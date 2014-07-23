@@ -31,6 +31,7 @@
 #ifndef AnimationEffect_h
 #define AnimationEffect_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CSSPropertyNames.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
@@ -41,13 +42,17 @@ namespace blink {
 
 class Interpolation;
 
-class AnimationEffect : public RefCountedWillBeGarbageCollectedFinalized<AnimationEffect> {
+class AnimationEffect : public RefCountedWillBeGarbageCollectedFinalized<AnimationEffect>, public ScriptWrappable {
 public:
     enum CompositeOperation {
         CompositeReplace,
         CompositeAdd,
     };
 
+    AnimationEffect()
+    {
+        ScriptWrappable::init(this);
+    }
     virtual ~AnimationEffect() { }
     virtual PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > sample(int iteration, double fraction, double iterationDuration) const = 0;
 

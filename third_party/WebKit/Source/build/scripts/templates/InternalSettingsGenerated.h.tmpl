@@ -4,8 +4,9 @@
 #ifndef InternalSettingsGenerated_h
 #define InternalSettingsGenerated_h
 
-#include "platform/heap/Handle.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/RefCountedSupplement.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -14,7 +15,7 @@ namespace WebCore {
 
 class Page;
 
-class InternalSettingsGenerated : public RefCountedWillBeGarbageCollectedFinalized<InternalSettingsGenerated> {
+class InternalSettingsGenerated : public RefCountedWillBeGarbageCollectedFinalized<InternalSettingsGenerated>, public ScriptWrappable {
 public:
     explicit InternalSettingsGenerated(Page*);
     virtual ~InternalSettingsGenerated();

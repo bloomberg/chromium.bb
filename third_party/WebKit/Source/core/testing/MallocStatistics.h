@@ -26,6 +26,7 @@
 #ifndef MallocStatistics_h
 #define MallocStatistics_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/FastMalloc.h"
 #include "wtf/PassRefPtr.h"
@@ -33,7 +34,7 @@
 
 namespace blink {
 
-class MallocStatistics : public RefCountedWillBeGarbageCollected<MallocStatistics> {
+class MallocStatistics : public RefCountedWillBeGarbageCollected<MallocStatistics>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<MallocStatistics> create()
     {
@@ -49,6 +50,7 @@ public:
 private:
     MallocStatistics()
     {
+        ScriptWrappable::init(this);
         m_stats = WTF::fastMallocStatistics();
     }
 

@@ -5,13 +5,14 @@
 #ifndef AnimationNodeTiming_h
 #define AnimationNodeTiming_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/animation/AnimationNode.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class AnimationNodeTiming : public RefCountedWillBeGarbageCollectedFinalized<AnimationNodeTiming> {
+class AnimationNodeTiming : public RefCountedWillBeGarbageCollectedFinalized<AnimationNodeTiming>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<AnimationNodeTiming> create(AnimationNode* parent);
     double delay();

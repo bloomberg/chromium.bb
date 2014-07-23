@@ -4,6 +4,7 @@
 #ifndef InternalRuntimeFlags_h
 #define InternalRuntimeFlags_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
@@ -12,7 +13,7 @@
 
 namespace WebCore {
 
-class InternalRuntimeFlags : public RefCountedWillBeGarbageCollected<InternalRuntimeFlags> {
+class InternalRuntimeFlags : public RefCountedWillBeGarbageCollected<InternalRuntimeFlags>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<InternalRuntimeFlags> create()
     {
@@ -34,7 +35,10 @@ public:
     void trace(Visitor*) { }
 
 private:
-    InternalRuntimeFlags() { }
+    InternalRuntimeFlags()
+    {
+        ScriptWrappable::init(this);
+    }
 };
 
 } // namespace WebCore

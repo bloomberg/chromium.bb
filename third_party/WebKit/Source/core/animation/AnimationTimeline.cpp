@@ -62,6 +62,7 @@ PassRefPtrWillBeRawPtr<AnimationTimeline> AnimationTimeline::create(Document* do
 AnimationTimeline::AnimationTimeline(Document* document, PassOwnPtrWillBeRawPtr<PlatformTiming> timing)
     : m_document(document)
 {
+    ScriptWrappable::init(this);
     if (!timing)
         m_timing = adoptPtrWillBeNoop(new AnimationTimelineTiming(this));
     else

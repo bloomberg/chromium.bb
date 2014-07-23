@@ -207,6 +207,7 @@ Internals::Internals(Document* document)
     : ContextLifecycleObserver(document)
     , m_runtimeFlags(InternalRuntimeFlags::create())
 {
+    ScriptWrappable::init(this);
 }
 
 Document* Internals::contextDocument() const

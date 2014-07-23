@@ -31,6 +31,7 @@
 #ifndef InternalProfilers_h
 #define InternalProfilers_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -38,8 +39,10 @@
 
 namespace blink {
 
-class InternalProfilers : public RefCountedWillBeGarbageCollected<InternalProfilers> {
+class InternalProfilers : public RefCountedWillBeGarbageCollected<InternalProfilers>, public ScriptWrappable {
 public:
+    InternalProfilers();
+
     static PassRefPtrWillBeRawPtr<InternalProfilers> create()
     {
         return adoptRefWillBeNoop(new InternalProfilers());

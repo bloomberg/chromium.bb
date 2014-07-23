@@ -20,12 +20,13 @@
 #ifndef SVGUnitTypes_h
 #define SVGUnitTypes_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGEnumeration.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
 
-class SVGUnitTypes : public RefCounted<SVGUnitTypes> {
+class SVGUnitTypes : public RefCounted<SVGUnitTypes>, public ScriptWrappable {
 public:
     enum SVGUnitType {
         SVG_UNIT_TYPE_UNKNOWN               = 0,
@@ -34,7 +35,7 @@ public:
     };
 
 private:
-    SVGUnitTypes() { }
+    SVGUnitTypes(); // No instantiation.
 };
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGUnitTypes::SVGUnitType>();
 

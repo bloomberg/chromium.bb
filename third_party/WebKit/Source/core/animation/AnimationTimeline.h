@@ -31,6 +31,7 @@
 #ifndef AnimationTimeline_h
 #define AnimationTimeline_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/animation/AnimationEffect.h"
 #include "core/animation/AnimationPlayer.h"
 #include "core/dom/Element.h"
@@ -46,7 +47,7 @@ class Document;
 class AnimationNode;
 
 // AnimationTimeline is constructed and owned by Document, and tied to its lifecycle.
-class AnimationTimeline : public RefCountedWillBeGarbageCollectedFinalized<AnimationTimeline> {
+class AnimationTimeline : public RefCountedWillBeGarbageCollectedFinalized<AnimationTimeline>, public ScriptWrappable {
 public:
     class PlatformTiming : public NoBaseWillBeGarbageCollectedFinalized<PlatformTiming> {
 

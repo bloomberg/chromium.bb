@@ -30,6 +30,7 @@ namespace blink {
 
 VTTRegionList::VTTRegionList()
 {
+    ScriptWrappable::init(this);
 }
 
 unsigned long VTTRegionList::length() const

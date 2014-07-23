@@ -32,6 +32,7 @@
 #define TextDecoder_h
 
 #include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/ArrayBufferView.h"
 #include "wtf/text/TextCodec.h"
@@ -42,7 +43,7 @@ namespace blink {
 
 class ExceptionState;
 
-class TextDecoder FINAL : public GarbageCollectedFinalized<TextDecoder> {
+class TextDecoder FINAL : public GarbageCollectedFinalized<TextDecoder>, public ScriptWrappable {
 public:
     static TextDecoder* create(const String& label, const Dictionary&, ExceptionState&);
     ~TextDecoder();

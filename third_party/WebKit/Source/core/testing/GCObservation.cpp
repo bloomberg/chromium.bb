@@ -33,7 +33,7 @@
 
 namespace blink {
 
-static void setWeakCallback(const v8::WeakCallbackData<v8::Value, GCObservation>& data)
+static void setWeakCallbackForGCObservation(const v8::WeakCallbackData<v8::Value, GCObservation>& data)
 {
     data.GetParameter()->setWasCollected();
 }
@@ -49,7 +49,8 @@ GCObservation::GCObservation(v8::Handle<v8::Value> observedValue)
     : m_observed(v8::Isolate::GetCurrent(), observedValue)
     , m_collected(false)
 {
-    m_observed.setWeak(this, setWeakCallback);
+    ScriptWrappable::init(this);
+    m_observed.setWeak(this, setWeakCallbackForGCObservation);
 }
 
 } // namespace blink

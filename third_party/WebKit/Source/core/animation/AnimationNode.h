@@ -31,6 +31,7 @@
 #ifndef AnimationNode_h
 #define AnimationNode_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/animation/Timing.h"
 #include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
@@ -58,7 +59,7 @@ static inline double nullValue()
     return std::numeric_limits<double>::quiet_NaN();
 }
 
-class AnimationNode : public RefCountedWillBeGarbageCollectedFinalized<AnimationNode> {
+class AnimationNode : public RefCountedWillBeGarbageCollectedFinalized<AnimationNode>, public ScriptWrappable {
     friend class AnimationPlayer; // Calls attach/detach, updateInheritedTime.
 public:
     // Note that logic in CSSAnimations depends on the order of these values.

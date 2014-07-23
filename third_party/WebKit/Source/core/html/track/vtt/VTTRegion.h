@@ -31,6 +31,7 @@
 #ifndef VTTRegion_h
 #define VTTRegion_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/html/track/TextTrack.h"
 #include "platform/Timer.h"
@@ -47,7 +48,7 @@ class HTMLDivElement;
 class VTTCueBox;
 class VTTScanner;
 
-class VTTRegion FINAL : public RefCountedWillBeGarbageCollectedFinalized<VTTRegion> {
+class VTTRegion FINAL : public RefCountedWillBeGarbageCollectedFinalized<VTTRegion>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<VTTRegion> create()
     {

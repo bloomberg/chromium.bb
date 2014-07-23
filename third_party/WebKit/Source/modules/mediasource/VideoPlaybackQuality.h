@@ -31,13 +31,14 @@
 #ifndef VideoPlaybackQuality_h
 #define VideoPlaybackQuality_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
 class Document;
 
-class VideoPlaybackQuality : public GarbageCollected<VideoPlaybackQuality> {
+class VideoPlaybackQuality : public GarbageCollectedFinalized<VideoPlaybackQuality>, public ScriptWrappable {
 public:
     static VideoPlaybackQuality* create(const Document&, unsigned totalVideoFrames, unsigned droppedVideoFrames, unsigned corruptedVideoFrames);
 

@@ -26,12 +26,13 @@
 #ifndef MediaDeviceInfo_h
 #define MediaDeviceInfo_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebMediaDeviceInfo.h"
 
 namespace blink {
 
-class MediaDeviceInfo FINAL : public GarbageCollectedFinalized<MediaDeviceInfo> {
+class MediaDeviceInfo FINAL : public GarbageCollectedFinalized<MediaDeviceInfo>, public ScriptWrappable {
 public:
     static MediaDeviceInfo* create(const blink::WebMediaDeviceInfo&);
 

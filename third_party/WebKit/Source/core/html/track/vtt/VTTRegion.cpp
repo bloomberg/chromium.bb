@@ -89,6 +89,7 @@ VTTRegion::VTTRegion()
     , m_currentTop(0)
     , m_scrollTimer(this, &VTTRegion::scrollTimerFired)
 {
+    ScriptWrappable::init(this);
 }
 
 VTTRegion::~VTTRegion()

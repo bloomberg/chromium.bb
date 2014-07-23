@@ -15,6 +15,7 @@ InternalSettingsGenerated::InternalSettingsGenerated(Page* page)
     , m_{{setting.name}}(page->settings().{{setting.name}}())
     {% endfor %}
 {
+    ScriptWrappable::init(this);
 }
 
 InternalSettingsGenerated::~InternalSettingsGenerated()

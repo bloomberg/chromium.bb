@@ -30,6 +30,7 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
@@ -70,7 +71,7 @@ class StaticNodeList;
 class ShadowRoot;
 class TypeConversions;
 
-class Internals FINAL : public RefCountedWillBeGarbageCollectedFinalized<Internals>, public ContextLifecycleObserver {
+class Internals FINAL : public RefCountedWillBeGarbageCollectedFinalized<Internals>, public ScriptWrappable, public ContextLifecycleObserver {
 public:
     static PassRefPtrWillBeRawPtr<Internals> create(Document*);
     virtual ~Internals();

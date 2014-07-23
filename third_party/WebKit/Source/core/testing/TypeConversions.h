@@ -26,13 +26,14 @@
 #ifndef TypeConversions_h
 #define TypeConversions_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "wtf/FastMalloc.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
 
-class TypeConversions : public RefCountedWillBeGarbageCollectedFinalized<TypeConversions> {
+class TypeConversions : public RefCountedWillBeGarbageCollectedFinalized<TypeConversions>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<TypeConversions> create()
     {
@@ -70,6 +71,7 @@ public:
 private:
     TypeConversions()
     {
+        ScriptWrappable::init(this);
     }
 
     long m_long;

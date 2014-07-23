@@ -19,6 +19,7 @@ PassRefPtrWillBeRawPtr<AnimationNodeTiming> AnimationNodeTiming::create(Animatio
 AnimationNodeTiming::AnimationNodeTiming(AnimationNode* parent)
 : m_parent(parent)
 {
+    ScriptWrappable::init(this);
 }
 
 double AnimationNodeTiming::delay()

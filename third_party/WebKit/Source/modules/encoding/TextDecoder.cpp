@@ -66,6 +66,7 @@ TextDecoder::TextDecoder(const WTF::TextEncoding& encoding, bool fatal, bool ign
     , m_ignoreBOM(ignoreBOM)
     , m_bomSeen(false)
 {
+    ScriptWrappable::init(this);
 }
 
 TextDecoder::~TextDecoder()

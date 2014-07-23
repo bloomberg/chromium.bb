@@ -20,11 +20,12 @@
 #ifndef SVGRenderingIntent_h
 #define SVGRenderingIntent_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
 
-class SVGRenderingIntent : public RefCounted<SVGRenderingIntent> {
+class SVGRenderingIntent : public RefCounted<SVGRenderingIntent>, public ScriptWrappable {
 public:
     enum SVGRenderingIntentType {
         RENDERING_INTENT_UNKNOWN                  = 0,
@@ -36,7 +37,7 @@ public:
     };
 
 private:
-    SVGRenderingIntent() { }
+    SVGRenderingIntent(); // No instantiation.
 };
 
 } // namespace blink

@@ -38,6 +38,11 @@
 
 namespace blink {
 
+InternalProfilers::InternalProfilers()
+{
+    ScriptWrappable::init(this);
+}
+
 void InternalProfilers::startHeapProfiling(const String& prefix)
 {
     blink::Platform::current()->startHeapProfiling(prefix);

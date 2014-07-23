@@ -31,6 +31,7 @@
 #ifndef TextEncoder_h
 #define TextEncoder_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/ArrayBufferView.h"
 #include "wtf/Uint8Array.h"
@@ -42,7 +43,7 @@ namespace blink {
 
 class ExceptionState;
 
-class TextEncoder FINAL : public GarbageCollectedFinalized<TextEncoder> {
+class TextEncoder FINAL : public GarbageCollectedFinalized<TextEncoder>, public ScriptWrappable {
 public:
     static TextEncoder* create(const String& utfLabel, ExceptionState&);
     ~TextEncoder();
