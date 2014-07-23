@@ -1079,6 +1079,42 @@ TEST_F(RenderTextTest, MoveCursorLeftRightWithSelection) {
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(Range(4), render_text->selection());
 }
+
+TEST_F(RenderTextTest, CenteredDisplayOffset) {
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  render_text->SetText(ASCIIToUTF16("abcdefghij"));
+  render_text->SetHorizontalAlignment(ALIGN_CENTER);
+
+  const int kEnlargement = 10;
+  const int content_width = render_text->GetContentWidth();
+  Rect display_rect(0, 0, content_width / 2,
+                    render_text->font_list().GetHeight());
+  render_text->SetDisplayRect(display_rect);
+
+  // Move the cursor to the beginning of the text and, by checking the cursor
+  // bounds, make sure no empty space is to the left of the text.
+  render_text->SetCursorPosition(0);
+  EXPECT_EQ(display_rect.x(), render_text->GetUpdatedCursorBounds().x());
+
+  // Widen the display rect and, by checking the cursor bounds, make sure no
+  // empty space is introduced to the left of the text.
+  display_rect.Inset(0, 0, -kEnlargement, 0);
+  render_text->SetDisplayRect(display_rect);
+  EXPECT_EQ(display_rect.x(), render_text->GetUpdatedCursorBounds().x());
+
+  // Move the cursor to the end of the text and, by checking the cursor bounds,
+  // make sure no empty space is to the right of the text.
+  render_text->SetCursorPosition(render_text->text().length());
+  EXPECT_EQ(display_rect.right(),
+            render_text->GetUpdatedCursorBounds().right());
+
+  // Widen the display rect and, by checking the cursor bounds, make sure no
+  // empty space is introduced to the right of the text.
+  display_rect.Inset(0, 0, -kEnlargement, 0);
+  render_text->SetDisplayRect(display_rect);
+  EXPECT_EQ(display_rect.right(),
+            render_text->GetUpdatedCursorBounds().right());
+}
 #endif  // !defined(OS_MACOSX)
 
 // TODO(xji): Make these work on Windows.
@@ -1559,11 +1595,11 @@ TEST_F(RenderTextTest, SetDisplayOffset) {
     { ALIGN_RIGHT, kEnlargement / 2, kEnlargement / 2 },
     { ALIGN_RIGHT, 2 * kEnlargement, kEnlargement },
     // When text is center-aligned, display offset can be in range
-    // [-kEnlargement / 2, kEnlargement / 2].
-    { ALIGN_CENTER, -kEnlargement, -kEnlargement / 2 },
+    // [-kEnlargement / 2 - 1, (kEnlargement - 1) / 2].
+    { ALIGN_CENTER, -kEnlargement, -kEnlargement / 2 - 1 },
     { ALIGN_CENTER, -kEnlargement / 4, -kEnlargement / 4 },
     { ALIGN_CENTER, kEnlargement / 4, kEnlargement / 4 },
-    { ALIGN_CENTER, kEnlargement, kEnlargement / 2 },
+    { ALIGN_CENTER, kEnlargement, (kEnlargement - 1) / 2 },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(large_content_cases); i++) {

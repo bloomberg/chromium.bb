@@ -900,11 +900,12 @@ const Vector2d& RenderText::GetUpdatedDisplayOffset() {
 
 void RenderText::SetDisplayOffset(int horizontal_offset) {
   const int extra_content = GetContentWidth() - display_rect_.width();
+  const int cursor_width = cursor_enabled_ ? 1 : 0;
 
   int min_offset = 0;
   int max_offset = 0;
   if (extra_content > 0) {
-    switch (horizontal_alignment_) {
+    switch (GetCurrentHorizontalAlignment()) {
       case ALIGN_LEFT:
         min_offset = -extra_content;
         break;
@@ -912,8 +913,12 @@ void RenderText::SetDisplayOffset(int horizontal_offset) {
         max_offset = extra_content;
         break;
       case ALIGN_CENTER:
-        min_offset = -extra_content / 2;
-        max_offset = extra_content / 2;
+        // The extra space reserved for cursor at the end of the text is ignored
+        // when centering text. So, to calculate the valid range for offset, we
+        // exclude that extra space, calculate the range, and add it back to the
+        // range (if cursor is enabled).
+        min_offset = -(extra_content - cursor_width + 1) / 2 - cursor_width;
+        max_offset = (extra_content - cursor_width) / 2;
         break;
       default:
         break;
@@ -1400,49 +1405,24 @@ void RenderText::UpdateCachedBoundsAndOffset() {
 
   // TODO(ckocagil): Add support for scrolling multiline text.
 
-  // First, set the valid flag true to calculate the current cursor bounds using
-  // the stale |display_offset_|. Applying |delta_offset| at the end of this
-  // function will set |cursor_bounds_| and |display_offset_| to correct values.
-  cached_bounds_and_offset_valid_ = true;
-  if (cursor_enabled())
+  int delta_x = 0;
+
+  if (cursor_enabled()) {
+    // When cursor is enabled, ensure it is visible. For this, set the valid
+    // flag true and calculate the current cursor bounds using the stale
+    // |display_offset_|. Then calculate the change in offset needed to move the
+    // cursor into the visible area.
+    cached_bounds_and_offset_valid_ = true;
     cursor_bounds_ = GetCursorBounds(selection_model_, insert_mode_);
 
-  // Update |display_offset_| to ensure the current cursor is visible.
-  const int display_width = display_rect_.width();
-  const int content_width = GetContentWidth();
-
-  int delta_x = 0;
-  if (content_width <= display_width || !cursor_enabled()) {
-    // Don't pan if the text fits in the display width or when the cursor is
-    // disabled.
-    delta_x = -display_offset_.x();
-  } else if (cursor_bounds_.right() > display_rect_.right()) {
-    // TODO(xji): when the character overflow is a RTL character, currently, if
-    // we pan cursor at the rightmost position, the entered RTL character is not
-    // displayed. Should pan cursor to show the last logical characters.
-    //
-    // Pan to show the cursor when it overflows to the right.
-    delta_x = display_rect_.right() - cursor_bounds_.right();
-  } else if (cursor_bounds_.x() < display_rect_.x()) {
-    // TODO(xji): have similar problem as above when overflow character is a
-    // LTR character.
-    //
-    // Pan to show the cursor when it overflows to the left.
-    delta_x = display_rect_.x() - cursor_bounds_.x();
-  } else if (display_offset_.x() != 0) {
-    // Reduce the pan offset to show additional overflow text when the display
-    // width increases.
-    HorizontalAlignment horizontal_alignment = GetCurrentHorizontalAlignment();
-    const int negate_rtl = horizontal_alignment == ALIGN_RIGHT ? -1 : 1;
-    const int offset = negate_rtl * display_offset_.x();
-    if (display_width > (content_width + offset)) {
-      delta_x = negate_rtl * (display_width - (content_width + offset));
-    }
+    // TODO(bidi): Show RTL glyphs at the cursor position for ALIGN_LEFT, etc.
+    if (cursor_bounds_.right() > display_rect_.right())
+      delta_x = display_rect_.right() - cursor_bounds_.right();
+    else if (cursor_bounds_.x() < display_rect_.x())
+      delta_x = display_rect_.x() - cursor_bounds_.x();
   }
 
-  Vector2d delta_offset(delta_x, 0);
-  display_offset_ += delta_offset;
-  cursor_bounds_ += delta_offset;
+  SetDisplayOffset(display_offset_.x() + delta_x);
 }
 
 void RenderText::DrawSelection(Canvas* canvas) {
