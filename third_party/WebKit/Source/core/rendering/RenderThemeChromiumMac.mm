@@ -1763,7 +1763,11 @@ String RenderThemeChromiumMac::fileListNameForWidth(Locale& locale, const FileLi
     if (fileList->isEmpty()) {
         strToTruncate = locale.queryString(blink::WebLocalizedString::FileButtonNoFileSelectedLabel);
     } else if (fileList->length() == 1) {
-        strToTruncate = [[NSFileManager defaultManager] displayNameAtPath:(fileList->item(0)->path())];
+        File* file = fileList->item(0);
+        if (file->userVisibility() == File::IsUserVisible)
+            strToTruncate = [[NSFileManager defaultManager] displayNameAtPath:(fileList->item(0)->path())];
+        else
+            strToTruncate = file->name();
     } else {
         // FIXME: Localization of fileList->length().
         return StringTruncator::rightTruncate(locale.queryString(blink::WebLocalizedString::MultipleFileUploadText, String::number(fileList->length())), width, font);

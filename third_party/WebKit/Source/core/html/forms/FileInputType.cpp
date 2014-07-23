@@ -89,8 +89,11 @@ FormControlState FileInputType::saveFormControlState() const
     FormControlState state;
     unsigned numFiles = m_fileList->length();
     for (unsigned i = 0; i < numFiles; ++i) {
-        state.append(m_fileList->item(i)->path());
-        state.append(m_fileList->item(i)->name());
+        if (m_fileList->item(i)->hasBackingFile()) {
+            state.append(m_fileList->item(i)->path());
+            state.append(m_fileList->item(i)->name());
+        }
+        // FIXME: handle Blob-backed File instances, see http://crbug.com/394948
     }
     return state;
 }
@@ -156,7 +159,7 @@ void FileInputType::handleDOMActivateEvent(Event* event)
         settings.allowsMultipleFiles = settings.allowsDirectoryUpload || input.fastHasAttribute(multipleAttr);
         settings.acceptMIMETypes = input.acceptMIMETypes();
         settings.acceptFileExtensions = input.acceptFileExtensions();
-        settings.selectedFiles = m_fileList->paths();
+        settings.selectedFiles = m_fileList->pathsForUserVisibleFiles();
         settings.useMediaCapture = RuntimeEnabledFeatures::mediaCaptureEnabled() && input.isFileUpload() && input.fastHasAttribute(captureAttr);
         chrome->runOpenPanel(input.document().frame(), newFileChooser(settings));
     }

@@ -2316,7 +2316,7 @@ private:
             if (!doReadNumber(&lastModified))
                 return nullptr;
         }
-        return File::create(path, name, relativePath, hasSnapshot > 0, size, lastModified, getOrCreateBlobDataHandle(uuid, type));
+        return File::createFromSerialization(path, name, relativePath, hasSnapshot > 0, size, lastModified, getOrCreateBlobDataHandle(uuid, type));
     }
 
     PassRefPtrWillBeRawPtr<File> readFileIndexHelper()
@@ -2328,7 +2328,7 @@ private:
         if (!doReadUint32(&index) || index >= m_blobInfo->size())
             return nullptr;
         const blink::WebBlobInfo& info = (*m_blobInfo)[index];
-        return File::create(info.filePath(), info.fileName(), info.size(), info.lastModified(), getOrCreateBlobDataHandle(info.uuid(), info.type(), info.size()));
+        return File::createFromIndexedSerialization(info.filePath(), info.fileName(), info.size(), info.lastModified(), getOrCreateBlobDataHandle(info.uuid(), info.type(), info.size()));
     }
 
     template<class T>

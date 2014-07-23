@@ -101,23 +101,31 @@ WebVector<WebDragData::Item> WebDragData::items() const
                 RefPtrWillBeRawPtr<blink::Blob> blob = originalItem->getAsFile();
                 if (blob->isFile()) {
                     File* file = toFile(blob.get());
-                    if (!file->path().isEmpty()) {
-                        item.storageType = Item::StorageTypeFilename;
-                        item.filenameData = file->path();
-                        item.displayNameData = file->name();
-                    } else if (!file->fileSystemURL().isEmpty()) {
-                        item.storageType = Item::StorageTypeFileSystemFile;
-                        item.fileSystemURL = file->fileSystemURL();
-                        item.fileSystemFileSize = file->size();
+                    if (file->hasBackingFile()) {
+                        if (file->userVisibility() == File::IsUserVisible) {
+                            item.storageType = Item::StorageTypeFilename;
+                            item.filenameData = file->path();
+                            item.displayNameData = file->name();
+                        } else {
+                            item.storageType = Item::StorageTypeFileSystemFile;
+                            item.fileSystemURL = file->fileSystemURL();
+                            item.fileSystemFileSize = file->size();
+                        }
                     } else {
-                        ASSERT_NOT_REACHED();
+                        // FIXME: support dragging constructed Files across renderers, see http://crbug.com/394955
+                        item.storageType = Item::StorageTypeString;
+                        item.stringType = "text/plain";
+                        item.stringData = file->name();
                     }
-                } else
+                } else {
                     ASSERT_NOT_REACHED();
-            } else
+                }
+            } else {
                 ASSERT_NOT_REACHED();
-        } else
+            }
+        } else {
             ASSERT_NOT_REACHED();
+        }
         item.title = originalItem->title();
         item.baseURL = originalItem->baseURL();
         itemList.append(item);

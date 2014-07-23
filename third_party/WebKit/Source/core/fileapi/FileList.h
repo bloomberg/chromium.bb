@@ -49,7 +49,7 @@ public:
     bool isEmpty() const { return m_files.isEmpty(); }
     void clear() { m_files.clear(); }
     void append(PassRefPtrWillBeRawPtr<File> file) { m_files.append(file); }
-    Vector<String> paths() const;
+    Vector<String> pathsForUserVisibleFiles() const;
 
     void trace(Visitor*);
 

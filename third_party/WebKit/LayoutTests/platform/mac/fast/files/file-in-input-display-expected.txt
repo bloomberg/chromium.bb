@@ -1,0 +1,15 @@
+CONSOLE MESSAGE: line 47: [object DataTransfer]
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x188
+  RenderBlock {HTML} at (0,0) size 800x188
+    RenderBody {BODY} at (8,8) size 784x170
+      RenderBlock {DIV} at (0,0) size 102x102 [border: (1px solid #000000)]
+      RenderBlock {FORM} at (0,152) size 784x18
+        RenderBlock {P} at (0,0) size 784x18
+          RenderFileUploadControl {INPUT} at (0,0) size 237x18 "hello.txt"
+            RenderButton {INPUT} at (0,0) size 77.56x18 [bgcolor=#C0C0C0]
+              RenderBlock (anonymous) at (8,2.50) size 61.56x13
+                RenderText {#text} at (0,0) size 62x13
+                  text run at (0,0) width 62: "Choose File"
+          RenderText {#text} at (0,0) size 0x0
