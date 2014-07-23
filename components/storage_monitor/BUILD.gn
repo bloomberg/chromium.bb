@@ -47,7 +47,7 @@ static_library("storage_monitor") {
   ]
 
   if (is_mac) {
-    libs += [
+    libs = [
       "DiskArbitration.framework",
       "Foundation.framework",
       "ImageCaptureCore.framework",

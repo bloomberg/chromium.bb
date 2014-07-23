@@ -194,7 +194,6 @@ static_library("common") {
 
   if (is_mac) {
     sources -= [
-      "child_process_logging_posix.cc",
       "chrome_version_info_posix.cc",
     ]
     deps += [

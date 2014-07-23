@@ -182,7 +182,7 @@ source_set("audio") {
   }
 
   if (use_alsa) {
-    libs = [ "asound" ]
+    libs += [ "asound" ]
     defines = [ "USE_ALSA" ]
     sources += [
       "alsa/alsa_input.cc",

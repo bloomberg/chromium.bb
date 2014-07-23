@@ -293,8 +293,6 @@ static_library("ui") {
       # Mac has its own way of drawing tabs.
       "tabs/tab_resources.cc",
       "tabs/tab_resources.h",
-      "views/extensions/extension_view_views.cc",
-      "views/extensions/extension_view_views.h",
     ]
     deps += [
       #'../third_party/apple_sample_code/apple_sample_code.gyp:apple_sample_code',  TODO(GYP)

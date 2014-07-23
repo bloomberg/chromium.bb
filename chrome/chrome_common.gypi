@@ -484,7 +484,6 @@
             '<(DEPTH)/breakpad/src',
           ],
           'sources!': [
-            'common/child_process_logging_posix.cc',
             'common/chrome_version_info_posix.cc',
           ],
         }],

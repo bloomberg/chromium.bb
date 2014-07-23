@@ -135,69 +135,6 @@ component("base") {
     "dragdrop/os_exchange_data_provider_win.cc",
     "dragdrop/os_exchange_data_provider_win.h",
     "hit_test.h",
-    "ime/candidate_window.cc",
-    "ime/candidate_window.h",
-    "ime/chromeos/character_composer.cc",
-    "ime/chromeos/character_composer.h",
-    "ime/chromeos/ime_bridge.cc",
-    "ime/chromeos/ime_bridge.h",
-    "ime/chromeos/ime_keymap.cc",
-    "ime/chromeos/ime_keymap.h",
-    "ime/chromeos/mock_ime_candidate_window_handler.cc",
-    "ime/chromeos/mock_ime_candidate_window_handler.h",
-    "ime/chromeos/mock_ime_engine_handler.cc",
-    "ime/chromeos/mock_ime_engine_handler.h",
-    "ime/chromeos/mock_ime_input_context_handler.cc",
-    "ime/chromeos/mock_ime_input_context_handler.h",
-    "ime/composition_text.cc",
-    "ime/composition_text.h",
-    "ime/composition_text_util_pango.cc",
-    "ime/composition_text_util_pango.h",
-    "ime/composition_underline.h",
-    "ime/dummy_input_method_delegate.cc",
-    "ime/dummy_input_method_delegate.h",
-    "ime/infolist_entry.cc",
-    "ime/infolist_entry.h",
-    "ime/input_method.h",
-    "ime/input_method_auralinux.cc",
-    "ime/input_method_auralinux.h",
-    "ime/input_method_base.cc",
-    "ime/input_method_base.h",
-    "ime/input_method_chromeos.cc",
-    "ime/input_method_chromeos.h",
-    "ime/input_method_delegate.h",
-    "ime/input_method_factory.cc",
-    "ime/input_method_factory.h",
-    "ime/input_method_initializer.cc",
-    "ime/input_method_initializer.h",
-    "ime/input_method_mac.h",
-    "ime/input_method_mac.mm",
-    "ime/input_method_minimal.cc",
-    "ime/input_method_minimal.h",
-    "ime/input_method_observer.h",
-    "ime/input_method_win.cc",
-    "ime/input_method_win.h",
-    "ime/linux/fake_input_method_context.cc",
-    "ime/linux/fake_input_method_context.h",
-    "ime/linux/fake_input_method_context_factory.cc",
-    "ime/linux/fake_input_method_context_factory.h",
-    "ime/linux/linux_input_method_context.h",
-    "ime/linux/linux_input_method_context_factory.cc",
-    "ime/linux/linux_input_method_context_factory.h",
-    "ime/mock_input_method.cc",
-    "ime/mock_input_method.h",
-    "ime/remote_input_method_delegate_win.h",
-    "ime/remote_input_method_win.cc",
-    "ime/remote_input_method_win.h",
-    "ime/text_input_client.cc",
-    "ime/text_input_client.h",
-    "ime/text_input_focus_manager.cc",
-    "ime/text_input_focus_manager.h",
-    "ime/text_input_type.h",
-    "ime/win/imm32_manager.cc",
-    "ime/win/imm32_manager.h",
-    "ime/win/tsf_input_scope.cc",
-    "ime/win/tsf_input_scope.h",
     "l10n/formatter.cc",
     "l10n/formatter.h",
     "l10n/l10n_font_util.cc",
@@ -358,6 +295,8 @@ component("base") {
       "l10n/l10n_util_mac.h",
       "l10n/l10n_util_mac.mm",
     ]
+  } else {
+    deps += [ "//ui/base/ime" ]
   }
 
   if (toolkit_views) {
@@ -426,17 +365,6 @@ component("base") {
     }
   }
 
-  if (use_pango) {
-    configs += [
-      "//build/config/linux:pangocairo",
-    ]
-  } else {
-    sources -= [
-      "ime/composition_text_util_pango.cc",
-      "ime/composition_text_util_pango.h",
-    ]
-  }
-
   if (is_chromeos || (use_aura && is_linux && !use_x11)) {
     sources += [
       "dragdrop/os_exchange_data_provider_aura.cc",
@@ -488,6 +416,8 @@ component("base") {
     ]
 
     sources -= [
+      "cursor/image_cursors.cc",
+      "cursor/image_cursors.h",
       "dragdrop/drag_utils.cc",
       "dragdrop/drag_utils.h",
     ]
