@@ -109,6 +109,10 @@ void NewTabPagePrefs::SetForeignSessionCollapsed(JNIEnv* env,
 void NewTabPagePrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
+      prefs::kNtpCollapsedCurrentlyOpenTabs,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
       prefs::kNtpCollapsedSnapshotDocument,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
