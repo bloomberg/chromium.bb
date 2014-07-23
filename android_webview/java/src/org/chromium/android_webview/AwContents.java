@@ -2398,8 +2398,10 @@ public class AwContents {
     // Return true if the GeolocationPermissionAPI should be used.
     @CalledByNative
     private boolean useLegacyGeolocationPermissionAPI() {
-        // TODO (michaelbai): Need to verify whether this is correct when release.
-        return mContext.getApplicationInfo().targetSdkVersion <= Build.VERSION_CODES.KITKAT;
+        // Always return true since we are not ready to swap the geolocation yet.
+        // TODO: If we decide not to migrate the geolocation, there are some unreachable
+        // code need to remove. http://crbug.com/396184.
+        return true;
     }
 
     //--------------------------------------------------------------------------------------------
