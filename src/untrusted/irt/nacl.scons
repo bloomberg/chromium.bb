@@ -72,6 +72,7 @@ irt_support_objs += [
 env.ComponentLibrary('libirt_support_private', irt_support_objs)
 
 irt_nonbrowser = ['irt_interfaces.c',
+                  'irt_query_list.c',
                   'irt_core_resource.c',
                   ]
 

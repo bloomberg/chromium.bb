@@ -43,6 +43,7 @@ executable("irt_core_raw") {
     "irt_nameservice.c",
     "irt_private_pthread.c",
     "irt_private_tls.c",
+    "irt_query_list.c",
     "irt_random.c",
     "irt_sem.c",
     "irt_thread.c",

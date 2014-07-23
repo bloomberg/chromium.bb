@@ -437,7 +437,9 @@ def RunHostLD(infile, outfile):
   lib_dir = (env.getone('BASE_LIB_NATIVE')
              + 'x86-32-%s' % env.getone('TARGET_OS'))
   args = ['gcc', '-m32', infile, '-o', outfile,
-          os.path.join(lib_dir, 'unsandboxed_irt.o'), '-lpthread']
+          os.path.join(lib_dir, 'unsandboxed_irt.o'),
+          os.path.join(lib_dir, 'irt_query_list.o'),
+          '-lpthread']
   if env.getone('TARGET_OS') == 'linux':
     args.append('-lrt')  # For clock_gettime()
   driver_tools.Run(args)

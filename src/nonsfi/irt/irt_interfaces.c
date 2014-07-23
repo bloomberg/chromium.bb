@@ -26,6 +26,7 @@
 #include "native_client/src/include/elf32.h"
 #include "native_client/src/include/elf_auxv.h"
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/public/irt_core.h"
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 #include "native_client/src/trusted/service_runtime/include/sys/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
@@ -644,44 +645,26 @@ const struct nacl_irt_dev_getpid nacl_irt_dev_getpid = {
   irt_getpid,
 };
 
-struct nacl_interface_table {
-  const char *name;
-  const void *table;
-  size_t size;
-};
-
-static const struct nacl_interface_table irt_interfaces[] = {
-  { NACL_IRT_BASIC_v0_1, &nacl_irt_basic, sizeof(nacl_irt_basic) },
-  { NACL_IRT_FDIO_v0_1, &nacl_irt_fdio, sizeof(nacl_irt_fdio) },
-  { NACL_IRT_MEMORY_v0_3, &nacl_irt_memory, sizeof(nacl_irt_memory) },
-  { NACL_IRT_TLS_v0_1, &nacl_irt_tls, sizeof(nacl_irt_tls) },
-  { NACL_IRT_THREAD_v0_1, &nacl_irt_thread, sizeof(nacl_irt_thread) },
-  { NACL_IRT_FUTEX_v0_1, &nacl_irt_futex, sizeof(nacl_irt_futex) },
+static const struct nacl_irt_interface irt_interfaces[] = {
+  { NACL_IRT_BASIC_v0_1, &nacl_irt_basic, sizeof(nacl_irt_basic), NULL },
+  { NACL_IRT_FDIO_v0_1, &nacl_irt_fdio, sizeof(nacl_irt_fdio), NULL },
+  { NACL_IRT_MEMORY_v0_3, &nacl_irt_memory, sizeof(nacl_irt_memory), NULL },
+  { NACL_IRT_TLS_v0_1, &nacl_irt_tls, sizeof(nacl_irt_tls), NULL },
+  { NACL_IRT_THREAD_v0_1, &nacl_irt_thread, sizeof(nacl_irt_thread), NULL },
+  { NACL_IRT_FUTEX_v0_1, &nacl_irt_futex, sizeof(nacl_irt_futex), NULL },
 #if defined(__linux__) || defined(__native_client__)
-  { NACL_IRT_CLOCK_v0_1, &nacl_irt_clock, sizeof(nacl_irt_clock) },
+  { NACL_IRT_CLOCK_v0_1, &nacl_irt_clock, sizeof(nacl_irt_clock), NULL },
 #endif
   { NACL_IRT_DEV_FILENAME_v0_3, &nacl_irt_dev_filename,
-    sizeof(nacl_irt_dev_filename) },
+    sizeof(nacl_irt_dev_filename), NULL },
   { NACL_IRT_DEV_GETPID_v0_1, &nacl_irt_dev_getpid,
-    sizeof(nacl_irt_dev_getpid) },
+    sizeof(nacl_irt_dev_getpid), NULL },
 };
 
-static size_t irt_interface_query(const char *interface_ident,
-                                  void *table, size_t tablesize) {
-  unsigned i;
-  for (i = 0; i < NACL_ARRAY_SIZE(irt_interfaces); ++i) {
-    if (0 == strcmp(interface_ident, irt_interfaces[i].name)) {
-      const size_t size = irt_interfaces[i].size;
-      if (size <= tablesize) {
-        memcpy(table, irt_interfaces[i].table, size);
-        return size;
-      }
-      break;
-    }
-  }
-  fprintf(stderr, "Warning: unavailable IRT interface queried: %s\n",
-          interface_ident);
-  return 0;
+size_t nacl_irt_query_core(const char *interface_ident,
+                           void *table, size_t tablesize) {
+  return nacl_irt_query_list(interface_ident, table, tablesize,
+                             irt_interfaces, sizeof(irt_interfaces));
 }
 
 int nacl_irt_nonsfi_entry(int argc, char **argv, char **environ,
@@ -716,7 +699,7 @@ int nacl_irt_nonsfi_entry(int argc, char **argv, char **environ,
   data[pos++] = 0;
   /* auxv[0] */
   data[pos++] = AT_SYSINFO;
-  data[pos++] = (uintptr_t) irt_interface_query;
+  data[pos++] = (uintptr_t) nacl_irt_query_core;
   /* auxv[1] */
   data[pos++] = 0;
   data[pos++] = 0;

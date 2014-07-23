@@ -18,4 +18,6 @@ env.Append(CCFLAGS='-Wno-unused-parameter')
 # DEFINE_STUB/USE_STUB are gone.
 env.FilterOut(CFLAGS='-Wstrict-prototypes')
 
-env.ComponentLibrary('irt_nonsfi', ['irt_interfaces.c'])
+irt_query_list_o = env.ComponentObject(
+    'irt_query_list', ['$MAIN_DIR/src/untrusted/irt/irt_query_list.c'])
+env.ComponentLibrary('irt_nonsfi', ['irt_interfaces.c', irt_query_list_o])

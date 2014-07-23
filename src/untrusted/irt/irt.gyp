@@ -14,6 +14,7 @@
       'irt_malloc.c',
       'irt_private_pthread.c',
       'irt_private_tls.c',
+      'irt_query_list.c',
 # irt_common_interfaces
       'irt_basic.c',
       'irt_code_data_alloc.c',

@@ -2483,6 +2483,9 @@ libs-support-unsandboxed() {
         -DNACL_LINUX=1 -DDEFINE_MAIN \
         ${NACL_ROOT}/src/nonsfi/irt/irt_interfaces.c \
         -o ${destdir}/unsandboxed_irt.o
+    gcc -m32 -O2 -Wall -Werror -I${NACL_ROOT}/.. -c \
+        ${NACL_ROOT}/src/untrusted/irt/irt_query_list.c \
+        -o ${destdir}/irt_query_list.o
   fi
 }
 
