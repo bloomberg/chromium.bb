@@ -92,31 +92,45 @@ test(function() {
     offsetKeyframeB,
     offsetKeyframeC,
   ], offsetKeyframeBExpectations, 'with ordered offsets');
-  assertAnimationStyles([
-    offsetKeyframeA,
-    offsetKeyframeC,
-    offsetKeyframeB,
-  ], offsetKeyframeBExpectations, 'with unordered offsets (1)');
-  assertAnimationStyles([
-    offsetKeyframeB,
-    offsetKeyframeA,
-    offsetKeyframeC,
-  ], offsetKeyframeBExpectations, 'with unordered offsets (2)');
-  assertAnimationStyles([
-    offsetKeyframeB,
-    offsetKeyframeC,
-    offsetKeyframeA,
-  ], offsetKeyframeBExpectations, 'with unordered offsets (3)');
-  assertAnimationStyles([
-    offsetKeyframeC,
-    offsetKeyframeA,
-    offsetKeyframeB,
-  ], offsetKeyframeBExpectations, 'with unordered offsets (4)');
-  assertAnimationStyles([
-    offsetKeyframeC,
-    offsetKeyframeB,
-    offsetKeyframeA,
-  ], offsetKeyframeBExpectations, 'with unordered offsets (5)');
+  assert_throws('InvalidModificationError', function() {
+    assertAnimationStyles([
+      offsetKeyframeA,
+      offsetKeyframeC,
+      offsetKeyframeB,
+    ], offsetKeyframeBExpectations, 'with unordered offsets (1)');
+  });
+
+  assert_throws('InvalidModificationError', function() {
+    assertAnimationStyles([
+      offsetKeyframeB,
+      offsetKeyframeA,
+      offsetKeyframeC,
+    ], offsetKeyframeBExpectations, 'with unordered offsets (2)');
+  });
+
+  assert_throws('InvalidModificationError', function() {
+    assertAnimationStyles([
+      offsetKeyframeB,
+      offsetKeyframeC,
+      offsetKeyframeA,
+    ], offsetKeyframeBExpectations, 'with unordered offsets (3)');
+  });
+
+  assert_throws('InvalidModificationError', function() {
+    assertAnimationStyles([
+      offsetKeyframeC,
+      offsetKeyframeA,
+      offsetKeyframeB,
+    ], offsetKeyframeBExpectations, 'with unordered offsets (4)');
+  });
+
+  assert_throws('InvalidModificationError', function() {
+    assertAnimationStyles([
+      offsetKeyframeC,
+      offsetKeyframeB,
+      offsetKeyframeA,
+    ], offsetKeyframeBExpectations, 'with unordered offsets (5)');
+  });
 },
 'element.animate() with 3 keyframes and 3 offsets specified',
 {

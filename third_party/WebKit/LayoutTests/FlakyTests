@@ -1580,7 +1580,6 @@ crbug.com/357437 [ Release Mavericks ] web-animations-api/change-in-animation-fr
 crbug.com/357437 [ Release Win7 ] web-animations-api/change-in-animation-frame.html [ Failure Pass ]
 crbug.com/357437 [ Debug Win7 ] web-animations-api/change-in-animation-frame.html [ Failure Pass ]
 crbug.com/357437 [ Release XP ] web-animations-api/change-in-animation-frame.html [ Failure Pass ]
-Bug(gardener) [ Debug Win7 ] web-animations-api/w3c/ignored-keyframes.html [ Crash Pass ]
 Bug(gardener) [ Debug Lion ] webaudio/audiobuffersource-loop-points.html [ Crash Pass ]
 crbug.com/392095 [ Debug Lion ] webaudio/realtimeanalyser-fft-scaling.html [ Failure Pass ]
 Bug(gardener) [ Debug Win7 ] webaudio/up-mixing-mono-51.html [ Pass Timeout ]

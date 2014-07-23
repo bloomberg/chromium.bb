@@ -7,11 +7,9 @@
 <script>
 
 test(function() {
-  try {
+  assert_throws({name: 'InvalidModificationError'}, function() {
     div.animate([{height: '100px', offset: 0.5}, {height: '200px', offset: 0}, {height: '300px', offset: 1}], 1);
-  } catch (e) {
-    assert_unreached('Out-of-order properties should be sorted when possible');
-  }
+  }, 'Out-of-order properties should not work');
 
   assert_throws({name: 'InvalidModificationError'}, function() {
     div.animate([{height: '100px', offset: 0.5}, {height: '150px'},

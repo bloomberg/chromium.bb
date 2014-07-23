@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<script>
+function assert_throws_with_message(e, f, m) {
+  try {
+    f();
+  } catch(exception) {
+    assert_equals(exception.name, e);
+    assert_equals(exception.message, m);
+  }
+}
+
+test(function() {
+  assert_throws_with_message('InvalidModificationError',
+    function() {
+      document.documentElement.animate([
+        {offset: 0.6},
+        {offset: 0.4}
+      ]);
+    },
+    "Failed to execute 'animate' on 'Element': Keyframes with specified offsets are not sorted"
+  );
+
+  assert_throws_with_message('InvalidModificationError',
+    function() {
+      document.documentElement.animate([
+        {offset: 'a donkey'}
+      ]);
+    },
+    "Failed to execute 'animate' on 'Element': Non numeric offset provided"
+  );
+
+  assert_throws_with_message('InvalidModificationError',
+    function() {
+      document.documentElement.animate([
+        {offset: -1}
+      ]);
+    },
+    "Failed to execute 'animate' on 'Element': Offsets provided outside the range [0, 1]"
+  );
+});
+</script>

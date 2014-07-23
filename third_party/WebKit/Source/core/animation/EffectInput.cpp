@@ -52,36 +52,37 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
 
     StyleSheetContents* styleSheetContents = element->document().elementSheet().contents();
     StringKeyframeVector keyframes;
-    bool everyFrameHasOffset = true;
-    bool looselySortedByOffset = true;
-    double lastOffset = -std::numeric_limits<double>::infinity();
+    double lastOffset = 0;
 
     for (size_t i = 0; i < keyframeDictionaryVector.size(); ++i) {
         RefPtrWillBeRawPtr<StringKeyframe> keyframe = StringKeyframe::create();
 
-        bool frameHasOffset = false;
-        double offset;
-        if (DictionaryHelper::get(keyframeDictionaryVector[i], "offset", offset)) {
-            // Keyframes with offsets outside the range [0.0, 1.0] are ignored.
-            if (std::isnan(offset) || offset < 0 || offset > 1)
-                continue;
+        ScriptValue scriptValue;
+        bool frameHasOffset = DictionaryHelper::get(keyframeDictionaryVector[i], "offset", scriptValue) && !scriptValue.isNull();
 
-            frameHasOffset = true;
-            // The JS value null gets converted to 0 so we need to check whether the original value is null.
-            if (offset == 0) {
-                ScriptValue scriptValue;
-                if (DictionaryHelper::get(keyframeDictionaryVector[i], "offset", scriptValue) && scriptValue.isNull())
-                    frameHasOffset = false;
+        if (frameHasOffset) {
+            double offset;
+            DictionaryHelper::get(keyframeDictionaryVector[i], "offset", offset);
+
+            // Keyframes with offsets outside the range [0.0, 1.0] are an error.
+            if (std::isnan(offset)) {
+                exceptionState.throwDOMException(InvalidModificationError, "Non numeric offset provided");
             }
-            if (frameHasOffset) {
-                keyframe->setOffset(offset);
-                if (offset < lastOffset)
-                    looselySortedByOffset = false;
-                lastOffset = offset;
+
+            if (offset < 0 || offset > 1) {
+                exceptionState.throwDOMException(InvalidModificationError, "Offsets provided outside the range [0, 1]");
+                return nullptr;
             }
+
+            if (offset < lastOffset) {
+                exceptionState.throwDOMException(InvalidModificationError, "Keyframes with specified offsets are not sorted");
+                return nullptr;
+            }
+
+            lastOffset = offset;
+
+            keyframe->setOffset(offset);
         }
-        everyFrameHasOffset = everyFrameHasOffset && frameHasOffset;
-
         keyframes.append(keyframe);
 
         String compositeString;
@@ -106,14 +107,6 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
             DictionaryHelper::get(keyframeDictionaryVector[i], property, value);
             keyframe->setPropertyValue(id, value, styleSheetContents);
         }
-    }
-
-    if (!looselySortedByOffset) {
-        if (!everyFrameHasOffset) {
-            exceptionState.throwDOMException(InvalidModificationError, "Keyframes are not loosely sorted by offset.");
-            return nullptr;
-        }
-        nonCopyingSort(keyframes.begin(), keyframes.end(), Keyframe::compareOffsets);
     }
 
     RefPtrWillBeRawPtr<StringKeyframeEffectModel> keyframeEffectModel = StringKeyframeEffectModel::create(keyframes);

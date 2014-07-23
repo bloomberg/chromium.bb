@@ -67,65 +67,43 @@ PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > Ke
 
 KeyframeEffectModelBase::KeyframeVector KeyframeEffectModelBase::normalizedKeyframes(const KeyframeVector& keyframes)
 {
-    // keyframes [beginIndex, endIndex) will remain after removing all keyframes if they are not
-    // loosely sorted by offset, and after removing keyframes with positional offset outide [0, 1].
-    size_t beginIndex = 0;
-    size_t endIndex = keyframes.size();
-
-    // Becomes the most recent keyframe with an explicit offset.
-    size_t lastIndex = endIndex;
-    double lastOffset = std::numeric_limits<double>::quiet_NaN();
+    double lastOffset = 0;
+    KeyframeVector result;
+    result.reserveCapacity(keyframes.size());
 
     for (size_t i = 0; i < keyframes.size(); ++i) {
         double offset = keyframes[i]->offset();
         if (!isNull(offset)) {
-            if (lastIndex < i && offset < lastOffset) {
-                // The keyframes are not loosely sorted by offset. Exclude all.
-                endIndex = beginIndex;
-                break;
-            }
+            ASSERT(offset >= 0);
+            ASSERT(offset <= 1);
+            ASSERT(offset >= lastOffset);
+            lastOffset = offset;
+        }
+        result.append(keyframes[i]->clone());
+    }
 
-            if (offset < 0) {
-                // Remove all keyframes up to and including this keyframe.
-                beginIndex = i + 1;
-            } else if (offset > 1) {
-                // Remove all keyframes from this keyframe onwards. Note we must complete our checking
-                // that the keyframes are loosely sorted by offset, so we can't exit the loop early.
-                endIndex = std::min(i, endIndex);
-            }
+    if (result.isEmpty()) {
+        return result;
+    }
 
+    if (isNull(result.last()->offset()))
+        result.last()->setOffset(1);
+
+    if (result.size() > 1 && isNull(result[0]->offset()))
+        result[0]->setOffset(0);
+
+    size_t lastIndex = 0;
+    lastOffset = result[0]->offset();
+    for (size_t i = 1; i < result.size(); ++i) {
+        double offset = result[i]->offset();
+        if (!isNull(offset)) {
+            for (size_t j = 1; j < i - lastIndex; ++j)
+                result[lastIndex + j]->setOffset(lastOffset + (offset - lastOffset) * j / (i - lastIndex));
             lastIndex = i;
             lastOffset = offset;
         }
     }
 
-    KeyframeVector result;
-    if (beginIndex != endIndex) {
-        result.reserveCapacity(endIndex - beginIndex);
-        for (size_t i = beginIndex; i < endIndex; ++i) {
-            result.append(keyframes[i]->clone());
-        }
-
-        if (isNull(result[result.size() - 1]->offset()))
-            result[result.size() - 1]->setOffset(1);
-
-        if (result.size() > 1 && isNull(result[0]->offset()))
-            result[0]->setOffset(0);
-
-        lastIndex = 0;
-        lastOffset = result[0]->offset();
-        for (size_t i = 1; i < result.size(); ++i) {
-            double offset = result[i]->offset();
-            if (!isNull(offset)) {
-                if (lastIndex + 1 < i) {
-                    for (size_t j = 1; j < i - lastIndex; ++j)
-                        result[lastIndex + j]->setOffset(lastOffset + (offset - lastOffset) * j / (i - lastIndex));
-                }
-                lastIndex = i;
-                lastOffset = offset;
-            }
-        }
-    }
     return result;
 }
 

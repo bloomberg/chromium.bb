@@ -438,49 +438,6 @@ public:
     }
 };
 
-TEST_F(KeyframeEffectModelTest, NotLooselySorted)
-{
-    KeyframeVector keyframes(4);
-    keyframes[0] = AnimatableValueKeyframe::create();
-    keyframes[1] = AnimatableValueKeyframe::create();
-    keyframes[1]->setOffset(9);
-    keyframes[2] = AnimatableValueKeyframe::create();
-    keyframes[3] = AnimatableValueKeyframe::create();
-    keyframes[3]->setOffset(1);
-
-    const KeyframeVector result = normalizedKeyframes(keyframes);
-    EXPECT_EQ(0U, result.size());
-}
-
-TEST_F(KeyframeEffectModelTest, LastOne)
-{
-    KeyframeVector keyframes(3);
-    keyframes[0] = AnimatableValueKeyframe::create();
-    keyframes[0]->setOffset(-1);
-    keyframes[1] = AnimatableValueKeyframe::create();
-    keyframes[2] = AnimatableValueKeyframe::create();
-    keyframes[2]->setOffset(2);
-
-    const KeyframeVector result = normalizedKeyframes(keyframes);
-    EXPECT_EQ(1U, result.size());
-    EXPECT_DOUBLE_EQ(1.0, result[0]->offset());
-}
-
-TEST_F(KeyframeEffectModelTest, FirstZero)
-{
-    KeyframeVector keyframes(3);
-    keyframes[0] = AnimatableValueKeyframe::create();
-    keyframes[0]->setOffset(-1);
-    keyframes[1] = AnimatableValueKeyframe::create();
-    keyframes[2] = AnimatableValueKeyframe::create();
-    keyframes[2]->setOffset(0.25);
-
-    const KeyframeVector result = normalizedKeyframes(keyframes);
-    EXPECT_EQ(2U, result.size());
-    EXPECT_DOUBLE_EQ(0.0, result[0]->offset());
-    EXPECT_DOUBLE_EQ(0.25, result[1]->offset());
-}
-
 TEST_F(KeyframeEffectModelTest, EvenlyDistributed1)
 {
     KeyframeVector keyframes(5);
@@ -503,18 +460,14 @@ TEST_F(KeyframeEffectModelTest, EvenlyDistributed1)
 
 TEST_F(KeyframeEffectModelTest, EvenlyDistributed2)
 {
-    KeyframeVector keyframes(8);
+    KeyframeVector keyframes(6);
     keyframes[0] = AnimatableValueKeyframe::create();
-    keyframes[0]->setOffset(-0.1);
     keyframes[1] = AnimatableValueKeyframe::create();
     keyframes[2] = AnimatableValueKeyframe::create();
     keyframes[3] = AnimatableValueKeyframe::create();
+    keyframes[3]->setOffset(0.75);
     keyframes[4] = AnimatableValueKeyframe::create();
-    keyframes[4]->setOffset(0.75);
     keyframes[5] = AnimatableValueKeyframe::create();
-    keyframes[6] = AnimatableValueKeyframe::create();
-    keyframes[7] = AnimatableValueKeyframe::create();
-    keyframes[7]->setOffset(1.1);
 
     const KeyframeVector result = normalizedKeyframes(keyframes);
     EXPECT_EQ(6U, result.size());
