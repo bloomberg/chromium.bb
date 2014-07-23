@@ -70,9 +70,10 @@ public:
     // explicitly by passing the last parameter.
     // In the usual case, they are set automatically and you don't have to
     // pass it.
-    static PassRefPtrWillBeRawPtr<NewWebSocketChannelImpl> create(ExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL = String(), unsigned lineNumber = 0)
+    // Specify handle explicitly only in tests.
+    static PassRefPtrWillBeRawPtr<NewWebSocketChannelImpl> create(ExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL = String(), unsigned lineNumber = 0, blink::WebSocketHandle *handle = 0)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new NewWebSocketChannelImpl(context, client, sourceURL, lineNumber));
+        return adoptRefWillBeRefCountedGarbageCollected(new NewWebSocketChannelImpl(context, client, sourceURL, lineNumber, handle));
     }
     virtual ~NewWebSocketChannelImpl();
 
@@ -126,7 +127,7 @@ private:
 
     class BlobLoader;
 
-    NewWebSocketChannelImpl(ExecutionContext*, WebSocketChannelClient*, const String&, unsigned);
+    NewWebSocketChannelImpl(ExecutionContext*, WebSocketChannelClient*, const String&, unsigned, blink::WebSocketHandle*);
     void sendInternal();
     void flowControlIfNecessary();
     void failAsError(const String& reason) { fail(reason, ErrorMessageLevel, m_sourceURLAtConstruction, m_lineNumberAtConstruction); }

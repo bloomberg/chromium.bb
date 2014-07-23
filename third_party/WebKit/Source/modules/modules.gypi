@@ -988,6 +988,7 @@
       'indexeddb/IDBTransactionTest.cpp',
       'serviceworkers/ServiceWorkerContainerTest.cpp',
       'websockets/DOMWebSocketTest.cpp',
+      'websockets/NewWebSocketChannelImplTest.cpp',
       'websockets/WebSocketDeflaterTest.cpp',
       'websockets/WebSocketExtensionDispatcherTest.cpp',
       'websockets/WebSocketExtensionParserTest.cpp',

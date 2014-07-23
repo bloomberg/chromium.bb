@@ -108,9 +108,9 @@ void NewWebSocketChannelImpl::BlobLoader::didFail(FileError::ErrorCode errorCode
     // |this| is deleted here.
 }
 
-NewWebSocketChannelImpl::NewWebSocketChannelImpl(ExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber)
+NewWebSocketChannelImpl::NewWebSocketChannelImpl(ExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber, blink::WebSocketHandle *handle)
     : ContextLifecycleObserver(context)
-    , m_handle(adoptPtr(blink::Platform::current()->createWebSocketHandle()))
+    , m_handle(adoptPtr(handle ? handle : blink::Platform::current()->createWebSocketHandle()))
     , m_client(client)
     , m_identifier(0)
     , m_sendingQuota(0)
