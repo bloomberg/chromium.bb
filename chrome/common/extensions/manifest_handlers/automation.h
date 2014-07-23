@@ -15,7 +15,14 @@
 
 namespace extensions {
 
+namespace api {
+namespace manifest_types {
+struct Automation;
+}
+}
+
 class URLPatternSet;
+class AutomationManifestPermission;
 
 namespace automation_errors {
 extern const char kErrorInvalidMatchPattern[];
@@ -26,20 +33,6 @@ extern const char kErrorInvalidMatch[];
 extern const char kErrorNoMatchesProvided[];
 }
 
-// Parses the automation manifest entry.
-class AutomationHandler : public ManifestHandler {
- public:
-  AutomationHandler();
-  virtual ~AutomationHandler();
-
-  virtual bool Parse(Extension* extensions, base::string16* error) OVERRIDE;
-
- private:
-  virtual const std::vector<std::string> Keys() const OVERRIDE;
-
-  DISALLOW_COPY_AND_ASSIGN(AutomationHandler);
-};
-
 // The parsed form of the automation manifest entry.
 struct AutomationInfo : public Extension::ManifestData {
  public:
@@ -49,6 +42,7 @@ struct AutomationInfo : public Extension::ManifestData {
       std::vector<InstallWarning>* install_warnings,
       base::string16* error);
 
+  static scoped_ptr<base::Value> ToValue(const AutomationInfo& info);
   virtual ~AutomationInfo();
 
   // true if the extension has requested 'desktop' permission.
@@ -62,17 +56,34 @@ struct AutomationInfo : public Extension::ManifestData {
   // access (false) to the automation tree.
   const bool interact;
 
-  // Whether any matches were specified (false if automation was specified as a
-  // boolean, or no matches key was provided.
-  const bool specified_matches;
-
  private:
   AutomationInfo();
-  AutomationInfo(bool desktop,
-                 const URLPatternSet& matches,
-                 bool interact,
-                 bool specified_matches);
+  AutomationInfo(bool desktop, URLPatternSet matches, bool interact);
+
+  static scoped_ptr<api::manifest_types::Automation> AsManifestType(
+      const AutomationInfo& info);
+
   DISALLOW_COPY_AND_ASSIGN(AutomationInfo);
+  friend class AutomationManifestPermission;
+  friend class AutomationHandler;
+};
+
+// Parses the automation manifest entry.
+class AutomationHandler : public ManifestHandler {
+ public:
+  AutomationHandler();
+  virtual ~AutomationHandler();
+
+ private:
+  // ManifestHandler implementation.
+  virtual bool Parse(Extension* extensions, base::string16* error) OVERRIDE;
+
+  virtual ManifestPermission* CreatePermission() OVERRIDE;
+  virtual ManifestPermission* CreateInitialRequiredPermission(
+      const Extension* extension) OVERRIDE;
+  virtual const std::vector<std::string> Keys() const OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(AutomationHandler);
 };
 
 }  // namespace extensions

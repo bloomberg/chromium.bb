@@ -214,12 +214,8 @@ bool PermissionSet::HasEffectiveAccessToAllHosts() const {
   // There are two ways this set can have effective access to all hosts:
   //  1) it has an <all_urls> URL pattern.
   //  2) it has a named permission with implied full URL access.
-  for (URLPatternSet::const_iterator host = effective_hosts().begin();
-       host != effective_hosts().end(); ++host) {
-    if (host->match_all_urls() ||
-        (host->match_subdomains() && host->host().empty()))
-      return true;
-  }
+  if (effective_hosts().MatchesAllURLs())
+    return true;
 
   for (APIPermissionSet::const_iterator i = apis().begin();
        i != apis().end(); ++i) {
