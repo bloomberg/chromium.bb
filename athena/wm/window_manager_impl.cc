@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
+#include "ui/wm/core/window_util.h"
 #include "ui/wm/public/window_types.h"
 
 namespace athena {
@@ -67,6 +68,7 @@ class WindowManagerImpl : public WindowManager,
   virtual void OnSelectWindow(aura::Window* window) OVERRIDE {
     CHECK_EQ(container_.get(), window->parent());
     container_->StackChildAtTop(window);
+    wm::ActivateWindow(window);
     overview_.reset();
     FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
                       OnOverviewModeExit());

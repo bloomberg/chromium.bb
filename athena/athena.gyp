@@ -152,6 +152,7 @@
       'sources': [
         'test/athena_unittests.cc',
         'activity/activity_manager_unittest.cc',
+        'home/home_card_unittest.cc',
         'input/accelerator_manager_unittest.cc',
         'wm/window_manager_unittest.cc',
       ],

@@ -40,6 +40,7 @@ class ActivityWidget {
   void Show() {
     Update();
     widget_->Show();
+    widget_->Activate();
   }
 
   void Update() {

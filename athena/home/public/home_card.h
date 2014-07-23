@@ -44,8 +44,9 @@ class ATHENA_EXPORT HomeCard {
 
   virtual ~HomeCard() {}
 
-  // Update the current state of the home card to |state|.
+  // Updates/gets the current state of the home card.
   virtual void SetState(State state) = 0;
+  virtual State GetState() = 0;
 
   // Registers a search_provider to the HomeCard. Receiver will take
   // the ownership of the specified provider.

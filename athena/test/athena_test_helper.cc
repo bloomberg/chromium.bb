@@ -7,8 +7,10 @@
 #include "athena/main/athena_launcher.h"
 #include "athena/test/sample_activity_factory.h"
 #include "athena/test/test_app_model_builder.h"
+#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/input_state_lookup.h"
@@ -45,6 +47,10 @@ AthenaTestHelper::~AthenaTestHelper() {
 
 void AthenaTestHelper::SetUp(ui::ContextFactory* context_factory) {
   setup_called_ = true;
+
+  // Force showing in the experimental app-list view.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      app_list::switches::kEnableExperimentalAppList);
 
   aura::Env::CreateInstance(true);
   aura::Env::GetInstance()->set_context_factory(context_factory);

@@ -26,6 +26,8 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/visibility_controller.h"
 #include "ui/wm/core/window_animations.h"
+#include "ui/wm/public/activation_change_observer.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace athena {
 namespace {
@@ -153,7 +155,8 @@ class HomeCardImpl : public HomeCard,
                      public AcceleratorHandler,
                      public HomeCardLayoutManager::Delegate,
                      public MinimizedHomeDragDelegate,
-                     public WindowManagerObserver {
+                     public WindowManagerObserver,
+                     public aura::client::ActivationChangeObserver {
  public:
   explicit HomeCardImpl(AppModelBuilder* model_builder);
   virtual ~HomeCardImpl();
@@ -168,6 +171,7 @@ class HomeCardImpl : public HomeCard,
 
   // Overridden from HomeCard:
   virtual void SetState(State state) OVERRIDE;
+  virtual State GetState() OVERRIDE;
   virtual void RegisterSearchProvider(
       app_list::SearchProvider* search_provider) OVERRIDE;
   virtual void UpdateVirtualKeyboardBounds(
@@ -232,6 +236,13 @@ class HomeCardImpl : public HomeCard,
     SetState(VISIBLE_MINIMIZED);
   }
 
+  // aura::client::ActivationChangeObserver:
+  virtual void OnWindowActivated(aura::Window* gained_active,
+                                 aura::Window* lost_active) OVERRIDE {
+    if (gained_active != home_card_widget_->GetNativeWindow())
+      SetState(VISIBLE_MINIMIZED);
+  }
+
   scoped_ptr<AppModelBuilder> model_builder_;
 
   HomeCard::State state_;
@@ -244,6 +255,7 @@ class HomeCardImpl : public HomeCard,
   HomeCardView* home_card_view_;
   scoped_ptr<AppListViewDelegate> view_delegate_;
   HomeCardLayoutManager* layout_manager_;
+  aura::client::ActivationClient* activation_client_;  // Not owned
 
   // Right now HomeCard allows only one search provider.
   // TODO(mukai): port app-list's SearchController and Mixer.
@@ -254,11 +266,12 @@ class HomeCardImpl : public HomeCard,
 
 HomeCardImpl::HomeCardImpl(AppModelBuilder* model_builder)
     : model_builder_(model_builder),
-      state_(VISIBLE_MINIMIZED),
+      state_(HIDDEN),
       original_state_(VISIBLE_MINIMIZED),
       home_card_widget_(NULL),
       home_card_view_(NULL),
-      layout_manager_(NULL) {
+      layout_manager_(NULL),
+      activation_client_(NULL) {
   DCHECK(!instance);
   instance = this;
   WindowManager::GetInstance()->AddObserver(this);
@@ -267,11 +280,16 @@ HomeCardImpl::HomeCardImpl(AppModelBuilder* model_builder)
 HomeCardImpl::~HomeCardImpl() {
   DCHECK(instance);
   WindowManager::GetInstance()->RemoveObserver(this);
+  if (activation_client_)
+    activation_client_->RemoveObserver(this);
   home_card_widget_->CloseNow();
   instance = NULL;
 }
 
 void HomeCardImpl::SetState(HomeCard::State state) {
+  if (state_ == state)
+    return;
+
   // Update |state_| before changing the visibility of the widgets, so that
   // LayoutManager callbacks get the correct state.
   state_ = state;
@@ -283,6 +301,10 @@ void HomeCardImpl::SetState(HomeCard::State state) {
     home_card_view_->SetState(state);
     layout_manager_->Layout();
   }
+}
+
+HomeCard::State HomeCardImpl::GetState() {
+  return state_;
 }
 
 void HomeCardImpl::RegisterSearchProvider(
@@ -330,6 +352,11 @@ void HomeCardImpl::Init() {
 
   SetState(VISIBLE_MINIMIZED);
   home_card_view_->Layout();
+
+  activation_client_ =
+      aura::client::GetActivationClient(container->GetRootWindow());
+  if (activation_client_)
+    activation_client_->AddObserver(this);
 }
 
 void HomeCardImpl::InstallAccelerators() {
