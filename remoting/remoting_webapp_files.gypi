@@ -135,7 +135,9 @@
     ],
     # The unit test cases for the webapp
     'remoting_webapp_unittest_cases': [
+      'webapp/js_proto/chrome_proto.js',
       'webapp/unittests/base_unittest.js',
+      'webapp/unittests/l10n_unittest.js',
       'webapp/unittests/menu_button_unittest.js',
     ],
     'remoting_webapp_unittest_additional_files': [

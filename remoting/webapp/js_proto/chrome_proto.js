@@ -248,10 +248,10 @@ chrome.permissions = {
 
 
 /** @type {Object} */
-chrome.tabs;
+chrome.tabs = {};
 
 /** @param {function(chrome.Tab):void} callback */
-chrome.tabs.getCurrent = function(callback) {}
+chrome.tabs.getCurrent = function(callback) {};
 
 /** @constructor */
 chrome.Tab = function() {
@@ -263,12 +263,12 @@ chrome.Tab = function() {
 
 
 /** @type {Object} */
-chrome.windows;
+chrome.windows = {};
 
 /** @param {number} id
  *  @param {Object?} getInfo
  *  @param {function(chrome.Window):void} callback */
-chrome.windows.get = function(id, getInfo, callback) {}
+chrome.windows.get = function(id, getInfo, callback) {};
 
 /** @constructor */
 chrome.Window = function() {
