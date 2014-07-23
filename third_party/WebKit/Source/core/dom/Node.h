@@ -232,7 +232,7 @@ public:
     bool isPseudoElement() const { return pseudoId() != NOPSEUDO; }
     bool isBeforePseudoElement() const { return pseudoId() == BEFORE; }
     bool isAfterPseudoElement() const { return pseudoId() == AFTER; }
-    PseudoId pseudoId() const { return (isElementNode() && hasCustomStyleCallbacks()) ? customPseudoId() : NOPSEUDO; }
+    virtual PseudoId pseudoId() const { return NOPSEUDO; }
 
     bool isCustomElement() const { return getFlag(CustomElementFlag); }
     enum CustomElementState {
@@ -786,12 +786,6 @@ protected:
 private:
     friend class TreeShared<Node>;
     friend class WeakNodeMap;
-
-    virtual PseudoId customPseudoId() const
-    {
-        ASSERT(hasCustomStyleCallbacks());
-        return NOPSEUDO;
-    }
 
     unsigned styledSubtreeSize() const;
 

@@ -281,7 +281,6 @@ namespace blink {
         bool matchNth(int count) const;
 
         bool matchesPseudoElement() const;
-        bool isUnknownPseudoElement() const;
         bool isCustomPseudoElement() const;
         bool isDirectAdjacentSelector() const { return m_relation == DirectAdjacent; }
         bool isSiblingSelector() const;
@@ -378,11 +377,6 @@ inline bool CSSSelector::matchesPseudoElement() const
     if (m_pseudoType == PseudoUnknown)
         extractPseudoType();
     return m_match == PseudoElement;
-}
-
-inline bool CSSSelector::isUnknownPseudoElement() const
-{
-    return m_match == PseudoElement && m_pseudoType == PseudoUnknown;
 }
 
 inline bool CSSSelector::isCustomPseudoElement() const
