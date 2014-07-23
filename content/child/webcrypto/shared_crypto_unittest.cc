@@ -3286,15 +3286,6 @@ TEST_F(SharedCryptoTest, AesGcmSampleSets) {
     const std::vector<uint8_t> test_cipher_text =
         GetBytesFromHexString(test, "cipher_text");
 
-#if defined(USE_OPENSSL)
-    // TODO(eroman): Add support for 256-bit keys.
-    if (test_key.size() == 32) {
-      LOG(WARNING)
-          << "OpenSSL doesn't support 256-bit keys for AES-GCM; skipping";
-      continue;
-    }
-#endif
-
     blink::WebCryptoKey key = ImportSecretKeyFromRaw(
         test_key,
         CreateAlgorithm(blink::WebCryptoAlgorithmIdAesGcm),

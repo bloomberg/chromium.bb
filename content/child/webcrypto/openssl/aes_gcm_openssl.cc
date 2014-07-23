@@ -26,7 +26,8 @@ const EVP_AEAD* GetAesGcmAlgorithmFromKeySize(unsigned int key_size_bytes) {
   switch (key_size_bytes) {
     case 16:
       return EVP_aead_aes_128_gcm();
-    // TODO(eroman): Hook up 256-bit support when it is available.
+    case 32:
+      return EVP_aead_aes_256_gcm();
     default:
       return NULL;
   }
