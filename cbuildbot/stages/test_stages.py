@@ -15,7 +15,6 @@ from chromite.cbuildbot import constants
 from chromite.cbuildbot import lab_status
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages
-from chromite.cros.tests import image_test
 from chromite.lib import cgroups
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
@@ -369,6 +368,9 @@ class ImageTestStage(generic_stages.BoardSpecificBuilderStage,
     Args:
       test_results_dir: A path to the directory with perf files.
     """
+    # Import image_test here so that extra imports from image_test does not
+    # affect cbuildbot in bootstrap.
+    from chromite.cros.tests import image_test
     # A dict of list of perf values, keyed by test name.
     perf_entries = collections.defaultdict(list)
     for root, _, filenames in os.walk(test_results_dir):

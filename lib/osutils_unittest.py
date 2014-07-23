@@ -545,5 +545,34 @@ tmpfs /mnt/\134 tmpfs ro 0 0
     self.assertEqual(r[6].destination, '/mnt/\\')
 
 
+class ResolveSymlinkTest(cros_test_lib.TestCase):
+  """Tests for ResolveSymlink."""
+
+  def testRelativeLink(self):
+    os.symlink('target', 'link')
+    self.assertEqual(osutils.ResolveSymlink('link'), 'target')
+    os.unlink('link')
+
+  def testAbsoluteLink(self):
+    os.symlink('/target', 'link')
+    self.assertEqual(osutils.ResolveSymlink('link'), '/target')
+    self.assertEqual(osutils.ResolveSymlink('link', '/root'), '/root/target')
+    os.unlink('link')
+
+  def testRecursion(self):
+    os.symlink('target', 'link1')
+    os.symlink('link1', 'link2')
+    self.assertEqual(osutils.ResolveSymlink('link2'), 'target')
+    os.unlink('link2')
+    os.unlink('link1')
+
+  def testRecursionWithAbsoluteLink(self):
+    os.symlink('target', 'link1')
+    os.symlink('/link1', 'link2')
+    self.assertEqual(osutils.ResolveSymlink('link2', '.'), './target')
+    os.unlink('link2')
+    os.unlink('link1')
+
+
 if __name__ == '__main__':
   cros_test_lib.main()

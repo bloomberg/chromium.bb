@@ -6,7 +6,11 @@
 
 import itertools
 import logging
+import magic
+import mimetypes
 import os
+import re
+import stat
 import unittest
 
 from chromite.lib import cros_build_lib
@@ -191,13 +195,114 @@ class LocaltimeTest(NonForgivingImageTestCase):
                      os.readlink(localtime_path))
 
 
+def _GuessMimeType(magic_obj, file_name):
+  """Guess a file's mimetype base on its extension and content.
+
+  File extension is favored over file content to reduce noise.
+
+  Args:
+    magic_obj: A loaded magic instance.
+    file_name: A path to the file.
+
+  Returns:
+    A mime type of |file_name|.
+  """
+  mime_type, _ = mimetypes.guess_type(file_name)
+  if not mime_type:
+    mime_type = magic_obj.file(file_name)
+  return mime_type
+
+
 class BlacklistTest(NonForgivingImageTestCase):
-  """Verify that rootfs does not contain blacklisted directories."""
+  """Verify that rootfs does not contain blacklisted items."""
 
   def TestBlacklistedDirectories(self):
     dirs = [os.path.join(ROOT_A, 'usr', 'share', 'locale')]
     for d in dirs:
       self.assertFalse(os.path.isdir(d), 'Directory %s is blacklisted.' % d)
+
+  def TestBlacklistedFileTypes(self):
+    """Fail if there are files of prohibited types (such as C++ source code).
+
+    The whitelist has higher precedence than the blacklist.
+    """
+    blacklisted_patterns = [re.compile(x) for x in [
+        r'text/x-c\+\+',
+        r'text/x-c',
+    ]]
+    whitelisted_patterns = [re.compile(x) for x in [
+        r'.*/braille/.*',
+        r'.*/brltty/.*',
+        r'.*/etc/sudoers$',
+        r'.*/dump_vpd_log$',
+        r'.*\.conf$',
+        r'.*/libnl/classid$',
+        r'.*/locale/',
+        r'.*/X11/xkb/',
+        r'.*/chromeos-assets/',
+        r'.*/udev/rules.d/',
+        r'.*/firmware/ar3k/.*pst$',
+        r'.*/etc/services',
+        r'.*/usr/share/dev-install/portage',
+    ]]
+
+    failures = []
+
+    magic_obj = magic.open(magic.MAGIC_MIME_TYPE)
+    magic_obj.load()
+    for root, _, file_names in os.walk(ROOT_A):
+      for file_name in file_names:
+        full_name = os.path.join(root, file_name)
+        if os.path.islink(full_name) or not os.path.isfile(full_name):
+          continue
+
+        mime_type = _GuessMimeType(magic_obj, full_name)
+        if (any(x.match(mime_type) for x in blacklisted_patterns) and not
+            any(x.match(full_name) for x in whitelisted_patterns)):
+          failures.append('File %s has blacklisted type %s.' %
+                          (full_name, mime_type))
+    magic_obj.close()
+
+    self.assertFalse(failures, '\n'.join(failures))
+
+  def TestValidInterpreter(self):
+    """Fail if a script's interpreter is not found, or not executable.
+
+    A script interpreter is anything after the #! sign, up to the end of line
+    or the first space.
+    """
+    failures = []
+
+    for root, _, file_names in os.walk(ROOT_A):
+      for file_name in file_names:
+        full_name = os.path.join(root, file_name)
+        file_stat = os.lstat(full_name)
+        if (not stat.S_ISREG(file_stat.st_mode) or
+            (file_stat.st_mode & 0111) == 0):
+          continue
+
+        with open(full_name, 'rb') as f:
+          if f.read(2) != '#!':
+            continue
+          line = f.readline().strip()
+
+        # Ignore arguments to the interpreter.
+        interp = line.split(' ', 1)[0]
+        if interp.startswith('/'):
+          # Absolute path to the interpreter.
+          interp = os.path.join(ROOT_A, interp.lstrip('/'))
+          # Interpreter could be a symlink. Resolve it.
+          interp = osutils.ResolveSymlink(interp, ROOT_A)
+          if not os.path.isfile(interp):
+            failures.append('File %s uses non-existing interpreter %s.' %
+                            (full_name, interp))
+          elif (os.stat(interp).st_mode & 0111) == 0:
+            failures.append('Interpreter %s is not executable.' % interp)
+        else:
+          failures.append('File %s uses non-absolute interpreter path %s.' %
+                          (full_name, interp))
+
+    self.assertFalse(failures, '\n'.join(failures))
 
 
 class LinkageTest(NonForgivingImageTestCase):
