@@ -669,13 +669,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableNaClDebug)
   },
   {
-    "disable-pnacl",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_DISABLE_PNACL_NAME,
-    IDS_FLAGS_DISABLE_PNACL_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kDisablePnacl)
-  },
-  {
     "nacl-debug-mask",  // FLAGS:RECORD_UMA
     IDS_FLAGS_NACL_DEBUG_MASK_NAME,
     IDS_FLAGS_NACL_DEBUG_MASK_DESCRIPTION,

@@ -311,9 +311,6 @@ const char kDisablePermissionsBubbles[]      = "disable-permissions-bubbles";
 // Disable pop-up blocking.
 const char kDisablePopupBlocking[]          = "disable-popup-blocking";
 
-// Disables the usage of Portable Native Client.
-const char kDisablePnacl[]                  = "disable-pnacl";
-
 // Disable speculative TCP/IP preconnection.
 const char kDisablePreconnect[]             = "disable-preconnect";
 

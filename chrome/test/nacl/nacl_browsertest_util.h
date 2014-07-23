@@ -76,8 +76,6 @@ class NaClBrowserTestBase : public InProcessBrowserTest {
 
   virtual bool IsAPnaclTest();
 
-  virtual bool IsPnaclDisabled();
-
   // Map a file relative to the variant directory to a URL served by the test
   // web server.
   GURL TestURL(const base::FilePath::StringType& url_fragment);
@@ -130,19 +128,6 @@ class NaClBrowserTestPnaclNonSfi : public NaClBrowserTestBase {
  public:
   virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
   virtual base::FilePath::StringType Variant() OVERRIDE;
-};
-
-// Class used to test that when --disable-pnacl is specified the PNaCl mime
-// type is not available.
-class NaClBrowserTestPnaclDisabled : public NaClBrowserTestBase {
- public:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
-
-  virtual base::FilePath::StringType Variant() OVERRIDE;
-
-  virtual bool IsAPnaclTest() OVERRIDE;
-
-  virtual bool IsPnaclDisabled() OVERRIDE;
 };
 
 class NaClBrowserTestNonSfiMode : public NaClBrowserTestBase {

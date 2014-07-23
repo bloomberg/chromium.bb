@@ -1653,7 +1653,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kCloudPrintURL,
       switches::kCloudPrintXmppEndpoint,
       switches::kDisableBundledPpapiFlash,
-      switches::kDisablePnacl,
       switches::kDisableScriptedPrintThrottling,
       switches::kEnableAppView,
       switches::kEnableAppWindowControls,

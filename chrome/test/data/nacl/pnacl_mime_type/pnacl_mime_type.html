@@ -21,17 +21,12 @@ function report(msg) {
   domAutomationController.send(JSON.stringify(msg));
 }
 
-var pnacl_disabled = (getTestArguments()["pnacl_disabled"] !== undefined);
 var tests = 0;
 var errors = 0;
 
 var pnacl_mime_type = "application/x-pnacl";
-if (!pnacl_disabled && (navigator.mimeTypes[pnacl_mime_type] == undefined)) {
+if (navigator.mimeTypes[pnacl_mime_type] == undefined) {
   report({type: "Log", message: "Error: could not find " + pnacl_mime_type});
-  errors++;
-} else if (pnacl_disabled &&
-           (navigator.mimeTypes[pnacl_mime_type] !== undefined)) {
-  report({type: "Log", message: "Error: unexpected " + pnacl_mime_type});
   errors++;
 }
 tests++;

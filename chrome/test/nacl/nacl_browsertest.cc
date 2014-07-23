@@ -377,10 +377,6 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl, PnaclMimeType) {
   RunLoadTest(FILE_PATH_LITERAL("pnacl_mime_type.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclDisabled, PnaclMimeType) {
-  RunLoadTest(FILE_PATH_LITERAL("pnacl_mime_type.html"));
-}
-
 class NaClBrowserTestNewlibStdoutPM : public NaClBrowserTestNewlib {
  public:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {

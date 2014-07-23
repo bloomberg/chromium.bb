@@ -5563,12 +5563,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NACL_DEBUG_MASK_CHOICE_INCLUDE_DEBUG">
         Debug only if manifest URL ends with debug.nmf.
       </message>
-      <message name="IDS_FLAGS_DISABLE_PNACL_NAME" desc="Name of the 'Disable Portable Native Client' lab.">
-        Disable Portable Native Client.
-      </message>
-      <message name="IDS_FLAGS_DISABLE_PNACL_DESCRIPTION" desc="Description of the 'Disable Portable Native Client' lab.">
-        Disable support for Portable Native Client (PNaCl).
-      </message>
       <message name="IDS_FLAGS_SAVE_PAGE_AS_MHTML_NAME" desc="Name of the 'Save Page as MHTML' lab.">
         Save Page as MHTML
       </message>

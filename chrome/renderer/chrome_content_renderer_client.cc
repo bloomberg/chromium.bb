@@ -685,9 +685,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
                 CommandLine::ForCurrentProcess()->HasSwitch(
                     switches::kEnableNaCl);
           } else if (is_pnacl_mime_type) {
-            is_nacl_unrestricted =
-                !CommandLine::ForCurrentProcess()->HasSwitch(
-                    switches::kDisablePnacl);
+            is_nacl_unrestricted = true;
           }
           GURL manifest_url;
           GURL app_url;

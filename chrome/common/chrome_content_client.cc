@@ -169,8 +169,6 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
   // enabled by default for the non-portable case.  This allows apps installed
   // from the Chrome Web Store to use NaCl even if the command line switch
   // isn't set.  For other uses of NaCl we check for the command line switch.
-  // Specifically, Portable Native Client is only enabled by the command line
-  // switch.
   static bool skip_nacl_file_check = false;
   if (PathService::Get(chrome::FILE_NACL_PLUGIN, &path)) {
     if (skip_nacl_file_check || base::PathExists(path)) {
@@ -181,13 +179,10 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
                                                 kNaClPluginExtension,
                                                 kNaClPluginDescription);
       nacl.mime_types.push_back(nacl_mime_type);
-      if (!CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisablePnacl)) {
-        content::WebPluginMimeType pnacl_mime_type(kPnaclPluginMimeType,
-                                                   kPnaclPluginExtension,
-                                                   kPnaclPluginDescription);
-        nacl.mime_types.push_back(pnacl_mime_type);
-      }
+      content::WebPluginMimeType pnacl_mime_type(kPnaclPluginMimeType,
+                                                 kPnaclPluginExtension,
+                                                 kPnaclPluginDescription);
+      nacl.mime_types.push_back(pnacl_mime_type);
       nacl.permissions = kNaClPluginPermissions;
       plugins->push_back(nacl);
 
