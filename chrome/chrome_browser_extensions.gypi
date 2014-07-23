@@ -945,7 +945,7 @@
     ],
   },
   # ----------------------------------------------------------------------------
-  # Note on GN build: everythign below here is duplicated in
+  # Note on GN build: everything below here is duplicated in
   # chrome/browser/BUILD.gn. If you change anything, you will also have to
   # update that file. Some short and probably rarely-changing file lists are
   # duplicated between the builds. If a list gets longer or is changed it is
@@ -984,7 +984,6 @@
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',
-        '../device/hid/hid.gyp:device_hid',
         '../extensions/common/api/api.gyp:extensions_api',
         '../extensions/extensions.gyp:extensions_browser',
         '../extensions/extensions_strings.gyp:extensions_strings',
@@ -1050,6 +1049,7 @@
         ['enable_extensions==1', {
           'dependencies': [
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
+            '../device/hid/hid.gyp:device_hid',
           ],
           'sources': [
             '<@(chrome_browser_extensions_enabled_sources)',

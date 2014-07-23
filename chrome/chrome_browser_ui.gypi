@@ -2606,18 +2606,16 @@
             'common/extensions/api/api.gyp:chrome_api',
             'debugger',
             'installer_util',
-            '../mojo/mojo.gyp:mojo_system_impl',
-            '../third_party/re2/re2.gyp:re2',
             '../components/components.gyp:autofill_content_risk_proto',
-            '../device/bluetooth/bluetooth.gyp:device_bluetooth',
-            '../device/nfc/nfc.gyp:device_nfc',
             '../media/media.gyp:media',
+            '../mojo/mojo.gyp:mojo_system_impl',
             '../net/net.gyp:net_with_v8',
             '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
             '../third_party/expat/expat.gyp:expat',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/libjingle/libjingle.gyp:libjingle',
             '../third_party/npapi/npapi.gyp:npapi',
+            '../third_party/re2/re2.gyp:re2',
             '../ui/compositor/compositor.gyp:compositor',
             '../ui/surface/surface.gyp:surface',
             '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
@@ -2689,6 +2687,7 @@
           'dependencies': [
             'browser_chromeos',
             '../components/components.gyp:user_manager',
+            '../device/nfc/nfc.gyp:device_nfc',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
           ],
@@ -2958,6 +2957,11 @@
         # will link with SyzyASan builds.
         ['OS=="win" and syzyasan==1', {
           'msvs_shard': 4,
+        }],
+        ['OS!="android" and OS!="ios"', {
+          'dependencies': [
+            '../device/bluetooth/bluetooth.gyp:device_bluetooth',
+          ],
         }],
       ],
     },

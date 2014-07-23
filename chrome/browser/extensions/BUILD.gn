@@ -69,7 +69,6 @@ static_library("extensions") {
     #"debugger",  TODO(GYP)
     #"installer_util",  TODO(GYP)
     #"../components/components.gyp:omaha_query_params",  TODO(GYP)
-    #"../device/hid/hid.gyp:device_hid",  TODO(GYP)
     #"../extensions/extensions.gyp:extensions_browser",  TODO(GYP)
     #"../third_party/webrtc/modules/modules.gyp:desktop_capture",  TODO(GYP)
   ]
@@ -110,6 +109,7 @@ static_library("extensions") {
         ".", "//chrome")
     deps += [
       #'../device/bluetooth/bluetooth.gyp:device_bluetooth',  TODO(GYP)
+      #"../device/hid/hid.gyp:device_hid",  TODO(GYP)
     ]
 
     if (is_chromeos) {

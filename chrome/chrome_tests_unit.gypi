@@ -2039,11 +2039,11 @@
       'conditions': [
         ['OS!="ios"', {
           'dependencies': [
+            'common/extensions/api/api.gyp:chrome_api',
             '../components/components.gyp:autofill_content_test_support',
             '../components/components.gyp:component_metrics_proto',
             '../components/components.gyp:data_reduction_proxy_test_support',
             '../components/components_strings.gyp:components_strings',
-            '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
             '../extensions/extensions_resources.gyp:extensions_resources',
             '../extensions/extensions_strings.gyp:extensions_strings',
             '../gpu/gpu.gyp:gpu_unittest_utils',
@@ -2057,7 +2057,6 @@
             '../ui/gl/gl.gyp:gl',
             '../v8/tools/gyp/v8.gyp:v8',
             '../webkit/webkit_resources.gyp:webkit_resources',
-            'common/extensions/api/api.gyp:chrome_api',
           ],
           # TODO(scr): Use this in browser_tests too.
           'includes': [
@@ -2566,6 +2565,7 @@
         ['OS!="android" and OS!="ios"', {
           'dependencies': [
             'tools/profile_reset/jtl_compiler.gyp:jtl_compiler_lib',
+            '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
           ],
           'sources!': [
             'browser/metrics/variations/variations_request_scheduler_mobile_unittest.cc',

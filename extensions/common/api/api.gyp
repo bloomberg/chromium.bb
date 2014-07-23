@@ -51,9 +51,13 @@
         'root_namespace': 'extensions::core_api',
         'impl_dir': 'extensions/browser/api',
       },
-      'dependencies': [
-        '<(DEPTH)/device/serial/serial.gyp:device_serial',
-        '<(DEPTH)/skia/skia.gyp:skia',
+      'conditions': [
+        ['enable_extensions==1', {
+          'dependencies': [
+            '<(DEPTH)/device/serial/serial.gyp:device_serial',
+            '<(DEPTH)/skia/skia.gyp:skia',
+          ],
+        }],
       ],
     },
   ],

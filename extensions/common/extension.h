@@ -28,16 +28,9 @@
 #include "ui/gfx/size.h"
 #include "url/gurl.h"
 
-class ExtensionAction;
-class SkBitmap;
-
 namespace base {
 class DictionaryValue;
 class Version;
-}
-
-namespace gfx {
-class ImageSkia;
 }
 
 namespace extensions {
