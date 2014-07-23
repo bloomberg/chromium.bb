@@ -97,6 +97,11 @@ class WEBVIEW_EXPORT WebView : public View,
   virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
 
  protected:
+  // Swaps the owned WebContents |wc_owner_| with |new_web_contents|. Returns
+  // the previously owned WebContents.
+  scoped_ptr<content::WebContents> SwapWebContents(
+      scoped_ptr<content::WebContents> new_web_contents);
+
   // Overridden from View:
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual void ViewHierarchyChanged(

@@ -29,6 +29,7 @@ class WebActivity : public Activity,
                     public content::WebContentsObserver {
  public:
   WebActivity(content::BrowserContext* context, const GURL& gurl);
+  WebActivity(AthenaWebView* web_view);
   virtual ~WebActivity();
 
  protected:

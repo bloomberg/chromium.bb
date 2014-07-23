@@ -122,6 +122,18 @@ ui::TextInputClient* WebView::GetTextInputClient() {
   return NULL;
 }
 
+scoped_ptr<content::WebContents> WebView::SwapWebContents(
+    scoped_ptr<content::WebContents> new_web_contents) {
+  if (wc_owner_)
+    wc_owner_->SetDelegate(NULL);
+  scoped_ptr<content::WebContents> old_web_contents(wc_owner_.Pass());
+  wc_owner_ = new_web_contents.Pass();
+  if (wc_owner_)
+    wc_owner_->SetDelegate(this);
+  SetWebContents(wc_owner_.get());
+  return old_web_contents.Pass();
+}
+
 void WebView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // In most cases, the holder is simply sized to fill this WebView's bounds.
   // Only WebContentses that are in fullscreen mode and being screen-captured

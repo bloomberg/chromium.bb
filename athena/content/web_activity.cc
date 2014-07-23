@@ -4,10 +4,13 @@
 
 #include "athena/content/web_activity.h"
 
+#include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
 #include "athena/input/public/accelerator_manager.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/focus/focus_manager.h"
@@ -124,32 +127,30 @@ class AthenaWebView : public views::WebView {
  public:
   AthenaWebView(content::BrowserContext* context)
       : views::WebView(context), controller_(new WebActivityController(this)) {
-    // We create the first web contents ourselves to allow us to replace it
-    // later on.
-    SetWebContents(content::WebContents::Create(
-        content::WebContents::CreateParams(context)));
     // TODO(skuhne): Add content observer to detect renderer crash and set
     // content status to unloaded if that happens.
   }
-  virtual ~AthenaWebView() {
-    // |WebView| does not own the content, so we need to destroy it here.
-    content::WebContents* current_contents = GetWebContents();
-    SetWebContents(NULL);
-    delete current_contents;
+
+  AthenaWebView(content::WebContents* web_contents)
+      : views::WebView(web_contents->GetBrowserContext()),
+        controller_(new WebActivityController(this)) {
+    scoped_ptr<content::WebContents> old_contents(
+        SwapWebContents(scoped_ptr<content::WebContents>(web_contents)));
   }
+
+  virtual ~AthenaWebView() {}
 
   void InstallAccelerators() { controller_->InstallAccelerators(); }
 
   void EvictContent() {
-    content::WebContents* old_contents = GetWebContents();
+    scoped_ptr<content::WebContents> old_contents(SwapWebContents(
+        scoped_ptr<content::WebContents>(content::WebContents::Create(
+            content::WebContents::CreateParams(browser_context())))));
     evicted_web_contents_.reset(
         content::WebContents::Create(content::WebContents::CreateParams(
             old_contents->GetBrowserContext())));
     evicted_web_contents_->GetController().CopyStateFrom(
         old_contents->GetController());
-    SetWebContents(content::WebContents::Create(
-        content::WebContents::CreateParams(old_contents->GetBrowserContext())));
-    delete old_contents;
     // As soon as the new contents becomes visible, it should reload.
     // TODO(skuhne): This breaks script connections with other activities.
     // Even though this is the same technique as used by the TabStripModel,
@@ -159,16 +160,60 @@ class AthenaWebView : public views::WebView {
 
   void ReloadContent() {
     CHECK(evicted_web_contents_.get());
-    content::WebContents* null_contents = GetWebContents();
-    SetWebContents(evicted_web_contents_.release());
-    delete null_contents;
+    scoped_ptr<content::WebContents> replaced_contents(SwapWebContents(
+        evicted_web_contents_.Pass()));
   }
 
   // Check if the content got evicted.
   const bool IsContentEvicted() { return !!evicted_web_contents_.get(); }
 
- private:
-  // WebContentsDelegate:
+  // content::WebContentsDelegate:
+  virtual content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) OVERRIDE {
+    switch(params.disposition) {
+      case CURRENT_TAB: {
+        DCHECK(source == web_contents());
+        content::NavigationController::LoadURLParams load_url_params(
+            params.url);
+        load_url_params.referrer = params.referrer;
+        load_url_params.frame_tree_node_id = params.frame_tree_node_id;
+        load_url_params.transition_type = params.transition;
+        load_url_params.extra_headers = params.extra_headers;
+        load_url_params.should_replace_current_entry =
+            params.should_replace_current_entry;
+        load_url_params.is_renderer_initiated = params.is_renderer_initiated;
+        load_url_params.transferred_global_request_id =
+            params.transferred_global_request_id;
+        web_contents()->GetController().LoadURLWithParams(load_url_params);
+        return web_contents();
+      }
+      case NEW_FOREGROUND_TAB:
+      case NEW_BACKGROUND_TAB:
+      case NEW_POPUP:
+      case NEW_WINDOW: {
+        ActivityManager::Get()->AddActivity(
+            ActivityFactory::Get()->CreateWebActivity(browser_context(),
+                                                      params.url));
+        break;
+      }
+      default:
+        break;
+    }
+    // NULL is returned if the URL wasn't opened immediately.
+    return NULL;
+  }
+
+  virtual void AddNewContents(content::WebContents* source,
+                              content::WebContents* new_contents,
+                              WindowOpenDisposition disposition,
+                              const gfx::Rect& initial_pos,
+                              bool user_gesture,
+                              bool* was_blocked) OVERRIDE {
+    ActivityManager::Get()->AddActivity(
+        new WebActivity(new AthenaWebView(new_contents)));
+  }
+
   virtual bool PreHandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event,
@@ -183,6 +228,7 @@ class AthenaWebView : public views::WebView {
     controller_->HandleKeyboardEvent(source, event);
   }
 
+ private:
   scoped_ptr<WebActivityController> controller_;
 
   // If the activity got evicted, this is the web content which holds the known
@@ -198,6 +244,16 @@ WebActivity::WebActivity(content::BrowserContext* browser_context,
       url_(url),
       web_view_(NULL),
       current_state_(ACTIVITY_UNLOADED) {
+}
+
+WebActivity::WebActivity(AthenaWebView* web_view)
+    : browser_context_(web_view->browser_context()),
+      url_(web_view->GetWebContents()->GetURL()),
+      web_view_(web_view),
+      current_state_(ACTIVITY_UNLOADED) {
+  // Transition to state ACTIVITY_INVISIBLE to perform the same setup steps
+  // as on new activities (namely adding a WebContentsObserver).
+  SetCurrentState(ACTIVITY_INVISIBLE);
 }
 
 WebActivity::~WebActivity() {
