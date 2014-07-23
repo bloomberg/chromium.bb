@@ -88,7 +88,7 @@ private:
     explicit ServiceWorkerContainer(ExecutionContext*);
 
     typedef ScriptPromiseProperty<RawPtrWillBeMember<ServiceWorkerContainer>, RefPtrWillBeMember<ServiceWorker>, RefPtrWillBeMember<ServiceWorker> > ReadyProperty;
-    PassRefPtrWillBeRawPtr<ReadyProperty> createReadyProperty();
+    ReadyProperty* createReadyProperty();
     void checkReadyChanged(PassRefPtrWillBeRawPtr<ServiceWorker> previousReadyWorker);
 
     blink::WebServiceWorkerProvider* m_provider;
@@ -96,7 +96,7 @@ private:
     RefPtrWillBeMember<ServiceWorker> m_controller;
     RefPtrWillBeMember<ServiceWorker> m_installing;
     RefPtrWillBeMember<ServiceWorker> m_waiting;
-    RefPtrWillBeMember<ReadyProperty> m_ready;
+    PersistentWillBeMember<ReadyProperty> m_ready;
 };
 
 } // namespace blink

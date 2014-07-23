@@ -18,7 +18,7 @@ public:
     virtual ~GarbageCollectedScriptWrappable();
 
     const String& toString() const { return m_string; }
-    void trace(Visitor*) { }
+    virtual void trace(Visitor*) { }
 
 private:
     String m_string;

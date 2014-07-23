@@ -19,9 +19,10 @@ public:
 
     const String& toString() const { return m_string; }
 
-private:
+protected:
     RefCountedScriptWrappable(const String&);
 
+private:
     String m_string;
 };
 

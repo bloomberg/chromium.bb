@@ -16,7 +16,7 @@ namespace blink {
 
 class ExecutionContext;
 
-class ScriptPromisePropertyBase : public RefCountedWillBeRefCountedGarbageCollected<ScriptPromisePropertyBase>, public ContextLifecycleObserver {
+class ScriptPromisePropertyBase : public GarbageCollectedFinalized<ScriptPromisePropertyBase>, public ContextLifecycleObserver {
 public:
     virtual ~ScriptPromisePropertyBase();
 
