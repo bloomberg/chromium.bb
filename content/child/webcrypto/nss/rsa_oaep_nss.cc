@@ -8,6 +8,7 @@
 #include <secerr.h>
 #include <sechash.h>
 
+#include "base/stl_util.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/nss/key_nss.h"
 #include "content/child/webcrypto/nss/rsa_key_nss.h"
@@ -96,7 +97,7 @@ Status EncryptRsaOaep(SECKEYPublicKey* key,
   param.len = sizeof(oaep_params);
 
   buffer->resize(SECKEY_PublicKeyStrength(key));
-  unsigned char* buffer_data = Uint8VectorStart(buffer);
+  unsigned char* buffer_data = vector_as_array(buffer);
   unsigned int output_len;
   if (NssRuntimeSupport::Get()->pk11_pub_encrypt_func()(key,
                                                         CKM_RSA_PKCS_OAEP,
@@ -139,7 +140,7 @@ Status DecryptRsaOaep(SECKEYPrivateKey* key,
 
   buffer->resize(modulus_length_bytes);
 
-  unsigned char* buffer_data = Uint8VectorStart(buffer);
+  unsigned char* buffer_data = vector_as_array(buffer);
   unsigned int output_len;
   if (NssRuntimeSupport::Get()->pk11_priv_decrypt_func()(key,
                                                          CKM_RSA_PKCS_OAEP,

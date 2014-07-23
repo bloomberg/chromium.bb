@@ -7,6 +7,7 @@
 
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
+#include "base/stl_util.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/openssl/aes_key_openssl.h"
 #include "content/child/webcrypto/openssl/key_openssl.h"
@@ -83,7 +84,7 @@ Status AesCbcEncryptDecrypt(CipherOperation cipher_operation,
 
   buffer->resize(output_max_len.ValueOrDie());
 
-  unsigned char* const buffer_data = Uint8VectorStart(buffer);
+  unsigned char* const buffer_data = vector_as_array(buffer);
 
   int output_len = 0;
   if (!EVP_CipherUpdate(context.get(),

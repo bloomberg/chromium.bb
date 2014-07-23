@@ -5,6 +5,7 @@
 #include <openssl/hmac.h>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "content/child/webcrypto/algorithm_implementation.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/jwk.h"
@@ -48,7 +49,7 @@ Status SignHmac(const std::vector<uint8_t>& raw_key,
 
   buffer->resize(hmac_expected_length);
   crypto::ScopedOpenSSLSafeSizeBuffer<EVP_MAX_MD_SIZE> hmac_result(
-      Uint8VectorStart(buffer), hmac_expected_length);
+      vector_as_array(buffer), hmac_expected_length);
 
   unsigned int hmac_actual_length;
   unsigned char* const success = HMAC(digest_algorithm,
@@ -193,7 +194,7 @@ class HmacImplementation : public AlgorithmImplementation {
 
     // Do not allow verification of truncated MACs.
     *signature_match = result.size() == signature.byte_length() &&
-                       crypto::SecureMemEqual(Uint8VectorStart(result),
+                       crypto::SecureMemEqual(vector_as_array(&result),
                                               signature.bytes(),
                                               signature.byte_length());
 

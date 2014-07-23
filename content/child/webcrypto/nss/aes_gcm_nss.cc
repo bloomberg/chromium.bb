@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/numerics/safe_math.h"
+#include "base/stl_util.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/nss/aes_key_nss.h"
 #include "content/child/webcrypto/nss/key_nss.h"
@@ -112,7 +113,7 @@ Status AesGcmEncryptDecrypt(EncryptOrDecrypt mode,
   // WebCryptoArrayBuffer is expensive that hack may be worth looking into.
 
   buffer->resize(buffer_size.ValueOrDie());
-  unsigned char* buffer_data = Uint8VectorStart(buffer);
+  unsigned char* buffer_data = vector_as_array(buffer);
 
   PK11_EncryptDecryptFunction encrypt_or_decrypt_func =
       (mode == ENCRYPT) ? NssRuntimeSupport::Get()->pk11_encrypt_func()

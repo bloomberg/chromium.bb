@@ -8,6 +8,7 @@
 #include <sechash.h>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "content/child/webcrypto/algorithm_implementation.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/jwk.h"
@@ -191,7 +192,7 @@ class HmacImplementation : public AlgorithmImplementation {
     DCHECK_NE(0u, signature_item.len);
 
     buffer->resize(signature_item.len);
-    signature_item.data = Uint8VectorStart(buffer);
+    signature_item.data = vector_as_array(buffer);
 
     if (PK11_SignWithSymKey(
             sym_key, mechanism, &param_item, &signature_item, &data_item) !=
@@ -216,7 +217,7 @@ class HmacImplementation : public AlgorithmImplementation {
 
     // Do not allow verification of truncated MACs.
     *signature_match = result.size() == signature.byte_length() &&
-                       crypto::SecureMemEqual(Uint8VectorStart(result),
+                       crypto::SecureMemEqual(vector_as_array(&result),
                                               signature.bytes(),
                                               signature.byte_length());
 

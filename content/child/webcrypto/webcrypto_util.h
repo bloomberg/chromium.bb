@@ -21,13 +21,6 @@ namespace webcrypto {
 
 class Status;
 
-// Returns a pointer to the start of |data|, or NULL if it is empty. This is a
-// convenience function for getting the pointer, and should not be used beyond
-// the expected lifetime of |data|.
-CONTENT_EXPORT const uint8_t* Uint8VectorStart(
-    const std::vector<uint8_t>& data);
-CONTENT_EXPORT uint8_t* Uint8VectorStart(std::vector<uint8_t>* data);
-
 // This function decodes unpadded 'base64url' encoded data, as described in
 // RFC4648 (http://www.ietf.org/rfc/rfc4648.txt) Section 5.
 // In Web Crypto, this type of encoding is only used inside JWK.

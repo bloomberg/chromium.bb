@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -159,7 +160,7 @@ blink::WebCryptoAlgorithm CreateRsaHashedKeyGenAlgorithm(
       new blink::WebCryptoRsaHashedKeyGenParams(
           CreateAlgorithm(hash_id),
           modulus_length,
-          webcrypto::Uint8VectorStart(public_exponent),
+          vector_as_array(&public_exponent),
           public_exponent.size()));
 }
 
@@ -169,7 +170,7 @@ blink::WebCryptoAlgorithm CreateRsaOaepAlgorithm(
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdRsaOaep,
       new blink::WebCryptoRsaOaepParams(
-          !label.empty(), Uint8VectorStart(label), label.size()));
+          !label.empty(), vector_as_array(&label), label.size()));
 }
 
 // Creates an AES-CBC algorithm.
@@ -177,7 +178,7 @@ blink::WebCryptoAlgorithm CreateAesCbcAlgorithm(
     const std::vector<uint8_t>& iv) {
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdAesCbc,
-      new blink::WebCryptoAesCbcParams(Uint8VectorStart(iv), iv.size()));
+      new blink::WebCryptoAesCbcParams(vector_as_array(&iv), iv.size()));
 }
 
 // Creates an AES-GCM algorithm.
@@ -188,10 +189,10 @@ blink::WebCryptoAlgorithm CreateAesGcmAlgorithm(
   EXPECT_TRUE(SupportsAesGcm());
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdAesGcm,
-      new blink::WebCryptoAesGcmParams(Uint8VectorStart(iv),
+      new blink::WebCryptoAesGcmParams(vector_as_array(&iv),
                                        iv.size(),
                                        true,
-                                       Uint8VectorStart(additional_data),
+                                       vector_as_array(&additional_data),
                                        additional_data.size(),
                                        true,
                                        tag_length_bits));
@@ -601,7 +602,7 @@ Status ImportKeyJwkFromDict(const base::DictionaryValue& dict,
 scoped_ptr<base::DictionaryValue> GetJwkDictionary(
     const std::vector<uint8_t>& json) {
   base::StringPiece json_string(
-      reinterpret_cast<const char*>(Uint8VectorStart(json)), json.size());
+      reinterpret_cast<const char*>(vector_as_array(&json)), json.size());
   base::Value* value = base::JSONReader::Read(json_string);
   EXPECT_TRUE(value);
   base::DictionaryValue* dict_value = NULL;
@@ -903,7 +904,7 @@ TEST_F(SharedCryptoTest, HMACSampleSets) {
     EXPECT_EQ(Status::Success(),
               Verify(algorithm,
                      key,
-                     CryptoData(Uint8VectorStart(output), output.size() - 1),
+                     CryptoData(vector_as_array(&output), output.size() - 1),
                      CryptoData(test_message),
                      &signature_match));
     EXPECT_FALSE(signature_match);
@@ -2439,7 +2440,6 @@ TEST_F(SharedCryptoTest, MAYBE(ImportRsaPrivateKeyJwkIncorrectOptionalEmpty)) {
                                  true,
                                  blink::WebCryptoKeyUsageSign,
                                  &key));
-
 }
 
 TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsa)) {
@@ -2683,8 +2683,7 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsaBadExponent)) {
     blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
 
     EXPECT_EQ(Status::ErrorGenerateKeyPublicExponent(),
-              GenerateKeyPair(
-                  algorithm, true, 0, &public_key, &private_key));
+              GenerateKeyPair(algorithm, true, 0, &public_key, &private_key));
   }
 }
 
@@ -2724,7 +2723,7 @@ TEST_F(SharedCryptoTest, RsaSsaSignVerifyFailures) {
       Status::Success(),
       Verify(algorithm,
              public_key,
-             CryptoData(Uint8VectorStart(signature), signature.size() - 1),
+             CryptoData(vector_as_array(&signature), signature.size() - 1),
              CryptoData(data),
              &signature_match));
   EXPECT_FALSE(signature_match);
@@ -3430,15 +3429,15 @@ TEST_F(SharedCryptoTest, MAYBE(UnwrapAesCbc192)) {
                              blink::WebCryptoKeyUsageUnwrapKey);
 
   blink::WebCryptoKey unwrapped_key = blink::WebCryptoKey::createNull();
-      ASSERT_EQ(Status::ErrorAes192BitUnsupported(),
-                UnwrapKey(blink::WebCryptoKeyFormatRaw,
-                          CryptoData(wrapped_key),
-                          wrapping_key,
-                          CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw),
-                          CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
-                          true,
-                          blink::WebCryptoKeyUsageEncrypt,
-                          &unwrapped_key));
+  ASSERT_EQ(Status::ErrorAes192BitUnsupported(),
+            UnwrapKey(blink::WebCryptoKeyFormatRaw,
+                      CryptoData(wrapped_key),
+                      wrapping_key,
+                      CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw),
+                      CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
+                      true,
+                      blink::WebCryptoKeyUsageEncrypt,
+                      &unwrapped_key));
 }
 
 class SharedCryptoRsaOaepTest : public ::testing::Test {

@@ -6,6 +6,7 @@
 #include <openssl/evp.h>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/openssl/aes_key_openssl.h"
 #include "content/child/webcrypto/openssl/key_openssl.h"
@@ -62,7 +63,7 @@ Status AesGcmEncryptDecrypt(EncryptOrDecrypt mode,
 
   if (!EVP_AEAD_CTX_init(&ctx,
                          aead_alg,
-                         Uint8VectorStart(raw_key),
+                         vector_as_array(&raw_key),
                          raw_key.size(),
                          tag_length_bytes,
                          NULL)) {
@@ -82,7 +83,7 @@ Status AesGcmEncryptDecrypt(EncryptOrDecrypt mode,
     buffer->resize(data.byte_length() - tag_length_bytes);
 
     ok = EVP_AEAD_CTX_open(&ctx,
-                           Uint8VectorStart(buffer),
+                           vector_as_array(buffer),
                            &len,
                            buffer->size(),
                            iv.bytes(),
@@ -97,7 +98,7 @@ Status AesGcmEncryptDecrypt(EncryptOrDecrypt mode,
     buffer->resize(data.byte_length() + tag_length_bytes);
 
     ok = EVP_AEAD_CTX_seal(&ctx,
-                           Uint8VectorStart(buffer),
+                           vector_as_array(buffer),
                            &len,
                            buffer->size(),
                            iv.bytes(),

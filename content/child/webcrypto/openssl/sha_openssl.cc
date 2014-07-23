@@ -7,6 +7,7 @@
 #include <openssl/sha.h>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "content/child/webcrypto/algorithm_implementation.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/openssl/util_openssl.h"
@@ -60,7 +61,7 @@ class DigestorOpenSsl : public blink::WebCryptoDigestor {
   Status FinishWithVectorAndStatus(std::vector<uint8_t>* result) {
     const int hash_expected_size = EVP_MD_CTX_size(digest_context_.get());
     result->resize(hash_expected_size);
-    unsigned char* const hash_buffer = Uint8VectorStart(result);
+    unsigned char* const hash_buffer = vector_as_array(result);
     unsigned int hash_buffer_size;  // ignored
     return FinishInternal(hash_buffer, &hash_buffer_size);
   }

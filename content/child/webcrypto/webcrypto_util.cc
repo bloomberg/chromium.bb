@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/child/webcrypto/status.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
@@ -15,18 +16,6 @@
 namespace content {
 
 namespace webcrypto {
-
-const uint8_t* Uint8VectorStart(const std::vector<uint8_t>& data) {
-  if (data.empty())
-    return NULL;
-  return &data[0];
-}
-
-uint8_t* Uint8VectorStart(std::vector<uint8_t>* data) {
-  if (data->empty())
-    return NULL;
-  return &(*data)[0];
-}
 
 // This function decodes unpadded 'base64url' encoded data, as described in
 // RFC4648 (http://www.ietf.org/rfc/rfc4648.txt) Section 5. To do this, first
@@ -54,7 +43,7 @@ std::string Base64EncodeUrlSafe(const base::StringPiece& input) {
 
 std::string Base64EncodeUrlSafe(const std::vector<uint8_t>& input) {
   const base::StringPiece string_piece(
-      reinterpret_cast<const char*>(Uint8VectorStart(input)), input.size());
+      reinterpret_cast<const char*>(vector_as_array(&input)), input.size());
   return Base64EncodeUrlSafe(string_piece);
 }
 

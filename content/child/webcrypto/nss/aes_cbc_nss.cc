@@ -5,6 +5,7 @@
 #include <cryptohi.h>
 
 #include "base/numerics/safe_math.h"
+#include "base/stl_util.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/nss/aes_key_nss.h"
 #include "content/child/webcrypto/nss/key_nss.h"
@@ -72,7 +73,7 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt mode,
   //               encryption, and can be smaller for decryption.
   buffer->resize(output_max_len.ValueOrDie());
 
-  unsigned char* buffer_data = Uint8VectorStart(buffer);
+  unsigned char* buffer_data = vector_as_array(buffer);
 
   int output_len;
   if (SECSuccess != PK11_CipherOp(context.get(),

@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -119,8 +120,7 @@ void CompleteWithBufferOrError(const Status& status,
       // theoretically this could overflow.
       CompleteWithError(Status::ErrorUnexpected(), result);
     } else {
-      result->completeWithBuffer(webcrypto::Uint8VectorStart(buffer),
-                                 buffer.size());
+      result->completeWithBuffer(vector_as_array(&buffer), buffer.size());
     }
   }
 }
@@ -481,8 +481,7 @@ void DoExportKeyReply(scoped_ptr<ExportKeyState> state) {
     CompleteWithError(state->status, &state->result);
   } else {
     state->result.completeWithJson(
-        reinterpret_cast<const char*>(
-            webcrypto::Uint8VectorStart(&state->buffer)),
+        reinterpret_cast<const char*>(vector_as_array(&state->buffer)),
         state->buffer.size());
   }
 }

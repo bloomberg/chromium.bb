@@ -5,6 +5,7 @@
 #include <sechash.h>
 #include <vector>
 
+#include "base/stl_util.h"
 #include "content/child/webcrypto/algorithm_implementation.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/nss/util_nss.h"
@@ -85,7 +86,7 @@ class DigestorNSS : public blink::WebCryptoDigestor {
 
     unsigned int result_length = HASH_ResultLenContext(hash_context_);
     result->resize(result_length);
-    unsigned char* digest = Uint8VectorStart(result);
+    unsigned char* digest = vector_as_array(result);
     unsigned int digest_size;  // ignored
     return FinishInternal(digest, &digest_size);
   }
