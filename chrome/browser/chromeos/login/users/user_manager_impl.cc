@@ -43,6 +43,7 @@
 #include "chrome/browser/chromeos/profiles/multiprofiles_session_aborted_dialog.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/session_length_limiter.h"
+#include "chrome/browser/net/crl_set_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/chromeos/manager_password_service_factory.h"
 #include "chrome/browser/supervised_user/chromeos/supervised_user_password_service_factory.h"
@@ -439,6 +440,17 @@ void UserManagerImpl::UserLoggedIn(const std::string& user_id,
   SetLRUUser(active_user_);
 
   if (!primary_user_) {
+    // Register CRLSet now that the home dir is mounted.
+    if (!username_hash.empty()) {
+      base::FilePath path;
+      path =
+          chromeos::ProfileHelper::GetProfilePathByUserIdHash(username_hash);
+      component_updater::ComponentUpdateService* cus =
+          g_browser_process->component_updater();
+      CRLSetFetcher* crl_set = g_browser_process->crl_set_fetcher();
+      if (crl_set && cus)
+        crl_set->StartInitialLoad(cus, path);
+    }
     primary_user_ = active_user_;
     if (primary_user_->GetType() == user_manager::USER_TYPE_REGULAR)
       SendRegularUserLoginMetrics(user_id);

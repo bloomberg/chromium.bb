@@ -8,7 +8,6 @@
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
@@ -26,19 +25,20 @@ using content::BrowserThread;
 
 CRLSetFetcher::CRLSetFetcher() : cus_(NULL) {}
 
-bool CRLSetFetcher::GetCRLSetFilePath(base::FilePath* path) const {
-  bool ok = PathService::Get(chrome::DIR_USER_DATA, path);
-  if (!ok) {
-    NOTREACHED();
-    return false;
-  }
-  *path = path->Append(chrome::kCRLSetFilename);
-  return true;
+void CRLSetFetcher::SetCRLSetFilePath(const base::FilePath& path) {
+  crl_path_ = path.Append(chrome::kCRLSetFilename);
 }
 
-void CRLSetFetcher::StartInitialLoad(ComponentUpdateService* cus) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+base::FilePath CRLSetFetcher::GetCRLSetFilePath() const {
+  return crl_path_;
+}
 
+void CRLSetFetcher::StartInitialLoad(ComponentUpdateService* cus,
+                                     const base::FilePath& path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (path.empty())
+    return;
+  SetCRLSetFilePath(path);
   cus_ = cus;
 
   if (!BrowserThread::PostTask(
@@ -48,9 +48,12 @@ void CRLSetFetcher::StartInitialLoad(ComponentUpdateService* cus) {
   }
 }
 
-void CRLSetFetcher::DeleteFromDisk() {
+void CRLSetFetcher::DeleteFromDisk(const base::FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  if (path.empty())
+    return;
+  SetCRLSetFilePath(path);
   if (!BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
           base::Bind(&CRLSetFetcher::DoDeleteFromDisk, this))) {
@@ -61,11 +64,7 @@ void CRLSetFetcher::DeleteFromDisk() {
 void CRLSetFetcher::DoInitialLoadFromDisk() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  base::FilePath crl_set_file_path;
-  if (!GetCRLSetFilePath(&crl_set_file_path))
-    return;
-
-  LoadFromDisk(crl_set_file_path, &crl_set_);
+  LoadFromDisk(GetCRLSetFilePath(), &crl_set_);
 
   uint32 sequence_of_loaded_crl = 0;
   if (crl_set_.get())
@@ -160,11 +159,7 @@ void CRLSetFetcher::RegisterComponent(uint32 sequence_of_loaded_crl) {
 void CRLSetFetcher::DoDeleteFromDisk() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  base::FilePath crl_set_file_path;
-  if (!GetCRLSetFilePath(&crl_set_file_path))
-    return;
-
-  DeleteFile(crl_set_file_path, false /* not recursive */);
+  DeleteFile(GetCRLSetFilePath(), false /* not recursive */);
 }
 
 void CRLSetFetcher::OnUpdateError(int error) {
@@ -176,9 +171,7 @@ bool CRLSetFetcher::Install(const base::DictionaryValue& manifest,
                             const base::FilePath& unpack_path) {
   base::FilePath crl_set_file_path =
       unpack_path.Append(FILE_PATH_LITERAL("crl-set"));
-  base::FilePath save_to;
-  if (!GetCRLSetFilePath(&save_to))
-    return true;
+  base::FilePath save_to = GetCRLSetFilePath();
 
   std::string crl_set_bytes;
   if (!base::ReadFileToString(crl_set_file_path, &crl_set_bytes)) {

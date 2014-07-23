@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 
@@ -25,10 +26,11 @@ class CRLSetFetcher : public component_updater::ComponentInstaller,
  public:
   CRLSetFetcher();
 
-  void StartInitialLoad(component_updater::ComponentUpdateService* cus);
+  void StartInitialLoad(component_updater::ComponentUpdateService* cus,
+                        const base::FilePath& path);
 
   // DeleteFromDisk asynchronously delete the CRLSet file.
-  void DeleteFromDisk();
+  void DeleteFromDisk(const base::FilePath& path);
 
   // ComponentInstaller interface
   virtual void OnUpdateError(int error) OVERRIDE;
@@ -44,7 +46,10 @@ class CRLSetFetcher : public component_updater::ComponentInstaller,
 
   // GetCRLSetbase::FilePath gets the path of the CRL set file in the user data
   // dir.
-  bool GetCRLSetFilePath(base::FilePath* path) const;
+  base::FilePath GetCRLSetFilePath() const;
+
+  // Sets the path of the CRL set file in the user data dir.
+  void SetCRLSetFilePath(const base::FilePath& path);
 
   // DoInitialLoadFromDisk runs on the FILE thread and attempts to load a CRL
   // set from the user-data dir. It then registers this object as a component
@@ -68,6 +73,9 @@ class CRLSetFetcher : public component_updater::ComponentInstaller,
   void DoDeleteFromDisk();
 
   component_updater::ComponentUpdateService* cus_;
+
+  // Path where the CRL file is stored.
+  base::FilePath crl_path_;
 
   // We keep a pointer to the current CRLSet for use on the FILE thread when
   // applying delta updates.

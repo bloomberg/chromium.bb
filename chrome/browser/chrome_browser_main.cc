@@ -399,15 +399,19 @@ void RegisterComponentsForUpdate() {
   RegisterCldComponent(cus);
 #endif
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  // CRLSetFetcher attempts to load a CRL set from either the local disk or
-  // network.
-  g_browser_process->crl_set_fetcher()->StartInitialLoad(cus);
-#elif defined(OS_ANDROID)
-  // The CRLSet component was enabled for some releases. This code attempts to
-  // delete it from the local disk of those how may have downloaded it.
-  g_browser_process->crl_set_fetcher()->DeleteFromDisk();
+  base::FilePath path;
+  if (PathService::Get(chrome::DIR_USER_DATA, &path)) {
+#if defined(OS_ANDROID)
+    // The CRLSet component was enabled for some releases. This code attempts to
+    // delete it from the local disk of those how may have downloaded it.
+    g_browser_process->crl_set_fetcher()->DeleteFromDisk(path);
+#elif !defined(OS_CHROMEOS)
+    // CRLSetFetcher attempts to load a CRL set from either the local disk or
+    // network.
+    // For Chrome OS this registration is delayed until user login.
+    g_browser_process->crl_set_fetcher()->StartInitialLoad(cus, path);
 #endif
+  }
 
 #if defined(OS_WIN)
   ExecutePendingSwReporter(cus, g_browser_process->local_state());
