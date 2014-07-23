@@ -36,6 +36,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       'hideUserPodCustomIcon',
       'setAuthType',
       'showEasyUnlockBubble',
+      'setPublicSessionKeyboardLayouts',
     ],
 
     preferredWidth_: 0,
@@ -306,6 +307,15 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      */
     showEasyUnlockBubble: function() {
       $('pod-row').showEasyUnlockBubble();
+    },
+
+    /**
+     * Updates the list of available keyboard layouts for a public session pod.
+     * @param {string} userID The user ID of the public session
+     * @param {!Object} list List of available keyboard layouts
+     */
+    setPublicSessionKeyboardLayouts: function(userID, list) {
+      $('pod-row').setPublicSessionKeyboardLayouts(userID, list);
     }
   };
 });

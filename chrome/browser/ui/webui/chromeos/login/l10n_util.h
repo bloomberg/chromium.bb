@@ -55,6 +55,15 @@ scoped_ptr<base::ListValue> GetLoginKeyboardLayouts(
     const std::string& locale,
     const std::string& selected);
 
+// Return a list of keyboard layouts that can be used for |locale|. Each list
+// entry is a dictionary that contains data such as an ID and a display name.
+// The list will consist of the device's hardware layouts, followed by a divider
+// and locale-specific keyboard layouts, if any. All layouts supported for
+// |locale| are returned, including those that produce non-Latin characters by
+// default.
+scoped_ptr<base::ListValue> GetKeyboardLayoutsForLocale(
+    const std::string& locale);
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_L10N_UTIL_H_

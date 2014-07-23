@@ -50,6 +50,7 @@ cr.define('login', function() {
    */
   var POD_WIDTH = 180;
   var PUBLIC_EXPANDED_BASIC_WIDTH = 500;
+  var PUBLIC_EXPANDED_ADVANCED_WIDTH = 610;
   var CROS_POD_HEIGHT = 213;
   var DESKTOP_POD_HEIGHT = 226;
   var POD_ROW_PADDING = 10;
@@ -996,21 +997,10 @@ cr.define('login', function() {
       this.resetTabOrder();
       this.classList.toggle('expanded', expanded);
       if (expanded) {
-        var isDesktopUserManager = Oobe.getInstance().displayType ==
-            DISPLAY_TYPE.DESKTOP_USER_MANAGER;
-        var rowPadding = isDesktopUserManager ? DESKTOP_ROW_PADDING :
-                                                POD_ROW_PADDING;
         this.usualLeft = this.left;
-        this.usualTop = this.top;
-        if (this.left + PUBLIC_EXPANDED_BASIC_WIDTH >
-            $('pod-row').offsetWidth - rowPadding)
-          this.left = $('pod-row').offsetWidth - rowPadding -
-              PUBLIC_EXPANDED_BASIC_WIDTH;
-      } else {
-        if (typeof(this.usualLeft) != 'undefined')
-          this.left = this.usualLeft;
-        if (typeof(this.usualTop) != 'undefined')
-          this.top = this.usualTop;
+        this.makeSpaceForExpandedPod_();
+      } else if (typeof(this.usualLeft) != 'undefined') {
+        this.left = this.usualLeft;
       }
 
       var self = this;
@@ -1025,6 +1015,8 @@ cr.define('login', function() {
         if (document.activeElement)
           document.activeElement.dispatchEvent(new Event('focus'));
       });
+      // Guard timer set to animation duration + 20ms.
+      ensureTransitionEndEvent(this, 200);
     },
 
     /** @override */
@@ -1061,10 +1053,55 @@ cr.define('login', function() {
       learnMore.addEventListener('click', this.handleLearnMoreEvent);
       learnMore.addEventListener('keydown', this.handleLearnMoreEvent);
 
+      var languageSelect = this.querySelector('.language-select');
+      languageSelect.tabIndex = UserPodTabOrder.POD_INPUT;
+      languageSelect.addEventListener('change', function() {
+        chrome.send('getPublicSessionKeyboardLayouts', [
+            this.user.username,
+            languageSelect.options[languageSelect.selectedIndex].value]);
+      }.bind(this));
+
+      this.querySelector('.keyboard-select').tabIndex =
+          UserPodTabOrder.POD_INPUT;
+
+      var languageAndInput = this.querySelector('.language-and-input');
+      languageAndInput.tabIndex = UserPodTabOrder.POD_INPUT;
+      languageAndInput.addEventListener('click',
+                                        this.transitionToAdvanced_.bind(this));
+
       this.enterButtonElement.addEventListener('click', (function(e) {
         this.enterButtonElement.disabled = true;
         chrome.send('launchPublicAccount', [this.user.username]);
       }).bind(this));
+    },
+
+    /** @override **/
+    initialize: function() {
+      UserPod.prototype.initialize.call(this);
+
+      var id = this.user.username + '-language';
+      this.querySelector('.language-select-label').htmlFor = id;
+      var languageSelect = this.querySelector('.language-select');
+      languageSelect.setAttribute('id', id);
+      var list = this.user.initialLocales;
+      languageSelect.innerHTML = '';
+      var group = languageSelect;
+      for (var i = 0; i < list.length; ++i) {
+        var item = list[i];
+        if (item.optionGroupName) {
+          group = document.createElement('optgroup');
+          group.label = item.optionGroupName;
+          languageSelect.appendChild(group);
+        } else {
+          group.appendChild(
+              new Option(item.title, item.value, item.selected, item.selected));
+        }
+      }
+
+      id = this.user.username + '-keyboard';
+      this.querySelector('.keyboard-select-label').htmlFor = id;
+      this.querySelector('.keyboard-select').setAttribute('id', id);
+      this.populateKeyboardSelect_(this.user.initialKeyboardLayouts);
     },
 
     /** @override **/
@@ -1095,8 +1132,10 @@ cr.define('login', function() {
 
     /** @override */
     activate: function(e) {
-      this.expanded = true;
-      this.focusInput();
+      if (!this.expanded) {
+        this.expanded = true;
+        this.focusInput();
+      }
       return true;
     },
 
@@ -1138,6 +1177,54 @@ cr.define('login', function() {
       chrome.send('launchHelpApp', [HELP_TOPIC_PUBLIC_SESSION]);
       stopEventPropagation(event);
     },
+
+    makeSpaceForExpandedPod_: function() {
+      var width = this.classList.contains('advanced') ?
+          PUBLIC_EXPANDED_ADVANCED_WIDTH : PUBLIC_EXPANDED_BASIC_WIDTH;
+      var isDesktopUserManager = Oobe.getInstance().displayType ==
+          DISPLAY_TYPE.DESKTOP_USER_MANAGER;
+      var rowPadding = isDesktopUserManager ? DESKTOP_ROW_PADDING :
+                                              POD_ROW_PADDING;
+      if (this.left + width > $('pod-row').offsetWidth - rowPadding)
+        this.left = $('pod-row').offsetWidth - rowPadding - width;
+    },
+
+    /**
+     * Transition the expanded pod from the basic to the advanced view.
+     */
+    transitionToAdvanced_: function() {
+      var pod = this;
+      var languageAndInputSection =
+          this.querySelector('.language-and-input-section');
+      this.classList.add('transitioning-to-advanced');
+      setTimeout(function() {
+        pod.classList.add('advanced');
+        pod.makeSpaceForExpandedPod_();
+        languageAndInputSection.addEventListener('webkitTransitionEnd',
+                                                 function observer() {
+          languageAndInputSection.removeEventListener('webkitTransitionEnd',
+                                                      observer);
+          pod.classList.remove('transitioning-to-advanced');
+          pod.querySelector('.language-select').focus();
+        });
+        // Guard timer set to animation duration + 20ms.
+        ensureTransitionEndEvent(languageAndInputSection, 380);
+      }, 0);
+    },
+
+    /**
+     * Populates the keyboard layout "select" element with a list of layouts.
+     * @param {!Object} list List of available keyboard layouts
+     */
+    populateKeyboardSelect_: function(list) {
+      var keyboardSelect = this.querySelector('.keyboard-select');
+      keyboardSelect.innerHTML = '';
+      for (var i = 0; i < list.length; ++i) {
+        var item = list[i];
+        keyboardSelect.appendChild(
+            new Option(item.title, item.value, item.selected, item.selected));
+      }
+    }
   };
 
   /**
@@ -1733,6 +1820,17 @@ cr.define('login', function() {
     },
 
     /**
+     * Updates the list of available keyboard layouts for a public session pod.
+     * @param {string} userID The user ID of the public session
+     * @param {!Object} list List of available keyboard layouts
+     */
+    setPublicSessionKeyboardLayouts: function(userID, list) {
+      var pod = this.getPodWithUsername_(userID);
+      if (pod != null)
+        pod.populateKeyboardSelect_(list);
+    },
+
+    /**
      * Called when window was resized.
      */
     onWindowResize: function() {
@@ -2087,11 +2185,10 @@ cr.define('login', function() {
         pod.isActionBoxMenuHovered = true;
 
       // Return focus back to single pod.
-      if (this.alwaysFocusSinglePod) {
+      if (this.alwaysFocusSinglePod && !pod) {
         this.focusPod(this.focusedPod_, true /* force */);
         this.focusedPod_.userTypeBubbleElement.classList.remove('bubble-shown');
-        if (!pod)
-          this.focusedPod_.isActionBoxMenuHovered = false;
+        this.focusedPod_.isActionBoxMenuHovered = false;
       }
     },
 

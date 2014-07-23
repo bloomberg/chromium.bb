@@ -355,7 +355,8 @@ class SigninScreenHandler
   void HandleFocusPod(const std::string& user_id);
   void HandleLaunchKioskApp(const std::string& app_id, bool diagnostic_mode);
   void HandleRetrieveAuthenticatedUserEmail(double attempt_token);
-
+  void HandleGetPublicSessionKeyboardLayouts(const std::string& user_id,
+                                             const std::string& locale);
 
   // Returns true iff
   // (i)   log in is restricted to some user list,

@@ -38,6 +38,7 @@
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
@@ -45,6 +46,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/authenticated_user_email_retriever.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -53,6 +55,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/ime/ime_keyboard.h"
+#include "chromeos/ime/input_method_descriptor.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
@@ -376,9 +379,13 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("publicAccountInfoFormat", IDS_LOGIN_PUBLIC_ACCOUNT_INFO_FORMAT);
   builder->Add("publicAccountReminder",
                IDS_LOGIN_PUBLIC_ACCOUNT_SIGNOUT_REMINDER);
+  builder->Add("publicSessionLanguageAndInput",
+               IDS_LOGIN_PUBLIC_SESSION_LANGUAGE_AND_INPUT);
   builder->Add("publicAccountEnter", IDS_LOGIN_PUBLIC_ACCOUNT_ENTER);
   builder->Add("publicAccountEnterAccessibleName",
                IDS_LOGIN_PUBLIC_ACCOUNT_ENTER_ACCESSIBLE_NAME);
+  builder->Add("publicSessionSelectLanguage", IDS_LANGUAGE_SELECTION_SELECT);
+  builder->Add("publicSessionSelectKeyboard", IDS_KEYBOARD_SELECTION_SELECT);
   builder->Add("removeUserWarningText",
                base::string16());
   builder->AddF("removeSupervisedUserWarningText",
@@ -742,6 +749,9 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("focusPod", &SigninScreenHandler::HandleFocusPod);
   AddCallback("retrieveAuthenticatedUserEmail",
               &SigninScreenHandler::HandleRetrieveAuthenticatedUserEmail);
+  AddCallback("getPublicSessionKeyboardLayouts",
+              &SigninScreenHandler::HandleGetPublicSessionKeyboardLayouts);
+
 
   // This message is sent by the kiosk app menu, but is handled here
   // so we can tell the delegate to launch the app.
@@ -1278,6 +1288,15 @@ void SigninScreenHandler::HandleRetrieveAuthenticatedUserEmail(
                  "login.GaiaSigninScreen.setAuthenticatedUserEmail",
                  attempt_token),
       Profile::FromWebUI(web_ui())->GetRequestContext()));
+}
+
+void SigninScreenHandler::HandleGetPublicSessionKeyboardLayouts(
+    const std::string& user_id,
+    const std::string& locale) {
+  web_ui()->CallJavascriptFunction(
+      "login.AccountPickerScreen.setPublicSessionKeyboardLayouts",
+      base::StringValue(user_id),
+      *GetKeyboardLayoutsForLocale(locale).release());
 }
 
 void SigninScreenHandler::HandleLaunchKioskApp(const std::string& app_id,

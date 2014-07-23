@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 
+#include <vector>
+
 #include "ash/shell.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
@@ -12,6 +14,7 @@
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
+#include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_manager/user_type.h"
@@ -34,6 +37,8 @@ const char kKeyIsOwner[] = "isOwner";
 const char kKeyInitialAuthType[] = "initialAuthType";
 const char kKeyMultiProfilesAllowed[] = "isMultiProfilesAllowed";
 const char kKeyMultiProfilesPolicy[] = "multiProfilesPolicy";
+const char kKeyInitialLocales[] = "initialLocales";
+const char kKeyInitialKeyboardLayouts[] = "initialKeyboardLayouts";
 
 // Max number of users to show.
 // Please keep synced with one in signin_userlist_unittest.cc.
@@ -97,6 +102,16 @@ void UserSelectionScreen::FillUserDictionary(
       user_dict->SetString(kKeyEnterpriseDomain,
                            policy_connector->GetEnterpriseDomain());
     }
+
+    // TODO(bartfab): Initialize |locale| and |most_relevant_languages| based on
+    // policy.
+    const std::string locale;
+    std::vector<std::string> most_relevant_languages;
+    user_dict->Set(
+        kKeyInitialLocales,
+        GetUILanguageList(&most_relevant_languages, locale).release());
+    user_dict->Set(kKeyInitialKeyboardLayouts,
+                   GetKeyboardLayoutsForLocale(locale).release());
   }
 }
 

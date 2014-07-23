@@ -84,13 +84,37 @@
 <div id="public-account-user-pod-extras-template" hidden>
   <div class="expanded-pane">
     <div class="expanded-pane-contents">
-      <div class="expanded-pane-name"></div>
-      <div class="reminder" i18n-content="publicAccountReminder"></div>
+      <div class="side-container">
+        <div class="expanded-pane-name"></div>
+        <div class="reminder" i18n-content="publicAccountReminder"></div>
+        <div class="language-and-input-section">
+          <div class="select-with-label">
+            <label class="language-select-label"
+                   i18n-content="publicSessionSelectLanguage">
+            </label>
+            <div class="select-container">
+              <select class="language-select"></select>
+            </div>
+          </div>
+          <div class="select-with-label">
+            <label class="keyboard-select-label"
+                   i18n-content="publicSessionSelectKeyboard">
+            </label>
+            <div class="select-container">
+              <select class="keyboard-select"></select>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="bottom-container">
         <div class="expanded-pane-learn-more-container">
           <div class="expanded-pane-learn-more"></div>
         </div>
         <div class="info"></div>
+        <div class="language-and-input-container">
+          <a class="language-and-input" href="#" role="button"
+             i18n-content="publicSessionLanguageAndInput"></a>
+        </div>
         <button class="enter-button"
                 i18n-content="publicAccountEnter"
                 i18n-values="aria-label:publicAccountEnterAccessibleName">

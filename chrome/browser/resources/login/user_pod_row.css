@@ -415,6 +415,10 @@ html[dir=rtl] .user-type-bubble {
   width: 500px;
 }
 
+.pod.public-account.expanded.advanced {
+  width: 610px;
+}
+
 .pod.public-account.focused .name-container {
   display: flex;
 }
@@ -443,6 +447,7 @@ html[dir=rtl] .user-type-bubble {
 .pod.public-account.animating .expanded-pane,
 .pod.public-account.expanded .expanded-pane {
   display: block;
+  font-size: 12px;
   margin: 10px;
   overflow: hidden;
   z-index: 1;
@@ -456,13 +461,24 @@ html[dir=rtl] .user-type-bubble {
   width: 490px;
 }
 
+.pod.public-account.transitioning-to-advanced .expanded-pane-contents {
+  transition: width 180ms;
+}
+
+.pod.public-account.expanded.advanced .expanded-pane-contents {
+  width: 600px;
+}
+
 html[dir=rtl] .expanded-pane-contents {
   float: left;
 }
 
-.expanded-pane-name {
+.side-container {
   -webkit-margin-start: 200px;
-  flex: none;
+  flex: auto;
+}
+
+.expanded-pane-name {
   font-size: 19px;
   margin-bottom: 11px;
   margin-top: -2px;
@@ -472,16 +488,53 @@ html[dir=rtl] .expanded-pane-contents {
 }
 
 .reminder {
-  -webkit-margin-start: 200px;
-  flex: auto;
-  font-size: 12px;
   font-weight: bold;
+}
+
+.language-and-input-section {
+  display: none;
+}
+
+.pod.public-account.transitioning-to-advanced .language-and-input-section {
+  display: block;
+  opacity: 0;
+  transition: opacity 180ms ease 180ms;
+}
+
+.pod.public-account.expanded.advanced .language-and-input-section {
+  display: block;
+  opacity: 1;
+}
+
+.select-with-label {
+  display: flex;
+  margin-top: 20px;
+}
+
+.language-select-label,
+.keyboard-select-label {
+  flex: none;
+  margin-top: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 170px;
+}
+
+.select-container {
+  flex: auto;
+}
+
+.language-select,
+.keyboard-select {
+  width: 100%;
 }
 
 .bottom-container {
   -webkit-margin-start: 10px;
   display: flex;
   flex: none;
+  font-size: 13px;
 }
 
 .expanded-pane-learn-more-container,
@@ -499,9 +552,28 @@ html[dir=rtl] .expanded-pane-contents {
 
 .info {
   flex: auto;
-  font-size: 13px;
-  margin: 5px 10px 0 10px;
+  margin: 5px 10px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.language-and-input-container {
+  -webkit-margin-end: 25px;
+  flex: none;
+}
+
+.language-and-input {
+  color: rgb(49, 106, 197);
+  position: relative;
+  text-decoration: none;
+  top: 4px;
+}
+
+.pod.public-account.expanded.advanced .language-and-input-container {
+  display: none;
+}
+
+.enter-button {
+  font-size: 14px;
 }
