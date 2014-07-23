@@ -138,10 +138,8 @@ bool TypedUrlDataTypeController::PostTaskOnBackendThread(
   HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile(), Profile::IMPLICIT_ACCESS);
   if (history) {
-    history->ScheduleDBTask(
-        scoped_ptr<history::HistoryDBTask>(
-            new RunTaskOnHistoryThread(task, this)),
-        &task_tracker_);
+    history->ScheduleDBTask(new RunTaskOnHistoryThread(task, this),
+                            &task_tracker_);
     return true;
   } else {
     // History must be disabled - don't start.

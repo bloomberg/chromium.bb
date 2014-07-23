@@ -71,8 +71,8 @@ void PostWorkerTask(const base::WeakPtr<HistoryService>& history_service,
                     syncer::SyncerError* error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (history_service.get()) {
-    scoped_ptr<history::HistoryDBTask> task(new WorkerTask(work, done, error));
-    history_service->ScheduleDBTask(task.Pass(), cancelable_tracker);
+    scoped_refptr<WorkerTask> task(new WorkerTask(work, done, error));
+    history_service->ScheduleDBTask(task.get(), cancelable_tracker);
   } else {
     *error = syncer::CANNOT_DO_WORK;
     done->Signal();
@@ -94,8 +94,8 @@ HistoryModelWorker::HistoryModelWorker(
 void HistoryModelWorker::RegisterForLoopDestruction() {
   CHECK(history_service_.get());
   history_service_->ScheduleDBTask(
-      scoped_ptr<history::HistoryDBTask>(new AddDBThreadObserverTask(
-          base::Bind(&HistoryModelWorker::RegisterOnDBThread, this))),
+      new AddDBThreadObserverTask(
+          base::Bind(&HistoryModelWorker::RegisterOnDBThread, this)),
       cancelable_tracker_.get());
 }
 

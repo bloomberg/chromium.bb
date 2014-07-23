@@ -1502,21 +1502,20 @@ class HistoryDBTaskImpl : public HistoryDBTask {
  public:
   static const int kWantInvokeCount;
 
-  HistoryDBTaskImpl(int* invoke_count, bool* done_invoked)
-      : invoke_count_(invoke_count), done_invoked_(done_invoked) {}
+  HistoryDBTaskImpl() : invoke_count(0), done_invoked(false) {}
 
   virtual bool RunOnDBThread(HistoryBackend* backend,
                              HistoryDatabase* db) OVERRIDE {
-    return (++*invoke_count_ == kWantInvokeCount);
+    return (++invoke_count == kWantInvokeCount);
   }
 
   virtual void DoneRunOnMainThread() OVERRIDE {
-    *done_invoked_ = true;
+    done_invoked = true;
     base::MessageLoop::current()->Quit();
   }
 
-  int* invoke_count_;
-  bool* done_invoked_;
+  int invoke_count;
+  bool done_invoked;
 
  private:
   virtual ~HistoryDBTaskImpl() {}
@@ -1532,12 +1531,8 @@ const int HistoryDBTaskImpl::kWantInvokeCount = 2;
 TEST_F(HistoryTest, HistoryDBTask) {
   ASSERT_TRUE(history_service_.get());
   base::CancelableTaskTracker task_tracker;
-  int invoke_count = 0;
-  bool done_invoked = false;
-  history_service_->ScheduleDBTask(
-      scoped_ptr<history::HistoryDBTask>(
-          new HistoryDBTaskImpl(&invoke_count, &done_invoked)),
-      &task_tracker);
+  scoped_refptr<HistoryDBTaskImpl> task(new HistoryDBTaskImpl());
+  history_service_->ScheduleDBTask(task.get(), &task_tracker);
   // Run the message loop. When HistoryDBTaskImpl::DoneRunOnMainThread runs,
   // it will stop the message loop. If the test hangs here, it means
   // DoneRunOnMainThread isn't being invoked correctly.
@@ -1545,24 +1540,20 @@ TEST_F(HistoryTest, HistoryDBTask) {
   CleanupHistoryService();
   // WARNING: history has now been deleted.
   history_service_.reset();
-  ASSERT_EQ(HistoryDBTaskImpl::kWantInvokeCount, invoke_count);
-  ASSERT_TRUE(done_invoked);
+  ASSERT_EQ(HistoryDBTaskImpl::kWantInvokeCount, task->invoke_count);
+  ASSERT_TRUE(task->done_invoked);
 }
 
 TEST_F(HistoryTest, HistoryDBTaskCanceled) {
   ASSERT_TRUE(history_service_.get());
   base::CancelableTaskTracker task_tracker;
-  int invoke_count = 0;
-  bool done_invoked = false;
-  history_service_->ScheduleDBTask(
-      scoped_ptr<history::HistoryDBTask>(
-          new HistoryDBTaskImpl(&invoke_count, &done_invoked)),
-      &task_tracker);
+  scoped_refptr<HistoryDBTaskImpl> task(new HistoryDBTaskImpl());
+  history_service_->ScheduleDBTask(task.get(), &task_tracker);
   task_tracker.TryCancelAll();
   CleanupHistoryService();
   // WARNING: history has now been deleted.
   history_service_.reset();
-  ASSERT_FALSE(done_invoked);
+  ASSERT_FALSE(task->done_invoked);
 }
 
 // Create a local delete directive and process it while sync is

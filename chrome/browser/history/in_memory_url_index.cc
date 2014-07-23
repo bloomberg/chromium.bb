@@ -296,9 +296,8 @@ void InMemoryURLIndex::ScheduleRebuildFromHistory() {
       HistoryServiceFactory::GetForProfile(profile_,
                                            Profile::EXPLICIT_ACCESS);
   service->ScheduleDBTask(
-      scoped_ptr<history::HistoryDBTask>(
-          new InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask(
-              this, languages_, scheme_whitelist_)),
+      new InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask(
+          this, languages_, scheme_whitelist_),
       &cache_reader_tracker_);
 }
 
