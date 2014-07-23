@@ -90,6 +90,11 @@ void RadioNodeList::setValue(const String& value)
     }
 }
 
+bool RadioNodeList::matchesByIdOrName(const Element& testElement) const
+{
+    return testElement.getIdAttribute() == m_name || testElement.getNameAttribute() == m_name;
+}
+
 bool RadioNodeList::checkElementMatchesRadioNodeListFilter(const Element& testElement) const
 {
     ASSERT(!m_onlyMatchImgElements);
@@ -100,7 +105,7 @@ bool RadioNodeList::checkElementMatchesRadioNodeListFilter(const Element& testEl
             return false;
     }
 
-    return testElement.getIdAttribute() == m_name || testElement.getNameAttribute() == m_name;
+    return matchesByIdOrName(testElement);
 }
 
 bool RadioNodeList::elementMatches(const Element& element) const
@@ -108,7 +113,11 @@ bool RadioNodeList::elementMatches(const Element& element) const
     if (m_onlyMatchImgElements) {
         if (!isHTMLImageElement(element))
             return false;
-        return toHTMLElement(element).formOwner() == ownerNode();
+
+        if (toHTMLElement(element).formOwner() != ownerNode())
+            return false;
+
+        return matchesByIdOrName(element);
     }
 
     if (!isHTMLObjectElement(element) && !element.isFormControlElement())

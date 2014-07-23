@@ -50,6 +50,8 @@ private:
 
     bool checkElementMatchesRadioNodeListFilter(const Element&) const;
 
+    bool matchesByIdOrName(const Element&) const;
+
     virtual bool elementMatches(const Element&) const OVERRIDE;
 
     AtomicString m_name;
@@ -59,4 +61,3 @@ private:
 } // namespace
 
 #endif
-
