@@ -225,6 +225,7 @@ void LocalFileChangeTracker::DemoteChangesForURL(
                              &demoted_changes_, NULL);
     change_list.pop_front();
   }
+  UpdateNumChanges();
 }
 
 void LocalFileChangeTracker::PromoteDemotedChangesForURL(
@@ -256,6 +257,7 @@ bool LocalFileChangeTracker::PromoteDemotedChanges() {
     fileapi::FileSystemURL url = demoted_changes_.begin()->first;
     PromoteDemotedChangesForURL(url);
   }
+  UpdateNumChanges();
   return true;
 }
 
@@ -321,6 +323,7 @@ void LocalFileChangeTracker::DropAllChanges() {
   changes_.clear();
   change_seqs_.clear();
   mirror_changes_.clear();
+  UpdateNumChanges();
 }
 
 SyncStatusCode LocalFileChangeTracker::MarkDirtyOnDatabase(
