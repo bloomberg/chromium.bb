@@ -7,6 +7,7 @@
 
 #include "core/page/PageLifecycleObserver.h"
 #include "platform/Supplementable.h"
+#include "platform/Timer.h"
 #include "public/platform/WebLockOrientationCallback.h"
 #include "public/platform/WebScreenOrientationLockType.h"
 #include "public/platform/WebScreenOrientationType.h"
@@ -54,9 +55,12 @@ private:
 
     void updateOrientation();
 
+    void dispatchEventTimerFired(Timer<ScreenOrientationController>*);
+
     PersistentWillBeMember<ScreenOrientation> m_orientation;
     blink::WebScreenOrientationClient* m_client;
     LocalFrame& m_frame;
+    Timer<ScreenOrientationController> m_dispatchEventTimer;
 };
 
 } // namespace blink

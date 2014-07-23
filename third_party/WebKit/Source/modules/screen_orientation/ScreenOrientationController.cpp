@@ -43,6 +43,7 @@ ScreenOrientationController::ScreenOrientationController(LocalFrame& frame, blin
     : PageLifecycleObserver(frame.page())
     , m_client(client)
     , m_frame(frame)
+    , m_dispatchEventTimer(this, &ScreenOrientationController::dispatchEventTimerFired)
 {
 }
 
@@ -130,7 +131,8 @@ void ScreenOrientationController::notifyOrientationChanged()
     }
 
     // Notify current orientation object.
-    m_orientation->dispatchEvent(Event::create(EventTypeNames::change));
+    if (!m_dispatchEventTimer.isActive())
+        m_dispatchEventTimer.startOneShot(0, FROM_HERE);
 
     // ... and child frames, if they have a ScreenOrientationController.
     for (size_t i = 0; i < childFrames.size(); ++i) {
@@ -168,6 +170,13 @@ void ScreenOrientationController::unlock()
 const LocalFrame& ScreenOrientationController::frame() const
 {
     return m_frame;
+}
+
+void ScreenOrientationController::dispatchEventTimerFired(Timer<ScreenOrientationController>*)
+{
+    if (!m_orientation)
+        return;
+    m_orientation->dispatchEvent(Event::create(EventTypeNames::change));
 }
 
 void ScreenOrientationController::trace(Visitor* visitor)
