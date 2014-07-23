@@ -550,6 +550,9 @@ DisplayInfo CreateDisplayInfo(int64 id,
 }  // namespace
 
 TEST_F(DisplayControllerTest, MirrorToDockedWithFullscreen) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   // Creates windows to catch activation change event.
   scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithId(1));
   w1->Focus();
