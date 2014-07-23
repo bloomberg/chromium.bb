@@ -389,8 +389,8 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                         cmd_line.extend(['--results-directory', options.results_directory])
                     if options.verbose:
                         cmd_line.append('--verbose')
-                    copy_baseline_commands.append(tuple([[path_to_webkit_patch, 'copy-existing-baselines-internal'] + cmd_line, cwd]))
-                    rebaseline_commands.append(tuple([[path_to_webkit_patch, 'rebaseline-test-internal'] + cmd_line, cwd]))
+                    copy_baseline_commands.append(tuple([[self._tool.executable, path_to_webkit_patch, 'copy-existing-baselines-internal'] + cmd_line, cwd]))
+                    rebaseline_commands.append(tuple([[self._tool.executable, path_to_webkit_patch, 'rebaseline-test-internal'] + cmd_line, cwd]))
         return copy_baseline_commands, rebaseline_commands, lines_to_remove
 
     def _serial_commands(self, command_results):
@@ -437,7 +437,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
 
             path_to_webkit_patch = self._tool.path()
             cwd = self._tool.scm().checkout_root
-            optimize_commands.append(tuple([[path_to_webkit_patch, 'optimize-baselines'] + cmd_line, cwd]))
+            optimize_commands.append(tuple([[self._tool.executable, path_to_webkit_patch, 'optimize-baselines'] + cmd_line, cwd]))
         return optimize_commands
 
     def _update_expectations_files(self, lines_to_remove):
