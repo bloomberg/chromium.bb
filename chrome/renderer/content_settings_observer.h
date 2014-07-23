@@ -65,7 +65,6 @@ class ContentSettingsObserver
   virtual bool allowStorage(bool local) OVERRIDE;
   virtual bool allowReadFromClipboard(bool default_value) OVERRIDE;
   virtual bool allowWriteToClipboard(bool default_value) OVERRIDE;
-  virtual bool allowWebComponents(bool default_value) OVERRIDE;
   virtual bool allowMutationEvents(bool default_value) OVERRIDE;
   virtual bool allowPushState() OVERRIDE;
   virtual void didNotAllowPlugins() OVERRIDE;

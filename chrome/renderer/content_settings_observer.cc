@@ -428,24 +428,6 @@ bool ContentSettingsObserver::allowWriteToClipboard(bool default_value) {
   return allowed;
 }
 
-bool ContentSettingsObserver::allowWebComponents(bool default_value) {
-  if (default_value)
-    return true;
-
-  WebFrame* frame = render_frame()->GetWebFrame();
-  WebSecurityOrigin origin = frame->document().securityOrigin();
-  if (EqualsASCII(origin.protocol(), content::kChromeUIScheme))
-    return true;
-
-  if (const extensions::Extension* extension = GetExtension(origin)) {
-    if (extension->permissions_data()->HasAPIPermission(
-            APIPermission::kExperimental))
-      return true;
-  }
-
-  return false;
-}
-
 bool ContentSettingsObserver::allowMutationEvents(bool default_value) {
   WebFrame* frame = render_frame()->GetWebFrame();
   WebSecurityOrigin origin = frame->document().securityOrigin();
