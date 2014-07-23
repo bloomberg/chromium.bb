@@ -11,6 +11,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/services/html_viewer/webcookiejar_impl.h"
 #include "mojo/services/html_viewer/webthread_impl.h"
 #include "mojo/services/html_viewer/weburlloader_impl.h"
 #include "net/base/data_url.h"
@@ -53,9 +54,17 @@ BlinkPlatformImpl::BlinkPlatformImpl(ApplicationImpl* app)
       shared_timer_suspended_(0),
       current_thread_slot_(&DestroyCurrentThread) {
   app->ConnectToService("mojo:mojo_network_service", &network_service_);
+
+  CookieStorePtr cookie_store;
+  network_service_->GetCookieStore(Get(&cookie_store));
+  cookie_jar_.reset(new WebCookieJarImpl(cookie_store.Pass()));
 }
 
 BlinkPlatformImpl::~BlinkPlatformImpl() {
+}
+
+blink::WebCookieJar* BlinkPlatformImpl::cookieJar() {
+  return cookie_jar_.get();
 }
 
 blink::WebMimeRegistry* BlinkPlatformImpl::mimeRegistry() {

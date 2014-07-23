@@ -47,19 +47,20 @@ class HTMLDocumentView : public blink::WebViewClient,
   virtual bool allowsBrokenNullLayerTreeView() const;
 
   // WebFrameClient methods:
+  virtual blink::WebCookieJar* cookieJar(blink::WebLocalFrame* frame);
   virtual blink::WebNavigationPolicy decidePolicyForNavigation(
       blink::WebLocalFrame* frame, blink::WebDataSource::ExtraData* data,
       const blink::WebURLRequest& request, blink::WebNavigationType nav_type,
-      blink::WebNavigationPolicy default_policy, bool isRedirect) OVERRIDE;
+      blink::WebNavigationPolicy default_policy, bool isRedirect);
   virtual void didAddMessageToConsole(
       const blink::WebConsoleMessage& message,
       const blink::WebString& source_name,
       unsigned source_line,
-      const blink::WebString& stack_trace) OVERRIDE;
+      const blink::WebString& stack_trace);
   virtual void didNavigateWithinPage(
       blink::WebLocalFrame* frame,
       const blink::WebHistoryItem& history_item,
-      blink::WebHistoryCommitType commit_type) OVERRIDE;
+      blink::WebHistoryCommitType commit_type);
 
   // ViewObserver methods:
   virtual void OnViewInputEvent(view_manager::View* view,

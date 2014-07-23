@@ -5,6 +5,7 @@
 #ifndef MOJO_SERVICES_HTML_VIEWER_BLINK_PLATFORM_IMPL_H_
 #define MOJO_SERVICES_HTML_VIEWER_BLINK_PLATFORM_IMPL_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/timer/timer.h"
@@ -16,6 +17,7 @@
 
 namespace mojo {
 class ApplicationImpl;
+class WebCookieJarImpl;
 
 class BlinkPlatformImpl : public blink::Platform {
  public:
@@ -23,6 +25,7 @@ class BlinkPlatformImpl : public blink::Platform {
   virtual ~BlinkPlatformImpl();
 
   // blink::Platform methods:
+  virtual blink::WebCookieJar* cookieJar();
   virtual blink::WebMimeRegistry* mimeRegistry();
   virtual blink::WebThemeEngine* themeEngine();
   virtual blink::WebString defaultLocale();
@@ -69,8 +72,11 @@ class BlinkPlatformImpl : public blink::Platform {
   int shared_timer_suspended_;  // counter
   base::ThreadLocalStorage::Slot current_thread_slot_;
   WebThemeEngineImpl theme_engine_;
+  scoped_ptr<WebCookieJarImpl> cookie_jar_;
   WebMimeRegistryImpl mime_registry_;
   blink::WebScrollbarBehavior scrollbar_behavior_;
+
+  DISALLOW_COPY_AND_ASSIGN(BlinkPlatformImpl);
 };
 
 }  // namespace mojo

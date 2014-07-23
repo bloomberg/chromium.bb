@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "mojo/public/cpp/bindings/interface_impl.h"
 #include "mojo/services/public/interfaces/network/network_service.mojom.h"
+#include "url/gurl.h"
 
 namespace mojo {
 class ApplicationConnection;
@@ -21,9 +22,11 @@ class NetworkServiceImpl : public InterfaceImpl<NetworkService> {
 
   // NetworkService methods:
   virtual void CreateURLLoader(InterfaceRequest<URLLoader> loader) OVERRIDE;
+  virtual void GetCookieStore(InterfaceRequest<CookieStore> store) OVERRIDE;
 
  private:
   NetworkContext* context_;
+  GURL origin_;
 };
 
 }  // namespace mojo

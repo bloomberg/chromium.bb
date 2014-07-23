@@ -15,6 +15,7 @@
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "skia/ext/refptr.h"
+#include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
@@ -32,6 +33,7 @@ namespace {
 
 void ConfigureSettings(blink::WebSettings* settings) {
   settings->setAcceleratedCompositingEnabled(false);
+  settings->setCookieEnabled(true);
   settings->setDefaultFixedFontSize(13);
   settings->setDefaultFontSize(16);
   settings->setLoadsImagesAutomatically(true);
@@ -139,10 +141,16 @@ void HTMLDocumentView::didInvalidateRect(const blink::WebRect& rect) {
 bool HTMLDocumentView::allowsBrokenNullLayerTreeView() const {
   // TODO(darin): Switch to using compositor bindings.
   //
-  // NOTE: Note to Blink maintainers, feel free to just break this code if it
-  // is the last using compositor bindings and you want to delete the old path.
+  // NOTE: Note to Blink maintainers, feel free to break this code if it is the
+  // last NOT using compositor bindings and you want to delete this code path.
   //
   return true;
+}
+
+blink::WebCookieJar* HTMLDocumentView::cookieJar(blink::WebLocalFrame* frame) {
+  // TODO(darin): Blink does not fallback to the Platform provided WebCookieJar.
+  // Either it should, as it once did, or we should find another solution here.
+  return blink::Platform::current()->cookieJar();
 }
 
 blink::WebNavigationPolicy HTMLDocumentView::decidePolicyForNavigation(

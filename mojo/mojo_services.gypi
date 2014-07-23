@@ -51,6 +51,8 @@
         'services/html_viewer/html_viewer.cc',
         'services/html_viewer/html_document_view.cc',
         'services/html_viewer/html_document_view.h',
+        'services/html_viewer/webcookiejar_impl.cc',
+        'services/html_viewer/webcookiejar_impl.h',
         'services/html_viewer/webmimeregistry_impl.cc',
         'services/html_viewer/webmimeregistry_impl.h',
         'services/html_viewer/webstoragenamespace_impl.cc',
@@ -362,6 +364,7 @@
       'target_name': 'mojo_network_bindings',
       'type': 'static_library',
       'sources': [
+        'services/public/interfaces/network/cookie_store.mojom',
         'services/public/interfaces/network/network_error.mojom',
         'services/public/interfaces/network/network_service.mojom',
         'services/public/interfaces/network/url_loader.mojom',
@@ -390,6 +393,8 @@
         'mojo_network_bindings',
       ],
       'sources': [
+        'services/network/cookie_store_impl.cc',
+        'services/network/cookie_store_impl.h',
         'services/network/network_context.cc',
         'services/network/network_context.h',
         'services/network/network_service_impl.cc',

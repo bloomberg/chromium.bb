@@ -73,7 +73,8 @@ class HTMLViewer : public ApplicationDelegate,
                            view_manager::Node* root) OVERRIDE {
     document_view_ = new HTMLDocumentView(
         application_impl_->ConnectToApplication("mojo://mojo_window_manager/")->
-            GetServiceProvider(), view_manager);
+            GetServiceProvider(),
+        view_manager);
     document_view_->AttachToNode(root);
     MaybeLoad();
   }
