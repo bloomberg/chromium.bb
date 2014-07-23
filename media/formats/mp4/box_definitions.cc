@@ -379,14 +379,13 @@ bool AVCDecoderConfigurationRecord::ParseInternal(BufferReader* reader,
          reader->Read1(&avc_level));
 
   uint8 length_size_minus_one;
-  RCHECK(reader->Read1(&length_size_minus_one) &&
-         (length_size_minus_one & 0xfc) == 0xfc);
+  RCHECK(reader->Read1(&length_size_minus_one));
   length_size = (length_size_minus_one & 0x3) + 1;
 
   RCHECK(length_size != 3); // Only values of 1, 2, and 4 are valid.
 
   uint8 num_sps;
-  RCHECK(reader->Read1(&num_sps) && (num_sps & 0xe0) == 0xe0);
+  RCHECK(reader->Read1(&num_sps));
   num_sps &= 0x1f;
 
   sps_list.resize(num_sps);
