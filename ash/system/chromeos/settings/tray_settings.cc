@@ -108,8 +108,8 @@ class SettingsDefaultView : public ActionableView,
 
     base::string16 accessible_name = label_ ?
         label_->text() + base::ASCIIToUTF16(", ") +
-            PowerStatus::Get()->GetAccessibleNameString() :
-        PowerStatus::Get()->GetAccessibleNameString();
+            PowerStatus::Get()->GetAccessibleNameString(true) :
+        PowerStatus::Get()->GetAccessibleNameString(true);
     SetAccessibleName(accessible_name);
   }
 

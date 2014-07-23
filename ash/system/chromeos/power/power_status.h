@@ -129,7 +129,7 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
   gfx::ImageSkia GetBatteryImage(IconSet icon_set) const;
 
   // Returns an string describing the current state for accessibility.
-  base::string16 GetAccessibleNameString() const;
+  base::string16 GetAccessibleNameString(bool full_description) const;
 
   // Updates |proto_|. Does not notify observers.
   void SetProtoForTesting(const power_manager::PowerSupplyProperties& proto);

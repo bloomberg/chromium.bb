@@ -69,7 +69,7 @@ class PowerTrayView : public views::ImageView {
     SetVisible(PowerStatus::Get()->IsBatteryPresent());
 
     if (battery_alert) {
-      accessible_name_ = PowerStatus::Get()->GetAccessibleNameString();
+      accessible_name_ = PowerStatus::Get()->GetAccessibleNameString(true);
       NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
     }
   }

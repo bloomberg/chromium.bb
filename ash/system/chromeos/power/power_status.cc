@@ -235,7 +235,8 @@ gfx::ImageSkia PowerStatus::GetBatteryImage(IconSet icon_set) const {
   return gfx::ImageSkiaOperations::ExtractSubset(*all.ToImageSkia(), region);
 }
 
-base::string16 PowerStatus::GetAccessibleNameString() const {
+base::string16 PowerStatus::GetAccessibleNameString(
+    bool full_description) const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (IsBatteryFull()) {
     return rb.GetLocalizedString(
@@ -247,6 +248,9 @@ base::string16 PowerStatus::GetAccessibleNameString() const {
       IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_CHARGING_ACCESSIBLE :
       IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ACCESSIBLE,
       base::IntToString16(GetRoundedBatteryPercent()));
+  if (!full_description)
+    return battery_percentage_accessible;
+
   base::string16 battery_time_accessible = base::string16();
   const base::TimeDelta time = IsBatteryCharging() ? GetBatteryTimeToFull() :
       GetBatteryTimeToEmpty();

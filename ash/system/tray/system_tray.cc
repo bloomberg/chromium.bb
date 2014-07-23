@@ -50,6 +50,7 @@
 #include "ash/system/chromeos/network/tray_network.h"
 #include "ash/system/chromeos/network/tray_sms.h"
 #include "ash/system/chromeos/network/tray_vpn.h"
+#include "ash/system/chromeos/power/power_status.h"
 #include "ash/system/chromeos/power/tray_power.h"
 #include "ash/system/chromeos/rotation/tray_rotation_lock.h"
 #include "ash/system/chromeos/screen_security/screen_capture_tray_item.h"
@@ -402,6 +403,16 @@ void SystemTray::DestroyNotificationBubble() {
   }
 }
 
+base::string16 SystemTray::GetAccessibleNameForTray() {
+  base::string16 time = GetAccessibleTimeString(base::Time::Now());
+  base::string16 battery = base::ASCIIToUTF16("");
+#if defined(OS_CHROMEOS)
+  battery = PowerStatus::Get()->GetAccessibleNameString(false);
+#endif
+  return l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_ACCESSIBLE_DESCRIPTION, time, battery);
+}
+
 int SystemTray::GetTrayXOffset(SystemTrayItem* item) const {
   // Don't attempt to align the arrow if the shelf is on the left or right.
   if (shelf_alignment() != SHELF_ALIGNMENT_BOTTOM &&
@@ -588,6 +599,14 @@ void SystemTray::UpdateWebNotifications() {
   status_area_widget()->web_notification_tray()->SetSystemTrayHeight(height);
 }
 
+base::string16 SystemTray::GetAccessibleTimeString(
+    const base::Time& now) const {
+  base::HourClockType hour_type =
+      ash::Shell::GetInstance()->system_tray_delegate()->GetHourClockType();
+  return base::TimeFormatTimeOfDayWithHourClockType(
+      now, hour_type, base::kKeepAmPm);
+}
+
 void SystemTray::SetShelfAlignment(ShelfAlignment alignment) {
   if (alignment == shelf_alignment())
     return;
@@ -613,10 +632,6 @@ void SystemTray::AnchorUpdated() {
     system_bubble_->bubble_view()->UpdateBubble();
     UpdateBubbleViewArrow(system_bubble_->bubble_view());
   }
-}
-
-base::string16 SystemTray::GetAccessibleNameForTray() {
-  return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBLE_NAME);
 }
 
 void SystemTray::BubbleResized(const TrayBubbleView* bubble_view) {

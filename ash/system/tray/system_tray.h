@@ -161,6 +161,10 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // Resets |notification_bubble_| and clears any related state.
   void DestroyNotificationBubble();
 
+  // Returns a string with the current time for accessibility on the status
+  // tray bar.
+  base::string16 GetAccessibleTimeString(const base::Time& now) const;
+
   // Calculates the x-offset for the item in the tray. Returns -1 if its tray
   // item view is not visible.
   int GetTrayXOffset(SystemTrayItem* item) const;
