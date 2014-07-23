@@ -93,7 +93,12 @@ public:
         ON_CALL(*channelClient(), didConsumeBufferedAmount(_)).WillByDefault(Invoke(this, &NewWebSocketChannelImplTest::didConsumeBufferedAmount));
     }
 
-    ~NewWebSocketChannelImplTest() { }
+    ~NewWebSocketChannelImplTest()
+    {
+#if ENABLE(OILPAN)
+        channel()->disconnect();
+#endif
+    }
 
     MockWebSocketChannelClient* channelClient()
     {
