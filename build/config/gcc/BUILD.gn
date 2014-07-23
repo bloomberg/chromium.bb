@@ -21,9 +21,8 @@ config("symbol_visibility_hidden") {
 # Settings for executables and shared libraries.
 config("executable_ldconfig") {
   ldflags = [
-    # Want to pass "\$". Need to escape both '\' and '$'. GN will re-escape as
-    # required for ninja.
-    "-Wl,-rpath=\\\$ORIGIN/lib/",
+    # Want to pass "\$". GN will re-escape as required for ninja.
+    "-Wl,-rpath=\$ORIGIN/lib/",
 
     "-Wl,-rpath-link=lib/",
   ]
