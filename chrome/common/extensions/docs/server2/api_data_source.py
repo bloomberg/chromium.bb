@@ -382,7 +382,8 @@ class _JSCModel(object):
       if function.callback is not None:
         # Show the callback as an extra parameter.
         function_dict['parameters'].append(
-            self._GenerateCallbackProperty(function.callback))
+            self._GenerateCallbackProperty(function.callback,
+                                           function_dict['callback']))
       if len(function_dict['parameters']) > 0:
         function_dict['parameters'][-1]['last'] = True
       return function_dict
@@ -429,11 +430,13 @@ class _JSCModel(object):
         callback_object.params = event.params
         if event.callback:
           callback_object.callback = event.callback
-        callback_parameters = self._GenerateCallbackProperty(callback_object)
+        callback = self._GenerateFunction(callback_object)
+        callback_parameters = self._GenerateCallbackProperty(callback_object,
+                                                             callback)
         callback_parameters['last'] = True
         event_dict['byName']['addListener'] = {
           'name': 'addListener',
-          'callback': self._GenerateFunction(callback_object),
+          'callback': callback,
           'parameters': [callback_parameters]
         }
     with self._current_node.Descend(event.simple_name, ignore=('properties',)):
@@ -514,12 +517,13 @@ class _JSCModel(object):
 
       return property_dict
 
-  def _GenerateCallbackProperty(self, callback):
+  def _GenerateCallbackProperty(self, callback, callback_dict):
     property_dict = {
       'name': callback.simple_name,
       'description': callback.description,
       'optional': callback.optional,
-      'is_callback': True,
+      'isCallback': True,
+      'asFunction': callback_dict,
       'id': _CreateId(callback, 'property'),
       'simple_type': 'function',
     }

@@ -42,8 +42,8 @@
         hideParamTOC:hideParamTOC /}}
   </table>
 {{/parameters}}
-{{?is_callback}}
-  {{?parentCallback +partials.callback callback:parentCallback/}}
-{{/is_callback}}
+{{?isCallback}}
+  {{+partials.callback callback:asFunction/}}
+{{/isCallback}}
 </td>
 {{/property}}
