@@ -2560,8 +2560,12 @@ public class AwSettingsTest extends AwTestBase {
         assertTrue(VideoTestUtil.runVideoTest(this, false, WAIT_TIMEOUT_MS));
     }
 
+    /*
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
+    http://crbug.com/396645
+    */
+    @DisabledTest
     public void testMediaPlaybackWithUserGesture() throws Throwable {
         // Wait for 5 second to see if video played.
         assertFalse(VideoTestUtil.runVideoTest(this, true, scaleTimeout(5000)));
