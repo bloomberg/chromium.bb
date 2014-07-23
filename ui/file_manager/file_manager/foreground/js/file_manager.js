@@ -104,6 +104,7 @@ FileManager.prototype = {
  * FULL_PAGE which is specific to this code.
  *
  * @enum {string}
+ * @const
  */
 var DialogType = {
   SELECT_FOLDER: 'folder',
@@ -154,6 +155,8 @@ DialogType.isFolderDialog = function(type) {
   return type == DialogType.SELECT_FOLDER ||
          type == DialogType.SELECT_UPLOAD_FOLDER;
 };
+
+Object.freeze(DialogType);
 
 /**
  * Bottom margin of the list and tree for transparent preview panel.
@@ -1078,11 +1081,14 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.initNavigationList_ = function() {
+    var fakeEntriesVisible =
+        this.dialogType != DialogType.SELECT_SAVEAS_FILE;
     this.directoryTree_ = this.dialogDom_.querySelector('#directory-tree');
     DirectoryTree.decorate(this.directoryTree_,
                            this.directoryModel_,
                            this.volumeManager_,
-                           this.metadataCache_);
+                           this.metadataCache_,
+                           fakeEntriesVisible);
 
     this.navigationList_ = this.dialogDom_.querySelector('#navigation-list');
     NavigationList.decorate(this.navigationList_,

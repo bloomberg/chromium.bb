@@ -412,12 +412,13 @@ function DirectoryTree() {}
  * @param {DirectoryModel} directoryModel Current DirectoryModel.
  * @param {VolumeManagerWrapper} volumeManager VolumeManager of the system.
  * @param {MetadataCache} metadataCache Shared MetadataCache instance.
+ * @param {boolean} fakeEntriesVisible True if it should show the fakeEntries.
  */
 DirectoryTree.decorate = function(
-    el, directoryModel, volumeManager, metadataCache) {
+    el, directoryModel, volumeManager, metadataCache, fakeEntriesVisible) {
   el.__proto__ = DirectoryTree.prototype;
   (/** @type {DirectoryTree} */ el).decorate(
-      directoryModel, volumeManager, metadataCache);
+      directoryModel, volumeManager, metadataCache, fakeEntriesVisible);
 };
 
 DirectoryTree.prototype = {
@@ -494,9 +495,10 @@ DirectoryTree.prototype.searchAndSelectByEntry = function(entry) {
  * @param {DirectoryModel} directoryModel Current DirectoryModel.
  * @param {VolumeManagerWrapper} volumeManager VolumeManager of the system.
  * @param {MetadataCache} metadataCache Shared MetadataCache instance.
+ * @param {boolean} fakeEntriesVisible True if it should show the fakeEntries.
  */
 DirectoryTree.prototype.decorate = function(
-    directoryModel, volumeManager, metadataCache) {
+    directoryModel, volumeManager, metadataCache, fakeEntriesVisible) {
   cr.ui.Tree.prototype.decorate.call(this);
 
   this.sequence_ = 0;
@@ -526,6 +528,13 @@ DirectoryTree.prototype.decorate = function(
 
   this.scrollBar_ = MainPanelScrollBar();
   this.scrollBar_.initialize(this.parentNode, this);
+
+  /**
+   * Flag to show fake entries in the tree.
+   * @type {boolean}
+   * @private
+   */
+  this.fakeEntriesVisible_ = fakeEntriesVisible;
 };
 
 /**
@@ -573,8 +582,10 @@ DirectoryTree.prototype.updateSubDirectories = function(
   };
 
   // Add fakes (if any).
-  for (var key in this.currentVolumeInfo_.fakeEntries) {
-    this.entries_.push(this.currentVolumeInfo_.fakeEntries[key]);
+  if (this.fakeEntriesVisible_) {
+    for (var key in this.currentVolumeInfo_.fakeEntries) {
+      this.entries_.push(this.currentVolumeInfo_.fakeEntries[key]);
+    }
   }
 
   // If the display root is not available yet, then redraw anyway with what
