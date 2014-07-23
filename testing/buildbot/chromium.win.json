@@ -333,6 +333,7 @@
       "views_unittests",
       "wm_unittests",
       "aura_unittests",
+      "ash_unittests",
       "compositor_unittests",
       "events_unittests"
     ]
