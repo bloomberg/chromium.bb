@@ -623,7 +623,7 @@ void ContentViewCoreImpl::ShowPastePopup(int x_dip, int y_dip) {
 
 void ContentViewCoreImpl::GetScaledContentBitmap(
     float scale,
-    jobject jbitmap_config,
+    SkColorType color_type,
     gfx::Rect src_subrect,
     const base::Callback<void(bool, const SkBitmap&)>& result_callback) {
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
@@ -631,7 +631,7 @@ void ContentViewCoreImpl::GetScaledContentBitmap(
     result_callback.Run(false, SkBitmap());
     return;
   }
-  SkColorType color_type = gfx::ConvertToSkiaColorType(jbitmap_config);
+
   view->GetScaledContentBitmap(scale, color_type, src_subrect,
       result_callback);
 }

@@ -54,7 +54,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   virtual void ShowPastePopup(int x, int y) OVERRIDE;
   virtual void GetScaledContentBitmap(
       float scale,
-      jobject bitmap_config,
+      SkColorType color_type,
       gfx::Rect src_subrect,
       const base::Callback<void(bool, const SkBitmap&)>& result_callback)
       OVERRIDE;

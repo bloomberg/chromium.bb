@@ -617,6 +617,7 @@
         # All unittests in browser, common, renderer and service.
         'browser/about_flags_unittest.cc',
         'browser/android/bookmarks/partner_bookmarks_shim_unittest.cc',
+        'browser/android/thumbnail/scoped_ptr_expiring_cache_unittest.cc',
         # mock_google_location_settings_helper could logically go in
         # test_support_unit. However tests suites in the internal repository
         # depend on an alternate implementation so instead each test suite

@@ -99,6 +99,10 @@
       'browser/android/tab_android.cc',
       'browser/android/tab_android.h',
       'browser/android/tab_load_status.h',
+      'browser/android/thumbnail/thumbnail.cc',
+      'browser/android/thumbnail/thumbnail.h',
+      'browser/android/thumbnail/thumbnail_store.cc',
+      'browser/android/thumbnail/thumbnail_store.h',
       'browser/android/uma_bridge.cc',
       'browser/android/uma_bridge.h',
       'browser/android/uma_utils.cc',
@@ -3264,6 +3268,7 @@
           'dependencies': [
             '../components/components.gyp:cdm_browser',
             '../components/components.gyp:web_contents_delegate_android',
+            '../third_party/android_opengl/etc1/etc1.gyp:etc1',
             'chrome_browser_jni_headers',
           ],
           'dependencies!': [
