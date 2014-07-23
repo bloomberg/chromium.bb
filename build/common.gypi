@@ -2086,7 +2086,7 @@
         'clang%': 1,
         'use_allocator%': 'none',
       }],
-      ['asan==1 and OS!="win"', {
+      ['asan==1 and OS=="linux"', {
         'use_custom_libcxx%': 1,
       }],
       ['ubsan==1', {
