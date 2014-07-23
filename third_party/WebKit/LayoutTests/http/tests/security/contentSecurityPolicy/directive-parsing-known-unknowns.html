@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+}
+if (window.internals)
+    internals.settings.setExperimentalContentSecurityPolicyFeaturesEnabled(false);
+</script>
+<meta http-equiv="Content-Security-Policy" content="child-src 'none'"/>
+</head>
+<body>
+<p>This page disables CSP2, but uses a CSP2 directive. It should log an informative message to the console: not an error.</p>
+</body>
+</html>
+
