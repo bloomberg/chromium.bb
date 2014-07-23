@@ -30,6 +30,7 @@ import time
 
 from third_party.depot_tools import fix_encoding
 
+from utils import file_path
 from utils import lru
 from utils import on_error
 from utils import threading_utils
@@ -895,7 +896,11 @@ def main(args):
   # |options.cache| path may not exist until DiskCache() instance is created.
   cache = DiskCache(
       options.cache, policies, isolateserver.get_hash_algo(options.namespace))
+
   remote = options.isolate_server or options.indir
+  if file_path.is_url(remote):
+    auth.ensure_logged_in(remote)
+
   with isolateserver.get_storage(remote, options.namespace) as storage:
     # Hashing schemes used by |storage| and |cache| MUST match.
     assert storage.hash_algo == cache.hash_algo

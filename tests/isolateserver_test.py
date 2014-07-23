@@ -40,6 +40,7 @@ class TestCase(auto_stub.TestCase):
   """Mocks out url_open() calls and sys.stdout/stderr."""
   def setUp(self):
     super(TestCase, self).setUp()
+    self.mock(isolateserver.auth, 'ensure_logged_in', lambda _: None)
     self.mock(isolateserver.net, 'url_open', self._url_open)
     self.mock(isolateserver.net, 'sleep_before_retry', lambda *_: None)
     self._lock = threading.Lock()

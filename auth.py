@@ -20,35 +20,6 @@ from utils import oauth
 from utils import tools
 
 
-def add_auth_options(parser):
-  """Adds command line options related to authentication."""
-  parser.auth_group = optparse.OptionGroup(parser, 'Authentication')
-  parser.auth_group.add_option(
-      '--auth-method',
-      metavar='METHOD',
-      default=net.get_default_auth_config()[0],
-      help='Authentication method to use: %s. [default: %%default]' %
-          ', '.join(name for name, _ in net.AUTH_METHODS))
-  parser.add_option_group(parser.auth_group)
-  oauth.add_oauth_options(parser)
-
-
-def process_auth_options(parser, options):
-  """Configures process-wide authentication parameters based on |options|."""
-  # Validate that authentication method is known.
-  if options.auth_method not in dict(net.AUTH_METHODS):
-    parser.error('Invalid --auth-method value: %s' % options.auth_method)
-
-  # Process the rest of the flags based on actual method used.
-  # Only oauth is configurable now.
-  config = None
-  if options.auth_method == 'oauth':
-    config = oauth.extract_oauth_config_from_options(options)
-
-  # Now configure 'net' globally to use this for every request.
-  net.configure_auth(options.auth_method, config)
-
-
 class AuthServiceError(Exception):
   """Unexpected response from authentication service."""
 
@@ -79,6 +50,57 @@ class AuthService(object):
     if not identity:
       raise AuthServiceError('Failed to fetch identity')
     return identity['identity']
+
+
+def add_auth_options(parser):
+  """Adds command line options related to authentication."""
+  parser.auth_group = optparse.OptionGroup(parser, 'Authentication')
+  parser.auth_group.add_option(
+      '--auth-method',
+      metavar='METHOD',
+      default=net.get_default_auth_config()[0],
+      help='Authentication method to use: %s. [default: %%default]' %
+          ', '.join(name for name, _ in net.AUTH_METHODS))
+  parser.add_option_group(parser.auth_group)
+  oauth.add_oauth_options(parser)
+
+
+def process_auth_options(parser, options):
+  """Configures process-wide authentication parameters based on |options|."""
+  # Validate that authentication method is known.
+  if options.auth_method not in dict(net.AUTH_METHODS):
+    parser.error('Invalid --auth-method value: %s' % options.auth_method)
+
+  # Process the rest of the flags based on actual method used.
+  # Only oauth is configurable now.
+  config = None
+  if options.auth_method == 'oauth':
+    config = oauth.extract_oauth_config_from_options(options)
+
+  # Now configure 'net' globally to use this for every request.
+  net.configure_auth(options.auth_method, config)
+
+
+def ensure_logged_in(server_url):
+  """Checks that user is logged in, asking to do it if not.
+
+  Aborts the process with exit code 1 if user is not logged it. Noop when used
+  on bots.
+  """
+  if net.get_auth_method() not in ('cookie', 'oauth'):
+    return
+  server_url = server_url.lower().rstrip('/')
+  assert server_url.startswith(('https://', 'http://localhost:')), server_url
+  service = AuthService(server_url)
+  service.login(False)
+  identity = service.get_current_identity()
+  if identity == 'anonymous:anonymous':
+    print >> sys.stderr, (
+        'Please login to %s: \n'
+        '  python auth.py login --service=%s' % (server_url, server_url))
+    sys.exit(1)
+  email = identity.split(':')[1]
+  print >> sys.stderr, 'Logged in to %s: %s' % (server_url, email)
 
 
 @subcommand.usage('[options]')

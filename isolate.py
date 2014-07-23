@@ -1046,6 +1046,8 @@ def CMDarchive(parser, args):
   isolateserver.process_isolate_server_options(parser, options)
   if args:
     parser.error('Unsupported argument: %s' % args)
+  if file_path.is_url(options.isolate_server):
+    auth.ensure_logged_in(options.isolate_server)
   cwd = os.getcwd()
   with tools.Profiler('GenerateHashtable'):
     success = False

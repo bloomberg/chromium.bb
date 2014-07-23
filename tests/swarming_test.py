@@ -205,8 +205,9 @@ class TestCase(auto_stub.TestCase):
     super(TestCase, self).setUp()
     self._lock = threading.Lock()
     self.requests = []
+    self.mock(swarming.auth, 'ensure_logged_in', lambda _: None)
     self.mock(swarming.net.HttpService, 'request', self._url_open)
-    self.mock(swarming.time, 'sleep', lambda x: None)
+    self.mock(swarming.time, 'sleep', lambda _: None)
     self.mock(swarming.subprocess, 'call', lambda *_: self.fail())
     self.mock(swarming.threading, 'Event', NonBlockingEvent)
     self.mock(sys, 'stdout', StringIO.StringIO())

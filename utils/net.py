@@ -324,6 +324,15 @@ def configure_auth(method, config=None):
     _auth_method_config = config
 
 
+def get_auth_method():
+  """Returns authentication method used by default.
+
+  Set with 'configure_auth'. See 'configure_auth' doc string for existing
+  auth method.
+  """
+  return _auth_method
+
+
 def create_authenticator(urlhost):
   """Makes Authenticator instance used by HttpService to access |urlhost|."""
   # We use signed URL for Google Storage, no need for special authentication.

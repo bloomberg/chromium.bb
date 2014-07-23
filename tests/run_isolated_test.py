@@ -63,6 +63,7 @@ class RunIsolatedTest(auto_stub.TestCase):
     self.tempdir = tempfile.mkdtemp(prefix='run_isolated_test')
     logging.debug(self.tempdir)
     self.mock(run_isolated, 'make_temp_dir', self.fake_make_temp_dir)
+    self.mock(run_isolated.auth, 'ensure_logged_in', lambda _: None)
 
   def tearDown(self):
     for dirpath, dirnames, filenames in os.walk(self.tempdir, topdown=True):

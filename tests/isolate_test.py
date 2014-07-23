@@ -37,6 +37,7 @@ def hash_file(*args):
 class IsolateBase(auto_stub.TestCase):
   def setUp(self):
     super(IsolateBase, self).setUp()
+    self.mock(isolate.auth, 'ensure_logged_in', lambda _: None)
     self.old_cwd = os.getcwd()
     self.cwd = tempfile.mkdtemp(prefix='isolate_')
     # Everything should work even from another directory.

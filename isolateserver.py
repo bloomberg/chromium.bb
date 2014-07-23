@@ -2193,6 +2193,8 @@ def CMDarchive(parser, args):
            'directories')
   options, files = parser.parse_args(args)
   process_isolate_server_options(parser, options)
+  if file_path.is_url(options.isolate_server):
+    auth.ensure_logged_in(options.isolate_server)
   try:
     archive(options.isolate_server, options.namespace, files, options.blacklist)
   except Error as e:
@@ -2227,6 +2229,9 @@ def CMDdownload(parser, args):
   options.target = os.path.abspath(options.target)
 
   remote = options.isolate_server or options.indir
+  if file_path.is_url(remote):
+    auth.ensure_logged_in(remote)
+
   with get_storage(remote, options.namespace) as storage:
     # Fetching individual files.
     if options.file:

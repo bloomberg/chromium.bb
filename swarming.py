@@ -958,6 +958,7 @@ def CMDcollect(parser, args):
   elif len(args) > 1:
     parser.error('Must specify only one task name.')
 
+  auth.ensure_logged_in(options.swarming)
   try:
     return collect(
         options.swarming,
@@ -989,7 +990,10 @@ def CMDquery(parser, args):
 
   if options.keep_dead and options.dead_only:
     parser.error('Use only one of --keep-dead and --dead-only')
+
+  auth.ensure_logged_in(options.swarming)
   service = net.get_http_service(options.swarming)
+
   data = service.json_request('GET', '/swarming/api/v1/bots')
   if data is None:
     print >> sys.stderr, 'Failed to access %s' % options.swarming
@@ -1041,6 +1045,9 @@ def CMDrun(parser, args):
   options, args = parser.parse_args(args)
   process_trigger_options(parser, options, args)
 
+  auth.ensure_logged_in(options.swarming)
+  if file_path.is_url(options.isolate_server):
+    auth.ensure_logged_in(options.isolate_server)
   try:
     tasks, task_name = trigger(
         swarming=options.swarming,
@@ -1105,6 +1112,9 @@ def CMDtrigger(parser, args):
   options, args = parser.parse_args(args)
   process_trigger_options(parser, options, args)
 
+  auth.ensure_logged_in(options.swarming)
+  if file_path.is_url(options.isolate_server):
+    auth.ensure_logged_in(options.isolate_server)
   try:
     tasks, task_name = trigger(
         swarming=options.swarming,
