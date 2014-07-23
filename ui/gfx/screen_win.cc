@@ -30,6 +30,32 @@ gfx::Display GetDisplay(MONITORINFOEX& monitor_info) {
   gfx::Display display(id, bounds);
   display.set_work_area(gfx::Rect(monitor_info.rcWork));
   display.SetScaleAndBounds(gfx::win::GetDeviceScaleFactor(), bounds);
+
+  DEVMODE mode;
+  memset(&mode, 0, sizeof(DEVMODE));
+  mode.dmSize = sizeof(DEVMODE);
+  mode.dmDriverExtra = 0;
+  if (EnumDisplaySettings(monitor_info.szDevice,
+                          ENUM_CURRENT_SETTINGS,
+                          &mode)) {
+    switch (mode.dmDisplayOrientation) {
+    case DMDO_DEFAULT:
+      display.set_rotation(gfx::Display::ROTATE_0);
+      break;
+    case DMDO_90:
+      display.set_rotation(gfx::Display::ROTATE_90);
+      break;
+    case DMDO_180:
+      display.set_rotation(gfx::Display::ROTATE_180);
+      break;
+    case DMDO_270:
+      display.set_rotation(gfx::Display::ROTATE_270);
+      break;
+    default:
+      NOTREACHED();
+    }
+  }
+
   return display;
 }
 
