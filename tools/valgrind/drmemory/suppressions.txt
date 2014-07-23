@@ -642,3 +642,7 @@ USER32.dll!ReleaseDC
 *!webrtc::ScreenCapturerWinGdi::~ScreenCapturerWinGdi
 *!webrtc::ScreenCapturerWinGdi::`scalar deleting destructor'
 content.dll!content::DesktopCaptureDevice::Core::DoStopAndDeAllocate
+
+UNADDRESSABLE ACCESS
+name=http://code.google.com/p/dynamorio/issues/detail?id=1443
+dynamorio.dll!*
