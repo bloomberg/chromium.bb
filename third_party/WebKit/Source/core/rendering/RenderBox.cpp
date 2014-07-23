@@ -1579,7 +1579,7 @@ void RenderBox::invalidatePaintIfNeeded(const PaintInvalidationState& paintInval
         || (shouldDoFullPaintInvalidationIfSelfPaintingLayer()
             && hasLayer()
             && layer()->isSelfPaintingLayer())) {
-        setShouldDoFullPaintInvalidation(true);
+        setShouldDoFullPaintInvalidation(true, MarkOnlyThis);
     }
 
     if (!RenderObject::invalidatePaintIfNeeded(newPaintInvalidationContainer, oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer, paintInvalidationState))
