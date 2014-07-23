@@ -202,6 +202,7 @@
         '<(DEPTH)/content/content.gyp:content_app_both',
         '<(DEPTH)/content/content_shell_and_tests.gyp:content_browser_test_support',
         '<(DEPTH)/content/content_shell_and_tests.gyp:test_support_content',
+        '<(DEPTH)/extensions/extensions.gyp:extensions_test_support',
         '<(DEPTH)/testing/gtest.gyp:gtest',
       ],
       'defines': [
@@ -209,6 +210,7 @@
       ],
       'sources': [
         # TODO(yoz): Refactor once we have a second test target.
+        'browser/dns_apitest.cc',
         'browser/shell_browsertest.cc',
         'test/shell_test.h',
         'test/shell_test.cc',

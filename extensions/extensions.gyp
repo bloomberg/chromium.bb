@@ -654,6 +654,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../net/net.gyp:net_test_support',
         '../testing/gtest.gyp:gtest',
         'common/api/api.gyp:extensions_api',
         'extensions_browser',
@@ -664,6 +665,10 @@
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'sources': [
+        'browser/api/dns/mock_host_resolver_creator.cc',
+        'browser/api/dns/mock_host_resolver_creator.h',
+        'browser/api_test_utils.cc',
+        'browser/api_test_utils.h',
         'browser/test_extensions_browser_client.cc',
         'browser/test_extensions_browser_client.h',
         'browser/test_management_policy.cc',

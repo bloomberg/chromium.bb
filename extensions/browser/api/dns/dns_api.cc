@@ -49,8 +49,7 @@ void DnsResolveFunction::WorkOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   net::HostResolver* host_resolver =
-      HostResolverWrapper::GetInstance()->GetHostResolver(
-          resource_context_->GetHostResolver());
+      HostResolverWrapper::GetInstance()->GetHostResolver(resource_context_);
   DCHECK(host_resolver);
 
   // Yes, we are passing zero as the port. There are some interesting but not

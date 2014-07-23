@@ -4,6 +4,9 @@
 
 #include "extensions/browser/api/dns/host_resolver_wrapper.h"
 
+#include "content/public/browser/resource_context.h"
+#include "net/dns/host_resolver.h"
+
 namespace extensions {
 
 HostResolverWrapper::HostResolverWrapper() : resolver_(NULL) {}
@@ -14,8 +17,8 @@ HostResolverWrapper* HostResolverWrapper::GetInstance() {
 }
 
 net::HostResolver* HostResolverWrapper::GetHostResolver(
-    net::HostResolver* real_resolver) {
-  return resolver_ ? resolver_ : real_resolver;
+    content::ResourceContext* context) {
+  return resolver_ ? resolver_ : context->GetHostResolver();
 }
 
 void HostResolverWrapper::SetHostResolverForTesting(

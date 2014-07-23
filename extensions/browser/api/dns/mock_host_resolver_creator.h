@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_DNS_MOCK_HOST_RESOLVER_CREATOR_H_
-#define CHROME_BROWSER_EXTENSIONS_API_DNS_MOCK_HOST_RESOLVER_CREATOR_H_
+#ifndef EXTENSIONS_BROWSER_API_DNS_MOCK_HOST_RESOLVER_CREATOR_H_
+#define EXTENSIONS_BROWSER_API_DNS_MOCK_HOST_RESOLVER_CREATOR_H_
 
 #include <string>
 
@@ -11,6 +11,7 @@
 #include "base/synchronization/waitable_event.h"
 
 namespace net {
+class HostResolver;
 class MockHostResolver;
 }
 
@@ -26,7 +27,7 @@ class MockHostResolverCreator
 
   MockHostResolverCreator();
 
-  net::MockHostResolver* CreateMockHostResolver();
+  net::HostResolver* CreateMockHostResolver();
   void DeleteMockHostResolver();
 
  private:
@@ -48,4 +49,4 @@ class MockHostResolverCreator
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_DNS_MOCK_HOST_RESOLVER_CREATOR_H_
+#endif  // EXTENSIONS_BROWSER_API_DNS_MOCK_HOST_RESOLVER_CREATOR_H_

@@ -6,7 +6,14 @@
 #define EXTENSIONS_BROWSER_API_DNS_HOST_RESOLVER_WRAPPER_H_
 
 #include "base/memory/singleton.h"
-#include "net/dns/host_resolver.h"
+
+namespace content {
+class ResourceContext;
+}
+
+namespace net {
+class HostResolver;
+}
 
 namespace extensions {
 
@@ -23,11 +30,10 @@ class HostResolverWrapper {
  public:
   static HostResolverWrapper* GetInstance();
 
-  // Given a pointer to a real host resolver, returns the same pointer or else
-  // a substitute MockHostResolver to use instead. If
-  // SetHostResolverForTesting() hasn't been called, then this method returns
-  // the supplied argument as its result.
-  net::HostResolver* GetHostResolver(net::HostResolver* real_resolver);
+  // Given a pointer to a ResourceContext, returns its HostResolver if
+  // SetHostResolverForTesting() hasn't been called, or else a
+  // a substitute MockHostResolver to use instead.
+  net::HostResolver* GetHostResolver(content::ResourceContext* context);
 
   // Sets the MockHostResolver to return in GetHostResolver().
   void SetHostResolverForTesting(net::HostResolver* mock_resolver);

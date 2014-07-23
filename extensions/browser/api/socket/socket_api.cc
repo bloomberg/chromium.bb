@@ -96,8 +96,7 @@ bool SocketExtensionWithDnsLookupFunction::PrePrepare() {
 void SocketExtensionWithDnsLookupFunction::StartDnsLookup(
     const std::string& hostname) {
   net::HostResolver* host_resolver =
-      extensions::HostResolverWrapper::GetInstance()->GetHostResolver(
-          resource_context_->GetHostResolver());
+      HostResolverWrapper::GetInstance()->GetHostResolver(resource_context_);
   DCHECK(host_resolver);
 
   // Yes, we are passing zero as the port. There are some interesting but not
