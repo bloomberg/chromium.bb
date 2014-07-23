@@ -154,6 +154,6 @@ source_set("test_support") {
 #  ]
 #
 #  if (is_linux) {
-#    #deps += [ "//third_party/mesa:osmesa" ]  # TODO(GYP)
+#    deps += [ "//third_party/mesa:osmesa" ]
 #  }
 #}

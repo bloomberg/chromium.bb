@@ -45,7 +45,7 @@ component("gpu") {
   ]
 }
 
-source_set("gpu_unittest_utils") {
+source_set("test_support") {
   sources = [
     "command_buffer/service/gles2_cmd_decoder_mock.cc",
     "command_buffer/service/error_state_mock.cc",
@@ -97,7 +97,7 @@ test("gl_tests") {
 
   deps = [
     ":gpu",
-    ":gpu_unittest_utils",
+    ":test_support",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//testing/gmock",
@@ -223,7 +223,7 @@ test("gpu_unittests") {
 
   deps = [
     ":gpu",
-    ":gpu_unittest_utils",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
@@ -236,5 +236,23 @@ test("gpu_unittests") {
     "//ui/gl",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation_client_side_arrays",
+  ]
+}
+
+test("angle_unittests") {
+  sources = [
+    "angle_unittest_main.cc",
+  ]
+
+  # TODO(GYP) / TODO(brettw) remove this when angle is rolled to include:
+  # https://chromium-review.googlesource.com/#/c/209452/
+  include_dirs = [ "//third_party/angle/include" ]
+
+  deps = [
+    "//base",
+    "//base/third_party/dynamic_annotations",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/angle:translator_static",
   ]
 }

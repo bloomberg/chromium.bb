@@ -223,8 +223,10 @@
         'src/src/glsl/ralloc.h',
         'src/src/glsl/s_expression.cpp',
         'src/src/glsl/s_expression.h',
-        'src/src/glsl/standalone_scaffolding.cpp',
-        'src/src/glsl/standalone_scaffolding.h',
+        # This file is not needed and has duplicate symbols (although it
+        # happens to link because of static library link ordering).
+        #'src/src/glsl/standalone_scaffolding.cpp',
+        #'src/src/glsl/standalone_scaffolding.h',
         'src/src/glsl/strtod.c',
         'src/src/glsl/strtod.h',
       ],

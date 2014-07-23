@@ -249,9 +249,9 @@ static_library("content_shell_lib") {
   }
 
   if (use_x11) {
-    # TODO(GYP) The GYP build includes a dep on the xdisplaycheck executable.
-    # Track down who added this and ask them if it's necessary, since this
-    # seems suspicious.
+    # Some tests rely on this tool at runtime. Note: it might be better if
+    # the tests that needed it had this as a dep instead of adding it here.
+    datadeps = [ "//tools/xdisplaycheck" ]
   }
 
   if (is_android) {
@@ -437,7 +437,7 @@ executable("content_shell") {
     ":content_shell_lib",
     ":pak",
     "//base/allocator",
-    #'../third_party/mesa/mesa.gyp:osmesa',  TODO(GYP)
+    "//third_party/mesa:osmesa",
   ]
 
   if (is_win) {

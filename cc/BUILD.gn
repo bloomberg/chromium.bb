@@ -602,7 +602,7 @@ source_set("test_support") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//gpu:gpu_unittest_utils",
+    "//gpu:test_support",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gl_in_process_context",
@@ -610,13 +610,15 @@ source_set("test_support") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
-    # TODO(GYP)
-    #"//third_party/mesa/mesa.gyp:osmesa",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gfx:test_support",
     "//ui/gl",
   ]
+
+  if (!is_android) {  # TODO(GYP) Enable on Android when osmesa links.
+    deps += [ "//third_party/mesa:osmesa" ]
+  }
 }
 
 test("cc_unittests") {
@@ -747,7 +749,7 @@ test("cc_unittests") {
     "//base/test:test_support",
     "//cc/surfaces",
     "//gpu",
-    "//gpu:gpu_unittest_utils",
+    "//gpu:test_support",
     "//media",
     "//testing/gmock",
     "//testing/gtest",
@@ -778,7 +780,7 @@ test("cc_perftests") {
     ":test_support",
     "//base",
     "//gpu",
-    "//gpu:gpu_unittest_utils",
+    "//gpu:test_support",
     "//media",
     "//skia",
     "//testing/gmock",

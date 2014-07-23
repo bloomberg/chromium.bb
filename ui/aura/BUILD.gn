@@ -293,7 +293,7 @@ source_set("test_support") {
 #
 #  if (is_linux) {
 #    deps += [
-#      #"<(DEPTH)/third_party/mesa/mesa.gyp:osmesa",
+#      "<(DEPTH)/third_party/mesa/mesa.gyp:osmesa",
 #    ]
 #  }
 #
