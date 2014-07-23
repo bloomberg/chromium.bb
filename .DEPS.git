@@ -14,7 +14,7 @@ deps = {
     'breakpad':
         Var('git_url') + '/external/google-breakpad.git@fe34e3f9fef1eb425b25a79f0da84e2f277d433b',
     'buildtools':
-        Var('git_url') + '/chromium/buildtools.git@916ba1fc49098855f8ddd08edd41484d36d84e08',
+        Var('git_url') + '/chromium/buildtools.git@59b93247766e1cdac6e482637ad493df38f7aeb7',
     'testing/gtest':
         Var('git_url') + '/external/googletest.git@74de57c951aedebc5dfe26a27604353432392b98',
     'third_party':
@@ -77,6 +77,18 @@ hooks = [
 ],
     'pattern':
          '.'
+},
+    {
+    'action':
+         [
+    'python',
+    'native_client/build/vs_toolchain.py',
+    'update'
+],
+    'pattern':
+         '.',
+    'name':
+         'win_toolchain'
 },
     {
     'action':
