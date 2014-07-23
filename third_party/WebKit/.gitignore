@@ -1,5 +1,7 @@
-# This is pulled in via an entry in DEPS
+# These are pulled in via entries in DEPS.
 LayoutTests/w3c
+LayoutTests/third_party/web-platform-tests
+LayoutTests/third_party/csswg-test
 
 *.Makefile
 *.mk
