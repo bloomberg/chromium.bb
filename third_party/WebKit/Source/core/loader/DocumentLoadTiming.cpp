@@ -75,6 +75,13 @@ void DocumentLoadTiming::setNavigationStart(double navigationStart)
 {
     ASSERT(m_referenceMonotonicTime && m_referenceWallTime);
     m_navigationStart = navigationStart;
+
+    // |m_referenceMonotonicTime| and |m_referenceWallTime| represent
+    // navigationStart. When the embedder sets navigationStart (because the
+    // navigation started earlied on the browser side), we need to adjust these
+    // as well.
+    m_referenceWallTime = monotonicTimeToPseudoWallTime(navigationStart);
+    m_referenceMonotonicTime = navigationStart;
 }
 
 void DocumentLoadTiming::addRedirect(const KURL& redirectingUrl, const KURL& redirectedUrl)
