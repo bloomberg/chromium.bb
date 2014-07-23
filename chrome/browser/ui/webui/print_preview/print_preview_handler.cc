@@ -278,11 +278,14 @@ void ReportPrintSettingsStats(const base::DictionaryValue& settings) {
 
 // Callback that stores a PDF file on disk.
 void PrintToPdfCallback(printing::Metafile* metafile,
-                        const base::FilePath& path) {
+                        const base::FilePath& path,
+                        const base::Closure& pdf_file_saved_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   metafile->SaveTo(path);
   // |metafile| must be deleted on the UI thread.
   BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, metafile);
+  if (!pdf_file_saved_closure.is_null())
+    pdf_file_saved_closure.Run();
 }
 
 std::string GetDefaultPrinterOnFileThread() {
@@ -1372,7 +1375,10 @@ void PrintPreviewHandler::PostPrintToPdfTask() {
   metafile->InitFromData(static_cast<const void*>(data->front()), data->size());
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&PrintToPdfCallback, metafile.release(), print_to_pdf_path_));
+      base::Bind(&PrintToPdfCallback,
+                 metafile.release(),
+                 print_to_pdf_path_,
+                 pdf_file_saved_closure_));
   print_to_pdf_path_ = base::FilePath();
   ClosePreviewDialog();
 }
@@ -1630,4 +1636,9 @@ void PrintPreviewHandler::RegisterForMergeSession() {
 void PrintPreviewHandler::UnregisterForMergeSession() {
   if (reconcilor_)
     reconcilor_->RemoveMergeSessionObserver(this);
+}
+
+void PrintPreviewHandler::SetPdfSavedClosureForTesting(
+    const base::Closure& closure) {
+  pdf_file_saved_closure_ = closure;
 }

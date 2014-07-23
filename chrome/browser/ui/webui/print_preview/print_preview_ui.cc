@@ -621,3 +621,8 @@ void PrintPreviewUI::SetDelegateForTesting(TestingDelegate* delegate) {
 void PrintPreviewUI::SetSelectedFileForTesting(const base::FilePath& path) {
   handler_->FileSelected(path, 0, NULL);
 }
+
+void PrintPreviewUI::SetPdfSavedClosureForTesting(
+    const base::Closure& closure) {
+  handler_->SetPdfSavedClosureForTesting(closure);
+}

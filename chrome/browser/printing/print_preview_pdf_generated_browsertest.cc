@@ -11,6 +11,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -82,7 +84,7 @@ enum State {
 // there should be more settings added to this struct.
 struct PrintPreviewSettings {
   PrintPreviewSettings(bool is_portrait,
-                       std::string page_numbers,
+                       const std::string& page_numbers,
                        bool headers_and_footers,
                        bool background_colors_and_images,
                        MarginType margins,
@@ -107,11 +109,14 @@ struct PrintPreviewSettings {
 // change the settings of the preview dialog.
 class PrintPreviewObserver : public WebContentsObserver {
  public:
-  PrintPreviewObserver(Browser* browser, WebContents* dialog)
+  PrintPreviewObserver(Browser* browser,
+                       WebContents* dialog,
+                       const base::FilePath& pdf_file_save_path)
       : WebContentsObserver(dialog),
         browser_(browser),
         state_(kWaitingToSendSaveAsPdf),
-        failed_setting_("None") {}
+        failed_setting_("None"),
+        pdf_file_save_path_(pdf_file_save_path) {}
 
   virtual ~PrintPreviewObserver() {}
 
@@ -184,7 +189,13 @@ class PrintPreviewObserver : public WebContentsObserver {
       state_ = kWaitingForFinalMessage;
       failed_setting_ = "Margins";
     } else if (state_ == kWaitingForFinalMessage) {
-      EndLoop();
+      // Called by |GetUI()->handler_|, it is a callback function that call
+      // |EndLoop| when an attempt to save the PDF has been made.
+      base::Closure end_loop_closure =
+          base::Bind(&PrintPreviewObserver::EndLoop, base::Unretained(this));
+      GetUI()->SetPdfSavedClosureForTesting(end_loop_closure);
+      ASSERT_FALSE(pdf_file_save_path_.empty());
+      GetUI()->SetSelectedFileForTesting(pdf_file_save_path_);
       return;
     }
 
@@ -272,10 +283,6 @@ class PrintPreviewObserver : public WebContentsObserver {
     Observe(new_web_contents);
   }
 
-  virtual void WebContentsDestroyed() OVERRIDE {
-    EndLoop();
-  }
-
   Browser* browser_;
   base::Closure quit_closure_;
   scoped_ptr<PrintPreviewSettings> settings_;
@@ -285,6 +292,7 @@ class PrintPreviewObserver : public WebContentsObserver {
   // ManipulatePreviewSettings() on the observer.
   State state_;
   std::string failed_setting_;
+  const base::FilePath pdf_file_save_path_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewObserver);
 };
@@ -295,8 +303,8 @@ class PrintPreviewPdfGeneratedBrowserTest : public InProcessBrowserTest {
   virtual ~PrintPreviewPdfGeneratedBrowserTest() {}
 
   // Navigates to the given web page, then initiates print preview and waits
-  // for all the settings to be set.
-  void NavigateAndPreview(const base::FilePath::StringType& file_name,
+  // for all the settings to be set, then save the preview to PDF.
+  void NavigateAndPrint(const base::FilePath::StringType& file_name,
                           const PrintPreviewSettings& settings) {
     print_preview_observer_->SetPrintPreviewSettings(settings);
     base::FilePath path(file_name);
@@ -308,31 +316,12 @@ class PrintPreviewPdfGeneratedBrowserTest : public InProcessBrowserTest {
     print_preview_observer_->set_quit_closure(loop.QuitClosure());
     chrome::Print(browser());
     loop.Run();
-  }
 
-  // Prints the web page to a PDF. NavigateAndPreview must be called first.
-  void Print() {
-    ASSERT_FALSE(pdf_file_save_path_.empty());
-
-    base::RunLoop loop;
-    print_preview_observer_->set_quit_closure(loop.QuitClosure());
-    print_preview_observer_->GetUI()->SetSelectedFileForTesting(
-        pdf_file_save_path_);
-    loop.Run();
-
-    // Checks to see if the file exists and is readable. If the file doesn't
-    // exist, the test will fail. If it exists, but isn't readable, the test
-    // will keep polling until the file becomes readable. This is due to a
-    // problem on Windows where the file exists, but isn't readable, causing
-    // other ASSERT statements in this test to fail.
-    // TODO(ivandavid): Come up with a better way to do this.
-    ASSERT_TRUE(base::PathExists(pdf_file_save_path_));
-    while (true) {
-      base::File pdf_file(
-          pdf_file_save_path_, base::File::FLAG_OPEN | base::File::FLAG_READ);
-      if (pdf_file.IsValid())
-        break;
-    }
+    // Need to check whether the save was successful. Ending the loop only
+    // means the save was attempted.
+    base::File pdf_file(
+        pdf_file_save_path_, base::File::FLAG_OPEN | base::File::FLAG_READ);
+    ASSERT_TRUE(pdf_file.IsValid());
   }
 
   // Initializes function pointers from the PDF library. Called once when the
@@ -495,7 +484,8 @@ class PrintPreviewPdfGeneratedBrowserTest : public InProcessBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(tab);
 
-    print_preview_observer_.reset(new PrintPreviewObserver(browser(), tab));
+    print_preview_observer_.reset(
+        new PrintPreviewObserver(browser(), tab, pdf_file_save_path_));
     chrome::DuplicateTab(browser());
 
     WebContents* initiator =
@@ -698,8 +688,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewPdfGeneratedBrowserTest,
 
     ASSERT_GE(cmd_arguments.size(), 1U);
     base::FilePath::StringType test_name(cmd_arguments[0]);
-    NavigateAndPreview(test_name, settings);
-    Print();
+    NavigateAndPrint(test_name, settings);
     PdfToPng();
 
     // Message to the layout test framework indicating that it should start

@@ -105,6 +105,9 @@ class PrintPreviewHandler
     return regenerate_preview_request_count_;
   }
 
+  // Sets |pdf_file_saved_closure_| to |closure|.
+  void SetPdfSavedClosureForTesting(const base::Closure& closure);
+
  private:
   friend class PrintPreviewPdfGeneratedBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewPdfGeneratedBrowserTest,
@@ -331,6 +334,10 @@ class PrintPreviewHandler
 #endif
 
   base::WeakPtrFactory<PrintPreviewHandler> weak_factory_;
+
+  // Notifies tests that want to know if the PDF has been saved. This doesn't
+  // notify the test if it was a successful save, only that it was attempted.
+  base::Closure pdf_file_saved_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewHandler);
 };
