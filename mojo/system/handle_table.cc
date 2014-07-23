@@ -146,6 +146,13 @@ MojoResult HandleTable::MarkBusyAndStartTransport(
         Dispatcher::HandleTableAccess::TryStartTransport(
             entries[i]->dispatcher.get());
     if (!transport.is_valid()) {
+      // Only log for Debug builds, since this is not a problem with the system
+      // code, but with user code.
+      DLOG(WARNING) << "Likely race condition in user code detected: attempt "
+                       "to transfer handle "
+                    << handles[i]
+                    << " while it is in use on a different thread";
+
       // Unset the busy flag (since it won't be unset below).
       entries[i]->busy = false;
       error_result = MOJO_RESULT_BUSY;
