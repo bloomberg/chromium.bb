@@ -94,19 +94,26 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
         return promise;
     }
 
+    // FIXME: This should use the container's execution context, not
+    // the callers.
     ExecutionContext* executionContext = scriptState->executionContext();
     RefPtr<SecurityOrigin> documentOrigin = executionContext->securityOrigin();
+    if (!documentOrigin->canAccessFeatureRequiringSecureOrigin()) {
+        resolver->reject(DOMException::create(SecurityError, "Service Workers are only supported over secure origins."));
+        return promise;
+    }
+
     KURL patternURL = executionContext->completeURL(options.scope);
     patternURL.removeFragmentIdentifier();
     if (!documentOrigin->canRequest(patternURL)) {
-        resolver->reject(DOMException::create(SecurityError, "Can only register for patterns in the document's origin."));
+        resolver->reject(DOMException::create(SecurityError, "The scope must match the current origin."));
         return promise;
     }
 
     KURL scriptURL = executionContext->completeURL(url);
     scriptURL.removeFragmentIdentifier();
     if (!documentOrigin->canRequest(scriptURL)) {
-        resolver->reject(DOMException::create(SecurityError, "Script must be in document's origin."));
+        resolver->reject(DOMException::create(SecurityError, "The origin of the script must match the current origin."));
         return promise;
     }
 
@@ -138,11 +145,18 @@ ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ScriptState* scrip
         return promise;
     }
 
+    // FIXME: This should use the container's execution context, not
+    // the callers.
     RefPtr<SecurityOrigin> documentOrigin = scriptState->executionContext()->securityOrigin();
+    if (!documentOrigin->canAccessFeatureRequiringSecureOrigin()) {
+        resolver->reject(DOMException::create(SecurityError, "Service Workers are only supported over secure origins."));
+        return promise;
+    }
+
     KURL patternURL = scriptState->executionContext()->completeURL(pattern);
     patternURL.removeFragmentIdentifier();
     if (!pattern.isEmpty() && !documentOrigin->canRequest(patternURL)) {
-        resolver->reject(DOMException::create(SecurityError, "Can only unregister for patterns in the document's origin."));
+        resolver->reject(DOMException::create(SecurityError, "The scope must match the current origin."));
         return promise;
     }
 

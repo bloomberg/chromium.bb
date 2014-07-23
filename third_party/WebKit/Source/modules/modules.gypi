@@ -984,6 +984,7 @@
       'indexeddb/IDBKeyPathTest.cpp',
       'indexeddb/IDBRequestTest.cpp',
       'indexeddb/IDBTransactionTest.cpp',
+      'serviceworkers/ServiceWorkerContainerTest.cpp',
       'websockets/DOMWebSocketTest.cpp',
       'websockets/WebSocketDeflaterTest.cpp',
       'websockets/WebSocketExtensionDispatcherTest.cpp',
