@@ -24,9 +24,11 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/pref_names.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
 
 using extensions::Extension;
 
@@ -104,9 +106,18 @@ void ExtensionAppModelBuilder::OnBeginExtensionInstall(
     existing_item->SetIsInstalling(true);
     return;
   }
+
+  // Icons from the webstore can be unusual sizes. Once installed,
+  // ExtensionAppItem uses extension_misc::EXTENSION_ICON_MEDIUM (48) to load
+  // it, so be consistent with that.
+  gfx::Size icon_size(extension_misc::EXTENSION_ICON_MEDIUM,
+                      extension_misc::EXTENSION_ICON_MEDIUM);
+  gfx::ImageSkia resized(gfx::ImageSkiaOperations::CreateResizedImage(
+      params.installing_icon, skia::ImageOperations::RESIZE_BEST, icon_size));
+
   InsertApp(CreateAppItem(params.extension_id,
                           params.extension_name,
-                          params.installing_icon,
+                          resized,
                           params.is_platform_app));
   SetHighlightedApp(params.extension_id);
 }
