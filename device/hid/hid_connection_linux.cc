@@ -104,17 +104,20 @@ void HidConnectionLinux::PlatformWrite(
     uint8_t report_id,
     scoped_refptr<net::IOBufferWithSize> buffer,
     const IOCallback& callback) {
-  // If report ID is non-zero, insert it into a new copy of the buffer.
-  if (report_id != 0)
-    buffer = CopyBufferWithReportId(buffer, report_id);
-  int bytes_written = HANDLE_EINTR(
+  // Linux always expects the first byte of the buffer to be the report ID.
+  buffer = CopyBufferWithReportId(buffer, report_id);
+  const int bytes_written = HANDLE_EINTR(
       write(device_file_.GetPlatformFile(), buffer->data(), buffer->size()));
   if (bytes_written < 0) {
     VPLOG(1) << "Write failed";
     Disconnect();
     callback.Run(false, 0);
   } else {
-    callback.Run(true, bytes_written);
+    if (bytes_written != buffer->size()) {
+      LOG(WARNING) << "Incomplete HID write: "
+                   << bytes_written << " != " << buffer->size();
+    }
+    callback.Run(true, bytes_written == 0 ? 0 : bytes_written - 1);
   }
 }
 
