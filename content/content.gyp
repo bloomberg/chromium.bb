@@ -157,6 +157,7 @@
         ['OS != "ios"', {
           'targets': [
             {
+              # GN version: //content/child and //content/public/child
               'target_name': 'content_child',
               'type': 'static_library',
               'variables': { 'enable_wexit_time_destructors': 1, },
@@ -170,6 +171,7 @@
               'msvs_disabled_warnings': [ 4267, ],
             },
             {
+              # GN version: //content/gpu
               'target_name': 'content_gpu',
               'type': 'static_library',
               'variables': { 'enable_wexit_time_destructors': 1, },
@@ -182,6 +184,7 @@
               ],
             },
             {
+              # GN version: //content/plugin and //content/public/plugin
               'target_name': 'content_plugin',
               'type': 'static_library',
               'variables': { 'enable_wexit_time_destructors': 1, },
@@ -194,6 +197,7 @@
               ],
             },
             {
+              # GN version: //content/ppapi_plugin
               'target_name': 'content_ppapi_plugin',
               'type': 'static_library',
               'variables': { 'enable_wexit_time_destructors': 1, },
@@ -204,6 +208,7 @@
               'msvs_disabled_warnings': [ 4267, ],
             },
             {
+              # GN version: //content/renderer and //content/public/renderer
               'target_name': 'content_renderer',
               'type': 'static_library',
               'variables': { 'enable_wexit_time_destructors': 1, },
@@ -224,6 +229,7 @@
               ],
             },
             {
+              # GN version: //content/utility and //content/public/utility
               'target_name': 'content_utility',
               'type': 'static_library',
               'variables': { 'enable_wexit_time_destructors': 1, },
@@ -236,6 +242,7 @@
               ],
             },
             {
+              # GN version: //content/worker
               'target_name': 'content_worker',
               'type': 'static_library',
               'variables': { 'enable_wexit_time_destructors': 1, },

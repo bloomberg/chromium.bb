@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("plugin") {
+executable("xdisplaycheck") {
   sources = [
-    "content_plugin_client.h",
+    "xdisplaycheck.cc",
   ]
 
-  deps = [
-    "//content/plugin",
+  configs += [
+    "//build/config/linux:x11"
   ]
 }

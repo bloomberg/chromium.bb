@@ -7,7 +7,8 @@
     'chromium_code': 1,
   },
   'targets': [
-     {
+    {
+      # GN version: //ui/events/ipc
       'target_name': 'events_ipc',
       'type': '<(component)',
       'dependencies': [

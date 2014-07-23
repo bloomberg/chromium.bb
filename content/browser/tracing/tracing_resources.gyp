@@ -9,6 +9,7 @@
   },
   'targets': [
     {
+      # GN version: //content/browser/tracing:generate_tracing_grd
       'target_name': 'generate_tracing_grd',
       'type': 'none',
       'dependencies': [
@@ -37,6 +38,7 @@
     },
 
     {
+      # GN version: //content/browser/tracing:resources
       'target_name': 'tracing_resources',
       'type': 'none',
       'dependencies': [

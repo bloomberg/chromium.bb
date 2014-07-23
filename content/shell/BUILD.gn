@@ -1,0 +1,467 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+import("//build/config/ui.gni")
+import("//tools/grit/grit_rule.gni")
+import("//tools/grit/repack.gni")
+if (is_android) {
+  import("//build/config/android/config.gni")
+}
+
+declare_args() {
+  content_shell_product_name = "Content Shell"
+
+  # The "19" is so that sites that sniff for version think that this is
+  # something reasonably current; the "77.34.5" is a hint that this isn't a
+  # standard Chrome.
+  content_shell_version = "19.77.34.5"
+}
+
+static_library("content_shell_lib") {
+  sources = [
+    "android/shell_jni_registrar.cc",
+    "android/shell_jni_registrar.h",
+    "android/shell_manager.cc",
+    "android/shell_manager.h",
+    "app/paths_mac.h",
+    "app/paths_mac.mm",
+    "app/shell_breakpad_client.cc",
+    "app/shell_breakpad_client.h",
+    "app/shell_main_delegate.cc",
+    "app/shell_main_delegate.h",
+    "app/shell_main_delegate_mac.h",
+    "app/shell_main_delegate_mac.mm",
+    "app/webkit_test_platform_support_android.cc",
+    "app/webkit_test_platform_support.h",
+    "app/webkit_test_platform_support_linux.cc",
+    "app/webkit_test_platform_support_mac.mm",
+    "app/webkit_test_platform_support_win.cc",
+    "browser/notify_done_forwarder.cc",
+    "browser/notify_done_forwarder.h",
+    "browser/shell_android.cc",
+    "browser/shell_application_mac.h",
+    "browser/shell_application_mac.mm",
+    "browser/shell_browser_context.cc",
+    "browser/shell_browser_context.h",
+    "browser/shell_browser_main.cc",
+    "browser/shell_browser_main.h",
+    "browser/shell_browser_main_parts.cc",
+    "browser/shell_browser_main_parts.h",
+    "browser/shell_browser_main_parts_mac.mm",
+    "browser/shell.cc",
+    "browser/shell_content_browser_client.cc",
+    "browser/shell_content_browser_client.h",
+    "browser/shell_devtools_delegate.cc",
+    "browser/shell_devtools_delegate.h",
+    "browser/shell_devtools_frontend.cc",
+    "browser/shell_devtools_frontend.h",
+    "browser/shell_download_manager_delegate.cc",
+    "browser/shell_download_manager_delegate.h",
+    "browser/shell.h",
+    "browser/shell_javascript_dialog.h",
+    "browser/shell_javascript_dialog_mac.mm",
+    "browser/shell_javascript_dialog_manager.cc",
+    "browser/shell_javascript_dialog_manager.h",
+    "browser/shell_javascript_dialog_win.cc",
+    "browser/shell_layout_tests_android.cc",
+    "browser/shell_layout_tests_android.h",
+    "browser/shell_login_dialog.cc",
+    "browser/shell_login_dialog.h",
+    "browser/shell_login_dialog_mac.mm",
+    "browser/shell_mac.mm",
+    "browser/shell_message_filter.cc",
+    "browser/shell_message_filter.h",
+    "browser/shell_net_log.cc",
+    "browser/shell_net_log.h",
+    "browser/shell_network_delegate.cc",
+    "browser/shell_network_delegate.h",
+    "browser/shell_platform_data_aura.cc",
+    "browser/shell_platform_data_aura.h",
+    "browser/shell_plugin_service_filter.cc",
+    "browser/shell_plugin_service_filter.h",
+    "browser/shell_quota_permission_context.cc",
+    "browser/shell_quota_permission_context.h",
+    "browser/shell_resource_dispatcher_host_delegate.cc",
+    "browser/shell_resource_dispatcher_host_delegate.h",
+    "browser/shell_speech_recognition_manager_delegate.cc",
+    "browser/shell_speech_recognition_manager_delegate.h",
+    "browser/shell_url_request_context_getter.cc",
+    "browser/shell_url_request_context_getter.h",
+    "browser/shell_web_contents_view_delegate_android.cc",
+    "browser/shell_web_contents_view_delegate_creator.h",
+    "browser/shell_web_contents_view_delegate.h",
+    "browser/shell_web_contents_view_delegate_mac.mm",
+    "browser/shell_web_contents_view_delegate_win.cc",
+    "browser/webkit_test_controller.cc",
+    "browser/webkit_test_controller.h",
+    "common/leak_detection_result.h",
+    "common/shell_content_client.cc",
+    "common/shell_content_client.h",
+    "common/shell_messages.cc",
+    "common/shell_messages.h",
+    "common/shell_switches.cc",
+    "common/shell_switches.h",
+    "common/shell_test_configuration.cc",
+    "common/shell_test_configuration.h",
+    "common/test_runner/test_preferences.cc",
+    "common/test_runner/test_preferences.h",
+    "common/webkit_test_helpers.cc",
+    "common/webkit_test_helpers.h",
+    "geolocation/shell_access_token_store.cc",
+    "geolocation/shell_access_token_store.h",
+    "renderer/gc_controller.cc",
+    "renderer/gc_controller.h",
+    "renderer/leak_detector.cc",
+    "renderer/leak_detector.h",
+    "renderer/shell_content_renderer_client.cc",
+    "renderer/shell_content_renderer_client.h",
+    "renderer/shell_render_frame_observer.cc",
+    "renderer/shell_render_frame_observer.h",
+    "renderer/shell_render_process_observer.cc",
+    "renderer/shell_render_process_observer.h",
+    "renderer/shell_render_view_observer.cc",
+    "renderer/shell_render_view_observer.h",
+    "renderer/test_runner/MockSpellCheck.cpp",
+    "renderer/test_runner/MockSpellCheck.h",
+    "renderer/test_runner/MockWebMIDIAccessor.cpp",
+    "renderer/test_runner/MockWebMIDIAccessor.h",
+    "renderer/test_runner/MockWebMediaStreamCenter.cpp",
+    "renderer/test_runner/MockWebMediaStreamCenter.h",
+    "renderer/test_runner/MockWebSpeechRecognizer.cpp",
+    "renderer/test_runner/MockWebSpeechRecognizer.h",
+    "renderer/test_runner/SpellCheckClient.cpp",
+    "renderer/test_runner/SpellCheckClient.h",
+    "renderer/test_runner/TestCommon.cpp",
+    "renderer/test_runner/TestCommon.h",
+    "renderer/test_runner/TestInterfaces.cpp",
+    "renderer/test_runner/TestInterfaces.h",
+    "renderer/test_runner/TestPlugin.cpp",
+    "renderer/test_runner/TestPlugin.h",
+    "renderer/test_runner/WebTask.cpp",
+    "renderer/test_runner/WebTask.h",
+    "renderer/test_runner/WebTestDelegate.h",
+    "renderer/test_runner/WebTestInterfaces.cpp",
+    "renderer/test_runner/WebTestInterfaces.h",
+    "renderer/test_runner/WebTestThemeEngineMac.h",
+    "renderer/test_runner/WebTestThemeEngineMac.mm",
+    "renderer/test_runner/accessibility_controller.cc",
+    "renderer/test_runner/accessibility_controller.h",
+    "renderer/test_runner/event_sender.cc",
+    "renderer/test_runner/event_sender.h",
+    "renderer/test_runner/gamepad_controller.cc",
+    "renderer/test_runner/gamepad_controller.h",
+    "renderer/test_runner/mock_constraints.cc",
+    "renderer/test_runner/mock_constraints.h",
+    "renderer/test_runner/mock_grammar_check.cc",
+    "renderer/test_runner/mock_grammar_check.h",
+    "renderer/test_runner/mock_screen_orientation_client.cc",
+    "renderer/test_runner/mock_screen_orientation_client.h",
+    "renderer/test_runner/mock_web_audio_device.cc",
+    "renderer/test_runner/mock_web_audio_device.h",
+    "renderer/test_runner/mock_web_push_client.cc",
+    "renderer/test_runner/mock_web_push_client.h",
+    "renderer/test_runner/mock_web_theme_engine.cc",
+    "renderer/test_runner/mock_web_theme_engine.h",
+    "renderer/test_runner/mock_web_user_media_client.cc",
+    "renderer/test_runner/mock_web_user_media_client.h",
+    "renderer/test_runner/mock_webrtc_data_channel_handler.cc",
+    "renderer/test_runner/mock_webrtc_data_channel_handler.h",
+    "renderer/test_runner/mock_webrtc_dtmf_sender_handler.cc",
+    "renderer/test_runner/mock_webrtc_dtmf_sender_handler.h",
+    "renderer/test_runner/mock_webrtc_peer_connection_handler.cc",
+    "renderer/test_runner/mock_webrtc_peer_connection_handler.h",
+    "renderer/test_runner/notification_presenter.cc",
+    "renderer/test_runner/notification_presenter.h",
+    "renderer/test_runner/test_runner.cc",
+    "renderer/test_runner/test_runner.h",
+    "renderer/test_runner/text_input_controller.cc",
+    "renderer/test_runner/text_input_controller.h",
+    "renderer/test_runner/web_ax_object_proxy.cc",
+    "renderer/test_runner/web_ax_object_proxy.h",
+    "renderer/test_runner/web_frame_test_proxy.h",
+    "renderer/test_runner/web_permissions.cc",
+    "renderer/test_runner/web_permissions.h",
+    "renderer/test_runner/web_test_proxy.cc",
+    "renderer/test_runner/web_test_proxy.h",
+    "renderer/test_runner/web_test_runner.h",
+    "renderer/webkit_test_runner.cc",
+    "renderer/webkit_test_runner.h",
+  ]
+
+  defines = [ "CONTENT_SHELL_VERSION=\"$content_shell_version\"" ]
+
+  deps = [
+    ":resources",
+    "//base",
+    "//base:base_static",
+    "//base/allocator",
+    "//base/third_party/dynamic_annotations",
+    "//cc",
+    "//content:resources",
+    "//content/gpu",
+    "//content/ppapi_plugin",
+    "//content/public/browser",
+    "//content/public/common",
+    "//content/public/plugin",
+    "//content/public/renderer",
+    "//content/public/utility",
+    "//content/worker",
+    "//content/test:layouttest_support",
+    "//gin",
+    "//gpu",
+    "//ipc",
+    "//media",
+    "//net",
+    "//net:net_resources",
+    "//skia",
+    "//third_party/icu",
+    "//third_party/WebKit/public:blink",
+    "//ui/base",
+    "//ui/events:events_base",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gfx/ipc",
+    "//ui/gl",
+    "//url",
+    "//v8",
+    "//webkit:resources",
+    "//webkit/browser:storage",
+    #'content.gyp:content_app_both',  TODO(GYP)
+    #'copy_test_netscape_plugin',  TODO(GYP)
+    #'../components/components.gyp:breakpad_component',  TODO(GYP)
+    #'../third_party/WebKit/public/blink.gyp:blink_test_support',  TODO(GYP)
+  ]
+
+  if (is_win) {
+    configs -= [ "//build/config/win:console" ]
+    configs += [ "//build/config/win:windowed" ]
+    deps += [ "//webkit/resources" ]
+    #'LinkIncremental': '<(msvs_large_module_debug_link_mode)',  TODO(GYP)
+
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    cflags = [ "/wd4267" ]
+  }
+
+  if (is_linux) {
+    configs += [ "//build/config/linux:fontconfig" ]
+  }
+
+  if (use_x11) {
+    # TODO(GYP) The GYP build includes a dep on the xdisplaycheck executable.
+    # Track down who added this and ask them if it's necessary, since this
+    # seems suspicious.
+  }
+
+  if (is_android) {
+    #deps += [ 'content_shell_jni_headers' ]  TODO(GYP)
+    #deps -= [ 'copy_test_netscape_plugin' ]  TODO(GYP)
+  }
+
+  if (is_posix && !is_mac && (!is_android || !is_android_webview_build)) {
+    #deps += [ '../components/components.gyp:breakpad_host' ]  TODO(GYP
+  }
+
+  if (use_aura) {
+    deps += [
+      "//ui/aura",
+      "//ui/aura:test_support",
+      "//ui/events",
+      "//ui/strings",
+      "//ui/wm",
+    ]
+
+    if (toolkit_views) {
+      sources += [ "browser/shell_views.cc" ]
+      deps += [
+        "//ui/resources",
+        "//ui/views/controls/webview",
+        "//ui/views",
+        "//ui/views:test_support",
+      ]
+    } else {
+      sources += [ "browser/shell_aura.cc" ]
+    }
+  }
+
+  # The test plugin relies on X11.
+  if (is_linux && !use_x11) {
+    #deps -= [ 'copy_test_netscape_plugin' ]  TODO(GYP)
+  }
+
+  if (is_chromeos) {
+    deps += [
+      "//ui/wm:test_support",
+      #'../chromeos/chromeos.gyp:chromeos',  TODO(GYP)
+    ]
+  }
+
+  if (is_linux) {
+    deps += [ "//third_party/freetype2" ]
+  }
+
+  if (!enable_plugins) {
+    sources -= [
+      "browser/shell_plugin_service_filter.cc",
+      "browser/shell_plugin_service_filter.h",
+    ]
+  }
+}
+
+grit("content_shell_resources_grit") {
+  visibility = ":*"
+  source = "shell_resources.grd"
+  outputs = [
+    "grit/shell_resources.h",
+    "shell_resources.pak",
+    "shell_resources.rc",
+  ]
+}
+
+copy("copy_shell_resources") {
+  sources = [ "$target_gen_dir/shell_resources.pak" ]
+  outputs = [ "$root_out_dir/shell_resources.pak" ]
+
+  deps = [ ":content_shell_resources_grit" ]
+  forward_dependent_configs_from = [ ":content_shell_resources_grit" ]
+}
+
+# Font copies.
+if (!is_mac) {
+  copy("copy_ahem") {
+    visibility = ":*"
+    sources = [ "renderer/test_runner/resources/fonts/AHEM____.TTF" ]
+    outputs = [ "$root_out_dir/AHEM____.TTF" ]
+  }
+}
+if (use_x11) {
+  copy("copy_x11_fonts") {
+    visibility = ":*"
+    sources = [
+      "renderer/test_runner/resources/fonts/fonts.conf",
+      "//third_party/gardiner_mod/GardinerModBug.ttf",
+      "//third_party/gardiner_mod/GardinerModCat.ttf",
+    ]
+    outputs = [ "$root_out_dir/{{source_file_part}}" ]
+  }
+}
+if (is_android) {
+  copy("copy_android_fonts") {
+    visibility = ":*"
+    sources = [
+      "renderer/test_runner/resources/fonts/android_main_fonts.xml",
+      "renderer/test_runner/resources/fonts/android_fallback_fonts.xml",
+    ]
+    outputs = [ "$root_out_dir/{{source_file_part}}" ]
+  }
+}
+
+group("resources") {
+  deps = [
+    ":copy_shell_resources",
+  ]
+  forward_dependent_configs_from = [ ":copy_shell_resources" ]
+
+  if (is_mac) {
+    # TODO(GYP) Mac bundle resources.
+    #'all_dependent_settings': {
+    #  'mac_bundle_resources': [
+    #    'shell/renderer/test_runner/resources/fonts/AHEM____.TTF',
+    #    'shell/renderer/test_runner/resources/fonts/ChromiumAATTest.ttf',
+    #    '<(SHARED_INTERMEDIATE_DIR)/webkit/missingImage.png',
+    #    '<(SHARED_INTERMEDIATE_DIR)/webkit/textAreaResizeCorner.png',
+    #  ],
+    #},
+  } else {
+    deps += [ ":copy_ahem" ]
+  }
+
+  if (use_x11) {
+    deps += [ ":copy_x11_fonts" ]
+  }
+  if (is_android) {
+    deps += [ ":copy_android_fonts" ]
+  }
+}
+
+repack("pak") {
+  sources = [
+    "$root_gen_dir/content/content_resources.pak",
+    "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
+    "$root_gen_dir/content/shell/shell_resources.pak",
+    "$root_gen_dir/net/net_resources.pak",
+    "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
+    "$root_gen_dir/ui/resources/webui_resources.pak",
+    "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
+    "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
+    "$root_gen_dir/webkit/blink_resources.pak",
+    "$root_gen_dir/webkit/webkit_resources_100_percent.pak",
+    "$root_gen_dir/webkit/webkit_strings_en-US.pak",
+  ]
+
+  deps = [
+    ":resources",
+    "//content:resources",
+    "//content/browser/tracing:resources",
+    "//net:net_resources",
+    "//ui/resources",
+    "//ui/strings",
+    "//webkit:resources",
+    "//webkit:strings",
+  ]
+
+  if (is_android) {
+    output = "$root_out_dir/content_shell/assets/content_shell.pak"
+  } else {
+    sources += [ "$root_gen_dir/webkit/devtools_resources.pak" ]
+    deps += [ "//content/browser/devtools:resources" ]
+    output = "$root_out_dir/content_shell.pak"
+  }
+}
+
+if (false) {  # TODO(GYP) enable once this links.
+
+executable("content_shell") {
+  # TODO(GYP) mac resource bundle stuff for this target.
+  # TODO(GYP) Windows content shell settings:
+  #  - Manifest.
+  #  - RC file.
+  #  - 'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+  sources = [
+    "../app/startup_helper_win.cc",
+    "app/shell_main.cc",
+  ]
+
+  deps = [
+    ":content_shell_lib",
+    ":pak",
+    "//base/allocator",
+    #'../third_party/mesa/mesa.gyp:osmesa',  TODO(GYP)
+  ]
+
+  if (is_win) {
+    deps = [ "//sandbox" ]
+    if (!is_asan) {
+      configs -= [ "//build/config/win:console" ]
+      configs += [ "//build/config/win:windowed" ]
+    }
+  }
+
+  if (is_mac) {
+    # TODO(GYP) lots of stuff from GYP file here.
+  }
+
+  if (!is_android || !is_android_webview_build) {
+    deps += [
+      # NOTE: rely on host build of this target.
+      #'../tools/imagediff/image_diff.gyp:image_diff',  TODO(GYP)
+    ]
+  }
+}
+
+} else {
+  # Content shell not ready, make a dummpy to make dependency management easier.
+  group("content_shell") {
+  }
+}

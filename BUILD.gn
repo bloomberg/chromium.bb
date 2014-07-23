@@ -31,6 +31,7 @@ group("root") {
     "//chrome/utility",
     "//components:all_components",
     "//content",
+    "//content/shell:content_shell",
     "//crypto",
     "//device/bluetooth",
     "//device/nfc",
@@ -130,6 +131,10 @@ group("root") {
     ]
   }
 
+  if (use_x11) {
+    deps += [ "//tools/xdisplaycheck" ]
+  }
+
   if (is_win) {
     deps += [
       "//ui/metro_viewer",
@@ -165,6 +170,7 @@ group("root") {
       "//chrome/service",  # Blocked on content.
       "//chrome/utility",  # Blocked on content.
       "//content",
+      "//content/shell:content_shell",  # Blocked on content.
       "//extensions/common",
       "//extensions/common/api",
       "//pdf",  # Not compiled on Android in GYP yet, either.

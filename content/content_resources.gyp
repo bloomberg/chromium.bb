@@ -8,6 +8,7 @@
 {
   'targets': [
     {
+      # GN version: //content:resources
       'target_name': 'content_resources',
       'type': 'none',
       'variables': {

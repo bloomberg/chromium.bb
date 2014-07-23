@@ -50,6 +50,8 @@ static_library("test_support") {
       "//content/worker",
       "//cc",
       "//cc:test_support",
+      "//media",
+      "//ppapi:ppapi_host",
       "//ppapi:ppapi_proxy",
       "//ppapi:ppapi_shared",
       "//third_party/WebKit/public:blink",
@@ -60,8 +62,6 @@ static_library("test_support") {
       "//webkit/browser:storage",
       "//webkit/common:storage",
 # TODO(GYP)
-#"//media",
-#"//ppapi:host",
 #"//ppapi:unittest_shared",
     ]
 
@@ -92,15 +92,15 @@ static_library("test_support") {
     }
 
     if (use_glib) {
-      deps += [
-        "//build/linux/system:glib",
+      configs += [
+        "//build/config/linux:glib",
       ]
     }
 
     if (use_aura) {
       deps += [
         "//ui/aura:test_support",
-        "//ui/resources:test_pak",
+        "//ui/resources:ui_test_pak",
         "//ui/wm",
       ]
     }

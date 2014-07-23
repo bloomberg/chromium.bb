@@ -19,6 +19,7 @@
   },
   'targets': [
     {
+      # GN version: //content/shell:content_shell_lib
       'target_name': 'content_shell_lib',
       'type': 'static_library',
       'defines': ['CONTENT_SHELL_VERSION="<(content_shell_version)"'],
@@ -68,6 +69,7 @@
         '..',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'shell/android/shell_jni_registrar.cc',
         'shell/android/shell_jni_registrar.h',
         'shell/android/shell_manager.cc',
@@ -246,11 +248,6 @@
         },
       },
       'conditions': [
-        ['OS=="mac"', {
-          'sources/': [
-            ['exclude', 'WebTestThemeEngineMock.cpp'],
-          ],
-        }],
         ['OS=="win" and win_use_allocator_shim==1', {
           'dependencies': [
             '../base/allocator/allocator.gyp:allocator',
@@ -274,10 +271,6 @@
           },
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
-        }, {  # OS!="win"
-          'sources/': [
-            ['exclude', 'Win\\.cpp$'],
-          ],
         }],  # OS=="win"
         ['OS=="linux"', {
           'dependencies': [
@@ -357,14 +350,15 @@
           ],
         }],
         ['enable_plugins==0', {
-          'sources/': [
-            ['exclude', 'shell/browser/shell_plugin_service_filter.cc'],
-            ['exclude', 'shell/browser/shell_plugin_service_filter.h'],
+          'sources!': [
+            'shell/browser/shell_plugin_service_filter.cc',
+            'shell/browser/shell_plugin_service_filter.h',
           ],
         }]
       ],
     },
     {
+      # GN version: //content/shell:resources
       'target_name': 'content_shell_resources',
       'type': 'none',
       'variables': {
@@ -431,9 +425,11 @@
     {
       # We build a minimal set of resources so WebKit in content_shell has
       # access to necessary resources.
+      # GN version: //content/shell:pak
       'target_name': 'content_shell_pak',
       'type': 'none',
       'dependencies': [
+        'browser/tracing/tracing_resources.gyp:tracing_resources',
         'content_resources.gyp:content_resources',
         'content_shell_resources',
         '<(DEPTH)/net/net.gyp:net_resources',
@@ -443,11 +439,6 @@
         '<(DEPTH)/webkit/webkit_resources.gyp:webkit_strings',
       ],
       'conditions': [
-        ['OS!="android" and OS!="ios"', {
-          'dependencies': [
-            'browser/tracing/tracing_resources.gyp:tracing_resources',
-          ],
-        }],
         ['OS!="android"', {
           'dependencies': [
             'browser/devtools/devtools_resources.gyp:devtools_resources',
@@ -485,6 +476,7 @@
       ],
     },
     {
+      # GN version: //content/shell:content_shell
       'target_name': 'content_shell',
       'type': 'executable',
       'mac_bundle': 1,

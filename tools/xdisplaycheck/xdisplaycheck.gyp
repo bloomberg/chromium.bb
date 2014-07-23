@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //tools/xdisplaycheck
       'target_name': 'xdisplaycheck',
       'type': 'executable',
       'dependencies': [
