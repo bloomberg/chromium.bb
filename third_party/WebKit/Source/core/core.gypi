@@ -3384,6 +3384,7 @@
             'css/DragUpdateTest.cpp',
             'css/MediaValuesTest.cpp',
             'css/MediaQueryEvaluatorTest.cpp',
+            'css/MediaQueryListTest.cpp',
             'css/MediaQueryMatcherTest.cpp',
             'css/MediaQuerySetTest.cpp',
             'css/RuleSetTest.cpp',
