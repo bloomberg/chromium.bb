@@ -8,7 +8,9 @@
 #include <windows.h>
 #include <bits.h>
 
+#include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/win/scoped_comptr.h"
@@ -16,33 +18,36 @@
 
 namespace base {
 class FilePath;
+class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace component_updater {
 
 // Implements a downloader in terms of the BITS service. The public interface
 // of this class and the CrxDownloader overrides are expected to be called
-// from the UI thread. The rest of the class code runs on the FILE thread in
-// a single threaded apartment. Instances of this class are created and
-// destroyed in the UI thread. See the implementation of the class destructor
-// for details regarding the clean up of resources acquired in this class.
+// from the main thread. The rest of the class code runs on a single thread
+// task runner. This task runner must be initialized to work with COM objects.
+// Instances of this class are created and destroyed in the main thread.
+// See the implementation of the class destructor for details regarding the
+// clean up of resources acquired in this class.
 class BackgroundDownloader : public CrxDownloader {
  protected:
   friend class CrxDownloader;
   BackgroundDownloader(scoped_ptr<CrxDownloader> successor,
                        net::URLRequestContextGetter* context_getter,
-                       scoped_refptr<base::SequencedTaskRunner> task_runner);
+                       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   virtual ~BackgroundDownloader();
 
  private:
   // Overrides for CrxDownloader.
   virtual void DoStartDownload(const GURL& url) OVERRIDE;
 
-  // Called asynchronously on the FILE thread at different stages during
+  // Called asynchronously on the |task_runner_| at different stages during
   // the download. |OnDownloading| can be called multiple times.
-  // |EndDownload| switches the execution flow from the FILE to the UI thread.
-  // Accessing any data members of this object on the FILE thread after
-  // calling |EndDownload| is unsafe.
+  // |EndDownload| switches the execution flow from the |task_runner_| to the
+  // main thread. Accessing any data members of this object from the
+  // |task_runner_|after calling |EndDownload| is unsafe.
   void BeginDownload(const GURL& url);
   void OnDownloading();
   void EndDownload(HRESULT hr);
@@ -75,12 +80,19 @@ class BackgroundDownloader : public CrxDownloader {
   // temporary file to its destination and removing it from the BITS queue.
   HRESULT CompleteJob();
 
+  // Ensures that we are running on the same thread we created the object on.
+  base::ThreadChecker thread_checker_;
+
+  // Used to post responses back to the main thread. Initialized on the main
+  // loop but accessed from the task runner.
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+
   net::URLRequestContextGetter* context_getter_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // The timer and the BITS interface pointers have thread affinity. These
-  // members are initialized on the FILE thread and they must be destroyed
-  // on the FILE thread.
+  // members are initialized on the task runner and they must be destroyed
+  // on the task runner.
   scoped_ptr<base::RepeatingTimer<BackgroundDownloader> > timer_;
 
   base::win::ScopedComPtr<IBackgroundCopyManager> bits_manager_;

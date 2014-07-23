@@ -9,13 +9,17 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "base/version.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 
 namespace base {
 class DictionaryValue;
 class FilePath;
+class SequencedTaskRunner;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace component_updater {
@@ -76,7 +80,7 @@ class ComponentInstallerTraits {
 // to the constructor.
 class DefaultComponentInstaller : public ComponentInstaller {
  public:
-  explicit DefaultComponentInstaller(
+  DefaultComponentInstaller(
       scoped_ptr<ComponentInstallerTraits> installer_traits);
 
   // Registers the component for update checks and installs.
@@ -103,6 +107,13 @@ class DefaultComponentInstaller : public ComponentInstaller {
   std::string current_fingerprint_;
   scoped_ptr<base::DictionaryValue> current_manifest_;
   scoped_ptr<ComponentInstallerTraits> installer_traits_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  // Used to post responses back to the main thread. Initialized on the main
+  // loop but accessed from the task runner.
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultComponentInstaller);
 };

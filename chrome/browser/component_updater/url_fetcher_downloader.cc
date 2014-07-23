@@ -5,13 +5,11 @@
 #include "chrome/browser/component_updater/url_fetcher_downloader.h"
 
 #include "base/logging.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "url/gurl.h"
-
-using content::BrowserThread;
 
 namespace component_updater {
 
@@ -24,14 +22,14 @@ UrlFetcherDownloader::UrlFetcherDownloader(
       task_runner_(task_runner),
       downloaded_bytes_(-1),
       total_bytes_(-1) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 UrlFetcherDownloader::~UrlFetcherDownloader() {
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void UrlFetcherDownloader::DoStartDownload(const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   url_fetcher_.reset(
       net::URLFetcher::Create(0, url, net::URLFetcher::GET, this));
@@ -52,7 +50,7 @@ void UrlFetcherDownloader::DoStartDownload(const GURL& url) {
 }
 
 void UrlFetcherDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   const base::Time download_end_time(base::Time::Now());
   const base::TimeDelta download_time =
@@ -94,7 +92,7 @@ void UrlFetcherDownloader::OnURLFetchDownloadProgress(
     const net::URLFetcher* source,
     int64 current,
     int64 total) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   downloaded_bytes_ = current;
   total_bytes_ = total;

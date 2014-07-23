@@ -12,8 +12,13 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "url/gurl.h"
+
+namespace base {
+class SequencedTaskRunner;
+class SingleThreadTaskRunner;
+}
 
 namespace net {
 class URLRequestContextGetter;
@@ -30,7 +35,7 @@ namespace component_updater {
 // When multiple urls and downloaders exists, first all the urls are tried, in
 // the order they are provided in the StartDownload function argument. After
 // that, the download request is routed to the next downloader in the chain.
-// The members of this class expect to be called from the UI thread only.
+// The members of this class expect to be called from the main thread only.
 class CrxDownloader {
  public:
   struct DownloadMetrics {
@@ -84,10 +89,14 @@ class CrxDownloader {
   // Factory method to create an instance of this class and build the
   // chain of responsibility. |is_background_download| specifies that a
   // background downloader be used, if the platform supports it.
+  // |url_fetcher_task_runner| should be an IO capable task runner able to
+  // support UrlFetcherDownloader. |background_task_runner| should be an
+  // IO capable thread able to support BackgroundDownloader.
   static CrxDownloader* Create(
       bool is_background_download,
       net::URLRequestContextGetter* context_getter,
-      scoped_refptr<base::SequencedTaskRunner> task_runner);
+      scoped_refptr<base::SequencedTaskRunner> url_fetcher_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> background_task_runner);
   virtual ~CrxDownloader();
 
   void set_progress_callback(const ProgressCallback& progress_callback);
@@ -126,6 +135,8 @@ class CrxDownloader {
 
  private:
   virtual void DoStartDownload(const GURL& url) = 0;
+
+  base::ThreadChecker thread_checker_;
 
   std::vector<GURL> urls_;
   scoped_ptr<CrxDownloader> successor_;

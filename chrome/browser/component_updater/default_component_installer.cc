@@ -6,12 +6,16 @@
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
+#include "base/message_loop/message_loop_proxy.h"
+#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/values.h"
 #include "base/version.h"
 // TODO(ddorwin): Find a better place for ReadManifest.
 #include "chrome/browser/component_updater/component_unpacker.h"
+#include "chrome/browser/component_updater/component_updater_configurator.h"
 #include "chrome/browser/component_updater/default_component_installer.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace component_updater {
 
@@ -26,20 +30,25 @@ ComponentInstallerTraits::~ComponentInstallerTraits() {
 
 DefaultComponentInstaller::DefaultComponentInstaller(
     scoped_ptr<ComponentInstallerTraits> installer_traits)
-    : current_version_(kNullVersion) {
+    : current_version_(kNullVersion),
+      main_task_runner_(base::MessageLoopProxy::current()) {
   installer_traits_ = installer_traits.Pass();
 }
 
 DefaultComponentInstaller::~DefaultComponentInstaller() {
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void DefaultComponentInstaller::Register(ComponentUpdateService* cus) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  task_runner_ = cus->GetSequencedTaskRunner();
+
   if (!installer_traits_) {
     NOTREACHED() << "A DefaultComponentInstaller has been created but "
                  << "has no installer traits.";
     return;
   }
-  content::BrowserThread::PostBlockingPoolTask(
+  task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DefaultComponentInstaller::StartRegistration,
                  base::Unretained(this),
@@ -65,6 +74,8 @@ bool DefaultComponentInstaller::InstallHelper(
 
 bool DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
                                         const base::FilePath& unpack_path) {
+  DCHECK(task_runner_);
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   std::string manifest_version;
   manifest.GetStringASCII("version", &manifest_version);
   base::Version version(manifest_version.c_str());
@@ -88,8 +99,7 @@ bool DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
   current_manifest_.reset(manifest.DeepCopy());
   scoped_ptr<base::DictionaryValue> manifest_copy(
       current_manifest_->DeepCopy());
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
+  main_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ComponentInstallerTraits::ComponentReady,
                  base::Unretained(installer_traits_.get()),
@@ -112,6 +122,8 @@ bool DefaultComponentInstaller::GetInstalledFile(
 }
 
 void DefaultComponentInstaller::StartRegistration(ComponentUpdateService* cus) {
+  DCHECK(task_runner_);
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   base::FilePath base_dir = installer_traits_->GetBaseDirectory();
   if (!base::PathExists(base_dir) && !base::CreateDirectory(base_dir)) {
     NOTREACHED() << "Could not create the base directory for "
@@ -176,8 +188,7 @@ void DefaultComponentInstaller::StartRegistration(ComponentUpdateService* cus) {
     base::DeleteFile(*iter, true);
   }
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
+  main_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DefaultComponentInstaller::FinishRegistration,
                  base::Unretained(this),
@@ -191,7 +202,7 @@ base::FilePath DefaultComponentInstaller::GetInstallDirectory() {
 
 void DefaultComponentInstaller::FinishRegistration(
     ComponentUpdateService* cus) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (installer_traits_->CanAutoUpdate()) {
     CrxComponent crx;
     crx.name = installer_traits_->GetName();

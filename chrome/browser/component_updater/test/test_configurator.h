@@ -47,6 +47,10 @@ class TestConfigurator : public Configurator {
   virtual bool InProcess() const OVERRIDE;
   virtual bool DeltasEnabled() const OVERRIDE;
   virtual bool UseBackgroundDownloader() const OVERRIDE;
+  virtual scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
+      const OVERRIDE;
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+      GetSingleThreadTaskRunner() const OVERRIDE;
 
   typedef std::pair<CrxComponent*, int> CheckAtLoopCount;
   void SetLoopCount(int times);

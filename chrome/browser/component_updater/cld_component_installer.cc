@@ -13,14 +13,12 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/translate/content/browser/data_file_browser_cld_data_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/ssl/ssl_config_service.h"
 
 using component_updater::ComponentUpdateService;
-using content::BrowserThread;
 
 namespace {
 // TODO(andrewhayden): Make the data file path into a gyp/gn define

@@ -7,10 +7,14 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
+
 class GURL;
 
 namespace base {
 class CommandLine;
+class SingleThreadTaskRunner;
+class SequencedTaskRunner;
 class Version;
 }
 
@@ -89,6 +93,16 @@ class Configurator {
   // True means that the background downloader can be used for downloading
   // non on-demand components.
   virtual bool UseBackgroundDownloader() const = 0;
+
+  // Gets a task runner to a blocking pool of threads suitable for worker jobs.
+  virtual scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
+      const = 0;
+
+  // Gets a task runner for worker jobs guaranteed to run on a single thread.
+  // This thread must be capable of IO. On Windows, this thread must be
+  // initialized for use of COM objects.
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+      GetSingleThreadTaskRunner() const = 0;
 };
 
 Configurator* MakeChromeComponentUpdaterConfigurator(

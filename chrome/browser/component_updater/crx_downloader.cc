@@ -3,14 +3,15 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/component_updater/crx_downloader.h"
+
+#include "base/logging.h"
+#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "chrome/browser/component_updater/url_fetcher_downloader.h"
-#include "content/public/browser/browser_thread.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/component_updater/background_downloader_win.h"
 #endif
-
-using content::BrowserThread;
 
 namespace component_updater {
 
@@ -31,16 +32,16 @@ CrxDownloader::DownloadMetrics::DownloadMetrics()
 CrxDownloader* CrxDownloader::Create(
     bool is_background_download,
     net::URLRequestContextGetter* context_getter,
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> url_fetcher_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> background_task_runner) {
   scoped_ptr<CrxDownloader> url_fetcher_downloader(
       new UrlFetcherDownloader(scoped_ptr<CrxDownloader>().Pass(),
                                context_getter,
-                               task_runner));
+                               url_fetcher_task_runner));
 #if defined(OS_WIN)
   if (is_background_download) {
-    return new BackgroundDownloader(url_fetcher_downloader.Pass(),
-                                    context_getter,
-                                    task_runner);
+    return new BackgroundDownloader(
+        url_fetcher_downloader.Pass(), context_getter, background_task_runner);
   }
 #endif
 
@@ -49,7 +50,6 @@ CrxDownloader* CrxDownloader::Create(
 
 CrxDownloader::CrxDownloader(scoped_ptr<CrxDownloader> successor)
     : successor_(successor.Pass()) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 CrxDownloader::~CrxDownloader() {
@@ -85,7 +85,7 @@ void CrxDownloader::StartDownloadFromUrl(
 
 void CrxDownloader::StartDownload(const std::vector<GURL>& urls,
                                   const DownloadCallback& download_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (urls.empty()) {
     // Make a result and complete the download with a generic error for now.
@@ -110,7 +110,7 @@ void CrxDownloader::OnDownloadComplete(
     bool is_handled,
     const Result& result,
     const DownloadMetrics& download_metrics) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   download_metrics_.push_back(download_metrics);
 
@@ -147,7 +147,7 @@ void CrxDownloader::OnDownloadComplete(
 }
 
 void CrxDownloader::OnDownloadProgress(const Result& result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (progress_callback_.is_null())
     return;

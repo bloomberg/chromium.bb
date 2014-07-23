@@ -130,4 +130,18 @@ void TestConfigurator::SetInitialDelay(int seconds) {
   initial_time_ = seconds;
 }
 
+scoped_refptr<base::SequencedTaskRunner>
+TestConfigurator::GetSequencedTaskRunner() const {
+  return content::BrowserThread::GetBlockingPool()
+      ->GetSequencedTaskRunnerWithShutdownBehavior(
+          content::BrowserThread::GetBlockingPool()->GetSequenceToken(),
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+TestConfigurator::GetSingleThreadTaskRunner() const {
+  return content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::FILE);
+}
+
 }  // namespace component_updater

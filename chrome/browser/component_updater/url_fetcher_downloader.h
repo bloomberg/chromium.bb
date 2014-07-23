@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/component_updater/crx_downloader.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -46,6 +47,8 @@ class UrlFetcherDownloader : public CrxDownloader,
 
   int64 downloaded_bytes_;
   int64 total_bytes_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlFetcherDownloader);
 };

@@ -7,15 +7,13 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/component_updater/component_updater_configurator.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
 #include "chrome/browser/component_updater/crx_update_item.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
-
-using content::BrowserThread;
 
 namespace component_updater {
 
@@ -88,6 +86,8 @@ class UpdateCheckerImpl : public UpdateChecker, public net::URLFetcherDelegate {
 
   scoped_ptr<net::URLFetcher> url_fetcher_;
 
+  base::ThreadChecker thread_checker_;
+
   DISALLOW_COPY_AND_ASSIGN(UpdateCheckerImpl);
 };
 
@@ -103,17 +103,16 @@ UpdateCheckerImpl::UpdateCheckerImpl(
     const Configurator& config,
     const UpdateCheckCallback& update_check_callback)
     : config_(config), update_check_callback_(update_check_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 UpdateCheckerImpl::~UpdateCheckerImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 bool UpdateCheckerImpl::CheckForUpdates(
     const std::vector<CrxUpdateItem*>& items_to_check,
     const std::string& additional_attributes) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (url_fetcher_)
     return false;  // Another fetch is in progress.
@@ -128,7 +127,7 @@ bool UpdateCheckerImpl::CheckForUpdates(
 }
 
 void UpdateCheckerImpl::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(url_fetcher_.get() == source);
 
   int error = 0;

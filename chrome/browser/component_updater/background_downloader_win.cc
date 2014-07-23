@@ -12,26 +12,25 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_co_mem.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/base/win/atl_module.h"
 #include "url/gurl.h"
 
 using base::win::ScopedCoMem;
 using base::win::ScopedComPtr;
-using content::BrowserThread;
 
 // The class BackgroundDownloader in this module is an adapter between
 // the CrxDownloader interface and the BITS service interfaces.
-// The interface exposed on the CrxDownloader code runs on the UI thread, while
-// the BITS specific code runs in a single threaded apartment on the FILE
-// thread.
-// For every url to download, a BITS job is created, unless there is already
-// an existing job for that url, in which case, the downloader connects to it.
-// Once a job is associated with the url, the code looks for changes in the
-// BITS job state. The checks are triggered by a timer.
+// The interface exposed on the CrxDownloader code runs on the main thread,
+// while the BITS specific code runs on a separate thread passed in by the
+// client. For every url to download, a BITS job is created, unless there is
+// already an existing job for that url, in which case, the downloader
+// connects to it. Once a job is associated with the url, the code looks for
+// changes in the BITS job state. The checks are triggered by a timer.
 // The BITS job contains just one file to download. There could only be one
 // download in progress at a time. If Chrome closes down before the download is
 // complete, the BITS job remains active and finishes in the background, without
@@ -387,19 +386,19 @@ HRESULT CleanupStaleJobs(
 BackgroundDownloader::BackgroundDownloader(
     scoped_ptr<CrxDownloader> successor,
     net::URLRequestContextGetter* context_getter,
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : CrxDownloader(successor.Pass()),
+      main_task_runner_(base::MessageLoopProxy::current()),
       context_getter_(context_getter),
       task_runner_(task_runner),
       is_completed_(false) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 BackgroundDownloader::~BackgroundDownloader() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // The following objects have thread affinity and can't be destroyed on the
-  // UI thread. The resources managed by these objects are acquired at the
+  // main thread. The resources managed by these objects are acquired at the
   // beginning of a download and released at the end of the download. Most of
   // the time, when this destructor is called, these resources have been already
   // disposed by. Releasing the ownership here is a NOP. However, if the browser
@@ -412,10 +411,9 @@ BackgroundDownloader::~BackgroundDownloader() {
 }
 
 void BackgroundDownloader::DoStartDownload(const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
+  task_runner_->PostTask(
       FROM_HERE,
       base::Bind(
           &BackgroundDownloader::BeginDownload, base::Unretained(this), url));
@@ -424,7 +422,7 @@ void BackgroundDownloader::DoStartDownload(const GURL& url) {
 // Called once when this class is asked to do a download. Creates or opens
 // an existing bits job, hooks up the notifications, and starts the timer.
 void BackgroundDownloader::BeginDownload(const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   DCHECK(!timer_);
 
@@ -449,7 +447,7 @@ void BackgroundDownloader::BeginDownload(const GURL& url) {
 
 // Called any time the timer fires.
 void BackgroundDownloader::OnDownloading() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   DCHECK(job_);
 
@@ -505,7 +503,7 @@ void BackgroundDownloader::OnDownloading() {
 // Completes the BITS download, picks up the file path of the response, and
 // notifies the CrxDownloader. The function should be called only once.
 void BackgroundDownloader::EndDownload(HRESULT error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   DCHECK(!is_completed_);
   is_completed_ = true;
@@ -552,17 +550,17 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
   result.response = response_;
   result.downloaded_bytes = downloaded_bytes;
   result.total_bytes = total_bytes;
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&BackgroundDownloader::OnDownloadComplete,
-                                     base::Unretained(this),
-                                     is_handled,
-                                     result,
-                                     download_metrics));
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&BackgroundDownloader::OnDownloadComplete,
+                 base::Unretained(this),
+                 is_handled,
+                 result,
+                 download_metrics));
 
-  // Once the task is posted to the the UI thread, this object may be deleted
+  // Once the task is posted to the the main thread, this object may be deleted
   // by its owner. It is not safe to access members of this object on the
-  // FILE thread from this point on. The timer is stopped and all BITS
+  // task runner from this point on. The timer is stopped and all BITS
   // interface pointers have been released.
 }
 
@@ -625,11 +623,11 @@ void BackgroundDownloader::OnStateTransferring() {
   result.downloaded_bytes = downloaded_bytes;
   result.total_bytes = total_bytes;
 
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&BackgroundDownloader::OnDownloadProgress,
-                                     base::Unretained(this),
-                                     result));
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&BackgroundDownloader::OnDownloadProgress,
+                 base::Unretained(this),
+                 result));
 }
 
 // Called when the download was cancelled. Since the observer should have
@@ -646,7 +644,7 @@ void BackgroundDownloader::OnStateAcknowledged() {
 // Creates or opens a job for the given url and queues it up. Tries to
 // install a job observer but continues on if an observer can't be set up.
 HRESULT BackgroundDownloader::QueueBitsJob(const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   HRESULT hr = S_OK;
   if (bits_manager_ == NULL) {

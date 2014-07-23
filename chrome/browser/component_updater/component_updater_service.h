@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/version.h"
 #include "url/gurl.h"
 
@@ -17,6 +18,7 @@ class ComponentsUI;
 namespace base {
 class DictionaryValue;
 class FilePath;
+class SequencedTaskRunner;
 }
 
 namespace net {
@@ -38,7 +40,7 @@ class OnDemandUpdater;
 // given to ComponentUpdateService::RegisterComponent().
 class ComponentInstaller {
  public:
-  // Called by the component updater on the UI thread when there was a
+  // Called by the component updater on the main thread when there was a
   // problem unpacking or verifying the component. |error| is a non-zero
   // value which is only meaningful to the component updater.
   virtual void OnUpdateError(int error) = 0;
@@ -46,7 +48,8 @@ class ComponentInstaller {
   // Called by the component updater when a component has been unpacked
   // and is ready to be installed. |manifest| contains the CRX manifest
   // json dictionary and |unpack_path| contains the temporary directory
-  // with all the unpacked CRX files.
+  // with all the unpacked CRX files. This method may be called from
+  // a thread other than the main thread.
   virtual bool Install(const base::DictionaryValue& manifest,
                        const base::FilePath& unpack_path) = 0;
 
@@ -96,7 +99,7 @@ struct CrxUpdateItem;
 // notifications are fired, like COMPONENT_UPDATER_STARTED and
 // COMPONENT_UPDATE_FOUND. See notification_type.h for more details.
 //
-// All methods are safe to call ONLY from chrome's UI thread.
+// All methods are safe to call ONLY from the browser's main thread.
 class ComponentUpdateService {
  public:
   enum Status { kOk, kReplaced, kInProgress, kError };
@@ -167,6 +170,9 @@ class ComponentUpdateService {
   // Returns an interface for on-demand updates. On-demand updates are
   // proactively triggered outside the normal component update service schedule.
   virtual OnDemandUpdater& GetOnDemandUpdater() = 0;
+
+  // Returns a task runner suitable for use by component installers.
+  virtual scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner() = 0;
 
   virtual ~ComponentUpdateService() {}
 
