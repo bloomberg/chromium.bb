@@ -75,6 +75,10 @@ V8AbstractEventListener::~V8AbstractEventListener()
 
 void V8AbstractEventListener::handleEvent(ExecutionContext*, Event* event)
 {
+    if (scriptState()->contextIsEmpty())
+        return;
+    if (!scriptState()->executionContext())
+        return;
     // Don't reenter V8 if execution was terminated in this instance of V8.
     if (scriptState()->executionContext()->isJSExecutionForbidden())
         return;
@@ -85,8 +89,6 @@ void V8AbstractEventListener::handleEvent(ExecutionContext*, Event* event)
     // See issue 889829.
     RefPtr<V8AbstractEventListener> protect(this);
 
-    if (scriptState()->contextIsEmpty())
-        return;
     ScriptState::Scope scope(scriptState());
 
     // Get the V8 wrapper for the event object.
