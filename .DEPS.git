@@ -620,17 +620,6 @@ hooks = [
     'action':
          [
     'python',
-    'src/third_party/clang_format/bin/rm_binaries.py'
-],
-    'pattern':
-         '.',
-    'name':
-         'remove_old_clang_format_binaries'
-},
-    {
-    'action':
-         [
-    'python',
     'src/third_party/binutils/download.py'
 ],
     'pattern':
