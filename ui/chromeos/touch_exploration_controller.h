@@ -26,25 +26,9 @@ class GestureEvent;
 class GestureProviderAura;
 class TouchEvent;
 
-// A delegate to handle commands in response to detected accessibility gesture
-// events.
-class TouchExplorationControllerDelegate {
- public:
-  virtual ~TouchExplorationControllerDelegate() {}
-
-  // This function should be called whenever the delegate wants to play a sound
-  // when the volume adjusts.
-  virtual void PlayVolumeAdjustSound() = 0;
-
-  // Takes an int from 0.0 to 100.0 that indicates the percent the volume
-  // should be set to.
-  virtual void SetOutputLevel(int volume) = 0;
-};
-
 // TouchExplorationController is used in tandem with "Spoken Feedback" to
-// make the touch UI accessible. Gestures performed in the middle of the screen
-// are mapped to accessiblity key shortcuts while gestures performed on the edge
-// of the screen can change settings.
+// make the touch UI accessible. Gestures are mapped to accessiblity key
+// shortcuts.
 //
 // ** Short version **
 //
@@ -56,10 +40,7 @@ class TouchExplorationControllerDelegate {
 // right would correspond to the keyboard short cut shift+search+right.
 // When two or more fingers are pressed initially, from then on the events
 // are passed through, but with the initial finger removed - so if you swipe
-// down with two fingers, the running app will see a one-finger swipe. Slide
-// gestures performed on the edge of the screen can change settings
-// continuously. For example, sliding a finger along the right side of the
-// screen will change the volume.
+// down with two fingers, the running app will see a one-finger swipe.
 //
 // ** Long version **
 //
@@ -110,24 +91,6 @@ class TouchExplorationControllerDelegate {
 // adds a third finger while in two to one finger mode, all fingers and touch
 // events are passed through from then on.
 //
-// If the user places a finger on the edge of the screen and moves their finger
-// past slop, a slide gesture is performed. The user can then slide one finger
-// along an edge of the screen and continuously control a setting. Once the user
-// enters this state, the boundaries that define an edge expand so that the user
-// can now adjust the setting within a slightly bigger width along the screen.
-// If the user exits this area without lifting their finger, they will not be
-// able to perform any actions, however if they keep their finger down and
-// return to the "hot edge," then they can still adjust the setting. In order to
-// perform other touch accessibility movements, the user must lift their finger.
-// If additional fingers are added while in this state, the user will transition
-// to passthrough.
-//
-// Currently, only the right edge is mapped to control the volume. Volume
-// control along the edge of the screen is directly proportional to where the
-// user's finger is located on the screen. The top right corner of the screen
-// automatically sets the volume to 100% and the bottome right corner of the
-// screen automatically sets the volume to 0% once the user has moved past slop.
-//
 // Once touch exploration mode has been activated,
 // it remains in that mode until all fingers have been released.
 //
@@ -137,9 +100,7 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
     : public ui::EventRewriter,
       public ui::GestureProviderAuraClient {
  public:
-  explicit TouchExplorationController(
-      aura::Window* root_window,
-      ui::TouchExplorationControllerDelegate* delegate);
+  explicit TouchExplorationController(aura::Window* root_window);
   virtual ~TouchExplorationController();
 
  private:
@@ -173,8 +134,6 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InWaitForRelease(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
-  ui::EventRewriteStatus InSlideGesture(
-      const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
 
   // This timer is started every time we get the first press event, and
   // it fires after the double-click timeout elapses (300 ms by default).
@@ -198,8 +157,6 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
 
   void OnSwipeEvent(ui::GestureEvent* swipe_gesture);
 
-  void SideSlideControl(ui::GestureEvent* gesture);
-
   // Dispatches the keyboard short cut Shift+Search+<arrow key>
   // outside the event rewritting flow.
   void DispatchShiftSearchKeyEvent(const ui::KeyboardCode direction);
@@ -212,22 +169,6 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   // Set the state to NO_FINGERS_DOWN and reset any other fields to their
   // default value.
   void ResetToNoFingersDown();
-
-  void PlaySoundForTimer();
-
-  // Some constants used in touch_exploration_controller:
-
-  // Within this many dips of the screen edge, the release event generated will
-  // reset the state to NoFingersDown.
-  const float kLeavingScreenEdge = 6;
-
-  // Swipe/scroll gestures within these bounds (in DIPs) will change preset
-  // settings.
-  const float kMaxDistanceFromEdge = 75;
-
-  // After a slide gesture has been triggered, if the finger is still within
-  // these bounds (in DIPs), the preset settings will still change.
-  const float kSlopDistanceFromEdge = kMaxDistanceFromEdge + 40;
 
   enum State {
     // No fingers are down and no events are pending.
@@ -295,27 +236,7 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
     // generally useful for developing new features, because it creates a
     // simple way to handle a dead end in user flow.
     WAIT_FOR_RELEASE,
-
-    // If the user is within the given bounds from an edge of the screen, not
-    // including corners, then the resulting movements will be interpreted as
-    // slide gestures.
-    SLIDE_GESTURE,
   };
-
-  enum ScreenLocation {
-    // Hot "edges" of the screen are each represented by a respective bit.
-    NO_EDGE = 0,
-    RIGHT_EDGE = 1 << 0,
-    TOP_EDGE = 1 << 1,
-    LEFT_EDGE = 1 << 2,
-    BOTTOM_EDGE = 1 << 3,
-  };
-
-  // Given a point, if it is within the given bounds of an edge, returns the
-  // edge. If it is within the given bounds of two edges, returns an int with
-  // both bits that represent the respective edges turned on. Otherwise returns
-  // SCREEN_CENTER.
-  int FindEdgesWithinBounds(gfx::Point point, float bounds);
 
   void VlogState(const char* function_name);
 
@@ -325,9 +246,6 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   const char* EnumStateToString(State state);
 
   aura::Window* root_window_;
-
-  // Handles volume control. Not owned.
-  ui::TouchExplorationControllerDelegate* delegate_;
 
   // A set of touch ids for fingers currently touching the screen.
   std::vector<int> current_touch_ids_;
@@ -357,9 +275,6 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
 
   // A timer to fire the mouse move event after the double-tap delay.
   base::OneShotTimer<TouchExplorationController> tap_timer_;
-
-  // A timer to fire an indicating sound when sliding to change volume.
-  base::RepeatingTimer<TouchExplorationController> sound_timer_;
 
   // For testing only, an event handler to use for generated events
   // outside of the normal event rewriting flow.

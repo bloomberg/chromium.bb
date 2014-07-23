@@ -97,7 +97,7 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   virtual bool IsInputMutedForDevice(uint64 device_id);
 
   // Returns true if the output volume is below the default mute volume level.
-  virtual bool IsOutputVolumeBelowDefaultMuteLevel();
+  virtual bool IsOutputVolumeBelowDefaultMuteLvel();
 
   // Returns volume level in 0-100% range at which the volume should be muted.
   virtual int GetOutputDefaultVolumeMuteThreshold();

@@ -76,7 +76,7 @@
 #include "ui/wm/public/window_types.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/ash_touch_exploration_manager_chromeos.h"
+#include "ash/system/tray_accessibility.h"
 #include "ash/wm/boot_splash_screen_chromeos.h"
 #include "ui/chromeos/touch_exploration_controller.h"
 #endif
@@ -261,6 +261,54 @@ class EmptyWindowDelegate : public aura::WindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(EmptyWindowDelegate);
 };
 
+#if defined(OS_CHROMEOS)
+// Responsible for initializing TouchExplorationController when spoken
+// feedback is on.
+class CrosAccessibilityObserver : public AccessibilityObserver {
+ public:
+  explicit CrosAccessibilityObserver(
+      RootWindowController* root_window_controller)
+      : root_window_controller_(root_window_controller) {
+    Shell::GetInstance()->system_tray_notifier()->
+        AddAccessibilityObserver(this);
+    UpdateTouchExplorationState();
+  }
+
+  virtual ~CrosAccessibilityObserver() {
+    SystemTrayNotifier* system_tray_notifier =
+        Shell::GetInstance()->system_tray_notifier();
+    if (system_tray_notifier)
+      system_tray_notifier->RemoveAccessibilityObserver(this);
+  }
+
+ private:
+  void UpdateTouchExplorationState() {
+    AccessibilityDelegate* delegate =
+        Shell::GetInstance()->accessibility_delegate();
+    bool enabled = delegate->IsSpokenFeedbackEnabled();
+
+    if (enabled && !touch_exploration_controller_.get()) {
+      touch_exploration_controller_.reset(
+          new ui::TouchExplorationController(
+              root_window_controller_->GetRootWindow()));
+    } else if (!enabled) {
+      touch_exploration_controller_.reset();
+    }
+  }
+
+  // Overridden from AccessibilityObserver.
+  virtual void OnAccessibilityModeChanged(
+      AccessibilityNotificationVisibility notify) OVERRIDE {
+    UpdateTouchExplorationState();
+  }
+
+  scoped_ptr<ui::TouchExplorationController> touch_exploration_controller_;
+  RootWindowController* root_window_controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(CrosAccessibilityObserver);
+};
+#endif  // OS_CHROMEOS
+
 }  // namespace
 
 void RootWindowController::CreateForPrimaryDisplay(AshWindowTreeHost* host) {
@@ -348,8 +396,8 @@ void RootWindowController::Shutdown() {
   shell->RemoveShellObserver(this);
 
 #if defined(OS_CHROMEOS)
-  if (touch_exploration_manager_) {
-    touch_exploration_manager_.reset();
+  if (cros_accessibility_observer_) {
+    cros_accessibility_observer_.reset();
   }
 #endif
 
@@ -759,7 +807,7 @@ void RootWindowController::Init(RootWindowType root_window_type,
 #if defined(OS_CHROMEOS)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshDisableTouchExplorationMode)) {
-    touch_exploration_manager_.reset(new AshTouchExplorationManager(this));
+    cros_accessibility_observer_.reset(new CrosAccessibilityObserver(this));
   }
 #endif
 }
