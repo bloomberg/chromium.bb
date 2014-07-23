@@ -25,6 +25,10 @@ from elftools.elf.dynamic import DynamicSection, DynamicSegment
 from elftools.elf.enums import ENUM_D_TAG
 from elftools.elf.segments import InterpSegment
 from elftools.elf.sections import SymbolTableSection
+from elftools.elf.gnuversions import (
+    GNUVerSymSection, GNUVerDefSection,
+    GNUVerNeedSection,
+    )
 from elftools.elf.relocation import RelocationSection
 from elftools.elf.descriptions import (
     describe_ei_class, describe_ei_data, describe_ei_version,
@@ -33,7 +37,9 @@ from elftools.elf.descriptions import (
     describe_sh_type, describe_sh_flags,
     describe_symbol_type, describe_symbol_bind, describe_symbol_visibility,
     describe_symbol_shndx, describe_reloc_type, describe_dyn_tag,
+    describe_ver_flags,
     )
+from elftools.elf.constants import E_FLAGS
 from elftools.dwarf.dwarfinfo import DWARFInfo
 from elftools.dwarf.descriptions import (
     describe_reg_name, describe_attr_value, set_global_machine_arch,
@@ -60,6 +66,8 @@ class ReadElf(object):
 
         # Lazily initialized if a debug dump is requested
         self._dwarfinfo = None
+
+        self._versioninfo = None
 
     def display_file_header(self):
         """ Display the ELF file header
@@ -94,8 +102,9 @@ class ReadElf(object):
         self._emit('  Start of section headers:          %s' %
                 header['e_shoff'])
         self._emitline(' (bytes into file)')
-        self._emitline('  Flags:                             %s' %
-                self._format_hex(header['e_flags']))
+        self._emitline('  Flags:                             %s%s' %
+                (self._format_hex(header['e_flags']),
+                self.decode_flags(header['e_flags'])))
         self._emitline('  Size of this header:               %s (bytes)' %
                 header['e_ehsize'])
         self._emitline('  Size of program headers:           %s (bytes)' %
@@ -108,6 +117,17 @@ class ReadElf(object):
                 header['e_shnum'])
         self._emitline('  Section header string table index: %s' %
                 header['e_shstrndx'])
+
+    def decode_flags(self, flags):
+        description = ""
+        if self.elffile['e_machine'] == "EM_ARM":
+            if flags & E_FLAGS.EF_ARM_HASENTRY:
+                description += ", has entry point"
+
+            version = flags & E_FLAGS.EF_ARM_EABIMASK
+            if version == E_FLAGS.EF_ARM_EABI_VER5:
+                description += ", Version5 EABI"
+        return description
 
     def display_program_headers(self, show_heading=True):
         """ Display the ELF program headers.
@@ -254,6 +274,8 @@ class ReadElf(object):
     def display_symbol_tables(self):
         """ Display the symbol tables contained in the file
         """
+        self._init_versioninfo()
+
         for section in self.elffile.iter_sections():
             if not isinstance(section, SymbolTableSection):
                 continue
@@ -272,24 +294,47 @@ class ReadElf(object):
                 self._emitline('   Num:    Value          Size Type    Bind   Vis      Ndx Name')
 
             for nsym, symbol in enumerate(section.iter_symbols()):
+
+                version_info = ''
+                # readelf doesn't display version info for Solaris versioning
+                if (section['sh_type'] == 'SHT_DYNSYM' and
+                        self._versioninfo['type'] == 'GNU'):
+                    version = self._symbol_version(nsym)
+                    if (version['name'] != bytes2str(symbol.name) and
+                        version['index'] not in ('VER_NDX_LOCAL',
+                                                 'VER_NDX_GLOBAL')):
+                        if version['filename']:
+                            # external symbol
+                            version_info = '@%(name)s (%(index)i)' % version
+                        else:
+                            # internal symbol
+                            if version['hidden']:
+                                version_info = '@%(name)s' % version
+                            else:
+                                version_info = '@@%(name)s' % version
+
                 # symbol names are truncated to 25 chars, similarly to readelf
-                self._emitline('%6d: %s %5d %-7s %-6s %-7s %4s %.25s' % (
+                self._emitline('%6d: %s %5d %-7s %-6s %-7s %4s %.25s%s' % (
                     nsym,
-                    self._format_hex(symbol['st_value'], fullhex=True, lead0x=False),
+                    self._format_hex(
+                        symbol['st_value'], fullhex=True, lead0x=False),
                     symbol['st_size'],
                     describe_symbol_type(symbol['st_info']['type']),
                     describe_symbol_bind(symbol['st_info']['bind']),
                     describe_symbol_visibility(symbol['st_other']['visibility']),
                     describe_symbol_shndx(symbol['st_shndx']),
-                    bytes2str(symbol.name)))
+                    bytes2str(symbol.name),
+                    version_info))
 
     def display_dynamic_tags(self):
         """ Display the dynamic tags contained in the file
         """
+        has_dynamic_sections = False
         for section in self.elffile.iter_sections():
             if not isinstance(section, DynamicSection):
                 continue
 
+            has_dynamic_sections = True
             self._emitline("\nDynamic section at offset %s contains %s entries:" % (
                 self._format_hex(section['sh_offset']),
                 section.num_tags()))
@@ -305,11 +350,9 @@ class ReadElf(object):
                     parsed = 'Library runpath: [%s]' % bytes2str(tag.runpath)
                 elif tag.entry.d_tag == 'DT_SONAME':
                     parsed = 'Library soname: [%s]' % bytes2str(tag.soname)
-                elif (tag.entry.d_tag.endswith('SZ') or
-                      tag.entry.d_tag.endswith('ENT')):
+                elif tag.entry.d_tag.endswith(('SZ', 'ENT')):
                     parsed = '%i (bytes)' % tag['d_val']
-                elif (tag.entry.d_tag.endswith('NUM') or
-                      tag.entry.d_tag.endswith('COUNT')):
+                elif tag.entry.d_tag.endswith(('NUM', 'COUNT')):
                     parsed = '%i' % tag['d_val']
                 elif tag.entry.d_tag == 'DT_PLTREL':
                     s = describe_dyn_tag(tag.entry.d_val)
@@ -325,6 +368,10 @@ class ReadElf(object):
                     padding,
                     '(%s)' % (tag.entry.d_tag[3:],),
                     parsed))
+        if not has_dynamic_sections:
+            # readelf only prints this if there is at least one segment
+            if self.elffile.num_segments():
+                self._emitline("\nThere is no dynamic section in this file.")
 
     def display_relocations(self):
         """ Display the relocations contained in the file
@@ -383,6 +430,111 @@ class ReadElf(object):
 
         if not has_relocation_sections:
             self._emitline('\nThere are no relocations in this file.')
+
+    def display_version_info(self):
+        """ Display the version info contained in the file
+        """
+        self._init_versioninfo()
+
+        if not self._versioninfo['type']:
+            self._emitline("\nNo version information found in this file.")
+            return
+
+        for section in self.elffile.iter_sections():
+            if isinstance(section, GNUVerSymSection):
+                self._print_version_section_header(
+                    section, 'Version symbols', lead0x=False)
+
+                num_symbols = section.num_symbols()
+    
+                # Symbol version info are printed four by four entries 
+                for idx_by_4 in range(0, num_symbols, 4):
+
+                    self._emit('  %03x:' % idx_by_4)
+
+                    for idx in range(idx_by_4, min(idx_by_4 + 4, num_symbols)):
+
+                        symbol_version = self._symbol_version(idx)
+                        if symbol_version['index'] == 'VER_NDX_LOCAL':
+                            version_index = 0
+                            version_name = '(*local*)'
+                        elif symbol_version['index'] == 'VER_NDX_GLOBAL':
+                            version_index = 1
+                            version_name = '(*global*)'
+                        else:
+                            version_index = symbol_version['index']
+                            version_name = '(%(name)s)' % symbol_version
+
+                        visibility = 'h' if symbol_version['hidden'] else ' '
+
+                        self._emit('%4x%s%-13s' % (
+                            version_index, visibility, version_name))
+
+                    self._emitline()
+
+            elif isinstance(section, GNUVerDefSection):
+                self._print_version_section_header(
+                    section, 'Version definition', indent=2)
+
+                offset = 0
+                for verdef, verdaux_iter in section.iter_versions():
+                    verdaux = next(verdaux_iter)
+
+                    name = verdaux.name
+                    if verdef['vd_flags']:
+                        flags = describe_ver_flags(verdef['vd_flags'])
+                        # Mimic exactly the readelf output
+                        flags += ' '
+                    else:
+                        flags = 'none'
+
+                    self._emitline('  %s: Rev: %i  Flags: %s  Index: %i'
+                                   '  Cnt: %i  Name: %s' % (
+                            self._format_hex(offset, fieldsize=6,
+                                             alternate=True),
+                            verdef['vd_version'], flags, verdef['vd_ndx'],
+                            verdef['vd_cnt'], bytes2str(name)))
+
+                    verdaux_offset = (
+                            offset + verdef['vd_aux'] + verdaux['vda_next'])
+                    for idx, verdaux in enumerate(verdaux_iter, start=1):
+                        self._emitline('  %s: Parent %i: %s' %
+                            (self._format_hex(verdaux_offset, fieldsize=4),
+                                              idx, bytes2str(verdaux.name)))
+                        verdaux_offset += verdaux['vda_next']
+
+                    offset += verdef['vd_next']
+
+            elif isinstance(section, GNUVerNeedSection):
+                self._print_version_section_header(section, 'Version needs')
+
+                offset = 0
+                for verneed, verneed_iter in section.iter_versions():
+
+                    self._emitline('  %s: Version: %i  File: %s  Cnt: %i' % (
+                            self._format_hex(offset, fieldsize=6,
+                                             alternate=True),
+                            verneed['vn_version'], bytes2str(verneed.name),
+                            verneed['vn_cnt']))
+
+                    vernaux_offset = offset + verneed['vn_aux']
+                    for idx, vernaux in enumerate(verneed_iter, start=1):
+                        if vernaux['vna_flags']:
+                            flags = describe_ver_flags(vernaux['vna_flags'])
+                            # Mimic exactly the readelf output
+                            flags += ' '
+                        else:
+                            flags = 'none'
+
+                        self._emitline(
+                            '  %s:   Name: %s  Flags: %s  Version: %i' % (
+                                self._format_hex(vernaux_offset, fieldsize=4),
+                                bytes2str(vernaux.name), flags,
+                                vernaux['vna_other']))
+
+                        vernaux_offset += vernaux['vna_next']
+
+                    offset += verneed['vn_next']
 
     def display_hex_dump(self, section_spec):
         """ Display a hex dump of a section. section_spec is either a section
@@ -486,7 +638,8 @@ class ReadElf(object):
         else:
             self._emitline('debug dump not yet supported for "%s"' % dump_what)
 
-    def _format_hex(self, addr, fieldsize=None, fullhex=False, lead0x=True):
+    def _format_hex(self, addr, fieldsize=None, fullhex=False, lead0x=True,
+                    alternate=False):
         """ Format an address into a hexadecimal string.
 
             fieldsize:
@@ -501,7 +654,20 @@ class ReadElf(object):
 
             lead0x:
                 If True, leading 0x is added
+
+            alternate:
+                If True, override lead0x to emulate the alternate
+                hexadecimal form specified in format string with the #
+                character: only non-zero values are prefixed with 0x.
+                This form is used by readelf.
         """
+        if alternate:
+            if addr == 0:
+                lead0x = False
+            else:
+                lead0x = True
+                fieldsize -= 2
+
         s = '0x' if lead0x else ''
         if fullhex:
             fieldsize = 8 if self.elffile.elfclass == 32 else 16
@@ -510,6 +676,97 @@ class ReadElf(object):
         else:
             field = '%' + '0%sx' % fieldsize
         return s + field % addr
+
+    def _print_version_section_header(self, version_section, name, lead0x=True,
+                                      indent=1):
+        """ Print a section header of one version related section (versym,
+            verneed or verdef) with some options to accomodate readelf
+            little differences between each header (e.g. indentation
+            and 0x prefixing).
+        """
+        if hasattr(version_section, 'num_versions'):
+            num_entries = version_section.num_versions()
+        else:
+            num_entries = version_section.num_symbols()
+
+        self._emitline("\n%s section '%s' contains %s entries:" %
+            (name, bytes2str(version_section.name), num_entries))
+        self._emitline('%sAddr: %s  Offset: %s  Link: %i (%s)' % (
+            ' ' * indent,
+            self._format_hex(
+                version_section['sh_addr'], fieldsize=16, lead0x=lead0x),
+            self._format_hex(
+                version_section['sh_offset'], fieldsize=6, lead0x=True),
+            version_section['sh_link'],
+            bytes2str(
+                self.elffile.get_section(version_section['sh_link']).name)
+            )
+        )
+
+    def _init_versioninfo(self):
+        """ Search and initialize informations about version related sections
+            and the kind of versioning used (GNU or Solaris).
+        """
+        if self._versioninfo is not None:
+            return
+
+        self._versioninfo = {'versym': None, 'verdef': None,
+                             'verneed': None, 'type': None}
+
+        for section in self.elffile.iter_sections():
+            if isinstance(section, GNUVerSymSection):
+                self._versioninfo['versym'] = section
+            elif isinstance(section, GNUVerDefSection):
+                self._versioninfo['verdef'] = section
+            elif isinstance(section, GNUVerNeedSection):
+                self._versioninfo['verneed'] = section
+            elif isinstance(section, DynamicSection):
+                for tag in section.iter_tags():
+                    if tag['d_tag'] == 'DT_VERSYM':
+                        self._versioninfo['type'] = 'GNU'
+                        break
+
+        if not self._versioninfo['type'] and (
+                self._versioninfo['verneed'] or self._versioninfo['verdef']):
+            self._versioninfo['type'] = 'Solaris'
+
+    def _symbol_version(self, nsym):
+        """ Return a dict containing information on the
+                   or None if no version information is available
+        """
+        self._init_versioninfo()
+
+        symbol_version = dict.fromkeys(('index', 'name', 'filename', 'hidden'))
+
+        if (not self._versioninfo['versym'] or
+                nsym >= self._versioninfo['versym'].num_symbols()):
+            return None
+
+        symbol = self._versioninfo['versym'].get_symbol(nsym)
+        index = symbol.entry['ndx']
+        if not index in ('VER_NDX_LOCAL', 'VER_NDX_GLOBAL'):
+            index = int(index)
+
+            if self._versioninfo['type'] == 'GNU':
+                # In GNU versioning mode, the highest bit is used to
+                # store wether the symbol is hidden or not
+                if index & 0x8000:
+                    index &= ~0x8000
+                    symbol_version['hidden'] = True
+
+            if (self._versioninfo['verdef'] and
+                    index <= self._versioninfo['verdef'].num_versions()):
+                _, verdaux_iter = \
+                        self._versioninfo['verdef'].get_version(index)
+                symbol_version['name'] = bytes2str(next(verdaux_iter).name)
+            else:
+                verneed, vernaux = \
+                        self._versioninfo['verneed'].get_version(index)
+                symbol_version['name'] = bytes2str(vernaux.name)
+                symbol_version['filename'] = bytes2str(verneed.name)
+
+        symbol_version['index'] = index
+        return symbol_version
 
     def _section_from_spec(self, spec):
         """ Retrieve a section given a "spec" (either number or name).
@@ -664,8 +921,10 @@ class ReadElf(object):
 
         for entry in self._dwarfinfo.CFI_entries():
             if isinstance(entry, CIE):
-                self._emitline('\n%08x %08x %08x CIE' % (
-                    entry.offset, entry['length'], entry['CIE_id']))
+                self._emitline('\n%08x %s %s CIE' % (
+                    entry.offset,
+                    self._format_hex(entry['length'], fullhex=True, lead0x=False),
+                    self._format_hex(entry['CIE_id'], fullhex=True, lead0x=False)))
                 self._emitline('  Version:               %d' % entry['version'])
                 self._emitline('  Augmentation:          "%s"' % bytes2str(entry['augmentation']))
                 self._emitline('  Code alignment factor: %u' % entry['code_alignment_factor'])
@@ -673,13 +932,15 @@ class ReadElf(object):
                 self._emitline('  Return address column: %d' % entry['return_address_register'])
                 self._emitline()
             else: # FDE
-                self._emitline('\n%08x %08x %08x FDE cie=%08x pc=%08x..%08x' % (
+                self._emitline('\n%08x %s %s FDE cie=%08x pc=%s..%s' % (
                     entry.offset,
-                    entry['length'],
-                    entry['CIE_pointer'],
+                    self._format_hex(entry['length'], fullhex=True, lead0x=False),
+                    self._format_hex(entry['CIE_pointer'], fullhex=True, lead0x=False),
                     entry.cie.offset,
-                    entry['initial_location'],
-                    entry['initial_location'] + entry['address_range']))
+                    self._format_hex(entry['initial_location'], fullhex=True, lead0x=False),
+                    self._format_hex(
+                        entry['initial_location'] + entry['address_range'],
+                        fullhex=True, lead0x=False)))
 
             self._emit(describe_CFI_instructions(entry))
         self._emitline()
@@ -694,23 +955,24 @@ class ReadElf(object):
 
         for entry in self._dwarfinfo.CFI_entries():
             if isinstance(entry, CIE):
-                self._emitline('\n%08x %08x %08x CIE "%s" cf=%d df=%d ra=%d' % (
+                self._emitline('\n%08x %s %s CIE "%s" cf=%d df=%d ra=%d' % (
                     entry.offset,
-                    entry['length'],
-                    entry['CIE_id'],
+                    self._format_hex(entry['length'], fullhex=True, lead0x=False),
+                    self._format_hex(entry['CIE_id'], fullhex=True, lead0x=False),
                     bytes2str(entry['augmentation']),
                     entry['code_alignment_factor'],
                     entry['data_alignment_factor'],
                     entry['return_address_register']))
                 ra_regnum = entry['return_address_register']
             else: # FDE
-                self._emitline('\n%08x %08x %08x FDE cie=%08x pc=%08x..%08x' % (
+                self._emitline('\n%08x %s %s FDE cie=%08x pc=%s..%s' % (
                     entry.offset,
-                    entry['length'],
-                    entry['CIE_pointer'],
+                    self._format_hex(entry['length'], fullhex=True, lead0x=False),
+                    self._format_hex(entry['CIE_pointer'], fullhex=True, lead0x=False),
                     entry.cie.offset,
-                    entry['initial_location'],
-                    entry['initial_location'] + entry['address_range']))
+                    self._format_hex(entry['initial_location'], fullhex=True, lead0x=False),
+                    self._format_hex(entry['initial_location'] + entry['address_range'],
+                        fullhex=True, lead0x=False)))
                 ra_regnum = entry.cie['return_address_register']
 
             # Print the heading row for the decoded table
@@ -802,6 +1064,9 @@ def main(stream=None):
     optparser.add_option('-p', '--string-dump',
             action='store', dest='show_string_dump', metavar='<number|name>',
             help='Dump the contents of section <number|name> as strings')
+    optparser.add_option('-V', '--version-info',
+            action='store_true', dest='show_version_info',
+            help='Display the version sections (if present)')
     optparser.add_option('--debug-dump',
             action='store', dest='debug_dump_what', metavar='<what>',
             help=(
@@ -838,6 +1103,8 @@ def main(stream=None):
                 readelf.display_symbol_tables()
             if options.show_relocs:
                 readelf.display_relocations()
+            if options.show_version_info:
+                readelf.display_version_info()
             if options.show_hex_dump:
                 readelf.display_hex_dump(options.show_hex_dump)
             if options.show_string_dump:

@@ -7,9 +7,12 @@
 # This code is in the public domain
 #-------------------------------------------------------------------------------
 from collections import namedtuple
+import os
 
-from ..common.py3compat import OrderedDict
+from ..common.exceptions import DWARFError
+from ..common.py3compat import OrderedDict, bytes2str, iteritems
 from ..common.utils import struct_parse, preserve_stream_pos
+from .enums import DW_FORM_raw2name
 
 
 # AttributeValue - describes an attribute value in the DIE:
@@ -99,6 +102,20 @@ class DIE(object):
         """
         return self._parent
 
+    def get_full_path(self):
+        """ Return the full path filename for the DIE.
+
+            The filename is the join of 'DW_AT_comp_dir' and 'DW_AT_name',
+            either of which may be missing in practice. Note that its value is
+            usually a string taken from the .debug_string section and the
+            returned value will be a string.
+        """
+        comp_dir_attr = self.attributes.get('DW_AT_comp_dir', None)
+        comp_dir = bytes2str(comp_dir_attr.value) if comp_dir_attr else ''
+        fname_attr = self.attributes.get('DW_AT_name', None)
+        fname = bytes2str(fname_attr.value) if fname_attr else ''
+        return os.path.join(comp_dir, fname)
+
     def iter_children(self):
         """ Yield all children of this DIE
         """
@@ -128,7 +145,7 @@ class DIE(object):
     def __repr__(self):
         s = 'DIE %s, size=%s, has_chidren=%s\n' % (
             self.tag, self.size, self.has_children)
-        for attrname, attrval in self.attributes.iteritems():
+        for attrname, attrval in iteritems(self.attributes):
             s += '    |%-18s:  %s\n' % (attrname, attrval)
         return s
 
@@ -187,9 +204,15 @@ class DIE(object):
         elif form == 'DW_FORM_flag':
             value = not raw_value == 0
         elif form == 'DW_FORM_indirect':
-            form = raw_value
+            try:
+                form = DW_FORM_raw2name[raw_value]
+            except KeyError as err:
+                raise DWARFError(
+                        'Found DW_FORM_indirect with unknown raw_value=' +
+                        str(raw_value))
+
             raw_value = struct_parse(
-                structs.Dwarf_dw_form[form], self.stream)
+                self.cu.structs.Dwarf_dw_form[form], self.stream)
             # Let's hope this doesn't get too deep :-)
             return self._translate_attr_value(form, raw_value)
         else:

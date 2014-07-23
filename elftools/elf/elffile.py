@@ -12,11 +12,14 @@ from ..common.utils import struct_parse, elf_assert
 from ..construct import ConstructError
 from .structs import ELFStructs
 from .sections import (
-        Section, StringTableSection, SymbolTableSection, NullSection)
+        Section, StringTableSection, SymbolTableSection,
+        SUNWSyminfoTableSection, NullSection)
 from .dynamic import DynamicSection, DynamicSegment
 from .relocation import RelocationSection, RelocationHandler
+from .gnuversions import (
+        GNUVerNeedSection, GNUVerDefSection,
+        GNUVerSymSection)
 from .segments import Segment, InterpSegment
-from .enums import ENUM_RELOC_TYPE_i386, ENUM_RELOC_TYPE_x64
 from ..dwarf.dwarfinfo import DWARFInfo, DebugSectionDescriptor, DwarfConfig
 
 
@@ -105,6 +108,18 @@ class ELFFile(object):
         for i in range(self.num_segments()):
             yield self.get_segment(i)
 
+    def address_offsets(self, start, size=1):
+        """ Yield a file offset for each ELF segment containing a memory region.
+
+            A memory region is defined by the range [start...start+size). The
+            offset of the region is yielded.
+        """
+        end = start + size
+        for seg in self.iter_segments():
+            if (start >= seg['p_vaddr'] and
+                end <= seg['p_vaddr'] + seg['p_filesz']):
+                yield start - seg['p_vaddr'] + seg['p_offset']
+
     def has_dwarf_info(self):
         """ Check whether this file appears to have debugging information.
             We assume that if it has the debug_info section, it has all theother
@@ -125,24 +140,26 @@ class ELFFile(object):
         #
         debug_sections = {}
         for secname in (b'.debug_info', b'.debug_abbrev', b'.debug_str',
-                        b'.debug_line', b'.debug_frame', b'.debug_loc',
-                        b'.debug_ranges'):
+                        b'.debug_line', b'.debug_frame',
+                        b'.debug_loc', b'.debug_ranges'):
             section = self.get_section_by_name(secname)
             if section is None:
                 debug_sections[secname] = None
             else:
                 debug_sections[secname] = self._read_dwarf_section(
-                        section,
-                        relocate_dwarf_sections)
+                    section,
+                    relocate_dwarf_sections)
 
         return DWARFInfo(
                 config=DwarfConfig(
                     little_endian=self.little_endian,
-                    default_address_size=self.elfclass / 8,
+                    default_address_size=self.elfclass // 8,
                     machine_arch=self.get_machine_arch()),
                 debug_info_sec=debug_sections[b'.debug_info'],
                 debug_abbrev_sec=debug_sections[b'.debug_abbrev'],
                 debug_frame_sec=debug_sections[b'.debug_frame'],
+                # TODO(eliben): reading of eh_frame is not hooked up yet
+                eh_frame_sec=None,
                 debug_str_sec=debug_sections[b'.debug_str'],
                 debug_loc_sec=debug_sections[b'.debug_loc'],
                 debug_ranges_sec=debug_sections[b'.debug_ranges'],
@@ -158,6 +175,8 @@ class ELFFile(object):
             return 'x86'
         elif self['e_machine'] == 'EM_ARM':
             return 'ARM'
+        elif self['e_machine'] == 'EM_AARCH64':
+            return 'AArch64'
         else:
             return '<unknown>'
 
@@ -241,8 +260,16 @@ class ELFFile(object):
             return StringTableSection(section_header, name, self.stream)
         elif sectype == 'SHT_NULL':
             return NullSection(section_header, name, self.stream)
-        elif sectype in ('SHT_SYMTAB', 'SHT_DYNSYM'):
+        elif sectype in ('SHT_SYMTAB', 'SHT_DYNSYM', 'SHT_SUNW_LDYNSYM'):
             return self._make_symbol_table_section(section_header, name)
+        elif sectype == 'SHT_SUNW_syminfo':
+            return self._make_sunwsyminfo_table_section(section_header, name)
+        elif sectype == 'SHT_GNU_verneed':
+            return self._make_gnu_verneed_section(section_header, name)
+        elif sectype == 'SHT_GNU_verdef':
+            return self._make_gnu_verdef_section(section_header, name)
+        elif sectype == 'SHT_GNU_versym':
+            return self._make_gnu_versym_section(section_header, name)
         elif sectype in ('SHT_REL', 'SHT_RELA'):
             return RelocationSection(
                 section_header, name, self.stream, self)
@@ -260,6 +287,46 @@ class ELFFile(object):
             section_header, name, self.stream,
             elffile=self,
             stringtable=strtab_section)
+
+    def _make_sunwsyminfo_table_section(self, section_header, name):
+        """ Create a SUNWSyminfoTableSection
+        """
+        linked_strtab_index = section_header['sh_link']
+        strtab_section = self.get_section(linked_strtab_index)
+        return SUNWSyminfoTableSection(
+            section_header, name, self.stream,
+            elffile=self,
+            symboltable=strtab_section)
+
+    def _make_gnu_verneed_section(self, section_header, name):
+        """ Create a GNUVerNeedSection
+        """
+        linked_strtab_index = section_header['sh_link']
+        strtab_section = self.get_section(linked_strtab_index)
+        return GNUVerNeedSection(
+            section_header, name, self.stream,
+            elffile=self,
+            stringtable=strtab_section)
+
+    def _make_gnu_verdef_section(self, section_header, name):
+        """ Create a GNUVerDefSection
+        """
+        linked_strtab_index = section_header['sh_link']
+        strtab_section = self.get_section(linked_strtab_index)
+        return GNUVerDefSection(
+            section_header, name, self.stream,
+            elffile=self,
+            stringtable=strtab_section)
+
+    def _make_gnu_versym_section(self, section_header, name):
+        """ Create a GNUVerSymSection
+        """
+        linked_strtab_index = section_header['sh_link']
+        strtab_section = self.get_section(linked_strtab_index)
+        return GNUVerSymSection(
+            section_header, name, self.stream,
+            elffile=self,
+            symboltable=strtab_section)
 
     def _get_segment_header(self, n):
         """ Find the header of segment #n, parse it and return the struct

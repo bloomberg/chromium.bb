@@ -82,7 +82,7 @@ def describe_CFI_instructions(entry):
                         'DW_CFA_advance_loc4', 'DW_CFA_advance_loc'):
             _assert_FDE_instruction(instr)
             factored_offset = instr.args[0] * cie['code_alignment_factor']
-            s += '  %s: %s to %08x\n' % (
+            s += '  %s: %s to %016x\n' % (
                 name, factored_offset, factored_offset + pc)
             pc += factored_offset
         elif name in (  'DW_CFA_remember_state', 'DW_CFA_restore_state',
@@ -197,6 +197,12 @@ def _describe_attr_debool(attr, die, section_offset):
     """
     return '1' if attr.value else '0'
 
+def _describe_attr_present(attr, die, section_offset):
+    """ Some forms may simply mean that an attribute is present,
+        without providing any value.
+    """
+    return '1'
+
 def _describe_attr_block(attr, die, section_offset):
     s = '%s byte block: ' % len(attr.value)
     s += ' '.join('%x' % item for item in attr.value) + ' '
@@ -227,6 +233,9 @@ _ATTR_DESCRIPTION_MAP = defaultdict(
     DW_FORM_block2=_describe_attr_block,
     DW_FORM_block4=_describe_attr_block,
     DW_FORM_block=_describe_attr_block,
+    DW_FORM_flag_present=_describe_attr_present,
+    DW_FORM_exprloc=_describe_attr_block,
+    DW_FORM_ref_sig8=_describe_attr_ref,
 )
 
 
