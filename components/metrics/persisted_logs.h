@@ -51,7 +51,7 @@ class PersistedLogs {
   // at least |min_log_bytes| bytes of logs, whichever is greater.
   //
   // If the optional |max_log_size| parameter is non-zero, all logs larger than
-  // that limit will be dropped before logs are written to disk.
+  // that limit will be skipped when writing to disk.
   PersistedLogs(PrefService* local_state,
                 const char* pref_name,
                 const char* old_pref_name,
@@ -61,7 +61,7 @@ class PersistedLogs {
   ~PersistedLogs();
 
   // Write list to storage.
-  void SerializeLogs();
+  void SerializeLogs() const;
 
   // Reads the list from the preference.
   LogReadStatus DeserializeLogs();
@@ -115,7 +115,7 @@ class PersistedLogs {
 
  private:
   // Writes the list to the ListValue.
-  void WriteLogsToPrefList(base::ListValue* list);
+  void WriteLogsToPrefList(base::ListValue* list) const;
 
   // Reads the list from the ListValue.
   LogReadStatus ReadLogsFromPrefList(const base::ListValue& list);
