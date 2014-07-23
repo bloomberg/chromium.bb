@@ -94,8 +94,6 @@ crbug.com/231721 [ Win ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass 
 
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Failure Pass ]
 
-crbug.com/395040 fast/repaint/repaint-composited-child-in-scrolled-container.html [ NeedsRebaseline ]
-
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/elements-001.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/non-element-nodes-001.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/events/event-dispatch/test-001.html [ Failure ]

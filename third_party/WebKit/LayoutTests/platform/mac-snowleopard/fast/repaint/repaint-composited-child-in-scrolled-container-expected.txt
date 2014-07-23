@@ -1,0 +1,36 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [293, 8, 15, 15],
+        [207, 293, 56, 15],
+        [151, 293, 112, 15],
+        [8, 293, 199, 15],
+        [8, 293, 15, 15]
+      ],
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [285, 285],
+          "children": [
+            {
+              "position": [-315, 0],
+              "bounds": [600, 600],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#FF0000",
+              "repaintRects": [
+                [0, 0, 600, 600]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
