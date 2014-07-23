@@ -93,9 +93,15 @@ bool WebThreadImpl::isCurrentThread() const {
 void WebThreadImpl::setSharedTimerFiredFunction(
     SharedTimerFunction timerFunction) {
   shared_timer_function_ = timerFunction;
+  if (shared_timer_function_ != NULL)
+    shared_timer_.reset(new base::OneShotTimer<WebThreadImpl>());
+  else
+    shared_timer_.reset(NULL);
 }
 
 void WebThreadImpl::setSharedTimerFireInterval(double interval_seconds) {
+  DCHECK(shared_timer_function_);
+
   // See BlinkPlatformImpl::setSharedTimerFireInterval for explanation of
   // why ceil is used in the interval calculation.
   int64 interval = static_cast<int64>(
@@ -105,13 +111,14 @@ void WebThreadImpl::setSharedTimerFireInterval(double interval_seconds) {
   if (interval < 0)
     interval = 0;
 
-  shared_timer_.Stop();
-  shared_timer_.Start(FROM_HERE, base::TimeDelta::FromMicroseconds(interval),
+  shared_timer_->Stop();
+  shared_timer_->Start(FROM_HERE, base::TimeDelta::FromMicroseconds(interval),
                       this, &WebThreadImpl::OnTimeout);
 }
 
 void WebThreadImpl::stopSharedTimer() {
-  shared_timer_.Stop();
+  DCHECK(shared_timer_function_);
+  shared_timer_->Stop();
 }
 
 WebThreadImpl::~WebThreadImpl() {

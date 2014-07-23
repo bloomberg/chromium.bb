@@ -64,7 +64,9 @@ class CONTENT_EXPORT WebThreadImpl : public WebThreadBase {
     if (shared_timer_function_)
       shared_timer_function_();
   }
-  base::OneShotTimer<WebThreadImpl> shared_timer_;
+  // The shared timer is a scoped_ptr, so it can be deleted on the same
+  // thread that created it.
+  scoped_ptr<base::OneShotTimer<WebThreadImpl> > shared_timer_;
   SharedTimerFunction shared_timer_function_;
 
   scoped_ptr<base::Thread> thread_;
