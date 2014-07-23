@@ -960,7 +960,14 @@ TEST_F(TileManagerTileIteratorTest, EvictionTileIterator) {
   EXPECT_EQ(all_tiles, new_content_tiles);
 }
 
-TEST_F(TileManagerTileIteratorTest, EvictionTileIteratorWithOcclusion) {
+#if defined(OS_WIN)
+#define MAYBE_EvictionTileIteratorWithOcclusion \
+  DISABLED_EvictionTileIteratorWithOcclusion
+#else
+#define MAYBE_EvictionTileIteratorWithOcclusion \
+  EvictionTileIteratorWithOcclusion
+#endif
+TEST_F(TileManagerTileIteratorTest, MAYBE_EvictionTileIteratorWithOcclusion) {
   gfx::Size tile_size(102, 102);
   gfx::Size layer_bounds(1000, 1000);
 
