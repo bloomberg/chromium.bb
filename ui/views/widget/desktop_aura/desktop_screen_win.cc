@@ -12,24 +12,6 @@
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 
-namespace {
-
-MONITORINFO GetMonitorInfoForMonitor(HMONITOR monitor) {
-  MONITORINFO monitor_info = { 0 };
-  monitor_info.cbSize = sizeof(monitor_info);
-  GetMonitorInfo(monitor, &monitor_info);
-  return monitor_info;
-}
-
-gfx::Display GetDisplay(MONITORINFO& monitor_info) {
-  // TODO(oshima): Implement ID and Observer.
-  gfx::Display display(0, gfx::Rect(monitor_info.rcMonitor));
-  display.set_work_area(gfx::Rect(monitor_info.rcWork));
-  return display;
-}
-
-}  // namespace
-
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
