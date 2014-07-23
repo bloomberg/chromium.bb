@@ -173,7 +173,6 @@ crbug.com/247979 [ Win Mac Release ] inspector/elements/edit-dom-actions.html [ 
 crbug.com/247979 [ Win7 Debug ] inspector/elements/edit-dom-actions.html [ WontFix ]
 crbug.com/247979 [ Mac Linux Debug ] inspector/elements/edit-dom-actions.html [ WontFix ]
 crbug.com/248065 [ Linux ] svg/text/foreignObject-text-clipping-bug.xml [ WontFix ]
-crbug.com/257325 [ Mac ] media/audio-repaint.html [ WontFix ]
 crbug.com/246077 virtual/android/fullscreen/full-screen-render-inline.html [ WontFix ]
 crbug.com/259547 virtual/gpu/fast/canvas/canvas-blend-image.html [ WontFix ]
 crbug.com/259547 virtual/gpu/fast/canvas/canvas-blend-solid.html [ WontFix ]
