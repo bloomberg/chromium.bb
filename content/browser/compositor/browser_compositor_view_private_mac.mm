@@ -196,6 +196,15 @@ void BrowserCompositorViewMacInternal::GotSoftwareFrame(
   }
 }
 
+bool BrowserCompositorViewMacInternal::AcceleratedLayerShouldAckImmediately()
+    const {
+  // If there is no client then the accelerated layer is not in the hierarchy
+  // and will never draw.
+  if (!client_)
+    return true;
+  return client_->BrowserCompositorViewShouldAckImmediately();
+}
+
 void BrowserCompositorViewMacInternal::AcceleratedLayerDidDrawFrame(
     bool succeeded) {
   if (accelerated_layer_output_surface_id_) {

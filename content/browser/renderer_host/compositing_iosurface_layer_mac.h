@@ -22,6 +22,7 @@ class CompositingIOSurfaceContext;
 // BrowserCompositorViewMac).
 class CompositingIOSurfaceLayerClient {
  public:
+  virtual bool AcceleratedLayerShouldAckImmediately() const = 0;
   virtual void AcceleratedLayerDidDrawFrame(bool succeeded) = 0;
 };
 

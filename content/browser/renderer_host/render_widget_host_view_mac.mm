@@ -449,6 +449,12 @@ DelegatedFrameHost* RenderWidgetHostViewMac::GetDelegatedFrameHost() const {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserCompositorViewMacClient, public:
 
+bool RenderWidgetHostViewMac::BrowserCompositorViewShouldAckImmediately()
+    const {
+  // The logic for delegated and non-delegated rendering is the same.
+  return AcceleratedLayerShouldAckImmediately();
+}
+
 void RenderWidgetHostViewMac::BrowserCompositorViewFrameSwapped(
     const std::vector<ui::LatencyInfo>& all_latency_info) {
   if (!render_widget_host_)
@@ -1526,20 +1532,6 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
     return;
   }
 
-  // If the window is occluded, then this frame's display call may be severely
-  // throttled. This is a good thing, unless tab capture may be active,
-  // because the broadcast will be inappropriately throttled.
-  // http://crbug.com/350410
-  NSWindow* window = [cocoa_view_ window];
-  if (window && [window respondsToSelector:@selector(occlusionState)]) {
-    bool window_is_occluded =
-        !([window occlusionState] & NSWindowOcclusionStateVisible);
-    // Note that we aggressively ack even if this particular frame is not being
-    // captured.
-    if (window_is_occluded && frame_subscriber_)
-      scoped_ack.Reset();
-  }
-
   // If we reach here, then the frame will be displayed by a future draw
   // call, so don't make the callback.
   ignore_result(scoped_ack.Release());
@@ -2270,6 +2262,51 @@ SkColorType RenderWidgetHostViewMac::PreferredReadbackFormat() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // CompositingIOSurfaceLayerClient, public:
+
+bool RenderWidgetHostViewMac::AcceleratedLayerShouldAckImmediately() const {
+  // If vsync is disabled, then always draw and ack frames immediately.
+  static bool is_vsync_disabled =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync);
+  if (is_vsync_disabled)
+    return true;
+
+  // If the window is occluded, then this frame's display call may be severely
+  // throttled. This is a good thing, unless tab capture may be active, because
+  // the broadcast will be inappropriately throttled.
+  // http://crbug.com/350410
+
+  // If tab capture isn't active then only ack frames when we draw them.
+  if (delegated_frame_host_) {
+    if (!delegated_frame_host_->HasFrameSubscriber())
+      return false;
+  } else {
+    if (!frame_subscriber_)
+      return false;
+  }
+
+  NSWindow* window = [cocoa_view_ window];
+  // If the view isn't even in the heirarchy then frames will never be drawn,
+  // so ack them immediately.
+  if (!window)
+    return true;
+
+  // Check the window occlusion API.
+  if ([window respondsToSelector:@selector(occlusionState)]) {
+    if ([window occlusionState] & NSWindowOcclusionStateVisible) {
+      // If the window is visible then it is safe to wait until frames are
+      // drawn to ack them.
+      return false;
+    } else {
+      // If the window is occluded then frames may never be drawn, so ack them
+      // immediately.
+      return true;
+    }
+  }
+
+  // If the window occlusion API is not present then ack frames when we draw
+  // them.
+  return false;
+}
 
 void RenderWidgetHostViewMac::AcceleratedLayerDidDrawFrame(bool succeeded) {
   if (!render_widget_host_)

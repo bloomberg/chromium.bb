@@ -41,6 +41,10 @@ class BrowserCompositorViewMacInternal;
 // NSView backed by a ui::Compositor).
 class BrowserCompositorViewMacClient {
  public:
+  // Drawing is usually throttled by the rate at which CoreAnimation draws
+  // frames to the screen. This can be used to disable throttling.
+  virtual bool BrowserCompositorViewShouldAckImmediately() const = 0;
+
   // Called when a frame is drawn, and used to pass latency info back to the
   // renderer (if any).
   virtual void BrowserCompositorViewFrameSwapped(

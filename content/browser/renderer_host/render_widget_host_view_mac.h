@@ -350,6 +350,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   virtual SkColorType PreferredReadbackFormat() OVERRIDE;
 
   // CompositingIOSurfaceLayerClient implementation.
+  virtual bool AcceleratedLayerShouldAckImmediately() const OVERRIDE;
   virtual void AcceleratedLayerDidDrawFrame(bool succeeded) OVERRIDE;
 
   // gfx::DisplayObserver implementation.
@@ -520,6 +521,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   virtual DelegatedFrameHost* GetDelegatedFrameHost() const OVERRIDE;
 
   // BrowserCompositorViewMacClient implementation.
+  virtual bool BrowserCompositorViewShouldAckImmediately() const OVERRIDE;
   virtual void BrowserCompositorViewFrameSwapped(
       const std::vector<ui::LatencyInfo>& latency_info) OVERRIDE;
   virtual NSView* BrowserCompositorSuperview() OVERRIDE;

@@ -31,9 +31,6 @@ CompositingIOSurfaceContext::Get(int window_number) {
     return found->second;
   }
 
-  static bool is_vsync_disabled =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync);
-
   base::ScopedTypeRef<CGLContextObj> cgl_context_strong;
   CGLContextObj cgl_context = NULL;
   CGLError error = kCGLNoError;
@@ -98,7 +95,6 @@ CompositingIOSurfaceContext::Get(int window_number) {
       window_number,
       cgl_context_strong,
       cgl_context,
-      is_vsync_disabled,
       shader_program_cache.Pass());
 }
 
@@ -118,12 +114,10 @@ CompositingIOSurfaceContext::CompositingIOSurfaceContext(
     int window_number,
     base::ScopedTypeRef<CGLContextObj> cgl_context_strong,
     CGLContextObj cgl_context,
-    bool is_vsync_disabled,
     scoped_ptr<CompositingIOSurfaceShaderPrograms> shader_program_cache)
     : window_number_(window_number),
       cgl_context_strong_(cgl_context_strong),
       cgl_context_(cgl_context),
-      is_vsync_disabled_(is_vsync_disabled),
       shader_program_cache_(shader_program_cache.Pass()),
       poisoned_(false) {
   DCHECK(window_map()->find(window_number_) == window_map()->end());

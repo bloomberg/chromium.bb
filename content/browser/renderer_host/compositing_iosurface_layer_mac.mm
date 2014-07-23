@@ -43,23 +43,22 @@ CompositingIOSurfaceLayerHelper::~CompositingIOSurfaceLayerHelper() {
 }
 
 void CompositingIOSurfaceLayerHelper::GotNewFrame() {
+  // A trace value of 2 indicates that there is a pending swap ack. See
+  // canDrawInCGLContext for other value meanings.
+  TRACE_COUNTER_ID1("browser", "PendingSwapAck", this, 2);
+
   has_pending_frame_ = true;
   needs_display_ = true;
   timer_.Reset();
 
-  if ([layer_ context] && [layer_ context]->is_vsync_disabled()) {
-    // If vsync is disabled, draw immediately and don't bother trying to use
-    // the isAsynchronous property to ensure smooth animation.
+  // If reqested, draw immediately and don't bother trying to use the
+  // isAsynchronous property to ensure smooth animation.
+  if (client_->AcceleratedLayerShouldAckImmediately()) {
     ImmediatelyForceDisplayAndAck();
   } else {
-    needs_display_ = YES;
     if (![layer_ isAsynchronous])
       [layer_ setAsynchronous:YES];
   }
-
-  // A trace value of 2 indicates that there is a pending swap ack. See
-  // canDrawInCGLContext for other value meanings.
-  TRACE_COUNTER_ID1("browser", "PendingSwapAck", this, 2);
 }
 
 void CompositingIOSurfaceLayerHelper::SetNeedsDisplay() {

@@ -105,6 +105,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   void BeginFrameSubscription(
       scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber);
   void EndFrameSubscription();
+  bool HasFrameSubscriber() const { return frame_subscriber_; }
 
   // Exposed for tests.
   cc::DelegatedFrameProvider* FrameProviderForTesting() const {

@@ -57,6 +57,7 @@ class BrowserCompositorViewMacInternal
       SkCanvas* canvas) OVERRIDE;
 
   // CompositingIOSurfaceLayerClient implementation:
+  virtual bool AcceleratedLayerShouldAckImmediately() const OVERRIDE;
   virtual void AcceleratedLayerDidDrawFrame(bool succeeded) OVERRIDE;
 
   // The client of the BrowserCompositorViewMac that is using this as its
