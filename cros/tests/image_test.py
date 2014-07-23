@@ -32,7 +32,7 @@ def IsPerfFile(file_name):
   return file_name.endswith(PERF_EXTENSION)
 
 
-class BoardAndDirectoryMixin(object):
+class _BoardAndDirectoryMixin(object):
   """A mixin to hold image test's specific info."""
 
   _board = None
@@ -45,7 +45,7 @@ class BoardAndDirectoryMixin(object):
     self._result_dir = result_dir
 
 
-class ImageTestCase(unittest.TestCase, BoardAndDirectoryMixin):
+class ImageTestCase(unittest.TestCase, _BoardAndDirectoryMixin):
   """Subclass unittest.TestCase to provide utility methods for image tests.
 
   Tests should not directly inherit this class. They should instead inherit
@@ -154,7 +154,7 @@ class NonForgivingImageTestCase(ImageTestCase):
     return False
 
 
-class ImageTestSuite(unittest.TestSuite, BoardAndDirectoryMixin):
+class ImageTestSuite(unittest.TestSuite, _BoardAndDirectoryMixin):
   """Wrap around unittest.TestSuite to pass more info to the actual tests."""
 
   def GetTests(self):
@@ -167,7 +167,7 @@ class ImageTestSuite(unittest.TestSuite, BoardAndDirectoryMixin):
     return super(ImageTestSuite, self).run(result)
 
 
-class ImageTestRunner(unittest.TextTestRunner, BoardAndDirectoryMixin):
+class ImageTestRunner(unittest.TextTestRunner, _BoardAndDirectoryMixin):
   """Wrap around unittest.TextTestRunner to pass more info down the chain."""
 
   def run(self, test):

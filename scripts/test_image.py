@@ -47,7 +47,7 @@ def FindImage(image_path):
     # Assume base image.
     image_file = os.path.join(image_path, constants.BASE_IMAGE_NAME + '.bin')
     if not os.path.exists(image_file):
-      raise ValueError('%s does not contain base image' % image_path)
+      raise ValueError('Cannot find base image %s' % image_file)
   elif os.path.isfile(image_path):
     image_file = image_path
   else:

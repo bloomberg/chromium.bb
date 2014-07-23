@@ -38,8 +38,11 @@ class OutputPerfValueTest(PerfUploadTestCase):
   """Test function OutputPerfValue."""
 
   def testInvalidDescription(self):
+    perf_uploader.OutputPerfValue(self.file_name, 'a' * 256, 0, 'ignored')
     self.assertRaises(ValueError, perf_uploader.OutputPerfValue,
                       'ignored', 'a' * 257, 0, 'ignored')
+
+    perf_uploader.OutputPerfValue(self.file_name, 'abcXYZ09-_.', 0, 'ignored')
     self.assertRaises(ValueError, perf_uploader.OutputPerfValue,
                       'ignored', 'a\x00c', 0, 'ignored')
 
