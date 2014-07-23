@@ -89,7 +89,8 @@ template("nacl_toolchain") {
       nacl_prep = "raw"
     }
     deps = [
-      "//native_client/build/toolchain:untar_${package}"
+      "//native_client/build/toolchain:${package}_untar",
+      "//native_client/build/toolchain:${package}_copies"
     ]
   }
 

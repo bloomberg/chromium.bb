@@ -23,7 +23,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
-  "buildtools_revision": "916ba1fc49098855f8ddd08edd41484d36d84e08"
+  "buildtools_revision": "59b93247766e1cdac6e482637ad493df38f7aeb7"
 }
 
 deps = {
@@ -89,6 +89,12 @@ hooks = [
                "native_client/build/package_version/package_version.py",
                "sync", "--extract",
     ],
+  },
+  {
+    # Update the Windows toolchain if necessary.
+    "name": "win_toolchain",
+    "pattern": ".",
+    "action": ["python", "native_client/build/vs_toolchain.py", "update"],
   },
   # Update clang
   {

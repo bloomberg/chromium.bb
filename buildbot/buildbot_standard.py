@@ -167,19 +167,17 @@ def BuildScript(status, context):
 
   # Make sure our GN build is working.
   gn_path = None
+  targets = ['trusted_' + context['arch'], 'untrusted']
   if context.Linux() and context['arch'] != 'arm':
     gn_path = '../buildtools/linux32/gn'
-    targets = ['trusted_' + context['arch'], 'untrusted']
 
   # TODO(noelallen) Disable Mac and Windows build, but
   # check in so we can debug on the bots.
   if 0:
-    if context.Mac():
-      gn_path = '../buildtools/mac/gn'
-      targets = ['trusted_' + context['arch'], 'untrusted']
     if context.Windows():
       gn_path = '../buildtools/win/gn.exe'
-      targets = ['trusted_' + context['arch'], 'untrusted']
+    if context.Mac():
+      gn_path = '../buildtools/mac/gn'
 
   if gn_path:
     with Step('gn_compile', status):

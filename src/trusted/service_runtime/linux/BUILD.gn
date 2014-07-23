@@ -1,4 +1,4 @@
-# Copyright (c) 2014 The Native ClientAuthors. All rights reserved.
+# Copyright (c) 2014 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -14,8 +14,6 @@ if (cpu_arch == "arm") {
 bootstrap_lib_path = "$target_out_dir/libnacl_bootstrap_lib.a"
 bootstrap_raw_path = "$target_gen_dir/nacl_bootstrap_raw"
 bootstrap_exe_path = "$root_out_dir/nacl_helper_bootstrap"
-
-print(bootstrap_lib_path)
 
 linker_script_path = rebase_path("nacl_bootstrap.x")
 
