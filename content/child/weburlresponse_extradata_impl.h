@@ -1,22 +1,21 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_CHILD_WEBURLRESPONSE_EXTRADATA_IMPL_H_
-#define WEBKIT_CHILD_WEBURLRESPONSE_EXTRADATA_IMPL_H_
+#ifndef CONTENT_CHILD_WEBURLRESPONSE_EXTRADATA_IMPL_H_
+#define CONTENT_CHILD_WEBURLRESPONSE_EXTRADATA_IMPL_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "content/common/content_export.h"
 #include "net/http/http_response_info.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "webkit/child/webkit_child_export.h"
 
-namespace webkit_glue {
+namespace content {
 
-// Base class for Chrome's implementation of the "extra data".
-class WEBKIT_CHILD_EXPORT WebURLResponseExtraDataImpl :
+class CONTENT_EXPORT WebURLResponseExtraDataImpl :
     public NON_EXPORTED_BASE(blink::WebURLResponse::ExtraData) {
  public:
   explicit WebURLResponseExtraDataImpl(
@@ -91,6 +90,6 @@ class WEBKIT_CHILD_EXPORT WebURLResponseExtraDataImpl :
   DISALLOW_COPY_AND_ASSIGN(WebURLResponseExtraDataImpl);
 };
 
-}  // namespace webkit_glue
+}  // namespace content
 
-#endif  // WEBKIT_CHILD_WEBURLRESPONSE_EXTRADATA_IMPL_H_
+#endif  // CONTENT_CHILD_WEBURLRESPONSE_EXTRADATA_IMPL_H_

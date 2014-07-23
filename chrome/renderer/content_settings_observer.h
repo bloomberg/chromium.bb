@@ -111,7 +111,7 @@ class ContentSettingsObserver
 
   // Helpers.
   // True if |frame| contains content that is white-listed for content settings.
-  static bool IsWhitelistedForContentSettings(blink::WebFrame* frame);
+  static bool IsWhitelistedForContentSettings(content::RenderFrame* frame);
   static bool IsWhitelistedForContentSettings(
       const blink::WebSecurityOrigin& origin,
       const GURL& document_url);

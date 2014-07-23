@@ -17,6 +17,7 @@ class WebLocalFrame;
 class WebNode;
 class WebPlugin;
 class WebURLRequest;
+class WebURLResponse;
 struct WebPluginParams;
 }
 
@@ -90,6 +91,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
 
   // Returns the ServiceRegistry for this frame.
   virtual ServiceRegistry* GetServiceRegistry() = 0;
+
+  // Returns true if this frame is a FTP directory listing.
+  virtual bool IsFTPDirectoryListing() = 0;
 
  protected:
   virtual ~RenderFrame() {}

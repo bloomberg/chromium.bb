@@ -1,10 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/child/weburlresponse_extradata_impl.h"
+#include "content/child/weburlresponse_extradata_impl.h"
 
-namespace webkit_glue {
+namespace content {
 
 WebURLResponseExtraDataImpl::WebURLResponseExtraDataImpl(
     const std::string& npn_negotiated_protocol)
@@ -16,4 +16,4 @@ WebURLResponseExtraDataImpl::WebURLResponseExtraDataImpl(
 WebURLResponseExtraDataImpl::~WebURLResponseExtraDataImpl() {
 }
 
-}  // namespace webkit_glue
+}  // namespace content

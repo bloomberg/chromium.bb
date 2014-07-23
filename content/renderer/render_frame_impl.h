@@ -232,6 +232,7 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void ExecuteJavaScript(const base::string16& javascript) OVERRIDE;
   virtual bool IsHidden() OVERRIDE;
   virtual ServiceRegistry* GetServiceRegistry() OVERRIDE;
+  virtual bool IsFTPDirectoryListing() OVERRIDE;
 
   // blink::WebFrameClient implementation:
   virtual blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,

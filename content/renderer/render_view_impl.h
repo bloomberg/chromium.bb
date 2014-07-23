@@ -120,10 +120,6 @@ namespace ui {
 struct SelectedFileInfo;
 }
 
-namespace webkit_glue {
-class WebURLResponseExtraDataImpl;
-}
-
 namespace content {
 class BrowserPluginManager;
 class DevToolsAgent;

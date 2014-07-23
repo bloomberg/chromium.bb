@@ -28,6 +28,7 @@
 #include "content/child/web_socket_stream_handle_impl.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/child/websocket_bridge.h"
+#include "content/child/weburlresponse_extradata_impl.h"
 #include "content/common/clipboard_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
@@ -109,7 +110,6 @@
 #include "third_party/WebKit/public/web/WebSurroundingText.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "webkit/child/weburlresponse_extradata_impl.h"
 
 #if defined(ENABLE_PLUGINS)
 #include "content/renderer/npapi/webplugin_impl.h"
@@ -171,7 +171,6 @@ using blink::WebVector;
 using blink::WebView;
 using base::Time;
 using base::TimeDelta;
-using webkit_glue::WebURLResponseExtraDataImpl;
 
 namespace content {
 
@@ -1347,6 +1346,12 @@ void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
 
 ServiceRegistry* RenderFrameImpl::GetServiceRegistry() {
   return &service_registry_;
+}
+
+bool RenderFrameImpl::IsFTPDirectoryListing() {
+  WebURLResponseExtraDataImpl* extra_data =
+      GetExtraDataFromResponse(frame_->dataSource()->response());
+  return extra_data ? extra_data->is_ftp_directory_listing() : false;
 }
 
 // blink::WebFrameClient implementation ----------------------------------------
@@ -2552,8 +2557,7 @@ void RenderFrameImpl::didReceiveResponse(
   int http_status_code = response.httpStatusCode();
 
   // Record page load flags.
-  WebURLResponseExtraDataImpl* extra_data =
-      GetExtraDataFromResponse(response);
+  WebURLResponseExtraDataImpl* extra_data = GetExtraDataFromResponse(response);
   if (extra_data) {
     document_state->set_was_fetched_via_spdy(
         extra_data->was_fetched_via_spdy());

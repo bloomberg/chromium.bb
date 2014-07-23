@@ -194,7 +194,6 @@
 #include "ui/gfx/size_conversions.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "v8/include/v8.h"
-#include "webkit/child/weburlresponse_extradata_impl.h"
 
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
@@ -309,7 +308,6 @@ using blink::WebNetworkStateNotifier;
 using blink::WebRuntimeFeatures;
 using base::Time;
 using base::TimeDelta;
-using webkit_glue::WebURLResponseExtraDataImpl;
 
 #if defined(OS_ANDROID)
 using blink::WebContentDetectionResult;

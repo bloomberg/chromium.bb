@@ -13,19 +13,18 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "content/child/weburlresponse_extradata_impl.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/ftp/ftp_directory_listing_parser.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
-#include "webkit/child/weburlresponse_extradata_impl.h"
 
 using blink::WebURLLoader;
 using blink::WebURLLoaderClient;
 using blink::WebURLResponse;
 using net::FtpDirectoryListingEntry;
-using webkit_glue::WebURLResponseExtraDataImpl;
 
 namespace {
 

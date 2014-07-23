@@ -25,7 +25,6 @@
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "webkit/child/weburlresponse_extradata_impl.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/common/extensions/chrome_extension_messages.h"
@@ -303,15 +302,15 @@ bool ContentSettingsObserver::allowImage(bool enabled_per_settings,
     if (is_interstitial_page_)
       return true;
 
-    WebFrame* frame = render_frame()->GetWebFrame();
-    if (IsWhitelistedForContentSettings(frame))
+    if (IsWhitelistedForContentSettings(render_frame()))
       return true;
 
     if (content_setting_rules_) {
       GURL secondary_url(image_url);
-      allow = GetContentSettingFromRules(
-          content_setting_rules_->image_rules,
-          frame, secondary_url) != CONTENT_SETTING_BLOCK;
+      allow =
+          GetContentSettingFromRules(content_setting_rules_->image_rules,
+                                     render_frame()->GetWebFrame(),
+                                     secondary_url) != CONTENT_SETTING_BLOCK;
     }
   }
   if (!allow)
@@ -361,7 +360,7 @@ bool ContentSettingsObserver::allowScript(bool enabled_per_settings) {
         GURL(frame->document().securityOrigin().toString()));
     allow = setting != CONTENT_SETTING_BLOCK;
   }
-  allow = allow || IsWhitelistedForContentSettings(frame);
+  allow = allow || IsWhitelistedForContentSettings(render_frame());
 
   cached_script_permissions_[frame] = allow;
   return allow;
@@ -376,15 +375,14 @@ bool ContentSettingsObserver::allowScriptFromSource(
     return true;
 
   bool allow = true;
-  WebFrame* frame = render_frame()->GetWebFrame();
   if (content_setting_rules_) {
-    ContentSetting setting = GetContentSettingFromRules(
-        content_setting_rules_->script_rules,
-        frame,
-        GURL(script_url));
+    ContentSetting setting =
+        GetContentSettingFromRules(content_setting_rules_->script_rules,
+                                   render_frame()->GetWebFrame(),
+                                   GURL(script_url));
     allow = setting != CONTENT_SETTING_BLOCK;
   }
-  return allow || IsWhitelistedForContentSettings(frame);
+  return allow || IsWhitelistedForContentSettings(render_frame());
 }
 
 bool ContentSettingsObserver::allowStorage(bool local) {
@@ -667,20 +665,20 @@ const extensions::Extension* ContentSettingsObserver::GetExtension(
   return extension_dispatcher_->extensions()->GetByID(extension_id);
 }
 
-bool ContentSettingsObserver::IsWhitelistedForContentSettings(WebFrame* frame) {
+bool ContentSettingsObserver::IsWhitelistedForContentSettings(
+    content::RenderFrame* frame) {
   // Whitelist Instant processes.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInstantProcess))
     return true;
 
   // Whitelist ftp directory listings, as they require JavaScript to function
   // properly.
-  webkit_glue::WebURLResponseExtraDataImpl* extra_data =
-      static_cast<webkit_glue::WebURLResponseExtraDataImpl*>(
-          frame->dataSource()->response().extraData());
-  if (extra_data && extra_data->is_ftp_directory_listing())
+  if (frame->IsFTPDirectoryListing())
     return true;
-  return IsWhitelistedForContentSettings(frame->document().securityOrigin(),
-                                         frame->document().url());
+
+  WebFrame* web_frame = frame->GetWebFrame();
+  return IsWhitelistedForContentSettings(web_frame->document().securityOrigin(),
+                                         web_frame->document().url());
 }
 
 bool ContentSettingsObserver::IsWhitelistedForContentSettings(

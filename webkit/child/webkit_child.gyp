@@ -56,8 +56,6 @@
         'resource_loader_bridge.cc',
         'resource_loader_bridge.h',
         'webkit_child_export.h',
-        'weburlresponse_extradata_impl.cc',
-        'weburlresponse_extradata_impl.h',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267 ],
