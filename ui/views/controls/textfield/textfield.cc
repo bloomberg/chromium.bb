@@ -271,6 +271,8 @@ Textfield::Textfield()
       drop_cursor_visible_(false),
       initiating_drag_(false),
       aggregated_clicks_(0),
+      drag_start_display_offset_(0),
+      touch_handles_hidden_due_to_scroll_(false),
       weak_ptr_factory_(this) {
   set_context_menu_controller(this);
   set_drag_controller(this);
@@ -337,6 +339,12 @@ base::string16 Textfield::GetSelectedText() const {
 void Textfield::SelectAll(bool reversed) {
   model_->SelectAll(reversed);
   UpdateSelectionClipboard();
+  UpdateAfterChange(false, true);
+}
+
+void Textfield::SelectWordAt(const gfx::Point& point) {
+  model_->MoveCursorTo(point, false);
+  model_->SelectWord();
   UpdateAfterChange(false, true);
 }
 
@@ -583,9 +591,7 @@ bool Textfield::OnMousePressed(const ui::MouseEvent& event) {
             MoveCursorTo(event.location(), event.IsShiftDown());
           break;
         case 1:
-          model_->MoveCursorTo(event.location(), false);
-          model_->SelectWord();
-          UpdateAfterChange(false, true);
+          SelectWordAt(event.location());
           double_click_word_ = GetRenderText()->selection();
           break;
         case 2:
@@ -693,79 +699,84 @@ ui::TextInputClient* Textfield::GetTextInputClient() {
 void Textfield::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
-      OnBeforeUserAction();
       RequestFocus();
       ShowImeIfNeeded();
-
-      // We don't deselect if the point is in the selection
-      // because TAP_DOWN may turn into a LONG_PRESS.
-      if (!GetRenderText()->IsPointInSelection(event->location()))
-        MoveCursorTo(event->location(), false);
-      OnAfterUserAction();
-      event->SetHandled();
-      break;
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-      OnBeforeUserAction();
-      MoveCursorTo(event->location(), true);
-      OnAfterUserAction();
-      event->SetHandled();
-      break;
-    case ui::ET_GESTURE_SCROLL_END:
-    case ui::ET_SCROLL_FLING_START:
-      CreateTouchSelectionControllerAndNotifyIt();
       event->SetHandled();
       break;
     case ui::ET_GESTURE_TAP:
       if (event->details().tap_count() == 1) {
-        CreateTouchSelectionControllerAndNotifyIt();
+        if (!GetRenderText()->IsPointInSelection(event->location())) {
+          OnBeforeUserAction();
+          MoveCursorTo(event->location(), false);
+          OnAfterUserAction();
+        }
+      } else if (event->details().tap_count() == 2) {
+        OnBeforeUserAction();
+        SelectWordAt(event->location());
+        OnAfterUserAction();
       } else {
-        DestroyTouchSelection();
         OnBeforeUserAction();
         SelectAll(false);
         OnAfterUserAction();
-        event->SetHandled();
       }
+      CreateTouchSelectionControllerAndNotifyIt();
 #if defined(OS_WIN)
       if (!read_only())
         base::win::DisplayVirtualKeyboard();
 #endif
+      event->SetHandled();
       break;
     case ui::ET_GESTURE_LONG_PRESS:
-      // If long press happens outside selection, select word and show context
-      // menu (If touch selection is enabled, context menu is shown by the
-      // |touch_selection_controller_|, hence we mark the event handled.
-      // Otherwise, the regular context menu will be shown by views).
-      // If long press happens in selected text and touch drag drop is enabled,
-      // we will turn off touch selection (if one exists) and let views do drag
-      // drop.
       if (!GetRenderText()->IsPointInSelection(event->location())) {
+        // If long-press happens outside selection, select word and try to
+        // activate touch selection.
         OnBeforeUserAction();
-        model_->SelectWord();
-        touch_selection_controller_.reset(
-            ui::TouchSelectionController::create(this));
-        UpdateAfterChange(false, true);
+        SelectWordAt(event->location());
         OnAfterUserAction();
-        if (touch_selection_controller_)
-          event->SetHandled();
-      } else if (switches::IsTouchDragDropEnabled()) {
-        initiating_drag_ = true;
-        DestroyTouchSelection();
-      } else {
-        if (!touch_selection_controller_)
-          CreateTouchSelectionControllerAndNotifyIt();
-        if (touch_selection_controller_)
-          event->SetHandled();
-      }
-      return;
-    case ui::ET_GESTURE_LONG_TAP:
-      if (!touch_selection_controller_)
         CreateTouchSelectionControllerAndNotifyIt();
-
+        // If touch selection activated successfully, mark event as handled so
+        // that the regular context menu is not shown.
+        if (touch_selection_controller_)
+          event->SetHandled();
+      } else {
+        // If long-press happens on the selection, deactivate touch selection
+        // and try to initiate drag-drop. If drag-drop is not enabled, context
+        // menu will be shown. Event is not marked as handled to let Views
+        // handle drag-drop or context menu.
+        DestroyTouchSelection();
+        initiating_drag_ = switches::IsTouchDragDropEnabled();
+      }
+      break;
+    case ui::ET_GESTURE_LONG_TAP:
       // If touch selection is enabled, the context menu on long tap will be
       // shown by the |touch_selection_controller_|, hence we mark the event
-      // handled so views does not try to show context menu on it.
+      // handled so Views does not try to show context menu on it.
       if (touch_selection_controller_)
         event->SetHandled();
+      break;
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      touch_handles_hidden_due_to_scroll_ = touch_selection_controller_ != NULL;
+      DestroyTouchSelection();
+      drag_start_location_ = event->location();
+      drag_start_display_offset_ =
+          GetRenderText()->GetUpdatedDisplayOffset().x();
+      event->SetHandled();
+      break;
+    case ui::ET_GESTURE_SCROLL_UPDATE: {
+      int new_offset = drag_start_display_offset_ + event->location().x() -
+          drag_start_location_.x();
+      GetRenderText()->SetDisplayOffset(new_offset);
+      SchedulePaint();
+      event->SetHandled();
+      break;
+    }
+    case ui::ET_GESTURE_SCROLL_END:
+    case ui::ET_SCROLL_FLING_START:
+      if (touch_handles_hidden_due_to_scroll_) {
+        CreateTouchSelectionControllerAndNotifyIt();
+        touch_handles_hidden_due_to_scroll_ = false;
+      }
+      event->SetHandled();
       break;
     default:
       return;

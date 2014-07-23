@@ -89,6 +89,9 @@ class VIEWS_EXPORT Textfield : public View,
   // of text that overflows its display area.
   void SelectAll(bool reversed);
 
+  // A convenience method to select the word closest to |point|.
+  void SelectWordAt(const gfx::Point& point);
+
   // Clears the selection within the edit field and sets the caret to the end.
   void ClearSelection();
 
@@ -449,6 +452,15 @@ class VIEWS_EXPORT Textfield : public View,
   gfx::Range double_click_word_;
 
   scoped_ptr<ui::TouchSelectionController> touch_selection_controller_;
+
+  // Used to track touch drag starting location and offset to enable touch
+  // scrolling.
+  gfx::Point drag_start_location_;
+  int drag_start_display_offset_;
+
+  // Tracks if touch editing handles are hidden because user has started
+  // scrolling. If |true|, handles are shown after scrolling ends.
+  bool touch_handles_hidden_due_to_scroll_;
 
   // Context menu related members.
   scoped_ptr<ui::SimpleMenuModel> context_menu_contents_;

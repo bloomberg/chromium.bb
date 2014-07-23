@@ -764,8 +764,10 @@ void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
     saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
   }
 
+  views::Textfield::OnGestureEvent(event);
+
   if (select_all_on_gesture_tap_ && event->type() == ui::ET_GESTURE_TAP)
-    SelectAll(false);
+    SelectAll(true);
 
   if (event->type() == ui::ET_GESTURE_TAP ||
       event->type() == ui::ET_GESTURE_TAP_CANCEL ||
@@ -776,8 +778,6 @@ void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
       event->type() == ui::ET_GESTURE_LONG_TAP) {
     select_all_on_gesture_tap_ = false;
   }
-
-  views::Textfield::OnGestureEvent(event);
 }
 
 void OmniboxViewViews::AboutToRequestFocusFromTabTraversal(bool reverse) {
