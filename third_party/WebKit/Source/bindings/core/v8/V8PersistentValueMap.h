@@ -65,7 +65,7 @@ public:
         Impl* impl, KeyType key, v8::PersistentContainerValue value)
     {
         v8::PersistentContainerValue oldValue = Get(impl, key);
-        impl->add(key, value);
+        impl->set(key, value);
         return oldValue;
     }
     static v8::PersistentContainerValue Get(const Impl* impl, KeyType key)
