@@ -154,14 +154,12 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(cons
     RenderObject* renderer = layer->renderer();
 
     if (hasOverflowScrollTrigger()) {
-        if (const RenderLayer* scrollingAncestor = layer->ancestorScrollingLayer()) {
-            if (scrollingAncestor->needsCompositedScrolling()) {
-                if (layer->clipParent())
-                    directReasons |= CompositingReasonOutOfFlowClipping;
+        if (layer->clipParent())
+            directReasons |= CompositingReasonOutOfFlowClipping;
 
-                if (layer->scrollParent())
-                    directReasons |= CompositingReasonOverflowScrollingParent;
-            }
+        if (const RenderLayer* scrollingAncestor = layer->ancestorScrollingLayer()) {
+            if (scrollingAncestor->needsCompositedScrolling() && layer->scrollParent())
+                directReasons |= CompositingReasonOverflowScrollingParent;
         }
 
         if (layer->needsCompositedScrolling())
