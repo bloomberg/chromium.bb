@@ -37,13 +37,6 @@ class SYNC_EXPORT Invalidation {
 
   ~Invalidation();
 
-  // We define the copy and assignment operators explicitly for now, even
-  // though the implicit definitions would be good enough for our purposes.
-  // This is to work around some linker issues in the Windows build.  See
-  // http://crbug.com/394549.
-  Invalidation(const Invalidation& other);
-  Invalidation& operator=(const Invalidation& other);
-
   // Compares two invalidations.  The comparison ignores ack-tracking state.
   bool Equals(const Invalidation& other) const;
 

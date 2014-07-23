@@ -42,15 +42,6 @@ Invalidation Invalidation::InitFromDroppedInvalidation(
                       std::string(), dropped.ack_handle_);
 }
 
-Invalidation::Invalidation(const Invalidation& other)
-  : id_(other.id_),
-    is_unknown_version_(other.is_unknown_version_),
-    version_(other.version_),
-    payload_(other.payload_),
-    ack_handle_(other.ack_handle_),
-    ack_handler_(other.ack_handler_) {
-}
-
 scoped_ptr<Invalidation> Invalidation::InitFromValue(
     const base::DictionaryValue& value) {
   invalidation::ObjectId id;
@@ -95,16 +86,6 @@ scoped_ptr<Invalidation> Invalidation::InitFromValue(
 }
 
 Invalidation::~Invalidation() {}
-
-Invalidation& Invalidation::operator=(const Invalidation& other) {
-  id_ = other.id_;
-  is_unknown_version_ = other.is_unknown_version_;
-  version_ = other.version_;
-  payload_ = other.payload_;
-  ack_handle_ = other.ack_handle_;
-  ack_handler_ = other.ack_handler_;
-  return *this;
-}
 
 invalidation::ObjectId Invalidation::object_id() const {
   return id_;

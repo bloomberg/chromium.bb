@@ -11,9 +11,6 @@
   {
     'target_name': 'sync_tools_helper',
     'type': 'static_library',
-    'defines': [
-      'SYNC_IMPLEMENTATION',
-    ],
     'include_dirs': [
       '../..',
     ],
