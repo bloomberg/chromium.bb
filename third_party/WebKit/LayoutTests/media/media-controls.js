@@ -90,7 +90,7 @@ function textTrackDisplayElement(parentElement, id, cueNumber)
 function testClosedCaptionsButtonVisibility(expected)
 {
     try {
-        captionsButtonElement = mediaControlsElement(internals.shadowRoot(mediaElement).firstChild, "-webkit-media-controls-toggle-closed-captions-button");
+        captionsButtonElement = mediaControlsButton(mediaElement, "toggle-closed-captions-button");
         captionsButtonCoordinates = mediaControlsButtonCoordinates(mediaElement, "toggle-closed-captions-button");
     } catch (exception) {
         consoleWrite("Failed to find a closed captions button or its coordinates: " + exception);

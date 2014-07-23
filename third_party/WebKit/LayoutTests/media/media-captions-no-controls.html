@@ -25,9 +25,9 @@
                 run("video.setAttribute('controls','controls')");
                 testExpected("video.textTracks.length", 1);
                 testExpected("video.controls", true);
-                controlsElement = mediaControlsElement(internals.shadowRoot(video).firstChild, "-webkit-media-controls-panel");
+                panel = mediaControlsButton(video, "panel");
                 testExpected("internals.shadowRoot(video).firstChild", null, "!=");
-                testExpected("controlsElement.style['display']", 'none', "!=");
+                testExpected("panel.style['display']", 'none', "!=");
 
                 consoleWrite("");
                 endTest();
