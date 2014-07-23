@@ -1031,7 +1031,6 @@
           'dependencies': [
             '../ipc/ipc.gyp:ipc',
             '../ui/metro_viewer/metro_viewer.gyp:metro_viewer_messages',
-            '../ui/platform_window/win/win_window.gyp:win_window',
             '../win8/win8.gyp:metro_viewer',
             '../win8/win8.gyp:test_support_win8',
             '../win8/win8_tests.gyp:test_registrar',

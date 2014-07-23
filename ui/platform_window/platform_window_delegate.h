@@ -44,8 +44,6 @@ class PlatformWindowDelegate {
   virtual void OnLostCapture() = 0;
 
   virtual void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) = 0;
-
-  virtual void OnActivationChanged(bool active) = 0;
 };
 
 }  // namespace ui

@@ -72,15 +72,6 @@ class WIN_WINDOW_EXPORT WinWindow : public NON_EXPORTED_BASE(PlatformWindow),
   DISALLOW_COPY_AND_ASSIGN(WinWindow);
 };
 
-namespace test {
-
-// Set true to let WindowTreeHostWin use a popup window
-// with no frame/title so that the window size and test's
-// expectations matches.
-WIN_WINDOW_EXPORT void SetUsePopupAsRootWindowForTest(bool use);
-
-}  // namespace test
-
 }  // namespace ui
 
 #endif  // UI_PLATFORM_WINDOW_WIN_WIN_WINDOW_H_

@@ -35,7 +35,6 @@ class AURA_EXPORT WindowTreeHostOzone : public WindowTreeHost,
   virtual void OnLostCapture() OVERRIDE;
   virtual void OnAcceleratedWidgetAvailable(
       gfx::AcceleratedWidget widget) OVERRIDE;
-  virtual void OnActivationChanged(bool active) OVERRIDE;
 
   // WindowTreeHost:
   virtual ui::EventSource* GetEventSource() OVERRIDE;

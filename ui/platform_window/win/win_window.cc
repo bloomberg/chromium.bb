@@ -13,8 +13,6 @@ namespace ui {
 
 namespace {
 
-bool use_popup_as_root_window_for_test = false;
-
 gfx::Rect GetWindowBoundsForClientBounds(DWORD style, DWORD ex_style,
                                          const gfx::Rect& bounds) {
   RECT wr;
@@ -39,8 +37,6 @@ WinWindow::WinWindow(PlatformWindowDelegate* delegate,
                      const gfx::Rect& bounds)
     : delegate_(delegate) {
   CHECK(delegate_);
-  if (use_popup_as_root_window_for_test)
-    set_window_style(WS_POPUP);
   gfx::Rect window_bounds = GetWindowBoundsForClientBounds(
       WS_OVERLAPPEDWINDOW, window_ex_style(), bounds);
   gfx::WindowImpl::Init(NULL, window_bounds);
@@ -130,7 +126,6 @@ LRESULT WinWindow::OnKeyEvent(UINT message, WPARAM w_param, LPARAM l_param) {
 }
 
 LRESULT WinWindow::OnNCActivate(UINT message, WPARAM w_param, LPARAM l_param) {
-  delegate_->OnActivationChanged(!!w_param);
   return DefWindowProc(hwnd(), message, w_param, l_param);
 }
 
@@ -167,12 +162,4 @@ void WinWindow::OnWindowPosChanged(WINDOWPOS* window_pos) {
   }
 }
 
-namespace test {
-
-// static
-void SetUsePopupAsRootWindowForTest(bool use) {
-  use_popup_as_root_window_for_test = use;
-}
-
-}  // namespace test
 }  // namespace ui
