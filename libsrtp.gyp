@@ -30,6 +30,7 @@
           'HAVE_INTTYPES_H',
           'HAVE_NETINET_IN_H',
           'INLINE=inline',
+          'DEV_URANDOM="/dev/urandom"',
         ],
       }],
       ['OS=="win"', {
