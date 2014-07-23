@@ -483,8 +483,6 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
 
 bool LayerTreeHostImpl::HaveTouchEventHandlersAt(
     const gfx::Point& viewport_point) {
-  if (!settings_.touch_hit_testing)
-    return true;
 
   gfx::PointF device_viewport_point =
       gfx::ScalePoint(viewport_point, device_scale_factor_);

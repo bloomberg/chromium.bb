@@ -1182,7 +1182,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setPinchOverlayScrollbarThickness(
       prefs.pinch_overlay_scrollbar_thickness);
   settings->setUseSolidColorScrollbars(prefs.use_solid_color_scrollbars);
-  settings->setCompositorTouchHitTesting(prefs.compositor_touch_hit_testing);
 }
 
 /*static*/

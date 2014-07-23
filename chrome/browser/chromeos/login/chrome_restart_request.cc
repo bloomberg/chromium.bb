@@ -174,7 +174,6 @@ std::string DeriveCommandLine(const GURL& start_url,
     // content/browser/renderer_host/render_process_host_impl.cc.
     cc::switches::kCompositeToMailbox,
     cc::switches::kDisableCompositedAntialiasing,
-    cc::switches::kDisableCompositorTouchHitTesting,
     cc::switches::kDisableMainFrameBeforeActivation,
     cc::switches::kDisableMainFrameBeforeDraw,
     cc::switches::kDisablePinchVirtualViewport,

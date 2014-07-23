@@ -120,9 +120,5 @@ const char kCCLayerTreeTestNoTimeout[] = "cc-layer-tree-test-no-timeout";
 // Makes pixel tests write their output instead of read it.
 const char kCCRebaselinePixeltests[] = "cc-rebaseline-pixeltests";
 
-// Disable touch hit testing in the compositor.
-const char kDisableCompositorTouchHitTesting[] =
-    "disable-compositor-touch-hit-testing";
-
 }  // namespace switches
 }  // namespace cc

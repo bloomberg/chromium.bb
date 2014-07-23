@@ -5645,12 +5645,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_DISABLE_TOUCH_ADJUSTMENT_DESCRIPTION" desc="Description of the disable touch adjustment flag.">
         Disables touch adjustment support.  Touch adjustment is the process of refining the position of a touch gesture in order to compensate for touches having poor resolution compared to a mouse.
       </message>
-      <message name="IDS_FLAGS_DISABLE_COMPOSITOR_TOUCH_HIT_TESTING_NAME" desc="Title of the disable compositor touch hit testing flag.">
-        Disable compositor touch hit testing.
-      </message>
-      <message name="IDS_FLAGS_DISABLE_COMPOSITOR_TOUCH_HIT_TESTING_DESCRIPTION" desc="Description of the disable compositor touch hit testing flags.">
-        Disables an optimization intended to improve touch scrolling responsiveness.  Forces all touch events to go to the blink main thread to look for handlers, instead of potentially short-circuiting from the compositor thread.
-      </message>
       <message name="IDS_FLAGS_COMPOSITED_LAYER_BORDERS" desc="Name of the 'Composited layer borders' lab.">
         Composited render layer borders
       </message>

@@ -1544,13 +1544,6 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "disable-compositor-touch-hit-testing",
-    IDS_FLAGS_DISABLE_COMPOSITOR_TOUCH_HIT_TESTING_NAME,
-    IDS_FLAGS_DISABLE_COMPOSITOR_TOUCH_HIT_TESTING_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(cc::switches::kDisableCompositorTouchHitTesting),
-  },
-  {
     "enable-streamlined-hosted-apps",
     IDS_FLAGS_ENABLE_STREAMLINED_HOSTED_APPS_NAME,
     IDS_FLAGS_ENABLE_STREAMLINED_HOSTED_APPS_DESCRIPTION,
