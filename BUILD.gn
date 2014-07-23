@@ -96,6 +96,7 @@ group("root") {
     "//third_party/zlib",
     "//third_party:jpeg",
     "//tools/gn",
+    "//tools/imagediff($host_toolchain)",
     "//ui/app_list",
     "//ui/aura",
     "//ui/accessibility",

@@ -453,9 +453,10 @@ executable("content_shell") {
   }
 
   if (!is_android || !is_android_webview_build) {
-    deps += [
-      # NOTE: rely on host build of this target.
-      #'../tools/imagediff/image_diff.gyp:image_diff',  TODO(GYP)
+    # Some tests rely on this tool. It might be nicer if these tests relied on
+    # image diff rather than having content shell depend on it.
+    datadeps = [
+      "//tools/imagediff($host_toolchain)",
     ]
   }
 }
