@@ -358,6 +358,9 @@ class OnErrorServerTest(OnErrorBase):
 
 
 def run_shell_out(url, mode):
+  # Ignore _DISABLE_ENVVAR if set.
+  os.environ.pop(on_error._DISABLE_ENVVAR, None)
+
   # Enable 'report_on_exception_exit' even though main file is *_test.py.
   on_error._is_in_test = lambda: False
 

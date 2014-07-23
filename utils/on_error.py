@@ -20,6 +20,7 @@ import time
 import traceback
 
 from . import net
+from . import tools
 from . import zip_package
 
 
@@ -30,6 +31,9 @@ _ENABLED_DOMAINS = (
   '.google.com',
   '.google.com.internal',
 )
+
+# If this envar is '1' then disable reports. Useful when developing the client.
+_DISABLE_ENVVAR = 'SWARMING_DISABLE_ON_ERROR'
 
 
 # Set this variable to the net.HttpService server to be used to report errors.
@@ -216,6 +220,9 @@ def report_on_exception_exit(server):
   global _SERVER
   if _SERVER:
     raise ValueError('on_error.report_on_exception_exit() was called twice')
+
+  if tools.get_bool_env_var(_DISABLE_ENVVAR):
+    return False
 
   if _is_in_test():
     # Disable when running inside unit tests process.
