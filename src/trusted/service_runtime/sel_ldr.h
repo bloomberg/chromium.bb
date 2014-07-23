@@ -441,6 +441,8 @@ struct NaClApp {
    * holding the mutex futex_wait_list_mu.
    */
   struct NaClListNode       futex_wait_list_head;
+
+  const struct NaClEmbedderInterface *embedder_interface;
 };
 
 
