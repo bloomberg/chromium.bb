@@ -206,6 +206,7 @@
             ],
         },
         {
+            # GN version: //third_party/WebKit/Source/web:test_support
             'target_name': 'blink_web_test_support',
             'conditions': [
                 ['component=="shared_library"', {

@@ -41,6 +41,7 @@
     ],
     'targets': [
         {
+            # GN version: //third_party/WebKit/Source/web:webkit_unit_tests
             'target_name': 'webkit_unit_tests',
             'type': 'executable',
             'variables': { 'enable_wexit_time_destructors': 1, },

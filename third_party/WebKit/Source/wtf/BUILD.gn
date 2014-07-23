@@ -108,7 +108,7 @@ test("wtf_unittests") {
 
   deps = [
     ":run_all_tests",
-    ":unittest_helpers",
+    ":test_support",
     ":wtf",
     "//base",
     "//base/allocator",
@@ -135,7 +135,8 @@ source_set("run_all_tests") {
   ]
 }
 
-component("unittest_helpers") {
+component("test_support") {
+  output_name = "wtf_test_support"
   sources = gypi_values.wtf_unittest_helper_files
   defines = [ "WTF_UNITTEST_HELPERS_IMPLEMENTATION=1" ]
 

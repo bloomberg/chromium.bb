@@ -562,6 +562,7 @@ action("generated_testing_idls_internal_runtime_flags") {
 group("make_core_generated") {
   deps = [
     ":make_core_generated_private_script",
+    ":make_core_generated_private_script_for_testing",
     ":make_core_generated_html_entity_table",
     ":make_core_generated_css_property_names",
     ":make_core_generated_media_feature_names",

@@ -25,13 +25,12 @@ group("blink_minimal") {
   ]
 }
 
-# TODO(GYP) enable this when web:test_support exists.
 # GYP version: WebKit/public/blink.gyp:blink_test_support
-#group("test_support") {
-#  deps = [
-#    "//third_party/WebKit/Source/web:test_support",
-#  ]
-#}
+group("test_support") {
+  deps = [
+    "//third_party/WebKit/Source/web:test_support",
+  ]
+}
 
 # GYP version: WebKit/public/all.gyp:all_blink
 group("all_blink") {

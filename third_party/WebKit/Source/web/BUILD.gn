@@ -49,6 +49,7 @@ component("web") {
   }
 }
 
+# GYP version: WebKit/Source/web/web.gyp:blink_web_test_support
 source_set("test_support") {
   if (!is_component_build) {
     deps = [
@@ -68,8 +69,9 @@ source_set("test_support") {
   }
 }
 
-# TODO(GYP): Enable when //content/test:test_support added
+# TODO(GYP): Enable when //content/test:test_support links.
 if (false) {
+# GYP version: WebKit/Source/web/web_tests.gyp:webkit_unit_tests
 test("webkit_unit_tests") {
   deps = [
     ":test_support",
@@ -77,15 +79,14 @@ test("webkit_unit_tests") {
     "//base",
     "//base/test:test_support",
     "//base:i18n",
+    "//content/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/WebKit/Source/wtf:unittest_helpers",
+    "//third_party/WebKit/Source/wtf:test_support",
     "//third_party/libwebp",
     "//third_party/zlib",
     "//url",
     "//v8",
-# "//content/test:test_support",
-# webkit_unit_test_resources
    ]
 
   sources = [ "tests/RunAllTests.cpp" ]
