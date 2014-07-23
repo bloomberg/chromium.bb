@@ -160,6 +160,18 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
 
   UMA_HISTOGRAM_BOOLEAN("Aura.CreatedGpuBrowserCompositor", !!context_provider);
 
+  if (context_provider) {
+    scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_task_runner =
+        GetCompositorMessageLoop();
+    if (!compositor_thread_task_runner.get())
+      compositor_thread_task_runner = base::MessageLoopProxy::current();
+
+    // Here we know the GpuProcessHost has been set up, because we created a
+    // context.
+    output_surface_proxy_->ConnectToGpuProcessHost(
+        compositor_thread_task_runner.get());
+  }
+
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseSurfaces)) {
     // This gets a bit confusing. Here we have a ContextProvider configured to
@@ -212,16 +224,6 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
             compositor->vsync_manager()));
     return surface.PassAs<cc::OutputSurface>();
   }
-
-  scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_task_runner =
-      GetCompositorMessageLoop();
-  if (!compositor_thread_task_runner.get())
-    compositor_thread_task_runner = base::MessageLoopProxy::current();
-
-  // Here we know the GpuProcessHost has been set up, because we created a
-  // context.
-  output_surface_proxy_->ConnectToGpuProcessHost(
-      compositor_thread_task_runner.get());
 
   scoped_ptr<BrowserCompositorOutputSurface> surface(
       new GpuBrowserCompositorOutputSurface(
