@@ -562,6 +562,9 @@ class ManifestVersionedSyncStage(SyncStage):
 class MasterSlaveSyncStage(ManifestVersionedSyncStage):
   """Stage that generates a unique manifest file candidate, and sync's to it."""
 
+  # Timeout for waiting on the latest candidate manifest.
+  LATEST_CANDIDATE_TIMEOUT_SECONDS = 20 * 60
+
   # TODO(mtennant): Turn this into self._run.attrs.sub_manager or similar.
   # An instance of lkgm_manager.LKGMManager for slave builds.
   sub_manager = None
@@ -627,7 +630,8 @@ class MasterSlaveSyncStage(ManifestVersionedSyncStage):
       return manifest
     else:
       return self.manifest_manager.GetLatestCandidate(
-          dashboard_url=self.ConstructDashboardURL())
+          dashboard_url=self.ConstructDashboardURL(),
+          timeout=self.LATEST_CANDIDATE_TIMEOUT_SECONDS)
 
   def GetLatestChromeVersion(self):
     """Returns the version of Chrome to uprev."""

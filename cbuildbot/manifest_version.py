@@ -20,6 +20,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
+from chromite.lib import timeout_util
 
 
 BUILD_STATUS_URL = '%s/builder-status' % constants.MANIFEST_VERSIONS_GS_URL
@@ -391,6 +392,8 @@ class BuilderStatus(object):
 class BuildSpecsManager(object):
   """A Class to manage buildspecs and their states."""
 
+  SLEEP_TIMEOUT = 1
+
   def __init__(self, source_repo, manifest_repo, build_names, incr_type, force,
                branch, manifest=constants.DEFAULT_MANIFEST, dry_run=True,
                master=False):
@@ -602,6 +605,62 @@ class BuildSpecsManager(object):
       return BuilderStatus(BuilderStatus.STATUS_MISSING, None)
 
     return BuildSpecsManager._UnpickleBuildStatus(output)
+
+  def GetBuildersStatus(self, builders_array, timeout=3 * 60):
+    """Get the statuses of the builders.
+
+    Args:
+      builders_array: A list of the names of the builders to check.
+      timeout: Number of seconds to wait for the results.
+
+    Returns:
+      A build-names->status dictionary of build statuses.
+    """
+    builders_completed = set()
+    builder_statuses = {}
+
+    def _CheckStatusOfBuildersArray():
+      """Helper function that iterates through current statuses."""
+      for builder_name in builders_array:
+        cached_status = builder_statuses.get(builder_name)
+        if not cached_status or not cached_status.Completed():
+          logging.debug("Checking for builder %s's status", builder_name)
+          builder_status = self.GetBuildStatus(builder_name,
+                                               self.current_version)
+          builder_statuses[builder_name] = builder_status
+          if builder_status.Missing():
+            logging.warn('No status found for builder %s.', builder_name)
+          elif builder_status.Completed():
+            builders_completed.add(builder_name)
+            logging.info('Builder %s completed with status "%s".',
+                         builder_name, builder_status.status)
+
+      if len(builders_completed) < len(builders_array):
+        logging.info('Still waiting for the following builds to complete: %r',
+                     sorted(set(builders_array).difference(builders_completed)))
+        return None
+      else:
+        return 'Builds completed.'
+
+    def _PrintRemainingTime(minutes_left):
+      logging.info('%d more minutes until timeout...', minutes_left)
+
+    # Check for build completion until all builders report in.
+    try:
+      builds_succeeded = timeout_util.WaitForSuccess(
+          lambda x: x is None,
+          _CheckStatusOfBuildersArray,
+          timeout,
+          period=self.SLEEP_TIMEOUT,
+          side_effect_func=_PrintRemainingTime)
+    except timeout_util.TimeoutError:
+      builds_succeeded = None
+
+    if not builds_succeeded:
+      logging.error('Not all builds finished before timeout (%d minutes)'
+                    ' reached.', int((timeout / 60) + 0.5))
+
+    return builder_statuses
 
   @staticmethod
   def _UnpickleBuildStatus(pickle_string):

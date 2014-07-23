@@ -6,6 +6,7 @@
 
 """Unittests for manifest_version. Needs to be run inside of chroot."""
 
+import mox
 import os
 import sys
 import tempfile
@@ -293,6 +294,44 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
     self.assertEqual(passed_input_status.AsFlatDict(),
                 passed_output_status.AsFlatDict())
     self.assertTrue(empty_string_status.Failed())
+
+  def _GetBuildersStatus(self, builders, status_runs):
+    """Test a call to BuildSpecsManger.GetBuildersStatus.
+
+    Args:
+      builders: List of builders to get status for.
+      status_runs: List of expected (builder, status) tuples.
+    """
+    self.mox.StubOutWithMock(manifest_version.BuildSpecsManager,
+                             'GetBuildStatus')
+    for builder, status in status_runs:
+      status = manifest_version.BuilderStatus(status, None)
+      manifest_version.BuildSpecsManager.GetBuildStatus(
+          builder, mox.IgnoreArg()).AndReturn(status)
+
+    self.mox.ReplayAll()
+    statuses = self.manager.GetBuildersStatus(builders)
+    self.mox.VerifyAll()
+    return statuses
+
+  def testGetBuildersStatusBothFinished(self):
+    """Tests GetBuilderStatus where both builds have finished."""
+    status_runs = [('build1', manifest_version.BuilderStatus.STATUS_FAILED),
+                   ('build2', manifest_version.BuilderStatus.STATUS_PASSED)]
+    statuses = self._GetBuildersStatus(['build1', 'build2'], status_runs)
+    self.assertTrue(statuses['build1'].Failed())
+    self.assertTrue(statuses['build2'].Passed())
+
+  def testGetBuildersStatusLoop(self):
+    """Tests GetBuilderStatus where builds are inflight."""
+    status_runs = [('build1', manifest_version.BuilderStatus.STATUS_INFLIGHT),
+                   ('build2', manifest_version.BuilderStatus.STATUS_MISSING),
+                   ('build1', manifest_version.BuilderStatus.STATUS_FAILED),
+                   ('build2', manifest_version.BuilderStatus.STATUS_INFLIGHT),
+                   ('build2', manifest_version.BuilderStatus.STATUS_PASSED)]
+    statuses = self._GetBuildersStatus(['build1', 'build2'], status_runs)
+    self.assertTrue(statuses['build1'].Failed())
+    self.assertTrue(statuses['build2'].Passed())
 
 
 if __name__ == '__main__':

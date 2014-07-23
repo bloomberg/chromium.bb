@@ -122,18 +122,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   Vars:
     lkgm_subdir:  Subdirectory within manifest repo to store candidates.
   """
-  # Max timeout before assuming other builders have failed.
-  LONG_MAX_TIMEOUT_SECONDS = 1200
-
-  # Max timeout before assuming other builders have failed for Chrome PFQ.
-  # Longer as there is little to lose for Chrome PFQ waiting and arm
-  # has been slower often.
-  CHROME_LONG_MAX_TIMEOUT_SECONDS = 3 * 60 * 60
-  # Max timeout before assuming other builders have failed.
-  MAX_TIMEOUT_SECONDS = 300
-  # Polling timeout for checking git repo for other build statuses.
-  SLEEP_TIMEOUT = constants.SLEEP_TIMEOUT
-
   # Sub-directories for LKGM and Chrome LKGM's.
   LKGM_SUBDIR = 'LKGM-candidates'
   CHROME_PFQ_SUBDIR = 'chrome-LKGM-candidates'
@@ -178,17 +166,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     else:
       assert cbuildbot_config.IsPFQType(self.build_type)
       self.rel_working_dir = self.LKGM_SUBDIR
-
-  def _GetMaxLongTimeout(self):
-    """Get the long "max timeout" for this builder.
-
-    Returns:
-      Timeout in seconds.
-    """
-    if self.build_type == constants.PFQ_TYPE:
-      return self.LONG_MAX_TIMEOUT_SECONDS
-    else:
-      return self.CHROME_LONG_MAX_TIMEOUT_SECONDS
 
   def GetCurrentVersionInfo(self):
     """Returns the lkgm version info from the version file."""
@@ -444,12 +421,13 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     else:
       raise manifest_version.GenerateBuildSpecException(last_error)
 
-  def GetLatestCandidate(self, dashboard_url=None):
+  def GetLatestCandidate(self, dashboard_url=None, timeout=3 * 60):
     """Gets and syncs to the next candiate manifest.
 
     Args:
       retries: Number of retries for updating the status
       dashboard_url: Optional url linking to builder dashboard for this build.
+      timeout: The timeout in seconds.
 
     Returns:
       Local path to manifest to build or None in case of no need to build.
@@ -479,7 +457,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       version_to_build = timeout_util.WaitForSuccess(
           lambda x: x is None,
           _AttemptToGetLatestCandidate,
-          self._GetMaxLongTimeout(),
+          timeout,
           period=self.SLEEP_TIMEOUT,
           side_effect_func=_PrintRemainingTime)
     except timeout_util.TimeoutError:
@@ -497,64 +475,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       return manifest
     else:
       return None
-
-  def GetBuildersStatus(self, builders_array, wait_for_results=True):
-    """Returns a build-names->status dictionary of build statuses.
-
-    Args:
-      builders_array: A list of the names of the builders to check.
-      wait_for_results: If True, keep trying until all builder statuses are
-        available or until timeout is reached.
-    """
-    builders_completed = set()
-    builder_statuses = {}
-
-    def _CheckStatusOfBuildersArray():
-      """Helper function that iterates through current statuses."""
-      for builder_name in builders_array:
-        cached_status = builder_statuses.get(builder_name)
-        if not cached_status or not cached_status.Completed():
-          logging.debug("Checking for builder %s's status", builder_name)
-          builder_status = self.GetBuildStatus(builder_name,
-                                               self.current_version)
-          builder_statuses[builder_name] = builder_status
-          if builder_status.Missing():
-            logging.warn('No status found for builder %s.', builder_name)
-          elif builder_status.Completed():
-            builders_completed.add(builder_name)
-            logging.info('Builder %s completed with status "%s".',
-                         builder_name, builder_status.status)
-
-      if len(builders_completed) < len(builders_array):
-        logging.info('Still waiting for the following builds to complete: %r',
-                     sorted(set(builders_array).difference(builders_completed)))
-        return None
-      else:
-        return 'Builds completed.'
-
-    def _PrintRemainingTime(minutes_left):
-      logging.info('%d more minutes until timeout...', minutes_left)
-
-    # Even if we do not want to wait for results long, wait a little bit
-    # just to exercise the same code.
-    max_timeout = self._GetMaxLongTimeout() if wait_for_results else 3 * 60
-
-    # Check for build completion until all builders report in.
-    try:
-      builds_succeeded = timeout_util.WaitForSuccess(
-          lambda x: x is None,
-          _CheckStatusOfBuildersArray,
-          max_timeout,
-          period=self.SLEEP_TIMEOUT,
-          side_effect_func=_PrintRemainingTime)
-    except timeout_util.TimeoutError:
-      builds_succeeded = None
-
-    if not builds_succeeded:
-      logging.error('Not all builds finished before timeout (%d minutes)'
-                    ' reached.', int((max_timeout / 60) + 0.5))
-
-    return builder_statuses
 
   def PromoteCandidate(self, retries=manifest_version.NUM_RETRIES):
     """Promotes the current LKGM candidate to be a real versioned LKGM."""

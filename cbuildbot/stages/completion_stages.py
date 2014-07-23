@@ -126,6 +126,14 @@ class ImportantBuilderFailedException(failures_lib.StepFailure):
 class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
   """Stage that records whether we passed or failed to build/test manifest."""
 
+  # Max wait time for results from slaves.
+  SLAVE_STATUS_TIMEOUT_SECONDS = 3 * 60 * 60
+  # Max wait time for results for PFQ type builder. Note that this
+  # does not include Chrome PFQ or CQ.
+  PFQ_SLAVE_STATUS_TIMEOUT_SECONDS = 20 * 60
+  SLAVE_CHECKING_PERIOD_SECONDS = constants.SLEEP_TIMEOUT
+
+
   def __init__(self, *args, **kwargs):
     super(MasterSlaveSyncCompletionStage, self).__init__(*args, **kwargs)
     self._slave_statuses = {}
@@ -153,10 +161,16 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         return self._run.attrs.manifest_manager.GetBuildersStatus(
             [self._bot_id])
     else:
-      # This is a master build, so return the statuses for all its slaves.
-
-      # Wait for slaves to finish, unless this is a debug run.
-      wait_for_results = not self._run.options.debug
+      # This is a master build, so wait for all the slaves to finish
+      # and return their statuses.
+      if self._run.options.debug:
+        # For debug runs, wait for three minutes to ensure most code
+        # paths are executed.
+        timeout = 3 * 60
+      elif self._run.config.build_type == constants.PFQ_TYPE:
+        timeout = self.PFQ_SLAVE_STATUS_TIMEOUT_SECONDS
+      else:
+        timeout = self.SLAVE_STATUS_TIMEOUT_SECONDS
 
       builders = self._GetSlaveConfigs()
       builder_names = [b['name'] for b in builders]
@@ -165,7 +179,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       if sync_stages.MasterSlaveSyncStage.sub_manager:
         manager = sync_stages.MasterSlaveSyncStage.sub_manager
 
-      return manager.GetBuildersStatus(builder_names, wait_for_results)
+      return manager.GetBuildersStatus(builder_names, timeout=timeout)
 
   def _AbortCQHWTests(self):
     """Abort any HWTests started by the CQ."""

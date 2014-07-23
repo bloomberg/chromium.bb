@@ -18,7 +18,6 @@ if __name__ == '__main__':
   sys.path.insert(0, constants.SOURCE_ROOT)
 
 from chromite.cbuildbot import lkgm_manager
-from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -358,8 +357,8 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
 
     self.mox.ReplayAll()
     self.manager.SLEEP_TIMEOUT = 0.2
-    self.manager.LONG_MAX_TIMEOUT_SECONDS = 0.1 # Only run once.
-    candidate = self.manager.GetLatestCandidate()
+    # Only run once.
+    candidate = self.manager.GetLatestCandidate(timeout=0.1)
     self.assertEqual(candidate, None)
     self.mox.VerifyAll()
 
@@ -372,43 +371,6 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
                             dir_pfx, '1.2.4-rc21.xml')
     osutils.Touch(manifest)
     return manifest, dir_pfx
-
-  def _GetBuildersStatus(self, builders, status_runs):
-    """Test a call to LKGMManager.GetBuildersStatus.
-
-    Args:
-      builders: List of builders to get status for.
-      status_runs: List of expected (builder, status) tuples.
-    """
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'GetBuildStatus')
-    for builder, status in status_runs:
-      status = manifest_version.BuilderStatus(status, None)
-      lkgm_manager.LKGMManager.GetBuildStatus(
-          builder, mox.IgnoreArg()).AndReturn(status)
-
-    self.mox.ReplayAll()
-    statuses = self.manager.GetBuildersStatus(builders)
-    self.mox.VerifyAll()
-    return statuses
-
-  def testGetBuildersStatusBothFinished(self):
-    """Tests GetBuilderStatus where both builds have finished."""
-    status_runs = [('build1', manifest_version.BuilderStatus.STATUS_FAILED),
-                   ('build2', manifest_version.BuilderStatus.STATUS_PASSED)]
-    statuses = self._GetBuildersStatus(['build1', 'build2'], status_runs)
-    self.assertTrue(statuses['build1'].Failed())
-    self.assertTrue(statuses['build2'].Passed())
-
-  def testGetBuildersStatusLoop(self):
-    """Tests GetBuilderStatus where builds are inflight."""
-    status_runs = [('build1', manifest_version.BuilderStatus.STATUS_INFLIGHT),
-                   ('build2', manifest_version.BuilderStatus.STATUS_MISSING),
-                   ('build1', manifest_version.BuilderStatus.STATUS_FAILED),
-                   ('build2', manifest_version.BuilderStatus.STATUS_INFLIGHT),
-                   ('build2', manifest_version.BuilderStatus.STATUS_PASSED)]
-    statuses = self._GetBuildersStatus(['build1', 'build2'], status_runs)
-    self.assertTrue(statuses['build1'].Failed())
-    self.assertTrue(statuses['build2'].Passed())
 
   def testGenerateBlameListSinceLKGM(self):
     """Tests that we can generate a blamelist from two commit messages.
