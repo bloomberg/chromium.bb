@@ -189,6 +189,10 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
 
   IdentityGetAuthTokenFunction();
 
+  const ExtensionTokenKey* GetExtensionTokenKeyForTest() {
+    return token_key_.get();
+  }
+
  protected:
   virtual ~IdentityGetAuthTokenFunction();
 
@@ -202,6 +206,9 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
                                  const std::string& oauth_error) OVERRIDE;
   virtual void OnGaiaFlowCompleted(const std::string& access_token,
                                    const std::string& expiration) OVERRIDE;
+
+  // Starts a login access token request.
+  virtual void StartLoginAccessTokenRequest();
 
   // OAuth2TokenService::Consumer implementation:
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
@@ -219,7 +226,6 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
                            ComponentWithNormalClientId);
   FRIEND_TEST_ALL_PREFIXES(GetAuthTokenFunctionTest, InteractiveQueueShutdown);
   FRIEND_TEST_ALL_PREFIXES(GetAuthTokenFunctionTest, NoninteractiveShutdown);
-  friend class MockGetAuthTokenFunction;
 
   // ExtensionFunction:
   virtual bool RunAsync() OVERRIDE;
@@ -249,9 +255,6 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   // IdentityAPI::ShutdownObserver implementation:
   virtual void OnShutdown() OVERRIDE;
 
-  // Starts a login access token request.
-  virtual void StartLoginAccessTokenRequest();
-
 #if defined(OS_CHROMEOS)
   // Starts a login access token request for device robot account. This method
   // will be called only in enterprise kiosk mode in ChromeOS.
@@ -269,7 +272,7 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
       const std::string& login_access_token);
 
   // Checks if there is a master login token to mint tokens for the extension.
-  virtual bool HasLoginToken() const;
+  bool HasLoginToken() const;
 
   // Maps OAuth2 protocol errors to an error message returned to the
   // developer in chrome.runtime.lastError.
