@@ -45,3 +45,19 @@ function testGridDefinitionsSetBadJSValues(columnValue, rowValue)
     testGridDefinitionsValues(element, "none", "none");
     document.body.removeChild(element);
 }
+
+function checkGridAutoFlowSetCSSValue(elementId, expectedValue)
+{
+    shouldBe("window.getComputedStyle(" + elementId + ", '').getPropertyValue('grid-auto-flow')", "'" + expectedValue + "'");
+}
+
+function checkGridAutoFlowSetJSValue(newValue, expectedStyleValue, expectedComputedStyleValue)
+{
+    element = document.createElement("div");
+    document.body.appendChild(element);
+    if (newValue)
+        element.style.gridAutoFlow = newValue;
+    shouldBe("element.style.gridAutoFlow", "'" + expectedStyleValue + "'");
+    shouldBe("window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow')", "'" + expectedComputedStyleValue + "'");
+    document.body.removeChild(element);
+}
