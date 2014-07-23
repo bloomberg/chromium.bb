@@ -56,6 +56,9 @@ void WindowTreeHostOzone::OnAcceleratedWidgetAvailable(
   CreateCompositor(widget_);
 }
 
+void WindowTreeHostOzone::OnActivationChanged(bool active) {
+}
+
 ui::EventSource* WindowTreeHostOzone::GetEventSource() {
   return this;
 }

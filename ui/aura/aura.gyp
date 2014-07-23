@@ -124,6 +124,7 @@
         ['OS=="win"', {
           'dependencies': [
             '../metro_viewer/metro_viewer.gyp:metro_viewer_messages',
+            '../platform_window/win/win_window.gyp:win_window',
             '../../ipc/ipc.gyp:ipc',
           ],
           'sources!': [

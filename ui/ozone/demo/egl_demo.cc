@@ -48,6 +48,7 @@ class DemoWindow : public ui::PlatformWindowDelegate {
     CHECK_NE(widget, gfx::kNullAcceleratedWidget);
     widget_ = widget;
   }
+  virtual void OnActivationChanged(bool active) OVERRIDE {}
 
  private:
   scoped_ptr<ui::PlatformWindow> platform_window_;
