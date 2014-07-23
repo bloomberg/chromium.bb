@@ -7,8 +7,52 @@
 var worker = 'resources/fetch-event-test-worker.js';
 
 (function() {
+    var t = async_test('Service Worker responds to fetch event with string');
+    var scope = 'resources/simple.html?string';
+    service_worker_unregister_and_register(t, worker, scope)
+      .then(t.step_func(function(sw) {
+          return wait_for_state(t, sw, 'activated');
+        }))
+      .then(t.step_func(function() { return with_iframe(scope); }))
+      .then(t.step_func(function(frame) {
+          assert_equals(
+              frame.contentDocument.body.textContent,
+              'Test string',
+              'Service Worker should respond to fetch with a test string');
+          assert_equals(
+              frame.contentDocument.contentType,
+              'text/plain',
+              'The content type of the response created with a string should be text/plain');
+          assert_equals(
+              frame.contentDocument.characterSet,
+              'UTF-8',
+              'The character set of the response created with a string should be UTF-8');
+          return service_worker_unregister_and_done(t, scope);
+        }))
+      .catch(unreached_rejection(t));
+}());
+
+(function() {
     var t = async_test('Service Worker responds to fetch event with blob body');
-    var scope = 'referrer';
+    var scope = 'resources/simple.html?blob';
+    service_worker_unregister_and_register(t, worker, scope)
+      .then(t.step_func(function(sw) {
+          return wait_for_state(t, sw, 'activated');
+        }))
+      .then(t.step_func(function() { return with_iframe(scope); }))
+      .then(t.step_func(function(frame) {
+          assert_equals(
+              frame.contentDocument.body.textContent,
+              'Test blob',
+              'Service Worker should respond to fetch with a test string');
+          return service_worker_unregister_and_done(t, scope);
+        }))
+      .catch(unreached_rejection(t));
+}());
+
+(function() {
+    var t = async_test('Service Worker responds to fetch event with the referrer URL');
+    var scope = 'resources/simple.html?referrer';
     service_worker_unregister_and_register(t, worker, scope)
       .then(t.step_func(function(sw) {
           return wait_for_state(t, sw, 'activated');

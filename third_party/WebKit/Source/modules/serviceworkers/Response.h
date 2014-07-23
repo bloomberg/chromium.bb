@@ -28,6 +28,7 @@ class Response FINAL : public RefCountedWillBeGarbageCollectedFinalized<Response
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Response);
 public:
     static PassRefPtrWillBeRawPtr<Response> create(Blob*, const Dictionary&, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<Response> create(const String&, const Dictionary&, ExceptionState&);
     static PassRefPtrWillBeRawPtr<Response> create(Blob*, const ResponseInit&, ExceptionState&);
 
     static PassRefPtrWillBeRawPtr<Response> create(PassRefPtrWillBeRawPtr<FetchResponseData>);

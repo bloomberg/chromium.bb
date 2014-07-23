@@ -1,5 +1,13 @@
+function handleString(event) {
+    event.respondWith(new Response('Test string'));
+}
+
+function handleBlob(event) {
+    event.respondWith(new Response(new Blob(['Test blob'])));
+}
+
 function handleReferrer(event) {
-    event.respondWith(new Response(new Blob(["Referrer: " + event.request.referrer])));
+    event.respondWith(new Response(new Blob(['Referrer: ' + event.request.referrer])));
 }
 
 function handleNullBody(event) {
@@ -23,7 +31,9 @@ function handleFetch(event) {
 self.addEventListener('fetch', function(event) {
     var url = event.request.url;
     var handlers = [
-        { pattern: 'referrer', fn: handleReferrer },
+        { pattern: '?string', fn: handleString },
+        { pattern: '?blob', fn: handleBlob },
+        { pattern: '?referrer', fn: handleReferrer },
         { pattern: '?ignore', fn: function() {} },
         { pattern: '?null', fn: handleNullBody },
         { pattern: '?reject', fn: handleReject },

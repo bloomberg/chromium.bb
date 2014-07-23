@@ -19,6 +19,17 @@ PassRefPtrWillBeRawPtr<Response> Response::create(Blob* body, const Dictionary& 
     return create(body, ResponseInit(responseInit), exceptionState);
 }
 
+PassRefPtrWillBeRawPtr<Response> Response::create(const String& body, const Dictionary& responseInit, ExceptionState& exceptionState)
+{
+    OwnPtr<BlobData> blobData = BlobData::create();
+    blobData->appendText(body, false);
+    // "Set |Content-Type| to `text/plain;charset=UTF-8`."
+    blobData->setContentType("text/plain;charset=UTF-8");
+    const long long length = blobData->length();
+    RefPtrWillBeRawPtr<Blob> blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
+    return create(blob.get(), ResponseInit(responseInit), exceptionState);
+}
+
 PassRefPtrWillBeRawPtr<Response> Response::create(Blob* body, const ResponseInit& responseInit, ExceptionState& exceptionState)
 {
     // "1. If |init|'s status member is not in the range 200 to 599, throw a
