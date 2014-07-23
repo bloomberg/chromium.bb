@@ -48,6 +48,10 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   // Returns true if a channel ID was sent on this connection.
   bool WasChannelIDSent() const;
 
+  // Returns true if our ChannelIDSourceCallback was run, which implies the
+  // ChannelIDSource operated asynchronously. Intended for testing.
+  bool WasChannelIDSourceCallbackRun() const;
+
  private:
   // ChannelIDSourceCallbackImpl is passed as the callback method to
   // GetChannelIDKey. The ChannelIDSource calls this class with the result of
@@ -140,6 +144,9 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
 
   // True if a channel ID was sent.
   bool channel_id_sent_;
+
+  // True if channel_id_source_callback_ was run.
+  bool channel_id_source_callback_run_;
 
   // channel_id_source_callback_ contains the callback object that we passed
   // to an asynchronous channel ID lookup. The ChannelIDSource owns this

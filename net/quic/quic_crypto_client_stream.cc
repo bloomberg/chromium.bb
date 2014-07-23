@@ -27,6 +27,7 @@ void QuicCryptoClientStream::ChannelIDSourceCallbackImpl::Run(
   }
 
   stream_->channel_id_key_.reset(channel_id_key->release());
+  stream_->channel_id_source_callback_run_ = true;
   stream_->channel_id_source_callback_ = NULL;
   stream_->DoHandshakeLoop(NULL);
 
@@ -79,6 +80,7 @@ QuicCryptoClientStream::QuicCryptoClientStream(
       server_id_(server_id),
       generation_counter_(0),
       channel_id_sent_(false),
+      channel_id_source_callback_run_(false),
       channel_id_source_callback_(NULL),
       verify_context_(verify_context),
       proof_verify_callback_(NULL) {
@@ -132,6 +134,10 @@ int QuicCryptoClientStream::num_sent_client_hellos() const {
 
 bool QuicCryptoClientStream::WasChannelIDSent() const {
   return channel_id_sent_;
+}
+
+bool QuicCryptoClientStream::WasChannelIDSourceCallbackRun() const {
+  return channel_id_source_callback_run_;
 }
 
 void QuicCryptoClientStream::HandleServerConfigUpdateMessage(

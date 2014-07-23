@@ -127,7 +127,7 @@ bool HexChar(char c, uint8* value) {
 // A ChannelIDSource that works in asynchronous mode unless the |callback|
 // argument to GetChannelIDKey is NULL.
 class AsyncTestChannelIDSource : public ChannelIDSource,
-                                 public CryptoTestUtils::WorkSource {
+                                 public CryptoTestUtils::CallbackSource {
  public:
   // Takes ownership of |sync_source|, a synchronous ChannelIDSource.
   explicit AsyncTestChannelIDSource(ChannelIDSource* sync_source)
@@ -154,8 +154,8 @@ class AsyncTestChannelIDSource : public ChannelIDSource,
     return QUIC_PENDING;
   }
 
-  // WorkSource implementation.
-  virtual void DoPendingWork() OVERRIDE {
+  // CallbackSource implementation.
+  virtual void RunPendingCallbacks() OVERRIDE {
     if (callback_.get()) {
       callback_->Run(&channel_id_key_);
       callback_.reset();
@@ -243,7 +243,7 @@ int CryptoTestUtils::HandshakeWithFakeClient(
   CHECK(client.CryptoConnect());
   CHECK_EQ(1u, client_conn->packets_.size());
 
-  CommunicateHandshakeMessagesAndDoWork(
+  CommunicateHandshakeMessagesAndRunCallbacks(
       client_conn, &client, server_conn, server, async_channel_id_source);
 
   CompareClientAndServerKeys(&client, server);
@@ -257,6 +257,8 @@ int CryptoTestUtils::HandshakeWithFakeClient(
     EXPECT_EQ(QUIC_SUCCESS, status);
     EXPECT_EQ(channel_id_key->SerializeKey(),
               server->crypto_negotiated_params().channel_id);
+    EXPECT_EQ(options.channel_id_source_async,
+              client.WasChannelIDSourceCallbackRun());
   }
 
   return client.num_sent_client_hellos();
@@ -281,32 +283,32 @@ void CryptoTestUtils::CommunicateHandshakeMessages(
     QuicCryptoStream* a,
     PacketSavingConnection* b_conn,
     QuicCryptoStream* b) {
-  CommunicateHandshakeMessagesAndDoWork(a_conn, a, b_conn, b, NULL);
+  CommunicateHandshakeMessagesAndRunCallbacks(a_conn, a, b_conn, b, NULL);
 }
 
 // static
-void CryptoTestUtils::CommunicateHandshakeMessagesAndDoWork(
+void CryptoTestUtils::CommunicateHandshakeMessagesAndRunCallbacks(
     PacketSavingConnection* a_conn,
     QuicCryptoStream* a,
     PacketSavingConnection* b_conn,
     QuicCryptoStream* b,
-    WorkSource* work_source) {
+    CallbackSource* callback_source) {
   size_t a_i = 0, b_i = 0;
   while (!a->handshake_confirmed()) {
     ASSERT_GT(a_conn->packets_.size(), a_i);
     LOG(INFO) << "Processing " << a_conn->packets_.size() - a_i
               << " packets a->b";
     MovePackets(a_conn, &a_i, b, b_conn);
-    if (work_source) {
-      work_source->DoPendingWork();
+    if (callback_source) {
+      callback_source->RunPendingCallbacks();
     }
 
     ASSERT_GT(b_conn->packets_.size(), b_i);
     LOG(INFO) << "Processing " << b_conn->packets_.size() - b_i
               << " packets b->a";
     MovePackets(b_conn, &b_i, a, a_conn);
-    if (work_source) {
-      work_source->DoPendingWork();
+    if (callback_source) {
+      callback_source->RunPendingCallbacks();
     }
   }
 }

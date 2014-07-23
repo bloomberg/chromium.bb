@@ -38,17 +38,18 @@ class PacketSavingConnection;
 
 class CryptoTestUtils {
  public:
-  // An interface for a source of work. This may be use for invoking callbacks
-  // asynchronously.
+  // An interface for a source of callbacks. This is used for invoking
+  // callbacks asynchronously.
   //
-  // Call the DoPendingWork method regularly to do the work from this source.
-  class WorkSource {
+  // Call the RunPendingCallbacks method regularly to run the callbacks from
+  // this source.
+  class CallbackSource {
    public:
-    virtual ~WorkSource() {}
+    virtual ~CallbackSource() {}
 
-    // Does pending work in this source. If there is no pending work, does
-    // nothing.
-    virtual void DoPendingWork() = 0;
+    // Runs pending callbacks from this source. If there is no pending
+    // callback, does nothing.
+    virtual void RunPendingCallbacks() = 0;
   };
 
   // FakeClientOptions bundles together a number of options for configuring
@@ -93,16 +94,16 @@ class CryptoTestUtils {
                                            PacketSavingConnection* b_conn,
                                            QuicCryptoStream* b);
 
-  // CommunicateHandshakeMessagesAndDoWork moves messages from |a| to |b| and
-  // back until |a|'s handshake has completed. If |work_source| is not NULL,
-  // CommunicateHandshakeMessagesAndDoWork also does work from |work_source|
-  // between processing messages.
-  static void CommunicateHandshakeMessagesAndDoWork(
+  // CommunicateHandshakeMessagesAndRunCallbacks moves messages from |a| to |b|
+  // and back until |a|'s handshake has completed. If |callback_source| is not
+  // NULL, CommunicateHandshakeMessagesAndRunCallbacks also runs callbacks from
+  // |callback_source| between processing messages.
+  static void CommunicateHandshakeMessagesAndRunCallbacks(
       PacketSavingConnection* a_conn,
       QuicCryptoStream* a,
       PacketSavingConnection* b_conn,
       QuicCryptoStream* b,
-      WorkSource* work_source);
+      CallbackSource* callback_source);
 
   // AdvanceHandshake attempts to moves messages from |a| to |b| and |b| to |a|.
   // Returns the number of messages moved.
