@@ -25,9 +25,27 @@ void NinjaCopyTargetWriter::Run() {
 
   std::string rule_prefix = helper_.GetRulePrefix(target_->settings());
 
-  std::string implicit_deps =
-      WriteInputDepsStampAndGetDep(std::vector<const Target*>());
-
+  // Note that we don't write implicit deps for copy steps. "copy" only
+  // depends on the output files themselves, rather than having includes
+  // (the possibility of generated #includes is the main reason for implicit
+  // dependencies).
+  //
+  // It would seem that specifying implicit dependencies on the deps of the
+  // copy command would still be harmeless. But Chrome implements copy tools
+  // as hard links (much faster) which don't change the timestamp. If the
+  // ninja rule looks like this:
+  //   output: copy input | foo.stamp
+  // The copy will not make a new timestamp on the output file, but the
+  // foo.stamp file generated from a previous step will have a new timestamp.
+  // The copy rule will therefore look out-of-date to Ninja and the rule will
+  // get rebuilt.
+  //
+  // If this copy is copying a generated file, not listing the implicit
+  // dependency will be fine as long as the input to the copy is properly
+  // listed as the output from the step that generated it.
+  //
+  // Moreover, doing this assumes that the copy step is always a simple
+  // locally run command, so there is no need for a toolchain dependency.
   for (size_t i = 0; i < target_->sources().size(); i++) {
     const SourceFile& input_file = target_->sources()[i];
 
@@ -47,7 +65,7 @@ void NinjaCopyTargetWriter::Run() {
     path_output_.WriteFile(out_, output_file);
     out_ << ": " << rule_prefix << "copy ";
     path_output_.WriteFile(out_, input_file);
-    out_ << implicit_deps << std::endl;
+    out_ << std::endl;
   }
 
   // Write out the rule for the target to copy all of them.
