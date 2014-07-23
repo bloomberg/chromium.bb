@@ -641,8 +641,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoForward) {
 // certificate. Close the page while WSS connection waits for SSLManager's
 // response from UI thread.
 // Disabled on Windows because it was flaking on XP Tests (1). crbug.com/165258
-// Disabled under LeakSanitizer due to memory leaks. http://crbug.com/317363
-#if defined(OS_WIN) || defined(LEAK_SANITIZER)
+#if defined(OS_WIN)
 #define MAYBE_TestWSSInvalidCertAndClose DISABLED_TestWSSInvalidCertAndClose
 #else
 #define MAYBE_TestWSSInvalidCertAndClose TestWSSInvalidCertAndClose
