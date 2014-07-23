@@ -286,7 +286,8 @@ class CertVerifyProcChromeOSOrderingTest
 // Test a variety of different combinations of (maybe) verifying / (maybe)
 // importing / verifying again, to try to find any cases where caching might
 // affect the results.
-TEST_P(CertVerifyProcChromeOSOrderingTest, TrustThenVerify) {
+// http://crbug.com/396501
+TEST_P(CertVerifyProcChromeOSOrderingTest, DISABLED_TrustThenVerify) {
   const ParamType& param = GetParam();
   const bool verify_first = std::tr1::get<0>(param);
   const int trust_bitmask = std::tr1::get<1>(param);

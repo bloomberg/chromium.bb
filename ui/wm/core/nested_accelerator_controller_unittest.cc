@@ -155,7 +155,8 @@ class NestedAcceleratorTest : public aura::test::AuraTestBase {
 }  // namespace
 
 // Aura window above lock screen in z order.
-TEST_F(NestedAcceleratorTest, AssociatedWindowAboveLockScreen) {
+// http://crbug.com/396494
+TEST_F(NestedAcceleratorTest, DISABLED_AssociatedWindowAboveLockScreen) {
   // TODO(oshima|sadrul): remove when Win implements PES.
   if (!ui::PlatformEventSource::GetInstance())
     return;
@@ -180,7 +181,8 @@ TEST_F(NestedAcceleratorTest, AssociatedWindowAboveLockScreen) {
 }
 
 // Test that the nested dispatcher handles accelerators.
-TEST_F(NestedAcceleratorTest, AcceleratorsHandled) {
+// http://crbug.com/396494
+TEST_F(NestedAcceleratorTest, DISABLED_AcceleratorsHandled) {
   // TODO(oshima|sadrul): remove when Win implements PES.
   if (!ui::PlatformEventSource::GetInstance())
     return;

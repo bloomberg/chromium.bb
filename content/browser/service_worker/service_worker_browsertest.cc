@@ -742,8 +742,8 @@ static int CountRenderProcessHosts() {
   return result;
 }
 
-// Crashes on Android: http://crbug.com/387045
-#if defined(OS_ANDROID)
+// Crashes on Android and flakes on CrOS: http://crbug.com/387045
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
 #define MAYBE_Registration DISABLED_Registration
 #else
 #define MAYBE_Registration Registration

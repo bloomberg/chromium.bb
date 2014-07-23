@@ -1460,7 +1460,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_StoragePersistence) {
 
 // This is the post-reset portion of the StoragePersistence test.  See
 // PRE_StoragePersistence for main comment.
-IN_PROC_BROWSER_TEST_F(WebViewTest, StoragePersistence) {
+#if defined(OS_CHROMEOS)
+// http://crbug.com/223888
+#define MAYBE_StoragePersistence DISABLED_StoragePersistence
+#else
+#define MAYBE_StoragePersistence StoragePersistence
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_StoragePersistence) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // We don't care where the main browser is on this test.

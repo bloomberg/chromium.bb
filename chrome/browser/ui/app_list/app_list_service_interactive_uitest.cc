@@ -169,7 +169,13 @@ class ShowAppListInteractiveTest : public InProcessBrowserTest {
 };
 
 // Test showing the app list using the command line switch.
-IN_PROC_BROWSER_TEST_F(ShowAppListInteractiveTest, ShowAppListFlag) {
+#if defined(OS_CHROMEOS)
+// http://crbug.com/396499
+#define MAYBE_ShowAppListFlag DISABLED_ShowAppListFlag
+#else
+#define MAYBE_ShowAppListFlag ShowAppListFlag
+#endif
+IN_PROC_BROWSER_TEST_F(ShowAppListInteractiveTest, MAYBE_ShowAppListFlag) {
   AppListService* service = test::GetAppListService();
   // The app list should already be shown because we passed
   // switches::kShowAppList.

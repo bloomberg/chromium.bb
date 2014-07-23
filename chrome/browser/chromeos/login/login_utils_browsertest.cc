@@ -573,7 +573,8 @@ TEST_F(LoginUtilsTest, RlzInitialized) {
 }
 #endif
 
-TEST_P(LoginUtilsBlockingLoginTest, LoginBlocksForUser) {
+// http://crbug.com/396506
+TEST_P(LoginUtilsBlockingLoginTest, DISABLED_LoginBlocksForUser) {
   UserManager* user_manager = UserManager::Get();
   EXPECT_FALSE(user_manager->IsUserLoggedIn());
   EXPECT_FALSE(connector_->IsEnterpriseManaged());

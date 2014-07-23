@@ -4265,7 +4265,13 @@ class ExtensionCookieCallback {
 };
 
 // Verifies extension state is removed upon uninstall.
-TEST_F(ExtensionServiceTest, ClearExtensionData) {
+#if defined(OS_CHROMEOS)
+// http://crbug.com/396504
+#define MAYBE_ClearExtensionData DISABLED_ClearExtensionData
+#else
+#define MAYBE_ClearExtensionData ClearExtensionData
+#endif
+TEST_F(ExtensionServiceTest, MAYBE_ClearExtensionData) {
   InitializeEmptyExtensionService();
   ExtensionCookieCallback callback;
 

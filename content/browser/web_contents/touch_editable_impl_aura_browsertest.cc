@@ -312,8 +312,14 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
   EXPECT_STREQ("Some", selection.c_str());
 }
 
+#if defined(OS_CHROMEOS)
+// http://crbug.com/396509
+#define MAYBE_TouchCursorInTextfieldTest DISABLED_TouchCursorInTextfieldTest
+#else
+#define MAYBE_TouchCursorInTextfieldTest TouchCursorInTextfieldTest
+#endif
 IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
-                       TouchCursorInTextfieldTest) {
+                       MAYBE_TouchCursorInTextfieldTest) {
   ASSERT_NO_FATAL_FAILURE(StartTestWithPage("files/touch_selection.html"));
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());

@@ -1322,7 +1322,8 @@ TEST_PPAPI_OUT_OF_PROCESS(FlashFile)
 // Mac/Aura reach NOTIMPLEMENTED/time out.
 // mac: http://crbug.com/96767
 // aura: http://crbug.com/104384
-#if defined(OS_MACOSX)
+// cros: http://crbug.com/396502
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #define MAYBE_FlashFullscreen DISABLED_FlashFullscreen
 #else
 #define MAYBE_FlashFullscreen FlashFullscreen
