@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Wed Jul  9 11:09:04 2014. */
+/* From private/ppb_nacl_private.idl modified Thu Jul 10 10:34:30 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -14,6 +14,7 @@
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/c/private/ppp_pexe_stream_handler.h"
 
 #define PPB_NACL_PRIVATE_INTERFACE_1_0 "PPB_NaCl_Private;1.0"
 #define PPB_NACL_PRIVATE_INTERFACE PPB_NACL_PRIVATE_INTERFACE_1_0
@@ -270,27 +271,6 @@ struct PPB_NaCl_Private_1_0 {
   int32_t (*GetNumberOfProcessors)(void);
   /* Return whether the non-SFI mode is enabled. */
   PP_Bool (*IsNonSFIModeEnabled)(void);
-  /* Create a temporary file, which will be deleted by the time the
-   * last handle is closed (or earlier on POSIX systems), to use for
-   * the nexe with the cache information given by |pexe_url|,
-   * |abi_version|, |opt_level|, and |headers|.  If the nexe is already present
-   * in the cache, |is_hit| is set to PP_TRUE and the contents of the nexe will
-   * be copied into the temporary file. Otherwise |is_hit| is set to PP_FALSE
-   * and the temporary file will be writeable.  Currently the implementation is
-   * a stub, which always sets is_hit to false and calls the implementation of
-   * CreateTemporaryFile. In a subsequent CL it will call into the browser
-   * which will remember the association between the cache key and the fd, and
-   * copy the nexe into the cache after the translation finishes.
-   */
-  int32_t (*GetNexeFd)(PP_Instance instance,
-                       const char* pexe_url,
-                       uint32_t abi_version,
-                       uint32_t opt_level,
-                       const char* headers,
-                       const char* extra_flags,
-                       PP_Bool* is_hit,
-                       PP_FileHandle* nexe_handle,
-                       struct PP_CompletionCallback callback);
   /* Report to the browser that translation of the pexe for |instance|
    * has finished, or aborted with an error. If |success| is true, the
    * browser may then store the translation in the cache. The renderer
@@ -416,6 +396,19 @@ struct PPB_NaCl_Private_1_0 {
    * time.
    */
   void (*SetPNaClStartTime)(PP_Instance instance);
+  /* Downloads and streams a pexe file for PNaCl translation.
+   * Fetches the content at |pexe_url| for the given instance and opt_level.
+   * If a translated cached nexe is already available, |cache_hit_handle|
+   * is set and |cache_hit_callback| is called.
+   * Otherwise, |stream_callback| is called repeatedly with blocks of data
+   * as they are received. |stream_finished_callback| is called after all
+   * data has been received and dispatched to |stream_callback|.
+   */
+  void (*StreamPexe)(PP_Instance instance,
+                     const char* pexe_url,
+                     int32_t opt_level,
+                     const struct PPP_PexeStreamHandler_1_0* stream_handler,
+                     void* stream_handler_user_data);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;

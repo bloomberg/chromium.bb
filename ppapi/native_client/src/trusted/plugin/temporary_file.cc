@@ -18,20 +18,13 @@
 
 namespace plugin {
 
-TempFile::TempFile(Plugin* plugin) : plugin_(plugin),
-                                     internal_handle_(PP_kInvalidFileHandle) {
-}
+TempFile::TempFile(Plugin* plugin, PP_FileHandle handle)
+    : plugin_(plugin),
+      internal_handle_(handle) { }
 
 TempFile::~TempFile() { }
 
 int32_t TempFile::Open(bool writeable) {
-  // TODO(teravest): Clean up this Open() behavior; this is really confusing as
-  // written.
-  if (internal_handle_ == PP_kInvalidFileHandle) {
-    internal_handle_ =
-        plugin_->nacl_interface()->CreateTemporaryFile(plugin_->pp_instance());
-  }
-
   if (internal_handle_ == PP_kInvalidFileHandle) {
     PLUGIN_PRINTF(("TempFile::Open failed w/ PP_kInvalidFileHandle\n"));
     return PP_ERROR_FAILED;

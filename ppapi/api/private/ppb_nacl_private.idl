@@ -237,28 +237,6 @@ interface PPB_NaCl_Private {
   /* Return whether the non-SFI mode is enabled. */
   PP_Bool IsNonSFIModeEnabled();
 
-  /* Create a temporary file, which will be deleted by the time the
-   * last handle is closed (or earlier on POSIX systems), to use for
-   * the nexe with the cache information given by |pexe_url|,
-   * |abi_version|, |opt_level|, and |headers|.  If the nexe is already present
-   * in the cache, |is_hit| is set to PP_TRUE and the contents of the nexe will
-   * be copied into the temporary file. Otherwise |is_hit| is set to PP_FALSE
-   * and the temporary file will be writeable.  Currently the implementation is
-   * a stub, which always sets is_hit to false and calls the implementation of
-   * CreateTemporaryFile. In a subsequent CL it will call into the browser
-   * which will remember the association between the cache key and the fd, and
-   * copy the nexe into the cache after the translation finishes.
-   */
-  int32_t GetNexeFd([in] PP_Instance instance,
-                    [in] str_t pexe_url,
-                    [in] uint32_t abi_version,
-                    [in] uint32_t opt_level,
-                    [in] str_t headers,
-                    [in] str_t extra_flags,
-                    [out] PP_Bool is_hit,
-                    [out] PP_FileHandle nexe_handle,
-                    [in] PP_CompletionCallback callback);
-
   /* Report to the browser that translation of the pexe for |instance|
    * has finished, or aborted with an error. If |success| is true, the
    * browser may then store the translation in the cache. The renderer
@@ -419,4 +397,18 @@ interface PPB_NaCl_Private {
    * time.
    */
   void SetPNaClStartTime([in] PP_Instance instance);
+
+  /* Downloads and streams a pexe file for PNaCl translation.
+   * Fetches the content at |pexe_url| for the given instance and opt_level.
+   * If a translated cached nexe is already available, |cache_hit_handle|
+   * is set and |cache_hit_callback| is called.
+   * Otherwise, |stream_callback| is called repeatedly with blocks of data
+   * as they are received. |stream_finished_callback| is called after all
+   * data has been received and dispatched to |stream_callback|.
+   */
+  void StreamPexe([in] PP_Instance instance,
+                  [in] str_t pexe_url,
+                  [in] int32_t opt_level,
+                  [in] PPP_PexeStreamHandler stream_handler,
+                  [inout] mem_t stream_handler_user_data);
 };

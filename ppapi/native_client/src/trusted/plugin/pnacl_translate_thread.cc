@@ -111,27 +111,15 @@ void PnaclTranslateThread::RunTranslate(
 }
 
 // Called from main thread to send bytes to the translator.
-void PnaclTranslateThread::PutBytes(std::vector<char>* bytes, int count) {
-  PLUGIN_PRINTF(("PutBytes (this=%p, bytes=%p, size=%" NACL_PRIuS
-                 ", count=%d)\n",
-                 this, bytes, bytes ? bytes->size() : 0, count));
-  size_t buffer_size = 0;
+void PnaclTranslateThread::PutBytes(const void* bytes, int32_t count) {
   CHECK(bytes != NULL);
-  // Ensure that the buffer we send to the translation thread is the right size
-  // (count can be < the buffer size). This can be done without the lock.
-  buffer_size = bytes->size();
-  bytes->resize(count);
-
   NaClXMutexLock(&cond_mu_);
-
   data_buffers_.push_back(std::vector<char>());
-  bytes->swap(data_buffers_.back()); // Avoid copying the buffer data.
-
+  data_buffers_.back().insert(data_buffers_.back().end(),
+                              static_cast<const char*>(bytes),
+                              static_cast<const char*>(bytes) + count);
   NaClXCondVarSignal(&buffer_cond_);
   NaClXMutexUnlock(&cond_mu_);
-
-  // Ensure the buffer we send back to the coordinator is the expected size
-  bytes->resize(buffer_size);
 }
 
 void PnaclTranslateThread::EndStream() {

@@ -6,7 +6,6 @@
   'variables': {
     'chromium_code': 1,  # Use higher warning level.
     'common_sources': [
-      'file_downloader.cc',
       'module_ppapi.cc',
       'nacl_subprocess.cc',
       'plugin.cc',

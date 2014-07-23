@@ -36,7 +36,7 @@ class Plugin;
 class TempFile {
  public:
   // Create a TempFile.
-  explicit TempFile(Plugin* plugin);
+  TempFile(Plugin* plugin, PP_FileHandle handle);
   ~TempFile();
 
   // Opens a temporary file object and descriptor wrapper referring to the file.
@@ -54,9 +54,6 @@ class TempFile {
   // Returns the handle to the file repesented and resets the internal handle
   // and all wrappers.
   PP_FileHandle TakeFileHandle();
-
-  // Used by GetNexeFd() to set the underlying internal handle.
-  PP_FileHandle* internal_handle() { return &internal_handle_; }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(TempFile);

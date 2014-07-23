@@ -28,11 +28,12 @@
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/view.h"
 
-#include "ppapi/native_client/src/trusted/plugin/file_downloader.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_subprocess.h"
 #include "ppapi/native_client/src/trusted/plugin/pnacl_coordinator.h"
 #include "ppapi/native_client/src/trusted/plugin/service_runtime.h"
 #include "ppapi/native_client/src/trusted/plugin/utility.h"
+
+#include "ppapi/utility/completion_callback_factory.h"
 
 namespace nacl {
 class DescWrapper;
