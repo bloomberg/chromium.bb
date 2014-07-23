@@ -15,8 +15,9 @@
 namespace examples {
 namespace {
 
-float CalculateDragDistance(const gfx::PointF& start, const mojo::Point& end) {
-  return hypot(start.x() - end.x, start.y() - end.y);
+float CalculateDragDistance(const mojo::Point& start, const mojo::Point& end) {
+  return hypot(static_cast<float>(start.x - end.x),
+               static_cast<float>(start.y - end.y));
 }
 
 float GetRandomColor() {
@@ -40,10 +41,10 @@ GLES2ClientImpl::~GLES2ClientImpl() {
 }
 
 void GLES2ClientImpl::SetSize(const mojo::Size& size) {
-  size_ = gfx::Size(size.width, size.height);
-  if (size_.IsEmpty())
+  size_ = size;
+  if (size_.width == 0 || size_.height == 0)
     return;
-  cube_.Init(size_.width(), size_.height());
+  cube_.Init(size_.width, size_.height);
   RequestAnimationFrames();
 }
 
@@ -54,7 +55,7 @@ void GLES2ClientImpl::HandleInputEvent(const mojo::Event& event) {
     if (event.flags & ui::EF_RIGHT_MOUSE_BUTTON)
       break;
     CancelAnimationFrames();
-    capture_point_.SetPoint(event.location->x, event.location->y);
+    capture_point_ = *event.location;
     last_drag_point_ = capture_point_;
     drag_start_time_ = mojo::GetTimeTicksNow();
     break;
@@ -63,15 +64,15 @@ void GLES2ClientImpl::HandleInputEvent(const mojo::Event& event) {
     if (event.flags & ui::EF_RIGHT_MOUSE_BUTTON)
       break;
     if (!getting_animation_frames_) {
-      int direction = event.location->y < last_drag_point_.y() ||
-          event.location->x > last_drag_point_.x() ? 1 : -1;
+      int direction = event.location->y < last_drag_point_.y ||
+          event.location->x > last_drag_point_.x ? 1 : -1;
       cube_.set_direction(direction);
       cube_.UpdateForDragDistance(
           CalculateDragDistance(last_drag_point_, *event.location));
       cube_.Draw();
       MojoGLES2SwapBuffers();
 
-      last_drag_point_.SetPoint(event.location->x, event.location->y);
+      last_drag_point_ = *event.location;
     }
     break;
   case ui::ET_MOUSE_RELEASED:
@@ -86,7 +87,7 @@ void GLES2ClientImpl::HandleInputEvent(const mojo::Event& event) {
         CalculateDragDistance(capture_point_, *event.location),
         delta);
 
-    capture_point_ = last_drag_point_ = gfx::PointF();
+    capture_point_ = last_drag_point_ = mojo::Point();
     RequestAnimationFrames();
     break;
   }
