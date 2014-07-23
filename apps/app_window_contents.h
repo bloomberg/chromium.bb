@@ -5,16 +5,13 @@
 #ifndef APPS_APP_WINDOW_CONTENTS_H_
 #define APPS_APP_WINDOW_CONTENTS_H_
 
-#include <vector>
-
 #include "apps/app_window.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/extension_function_dispatcher.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace content {
 class BrowserContext;
@@ -31,7 +28,6 @@ namespace apps {
 // messages to the extensions system.
 class AppWindowContentsImpl
     : public AppWindowContents,
-      public content::NotificationObserver,
       public content::WebContentsObserver,
       public extensions::ExtensionFunctionDispatcher::Delegate {
  public:
@@ -48,11 +44,6 @@ class AppWindowContentsImpl
   virtual content::WebContents* GetWebContents() const OVERRIDE;
 
  private:
-  // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // content::WebContentsObserver
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
@@ -68,7 +59,6 @@ class AppWindowContentsImpl
 
   AppWindow* host_;  // This class is owned by |host_|
   GURL url_;
-  content::NotificationRegistrar registrar_;
   scoped_ptr<content::WebContents> web_contents_;
   scoped_ptr<extensions::ExtensionFunctionDispatcher>
       extension_function_dispatcher_;

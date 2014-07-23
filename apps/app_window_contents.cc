@@ -12,8 +12,6 @@
 #include "chrome/common/extensions/api/app_window.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -41,7 +39,7 @@ void AppWindowContentsImpl::Initialize(content::BrowserContext* context,
       content::WebContents::Create(content::WebContents::CreateParams(
           context, content::SiteInstance::CreateForURL(context, url_))));
 
-  content::WebContentsObserver::Observe(web_contents_.get());
+  Observe(web_contents_.get());
   web_contents_->GetMutableRendererPrefs()->
       browser_handles_all_top_level_requests = true;
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();
@@ -61,20 +59,9 @@ void AppWindowContentsImpl::LoadContents(int32 creator_process_id) {
             << ") != creator (" << creator_process_id << "). Routing disabled.";
   }
 
-  // TODO(jeremya): there's a bug where navigating a web contents to an
-  // extension URL causes it to create a new RVH and discard the old (perfectly
-  // usable) one. To work around this, we watch for a
-  // NOTIFICATION_RENDER_VIEW_HOST_CHANGED message from the web contents (which
-  // will be sent during LoadURL) and suspend resource requests on the new RVH
-  // to ensure that we block the new RVH from loading anything. It should be
-  // okay to remove the NOTIFICATION_RENDER_VIEW_HOST_CHANGED registration once
-  // http://crbug.com/123007 is fixed.
-  registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-                 content::Source<content::WebContents>(web_contents()));
   web_contents_->GetController().LoadURL(
       url_, content::Referrer(), content::PAGE_TRANSITION_LINK,
       std::string());
-  registrar_.RemoveAll();
 }
 
 void AppWindowContentsImpl::NativeWindowChanged(
@@ -111,27 +98,6 @@ void AppWindowContentsImpl::DispatchWindowShownForTests() const {
 
 content::WebContents* AppWindowContentsImpl::GetWebContents() const {
   return web_contents_.get();
-}
-
-void AppWindowContentsImpl::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED: {
-      // TODO(jeremya): once http://crbug.com/123007 is fixed, we'll no longer
-      // need to suspend resource requests here (the call in the constructor
-      // should be enough).
-      content::Details<std::pair<content::RenderViewHost*,
-                                 content::RenderViewHost*> >
-          host_details(details);
-      if (host_details->first)
-        SuspendRenderViewHost(host_details->second);
-      break;
-    }
-    default:
-      NOTREACHED() << "Received unexpected notification";
-  }
 }
 
 bool AppWindowContentsImpl::OnMessageReceived(const IPC::Message& message) {
