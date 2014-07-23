@@ -245,17 +245,16 @@ function unload() {
 
 /**
  * Loads the video file.
- * @param {string} url URL of the video file.
- * @param {string} title Title of the video file.
+ * @param {Object} video Data of the video file.
  * @param {function()=} opt_callback Completion callback.
  * @private
  */
-VideoPlayer.prototype.loadVideo_ = function(url, title, opt_callback) {
+VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
   this.unloadVideo();
 
-  document.title = title;
+  document.title = video.title;
 
-  document.querySelector('#title').innerText = title;
+  document.querySelector('#title').innerText = video.title;
 
   var videoPlayerElement = document.querySelector('#video-player');
   if (this.currentPos_ === (this.videos_.length - 1))
@@ -290,7 +289,7 @@ VideoPlayer.prototype.loadVideo_ = function(url, title, opt_callback) {
     document.querySelector('#video-container').appendChild(this.videoElement_);
 
     this.controls.attachMedia(this.videoElement_);
-    this.videoElement_.src = url;
+    this.videoElement_.src = video.url;
   }
 
   this.videoElement_.load();
@@ -392,7 +391,7 @@ VideoPlayer.prototype.advance_ = function(direction) {
  */
 VideoPlayer.prototype.reloadCurrentVideo_ = function(opt_callback) {
   var currentVideo = this.videos_[this.currentPos_];
-  this.loadVideo_(currentVideo.fileUrl, currentVideo.entry.name, opt_callback);
+  this.loadVideo_(currentVideo, opt_callback);
 };
 
 /**

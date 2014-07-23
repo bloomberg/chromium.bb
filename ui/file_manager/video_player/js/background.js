@@ -9,42 +9,66 @@
 // the same name will be overridden each other.
 var appWindowsForTest = {};
 
-chrome.app.runtime.onLaunched.addListener(function(launchData) {
+var initializeQueue = new AsyncUtil.Queue();
+
+// Initializes the strings. This needs for the volume manager.
+initializeQueue.run(function(fulfill) {
+  chrome.fileBrowserPrivate.getStrings(function(stringData) {
+    loadTimeData.data = stringData;
+    fulfill();
+  }.wrap());
+}.wrap());
+
+// Initializes the volume manager. This needs for isolated entries.
+initializeQueue.run(function(fulfill) {
+  VolumeManager.getInstance(fulfill);
+}.wrap());
+
+chrome.app.runtime.onLaunched.addListener(onLaunched);
+
+/**
+ * Called when an app is launched.
+ * @param {Object} launchData Launch data.
+ */
+function onLaunched(launchData) {
   if (!launchData || !launchData.items || launchData.items.length == 0)
     return;
 
-  var getFilePromises = launchData.items.map(function(item) {
-    var entry = item.entry;
-    return new Promise(function(fullfill, reject) {
-      entry.file(
-          function(file) {
-            fullfill({
-              entry: entry,
-              file: file,
-              fileUrl: window.URL.createObjectURL(file)
-            });
-          },
-          function() {
-            fullfill({entry: entry, file: null, fileUrl: null});
-          });
-    });
-  });
+  var videos = [];
 
-  Promise.all(getFilePromises).then(function(results) {
-    results = results.filter(function(result) { return result.file !== null; });
-    if (results.length > 0)
-      open(results);
-  }.wrap(),
-  function() {
-    // TODO(yoshiki): handle error in a smarter way.
-    open('', 'error');  // Empty URL shows the error message.
+  initializeQueue.run(function(fulfill) {
+    var isolatedEntries = launchData.items.map(function(item) {
+      return item.entry;
+    });
+
+    chrome.fileBrowserPrivate.resolveIsolatedEntries(isolatedEntries,
+        function(externalEntries) {
+          videos = externalEntries.map(function(entry) {
+            return Object.freeze({
+              entry: entry,
+              title: entry.name,
+              url: entry.toURL(),
+            });
+          });
+          fulfill();
+        }.wrap());
   }.wrap());
-}.wrap());
+
+  initializeQueue.run(function(fulfill) {
+    if (videos.length > 0) {
+      open(videos);
+    } else {
+      // TODO(yoshiki): handle error in a smarter way.
+      open('', 'error');  // Empty URL shows the error message.
+    }
+    fulfill();
+  }.wrap());
+}
 
 /**
  * Opens player window.
  * @param {Array.<Object>} videos List of videos to play.
- **/
+ */
 function open(videos) {
   chrome.app.window.create('video_player.html', {
     id: 'video',
