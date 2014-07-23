@@ -123,7 +123,7 @@ class ViewManagerClientImpl : public ViewManager,
                                 EventPtr event,
                                 const Callback<void()>& callback) OVERRIDE;
   virtual void OnFocusChanged(Id gained_focus_id, Id lost_focus_id) OVERRIDE;
-  virtual void EmbedRoot(const String& url) OVERRIDE;
+  virtual void Embed(const String& url) OVERRIDE;
   virtual void DispatchOnViewInputEvent(Id view_id, EventPtr event) OVERRIDE;
 
   // Sync the client model with the service by enumerating the pending

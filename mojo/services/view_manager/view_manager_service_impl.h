@@ -205,9 +205,9 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   virtual void SetNodeVisibility(Id transport_node_id,
                                  bool visible,
                                  const Callback<void(bool)>& callback) OVERRIDE;
-  virtual void Embed(const mojo::String& url,
+  virtual void Embed(const String& url,
                      Id transport_node_id,
-                     const mojo::Callback<void(bool)>& callback) OVERRIDE;
+                     const Callback<void(bool)>& callback) OVERRIDE;
   virtual void DispatchOnViewInputEvent(Id transport_view_id,
                                         EventPtr event) OVERRIDE;
 

@@ -726,6 +726,11 @@ void ViewManagerServiceImpl::SetNodeVisibility(
 void ViewManagerServiceImpl::Embed(const String& url,
                                    Id transport_node_id,
                                    const Callback<void(bool)>& callback) {
+  if (NodeIdFromTransportId(transport_node_id) == InvalidNodeId()) {
+    root_node_manager_->EmbedRoot(url);
+    callback.Run(true);
+    return;
+  }
   bool success = CanEmbed(transport_node_id);
   if (success) {
     // Only allow a node to be the root for one connection.

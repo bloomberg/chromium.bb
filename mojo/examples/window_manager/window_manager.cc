@@ -367,7 +367,7 @@ class WindowManager : public ApplicationDelegate,
   }
 
   // Overridden from WindowManagerDelegate:
-  virtual void EmbedRoot(const String& url) OVERRIDE {
+  virtual void Embed(const String& url) OVERRIDE {
     CreateWindow(url,
                  navigation::NavigationDetailsPtr().Pass(),
                  navigation::ResponseDetailsPtr().Pass());

@@ -80,8 +80,8 @@ std::string ChangeToDescription1(const Change& change) {
           "InputEvent view=%s event_action=%d",
           NodeIdToString(change.view_id).c_str(),
           change.event_action);
-    case CHANGE_TYPE_EMBED_ROOT:
-      return base::StringPrintf("EmbedRoot url=%s", change.embed_url.data());
+    case CHANGE_TYPE_EMBED:
+      return base::StringPrintf("Embed url=%s", change.embed_url.data());
   }
   return std::string();
 }
@@ -225,9 +225,9 @@ void TestChangeTracker::OnViewInputEvent(Id view_id, EventPtr event) {
   AddChange(change);
 }
 
-void TestChangeTracker::OnEmbedRoot(const String& url) {
+void TestChangeTracker::OnEmbed(const String& url) {
   Change change;
-  change.type = CHANGE_TYPE_EMBED_ROOT;
+  change.type = CHANGE_TYPE_EMBED;
   change.embed_url = url;
   AddChange(change);
 }

@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_vector.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 #include "mojo/services/view_manager/root_node_manager.h"
 #include "mojo/services/view_manager/root_view_manager_delegate.h"
@@ -47,12 +48,11 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerInitServiceImpl
     Callback<void(bool)> callback;
   };
 
-  void MaybeEmbedRoot(const std::string& url,
-                      const Callback<void(bool)>& callback);
+  void MaybeEmbed();
 
   // ViewManagerInitService overrides:
-  virtual void EmbedRoot(const String& url,
-                         const Callback<void(bool)>& callback) OVERRIDE;
+  virtual void Embed(const String& url,
+                     const Callback<void(bool)>& callback) OVERRIDE;
 
   // RootViewManagerDelegate overrides:
   virtual void OnRootViewManagerWindowTreeHostCreated() OVERRIDE;
@@ -63,8 +63,9 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerInitServiceImpl
 
   RootNodeManager root_node_manager_;
 
-  // Parameters passed to Connect(). If non-null Connect() has been invoked.
-  scoped_ptr<ConnectParams> connect_params_;
+  // Stores information about inbound calls to Embed() pending execution on
+  // the window tree host being ready to use.
+  ScopedVector<ConnectParams> connect_params_;
 
   bool is_tree_host_ready_;
 

@@ -20,9 +20,9 @@ class ViewManagerInit : public ApplicationDelegate {
 
   virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
     app->ConnectToService("mojo:mojo_view_manager", &view_manager_init_);
-    view_manager_init_->EmbedRoot("mojo:mojo_aura_demo",
-                                  base::Bind(&ViewManagerInit::DidConnect,
-                                             base::Unretained(this)));
+    view_manager_init_->Embed("mojo:mojo_aura_demo",
+                              base::Bind(&ViewManagerInit::DidConnect,
+                                         base::Unretained(this)));
   }
 
  private:

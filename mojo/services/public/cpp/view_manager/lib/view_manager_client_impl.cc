@@ -824,8 +824,8 @@ void ViewManagerClientImpl::OnFocusChanged(Id gained_focus_id,
   }
 }
 
-void ViewManagerClientImpl::EmbedRoot(const String& url) {
-  window_manager_delegate_->EmbedRoot(url);
+void ViewManagerClientImpl::Embed(const String& url) {
+  window_manager_delegate_->Embed(url);
 }
 
 void ViewManagerClientImpl::DispatchOnViewInputEvent(Id view_id,

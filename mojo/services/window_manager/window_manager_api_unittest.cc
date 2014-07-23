@@ -23,8 +23,8 @@ const char kTestServiceURL[] = "mojo:test_url";
 
 void EmptyResultCallback(bool result) {}
 
-// Callback from EmbedRoot(). |result| is the result of the
-// Embed() call and |run_loop| the nested RunLoop.
+// Callback from Embed(). |result| is the result of the Embed() call and
+// |run_loop| the nested RunLoop.
 void ResultCallback(bool* result_cache, base::RunLoop* run_loop, bool result) {
   *result_cache = result;
   run_loop->Quit();
@@ -32,12 +32,12 @@ void ResultCallback(bool* result_cache, base::RunLoop* run_loop, bool result) {
 
 // Responsible for establishing the initial ViewManagerService connection.
 // Blocks until result is determined.
-bool EmbedRoot(view_manager::ViewManagerInitService* view_manager_init,
+bool InitEmbed(view_manager::ViewManagerInitService* view_manager_init,
                const std::string& url) {
   bool result = false;
   base::RunLoop run_loop;
-  view_manager_init->EmbedRoot(url,
-                               base::Bind(&ResultCallback, &result, &run_loop));
+  view_manager_init->Embed(url,
+                           base::Bind(&ResultCallback, &result, &run_loop));
   run_loop.Run();
   return result;
 }
@@ -217,7 +217,7 @@ class WindowManagerApiTest : public testing::Test {
     test_helper_.service_manager()->ConnectToService(
         GURL("mojo:mojo_view_manager"),
         &view_manager_init_);
-    ASSERT_TRUE(EmbedRoot(view_manager_init_.get(),
+    ASSERT_TRUE(InitEmbed(view_manager_init_.get(),
                           "mojo:mojo_core_window_manager"));
     ConnectToWindowManager();
   }

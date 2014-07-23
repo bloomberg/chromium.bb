@@ -31,32 +31,32 @@ ViewManagerInitServiceImpl::ViewManagerInitServiceImpl(
 ViewManagerInitServiceImpl::~ViewManagerInitServiceImpl() {
 }
 
-void ViewManagerInitServiceImpl::MaybeEmbedRoot(
-    const std::string& url,
-    const Callback<void(bool)>& callback) {
+void ViewManagerInitServiceImpl::MaybeEmbed() {
   if (!is_tree_host_ready_)
     return;
 
-  root_node_manager_.EmbedRoot(url);
-  callback.Run(true);
+  ScopedVector<ConnectParams>::const_iterator it = connect_params_.begin();
+  for (; it != connect_params_.end(); ++it) {
+    root_node_manager_.EmbedRoot((*it)->url);
+    (*it)->callback.Run(true);
+  }
+  connect_params_.clear();
 }
 
-void ViewManagerInitServiceImpl::EmbedRoot(
+void ViewManagerInitServiceImpl::Embed(
     const String& url,
     const Callback<void(bool)>& callback) {
-  // TODO(beng): This means you can only have one EmbedRoot in flight at a time.
-  //             Keep a vector of these around instead.
-  connect_params_.reset(new ConnectParams);
-  connect_params_->url = url.To<std::string>();
-  connect_params_->callback = callback;
-  MaybeEmbedRoot(url.To<std::string>(), callback);
+  ConnectParams* params = new ConnectParams;
+  params->url = url.To<std::string>();
+  params->callback = callback;
+  connect_params_.push_back(params);
+  MaybeEmbed();
 }
 
 void ViewManagerInitServiceImpl::OnRootViewManagerWindowTreeHostCreated() {
   DCHECK(!is_tree_host_ready_);
   is_tree_host_ready_ = true;
-  if (connect_params_)
-    MaybeEmbedRoot(connect_params_->url, connect_params_->callback);
+  MaybeEmbed();
 }
 
 void ViewManagerInitServiceImpl::OnNativeViewportDeleted() {

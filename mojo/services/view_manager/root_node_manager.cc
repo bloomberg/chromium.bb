@@ -93,7 +93,7 @@ void RootNodeManager::EmbedRoot(const std::string& url) {
     return;
   }
   ViewManagerServiceImpl* connection = GetConnection(kWindowManagerConnection);
-  connection->client()->EmbedRoot(url);
+  connection->client()->Embed(url);
 }
 
 void RootNodeManager::Embed(ConnectionSpecificId creator_id,

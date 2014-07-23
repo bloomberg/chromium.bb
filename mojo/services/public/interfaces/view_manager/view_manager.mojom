@@ -33,7 +33,7 @@ interface ViewManagerInitService {
   // application embedded at the service root Node. This application is
   // typically referred to as the "window manager", and will have a specific
   // definition of where within its Node hierarchy to embed an unparented URL.
-  EmbedRoot(string url) => (bool success);
+  Embed(string url) => (bool success);
 };
 
 // Nodes and Views are identified by a uint32. The upper 16 bits are the
@@ -134,6 +134,10 @@ interface ViewManagerService {
   // current connection. The current connection is told this by way of
   // OnNodeDeleted().
   //
+  // If |node_id| is 0, the View Manager delegates determination of what node to
+  // embed |url| at to the app embedded at the service root node (i.e. the
+  // window manager).
+  //
   // This advances the server change id.
   Embed(string url, uint32 node_id) => (bool success);
 
@@ -207,7 +211,7 @@ interface ViewManagerClient {
   //            once support for derived FIFOs is landed.
 
   // Requests the window manager create a "top level" node embedding |url|.
-  EmbedRoot(string url);
+  Embed(string url);
 
   // Requests the view manager dispatch the event targeted at |view|.
   DispatchOnViewInputEvent(uint32 view, mojo.Event event);

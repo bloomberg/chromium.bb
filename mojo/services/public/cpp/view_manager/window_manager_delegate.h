@@ -17,7 +17,7 @@ class View;
 class WindowManagerDelegate {
  public:
   // Create an appropriate node to embed |url|.
-  virtual void EmbedRoot(const String& url) = 0;
+  virtual void Embed(const String& url) = 0;
 
   // Dispatch the supplied input event to the appropriate view (taking into
   // account focus, activation, modality, etc.).

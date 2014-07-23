@@ -363,8 +363,8 @@ class TestViewManagerClientConnection
   }
   virtual void OnFocusChanged(Id gained_focus_id,
                               Id lost_focus_id) OVERRIDE {}
-  virtual void EmbedRoot(const String& url) OVERRIDE {
-    tracker_.OnEmbedRoot(url);
+  virtual void Embed(const String& url) OVERRIDE {
+    tracker_.OnEmbed(url);
   }
   virtual void DispatchOnViewInputEvent(Id view_id,
                                         mojo::EventPtr event) OVERRIDE {
@@ -421,23 +421,24 @@ Id BuildViewId(ConnectionSpecificId connection_id,
   return (connection_id << 16) | view_id;
 }
 
-// Callback from EmbedRoot(). |result| is the result of the
+// Callback from Embed(). |result| is the result of the
 // Embed() call and |run_loop| the nested RunLoop.
-void EmbedRootCallback(bool* result_cache,
-                       base::RunLoop* run_loop,
-                       bool result) {
+void EmbedCallback(bool* result_cache, base::RunLoop* run_loop, bool result) {
   *result_cache = result;
   run_loop->Quit();
 }
 
-// Responsible for establishing the initial ViewManagerService connection.
+// Embed from an application that does not yet have a view manager connection.
 // Blocks until result is determined.
-bool EmbedRoot(ViewManagerInitService* view_manager_init,
-               const std::string& url) {
+bool InitEmbed(ViewManagerInitService* view_manager_init,
+               const std::string& url,
+               size_t number_of_calls) {
   bool result = false;
   base::RunLoop run_loop;
-  view_manager_init->EmbedRoot(url, base::Bind(&EmbedRootCallback,
-                                               &result, &run_loop));
+  for (size_t i = 0; i < number_of_calls; ++i) {
+    view_manager_init->Embed(url, base::Bind(&EmbedCallback,
+                                             &result, &run_loop));
+  }
   run_loop.Run();
   return result;
 }
@@ -464,7 +465,7 @@ class ViewManagerTest : public testing::Test {
     test_helper_.service_manager()->ConnectToService(
         GURL("mojo:mojo_view_manager"),
         &view_manager_init_);
-    ASSERT_TRUE(EmbedRoot(view_manager_init_.get(), kTestServiceURL));
+    ASSERT_TRUE(InitEmbed(view_manager_init_.get(), kTestServiceURL, 1));
 
     connection_ = ViewManagerProxy::WaitForInstance();
     ASSERT_TRUE(connection_ != NULL);
@@ -520,10 +521,23 @@ class ViewManagerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ViewManagerTest);
 };
 
-TEST_F(ViewManagerTest, SecondEmbedRoot) {
-  ASSERT_TRUE(EmbedRoot(view_manager_init_.get(), kTestServiceURL));
+TEST_F(ViewManagerTest, SecondEmbedRoot_InitService) {
+  ASSERT_TRUE(InitEmbed(view_manager_init_.get(), kTestServiceURL, 1));
   connection_->DoRunLoopUntilChangesCount(1);
   EXPECT_EQ(kTestServiceURL, connection_->changes()[0].embed_url);
+}
+
+TEST_F(ViewManagerTest, SecondEmbedRoot_Service) {
+  ASSERT_TRUE(connection_->Embed(BuildNodeId(0, 0), kTestServiceURL));
+  connection_->DoRunLoopUntilChangesCount(1);
+  EXPECT_EQ(kTestServiceURL, connection_->changes()[0].embed_url);
+}
+
+TEST_F(ViewManagerTest, MultipleEmbedRootsBeforeWTHReady) {
+  ASSERT_TRUE(InitEmbed(view_manager_init_.get(), kTestServiceURL, 2));
+  connection_->DoRunLoopUntilChangesCount(2);
+  EXPECT_EQ(kTestServiceURL, connection_->changes()[0].embed_url);
+  EXPECT_EQ(kTestServiceURL, connection_->changes()[1].embed_url);
 }
 
 // Verifies client gets a valid id.

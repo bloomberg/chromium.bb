@@ -376,7 +376,7 @@ class ViewManagerTest : public testing::Test {
   bool EmbedRoot(ViewManagerInitService* view_manager_init,
                  const std::string& url) {
     bool result = false;
-    view_manager_init->EmbedRoot(
+    view_manager_init->Embed(
         url,
         base::Bind(&ViewManagerTest::EmbedRootCallback, base::Unretained(this),
                    &result));
