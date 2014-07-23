@@ -107,6 +107,7 @@ class MockInputRouter : public InputRouter {
   }
   virtual bool ShouldForwardTouchEvent() const OVERRIDE { return true; }
   virtual void OnViewUpdated(int view_flags) OVERRIDE {}
+  virtual bool HasPendingEvents() const OVERRIDE { return false; }
 
   // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
@@ -302,6 +303,17 @@ class TestView : public TestRenderWidgetHostView {
       return mock_physical_backing_size_;
     return TestRenderWidgetHostView::GetPhysicalBackingSize();
   }
+#if defined(USE_AURA)
+  virtual ~TestView() {
+    // Simulate the mouse exit event dispatched when an aura window is
+    // destroyed. (MakeWebMouseEventFromAuraEvent translates ET_MOUSE_EXITED
+    // into WebInputEvent::MouseMove.)
+    rwh_->input_router()->SendMouseEvent(
+        MouseEventWithLatencyInfo(
+            SyntheticWebMouseEventBuilder::Build(WebInputEvent::MouseMove),
+            ui::LatencyInfo()));
+  }
+#endif
 
  protected:
   WebMouseWheelEvent unhandled_wheel_event_;
@@ -1397,6 +1409,15 @@ TEST_F(RenderWidgetHostTest, InputEventRWHLatencyComponent) {
   CheckLatencyInfoComponentInMessage(
       process_, GetLatencyComponentId(), WebInputEvent::TouchStart);
   SendInputEventACK(WebInputEvent::TouchStart, INPUT_EVENT_ACK_STATE_CONSUMED);
+}
+
+TEST_F(RenderWidgetHostTest, RendererExitedResetsInputRouter) {
+  // RendererExited will delete the view.
+  host_->SetView(new TestView(host_.get()));
+  host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
+
+  // Make sure the input router is in a fresh state.
+  ASSERT_FALSE(host_->input_router()->HasPendingEvents());
 }
 
 }  // namespace content

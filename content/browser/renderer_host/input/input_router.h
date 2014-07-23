@@ -63,6 +63,8 @@ class InputRouter : public IPC::Listener {
     MOBILE_VIEWPORT   = 1 << 1
   };
   virtual void OnViewUpdated(int view_flags) = 0;
+
+  virtual bool HasPendingEvents() const = 0;
 };
 
 }  // namespace content

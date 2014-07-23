@@ -1208,10 +1208,6 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
 
   waiting_for_screen_rects_ack_ = false;
 
-  // Reset to ensure that input routing works with a new renderer.
-  input_router_.reset(new InputRouterImpl(
-      process_, this, this, routing_id_, GetInputRouterConfigForPlatform()));
-
   // Must reset these to ensure that keyboard events work with a new renderer.
   suppress_next_char_events_ = false;
 
@@ -1229,6 +1225,13 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
     view_->RenderProcessGone(status, exit_code);
     view_ = NULL;  // The View should be deleted by RenderProcessGone.
   }
+
+  // Reconstruct the input router to ensure that it has fresh state for a new
+  // renderer. Otherwise it may be stuck waiting for the old renderer to ack an
+  // event. (In particular, the above call to view_->RenderProcessGone will
+  // destroy the aura window, which may dispatch a synthetic mouse move.)
+  input_router_.reset(new InputRouterImpl(
+      process_, this, this, routing_id_, GetInputRouterConfigForPlatform()));
 
   synthetic_gesture_controller_.reset();
 }

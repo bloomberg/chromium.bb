@@ -74,6 +74,7 @@ class CONTENT_EXPORT InputRouterImpl
   virtual const NativeWebKeyboardEvent* GetLastKeyboardEvent() const OVERRIDE;
   virtual bool ShouldForwardTouchEvent() const OVERRIDE;
   virtual void OnViewUpdated(int view_flags) OVERRIDE;
+  virtual bool HasPendingEvents() const OVERRIDE;
 
   // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -204,8 +205,6 @@ private:
   // If a flush has been requested, signals a completed flush to the client if
   // all events have been dispatched (i.e., |HasPendingEvents()| is false).
   void SignalFlushedIfNecessary();
-
-  bool HasPendingEvents() const;
 
   bool IsInOverscrollGesture() const;
 
