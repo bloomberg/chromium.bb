@@ -1723,6 +1723,9 @@ void LocalDOMWindow::setLocation(const String& urlString, LocalDOMWindow* callin
 
 void LocalDOMWindow::printErrorMessage(const String& message)
 {
+    if (!isCurrentlyDisplayedInFrame())
+        return;
+
     if (message.isEmpty())
         return;
 
