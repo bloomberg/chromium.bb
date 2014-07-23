@@ -1943,6 +1943,9 @@ void RenderViewContextMenu::OpenURL(
   content::Referrer referrer(referring_url.GetAsReferrer(),
       params_.referrer_policy);
 
+  if (params_.link_url == url && disposition != OFF_THE_RECORD)
+    params_.custom_context.link_followed = url;
+
   WebContents* new_contents = source_web_contents_->OpenURL(OpenURLParams(
       url, referrer, disposition, transition, false));
   if (!new_contents)

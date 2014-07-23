@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/renderer/dom_utils.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/menu_item_builder.h"
 #include "third_party/WebKit/public/web/WebElement.h"
@@ -55,14 +56,7 @@ ContextMenuParams ContextMenuParamsBuilder::Build(
   }
 
   if (!params.link_url.is_empty()) {
-    blink::WebNode selectedNode = data.node;
-
-    // If there are other embedded tags (like <a ..>Some <b>text</b></a>)
-    // we need to extract the parent <a/> node.
-    while (!selectedNode.isLink() && !selectedNode.parentNode().isNull()) {
-      selectedNode = selectedNode.parentNode();
-    }
-
+    blink::WebNode selectedNode = DomUtils::ExtractParentAnchorNode(data.node);
     blink::WebElement selectedElement = selectedNode.to<blink::WebElement>();
     if (selectedNode.isLink() && !selectedElement.isNull()) {
       params.link_text = selectedElement.innerText();

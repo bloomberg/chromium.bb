@@ -36,6 +36,12 @@ struct CONTENT_EXPORT CustomContextMenuContext {
   // It could also be |kCurrentRenderWidget|, which means the render widget that
   // the corresponding ViewHostMsg_ContextMenu is sent to.
   int32 render_widget_id;
+
+  // If the context menu was created for a link, and we navigated to that url,
+  // this will contain the url that was navigated. This field may not be set
+  // if, for example, we are transitioning to an incognito window, since we
+  // want to sever any connection to the old renderer.
+  GURL link_followed;
 };
 
 // FIXME(beng): This would be more useful in the future and more efficient
