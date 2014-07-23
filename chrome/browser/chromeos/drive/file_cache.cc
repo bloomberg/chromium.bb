@@ -284,7 +284,7 @@ FileError FileCache::OpenForWrite(
 
   write_opened_files_[id]++;
   file_closer->reset(new base::ScopedClosureRunner(
-      base::Bind(&google_apis::RunTaskOnThread,
+      base::Bind(&google_apis::RunTaskWithTaskRunner,
                  blocking_task_runner_,
                  base::Bind(&FileCache::CloseForWrite,
                             weak_ptr_factory_.GetWeakPtr(),

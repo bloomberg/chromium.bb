@@ -57,7 +57,7 @@ void PostFileSystemCallback(
                  file_system_getter, function,
                  on_error_callback.is_null() ?
                  base::Closure() :
-                 base::Bind(&google_apis::RunTaskOnThread,
+                 base::Bind(&google_apis::RunTaskWithTaskRunner,
                             base::MessageLoopProxy::current(),
                             on_error_callback)));
 }
@@ -74,7 +74,7 @@ void RunCreateOrOpenFileCallback(
   // (crbug.com/259184).
   callback.Run(
       file.Pass(),
-      base::Bind(&google_apis::RunTaskOnThread,
+      base::Bind(&google_apis::RunTaskWithTaskRunner,
                  BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
                  close_callback_on_ui_thread));
 }

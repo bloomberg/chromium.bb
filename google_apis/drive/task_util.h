@@ -10,9 +10,9 @@
 
 namespace google_apis {
 
-// Runs task on a thread on which |task_runner| may run tasks.
-void RunTaskOnThread(scoped_refptr<base::SequencedTaskRunner> task_runner,
-                     const base::Closure& task);
+// Runs the task with the task runner.
+void RunTaskWithTaskRunner(scoped_refptr<base::TaskRunner> task_runner,
+                           const base::Closure& task);
 
 namespace internal {
 
@@ -116,7 +116,7 @@ CallbackType CreateComposedCallback(
 template<typename CallbackType>
 CallbackType CreateRelayCallback(const CallbackType& callback) {
   return CreateComposedCallback(
-      base::Bind(&RunTaskOnThread, base::MessageLoopProxy::current()),
+      base::Bind(&RunTaskWithTaskRunner, base::MessageLoopProxy::current()),
       callback);
 }
 

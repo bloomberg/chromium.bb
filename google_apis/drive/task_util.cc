@@ -8,14 +8,10 @@
 
 namespace google_apis {
 
-void RunTaskOnThread(scoped_refptr<base::SequencedTaskRunner> task_runner,
-                     const base::Closure& task) {
-  if (task_runner->RunsTasksOnCurrentThread()) {
-    task.Run();
-  } else {
-    const bool posted = task_runner->PostTask(FROM_HERE, task);
-    DCHECK(posted);
-  }
+void RunTaskWithTaskRunner(scoped_refptr<base::TaskRunner> task_runner,
+                           const base::Closure& task) {
+  const bool posted = task_runner->PostTask(FROM_HERE, task);
+  DCHECK(posted);
 }
 
 }  // namespace google_apis

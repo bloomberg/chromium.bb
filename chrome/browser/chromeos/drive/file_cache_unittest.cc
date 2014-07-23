@@ -381,6 +381,7 @@ TEST_F(FileCacheTest, OpenForWrite) {
 
   // Close (1).
   file_closer1.reset();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(cache_->IsOpenedForWrite(id));
 
   // last_modified is updated.
@@ -389,6 +390,7 @@ TEST_F(FileCacheTest, OpenForWrite) {
 
   // Close (2).
   file_closer2.reset();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(cache_->IsOpenedForWrite(id));
 
   // Try to open non-existent file.
@@ -424,6 +426,7 @@ TEST_F(FileCacheTest, UpdateMd5) {
 
   // Close file.
   file_closer.reset();
+  base::RunLoop().RunUntilIdle();
 
   // MD5 was cleared by OpenForWrite().
   EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
@@ -461,6 +464,7 @@ TEST_F(FileCacheTest, ClearDirty) {
 
   // Close the file and clear the dirty bit.
   file_closer.reset();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, cache_->ClearDirty(id));
 
   // Entry is not dirty.
