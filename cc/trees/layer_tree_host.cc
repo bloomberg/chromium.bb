@@ -377,6 +377,8 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
       sync_tree->ResetContentsTexturesPurged();
   }
 
+  sync_tree->set_has_ever_been_drawn(false);
+
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
 }
 

@@ -90,6 +90,7 @@ LayerTreeImpl::LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl)
       needs_update_draw_properties_(true),
       needs_full_tree_sync_(true),
       next_activation_forces_redraw_(false),
+      has_ever_been_drawn_(false),
       render_surface_layer_list_id_(0) {
 }
 
@@ -237,6 +238,8 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
             target_tree->root_layer(), hud_layer()->id())));
   else
     target_tree->set_hud_layer(NULL);
+
+  target_tree->has_ever_been_drawn_ = false;
 }
 
 LayerImpl* LayerTreeImpl::InnerViewportContainerLayer() const {

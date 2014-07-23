@@ -188,6 +188,11 @@ class CC_EXPORT LayerTreeImpl {
 
   void ForceRedrawNextActivation() { next_activation_forces_redraw_ = true; }
 
+  void set_has_ever_been_drawn(bool has_drawn) {
+    has_ever_been_drawn_ = has_drawn;
+  }
+  bool has_ever_been_drawn() const { return has_ever_been_drawn_; }
+
   void set_ui_resource_request_queue(const UIResourceRequestQueue& queue);
 
   const LayerImplList& RenderSurfaceLayerList() const;
@@ -329,6 +334,8 @@ class CC_EXPORT LayerTreeImpl {
   bool needs_full_tree_sync_;
 
   bool next_activation_forces_redraw_;
+
+  bool has_ever_been_drawn_;
 
   ScopedPtrVector<SwapPromise> swap_promise_list_;
 
