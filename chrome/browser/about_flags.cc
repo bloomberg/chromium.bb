@@ -23,6 +23,7 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/nacl/common/nacl_switches.h"
+#include "components/search/search_switches.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/common/switches.h"
 #include "grit/chromium_strings.h"

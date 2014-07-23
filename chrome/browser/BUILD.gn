@@ -59,6 +59,7 @@ static_library("browser") {
     "//components/policy:policy_component",
     "//components/query_parser",
     "//components/rappor",
+    "//components/search",
     "//components/signin/core/browser",
     "//components/startup_metric_utils",
     "//components/strings",

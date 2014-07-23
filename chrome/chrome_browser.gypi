@@ -2879,6 +2879,7 @@
         '../components/components.gyp:precache_core',
         '../components/components.gyp:query_parser',
         '../components/components.gyp:rappor',
+        '../components/components.gyp:search',
         '../components/components.gyp:search_engines',
         '../components/components.gyp:search_provider_logos',
         '../components/components.gyp:signin_core_browser',

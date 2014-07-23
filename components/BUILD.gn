@@ -61,6 +61,7 @@ group("all_components") {
     "//components/query_parser",
     "//components/rappor",
     "//components/resources:components_resources",
+    "//components/search",
     "//components/search_engines",
     "//components/search_provider_logos",
     "//components/sessions",

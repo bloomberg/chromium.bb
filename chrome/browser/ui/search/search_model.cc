@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/search/search_model.h"
 
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
+#include "components/search/search.h"
 
 SearchModel::State::State()
     : instant_support(INSTANT_SUPPORT_UNKNOWN),

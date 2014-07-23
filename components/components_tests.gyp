@@ -162,6 +162,8 @@
             'rappor/log_uploader_unittest.cc',
             'rappor/rappor_metric_unittest.cc',
             'rappor/rappor_service_unittest.cc',
+            'search/search_android_unittest.cc',
+            'search/search_unittest.cc',
             'search_engines/default_search_manager_unittest.cc',
             'search_engines/default_search_policy_handler_unittest.cc',
             'search_engines/search_host_to_urls_map_unittest.cc',
@@ -351,6 +353,9 @@
             # Dependencies of rappor
             'components.gyp:rappor',
 
+            # Dependencies of search
+            'components.gyp:search',
+
             # Dependencies of search_engines
             'components.gyp:search_engines',
 
@@ -457,6 +462,7 @@
                 ['include', '^network_time/'],
                 ['include', '^password_manager/'],
                 ['include', '^precache/core/'],
+                ['include', '^search/'],
                 ['include', '^search_engines/'],
                 ['include', '^search_provider_logos/'],
                 ['include', '^signin/'],

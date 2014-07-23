@@ -1293,9 +1293,6 @@ const char kEnableZeroSuggestPersonalized[] =
 // Enables instant search clicks feature.
 const char kEnableInstantSearchClicks[] = "enable-instant-search-clicks";
 
-// Enables EmbeddedSearch API in the search results page.
-const char kEnableEmbeddedSearchAPI[] = "enable-embeddedsearch-api";
-
 #endif
 
 #if defined(USE_ASH)

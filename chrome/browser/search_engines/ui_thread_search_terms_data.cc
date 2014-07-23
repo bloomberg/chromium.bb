@@ -23,6 +23,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/search/search.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/protocol/sync.pb.h"
 #include "url/gurl.h"

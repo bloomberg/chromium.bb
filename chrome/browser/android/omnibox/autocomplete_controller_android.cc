@@ -37,6 +37,7 @@
 #include "components/autocomplete/autocomplete_match_type.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/search/search.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
