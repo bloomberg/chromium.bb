@@ -442,12 +442,12 @@ DeleteResult DeleteUserDataDir(const base::FilePath& user_data_dir,
   if (result == DELETE_REQUIRES_REBOOT) {
     ScheduleParentAndGrandparentForDeletion(user_data_dir);
   } else {
-    const base::FilePath user_data_dir(user_data_dir.DirName());
-    if (!user_data_dir.empty() &&
-        DeleteEmptyDir(user_data_dir) == DELETE_SUCCEEDED) {
-      const base::FilePath product_dir(user_data_dir.DirName());
-      if (!product_dir.empty())
-        DeleteEmptyDir(product_dir);
+    const base::FilePath product_dir1(user_data_dir.DirName());
+    if (!product_dir1.empty() &&
+        DeleteEmptyDir(product_dir1) == DELETE_SUCCEEDED) {
+      const base::FilePath product_dir2(product_dir1.DirName());
+      if (!product_dir2.empty())
+        DeleteEmptyDir(product_dir2);
     }
   }
 
