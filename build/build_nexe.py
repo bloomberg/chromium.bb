@@ -537,23 +537,33 @@ class Builder(object):
       if rebuilt:
         raise Error('Could not find output file %s.' % out)
       return True
-    stamp_tm = GetMTime(self.toolstamp)
-    out_tm = GetMTime(out)
-    outd_tm = GetMTime(outd)
-    src_tm = GetMTime(src)
-    if IsStale(out_tm, stamp_tm, rebuilt):
+
+    inputs = [__file__, self.toolstamp, src]
+    outputs = [out, outd]
+
+    # Find their timestamps if any.
+    input_times = [(GetMTime(f), f) for f in inputs]
+    output_times = [(GetMTime(f), f) for f in outputs]
+
+    # All inputs must exist.
+    missing_inputs = [p[1] for p in input_times if p[0] is None]
+    if missing_inputs:
+      raise Error('Missing inputs: %s' % str(missing_inputs))
+
+    # Rebuild if any outputs are missing.
+    missing_outputs = [p[1] for p in output_times if p[0] is None]
+    if missing_outputs:
       if rebuilt:
-        raise Error('Output %s is older than toolchain stamp %s' % (
-            out, self.toolstamp))
-      return True
-    if IsStale(out_tm, src_tm, rebuilt):
-      if rebuilt:
-        raise Error('Output %s is older than source %s.' % (out, src))
+        raise Error('Outputs missing after rebuild: %s' % str(missing_outputs))
       return True
 
-    if IsStale(outd_tm, src_tm, rebuilt):
+    newest_input = max(input_times)
+    oldest_output = min(output_times)
+
+    if IsStale(oldest_output[0], newest_input[0], rebuilt):
       if rebuilt:
-        raise Error('Dependency file is older than source %s.' % src)
+        raise Error('Output %s is older than toolchain stamp %s' % (
+            oldest_output[1], newest_input[1]))
       return True
 
     # Decode emitted makefile.
@@ -576,16 +586,10 @@ class Builder(object):
     # Check if any input has changed.
     for filename in deps:
       file_tm = GetMTime(filename)
-      if IsStale(out_tm, file_tm, rebuilt):
+      if IsStale(oldest_output[0], file_tm, rebuilt):
         if rebuilt:
           raise Error('Dependency %s is older than output %s.' % (
-              filename, out))
-        return True
-
-      if IsStale(outd_tm, file_tm, rebuilt):
-        if rebuilt:
-          raise Error('Dependency %s is older than dep file %s.' % (
-              filename, outd))
+              filename, oldest_output[1]))
         return True
     return False
 
