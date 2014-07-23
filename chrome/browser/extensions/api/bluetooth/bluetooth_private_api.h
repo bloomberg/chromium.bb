@@ -76,34 +76,6 @@ class BluetoothPrivateSetAdapterStateFunction
   DISALLOW_COPY_AND_ASSIGN(BluetoothPrivateSetAdapterStateFunction);
 };
 
-class BluetoothPrivateEnablePairingFunction
-    : public BluetoothExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("bluetoothPrivate.enablePairing",
-                             BLUETOOTHPRIVATE_ENABLEPAIRING)
-  BluetoothPrivateEnablePairingFunction();
-  // BluetoothExtensionFunction overrides:
-  virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) OVERRIDE;
-
- private:
-  virtual ~BluetoothPrivateEnablePairingFunction();
-  DISALLOW_COPY_AND_ASSIGN(BluetoothPrivateEnablePairingFunction);
-};
-
-class BluetoothPrivateDisablePairingFunction
-    : public BluetoothExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("bluetoothPrivate.disablePairing",
-                             BLUETOOTHPRIVATE_DISABLEPAIRING)
-  BluetoothPrivateDisablePairingFunction();
-  // BluetoothExtensionFunction overrides:
-  virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) OVERRIDE;
-
- private:
-  virtual ~BluetoothPrivateDisablePairingFunction();
-  DISALLOW_COPY_AND_ASSIGN(BluetoothPrivateDisablePairingFunction);
-};
-
 class BluetoothPrivateSetPairingResponseFunction
     : public BluetoothExtensionFunction {
  public:

@@ -38665,8 +38665,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="704" label="METRICSPRIVATE_RECORDSPARSEVALUE"/>
   <int value="705" label="HOTWORDPRIVATE_SETAUDIOLOGGINGENABLED"/>
   <int value="706" label="BLUETOOTHPRIVATE_SETADAPTERSTATE"/>
-  <int value="707" label="BLUETOOTHPRIVATE_ENABLEPAIRING"/>
-  <int value="708" label="BLUETOOTHPRIVATE_DISABLEPAIRING"/>
+  <int value="707" label="DELETED_BLUETOOTHPRIVATE_ENABLEPAIRING"/>
+  <int value="708" label="DELETED_BLUETOOTHPRIVATE_DISABLEPAIRING"/>
   <int value="709" label="BLUETOOTHPRIVATE_SETPAIRINGRESPONSE"/>
   <int value="710" label="NETWORKINGPRIVATE_GETCAPTIVEPORTALSTATUS"/>
   <int value="711" label="AUTOMATIONINTERNAL_PERFORMACTION"/>
