@@ -37,7 +37,6 @@
 #include "content/child/quota_dispatcher.h"
 #include "content/child/quota_message_filter.h"
 #include "content/child/resource_dispatcher.h"
-#include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/service_worker_message_filter.h"
 #include "content/child/socket_stream_dispatcher.h"
 #include "content/child/thread_safe_sender.h"
@@ -257,8 +256,6 @@ void ChildThread::Init() {
 
   service_worker_message_filter_ =
       new ServiceWorkerMessageFilter(thread_safe_sender_.get());
-  service_worker_dispatcher_.reset(
-      new ServiceWorkerDispatcher(thread_safe_sender_.get()));
 
   quota_message_filter_ =
       new QuotaMessageFilter(thread_safe_sender_.get());

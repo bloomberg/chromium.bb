@@ -44,7 +44,6 @@ class ChildHistogramMessageFilter;
 class ChildResourceMessageFilter;
 class ChildSharedBitmapManager;
 class FileSystemDispatcher;
-class ServiceWorkerDispatcher;
 class ServiceWorkerMessageFilter;
 class QuotaDispatcher;
 class QuotaMessageFilter;
@@ -105,10 +104,6 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
 
   FileSystemDispatcher* file_system_dispatcher() const {
     return file_system_dispatcher_.get();
-  }
-
-  ServiceWorkerDispatcher* service_worker_dispatcher() const {
-    return service_worker_dispatcher_.get();
   }
 
   QuotaDispatcher* quota_dispatcher() const {
@@ -226,8 +221,6 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   base::MessageLoop* message_loop_;
 
   scoped_ptr<FileSystemDispatcher> file_system_dispatcher_;
-
-  scoped_ptr<ServiceWorkerDispatcher> service_worker_dispatcher_;
 
   scoped_ptr<QuotaDispatcher> quota_dispatcher_;
 
