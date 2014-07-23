@@ -74,7 +74,6 @@ source_set("renderer") {
     sources -= [
       "accessibility/renderer_accessibility_focus_only.cc",
       "media/audio_decoder.cc",
-      "media/filter_helpers.cc",
       "media/webmediaplayer_impl.cc",
     ]
     sources += [
@@ -168,12 +167,5 @@ source_set("renderer") {
     sources += rebase_path(
         content_renderer_gypi_values.private_renderer_plugin_webrtc_sources,
         ".", "//content")
-  }
-
-  if (!enable_pepper_cdms) {
-    sources -= [
-      "renderer/media/crypto/ppapi_decryptor.cc",
-      "renderer/media/crypto/ppapi_decryptor.h",
-    ]
   }
 }

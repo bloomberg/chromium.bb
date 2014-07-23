@@ -8,6 +8,7 @@
   },
   'targets': [
     {
+      # GN version: //extensions/common
       'target_name': 'extensions_common',
       'type': 'static_library',
       'dependencies': [

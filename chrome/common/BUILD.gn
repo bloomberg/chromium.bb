@@ -160,13 +160,9 @@ static_library("common") {
     sources -= [
       "badge_util.cc",
       "chrome_version_info_posix.cc",
-      "extensions/api/extension_action/browser_action_handler.cc",
-      "extensions/api/extension_action/page_action_handler.cc",
-      "extensions/api/spellcheck/spellcheck_handler.cc",
       "extensions/manifest_handlers/minimum_chrome_version_checker.cc",
       "icon_with_badge_image_source.cc",
       "media_galleries/metadata_types.h",
-      "net/url_util.cc",
       "spellcheck_common.cc",
     ]
   } else {

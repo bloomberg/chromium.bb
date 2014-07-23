@@ -4,7 +4,7 @@
 
 import("//extensions/generated_extensions_api.gni")
 
-# GN version: extensions/common/api/api.gyp:extensions_api
+# GYP version: extensions/common/api/api.gyp:extensions_api
 generated_extensions_api("api") {
   sources = [
     "app_runtime.idl",

@@ -35,6 +35,7 @@ group("root") {
     "//device/bluetooth",
     "//device/nfc",
     "//device/usb",
+    "//extensions/common",
     "//extensions/common/api",
     "//gin",
     "//gpu",
@@ -164,6 +165,7 @@ group("root") {
       "//chrome/service",  # Blocked on content.
       "//chrome/utility",  # Blocked on content.
       "//content",
+      "//extensions/common",
       "//extensions/common/api",
       "//pdf",  # Not compiled on Android in GYP yet, either.
       "//ppapi:ppapi_c",
