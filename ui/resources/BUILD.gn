@@ -17,16 +17,33 @@ group("resources") {
 grit("ui_resources_grd") {
   visibility = ":resources"
   source = "ui_resources.grd"
+  outputs = [
+    "grit/ui_resources.h",
+    "grit/ui_resources_map.cc",
+    "grit/ui_resources_map.h",
+    "ui_resources_100_percent.pak",
+    "ui_resources_200_percent.pak",
+  ]
 }
 
 grit("ui_unscaled_resources_grd") {
   visibility = ":resources"
   source = "ui_unscaled_resources.grd"
+  outputs = [
+    "grit/ui_unscaled_resources.h",
+    "ui_unscaled_resources.rc",
+  ]
 }
 
 grit("webui_resources_grd") {
   visibility = ":resources"
   source = "../webui/resources/webui_resources.grd"
+  outputs = [
+    "grit/webui_resources.h",
+    "grit/webui_resources_map.cc",
+    "grit/webui_resources_map.h",
+    "webui_resources.pak",
+  ]
 }
 
 if (!is_mac) {

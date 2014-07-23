@@ -16,10 +16,18 @@ group("extensions_resources") {
 #              (exntensions_resources action)
 grit("extensions_resources_grd") {
   source = "extensions_resources.grd"
+  outputs = [
+    "grit/extensions_resources.h",
+    "extensions_resources.pak",
+  ]
 }
 
 # GYP version: extensions/extensions_resources.gyp:extensions_resources
 #              (exntensions_renderer_resources action)
 grit("extensions_renderer_resources") {
   source = "renderer/resources/extensions_renderer_resources.grd"
+  outputs = [
+    "grit/extensions_renderer_resources.h",
+    "extensions_renderer_resources.pak",
+  ]
 }

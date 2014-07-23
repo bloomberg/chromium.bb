@@ -38,6 +38,11 @@ if (is_component_build) {
 
 grit("resources") {
   source = "content_resources.grd"
+  outputs = [
+    "grit/content_resources.h",
+    "content_resources.pak",
+    "content_resources.rc",
+  ]
 }
 
 # This target exists to "hold" the content_export header so we can do proper

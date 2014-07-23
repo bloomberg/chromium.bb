@@ -7,10 +7,10 @@
 #
 # Parameters
 #
-#   source
+#   source (required)
 #       Path to .grd file.
 #
-#   outputs (optional)
+#   outputs (required)
 #       List of outputs from grit, relative to the target_gen_dir. If supplied,
 #       a call to Grit to compute the outputs can be skipped which will make
 #       GN run faster. Grit will verify at build time that this list is correct
@@ -45,7 +45,13 @@
 # Example
 #
 #   grit("my_resources") {
-#     source = "myfile.grd"  # source is required.
+#     # Source and outputs are required.
+#     source = "myfile.grd"
+#     outputs = [
+#       "foo_strings.h",
+#       "foo_strings.pak",
+#     ]
+#
 #     grit_flags = [ "-E", "foo=bar" ]  # Optional extra flags.
 #     # You can also put deps here if the grit source depends on generated
 #     # files.
@@ -212,34 +218,20 @@ template("grit") {
   grit_inputs = [ invoker.source ]
 
   assert_files_flags = []
-  if (defined(invoker.outputs)) {
-    # If the declaration specified outputs, we want to make sure that they
-    # actually match what Grit is writing. We write the list to a file (some
-    # of the output lists are long enough to not fit on a Windows command line)
-    # and ask Grit to verify those are the actual outputs at runtime.
-    asserted_list_file = "$target_out_dir/${target_name}_expected_outputs.txt"
-    write_file(asserted_list_file,
-               rebase_path(invoker.outputs, root_build_dir, target_gen_dir))
-    assert_files_flags += [
-      "--assert-file-list=" + rebase_path(asserted_list_file, root_build_dir),
-    ]
-    grit_outputs = get_path_info(
-        rebase_path(invoker.outputs, ".", target_gen_dir),
-        "abspath")
-  } else {
-    # Ask Grit for the output list.
-    grit_outputs_build_rel = exec_script(grit_info_script,
-      [ "--outputs", "$rebased_output_dir", source_path, "-f", resource_ids ] +
-      grit_flags,
-      "list lines")
 
-    # The names returned by grit are relative to the current (build) directory,
-    # but references to files in this template are expected to be relative to
-    # the invoking BUILD.gn file's directory. Make it absolute so there's no
-    # ambiguity.
-    grit_outputs = get_path_info(
-        rebase_path(grit_outputs_build_rel, ".", root_build_dir), "abspath")
-  }
+  # We want to make sure the declared outputs actually match what Grit is
+  # writing. We write the list to a file (some of the output lists are long
+  # enough to not fit on a Windows command line) and ask Grit to verify those
+  # are the actual outputs at runtime.
+  asserted_list_file = "$target_out_dir/${target_name}_expected_outputs.txt"
+  write_file(asserted_list_file,
+             rebase_path(invoker.outputs, root_build_dir, target_gen_dir))
+  assert_files_flags += [
+    "--assert-file-list=" + rebase_path(asserted_list_file, root_build_dir),
+  ]
+  grit_outputs = get_path_info(
+      rebase_path(invoker.outputs, ".", target_gen_dir),
+      "abspath")
 
   # The config and the action below get this visibility son only the generated
   # source set can depend on them. The variable "target_name" will get

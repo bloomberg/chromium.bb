@@ -545,6 +545,11 @@ component("net") {
 
 grit("net_resources") {
   source = "base/net_resources.grd"
+  outputs = [
+    "grit/net_resources.h",
+    "net_resources.pak",
+    "net_resources.rc",
+  ]
 }
 
 static_library("http_server") {

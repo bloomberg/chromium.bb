@@ -46,6 +46,12 @@ component("keyboard") {
 
 grit("resources_grit") {
   source = "keyboard_resources.grd"
+  outputs = [
+    "grit/keyboard_resources.h",
+    "grit/keyboard_resources_map.h",
+    "keyboard_resources.pak",
+    "keyboard_resources.rc",
+  ]
 }
 
 copy("resources") {

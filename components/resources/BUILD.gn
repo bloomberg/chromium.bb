@@ -16,10 +16,19 @@ group("resources") {
 #              (generate_components_resources action)
 grit("components_resources") {
   source = "components_resources.grd"
+  outputs = [
+    "grit/component_resources.h",
+    "component_resources.pak",
+  ]
 }
 
 # GYP version: components/components_resources.gyp
 #              (generate_scaled_components_resources action)
 grit("components_scaled_resources") {
   source = "components_scaled_resources.grd"
+  outputs = [
+    "grit/component_scaled_resources.h",
+    "component_resources_100_percent.pak",
+    "component_resources_200_percent.pak",
+  ]
 }

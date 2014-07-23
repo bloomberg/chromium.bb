@@ -6,4 +6,9 @@ import("//tools/grit/grit_rule.gni")
 
 grit("resources") {
   source = "ash_resources.grd"
+  outputs = [
+    "grit/ash_resources.h",
+    "ash_resources_100_percent.pak",
+    "ash_resources_200_percent.pak",
+  ]
 }

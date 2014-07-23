@@ -14,12 +14,20 @@ gypi_values = exec_script(
 #              (generate_common_resources action)
 grit("resources") {
   source = "common_resources.grd"
+  outputs = [
+    "grit/common_resources.h",
+    "common_resources.pak",
+  ]
 }
 
 # GYP version: chrome/chrome_resources.gyp:chrome_resources
 #              (generate_extensions_api_resources action)
 grit("extensions_api_resources") {
   source = "extensions_api_resources.grd"
+  outputs = [
+    "grit/extensions_api_resources.h",
+    "extensions_api_resources.pak",
+  ]
 }
 
 # GYP version: chrome/chrome_common.gyp:common

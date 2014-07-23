@@ -7,6 +7,13 @@ import("//tools/grit/grit_rule.gni")
 # GYP version: chrome/chrome_resources.gyp:theme_resources
 grit("theme_resources") {
   source = "theme_resources.grd"
+  outputs = [
+    "grit/theme_resources.h",
+    "grit/theme_resources_map.cc",
+    "grit/theme_resources_map.h",
+    "theme_resources_100_percent.pak",
+    "theme_resources_200_percent.pak",
+  ]
 
   deps = [
     ":chrome_unscaled_resources",
@@ -17,4 +24,8 @@ grit("theme_resources") {
 # GYP version: chrome/chrome_resources.gyp:chrome_unscaled_resources
 grit("chrome_unscaled_resources") {
   source = "chrome_unscaled_resources.grd"
+  outputs = [
+    "grit/chrome_unscaled_resources.h",
+    "chrome_unscaled_resources.pak",
+  ]
 }

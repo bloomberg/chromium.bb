@@ -335,6 +335,7 @@ template("android_resources") {
 # Variables
 #   deps: Specifies the dependencies of this target.
 #   grd_file: Path to the .grd file to generate strings.xml from.
+#   outputs: Expected grit outputs (see grit rule).
 #
 # Example
 #  java_strings_grd("foo_strings_grd") {
@@ -351,8 +352,11 @@ template("java_strings_grd") {
     }
   }
 
+  # Put grit files into this subdirectory of target_gen_dir.
+  extra_output_path = target_name + "_grit_output"
+
   grit_target_name = "${target_name}__grit"
-  grit_output_dir = base_path + "_grit_output"
+  grit_output_dir = "$target_gen_dir/$extra_output_path"
   grit(grit_target_name) {
     grit_flags = [
       "-E", "ANDROID_JAVA_TAGGED_ONLY=false",
@@ -360,6 +364,10 @@ template("java_strings_grd") {
     output_dir = grit_output_dir
     resource_ids = ""
     source = invoker.grd_file
+    # The grit rule expects files relative to target_gen_dir, but this rule
+    # appends a suffix to that. This rebase will prepend extra_output_path to
+    # each filename.
+    outputs = rebase_path(invoker.outputs, ".", extra_output_path)
   }
 
   # This needs to get outputs from grit's internal target, not the final

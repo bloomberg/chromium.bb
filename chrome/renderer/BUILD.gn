@@ -15,6 +15,11 @@ gypi_values = exec_script(
 # (generate_renderer_resources action)
 grit("resources") {
   source = "resources/renderer_resources.grd"
+  outputs = [
+    "grit/renderer_resources.h",
+    "renderer_resources_100_percent.pak",
+    "renderer_resources_200_percent.pak",
+  ]
 }
 
 static_library("renderer") {
