@@ -27,6 +27,9 @@
 #           python tools/grit/grit_info.py --outputs . path/to/your.grd
 #       And strip the leading "./" from the output files.
 #
+#   defines (optional)
+#       Extra defines to pass to grit (on top of the global grit_defines list).
+#
 #   grit_flags (optional)
 #       List of strings containing extra command-line flags to pass to Grit.
 #
@@ -261,7 +264,16 @@ template("grit") {
       "-o", rebased_output_dir,
       "--depdir", ".",
       "--depfile", rebase_path(depfile, root_build_dir),
-    ] + grit_defines + grit_flags + assert_files_flags
+    ] + grit_defines
+
+    # Add extra defines with -D flags.
+    if (defined(invoker.defines)) {
+      foreach (i, invoker.defines) {
+        args += [ "-D", i ]
+      }
+    }
+
+    args += grit_flags + assert_files_flags
 
     visibility = target_visibility
 

@@ -12,7 +12,7 @@ tracing_gen_dir = "$root_gen_dir/content/browser/tracing"
 tracing_grd = "$tracing_gen_dir/tracing_resources.grd"
 
 action("generate_tracing_grd") {
-  visibility = ":resources"
+  visibility = ":*"
   script = "generate_trace_viewer_grd.py"
 
   input_pages = [
@@ -31,36 +31,19 @@ action("generate_tracing_grd") {
   ]
 }
 
-# This can't use the grit template because the grd file is generated at build
-# time, so the trick of using grit_info to get the real inputs/outputs at GYP
-# time isn't possible.
-action("resources") {
-  script = "//tools/grit/grit.py"
-
-  # Get the list of grit script sources.
-  grit_inputs_build_rel =
-    exec_script("//tools/grit/grit_info.py", [ "--inputs" ], "list lines")
-
-  inputs = rebase_path(grit_inputs_build_rel, ".", root_build_dir) + [
-    grit_resource_id_file,
-  ]
+grit("resources") {
+  source = tracing_grd
   outputs = [
-    "$target_gen_dir/grit/tracing_resources.h",
-    "$target_gen_dir/tracing_resources.pak",
+    "grit/tracing_resources.h",
+    "tracing_resources.pak",
   ]
 
-  args = [
-    "-i", rebase_path(tracing_grd, root_build_dir), "build",
-    "-f", rebase_path(grit_resource_id_file, root_build_dir),
-    "-o", rebase_path(target_gen_dir, root_build_dir),
-    # resource_ids has an entry for our .grd file that looks like:
-    # "<(SHARED_INTERMEDIATE_DIR)/content/browser/tracing/tracing_resources.grd"
-    # and what we pass here should make that resolve to our .grd file.
-    "-DSHARED_INTERMEDIATE_DIR=" +
-          rebase_path(root_gen_dir, root_build_dir),
-  ] + grit_defines
-
-  deps = [
-    ":generate_tracing_grd",
+  # resource_ids has an entry for our .grd file that looks like:
+  # "<(SHARED_INTERMEDIATE_DIR)/content/browser/tracing/tracing_resources.grd"
+  # and what we pass here should make that resolve to our .grd file.
+  defines = [
+    "SHARED_INTERMEDIATE_DIR=" + rebase_path(root_gen_dir, root_build_dir),
   ]
+
+  deps = [ ":generate_tracing_grd" ]
 }
