@@ -28,7 +28,7 @@ class SkpicturePrinterUnitTest(
 
     # Picture printing is not supported on all platforms.
     if results.failures:
-      assert 'not supported' in results.failures[0][1]
+      assert 'not supported' in results.failures[0].exc_info[1].message
       return
 
     saved_picture_count = results.FindAllPageSpecificValuesNamed(
