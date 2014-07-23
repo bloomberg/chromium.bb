@@ -250,6 +250,7 @@ unsigned NaClProcessHost::keepalive_throttle_interval_milliseconds_ =
 
 NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
                                  base::File nexe_file,
+                                 NaClFileToken nexe_token,
                                  ppapi::PpapiPermissions permissions,
                                  int render_view_id,
                                  uint32 permission_bits,
@@ -262,6 +263,7 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
                                  const base::FilePath& profile_directory)
     : manifest_url_(manifest_url),
       nexe_file_(nexe_file.Pass()),
+      nexe_token_(nexe_token),
       permissions_(permissions),
 #if defined(OS_WIN)
       process_launched_by_broker_(false),
@@ -820,12 +822,6 @@ bool NaClProcessHost::StartNaClExecution() {
   if (uses_nonsfi_mode_) {
     // Currently, non-SFI mode is supported only on Linux.
 #if defined(OS_LINUX)
-    // nexe_file_ still keeps the ownership at this moment, because |params|
-    // may just be destroyed before sending IPC is properly processed.
-    // Note that although we set auto_close=true for FileDescriptor's
-    // constructor, it is not automatically handled in its destructor as RAII.
-    params.nexe_file =
-        base::FileDescriptor(nexe_file_.GetPlatformFile(), true);
     // In non-SFI mode, we do not use SRPC. Make sure that the socketpair is
     // not created.
     DCHECK_EQ(internal_->socket_for_sel_ldr, NACL_INVALID_HANDLE);
@@ -839,6 +835,11 @@ bool NaClProcessHost::StartNaClExecution() {
         NaClBrowser::GetDelegate()->URLMatchesDebugPatterns(manifest_url_);
     params.uses_irt = uses_irt_;
     params.enable_dyncode_syscalls = enable_dyncode_syscalls_;
+
+    // TODO(teravest): Resolve the file tokens right now instead of making the
+    // loader send IPC to resolve them later.
+    params.nexe_token_lo = nexe_token_.lo;
+    params.nexe_token_hi = nexe_token_.hi;
 
     const ChildProcessData& data = process_->GetData();
     if (!ShareHandleToSelLdr(data.handle,
@@ -891,13 +892,12 @@ bool NaClProcessHost::StartNaClExecution() {
 #endif
   }
 
-  // Here we are about to send the IPC, so release file descriptors to delegate
-  // the ownership to the message.
-  if (uses_nonsfi_mode_) {
-    nexe_file_.TakePlatformFile();
-  } else {
+  if (!uses_nonsfi_mode_) {
     internal_->socket_for_sel_ldr = NACL_INVALID_HANDLE;
   }
+
+  params.nexe_file = IPC::TakeFileHandleForProcess(nexe_file_.Pass(),
+                                                   process_->GetData().handle);
 
   process_->Send(new NaClProcessMsg_Start(params));
   return true;

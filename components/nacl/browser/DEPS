@@ -1,6 +1,7 @@
 include_rules = [
   "+content/public/browser",
   "+content/public/test",
+  "+native_client/src/public",
   "+native_client/src/shared/imc/nacl_imc_c.h",
   "+net",
   "+ppapi/host",

@@ -44,6 +44,8 @@ struct NaClStartParams {
   ~NaClStartParams();
 
   IPC::PlatformFileForTransit nexe_file;
+  uint64_t nexe_token_lo;
+  uint64_t nexe_token_hi;
 
   std::vector<FileDescriptor> handles;
   FileDescriptor debug_stub_server_bound_socket;
@@ -60,6 +62,7 @@ struct NaClStartParams {
   bool enable_ipc_proxy;
   bool uses_irt;
   bool enable_dyncode_syscalls;
+
   // NOTE: Any new fields added here must also be added to the IPC
   // serialization in nacl_messages.h and (for POD fields) the constructor
   // in nacl_types.cc.
@@ -73,6 +76,8 @@ struct NaClLaunchParams {
   NaClLaunchParams();
   NaClLaunchParams(const std::string& manifest_url,
                    const IPC::PlatformFileForTransit& nexe_file,
+                   uint64_t nexe_token_lo,
+                   uint64_t nexe_token_hi,
                    int render_view_id,
                    uint32 permission_bits,
                    bool uses_irt,
@@ -80,11 +85,16 @@ struct NaClLaunchParams {
                    bool enable_dyncode_syscalls,
                    bool enable_exception_handling,
                    bool enable_crash_throttling);
-  NaClLaunchParams(const NaClLaunchParams& l);
   ~NaClLaunchParams();
 
   std::string manifest_url;
+  // On Windows, the HANDLE passed here is valid in the renderer's context.
+  // It's the responsibility of the browser to duplicate this handle properly
+  // for passing it to the plugin.
   IPC::PlatformFileForTransit nexe_file;
+  uint64_t nexe_token_lo;
+  uint64_t nexe_token_hi;
+
   int render_view_id;
   uint32 permission_bits;
   bool uses_irt;
