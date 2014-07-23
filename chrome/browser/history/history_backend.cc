@@ -163,35 +163,40 @@ class CommitLaterTask : public base::RefCounted<CommitLaterTask> {
   scoped_refptr<HistoryBackend> history_backend_;
 };
 
-// QueuedHistoryDBTask ---------------------------------------------------------
 
 QueuedHistoryDBTask::QueuedHistoryDBTask(
-    scoped_refptr<HistoryDBTask> task,
+    scoped_ptr<HistoryDBTask> task,
     scoped_refptr<base::SingleThreadTaskRunner> origin_loop,
     const base::CancelableTaskTracker::IsCanceledCallback& is_canceled)
-    : task_(task), origin_loop_(origin_loop), is_canceled_(is_canceled) {
+    : task_(task.Pass()), origin_loop_(origin_loop), is_canceled_(is_canceled) {
   DCHECK(task_);
   DCHECK(origin_loop_);
   DCHECK(!is_canceled_.is_null());
 }
 
 QueuedHistoryDBTask::~QueuedHistoryDBTask() {
+  // Ensure that |task_| is destroyed on its origin thread.
+  origin_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&base::DeletePointer<HistoryDBTask>,
+                 base::Unretained(task_.release())));
 }
 
 bool QueuedHistoryDBTask::is_canceled() {
   return is_canceled_.Run();
 }
 
-bool QueuedHistoryDBTask::RunOnDBThread(HistoryBackend* backend,
+bool QueuedHistoryDBTask::Run(HistoryBackend* backend,
                                         HistoryDatabase* db) {
   return task_->RunOnDBThread(backend, db);
 }
 
-void QueuedHistoryDBTask::DoneRunOnMainThread() {
+void QueuedHistoryDBTask::DoneRun() {
   origin_loop_->PostTask(
       FROM_HERE,
       base::Bind(&RunUnlessCanceled,
-                 base::Bind(&HistoryDBTask::DoneRunOnMainThread, task_),
+                 base::Bind(&HistoryDBTask::DoneRunOnMainThread,
+                            base::Unretained(task_.get())),
                  is_canceled_));
 }
 
@@ -212,6 +217,8 @@ HistoryBackend::HistoryBackend(const base::FilePath& history_dir,
 
 HistoryBackend::~HistoryBackend() {
   DCHECK(!scheduled_commit_.get()) << "Deleting without cleanup";
+  STLDeleteContainerPointers(queued_history_db_tasks_.begin(),
+                             queued_history_db_tasks_.end());
   queued_history_db_tasks_.clear();
 
 #if defined(OS_ANDROID)
@@ -2330,31 +2337,34 @@ void HistoryBackend::CancelScheduledCommit() {
 void HistoryBackend::ProcessDBTaskImpl() {
   if (!db_) {
     // db went away, release all the refs.
+    STLDeleteContainerPointers(queued_history_db_tasks_.begin(),
+                               queued_history_db_tasks_.end());
     queued_history_db_tasks_.clear();
     return;
   }
 
   // Remove any canceled tasks.
   while (!queued_history_db_tasks_.empty()) {
-    QueuedHistoryDBTask& task = queued_history_db_tasks_.front();
-    if (!task.is_canceled()) {
+    QueuedHistoryDBTask* task = queued_history_db_tasks_.front();
+    if (!task->is_canceled())
       break;
-    }
+
+    delete task;
     queued_history_db_tasks_.pop_front();
   }
   if (queued_history_db_tasks_.empty())
     return;
 
   // Run the first task.
-  QueuedHistoryDBTask task = queued_history_db_tasks_.front();
+  scoped_ptr<QueuedHistoryDBTask> task(queued_history_db_tasks_.front());
   queued_history_db_tasks_.pop_front();
-  if (task.RunOnDBThread(this, db_.get())) {
+  if (task->Run(this, db_.get())) {
     // The task is done, notify the callback.
-    task.DoneRunOnMainThread();
+    task->DoneRun();
   } else {
     // The task wants to run some more. Schedule it at the end of the current
     // tasks, and process it after an invoke later.
-    queued_history_db_tasks_.insert(queued_history_db_tasks_.end(), task);
+    queued_history_db_tasks_.push_back(task.release());
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&HistoryBackend::ProcessDBTaskImpl, this));
   }
@@ -2540,13 +2550,12 @@ void HistoryBackend::KillHistoryDatabase() {
 }
 
 void HistoryBackend::ProcessDBTask(
-    scoped_refptr<HistoryDBTask> task,
+    scoped_ptr<HistoryDBTask> task,
     scoped_refptr<base::SingleThreadTaskRunner> origin_loop,
     const base::CancelableTaskTracker::IsCanceledCallback& is_canceled) {
   bool scheduled = !queued_history_db_tasks_.empty();
-  queued_history_db_tasks_.insert(
-      queued_history_db_tasks_.end(),
-      QueuedHistoryDBTask(task, origin_loop, is_canceled));
+  queued_history_db_tasks_.push_back(
+      new QueuedHistoryDBTask(task.Pass(), origin_loop, is_canceled));
   if (!scheduled)
     ProcessDBTaskImpl();
 }

@@ -181,8 +181,9 @@ class TopSitesImplTest : public HistoryUnitTestBase {
   // Blocks the caller until history processes a task. This is useful if you
   // need to wait until you know history has processed a task.
   void WaitForHistory() {
-    history_service()->ScheduleDBTask(new WaitForHistoryTask(),
-                                      &history_tracker_);
+    history_service()->ScheduleDBTask(
+        scoped_ptr<history::HistoryDBTask>(new WaitForHistoryTask()),
+        &history_tracker_);
     base::MessageLoop::current()->Run();
   }
 

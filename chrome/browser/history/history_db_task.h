@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_HISTORY_HISTORY_DB_TASK_H_
 #define CHROME_BROWSER_HISTORY_HISTORY_DB_TASK_H_
 
-#include "base/memory/ref_counted.h"
-
 namespace history {
 
 class HistoryBackend;
@@ -16,9 +14,12 @@ class HistoryDatabase;
 // thread. HistoryDBTask is scheduled using HistoryService::ScheduleDBTask.
 // When HistoryBackend processes the task it invokes RunOnDBThread. Once the
 // task completes and has not been canceled, DoneRunOnMainThread is invoked back
-// on the main thread.
-class HistoryDBTask : public base::RefCountedThreadSafe<HistoryDBTask> {
+// on the main thread, after which this object is destroyed, also on the
+// main thread.
+class HistoryDBTask {
  public:
+  virtual ~HistoryDBTask() {}
+
   // Invoked on the database thread. The return value indicates whether the
   // task is done. A return value of true signals the task is done and
   // RunOnDBThread should NOT be invoked again. A return value of false
@@ -30,11 +31,6 @@ class HistoryDBTask : public base::RefCountedThreadSafe<HistoryDBTask> {
   // only invoked if the request was not canceled and returned true from
   // RunOnDBThread.
   virtual void DoneRunOnMainThread() = 0;
-
- protected:
-  friend class base::RefCountedThreadSafe<HistoryDBTask>;
-
-  virtual ~HistoryDBTask() {}
 };
 
 }  // namespace history

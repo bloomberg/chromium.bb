@@ -299,9 +299,10 @@ void DeleteDirectiveHandler::Start(
   if (!initial_sync_data.empty()) {
     // Drop processed delete directives during startup.
     history_service->ScheduleDBTask(
-        new DeleteDirectiveTask(weak_ptr_factory_.GetWeakPtr(),
-                                initial_sync_data,
-                                DROP_AFTER_PROCESSING),
+        scoped_ptr<history::HistoryDBTask>(
+            new DeleteDirectiveTask(weak_ptr_factory_.GetWeakPtr(),
+                                    initial_sync_data,
+                                    DROP_AFTER_PROCESSING)),
         &internal_tracker_);
   }
 }
@@ -409,9 +410,10 @@ syncer::SyncError DeleteDirectiveHandler::ProcessSyncChanges(
     // redelivered delete directives to avoid processing them again and again
     // in one chrome session.
     history_service->ScheduleDBTask(
-        new DeleteDirectiveTask(weak_ptr_factory_.GetWeakPtr(),
-                                delete_directives,
-                                KEEP_AFTER_PROCESSING),
+        scoped_ptr<history::HistoryDBTask>(
+            new DeleteDirectiveTask(weak_ptr_factory_.GetWeakPtr(),
+                                    delete_directives,
+                                    KEEP_AFTER_PROCESSING)),
         &internal_tracker_);
   }
   return syncer::SyncError();

@@ -366,7 +366,8 @@ void URLIndexPrivateData::ScheduleUpdateRecentVisits(
     URLID url_id,
     base::CancelableTaskTracker* tracker) {
   history_service->ScheduleDBTask(
-      new UpdateRecentVisitsFromHistoryDBTask(this, url_id), tracker);
+      scoped_ptr<history::HistoryDBTask>(
+          new UpdateRecentVisitsFromHistoryDBTask(this, url_id)), tracker);
 }
 
 // Helper functor for DeleteURL.
