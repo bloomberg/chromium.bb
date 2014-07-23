@@ -19,9 +19,12 @@
 The information can include symbol names, offsets, and source locations.
 """
 
+import glob
+import itertools
 import os
 import re
 import subprocess
+import zipfile
 
 CHROME_SRC = os.path.join(os.path.realpath(os.path.dirname(__file__)),
                           os.pardir, os.pardir, os.pardir, os.pardir)
@@ -130,6 +133,158 @@ def FindToolchain():
 
   raise Exception("Could not find tool chain")
 
+def GetAapt():
+  """Returns the path to aapt.
+
+  Args:
+    None
+
+  Returns:
+    the pathname of the 'aapt' executable.
+  """
+  sdk_home = os.path.join('third_party', 'android_tools', 'sdk')
+  sdk_home = os.environ.get('SDK_HOME', sdk_home)
+  aapt_exe = glob.glob(os.path.join(sdk_home, 'build-tools', '*', 'aapt'))
+  if not aapt_exe:
+    return None
+  return sorted(aapt_exe, key=os.path.getmtime, reverse=True)[0]
+
+def ApkMatchPackageName(aapt, apk_path, package_name):
+  """Returns true the APK's package name matches package_name.
+
+  Args:
+    aapt: pathname for the 'aapt' executable.
+    apk_path: pathname of the APK file.
+    package_name: package name to match.
+
+  Returns:
+    True if the package name matches or aapt is None, False otherwise.
+  """
+  if not aapt:
+    # Allow false positives
+    return True
+  aapt_output = subprocess.check_output(
+      [aapt, 'dump', 'badging', apk_path]).split('\n')
+  package_name_re = re.compile(r'package: .*name=\'(\S*)\'')
+  for line in aapt_output:
+    match = package_name_re.match(line)
+    if match:
+      return package_name == match.group(1)
+  return False
+
+def PathListJoin(prefix_list, suffix_list):
+   """Returns each prefix in prefix_list joined with each suffix in suffix list.
+
+   Args:
+     prefix_list: list of path prefixes.
+     suffix_list: list of path suffixes.
+
+   Returns:
+     List of paths each of which joins a prefix with a suffix.
+   """
+   return [
+       os.path.join(prefix, suffix)
+       for prefix in prefix_list for suffix in suffix_list ]
+
+def GetCandidates(dirs, filepart, candidate_fun):
+  """Returns a list of candidate filenames.
+
+  Args:
+    dirs: a list of the directory part of the pathname.
+    filepart: the file part of the pathname.
+    candidate_fun: a function to apply to each candidate, returns a list.
+
+  Returns:
+    A list of candidate files ordered by modification time, newest first.
+  """
+  out_dir = os.environ.get('CHROMIUM_OUT_DIR', 'out')
+  out_dir = os.path.join(CHROME_SYMBOLS_DIR, out_dir)
+  buildtype = os.environ.get('BUILDTYPE')
+  if buildtype:
+    buildtype_list = [ buildtype ]
+  else:
+    buildtype_list = [ 'Debug', 'Release' ]
+
+  candidates = PathListJoin([out_dir], buildtype_list) + [CHROME_SYMBOLS_DIR]
+  candidates = PathListJoin(candidates, dirs)
+  candidates = PathListJoin(candidates, [filepart])
+  candidates = list(
+      itertools.chain.from_iterable(map(candidate_fun, candidates)))
+  candidates = sorted(candidates, key=os.path.getmtime, reverse=True)
+  return candidates
+
+def GetCandidateApks():
+  """Returns a list of APKs which could contain the library.
+
+  Args:
+    None
+
+  Returns:
+    list of APK filename which could contain the library.
+  """
+  return GetCandidates(['apks'], '*.apk', glob.glob)
+
+def GetCrazyLib(apk_filename):
+  """Returns the name of the first crazy library from this APK.
+
+  Args:
+    apk_filename: name of an APK file.
+
+  Returns:
+    Name of the first library which would be crazy loaded from this APK.
+  """
+  zip_file = zipfile.ZipFile(apk_filename, 'r')
+  for filename in zip_file.namelist():
+    match = re.match('lib/[^/]*/crazy.(lib.*[.]so)', filename)
+    if match:
+      return match.group(1)
+
+def GetMatchingApks(device_apk_name):
+  """Find any APKs which match the package indicated by the device_apk_name.
+
+  Args:
+     device_apk_name: name of the APK on the device.
+
+  Returns:
+     A list of APK filenames which could contain the desired library.
+  """
+  match = re.match('(.*)-[0-9]+[.]apk$', device_apk_name)
+  if not match:
+    return None
+  package_name = match.group(1)
+  return filter(
+      lambda candidate_apk:
+          ApkMatchPackageName(GetAapt(), candidate_apk, package_name),
+      GetCandidateApks())
+
+def MapDeviceApkToLibrary(device_apk_name):
+  """Provide a library name which corresponds with device_apk_name.
+
+  Args:
+    device_apk_name: name of the APK on the device.
+
+  Returns:
+    Name of the library which corresponds to that APK.
+  """
+  matching_apks = GetMatchingApks(device_apk_name)
+  for matching_apk in matching_apks:
+    crazy_lib = GetCrazyLib(matching_apk)
+    if crazy_lib:
+      return crazy_lib
+
+def GetCandidateLibraries(library_name):
+  """Returns a list of candidate library filenames.
+
+  Args:
+    library_name: basename of the library to match.
+
+  Returns:
+    A list of matching library filenames for library_name.
+  """
+  return GetCandidates(
+      ['lib', 'lib.target'], library_name,
+      lambda filename: filter(os.path.exists, [filename]))
+
 def TranslateLibPath(lib):
   # SymbolInformation(lib, addr) receives lib as the path from symbols
   # root to the symbols file. This needs to be translated to point to the
@@ -138,21 +293,20 @@ def TranslateLibPath(lib):
   # If the .so is not found somewhere in CHROME_SYMBOLS_DIR, leave it
   # untranslated in case it is an Android symbol in SYMBOLS_DIR.
   library_name = os.path.basename(lib)
-  out_dir = os.environ.get('CHROMIUM_OUT_DIR', 'out')
-  candidate_dirs = ['.',
-                    os.path.join(out_dir, 'Debug', 'lib'),
-                    os.path.join(out_dir, 'Debug', 'lib.target'),
-                    os.path.join(out_dir, 'Release', 'lib'),
-                    os.path.join(out_dir, 'Release', 'lib.target'),
-                    ]
 
-  candidate_libraries = map(
-      lambda d: ('%s/%s/%s' % (CHROME_SYMBOLS_DIR, d, library_name)),
-      candidate_dirs)
-  candidate_libraries = filter(os.path.exists, candidate_libraries)
-  candidate_libraries = sorted(candidate_libraries,
-                               key=os.path.getmtime, reverse=True)
+  # The filename in the stack trace maybe an APK name rather than a library
+  # name. This happens when the library was loaded directly from inside the
+  # APK. If this is the case we try to figure out the library name by looking
+  # for a matching APK file and finding the name of the library in contains.
+  # The name of the APK file on the device is of the form
+  # <package_name>-<number>.apk. The APK file on the host may have any name
+  # so we look at the APK badging to see if the package name matches.
+  if re.search('-[0-9]+[.]apk$', library_name):
+    mapping = MapDeviceApkToLibrary(library_name)
+    if mapping:
+      library_name = mapping
 
+  candidate_libraries = GetCandidateLibraries(library_name)
   if not candidate_libraries:
     return lib
 
