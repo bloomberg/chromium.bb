@@ -41,7 +41,7 @@ td {
     vertical-align: baseline
 }
 
-.webkit-line-gutter-backdrop, .webkit-line-number {
+.line-gutter-backdrop, .line-number {
     /* Keep this in sync with inspector.css (.webkit-line-gutter-backdrop) */
     box-sizing: border-box;
     padding: 0 4px !important;
@@ -51,7 +51,7 @@ td {
     -webkit-user-select: none;
 }
 
-.webkit-line-gutter-backdrop {
+.line-gutter-backdrop {
     /* Keep this in sync with inspector.css (.webkit-line-gutter-backdrop) */
     position: absolute;
     z-index: -1;
@@ -60,7 +60,7 @@ td {
     height: 100%
 }
 
-.webkit-line-number {
+.line-number {
     text-align: right;
     color: rgb(128, 128, 128);
     word-break: normal;
@@ -70,70 +70,70 @@ td {
     -webkit-user-select: none;
 }
 
-.webkit-line-number::before {
+.line-number::before {
     content: attr(value);
 }
 
-tbody:last-child .webkit-line-content:empty:before {
+tbody:last-child .line-content:empty:before {
     content: " ";
 }
 
-.webkit-line-content {
+.line-content {
     padding: 0 5px !important;
 }
 
-.webkit-highlight {
+.highlight {
     background-color: rgb(100%, 42%, 42%);
     border: 2px solid rgb(100%, 31%, 31%);
 }
 
-.webkit-html-tag {
+.html-tag {
     /* Keep this in sync with inspector.css (.webkit-html-tag) */
     color: rgb(136, 18, 128);
 }
 
-.webkit-html-attribute-name {
+.html-attribute-name {
     /* Keep this in sync with inspector.css (.webkit-html-attribute-name) */
     color: rgb(153, 69, 0);
 }
 
-.webkit-html-attribute-value {
+.html-attribute-value {
     /* Keep this in sync with inspector.css (.webkit-html-attribute-value) */
     color: rgb(26, 26, 166);
 }
 
-.webkit-html-external-link, .webkit-html-resource-link {
+.html-external-link, .html-resource-link {
     /* Keep this in sync with inspectorSyntaxHighlight.css (.webkit-html-external-link, .webkit-html-resource-link) */
     color: #00e;
 }
 
-.webkit-html-external-link {
+.html-external-link {
     /* Keep this in sync with inspectorSyntaxHighlight.css (.webkit-html-external-link) */
     text-decoration: none;
 }
 
-.webkit-html-external-link:hover {
+.html-external-link:hover {
     /* Keep this in sync with inspectorSyntaxHighlight.css (.webkit-html-external-link:hover) */
     text-decoration: underline;
 }
 
-.webkit-html-comment {
+.html-comment {
     /* Keep this in sync with inspectorSyntaxHighlight.css (.webkit-html-comment) */
     color: rgb(35, 110, 37);
 }
 
-.webkit-html-doctype {
+.html-doctype {
     /* Keep this in sync with inspectorSyntaxHighlight.css (.webkit-html-doctype) */
     color: rgb(192, 192, 192);
 }
 
-.webkit-html-end-of-file {
+.html-end-of-file {
     /* Keep this in sync with inspectorSyntaxHighlight.css (.webkit-html-end-of-file) */
     color: rgb(255, 0, 0);
     font-weight: bold;
 }
 
-.webkit-html-message-bubble {
+.html-message-bubble {
     box-shadow: black 0px 2px 5px;
     border-radius: 9px;
     -webkit-border-fit: lines;
@@ -145,22 +145,22 @@ tbody:last-child .webkit-line-content:empty:before {
     padding: 0 7px 1px;
 }
 
-.webkit-html-warning-message {
+.html-warning-message {
     background-color: rgb(100%, 62%, 42%);
     border: 2px solid rgb(100%, 52%, 21%);
 }
 
-.webkit-html-error-message {
+.html-error-message {
     background-color: rgb(100%, 42%, 42%);
     border: 2px solid rgb(100%, 31%, 31%);
 }
 
-.webkit-html-message-line {
+.html-message-line {
     padding-left: 23px;
     text-indent: -20px;
 }
 
-.webkit-html-message-icon {
+.html-message-icon {
     position: relative;
     top: 2px;
     margin: 0 4px;
