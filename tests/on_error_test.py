@@ -364,6 +364,9 @@ def run_shell_out(url, mode):
   # Hack it out so registering works.
   on_error._ENABLED_DOMAINS = (socket.getfqdn(),)
 
+  # Don't try to authenticate into localhost.
+  on_error.net.create_authenticator = lambda _: None
+
   if not on_error.report_on_exception_exit(url):
     print 'Failure to register the handler'
     return 1

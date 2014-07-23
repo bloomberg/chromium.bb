@@ -906,10 +906,14 @@ class OAuthAuthenticator(Authenticator):
     self.urlhost = urlhost
     self.config = config
     self._lock = threading.Lock()
-    self._access_token = oauth.load_access_token(self.urlhost, self.config)
+    self._access_token_known = False
+    self._access_token = None
 
   def authorize(self, request):
     with self._lock:
+      if not self._access_token_known:
+        self._access_token = oauth.load_access_token(self.urlhost, self.config)
+        self._access_token_known = True
       if self._access_token:
         request.headers['Authorization'] = 'Bearer %s' % self._access_token
 
@@ -917,11 +921,13 @@ class OAuthAuthenticator(Authenticator):
     with self._lock:
       self._access_token = oauth.create_access_token(
           self.urlhost, self.config, allow_user_interaction)
+      self._access_token_known = True
       return self._access_token is not None
 
   def logout(self):
     with self._lock:
       self._access_token = None
+      self._access_token_known = True
       oauth.purge_access_token(self.urlhost, self.config)
 
 

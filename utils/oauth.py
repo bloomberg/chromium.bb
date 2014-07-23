@@ -14,6 +14,7 @@ import optparse
 import os
 import socket
 import sys
+import threading
 import urlparse
 import webbrowser
 
@@ -43,6 +44,18 @@ OAuthConfig = collections.namedtuple('OAuthConfig', [
   'no_local_webserver',
   'webserver_port',
 ])
+
+
+# Configuration fetched from a service, returned by _fetch_service_config.
+_ServiceConfig = collections.namedtuple('_ServiceConfig', [
+  'client_id',
+  'client_secret',
+  'primary_url',
+])
+
+# Process cache of _fetch_service_config results.
+_service_config_cache = {}
+_service_config_cache_lock = threading.Lock()
 
 
 def make_oauth_config(
@@ -114,7 +127,10 @@ def extract_oauth_config_from_options(options):
 def load_access_token(urlhost, config):
   """Returns cached access token if it is not expired yet."""
   assert isinstance(config, OAuthConfig)
-  storage = _get_storage(urlhost, config)
+  auth_service_url = _fetch_auth_service_url(urlhost)
+  if not auth_service_url:
+    return None
+  storage = _get_storage(auth_service_url, config)
   credentials = storage.get()
   # Missing?
   if not credentials or credentials.invalid:
@@ -139,13 +155,16 @@ def create_access_token(urlhost, config, allow_user_interaction):
     None on error or if OAuth2 flow was interrupted.
   """
   assert isinstance(config, OAuthConfig)
-  storage = _get_storage(urlhost, config)
+  auth_service_url = _fetch_auth_service_url(urlhost)
+  if not auth_service_url:
+    return None
+  storage = _get_storage(auth_service_url, config)
   credentials = storage.get()
 
   # refresh_token is missing, need to go through full flow.
   if credentials is None or credentials.invalid:
     if allow_user_interaction:
-      return _run_oauth_dance(urlhost, storage, config)
+      return _run_oauth_dance(auth_service_url, storage, config)
     return None
 
   # refresh_token is ok, use it.
@@ -154,7 +173,7 @@ def create_access_token(urlhost, config, allow_user_interaction):
   except client.Error as err:
     logging.error('OAuth error: %s', err)
     if allow_user_interaction:
-      return _run_oauth_dance(urlhost, storage, config)
+      return _run_oauth_dance(auth_service_url, storage, config)
     return None
 
   # Success.
@@ -167,7 +186,9 @@ def create_access_token(urlhost, config, allow_user_interaction):
 def purge_access_token(urlhost, config):
   """Deletes OAuth tokens that can be used to access |urlhost|."""
   assert isinstance(config, OAuthConfig)
-  _get_storage(urlhost, config).delete()
+  auth_service_url = _fetch_auth_service_url(urlhost)
+  if auth_service_url:
+    _get_storage(auth_service_url, config).delete()
 
 
 def _get_storage(urlhost, config):
@@ -176,30 +197,67 @@ def _get_storage(urlhost, config):
       config.tokens_cache, urlhost.rstrip('/'))
 
 
-def _fetch_oauth_client_id(urlhost):
-  """Ask service to for client_id and client_secret to use."""
-  # client_secret is not really a secret in that case. So an attacker can
-  # impersonate service's identity in OAuth2 flow. But that's generally
-  # fine as long as a list of allowed redirect_uri's associated with client_id
-  # is limited to 'localhost' or 'urn:ietf:wg:oauth:2.0:oob'. In that case
-  # attacker needs some process running on user's machine to successfully
-  # complete the flow and grab access_token. When you have malicious code
-  # running on your machine your screwed anyway.
-  response = requests.get(
-      '%s/auth/api/v1/server/oauth_config' % urlhost.rstrip('/'))
-  if response.status_code == 200:
-    try:
-      config = response.json()
-      if not isinstance(config, dict):
-        raise ValueError()
-      return config['client_id'], config['client_not_so_secret']
-    except (KeyError, ValueError) as err:
-      logging.error('Invalid response from the service: %s', err)
-  else:
-    logging.error(
-        'Error when fetching oauth_config, HTTP status code %d',
-        response.status_code)
-  return None, None
+def _fetch_auth_service_url(urlhost):
+  """Fetches URL of a main authentication service used by |urlhost|.
+
+  Returns:
+    * If |urlhost| is using a authentication service, returns its URL.
+    * If |urlhost| is not using authentication servier, returns |urlhost|.
+    * If there was a error communicating with |urlhost|, returns None.
+  """
+  # TODO(vadimsh): Cache {urlhost -> primary_url} mapping locally on disk
+  # to avoid round trip to the server all the time.
+  service_config = _fetch_service_config(urlhost)
+  if not service_config:
+    return None
+  url = (service_config.primary_url or urlhost).rstrip('/')
+  assert url.startswith(('https://', 'http://localhost:')), url
+  return url
+
+
+def _fetch_service_config(urlhost):
+  """Fetches OAuth related configuration from a service.
+
+  The configuration includes OAuth client_id and client_secret, as well as
+  URL of a primary authentication service (or None if not used).
+
+  Returns:
+    Instance of _ServiceConfig on success, None on failure.
+  """
+  def do_fetch():
+    # client_secret is not really a secret in that case. So an attacker can
+    # impersonate service's identity in OAuth2 flow. But that's generally
+    # fine as long as a list of allowed redirect_uri's associated with client_id
+    # is limited to 'localhost' or 'urn:ietf:wg:oauth:2.0:oob'. In that case
+    # attacker needs some process running on user's machine to successfully
+    # complete the flow and grab access_token. When you have malicious code
+    # running on your machine you're screwed anyway.
+    response = requests.get(
+        '%s/auth/api/v1/server/oauth_config' % urlhost.rstrip('/'))
+    if response.status_code == 200:
+      try:
+        config = response.json()
+        if not isinstance(config, dict):
+          raise ValueError()
+        return _ServiceConfig(
+            config['client_id'],
+            config['client_not_so_secret'],
+            config.get('primary_url'))
+      except (KeyError, ValueError) as err:
+        logging.error('Invalid response from the service: %s', err)
+    else:
+      logging.error(
+          'Error when fetching oauth_config, HTTP status code %d',
+          response.status_code)
+    return None
+
+  # Use local cache to avoid unnecessary network calls.
+  with _service_config_cache_lock:
+    if urlhost not in _service_config_cache:
+      config = do_fetch()
+      if config:
+        _service_config_cache[urlhost] = config
+    return _service_config_cache.get(urlhost)
 
 
 # The chunk of code below is based on oauth2client.tools module. Unfortunately
@@ -209,16 +267,19 @@ def _fetch_oauth_client_id(urlhost):
 
 def _run_oauth_dance(urlhost, storage, config):
   """Perform full OAuth2 dance with the browser."""
-  # Fetch client_id and client_secret from service itself.
-  client_id, client_not_so_secret = _fetch_oauth_client_id(urlhost)
-  if not client_id or not client_not_so_secret:
-    print 'Couldn\'t fetch OAuth client credentials'
+  # Fetch client_id and client_secret from the service itself.
+  service_config = _fetch_service_config(urlhost)
+  if not service_config:
+    print 'Couldn\'t fetch OAuth configuration'
+    return None
+  if not service_config.client_id or not service_config.client_secret:
+    print 'OAuth is not configured on the service'
     return None
 
   # Appengine expects a token scoped to 'userinfo.email'.
   flow = client.OAuth2WebServerFlow(
-      client_id,
-      client_not_so_secret,
+      service_config.client_id,
+      service_config.client_secret,
       'https://www.googleapis.com/auth/userinfo.email',
       approval_prompt='force')
 
