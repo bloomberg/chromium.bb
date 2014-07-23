@@ -9,8 +9,6 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
@@ -23,7 +21,7 @@ import org.chromium.content.common.ScreenOrientationValues;
 class ScreenOrientationProvider {
     private static final String TAG = "ScreenOrientationProvider";
 
-    private int getOrientationFromWebScreenOrientations(byte orientations) {
+    private static int getOrientationFromWebScreenOrientations(byte orientations) {
         switch (orientations) {
             case ScreenOrientationValues.DEFAULT:
                 return ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
@@ -47,14 +45,8 @@ class ScreenOrientationProvider {
         }
     }
 
-    @VisibleForTesting
     @CalledByNative
-    static ScreenOrientationProvider create() {
-        return new ScreenOrientationProvider();
-    }
-
-    @CalledByNative
-    void lockOrientation(byte orientations) {
+    static void lockOrientation(byte orientations) {
         Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
         if (activity == null) {
             return;
@@ -69,7 +61,7 @@ class ScreenOrientationProvider {
     }
 
     @CalledByNative
-    void unlockOrientation() {
+    static void unlockOrientation() {
         Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
         if (activity == null) {
             return;

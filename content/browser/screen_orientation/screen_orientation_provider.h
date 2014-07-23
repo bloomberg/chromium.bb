@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_PROVIDER_H_
 #define CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_PROVIDER_H_
 
+#include "base/macros.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
 
 namespace content {

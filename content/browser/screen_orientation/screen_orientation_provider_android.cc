@@ -69,15 +69,9 @@ void ScreenOrientationProviderAndroid::LockOrientation(
     }
   }
 
-  if (j_screen_orientation_provider_.is_null()) {
-    j_screen_orientation_provider_.Reset(Java_ScreenOrientationProvider_create(
-        base::android::AttachCurrentThread()));
-  }
-
   lock_applied_ = true;
   Java_ScreenOrientationProvider_lockOrientation(
-      base::android::AttachCurrentThread(),
-      j_screen_orientation_provider_.obj(), lock_orientation);
+      base::android::AttachCurrentThread(), lock_orientation);
 
   // If two calls happen close to each other, Android will ignore the first.
   if (pending_lock_) {
@@ -99,12 +93,8 @@ void ScreenOrientationProviderAndroid::UnlockOrientation() {
   if (!lock_applied_)
     return;
 
-  // j_screen_orientation_provider_ was set when locking so it can't be null.
-  DCHECK(!j_screen_orientation_provider_.is_null());
-
   Java_ScreenOrientationProvider_unlockOrientation(
-      base::android::AttachCurrentThread(),
-      j_screen_orientation_provider_.obj());
+      base::android::AttachCurrentThread());
   lock_applied_ = false;
 }
 

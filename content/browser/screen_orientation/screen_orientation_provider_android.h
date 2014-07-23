@@ -5,7 +5,8 @@
 #ifndef CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_PROVIDER_ANDROID_H_
 #define CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_PROVIDER_ANDROID_H_
 
-#include "base/android/jni_android.h"
+#include <jni.h>
+
 #include "base/compiler_specific.h"
 #include "content/browser/screen_orientation/screen_orientation_provider.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -45,8 +46,6 @@ class ScreenOrientationProviderAndroid : public ScreenOrientationProvider,
   blink::WebScreenOrientationLockType GetNaturalLockType() const;
 
   virtual ~ScreenOrientationProviderAndroid();
-
-  base::android::ScopedJavaGlobalRef<jobject> j_screen_orientation_provider_;
 
   // ScreenOrientationDispatcherHost owns ScreenOrientationProvider so
   // dispatcher_ should not point to an invalid memory.

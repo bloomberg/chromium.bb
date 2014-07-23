@@ -29,7 +29,6 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
             UrlUtils.encodeHtmlDataUri("<html><body>foo</body></html>");
 
     private MockOrientationObserver mObserver;
-    private final ScreenOrientationProvider mProvider = ScreenOrientationProvider.create();
 
     private boolean checkOrientationForLock(int orientations) {
         switch (orientations) {
@@ -58,7 +57,7 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
      * Locks the screen orientation to |orientations| using ScreenOrientationProvider.
      */
     private void lockOrientation(int orientations) {
-        mProvider.lockOrientation((byte)orientations);
+        ScreenOrientationProvider.lockOrientation((byte)orientations);
     }
 
     /**
@@ -78,7 +77,7 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
      * Unlock the screen orientation using |ScreenOrientationProvider|.
      */
     private void unlockOrientation() {
-        mProvider.unlockOrientation();
+        ScreenOrientationProvider.unlockOrientation();
     }
 
     @Override
