@@ -173,12 +173,10 @@ TemplateURL* GetDefaultSearchProviderTemplateURL(Profile* profile) {
 
 GURL TemplateURLRefToGURL(const TemplateURLRef& ref,
                           const SearchTermsData& search_terms_data,
-                          int start_margin,
                           bool append_extra_query_params,
                           bool force_instant_results) {
   TemplateURLRef::SearchTermsArgs search_terms_args =
       TemplateURLRef::SearchTermsArgs(base::string16());
-  search_terms_args.omnibox_start_margin = start_margin;
   search_terms_args.append_extra_query_params = append_extra_query_params;
   search_terms_args.force_instant_results = force_instant_results;
   return GURL(ref.ReplaceSearchTerms(search_terms_args, search_terms_data));
@@ -187,9 +185,8 @@ GURL TemplateURLRefToGURL(const TemplateURLRef& ref,
 bool MatchesAnySearchURL(const GURL& url,
                          TemplateURL* template_url,
                          const SearchTermsData& search_terms_data) {
-  GURL search_url =
-      TemplateURLRefToGURL(template_url->url_ref(), search_terms_data,
-                           kDisableStartMargin, false, false);
+  GURL search_url = TemplateURLRefToGURL(template_url->url_ref(),
+                                         search_terms_data, false, false);
   if (search_url.is_valid() &&
       search::MatchesOriginAndPath(url, search_url))
     return true;
@@ -197,8 +194,7 @@ bool MatchesAnySearchURL(const GURL& url,
   // "URLCount() - 1" because we already tested url_ref above.
   for (size_t i = 0; i < template_url->URLCount() - 1; ++i) {
     TemplateURLRef ref(template_url, i);
-    search_url = TemplateURLRefToGURL(ref, search_terms_data,
-                                      kDisableStartMargin, false, false);
+    search_url = TemplateURLRefToGURL(ref, search_terms_data, false, false);
     if (search_url.is_valid() &&
         search::MatchesOriginAndPath(url, search_url))
       return true;
@@ -241,7 +237,7 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
   const TemplateURLRef& instant_url_ref = template_url->instant_url_ref();
   UIThreadSearchTermsData search_terms_data(profile);
   const GURL instant_url = TemplateURLRefToGURL(
-      instant_url_ref, search_terms_data, kDisableStartMargin, false, false);
+      instant_url_ref, search_terms_data, false, false);
   if (!instant_url.is_valid())
     return false;
 
@@ -324,7 +320,7 @@ struct NewTabURLDetails {
 
     GURL search_provider_url = TemplateURLRefToGURL(
         template_url->new_tab_url_ref(), UIThreadSearchTermsData(profile),
-        kDisableStartMargin, false, false);
+        false, false);
     NewTabURLState state = IsValidNewTabURL(profile, search_provider_url);
     switch (state) {
       case NEW_TAB_URL_VALID:
@@ -530,8 +526,7 @@ bool IsSuggestPrefEnabled(Profile* profile) {
          profile->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled);
 }
 
-GURL GetInstantURL(Profile* profile, int start_margin,
-                   bool force_instant_results) {
+GURL GetInstantURL(Profile* profile, bool force_instant_results) {
   if (!IsInstantExtendedAPIEnabled() || !IsSuggestPrefEnabled(profile))
     return GURL();
 
@@ -541,7 +536,7 @@ GURL GetInstantURL(Profile* profile, int start_margin,
 
   GURL instant_url = TemplateURLRefToGURL(
       template_url->instant_url_ref(), UIThreadSearchTermsData(profile),
-      start_margin, true, force_instant_results);
+      true, force_instant_results);
   if (!instant_url.is_valid() ||
       !template_url->HasSearchTermsReplacementKey(instant_url))
     return GURL();
@@ -581,7 +576,7 @@ std::vector<GURL> GetSearchURLs(Profile* profile) {
   for (size_t i = 0; i < template_url->URLCount(); ++i) {
     TemplateURLRef ref(template_url, i);
     result.push_back(TemplateURLRefToGURL(ref, UIThreadSearchTermsData(profile),
-                                          kDisableStartMargin, false, false));
+                                          false, false));
   }
   return result;
 }
@@ -591,8 +586,7 @@ GURL GetNewTabPageURL(Profile* profile) {
 }
 
 GURL GetSearchResultPrefetchBaseURL(Profile* profile) {
-  return ShouldPrefetchSearchResults() ?
-      GetInstantURL(profile, kDisableStartMargin, true) : GURL();
+  return ShouldPrefetchSearchResults() ? GetInstantURL(profile, true) : GURL();
 }
 
 bool ShouldPrefetchSearchResults() {

@@ -336,8 +336,7 @@ class BaseSearchProvider : public AutocompleteProvider,
   //
   // |input| is also necessary for various other details, like whether we should
   // allow inline autocompletion and what the transition type should be.
-  // |accepted_suggestion| and |omnibox_start_margin| are used to generate
-  // Assisted Query Stats.
+  // |accepted_suggestion| is used to generate Assisted Query Stats.
   // |append_extra_query_params| should be set if |template_url| is the default
   // search engine, so the destination URL will contain any
   // command-line-specified query params.
@@ -349,7 +348,6 @@ class BaseSearchProvider : public AutocompleteProvider,
       const TemplateURL* template_url,
       const SearchTermsData& search_terms_data,
       int accepted_suggestion,
-      int omnibox_start_margin,
       bool append_extra_query_params,
       bool from_app_list);
 

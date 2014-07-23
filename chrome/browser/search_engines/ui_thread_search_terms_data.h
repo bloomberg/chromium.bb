@@ -34,6 +34,7 @@ class UIThreadSearchTermsData : public SearchTermsData {
       bool for_search) const OVERRIDE;
   virtual std::string ForceInstantResultsParam(
       bool for_prerender) const OVERRIDE;
+  virtual int OmniboxStartMargin() const OVERRIDE;
   virtual std::string NTPIsThemedParam() const OVERRIDE;
   virtual std::string GoogleImageSearchSource() const OVERRIDE;
 

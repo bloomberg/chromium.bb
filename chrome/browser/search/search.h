@@ -148,16 +148,13 @@ bool NavEntryIsInstantNTP(const content::WebContents* contents,
 // if the engine doesn't have an Instant URL, or if it shouldn't be used (say
 // because it doesn't satisfy the requirements for extended mode or if Instant
 // is disabled through preferences). Callers must check that the returned URL is
-// valid before using it. The value of |start_margin| is used for the "es_sm"
-// parameter in the URL. |force_instant_results| forces a search page to update
+// valid before using it. |force_instant_results| forces a search page to update
 // results incrementally even if that is otherwise disabled by google.com
 // preferences.
 // NOTE: This method expands the default search engine's instant_url template,
 // so it shouldn't be called from SearchTermsData or other such code that would
 // lead to an infinite recursion.
-GURL GetInstantURL(Profile* profile,
-                   int start_margin,
-                   bool force_instant_results);
+GURL GetInstantURL(Profile* profile, bool force_instant_results);
 
 // Returns URLs associated with the default search engine for |profile|.
 std::vector<GURL> GetSearchURLs(Profile* profile);

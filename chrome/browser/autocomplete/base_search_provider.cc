@@ -20,8 +20,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/instant_service.h"
-#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
@@ -156,7 +154,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
           suggestion, type, suggestion, base::string16(), base::string16(),
           base::string16(), base::string16(), std::string(), std::string(),
           from_keyword_provider, 0, false, false, base::string16()),
-      template_url, search_terms_data, 0, 0, false, false);
+      template_url, search_terms_data, 0, false, false);
 }
 
 void BaseSearchProvider::Stop(bool clear_cached_results) {
@@ -484,7 +482,6 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
     const TemplateURL* template_url,
     const SearchTermsData& search_terms_data,
     int accepted_suggestion,
-    int omnibox_start_margin,
     bool append_extra_query_params,
     bool from_app_list) {
   AutocompleteMatch match(autocomplete_provider, suggestion.relevance(), false,
@@ -538,7 +535,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
       new TemplateURLRef::SearchTermsArgs(suggestion.suggestion()));
   match.search_terms_args->original_query = input.text();
   match.search_terms_args->accepted_suggestion = accepted_suggestion;
-  match.search_terms_args->omnibox_start_margin = omnibox_start_margin;
+  match.search_terms_args->enable_omnibox_start_margin = true;
   match.search_terms_args->suggest_query_params =
       suggestion.suggest_query_params();
   match.search_terms_args->append_extra_query_params =
@@ -715,18 +712,11 @@ void BaseSearchProvider::AddMatchToMap(const SuggestResult& result,
                                        int accepted_suggestion,
                                        bool mark_as_deletable,
                                        MatchMap* map) {
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(profile_);
-  // Android and iOS have no InstantService.
-  const int omnibox_start_margin = instant_service ?
-      instant_service->omnibox_start_margin() : chrome::kDisableStartMargin;
-
   AutocompleteMatch match = CreateSearchSuggestion(
       this, GetInput(result.from_keyword_provider()), result,
       GetTemplateURL(result.from_keyword_provider()),
       UIThreadSearchTermsData(profile_), accepted_suggestion,
-      omnibox_start_margin, ShouldAppendExtraParams(result),
-      in_app_list_);
+      ShouldAppendExtraParams(result), in_app_list_);
   if (!match.destination_url.is_valid())
     return;
   match.search_terms_args->bookmark_bar_pinned =

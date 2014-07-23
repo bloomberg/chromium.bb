@@ -129,9 +129,9 @@ class TemplateURLRef {
     // the request was issued.  Set to base::string16::npos if not used.
     size_t cursor_position;
 
-    // The start-edge margin of the omnibox in pixels, used in extended Instant
-    // to align the preview contents with the omnibox.
-    int omnibox_start_margin;
+    // True to enable the start-edge margin of the omnibox, used in extended
+    // Instant to align the preview contents with the omnibox.
+    bool enable_omnibox_start_margin;
 
     // The URL of the current webpage to be used for experimental zero-prefix
     // suggestions.

@@ -63,6 +63,9 @@ class SearchTermsData {
   // incrementally.
   virtual std::string ForceInstantResultsParam(bool for_prerender) const;
 
+  // Returns the start-edge margin of the omnibox in pixels.
+  virtual int OmniboxStartMargin() const;
+
   // Returns a string indicating whether a non-default theme is active,
   // suitable for adding as a query string param to the homepage.  This only
   // applies if Instant Extended is enabled.  Returns an empty string otherwise.

@@ -30,6 +30,7 @@ class TestSearchTermsData : public SearchTermsData {
   virtual std::string GoogleImageSearchSource() const OVERRIDE;
   virtual bool EnableAnswersInSuggest() const OVERRIDE;
   virtual bool IsShowingSearchTermsOnSearchResultsPages() const OVERRIDE;
+  virtual int OmniboxStartMargin() const OVERRIDE;
 
   void set_google_base_url(const std::string& google_base_url) {
     google_base_url_ = google_base_url;
@@ -43,12 +44,16 @@ class TestSearchTermsData : public SearchTermsData {
   void set_is_showing_search_terms_on_search_results_pages(bool value) {
     is_showing_search_terms_on_search_results_pages_ = value;
   }
+  void set_omnibox_start_margin(int omnibox_start_margin) {
+    omnibox_start_margin_ = omnibox_start_margin;
+  }
 
  private:
   std::string google_base_url_;
   std::string search_client_;
   bool enable_answers_in_suggest_;
   bool is_showing_search_terms_on_search_results_pages_;
+  int omnibox_start_margin_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSearchTermsData);
 };
@@ -83,6 +88,10 @@ bool TestSearchTermsData::EnableAnswersInSuggest() const {
 
 bool TestSearchTermsData::IsShowingSearchTermsOnSearchResultsPages() const {
   return is_showing_search_terms_on_search_results_pages_;
+}
+
+int TestSearchTermsData::OmniboxStartMargin() const {
+  return omnibox_start_margin_;
 }
 
 // TemplateURLTest ------------------------------------------------------------
@@ -698,6 +707,42 @@ TEST_F(TemplateURLTest, ReplaceCurrentPageUrl) {
     ASSERT_TRUE(url.url_ref().SupportsReplacement(search_terms_data_));
     TemplateURLRef::SearchTermsArgs search_terms_args(test_data[i].search_term);
     search_terms_args.current_page_url = test_data[i].current_page_url;
+    GURL result(url.url_ref().ReplaceSearchTerms(search_terms_args,
+                                                 search_terms_data_));
+    ASSERT_TRUE(result.is_valid());
+    EXPECT_EQ(test_data[i].expected_result, result.spec());
+  }
+}
+
+TEST_F(TemplateURLTest, OmniboxStartmargin) {
+  struct TestData {
+    const bool enable_omnibox_start_margin;
+    const int omnibox_start_margin;
+    const std::string expected_result;
+  } test_data[] = {
+    { false,
+      0,
+      "http://bar/foo?q=foobar" },
+    { true,
+      0,
+      "http://bar/foo?es_sm=0&q=foobar" },
+    { true,
+      42,
+      "http://bar/foo?es_sm=42&q=foobar" },
+  };
+  TemplateURLData data;
+  data.SetURL("http://bar/foo?{google:omniboxStartMarginParameter}"
+              "q={searchTerms}");
+  data.input_encodings.push_back("UTF-8");
+  TemplateURL url(data);
+  EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
+  ASSERT_TRUE(url.url_ref().SupportsReplacement(search_terms_data_));
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+    TemplateURLRef::SearchTermsArgs search_terms_args(ASCIIToUTF16("foobar"));
+    search_terms_args.enable_omnibox_start_margin =
+        test_data[i].enable_omnibox_start_margin;
+    search_terms_data_.set_omnibox_start_margin(
+        test_data[i].omnibox_start_margin);
     GURL result(url.url_ref().ReplaceSearchTerms(search_terms_args,
                                                  search_terms_data_));
     ASSERT_TRUE(result.is_valid());

@@ -76,6 +76,10 @@ std::string SearchTermsData::ForceInstantResultsParam(
   return std::string();
 }
 
+int SearchTermsData::OmniboxStartMargin() const {
+  return 0;
+}
+
 std::string SearchTermsData::NTPIsThemedParam() const {
   return std::string();
 }

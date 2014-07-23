@@ -13,6 +13,8 @@
 #include "chrome/browser/google/google_profile_helper.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -143,6 +145,14 @@ std::string UIThreadSearchTermsData::InstantExtendedEnabledParam(
 std::string UIThreadSearchTermsData::ForceInstantResultsParam(
     bool for_prerender) const {
   return chrome::ForceInstantResultsParam(for_prerender);
+}
+
+int UIThreadSearchTermsData::OmniboxStartMargin() const {
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile_);
+  // Android and iOS have no InstantService.
+  return instant_service ?
+      instant_service->omnibox_start_margin() : chrome::kDisableStartMargin;
 }
 
 std::string UIThreadSearchTermsData::NTPIsThemedParam() const {
