@@ -336,7 +336,6 @@ class TestGitCl(TestCase):
          'refs/heads/working'],),
        (' PRESUBMIT.py |    2 +-\n'
         ' 1 files changed, 1 insertions(+), 1 deletions(-)\n')),
-      (('About to commit; enter to confirm.',), None),
       ((['git', 'show-ref', '--quiet', '--verify',
          'refs/heads/git-cl-commit'],),
        (('', None), 0)),

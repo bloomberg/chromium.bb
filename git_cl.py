@@ -1944,7 +1944,6 @@ def SendUpstream(parser, args, cmd):
   branches = [base_branch, cl.GetBranchRef()]
   if not options.force:
     print_stats(options.similarity, options.find_copies, branches)
-    ask_for_data('About to commit; enter to confirm.')
 
   # We want to squash all this branch's commits into one commit with the proper
   # description. We do this by doing a "reset --soft" to the base branch (which
