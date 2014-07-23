@@ -34,6 +34,7 @@ class CC_EXPORT PictureLayerImpl
     ~LayerRasterTileIterator();
 
     Tile* operator*();
+    const Tile* operator*() const;
     LayerRasterTileIterator& operator++();
     operator bool() const;
 
@@ -62,6 +63,7 @@ class CC_EXPORT PictureLayerImpl
     ~LayerEvictionTileIterator();
 
     Tile* operator*();
+    const Tile* operator*() const;
     LayerEvictionTileIterator& operator++();
     operator bool() const;
 

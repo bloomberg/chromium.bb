@@ -1508,6 +1508,16 @@ Tile* PictureLayerImpl::LayerRasterTileIterator::operator*() {
   return *iterators_[index];
 }
 
+const Tile* PictureLayerImpl::LayerRasterTileIterator::operator*() const {
+  DCHECK(*this);
+
+  IteratorType index = stages_[current_stage_].iterator_type;
+  DCHECK(iterators_[index]);
+  DCHECK(iterators_[index].get_type() == stages_[current_stage_].tile_type);
+
+  return *iterators_[index];
+}
+
 PictureLayerImpl::LayerEvictionTileIterator::LayerEvictionTileIterator()
     : iterator_index_(0),
       iteration_stage_(TilePriority::EVENTUALLY),
@@ -1581,6 +1591,11 @@ PictureLayerImpl::LayerEvictionTileIterator::LayerEvictionTileIterator(
 PictureLayerImpl::LayerEvictionTileIterator::~LayerEvictionTileIterator() {}
 
 Tile* PictureLayerImpl::LayerEvictionTileIterator::operator*() {
+  DCHECK(*this);
+  return *iterators_[iterator_index_];
+}
+
+const Tile* PictureLayerImpl::LayerEvictionTileIterator::operator*() const {
   DCHECK(*this);
   return *iterators_[iterator_index_];
 }
