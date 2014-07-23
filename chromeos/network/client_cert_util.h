@@ -66,11 +66,11 @@ CHROMEOS_EXPORT scoped_refptr<net::X509Certificate> GetCertificateMatch(
 // If not empty, sets the TPM properties in |properties|. If |pkcs11_id| is not
 // NULL, also sets the ClientCertID. |cert_config_type| determines which
 // dictionary entries to set.
-void SetShillProperties(const ConfigType cert_config_type,
-                        const std::string& tpm_slot,
-                        const std::string& tpm_pin,
-                        const std::string* pkcs11_id,
-                        base::DictionaryValue* properties);
+CHROMEOS_EXPORT void SetShillProperties(const ConfigType cert_config_type,
+                                        const std::string& tpm_slot,
+                                        const std::string& tpm_pin,
+                                        const std::string* pkcs11_id,
+                                        base::DictionaryValue* properties);
 
 // Returns true if all required configuration properties are set and not empty.
 bool IsCertificateConfigured(const client_cert::ConfigType cert_config_type,

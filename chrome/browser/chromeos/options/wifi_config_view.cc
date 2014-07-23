@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/options/passphrase_textfield.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/login/login_state.h"
+#include "chromeos/network/client_cert_util.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_handler.h"
@@ -872,12 +873,12 @@ void WifiConfigView::SetEapProperties(base::DictionaryValue* properties) {
   properties->SetStringWithoutPathExpansion(
       shill::kEapSubjectMatchProperty, GetEapSubjectMatch());
 
-  // shill requires both CertID and KeyID for TLS connections, despite
-  // the fact that by convention they are the same ID.
-  properties->SetStringWithoutPathExpansion(
-      shill::kEapCertIdProperty, GetEapClientCertPkcs11Id());
-  properties->SetStringWithoutPathExpansion(
-      shill::kEapKeyIdProperty, GetEapClientCertPkcs11Id());
+  const std::string pkcs11id = GetEapClientCertPkcs11Id();
+  client_cert::SetShillProperties(client_cert::CONFIG_TYPE_EAP,
+                                  CertLibrary::Get()->GetTPMSlotID(),
+                                  TPMTokenLoader::Get()->tpm_user_pin(),
+                                  &pkcs11id,
+                                  properties);
 
   properties->SetBooleanWithoutPathExpansion(
       shill::kEapUseSystemCasProperty, GetEapUseSystemCas());

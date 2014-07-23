@@ -149,6 +149,10 @@ bool CertLibrary::IsHardwareBacked() const {
   return CertLoader::Get()->IsHardwareBacked();
 }
 
+std::string CertLibrary::GetTPMSlotID() const {
+  return base::IntToString(CertLoader::Get()->TPMTokenSlotID());
+}
+
 int CertLibrary::NumCertificates(CertType type) const {
   const net::CertificateList& cert_list = GetCertificateListForType(type);
   return static_cast<int>(cert_list.size());
