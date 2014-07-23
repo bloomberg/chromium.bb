@@ -55,6 +55,7 @@ class CC_EXPORT PictureLayerTiling {
     ~TilingRasterTileIterator();
 
     operator bool() const { return !!current_tile_; }
+    const Tile* operator*() const { return current_tile_; }
     Tile* operator*() { return current_tile_; }
     TilePriority::PriorityBin get_type() const { return type_; }
 
@@ -99,7 +100,8 @@ class CC_EXPORT PictureLayerTiling {
                                TreePriority tree_priority);
     ~TilingEvictionTileIterator();
 
-    operator bool();
+    operator bool() const;
+    const Tile* operator*() const;
     Tile* operator*();
     TilingEvictionTileIterator& operator++();
     TilePriority::PriorityBin get_type() {
@@ -110,10 +112,6 @@ class CC_EXPORT PictureLayerTiling {
     }
 
    private:
-    void Initialize();
-    bool IsValid() const { return is_valid_; }
-
-    bool is_valid_;
     PictureLayerTiling* tiling_;
     TreePriority tree_priority_;
     std::vector<Tile*>::iterator tile_iterator_;

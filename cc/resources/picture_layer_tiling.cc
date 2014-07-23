@@ -944,26 +944,33 @@ operator++() {
 }
 
 PictureLayerTiling::TilingEvictionTileIterator::TilingEvictionTileIterator()
-    : is_valid_(false), tiling_(NULL) {}
+    : tiling_(NULL) {
+}
 
 PictureLayerTiling::TilingEvictionTileIterator::TilingEvictionTileIterator(
     PictureLayerTiling* tiling,
     TreePriority tree_priority)
-    : is_valid_(false), tiling_(tiling), tree_priority_(tree_priority) {}
+    : tiling_(tiling), tree_priority_(tree_priority) {
+  tiling_->UpdateEvictionCacheIfNeeded(tree_priority_);
+  tile_iterator_ = tiling_->eviction_tiles_cache_.begin();
+  if (tile_iterator_ != tiling_->eviction_tiles_cache_.end() &&
+      !(*tile_iterator_)->HasResources()) {
+    ++(*this);
+  }
+}
 
 PictureLayerTiling::TilingEvictionTileIterator::~TilingEvictionTileIterator() {}
 
-PictureLayerTiling::TilingEvictionTileIterator::operator bool() {
-  if (!IsValid())
-    Initialize();
-
-  return IsValid() && tile_iterator_ != tiling_->eviction_tiles_cache_.end();
+PictureLayerTiling::TilingEvictionTileIterator::operator bool() const {
+  return tiling_ && tile_iterator_ != tiling_->eviction_tiles_cache_.end();
 }
 
 Tile* PictureLayerTiling::TilingEvictionTileIterator::operator*() {
-  if (!IsValid())
-    Initialize();
+  DCHECK(*this);
+  return *tile_iterator_;
+}
 
+const Tile* PictureLayerTiling::TilingEvictionTileIterator::operator*() const {
   DCHECK(*this);
   return *tile_iterator_;
 }
@@ -978,19 +985,6 @@ operator++() {
            (!(*tile_iterator_)->HasResources()));
 
   return *this;
-}
-
-void PictureLayerTiling::TilingEvictionTileIterator::Initialize() {
-  if (!tiling_)
-    return;
-
-  tiling_->UpdateEvictionCacheIfNeeded(tree_priority_);
-  tile_iterator_ = tiling_->eviction_tiles_cache_.begin();
-  is_valid_ = true;
-  if (tile_iterator_ != tiling_->eviction_tiles_cache_.end() &&
-      !(*tile_iterator_)->HasResources()) {
-    ++(*this);
-  }
 }
 
 }  // namespace cc
