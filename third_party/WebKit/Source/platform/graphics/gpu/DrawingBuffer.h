@@ -154,7 +154,7 @@ public:
 
     // WebExternalTextureLayerClient implementation.
     virtual bool prepareMailbox(blink::WebExternalTextureMailbox*, blink::WebExternalBitmap*) OVERRIDE;
-    virtual void mailboxReleased(const blink::WebExternalTextureMailbox&) OVERRIDE;
+    virtual void mailboxReleased(const blink::WebExternalTextureMailbox&, bool lostResource = false) OVERRIDE;
 
     // Destroys the TEXTURE_2D binding for the owned context
     bool copyToPlatformTexture(blink::WebGraphicsContext3D*, Platform3DObject texture, GLenum internalFormat,

@@ -489,27 +489,50 @@ Canvas2DLayerBridge::MailboxInfo* Canvas2DLayerBridge::createMailboxInfo() {
     return mailboxInfo;
 }
 
-void Canvas2DLayerBridge::mailboxReleased(const blink::WebExternalTextureMailbox& mailbox)
+void Canvas2DLayerBridge::mailboxReleased(const blink::WebExternalTextureMailbox& mailbox, bool lostResource)
 {
     freeReleasedMailbox(); // Never have more than one mailbox in the released state.
+    bool contextLost = !m_isSurfaceValid || m_contextProvider->context3d()->isContextLost();
     Vector<MailboxInfo>::iterator mailboxInfo;
     for (mailboxInfo = m_mailboxes.begin(); mailboxInfo < m_mailboxes.end(); ++mailboxInfo) {
         if (nameEquals(mailboxInfo->m_mailbox, mailbox)) {
             mailboxInfo->m_mailbox.syncPoint = mailbox.syncPoint;
             ASSERT(mailboxInfo->m_status == MailboxInUse);
-            mailboxInfo->m_status = MailboxReleased;
+            ASSERT(mailboxInfo->m_parentLayerBridge.get() == this);
+
+            if (contextLost) {
+                // No need to clean up the mailbox resource, but make sure the
+                // mailbox can also be reusable once the context is restored.
+                mailboxInfo->m_status = MailboxAvailable;
+                m_releasedMailboxInfoIndex = InvalidMailboxIndex;
+                Canvas2DLayerManager::get().layerTransientResourceAllocationChanged(this);
+            } else if (lostResource) {
+                // In case of the resource is lost, we need to delete the backing
+                // texture and remove the mailbox from list to avoid reusing it
+                // in future.
+                if (mailboxInfo->m_image) {
+                    mailboxInfo->m_image->getTexture()->resetFlag(
+                        static_cast<GrTextureFlags>(GrTexture::kReturnToCache_FlagBit));
+                    mailboxInfo->m_image->getTexture()->textureParamsModified();
+                    mailboxInfo->m_image.clear();
+                }
+                size_t i = mailboxInfo - m_mailboxes.begin();
+                m_mailboxes.remove(i);
+                Canvas2DLayerManager::get().layerTransientResourceAllocationChanged(this);
+            } else {
+                mailboxInfo->m_status = MailboxReleased;
+                m_releasedMailboxInfoIndex = mailboxInfo - m_mailboxes.begin();
+                m_framesSinceMailboxRelease = 0;
+                if (isHidden()) {
+                    freeReleasedMailbox();
+                } else {
+                    ASSERT(!m_destructionInProgress);
+                    Canvas2DLayerManager::get().layerTransientResourceAllocationChanged(this);
+                }
+            }
             // Trigger Canvas2DLayerBridge self-destruction if this is the
             // last live mailbox and the layer bridge is not externally
             // referenced.
-            m_releasedMailboxInfoIndex = mailboxInfo - m_mailboxes.begin();
-            m_framesSinceMailboxRelease = 0;
-            if (isHidden()) {
-                freeReleasedMailbox();
-            } else {
-                ASSERT(!m_destructionInProgress);
-                Canvas2DLayerManager::get().layerTransientResourceAllocationChanged(this);
-            }
-            ASSERT(mailboxInfo->m_parentLayerBridge.get() == this);
             mailboxInfo->m_parentLayerBridge.clear();
             return;
         }

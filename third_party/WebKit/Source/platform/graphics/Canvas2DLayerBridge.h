@@ -60,7 +60,7 @@ public:
 
     // blink::WebExternalTextureLayerClient implementation.
     virtual bool prepareMailbox(blink::WebExternalTextureMailbox*, blink::WebExternalBitmap*) OVERRIDE;
-    virtual void mailboxReleased(const blink::WebExternalTextureMailbox&) OVERRIDE;
+    virtual void mailboxReleased(const blink::WebExternalTextureMailbox&, bool lostResource) OVERRIDE;
 
     // SkDeferredCanvas::NotificationClient implementation
     virtual void prepareForDraw() OVERRIDE;
