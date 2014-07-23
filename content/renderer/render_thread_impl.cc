@@ -1280,6 +1280,17 @@ scoped_ptr<gfx::GpuMemoryBuffer> RenderThreadImpl::AllocateGpuMemoryBuffer(
       .PassAs<gfx::GpuMemoryBuffer>();
 }
 
+void RenderThreadImpl::DeleteGpuMemoryBuffer(
+    scoped_ptr<gfx::GpuMemoryBuffer> buffer) {
+  gfx::GpuMemoryBufferHandle handle(buffer->GetHandle());
+
+  IPC::Message* message = new ChildProcessHostMsg_DeletedGpuMemoryBuffer(
+      handle.type, handle.global_id);
+
+  // Allow calling this from the compositor thread.
+  thread_safe_sender()->Send(message);
+}
+
 void RenderThreadImpl::DoNotSuspendWebKitSharedTimer() {
   suspend_webkit_shared_timer_ = false;
 }

@@ -425,6 +425,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
       size_t height,
       unsigned internalformat,
       unsigned usage) OVERRIDE;
+  virtual void DeleteGpuMemoryBuffer(
+      scoped_ptr<gfx::GpuMemoryBuffer> buffer) OVERRIDE;
 
   void Init();
 

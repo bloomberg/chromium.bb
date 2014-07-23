@@ -201,7 +201,7 @@ class GpuCommandBufferStub
                                  uint32 width,
                                  uint32 height,
                                  uint32 internalformat);
-  void OnDestroyGpuMemoryBuffer(int32 id);
+  void OnUnregisterGpuMemoryBuffer(int32 id);
 
   void OnCommandProcessed();
   void OnParseError();

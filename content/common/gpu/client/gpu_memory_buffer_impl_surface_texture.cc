@@ -63,7 +63,7 @@ int GpuMemoryBufferImplSurfaceTexture::WindowFormat(unsigned internalformat) {
 }
 
 bool GpuMemoryBufferImplSurfaceTexture::InitializeFromHandle(
-    gfx::GpuMemoryBufferHandle handle) {
+    const gfx::GpuMemoryBufferHandle& handle) {
   TRACE_EVENT0("gpu",
                "GpuMemoryBufferImplSurfaceTexture::InitializeFromHandle");
 

@@ -1374,6 +1374,8 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER_DELAY_REPLY(
           ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
           OnAllocateGpuMemoryBuffer)
+      IPC_MESSAGE_HANDLER(ChildProcessHostMsg_DeletedGpuMemoryBuffer,
+                          OnDeletedGpuMemoryBuffer)
       IPC_MESSAGE_HANDLER(ViewHostMsg_Close_ACK, OnCloseACK)
 #if defined(ENABLE_WEBRTC)
       IPC_MESSAGE_HANDLER(AecDumpMsg_RegisterAecDumpConsumer,
@@ -2339,6 +2341,13 @@ void RenderProcessHostImpl::GpuMemoryBufferAllocated(
   ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer::WriteReplyParams(reply,
                                                                     handle);
   Send(reply);
+}
+
+void RenderProcessHostImpl::OnDeletedGpuMemoryBuffer(
+    gfx::GpuMemoryBufferType type,
+    const gfx::GpuMemoryBufferId& id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  GpuMemoryBufferImpl::DeletedByChildProcess(type, id, GetHandle());
 }
 
 }  // namespace content

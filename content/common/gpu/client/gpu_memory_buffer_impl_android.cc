@@ -45,8 +45,15 @@ void GpuMemoryBufferImpl::AllocateForChildProcess(
 }
 
 // static
+void GpuMemoryBufferImpl::DeletedByChildProcess(
+    gfx::GpuMemoryBufferType type,
+    const gfx::GpuMemoryBufferId& id,
+    base::ProcessHandle child_process) {
+}
+
+// static
 scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImpl::CreateFromHandle(
-    gfx::GpuMemoryBufferHandle handle,
+    const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
     unsigned internalformat) {
   switch (handle.type) {

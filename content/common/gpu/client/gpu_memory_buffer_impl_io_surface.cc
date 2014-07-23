@@ -55,7 +55,7 @@ uint32 GpuMemoryBufferImplIOSurface::PixelFormat(unsigned internalformat) {
 }
 
 bool GpuMemoryBufferImplIOSurface::InitializeFromHandle(
-    gfx::GpuMemoryBufferHandle handle) {
+    const gfx::GpuMemoryBufferHandle& handle) {
   DCHECK(IsFormatSupported(internalformat_));
   io_surface_.reset(IOSurfaceLookup(handle.io_surface_id));
   if (!io_surface_) {

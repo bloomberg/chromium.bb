@@ -77,7 +77,7 @@ bool GpuMemoryBufferImplSharedMemory::Initialize() {
 }
 
 bool GpuMemoryBufferImplSharedMemory::InitializeFromHandle(
-    gfx::GpuMemoryBufferHandle handle) {
+    const gfx::GpuMemoryBufferHandle& handle) {
   DCHECK(IsLayoutSupported(size_, internalformat_));
   if (!base::SharedMemory::IsHandleValid(handle.handle))
     return false;

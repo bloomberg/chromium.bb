@@ -38,6 +38,8 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
       size_t height,
       unsigned internalformat,
       unsigned usage) OVERRIDE;
+  virtual void DeleteGpuMemoryBuffer(
+      scoped_ptr<gfx::GpuMemoryBuffer> buffer) OVERRIDE {}
 
   // GpuMemoryBufferFactoryHost implementation.
   virtual void CreateGpuMemoryBuffer(

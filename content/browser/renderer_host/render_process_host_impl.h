@@ -24,6 +24,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 #if defined(OS_MACOSX)
 #include <IOSurface/IOSurfaceAPI.h>
@@ -329,6 +330,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
                                  IPC::Message* reply);
   void GpuMemoryBufferAllocated(IPC::Message* reply,
                                 const gfx::GpuMemoryBufferHandle& handle);
+  void OnDeletedGpuMemoryBuffer(gfx::GpuMemoryBufferType type,
+                                const gfx::GpuMemoryBufferId& id);
 
   scoped_ptr<MojoApplicationHost> mojo_application_host_;
   bool mojo_activation_required_;

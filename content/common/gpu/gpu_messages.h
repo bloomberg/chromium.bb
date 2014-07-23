@@ -632,8 +632,8 @@ IPC_MESSAGE_ROUTED5(GpuCommandBufferMsg_RegisterGpuMemoryBuffer,
                     uint32 /* height */,
                     uint32 /* internalformat */)
 
-// Destroy a previously created gpu memory buffer.
-IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_DestroyGpuMemoryBuffer,
+// Unregister a previously registered gpu memory buffer.
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_UnregisterGpuMemoryBuffer,
                     int32 /* id */)
 
 // Attaches an external image stream to the client texture.

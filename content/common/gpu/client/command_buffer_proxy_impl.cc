@@ -342,10 +342,11 @@ void CommandBufferProxyImpl::DestroyGpuMemoryBuffer(int32 id) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
-  Send(new GpuCommandBufferMsg_DestroyGpuMemoryBuffer(route_id_, id));
+  Send(new GpuCommandBufferMsg_UnregisterGpuMemoryBuffer(route_id_, id));
 
   // Remove the gpu memory buffer from the client side cache.
-  gpu_memory_buffers_.erase(id);
+  DCHECK(gpu_memory_buffers_.find(id) != gpu_memory_buffers_.end());
+  channel_->factory()->DeleteGpuMemoryBuffer(gpu_memory_buffers_.take(id));
 }
 
 int CommandBufferProxyImpl::GetRouteID() const {

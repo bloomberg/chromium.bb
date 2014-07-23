@@ -23,7 +23,7 @@ class GpuMemoryBufferImplSurfaceTexture : public GpuMemoryBufferImpl {
   static bool IsConfigurationSupported(unsigned internalformat, unsigned usage);
   static int WindowFormat(unsigned internalformat);
 
-  bool InitializeFromHandle(gfx::GpuMemoryBufferHandle handle);
+  bool InitializeFromHandle(const gfx::GpuMemoryBufferHandle& handle);
 
   // Overridden from gfx::GpuMemoryBuffer:
   virtual void* Map() OVERRIDE;

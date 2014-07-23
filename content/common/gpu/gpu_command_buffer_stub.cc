@@ -238,8 +238,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
         OnSetClientHasMemoryAllocationChangedCallback)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_RegisterGpuMemoryBuffer,
                         OnRegisterGpuMemoryBuffer);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DestroyGpuMemoryBuffer,
-                        OnDestroyGpuMemoryBuffer);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_UnregisterGpuMemoryBuffer,
+                        OnUnregisterGpuMemoryBuffer);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_CreateStreamTexture,
                         OnCreateStreamTexture)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -950,8 +950,8 @@ void GpuCommandBufferStub::OnRegisterGpuMemoryBuffer(
   }
 }
 
-void GpuCommandBufferStub::OnDestroyGpuMemoryBuffer(int32 id) {
-  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnDestroyGpuMemoryBuffer");
+void GpuCommandBufferStub::OnUnregisterGpuMemoryBuffer(int32 id) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnUnregisterGpuMemoryBuffer");
 
   if (decoder_) {
     gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();

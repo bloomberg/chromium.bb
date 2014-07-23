@@ -31,7 +31,7 @@ class GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
                                        unsigned usage);
 
   bool Initialize();
-  bool InitializeFromHandle(gfx::GpuMemoryBufferHandle handle);
+  bool InitializeFromHandle(const gfx::GpuMemoryBufferHandle& handle);
 
   // Overridden from gfx::GpuMemoryBuffer:
   virtual void* Map() OVERRIDE;

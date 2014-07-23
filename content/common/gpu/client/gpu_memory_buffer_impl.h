@@ -35,10 +35,15 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
                                       base::ProcessHandle child_process,
                                       const AllocationCallback& callback);
 
+  // Notify that GPU memory buffer has been deleted by |child_process|.
+  static void DeletedByChildProcess(gfx::GpuMemoryBufferType type,
+                                    const gfx::GpuMemoryBufferId& id,
+                                    base::ProcessHandle child_process);
+
   // Creates an instance from the given |handle|. |size| and |internalformat|
   // should match what was used to allocate the |handle|.
   static scoped_ptr<GpuMemoryBufferImpl> CreateFromHandle(
-      gfx::GpuMemoryBufferHandle handle,
+      const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       unsigned internalformat);
 

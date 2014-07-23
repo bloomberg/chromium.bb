@@ -23,7 +23,7 @@ class GpuMemoryBufferImplIOSurface : public GpuMemoryBufferImpl {
   static bool IsConfigurationSupported(unsigned internalformat, unsigned usage);
   static uint32 PixelFormat(unsigned internalformat);
 
-  bool InitializeFromHandle(gfx::GpuMemoryBufferHandle handle);
+  bool InitializeFromHandle(const gfx::GpuMemoryBufferHandle& handle);
 
   // Overridden from gfx::GpuMemoryBuffer:
   virtual void* Map() OVERRIDE;
