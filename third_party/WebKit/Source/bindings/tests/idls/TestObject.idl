@@ -554,5 +554,6 @@ interface TestObject {
     [ImplementedInPrivateScript] attribute short shortAttribute;
     [ImplementedInPrivateScript] attribute DOMString stringAttribute;
     [ImplementedInPrivateScript] attribute Node nodeAttribute;
-
+    [ImplementedInPrivateScript, OnlyExposedToPrivateScript] short addIntegerForPrivateScriptOnly(short value1, short value2);
+    [ImplementedInPrivateScript, OnlyExposedToPrivateScript] attribute DOMString stringAttributeForPrivateScriptOnly;
 };

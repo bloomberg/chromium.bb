@@ -49,10 +49,15 @@ public:
     {% if interface_name == 'Window' %}
     static v8::Handle<v8::ObjectTemplate> getShadowObjectTemplate(v8::Isolate*);
     {% endif %}
-    {% for method in methods if method.is_custom %}
+    {% for method in methods %}
+    {% if method.is_custom %}
     {% filter conditional(method.conditional_string) %}
     static void {{method.name}}MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     {% endfilter %}
+    {% endif %}
+    {% if method.is_implemented_in_private_script %}
+    static bool {{method.name}}MethodImplementedInPrivateScript({{method.argument_declarations_for_private_script | join(', ')}});
+    {% endif %}
     {% endfor %}
     {% if constructors or has_custom_constructor or has_event_constructor %}
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
@@ -70,6 +75,12 @@ public:
     {% filter conditional(attribute.conditional_string) %}
     static void {{attribute.name}}AttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
     {% endfilter %}
+    {% endif %}
+    {% if attribute.is_implemented_in_private_script %}
+    static bool {{attribute.name}}AttributeGetterImplementedInPrivateScript(LocalFrame* frame, {{cpp_class}}* holderImpl, {{attribute.cpp_type}}* result);
+    {% if not attribute.is_read_only or attribute.put_forwards %}
+    static bool {{attribute.name}}AttributeSetterImplementedInPrivateScript(LocalFrame* frame, {{cpp_class}}* holderImpl, {{attribute.argument_cpp_type}} cppValue);
+    {% endif %}
     {% endif %}
     {% endfor %}
     {# Custom special operations #}

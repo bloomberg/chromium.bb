@@ -728,7 +728,10 @@ void {{v8_class}}::visitDOMWrapper(void* object, const v8::Persistent<v8::Object
 {% if interface_name == 'Window' %}
 static const V8DOMConfiguration::AttributeConfiguration shadowAttributes[] = {
     {% for attribute in attributes if attribute.is_unforgeable %}
+    {# FIXME: Expose [OnlyExposedToPrivateScript] attributes to window objects of private scripts #}
+    {% if not attribute.only_exposed_to_private_script %}
     {{attribute_configuration(attribute)}},
+    {% endif %}
     {% endfor %}
 };
 
@@ -746,9 +749,12 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[]
                attribute.runtime_enabled_function or
                attribute.per_context_enabled_function or
                (interface_name == 'Window' and attribute.is_unforgeable)) %}
+    {# FIXME: Expose [OnlyExposedToPrivateScript] attributes to window objects of private scripts #}
+    {% if not attribute.only_exposed_to_private_script %}
     {% filter conditional(attribute.conditional_string) %}
     {{attribute_configuration(attribute)}},
     {% endfilter %}
+    {% endif %}
     {% endfor %}
 };
 
@@ -761,7 +767,10 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[]
 {% if has_accessors %}
 static const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] = {
     {% for attribute in attributes if attribute.is_expose_js_accessors %}
+    {# FIXME: Expose [OnlyExposedToPrivateScript] attributes to window objects of private scripts #}
+    {% if not attribute.only_exposed_to_private_script %}
     {{attribute_configuration(attribute)}},
+    {% endif %}
     {% endfor %}
 };
 
@@ -774,9 +783,12 @@ static const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] =
 {% if method_configuration_methods %}
 static const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
     {% for method in method_configuration_methods %}
+    {# FIXME: Expose [OnlyExposedToPrivateScript] methods to window objects of private scripts #}
+    {% if not method.only_exposed_to_private_script %}
     {% filter conditional(method.conditional_string) %}
     {{method_configuration(method)}},
     {% endfilter %}
+    {% endif %}
     {% endfor %}
 };
 

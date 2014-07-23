@@ -126,7 +126,7 @@ def scoped_name(interface, definition, base_name):
         definition.name in ('Constructor', 'NamedConstructor')):
         return '%s::%s' % (cpp_name(interface), base_name)
     if 'ImplementedInPrivateScript' in definition.extended_attributes:
-        return base_name
+        return '%s::%s' % (v8_class_name(interface), base_name)
     return 'impl->%s' % base_name
 
 

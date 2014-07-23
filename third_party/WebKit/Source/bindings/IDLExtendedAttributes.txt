@@ -70,6 +70,7 @@ MeasureAs=*
 NamedConstructor=*
 NoInterfaceObject
 NotEnumerable
+OnlyExposedToPrivateScript
 OverrideBuiltins
 PartialInterfaceImplementedAs=*
 # Valid values for [PerContextEnabled] are Context Features, in

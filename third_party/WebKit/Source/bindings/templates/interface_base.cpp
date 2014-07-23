@@ -62,12 +62,7 @@ template <typename T> void V8_USE(T) { }
        attribute_setter_implemented_in_private_script
        with context %}
 {% for attribute in attributes if not attribute.constructor_type %}
-{% if attribute.is_implemented_in_private_script %}
-{{attribute_getter_implemented_in_private_script(attribute)}}
-{% if not attribute.is_read_only or attribute.put_forwards %}
-{{attribute_setter_implemented_in_private_script(attribute)}}
-{% endif %}
-{% endif %}
+{% if not attribute.only_exposed_to_private_script %}
 {% for world_suffix in attribute.world_suffixes %}
 {% if not attribute.has_custom_getter %}
 {{attribute_getter(attribute, world_suffix)}}
@@ -80,6 +75,7 @@ template <typename T> void V8_USE(T) { }
 {{attribute_setter_callback(attribute, world_suffix)}}
 {% endif %}
 {% endfor %}
+{% endif %}
 {% endfor %}
 {% block constructor_getter %}{% endblock %}
 {% for attribute in attributes if attribute.needs_constructor_getter_callback %}
@@ -95,9 +91,7 @@ template <typename T> void V8_USE(T) { }
        method_implemented_in_private_script
        with context %}
 {% for method in methods %}
-{% if method.is_implemented_in_private_script %}
-{{method_implemented_in_private_script(method)}}
-{% endif %}
+{% if not method.only_exposed_to_private_script %}
 {% for world_suffix in method.world_suffixes %}
 {% if not method.is_custom %}
 {{generate_method(method, world_suffix)}}
@@ -113,6 +107,7 @@ template <typename T> void V8_USE(T) { }
 {{origin_safe_method_getter(method, world_suffix)}}
 {% endif %}
 {% endfor %}
+{% endif %}
 {% endfor %}
 {% block origin_safe_method_setter %}{% endblock %}
 {# Constructors #}
@@ -161,5 +156,14 @@ template <typename T> void V8_USE(T) { }
 {% block wrap %}{% endblock %}
 {% block create_wrapper %}{% endblock %}
 {% block deref_object_and_to_v8_no_inline %}{% endblock %}
+{% for method in methods if method.is_implemented_in_private_script %}
+{{method_implemented_in_private_script(method)}}
+{% endfor %}
+{% for attribute in attributes if attribute.is_implemented_in_private_script %}
+{{attribute_getter_implemented_in_private_script(attribute)}}
+{% if not attribute.is_read_only or attribute.put_forwards %}
+{{attribute_setter_implemented_in_private_script(attribute)}}
+{% endif %}
+{% endfor %}
 } // namespace blink
 {% endfilter %}

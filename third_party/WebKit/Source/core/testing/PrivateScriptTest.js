@@ -11,6 +11,7 @@ installClass("PrivateScriptTest", function(global) {
         this.m_shortAttribute = -1;
         this.m_stringAttribute = "xxx";
         this.m_nodeAttribute = null;
+        this.m_stringAttributeForPrivateScriptOnly = "yyy";
     }
 
     InternalsPrototype.doNothing = function() {
@@ -118,6 +119,15 @@ installClass("PrivateScriptTest", function(global) {
     InternalsPrototype.voidMethodThrowsSyntaxError = function() {
         throw new DOMExceptionInPrivateScript("SyntaxError", "method threw error");
     }
+
+    InternalsPrototype.addIntegerForPrivateScriptOnly = function(value1, value2) {
+        return value1 + value2;
+    }
+
+    Object.defineProperty(InternalsPrototype, "stringAttributeForPrivateScriptOnly", {
+        get: function() { return this.m_stringAttributeForPrivateScriptOnly; },
+        set: function(value) { this.m_stringAttributeForPrivateScriptOnly = value; }
+    });
 
     return InternalsPrototype;
 });

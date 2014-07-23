@@ -3427,6 +3427,7 @@
             'rendering/RenderTableCellTest.cpp',
             'rendering/RenderTableRowTest.cpp',
             'rendering/shapes/BoxShapeTest.cpp',
+            'testing/PrivateScriptTestTest.cpp',
             'testing/UnitTestHelpers.cpp',
             'testing/UnitTestHelpers.h',
             'xml/parser/SharedBufferReaderTest.cpp',
