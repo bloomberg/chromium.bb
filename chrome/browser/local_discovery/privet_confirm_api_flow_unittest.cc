@@ -41,7 +41,7 @@ class MockDelegate {
   MOCK_METHOD1(Callback, void(GCDApiFlow::Status));
 };
 
-TEST(CloudPrintPrinterListTest, Parsing) {
+TEST(PrivetConfirmApiFlowTest, Parsing) {
   StrictMock<MockDelegate> delegate;
   PrivetConfirmApiCallFlow confirmation(
       "123", base::Bind(&MockDelegate::Callback, base::Unretained(&delegate)));
