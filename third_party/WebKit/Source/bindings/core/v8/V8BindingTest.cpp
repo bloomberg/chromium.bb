@@ -167,6 +167,58 @@ TEST_F(V8ValueTraitsTest, vector)
     CHECK_TOV8VALUE("foo,bar", v);
 }
 
+TEST_F(V8ValueTraitsTest, stringVectors)
+{
+    Vector<String> stringVector;
+    stringVector.append("foo");
+    stringVector.append("bar");
+    CHECK_TOV8VALUE("foo,bar", stringVector);
+
+    Vector<AtomicString> atomicStringVector;
+    atomicStringVector.append("quux");
+    atomicStringVector.append("bar");
+    CHECK_TOV8VALUE("quux,bar", atomicStringVector);
+}
+
+TEST_F(V8ValueTraitsTest, basicTypeVectors)
+{
+    Vector<int> intVector;
+    intVector.append(42);
+    intVector.append(23);
+    CHECK_TOV8VALUE("42,23", intVector);
+
+    Vector<long> longVector;
+    longVector.append(31773);
+    longVector.append(404);
+    CHECK_TOV8VALUE("31773,404", longVector);
+
+    Vector<unsigned> unsignedVector;
+    unsignedVector.append(1);
+    unsignedVector.append(2);
+    CHECK_TOV8VALUE("1,2", unsignedVector);
+
+    Vector<unsigned long> unsignedLongVector;
+    unsignedLongVector.append(1001);
+    unsignedLongVector.append(2002);
+    CHECK_TOV8VALUE("1001,2002", unsignedLongVector);
+
+    Vector<float> floatVector;
+    floatVector.append(0.125);
+    floatVector.append(1.);
+    CHECK_TOV8VALUE("0.125,1", floatVector);
+
+    Vector<double> doubleVector;
+    doubleVector.append(2.3);
+    doubleVector.append(4.2);
+    CHECK_TOV8VALUE("2.3,4.2", doubleVector);
+
+    Vector<bool> boolVector;
+    boolVector.append(true);
+    boolVector.append(true);
+    boolVector.append(false);
+    CHECK_TOV8VALUE("true,true,false", boolVector);
+}
+
 TEST_F(V8ValueTraitsTest, heapVector)
 {
     HeapVector<Member<GarbageCollectedScriptWrappable> > v;
@@ -175,6 +227,58 @@ TEST_F(V8ValueTraitsTest, heapVector)
     v.append(nullptr);
 
     CHECK_TOV8VALUE("hoge,fuga,", v);
+}
+
+TEST_F(V8ValueTraitsTest, stringHeapVectors)
+{
+    HeapVector<String> stringVector;
+    stringVector.append("foo");
+    stringVector.append("bar");
+    CHECK_TOV8VALUE("foo,bar", stringVector);
+
+    HeapVector<AtomicString> atomicStringVector;
+    atomicStringVector.append("quux");
+    atomicStringVector.append("bar");
+    CHECK_TOV8VALUE("quux,bar", atomicStringVector);
+}
+
+TEST_F(V8ValueTraitsTest, basicTypeHeapVectors)
+{
+    HeapVector<int> intVector;
+    intVector.append(42);
+    intVector.append(23);
+    CHECK_TOV8VALUE("42,23", intVector);
+
+    HeapVector<long> longVector;
+    longVector.append(31773);
+    longVector.append(404);
+    CHECK_TOV8VALUE("31773,404", longVector);
+
+    HeapVector<unsigned> unsignedVector;
+    unsignedVector.append(1);
+    unsignedVector.append(2);
+    CHECK_TOV8VALUE("1,2", unsignedVector);
+
+    HeapVector<unsigned long> unsignedLongVector;
+    unsignedLongVector.append(1001);
+    unsignedLongVector.append(2002);
+    CHECK_TOV8VALUE("1001,2002", unsignedLongVector);
+
+    HeapVector<float> floatVector;
+    floatVector.append(0.125);
+    floatVector.append(1.);
+    CHECK_TOV8VALUE("0.125,1", floatVector);
+
+    HeapVector<double> doubleVector;
+    doubleVector.append(2.3);
+    doubleVector.append(4.2);
+    CHECK_TOV8VALUE("2.3,4.2", doubleVector);
+
+    HeapVector<bool> boolVector;
+    boolVector.append(true);
+    boolVector.append(true);
+    boolVector.append(false);
+    CHECK_TOV8VALUE("true,true,false", boolVector);
 }
 
 TEST_F(V8ValueTraitsTest, scriptValue)

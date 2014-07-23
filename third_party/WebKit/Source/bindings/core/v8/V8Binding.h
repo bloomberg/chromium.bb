@@ -237,22 +237,6 @@ struct V8ValueTraits {
     }
 };
 
-template <typename T, size_t inlineCapacity, typename Allocator>
-struct V8ValueTraits<WTF::Vector<T, inlineCapacity, Allocator> > {
-    static v8::Handle<v8::Value> toV8Value(const Vector<T, inlineCapacity, Allocator>& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-    {
-        return v8ArrayNoInline(value, creationContext, isolate);
-    }
-};
-
-template <typename T, size_t inlineCapacity>
-struct V8ValueTraits<HeapVector<T, inlineCapacity> > {
-    static v8::Handle<v8::Value> toV8Value(const HeapVector<T, inlineCapacity>& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-    {
-        return v8ArrayNoInline(value, creationContext, isolate);
-    }
-};
-
 template<>
 struct V8ValueTraits<String> {
     static inline v8::Handle<v8::Value> toV8Value(const String& value, v8::Handle<v8::Object>, v8::Isolate* isolate)
@@ -418,6 +402,14 @@ v8::Handle<v8::Value> v8Array(const Vector<T, inlineCapacity>& iterator, v8::Han
     return result;
 }
 
+template <typename T, size_t inlineCapacity, typename Allocator>
+struct V8ValueTraits<WTF::Vector<T, inlineCapacity, Allocator> > {
+    static v8::Handle<v8::Value> toV8Value(const Vector<T, inlineCapacity, Allocator>& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+    {
+        return v8Array(value, creationContext, isolate);
+    }
+};
+
 template<typename T, size_t inlineCapacity>
 v8::Handle<v8::Value> v8Array(const HeapVector<T, inlineCapacity>& iterator, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -430,27 +422,13 @@ v8::Handle<v8::Value> v8Array(const HeapVector<T, inlineCapacity>& iterator, v8:
     return result;
 }
 
-template<typename T, size_t inlineCapacity>
-v8::Handle<v8::Value> v8ArrayNoInline(const Vector<T, inlineCapacity>& iterator, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    v8::Local<v8::Array> result = v8::Array::New(isolate, iterator.size());
-    int index = 0;
-    typename Vector<T, inlineCapacity>::const_iterator end = iterator.end();
-    for (typename Vector<T, inlineCapacity>::const_iterator iter = iterator.begin(); iter != end; ++iter)
-        result->Set(v8::Integer::New(isolate, index++), toV8NoInline(WTF::getPtr(*iter), creationContext, isolate));
-    return result;
-}
-
-template<typename T, size_t inlineCapacity>
-v8::Handle<v8::Value> v8ArrayNoInline(const HeapVector<T, inlineCapacity>& iterator, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    v8::Local<v8::Array> result = v8::Array::New(isolate, iterator.size());
-    int index = 0;
-    typename HeapVector<T, inlineCapacity>::const_iterator end = iterator.end();
-    for (typename HeapVector<T, inlineCapacity>::const_iterator iter = iterator.begin(); iter != end; ++iter)
-        result->Set(v8::Integer::New(isolate, index++), toV8NoInline(WTF::getPtr(*iter), creationContext, isolate));
-    return result;
-}
+template <typename T, size_t inlineCapacity>
+struct V8ValueTraits<HeapVector<T, inlineCapacity> > {
+    static v8::Handle<v8::Value> toV8Value(const HeapVector<T, inlineCapacity>& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+    {
+        return v8Array(value, creationContext, isolate);
+    }
+};
 
 // Conversion flags, used in toIntXX/toUIntXX.
 enum IntegerConversionConfiguration {
