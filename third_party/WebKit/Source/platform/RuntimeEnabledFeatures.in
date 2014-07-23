@@ -118,7 +118,7 @@ ServiceWorker status=experimental
 SessionStorage status=stable
 SharedWorker status=stable
 PictureSizes status=stable
-Picture status=experimental
+Picture status=stable
 
 // window.showModalDialog is deprecated and slated for removal. crbug.com/345831
 ShowModalDialog status=deprecated
