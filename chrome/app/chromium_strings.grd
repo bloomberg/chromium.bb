@@ -262,26 +262,21 @@ be available for now. -->
       <message name="IDS_CERT_ERROR_COMMON_NAME_INVALID_EXTRA_INFO_2" desc="2nd paragraph of extra information for an unsafe common name in an X509 certificate">
         In this case, the address listed in the certificate does not match the address of the website your browser tried to go to. One possible reason for this is that your communications are being intercepted by an attacker who is presenting a certificate for a different website, which would cause a mismatch. Another possible reason is that the server is set up to return the same certificate for multiple websites, including the one you are attempting to visit, even though that certificate is not valid for all of those websites. Chromium can say for sure that you reached &lt;strong&gt;<ph name="DOMAIN2">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but cannot verify that that is the same site as &lt;strong&gt;<ph name="DOMAIN">$2<ex>www.paypal.com</ex></ph>&lt;/strong&gt; which you intended to reach. If you proceed, Chromium will not check for any further name mismatches.
       </message>
-      <message name="IDS_CERT_ERROR_EXPIRED_DETAILS" desc="Details for an expired X509 certificate">
-        You attempted to reach &lt;strong&gt;<ph name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presented an expired certificate. No information is available to indicate whether that certificate has been compromised since its expiration. This means Chromium cannot guarantee that you are communicating with &lt;strong&gt;<ph name="DOMAIN2">$2<ex>paypal.com</ex></ph>&lt;/strong&gt; and not an attacker. Your computer's clock is currently set to <ph name="CURRENT_TIME">$3<ex>Monday, July 18th, 2012 12:31PM</ex></ph>. Does that look right? If not, you should correct the error and refresh this page.
-      </message>
-      <message name="IDS_CERT_ERROR_NOT_YET_VALID_DETAILS" desc="Details for an X509 certificate that is not yet valid">
-        You attempted to reach &lt;strong&gt;<ph name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presented a certificate that is not yet valid. No information is available to indicate whether that certificate can be trusted. Chromium cannot reliably guarantee that you are communicating with &lt;strong&gt;<ph name="DOMAIN2">$2<ex>paypal.com</ex></ph>&lt;/strong&gt; and not an attacker. Your computer's clock is currently set to <ph name="CURRENT_TIME">$3<ex>Monday, July 18th, 2012 12:31PM</ex></ph>. Does that look right? If not, you should correct your system's clock and then refresh this page.
-      </message>
       <if expr="is_ios">
         <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_DETAILS" desc="Details for an X509 certificate with an invalid authority">
-          You attempted to reach &lt;strong&gt;<ph
-name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presented a certificate issued by an entity that is not trusted by Chromium. This may mean that the server has generated its own security credentials, which Chromium cannot rely on for identity information, or an attacker may be trying to intercept your communications.
+          This server could not prove that it is <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>; its security certificate is not trusted by Chromium. This may be caused by a misconfiguration or an attacker intercepting your connection.
         </message>
       </if>
-      <if expr="not is_ios">
+      <if expr="is_android">
         <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_DETAILS" desc="Details for an X509 certificate with an invalid authority">
-          You attempted to reach &lt;strong&gt;<ph name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presented a certificate issued by an entity that is not trusted by your computer's operating system. This may mean that the server has generated its own security credentials, which Chromium cannot rely on for identity information, or an attacker may be trying to intercept your communications.
+          This server could not prove that it is <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>; its security certificate is not trusted by your device's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection.
         </message>
       </if>
-      <message name="IDS_CERT_ERROR_CONTAINS_ERRORS_DETAILS" desc="Details of the error page for an X509 certificate that contains errors">
-        You attempted to reach &lt;strong&gt;<ph name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the certificate that the server presented contains errors. Chromium cannot use a certificate with errors and cannot validate the identity of the site that you have attempted to connect to.
-      </message>
+      <if expr="not is_ios and not is_android">
+        <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_DETAILS" desc="Details for an X509 certificate with an invalid authority">
+          This server could not prove that it is <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>; its security certificate is not trusted by your computer's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection.
+        </message>
+      </if>
       <message name="IDS_TASK_MANAGER_TITLE" desc="The title of the Task Manager window">
         Task Manager - Chromium
       </message>

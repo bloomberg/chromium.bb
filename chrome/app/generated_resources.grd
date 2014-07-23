@@ -2454,7 +2454,7 @@ Even if you have downloaded files from this website before, the website might ha
         This is probably not the site you are looking for!
       </message>
       <message name="IDS_CERT_ERROR_COMMON_NAME_INVALID_DETAILS" desc="Details for an unsafe common name in an X509 certificate">
-        You attempted to reach <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>, but instead you actually reached a server identifying itself as <ph name="DOMAIN2">&lt;strong&gt;$2<ex>fakepaypal.com</ex>&lt;/strong&gt;</ph>. This may be caused by a misconfiguration on the server or by something more serious. An attacker on your network could be trying to get you to visit a fake (and potentially harmful) version of <ph name="DOMAIN3">&lt;strong&gt;$3<ex>paypal.com</ex>&lt;/strong&gt;</ph>.
+        This server could not prove that it is <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>; its security certificate is from <ph name="DOMAIN2">&lt;strong&gt;$2<ex>fakepaypal.com</ex>&lt;/strong&gt;</ph>. This may be caused by a misconfiguration or an attacker intercepting your connection.
       </message>
       <message name="IDS_CERT_ERROR_COMMON_NAME_INVALID_DESCRIPTION" desc="Description for an unsafe common name in an X509 certificate">
         Server's certificate does not match the URL.
@@ -2462,6 +2462,9 @@ Even if you have downloaded files from this website before, the website might ha
 
       <message name="IDS_CERT_ERROR_EXPIRED_TITLE" desc="Title for an expired X509 certificate">
         The site's security certificate has expired!
+      </message>
+      <message name="IDS_CERT_ERROR_EXPIRED_DETAILS" desc="Details for an expired X509 certificate">
+        This server could not prove that it is <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>; its security certificate expired <ph name="DAYS">$2<ex>3</ex></ph> day(s) ago. This may be caused by a misconfiguration or an attacker intercepting your connection. Your computer's clock is currently set to <ph name="CURRENT_TIME">$3<ex>July 18, 2012</ex></ph>. Does that look right? If not, you should correct your system's clock and then refresh this page.
       </message>
       <message name="IDS_CERT_ERROR_EXPIRED_DETAILS_EXTRA_INFO_2" desc="2nd paragraph of extra information for an expired X509 certificate">
         For a certificate which has not expired, the issuer of that certificate is responsible for maintaining something called a "revocation list". If a certificate is ever compromised, the issuer can revoke it by adding it to the revocation list, and then this certificate will no longer be trusted by your browser. Revocation status is not required to be maintained for expired certificates, so while this certificate used to be valid for the website you're visiting, at this point it is not possible to determine whether the certificate was compromised and subsequently revoked, or whether it remains secure. As such it is impossible to tell whether you're communicating with the legitimate website, or whether the certificate was compromised and is now in the possession of an attacker with whom you are communicating.
@@ -2472,6 +2475,9 @@ Even if you have downloaded files from this website before, the website might ha
 
       <message name="IDS_CERT_ERROR_NOT_YET_VALID_TITLE" desc="Title for an X509 certificate that is not yet valid">
         The server's security certificate is not yet valid!
+      </message>
+      <message name="IDS_CERT_ERROR_NOT_YET_VALID_DETAILS" desc="Details for an X509 certificate that is not yet valid">
+        This server could not prove that it is <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>; its security certificate is supposedly from <ph name="DAYS">$2<ex>3</ex></ph> day(s) in the future. This may be caused by a misconfiguration or an attacker intercepting your connection.
       </message>
       <message name="IDS_CERT_ERROR_NOT_YET_VALID_DETAILS_EXTRA_INFO_2" desc="2nd paragraph of extra information for a X509 certificate that is not yet valid">
         Certificates have a validity period, much like any identity document (such as a passport) that you may have. The certificate presented to your browser is not yet valid. When a certificate is outside of its validity period, certain information about the status of the certificate (whether it has been revoked and should no longer be trusted) is not required to be maintained. As such, it is not possible to verify that this certificate is trustworthy. You should not proceed.
@@ -2508,6 +2514,9 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_CERT_ERROR_CONTAINS_ERRORS_TITLE" desc="Title of the error page for an X509 certificate that contains errors">
         The server's security certificate has errors!
       </message>
+      <message name="IDS_CERT_ERROR_CONTAINS_ERRORS_DETAILS" desc="Details of the error page for an X509 certificate that contains errors">
+        This server could not prove that it is <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>; its security certificate contains errors. This may be caused by a misconfiguration or an attacker intercepting your connection.
+      </message>
       <message name="IDS_CERT_ERROR_CONTAINS_ERRORS_EXTRA_INFO_2" desc="2nd paragraph of extra information for a X509 certificate that contains errors">
         In this case, the certificate presented to your browser has errors and cannot be understood. This may mean that we cannot understand the identity information within the certificate, or certain other information in the certificate used to secure the connection. You should not proceed.
       </message>
@@ -2519,7 +2528,7 @@ Even if you have downloaded files from this website before, the website might ha
         Failed to check revocation.
       </message>
       <message name="IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_DETAILS" desc="Details for being unable to check revocation status of an X509 certificate">
-        Unable to check whether the server's certificate was revoked.
+        This server could not prove that it is <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>; its security certificate might be revoked. This may be caused by a misconfiguration or an attacker intercepting your connection.
       </message>
       <message name="IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_DESCRIPTION" desc="Description for being unable to check revocation status of an X509 certificate">
         Server's certificate cannot be checked.
@@ -2529,7 +2538,7 @@ Even if you have downloaded files from this website before, the website might ha
         No revocation mechanism found.
       </message>
       <message name="IDS_CERT_ERROR_NO_REVOCATION_MECHANISM_DETAILS" desc="Details for not finding a revocation mechanism in an X509 certificate">
-        No revocation mechanism found in the server's certificate.
+        This server could not prove that it is <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>; its security certificate might be revoked. This may be caused by a misconfiguration or an attacker intercepting your connection.
       </message>
       <message name="IDS_CERT_ERROR_NO_REVOCATION_MECHANISM_DESCRIPTION" desc="Description for not finding a revocation mechanism in an X509 certificate">
         No revocation mechanism found.
@@ -2591,7 +2600,7 @@ Even if you have downloaded files from this website before, the website might ha
         The server certificate contains a domain name that shouldn't be there.
       </message>
       <message name="IDS_CERT_ERROR_NAME_CONSTRAINT_VIOLATION_DETAILS" desc="Details of the error page for a certificate that contains a name outside of its scope">
-        You attempted to reach <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>, but the server presented an invalid certificate. The authority who created the certificate is not allowed to speak on behalf of some websites. One of those websites is mentioned in the certificate, even though it shouldn't be.
+        This server could not prove that it is <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>; its security certificate might have been issued fraudulently. This may be caused by a misconfiguration or an attacker intercepting your connection.
       </message>
       <message name="IDS_CERT_ERROR_NAME_CONSTRAINT_VIOLATION_DESCRIPTION" desc="Description of the error page for a certificate that contains a name outside of its scope">
         Server's certificate violates name constraints.

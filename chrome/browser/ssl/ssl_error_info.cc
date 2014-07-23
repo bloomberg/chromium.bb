@@ -5,6 +5,7 @@
 #include "chrome/browser/ssl/ssl_error_info.h"
 
 #include "base/i18n/time_formatting.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/cert_store.h"
 #include "grit/chromium_strings.h"
@@ -58,8 +59,7 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
           l10n_util::GetStringFUTF16(IDS_CERT_ERROR_COMMON_NAME_INVALID_DETAILS,
                                      UTF8ToUTF16(request_url.host()),
                                      net::EscapeForHTML(
-                                         UTF8ToUTF16(dns_names[i])),
-                                     UTF8ToUTF16(request_url.host()));
+                                         UTF8ToUTF16(dns_names[i])));
       short_description = l10n_util::GetStringUTF16(
           IDS_CERT_ERROR_COMMON_NAME_INVALID_DESCRIPTION);
       extra_info.push_back(
@@ -79,8 +79,9 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
         details = l10n_util::GetStringFUTF16(
             IDS_CERT_ERROR_EXPIRED_DETAILS,
             UTF8ToUTF16(request_url.host()),
-            UTF8ToUTF16(request_url.host()),
-            base::TimeFormatFriendlyDateAndTime(base::Time::Now()));
+            base::IntToString16(
+                (base::Time::Now() - cert->valid_expiry()).InDays()),
+            base::TimeFormatFriendlyDate(base::Time::Now()));
         short_description =
             l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXPIRED_DESCRIPTION);
         extra_info.push_back(l10n_util::GetStringUTF16(
@@ -93,8 +94,8 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
         details = l10n_util::GetStringFUTF16(
             IDS_CERT_ERROR_NOT_YET_VALID_DETAILS,
             UTF8ToUTF16(request_url.host()),
-            UTF8ToUTF16(request_url.host()),
-            base::TimeFormatFriendlyDateAndTime(base::Time::Now()));
+            base::IntToString16(
+                (cert->valid_start() - base::Time::Now()).InDays()));
         short_description =
             l10n_util::GetStringUTF16(IDS_CERT_ERROR_NOT_YET_VALID_DESCRIPTION);
         extra_info.push_back(
@@ -143,8 +144,10 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
           IDS_CERT_ERROR_NO_REVOCATION_MECHANISM_DESCRIPTION);
       break;
     case CERT_UNABLE_TO_CHECK_REVOCATION:
-      title = l10n_util::GetStringUTF16(
-          IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_TITLE);
+      // TODO(felt): Hasn't this been deprecated?
+      title = l10n_util::GetStringFUTF16(
+          IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_TITLE,
+          UTF8ToUTF16(request_url.host()));
       details = l10n_util::GetStringUTF16(
           IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_DETAILS);
       short_description = l10n_util::GetStringUTF16(
