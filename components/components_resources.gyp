@@ -30,7 +30,6 @@
         },
       ],
       'includes': [ '../build/grit_target.gypi' ],
-      'hard_dependency': 1,
     },
   ],
 }

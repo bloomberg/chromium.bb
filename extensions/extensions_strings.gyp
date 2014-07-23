@@ -8,24 +8,19 @@
       # GN version: //extensions:strings
       'target_name': 'extensions_strings',
       'type': 'none',
+      'variables': {
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/extensions/strings',
+      },
       'actions': [
         {
           'action_name': 'generate_extensions_strings',
           'variables': {
             'grit_grd_file': 'extensions_strings.grd',
-            'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/extensions/strings',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
       ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(SHARED_INTERMEDIATE_DIR)/extensions/strings',
-        ],
-      },
-      # This target generates extensions_strings.h so it must be built before
-      # targets that depend on it.
-      'hard_dependency': 1,
+      'includes': [ '../build/grit_target.gypi' ],
     },
   ],
 }
