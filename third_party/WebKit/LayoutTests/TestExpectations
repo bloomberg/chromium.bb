@@ -1323,5 +1323,3 @@ crbug.com/390587 [ XP ] svg/custom/object-sizing-no-width-height-change-content-
 crbug.com/395103 [ Mac ] compositing/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ NeedsRebaseline ]
 crbug.com/395103 [ Mac ] virtual/gpu/compositedscrolling/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ NeedsRebaseline ]
 crbug.com/395103 [ Mac ] virtual/softwarecompositing/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ NeedsRebaseline ]
-
-crbug.com/388780 webexposed/global-constructors-listing.html [ NeedsRebaseline ]

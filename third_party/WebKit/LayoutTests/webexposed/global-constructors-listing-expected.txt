@@ -70,6 +70,10 @@ DOMError
 DOMException
 DOMImplementation
 DOMParser
+DOMPoint
+DOMPointReadOnly
+DOMRect
+DOMRectReadOnly
 DOMSettableTokenList
 DOMStringList
 DOMStringMap
