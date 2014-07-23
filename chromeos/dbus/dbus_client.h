@@ -9,7 +9,7 @@
 
 namespace dbus {
 class Bus;
-};
+}  // namespace dbus
 
 namespace chromeos {
 

@@ -5,8 +5,6 @@
 #ifndef CHROMEOS_DBUS_FAKE_DBUS_THREAD_MANAGER_H_
 #define CHROMEOS_DBUS_FAKE_DBUS_THREAD_MANAGER_H_
 
-#include <string>
-
 #include "base/logging.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"

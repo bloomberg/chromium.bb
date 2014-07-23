@@ -5,8 +5,6 @@
 #ifndef CHROMEOS_DBUS_DBUS_THREAD_MANAGER_H_
 #define CHROMEOS_DBUS_DBUS_THREAD_MANAGER_H_
 
-#include <string>
-
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -14,12 +12,12 @@
 
 namespace base {
 class Thread;
-};
+}  // namespace base
 
 namespace dbus {
 class Bus;
 class ObjectPath;
-};
+}  // namespace dbus
 
 namespace chromeos {
 

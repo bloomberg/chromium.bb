@@ -4,8 +4,6 @@
 
 #include "chromeos/dbus/dbus_thread_manager.h"
 
-#include <map>
-
 #include "base/command_line.h"
 #include "base/observer_list.h"
 #include "base/sys_info.h"
@@ -257,7 +255,7 @@ class DBusClientBundle {
 // The DBusThreadManager implementation used in production.
 class DBusThreadManagerImpl : public DBusThreadManager {
  public:
-  explicit DBusThreadManagerImpl() {
+  DBusThreadManagerImpl() {
     // Create the D-Bus thread.
     base::Thread::Options thread_options;
     thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
@@ -467,6 +465,8 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_refptr<dbus::Bus> system_bus_;
   scoped_ptr<DBusClientBundle> client_bundle_;
   scoped_ptr<PowerPolicyController> power_policy_controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(DBusThreadManagerImpl);
 };
 
 // static
