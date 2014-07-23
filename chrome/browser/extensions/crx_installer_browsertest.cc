@@ -397,12 +397,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, HiDpiThemeTest) {
 }
 
 // See http://crbug.com/315299.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_InstallDelayedUntilNextUpdate \
         DISABLED_InstallDelayedUntilNextUpdate
 #else
 #define MAYBE_InstallDelayedUntilNextUpdate InstallDelayedUntilNextUpdate
-#endif  // defined(OS_WIN)
+#endif
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
                        MAYBE_InstallDelayedUntilNextUpdate) {
   const std::string extension_id("ldnnhddmnhbkjipkidpdiheffobcpfmf");

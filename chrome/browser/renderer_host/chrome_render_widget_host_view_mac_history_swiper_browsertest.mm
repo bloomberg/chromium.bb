@@ -586,8 +586,9 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
 
 // Each movement event that has non-zero parameters has both horizontal and
 // vertical motion. This should not trigger history navigation.
+// http://crbug.com/396328
 IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
-                       TestAllDiagonalSwipes) {
+                       DISABLED_TestAllDiagonalSwipes) {
   if (!IsHistorySwipingSupported())
     return;
 

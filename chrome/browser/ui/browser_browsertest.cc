@@ -2505,7 +2505,13 @@ IN_PROC_BROWSER_TEST_F(ClickModifierTest, WindowOpenControlShiftClickTest) {
 }
 
 // Middle-clicks open in a background tab.
-IN_PROC_BROWSER_TEST_F(ClickModifierTest, WindowOpenMiddleClickTest) {
+#if defined(OS_LINUX)
+// http://crbug.com/396347
+#define MAYBE_WindowOpenMiddleClickTest DISABLED_WindowOpenMiddleClickTest
+#else
+#define MAYBE_WindowOpenMiddleClickTest WindowOpenMiddleClickTest
+#endif
+IN_PROC_BROWSER_TEST_F(ClickModifierTest, MAYBE_WindowOpenMiddleClickTest) {
   int modifiers = 0;
   blink::WebMouseEvent::Button button = blink::WebMouseEvent::ButtonMiddle;
   WindowOpenDisposition disposition = NEW_BACKGROUND_TAB;
@@ -2555,7 +2561,8 @@ IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefControlClickTest) {
 
 // Control-shift-clicks open in a foreground tab.
 // On OSX meta [the command key] takes the place of control.
-IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefControlShiftClickTest) {
+// http://crbug.com/396347
+IN_PROC_BROWSER_TEST_F(ClickModifierTest, DISABLED_HrefControlShiftClickTest) {
 #if defined(OS_MACOSX)
   int modifiers = blink::WebInputEvent::MetaKey;
 #else
@@ -2576,7 +2583,8 @@ IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefMiddleClickTest) {
 }
 
 // Shift-middle-clicks open in a foreground tab.
-IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefShiftMiddleClickTest) {
+// http://crbug.com/396347
+IN_PROC_BROWSER_TEST_F(ClickModifierTest, DISABLED_HrefShiftMiddleClickTest) {
   int modifiers = blink::WebInputEvent::ShiftKey;
   blink::WebMouseEvent::Button button = blink::WebMouseEvent::ButtonMiddle;
   WindowOpenDisposition disposition = NEW_FOREGROUND_TAB;

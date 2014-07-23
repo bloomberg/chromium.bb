@@ -76,7 +76,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabSize) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "tab_size.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabUpdate) {
+// Flaky on linux: http://crbug.com/396364
+#if defined(OS_LINUX)
+#define MAYBE_TabUpdate DISABLED_TabUpdate
+#else
+#define MAYBE_TabUpdate TabUpdate
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabUpdate) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "update.html")) << message_;
 }
 

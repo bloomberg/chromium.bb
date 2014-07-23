@@ -1046,8 +1046,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 }
 
 // This test makes sure a crashed singleton tab reloads from a new navigation.
+// http://crbug.com/396371
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       NavigateToCrashedSingletonTab) {
+                       DISABLED_NavigateToCrashedSingletonTab) {
   GURL singleton_url(GetContentSettingsURL());
   WebContents* web_contents = chrome::AddSelectedTabWithURL(
       browser(), singleton_url, content::PAGE_TRANSITION_LINK);

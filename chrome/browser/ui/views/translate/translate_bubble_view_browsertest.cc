@@ -59,8 +59,9 @@ IN_PROC_BROWSER_TEST_F(TranslateBubbleViewBrowserTest,
   EXPECT_FALSE(TranslateBubbleView::IsShowing());
 }
 
+// http://crbug.com/378061
 IN_PROC_BROWSER_TEST_F(TranslateBubbleViewBrowserTest,
-                       CloseLastTabWithoutTranslating) {
+                       DISABLED_CloseLastTabWithoutTranslating) {
   EXPECT_FALSE(TranslateBubbleView::IsShowing());
 
   // Show a French page and wait until the bubble is shown.

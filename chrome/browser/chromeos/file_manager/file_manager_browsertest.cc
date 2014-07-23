@@ -746,7 +746,8 @@ class FileManagerBrowserTest :
   }
 };
 
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, Test) {
+// http://crbug.com/327719
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, DISABLED_Test) {
   StartTest();
 }
 
@@ -774,14 +775,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "fileDisplayDrive"),
                       TestParameter(NOT_IN_GUEST_MODE, "fileDisplayMtp")));
 
-// Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG)
-#define MAYBE_OpenZipFiles DISABLED_OpenZipFiles
-#else
-#define MAYBE_OpenZipFiles OpenZipFiles
-#endif
+// http://crbug.com/327719
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_OpenZipFiles,
+    DISABLED_OpenZipFiles,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "zipOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "zipOpenDownloads"),

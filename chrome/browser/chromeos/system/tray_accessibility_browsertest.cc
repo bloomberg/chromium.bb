@@ -269,7 +269,8 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, LoginStatus) {
   EXPECT_EQ(ash::user::LOGGED_IN_USER, GetLoginStatus());
 }
 
-IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowTrayIcon) {
+// http://crbug.com/396342
+IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, DISABLED_ShowTrayIcon) {
   SetLoginStatus(ash::user::LOGGED_IN_NONE);
 
   // Confirms that the icon is invisible before login.
@@ -338,7 +339,8 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowTrayIcon) {
   EXPECT_FALSE(IsTrayIconVisible());
 }
 
-IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenu) {
+// http://crbug.com/396342
+IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, DISABLED_ShowMenu) {
   // Login
   UserManager::Get()->UserLoggedIn(
       "owner@invalid.domain", "owner@invalid.domain", true);
@@ -406,7 +408,9 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenu) {
   EXPECT_FALSE(CanCreateMenuItem());
 }
 
-IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowMenuOption) {
+// http://crbug.com/396318
+IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest,
+    DISABLED_ShowMenuWithShowMenuOption) {
   // Login
   UserManager::Get()->UserLoggedIn(
       "owner@invalid.domain", "owner@invalid.domain", true);

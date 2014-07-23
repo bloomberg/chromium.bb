@@ -102,14 +102,9 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, MAYBE_TaskManagerNewPrintPreview) {
       WaitForTaskManagerRows(1, MatchPrint(url::kAboutBlankURL)));
 }
 
-// Disable the test for mac as it started being flaky, see http://crbug/367665.
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-#define MAYBE_TaskManagerExistingPrintPreview DISABLED_TaskManagerExistingPrintPreview
-#else
-#define MAYBE_TaskManagerExistingPrintPreview TaskManagerExistingPrintPreview
-#endif
+// http://crbug/367665.
 IN_PROC_BROWSER_TEST_F(PrintPreviewTest,
-                       MAYBE_TaskManagerExistingPrintPreview) {
+                       DISABLED_TaskManagerExistingPrintPreview) {
   // Create the print preview dialog.
   Print();
 
@@ -183,7 +178,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, WindowedNPAPIPluginHidden) {
   ASSERT_FALSE(rects_equal);
 }
 
-IN_PROC_BROWSER_TEST_F(PrintPreviewTest, NoCrashOnCloseWithOtherTabs) {
+// http://crbug.com/396360
+IN_PROC_BROWSER_TEST_F(PrintPreviewTest, DISABLED_NoCrashOnCloseWithOtherTabs) {
   // Now print preview.
   Print();
 

@@ -665,7 +665,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchInDiagnosticMode) {
   WaitForAppLaunchSuccess();
 }
 
-IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningCancel) {
+// http://crbug.com/396320
+IN_PROC_BROWSER_TEST_F(KioskTest, DISABLED_AutolaunchWarningCancel) {
   EnableConsumerKioskMode();
   // Start UI, find menu entry for this app and launch it.
   chromeos::WizardController::SkipPostLoginScreensForTesting();
@@ -694,7 +695,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningCancel) {
   EXPECT_FALSE(KioskAppManager::Get()->IsAutoLaunchEnabled());
 }
 
-IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningConfirm) {
+// http://crbug.com/396320
+IN_PROC_BROWSER_TEST_F(KioskTest, DISABLED_AutolaunchWarningConfirm) {
   EnableConsumerKioskMode();
   // Start UI, find menu entry for this app and launch it.
   chromeos::WizardController::SkipPostLoginScreensForTesting();
@@ -1026,8 +1028,9 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
               std::string(kTestOfflineEnabledKioskApp) + "_v1.crx");
 }
 
+// http://crbug.com/396334
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
-                       LaunchCachedOfflineEnabledAppNoNetwork) {
+                       DISABLED_LaunchCachedOfflineEnabledAppNoNetwork) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
   EXPECT_TRUE(
       KioskAppManager::Get()->HasCachedCrx(kTestOfflineEnabledKioskApp));
@@ -1239,7 +1242,7 @@ class KioskEnterpriseTest : public KioskTest {
 };
 
 // Flaky: crbug.com/394032
-IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, DISALBED_EnterpriseKioskApp) {
+IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, DISABLED_EnterpriseKioskApp) {
   chromeos::WizardController::SkipPostLoginScreensForTesting();
   chromeos::WizardController* wizard_controller =
       chromeos::WizardController::default_controller();
@@ -1342,7 +1345,8 @@ class KioskHiddenWebUITest : public KioskTest,
   DISALLOW_COPY_AND_ASSIGN(KioskHiddenWebUITest);
 };
 
-IN_PROC_BROWSER_TEST_F(KioskHiddenWebUITest, AutolaunchWarning) {
+// http://crbug.com/396336
+IN_PROC_BROWSER_TEST_F(KioskHiddenWebUITest, DISABLED_AutolaunchWarning) {
   // Add a device owner.
   FakeUserManager* user_manager = new FakeUserManager();
   user_manager->AddUser(kTestOwnerEmail);

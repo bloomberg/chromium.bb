@@ -143,7 +143,9 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, HideKeyboardKeyTest) {
           VirtualKeyboardBrowserTestConfig());
 }
 
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, KeysetTransitionTest) {
+// http://crbug.com/396326
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest,
+                       DISABLED_KeysetTransitionTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("keyset_transition_test.js")),
           VirtualKeyboardBrowserTestConfig());
 }

@@ -22,7 +22,8 @@
 using base::ASCIIToUTF16;
 using metrics::OmniboxEventProto;
 
-IN_PROC_BROWSER_TEST_F(OmniboxApiTest, Basic) {
+// http://crbug.com/167158
+IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_Basic) {
   ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
 
   // The results depend on the TemplateURLService being loaded. Make sure it is

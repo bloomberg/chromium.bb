@@ -523,7 +523,8 @@ ExtensionFunction* FakeAutomationInternalPerformActionFunctionFactory() {
   return new FakeAutomationInternalPerformActionFunction();
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, GeneratedTree) {
+// http://crbug.com/396353
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_GeneratedTree) {
   ASSERT_TRUE(extensions::ExtensionFunctionDispatcher::OverrideFunction(
       "automationInternal.enableTab",
       FakeAutomationInternalEnableTabFunctionFactory));

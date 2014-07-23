@@ -674,19 +674,13 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPIPrivateTest, MAYBE_FileIO_Private) {
   RUN_FILEIO_PRIVATE_SUBTESTS;
 }
 
-// Flaky on XP; times out, http://crbug.com/313401
-#if defined(OS_WIN)
-#define MAYBE_NaCl_Newlib_FileIO DISABLED_FileIO
-#define MAYBE_NaCl_Newlib_FileIO_Private DISABLED_FileIO_Private
-#else
-#define MAYBE_NaCl_Newlib_FileIO FileIO
-#define MAYBE_NaCl_Newlib_FileIO_Private FileIO_Private
-#endif
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_NaCl_Newlib_FileIO) {
+// http://crbug.com/313401
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, DISABLED_FileIO) {
   RUN_FILEIO_SUBTESTS;
 }
+// http://crbug.com/313401
 IN_PROC_BROWSER_TEST_F(PPAPIPrivateNaClNewlibTest,
-                       MAYBE_NaCl_Newlib_FileIO_Private) {
+                       DISABLED_NaCl_Newlib_FileIO_Private) {
   RUN_FILEIO_PRIVATE_SUBTESTS;
 }
 
@@ -699,18 +693,12 @@ IN_PROC_BROWSER_TEST_F(PPAPIPrivateNaClGLibcTest, DISABLED_FileIO_Private) {
   RUN_FILEIO_PRIVATE_SUBTESTS;
 }
 
-// Flaky on XP; times out, http://crbug.com/313205
-#if defined(OS_WIN)
-#define MAYBE_PNaCl_FileIO DISABLED_FileIO
-#define MAYBE_PNaCl_FileIO_Private DISABLED_FileIO_Private
-#else
-#define MAYBE_PNaCl_FileIO FileIO
-#define MAYBE_PNaCl_FileIO_Private FileIO_Private
-#endif
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PNaCl_FileIO) {
+// http://crbug.com/313205
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, DISABLED_FileIO) {
   RUN_FILEIO_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPIPrivateNaClPNaClTest, MAYBE_PNaCl_FileIO_Private) {
+IN_PROC_BROWSER_TEST_F(PPAPIPrivateNaClPNaClTest,
+                       DISABLED_PNaCl_FileIO_Private) {
   RUN_FILEIO_PRIVATE_SUBTESTS;
 }
 
@@ -1028,9 +1016,11 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, WebSocket2) {
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(WebSocket1)) {
   RUN_WEBSOCKET_SUBTESTS_1;
 }
+#if !defined(OS_WIN)  // http://crbug.com/396363
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(WebSocket2)) {
   RUN_WEBSOCKET_SUBTESTS_2;
 }
+#endif
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, WebSocket1) {
   RUN_WEBSOCKET_SUBTESTS_1;
 }

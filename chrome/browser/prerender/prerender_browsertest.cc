@@ -4360,15 +4360,10 @@ class PrerenderOmniboxBrowserTest : public PrerenderBrowserTest {
   }
 };
 
-// Times out on Mac at minimum. http://crbug.com/395152
-#if defined(OS_MACOSX)
-#define MAYBE_PrerenderOmniboxCancel DISABLED_PrerenderOmniboxCancel
-#else
-#define MAYBE_PrerenderOmniboxCancel PrerenderOmniboxCancel
-#endif
 // Checks that closing the omnibox popup cancels an omnibox prerender.
+// http://crbug.com/395152
 IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest,
-                       MAYBE_PrerenderOmniboxCancel) {
+                       DISABLED_PrerenderOmniboxCancel) {
   // Ensure the cookie store has been loaded.
   if (!GetPrerenderManager()->cookie_store_loaded()) {
     base::RunLoop loop;
@@ -4387,18 +4382,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest,
   prerender->WaitForStop();
 }
 
-// Crashes on windows.  The failure seems to be that the PrerenderOmniboxAbandon
-// test is setting up a call to the windows API RegisterApplicationRestart with
-// a command line that is too long (> 1024 characters).
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_PrerenderOmniboxAbandon DISABLED_PrerenderOmniboxAbandon
-#else
-#define MAYBE_PrerenderOmniboxAbandon PrerenderOmniboxAbandon
-#endif
-
 // Checks that accepting omnibox input abandons an omnibox prerender.
+// http://crbug.com/394592
 IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest,
-                       MAYBE_PrerenderOmniboxAbandon) {
+                       DISABLED_PrerenderOmniboxAbandon) {
   // Set the abandon timeout to something high so it does not introduce
   // flakiness if the prerender times out before the test completes.
   GetPrerenderManager()->mutable_config().abandon_time_to_live =
