@@ -280,8 +280,9 @@ VideoPlayer.prototype.loadVideo_ = function(url, title, opt_callback) {
     this.controls.attachMedia(this.videoElement_);
 
     document.querySelector('#cast-name-label').textContent =
-        loadTimeData.getString('VIDEO_PLAYER_PLAYING_ON');;
-    document.querySelector('#cast-name').textContent = this.currentCast_.name;
+        loadTimeData.getString('VIDEO_PLAYER_PLAYING_ON');
+    document.querySelector('#cast-name').textContent =
+        this.currentCast_.friendlyName;
   } else {
     videoPlayerElement.removeAttribute('casting');
 
@@ -400,7 +401,7 @@ VideoPlayer.prototype.reloadCurrentVideo_ = function(opt_callback) {
  */
 VideoPlayer.prototype.onCastSelected_ = function(cast) {
   // If the selected item is same as the current item, do nothing.
-  if ((this.currentCast_ && this.currentCast_.name) === (cast && cast.name))
+  if ((this.currentCast_ && this.currentCast_.label) === (cast && cast.label))
     return;
 
   this.currentCast_ = cast || null;
@@ -434,7 +435,7 @@ VideoPlayer.prototype.setCastList = function(casts) {
 
   for (var i = 0; i < casts.length; i++) {
     var item = new cr.ui.MenuItem();
-    item.label = casts[i].name;
+    item.label = casts[i].friendlyName;
     item.addEventListener('activate',
                           this.onCastSelected_.wrap(this, casts[i]));
     menu.appendChild(item);
