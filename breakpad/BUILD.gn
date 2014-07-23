@@ -206,7 +206,7 @@ if (current_toolchain == host_toolchain && is_mac) {
 }
 
 if (is_mac) {
-  static_library("breakpad_utilities") {
+  static_library("utilities") {
     sources = [
       "src/client/mac/handler/breakpad_nlist_64.cc",
       "src/client/mac/handler/dynamic_images.cc",
@@ -248,7 +248,7 @@ if (is_mac) {
     ]
 
     deps = [
-      ":breakpad_utilities"
+      ":utilities"
     ]
   }
 
@@ -279,7 +279,7 @@ if (is_mac) {
     ]
 
     deps = [
-      ":breakpad_utilities",
+      ":utilities",
       ":crash_inspector",
       ":crash_report_sender",
     ]
@@ -362,13 +362,14 @@ if (is_linux && current_toolchain == host_toolchain) {
     include_dirs = [ "src" ]
   }
 
-  config("breakpad_client_config") {
+  config("client_config") {
+    include_dirs = [ "src" ]
     if (is_android) {
-      include_dirs = [ "src/common/android/include" ]
+      include_dirs += [ "src/common/android/include" ]
     }
   }
 
-  static_library("breakpad_client") {
+  static_library("client") {
     sources = [
       "src/client/linux/crash_generation/crash_generation_client.cc",
       "src/client/linux/crash_generation/crash_generation_client.h",
@@ -422,7 +423,7 @@ if (is_linux && current_toolchain == host_toolchain) {
 
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
-    direct_dependent_configs = [ ":breakpad_client_config" ]
+    direct_dependent_configs = [ ":client_config" ]
 
     # Android NDK toolchain doesn't support -mimplicit-it=always
     if (cpu_arch == "arm" && !is_android) {
@@ -448,7 +449,7 @@ if (is_linux && current_toolchain == host_toolchain) {
     ]
   }
 
-  static_library("breakpad_processor_support") {
+  static_library("processor_support") {
     sources = [
       "src/common/scoped_ptr.h",
       "src/processor/basic_code_modules.cc",
@@ -498,8 +499,8 @@ if (is_linux && current_toolchain == host_toolchain) {
     ]
 
     deps = [
-      ":breakpad_client",
-      ":breakpad_processor_support",
+      ":client",
+      ":processor_support",
       ":linux_dumper_unittest_helper",
       "//testing/gtest",
       "//testing/gtest:gtest_main",
@@ -534,7 +535,7 @@ if (is_linux && current_toolchain == host_toolchain) {
       "src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc",
     ]
     deps = [
-      ":breakpad_processor_support",
+      ":processor_support",
     ]
 
     include_dirs = [
@@ -556,7 +557,7 @@ if (is_linux && current_toolchain == host_toolchain) {
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
 
-    deps = [ ":breakpad_client" ]
+    deps = [ ":client" ]
 
     include_dirs = [ "src" ]
 
@@ -571,7 +572,7 @@ if (is_linux && current_toolchain == host_toolchain) {
 
     include_dirs = [ "src" ]
 
-    deps = [ ":breakpad_client" ]
+    deps = [ ":client" ]
   }
 
   executable("core-2-minidump") {
@@ -580,7 +581,7 @@ if (is_linux && current_toolchain == host_toolchain) {
     ]
 
     deps = [
-      ":breakpad_client",
+      ":client",
     ]
 
     include_dirs = [ "src" ]
@@ -588,7 +589,7 @@ if (is_linux && current_toolchain == host_toolchain) {
 }
 
 if (is_ios) {
-  static_library("breakpad_client") {
+  static_library("client") {
     sources = [
       "src/client/ios/Breakpad.h",
       "src/client/ios/Breakpad.mm",

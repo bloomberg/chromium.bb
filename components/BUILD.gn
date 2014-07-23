@@ -16,6 +16,8 @@ group("all_components") {
     "//components/bookmarks/browser",
     "//components/bookmarks/common",
     "//components/bookmarks/test",
+    "//components/breakpad/app",
+    "//components/breakpad/browser",
     "//components/captive_portal",
     "//components/cdm/browser",
     "//components/cdm/common",
@@ -106,6 +108,8 @@ group("all_components") {
       "//components/autofill/content/browser",  # Blocked on content/blink.
       "//components/autofill/content/common",  # Blocked on content.
       "//components/autofill/content/renderer",  # Blocked on content/blink.
+      "//components/breakpad/app",  # Should work, needs checking.
+      "//components/breakpad/browser",  # Should work, needs checking.
       "//components/captive_portal",  # Should work, needs checking.
       "//components/cloud_devices/common",  # Should work, needs checking.
       "//components/cdm/browser",  # Blocked on content.

@@ -33,6 +33,8 @@
       # Note: if you depend on this target, you need to either link in
       # content.gyp:content_common, or add
       # content/public/common/content_switches.cc to your sources.
+      #
+      # GN version: //components/breakpad/app
       'target_name': 'breakpad_component',
       'type': '<(breakpad_component_target_type)',
       'sources': [
@@ -84,6 +86,7 @@
       ],
     },
     {
+      # GN version: //components/breakpad/app:test_support
       'target_name': 'breakpad_test_support',
       'type': 'none',
       'dependencies': [
@@ -100,6 +103,7 @@
     ['OS=="win"', {
       'targets': [
         {
+          # GN version: //components/breakpad/tools:crash_service
           'target_name': 'breakpad_crash_service',
           'type': 'static_library',
           'dependencies': [
@@ -194,6 +198,7 @@
     ['os_posix == 1 and OS != "mac" and OS != "ios" and android_webview_build != 1', {
       'targets': [
         {
+          # GN version: //components/breakpad/browser
           'target_name': 'breakpad_host',
           'type': 'static_library',
           'dependencies': [

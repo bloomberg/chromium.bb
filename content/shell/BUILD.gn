@@ -199,6 +199,7 @@ static_library("content_shell_lib") {
     "//base/allocator",
     "//base/third_party/dynamic_annotations",
     "//cc",
+    "//components/breakpad/app",
     "//content:resources",
     "//content/gpu",
     "//content/ppapi_plugin",
@@ -230,7 +231,6 @@ static_library("content_shell_lib") {
     "//webkit/browser:storage",
     #'content.gyp:content_app_both',  TODO(GYP)
     #'copy_test_netscape_plugin',  TODO(GYP)
-    #'../components/components.gyp:breakpad_component',  TODO(GYP)
     #'../third_party/WebKit/public/blink.gyp:blink_test_support',  TODO(GYP)
   ]
 
@@ -260,7 +260,7 @@ static_library("content_shell_lib") {
   }
 
   if (is_posix && !is_mac && (!is_android || !is_android_webview_build)) {
-    #deps += [ '../components/components.gyp:breakpad_host' ]  TODO(GYP
+    deps += [ "//components/breakpad/browser" ]
   }
 
   if (use_aura) {

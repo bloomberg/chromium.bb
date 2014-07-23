@@ -1,0 +1,65 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+if (is_android) {
+  import("//build/config/android/config.gni")
+}
+
+source_set("lib") {
+  sources = [
+    "breakpad_client.cc",
+    "breakpad_client.h",
+    "crash_keys_win.cc",
+    "crash_keys_win.h",
+  ]
+}
+
+# Note: if you depend on this target, you need to either link in
+# content.gyp:content_common, or add content/public/common/content_switches.cc
+# to your sources.
+#
+# GYP version: components/breakpad.gyp:breakpad_component
+source_set("app") {
+  sources = [
+    "breakpad_linux_impl.h",
+    "breakpad_mac.h",
+    "breakpad_mac.mm",
+    "breakpad_win.cc",
+    "breakpad_win.h",
+    "hard_error_handler_win.cc",
+    "hard_error_handler_win.h",
+  ]
+  if (is_android || is_linux) {
+    # Want these files on both Linux and Android.
+    set_sources_assignment_filter([])
+    sources += [
+      "breakpad_linux.cc",
+      "breakpad_linux.h",
+    ]
+  }
+
+  defines = [ "BREAKPAD_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    ":lib",
+  ]
+
+  if (is_mac) {
+    deps += [ "//breakpad" ]
+  } else if (is_win) {
+    deps += [
+      "//sandbox",
+      #'../breakpad/breakpad.gyp:breakpad_handler',  TODO(GYP)
+      #'../breakpad/breakpad.gyp:breakpad_sender',  TODO(GYP)
+    ]
+  } else if (is_posix && !is_ios &&
+             (!is_android || !is_android_webview_build)) {
+    deps += [ "//breakpad:client" ]
+  }
+}
+
+source_set("test_support") {
+  deps = [ ":lib" ]
+}
