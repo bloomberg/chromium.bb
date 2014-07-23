@@ -55,6 +55,7 @@ PRUNE_PATHS = set([
     os.path.join('third_party','qunit'),
     os.path.join('third_party','sinonjs'),
     os.path.join('third_party','syzygy'),
+    os.path.join('tools', 'profile_chrome', 'third_party'),
 
     # Chromium code in third_party.
     os.path.join('third_party','fuzzymatch'),

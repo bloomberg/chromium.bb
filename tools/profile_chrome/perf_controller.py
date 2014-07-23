@@ -4,6 +4,7 @@
 
 import logging
 import os
+import signal
 import subprocess
 import sys
 import tempfile
@@ -170,9 +171,8 @@ class PerfProfilerController(controllers.BaseController):
         perf_profile, symfs_dir, required_libs, kallsyms))
 
     # Convert the perf profile into JSON.
-    perf_script_path = os.path.join(constants.DIR_SOURCE_ROOT,
-        'tools', 'telemetry', 'telemetry', 'core', 'platform', 'profiler',
-        'perf_vis', 'perf_to_tracing.py')
+    perf_script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                    'third_party', 'perf_to_tracing.py')
     json_file_name = os.path.basename(perf_profile)
     with open(os.devnull, 'w') as dev_null, \
         open(json_file_name, 'w') as json_file:
