@@ -953,6 +953,16 @@ TEST_F(DisplayManagerTest, UIScale) {
   display = Shell::GetScreen()->GetPrimaryDisplay();
   EXPECT_EQ(1.0f, display.device_scale_factor());
   EXPECT_EQ("1280x850", display.bounds().size().ToString());
+
+  // 1.25 ui scaling on 1.25 DSF device should use 1.0 DSF
+  // on screen.
+  UpdateDisplay("1280x850*1.25");
+  display_manager()->SetDisplayUIScale(display_id, 1.25f);
+  EXPECT_EQ(1.25f, GetDisplayInfoAt(0).configured_ui_scale());
+  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveUIScale());
+  display = Shell::GetScreen()->GetPrimaryDisplay();
+  EXPECT_EQ(1.0f, display.device_scale_factor());
+  EXPECT_EQ("1280x850", display.bounds().size().ToString());
 }
 
 TEST_F(DisplayManagerTest, UIScaleUpgradeToHighDPI) {

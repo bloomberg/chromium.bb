@@ -65,6 +65,7 @@ const int kMinimumOverlapForInvalidOffset = 100;
 // for the full list of resolutions.
 const float kUIScalesFor2x[] =
     {0.5f, 0.625f, 0.8f, 1.0f, 1.125f, 1.25f, 1.5f, 2.0f};
+const float kUIScalesFor1_25x[] = {0.5f, 0.625f, 0.8f, 1.0f, 1.25f };
 const float kUIScalesFor1280[] = {0.5f, 0.625f, 0.8f, 1.0f, 1.125f };
 const float kUIScalesFor1366[] = {0.5f, 0.6f, 0.75f, 1.0f, 1.125f };
 
@@ -183,23 +184,26 @@ DisplayManager::~DisplayManager() {
 // static
 std::vector<float> DisplayManager::GetScalesForDisplay(
     const DisplayInfo& info) {
+
+#define ASSIGN_ARRAY(v, a) v.assign(a, a + arraysize(a))
+
   std::vector<float> ret;
   if (info.device_scale_factor() == 2.0f) {
-    ret.assign(kUIScalesFor2x, kUIScalesFor2x + arraysize(kUIScalesFor2x));
+    ASSIGN_ARRAY(ret, kUIScalesFor2x);
+    return ret;
+  } else if (info.device_scale_factor() == 1.25f) {
+    ASSIGN_ARRAY(ret, kUIScalesFor1_25x);
     return ret;
   }
   switch (info.bounds_in_native().width()) {
     case 1280:
-      ret.assign(kUIScalesFor1280,
-                 kUIScalesFor1280 + arraysize(kUIScalesFor1280));
+      ASSIGN_ARRAY(ret, kUIScalesFor1280);
       break;
     case 1366:
-      ret.assign(kUIScalesFor1366,
-                 kUIScalesFor1366 + arraysize(kUIScalesFor1366));
+      ASSIGN_ARRAY(ret, kUIScalesFor1366);
       break;
     default:
-      ret.assign(kUIScalesFor1280,
-                 kUIScalesFor1280 + arraysize(kUIScalesFor1280));
+      ASSIGN_ARRAY(ret, kUIScalesFor1280);
 #if defined(OS_CHROMEOS)
       if (base::SysInfo::IsRunningOnChromeOS())
         NOTREACHED() << "Unknown resolution:" << info.ToString();

@@ -23,6 +23,7 @@
 namespace ash {
 namespace {
 
+// TODO(oshima): This feature is obsolete. Remove this after m38.
 bool allow_upgrade_to_high_dpi = false;
 
 }
@@ -253,7 +254,7 @@ float DisplayInfo::GetEffectiveDeviceScaleFactor() const {
   if (allow_upgrade_to_high_dpi && configured_ui_scale_ < 1.0f &&
       device_scale_factor_ == 1.0f) {
     return 2.0f;
-  } else if (device_scale_factor_ == 2.0f && configured_ui_scale_ == 2.0f) {
+  } else if (device_scale_factor_ == configured_ui_scale_) {
     return 1.0f;
   }
   return device_scale_factor_;
@@ -263,7 +264,7 @@ float DisplayInfo::GetEffectiveUIScale() const {
   if (allow_upgrade_to_high_dpi && configured_ui_scale_ < 1.0f &&
       device_scale_factor_ == 1.0f) {
     return configured_ui_scale_ * 2.0f;
-  } else if (device_scale_factor_ == 2.0f && configured_ui_scale_ == 2.0f) {
+  } else if (device_scale_factor_ == configured_ui_scale_) {
     return 1.0f;
   }
   return configured_ui_scale_;
