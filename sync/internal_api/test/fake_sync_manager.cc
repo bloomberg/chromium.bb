@@ -14,7 +14,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "sync/internal_api/public/base/invalidator_state.h"
 #include "sync/internal_api/public/http_post_provider_factory.h"
 #include "sync/internal_api/public/internal_components_factory.h"
 #include "sync/internal_api/public/util/weak_handle.h"

@@ -14,12 +14,6 @@
 #include "google/cacheinvalidation/types.pb.h"
 #include "sync/internal_api/public/base/invalidation.h"
 
-namespace invalidation {
-void PrintTo(const invalidation::ObjectId& id, std::ostream* os) {
-  *os << syncer::ObjectIdToString(id);
-}
-}  // namespace invalidation
-
 namespace syncer {
 
 bool ObjectIdLessThan::operator()(const invalidation::ObjectId& lhs,
@@ -45,22 +39,6 @@ bool InvalidationVersionLessThan::operator()(
     return false;
 
   return a.version() < b.version();
-}
-
-bool RealModelTypeToObjectId(ModelType model_type,
-                             invalidation::ObjectId* object_id) {
-  std::string notification_type;
-  if (!RealModelTypeToNotificationType(model_type, &notification_type)) {
-    return false;
-  }
-  object_id->Init(ipc::invalidation::ObjectSource::CHROME_SYNC,
-                  notification_type);
-  return true;
-}
-
-bool ObjectIdToRealModelType(const invalidation::ObjectId& object_id,
-                             ModelType* model_type) {
-  return NotificationTypeToRealModelType(object_id.name(), model_type);
 }
 
 scoped_ptr<base::DictionaryValue> ObjectIdToValue(
@@ -90,42 +68,6 @@ std::string ObjectIdToString(
   std::string str;
   base::JSONWriter::Write(value.get(), &str);
   return str;
-}
-
-ObjectIdSet ModelTypeSetToObjectIdSet(ModelTypeSet model_types) {
-  ObjectIdSet ids;
-  for (ModelTypeSet::Iterator it = model_types.First(); it.Good(); it.Inc()) {
-    invalidation::ObjectId model_type_as_id;
-    if (!RealModelTypeToObjectId(it.Get(), &model_type_as_id)) {
-      DLOG(WARNING) << "Invalid model type " << it.Get();
-      continue;
-    }
-    ids.insert(model_type_as_id);
-  }
-  return ids;
-}
-
-ModelTypeSet ObjectIdSetToModelTypeSet(const ObjectIdSet& ids) {
-  ModelTypeSet model_types;
-  for (ObjectIdSet::const_iterator it = ids.begin(); it != ids.end(); ++it) {
-    ModelType model_type;
-    if (!ObjectIdToRealModelType(*it, &model_type)) {
-      DLOG(WARNING) << "Invalid object ID " << ObjectIdToString(*it);
-      continue;
-    }
-    model_types.Put(model_type);
-  }
-  return model_types;
-}
-
-std::string InvalidationToString(
-    const invalidation::Invalidation& invalidation) {
-  std::stringstream ss;
-  ss << "{ ";
-  ss << "object_id: " << ObjectIdToString(invalidation.object_id()) << ", ";
-  ss << "version: " << invalidation.version();
-  ss << " }";
-  return ss.str();
 }
 
 }  // namespace syncer

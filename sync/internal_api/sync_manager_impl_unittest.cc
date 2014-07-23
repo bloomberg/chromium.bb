@@ -977,9 +977,9 @@ class SyncManagerTest : public testing::Test,
         GetEncryptedTypes(trans->GetWrappedTrans());
   }
 
-  void SimulateInvalidatorStateChangeForTest(InvalidatorState state) {
+  void SimulateInvalidatorEnabledForTest(bool is_enabled) {
     DCHECK(sync_manager_.thread_checker_.CalledOnValidThread());
-    sync_manager_.SetInvalidatorEnabled(state == INVALIDATIONS_ENABLED);
+    sync_manager_.SetInvalidatorEnabled(is_enabled);
   }
 
   void SetProgressMarkerForType(ModelType type, bool set) {

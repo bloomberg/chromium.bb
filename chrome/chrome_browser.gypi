@@ -1307,6 +1307,8 @@
       'browser/sync/glue/history_model_worker.h',
       'browser/sync/glue/invalidation_adapter.cc',
       'browser/sync/glue/invalidation_adapter.h',
+      'browser/sync/glue/invalidation_helper.cc',
+      'browser/sync/glue/invalidation_helper.h',
       'browser/sync/glue/local_device_info_provider.h',
       'browser/sync/glue/local_device_info_provider_impl.cc',
       'browser/sync/glue/local_device_info_provider_impl.h',

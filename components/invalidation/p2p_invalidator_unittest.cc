@@ -11,7 +11,6 @@
 #include "components/invalidation/notifier_reason_util.h"
 #include "jingle/notifier/listener/fake_push_client.h"
 #include "sync/internal_api/public/base/invalidator_state.h"
-#include "sync/internal_api/public/base/model_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -86,6 +85,8 @@ class P2PInvalidatorTest : public testing::Test {
  protected:
   P2PInvalidatorTest()
       : next_sent_notification_to_reflect_(0) {
+    default_enabled_ids_.insert(invalidation::ObjectId(10, "A"));
+    default_enabled_ids_.insert(invalidation::ObjectId(10, "B"));
     delegate_.CreateInvalidator("sender",
                                 "fake_state",
                                 base::WeakPtr<InvalidationStateTracker>());
@@ -96,9 +97,7 @@ class P2PInvalidatorTest : public testing::Test {
     delegate_.GetInvalidator()->UnregisterHandler(&fake_handler_);
   }
 
-  ObjectIdInvalidationMap MakeInvalidationMap(ModelTypeSet types) {
-    ObjectIdInvalidationMap invalidations;
-    ObjectIdSet ids = ModelTypeSetToObjectIdSet(types);
+  ObjectIdInvalidationMap MakeInvalidationMap(ObjectIdSet ids) {
     return ObjectIdInvalidationMap::InvalidateAll(ids);
   }
 
@@ -113,6 +112,8 @@ class P2PInvalidatorTest : public testing::Test {
     }
     next_sent_notification_to_reflect_ = sent_notifications.size();
   }
+
+  ObjectIdSet default_enabled_ids_;
 
   FakeInvalidationHandler fake_handler_;
   P2PInvalidatorTestDelegate delegate_;
@@ -180,8 +181,7 @@ TEST_F(P2PInvalidatorTest, P2PNotificationDataDefault) {
 // non-default-constructed P2PNotificationData.
 TEST_F(P2PInvalidatorTest, P2PNotificationDataNonDefault) {
   ObjectIdInvalidationMap invalidation_map =
-      ObjectIdInvalidationMap::InvalidateAll(
-          ModelTypeSetToObjectIdSet(ModelTypeSet(BOOKMARKS, THEMES)));
+      ObjectIdInvalidationMap::InvalidateAll(default_enabled_ids_);
   const P2PNotificationData notification_data("sender",
                                               NOTIFY_ALL,
                                               invalidation_map);
@@ -193,11 +193,12 @@ TEST_F(P2PInvalidatorTest, P2PNotificationDataNonDefault) {
   EXPECT_EQ(
       "{\"invalidations\":["
       "{\"isUnknownVersion\":true,"
-       "\"objectId\":{\"name\":\"BOOKMARK\",\"source\":1004}},"
+      "\"objectId\":{\"name\":\"A\",\"source\":10}},"
       "{\"isUnknownVersion\":true,"
-       "\"objectId\":{\"name\":\"THEME\",\"source\":1004}}"
+      "\"objectId\":{\"name\":\"B\",\"source\":10}}"
       "],\"notificationType\":\"notifyAll\","
-      "\"senderId\":\"sender\"}", notification_data_str);
+      "\"senderId\":\"sender\"}",
+      notification_data_str);
 
   P2PNotificationData notification_data_parsed;
   EXPECT_TRUE(notification_data_parsed.ResetFromString(notification_data_str));
@@ -209,13 +210,10 @@ TEST_F(P2PInvalidatorTest, P2PNotificationDataNonDefault) {
 // observer should receive only a notification from the call to
 // UpdateEnabledTypes().
 TEST_F(P2PInvalidatorTest, NotificationsBasic) {
-  const ModelTypeSet enabled_types(BOOKMARKS, PREFERENCES);
-
   P2PInvalidator* const invalidator = delegate_.GetInvalidator();
   notifier::FakePushClient* const push_client = delegate_.GetPushClient();
 
-  invalidator->UpdateRegisteredIds(&fake_handler_,
-                                   ModelTypeSetToObjectIdSet(enabled_types));
+  invalidator->UpdateRegisteredIds(&fake_handler_, default_enabled_ids_);
 
   const char kEmail[] = "foo@bar.com";
   const char kToken[] = "token";
@@ -237,14 +235,12 @@ TEST_F(P2PInvalidatorTest, NotificationsBasic) {
 
   ReflectSentNotifications();
   EXPECT_EQ(1, fake_handler_.GetInvalidationCount());
-  EXPECT_THAT(
-      MakeInvalidationMap(enabled_types),
-      Eq(fake_handler_.GetLastInvalidationMap()));
+  EXPECT_THAT(MakeInvalidationMap(default_enabled_ids_),
+              Eq(fake_handler_.GetLastInvalidationMap()));
 
   // Sent with target NOTIFY_OTHERS so should not be propagated to
   // |fake_handler_|.
-  invalidator->SendInvalidation(
-      ModelTypeSetToObjectIdSet(ModelTypeSet(THEMES, APPS)));
+  invalidator->SendInvalidation(default_enabled_ids_);
 
   ReflectSentNotifications();
   EXPECT_EQ(1, fake_handler_.GetInvalidationCount());
@@ -254,18 +250,26 @@ TEST_F(P2PInvalidatorTest, NotificationsBasic) {
 // target settings.  The notifications received by the observer should
 // be consistent with the target settings.
 TEST_F(P2PInvalidatorTest, SendNotificationData) {
-  const ModelTypeSet enabled_types(BOOKMARKS, PREFERENCES, THEMES);
-  const ModelTypeSet changed_types(THEMES, APPS);
-  const ModelTypeSet expected_types(THEMES);
+  ObjectIdSet enabled_ids;
+  ObjectIdSet changed_ids;
+  ObjectIdSet expected_ids;
+
+  enabled_ids.insert(invalidation::ObjectId(20, "A"));
+  enabled_ids.insert(invalidation::ObjectId(20, "B"));
+  enabled_ids.insert(invalidation::ObjectId(20, "C"));
+
+  changed_ids.insert(invalidation::ObjectId(20, "A"));
+  changed_ids.insert(invalidation::ObjectId(20, "Z"));
+
+  expected_ids.insert(invalidation::ObjectId(20, "A"));
 
   const ObjectIdInvalidationMap& invalidation_map =
-      MakeInvalidationMap(changed_types);
+      MakeInvalidationMap(changed_ids);
 
   P2PInvalidator* const invalidator = delegate_.GetInvalidator();
   notifier::FakePushClient* const push_client = delegate_.GetPushClient();
 
-  invalidator->UpdateRegisteredIds(&fake_handler_,
-                                   ModelTypeSetToObjectIdSet(enabled_types));
+  invalidator->UpdateRegisteredIds(&fake_handler_, enabled_ids);
 
   invalidator->UpdateCredentials("foo@bar.com", "fake_token");
 
@@ -275,15 +279,12 @@ TEST_F(P2PInvalidatorTest, SendNotificationData) {
 
   ReflectSentNotifications();
   EXPECT_EQ(1, fake_handler_.GetInvalidationCount());
-  EXPECT_EQ(ModelTypeSetToObjectIdSet(enabled_types),
-            fake_handler_.GetLastInvalidationMap().GetObjectIds());
+  EXPECT_EQ(enabled_ids, fake_handler_.GetLastInvalidationMap().GetObjectIds());
 
   // Should be dropped.
   invalidator->SendNotificationDataForTest(P2PNotificationData());
   ReflectSentNotifications();
   EXPECT_EQ(1, fake_handler_.GetInvalidationCount());
-
-  const ObjectIdSet& expected_ids = ModelTypeSetToObjectIdSet(expected_types);
 
   // Should be propagated.
   invalidator->SendNotificationDataForTest(

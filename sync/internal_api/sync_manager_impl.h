@@ -20,7 +20,6 @@
 #include "sync/internal_api/js_sync_encryption_handler_observer.h"
 #include "sync/internal_api/js_sync_manager_observer.h"
 #include "sync/internal_api/protocol_event_buffer.h"
-#include "sync/internal_api/public/base/invalidator_state.h"
 #include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/user_share.h"

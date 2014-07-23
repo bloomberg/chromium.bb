@@ -30,6 +30,7 @@
 #include "chrome/browser/signin/profile_identity_provider.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/glue/invalidation_helper.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/fake_server_invalidation_service.h"

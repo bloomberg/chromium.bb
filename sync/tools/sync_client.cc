@@ -44,6 +44,7 @@
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_event_handler.h"
 #include "sync/test/fake_encryptor.h"
+#include "sync/tools/invalidation_helper.h"
 #include "sync/tools/null_invalidation_state_tracker.h"
 
 #if defined(OS_MACOSX)

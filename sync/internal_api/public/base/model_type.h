@@ -298,8 +298,9 @@ SYNC_EXPORT std::string ModelTypeToRootTag(ModelType type);
 // subscribing to server-issued notifications).  Returns true iff
 // |model_type| was a real model type and |notification_type| was
 // filled in.
-bool RealModelTypeToNotificationType(ModelType model_type,
-                                     std::string* notification_type);
+SYNC_EXPORT bool RealModelTypeToNotificationType(
+    ModelType model_type,
+    std::string* notification_type);
 
 // Converts a notification type to a real model type.  Returns true
 // iff |notification_type| was the notification type of a real model

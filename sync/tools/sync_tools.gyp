@@ -27,6 +27,8 @@
       '../sync.gyp:sync',
     ],
     'sources': [
+      'invalidation_helper.cc',
+      'invalidation_helper.h',
       'null_invalidation_state_tracker.cc',
       'null_invalidation_state_tracker.h',
     ],

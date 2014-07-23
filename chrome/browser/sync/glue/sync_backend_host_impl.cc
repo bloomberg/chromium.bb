@@ -10,6 +10,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/sync/glue/invalidation_helper.h"
 #include "chrome/browser/sync/glue/sync_backend_host_core.h"
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
 #include "chrome/common/chrome_switches.h"

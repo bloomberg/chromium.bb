@@ -29,6 +29,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "sync/internal_api/public/base/invalidation_util.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/tools/invalidation_helper.h"
 #include "sync/tools/null_invalidation_state_tracker.h"
 
 #if defined(OS_MACOSX)
