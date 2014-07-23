@@ -846,7 +846,8 @@ TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreen) {
 // problem (such as a modal dialog up).  This tests is a very useful canary, so
 // please do not mark it as flaky without first verifying that there are no bot
 // problems.
-TEST_F(BrowserWindowFullScreenControllerTest, TestActivate) {
+// http://crbug.com/53586
+TEST_F(BrowserWindowFullScreenControllerTest, DISABLED_TestActivate) {
   [controller_ showWindow:nil];
 
   EXPECT_FALSE([controller_ isFullscreen]);
