@@ -12,8 +12,8 @@ content_tests_gypi_values = exec_script(
     "scope",
     [ "../content_tests.gypi" ])
 
-static_library("test_support") {
 # GYP version //content/content_tests.gypi:test_support_content
+static_library("test_support") {
   deps = [
     "//net:test_support",
     "//skia",
@@ -54,6 +54,7 @@ static_library("test_support") {
       "//ppapi:ppapi_host",
       "//ppapi:ppapi_proxy",
       "//ppapi:ppapi_shared",
+      "//ppapi:ppapi_unittest_shared",
       "//third_party/WebKit/public:blink",
       "//ui/surface",
       "//v8",
@@ -61,18 +62,16 @@ static_library("test_support") {
       "//webkit/common/gpu",
       "//webkit/browser:storage",
       "//webkit/common:storage",
-# TODO(GYP)
-#"//ppapi:unittest_shared",
     ]
 
     forward_dependent_configs_from = [
       "//third_party/WebKit/public:blink",
     ]
 
-# TODO(GYP)
-# These targets need include dirs and defines from the libjingle target in order
-# to compile.
-    if (false && enable_webrtc) {
+    if (enable_webrtc) {
+      # TODO(GYP) remove this when libjingle is converted.
+      configs += [ "//content:libjingle_stub_config" ]
+
       sources += [
         "../renderer/media/mock_media_stream_dispatcher.cc",
         "../renderer/media/mock_media_stream_dispatcher.h",
@@ -85,16 +84,14 @@ static_library("test_support") {
       ]
 
       deps += [
-        "//third_party/libjingle:webrtc",
-        "//third_party/libjingle:peerconnection",
-        "//third_party/webrtc/modules:video_capture",
+        #"//third_party/libjingle:webrtc",  TODO(GYP)
+        #"//third_party/libjingle:peerconnection",  TODO(GYP)
+        #"//third_party/webrtc/modules:video_capture",  TODO(GYP)
       ]
     }
 
     if (use_glib) {
-      configs += [
-        "//build/config/linux:glib",
-      ]
+      configs += [ "//build/config/linux:glib" ]
     }
 
     if (use_aura) {
@@ -114,8 +111,7 @@ static_library("test_support") {
     }
 
     if (!is_android && !is_ios) {
-# TODO(GYP)
-#deps += [ "//third_party/libvpx" ]
+      #deps += [ "//third_party/libvpx" ]  TODO(GYP)
     }
 
     if (is_android) {
@@ -144,8 +140,8 @@ static_library("test_support") {
 
 if (!is_ios) {
 
+  # GYP version //content/content_tests.gypi:layouttest_support_content
   static_library("layouttest_support") {
-# GYP version //content/content_tests.gypi:layouttest_support_content
     sources = rebase_path(content_tests_gypi_values.layouttest_support_content_sources,
                           ".", "//content")
 
@@ -157,8 +153,7 @@ if (!is_ios) {
     ]
 
     if (is_android) {
-# TODO(GYP)
-# deps += [ "test_support_content_jni_headers" ]
+      #deps += [ "test_support_content_jni_headers" ]  TODO(GYP)
     }
   }
 

@@ -32,6 +32,7 @@ group("root") {
     "//components:all_components",
     "//content",
     "//content/shell:content_shell",
+    "//content/test:test_support",
     "//crypto",
     "//device/bluetooth",
     "//device/nfc",
@@ -171,6 +172,7 @@ group("root") {
       "//chrome/utility",  # Blocked on content.
       "//content",
       "//content/shell:content_shell",  # Blocked on content.
+      "//content/test:test_support",  # Blocked on content.
       "//extensions/common",
       "//extensions/common/api",
       "//pdf",  # Not compiled on Android in GYP yet, either.

@@ -47,7 +47,7 @@ source_set("test_support") {
     ":webview",
     "//base",
     "//content",
-    "//ipc",
+    "//ipc:test_support",
     "//skia",
     "//testing/gtest",
     "//ui/aura",

@@ -773,4 +773,27 @@ component("ppapi_host") {
   ]
 }
 
+static_library("ppapi_unittest_shared") {
+  sources = [
+    "proxy/ppapi_proxy_test.cc",
+    "proxy/ppapi_proxy_test.h",
+    "proxy/resource_message_test_sink.cc",
+    "proxy/resource_message_test_sink.h",
+    "shared_impl/test_globals.cc",
+    "shared_impl/test_globals.h",
+    "shared_impl/unittest_utils.cc",
+    "shared_impl/unittest_utils.h",
+  ]
+
+  deps = [
+    ":ppapi_proxy",
+    ":ppapi_shared",
+    "//base/test:test_support",
+    "//ipc",
+    "//ipc:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
 # TODO(GYP) other targets from ppapi_tests.gyp

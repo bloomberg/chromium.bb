@@ -109,7 +109,7 @@ static_library("test_support") {
   deps = [
     ":views",
     "//base",
-    "//ipc",
+    "//ipc:test_support",
     "//skia",
     "//testing/gtest",
     "//ui/aura",

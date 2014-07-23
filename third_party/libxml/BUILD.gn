@@ -172,16 +172,9 @@ static_library("libxml") {
       # line, but until that's landed suppress the warning:
       "-Wno-empty-body",
 
-      # See http://crbug.com/138571#c8
-      "-Wno-ignored-attributes",
+      # debugXML.c compares array 'arg' to NULL.
+      "-Wno-tautological-pointer-compare",
     ]
-    if (is_mac) {
-      # Mac Clang warnings.
-      cflags += [
-        # debugXML.c compares array 'arg' to NULL.
-        "-Wno-tautological-pointer-compare",
-      ]
-    }
   }
 
   include_dirs = [
