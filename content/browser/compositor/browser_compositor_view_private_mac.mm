@@ -147,10 +147,8 @@ void BrowserCompositorViewMacInternal::GotAcceleratedIOSurfaceFrame(
   bool bounds_changed = !CGRectEqualToRect(
       new_layer_bounds, [accelerated_layer_ bounds]);
   [accelerated_layer_ setBounds:new_layer_bounds];
-  if (bounds_changed) {
-    [accelerated_layer_ setNeedsDisplay];
-    [accelerated_layer_ displayIfNeeded];
-  }
+  if (bounds_changed)
+    [accelerated_layer_ setNeedsDisplayAndDisplayAndAck];
 
   // If there was a software layer or an old accelerated layer, remove it.
   // Disable the fade-out animation as the layer is removed.

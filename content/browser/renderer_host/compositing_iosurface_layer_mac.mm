@@ -54,7 +54,7 @@ void CompositingIOSurfaceLayerHelper::GotNewFrame() {
   // If reqested, draw immediately and don't bother trying to use the
   // isAsynchronous property to ensure smooth animation.
   if (client_->AcceleratedLayerShouldAckImmediately()) {
-    ImmediatelyForceDisplayAndAck();
+    SetNeedsDisplayAndDisplayAndAck();
   } else {
     if (![layer_ isAsynchronous])
       [layer_ setAsynchronous:YES];
@@ -104,8 +104,29 @@ void CompositingIOSurfaceLayerHelper::AckPendingFrame(bool success) {
   TRACE_COUNTER_ID1("browser", "PendingSwapAck", this, 0);
 }
 
-void CompositingIOSurfaceLayerHelper::ImmediatelyForceDisplayAndAck() {
+void CompositingIOSurfaceLayerHelper::SetNeedsDisplayAndDisplayAndAck() {
+  // Drawing using setNeedsDisplay and displayIfNeeded will result in
+  // subsequent canDrawInCGLContext callbacks getting dropped, and jerky
+  // animation. Disable asynchronous drawing before issuing these calls as a
+  // workaround.
+  // http://crbug.com/395827
+  if ([layer_ isAsynchronous])
+    [layer_ setAsynchronous:NO];
+
   [layer_ setNeedsDisplay];
+  DisplayIfNeededAndAck();
+}
+
+void CompositingIOSurfaceLayerHelper::DisplayIfNeededAndAck() {
+  if (!needs_display_)
+    return;
+
+  // As in SetNeedsDisplayAndDisplayAndAck, disable asynchronous drawing before
+  // issuing displayIfNeeded.
+  // http://crbug.com/395827
+  if ([layer_ isAsynchronous])
+    [layer_ setAsynchronous:NO];
+
   [layer_ displayIfNeeded];
 
   // Calls to setNeedsDisplay can sometimes be ignored, especially if issued
@@ -116,7 +137,7 @@ void CompositingIOSurfaceLayerHelper::ImmediatelyForceDisplayAndAck() {
 }
 
 void CompositingIOSurfaceLayerHelper::TimerFired() {
-  ImmediatelyForceDisplayAndAck();
+  SetNeedsDisplayAndDisplayAndAck();
 }
 
 }  // namespace content
@@ -169,6 +190,14 @@ void CompositingIOSurfaceLayerHelper::TimerFired() {
 
 - (void)gotNewFrame {
   helper_->GotNewFrame();
+}
+
+- (void)setNeedsDisplayAndDisplayAndAck {
+  helper_->SetNeedsDisplayAndDisplayAndAck();
+}
+
+- (void)displayIfNeededAndAck {
+  helper_->DisplayIfNeededAndAck();
 }
 
 // The remaining methods implement the CAOpenGLLayer interface.

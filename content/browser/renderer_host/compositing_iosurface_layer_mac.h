@@ -51,10 +51,14 @@ class CompositingIOSurfaceLayerHelper {
   // frame.
   void DidDraw(bool success);
 
+  // Immediately re-draw the layer, even if the content has not changed, and
+  // ensure that the frame be acked.
+  void SetNeedsDisplayAndDisplayAndAck();
+
+  // Immediately draw the layer, only if one is pending, and ensure that the
+  // frame be acked.
+  void DisplayIfNeededAndAck();
  private:
-  // Immediately draw a frame (disregarding vsync) and ensure that the frame is
-  // acknowledged.
-  void ImmediatelyForceDisplayAndAck();
 
   // Called whenever the frame provided in GotNewFrame should be acknowledged
   // (this may be because it was drawn, or it may be to unblock the
@@ -113,6 +117,13 @@ class CompositingIOSurfaceLayerHelper {
 
 // Called when a new frame is received.
 - (void)gotNewFrame;
+
+// Force a draw immediately (even if this means re-displaying a previously
+// displayed frame).
+- (void)setNeedsDisplayAndDisplayAndAck;
+
+// Force a draw immediately, but only if one was requested.
+- (void)displayIfNeededAndAck;
 
 @end
 

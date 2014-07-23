@@ -1779,8 +1779,8 @@ void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceSuspend() {
-  if (compositing_iosurface_)
-    compositing_iosurface_->UnrefIOSurface();
+  if (render_widget_host_->is_hidden())
+    DestroyCompositedIOSurfaceAndLayer();
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceRelease() {
@@ -2206,7 +2206,7 @@ void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
   // to keep the window and the window's contents in sync.
   [cocoa_view_ displayIfNeeded];
   [software_layer_ displayIfNeeded];
-  [compositing_iosurface_layer_ displayIfNeeded];
+  [compositing_iosurface_layer_ displayIfNeededAndAck];
 }
 
 void RenderWidgetHostViewMac::LayoutLayers() {
@@ -2250,8 +2250,7 @@ void RenderWidgetHostViewMac::LayoutLayers() {
       // displayed. Calling displayIfNeeded will ensure that the right size
       // frame is drawn to the screen.
       // http://crbug.com/350817
-      [compositing_iosurface_layer_ setNeedsDisplay];
-      [compositing_iosurface_layer_ displayIfNeeded];
+      [compositing_iosurface_layer_ setNeedsDisplayAndDisplayAndAck];
     }
   }
 }
