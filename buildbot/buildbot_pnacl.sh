@@ -48,6 +48,22 @@ readonly SCONS_NONSFI_NEWLIB_TESTS="\
 # TODO(mseaborn): Run small_tests_irt with nonsfi_nacl=1 when it passes,
 # instead of the following whitelist of tests.
 readonly SCONS_NONSFI_TESTS="\
+    run_hello_world_test_irt \
+    run_float_test_irt \
+    run_malloc_realloc_calloc_free_test_irt \
+    run_dup_test_irt \
+    run_syscall_test_irt \
+    run_getpid_test_irt \
+    toolchain_tests_irt \
+    skip_nonstable_bitcode=1 \
+    use_newlib_nonsfi_loader=0"
+readonly SCONS_NONSFI_NEWLIB="nonsfi_nacl=1 ${SCONS_NONSFI_NEWLIB_TESTS}"
+readonly SCONS_NONSFI="nonsfi_nacl=1 ${SCONS_NONSFI_TESTS}"
+# Extra non-IRT-using test to run for x86-32 and ARM on toolchain bots.
+# TODO(mseaborn): Run this on the main bots after the toolchain revision is
+# updated.
+readonly SCONS_NONSFI_TC="\
+    ${SCONS_NONSFI} \
     run_clock_get_test \
     run_dup_test \
     run_fcntl_test \
@@ -60,18 +76,7 @@ readonly SCONS_NONSFI_TESTS="\
     run_pwrite_test \
     run_socket_test \
     run_stack_alignment_test \
-    run_syscall_test \
-    run_dup_test_irt \
-    run_float_test_irt \
-    run_getpid_test_irt \
-    run_hello_world_test_irt \
-    run_malloc_realloc_calloc_free_test_irt \
-    run_syscall_test_irt \
-    toolchain_tests_irt \
-    skip_nonstable_bitcode=1 \
-    use_newlib_nonsfi_loader=0"
-readonly SCONS_NONSFI_NEWLIB="nonsfi_nacl=1 ${SCONS_NONSFI_NEWLIB_TESTS}"
-readonly SCONS_NONSFI="nonsfi_nacl=1 ${SCONS_NONSFI_TESTS}"
+    run_syscall_test"
 
 # subset of tests used on toolchain builders
 readonly SCONS_TC_TESTS="small_tests medium_tests"
@@ -471,8 +476,8 @@ tc-tests-all() {
     "run_hello_world_test"
 
   # Test Non-SFI Mode.
-  scons-stage-irt "x86-32" "${scons_flags}" "${SCONS_NONSFI}"
-  scons-stage-irt "arm" "${scons_flags}" "${SCONS_NONSFI}"
+  scons-stage-irt "x86-32" "${scons_flags}" "${SCONS_NONSFI_TC}"
+  scons-stage-irt "arm" "${scons_flags}" "${SCONS_NONSFI_TC}"
 
   # Test unsandboxed mode.
   scons-stage-irt "x86-32" "${scons_flags}" "pnacl_unsandboxed=1" \
