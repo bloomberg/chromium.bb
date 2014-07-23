@@ -13,14 +13,15 @@ namespace chromeos {
 
 // The DebugDaemonClient implementation used on Linux desktop,
 // which does nothing.
-class FakeDebugDaemonClient : public DebugDaemonClient {
+class CHROMEOS_EXPORT FakeDebugDaemonClient : public DebugDaemonClient {
  public:
   FakeDebugDaemonClient();
   virtual ~FakeDebugDaemonClient();
 
   virtual void Init(dbus::Bus* bus) OVERRIDE;
-  virtual void GetDebugLogs(base::File file,
-                            const GetDebugLogsCallback& callback) OVERRIDE;
+  virtual void DumpDebugLogs(bool is_compressed,
+                             base::File file,
+                             const GetDebugLogsCallback& callback) OVERRIDE;
   virtual void SetDebugMode(const std::string& subsystem,
                             const SetDebugModeCallback& callback) OVERRIDE;
   virtual void StartSystemTracing() OVERRIDE;

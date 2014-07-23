@@ -38815,6 +38815,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="843" label="EASYUNLOCKPRIVATE_GENERATEECP256KEYPAIR"/>
   <int value="844" label="EASYUNLOCKPRIVATE_CREATESECUREMESSAGE"/>
   <int value="845" label="EASYUNLOCKPRIVATE_UNWRAPSECUREMESSAGE"/>
+  <int value="846" label="LOGPRIVATE_STARTEVENTRECODER"/>
+  <int value="847" label="LOGPRIVATE_STOPEVENTRECODER"/>
+  <int value="848" label="LOGPRIVATE_DUMPLOGS"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

@@ -187,7 +187,7 @@ void RemoveSymlinkAndLog(const base::FilePath& link_path,
 
 }  // anonymous namespace
 
-base::FilePath GetSessionLogFile(const CommandLine& command_line) {
+base::FilePath GetSessionLogDir(const CommandLine& command_line) {
   base::FilePath log_dir;
   std::string log_dir_str;
   scoped_ptr<base::Environment> env(base::Environment::Create());
@@ -210,7 +210,11 @@ base::FilePath GetSessionLogFile(const CommandLine& command_line) {
     }
     log_dir = log_dir.Append(profile_dir);
   }
-  return log_dir.Append(GetLogFileName().BaseName());
+  return log_dir;
+}
+
+base::FilePath GetSessionLogFile(const CommandLine& command_line) {
+  return GetSessionLogDir(command_line).Append(GetLogFileName().BaseName());
 }
 
 void RedirectChromeLogging(const CommandLine& command_line) {

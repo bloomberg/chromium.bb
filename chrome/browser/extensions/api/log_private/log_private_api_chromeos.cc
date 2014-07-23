@@ -7,12 +7,15 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/api/log_private/filter_handler.h"
 #include "chrome/browser/extensions/api/log_private/log_parser.h"
 #include "chrome/browser/extensions/api/log_private/syslog_parser.h"
@@ -20,21 +23,47 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/api/log_private.h"
+#include "chrome/common/logging_chrome.h"
+#include "content/public/browser/render_process_host.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/granted_file_entry.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/system_logs/debug_log_writer.h"
+#endif
 
 using content::BrowserThread;
 
 namespace events {
-const char kOnAddNetInternalsEntries[] = "logPrivate.onAddNetInternalsEntries";
+const char kOnCapturedEvents[] = "logPrivate.onCapturedEvents";
 }  // namespace events
 
 namespace extensions {
 namespace {
 
+const char kAppLogsSubdir[] = "apps";
+const char kLogDumpsSubdir[] = "log_dumps";
+const char kLogFileNameBase[] = "net-internals";
 const int kNetLogEventDelayMilliseconds = 100;
+
+// Gets sequenced task runner for file specific calls within this API.
+scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner() {
+  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
+  return pool->GetSequencedTaskRunnerWithShutdownBehavior(
+      pool->GetNamedSequenceToken(FileResource::kSequenceToken),
+      base::SequencedWorkerPool::BLOCK_SHUTDOWN);
+}
+
+// Checks if we are running on sequenced task runner thread.
+bool IsRunningOnSequenceThread() {
+  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
+  return pool->IsRunningSequenceOnCurrentThread(
+      pool->GetNamedSequenceToken(FileResource::kSequenceToken));
+}
 
 scoped_ptr<LogParser> CreateLogParser(const std::string& log_type) {
   if (log_type == "syslog")
@@ -61,34 +90,118 @@ void CollectLogInfo(
   }
 }
 
+// Returns directory location of app-specific logs that are initiated with
+// logPrivate.startEventRecorder() calls - /home/chronos/user/log/apps
+base::FilePath GetAppLogDirectory() {
+  return logging::GetSessionLogDir(*CommandLine::ForCurrentProcess())
+      .Append(kAppLogsSubdir);
+}
+
+// Returns directory location where logs dumps initiated with chrome.dumpLogs
+// will be stored - /home/chronos/<user_profile_dir>/Downloads/log_dumps
+base::FilePath GetLogDumpDirectory(content::BrowserContext* context) {
+  const DownloadPrefs* const prefs = DownloadPrefs::FromBrowserContext(context);
+  return prefs->DownloadPath().Append(kLogDumpsSubdir);
+}
+
+// Removes direcotry content of |logs_dumps| and |app_logs_dir| (only for the
+// primary profile).
+void CleanUpLeftoverLogs(bool is_primary_profile,
+                         const base::FilePath& app_logs_dir,
+                         const base::FilePath& logs_dumps) {
+  LOG(WARNING) << "Deleting " << app_logs_dir.value();
+  LOG(WARNING) << "Deleting " << logs_dumps.value();
+
+  DCHECK(IsRunningOnSequenceThread());
+  base::DeleteFile(logs_dumps, true);
+
+  // App-specific logs are stored in /home/chronos/user/log/apps directory that
+  // is shared between all profiles in multi-profile case. We should not
+  // nuke it for non-primary profiles.
+  if (!is_primary_profile)
+    return;
+
+  base::DeleteFile(app_logs_dir, true);
+}
+
 }  // namespace
+
+const char FileResource::kSequenceToken[] = "log_api_files";
+
+FileResource::FileResource(const std::string& owner_extension_id,
+                           const base::FilePath& path)
+    : ApiResource(owner_extension_id), path_(path) {
+}
+
+FileResource::~FileResource() {
+  base::DeleteFile(path_, true);
+}
+
+bool FileResource::IsPersistent() const {
+  return false;
+}
 
 // static
 LogPrivateAPI* LogPrivateAPI::Get(content::BrowserContext* context) {
-  return GetFactoryInstance()->Get(context);
+  LogPrivateAPI* api = GetFactoryInstance()->Get(context);
+  api->Initialize();
+  return api;
 }
 
 LogPrivateAPI::LogPrivateAPI(content::BrowserContext* context)
     : browser_context_(context),
       logging_net_internals_(false),
-      extension_registry_observer_(this) {
-  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
+      event_sink_(api::log_private::EVENT_SINK_CAPTURE),
+      extension_registry_observer_(this),
+      log_file_resources_(context),
+      initialized_(false) {
 }
 
 LogPrivateAPI::~LogPrivateAPI() {
 }
 
-void LogPrivateAPI::StartNetInternalsWatch(const std::string& extension_id) {
+void LogPrivateAPI::StartNetInternalsWatch(
+    const std::string& extension_id,
+    api::log_private::EventSink event_sink,
+    const base::Closure& closure) {
   net_internal_watches_.insert(extension_id);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+
+  // Nuke any leftover app-specific or dumped log files from previous sessions.
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::IO,
+      FROM_HERE,
       base::Bind(&LogPrivateAPI::MaybeStartNetInternalLogging,
-                 base::Unretained(this)));
+                 base::Unretained(this),
+                 extension_id,
+                 g_browser_process->io_thread(),
+                 event_sink),
+      closure);
 }
 
-void LogPrivateAPI::StopNetInternalsWatch(const std::string& extension_id) {
+void LogPrivateAPI::StopNetInternalsWatch(const std::string& extension_id,
+                                          const base::Closure& closure) {
   net_internal_watches_.erase(extension_id);
-  MaybeStopNetInternalLogging();
+  MaybeStopNetInternalLogging(closure);
+}
+
+void LogPrivateAPI::StopAllWatches(const std::string& extension_id,
+                                   const base::Closure& closure) {
+  StopNetInternalsWatch(extension_id, closure);
+}
+
+void LogPrivateAPI::RegisterTempFile(const std::string& owner_extension_id,
+                                     const base::FilePath& file_path) {
+  if (!IsRunningOnSequenceThread()) {
+    GetSequencedTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&LogPrivateAPI::RegisterTempFile,
+                   base::Unretained(this),
+                   owner_extension_id,
+                   file_path));
+    return;
+  }
+
+  log_file_resources_.Add(new FileResource(owner_extension_id, file_path));
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<LogPrivateAPI> >
@@ -101,7 +214,13 @@ LogPrivateAPI::GetFactoryInstance() {
 }
 
 void LogPrivateAPI::OnAddEntry(const net::NetLog::Entry& entry) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // We could receive events on whatever thread they happen to be generated,
+  // since we are only interested in network events, we should ignore any
+  // other thread than BrowserThread::IO.
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    return;
+  }
+
   if (!pending_entries_.get()) {
     pending_entries_.reset(new base::ListValue());
     BrowserThread::PostDelayedTask(
@@ -128,44 +247,150 @@ void LogPrivateAPI::AddEntriesOnUI(scoped_ptr<base::ListValue> value) {
     // Create the event's arguments value.
     scoped_ptr<base::ListValue> event_args(new base::ListValue());
     event_args->Append(value->DeepCopy());
-    scoped_ptr<Event> event(new Event(events::kOnAddNetInternalsEntries,
-                                      event_args.Pass()));
+    scoped_ptr<Event> event(
+        new Event(events::kOnCapturedEvents, event_args.Pass()));
     EventRouter::Get(browser_context_)
         ->DispatchEventToExtension(*ix, event.Pass());
   }
 }
 
-void LogPrivateAPI::MaybeStartNetInternalLogging() {
+void LogPrivateAPI::InitializeNetLogger(const std::string& owner_extension_id,
+                                        net::NetLogLogger** net_log_logger) {
+  DCHECK(IsRunningOnSequenceThread());
+  (*net_log_logger) = NULL;
+
+  // Create app-specific subdirectory in session logs folder.
+  base::FilePath app_log_dir = GetAppLogDirectory().Append(owner_extension_id);
+  if (!base::DirectoryExists(app_log_dir)) {
+    if (!base::CreateDirectory(app_log_dir)) {
+      LOG(ERROR) << "Could not create dir " << app_log_dir.value();
+      return;
+    }
+  }
+
+  base::FilePath file_path = app_log_dir.Append(kLogFileNameBase);
+  file_path = logging::GenerateTimestampedName(file_path, base::Time::Now());
+  FILE* file = NULL;
+  file = fopen(file_path.value().c_str(), "w");
+  if (file == NULL) {
+    LOG(ERROR) << "Could not open " << file_path.value();
+    return;
+  }
+
+  RegisterTempFile(owner_extension_id, file_path);
+  scoped_ptr<base::Value> constants(net::NetLogLogger::GetConstants());
+  *net_log_logger = new net::NetLogLogger(file, *constants);
+  (*net_log_logger)->set_log_level(net::NetLog::LOG_ALL_BUT_BYTES);
+}
+
+void LogPrivateAPI::StartObservingNetEvents(
+    IOThread* io_thread,
+    net::NetLogLogger** net_log_logger) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!(*net_log_logger))
+    return;
+
+  net_log_logger_.reset(*net_log_logger);
+  net_log_logger_->StartObserving(io_thread->net_log());
+}
+
+void LogPrivateAPI::MaybeStartNetInternalLogging(
+    const std::string& caller_extension_id,
+    IOThread* io_thread,
+    api::log_private::EventSink event_sink) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!logging_net_internals_) {
-    g_browser_process->io_thread()->net_log()->AddThreadSafeObserver(
-        this, net::NetLog::LOG_ALL_BUT_BYTES);
     logging_net_internals_ = true;
+    event_sink_ = event_sink;
+    switch (event_sink_) {
+      case api::log_private::EVENT_SINK_CAPTURE: {
+        io_thread->net_log()->AddThreadSafeObserver(
+            this, net::NetLog::LOG_ALL_BUT_BYTES);
+        break;
+      }
+      case api::log_private::EVENT_SINK_FILE: {
+        net::NetLogLogger** net_logger_ptr = new net::NetLogLogger* [1];
+        // Initialize net logger on the blocking pool and start observing event
+        // with in on IO thread.
+        GetSequencedTaskRunner()->PostTaskAndReply(
+            FROM_HERE,
+            base::Bind(&LogPrivateAPI::InitializeNetLogger,
+                       base::Unretained(this),
+                       caller_extension_id,
+                       net_logger_ptr),
+            base::Bind(&LogPrivateAPI::StartObservingNetEvents,
+                       base::Unretained(this),
+                       io_thread,
+                       base::Owned(net_logger_ptr)));
+        break;
+      }
+      case api::log_private::EVENT_SINK_NONE: {
+        NOTREACHED();
+        break;
+      }
+    }
   }
 }
 
-void LogPrivateAPI::MaybeStopNetInternalLogging() {
+void LogPrivateAPI::MaybeStopNetInternalLogging(const base::Closure& closure) {
   if (net_internal_watches_.empty()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&LogPrivateAPI:: StopNetInternalLogging,
-                   base::Unretained(this)));
+    if (closure.is_null()) {
+      BrowserThread::PostTask(
+          BrowserThread::IO,
+          FROM_HERE,
+          base::Bind(&LogPrivateAPI::StopNetInternalLogging,
+                     base::Unretained(this)));
+    } else {
+      BrowserThread::PostTaskAndReply(
+          BrowserThread::IO,
+          FROM_HERE,
+          base::Bind(&LogPrivateAPI::StopNetInternalLogging,
+                     base::Unretained(this)),
+          closure);
+    }
   }
 }
 
 void LogPrivateAPI::StopNetInternalLogging() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (net_log() && logging_net_internals_) {
-    net_log()->RemoveThreadSafeObserver(this);
     logging_net_internals_ = false;
+    switch (event_sink_) {
+      case api::log_private::EVENT_SINK_CAPTURE:
+        net_log()->RemoveThreadSafeObserver(this);
+        break;
+      case api::log_private::EVENT_SINK_FILE:
+        net_log_logger_->StopObserving();
+        net_log_logger_.reset();
+        break;
+      case api::log_private::EVENT_SINK_NONE:
+        NOTREACHED();
+        break;
+    }
   }
+}
+
+void LogPrivateAPI::Initialize() {
+  if (initialized_)
+    return;
+
+  // Clean up temp files and folders from the previous sessions.
+  initialized_ = true;
+  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
+  GetSequencedTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&CleanUpLeftoverLogs,
+                 Profile::FromBrowserContext(browser_context_) ==
+                     ProfileManager::GetPrimaryUserProfile(),
+                 GetAppLogDirectory(),
+                 GetLogDumpDirectory(browser_context_)));
 }
 
 void LogPrivateAPI::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
     UnloadedExtensionInfo::Reason reason) {
-  StopNetInternalsWatch(extension->id());
+  StopNetInternalsWatch(extension->id(), base::Closure());
 }
 
 LogPrivateGetHistoricalFunction::LogPrivateGetHistoricalFunction() {
@@ -208,30 +433,117 @@ void LogPrivateGetHistoricalFunction::OnSystemLogsLoaded(
   SendResponse(true);
 }
 
-LogPrivateStartNetInternalsWatchFunction::
-LogPrivateStartNetInternalsWatchFunction() {
+LogPrivateStartEventRecorderFunction::LogPrivateStartEventRecorderFunction() {
 }
 
-LogPrivateStartNetInternalsWatchFunction::
-~LogPrivateStartNetInternalsWatchFunction() {
+LogPrivateStartEventRecorderFunction::~LogPrivateStartEventRecorderFunction() {
 }
 
-bool LogPrivateStartNetInternalsWatchFunction::RunSync() {
-  LogPrivateAPI::Get(GetProfile())->StartNetInternalsWatch(extension_id());
+bool LogPrivateStartEventRecorderFunction::RunAsync() {
+  scoped_ptr<api::log_private::StartEventRecorder::Params> params(
+      api::log_private::StartEventRecorder::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  switch (params->event_type) {
+    case api::log_private::EVENT_TYPE_NETWORK:
+      LogPrivateAPI::Get(Profile::FromBrowserContext(browser_context()))
+          ->StartNetInternalsWatch(
+              extension_id(),
+              params->sink,
+              base::Bind(
+                  &LogPrivateStartEventRecorderFunction::OnEventRecorderStarted,
+                  this));
+      break;
+    case api::log_private::EVENT_TYPE_NONE:
+      NOTREACHED();
+      return false;
+  }
+
   return true;
 }
 
-LogPrivateStopNetInternalsWatchFunction::
-LogPrivateStopNetInternalsWatchFunction() {
+void LogPrivateStartEventRecorderFunction::OnEventRecorderStarted() {
+  SendResponse(true);
 }
 
-LogPrivateStopNetInternalsWatchFunction::
-~LogPrivateStopNetInternalsWatchFunction() {
+LogPrivateStopEventRecorderFunction::LogPrivateStopEventRecorderFunction() {
 }
 
-bool LogPrivateStopNetInternalsWatchFunction::RunSync() {
-  LogPrivateAPI::Get(GetProfile())->StopNetInternalsWatch(extension_id());
+LogPrivateStopEventRecorderFunction::~LogPrivateStopEventRecorderFunction() {
+}
+
+bool LogPrivateStopEventRecorderFunction::RunAsync() {
+  scoped_ptr<api::log_private::StopEventRecorder::Params> params(
+      api::log_private::StopEventRecorder::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  switch (params->event_type) {
+    case api::log_private::EVENT_TYPE_NETWORK:
+      LogPrivateAPI::Get(Profile::FromBrowserContext(browser_context()))
+          ->StopNetInternalsWatch(
+              extension_id(),
+              base::Bind(
+                  &LogPrivateStopEventRecorderFunction::OnEventRecorderStopped,
+                  this));
+      break;
+    case api::log_private::EVENT_TYPE_NONE:
+      NOTREACHED();
+      return false;
+  }
   return true;
+}
+
+void LogPrivateStopEventRecorderFunction::OnEventRecorderStopped() {
+  SendResponse(true);
+}
+
+LogPrivateDumpLogsFunction::LogPrivateDumpLogsFunction() {
+}
+
+LogPrivateDumpLogsFunction::~LogPrivateDumpLogsFunction() {
+}
+
+bool LogPrivateDumpLogsFunction::RunAsync() {
+  LogPrivateAPI::Get(Profile::FromBrowserContext(browser_context()))
+      ->StopAllWatches(
+          extension_id(),
+          base::Bind(&LogPrivateDumpLogsFunction::OnStopAllWatches, this));
+  return true;
+}
+
+void LogPrivateDumpLogsFunction::OnStopAllWatches() {
+  chromeos::DebugLogWriter::StoreCombinedLogs(
+      GetLogDumpDirectory(browser_context()).Append(extension_id()),
+      FileResource::kSequenceToken,
+      base::Bind(&LogPrivateDumpLogsFunction::OnStoreLogsCompleted, this));
+}
+
+void LogPrivateDumpLogsFunction::OnStoreLogsCompleted(
+    const base::FilePath& log_path,
+    bool succeeded) {
+  if (succeeded) {
+    LogPrivateAPI::Get(Profile::FromBrowserContext(browser_context()))
+        ->RegisterTempFile(extension_id(), log_path);
+  }
+
+  scoped_ptr<base::DictionaryValue> response(new base::DictionaryValue());
+  extensions::GrantedFileEntry file_entry =
+      extensions::app_file_handler_util::CreateFileEntry(
+          Profile::FromBrowserContext(browser_context()),
+          GetExtension(),
+          render_view_host_->GetProcess()->GetID(),
+          log_path,
+          false);
+
+  base::DictionaryValue* entry = new base::DictionaryValue();
+  entry->SetString("fileSystemId", file_entry.filesystem_id);
+  entry->SetString("baseName", file_entry.registered_name);
+  entry->SetString("id", file_entry.id);
+  entry->SetBoolean("isDirectory", false);
+  base::ListValue* entry_list = new base::ListValue();
+  entry_list->Append(entry);
+  response->Set("entries", entry_list);
+  response->SetBoolean("multiple", false);
+  SetResult(response.release());
+  SendResponse(succeeded);
 }
 
 }  // namespace extensions

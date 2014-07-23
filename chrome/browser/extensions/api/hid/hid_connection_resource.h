@@ -25,14 +25,12 @@ class HidConnectionResource : public ApiResource {
     return connection_;
   }
 
- private:
-  friend class ApiResourceManager<HidConnectionResource>;
-
   static const char* service_name() { return "HidConnectionResourceManager"; }
 
   static const content::BrowserThread::ID kThreadId =
       content::BrowserThread::FILE;
 
+ private:
   scoped_refptr<device::HidConnection> connection_;
 
   DISALLOW_COPY_AND_ASSIGN(HidConnectionResource);

@@ -29,9 +29,11 @@ class CHROMEOS_EXPORT DebugDaemonClient : public DBusClient {
   typedef base::Callback<void(bool succeeded)> GetDebugLogsCallback;
 
   // Requests to store debug logs into |file| and calls |callback|
-  // when completed. Debug logs will be stored in the .tgz format.
-  virtual void GetDebugLogs(base::File file,
-                            const GetDebugLogsCallback& callback) = 0;
+  // when completed. Debug logs will be stored in the .tgz if
+  // |is_compressed| is true, otherwise in logs will be stored in .tar format.
+  virtual void DumpDebugLogs(bool is_compressed,
+                             base::File file,
+                             const GetDebugLogsCallback& callback) = 0;
 
   // Called once SetDebugMode() is complete. Takes one parameter:
   // - succeeded: debug mode was changed successfully.

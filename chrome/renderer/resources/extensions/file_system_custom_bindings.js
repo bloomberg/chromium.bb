@@ -5,110 +5,13 @@
 // Custom binding for the fileSystem API.
 
 var binding = require('binding').Binding.create('fileSystem');
-
-var fileSystemNatives = requireNative('file_system_natives');
-var GetIsolatedFileSystem = fileSystemNatives.GetIsolatedFileSystem;
-var lastError = require('lastError');
 var sendRequest = require('sendRequest');
-var GetModuleSystem = requireNative('v8_context').GetModuleSystem;
-// TODO(sammc): Don't require extension. See http://crbug.com/235689.
-var GetExtensionViews = requireNative('runtime').GetExtensionViews;
 
-// Fallback to using the current window if no background page is running.
-var backgroundPage = GetExtensionViews(-1, 'BACKGROUND')[0] || window;
-var backgroundPageModuleSystem = GetModuleSystem(backgroundPage);
-
-// All windows use the bindFileEntryCallback from the background page so their
-// FileEntry objects have the background page's context as their own. This
-// allows them to be used from other windows (including the background page)
-// after the original window is closed.
-if (window == backgroundPage) {
-  var bindFileEntryCallback = function(functionName, apiFunctions) {
-    apiFunctions.setCustomCallback(functionName,
-        function(name, request, response) {
-      if (request.callback && response) {
-        var callback = request.callback;
-        request.callback = null;
-
-        var entries = [];
-        var hasError = false;
-
-        var getEntryError = function(fileError) {
-          if (!hasError) {
-            hasError = true;
-            lastError.run(
-                'fileSystem.' + functionName,
-                'Error getting fileEntry, code: ' + fileError.code,
-                request.stack,
-                callback);
-          }
-        }
-
-        // Loop through the response entries and asynchronously get the
-        // FileEntry for each. We use hasError to ensure that only the first
-        // error is reported. Note that an error can occur either during the
-        // loop or in the asynchronous error callback to getFile.
-        $Array.forEach(response.entries, function(entry) {
-          if (hasError)
-            return;
-          var fileSystemId = entry.fileSystemId;
-          var baseName = entry.baseName;
-          var id = entry.id;
-          var fs = GetIsolatedFileSystem(fileSystemId);
-
-          try {
-            var getEntryCallback = function(fileEntry) {
-              if (hasError)
-                return;
-              entryIdManager.registerEntry(id, fileEntry);
-              entries.push(fileEntry);
-              // Once all entries are ready, pass them to the callback. In the
-              // event of an error, this condition will never be satisfied so
-              // the callback will not be called with any entries.
-              if (entries.length == response.entries.length) {
-                if (response.multiple) {
-                  sendRequest.safeCallbackApply(
-                      'fileSystem.' + functionName, request, callback,
-                      [entries]);
-                } else {
-                  sendRequest.safeCallbackApply(
-                      'fileSystem.' + functionName, request, callback,
-                      [entries[0]]);
-                }
-              }
-            }
-            // TODO(koz): fs.root.getFile() makes a trip to the browser process,
-            // but it might be possible avoid that by calling
-            // WebDOMFileSystem::createV8Entry().
-            if (entry.isDirectory) {
-              fs.root.getDirectory(baseName, {}, getEntryCallback,
-                                   getEntryError);
-            } else {
-              fs.root.getFile(baseName, {}, getEntryCallback, getEntryError);
-            }
-          } catch (e) {
-            if (!hasError) {
-              hasError = true;
-              lastError.run('fileSystem.' + functionName,
-                            'Error getting fileEntry: ' + e.stack,
-                            request.stack,
-                            callback);
-            }
-          }
-        });
-      }
-    });
-  };
-  var entryIdManager = require('entryIdManager');
-} else {
-  // Force the fileSystem API to be loaded in the background page. Using
-  // backgroundPageModuleSystem.require('fileSystem') is insufficient as
-  // requireNative is only allowed while lazily loading an API.
-  backgroundPage.chrome.fileSystem;
-  var bindFileEntryCallback = backgroundPageModuleSystem.require(
-      'fileSystem').bindFileEntryCallback;
-  var entryIdManager = backgroundPageModuleSystem.require('entryIdManager');
-}
+var getFileBindingsForApi =
+    require('fileEntryBindingUtil').getFileBindingsForApi;
+var fileBindings = getFileBindingsForApi('fileSystem');
+var bindFileEntryCallback = fileBindings.bindFileEntryCallback;
+var entryIdManager = fileBindings.entryIdManager;
 
 binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;

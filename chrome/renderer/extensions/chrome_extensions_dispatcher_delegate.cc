@@ -197,6 +197,7 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("imageWriterPrivate",
                              IDR_IMAGE_WRITER_PRIVATE_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("input.ime", IDR_INPUT_IME_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("logPrivate", IDR_LOG_PRIVATE_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("mediaGalleries",
                              IDR_MEDIA_GALLERIES_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("notifications",
@@ -238,6 +239,8 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
 
   // Platform app sources that are not API-specific..
   source_map->RegisterSource("appView", IDR_APP_VIEW_JS);
+  source_map->RegisterSource("fileEntryBindingUtil",
+                             IDR_FILE_ENTRY_BINDING_UTIL_JS);
   source_map->RegisterSource("tagWatcher", IDR_TAG_WATCHER_JS);
   source_map->RegisterSource("webViewInternal",
                              IDR_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS);

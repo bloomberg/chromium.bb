@@ -979,6 +979,8 @@
         'browser/chromeos/system/timezone_util.h',
         'browser/chromeos/system_logs/command_line_log_source.cc',
         'browser/chromeos/system_logs/command_line_log_source.h',
+        'browser/chromeos/system_logs/debug_log_writer.cc',
+        'browser/chromeos/system_logs/debug_log_writer.h',
         'browser/chromeos/system_logs/dbus_log_source.cc',
         'browser/chromeos/system_logs/dbus_log_source.h',
         'browser/chromeos/system_logs/debug_daemon_log_source.cc',

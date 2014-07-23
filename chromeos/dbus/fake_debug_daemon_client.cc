@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fake_debug_daemon_client.h"
+#include "chromeos/dbus/fake_debug_daemon_client.h"
 
 #include <map>
 #include <string>
@@ -21,8 +21,10 @@ FakeDebugDaemonClient::~FakeDebugDaemonClient() {}
 
 void FakeDebugDaemonClient::Init(dbus::Bus* bus) {}
 
-void FakeDebugDaemonClient::GetDebugLogs(base::File file,
-                                         const GetDebugLogsCallback& callback) {
+void FakeDebugDaemonClient::DumpDebugLogs(
+    bool is_compressed,
+    base::File file,
+    const GetDebugLogsCallback& callback) {
   callback.Run(false);
 }
 

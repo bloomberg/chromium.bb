@@ -46,9 +46,9 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   virtual ~DebugDaemonClientImpl() {}
 
   // DebugDaemonClient override.
-  virtual void GetDebugLogs(base::File file,
-                            const GetDebugLogsCallback& callback) OVERRIDE {
-
+  virtual void DumpDebugLogs(bool is_compressed,
+                             base::File file,
+                             const GetDebugLogsCallback& callback) OVERRIDE {
     dbus::FileDescriptor* file_descriptor = new dbus::FileDescriptor;
     file_descriptor->PutValue(file.TakePlatformFile());
     // Punt descriptor validity check to a worker thread; on return we'll
@@ -59,6 +59,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                    base::Unretained(file_descriptor)),
         base::Bind(&DebugDaemonClientImpl::OnCheckValidityGetDebugLogs,
                    weak_ptr_factory_.GetWeakPtr(),
+                   is_compressed,
                    base::Owned(file_descriptor),
                    callback),
         false);
@@ -313,13 +314,14 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 
  private:
   // Called when a CheckValidity response is received.
-  void OnCheckValidityGetDebugLogs(dbus::FileDescriptor* file_descriptor,
+  void OnCheckValidityGetDebugLogs(bool is_compressed,
+                                   dbus::FileDescriptor* file_descriptor,
                                    const GetDebugLogsCallback& callback) {
     // Issue the dbus request to get debug logs.
-    dbus::MethodCall method_call(
-        debugd::kDebugdInterface,
-        debugd::kGetDebugLogs);
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kDumpDebugLogs);
     dbus::MessageWriter writer(&method_call);
+    writer.AppendBool(is_compressed);
     writer.AppendFileDescriptor(*file_descriptor);
 
     debugdaemon_proxy_->CallMethod(

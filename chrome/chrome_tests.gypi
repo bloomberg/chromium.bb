@@ -1094,6 +1094,7 @@
         'browser/extensions/api/image_writer_private/image_writer_private_apitest.cc',
         'browser/extensions/api/image_writer_private/test_utils.cc',
         'browser/extensions/api/input_ime/input_ime_apitest_chromeos.cc',
+        'browser/extensions/api/log_private/log_private_apitest_chromeos.cc',
         'browser/extensions/api/management/management_api_browsertest.cc',
         'browser/extensions/api/management/management_apitest.cc',
         'browser/extensions/api/management/management_browsertest.cc',

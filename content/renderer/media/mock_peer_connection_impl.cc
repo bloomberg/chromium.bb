@@ -286,12 +286,12 @@ bool MockPeerConnectionImpl::GetStats(
     report2.id = "nontrack";
     report2.type = "generic";
     report2.timestamp = 44;
-    report2.values.push_back(value);
-    webrtc::StatsReport::Value value2 = {
-      webrtc::StatsReport::kStatsValueNameFingerprintAlgorithm,
-      "somevalue"
-    };
-    report2.values.push_back(value2);
+      report2.values.push_back(value);
+      webrtc::StatsReport::Value value2 = {
+        webrtc::StatsReport::kStatsValueNameFingerprintAlgorithm,
+        "somevalue"
+      };
+      report2.values.push_back(value2);
   }
   // Note that the callback is synchronous, not asynchronous; it will
   // happen before the request call completes.

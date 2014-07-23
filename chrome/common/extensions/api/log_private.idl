@@ -46,14 +46,45 @@ namespace logPrivate {
 
   callback GetHistoricalCallback = void (Result res);
 
+  callback DumpLogsCallback = void ([instanceOf=FileEntry] object logs);
+
+  callback CompletionCallback = void ();
+
+  // The type of the events to be recorded.
+  enum EventType { network };
+
+  // The type of the event sink where captured events will be sent.
+  enum EventSink {
+    // Events will be sent to the webapp via onCapturedEvents. 
+    capture,
+    // Events will be sent to a log file which can be collected
+    // through archive generated with dumpLogs() call.
+    file
+  };
+
   interface Functions {
     // Get the existing logs from ChromeOS system.
     static void getHistorical(Filter filter, GetHistoricalCallback callback);
-    static void startNetInternalsWatch();
-    static void stopNetInternalsWatch();
+    // Start capturing events of specific type.
+    static void startEventRecorder(EventType eventType,
+                                   EventSink sink,
+                                   CompletionCallback callback);
+    // Stop  capturing events of specific type.
+    static void stopEventRecorder(EventType eventType, CompletionCallback callback);
+    // Dump all system and captured events into a .tar.gz file.
+    // The archive file will contain following top level directories:
+    //   /var/log/
+    //       ChromeOS system logs.
+    //   /home/chronos/user/log/
+    //       Session specific logs (chrome app logs).
+    //   /home/chronos/user/log/apps/<app_id>
+    //       Contains webapp specific logs including those collected with
+    //       startEventRecorder(..., sink="file") call.
+    static void dumpLogs(DumpLogsCallback callback);
   };
 
   interface Events {
-    static void onAddNetInternalsEntries(object[] entries);
+    // Receives events of type which is currently being captured.
+    static void onCapturedEvents(object[] entries);
   };
 };

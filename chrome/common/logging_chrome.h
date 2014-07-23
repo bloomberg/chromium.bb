@@ -35,6 +35,9 @@ void InitChromeLogging(const base::CommandLine& command_line,
                        OldFileDeletionState delete_old_log_file);
 
 #if defined(OS_CHROMEOS)
+// Get the log file directory path.
+base::FilePath GetSessionLogDir(const base::CommandLine& command_line);
+
 // Get the log file location.
 base::FilePath GetSessionLogFile(const base::CommandLine& command_line);
 
