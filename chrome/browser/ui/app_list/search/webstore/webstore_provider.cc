@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -28,13 +27,6 @@ const char kKeyResults[] = "results";
 const char kKeyId[] = "id";
 const char kKeyLocalizedName[] = "localized_name";
 const char kKeyIconUrl[] = "icon_url";
-
-// Returns true if the launcher should send queries to the web store server.
-bool UseWebstoreSearch() {
-  const char kFieldTrialName[] = "LauncherUseWebstoreSearch";
-  const char kEnable[] = "Enable";
-  return base::FieldTrialList::FindFullName(kFieldTrialName) == kEnable;
-}
 
 }  // namespace
 
@@ -62,17 +54,15 @@ void WebstoreProvider::Start(const base::string16& query) {
       return;
   }
 
-  if (UseWebstoreSearch()) {
-    if (!webstore_search_) {
-      webstore_search_.reset(new JSONResponseFetcher(
-          base::Bind(&WebstoreProvider::OnWebstoreSearchFetched,
-                     base::Unretained(this)),
-          profile_->GetRequestContext()));
-    }
-
-    StartThrottledQuery(base::Bind(&WebstoreProvider::StartQuery,
-                                   base::Unretained(this)));
+  if (!webstore_search_) {
+    webstore_search_.reset(new JSONResponseFetcher(
+        base::Bind(&WebstoreProvider::OnWebstoreSearchFetched,
+                   base::Unretained(this)),
+        profile_->GetRequestContext()));
   }
+
+  StartThrottledQuery(base::Bind(&WebstoreProvider::StartQuery,
+                                 base::Unretained(this)));
 
   // Add a placeholder result which when clicked will run the user's query in a
   // browser. This placeholder is removed when the search results arrive.
