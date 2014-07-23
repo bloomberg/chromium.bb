@@ -547,29 +547,15 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
         return;
     }
 
-    // Since the m_frontColorBuffer was produced and sent to the compositor, it cannot be bound to an fbo.
-    // We have to make a copy of it here and bind that copy instead.
-    // FIXME: That's not true any more, provided we don't change texture
-    // parameters.
-    unsigned sourceTexture = createColorTexture();
-    texImage2DResourceSafe(GL_TEXTURE_2D, 0, m_internalColorFormat, m_size.width(), m_size.height(), 0, m_colorFormat, GL_UNSIGNED_BYTE);
-    m_context->copyTextureCHROMIUM(GL_TEXTURE_2D, m_frontColorBuffer.textureId, sourceTexture, 0, GL_RGBA, GL_UNSIGNED_BYTE);
-
-    // Since we're using the same context as WebGL, we have to restore any state we change (in this case, just the framebuffer binding).
-    // FIXME: The WebGLRenderingContext tracks the current framebuffer binding, it would be slightly more efficient to use this value
-    // rather than querying it off of the context.
-    GLint previousFramebuffer = 0;
-    m_context->getIntegerv(GL_FRAMEBUFFER_BINDING, &previousFramebuffer);
-
     Platform3DObject framebuffer = m_context->createFramebuffer();
     m_context->bindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-    m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sourceTexture, 0);
+    // We don't need to bind a copy of m_frontColorBuffer since the texture parameters are untouched.
+    m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_frontColorBuffer.textureId, 0);
 
     paintFramebufferToCanvas(framebuffer, size().width(), size().height(), !m_actualAttributes.premultipliedAlpha, imageBuffer);
     m_context->deleteFramebuffer(framebuffer);
-    m_context->deleteTexture(sourceTexture);
-
-    m_context->bindFramebuffer(GL_FRAMEBUFFER, previousFramebuffer);
+    // Since we're using the same context as WebGL, we have to restore any state we change (in this case, just the framebuffer binding).
+    restoreFramebufferBinding();
 }
 
 void DrawingBuffer::clearPlatformLayer()
