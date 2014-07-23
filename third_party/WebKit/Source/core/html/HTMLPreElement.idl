@@ -19,7 +19,7 @@
  */
 
 interface HTMLPreElement : HTMLElement {
-    [Reflect] attribute long width;
+    [Reflect, MeasureAs=HTMLPreElementWidth] attribute long width;
 
     // Extensions
     [Reflect, MeasureAs=HTMLPreElementWrap] attribute boolean wrap;
