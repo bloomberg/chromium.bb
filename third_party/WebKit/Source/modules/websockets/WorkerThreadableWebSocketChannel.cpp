@@ -249,12 +249,12 @@ void WorkerThreadableWebSocketChannel::Peer::initialize(ExecutionContext* contex
 void WorkerThreadableWebSocketChannel::Peer::destroy()
 {
     ASSERT(isMainThread());
-    if (m_mainWebSocketChannel)
-        m_mainWebSocketChannel->disconnect();
+    disconnect();
 
 #if ENABLE(OILPAN)
     m_keepAlive = nullptr;
     m_syncHelper->signalWorkerThread();
+    m_syncHelper = nullptr;
 #else
     delete this;
 #endif
@@ -263,6 +263,7 @@ void WorkerThreadableWebSocketChannel::Peer::destroy()
 void WorkerThreadableWebSocketChannel::Peer::connect(const KURL& url, const String& protocol)
 {
     ASSERT(isMainThread());
+    ASSERT(m_syncHelper);
     if (!m_mainWebSocketChannel) {
         m_syncHelper->setConnectRequestResult(false);
     } else {
@@ -275,6 +276,7 @@ void WorkerThreadableWebSocketChannel::Peer::connect(const KURL& url, const Stri
 void WorkerThreadableWebSocketChannel::Peer::send(const String& message)
 {
     ASSERT(isMainThread());
+    ASSERT(m_syncHelper);
     if (!m_mainWebSocketChannel) {
         m_syncHelper->setSendRequestResult(WebSocketChannel::SendFail);
     } else {
@@ -287,6 +289,7 @@ void WorkerThreadableWebSocketChannel::Peer::send(const String& message)
 void WorkerThreadableWebSocketChannel::Peer::sendArrayBuffer(PassOwnPtr<Vector<char> > data)
 {
     ASSERT(isMainThread());
+    ASSERT(m_syncHelper);
     if (!m_mainWebSocketChannel) {
         m_syncHelper->setSendRequestResult(WebSocketChannel::SendFail);
     } else {
@@ -299,6 +302,7 @@ void WorkerThreadableWebSocketChannel::Peer::sendArrayBuffer(PassOwnPtr<Vector<c
 void WorkerThreadableWebSocketChannel::Peer::sendBlob(PassRefPtr<BlobDataHandle> blobData)
 {
     ASSERT(isMainThread());
+    ASSERT(m_syncHelper);
     if (!m_mainWebSocketChannel) {
         m_syncHelper->setSendRequestResult(WebSocketChannel::SendFail);
     } else {
@@ -311,6 +315,7 @@ void WorkerThreadableWebSocketChannel::Peer::sendBlob(PassRefPtr<BlobDataHandle>
 void WorkerThreadableWebSocketChannel::Peer::close(int code, const String& reason)
 {
     ASSERT(isMainThread());
+    ASSERT(m_syncHelper);
     if (!m_mainWebSocketChannel)
         return;
     m_mainWebSocketChannel->close(code, reason);
@@ -319,6 +324,7 @@ void WorkerThreadableWebSocketChannel::Peer::close(int code, const String& reaso
 void WorkerThreadableWebSocketChannel::Peer::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
 {
     ASSERT(isMainThread());
+    ASSERT(m_syncHelper);
     if (!m_mainWebSocketChannel)
         return;
     m_mainWebSocketChannel->fail(reason, level, sourceURL, lineNumber);
@@ -327,6 +333,7 @@ void WorkerThreadableWebSocketChannel::Peer::fail(const String& reason, MessageL
 void WorkerThreadableWebSocketChannel::Peer::disconnect()
 {
     ASSERT(isMainThread());
+    ASSERT(m_syncHelper);
     if (!m_mainWebSocketChannel)
         return;
     m_mainWebSocketChannel->disconnect();
