@@ -374,6 +374,9 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_TYPE_MIDI_SYSEX" desc="The label used for MIDI system exclusive message permission controls in the Website Settings popup.">
         MIDI full control
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_TYPE_STORAGE" desc="The label used for the local storage type in the Manage Sites settings.">
+        Storage
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_SHOW_SITE_DATA" desc="The label of the Show Cookies and Site Data link in the site data section of the Website Settings popup.">
         Show cookies and site data
       </message>

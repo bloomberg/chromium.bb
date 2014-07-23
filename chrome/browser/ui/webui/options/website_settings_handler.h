@@ -9,7 +9,9 @@
 
 #include "base/basictypes.h"
 #include "base/macros.h"
+#include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -20,6 +22,9 @@ class WebsiteSettingsHandler : public OptionsPageUIHandler {
  public:
   WebsiteSettingsHandler();
   virtual ~WebsiteSettingsHandler();
+
+  typedef std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>
+      LocalStorageList;
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
@@ -35,11 +40,26 @@ class WebsiteSettingsHandler : public OptionsPageUIHandler {
   // |args| is the filter string.
   void HandleUpdateSearchResults(const base::ListValue* args);
 
-  // Get all origins with Content Settings for the last given content setting,
-  // filter them by |filter|, and update the page.
-  void UpdateOrigins(const std::string& filter);
+  // Update the page with all origins that are using local storage.
+  void HandleUpdateLocalStorage(const base::ListValue* args);
 
-  ContentSettingsType last_setting_;
+  // Callback method to be invoked when fetching the data is complete.
+  void OnLocalStorageFetched(const LocalStorageList& storage);
+
+  // Get all origins with Content Settings for the last given content setting,
+  // filter them by |last_filter_|, and update the page.
+  void UpdateOrigins();
+
+  // Get all origins with local storage usage, filter them by |last_filter_|,
+  // and update the page.
+  void UpdateLocalStorage();
+
+  std::string last_setting_;
+  std::string last_filter_;
+  scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_;
+  LocalStorageList local_storage_list_;
+
+  base::WeakPtrFactory<WebsiteSettingsHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebsiteSettingsHandler);
 };

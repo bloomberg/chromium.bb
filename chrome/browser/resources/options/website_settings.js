@@ -41,7 +41,10 @@ cr.define('options', function() {
       $('resourceType').onchange = function() {
         var target = event.target;
         assert(target.tagName == 'SELECT');
-        chrome.send('updateOrigins', [target.value]);
+        if (target.value == 'storage')
+          chrome.send('updateLocalStorage');
+        else
+          chrome.send('updateOrigins', [target.value]);
       };
 
       var searchBox = $('website-settings-search-box');
@@ -90,6 +93,24 @@ cr.define('options', function() {
     },
 
     /**
+     * Populates the origin list with all origins that are using local storage.
+     * @private
+     */
+    populateLocalStorage_: function(originDict) {
+      var origins = Object.keys(originDict).map(function(origin) {
+        return {
+          origin: origin,
+          usage: originDict[origin].usage,
+          usageString: originDict[origin].usageString
+        };
+      });
+      origins.sort(function(first, second) {
+        return second.usage - first.usage;
+      });
+      this.originList_.dataModel = new ArrayDataModel(origins);
+    },
+
+    /**
      * Handle and delay search query changes.
      * @param {!Event} e The event object.
      * @private
@@ -105,6 +126,10 @@ cr.define('options', function() {
 
   WebsiteSettingsManager.populateOrigins = function(originDict) {
     WebsiteSettingsManager.getInstance().populateOrigins_(originDict);
+  };
+
+  WebsiteSettingsManager.populateLocalStorage = function(originDict) {
+    WebsiteSettingsManager.getInstance().populateLocalStorage_(originDict);
   };
 
   // Export

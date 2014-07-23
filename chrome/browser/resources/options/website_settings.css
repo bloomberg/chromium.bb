@@ -20,3 +20,12 @@
   margin: 5px 0 0;
   min-height: 0;
 }
+
+.origin-list-item {
+  display: flex;
+  justify-content: space-between;
+}
+
+.local-storage-usage {
+  margin: auto 0;
+}

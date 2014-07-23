@@ -8,7 +8,15 @@ cr.define('options', function() {
 
   function OriginListItem(origin) {
     var el = cr.doc.createElement('div');
-    el.origin_ = origin;
+
+    if (origin.origin) {
+      el.origin_ = origin.origin;
+      el.usage_ = origin.usage;
+      el.usageString_ = origin.usageString;
+    } else {
+      el.origin_ = origin;
+    }
+
     el.__proto__ = OriginListItem.prototype;
     el.decorate();
     return el;
@@ -21,8 +29,7 @@ cr.define('options', function() {
     decorate: function() {
       ListItem.prototype.decorate.call(this);
 
-      this.classList.add('deletable-item');
-
+      this.className = 'deletable-item origin-list-item';
       this.contentElement_ = this.ownerDocument.createElement('div');
       this.appendChild(this.contentElement_);
 
@@ -31,6 +38,13 @@ cr.define('options', function() {
       titleEl.textContent = this.origin_;
       titleEl.style.backgroundImage = getFaviconImageSet(this.origin_);
       this.contentElement_.appendChild(titleEl);
+
+      if (this.usageString_) {
+        var usageEl = this.ownerDocument.createElement('span');
+        usageEl.className = 'local-storage-usage';
+        usageEl.textContent = this.usageString_;
+        this.appendChild(usageEl);
+      }
     }
   };
 
