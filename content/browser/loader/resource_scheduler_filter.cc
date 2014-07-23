@@ -45,7 +45,15 @@ bool ResourceSchedulerFilter::OnMessageReceived(const IPC::Message& message) {
       }
       if (PageTransitionIsMainFrame(params.transition) &&
           !params.was_within_same_page) {
-        scheduler->OnNavigate(child_id_, message.routing_id());
+        // We need to track the RenderViewHost routing_id because of downstream
+        // dependencies (crbug.com/392171 DownloadRequestHandle,
+        // SaveFileManager, ResourceDispatcherHostImpl, MediaStreamUIProxy,
+        // SpeechRecognitionDispatcherHost and possibly others). They look up
+        // the view based on the ID stored in the resource requests.
+        // Once those dependencies are unwound or moved to RenderFrameHost
+        // (crbug.com/304341) we can move the client to be based on the
+        // routing_id of the RenderFrameHost.
+        scheduler->OnNavigate(child_id_, params.render_view_routing_id);
       }
       break;
     }
