@@ -208,15 +208,15 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         new QuicClientSession(connection_,
                               scoped_ptr<DatagramClientSocket>(socket),
                               writer_.Pass(), NULL,
+                              &crypto_client_stream_factory_,
                               make_scoped_ptr((QuicServerInfo*)NULL),
-                              DefaultQuicConfig(),
+                              QuicServerId(kServerHostname, kServerPort,
+                                           false, PRIVACY_MODE_DISABLED),
+                              DefaultQuicConfig(), &crypto_config_,
                               base::MessageLoop::current()->
                                   message_loop_proxy().get(),
                               NULL));
-    session_->InitializeSession(QuicServerId(kServerHostname, kServerPort,
-                                             false, PRIVACY_MODE_DISABLED),
-                                &crypto_config_,
-                                &crypto_client_stream_factory_);
+    session_->InitializeSession();
     session_->GetCryptoStream()->CryptoConnect();
     EXPECT_TRUE(session_->IsCryptoHandshakeConfirmed());
     stream_.reset(use_closing_stream_ ?

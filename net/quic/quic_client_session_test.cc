@@ -72,13 +72,14 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
       : writer_(new TestPacketWriter(GetParam())),
         connection_(
             new PacketSavingConnection(false, SupportedVersions(GetParam()))),
-        session_(connection_, GetSocket().Pass(), writer_.Pass(), NULL,
-                 make_scoped_ptr((QuicServerInfo*)NULL), DefaultQuicConfig(),
+        session_(connection_, GetSocket().Pass(), writer_.Pass(), NULL, NULL,
+                 make_scoped_ptr((QuicServerInfo*)NULL),
+                 QuicServerId(kServerHostname, kServerPort, false,
+                              PRIVACY_MODE_DISABLED),
+                 DefaultQuicConfig(), &crypto_config_,
                  base::MessageLoop::current()->message_loop_proxy().get(),
                  &net_log_) {
-    session_.InitializeSession(QuicServerId(kServerHostname, kServerPort, false,
-                                            PRIVACY_MODE_DISABLED),
-                               &crypto_config_, NULL);
+    session_.InitializeSession();
     session_.config()->SetDefaults();
     crypto_config_.SetDefaults();
   }
