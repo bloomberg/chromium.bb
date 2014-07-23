@@ -3219,11 +3219,6 @@ void WebViewImpl::performPluginAction(const WebPluginAction& action,
 
 WebHitTestResult WebViewImpl::hitTestResultAt(const WebPoint& point)
 {
-    return coreHitTestResultAt(point);
-}
-
-HitTestResult WebViewImpl::coreHitTestResultAt(const WebPoint& point)
-{
     IntPoint scaledPoint = point;
     scaledPoint.scale(1 / pageScaleFactor(), 1 / pageScaleFactor());
     return hitTestResultForWindowPos(scaledPoint);

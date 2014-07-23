@@ -55,7 +55,6 @@
 #include "public/web/WebRange.h"
 #include "public/web/WebView.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WebViewImpl.h"
 
 using namespace blink;
 
@@ -113,7 +112,7 @@ namespace blink {
 
 NSAttributedString* WebSubstringUtil::attributedWordAtPoint(WebView* view, WebPoint point, WebPoint& baselinePoint)
 {
-    HitTestResult result = static_cast<WebViewImpl*>(view)->coreHitTestResultAt(point);
+    HitTestResult result = view->hitTestResultAt(point);
     if (!result.targetNode())
       return nil;
     LocalFrame* frame = result.targetNode()->document().frame();

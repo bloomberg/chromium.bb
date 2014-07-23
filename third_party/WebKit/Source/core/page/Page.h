@@ -253,7 +253,7 @@ private:
     const OwnPtrWillBeMember<DragCaretController> m_dragCaretController;
     const OwnPtrWillBeMember<DragController> m_dragController;
     const OwnPtr<FocusController> m_focusController;
-    const OwnPtrWillBeMember<ContextMenuController> m_contextMenuController;
+    const OwnPtr<ContextMenuController> m_contextMenuController;
     const OwnPtr<InspectorController> m_inspectorController;
     const OwnPtrWillBeMember<PointerLockController> m_pointerLockController;
     OwnPtr<ScrollingCoordinator> m_scrollingCoordinator;

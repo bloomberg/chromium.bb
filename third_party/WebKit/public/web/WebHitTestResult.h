@@ -35,7 +35,6 @@ class HitTestResult;
 namespace blink {
 
 class WebElement;
-class WebHitTestResultPrivate;
 class WebNode;
 class WebURL;
 struct WebPoint;
@@ -75,10 +74,11 @@ public:
 #if BLINK_IMPLEMENTATION
     WebHitTestResult(const blink::HitTestResult&);
     WebHitTestResult& operator=(const blink::HitTestResult&);
+    operator blink::HitTestResult() const;
 #endif
 
 protected:
-    WebPrivateOwnPtr<WebHitTestResultPrivate> m_private;
+    WebPrivateOwnPtr<blink::HitTestResult> m_private;
 };
 
 } // namespace blink
