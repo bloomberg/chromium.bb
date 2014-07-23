@@ -57,7 +57,11 @@ class GaiaScreenHandler : public BaseScreenHandler {
 
   void LoadGaia(const GaiaContext& context);
   void UpdateGaia(const GaiaContext& context);
-  void ReloadGaia();
+
+  // Sends request to reload Gaia. If |force_reload| is true, request
+  // will be sent in any case, otherwise it will be sent only when Gaia is
+  // not loading right now.
+  void ReloadGaia(bool force_reload);
 
   FrameState frame_state() const { return frame_state_; }
   net::Error frame_error() const { return frame_error_; }

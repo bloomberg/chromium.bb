@@ -101,6 +101,25 @@ static bool Contains(const std::vector<std::string>& container,
          container.end();
 }
 
+class CallOnReturn {
+ public:
+  explicit CallOnReturn(const base::Closure& callback)
+      : callback_(callback), call_scheduled_(false) {}
+
+  ~CallOnReturn() {
+    if (call_scheduled_ && !callback_.is_null())
+      callback_.Run();
+  }
+
+  void ScheduleCall() { call_scheduled_ = true; }
+
+ private:
+  base::Closure callback_;
+  bool call_scheduled_;
+
+  DISALLOW_COPY_AND_ASSIGN(CallOnReturn);
+};
+
 }  // namespace
 
 namespace chromeos {
@@ -542,6 +561,9 @@ void SigninScreenHandler::UpdateStateInternal(
       is_online && last_network_state_ != NetworkStateInformer::ONLINE;
   last_network_state_ = state;
 
+  CallOnReturn reload_gaia(base::Bind(
+      &SigninScreenHandler::ReloadGaia, weak_factory_.GetWeakPtr(), true));
+
   if (is_online || !is_behind_captive_portal)
     error_screen_actor_->HideCaptivePortal();
 
@@ -557,22 +579,27 @@ void SigninScreenHandler::UpdateStateInternal(
   if (reason == ErrorScreenActor::ERROR_REASON_NETWORK_STATE_CHANGED &&
       from_not_online_to_online_transition) {
     // Schedules a immediate retry.
-    LOG(WARNING) << "Retry page load since network has been changed.";
-    ReloadGaiaScreen();
+    LOG(WARNING) << "Retry frame load since network has been changed.";
+    reload_gaia.ScheduleCall();
   }
 
   if (reason == ErrorScreenActor::ERROR_REASON_PROXY_CONFIG_CHANGED &&
       error_screen_should_overlay) {
     // Schedules a immediate retry.
-    LOG(WARNING) << "Retry page load since proxy settings has been changed.";
-    ReloadGaiaScreen();
+    LOG(WARNING) << "Retry frameload since proxy settings has been changed.";
+    reload_gaia.ScheduleCall();
   }
 
   if (reason == ErrorScreenActor::ERROR_REASON_FRAME_ERROR &&
       !IsProxyError(state, reason, FrameError())) {
-    LOG(WARNING) << "Retry page load due to reason: "
+    LOG(WARNING) << "Retry frame load due to reason: "
                  << ErrorScreenActor::ErrorReasonString(reason);
-    ReloadGaiaScreen();
+    reload_gaia.ScheduleCall();
+  }
+
+  if (is_gaia_loading_timeout) {
+    LOG(WARNING) << "Retry frame load due to loading timeout.";
+    reload_gaia.ScheduleCall();
   }
 
   if ((!is_online || is_gaia_loading_timeout || is_gaia_error) &&
@@ -645,11 +672,11 @@ void SigninScreenHandler::HideOfflineMessage(
 
   // Forces a reload for Gaia screen on hiding error message.
   if (IsGaiaVisible() || IsGaiaHiddenByError())
-    ReloadGaiaScreen();
+    ReloadGaia(false);
 }
 
-void SigninScreenHandler::ReloadGaiaScreen() {
-  gaia_screen_handler_->ReloadGaia();
+void SigninScreenHandler::ReloadGaia(bool force_reload) {
+  gaia_screen_handler_->ReloadGaia(force_reload);
 }
 
 void SigninScreenHandler::Initialize() {
@@ -832,7 +859,7 @@ void SigninScreenHandler::Observe(int type,
       has_pending_auth_ui_ = false;
       // Reload auth extension as proxy credentials are supplied.
       if (!IsSigninScreenHiddenByError() && ui_state_ == UI_STATE_GAIA_SIGNIN)
-        ReloadGaiaScreen();
+        ReloadGaia(true);
       update_state_closure_.Cancel();
       break;
     case chrome::NOTIFICATION_AUTH_CANCELLED: {

@@ -182,9 +182,11 @@ void GaiaScreenHandler::UpdateGaia(const GaiaContext& context) {
   CallJS("updateAuthExtension", params);
 }
 
-void GaiaScreenHandler::ReloadGaia() {
-  if (frame_state_ == FRAME_STATE_LOADING)
+void GaiaScreenHandler::ReloadGaia(bool force_reload) {
+  if (frame_state_ == FRAME_STATE_LOADING && !force_reload) {
+    VLOG(1) << "Skipping reloading of Gaia since gaia is loading.";
     return;
+  }
   NetworkStateInformer::State state = network_state_informer_->state();
   if (state != NetworkStateInformer::ONLINE) {
     VLOG(1) << "Skipping reloading of Gaia since network state="

@@ -262,7 +262,7 @@ class SigninScreenHandler
                                   ErrorScreenActor::ErrorReason reason);
   void HideOfflineMessage(NetworkStateInformer::State state,
                           ErrorScreenActor::ErrorReason reason);
-  void ReloadGaiaScreen();
+  void ReloadGaia(bool force_reload);
 
   // BaseScreenHandler implementation:
   virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) OVERRIDE;
