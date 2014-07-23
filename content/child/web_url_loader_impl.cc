@@ -387,8 +387,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   // the render process, so we can use requestorProcessID even for requests
   // from in-process plugins.
   request_info.requestor_pid = request.requestorProcessID();
-  request_info.request_type =
-      ResourceType::FromTargetType(request.targetType());
+  request_info.request_type = ResourceType::FromWebURLRequest(request);
   request_info.priority =
       ConvertWebKitPriorityToNetPriority(request.priority());
   request_info.appcache_host_id = request.appCacheHostID();

@@ -37,7 +37,7 @@ class CONTENT_EXPORT ResourceType {
                      // everytime.
   };
 
-  static Type FromTargetType(blink::WebURLRequest::TargetType type);
+  static Type FromWebURLRequest(const blink::WebURLRequest& request);
 
   static bool ValidType(int32 type) {
     return type >= MAIN_FRAME && type < LAST_TYPE;

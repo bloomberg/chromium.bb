@@ -2627,7 +2627,7 @@ void RenderFrameImpl::didLoadResourceFromMemoryCache(
       response.securityInfo(),
       request.httpMethod().utf8(),
       response.mimeType().utf8(),
-      ResourceType::FromTargetType(request.targetType())));
+      ResourceType::FromWebURLRequest(request)));
 }
 
 void RenderFrameImpl::didDisplayInsecureContent(blink::WebLocalFrame* frame) {
