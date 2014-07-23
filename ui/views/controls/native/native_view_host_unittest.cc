@@ -135,9 +135,10 @@ TEST_F(NativeViewHostTest, NativeViewHierarchyChanged) {
                                               test_view,
                                               host));
 #if defined(USE_AURA)
-  // One notification is generated from inserting the native view into the
-  // clipping window.
-  EXPECT_EQ(1, test_view->notification_count());
+  // Two notifications are generated from inserting the native view into the
+  // clipping window and then inserting the clipping window into the root
+  // window.
+  EXPECT_EQ(2, test_view->notification_count());
 #else
   EXPECT_EQ(0, test_view->notification_count());
 #endif
@@ -160,13 +161,14 @@ TEST_F(NativeViewHostTest, NativeViewHierarchyChanged) {
   // Attaching should send a NativeViewHierarchyChanged() notification and
   // reset the parent.
   host->Attach(child->GetNativeView());
-  EXPECT_EQ(1, test_view->notification_count());
 #if defined(USE_AURA)
   // There is a clipping window inserted above the native view that needs to be
   // accounted for when looking at the relationship between the native views.
+  EXPECT_EQ(2, test_view->notification_count());
   EXPECT_EQ(toplevel()->GetNativeView(),
             GetNativeParent(GetNativeParent(child->GetNativeView())));
 #else
+  EXPECT_EQ(1, test_view->notification_count());
   EXPECT_EQ(toplevel()->GetNativeView(),
             GetNativeParent(child->GetNativeView()));
 #endif

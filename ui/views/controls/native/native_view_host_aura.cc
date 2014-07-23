@@ -200,14 +200,14 @@ void NativeViewHostAura::AddClippingWindow() {
   RemoveClippingWindow();
 
   gfx::Rect bounds = host_->native_view()->bounds();
+  host_->native_view()->SetProperty(aura::client::kHostWindowKey,
+                                    host_->GetWidget()->GetNativeView());
+  Widget::ReparentNativeView(host_->native_view(),
+                             &clipping_window_);
   if (host_->GetWidget()->GetNativeView()) {
     Widget::ReparentNativeView(&clipping_window_,
                                host_->GetWidget()->GetNativeView());
   }
-  host_->native_view()->SetProperty(aura::client::kHostWindowKey,
-      host_->GetWidget()->GetNativeView());
-  Widget::ReparentNativeView(host_->native_view(),
-                             &clipping_window_);
   clipping_window_.SetBounds(bounds);
   bounds.set_origin(gfx::Point(0, 0));
   host_->native_view()->SetBounds(bounds);
