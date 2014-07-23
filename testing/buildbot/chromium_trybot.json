@@ -197,6 +197,8 @@
     "content/test/data/.*",
     "DEPS",
     "testing/buildbot/.*",
+    "tools/perf/.*",
+    "tools/telemetry/.*",
     "tools/whitespace.txt"
   ],
 
