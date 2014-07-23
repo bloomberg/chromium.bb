@@ -855,16 +855,6 @@ void BluetoothLowEnergyEventRouter::GattServiceAdded(
   const std::string& service_id = service->GetIdentifier();
   observed_gatt_services_.insert(service_id);
   service_id_to_device_address_[service_id] = device->GetAddress();
-
-  // Signal API event.
-  apibtle::Service api_service;
-  PopulateService(service, &api_service);
-
-  scoped_ptr<base::ListValue> args =
-      apibtle::OnServiceAdded::Create(api_service);
-  scoped_ptr<Event> event(
-      new Event(apibtle::OnServiceAdded::kEventName, args.Pass()));
-  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 
 void BluetoothLowEnergyEventRouter::GattServiceRemoved(
@@ -893,6 +883,27 @@ void BluetoothLowEnergyEventRouter::GattServiceRemoved(
       apibtle::OnServiceRemoved::Create(api_service);
   scoped_ptr<Event> event(
       new Event(apibtle::OnServiceRemoved::kEventName, args.Pass()));
+  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
+}
+
+void BluetoothLowEnergyEventRouter::GattDiscoveryCompleteForService(
+    BluetoothGattService* service) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  VLOG(2) << "GATT service discovery complete: " << service->GetIdentifier();
+
+  DCHECK(observed_gatt_services_.find(service->GetIdentifier()) !=
+         observed_gatt_services_.end());
+  DCHECK(service_id_to_device_address_.find(service->GetIdentifier()) !=
+         service_id_to_device_address_.end());
+
+  // Signal the service added event here.
+  apibtle::Service api_service;
+  PopulateService(service, &api_service);
+
+  scoped_ptr<base::ListValue> args =
+      apibtle::OnServiceAdded::Create(api_service);
+  scoped_ptr<Event> event(
+      new Event(apibtle::OnServiceAdded::kEventName, args.Pass()));
   EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 

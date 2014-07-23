@@ -146,6 +146,10 @@ class BluetoothRemoteGattServiceChromeOS
       CharacteristicMap;
   CharacteristicMap characteristics_;
 
+  // Indicates whether or not the characteristics of this service are known to
+  // have been discovered.
+  bool discovery_complete_;
+
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<BluetoothRemoteGattServiceChromeOS> weak_ptr_factory_;

@@ -131,16 +131,18 @@ class BluetoothGattService {
   // as well as when successive changes occur during its life cycle.
   class Observer {
    public:
+    // Called when all characteristic and descriptor discovery procedures are
+    // known to be completed for the GATT service |service|. This method will be
+    // called after the initial discovery of a GATT service and will usually be
+    // preceded by calls to GattCharacteristicAdded and GattDescriptorAdded.
+    virtual void GattDiscoveryCompleteForService(
+        BluetoothGattService* service) {}
+
     // Called when properties of the remote GATT service |service| have changed.
     // This will get called for properties such as UUID, as well as for changes
     // to the list of known characteristics and included services. Observers
     // should read all GATT characteristic and descriptors objects and do any
-    // necessary set up required for a changed service. This method may be
-    // called several times, especially when the service is discovered for the
-    // first time. It will be called for each characteristic and characteristic
-    // descriptor that is discovered or removed. Hence this method should be
-    // used to check whether or not all characteristics of a service have been
-    // discovered that correspond to the profile implemented by the Observer.
+    // necessary set up required for a changed service.
     virtual void GattServiceChanged(BluetoothGattService* service) {}
 
     // Called when the remote GATT characteristic |characteristic| belonging to
@@ -153,22 +155,12 @@ class BluetoothGattService {
     // depends on the particular profile the remote device implements, hence the
     // client of a GATT based profile will usually operate on the whole set of
     // characteristics and not just one.
-    //
-    // This method will always be followed by a call to GattServiceChanged,
-    // which can be used by observers to get all the characteristics of a
-    // service and perform the necessary updates. GattCharacteristicAdded exists
-    // mostly for convenience.
     virtual void GattCharacteristicAdded(
         BluetoothGattService* service,
         BluetoothGattCharacteristic* characteristic) {}
 
     // Called when a GATT characteristic |characteristic| belonging to GATT
-    // service |service| has been removed. This method is for convenience
-    // and will be followed by a call to GattServiceChanged (except when called
-    // after the service gets removed) which should be used for bootstrapping a
-    // GATT based profile. See the documentation of GattCharacteristicAdded and
-    // GattServiceChanged for more information. Try to obtain the service from
-    // its device to see whether or not the service has been removed.
+    // service |service| has been removed.
     virtual void GattCharacteristicRemoved(
         BluetoothGattService* service,
         BluetoothGattCharacteristic* characteristic) {}
@@ -178,19 +170,12 @@ class BluetoothGattService {
     // cache the arguments as the pointers may become invalid. Instead, use the
     // specially assigned identifier to obtain a descriptor and cache that
     // identifier as necessary.
-    //
-    // This method will always be followed by a call to GattServiceChanged,
-    // which can be used by observers to get all the characteristics of a
-    // service and perform the necessary updates. GattDescriptorAdded exists
-    // mostly for convenience.
     virtual void GattDescriptorAdded(
         BluetoothGattCharacteristic* characteristic,
         BluetoothGattDescriptor* descriptor) {}
 
     // Called when a GATT characteristic descriptor |descriptor| belonging to
-    // characteristic |characteristic| has been removed. This method is for
-    // convenience and will be followed by a call to GattServiceChanged (except
-    // when called after the service gets removed).
+    // characteristic |characteristic| has been removed.
     virtual void GattDescriptorRemoved(
         BluetoothGattCharacteristic* characteristic,
         BluetoothGattDescriptor* descriptor) {}

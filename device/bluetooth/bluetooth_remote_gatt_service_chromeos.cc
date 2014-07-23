@@ -22,6 +22,7 @@ BluetoothRemoteGattServiceChromeOS::BluetoothRemoteGattServiceChromeOS(
     : object_path_(object_path),
       adapter_(adapter),
       device_(device),
+      discovery_complete_(false),
       weak_ptr_factory_(this) {
   VLOG(1) << "Creating remote GATT service with identifier: "
           << object_path.value() << ", UUID: " << GetUUID().canonical_value();
@@ -157,6 +158,12 @@ BluetoothRemoteGattServiceChromeOS::GetAdapter() const {
 }
 
 void BluetoothRemoteGattServiceChromeOS::NotifyServiceChanged() {
+  // Don't send service changed unless we know that all characteristics have
+  // already been discovered. This is to prevent spammy events before sending
+  // out the first Gatt
+  if (!discovery_complete_)
+    return;
+
   FOR_EACH_OBSERVER(device::BluetoothGattService::Observer, observers_,
                     GattServiceChanged(this));
 }
@@ -203,8 +210,27 @@ void BluetoothRemoteGattServiceChromeOS::GattServicePropertyChanged(
   if (object_path != object_path_)
     return;
 
-  VLOG(1) << "Service property changed: " << object_path.value();
-  NotifyServiceChanged();
+  VLOG(1) << "Service property changed: \"" << property_name << "\", "
+          << object_path.value();
+  BluetoothGattServiceClient::Properties* properties =
+      DBusThreadManager::Get()->GetBluetoothGattServiceClient()->GetProperties(
+          object_path);
+  DCHECK(properties);
+
+  if (property_name != properties->characteristics.name()) {
+    NotifyServiceChanged();
+    return;
+  }
+
+  if (discovery_complete_)
+    return;
+
+  VLOG(1) << "All characteristics were discovered for service: "
+          << object_path.value();
+  discovery_complete_ = true;
+  FOR_EACH_OBSERVER(device::BluetoothGattService::Observer,
+                    observers_,
+                    GattDiscoveryCompleteForService(this));
 }
 
 void BluetoothRemoteGattServiceChromeOS::GattCharacteristicAdded(
@@ -235,7 +261,6 @@ void BluetoothRemoteGattServiceChromeOS::GattCharacteristicAdded(
 
   FOR_EACH_OBSERVER(device::BluetoothGattService::Observer, observers_,
                     GattCharacteristicAdded(this, characteristic));
-  NotifyServiceChanged();
 }
 
 void BluetoothRemoteGattServiceChromeOS::GattCharacteristicRemoved(
@@ -255,7 +280,6 @@ void BluetoothRemoteGattServiceChromeOS::GattCharacteristicRemoved(
 
   FOR_EACH_OBSERVER(device::BluetoothGattService::Observer, observers_,
                     GattCharacteristicRemoved(this, characteristic));
-  NotifyServiceChanged();
 
   delete characteristic;
 }
@@ -264,7 +288,7 @@ void BluetoothRemoteGattServiceChromeOS::GattCharacteristicPropertyChanged(
     const dbus::ObjectPath& object_path,
     const std::string& property_name) {
   if (characteristics_.find(object_path) == characteristics_.end()) {
-    VLOG(2) << "Properties of unknown characteristic changed";
+    VLOG(3) << "Properties of unknown characteristic changed";
     return;
   }
 

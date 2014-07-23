@@ -330,9 +330,18 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ServiceEvents) {
   // Cause events to be sent to the extension.
   event_router()->DeviceAdded(mock_adapter_, device0_.get());
 
+  // These will create the identifier mappings.
   event_router()->GattServiceAdded(device0_.get(), service0_.get());
   event_router()->GattServiceAdded(device0_.get(), service1_.get());
+
+  // These will send the onServiceAdded event to apps.
+  event_router()->GattDiscoveryCompleteForService(service0_.get());
+  event_router()->GattDiscoveryCompleteForService(service1_.get());
+
+  // This will send the onServiceChanged event to apps.
   event_router()->GattServiceChanged(service1_.get());
+
+  // This will send the  onServiceRemoved event to apps.
   event_router()->GattServiceRemoved(device0_.get(), service0_.get());
 
   EXPECT_TRUE(listener.WaitUntilSatisfied());
@@ -361,6 +370,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedService) {
 
   event_router()->DeviceAdded(mock_adapter_, device0_.get());
   event_router()->GattServiceAdded(device0_.get(), service0_.get());
+  event_router()->GattDiscoveryCompleteForService(service0_.get());
 
   ExtensionTestMessageListener get_service_success_listener("getServiceSuccess",
                                                             true);

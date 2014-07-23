@@ -341,7 +341,7 @@ void BluetoothRemoteGattCharacteristicChromeOS::GattDescriptorAdded(
           GetProperties(object_path);
   DCHECK(properties);
   if (properties->characteristic.value() != object_path_) {
-    VLOG(2) << "Remote GATT descriptor does not belong to this characteristic.";
+    VLOG(3) << "Remote GATT descriptor does not belong to this characteristic.";
     return;
   }
 
@@ -356,7 +356,6 @@ void BluetoothRemoteGattCharacteristicChromeOS::GattDescriptorAdded(
   DCHECK(service_);
 
   service_->NotifyDescriptorAddedOrRemoved(this, descriptor, true /* added */);
-  service_->NotifyServiceChanged();
 }
 
 void BluetoothRemoteGattCharacteristicChromeOS::GattDescriptorRemoved(
@@ -374,12 +373,10 @@ void BluetoothRemoteGattCharacteristicChromeOS::GattDescriptorRemoved(
   DCHECK(descriptor->object_path() == object_path);
   descriptors_.erase(iter);
 
-  service_->NotifyDescriptorAddedOrRemoved(this, descriptor, false /* added */);
-  delete descriptor;
-
   DCHECK(service_);
+  service_->NotifyDescriptorAddedOrRemoved(this, descriptor, false /* added */);
 
-  service_->NotifyServiceChanged();
+  delete descriptor;
 }
 
 void BluetoothRemoteGattCharacteristicChromeOS::OnValueSuccess(

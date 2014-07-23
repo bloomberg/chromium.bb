@@ -134,6 +134,7 @@ class TestGattServiceObserver : public BluetoothGattService::Observer {
                           BluetoothDevice* device,
                           BluetoothGattService* service)
       : gatt_service_changed_count_(0),
+        gatt_discovery_complete_count_(0),
         gatt_characteristic_added_count_(0),
         gatt_characteristic_removed_count_(0),
         gatt_characteristic_value_changed_count_(0),
@@ -160,6 +161,14 @@ class TestGattServiceObserver : public BluetoothGattService::Observer {
   }
 
   // BluetoothGattService::Observer overrides.
+  virtual void GattDiscoveryCompleteForService(
+      BluetoothGattService* service) OVERRIDE {
+    ASSERT_EQ(gatt_service_id_, service->GetIdentifier());
+    ++gatt_discovery_complete_count_;
+
+    QuitMessageLoop();
+  }
+
   virtual void GattServiceChanged(BluetoothGattService* service) OVERRIDE {
     ASSERT_EQ(gatt_service_id_, service->GetIdentifier());
     ++gatt_service_changed_count_;
@@ -268,6 +277,7 @@ class TestGattServiceObserver : public BluetoothGattService::Observer {
   }
 
   int gatt_service_changed_count_;
+  int gatt_discovery_complete_count_;
   int gatt_characteristic_added_count_;
   int gatt_characteristic_removed_count_;
   int gatt_characteristic_value_changed_count_;
@@ -608,6 +618,7 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicAddedAndRemoved) {
 
   TestGattServiceObserver service_observer(adapter_, device, service);
   EXPECT_EQ(0, service_observer.gatt_service_changed_count_);
+  EXPECT_EQ(0, service_observer.gatt_discovery_complete_count_);
   EXPECT_EQ(0, service_observer.gatt_characteristic_added_count_);
   EXPECT_EQ(0, service_observer.gatt_characteristic_removed_count_);
   EXPECT_EQ(0, service_observer.gatt_characteristic_value_changed_count_);
@@ -619,7 +630,8 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicAddedAndRemoved) {
   // 3 characteristics should appear. Only 1 of the characteristics sends
   // value changed signals. Service changed should be fired once for
   // descriptor added.
-  EXPECT_EQ(4, service_observer.gatt_service_changed_count_);
+  EXPECT_EQ(0, service_observer.gatt_service_changed_count_);
+  EXPECT_EQ(1, service_observer.gatt_discovery_complete_count_);
   EXPECT_EQ(3, service_observer.gatt_characteristic_added_count_);
   EXPECT_EQ(0, service_observer.gatt_characteristic_removed_count_);
   EXPECT_EQ(0, service_observer.gatt_characteristic_value_changed_count_);
@@ -627,16 +639,20 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicAddedAndRemoved) {
 
   // Hide the characteristics. 3 removed signals should be received.
   fake_bluetooth_gatt_characteristic_client_->HideHeartRateCharacteristics();
-  EXPECT_EQ(8, service_observer.gatt_service_changed_count_);
+  EXPECT_EQ(0, service_observer.gatt_service_changed_count_);
   EXPECT_EQ(3, service_observer.gatt_characteristic_added_count_);
   EXPECT_EQ(3, service_observer.gatt_characteristic_removed_count_);
   EXPECT_EQ(0, service_observer.gatt_characteristic_value_changed_count_);
   EXPECT_TRUE(service->GetCharacteristics().empty());
 
-  // Re-expose the heart rate characteristics.
+  // Re-expose the heart rate characteristics. We shouldn't get another
+  // GattDiscoveryCompleteForService call, since the service thinks that
+  // discovery is done. On the bluetoothd side, characteristics will be removed
+  // only if the service will also be subsequently removed.
   fake_bluetooth_gatt_characteristic_client_->ExposeHeartRateCharacteristics(
       fake_bluetooth_gatt_service_client_->GetHeartRateServicePath());
-  EXPECT_EQ(12, service_observer.gatt_service_changed_count_);
+  EXPECT_EQ(0, service_observer.gatt_service_changed_count_);
+  EXPECT_EQ(1, service_observer.gatt_discovery_complete_count_);
   EXPECT_EQ(6, service_observer.gatt_characteristic_added_count_);
   EXPECT_EQ(3, service_observer.gatt_characteristic_removed_count_);
   EXPECT_EQ(0, service_observer.gatt_characteristic_value_changed_count_);
@@ -644,7 +660,7 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicAddedAndRemoved) {
 
   // Hide the service. All characteristics should disappear.
   fake_bluetooth_gatt_service_client_->HideHeartRateService();
-  EXPECT_EQ(16, service_observer.gatt_service_changed_count_);
+  EXPECT_EQ(0, service_observer.gatt_service_changed_count_);
   EXPECT_EQ(6, service_observer.gatt_characteristic_added_count_);
   EXPECT_EQ(6, service_observer.gatt_characteristic_removed_count_);
   EXPECT_EQ(0, service_observer.gatt_characteristic_value_changed_count_);
@@ -679,7 +695,7 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorAddedAndRemoved) {
 
   // Run the message loop so that the characteristics appear.
   base::MessageLoop::current()->Run();
-  EXPECT_EQ(4, service_observer.gatt_service_changed_count_);
+  EXPECT_EQ(0, service_observer.gatt_service_changed_count_);
 
   // Only the Heart Rate Measurement characteristic has a descriptor.
   EXPECT_EQ(1, service_observer.gatt_descriptor_added_count_);
@@ -717,7 +733,7 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorAddedAndRemoved) {
   fake_bluetooth_gatt_descriptor_client_->HideDescriptor(
       dbus::ObjectPath(descriptor->GetIdentifier()));
   EXPECT_TRUE(characteristic->GetDescriptors().empty());
-  EXPECT_EQ(5, service_observer.gatt_service_changed_count_);
+  EXPECT_EQ(0, service_observer.gatt_service_changed_count_);
   EXPECT_EQ(1, service_observer.gatt_descriptor_added_count_);
   EXPECT_EQ(1, service_observer.gatt_descriptor_removed_count_);
   EXPECT_EQ(0, service_observer.gatt_descriptor_value_changed_count_);
@@ -729,7 +745,7 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorAddedAndRemoved) {
       dbus::ObjectPath(characteristic->GetIdentifier()),
       FakeBluetoothGattDescriptorClient::
           kClientCharacteristicConfigurationUUID);
-  EXPECT_EQ(6, service_observer.gatt_service_changed_count_);
+  EXPECT_EQ(0, service_observer.gatt_service_changed_count_);
   EXPECT_EQ(1U, characteristic->GetDescriptors().size());
   EXPECT_EQ(2, service_observer.gatt_descriptor_added_count_);
   EXPECT_EQ(1, service_observer.gatt_descriptor_removed_count_);
@@ -1001,12 +1017,14 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
 
   TestGattServiceObserver service_observer(adapter_, device, service);
   EXPECT_EQ(0, service_observer.gatt_service_changed_count_);
+  EXPECT_EQ(0, service_observer.gatt_discovery_complete_count_);
   EXPECT_EQ(0, service_observer.gatt_descriptor_value_changed_count_);
   EXPECT_TRUE(service->GetCharacteristics().empty());
 
   // Run the message loop so that the characteristics appear.
   base::MessageLoop::current()->Run();
-  EXPECT_EQ(4, service_observer.gatt_service_changed_count_);
+  EXPECT_EQ(0, service_observer.gatt_service_changed_count_);
+  EXPECT_EQ(1, service_observer.gatt_discovery_complete_count_);
 
   // Only the Heart Rate Measurement characteristic has a descriptor.
   BluetoothGattCharacteristic* characteristic = service->GetCharacteristic(
@@ -1043,7 +1061,7 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(ValuesEqual(last_read_value_, descriptor->GetValue()));
   EXPECT_TRUE(ValuesEqual(desc_value, descriptor->GetValue()));
-  EXPECT_EQ(4, service_observer.gatt_service_changed_count_);
+  EXPECT_EQ(0, service_observer.gatt_service_changed_count_);
   EXPECT_EQ(1, service_observer.gatt_descriptor_value_changed_count_);
 
   // Write value. Writes to this descriptor will fail.
@@ -1058,7 +1076,7 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
   EXPECT_EQ(1, error_callback_count_);
   EXPECT_TRUE(ValuesEqual(last_read_value_, descriptor->GetValue()));
   EXPECT_FALSE(ValuesEqual(desc_value, descriptor->GetValue()));
-  EXPECT_EQ(4, service_observer.gatt_service_changed_count_);
+  EXPECT_EQ(0, service_observer.gatt_service_changed_count_);
   EXPECT_EQ(1, service_observer.gatt_descriptor_value_changed_count_);
 
   // Read new value.
@@ -1071,7 +1089,7 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
   EXPECT_EQ(1, error_callback_count_);
   EXPECT_TRUE(ValuesEqual(last_read_value_, descriptor->GetValue()));
   EXPECT_FALSE(ValuesEqual(desc_value, descriptor->GetValue()));
-  EXPECT_EQ(4, service_observer.gatt_service_changed_count_);
+  EXPECT_EQ(0, service_observer.gatt_service_changed_count_);
   EXPECT_EQ(2, service_observer.gatt_descriptor_value_changed_count_);
 }
 

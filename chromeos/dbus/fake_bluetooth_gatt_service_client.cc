@@ -182,6 +182,13 @@ void FakeBluetoothGattServiceClient::ExposeHeartRateCharacteristics() {
           DBusThreadManager::Get()->GetBluetoothGattCharacteristicClient());
   char_client->ExposeHeartRateCharacteristics(
       dbus::ObjectPath(heart_rate_service_path_));
+
+  std::vector<dbus::ObjectPath> char_paths;
+  char_paths.push_back(char_client->GetHeartRateMeasurementPath());
+  char_paths.push_back(char_client->GetBodySensorLocationPath());
+  char_paths.push_back(char_client->GetHeartRateControlPointPath());
+
+  heart_rate_service_properties_->characteristics.ReplaceValue(char_paths);
 }
 
 }  // namespace chromeos

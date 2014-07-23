@@ -518,7 +518,7 @@ void BluetoothDeviceChromeOS::GattServiceRemoved(
     const dbus::ObjectPath& object_path) {
   GattServiceMap::iterator iter = gatt_services_.find(object_path.value());
   if (iter == gatt_services_.end()) {
-    VLOG(2) << "Unknown GATT service removed: " << object_path.value();
+    VLOG(3) << "Unknown GATT service removed: " << object_path.value();
     return;
   }
 

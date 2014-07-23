@@ -294,6 +294,11 @@ void FakeBluetoothGattCharacteristicClient::ExposeHeartRateCharacteristics(
           kClientCharacteristicConfigurationUUID));
   DCHECK(ccc_path.IsValid());
   heart_rate_measurement_ccc_desc_path_ = ccc_path.value();
+
+  std::vector<dbus::ObjectPath> desc_paths;
+  desc_paths.push_back(ccc_path);
+
+  heart_rate_measurement_properties_->descriptors.ReplaceValue(desc_paths);
 }
 
 void FakeBluetoothGattCharacteristicClient::HideHeartRateCharacteristics() {

@@ -241,6 +241,8 @@ class BluetoothLowEnergyEventRouter
       device::BluetoothGattService* service) OVERRIDE;
 
   // device::BluetoothGattService::Observer overrides.
+  virtual void GattDiscoveryCompleteForService(
+      device::BluetoothGattService* service) OVERRIDE;
   virtual void GattServiceChanged(
       device::BluetoothGattService* service) OVERRIDE;
   virtual void GattCharacteristicAdded(

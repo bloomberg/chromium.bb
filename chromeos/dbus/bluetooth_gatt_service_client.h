@@ -30,6 +30,10 @@ class CHROMEOS_EXPORT BluetoothGattServiceClient : public DBusClient {
     // Whether or not this service is a primary service.
     dbus::Property<bool> primary;
 
+    // Array of object paths representing the characteristics of this service.
+    // [read-only]
+    dbus::Property<std::vector<dbus::ObjectPath> > characteristics;
+
     // Array of object paths representing the included services of this service.
     // [read-only]
     dbus::Property<std::vector<dbus::ObjectPath> > includes;

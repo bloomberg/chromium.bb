@@ -22,6 +22,8 @@ BluetoothGattServiceClient::Properties::Properties(
   RegisterProperty(bluetooth_gatt_service::kIncludesProperty, &includes);
   RegisterProperty(bluetooth_gatt_service::kDeviceProperty, &device);
   RegisterProperty(bluetooth_gatt_service::kPrimaryProperty, &primary);
+  RegisterProperty(bluetooth_gatt_service::kCharacteristicsProperty,
+                   &characteristics);
 }
 
 BluetoothGattServiceClient::Properties::~Properties() {

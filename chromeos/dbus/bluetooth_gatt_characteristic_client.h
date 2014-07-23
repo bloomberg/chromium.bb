@@ -30,13 +30,17 @@ class CHROMEOS_EXPORT BluetoothGattCharacteristicClient : public DBusClient {
     dbus::Property<dbus::ObjectPath> service;
 
     // Whether or not this characteristic is currently sending ValueUpdated
-    // signals.
+    // signals. [read-only]
     dbus::Property<bool> notifying;
 
     // List of flags representing the GATT "Characteristic Properties bit field"
     // and properties read from the GATT "Characteristic Extended Properties"
     // descriptor bit field. [read-only, optional]
     dbus::Property<std::vector<std::string> > flags;
+
+    // Array of object paths representing the descriptors of this
+    // characteristic. [read-only]
+    dbus::Property<std::vector<dbus::ObjectPath> > descriptors;
 
     Properties(dbus::ObjectProxy* object_proxy,
                const std::string& interface_name,

@@ -13,15 +13,6 @@
 
 namespace chromeos {
 
-namespace {
-
-// TODO(armansito): Move these to service_constants.h later.
-const char kNotifyingProperty[] = "Notifying";
-const char kStartNotify[] = "StartNotify";
-const char kStopNotify[] = "StopNotify";
-
-}  // namespace
-
 // static
 const char BluetoothGattCharacteristicClient::kNoResponseError[] =
     "org.chromium.Error.NoResponse";
@@ -36,8 +27,11 @@ BluetoothGattCharacteristicClient::Properties::Properties(
     : dbus::PropertySet(object_proxy, interface_name, callback) {
   RegisterProperty(bluetooth_gatt_characteristic::kUUIDProperty, &uuid);
   RegisterProperty(bluetooth_gatt_characteristic::kServiceProperty, &service);
-  RegisterProperty(kNotifyingProperty, &notifying);
+  RegisterProperty(bluetooth_gatt_characteristic::kNotifyingProperty,
+                   &notifying);
   RegisterProperty(bluetooth_gatt_characteristic::kFlagsProperty, &flags);
+  RegisterProperty(bluetooth_gatt_characteristic::kDescriptorsProperty,
+                   &descriptors);
 }
 
 BluetoothGattCharacteristicClient::Properties::~Properties() {
@@ -158,7 +152,7 @@ class BluetoothGattCharacteristicClientImpl
 
     dbus::MethodCall method_call(
         bluetooth_gatt_characteristic::kBluetoothGattCharacteristicInterface,
-        kStartNotify);
+        bluetooth_gatt_characteristic::kStartNotify);
 
     object_proxy->CallMethodWithErrorCallback(
         &method_call,
@@ -184,7 +178,7 @@ class BluetoothGattCharacteristicClientImpl
 
     dbus::MethodCall method_call(
         bluetooth_gatt_characteristic::kBluetoothGattCharacteristicInterface,
-        kStopNotify);
+        bluetooth_gatt_characteristic::kStopNotify);
 
     object_proxy->CallMethodWithErrorCallback(
         &method_call,
