@@ -689,12 +689,9 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
-      # TODO(tfarina): Our plan is to build and run this target on Chromium bots
-      # (TS, CQ, Waterfall). First we will get this target passing all tests,
-      # after that we will start the work on buildbot to get this running there.
-      # When we consider this stable in the bots, we can go to unit_tests target
-      # and remove the duplicated entries from there, otherwise if we just
-      # remove them right now we would be losing coverage.
+      # TODO(tfarina): Many extension unit tests run as part of Chrome's
+      # unit_tests target. They should be moved here, which may require some
+      # refactoring (ExtensionsBrowserClient, TestingProfile, etc.).
       # http://crbug.com/348066
       'target_name': 'extensions_unittests',
       'type': 'executable',
