@@ -27,9 +27,13 @@ class MEDIA_EXPORT VideoRenderer {
   typedef base::Callback<base::TimeDelta()> TimeDeltaCB;
 
   VideoRenderer();
+
+  // Stops all operations and drops all pending callbacks.
+  // TODO(xhwang): Fires all pending callbacks to be consistent with the rest of
+  // media pipeline.
   virtual ~VideoRenderer();
 
-  // Initialize a VideoRenderer with |stream|, executing |init_cb| upon
+  // Initializes a VideoRenderer with |stream|, executing |init_cb| upon
   // completion.
   //
   // |statistics_cb| is executed periodically with video rendering stats, such
@@ -58,8 +62,8 @@ class MEDIA_EXPORT VideoRenderer {
                           const TimeDeltaCB& get_time_cb,
                           const TimeDeltaCB& get_duration_cb) = 0;
 
-  // Discard any video data and stop reading from |stream|, executing |callback|
-  // when completed.
+  // Discards any video data and stops reading from |stream|, executing
+  // |callback| when completed.
   //
   // Clients should expect |buffering_state_cb| to be called with
   // BUFFERING_HAVE_NOTHING while flushing is in progress.
@@ -69,10 +73,6 @@ class MEDIA_EXPORT VideoRenderer {
   //
   // Only valid to call after a successful Initialize() or Flush().
   virtual void StartPlaying() = 0;
-
-  // Stop all operations in preparation for being deleted, executing |callback|
-  // when complete.
-  virtual void Stop(const base::Closure& callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoRenderer);

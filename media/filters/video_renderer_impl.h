@@ -69,7 +69,6 @@ class MEDIA_EXPORT VideoRendererImpl
                           const TimeDeltaCB& get_duration_cb) OVERRIDE;
   virtual void Flush(const base::Closure& callback) OVERRIDE;
   virtual void StartPlaying() OVERRIDE;
-  virtual void Stop(const base::Closure& callback) OVERRIDE;
 
   // PlatformThread::Delegate implementation.
   virtual void ThreadMain() OVERRIDE;
@@ -94,9 +93,6 @@ class MEDIA_EXPORT VideoRendererImpl
 
   // Called when VideoFrameStream::Reset() completes.
   void OnVideoFrameStreamResetDone();
-
-  // Helper function that flushes the buffers when a Stop() or error occurs.
-  void DoStopOrError_Locked();
 
   // Runs |paint_cb_| with the next frame from |ready_frames_|.
   //
@@ -164,8 +160,7 @@ class MEDIA_EXPORT VideoRendererImpl
     kInitializing,
     kFlushing,
     kFlushed,
-    kPlaying,
-    kStopped,
+    kPlaying
   };
   State state_;
 
@@ -207,6 +202,8 @@ class MEDIA_EXPORT VideoRendererImpl
   // last call to |statistics_cb_|. These must be accessed under lock.
   int frames_decoded_;
   int frames_dropped_;
+
+  bool is_shutting_down_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<VideoRendererImpl> weak_factory_;

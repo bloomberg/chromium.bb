@@ -128,7 +128,6 @@ class MockVideoRenderer : public VideoRenderer {
                                  const TimeDeltaCB& get_duration_cb));
   MOCK_METHOD1(Flush, void(const base::Closure& callback));
   MOCK_METHOD0(StartPlaying, void());
-  MOCK_METHOD1(Stop, void(const base::Closure& callback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockVideoRenderer);

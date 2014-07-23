@@ -311,9 +311,6 @@ class PipelineTest : public ::testing::Test {
   void ExpectStop() {
     if (demuxer_)
       EXPECT_CALL(*demuxer_, Stop(_)).WillOnce(RunClosure<0>());
-
-    if (video_stream_)
-      EXPECT_CALL(*video_renderer_, Stop(_)).WillOnce(RunClosure<0>());
   }
 
   MOCK_METHOD2(OnAddTextTrack, void(const TextTrackConfig&,
@@ -979,7 +976,6 @@ class PipelineTeardownTest : public PipelineTest {
       }
 
       EXPECT_CALL(*demuxer_, Stop(_)).WillOnce(RunClosure<0>());
-      EXPECT_CALL(*video_renderer_, Stop(_)).WillOnce(RunClosure<0>());
       return status;
     }
 
@@ -1014,7 +1010,6 @@ class PipelineTeardownTest : public PipelineTest {
     PipelineStatus status = SetSeekExpectations(state, stop_or_error);
 
     EXPECT_CALL(*demuxer_, Stop(_)).WillOnce(RunClosure<0>());
-    EXPECT_CALL(*video_renderer_, Stop(_)).WillOnce(RunClosure<0>());
     EXPECT_CALL(callbacks_, OnSeek(status));
 
     if (status == PIPELINE_OK) {
@@ -1084,7 +1079,6 @@ class PipelineTeardownTest : public PipelineTest {
     InSequence s;
 
     EXPECT_CALL(*demuxer_, Stop(_)).WillOnce(RunClosure<0>());
-    EXPECT_CALL(*video_renderer_, Stop(_)).WillOnce(RunClosure<0>());
 
     switch (stop_or_error) {
       case kStop:

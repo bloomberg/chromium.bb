@@ -41,14 +41,22 @@ VideoRendererImpl::VideoRendererImpl(
       last_timestamp_(kNoTimestamp()),
       frames_decoded_(0),
       frames_dropped_(0),
+      is_shutting_down_(false),
       weak_factory_(this) {
   DCHECK(!paint_cb_.is_null());
 }
 
 VideoRendererImpl::~VideoRendererImpl() {
-  base::AutoLock auto_lock(lock_);
-  CHECK(state_ == kStopped || state_ == kUninitialized) << state_;
-  CHECK(thread_.is_null());
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  {
+    base::AutoLock auto_lock(lock_);
+    is_shutting_down_ = true;
+    frame_available_.Signal();
+  }
+
+  if (!thread_.is_null())
+    base::PlatformThread::Join(thread_);
 }
 
 void VideoRendererImpl::Flush(const base::Closure& callback) {
@@ -71,41 +79,6 @@ void VideoRendererImpl::Flush(const base::Closure& callback) {
   video_frame_stream_->Reset(
       base::Bind(&VideoRendererImpl::OnVideoFrameStreamResetDone,
                  weak_factory_.GetWeakPtr()));
-}
-
-void VideoRendererImpl::Stop(const base::Closure& callback) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  base::AutoLock auto_lock(lock_);
-  if (state_ == kUninitialized || state_ == kStopped) {
-    task_runner_->PostTask(FROM_HERE, callback);
-    return;
-  }
-
-  // TODO(scherkus): Consider invalidating |weak_factory_| and replacing
-  // task-running guards that check |state_| with DCHECK().
-
-  state_ = kStopped;
-
-  statistics_cb_.Reset();
-  max_time_cb_.Reset();
-  DoStopOrError_Locked();
-
-  // Clean up our thread if present.
-  base::PlatformThreadHandle thread_to_join = base::PlatformThreadHandle();
-  if (!thread_.is_null()) {
-    // Signal the thread since it's possible to get stopped with the video
-    // thread waiting for a read to complete.
-    frame_available_.Signal();
-    std::swap(thread_, thread_to_join);
-  }
-
-  if (!thread_to_join.is_null()) {
-    base::AutoUnlock auto_unlock(lock_);
-    base::PlatformThread::Join(thread_to_join);
-  }
-
-  video_frame_stream_.reset();
-  task_runner_->PostTask(FROM_HERE, callback);
 }
 
 void VideoRendererImpl::StartPlaying() {
@@ -167,10 +140,6 @@ void VideoRendererImpl::Initialize(DemuxerStream* stream,
 void VideoRendererImpl::OnVideoFrameStreamInitialized(bool success) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
-
-  if (state_ == kStopped)
-    return;
-
   DCHECK_EQ(state_, kInitializing);
 
   if (!success) {
@@ -213,7 +182,7 @@ void VideoRendererImpl::ThreadMain() {
     base::AutoLock auto_lock(lock_);
 
     // Thread exit condition.
-    if (state_ == kStopped)
+    if (is_shutting_down_)
       return;
 
     // Remain idle as long as we're not playing.
@@ -327,7 +296,7 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
 
   // Already-queued VideoFrameStream ReadCB's can fire after various state
   // transitions have happened; in that case just drop those frames immediately.
-  if (state_ == kStopped || state_ == kFlushing)
+  if (state_ == kFlushing)
     return;
 
   DCHECK_EQ(state_, kPlaying);
@@ -451,16 +420,12 @@ void VideoRendererImpl::AttemptRead_Locked() {
     case kInitializing:
     case kFlushing:
     case kFlushed:
-    case kStopped:
       return;
   }
 }
 
 void VideoRendererImpl::OnVideoFrameStreamResetDone() {
   base::AutoLock auto_lock(lock_);
-  if (state_ == kStopped)
-    return;
-
   DCHECK_EQ(kFlushing, state_);
   DCHECK(!pending_read_);
   DCHECK(ready_frames_.empty());
@@ -471,12 +436,6 @@ void VideoRendererImpl::OnVideoFrameStreamResetDone() {
   state_ = kFlushed;
   last_timestamp_ = kNoTimestamp();
   base::ResetAndReturn(&flush_cb_).Run();
-}
-
-void VideoRendererImpl::DoStopOrError_Locked() {
-  lock_.AssertAcquired();
-  last_timestamp_ = kNoTimestamp();
-  ready_frames_.clear();
 }
 
 void VideoRendererImpl::UpdateStatsAndWait_Locked(
