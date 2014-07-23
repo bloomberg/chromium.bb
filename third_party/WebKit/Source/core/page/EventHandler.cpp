@@ -3047,6 +3047,11 @@ static FocusType focusDirectionForKey(const AtomicString& keyIdentifier)
 void EventHandler::defaultKeyboardEventHandler(KeyboardEvent* event)
 {
     if (event->type() == EventTypeNames::keydown) {
+        // Clear caret blinking suspended state to make sure that caret blinks
+        // when we type again after long pressing on an empty input field.
+        if (m_frame && m_frame->selection().isCaretBlinkingSuspended())
+            m_frame->selection().setCaretBlinkingSuspended(false);
+
         m_frame->editor().handleKeyboardEvent(event);
         if (event->defaultHandled())
             return;

@@ -33,6 +33,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/editing/FrameSelection.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -1168,6 +1169,29 @@ TEST_F(WebViewTest, LongPressSelection)
     EXPECT_EQ("", std::string(frame->selectionAsText().utf8().data()));
     EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureLongPress, target));
     EXPECT_EQ("testword", std::string(frame->selectionAsText().utf8().data()));
+}
+
+TEST_F(WebViewTest, BlinkCaretOnTypingAfterLongPress)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("blink_caret_on_typing_after_long_press.html"));
+
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "blink_caret_on_typing_after_long_press.html", true);
+    webView->resize(WebSize(640, 480));
+    webView->layout();
+    runPendingTasks();
+
+    WebString target = WebString::fromUTF8("target");
+    WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webView->mainFrame());
+
+    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureLongPress, target));
+    EXPECT_TRUE(mainFrame->frame()->selection().isCaretBlinkingSuspended());
+
+    WebKeyboardEvent keyEvent;
+    keyEvent.type = WebInputEvent::RawKeyDown;
+    webView->handleInputEvent(keyEvent);
+    keyEvent.type = WebInputEvent::KeyUp;
+    webView->handleInputEvent(keyEvent);
+    EXPECT_FALSE(mainFrame->frame()->selection().isCaretBlinkingSuspended());
 }
 #endif
 
