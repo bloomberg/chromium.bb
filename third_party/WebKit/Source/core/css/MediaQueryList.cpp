@@ -91,6 +91,8 @@ bool MediaQueryList::hasPendingActivity() const
 
 void MediaQueryList::stop()
 {
+    // m_listeners.clear() can drop the last ref to this MediaQueryList.
+    RefPtrWillBeRawPtr<MediaQueryList> protect(this);
     m_listeners.clear();
 }
 
