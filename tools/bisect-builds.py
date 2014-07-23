@@ -269,7 +269,7 @@ class PathContext(object):
       if result:
         return result.group(1)
     print 'Failed to get svn revision number for %s' % git_sha1
-    return None
+    raise ValueError
 
   def _GetSVNRevisionFromGitHashFromGitCheckout(self, git_sha1, depot):
     def _RunGit(command, path):
@@ -294,7 +294,7 @@ class PathContext(object):
       (git_output, return_code) = _RunGit(command, path)
       if not return_code:
         return git_output.strip('\n')
-      return None
+      raise ValueError
     else:
       print ('Script should be run from src folder. ' +
              'Eg: python tools/bisect-builds.py -g 280588 -b 280590' +
