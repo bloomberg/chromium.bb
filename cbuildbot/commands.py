@@ -1734,7 +1734,7 @@ def GeneratePayloads(build_root, target_image_path, archive_dir):
 
   cwd = os.path.join(build_root, 'src', 'scripts')
   path = git.ReinterpretPathForChroot(
-      os.path.join(build_root, 'src', 'platform', 'dev'))
+      os.path.join(build_root, 'src', 'platform', 'dev', 'host'))
   chroot_dir = os.path.join(build_root, 'chroot')
   chroot_tmp = os.path.join(chroot_dir, 'tmp')
   chroot_target = git.ReinterpretPathForChroot(target_image_path)
