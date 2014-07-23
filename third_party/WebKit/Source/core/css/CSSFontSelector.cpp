@@ -160,6 +160,7 @@ void CSSFontSelector::clearDocument()
 {
     m_fontLoader->clearResourceFetcherAndFontSelector();
     m_document = nullptr;
+    m_fontFaceCache.clearAll();
 }
 #endif
 

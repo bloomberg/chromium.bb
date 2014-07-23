@@ -107,11 +107,23 @@ void FontFaceCache::removeFontFace(FontFace* fontFace, bool cssConnected)
     ++m_version;
 }
 
-void FontFaceCache::clear()
+void FontFaceCache::clearCSSConnected()
 {
     for (StyleRuleToFontFace::iterator it = m_styleRuleToFontFace.begin(); it != m_styleRuleToFontFace.end(); ++it)
         removeFontFace(it->value.get(), true);
     m_styleRuleToFontFace.clear();
+}
+
+void FontFaceCache::clearAll()
+{
+    if (m_fontFaces.isEmpty())
+        return;
+
+    m_fontFaces.clear();
+    m_fonts.clear();
+    m_styleRuleToFontFace.clear();
+    m_cssConnectedFontFaces.clear();
+    ++m_version;
 }
 
 static inline bool compareFontFaces(CSSSegmentedFontFace* first, CSSSegmentedFontFace* second, FontTraits desiredTraits)

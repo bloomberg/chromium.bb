@@ -551,9 +551,8 @@ void StyleEngine::resolverChanged(StyleResolverUpdateMode mode)
 
 void StyleEngine::clearFontCache()
 {
-    // We should not recreate FontSelector. Instead, clear fontFaceCache.
     if (m_fontSelector)
-        m_fontSelector->fontFaceCache()->clear();
+        m_fontSelector->fontFaceCache()->clearCSSConnected();
     if (m_resolver)
         m_resolver->invalidateMatchedPropertiesCache();
 }
