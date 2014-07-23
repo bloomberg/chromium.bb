@@ -1289,9 +1289,6 @@ crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ 
 # V8 3.28.19
 crbug.com/392762 fast/js/nested-object-gc.html [ Pass Crash ]
 
-# Linux switching to Clang (Chromium r282246).
-crbug.com/392764 [ Linux ] compositing/layer-creation/overlap-transformed-preserved-3d.html [ Failure ]
-crbug.com/392764 [ Linux ] virtual/softwarecompositing/layer-creation/overlap-transformed-preserved-3d.html [ Failure ]
 # Linux32 only. There seems to be no way to selectively specify Linux32, so marking as flaky (it actually isn't).
 crbug.com/392764 [ Linux ] webaudio/distance-linear.html [ Pass Failure ]
 
@@ -1323,3 +1320,7 @@ crbug.com/390587 [ XP ] svg/custom/object-sizing-no-width-height-change-content-
 crbug.com/395103 [ Mac ] compositing/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ NeedsRebaseline ]
 crbug.com/395103 [ Mac ] virtual/gpu/compositedscrolling/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ NeedsRebaseline ]
 crbug.com/395103 [ Mac ] virtual/softwarecompositing/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ NeedsRebaseline ]
+
+crbug.com/396791 [ Debug ] virtual/threaded/printing/print-close-crash.html [ Pass Crash ]
+
+crbug.com/396798 virtual/softwarecompositing/culling/tile-occlusion-boundaries.html [ Pass ImageOnlyFailure ]
