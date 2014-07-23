@@ -183,8 +183,7 @@ def WaitForReturnValue(values, *args, **kwargs):
 
 
 def WaitForSuccess(retry_check, func, timeout, period=1, side_effect_func=None,
-                   func_args=None, func_kwargs=None,
-                   fallback_timeout=10):
+                   func_args=None, func_kwargs=None, fallback_timeout=10):
   """Periodically run a function, waiting in between runs.
 
   Continues to run given function until return value is accepted by retry check.
@@ -199,7 +198,9 @@ def WaitForSuccess(retry_check, func, timeout, period=1, side_effect_func=None,
     timeout: The maximum amount of time to wait, in integer seconds.
     period: Integer number of seconds between calls to |func|.
     side_effect_func: Optional function to be called between polls of func,
-                      typically to output logging messages.
+                      typically to output logging messages. The remaining
+                      time in minutes will be passed as the first arg to
+                      |side_effect_func|.
     func_args: Optional list of positional arguments to be passed to |func|.
     func_kwargs: Optional dictionary of keyword arguments to be passed to
                  |func|.
@@ -232,7 +233,9 @@ def WaitForSuccess(retry_check, func, timeout, period=1, side_effect_func=None,
         return value
 
       if side_effect_func:
-        side_effect_func()
+        # The remaining time may be negative. Add 0.5 minutes to
+        # offset it so we don't return a negative value.
+        side_effect_func((timeout_end - time.time()) / 60 + 0.5)
 
       time_remaining = min(timeout_end, period_end) - time.time()
       if time_remaining > 0:
