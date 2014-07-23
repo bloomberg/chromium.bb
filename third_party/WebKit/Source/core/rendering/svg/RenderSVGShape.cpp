@@ -302,9 +302,8 @@ bool RenderSVGShape::nodeAtFloatPoint(const HitTestRequest& request, HitTestResu
     if (hitTestAction != HitTestForeground)
         return false;
 
-    FloatPoint localPoint = m_localTransform.inverse().mapPoint(pointInParent);
-
-    if (!SVGRenderSupport::pointInClippingArea(this, localPoint))
+    FloatPoint localPoint;
+    if (!SVGRenderSupport::transformToUserSpaceAndCheckClipping(this, m_localTransform, pointInParent, localPoint))
         return false;
 
     PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_GEOMETRY_HITTESTING, request, style()->pointerEvents());

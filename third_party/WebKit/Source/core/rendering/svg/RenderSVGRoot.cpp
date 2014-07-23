@@ -425,14 +425,17 @@ bool RenderSVGRoot::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
     // Only test SVG content if the point is in our content box.
     // FIXME: This should be an intersection when rect-based hit tests are supported by nodeAtFloatPoint.
     if (contentBoxRect().contains(pointInBorderBox)) {
-        FloatPoint localPoint = localToParentTransform().inverse().mapPoint(FloatPoint(pointInParent));
+        const AffineTransform& localToParentTransform = this->localToParentTransform();
+        if (localToParentTransform.isInvertible()) {
+            FloatPoint localPoint = localToParentTransform.inverse().mapPoint(FloatPoint(pointInParent));
 
-        for (RenderObject* child = lastChild(); child; child = child->previousSibling()) {
-            // FIXME: nodeAtFloatPoint() doesn't handle rect-based hit tests yet.
-            if (child->nodeAtFloatPoint(request, result, localPoint, hitTestAction)) {
-                updateHitTestResult(result, pointInBorderBox);
-                if (!result.addNodeToRectBasedTestResult(child->node(), request, locationInContainer))
-                    return true;
+            for (RenderObject* child = lastChild(); child; child = child->previousSibling()) {
+                // FIXME: nodeAtFloatPoint() doesn't handle rect-based hit tests yet.
+                if (child->nodeAtFloatPoint(request, result, localPoint, hitTestAction)) {
+                    updateHitTestResult(result, pointInBorderBox);
+                    if (!result.addNodeToRectBasedTestResult(child->node(), request, locationInContainer))
+                        return true;
+                }
             }
         }
     }

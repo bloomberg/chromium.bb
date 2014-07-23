@@ -338,7 +338,11 @@ bool RenderSVGResourceClipper::hitTestClipContent(const FloatRect& objectBoundin
         point = transform.inverse().mapPoint(point);
     }
 
-    point = clipPathElement->animatedLocalTransform().inverse().mapPoint(point);
+    AffineTransform animatedLocalTransform = clipPathElement->animatedLocalTransform();
+    if (!animatedLocalTransform.isInvertible())
+        return false;
+
+    point = animatedLocalTransform.inverse().mapPoint(point);
 
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
         RenderObject* renderer = childElement->renderer();

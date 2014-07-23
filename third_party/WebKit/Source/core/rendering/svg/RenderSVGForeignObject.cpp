@@ -168,7 +168,11 @@ bool RenderSVGForeignObject::nodeAtFloatPoint(const HitTestRequest& request, Hit
     if (hitTestAction != HitTestForeground)
         return false;
 
-    FloatPoint localPoint = localTransform().inverse().mapPoint(pointInParent);
+    AffineTransform localTransform = this->localTransform();
+    if (!localTransform.isInvertible())
+        return false;
+
+    FloatPoint localPoint = localTransform.inverse().mapPoint(pointInParent);
 
     // Early exit if local point is not contained in clipped viewport area
     if (SVGRenderSupport::isOverflowHidden(this) && !m_viewport.contains(localPoint))

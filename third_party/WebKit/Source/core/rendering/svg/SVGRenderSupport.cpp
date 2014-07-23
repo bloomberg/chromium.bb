@@ -319,6 +319,14 @@ bool SVGRenderSupport::pointInClippingArea(RenderObject* object, const FloatPoin
     return true;
 }
 
+bool SVGRenderSupport::transformToUserSpaceAndCheckClipping(RenderObject* object, const AffineTransform& localTransform, const FloatPoint& pointInParent, FloatPoint& localPoint)
+{
+    if (!localTransform.isInvertible())
+        return false;
+    localPoint = localTransform.inverse().mapPoint(pointInParent);
+    return pointInClippingArea(object, localPoint);
+}
+
 void SVGRenderSupport::applyStrokeStyleToContext(GraphicsContext* context, const RenderStyle* style, const RenderObject* object)
 {
     ASSERT(context);
