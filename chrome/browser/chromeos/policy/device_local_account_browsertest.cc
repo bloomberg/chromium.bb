@@ -35,6 +35,8 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
+#include "chrome/browser/chromeos/extensions/external_cache.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -751,16 +753,23 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_ExtensionsUncached) {
   // Verify that the extension was not installed.
   EXPECT_FALSE(extension_service->GetExtensionById(kGoodExtensionID, true));
 
-  // Verify that the app was copied to the account's extension cache.
+  // Verify that the app was downloaded to the account's extension cache.
   base::FilePath test_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
   EXPECT_TRUE(ContentsEqual(
           GetCacheCRXFile(kAccountId1, kHostedAppID, kHostedAppVersion),
           test_dir.Append(kHostedAppCRXPath)));
 
-  // Verify that the extension was not copied to the account's extension cache.
-  EXPECT_FALSE(PathExists(GetCacheCRXFile(
-      kAccountId1, kGoodExtensionID, kGoodExtensionVersion)));
+  // Verify that the extension was removed from the account's extension cache
+  // after the installation failure.
+  DeviceLocalAccountPolicyBroker* broker =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos()->
+          GetDeviceLocalAccountPolicyService()->GetBrokerForUser(user_id_1_);
+  ASSERT_TRUE(broker);
+  chromeos::ExternalCache* cache =
+      broker->extension_loader()->GetExternalCacheForTesting();
+  ASSERT_TRUE(cache);
+  EXPECT_FALSE(cache->GetExtension(kGoodExtensionID, NULL, NULL));
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
@@ -776,10 +785,9 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
       GetCacheCRXFile(kAccountId1, kHostedAppID, kHostedAppVersion);
   EXPECT_TRUE(CopyFile(test_dir.Append(kHostedAppCRXPath),
                        cached_hosted_app));
-  const base::FilePath cached_extension =
-      GetCacheCRXFile(kAccountId1, kGoodExtensionID, kGoodExtensionVersion);
-  EXPECT_TRUE(CopyFile(test_dir.Append(kGoodExtensionCRXPath),
-                       cached_extension));
+  EXPECT_TRUE(CopyFile(
+      test_dir.Append(kGoodExtensionCRXPath),
+      GetCacheCRXFile(kAccountId1, kGoodExtensionID, kGoodExtensionVersion)));
 
   // Specify policy to force-install the hosted app.
   em::StringList* forcelist = device_local_account_policy_.payload()
@@ -849,7 +857,14 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
   EXPECT_TRUE(PathExists(cached_hosted_app));
 
   // Verify that the extension was removed from the account's extension cache.
-  EXPECT_FALSE(PathExists(cached_extension));
+  DeviceLocalAccountPolicyBroker* broker =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos()->
+          GetDeviceLocalAccountPolicyService()->GetBrokerForUser(user_id_1_);
+  ASSERT_TRUE(broker);
+  chromeos::ExternalCache* cache =
+      broker->extension_loader()->GetExternalCacheForTesting();
+  ASSERT_TRUE(cache);
+  EXPECT_FALSE(cache->GetExtension(kGoodExtensionID, NULL, NULL));
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {

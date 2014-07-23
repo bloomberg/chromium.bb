@@ -81,6 +81,11 @@ void DeviceLocalAccountExternalPolicyLoader::OnExtensionListsUpdated(
   LoadFinished();
 }
 
+ExternalCache*
+DeviceLocalAccountExternalPolicyLoader::GetExternalCacheForTesting() {
+  return external_cache_.get();
+}
+
 DeviceLocalAccountExternalPolicyLoader::
     ~DeviceLocalAccountExternalPolicyLoader() {
   DCHECK(!external_cache_);

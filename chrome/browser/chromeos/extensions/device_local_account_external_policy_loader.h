@@ -58,6 +58,8 @@ class DeviceLocalAccountExternalPolicyLoader
   virtual void OnExtensionListsUpdated(
       const base::DictionaryValue* prefs) OVERRIDE;
 
+  ExternalCache* GetExternalCacheForTesting();
+
  private:
   // If the cache was started, it must be stopped before |this| is destroyed.
   virtual ~DeviceLocalAccountExternalPolicyLoader();
