@@ -1395,7 +1395,7 @@ static bool scrollBehaviorFromScrollOptions(const Dictionary& scrollOptions, Scr
     return false;
 }
 
-void LocalDOMWindow::scrollBy(int x, int y) const
+void LocalDOMWindow::scrollBy(int x, int y, ScrollBehavior scrollBehavior) const
 {
     if (!isCurrentlyDisplayedInFrame())
         return;
@@ -1407,8 +1407,7 @@ void LocalDOMWindow::scrollBy(int x, int y) const
         return;
 
     IntSize scaledOffset(x * m_frame->pageZoomFactor(), y * m_frame->pageZoomFactor());
-    // FIXME: Use scrollBehavior to decide whether to scroll smoothly or instantly.
-    view->scrollBy(scaledOffset);
+    view->scrollBy(scaledOffset, scrollBehavior);
 }
 
 void LocalDOMWindow::scrollBy(int x, int y, const Dictionary& scrollOptions, ExceptionState &exceptionState) const
@@ -1416,10 +1415,10 @@ void LocalDOMWindow::scrollBy(int x, int y, const Dictionary& scrollOptions, Exc
     ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
     if (!scrollBehaviorFromScrollOptions(scrollOptions, scrollBehavior, exceptionState))
         return;
-    scrollBy(x, y);
+    scrollBy(x, y, scrollBehavior);
 }
 
-void LocalDOMWindow::scrollTo(int x, int y) const
+void LocalDOMWindow::scrollTo(int x, int y, ScrollBehavior scrollBehavior) const
 {
     if (!isCurrentlyDisplayedInFrame())
         return;
@@ -1431,8 +1430,7 @@ void LocalDOMWindow::scrollTo(int x, int y) const
         return;
 
     IntPoint layoutPos(x * m_frame->pageZoomFactor(), y * m_frame->pageZoomFactor());
-    // FIXME: Use scrollBehavior to decide whether to scroll smoothly or instantly.
-    view->setScrollPosition(layoutPos);
+    view->setScrollPosition(layoutPos, scrollBehavior);
 }
 
 void LocalDOMWindow::scrollTo(int x, int y, const Dictionary& scrollOptions, ExceptionState& exceptionState) const
@@ -1440,7 +1438,7 @@ void LocalDOMWindow::scrollTo(int x, int y, const Dictionary& scrollOptions, Exc
     ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
     if (!scrollBehaviorFromScrollOptions(scrollOptions, scrollBehavior, exceptionState))
         return;
-    scrollTo(x, y);
+    scrollTo(x, y, scrollBehavior);
 }
 
 void LocalDOMWindow::moveBy(float x, float y) const

@@ -39,6 +39,7 @@ class GraphicsContext;
 class GraphicsLayer;
 class PlatformGestureEvent;
 class PlatformWheelEvent;
+class ProgrammaticScrollAnimator;
 class ScrollAnimator;
 
 enum ScrollBehavior {
@@ -62,6 +63,8 @@ public:
     bool scroll(ScrollDirection, ScrollGranularity, float delta = 1);
     void scrollToOffsetWithoutAnimation(const FloatPoint&);
     void scrollToOffsetWithoutAnimation(ScrollbarOrientation, float offset);
+
+    void programmaticallyScrollSmoothlyToOffset(const FloatPoint&);
 
     // Should be called when the scroll position changes externally, for example if the scroll layer position
     // is updated on the scrolling thread and we need to notify the main thread.
@@ -109,7 +112,13 @@ public:
     ScrollAnimator* scrollAnimator() const;
 
     // This getter will return null if the ScrollAnimator hasn't been created yet.
-    ScrollAnimator* existingScrollAnimator() const { return m_scrollAnimator.get(); }
+    ScrollAnimator* existingScrollAnimator() const { return m_animators ? m_animators->scrollAnimator.get() : 0; }
+
+    ProgrammaticScrollAnimator* programmaticScrollAnimator() const;
+    ProgrammaticScrollAnimator* existingProgrammaticScrollAnimator() const
+    {
+        return m_animators ? m_animators->programmaticScrollAnimator.get() : 0;
+    }
 
     const IntPoint& scrollOrigin() const { return m_scrollOrigin; }
     bool scrollOriginChanged() const { return m_scrollOriginChanged; }
@@ -179,7 +188,7 @@ public:
     // Let subclasses provide a way of asking for and servicing scroll
     // animations.
     virtual bool scheduleAnimation() { return false; }
-    void serviceScrollAnimations();
+    void serviceScrollAnimations(double monotonicTime);
 
     virtual bool usesCompositedScrolling() const { return false; }
 
@@ -224,6 +233,8 @@ public:
     bool hasLayerForVerticalScrollbar() const;
     bool hasLayerForScrollCorner() const;
 
+    void cancelProgrammaticScrollAnimation();
+
 protected:
     ScrollableArea();
     virtual ~ScrollableArea();
@@ -257,7 +268,12 @@ private:
     virtual int documentStep(ScrollbarOrientation) const;
     virtual float pixelStep(ScrollbarOrientation) const;
 
-    mutable OwnPtr<ScrollAnimator> m_scrollAnimator;
+    struct ScrollableAreaAnimators {
+        OwnPtr<ScrollAnimator> scrollAnimator;
+        OwnPtr<ProgrammaticScrollAnimator> programmaticScrollAnimator;
+    };
+
+    mutable OwnPtr<ScrollableAreaAnimators> m_animators;
     unsigned m_constrainsScrollingToContentEdge : 1;
 
     unsigned m_inLiveResize : 1;

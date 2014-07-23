@@ -159,8 +159,11 @@ public:
     IntPoint cachedScrollPosition() const { return m_cachedScrollPosition; }
 
     // Functions for scrolling the view.
-    virtual void setScrollPosition(const IntPoint&);
-    void scrollBy(const IntSize& s) { return setScrollPosition(scrollPosition() + s); }
+    virtual void setScrollPosition(const IntPoint&, ScrollBehavior = ScrollBehaviorInstant);
+    void scrollBy(const IntSize& s, ScrollBehavior behavior = ScrollBehaviorInstant)
+    {
+        return setScrollPosition(scrollPosition() + s, behavior);
+    }
 
     bool scroll(ScrollDirection, ScrollGranularity);
 

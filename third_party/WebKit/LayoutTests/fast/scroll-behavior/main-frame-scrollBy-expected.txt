@@ -5,13 +5,13 @@ PASS Scroll x:1, y:2, smooth:false
 PASS Scroll x:2, y:3, smooth:false 
 PASS Scroll x:3, y:4, smooth:false 
 PASS Scroll x:4, y:5, smooth:false 
-FAIL Scroll x:10, y:15, smooth:true assert_equals: expected "10, 14" but got "20, 29"
-FAIL Scroll x:20, y:25, smooth:true assert_equals: expected "20, 29" but got "40, 54"
-FAIL Scroll x:30, y:35, smooth:true assert_equals: expected "40, 54" but got "70, 89"
-FAIL Scroll x:40, y:45, smooth:true assert_equals: expected "70, 89" but got "110, 134"
-FAIL Scroll x:4000, y:4100, smooth:true assert_equals: expected "110, 134" but got "4110, 4234"
-FAIL Scroll x:-3900, y:-3850, smooth:true assert_equals: expected "4110, 4234" but got "210, 384"
-FAIL Scroll x:4050, y:4000, smooth:true assert_equals: expected "210, 384" but got "4260, 4384"
-FAIL Scroll x:-4000, y:-4100, smooth:true assert_equals: expected "4260, 4384" but got "260, 284"
+PASS Scroll x:10, y:15, smooth:true 
+PASS Scroll x:20, y:25, smooth:true 
+PASS Scroll x:30, y:35, smooth:true 
+PASS Scroll x:40, y:45, smooth:true 
+PASS Scroll x:4000, y:4100, smooth:true 
+PASS Scroll x:-3900, y:-3850, smooth:true 
+PASS Scroll x:4050, y:4000, smooth:true 
+PASS Scroll x:-4000, y:-4100, smooth:true 
 Harness: the test ran to completion.
 

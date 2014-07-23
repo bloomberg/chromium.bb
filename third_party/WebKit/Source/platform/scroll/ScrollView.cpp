@@ -291,14 +291,17 @@ void ScrollView::scrollTo(const IntSize& newOffset)
         scrollContents(scrollDelta);
 }
 
-void ScrollView::setScrollPosition(const IntPoint& scrollPoint)
+void ScrollView::setScrollPosition(const IntPoint& scrollPoint, ScrollBehavior scrollBehavior)
 {
     IntPoint newScrollPosition = adjustScrollPositionWithinRange(scrollPoint);
 
     if (newScrollPosition == scrollPosition())
         return;
 
-    updateScrollbars(IntSize(newScrollPosition.x(), newScrollPosition.y()));
+    if (scrollBehavior == ScrollBehaviorInstant)
+        updateScrollbars(IntSize(newScrollPosition.x(), newScrollPosition.y()));
+    else
+        programmaticallyScrollSmoothlyToOffset(newScrollPosition);
 }
 
 bool ScrollView::scroll(ScrollDirection direction, ScrollGranularity granularity)

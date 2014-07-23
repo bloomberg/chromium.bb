@@ -263,6 +263,7 @@ void FrameView::prepareForDetach()
 
     if (ScrollAnimator* scrollAnimator = existingScrollAnimator())
         scrollAnimator->cancelAnimations();
+    cancelProgrammaticScrollAnimation();
 
     detachCustomScrollbars();
     // When the view is no longer associated with a frame, it needs to be removed from the ax object cache
@@ -1576,8 +1577,9 @@ void FrameView::scrollElementToRect(Element* element, const IntRect& rect)
     }
 }
 
-void FrameView::setScrollPosition(const IntPoint& scrollPoint)
+void FrameView::setScrollPosition(const IntPoint& scrollPoint, ScrollBehavior scrollBehavior)
 {
+    cancelProgrammaticScrollAnimation();
     TemporaryChange<bool> changeInProgrammaticScroll(m_inProgrammaticScroll, true);
     m_maintainScrollPositionAnchor = nullptr;
 
@@ -1586,7 +1588,9 @@ void FrameView::setScrollPosition(const IntPoint& scrollPoint)
     if (newScrollPosition == scrollPosition())
         return;
 
-    ScrollView::setScrollPosition(newScrollPosition);
+    if (scrollBehavior == ScrollBehaviorAuto)
+        scrollBehavior = m_frame->document()->documentElement()->renderer()->style()->scrollBehavior();
+    ScrollView::setScrollPosition(newScrollPosition, scrollBehavior);
 }
 
 void FrameView::setScrollPositionNonProgrammatically(const IntPoint& scrollPoint)

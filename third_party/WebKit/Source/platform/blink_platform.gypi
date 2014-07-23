@@ -754,6 +754,8 @@
       'scroll/FramelessScrollView.cpp',
       'scroll/FramelessScrollView.h',
       'scroll/FramelessScrollViewClient.h',
+      'scroll/ProgrammaticScrollAnimator.cpp',
+      'scroll/ProgrammaticScrollAnimator.h',
       'scroll/ScrollAnimator.cpp',
       'scroll/ScrollAnimator.h',
       'scroll/ScrollAnimatorNone.cpp',
