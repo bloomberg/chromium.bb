@@ -2197,9 +2197,8 @@ _release.add_config('link_freon-release',
   hw_tests=[],
   # This build can't run vm_tests, bug 387507
   vm_tests=[],
-  # This build doesn't generate signed images, so don't try to release them.
+  # This build doesn't release yet.
   paygen=False,
-  signer_tests=False,
   important=True,
 )
 

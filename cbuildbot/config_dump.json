@@ -34250,7 +34250,7 @@
         "rootfs_verification": true,
         "sanity_check_slaves": null,
         "shared_user_password": null,
-        "signer_tests": false,
+        "signer_tests": true,
         "sync_chrome": null,
         "tests_supported": true,
         "trybot_list": true,
