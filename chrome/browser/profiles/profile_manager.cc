@@ -82,13 +82,13 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/user_manager/user.h"
 #endif
 
 using base::UserMetricsAction;
@@ -337,7 +337,7 @@ Profile* ProfileManager::GetActiveUserProfile() {
   }
 
   chromeos::UserManager* manager = chromeos::UserManager::Get();
-  const chromeos::User* user = manager->GetActiveUser();
+  const user_manager::User* user = manager->GetActiveUser();
   // To avoid an endless loop (crbug.com/334098) we have to additionally check
   // if the profile of the user was already created. If the profile was not yet
   // created we load the profile using the profile directly.

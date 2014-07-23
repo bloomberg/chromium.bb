@@ -19,9 +19,11 @@ class DictionaryValue;
 class ListValue;
 }
 
-namespace chromeos {
-
+namespace user_manager {
 class User;
+}
+
+namespace chromeos {
 
 namespace options {
 
@@ -119,7 +121,7 @@ class ChangePictureOptionsHandler : public ::options::OptionsPageUIHandler,
 
   // Returns user related to current WebUI. If this user doesn't exist,
   // returns active user.
-  User* GetUser() const;
+  user_manager::User* GetUser() const;
 
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 

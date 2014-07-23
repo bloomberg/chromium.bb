@@ -31,6 +31,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_image/default_user_images.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "content/public/browser/browser_thread.h"
@@ -64,7 +65,7 @@ UserImageScreen::UserImageScreen(ScreenObserver* screen_observer,
     : WizardScreen(screen_observer),
       actor_(actor),
       accept_photo_after_decoding_(false),
-      selected_image_(User::kInvalidImageIndex),
+      selected_image_(user_manager::User::USER_IMAGE_INVALID),
       profile_picture_enabled_(false),
       profile_picture_data_url_(url::kAboutBlankURL),
       profile_picture_absent_(false),
@@ -165,14 +166,14 @@ void UserImageScreen::OnImageSelected(const std::string& image_type,
   }
   if (image_url.empty())
     return;
-  int user_image_index = User::kInvalidImageIndex;
+  int user_image_index = user_manager::User::USER_IMAGE_INVALID;
   if (image_type == "default" &&
       user_manager::IsDefaultImageUrl(image_url, &user_image_index)) {
     selected_image_ = user_image_index;
   } else if (image_type == "camera") {
-    selected_image_ = User::kExternalImageIndex;
+    selected_image_ = user_manager::User::USER_IMAGE_EXTERNAL;
   } else if (image_type == "profile") {
-    selected_image_ = User::kProfileImageIndex;
+    selected_image_ = user_manager::User::USER_IMAGE_PROFILE;
   } else {
     NOTREACHED() << "Unexpected image type: " << image_type;
   }
@@ -182,7 +183,7 @@ void UserImageScreen::OnImageAccepted() {
   UserImageManager* image_manager = GetUserImageManager();
   int uma_index = 0;
   switch (selected_image_) {
-    case User::kExternalImageIndex:
+    case user_manager::User::USER_IMAGE_EXTERNAL:
       // Photo decoding may not have been finished yet.
       if (user_photo_.isNull()) {
         accept_photo_after_decoding_ = true;
@@ -192,7 +193,7 @@ void UserImageScreen::OnImageAccepted() {
           user_manager::UserImage::CreateAndEncode(user_photo_));
       uma_index = user_manager::kHistogramImageFromCamera;
       break;
-    case User::kProfileImageIndex:
+    case user_manager::User::USER_IMAGE_PROFILE:
       image_manager->SaveUserImageFromProfileImage();
       uma_index = user_manager::kHistogramImageFromProfile;
       break;
@@ -247,7 +248,7 @@ void UserImageScreen::PrepareToShow() {
     actor_->PrepareToShow();
 }
 
-const User* UserImageScreen::GetUser() {
+const user_manager::User* UserImageScreen::GetUser() {
   if (user_id_.empty())
     return UserManager::Get()->GetLoggedInUser();
   return UserManager::Get()->FindUser(user_id_);

@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-namespace chromeos {
+namespace user_manager {
 class User;
 }
 
@@ -32,7 +32,7 @@ class ProfilePolicyConnector : public KeyedService {
   // If |force_immediate_load| then disk caches will be loaded synchronously.
   void Init(bool force_immediate_load,
 #if defined(OS_CHROMEOS)
-            const chromeos::User* user,
+            const user_manager::User* user,
 #endif
             SchemaRegistry* schema_registry,
             CloudPolicyManager* user_cloud_policy_manager);

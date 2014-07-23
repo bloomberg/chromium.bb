@@ -11,11 +11,11 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/audio/chromeos_sounds.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_image/default_user_images.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -159,7 +159,7 @@ void UserImageScreenHandler::HandleGetImages() {
   CallJS("setDefaultImages", image_urls);
   if (!screen_)
     return;
-  if (screen_->selected_image() != User::kInvalidImageIndex)
+  if (screen_->selected_image() != user_manager::User::USER_IMAGE_INVALID)
     SelectImage(screen_->selected_image());
 
   if (screen_->profile_picture_data_url() != url::kAboutBlankURL)

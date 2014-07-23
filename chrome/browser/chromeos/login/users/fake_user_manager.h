@@ -10,8 +10,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_image/user_image.h"
 
 namespace chromeos {
@@ -26,29 +26,30 @@ class FakeUserManager : public UserManager {
   virtual ~FakeUserManager();
 
   // Create and add a new user.
-  const User* AddUser(const std::string& email);
+  const user_manager::User* AddUser(const std::string& email);
 
   // Create and add a kiosk app user.
   void AddKioskAppUser(const std::string& kiosk_app_username);
 
   // Create and add a public account user.
-  const User* AddPublicAccountUser(const std::string& email);
+  const user_manager::User* AddPublicAccountUser(const std::string& email);
 
   // Calculates the user name hash and calls UserLoggedIn to login a user.
   void LoginUser(const std::string& email);
 
   // UserManager overrides.
-  virtual const UserList& GetUsers() const OVERRIDE;
-  virtual UserList GetUsersAdmittedForMultiProfile() const OVERRIDE;
-  virtual const UserList& GetLoggedInUsers() const OVERRIDE;
+  virtual const user_manager::UserList& GetUsers() const OVERRIDE;
+  virtual user_manager::UserList GetUsersAdmittedForMultiProfile()
+      const OVERRIDE;
+  virtual const user_manager::UserList& GetLoggedInUsers() const OVERRIDE;
 
   // Set the user as logged in.
   virtual void UserLoggedIn(const std::string& email,
                             const std::string& username_hash,
                             bool browser_restart) OVERRIDE;
 
-  virtual const User* GetActiveUser() const OVERRIDE;
-  virtual User* GetActiveUser() OVERRIDE;
+  virtual const user_manager::User* GetActiveUser() const OVERRIDE;
+  virtual user_manager::User* GetActiveUser() OVERRIDE;
   virtual void SwitchActiveUser(const std::string& email) OVERRIDE;
   virtual void SaveUserDisplayName(const std::string& username,
       const base::string16& display_name) OVERRIDE;
@@ -62,22 +63,24 @@ class FakeUserManager : public UserManager {
   virtual UserImageManager* GetUserImageManager(
       const std::string& user_id) OVERRIDE;
   virtual SupervisedUserManager* GetSupervisedUserManager() OVERRIDE;
-  virtual const UserList& GetLRULoggedInUsers() OVERRIDE;
-  virtual UserList GetUnlockUsers() const OVERRIDE;
+  virtual const user_manager::UserList& GetLRULoggedInUsers() OVERRIDE;
+  virtual user_manager::UserList GetUnlockUsers() const OVERRIDE;
   virtual const std::string& GetOwnerEmail() OVERRIDE;
   virtual void SessionStarted() OVERRIDE {}
   virtual void RemoveUser(const std::string& email,
       RemoveUserDelegate* delegate) OVERRIDE {}
   virtual void RemoveUserFromList(const std::string& email) OVERRIDE;
   virtual bool IsKnownUser(const std::string& email) const OVERRIDE;
-  virtual const User* FindUser(const std::string& email) const OVERRIDE;
-  virtual User* FindUserAndModify(const std::string& email) OVERRIDE;
-  virtual const User* GetLoggedInUser() const OVERRIDE;
-  virtual User* GetLoggedInUser() OVERRIDE;
-  virtual const User* GetPrimaryUser() const OVERRIDE;
+  virtual const user_manager::User* FindUser(
+      const std::string& email) const OVERRIDE;
+  virtual user_manager::User* FindUserAndModify(
+      const std::string& email) OVERRIDE;
+  virtual const user_manager::User* GetLoggedInUser() const OVERRIDE;
+  virtual user_manager::User* GetLoggedInUser() OVERRIDE;
+  virtual const user_manager::User* GetPrimaryUser() const OVERRIDE;
   virtual void SaveUserOAuthStatus(
       const std::string& username,
-      User::OAuthTokenStatus oauth_token_status) OVERRIDE {}
+      user_manager::User::OAuthTokenStatus oauth_token_status) OVERRIDE {}
   virtual void SaveForceOnlineSignin(const std::string& user_id,
                                      bool force_online_signin) OVERRIDE {}
   virtual base::string16 GetUserDisplayName(
@@ -125,13 +128,13 @@ class FakeUserManager : public UserManager {
 
  private:
   // We use this internal function for const-correctness.
-  User* GetActiveUserInternal() const;
+  user_manager::User* GetActiveUserInternal() const;
 
   scoped_ptr<FakeSupervisedUserManager> supervised_user_manager_;
-  UserList user_list_;
-  UserList logged_in_users_;
+  user_manager::UserList user_list_;
+  user_manager::UserList logged_in_users_;
   std::string owner_email_;
-  User* primary_user_;
+  user_manager::User* primary_user_;
 
   // If set this is the active user. If empty, the first created user is the
   // active user.

@@ -740,8 +740,6 @@
         'browser/chromeos/login/users/user_manager.h',
         'browser/chromeos/login/users/user_manager_impl.cc',
         'browser/chromeos/login/users/user_manager_impl.h',
-        'browser/chromeos/login/users/user.cc',
-        'browser/chromeos/login/users/user.h',
         'browser/chromeos/login/users/wallpaper/wallpaper_manager.cc',
         'browser/chromeos/login/users/wallpaper/wallpaper_manager.h',
         'browser/chromeos/login/version_info_updater.cc',

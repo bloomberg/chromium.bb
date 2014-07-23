@@ -105,7 +105,6 @@
 #include "ash/shell.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/chromeos_utils.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -121,6 +120,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
+#include "components/user_manager/user.h"
 #include "policy/policy_constants.h"
 #include "ui/gfx/image/image_skia.h"
 #endif  // defined(OS_CHROMEOS)
@@ -504,7 +504,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   Profile* profile = Profile::FromWebUI(web_ui());
   std::string username = profile->GetProfileName();
   if (username.empty()) {
-    chromeos::User* user =
+    user_manager::User* user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
     if (user && (user->GetType() != user_manager::USER_TYPE_GUEST))
       username = user->email();

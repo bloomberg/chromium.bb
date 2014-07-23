@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/audio/chromeos_sounds.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_image/default_user_images.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "content/public/browser/browser_thread.h"
@@ -77,7 +78,7 @@ const char kProfileDownloadReason[] = "Preferences";
 
 ChangePictureOptionsHandler::ChangePictureOptionsHandler()
     : previous_image_url_(url::kAboutBlankURL),
-      previous_image_index_(User::kInvalidImageIndex) {
+      previous_image_index_(user_manager::User::USER_IMAGE_INVALID) {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
       content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
@@ -267,18 +268,18 @@ void ChangePictureOptionsHandler::HandlePageHidden(
 }
 
 void ChangePictureOptionsHandler::SendSelectedImage() {
-  const User* user = GetUser();
+  const user_manager::User* user = GetUser();
   DCHECK(!user->email().empty());
 
   previous_image_index_ = user->image_index();
   switch (previous_image_index_) {
-    case User::kExternalImageIndex: {
+    case user_manager::User::USER_IMAGE_EXTERNAL: {
       // User has image from camera/file, record it and add to the image list.
       previous_image_ = user->GetImage();
       SendOldImage(webui::GetBitmapDataUrl(*previous_image_.bitmap()));
       break;
     }
-    case User::kProfileImageIndex: {
+    case user_manager::User::USER_IMAGE_PROFILE: {
       // User has his/her Profile image as the current image.
       SendProfileImage(user->GetImage(), true);
       break;
@@ -314,7 +315,7 @@ void ChangePictureOptionsHandler::UpdateProfileImage() {
       UserManager::Get()->GetUserImageManager(GetUser()->email());
   // If we have a downloaded profile image and haven't sent it in
   // |SendSelectedImage|, send it now (without selecting).
-  if (previous_image_index_ != User::kProfileImageIndex &&
+  if (previous_image_index_ != user_manager::User::USER_IMAGE_PROFILE &&
       !user_image_manager->DownloadedProfileImage().isNull())
     SendProfileImage(user_image_manager->DownloadedProfileImage(), false);
 
@@ -343,7 +344,7 @@ void ChangePictureOptionsHandler::HandleSelectImage(
 
   UserImageManager* user_image_manager =
       UserManager::Get()->GetUserImageManager(GetUser()->email());
-  int image_index = User::kInvalidImageIndex;
+  int image_index = user_manager::User::USER_IMAGE_INVALID;
   bool waiting_for_camera_photo = false;
 
   if (image_type == "old") {
@@ -379,7 +380,7 @@ void ChangePictureOptionsHandler::HandleSelectImage(
     // Profile image selected. Could be previous (old) user image.
     user_image_manager->SaveUserImageFromProfileImage();
 
-    if (previous_image_index_ == User::kProfileImageIndex) {
+    if (previous_image_index_ == user_manager::User::USER_IMAGE_PROFILE) {
       UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                                 user_manager::kHistogramImageOld,
                                 user_manager::kHistogramImagesCount);
@@ -444,7 +445,7 @@ void ChangePictureOptionsHandler::Observe(
                      false);
   } else if (type == chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED) {
     // Not initialized yet.
-    if (previous_image_index_ == User::kInvalidImageIndex)
+    if (previous_image_index_ == user_manager::User::USER_IMAGE_INVALID)
       return;
     SendSelectedImage();
   }
@@ -470,9 +471,9 @@ void ChangePictureOptionsHandler::OnDecodeImageFailed(
   NOTREACHED() << "Failed to decode PNG image from WebUI";
 }
 
-User* ChangePictureOptionsHandler::GetUser() const {
+user_manager::User* ChangePictureOptionsHandler::GetUser() const {
   Profile* profile = Profile::FromWebUI(web_ui());
-  User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user)
     return UserManager::Get()->GetActiveUser();
   return user;

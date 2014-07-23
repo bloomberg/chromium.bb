@@ -48,7 +48,6 @@
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -104,6 +103,7 @@
 #include "chromeos/tpm_token_loader.h"
 #include "components/metrics/metrics_service.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/user_manager/user.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/power_save_blocker.h"
@@ -499,7 +499,8 @@ void SetGuestLocale(Profile* const profile) {
   scoped_ptr<locale_util::SwitchLanguageCallback> callback(
       new locale_util::SwitchLanguageCallback(base::Bind(
           &GuestLanguageSetCallbackData::Callback, base::Passed(data.Pass()))));
-  User* const user = ProfileHelper::Get()->GetUserByProfile(profile);
+  user_manager::User* const user =
+      ProfileHelper::Get()->GetUserByProfile(profile);
   UserSessionManager::GetInstance()->RespectLocalePreference(
       profile, user, callback.Pass());
 }

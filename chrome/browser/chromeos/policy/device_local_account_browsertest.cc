@@ -43,7 +43,6 @@
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_test_util.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/users/user_manager_impl.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -90,6 +89,7 @@
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/signin/core/common/signin_pref_names.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -416,7 +416,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
   }
 
   void CheckPublicSessionPresent(const std::string& id) {
-    const chromeos::User* user = chromeos::UserManager::Get()->FindUser(id);
+    const user_manager::User* user = chromeos::UserManager::Get()->FindUser(id);
     ASSERT_TRUE(user);
     EXPECT_EQ(id, user->email());
     EXPECT_EQ(user_manager::USER_TYPE_PUBLIC_ACCOUNT, user->GetType());
@@ -479,7 +479,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LoginScreen) {
 
 static bool DisplayNameMatches(const std::string& account_id,
                                const std::string& display_name) {
-  const chromeos::User* user =
+  const user_manager::User* user =
       chromeos::UserManager::Get()->FindUser(account_id);
   if (!user || user->display_name().empty())
     return false;
@@ -1018,7 +1018,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
       test_dir.Append(chromeos::test::kUserAvatarImage1RelativePath)).Load();
   ASSERT_TRUE(policy_image);
 
-  const chromeos::User* user =
+  const user_manager::User* user =
       chromeos::UserManager::Get()->FindUser(user_id_1_);
   ASSERT_TRUE(user);
 
@@ -1028,7 +1028,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
       user_data_dir.Append(user_id_1_).AddExtension("jpg");
 
   EXPECT_FALSE(user->HasDefaultImage());
-  EXPECT_EQ(chromeos::User::kExternalImageIndex, user->image_index());
+  EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, user->image_index());
   EXPECT_TRUE(chromeos::test::AreImagesEqual(*policy_image, user->GetImage()));
   const base::DictionaryValue* images_pref =
       g_browser_process->local_state()->GetDictionary("user_image_info");
@@ -1041,7 +1041,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
   std::string image_path;
   ASSERT_TRUE(image_properties->GetInteger("index", &image_index));
   ASSERT_TRUE(image_properties->GetString("path", &image_path));
-  EXPECT_EQ(chromeos::User::kExternalImageIndex, image_index);
+  EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, image_index);
   EXPECT_EQ(saved_image_path.value(), image_path);
 
   scoped_ptr<gfx::ImageSkia> saved_image =

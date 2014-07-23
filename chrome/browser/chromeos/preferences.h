@@ -52,9 +52,10 @@ class Preferences : public PrefServiceSyncableObserver,
 
   // This method will initialize Chrome OS settings to values in user prefs.
   // |user| is the user owning this preferences.
-  void Init(PrefServiceSyncable* prefs, const User* user);
+  void Init(PrefServiceSyncable* prefs, const user_manager::User* user);
 
-  void InitUserPrefsForTesting(PrefServiceSyncable* prefs, const User* user);
+  void InitUserPrefsForTesting(PrefServiceSyncable* prefs,
+                               const user_manager::User* user);
   void SetInputMethodListForTesting();
 
  private:
@@ -103,7 +104,8 @@ class Preferences : public PrefServiceSyncableObserver,
   virtual void OnTouchHudProjectionToggled(bool enabled) OVERRIDE;
 
   // Overriden form UserManager::UserSessionStateObserver.
-  virtual void ActiveUserChanged(const User* active_user) OVERRIDE;
+  virtual void ActiveUserChanged(
+      const user_manager::User* active_user) OVERRIDE;
 
   PrefServiceSyncable* prefs_;
 
@@ -134,7 +136,7 @@ class Preferences : public PrefServiceSyncableObserver,
   IntegerPrefMember xkb_auto_repeat_interval_pref_;
 
   // User owning these preferences.
-  const User* user_;
+  const user_manager::User* user_;
 
   // Whether user is a primary user.
   bool user_is_primary_;

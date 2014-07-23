@@ -236,7 +236,7 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // Calls Pkcs11GetTpmTokenInfoForUser method.  On success |callback| will
   // receive PKCS #11 token information for the user identified by |user_email|.
   // The |user_email| must be a canonical email address as returned by
-  // chromeos::User::email().
+  // user_manager::User::email().
   virtual void Pkcs11GetTpmTokenInfoForUser(
       const std::string& user_email,
       const Pkcs11GetTpmTokenInfoCallback& callback) = 0;

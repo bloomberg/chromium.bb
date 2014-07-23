@@ -2,20 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/users/user.h"
+#include "components/user_manager/user.h"
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chromeos/login/user_names.h"
 #include "components/user_manager/user_image/default_user_images.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
-namespace chromeos {
+namespace user_manager {
 
 namespace {
 
@@ -30,17 +28,13 @@ std::string GetUserName(const std::string& email) {
 
 }  // namespace
 
-const int User::kExternalImageIndex;
-const int User::kProfileImageIndex;
-const int User::kInvalidImageIndex;
-
 class RegularUser : public User {
  public:
   explicit RegularUser(const std::string& email);
   virtual ~RegularUser();
 
   // Overridden from User:
-  virtual user_manager::UserType GetType() const OVERRIDE;
+  virtual UserType GetType() const OVERRIDE;
   virtual bool CanSyncImage() const OVERRIDE;
 
  private:
@@ -53,7 +47,7 @@ class GuestUser : public User {
   virtual ~GuestUser();
 
   // Overridden from User:
-  virtual user_manager::UserType GetType() const OVERRIDE;
+  virtual UserType GetType() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GuestUser);
@@ -65,7 +59,7 @@ class KioskAppUser : public User {
   virtual ~KioskAppUser();
 
   // Overridden from User:
-  virtual user_manager::UserType GetType() const OVERRIDE;
+  virtual UserType GetType() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KioskAppUser);
@@ -77,7 +71,7 @@ class SupervisedUser : public User {
   virtual ~SupervisedUser();
 
   // Overridden from User:
-  virtual user_manager::UserType GetType() const OVERRIDE;
+  virtual UserType GetType() const OVERRIDE;
   virtual std::string display_email() const OVERRIDE;
 
  private:
@@ -90,7 +84,7 @@ class RetailModeUser : public User {
   virtual ~RetailModeUser();
 
   // Overridden from User:
-  virtual user_manager::UserType GetType() const OVERRIDE;
+  virtual UserType GetType() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RetailModeUser);
@@ -102,7 +96,7 @@ class PublicAccountUser : public User {
   virtual ~PublicAccountUser();
 
   // Overridden from User:
-  virtual user_manager::UserType GetType() const OVERRIDE;
+  virtual UserType GetType() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PublicAccountUser);
@@ -114,9 +108,8 @@ std::string User::GetEmail() const {
 
 base::string16 User::GetDisplayName() const {
   // Fallback to the email account name in case display name haven't been set.
-  return display_name_.empty() ?
-      base::UTF8ToUTF16(GetAccountName(true)) :
-      display_name_;
+  return display_name_.empty() ? base::UTF8ToUTF16(GetAccountName(true))
+                               : display_name_;
 }
 
 base::string16 User::GetGivenName() const {
@@ -139,7 +132,7 @@ std::string User::GetAccountName(bool use_display_email) const {
 }
 
 bool User::HasDefaultImage() const {
-  return image_index_ >= 0 && image_index_ < user_manager::kDefaultImagesCount;
+  return image_index_ >= 0 && image_index_ < kDefaultImagesCount;
 }
 
 bool User::CanSyncImage() const {
@@ -194,7 +187,7 @@ User::User(const std::string& email)
     : email_(email),
       oauth_token_status_(OAUTH_TOKEN_STATUS_UNKNOWN),
       force_online_signin_(false),
-      image_index_(kInvalidImageIndex),
+      image_index_(USER_IMAGE_INVALID),
       image_is_stub_(false),
       image_is_loading_(false),
       can_lock_(false),
@@ -203,14 +196,14 @@ User::User(const std::string& email)
       profile_is_created_(false) {
 }
 
-User::~User() {}
+User::~User() {
+}
 
 void User::SetAccountLocale(const std::string& resolved_account_locale) {
   account_locale_.reset(new std::string(resolved_account_locale));
 }
 
-void User::SetImage(const user_manager::UserImage& user_image,
-                    int image_index) {
+void User::SetImage(const UserImage& user_image, int image_index) {
   user_image_ = user_image;
   image_index_ = image_index;
   image_is_stub_ = false;
@@ -222,10 +215,10 @@ void User::SetImageURL(const GURL& image_url) {
   user_image_.set_url(image_url);
 }
 
-void User::SetStubImage(int image_index, bool is_loading) {
-  user_image_ = user_manager::UserImage(
-      *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_PROFILE_PICTURE_LOADING));
+void User::SetStubImage(const UserImage& stub_user_image,
+                        int image_index,
+                        bool is_loading) {
+  user_image_ = stub_user_image;
   image_index_ = image_index;
   image_is_stub_ = true;
   image_is_loading_ = is_loading;
@@ -236,9 +229,10 @@ RegularUser::RegularUser(const std::string& email) : User(email) {
   set_display_email(email);
 }
 
-RegularUser::~RegularUser() {}
+RegularUser::~RegularUser() {
+}
 
-user_manager::UserType RegularUser::GetType() const {
+UserType RegularUser::GetType() const {
   return user_manager::USER_TYPE_REGULAR;
 }
 
@@ -250,9 +244,10 @@ GuestUser::GuestUser() : User(chromeos::login::kGuestUserName) {
   set_display_email(std::string());
 }
 
-GuestUser::~GuestUser() {}
+GuestUser::~GuestUser() {
+}
 
-user_manager::UserType GuestUser::GetType() const {
+UserType GuestUser::GetType() const {
   return user_manager::USER_TYPE_GUEST;
 }
 
@@ -261,20 +256,21 @@ KioskAppUser::KioskAppUser(const std::string& kiosk_app_username)
   set_display_email(kiosk_app_username);
 }
 
-KioskAppUser::~KioskAppUser() {}
+KioskAppUser::~KioskAppUser() {
+}
 
-user_manager::UserType KioskAppUser::GetType() const {
+UserType KioskAppUser::GetType() const {
   return user_manager::USER_TYPE_KIOSK_APP;
 }
 
-SupervisedUser::SupervisedUser(const std::string& username)
-    : User(username) {
+SupervisedUser::SupervisedUser(const std::string& username) : User(username) {
   set_can_lock(true);
 }
 
-SupervisedUser::~SupervisedUser() {}
+SupervisedUser::~SupervisedUser() {
+}
 
-user_manager::UserType SupervisedUser::GetType() const {
+UserType SupervisedUser::GetType() const {
   return user_manager::USER_TYPE_SUPERVISED;
 }
 
@@ -286,18 +282,20 @@ RetailModeUser::RetailModeUser() : User(chromeos::login::kRetailModeUserName) {
   set_display_email(std::string());
 }
 
-RetailModeUser::~RetailModeUser() {}
+RetailModeUser::~RetailModeUser() {
+}
 
-user_manager::UserType RetailModeUser::GetType() const {
+UserType RetailModeUser::GetType() const {
   return user_manager::USER_TYPE_RETAIL_MODE;
 }
 
 PublicAccountUser::PublicAccountUser(const std::string& email) : User(email) {
 }
 
-PublicAccountUser::~PublicAccountUser() {}
+PublicAccountUser::~PublicAccountUser() {
+}
 
-user_manager::UserType PublicAccountUser::GetType() const {
+UserType PublicAccountUser::GetType() const {
   return user_manager::USER_TYPE_PUBLIC_ACCOUNT;
 }
 
@@ -318,4 +316,4 @@ bool User::has_gaia_account() const {
   return false;
 }
 
-}  // namespace chromeos
+}  // namespace user_manager

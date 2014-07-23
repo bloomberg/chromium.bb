@@ -7,10 +7,10 @@
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller_delegate.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/user_manager/user.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -79,10 +79,9 @@ class SigninPrepareUserListTest
 
 TEST_F(SigninPrepareUserListTest, AlwaysKeepOwnerInList) {
   EXPECT_LT(kMaxUsers, fake_user_manager_->GetUsers().size());
-  UserList users_to_send = UserSelectionScreen::PrepareUserListForSending(
-      fake_user_manager_->GetUsers(),
-      kOwner,
-      true /* is signin to add */);
+  user_manager::UserList users_to_send =
+      UserSelectionScreen::PrepareUserListForSending(
+          fake_user_manager_->GetUsers(), kOwner, true /* is signin to add */);
 
   EXPECT_EQ(kMaxUsers, users_to_send.size());
   EXPECT_EQ(kOwner, users_to_send.back()->email());
@@ -100,10 +99,9 @@ TEST_F(SigninPrepareUserListTest, AlwaysKeepOwnerInList) {
 }
 
 TEST_F(SigninPrepareUserListTest, PublicAccounts) {
-  UserList users_to_send = UserSelectionScreen::PrepareUserListForSending(
-      fake_user_manager_->GetUsers(),
-      kOwner,
-      true /* is signin to add */);
+  user_manager::UserList users_to_send =
+      UserSelectionScreen::PrepareUserListForSending(
+          fake_user_manager_->GetUsers(), kOwner, true /* is signin to add */);
 
   EXPECT_EQ(kMaxUsers, users_to_send.size());
   EXPECT_EQ("a0@gmail.com", users_to_send.front()->email());

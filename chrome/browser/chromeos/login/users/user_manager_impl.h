@@ -18,13 +18,13 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller_delegate.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_policy_observer.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "components/user_manager/user.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -58,11 +58,12 @@ class UserManagerImpl
   virtual UserImageManager* GetUserImageManager(
       const std::string& user_id) OVERRIDE;
   virtual SupervisedUserManager* GetSupervisedUserManager() OVERRIDE;
-  virtual const UserList& GetUsers() const OVERRIDE;
-  virtual UserList GetUsersAdmittedForMultiProfile() const OVERRIDE;
-  virtual const UserList& GetLoggedInUsers() const OVERRIDE;
-  virtual const UserList& GetLRULoggedInUsers() OVERRIDE;
-  virtual UserList GetUnlockUsers() const OVERRIDE;
+  virtual const user_manager::UserList& GetUsers() const OVERRIDE;
+  virtual user_manager::UserList GetUsersAdmittedForMultiProfile()
+      const OVERRIDE;
+  virtual const user_manager::UserList& GetLoggedInUsers() const OVERRIDE;
+  virtual const user_manager::UserList& GetLRULoggedInUsers() OVERRIDE;
+  virtual user_manager::UserList GetUnlockUsers() const OVERRIDE;
   virtual const std::string& GetOwnerEmail() OVERRIDE;
   virtual void UserLoggedIn(const std::string& user_id,
                             const std::string& user_id_hash,
@@ -73,16 +74,18 @@ class UserManagerImpl
                           RemoveUserDelegate* delegate) OVERRIDE;
   virtual void RemoveUserFromList(const std::string& user_id) OVERRIDE;
   virtual bool IsKnownUser(const std::string& user_id) const OVERRIDE;
-  virtual const User* FindUser(const std::string& user_id) const OVERRIDE;
-  virtual User* FindUserAndModify(const std::string& user_id) OVERRIDE;
-  virtual const User* GetLoggedInUser() const OVERRIDE;
-  virtual User* GetLoggedInUser() OVERRIDE;
-  virtual const User* GetActiveUser() const OVERRIDE;
-  virtual User* GetActiveUser() OVERRIDE;
-  virtual const User* GetPrimaryUser() const OVERRIDE;
+  virtual const user_manager::User* FindUser(
+      const std::string& user_id) const OVERRIDE;
+  virtual user_manager::User* FindUserAndModify(
+      const std::string& user_id) OVERRIDE;
+  virtual const user_manager::User* GetLoggedInUser() const OVERRIDE;
+  virtual user_manager::User* GetLoggedInUser() OVERRIDE;
+  virtual const user_manager::User* GetActiveUser() const OVERRIDE;
+  virtual user_manager::User* GetActiveUser() OVERRIDE;
+  virtual const user_manager::User* GetPrimaryUser() const OVERRIDE;
   virtual void SaveUserOAuthStatus(
       const std::string& user_id,
-      User::OAuthTokenStatus oauth_token_status) OVERRIDE;
+      user_manager::User::OAuthTokenStatus oauth_token_status) OVERRIDE;
   virtual void SaveForceOnlineSignin(const std::string& user_id,
                                      bool force_online_signin) OVERRIDE;
   virtual void SaveUserDisplayName(const std::string& user_id,
@@ -180,18 +183,18 @@ class UserManagerImpl
 
   // Returns a list of users who have logged into this device previously.
   // Same as GetUsers but used if you need to modify User from that list.
-  UserList& GetUsersAndModify();
+  user_manager::UserList& GetUsersAndModify();
 
   // Returns the user with the given email address if found in the persistent
   // list. Returns |NULL| otherwise.
-  const User* FindUserInList(const std::string& user_id) const;
+  const user_manager::User* FindUserInList(const std::string& user_id) const;
 
   // Returns |true| if user with the given id is found in the persistent list.
   // Returns |false| otherwise. Does not trigger user loading.
   const bool UserExistsInList(const std::string& user_id) const;
 
   // Same as FindUserInList but returns non-const pointer to User object.
-  User* FindUserInListAndModify(const std::string& user_id);
+  user_manager::User* FindUserInListAndModify(const std::string& user_id);
 
   // Indicates that a user just logged in as guest.
   void GuestUserLoggedIn();
@@ -206,7 +209,7 @@ class UserManagerImpl
   void SupervisedUserLoggedIn(const std::string& user_id);
 
   // Indicates that a user just logged into a public session.
-  void PublicAccountUserLoggedIn(User* user);
+  void PublicAccountUserLoggedIn(user_manager::User* user);
 
   // Indicates that a kiosk app robot just logged in.
   void KioskAppLoggedIn(const std::string& app_id);
@@ -222,7 +225,8 @@ class UserManagerImpl
   void NotifyOnLogin();
 
   // Reads user's oauth token status from local state preferences.
-  User::OAuthTokenStatus LoadUserOAuthStatus(const std::string& user_id) const;
+  user_manager::User::OAuthTokenStatus LoadUserOAuthStatus(
+      const std::string& user_id) const;
 
   // Read a flag indicating whether online authentication against GAIA should
   // be enforced during the user's next sign-in from local state preferences.
@@ -240,7 +244,8 @@ class UserManagerImpl
   // Removes a regular or supervised user from the user list.
   // Returns the user if found or NULL otherwise.
   // Also removes the user from the persistent user list.
-  User* RemoveRegularOrSupervisedUserFromList(const std::string& user_id);
+  user_manager::User* RemoveRegularOrSupervisedUserFromList(
+      const std::string& user_id);
 
   // If data for a public account is marked as pending removal and the user is
   // no longer logged into that account, removes the data.
@@ -272,10 +277,10 @@ class UserManagerImpl
   void NotifyMergeSessionStateChanged();
 
   // Notifies observers that active user has changed.
-  void NotifyActiveUserChanged(const User* active_user);
+  void NotifyActiveUserChanged(const user_manager::User* active_user);
 
   // Notifies observers that another user was added to the session.
-  void NotifyUserAddedToSession(const User* added_user);
+  void NotifyUserAddedToSession(const user_manager::User* added_user);
 
   // Notifies observers that active user_id hash has changed.
   void NotifyActiveUserHashChanged(const std::string& hash);
@@ -287,11 +292,11 @@ class UserManagerImpl
   void UpdateLoginState();
 
   // Insert |user| at the front of the LRU user list.
-  void SetLRUUser(User* user);
+  void SetLRUUser(user_manager::User* user);
 
   // Adds |user| to users list, and adds it to front of LRU list. It is assumed
   // that there is no user with same id.
-  void AddUserRecord(User* user);
+  void AddUserRecord(user_manager::User* user);
 
   // Sends metrics in response to a regular user logging in.
   void SendRegularUserLoginMetrics(const std::string& user_id);
@@ -323,7 +328,7 @@ class UserManagerImpl
 
   // A wrapper around C++ delete operator. Deletes |user|, and when |user|
   // equals to active_user_, active_user_ is reset to NULL.
-  void DeleteUser(User* user);
+  void DeleteUser(user_manager::User* user);
 
   // Interface to the signed settings store.
   CrosSettings* cros_settings_;
@@ -337,29 +342,29 @@ class UserManagerImpl
   // List of all known users. User instances are owned by |this|. Regular users
   // are removed by |RemoveUserFromList|, public accounts by
   // |UpdateAndCleanUpPublicAccounts|.
-  UserList users_;
+  user_manager::UserList users_;
 
   // List of all users that are logged in current session. These point to User
   // instances in |users_|. Only one of them could be marked as active.
-  UserList logged_in_users_;
+  user_manager::UserList logged_in_users_;
 
   // A list of all users that are logged in the current session. In contrast to
   // |logged_in_users|, the order of this list is least recently used so that
   // the active user should always be the first one in the list.
-  UserList lru_logged_in_users_;
+  user_manager::UserList lru_logged_in_users_;
 
   // The list which gets reported when the |lru_logged_in_users_| list is empty.
-  UserList temp_single_logged_in_users_;
+  user_manager::UserList temp_single_logged_in_users_;
 
   // The logged-in user that is currently active in current session.
   // NULL until a user has logged in, then points to one
   // of the User instances in |users_|, the |guest_user_| instance or an
   // ephemeral user instance.
-  User* active_user_;
+  user_manager::User* active_user_;
 
   // The primary user of the current session. It is recorded for the first
   // signed-in user and does not change thereafter.
-  User* primary_user_;
+  user_manager::User* primary_user_;
 
   // True if SessionStarted() has been called.
   bool session_started_;

@@ -38,10 +38,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/magnifier/magnifier_constants.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 #include "chromeos/dbus/power_policy_controller.h"
+#include "components/user_manager/user.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -533,7 +533,8 @@ void GetDeprecatedFeaturesMap(
 void PopulatePolicyHandlerParameters(PolicyHandlerParameters* parameters) {
 #if defined(OS_CHROMEOS)
   if (chromeos::UserManager::IsInitialized()) {
-    const chromeos::User* user = chromeos::UserManager::Get()->GetActiveUser();
+    const user_manager::User* user =
+        chromeos::UserManager::Get()->GetActiveUser();
     if (user)
       parameters->user_id_hash = user->username_hash();
   }

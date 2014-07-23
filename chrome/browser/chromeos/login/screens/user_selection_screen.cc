@@ -55,7 +55,7 @@ UserSelectionScreen::~UserSelectionScreen() {
 
 // static
 void UserSelectionScreen::FillUserDictionary(
-    User* user,
+    user_manager::User* user,
     bool is_owner,
     bool is_signin_to_add,
     ScreenlockBridge::LockHandler::AuthType auth_type,
@@ -101,7 +101,8 @@ void UserSelectionScreen::FillUserDictionary(
 }
 
 // static
-bool UserSelectionScreen::ShouldForceOnlineSignIn(const User* user) {
+bool UserSelectionScreen::ShouldForceOnlineSignIn(
+    const user_manager::User* user) {
   // Public sessions are always allowed to log in offline.
   // Supervised user are allowed to log in offline if their OAuth token status
   // is unknown or valid.
@@ -113,14 +114,15 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(const User* user) {
   if (user->is_logged_in())
     return false;
 
-  const User::OAuthTokenStatus token_status = user->oauth_token_status();
+  const user_manager::User::OAuthTokenStatus token_status =
+      user->oauth_token_status();
   const bool is_supervised_user =
       user->GetType() == user_manager::USER_TYPE_SUPERVISED;
   const bool is_public_session =
       user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
 
   if (is_supervised_user &&
-      token_status == User::OAUTH_TOKEN_STATUS_UNKNOWN) {
+      token_status == user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN) {
     return false;
   }
 
@@ -128,15 +130,16 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(const User* user) {
     return false;
 
   return user->force_online_signin() ||
-         (token_status == User::OAUTH2_TOKEN_STATUS_INVALID) ||
-         (token_status == User::OAUTH_TOKEN_STATUS_UNKNOWN);
+         (token_status == user_manager::User::OAUTH2_TOKEN_STATUS_INVALID) ||
+         (token_status == user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN);
 }
 
 void UserSelectionScreen::SetHandler(LoginDisplayWebUIHandler* handler) {
   handler_ = handler;
 }
 
-void UserSelectionScreen::Init(const UserList& users, bool show_guest) {
+void UserSelectionScreen::Init(const user_manager::UserList& users,
+                               bool show_guest) {
   users_ = users;
   show_guest_ = show_guest;
 
@@ -147,7 +150,8 @@ void UserSelectionScreen::Init(const UserList& users, bool show_guest) {
 }
 
 void UserSelectionScreen::OnBeforeUserRemoved(const std::string& username) {
-  for (UserList::iterator it = users_.begin(); it != users_.end(); ++it) {
+  for (user_manager::UserList::iterator it = users_.begin(); it != users_.end();
+       ++it) {
     if ((*it)->email() == username) {
       users_.erase(it);
       break;
@@ -162,14 +166,14 @@ void UserSelectionScreen::OnUserRemoved(const std::string& username) {
   handler_->OnUserRemoved(username);
 }
 
-void UserSelectionScreen::OnUserImageChanged(const User& user) {
+void UserSelectionScreen::OnUserImageChanged(const user_manager::User& user) {
   if (!handler_)
     return;
   handler_->OnUserImageChanged(user);
   // TODO(antrim) : updateUserImage(user.email())
 }
 
-const UserList& UserSelectionScreen::GetUsers() const {
+const user_manager::UserList& UserSelectionScreen::GetUsers() const {
   return users_;
 }
 
@@ -190,17 +194,18 @@ void UserSelectionScreen::OnUserActivity(const ui::Event* event) {
 }
 
 // static
-const UserList UserSelectionScreen::PrepareUserListForSending(
-    const UserList& users,
+const user_manager::UserList UserSelectionScreen::PrepareUserListForSending(
+    const user_manager::UserList& users,
     std::string owner,
     bool is_signin_to_add) {
-
-  UserList users_to_send;
+  user_manager::UserList users_to_send;
   bool has_owner = owner.size() > 0;
   size_t max_non_owner_users = has_owner ? kMaxUsers - 1 : kMaxUsers;
   size_t non_owner_count = 0;
 
-  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+  for (user_manager::UserList::const_iterator it = users.begin();
+       it != users.end();
+       ++it) {
     const std::string& user_id = (*it)->email();
     bool is_owner = (user_id == owner);
     bool is_public_account =
@@ -226,7 +231,7 @@ const UserList UserSelectionScreen::PrepareUserListForSending(
 
 void UserSelectionScreen::SendUserList() {
   base::ListValue users_list;
-  const UserList& users = GetUsers();
+  const user_manager::UserList& users = GetUsers();
 
   // TODO(nkostylev): Move to a separate method in UserManager.
   // http://crbug.com/230852
@@ -240,13 +245,12 @@ void UserSelectionScreen::SendUserList() {
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   bool is_enterprise_managed = connector->IsEnterpriseManaged();
 
-  const UserList users_to_send = PrepareUserListForSending(users,
-                                                           owner,
-                                                           is_signin_to_add);
+  const user_manager::UserList users_to_send =
+      PrepareUserListForSending(users, owner, is_signin_to_add);
 
   user_auth_type_map_.clear();
 
-  for (UserList::const_iterator it = users_to_send.begin();
+  for (user_manager::UserList::const_iterator it = users_to_send.begin();
        it != users_to_send.end();
        ++it) {
     const std::string& user_id = (*it)->email();

@@ -209,11 +209,13 @@ void SupervisedUserCreationScreenHandler::PrepareToShow() {}
 void SupervisedUserCreationScreenHandler::Show() {
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   scoped_ptr<base::ListValue> users_list(new base::ListValue());
-  const UserList& users = UserManager::Get()->GetUsers();
+  const user_manager::UserList& users = UserManager::Get()->GetUsers();
   std::string owner;
   chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
 
-  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+  for (user_manager::UserList::const_iterator it = users.begin();
+       it != users.end();
+       ++it) {
     if ((*it)->GetType() != user_manager::USER_TYPE_REGULAR)
       continue;
     bool is_owner = ((*it)->email() == owner);

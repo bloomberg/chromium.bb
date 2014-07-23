@@ -11,8 +11,8 @@
 #include "chrome/browser/chromeos/login/screens/user_image_screen_actor.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_sync_observer.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/image_decoder.h"
+#include "components/user_manager/user.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -93,7 +93,7 @@ class UserImageScreen: public WizardScreen,
                                 const base::Value* current);
 
   // Returns current user.
-  const User* GetUser();
+  const user_manager::User* GetUser();
 
   // Returns UserImageManager for the current user.
   UserImageManager* GetUserImageManager();

@@ -24,7 +24,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.h"
 #include "chrome/common/chrome_paths.h"
@@ -32,6 +31,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/user_names.h"
+#include "components/user_manager/user.h"
 #include "content/public/test/test_utils.h"
 #include "ui/aura/env.h"
 #include "ui/gfx/image/image_skia.h"
@@ -177,12 +177,9 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
 
   std::string relative_path = base::FilePath(kTestUser1Hash).Append(id).value();
   // Saves wallpaper info to local state for user |kTestUser1|.
-  WallpaperInfo info = {
-      relative_path,
-      WALLPAPER_LAYOUT_CENTER_CROPPED,
-      User::CUSTOMIZED,
-      base::Time::Now().LocalMidnight()
-  };
+  WallpaperInfo info = {relative_path, WALLPAPER_LAYOUT_CENTER_CROPPED,
+                        user_manager::User::CUSTOMIZED,
+                        base::Time::Now().LocalMidnight()};
   wallpaper_manager->SetUserWallpaperInfo(kTestUser1, info, true);
 
   // Set the wallpaper for |kTestUser1|.
@@ -262,12 +259,9 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
 
   std::string relative_path = base::FilePath(kTestUser1Hash).Append(id).value();
   // Saves wallpaper info to local state for user |kTestUser1|.
-  WallpaperInfo info = {
-      relative_path,
-      WALLPAPER_LAYOUT_CENTER_CROPPED,
-      User::CUSTOMIZED,
-      base::Time::Now().LocalMidnight()
-  };
+  WallpaperInfo info = {relative_path, WALLPAPER_LAYOUT_CENTER_CROPPED,
+                        user_manager::User::CUSTOMIZED,
+                        base::Time::Now().LocalMidnight()};
   wallpaper_manager->SetUserWallpaperInfo(kTestUser1, info, true);
 
   wallpaper_manager->SetUserWallpaperNow(kTestUser1);
@@ -294,12 +288,9 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   // Old wallpaper migration code doesn't exist in codebase anymore. Modify user
   // wallpaper info directly to simulate the wallpaper migration. See
   // crosbug.com/38429 for details about why we modify wallpaper info this way.
-  WallpaperInfo info = {
-      "123",
-      WALLPAPER_LAYOUT_CENTER_CROPPED,
-      User::DEFAULT,
-      base::Time::Now().LocalMidnight()
-  };
+  WallpaperInfo info = {"123", WALLPAPER_LAYOUT_CENTER_CROPPED,
+                        user_manager::User::DEFAULT,
+                        base::Time::Now().LocalMidnight()};
   base::FilePath user_data_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
   ASSERT_TRUE(wallpaper_manager_test_utils::WriteJPEGFile(
@@ -374,12 +365,9 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestNoAnimation,
   // Old wallpaper migration code doesn't exist in codebase anymore. Modify user
   // wallpaper info directly to simulate the wallpaper migration. See
   // crosbug.com/38429 for details about why we modify wallpaper info this way.
-  WallpaperInfo info = {
-      "123",
-      WALLPAPER_LAYOUT_CENTER_CROPPED,
-      User::DEFAULT,
-      base::Time::Now().LocalMidnight()
-  };
+  WallpaperInfo info = {"123", WALLPAPER_LAYOUT_CENTER_CROPPED,
+                        user_manager::User::DEFAULT,
+                        base::Time::Now().LocalMidnight()};
   base::FilePath user_data_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
   ASSERT_TRUE(wallpaper_manager_test_utils::WriteJPEGFile(
@@ -490,12 +478,9 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCacheUpdate,
 
   std::string relative_path = base::FilePath(kTestUser1Hash).Append(id).value();
   // Saves wallpaper info to local state for user |kTestUser1|.
-  WallpaperInfo info = {
-      relative_path,
-      WALLPAPER_LAYOUT_CENTER_CROPPED,
-      User::CUSTOMIZED,
-      base::Time::Now().LocalMidnight()
-  };
+  WallpaperInfo info = {relative_path, WALLPAPER_LAYOUT_CENTER_CROPPED,
+                        user_manager::User::CUSTOMIZED,
+                        base::Time::Now().LocalMidnight()};
   wallpaper_manager->SetUserWallpaperInfo(kTestUser1, info, true);
   wallpaper_manager->SetUserWallpaperNow(kTestUser1);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
@@ -551,7 +536,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCacheUpdate,
                                         kTestUser1Hash,
                                         "dummy",  // dummy file name
                                         WALLPAPER_LAYOUT_CENTER,
-                                        User::CUSTOMIZED,
+                                        user_manager::User::CUSTOMIZED,
                                         green_wallpaper,
                                         true);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
@@ -791,7 +776,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                                               "test_hash",
                                               "test-nofile.jpeg",
                                               WALLPAPER_LAYOUT_STRETCH,
-                                              User::CUSTOMIZED,
+                                              user_manager::User::CUSTOMIZED,
                                               image,
                                               true);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();

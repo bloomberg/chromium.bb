@@ -13,12 +13,12 @@
 #include "base/prefs/pref_service.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/user_manager/user.h"
 
 namespace chromeos {
 
@@ -43,7 +43,8 @@ void SAMLOfflineSigninLimiter::RegisterProfilePrefs(
 
 void SAMLOfflineSigninLimiter::SignedIn(UserContext::AuthFlow auth_flow) {
   PrefService* prefs = profile_->GetPrefs();
-  const User* user = ProfileHelper::Get()->GetUserByProfile(profile_);
+  const user_manager::User* user =
+      ProfileHelper::Get()->GetUserByProfile(profile_);
   if (!user) {
     NOTREACHED();
     return;
@@ -140,7 +141,7 @@ void SAMLOfflineSigninLimiter::UpdateLimit() {
 }
 
 void SAMLOfflineSigninLimiter::ForceOnlineLogin() {
-  User* user = ProfileHelper::Get()->GetUserByProfile(profile_);
+  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile_);
   if (!user) {
     NOTREACHED();
     return;

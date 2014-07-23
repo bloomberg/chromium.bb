@@ -76,7 +76,7 @@ class LoginDisplayWebUIHandler {
   virtual void ClearAndEnablePassword() = 0;
   virtual void ClearUserPodPassword() = 0;
   virtual void OnUserRemoved(const std::string& username) = 0;
-  virtual void OnUserImageChanged(const User& user) = 0;
+  virtual void OnUserImageChanged(const user_manager::User& user) = 0;
   virtual void OnPreferencesChanged() = 0;
   virtual void ResetSigninScreenHandlerDelegate() = 0;
   virtual void ShowError(int login_attempts,
@@ -169,7 +169,7 @@ class SigninScreenHandlerDelegate {
   virtual void SetWebUIHandler(LoginDisplayWebUIHandler* webui_handler) = 0;
 
   // Returns users list to be shown.
-  virtual const UserList& GetUsers() const = 0;
+  virtual const user_manager::UserList& GetUsers() const = 0;
 
   // Whether login as guest is available.
   virtual bool IsShowGuest() const = 0;
@@ -276,7 +276,7 @@ class SigninScreenHandler
   virtual void ClearAndEnablePassword() OVERRIDE;
   virtual void ClearUserPodPassword() OVERRIDE;
   virtual void OnUserRemoved(const std::string& username) OVERRIDE;
-  virtual void OnUserImageChanged(const User& user) OVERRIDE;
+  virtual void OnUserImageChanged(const user_manager::User& user) OVERRIDE;
   virtual void OnPreferencesChanged() OVERRIDE;
   virtual void ResetSigninScreenHandlerDelegate() OVERRIDE;
   virtual void ShowError(int login_attempts,

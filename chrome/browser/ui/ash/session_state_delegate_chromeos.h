@@ -57,8 +57,10 @@ class SessionStateDelegateChromeos
   virtual void LoggedInStateChanged() OVERRIDE;
 
   // chromeos::UserManager::UserSessionStateObserver:
-  virtual void ActiveUserChanged(const chromeos::User* active_user) OVERRIDE;
-  virtual void UserAddedToSession(const chromeos::User* added_user) OVERRIDE;
+  virtual void ActiveUserChanged(
+      const user_manager::User* active_user) OVERRIDE;
+  virtual void UserAddedToSession(
+      const user_manager::User* added_user) OVERRIDE;
 
   // chromeos::UserAddingScreen::Observer:
   virtual void OnUserAddingStarted() OVERRIDE;

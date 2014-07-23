@@ -31,7 +31,6 @@
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -57,6 +56,7 @@
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "components/user_manager/user.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
@@ -242,7 +242,8 @@ void UserSessionManager::RestoreAuthenticationSession(Profile* user_profile) {
     return;
   }
 
-  User* user = ProfileHelper::Get()->GetUserByProfile(user_profile);
+  user_manager::User* user =
+      ProfileHelper::Get()->GetUserByProfile(user_profile);
   DCHECK(user);
   if (!net::NetworkChangeNotifier::IsOffline()) {
     pending_signin_restore_sessions_.erase(user->email());
@@ -325,7 +326,7 @@ void UserSessionManager::SetAppModeChromeClientOAuthInfo(
 
 bool UserSessionManager::RespectLocalePreference(
     Profile* profile,
-    const User* user,
+    const user_manager::User* user,
     scoped_ptr<locale_util::SwitchLanguageCallback> callback) const {
   // TODO(alemate): http://crbug.com/288941 : Respect preferred language list in
   // the Google user profile.
@@ -411,17 +412,18 @@ void UserSessionManager::RemoveSessionStateObserver(
 void UserSessionManager::OnSessionRestoreStateChanged(
     Profile* user_profile,
     OAuth2LoginManager::SessionRestoreState state) {
-  User::OAuthTokenStatus user_status = User::OAUTH_TOKEN_STATUS_UNKNOWN;
+  user_manager::User::OAuthTokenStatus user_status =
+      user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN;
   OAuth2LoginManager* login_manager =
       OAuth2LoginManagerFactory::GetInstance()->GetForProfile(user_profile);
 
   bool connection_error = false;
   switch (state) {
     case OAuth2LoginManager::SESSION_RESTORE_DONE:
-      user_status = User::OAUTH2_TOKEN_STATUS_VALID;
+      user_status = user_manager::User::OAUTH2_TOKEN_STATUS_VALID;
       break;
     case OAuth2LoginManager::SESSION_RESTORE_FAILED:
-      user_status = User::OAUTH2_TOKEN_STATUS_INVALID;
+      user_status = user_manager::User::OAUTH2_TOKEN_STATUS_INVALID;
       break;
     case OAuth2LoginManager::SESSION_RESTORE_CONNECTION_FAILED:
       connection_error = true;
@@ -456,7 +458,7 @@ void UserSessionManager::OnNewRefreshTokenAvaiable(Profile* user_profile) {
   // Mark user auth token status as valid.
   UserManager::Get()->SaveUserOAuthStatus(
       UserManager::Get()->GetLoggedInUser()->email(),
-      User::OAUTH2_TOKEN_STATUS_VALID);
+      user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
 
   VLOG(1) << "Exiting after new refresh token fetched";
 
@@ -480,8 +482,10 @@ void UserSessionManager::OnConnectionTypeChanged(
   }
 
   // Need to iterate over all users and their OAuth2 session state.
-  const UserList& users = user_manager->GetLoggedInUsers();
-  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+  const user_manager::UserList& users = user_manager->GetLoggedInUsers();
+  for (user_manager::UserList::const_iterator it = users.begin();
+       it != users.end();
+       ++it) {
     if (!(*it)->is_profile_created())
       continue;
 
@@ -599,7 +603,7 @@ void UserSessionManager::InitProfilePreferences(Profile* profile,
     SetFirstLoginPrefs(profile->GetPrefs());
 
   if (UserManager::Get()->IsLoggedInAsSupervisedUser()) {
-    User* active_user = UserManager::Get()->GetActiveUser();
+    user_manager::User* active_user = UserManager::Get()->GetActiveUser();
     std::string supervised_user_sync_id =
         UserManager::Get()->GetSupervisedUserManager()->
             GetUserSyncId(active_user->email());
@@ -700,7 +704,8 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
   InitializeCertsForPrimaryUser(profile);
 
   // Initialize RLZ only for primary user.
-  const User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+  const user_manager::User* user =
+      ProfileHelper::Get()->GetUserByProfile(profile);
   if (user_manager->GetPrimaryUser() == user)
     InitRlz(profile);
 
@@ -810,7 +815,7 @@ void UserSessionManager::InitializeCertsForPrimaryUser(Profile* profile) {
   // Now that the user profile has been initialized
   // |GetNSSCertDatabaseForProfile| is safe to be used.
   UserManager* user_manager = UserManager::Get();
-  const User* primary_user = user_manager->GetPrimaryUser();
+  const user_manager::User* primary_user = user_manager->GetPrimaryUser();
   if (user_manager->IsUserLoggedIn() &&
       primary_user &&
       profile == ProfileHelper::Get()->GetProfileByUser(primary_user) &&
@@ -863,12 +868,13 @@ void UserSessionManager::RestorePendingUserSessions() {
   pending_user_sessions_.erase(user_id);
 
   // Check that this user is not logged in yet.
-  UserList logged_in_users = UserManager::Get()->GetLoggedInUsers();
+  user_manager::UserList logged_in_users =
+      UserManager::Get()->GetLoggedInUsers();
   bool user_already_logged_in = false;
-  for (UserList::const_iterator it = logged_in_users.begin();
+  for (user_manager::UserList::const_iterator it = logged_in_users.begin();
        it != logged_in_users.end();
        ++it) {
-    const User* user = (*it);
+    const user_manager::User* user = (*it);
     if (user->email() == user_id) {
       user_already_logged_in = true;
       break;

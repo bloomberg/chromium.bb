@@ -184,19 +184,22 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
                      base::Unretained(this)));
 }
 
-void ExistingUserController::Init(const UserList& users) {
+void ExistingUserController::Init(const user_manager::UserList& users) {
   time_init_ = base::Time::Now();
   UpdateLoginDisplay(users);
   ConfigurePublicSessionAutoLogin();
 }
 
-void ExistingUserController::UpdateLoginDisplay(const UserList& users) {
+void ExistingUserController::UpdateLoginDisplay(
+    const user_manager::UserList& users) {
   bool show_users_on_signin;
-  UserList filtered_users;
+  user_manager::UserList filtered_users;
 
   cros_settings_->GetBoolean(kAccountsPrefShowUserNamesOnSignIn,
                              &show_users_on_signin);
-  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+  for (user_manager::UserList::const_iterator it = users.begin();
+       it != users.end();
+       ++it) {
     // TODO(xiyuan): Clean user profile whose email is not in whitelist.
     bool meets_supervised_requirements =
         (*it)->GetType() != user_manager::USER_TYPE_SUPERVISED ||
@@ -287,7 +290,8 @@ void ExistingUserController::Observe(
   }
   if (type != chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED)
     return;
-  login_display_->OnUserImageChanged(*content::Details<User>(details).ptr());
+  login_display_->OnUserImageChanged(
+      *content::Details<user_manager::User>(details).ptr());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -572,7 +576,7 @@ void ExistingUserController::LoginAsPublicAccount(
 
   // If there is no public account with the given |username|, logging in is not
   // possible.
-  const User* user = UserManager::Get()->FindUser(username);
+  const user_manager::User* user = UserManager::Get()->FindUser(username);
   if (!user || user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
     // Re-enable clicking on other windows.
     login_display_->SetUIEnabled(true);
@@ -993,7 +997,7 @@ void ExistingUserController::ConfigurePublicSessionAutoLogin() {
     }
   }
 
-  const User* user =
+  const user_manager::User* user =
       UserManager::Get()->FindUser(public_session_auto_login_username_);
   if (!user || user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT)
     public_session_auto_login_username_.clear();
@@ -1132,7 +1136,7 @@ void ExistingUserController::ShowError(int error_id,
 
   if (error_id == IDS_LOGIN_ERROR_AUTHENTICATING) {
     if (num_login_attempts_ > 1) {
-      const User* user =
+      const user_manager::User* user =
           UserManager::Get()->FindUser(last_login_attempt_username_);
       if (user && (user->GetType() == user_manager::USER_TYPE_SUPERVISED))
         error_id = IDS_LOGIN_ERROR_AUTHENTICATING_2ND_TIME_SUPERVISED;
@@ -1147,8 +1151,7 @@ void ExistingUserController::ShowGaiaPasswordChanged(
   // Invalidate OAuth token, since it can't be correct after password is
   // changed.
   UserManager::Get()->SaveUserOAuthStatus(
-      username,
-      User::OAUTH2_TOKEN_STATUS_INVALID);
+      username, user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
 
   login_display_->SetUIEnabled(true);
   login_display_->ShowGaiaPasswordChanged(username);

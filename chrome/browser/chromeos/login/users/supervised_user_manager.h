@@ -15,9 +15,12 @@
 
 class PrefRegistrySimple;
 
+namespace user_manager {
+class User;
+}
+
 namespace chromeos {
 
-class User;
 class SupervisedUserAuthentication;
 
 // Keys in dictionary with supervised password information.
@@ -60,7 +63,7 @@ class SupervisedUserManager {
   // Returns created user, or existing user if there already
   // was a supervised user with such display name.
   // TODO(antrim): Refactor into a single struct to have only 1 getter.
-  virtual const User* CreateUserRecord(
+  virtual const user_manager::User* CreateUserRecord(
       const std::string& manager_id,
       const std::string& local_user_id,
       const std::string& sync_user_id,
@@ -71,12 +74,13 @@ class SupervisedUserManager {
 
   // Returns the supervised user with the given |display_name| if found in
   // the persistent list. Returns |NULL| otherwise.
-  virtual const User* FindByDisplayName(
+  virtual const user_manager::User* FindByDisplayName(
       const base::string16& display_name) const = 0;
 
   // Returns the supervised user with the given |sync_id| if found in
   // the persistent list. Returns |NULL| otherwise.
-  virtual const User* FindBySyncId(const std::string& sync_id) const = 0;
+  virtual const user_manager::User* FindBySyncId(
+      const std::string& sync_id) const = 0;
 
   // Returns sync_user_id for supervised user with |user_id| or empty string if
   // such user is not found or it doesn't have user_id defined.

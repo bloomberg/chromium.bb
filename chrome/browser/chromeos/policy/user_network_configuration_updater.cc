@@ -9,12 +9,12 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/net/onc_utils.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
+#include "components/user_manager/user.h"
 #include "content/public/browser/notification_source.h"
 #include "net/cert/x509_certificate.h"
 #include "policy/policy_constants.h"
@@ -28,7 +28,7 @@ scoped_ptr<UserNetworkConfigurationUpdater>
 UserNetworkConfigurationUpdater::CreateForUserPolicy(
     Profile* profile,
     bool allow_trusted_certs_from_policy,
-    const chromeos::User& user,
+    const user_manager::User& user,
     PolicyService* policy_service,
     chromeos::ManagedNetworkConfigurationHandler* network_config_handler) {
   scoped_ptr<UserNetworkConfigurationUpdater> updater(
@@ -54,7 +54,7 @@ void UserNetworkConfigurationUpdater::RemoveTrustedCertsObserver(
 UserNetworkConfigurationUpdater::UserNetworkConfigurationUpdater(
     Profile* profile,
     bool allow_trusted_certs_from_policy,
-    const chromeos::User& user,
+    const user_manager::User& user,
     PolicyService* policy_service,
     chromeos::ManagedNetworkConfigurationHandler* network_config_handler)
     : NetworkConfigurationUpdater(onc::ONC_SOURCE_USER_POLICY,

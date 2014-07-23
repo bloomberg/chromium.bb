@@ -51,14 +51,14 @@ bool SupervisedUserCreationFlow::ShouldSkipPostLoginScreens() {
 }
 
 void SupervisedUserCreationFlow::HandleOAuthTokenStatusChange(
-    User::OAuthTokenStatus status) {
-  if (status == User::OAUTH_TOKEN_STATUS_UNKNOWN)
+    user_manager::User::OAuthTokenStatus status) {
+  if (status == user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN)
     return;
-  if (status == User::OAUTH2_TOKEN_STATUS_INVALID) {
+  if (status == user_manager::User::OAUTH2_TOKEN_STATUS_INVALID) {
     GetScreen(host())->ShowManagerInconsistentStateErrorScreen();
     return;
   }
-  DCHECK(status == User::OAUTH2_TOKEN_STATUS_VALID);
+  DCHECK(status == user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
   // We expect that LaunchExtraSteps is called by this time (local
   // authentication happens before oauth token validation).
   token_validated_ = true;

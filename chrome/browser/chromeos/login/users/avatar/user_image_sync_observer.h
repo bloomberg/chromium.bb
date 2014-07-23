@@ -43,7 +43,7 @@ class UserImageSyncObserver: public PrefServiceSyncableObserver,
   };
 
  public:
-  explicit UserImageSyncObserver(const User* user);
+  explicit UserImageSyncObserver(const user_manager::User* user);
   virtual ~UserImageSyncObserver();
 
   // Register syncable preference for profile.
@@ -88,7 +88,7 @@ class UserImageSyncObserver: public PrefServiceSyncableObserver,
   // If it is allowed to change user image now.
   bool CanUpdateLocalImageNow();
 
-  const User* user_;
+  const user_manager::User* user_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
   scoped_ptr<content::NotificationRegistrar> notification_registrar_;
   PrefServiceSyncable* prefs_;

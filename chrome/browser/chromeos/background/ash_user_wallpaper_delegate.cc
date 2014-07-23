@@ -4,20 +4,20 @@
 
 #include "chrome/browser/chromeos/background/ash_user_wallpaper_delegate.h"
 
-#include "ash/shell.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
+#include "ash/shell.h"
 #include "ash/wm/window_animations.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_manager_util.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/login_state.h"
+#include "components/user_manager/user.h"
 #include "content/public/browser/notification_service.h"
 
 namespace chromeos {
@@ -105,7 +105,8 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
         user_type != LoginState::LOGGED_IN_USER_SUPERVISED) {
       return false;
     }
-    const User* user = chromeos::UserManager::Get()->GetActiveUser();
+    const user_manager::User* user =
+        chromeos::UserManager::Get()->GetActiveUser();
     if (!user)
       return false;
     if (chromeos::WallpaperManager::Get()->IsPolicyControlled(user->email()))

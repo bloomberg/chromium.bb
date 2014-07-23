@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/user_manager/user.h"
 #endif
 
 namespace extensions {
@@ -109,17 +110,17 @@ bool AutotestPrivateLoginStatusFunction::RunSync() {
       result->SetBoolean("isGuest", user_manager->IsLoggedInAsGuest());
       result->SetBoolean("isKiosk", user_manager->IsLoggedInAsKioskApp());
 
-      const chromeos::User* user = user_manager->GetLoggedInUser();
+      const user_manager::User* user = user_manager->GetLoggedInUser();
       result->SetString("email", user->email());
       result->SetString("displayEmail", user->display_email());
 
       std::string user_image;
       switch (user->image_index()) {
-        case chromeos::User::kExternalImageIndex:
+        case user_manager::User::USER_IMAGE_EXTERNAL:
           user_image = "file";
           break;
 
-        case chromeos::User::kProfileImageIndex:
+        case user_manager::User::USER_IMAGE_PROFILE:
           user_image = "profile";
           break;
 

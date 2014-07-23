@@ -61,7 +61,7 @@ class AccountsOptionsTest : public LoginManagerTest {
   }
 
  protected:
-  void CheckAccountsUI(const User* user, bool is_owner) {
+  void CheckAccountsUI(const user_manager::User* user, bool is_owner) {
     Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
     profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                    user->email());

@@ -25,7 +25,6 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
@@ -38,6 +37,7 @@
 #include "chromeos/system/statistics_provider.h"
 #include "components/feedback/tracing_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/user_manager/user.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
@@ -351,7 +351,8 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
       prefs::kLanguageXkbAutoRepeatInterval, prefs, callback);
 }
 
-void Preferences::Init(PrefServiceSyncable* prefs, const User* user) {
+void Preferences::Init(PrefServiceSyncable* prefs,
+                       const user_manager::User* user) {
   DCHECK(user);
   user_ = user;
   user_is_primary_ = UserManager::Get()->GetPrimaryUser() == user_;
@@ -374,7 +375,7 @@ void Preferences::Init(PrefServiceSyncable* prefs, const User* user) {
 }
 
 void Preferences::InitUserPrefsForTesting(PrefServiceSyncable* prefs,
-                                          const User* user) {
+                                          const user_manager::User* user) {
   user_ = user;
   InitUserPrefs(prefs);
 }
@@ -646,7 +647,7 @@ void Preferences::OnTouchHudProjectionToggled(bool enabled) {
   touch_hud_projection_enabled_.SetValue(enabled);
 }
 
-void Preferences::ActiveUserChanged(const User* active_user) {
+void Preferences::ActiveUserChanged(const user_manager::User* active_user) {
   if (active_user != user_)
     return;
   ApplyPreferences(REASON_ACTIVE_USER_CHANGED, "");

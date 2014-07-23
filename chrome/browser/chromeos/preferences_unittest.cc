@@ -50,7 +50,7 @@ TEST(PreferencesTest, TestUpdatePrefOnBrowserScreenDetails) {
   chromeos::FakeUserManager* user_manager = new chromeos::FakeUserManager();
   chromeos::ScopedUserManagerEnabler user_manager_enabler(user_manager);
   const char test_user_email[] = "test_user@example.com";
-  const User* test_user = user_manager->AddUser(test_user_email);
+  const user_manager::User* test_user = user_manager->AddUser(test_user_email);
   user_manager->LoginUser(test_user_email);
 
   TestingPrefServiceSyncable prefs;

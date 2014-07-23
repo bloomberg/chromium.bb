@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -30,6 +29,7 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/user_manager/user.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -528,7 +528,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, UseAutenticatedUserEmailAddress) {
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources()).Wait();
-  const User* user = UserManager::Get()->GetActiveUser();
+  const user_manager::User* user = UserManager::Get()->GetActiveUser();
   ASSERT_TRUE(user);
   EXPECT_EQ(kFirstSAMLUserEmail, user->email());
 }
@@ -644,10 +644,10 @@ void SAMLPolicyTest::SetUpOnMainThread() {
   SamlTest::SetUpOnMainThread();
 
   // Pretend that the test users' OAuth tokens are valid.
-  UserManager::Get()->SaveUserOAuthStatus(kFirstSAMLUserEmail,
-                                          User::OAUTH2_TOKEN_STATUS_VALID);
-  UserManager::Get()->SaveUserOAuthStatus(kNonSAMLUserEmail,
-                                          User::OAUTH2_TOKEN_STATUS_VALID);
+  UserManager::Get()->SaveUserOAuthStatus(
+      kFirstSAMLUserEmail, user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
+  UserManager::Get()->SaveUserOAuthStatus(
+      kNonSAMLUserEmail, user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
 }
 
 void SAMLPolicyTest::SetSAMLOfflineSigninTimeLimitPolicy(int limit) {

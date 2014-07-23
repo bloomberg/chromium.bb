@@ -116,7 +116,7 @@ class MultiProfileUserControllerTest
 
     for (size_t i = 0; i < arraysize(kUsers); ++i) {
       const std::string user_email(kUsers[i]);
-      const User* user = fake_user_manager_->AddUser(user_email);
+      const user_manager::User* user = fake_user_manager_->AddUser(user_email);
 
       // Note that user profiles are created after user login in reality.
       TestingProfile* user_profile =

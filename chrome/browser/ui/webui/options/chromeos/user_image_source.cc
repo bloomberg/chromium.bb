@@ -55,7 +55,8 @@ base::RefCountedMemory* UserImageSource::GetUserImage(
     const std::string& email,
     bool is_image_animated,
     ui::ScaleFactor scale_factor) const {
-  const chromeos::User* user = chromeos::UserManager::Get()->FindUser(email);
+  const user_manager::User* user =
+      chromeos::UserManager::Get()->FindUser(email);
   if (user) {
     if (user->has_animated_image() && is_image_animated) {
       return new base::RefCountedBytes(user->animated_image());
@@ -109,7 +110,8 @@ std::string UserImageSource::GetMimeType(const std::string& path) const {
   ParseRequest(url, &email, &is_image_animated);
 
   if (is_image_animated) {
-    const chromeos::User* user = chromeos::UserManager::Get()->FindUser(email);
+    const user_manager::User* user =
+        chromeos::UserManager::Get()->FindUser(email);
     if (user && user->has_animated_image())
       return "image/gif";
   }

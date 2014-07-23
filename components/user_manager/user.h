@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USERS_USER_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_USERS_USER_H_
+#ifndef COMPONENTS_USER_MANAGER_USER_H_
+#define COMPONENTS_USER_MANAGER_USER_H_
 
 #include <string>
 #include <vector>
@@ -12,11 +12,23 @@
 #include "base/strings/string16.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_info.h"
+#include "components/user_manager/user_manager_export.h"
 #include "components/user_manager/user_type.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
+class FakeLoginUtils;
+class FakeUserManager;
+class MockUserManager;
+class SupervisedUserManagerImpl;
+class UserAddingScreenTest;
+class UserImageManagerImpl;
+class UserManagerImpl;
+class UserSessionManager;
+}
+
+namespace user_manager {
 
 // A class representing information about a previously logged in user.
 // Each user has a canonical email (username), returned by |email()| and
@@ -24,23 +36,28 @@ namespace chromeos {
 // returned by |displayed_email()|.
 // Displayed emails are for use in UI only, anywhere else users must be referred
 // to by |email()|.
-class User : public user_manager::UserInfo {
+class USER_MANAGER_EXPORT User : public UserInfo {
  public:
   // User OAuth token status according to the last check.
   // Please note that enum values 1 and 2 were used for OAuth1 status and are
   // deprecated now.
   typedef enum {
-     OAUTH_TOKEN_STATUS_UNKNOWN  = 0,
-     OAUTH2_TOKEN_STATUS_INVALID = 3,
-     OAUTH2_TOKEN_STATUS_VALID   = 4,
+    OAUTH_TOKEN_STATUS_UNKNOWN = 0,
+    OAUTH2_TOKEN_STATUS_INVALID = 3,
+    OAUTH2_TOKEN_STATUS_VALID = 4,
   } OAuthTokenStatus;
 
-  // Returned as |image_index| when user-selected file or photo is used as
-  // user image.
-  static const int kExternalImageIndex = -1;
-  // Returned as |image_index| when user profile image is used as user image.
-  static const int kProfileImageIndex = -2;
-  static const int kInvalidImageIndex = -3;
+  // These special values are used instead of actual default image indices.
+  typedef enum {
+    USER_IMAGE_INVALID = -3,
+
+    // Returned as |image_index| when user profile image is used as user image.
+    USER_IMAGE_PROFILE = -2,
+
+    // Returned as |image_index| when user-selected file or photo is used as
+    // user image.
+    USER_IMAGE_EXTERNAL = -1,
+  } UserImageType;
 
   enum WallpaperType {
     /* DAILY = 0 */    // Removed.  Do not re-use the id!
@@ -53,7 +70,7 @@ class User : public user_manager::UserInfo {
   };
 
   // Returns the user type.
-  virtual user_manager::UserType GetType() const = 0;
+  virtual UserType GetType() const = 0;
 
   // The email the user used to log in.
   const std::string& email() const { return email_; }
@@ -61,7 +78,7 @@ class User : public user_manager::UserInfo {
   // The displayed user name.
   base::string16 display_name() const { return display_name_; }
 
-  // user_manager::UserInfo
+  // UserInfo
   virtual std::string GetEmail() const OVERRIDE;
   virtual base::string16 GetDisplayName() const OVERRIDE;
   virtual base::string16 GetGivenName() const OVERRIDE;
@@ -81,12 +98,12 @@ class User : public user_manager::UserInfo {
   int image_index() const { return image_index_; }
   bool has_raw_image() const { return user_image_.has_raw_image(); }
   // Returns raw representation of static user image.
-  const user_manager::UserImage::RawImage& raw_image() const {
+  const UserImage::RawImage& raw_image() const {
     return user_image_.raw_image();
   }
   bool has_animated_image() const { return user_image_.has_animated_image(); }
   // Returns raw representation of animated user image.
-  const user_manager::UserImage::RawImage& animated_image() const {
+  const UserImage::RawImage& animated_image() const {
     return user_image_.animated_image();
   }
 
@@ -127,21 +144,19 @@ class User : public user_manager::UserInfo {
   virtual bool is_active() const;
 
   // True if the user Profile is created.
-  bool is_profile_created() const {
-    return profile_is_created_;
-  }
+  bool is_profile_created() const { return profile_is_created_; }
 
  protected:
-  friend class SupervisedUserManagerImpl;
-  friend class UserManagerImpl;
-  friend class UserImageManagerImpl;
-  friend class UserSessionManager;
+  friend class chromeos::SupervisedUserManagerImpl;
+  friend class chromeos::UserManagerImpl;
+  friend class chromeos::UserImageManagerImpl;
+  friend class chromeos::UserSessionManager;
 
   // For testing:
-  friend class MockUserManager;
-  friend class FakeLoginUtils;
-  friend class FakeUserManager;
-  friend class UserAddingScreenTest;
+  friend class chromeos::MockUserManager;
+  friend class chromeos::FakeLoginUtils;
+  friend class chromeos::FakeUserManager;
+  friend class chromeos::UserAddingScreenTest;
 
   // Do not allow anyone else to create new User instances.
   static User* CreateRegularUser(const std::string& email);
@@ -154,21 +169,21 @@ class User : public user_manager::UserInfo {
   explicit User(const std::string& email);
   virtual ~User();
 
-  const std::string* GetAccountLocale() const {
-    return account_locale_.get();
-  }
+  const std::string* GetAccountLocale() const { return account_locale_.get(); }
 
   // Setters are private so only UserManager can call them.
   void SetAccountLocale(const std::string& resolved_account_locale);
 
-  void SetImage(const user_manager::UserImage& user_image, int image_index);
+  void SetImage(const UserImage& user_image, int image_index);
 
   void SetImageURL(const GURL& image_url);
 
   // Sets a stub image until the next |SetImage| call. |image_index| may be
-  // one of |kExternalImageIndex| or |kProfileImageIndex|.
+  // one of |USER_IMAGE_EXTERNAL| or |USER_IMAGE_PROFILE|.
   // If |is_loading| is |true|, that means user image is being loaded from file.
-  void SetStubImage(int image_index, bool is_loading);
+  void SetStubImage(const UserImage& stub_user_image,
+                    int image_index,
+                    bool is_loading);
 
   void set_display_name(const base::string16& display_name) {
     display_name_ = display_name;
@@ -182,7 +197,7 @@ class User : public user_manager::UserInfo {
     display_email_ = display_email;
   }
 
-  const user_manager::UserImage& user_image() const { return user_image_; }
+  const UserImage& user_image() const { return user_image_; }
 
   void set_oauth_token_status(OAuthTokenStatus status) {
     oauth_token_status_ = status;
@@ -196,21 +211,13 @@ class User : public user_manager::UserInfo {
     username_hash_ = username_hash;
   }
 
-  void set_is_logged_in(bool is_logged_in) {
-    is_logged_in_ = is_logged_in;
-  }
+  void set_is_logged_in(bool is_logged_in) { is_logged_in_ = is_logged_in; }
 
-  void set_can_lock(bool can_lock) {
-    can_lock_ = can_lock;
-  }
+  void set_can_lock(bool can_lock) { can_lock_ = can_lock; }
 
-  void set_is_active(bool is_active) {
-    is_active_ = is_active;
-  }
+  void set_is_active(bool is_active) { is_active_ = is_active; }
 
-  void set_profile_is_created() {
-    profile_is_created_ = true;
-  }
+  void set_profile_is_created() { profile_is_created_ = true; }
 
   // True if user has google account (not a guest or managed user).
   bool has_gaia_account() const;
@@ -221,7 +228,7 @@ class User : public user_manager::UserInfo {
   base::string16 given_name_;
   // The displayed user email, defaults to |email_|.
   std::string display_email_;
-  user_manager::UserImage user_image_;
+  UserImage user_image_;
   OAuthTokenStatus oauth_token_status_;
   bool force_online_signin_;
 
@@ -234,8 +241,8 @@ class User : public user_manager::UserInfo {
   // Used to identify homedir mount point.
   std::string username_hash_;
 
-  // Either index of a default image for the user, |kExternalImageIndex| or
-  // |kProfileImageIndex|.
+  // Either index of a default image for the user, |USER_IMAGE_EXTERNAL| or
+  // |USER_IMAGE_PROFILE|.
   int image_index_;
 
   // True if current user image is a stub set by a |SetStubImage| call.
@@ -262,6 +269,6 @@ class User : public user_manager::UserInfo {
 // List of known users.
 typedef std::vector<User*> UserList;
 
-}  // namespace chromeos
+}  // namespace user_manager
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_USERS_USER_H_
+#endif  // COMPONENTS_USER_MANAGER_USER_H_

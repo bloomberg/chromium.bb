@@ -61,7 +61,7 @@ class DialogLauncher : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     DCHECK(type == chrome::NOTIFICATION_SESSION_STARTED);
-    DCHECK(content::Details<const User>(details).ptr() ==
+    DCHECK(content::Details<const user_manager::User>(details).ptr() ==
            ProfileHelper::Get()->GetUserByProfile(profile_));
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     bool launched_in_test = command_line->HasSwitch(::switches::kTestType);

@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -20,6 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/login/auth/user_context.h"
+#include "components/user_manager/user.h"
 #include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -61,7 +61,8 @@ void FakeLoginUtils::PrepareProfile(const UserContext& user_context,
                                     LoginUtils::Delegate* delegate) {
   UserManager::Get()->UserLoggedIn(
       user_context.GetUserID(), user_context.GetUserIDHash(), false);
-  User* user = UserManager::Get()->FindUserAndModify(user_context.GetUserID());
+  user_manager::User* user =
+      UserManager::Get()->FindUserAndModify(user_context.GetUserID());
   DCHECK(user);
 
   // Make sure that we get the real Profile instead of the login Profile.
@@ -71,7 +72,7 @@ void FakeLoginUtils::PrepareProfile(const UserContext& user_context,
                                  user_context.GetUserID());
 
   if (UserManager::Get()->IsLoggedInAsSupervisedUser()) {
-    User* active_user = UserManager::Get()->GetActiveUser();
+    user_manager::User* active_user = UserManager::Get()->GetActiveUser();
     std::string supervised_user_sync_id =
         UserManager::Get()->GetSupervisedUserManager()->
             GetUserSyncId(active_user->email());

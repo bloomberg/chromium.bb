@@ -129,7 +129,7 @@ ScreenLocker* ScreenLocker::screen_locker_ = NULL;
 //////////////////////////////////////////////////////////////////////////////
 // ScreenLocker, public:
 
-ScreenLocker::ScreenLocker(const UserList& users)
+ScreenLocker::ScreenLocker(const user_manager::UserList& users)
     : users_(users),
       locked_(false),
       start_time_(base::Time::Now()),
@@ -202,7 +202,8 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
     UMA_HISTOGRAM_TIMES("ScreenLocker.AuthenticationSuccessTime", delta);
   }
 
-  const User* user = UserManager::Get()->FindUser(user_context.GetUserID());
+  const user_manager::User* user =
+      UserManager::Get()->FindUser(user_context.GetUserID());
   if (user) {
     if (!user->is_active())
       UserManager::Get()->SwitchActiveUser(user_context.GetUserID());
@@ -250,7 +251,8 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
   delegate_->OnAuthenticate();
 
   // Special case: supervised users. Use special authenticator.
-  if (const User* user = FindUnlockUser(user_context.GetUserID())) {
+  if (const user_manager::User* user =
+          FindUnlockUser(user_context.GetUserID())) {
     if (user->GetType() == user_manager::USER_TYPE_SUPERVISED) {
       UserContext updated_context = UserManager::Get()
                                         ->GetSupervisedUserManager()
@@ -278,9 +280,12 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
                  user_context));
 }
 
-const User* ScreenLocker::FindUnlockUser(const std::string& user_id) {
-  const User* unlock_user = NULL;
-  for (UserList::const_iterator it = users_.begin(); it != users_.end(); ++it) {
+const user_manager::User* ScreenLocker::FindUnlockUser(
+    const std::string& user_id) {
+  const user_manager::User* unlock_user = NULL;
+  for (user_manager::UserList::const_iterator it = users_.begin();
+       it != users_.end();
+       ++it) {
     if ((*it)->email() == user_id) {
       unlock_user = *it;
       break;
@@ -484,7 +489,9 @@ content::WebUI* ScreenLocker::GetAssociatedWebUI() {
 }
 
 bool ScreenLocker::IsUserLoggedIn(const std::string& username) {
-  for (UserList::const_iterator it = users_.begin(); it != users_.end(); ++it) {
+  for (user_manager::UserList::const_iterator it = users_.begin();
+       it != users_.end();
+       ++it) {
     if ((*it)->email() == username)
       return true;
   }

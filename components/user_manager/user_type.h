@@ -5,12 +5,10 @@
 #ifndef COMPONENTS_USER_MANAGER_USER_TYPE_H_
 #define COMPONENTS_USER_MANAGER_USER_TYPE_H_
 
-#include "components/user_manager/user_manager_export.h"
-
 namespace user_manager {
 
 // The user type. Used in a histogram; do not modify existing types.
-USER_MANAGER_EXPORT typedef enum {
+typedef enum {
   // Regular user, has a user name and password.
   USER_TYPE_REGULAR = 0,
   // Guest user, logs in without authentication.

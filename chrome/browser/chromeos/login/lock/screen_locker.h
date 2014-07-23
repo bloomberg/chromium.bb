@@ -16,9 +16,9 @@
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_delegate.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/user_context.h"
+#include "components/user_manager/user.h"
 #include "ui/base/accelerators/accelerator.h"
 
 namespace content {
@@ -47,7 +47,7 @@ class WebUIScreenLockerTester;
 // instance of itself which will be deleted when the system is unlocked.
 class ScreenLocker : public AuthStatusConsumer {
  public:
-  explicit ScreenLocker(const UserList& users);
+  explicit ScreenLocker(const user_manager::UserList& users);
 
   // Returns the default instance if it has been created.
   static ScreenLocker* default_screen_locker() {
@@ -90,7 +90,7 @@ class ScreenLocker : public AuthStatusConsumer {
   ScreenLockerDelegate* delegate() const { return delegate_.get(); }
 
   // Returns the users to authenticate.
-  const UserList& users() const { return users_; }
+  const user_manager::UserList& users() const { return users_; }
 
   // Allow a AuthStatusConsumer to listen for
   // the same login events that ScreenLocker does.
@@ -144,13 +144,13 @@ class ScreenLocker : public AuthStatusConsumer {
   bool IsUserLoggedIn(const std::string& username);
 
   // Looks up user in unlock user list.
-  const User* FindUnlockUser(const std::string& user_id);
+  const user_manager::User* FindUnlockUser(const std::string& user_id);
 
   // ScreenLockerDelegate instance in use.
   scoped_ptr<ScreenLockerDelegate> delegate_;
 
   // Users that can unlock the device.
-  UserList users_;
+  user_manager::UserList users_;
 
   // Used to authenticate the user to unlock.
   scoped_refptr<Authenticator> authenticator_;

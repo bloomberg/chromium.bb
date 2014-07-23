@@ -51,7 +51,7 @@ bool DefaultUserFlow::HandlePasswordChangeDetected() {
 }
 
 void DefaultUserFlow::HandleOAuthTokenStatusChange(
-    User::OAuthTokenStatus status) {
+    user_manager::User::OAuthTokenStatus status) {
 }
 
 void DefaultUserFlow::LaunchExtraSteps(Profile* profile) {

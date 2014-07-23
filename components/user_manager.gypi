@@ -20,6 +20,8 @@
       'user_manager/user_image/default_user_images.h',
       'user_manager/user_image/user_image.cc',
       'user_manager/user_image/user_image.h',
+      'user_manager/user.cc',
+      'user_manager/user.h',
       'user_manager/user_type.h',
     ],
   },
@@ -30,7 +32,6 @@
       '<(DEPTH)/base/base.gyp:base',
       '<(DEPTH)/skia/skia.gyp:skia',
       '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
-      '<(DEPTH)/url/url.gyp:url_lib',
     ],
     'defines': [
       'USER_MANAGER_IMPLEMENTATION',
@@ -44,8 +45,10 @@
     'conditions': [
       ['chromeos == 1', {
         'dependencies': [
+          '<(DEPTH)/google_apis/google_apis.gyp:google_apis',
           '<(DEPTH)/ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
           '<(DEPTH)/ui/chromeos/ui_chromeos.gyp:ui_chromeos_strings',
+          '<(DEPTH)/url/url.gyp:url_lib',
         ],
         'sources': [ '<@(user_manager_chromeos_sources)' ],
       }],

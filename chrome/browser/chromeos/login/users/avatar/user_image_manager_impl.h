@@ -19,8 +19,8 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_loader.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
+#include "components/user_manager/user.h"
 #include "ui/gfx/image/image_skia.h"
 
 class ProfileDownloader;
@@ -144,10 +144,10 @@ class UserImageManagerImpl
   void TryToCreateImageSyncObserver();
 
   // Returns immutable version of user with |user_id_|.
-  const User* GetUser() const;
+  const user_manager::User* GetUser() const;
 
   // Returns mutable version of user with |user_id_|.
-  User* GetUserAndModify() const;
+  user_manager::User* GetUserAndModify() const;
 
   // Returns true if user with |user_id_| is logged in and a regular user.
   bool IsUserLoggedInAndRegular() const;

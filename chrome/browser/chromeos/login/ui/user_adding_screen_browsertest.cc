@@ -50,7 +50,7 @@ class UserAddingScreenTest : public LoginManagerTest,
 
   virtual void OnUserAddingStarted() OVERRIDE { ++user_adding_started_; }
 
-  void SetUserCanLock(User* user, bool can_lock) {
+  void SetUserCanLock(user_manager::User* user, bool can_lock) {
     user->set_can_lock(can_lock);
   }
 
@@ -192,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
                     MultiProfileUserController::kBehaviorUnrestricted);
   prefs3->SetString(prefs::kMultiProfileUserBehavior,
                     MultiProfileUserController::kBehaviorUnrestricted);
-  chromeos::UserList unlock_users = user_manager->GetUnlockUsers();
+  user_manager::UserList unlock_users = user_manager->GetUnlockUsers();
   ASSERT_EQ(1UL, unlock_users.size());
   EXPECT_EQ(kTestUsers[0], unlock_users[0]->email());
 

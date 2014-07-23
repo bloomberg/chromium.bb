@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
-#include "chrome/browser/chromeos/login/users/user.h"
+#include "components/user_manager/user.h"
 
 class Profile;
 
@@ -28,8 +28,8 @@ class SupervisedUserCreationFlow : public ExtendedUserFlow {
   virtual bool HandleLoginFailure(const AuthFailure& failure) OVERRIDE;
   virtual void HandleLoginSuccess(const UserContext& context) OVERRIDE;
   virtual bool HandlePasswordChangeDetected() OVERRIDE;
-  virtual void HandleOAuthTokenStatusChange(User::OAuthTokenStatus status)
-      OVERRIDE;
+  virtual void HandleOAuthTokenStatusChange(
+      user_manager::User::OAuthTokenStatus status) OVERRIDE;
   virtual void LaunchExtraSteps(Profile* profile) OVERRIDE;
  private:
   // Display name for user being created.

@@ -14,12 +14,12 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/user_manager/user.h"
 #endif
 
 namespace policy {
@@ -38,7 +38,7 @@ DeviceLocalAccountPolicyBroker* GetBroker(content::BrowserContext* context) {
     return NULL;
   }
 
-  chromeos::User* user =
+  user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user)
     return NULL;

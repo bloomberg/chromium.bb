@@ -252,7 +252,7 @@ void DeviceSettingsTestBase::ReloadDeviceSettings() {
 
 void DeviceSettingsTestBase::InitOwner(const std::string& user_id,
                                        bool tpm_is_ready) {
-  const User* user = user_manager_->FindUser(user_id);
+  const user_manager::User* user = user_manager_->FindUser(user_id);
   if (!user) {
     user = user_manager_->AddUser(user_id);
     profile_->set_profile_name(user_id);

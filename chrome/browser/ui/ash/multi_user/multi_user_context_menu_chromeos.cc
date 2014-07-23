@@ -12,7 +12,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_warning_dialog.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/common/pref_names.h"
+#include "components/user_manager/user.h"
 #include "grit/generated_resources.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -129,10 +129,11 @@ void ExecuteVisitDesktopCommand(int command_id, aura::Window* window) {
 
       // Don't show warning dialog if any logged in user in multi-profiles
       // session dismissed it.
-      const chromeos::UserList logged_in_users =
+      const user_manager::UserList logged_in_users =
           chromeos::UserManager::Get()->GetLoggedInUsers();
-      for (chromeos::UserList::const_iterator it = logged_in_users.begin();
-           it != logged_in_users.end(); ++it) {
+      for (user_manager::UserList::const_iterator it = logged_in_users.begin();
+           it != logged_in_users.end();
+           ++it) {
         if (multi_user_util::GetProfileFromUserID(
             multi_user_util::GetUserIDFromEmail((*it)->email()))->GetPrefs()->
             GetBoolean(prefs::kMultiProfileWarningShowDismissed)) {

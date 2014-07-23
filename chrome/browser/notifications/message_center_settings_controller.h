@@ -80,7 +80,8 @@ class MessageCenterSettingsController
 
 #if defined(OS_CHROMEOS)
   // Overridden from chromeos::UserManager::UserSessionStateObserver.
-  virtual void ActiveUserChanged(const chromeos::User* active_user) OVERRIDE;
+  virtual void ActiveUserChanged(
+      const user_manager::User* active_user) OVERRIDE;
 #endif
 
   // Overridden from extensions::AppIconLoader::Delegate.

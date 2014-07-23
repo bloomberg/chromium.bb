@@ -144,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesTest, MultiProfiles) {
   // Add first user and init its preferences. Check that corresponding
   // settings has been changed.
   LoginUser(kTestUsers[0]);
-  const User* user1 = user_manager->FindUser(kTestUsers[0]);
+  const user_manager::User* user1 = user_manager->FindUser(kTestUsers[0]);
   PrefService* prefs1 =
       ProfileHelper::Get()->GetProfileByUser(user1)->GetPrefs();
   SetPrefs(prefs1, false);
@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesTest, MultiProfiles) {
   DisableAnimations();
   AddUser(kTestUsers[1]);
   content::RunAllPendingInMessageLoop();
-  const User* user2 = user_manager->FindUser(kTestUsers[1]);
+  const user_manager::User* user2 = user_manager->FindUser(kTestUsers[1]);
   EXPECT_TRUE(user2->is_active());
   PrefService* prefs2 =
       ProfileHelper::Get()->GetProfileByUser(user2)->GetPrefs();

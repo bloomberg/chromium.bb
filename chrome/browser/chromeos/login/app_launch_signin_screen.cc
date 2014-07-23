@@ -41,13 +41,13 @@ void AppLaunchSigninScreen::Show() {
 void AppLaunchSigninScreen::InitOwnerUserList() {
   UserManager* user_manager = GetUserManager();
   const std::string& owner_email = user_manager->GetOwnerEmail();
-  const UserList& all_users = user_manager->GetUsers();
+  const user_manager::UserList& all_users = user_manager->GetUsers();
 
   owner_user_list_.clear();
-  for (UserList::const_iterator it = all_users.begin();
+  for (user_manager::UserList::const_iterator it = all_users.begin();
        it != all_users.end();
        ++it) {
-    User* user = *it;
+    user_manager::User* user = *it;
     if (user->email() == owner_email) {
       owner_user_list_.push_back(user);
       break;
@@ -141,7 +141,7 @@ void AppLaunchSigninScreen::ShowSigninScreenForCreds(
   NOTREACHED();
 }
 
-const UserList& AppLaunchSigninScreen::GetUsers() const {
+const user_manager::UserList& AppLaunchSigninScreen::GetUsers() const {
   if (test_user_manager_) {
     return test_user_manager_->GetUsers();
   }
@@ -189,9 +189,11 @@ void AppLaunchSigninScreen::OnAuthSuccess(const UserContext& user_context) {
 
 void AppLaunchSigninScreen::HandleGetUsers() {
   base::ListValue users_list;
-  const UserList& users = GetUsers();
+  const user_manager::UserList& users = GetUsers();
 
-  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+  for (user_manager::UserList::const_iterator it = users.begin();
+       it != users.end();
+       ++it) {
     ScreenlockBridge::LockHandler::AuthType initial_auth_type =
         UserSelectionScreen::ShouldForceOnlineSignIn(*it)
             ? ScreenlockBridge::LockHandler::ONLINE_SIGN_IN

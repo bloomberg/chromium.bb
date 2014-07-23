@@ -11,8 +11,8 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/avatar/mock_user_image_manager.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -26,9 +26,10 @@ class MockUserManager : public UserManager {
   virtual ~MockUserManager();
 
   MOCK_METHOD0(Shutdown, void(void));
-  MOCK_CONST_METHOD0(GetUsersAdmittedForMultiProfile, UserList(void));
-  MOCK_CONST_METHOD0(GetLoggedInUsers, const UserList&(void));
-  MOCK_METHOD0(GetLRULoggedInUsers, const UserList&(void));
+  MOCK_CONST_METHOD0(GetUsersAdmittedForMultiProfile,
+                     user_manager::UserList(void));
+  MOCK_CONST_METHOD0(GetLoggedInUsers, const user_manager::UserList&(void));
+  MOCK_METHOD0(GetLRULoggedInUsers, const user_manager::UserList&(void));
   MOCK_METHOD3(UserLoggedIn, void(
       const std::string&, const std::string&, bool));
   MOCK_METHOD1(SwitchActiveUser, void(const std::string& email));
@@ -36,10 +37,10 @@ class MockUserManager : public UserManager {
   MOCK_METHOD2(RemoveUser, void(const std::string&, RemoveUserDelegate*));
   MOCK_METHOD1(RemoveUserFromList, void(const std::string&));
   MOCK_CONST_METHOD1(IsKnownUser, bool(const std::string&));
-  MOCK_CONST_METHOD1(FindUser, const User*(const std::string&));
-  MOCK_METHOD1(FindUserAndModify, User*(const std::string&));
-  MOCK_METHOD2(SaveUserOAuthStatus, void(const std::string&,
-                                         User::OAuthTokenStatus));
+  MOCK_CONST_METHOD1(FindUser, const user_manager::User*(const std::string&));
+  MOCK_METHOD1(FindUserAndModify, user_manager::User*(const std::string&));
+  MOCK_METHOD2(SaveUserOAuthStatus,
+               void(const std::string&, user_manager::User::OAuthTokenStatus));
   MOCK_METHOD2(SaveForceOnlineSignin, void(const std::string&, bool));
   MOCK_METHOD2(SaveUserDisplayName, void(const std::string&,
                                          const base::string16&));
@@ -78,14 +79,14 @@ class MockUserManager : public UserManager {
 
   // You can't mock these functions easily because nobody can create
   // User objects but the UserManagerImpl and us.
-  virtual const UserList& GetUsers() const OVERRIDE;
-  virtual const User* GetLoggedInUser() const OVERRIDE;
-  virtual UserList GetUnlockUsers() const OVERRIDE;
+  virtual const user_manager::UserList& GetUsers() const OVERRIDE;
+  virtual const user_manager::User* GetLoggedInUser() const OVERRIDE;
+  virtual user_manager::UserList GetUnlockUsers() const OVERRIDE;
   virtual const std::string& GetOwnerEmail() OVERRIDE;
-  virtual User* GetLoggedInUser() OVERRIDE;
-  virtual const User* GetActiveUser() const OVERRIDE;
-  virtual User* GetActiveUser() OVERRIDE;
-  virtual const User* GetPrimaryUser() const OVERRIDE;
+  virtual user_manager::User* GetLoggedInUser() OVERRIDE;
+  virtual const user_manager::User* GetActiveUser() const OVERRIDE;
+  virtual user_manager::User* GetActiveUser() OVERRIDE;
+  virtual const user_manager::User* GetPrimaryUser() const OVERRIDE;
 
   virtual MultiProfileUserController* GetMultiProfileUserController() OVERRIDE;
   virtual UserImageManager* GetUserImageManager(
@@ -101,7 +102,7 @@ class MockUserManager : public UserManager {
 
   // Creates a new public session user. Users previously created by this
   // MockUserManager become invalid.
-  User* CreatePublicAccountUser(const std::string& email);
+  user_manager::User* CreatePublicAccountUser(const std::string& email);
 
   // Adds a new User instance to the back of the user list. Users previously
   // created by this MockUserManager remain valid.
@@ -114,7 +115,7 @@ class MockUserManager : public UserManager {
   scoped_ptr<UserFlow> user_flow_;
   scoped_ptr<MockUserImageManager> user_image_manager_;
   scoped_ptr<FakeSupervisedUserManager> supervised_user_manager_;
-  UserList user_list_;
+  user_manager::UserList user_list_;
 };
 
 }  // namespace chromeos

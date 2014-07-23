@@ -11,12 +11,12 @@
 #include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_constants.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_sync_service.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_type.h"
 
 namespace chromeos {
@@ -43,9 +43,11 @@ void ManagerPasswordService::Init(
   SupervisedUserManager* supervised_user_manager =
       user_manager->GetSupervisedUserManager();
 
-  const UserList& users = user_manager->GetUsers();
+  const user_manager::UserList& users = user_manager->GetUsers();
 
-  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+  for (user_manager::UserList::const_iterator it = users.begin();
+       it != users.end();
+       ++it) {
     if ((*it)->GetType() != user_manager::USER_TYPE_SUPERVISED)
       continue;
     if (user_id != supervised_user_manager->GetManagerUserId((*it)->email()))
@@ -64,7 +66,7 @@ void ManagerPasswordService::OnSharedSettingsChange(
 
   SupervisedUserManager* supervised_user_manager =
       UserManager::Get()->GetSupervisedUserManager();
-  const User* user = supervised_user_manager->FindBySyncId(su_id);
+  const user_manager::User* user = supervised_user_manager->FindBySyncId(su_id);
   // No user on device.
   if (user == NULL)
     return;

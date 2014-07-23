@@ -22,12 +22,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "components/user_manager/user.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
 #include "grit/app_locale_settings.h"
@@ -377,12 +377,9 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::OnWallpaperDecoded(
       user_id_, image, layout, update_wallpaper);
   bool is_persistent =
       !chromeos::UserManager::Get()->IsCurrentUserNonCryptohomeDataEphemeral();
-  chromeos::WallpaperInfo info = {
-      params->url,
-      layout,
-      chromeos::User::ONLINE,
-      base::Time::Now().LocalMidnight()
-  };
+  chromeos::WallpaperInfo info = {params->url, layout,
+                                  user_manager::User::ONLINE,
+                                  base::Time::Now().LocalMidnight()};
   wallpaper_manager->SetUserWallpaperInfo(user_id_, info, is_persistent);
   SetResult(new base::FundamentalValue(true));
   Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -491,12 +488,9 @@ void WallpaperPrivateSetWallpaperFunction::SetDecodedWallpaper(
 
   bool is_persistent =
       !chromeos::UserManager::Get()->IsCurrentUserNonCryptohomeDataEphemeral();
-  chromeos::WallpaperInfo info = {
-      params->url,
-      layout,
-      chromeos::User::ONLINE,
-      base::Time::Now().LocalMidnight()
-  };
+  chromeos::WallpaperInfo info = {params->url, layout,
+                                  user_manager::User::ONLINE,
+                                  base::Time::Now().LocalMidnight()};
   Profile* profile = Profile::FromBrowserContext(browser_context());
   // This API is only available to the component wallpaper picker. We do not
   // need to show the app's name if it is the component wallpaper picker. So set
@@ -521,12 +515,10 @@ bool WallpaperPrivateResetWallpaperFunction::RunAsync() {
   std::string user_id = user_manager->GetActiveUser()->email();
   wallpaper_manager->RemoveUserWallpaperInfo(user_id);
 
-  chromeos::WallpaperInfo info = {
-      "",
-      ash::WALLPAPER_LAYOUT_CENTER,
-      chromeos::User::DEFAULT,
-      base::Time::Now().LocalMidnight()
-  };
+  chromeos::WallpaperInfo info = {std::string(),
+                                  ash::WALLPAPER_LAYOUT_CENTER,
+                                  user_manager::User::DEFAULT,
+                                  base::Time::Now().LocalMidnight()};
   bool is_persistent =
       !user_manager->IsCurrentUserNonCryptohomeDataEphemeral();
   wallpaper_manager->SetUserWallpaperInfo(user_id, info, is_persistent);
@@ -584,7 +576,7 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
                                         user_id_hash_,
                                         params->file_name,
                                         layout,
-                                        chromeos::User::CUSTOMIZED,
+                                        user_manager::User::CUSTOMIZED,
                                         image,
                                         update_wallpaper);
   unsafe_wallpaper_decoder_ = NULL;
@@ -655,7 +647,7 @@ bool WallpaperPrivateSetCustomWallpaperLayoutFunction::RunAsync() {
       chromeos::WallpaperManager::Get();
   chromeos::WallpaperInfo info;
   wallpaper_manager->GetLoggedInUserWallpaperInfo(&info);
-  if (info.type != chromeos::User::CUSTOMIZED) {
+  if (info.type != user_manager::User::CUSTOMIZED) {
     SetError("Only custom wallpaper can change layout.");
     SendResponse(false);
     return false;

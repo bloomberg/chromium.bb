@@ -285,7 +285,7 @@ void CoreChromeOSOptionsHandler::GetLocalizedValues(
 
   // Check at load time whether this is a secondary user in a multi-profile
   // session.
-  User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
   if (user && user->email() != user_manager->GetPrimaryUser()->email()) {
     const std::string& primary_email = user_manager->GetPrimaryUser()->email();
 

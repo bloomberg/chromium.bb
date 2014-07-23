@@ -27,6 +27,7 @@
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/network/network_state.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
@@ -207,7 +208,7 @@ void SupervisedUserCreationScreen::CreateSupervisedUser(
     const std::string& supervised_user_password) {
   DCHECK(controller_.get());
   int image;
-  if (selected_image_ == User::kExternalImageIndex)
+  if (selected_image_ == user_manager::User::USER_IMAGE_EXTERNAL)
     // TODO(dzhioev): crbug/249660
     image = SupervisedUserCreationController::kDummyAvatarIndex;
   else
@@ -445,7 +446,7 @@ void SupervisedUserCreationScreen::ApplyPicture() {
   UserManager* user_manager = UserManager::Get();
   UserImageManager* image_manager = user_manager->GetUserImageManager(user_id);
   switch (selected_image_) {
-    case User::kExternalImageIndex:
+    case user_manager::User::USER_IMAGE_EXTERNAL:
       // Photo decoding may not have been finished yet.
       if (user_photo_.isNull()) {
         apply_photo_after_decoding_ = true;
@@ -454,7 +455,7 @@ void SupervisedUserCreationScreen::ApplyPicture() {
       image_manager->SaveUserImage(
           user_manager::UserImage::CreateAndEncode(user_photo_));
       break;
-    case User::kProfileImageIndex:
+    case user_manager::User::USER_IMAGE_PROFILE:
       NOTREACHED() << "Supervised users have no profile pictures";
       break;
     default:
@@ -582,12 +583,12 @@ void SupervisedUserCreationScreen::OnImageSelected(
     const std::string& image_url) {
   if (image_url.empty())
     return;
-  int user_image_index = User::kInvalidImageIndex;
+  int user_image_index = user_manager::User::USER_IMAGE_INVALID;
   if (image_type == "default" &&
       user_manager::IsDefaultImageUrl(image_url, &user_image_index)) {
     selected_image_ = user_image_index;
   } else if (image_type == "camera") {
-    selected_image_ = User::kExternalImageIndex;
+    selected_image_ = user_manager::User::USER_IMAGE_EXTERNAL;
   } else {
     NOTREACHED() << "Unexpected image type: " << image_type;
   }

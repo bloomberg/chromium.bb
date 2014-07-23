@@ -20,9 +20,9 @@
 #include "chrome/browser/chromeos/login/auth/login_performer.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "components/user_manager/user.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
@@ -60,7 +60,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   }
 
   // Creates and shows login UI for known users.
-  void Init(const UserList& users);
+  void Init(const user_manager::UserList& users);
 
   // Tells the controller to enter the Enterprise Enrollment screen when
   // appropriate.
@@ -219,7 +219,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   }
 
   // Updates the |login_display_| attached to this controller.
-  void UpdateLoginDisplay(const UserList& users);
+  void UpdateLoginDisplay(const user_manager::UserList& users);
 
   // Sends an accessibility alert event to extension listeners.
   void SendAccessibilityAlert(const std::string& alert_text);

@@ -44,7 +44,7 @@ void SupervisedUserPasswordService::OnSharedSettingsChange(
     return;
   chromeos::SupervisedUserManager* supervised_user_manager =
       chromeos::UserManager::Get()->GetSupervisedUserManager();
-  const chromeos::User* user = supervised_user_manager->FindBySyncId(su_id);
+  const user_manager::User* user = supervised_user_manager->FindBySyncId(su_id);
   if (user == NULL) {
     LOG(WARNING) << "Got notification for user not on device.";
     return;

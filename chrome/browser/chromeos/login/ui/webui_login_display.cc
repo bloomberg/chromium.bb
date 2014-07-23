@@ -51,7 +51,7 @@ void WebUILoginDisplay::ClearAndEnablePassword() {
       webui_handler_->ClearAndEnablePassword();
 }
 
-void WebUILoginDisplay::Init(const UserList& users,
+void WebUILoginDisplay::Init(const user_manager::UserList& users,
                              bool show_guest,
                              bool show_users,
                              bool show_new_user) {
@@ -81,7 +81,7 @@ void WebUILoginDisplay::OnUserRemoved(const std::string& username) {
   user_selection_screen_->OnUserRemoved(username);
 }
 
-void WebUILoginDisplay::OnUserImageChanged(const User& user) {
+void WebUILoginDisplay::OnUserImageChanged(const user_manager::User& user) {
   user_selection_screen_->OnUserImageChanged(user);
 }
 
@@ -89,7 +89,7 @@ void WebUILoginDisplay::HandleGetUsers() {
   user_selection_screen_->HandleGetUsers();
 }
 
-const UserList& WebUILoginDisplay::GetUsers() const {
+const user_manager::UserList& WebUILoginDisplay::GetUsers() const {
   return user_selection_screen_->GetUsers();
 }
 

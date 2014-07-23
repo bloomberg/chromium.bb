@@ -109,8 +109,8 @@ void OAuth2LoginManager::RestoreSessionFromSavedTokens() {
     // and OnRefreshTokenAvailable is not called. Flagging it here would
     // cause user to go through Gaia in next login to obtain a new refresh
     // token.
-    UserManager::Get()->SaveUserOAuthStatus(primary_account_id,
-                                            User::OAUTH_TOKEN_STATUS_UNKNOWN);
+    UserManager::Get()->SaveUserOAuthStatus(
+        primary_account_id, user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN);
 
     token_service->LoadCredentials(primary_account_id);
   }
@@ -145,8 +145,8 @@ void OAuth2LoginManager::OnRefreshTokenAvailable(
   // Only restore session cookies for the primary account in the profile.
   if (GetPrimaryAccountId() == account_id) {
     // Token is loaded. Undo the flagging before token loading.
-    UserManager::Get()->SaveUserOAuthStatus(account_id,
-                                            User::OAUTH2_TOKEN_STATUS_VALID);
+    UserManager::Get()->SaveUserOAuthStatus(
+        account_id, user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
     VerifySessionCookies();
   }
 }

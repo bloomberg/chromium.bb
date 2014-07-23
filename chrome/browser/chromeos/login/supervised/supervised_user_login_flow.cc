@@ -55,7 +55,7 @@ bool SupervisedUserLoginFlow::HandlePasswordChangeDetected() {
 }
 
 void SupervisedUserLoginFlow::HandleOAuthTokenStatusChange(
-    User::OAuthTokenStatus status) {
+    user_manager::User::OAuthTokenStatus status) {
 }
 
 void SupervisedUserLoginFlow::OnSyncSetupDataLoaded(

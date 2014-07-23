@@ -17,10 +17,13 @@ class DictionaryValue;
 class ListValue;
 }
 
+namespace user_manager {
+class User;
+}
+
 namespace chromeos {
 
 class NetworkState;
-class User;
 
 namespace onc {
 
@@ -38,10 +41,10 @@ scoped_ptr<base::DictionaryValue> ConvertOncProxySettingsToProxyConfig(
 // implemented, which are replaced by attributes of the logged-in user with
 // |hashed_username|.
 void ExpandStringPlaceholdersInNetworksForUser(
-    const chromeos::User* user,
+    const user_manager::User* user,
     base::ListValue* network_configs);
 
-void ImportNetworksForUser(const chromeos::User* user,
+void ImportNetworksForUser(const user_manager::User* user,
                            const base::ListValue& network_configs,
                            std::string* error);
 

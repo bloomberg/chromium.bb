@@ -200,7 +200,7 @@ void CrosLanguageOptionsHandler::SetApplicationLocale(
   UserManager* user_manager = UserManager::Get();
 
   // Only the primary user can change the locale.
-  User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
   if (user && user->email() == user_manager->GetPrimaryUser()->email()) {
     profile->ChangeAppLocale(language_code,
                              Profile::APP_LOCALE_CHANGED_VIA_SETTINGS);

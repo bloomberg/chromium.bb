@@ -20,12 +20,12 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
 #include "chrome/browser/chromeos/policy/login_profile_policy_provider.h"
+#include "components/user_manager/user.h"
 #endif
 
 namespace policy {
@@ -56,7 +56,7 @@ ProfilePolicyConnector::~ProfilePolicyConnector() {}
 void ProfilePolicyConnector::Init(
     bool force_immediate_load,
 #if defined(OS_CHROMEOS)
-    const chromeos::User* user,
+    const user_manager::User* user,
 #endif
     SchemaRegistry* schema_registry,
     CloudPolicyManager* user_cloud_policy_manager) {

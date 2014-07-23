@@ -856,7 +856,7 @@ bool FileBrowserPrivateRequestDriveShareFunction::RunAsync() {
   if (!owner_file_system)
     return false;
 
-  const chromeos::User* const user =
+  const user_manager::User* const user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(GetProfile());
   if (!user || !user->is_logged_in())
     return false;

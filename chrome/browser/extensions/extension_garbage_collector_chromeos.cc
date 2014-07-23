@@ -55,7 +55,7 @@ bool ExtensionGarbageCollectorChromeOS::CanGarbageCollectSharedExtensions() {
     return false;
   }
 
-  const chromeos::UserList& active_users = user_manager->GetLoggedInUsers();
+  const user_manager::UserList& active_users = user_manager->GetLoggedInUsers();
   for (size_t i = 0; i < active_users.size(); i++) {
     Profile* profile =
         chromeos::ProfileHelper::Get()->GetProfileByUser(active_users[i]);

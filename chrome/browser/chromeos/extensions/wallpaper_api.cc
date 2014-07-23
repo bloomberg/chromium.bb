@@ -12,13 +12,13 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "components/user_manager/user.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
@@ -143,7 +143,7 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
                                         user_id_hash_,
                                         params_->details.name,
                                         layout,
-                                        chromeos::User::CUSTOMIZED,
+                                        user_manager::User::CUSTOMIZED,
                                         image,
                                         update_wallpaper);
   unsafe_wallpaper_decoder_ = NULL;

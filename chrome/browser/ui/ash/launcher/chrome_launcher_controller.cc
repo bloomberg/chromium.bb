@@ -246,7 +246,8 @@ class ChromeLauncherControllerUserSwitchObserverChromeOS
   }
 
   // chromeos::UserManager::UserSessionStateObserver overrides:
-  virtual void UserAddedToSession(const chromeos::User* added_user) OVERRIDE;
+  virtual void UserAddedToSession(
+      const user_manager::User* added_user) OVERRIDE;
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,
@@ -272,7 +273,7 @@ class ChromeLauncherControllerUserSwitchObserverChromeOS
 };
 
 void ChromeLauncherControllerUserSwitchObserverChromeOS::UserAddedToSession(
-    const chromeos::User* active_user) {
+    const user_manager::User* active_user) {
   Profile* profile = multi_user_util::GetProfileFromUserID(
       active_user->email());
   // If we do not have a profile yet, we postpone forwarding the notification

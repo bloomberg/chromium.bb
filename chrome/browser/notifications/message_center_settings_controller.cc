@@ -411,7 +411,7 @@ void MessageCenterSettingsController::OnFaviconLoaded(
 
 #if defined(OS_CHROMEOS)
 void MessageCenterSettingsController::ActiveUserChanged(
-    const chromeos::User* active_user) {
+    const user_manager::User* active_user) {
   RebuildNotifierGroups();
 }
 #endif
@@ -452,7 +452,7 @@ void MessageCenterSettingsController::CreateNotifierGroupForGuestLogin() {
   if (!user_manager->IsLoggedInAsGuest())
     return;
 
-  chromeos::User* user = user_manager->GetActiveUser();
+  user_manager::User* user = user_manager->GetActiveUser();
   Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
   DCHECK(profile);
   notifier_groups_.push_back(

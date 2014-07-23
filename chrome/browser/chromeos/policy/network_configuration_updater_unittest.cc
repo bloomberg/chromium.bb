@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -26,6 +25,7 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_service_impl.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -51,7 +51,7 @@ namespace {
 const char kFakeUserEmail[] = "fake email";
 const char kFakeUsernameHash[] = "fake hash";
 
-class FakeUser : public chromeos::User {
+class FakeUser : public user_manager::User {
  public:
   FakeUser() : User(kFakeUserEmail) {
     set_display_email(kFakeUserEmail);

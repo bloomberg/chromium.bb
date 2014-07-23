@@ -5,7 +5,6 @@
 #include "chrome/browser/supervised_user/chromeos/manager_password_service_factory.h"
 
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/supervised_user/supervised_user_shared_settings_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_sync_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/user_manager/user.h"
 
 namespace chromeos {
 
@@ -43,7 +43,7 @@ ManagerPasswordServiceFactory::
 KeyedService* ManagerPasswordServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile= static_cast<Profile*>(context);
-  chromeos::User* user =
+  user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   if (chromeos::UserManager::Get()->GetSupervisedUserManager()->
       HasSupervisedUsers(user->email())) {

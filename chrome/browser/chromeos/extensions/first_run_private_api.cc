@@ -6,9 +6,9 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "components/user_manager/user.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -17,7 +17,7 @@
 bool FirstRunPrivateGetLocalizedStringsFunction::RunSync() {
   UMA_HISTOGRAM_COUNTS("CrosFirstRun.DialogShown", 1);
   base::DictionaryValue* localized_strings = new base::DictionaryValue();
-  chromeos::User* user =
+  user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(GetProfile());
   if (!user->GetGivenName().empty()) {
     localized_strings->SetString(

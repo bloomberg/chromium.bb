@@ -103,7 +103,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/drive_protocol_handler.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
@@ -114,6 +113,7 @@
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/user_manager/user.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
@@ -360,7 +360,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 #if defined(OS_CHROMEOS)
   chromeos::UserManager* user_manager = chromeos::UserManager::Get();
   if (user_manager) {
-    chromeos::User* user =
+    user_manager::User* user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
     // No need to initialize NSS for users with empty username hash:
     // Getters for a user's NSS slots always return NULL slot if the user's

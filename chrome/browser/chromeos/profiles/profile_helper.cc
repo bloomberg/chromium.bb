@@ -9,7 +9,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -17,6 +16,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/user_manager/user.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
@@ -37,7 +37,7 @@ bool ShouldAddProfileDirPrefix(const std::string& user_id_hash) {
 class UsernameHashMatcher {
  public:
   explicit UsernameHashMatcher(const std::string& h) : username_hash(h) {}
-  bool operator()(const User* user) const {
+  bool operator()(const user_manager::User* user) const {
     return user->username_hash() == username_hash;
   }
 
@@ -151,7 +151,7 @@ base::FilePath ProfileHelper::GetUserProfileDirByUserId(
   // ProfileManager and use only this function to construct profile path.
   // TODO(nkostylev): Cleanup profile dir related code paths crbug.com/294233
   base::FilePath profile_dir;
-  const User* user = UserManager::Get()->FindUser(user_id);
+  const user_manager::User* user = UserManager::Get()->FindUser(user_id);
   if (user && !user->username_hash().empty())
     profile_dir = ProfileHelper::GetUserProfileDir(user->username_hash());
 
@@ -170,7 +170,7 @@ bool ProfileHelper::IsSigninProfile(Profile* profile) {
 bool ProfileHelper::IsOwnerProfile(Profile* profile) {
   if (!profile)
     return false;
-  chromeos::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user)
     return false;
 
@@ -224,10 +224,10 @@ void ProfileHelper::ClearSigninProfile(const base::Closure& on_clear_callback) {
                   BrowsingDataHelper::ALL);
 }
 
-Profile* ProfileHelper::GetProfileByUser(const User* user) {
+Profile* ProfileHelper::GetProfileByUser(const user_manager::User* user) {
   // This map is non-empty only in tests.
   if (!user_to_profile_for_testing_.empty()) {
-    std::map<const User*, Profile*>::const_iterator it =
+    std::map<const user_manager::User*, Profile*>::const_iterator it =
         user_to_profile_for_testing_.find(user);
     return it == user_to_profile_for_testing_.end() ? NULL : it->second;
   }
@@ -245,14 +245,16 @@ Profile* ProfileHelper::GetProfileByUser(const User* user) {
   return profile;
 }
 
-User* ProfileHelper::GetUserByProfile(Profile* profile) {
+user_manager::User* ProfileHelper::GetUserByProfile(Profile* profile) {
   // This map is non-empty only in tests.
   if (enable_profile_to_user_testing || !user_list_for_testing_.empty()) {
     if (always_return_primary_user_for_testing)
-      return const_cast<User*>(UserManager::Get()->GetPrimaryUser());
+      return const_cast<user_manager::User*>(
+          UserManager::Get()->GetPrimaryUser());
 
     const std::string& user_name = profile->GetProfileName();
-    for (UserList::const_iterator it = user_list_for_testing_.begin();
+    for (user_manager::UserList::const_iterator it =
+             user_list_for_testing_.begin();
          it != user_list_for_testing_.end();
          ++it) {
       if ((*it)->email() == user_name)
@@ -260,7 +262,8 @@ User* ProfileHelper::GetUserByProfile(Profile* profile) {
     }
 
     // In case of test setup we should always default to primary user.
-    return const_cast<User*>(UserManager::Get()->GetPrimaryUser());
+    return const_cast<user_manager::User*>(
+        UserManager::Get()->GetPrimaryUser());
   }
 
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -282,19 +285,19 @@ User* ProfileHelper::GetUserByProfile(Profile* profile) {
 
   const std::string username_hash =
       ProfileHelper::GetUserIdHashFromProfile(profile);
-  const UserList& users = user_manager->GetUsers();
-  const UserList::const_iterator pos = std::find_if(
+  const user_manager::UserList& users = user_manager->GetUsers();
+  const user_manager::UserList::const_iterator pos = std::find_if(
       users.begin(), users.end(), UsernameHashMatcher(username_hash));
   if (pos != users.end())
     return *pos;
 
   // Many tests do not have their users registered with UserManager and
   // runs here. If |active_user_| matches |profile|, returns it.
-  const User* active_user = user_manager->GetActiveUser();
+  const user_manager::User* active_user = user_manager->GetActiveUser();
   return active_user &&
                  ProfileHelper::GetProfilePathByUserIdHash(
                      active_user->username_hash()) == profile->GetPath()
-             ? const_cast<User*>(active_user)
+             ? const_cast<user_manager::User*>(active_user)
              : NULL;
 }
 
@@ -336,7 +339,8 @@ void ProfileHelper::ActiveUserHashChanged(const std::string& hash) {
   VLOG(1) << "Switching to profile path: " << profile_path.value();
 }
 
-void ProfileHelper::SetProfileToUserMappingForTesting(User* user) {
+void ProfileHelper::SetProfileToUserMappingForTesting(
+    user_manager::User* user) {
   user_list_for_testing_.push_back(user);
 }
 
@@ -351,8 +355,9 @@ void ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(bool value) {
   ProfileHelper::SetProfileToUserForTestingEnabled(true);
 }
 
-void ProfileHelper::SetUserToProfileMappingForTesting(const User* user,
-                                                      Profile* profile) {
+void ProfileHelper::SetUserToProfileMappingForTesting(
+    const user_manager::User* user,
+    Profile* profile) {
   user_to_profile_for_testing_[user] = profile;
 }
 

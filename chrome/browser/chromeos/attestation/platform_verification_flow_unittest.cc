@@ -89,7 +89,8 @@ class FakeDelegate : public PlatformVerificationFlow::Delegate {
     return url_;
   }
 
-  virtual User* GetUser(content::WebContents* web_contents) OVERRIDE {
+  virtual user_manager::User* GetUser(
+      content::WebContents* web_contents) OVERRIDE {
     return mock_user_manager_.GetActiveUser();
   }
 

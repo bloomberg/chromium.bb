@@ -104,10 +104,10 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
   void ClearSigninProfile(const base::Closure& on_clear_callback);
 
   // Returns NULL if profile for user is not found or is not fully loaded.
-  Profile* GetProfileByUser(const User* user);
+  Profile* GetProfileByUser(const user_manager::User* user);
 
   // Returns NULL if User is not created.
-  User* GetUserByProfile(Profile* profile);
+  user_manager::User* GetUserByProfile(Profile* profile);
 
  private:
   friend class DeviceSettingsTestBase;
@@ -133,7 +133,7 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
 
   // Associates |user| with profile with the same user_id,
   // for GetUserByProfile() testing.
-  void SetProfileToUserMappingForTesting(User* user);
+  void SetProfileToUserMappingForTesting(user_manager::User* user);
 
   // Enables/disables testing code path in GetUserByProfile() like
   // always return primary user (when always_return_primary_user_for_testing is
@@ -145,7 +145,8 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
   static void SetAlwaysReturnPrimaryUserForTesting(bool value);
 
   // Associates |profile| with |user|, for GetProfileByUser() testing.
-  void SetUserToProfileMappingForTesting(const User* user, Profile* profile);
+  void SetUserToProfileMappingForTesting(const user_manager::User* user,
+                                         Profile* profile);
 
   // Identifies path to active user profile on Chrome OS.
   std::string active_user_id_hash_;
@@ -157,11 +158,11 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
   std::vector<base::Closure> on_clear_callbacks_;
 
   // Used for testing by unit tests and FakeUserManager/MockUserManager.
-  std::map<const User*, Profile*> user_to_profile_for_testing_;
+  std::map<const user_manager::User*, Profile*> user_to_profile_for_testing_;
 
   // When this list is not empty GetUserByProfile() will find user that has
   // the same user_id as |profile|->GetProfileName().
-  UserList user_list_for_testing_;
+  user_manager::UserList user_list_for_testing_;
 
   // If true testing code path is used in GetUserByProfile() even if
   // user_list_for_testing_ list is empty. In that case primary user will always

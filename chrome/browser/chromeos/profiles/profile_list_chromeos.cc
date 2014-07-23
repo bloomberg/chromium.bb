@@ -43,11 +43,12 @@ void ProfileListChromeOS::RebuildMenu() {
   ClearMenu();
 
   // Filter for profiles associated with logged-in users.
-  UserList users = UserManager::Get()->GetLoggedInUsers();
+  user_manager::UserList users = UserManager::Get()->GetLoggedInUsers();
 
   // Add corresponding profiles.
-  for (UserList::const_iterator it = users.begin();
-       it != users.end(); ++it) {
+  for (user_manager::UserList::const_iterator it = users.begin();
+       it != users.end();
+       ++it) {
     size_t i = profile_info_->GetIndexOfProfileWithPath(
         ProfileHelper::GetProfilePathByUserIdHash((*it)->username_hash()));
 

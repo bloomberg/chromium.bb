@@ -8,7 +8,7 @@
 #include <string>
 
 #include "chrome/browser/chromeos/login/user_flow.h"
-#include "chrome/browser/chromeos/login/users/user.h"
+#include "components/user_manager/user.h"
 
 class PrefRegistrySimple;
 
@@ -40,10 +40,10 @@ class UserManager {
   class UserSessionStateObserver {
    public:
     // Called when active user has changed.
-    virtual void ActiveUserChanged(const User* active_user);
+    virtual void ActiveUserChanged(const user_manager::User* active_user);
 
     // Called when another user got added to the existing session.
-    virtual void UserAddedToSession(const User* added_user);
+    virtual void UserAddedToSession(const user_manager::User* added_user);
 
     // Called right before notifying on user change so that those who rely
     // on user_id hash would be accessing up-to-date value.
@@ -106,7 +106,7 @@ class UserManager {
 
   // Returns a list of users who have logged into this device previously. This
   // is sorted by last login date with the most recent user at the beginning.
-  virtual const UserList& GetUsers() const = 0;
+  virtual const user_manager::UserList& GetUsers() const = 0;
 
   // Returns list of users admitted for logging in into multi-profile session.
   // Users that have a policy that prevents them from being added to the
@@ -114,15 +114,15 @@ class UserManager {
   // are regular users (i.e. not a public session/supervised etc.).
   // Returns an empty list in case when primary user is not a regular one or
   // has a policy that prohibids it to be part of multi-profile session.
-  virtual UserList GetUsersAdmittedForMultiProfile() const = 0;
+  virtual user_manager::UserList GetUsersAdmittedForMultiProfile() const = 0;
 
   // Returns a list of users who are currently logged in.
-  virtual const UserList& GetLoggedInUsers() const = 0;
+  virtual const user_manager::UserList& GetLoggedInUsers() const = 0;
 
   // Returns a list of users who are currently logged in in the LRU order -
   // so the active user is the first one in the list. If there is no user logged
   // in, the current user will be returned.
-  virtual const UserList& GetLRULoggedInUsers() = 0;
+  virtual const user_manager::UserList& GetLRULoggedInUsers() = 0;
 
   // Returns a list of users who can unlock the device.
   // This list is based on policy and whether user is able to do unlock.
@@ -130,7 +130,7 @@ class UserManager {
   // * If user has primary-only policy then it is the only user in unlock users.
   // * Otherwise all users with unrestricted policy are added to this list.
   // All users that are unable to perform unlock are excluded from this list.
-  virtual UserList GetUnlockUsers() const = 0;
+  virtual user_manager::UserList GetUnlockUsers() const = 0;
 
   // Returns the email of the owner user. Returns an empty string if there is
   // no owner for the device.
@@ -173,33 +173,34 @@ class UserManager {
 
   // Returns the user with the given user id if found in the persistent
   // list or currently logged in as ephemeral. Returns |NULL| otherwise.
-  virtual const User* FindUser(const std::string& user_id) const = 0;
+  virtual const user_manager::User* FindUser(
+      const std::string& user_id) const = 0;
 
   // Returns the user with the given user id if found in the persistent
   // list or currently logged in as ephemeral. Returns |NULL| otherwise.
   // Same as FindUser but returns non-const pointer to User object.
-  virtual User* FindUserAndModify(const std::string& user_id) = 0;
+  virtual user_manager::User* FindUserAndModify(const std::string& user_id) = 0;
 
   // Returns the logged-in user.
   // TODO(nkostylev): Deprecate this call, move clients to GetActiveUser().
   // http://crbug.com/230852
-  virtual const User* GetLoggedInUser() const = 0;
-  virtual User* GetLoggedInUser() = 0;
+  virtual const user_manager::User* GetLoggedInUser() const = 0;
+  virtual user_manager::User* GetLoggedInUser() = 0;
 
   // Returns the logged-in user that is currently active within this session.
   // There could be multiple users logged in at the the same but for now
   // we support only one of them being active.
-  virtual const User* GetActiveUser() const = 0;
-  virtual User* GetActiveUser() = 0;
+  virtual const user_manager::User* GetActiveUser() const = 0;
+  virtual user_manager::User* GetActiveUser() = 0;
 
   // Returns the primary user of the current session. It is recorded for the
   // first signed-in user and does not change thereafter.
-  virtual const User* GetPrimaryUser() const = 0;
+  virtual const user_manager::User* GetPrimaryUser() const = 0;
 
   // Saves user's oauth token status in local state preferences.
   virtual void SaveUserOAuthStatus(
       const std::string& user_id,
-      User::OAuthTokenStatus oauth_token_status) = 0;
+      user_manager::User::OAuthTokenStatus oauth_token_status) = 0;
 
   // Saves a flag indicating whether online authentication against GAIA should
   // be enforced during the user's next sign-in.

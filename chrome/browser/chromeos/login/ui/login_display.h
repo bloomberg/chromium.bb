@@ -13,8 +13,8 @@
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/users/remove_user_delegate.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "components/user_manager/user.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
@@ -104,7 +104,7 @@ class LoginDisplay : public RemoveUserDelegate {
 
   // Initializes login UI with the user pods based on list of known users and
   // guest, new user pods if those are enabled.
-  virtual void Init(const UserList& users,
+  virtual void Init(const user_manager::UserList& users,
                     bool show_guest,
                     bool show_users,
                     bool show_new_user) = 0;
@@ -115,7 +115,7 @@ class LoginDisplay : public RemoveUserDelegate {
 
   // Called when user image has been changed.
   // |user| contains updated user.
-  virtual void OnUserImageChanged(const User& user) = 0;
+  virtual void OnUserImageChanged(const user_manager::User& user) = 0;
 
   // Changes enabled state of the UI.
   virtual void SetUIEnabled(bool is_enabled) = 0;

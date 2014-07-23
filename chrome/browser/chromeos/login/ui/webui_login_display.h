@@ -13,9 +13,9 @@
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "components/user_manager/user.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/user_activity_observer.h"
 
@@ -31,13 +31,13 @@ class WebUILoginDisplay : public LoginDisplay,
 
   // LoginDisplay implementation:
   virtual void ClearAndEnablePassword() OVERRIDE;
-  virtual void Init(const UserList& users,
+  virtual void Init(const user_manager::UserList& users,
                     bool show_guest,
                     bool show_users,
                     bool show_new_user) OVERRIDE;
   virtual void OnPreferencesChanged() OVERRIDE;
   virtual void OnBeforeUserRemoved(const std::string& username) OVERRIDE;
-  virtual void OnUserImageChanged(const User& user) OVERRIDE;
+  virtual void OnUserImageChanged(const user_manager::User& user) OVERRIDE;
   virtual void OnUserRemoved(const std::string& username) OVERRIDE;
   virtual void SetUIEnabled(bool is_enabled) OVERRIDE;
   virtual void ShowError(int error_msg_id,
@@ -76,7 +76,7 @@ class WebUILoginDisplay : public LoginDisplay,
       LoginDisplayWebUIHandler* webui_handler) OVERRIDE;
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password);
-  virtual const UserList& GetUsers() const OVERRIDE;
+  virtual const user_manager::UserList& GetUsers() const OVERRIDE;
   virtual bool IsShowGuest() const OVERRIDE;
   virtual bool IsShowUsers() const OVERRIDE;
   virtual bool IsUserSigninCompleted() const OVERRIDE;

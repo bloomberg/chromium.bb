@@ -134,8 +134,10 @@ void AccountsOptionsHandler::HandleWhitelistExistingUsers(
   else
     new_list.reset(new base::ListValue);
 
-  const UserList& users = UserManager::Get()->GetUsers();
-  for (UserList::const_iterator it = users.begin(); it < users.end(); ++it)
+  const user_manager::UserList& users = UserManager::Get()->GetUsers();
+  for (user_manager::UserList::const_iterator it = users.begin();
+       it < users.end();
+       ++it)
     new_list->AppendIfNotPresent(new base::StringValue((*it)->email()));
 
   cros_settings->Set(kAccountsPrefUsers, *new_list.get());

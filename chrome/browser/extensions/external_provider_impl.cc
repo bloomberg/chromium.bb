@@ -37,13 +37,13 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/app_pack_updater.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "components/user_manager/user.h"
 #else
 #include "chrome/browser/extensions/default_apps.h"
 #endif
@@ -364,7 +364,7 @@ void ExternalProviderImpl::CreateExternalProviders(
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   bool is_chrome_os_public_session = false;
-  const chromeos::User* user =
+  const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   policy::DeviceLocalAccount::Type account_type;
   if (user && policy::IsDeviceLocalAccountUser(user->email(), &account_type)) {

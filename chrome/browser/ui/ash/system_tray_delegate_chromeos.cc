@@ -60,7 +60,6 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -100,6 +99,7 @@
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
@@ -613,8 +613,9 @@ void SystemTrayDelegateChromeOS::ShowUserLogin() {
     // Don't show dialog if any logged in user in multi-profiles session
     // dismissed it.
     bool show_intro = true;
-    const UserList logged_in_users = UserManager::Get()->GetLoggedInUsers();
-    for (UserList::const_iterator it = logged_in_users.begin();
+    const user_manager::UserList logged_in_users =
+        UserManager::Get()->GetLoggedInUsers();
+    for (user_manager::UserList::const_iterator it = logged_in_users.begin();
          it != logged_in_users.end();
          ++it) {
       show_intro &= !multi_user_util::GetProfileFromUserID(
@@ -908,7 +909,7 @@ ash::tray::UserAccountsDelegate*
 SystemTrayDelegateChromeOS::GetUserAccountsDelegate(
     const std::string& user_id) {
   if (!accounts_delegates_.contains(user_id)) {
-    const User* user = UserManager::Get()->FindUser(user_id);
+    const user_manager::User* user = UserManager::Get()->FindUser(user_id);
     Profile* user_profile = ProfileHelper::Get()->GetProfileByUser(user);
     CHECK(user_profile);
     accounts_delegates_.set(

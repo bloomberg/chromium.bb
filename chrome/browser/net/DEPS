@@ -1,4 +1,4 @@
 include_rules = [
-  "+components/onc",
+  # For nss_context_chromeos_browsertest.cc.
   "+components/user_manager",
 ]

@@ -8,11 +8,11 @@
 #include "base/logging.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/user_manager/user.h"
 #include "net/base/escape.h"
 
 namespace file_manager {
@@ -36,10 +36,10 @@ base::FilePath GetDownloadsFolderForProfile(Profile* profile) {
   // $HOME/Downloads for ease for accessing local files for debugging.
   if (!base::SysInfo::IsRunningOnChromeOS() &&
       chromeos::UserManager::IsInitialized()) {
-    const chromeos::User* const user =
+    const user_manager::User* const user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(
             profile->GetOriginalProfile());
-    const chromeos::User* const primary_user =
+    const user_manager::User* const primary_user =
         chromeos::UserManager::Get()->GetPrimaryUser();
     if (user == primary_user)
       return DownloadPrefs::GetDefaultDownloadDirectory();
@@ -77,7 +77,7 @@ bool MigratePathFromOldFormat(Profile* profile,
   // migration when multi-profile flag is enabled and then disabled, or (2) in
   // some edge cases (crbug.com/356322) that u-<hash> path is temporarily used.
   if (chromeos::UserManager::IsInitialized()) {
-    const chromeos::User* const user =
+    const user_manager::User* const user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
     if (user) {
       const base::FilePath hashed_downloads =
@@ -106,7 +106,7 @@ std::string GetDownloadsMountPointName(Profile* profile) {
   // to "Downloads". Note that some profiles (like login or test profiles)
   // are not associated with an user account. In that case, no suffix is added
   // because such a profile never belongs to a multi-profile session.
-  chromeos::User* const user =
+  user_manager::User* const user =
       chromeos::UserManager::IsInitialized()
           ? chromeos::ProfileHelper::Get()->GetUserByProfile(
                 profile->GetOriginalProfile())

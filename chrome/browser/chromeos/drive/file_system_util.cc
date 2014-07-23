@@ -121,7 +121,7 @@ base::FilePath GetDriveMountPointPath(Profile* profile) {
     // enabled. In that case, we fall back to use UserManager (it basically just
     // returns currently active users's hash in such a case.) I still try
     // ProfileHelper first because it works better in tests.
-    chromeos::User* const user =
+    user_manager::User* const user =
         chromeos::UserManager::IsInitialized()
             ? chromeos::ProfileHelper::Get()->GetUserByProfile(
                   profile->GetOriginalProfile())

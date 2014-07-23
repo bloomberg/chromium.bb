@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/chromeos/login/users/user.h"
+#include "components/user_manager/user.h"
 
 class PrefRegistrySimple;
 
@@ -66,7 +66,7 @@ class UserImageManager {
   virtual void DeleteUserImage() = 0;
 
   // Starts downloading the profile image for the user.  If user's image
-  // index is |kProfileImageIndex|, newly downloaded image is immediately
+  // index is |USER_IMAGE_PROFILE|, newly downloaded image is immediately
   // set as user's current picture.  |reason| is an arbitrary string
   // (used to report UMA histograms with download times).
   virtual void DownloadProfileImage(const std::string& reason) = 0;

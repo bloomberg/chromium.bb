@@ -18,8 +18,8 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_loader.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -34,6 +34,7 @@ class SequencedTaskRunner;
 }
 
 namespace user_manager {
+class User;
 class UserImage;
 }
 
@@ -43,7 +44,7 @@ struct WallpaperInfo {
   // Online wallpaper URL or file name of migrated wallpaper.
   std::string file;
   ash::WallpaperLayout layout;
-  User::WallpaperType type;
+  user_manager::User::WallpaperType type;
   base::Time date;
   bool operator==(const WallpaperInfo& other) {
     return (file == other.file) && (layout == other.layout) &&
@@ -268,7 +269,7 @@ class WallpaperManager: public content::NotificationObserver {
                           const std::string& user_id_hash,
                           const std::string& file,
                           ash::WallpaperLayout layout,
-                          User::WallpaperType type,
+                          user_manager::User::WallpaperType type,
                           const gfx::ImageSkia& image,
                           bool update_wallpaper);
 
@@ -355,7 +356,7 @@ class WallpaperManager: public content::NotificationObserver {
 
 
   // Record data for User Metrics Analysis.
-  static void RecordUma(User::WallpaperType type, int index);
+  static void RecordUma(user_manager::User::WallpaperType type, int index);
 
   // Saves original custom wallpaper to |path| (absolute path) on filesystem
   // and starts resizing operation of the custom wallpaper if necessary.

@@ -20,19 +20,19 @@ MockUserManager::~MockUserManager() {
   ClearUserList();
 }
 
-const UserList& MockUserManager::GetUsers() const {
+const user_manager::UserList& MockUserManager::GetUsers() const {
   return user_list_;
 }
 
-const User* MockUserManager::GetLoggedInUser() const {
+const user_manager::User* MockUserManager::GetLoggedInUser() const {
   return user_list_.empty() ? NULL : user_list_.front();
 }
 
-User* MockUserManager::GetLoggedInUser() {
+user_manager::User* MockUserManager::GetLoggedInUser() {
   return user_list_.empty() ? NULL : user_list_.front();
 }
 
-UserList MockUserManager::GetUnlockUsers() const {
+user_manager::UserList MockUserManager::GetUnlockUsers() const {
   return user_list_;
 }
 
@@ -40,15 +40,15 @@ const std::string& MockUserManager::GetOwnerEmail() {
   return GetLoggedInUser()->email();
 }
 
-const User* MockUserManager::GetActiveUser() const {
+const user_manager::User* MockUserManager::GetActiveUser() const {
   return GetLoggedInUser();
 }
 
-User* MockUserManager::GetActiveUser() {
+user_manager::User* MockUserManager::GetActiveUser() {
   return GetLoggedInUser();
 }
 
-const User* MockUserManager::GetPrimaryUser() const {
+const user_manager::User* MockUserManager::GetPrimaryUser() const {
   return GetLoggedInUser();
 }
 
@@ -79,23 +79,24 @@ UserFlow* MockUserManager::GetUserFlow(const std::string&) const {
   return user_flow_.get();
 }
 
-User* MockUserManager::CreatePublicAccountUser(const std::string& email) {
+user_manager::User* MockUserManager::CreatePublicAccountUser(
+    const std::string& email) {
   ClearUserList();
-  User* user = User::CreatePublicAccountUser(email);
+  user_manager::User* user = user_manager::User::CreatePublicAccountUser(email);
   user_list_.push_back(user);
   ProfileHelper::Get()->SetProfileToUserMappingForTesting(user);
   return user_list_.back();
 }
 
 void MockUserManager::AddUser(const std::string& email) {
-  User* user = User::CreateRegularUser(email);
+  user_manager::User* user = user_manager::User::CreateRegularUser(email);
   user_list_.push_back(user);
   ProfileHelper::Get()->SetProfileToUserMappingForTesting(user);
 }
 
 void MockUserManager::ClearUserList() {
   // Can't use STLDeleteElements because of the protected destructor of User.
-  UserList::iterator user;
+  user_manager::UserList::iterator user;
   for (user = user_list_.begin(); user != user_list_.end(); ++user)
     delete *user;
   user_list_.clear();

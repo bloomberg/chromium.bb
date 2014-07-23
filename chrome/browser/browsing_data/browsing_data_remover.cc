@@ -76,12 +76,12 @@
 #include "webkit/common/quota/quota_types.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/attestation/attestation_constants.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/user_manager/user.h"
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
@@ -658,7 +658,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
         pepper_flash_settings_manager_->DeauthorizeContentLicenses(prefs);
 #if defined(OS_CHROMEOS)
     // On Chrome OS, also delete any content protection platform keys.
-    chromeos::User* user =
+    user_manager::User* user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
     if (!user) {
       LOG(WARNING) << "Failed to find user for current profile.";

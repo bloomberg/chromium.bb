@@ -22,11 +22,11 @@ void UserManager::Observer::LocalStateChanged(UserManager* user_manager) {
 }
 
 void UserManager::UserSessionStateObserver::ActiveUserChanged(
-    const User* active_user) {
+    const user_manager::User* active_user) {
 }
 
 void UserManager::UserSessionStateObserver::UserAddedToSession(
-    const User* active_user) {
+    const user_manager::User* active_user) {
 }
 
 void UserManager::UserSessionStateObserver::ActiveUserHashChanged(

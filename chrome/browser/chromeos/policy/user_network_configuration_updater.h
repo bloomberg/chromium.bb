@@ -24,8 +24,11 @@ namespace base {
 class ListValue;
 }
 
-namespace chromeos {
+namespace user_manager {
 class User;
+}
+
+namespace chromeos {
 
 namespace onc {
 class CertificateImporter;
@@ -67,7 +70,7 @@ class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater,
   static scoped_ptr<UserNetworkConfigurationUpdater> CreateForUserPolicy(
       Profile* profile,
       bool allow_trusted_certs_from_policy,
-      const chromeos::User& user,
+      const user_manager::User& user,
       PolicyService* policy_service,
       chromeos::ManagedNetworkConfigurationHandler* network_config_handler);
 
@@ -88,7 +91,7 @@ class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater,
   UserNetworkConfigurationUpdater(
       Profile* profile,
       bool allow_trusted_certs_from_policy,
-      const chromeos::User& user,
+      const user_manager::User& user,
       PolicyService* policy_service,
       chromeos::ManagedNetworkConfigurationHandler* network_config_handler);
 
@@ -120,7 +123,7 @@ class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater,
   bool allow_trusted_certificates_from_policy_;
 
   // The user for whom the user policy will be applied.
-  const chromeos::User* user_;
+  const user_manager::User* user_;
 
   ObserverList<WebTrustedCertsObserver, true> observer_list_;
 

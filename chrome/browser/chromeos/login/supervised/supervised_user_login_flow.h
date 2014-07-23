@@ -30,8 +30,8 @@ class SupervisedUserLoginFlow
   virtual bool HandleLoginFailure(const AuthFailure& failure) OVERRIDE;
   virtual void HandleLoginSuccess(const UserContext& context) OVERRIDE;
   virtual bool HandlePasswordChangeDetected() OVERRIDE;
-  virtual void HandleOAuthTokenStatusChange(User::OAuthTokenStatus status)
-      OVERRIDE;
+  virtual void HandleOAuthTokenStatusChange(
+      user_manager::User::OAuthTokenStatus status) OVERRIDE;
   virtual void LaunchExtraSteps(Profile* profile) OVERRIDE;
 
   // ExtendedAuthenticator::NewAuthStatusConsumer overrides.

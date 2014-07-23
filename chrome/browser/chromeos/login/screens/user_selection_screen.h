@@ -12,8 +12,8 @@
 #include "base/compiler_specific.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
+#include "components/user_manager/user.h"
 #include "ui/wm/core/user_activity_observer.h"
 
 namespace chromeos {
@@ -26,16 +26,16 @@ class UserSelectionScreen : public wm::UserActivityObserver {
   UserSelectionScreen();
   virtual ~UserSelectionScreen();
 
-  static const UserList PrepareUserListForSending(
-      const UserList& users,
+  static const user_manager::UserList PrepareUserListForSending(
+      const user_manager::UserList& users,
       std::string owner,
       bool is_signin_to_add);
 
   void SetHandler(LoginDisplayWebUIHandler* handler);
 
-  void Init(const UserList& users, bool show_guest);
-  const UserList& GetUsers() const;
-  void OnUserImageChanged(const User& user);
+  void Init(const user_manager::UserList& users, bool show_guest);
+  const user_manager::UserList& GetUsers() const;
+  void OnUserImageChanged(const user_manager::User& user);
   void OnBeforeUserRemoved(const std::string& username);
   void OnUserRemoved(const std::string& username);
 
@@ -52,20 +52,20 @@ class UserSelectionScreen : public wm::UserActivityObserver {
 
   // Fills |user_dict| with information about |user|.
   static void FillUserDictionary(
-      User* user,
+      user_manager::User* user,
       bool is_owner,
       bool is_signin_to_add,
       ScreenlockBridge::LockHandler::AuthType auth_type,
       base::DictionaryValue* user_dict);
 
   // Determines if user auth status requires online sign in.
-  static bool ShouldForceOnlineSignIn(const User* user);
+  static bool ShouldForceOnlineSignIn(const user_manager::User* user);
 
  private:
   LoginDisplayWebUIHandler* handler_;
 
   // Set of Users that are visible.
-  UserList users_;
+  user_manager::UserList users_;
 
   // Whether to show guest login.
   bool show_guest_;

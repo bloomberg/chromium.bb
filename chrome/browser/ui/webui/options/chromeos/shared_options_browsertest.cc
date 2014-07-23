@@ -110,7 +110,9 @@ class SharedOptionsTest : public LoginManagerTest {
   }
 
  protected:
-  void CheckOptionsUI(const User* user, bool is_owner, bool is_primary) {
+  void CheckOptionsUI(const user_manager::User* user,
+                      bool is_owner,
+                      bool is_primary) {
     Browser* browser = CreateBrowserForUser(user);
     content::WebContents* contents =
         browser->tab_strip_model()->GetActiveWebContents();
@@ -128,7 +130,7 @@ class SharedOptionsTest : public LoginManagerTest {
   }
 
   // Creates a browser and navigates to the Settings page.
-  Browser* CreateBrowserForUser(const User* user) {
+  Browser* CreateBrowserForUser(const user_manager::User* user) {
     Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
     profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                    user->email());
@@ -303,8 +305,8 @@ IN_PROC_BROWSER_TEST_F(SharedOptionsTest, ScreenLockPreferencePrimary) {
   AddUser(kTestNonOwner);
 
   UserManager* manager = UserManager::Get();
-  const User* user1 = manager->FindUser(kTestOwner);
-  const User* user2 = manager->FindUser(kTestNonOwner);
+  const user_manager::User* user1 = manager->FindUser(kTestOwner);
+  const user_manager::User* user2 = manager->FindUser(kTestNonOwner);
 
   PrefService* prefs1 =
       ProfileHelper::Get()->GetProfileByUser(user1)->GetPrefs();
@@ -374,8 +376,8 @@ IN_PROC_BROWSER_TEST_F(SharedOptionsTest, ScreenLockPreferenceSecondary) {
   AddUser(kTestNonOwner);
 
   UserManager* manager = UserManager::Get();
-  const User* user1 = manager->FindUser(kTestOwner);
-  const User* user2 = manager->FindUser(kTestNonOwner);
+  const user_manager::User* user1 = manager->FindUser(kTestOwner);
+  const user_manager::User* user2 = manager->FindUser(kTestNonOwner);
 
   PrefService* prefs1 =
       ProfileHelper::Get()->GetProfileByUser(user1)->GetPrefs();

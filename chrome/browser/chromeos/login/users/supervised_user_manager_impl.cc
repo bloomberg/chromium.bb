@@ -165,8 +165,10 @@ std::string SupervisedUserManagerImpl::GenerateUserId() {
 
 bool SupervisedUserManagerImpl::HasSupervisedUsers(
       const std::string& manager_id) const {
-  const UserList& users = owner_->GetUsers();
-  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+  const user_manager::UserList& users = owner_->GetUsers();
+  for (user_manager::UserList::const_iterator it = users.begin();
+       it != users.end();
+       ++it) {
     if ((*it)->GetType() == user_manager::USER_TYPE_SUPERVISED) {
       if (manager_id == GetManagerUserId((*it)->email()))
         return true;
@@ -175,21 +177,22 @@ bool SupervisedUserManagerImpl::HasSupervisedUsers(
   return false;
 }
 
-const User* SupervisedUserManagerImpl::CreateUserRecord(
-      const std::string& manager_id,
-      const std::string& local_user_id,
-      const std::string& sync_user_id,
-      const base::string16& display_name) {
-  const User* user = FindByDisplayName(display_name);
+const user_manager::User* SupervisedUserManagerImpl::CreateUserRecord(
+    const std::string& manager_id,
+    const std::string& local_user_id,
+    const std::string& sync_user_id,
+    const base::string16& display_name) {
+  const user_manager::User* user = FindByDisplayName(display_name);
   DCHECK(!user);
   if (user)
     return user;
-  const User* manager = owner_->FindUser(manager_id);
+  const user_manager::User* manager = owner_->FindUser(manager_id);
   CHECK(manager);
 
   PrefService* local_state = g_browser_process->local_state();
 
-  User* new_user = User::CreateSupervisedUser(local_user_id);
+  user_manager::User* new_user =
+      user_manager::User::CreateSupervisedUser(local_user_id);
 
   owner_->AddUserRecord(new_user);
 
@@ -352,11 +355,13 @@ void SupervisedUserManagerImpl::SetUserBooleanValue(const std::string& user_id,
   update->SetBooleanWithoutPathExpansion(user_id, value);
 }
 
-const User* SupervisedUserManagerImpl::FindByDisplayName(
+const user_manager::User* SupervisedUserManagerImpl::FindByDisplayName(
     const base::string16& display_name) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  const UserList& users = owner_->GetUsers();
-  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+  const user_manager::UserList& users = owner_->GetUsers();
+  for (user_manager::UserList::const_iterator it = users.begin();
+       it != users.end();
+       ++it) {
     if (((*it)->GetType() == user_manager::USER_TYPE_SUPERVISED) &&
         ((*it)->display_name() == display_name)) {
       return *it;
@@ -365,11 +370,13 @@ const User* SupervisedUserManagerImpl::FindByDisplayName(
   return NULL;
 }
 
-const User* SupervisedUserManagerImpl::FindBySyncId(
+const user_manager::User* SupervisedUserManagerImpl::FindBySyncId(
     const std::string& sync_id) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  const UserList& users = owner_->GetUsers();
-  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+  const user_manager::UserList& users = owner_->GetUsers();
+  for (user_manager::UserList::const_iterator it = users.begin();
+       it != users.end();
+       ++it) {
     if (((*it)->GetType() == user_manager::USER_TYPE_SUPERVISED) &&
         (GetUserSyncId((*it)->email()) == sync_id)) {
       return *it;

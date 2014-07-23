@@ -35,7 +35,6 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -60,6 +59,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -748,7 +748,7 @@ void SigninScreenHandler::OnUserRemoved(const std::string& username) {
     OnShowAddUser();
 }
 
-void SigninScreenHandler::OnUserImageChanged(const User& user) {
+void SigninScreenHandler::OnUserImageChanged(const user_manager::User& user) {
   if (page_is_ready())
     CallJS("login.AccountPickerScreen.updateUserImage", user.email());
 }
@@ -867,7 +867,7 @@ void SigninScreenHandler::ShowUserPodCustomIcon(
   // TODO(tengs): Move this code once we move unlocking to native code.
   if (ScreenLocker::default_screen_locker()) {
     UserManager* user_manager = UserManager::Get();
-    const User* user = user_manager->FindUser(username);
+    const user_manager::User* user = user_manager->FindUser(username);
     if (!user)
       return;
     PrefService* profile_prefs =
@@ -972,9 +972,11 @@ void SigninScreenHandler::HandleAuthenticateUser(const std::string& username,
 void SigninScreenHandler::HandleAttemptUnlock(const std::string& username) {
   DCHECK(ScreenLocker::default_screen_locker());
 
-  const User* unlock_user = NULL;
-  const UserList& users = delegate_->GetUsers();
-  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+  const user_manager::User* unlock_user = NULL;
+  const user_manager::UserList& users = delegate_->GetUsers();
+  for (user_manager::UserList::const_iterator it = users.begin();
+       it != users.end();
+       ++it) {
     if ((*it)->email() == username) {
       unlock_user = *it;
       break;
@@ -1267,7 +1269,7 @@ bool SigninScreenHandler::AllWhitelistedUsersPresent() {
   if (allow_new_user)
     return false;
   UserManager* user_manager = UserManager::Get();
-  const UserList& users = user_manager->GetUsers();
+  const user_manager::UserList& users = user_manager->GetUsers();
   if (!delegate_ || users.size() > kMaxUsers) {
     return false;
   }

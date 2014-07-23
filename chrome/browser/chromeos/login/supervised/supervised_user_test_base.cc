@@ -304,8 +304,8 @@ void SupervisedUserTestBase::StartFlowLoginAsManager() {
   login_observer.Wait();
 
   // OAuth token is valid.
-  UserManager::Get()->SaveUserOAuthStatus(kTestManager,
-                                          User::OAUTH2_TOKEN_STATUS_VALID);
+  UserManager::Get()->SaveUserOAuthStatus(
+      kTestManager, user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
   base::RunLoop().RunUntilIdle();
 
   // Check the page have changed.
@@ -364,7 +364,8 @@ void SupervisedUserTestBase::SigninAsSupervisedUser(
   ASSERT_EQ(3UL, UserManager::Get()->GetUsers().size());
 
   // Created supervised user have to be first in a list.
-  const User* user = UserManager::Get()->GetUsers().at(user_index);
+  const user_manager::User* user =
+      UserManager::Get()->GetUsers().at(user_index);
   ASSERT_EQ(base::UTF8ToUTF16(expected_display_name), user->display_name());
   LoginUser(user->email());
   if (check_homedir_calls)
@@ -383,7 +384,8 @@ void SupervisedUserTestBase::SigninAsManager(int user_index) {
   ASSERT_EQ(3UL, UserManager::Get()->GetUsers().size());
 
   // Created supervised user have to be first in a list.
-  const User* user = UserManager::Get()->GetUsers().at(user_index);
+  const user_manager::User* user =
+      UserManager::Get()->GetUsers().at(user_index);
   LoginUser(user->email());
   Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
   shared_settings_adapter_.reset(
@@ -399,7 +401,8 @@ void SupervisedUserTestBase::RemoveSupervisedUser(
   ASSERT_EQ(original_user_count, UserManager::Get()->GetUsers().size());
 
   // Created supervised user have to be first in a list.
-  const User* user = UserManager::Get()->GetUsers().at(user_index);
+  const user_manager::User* user =
+      UserManager::Get()->GetUsers().at(user_index);
   ASSERT_EQ(base::UTF8ToUTF16(expected_display_name), user->display_name());
 
   // Open pod menu.

@@ -21,7 +21,6 @@
 #include "chrome/browser/chromeos/login/ui/mock_login_display.h"
 #include "chrome/browser/chromeos/login/ui/mock_login_display_host.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -43,6 +42,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
+#include "components/user_manager/user.h"
 #include "content/public/test/mock_notification_observer.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/mock_url_fetcher_factory.h"
@@ -168,7 +168,7 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
     existing_user_controller_.reset(
         new ExistingUserController(mock_login_display_host_.get()));
     ASSERT_EQ(existing_user_controller(), existing_user_controller_.get());
-    existing_user_controller_->Init(UserList());
+    existing_user_controller_->Init(user_manager::UserList());
     profile_prepared_cb_ =
         base::Bind(&ExistingUserController::OnProfilePrepared,
                    base::Unretained(existing_user_controller()),

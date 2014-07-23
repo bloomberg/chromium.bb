@@ -143,7 +143,8 @@ bool ProxyConfigServiceImpl::IgnoreProxy(const PrefService* profile_prefs,
   if (onc_source == ::onc::ONC_SOURCE_DEVICE_POLICY) {
     policy::BrowserPolicyConnectorChromeOS* connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
-    const User* logged_in_user = UserManager::Get()->GetLoggedInUser();
+    const user_manager::User* logged_in_user =
+        UserManager::Get()->GetLoggedInUser();
     if (connector->GetUserAffiliation(logged_in_user->email()) ==
         policy::USER_AFFILIATION_MANAGED) {
       VLOG(1) << "Respecting proxy for network, as logged-in user belongs to "

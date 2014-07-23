@@ -11,11 +11,11 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "components/user_manager/user.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -50,7 +50,7 @@ std::string EscapeFileSystemId(const std::string& file_system_id) {
 base::FilePath GetMountPath(Profile* profile,
                             const std::string& extension_id,
                             const std::string& file_system_id) {
-  chromeos::User* const user =
+  user_manager::User* const user =
       chromeos::UserManager::IsInitialized()
           ? chromeos::ProfileHelper::Get()->GetUserByProfile(
                 profile->GetOriginalProfile())

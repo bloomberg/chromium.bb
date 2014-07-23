@@ -18,7 +18,7 @@ bool FakeSupervisedUserManager::HasSupervisedUsers(
   return false;
 }
 
-const User* FakeSupervisedUserManager::CreateUserRecord(
+const user_manager::User* FakeSupervisedUserManager::CreateUserRecord(
     const std::string& manager_id,
     const std::string& local_user_id,
     const std::string& sync_user_id,
@@ -30,12 +30,12 @@ std::string FakeSupervisedUserManager::GenerateUserId() {
   return std::string();
 }
 
-const User* FakeSupervisedUserManager::FindByDisplayName(
+const user_manager::User* FakeSupervisedUserManager::FindByDisplayName(
     const base::string16& display_name) const {
   return NULL;
 }
 
-const User* FakeSupervisedUserManager::FindBySyncId(
+const user_manager::User* FakeSupervisedUserManager::FindBySyncId(
     const std::string& sync_id) const {
   return NULL;
 }

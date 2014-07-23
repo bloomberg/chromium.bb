@@ -1,6 +1,7 @@
 include_rules = [
   "+chrome",
   "+chromeos",
+  "+components/user_manager",
   "+content/public/browser",
   "+content/public/common",
   "+content/public/test",

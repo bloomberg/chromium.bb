@@ -11,7 +11,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller_delegate.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/user_manager/user.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 namespace chromeos {
@@ -86,7 +86,7 @@ MultiProfileUserController::IsUserAllowedInSession(
   UserManager* user_manager = UserManager::Get();
   CHECK(user_manager);
 
-  const User* primary_user = user_manager->GetPrimaryUser();
+  const user_manager::User* primary_user = user_manager->GetPrimaryUser();
   std::string primary_user_email;
   if (primary_user)
     primary_user_email = primary_user->email();
@@ -190,8 +190,10 @@ void MultiProfileUserController::SetCachedValue(
 }
 
 void MultiProfileUserController::CheckSessionUsers() {
-  const UserList& users = UserManager::Get()->GetLoggedInUsers();
-  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+  const user_manager::UserList& users = UserManager::Get()->GetLoggedInUsers();
+  for (user_manager::UserList::const_iterator it = users.begin();
+       it != users.end();
+       ++it) {
     if (IsUserAllowedInSession((*it)->email()) != ALLOWED) {
       delegate_->OnUserNotAllowed((*it)->email());
       return;

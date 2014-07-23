@@ -530,7 +530,7 @@ bool ExtensionAssetsManagerChromeOS::CleanUpExtension(
         NOTREACHED();
         return false;
       }
-      const chromeos::User* user = user_manager->FindUser(user_id);
+      const user_manager::User* user = user_manager->FindUser(user_id);
       bool not_used = false;
       if (!user) {
         not_used = true;

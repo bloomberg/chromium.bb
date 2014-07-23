@@ -427,8 +427,9 @@ void DeviceStatusCollector::GetNetworkInterfaces(
 void DeviceStatusCollector::GetUsers(em::DeviceStatusReportRequest* request) {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  const chromeos::UserList& users = chromeos::UserManager::Get()->GetUsers();
-  chromeos::UserList::const_iterator user;
+  const user_manager::UserList& users =
+      chromeos::UserManager::Get()->GetUsers();
+  user_manager::UserList::const_iterator user;
   for (user = users.begin(); user != users.end(); ++user) {
     // Only regular users are reported.
     if ((*user)->GetType() != user_manager::USER_TYPE_REGULAR)

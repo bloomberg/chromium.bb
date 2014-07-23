@@ -78,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
                        DISABLED_PRE_PasswordChangeFromUserTest) {
   SigninAsSupervisedUser(true, 0, kTestSupervisedUserDisplayName);
 
-  const User* user = UserManager::Get()->GetUsers().at(0);
+  const user_manager::User* user = UserManager::Get()->GetUsers().at(0);
   std::string sync_id =
       UserManager::Get()->GetSupervisedUserManager()->GetUserSyncId(
           user->email());
@@ -123,7 +123,8 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
 // update, and performs migration.
 IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
                        DISABLED_PRE_PasswordChangeFromManagerTest) {
-  const User* supervised_user = UserManager::Get()->GetUsers().at(0);
+  const user_manager::User* supervised_user =
+      UserManager::Get()->GetUsers().at(0);
 
   SigninAsManager(1);
 
@@ -189,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
                        DISABLED_PRE_PRE_PasswordChangeUserAndManagerTest) {
   SigninAsSupervisedUser(true, 0, kTestSupervisedUserDisplayName);
 
-  const User* user = UserManager::Get()->GetUsers().at(0);
+  const user_manager::User* user = UserManager::Get()->GetUsers().at(0);
   std::string sync_id =
       UserManager::Get()->GetSupervisedUserManager()->GetUserSyncId(
           user->email());
@@ -211,7 +212,8 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
 // performs the migration.
 IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
                        DISABLED_PRE_PasswordChangeUserAndManagerTest) {
-  const User* supervised_user = UserManager::Get()->GetUsers().at(0);
+  const user_manager::User* supervised_user =
+      UserManager::Get()->GetUsers().at(0);
 
   SigninAsManager(1);
 

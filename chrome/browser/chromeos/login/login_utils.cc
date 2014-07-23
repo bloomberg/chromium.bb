@@ -49,7 +49,6 @@
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -78,6 +77,7 @@
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/user_manager/user.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -309,7 +309,8 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
   if (browser_shutdown::IsTryingToQuit())
     return;
 
-  User* const user = ProfileHelper::Get()->GetUserByProfile(profile);
+  user_manager::User* const user =
+      ProfileHelper::Get()->GetUserByProfile(profile);
   scoped_ptr<DoBrowserLaunchOnLocaleLoadedData> data(
       new DoBrowserLaunchOnLocaleLoadedData(this, profile, login_host));
 

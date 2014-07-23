@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/ui_proxy_config.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
@@ -26,6 +25,7 @@
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translator.h"
 #include "chromeos/network/onc/onc_utils.h"
+#include "components/user_manager/user.h"
 #include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_bypass_rules.h"
 #include "net/proxy/proxy_server.h"
@@ -152,7 +152,8 @@ namespace {
 // user attribute.
 class UserStringSubstitution : public chromeos::onc::StringSubstitution {
  public:
-  explicit UserStringSubstitution(const chromeos::User* user) : user_(user) {}
+  explicit UserStringSubstitution(const user_manager::User* user)
+      : user_(user) {}
   virtual ~UserStringSubstitution() {}
 
   virtual bool GetSubstitute(const std::string& placeholder,
@@ -167,7 +168,7 @@ class UserStringSubstitution : public chromeos::onc::StringSubstitution {
   }
 
  private:
-  const chromeos::User* user_;
+  const user_manager::User* user_;
 
   DISALLOW_COPY_AND_ASSIGN(UserStringSubstitution);
 };
@@ -175,7 +176,7 @@ class UserStringSubstitution : public chromeos::onc::StringSubstitution {
 }  // namespace
 
 void ExpandStringPlaceholdersInNetworksForUser(
-    const chromeos::User* user,
+    const user_manager::User* user,
     base::ListValue* network_configs) {
   if (!user) {
     // In tests no user may be logged in. It's not harmful if we just don't
@@ -186,7 +187,7 @@ void ExpandStringPlaceholdersInNetworksForUser(
   chromeos::onc::ExpandStringsInNetworks(substitution, network_configs);
 }
 
-void ImportNetworksForUser(const chromeos::User* user,
+void ImportNetworksForUser(const user_manager::User* user,
                            const base::ListValue& network_configs,
                            std::string* error) {
   error->clear();
@@ -265,7 +266,7 @@ void ImportNetworksForUser(const chromeos::User* user,
 const base::DictionaryValue* FindPolicyForActiveUser(
     const std::string& guid,
     ::onc::ONCSource* onc_source) {
-  const User* user = UserManager::Get()->GetActiveUser();
+  const user_manager::User* user = UserManager::Get()->GetActiveUser();
   std::string username_hash = user ? user->username_hash() : std::string();
   return NetworkHandler::Get()->managed_network_configuration_handler()->
       FindPolicyByGUID(username_hash, guid, onc_source);
@@ -274,7 +275,7 @@ const base::DictionaryValue* FindPolicyForActiveUser(
 const base::DictionaryValue* GetGlobalConfigFromPolicy(bool for_active_user) {
   std::string username_hash;
   if (for_active_user) {
-    const User* user = UserManager::Get()->GetActiveUser();
+    const user_manager::User* user = UserManager::Get()->GetActiveUser();
     if (!user) {
       LOG(ERROR) << "No user logged in yet.";
       return NULL;

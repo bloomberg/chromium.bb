@@ -75,7 +75,7 @@ GetLoggedInProfileInfoList(content::WebContents* contents) {
     if (original_profiles.count(profile))
       continue;
     original_profiles.insert(profile);
-    const chromeos::User* const user =
+    const user_manager::User* const user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
     if (!user || !user->is_logged_in())
       continue;
@@ -108,12 +108,11 @@ GetLoggedInProfileInfoList(content::WebContents* contents) {
 } // namespace
 
 bool FileBrowserPrivateLogoutUserForReauthenticationFunction::RunSync() {
-  chromeos::User* user =
+  user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(GetProfile());
   if (user) {
     chromeos::UserManager::Get()->SaveUserOAuthStatus(
-        user->email(),
-        chromeos::User::OAUTH2_TOKEN_STATUS_INVALID);
+        user->email(), user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
   }
 
   chrome::AttemptUserExit();

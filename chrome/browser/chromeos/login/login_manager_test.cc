@@ -10,11 +10,11 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
+#include "components/user_manager/user.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -67,7 +67,8 @@ void LoginManagerTest::SetExpectedCredentials(const UserContext& user_context) {
 bool LoginManagerTest::TryToLogin(const UserContext& user_context) {
   if (!AddUserToSession(user_context))
     return false;
-  if (const User* active_user = UserManager::Get()->GetActiveUser())
+  if (const user_manager::User* active_user =
+          UserManager::Get()->GetActiveUser())
     return active_user->email() == user_context.GetUserID();
   return false;
 }
@@ -83,9 +84,11 @@ bool LoginManagerTest::AddUserToSession(const UserContext& user_context) {
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources()).Wait();
-  const UserList& logged_users = UserManager::Get()->GetLoggedInUsers();
-  for (UserList::const_iterator it = logged_users.begin();
-       it != logged_users.end(); ++it) {
+  const user_manager::UserList& logged_users =
+      UserManager::Get()->GetLoggedInUsers();
+  for (user_manager::UserList::const_iterator it = logged_users.begin();
+       it != logged_users.end();
+       ++it) {
     if ((*it)->email() == user_context.GetUserID())
       return true;
   }
