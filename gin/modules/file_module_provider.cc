@@ -40,6 +40,7 @@ void AttempToLoadModule(const base::WeakPtr<Runner>& runner,
     runner->Run(source, id);
     return;
   }
+  LOG(ERROR) << "Failed to load module from disk: " << id;
 }
 
 }  // namespace
