@@ -42,10 +42,10 @@ void QuitRunLoop() {
   current_run_loop->Quit();
 }
 
-void WaitForAllChangesToBeAcked(ViewManagerClientImpl* client) {
-  client->set_changes_acked_callback(base::Bind(&QuitRunLoop));
+void WaitForChangeToBeAcked(ViewManagerClientImpl* client) {
+  client->set_change_acked_callback(base::Bind(&QuitRunLoop));
   DoRunLoop();
-  client->ClearChangesAckedCallback();
+  client->ClearChangeAckedCallback();
 }
 
 class ConnectServiceLoader : public ServiceLoader,
@@ -650,11 +650,15 @@ TEST_F(ViewManagerTest, MapSubtreeOnAttach) {
   Node* child1 = Node::Create(window_manager());
   Node* child11 = Node::Create(window_manager());
   child1->AddChild(child11);
+  WaitForChangeToBeAcked(
+      static_cast<ViewManagerClientImpl*>(window_manager()));
   gfx::Rect child11_bounds(800, 600);
   child11->SetBounds(child11_bounds);
+  WaitForChangeToBeAcked(
+      static_cast<ViewManagerClientImpl*>(window_manager()));
   View* view11 = View::Create(window_manager());
   child11->SetActiveView(view11);
-  WaitForAllChangesToBeAcked(
+  WaitForChangeToBeAcked(
       static_cast<ViewManagerClientImpl*>(window_manager()));
 
   // When added to the shared node, the entire hierarchy and all property

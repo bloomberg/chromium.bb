@@ -63,11 +63,11 @@ class ViewManagerClientImpl : public ViewManager,
 
   void Embed(const String& url, Id node_id);
 
-  void set_changes_acked_callback(const base::Callback<void(void)>& callback) {
-    changes_acked_callback_ = callback;
+  void set_change_acked_callback(const base::Callback<void(void)>& callback) {
+    change_acked_callback_ = callback;
   }
-  void ClearChangesAckedCallback() {
-    changes_acked_callback_ = base::Callback<void(void)>();
+  void ClearChangeAckedCallback() {
+    change_acked_callback_ = base::Callback<void(void)>();
   }
 
   // Start/stop tracking nodes & views. While tracked, they can be retrieved via
@@ -80,9 +80,7 @@ class ViewManagerClientImpl : public ViewManager,
 
  private:
   friend class RootObserver;
-  friend class ViewManagerTransaction;
 
-  typedef ScopedVector<ViewManagerTransaction> Transactions;
   typedef std::map<Id, Node*> IdToNodeMap;
   typedef std::map<Id, View*> IdToViewMap;
 
@@ -126,16 +124,14 @@ class ViewManagerClientImpl : public ViewManager,
   virtual void Embed(const String& url) OVERRIDE;
   virtual void DispatchOnViewInputEvent(Id view_id, EventPtr event) OVERRIDE;
 
-  // Sync the client model with the service by enumerating the pending
-  // transaction queue and applying them in order.
-  void Sync();
-
-  // Removes |transaction| from the pending queue. |transaction| must be at the
-  // front of the queue.
-  void RemoveFromPendingQueue(ViewManagerTransaction* transaction);
-
   void AddRoot(Node* root);
   void RemoveRoot(Node* root);
+
+  void OnActionCompleted(bool success);
+  void OnActionCompletedWithErrorCode(ErrorCode code);
+
+  base::Callback<void(bool)> ActionCompletedCallback();
+  base::Callback<void(ErrorCode)> ActionCompletedCallbackWithErrorCode();
 
   bool connected_;
   ConnectionSpecificId connection_id_;
@@ -143,9 +139,7 @@ class ViewManagerClientImpl : public ViewManager,
 
   std::string creator_url_;
 
-  Transactions pending_transactions_;
-
-  base::Callback<void(void)> changes_acked_callback_;
+  base::Callback<void(void)> change_acked_callback_;
 
   ViewManagerDelegate* delegate_;
   WindowManagerDelegate* window_manager_delegate_;
