@@ -61,7 +61,12 @@ public:
     MOCK_METHOD1(didConsumeBufferedAmount, void(unsigned long));
     MOCK_METHOD0(didStartClosingHandshake, void());
     MOCK_METHOD3(didClose, void(ClosingHandshakeCompletionStatus, unsigned short, const String&));
-    MOCK_METHOD1(trace, void(Visitor*));
+
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        WebSocketChannelClient::trace(visitor);
+    }
+
 };
 
 class MockWebSocketHandle : public blink::WebSocketHandle {
