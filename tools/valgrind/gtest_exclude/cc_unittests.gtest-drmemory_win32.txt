@@ -4,3 +4,4 @@ LayerTreeHostBlendingPixelTest.*
 LayerTreeHostFiltersPixelTest.*
 SchedulerTest.*
 LayerTreeHostTestContinuousPainting.*
+LayerTreeHostAnimationTestContinuousAnimate.RunMultiThread_DirectRenderer_ImplSidePaint
