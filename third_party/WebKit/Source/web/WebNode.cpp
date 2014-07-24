@@ -234,6 +234,11 @@ bool WebNode::hasNonEmptyBoundingBox() const
     return m_private->hasNonEmptyBoundingBox();
 }
 
+bool WebNode::containsIncludingShadowDOM(const WebNode& other) const
+{
+    return m_private->containsIncludingShadowDOM(other.m_private.get());
+}
+
 WebPluginContainer* WebNode::pluginContainer() const
 {
     if (isNull())
