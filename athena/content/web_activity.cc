@@ -14,6 +14,7 @@
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/widget/widget.h"
 
 namespace athena {
 namespace {
@@ -126,7 +127,9 @@ class WebActivityController : public AcceleratorHandler {
 class AthenaWebView : public views::WebView {
  public:
   AthenaWebView(content::BrowserContext* context)
-      : views::WebView(context), controller_(new WebActivityController(this)) {
+      : views::WebView(context), controller_(new WebActivityController(this)),
+        fullscreen_(false) {
+    SetEmbedFullscreenWidgetMode(true);
     // TODO(skuhne): Add content observer to detect renderer crash and set
     // content status to unloaded if that happens.
   }
@@ -228,12 +231,27 @@ class AthenaWebView : public views::WebView {
     controller_->HandleKeyboardEvent(source, event);
   }
 
+  virtual void ToggleFullscreenModeForTab(content::WebContents* web_contents,
+                                          bool enter_fullscreen) OVERRIDE {
+    fullscreen_ = enter_fullscreen;
+    GetWidget()->SetFullscreen(fullscreen_);
+  }
+
+  virtual bool IsFullscreenForTabOrPending(
+      const content::WebContents* web_contents) const OVERRIDE {
+    return fullscreen_;
+  }
+
  private:
   scoped_ptr<WebActivityController> controller_;
 
   // If the activity got evicted, this is the web content which holds the known
   // state of the content before eviction.
   scoped_ptr<content::WebContents> evicted_web_contents_;
+
+  // TODO(oshima): Find out if we should support window fullscreen.
+  // It may still useful when a user is in split mode.
+  bool fullscreen_;
 
   DISALLOW_COPY_AND_ASSIGN(AthenaWebView);
 };
