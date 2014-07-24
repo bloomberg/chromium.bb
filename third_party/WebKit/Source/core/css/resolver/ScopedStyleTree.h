@@ -37,22 +37,15 @@ namespace blink {
 class ScopedStyleTree {
     WTF_MAKE_NONCOPYABLE(ScopedStyleTree); WTF_MAKE_FAST_ALLOCATED;
 public:
-    ScopedStyleTree() : m_scopedResolverForDocument(0), m_buildInDocumentOrder(true) { }
+    ScopedStyleTree();
+    ~ScopedStyleTree();
 
     ScopedStyleResolver* ensureScopedStyleResolver(ContainerNode& scopingNode);
-    ScopedStyleResolver* lookupScopedStyleResolverFor(const ContainerNode* scopingNode)
-    {
-        HashMap<const ContainerNode*, OwnPtr<ScopedStyleResolver> >::iterator it = m_authorStyles.find(scopingNode);
-        return it != m_authorStyles.end() ? it->value.get() : 0;
-    }
 
     ScopedStyleResolver* scopedStyleResolverFor(const ContainerNode& scopingNode);
-    ScopedStyleResolver* addScopedStyleResolver(ContainerNode& scopingNode, bool& isNewEntry);
-    void clear();
 
     // for fast-path.
-    bool hasOnlyScopedResolverForDocument() const { return m_scopedResolverForDocument && m_authorStyles.size() == 1; }
-    ScopedStyleResolver* scopedStyleResolverForDocument() const { return m_scopedResolverForDocument; }
+    bool hasOnlyScopedResolverForDocument() const { return m_authorStyles.size() == 1; }
 
     void resolveScopedStyles(const Element*, Vector<ScopedStyleResolver*, 8>&);
     void collectScopedResolversForHostedShadowTrees(const Element*, Vector<ScopedStyleResolver*, 8>&);
@@ -65,26 +58,24 @@ public:
     void popStyleCache(const ContainerNode& scopingNode);
 
     void collectFeaturesTo(RuleFeatureSet& features);
-    void setBuildInDocumentOrder(bool enabled) { m_buildInDocumentOrder = enabled; }
-    bool buildInDocumentOrder() const { return m_buildInDocumentOrder; }
 
 private:
-    void setupScopedStylesTree(ScopedStyleResolver* target);
-
     bool cacheIsValid(const ContainerNode* parent) const { return parent && parent == m_cache.nodeForScopedStyles; }
     void resolveStyleCache(const ContainerNode* scopingNode);
     ScopedStyleResolver* enclosingScopedStyleResolverFor(const ContainerNode* scopingNode);
 
-    void reparentNodes(const ScopedStyleResolver* oldParent, ScopedStyleResolver* newParent);
-
 private:
-    HashMap<const ContainerNode*, OwnPtr<ScopedStyleResolver> > m_authorStyles;
-    ScopedStyleResolver* m_scopedResolverForDocument;
-    bool m_buildInDocumentOrder;
+    HashMap<const ContainerNode*, ScopedStyleResolver*> m_authorStyles;
 
     struct ScopedStyleCache {
         ScopedStyleResolver* scopedResolver;
         const ContainerNode* nodeForScopedStyles;
+
+        ScopedStyleCache()
+            : scopedResolver(0)
+            , nodeForScopedStyles(0)
+        {
+        }
 
         void clear()
         {

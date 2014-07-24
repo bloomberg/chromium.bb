@@ -28,6 +28,7 @@
 #include "core/dom/TreeScope.h"
 
 #include "core/HTMLNames.h"
+#include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -143,6 +144,19 @@ void TreeScope::setParentTreeScope(TreeScope& newParentScope)
 #endif
     m_parentTreeScope = &newParentScope;
     setDocument(newParentScope.document());
+}
+
+ScopedStyleResolver& TreeScope::ensureScopedStyleResolver()
+{
+    RELEASE_ASSERT(this);
+    if (!m_scopedStyleResolver)
+        m_scopedStyleResolver = ScopedStyleResolver::create(*this);
+    return *m_scopedStyleResolver;
+}
+
+void TreeScope::clearScopedStyleResolver()
+{
+    m_scopedStyleResolver.clear();
 }
 
 Element* TreeScope::getElementById(const AtomicString& elementId) const

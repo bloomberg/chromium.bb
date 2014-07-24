@@ -143,7 +143,7 @@ StyleResolver::StyleResolver(Document& document)
     else
         m_medium = adoptPtr(new MediaQueryEvaluator("all"));
 
-    m_styleTree.clear();
+    m_styleTree.ensureScopedStyleResolver(document);
 
     initWatchedSelectorRules(CSSSelectorWatch::from(document).watchedCallbackSelectors());
 
@@ -197,7 +197,6 @@ void StyleResolver::appendCSSStyleSheet(CSSStyleSheet* cssSheet)
 
 void StyleResolver::appendPendingAuthorStyleSheets()
 {
-    setBuildScopedStyleTreeInDocumentOrder(false);
     for (WillBeHeapListHashSet<RawPtrWillBeMember<CSSStyleSheet>, 16>::iterator it = m_pendingStyleSheets.begin(); it != m_pendingStyleSheets.end(); ++it)
         appendCSSStyleSheet(*it);
 
@@ -255,7 +254,7 @@ void StyleResolver::processScopedRules(const RuleSet& authorRules, CSSStyleSheet
 
 void StyleResolver::resetAuthorStyle(const ContainerNode* scopingNode)
 {
-    ScopedStyleResolver* resolver = scopingNode ? m_styleTree.lookupScopedStyleResolverFor(scopingNode) : m_styleTree.scopedStyleResolverForDocument();
+    ScopedStyleResolver* resolver = scopingNode ? scopingNode->treeScope().scopedStyleResolver() : m_document.scopedStyleResolver();
     if (!resolver)
         return;
 
@@ -421,7 +420,7 @@ void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& col
 
     bool applyAuthorStyles = applyAuthorStylesOf(element);
     if (m_styleTree.hasOnlyScopedResolverForDocument()) {
-        m_styleTree.scopedStyleResolverForDocument()->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, ignoreCascadeScope);
+        m_document.scopedStyleResolver()->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, ignoreCascadeScope);
         m_treeBoundaryCrossingRules.collectTreeBoundaryCrossingRules(element, collector, includeEmptyRules);
         collector.sortAndTransferMatchedRules();
         return;
@@ -893,7 +892,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
 
     collector.matchPageRules(CSSDefaultStyleSheets::instance().defaultPrintStyle());
 
-    if (ScopedStyleResolver* scopedResolver = m_styleTree.scopedStyleResolverForDocument())
+    if (ScopedStyleResolver* scopedResolver = m_document.scopedStyleResolver())
         scopedResolver->matchPageRules(collector);
 
     state.setLineHeightValue(0);
@@ -932,7 +931,7 @@ void StyleResolver::collectViewportRules()
     if (document().isMobileDocument())
         viewportStyleResolver()->collectViewportRules(defaultStyleSheets.defaultXHTMLMobileProfileStyle(), ViewportStyleResolver::UserAgentOrigin);
 
-    if (ScopedStyleResolver* scopedResolver = m_styleTree.scopedStyleResolverForDocument())
+    if (ScopedStyleResolver* scopedResolver = m_document.scopedStyleResolver())
         scopedResolver->collectViewportRulesTo(this);
 
     viewportStyleResolver()->resolve();

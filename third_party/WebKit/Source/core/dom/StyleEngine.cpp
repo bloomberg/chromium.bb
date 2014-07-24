@@ -458,7 +458,6 @@ void StyleEngine::appendActiveAuthorStyleSheets()
 {
     ASSERT(isMaster());
 
-    m_resolver->setBuildScopedStyleTreeInDocumentOrder(true);
     m_resolver->appendAuthorStyleSheets(documentStyleSheetCollection()->activeAuthorStyleSheets());
 
     TreeScopeSet::iterator begin = m_activeTreeScopes.begin();
@@ -468,7 +467,6 @@ void StyleEngine::appendActiveAuthorStyleSheets()
             m_resolver->appendAuthorStyleSheets(collection->activeAuthorStyleSheets());
     }
     m_resolver->finishAppendAuthorStyleSheets();
-    m_resolver->setBuildScopedStyleTreeInDocumentOrder(false);
 }
 
 void StyleEngine::createResolver()

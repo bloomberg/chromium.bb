@@ -96,9 +96,6 @@ void ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine
     analyzeStyleSheetChange(updateMode, collection, change);
 
     if (StyleResolver* styleResolver = engine->resolver()) {
-        // FIXME: We might have already had styles in child treescope. In this case, we cannot use buildScopedStyleTreeInDocumentOrder.
-        // Need to change "false" to some valid condition.
-        styleResolver->setBuildScopedStyleTreeInDocumentOrder(false);
         if (change.styleResolverUpdateType != Additive) {
             // We should not destroy StyleResolver when we find any stylesheet update in a shadow tree.
             // In this case, we will reset rulesets created from style elements in the shadow tree.

@@ -56,8 +56,7 @@ public:
 
     const ContainerNode& scopingNode() const { return m_scope.rootNode(); }
     const TreeScope& treeScope() const { return m_scope; }
-    void setParent(ScopedStyleResolver* newParent) { m_parent = newParent; }
-    ScopedStyleResolver* parent() { return m_parent; }
+    ScopedStyleResolver* parent() const;
 
 public:
     const StyleRuleKeyframes* keyframeStylesForAnimation(const StringImpl* animationName);
@@ -73,12 +72,10 @@ public:
 private:
     explicit ScopedStyleResolver(TreeScope& scope)
         : m_scope(scope)
-        , m_parent(0)
     {
     }
 
     TreeScope& m_scope;
-    ScopedStyleResolver* m_parent;
 
     WillBePersistentHeapVector<RawPtrWillBeMember<CSSStyleSheet> > m_authorStyleSheets;
 

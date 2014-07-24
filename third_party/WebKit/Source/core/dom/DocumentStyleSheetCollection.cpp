@@ -105,9 +105,6 @@ void DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, 
         // No need to always-clear font cache.
         engine->clearFontCache();
     } else if (StyleResolver* styleResolver = engine->resolver()) {
-        // FIXME: We might have already had styles in child treescope. In this case, we cannot use buildScopedStyleTreeInDocumentOrder.
-        // Need to change "false" to some valid condition.
-        styleResolver->setBuildScopedStyleTreeInDocumentOrder(false);
         if (change.styleResolverUpdateType != Additive) {
             ASSERT(change.styleResolverUpdateType == Reset);
             styleResolver->resetAuthorStyle(&m_treeScope.rootNode());

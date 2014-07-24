@@ -41,6 +41,7 @@ class HTMLLabelElement;
 class HTMLMapElement;
 class HitTestResult;
 class IdTargetObserverRegistry;
+class ScopedStyleResolver;
 class Node;
 
 // A class which inherits both Node and TreeScope must call clearRareData() in its destructor
@@ -136,6 +137,10 @@ public:
 
     virtual void trace(Visitor*);
 
+    ScopedStyleResolver* scopedStyleResolver() const { return m_scopedStyleResolver.get(); }
+    ScopedStyleResolver& ensureScopedStyleResolver();
+    void clearScopedStyleResolver();
+
 protected:
     TreeScope(ContainerNode&, Document&);
     TreeScope(Document&);
@@ -184,6 +189,8 @@ private:
     OwnPtrWillBeMember<DocumentOrderedMap> m_labelsByForAttribute;
 
     OwnPtrWillBeMember<IdTargetObserverRegistry> m_idTargetObserverRegistry;
+
+    OwnPtrWillBeMember<ScopedStyleResolver> m_scopedStyleResolver;
 
     mutable RefPtrWillBeMember<DOMSelection> m_selection;
 };

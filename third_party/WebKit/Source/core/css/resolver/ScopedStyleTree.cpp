@@ -36,13 +36,22 @@ namespace blink {
 
 class StyleSheetContents;
 
+ScopedStyleTree::ScopedStyleTree()
+{
+}
+
+ScopedStyleTree::~ScopedStyleTree()
+{
+    for (HashMap<const ContainerNode*, ScopedStyleResolver*>::iterator it = m_authorStyles.begin(); it != m_authorStyles.end(); ++it)
+        it->key->treeScope().clearScopedStyleResolver();
+}
+
 ScopedStyleResolver* ScopedStyleTree::ensureScopedStyleResolver(ContainerNode& scopingNode)
 {
-    bool isNewEntry;
-    ScopedStyleResolver* scopedStyleResolver = addScopedStyleResolver(scopingNode, isNewEntry);
-    if (isNewEntry)
-        setupScopedStylesTree(scopedStyleResolver);
-    return scopedStyleResolver;
+    ASSERT(scopingNode.isShadowRoot() || scopingNode.isDocumentNode());
+
+    m_authorStyles.add(&scopingNode, &scopingNode.treeScope().ensureScopedStyleResolver());
+    return scopingNode.treeScope().scopedStyleResolver();
 }
 
 ScopedStyleResolver* ScopedStyleTree::scopedStyleResolverFor(const ContainerNode& scopingNode)
@@ -51,65 +60,7 @@ ScopedStyleResolver* ScopedStyleTree::scopedStyleResolverFor(const ContainerNode
         && !scopingNode.isDocumentNode()
         && !scopingNode.isShadowRoot())
         return 0;
-    return lookupScopedStyleResolverFor(&scopingNode);
-}
-
-ScopedStyleResolver* ScopedStyleTree::addScopedStyleResolver(ContainerNode& scopingNode, bool& isNewEntry)
-{
-    HashMap<const ContainerNode*, OwnPtr<ScopedStyleResolver> >::AddResult addResult = m_authorStyles.add(&scopingNode, nullptr);
-
-    ASSERT(scopingNode.isShadowRoot() || scopingNode.isDocumentNode());
-
-    if (addResult.isNewEntry) {
-        addResult.storedValue->value = ScopedStyleResolver::create(scopingNode.treeScope());
-        if (scopingNode.isDocumentNode())
-            m_scopedResolverForDocument = addResult.storedValue->value.get();
-    }
-    isNewEntry = addResult.isNewEntry;
-    return addResult.storedValue->value.get();
-}
-
-void ScopedStyleTree::setupScopedStylesTree(ScopedStyleResolver* target)
-{
-    ASSERT(target);
-
-    const ContainerNode& scopingNode = target->scopingNode();
-
-    // Since StyleResolver creates RuleSets according to styles' document
-    // order, a parent of the given ScopedRuleData has been already
-    // prepared.
-    for (ContainerNode* node = scopingNode.parentOrShadowHostNode(); node; node = node->parentOrShadowHostNode()) {
-        if (ScopedStyleResolver* scopedResolver = scopedStyleResolverFor(*node)) {
-            target->setParent(scopedResolver);
-            break;
-        }
-        if (node->isDocumentNode()) {
-            bool dummy;
-            ScopedStyleResolver* scopedResolver = addScopedStyleResolver(*node, dummy);
-            target->setParent(scopedResolver);
-            setupScopedStylesTree(scopedResolver);
-            break;
-        }
-    }
-
-    if (m_buildInDocumentOrder)
-        return;
-
-    // Reparent all nodes whose scoping node is contained by target's one.
-    for (HashMap<const ContainerNode*, OwnPtr<ScopedStyleResolver> >::iterator it = m_authorStyles.begin(); it != m_authorStyles.end(); ++it) {
-        if (it->value == target)
-            continue;
-        ASSERT(it->key->inDocument());
-        if (it->value->parent() == target->parent() && scopingNode.containsIncludingShadowDOM(it->key))
-            it->value->setParent(target);
-    }
-}
-
-void ScopedStyleTree::clear()
-{
-    m_authorStyles.clear();
-    m_scopedResolverForDocument = 0;
-    m_cache.clear();
+    return scopingNode.treeScope().scopedStyleResolver();
 }
 
 void ScopedStyleTree::resolveScopedStyles(const Element* element, Vector<ScopedStyleResolver*, 8>& resolvers)
@@ -193,17 +144,8 @@ void ScopedStyleTree::popStyleCache(const ContainerNode& scopingNode)
 void ScopedStyleTree::collectFeaturesTo(RuleFeatureSet& features)
 {
     HashSet<const StyleSheetContents*> visitedSharedStyleSheetContents;
-    for (HashMap<const ContainerNode*, OwnPtr<ScopedStyleResolver> >::iterator it = m_authorStyles.begin(); it != m_authorStyles.end(); ++it)
+    for (HashMap<const ContainerNode*, ScopedStyleResolver*>::iterator it = m_authorStyles.begin(); it != m_authorStyles.end(); ++it)
         it->value->collectFeaturesTo(features, visitedSharedStyleSheetContents);
-}
-
-inline void ScopedStyleTree::reparentNodes(const ScopedStyleResolver* oldParent, ScopedStyleResolver* newParent)
-{
-    // FIXME: this takes O(N) (N = number of all scoping nodes).
-    for (HashMap<const ContainerNode*, OwnPtr<ScopedStyleResolver> >::iterator it = m_authorStyles.begin(); it != m_authorStyles.end(); ++it) {
-        if (it->value->parent() == oldParent)
-            it->value->setParent(newParent);
-    }
 }
 
 void ScopedStyleTree::remove(const ContainerNode* scopingNode)
@@ -211,15 +153,17 @@ void ScopedStyleTree::remove(const ContainerNode* scopingNode)
     if (!scopingNode || scopingNode->isDocumentNode())
         return;
 
-    ScopedStyleResolver* resolverRemoved = lookupScopedStyleResolverFor(scopingNode);
-    if (!resolverRemoved)
+    ScopedStyleResolver* resolver = scopingNode->treeScope().scopedStyleResolver();
+    if (!resolver)
         return;
 
-    reparentNodes(resolverRemoved, resolverRemoved->parent());
-    if (m_cache.scopedResolver == resolverRemoved)
+    if (m_cache.scopedResolver == resolver)
         m_cache.clear();
 
+    // resolver is going to be freed below.
+    resolver = 0;
     m_authorStyles.remove(scopingNode);
+    scopingNode->treeScope().clearScopedStyleResolver();
 }
 
 } // namespace blink
