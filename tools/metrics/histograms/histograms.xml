@@ -25636,6 +25636,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.OldDatabaseKilobytes" units="KB">
+  <obsolete>
+    Deprecated 7/2014. No longer generated.
+  </obsolete>
   <owner>shess@chromium.org</owner>
   <summary>Size of v1 database deleted from client profile.</summary>
 </histogram>
@@ -46129,17 +46132,39 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="SB2FormatEvent" type="int">
-  <int value="0" label="FILE_CORRUPT"/>
-  <int value="1" label="SQLITE_CORRUPT"/>
-  <int value="2" label="FOUND_SQLITE"/>
-  <int value="3" label="FOUND_UNKNOWN"/>
-  <int value="4" label="SQLITE_DELETED"/>
-  <int value="5" label="SQLITE_DELETE_FAILED"/>
-  <int value="6" label="SQLITE_DELETED_ORIGINAL"/>
-  <int value="7" label="SQLITE_DELETE_ORIGINAL_FAILED"/>
-  <int value="8" label="VALIDITY_CHECKSUM_FAILURE"/>
-  <int value="9" label="UPDATE_CHECKSUM_FAILURE"/>
-  <int value="10" label="HEADER_CHECKSUM_FAILURE"/>
+  <summary>
+    Track information for various error cases in the safe-browsing store.
+  </summary>
+  <int value="0" label="FILE_CORRUPT">Store corruption detected</int>
+  <int value="1" label="SQLITE_CORRUPT">
+    SQLite store orruption detected (obsolete)
+  </int>
+  <int value="2" label="FOUND_SQLITE">SQLite store found (obsolete)</int>
+  <int value="3" label="FOUND_UNKNOWN">Store format unknown at open</int>
+  <int value="4" label="SQLITE_DELETED">
+    Deleted SQLite-format store (obsolete)
+  </int>
+  <int value="5" label="SQLITE_DELETE_FAILED">
+    Deletion of SQLite-format store failed (obsolete)
+  </int>
+  <int value="6" label="SQLITE_DELETED_ORIGINAL">
+    Deleted pre-release SQLite store (obsolete)
+  </int>
+  <int value="7" label="SQLITE_DELETE_ORIGINAL_FAILED">
+    Deletion of pre-release SQLite store failed (obsolete)
+  </int>
+  <int value="8" label="VALIDITY_CHECKSUM_FAILURE">
+    Failed explicit checksum check on failed update from server
+  </int>
+  <int value="9" label="UPDATE_CHECKSUM_FAILURE">
+    Failed checksum check while merging new data into store
+  </int>
+  <int value="10" label="HEADER_CHECKSUM_FAILURE">
+    Failed header checksum check when opening store
+  </int>
+  <int value="11" label="FOUND_DEPRECATED">
+    Store with valid magic number has deprecated version number
+  </int>
 </enum>
 
 <enum name="SB2GetHashResult" type="int">

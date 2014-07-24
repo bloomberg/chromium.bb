@@ -86,8 +86,8 @@ enum FormatEventType {
 
   // The type of format found in the file.  The expected case (new
   // file format) is intentionally not covered.
-  FORMAT_EVENT_FOUND_SQLITE,
-  FORMAT_EVENT_FOUND_UNKNOWN,
+  FORMAT_EVENT_FOUND_SQLITE,  // Obsolete
+  FORMAT_EVENT_FOUND_UNKNOWN,  // magic does not match.
 
   // The number of SQLite-format files deleted should be the same as
   // FORMAT_EVENT_FOUND_SQLITE.  It can differ if the delete fails,
@@ -97,8 +97,8 @@ enum FormatEventType {
 
   // Found and deleted (or failed to delete) the ancient "Safe
   // Browsing" file.
-  FORMAT_EVENT_DELETED_ORIGINAL,
-  FORMAT_EVENT_DELETED_ORIGINAL_FAILED,
+  FORMAT_EVENT_DELETED_ORIGINAL,  // Obsolete
+  FORMAT_EVENT_DELETED_ORIGINAL_FAILED,  // Obsolete
 
   // The checksum did not check out in CheckValidity() or in
   // FinishUpdate().  This most likely indicates that the machine
@@ -109,6 +109,8 @@ enum FormatEventType {
   // The header checksum was incorrect in ReadAndVerifyHeader().  Likely
   // indicates that the system crashed while writing an update.
   FORMAT_EVENT_HEADER_CHECKSUM_FAILURE,
+
+  FORMAT_EVENT_FOUND_DEPRECATED,  // version too old.
 
   // Memory space for histograms is determined by the max.  ALWAYS
   // ADD NEW VALUES BEFORE THIS ONE.
@@ -630,32 +632,6 @@ bool ReadDbStateHelper(const base::FilePath& filename,
 
 }  // namespace
 
-// static
-void SafeBrowsingStoreFile::CheckForOriginalAndDelete(
-    const base::FilePath& current_filename) {
-  const base::FilePath original_filename(
-      current_filename.DirName().AppendASCII("Safe Browsing"));
-  if (base::PathExists(original_filename)) {
-    int64 size = 0;
-    if (base::GetFileSize(original_filename, &size)) {
-      UMA_HISTOGRAM_COUNTS("SB2.OldDatabaseKilobytes",
-                           static_cast<int>(size / 1024));
-    }
-
-    if (base::DeleteFile(original_filename, false)) {
-      RecordFormatEvent(FORMAT_EVENT_DELETED_ORIGINAL);
-    } else {
-      RecordFormatEvent(FORMAT_EVENT_DELETED_ORIGINAL_FAILED);
-    }
-
-    // Just best-effort on the journal file, don't want to get lost in
-    // the weeds.
-    const base::FilePath journal_filename(
-        current_filename.DirName().AppendASCII("Safe Browsing-journal"));
-    base::DeleteFile(journal_filename, false);
-  }
-}
-
 SafeBrowsingStoreFile::SafeBrowsingStoreFile()
     : chunks_written_(0), empty_(false), corruption_seen_(false) {}
 
@@ -817,11 +793,6 @@ bool SafeBrowsingStoreFile::BeginUpdate() {
   DCHECK(sub_hashes_.empty());
   DCHECK_EQ(chunks_written_, 0);
 
-  // Since the following code will already hit the profile looking for
-  // database files, this is a reasonable to time delete any old
-  // files.
-  CheckForOriginalAndDelete(filename_);
-
   corruption_seen_ = false;
 
   const base::FilePath new_filename = TemporaryFileForFilename(filename_);
@@ -849,15 +820,9 @@ bool SafeBrowsingStoreFile::BeginUpdate() {
                           file.get(), &context);
   if (version == kInvalidVersion) {
     FileHeaderV8 retry_header;
-    if (FileRewind(file.get()) && ReadItem(&retry_header, file.get(), NULL) &&
-        (retry_header.magic != kFileMagic ||
-         (retry_header.version != 8 && retry_header.version != 7))) {
-      // TODO(shess): Think on whether these histograms are generating any
-      // actionable data.  I kid you not, SQLITE happens many thousands of times
-      // per day, UNKNOWN about 3x higher than that.
-      if (!strcmp(reinterpret_cast<char*>(&retry_header.magic),
-                  "SQLite format 3")) {
-        RecordFormatEvent(FORMAT_EVENT_FOUND_SQLITE);
+    if (FileRewind(file.get()) && ReadItem(&retry_header, file.get(), NULL)) {
+      if (retry_header.magic == kFileMagic && retry_header.version < 7) {
+        RecordFormatEvent(FORMAT_EVENT_FOUND_DEPRECATED);
       } else {
         RecordFormatEvent(FORMAT_EVENT_FOUND_UNKNOWN);
       }
