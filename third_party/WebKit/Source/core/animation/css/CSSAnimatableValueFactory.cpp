@@ -459,16 +459,9 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
     case CSSPropertyPerspective:
         return createFromDouble(style.perspective());
     case CSSPropertyPerspectiveOrigin:
-        ASSERT(RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled());
         return AnimatableLengthPoint::create(
             createFromLength(style.perspectiveOriginX(), style),
             createFromLength(style.perspectiveOriginY(), style));
-    case CSSPropertyWebkitPerspectiveOriginX:
-        ASSERT(!RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled());
-        return createFromLength(style.perspectiveOriginX(), style);
-    case CSSPropertyWebkitPerspectiveOriginY:
-        ASSERT(!RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled());
-        return createFromLength(style.perspectiveOriginY(), style);
     case CSSPropertyShapeOutside:
         return createFromShapeValue(style.shapeOutside());
     case CSSPropertyShapeMargin:
@@ -480,20 +473,10 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
     case CSSPropertyTransform:
         return AnimatableTransform::create(style.transform());
     case CSSPropertyTransformOrigin:
-        ASSERT(RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled());
         return AnimatableLengthPoint3D::create(
             createFromLength(style.transformOriginX(), style),
             createFromLength(style.transformOriginY(), style),
             createFromDouble(style.transformOriginZ()));
-    case CSSPropertyWebkitTransformOriginX:
-        ASSERT(!RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled());
-        return createFromLength(style.transformOriginX(), style);
-    case CSSPropertyWebkitTransformOriginY:
-        ASSERT(!RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled());
-        return createFromLength(style.transformOriginY(), style);
-    case CSSPropertyWebkitTransformOriginZ:
-        ASSERT(!RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled());
-        return createFromDouble(style.transformOriginZ());
     case CSSPropertyWidows:
         return createFromDouble(style.widows());
     case CSSPropertyWidth:

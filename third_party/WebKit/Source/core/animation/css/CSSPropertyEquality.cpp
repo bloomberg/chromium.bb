@@ -280,10 +280,6 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
         return a.perspective() == b.perspective();
     case CSSPropertyPerspectiveOrigin:
         return a.perspectiveOriginX() == b.perspectiveOriginX() && a.perspectiveOriginY() == b.perspectiveOriginY();
-    case CSSPropertyWebkitPerspectiveOriginX:
-        return a.perspectiveOriginX() == b.perspectiveOriginX();
-    case CSSPropertyWebkitPerspectiveOriginY:
-        return a.perspectiveOriginY() == b.perspectiveOriginY();
     case CSSPropertyWebkitTextStrokeColor:
         return a.textStrokeColor().resolve(a.color()) == b.textStrokeColor().resolve(b.color())
             && a.visitedLinkTextStrokeColor().resolve(a.color()) == b.visitedLinkTextStrokeColor().resolve(b.color());
@@ -291,12 +287,6 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
         return a.transform() == b.transform();
     case CSSPropertyTransformOrigin:
         return a.transformOriginX() == b.transformOriginX() && a.transformOriginY() == b.transformOriginY() && a.transformOriginZ() == b.transformOriginZ();
-    case CSSPropertyWebkitTransformOriginX:
-        return a.transformOriginX() == b.transformOriginX();
-    case CSSPropertyWebkitTransformOriginY:
-        return a.transformOriginY() == b.transformOriginY();
-    case CSSPropertyWebkitTransformOriginZ:
-        return a.transformOriginZ() == b.transformOriginZ();
     case CSSPropertyWidows:
         return a.widows() == b.widows();
     case CSSPropertyWidth:

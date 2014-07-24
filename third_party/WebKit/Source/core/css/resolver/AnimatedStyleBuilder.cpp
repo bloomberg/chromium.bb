@@ -539,20 +539,11 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setPerspective(clampTo<float>(toAnimatableDouble(value)->toDouble()));
         return;
     case CSSPropertyPerspectiveOrigin: {
-        ASSERT(RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled());
         const AnimatableLengthPoint* animatableLengthPoint = toAnimatableLengthPoint(value);
         style->setPerspectiveOriginX(animatableValueToLength(animatableLengthPoint->x(), state));
         style->setPerspectiveOriginY(animatableValueToLength(animatableLengthPoint->y(), state));
         return;
     }
-    case CSSPropertyWebkitPerspectiveOriginX:
-        ASSERT(!RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled());
-        style->setPerspectiveOriginX(animatableValueToLength(value, state));
-        return;
-    case CSSPropertyWebkitPerspectiveOriginY:
-        ASSERT(!RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled());
-        style->setPerspectiveOriginY(animatableValueToLength(value, state));
-        return;
     case CSSPropertyShapeOutside:
         style->setShapeOutside(toAnimatableShapeValue(value)->shapeValue());
         return;
@@ -573,25 +564,12 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         return;
     }
     case CSSPropertyTransformOrigin: {
-        ASSERT(RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled());
         const AnimatableLengthPoint3D* animatableLengthPoint3D = toAnimatableLengthPoint3D(value);
         style->setTransformOriginX(animatableValueToLength(animatableLengthPoint3D->x(), state));
         style->setTransformOriginY(animatableValueToLength(animatableLengthPoint3D->y(), state));
         style->setTransformOriginZ(clampTo<float>(toAnimatableDouble(animatableLengthPoint3D->z())->toDouble()));
         return;
     }
-    case CSSPropertyWebkitTransformOriginX:
-        ASSERT(!RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled());
-        style->setTransformOriginX(animatableValueToLength(value, state));
-        return;
-    case CSSPropertyWebkitTransformOriginY:
-        ASSERT(!RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled());
-        style->setTransformOriginY(animatableValueToLength(value, state));
-        return;
-    case CSSPropertyWebkitTransformOriginZ:
-        ASSERT(!RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled());
-        style->setTransformOriginZ(toAnimatableDouble(value)->toDouble());
-        return;
     case CSSPropertyWidows:
         style->setWidows(animatableValueRoundClampTo<unsigned short>(value, 1));
         return;

@@ -41,7 +41,6 @@ CSSMaskSourceType status=experimental
 CSSOMSmoothScroll status=experimental
 CSSTouchAction status=stable
 CSSTouchActionDelay status=test
-CSSTransformsUnprefixed status=stable
 CSSViewport status=experimental
 CSSWillChange status=stable
 CSS3Text status=experimental
