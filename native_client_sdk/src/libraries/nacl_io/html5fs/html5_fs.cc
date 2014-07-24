@@ -147,15 +147,17 @@ Error Html5Fs::Rename(const Path& path, const Path& newpath) {
   if (error)
     return error;
 
-  const char* oldpath_full = GetFullPath(path).Join().c_str();
+  std::string oldpath_full = GetFullPath(path).Join();
   ScopedResource fileref_resource(
-      ppapi(), file_ref_iface_->Create(filesystem_resource_, oldpath_full));
+      ppapi(),
+      file_ref_iface_->Create(filesystem_resource_, oldpath_full.c_str()));
   if (!fileref_resource.pp_resource())
     return ENOENT;
 
-  const char* newpath_full = GetFullPath(newpath).Join().c_str();
+  std::string newpath_full = GetFullPath(newpath).Join();
   ScopedResource new_fileref_resource(
-      ppapi(), file_ref_iface_->Create(filesystem_resource_, newpath_full));
+      ppapi(),
+      file_ref_iface_->Create(filesystem_resource_, newpath_full.c_str()));
   if (!new_fileref_resource.pp_resource())
     return ENOENT;
 
