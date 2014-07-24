@@ -27,6 +27,8 @@ source_set("renderer") {
     "//content:resources",
     "//content/common:mojo_bindings",
     "//gin",
+    "//media",
+    "//mojo/bindings/js",
     "//mojo/environment:chromium",
     "//mojo/public/js/bindings",
     "//mojo/public/interfaces/service_provider",
@@ -34,7 +36,7 @@ source_set("renderer") {
     "//skia",
     "//third_party/icu",
     "//third_party/npapi",
-    "//third_party/WebKit/public:blink_headers",
+    "//third_party/WebKit/public:blink",
     "//third_party/widevine/cdm:version_h",
     "//ui/accessibility",
     "//ui/events:dom4_keycode_converter",
@@ -45,11 +47,8 @@ source_set("renderer") {
     "//webkit/common",
     "//webkit/common:storage",
     "//webkit/common/gpu",
-    # TODO(GYP)
-    #'../jingle/jingle.gyp:jingle_glue',
-    #'../media/media.gyp:media',
-    #'../third_party/WebKit/public/blink.gyp:blink',
-    #'../third_party/libjingle/libjingle.gyp:libjingle',
+    #'../jingle/jingle.gyp:jingle_glue',  TODO(GYP)
+    #'../third_party/libjingle/libjingle.gyp:libjingle',  TODO(GYP)
   ]
 
   if (!enable_notifications) {
@@ -89,8 +88,7 @@ source_set("renderer") {
 
     deps += [
       "//third_party/android_tools:cpu_features",
-      # TODO(GYP)
-      #"//third_party/libphonenumber",
+      "//third_party/libphonenumber",
     ]
   } else {
     sources -= [
@@ -130,12 +128,11 @@ source_set("renderer") {
         ".", "//content")
     deps += [
       "//crypto",
-      # TODO(GYP)
-      #"../third_party/libjingle/libjingle.gyp:libjingle_webrtc",
-      #"../third_party/libjingle/libjingle.gyp:libpeerconnection",
-      #"../third_party/webrtc/modules/modules.gyp:audio_device",
-      #"../third_party/webrtc/modules/modules.gyp:audio_processing",
-      #"//third_party/libyuv",
+      "//third_party/libyuv",
+      #"../third_party/libjingle/libjingle.gyp:libjingle_webrtc",  TODO(GYP)
+      #"../third_party/libjingle/libjingle.gyp:libpeerconnection",  TODO(GYP)
+      #"../third_party/webrtc/modules/modules.gyp:audio_device",  TODO(GYP)
+      #"../third_party/webrtc/modules/modules.gyp:audio_processing",  TODO(GYP)
     ]
   } else {
     sources += [

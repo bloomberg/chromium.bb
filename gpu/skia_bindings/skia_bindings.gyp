@@ -8,6 +8,7 @@
   },
   'targets': [
     {
+      # GN version: //gpu/skia_bindings
       'target_name': 'gpu_skia_bindings',
       'type': 'static_library',
       'dependencies': [

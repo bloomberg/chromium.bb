@@ -15,6 +15,9 @@ content_tests_gypi_values = exec_script(
 # GYP version //content/content_tests.gypi:test_support_content
 static_library("test_support") {
   deps = [
+    "//content/public/app",
+    "//content/public/browser",
+    "//content/public/common",
     "//net:test_support",
     "//skia",
     "//testing/gmock",
@@ -30,23 +33,19 @@ static_library("test_support") {
     "//ui/resources",
     "//url",
     "//webkit/common",
-    "//content/browser/speech/proto",
-    "//content/browser",
-    "//content/common",
-    "//content/app",
   ]
 
   if (!is_ios) {
-    sources = rebase_path(content_tests_gypi_values.layouttest_support_content_sources,
+    sources = rebase_path(content_tests_gypi_values.test_support_content_sources,
                           ".", "//content")
 
     deps += [
+      "//content/browser/speech/proto",
       "//content/child",
-      "//content/common",
       "//content/gpu",
       "//content/ppapi_plugin",
-      "//content/renderer",
-      "//content/utility",
+      "//content/public/renderer",
+      "//content/public/utility",
       "//content/worker",
       "//cc",
       "//cc:test_support",

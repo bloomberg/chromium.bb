@@ -33,6 +33,8 @@
 #     //gpu/command_buffer/common
 #     (Merged in to here because the separate file exists in GYP only to break
 #     a .gyp file dependency cycle which GN doesn't have.)
+#
+# gpu/skia_bindings/skia_bindings.gyp:gpu_skia_bindings => //gpu/skia_bindings
 
 component("gpu") {
   deps = [

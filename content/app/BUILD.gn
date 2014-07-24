@@ -28,6 +28,7 @@ source_set("app") {
     # picking the allocator.
     "//base/allocator",
     "//content:export",
+    "//content/public/common",
     "//crypto",
     "//ui/base",
     "//ui/gfx",

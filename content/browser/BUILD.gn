@@ -306,7 +306,7 @@ source_set("browser") {
     ]
     deps += [
       #"//content:jni_headers",  TODO(GYP)
-      #"//media",  TODO(GYP)
+      "//media",
     ]
     libs += [ "jnigraphics" ]
   }

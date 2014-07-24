@@ -14,6 +14,8 @@ component("system") {
 
   sources = [
     # Should there be a separate "embedder" target?
+    "../embedder/channel_init.cc",
+    "../embedder/channel_init.h",
     "../embedder/embedder.cc",
     "../embedder/embedder.h",
     "../embedder/platform_channel_pair.cc",

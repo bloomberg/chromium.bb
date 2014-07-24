@@ -1,0 +1,26 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# GYP version: mojo/mojo.gyp:mojo_js_bindings
+static_library("js") {
+  sources = [
+    "core.cc",
+    "core.h",
+    "handle.cc",
+    "handle.h",
+    "support.cc",
+    "support.h",
+    "waiting_callback.cc",
+    "waiting_callback.h",
+  ]
+
+  deps = [
+    "//base",
+    "//gin",
+    "//mojo/common",
+    "//v8",
+  ]
+
+  forward_dependent_configs_from = deps
+}

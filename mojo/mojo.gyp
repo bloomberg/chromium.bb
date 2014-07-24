@@ -723,6 +723,7 @@
       ],
     },
     {
+      # GN version: //mojo/bindings/js
       'target_name': 'mojo_js_bindings_lib',
       'type': 'static_library',
       'dependencies': [
@@ -737,6 +738,7 @@
         'mojo_common_lib',
       ],
       'sources': [
+        # Sources list duplicated in GN build.
         'bindings/js/core.cc',
         'bindings/js/core.h',
         'bindings/js/handle.cc',
