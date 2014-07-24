@@ -67,6 +67,11 @@ struct GlyphOverflow {
     {
     }
 
+    bool isZero() const
+    {
+        return !left && !right && !top && !bottom;
+    }
+
     int left;
     int right;
     int top;

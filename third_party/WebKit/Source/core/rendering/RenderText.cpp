@@ -869,8 +869,10 @@ void RenderText::computePreferredLogicalWidths(float leadWidth)
     HashSet<const SimpleFontData*> fallbackFonts;
     GlyphOverflow glyphOverflow;
     computePreferredLogicalWidths(leadWidth, fallbackFonts, glyphOverflow);
-    if (fallbackFonts.isEmpty() && !glyphOverflow.left && !glyphOverflow.right && !glyphOverflow.top && !glyphOverflow.bottom)
-        m_knownToHaveNoOverflowAndNoFallbackFonts = true;
+
+    // We shouldn't change our mind once we "know".
+    ASSERT(!m_knownToHaveNoOverflowAndNoFallbackFonts || (fallbackFonts.isEmpty() && glyphOverflow.isZero()));
+    m_knownToHaveNoOverflowAndNoFallbackFonts = fallbackFonts.isEmpty() && glyphOverflow.isZero();
 }
 
 static inline float hyphenWidth(RenderText* renderer, const Font& font, TextDirection direction)
@@ -1493,8 +1495,10 @@ float RenderText::width(unsigned from, unsigned len, const Font& f, float xPos, 
                 ASSERT(glyphOverflow);
                 if (preferredLogicalWidthsDirty() || !m_knownToHaveNoOverflowAndNoFallbackFonts) {
                     const_cast<RenderText*>(this)->computePreferredLogicalWidths(0, *fallbackFonts, *glyphOverflow);
-                    if (fallbackFonts->isEmpty() && !glyphOverflow->left && !glyphOverflow->right && !glyphOverflow->top && !glyphOverflow->bottom)
-                        m_knownToHaveNoOverflowAndNoFallbackFonts = true;
+                    // We shouldn't change our mind once we "know".
+                    ASSERT(!m_knownToHaveNoOverflowAndNoFallbackFonts
+                        || (fallbackFonts->isEmpty() && glyphOverflow->isZero()));
+                    m_knownToHaveNoOverflowAndNoFallbackFonts = fallbackFonts->isEmpty() && glyphOverflow->isZero();
                 }
                 w = m_maxWidth;
             } else {
