@@ -357,7 +357,7 @@ DeviceHandler.prototype.onMountCompleted_ = function(event) {
       return;
     // If the multipart error message has already shown, do nothing because the
     // message does not changed by the following mount results.
-    case DeviceHandler.MULTIPART_ERROR:
+    case DeviceHandler.MountStatus.MULTIPART_ERROR:
       return;
     // If this is the first result, hide the scanning notification.
     case DeviceHandler.MountStatus.NO_RESULT:
@@ -387,6 +387,9 @@ DeviceHandler.prototype.onMountCompleted_ = function(event) {
       }
       break;
   }
+
+  if (event.eventType === 'unmount')
+    return;
 
   // Show the notification for the current errors.
   // If there is no error, do not show/update the notification.
