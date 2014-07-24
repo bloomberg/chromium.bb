@@ -145,6 +145,7 @@ PPAPIT*.F*
 PPAPIT*.W*
 PPAPIT*.U*3
 # Q*
+QU*
 # R*
 Red*
 Ref*
