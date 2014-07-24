@@ -245,9 +245,6 @@ class BookmarksRemoveFunction : public BookmarksFunction {
   static bool ExtractIds(const base::ListValue* args,
                          std::list<int64>* ids,
                          bool* invalid_id);
-  // BookmarksFunction:
-  virtual void GetQuotaLimitHeuristics(
-      QuotaLimitHeuristics* heuristics) const OVERRIDE;
 
  protected:
   virtual ~BookmarksRemoveFunction() {}
@@ -268,10 +265,6 @@ class BookmarksCreateFunction : public BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bookmarks.create", BOOKMARKS_CREATE)
 
-  // BookmarksFunction:
-  virtual void GetQuotaLimitHeuristics(
-      QuotaLimitHeuristics* heuristics) const OVERRIDE;
-
  protected:
   virtual ~BookmarksCreateFunction() {}
 
@@ -287,10 +280,6 @@ class BookmarksMoveFunction : public BookmarksFunction {
                          std::list<int64>* ids,
                          bool* invalid_id);
 
-  // BookmarksFunction:
-  virtual void GetQuotaLimitHeuristics(
-      QuotaLimitHeuristics* heuristics) const OVERRIDE;
-
  protected:
   virtual ~BookmarksMoveFunction() {}
 
@@ -305,10 +294,6 @@ class BookmarksUpdateFunction : public BookmarksFunction {
   static bool ExtractIds(const base::ListValue* args,
                          std::list<int64>* ids,
                          bool* invalid_id);
-
-  // BookmarksFunction:
-  virtual void GetQuotaLimitHeuristics(
-      QuotaLimitHeuristics* heuristics) const OVERRIDE;
 
  protected:
   virtual ~BookmarksUpdateFunction() {}

@@ -30,7 +30,6 @@ class ExtensionFunction;
 
 namespace extensions {
 class QuotaLimitHeuristic;
-class TestResetQuotaFunction;
 
 typedef std::list<QuotaLimitHeuristic*> QuotaLimitHeuristics;
 
@@ -61,7 +60,6 @@ class QuotaService : public base::NonThreadSafe {
                      const base::TimeTicks& event_time);
 
  private:
-  friend class extensions::TestResetQuotaFunction;
   typedef std::string ExtensionId;
   typedef std::string FunctionName;
   // All QuotaLimitHeuristic instances in this map are owned by us.

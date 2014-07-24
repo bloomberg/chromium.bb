@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/i18n/time_formatting.h"
-#include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
@@ -49,7 +48,6 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/quota_service.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -63,19 +61,11 @@ namespace extensions {
 namespace keys = bookmark_api_constants;
 namespace bookmarks = api::bookmarks;
 
-using base::TimeDelta;
 using bookmarks::BookmarkTreeNode;
 using bookmarks::CreateDetails;
 using content::BrowserContext;
 using content::BrowserThread;
 using content::WebContents;
-
-typedef QuotaLimitHeuristic::Bucket Bucket;
-typedef QuotaLimitHeuristic::Config Config;
-typedef QuotaLimitHeuristic::BucketList BucketList;
-typedef QuotaService::TimedLimit TimedLimit;
-typedef QuotaService::SustainedLimit SustainedLimit;
-typedef QuotaLimitHeuristic::BucketMapper BucketMapper;
 
 namespace {
 
@@ -802,198 +792,6 @@ bool BookmarksUpdateFunction::RunOnReady() {
           GetChromeBookmarkClient(), node, false, false));
   results_ = bookmarks::Update::Results::Create(*tree_node);
   return true;
-}
-
-// Mapper superclass for BookmarkFunctions.
-template <typename BucketIdType>
-class BookmarkBucketMapper : public BucketMapper {
- public:
-  virtual ~BookmarkBucketMapper() { STLDeleteValues(&buckets_); }
- protected:
-  Bucket* GetBucket(const BucketIdType& id) {
-    Bucket* b = buckets_[id];
-    if (b == NULL) {
-      b = new Bucket();
-      buckets_[id] = b;
-    }
-    return b;
-  }
- private:
-  std::map<BucketIdType, Bucket*> buckets_;
-};
-
-// Mapper for 'bookmarks.create'.  Maps "same input to bookmarks.create" to a
-// unique bucket.
-class CreateBookmarkBucketMapper : public BookmarkBucketMapper<std::string> {
- public:
-  explicit CreateBookmarkBucketMapper(BrowserContext* context)
-      : browser_context_(context) {}
-  // TODO(tim): This should share code with BookmarksCreateFunction::RunOnReady,
-  // but I can't figure out a good way to do that with all the macros.
-  virtual void GetBucketsForArgs(const base::ListValue* args,
-                                 BucketList* buckets) OVERRIDE {
-    const base::DictionaryValue* json;
-    if (!args->GetDictionary(0, &json))
-      return;
-
-    std::string parent_id;
-    if (json->HasKey(keys::kParentIdKey)) {
-      if (!json->GetString(keys::kParentIdKey, &parent_id))
-        return;
-    }
-    BookmarkModel* model = BookmarkModelFactory::GetForProfile(
-        Profile::FromBrowserContext(browser_context_));
-
-    int64 parent_id_int64;
-    base::StringToInt64(parent_id, &parent_id_int64);
-    const BookmarkNode* parent =
-        ::bookmarks::GetBookmarkNodeByID(model, parent_id_int64);
-    if (!parent)
-      return;
-
-    std::string bucket_id = base::UTF16ToUTF8(parent->GetTitle());
-    std::string title;
-    json->GetString(keys::kTitleKey, &title);
-    std::string url_string;
-    json->GetString(keys::kUrlKey, &url_string);
-
-    bucket_id += title;
-    bucket_id += url_string;
-    // 20 bytes (SHA1 hash length) is very likely less than most of the
-    // |bucket_id| strings we construct here, so we hash it to save space.
-    buckets->push_back(GetBucket(base::SHA1HashString(bucket_id)));
-  }
-
- private:
-  BrowserContext* browser_context_;
-};
-
-// Mapper for 'bookmarks.remove'.
-class RemoveBookmarksBucketMapper : public BookmarkBucketMapper<std::string> {
- public:
-  explicit RemoveBookmarksBucketMapper(BrowserContext* context)
-      : browser_context_(context) {}
-  virtual void GetBucketsForArgs(const base::ListValue* args,
-                                 BucketList* buckets) OVERRIDE {
-    typedef std::list<int64> IdList;
-    IdList ids;
-    bool invalid_id = false;
-    if (!BookmarksRemoveFunction::ExtractIds(args, &ids, &invalid_id) ||
-        invalid_id) {
-      return;
-    }
-
-    for (IdList::iterator it = ids.begin(); it != ids.end(); ++it) {
-      BookmarkModel* model = BookmarkModelFactory::GetForProfile(
-          Profile::FromBrowserContext(browser_context_));
-      const BookmarkNode* node = ::bookmarks::GetBookmarkNodeByID(model, *it);
-      if (!node || node->is_root())
-        return;
-
-      std::string bucket_id;
-      bucket_id += base::UTF16ToUTF8(node->parent()->GetTitle());
-      bucket_id += base::UTF16ToUTF8(node->GetTitle());
-      bucket_id += node->url().spec();
-      buckets->push_back(GetBucket(base::SHA1HashString(bucket_id)));
-    }
-  }
-
- private:
-  BrowserContext* browser_context_;
-};
-
-// Mapper for any bookmark function accepting bookmark IDs as parameters, where
-// a distinct ID corresponds to a single item in terms of quota limiting.  This
-// is inappropriate for bookmarks.remove, for example, since repeated removals
-// of the same item will actually have a different ID each time.
-template <class FunctionType>
-class BookmarkIdMapper : public BookmarkBucketMapper<int64> {
- public:
-  typedef std::list<int64> IdList;
-  virtual void GetBucketsForArgs(const base::ListValue* args,
-                                 BucketList* buckets) {
-    IdList ids;
-    bool invalid_id = false;
-    if (!FunctionType::ExtractIds(args, &ids, &invalid_id) || invalid_id)
-      return;
-    for (IdList::iterator it = ids.begin(); it != ids.end(); ++it)
-      buckets->push_back(GetBucket(*it));
-  }
-};
-
-// Builds heuristics for all BookmarkFunctions using specialized BucketMappers.
-class BookmarksQuotaLimitFactory {
- public:
-  // For id-based bookmark functions.
-  template <class FunctionType>
-  static void Build(QuotaLimitHeuristics* heuristics) {
-    BuildWithMappers(heuristics, new BookmarkIdMapper<FunctionType>(),
-                                 new BookmarkIdMapper<FunctionType>());
-  }
-
-  // For bookmarks.create.
-  static void BuildForCreate(QuotaLimitHeuristics* heuristics,
-                             BrowserContext* context) {
-    BuildWithMappers(heuristics,
-                     new CreateBookmarkBucketMapper(context),
-                     new CreateBookmarkBucketMapper(context));
-  }
-
-  // For bookmarks.remove.
-  static void BuildForRemove(QuotaLimitHeuristics* heuristics,
-                             BrowserContext* context) {
-    BuildWithMappers(heuristics,
-                     new RemoveBookmarksBucketMapper(context),
-                     new RemoveBookmarksBucketMapper(context));
-  }
-
- private:
-  static void BuildWithMappers(QuotaLimitHeuristics* heuristics,
-      BucketMapper* short_mapper, BucketMapper* long_mapper) {
-    const Config kSustainedLimitConfig = {
-      // See bookmarks.json for current value.
-      bookmarks::MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE,
-      TimeDelta::FromMinutes(1)
-    };
-    heuristics->push_back(new SustainedLimit(
-        TimeDelta::FromMinutes(10),
-        kSustainedLimitConfig,
-        short_mapper,
-        "MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE"));
-
-    const Config kTimedLimitConfig = {
-      // See bookmarks.json for current value.
-      bookmarks::MAX_WRITE_OPERATIONS_PER_HOUR,
-      TimeDelta::FromHours(1)
-    };
-    heuristics->push_back(new TimedLimit(
-        kTimedLimitConfig,
-        long_mapper,
-        "MAX_WRITE_OPERATIONS_PER_HOUR"));
-  }
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(BookmarksQuotaLimitFactory);
-};
-
-// And finally, building the individual heuristics for each function.
-void BookmarksRemoveFunction::GetQuotaLimitHeuristics(
-    QuotaLimitHeuristics* heuristics) const {
-  BookmarksQuotaLimitFactory::BuildForRemove(heuristics, GetProfile());
-}
-
-void BookmarksMoveFunction::GetQuotaLimitHeuristics(
-    QuotaLimitHeuristics* heuristics) const {
-  BookmarksQuotaLimitFactory::Build<BookmarksMoveFunction>(heuristics);
-}
-
-void BookmarksUpdateFunction::GetQuotaLimitHeuristics(
-    QuotaLimitHeuristics* heuristics) const {
-  BookmarksQuotaLimitFactory::Build<BookmarksUpdateFunction>(heuristics);
-}
-
-void BookmarksCreateFunction::GetQuotaLimitHeuristics(
-    QuotaLimitHeuristics* heuristics) const {
-  BookmarksQuotaLimitFactory::BuildForCreate(heuristics, GetProfile());
 }
 
 BookmarksIOFunction::BookmarksIOFunction() {}

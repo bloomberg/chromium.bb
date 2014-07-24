@@ -36,12 +36,6 @@ var node2 = {parentId:"1", title:"foo quux",
              url:"http://www.example.com/bar"};
 var node3 = {parentId:"1", title:"Foo bar baz",
              url:"http://www.google.com/hello/quux"};
-var quota_node1 = {parentId:"1", title:"Dave",
-                   url:"http://www.dmband.com/"};
-var quota_node2 = {parentId:"1", title:"UW",
-                   url:"http://www.uwaterloo.ca/"};
-var quota_node3 = {parentId:"1", title:"Whistler",
-                   url:"http://www.whistlerblackcomb.com/"};
 
 var pass = chrome.test.callbackPass;
 var fail = chrome.test.callbackFail;
@@ -467,51 +461,6 @@ chrome.test.runTests([
       // Does not match anything since folder was removed with node3 in it
       chrome.test.assertEq(0, results.length);
     }));
-  },
-
-  function quotaLimitedCreate() {
-    var node = {parentId:"1", title:"quotacreate", url:"http://www.quota.com/"};
-    for (i = 0; i < 100; i++) {
-      chrome.bookmarks.create(node, pass(function(results) {
-        expected[0].children[0].children.push(results);
-      }));
-    }
-    chrome.bookmarks.create(
-        node,
-        fail("This request exceeds the MAX_WRITE_OPERATIONS_PER_HOUR quota."));
-
-    chrome.test.resetQuota();
-
-    // Also, test that > 100 creations of different items is fine.
-    for (i = 0; i < 101; i++) {
-      var changer = {parentId:"1", title:"" + i, url:"http://www.quota.com/"};
-      chrome.bookmarks.create(changer, pass(function(results) {
-        expected[0].children[0].children.push(results);
-      }));
-    }
-  },
-
-  function quotaSetup() {
-    createNodes(bookmarksBar(),
-                [quota_node1, quota_node2, quota_node3],
-                pass(function() {
-      verifyTreeIsExpected(pass());
-    }));
-  },
-
-  function quotaLimitedUpdate() {
-    var title = "hello, world!";
-    for (i = 0; i < 100; i++) {
-      chrome.bookmarks.update(quota_node1.id, {"title": title},
-          pass(function(results) {
-                 chrome.test.assertEq(title, results.title);
-               }
-      ));
-    }
-    chrome.bookmarks.update(quota_node1.id, {"title": title},
-        fail("This request exceeds the MAX_WRITE_OPERATIONS_PER_HOUR quota."));
-
-    chrome.test.resetQuota();
   },
 
   function getRecentSetup() {

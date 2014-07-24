@@ -8,12 +8,14 @@
     "description": "Use the <code>chrome.bookmarks</code> API to create, organize, and otherwise manipulate bookmarks. Also see <a href='override'>Override Pages</a>, which you can use to create a custom Bookmark Manager page.",
     "properties": {
       "MAX_WRITE_OPERATIONS_PER_HOUR": {
-        "value": 100,
-        "description": "The maximum number of <code>move</code>, <code>update</code>, <code>create</code>, or <code>remove</code> operations that can be performed each hour. Updates that would cause this limit to be exceeded fail."
+        "value": 1000000,
+        "deprecated": "Bookmark write operations are no longer limited by Chrome.",
+        "description": ""
       },
       "MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE": {
-        "value": 2,
-        "description": "The maximum number of <code>move</code>, <code>update</code>, <code>create</code>, or <code>remove</code> operations that can be performed each minute, sustained over 10 minutes. Updates that would cause this limit to be exceeded fail."
+        "value": 1000000,
+        "deprecated": "Bookmark write operations are no longer limited by Chrome.",
+        "description": ""
       }
     },
     "types": [

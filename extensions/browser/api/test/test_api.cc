@@ -13,7 +13,6 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/quota_service.h"
 #include "extensions/common/api/test.h"
 
 namespace {
@@ -74,16 +73,6 @@ bool TestLogFunction::RunSafe() {
   scoped_ptr<Log::Params> params(Log::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   VLOG(1) << params->message;
-  return true;
-}
-
-TestResetQuotaFunction::~TestResetQuotaFunction() {}
-
-bool TestResetQuotaFunction::RunSafe() {
-  QuotaService* quota =
-      ExtensionSystem::Get(browser_context())->quota_service();
-  quota->Purge();
-  quota->violation_errors_.clear();
   return true;
 }
 

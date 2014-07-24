@@ -58,17 +58,6 @@ class TestLogFunction : public TestExtensionFunction {
   virtual bool RunSafe() OVERRIDE;
 };
 
-class TestResetQuotaFunction : public TestExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("test.resetQuota", UNKNOWN)
-
- protected:
-  virtual ~TestResetQuotaFunction();
-
-  // TestExtensionFunction:
-  virtual bool RunSafe() OVERRIDE;
-};
-
 class TestSendMessageFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("test.sendMessage", UNKNOWN)
