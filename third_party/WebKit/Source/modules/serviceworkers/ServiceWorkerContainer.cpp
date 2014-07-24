@@ -98,8 +98,9 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
     // the callers.
     ExecutionContext* executionContext = scriptState->executionContext();
     RefPtr<SecurityOrigin> documentOrigin = executionContext->securityOrigin();
-    if (!documentOrigin->canAccessFeatureRequiringSecureOrigin()) {
-        resolver->reject(DOMException::create(SecurityError, "Service Workers are only supported over secure origins."));
+    String errorMessage;
+    if (!documentOrigin->canAccessFeatureRequiringSecureOrigin(errorMessage)) {
+        resolver->reject(DOMException::create(NotSupportedError, errorMessage));
         return promise;
     }
 
@@ -148,8 +149,9 @@ ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ScriptState* scrip
     // FIXME: This should use the container's execution context, not
     // the callers.
     RefPtr<SecurityOrigin> documentOrigin = scriptState->executionContext()->securityOrigin();
-    if (!documentOrigin->canAccessFeatureRequiringSecureOrigin()) {
-        resolver->reject(DOMException::create(SecurityError, "Service Workers are only supported over secure origins."));
+    String errorMessage;
+    if (!documentOrigin->canAccessFeatureRequiringSecureOrigin(errorMessage)) {
+        resolver->reject(DOMException::create(NotSupportedError, errorMessage));
         return promise;
     }
 

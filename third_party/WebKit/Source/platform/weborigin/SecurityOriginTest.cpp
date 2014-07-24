@@ -127,12 +127,16 @@ TEST(SecurityOriginTest, CanAccessFeatureRequringSecureOrigin)
     for (size_t i = 0; i < ARRAYSIZE_UNSAFE(inputs); ++i) {
         SCOPED_TRACE(i);
         RefPtr<SecurityOrigin> origin = SecurityOrigin::createFromString(inputs[i].url);
-        EXPECT_EQ(inputs[i].accessGranted, origin->canAccessFeatureRequiringSecureOrigin());
+        String errorMessage;
+        EXPECT_EQ(inputs[i].accessGranted, origin->canAccessFeatureRequiringSecureOrigin(errorMessage));
+        EXPECT_EQ(inputs[i].accessGranted, errorMessage.isEmpty());
     }
 
     // Unique origins are not considered secure.
     RefPtr<SecurityOrigin> uniqueOrigin = SecurityOrigin::createUnique();
-    EXPECT_FALSE(uniqueOrigin->canAccessFeatureRequiringSecureOrigin());
+    String errorMessage;
+    EXPECT_FALSE(uniqueOrigin->canAccessFeatureRequiringSecureOrigin(errorMessage));
+    EXPECT_EQ("Only secure origins are allowed. http://goo.gl/lq4gCo", errorMessage);
 }
 
 } // namespace

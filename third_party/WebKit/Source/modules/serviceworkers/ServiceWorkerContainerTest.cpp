@@ -210,7 +210,7 @@ TEST_F(ServiceWorkerContainerTest, Register_NonSecureOriginIsRejected)
     testRegisterRejected(
         "http://www.example.com/worker.js",
         "http://www.example.com/*",
-        ExpectDOMException("SecurityError", "Service Workers are only supported over secure origins."));
+        ExpectDOMException("NotSupportedError", "Only secure origins are allowed. http://goo.gl/lq4gCo"));
 }
 
 TEST_F(ServiceWorkerContainerTest, Register_CrossOriginScriptIsRejected)
@@ -236,7 +236,7 @@ TEST_F(ServiceWorkerContainerTest, Unregister_NonSecureOriginIsRejected)
     setPageURL("http://www.example.com");
     testUnregisterRejected(
         "*",
-        ExpectDOMException("SecurityError", "Service Workers are only supported over secure origins."));
+        ExpectDOMException("NotSupportedError", "Only secure origins are allowed. http://goo.gl/lq4gCo"));
 }
 
 TEST_F(ServiceWorkerContainerTest, Unregister_CrossOriginScopeIsRejected)

@@ -376,10 +376,14 @@ bool SecurityOrigin::canDisplay(const KURL& url) const
     return true;
 }
 
-bool SecurityOrigin::canAccessFeatureRequiringSecureOrigin() const
+bool SecurityOrigin::canAccessFeatureRequiringSecureOrigin(String& errorMessage) const
 {
     ASSERT(m_protocol != "data");
-    return SchemeRegistry::shouldTreatURLSchemeAsSecure(m_protocol) || isLocal() || isLocalhost();
+    if (SchemeRegistry::shouldTreatURLSchemeAsSecure(m_protocol) || isLocal() || isLocalhost())
+        return true;
+
+    errorMessage = "Only secure origins are allowed. http://goo.gl/lq4gCo";
+    return false;
 }
 
 SecurityOrigin::Policy SecurityOrigin::canShowNotifications() const

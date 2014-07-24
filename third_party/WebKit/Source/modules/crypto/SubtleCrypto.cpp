@@ -78,8 +78,9 @@ static bool parseAlgorithm(const Dictionary& raw, WebCryptoOperation op, WebCryp
 static bool canAccessWebCrypto(ScriptState* scriptState, CryptoResult* result)
 {
     const SecurityOrigin* origin = scriptState->executionContext()->securityOrigin();
-    if (!origin->canAccessFeatureRequiringSecureOrigin()) {
-        result->completeWithError(WebCryptoErrorTypeNotSupported, "WebCrypto is only supported over secure origins. See http://crbug.com/373032");
+    String errorMessage;
+    if (!origin->canAccessFeatureRequiringSecureOrigin(errorMessage)) {
+        result->completeWithError(WebCryptoErrorTypeNotSupported, errorMessage);
         return false;
     }
 
