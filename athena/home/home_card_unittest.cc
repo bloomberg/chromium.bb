@@ -57,6 +57,10 @@ TEST_F(HomeCardTest, AppSelection) {
       athena::ActivityFactory::Get()->CreateWebActivity(
           NULL, GURL("http://www.google.com/")));
   EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
+
+  // Overview mode has to finish before ending test, otherwise it crashes.
+  // TODO(mukai): fix this.
+  WindowManager::GetInstance()->ToggleOverview();
 }
 
 TEST_F(HomeCardTest, Accelerators) {
@@ -80,6 +84,10 @@ TEST_F(HomeCardTest, Accelerators) {
   EXPECT_EQ(HomeCard::VISIBLE_CENTERED, HomeCard::Get()->GetState());
   generator.PressKey(ui::VKEY_L, ui::EF_CONTROL_DOWN);
   EXPECT_EQ(HomeCard::VISIBLE_CENTERED, HomeCard::Get()->GetState());
+
+  // Overview mode has to finish before ending test, otherwise it crashes.
+  // TODO(mukai): fix this.
+  WindowManager::GetInstance()->ToggleOverview();
 }
 
 }  // namespace athena

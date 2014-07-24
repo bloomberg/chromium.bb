@@ -39,9 +39,6 @@ class WindowManagerImpl : public WindowManager,
     COMMAND_TOGGLE_OVERVIEW,
   };
 
-  // Sets whether overview mode is active.
-  void SetInOverview(bool active);
-
   void InstallAccelerators();
 
   // WindowManager:
@@ -115,7 +112,6 @@ WindowManagerImpl::~WindowManagerImpl() {
 void WindowManagerImpl::Layout() {
   if (!container_)
     return;
-  SetInOverview(false);
   gfx::Rect bounds = gfx::Rect(container_->bounds().size());
   const aura::Window::Windows& children = container_->children();
   for (aura::Window::Windows::const_iterator iter = children.begin();
@@ -128,22 +124,14 @@ void WindowManagerImpl::Layout() {
 }
 
 void WindowManagerImpl::ToggleOverview() {
-  SetInOverview(overview_.get() == NULL);
-}
-
-void WindowManagerImpl::SetInOverview(bool active) {
-  bool in_overview = !!overview_;
-  if (active == in_overview)
-    return;
-
-  if (active) {
-    overview_ = WindowOverviewMode::Create(container_.get(), this);
-    FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
-                      OnOverviewModeEnter());
-  } else {
+  if (overview_) {
     overview_.reset();
     FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
                       OnOverviewModeExit());
+  } else {
+    overview_ = WindowOverviewMode::Create(container_.get(), this);
+    FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
+                      OnOverviewModeEnter());
   }
 }
 
@@ -168,7 +156,9 @@ void WindowManagerImpl::OnSelectWindow(aura::Window* window) {
   CHECK_EQ(container_.get(), window->parent());
   container_->StackChildAtTop(window);
   wm::ActivateWindow(window);
-  SetInOverview(false);
+  overview_.reset();
+  FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
+                    OnOverviewModeExit());
 }
 
 void WindowManagerImpl::OnWindowDestroying(aura::Window* window) {
