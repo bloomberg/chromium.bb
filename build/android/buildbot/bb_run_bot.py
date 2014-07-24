@@ -115,6 +115,7 @@ def GetCommands(options, bot_config):
 
 def GetBotStepMap():
   compile_step = ['compile']
+  chrome_proxy_tests = ['chrome_proxy']
   std_host_tests = ['check_webview_licenses', 'findbugs']
   std_build_steps = ['compile', 'zip_build']
   std_test_steps = ['extract_build']
@@ -141,8 +142,9 @@ def GetBotStepMap():
       B('main-clang-builder',
         H(compile_step, extra_gyp='clang=1 component=shared_library')),
       B('main-clobber', H(compile_step)),
-      B('main-tests-rel', H(std_test_steps), T(std_tests + telemetry_tests,
-                                               [flakiness_server])),
+      B('main-tests-rel', H(std_test_steps),
+        T(std_tests + telemetry_tests + chrome_proxy_tests,
+          [flakiness_server])),
       B('main-tests', H(std_test_steps), T(std_tests, [flakiness_server])),
 
       # Other waterfalls
