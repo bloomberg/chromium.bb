@@ -155,6 +155,10 @@ var WEB_VIEW_EVENTS = {
   'unresponsive': {
     evt: CreateEvent('webViewInternal.onUnresponsive'),
     fields: ['processId']
+  },
+  'zoomchange': {
+    evt: CreateEvent('webViewInternal.onZoomChange'),
+    fields: ['oldZoomFactor', 'newZoomFactor']
   }
 };
 

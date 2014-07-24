@@ -766,6 +766,21 @@ WebViewInternal.prototype.stopFinding = function(action) {
   WebView.stopFinding(this.instanceId, action);
 };
 
+/** @private */
+WebViewInternal.prototype.setZoom = function(zoomFactor, callback) {
+  if (!this.instanceId) {
+    return;
+  }
+  WebView.setZoom(this.instanceId, zoomFactor, callback);
+};
+
+WebViewInternal.prototype.getZoom = function(callback) {
+  if (!this.instanceId) {
+    return;
+  }
+  WebView.getZoom(this.instanceId, callback);
+};
+
 WebViewInternal.prototype.buildAttachParams = function(isNewWindow) {
   var params = {
     'api': 'webview',
@@ -869,9 +884,11 @@ function registerWebViewElement() {
     'canGoForward',
     'clearData',
     'getProcessId',
+    'getZoom',
     'go',
     'print',
     'reload',
+    'setZoom',
     'stop',
     'stopFinding',
     'terminate',

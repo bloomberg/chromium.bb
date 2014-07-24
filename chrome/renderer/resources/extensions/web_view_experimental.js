@@ -20,27 +20,6 @@ var WebViewSchema =
 var idGeneratorNatives = requireNative('id_generator');
 var utils = require('utils');
 
-// WEB_VIEW_EXPERIMENTAL_EVENTS is a map of experimental <webview> DOM event
-//     names to their associated extension event descriptor objects.
-// An event listener will be attached to the extension event |evt| specified in
-//     the descriptor.
-// |fields| specifies the public-facing fields in the DOM event that are
-//     accessible to <webview> developers.
-// |customHandler| allows a handler function to be called each time an extension
-//     event is caught by its event listener. The DOM event should be dispatched
-//     within this handler function. With no handler function, the DOM event
-//     will be dispatched by default each time the extension event is caught.
-// |cancelable| (default: false) specifies whether the event's default
-//     behavior can be canceled. If the default action associated with the event
-//     is prevented, then its dispatch function will return false in its event
-//     handler. The event must have a custom handler for this to be meaningful.
-var WEB_VIEW_EXPERIMENTAL_EVENTS = {
-  'zoomchange': {
-    evt: CreateEvent('webViewInternal.onZoomChange'),
-    fields: ['oldZoomFactor', 'newZoomFactor']
-  }
-};
-
 function GetUniqueSubEventName(eventName) {
   return eventName + "/" + idGeneratorNatives.GetNextId();
 }
@@ -151,18 +130,8 @@ WebViewInternal.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
   } //  else we will ignore showing the context menu completely.
 };
 
-/**
- * @private
- */
-WebViewInternal.prototype.setZoom = function(zoomFactor) {
-  if (!this.instanceId) {
-    return;
-  }
-  WebView.setZoom(this.instanceId, zoomFactor);
-};
-
 WebViewInternal.prototype.maybeGetExperimentalEvents = function() {
-  return WEB_VIEW_EXPERIMENTAL_EVENTS;
+  return {};
 };
 
 /** @private */
@@ -171,40 +140,11 @@ WebViewInternal.prototype.maybeGetExperimentalPermissions = function() {
 };
 
 /** @private */
-WebViewInternal.prototype.maybeSetCurrentZoomFactor =
-    function(zoomFactor) {
-  this.currentZoomFactor = zoomFactor;
-};
-
-/** @private */
-WebViewInternal.prototype.setZoom = function(zoomFactor, callback) {
-  if (!this.instanceId) {
-    return;
-  }
-  WebView.setZoom(this.instanceId, zoomFactor, callback);
-};
-
-WebViewInternal.prototype.getZoom = function(callback) {
-  if (!this.instanceId) {
-    return;
-  }
-  WebView.getZoom(this.instanceId, callback);
-};
-
-/** @private */
 WebViewInternal.prototype.captureVisibleRegion = function(spec, callback) {
   WebView.captureVisibleRegion(this.instanceId, spec, callback);
 };
 
 WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {
-  proto.setZoom = function(zoomFactor, callback) {
-    privates(this).internal.setZoom(zoomFactor, callback);
-  };
-
-  proto.getZoom = function(callback) {
-    return privates(this).internal.getZoom(callback);
-  };
-
   proto.captureVisibleRegion = function(spec, callback) {
     privates(this).internal.captureVisibleRegion(spec, callback);
   };
