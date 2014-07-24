@@ -412,9 +412,6 @@ public:
     virtual bool isVideo() const { return false; }
     virtual bool isWidget() const { return false; }
 
-    // The background of the root element or the body element could propagate up to the canvas.
-    bool backgroundCanBleedToCanvas() const { return isBody() || isDocumentElement(); }
-
     bool isDocumentElement() const { return document().documentElement() == m_node; }
     // isBody is called from RenderBox::styleWillChange and is thus quite hot.
     bool isBody() const { return node() && node()->hasTagName(HTMLNames::bodyTag); }

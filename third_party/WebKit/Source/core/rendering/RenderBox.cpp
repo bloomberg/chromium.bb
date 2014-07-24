@@ -142,7 +142,12 @@ void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle& newStyl
 {
     RenderStyle* oldStyle = style();
     if (oldStyle) {
-        if ((diff.needsRepaint() || diff.needsLayout()) && backgroundCanBleedToCanvas()) {
+        // The background of the root element or the body element could propagate up to
+        // the canvas. Just dirty the entire canvas when our style changes substantially.
+        if ((diff.needsRepaint() || diff.needsLayout()) && node()
+            && (isHTMLHtmlElement(*node()) || isHTMLBodyElement(*node()))) {
+            view()->paintInvalidationForWholeRenderer();
+
             if (oldStyle->hasEntirelyFixedBackground() != newStyle.hasEntirelyFixedBackground())
                 view()->compositor()->setNeedsUpdateFixedBackground();
         }
@@ -158,6 +163,10 @@ void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle& newStyl
             if (isFloating() && !isOutOfFlowPositioned() && newStyle.hasOutOfFlowPosition())
                 removeFloatingOrPositionedChildFromBlockLists();
         }
+    // FIXME: This branch runs when !oldStyle, which means that layout was never called
+    // so what's the point in invalidating the whole view that we never painted?
+    } else if (isBody()) {
+        view()->paintInvalidationForWholeRenderer();
     }
 
     RenderBoxModelObject::styleWillChange(diff, newStyle);
@@ -1951,13 +1960,6 @@ LayoutRect RenderBox::clippedOverflowRectForPaintInvalidation(const RenderLayerM
 {
     if (style()->visibility() != VISIBLE && enclosingLayer()->subtreeIsInvisible())
         return LayoutRect();
-
-    // If we have a background that could bleed into the canvas, just return
-    // the viewport's rectangle. This works as only body and the document
-    // element's renderer can bleed into the viewport so we are guaranteed
-    // to be in the RenderView's coordinate space.
-    if (style()->hasBackground() && backgroundCanBleedToCanvas())
-        return view()->viewRect();
 
     LayoutRect r = visualOverflowRect();
     mapRectToPaintInvalidationBacking(paintInvalidationContainer, r, false /*fixed*/, paintInvalidationState);
