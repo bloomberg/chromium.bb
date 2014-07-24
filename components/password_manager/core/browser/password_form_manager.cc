@@ -390,13 +390,18 @@ void PasswordFormManager::OnRequestDone(
       continue;
     }
     if (current_score == best_score) {
+      PasswordForm* old_form = best_matches_[logins_result[i]->username_value];
+      if (old_form) {
+        if (preferred_match_ == old_form)
+          preferred_match_ = NULL;
+        delete old_form;
+      }
       best_matches_[logins_result[i]->username_value] = logins_result[i];
     } else if (current_score > best_score) {
       best_score = current_score;
       // This new login has a better score than all those up to this point
       // Note 'this' owns all the PasswordForms in best_matches_.
       STLDeleteValues(&best_matches_);
-      best_matches_.clear();
       preferred_match_ = NULL;  // Don't delete, its owned by best_matches_.
       best_matches_[logins_result[i]->username_value] = logins_result[i];
     }
