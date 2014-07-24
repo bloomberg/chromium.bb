@@ -8,17 +8,18 @@
   },
   'targets': [
     {
-      'target_name': 'ozone_egl_demo',
+      'target_name': 'ozone_demo',
       'type': 'executable',
       'dependencies': [
         '../../../base/base.gyp:base',
+        '../../../skia/skia.gyp:skia',
         '../../../ui/gfx/gfx.gyp:gfx_geometry',
         '../../../ui/gl/gl.gyp:gl',
         '../../../ui/ozone/ozone.gyp:ozone',
         '../../../ui/ozone/ozone.gyp:ozone_base',
       ],
       'sources': [
-        'egl_demo.cc',
+        'ozone_demo.cc',
       ],
     },
   ],
