@@ -2177,10 +2177,19 @@ public class AwContents {
         private int mLayerType = View.LAYER_TYPE_NONE;
         private ComponentCallbacks2 mComponentCallbacks;
 
+        // Only valid within software onDraw().
+        private final Rect mClipBoundsTemporary = new Rect();
+
         @Override
         public void onDraw(Canvas canvas) {
             if (mNativeAwContents == 0) {
                 canvas.drawColor(getEffectiveBackgroundColor());
+                return;
+            }
+
+            // For hardware draws, the clip at onDraw time could be different
+            // from the clip during DrawGL.
+            if (!canvas.isHardwareAccelerated() && !canvas.getClipBounds(mClipBoundsTemporary)) {
                 return;
             }
 
