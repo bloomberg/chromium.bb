@@ -44,7 +44,6 @@ WheelEvent::WheelEvent()
     , m_deltaY(0)
     , m_deltaZ(0)
     , m_deltaMode(DOM_DELTA_PIXEL)
-    , m_directionInvertedFromDevice(false)
 {
     ScriptWrappable::init(this);
 }
@@ -62,7 +61,7 @@ WheelEvent::WheelEvent(const AtomicString& type, const WheelEventInit& initializ
 
 WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta, unsigned deltaMode,
     PassRefPtrWillBeRawPtr<AbstractView> view, const IntPoint& screenLocation, const IntPoint& pageLocation,
-    bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool directionInvertedFromDevice)
+    bool ctrlKey, bool altKey, bool shiftKey, bool metaKey)
     : MouseEvent(EventTypeNames::wheel,
                  true, true, view, 0, screenLocation.x(), screenLocation.y(),
                  pageLocation.x(), pageLocation.y(),
@@ -73,7 +72,6 @@ WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta,
     , m_deltaY(-rawDelta.y())
     , m_deltaZ(0)
     , m_deltaMode(deltaMode)
-    , m_directionInvertedFromDevice(directionInvertedFromDevice)
 {
     ScriptWrappable::init(this);
 }
@@ -97,7 +95,6 @@ void WheelEvent::initWheelEvent(int rawDeltaX, int rawDeltaY, PassRefPtrWillBeRa
     m_deltaX = -rawDeltaX;
     m_deltaY = -rawDeltaY;
     m_deltaMode = DOM_DELTA_PIXEL;
-    m_directionInvertedFromDevice = false;
 
     initCoordinates(IntPoint(pageX, pageY));
 }
@@ -147,7 +144,7 @@ WheelEventDispatchMediator::WheelEventDispatchMediator(const PlatformWheelEvent&
 
     setEvent(WheelEvent::create(FloatPoint(event.wheelTicksX(), event.wheelTicksY()), FloatPoint(event.deltaX(), event.deltaY()),
         deltaMode(event), view, event.globalPosition(), event.position(),
-        event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(), event.directionInvertedFromDevice()));
+        event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey()));
 }
 
 WheelEvent* WheelEventDispatchMediator::event() const

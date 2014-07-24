@@ -67,10 +67,10 @@ public:
     static PassRefPtrWillBeRawPtr<WheelEvent> create(const FloatPoint& wheelTicks,
         const FloatPoint& rawDelta, unsigned deltaMode, PassRefPtrWillBeRawPtr<AbstractView> view,
         const IntPoint& screenLocation, const IntPoint& pageLocation,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool directionInvertedFromDevice)
+        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey)
     {
         return adoptRefWillBeNoop(new WheelEvent(wheelTicks, rawDelta, deltaMode, view,
-        screenLocation, pageLocation, ctrlKey, altKey, shiftKey, metaKey, directionInvertedFromDevice));
+        screenLocation, pageLocation, ctrlKey, altKey, shiftKey, metaKey));
     }
 
     void initWheelEvent(int rawDeltaX, int rawDeltaY, PassRefPtrWillBeRawPtr<AbstractView>,
@@ -91,7 +91,7 @@ public:
     float ticksX() const { return static_cast<float>(m_wheelDelta.x()) / TickMultiplier; }
     float ticksY() const { return static_cast<float>(m_wheelDelta.y()) / TickMultiplier; }
 
-    bool webkitDirectionInvertedFromDevice() const { return m_directionInvertedFromDevice; }
+    bool webkitDirectionInvertedFromDevice() const { return false; }
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual bool isMouseEvent() const OVERRIDE;
@@ -104,14 +104,13 @@ private:
     WheelEvent(const AtomicString&, const WheelEventInit&);
     WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta,
         unsigned, PassRefPtrWillBeRawPtr<AbstractView>, const IntPoint& screenLocation, const IntPoint& pageLocation,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool directionInvertedFromDevice);
+        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey);
 
     IntPoint m_wheelDelta;
     double m_deltaX;
     double m_deltaY;
     double m_deltaZ;
     unsigned m_deltaMode;
-    bool m_directionInvertedFromDevice;
 };
 
 DEFINE_EVENT_TYPE_CASTS(WheelEvent);
