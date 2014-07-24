@@ -80,6 +80,7 @@ component("base") {
     "atomicops_internals_x86_gcc.cc",
     "atomicops_internals_x86_gcc.h",
     "atomicops_internals_x86_msvc.h",
+    "auto_reset.h",
     "barrier_closure.cc",
     "barrier_closure.h",
     "base_export.h",
@@ -133,6 +134,10 @@ component("base") {
     "debug/debugger.h",
     "debug/debugger_posix.cc",
     "debug/debugger_win.cc",
+    "debug/dump_without_crashing.cc",
+    "debug/dump_without_crashing.h",
+    "debug/gdi_debug_util_win.cc",
+    "debug/gdi_debug_util_win.h",
     # This file depends on files from the "allocator" target,
     # but this target does not depend on "allocator" (see
     # allocator.gyp for details).
@@ -163,6 +168,9 @@ component("base") {
     "deferred_sequenced_task_runner.h",
     "environment.cc",
     "environment.h",
+    "event_recorder.h",
+    "event_recorder_stubs.cc",
+    "event_recorder_win.cc",
     "file_descriptor_posix.h",
     "file_util.cc",
     "file_util.h",
@@ -245,6 +253,8 @@ component("base") {
     "json/string_escape.h",
     "lazy_instance.cc",
     "lazy_instance.h",
+    "linux_util.cc",
+    "linux_util.h",
     "location.cc",
     "location.h",
     "logging.cc",
@@ -870,6 +880,8 @@ component("base") {
   } else {
     # Non-Linux.
     sources -= [
+      "linux_util.cc",
+      "linux_util.h",
       "nix/mime_util_xdg.cc",
       "nix/mime_util_xdg.h",
       "nix/xdg_util.cc",

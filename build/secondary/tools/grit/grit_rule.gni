@@ -228,12 +228,12 @@ template("grit") {
   # are the actual outputs at runtime.
   asserted_list_file = "$target_out_dir/${target_name}_expected_outputs.txt"
   write_file(asserted_list_file,
-             rebase_path(invoker.outputs, root_build_dir, target_gen_dir))
+             rebase_path(invoker.outputs, root_build_dir, output_dir))
   assert_files_flags += [
     "--assert-file-list=" + rebase_path(asserted_list_file, root_build_dir),
   ]
   grit_outputs = get_path_info(
-      rebase_path(invoker.outputs, ".", target_gen_dir),
+      rebase_path(invoker.outputs, ".", output_dir),
       "abspath")
 
   # The config and the action below get this visibility son only the generated
