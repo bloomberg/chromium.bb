@@ -28,20 +28,20 @@ found in the LICENSE file.
 
       core-menu {
         box-shadow: 0 3px 3px #ccc;
+        flex: none;
         /* Override /deep/ selector in core-menu.css. */
         margin: 0 !important;
         max-height: 20%;
-        min-height: 150px;
         overflow: auto;
         /* So the box-shadow goes on top of the results. */
         z-index: 1;
       }
 
       .results {
-        /* Stay below the box shadow of the core-menu. */
-        padding-top: 6px;
         flex: 1;
         overflow: auto;
+        /* Stay below the box shadow of the core-menu. */
+        padding-top: 6px;
       }
     </style>
     <template if="{{ !failures.length }}">
