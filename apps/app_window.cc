@@ -68,10 +68,6 @@ namespace {
 const int kDefaultWidth = 512;
 const int kDefaultHeight = 384;
 
-bool IsFullscreen(int fullscreen_types) {
-  return fullscreen_types != apps::AppWindow::FULLSCREEN_TYPE_NONE;
-}
-
 void SetConstraintProperty(const std::string& name,
                            int value,
                            base::DictionaryValue* bounds_properties) {
@@ -442,9 +438,8 @@ bool AppWindow::PreHandleKeyboardEvent(
   // ::HandleKeyboardEvent() will only be called if the KeyEvent's default
   // action is not prevented.
   // Thus, we should handle the KeyEvent here only if the permission is not set.
-  if (event.windowsKeyCode == ui::VKEY_ESCAPE &&
-      (fullscreen_types_ != FULLSCREEN_TYPE_NONE) &&
-      ((fullscreen_types_ & FULLSCREEN_TYPE_FORCED) == 0) &&
+  if (event.windowsKeyCode == ui::VKEY_ESCAPE && IsFullscreen() &&
+      !IsForcedFullscreen() &&
       !extension->permissions_data()->HasAPIPermission(
           APIPermission::kOverrideEscFullscreen)) {
     Restore();
@@ -460,9 +455,8 @@ void AppWindow::HandleKeyboardEvent(
   // If the window is currently fullscreen and not forced, ESC should leave
   // fullscreen.  If this code is being called for ESC, that means that the
   // KeyEvent's default behavior was not prevented by the content.
-  if (event.windowsKeyCode == ui::VKEY_ESCAPE &&
-      (fullscreen_types_ != FULLSCREEN_TYPE_NONE) &&
-      ((fullscreen_types_ & FULLSCREEN_TYPE_FORCED) == 0)) {
+  if (event.windowsKeyCode == ui::VKEY_ESCAPE && IsFullscreen() &&
+      !IsForcedFullscreen()) {
     Restore();
     return;
   }
@@ -517,8 +511,8 @@ void AppWindow::OnNativeWindowChanged() {
   SaveWindowPosition();
 
 #if defined(OS_WIN)
-  if (native_app_window_ && cached_always_on_top_ &&
-      !IsFullscreen(fullscreen_types_) && !native_app_window_->IsMaximized() &&
+  if (native_app_window_ && cached_always_on_top_ && !IsFullscreen() &&
+      !native_app_window_->IsMaximized() &&
       !native_app_window_->IsMinimized()) {
     UpdateNativeAlwaysOnTop();
   }
@@ -632,17 +626,43 @@ void AppWindow::UpdateAppIcon(const gfx::Image& image) {
   AppWindowRegistry::Get(browser_context_)->AppWindowIconChanged(this);
 }
 
-void AppWindow::Fullscreen() {
+void AppWindow::SetFullscreen(FullscreenType type, bool enable) {
+  DCHECK_NE(FULLSCREEN_TYPE_NONE, type);
+
+  if (enable) {
 #if !defined(OS_MACOSX)
-  // Do not enter fullscreen mode if disallowed by pref.
-  PrefService* prefs =
-      extensions::ExtensionsBrowserClient::Get()->GetPrefServiceForContext(
-          browser_context());
-  if (!prefs->GetBoolean(prefs::kAppFullscreenAllowed))
-    return;
+    // Do not enter fullscreen mode if disallowed by pref.
+    // TODO(bartfab): Add a test once it becomes possible to simulate a user
+    // gesture. http://crbug.com/174178
+    if (type != FULLSCREEN_TYPE_FORCED) {
+      PrefService* prefs =
+          extensions::ExtensionsBrowserClient::Get()->GetPrefServiceForContext(
+              browser_context());
+      if (!prefs->GetBoolean(prefs::kAppFullscreenAllowed))
+        return;
+    }
 #endif
-  fullscreen_types_ |= FULLSCREEN_TYPE_WINDOW_API;
+    fullscreen_types_ |= type;
+  } else {
+    fullscreen_types_ &= ~type;
+  }
   SetNativeWindowFullscreen();
+}
+
+bool AppWindow::IsFullscreen() const {
+  return fullscreen_types_ != FULLSCREEN_TYPE_NONE;
+}
+
+bool AppWindow::IsForcedFullscreen() const {
+  return (fullscreen_types_ & FULLSCREEN_TYPE_FORCED) != 0;
+}
+
+bool AppWindow::IsHtmlApiFullscreen() const {
+  return (fullscreen_types_ & FULLSCREEN_TYPE_HTML_API) != 0;
+}
+
+void AppWindow::Fullscreen() {
+  SetFullscreen(FULLSCREEN_TYPE_WINDOW_API, true);
 }
 
 void AppWindow::Maximize() { GetBaseWindow()->Maximize(); }
@@ -650,7 +670,7 @@ void AppWindow::Maximize() { GetBaseWindow()->Maximize(); }
 void AppWindow::Minimize() { GetBaseWindow()->Minimize(); }
 
 void AppWindow::Restore() {
-  if (IsFullscreen(fullscreen_types_)) {
+  if (IsFullscreen()) {
     fullscreen_types_ = FULLSCREEN_TYPE_NONE;
     SetNativeWindowFullscreen();
   } else {
@@ -659,21 +679,11 @@ void AppWindow::Restore() {
 }
 
 void AppWindow::OSFullscreen() {
-#if !defined(OS_MACOSX)
-  // Do not enter fullscreen mode if disallowed by pref.
-  PrefService* prefs =
-      extensions::ExtensionsBrowserClient::Get()->GetPrefServiceForContext(
-          browser_context());
-  if (!prefs->GetBoolean(prefs::kAppFullscreenAllowed))
-    return;
-#endif
-  fullscreen_types_ |= FULLSCREEN_TYPE_OS;
-  SetNativeWindowFullscreen();
+  SetFullscreen(FULLSCREEN_TYPE_OS, true);
 }
 
 void AppWindow::ForcedFullscreen() {
-  fullscreen_types_ |= FULLSCREEN_TYPE_FORCED;
-  SetNativeWindowFullscreen();
+  SetFullscreen(FULLSCREEN_TYPE_FORCED, true);
 }
 
 void AppWindow::SetContentSizeConstraints(const gfx::Size& min_size,
@@ -739,7 +749,7 @@ void AppWindow::SetAlwaysOnTop(bool always_on_top) {
   // As a security measure, do not allow fullscreen windows or windows that
   // overlap the taskbar to be on top. The property will be applied when the
   // window exits fullscreen and moves away from the taskbar.
-  if (!IsFullscreen(fullscreen_types_) && !IntersectsWithTaskbar())
+  if (!IsFullscreen() && !IntersectsWithTaskbar())
     native_app_window_->SetAlwaysOnTop(always_on_top);
 
   OnNativeWindowChanged();
@@ -897,7 +907,7 @@ bool AppWindow::IntersectsWithTaskbar() const {
 void AppWindow::UpdateNativeAlwaysOnTop() {
   DCHECK(cached_always_on_top_);
   bool is_on_top = native_app_window_->IsAlwaysOnTop();
-  bool fullscreen = IsFullscreen(fullscreen_types_);
+  bool fullscreen = IsFullscreen();
   bool intersects_taskbar = IntersectsWithTaskbar();
 
   if (is_on_top && (fullscreen || intersects_taskbar)) {
@@ -962,18 +972,6 @@ void AppWindow::NavigationStateChanged(const content::WebContents* source,
 
 void AppWindow::ToggleFullscreenModeForTab(content::WebContents* source,
                                            bool enter_fullscreen) {
-#if !defined(OS_MACOSX)
-  // Do not enter fullscreen mode if disallowed by pref.
-  // TODO(bartfab): Add a test once it becomes possible to simulate a user
-  // gesture. http://crbug.com/174178
-  PrefService* prefs =
-      extensions::ExtensionsBrowserClient::Get()->GetPrefServiceForContext(
-          browser_context());
-  if (enter_fullscreen && !prefs->GetBoolean(prefs::kAppFullscreenAllowed)) {
-    return;
-  }
-#endif
-
   const extensions::Extension* extension = GetExtension();
   if (!extension)
     return;
@@ -983,16 +981,12 @@ void AppWindow::ToggleFullscreenModeForTab(content::WebContents* source,
     return;
   }
 
-  if (enter_fullscreen)
-    fullscreen_types_ |= FULLSCREEN_TYPE_HTML_API;
-  else
-    fullscreen_types_ &= ~FULLSCREEN_TYPE_HTML_API;
-  SetNativeWindowFullscreen();
+  SetFullscreen(FULLSCREEN_TYPE_HTML_API, enter_fullscreen);
 }
 
 bool AppWindow::IsFullscreenForTabOrPending(const content::WebContents* source)
     const {
-  return ((fullscreen_types_ & FULLSCREEN_TYPE_HTML_API) != 0);
+  return IsHtmlApiFullscreen();
 }
 
 void AppWindow::Observe(int type,

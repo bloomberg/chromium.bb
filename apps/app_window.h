@@ -313,6 +313,24 @@ class AppWindow : public content::NotificationObserver,
   // callback. Also called externally for v1 apps using Ash Panels.
   void UpdateAppIcon(const gfx::Image& image);
 
+  // Enable or disable fullscreen mode. |type| specifies which type of
+  // fullscreen mode to change (note that disabling one type of fullscreen may
+  // not exit fullscreen mode because a window may have a different type of
+  // fullscreen enabled). If |type| is not FORCED, checks that the extension has
+  // the required permission.
+  void SetFullscreen(FullscreenType type, bool enable);
+
+  // Returns true if the app window is in a fullscreen state.
+  bool IsFullscreen() const;
+
+  // Returns true if the app window is in a forced fullscreen state (one that
+  // cannot be exited by the user).
+  bool IsForcedFullscreen() const;
+
+  // Returns true if the app window is in a fullscreen state entered from an
+  // HTML API request.
+  bool IsHtmlApiFullscreen() const;
+
   // Transitions window into fullscreen, maximized, minimized or restores based
   // on chrome.app.window API.
   void Fullscreen();
