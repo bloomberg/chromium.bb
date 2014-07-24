@@ -35,17 +35,6 @@ var utils = require('utils');
 //     is prevented, then its dispatch function will return false in its event
 //     handler. The event must have a custom handler for this to be meaningful.
 var WEB_VIEW_EXPERIMENTAL_EVENTS = {
-  'findupdate': {
-    evt: CreateEvent('webViewInternal.onFindReply'),
-    fields: [
-      'searchText',
-      'numberOfMatches',
-      'activeMatchOrdinal',
-      'selectionRect',
-      'canceled',
-      'finalUpdate'
-    ]
-  },
   'zoomchange': {
     evt: CreateEvent('webViewInternal.onZoomChange'),
     fields: ['oldZoomFactor', 'newZoomFactor']
@@ -207,22 +196,6 @@ WebViewInternal.prototype.captureVisibleRegion = function(spec, callback) {
   WebView.captureVisibleRegion(this.instanceId, spec, callback);
 };
 
-/** @private */
-WebViewInternal.prototype.find = function(search_text, options, callback) {
-  if (!this.instanceId) {
-    return;
-  }
-  WebView.find(this.instanceId, search_text, options, callback);
-};
-
-/** @private */
-WebViewInternal.prototype.stopFinding = function(action) {
-  if (!this.instanceId) {
-    return;
-  }
-  WebView.stopFinding(this.instanceId, action);
-};
-
 WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {
   proto.setZoom = function(zoomFactor, callback) {
     privates(this).internal.setZoom(zoomFactor, callback);
@@ -234,14 +207,6 @@ WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {
 
   proto.captureVisibleRegion = function(spec, callback) {
     privates(this).internal.captureVisibleRegion(spec, callback);
-  };
-
-  proto.find = function(search_text, options, callback) {
-    privates(this).internal.find(search_text, options, callback);
-  };
-
-  proto.stopFinding = function(action) {
-    privates(this).internal.stopFinding(action);
   };
 };
 

@@ -750,6 +750,22 @@ WebViewInternal.prototype.setUserAgentOverride = function(userAgentOverride) {
   WebView.overrideUserAgent(this.instanceId, userAgentOverride);
 };
 
+/** @private */
+WebViewInternal.prototype.find = function(search_text, options, callback) {
+  if (!this.instanceId) {
+    return;
+  }
+  WebView.find(this.instanceId, search_text, options, callback);
+};
+
+/** @private */
+WebViewInternal.prototype.stopFinding = function(action) {
+  if (!this.instanceId) {
+    return;
+  }
+  WebView.stopFinding(this.instanceId, action);
+};
+
 WebViewInternal.prototype.buildAttachParams = function(isNewWindow) {
   var params = {
     'api': 'webview',
@@ -847,6 +863,7 @@ function registerWebViewElement() {
 
   var methods = [
     'back',
+    'find',
     'forward',
     'canGoBack',
     'canGoForward',
@@ -856,6 +873,7 @@ function registerWebViewElement() {
     'print',
     'reload',
     'stop',
+    'stopFinding',
     'terminate',
     'executeScript',
     'insertCSS',

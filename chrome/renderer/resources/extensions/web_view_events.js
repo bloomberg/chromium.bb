@@ -69,6 +69,17 @@ var WEB_VIEW_EVENTS = {
      evt: CreateEvent('webViewInternal.onExit'),
      fields: ['processId', 'reason']
   },
+  'findupdate': {
+    evt: CreateEvent('webViewInternal.onFindReply'),
+    fields: [
+      'searchText',
+      'numberOfMatches',
+      'activeMatchOrdinal',
+      'selectionRect',
+      'canceled',
+      'finalUpdate'
+    ]
+  },
   'loadabort': {
     cancelable: true,
     customHandler: function(handler, event, webViewEvent) {
