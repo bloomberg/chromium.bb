@@ -13,21 +13,19 @@ class {{namespace}}QualifiedName : public QualifiedName { };
 
 namespace {{namespace}}Names {
 
-#ifndef {{namespace|to_macro_style}}_NAMES_HIDE_GLOBALS
 // Namespace
-extern const WTF::AtomicString {{namespace_prefix}}NamespaceURI;
+extern const WTF::AtomicString& {{namespace_prefix}}NamespaceURI;
 
 // Tags
 {% for tag in tags|sort %}
-extern const WebCore::{{namespace}}QualifiedName {{tag|symbol}}Tag;
+extern const WebCore::{{namespace}}QualifiedName& {{tag|symbol}}Tag;
 {% endfor %}
 
 // Attributes
 {% for attr in attrs|sort %}
-extern const WebCore::QualifiedName {{attr|symbol}}Attr;
+extern const WebCore::QualifiedName& {{attr|symbol}}Attr;
 {% endfor %}
 
-#endif // {{namespace|to_macro_style}}_NAMES_HIDE_GLOBALS
 {% if tags %}
 const unsigned {{namespace}}TagsCount = {{tags|count}};
 PassOwnPtr<const {{namespace}}QualifiedName*[]> get{{namespace}}Tags();

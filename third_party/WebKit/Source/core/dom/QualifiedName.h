@@ -98,9 +98,6 @@ public:
 
     QualifiedName(const AtomicString& prefix, const AtomicString& localName, const AtomicString& namespaceURI);
     ~QualifiedName();
-#ifdef QNAME_DEFAULT_CONSTRUCTOR
-    QualifiedName() { }
-#endif
 
     QualifiedName(const QualifiedName& other) : m_impl(other.m_impl) { }
     const QualifiedName& operator=(const QualifiedName& other) { m_impl = other.m_impl; return *this; }
@@ -146,10 +143,8 @@ private:
     RefPtr<QualifiedNameImpl> m_impl;
 };
 
-#ifndef WEBCORE_QUALIFIEDNAME_HIDE_GLOBALS
-extern const QualifiedName anyName;
+extern const QualifiedName& anyName;
 inline const QualifiedName& anyQName() { return anyName; }
-#endif
 
 inline bool operator==(const AtomicString& a, const QualifiedName& q) { return a == q.localName(); }
 inline bool operator!=(const AtomicString& a, const QualifiedName& q) { return a != q.localName(); }

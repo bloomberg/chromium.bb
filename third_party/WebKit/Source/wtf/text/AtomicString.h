@@ -211,13 +211,12 @@ inline bool equalIgnoringCase(const String& a, const AtomicString& b) { return e
 
 // Define external global variables for the commonly used atomic strings.
 // These are only usable from the main thread.
-#ifndef ATOMICSTRING_HIDE_GLOBALS
-WTF_EXPORT extern const AtomicString nullAtom;
-WTF_EXPORT extern const AtomicString emptyAtom;
-WTF_EXPORT extern const AtomicString starAtom;
-WTF_EXPORT extern const AtomicString xmlAtom;
-WTF_EXPORT extern const AtomicString xmlnsAtom;
-WTF_EXPORT extern const AtomicString xlinkAtom;
+WTF_EXPORT extern const AtomicString& nullAtom;
+WTF_EXPORT extern const AtomicString& emptyAtom;
+WTF_EXPORT extern const AtomicString& starAtom;
+WTF_EXPORT extern const AtomicString& xmlAtom;
+WTF_EXPORT extern const AtomicString& xmlnsAtom;
+WTF_EXPORT extern const AtomicString& xlinkAtom;
 
 inline AtomicString AtomicString::fromUTF8(const char* characters, size_t length)
 {
@@ -236,7 +235,6 @@ inline AtomicString AtomicString::fromUTF8(const char* characters)
         return emptyAtom;
     return fromUTF8Internal(characters, 0);
 }
-#endif
 
 // AtomicStringHash is the default hash for AtomicString
 template<typename T> struct DefaultHash;
@@ -248,7 +246,6 @@ template<> struct DefaultHash<AtomicString> {
 
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(AtomicString);
 
-#ifndef ATOMICSTRING_HIDE_GLOBALS
 using WTF::AtomicString;
 using WTF::nullAtom;
 using WTF::emptyAtom;
@@ -256,7 +253,6 @@ using WTF::starAtom;
 using WTF::xmlAtom;
 using WTF::xmlnsAtom;
 using WTF::xlinkAtom;
-#endif
 
 #include "wtf/text/StringConcatenate.h"
 #endif // AtomicString_h

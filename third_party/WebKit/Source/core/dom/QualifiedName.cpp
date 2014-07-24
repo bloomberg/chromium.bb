@@ -19,12 +19,6 @@
 
 #include "config.h"
 
-#ifdef SKIP_STATIC_CONSTRUCTORS_ON_GCC
-#define WEBCORE_QUALIFIEDNAME_HIDE_GLOBALS 1
-#else
-#define QNAME_DEFAULT_CONSTRUCTOR
-#endif
-
 #include "core/dom/QualifiedName.h"
 
 #include "core/HTMLNames.h"

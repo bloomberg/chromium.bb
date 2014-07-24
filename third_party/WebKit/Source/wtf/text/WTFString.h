@@ -667,12 +667,7 @@ template<> struct DefaultHash<String> {
 
 // Shared global empty string.
 WTF_EXPORT const String& emptyString();
-
-#ifndef STRING_HIDE_GLOBALS
-
-WTF_EXPORT extern const String xmlnsWithColon;
-
-#endif // STRING_HIDE_GLOBALS
+WTF_EXPORT extern const String& xmlnsWithColon;
 
 } // namespace WTF
 

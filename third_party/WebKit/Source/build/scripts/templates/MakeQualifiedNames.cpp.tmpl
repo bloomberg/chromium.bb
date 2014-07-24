@@ -3,12 +3,6 @@
 
 #include "config.h"
 
-#ifdef SKIP_STATIC_CONSTRUCTORS_ON_GCC
-#define {{namespace|to_macro_style}}_NAMES_HIDE_GLOBALS 1
-#else
-#define QNAME_DEFAULT_CONSTRUCTOR 1
-#endif
-
 #include "{{namespace}}Names.h"
 
 #include "wtf/StaticConstructors.h"

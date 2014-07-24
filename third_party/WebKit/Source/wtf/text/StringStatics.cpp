@@ -26,11 +26,6 @@
 #include "config.h"
 #include "StringStatics.h"
 
-#ifdef SKIP_STATIC_CONSTRUCTORS_ON_GCC
-#define ATOMICSTRING_HIDE_GLOBALS 1
-#define STRING_HIDE_GLOBALS 1
-#endif
-
 #include "AtomicString.h"
 #include "StringImpl.h"
 #include "wtf/DynamicAnnotations.h"

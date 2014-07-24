@@ -3,10 +3,6 @@
 
 #include "config.h"
 
-#ifdef SKIP_STATIC_CONSTRUCTORS_ON_GCC
-#define {{namespace|to_macro_style}}_NAMES_HIDE_GLOBALS 1
-#endif
-
 #include "{{namespace}}{{suffix}}Names.h"
 
 #include "wtf/StaticConstructors.h"
@@ -18,12 +14,7 @@ using namespace WTF;
 
 {% for entry in entries|sort %}
 {% filter enable_conditional(entry.Conditional) %}
-{% if export %}
-DEFINE_GLOBAL(AtomicString, {{entry|symbol}}Storage)
-{{export}} const AtomicString& {{entry|symbol}} = *reinterpret_cast<const AtomicString*>(&{{entry|symbol}}Storage);
-{% else %}
 DEFINE_GLOBAL(AtomicString, {{entry|symbol}})
-{% endif %}
 {% endfilter %}
 {% endfor %}
 
