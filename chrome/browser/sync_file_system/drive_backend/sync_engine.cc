@@ -354,6 +354,10 @@ void SyncEngine::InitializeInternal(
   service_state_ = REMOTE_SERVICE_TEMPORARY_UNAVAILABLE;
   SetSyncEnabled(sync_enabled_);
   OnNetworkChanged(net::NetworkChangeNotifier::GetConnectionType());
+  if (drive_service_->HasRefreshToken())
+    OnReadyToSendRequests();
+  else
+    OnRefreshTokenInvalid();
 }
 
 void SyncEngine::AddServiceObserver(SyncServiceObserver* observer) {
