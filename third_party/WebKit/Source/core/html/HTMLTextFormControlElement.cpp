@@ -34,6 +34,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextIterator.h"
 #include "core/events/Event.h"
@@ -41,6 +42,9 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
+#include "core/page/FocusController.h"
+#include "core/page/Page.h"
+#include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderTheme.h"
 #include "platform/heap/Handle.h"
@@ -180,7 +184,11 @@ void HTMLTextFormControlElement::setSelectionDirection(const String& direction)
 
 void HTMLTextFormControlElement::select()
 {
-    setSelectionRange(0, std::numeric_limits<int>::max(), SelectionHasNoDirection);
+    document().updateLayoutIgnorePendingStylesheets();
+    RefPtrWillBeRawPtr<HTMLTextFormControlElement> protector(this);
+    if (isFocusable())
+        document().page()->focusController().setFocusedElement(this, document().frame());
+    setSelectionRange(0, std::numeric_limits<int>::max(), SelectionHasNoDirection, ChangeSelection);
 }
 
 bool HTMLTextFormControlElement::shouldDispatchFormControlChangeEvent(String& oldValue, String& newValue)
@@ -274,10 +282,13 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, const Str
     else if (directionString == "backward")
         direction = SelectionHasBackwardDirection;
 
+    if (direction == SelectionHasNoDirection && document().frame() && document().frame()->editor().behavior().shouldConsiderSelectionAsDirectional())
+        direction = SelectionHasForwardDirection;
+
     return setSelectionRange(start, end, direction);
 }
 
-void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextFieldSelectionDirection direction)
+void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextFieldSelectionDirection direction, SelectionOption selectionOption)
 {
     document().updateLayoutIgnorePendingStylesheets();
 
@@ -286,11 +297,18 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
 
     end = std::max(end, 0);
     start = std::min(std::max(start, 0), end);
-
-    if (!hasVisibleTextArea(renderer(), innerEditorElement())) {
-        cacheSelection(start, end, direction);
+    cacheSelection(start, end, direction);
+    if (!hasVisibleTextArea(renderer(), innerEditorElement()))
         return;
-    }
+
+    LocalFrame* frame = document().frame();
+
+    if (!frame)
+        return;
+
+    if (selectionOption == NotChangeSelection && document().focusedElement() != this)
+        return;
+
     VisiblePosition startPosition = visiblePositionForIndex(start);
     VisiblePosition endPosition;
     if (start == end)
@@ -311,8 +329,7 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
         newSelection = VisibleSelection(startPosition, endPosition);
     newSelection.setIsDirectional(direction != SelectionHasNoDirection);
 
-    if (LocalFrame* frame = document().frame())
-        frame->selection().setSelection(newSelection);
+    frame->selection().setSelection(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | FrameSelection::DoNotSetFocus);
 }
 
 VisiblePosition HTMLTextFormControlElement::visiblePositionForIndex(int index) const

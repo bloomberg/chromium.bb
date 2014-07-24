@@ -76,7 +76,7 @@ private:
     void updateValue() const;
     virtual void setInnerEditorValue(const String&) OVERRIDE;
     void setNonDirtyValue(const String&);
-    void setValueCommon(const String&, TextFieldEventBehavior);
+    void setValueCommon(const String&, TextFieldEventBehavior, SelectionOption = NotChangeSelection);
 
     virtual bool supportsPlaceholder() const OVERRIDE { return true; }
     virtual void updatePlaceholderText() OVERRIDE;

@@ -42,6 +42,11 @@ class HTMLTextFormControlElement : public HTMLFormControlElementWithState {
 public:
     // Common flag for HTMLInputElement::tooLong() and HTMLTextAreaElement::tooLong().
     enum NeedsToCheckDirtyFlag {CheckDirtyFlag, IgnoreDirtyFlag};
+    // Option of setSelectionRange.
+    enum SelectionOption {
+        ChangeSelection,
+        NotChangeSelection
+    };
 
     virtual ~HTMLTextFormControlElement();
 
@@ -69,7 +74,7 @@ public:
     virtual void setRangeText(const String& replacement, ExceptionState&);
     virtual void setRangeText(const String& replacement, unsigned start, unsigned end, const String& selectionMode, ExceptionState&);
     void setSelectionRange(int start, int end, const String& direction);
-    void setSelectionRange(int start, int end, TextFieldSelectionDirection = SelectionHasNoDirection);
+    void setSelectionRange(int start, int end, TextFieldSelectionDirection = SelectionHasNoDirection, SelectionOption = ChangeSelection);
     PassRefPtrWillBeRawPtr<Range> selection() const;
 
     virtual void dispatchFormControlChangeEvent() OVERRIDE FINAL;

@@ -338,19 +338,17 @@ void HTMLTextAreaElement::setValue(const String& value, TextFieldEventBehavior e
     RefPtrWillBeRawPtr<HTMLTextAreaElement> protector(this);
     setValueCommon(value, eventBehavior);
     m_isDirty = true;
-    setNeedsValidityCheck();
     if (document().focusedElement() == this)
         document().frameHost()->chrome().client().didUpdateTextOfFocusedElementByNonUserInput();
 }
 
 void HTMLTextAreaElement::setNonDirtyValue(const String& value)
 {
-    setValueCommon(value, DispatchNoEvent);
+    setValueCommon(value, DispatchNoEvent, ChangeSelection);
     m_isDirty = false;
-    setNeedsValidityCheck();
 }
 
-void HTMLTextAreaElement::setValueCommon(const String& newValue, TextFieldEventBehavior eventBehavior)
+void HTMLTextAreaElement::setValueCommon(const String& newValue, TextFieldEventBehavior eventBehavior, SelectionOption selectionOption)
 {
     // Code elsewhere normalizes line endings added by the user via the keyboard or pasting.
     // We normalize line endings coming from JavaScript here.
@@ -358,10 +356,21 @@ void HTMLTextAreaElement::setValueCommon(const String& newValue, TextFieldEventB
     normalizedValue.replace("\r\n", "\n");
     normalizedValue.replace('\r', '\n');
 
-    // Return early because we don't want to move the caret or trigger other side effects
-    // when the value isn't changing. This matches Firefox behavior, at least.
-    if (normalizedValue == value())
+    // Return early because we don't want to trigger other side effects
+    // when the value isn't changing.
+    // FIXME: Simple early return doesn't match the Firefox ever.
+    // Remove these lines.
+    if (normalizedValue == value()) {
+        if (selectionOption == ChangeSelection) {
+            setNeedsValidityCheck();
+            if (isFinishedParsingChildren()) {
+                // Set the caret to the end of the text value except for initialize.
+                unsigned endOfString = m_value.length();
+                setSelectionRange(endOfString, endOfString, SelectionHasNoDirection, NotChangeSelection);
+            }
+        }
         return;
+    }
 
     m_value = normalizedValue;
     setInnerEditorValue(m_value);
@@ -370,11 +379,11 @@ void HTMLTextAreaElement::setValueCommon(const String& newValue, TextFieldEventB
     updatePlaceholderVisibility(false);
     setNeedsStyleRecalc(SubtreeStyleChange);
     m_suggestedValue = String();
-
-    // Set the caret to the end of the text value.
-    if (document().focusedElement() == this) {
+    setNeedsValidityCheck();
+    if (isFinishedParsingChildren()) {
+        // Set the caret to the end of the text value except for initialize.
         unsigned endOfString = m_value.length();
-        setSelectionRange(endOfString, endOfString);
+        setSelectionRange(endOfString, endOfString, SelectionHasNoDirection, NotChangeSelection);
     }
 
     notifyFormStateChanged();
