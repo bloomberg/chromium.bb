@@ -237,7 +237,7 @@ public:
     AnnotationModeFlags annotationMode() const { return m_annotationMode; }
     void setAnnotationMode(const AnnotationModeFlags mode) { m_annotationMode = mode; }
 
-    SkColorFilter* colorFilter();
+    SkColorFilter* colorFilter() const;
     void setColorFilter(ColorFilter);
     // ---------- End state management methods -----------------
 
@@ -411,6 +411,14 @@ public:
     void beginAnnotation(const AnnotationList&);
     void endAnnotation();
 
+    void preparePaintForDrawRectToRect(
+        SkPaint*,
+        const SkRect& srcRect,
+        const SkRect& destRect,
+        CompositeOperator,
+        blink::WebBlendMode,
+        bool isLazyDecoded = false,
+        bool isDataComplete = true) const;
 private:
     const GraphicsContextState* immutableState() const { return m_paintState; }
 

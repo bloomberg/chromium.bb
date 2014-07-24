@@ -34,6 +34,7 @@
 #include "platform/graphics/DisplayList.h"
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/TextRunIterator.h"
 #include "platform/weborigin/KURL.h"
@@ -397,7 +398,7 @@ void GraphicsContext::setCompositeOperation(CompositeOperator compositeOperation
     mutableState()->setCompositeOperation(compositeOperation, blendMode);
 }
 
-SkColorFilter* GraphicsContext::colorFilter()
+SkColorFilter* GraphicsContext::colorFilter() const
 {
     return immutableState()->colorFilter();
 }
@@ -1854,6 +1855,53 @@ void GraphicsContext::didDrawTextInRect(const SkRect& textRect)
         TRACE_EVENT0("skia", "GraphicsContext::didDrawTextInRect");
         m_textRegion.join(textRect);
     }
+}
+
+void GraphicsContext::preparePaintForDrawRectToRect(
+    SkPaint* paint,
+    const SkRect& srcRect,
+    const SkRect& destRect,
+    CompositeOperator compositeOp,
+    blink::WebBlendMode blendMode,
+    bool isLazyDecoded,
+    bool isDataComplete) const
+{
+    paint->setXfermode(WebCoreCompositeToSkiaComposite(compositeOp, blendMode).get());
+    paint->setColorFilter(this->colorFilter());
+    paint->setAlpha(this->getNormalizedAlpha());
+    paint->setLooper(this->drawLooper());
+    paint->setAntiAlias(shouldDrawAntiAliased(this, destRect));
+
+    InterpolationQuality resampling;
+    if (this->isAccelerated()) {
+        resampling = InterpolationLow;
+    } else if (this->printing()) {
+        resampling = InterpolationNone;
+    } else if (isLazyDecoded) {
+        resampling = InterpolationHigh;
+    } else {
+        // Take into account scale applied to the canvas when computing sampling mode (e.g. CSS scale or page scale).
+        SkRect destRectTarget = destRect;
+        SkMatrix totalMatrix = this->getTotalMatrix();
+        if (!(totalMatrix.getType() & (SkMatrix::kAffine_Mask | SkMatrix::kPerspective_Mask)))
+            totalMatrix.mapRect(&destRectTarget, destRect);
+
+        resampling = computeInterpolationQuality(totalMatrix,
+            SkScalarToFloat(srcRect.width()), SkScalarToFloat(srcRect.height()),
+            SkScalarToFloat(destRectTarget.width()), SkScalarToFloat(destRectTarget.height()),
+            isDataComplete);
+    }
+
+    if (resampling == InterpolationNone) {
+        // FIXME: This is to not break tests (it results in the filter bitmap flag
+        // being set to true). We need to decide if we respect InterpolationNone
+        // being returned from computeInterpolationQuality.
+        resampling = InterpolationLow;
+    }
+    resampling = limitInterpolationQuality(this, resampling);
+
+    bool useBicubicFilter = resampling == InterpolationHigh;
+    paint->setFilterLevel(convertToSkiaFilterLevel(useBicubicFilter, resampling));
 }
 
 }

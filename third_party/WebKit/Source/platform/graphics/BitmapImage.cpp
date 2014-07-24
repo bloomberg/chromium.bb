@@ -303,7 +303,7 @@ void BitmapImage::draw(GraphicsContext* ctxt, const FloatRect& dstRect, const Fl
         }
     }
 
-    bm->draw(ctxt, normSrcRect, normDstRect, WebCoreCompositeToSkiaComposite(compositeOp, blendMode));
+    bm->draw(ctxt, normSrcRect, normDstRect, compositeOp, blendMode);
 
     if (ImageObserver* observer = imageObserver())
         observer->didDraw(this);

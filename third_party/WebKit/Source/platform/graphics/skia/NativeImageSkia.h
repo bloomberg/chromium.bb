@@ -105,7 +105,13 @@ public:
     // Rectangle of the subset in the scaled image.
     SkBitmap resizedBitmap(const SkISize& scaledImageSize, const SkIRect& scaledImageSubset) const;
 
-    void draw(GraphicsContext*, const SkRect& srcRect, const SkRect& destRect, PassRefPtr<SkXfermode>) const;
+    void draw(
+        GraphicsContext*,
+        const SkRect& srcRect,
+        const SkRect& destRect,
+        CompositeOperator,
+        blink::WebBlendMode) const;
+
     void drawPattern(
         GraphicsContext*,
         const FloatRect& srcRect,
@@ -152,9 +158,7 @@ private:
     // entire thing, it's best to just do it up front.
     bool shouldCacheResampling(const SkISize& scaledImageSize, const SkIRect& scaledImageSubset) const;
 
-    InterpolationQuality computeInterpolationQuality(const SkMatrix&, float srcWidth, float srcHeight, float destWidth, float destHeight) const;
     SkBitmap extractScaledImageFragment(const SkRect& srcRect, float scaleX, float scaleY, SkRect* scaledSrcRect) const;
-    void drawResampledBitmap(GraphicsContext*, SkPaint&, const SkRect& srcRect, const SkRect& destRect) const;
 
     // The original image.
     SkBitmap m_image;
