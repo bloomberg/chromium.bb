@@ -105,7 +105,7 @@ class LoginScreenDefaultPolicyLoginScreenBrowsertest
   // LoginScreenDefaultPolicyBrowsertestBase:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
   virtual void SetUpOnMainThread() OVERRIDE;
-  virtual void CleanUpOnMainThread() OVERRIDE;
+  virtual void TearDownOnMainThread() OVERRIDE;
 
   void VerifyPrefFollowsRecommendation(const char* pref_name,
                                        const base::Value& recommended_value);
@@ -189,11 +189,11 @@ void LoginScreenDefaultPolicyLoginScreenBrowsertest::SetUpOnMainThread() {
       chromeos::ProfileHelper::GetSigninProfile());
 }
 
-void LoginScreenDefaultPolicyLoginScreenBrowsertest::CleanUpOnMainThread() {
+void LoginScreenDefaultPolicyLoginScreenBrowsertest::TearDownOnMainThread() {
   base::MessageLoop::current()->PostTask(FROM_HERE,
                                          base::Bind(&chrome::AttemptExit));
   base::RunLoop().RunUntilIdle();
-  LoginScreenDefaultPolicyBrowsertestBase::CleanUpOnMainThread();
+  LoginScreenDefaultPolicyBrowsertestBase::TearDownOnMainThread();
 }
 
 void LoginScreenDefaultPolicyLoginScreenBrowsertest::

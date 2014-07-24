@@ -81,14 +81,14 @@ class ExtensionPreferenceApiTest : public ExtensionApiTest {
     g_browser_process->AddRefModule();
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     // ReleaseBrowserProcessModule() needs to be called in a message loop, so we
     // post a task to do it, then run the message loop.
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&ReleaseBrowserProcessModule));
     content::RunAllPendingInMessageLoop();
 
-    ExtensionApiTest::CleanUpOnMainThread();
+    ExtensionApiTest::TearDownOnMainThread();
   }
 
   Profile* profile_;

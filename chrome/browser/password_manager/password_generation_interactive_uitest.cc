@@ -74,7 +74,7 @@ class PasswordGenerationInteractiveTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), url);
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     // Clean up UI.
     ChromePasswordManagerClient* client =
         ChromePasswordManagerClient::FromWebContents(GetWebContents());

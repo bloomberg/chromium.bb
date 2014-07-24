@@ -213,7 +213,7 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     autofill_manager->SetTestDelegate(&test_delegate_);
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     // Make sure to close any showing popups prior to tearing down the UI.
     content::WebContents* web_contents = GetWebContents();
     AutofillManager* autofill_manager = ContentAutofillDriver::FromWebContents(

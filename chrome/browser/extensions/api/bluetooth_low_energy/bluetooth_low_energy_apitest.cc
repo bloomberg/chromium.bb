@@ -101,7 +101,7 @@ class BluetoothLowEnergyApiTest : public ExtensionApiTest {
     SetUpMocks();
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     EXPECT_CALL(*mock_adapter_, RemoveObserver(_));
   }
 

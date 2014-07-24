@@ -31,7 +31,7 @@ class ZoomDecorationTest : public InProcessBrowserTest {
                        base::Unretained(this)));
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     zoom_subscription_.reset();
   }
 

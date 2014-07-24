@@ -187,7 +187,7 @@ class UsbApiTest : public ExtensionApiTest {
     UsbService::SetInstanceForTest(new MockUsbService(mock_device_));
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
     UsbService* service = NULL;

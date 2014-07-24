@@ -980,7 +980,7 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
     ASSERT_TRUE(sb_service_.get() != NULL);
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     sb_service_ = NULL;
   }
 

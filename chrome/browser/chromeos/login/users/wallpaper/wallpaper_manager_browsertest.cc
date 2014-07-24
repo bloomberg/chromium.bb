@@ -77,7 +77,7 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     controller_ = NULL;
   }
 

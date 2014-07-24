@@ -73,7 +73,7 @@ class ActiveScriptControllerBrowserTest : public ExtensionBrowserTest {
   ActiveScriptControllerBrowserTest() {}
 
   virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
-  virtual void CleanUpOnMainThread() OVERRIDE;
+  virtual void TearDownOnMainThread() OVERRIDE;
 
   // Returns an extension with the given |host_type| and |injection_type|. If
   // one already exists, the existing extension will be returned. Othewrwise,
@@ -96,7 +96,7 @@ void ActiveScriptControllerBrowserTest::SetUpCommandLine(
   command_line->AppendSwitch(switches::kEnableScriptsRequireAction);
 }
 
-void ActiveScriptControllerBrowserTest::CleanUpOnMainThread() {
+void ActiveScriptControllerBrowserTest::TearDownOnMainThread() {
   test_extension_dirs_.clear();
 }
 

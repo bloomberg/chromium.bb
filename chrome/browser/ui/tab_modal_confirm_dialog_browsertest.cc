@@ -65,7 +65,7 @@ void TabModalConfirmDialogTest::SetUpOnMainThread() {
   content::RunAllPendingInMessageLoop();
 }
 
-void TabModalConfirmDialogTest::CleanUpOnMainThread() {
+void TabModalConfirmDialogTest::TearDownOnMainThread() {
   content::RunAllPendingInMessageLoop();
 }
 

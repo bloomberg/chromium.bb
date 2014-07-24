@@ -46,7 +46,7 @@ class TabModalConfirmDialogTest
   TabModalConfirmDialogTest();
 
   virtual void SetUpOnMainThread() OVERRIDE;
-  virtual void CleanUpOnMainThread() OVERRIDE;
+  virtual void TearDownOnMainThread() OVERRIDE;
 
   // MockTabModalConfirmDialogDelegate::Delegate:
   virtual void OnAccepted() OVERRIDE;

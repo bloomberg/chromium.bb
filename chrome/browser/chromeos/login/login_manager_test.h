@@ -30,7 +30,7 @@ class LoginManagerTest : public InProcessBrowserTest {
   explicit LoginManagerTest(bool should_launch_browser);
 
   // Overriden from InProcessBrowserTest.
-  virtual void CleanUpOnMainThread() OVERRIDE;
+  virtual void TearDownOnMainThread() OVERRIDE;
   virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
   virtual void SetUpOnMainThread() OVERRIDE;

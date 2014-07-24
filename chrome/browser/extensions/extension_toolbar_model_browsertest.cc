@@ -32,7 +32,7 @@ class ExtensionToolbarModelTest : public ExtensionBrowserTest,
     model_->AddObserver(this);
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     model_->RemoveObserver(this);
   }
 

@@ -257,9 +257,9 @@ class SyncTest : public InProcessBrowserTest {
   // on by default yet.
   virtual void AddOptionalTypesToCommandLine(base::CommandLine* cl);
 
-  // InProcessBrowserTest override. Destroys all the sync clients and sync
+  // BrowserTestBase override. Destroys all the sync clients and sync
   // profiles created by a test.
-  virtual void CleanUpOnMainThread() OVERRIDE;
+  virtual void TearDownOnMainThread() OVERRIDE;
 
   // InProcessBrowserTest override. Changes behavior of the default host
   // resolver to avoid DNS lookup errors.

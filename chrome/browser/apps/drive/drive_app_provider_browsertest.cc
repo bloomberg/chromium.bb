@@ -77,12 +77,12 @@ class DriveAppProviderTest : public ExtensionBrowserTest,
             .PassAs<DriveServiceBridge>());
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     provider_.reset();
     apps_registry_.reset();
     fake_drive_service_.reset();
 
-    ExtensionBrowserTest::CleanUpOnMainThread();
+    ExtensionBrowserTest::TearDownOnMainThread();
   }
 
   const Extension* InstallChromeApp(int expected_change) {

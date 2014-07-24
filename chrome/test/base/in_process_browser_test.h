@@ -66,7 +66,7 @@ class ContentRendererClient;
 // related to the browser object and associated window, like opening a new Tab
 // with a testing page loaded.
 //
-// CleanUpOnMainThread() is called just after executing the real test code to
+// TearDownOnMainThread() is called just after executing the real test code to
 // do necessary cleanup before the browser is torn down.
 //
 // TearDownInProcessBrowserTestFixture() is called after BrowserMain() exits to
@@ -121,10 +121,6 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   // directory before the browser starts up, it can do so here. Returns true if
   // successful.
   virtual bool SetUpUserDataDirectory() WARN_UNUSED_RESULT;
-
-  // Override this to add any custom cleanup code that needs to be done on the
-  // main thread before the browser is torn down.
-  virtual void CleanUpOnMainThread() {}
 
   // BrowserTestBase:
   virtual void RunTestOnMainThreadLoop() OVERRIDE;

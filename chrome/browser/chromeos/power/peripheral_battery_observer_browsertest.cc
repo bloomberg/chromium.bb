@@ -46,7 +46,7 @@ class PeripheralBatteryObserverTest : public InProcessBrowserTest {
     observer_.reset(new PeripheralBatteryObserver());
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     observer_.reset();
   }
 
