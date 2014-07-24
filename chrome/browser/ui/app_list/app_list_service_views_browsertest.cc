@@ -103,7 +103,6 @@ class AppListControllerAppInfoDialogBrowserTest : public ExtensionBrowserTest {
 };
 
 // Test the DoShowAppInfoFlow function of the controller delegate.
-// Crashes on all platforms some of the time (flaky). http://crbug.com/378251
 IN_PROC_BROWSER_TEST_F(AppListControllerAppInfoDialogBrowserTest,
                        DoShowAppInfoFlow) {
   // Install an extension to open the dialog for.
