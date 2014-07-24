@@ -32,7 +32,6 @@
 #include "core/html/imports/HTMLImport.h"
 #include "core/rendering/RenderObject.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebURLRequest.h"
 
 namespace blink {
 
@@ -56,7 +55,6 @@ FetchRequest PreloadRequest::resourceRequest(Document* document)
     initiatorInfo.name = AtomicString(m_initiatorName);
     initiatorInfo.position = m_initiatorPosition;
     FetchRequest request(ResourceRequest(completeURL(document)), initiatorInfo);
-    request.mutableResourceRequest().setRequestContext(blink::WebURLRequest::RequestContextPrefetch);
 
     if (m_isCORSEnabled)
         request.setCrossOriginAccessControl(document->securityOrigin(), m_allowCredentials);

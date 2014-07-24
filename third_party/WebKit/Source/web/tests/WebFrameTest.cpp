@@ -5916,17 +5916,15 @@ TEST_F(WebFrameTest, LoaderOriginAccess)
     // First try to load the request with regular access. Should fail.
     options.crossOriginRequestPolicy = blink::UseAccessControl;
     blink::ResourceLoaderOptions resourceLoaderOptions;
-    blink::ResourceRequest request(resourceUrl);
-    request.setRequestContext(WebURLRequest::RequestContextInternal);
     blink::DocumentThreadableLoader::loadResourceSynchronously(
-        *frame->document(), request, client, options, resourceLoaderOptions);
+        *frame->document(), blink::ResourceRequest(resourceUrl), client, options, resourceLoaderOptions);
     EXPECT_TRUE(client.failed());
 
     client.reset();
     // Try to load the request with cross origin access. Should succeed.
     options.crossOriginRequestPolicy = blink::AllowCrossOriginRequests;
     blink::DocumentThreadableLoader::loadResourceSynchronously(
-        *frame->document(), request, client, options, resourceLoaderOptions);
+        *frame->document(), blink::ResourceRequest(resourceUrl), client, options, resourceLoaderOptions);
     EXPECT_FALSE(client.failed());
 }
 

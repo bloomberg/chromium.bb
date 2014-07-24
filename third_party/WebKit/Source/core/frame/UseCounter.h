@@ -484,8 +484,6 @@ public:
         MeterElement = 483,
         ProgressElement = 484,
         VideoFullscreenAllowedExemption = 485,
-        PPAPIRequestAllowedByObjectSrc = 486,
-        PPAPIRequestBypassedObjectSrc = 487,
         WebKitPoint = 488,
         HTMLPreElementWidth = 489,
         // Add new features immediately above this line. Don't change assigned

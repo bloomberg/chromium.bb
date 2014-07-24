@@ -39,7 +39,6 @@
 #include "core/loader/DocumentLoader.h"
 #include "platform/network/ResourceRequest.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebURLRequest.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 
@@ -74,7 +73,6 @@ protected:
             response.setURL(KURL(ParsedURLString, kResourceURL));
         ResourcePtr<Resource> resource =
             new Resource(ResourceRequest(response.url()), type);
-        resource->resourceRequest().setRequestContext(blink::WebURLRequest::RequestContextInternal);
         resource->setResponse(response);
         memoryCache()->add(resource.get());
 
@@ -87,7 +85,6 @@ protected:
             request.setURL(KURL(ParsedURLString, kResourceURL));
         ResourcePtr<Resource> resource =
             new Resource(request, type);
-        request.setRequestContext(blink::WebURLRequest::RequestContextInternal);
         resource->setResponse(ResourceResponse(KURL(ParsedURLString, kResourceURL), "text/html", 0, nullAtom, String()));
         memoryCache()->add(resource.get());
 
@@ -97,14 +94,12 @@ protected:
     ResourcePtr<Resource> fetch()
     {
         FetchRequest fetchRequest(ResourceRequest(KURL(ParsedURLString, kResourceURL)), FetchInitiatorInfo());
-        fetchRequest.mutableResourceRequest().setRequestContext(blink::WebURLRequest::RequestContextFetch);
         return m_fetcher->fetchSynchronously(fetchRequest);
     }
 
     ResourcePtr<Resource> fetchImage()
     {
         FetchRequest fetchRequest(ResourceRequest(KURL(ParsedURLString, kResourceURL)), FetchInitiatorInfo());
-        fetchRequest.mutableResourceRequest().setRequestContext(blink::WebURLRequest::RequestContextImage);
         return m_fetcher->fetchImage(fetchRequest);
     }
 
@@ -463,14 +458,12 @@ TEST_F(CachingCorrectnessTest, FreshWithStaleRedirect)
 TEST_F(CachingCorrectnessTest, PostToSameURLTwice)
 {
     ResourceRequest request1(KURL(ParsedURLString, kResourceURL));
-    request1.setRequestContext(blink::WebURLRequest::RequestContextInternal);
     request1.setHTTPMethod("POST");
     ResourcePtr<Resource> resource1 = new Resource(ResourceRequest(request1.url()), Resource::Raw);
     resource1->setLoading(true);
     memoryCache()->add(resource1.get());
 
     ResourceRequest request2(KURL(ParsedURLString, kResourceURL));
-    request2.setRequestContext(blink::WebURLRequest::RequestContextInternal);
     request2.setHTTPMethod("POST");
     FetchRequest fetch2(request2, FetchInitiatorInfo());
     ResourcePtr<Resource> resource2 = fetcher()->fetchSynchronously(fetch2);

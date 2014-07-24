@@ -241,7 +241,6 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior)
         if (isHTMLPictureElement(element()->parentNode()) || !element()->fastGetAttribute(HTMLNames::srcsetAttr).isEmpty())
             resourceLoaderOptions.mixedContentBlockingTreatment = TreatAsActiveContent;
         FetchRequest request(ResourceRequest(url), element()->localName(), resourceLoaderOptions);
-        request.mutableResourceRequest().setRequestContext(blink::WebURLRequest::RequestContextImage);
         configureRequest(request, bypassBehavior, *m_element);
 
         if (m_loadingImageDocument)
