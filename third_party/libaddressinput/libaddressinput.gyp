@@ -4,6 +4,7 @@
 {
   'includes': ['src/cpp/libaddressinput.gypi'],
   'variables': {
+    'libaddressinput_test_data_dir%': 'src/third_party/libaddressinput/src/testdata',
     'libaddressinput_util_files': [
       'src/cpp/src/address_data.cc',
       'src/cpp/src/address_field.cc',
@@ -144,7 +145,7 @@
         'chromium/trie_unittest.cc',
       ],
       'defines': [
-        'TEST_DATA_DIR="third_party/libaddressinput/src/testdata"',
+        'TEST_DATA_DIR="<(libaddressinput_test_data_dir)"',
       ],
       'include_dirs': [
         '../../',
