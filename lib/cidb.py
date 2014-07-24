@@ -36,10 +36,10 @@ def minimum_schema(min_version):
   """
 
   def decorator(f):
-    def wrapper(self, *args):
+    def wrapper(self, *args, **kwargs):
       if self.schema_version < min_version:
         raise UnsupportedMethodException()
-      return f(self, *args)
+      return f(self, *args, **kwargs)
     return wrapper
   return decorator
 
