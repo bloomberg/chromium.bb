@@ -8,6 +8,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "extensions/browser/extension_registry_factory.h"
 
 // static
 AppSyncUIState* AppSyncUIStateFactory::GetForProfile(Profile* profile) {
@@ -27,6 +28,7 @@ AppSyncUIStateFactory::AppSyncUIStateFactory()
     : BrowserContextKeyedServiceFactory(
         "AppSyncUIState",
         BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(extensions::ExtensionRegistryFactory::GetInstance());
   DependsOn(ProfileSyncServiceFactory::GetInstance());
 }
 
