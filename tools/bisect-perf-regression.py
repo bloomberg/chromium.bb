@@ -2236,14 +2236,19 @@ class BisectPerformanceMetrics(object):
   def _IsBisectModeStandardDeviation(self):
     return self.opts.bisect_mode in [BISECT_MODE_STD_DEV]
 
-  def GetCompatibleCommand(self, command_to_run, revision):
+  def GetCompatibleCommand(self, command_to_run, revision, depot):
     # Prior to crrev.com/274857 *only* android-chromium-testshell
     # Then until crrev.com/276628 *both* (android-chromium-testshell and
     # android-chrome-shell) work. After that rev 276628 *only*
     # android-chrome-shell works. bisect-perf-reggresion.py script should
     # handle these cases and set appropriate browser type based on revision.
-    if self.opts.target_platform in ['android', 'android-chrome']:
-      svn_revision = self.source_control.SVNFindRev(revision)
+    if self.opts.target_platform in ['android']:
+      # When its a third_party depot, get the chromium revision.
+      if depot != 'chromium':
+        revision = CheckRunGit(['rev-parse', 'HEAD'], cwd=self.src_cwd).strip()
+      svn_revision = self.source_control.SVNFindRev(revision, cwd=self.src_cwd)
+      if not svn_revision:
+        return command_to_run
       cmd_re = re.compile('--browser=(?P<browser_type>\S+)')
       matches = cmd_re.search(command_to_run)
       if IsStringInt(svn_revision) and matches:
@@ -2639,7 +2644,8 @@ class BisectPerformanceMetrics(object):
         if self.BuildCurrentRevision(depot, revision):
           after_build_time = time.time()
           # Hack to support things that got changed.
-          command_to_run = self.GetCompatibleCommand(command_to_run, revision)
+          command_to_run = self.GetCompatibleCommand(
+              command_to_run, revision, depot)
           results = self.RunPerformanceTestAndParseResults(command_to_run,
                                                            metric)
           # Restore build output directory once the tests are done, to avoid

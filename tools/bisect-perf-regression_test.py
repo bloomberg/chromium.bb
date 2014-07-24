@@ -247,6 +247,7 @@ vars = {
     bisect_instance = bisect_perf_module.BisectPerformanceMetrics(
         source_control, bisect_options)
     bisect_instance.opts.target_platform = 'android'
+    depot = 'chromium'
     # android-chrome-shell -> android-chromium-testshell
     revision = 274857
     git_revision = bisect_instance.source_control.ResolveToRevision(
@@ -256,7 +257,7 @@ vars = {
     expected_command = ('tools/perf/run_benchmark -v --browser='
                         'android-chromium-testshell page_cycler.intl_ja_zh')
     self.assertEqual(
-        bisect_instance.GetCompatibleCommand(command, git_revision),
+        bisect_instance.GetCompatibleCommand(command, git_revision, depot),
         expected_command)
 
     # android-chromium-testshell -> android-chromium-testshell
@@ -268,7 +269,7 @@ vars = {
     expected_command = ('tools/perf/run_benchmark -v --browser='
                         'android-chromium-testshell page_cycler.intl_ja_zh')
     self.assertEqual(
-        bisect_instance.GetCompatibleCommand(command, git_revision),
+        bisect_instance.GetCompatibleCommand(command, git_revision, depot),
         expected_command)
 
     # android-chromium-testshell -> android-chrome-shell
@@ -280,7 +281,7 @@ vars = {
     expected_command = ('tools/perf/run_benchmark -v --browser='
                         'android-chrome-shell page_cycler.intl_ja_zh')
     self.assertEqual(
-        bisect_instance.GetCompatibleCommand(command, git_revision),
+        bisect_instance.GetCompatibleCommand(command, git_revision, depot),
         expected_command)
     # android-chrome-shell -> android-chrome-shell
     command = ('tools/perf/run_benchmark -v '
@@ -288,7 +289,7 @@ vars = {
     expected_command = ('tools/perf/run_benchmark -v --browser='
                         'android-chrome-shell page_cycler.intl_ja_zh')
     self.assertEqual(
-        bisect_instance.GetCompatibleCommand(command, git_revision),
+        bisect_instance.GetCompatibleCommand(command, git_revision, depot),
         expected_command)
     # Not android platform
     bisect_instance.opts.target_platform = 'chromium'
@@ -297,7 +298,7 @@ vars = {
     expected_command = ('tools/perf/run_benchmark -v --browser='
                         'release page_cycler.intl_ja_zh')
     self.assertEqual(
-        bisect_instance.GetCompatibleCommand(command, git_revision),
+        bisect_instance.GetCompatibleCommand(command, git_revision, depot),
         expected_command)
 
 if __name__ == '__main__':
