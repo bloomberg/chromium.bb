@@ -820,6 +820,7 @@
     { "name": "code-poets.co.uk", "include_subdomains": true, "mode": "force-https" },
     { "name": "jackyyf.com", "mode": "force-https" },
     { "name": "flynn.io", "include_subdomains": true, "mode": "force-https" },
+    { "name": "hackerone.com", "include_subdomains": true, "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
@@ -829,6 +830,8 @@
     { "name": "google-analytics.com", "include_subdomains": true, "pins": "google", "snionly": true },
     { "name": "googlegroups.com", "include_subdomains": true, "pins": "google", "snionly": true },
     { "name": "mykolab.com", "include_subdomains": true, "mode": "force-https", "snionly": true },
-    { "name": "semenkovich.com", "include_subdomains": true, "mode": "force-https", "snionly": true }
+    { "name": "semenkovich.com", "include_subdomains": true, "mode": "force-https", "snionly": true },
+    { "name": "rme.li", "mode": "force-https", "snionly": true },
+    { "name": "www.rme.li", "mode": "force-https", "snionly": true }
   ]
 }
