@@ -107,6 +107,10 @@ per-file onc.gypi=gspencer@chromium.org
 per-file onc.gypi=pneubeck@chromium.org
 per-file onc.gypi=stevenjb@chromium.org
 
+per-file pairing.gypi=achuith@chromium.org
+per-file pairing.gypi=dzhioev@chromium.org
+per-file pairing.gypi=zork@chromium.org
+
 per-file password_manager*=albertb@chromium.org
 per-file password_manager*=dubroy@chromium.org
 per-file password_manager*=gcasto@chromium.org
