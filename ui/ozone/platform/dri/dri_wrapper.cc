@@ -83,6 +83,10 @@ bool DriWrapper::SetCrtc(uint32_t crtc_id,
 
 bool DriWrapper::SetCrtc(drmModeCrtc* crtc, uint32_t* connectors) {
   CHECK(fd_ >= 0);
+  // If there's no buffer then the CRTC was disabled.
+  if (!crtc->buffer_id)
+    return DisableCrtc(crtc->crtc_id);
+
   return !drmModeSetCrtc(fd_,
                          crtc->crtc_id,
                          crtc->buffer_id,
