@@ -110,6 +110,7 @@
 #include "core/events/PageTransitionEvent.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
@@ -2204,6 +2205,7 @@ void Document::detach(const AttachContext& context)
 
     if (Document* parentDoc = parentDocument())
         parentDoc->didClearTouchEventHandlers(this);
+    frameHost()->eventHandlerRegistry().documentDetached(*this);
 
     // This is required, as our LocalFrame might delete itself as soon as it detaches
     // us. However, this violates Node::detach() semantics, as it's never
