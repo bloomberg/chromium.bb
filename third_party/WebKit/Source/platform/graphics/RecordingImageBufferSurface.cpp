@@ -20,6 +20,7 @@ RecordingImageBufferSurface::RecordingImageBufferSurface(const IntSize& size, Op
     , m_graphicsContext(0)
     , m_initialSaveCount(0)
     , m_frameWasCleared(true)
+    , m_surfaceUsedSincePreviousFrameWasPresented(false)
 {
     initializeCurrentFrame();
 }
@@ -89,12 +90,19 @@ SkCanvas* RecordingImageBufferSurface::canvas() const
 
 PassRefPtr<SkPicture> RecordingImageBufferSurface::getPicture()
 {
-    if (handleOpaqueFrame())
+    if (handleOpaqueFrame()) {
+        m_surfaceUsedSincePreviousFrameWasPresented = false;
         return m_previousFrame;
+    }
 
     if (!m_rasterCanvas)
         fallBackToRasterCanvas();
     return nullptr;
+}
+
+void RecordingImageBufferSurface::willUse()
+{
+    m_surfaceUsedSincePreviousFrameWasPresented = true;
 }
 
 void RecordingImageBufferSurface::didClearCanvas()
@@ -108,18 +116,18 @@ bool RecordingImageBufferSurface::handleOpaqueFrame()
         return false;
     IntRect canvasRect(IntPoint(0, 0), size());
     if (!m_frameWasCleared && !m_graphicsContext->opaqueRegion().asRect().contains(canvasRect)) {
-        return false;
+        // No clear happened. If absolutely nothing was drawn, then we can just continue to use the previous frame.
+        return !m_surfaceUsedSincePreviousFrameWasPresented;
     }
 
     SkCanvas* oldCanvas = m_currentFrame->getRecordingCanvas(); // Could be raster or picture
 
     // FIXME(crbug.com/392614): handle transferring complex state from the current picture to the new one.
-    if (oldCanvas->getSaveCount() > m_initialSaveCount) {
+    if (oldCanvas->getSaveCount() > m_initialSaveCount)
         return false;
-    }
-    if (!oldCanvas->isClipRect()) {
+
+    if (!oldCanvas->isClipRect())
         return false;
-    }
 
     SkMatrix ctm = oldCanvas->getTotalMatrix();
     SkRect clip;

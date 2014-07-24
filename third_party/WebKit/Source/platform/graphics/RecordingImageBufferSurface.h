@@ -28,6 +28,7 @@ public:
     virtual PassRefPtr<SkPicture> getPicture() OVERRIDE;
     virtual bool isValid() const OVERRIDE { return true; }
     virtual void willReadback() OVERRIDE;
+    virtual void willUse() OVERRIDE;
     virtual void didClearCanvas() OVERRIDE;
     virtual void setImageBuffer(ImageBuffer*) OVERRIDE;
 
@@ -43,6 +44,7 @@ private:
     GraphicsContext* m_graphicsContext;
     int m_initialSaveCount;
     bool m_frameWasCleared;
+    bool m_surfaceUsedSincePreviousFrameWasPresented;
 };
 
 } // namespace WebCore
