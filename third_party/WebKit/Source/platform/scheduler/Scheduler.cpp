@@ -37,6 +37,26 @@ private:
     Scheduler::Task m_task;
 };
 
+class MainThreadIdleTaskAdapter : public blink::WebThread::Task {
+public:
+    MainThreadIdleTaskAdapter(const Scheduler::IdleTask& idleTask, double allottedTimeMs)
+        : m_idleTask(idleTask)
+        , m_allottedTimeMs(allottedTimeMs)
+    {
+    }
+
+    // WebThread::Task implementation.
+    virtual void run() OVERRIDE
+    {
+        TRACE_EVENT1("blink", "MainThreadIdleTaskAdapter::run", "allottedTime", m_allottedTimeMs);
+        m_idleTask(m_allottedTimeMs);
+    }
+
+private:
+    Scheduler::IdleTask m_idleTask;
+    double m_allottedTimeMs;
+};
+
 }
 
 Scheduler* Scheduler::s_sharedScheduler = nullptr;
@@ -72,6 +92,12 @@ void Scheduler::scheduleTask(const TraceLocation& location, const Task& task)
     m_mainThread->postTask(new MainThreadTaskAdapter(location, task));
 }
 
+void Scheduler::scheduleIdleTask(const IdleTask& idleTask)
+{
+    // TODO: send a real allottedTime here.
+    m_mainThread->postTask(new MainThreadIdleTaskAdapter(idleTask, 0));
+}
+
 void Scheduler::postTask(const TraceLocation& location, const Task& task)
 {
     scheduleTask(location, task);
@@ -85,6 +111,11 @@ void Scheduler::postInputTask(const TraceLocation& location, const Task& task)
 void Scheduler::postCompositorTask(const TraceLocation& location, const Task& task)
 {
     scheduleTask(location, task);
+}
+
+void Scheduler::postIdleTask(const IdleTask& idleTask)
+{
+    scheduleIdleTask(idleTask);
 }
 
 void Scheduler::tickSharedTimer()

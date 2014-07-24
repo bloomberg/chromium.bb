@@ -146,6 +146,11 @@ void unorderedTestTask(int value, int* result)
     *result += value;
 }
 
+void idleTestTask(int value, int* result, double allottedTime)
+{
+    *result += value;
+}
+
 TEST_F(SchedulerTest, TestPostTask)
 {
     int result = 0;
@@ -190,6 +195,18 @@ TEST_F(SchedulerTest, TestSharedTimer)
 
     m_scheduler->setSharedTimerFiredFunction(nullptr);
     EXPECT_FALSE(m_platformSupport.sharedTimerRunning());
+}
+
+TEST_F(SchedulerTest, TestIdleTask)
+{
+    // TODO: Check task allottedTime when implemented in the scheduler.
+    int result = 0;
+    m_scheduler->postIdleTask(bind<double>(&idleTestTask, 1, &result));
+    m_scheduler->postIdleTask(bind<double>(&idleTestTask, 1, &result));
+    m_scheduler->postIdleTask(bind<double>(&idleTestTask, 1, &result));
+    m_scheduler->postIdleTask(bind<double>(&idleTestTask, 1, &result));
+    runPendingTasks();
+    EXPECT_EQ(4, result);
 }
 
 } // namespace
