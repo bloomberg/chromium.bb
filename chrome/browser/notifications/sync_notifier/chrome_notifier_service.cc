@@ -8,8 +8,10 @@
 
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
 
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/synced_notifications_private/synced_notifications_shim.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/notification_service.h"
 #include "extensions/browser/event_router.h"
 
 namespace notifier {
@@ -19,6 +21,8 @@ ChromeNotifierService::ChromeNotifierService(Profile* profile)
       weak_ptr_factory_(this) {
   synced_notifications_shim_.reset(new SyncedNotificationsShim(
       base::Bind(&ChromeNotifierService::FireSyncJSEvent,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&ChromeNotifierService::NotifyRefreshNeeded,
                  weak_ptr_factory_.GetWeakPtr())));
 }
 
@@ -38,6 +42,14 @@ void ChromeNotifierService::FireSyncJSEvent(
   // TODO(synced notifications): consider broadcasting to a specific extension
   // id.
   extensions::EventRouter::Get(profile_)->BroadcastEvent(event.Pass());
+}
+
+void ChromeNotifierService::NotifyRefreshNeeded() {
+  const syncer::ModelTypeSet types(syncer::SYNCED_NOTIFICATIONS);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
+      content::Source<Profile>(profile_),
+      content::Details<const syncer::ModelTypeSet>(&types));
 }
 
 }  // namespace notifier

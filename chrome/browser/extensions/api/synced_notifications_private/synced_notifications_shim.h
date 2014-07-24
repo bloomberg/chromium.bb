@@ -23,7 +23,8 @@ class SyncedNotificationsShim : public syncer::SyncableService {
   // Callback for firing extension events.
   typedef base::Callback<void(scoped_ptr<extensions::Event>)> EventLauncher;
 
-  explicit SyncedNotificationsShim(const EventLauncher& event_launcher);
+  explicit SyncedNotificationsShim(const EventLauncher& event_launcher,
+                                   const base::Closure& refresh_request);
   virtual ~SyncedNotificationsShim();
 
   // SyncableService interface.
@@ -57,6 +58,9 @@ class SyncedNotificationsShim : public syncer::SyncableService {
  private:
   // Callback to trigger firing extension events.
   EventLauncher event_launcher_;
+
+  // Callback to trigger synced notification refresh.
+  base::Closure refresh_request_;
 
   // The sync change processors, initialized via MergeDataAndStartSyncing.
   scoped_ptr<syncer::SyncChangeProcessor> notifications_change_processor_;

@@ -129,8 +129,10 @@ bool PopulateJSDataListFromSync(
 }  // namespace
 
 SyncedNotificationsShim::SyncedNotificationsShim(
-    const EventLauncher& event_launcher)
-    : event_launcher_(event_launcher) {
+    const EventLauncher& event_launcher,
+    const base::Closure& refresh_request)
+    : event_launcher_(event_launcher),
+      refresh_request_(refresh_request) {
 }
 
 SyncedNotificationsShim::~SyncedNotificationsShim() {
@@ -240,6 +242,12 @@ bool SyncedNotificationsShim::SetRenderContext(
   syncer::SyncError error =
       notifications_change_processor_->UpdateDataTypeContext(
           syncer::SYNCED_NOTIFICATIONS, sync_refresh_status, new_context);
+
+  if (sync_refresh_status == syncer::SyncChangeProcessor::REFRESH_NEEDED &&
+      !refresh_request_.is_null()) {
+    refresh_request_.Run();
+  }
+
   return !error.IsSet();
 }
 

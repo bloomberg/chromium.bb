@@ -37,6 +37,9 @@ class ChromeNotifierService : public KeyedService {
   // Helper method for firing JS events triggered by sync.
   void FireSyncJSEvent(scoped_ptr<extensions::Event> event);
 
+  // Helper method for trigger synced notification refreshes.
+  void NotifyRefreshNeeded();
+
   // The owning profile.
   Profile* const profile_;
 

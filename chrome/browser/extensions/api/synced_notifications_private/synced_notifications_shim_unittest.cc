@@ -81,6 +81,9 @@ class SyncedNotificationsShimTest : public testing::Test {
   // Transfers ownership of the last event received.
   scoped_ptr<Event> GetLastEvent();
 
+  // Records that a refresh has been requested.
+  void RequestRefresh();
+
   SyncedNotificationsShim* shim() { return &shim_; }
   syncer::FakeSyncChangeProcessor* notification_processor() {
     return notification_processor_;
@@ -88,6 +91,7 @@ class SyncedNotificationsShimTest : public testing::Test {
   syncer::FakeSyncChangeProcessor* app_info_processor() {
     return app_info_processor_;
   }
+  bool refresh_requested() const { return refresh_requested_; }
 
  private:
   void EventCallback(scoped_ptr<Event> event);
@@ -100,19 +104,30 @@ class SyncedNotificationsShimTest : public testing::Test {
 
   // The last event fired by the shim.
   scoped_ptr<Event> last_event_fired_;
+
+  // Whether a refresh has been requested;
+  bool refresh_requested_;
 };
 
 SyncedNotificationsShimTest::SyncedNotificationsShimTest()
     : shim_(base::Bind(&SyncedNotificationsShimTest::EventCallback,
+                       base::Unretained(this)),
+            base::Bind(&SyncedNotificationsShimTest::RequestRefresh,
                        base::Unretained(this))),
       notification_processor_(NULL),
-      app_info_processor_(NULL) {}
+      app_info_processor_(NULL),
+      refresh_requested_(false) {}
 
 SyncedNotificationsShimTest::~SyncedNotificationsShimTest() {}
 
 void SyncedNotificationsShimTest::EventCallback(scoped_ptr<Event> event) {
   ASSERT_FALSE(last_event_fired_);
   last_event_fired_ = event.Pass();
+}
+
+void SyncedNotificationsShimTest::RequestRefresh() {
+  ASSERT_FALSE(refresh_requested_);
+  refresh_requested_ = true;
 }
 
 scoped_ptr<Event> SyncedNotificationsShimTest::GetLastEvent() {
@@ -320,12 +335,14 @@ TEST_F(SyncedNotificationsShimTest, SetRenderContext) {
   const std::string kContext = "context";
   EXPECT_FALSE(shim()->SetRenderContext(
       synced_notifications_private::REFRESH_REQUEST_REFRESH_NEEDED, kContext));
+  EXPECT_FALSE(refresh_requested());
 
   StartSync();
 
   EXPECT_TRUE(shim()->SetRenderContext(
       synced_notifications_private::REFRESH_REQUEST_REFRESH_NEEDED, kContext));
   EXPECT_EQ(kContext, notification_processor()->context());
+  EXPECT_TRUE(refresh_requested());
 }
 
 }  // namespace
