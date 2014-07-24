@@ -829,7 +829,7 @@ FcSfntNameTranscode (FT_SfntName *sname)
 	*u8 = '\0';
 	goto done;
     }
-    if (!strcmp (fromcode, "MACINTOSH"))
+    if (!strcmp (fromcode, FC_ENCODING_MAC_ROMAN))
     {
 	FcChar8	    *src = sname->string;
 	int	    src_len = sname->string_len;
@@ -840,7 +840,7 @@ FcSfntNameTranscode (FT_SfntName *sname)
 	/*
 	 * Convert Latin1 to Utf8. Freed below
 	 */
-	utf8 = malloc (src_len + 1);
+	utf8 = malloc (src_len * 3 + 1);
 	if (!utf8)
 	    return 0;
 
