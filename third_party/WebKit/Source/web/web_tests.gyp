@@ -70,11 +70,7 @@
                 'src',
             ],
             'conditions': [
-                ['component=="shared_library"', {
-                    'defines': [
-                        'BLINK_DLL_UNITTEST',
-                    ],
-                }, {
+                ['component!="shared_library"', {
                     'dependencies': [
                         '../core/core.gyp:webcore',
                     ],

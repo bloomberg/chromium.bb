@@ -106,9 +106,6 @@
                     ],
                     'sources': [
                         # Compile Blink unittest files into blink_web.dll in component build mode
-                        # since there're methods that are tested but not exported.
-                        # WebUnitTests.* exports an API that runs all the unittests inside
-                        # blink_web.dll.
                         '<@(bindings_unittest_files)',
                         '<@(core_unittest_files)',
                         '<@(modules_unittest_files)',
@@ -116,7 +113,6 @@
                         '<@(platform_web_unittest_files)',
                         '<@(web_unittest_files)',
                         'WebTestingSupport.cpp',
-                        'tests/WebUnitTests.cpp',   # Components test runner support.
                     ],
                     'conditions': [
                         ['OS=="win" or OS=="mac"', {

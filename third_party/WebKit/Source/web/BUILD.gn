@@ -91,9 +91,7 @@ test("webkit_unit_tests") {
 
   sources = [ "tests/RunAllTests.cpp" ]
 
-  if (is_component_build) {
-    defines = [ "BLINK_DLL_UNITTEST" ]
-  } else {
+  if (!is_component_build) {
     deps += [ "//third_party/WebKit/Source/core" ]
 
     configs += [ "//third_party/WebKit/Source:inside_blink" ]

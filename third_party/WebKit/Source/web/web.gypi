@@ -313,6 +313,7 @@
       'tests/WebURLRequestTest.cpp',
       'tests/WebURLResponseTest.cpp',
       'tests/WebUserGestureTokenTest.cpp',
+      'tests/WebUnitTests.cpp',
       'tests/WebViewTest.cpp',
     ],
     'conditions': [

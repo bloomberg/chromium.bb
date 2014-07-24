@@ -35,22 +35,23 @@
 
 namespace blink {
 
-// In chromium multi-dll build, webkit unittest code are compiled in
-// blink_web.dll. This means the test suite object needs to be initialized
-// inside Blink.
+// In a chromium multi-dll build, blink unittest code is compiled into
+// blink_web.dll, since some of the tests cover unexported methods.
 //
-// However, the webkit unittest code needs to also initialize/teardown.
-// This leads to the API here, which has explicit managment of the TestSuite
-// lifetime.
-
-// Initialize the global testSuite object inside blink_web.dll
-BLINK_EXPORT void InitTestSuite(int argc, char** argv);
-
-// Runs all tests found inside blink_web.dll
-BLINK_EXPORT int RunAllUnitTests();
-
-// Deletes the global testSuite object inside blink_web.dll
-BLINK_EXPORT void DeleteTestSuite();
+// While gtest does support running tests in libraries, the chromium gtest is
+// not built with shared library support. As a result, if the test runner tries
+// to instantiate the test suite outside of blink_web.dll, it won't correctly
+// register the tests. In order to get around that, blink_web.dll exports this
+// helper function to instantiate and run the test suite in the right module.
+//
+// Unfortunately, to make things more complicated, blink tests require some test
+// support initialization in the content layer. Since the content layer depends
+// on blink_web.dll, runWebTests() can't initialize it directly since that
+// introduces a dependency cycle.
+//
+// To get around that, runWebTests() allows the caller to supply hooks to
+// execute code before and after running tests.
+BLINK_EXPORT int runWebTests(int argc, char** argv, void (*preTestHook)(void), void (*postTestHook)(void));
 
 } // namespace blink
 
