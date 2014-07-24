@@ -1652,6 +1652,8 @@ static bool findDropZone(Node* target, DataTransfer* dataTransfer)
         if (dropZoneStr.isEmpty())
             continue;
 
+        UseCounter::count(element->document(), UseCounter::PrefixedHTMLElementDropzone);
+
         dropZoneStr = dropZoneStr.lower();
 
         SpaceSplitString keywords(dropZoneStr, false);
