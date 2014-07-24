@@ -378,6 +378,9 @@ int prctl(int option, uintptr_t arg2, uintptr_t arg3,
       linux_syscall5(__NR_prctl, option, arg2, arg3, arg4, arg5));
 }
 
+#if defined(__i386__)
+/* On x86-32 Linux, socket related syscalls are defined by using socketcall. */
+
 static uintptr_t socketcall(int op, void *args) {
   return errno_value_call(
       linux_syscall2(__NR_socketcall, op, (uintptr_t) args));
@@ -402,6 +405,32 @@ int socketpair(int domain, int type, int protocol, int sv[2]) {
   uint32_t args[] = { domain, type, protocol, (uintptr_t) sv };
   return socketcall(SYS_SOCKETPAIR, args);
 }
+
+#elif defined(__arm__)
+/* On ARM Linux, socketcall is not defined. Instead use each syscall. */
+
+ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
+  return errno_value_call(
+      linux_syscall3(__NR_recvmsg, sockfd, (uintptr_t) msg, flags));
+}
+
+ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
+  return errno_value_call(
+      linux_syscall3(__NR_sendmsg, sockfd, (uintptr_t) msg, flags));
+}
+
+int shutdown(int sockfd, int how) {
+  return errno_value_call(linux_syscall2(__NR_shutdown, sockfd, how));
+}
+
+int socketpair(int domain, int type, int protocol, int sv[2]) {
+  return errno_value_call(
+      linux_syscall4(__NR_socketpair, domain, type, protocol, (uintptr_t) sv));
+}
+
+#else
+# error Unsupported architecture
+#endif
 
 pid_t waitpid(pid_t pid, int *status, int options) {
   return errno_value_call(

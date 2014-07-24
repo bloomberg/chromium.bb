@@ -56,6 +56,11 @@
 # define __NR_clock_gettime      265
 # define __NR_clock_getres       266
 
+#define SYS_SOCKETPAIR 8
+#define SYS_SHUTDOWN   13
+#define SYS_SENDMSG    16
+#define SYS_RECVMSG    17
+
 #elif defined(__arm__)
 
 # define __NR_exit               1
@@ -79,7 +84,6 @@
 # define __NR_symlink            83
 # define __NR_readlink           85
 # define __NR_munmap             91
-# define __NR_socketcall         102
 # define __NR_wait4              114
 # define __NR_clone              120
 # define __NR_mprotect           125
@@ -101,15 +105,14 @@
 # define __NR_exit_group         248
 # define __NR_clock_gettime      263
 # define __NR_clock_getres       264
+# define __NR_socketpair         288
+# define __NR_shutdown           293
+# define __NR_sendmsg            296
+# define __NR_recvmsg            297
 # define __NR_ARM_set_tls        0xf0005
 
 #else
 # error Unsupported architecture
 #endif
-
-#define SYS_SOCKETPAIR 8
-#define SYS_SHUTDOWN   13
-#define SYS_SENDMSG    16
-#define SYS_RECVMSG    17
 
 #endif
