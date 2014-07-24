@@ -430,8 +430,8 @@ cvox.ActiveIndicator.prototype.moveIndicator_ = function(
   if (window.getComputedStyle(document.body, null).position != 'static') {
     offsetX = -document.body.getBoundingClientRect().left;
     offsetY = -document.body.getBoundingClientRect().top;
-  } else if (window.getComputedStyle(document.documentElement, null).position
-                 != 'static') {
+  } else if (window.getComputedStyle(document.documentElement, null).position !=
+                 'static') {
     offsetX = -document.documentElement.getBoundingClientRect().left;
     offsetY = -document.documentElement.getBoundingClientRect().top;
   } else {
@@ -828,6 +828,13 @@ cvox.ActiveIndicator.prototype.inset_ = function(r, left, top, right, bottom) {
 cvox.ActiveIndicator.prototype.createDiv_ = function(
       parent, className, opt_before) {
   var elem = document.createElement('div');
+  elem.setAttribute('aria-hidden', 'true');
+
+  // This allows the MutationObserver used for live regions to quickly
+  // ignore changes to this element rather than doing a lot of calculations
+  // first.
+  elem.setAttribute('cvoxIgnore', '');
+
   elem.className = className;
   if (opt_before) {
     parent.insertBefore(elem, opt_before);
