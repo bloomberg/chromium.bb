@@ -28,6 +28,7 @@
 namespace blink {
 
 class ContainerNode;
+class Document;
 class Element;
 class RenderStyle;
 
@@ -35,14 +36,7 @@ class RenderStyle;
 class ElementResolveContext {
     STACK_ALLOCATED();
 public:
-    ElementResolveContext()
-        : m_element(nullptr)
-        , m_parentNode(nullptr)
-        , m_rootElementStyle(0)
-        , m_elementLinkState(NotInsideLink)
-        , m_distributedToInsertionPoint(false)
-    {
-    }
+    explicit ElementResolveContext(const Document&);
 
     explicit ElementResolveContext(Element&);
 

@@ -29,6 +29,15 @@
 
 namespace blink {
 
+ElementResolveContext::ElementResolveContext(const Document& document)
+    : m_element(nullptr)
+    , m_parentNode(nullptr)
+    , m_rootElementStyle(document.documentElement() ? document.documentElement()->renderStyle() : document.renderStyle())
+    , m_elementLinkState(NotInsideLink)
+    , m_distributedToInsertionPoint(false)
+{
+}
+
 ElementResolveContext::ElementResolveContext(Element& element)
     : m_element(&element)
     , m_elementLinkState(element.document().visitedLinkState().determineLinkState(element))
