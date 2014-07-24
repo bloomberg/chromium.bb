@@ -167,7 +167,7 @@ remoting.Clipboard.prototype.toOs = function(clipboardData) {
 remoting.Clipboard.prototype.initiateToHost = function() {
   // It would be cleaner to send a paste command to the plugin element,
   // but that's not supported.
-  console.log('Initiating clipboard paste.');
+  //console.log('Initiating clipboard paste.');
   document.execCommand("paste");
 };
 

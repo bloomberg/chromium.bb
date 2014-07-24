@@ -94,14 +94,16 @@ remoting.init = function() {
   var sandbox = /** @type {HTMLIFrameElement} */
       document.getElementById('wcs-sandbox');
   remoting.wcsSandbox = new remoting.WcsSandboxContainer(sandbox.contentWindow);
-  var menuFeedback = new remoting.Feedback(
-      document.getElementById('help-feedback-main'),
-      document.getElementById('help-main'),
-      document.getElementById('send-feedback-main'));
-  var toolbarFeedback = new remoting.Feedback(
-      document.getElementById('help-feedback-toolbar'),
-      document.getElementById('help-toolbar'),
-      document.getElementById('send-feedback-toolbar'));
+  var homeFeedback = new remoting.MenuButton(
+      document.getElementById('help-feedback-main'));
+  var toolbarFeedback = new remoting.MenuButton(
+      document.getElementById('help-feedback-toolbar'));
+  remoting.manageHelpAndFeedback(
+      document.getElementById('title-bar'));
+  remoting.manageHelpAndFeedback(
+      document.getElementById('help-feedback-toolbar'));
+  remoting.manageHelpAndFeedback(
+      document.getElementById('help-feedback-main'));
 
   /** @param {remoting.Error} error */
   var onGetEmailError = function(error) {

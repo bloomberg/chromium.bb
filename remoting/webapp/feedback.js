@@ -7,28 +7,28 @@
 var remoting = remoting || {};
 
 /**
- * Show or hide the feedback button based on whether or not the current version
- * of Chrome recognizes Chrome Remote Desktop as an authorized feedback source.
+ * Attach appropriate event handlers and show or hide the feedback button based
+ * on whether or not the current version of Chrome recognizes Chrome Remote
+ * Desktop as an authorized feedback source.
  *
- * @param {HTMLElement} helpIcon The parent <span> for the help icon and the
- *     <ul> containing the help and feedback entries.
- * @param {HTMLElement} helpButton The Help <li> associated with the help icon.
- * @param {HTMLElement} feedbackButton The Feedback <li> associated with the
- *     help icon.
- * @constructor
+ * @param {HTMLElement} container The menu containing the help and feedback
+ *     items.
  */
-remoting.Feedback = function(helpIcon, helpButton, feedbackButton) {
-  var menuButton = new remoting.MenuButton(helpIcon);
+remoting.manageHelpAndFeedback = function(container) {
   var showHelp = function() {
     window.open('https://www.google.com/support/chrome/bin/answer.py?' +
                 'answer=1649523');
   }
+  var helpButton = container.querySelector('.menu-help');
+  base.debug.assert(helpButton != null);
   helpButton.addEventListener('click', showHelp, false);
+  var feedbackButton = container.querySelector('.menu-feedback');
+  base.debug.assert(feedbackButton != null);
   var chromeVersion = parseInt(
       window.navigator.appVersion.match(/Chrome\/(\d+)\./)[1], 10);
   if (chromeVersion >= 35) {
     feedbackButton.addEventListener('click',
-                                    this.sendFeedback_.bind(this),
+                                    remoting.sendFeedback_,
                                     false);
   } else {
     feedbackButton.hidden = true;
@@ -39,7 +39,7 @@ remoting.Feedback = function(helpIcon, helpButton, feedbackButton) {
  * Pass the current version of Chrome Remote Desktop to the Google Feedback
  * extension and instruct it to show the feedback dialog.
  */
-remoting.Feedback.prototype.sendFeedback_ = function() {
+remoting.sendFeedback_ = function() {
   var message = {
     requestFeedback: true,
     feedbackInfo: {

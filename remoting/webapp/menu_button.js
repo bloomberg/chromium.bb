@@ -18,8 +18,10 @@ var remoting = remoting || {};
  *     elements comprising the menu. It should have the "menu-button" class.
  * @param {function():void=} opt_onShow Optional callback invoked before the
  *     menu is shown.
+ * @param {function():void=} opt_onHide Optional callback after before the
+ *     menu is hidden.
  */
-remoting.MenuButton = function(container, opt_onShow) {
+remoting.MenuButton = function(container, opt_onShow, opt_onHide) {
   /**
    * @type {HTMLElement}
    * @private
@@ -39,6 +41,12 @@ remoting.MenuButton = function(container, opt_onShow) {
    */
   this.onShow_ = opt_onShow;
 
+  /**
+   * @type {undefined|function():void}
+   * @private
+   */
+  this.onHide_ = opt_onHide;
+
   /** @type {remoting.MenuButton} */
   var that = this;
 
@@ -48,7 +56,10 @@ remoting.MenuButton = function(container, opt_onShow) {
    */
   var closeHandler = function(event) {
     that.button_.classList.remove(remoting.MenuButton.BUTTON_ACTIVE_CLASS_);
-    document.body.removeEventListener('click', closeHandler, true);
+    document.body.removeEventListener('click', closeHandler, false);
+    if (that.onHide_) {
+      that.onHide_();
+    }
   };
 
   /**
@@ -83,15 +94,15 @@ remoting.MenuButton.prototype.menu = function() {
 
 /**
  * Set or unset the selected state of an <li> menu item.
- * @param {HTMLElement} item The menu item to update.
+ * @param {Element} item The menu item to update.
  * @param {boolean} selected True to select the item, false to deselect it.
  * @return {void} Nothing.
  */
 remoting.MenuButton.select = function(item, selected) {
   if (selected) {
-    item.classList.add('selected');
+    /** @type {DOMTokenList} */(item.classList).add('selected');
   } else {
-    item.classList.remove('selected');
+    /** @type {DOMTokenList} */(item.classList).remove('selected');
   }
 };
 

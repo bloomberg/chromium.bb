@@ -18,10 +18,10 @@ var remoting = remoting || {};
  */
 remoting.WindowFrame = function(titleBar) {
   /**
-   * @type {boolean}
+   * @type {remoting.ClientSession}
    * @private
    */
-  this.isConnected_ = false;
+  this.clientSession_ = null;
 
   /**
    * @type {HTMLElement}
@@ -38,12 +38,39 @@ remoting.WindowFrame = function(titleBar) {
   base.debug.assert(this.hoverTarget_ != null);
 
   /**
+   * @type {remoting.OptionsMenu}
+   * @private
+   */
+  this.optionsMenu_ = new remoting.OptionsMenu(
+      titleBar.querySelector('.menu-send-ctrl-alt-del'),
+      titleBar.querySelector('.menu-send-print-screen'),
+      titleBar.querySelector('.menu-resize-to-client'),
+      titleBar.querySelector('.menu-shrink-to-fit'),
+      titleBar.querySelector('.menu-new-connection'),
+      null);
+
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  this.title_ = /** @type {HTMLElement} */
+      (titleBar.querySelector('.window-title'));
+  base.debug.assert(this.title_ != null);
+
+  /**
    * @type {HTMLElement}
    * @private
    */
   this.maximizeRestoreControl_ = /** @type {HTMLElement} */
       (titleBar.querySelector('.window-maximize-restore'));
   base.debug.assert(this.maximizeRestoreControl_ != null);
+
+  var optionsButton = titleBar.querySelector('.window-options');
+  base.debug.assert(optionsButton != null);
+  this.optionMenuButton_ = new remoting.MenuButton(
+      optionsButton,
+      this.onShowOptionsMenu_.bind(this),
+      this.onHideOptionsMenu_.bind(this));
 
   /**
    * @type {Array.<{cls:string, fn: function()}>}
@@ -73,14 +100,23 @@ remoting.WindowFrame = function(titleBar) {
 };
 
 /**
- * @param {boolean} isConnected True if there is a connection active.
+ * @param {remoting.ClientSession} clientSession The client session, or null if
+ *     there is no connection.
  */
-remoting.WindowFrame.prototype.setConnected = function(isConnected) {
-  this.isConnected_ = isConnected;
-  if (this.isConnected_) {
+remoting.WindowFrame.prototype.setClientSession = function(clientSession) {
+  this.optionsMenu_.setClientSession(clientSession);
+  this.clientSession_ = clientSession;
+  var windowTitle = document.head.querySelector('title');
+  if (this.clientSession_) {
     document.body.classList.add('connected');
+    this.title_.innerText = clientSession.getHostDisplayName();
+    windowTitle.innerText = clientSession.getHostDisplayName() + ' - ' +
+        chrome.i18n.getMessage(/*i18n-content*/'PRODUCT_NAME');
   } else {
     document.body.classList.remove('connected');
+    this.title_.innerHTML = '&nbsp;';
+    windowTitle.innerText =
+        chrome.i18n.getMessage(/*i18n-content*/'PRODUCT_NAME');
   }
   this.updateMaximizeOrRestoreIconTitle_();
 };
@@ -129,7 +165,8 @@ remoting.WindowFrame.prototype.maximizeOrRestoreWindow_ = function() {
     // If the app is not full-screen, or went full-screen without first
     // being maximized, then the second restore has no effect.
     chrome.app.window.current().restore();
-  } else if (this.isConnected_) {
+    chrome.app.window.current().restore();
+  } else if (this.clientSession_) {
     chrome.app.window.current().fullscreen();
   } else {
     chrome.app.window.current().maximize();
@@ -163,13 +200,31 @@ remoting.WindowFrame.prototype.updateMaximizeOrRestoreIconTitle_ = function() {
     tag = /*i18n-content*/'EXIT_FULL_SCREEN';
   } else if (chrome.app.window.current().isMaximized()) {
     tag = /*i18n-content*/'RESTORE_WINDOW';
-  } else if (this.isConnected_) {
+  } else if (this.clientSession_) {
     tag = /*i18n-content*/'FULL_SCREEN';
   } else {
     tag = /*i18n-content*/'MAXIMIZE_WINDOW';
   }
   this.maximizeRestoreControl_.title = l10n.getTranslationOrError(tag);
 };
+
+/**
+ * Callback invoked when the options menu is shown.
+ * @private
+ */
+remoting.WindowFrame.prototype.onShowOptionsMenu_ = function() {
+  this.optionsMenu_.onShow();
+  this.hoverTarget_.classList.add('menu-opened');
+};
+
+/**
+ * Callback invoked when the options menu is shown.
+ * @private
+ */
+remoting.WindowFrame.prototype.onHideOptionsMenu_ = function() {
+  this.hoverTarget_.classList.remove('menu-opened');
+};
+
 
 /** @type {remoting.WindowFrame} */
 remoting.windowFrame = null;

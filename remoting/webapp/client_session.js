@@ -609,9 +609,10 @@ remoting.ClientSession.prototype.removePlugin = function() {
         remoting.fullscreen.removeListener(listener);
       });
   if (remoting.windowFrame) {
-    remoting.windowFrame.setConnected(false);
+    remoting.windowFrame.setClientSession(null);
+  } else {
+    remoting.toolbar.setClientSession(null);
   }
-  remoting.toolbar.setClientSession(null);
 
   // Remove mediasource-rendering class from the container - this will also
   // hide the <video> element.
@@ -995,9 +996,10 @@ remoting.ClientSession.prototype.onConnectionStatusUpdate_ =
     remoting.fullscreen.addListener(this.callOnFullScreenChanged_);
     remoting.fullscreen.syncWithMaximize(true);
     if (remoting.windowFrame) {
-      remoting.windowFrame.setConnected(true);
+      remoting.windowFrame.setClientSession(this);
+    } else {
+      remoting.toolbar.setClientSession(this);
     }
-    remoting.toolbar.setClientSession(this);
 
     this.container_.addEventListener('mousemove',
                                      this.updateMouseCursorPosition_,

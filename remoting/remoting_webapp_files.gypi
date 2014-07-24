@@ -197,6 +197,7 @@
       'resources/icon_host.webp',
       'resources/icon_maximize_restore.webp',
       'resources/icon_minimize.webp',
+      'resources/icon_options.webp',
       'resources/icon_pencil.webp',
       'resources/icon_warning.webp',
       'resources/infographic_my_computers.webp',

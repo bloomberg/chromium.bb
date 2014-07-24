@@ -22,7 +22,7 @@ html.apps-v2 .title-bar {
 .window-controls-hover-target {
   height: 32px;
   line-height: 32px;
-  font-size: 16px;
+  font-size: 14px;
   background-color: #c4c4c4;
 }
 
@@ -56,6 +56,12 @@ html.apps-v2 .title-bar {
   border-__MSG_@@bidi_start_edge__: 1px solid rgba(0, 0, 0, 0.2);
 }
 
+.window-control > span.menu-button-activator {
+  display: inline-block;
+  width: 100%;
+  height: 100%;
+}
+
 .window-control:hover {
   background-color: #d5d5d5;
 }
@@ -64,7 +70,7 @@ html.apps-v2 .title-bar {
   background-color: #a6a6a6;
 }
 
-.window-control > img {
+.window-control img {
   margin-bottom: -2px;
 }
 
@@ -109,8 +115,9 @@ html.apps-v2 #scroller {
 }
 
 
-/* When connected to a host, the Disconnect button is displayed. */
-body:not(.connected) .window-disconnect {
+/* The Disconnect and Options buttons are only displayed when connected. */
+body:not(.connected) .window-disconnect,
+body:not(.connected) .window-options {
   display: none;
 }
 
@@ -163,12 +170,13 @@ body.fullscreen .window-controls-hover-target {
 }
 
 body.fullscreen .window-controls-hover-target:hover,
-body.fullscreen .window-controls-hover-target.opened {
+body.fullscreen .window-controls-hover-target.opened,
+body.fullscreen .window-controls-hover-target.menu-opened {
   top: -4px;
   opacity: 1.0;
   box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.5);
 }
 
 .fullscreen .window-controls-hover-target.opened .window-controls-stub {
-    background-color: #a6a6a6;
+  background-color: #a6a6a6;
 }

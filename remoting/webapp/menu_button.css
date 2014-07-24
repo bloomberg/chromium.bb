@@ -10,6 +10,8 @@
 .menu-button-activator + ul {
   display: none;
   position: absolute;
+  line-height: normal;
+  text-align: __MSG_@@bidi_start_edge__;
 }
 
 .menu-button-activator + ul:not(.right-align) {
@@ -24,7 +26,7 @@
   display: block;
 }
 
-.menu-button-activator.active {
+button.menu-button-activator.active {
   background-color: #EEE;
   background-image: -webkit-gradient(linear, left top, left bottom,
                                      from(#EEE), to(#E0E0E0));

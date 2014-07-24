@@ -51,19 +51,12 @@ remoting.Toolbar = function(toolbar) {
       document.getElementById('send-print-screen'),
       document.getElementById('screen-resize-to-client'),
       document.getElementById('screen-shrink-to-fit'),
+      document.getElementById('new-connection'),
       document.getElementById('toggle-full-screen'));
 
   window.addEventListener('mousemove', remoting.Toolbar.onMouseMove, false);
   window.addEventListener('resize', this.center.bind(this), false);
 
-  registerEventListener('new-connection', 'click',
-      function() {
-        chrome.app.window.create('main.html', {
-          'width': 800,
-          'height': 600,
-          'frame': "none"
-        });
-      });
   registerEventListener('toolbar-disconnect', 'click', remoting.disconnect);
   registerEventListener('toolbar-stub', 'click',
       function() { remoting.toolbar.toggle(); });

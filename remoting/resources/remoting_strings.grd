@@ -563,6 +563,9 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message desc="Tool-tip for the window's restore icon." name="IDS_RESTORE_WINDOW">
         Restore window
       </message>
+      <message desc="Tool-tip for the window's options menu icon." name="IDS_OPTIONS_MENU">
+        Options
+      </message>
       <message desc="Button displayed underneath explanatory text for app features. Clicking causes the text, infographic and the button itself to be replaced by the actual UI for that feature." name="IDS_GET_STARTED">
         Get started
       </message>
@@ -714,13 +717,13 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
         Screen options
       </message>
       <message desc="Label for the client-side menu button that sends a Ctrl-Alt-Del sequence to the host. Clicking this button behaves as if Ctrl, Alt and Del were pressed and then released at the host." name="IDS_SEND_CTRL_ALT_DEL" formatter_data="android_java">
-        Ctrl-Alt-Del
+        Send Ctrl-Alt-Del
       </message>
       <message desc="Tool-bar button used to access buttons for pressing and releasing keys or sequences of keys that might not otherwise be available. For example, Ctrl-Alt-Del, which if pressed at a client would take effect there, rather than being sent to the host as the user expected." name="IDS_SEND_KEYS">
         Send keys
       </message>
       <message desc="Label for the client-side menu button that sends a PrtScn key press to the host. The 'PrtScn' abbreviation (as typically printed on the keycap on English keyboards) is preferred over 'Print Screen', to make it clearer that this refers to the physical PrtScn key, and not the OS-specific keyboard shortcut for the screen capture functionality." name="IDS_SEND_PRINT_SCREEN">
-        PrtScn
+        Send PrtScn
       </message>
       <message desc="Menu option for enabling shrink-to-fit. When clicked, the remote desktop will be scaled down so that it fits in the browser window." name="IDS_SHRINK_TO_FIT">
         Shrink to fit

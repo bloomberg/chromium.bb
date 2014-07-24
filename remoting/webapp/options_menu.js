@@ -13,19 +13,22 @@
 var remoting = remoting || {};
 
 /**
- * @param {HTMLElement} sendCtrlAltDel
- * @param {HTMLElement} sendPrtScrn
- * @param {HTMLElement} resizeToClient
- * @param {HTMLElement} shrinkToFit
- * @param {HTMLElement?} fullscreen
+ * @param {Element} sendCtrlAltDel
+ * @param {Element} sendPrtScrn
+ * @param {Element} resizeToClient
+ * @param {Element} shrinkToFit
+ * @param {Element} newConnection
+ * @param {Element?} fullscreen
  * @constructor
  */
 remoting.OptionsMenu = function(sendCtrlAltDel, sendPrtScrn,
-                                resizeToClient, shrinkToFit, fullscreen) {
+                                resizeToClient, shrinkToFit,
+                                newConnection, fullscreen) {
   this.sendCtrlAltDel_ = sendCtrlAltDel;
   this.sendPrtScrn_ = sendPrtScrn;
   this.resizeToClient_ = resizeToClient;
   this.shrinkToFit_ = shrinkToFit;
+  this.newConnection_ = newConnection;
   this.fullscreen_ = fullscreen;
   /**
    * @type {remoting.ClientSession}
@@ -41,6 +44,8 @@ remoting.OptionsMenu = function(sendCtrlAltDel, sendPrtScrn,
       'click', this.onResizeToClient_.bind(this), false);
   this.shrinkToFit_.addEventListener(
       'click', this.onShrinkToFit_.bind(this), false);
+  this.newConnection_.addEventListener(
+      'click', this.onNewConnection_.bind(this), false);
   if (this.fullscreen_) {
     this.fullscreen_.addEventListener(
         'click', this.onFullscreen_.bind(this), false);
@@ -92,6 +97,14 @@ remoting.OptionsMenu.prototype.onShrinkToFit_ = function() {
     this.clientSession_.setScreenMode(!this.clientSession_.getShrinkToFit(),
                                       this.clientSession_.getResizeToClient());
   }
+};
+
+remoting.OptionsMenu.prototype.onNewConnection_ = function() {
+  chrome.app.window.create('main.html', {
+    'width': 800,
+    'height': 600,
+    'frame': 'none'
+  });
 };
 
 remoting.OptionsMenu.prototype.onFullscreen_ = function() {

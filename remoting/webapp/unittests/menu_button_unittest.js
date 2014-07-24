@@ -6,8 +6,9 @@
 
 'use strict';
 
+var onShow = null;
+var onHide = null;
 var menuButton = null;
-var menuShown = false;
 
 module('MenuButton', {
   setup: function() {
@@ -19,12 +20,16 @@ module('MenuButton', {
             '<li id="menu-option-1">Option 1</li>' +
           '</ul>' +
         '</span>';
+    onShow = sinon.spy();
+    onHide = sinon.spy();
     menuButton = new remoting.MenuButton(
         document.getElementById('menu-button-container'),
-        function() { menuShown = true; });
-    menuShown = false;
+        onShow, onHide);
   },
   teardown: function() {
+    onShow = null;
+    onHide = null;
+    menuButton = null;
   }
 });
 
@@ -57,10 +62,13 @@ test('should dismiss when menu item is clicked', function() {
   ok(menu.offsetWidth == 0 && menu.offsetHeight == 0);
 });
 
-test('should invoke callback', function() {
-  ok(!menuShown);
+test('should invoke callbacks', function() {
+  ok(!onShow.called);
   menuButton.button().click();
-  ok(menuShown);
+  ok(onShow.called);
+  ok(!onHide.called);
+  document.body.click();
+  ok(onHide.called);
 });
 
 test('select method should set/unset background image', function() {
