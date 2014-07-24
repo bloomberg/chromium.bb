@@ -45,7 +45,6 @@ public:
 
     virtual void layoutBlock(bool relayoutChildren) OVERRIDE;
 
-    virtual bool avoidsFloats() const OVERRIDE { return true; }
     virtual bool canCollapseAnonymousBlockChild() const OVERRIDE { return false; }
 
     void dirtyGrid();

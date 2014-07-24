@@ -104,7 +104,7 @@ public:
     void markAllDescendantsWithFloatsForLayout(RenderBox* floatToRemove = 0, bool inLayout = true);
     void markSiblingsWithFloatsForLayout(RenderBox* floatToRemove = 0);
 
-    virtual bool containsFloats() const OVERRIDE FINAL { return m_floatingObjects && !m_floatingObjects->set().isEmpty(); }
+    bool containsFloats() const { return m_floatingObjects && !m_floatingObjects->set().isEmpty(); }
     bool containsFloat(RenderBox*) const;
 
     void removeFloatingObjects();
@@ -184,6 +184,8 @@ public:
 
     LayoutUnit paginationStrut() const { return m_rareData ? m_rareData->m_paginationStrut : LayoutUnit(); }
     void setPaginationStrut(LayoutUnit);
+
+    virtual bool avoidsFloats() const OVERRIDE;
 
 protected:
     void rebuildFloatsFromIntruding();

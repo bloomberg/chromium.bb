@@ -277,8 +277,6 @@ private:
 
     virtual bool isTable() const OVERRIDE { return true; }
 
-    virtual bool avoidsFloats() const OVERRIDE { return true; }
-
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
     virtual void paintObject(PaintInfo&, const LayoutPoint&) OVERRIDE;
     virtual void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint&) OVERRIDE;

@@ -46,7 +46,6 @@ public:
     virtual const char* renderName() const OVERRIDE;
 
     virtual bool isFlexibleBox() const OVERRIDE FINAL { return true; }
-    virtual bool avoidsFloats() const OVERRIDE FINAL { return true; }
     virtual bool canCollapseAnonymousBlockChild() const OVERRIDE { return false; }
     virtual void layoutBlock(bool relayoutChildren) OVERRIDE FINAL;
 

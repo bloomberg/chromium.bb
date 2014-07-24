@@ -44,7 +44,6 @@ public:
     void layoutHorizontalBox(bool relayoutChildren);
     void layoutVerticalBox(bool relayoutChildren);
 
-    virtual bool avoidsFloats() const OVERRIDE { return true; }
     virtual bool isDeprecatedFlexibleBox() const OVERRIDE { return true; }
     bool isStretchingChildren() const { return m_stretchingChildren; }
     virtual bool canCollapseAnonymousBlockChild() const OVERRIDE { return false; }

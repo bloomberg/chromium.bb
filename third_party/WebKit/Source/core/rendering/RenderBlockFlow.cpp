@@ -536,10 +536,9 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
     // Go ahead and position the child as though it didn't collapse with the top.
     setLogicalTopForChild(child, logicalTopEstimate);
 
-    RenderBlock* childRenderBlock = child->isRenderBlock() ? toRenderBlock(child) : 0;
-    RenderBlockFlow* childRenderBlockFlow = (childRenderBlock && child->isRenderBlockFlow()) ? toRenderBlockFlow(child) : 0;
+    RenderBlockFlow* childRenderBlockFlow = child->isRenderBlockFlow() ? toRenderBlockFlow(child) : 0;
     bool markDescendantsWithFloats = false;
-    if (logicalTopEstimate != oldLogicalTop && !child->avoidsFloats() && childRenderBlock && childRenderBlock->containsFloats()) {
+    if (logicalTopEstimate != oldLogicalTop && childRenderBlockFlow && !childRenderBlockFlow->avoidsFloats() && childRenderBlockFlow->containsFloats()) {
         markDescendantsWithFloats = true;
     } else if (UNLIKELY(logicalTopEstimate.mightBeSaturated())) {
         // logicalTopEstimate, returned by estimateLogicalTopPosition, might be saturated for
@@ -603,12 +602,11 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
             layoutScope.setChildNeedsLayout(child);
         }
 
-        if (childRenderBlock) {
-            if (!child->avoidsFloats() && childRenderBlock->containsFloats())
-                childRenderBlockFlow->markAllDescendantsWithFloatsForLayout();
-            if (!child->needsLayout())
-                child->markForPaginationRelayoutIfNeeded(layoutScope);
-        }
+        if (childRenderBlockFlow && !childRenderBlockFlow->avoidsFloats() && childRenderBlockFlow->containsFloats())
+            childRenderBlockFlow->markAllDescendantsWithFloatsForLayout();
+
+        if (!child->needsLayout())
+            child->markForPaginationRelayoutIfNeeded(layoutScope);
 
         // Our guess was wrong. Make the child lay itself out again.
         child->layoutIfNeeded();
@@ -680,7 +678,7 @@ LayoutUnit RenderBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTopA
         SubtreeLayoutScope layoutScope(*child);
 
         if (childBlockFlow) {
-            if (!child->avoidsFloats() && childBlockFlow->containsFloats())
+            if (!childBlockFlow->avoidsFloats() && childBlockFlow->containsFloats())
                 childBlockFlow->markAllDescendantsWithFloatsForLayout();
             if (!child->needsLayout())
                 child->markForPaginationRelayoutIfNeeded(layoutScope);
@@ -1827,7 +1825,7 @@ void RenderBlockFlow::markSiblingsWithFloatsForLayout(RenderBox* floatToRemove)
     FloatingObjectSetIterator end = floatingObjectSet.end();
 
     for (RenderObject* next = nextSibling(); next; next = next->nextSibling()) {
-        if (!next->isRenderBlockFlow() || next->isFloatingOrOutOfFlowPositioned() || toRenderBlock(next)->avoidsFloats())
+        if (!next->isRenderBlockFlow() || next->isFloatingOrOutOfFlowPositioned() || toRenderBlockFlow(next)->avoidsFloats())
             continue;
 
         RenderBlockFlow* nextBlock = toRenderBlockFlow(next);
@@ -2802,6 +2800,13 @@ void RenderBlockFlow::setPaginationStrut(LayoutUnit strut)
         m_rareData = adoptPtr(new RenderBlockFlowRareData(this));
     }
     m_rareData->m_paginationStrut = strut;
+}
+
+bool RenderBlockFlow::avoidsFloats() const
+{
+    // Floats can't intrude into our box if we have a non-auto column count or width.
+    // Note: we need to use RenderBox::avoidsFloats here since RenderBlock::avoidsFloats is always true.
+    return RenderBox::avoidsFloats() || !style()->hasAutoColumnCount() || !style()->hasAutoColumnWidth();
 }
 
 LayoutUnit RenderBlockFlow::logicalLeftSelectionOffset(RenderBlock* rootBlock, LayoutUnit position)

@@ -141,9 +141,6 @@ public:
     // RenderBoxes without needed to check whether they're RenderBlocks first.
     virtual void markForPaginationRelayoutIfNeeded(SubtreeLayoutScope&) OVERRIDE FINAL;
 
-    // FIXME-BLOCKFLOW: Remove virtualizaion when all of the line layout code has been moved out of RenderBlock
-    virtual bool containsFloats() const { return false; }
-
     LayoutUnit textIndentOffset() const;
 
     virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE;
@@ -374,7 +371,7 @@ private:
 
     bool hasCaret() const;
 
-    virtual bool avoidsFloats() const OVERRIDE;
+    virtual bool avoidsFloats() const OVERRIDE { return true; }
 
     bool hitTestColumns(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
     bool hitTestContents(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);

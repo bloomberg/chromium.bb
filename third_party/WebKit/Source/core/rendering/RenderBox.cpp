@@ -2245,7 +2245,7 @@ LayoutUnit RenderBox::computeLogicalWidthUsing(SizeType widthType, const Length&
     LayoutUnit marginEnd = 0;
     LayoutUnit logicalWidthResult = fillAvailableMeasure(availableLogicalWidth, marginStart, marginEnd);
 
-    if (shrinkToAvoidFloats() && cb->containsFloats())
+    if (shrinkToAvoidFloats() && cb->isRenderBlockFlow() && toRenderBlockFlow(cb)->containsFloats())
         logicalWidthResult = std::min(logicalWidthResult, shrinkLogicalWidthToAvoidFloats(marginStart, marginEnd, toRenderBlockFlow(cb)));
 
     if (widthType == MainOrPreferredSize && sizesLogicalWidthToFitContent(logicalWidth))
@@ -2367,7 +2367,7 @@ void RenderBox::computeMarginsForDirection(MarginDirection flowDirection, const 
     LayoutUnit marginEndWidth = minimumValueForLength(marginEndLength, containerWidth);
 
     LayoutUnit availableWidth = containerWidth;
-    if (avoidsFloats() && containingBlock->containsFloats()) {
+    if (avoidsFloats() && containingBlock->isRenderBlockFlow() && toRenderBlockFlow(containingBlock)->containsFloats()) {
         availableWidth = containingBlockAvailableLineWidth();
         if (shrinkToAvoidFloats() && availableWidth < containerWidth) {
             marginStart = std::max<LayoutUnit>(0, marginStartWidth);
