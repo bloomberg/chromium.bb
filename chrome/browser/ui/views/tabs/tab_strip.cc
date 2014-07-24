@@ -1186,6 +1186,12 @@ bool TabStrip::IsImmersiveStyle() const {
   return immersive_style_;
 }
 
+void TabStrip::UpdateTabAccessibilityState(const Tab* tab,
+                                           ui::AXViewState* state) {
+  state->count = tab_count();
+  state->index = GetModelIndexOfTab(tab);
+}
+
 void TabStrip::MouseMovedOutOfHost() {
   ResizeLayoutTabs();
   if (reset_to_shrink_on_exit_) {

@@ -232,6 +232,8 @@ class TabStrip : public views::View,
                                  const ui::MouseEvent& event) OVERRIDE;
   virtual bool ShouldPaintTab(const Tab* tab, gfx::Rect* clip) OVERRIDE;
   virtual bool IsImmersiveStyle() const OVERRIDE;
+  virtual void UpdateTabAccessibilityState(const Tab* tab,
+                                           ui::AXViewState* state) OVERRIDE;
 
   // MouseWatcherListener overrides:
   virtual void MouseMovedOutOfHost() OVERRIDE;

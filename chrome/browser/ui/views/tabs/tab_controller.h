@@ -89,6 +89,10 @@ class TabController {
   // Returns true if tabs painted in the rectangular light-bar style.
   virtual bool IsImmersiveStyle() const = 0;
 
+  // Adds private information to the tab's accessibility state.
+  virtual void UpdateTabAccessibilityState(const Tab* tab,
+                                        ui::AXViewState* state) = 0;
+
  protected:
   virtual ~TabController() {}
 };

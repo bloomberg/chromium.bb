@@ -96,6 +96,10 @@ class AccessibilityEventRouterViews : public content::NotificationObserver {
       views::View* view,
       ui::AXEvent event,
       Profile* profile);
+  static void SendTabNotification(
+      views::View* view,
+      ui::AXEvent event,
+      Profile* profile);
   static void SendMenuItemNotification(
       views::View* view,
       ui::AXEvent event,

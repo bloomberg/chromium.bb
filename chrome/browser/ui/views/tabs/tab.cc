@@ -1014,6 +1014,7 @@ void Tab::GetAccessibleState(ui::AXViewState* state) {
   state->name = data_.title;
   state->AddStateFlag(ui::AX_STATE_MULTISELECTABLE);
   state->AddStateFlag(ui::AX_STATE_SELECTABLE);
+  controller_->UpdateTabAccessibilityState(this, state);
   if (IsSelected())
     state->AddStateFlag(ui::AX_STATE_SELECTED);
 }

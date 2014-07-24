@@ -60,6 +60,8 @@ class FakeTabController : public TabController {
     return true;
   }
   virtual bool IsImmersiveStyle() const OVERRIDE { return immersive_style_; }
+  virtual void UpdateTabAccessibilityState(const Tab* tab,
+                                           ui::AXViewState* state) OVERRIDE{};
 
  private:
   ui::ListSelectionModel selection_model_;

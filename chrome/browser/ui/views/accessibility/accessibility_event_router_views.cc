@@ -229,6 +229,9 @@ void AccessibilityEventRouterViews::DispatchAccessibilityEvent(
   case ui::AX_ROLE_TREE:
     SendTreeNotification(view, type, profile);
     break;
+  case ui::AX_ROLE_TAB:
+    SendTabNotification(view, type, profile);
+    break;
   case ui::AX_ROLE_TREE_ITEM:
     SendTreeItemNotification(view, type, profile);
     break;
@@ -242,6 +245,21 @@ void AccessibilityEventRouterViews::DispatchAccessibilityEvent(
     // caught so we can add accessibility extension API support.
     NOTREACHED();
   }
+}
+
+// static
+void AccessibilityEventRouterViews::SendTabNotification(
+    views::View* view,
+    ui::AXEvent event,
+    Profile* profile) {
+  ui::AXViewState state;
+  view->GetAccessibleState(&state);
+  if (state.index == -1)
+    return;
+  std::string name = base::UTF16ToUTF8(state.name);
+  std::string context = GetViewContext(view);
+  AccessibilityTabInfo info(profile, name, context, state.index, state.count);
+  SendControlAccessibilityNotification(event, &info);
 }
 
 // static
