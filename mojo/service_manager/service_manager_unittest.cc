@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/interface_factory.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
+#include "mojo/service_manager/background_service_loader.h"
 #include "mojo/service_manager/service_loader.h"
 #include "mojo/service_manager/service_manager.h"
 #include "mojo/service_manager/test.mojom.h"
@@ -148,22 +149,99 @@ class TestServiceLoader : public ServiceLoader,
   DISALLOW_COPY_AND_ASSIGN(TestServiceLoader);
 };
 
-struct TesterContext {
-  TesterContext()
-      : num_b_calls(0),
-        num_c_calls(0),
-        num_a_deletes(0),
-        num_b_deletes(0),
-        num_c_deletes(0),
-        tester_called_quit(false),
-        a_called_quit(false) {}
-  int num_b_calls;
-  int num_c_calls;
-  int num_a_deletes;
-  int num_b_deletes;
-  int num_c_deletes;
-  bool tester_called_quit;
-  bool a_called_quit;
+class TesterContext {
+ public:
+  explicit TesterContext(base::MessageLoop* loop)
+      : num_b_calls_(0),
+        num_c_calls_(0),
+        num_a_deletes_(0),
+        num_b_deletes_(0),
+        num_c_deletes_(0),
+        tester_called_quit_(false),
+        a_called_quit_(false),
+        loop_(loop) {}
+
+  void IncrementNumBCalls() {
+    base::AutoLock lock(lock_);
+    num_b_calls_++;
+  }
+
+  void IncrementNumCCalls() {
+    base::AutoLock lock(lock_);
+    num_c_calls_++;
+  }
+
+  void IncrementNumADeletes() {
+    base::AutoLock lock(lock_);
+    num_a_deletes_++;
+  }
+
+  void IncrementNumBDeletes() {
+    base::AutoLock lock(lock_);
+    num_b_deletes_++;
+  }
+
+  void IncrementNumCDeletes() {
+    base::AutoLock lock(lock_);
+    num_c_deletes_++;
+  }
+
+  void set_tester_called_quit() {
+    base::AutoLock lock(lock_);
+    tester_called_quit_ = true;
+  }
+
+  void set_a_called_quit() {
+    base::AutoLock lock(lock_);
+    a_called_quit_ = true;
+  }
+
+  int num_b_calls() {
+    base::AutoLock lock(lock_);
+    return num_b_calls_;
+  }
+  int num_c_calls() {
+    base::AutoLock lock(lock_);
+    return num_c_calls_;
+  }
+  int num_a_deletes() {
+    base::AutoLock lock(lock_);
+    return num_a_deletes_;
+  }
+  int num_b_deletes() {
+    base::AutoLock lock(lock_);
+    return num_b_deletes_;
+  }
+  int num_c_deletes() {
+    base::AutoLock lock(lock_);
+    return num_c_deletes_;
+  }
+  bool tester_called_quit() {
+    base::AutoLock lock(lock_);
+    return tester_called_quit_;
+  }
+  bool a_called_quit() {
+    base::AutoLock lock(lock_);
+    return a_called_quit_;
+  }
+
+  void QuitSoon() {
+    loop_->PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+  }
+
+ private:
+  // lock_ protects all members except for loop_ which must be unchanged for the
+  // lifetime of this class.
+  base::Lock lock_;
+  int num_b_calls_;
+  int num_c_calls_;
+  int num_a_deletes_;
+  int num_b_deletes_;
+  int num_c_deletes_;
+  bool tester_called_quit_;
+  bool a_called_quit_;
+
+  base::MessageLoop* loop_;
 };
 
 // Used to test that the requestor url will be correctly passed.
@@ -173,7 +251,7 @@ class TestAImpl : public InterfaceImpl<TestA> {
       : test_context_(test_context) {
     connection->ConnectToApplication(kTestBURLString)->ConnectToService(&b_);
   }
-  virtual ~TestAImpl() { test_context_->num_a_deletes++; }
+  virtual ~TestAImpl() { test_context_->IncrementNumADeletes(); }
 
  private:
   virtual void CallB() OVERRIDE {
@@ -185,8 +263,8 @@ class TestAImpl : public InterfaceImpl<TestA> {
   }
 
   void Quit() {
-    test_context_->a_called_quit = true;
-    base::MessageLoop::current()->Quit();
+    test_context_->set_a_called_quit();
+    test_context_->QuitSoon();
   }
 
   TesterContext* test_context_;
@@ -201,20 +279,18 @@ class TestBImpl : public InterfaceImpl<TestB> {
   }
 
   virtual ~TestBImpl() {
-    test_context_->num_b_deletes++;
-    if (!base::MessageLoop::current()->is_running())
-      return;
-    base::MessageLoop::current()->Quit();
+    test_context_->IncrementNumBDeletes();
+    test_context_->QuitSoon();
   }
 
  private:
   virtual void B(const mojo::Callback<void()>& callback) OVERRIDE {
-    ++test_context_->num_b_calls;
+    test_context_->IncrementNumBCalls();
     callback.Run();
   }
 
   virtual void CallC(const mojo::Callback<void()>& callback) OVERRIDE {
-    ++test_context_->num_b_calls;
+    test_context_->IncrementNumBCalls();
     c_->C(callback);
   }
 
@@ -227,11 +303,11 @@ class TestCImpl : public InterfaceImpl<TestC> {
   TestCImpl(ApplicationConnection* connection, TesterContext* test_context)
       : test_context_(test_context) {}
 
-  virtual ~TestCImpl() { test_context_->num_c_deletes++; }
+  virtual ~TestCImpl() { test_context_->IncrementNumCDeletes(); }
 
  private:
   virtual void C(const mojo::Callback<void()>& callback) OVERRIDE {
-    ++test_context_->num_c_calls;
+    test_context_->IncrementNumCCalls();
     callback.Run();
   }
   TesterContext* test_context_;
@@ -263,8 +339,8 @@ class Tester : public ApplicationDelegate,
       ApplicationConnection* connection) OVERRIDE {
     if (!requestor_url_.empty() &&
           requestor_url_ != connection->GetRemoteApplicationURL()) {
-      context_->tester_called_quit = true;
-      base::MessageLoop::current()->Quit();
+      context_->set_tester_called_quit();
+      context_->QuitSoon();
       return false;
     }
     // If we're coming from A, then add B, otherwise A.
@@ -334,7 +410,7 @@ class TestServiceInterceptor : public ServiceManager::Interceptor {
 
 class ServiceManagerTest : public testing::Test {
  public:
-  ServiceManagerTest() {}
+  ServiceManagerTest() : tester_context_(&loop_) {}
 
   virtual ~ServiceManagerTest() {}
 
@@ -355,6 +431,15 @@ class ServiceManagerTest : public testing::Test {
     service_manager_.reset(NULL);
   }
 
+  void AddLoaderForURL(const GURL& url, const std::string& requestor_url) {
+    scoped_ptr<ServiceLoader> real_loader(
+        new Tester(&tester_context_, requestor_url));
+    service_manager_->SetLoaderForURL(
+        scoped_ptr<ServiceLoader>(new BackgroundServiceLoader(
+            real_loader.Pass(), "", base::MessageLoop::TYPE_DEFAULT)),
+        url);
+  }
+
   bool HasFactoryForTestURL() {
     ServiceManager::TestAPI manager_test_api(service_manager_.get());
     return manager_test_api.HasFactoryForURL(GURL(kTestURLString));
@@ -362,8 +447,9 @@ class ServiceManagerTest : public testing::Test {
 
  protected:
   base::ShadowingAtExitManager at_exit_;
-  base::MessageLoop loop_;
+  TesterContext tester_context_;
   TestContext context_;
+  base::MessageLoop loop_;
   scoped_ptr<TestClientImpl> test_client_;
   scoped_ptr<ServiceManager> service_manager_;
   DISALLOW_COPY_AND_ASSIGN(ServiceManagerTest);
@@ -416,25 +502,28 @@ TEST_F(ServiceManagerTest, SetLoaders) {
   TestServiceLoader* default_loader = new TestServiceLoader;
   TestServiceLoader* url_loader = new TestServiceLoader;
   TestServiceLoader* scheme_loader = new TestServiceLoader;
-  sm.set_default_loader(scoped_ptr<ServiceLoader>(default_loader));
-  sm.SetLoaderForURL(scoped_ptr<ServiceLoader>(url_loader), GURL("test:test1"));
-  sm.SetLoaderForScheme(scoped_ptr<ServiceLoader>(scheme_loader), "test");
+  service_manager_->set_default_loader(
+      scoped_ptr<ServiceLoader>(default_loader));
+  service_manager_->SetLoaderForURL(scoped_ptr<ServiceLoader>(url_loader),
+                                    GURL("test:test1"));
+  service_manager_->SetLoaderForScheme(scoped_ptr<ServiceLoader>(scheme_loader),
+                                       "test");
 
   // test::test1 should go to url_loader.
   TestServicePtr test_service;
-  sm.ConnectToService(GURL("test:test1"), &test_service);
+  service_manager_->ConnectToService(GURL("test:test1"), &test_service);
   EXPECT_EQ(1, url_loader->num_loads());
   EXPECT_EQ(0, scheme_loader->num_loads());
   EXPECT_EQ(0, default_loader->num_loads());
 
   // test::test2 should go to scheme loader.
-  sm.ConnectToService(GURL("test:test2"), &test_service);
+  service_manager_->ConnectToService(GURL("test:test2"), &test_service);
   EXPECT_EQ(1, url_loader->num_loads());
   EXPECT_EQ(1, scheme_loader->num_loads());
   EXPECT_EQ(0, default_loader->num_loads());
 
   // http::test1 should go to default loader.
-  sm.ConnectToService(GURL("http:test1"), &test_service);
+  service_manager_->ConnectToService(GURL("http:test1"), &test_service);
   EXPECT_EQ(1, url_loader->num_loads());
   EXPECT_EQ(1, scheme_loader->num_loads());
   EXPECT_EQ(1, default_loader->num_loads());
@@ -442,121 +531,83 @@ TEST_F(ServiceManagerTest, SetLoaders) {
 
 // Confirm that the url of a service is correctly passed to another service that
 // it loads.
-// http://crbug.com/396300
-TEST_F(ServiceManagerTest, DISABLED_ACallB) {
-  TesterContext context;
-  ServiceManager sm;
-
+TEST_F(ServiceManagerTest, ACallB) {
   // Any url can load a.
-  sm.SetLoaderForURL(
-      scoped_ptr<ServiceLoader>(new Tester(&context, std::string())),
-      GURL(kTestAURLString));
+  AddLoaderForURL(GURL(kTestAURLString), std::string());
 
   // Only a can load b.
-  sm.SetLoaderForURL(
-      scoped_ptr<ServiceLoader>(
-          new Tester(&context, kTestAURLString)),
-      GURL(kTestBURLString));
+  AddLoaderForURL(GURL(kTestBURLString), kTestAURLString);
 
   TestAPtr a;
-  sm.ConnectToService(GURL(kTestAURLString), &a);
+  service_manager_->ConnectToService(GURL(kTestAURLString), &a);
   a->CallB();
   loop_.Run();
-  EXPECT_EQ(1, context.num_b_calls);
-  EXPECT_TRUE(context.a_called_quit);
+  EXPECT_EQ(1, tester_context_.num_b_calls());
+  EXPECT_TRUE(tester_context_.a_called_quit());
 }
 
 // A calls B which calls C.
-// http://crbug.com/396300
-TEST_F(ServiceManagerTest, DISABLED_BCallC) {
-  TesterContext context;
-  ServiceManager sm;
-
+TEST_F(ServiceManagerTest, BCallC) {
   // Any url can load a.
-  sm.SetLoaderForURL(
-      scoped_ptr<ServiceLoader>(new Tester(&context, std::string())),
-      GURL(kTestAURLString));
+  AddLoaderForURL(GURL(kTestAURLString), std::string());
 
   // Only a can load b.
-  sm.SetLoaderForURL(
-      scoped_ptr<ServiceLoader>(
-          new Tester(&context, kTestAURLString)),
-      GURL(kTestBURLString));
+  AddLoaderForURL(GURL(kTestBURLString), kTestAURLString);
 
   TestAPtr a;
-  sm.ConnectToService(GURL(kTestAURLString), &a);
+  service_manager_->ConnectToService(GURL(kTestAURLString), &a);
   a->CallCFromB();
   loop_.Run();
 
-  EXPECT_EQ(1, context.num_b_calls);
-  EXPECT_EQ(1, context.num_c_calls);
-  EXPECT_TRUE(context.a_called_quit);
+  EXPECT_EQ(1, tester_context_.num_b_calls());
+  EXPECT_EQ(1, tester_context_.num_c_calls());
+  EXPECT_TRUE(tester_context_.a_called_quit());
 }
 
 // Confirm that a service impl will be deleted if the app that connected to
 // it goes away.
-// http://crbug.com/396300
-TEST_F(ServiceManagerTest, DISABLED_BDeleted) {
-  TesterContext context;
-  ServiceManager sm;
-
-  sm.SetLoaderForURL(
-      scoped_ptr<ServiceLoader>(new Tester(&context, std::string())),
-      GURL(kTestAURLString));
-
-  sm.SetLoaderForURL(
-      scoped_ptr<ServiceLoader>( new Tester(&context, std::string())),
-      GURL(kTestBURLString));
+TEST_F(ServiceManagerTest, BDeleted) {
+  AddLoaderForURL(GURL(kTestAURLString), std::string());
+  AddLoaderForURL(GURL(kTestBURLString), std::string());
 
   TestAPtr a;
-  sm.ConnectToService(GURL(kTestAURLString), &a);
+  service_manager_->ConnectToService(GURL(kTestAURLString), &a);
 
   a->CallB();
   loop_.Run();
 
   // Kills the a app.
-  sm.SetLoaderForURL(scoped_ptr<ServiceLoader>(), GURL(kTestAURLString));
+  service_manager_->SetLoaderForURL(scoped_ptr<ServiceLoader>(),
+                                    GURL(kTestAURLString));
   loop_.Run();
-  EXPECT_EQ(1, context.num_b_deletes);
+
+  EXPECT_EQ(1, tester_context_.num_b_deletes());
 }
 
 // Confirm that the url of a service is correctly passed to another service that
 // it loads, and that it can be rejected.
-// http://crbug.com/396300
-TEST_F(ServiceManagerTest, DISABLED_ANoLoadB) {
-  TesterContext context;
-  ServiceManager sm;
-
+TEST_F(ServiceManagerTest, ANoLoadB) {
   // Any url can load a.
-  sm.SetLoaderForURL(
-      scoped_ptr<ServiceLoader>(new Tester(&context, std::string())),
-      GURL(kTestAURLString));
+  AddLoaderForURL(GURL(kTestAURLString), std::string());
 
   // Only c can load b, so this will fail.
-  sm.SetLoaderForURL(
-      scoped_ptr<ServiceLoader>(new Tester(&context, "test:TestC")),
-       GURL(kTestBURLString));
+  AddLoaderForURL(GURL(kTestBURLString), "test:TestC");
 
   TestAPtr a;
-  sm.ConnectToService(GURL(kTestAURLString), &a);
+  service_manager_->ConnectToService(GURL(kTestAURLString), &a);
   a->CallB();
   loop_.Run();
-  EXPECT_EQ(0, context.num_b_calls);
-  EXPECT_TRUE(context.tester_called_quit);
+  EXPECT_EQ(0, tester_context_.num_b_calls());
+  EXPECT_TRUE(tester_context_.tester_called_quit());
 }
 
 TEST_F(ServiceManagerTest, NoServiceNoLoad) {
-  TesterContext context;
-  ServiceManager sm;
-
-  sm.SetLoaderForURL(
-      scoped_ptr<ServiceLoader>(new Tester(&context, std::string())),
-      GURL(kTestAURLString));
+  AddLoaderForURL(GURL(kTestAURLString), std::string());
 
   // There is no TestC service implementation registered with ServiceManager,
   // so this cannot succeed (but also shouldn't crash).
   TestCPtr c;
-  sm.ConnectToService(GURL(kTestAURLString), &c);
+  service_manager_->ConnectToService(GURL(kTestAURLString), &c);
   QuitMessageLoopErrorHandler quitter;
   c.set_error_handler(&quitter);
 
@@ -565,15 +616,15 @@ TEST_F(ServiceManagerTest, NoServiceNoLoad) {
 }
 
 TEST_F(ServiceManagerTest, Interceptor) {
-  ServiceManager sm;
   TestServiceInterceptor interceptor;
   TestServiceLoader* default_loader = new TestServiceLoader;
-  sm.set_default_loader(scoped_ptr<ServiceLoader>(default_loader));
-  sm.SetInterceptor(&interceptor);
+  service_manager_->set_default_loader(
+      scoped_ptr<ServiceLoader>(default_loader));
+  service_manager_->SetInterceptor(&interceptor);
 
   std::string url("test:test3");
   TestServicePtr test_service;
-  sm.ConnectToService(GURL(url), &test_service);
+  service_manager_->ConnectToService(GURL(url), &test_service);
 
   EXPECT_EQ(1, interceptor.call_count());
   EXPECT_EQ(url, interceptor.url_spec());
