@@ -55,6 +55,8 @@ class AthenaTemplateURLServiceClient : public TemplateURLServiceClient {
       TemplateURLID id,
       const base::string16& term) OVERRIDE {}
   virtual void AddKeywordGeneratedVisit(const GURL& url) OVERRIDE {}
+  virtual void RestoreExtensionInfoIfNecessary(
+      TemplateURL* template_url) OVERRIDE {}
 
   DISALLOW_COPY_AND_ASSIGN(AthenaTemplateURLServiceClient);
 };

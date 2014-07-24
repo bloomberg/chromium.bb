@@ -9,6 +9,7 @@
 #include "components/search_engines/template_url_id.h"
 
 class GURL;
+class TemplateURL;
 class TemplateURLService;
 
 // This interface provides history related functionality required by
@@ -31,6 +32,9 @@ class TemplateURLServiceClient {
 
   // Adds the given URL to history as a keyword generated visit.
   virtual void AddKeywordGeneratedVisit(const GURL& url) = 0;
+
+  // Restores the extension info of a TemplateURL loaded from the database.
+  virtual void RestoreExtensionInfoIfNecessary(TemplateURL* template_url) = 0;
 };
 
 #endif  // COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_CLIENT_H_

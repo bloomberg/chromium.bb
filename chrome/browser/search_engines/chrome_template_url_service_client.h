@@ -28,6 +28,8 @@ class ChromeTemplateURLServiceClient : public TemplateURLServiceClient,
                                            TemplateURLID id,
                                            const base::string16& term) OVERRIDE;
   virtual void AddKeywordGeneratedVisit(const GURL& url) OVERRIDE;
+  virtual void RestoreExtensionInfoIfNecessary(
+      TemplateURL* template_url) OVERRIDE;
 
   // content::NotificationObserver:
   virtual void Observe(int type,

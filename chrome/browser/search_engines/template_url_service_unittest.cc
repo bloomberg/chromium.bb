@@ -502,6 +502,25 @@ TEST_F(TemplateURLServiceTest, AddSameKeywordWithExtensionPresent) {
             model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword_")));
 }
 
+TEST_F(TemplateURLServiceTest, RestoreOmniboxExtensionKeyword) {
+  test_util_->VerifyLoad();
+
+  // Register an omnibox keyword.
+  model()->RegisterOmniboxKeyword("test", "extension", "keyword",
+                                  "chrome-extension://test");
+  ASSERT_TRUE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword")));
+
+  // Reload the data.
+  test_util_->ResetModel(true);
+
+  // Ensure the omnibox keyword is restored correctly.
+  TemplateURL* t_url =
+      model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword"));
+  ASSERT_TRUE(t_url);
+  ASSERT_EQ(TemplateURL::OMNIBOX_API_EXTENSION, t_url->GetType());
+  EXPECT_EQ("test", t_url->GetExtensionId());
+}
+
 TEST_F(TemplateURLServiceTest, ClearBrowsingData_Keywords) {
   Time now = Time::Now();
   TimeDelta one_day = TimeDelta::FromDays(1);

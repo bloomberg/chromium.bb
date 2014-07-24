@@ -575,6 +575,12 @@ class TemplateURL {
     return contextual_search_url_ref_;
   }
 
+  // This setter shouldn't be used except by TemplateURLService and
+  // TemplateURLServiceClient implementations.
+  void set_extension_info(scoped_ptr<AssociatedExtensionInfo> extension_info) {
+    extension_info_ = extension_info.Pass();
+  }
+
   // Returns true if |url| supports replacement.
   bool SupportsReplacement(const SearchTermsData& search_terms_data) const;
 

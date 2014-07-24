@@ -851,6 +851,14 @@ void TemplateURLService::OnWebDataServiceRequestDone(
       &new_resource_keyword_version,
       &pre_sync_deletes_);
 
+  if (client_) {
+    // Restore extension info of loaded TemplateURLs.
+    for (size_t i = 0; i < template_urls.size(); ++i) {
+      DCHECK(!template_urls[i]->extension_info_);
+      client_->RestoreExtensionInfoIfNecessary(template_urls[i]);
+    }
+  }
+
   KeywordWebDataService::BatchModeScoper scoper(web_data_service_.get());
 
   PatchMissingSyncGUIDs(&template_urls);

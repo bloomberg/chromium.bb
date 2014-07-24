@@ -12,6 +12,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/common/constants.h"
 
 ChromeTemplateURLServiceClient::ChromeTemplateURLServiceClient(Profile* profile)
     : profile_(profile),
@@ -62,6 +63,18 @@ void ChromeTemplateURLServiceClient::AddKeywordGeneratedVisit(const GURL& url) {
                              history::RedirectList(),
                              content::PAGE_TRANSITION_KEYWORD_GENERATED,
                              history::SOURCE_BROWSED, false);
+}
+
+void ChromeTemplateURLServiceClient::RestoreExtensionInfoIfNecessary(
+    TemplateURL* template_url) {
+  const TemplateURLData& data = template_url->data();
+  GURL url(data.url());
+  if (url.SchemeIs(extensions::kExtensionScheme)) {
+    const std::string& extension_id = url.host();
+    template_url->set_extension_info(make_scoped_ptr(
+        new TemplateURL::AssociatedExtensionInfo(
+            TemplateURL::OMNIBOX_API_EXTENSION, extension_id)));
+  }
 }
 
 void ChromeTemplateURLServiceClient::Observe(
