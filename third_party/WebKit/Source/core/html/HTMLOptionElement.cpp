@@ -56,6 +56,10 @@ HTMLOptionElement::HTMLOptionElement(Document& document)
     ScriptWrappable::init(this);
 }
 
+HTMLOptionElement::~HTMLOptionElement()
+{
+}
+
 PassRefPtrWillBeRawPtr<HTMLOptionElement> HTMLOptionElement::create(Document& document)
 {
     RefPtrWillBeRawPtr<HTMLOptionElement> option = adoptRefWillBeNoop(new HTMLOptionElement(document));

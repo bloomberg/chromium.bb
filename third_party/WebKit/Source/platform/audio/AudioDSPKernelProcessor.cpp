@@ -46,6 +46,10 @@ AudioDSPKernelProcessor::AudioDSPKernelProcessor(float sampleRate, unsigned numb
 {
 }
 
+AudioDSPKernelProcessor::~AudioDSPKernelProcessor()
+{
+}
+
 void AudioDSPKernelProcessor::initialize()
 {
     if (isInitialized())

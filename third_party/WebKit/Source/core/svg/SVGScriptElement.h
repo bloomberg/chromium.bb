@@ -47,6 +47,7 @@ public:
 
 private:
     SVGScriptElement(Document&, bool wasInsertedByParser, bool alreadyStarted);
+    virtual ~SVGScriptElement();
 
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;

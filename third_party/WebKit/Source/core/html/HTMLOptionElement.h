@@ -69,6 +69,7 @@ public:
 
 private:
     explicit HTMLOptionElement(Document&);
+    virtual ~HTMLOptionElement();
 
     virtual bool rendererIsFocusable() const OVERRIDE { return true; }
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
