@@ -37,7 +37,7 @@ class WizardInProcessBrowserTest : public InProcessBrowserTest {
   // Overriden from InProcessBrowserTest:
   virtual void SetUpOnMainThread() OVERRIDE;
   virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
-  virtual void TearDownOnMainThread() OVERRIDE;
+  virtual void CleanUpOnMainThread() OVERRIDE;
 
  private:
   std::string screen_name_;

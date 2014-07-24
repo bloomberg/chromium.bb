@@ -50,7 +50,7 @@ class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
     AccessibilityManager::SetBrailleControllerForTest(&braille_controller_);
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     AccessibilityManager::SetBrailleControllerForTest(NULL);
   }
 

@@ -453,7 +453,7 @@ class DownloadTest : public InProcessBrowserTest {
     ASSERT_TRUE(InitialSetup());
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     // Needs to be torn down on the main thread. file_activity_observer_ holds a
     // reference to the ChromeDownloadManagerDelegate which should be destroyed
     // on the UI thread.

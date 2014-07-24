@@ -854,7 +854,7 @@ class BeforeUnloadAtQuitWithTwoWindows : public InProcessBrowserTest {
   // This test is for testing a specific shutdown behavior. This mimics what
   // happens in InProcessBrowserTest::RunTestOnMainThread and QuitBrowsers, but
   // ensures that it happens through the single IDC_EXIT of the test.
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     // Cycle both the MessageLoop and the Cocoa runloop twice to flush out any
     // Chrome work that generates Cocoa work. Do this twice since there are two
     // Browsers that must be closed.

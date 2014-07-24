@@ -208,7 +208,7 @@ class SpellingMenuObserverTest : public InProcessBrowserTest {
     Reset(false);
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     observer_.reset();
     menu_.reset();
   }

@@ -64,7 +64,7 @@ class ThumbnailManagerBrowserTest : public InProcessBrowserTest {
     thumbnail_manager_.reset(CreateThumbnailManager(fake_db_));
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     fake_db_ = NULL;
     db_model_.clear();
     thumbnail_manager_.reset();

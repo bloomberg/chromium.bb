@@ -149,7 +149,7 @@ class DeviceManagementServiceIntegrationTest
     service_->ScheduleInitialization(0);
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     service_.reset();
     test_server_.reset();
     interceptor_.reset();

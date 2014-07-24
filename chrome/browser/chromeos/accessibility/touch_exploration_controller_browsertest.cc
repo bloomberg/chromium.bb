@@ -50,7 +50,7 @@ class TouchExplorationTest : public InProcessBrowserTest {
     root_window_->AddPreTargetHandler(event_handler_.get());
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     SwitchTouchExplorationMode(false);
     root_window_->RemovePreTargetHandler(event_handler_.get());
   }

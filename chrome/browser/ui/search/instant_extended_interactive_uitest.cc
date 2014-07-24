@@ -293,8 +293,8 @@ class InstantExtendedNetworkTest : public InstantExtendedTest {
     InstantExtendedTest::SetUpOnMainThread();
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
-    InstantExtendedTest::TearDownOnMainThread();
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    InstantExtendedTest::CleanUpOnMainThread();
     fake_network_change_notifier_.reset();
     disable_for_test_.reset();
   }

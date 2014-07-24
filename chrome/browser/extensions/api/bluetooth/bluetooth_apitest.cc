@@ -48,7 +48,7 @@ class BluetoothApiTest : public ExtensionApiTest {
     SetUpMockAdapter();
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     EXPECT_CALL(*mock_adapter_, RemoveObserver(testing::_));
   }
 

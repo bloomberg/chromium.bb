@@ -55,7 +55,7 @@ class TabScrubberTest : public InProcessBrowserTest,
         ash::EventTransformationHandler::TRANSFORM_NONE);
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     browser()->tab_strip_model()->RemoveObserver(this);
   }
 

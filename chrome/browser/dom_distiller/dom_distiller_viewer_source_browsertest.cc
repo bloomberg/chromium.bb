@@ -87,7 +87,7 @@ class DomDistillerViewerSourceBrowserTest : public InProcessBrowserTest {
     database_model_ = new FakeDB<ArticleEntry>::EntryMap;
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE { delete database_model_; }
+  virtual void CleanUpOnMainThread() OVERRIDE { delete database_model_; }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kEnableDomDistiller);

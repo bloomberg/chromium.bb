@@ -88,7 +88,7 @@ class WebstoreProviderTest : public InProcessBrowserTest {
     webstore_provider_->set_use_throttling(false);
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     EXPECT_TRUE(test_server_->ShutdownAndWaitUntilComplete());
     test_server_.reset();
   }

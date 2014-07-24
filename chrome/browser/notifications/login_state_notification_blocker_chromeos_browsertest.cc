@@ -35,11 +35,11 @@ class LoginStateNotificationBlockerChromeOSBrowserTest
     chromeos::LoginManagerTest::SetUpOnMainThread();
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     if (blocker_)
       blocker_->RemoveObserver(this);
     blocker_.reset();
-    chromeos::LoginManagerTest::TearDownOnMainThread();
+    chromeos::LoginManagerTest::CleanUpOnMainThread();
   }
 
  protected:

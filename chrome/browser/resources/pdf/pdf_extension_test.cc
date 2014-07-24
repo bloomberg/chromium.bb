@@ -31,9 +31,9 @@ class PDFExtensionTest : public ExtensionApiTest {
   }
 
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
-    ExtensionApiTest::TearDownOnMainThread();
+    ExtensionApiTest::CleanUpOnMainThread();
   }
 
   void RunTestsInFile(std::string filename, bool requiresPlugin) {

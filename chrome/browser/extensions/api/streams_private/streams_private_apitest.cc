@@ -141,11 +141,11 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpOnMainThread();
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     // Tear down the test server.
     EXPECT_TRUE(test_server_->ShutdownAndWaitUntilComplete());
     test_server_.reset();
-    ExtensionApiTest::TearDownOnMainThread();
+    ExtensionApiTest::CleanUpOnMainThread();
   }
 
   void InitializeDownloadSettings() {

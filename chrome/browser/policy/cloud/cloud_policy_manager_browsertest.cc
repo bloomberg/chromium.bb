@@ -85,7 +85,7 @@ class CloudPolicyManagerTest : public InProcessBrowserTest {
 #endif
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     // Verify that all the expected requests were handled.
     EXPECT_EQ(0u, interceptor_->GetPendingSize());
 

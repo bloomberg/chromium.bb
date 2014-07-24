@@ -52,7 +52,7 @@ class TestChromeWebUIControllerFactoryTest : public InProcessBrowserTest {
         GURL(kChromeTestChromeWebUIControllerFactory).host(), &mock_provider_);
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     test_factory_->RemoveFactoryOverride(
         GURL(kChromeTestChromeWebUIControllerFactory).host());
     content::WebUIControllerFactory::UnregisterFactoryForTesting(

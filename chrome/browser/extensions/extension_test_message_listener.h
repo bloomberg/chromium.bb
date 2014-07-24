@@ -82,7 +82,7 @@ class TestSendMessageFunction;
 // destructed *before* the browser gets torn down. Two common patterns are to
 // either make it a local variable inside your test body, or if it's a member
 // variable of a ExtensionBrowserTest subclass, override the
-// BrowserTestBase::TearDownOnMainThread() method and clean it up there.
+// InProcessBrowserTest::CleanUpOnMainThread() method and clean it up there.
 class ExtensionTestMessageListener : public content::NotificationObserver {
  public:
   // We immediately start listening for |expected_message|.

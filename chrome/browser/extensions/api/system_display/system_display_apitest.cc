@@ -182,12 +182,12 @@ class SystemDisplayApiTest: public ExtensionApiTest {
     DisplayInfoProvider::InitializeForTesting(provider_.get());
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
 #if defined(OS_CHROMEOS)
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
                                    ash::Shell::GetScreen());
 #endif
-    ExtensionApiTest::TearDownOnMainThread();
+    ExtensionApiTest::CleanUpOnMainThread();
   }
 
  protected:

@@ -343,7 +343,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     InitializePolicy();
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     BrowserList::RemoveObserver(this);
 
     // This shuts down the login UI.

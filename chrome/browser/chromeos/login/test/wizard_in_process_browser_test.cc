@@ -41,7 +41,7 @@ void WizardInProcessBrowserTest::SetUpOnMainThread() {
   }
 }
 
-void WizardInProcessBrowserTest::TearDownOnMainThread() {
+void WizardInProcessBrowserTest::CleanUpOnMainThread() {
   // LoginDisplayHost owns controllers and all windows.
   base::MessageLoopForUI::current()->DeleteSoon(FROM_HERE, host_);
 

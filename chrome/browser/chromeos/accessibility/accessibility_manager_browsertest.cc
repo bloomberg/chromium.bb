@@ -242,7 +242,7 @@ class AccessibilityManagerTest : public InProcessBrowserTest {
     default_autoclick_delay_ = GetAutoclickDelay();
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     AccessibilityManager::SetBrailleControllerForTest(NULL);
   }
 

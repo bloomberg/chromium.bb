@@ -113,7 +113,7 @@ class WebUIBrowserTest : public JavaScriptBrowserTest {
 
   // Set up & tear down console error catching.
   virtual void SetUpOnMainThread() OVERRIDE;
-  virtual void TearDownOnMainThread() OVERRIDE;
+  virtual void CleanUpOnMainThread() OVERRIDE;
 
   // Set a WebUI instance to run tests on.
   void SetWebUIInstance(content::WebUI* web_ui);

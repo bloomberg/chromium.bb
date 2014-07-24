@@ -70,6 +70,7 @@ class SupervisedUserTestBase : public chromeos::LoginManagerTest {
   virtual ~SupervisedUserTestBase();
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
+  virtual void CleanUpOnMainThread() OVERRIDE;
 
  protected:
   virtual void TearDown() OVERRIDE;

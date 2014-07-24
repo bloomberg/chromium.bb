@@ -53,7 +53,7 @@ class DriveFirstRunTest : public InProcessBrowserTest,
 
   // InProcessBrowserTest overrides:
   virtual void SetUpOnMainThread() OVERRIDE;
-  virtual void TearDownOnMainThread() OVERRIDE;
+  virtual void CleanUpOnMainThread() OVERRIDE;
 
   // DriveFirstRunController::Observer overrides:
   virtual void OnCompletion(bool success) OVERRIDE;
@@ -102,7 +102,8 @@ void DriveFirstRunTest::SetUpOnMainThread() {
   controller_->SetAppInfoForTest(kTestAppId, kTestEndpointUrl);
 }
 
-void DriveFirstRunTest::TearDownOnMainThread() {
+void DriveFirstRunTest::CleanUpOnMainThread() {
+  InProcessBrowserTest::CleanUpOnMainThread();
   content::RunAllPendingInMessageLoop();
 }
 

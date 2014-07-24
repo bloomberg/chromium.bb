@@ -39,7 +39,7 @@ class SocketApiTest : public ExtensionApiTest {
         resolver_creator_->CreateMockHostResolver());
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     extensions::HostResolverWrapper::GetInstance()->
         SetHostResolverForTesting(NULL);
     resolver_creator_->DeleteMockHostResolver();

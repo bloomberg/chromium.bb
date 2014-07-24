@@ -263,8 +263,9 @@ class PasswordManagerBrowserTest : public InProcessBrowserTest {
         password_manager::switches::kEnableAutomaticPasswordSaving));
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+    InProcessBrowserTest::CleanUpOnMainThread();
   }
 
  protected:

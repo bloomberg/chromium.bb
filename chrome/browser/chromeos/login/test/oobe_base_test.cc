@@ -70,7 +70,7 @@ void OobeBaseTest::SetUpOnMainThread() {
   ExtensionApiTest::SetUpOnMainThread();
 }
 
-void OobeBaseTest::TearDownOnMainThread() {
+void OobeBaseTest::CleanUpOnMainThread() {
   // If the login display is still showing, exit gracefully.
   if (LoginDisplayHostImpl::default_host()) {
     base::MessageLoop::current()->PostTask(FROM_HERE,
@@ -78,7 +78,7 @@ void OobeBaseTest::TearDownOnMainThread() {
     content::RunMessageLoop();
   }
 
-  ExtensionApiTest::TearDownOnMainThread();
+  ExtensionApiTest::CleanUpOnMainThread();
 }
 
 void OobeBaseTest::SetUpCommandLine(CommandLine* command_line) {

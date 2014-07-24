@@ -89,7 +89,7 @@ class CaptivePortalWindowTest : public InProcessBrowserTest {
         new CaptivePortalWindowProxy(&delegate_, web_contents));
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     captive_portal_window_proxy_.reset();
     base::MessageLoopForUI::current()->DeleteSoon(FROM_HERE, host_);
     base::MessageLoopForUI::current()->RunUntilIdle();

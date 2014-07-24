@@ -114,7 +114,7 @@ class SyncedPrefChangeRegistrarTest : public InProcessBrowserTest {
     registrar_.reset(new SyncedPrefChangeRegistrar(prefs_));
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     registrar_.reset();
   }
 

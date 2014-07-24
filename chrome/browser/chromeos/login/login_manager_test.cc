@@ -29,7 +29,7 @@ LoginManagerTest::LoginManagerTest(bool should_launch_browser)
   set_exit_when_last_browser_closes(false);
 }
 
-void LoginManagerTest::TearDownOnMainThread() {
+void LoginManagerTest::CleanUpOnMainThread() {
   if (LoginDisplayHostImpl::default_host())
     LoginDisplayHostImpl::default_host()->Finalize();
   base::MessageLoop::current()->RunUntilIdle();

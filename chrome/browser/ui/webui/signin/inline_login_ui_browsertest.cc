@@ -157,7 +157,7 @@ class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
         GURL(kFooWebUIURL).host(), &foo_provider_);
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     test_factory_->RemoveFactoryOverride(GURL(kFooWebUIURL).host());
     content::WebUIControllerFactory::UnregisterFactoryForTesting(
         test_factory_.get());

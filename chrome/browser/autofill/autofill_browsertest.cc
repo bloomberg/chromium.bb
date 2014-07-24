@@ -120,7 +120,7 @@ class AutofillTest : public InProcessBrowserTest {
     test::DisableSystemServices(browser()->profile()->GetPrefs());
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     // Make sure to close any showing popups prior to tearing down the UI.
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();

@@ -203,6 +203,10 @@ void SupervisedUserTestBase::SetUpInProcessBrowserTestFixture() {
                                                           online_state);
 }
 
+void SupervisedUserTestBase::CleanUpOnMainThread() {
+  LoginManagerTest::CleanUpOnMainThread();
+}
+
 void SupervisedUserTestBase::TearDown() {
   cryptohome::AsyncMethodCaller::Shutdown();
   cryptohome::HomedirMethods::Shutdown();

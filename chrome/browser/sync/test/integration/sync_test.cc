@@ -472,7 +472,7 @@ bool SyncTest::SetupSync() {
   return true;
 }
 
-void SyncTest::TearDownOnMainThread() {
+void SyncTest::CleanUpOnMainThread() {
   for (size_t i = 0; i < clients_.size(); ++i) {
     clients_[i]->service()->DisableForUser();
   }

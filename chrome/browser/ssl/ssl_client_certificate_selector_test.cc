@@ -66,11 +66,11 @@ void SSLClientCertificateSelectorTestBase::SetUpOnMainThread() {
 
 // Have to release our reference to the auth handler during the test to allow
 // it to be destroyed while the Browser and its IO thread still exist.
-void SSLClientCertificateSelectorTestBase::TearDownOnMainThread() {
+void SSLClientCertificateSelectorTestBase::CleanUpOnMainThread() {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&SSLClientCertificateSelectorTestBase::TearDownOnIOThread,
+      base::Bind(&SSLClientCertificateSelectorTestBase::CleanUpOnIOThread,
                  this));
 
   io_loop_finished_event_.Wait();
@@ -87,7 +87,7 @@ void SSLClientCertificateSelectorTestBase::SetUpOnIOThread() {
   io_loop_finished_event_.Signal();
 }
 
-void SSLClientCertificateSelectorTestBase::TearDownOnIOThread() {
+void SSLClientCertificateSelectorTestBase::CleanUpOnIOThread() {
   delete url_request_;
 
   io_loop_finished_event_.Signal();

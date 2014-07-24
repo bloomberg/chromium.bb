@@ -39,7 +39,7 @@ class WebNotificationTrayTest : public InProcessBrowserTest {
   WebNotificationTrayTest() {}
   virtual ~WebNotificationTrayTest() {}
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     message_center::MessageCenter::Get()->RemoveAllNotifications(false);
   }
 

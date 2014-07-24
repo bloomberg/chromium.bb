@@ -49,11 +49,11 @@ class AccountsOptionsTest : public LoginManagerTest {
     settings->AddSettingsProvider(&stub_settings_provider_);
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     CrosSettings* settings = CrosSettings::Get();
     settings->RemoveSettingsProvider(&stub_settings_provider_);
     settings->AddSettingsProvider(device_settings_provider_);
-    LoginManagerTest::TearDownOnMainThread();
+    LoginManagerTest::CleanUpOnMainThread();
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {

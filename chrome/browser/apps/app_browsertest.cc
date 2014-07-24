@@ -1213,9 +1213,9 @@ class RestartDeviceTest : public PlatformAppBrowserTest {
         .WillRepeatedly(testing::Return(true));
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     user_manager_enabler_.reset();
-    PlatformAppBrowserTest::TearDownOnMainThread();
+    PlatformAppBrowserTest::CleanUpOnMainThread();
   }
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {

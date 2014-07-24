@@ -45,6 +45,10 @@ class BluetoothSocketApiTest : public ExtensionApiTest {
     SetUpMockAdapter();
   }
 
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    ExtensionApiTest::CleanUpOnMainThread();
+  }
+
   void SetUpMockAdapter() {
     // The browser will clean this up when it is torn down.
     mock_adapter_ = new testing::StrictMock<MockBluetoothAdapter>();

@@ -93,7 +93,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
 
   // Have to release our reference to the auth handler during the test to allow
   // it to be destroyed while the Browser and its IO thread still exist.
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&SSLClientCertificateSelectorTest::CleanUpOnIOThread, this));
@@ -192,10 +192,10 @@ class SSLClientCertificateSelectorMultiTabTest
     SSLClientCertificateSelectorTest::SetUpOnIOThread();
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     auth_requestor_2_ = NULL;
     auth_requestor_1_ = NULL;
-    SSLClientCertificateSelectorTest::TearDownOnMainThread();
+    SSLClientCertificateSelectorTest::CleanUpOnMainThread();
   }
 
   virtual void CleanUpOnIOThread() OVERRIDE {
@@ -255,9 +255,9 @@ class SSLClientCertificateSelectorMultiProfileTest
     SSLClientCertificateSelectorTest::SetUpOnIOThread();
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     auth_requestor_1_ = NULL;
-    SSLClientCertificateSelectorTest::TearDownOnMainThread();
+    SSLClientCertificateSelectorTest::CleanUpOnMainThread();
   }
 
   virtual void CleanUpOnIOThread() OVERRIDE {
