@@ -32,11 +32,11 @@
   width: 105px;
 }
 
-#video-player[multiple][tools] .arrow-box .arrow div {
+#video-player[multiple] .arrow-box .arrow div {
   opacity: 0.25;
 }
 
-#video-player[multiple][tools] .arrow-box .arrow div:hover {
+#video-player[multiple] .arrow-box .arrow div:hover {
   opacity: 1;
 }
 
