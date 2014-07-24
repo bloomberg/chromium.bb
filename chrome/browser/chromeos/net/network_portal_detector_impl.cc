@@ -37,6 +37,22 @@ const int kProxyChangeDelaySec = 1;
 // offline state in a row before notification is sent to observers.
 const int kMaxOfflineResultsBeforeReport = 3;
 
+// Delay before portal detection attempt after !ONLINE -> !ONLINE
+// transition.
+const int kShortInitialDelayBetweenAttemptsMs = 600;
+
+// Maximum timeout before portal detection attempts after !ONLINE ->
+// !ONLINE transition.
+const int kShortMaximumDelayBetweenAttemptsMs = 2 * 60 * 1000;
+
+// Delay before portal detection attempt after !ONLINE -> ONLINE
+// transition.
+const int kLongInitialDelayBetweenAttemptsMs = 30 * 1000;
+
+// Maximum timeout before portal detection attempts after !ONLINE ->
+// ONLINE transition.
+const int kLongMaximumDelayBetweenAttemptsMs = 5 * 60 * 1000;
+
 const NetworkState* DefaultNetwork() {
   return NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
 }
@@ -207,13 +223,12 @@ NetworkPortalDetectorImpl::NetworkPortalDetectorImpl(
       test_url_(CaptivePortalDetector::kDefaultURL),
       enabled_(false),
       strategy_(PortalDetectorStrategy::CreateById(
-          PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN)),
+          PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN, this)),
       last_detection_result_(CAPTIVE_PORTAL_STATUS_UNKNOWN),
       same_detection_result_count_(0),
       no_response_result_count_(0),
       weak_factory_(this) {
   captive_portal_detector_.reset(new CaptivePortalDetector(request_context));
-  strategy_->set_delegate(this);
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_PROXY_CHANGED,
@@ -307,8 +322,7 @@ void NetworkPortalDetectorImpl::SetStrategy(
     PortalDetectorStrategy::StrategyId id) {
   if (id == strategy_->Id())
     return;
-  strategy_.reset(PortalDetectorStrategy::CreateById(id).release());
-  strategy_->set_delegate(this);
+  strategy_ = PortalDetectorStrategy::CreateById(id, this).Pass();
   StopDetection();
   StartDetectionIfIdle();
 }
@@ -502,7 +516,15 @@ void NetworkPortalDetectorImpl::OnAttemptCompleted(
   if (last_detection_result_ != state.status) {
     last_detection_result_ = state.status;
     same_detection_result_count_ = 1;
-    strategy_->Reset();
+    net::BackoffEntry::Policy policy = strategy_->policy();
+    if (state.status == CAPTIVE_PORTAL_STATUS_ONLINE) {
+      policy.initial_delay_ms = kLongInitialDelayBetweenAttemptsMs;
+      policy.maximum_backoff_ms = kLongMaximumDelayBetweenAttemptsMs;
+    } else {
+      policy.initial_delay_ms = kShortInitialDelayBetweenAttemptsMs;
+      policy.maximum_backoff_ms = kShortMaximumDelayBetweenAttemptsMs;
+    }
+    strategy_->SetPolicyAndReset(policy);
   } else {
     ++same_detection_result_count_;
   }

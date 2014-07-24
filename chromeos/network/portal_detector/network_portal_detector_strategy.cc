@@ -17,14 +17,13 @@ const NetworkState* DefaultNetwork() {
   return NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
 }
 
-// TODO (ygorshenin@): reuse net::BackoffEntry for strategies.
-
 class LoginScreenStrategy : public PortalDetectorStrategy {
  public:
   static const int kBaseAttemptTimeoutSec = 5;
   static const int kMaxAttemptTimeoutSec = 30;
 
-  LoginScreenStrategy() {}
+  explicit LoginScreenStrategy(PortalDetectorStrategy::Delegate* delegate)
+      : PortalDetectorStrategy(delegate) {}
   virtual ~LoginScreenStrategy() {}
 
  protected:
@@ -51,7 +50,8 @@ class ErrorScreenStrategy : public PortalDetectorStrategy {
  public:
   static const int kAttemptTimeoutSec = 15;
 
-  ErrorScreenStrategy() {}
+  explicit ErrorScreenStrategy(PortalDetectorStrategy::Delegate* delegate)
+      : PortalDetectorStrategy(delegate) {}
   virtual ~ErrorScreenStrategy() {}
 
  protected:
@@ -71,7 +71,8 @@ class SessionStrategy : public PortalDetectorStrategy {
   static const int kFastAttemptTimeoutSec = 3;
   static const int kSlowAttemptTimeoutSec = 5;
 
-  SessionStrategy() {}
+  explicit SessionStrategy(PortalDetectorStrategy::Delegate* delegate)
+      : PortalDetectorStrategy(delegate) {}
   virtual ~SessionStrategy() {}
 
  protected:
@@ -91,6 +92,26 @@ class SessionStrategy : public PortalDetectorStrategy {
 
 }  // namespace
 
+// PortalDetectorStrategy::BackoffEntryImpl ------------------------------------
+
+class PortalDetectorStrategy::BackoffEntryImpl : public net::BackoffEntry {
+ public:
+  BackoffEntryImpl(const net::BackoffEntry::Policy* const policy,
+                   PortalDetectorStrategy::Delegate* delegate)
+      : net::BackoffEntry(policy), delegate_(delegate) {}
+  virtual ~BackoffEntryImpl() {}
+
+  // net::BackoffEntry overrides:
+  virtual base::TimeTicks ImplGetTimeNow() const OVERRIDE {
+    return delegate_->GetCurrentTimeTicks();
+  }
+
+ private:
+  PortalDetectorStrategy::Delegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(BackoffEntryImpl);
+};
+
 // PortalDetectorStrategy -----------------------------------------------------
 
 // static
@@ -107,12 +128,13 @@ base::TimeDelta PortalDetectorStrategy::next_attempt_timeout_for_testing_;
 bool PortalDetectorStrategy::next_attempt_timeout_for_testing_initialized_ =
     false;
 
-PortalDetectorStrategy::PortalDetectorStrategy()
-    : net::BackoffEntry(&policy_), delegate_(NULL) {
-  // First three attempts with the same result are performed with
-  // 600ms delay between them. Delay before every consecutive attempt
-  // is multplied by 2.0. Also, 30% fuzz factor is used for each
-  // delay.
+PortalDetectorStrategy::PortalDetectorStrategy(Delegate* delegate)
+    : delegate_(delegate) {
+  // First |policy_.num_errors_to_ignore| attempts with the same
+  // result are performed with |policy_.initial_delay_ms| between
+  // them. Delay before every consecutive attempt is multplied by
+  // |policy_.multiply_factor_|. Also, |policy_.jitter_factor| is used
+  // for each delay.
   policy_.num_errors_to_ignore = 3;
   policy_.initial_delay_ms = 600;
   policy_.multiply_factor = 2.0;
@@ -120,6 +142,7 @@ PortalDetectorStrategy::PortalDetectorStrategy()
   policy_.maximum_backoff_ms = 2 * 60 * 1000;
   policy_.entry_lifetime_ms = -1;
   policy_.always_use_initial_delay = true;
+  backoff_entry_.reset(new BackoffEntryImpl(&policy_, delegate_));
 }
 
 PortalDetectorStrategy::~PortalDetectorStrategy() {
@@ -127,14 +150,17 @@ PortalDetectorStrategy::~PortalDetectorStrategy() {
 
 // statc
 scoped_ptr<PortalDetectorStrategy> PortalDetectorStrategy::CreateById(
-    StrategyId id) {
+    StrategyId id,
+    Delegate* delegate) {
   switch (id) {
     case STRATEGY_ID_LOGIN_SCREEN:
-      return scoped_ptr<PortalDetectorStrategy>(new LoginScreenStrategy());
+      return scoped_ptr<PortalDetectorStrategy>(
+          new LoginScreenStrategy(delegate));
     case STRATEGY_ID_ERROR_SCREEN:
-      return scoped_ptr<PortalDetectorStrategy>(new ErrorScreenStrategy());
+      return scoped_ptr<PortalDetectorStrategy>(
+          new ErrorScreenStrategy(delegate));
     case STRATEGY_ID_SESSION:
-      return scoped_ptr<PortalDetectorStrategy>(new SessionStrategy());
+      return scoped_ptr<PortalDetectorStrategy>(new SessionStrategy(delegate));
     default:
       NOTREACHED();
       return scoped_ptr<PortalDetectorStrategy>(
@@ -145,7 +171,7 @@ scoped_ptr<PortalDetectorStrategy> PortalDetectorStrategy::CreateById(
 base::TimeDelta PortalDetectorStrategy::GetDelayTillNextAttempt() {
   if (delay_till_next_attempt_for_testing_initialized_)
     return delay_till_next_attempt_for_testing_;
-  return net::BackoffEntry::GetTimeUntilRelease();
+  return backoff_entry_->GetTimeUntilRelease();
 }
 
 base::TimeDelta PortalDetectorStrategy::GetNextAttemptTimeout() {
@@ -155,15 +181,17 @@ base::TimeDelta PortalDetectorStrategy::GetNextAttemptTimeout() {
 }
 
 void PortalDetectorStrategy::Reset() {
-  net::BackoffEntry::Reset();
+  backoff_entry_->Reset();
+}
+
+void PortalDetectorStrategy::SetPolicyAndReset(
+    const net::BackoffEntry::Policy& policy) {
+  policy_ = policy;
+  backoff_entry_.reset(new BackoffEntryImpl(&policy_, delegate_));
 }
 
 void PortalDetectorStrategy::OnDetectionCompleted() {
-  net::BackoffEntry::InformOfRequest(false);
-}
-
-base::TimeTicks PortalDetectorStrategy::ImplGetTimeNow() const {
-  return delegate_->GetCurrentTimeTicks();
+  backoff_entry_->InformOfRequest(false);
 }
 
 base::TimeDelta PortalDetectorStrategy::GetNextAttemptTimeoutImpl() {

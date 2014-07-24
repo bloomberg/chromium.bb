@@ -15,7 +15,7 @@
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT PortalDetectorStrategy : protected net::BackoffEntry {
+class CHROMEOS_EXPORT PortalDetectorStrategy {
  public:
   enum StrategyId {
     STRATEGY_ID_LOGIN_SCREEN,
@@ -40,9 +40,8 @@ class CHROMEOS_EXPORT PortalDetectorStrategy : protected net::BackoffEntry {
 
   virtual ~PortalDetectorStrategy();
 
-  static scoped_ptr<PortalDetectorStrategy> CreateById(StrategyId id);
-
-  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
+  static scoped_ptr<PortalDetectorStrategy> CreateById(StrategyId id,
+                                                       Delegate* delegate);
 
   // Returns delay before next detection attempt. This delay is needed
   // to separate detection attempts in time.
@@ -56,21 +55,26 @@ class CHROMEOS_EXPORT PortalDetectorStrategy : protected net::BackoffEntry {
   // Resets strategy to the initial state.
   void Reset();
 
+  const net::BackoffEntry::Policy& policy() const { return policy_; }
+
+  // Resets strategy to the initial stater and sets custom policy.
+  void SetPolicyAndReset(const net::BackoffEntry::Policy& policy);
+
   // Should be called when portal detection is completed and timeout before next
   // attempt should be adjusted.
   void OnDetectionCompleted();
 
  protected:
-  PortalDetectorStrategy();
+  class BackoffEntryImpl;
 
-  // net::BackoffEntry overrides:
-  virtual base::TimeTicks ImplGetTimeNow() const OVERRIDE;
+  explicit PortalDetectorStrategy(Delegate* delegate);
 
   // Interface for subclasses:
   virtual base::TimeDelta GetNextAttemptTimeoutImpl();
 
   Delegate* delegate_;
   net::BackoffEntry::Policy policy_;
+  scoped_ptr<BackoffEntryImpl> backoff_entry_;
 
  private:
   friend class NetworkPortalDetectorImplTest;
