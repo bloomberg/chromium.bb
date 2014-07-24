@@ -70,7 +70,7 @@ class DeleteFile(webapp2.RequestHandler):
         master = self.request.get(PARAM_MASTER)
         builder = self.request.get(PARAM_BUILDER)
         test_type = self.request.get(PARAM_TEST_TYPE)
-        build_number = self.request.get(PARAM_BUILD_NUMBER)
+        build_number = self.request.get(PARAM_BUILD_NUMBER, default_value=None)
         name = self.request.get(PARAM_NAME)
         num_files = self.request.get(PARAM_NUM_FILES)
         before = self.request.get(PARAM_BEFORE)
@@ -188,7 +188,7 @@ class GetFile(webapp2.RequestHandler):
         master = self.request.get(PARAM_MASTER)
         builder = self.request.get(PARAM_BUILDER)
         test_type = self.request.get(PARAM_TEST_TYPE)
-        build_number = self.request.get(PARAM_BUILD_NUMBER)
+        build_number = self.request.get(PARAM_BUILD_NUMBER, default_value=None)
         name = self.request.get(PARAM_NAME)
         before = self.request.get(PARAM_BEFORE)
         num_files = self.request.get(PARAM_NUM_FILES)
@@ -257,8 +257,13 @@ class Upload(webapp2.RequestHandler):
                              master, builder, test_type)
                 status_string, status_code = JsonResults.update(master, builder, test_type, file_json, is_full_results_format=False)
             else:
-                build_number = int(file_json.get('build_number', 0))
-                status_string, status_code = TestFile.add_file(master, builder, test_type, build_number, file.filename, file.value)
+                try:
+                    build_number = int(file_json.get('build_number', 0))
+                    status_string, status_code = TestFile.add_file(master, builder, test_type, build_number, file.filename, file.value)
+                except (ValueError, TypeError):
+                    status_code = 403
+                    status_string = 'Could not cast the build_number field in the json to an integer.'
+
                 if status_code == 200:
                     logging.info(status_string)
                 else:
