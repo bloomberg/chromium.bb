@@ -80,7 +80,7 @@ int HTMLTableRowElement::rowIndex() const
         }
     }
 
-    for (HTMLElement* child = Traversal<HTMLElement>::firstWithin(*table); child; child = Traversal<HTMLElement>::nextSibling(*child)) {
+    for (HTMLElement* child = Traversal<HTMLElement>::firstChild(*table); child; child = Traversal<HTMLElement>::nextSibling(*child)) {
         if (child->hasTagName(tbodyTag)) {
             HTMLTableSectionElement* section = toHTMLTableSectionElement(child);
             for (HTMLTableRowElement* row = Traversal<HTMLTableRowElement>::firstChild(*section); row; row = Traversal<HTMLTableRowElement>::nextSibling(*row)) {

@@ -77,7 +77,7 @@ void HTMLTableElement::setCaption(PassRefPtrWillBeRawPtr<HTMLTableCaptionElement
 
 HTMLTableSectionElement* HTMLTableElement::tHead() const
 {
-    for (HTMLElement* child = Traversal<HTMLElement>::firstWithin(*this); child; child = Traversal<HTMLElement>::nextSibling(*child)) {
+    for (HTMLElement* child = Traversal<HTMLElement>::firstChild(*this); child; child = Traversal<HTMLElement>::nextSibling(*child)) {
         if (child->hasTagName(theadTag))
             return toHTMLTableSectionElement(child);
     }
@@ -89,7 +89,7 @@ void HTMLTableElement::setTHead(PassRefPtrWillBeRawPtr<HTMLTableSectionElement> 
     deleteTHead();
 
     HTMLElement* child;
-    for (child = Traversal<HTMLElement>::firstWithin(*this); child; child = Traversal<HTMLElement>::nextSibling(*child)) {
+    for (child = Traversal<HTMLElement>::firstChild(*this); child; child = Traversal<HTMLElement>::nextSibling(*child)) {
         if (!child->hasTagName(captionTag) && !child->hasTagName(colgroupTag))
             break;
     }
@@ -99,7 +99,7 @@ void HTMLTableElement::setTHead(PassRefPtrWillBeRawPtr<HTMLTableSectionElement> 
 
 HTMLTableSectionElement* HTMLTableElement::tFoot() const
 {
-    for (HTMLElement* child = Traversal<HTMLElement>::firstWithin(*this); child; child = Traversal<HTMLElement>::nextSibling(*child)) {
+    for (HTMLElement* child = Traversal<HTMLElement>::firstChild(*this); child; child = Traversal<HTMLElement>::nextSibling(*child)) {
         if (child->hasTagName(tfootTag))
             return toHTMLTableSectionElement(child);
     }
@@ -111,7 +111,7 @@ void HTMLTableElement::setTFoot(PassRefPtrWillBeRawPtr<HTMLTableSectionElement> 
     deleteTFoot();
 
     HTMLElement* child;
-    for (child = Traversal<HTMLElement>::firstWithin(*this); child; child = Traversal<HTMLElement>::nextSibling(*child)) {
+    for (child = Traversal<HTMLElement>::firstChild(*this); child; child = Traversal<HTMLElement>::nextSibling(*child)) {
         if (!child->hasTagName(captionTag) && !child->hasTagName(colgroupTag) && !child->hasTagName(theadTag))
             break;
     }

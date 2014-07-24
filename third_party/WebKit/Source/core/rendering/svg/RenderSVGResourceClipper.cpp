@@ -91,7 +91,7 @@ bool RenderSVGResourceClipper::tryPathOnlyClipping(GraphicsContext* context,
     WindRule clipRule = RULE_NONZERO;
     Path clipPath = Path();
 
-    for (Element* childElement = ElementTraversal::firstWithin(*element()); childElement; childElement = ElementTraversal::nextSibling(*childElement)) {
+    for (Element* childElement = ElementTraversal::firstChild(*element()); childElement; childElement = ElementTraversal::nextSibling(*childElement)) {
         RenderObject* renderer = childElement->renderer();
         if (!renderer)
             continue;

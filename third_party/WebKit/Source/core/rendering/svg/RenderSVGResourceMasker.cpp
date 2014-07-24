@@ -137,7 +137,7 @@ PassRefPtr<DisplayList> RenderSVGResourceMasker::asDisplayList(GraphicsContext* 
     // with local clips/mask, which may yield incorrect results when mixing objectBoundingBox and
     // userSpaceOnUse units (http://crbug.com/294900).
     context->beginRecording(strokeBoundingBox());
-    for (Element* childElement = ElementTraversal::firstWithin(*element()); childElement; childElement = ElementTraversal::nextSibling(*childElement)) {
+    for (Element* childElement = ElementTraversal::firstChild(*element()); childElement; childElement = ElementTraversal::nextSibling(*childElement)) {
         RenderObject* renderer = childElement->renderer();
         if (!childElement->isSVGElement() || !renderer)
             continue;

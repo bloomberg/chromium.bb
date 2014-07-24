@@ -57,7 +57,7 @@ public:
     static unsigned childElementCount(ContainerNode& node)
     {
         unsigned count = 0;
-        for (Element* child = ElementTraversal::firstWithin(node); child; child = ElementTraversal::nextSibling(*child))
+        for (Element* child = ElementTraversal::firstChild(node); child; child = ElementTraversal::nextSibling(*child))
             ++count;
         return count;
     }

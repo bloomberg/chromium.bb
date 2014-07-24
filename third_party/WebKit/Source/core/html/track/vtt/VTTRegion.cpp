@@ -373,7 +373,7 @@ void VTTRegion::displayLastVTTCueBox()
     float regionBottom = m_regionDisplayTree->getBoundingClientRect()->bottom();
 
     // Find first cue that is not entirely displayed and scroll it upwards.
-    for (Element* child = ElementTraversal::firstWithin(*m_cueContainer); child && !m_scrollTimer.isActive(); child = ElementTraversal::nextSibling(*child)) {
+    for (Element* child = ElementTraversal::firstChild(*m_cueContainer); child && !m_scrollTimer.isActive(); child = ElementTraversal::nextSibling(*child)) {
         float childTop = toHTMLDivElement(child)->getBoundingClientRect()->top();
         float childBottom = toHTMLDivElement(child)->getBoundingClientRect()->bottom();
 
