@@ -45,9 +45,14 @@ function handleMessage(event) {
   var msg = event.data;
   var firstColon = msg.indexOf(':');
   var cmd = msg.substr(0, firstColon);
+
+  if (cmd == 'testend') {
+    event.srcElement.postMessage({'testend' : ''});
+    return;
+  }
+
   var cmdFunctionName = cmd + 'Command';
   var cmdFunction = window[cmdFunctionName];
-
   if (typeof(cmdFunction) !== 'function') {
     console.log('Unknown command: ' + cmd);
     console.log('  message: ' + msg);

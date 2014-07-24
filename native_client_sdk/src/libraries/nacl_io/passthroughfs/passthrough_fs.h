@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #ifndef LIBRARIES_NACL_IO_PASSTHROUGHFS_PASSTHROUGH_FS_H_
-
 #define LIBRARIES_NACL_IO_PASSTHROUGHFS_PASSTHROUGH_FS_H_
 
 #include "nacl_io/filesystem.h"

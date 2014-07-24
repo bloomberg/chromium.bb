@@ -20,6 +20,7 @@
 #include "nacl_io/kernel_wrap_real.h"
 #include "nacl_io/node.h"
 #include "nacl_io/osunistd.h"
+#include "nacl_io/passthroughfs/real_node.h"
 #include "nacl_io/pepper_interface.h"
 #include "sdk_util/auto_lock.h"
 
@@ -32,24 +33,6 @@
 namespace nacl_io {
 
 namespace {
-
-class RealNode : public Node {
- public:
-  RealNode(Filesystem* filesystem, int fd);
-
-  virtual Error Read(const HandleAttr& attr,
-                     void* buf,
-                     size_t count,
-                     int* out_bytes);
-  virtual Error Write(const HandleAttr& attr,
-                      const void* buf,
-                      size_t count,
-                      int* out_bytes);
-  virtual Error GetStat(struct stat* stat);
-
- protected:
-  int fd_;
-};
 
 class NullNode : public CharNode {
  public:
@@ -124,44 +107,6 @@ class FsNode : public Node {
   // this node will be destroyed when the filesystem is destroyed.
   Filesystem* other_fs_;
 };
-
-RealNode::RealNode(Filesystem* filesystem, int fd) : Node(filesystem), fd_(fd) {
-  SetType(S_IFCHR);
-}
-
-Error RealNode::Read(const HandleAttr& attr,
-                     void* buf,
-                     size_t count,
-                     int* out_bytes) {
-  *out_bytes = 0;
-
-  size_t readcnt;
-  int err = _real_read(fd_, buf, count, &readcnt);
-  if (err)
-    return err;
-
-  *out_bytes = static_cast<int>(readcnt);
-  return 0;
-}
-
-Error RealNode::Write(const HandleAttr& attr,
-                      const void* buf,
-                      size_t count,
-                      int* out_bytes) {
-  *out_bytes = 0;
-
-  size_t writecnt;
-  int err = _real_write(fd_, buf, count, &writecnt);
-  if (err)
-    return err;
-
-  *out_bytes = static_cast<int>(writecnt);
-  return 0;
-}
-
-Error RealNode::GetStat(struct stat* stat) {
-  return _real_fstat(fd_, stat);
-}
 
 Error NullNode::Read(const HandleAttr& attr,
                      void* buf,

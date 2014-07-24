@@ -46,6 +46,7 @@ EXTERN_C_BEGIN
   __libnacl_irt_##group.name = (typeof(REAL(name)))WRAP(name);
 
 extern void __libnacl_irt_dev_filename_init(void);
+extern void __libnacl_irt_dev_fdio_init(void);
 
 extern struct nacl_irt_basic __libnacl_irt_basic;
 extern struct nacl_irt_fdio __libnacl_irt_fdio;
@@ -261,13 +262,14 @@ static void assign_real_pointers() {
   static bool assigned = false;
   if (!assigned) {
     __libnacl_irt_dev_filename_init();
+    __libnacl_irt_dev_fdio_init();
     EXPAND_SYMBOL_LIST_OPERATION(ASSIGN_REAL_PTR)
     assigned = true;
   }
 }
 
-#define CHECK_REAL(func) \
-  if (!REAL(func))       \
+#define CHECK_REAL(func)    \
+  if (!REAL(func))          \
     assign_real_pointers();
 
 // "real" functions, i.e. the unwrapped original functions.
@@ -289,6 +291,12 @@ int _real_fstat(int fd, struct stat* buf) {
 
 int _real_isatty(int fd, int* result) {
   CHECK_REAL(isatty);
+  // The real isatty function can be NULL (for example if we are running
+  // withing chrome).
+  if (REAL(isatty) == NULL) {
+    *result = 0;
+    return ENOTTY;
+  }
   return REAL(isatty)(fd, result);
 }
 
