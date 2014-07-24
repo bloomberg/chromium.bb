@@ -27,6 +27,7 @@ const char* kPublicSessionWhitelist[] = {
     // Libraries:
     "aclofikceldphonlfmghmimkodjdmhck",  // Ancoris login component
     "eilbnahdgoddoedakcmfkcgfoegeloil",  // Ancoris proxy component
+    "ceehlgckkmkaoggdnjhibffkphfnphmg",  // Libdata login
 
     // Retail mode:
     "ehcabepphndocfmgbdkbjibfodelmpbb",  // Angry Birds demo
