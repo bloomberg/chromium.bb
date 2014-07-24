@@ -302,6 +302,7 @@ v8.log
 /third_party/perl
 /third_party/platformsdk_win7
 /third_party/platformsdk_win8
+/third_party/polymer
 /third_party/polymer_legacy
 /third_party/ppapi
 /third_party/psyco_win32
