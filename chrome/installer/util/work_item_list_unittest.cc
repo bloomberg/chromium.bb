@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/conditional_work_item_list.h"
 #include "chrome/installer/util/work_item.h"
@@ -27,32 +28,22 @@ const wchar_t kName[] = L"name";
 class WorkItemListTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    // Create a temporary key for testing
-    RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
-    key.DeleteKey(kTestRoot);
-    ASSERT_NE(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, kTestRoot, KEY_READ));
-    ASSERT_EQ(ERROR_SUCCESS,
-        key.Create(HKEY_CURRENT_USER, kTestRoot, KEY_READ));
-
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER, L"root_pit");
   }
 
   virtual void TearDown() {
     logging::CloseLogFile();
-
-    // Clean up the temporary key
-    RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
-    ASSERT_EQ(ERROR_SUCCESS, key.DeleteKey(kTestRoot));
   }
 
   base::ScopedTempDir temp_dir_;
+  registry_util::RegistryOverrideManager registry_override_manager_;
 };
 
 }  // namespace
 
 // Execute a WorkItem list successfully and then rollback.
-// http://crbug.com/396405
-TEST_F(WorkItemListTest, DISABLED_ExecutionSuccess) {
+TEST_F(WorkItemListTest, ExecutionSuccess) {
   scoped_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
   scoped_ptr<WorkItem> work_item;
 
@@ -233,8 +224,7 @@ TEST_F(WorkItemListTest, ConditionalExecutionSuccess) {
   EXPECT_FALSE(base::PathExists(top_dir_to_create));
 }
 
-// http://crbug.com/396405
-TEST_F(WorkItemListTest, DISABLED_ConditionalExecutionConditionFailure) {
+TEST_F(WorkItemListTest, ConditionalExecutionConditionFailure) {
   scoped_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
   scoped_ptr<WorkItem> work_item;
 
