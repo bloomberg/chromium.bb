@@ -497,20 +497,14 @@ void Pipeline::DoStop(const PipelineStatusCB& done_cb) {
 
   audio_renderer_.reset();
   video_renderer_.reset();
-
-  SerialRunner::Queue bound_fns;
+  text_renderer_.reset();
 
   if (demuxer_) {
-    bound_fns.Push(base::Bind(
-        &Demuxer::Stop, base::Unretained(demuxer_)));
+    demuxer_->Stop(base::Bind(done_cb, PIPELINE_OK));
+    return;
   }
 
-  if (text_renderer_) {
-    bound_fns.Push(base::Bind(
-        &TextRenderer::Stop, base::Unretained(text_renderer_.get())));
-  }
-
-  pending_callbacks_ = SerialRunner::Run(bound_fns, done_cb);
+  task_runner_->PostTask(FROM_HERE, base::Bind(done_cb, PIPELINE_OK));
 }
 
 void Pipeline::OnStopCompleted(PipelineStatus status) {
@@ -518,6 +512,7 @@ void Pipeline::OnStopCompleted(PipelineStatus status) {
   DCHECK_EQ(state_, kStopping);
   DCHECK(!audio_renderer_);
   DCHECK(!video_renderer_);
+  DCHECK(!text_renderer_);
   {
     base::AutoLock l(lock_);
     running_ = false;
@@ -526,7 +521,6 @@ void Pipeline::OnStopCompleted(PipelineStatus status) {
   SetState(kStopped);
   pending_callbacks_.reset();
   filter_collection_.reset();
-  text_renderer_.reset();
   demuxer_ = NULL;
 
   // If we stop during initialization/seeking we want to run |seek_cb_|

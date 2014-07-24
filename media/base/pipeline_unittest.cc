@@ -1093,6 +1093,7 @@ class PipelineTeardownTest : public PipelineTest {
         break;
 
       case kErrorAndStop:
+        EXPECT_CALL(callbacks_, OnError(PIPELINE_ERROR_READ));
         EXPECT_CALL(callbacks_, OnStop());
         pipeline_->SetErrorForTesting(PIPELINE_ERROR_READ);
         pipeline_->Stop(base::Bind(

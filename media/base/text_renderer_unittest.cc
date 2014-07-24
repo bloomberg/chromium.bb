@@ -19,11 +19,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::Eq;
-using ::testing::Exactly;
-using ::testing::Invoke;
-using ::testing::_;
-
 namespace media {
 
 // Local implementation of the TextTrack interface.
@@ -66,14 +61,9 @@ class TextRendererTest : public testing::Test {
                                           base::Unretained(this)));
   }
 
-  void DestroyTextRenderer() {
-    EXPECT_CALL(*this, OnStop());
-    text_renderer_->Stop(base::Bind(&TextRendererTest::OnStop,
-                                    base::Unretained(this)));
-    message_loop_.RunUntilIdle();
-
+  void Destroy() {
     text_renderer_.reset();
-    text_track_streams_.clear();
+    message_loop_.RunUntilIdle();
   }
 
   void AddTextTrack(TextKind kind,
@@ -199,23 +189,15 @@ class TextRendererTest : public testing::Test {
                                      base::Unretained(this)));
   }
 
-  void Stop() {
-    text_renderer_->Stop(base::Bind(&TextRendererTest::OnStop,
-                                    base::Unretained(this)));
-    message_loop_.RunUntilIdle();
-  }
-
   void ExpectRead(size_t idx) {
     FakeTextTrackStream* const stream = text_track_streams_[idx];
     EXPECT_CALL(*stream, OnRead());
   }
 
   MOCK_METHOD0(OnEnd, void());
-  MOCK_METHOD0(OnStop, void());
   MOCK_METHOD0(OnPause, void());
   MOCK_METHOD0(OnFlush, void());
 
-  scoped_ptr<TextRenderer> text_renderer_;
   base::MessageLoop message_loop_;
 
   typedef ScopedVector<FakeTextTrackStream> TextTrackStreams;
@@ -223,6 +205,8 @@ class TextRendererTest : public testing::Test {
 
   typedef std::vector<FakeTextTrack*> TextTracks;
   TextTracks text_tracks_;
+
+  scoped_ptr<TextRenderer> text_renderer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TextRendererTest);
@@ -236,28 +220,24 @@ TEST_F(TextRendererTest, CreateTextRendererNoInit) {
   text_renderer_.reset();
 }
 
-TEST_F(TextRendererTest, TestStop) {
+TEST_F(TextRendererTest, Create) {
   CreateTextRenderer();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, AddTextTrackOnly_OneTrack) {
   CreateTextRenderer();
   AddTextTrack(kTextSubtitles, "", "", false);
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, AddTextTrackOnly_TwoTracks) {
   CreateTextRenderer();
   AddTextTrack(kTextSubtitles, "track 1", "", false);
   AddTextTrack(kTextSubtitles, "track 2", "", false);
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayOnly) {
   CreateTextRenderer();
   Play();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, AddTrackBeforePlay_OneTrack) {
@@ -265,7 +245,6 @@ TEST_F(TextRendererTest, AddTrackBeforePlay_OneTrack) {
   AddTextTrack(kTextSubtitles, "", "", true);
   Play();
   AbortPendingReads();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, AddTrackBeforePlay_TwoTracks) {
@@ -274,7 +253,6 @@ TEST_F(TextRendererTest, AddTrackBeforePlay_TwoTracks) {
   AddTextTrack(kTextSubtitles, "2", "", true);
   Play();
   AbortPendingReads();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, AddTrackAfterPlay_OneTrackAfter) {
@@ -282,7 +260,6 @@ TEST_F(TextRendererTest, AddTrackAfterPlay_OneTrackAfter) {
   Play();
   AddTextTrack(kTextSubtitles, "", "", true);
   AbortPendingReads();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, AddTrackAfterPlay_TwoTracksAfter) {
@@ -291,7 +268,6 @@ TEST_F(TextRendererTest, AddTrackAfterPlay_TwoTracksAfter) {
   AddTextTrack(kTextSubtitles, "1", "", true);
   AddTextTrack(kTextSubtitles, "2", "", true);
   AbortPendingReads();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, AddTrackAfterPlay_OneTrackBeforeOneTrackAfter) {
@@ -300,7 +276,6 @@ TEST_F(TextRendererTest, AddTrackAfterPlay_OneTrackBeforeOneTrackAfter) {
   Play();
   AddTextTrack(kTextSubtitles, "2", "", true);
   AbortPendingReads();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayAddCue_OneTrack) {
@@ -310,7 +285,6 @@ TEST_F(TextRendererTest, PlayAddCue_OneTrack) {
   ExpectRead(0);
   SendCues(true);
   AbortPendingReads();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayAddCue_TwoTracks) {
@@ -322,7 +296,6 @@ TEST_F(TextRendererTest, PlayAddCue_TwoTracks) {
   ExpectRead(1);
   SendCues(true);
   AbortPendingReads();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosOnly_OneTrack) {
@@ -331,7 +304,6 @@ TEST_F(TextRendererTest, PlayEosOnly_OneTrack) {
   Play();
   EXPECT_CALL(*this, OnEnd());
   SendEosNotifications();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosOnly_TwoTracks) {
@@ -341,7 +313,6 @@ TEST_F(TextRendererTest, PlayEosOnly_TwoTracks) {
   Play();
   EXPECT_CALL(*this, OnEnd());
   SendEosNotifications();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayCueEos_OneTrack) {
@@ -352,7 +323,6 @@ TEST_F(TextRendererTest, PlayCueEos_OneTrack) {
   SendCues(true);
   EXPECT_CALL(*this, OnEnd());
   SendEosNotifications();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayCueEos_TwoTracks) {
@@ -365,30 +335,23 @@ TEST_F(TextRendererTest, PlayCueEos_TwoTracks) {
   SendCues(true);
   EXPECT_CALL(*this, OnEnd());
   SendEosNotifications();
-  DestroyTextRenderer();
 }
 
-TEST_F(TextRendererTest, StopPending_OneTrack) {
+TEST_F(TextRendererTest, DestroyPending_OneTrack) {
   CreateTextRenderer();
   AddTextTrack(kTextSubtitles, "", "", true);
   Play();
-  Stop();
-  EXPECT_CALL(*this, OnStop());
+  Destroy();
   SendEosNotifications();
-  text_renderer_.reset();
-  text_track_streams_.clear();
 }
 
-TEST_F(TextRendererTest, StopPending_TwoTracks) {
+TEST_F(TextRendererTest, DestroyPending_TwoTracks) {
   CreateTextRenderer();
   AddTextTrack(kTextSubtitles, "1", "", true);
   AddTextTrack(kTextSubtitles, "2", "", true);
   Play();
-  Stop();
-  EXPECT_CALL(*this, OnStop());
+  Destroy();
   SendEosNotifications();
-  text_renderer_.reset();
-  text_track_streams_.clear();
 }
 
 TEST_F(TextRendererTest, PlayPause_OneTrack) {
@@ -398,7 +361,6 @@ TEST_F(TextRendererTest, PlayPause_OneTrack) {
   AbortPendingReads();
   EXPECT_CALL(*this, OnPause());
   Pause();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayPause_TwoTracks) {
@@ -409,7 +371,6 @@ TEST_F(TextRendererTest, PlayPause_TwoTracks) {
   AbortPendingReads();
   EXPECT_CALL(*this, OnPause());
   Pause();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosPausePending_OneTrack) {
@@ -419,7 +380,6 @@ TEST_F(TextRendererTest, PlayEosPausePending_OneTrack) {
   Pause();
   EXPECT_CALL(*this, OnPause());
   SendEosNotifications();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosPausePending_TwoTracks) {
@@ -430,7 +390,6 @@ TEST_F(TextRendererTest, PlayEosPausePending_TwoTracks) {
   Pause();
   EXPECT_CALL(*this, OnPause());
   SendEosNotifications();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayCuePausePending_OneTrack) {
@@ -440,7 +399,6 @@ TEST_F(TextRendererTest, PlayCuePausePending_OneTrack) {
   Pause();
   EXPECT_CALL(*this, OnPause());
   SendCues(true);
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayCuePausePending_TwoTracks) {
@@ -451,7 +409,6 @@ TEST_F(TextRendererTest, PlayCuePausePending_TwoTracks) {
   Pause();
   EXPECT_CALL(*this, OnPause());
   SendCues(true);
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosPause_OneTrack) {
@@ -462,7 +419,6 @@ TEST_F(TextRendererTest, PlayEosPause_OneTrack) {
   SendEosNotifications();
   EXPECT_CALL(*this, OnPause());
   Pause();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosPause_TwoTracks) {
@@ -474,7 +430,6 @@ TEST_F(TextRendererTest, PlayEosPause_TwoTracks) {
   SendEosNotifications();
   EXPECT_CALL(*this, OnPause());
   Pause();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosPause_SplitEos) {
@@ -487,7 +442,6 @@ TEST_F(TextRendererTest, PlayEosPause_SplitEos) {
   SendEosNotification(1);
   EXPECT_CALL(*this, OnPause());
   Pause();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosFlush_OneTrack) {
@@ -503,7 +457,6 @@ TEST_F(TextRendererTest, PlayEosFlush_OneTrack) {
   Play();
   EXPECT_CALL(*this, OnEnd());
   SendEosNotifications();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosFlush_TwoTracks) {
@@ -521,14 +474,12 @@ TEST_F(TextRendererTest, PlayEosFlush_TwoTracks) {
   Play();
   EXPECT_CALL(*this, OnEnd());
   SendEosNotifications();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, AddTextTrackOnlyRemove_OneTrack) {
   CreateTextRenderer();
   AddTextTrack(kTextSubtitles, "", "", false);
   EXPECT_TRUE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, AddTextTrackOnlyRemove_TwoTracks) {
@@ -539,7 +490,6 @@ TEST_F(TextRendererTest, AddTextTrackOnlyRemove_TwoTracks) {
   EXPECT_TRUE(text_renderer_->HasTracks());
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, AddTrackBeforePlayRemove_OneTrack) {
@@ -549,7 +499,6 @@ TEST_F(TextRendererTest, AddTrackBeforePlayRemove_OneTrack) {
   AbortPendingReads();
   RemoveTextTrack(0);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, AddTrackBeforePlayRemove_TwoTracks) {
@@ -562,7 +511,6 @@ TEST_F(TextRendererTest, AddTrackBeforePlayRemove_TwoTracks) {
   EXPECT_TRUE(text_renderer_->HasTracks());
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, AddTrackBeforePlayRemove_SeparateCancel) {
@@ -576,7 +524,6 @@ TEST_F(TextRendererTest, AddTrackBeforePlayRemove_SeparateCancel) {
   AbortPendingRead(1);
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, AddTrackBeforePlayRemove_RemoveOneThenPlay) {
@@ -589,7 +536,6 @@ TEST_F(TextRendererTest, AddTrackBeforePlayRemove_RemoveOneThenPlay) {
   AbortPendingRead(1);
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, AddTrackBeforePlayRemove_RemoveTwoThenPlay) {
@@ -601,7 +547,6 @@ TEST_F(TextRendererTest, AddTrackBeforePlayRemove_RemoveTwoThenPlay) {
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
   Play();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, AddTrackAfterPlayRemove_OneTrack) {
@@ -611,7 +556,6 @@ TEST_F(TextRendererTest, AddTrackAfterPlayRemove_OneTrack) {
   AbortPendingReads();
   RemoveTextTrack(0);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, AddTrackAfterPlayRemove_TwoTracks) {
@@ -624,7 +568,6 @@ TEST_F(TextRendererTest, AddTrackAfterPlayRemove_TwoTracks) {
   EXPECT_TRUE(text_renderer_->HasTracks());
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, AddTrackAfterPlayRemove_SplitCancel) {
@@ -638,7 +581,6 @@ TEST_F(TextRendererTest, AddTrackAfterPlayRemove_SplitCancel) {
   AbortPendingRead(1);
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, AddTrackAfterPlayRemove_SplitAdd) {
@@ -652,7 +594,6 @@ TEST_F(TextRendererTest, AddTrackAfterPlayRemove_SplitAdd) {
   AbortPendingRead(1);
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayAddCueRemove_OneTrack) {
@@ -664,7 +605,6 @@ TEST_F(TextRendererTest, PlayAddCueRemove_OneTrack) {
   AbortPendingReads();
   RemoveTextTrack(0);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayAddCueRemove_TwoTracks) {
@@ -681,7 +621,6 @@ TEST_F(TextRendererTest, PlayAddCueRemove_TwoTracks) {
   EXPECT_TRUE(text_renderer_->HasTracks());
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosOnlyRemove_OneTrack) {
@@ -692,7 +631,6 @@ TEST_F(TextRendererTest, PlayEosOnlyRemove_OneTrack) {
   SendEosNotifications();
   RemoveTextTrack(0);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosOnlyRemove_TwoTracks) {
@@ -706,7 +644,6 @@ TEST_F(TextRendererTest, PlayEosOnlyRemove_TwoTracks) {
   EXPECT_TRUE(text_renderer_->HasTracks());
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayCueEosRemove_OneTrack) {
@@ -719,7 +656,6 @@ TEST_F(TextRendererTest, PlayCueEosRemove_OneTrack) {
   SendEosNotifications();
   RemoveTextTrack(0);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayCueEosRemove_TwoTracks) {
@@ -736,54 +672,6 @@ TEST_F(TextRendererTest, PlayCueEosRemove_TwoTracks) {
   EXPECT_TRUE(text_renderer_->HasTracks());
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
-}
-
-TEST_F(TextRendererTest, TestStopPendingRemove_OneTrack) {
-  CreateTextRenderer();
-  AddTextTrack(kTextSubtitles, "", "", true);
-  Play();
-  Stop();
-  EXPECT_CALL(*this, OnStop());
-  SendEosNotifications();
-  RemoveTextTrack(0);
-  EXPECT_FALSE(text_renderer_->HasTracks());
-  text_renderer_.reset();
-  text_track_streams_.clear();
-}
-
-TEST_F(TextRendererTest, TestStopPendingRemove_TwoTracks) {
-  CreateTextRenderer();
-  AddTextTrack(kTextSubtitles, "1", "", true);
-  AddTextTrack(kTextSubtitles, "2", "", true);
-  Play();
-  Stop();
-  SendEosNotification(0);
-  EXPECT_CALL(*this, OnStop());
-  SendEosNotification(1);
-  RemoveTextTrack(0);
-  EXPECT_TRUE(text_renderer_->HasTracks());
-  RemoveTextTrack(1);
-  EXPECT_FALSE(text_renderer_->HasTracks());
-  text_renderer_.reset();
-  text_track_streams_.clear();
-}
-
-TEST_F(TextRendererTest, TestStopPendingRemove_RemoveThenSendEos) {
-  CreateTextRenderer();
-  AddTextTrack(kTextSubtitles, "1", "", true);
-  AddTextTrack(kTextSubtitles, "2", "", true);
-  Play();
-  Stop();
-  SendEosNotification(0);
-  RemoveTextTrack(0);
-  EXPECT_TRUE(text_renderer_->HasTracks());
-  EXPECT_CALL(*this, OnStop());
-  SendEosNotification(1);
-  RemoveTextTrack(1);
-  EXPECT_FALSE(text_renderer_->HasTracks());
-  text_renderer_.reset();
-  text_track_streams_.clear();
 }
 
 TEST_F(TextRendererTest, PlayPauseRemove_PauseThenRemove) {
@@ -795,7 +683,6 @@ TEST_F(TextRendererTest, PlayPauseRemove_PauseThenRemove) {
   Pause();
   RemoveTextTrack(0);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayPauseRemove_RemoveThanPause) {
@@ -807,7 +694,6 @@ TEST_F(TextRendererTest, PlayPauseRemove_RemoveThanPause) {
   EXPECT_FALSE(text_renderer_->HasTracks());
   EXPECT_CALL(*this, OnPause());
   Pause();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayPause_PauseThenRemoveTwoTracks) {
@@ -822,7 +708,6 @@ TEST_F(TextRendererTest, PlayPause_PauseThenRemoveTwoTracks) {
   EXPECT_TRUE(text_renderer_->HasTracks());
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayPauseRemove_RemoveThenPauseTwoTracks) {
@@ -837,7 +722,6 @@ TEST_F(TextRendererTest, PlayPauseRemove_RemoveThenPauseTwoTracks) {
   Pause();
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayPauseRemove_SplitCancel) {
@@ -853,7 +737,6 @@ TEST_F(TextRendererTest, PlayPauseRemove_SplitCancel) {
   Pause();
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 
@@ -870,7 +753,6 @@ TEST_F(TextRendererTest, PlayPauseRemove_PauseLast) {
   EXPECT_FALSE(text_renderer_->HasTracks());
   EXPECT_CALL(*this, OnPause());
   Pause();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosPausePendingRemove_OneTrack) {
@@ -882,7 +764,6 @@ TEST_F(TextRendererTest, PlayEosPausePendingRemove_OneTrack) {
   SendEosNotifications();
   RemoveTextTrack(0);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosPausePendingRemove_TwoTracks) {
@@ -898,7 +779,6 @@ TEST_F(TextRendererTest, PlayEosPausePendingRemove_TwoTracks) {
   EXPECT_TRUE(text_renderer_->HasTracks());
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosPausePendingRemove_SplitEos) {
@@ -914,7 +794,6 @@ TEST_F(TextRendererTest, PlayEosPausePendingRemove_SplitEos) {
   SendEosNotification(1);
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayCuePausePendingRemove_OneTrack) {
@@ -926,7 +805,6 @@ TEST_F(TextRendererTest, PlayCuePausePendingRemove_OneTrack) {
   SendCues(true);
   RemoveTextTrack(0);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayCuePausePendingRemove_TwoTracks) {
@@ -942,7 +820,6 @@ TEST_F(TextRendererTest, PlayCuePausePendingRemove_TwoTracks) {
   EXPECT_TRUE(text_renderer_->HasTracks());
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayCuePausePendingRemove_SplitSendCue) {
@@ -958,7 +835,6 @@ TEST_F(TextRendererTest, PlayCuePausePendingRemove_SplitSendCue) {
   SendCue(1, true);
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosPauseRemove_PauseThenRemove) {
@@ -971,7 +847,6 @@ TEST_F(TextRendererTest, PlayEosPauseRemove_PauseThenRemove) {
   Pause();
   RemoveTextTrack(0);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosPauseRemove_RemoveThenPause) {
@@ -984,7 +859,6 @@ TEST_F(TextRendererTest, PlayEosPauseRemove_RemoveThenPause) {
   EXPECT_FALSE(text_renderer_->HasTracks());
   EXPECT_CALL(*this, OnPause());
   Pause();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosPause_PauseThenRemoveTwoTracks) {
@@ -1001,7 +875,6 @@ TEST_F(TextRendererTest, PlayEosPause_PauseThenRemoveTwoTracks) {
   EXPECT_TRUE(text_renderer_->HasTracks());
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosPause_RemovePauseRemove) {
@@ -1018,7 +891,6 @@ TEST_F(TextRendererTest, PlayEosPause_RemovePauseRemove) {
   Pause();
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosPause_EosThenPause) {
@@ -1035,7 +907,6 @@ TEST_F(TextRendererTest, PlayEosPause_EosThenPause) {
   Pause();
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosPause_PauseLast) {
@@ -1052,7 +923,6 @@ TEST_F(TextRendererTest, PlayEosPause_PauseLast) {
   EXPECT_FALSE(text_renderer_->HasTracks());
   EXPECT_CALL(*this, OnPause());
   Pause();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosPause_EosPauseRemove) {
@@ -1069,7 +939,6 @@ TEST_F(TextRendererTest, PlayEosPause_EosPauseRemove) {
   EXPECT_TRUE(text_renderer_->HasTracks());
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosPause_EosRemovePause) {
@@ -1086,7 +955,6 @@ TEST_F(TextRendererTest, PlayEosPause_EosRemovePause) {
   Pause();
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosPause_EosRemoveEosPause) {
@@ -1103,7 +971,6 @@ TEST_F(TextRendererTest, PlayEosPause_EosRemoveEosPause) {
   Pause();
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosPause_EosRemoveEosRemovePause) {
@@ -1120,7 +987,6 @@ TEST_F(TextRendererTest, PlayEosPause_EosRemoveEosRemovePause) {
   EXPECT_FALSE(text_renderer_->HasTracks());
   EXPECT_CALL(*this, OnPause());
   Pause();
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosFlushRemove_OneTrack) {
@@ -1138,7 +1004,6 @@ TEST_F(TextRendererTest, PlayEosFlushRemove_OneTrack) {
   SendEosNotifications();
   RemoveTextTrack(0);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosFlushRemove_TwoTracks) {
@@ -1161,7 +1026,6 @@ TEST_F(TextRendererTest, PlayEosFlushRemove_TwoTracks) {
   EXPECT_TRUE(text_renderer_->HasTracks());
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayEosFlushRemove_EosRemove) {
@@ -1184,7 +1048,6 @@ TEST_F(TextRendererTest, PlayEosFlushRemove_EosRemove) {
   SendEosNotification(1);
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayShort_SendCueThenEos) {
@@ -1196,7 +1059,6 @@ TEST_F(TextRendererTest, PlayShort_SendCueThenEos) {
   SendCue(0, true);
   EXPECT_CALL(*this, OnPause());
   SendEosNotification(1);
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayShort_EosThenSendCue) {
@@ -1208,7 +1070,6 @@ TEST_F(TextRendererTest, PlayShort_EosThenSendCue) {
   SendEosNotification(0);
   EXPECT_CALL(*this, OnPause());
   SendCue(1, true);
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayShortRemove_SendEosRemove) {
@@ -1224,7 +1085,6 @@ TEST_F(TextRendererTest, PlayShortRemove_SendEosRemove) {
   EXPECT_TRUE(text_renderer_->HasTracks());
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayShortRemove_SendRemoveEos) {
@@ -1240,7 +1100,6 @@ TEST_F(TextRendererTest, PlayShortRemove_SendRemoveEos) {
   SendEosNotification(1);
   RemoveTextTrack(1);
   EXPECT_FALSE(text_renderer_->HasTracks());
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayCuePausePendingCancel_OneTrack) {
@@ -1250,7 +1109,6 @@ TEST_F(TextRendererTest, PlayCuePausePendingCancel_OneTrack) {
   Pause();
   EXPECT_CALL(*this, OnPause());
   AbortPendingRead(0);
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayCuePausePendingCancel_SendThenCancel) {
@@ -1262,7 +1120,6 @@ TEST_F(TextRendererTest, PlayCuePausePendingCancel_SendThenCancel) {
   SendCue(0, true);
   EXPECT_CALL(*this, OnPause());
   AbortPendingRead(1);
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, PlayCuePausePendingCancel_CancelThenSend) {
@@ -1274,47 +1131,40 @@ TEST_F(TextRendererTest, PlayCuePausePendingCancel_CancelThenSend) {
   AbortPendingRead(0);
   EXPECT_CALL(*this, OnPause());
   SendCue(1, true);
-  DestroyTextRenderer();
 }
 
-TEST_F(TextRendererTest, PlayCueStopPendingCancel_OneTrack) {
+TEST_F(TextRendererTest, PlayCueDestroyPendingCancel_OneTrack) {
   CreateTextRenderer();
   AddTextTrack(kTextSubtitles, "", "", true);
   Play();
   Pause();
-  Stop();
-  EXPECT_CALL(*this, OnStop());
+  EXPECT_CALL(*this, OnPause());
+  Destroy();
   AbortPendingRead(0);
-  text_renderer_.reset();
-  text_track_streams_.clear();
 }
 
-TEST_F(TextRendererTest, PlayCueStopPendingCancel_SendThenCancel) {
+TEST_F(TextRendererTest, PlayCueDestroyPendingCancel_SendThenCancel) {
   CreateTextRenderer();
   AddTextTrack(kTextSubtitles, "1", "", true);
   AddTextTrack(kTextSubtitles, "2", "", true);
   Play();
   Pause();
-  Stop();
+  EXPECT_CALL(*this, OnPause());
+  Destroy();
   SendCue(0, false);
-  EXPECT_CALL(*this, OnStop());
   AbortPendingRead(1);
-  text_renderer_.reset();
-  text_track_streams_.clear();
 }
 
-TEST_F(TextRendererTest, PlayCueStopPendingCancel_CancelThenSend) {
+TEST_F(TextRendererTest, PlayCueDestroyPendingCancel_CancelThenSend) {
   CreateTextRenderer();
   AddTextTrack(kTextSubtitles, "1", "", true);
   AddTextTrack(kTextSubtitles, "2", "", true);
   Play();
   Pause();
-  Stop();
+  EXPECT_CALL(*this, OnPause());
+  Destroy();
   AbortPendingRead(0);
-  EXPECT_CALL(*this, OnStop());
   SendCue(1, false);
-  text_renderer_.reset();
-  text_track_streams_.clear();
 }
 
 TEST_F(TextRendererTest, AddRemoveAdd) {
@@ -1329,7 +1179,6 @@ TEST_F(TextRendererTest, AddRemoveAdd) {
   Play();
   EXPECT_CALL(*this, OnEnd());
   SendEosNotification(1);
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, AddRemoveEos) {
@@ -1342,7 +1191,6 @@ TEST_F(TextRendererTest, AddRemoveEos) {
   EXPECT_TRUE(text_renderer_->HasTracks());
   EXPECT_CALL(*this, OnEnd());
   SendEosNotification(1);
-  DestroyTextRenderer();
 }
 
 TEST_F(TextRendererTest, AddRemovePause) {
@@ -1356,23 +1204,6 @@ TEST_F(TextRendererTest, AddRemovePause) {
   Pause();
   EXPECT_CALL(*this, OnPause());
   SendEosNotification(1);
-  DestroyTextRenderer();
-}
-
-TEST_F(TextRendererTest, AddRemovePauseStop) {
-  CreateTextRenderer();
-  AddTextTrack(kTextSubtitles, "1", "", true);
-  AddTextTrack(kTextSubtitles, "2", "", true);
-  Play();
-  AbortPendingRead(0);
-  RemoveTextTrack(0);
-  EXPECT_TRUE(text_renderer_->HasTracks());
-  Pause();
-  Stop();
-  EXPECT_CALL(*this, OnStop());
-  SendEosNotification(1);
-  text_renderer_.reset();
-  text_track_streams_.clear();
 }
 
 }  // namespace media

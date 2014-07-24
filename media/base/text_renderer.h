@@ -38,32 +38,30 @@ class MEDIA_EXPORT TextRenderer {
   TextRenderer(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const AddTextTrackCB& add_text_track_cb);
+
+  // Stops all operations and fires all pending callbacks.
   ~TextRenderer();
 
   // |ended_cb| is executed when all of the text tracks have reached
   // end of stream, following a play request.
   void Initialize(const base::Closure& ended_cb);
 
-  // Start text track cue decoding and rendering.
+  // Starts text track cue decoding and rendering.
   void StartPlaying();
 
-  // Temporarily suspend decoding and rendering, executing |callback| when
+  // Temporarily suspends decoding and rendering, executing |callback| when
   // playback has been suspended.
   void Pause(const base::Closure& callback);
 
-  // Discard any text data, executing |callback| when completed.
+  // Discards any text data, executing |callback| when completed.
   void Flush(const base::Closure& callback);
 
-  // Stop all operations in preparation for being deleted, executing |callback|
-  // when complete.
-  void Stop(const base::Closure& callback);
-
-  // Add new |text_stream|, having the indicated |config|, to the text stream
+  // Adds new |text_stream|, having the indicated |config|, to the text stream
   // collection managed by this text renderer.
   void AddTextStream(DemuxerStream* text_stream,
                      const TextTrackConfig& config);
 
-  // Remove |text_stream| from the text stream collection.
+  // Removes |text_stream| from the text stream collection.
   void RemoveTextStream(DemuxerStream* text_stream);
 
   // Returns true if there are extant text tracks.
@@ -112,18 +110,13 @@ class MEDIA_EXPORT TextRenderer {
   // Callback provided to Pause().
   base::Closure pause_cb_;
 
-  // Callback provided to Stop().
-  base::Closure stop_cb_;
-
   // Simple state tracking variable.
   enum State {
     kUninitialized,
     kPausePending,
     kPaused,
     kPlaying,
-    kEnded,
-    kStopPending,
-    kStopped
+    kEnded
   };
   State state_;
 
