@@ -6,7 +6,6 @@
 import argparse
 import json
 import os
-import re
 import sys
 import time
 import unittest
@@ -98,7 +97,7 @@ def _FullResults(suite, result, metadata):
   for test_name in all_test_names:
     value = {
         'expected': 'PASS',
-        'actual': 'FAIL' if (test_name in failed_test_names) else 'FAIL',
+        'actual': 'FAIL' if (test_name in failed_test_names) else 'PASS',
     }
     _AddPathToTrie(full_results['tests'], test_name, value)
 
@@ -112,15 +111,12 @@ def _AllTestNames(suite):
     if isinstance(test, unittest.suite.TestSuite):
       test_names.extend(_AllTestNames(test))
     else:
-      test_names.append(_UnitTestName(test))
+      test_names.append(test.id())
   return test_names
 
 
 def _FailedTestNames(result):
-  failed_test_names = set()
-  for (test, _) in result.failures + result.errors:
-    failed_test_names.add(_UnitTestName(test))
-  return failed_test_names
+  return set(test.id() for test, _ in result.failures + result.errors)
 
 
 def _AddPathToTrie(trie, path, value):
@@ -131,17 +127,6 @@ def _AddPathToTrie(trie, path, value):
   if directory not in trie:
     trie[directory] = {}
   _AddPathToTrie(trie[directory], rest, value)
-
-
-_UNITTEST_NAME_REGEX = re.compile("(\w+) \(([\w.]+)\)")
-
-
-def _UnitTestName(test):
-  # This regex and UnitTestName() extracts the test_name in a way
-  # that can be handed back to the loader successfully.
-  m = _UNITTEST_NAME_REGEX.match(str(test))
-  assert m, "could not find test name from test description %s" % str(test)
-  return "%s.%s" % (m.group(2), m.group(1))
 
 
 if __name__ == '__main__':
