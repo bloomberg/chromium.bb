@@ -195,8 +195,12 @@ static void* WriteSecBuf(void* buf, uint16 length, uint32 offset) {
   length = SWAP16(length);
   offset = SWAP32(offset);
 #endif
+  // Len: 2 bytes.
   buf = WriteBytes(buf, &length, sizeof(length));
+  // MaxLen: 2 bytes. The sender should set it to the value of Len. The
+  // recipient must ignore it.
   buf = WriteBytes(buf, &length, sizeof(length));
+  // BufferOffset: 4 bytes.
   buf = WriteBytes(buf, &offset, sizeof(offset));
   return buf;
 }
