@@ -147,7 +147,7 @@ MediaControls.prototype.pause = function() {
  * @return {boolean} True if the media is currently playing.
  */
 MediaControls.prototype.isPlaying = function() {
-  return !this.media_.paused && !this.media_.ended;
+  return this.media_ && !this.media_.paused && !this.media_.ended;
 };
 
 /**
@@ -245,6 +245,9 @@ MediaControls.prototype.onProgressChange_ = function(value) {
  * @private
  */
 MediaControls.prototype.onProgressDrag_ = function(on) {
+  if (!this.media_)
+    return;
+
   if (on) {
     this.resumeAfterDrag_ = this.isPlaying();
     this.media_.pause();
@@ -376,6 +379,9 @@ MediaControls.prototype.detachMedia = function() {
  * but we want the media pipeline to deinitialize ASAP to minimize leakage.
  */
 MediaControls.prototype.cleanup = function() {
+  if (!this.media_)
+    return;
+
   this.media_.src = '';
   this.media_.load();
   this.detachMedia();
@@ -399,7 +405,7 @@ MediaControls.prototype.onMediaPlay_ = function(playing) {
  * @private
  */
 MediaControls.prototype.onMediaDuration_ = function() {
-  if (!this.media_.duration) {
+  if (!this.media_ || !this.media_.duration) {
     this.enableControls_('.media-control', false);
     return;
   }
@@ -430,7 +436,7 @@ MediaControls.prototype.onMediaDuration_ = function() {
  * @private
  */
 MediaControls.prototype.onMediaProgress_ = function() {
-  if (!this.media_.duration) {
+  if (!this.media_ || !this.media_.duration) {
     this.displayProgress_(0, 1);
     return;
   }
@@ -487,7 +493,7 @@ MediaControls.prototype.restorePlayState = function() {};
  * Encode current state into the page URL or the app state.
  */
 MediaControls.prototype.encodeState = function() {
-  if (!this.media_.duration)
+  if (!this.media_ || !this.media_.duration)
     return;
 
   if (window.appState) {
@@ -502,7 +508,7 @@ MediaControls.prototype.encodeState = function() {
  * @return {boolean} True if decode succeeded.
  */
 MediaControls.prototype.decodeState = function() {
-  if (!window.appState || !('time' in window.appState))
+  if (!this.media_ || !window.appState || !('time' in window.appState))
     return false;
   // There is no page reload for apps v2, only app restart.
   // Always restart in paused state.
@@ -962,6 +968,9 @@ function VideoControls(containerElement, onMediaError, stringFunction,
     this.textBanner_ = this.createControl('text-banner', opt_stateIconParent);
   }
 
+  // Disables all controls at first.
+  this.enableControls_('.media-control', false);
+
   var videoControls = this;
   chrome.mediaPlayerPrivate.onTogglePlayState.addListener(
       function() { videoControls.togglePlayStateWithFeedback(); });
@@ -1084,7 +1093,8 @@ VideoControls.prototype.togglePlayState = function() {
  *     (required when closing app windows).
  */
 VideoControls.prototype.savePosition = function(opt_sync) {
-  if (!this.media_.duration ||
+  if (!this.media_ ||
+      !this.media_.duration ||
       this.media_.duration < VideoControls.RESUME_THRESHOLD) {
     return;
   }
@@ -1116,7 +1126,7 @@ VideoControls.prototype.savePosition = function(opt_sync) {
  * Resumes the playback position saved in the persistent storage.
  */
 VideoControls.prototype.restorePlayState = function() {
-  if (this.media_.duration >= VideoControls.RESUME_THRESHOLD) {
+  if (this.media_ && this.media_.duration >= VideoControls.RESUME_THRESHOLD) {
     util.AppCache.getValue(this.media_.src, function(position) {
       if (position)
         this.media_.currentTime = position;
@@ -1168,6 +1178,9 @@ function AudioControls(container, advanceTrack, onError) {
   /* No volume controls */
   this.createButton('previous', this.onAdvanceClick_.bind(this, false));
   this.createButton('next', this.onAdvanceClick_.bind(this, true));
+
+  // Disables all controls at first.
+  this.enableControls_('.media-control', false);
 
   var audioControls = this;
   chrome.mediaPlayerPrivate.onNextTrack.addListener(
