@@ -11,7 +11,6 @@
 #include "base/callback_forward.h"
 #include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
 #include "base/observer_list_threadsafe.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_status.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
@@ -24,7 +23,6 @@
 #include "webkit/common/quota/quota_types.h"
 
 namespace base {
-class MessageLoopProxy;
 class SingleThreadTaskRunner;
 class Thread;
 }
@@ -217,10 +215,12 @@ class CannedSyncableFileSystem
 
   // Callbacks.
   void DidOpenFileSystem(base::SingleThreadTaskRunner* original_task_runner,
+                         const base::Closure& quit_closure,
                          const GURL& root,
                          const std::string& name,
                          base::File::Error result);
-  void DidInitializeFileSystemContext(sync_file_system::SyncStatusCode status);
+  void DidInitializeFileSystemContext(const base::Closure& quit_closure,
+                                      sync_file_system::SyncStatusCode status);
 
   void InitializeSyncStatusObserver();
 
