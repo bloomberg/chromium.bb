@@ -235,9 +235,6 @@ static_library("content_shell_lib") {
   ]
 
   if (is_win) {
-    configs -= [ "//build/config/win:console" ]
-    configs += [ "//build/config/win:windowed" ]
-    deps += [ "//webkit/resources" ]
     #'LinkIncremental': '<(msvs_large_module_debug_link_mode)',  TODO(GYP)
 
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
