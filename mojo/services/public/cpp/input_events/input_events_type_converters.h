@@ -13,6 +13,13 @@
 namespace mojo {
 
 template<>
+class MOJO_INPUT_EVENTS_EXPORT TypeConverter<EventType, ui::EventType> {
+ public:
+  static EventType ConvertFrom(ui::EventType type);
+  static ui::EventType ConvertTo(EventType type);
+};
+
+template<>
 class MOJO_INPUT_EVENTS_EXPORT TypeConverter<EventPtr, ui::Event> {
  public:
   static EventPtr ConvertFrom(const ui::Event& input);

@@ -104,8 +104,8 @@ class EmbeddedApp : public ApplicationDelegate,
 
   // Overridden from ViewObserver:
   virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE {
-    if (event->action == ui::ET_MOUSE_RELEASED) {
-      if (event->flags & ui::EF_LEFT_MOUSE_BUTTON) {
+    if (event->action == EVENT_TYPE_MOUSE_RELEASED) {
+      if (event->flags & EVENT_FLAGS_LEFT_MOUSE_BUTTON) {
         navigation::NavigationDetailsPtr nav_details(
             navigation::NavigationDetails::New());
         nav_details->url = "http://www.aaronboodman.com/z_dropbox/test.html";

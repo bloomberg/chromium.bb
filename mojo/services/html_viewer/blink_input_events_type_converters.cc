@@ -71,12 +71,12 @@ scoped_ptr<blink::WebInputEvent>
 TypeConverter<EventPtr, scoped_ptr<blink::WebInputEvent> >::ConvertTo(
     const EventPtr& event) {
 
-  if (event->action == ui::ET_MOUSE_PRESSED ||
-      event->action == ui::ET_MOUSE_RELEASED ||
-      event->action == ui::ET_MOUSE_ENTERED ||
-      event->action == ui::ET_MOUSE_EXITED ||
-      event->action == ui::ET_MOUSE_MOVED ||
-      event->action == ui::ET_MOUSE_DRAGGED) {
+  if (event->action == EVENT_TYPE_MOUSE_PRESSED ||
+      event->action == EVENT_TYPE_MOUSE_RELEASED ||
+      event->action == EVENT_TYPE_MOUSE_ENTERED ||
+      event->action == EVENT_TYPE_MOUSE_EXITED ||
+      event->action == EVENT_TYPE_MOUSE_MOVED ||
+      event->action == EVENT_TYPE_MOUSE_DRAGGED) {
     scoped_ptr<blink::WebMouseEvent> web_event(new blink::WebMouseEvent);
     web_event->x = event->location->x;
     web_event->y = event->location->y;
@@ -94,18 +94,18 @@ TypeConverter<EventPtr, scoped_ptr<blink::WebInputEvent> >::ConvertTo(
       web_event->button = blink::WebMouseEvent::ButtonRight;
 
     switch (event->action) {
-      case ui::ET_MOUSE_PRESSED:
+      case EVENT_TYPE_MOUSE_PRESSED:
         web_event->type = blink::WebInputEvent::MouseDown;
         web_event->clickCount = GetClickCount(event->flags);
         break;
-      case ui::ET_MOUSE_RELEASED:
+      case EVENT_TYPE_MOUSE_RELEASED:
         web_event->type = blink::WebInputEvent::MouseUp;
         web_event->clickCount = GetClickCount(event->flags);
         break;
-      case ui::ET_MOUSE_ENTERED:
-      case ui::ET_MOUSE_EXITED:
-      case ui::ET_MOUSE_MOVED:
-      case ui::ET_MOUSE_DRAGGED:
+      case EVENT_TYPE_MOUSE_ENTERED:
+      case EVENT_TYPE_MOUSE_EXITED:
+      case EVENT_TYPE_MOUSE_MOVED:
+      case EVENT_TYPE_MOUSE_DRAGGED:
         web_event->type = blink::WebInputEvent::MouseMove;
         break;
       default:
@@ -114,8 +114,8 @@ TypeConverter<EventPtr, scoped_ptr<blink::WebInputEvent> >::ConvertTo(
     }
 
     return web_event.PassAs<blink::WebInputEvent>();
-  } else if ((event->action == ui::ET_KEY_PRESSED ||
-              event->action == ui::ET_KEY_RELEASED) &&
+  } else if ((event->action == EVENT_TYPE_KEY_PRESSED ||
+              event->action == EVENT_TYPE_KEY_RELEASED) &&
              event->key_data) {
     scoped_ptr<blink::WebKeyboardEvent> web_event(new blink::WebKeyboardEvent);
 
@@ -129,11 +129,11 @@ TypeConverter<EventPtr, scoped_ptr<blink::WebInputEvent> >::ConvertTo(
         (event->key_data->key_code >= 32 && event->key_data->key_code < 127);
 
     switch (event->action) {
-      case ui::ET_KEY_PRESSED:
+      case EVENT_TYPE_KEY_PRESSED:
         web_event->type = is_char ? blink::WebInputEvent::Char :
             blink::WebInputEvent::RawKeyDown;
         break;
-      case ui::ET_KEY_RELEASED:
+      case EVENT_TYPE_KEY_RELEASED:
         web_event->type = blink::WebInputEvent::KeyUp;
         break;
       default:
@@ -154,7 +154,7 @@ TypeConverter<EventPtr, scoped_ptr<blink::WebInputEvent> >::ConvertTo(
 
     web_event->setKeyIdentifierFromWindowsKeyCode();
     return web_event.PassAs<blink::WebInputEvent>();
-  } else if (event->action == ui::ET_MOUSEWHEEL) {
+  } else if (event->action == EVENT_TYPE_MOUSEWHEEL) {
     scoped_ptr<blink::WebMouseWheelEvent> web_event(
         new blink::WebMouseWheelEvent);
     web_event->type = blink::WebInputEvent::MouseWheel;

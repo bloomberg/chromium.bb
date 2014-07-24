@@ -374,7 +374,7 @@ class WindowManager : public ApplicationDelegate,
   }
   virtual void DispatchEvent(View* target, EventPtr event) OVERRIDE {
     // TODO(beng): More sophisticated focus handling than this is required!
-    if (event->action == ui::ET_MOUSE_PRESSED &&
+    if (event->action == EVENT_TYPE_MOUSE_PRESSED &&
         !IsDescendantOfKeyboard(target)) {
       target->node()->SetFocus();
     }

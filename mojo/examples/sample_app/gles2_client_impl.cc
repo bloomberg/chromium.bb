@@ -10,7 +10,6 @@
 #include <stdlib.h>
 
 #include "mojo/public/c/gles2/gles2.h"
-#include "ui/events/event_constants.h"
 
 namespace examples {
 namespace {
@@ -50,18 +49,18 @@ void GLES2ClientImpl::SetSize(const mojo::Size& size) {
 
 void GLES2ClientImpl::HandleInputEvent(const mojo::Event& event) {
   switch (event.action) {
-  case ui::ET_MOUSE_PRESSED:
-  case ui::ET_TOUCH_PRESSED:
-    if (event.flags & ui::EF_RIGHT_MOUSE_BUTTON)
+  case mojo::EVENT_TYPE_MOUSE_PRESSED:
+  case mojo::EVENT_TYPE_TOUCH_PRESSED:
+    if (event.flags & mojo::EVENT_FLAGS_RIGHT_MOUSE_BUTTON)
       break;
     CancelAnimationFrames();
     capture_point_ = *event.location;
     last_drag_point_ = capture_point_;
     drag_start_time_ = mojo::GetTimeTicksNow();
     break;
-  case ui::ET_MOUSE_DRAGGED:
-  case ui::ET_TOUCH_MOVED:
-    if (event.flags & ui::EF_RIGHT_MOUSE_BUTTON)
+  case mojo::EVENT_TYPE_MOUSE_DRAGGED:
+  case mojo::EVENT_TYPE_TOUCH_MOVED:
+    if (event.flags & mojo::EVENT_FLAGS_RIGHT_MOUSE_BUTTON)
       break;
     if (!getting_animation_frames_) {
       int direction = event.location->y < last_drag_point_.y ||
@@ -75,9 +74,9 @@ void GLES2ClientImpl::HandleInputEvent(const mojo::Event& event) {
       last_drag_point_ = *event.location;
     }
     break;
-  case ui::ET_MOUSE_RELEASED:
-  case ui::ET_TOUCH_RELEASED: {
-    if (event.flags & ui::EF_RIGHT_MOUSE_BUTTON) {
+  case mojo::EVENT_TYPE_MOUSE_RELEASED:
+  case mojo::EVENT_TYPE_TOUCH_RELEASED: {
+    if (event.flags & mojo::EVENT_FLAGS_RIGHT_MOUSE_BUTTON) {
       cube_.set_color(GetRandomColor(), GetRandomColor(), GetRandomColor());
       break;
     }

@@ -101,7 +101,7 @@ class NestingApp : public ApplicationDelegate,
 
   // Overridden from ViewObserver:
   virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE {
-    if (event->action == ui::ET_MOUSE_RELEASED)
+    if (event->action == EVENT_TYPE_MOUSE_RELEASED)
       window_manager_->CloseWindow(view->node()->id());
   }
 

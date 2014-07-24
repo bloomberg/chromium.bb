@@ -1279,7 +1279,7 @@ TEST_F(ViewManagerTest, OnViewInput) {
   // Dispatch an event to the view and verify its received.
   {
     EventPtr event(Event::New());
-    event->action = 1;
+    event->action = static_cast<EventType>(1);
     connection_->view_manager()->DispatchOnViewInputEvent(
         BuildViewId(2, 11),
         event.Pass());
