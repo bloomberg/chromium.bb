@@ -203,6 +203,9 @@
               'config/win',
             ],
           },
+          'defines' : [
+            'SK_CPU_SSE_LEVEL=31'
+          ],
         }],
         [ 'target_arch != "arm" and target_arch != "arm64" and \
            target_arch != "mipsel"', {
@@ -239,6 +242,11 @@
           'xcode_settings': {
             'GCC_ENABLE_SSE41_EXTENSIONS': 'YES',
           },
+        }],
+        [ 'OS == "win"', {
+          'defines' : [
+            'SK_CPU_SSE_LEVEL=41'
+          ],
         }],
         [ 'target_arch == "x64"', {
           'sources': [
