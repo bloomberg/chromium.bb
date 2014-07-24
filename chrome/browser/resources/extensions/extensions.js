@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-<include src="../uber/uber_utils.js"></include>
-<include src="extension_code.js"></include>
-<include src="extension_commands_overlay.js"></include>
-<include src="extension_focus_manager.js"></include>
-<include src="extension_list.js"></include>
-<include src="pack_extension_overlay.js"></include>
-<include src="extension_error_overlay.js"></include>
-<include src="extension_loader.js"></include>
+<include src="../uber/uber_utils.js">
+<include src="extension_code.js">
+<include src="extension_commands_overlay.js">
+<include src="extension_focus_manager.js">
+<include src="extension_list.js">
+<include src="pack_extension_overlay.js">
+<include src="extension_error_overlay.js">
+<include src="extension_loader.js">
 
 <if expr="chromeos">
-<include src="chromeos/kiosk_apps.js"></include>
+<include src="chromeos/kiosk_apps.js">
 </if>
 
 // Used for observing function of the backend datasource for this page by

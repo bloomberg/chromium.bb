@@ -6,7 +6,7 @@
  * @fileoverview Login UI based on a stripped down OOBE controller.
  */
 
-<include src="login_common.js"></include>
+<include src="login_common.js">
 
 cr.define('cr.ui.Oobe', function() {
   return {

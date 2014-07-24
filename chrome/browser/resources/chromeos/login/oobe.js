@@ -7,14 +7,14 @@
  * This is the main code for the OOBE WebUI implementation.
  */
 
-<include src="login_common.js"></include>
-<include src="oobe_screen_eula.js"></include>
-<include src="oobe_screen_network.js"></include>
-<include src="oobe_screen_hid_detection.js"></include>
-<include src="oobe_screen_update.js"></include>
-<include src="oobe_screen_controller_pairing.js"></include>
-<include src="oobe_screen_host_pairing.js"></include>
-<include src="oobe_screen_auto_enrollment_check.js"></include>
+<include src="login_common.js">
+<include src="oobe_screen_eula.js">
+<include src="oobe_screen_network.js">
+<include src="oobe_screen_hid_detection.js">
+<include src="oobe_screen_update.js">
+<include src="oobe_screen_controller_pairing.js">
+<include src="oobe_screen_host_pairing.js">
+<include src="oobe_screen_auto_enrollment_check.js">
 
 cr.define('cr.ui.Oobe', function() {
   return {

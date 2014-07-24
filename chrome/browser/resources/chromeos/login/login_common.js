@@ -6,31 +6,31 @@
  * @fileoverview Common OOBE controller methods.
  */
 
-<include src="../../login/screen.js"></include>
-<include src="screen_context.js"></include>
-<include src="../user_images_grid.js"></include>
-<include src="apps_menu.js"></include>
-<include src="../../login/bubble.js"></include>
-<include src="../../login/display_manager.js"></include>
-<include src="header_bar.js"></include>
-<include src="network_dropdown.js"></include>
-<include src="oobe_screen_reset.js"></include>
-<include src="oobe_screen_autolaunch.js"></include>
-<include src="oobe_screen_enable_kiosk.js"></include>
-<include src="oobe_screen_terms_of_service.js"></include>
-<include src="oobe_screen_user_image.js"></include>
-<include src="../../login/screen_account_picker.js"></include>
-<include src="screen_app_launch_splash.js"></include>
-<include src="screen_error_message.js"></include>
-<include src="screen_gaia_signin.js"></include>
-<include src="screen_locally_managed_user_creation.js"></include>
-<include src="screen_password_changed.js"></include>
-<include src="screen_tpm_error.js"></include>
-<include src="screen_wrong_hwid.js"></include>
-<include src="screen_confirm_password.js"></include>
-<include src="screen_fatal_error.js"></include>
-<include src="../../login/user_pod_row.js"></include>
-<include src="../../login/resource_loader.js"></include>
+<include src="../../login/screen.js">
+<include src="screen_context.js">
+<include src="../user_images_grid.js">
+<include src="apps_menu.js">
+<include src="../../login/bubble.js">
+<include src="../../login/display_manager.js">
+<include src="header_bar.js">
+<include src="network_dropdown.js">
+<include src="oobe_screen_reset.js">
+<include src="oobe_screen_autolaunch.js">
+<include src="oobe_screen_enable_kiosk.js">
+<include src="oobe_screen_terms_of_service.js">
+<include src="oobe_screen_user_image.js">
+<include src="../../login/screen_account_picker.js">
+<include src="screen_app_launch_splash.js">
+<include src="screen_error_message.js">
+<include src="screen_gaia_signin.js">
+<include src="screen_locally_managed_user_creation.js">
+<include src="screen_password_changed.js">
+<include src="screen_tpm_error.js">
+<include src="screen_wrong_hwid.js">
+<include src="screen_confirm_password.js">
+<include src="screen_fatal_error.js">
+<include src="../../login/user_pod_row.js">
+<include src="../../login/resource_loader.js">
 
 cr.define('cr.ui', function() {
   var DisplayManager = cr.ui.login.DisplayManager;

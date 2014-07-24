@@ -6,7 +6,7 @@
  * @fileoverview Inline login UI.
  */
 
-<include src="../gaia_auth_host/gaia_auth_host.js"></include>
+<include src="../gaia_auth_host/gaia_auth_host.js">
 
 cr.define('inline.login', function() {
   'use strict';

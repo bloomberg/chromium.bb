@@ -8,5 +8,5 @@
 // TODO(bshe): remove this line when polymer supports the configuration.
 document.registerElement = undefined;
 
-<include src="../../../../third_party/polymer/platform/platform.js"></include>
+<include src="../../../../third_party/polymer/platform/platform.js">
 })();

@@ -6,7 +6,7 @@
  * @fileoverview Oobe signin screen implementation.
  */
 
-<include src="../../gaia_auth_host/gaia_auth_host.js"></include>
+<include src="../../gaia_auth_host/gaia_auth_host.js">
 
 login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
   // Gaia loading time after which error message must be displayed and
