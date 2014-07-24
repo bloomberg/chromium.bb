@@ -178,11 +178,10 @@ class ServiceRuntime {
   // successfully or unsuccessfully).
   void SignalNexeStarted(bool ok);
 
-  // Establish an SrpcClient to the sel_ldr instance and load the nexe.
-  // The nexe to be started is passed through |file_info|.
+  // Establish an SrpcClient to the sel_ldr instance and start the nexe.
   // This function must be called on the main thread.
   // This function must only be called once.
-  void LoadNexeAndStart(PP_NaClFileInfo file_info);
+  void StartNexe();
 
   // Starts the application channel to the nexe.
   SrpcClient* SetupAppChannel();
@@ -204,11 +203,10 @@ class ServiceRuntime {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
-  bool LoadNexeAndStartInternal(const PP_NaClFileInfo& file_info);
+  bool StartNexeInternal();
 
   bool SetupCommandChannel();
   bool InitReverseService();
-  bool LoadModule(const PP_NaClFileInfo& file_info);
   bool StartModule();
   void ReapLogs();
 

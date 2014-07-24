@@ -5,6 +5,7 @@
 #include "components/nacl/loader/nacl_listener.h"
 
 #include <errno.h>
+#include <fcntl.h>
 #include <stdlib.h>
 
 #if defined(OS_POSIX)
@@ -27,6 +28,7 @@
 #include "native_client/src/public/chrome_main.h"
 #include "native_client/src/public/nacl_app.h"
 #include "native_client/src/public/nacl_file_info.h"
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -37,7 +39,6 @@
 #include "components/nacl/loader/nonsfi/nonsfi_main.h"
 #include "content/public/common/child_process_sandbox_support_linux.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
-#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "ppapi/nacl_irt/plugin_startup.h"
 #endif
 
@@ -390,6 +391,22 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
   args->prereserved_sandbox_size = prereserved_sandbox_size_;
 #endif
 
+  NaClFileInfo nexe_file_info;
+  base::PlatformFile nexe_file = IPC::PlatformFileForTransitToPlatformFile(
+      params.nexe_file);
+#if defined(OS_WIN)
+  nexe_file_info.desc =
+      _open_osfhandle(reinterpret_cast<intptr_t>(nexe_file),
+                      _O_RDONLY | _O_BINARY);
+#elif defined(OS_POSIX)
+  nexe_file_info.desc = nexe_file;
+#else
+#error Unsupported target platform.
+#endif
+  nexe_file_info.file_token.lo = params.nexe_token_lo;
+  nexe_file_info.file_token.hi = params.nexe_token_hi;
+  args->nexe_desc = NaClDescIoFromFileInfo(nexe_file_info, NACL_ABI_O_RDONLY);
+
   NaClChromeMainStartApp(nap, args);
 }
 
@@ -472,6 +489,8 @@ void NaClListener::StartNonSfi(const nacl::NaClStartParams& params) {
   CHECK(params.handles.empty());
 
   CHECK(params.nexe_file != IPC::InvalidPlatformFileForTransit());
+  CHECK(params.nexe_token_lo == 0);
+  CHECK(params.nexe_token_hi == 0);
   nacl::nonsfi::MainStart(
       NaClDescIoDescFromDescAllocCtor(
           IPC::PlatformFileForTransitToPlatformFile(params.nexe_file),

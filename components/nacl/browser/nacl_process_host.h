@@ -22,6 +22,13 @@
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "url/gurl.h"
 
+// NaClFileToken here is forward declared here instead of including
+// nacl_file_info.h because that file isn't safe to include for disable_nacl=1
+// builds.
+// TODO(teravest): Stop building this header in disable_nacl=1 builds and
+// include nacl_file_info.h instead of forward declaring NaClFileToken.
+struct NaClFileToken;
+
 namespace content {
 class BrowserChildProcessHost;
 class BrowserPpapiHost;
@@ -46,6 +53,8 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
  public:
   // manifest_url: the URL of the manifest of the Native Client plugin being
   // executed.
+  // nexe_file: A file that corresponds to the nexe module to be loaded.
+  // nexe_token: A cache validation token for nexe_file.
   // permissions: PPAPI permissions, to control access to private APIs.
   // render_view_id: RenderView routing id, to control access to private APIs.
   // permission_bits: controls which interfaces the NaCl plugin can use.
@@ -63,6 +72,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // profile_directory: is the path of current profile directory.
   NaClProcessHost(const GURL& manifest_url,
                   base::File nexe_file,
+                  const NaClFileToken& nexe_token,
                   ppapi::PpapiPermissions permissions,
                   int render_view_id,
                   uint32 permission_bits,
@@ -189,6 +199,11 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 
   GURL manifest_url_;
   base::File nexe_file_;
+
+  // TODO(teravest): Use NaClFileInfo here, but without breaking the
+  // disable_nacl=1 build. (Why is this file even built with disable_nacl=1?)
+  uint64_t nexe_token_lo_;
+  uint64_t nexe_token_hi_;
 
   ppapi::PpapiPermissions permissions_;
 

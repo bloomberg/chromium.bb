@@ -66,16 +66,16 @@ void Plugin::HistogramTimeSmall(const std::string& name,
                                       kTimeSmallBuckets);
 }
 
-bool Plugin::LoadHelperNaClModule(PP_NaClFileInfo file_info,
-                                  NaClSubprocess* subprocess,
-                                  const SelLdrStartParams& params) {
+bool Plugin::LoadHelperNaClModuleInternal(NaClSubprocess* subprocess,
+                                          const SelLdrStartParams& params) {
   CHECK(!pp::Module::Get()->core()->IsMainThread());
   ServiceRuntime* service_runtime =
       new ServiceRuntime(this,
                          pp_instance(),
                          false,  // No main_service_runtime.
                          false,  // No non-SFI mode (i.e. in SFI-mode).
-                         pp::BlockUntilComplete(), pp::BlockUntilComplete());
+                         pp::BlockUntilComplete(),
+                         pp::BlockUntilComplete());
   subprocess->set_service_runtime(service_runtime);
   PLUGIN_PRINTF(("Plugin::LoadHelperNaClModule "
                  "(service_runtime=%p)\n",
@@ -102,17 +102,14 @@ bool Plugin::LoadHelperNaClModule(PP_NaClFileInfo file_info,
   if (!service_runtime_started)
     return false;
 
-  // Now actually load the nexe, which can happen on a background thread.
+  // Now actually start the nexe.
   //
   // We can't use pp::BlockUntilComplete() inside an in-process plugin, so we
   // have to roll our own blocking logic, similar to WaitForSelLdrStart()
   // above, except without timeout logic.
   pp::Module::Get()->core()->CallOnMainThread(
       0,
-      callback_factory_.NewCallback(
-          &Plugin::LoadNexeAndStart,
-          service_runtime,
-          file_info));
+      callback_factory_.NewCallback(&Plugin::StartNexe, service_runtime));
   return service_runtime->WaitForNexeStart();
 }
 
@@ -153,19 +150,8 @@ void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
       pp::Var(pp::PASS_REF, nacl_interface_->GetManifestBaseURL(pp_instance()));
   std::string manifest_base_url_str = manifest_base_url.AsString();
 
-  PP_NaClFileInfo file_info_for_srpc = kInvalidNaClFileInfo;
-  PP_NaClFileInfo file_info_for_ipc = kInvalidNaClFileInfo;
-  if (uses_nonsfi_mode) {
-    // In non-SFI mode, LaunchSelLdr is used to pass the nexe file's descriptor
-    // to the NaCl loader process.
-    file_info_for_ipc = file_info;
-  } else {
-    // Otherwise (i.e. in SFI-mode), LoadModule SRPC is still being used.
-    file_info_for_srpc = file_info;
-  }
-
   SelLdrStartParams params(manifest_base_url_str,
-                           file_info_for_ipc,
+                           file_info,
                            true /* uses_irt */,
                            true /* uses_ppapi */,
                            enable_dyncode_syscalls,
@@ -188,18 +174,16 @@ void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
   // We don't take any action once nexe loading has completed, so pass an empty
   // callback here for |callback|.
   pp::CompletionCallback callback = callback_factory_.NewCallback(
-      &Plugin::LoadNexeAndStart, service_runtime, file_info_for_srpc);
+      &Plugin::StartNexe, service_runtime);
   StartSelLdrOnMainThread(
       static_cast<int32_t>(PP_OK), service_runtime, params, callback);
 }
 
-void Plugin::LoadNexeAndStart(int32_t pp_error,
-                              ServiceRuntime* service_runtime,
-                              PP_NaClFileInfo file_info) {
+void Plugin::StartNexe(int32_t pp_error, ServiceRuntime* service_runtime) {
   CHECK(pp::Module::Get()->core()->IsMainThread());
   if (pp_error != PP_OK)
     return;
-  service_runtime->LoadNexeAndStart(file_info);
+  service_runtime->StartNexe();
 }
 
 bool Plugin::LoadNaClModuleContinuationIntern() {
@@ -242,14 +226,8 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(const nacl::string& helper_url,
   // TODO(sehr): define new UMA stats for translator related nexe events.
   // NOTE: The PNaCl translator nexes are not built to use the IRT.  This is
   // done to save on address space and swap space.
-  //
-  // Currently, this works only in SFI-mode. So, LoadModule SRPC is still used.
-  // So, pass kInvalidNaClFileInfo here, and instead |file_info| is passed
-  // to LoadNaClModuleFromBackgroundThread() below.
-  // TODO(teravest, hidehiko): Pass file_info to params, so that LaunchSelLdr
-  // will look at the info.
   SelLdrStartParams params(helper_url,
-                           kInvalidNaClFileInfo,
+                           file_info,
                            false /* uses_irt */,
                            false /* uses_ppapi */,
                            false /* enable_dyncode_syscalls */,
@@ -258,11 +236,9 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(const nacl::string& helper_url,
 
   // Helper NaCl modules always use the PNaCl manifest, as there is no
   // corresponding NMF.
-  if (!LoadHelperNaClModule(file_info,
-                            nacl_subprocess.get(),
-                            params)) {
+  if (!LoadHelperNaClModuleInternal(nacl_subprocess.get(), params))
     return NULL;
-  }
+
   // We need not wait for the init_done callback.  We can block
   // here in StartSrpcServices, since helper NaCl modules
   // are spawned from a private thread.
