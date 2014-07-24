@@ -924,6 +924,31 @@ STDMETHODIMP NativeViewAccessibilityWin::get_relationTargetsOfType(
   return S_OK;
 }
 
+STDMETHODIMP NativeViewAccessibilityWin::get_attributes(BSTR* attributes) {
+  if (!view_)
+    return E_FAIL;
+
+  if (!attributes)
+    return E_INVALIDARG;
+
+  base::string16 attributes_str;
+
+  // Text fields need to report the attribute "text-model:a1" to instruct
+  // screen readers to use IAccessible2 APIs to handle text editing in this
+  // object (as opposed to treating it like a native Windows text box).
+  // The text-model:a1 attribute is documented here:
+  // http://www.linuxfoundation.org/collaborate/workgroups/accessibility/ia2/ia2_implementation_guide
+  ui::AXViewState state;
+  view_->GetAccessibleState(&state);
+  if (state.role == ui::AX_ROLE_TEXT_FIELD) {
+    attributes_str = L"text-model:a1;";
+  }
+
+  *attributes = SysAllocString(attributes_str.c_str());
+  DCHECK(*attributes);
+  return S_OK;
+}
+
 //
 // IAccessibleText
 //

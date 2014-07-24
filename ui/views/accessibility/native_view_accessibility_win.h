@@ -152,13 +152,12 @@ NativeViewAccessibilityWin
                                          IUnknown ***targets,
                                          long *n_targets);
 
+  STDMETHODIMP get_attributes(BSTR* attributes);
+
   //
   // IAccessible2 methods not implemented.
   //
 
-  STDMETHODIMP get_attributes(BSTR* attributes) {
-    return E_NOTIMPL;
-  }
   STDMETHODIMP get_attribute(BSTR name, VARIANT* attribute) {
     return E_NOTIMPL;
   }
