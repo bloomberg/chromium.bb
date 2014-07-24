@@ -27,7 +27,8 @@
 
 namespace blink {
 
-void LineBreaker::skipLeadingWhitespace(InlineBidiResolver& resolver, LineInfo& lineInfo,
+void LineBreaker::skipLeadingWhitespace(InlineBidiResolver& resolver,
+    BidiRunList<BidiRun>& bidiRuns, LineInfo& lineInfo,
     FloatingObject* lastFloatFromPreviousLine, LineWidth& width)
 {
     while (!resolver.position().atEnd() && !requiresLineBox(resolver.position(), lineInfo, LeadingWhitespace)) {
@@ -35,7 +36,7 @@ void LineBreaker::skipLeadingWhitespace(InlineBidiResolver& resolver, LineInfo& 
         if (object->isOutOfFlowPositioned()) {
             setStaticPositions(m_block, toRenderBox(object));
             if (object->style()->isOriginalDisplayInlineType()) {
-                resolver.runs().addRun(createRun(0, 1, object, resolver));
+                bidiRuns.addRun(createRun(0, 1, object, resolver));
                 lineInfo.incrementRunsFromLeadingWhitespace();
             }
         } else if (object->isFloating()) {
@@ -47,7 +48,7 @@ void LineBreaker::skipLeadingWhitespace(InlineBidiResolver& resolver, LineInfo& 
         }
         resolver.position().increment(&resolver);
     }
-    resolver.commitExplicitEmbedding(resolver.runs());
+    resolver.commitExplicitEmbedding(bidiRuns);
 }
 
 void LineBreaker::reset()
@@ -57,7 +58,8 @@ void LineBreaker::reset()
     m_clear = CNONE;
 }
 
-InlineIterator LineBreaker::nextLineBreak(InlineBidiResolver& resolver, LineInfo& lineInfo,
+InlineIterator LineBreaker::nextLineBreak(InlineBidiResolver& resolver,
+    BidiRunList<BidiRun>& bidiRuns, LineInfo& lineInfo,
     RenderTextInfo& renderTextInfo, FloatingObject* lastFloatFromPreviousLine,
     WordMeasurements& wordMeasurements)
 {
@@ -69,7 +71,7 @@ InlineIterator LineBreaker::nextLineBreak(InlineBidiResolver& resolver, LineInfo
 
     LineWidth width(*m_block, lineInfo.isFirstLine(), requiresIndent(lineInfo.isFirstLine(), lineInfo.previousLineBrokeCleanly(), m_block->style()));
 
-    skipLeadingWhitespace(resolver, lineInfo, lastFloatFromPreviousLine, width);
+    skipLeadingWhitespace(resolver, bidiRuns, lineInfo, lastFloatFromPreviousLine, width);
 
     if (resolver.position().atEnd())
         return resolver.position();

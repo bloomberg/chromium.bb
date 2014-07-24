@@ -953,10 +953,8 @@ void GraphicsContext::drawBidiText(const Font& font, const TextRunPaintInfo& run
     bidiResolver.setStatus(BidiStatus(run.direction(), run.directionalOverride()));
     bidiResolver.setPositionIgnoringNestedIsolates(TextRunIterator(&run, 0));
 
-    // FIXME: This ownership should be reversed. We should pass BidiRunList
-    // to BidiResolver in createBidiRunsForLine.
-    BidiRunList<BidiCharacterRun>& bidiRuns = bidiResolver.runs();
-    bidiResolver.createBidiRunsForLine(TextRunIterator(&run, run.length()));
+    BidiRunList<BidiCharacterRun> bidiRuns;
+    bidiResolver.createBidiRunsForLine(TextRunIterator(&run, run.length()), bidiRuns);
     if (!bidiRuns.runCount())
         return;
 

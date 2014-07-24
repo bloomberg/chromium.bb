@@ -244,9 +244,11 @@ public:
     void embed(WTF::Unicode::Direction, BidiEmbeddingSource);
     bool commitExplicitEmbedding(BidiRunList<Run>&);
 
-    void createBidiRunsForLine(const Iterator& end, VisualDirectionOverride = NoVisualOverride, bool hardLineBreak = false, bool reorderRuns = true);
-
-    BidiRunList<Run>& runs() { return m_runs; }
+    void createBidiRunsForLine(const Iterator& end,
+        BidiRunList<Run>&,
+        VisualDirectionOverride = NoVisualOverride,
+        bool hardLineBreak = false,
+        bool reorderRuns = true);
 
     // FIXME: This used to be part of deleteRuns() but was a layering violation.
     // It's unclear if this is still needed.
@@ -286,10 +288,6 @@ protected:
     bool m_reachedEndOfLine;
     Iterator m_lastBeforeET; // Before a EuropeanNumberTerminator
     bool m_emptyRun;
-
-    // FIXME: This should not belong to the resolver, but rather be passed
-    // into createBidiRunsForLine by the caller.
-    BidiRunList<Run> m_runs;
 
     MidpointState<Iterator> m_midpointState;
 
@@ -660,7 +658,11 @@ TextDirection BidiResolver<Iterator, Run>::determineParagraphDirectionality(bool
 }
 
 template <class Iterator, class Run>
-void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, VisualDirectionOverride override, bool hardLineBreak, bool reorderRuns)
+void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end,
+    BidiRunList<Run>& runs,
+    VisualDirectionOverride override,
+    bool hardLineBreak,
+    bool reorderRuns)
 {
     using namespace WTF::Unicode;
 
@@ -678,10 +680,10 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
             increment();
         }
         m_direction = override == VisualLeftToRightOverride ? LeftToRight : RightToLeft;
-        appendRun(m_runs);
-        m_runs.setLogicallyLastRun(m_runs.lastRun());
-        if (override == VisualRightToLeftOverride && m_runs.runCount())
-            m_runs.reverseRuns(0, m_runs.runCount() - 1);
+        appendRun(runs);
+        runs.setLogicallyLastRun(runs.lastRun());
+        if (override == VisualRightToLeftOverride && runs.runCount())
+            runs.reverseRuns(0, runs.runCount() - 1);
         return;
     }
 
@@ -760,7 +762,7 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
         case LeftToRightOverride:
         case PopDirectionalFormat:
             embed(dirCurrent, FromUnicode);
-            commitExplicitEmbedding(m_runs);
+            commitExplicitEmbedding(runs);
             break;
 
         // strong types
@@ -771,7 +773,7 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
             case EuropeanNumber:
             case ArabicNumber:
                 if (m_status.last != EuropeanNumber || m_status.lastStrong != LeftToRight)
-                    appendRun(m_runs);
+                    appendRun(runs);
                 break;
             case LeftToRight:
                 break;
@@ -787,23 +789,23 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
                     if (m_status.lastStrong != LeftToRight) {
                         // the numbers need to be on a higher embedding level, so let's close that run
                         m_direction = EuropeanNumber;
-                        appendRun(m_runs);
+                        appendRun(runs);
                         if (context()->dir() != LeftToRight) {
                             // the neutrals take the embedding direction, which is R
                             m_eor = m_last;
                             m_direction = RightToLeft;
-                            appendRun(m_runs);
+                            appendRun(runs);
                         }
                     }
                 } else if (m_status.eor == ArabicNumber) {
                     // Arabic numbers are always on a higher embedding level, so let's close that run
                     m_direction = ArabicNumber;
-                    appendRun(m_runs);
+                    appendRun(runs);
                     if (context()->dir() != LeftToRight) {
                         // the neutrals take the embedding direction, which is R
                         m_eor = m_last;
                         m_direction = RightToLeft;
-                        appendRun(m_runs);
+                        appendRun(runs);
                     }
                 } else if (m_status.lastStrong != LeftToRight) {
                     // last stuff takes embedding dir
@@ -811,7 +813,7 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
                         m_eor = m_last;
                         m_direction = RightToLeft;
                     }
-                    appendRun(m_runs);
+                    appendRun(runs);
                 }
             default:
                 break;
@@ -827,7 +829,7 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
             case LeftToRight:
             case EuropeanNumber:
             case ArabicNumber:
-                appendRun(m_runs);
+                appendRun(runs);
             case RightToLeft:
             case RightToLeftArabic:
                 break;
@@ -842,13 +844,13 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
                 if (m_status.eor == EuropeanNumber) {
                     if (m_status.lastStrong == LeftToRight && context()->dir() == LeftToRight)
                         m_eor = m_last;
-                    appendRun(m_runs);
+                    appendRun(runs);
                 } else if (m_status.eor == ArabicNumber) {
-                    appendRun(m_runs);
+                    appendRun(runs);
                 } else if (m_status.lastStrong == LeftToRight) {
                     if (context()->dir() == LeftToRight)
                         m_eor = m_last;
-                    appendRun(m_runs);
+                    appendRun(runs);
                 }
             default:
                 break;
@@ -872,7 +874,7 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
                 case RightToLeftArabic:
                 case ArabicNumber:
                     m_eor = m_last;
-                    appendRun(m_runs);
+                    appendRun(runs);
                     m_direction = EuropeanNumber;
                     break;
                 case EuropeanNumberSeparator:
@@ -889,22 +891,22 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
                         if (m_status.lastStrong == RightToLeft) {
                             // ENs on both sides behave like Rs, so the neutrals should be R.
                             // Terminate the EN run.
-                            appendRun(m_runs);
+                            appendRun(runs);
                             // Make an R run.
                             m_eor = m_status.last == EuropeanNumberTerminator ? m_lastBeforeET : m_last;
                             m_direction = RightToLeft;
-                            appendRun(m_runs);
+                            appendRun(runs);
                             // Begin a new EN run.
                             m_direction = EuropeanNumber;
                         }
                     } else if (m_status.eor == ArabicNumber) {
                         // Terminate the AN run.
-                        appendRun(m_runs);
+                        appendRun(runs);
                         if (m_status.lastStrong == RightToLeft || context()->dir() == RightToLeft) {
                             // Make an R run.
                             m_eor = m_status.last == EuropeanNumberTerminator ? m_lastBeforeET : m_last;
                             m_direction = RightToLeft;
-                            appendRun(m_runs);
+                            appendRun(runs);
                             // Begin a new EN run.
                             m_direction = EuropeanNumber;
                         }
@@ -912,7 +914,7 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
                         // Extend the R run to include the neutrals.
                         m_eor = m_status.last == EuropeanNumberTerminator ? m_lastBeforeET : m_last;
                         m_direction = RightToLeft;
-                        appendRun(m_runs);
+                        appendRun(runs);
                         // Begin a new EN run.
                         m_direction = EuropeanNumber;
                     }
@@ -930,7 +932,7 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
             switch (m_status.last) {
             case LeftToRight:
                 if (context()->dir() == LeftToRight)
-                    appendRun(m_runs);
+                    appendRun(runs);
                 break;
             case ArabicNumber:
                 break;
@@ -938,7 +940,7 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
             case RightToLeftArabic:
             case EuropeanNumber:
                 m_eor = m_last;
-                appendRun(m_runs);
+                appendRun(runs);
                 break;
             case CommonNumberSeparator:
                 if (m_status.eor == ArabicNumber)
@@ -954,14 +956,14 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
                     || (m_status.eor == EuropeanNumber && (m_status.lastStrong == RightToLeft || context()->dir() == RightToLeft))
                     || (m_status.eor != EuropeanNumber && m_status.lastStrong == LeftToRight && context()->dir() == RightToLeft)) {
                     // Terminate the run before the neutrals.
-                    appendRun(m_runs);
+                    appendRun(runs);
                     // Begin an R run for the neutrals.
                     m_direction = RightToLeft;
                 } else if (m_direction == OtherNeutral) {
                     m_direction = m_status.lastStrong == LeftToRight ? LeftToRight : RightToLeft;
                 }
                 m_eor = m_last;
-                appendRun(m_runs);
+                appendRun(runs);
             default:
                 break;
             }
@@ -1018,7 +1020,7 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
                 default:
                     ASSERT_NOT_REACHED();
                 }
-                appendRun(m_runs);
+                appendRun(runs);
             }
             m_current = end;
             m_status = stateAtEnd.m_status;
@@ -1042,7 +1044,7 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
 
         increment();
         if (!m_currentExplicitEmbeddingSequence.isEmpty()) {
-            bool committed = commitExplicitEmbedding(m_runs);
+            bool committed = commitExplicitEmbedding(runs);
             if (committed && lastLineEnded) {
                 m_current = end;
                 m_status = stateAtEnd.m_status;
@@ -1058,14 +1060,14 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
         }
     }
 
-    m_runs.setLogicallyLastRun(m_runs.lastRun());
+    runs.setLogicallyLastRun(runs.lastRun());
     if (reorderRuns)
-        reorderRunsFromLevels(m_runs);
+        reorderRunsFromLevels(runs);
     m_endOfRunAtEndOfLine = Iterator();
     m_endOfLine = Iterator();
 
-    if (!hardLineBreak && m_runs.runCount())
-        applyL1Rule(m_runs);
+    if (!hardLineBreak && runs.runCount())
+        applyL1Rule(runs);
 }
 
 template <class Iterator, class Run>

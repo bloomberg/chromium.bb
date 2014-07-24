@@ -42,8 +42,9 @@ public:
         reset();
     }
 
-    InlineIterator nextLineBreak(InlineBidiResolver&, LineInfo&, RenderTextInfo&,
-        FloatingObject* lastFloatFromPreviousLine, WordMeasurements&);
+    InlineIterator nextLineBreak(InlineBidiResolver&, BidiRunList<BidiRun>&,
+        LineInfo&, RenderTextInfo&, FloatingObject* lastFloatFromPreviousLine,
+        WordMeasurements&);
 
     bool lineWasHyphenated() { return m_hyphenated; }
     const Vector<RenderBox*>& positionedObjects() { return m_positionedObjects; }
@@ -51,7 +52,8 @@ public:
 private:
     void reset();
 
-    void skipLeadingWhitespace(InlineBidiResolver&, LineInfo&, FloatingObject* lastFloatFromPreviousLine, LineWidth&);
+    void skipLeadingWhitespace(InlineBidiResolver&, BidiRunList<BidiRun>&,
+        LineInfo&, FloatingObject* lastFloatFromPreviousLine, LineWidth&);
 
     RenderBlockFlow* m_block;
     bool m_hyphenated;

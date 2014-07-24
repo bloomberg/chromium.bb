@@ -63,6 +63,7 @@ private:
     BidiCharacterRun* m_bidiRun;
     TextRun m_run;
     BidiResolver<TextRunIterator, BidiCharacterRun> m_bidiResolver;
+    BidiRunList<BidiCharacterRun> m_bidiRuns;
     bool m_isComplexText;
     float m_totalWidth;
     TextDirection m_textDirection;
@@ -91,8 +92,7 @@ SVGTextMetricsCalculator::SVGTextMetricsCalculator(RenderSVGInlineText* text)
 
 SVGTextMetricsCalculator::~SVGTextMetricsCalculator()
 {
-    if (m_bidiRun)
-        m_bidiResolver.runs().deleteRuns();
+    m_bidiRuns.deleteRuns();
 }
 
 void SVGTextMetricsCalculator::setupBidiRuns()
@@ -108,9 +108,8 @@ void SVGTextMetricsCalculator::setupBidiRuns()
     m_bidiResolver.setPositionIgnoringNestedIsolates(TextRunIterator(&m_run, 0));
     const bool hardLineBreak = false;
     const bool reorderRuns = false;
-    m_bidiResolver.createBidiRunsForLine(TextRunIterator(&m_run, m_run.length()), NoVisualOverride, hardLineBreak, reorderRuns);
-    BidiRunList<BidiCharacterRun>& bidiRuns = m_bidiResolver.runs();
-    m_bidiRun = bidiRuns.firstRun();
+    m_bidiResolver.createBidiRunsForLine(TextRunIterator(&m_run, m_run.length()), m_bidiRuns, NoVisualOverride, hardLineBreak, reorderRuns);
+    m_bidiRun = m_bidiRuns.firstRun();
 }
 
 SVGTextMetrics SVGTextMetricsCalculator::computeMetricsForCharacterSimple(unsigned textPosition)
