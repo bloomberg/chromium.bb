@@ -746,8 +746,7 @@ class FileManagerBrowserTest :
   }
 };
 
-// http://crbug.com/327719
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, DISABLED_Test) {
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, Test) {
   StartTest();
 }
 
