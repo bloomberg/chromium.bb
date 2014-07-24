@@ -301,6 +301,10 @@ char kTSanDefaultSuppressions[] =
 "race:webrtc::RemoteNtpTimeEstimator::Estimate\n"
 "race:webrtc::voe::TransmitMixer::EnableStereoChannelSwapping\n"
 
+// http://crbug.com/397022
+"deadlock:"
+"base::debug::TraceEventTestFixture_ThreadOnceBlocking_Test::TestBody\n"
+
 // End of suppressions.
 ;  // Please keep this semicolon.
 
