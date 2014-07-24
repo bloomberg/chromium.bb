@@ -29,7 +29,7 @@ class GpuMemoryBufferFactoryX11Pixmap {
   void DestroyGpuMemoryBuffer(const gfx::GpuMemoryBufferId& id);
 
   // Creates a GLImage instance for a GPU memory buffer.
-  scoped_refptr<gfx::GLImage> AcquireImageForGpuMemoryBuffer(
+  scoped_refptr<gfx::GLImage> CreateImageForGpuMemoryBuffer(
       const gfx::GpuMemoryBufferId& id,
       const gfx::Size& size,
       unsigned internalformat);

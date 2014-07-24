@@ -56,11 +56,11 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory {
         return image;
       }
       case gfx::X11_PIXMAP_BUFFER:
-        // Verify that client is the owner of the buffer we're about to acquire.
+        // Verify that client is the owner of the buffer we're about to use.
         if (handle.global_id.secondary_id != client_id)
           return scoped_refptr<gfx::GLImage>();
 
-        return x11_pixmap_factory_.AcquireImageForGpuMemoryBuffer(
+        return x11_pixmap_factory_.CreateImageForGpuMemoryBuffer(
             handle.global_id, size, internalformat);
       default:
         NOTREACHED();

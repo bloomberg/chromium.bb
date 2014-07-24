@@ -31,7 +31,7 @@ void GpuMemoryBufferFactoryX11Pixmap::DestroyGpuMemoryBuffer(
 }
 
 scoped_refptr<gfx::GLImage>
-GpuMemoryBufferFactoryX11Pixmap::AcquireImageForGpuMemoryBuffer(
+GpuMemoryBufferFactoryX11Pixmap::CreateImageForGpuMemoryBuffer(
     const gfx::GpuMemoryBufferId& id,
     const gfx::Size& size,
     unsigned internalformat) {
