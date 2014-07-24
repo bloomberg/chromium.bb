@@ -14,6 +14,8 @@ import org.chromium.chrome.R;
  * A check box used to determine if a page should always be translated.
  */
 public class TranslateCheckBox extends CheckBox implements OnCheckedChangeListener {
+    private static final int TEXT_SIZE_SP = 13;
+
     private final SubPanelListener mListener;
     private final TranslateOptions mOptions;
 
@@ -24,6 +26,8 @@ public class TranslateCheckBox extends CheckBox implements OnCheckedChangeListen
 
         setId(R.id.infobar_extra_check);
         setText(context.getString(R.string.translate_always_text, mOptions.sourceLanguage()));
+        setTextColor(context.getResources().getColor(R.color.infobar_text));
+        setTextSize(TEXT_SIZE_SP);
         setChecked(mOptions.alwaysTranslateLanguageState());
         setOnCheckedChangeListener(this);
     }

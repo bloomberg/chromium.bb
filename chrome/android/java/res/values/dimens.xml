@@ -32,7 +32,7 @@
     <!-- Text size of the infobar message. -->
     <dimen name="infobar_text_size">16sp</dimen>
     <!-- Text size of text inside infobar buttons. -->
-    <dimen name="infobar_button_text_size">12sp</dimen>
+    <dimen name="infobar_button_text_size">14sp</dimen>
     <!-- Minimum width of an infobar. -->
     <dimen name="infobar_min_width">220dp</dimen>
     <!-- Margin between items in an infobar. -->
