@@ -73,14 +73,14 @@ SECURITY_STATUS MockSSPILibrary::QuerySecurityPackageInfo(
 SECURITY_STATUS MockSSPILibrary::FreeCredentialsHandle(
     PCredHandle phCredential) {
   EXPECT_TRUE(phCredential->dwLower == ((ULONG_PTR) ((INT_PTR) 0)));
-  EXPECT_TRUE(phCredential->dwLower == ((ULONG_PTR) ((INT_PTR) 0)));
+  EXPECT_TRUE(phCredential->dwUpper == ((ULONG_PTR) ((INT_PTR) 0)));
   SecInvalidateHandle(phCredential);
   return SEC_E_OK;
 }
 
 SECURITY_STATUS MockSSPILibrary::DeleteSecurityContext(PCtxtHandle phContext) {
   EXPECT_TRUE(phContext->dwLower == ((ULONG_PTR) ((INT_PTR) 0)));
-  EXPECT_TRUE(phContext->dwLower == ((ULONG_PTR) ((INT_PTR) 0)));
+  EXPECT_TRUE(phContext->dwUpper == ((ULONG_PTR) ((INT_PTR) 0)));
   SecInvalidateHandle(phContext);
   return SEC_E_OK;
 }
