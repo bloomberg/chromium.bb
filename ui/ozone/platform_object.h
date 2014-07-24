@@ -16,7 +16,7 @@ namespace ui {
 // For the platform called "foo", PlatformObject<PlatformWidget> will ultimately
 // call the function with signature
 //
-//   Bar* CreatePlatformWidgetFoo();
+//   PlatformWidget* CreatePlatformWidgetFoo();
 //
 // A definition of this function for each compiled platform must be provided, or
 // link errors will result.
