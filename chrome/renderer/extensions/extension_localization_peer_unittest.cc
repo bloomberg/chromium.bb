@@ -49,10 +49,10 @@ class MockIpcMessageSender : public IPC::Sender {
   DISALLOW_COPY_AND_ASSIGN(MockIpcMessageSender);
 };
 
-class MockResourceLoaderBridgePeer : public content::RequestPeer {
+class MockRequestPeer : public content::RequestPeer {
  public:
-  MockResourceLoaderBridgePeer() {}
-  virtual ~MockResourceLoaderBridgePeer() {}
+  MockRequestPeer() {}
+  virtual ~MockRequestPeer() {}
 
   MOCK_METHOD2(OnUploadProgress, void(uint64 position, uint64 size));
   MOCK_METHOD3(OnReceivedRedirect,
@@ -74,14 +74,14 @@ class MockResourceLoaderBridgePeer : public content::RequestPeer {
       int64_t total_transfer_size));
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockResourceLoaderBridgePeer);
+  DISALLOW_COPY_AND_ASSIGN(MockRequestPeer);
 };
 
 class ExtensionLocalizationPeerTest : public testing::Test {
  protected:
   virtual void SetUp() {
     sender_.reset(new MockIpcMessageSender());
-    original_peer_.reset(new MockResourceLoaderBridgePeer());
+    original_peer_.reset(new MockRequestPeer());
     filter_peer_.reset(
         ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
             original_peer_.get(), sender_.get(), "text/css",
@@ -107,7 +107,7 @@ class ExtensionLocalizationPeerTest : public testing::Test {
   }
 
   scoped_ptr<MockIpcMessageSender> sender_;
-  scoped_ptr<MockResourceLoaderBridgePeer> original_peer_;
+  scoped_ptr<MockRequestPeer> original_peer_;
   scoped_ptr<ExtensionLocalizationPeer> filter_peer_;
 };
 

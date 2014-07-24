@@ -35,10 +35,6 @@ namespace blink {
 class WebFrame;
 }  // namespace blink
 
-namespace webkit_glue {
-class ResourceLoaderBridge;
-}  // namespace webkit_glue
-
 namespace content {
 class ChildHistogramMessageFilter;
 class ChildResourceMessageFilter;
