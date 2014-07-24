@@ -1107,6 +1107,8 @@ FcFreeTypeQueryFace (const FT_Face  face,
     FcRange	    *r = NULL;
     double	    lower_size = 0.0L, upper_size = DBL_MAX;
 
+    FcInitDebug (); /* We might be called with no initizalization whatsoever. */
+
     pat = FcPatternCreate ();
     if (!pat)
 	goto bail0;
