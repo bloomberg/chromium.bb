@@ -33,6 +33,7 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/common/three_d_api_types.h"
 #include "net/base/load_states.h"
+#include "net/http/http_response_headers.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/size.h"
@@ -328,7 +329,9 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void DidStartLoading(RenderFrameHost* render_frame_host,
                                bool to_different_document) OVERRIDE;
   virtual void SwappedOut(RenderFrameHost* render_frame_host) OVERRIDE;
-  virtual void DidDeferAfterResponseStarted() OVERRIDE;
+  virtual void DidDeferAfterResponseStarted(
+      const scoped_refptr<net::HttpResponseHeaders>& headers,
+      const GURL& url) OVERRIDE;
   virtual bool WillHandleDeferAfterResponseStarted() OVERRIDE;
   virtual void WorkerCrashed(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void ShowContextMenu(RenderFrameHost* render_frame_host,

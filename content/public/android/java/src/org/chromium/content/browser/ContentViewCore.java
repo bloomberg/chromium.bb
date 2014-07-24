@@ -240,6 +240,12 @@ public class ContentViewCore
          * if it's supported.
          */
         public boolean willHandleDeferAfterResponseStarted();
+
+        /**
+         * Called when the navigation is deferred immediately after the response
+         * started.
+         */
+        public void addEnteringStylesheetToTransition(String stylesheet);
     }
 
     private final Context mContext;
@@ -3024,6 +3030,13 @@ public class ContentViewCore
 
     public void setNavigationTransitionDelegate(NavigationTransitionDelegate delegate) {
         mNavigationTransitionDelegate = delegate;
+    }
+
+    @CalledByNative
+    private void addEnteringStylesheetToTransition(String stylesheet) {
+        if (mNavigationTransitionDelegate != null ) {
+            mNavigationTransitionDelegate.addEnteringStylesheetToTransition(stylesheet);
+        }
     }
 
     /**

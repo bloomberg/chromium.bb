@@ -3515,9 +3515,12 @@ void WebContentsImpl::SwappedOut(RenderFrameHost* rfh) {
     delegate_->SwappedOut(this);
 }
 
-void WebContentsImpl::DidDeferAfterResponseStarted() {
+void WebContentsImpl::DidDeferAfterResponseStarted(
+    const scoped_refptr<net::HttpResponseHeaders>& headers,
+    const GURL& url) {
 #if defined(OS_ANDROID)
-  ContentViewCoreImpl::FromWebContents(this)->DidDeferAfterResponseStarted();
+  ContentViewCoreImpl::FromWebContents(this)->DidDeferAfterResponseStarted(
+      headers, url);
 #endif
 }
 

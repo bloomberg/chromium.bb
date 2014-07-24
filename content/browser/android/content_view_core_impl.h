@@ -223,7 +223,9 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // This method is invoked when the request is deferred immediately after
   // receiving response headers.
-  void DidDeferAfterResponseStarted();
+  void DidDeferAfterResponseStarted(
+      const scoped_refptr<net::HttpResponseHeaders>& headers,
+      const GURL& url);
 
   // This method is invoked when a navigation transition is detected, to
   // determine if the embedder intends to handle it.

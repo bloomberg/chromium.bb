@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/media_stream_request.h"
+#include "net/http/http_response_headers.h"
 
 class GURL;
 
@@ -58,7 +59,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // Notification that the navigation on the main frame is blocked waiting
   // for transition to occur.
-  virtual void DidDeferAfterResponseStarted() {}
+  virtual void DidDeferAfterResponseStarted(
+      const scoped_refptr<net::HttpResponseHeaders>& headers,
+      const GURL& url) {}
 
   // Used to query whether the navigation transition will be handled.
   virtual bool WillHandleDeferAfterResponseStarted();

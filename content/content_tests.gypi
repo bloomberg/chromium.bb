@@ -613,6 +613,7 @@
         'browser/streams/stream_unittest.cc',
         'browser/streams/stream_url_request_job_unittest.cc',
         'browser/system_message_window_win_unittest.cc',
+        'browser/transition_request_manager_unittest.cc',
         'browser/web_contents/aura/overscroll_navigation_overlay_unittest.cc',
         'browser/web_contents/aura/window_slider_unittest.cc',
         'browser/web_contents/web_contents_delegate_unittest.cc',
@@ -1714,6 +1715,7 @@
             '../media/media.gyp:media_test_support',
             '../net/net.gyp:net_java',
             '../net/net.gyp:net_javatests',
+            '../net/net.gyp:net_java_test_support',
           ],
           'variables': {
             'apk_name': 'ContentShellTest',

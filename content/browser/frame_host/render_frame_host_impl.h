@@ -18,6 +18,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/page_transition_types.h"
+#include "net/http/http_response_headers.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 
 class GURL;
@@ -123,7 +124,10 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
 
   // Called on the current RenderFrameHost when the network response is first
   // receieved.
-  void OnDeferredAfterResponseStarted(const GlobalRequestID& global_request_id);
+  void OnDeferredAfterResponseStarted(
+      const GlobalRequestID& global_request_id,
+      const scoped_refptr<net::HttpResponseHeaders>& headers,
+      const GURL& url);
 
   // Tells the renderer that this RenderFrame is being swapped out for one in a
   // different renderer process.  It should run its unload handler, move to

@@ -7,12 +7,19 @@
 
 #include <set>
 #include <utility>
+#include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "url/gurl.h"
 
 template <typename T>
 struct DefaultSingletonTraits;
+
+namespace net {
+class HttpResponseHeaders;
+}
 
 namespace content {
 
@@ -26,6 +33,13 @@ class TransitionRequestManager {
  public:
   // Returns the singleton instance.
   CONTENT_EXPORT static TransitionRequestManager* GetInstance();
+
+  // Parses out any transition-entering-stylesheet link headers from the
+  // response headers.
+  CONTENT_EXPORT static void ParseTransitionStylesheetsFromHeaders(
+      const scoped_refptr<net::HttpResponseHeaders>& headers,
+      std::vector<GURL>& entering_stylesheets,
+      const GURL& resolve_address);
 
   // Returns whether the RenderFrameHost specified by the given IDs currently
   // has a pending transition request. If so, we will have to delay the

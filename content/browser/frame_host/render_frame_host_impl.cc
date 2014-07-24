@@ -534,14 +534,16 @@ void RenderFrameHostImpl::OnCrossSiteResponse(
 }
 
 void RenderFrameHostImpl::OnDeferredAfterResponseStarted(
-    const GlobalRequestID& global_request_id) {
+    const GlobalRequestID& global_request_id,
+    const scoped_refptr<net::HttpResponseHeaders>& headers,
+    const GURL& url) {
   frame_tree_node_->render_manager()->OnDeferredAfterResponseStarted(
       global_request_id, this);
 
   if (GetParent() || !delegate_->WillHandleDeferAfterResponseStarted())
     frame_tree_node_->render_manager()->ResumeResponseDeferredAtStart();
   else
-    delegate_->DidDeferAfterResponseStarted();
+    delegate_->DidDeferAfterResponseStarted(headers, url);
 }
 
 void RenderFrameHostImpl::SwapOut(RenderFrameProxyHost* proxy) {

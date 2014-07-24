@@ -1552,12 +1552,28 @@ void ContentViewCoreImpl::RequestTextSurroundingSelection(
   }
 }
 
-void ContentViewCoreImpl::DidDeferAfterResponseStarted() {
+void ContentViewCoreImpl::DidDeferAfterResponseStarted(
+    const scoped_refptr<net::HttpResponseHeaders>& headers,
+    const GURL& url) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj(java_ref_.get(env));
   if (obj.is_null())
     return;
+
+  std::vector<GURL> entering_stylesheets;
+  if (headers)
+    TransitionRequestManager::ParseTransitionStylesheetsFromHeaders(
+        headers, entering_stylesheets, url);
+
   Java_ContentViewCore_didDeferAfterResponseStarted(env, obj.obj());
+
+  std::vector<GURL>::const_iterator iter = entering_stylesheets.begin();
+  for (; iter != entering_stylesheets.end(); ++iter) {
+    ScopedJavaLocalRef<jstring> jstring_url(ConvertUTF8ToJavaString(
+        env, iter->spec()));
+    Java_ContentViewCore_addEnteringStylesheetToTransition(
+        env, obj.obj(), jstring_url.obj());
+  }
 }
 
 bool ContentViewCoreImpl::WillHandleDeferAfterResponseStarted() {
