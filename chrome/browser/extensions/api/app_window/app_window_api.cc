@@ -201,10 +201,12 @@ bool AppWindowCreateFunction::RunAsync() {
             view_id = created_view->GetRoutingID();
           }
 
-          if (options->focused.get() && !*options->focused.get())
-            window->Show(AppWindow::SHOW_INACTIVE);
-          else
-            window->Show(AppWindow::SHOW_ACTIVE);
+          if (options->hidden.get() && !*options->hidden.get()) {
+            if (options->focused.get() && !*options->focused.get())
+              window->Show(AppWindow::SHOW_INACTIVE);
+            else
+              window->Show(AppWindow::SHOW_ACTIVE);
+          }
 
           base::DictionaryValue* result = new base::DictionaryValue;
           result->Set("viewId", new base::FundamentalValue(view_id));
