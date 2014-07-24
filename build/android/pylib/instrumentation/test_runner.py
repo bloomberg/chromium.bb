@@ -98,7 +98,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     # once across test runners.
     if TestRunner._DEVICE_HAS_TEST_FILES.get(self.device, False):
       logging.warning('Already copied test files to device %s, skipping.',
-                      self.device.old_interface.GetDevice())
+                      str(self.device))
       return
 
     test_data = _GetDataFilesForTestSuite(self.test_pkg.GetApkName())
@@ -125,8 +125,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
                 TestRunner._DEVICE_DATA_DIR,
                 dst_layer))
     self.tool.CopyFiles()
-    TestRunner._DEVICE_HAS_TEST_FILES[
-        self.device.old_interface.GetDevice()] = True
+    TestRunner._DEVICE_HAS_TEST_FILES[str(self.device)] = True
 
   def _GetInstrumentationArgs(self):
     ret = {}

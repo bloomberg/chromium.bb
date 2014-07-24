@@ -165,7 +165,7 @@ class AndroidDevice(backends.Device):
         backend=backend,
         settings=backends.Settings(AndroidDevice._SETTINGS_KEYS))
     self.underlying_device = underlying_device
-    self._id = underlying_device.old_interface.GetDevice()
+    self._id = str(underlying_device)
     self._name = underlying_device.GetProp('ro.product.model')
     self._sys_stats = None
     self._last_device_stats = None

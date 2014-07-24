@@ -51,8 +51,9 @@ class _PerfProfiler(object):
         self._device.old_interface, prefix='perf_output')
     self._log_file = tempfile.TemporaryFile()
 
-    device_param = (['-s', self._device.old_interface.GetDevice()]
-                    if self._device.old_interface.GetDevice() else [])
+    # TODO(jbudorick) Look at providing a way to unhandroll this once the
+    #                 adb rewrite has fully landed.
+    device_param = (['-s', str(self._device)] if str(self._device) else [])
     cmd = ['adb'] + device_param + \
           ['shell', perf_binary, 'record',
            '--output', self._output_file.name] + _PERF_OPTIONS

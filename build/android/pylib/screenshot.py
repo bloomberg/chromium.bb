@@ -38,8 +38,8 @@ class VideoRecorder(object):
     self._is_started = False
 
     self._args = ['adb']
-    if self._device.old_interface.GetDevice():
-      self._args += ['-s', self._device.old_interface.GetDevice()]
+    if str(self._device):
+      self._args += ['-s', str(self._device)]
     self._args += ['shell', 'screenrecord', '--verbose']
     self._args += ['--bit-rate', str(megabits_per_second * 1000 * 1000)]
     if size:

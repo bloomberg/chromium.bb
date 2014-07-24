@@ -117,7 +117,7 @@ class AddressSanitizerTool(BaseTool):
     """Copies ASan tools to the device."""
     subprocess.call([os.path.join(DIR_SOURCE_ROOT,
                                   'tools/android/asan/asan_device_setup.sh'),
-                     '--device', self._device.old_interface.GetDevice(),
+                     '--device', str(self._device),
                      '--lib', self._lib,
                      '--extra-options', AddressSanitizerTool.EXTRA_OPTIONS])
     self._device.WaitUntilFullyBooted()

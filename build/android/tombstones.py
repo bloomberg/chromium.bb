@@ -150,7 +150,7 @@ def _GetTombstonesForDevice(device, options):
 
   device_now = _GetDeviceDateTime(device)
   for tombstone_file, tombstone_time in tombstones:
-    ret += [{'serial': device.old_interface.Adb().GetSerialNumber(),
+    ret += [{'serial': str(device),
              'device_now': device_now,
              'time': tombstone_time,
              'file': tombstone_file,

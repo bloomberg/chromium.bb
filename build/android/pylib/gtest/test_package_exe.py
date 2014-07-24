@@ -123,7 +123,7 @@ class TestPackageExecutable(TestPackage):
 
   #override
   def SpawnTestProcess(self, device):
-    args = ['adb', '-s', device.old_interface.GetDevice(), 'shell', 'sh',
+    args = ['adb', '-s', str(device), 'shell', 'sh',
             constants.TEST_EXECUTABLE_DIR + '/chrome_test_runner.sh']
     logging.info(args)
     return pexpect.spawn(args[0], args[1:], logfile=sys.stdout)

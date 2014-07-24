@@ -83,8 +83,10 @@ class DeviceUtils(object):
     Args:
       timeout: timeout in seconds
       retries: number of retries
+
     Returns:
       True if the device is online, False otherwise.
+
     Raises:
       CommandTimeoutError on timeout.
     """
@@ -97,8 +99,10 @@ class DeviceUtils(object):
     Args:
       timeout: timeout in seconds
       retries: number of retries
+
     Returns:
       True if adbd has root privileges, False otherwise.
+
     Raises:
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
@@ -113,6 +117,7 @@ class DeviceUtils(object):
 
     Returns:
       Same as for |HasRoot|.
+
     Raises:
       Same as for |HasRoot|.
     """
@@ -125,6 +130,7 @@ class DeviceUtils(object):
     Args:
       timeout: timeout in seconds
       retries: number of retries
+
     Raises:
       CommandFailedError if root could not be enabled.
       CommandTimeoutError on timeout.
@@ -140,8 +146,10 @@ class DeviceUtils(object):
     Args:
       timeout: timeout in seconds
       retries: number of retries
+
     Returns:
       The device's path to its SD card.
+
     Raises:
       CommandFailedError if the external storage path could not be determined.
       CommandTimeoutError on timeout.
@@ -165,6 +173,7 @@ class DeviceUtils(object):
       wifi: A boolean indicating if we should wait for wifi to come up or not.
       timeout: timeout in seconds
       retries: number of retries
+
     Raises:
       CommandFailedError on failure.
       CommandTimeoutError if one of the component waits times out.
@@ -184,6 +193,7 @@ class DeviceUtils(object):
     Args:
       wifi: Same as for |WaitUntilFullyBooted|.
       timeout: timeout in seconds
+
     Raises:
       Same as for |WaitUntilFullyBooted|.
     """
@@ -210,6 +220,7 @@ class DeviceUtils(object):
       block: A boolean indicating if we should wait for the reboot to complete.
       timeout: timeout in seconds
       retries: number of retries
+
     Raises:
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
@@ -234,6 +245,7 @@ class DeviceUtils(object):
       reinstall: A boolean indicating if we should keep any existing app data.
       timeout: timeout in seconds
       retries: number of retries
+
     Raises:
       CommandFailedError if the installation fails.
       CommandTimeoutError if the installation times out.
@@ -283,8 +295,10 @@ class DeviceUtils(object):
                with root privileges.
       timeout: timeout in seconds
       retries: number of retries
+
     Returns:
       The output of the command.
+
     Raises:
       CommandFailedError if check_return is True and the return code is nozero.
       CommandTimeoutError on timeout.
@@ -308,8 +322,10 @@ class DeviceUtils(object):
       check_return: Same as for |RunShellCommand|.
       as_root: Same as for |RunShellCommand|.
       timeout: timeout in seconds
+
     Raises:
       Same as for |RunShellCommand|.
+
     Returns:
       Same as for |RunShellCommand|.
     """
@@ -342,6 +358,7 @@ class DeviceUtils(object):
                 with the given |process_name| are dead.
       timeout: timeout in seconds
       retries: number of retries
+
     Raises:
       CommandFailedError if no process was killed.
       CommandTimeoutError on timeout.
@@ -378,6 +395,7 @@ class DeviceUtils(object):
                   before starting it.
       timeout: timeout in seconds
       retries: number of retries
+
     Raises:
       CommandFailedError if the activity could not be started.
       CommandTimeoutError on timeout.
@@ -402,6 +420,7 @@ class DeviceUtils(object):
       intent: An Intent to broadcast.
       timeout: timeout in seconds
       retries: number of retries
+
     Raises:
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
@@ -421,6 +440,7 @@ class DeviceUtils(object):
     Args:
       timeout: timeout in seconds
       retries: number of retries
+
     Raises:
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
@@ -435,6 +455,7 @@ class DeviceUtils(object):
       package: A string containing the name of the package to stop.
       timeout: timeout in seconds
       retries: number of retries
+
     Raises:
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
@@ -449,6 +470,7 @@ class DeviceUtils(object):
       package: A string containing the name of the package to stop.
       timeout: timeout in seconds
       retries: number of retries
+
     Raises:
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
@@ -465,6 +487,7 @@ class DeviceUtils(object):
       keycode: A integer keycode to send to the device.
       timeout: timeout in seconds
       retries: number of retries
+
     Raises:
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
@@ -488,6 +511,7 @@ class DeviceUtils(object):
                    the device.
       timeout: timeout in seconds
       retries: number of retries
+
     Raises:
       CommandFailedError on failure.
       CommandTimeoutError on timeout.
@@ -504,8 +528,10 @@ class DeviceUtils(object):
                    device.
       timeout: timeout in seconds
       retries: number of retries
+
     Returns:
       True if the file exists on the device, False otherwise.
+
     Raises:
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
@@ -520,8 +546,10 @@ class DeviceUtils(object):
 
     Args:
       device_path: Same as for |FileExists|.
+
     Returns:
       True if the file exists on the device, False otherwise.
+
     Raises:
       Same as for |FileExists|.
     """
@@ -538,6 +566,7 @@ class DeviceUtils(object):
                  the host.
       timeout: timeout in seconds
       retries: number of retries
+
     Raises:
       CommandFailedError on failure.
       CommandTimeoutError on timeout.
@@ -559,8 +588,10 @@ class DeviceUtils(object):
                root privileges.
       timeout: timeout in seconds
       retries: number of retries
+
     Returns:
       The contents of the file at |device_path| as a list of lines.
+
     Raises:
       CommandFailedError if the file can't be read.
       CommandTimeoutError on timeout.
@@ -589,6 +620,7 @@ class DeviceUtils(object):
                root privileges.
       timeout: timeout in seconds
       retries: number of retries
+
     Raises:
       CommandFailedError if the file could not be written on the device.
       CommandTimeoutError on timeout.
@@ -611,8 +643,10 @@ class DeviceUtils(object):
                    to list.
       timeout: timeout in seconds
       retries: number of retries
+
     Returns:
       The contents of the directory specified by |device_path|.
+
     Raises:
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
@@ -628,6 +662,7 @@ class DeviceUtils(object):
                or disabled.
       timeout: timeout in seconds
       retries: number of retries
+
     Raises:
       CommandTimeoutError on timeout.
     """
@@ -642,8 +677,10 @@ class DeviceUtils(object):
                      the device.
       timeout: timeout in seconds
       retries: number of retries
+
     Returns:
       The value of the device's |property_name| property.
+
     Raises:
       CommandTimeoutError on timeout.
     """
@@ -660,6 +697,7 @@ class DeviceUtils(object):
              device.
       timeout: timeout in seconds
       retries: number of retries
+
     Raises:
       CommandTimeoutError on timeout.
     """
@@ -675,9 +713,11 @@ class DeviceUtils(object):
       process_name: A string containing the process name to get the PIDs for.
       timeout: timeout in seconds
       retries: number of retries
+
     Returns:
       A dict mapping process name to PID for each process that contained the
       provided |process_name|.
+
     Raises:
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
@@ -701,8 +741,10 @@ class DeviceUtils(object):
                  screenshot to. If None, a file name will be generated.
       timeout: timeout in seconds
       retries: number of retries
+
     Returns:
       The name of the file on the host to which the screenshot was saved.
+
     Raises:
       CommandFailedError on failure.
       CommandTimeoutError on timeout.
@@ -717,13 +759,34 @@ class DeviceUtils(object):
     Args:
       timeout: timeout in seconds
       retries: number of retries
+
     Returns:
       A dict containing |num_reads|, |num_writes|, |read_ms|, and |write_ms|.
+
     Raises:
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
     return self.old_interface.GetIoStats()
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def GetMemoryUsageForPid(self, pid, timeout=None, retries=None):
+    """Gets the memory usage for the given PID.
+
+    Args:
+      pid: PID of the process.
+      timeout: timeout in seconds
+      retries: number of retries
+
+    Returns:
+      A 2-tuple containing:
+        - A dict containing the overall memory usage statistics for the PID.
+        - A dict containing memory usage statistics broken down by mapping.
+
+    Raises:
+      CommandTimeoutError on timeout.
+    """
+    return self.old_interface.GetMemoryUsageForPid(pid)
 
   def __str__(self):
     """Returns the device serial."""
@@ -742,6 +805,7 @@ class DeviceUtils(object):
                all attached devices will be used.
       async: If true, returns a Parallelizer that runs operations
              asynchronously.
+
     Returns:
       A Parallelizer operating over |devices|.
     """

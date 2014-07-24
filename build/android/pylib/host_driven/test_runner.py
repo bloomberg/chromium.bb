@@ -85,7 +85,7 @@ class HostDrivenTestRunner(base_test_runner.BaseTestRunner):
     exception_raised = False
 
     try:
-      test.SetUp(self.device.old_interface.GetDevice(), self.shard_index,
+      test.SetUp(str(self.device), self.shard_index,
                  self._push_deps, self._cleanup_test_files)
     except Exception:
       logging.exception(

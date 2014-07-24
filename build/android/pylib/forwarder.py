@@ -89,7 +89,7 @@ class Forwarder(object):
       instance = Forwarder._GetInstanceLocked(tool)
       instance._InitDeviceLocked(device, tool)
 
-      device_serial = device.old_interface.Adb().GetSerialNumber()
+      device_serial = str(device)
       redirection_commands = [
           ['--serial-id=' + device_serial, '--map', str(device),
            str(host)] for device, host in port_pairs]
@@ -147,7 +147,7 @@ class Forwarder(object):
     with _FileLock(Forwarder._LOCK_PATH):
       if not Forwarder._instance:
         return
-      adb_serial = device.old_interface.Adb().GetSerialNumber()
+      adb_serial = str(device)
       if adb_serial not in Forwarder._instance._initialized_devices:
         return
       port_map = Forwarder._GetInstanceLocked(
@@ -224,7 +224,7 @@ class Forwarder(object):
     Note that the global lock must be acquired before calling this method.
     """
     instance = Forwarder._GetInstanceLocked(None)
-    serial = device.old_interface.Adb().GetSerialNumber()
+    serial = str(device)
     serial_with_port = (serial, device_port)
     if not serial_with_port in instance._device_to_host_port_map:
       logging.error('Trying to unmap non-forwarded port %d' % device_port)
@@ -286,7 +286,7 @@ class Forwarder(object):
       tool: Tool class to use to get wrapper, if necessary, for executing the
             forwarder (see valgrind_tools.py).
     """
-    device_serial = device.old_interface.Adb().GetSerialNumber()
+    device_serial = str(device)
     if device_serial in self._initialized_devices:
       return
     Forwarder._KillDeviceLocked(device, tool)

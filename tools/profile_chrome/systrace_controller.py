@@ -56,11 +56,11 @@ class SystraceController(controllers.BaseController):
       return output_name
 
   def _RunATraceCommand(self, command):
-    # TODO(jbudorick) can this be made work with DeviceUtils?
     # We use a separate interface to adb because the one from AndroidCommands
     # isn't re-entrant.
-    device_param = (['-s', self._device.old_interface.GetDevice()]
-                    if self._device.old_interface.GetDevice() else [])
+    # TODO(jbudorick) Look at providing a way to unhandroll this once the
+    #                 adb rewrite has fully landed.
+    device_param = (['-s', str(self._device)] if str(self._device) else [])
     cmd = ['adb'] + device_param + ['shell', 'atrace', '--%s' % command] + \
         _SYSTRACE_OPTIONS + self._categories
     return cmd_helper.GetCmdOutput(cmd)

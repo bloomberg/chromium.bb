@@ -99,7 +99,7 @@ class ThermalThrottle(object):
     if not self._detector:
       return False
     has_been_throttled = False
-    serial_number = self._device.old_interface.GetDevice()
+    serial_number = str(self._device)
     log = self._device.RunShellCommand('dmesg -c')
     degree_symbol = unichr(0x00B0)
     for line in log:

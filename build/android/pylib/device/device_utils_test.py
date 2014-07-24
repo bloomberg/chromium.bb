@@ -1443,6 +1443,48 @@ class DeviceUtilsGetIOStatsTest(DeviceUtilsOldImplTest):
           self.device.GetIOStats())
 
 
+class DeviceUtilsGetMemoryUsageForPidTest(DeviceUtilsOldImplTest):
+
+  def setUp(self):
+    super(DeviceUtilsGetMemoryUsageForPidTest, self).setUp()
+    self.device.old_interface._privileged_command_runner = (
+        self.device.old_interface.RunShellCommand)
+    self.device.old_interface._protected_file_access_method_initialized = True
+
+  def testGetMemoryUsageForPid_validPid(self):
+    with self.assertCallsSequence([
+        ("adb -s 0123456789abcdef shell 'showmap 1234'",
+         '100 101 102 103 104 105 106 107 TOTAL\r\n'),
+        ("adb -s 0123456789abcdef shell "
+            "'cat \"/proc/1234/status\" 2> /dev/null'",
+         'VmHWM: 1024 kB')
+        ]):
+      self.assertEqual(
+          {
+            'Size': 100,
+            'Rss': 101,
+            'Pss': 102,
+            'Shared_Clean': 103,
+            'Shared_Dirty': 104,
+            'Private_Clean': 105,
+            'Private_Dirty': 106,
+            'VmHWM': 1024
+          },
+          self.device.GetMemoryUsageForPid(1234))
+
+  def testGetMemoryUsageForPid_invalidPid(self):
+    with self.assertCalls(
+        "adb -s 0123456789abcdef shell 'showmap 4321'",
+        'cannot open /proc/4321/smaps: No such file or directory\r\n'):
+      self.assertEqual({}, self.device.GetMemoryUsageForPid(4321))
+
+
+class DeviceUtilsStrTest(DeviceUtilsOldImplTest):
+  def testStr_noAdbCalls(self):
+    with self.assertNoAdbCalls():
+      self.assertEqual('0123456789abcdef', str(self.device))
+
+
 if __name__ == '__main__':
   logging.getLogger().setLevel(logging.DEBUG)
   unittest.main(verbosity=2)
