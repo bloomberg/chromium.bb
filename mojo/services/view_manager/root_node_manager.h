@@ -120,7 +120,11 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
       const std::string& url) const;
 
   // Returns the ViewManagerServiceImpl that has |id| as a root.
-  ViewManagerServiceImpl* GetConnectionWithRoot(const NodeId& id);
+  ViewManagerServiceImpl* GetConnectionWithRoot(const NodeId& id) {
+    return const_cast<ViewManagerServiceImpl*>(
+        const_cast<const RootNodeManager*>(this)->GetConnectionWithRoot(id));
+  }
+  const ViewManagerServiceImpl* GetConnectionWithRoot(const NodeId& id) const;
 
   void DispatchViewInputEventToWindowManager(const View* view,
                                              const ui::Event* event);

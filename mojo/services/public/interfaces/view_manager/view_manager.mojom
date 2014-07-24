@@ -76,7 +76,7 @@ interface ViewManagerService {
   AddNode(uint32 parent, uint32 child) => (bool success);
 
   // Removes a view from its current parent. This fails if the node is not
-  // valid, |server_change_id| doesn't match, or the node already has no parent.
+  // valid or the node already has no parent.
   //
   // Removing a node from a parent may result in OnNodeDeleted() being sent to
   // other connections. For example, connection A has nodes 1 and 2, with 2 a
@@ -134,11 +134,14 @@ interface ViewManagerService {
   // current connection. The current connection is told this by way of
   // OnNodeDeleted().
   //
+  // When a connection embeds an app the connection no longer has priviledges
+  // to access or see any of the children of the node. If the node had existing
+  // children the children are removed. The one exception is the root
+  // connection.
+  //
   // If |node_id| is 0, the View Manager delegates determination of what node to
   // embed |url| at to the app embedded at the service root node (i.e. the
   // window manager).
-  //
-  // This advances the server change id.
   Embed(string url, uint32 node_id) => (bool success);
 
   // TODO(sky): move these to a separate interface when FIFO works.
@@ -168,7 +171,7 @@ interface ViewManagerClient {
 
   // Invoked when a change is done to the hierarchy. A value of 0 is used to
   // identify a null node. For example, if the old_parent is NULL, 0 is
-  // supplied. See description above ViewManager for details on the change ids.
+  // supplied.
   // |nodes| contains any nodes that are that the client has not been told
   // about. This is not sent for hierarchy changes of nodes not known to this
   // client or not attached to the tree.

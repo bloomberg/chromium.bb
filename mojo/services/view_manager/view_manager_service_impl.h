@@ -123,6 +123,9 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   bool CanGetNodeTree(const Node* node) const;
   bool CanEmbed(Id transport_node_id) const;
   bool CanSetNodeVisibility(const Node* node, bool visible) const;
+  // Used during GetNodeTreeImpl() to decide if we should descend into |node|
+  // when building the results of GetNodeTree().
+  bool CanDescendIntoNodeForNodeTree(const Node* node) const;
 
   // Deletes a node owned by this connection. Returns true on success. |source|
   // is the connection that originated the change.
@@ -139,6 +142,10 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   // to |nodes|, marks |node| as known and recurses.
   void GetUnknownNodesFrom(const Node* node, std::vector<const Node*>* nodes);
 
+  // Returns true if node (or one of its ancestors) is embedded in another
+  // connection.
+  bool IsNodeEmbeddedInAnotherConnection(const Node* node) const;
+
   // Removes |node| and all its descendants from |known_nodes_|. This does not
   // recurse through nodes that were created by this connection. All nodes owned
   // by this connection are added to |local_nodes|.
@@ -150,6 +157,8 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
 
   // Removes |node_id| from the set of roots this connection knows about.
   void RemoveRoot(const NodeId& node_id);
+
+  void RemoveChildrenAsPartOfEmbed(const NodeId& node_id);
 
   // Returns true if |node| is a non-null and a descendant of |roots_| (or
   // |roots_| is empty).
@@ -167,6 +176,10 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   // valid for the client. The parent of nodes the client is not allowed to see
   // are set to NULL (in the returned NodeDatas).
   Array<NodeDataPtr> NodesToNodeDatas(const std::vector<const Node*>& nodes);
+
+  // Implementation of GetNodeTree(). Adds |node| to |nodes| and recurses if
+  // CanDescendIntoNodeForNodeTree() returns true.
+  void GetNodeTreeImpl(const Node* node, std::vector<const Node*>* nodes) const;
 
   // ViewManagerService:
   virtual void CreateNode(Id transport_node_id,

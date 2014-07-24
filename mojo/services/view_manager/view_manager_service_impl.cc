@@ -17,21 +17,6 @@
 namespace mojo {
 namespace view_manager {
 namespace service {
-namespace {
-
-// Places |node| in |nodes| and recurses through the children.
-void GetDescendants(const Node* node, std::vector<const Node*>* nodes) {
-  if (!node)
-    return;
-
-  nodes->push_back(node);
-
-  std::vector<const Node*> children(node->GetChildren());
-  for (size_t i = 0 ; i < children.size(); ++i)
-    GetDescendants(children[i], nodes);
-}
-
-}  // namespace
 
 ViewManagerServiceImpl::ViewManagerServiceImpl(
     RootNodeManager* root_node_manager,
@@ -241,15 +226,24 @@ bool ViewManagerServiceImpl::CanRemoveNodeFromParent(const Node* node) const {
   if (!parent)
     return false;
 
-  // Always allow the remove if there are no roots. Otherwise the remove is
-  // allowed if the parent is a descendant of the roots, or the node and its
-  // parent were created by this connection. We explicitly disallow removal of
-  // the node from its parent if the parent isn't visible to this connection
-  // (not in roots).
-  return (roots_.empty() ||
-          (IsNodeDescendantOfRoots(parent) ||
-           (node->id().connection_id == id_ &&
-            parent->id().connection_id == id_)));
+  if (roots_.empty())
+    return true;  // Root can do anything.
+
+  if (node->id().connection_id != id_)
+    return false;  // Can only unparent nodes we created.
+
+  if (roots_.count(NodeIdToTransportId(parent->id())) > 0)
+    return true;  // We can always remove from one of our roots.
+
+  // Don't allow removing from nodes from other connections that aren't in our
+  // root list.
+  if (parent->id().connection_id != id_)
+    return false;
+
+  // Allow the remove as long as we haven't embedded another node at |parent|.
+  ViewManagerServiceImpl* connection =
+      root_node_manager_->GetConnectionWithRoot(parent->id());
+  return !connection || connection == this;
 }
 
 bool ViewManagerServiceImpl::CanAddNode(const Node* parent,
@@ -263,12 +257,15 @@ bool ViewManagerServiceImpl::CanAddNode(const Node* parent,
   if (roots_.empty())
     return true;  // No restriction if there are no roots.
 
+  if (child->id().connection_id != id_)
+    return false;  // Can't move children from different connections.
+
   if (!IsNodeDescendantOfRoots(parent) && parent->id().connection_id != id_)
     return false;  // |parent| is not visible to this connection.
 
-  // Allow the add if the child is already a descendant of the roots or was
-  // created by this connection.
-  return (IsNodeDescendantOfRoots(child) || child->id().connection_id == id_);
+  // Only allow the add if we haven't given one of the ancestors of |parent| to
+  // another node. That is, Embed() hasn't been invoked with one of our nodes.
+  return !IsNodeEmbeddedInAnotherConnection(parent);
 }
 
 bool ViewManagerServiceImpl::CanReorderNode(const Node* node,
@@ -324,8 +321,16 @@ bool ViewManagerServiceImpl::CanSetFocus(const Node* node) const {
 }
 
 bool ViewManagerServiceImpl::CanGetNodeTree(const Node* node) const {
-  return node &&
-      (IsNodeDescendantOfRoots(node) || node->id().connection_id == id_);
+  if (!node)
+    return false;
+
+  if (roots_.empty())
+    return true;
+
+  if (node->id().connection_id == id_)
+    return true;
+
+  return roots_.count(NodeIdToTransportId(node->id())) > 0;
 }
 
 bool ViewManagerServiceImpl::CanEmbed(Id transport_node_id) const {
@@ -339,6 +344,16 @@ bool ViewManagerServiceImpl::CanSetNodeVisibility(const Node* node,
       (node->id().connection_id == id_ ||
        roots_.find(NodeIdToTransportId(node->id())) != roots_.end()) &&
       node->IsVisible() != visibile;
+}
+
+bool ViewManagerServiceImpl::CanDescendIntoNodeForNodeTree(
+    const Node* node) const {
+  if (roots_.empty())
+    return true;
+
+  ViewManagerServiceImpl* connection =
+      root_node_manager_->GetConnectionWithRoot(node->id());
+  return !connection || connection == this;
 }
 
 bool ViewManagerServiceImpl::DeleteNodeImpl(ViewManagerServiceImpl* source,
@@ -404,6 +419,18 @@ void ViewManagerServiceImpl::RemoveFromKnown(const Node* node,
     RemoveFromKnown(children[i], local_nodes);
 }
 
+bool ViewManagerServiceImpl::IsNodeEmbeddedInAnotherConnection(
+    const Node* node) const {
+  while (node) {
+    const ViewManagerServiceImpl* connection =
+        root_node_manager_->GetConnectionWithRoot(node->id());
+    if (connection)
+      return connection != this;
+    node = node->GetParent();
+  }
+  return false;
+}
+
 void ViewManagerServiceImpl::AddRoot(const NodeId& node_id) {
   const Id transport_node_id(NodeIdToTransportId(node_id));
   CHECK(roots_.count(transport_node_id) == 0);
@@ -448,13 +475,26 @@ void ViewManagerServiceImpl::RemoveRoot(const NodeId& node_id) {
     local_nodes[i]->GetParent()->Remove(local_nodes[i]);
 }
 
+void ViewManagerServiceImpl::RemoveChildrenAsPartOfEmbed(
+    const NodeId& node_id) {
+  // Let the root do what it wants.
+  if (roots_.empty())
+    return;
+
+  Node* node = GetNode(node_id);
+  CHECK(node);
+  CHECK(node->id().connection_id == node_id.connection_id);
+  std::vector<Node*> children = node->GetChildren();
+  for (size_t i = 0; i < children.size(); ++i)
+    node->Remove(children[i]);
+}
+
 bool ViewManagerServiceImpl::IsNodeDescendantOfRoots(const Node* node) const {
   if (roots_.empty())
     return true;
   if (!node)
     return false;
-  const Id invalid_node_id =
-      NodeIdToTransportId(InvalidNodeId());
+  const Id invalid_node_id = NodeIdToTransportId(InvalidNodeId());
   for (NodeIdSet::const_iterator i = roots_.begin(); i != roots_.end(); ++i) {
     if (*i == invalid_node_id)
       continue;
@@ -531,6 +571,24 @@ Array<NodeDataPtr> ViewManagerServiceImpl::NodesToNodeDatas(
     array[i] = inode.Pass();
   }
   return array.Pass();
+}
+
+void ViewManagerServiceImpl::GetNodeTreeImpl(
+    const Node* node,
+    std::vector<const Node*>* nodes) const {
+  DCHECK(node);
+
+  if (!CanGetNodeTree(node))
+    return;
+
+  nodes->push_back(node);
+
+  if (!CanDescendIntoNodeForNodeTree(node))
+    return;
+
+  std::vector<const Node*> children(node->GetChildren());
+  for (size_t i = 0 ; i < children.size(); ++i)
+    GetNodeTreeImpl(children[i], nodes);
 }
 
 void ViewManagerServiceImpl::CreateNode(
@@ -612,9 +670,11 @@ void ViewManagerServiceImpl::GetNodeTree(
   Node* node = GetNode(NodeIdFromTransportId(node_id));
   std::vector<const Node*> nodes;
   if (CanGetNodeTree(node)) {
-    GetDescendants(node, &nodes);
+    GetNodeTreeImpl(node, &nodes);
+#if !defined(NDEBUG)
     for (size_t i = 0; i < nodes.size(); ++i)
-      known_nodes_.insert(NodeIdToTransportId(nodes[i]->id()));
+      DCHECK_GT(known_nodes_.count(NodeIdToTransportId(nodes[i]->id())), 0u);
+#endif
   }
   callback.Run(NodesToNodeDatas(nodes));
 }
@@ -743,6 +803,7 @@ void ViewManagerServiceImpl::Embed(const String& url,
          (!connection_by_url && !connection_with_node_as_root)) &&
         (!connection_by_url || !connection_by_url->HasRoot(node_id))) {
       RootNodeManager::ScopedChange change(this, root_node_manager_, true);
+      RemoveChildrenAsPartOfEmbed(node_id);
       // Never message the originating connection.
       root_node_manager_->OnConnectionMessagedClient(id_);
       if (connection_with_node_as_root)

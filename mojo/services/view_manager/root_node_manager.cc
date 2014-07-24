@@ -142,8 +142,8 @@ ViewManagerServiceImpl* RootNodeManager::GetConnectionByCreator(
   return NULL;
 }
 
-ViewManagerServiceImpl* RootNodeManager::GetConnectionWithRoot(
-    const NodeId& id) {
+const ViewManagerServiceImpl* RootNodeManager::GetConnectionWithRoot(
+    const NodeId& id) const {
   for (ConnectionMap::const_iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
     if (i->second->HasRoot(id))

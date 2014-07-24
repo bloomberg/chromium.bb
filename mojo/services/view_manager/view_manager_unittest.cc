@@ -449,7 +449,10 @@ typedef std::vector<std::string> Changes;
 
 class ViewManagerTest : public testing::Test {
  public:
-  ViewManagerTest() : connection_(NULL), connection2_(NULL) {}
+  ViewManagerTest()
+      : connection_(NULL),
+        connection2_(NULL),
+        connection3_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
     test_helper_.Init();
@@ -473,6 +476,8 @@ class ViewManagerTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
+    if (connection3_)
+      connection3_->Destroy();
     if (connection2_)
       connection2_->Destroy();
     if (connection_)
@@ -504,6 +509,17 @@ class ViewManagerTest : public testing::Test {
     }
   }
 
+  void EstablishThirdConnection(ViewManagerProxy* owner, Id root_id) {
+    ASSERT_TRUE(connection3_ == NULL);
+    ASSERT_TRUE(owner->Embed(root_id, kTestServiceURL2));
+    connection3_ = ViewManagerProxy::WaitForInstance();
+    ASSERT_TRUE(connection3_ != NULL);
+    connection3_->DoRunLoopUntilChangesCount(1);
+    ASSERT_EQ(1u, connection3_->changes().size());
+    EXPECT_EQ("OnConnectionEstablished creator=mojo:test_url",
+              ChangesToDescription1(connection3_->changes())[0]);
+  }
+
   void DestroySecondConnection() {
     connection2_->Destroy();
     connection2_ = NULL;
@@ -515,8 +531,10 @@ class ViewManagerTest : public testing::Test {
 
   ViewManagerInitServicePtr view_manager_init_;
 
+  // NOTE: this connection is the root. As such, it has special permissions.
   ViewManagerProxy* connection_;
   ViewManagerProxy* connection2_;
+  ViewManagerProxy* connection3_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerTest);
 };
@@ -562,6 +580,136 @@ TEST_F(ViewManagerTest, TwoClientsGetDifferentConnectionIds) {
   // tests are written assuming that is the case. The key thing is the
   // connection ids of |connection_| and |connection2_| differ.
   EXPECT_EQ(2, connection2_->changes()[0].connection_id);
+}
+
+// Verifies when Embed() is invoked any child nodes are removed.
+TEST_F(ViewManagerTest, NodesRemovedWhenEmbedding) {
+  // Two nodes 1 and 2. 2 is parented to 1.
+  ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
+  ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
+  ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 2)));
+
+  ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
+
+  // Because |connection_| is the root, the embed call doesn't remove.
+  {
+    std::vector<TestNode> nodes;
+    connection_->GetNodeTree(BuildNodeId(1, 2), &nodes);
+    ASSERT_EQ(1u, nodes.size());
+    EXPECT_EQ("node=1,2 parent=1,1 view=null", nodes[0].ToString());
+  }
+
+  // But |connection2_| should not see node 2.
+  {
+    std::vector<TestNode> nodes;
+    connection2_->GetNodeTree(BuildNodeId(1, 1), &nodes);
+    ASSERT_EQ(1u, nodes.size());
+    EXPECT_EQ("node=1,1 parent=null view=null", nodes[0].ToString());
+  }
+  {
+    std::vector<TestNode> nodes;
+    connection2_->GetNodeTree(BuildNodeId(1, 2), &nodes);
+    EXPECT_TRUE(nodes.empty());
+  }
+
+  // Nodes 3 and 4 in connection 2.
+  ASSERT_TRUE(connection2_->CreateNode(BuildNodeId(2, 3)));
+  ASSERT_TRUE(connection2_->CreateNode(BuildNodeId(2, 4)));
+  ASSERT_TRUE(connection2_->AddNode(BuildNodeId(2, 3), BuildNodeId(2, 4)));
+
+  // Connection 3 rooted at 2.
+  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(connection2_,
+                                                   BuildNodeId(2, 3)));
+
+  // Node 4 should no longer have a parent.
+  {
+    std::vector<TestNode> nodes;
+    connection2_->GetNodeTree(BuildNodeId(2, 3), &nodes);
+    ASSERT_EQ(1u, nodes.size());
+    EXPECT_EQ("node=2,3 parent=null view=null", nodes[0].ToString());
+
+    nodes.clear();
+    connection2_->GetNodeTree(BuildNodeId(2, 4), &nodes);
+    ASSERT_EQ(1u, nodes.size());
+    EXPECT_EQ("node=2,4 parent=null view=null", nodes[0].ToString());
+  }
+
+  // And node 4 should not be visible to connection 3.
+  {
+    std::vector<TestNode> nodes;
+    connection3_->GetNodeTree(BuildNodeId(2, 3), &nodes);
+    ASSERT_EQ(1u, nodes.size());
+    EXPECT_EQ("node=2,3 parent=null view=null", nodes[0].ToString());
+  }
+}
+
+// Verifies once Embed() has been invoked the parent connection can't see any
+// children.
+TEST_F(ViewManagerTest, CantAccessChildrenOfEmbeddedNode) {
+  ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
+
+  ASSERT_TRUE(connection2_->CreateNode(BuildNodeId(2, 2)));
+  ASSERT_TRUE(connection2_->AddNode(BuildNodeId(1, 1), BuildNodeId(2, 2)));
+
+  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(connection2_,
+                                                   BuildNodeId(2, 2)));
+
+  ASSERT_TRUE(connection3_->CreateNode(BuildNodeId(3, 3)));
+  ASSERT_TRUE(connection3_->AddNode(BuildNodeId(2, 2), BuildNodeId(3, 3)));
+
+  // Even though 3 is a child of 2 connection 2 can't see 3 as it's from a
+  // different connection.
+  {
+    std::vector<TestNode> nodes;
+    connection2_->GetNodeTree(BuildNodeId(2, 2), &nodes);
+    ASSERT_EQ(1u, nodes.size());
+    EXPECT_EQ("node=2,2 parent=1,1 view=null", nodes[0].ToString());
+  }
+
+  {
+    std::vector<TestNode> nodes;
+    connection2_->GetNodeTree(BuildNodeId(3, 3), &nodes);
+    EXPECT_TRUE(nodes.empty());
+  }
+
+  // Connection 2 shouldn't be able to get node 3 at all.
+  {
+    std::vector<TestNode> nodes;
+    connection2_->GetNodeTree(BuildNodeId(3, 3), &nodes);
+    EXPECT_TRUE(nodes.empty());
+  }
+
+  // Connection 1 should be able to see it all (its the root).
+  {
+    std::vector<TestNode> nodes;
+    connection_->GetNodeTree(BuildNodeId(1, 1), &nodes);
+    ASSERT_EQ(3u, nodes.size());
+    EXPECT_EQ("node=1,1 parent=null view=null", nodes[0].ToString());
+    EXPECT_EQ("node=2,2 parent=1,1 view=null", nodes[1].ToString());
+    EXPECT_EQ("node=3,3 parent=2,2 view=null", nodes[2].ToString());
+  }
+}
+
+// Verifies once Embed() has been invoked the parent can't mutate the children.
+TEST_F(ViewManagerTest, CantModifyChildrenOfEmbeddedNode) {
+  ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
+
+  ASSERT_TRUE(connection2_->CreateNode(BuildNodeId(2, 2)));
+  ASSERT_TRUE(connection2_->AddNode(BuildNodeId(1, 1), BuildNodeId(2, 2)));
+
+  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(connection2_,
+                                                   BuildNodeId(2, 2)));
+
+  ASSERT_TRUE(connection2_->CreateNode(BuildNodeId(2, 3)));
+  // Connection 2 shouldn't be able to add anything to the node anymore.
+  ASSERT_FALSE(connection2_->AddNode(BuildNodeId(2, 2), BuildNodeId(2, 3)));
+
+  // Create node 3 in connection 3 and add it to node 3.
+  ASSERT_TRUE(connection3_->CreateNode(BuildNodeId(3, 3)));
+  ASSERT_TRUE(connection3_->AddNode(BuildNodeId(2, 2), BuildNodeId(3, 3)));
+
+  // Connection 2 shouldn't be able to remove node 3.
+  ASSERT_FALSE(connection2_->RemoveNodeFromParent(BuildNodeId(3, 3)));
 }
 
 // Verifies client gets a valid id.
@@ -1035,7 +1183,7 @@ TEST_F(ViewManagerTest, GetNodeTree) {
   ASSERT_TRUE(connection_->CreateView(BuildViewId(1, 51)));
   ASSERT_TRUE(connection_->SetView(BuildNodeId(1, 11), BuildViewId(1, 51)));
 
-  // Verifies GetNodeTree() on the root.
+  // Verifies GetNodeTree() on the root. The root connection sees all.
   {
     std::vector<TestNode> nodes;
     connection_->GetNodeTree(BuildNodeId(0, 1), &nodes);
@@ -1047,15 +1195,15 @@ TEST_F(ViewManagerTest, GetNodeTree) {
     EXPECT_EQ("node=2,3 parent=1,1 view=null", nodes[4].ToString());
   }
 
-  // Verifies GetNodeTree() on the node 1,1.
+  // Verifies GetNodeTree() on the node 1,1. This does not include 1,11 as it's
+  // from a different connection.
   {
     std::vector<TestNode> nodes;
     connection2_->GetNodeTree(BuildNodeId(1, 1), &nodes);
-    ASSERT_EQ(4u, nodes.size());
+    ASSERT_EQ(3u, nodes.size());
     EXPECT_EQ("node=1,1 parent=null view=null", nodes[0].ToString());
-    EXPECT_EQ("node=1,11 parent=1,1 view=1,51", nodes[1].ToString());
-    EXPECT_EQ("node=2,2 parent=1,1 view=null", nodes[2].ToString());
-    EXPECT_EQ("node=2,3 parent=1,1 view=null", nodes[3].ToString());
+    EXPECT_EQ("node=2,2 parent=1,1 view=null", nodes[1].ToString());
+    EXPECT_EQ("node=2,3 parent=1,1 view=null", nodes[2].ToString());
   }
 
   // Connection 2 shouldn't be able to get the root tree.
@@ -1293,17 +1441,8 @@ TEST_F(ViewManagerTest, OnViewInput) {
 TEST_F(ViewManagerTest, EmbedWithSameNodeId) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
-  // Create a third connection.
-  ViewManagerProxy* connection3 = NULL;
-  {
-    ASSERT_TRUE(connection_->Embed(BuildNodeId(1, 1), kTestServiceURL2));
-    connection3 = ViewManagerProxy::WaitForInstance();
-    ASSERT_TRUE(connection3 != NULL);
-    connection3->DoRunLoopUntilChangesCount(1);
-    const Changes changes(ChangesToDescription1(connection3->changes()));
-    ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("OnConnectionEstablished creator=mojo:test_url", changes[0]);
-  }
+  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(connection_,
+                                                   BuildNodeId(1, 1)));
 
   // Connection2 should have been told the node was deleted.
   {
@@ -1319,32 +1458,21 @@ TEST_F(ViewManagerTest, EmbedWithSameNodeId) {
     connection2_->GetNodeTree(BuildNodeId(1, 1), &nodes);
     EXPECT_TRUE(nodes.empty());
   }
-
-  connection3->Destroy();
 }
 
 TEST_F(ViewManagerTest, EmbedWithSameNodeId2) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
-  // Create a third connection.
-  ViewManagerProxy* connection3 = NULL;
-  {
-    ASSERT_TRUE(connection_->Embed(BuildNodeId(1, 1), kTestServiceURL2));
-    connection3 = ViewManagerProxy::WaitForInstance();
-    ASSERT_TRUE(connection3 != NULL);
-    connection3->DoRunLoopUntilChangesCount(1);
-    const Changes changes(ChangesToDescription1(connection3->changes()));
-    ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("OnConnectionEstablished creator=mojo:test_url", changes[0]);
-  }
+  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(connection_,
+                                                   BuildNodeId(1, 1)));
 
   // Connection2 should have been told the node was deleted.
   connection2_->DoRunLoopUntilChangesCount(1);
   connection2_->ClearChanges();
 
   // Create a node in the third connection and parent it to the root.
-  ASSERT_TRUE(connection3->CreateNode(BuildNodeId(3, 1)));
-  ASSERT_TRUE(connection3->AddNode(BuildNodeId(1, 1), BuildNodeId(3, 1)));
+  ASSERT_TRUE(connection3_->CreateNode(BuildNodeId(3, 1)));
+  ASSERT_TRUE(connection3_->AddNode(BuildNodeId(1, 1), BuildNodeId(3, 1)));
 
   // Connection 1 should have been told about the add (it owns the node).
   {
@@ -1367,21 +1495,21 @@ TEST_F(ViewManagerTest, EmbedWithSameNodeId2) {
               ChangeNodeDescription(changes));
 
     // And 3 should get a delete.
-    connection3->DoRunLoopUntilChangesCount(1);
-    ASSERT_EQ(1u, connection3->changes().size());
+    connection3_->DoRunLoopUntilChangesCount(1);
+    ASSERT_EQ(1u, connection3_->changes().size());
     EXPECT_EQ("NodeDeleted node=1,1",
-              ChangesToDescription1(connection3->changes())[0]);
+              ChangesToDescription1(connection3_->changes())[0]);
   }
 
-  // Connection3 has no root. Verify it can't see node 1,1 anymore.
+  // Connection3_ has no root. Verify it can't see node 1,1 anymore.
   {
     std::vector<TestNode> nodes;
-    connection3->GetNodeTree(BuildNodeId(1, 1), &nodes);
+    connection3_->GetNodeTree(BuildNodeId(1, 1), &nodes);
     EXPECT_TRUE(nodes.empty());
   }
 
   // Verify 3,1 is no longer parented to 1,1. We have to do this from 1,1 as
-  // connection3 can no longer see 1,1.
+  // connection3_ can no longer see 1,1.
   {
     std::vector<TestNode> nodes;
     connection_->GetNodeTree(BuildNodeId(1, 1), &nodes);
@@ -1389,15 +1517,13 @@ TEST_F(ViewManagerTest, EmbedWithSameNodeId2) {
     EXPECT_EQ("node=1,1 parent=null view=null", nodes[0].ToString());
   }
 
-  // Verify connection3 can still see the node it created 3,1.
+  // Verify connection3_ can still see the node it created 3,1.
   {
     std::vector<TestNode> nodes;
-    connection3->GetNodeTree(BuildNodeId(3, 1), &nodes);
+    connection3_->GetNodeTree(BuildNodeId(3, 1), &nodes);
     ASSERT_EQ(1u, nodes.size());
     EXPECT_EQ("node=3,1 parent=null view=null", nodes[0].ToString());
   }
-
-  connection3->Destroy();
 }
 
 // TODO(sky): add coverage of test that destroys connections and ensures other
