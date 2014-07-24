@@ -264,6 +264,196 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput", "Main"})
+    public void testGuessedKeycodeFromTyping() throws Throwable {
+        assertEquals(0, ImeAdapter.getTypedKeycodeGuess(null, ""));
+        assertEquals(KeyEvent.KEYCODE_X, ImeAdapter.getTypedKeycodeGuess(null, "x"));
+        assertEquals(0, ImeAdapter.getTypedKeycodeGuess(null, "xyz"));
+
+        assertEquals(0, ImeAdapter.getTypedKeycodeGuess("abc", "abc"));
+        assertEquals(KeyEvent.KEYCODE_DEL, ImeAdapter.getTypedKeycodeGuess("abc", ""));
+
+        assertEquals(KeyEvent.KEYCODE_H, ImeAdapter.getTypedKeycodeGuess("", "h"));
+        assertEquals(KeyEvent.KEYCODE_DEL, ImeAdapter.getTypedKeycodeGuess("h", ""));
+        assertEquals(KeyEvent.KEYCODE_E, ImeAdapter.getTypedKeycodeGuess("h", "he"));
+        assertEquals(KeyEvent.KEYCODE_L, ImeAdapter.getTypedKeycodeGuess("he", "hel"));
+        assertEquals(KeyEvent.KEYCODE_O, ImeAdapter.getTypedKeycodeGuess("hel", "helo"));
+        assertEquals(KeyEvent.KEYCODE_DEL, ImeAdapter.getTypedKeycodeGuess("helo", "hel"));
+        assertEquals(KeyEvent.KEYCODE_L, ImeAdapter.getTypedKeycodeGuess("hel", "hell"));
+        assertEquals(KeyEvent.KEYCODE_L, ImeAdapter.getTypedKeycodeGuess("hell", "helll"));
+        assertEquals(KeyEvent.KEYCODE_DEL, ImeAdapter.getTypedKeycodeGuess("helll", "hell"));
+        assertEquals(KeyEvent.KEYCODE_O, ImeAdapter.getTypedKeycodeGuess("hell", "hello"));
+
+        assertEquals(KeyEvent.KEYCODE_X, ImeAdapter.getTypedKeycodeGuess("xxx", "xxxx"));
+        assertEquals(KeyEvent.KEYCODE_X, ImeAdapter.getTypedKeycodeGuess("xxx", "xxxxx"));
+        assertEquals(KeyEvent.KEYCODE_DEL, ImeAdapter.getTypedKeycodeGuess("xxx", "xx"));
+        assertEquals(KeyEvent.KEYCODE_DEL, ImeAdapter.getTypedKeycodeGuess("xxx", "x"));
+
+        assertEquals(KeyEvent.KEYCODE_Y, ImeAdapter.getTypedKeycodeGuess("xxx", "xxxy"));
+        assertEquals(KeyEvent.KEYCODE_Y, ImeAdapter.getTypedKeycodeGuess("xxx", "xxxxy"));
+        assertEquals(0, ImeAdapter.getTypedKeycodeGuess("xxx", "xy"));
+        assertEquals(0, ImeAdapter.getTypedKeycodeGuess("xxx", "y"));
+
+        assertEquals(0, ImeAdapter.getTypedKeycodeGuess("foo", "bar"));
+        assertEquals(0, ImeAdapter.getTypedKeycodeGuess("foo", "bars"));
+        assertEquals(0, ImeAdapter.getTypedKeycodeGuess("foo", "ba"));
+    }
+
+    @SmallTest
+    @Feature({"TextInput", "Main"})
+    public void testKeyCodesWhileComposingText() throws Throwable {
+        DOMUtils.focusNode(mContentViewCore, "textarea");
+        assertWaitForKeyboardStatus(true);
+
+        // The calls below are a reflection of what the stock Google Keyboard (Android 4.4) sends
+        // when the noted key is touched on screen.  Exercise care when altering to make sure
+        // that the test reflects reality.  If this test breaks, it's possible that code has
+        // changed and different calls need to be made instead.
+        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
+
+        // H
+        expectUpdateStateCall(mConnection);
+        setComposingText(mConnection, "h", 1);
+        assertEquals(KeyEvent.KEYCODE_H, mImeAdapter.mLastSyntheticKeyCode);
+        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
+
+        // O
+        expectUpdateStateCall(mConnection);
+        setComposingText(mConnection, "ho", 1);
+        assertEquals(KeyEvent.KEYCODE_O, mImeAdapter.mLastSyntheticKeyCode);
+        assertEquals("ho", mConnection.getTextBeforeCursor(9, 0));
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("ho", mConnection.getTextBeforeCursor(9, 0));
+
+        // DEL
+        expectUpdateStateCall(mConnection);
+        setComposingText(mConnection, "h", 1);
+        assertEquals(KeyEvent.KEYCODE_DEL, mImeAdapter.mLastSyntheticKeyCode);
+        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
+        setComposingRegion(mConnection, 0, 1);  // DEL calls cancelComposition() then restarts
+
+        // I
+        setComposingText(mConnection, "hi", 1);
+        assertEquals(KeyEvent.KEYCODE_I, mImeAdapter.mLastSyntheticKeyCode);
+        assertEquals("hi", mConnection.getTextBeforeCursor(9, 0));
+
+        // SPACE
+        commitText(mConnection, "hi", 1);
+        assertEquals(0, mImeAdapter.mLastSyntheticKeyCode);
+        commitText(mConnection, " ", 1);
+        assertEquals(KeyEvent.KEYCODE_SPACE, mImeAdapter.mLastSyntheticKeyCode);
+        assertEquals("hi ", mConnection.getTextBeforeCursor(9, 0));
+
+        // DEL
+        deleteSurroundingText(mConnection, 1, 0);
+        assertEquals(KeyEvent.KEYCODE_DEL, mImeAdapter.mLastSyntheticKeyCode);
+        setComposingRegion(mConnection, 0, 2);
+        assertEquals("hi", mConnection.getTextBeforeCursor(9, 0));
+
+        // DEL
+        setComposingText(mConnection, "h", 1);
+        assertEquals(KeyEvent.KEYCODE_DEL, mImeAdapter.mLastSyntheticKeyCode);
+        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
+
+        // DEL
+        commitText(mConnection, "", 1);
+        assertEquals(KeyEvent.KEYCODE_DEL, mImeAdapter.mLastSyntheticKeyCode);
+        assertEquals("", mConnection.getTextBeforeCursor(9, 0));
+
+        // DEL (on empty input)
+        deleteSurroundingText(mConnection, 1, 0);  // BS on empty still sends 1,0
+        assertEquals(KeyEvent.KEYCODE_DEL, mImeAdapter.mLastSyntheticKeyCode);
+        assertEquals("", mConnection.getTextBeforeCursor(9, 0));
+    }
+
+    @SmallTest
+    @Feature({"TextInput", "Main"})
+    public void testKeyCodesWhileTypingText() throws Throwable {
+        DOMUtils.focusNode(mContentViewCore, "textarea");
+        assertWaitForKeyboardStatus(true);
+
+        // The calls below are a reflection of what the Hacker's Keyboard sends  when the noted
+        // key is touched on screen.  Exercise care when altering to make sure that the test
+        // reflects reality.
+        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
+
+        // H
+        expectUpdateStateCall(mConnection);
+        commitText(mConnection, "h", 1);
+        assertEquals(KeyEvent.KEYCODE_H, mImeAdapter.mLastSyntheticKeyCode);
+        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
+
+        // O
+        expectUpdateStateCall(mConnection);
+        commitText(mConnection, "o", 1);
+        assertEquals(KeyEvent.KEYCODE_O, mImeAdapter.mLastSyntheticKeyCode);
+        assertEquals("ho", mConnection.getTextBeforeCursor(9, 0));
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("ho", mConnection.getTextBeforeCursor(9, 0));
+
+        // DEL
+        expectUpdateStateCall(mConnection);
+        deleteSurroundingText(mConnection, 1, 0);
+        assertEquals(KeyEvent.KEYCODE_DEL, mImeAdapter.mLastSyntheticKeyCode);
+        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
+
+        // I
+        expectUpdateStateCall(mConnection);
+        commitText(mConnection, "i", 1);
+        assertEquals(KeyEvent.KEYCODE_I, mImeAdapter.mLastSyntheticKeyCode);
+        assertEquals("hi", mConnection.getTextBeforeCursor(9, 0));
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("hi", mConnection.getTextBeforeCursor(9, 0));
+
+        // SPACE
+        expectUpdateStateCall(mConnection);
+        commitText(mConnection, " ", 1);
+        assertEquals(KeyEvent.KEYCODE_SPACE, mImeAdapter.mLastSyntheticKeyCode);
+        assertEquals("hi ", mConnection.getTextBeforeCursor(9, 0));
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("hi ", mConnection.getTextBeforeCursor(9, 0));
+
+        // DEL
+        expectUpdateStateCall(mConnection);
+        deleteSurroundingText(mConnection, 1, 0);
+        assertEquals(KeyEvent.KEYCODE_DEL, mImeAdapter.mLastSyntheticKeyCode);
+        assertEquals("hi", mConnection.getTextBeforeCursor(9, 0));
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("hi", mConnection.getTextBeforeCursor(9, 0));
+
+        // DEL
+        expectUpdateStateCall(mConnection);
+        deleteSurroundingText(mConnection, 1, 0);
+        assertEquals(KeyEvent.KEYCODE_DEL, mImeAdapter.mLastSyntheticKeyCode);
+        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
+
+        // DEL
+        expectUpdateStateCall(mConnection);
+        deleteSurroundingText(mConnection, 1, 0);
+        assertEquals(KeyEvent.KEYCODE_DEL, mImeAdapter.mLastSyntheticKeyCode);
+        assertEquals("", mConnection.getTextBeforeCursor(9, 0));
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("", mConnection.getTextBeforeCursor(9, 0));
+
+        // DEL (on empty input)
+        deleteSurroundingText(mConnection, 1, 0);  // BS on empty still sends 1,0
+        assertEquals(KeyEvent.KEYCODE_DEL, mImeAdapter.mLastSyntheticKeyCode);
+        assertEquals("", mConnection.getTextBeforeCursor(9, 0));
+    }
+
+    @SmallTest
+    @Feature({"TextInput", "Main"})
     public void testEnterKeyEventWhileComposingText() throws Throwable {
         DOMUtils.focusNode(mContentViewCore, "input_radio");
         assertWaitForKeyboardStatus(false);
@@ -325,6 +515,23 @@ public class ImeTest extends ContentShellTestBase {
         }));
         states.get(index).assertEqualState(
                 text, selectionStart, selectionEnd, compositionStart, compositionEnd);
+    }
+
+    private void expectUpdateStateCall(final TestAdapterInputConnection connection) {
+        connection.mImeUpdateQueue.clear();
+    }
+
+    private void assertUpdateStateCall(final TestAdapterInputConnection connection, int maxms)
+            throws Exception {
+        while (connection.mImeUpdateQueue.size() == 0 && maxms > 0) {
+            try {
+                Thread.sleep(50);
+            } catch (Exception e) {
+                // Not really a problem since we're just going to sleep again.
+            }
+            maxms -= 50;
+        }
+        assertTrue(connection.mImeUpdateQueue.size() > 0);
     }
 
     private void assertClipboardContents(final Activity activity, final String expectedContents)
@@ -445,6 +652,16 @@ public class ImeTest extends ContentShellTestBase {
             @Override
             public void run() {
                 connection.finishComposingText();
+            }
+        });
+    }
+
+    private void deleteSurroundingText(final AdapterInputConnection connection, final int before,
+            final int after) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                connection.deleteSurroundingText(before, after);
             }
         });
     }
