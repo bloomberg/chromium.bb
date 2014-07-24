@@ -56,6 +56,10 @@ AccessibilityNotificationWaiter::~AccessibilityNotificationWaiter() {
 
 void AccessibilityNotificationWaiter::WaitForNotification() {
   loop_runner_->Run();
+
+  // Each loop runner can only be called once. Create a new one in case
+  // the caller wants to call this again to wait for the next notification.
+  loop_runner_ = new MessageLoopRunner();
 }
 
 const ui::AXTree& AccessibilityNotificationWaiter::GetAXTree() const {
@@ -64,7 +68,7 @@ const ui::AXTree& AccessibilityNotificationWaiter::GetAXTree() const {
 
 void AccessibilityNotificationWaiter::OnAccessibilityEvent(
     ui::AXEvent event_type, int event_target_id) {
-  if (!IsAboutBlank() && (event_to_wait_for_ == ui::AX_EVENT_NONE ||
+   if (!IsAboutBlank() && (event_to_wait_for_ == ui::AX_EVENT_NONE ||
                           event_to_wait_for_ == event_type)) {
     event_target_id_ = event_target_id;
     loop_runner_->Quit();

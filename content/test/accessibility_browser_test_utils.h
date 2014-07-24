@@ -24,7 +24,6 @@ class Shell;
 class AccessibilityNotificationWaiter {
  public:
   explicit AccessibilityNotificationWaiter(Shell* shell);
-
   AccessibilityNotificationWaiter(
       Shell* shell,
       AccessibilityMode accessibility_mode,

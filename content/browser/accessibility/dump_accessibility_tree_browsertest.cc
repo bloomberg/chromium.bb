@@ -93,8 +93,27 @@ class DumpAccessibilityTreeTest : public ContentBrowserTest {
     filters->push_back(Filter(base::ASCIIToUTF16("*=''"), Filter::DENY));
   }
 
-  void ParseFilters(const std::string& test_html,
-                    std::vector<Filter>* filters) {
+  // Parse the test html file and parse special directives, usually
+  // beginning with an '@' and inside an HTML comment, that control how the
+  // test is run and how the results are interpreted.
+  //
+  // When the accessibility tree is dumped as text, each attribute is
+  // run through filters before being appended to the string. An "allow"
+  // filter specifies attribute strings that should be dumped, and a "deny"
+  // filter specifies strings that should be suppressed. As an example,
+  // @MAC-ALLOW:AXSubrole=* means that the AXSubrole attribute should be
+  // printed, while @MAC-ALLOW:AXSubrole=AXList* means that any subrole
+  // beginning with the text "AXList" should be printed.
+  //
+  // The @WAIT-FOR:text directive allows the test to specify that the document
+  // may dynamically change after initial load, and the test is to wait
+  // until the given string (e.g., "text") appears in the resulting dump.
+  // A test can make some changes to the document, then append a magic string
+  // indicating that the test is done, and this framework will wait for that
+  // string to appear before comparing the results.
+  void ParseHtmlForExtraDirectives(const std::string& test_html,
+                                   std::vector<Filter>* filters,
+                                   std::string* wait_for) {
     std::vector<std::string> lines;
     base::SplitString(test_html, '\n', &lines);
     for (std::vector<std::string>::const_iterator iter = lines.begin();
@@ -107,6 +126,7 @@ class DumpAccessibilityTreeTest : public ContentBrowserTest {
           AccessibilityTreeFormatter::GetAllowString();
       const std::string& deny_str =
           AccessibilityTreeFormatter::GetDenyString();
+      const std::string& wait_str = "@WAIT-FOR:";
       if (StartsWithASCII(line, allow_empty_str, true)) {
         filters->push_back(
           Filter(base::UTF8ToUTF16(line.substr(allow_empty_str.size())),
@@ -119,6 +139,8 @@ class DumpAccessibilityTreeTest : public ContentBrowserTest {
         filters->push_back(Filter(base::UTF8ToUTF16(
                                       line.substr(deny_str.size())),
                                   Filter::DENY));
+      } else if (StartsWithASCII(line, wait_str, true)) {
+        *wait_for = line.substr(wait_str.size());
       }
     }
   }
@@ -170,32 +192,52 @@ void DumpAccessibilityTreeTest::RunTest(
     return;
   }
 
+  // Parse filters and other directives in the test file.
+  std::vector<Filter> filters;
+  std::string wait_for;
+  AddDefaultFilters(&filters);
+  ParseHtmlForExtraDirectives(html_contents, &filters, &wait_for);
+
   // Load the page.
   base::string16 html_contents16;
   html_contents16 = base::UTF8ToUTF16(html_contents);
   GURL url = GetTestUrl("accessibility",
                         html_file.BaseName().MaybeAsASCII().c_str());
-  AccessibilityNotificationWaiter waiter(
-      shell(), AccessibilityModeComplete,
-      ui::AX_EVENT_LOAD_COMPLETE);
-  NavigateToURL(shell(), url);
-  waiter.WaitForNotification();
 
+  // If there's a @WAIT-FOR directive, set up an accessibility notification
+  // waiter that returns on any event; we'll stop when we get the text we're
+  // waiting for, or time out. Otherwise just wait specifically for
+  // the "load complete" event.
+  scoped_ptr<AccessibilityNotificationWaiter> waiter;
+  if (!wait_for.empty()) {
+    waiter.reset(new AccessibilityNotificationWaiter(
+        shell(), AccessibilityModeComplete, ui::AX_EVENT_NONE));
+  } else {
+    waiter.reset(new AccessibilityNotificationWaiter(
+        shell(), AccessibilityModeComplete, ui::AX_EVENT_LOAD_COMPLETE));
+  }
+
+  // Load the test html.
+  NavigateToURL(shell(), url);
+
+  // Wait for notifications. If there's a @WAIT-FOR directive, break when
+  // the text we're waiting for appears in the dump, otherwise break after
+  // the first notification, which will be a load complete.
   RenderWidgetHostViewBase* host_view = static_cast<RenderWidgetHostViewBase*>(
       shell()->web_contents()->GetRenderWidgetHostView());
-  AccessibilityTreeFormatter formatter(
-      host_view->GetBrowserAccessibilityManager()->GetRoot());
-
-  // Parse filters in the test file.
-  std::vector<Filter> filters;
-  AddDefaultFilters(&filters);
-  ParseFilters(html_contents, &filters);
-  formatter.SetFilters(filters);
+  std::string actual_contents;
+  do {
+    waiter->WaitForNotification();
+    base::string16 actual_contents_utf16;
+    AccessibilityTreeFormatter formatter(
+        host_view->GetBrowserAccessibilityManager()->GetRoot());
+    formatter.SetFilters(filters);
+    formatter.FormatAccessibilityTree(&actual_contents_utf16);
+    actual_contents = base::UTF16ToUTF8(actual_contents_utf16);
+  } while (!wait_for.empty() &&
+           actual_contents.find(wait_for) == std::string::npos);
 
   // Perform a diff (or write the initial baseline).
-  base::string16 actual_contents_utf16;
-  formatter.FormatAccessibilityTree(&actual_contents_utf16);
-  std::string actual_contents = base::UTF16ToUTF8(actual_contents_utf16);
   std::vector<std::string> actual_lines, expected_lines;
   Tokenize(actual_contents, "\n", &actual_lines);
   Tokenize(expected_contents, "\n", &expected_lines);
@@ -528,6 +570,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityTableSimple) {
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityTableSpans) {
   RunTest(FILE_PATH_LITERAL("table-spans.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityTransition) {
+  RunTest(FILE_PATH_LITERAL("transition.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
