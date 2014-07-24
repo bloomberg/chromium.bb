@@ -19,11 +19,7 @@ class WebLockOrientationCallback {
 public:
     virtual ~WebLockOrientationCallback() { }
 
-    virtual void onSuccess(unsigned angle, WebScreenOrientationType)
-    {
-        onSuccess();
-    }
-    virtual void onSuccess() { }
+    virtual void onSuccess() = 0;
     virtual void onError(WebLockOrientationError) = 0;
 };
 
