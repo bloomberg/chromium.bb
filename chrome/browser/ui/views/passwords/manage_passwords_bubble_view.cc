@@ -539,7 +539,6 @@ void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
         browser_view->GetBoundsInScreen());
   }
   manage_passwords_bubble_->GetWidget()->Show();
-  manage_passwords_bubble_->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
   // set_use_focusless(true) has adverse effect on Windows.
   // 1) The bubble can't be the active window (which is not desired behavior).
   // 2) The bubble doesn't get WM_LBUTTONDOWN event. Therefore, all the buttons
@@ -572,7 +571,7 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
       anchor_view_(anchor_view),
       never_save_passwords_(false) {
   // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_view_insets(gfx::Insets(2, 0, 2, 0));
+  set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
   // Don't focus by default.
   set_use_focusless(true);
   if (anchor_view)
