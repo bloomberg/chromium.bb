@@ -286,6 +286,13 @@ double GetTouchParamFromXEvent(XEvent* xev,
   return default_value;
 }
 
+void ScaleTouchRadius(XEvent* xev, double* radius) {
+  DCHECK_EQ(GenericEvent, xev->type);
+  XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev->xcookie.data);
+  ui::DeviceDataManagerX11::GetInstance()->ApplyTouchRadiusScale(
+      xiev->sourceid, radius);
+}
+
 }  // namespace
 
 namespace ui {
@@ -704,13 +711,17 @@ int GetTouchId(const base::NativeEvent& xev) {
 }
 
 float GetTouchRadiusX(const base::NativeEvent& native_event) {
-  return GetTouchParamFromXEvent(native_event,
+  double radius = GetTouchParamFromXEvent(native_event,
       ui::DeviceDataManagerX11::DT_TOUCH_MAJOR, 0.0) / 2.0;
+  ScaleTouchRadius(native_event, &radius);
+  return radius;
 }
 
 float GetTouchRadiusY(const base::NativeEvent& native_event) {
-  return GetTouchParamFromXEvent(native_event,
+  double radius = GetTouchParamFromXEvent(native_event,
       ui::DeviceDataManagerX11::DT_TOUCH_MINOR, 0.0) / 2.0;
+  ScaleTouchRadius(native_event, &radius);
+  return radius;
 }
 
 float GetTouchAngle(const base::NativeEvent& native_event) {

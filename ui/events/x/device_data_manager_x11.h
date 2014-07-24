@@ -83,6 +83,9 @@ class EVENTS_BASE_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
                           // touch area.
     DT_TOUCH_PRESSURE,    // Pressure of the touch contact.
 
+    DT_TOUCH_POSITION_X,  // Touch X position.
+    DT_TOUCH_POSITION_Y,  // Touch Y position.
+
     // NOTE for XInput MT: 'Tracking ID' is provided in every touch event to
     // track individual touch. 'Tracking ID' is an unsigned 32-bit value and
     // is increased for each new touch. It will wrap back to 0 when reaching

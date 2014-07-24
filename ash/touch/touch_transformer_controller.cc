@@ -13,6 +13,7 @@
 #include "ui/display/chromeos/display_configurator.h"
 #include "ui/display/types/chromeos/display_snapshot.h"
 #include "ui/events/device_data_manager.h"
+#include "ui/events/x/device_data_manager_x11.h"
 
 namespace ash {
 
@@ -23,6 +24,52 @@ DisplayManager* GetDisplayManager() {
 }
 
 }  // namespace
+
+
+// This is to compute the scale ratio for the TouchEvent's radius. The
+// configured resolution of the display is not always the same as the touch
+// screen's reporting resolution, e.g. the display could be set as
+// 1920x1080 while the touchscreen is reporting touch position range at
+// 32767x32767. Touch radius is reported in the units the same as touch position
+// so we need to scale the touch radius to be compatible with the display's
+// resolution. We compute the scale as
+// sqrt of (display_area / touchscreen_area)
+double TouchTransformerController::GetTouchResolutionScale(
+    const DisplayInfo& touch_display) const {
+  if (touch_display.touch_device_id() == 0)
+    return 1.0;
+
+  double min_x, max_x;
+  double min_y, max_y;
+  if (!ui::DeviceDataManagerX11::GetInstance()->GetDataRange(
+          touch_display.touch_device_id(),
+          ui::DeviceDataManagerX11::DT_TOUCH_POSITION_X,
+          &min_x, &max_x) ||
+      !ui::DeviceDataManagerX11::GetInstance()->GetDataRange(
+          touch_display.touch_device_id(),
+          ui::DeviceDataManagerX11::DT_TOUCH_POSITION_Y,
+          &min_y, &max_y)) {
+    return 1.0;
+  }
+
+  double width = touch_display.bounds_in_native().width();
+  double height = touch_display.bounds_in_native().height();
+
+  if (max_x == 0.0 || max_y == 0.0 || width == 0.0 || height == 0.0)
+    return 1.0;
+
+  // [0, max_x] -> touchscreen width = max_x + 1
+  // [0, max_y] -> touchscreen height = max_y + 1
+  max_x += 1.0;
+  max_y += 1.0;
+
+  double ratio = std::sqrt((width * height) / (max_x * max_y));
+
+  VLOG(2) << "Screen width/height: " << width << "/" << height
+          << ", Touchscreen width/height: " << max_x << "/" << max_y
+          << ", Touch radius scale ratio: " << ratio;
+  return ratio;
+}
 
 // This function computes the extended mode TouchTransformer for
 // |touch_display|. The TouchTransformer maps the touch event position
@@ -158,10 +205,17 @@ void TouchTransformerController::UpdateTouchTransformer() const {
            display2_id != gfx::Display::kInvalidDisplayID);
     display1 = GetDisplayManager()->GetDisplayInfo(display1_id);
     display2 = GetDisplayManager()->GetDisplayInfo(display2_id);
+    device_manager->UpdateTouchRadiusScale(display1.touch_device_id(),
+                                           GetTouchResolutionScale(display1));
+    device_manager->UpdateTouchRadiusScale(display2.touch_device_id(),
+                                           GetTouchResolutionScale(display2));
   } else {
     single_display_id = GetDisplayManager()->first_display_id();
     DCHECK(single_display_id != gfx::Display::kInvalidDisplayID);
     single_display = GetDisplayManager()->GetDisplayInfo(single_display_id);
+    device_manager->UpdateTouchRadiusScale(
+        single_display.touch_device_id(),
+        GetTouchResolutionScale(single_display));
   }
 
   if (display_state == ui::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR) {

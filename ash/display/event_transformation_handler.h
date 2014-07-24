@@ -31,9 +31,6 @@ class ASH_EXPORT EventTransformationHandler : public ui::EventHandler {
 
   // Overridden from ui::EventHandler.
   virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
-#if defined(OS_CHROMEOS)
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
-#endif  // defined(OS_CHROMEOS)
 
  private:
   TransformationMode transformation_mode_;

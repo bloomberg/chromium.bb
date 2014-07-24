@@ -34,6 +34,8 @@ class ASH_EXPORT TouchTransformerController
                            TouchTransformerMirrorModePillarboxing);
   FRIEND_TEST_ALL_PREFIXES(TouchTransformerControllerTest,
                            TouchTransformerExtendedMode);
+  FRIEND_TEST_ALL_PREFIXES(TouchTransformerControllerTest,
+                           TouchRadiusScale);
 
   bool ShouldComputeMirrorModeTouchTransformer(
       const DisplayInfo& touch_display) const ;
@@ -43,6 +45,8 @@ class ASH_EXPORT TouchTransformerController
 
   gfx::Transform GetExtendedModeTouchTransformer(
       const DisplayInfo& touch_display, const gfx::Size& fb_size) const;
+
+  double GetTouchResolutionScale(const DisplayInfo& touch_display) const;
 
   // For unittests only.
   bool force_compute_mirror_mode_touch_transformer_;

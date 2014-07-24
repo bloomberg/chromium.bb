@@ -30,6 +30,9 @@ class EVENTS_BASE_EXPORT DeviceDataManager {
   void ApplyTouchTransformer(int touch_device_id, float* x, float* y);
   int64_t GetDisplayForTouchDevice(int touch_device_id) const;
 
+  void UpdateTouchRadiusScale(int touch_device_id, double scale);
+  void ApplyTouchRadiusScale(int touch_device_id, double* radius);
+
  protected:
   DeviceDataManager();
 
@@ -41,6 +44,8 @@ class EVENTS_BASE_EXPORT DeviceDataManager {
   static DeviceDataManager* instance_;
 
   bool IsTouchDeviceIdValid(int touch_device_id) const;
+
+  double touch_radius_scale_map_[kMaxDeviceNum];
 
   // Table to keep track of which display id is mapped to which touch device.
   int64_t touch_device_to_display_map_[kMaxDeviceNum];

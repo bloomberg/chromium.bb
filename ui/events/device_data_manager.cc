@@ -22,8 +22,10 @@ DeviceDataManager::DeviceDataManager() {
   base::AtExitManager::RegisterTask(
       base::Bind(&base::DeletePointer<DeviceDataManager>, this));
 
-  for (int i = 0; i < kMaxDeviceNum; ++i)
+  for (int i = 0; i < kMaxDeviceNum; ++i) {
     touch_device_to_display_map_[i] = gfx::Display::kInvalidDisplayID;
+    touch_radius_scale_map_[i] = 1.0;
+  }
 }
 
 DeviceDataManager::~DeviceDataManager() {
@@ -57,6 +59,7 @@ void DeviceDataManager::ClearTouchTransformerRecord() {
   for (int i = 0; i < kMaxDeviceNum; i++) {
     touch_device_transformer_map_[i] = gfx::Transform();
     touch_device_to_display_map_[i] = gfx::Display::kInvalidDisplayID;
+    touch_radius_scale_map_[i] = 1.0;
   }
 }
 
@@ -72,6 +75,18 @@ void DeviceDataManager::UpdateTouchInfoForDisplay(
     touch_device_to_display_map_[touch_device_id] = display_id;
     touch_device_transformer_map_[touch_device_id] = touch_transformer;
   }
+}
+
+void DeviceDataManager::UpdateTouchRadiusScale(int touch_device_id,
+                                               double scale) {
+  if (IsTouchDeviceIdValid(touch_device_id))
+    touch_radius_scale_map_[touch_device_id] = scale;
+}
+
+void DeviceDataManager::ApplyTouchRadiusScale(int touch_device_id,
+                                              double* radius) {
+  if (IsTouchDeviceIdValid(touch_device_id))
+    *radius = (*radius) * touch_radius_scale_map_[touch_device_id];
 }
 
 void DeviceDataManager::ApplyTouchTransformer(int touch_device_id,
