@@ -743,7 +743,7 @@
       ],
       'actions': [
         {
-          'action_name': 'repack_components_pack',
+          'action_name': 'repack_extensions_unittests_pak',
           'variables': {
             'pak_inputs': [
               '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_resources.pak',
