@@ -38,10 +38,10 @@ from google.appengine.ext import db
 from google.appengine.ext import testbed
 
 TEST_DATA = [
-    # master, builder, test_type, name, data; order matters.
-    ['ChromiumWebKit', 'WebKit Linux', 'layout-tests', 'webkit_linux_results.json', 'a'],
-    ['ChromiumWebKit', 'WebKit Win7', 'layout-tests', 'webkit_win7_results.json', 'b'],
-    ['ChromiumWin', 'Win7 (Dbg)', 'unittests', 'win7_dbg_unittests.json', 'c'],
+    # master, builder, test_type, build_number, name, data; order matters.
+    ['ChromiumWebKit', 'WebKit Linux', 'layout-tests', 1, 'webkit_linux_results.json', 'a'],
+    ['ChromiumWebKit', 'WebKit Win7', 'layout-tests', 2, 'webkit_win7_results.json', 'b'],
+    ['ChromiumWin', 'Win7 (Dbg)', 'unittests', 3, 'win7_dbg_unittests.json', 'c'],
 ]
 
 
@@ -56,10 +56,10 @@ class DataStoreFileTest(unittest.TestCase):
         test_file = testfile.TestFile()
 
     def _getAllFiles(self):
-        return testfile.TestFile.get_files(None, None, None, None, limit=None)
+        return testfile.TestFile.get_files(None, None, None, None, None, limit=None)
 
     def _assertFileMatchesData(self, expected_data, actual_file):
-        actual_fields = [actual_file.master, actual_file.builder, actual_file.test_type, actual_file.name, actual_file.data]
+        actual_fields = [actual_file.master, actual_file.builder, actual_file.test_type, actual_file.build_number, actual_file.name, actual_file.data]
         self.assertEqual(expected_data, actual_fields, 'Mismatch between expected fields in file and actual file.')
 
     def _addFileAndAssert(self, file_data):
@@ -89,33 +89,15 @@ class DataStoreFileTest(unittest.TestCase):
         self.assertEqual(len(TEST_DATA), len(files), 'Mismatch between number of test records and number of files in db.')
 
         for f in files:
-            fields = [f.master, f.builder, f.test_type, f.name, f.data]
+            fields = [f.master, f.builder, f.test_type, f.build_number, f.name, f.data]
             self.assertIn(fields, TEST_DATA)
-
-    def testOverwriteOrAddFile(self):
-        file_data = TEST_DATA[0][:]
-        _, code = testfile.TestFile.overwrite_or_add_file(*file_data)
-        self.assertEqual(200, code, 'Unable to create file with data: %s' % file_data)
-        files = self._getAllFiles()
-        self.assertEqual(1, len(files))
-
-        _, code = testfile.TestFile.overwrite_or_add_file(*file_data)
-        self.assertEqual(200, code, 'Unable to overwrite or create file with data: %s' % file_data)
-        files = self._getAllFiles()
-        self.assertEqual(1, len(files))
-
-        file_data = TEST_DATA[1][:]
-        _, code = testfile.TestFile.overwrite_or_add_file(*file_data)
-        self.assertEqual(200, code, 'Unable to overwrite or create file with different data: %s' % file_data)
-        files = self._getAllFiles()
-        self.assertEqual(2, len(files))
 
     def testDeleteFile(self):
         file_contents = 'x' * datastorefile.MAX_ENTRY_LEN * 2
-        file_data = ['ChromiumWebKit', 'WebKit Linux', 'layout-tests', 'results.json', file_contents]
+        file_data = ['ChromiumWebKit', 'WebKit Linux', 'layout-tests', 1, 'results.json', file_contents]
         self._addFileAndAssert(file_data)
 
-        ndeleted = testfile.TestFile.delete_file(None, 'ChromiumWebKit', 'WebKit Linux', 'layout-tests', 'results.json', None, None)
+        ndeleted = testfile.TestFile.delete_file(None, 'ChromiumWebKit', 'WebKit Linux', 'layout-tests', 1, 'results.json', None, None)
         self.assertEqual(1, ndeleted, 'Expected exactly one file to have been deleted.')
 
         nfiles = testfile.TestFile.all().count()
