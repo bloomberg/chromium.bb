@@ -40,7 +40,7 @@
 #include "content/public/common/user_agent.h"
 #include "grit/browser_resources.h"
 #include "jni/DevToolsServer_jni.h"
-#include "net/socket/unix_domain_socket_posix.h"
+#include "net/socket/unix_domain_listen_socket_posix.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -366,12 +366,13 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
       std::string* name) OVERRIDE {
     *name = base::StringPrintf(
         kTetheringSocketName, getpid(), ++last_tethering_socket_);
-    return net::UnixDomainSocket::CreateAndListenWithAbstractNamespace(
-               *name,
-               "",
-               delegate,
-               base::Bind(&content::CanUserConnectToDevTools))
-           .PassAs<net::StreamListenSocket>();
+    return net::deprecated::UnixDomainListenSocket::
+        CreateAndListenWithAbstractNamespace(
+            *name,
+            "",
+            delegate,
+            base::Bind(&content::CanUserConnectToDevTools))
+        .PassAs<net::StreamListenSocket>();
   }
 
  private:
@@ -423,7 +424,7 @@ void DevToolsServer::Start() {
     return;
 
   protocol_handler_ = content::DevToolsHttpHandler::Start(
-      new net::UnixDomainSocketWithAbstractNamespaceFactory(
+      new net::deprecated::UnixDomainListenSocketWithAbstractNamespaceFactory(
           socket_name_,
           base::StringPrintf("%s_%d", socket_name_.c_str(), getpid()),
           base::Bind(&content::CanUserConnectToDevTools)),

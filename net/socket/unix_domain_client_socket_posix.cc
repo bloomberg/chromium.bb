@@ -1,0 +1,162 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "net/socket/unix_domain_client_socket_posix.h"
+
+#include <sys/socket.h>
+#include <sys/un.h>
+
+#include "base/logging.h"
+#include "base/posix/eintr_wrapper.h"
+#include "net/base/net_errors.h"
+#include "net/base/net_util.h"
+#include "net/socket/socket_libevent.h"
+
+namespace net {
+
+UnixDomainClientSocket::UnixDomainClientSocket(const std::string& socket_path,
+                                               bool use_abstract_namespace)
+    : socket_path_(socket_path),
+      use_abstract_namespace_(use_abstract_namespace) {
+}
+
+UnixDomainClientSocket::UnixDomainClientSocket(
+    scoped_ptr<SocketLibevent> socket)
+    : use_abstract_namespace_(false),
+      socket_(socket.Pass()) {
+}
+
+UnixDomainClientSocket::~UnixDomainClientSocket() {
+  Disconnect();
+}
+
+// static
+bool UnixDomainClientSocket::FillAddress(const std::string& socket_path,
+                                         bool use_abstract_namespace,
+                                         SockaddrStorage* address) {
+  struct sockaddr_un* socket_addr =
+      reinterpret_cast<struct sockaddr_un*>(address->addr);
+  size_t path_max = address->addr_len - offsetof(struct sockaddr_un, sun_path);
+  // Non abstract namespace pathname should be null-terminated. Abstract
+  // namespace pathname must start with '\0'. So, the size is always greater
+  // than socket_path size by 1.
+  size_t path_size = socket_path.size() + 1;
+  if (path_size > path_max)
+    return false;
+
+  memset(socket_addr, 0, address->addr_len);
+  socket_addr->sun_family = AF_UNIX;
+  address->addr_len = path_size + offsetof(struct sockaddr_un, sun_path);
+  if (!use_abstract_namespace) {
+    memcpy(socket_addr->sun_path, socket_path.c_str(), socket_path.size());
+    return true;
+  }
+
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+  // Convert the path given into abstract socket name. It must start with
+  // the '\0' character, so we are adding it. |addr_len| must specify the
+  // length of the structure exactly, as potentially the socket name may
+  // have '\0' characters embedded (although we don't support this).
+  // Note that addr.sun_path is already zero initialized.
+  memcpy(socket_addr->sun_path + 1, socket_path.c_str(), socket_path.size());
+  return true;
+#else
+  return false;
+#endif
+}
+
+int UnixDomainClientSocket::Connect(const CompletionCallback& callback) {
+  DCHECK(!socket_);
+
+  if (socket_path_.empty())
+    return ERR_ADDRESS_INVALID;
+
+  SockaddrStorage address;
+  if (!FillAddress(socket_path_, use_abstract_namespace_, &address))
+    return ERR_ADDRESS_INVALID;
+
+  socket_.reset(new SocketLibevent);
+  int rv = socket_->Open(AF_UNIX);
+  DCHECK_NE(ERR_IO_PENDING, rv);
+  if (rv != OK)
+    return rv;
+
+  return socket_->Connect(address, callback);
+}
+
+void UnixDomainClientSocket::Disconnect() {
+  socket_.reset();
+}
+
+bool UnixDomainClientSocket::IsConnected() const {
+  return socket_ && socket_->IsConnected();
+}
+
+bool UnixDomainClientSocket::IsConnectedAndIdle() const {
+  return socket_ && socket_->IsConnectedAndIdle();
+}
+
+int UnixDomainClientSocket::GetPeerAddress(IPEndPoint* address) const {
+  NOTIMPLEMENTED();
+  return ERR_NOT_IMPLEMENTED;
+}
+
+int UnixDomainClientSocket::GetLocalAddress(IPEndPoint* address) const {
+  NOTIMPLEMENTED();
+  return ERR_NOT_IMPLEMENTED;
+}
+
+const BoundNetLog& UnixDomainClientSocket::NetLog() const {
+  return net_log_;
+}
+
+void UnixDomainClientSocket::SetSubresourceSpeculation() {
+}
+
+void UnixDomainClientSocket::SetOmniboxSpeculation() {
+}
+
+bool UnixDomainClientSocket::WasEverUsed() const {
+  return true;  // We don't care.
+}
+
+bool UnixDomainClientSocket::UsingTCPFastOpen() const {
+  return false;
+}
+
+bool UnixDomainClientSocket::WasNpnNegotiated() const {
+  return false;
+}
+
+NextProto UnixDomainClientSocket::GetNegotiatedProtocol() const {
+  return kProtoUnknown;
+}
+
+bool UnixDomainClientSocket::GetSSLInfo(SSLInfo* ssl_info) {
+  return false;
+}
+
+int UnixDomainClientSocket::Read(IOBuffer* buf, int buf_len,
+                                 const CompletionCallback& callback) {
+  DCHECK(socket_);
+  return socket_->Read(buf, buf_len, callback);
+}
+
+int UnixDomainClientSocket::Write(IOBuffer* buf, int buf_len,
+                                  const CompletionCallback& callback) {
+  DCHECK(socket_);
+  return socket_->Write(buf, buf_len, callback);
+}
+
+int UnixDomainClientSocket::SetReceiveBufferSize(int32 size) {
+  NOTIMPLEMENTED();
+  return ERR_NOT_IMPLEMENTED;
+}
+
+int UnixDomainClientSocket::SetSendBufferSize(int32 size) {
+  NOTIMPLEMENTED();
+  return ERR_NOT_IMPLEMENTED;
+}
+
+}  // namespace net

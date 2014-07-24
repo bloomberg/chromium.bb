@@ -1,6 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#include "net/socket/unix_domain_listen_socket_posix.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -21,6 +23,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -30,16 +33,16 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "net/socket/socket_descriptor.h"
-#include "net/socket/unix_domain_socket_posix.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::queue;
 using std::string;
 
 namespace net {
+namespace deprecated {
 namespace {
 
-const char kSocketFilename[] = "unix_domain_socket_for_testing";
+const char kSocketFilename[] = "socket_for_testing";
 const char kInvalidSocketPath[] = "/invalid/path";
 const char kMsg[] = "hello";
 
@@ -51,16 +54,6 @@ enum EventType {
   EVENT_LISTEN,
   EVENT_READ,
 };
-
-string MakeSocketPath(const string& socket_file_name) {
-  base::FilePath temp_dir;
-  base::GetTempDir(&temp_dir);
-  return temp_dir.Append(socket_file_name).value();
-}
-
-string MakeSocketPath() {
-  return MakeSocketPath(kSocketFilename);
-}
 
 class EventManager : public base::RefCounted<EventManager> {
  public:
@@ -151,39 +144,44 @@ bool UserCanConnectCallback(
   return allow_user;
 }
 
-class UnixDomainSocketTestHelper : public testing::Test {
+class UnixDomainListenSocketTestHelper : public testing::Test {
  public:
   void CreateAndListen() {
-    socket_ = UnixDomainSocket::CreateAndListen(
+    socket_ = UnixDomainListenSocket::CreateAndListen(
         file_path_.value(), socket_delegate_.get(), MakeAuthCallback());
     socket_delegate_->OnListenCompleted();
   }
 
  protected:
-  UnixDomainSocketTestHelper(const string& path, bool allow_user)
-      : file_path_(path),
-        allow_user_(allow_user) {}
+  UnixDomainListenSocketTestHelper(const string& path_str, bool allow_user)
+      : allow_user_(allow_user) {
+    file_path_ = base::FilePath(path_str);
+    if (!file_path_.IsAbsolute()) {
+      EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
+      file_path_ = GetTempSocketPath(file_path_.value());
+    }
+    // Beware that if path_str is an absolute path, this class doesn't delete
+    // the file. It must be an invalid path and cannot be created by unittests.
+  }
+
+  base::FilePath GetTempSocketPath(const std::string socket_name) {
+    DCHECK(temp_dir_.IsValid());
+    return temp_dir_.path().Append(socket_name);
+  }
 
   virtual void SetUp() OVERRIDE {
     event_manager_ = new EventManager();
     socket_delegate_.reset(new TestListenSocketDelegate(event_manager_));
-    DeleteSocketFile();
   }
 
   virtual void TearDown() OVERRIDE {
-    DeleteSocketFile();
     socket_.reset();
     socket_delegate_.reset();
     event_manager_ = NULL;
   }
 
-  UnixDomainSocket::AuthCallback MakeAuthCallback() {
+  UnixDomainListenSocket::AuthCallback MakeAuthCallback() {
     return base::Bind(&UserCanConnectCallback, allow_user_, event_manager_);
-  }
-
-  void DeleteSocketFile() {
-    ASSERT_FALSE(file_path_.empty());
-    base::DeleteFile(file_path_, false /* not recursive */);
   }
 
   SocketDescriptor CreateClientSocket() {
@@ -199,7 +197,8 @@ class UnixDomainSocketTestHelper : public testing::Test {
     strncpy(addr.sun_path, file_path_.value().c_str(), sizeof(addr.sun_path));
     addr_len = sizeof(sockaddr_un);
     if (connect(sock, reinterpret_cast<sockaddr*>(&addr), addr_len) != 0) {
-      LOG(ERROR) << "connect() error";
+      LOG(ERROR) << "connect() error: " << strerror(errno)
+                 << ": path=" << file_path_.value();
       return kInvalidSocket;
     }
     return sock;
@@ -212,43 +211,48 @@ class UnixDomainSocketTestHelper : public testing::Test {
     thread->StartWithOptions(options);
     thread->message_loop()->PostTask(
         FROM_HERE,
-        base::Bind(&UnixDomainSocketTestHelper::CreateAndListen,
+        base::Bind(&UnixDomainListenSocketTestHelper::CreateAndListen,
                    base::Unretained(this)));
     return thread.Pass();
   }
 
-  const base::FilePath file_path_;
+  base::ScopedTempDir temp_dir_;
+  base::FilePath file_path_;
   const bool allow_user_;
   scoped_refptr<EventManager> event_manager_;
   scoped_ptr<TestListenSocketDelegate> socket_delegate_;
-  scoped_ptr<UnixDomainSocket> socket_;
+  scoped_ptr<UnixDomainListenSocket> socket_;
 };
 
-class UnixDomainSocketTest : public UnixDomainSocketTestHelper {
+class UnixDomainListenSocketTest : public UnixDomainListenSocketTestHelper {
  protected:
-  UnixDomainSocketTest()
-      : UnixDomainSocketTestHelper(MakeSocketPath(), true /* allow user */) {}
+  UnixDomainListenSocketTest()
+      : UnixDomainListenSocketTestHelper(kSocketFilename,
+                                         true /* allow user */) {}
 };
 
-class UnixDomainSocketTestWithInvalidPath : public UnixDomainSocketTestHelper {
+class UnixDomainListenSocketTestWithInvalidPath
+    : public UnixDomainListenSocketTestHelper {
  protected:
-  UnixDomainSocketTestWithInvalidPath()
-      : UnixDomainSocketTestHelper(kInvalidSocketPath, true) {}
+  UnixDomainListenSocketTestWithInvalidPath()
+      : UnixDomainListenSocketTestHelper(kInvalidSocketPath, true) {}
 };
 
-class UnixDomainSocketTestWithForbiddenUser
-    : public UnixDomainSocketTestHelper {
+class UnixDomainListenSocketTestWithForbiddenUser
+    : public UnixDomainListenSocketTestHelper {
  protected:
-  UnixDomainSocketTestWithForbiddenUser()
-      : UnixDomainSocketTestHelper(MakeSocketPath(), false /* forbid user */) {}
+  UnixDomainListenSocketTestWithForbiddenUser()
+      : UnixDomainListenSocketTestHelper(kSocketFilename,
+                                         false /* forbid user */) {}
 };
 
-TEST_F(UnixDomainSocketTest, CreateAndListen) {
+TEST_F(UnixDomainListenSocketTest, CreateAndListen) {
   CreateAndListen();
   EXPECT_FALSE(socket_.get() == NULL);
 }
 
-TEST_F(UnixDomainSocketTestWithInvalidPath, CreateAndListenWithInvalidPath) {
+TEST_F(UnixDomainListenSocketTestWithInvalidPath,
+       CreateAndListenWithInvalidPath) {
   CreateAndListen();
   EXPECT_TRUE(socket_.get() == NULL);
 }
@@ -256,35 +260,35 @@ TEST_F(UnixDomainSocketTestWithInvalidPath, CreateAndListenWithInvalidPath) {
 #ifdef SOCKET_ABSTRACT_NAMESPACE_SUPPORTED
 // Test with an invalid path to make sure that the socket is not backed by a
 // file.
-TEST_F(UnixDomainSocketTestWithInvalidPath,
+TEST_F(UnixDomainListenSocketTestWithInvalidPath,
        CreateAndListenWithAbstractNamespace) {
-  socket_ = UnixDomainSocket::CreateAndListenWithAbstractNamespace(
+  socket_ = UnixDomainListenSocket::CreateAndListenWithAbstractNamespace(
       file_path_.value(), "", socket_delegate_.get(), MakeAuthCallback());
   EXPECT_FALSE(socket_.get() == NULL);
 }
 
-TEST_F(UnixDomainSocketTest, TestFallbackName) {
-  scoped_ptr<UnixDomainSocket> existing_socket =
-      UnixDomainSocket::CreateAndListenWithAbstractNamespace(
+TEST_F(UnixDomainListenSocketTest, TestFallbackName) {
+  scoped_ptr<UnixDomainListenSocket> existing_socket =
+      UnixDomainListenSocket::CreateAndListenWithAbstractNamespace(
           file_path_.value(), "", socket_delegate_.get(), MakeAuthCallback());
   EXPECT_FALSE(existing_socket.get() == NULL);
   // First, try to bind socket with the same name with no fallback name.
   socket_ =
-      UnixDomainSocket::CreateAndListenWithAbstractNamespace(
+      UnixDomainListenSocket::CreateAndListenWithAbstractNamespace(
           file_path_.value(), "", socket_delegate_.get(), MakeAuthCallback());
   EXPECT_TRUE(socket_.get() == NULL);
   // Now with a fallback name.
-  const char kFallbackSocketName[] = "unix_domain_socket_for_testing_2";
-  socket_ = UnixDomainSocket::CreateAndListenWithAbstractNamespace(
+  const char kFallbackSocketName[] = "socket_for_testing_2";
+  socket_ = UnixDomainListenSocket::CreateAndListenWithAbstractNamespace(
       file_path_.value(),
-      MakeSocketPath(kFallbackSocketName),
+      GetTempSocketPath(kFallbackSocketName).value(),
       socket_delegate_.get(),
       MakeAuthCallback());
   EXPECT_FALSE(socket_.get() == NULL);
 }
 #endif
 
-TEST_F(UnixDomainSocketTest, TestWithClient) {
+TEST_F(UnixDomainListenSocketTest, TestWithClient) {
   const scoped_ptr<base::Thread> server_thread = CreateAndRunServerThread();
   EventType event = event_manager_->WaitForEvent();
   ASSERT_EQ(EVENT_LISTEN, event);
@@ -311,7 +315,7 @@ TEST_F(UnixDomainSocketTest, TestWithClient) {
   ASSERT_EQ(EVENT_CLOSE, event);
 }
 
-TEST_F(UnixDomainSocketTestWithForbiddenUser, TestWithForbiddenUser) {
+TEST_F(UnixDomainListenSocketTestWithForbiddenUser, TestWithForbiddenUser) {
   const scoped_ptr<base::Thread> server_thread = CreateAndRunServerThread();
   EventType event = event_manager_->WaitForEvent();
   ASSERT_EQ(EVENT_LISTEN, event);
@@ -335,4 +339,5 @@ TEST_F(UnixDomainSocketTestWithForbiddenUser, TestWithForbiddenUser) {
 }
 
 }  // namespace
+}  // namespace deprecated
 }  // namespace net

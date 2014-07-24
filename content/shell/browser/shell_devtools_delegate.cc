@@ -29,7 +29,7 @@
 
 #if defined(OS_ANDROID)
 #include "content/public/browser/android/devtools_auth.h"
-#include "net/socket/unix_domain_socket_posix.h"
+#include "net/socket/unix_domain_listen_socket_posix.h"
 #endif
 
 using content::DevToolsAgentHost;
@@ -52,8 +52,9 @@ net::StreamListenSocketFactory* CreateSocketFactory() {
     socket_name = command_line.GetSwitchValueASCII(
         switches::kRemoteDebuggingSocketName);
   }
-  return new net::UnixDomainSocketWithAbstractNamespaceFactory(
-      socket_name, "", base::Bind(&content::CanUserConnectToDevTools));
+  return new net::deprecated::
+      UnixDomainListenSocketWithAbstractNamespaceFactory(
+          socket_name, "", base::Bind(&content::CanUserConnectToDevTools));
 #else
   // See if the user specified a port on the command line (useful for
   // automation). If not, use an ephemeral port by specifying 0.

@@ -14,7 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
 #include "base/values.h"
-#include "net/socket/unix_domain_socket_posix.h"
+#include "net/socket/unix_domain_listen_socket_posix.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/gnubby_socket.h"
 #include "remoting/proto/control.pb.h"
@@ -263,7 +263,7 @@ void GnubbyAuthHandlerPosix::CreateAuthorizationSocket() {
     HOST_LOG << "Listening for gnubby requests on "
              << g_gnubby_socket_name.Get().value();
 
-    auth_socket_ = net::UnixDomainSocket::CreateAndListen(
+    auth_socket_ = net::deprecated::UnixDomainListenSocket::CreateAndListen(
         g_gnubby_socket_name.Get().value(), this, base::Bind(MatchUid));
     if (!auth_socket_.get()) {
       LOG(ERROR) << "Failed to open socket for gnubby requests";
