@@ -200,6 +200,8 @@ class SyncEngine : public RemoteFileSyncService,
   scoped_ptr<RemoteChangeProcessorOnWorker> remote_change_processor_on_worker_;
 
   RemoteServiceState service_state_;
+  bool has_refresh_token_;
+  bool network_available_;
   bool sync_enabled_;
 
   // Delete them on worker.

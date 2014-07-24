@@ -51,9 +51,7 @@ SyncWorker::SyncWorker(
       sync_enabled_(false),
       default_conflict_resolution_policy_(
           CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN),
-      network_available_(false),
       extension_service_(extension_service),
-      has_refresh_token_(false),
       weak_ptr_factory_(this) {
   sequence_checker_.DetachFromSequence();
   DCHECK(base_dir_.IsAbsolute());
@@ -75,11 +73,6 @@ void SyncWorker::Initialize(scoped_ptr<SyncEngineContext> context) {
   task_manager_->Initialize(SYNC_STATUS_OK);
 
   PostInitializeTask();
-
-  net::NetworkChangeNotifier::ConnectionType type =
-      net::NetworkChangeNotifier::GetConnectionType();
-  network_available_ =
-      type != net::NetworkChangeNotifier::CONNECTION_NONE;
 }
 
 void SyncWorker::RegisterOrigin(
@@ -87,7 +80,7 @@ void SyncWorker::RegisterOrigin(
     const SyncStatusCallback& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
-  if (!GetMetadataDatabase() && has_refresh_token_)
+  if (!GetMetadataDatabase())
     PostInitializeTask();
 
   scoped_ptr<RegisterAppTask> task(
@@ -305,25 +298,10 @@ void SyncWorker::RecordTaskLog(scoped_ptr<TaskLogger::TaskLog> task_log) {
                  base::Passed(&task_log)));
 }
 
-void SyncWorker::OnNotificationReceived() {
+void SyncWorker::ActivateService(RemoteServiceState service_state,
+                                 const std::string& description) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-
-  if (service_state_ == REMOTE_SERVICE_TEMPORARY_UNAVAILABLE)
-    UpdateServiceState(REMOTE_SERVICE_OK, "Got push notification for Drive.");
-
-  should_check_remote_change_ = true;
-  MaybeScheduleNextTask();
-}
-
-void SyncWorker::OnReadyToSendRequests() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-
-  has_refresh_token_ = true;
-
-  if (service_state_ == REMOTE_SERVICE_OK)
-    return;
-  UpdateServiceState(REMOTE_SERVICE_OK, "Authenticated");
-
+  UpdateServiceState(service_state, description);
   if (!GetMetadataDatabase()) {
     PostInitializeTask();
     return;
@@ -333,31 +311,9 @@ void SyncWorker::OnReadyToSendRequests() {
   MaybeScheduleNextTask();
 }
 
-void SyncWorker::OnRefreshTokenInvalid() {
+void SyncWorker::DeactivateService(const std::string& description) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-
-  has_refresh_token_ = false;
-
-  UpdateServiceState(
-      REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
-      "Found invalid refresh token.");
-}
-
-void SyncWorker::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-
-  bool new_network_availability =
-      type != net::NetworkChangeNotifier::CONNECTION_NONE;
-
-  if (network_available_ && !new_network_availability) {
-    UpdateServiceState(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE, "Disconnected");
-  } else if (!network_available_ && new_network_availability) {
-    UpdateServiceState(REMOTE_SERVICE_OK, "Connected");
-    should_check_remote_change_ = true;
-    MaybeStartFetchChanges();
-  }
-  network_available_ = new_network_availability;
+  UpdateServiceState(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE, description);
 }
 
 void SyncWorker::DetachFromSequence() {
@@ -368,10 +324,6 @@ void SyncWorker::DetachFromSequence() {
 
 void SyncWorker::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
-}
-
-void SyncWorker::SetHasRefreshToken(bool has_refresh_token) {
-  has_refresh_token_ = has_refresh_token;
 }
 
 void SyncWorker::DoDisableApp(const std::string& app_id,
@@ -420,13 +372,8 @@ void SyncWorker::DidInitialize(SyncEngineInitializer* initializer,
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   if (status != SYNC_STATUS_OK) {
-    if (has_refresh_token_) {
-      UpdateServiceState(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE,
-                         "Could not initialize remote service");
-    } else {
-      UpdateServiceState(REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
-                         "Authentication required.");
-    }
+    UpdateServiceState(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE,
+                       "Could not initialize remote service");
     return;
   }
 
@@ -687,13 +634,8 @@ void SyncWorker::UpdateServiceStateFromSyncStatusCode(
     case SYNC_STATUS_NETWORK_ERROR:
     case SYNC_STATUS_ABORT:
     case SYNC_STATUS_FAILED:
-      if (has_refresh_token_) {
-        UpdateServiceState(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE,
-                           "Network or temporary service error.");
-      } else {
-        UpdateServiceState(REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
-                           "Authentication required");
-      }
+      UpdateServiceState(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE,
+                         "Network or temporary service error.");
       break;
 
     // Errors which would require manual user intervention to resolve.

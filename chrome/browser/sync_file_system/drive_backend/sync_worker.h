@@ -16,7 +16,6 @@
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/task_logger.h"
-#include "net/base/network_change_notifier.h"
 
 class ExtensionServiceInterface;
 class GURL;
@@ -96,11 +95,9 @@ class SyncWorker : public SyncWorkerInterface,
       const SyncFileMetadata& local_metadata,
       const fileapi::FileSystemURL& url,
       const SyncStatusCallback& callback) OVERRIDE;
-  virtual void OnNotificationReceived() OVERRIDE;
-  virtual void OnReadyToSendRequests() OVERRIDE;
-  virtual void OnRefreshTokenInvalid() OVERRIDE;
-  virtual void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
+  virtual void ActivateService(RemoteServiceState service_state,
+                               const std::string& description) OVERRIDE;
+  virtual void DeactivateService(const std::string& description) OVERRIDE;
   virtual void DetachFromSequence() OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
 
@@ -115,10 +112,6 @@ class SyncWorker : public SyncWorkerInterface,
   };
 
   typedef base::hash_map<std::string, AppStatus> AppStatusMap;
-
-  // SyncWorkerInterface overrides.
-  // TODO(peria): Remove this interface after making FakeSyncWorker class.
-  virtual void SetHasRefreshToken(bool has_refresh_token) OVERRIDE;
 
   void DoDisableApp(const std::string& app_id,
                     const SyncStatusCallback& callback);
@@ -169,7 +162,6 @@ class SyncWorker : public SyncWorkerInterface,
 
   bool sync_enabled_;
   ConflictResolutionPolicy default_conflict_resolution_policy_;
-  bool network_available_;
 
   scoped_ptr<SyncTaskManager> task_manager_;
 
@@ -177,8 +169,6 @@ class SyncWorker : public SyncWorkerInterface,
 
   scoped_ptr<SyncEngineContext> context_;
   ObserverList<Observer> observers_;
-
-  bool has_refresh_token_;
 
   base::SequenceChecker sequence_checker_;
 

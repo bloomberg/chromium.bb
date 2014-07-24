@@ -80,11 +80,9 @@ class FakeSyncWorker : public SyncWorkerInterface {
       const SyncFileMetadata& local_metadata,
       const fileapi::FileSystemURL& url,
       const SyncStatusCallback& callback) OVERRIDE;
-  virtual void OnNotificationReceived() OVERRIDE;
-  virtual void OnReadyToSendRequests() OVERRIDE;
-  virtual void OnRefreshTokenInvalid() OVERRIDE;
-  virtual void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
+  virtual void ActivateService(RemoteServiceState service_state,
+                               const std::string& description) OVERRIDE;
+  virtual void DeactivateService(const std::string& description) OVERRIDE;
   virtual void DetachFromSequence() OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
 
@@ -99,16 +97,11 @@ class FakeSyncWorker : public SyncWorkerInterface {
   };
   typedef std::map<GURL, AppStatus> StatusMap;
 
-  // TODO(peria): Change this method to be non-virtual.
-  virtual void SetHasRefreshToken(bool has_refresh_token) OVERRIDE;
-
   void UpdateServiceState(RemoteServiceState state,
                           const std::string& description);
 
   bool sync_enabled_;
   StatusMap status_map_;
-  bool has_refresh_token_;
-  bool network_available_;
 
   scoped_ptr<SyncEngineContext> sync_engine_context_;
 

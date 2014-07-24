@@ -63,6 +63,7 @@ class SyncEngineTest : public testing::Test,
         scoped_ptr<drive::DriveUploaderInterface>(),
         scoped_ptr<SyncWorkerInterface>(new FakeSyncWorker));
     sync_engine_->SetSyncEnabled(true);
+    sync_engine_->OnReadyToSendRequests();
 
     WaitForWorkerTaskRunner();
   }
