@@ -164,3 +164,4 @@ class VendorID(object):
 class ProductID(object):
   # TODO(reillyg): Get officially assigned IDs for these devices.
   GOOGLE_KEYBOARD_GADGET = 0x2001
+  GOOGLE_MOUSE_GADGET = 0x2002

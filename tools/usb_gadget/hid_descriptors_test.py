@@ -5,9 +5,9 @@
 
 import unittest
 
-import hid_constants
 import hid_descriptors
 import keyboard_gadget
+import mouse_gadget
 
 
 class HidTest(unittest.TestCase):
@@ -24,41 +24,6 @@ class HidTest(unittest.TestCase):
     self.assertEquals(keyboard_gadget.KeyboardFeature.REPORT_DESC, expected)
 
   def test_mouse_example(self):
-    report_desc = hid_descriptors.ReportDescriptor(
-        hid_descriptors.UsagePage(0x01),  # Generic Desktop
-        hid_descriptors.Usage(0x02),  # Mouse
-        hid_descriptors.Collection(
-            hid_constants.CollectionType.APPLICATION,
-            hid_descriptors.Usage(0x01),  # Pointer
-            hid_descriptors.Collection(
-                hid_constants.CollectionType.PHYSICAL,
-                hid_descriptors.UsagePage(0x09),  # Buttons
-                hid_descriptors.UsageMinimum(1),
-                hid_descriptors.UsageMaximum(3),
-                hid_descriptors.LogicalMinimum(0, force_length=1),
-                hid_descriptors.LogicalMaximum(1),
-                hid_descriptors.ReportCount(3),
-                hid_descriptors.ReportSize(1),
-                hid_descriptors.Input(hid_descriptors.Data,
-                                      hid_descriptors.Variable,
-                                      hid_descriptors.Absolute),
-                hid_descriptors.ReportCount(1),
-                hid_descriptors.ReportSize(5),
-                hid_descriptors.Input(hid_descriptors.Constant),
-                hid_descriptors.UsagePage(0x01),  # Generic Desktop
-                hid_descriptors.Usage(0x30),  # X
-                hid_descriptors.Usage(0x31),  # Y
-                hid_descriptors.LogicalMinimum(0x81),  # -127
-                hid_descriptors.LogicalMaximum(127),
-                hid_descriptors.ReportSize(8),
-                hid_descriptors.ReportCount(2),
-                hid_descriptors.Input(hid_descriptors.Data,
-                                      hid_descriptors.Variable,
-                                      hid_descriptors.Relative)
-            )
-        )
-    )
-
     expected = ''.join(chr(x) for x in [
         0x05, 0x01, 0x09, 0x02, 0xA1, 0x01, 0x09, 0x01, 0xA1, 0x00, 0x05, 0x09,
         0x19, 0x01, 0x29, 0x03, 0x15, 0x00, 0x25, 0x01, 0x95, 0x03, 0x75, 0x01,
@@ -66,7 +31,7 @@ class HidTest(unittest.TestCase):
         0x09, 0x31, 0x15, 0x81, 0x25, 0x7F, 0x75, 0x08, 0x95, 0x02, 0x81, 0x06,
         0xC0, 0xC0
     ])
-    self.assertEquals(report_desc, expected)
+    self.assertEquals(mouse_gadget.MouseFeature.REPORT_DESC, expected)
 
   def test_tag(self):
     self.assertEquals(hid_descriptors.Push(), '\xa4')
