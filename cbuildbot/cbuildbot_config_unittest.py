@@ -235,14 +235,6 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
             "%s is trying to run hw tests without uploading payloads." %
             build_name)
 
-  def testHWTestValidRetry(self):
-    """Verify that hw test only turn on retry when it waits for test results."""
-    for build_name, config in cbuildbot_config.config.iteritems():
-      for test_config in config['hw_tests']:
-        self.assertFalse(test_config.async and test_config.retry,
-                         '%s is trying to turn on retry for hw tests without '
-                         'waiting for test results.' % build_name)
-
   def testValidUnifiedMasterConfig(self):
     """Make sure any unified master configurations are valid."""
     for build_name, config in cbuildbot_config.config.iteritems():

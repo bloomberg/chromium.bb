@@ -459,23 +459,29 @@ class SimpleBuilder(Builder):
     self._RunStage(artifact_stages.UploadTestArtifactsStage, board,
                    builder_run=builder_run)
 
-    # We can not run hw tests without archiving the payloads.
-    stage_list = []
-    config = builder_run.config
-    if builder_run.options.archive:
-      for suite_config in config.hw_tests:
-        if suite_config.async:
-          stage_list.append([test_stages.ASyncHWTestStage, board, suite_config])
-        elif suite_config.suite == constants.HWTEST_AU_SUITE:
-          stage_list.append([test_stages.AUTestStage, board, suite_config])
-        elif suite_config.suite == constants.HWTEST_QAV_SUITE:
-          stage_list.append([test_stages.QATestStage, board, suite_config])
-        else:
-          stage_list.append([test_stages.HWTestStage, board, suite_config])
+    parallel_stages = []
 
-    stage_objs = [self._GetStageInstance(*x, builder_run=builder_run)
-                  for x in stage_list]
-    self._RunParallelStages(stage_objs)
+    # We can not run hw tests without archiving the payloads.
+    if builder_run.options.archive:
+      for suite_config in builder_run.config.hw_tests:
+        stage_class = None
+        if suite_config.async:
+          stage_class = test_stages.ASyncHWTestStage
+        elif suite_config.suite == constants.HWTEST_AU_SUITE:
+          stage_class = test_stages.AUTestStage
+        elif suite_config.suite == constants.HWTEST_QAV_SUITE:
+          stage_class = test_stages.QATestStage
+        else:
+          stage_class = test_stages.HWTestStage
+        new_stage = self._GetStageInstance(stage_class, board,
+                                           suite_config,
+                                           builder_run=builder_run)
+        if suite_config.blocking:
+          new_stage.Run()
+        else:
+          parallel_stages.append(new_stage)
+
+    self._RunParallelStages(parallel_stages)
 
   def _RunBackgroundStagesForBoardAndMarkAsSuccessful(self, builder_run, board):
     """Run background board-specific stages for the specified board.

@@ -646,16 +646,27 @@ class HWTestConfig(object):
   """Config object for hardware tests suites.
 
   Members:
-    timeout: Number of seconds to wait before timing out waiting for results.
+    suite: Name of the test suite to run.
+    timeout: Number of seconds to wait before timing out waiting for
+             results.
     pool: Pool to use for hw testing.
+    blocking: Suites that set this true run sequentially; each must pass
+              before the next begins.  Tests that set this false run in
+              parallel after all blocking tests have passed.
     async: Fire-and-forget suite.
-    warn_only: Failure on HW tests warns only (does not generate error). If set,
-               'critical' cannot be set.
+    warn_only: Failure on HW tests warns only (does not generate error).
     critical: Usually we consider structural failures here as OK.
-    num: Maximum number of devices to use when scheduling tests in the hw lab.
+    priority:  Priority at which tests in the suite will be scheduled in
+               the hw lab.
     file_bugs: Should we file bugs if a test fails in a suite run.
-    retry: Should we retry a test if a test fails in a suite run. Retry only
-           works when async is False.
+    num: Maximum number of DUTs to use when scheduling tests in the hw lab.
+    minimum_duts: minimum number of DUTs required for testing in the hw lab.
+    retry: Whether we should retry tests that fail in a suite run.
+
+  Some combinations of member settings are invalid:
+    * A suite config may not specify both blocking and async.
+    * A suite config may not specify both retry and async.
+    * A suite config may not specify both warn_only and critical.
   """
 
   DEFAULT_HW_TEST = 'bvt'
@@ -747,14 +758,17 @@ class HWTestConfig(object):
 
   def __init__(self, suite, num=constants.HWTEST_DEFAULT_NUM,
                pool=constants.HWTEST_MACH_POOL, timeout=DEFAULT_HW_TEST_TIMEOUT,
-               async=False, warn_only=False, critical=False, file_bugs=False,
-               priority=constants.HWTEST_BUILD_PRIORITY, retry=True,
-               minimum_duts=0):
+               async=False, warn_only=False, critical=False, blocking=False,
+               file_bugs=False, priority=constants.HWTEST_BUILD_PRIORITY,
+               retry=True, minimum_duts=0):
     """Constructor -- see members above."""
+    assert not async or (not blocking and not retry)
+    assert not warn_only or not critical
     self.suite = suite
     self.num = num
     self.pool = pool
     self.timeout = timeout
+    self.blocking = blocking
     self.async = async
     self.warn_only = warn_only
     self.critical = critical
@@ -762,7 +776,6 @@ class HWTestConfig(object):
     self.priority = priority
     self.retry = retry
     self.minimum_duts = minimum_duts
-    assert not (self.warn_only and self.critical)
 
   def SetBranchedValues(self):
     """Changes the HW Test timeout/priority values to branched values."""
