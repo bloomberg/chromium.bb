@@ -14,14 +14,19 @@ namespace {
 const SkColor kDragHandleColorNormal = SK_ColorGRAY;
 const SkColor kDragHandleColorHot = SK_ColorWHITE;
 
-class MinimizedHomeView : public views::View {
+// The small white bar in the middle of the minimized view. Does not reach to
+// events.
+class SmallBarView : public views::View {
  public:
-  explicit MinimizedHomeView(athena::MinimizedHomeDragDelegate* delegate)
-      : delegate_(delegate),
-        color_(SK_ColorTRANSPARENT) {
+  SmallBarView() : color_(SK_ColorTRANSPARENT) {
     SetColor(kDragHandleColorNormal);
   }
-  virtual ~MinimizedHomeView() {}
+
+  virtual ~SmallBarView() {}
+
+  void SetActive(bool active) {
+    SetColor(active ? kDragHandleColorHot : kDragHandleColorNormal);
+  }
 
  private:
   void SetColor(SkColor color) {
@@ -32,42 +37,64 @@ class MinimizedHomeView : public views::View {
     SchedulePaint();
   }
 
-  // views::View:
+  // views::View
   virtual gfx::Size GetPreferredSize() const OVERRIDE {
     const int kDragHandleWidth = 80;
     const int kDragHandleHeight = 4;
     return gfx::Size(kDragHandleWidth, kDragHandleHeight);
   }
 
+  SkColor color_;
+
+  DISALLOW_COPY_AND_ASSIGN(SmallBarView);
+};
+
+// This View shows an instance of SmallBarView in the middle, and reacts to
+// mouse and touch-gesture events.
+class MinimizedHomeView : public views::View {
+ public:
+  explicit MinimizedHomeView(athena::MinimizedHomeDragDelegate* delegate)
+      : delegate_(delegate),
+        bar_(new SmallBarView) {
+    set_background(views::Background::CreateSolidBackground(SK_ColorBLACK));
+    views::BoxLayout* layout =
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 2, 0);
+    layout->set_main_axis_alignment(
+        views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+    SetLayoutManager(layout);
+
+    AddChildView(bar_);
+  }
+  virtual ~MinimizedHomeView() {}
+
+ private:
+  // views::View:
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
     if (event.IsLeftMouseButton() && event.GetClickCount() == 1) {
       delegate_->OnDragUpCompleted();
-      SetColor(kDragHandleColorNormal);
+      bar_->SetActive(false);
       return true;
     }
     return false;
   }
 
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE {
-    SetColor(kDragHandleColorHot);
+    bar_->SetActive(true);
   }
 
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE {
-    SetColor(kDragHandleColorNormal);
+    bar_->SetActive(false);
   }
 
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
-    SkColor change_color = SK_ColorTRANSPARENT;
     if (event->type() == ui::ET_GESTURE_BEGIN &&
         event->details().touch_points() == 1) {
-      change_color = kDragHandleColorHot;
+      bar_->SetActive(true);
+      event->SetHandled();
+      return;
     } else if (event->type() == ui::ET_GESTURE_END &&
                event->details().touch_points() == 1) {
-      change_color = kDragHandleColorNormal;
-    }
-
-    if (change_color != SK_ColorTRANSPARENT) {
-      SetColor(change_color);
+      bar_->SetActive(false);
       event->SetHandled();
       return;
     }
@@ -79,12 +106,12 @@ class MinimizedHomeView : public views::View {
       const float kFlingCompletionVelocity = -100.f;
       if (details.velocity_y() < kFlingCompletionVelocity)
         delegate_->OnDragUpCompleted();
-      SetColor(kDragHandleColorNormal);
+      bar_->SetActive(false);
     }
   }
 
   athena::MinimizedHomeDragDelegate* delegate_;
-  SkColor color_;
+  SmallBarView* bar_;
 
   DISALLOW_COPY_AND_ASSIGN(MinimizedHomeView);
 };
@@ -94,17 +121,7 @@ class MinimizedHomeView : public views::View {
 namespace athena {
 
 views::View* CreateMinimizedHome(MinimizedHomeDragDelegate* delegate) {
-  views::View* content_view = new views::View;
-  content_view->set_background(
-      views::Background::CreateSolidBackground(SK_ColorBLACK));
-  views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 2, 0);
-  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-  content_view->SetLayoutManager(layout);
-
-  views::View* view = new MinimizedHomeView(delegate);
-  content_view->AddChildView(view);
-  return content_view;
+  return new MinimizedHomeView(delegate);
 }
 
 }  // namespace athena
