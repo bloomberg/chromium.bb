@@ -60,6 +60,10 @@ class MenuTestBase : public ViewEventTestBase,
   // Called once the menu is open.
   virtual void DoTestWithMenuOpen() = 0;
 
+  // Returns a bitmask of flags to use when creating the |menu_runner_|. By
+  // default, this is only views::MenuRunner::HAS_MNEMONICS.
+  virtual int GetMenuRunnerFlags();
+
   // ViewEventTestBase implementation.
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;

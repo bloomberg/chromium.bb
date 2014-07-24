@@ -572,7 +572,7 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
         copy_index);
     InMenuButton* paste = CreateAndConfigureButton(
         IDS_PASTE,
-        menu->use_new_menu() && menu->supports_new_separators_ ?
+        menu->use_new_menu() && menu->supports_new_separators() ?
             InMenuButtonBackground::CENTER_BUTTON :
             InMenuButtonBackground::RIGHT_BUTTON,
         paste_index);
@@ -654,7 +654,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
     zoom_label_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
 
     InMenuButtonBackground* center_bg = new InMenuButtonBackground(
-        menu->use_new_menu() && menu->supports_new_separators_ ?
+        menu->use_new_menu() && menu->supports_new_separators() ?
             InMenuButtonBackground::RIGHT_BUTTON :
             InMenuButtonBackground::CENTER_BUTTON,
         menu->use_new_menu());
@@ -946,17 +946,14 @@ class WrenchMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
 
 // WrenchMenu ------------------------------------------------------------------
 
-WrenchMenu::WrenchMenu(Browser* browser,
-                       bool use_new_menu,
-                       bool supports_new_separators)
+WrenchMenu::WrenchMenu(Browser* browser, int run_flags)
     : root_(NULL),
       browser_(browser),
       selected_menu_model_(NULL),
       selected_index_(0),
       bookmark_menu_(NULL),
       feedback_menu_item_(NULL),
-      use_new_menu_(use_new_menu),
-      supports_new_separators_(supports_new_separators) {
+      run_flags_(run_flags) {
   registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
                  content::Source<Profile>(browser_->profile()));
 }
@@ -985,8 +982,14 @@ void WrenchMenu::Init(ui::MenuModel* model) {
     DCHECK(command_id_to_entry_.find(i) == command_id_to_entry_.end());
 #endif  // defined(DEBUG)
 
-  menu_runner_.reset(
-      new views::MenuRunner(root_, views::MenuRunner::HAS_MNEMONICS));
+  int32 types = views::MenuRunner::HAS_MNEMONICS;
+  if (for_drop()) {
+    // We add NESTED_DRAG since currently the only operation to open the wrench
+    // menu for is an extension action drag, which is controlled by the child
+    // BrowserActionsContainer view.
+    types |= views::MenuRunner::FOR_DROP | views::MenuRunner::NESTED_DRAG;
+  }
+  menu_runner_.reset(new views::MenuRunner(root_, types));
 }
 
 void WrenchMenu::RunMenu(views::MenuButton* host) {
@@ -1009,6 +1012,11 @@ void WrenchMenu::RunMenu(views::MenuButton* host) {
   }
   if (selected_menu_model_)
     selected_menu_model_->ActivatedAt(selected_index_);
+}
+
+void WrenchMenu::CloseMenu() {
+  if (menu_runner_.get())
+    menu_runner_->Cancel();
 }
 
 bool WrenchMenu::IsShowing() {
@@ -1252,14 +1260,15 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
     // The button container menu items have a special height which we have to
     // use instead of the normal height.
     int height = 0;
-    if (use_new_menu_ &&
+    if (use_new_menu() &&
         (model->GetCommandIdAt(i) == IDC_CUT ||
          model->GetCommandIdAt(i) == IDC_ZOOM_MINUS))
       height = kMenuItemContainingButtonsHeight;
 
     scoped_ptr<ExtensionToolbarMenuView> extension_toolbar_menu_view;
     if (model->GetCommandIdAt(i) == IDC_EXTENSIONS_OVERFLOW_MENU) {
-      extension_toolbar_menu_view.reset(new ExtensionToolbarMenuView(browser_));
+      extension_toolbar_menu_view.reset(
+          new ExtensionToolbarMenuView(browser_, this));
       height = extension_toolbar_menu_view->GetPreferredSize().height();
     }
 
@@ -1363,7 +1372,7 @@ MenuItemView* WrenchMenu::AddMenuItem(MenuItemView* parent,
 
   if (menu_item) {
     // Flush all buttons to the right side of the menu for the new menu type.
-    menu_item->set_use_right_margin(!use_new_menu_);
+    menu_item->set_use_right_margin(!use_new_menu());
     menu_item->SetVisible(model->IsVisibleAt(model_index));
 
     if (menu_type == MenuModel::TYPE_COMMAND && model->HasIcons()) {

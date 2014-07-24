@@ -10,8 +10,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "ui/base/clipboard/clipboard.h"
 
-const char* BrowserActionDragData::kClipboardFormatString =
-    "chromium/x-browser-actions";
+namespace {
+
+// The MIME type for the clipboard format for BrowserActionDragData.
+const char kClipboardFormatString[] = "chromium/x-browser-actions";
+
+}
 
 BrowserActionDragData::BrowserActionDragData()
     : profile_(NULL), index_(static_cast<size_t>(-1)) {
@@ -22,7 +26,23 @@ BrowserActionDragData::BrowserActionDragData(
     : profile_(NULL), id_(id), index_(index) {
 }
 
-bool BrowserActionDragData::IsFromProfile(Profile* profile) const {
+bool BrowserActionDragData::GetDropFormats(
+    std::set<ui::OSExchangeData::CustomFormat>* custom_formats) {
+  custom_formats->insert(GetBrowserActionCustomFormat());
+  return true;
+}
+
+bool BrowserActionDragData::AreDropTypesRequired() {
+  return true;
+}
+
+bool BrowserActionDragData::CanDrop(const ui::OSExchangeData& data,
+                                    const Profile* profile) {
+  BrowserActionDragData drop_data;
+  return drop_data.Read(data) && drop_data.IsFromProfile(profile);
+}
+
+bool BrowserActionDragData::IsFromProfile(const Profile* profile) const {
   return profile_ == profile;
 }
 

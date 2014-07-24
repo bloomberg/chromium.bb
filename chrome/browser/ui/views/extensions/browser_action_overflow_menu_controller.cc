@@ -181,21 +181,17 @@ bool BrowserActionOverflowMenuController::GetDropFormats(
     views::MenuItemView* menu,
     int* formats,
     std::set<OSExchangeData::CustomFormat>* custom_formats) {
-  custom_formats->insert(BrowserActionDragData::GetBrowserActionCustomFormat());
-  return true;
+  return BrowserActionDragData::GetDropFormats(custom_formats);
 }
 
 bool BrowserActionOverflowMenuController::AreDropTypesRequired(
     views::MenuItemView* menu) {
-  return true;
+  return BrowserActionDragData::AreDropTypesRequired();
 }
 
 bool BrowserActionOverflowMenuController::CanDrop(
     views::MenuItemView* menu, const OSExchangeData& data) {
-  BrowserActionDragData drop_data;
-  if (!drop_data.Read(data))
-    return false;
-  return drop_data.IsFromProfile(owner_->profile());
+  return BrowserActionDragData::CanDrop(data, owner_->profile());
 }
 
 int BrowserActionOverflowMenuController::GetDropOperation(

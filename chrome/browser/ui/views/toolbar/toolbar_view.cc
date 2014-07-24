@@ -341,6 +341,37 @@ void ToolbarView::ShowBrowserActionPopup(
   browser_actions_->ShowPopup(extension, true);
 }
 
+void ToolbarView::ShowAppMenu(bool for_drop) {
+  if (wrench_menu_.get() && wrench_menu_->IsShowing())
+    return;
+
+  int run_flags = 0;
+  bool use_new_menu = false;
+  // TODO: remove this.
+#if !defined(OS_LINUX) || defined(OS_CHROMEOS)
+  if (GetNativeTheme() == ui::NativeThemeAura::instance()) {
+    use_new_menu = true;
+    run_flags |= WrenchMenu::SUPPORTS_NEW_SEPARATORS | WrenchMenu::USE_NEW_MENU;
+  }
+#endif
+
+  if (keyboard::KeyboardController::GetInstance() &&
+      keyboard::KeyboardController::GetInstance()->keyboard_visible()) {
+    keyboard::KeyboardController::GetInstance()->HideKeyboard(
+        keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
+  }
+
+  if (for_drop)
+    run_flags |= WrenchMenu::FOR_DROP;
+  wrench_menu_.reset(new WrenchMenu(browser_, run_flags));
+  wrench_menu_model_.reset(new WrenchMenuModel(this, browser_, use_new_menu));
+  wrench_menu_->Init(wrench_menu_model_.get());
+
+  FOR_EACH_OBSERVER(views::MenuListener, menu_listeners_, OnMenuOpened());
+
+  wrench_menu_->RunMenu(app_menu_);
+}
+
 views::MenuButton* ToolbarView::app_menu() const {
   return app_menu_;
 }
@@ -375,30 +406,7 @@ void ToolbarView::OnMenuButtonClicked(views::View* source,
                                       const gfx::Point& point) {
   TRACE_EVENT0("views", "ToolbarView::OnMenuButtonClicked");
   DCHECK_EQ(VIEW_ID_APP_MENU, source->id());
-
-  bool use_new_menu = false;
-  bool supports_new_separators = false;
-  // TODO: remove this.
-#if !defined(OS_LINUX) || defined(OS_CHROMEOS)
-  supports_new_separators =
-      GetNativeTheme() == ui::NativeThemeAura::instance();
-  use_new_menu = supports_new_separators;
-#endif
-
-  if (keyboard::KeyboardController::GetInstance() &&
-      keyboard::KeyboardController::GetInstance()->keyboard_visible()) {
-    keyboard::KeyboardController::GetInstance()->HideKeyboard(
-        keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
-  }
-
-  wrench_menu_.reset(new WrenchMenu(browser_, use_new_menu,
-                                    supports_new_separators));
-  wrench_menu_model_.reset(new WrenchMenuModel(this, browser_, use_new_menu));
-  wrench_menu_->Init(wrench_menu_model_.get());
-
-  FOR_EACH_OBSERVER(views::MenuListener, menu_listeners_, OnMenuOpened());
-
-  wrench_menu_->RunMenu(app_menu_);
+  ShowAppMenu(false);  // Not for drop.
 }
 
 ////////////////////////////////////////////////////////////////////////////////

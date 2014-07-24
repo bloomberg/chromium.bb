@@ -290,6 +290,7 @@ MenuItemView* MenuController::Run(Widget* parent,
                                   const gfx::Rect& bounds,
                                   MenuAnchorPosition position,
                                   bool context_menu,
+                                  bool is_nested_drag,
                                   int* result_event_flags) {
   exit_type_ = EXIT_NONE;
   possible_drag_ = false;
@@ -348,9 +349,11 @@ MenuItemView* MenuController::Run(Widget* parent,
   SetSelection(root, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
 
   if (!blocking_run_) {
-    // Start the timer to hide the menu. This is needed as we get no
-    // notification when the drag has finished.
-    StartCancelAllTimer();
+    if (!is_nested_drag) {
+      // Start the timer to hide the menu. This is needed as we get no
+      // notification when the drag has finished.
+      StartCancelAllTimer();
+    }
     return NULL;
   }
 
@@ -813,6 +816,10 @@ void MenuController::OnWidgetDestroying(Widget* widget) {
   owner_->RemoveObserver(this);
   owner_ = NULL;
   message_loop_->ClearOwner();
+}
+
+bool MenuController::IsCancelAllTimerRunningForTest() {
+  return cancel_all_timer_.IsRunning();
 }
 
 // static

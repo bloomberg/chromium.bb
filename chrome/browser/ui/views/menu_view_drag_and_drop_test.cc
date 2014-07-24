@@ -7,7 +7,9 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/view.h"
 
@@ -343,6 +345,9 @@ void MenuViewDragAndDropTestTestInMenuDrag::Step4() {
   Done();
 }
 
+// Test that an in-menu (i.e., entirely implemented in the menu code) closes the
+// menu automatically once the drag is complete, and does not ask the delegate
+// to stay open.
 VIEW_TEST(MenuViewDragAndDropTestTestInMenuDrag, MAYBE(TestInMenuDrag))
 
 class MenuViewDragAndDropTestNestedDrag : public MenuViewDragAndDropTest {
@@ -438,5 +443,72 @@ void MenuViewDragAndDropTestNestedDrag::Step4() {
   Done();
 }
 
+// Test that a nested drag (i.e. one via a child view, and not entirely
+// implemented in menu code) will consult the delegate before closing the view
+// after the drag.
 VIEW_TEST(MenuViewDragAndDropTestNestedDrag,
           MAYBE(MenuViewDragAndDropNestedDrag))
+
+class MenuViewDragAndDropForDropStayOpen : public MenuViewDragAndDropTest {
+ public:
+  MenuViewDragAndDropForDropStayOpen() {}
+  virtual ~MenuViewDragAndDropForDropStayOpen() {}
+
+ private:
+  // MenuViewDragAndDropTest:
+  virtual int GetMenuRunnerFlags() OVERRIDE;
+  virtual void DoTestWithMenuOpen() OVERRIDE;
+};
+
+int MenuViewDragAndDropForDropStayOpen::GetMenuRunnerFlags() {
+  return views::MenuRunner::HAS_MNEMONICS |
+         views::MenuRunner::NESTED_DRAG |
+         views::MenuRunner::FOR_DROP;
+}
+
+void MenuViewDragAndDropForDropStayOpen::DoTestWithMenuOpen() {
+  views::SubmenuView* submenu = menu()->GetSubmenu();
+  ASSERT_TRUE(submenu);
+  ASSERT_TRUE(submenu->IsShowing());
+
+  views::MenuController* controller = menu()->GetMenuController();
+  ASSERT_TRUE(controller);
+  EXPECT_FALSE(controller->IsCancelAllTimerRunningForTest());
+
+  Done();
+}
+
+// Test that if a menu is opened for a drop which is handled by a child view
+// that the menu does not immediately try to close.
+VIEW_TEST(MenuViewDragAndDropForDropStayOpen, MenuViewStaysOpenForNestedDrag)
+
+class MenuViewDragAndDropForDropCancel : public MenuViewDragAndDropTest {
+ public:
+  MenuViewDragAndDropForDropCancel() {}
+  virtual ~MenuViewDragAndDropForDropCancel() {}
+
+ private:
+  // MenuViewDragAndDropTest:
+  virtual int GetMenuRunnerFlags() OVERRIDE;
+  virtual void DoTestWithMenuOpen() OVERRIDE;
+};
+
+int MenuViewDragAndDropForDropCancel::GetMenuRunnerFlags() {
+  return views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::FOR_DROP;
+}
+
+void MenuViewDragAndDropForDropCancel::DoTestWithMenuOpen() {
+  views::SubmenuView* submenu = menu()->GetSubmenu();
+  ASSERT_TRUE(submenu);
+  ASSERT_TRUE(submenu->IsShowing());
+
+  views::MenuController* controller = menu()->GetMenuController();
+  ASSERT_TRUE(controller);
+  EXPECT_TRUE(controller->IsCancelAllTimerRunningForTest());
+
+  Done();
+}
+
+// Test that if a menu is opened for a drop handled entirely by menu code, the
+// menu will try to close if it does not receive any drag updates.
+VIEW_TEST(MenuViewDragAndDropForDropCancel, MenuViewCancelsForOwnDrag)

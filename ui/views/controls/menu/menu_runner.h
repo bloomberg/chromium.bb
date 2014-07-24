@@ -82,6 +82,12 @@ class VIEWS_EXPORT MenuRunner {
     // The menu should behave like a Windows native Combobox dropdow menu.
     // This behavior includes accepting the pending item and closing on F4.
     COMBOBOX  = 1 << 4,
+
+    // A child view is performing a drag-and-drop operation, so the menu should
+    // stay open (even if it doesn't receive drag updated events). In this case,
+    // the caller is responsible for closing the menu upon completion of the
+    // drag-and-drop.
+    NESTED_DRAG = 1 << 5,
   };
 
   enum RunResult {
