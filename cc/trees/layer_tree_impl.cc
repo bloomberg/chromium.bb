@@ -723,6 +723,13 @@ LayerImpl* LayerTreeImpl::FindPendingTreeLayerById(int id) {
   return tree->LayerById(id);
 }
 
+LayerImpl* LayerTreeImpl::FindRecycleTreeLayerById(int id) {
+  LayerTreeImpl* tree = layer_tree_host_impl_->recycle_tree();
+  if (!tree)
+    return NULL;
+  return tree->LayerById(id);
+}
+
 int LayerTreeImpl::MaxTextureSize() const {
   return layer_tree_host_impl_->GetRendererCapabilities().max_texture_size;
 }

@@ -296,6 +296,7 @@ class CC_EXPORT LayerTreeHostImpl
   const LayerTreeImpl* active_tree() const { return active_tree_.get(); }
   LayerTreeImpl* pending_tree() { return pending_tree_.get(); }
   const LayerTreeImpl* pending_tree() const { return pending_tree_.get(); }
+  LayerTreeImpl* recycle_tree() { return recycle_tree_.get(); }
   const LayerTreeImpl* recycle_tree() const { return recycle_tree_.get(); }
   // Returns the tree LTH synchronizes with.
   LayerTreeImpl* sync_tree() {
