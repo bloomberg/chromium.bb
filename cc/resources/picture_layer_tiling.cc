@@ -481,9 +481,6 @@ void PictureLayerTiling::UpdateTilePriorities(
   last_impl_frame_time_in_seconds_ = current_frame_time_in_seconds;
   last_visible_rect_in_content_space_ = visible_rect_in_content_space;
 
-  current_visible_rect_in_content_space_ = visible_rect_in_content_space;
-  current_skewport_ = skewport;
-  current_eventually_rect_ = eventually_rect;
   eviction_tiles_cache_valid_ = false;
 
   TilePriority now_priority(resolution_, TilePriority::NOW, 0);
@@ -560,11 +557,11 @@ void PictureLayerTiling::UpdateTilePriorities(
   }
 
   // Upgrade the priority on border tiles to be SOON.
-  current_soon_border_rect_ = visible_rect_in_content_space;
+  gfx::Rect soon_border_rect = visible_rect_in_content_space;
   float border = kSoonBorderDistanceInScreenPixels / content_to_screen_scale;
-  current_soon_border_rect_.Inset(-border, -border, -border, -border);
+  soon_border_rect.Inset(-border, -border, -border, -border);
   for (TilingData::DifferenceIterator iter(
-           &tiling_data_, current_soon_border_rect_, skewport);
+           &tiling_data_, soon_border_rect, skewport);
        iter;
        ++iter) {
     TileMap::iterator find = tiles_.find(iter.index());
@@ -577,6 +574,12 @@ void PictureLayerTiling::UpdateTilePriorities(
                           tile->priority(tree).distance_to_visible);
     tile->SetPriority(tree, priority);
   }
+
+  // Update iteration rects.
+  current_visible_rect_ = visible_rect_in_content_space;
+  current_skewport_rect_ = skewport;
+  current_soon_border_rect_ = soon_border_rect;
+  current_eventually_rect_ = eventually_rect;
 }
 
 void PictureLayerTiling::SetLiveTilesRect(
@@ -838,9 +841,8 @@ PictureLayerTiling::TilingRasterTileIterator::TilingRasterTileIterator(
     WhichTree tree)
     : tiling_(tiling),
       type_(TilePriority::NOW),
-      visible_rect_in_content_space_(
-          tiling_->current_visible_rect_in_content_space_),
-      skewport_in_content_space_(tiling_->current_skewport_),
+      visible_rect_in_content_space_(tiling_->current_visible_rect_),
+      skewport_in_content_space_(tiling_->current_skewport_rect_),
       eventually_rect_in_content_space_(tiling_->current_eventually_rect_),
       soon_border_rect_in_content_space_(tiling_->current_soon_border_rect_),
       tree_(tree),

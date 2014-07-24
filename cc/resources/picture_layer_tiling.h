@@ -300,10 +300,11 @@ class CC_EXPORT PictureLayerTiling {
   double last_impl_frame_time_in_seconds_;
   gfx::Rect last_visible_rect_in_content_space_;
 
-  gfx::Rect current_visible_rect_in_content_space_;
-  gfx::Rect current_skewport_;
-  gfx::Rect current_eventually_rect_;
+  // Iteration rects in content space
+  gfx::Rect current_visible_rect_;
+  gfx::Rect current_skewport_rect_;
   gfx::Rect current_soon_border_rect_;
+  gfx::Rect current_eventually_rect_;
 
   std::vector<Tile*> eviction_tiles_cache_;
   bool eviction_tiles_cache_valid_;
