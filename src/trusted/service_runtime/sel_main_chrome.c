@@ -18,7 +18,6 @@
 #include <string.h>
 
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/public/embedder_interface.h"
 #include "native_client/src/public/nacl_app.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
@@ -54,13 +53,6 @@ void NaClChromeMainSetUrandomFd(int urandom_fd) {
   NaClSecureRngModuleSetUrandomFd(urandom_fd);
 }
 #endif
-
-void NaClFatalLogHandlerCallback(void *state,
-                                 char *buf,
-                                 size_t buf_bytes) {
-  struct NaClApp *nap = (struct NaClApp *)state;
-  nap->embedder_interface->LogFatalMessage(buf, buf_bytes);
-}
 
 void NaClChromeMainInit(void) {
   CHECK(!g_initialized);
@@ -101,7 +93,6 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
   args->prereserved_sandbox_size = 0;
 #endif
   args->nexe_desc = NULL;
-  args->embedder_interface = NULL;
   return args;
 }
 
@@ -154,16 +145,8 @@ static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
 
   CHECK(g_initialized);
 
-  /* Inject the embedder interface, if it exists. */
-  nap->embedder_interface = args->embedder_interface;
-
-  if (args->embedder_interface != NULL &&
-      args->embedder_interface->LogFatalMessage != NULL) {
-    NaClErrorLogHookInit(NaClFatalLogHandlerCallback, nap);
-  } else {
-    NaClBootstrapChannelErrorReporterInit();
-    NaClErrorLogHookInit(NaClBootstrapChannelErrorReporter, nap);
-  }
+  NaClBootstrapChannelErrorReporterInit();
+  NaClErrorLogHookInit(NaClBootstrapChannelErrorReporter, nap);
 
   /* Allow or disallow dyncode API based on args. */
   nap->enable_dyncode_syscalls = args->enable_dyncode_syscalls;

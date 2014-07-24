@@ -19,7 +19,6 @@
 EXTERN_C_BEGIN
 
 struct NaClApp;
-struct NaClEmbedderInterface;
 struct NaClValidationCache;
 
 
@@ -173,9 +172,6 @@ struct NaClChromeMainArgs {
    * may be NULL if SRPC is used for module loading.
    */
   struct NaClDesc *nexe_desc;
-
-  /* Embedder reverse interface. Optional; may be NULL. */
-  const struct NaClEmbedderInterface *embedder_interface;
 };
 
 #if NACL_LINUX || NACL_OSX
