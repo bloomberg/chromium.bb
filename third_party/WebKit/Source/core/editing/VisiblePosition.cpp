@@ -457,7 +457,7 @@ VisiblePosition VisiblePosition::honorEditingBoundaryAtOrBefore(const VisiblePos
     if (pos.isNull())
         return pos;
 
-    Node* highestRoot = highestEditableRoot(deepEquivalent());
+    ContainerNode* highestRoot = highestEditableRoot(deepEquivalent());
 
     // Return empty position if pos is not somewhere inside the editable region containing this position
     if (highestRoot && !pos.deepEquivalent().deprecatedNode()->isDescendantOf(highestRoot))
@@ -483,7 +483,7 @@ VisiblePosition VisiblePosition::honorEditingBoundaryAtOrAfter(const VisiblePosi
     if (pos.isNull())
         return pos;
 
-    Node* highestRoot = highestEditableRoot(deepEquivalent());
+    ContainerNode* highestRoot = highestEditableRoot(deepEquivalent());
 
     // Return empty position if pos is not somewhere inside the editable region containing this position
     if (highestRoot && !pos.deepEquivalent().deprecatedNode()->isDescendantOf(highestRoot))
@@ -509,8 +509,8 @@ VisiblePosition VisiblePosition::skipToStartOfEditingBoundary(const VisiblePosit
     if (pos.isNull())
         return pos;
 
-    Node* highestRoot = highestEditableRoot(deepEquivalent());
-    Node* highestRootOfPos = highestEditableRoot(pos.deepEquivalent());
+    ContainerNode* highestRoot = highestEditableRoot(deepEquivalent());
+    ContainerNode* highestRootOfPos = highestEditableRoot(pos.deepEquivalent());
 
     // Return pos itself if the two are from the very same editable region, or both are non-editable.
     if (highestRootOfPos == highestRoot)
@@ -529,8 +529,8 @@ VisiblePosition VisiblePosition::skipToEndOfEditingBoundary(const VisiblePositio
     if (pos.isNull())
         return pos;
 
-    Node* highestRoot = highestEditableRoot(deepEquivalent());
-    Node* highestRootOfPos = highestEditableRoot(pos.deepEquivalent());
+    ContainerNode* highestRoot = highestEditableRoot(deepEquivalent());
+    ContainerNode* highestRootOfPos = highestEditableRoot(pos.deepEquivalent());
 
     // Return pos itself if the two are from the very same editable region, or both are non-editable.
     if (highestRootOfPos == highestRoot)

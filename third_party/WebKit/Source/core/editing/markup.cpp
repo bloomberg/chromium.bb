@@ -53,6 +53,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/HTMLSpanElement.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/rendering/RenderObject.h"
@@ -238,7 +239,7 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
     if (!shouldAnnotate() || parentIsTextarea)
         MarkupAccumulator::appendText(out, text);
     else {
-        const bool useRenderedText = !enclosingNodeWithTag(firstPositionInNode(&text), selectTag);
+        const bool useRenderedText = !enclosingElementWithTag(firstPositionInNode(&text), selectTag);
         String content = useRenderedText ? renderedText(text, m_range) : stringValueForRange(text, m_range);
         StringBuilder buffer;
         appendCharactersReplacingEntities(buffer, content, 0, content.length(), EntityMaskInPCDATA);
@@ -380,7 +381,7 @@ Node* StyledMarkupAccumulator::traverseNodesForSerialization(Node* startNode, No
             // Don't write out empty block containers that aren't fully selected.
             continue;
 
-        if (!n->renderer() && !enclosingNodeWithTag(firstPositionInOrBeforeNode(n), selectTag) && m_shouldAnnotate != AnnotateForNavigationTransition) {
+        if (!n->renderer() && !enclosingElementWithTag(firstPositionInOrBeforeNode(n), selectTag) && m_shouldAnnotate != AnnotateForNavigationTransition) {
             next = NodeTraversal::nextSkippingChildren(*n);
             // Don't skip over pastEnd.
             if (pastEnd && pastEnd->isDescendantOf(n))
@@ -551,10 +552,10 @@ static Node* highestAncestorToWrapMarkup(const Range* range, EAnnotateForInterch
     // any tab span that needs to be included.
     if (!specialCommonAncestor && isTabSpanTextNode(commonAncestor))
         specialCommonAncestor = commonAncestor->parentNode();
-    if (!specialCommonAncestor && isTabSpanNode(commonAncestor))
+    if (!specialCommonAncestor && isTabSpanElement(commonAncestor))
         specialCommonAncestor = commonAncestor;
 
-    if (Node *enclosingAnchor = enclosingNodeWithTag(firstPositionInNode(specialCommonAncestor ? specialCommonAncestor : commonAncestor), aTag))
+    if (Element* enclosingAnchor = enclosingElementWithTag(firstPositionInNode(specialCommonAncestor ? specialCommonAncestor : commonAncestor), aTag))
         specialCommonAncestor = enclosingAnchor;
 
     return specialCommonAncestor;
@@ -578,7 +579,7 @@ static String createMarkupInternal(Document& document, const Range* range, const
 
     document.updateLayoutIgnorePendingStylesheets();
 
-    Node* body = enclosingNodeWithTag(firstPositionInNode(commonAncestor), bodyTag);
+    Element* body = enclosingElementWithTag(firstPositionInNode(commonAncestor), bodyTag);
     Node* fullySelectedRoot = 0;
     // FIXME: Do this for all fully selected blocks, not just the body.
     if (body && areRangesEqual(VisibleSelection::selectionFromContentsOfNode(body).toNormalizedRange().get(), range))

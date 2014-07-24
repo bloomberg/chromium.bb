@@ -228,12 +228,12 @@ static bool expandSelectionToGranularity(LocalFrame& frame, TextGranularity gran
 static TriState selectionListState(const FrameSelection& selection, const QualifiedName& tagName)
 {
     if (selection.isCaret()) {
-        if (enclosingNodeWithTag(selection.selection().start(), tagName))
+        if (enclosingElementWithTag(selection.selection().start(), tagName))
             return TrueTriState;
     } else if (selection.isRange()) {
-        Node* startNode = enclosingNodeWithTag(selection.selection().start(), tagName);
-        Node* endNode = enclosingNodeWithTag(selection.selection().end(), tagName);
-        if (startNode && endNode && startNode == endNode)
+        Element* startElement = enclosingElementWithTag(selection.selection().start(), tagName);
+        Element* endElement = enclosingElementWithTag(selection.selection().end(), tagName);
+        if (startElement && endElement && startElement == endElement)
             return TrueTriState;
     }
 

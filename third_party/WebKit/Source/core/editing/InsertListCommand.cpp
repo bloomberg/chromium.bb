@@ -324,8 +324,8 @@ static Element* adjacentEnclosingList(const VisiblePosition& pos, const VisibleP
     if (!listNode)
         return 0;
 
-    Node* previousCell = enclosingTableCell(pos.deepEquivalent());
-    Node* currentCell = enclosingTableCell(adjacentPos.deepEquivalent());
+    Element* previousCell = enclosingTableCell(pos.deepEquivalent());
+    Element* currentCell = enclosingTableCell(adjacentPos.deepEquivalent());
 
     if (!listNode->hasTagName(listTag)
         || listNode->contains(pos.deepEquivalent().deprecatedNode())

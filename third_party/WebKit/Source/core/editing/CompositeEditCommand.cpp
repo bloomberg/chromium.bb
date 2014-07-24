@@ -64,6 +64,7 @@
 #include "core/events/ScopedEventQueue.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/HTMLSpanElement.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderListItem.h"
@@ -540,7 +541,7 @@ Position CompositeEditCommand::positionOutsideTabSpan(const Position& pos)
         return positionInParentAfterNode(*pos.anchorNode());
     }
 
-    Node* tabSpan = tabSpanNode(pos.containerNode());
+    HTMLSpanElement* tabSpan = tabSpanElement(pos.containerNode());
     ASSERT(tabSpan);
 
     if (pos.offsetInContainerNode() <= caretMinOffset(pos.containerNode()))

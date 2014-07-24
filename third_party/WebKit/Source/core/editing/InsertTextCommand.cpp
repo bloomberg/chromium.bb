@@ -33,6 +33,7 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/frame/LocalFrame.h"
+#include "core/html/HTMLSpanElement.h"
 
 namespace blink {
 
@@ -243,15 +244,15 @@ Position InsertTextCommand::insertTab(const Position& pos)
     }
 
     // create new tab span
-    RefPtrWillBeRawPtr<Element> spanNode = createTabSpanElement(document());
+    RefPtrWillBeRawPtr<HTMLSpanElement> spanElement = createTabSpanElement(document());
 
     // place it
     if (!node->isTextNode()) {
-        insertNodeAt(spanNode.get(), insertPos);
+        insertNodeAt(spanElement.get(), insertPos);
     } else {
         RefPtrWillBeRawPtr<Text> textNode = toText(node);
         if (offset >= textNode->length())
-            insertNodeAfter(spanNode, textNode.release());
+            insertNodeAfter(spanElement, textNode.release());
         else {
             // split node to make room for the span
             // NOTE: splitTextNode uses textNode for the
@@ -259,12 +260,12 @@ Position InsertTextCommand::insertTab(const Position& pos)
             // insert the span before it.
             if (offset > 0)
                 splitTextNode(textNode, offset);
-            insertNodeBefore(spanNode, textNode.release());
+            insertNodeBefore(spanElement, textNode.release());
         }
     }
 
     // return the position following the new tab
-    return lastPositionInNode(spanNode.get());
+    return lastPositionInNode(spanElement.get());
 }
 
 }

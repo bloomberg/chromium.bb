@@ -636,7 +636,7 @@ void ReplaceSelectionCommand::makeInsertedContentRoundTrippableWithHTMLTreeBuild
             continue;
 
         if (isProhibitedParagraphChild(toHTMLElement(node)->localName())) {
-            if (HTMLElement* paragraphElement = toHTMLElement(enclosingNodeWithTag(positionInParentBeforeNode(*node), pTag)))
+            if (HTMLElement* paragraphElement = toHTMLElement(enclosingElementWithTag(positionInParentBeforeNode(*node), pTag)))
                 moveNodeOutOfAncestor(node, paragraphElement);
         }
 
@@ -647,7 +647,7 @@ void ReplaceSelectionCommand::makeInsertedContentRoundTrippableWithHTMLTreeBuild
     }
 }
 
-void ReplaceSelectionCommand::moveNodeOutOfAncestor(PassRefPtrWillBeRawPtr<Node> prpNode, PassRefPtrWillBeRawPtr<Node> prpAncestor)
+void ReplaceSelectionCommand::moveNodeOutOfAncestor(PassRefPtrWillBeRawPtr<Node> prpNode, PassRefPtrWillBeRawPtr<ContainerNode> prpAncestor)
 {
     RefPtrWillBeRawPtr<Node> node = prpNode;
     RefPtrWillBeRawPtr<Node> ancestor = prpAncestor;
@@ -683,8 +683,8 @@ void ReplaceSelectionCommand::removeUnrenderedTextNodesAtEnds(InsertedNodes& ins
 
     Node* lastLeafInserted = insertedNodes.lastLeafInserted();
     if (lastLeafInserted && lastLeafInserted->isTextNode() && !nodeHasVisibleRenderText(toText(*lastLeafInserted))
-        && !enclosingNodeWithTag(firstPositionInOrBeforeNode(lastLeafInserted), selectTag)
-        && !enclosingNodeWithTag(firstPositionInOrBeforeNode(lastLeafInserted), scriptTag)) {
+        && !enclosingElementWithTag(firstPositionInOrBeforeNode(lastLeafInserted), selectTag)
+        && !enclosingElementWithTag(firstPositionInOrBeforeNode(lastLeafInserted), scriptTag)) {
         insertedNodes.willRemoveNode(*lastLeafInserted);
         removeNode(lastLeafInserted);
     }
@@ -701,7 +701,7 @@ void ReplaceSelectionCommand::removeUnrenderedTextNodesAtEnds(InsertedNodes& ins
 VisiblePosition ReplaceSelectionCommand::positionAtEndOfInsertedContent() const
 {
     // FIXME: Why is this hack here?  What's special about <select> tags?
-    Node* enclosingSelect = enclosingNodeWithTag(m_endOfInsertedContent, selectTag);
+    Element* enclosingSelect = enclosingElementWithTag(m_endOfInsertedContent, selectTag);
     return VisiblePosition(enclosingSelect ? lastPositionInOrAfterNode(enclosingSelect) : m_endOfInsertedContent);
 }
 
@@ -899,8 +899,8 @@ static bool isInlineNodeWithStyle(const Node* node)
 
 inline Node* nodeToSplitToAvoidPastingIntoInlineNodesWithStyle(const Position& insertionPos)
 {
-    Node* containgBlock = enclosingBlock(insertionPos.containerNode());
-    return highestEnclosingNodeOfType(insertionPos, isInlineNodeWithStyle, CannotCrossEditingBoundary, containgBlock);
+    Element* containingBlock = enclosingBlock(insertionPos.containerNode());
+    return highestEnclosingNodeOfType(insertionPos, isInlineNodeWithStyle, CannotCrossEditingBoundary, containingBlock);
 }
 
 void ReplaceSelectionCommand::doApply()
@@ -1149,7 +1149,7 @@ void ReplaceSelectionCommand::doApply()
         insertNodeAt(createBreakElement(document()).get(), startOfInsertedContent.deepEquivalent());
 
     if (endBR && (plainTextFragment || (shouldRemoveEndBR(endBR, originalVisPosBeforeEndBR) && !(fragment.hasInterchangeNewlineAtEnd() && selectionIsPlainText)))) {
-        RefPtrWillBeRawPtr<Node> parent = endBR->parentNode();
+        RefPtrWillBeRawPtr<ContainerNode> parent = endBR->parentNode();
         insertedNodes.willRemoveNode(*endBR);
         removeNode(endBR);
         if (Node* nodeToRemove = highestNodeToRemoveInPruning(parent.get())) {

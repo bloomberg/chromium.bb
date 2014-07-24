@@ -588,11 +588,11 @@ void VisibleSelection::adjustSelectionToAvoidCrossingEditingBoundaries()
     if (m_base.isNull() || m_start.isNull() || m_end.isNull())
         return;
 
-    Node* baseRoot = highestEditableRoot(m_base);
-    Node* startRoot = highestEditableRoot(m_start);
-    Node* endRoot = highestEditableRoot(m_end);
+    ContainerNode* baseRoot = highestEditableRoot(m_base);
+    ContainerNode* startRoot = highestEditableRoot(m_start);
+    ContainerNode* endRoot = highestEditableRoot(m_end);
 
-    Node* baseEditableAncestor = lowestEditableAncestor(m_base.containerNode());
+    Element* baseEditableAncestor = lowestEditableAncestor(m_base.containerNode());
 
     // The base, start and end are all in the same region.  No adjustment necessary.
     if (baseRoot == startRoot && baseRoot == endRoot)
@@ -627,7 +627,7 @@ void VisibleSelection::adjustSelectionToAvoidCrossingEditingBoundaries()
 
         // The selection ends in editable content or non-editable content inside a different editable ancestor,
         // move backward until non-editable content inside the same lowest editable ancestor is reached.
-        Node* endEditableAncestor = lowestEditableAncestor(m_end.containerNode());
+        Element* endEditableAncestor = lowestEditableAncestor(m_end.containerNode());
         if (endRoot || endEditableAncestor != baseEditableAncestor) {
 
             Position p = previousVisuallyDistinctCandidate(m_end);
@@ -657,7 +657,7 @@ void VisibleSelection::adjustSelectionToAvoidCrossingEditingBoundaries()
 
         // The selection starts in editable content or non-editable content inside a different editable ancestor,
         // move forward until non-editable content inside the same lowest editable ancestor is reached.
-        Node* startEditableAncestor = lowestEditableAncestor(m_start.containerNode());
+        Element* startEditableAncestor = lowestEditableAncestor(m_start.containerNode());
         if (startRoot || startEditableAncestor != baseEditableAncestor) {
             Position p = nextVisuallyDistinctCandidate(m_start);
             Node* shadowAncestor = startRoot ? startRoot->shadowHost() : 0;

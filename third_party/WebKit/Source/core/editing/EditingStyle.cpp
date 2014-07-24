@@ -53,6 +53,7 @@
 #include "core/editing/htmlediting.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFontElement.h"
+#include "core/html/HTMLSpanElement.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
@@ -455,8 +456,8 @@ static int textAlignResolvingStartAndEnd(T* style)
 void EditingStyle::init(Node* node, PropertiesToInclude propertiesToInclude)
 {
     if (isTabSpanTextNode(node))
-        node = tabSpanNode(node)->parentNode();
-    else if (isTabSpanNode(node))
+        node = tabSpanElement(node)->parentNode();
+    else if (isTabSpanElement(node))
         node = node->parentNode();
 
     RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> computedStyleAtPosition = CSSComputedStyleDeclaration::create(node);
@@ -745,7 +746,7 @@ bool EditingStyle::conflictsWithInlineStyleOfElement(Element* element, EditingSt
         CSSPropertyID propertyID = m_mutableStyle->propertyAt(i).id();
 
         // We don't override whitespace property of a tab span because that would collapse the tab into a space.
-        if (propertyID == CSSPropertyWhiteSpace && isTabSpanNode(element))
+        if (propertyID == CSSPropertyWhiteSpace && isTabSpanElement(element))
             continue;
 
         if (propertyID == CSSPropertyWebkitTextDecorationsInEffect && inlineStyle->getPropertyCSSValue(textDecorationPropertyForEditing())) {
@@ -1433,7 +1434,7 @@ StyleChange::StyleChange(EditingStyle* style, const Position& position)
         extractTextStyles(document, mutableStyle.get(), computedStyle->fixedPitchFontType());
 
     // Changing the whitespace style in a tab span would collapse the tab into a space.
-    if (isTabSpanTextNode(position.deprecatedNode()) || isTabSpanNode((position.deprecatedNode())))
+    if (isTabSpanTextNode(position.deprecatedNode()) || isTabSpanElement((position.deprecatedNode())))
         mutableStyle->removeProperty(CSSPropertyWhiteSpace);
 
     // If unicode-bidi is present in mutableStyle and direction is not, then add direction to mutableStyle.

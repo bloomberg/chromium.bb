@@ -869,7 +869,7 @@ bool ApplyStyleCommand::shouldApplyInlineStyleToRun(EditingStyle* style, Node* r
         // We don't consider m_isInlineElementToRemoveFunction here because we never apply style when m_isInlineElementToRemoveFunction is specified
         if (!style->styleIsPresentInComputedStyleOfNode(node))
             return true;
-        if (m_styledInlineElement && !enclosingNodeWithTag(positionBeforeNode(node), m_styledInlineElement->tagQName()))
+        if (m_styledInlineElement && !enclosingElementWithTag(positionBeforeNode(node), m_styledInlineElement->tagQName()))
             return true;
     }
     return false;
