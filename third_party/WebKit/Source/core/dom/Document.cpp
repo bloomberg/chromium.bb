@@ -1778,6 +1778,9 @@ void Document::updateRenderTree(StyleRecalcChange change)
 
     ScriptForbiddenScope forbidScript;
 
+    if (!view() || !isActive())
+        return;
+
     if (change != Force && !needsRenderTreeUpdate())
         return;
 
