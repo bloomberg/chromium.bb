@@ -609,8 +609,11 @@ void PrintPreviewUI::OnReloadPrintersList() {
   web_ui()->CallJavascriptFunction("reloadPrintersList");
 }
 
-void PrintPreviewUI::OnPrintPreviewScalingDisabled() {
-  web_ui()->CallJavascriptFunction("printScalingDisabledForSourcePDF");
+void PrintPreviewUI::OnSetOptionsFromDocument(
+    const PrintHostMsg_SetOptionsFromDocument_Params& params) {
+  // Notify WebUI that print scaling is disabled
+  if (params.is_scaling_disabled)
+    web_ui()->CallJavascriptFunction("printScalingDisabledForSourcePDF");
 }
 
 // static

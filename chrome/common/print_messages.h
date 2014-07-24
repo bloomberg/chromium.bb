@@ -11,6 +11,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/values.h"
 #include "ipc/ipc_message_macros.h"
+#include "printing/page_range.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 #include "third_party/WebKit/public/web/WebPrintScalingOption.h"
@@ -71,6 +72,16 @@ struct PrintHostMsg_RequestPrintPreview_Params {
   bool selection_only;
 };
 
+struct PrintHostMsg_SetOptionsFromDocument_Params {
+  PrintHostMsg_SetOptionsFromDocument_Params();
+  ~PrintHostMsg_SetOptionsFromDocument_Params();
+
+  bool is_scaling_disabled;
+  int copies;
+  printing::DuplexMode duplex;
+  printing::PageRanges page_ranges;
+};
+
 #endif  // CHROME_COMMON_PRINT_MESSAGES_H_
 
 #define IPC_MESSAGE_START PrintMsgStart
@@ -79,6 +90,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(printing::MarginType,
                           printing::MARGIN_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPrintScalingOption,
                           blink::WebPrintScalingOptionLast)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(printing::DuplexMode,
+                              printing::UNKNOWN_DUPLEX_MODE,
+                              printing::SHORT_EDGE)
 
 // Parameters for a render request.
 IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)
@@ -164,6 +178,25 @@ IPC_STRUCT_TRAITS_BEGIN(PrintHostMsg_RequestPrintPreview_Params)
   IPC_STRUCT_TRAITS_MEMBER(webnode_only)
   IPC_STRUCT_TRAITS_MEMBER(has_selection)
   IPC_STRUCT_TRAITS_MEMBER(selection_only)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(printing::PageRange)
+  IPC_STRUCT_TRAITS_MEMBER(from)
+  IPC_STRUCT_TRAITS_MEMBER(to)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(PrintHostMsg_SetOptionsFromDocument_Params)
+  // Specifies whether print scaling is enabled or not.
+  IPC_STRUCT_TRAITS_MEMBER(is_scaling_disabled)
+
+  // Specifies number of copies to be printed.
+  IPC_STRUCT_TRAITS_MEMBER(copies)
+
+  // Specifies paper handling option.
+  IPC_STRUCT_TRAITS_MEMBER(duplex)
+
+  // Specifies page range to be printed.
+  IPC_STRUCT_TRAITS_MEMBER(page_ranges)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(printing::PageSizeMargins)
@@ -443,6 +476,6 @@ IPC_SYNC_MESSAGE_ROUTED0_0(PrintHostMsg_SetupScriptedPrintPreview)
 IPC_MESSAGE_ROUTED1(PrintHostMsg_ShowScriptedPrintPreview,
                     bool /* is_modifiable */)
 
-// Notify the browser that the PDF in the initiator renderer has disabled print
-// scaling option.
-IPC_MESSAGE_ROUTED0(PrintHostMsg_PrintPreviewScalingDisabled)
+// Notify the browser to set print presets based on source PDF document.
+IPC_MESSAGE_ROUTED1(PrintHostMsg_SetOptionsFromDocument,
+                    PrintHostMsg_SetOptionsFromDocument_Params /* params */)

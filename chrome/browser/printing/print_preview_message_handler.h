@@ -14,6 +14,7 @@ struct PrintHostMsg_DidGetPreviewPageCount_Params;
 struct PrintHostMsg_DidPreviewDocument_Params;
 struct PrintHostMsg_DidPreviewPage_Params;
 struct PrintHostMsg_RequestPrintPreview_Params;
+struct PrintHostMsg_SetOptionsFromDocument_Params;
 
 namespace content {
 class WebContents;
@@ -63,7 +64,8 @@ class PrintPreviewMessageHandler
   void OnPrintPreviewFailed(int document_cookie);
   void OnPrintPreviewCancelled(int document_cookie);
   void OnInvalidPrinterSettings(int document_cookie);
-  void OnPrintPreviewScalingDisabled();
+  void OnSetOptionsFromDocument(
+      const PrintHostMsg_SetOptionsFromDocument_Params& params);
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewMessageHandler);
 };

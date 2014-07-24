@@ -17,6 +17,7 @@ class PrintPreviewDataService;
 class PrintPreviewHandler;
 struct PrintHostMsg_DidGetPreviewPageCount_Params;
 struct PrintHostMsg_RequestPrintPreview_Params;
+struct PrintHostMsg_SetOptionsFromDocument_Params;
 
 namespace base {
 class FilePath;
@@ -141,9 +142,9 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // Reload the printers list.
   void OnReloadPrintersList();
 
-  // Notifies the WebUI that the pdf print scaling option is disabled by
-  // default.
-  void OnPrintPreviewScalingDisabled();
+  // Notifies the WebUI to set print preset options from source PDF.
+  void OnSetOptionsFromDocument(
+      const PrintHostMsg_SetOptionsFromDocument_Params& params);
 
   // Allows tests to wait until the print preview dialog is loaded. Optionally
   // also instructs the dialog to auto-cancel, which is used for testing only.

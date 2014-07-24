@@ -23,6 +23,7 @@
 struct PrintMsg_Print_Params;
 struct PrintMsg_PrintPage_Params;
 struct PrintMsg_PrintPages_Params;
+struct PrintHostMsg_SetOptionsFromDocument_Params;
 
 namespace base {
 class DictionaryValue;
@@ -177,6 +178,10 @@ class PrintWebViewHelper
   bool CalculateNumberOfPages(blink::WebLocalFrame* frame,
                               const blink::WebNode& node,
                               int* number_of_pages);
+
+  // Set options for print preset from source PDF document.
+  void SetOptionsFromDocument(
+      PrintHostMsg_SetOptionsFromDocument_Params& params);
 
   // Update the current print settings with new |passed_job_settings|.
   // |passed_job_settings| dictionary contains print job details such as printer
