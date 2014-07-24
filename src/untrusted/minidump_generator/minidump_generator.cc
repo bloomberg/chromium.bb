@@ -90,6 +90,8 @@ class MinidumpAllocator {
     if (buf_ != NULL) {
       int result = munmap(buf_, buf_size_);
       assert(result == 0);
+      // Suppress unused variable warning in case where assert is compiled out.
+      (void) result;
     }
   }
 

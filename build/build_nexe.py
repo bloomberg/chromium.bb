@@ -937,6 +937,17 @@ def Main(argv):
                     help='Path of the goma directory.')
   options, files = parser.parse_args(argv[1:])
 
+  if options.name is None:
+    parser.error('--name is required!')
+  if options.build_config is None:
+    parser.error('--config-name is required!')
+  if options.root is None:
+    parser.error('--root is required!')
+  if options.arch is None:
+    parser.error('--arch is required!')
+  if options.build is None:
+    parser.error('--build is required!')
+
   if not argv:
     parser.print_help()
     return 1
