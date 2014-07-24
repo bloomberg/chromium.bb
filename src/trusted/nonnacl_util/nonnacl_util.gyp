@@ -18,8 +18,6 @@
       ['target_base=="sel_ldr_launcher"', {
         'sources': [
           'launcher_factory.cc',
-          'sel_ldr_launcher.h',
-          'sel_ldr_launcher_base.cc',
           'sel_ldr_launcher_standalone.cc',
         ],
         'conditions':[
@@ -58,12 +56,31 @@
   'targets': [
     # ----------------------------------------------------------------------
     {
+      'target_name': 'sel_ldr_launcher_base',
+      'type': 'static_library',
+      'dependencies': [
+        '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
+        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc',
+        '<(DEPTH)/native_client/src/shared/serialization/serialization.gyp:serialization',
+        '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
+        '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
+        '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:env_cleanser',
+        '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:nacl_error_code',
+      ],
+      'sources': [
+        'sel_ldr_launcher.h',
+        'sel_ldr_launcher_base.cc',
+      ]
+    },
+    # ----------------------------------------------------------------------
+    {
       'target_name': 'sel_ldr_launcher',
       'type': 'static_library',
       'variables': {
         'target_base': 'sel_ldr_launcher',
       },
       'dependencies': [
+        'sel_ldr_launcher_base',
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
         '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc',
         '<(DEPTH)/native_client/src/shared/serialization/serialization.gyp:serialization',
@@ -91,6 +108,27 @@
       'targets': [
         # --------------------------------------------------------------------
         {
+          'target_name': 'sel_ldr_launcher_base64',
+          'type': 'static_library',
+          'variables': {
+            'win_target': 'x64',
+          },
+          'dependencies': [
+            '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
+            '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc',
+            '<(DEPTH)/native_client/src/shared/serialization/serialization.gyp:serialization',
+            '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
+            '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
+            '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:env_cleanser',
+            '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:nacl_error_code',
+          ],
+          'sources': [
+            'sel_ldr_launcher.h',
+            'sel_ldr_launcher_base.cc',
+          ]
+        },
+        # --------------------------------------------------------------------
+        {
           'target_name': 'sel_ldr_launcher64',
           'type': 'static_library',
           'variables': {
@@ -98,6 +136,7 @@
             'win_target': 'x64',
           },
           'dependencies': [
+            'sel_ldr_launcher_base64',
             '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',
             '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc64',
             '<(DEPTH)/native_client/src/shared/serialization/serialization.gyp:serialization64',
