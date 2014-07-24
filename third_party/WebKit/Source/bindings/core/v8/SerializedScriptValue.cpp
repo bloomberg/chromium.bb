@@ -1282,7 +1282,7 @@ private:
         if (blob->hasBeenClosed())
             return handleError(DataCloneError, "A Blob object has been closed, and could therefore not be cloned.", next);
         int blobIndex = -1;
-        m_blobDataHandles.add(blob->uuid(), blob->blobDataHandle());
+        m_blobDataHandles.set(blob->uuid(), blob->blobDataHandle());
         if (appendBlobInfo(blob->uuid(), blob->type(), blob->size(), &blobIndex))
             m_writer.writeBlobIndex(blobIndex);
         else
@@ -1309,7 +1309,7 @@ private:
         if (file->hasBeenClosed())
             return handleError(DataCloneError, "A File object has been closed, and could therefore not be cloned.", next);
         int blobIndex = -1;
-        m_blobDataHandles.add(file->uuid(), file->blobDataHandle());
+        m_blobDataHandles.set(file->uuid(), file->blobDataHandle());
         if (appendFileInfo(file, &blobIndex)) {
             ASSERT(blobIndex >= 0);
             m_writer.writeFileIndex(blobIndex);
@@ -1331,7 +1331,7 @@ private:
             const File* file = fileList->item(i);
             if (file->hasBeenClosed())
                 return handleError(DataCloneError, "A File object has been closed, and could therefore not be cloned.", next);
-            m_blobDataHandles.add(file->uuid(), file->blobDataHandle());
+            m_blobDataHandles.set(file->uuid(), file->blobDataHandle());
             if (appendFileInfo(file, &blobIndex)) {
                 ASSERT(!i || blobIndex > 0);
                 ASSERT(blobIndex >= 0);
