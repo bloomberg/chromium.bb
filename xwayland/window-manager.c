@@ -1403,6 +1403,12 @@ weston_wm_handle_client_message(struct weston_wm *wm,
 	       client_message->data.data32[4],
 	       client_message->window);
 
+	/* The window may get created and destroyed before we actually
+	 * handle the message.  If it doesn't exist, bail.
+	 */
+	if (!window)
+		return;
+
 	if (client_message->type == wm->atom.net_wm_moveresize)
 		weston_wm_window_handle_moveresize(window, client_message);
 	else if (client_message->type == wm->atom.net_wm_state)
