@@ -1,0 +1,23 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+group("demo") {
+  deps = [
+    ":ozone_demo",
+  ]
+}
+
+executable("ozone_demo") {
+  sources = [
+    "ozone_demo.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//skia",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+    "//ui/ozone",
+  ]
+}

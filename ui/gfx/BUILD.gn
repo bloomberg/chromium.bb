@@ -8,9 +8,6 @@ if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
 }
-if (use_ozone) {
-  import("//ui/ozone/ozone.gni")
-}
 
 # Several targets want to include this header file, and some of them are
 # child dependencies of "gfx". Therefore, we separate it out here so multiple
@@ -321,13 +318,6 @@ component("gfx") {
   if (use_ozone) {
     sources += [
       "platform_font_ozone.cc",
-      "ozone/impl/file_surface_factory.cc",
-      "ozone/impl/file_surface_factory.h",
-      "ozone/surface_factory_ozone.cc",
-      "ozone/surface_factory_ozone.h",
-      "ozone/surface_ozone.h",
-      "ozone/overlay_candidates_ozone.cc",
-      "ozone/overlay_candidates_ozone.h",
     ]
   }
 
@@ -358,6 +348,11 @@ component("gfx") {
       "platform_font_pango.h",
     ]
     configs += [ "//build/config/linux:pangocairo" ]
+  }
+  if (use_pango && use_ozone) {
+    sources -= [
+      "platform_font_ozone.cc",
+    ]
   }
 }
 

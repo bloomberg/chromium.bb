@@ -1,0 +1,24 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("test") {
+  sources = [
+    "ozone_platform_test.cc",
+    "ozone_platform_test.h",
+    "test_cursor_factory.cc",
+    "test_cursor_factory.h",
+    "test_window.cc",
+    "test_window.h",
+    "test_window_manager.cc",
+    "test_window_manager.h",
+  ]
+
+  deps = [
+    "//base",
+    "//skia",
+    "//ui/base",
+    "//ui/events/ozone:events_ozone_evdev",
+    "//ui/gfx/geometry",
+  ]
+}

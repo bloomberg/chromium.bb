@@ -21,7 +21,7 @@ config("sdk") {
   }
 }
 
-pkg_config("dridrm") {
+pkg_config("libdrm") {
   packages = [ "libdrm" ]
 }
 

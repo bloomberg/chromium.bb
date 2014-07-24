@@ -142,22 +142,6 @@ component("events") {
 
   if (use_ozone) {
     sources += [
-      "ozone/device/udev/device_manager_udev.cc",
-      "ozone/device/udev/device_manager_udev.h",
-      "ozone/evdev/event_converter_evdev.cc",
-      "ozone/evdev/event_converter_evdev.h",
-      "ozone/evdev/event_device_info.cc",
-      "ozone/evdev/event_device_info.h",
-      "ozone/evdev/event_factory_evdev.cc",
-      "ozone/evdev/event_factory_evdev.h",
-      "ozone/evdev/event_modifiers_evdev.cc",
-      "ozone/evdev/event_modifiers_evdev.h",
-      "ozone/evdev/key_event_converter_evdev.cc",
-      "ozone/evdev/key_event_converter_evdev.h",
-      "ozone/evdev/touch_event_converter_evdev.cc",
-      "ozone/evdev/touch_event_converter_evdev.h",
-      "ozone/event_factory_ozone.cc",
-      "ozone/event_factory_ozone.h",
       "ozone/events_ozone.cc",
     ]
   }

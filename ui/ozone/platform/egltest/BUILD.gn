@@ -1,0 +1,40 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//tools/generate_library_loader/generate_library_loader.gni")
+
+source_set("egltest") {
+  sources = [
+    "ozone_platform_egltest.cc",
+    "ozone_platform_egltest.h",
+  ]
+
+  deps = [
+    ":eglplatform_shim",
+    "//base",
+    "//ui/events/ozone:events_ozone_evdev",
+    "//ui/gfx",
+  ]
+}
+
+generate_library_loader("eglplatform_shim") {
+  name = "LibeglplatformShimLoader"
+  output_h = "libeglplatform_shim.h"
+  output_cc = "libeglplatform_shim_loader.cc"
+  header = "\"ui/ozone/platform/egltest/eglplatform_shim.h\""
+
+  functions = [
+    "ShimQueryString",
+    "ShimInitialize",
+    "ShimTerminate",
+    "ShimCreateWindow",
+    "ShimQueryWindow",
+    "ShimDestroyWindow",
+    "ShimGetNativeDisplay",
+    "ShimGetNativeWindow",
+    "ShimReleaseNativeWindow",
+  ]
+}
+
+# TODO(spang): eglplatform_shim_x11 once support lands: http://crbug.com/380327

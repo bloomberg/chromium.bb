@@ -215,8 +215,8 @@ group("root") {
 
   if (use_ozone) {
     deps += [
-      "//ui/events/ozone:events_ozone",
-      "//ui/events/ozone:events_ozone_evdev",
+      "//ui/ozone",
+      "//ui/ozone/demo",
     ]
   }
 }

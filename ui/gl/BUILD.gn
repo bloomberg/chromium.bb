@@ -237,6 +237,8 @@ component("gl") {
   if (use_ozone) {
     sources += [
       "gl_context_ozone.cc",
+      "gl_egl_api_implementation.cc",
+      "gl_egl_api_implementation.h",
       "gl_implementation_ozone.cc",
       "gl_surface_ozone.cc",
     ]

@@ -4,9 +4,39 @@
 
 import("//ui/ozone/ozone.gni")
 
-declare_args() {
-  # The default platform for Ozone.
-  ozone_platform = "test"
+# The list of platforms that will be built.
+ozone_platforms = []
+
+# Extra dependencies to pull into ui/ozone for built platforms.
+ozone_platform_deps = []
+
+# Extra dependencies to pull into ozone_unittests for built platforms.
+ozone_platform_test_deps = []
+
+if (ozone_platform_egltest) {
+  ozone_platforms += [ "egltest" ]
+  ozone_platform_deps += [ "platform/egltest" ]
+}
+
+if (ozone_platform_test) {
+  ozone_platforms += [ "test" ]
+  ozone_platform_deps += [ "platform/test" ]
+}
+
+if (ozone_platform_caca) {
+  ozone_platforms += [ "caca" ]
+  ozone_platform_deps += [ "platform/caca" ]
+}
+
+if (ozone_platform_dri) {
+  ozone_platforms += [ "dri" ]
+  ozone_platform_deps += [ "platform/dri" ]
+  ozone_platform_test_deps += [ "platform/dri:dri_unittests" ]
+}
+
+if (ozone_platform_gbm) {
+  ozone_platforms += [ "gbm" ]
+  ozone_platform_deps += [ "platform/dri:gbm" ]
 }
 
 platform_list_cc_file = "$target_gen_dir/platform_list.cc"
@@ -51,16 +81,25 @@ component("ozone") {
     # common/chromeos files are excluded automatically when building with
     # chromeos=0, by exclusion rules in filename_rules.gypi due to the
     # "chromeos" folder name.
+    "common/chromeos/display_mode_proxy.cc",
+    "common/chromeos/display_mode_proxy.h",
+    "common/chromeos/display_snapshot_proxy.cc",
+    "common/chromeos/display_snapshot_proxy.h",
+    "common/chromeos/display_util.cc",
+    "common/chromeos/display_util.h",
     "common/chromeos/native_display_delegate_ozone.cc",
     "common/chromeos/native_display_delegate_ozone.h",
     "common/chromeos/touchscreen_device_manager_ozone.cc",
     "common/chromeos/touchscreen_device_manager_ozone.h",
     "common/gpu/ozone_gpu_message_generator.cc",
     "common/gpu/ozone_gpu_message_generator.h",
-    "ozone_platform.cc",
-    "ozone_platform.h",
-    "ozone_switches.cc",
-    "ozone_switches.h",
+    "common/gpu/ozone_gpu_message_params.cc",
+    "common/gpu/ozone_gpu_message_params.h",
+    "common/gpu/ozone_gpu_messages.h",
+    "public/ozone_platform.cc",
+    "public/ozone_platform.h",
+    "public/ozone_switches.cc",
+    "public/ozone_switches.h",
     "platform_selection.cc",
     "platform_selection.h",
   ]
@@ -81,17 +120,12 @@ component("ozone") {
     "//ui/gfx/ipc",
     # TODO(GYP) the GYP version has a way to add additional dependencies via
     # build flags.
-  ]
+  ] + ozone_platform_deps
 
   if (is_chromeos) {
     deps += [ "//ui/dusplay/types" ]
   }
 }
-
-# TODO(GYP) implement the ozone platforms. This should check the various
-# ozone_platform_*flags, and add deps and add to the ozone_platforms list for
-# the script below.
-ozone_platforms = ""
 
 # GYP version: ui/ozone/ozone.gyp:generate_ozone_platform_list
 action("generate_ozone_platform_list") {
@@ -107,8 +141,7 @@ action("generate_ozone_platform_list") {
     "--output_h=" + rebase_path(platform_list_h_file, root_build_dir),
     "--output_txt=" + rebase_path(platform_list_txt_file, root_build_dir),
     "--default=$ozone_platform",
-    ozone_platforms,
-  ]
+  ] + ozone_platforms
 }
 
 # GYP version: ui/ozone/ozone.gyp:generate_constructor_list
@@ -127,11 +160,19 @@ action("generate_constructor_list") {
     "--output_cc=" + rebase_path(constructor_list_cc_file, root_build_dir),
     "--namespace=ui",
     "--typename=OzonePlatform",
-    "--include=ui/ozone/ozone_platform.h",
+    "--include=\"ui/ozone/public/ozone_platform.h\"",
   ]
 
   deps = [ ":generate_ozone_platform_list" ]
 }
 
-# TODO(GYP) ozone_unittests
-# TODO(GYP) platform_caca, dri, other test stuff.
+test("ozone_unittests") {
+  sources = [
+    "run_all_unittests.cc",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+    "//testing/gtest",
+  ] + ozone_platform_test_deps
+}

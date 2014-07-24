@@ -1,0 +1,135 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/linux/pkg_config.gni")
+import("//ui/ozone/ozone.gni")
+
+source_set("dri_common") {
+  sources = [
+    "chromeos/display_mode_dri.cc",
+    "chromeos/display_mode_dri.h",
+    "chromeos/display_snapshot_dri.cc",
+    "chromeos/display_snapshot_dri.h",
+    "chromeos/native_display_delegate_dri.cc",
+    "chromeos/native_display_delegate_dri.h",
+    "cursor_factory_evdev_dri.cc",
+    "cursor_factory_evdev_dri.h",
+    "dri_console_buffer.cc",
+    "dri_console_buffer.h",
+    "dri_buffer.cc",
+    "dri_buffer.h",
+    "dri_surface.cc",
+    "dri_surface.h",
+    "dri_surface_factory.cc",
+    "dri_surface_factory.h",
+    "dri_util.cc",
+    "dri_util.h",
+    "dri_vsync_provider.cc",
+    "dri_vsync_provider.h",
+    "dri_window.cc",
+    "dri_window.h",
+    "dri_wrapper.cc",
+    "dri_wrapper.h",
+    "hardware_display_controller.cc",
+    "hardware_display_controller.h",
+    "scoped_drm_types.cc",
+    "scoped_drm_types.h",
+    "screen_manager.cc",
+    "screen_manager.h",
+    "scanout_buffer.h",
+    "virtual_terminal_manager.cc",
+    "virtual_terminal_manager.h",
+  ]
+
+  deps = [
+    "//base",
+    "//skia",
+    "//ipc",
+    "//ui/base",
+    "//ui/display/types",
+    "//ui/events",
+    "//ui/events/ozone:events_ozone_evdev",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+  ]
+
+  direct_dependent_configs = [
+    "//build/config/linux:libdrm",
+  ]
+}
+
+if (ozone_platform_dri) {
+  source_set("dri") {
+    sources = [
+      "ozone_platform_dri.cc",
+      "ozone_platform_dri.h",
+    ]
+
+    deps = [
+      ":dri_common",
+      "//base",
+      "//skia",
+      "//ui/events/ozone:events_ozone_evdev",
+    ]
+  }
+
+  source_set("dri_unittests") {
+    sources = [
+      "dri_surface_factory_unittest.cc",
+      "dri_surface_unittest.cc",
+      "hardware_display_controller_unittest.cc",
+      "screen_manager_unittest.cc",
+      "test/mock_dri_wrapper.cc",
+      "test/mock_dri_wrapper.h",
+    ]
+
+    deps = [
+      ":dri_common",
+      "//skia",
+      "//testing/gtest",
+    ]
+  }
+}
+
+if (ozone_platform_gbm) {
+  pkg_config("libgbm") {
+    packages = [ "gbm" ]
+  }
+
+  source_set("gbm") {
+    sources = [
+      "chromeos/display_message_handler.cc",
+      "chromeos/display_message_handler.h",
+      "chromeos/native_display_delegate_proxy.cc",
+      "chromeos/native_display_delegate_proxy.h",
+      "gbm_buffer.cc",
+      "gbm_buffer.h",
+      "gbm_buffer_base.cc",
+      "gbm_buffer_base.h",
+      "gbm_surface.cc",
+      "gbm_surface.h",
+      "gbm_surfaceless.cc",
+      "gbm_surfaceless.h",
+      "gbm_surface_factory.cc",
+      "gbm_surface_factory.h",
+      "gpu_platform_support_gbm.cc",
+      "gpu_platform_support_gbm.h",
+      "gpu_platform_support_host_gbm.cc",
+      "gpu_platform_support_host_gbm.h",
+      "ozone_platform_gbm.cc",
+      "ozone_platform_gbm.h",
+    ]
+
+    deps = [
+      ":dri_common",
+      "//base",
+      "//skia",
+      "//ui/events/ozone:events_ozone_evdev",
+    ]
+
+    direct_dependent_configs = [
+      ":libgbm",
+    ]
+  }
+}
