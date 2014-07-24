@@ -37,7 +37,8 @@ void ViewManagerLoader::OnServiceError(ServiceManager* manager,
 }
 
 bool ViewManagerLoader::ConfigureIncomingConnection(
-    ApplicationConnection* connection) {
+    ApplicationConnection* connection)  {
+  context_.ConfigureIncomingConnection(connection);
   connection->AddService(this);
   return true;
 }
@@ -45,7 +46,8 @@ bool ViewManagerLoader::ConfigureIncomingConnection(
 void ViewManagerLoader::Create(
     ApplicationConnection* connection,
     InterfaceRequest<ViewManagerInitService> request) {
-  BindToRequest(new ViewManagerInitServiceImpl(connection), &request);
+  BindToRequest(new ViewManagerInitServiceImpl(connection, &context_),
+                &request);
 }
 
 }  // namespace shell

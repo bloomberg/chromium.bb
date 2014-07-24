@@ -594,6 +594,53 @@
             'public/cpp/application/lib/mojo_main_chromium.cc',
           ],
         },
+        {
+          'target_name': 'mojo_wm_flow_wm',
+          'type': 'loadable_module',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'mojo_application',
+            'mojo_environment_chromium',
+            'mojo_core_window_manager_lib',
+            'mojo_view_manager_lib',
+            '<(mojo_system_for_loadable_module)',
+          ],
+          'sources': [
+            'examples/wm_flow/wm/wm.cc',
+            'public/cpp/application/lib/mojo_main_chromium.cc',
+          ],
+        },
+        {
+          'target_name': 'mojo_wm_flow_init',
+          'type': 'loadable_module',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'mojo_application',
+            'mojo_environment_chromium',
+            'mojo_view_manager_bindings',
+            '<(mojo_system_for_loadable_module)',
+          ],
+          'sources': [
+            'examples/wm_flow/init/init.cc',
+            'public/cpp/application/lib/mojo_main_chromium.cc',
+          ],
+        },
+        {
+          'target_name': 'mojo_wm_flow_app',
+          'type': 'loadable_module',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'mojo_application',
+            'mojo_environment_chromium',
+            'mojo_core_window_manager_bindings',
+            'mojo_view_manager_lib',
+            '<(mojo_system_for_loadable_module)',
+          ],
+          'sources': [
+            'examples/wm_flow/app/app.cc',
+            'public/cpp/application/lib/mojo_main_chromium.cc',
+          ],
+        },
       ],
     }],
     ['OS=="linux"', {

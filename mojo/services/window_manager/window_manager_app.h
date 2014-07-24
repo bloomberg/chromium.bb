@@ -48,7 +48,7 @@ class WindowManagerApp
       public InterfaceFactoryWithContext<WindowManagerServiceImpl,
                                          WindowManagerApp> {
  public:
-  WindowManagerApp();
+  explicit WindowManagerApp(view_manager::ViewManagerDelegate* delegate);
   virtual ~WindowManagerApp();
 
   void AddConnection(WindowManagerServiceImpl* connection);
@@ -62,14 +62,14 @@ class WindowManagerApp
 
   bool IsReady() const;
 
- private:
-  typedef std::set<WindowManagerServiceImpl*> Connections;
-  typedef std::map<view_manager::Id, aura::Window*> NodeIdToWindowMap;
-
   // Overridden from ApplicationDelegate:
   virtual void Initialize(ApplicationImpl* impl) MOJO_OVERRIDE;
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       MOJO_OVERRIDE;
+
+ private:
+  typedef std::set<WindowManagerServiceImpl*> Connections;
+  typedef std::map<view_manager::Id, aura::Window*> NodeIdToWindowMap;
 
   // Overridden from view_manager::ViewManagerDelegate:
   virtual void OnRootAdded(view_manager::ViewManager* view_manager,
@@ -102,6 +102,8 @@ class WindowManagerApp
   // Deletes the aura::Windows associated with the hierarchy beneath |id|,
   // and removes from the registry.
   void UnregisterSubtree(view_manager::Id id);
+
+  view_manager::ViewManagerDelegate* wrapped_delegate_;
 
   view_manager::ViewManager* view_manager_;
   view_manager::ViewManagerClientFactory view_manager_client_factory_;

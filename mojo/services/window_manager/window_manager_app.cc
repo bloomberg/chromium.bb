@@ -70,12 +70,14 @@ class WMFocusRules : public wm::FocusRules {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowManagerApp, public:
 
-WindowManagerApp::WindowManagerApp()
+WindowManagerApp::WindowManagerApp(view_manager::ViewManagerDelegate* delegate)
     : InterfaceFactoryWithContext(this),
+      wrapped_delegate_(delegate),
       view_manager_(NULL),
       view_manager_client_factory_(this),
       root_(NULL) {
 }
+
 WindowManagerApp::~WindowManagerApp() {
   // TODO(beng): Figure out if this should be done in
   //             OnViewManagerDisconnected().
@@ -169,7 +171,7 @@ void WindowManagerApp::OnRootAdded(view_manager::ViewManager* view_manager,
   focus_client_->AddObserver(this);
   activation_client_->AddObserver(this);
 
-  // TODO(beng): Create the universe.
+  wrapped_delegate_->OnRootAdded(view_manager, root);
 
   for (Connections::const_iterator it = connections_.begin();
        it != connections_.end(); ++it) {
@@ -180,6 +182,7 @@ void WindowManagerApp::OnRootAdded(view_manager::ViewManager* view_manager,
 void WindowManagerApp::OnViewManagerDisconnected(
     view_manager::ViewManager* view_manager) {
   DCHECK_EQ(view_manager_, view_manager);
+  wrapped_delegate_->OnViewManagerDisconnected(view_manager);
   root_->RemoveObserver(this);
   root_ = NULL;
   view_manager_ = NULL;
@@ -272,14 +275,6 @@ void WindowManagerApp::UnregisterSubtree(view_manager::Id id) {
   view_manager::Node::Children::const_iterator child = node->children().begin();
   for (; child != node->children().end(); ++child)
     UnregisterSubtree((*child)->id());
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ApplicationDelegate, public:
-
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new WindowManagerApp;
 }
 
 }  // namespace mojo

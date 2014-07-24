@@ -724,6 +724,8 @@
             'services/view_manager/view.cc',
             'services/view_manager/view.h',
             'services/view_manager/view_manager_export.h',
+            'services/view_manager/view_manager_init_service_context.cc',
+            'services/view_manager/view_manager_init_service_context.h',
             'services/view_manager/view_manager_init_service_impl.cc',
             'services/view_manager/view_manager_init_service_impl.h',
             'services/view_manager/view_manager_service_impl.cc',
@@ -802,8 +804,8 @@
           'includes': [ 'build/package_app.gypi' ],
         },
         {
-          'target_name': 'mojo_core_window_manager',
-          'type': 'loadable_module',
+          'target_name': 'mojo_core_window_manager_lib',
+          'type': 'static_library',
           'dependencies': [
             '../base/base.gyp:base',
             '../ui/base/ui_base.gyp:ui_base',
@@ -816,14 +818,24 @@
             'mojo_core_window_manager_bindings',
             'mojo_environment_chromium',
             'mojo_view_manager_lib',
-            '<(mojo_system_for_loadable_module)',
           ],
           'sources': [
-            'public/cpp/application/lib/mojo_main_chromium.cc',
             'services/window_manager/window_manager_app.cc',
             'services/window_manager/window_manager_app.h',
             'services/window_manager/window_manager_service_impl.cc',
             'services/window_manager/window_manager_service_impl.h',
+          ],
+        },
+        {
+          'target_name': 'mojo_core_window_manager',
+          'type': 'loadable_module',
+          'dependencies': [
+            'mojo_core_window_manager_lib',
+            '<(mojo_system_for_loadable_module)',
+          ],
+          'sources': [
+            'public/cpp/application/lib/mojo_main_chromium.cc',
+            'services/window_manager/main.cc',
           ],
         },
         {

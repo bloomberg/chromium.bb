@@ -11,6 +11,7 @@
 #include "mojo/public/cpp/application/interface_factory.h"
 #include "mojo/service_manager/service_loader.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
+#include "mojo/services/view_manager/view_manager_init_service_context.h"
 
 namespace mojo {
 
@@ -46,6 +47,7 @@ class ViewManagerLoader
       InterfaceRequest<view_manager::ViewManagerInitService> request) OVERRIDE;
 
   ScopedVector<Application> apps_;
+  view_manager::service::ViewManagerInitServiceContext context_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerLoader);
 };

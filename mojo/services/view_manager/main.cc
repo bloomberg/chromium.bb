@@ -4,6 +4,7 @@
 
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/services/view_manager/view_manager_init_service_context.h"
 #include "mojo/services/view_manager/view_manager_init_service_impl.h"
 
 namespace mojo {
@@ -18,6 +19,7 @@ class ViewManagerApp : public ApplicationDelegate,
 
   virtual bool ConfigureIncomingConnection(
       ApplicationConnection* connection) OVERRIDE {
+    context_.ConfigureIncomingConnection(connection);
     // TODO(sky): this needs some sort of authentication as well as making sure
     // we only ever have one active at a time.
     connection->AddService(this);
@@ -27,10 +29,13 @@ class ViewManagerApp : public ApplicationDelegate,
   virtual void Create(
       ApplicationConnection* connection,
       InterfaceRequest<ViewManagerInitService> request) OVERRIDE {
-    BindToRequest(new ViewManagerInitServiceImpl(connection), &request);
+    BindToRequest(new ViewManagerInitServiceImpl(connection, &context_),
+                  &request);
   }
 
  private:
+  ViewManagerInitServiceContext context_;
+
   DISALLOW_COPY_AND_ASSIGN(ViewManagerApp);
 };
 

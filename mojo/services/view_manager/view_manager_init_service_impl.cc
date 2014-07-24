@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/view_manager/ids.h"
+#include "mojo/services/view_manager/view_manager_init_service_context.h"
 #include "mojo/services/view_manager/view_manager_service_impl.h"
 
 namespace mojo {
@@ -19,25 +20,34 @@ ViewManagerInitServiceImpl::ConnectParams::ConnectParams() {}
 ViewManagerInitServiceImpl::ConnectParams::~ConnectParams() {}
 
 ViewManagerInitServiceImpl::ViewManagerInitServiceImpl(
-    ApplicationConnection* connection)
-    : root_node_manager_(
-          connection,
-          this,
-          base::Bind(&ViewManagerInitServiceImpl::OnNativeViewportDeleted,
-                     base::Unretained(this))),
-      is_tree_host_ready_(false) {
+    ApplicationConnection* connection,
+    ViewManagerInitServiceContext* context)
+    : context_(context) {
+  context_->AddConnection(this);
 }
 
 ViewManagerInitServiceImpl::~ViewManagerInitServiceImpl() {
+  context_->RemoveConnection(this);
+}
+
+void ViewManagerInitServiceImpl::OnNativeViewportDeleted() {
+  // TODO(beng): Should not have to rely on implementation detail of
+  //             InterfaceImpl to close the connection. Instead should simply
+  //             be able to delete this object.
+  internal_state()->router()->CloseMessagePipe();
+}
+
+void ViewManagerInitServiceImpl::OnRootViewManagerWindowTreeHostCreated() {
+  MaybeEmbed();
 }
 
 void ViewManagerInitServiceImpl::MaybeEmbed() {
-  if (!is_tree_host_ready_)
+  if (!context_->is_tree_host_ready())
     return;
 
   ScopedVector<ConnectParams>::const_iterator it = connect_params_.begin();
   for (; it != connect_params_.end(); ++it) {
-    root_node_manager_.EmbedRoot((*it)->url);
+    context_->root_node_manager()->EmbedRoot((*it)->url);
     (*it)->callback.Run(true);
   }
   connect_params_.clear();
@@ -51,19 +61,6 @@ void ViewManagerInitServiceImpl::Embed(
   params->callback = callback;
   connect_params_.push_back(params);
   MaybeEmbed();
-}
-
-void ViewManagerInitServiceImpl::OnRootViewManagerWindowTreeHostCreated() {
-  DCHECK(!is_tree_host_ready_);
-  is_tree_host_ready_ = true;
-  MaybeEmbed();
-}
-
-void ViewManagerInitServiceImpl::OnNativeViewportDeleted() {
-  // TODO(beng): Should not have to rely on implementation detail of
-  //             InterfaceImpl to close the connection. Instead should simply
-  //             be able to delete this object.
-  internal_state()->router()->CloseMessagePipe();
 }
 
 }  // namespace service
