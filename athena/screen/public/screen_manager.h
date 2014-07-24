@@ -35,6 +35,9 @@ class ATHENA_EXPORT ScreenManager {
     // True if the container can activate its child window.
     bool can_activate_children;
 
+    // True if the container will grab all of input events.
+    bool grab_inputs;
+
     // Defines the z_order priority of the container.
     int z_order_priority;
   };

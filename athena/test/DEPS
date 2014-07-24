@@ -2,6 +2,7 @@ include_rules = [
   "+athena/activity",
   "+athena/home/public",
   "+athena/main",
+  "+athena/screen/public",
   "+third_party/skia/include",
   "+ui/app_list",
   "+ui/aura",

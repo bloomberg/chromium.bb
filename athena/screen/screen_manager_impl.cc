@@ -16,6 +16,7 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/capture_controller.h"
@@ -29,6 +30,22 @@ DEFINE_OWNED_WINDOW_PROPERTY_KEY(ScreenManager::ContainerParams,
 
 ScreenManager* instance = NULL;
 
+bool GrabsInput(aura::Window* container) {
+  ScreenManager::ContainerParams* params =
+      container->GetProperty(kContainerParamsKey);
+  return params && params->grab_inputs;
+}
+
+// Returns the container which contains |window|.
+aura::Window* GetContainer(aura::Window* window) {
+  // No containers for NULL or the root window itself.
+  if (!window || !window->parent())
+    return NULL;
+  if (window->parent()->IsRootWindow())
+    return window;
+  return GetContainer(window->parent());
+}
+
 class AthenaFocusRules : public wm::BaseFocusRules {
  public:
   AthenaFocusRules() {}
@@ -39,6 +56,22 @@ class AthenaFocusRules : public wm::BaseFocusRules {
     ScreenManager::ContainerParams* params =
         window->GetProperty(kContainerParamsKey);
     return params && params->can_activate_children;
+  }
+  virtual bool CanActivateWindow(aura::Window* window) const OVERRIDE {
+    // Check if containers of higher z-order than |window| have 'grab_inputs'
+    // fields.
+    if (window) {
+      const aura::Window::Windows& containers =
+          window->GetRootWindow()->children();
+      aura::Window::Windows::const_iterator iter =
+          std::find(containers.begin(), containers.end(), GetContainer(window));
+      DCHECK(iter != containers.end());
+      for (++iter; iter != containers.end(); ++iter) {
+        if (GrabsInput(*iter))
+          return false;
+      }
+    }
+    return BaseFocusRules::CanActivateWindow(window);
   }
 
  private:
@@ -99,6 +132,57 @@ class AthenaScreenPositionClient : public aura::client::ScreenPositionClient {
   }
 
   DISALLOW_COPY_AND_ASSIGN(AthenaScreenPositionClient);
+};
+
+class AthenaEventTargeter : public aura::WindowTargeter,
+                            public aura::WindowObserver {
+ public:
+  explicit AthenaEventTargeter(aura::Window* container)
+      : container_(container) {
+    container_->AddObserver(this);
+  }
+
+  virtual ~AthenaEventTargeter() {
+    // Removed before the container is removed.
+    if (container_)
+      container_->RemoveObserver(this);
+  }
+
+ private:
+  // aura::WindowTargeter:
+  virtual bool SubtreeCanAcceptEvent(
+      ui::EventTarget* target,
+      const ui::LocatedEvent& event) const OVERRIDE {
+    aura::Window* window = static_cast<aura::Window*>(target);
+    const aura::Window::Windows& containers =
+        container_->GetRootWindow()->children();
+    aura::Window::Windows::const_iterator iter =
+        std::find(containers.begin(), containers.end(), container_);
+    DCHECK(iter != containers.end());
+    for (; iter != containers.end(); ++iter) {
+      if ((*iter)->Contains(window))
+        return true;
+    }
+    return false;
+  }
+
+  // aura::WindowObserver:
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
+    aura::Window* root_window = container_->GetRootWindow();
+    DCHECK_EQ(window, container_);
+    DCHECK_EQ(
+        this, static_cast<ui::EventTarget*>(root_window)->GetEventTargeter());
+
+    container_->RemoveObserver(this);
+    container_ = NULL;
+
+    // This will remove myself.
+    root_window->SetEventTargeter(scoped_ptr<ui::EventTargeter>());
+  }
+
+  aura::Window* container_;
+
+  DISALLOW_COPY_AND_ASSIGN(AthenaEventTargeter);
 };
 
 class ScreenManagerImpl : public ScreenManager {
@@ -208,6 +292,19 @@ aura::Window* ScreenManagerImpl::CreateContainer(
 #endif
 
   container->SetProperty(kContainerParamsKey, new ContainerParams(params));
+
+  // If another container is already grabbing the input, SetEventTargeter
+  // implicitly release the grabbing and remove the EventTargeter instance.
+  // TODO(mukai|oshima): think about the ideal behavior of multiple grabbing
+  // and implement it.
+  if (params.grab_inputs) {
+    DCHECK(std::find_if(children.begin(), children.end(), &GrabsInput)
+           == children.end())
+        << "input has already been grabbed by another container";
+    root_window_->SetEventTargeter(
+        scoped_ptr<ui::EventTargeter>(new AthenaEventTargeter(container)));
+  }
+
   root_window_->AddChild(container);
 
   aura::Window::Windows::const_iterator iter =
@@ -229,7 +326,10 @@ void ScreenManagerImpl::SetBackgroundImage(const gfx::ImageSkia& image) {
 
 ScreenManager::ContainerParams::ContainerParams(const std::string& n,
                                                 int priority)
-    : name(n), can_activate_children(false), z_order_priority(priority) {
+    : name(n),
+      can_activate_children(false),
+      grab_inputs(false),
+      z_order_priority(priority) {
 }
 
 // static

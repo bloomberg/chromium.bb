@@ -241,8 +241,10 @@ class HomeCardImpl : public HomeCard,
   // aura::client::ActivationChangeObserver:
   virtual void OnWindowActivated(aura::Window* gained_active,
                                  aura::Window* lost_active) OVERRIDE {
-    if (gained_active != home_card_widget_->GetNativeWindow())
+    if (state_ != HIDDEN &&
+        gained_active != home_card_widget_->GetNativeWindow()) {
       SetState(VISIBLE_MINIMIZED);
+    }
   }
 
   scoped_ptr<AppModelBuilder> model_builder_;

@@ -5,6 +5,7 @@
 #include "athena/test/athena_test_helper.h"
 
 #include "athena/main/athena_launcher.h"
+#include "athena/screen/public/screen_manager.h"
 #include "athena/test/sample_activity_factory.h"
 #include "athena/test/test_app_model_builder.h"
 #include "base/command_line.h"
@@ -21,7 +22,7 @@
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/screen.h"
-#include "ui/wm/core/default_activation_client.h"
+#include "ui/wm/core/focus_controller.h"
 #include "ui/wm/core/input_method_event_filter.h"
 
 #if defined(USE_X11)
@@ -72,11 +73,12 @@ void AthenaTestHelper::SetUp(ui::ContextFactory* context_factory) {
   input_method_filter_->SetInputMethodPropertyInRootWindow(
       root_window());
 
-  // TODO(oshima): Switch to athena implementation.
-  focus_client_.reset(new aura::test::TestFocusClient);
-  aura::client::SetFocusClient(root_window(),
-                               focus_client_.get());
-  new ::wm::DefaultActivationClient(root_window());
+  wm::FocusController* focus_controller =
+      new wm::FocusController(ScreenManager::CreateFocusRules());
+  aura::client::SetFocusClient(root_window(), focus_controller);
+  root_window()->AddPreTargetHandler(focus_controller);
+  aura::client::SetActivationClient(root_window(), focus_controller);
+  focus_client_.reset(focus_controller);
 
   root_window()->Show();
   // Ensure width != height so tests won't confuse them.
