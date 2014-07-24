@@ -214,10 +214,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
   void PerformLogin(const UserContext& user_context,
                     LoginPerformer::AuthorizationMode auth_mode);
 
-  void set_login_performer_delegate(LoginPerformer::Delegate* d) {
-    login_performer_delegate_.reset(d);
-  }
-
   // Updates the |login_display_| attached to this controller.
   void UpdateLoginDisplay(const user_manager::UserList& users);
 
@@ -235,10 +231,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // Used to execute login operations.
   scoped_ptr<LoginPerformer> login_performer_;
-
-  // Delegate for login performer to be overridden by tests.
-  // |this| is used if |login_performer_delegate_| is NULL.
-  scoped_ptr<LoginPerformer::Delegate> login_performer_delegate_;
 
   // Delegate to forward all authentication status events to.
   // Tests can use this to receive authentication status events.

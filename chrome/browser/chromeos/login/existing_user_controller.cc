@@ -447,12 +447,9 @@ void ExistingUserController::PerformLogin(
   // Use the same LoginPerformer for subsequent login as it has state
   // such as Authenticator instance.
   if (!login_performer_.get() || num_login_attempts_ <= 1) {
-    LoginPerformer::Delegate* delegate = this;
-    if (login_performer_delegate_.get())
-      delegate = login_performer_delegate_.get();
     // Only one instance of LoginPerformer should exist at a time.
     login_performer_.reset(NULL);
-    login_performer_.reset(new LoginPerformer(delegate));
+    login_performer_.reset(new LoginPerformer(this));
   }
 
   is_login_in_progress_ = true;
