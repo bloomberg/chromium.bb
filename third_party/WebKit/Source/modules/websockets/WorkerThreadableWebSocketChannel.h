@@ -149,7 +149,6 @@ public:
 #endif
     };
 
-private:
     // Bridge for Peer. Running on the worker thread.
     class Bridge FINAL : public RefCountedWillBeGarbageCollectedFinalized<Bridge> {
     public:
@@ -196,6 +195,7 @@ private:
         WeakPtrWillBeWeakMember<Peer> m_peer;
     };
 
+private:
     WorkerThreadableWebSocketChannel(WorkerGlobalScope&, WebSocketChannelClient*, const String& sourceURL, unsigned lineNumber);
 
     const RefPtrWillBeMember<ThreadableWebSocketChannelClientWrapper> m_workerClientWrapper;
