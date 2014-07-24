@@ -6,7 +6,8 @@
 
 <resources>
     <!-- Certificate Viewer Dimensions -->
-    <dimen name="certificate_viewer_padding">20dp</dimen>
+    <dimen name="certificate_viewer_padding_wide">24dp</dimen>
+    <dimen name="certificate_viewer_padding_thin">16dp</dimen>
 
     <!-- Accessibility tab switcher -->
     <dimen name="accessibility_tab_height">65dp</dimen>

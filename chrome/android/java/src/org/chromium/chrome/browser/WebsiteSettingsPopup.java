@@ -10,12 +10,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.provider.Browser;
-import android.text.Html;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup.LayoutParams;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -35,12 +34,14 @@ import java.net.URISyntaxException;
 public class WebsiteSettingsPopup implements OnClickListener {
     private static final String HELP_URL =
             "http://www.google.com/support/chrome/bin/answer.py?answer=95617";
+    private static final int DESCRIPTION_TEXT_SIZE_SP = 12;
     private final Context mContext;
     private final Dialog mDialog;
     private final LinearLayout mContainer;
     private final WebContents mWebContents;
-    private final int mPadding;
+    private final int mPaddingWide, mPaddingThin;
     private TextView mCertificateViewer, mMoreInfoLink;
+    private ViewGroup mCertificateLayout, mDescriptionLayout;
     private String mLinkUrl;
 
     private WebsiteSettingsPopup(Context context, WebContents webContents) {
@@ -49,8 +50,13 @@ public class WebsiteSettingsPopup implements OnClickListener {
 
         mContainer = new LinearLayout(mContext);
         mContainer.setOrientation(LinearLayout.VERTICAL);
-        mPadding = (int) context.getResources().getDimension(R.dimen.certificate_viewer_padding);
-        mContainer.setPadding(mPadding, 0, mPadding, 0);
+        mContainer.setBackgroundColor(Color.WHITE);
+        mPaddingWide = (int) context.getResources().getDimension(
+                R.dimen.certificate_viewer_padding_wide);
+        mPaddingThin = (int) context.getResources().getDimension(
+                R.dimen.certificate_viewer_padding_thin);
+        mContainer.setPadding(mPaddingWide, mPaddingWide + mPaddingThin, mPaddingWide,
+                mPaddingWide);
 
         mDialog = new Dialog(mContext);
         mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -76,9 +82,33 @@ public class WebsiteSettingsPopup implements OnClickListener {
         });
     }
 
-    /** Adds a section, which contains an icon, a headline, and a description. */
+    /**
+     * Adds certificate section, which contains an icon, a headline, a
+     * description and a label for certificate info link.
+     */
     @CalledByNative
-    private void addSection(int enumeratedIconId, String headline, String description) {
+    private void addCertificateSection(int enumeratedIconId, String headline, String description,
+            String label) {
+        View section = addSection(enumeratedIconId, headline, description);
+        assert mCertificateLayout == null;
+        mCertificateLayout = (ViewGroup) section.findViewById(R.id.website_settings_text_layout);
+        if (label != null && !label.isEmpty()) {
+            setCertificateViewer(label);
+        }
+    }
+
+    /**
+     * Adds Description section, which contains an icon, a headline, and a
+     * description. Most likely headline for description is empty
+     */
+    @CalledByNative
+    private void addDescriptionSection(int enumeratedIconId, String headline, String description) {
+        View section = addSection(enumeratedIconId, headline, description);
+        assert mDescriptionLayout == null;
+        mDescriptionLayout = (ViewGroup) section.findViewById(R.id.website_settings_text_layout);
+    }
+
+    private View addSection(int enumeratedIconId, String headline, String description) {
         View section = LayoutInflater.from(mContext).inflate(R.layout.website_settings, null);
         ImageView i = (ImageView) section.findViewById(R.id.website_settings_icon);
         int drawableId = ResourceId.mapToDrawableId(enumeratedIconId);
@@ -90,29 +120,23 @@ public class WebsiteSettingsPopup implements OnClickListener {
 
         TextView d = (TextView) section.findViewById(R.id.website_settings_description);
         d.setText(description);
+        d.setTextSize(DESCRIPTION_TEXT_SIZE_SP);
         if (TextUtils.isEmpty(description)) d.setVisibility(View.GONE);
 
         mContainer.addView(section);
+        return section;
     }
 
-    /** Adds a horizontal dividing line to separate sections. */
-    @CalledByNative
-    private void addDivider() {
-        View divider = new View(mContext);
-        final int dividerHeight = (int) (2 * mContext.getResources().getDisplayMetrics().density);
-        divider.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, dividerHeight));
-        divider.setBackgroundColor(Color.GRAY);
-        mContainer.addView(divider);
-    }
-
-    @CalledByNative
     private void setCertificateViewer(String label) {
         assert mCertificateViewer == null;
-        mCertificateViewer =  new TextView(mContext);
-        mCertificateViewer.setText(Html.fromHtml("<a href='#'>" + label + "</a>"));
+        mCertificateViewer = new TextView(mContext);
+        mCertificateViewer.setText(label);
+        mCertificateViewer.setTextColor(
+                mContext.getResources().getColor(R.color.website_settings_popup_text_link));
+        mCertificateViewer.setTextSize(DESCRIPTION_TEXT_SIZE_SP);
         mCertificateViewer.setOnClickListener(this);
-        mCertificateViewer.setPadding(0, 0, 0, mPadding);
-        mContainer.addView(mCertificateViewer);
+        mCertificateViewer.setPadding(0, mPaddingWide, 0, mPaddingWide);
+        mCertificateLayout.addView(mCertificateViewer);
     }
 
     @CalledByNative
@@ -124,10 +148,13 @@ public class WebsiteSettingsPopup implements OnClickListener {
     private void addUrl(String label, String url) {
         mMoreInfoLink = new TextView(mContext);
         mLinkUrl = url;
-        mMoreInfoLink.setText(Html.fromHtml("<a href='#'>" + label + "</a>"));
-        mMoreInfoLink.setPadding(0, mPadding, 0, mPadding);
+        mMoreInfoLink.setText(label);
+        mMoreInfoLink.setTextColor(
+                mContext.getResources().getColor(R.color.website_settings_popup_text_link));
+        mMoreInfoLink.setTextSize(DESCRIPTION_TEXT_SIZE_SP);
+        mMoreInfoLink.setPadding(0, mPaddingWide + mPaddingThin, 0, mPaddingWide);
         mMoreInfoLink.setOnClickListener(this);
-        mContainer.addView(mMoreInfoLink);
+        mDescriptionLayout.addView(mMoreInfoLink);
     }
 
     /** Displays the WebsiteSettingsPopup. */

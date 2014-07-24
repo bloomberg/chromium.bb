@@ -56,7 +56,7 @@ class CertificateViewer implements OnItemSelectedListener {
         mViews = new ArrayList<LinearLayout>();
         mTitles = new ArrayList<String>();
         mPadding = (int) context.getResources().getDimension(
-                R.dimen.certificate_viewer_padding) / 2;
+                R.dimen.certificate_viewer_padding_wide) / 2;
     }
 
     // Show information about an array of DER-encoded data representing a X509 certificate chain.

@@ -125,17 +125,15 @@ void WebsiteSettingsPopupAndroid::SetIdentityInfo(
 
     ScopedJavaLocalRef<jstring> description = ConvertUTF8ToJavaString(
         env, identity_info.identity_status_description);
-    Java_WebsiteSettingsPopup_addSection(env, popup_jobject_.obj(), icon_id,
-        ConvertUTF8ToJavaString(env, headline).obj(), description.obj());
-
     base::string16 certificate_label =
-        l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON);
-    if (!certificate_label.empty()) {
-      Java_WebsiteSettingsPopup_setCertificateViewer(env, popup_jobject_.obj(),
-          ConvertUTF16ToJavaString(env, certificate_label).obj());
-    }
-
-    Java_WebsiteSettingsPopup_addDivider(env, popup_jobject_.obj());
+            l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON);
+    Java_WebsiteSettingsPopup_addCertificateSection(
+        env,
+        popup_jobject_.obj(),
+        icon_id,
+        ConvertUTF8ToJavaString(env, headline).obj(),
+        description.obj(),
+        ConvertUTF16ToJavaString(env, certificate_label).obj());
   }
 
   {
@@ -145,10 +143,8 @@ void WebsiteSettingsPopupAndroid::SetIdentityInfo(
 
     ScopedJavaLocalRef<jstring> description = ConvertUTF8ToJavaString(
         env, identity_info.connection_status_description);
-    Java_WebsiteSettingsPopup_addSection(env, popup_jobject_.obj(), icon_id,
-        NULL, description.obj());
-
-    Java_WebsiteSettingsPopup_addDivider(env, popup_jobject_.obj());
+    Java_WebsiteSettingsPopup_addDescriptionSection(
+        env, popup_jobject_.obj(), icon_id, NULL, description.obj());
   }
 
   Java_WebsiteSettingsPopup_addMoreInfoLink(env, popup_jobject_.obj(),

@@ -28,4 +28,7 @@
     <color name="app_banner_install_button_fg">#ffffff</color>
     <color name="app_banner_open_button_fg">#777777</color>
     <color name="app_banner_card_highlight">#33999999</color>
+
+    <!--  Website Settings Popup colors -->
+    <color name="website_settings_popup_text_link">#5595fe</color>
 </resources>
