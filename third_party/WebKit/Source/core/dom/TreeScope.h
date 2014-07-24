@@ -190,7 +190,7 @@ private:
 
     OwnPtrWillBeMember<IdTargetObserverRegistry> m_idTargetObserverRegistry;
 
-    OwnPtr<ScopedStyleResolver> m_scopedStyleResolver;
+    OwnPtrWillBeMember<ScopedStyleResolver> m_scopedStyleResolver;
 
     mutable RefPtrWillBeMember<DOMSelection> m_selection;
 };

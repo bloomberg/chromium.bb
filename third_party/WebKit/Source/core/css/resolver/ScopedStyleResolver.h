@@ -44,18 +44,19 @@ class StyleResolver;
 class StyleSheetContents;
 
 // This class selects a RenderStyle for a given element based on a collection of stylesheets.
-class ScopedStyleResolver {
-    WTF_MAKE_NONCOPYABLE(ScopedStyleResolver); WTF_MAKE_FAST_ALLOCATED;
+class ScopedStyleResolver FINAL : public NoBaseWillBeGarbageCollected<ScopedStyleResolver> {
+    WTF_MAKE_NONCOPYABLE(ScopedStyleResolver);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<ScopedStyleResolver> create(TreeScope& scope)
+    static PassOwnPtrWillBeRawPtr<ScopedStyleResolver> create(TreeScope& scope)
     {
-        return adoptPtr(new ScopedStyleResolver(scope));
+        return adoptPtrWillBeNoop(new ScopedStyleResolver(scope));
     }
 
     static ContainerNode* scopingNodeFor(Document&, const CSSStyleSheet*);
 
-    const ContainerNode& scopingNode() const { return m_scope.rootNode(); }
-    const TreeScope& treeScope() const { return m_scope; }
+    const ContainerNode& scopingNode() const { return m_scope->rootNode(); }
+    const TreeScope& treeScope() const { return *m_scope; }
     ScopedStyleResolver* parent() const;
 
 public:
@@ -69,17 +70,19 @@ public:
     void resetAuthorStyle();
     void collectViewportRulesTo(StyleResolver*) const;
 
+    void trace(Visitor*);
+
 private:
     explicit ScopedStyleResolver(TreeScope& scope)
         : m_scope(scope)
     {
     }
 
-    TreeScope& m_scope;
+    RawPtrWillBeMember<TreeScope> m_scope;
 
-    WillBePersistentHeapVector<RawPtrWillBeMember<CSSStyleSheet> > m_authorStyleSheets;
+    WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> > m_authorStyleSheets;
 
-    typedef WillBePersistentHeapHashMap<const StringImpl*, RefPtrWillBeMember<StyleRuleKeyframes> > KeyframesRuleMap;
+    typedef WillBeHeapHashMap<const StringImpl*, RefPtrWillBeMember<StyleRuleKeyframes> > KeyframesRuleMap;
     KeyframesRuleMap m_keyframesRuleMap;
 };
 

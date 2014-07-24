@@ -203,7 +203,7 @@ const StyleRuleKeyframes* CSSAnimations::matchScopedKeyframesRule(StyleResolver*
     if (resolver->styleTreeHasOnlyScopedResolverForDocument())
         return element->document().scopedStyleResolver()->keyframeStylesForAnimation(animationName);
 
-    Vector<ScopedStyleResolver*, 8> stack;
+    WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8> stack;
     resolver->styleTreeResolveScopedKeyframesRules(element, stack);
     if (stack.isEmpty())
         return 0;

@@ -561,6 +561,7 @@ void TreeScope::trace(Visitor* visitor)
     visitor->trace(m_elementsById);
     visitor->trace(m_imageMapsByName);
     visitor->trace(m_labelsByForAttribute);
+    visitor->trace(m_scopedStyleResolver);
 }
 
 } // namespace blink

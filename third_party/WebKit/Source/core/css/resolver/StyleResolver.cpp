@@ -391,7 +391,7 @@ static inline bool applyAuthorStylesOf(const Element* element)
     return element->treeScope().applyAuthorStyles();
 }
 
-void StyleResolver::matchAuthorRulesForShadowHost(Element* element, ElementRuleCollector& collector, bool includeEmptyRules, Vector<ScopedStyleResolver*, 8>& resolvers, Vector<ScopedStyleResolver*, 8>& resolversInShadowTree)
+void StyleResolver::matchAuthorRulesForShadowHost(Element* element, ElementRuleCollector& collector, bool includeEmptyRules, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolvers, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolversInShadowTree)
 {
     collector.clearMatchedRules();
     collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
@@ -426,10 +426,10 @@ void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& col
         return;
     }
 
-    Vector<ScopedStyleResolver*, 8> resolvers;
+    WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8> resolvers;
     m_styleTree.resolveScopedStyles(element, resolvers);
 
-    Vector<ScopedStyleResolver*, 8> resolversInShadowTree;
+    WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8> resolversInShadowTree;
     m_styleTree.collectScopedResolversForHostedShadowTrees(element, resolversInShadowTree);
     if (!resolversInShadowTree.isEmpty()) {
         matchAuthorRulesForShadowHost(element, collector, includeEmptyRules, resolvers, resolversInShadowTree);
@@ -1566,6 +1566,7 @@ void StyleResolver::trace(Visitor* visitor)
     visitor->trace(m_watchedSelectorsRules);
     visitor->trace(m_treeBoundaryCrossingRules);
     visitor->trace(m_pendingStyleSheets);
+    visitor->trace(m_styleTree);
 #endif
 }
 

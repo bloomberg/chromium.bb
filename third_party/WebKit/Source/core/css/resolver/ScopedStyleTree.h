@@ -35,7 +35,8 @@
 namespace blink {
 
 class ScopedStyleTree {
-    WTF_MAKE_NONCOPYABLE(ScopedStyleTree); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(ScopedStyleTree);
+    DISALLOW_ALLOCATION();
 public:
     ScopedStyleTree();
     ~ScopedStyleTree();
@@ -47,9 +48,9 @@ public:
     // for fast-path.
     bool hasOnlyScopedResolverForDocument() const { return m_authorStyles.size() == 1; }
 
-    void resolveScopedStyles(const Element*, Vector<ScopedStyleResolver*, 8>&);
-    void collectScopedResolversForHostedShadowTrees(const Element*, Vector<ScopedStyleResolver*, 8>&);
-    void resolveScopedKeyframesRules(const Element*, Vector<ScopedStyleResolver*, 8>&);
+    void resolveScopedStyles(const Element*, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>&);
+    void collectScopedResolversForHostedShadowTrees(const Element*, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>&);
+    void resolveScopedKeyframesRules(const Element*, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>&);
     ScopedStyleResolver* scopedResolverFor(const Element*);
 
     void remove(const ContainerNode* scopingNode);
@@ -59,28 +60,37 @@ public:
 
     void collectFeaturesTo(RuleFeatureSet& features);
 
+    void trace(Visitor*);
+
 private:
     bool cacheIsValid(const ContainerNode* parent) const { return parent && parent == m_cache.nodeForScopedStyles; }
     void resolveStyleCache(const ContainerNode* scopingNode);
     ScopedStyleResolver* enclosingScopedStyleResolverFor(const ContainerNode* scopingNode);
 
-private:
-    HashMap<const ContainerNode*, ScopedStyleResolver*> m_authorStyles;
+    WillBeHeapHashMap<RawPtrWillBeMember<const ContainerNode>, RawPtrWillBeMember<ScopedStyleResolver> > m_authorStyles;
 
-    struct ScopedStyleCache {
-        ScopedStyleResolver* scopedResolver;
-        const ContainerNode* nodeForScopedStyles;
+    class ScopedStyleCache {
+        DISALLOW_ALLOCATION();
+    public:
+        RawPtrWillBeMember<ScopedStyleResolver> scopedResolver;
+        RawPtrWillBeMember<const ContainerNode> nodeForScopedStyles;
 
         ScopedStyleCache()
-            : scopedResolver(0)
-            , nodeForScopedStyles(0)
+            : scopedResolver(nullptr)
+            , nodeForScopedStyles(nullptr)
         {
         }
 
         void clear()
         {
-            scopedResolver = 0;
-            nodeForScopedStyles = 0;
+            scopedResolver = nullptr;
+            nodeForScopedStyles = nullptr;
+        }
+
+        void trace(Visitor* visitor)
+        {
+            visitor->trace(scopedResolver);
+            visitor->trace(nodeForScopedStyles);
         }
     };
     ScopedStyleCache m_cache;

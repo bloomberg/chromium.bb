@@ -42,8 +42,10 @@ ScopedStyleTree::ScopedStyleTree()
 
 ScopedStyleTree::~ScopedStyleTree()
 {
-    for (HashMap<const ContainerNode*, ScopedStyleResolver*>::iterator it = m_authorStyles.begin(); it != m_authorStyles.end(); ++it)
+#if !ENABLE(OILPAN)
+    for (HashMap<RawPtr<const ContainerNode>, RawPtr<ScopedStyleResolver> >::iterator it = m_authorStyles.begin(); it != m_authorStyles.end(); ++it)
         it->key->treeScope().clearScopedStyleResolver();
+#endif
 }
 
 ScopedStyleResolver* ScopedStyleTree::ensureScopedStyleResolver(ContainerNode& scopingNode)
@@ -63,13 +65,13 @@ ScopedStyleResolver* ScopedStyleTree::scopedStyleResolverFor(const ContainerNode
     return scopingNode.treeScope().scopedStyleResolver();
 }
 
-void ScopedStyleTree::resolveScopedStyles(const Element* element, Vector<ScopedStyleResolver*, 8>& resolvers)
+void ScopedStyleTree::resolveScopedStyles(const Element* element, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolvers)
 {
     for (ScopedStyleResolver* scopedResolver = scopedResolverFor(element); scopedResolver; scopedResolver = scopedResolver->parent())
         resolvers.append(scopedResolver);
 }
 
-void ScopedStyleTree::collectScopedResolversForHostedShadowTrees(const Element* element, Vector<ScopedStyleResolver*, 8>& resolvers)
+void ScopedStyleTree::collectScopedResolversForHostedShadowTrees(const Element* element, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolvers)
 {
     ElementShadow* shadow = element->shadow();
     if (!shadow)
@@ -84,7 +86,7 @@ void ScopedStyleTree::collectScopedResolversForHostedShadowTrees(const Element* 
     }
 }
 
-void ScopedStyleTree::resolveScopedKeyframesRules(const Element* element, Vector<ScopedStyleResolver*, 8>& resolvers)
+void ScopedStyleTree::resolveScopedKeyframesRules(const Element* element, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolvers)
 {
     Document& document = element->document();
     TreeScope& treeScope = element->treeScope();
@@ -144,7 +146,7 @@ void ScopedStyleTree::popStyleCache(const ContainerNode& scopingNode)
 void ScopedStyleTree::collectFeaturesTo(RuleFeatureSet& features)
 {
     HashSet<const StyleSheetContents*> visitedSharedStyleSheetContents;
-    for (HashMap<const ContainerNode*, ScopedStyleResolver*>::iterator it = m_authorStyles.begin(); it != m_authorStyles.end(); ++it)
+    for (WillBeHeapHashMap<RawPtrWillBeMember<const ContainerNode>, RawPtrWillBeMember<ScopedStyleResolver> >::iterator it = m_authorStyles.begin(); it != m_authorStyles.end(); ++it)
         it->value->collectFeaturesTo(features, visitedSharedStyleSheetContents);
 }
 
@@ -164,6 +166,14 @@ void ScopedStyleTree::remove(const ContainerNode* scopingNode)
     resolver = 0;
     m_authorStyles.remove(scopingNode);
     scopingNode->treeScope().clearScopedStyleResolver();
+}
+
+void ScopedStyleTree::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_authorStyles);
+    visitor->trace(m_cache);
+#endif
 }
 
 } // namespace blink

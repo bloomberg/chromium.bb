@@ -150,7 +150,7 @@ public:
 
     bool styleTreeHasOnlyScopedResolverForDocument() const { return m_styleTree.hasOnlyScopedResolverForDocument(); }
 
-    void styleTreeResolveScopedKeyframesRules(const Element* element, Vector<ScopedStyleResolver*, 8>& resolvers)
+    void styleTreeResolveScopedKeyframesRules(const Element* element, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolvers)
     {
         m_styleTree.resolveScopedKeyframesRules(element, resolvers);
     }
@@ -236,7 +236,7 @@ private:
     void collectPseudoRulesForElement(Element*, ElementRuleCollector&, PseudoId, unsigned rulesToInclude);
     void matchUARules(ElementRuleCollector&, RuleSet*);
     void matchAuthorRules(Element*, ElementRuleCollector&, bool includeEmptyRules);
-    void matchAuthorRulesForShadowHost(Element*, ElementRuleCollector&, bool includeEmptyRules, Vector<ScopedStyleResolver*, 8>& resolvers, Vector<ScopedStyleResolver*, 8>& resolversInShadowTree);
+    void matchAuthorRulesForShadowHost(Element*, ElementRuleCollector&, bool includeEmptyRules, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolvers, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolversInShadowTree);
     void matchAllRules(StyleResolverState&, ElementRuleCollector&, bool includeSMILProperties);
     void matchUARules(ElementRuleCollector&);
     // FIXME: watched selectors should be implemented using injected author stylesheets: http://crbug.com/316960

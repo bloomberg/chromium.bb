@@ -77,7 +77,7 @@ void ScopedStyleResolver::addRulesFromSheet(CSSStyleSheet* cssSheet, const Media
     AddRuleFlags addRuleFlags = resolver->document().securityOrigin()->canRequest(sheet->baseURL()) ? RuleHasDocumentSecurityOrigin : RuleHasNoSpecialState;
     const RuleSet& ruleSet = sheet->ensureRuleSet(medium, addRuleFlags);
     resolver->addMediaQueryResults(ruleSet.viewportDependentMediaQueryResults());
-    resolver->processScopedRules(ruleSet, cssSheet, m_scope.rootNode());
+    resolver->processScopedRules(ruleSet, cssSheet, treeScope().rootNode());
 }
 
 void ScopedStyleResolver::collectFeaturesTo(RuleFeatureSet& features, HashSet<const StyleSheetContents*>& visitedSharedStyleSheetContents)
@@ -149,6 +149,15 @@ void ScopedStyleResolver::collectViewportRulesTo(StyleResolver* resolver) const
         return;
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i)
         resolver->viewportStyleResolver()->collectViewportRules(&m_authorStyleSheets[i]->contents()->ruleSet(), ViewportStyleResolver::AuthorOrigin);
+}
+
+void ScopedStyleResolver::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_scope);
+    visitor->trace(m_authorStyleSheets);
+    visitor->trace(m_keyframesRuleMap);
+#endif
 }
 
 } // namespace blink
