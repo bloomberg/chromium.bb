@@ -354,7 +354,7 @@ TEST(URLFixerTest, FixupFile) {
   // this "original" filename is the one we tweak to get all the variations
   base::FilePath dir;
   base::FilePath original;
-  ASSERT_TRUE(PathService::Get(base::DIR_MODULE, &dir));
+  ASSERT_TRUE(PathService::Get(base::DIR_TEST_DATA, &dir));
   ASSERT_TRUE(MakeTempFile(
       dir,
       base::FilePath(FILE_PATH_LITERAL("url fixer upper existing file.txt")),
@@ -438,7 +438,7 @@ TEST(URLFixerTest, FixupRelativeFile) {
   base::FilePath full_path, dir;
   base::FilePath file_part(
       FILE_PATH_LITERAL("url_fixer_upper_existing_file.txt"));
-  ASSERT_TRUE(PathService::Get(base::DIR_MODULE, &dir));
+  ASSERT_TRUE(PathService::Get(base::DIR_TEST_DATA, &dir));
   ASSERT_TRUE(MakeTempFile(dir, file_part, &full_path));
   full_path = base::MakeAbsoluteFilePath(full_path);
   ASSERT_FALSE(full_path.empty());
