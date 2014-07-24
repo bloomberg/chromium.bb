@@ -33,10 +33,10 @@
     [InitializedByEventConstructor] readonly attribute double deltaZ;
     [InitializedByEventConstructor] readonly attribute unsigned long deltaMode;
 
-    // Non standard API.
-    [InitializedByEventConstructor] readonly attribute long wheelDeltaX;
-    [InitializedByEventConstructor] readonly attribute long wheelDeltaY;
-    readonly attribute long wheelDelta;
+    // Non-standard API.
+    [InitializedByEventConstructor, MeasureAs=WheelEventWheelDeltaX] readonly attribute long wheelDeltaX;
+    [InitializedByEventConstructor, MeasureAs=WheelEventWheelDeltaY] readonly attribute long wheelDeltaY;
+    [MeasureAs=WheelEventWheelDelta] readonly attribute long wheelDelta;
 
     // WebKit Extension
     [MeasureAs=PrefixedWheelEventDirectionInvertedFromDevice]
