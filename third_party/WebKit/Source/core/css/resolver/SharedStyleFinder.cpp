@@ -234,10 +234,7 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
         return false;
 
     bool isControl = candidate.isFormControlElement();
-
-    if (isControl != element().isFormControlElement())
-        return false;
-
+    ASSERT(isControl == element().isFormControlElement());
     if (isControl && !canShareStyleWithControl(candidate))
         return false;
 
