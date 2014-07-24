@@ -75,9 +75,8 @@ FullWindowVideoControls.prototype = { __proto__: VideoControls.prototype };
  * Displays error message.
  *
  * @param {string} message Message id.
- * @private
  */
-FullWindowVideoControls.prototype.showErrorMessage_ = function(message) {
+FullWindowVideoControls.prototype.showErrorMessage = function(message) {
   var errorBanner = document.querySelector('#error');
   errorBanner.textContent =
       loadTimeData.getString(message);
@@ -92,7 +91,7 @@ FullWindowVideoControls.prototype.showErrorMessage_ = function(message) {
  * @private
  */
 FullWindowVideoControls.prototype.onPlaybackError_ = function() {
-  this.showErrorMessage_('GALLERY_VIDEO_DECODING_ERROR');
+  this.showErrorMessage('GALLERY_VIDEO_DECODING_ERROR');
   this.decodeErrorOccured = true;
 
   // Disable inactivity watcher, and disable the ui, by hiding tools manually.
@@ -273,37 +272,77 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
   this.controls.inactivityWatcher.disabled = false;
   this.controls.decodeErrorOccured = false;
 
+  var videoElementInitializePromise;
   if (this.currentCast_) {
     videoPlayerElement.setAttribute('casting', true);
-    this.videoElement_ = new CastVideoElement();
-    this.controls.attachMedia(this.videoElement_);
 
     document.querySelector('#cast-name-label').textContent =
         loadTimeData.getString('VIDEO_PLAYER_PLAYING_ON');
     document.querySelector('#cast-name').textContent =
         this.currentCast_.friendlyName;
+
+    var downloadUrlPromise = new Promise(function(fulfill, reject) {
+      chrome.fileBrowserPrivate.getDownloadUrl(video.url, fulfill);
+    });
+
+    var mimePromise = new Promise(function(fulfill, reject) {
+      chrome.fileBrowserPrivate.getDriveEntryProperties(
+          [video.entry.toURL()], fulfill);
+    });
+
+    videoElementInitializePromise =
+        Promise.all([downloadUrlPromise, mimePromise]).then(function(results) {
+          var downloadUrl = results[0];
+          var props = results[1];
+          var mime = '';
+          if (!props || props.length === 0 || !props[0].contentMimeType) {
+            // TODO(yoshiki): Adds a logic to guess the mime.
+          } else {
+            mime = props[0].contentMimeType;
+          }
+
+          return new Promise(function(fulfill, reject) {
+            chrome.cast.requestSession(
+                fulfill, reject, undefined, this.currentCast_.label);
+          }).then(function(session) {
+            var mediaInfo = new chrome.cast.media.MediaInfo(downloadUrl);
+            mediaInfo.contentType = mime;
+            this.videoElement_ = new CastVideoElement(mediaInfo, session);
+            this.controls.attachMedia(this.videoElement_);
+          }.bind(this));
+        }.bind(this));
   } else {
     videoPlayerElement.removeAttribute('casting');
 
     this.videoElement_ = document.createElement('video');
-    document.querySelector('#video-container').appendChild(this.videoElement_);
+    document.querySelector('#video-container').appendChild(
+        this.videoElement_);
 
     this.controls.attachMedia(this.videoElement_);
     this.videoElement_.src = video.url;
+
+    videoElementInitializePromise = Promise.resolve();
   }
 
-  this.videoElement_.load();
+  videoElementInitializePromise.then(
+      function() {
+        this.videoElement_.load();
 
-  if (opt_callback) {
-    var handler = function(currentPos, event) {
-      console.log('loaded: ', currentPos, this.currentPos_);
-      if (currentPos === this.currentPos_)
-        opt_callback();
-      this.videoElement_.removeEventListener('loadedmetadata', handler);
-    }.wrap(this, this.currentPos_);
+        if (opt_callback) {
+          var handler = function(currentPos, event) {
+            if (currentPos === this.currentPos_)
+              opt_callback();
+            this.videoElement_.removeEventListener('loadedmetadata', handler);
+          }.wrap(this, this.currentPos_);
 
-    this.videoElement_.addEventListener('loadedmetadata', handler);
-  }
+          this.videoElement_.addEventListener('loadedmetadata', handler);
+        }
+      }.bind(this),
+      function videoElementInitializePromiseRejected() {
+        console.error('Failed to initialize the video element.',
+                      error.stack || error);
+        this.controls_.showErrorMessage('GALLERY_VIDEO_ERROR');
+      }.bind(this));
 };
 
 /**
