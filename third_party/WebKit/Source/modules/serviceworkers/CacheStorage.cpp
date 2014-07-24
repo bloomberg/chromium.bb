@@ -10,13 +10,9 @@
 
 namespace WebCore {
 
-PassRefPtr<CacheStorage> CacheStorage::create()
+PassRefPtrWillBeRawPtr<CacheStorage> CacheStorage::create()
 {
-    return adoptRef(new CacheStorage());
-}
-
-CacheStorage::~CacheStorage()
-{
+    return adoptRefWillBeNoop(new CacheStorage());
 }
 
 // FIXME: Implement every one of these methods.

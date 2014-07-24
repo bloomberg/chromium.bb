@@ -59,7 +59,7 @@ public:
     PassRefPtrWillBeRawPtr<ServiceWorkerClients> clients();
     String scope(ExecutionContext*);
 
-    PassRefPtr<CacheStorage> caches(ExecutionContext*);
+    PassRefPtrWillBeRawPtr<CacheStorage> caches(ExecutionContext*);
 
     ScriptPromise fetch(ScriptState*, Request*);
     ScriptPromise fetch(ScriptState*, const String&);

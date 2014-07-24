@@ -88,7 +88,7 @@ String ServiceWorkerGlobalScope::scope(ExecutionContext* context)
     return ServiceWorkerGlobalScopeClient::from(context)->scope().string();
 }
 
-PassRefPtr<CacheStorage> ServiceWorkerGlobalScope::caches(ExecutionContext* context)
+PassRefPtrWillBeRawPtr<CacheStorage> ServiceWorkerGlobalScope::caches(ExecutionContext* context)
 {
     if (!m_cacheStorage)
         m_cacheStorage = CacheStorage::create();
@@ -128,6 +128,7 @@ const AtomicString& ServiceWorkerGlobalScope::interfaceName() const
 void ServiceWorkerGlobalScope::trace(Visitor* visitor)
 {
     visitor->trace(m_clients);
+    visitor->trace(m_cacheStorage);
     WorkerGlobalScope::trace(visitor);
 }
 

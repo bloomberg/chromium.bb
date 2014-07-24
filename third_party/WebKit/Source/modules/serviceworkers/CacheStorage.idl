@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 [
+    WillBeGarbageCollected,
     NoInterfaceObject,
     Exposed=ServiceWorker,
     RuntimeEnabled=ServiceWorker,

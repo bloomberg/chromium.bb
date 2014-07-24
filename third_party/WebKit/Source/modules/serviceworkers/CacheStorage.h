@@ -19,14 +19,15 @@ namespace WebCore {
 class CacheStorage FINAL : public RefCountedWillBeGarbageCollected<CacheStorage>, public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(CacheStorage);
 public:
-    static PassRefPtr<CacheStorage> create();
-    virtual ~CacheStorage();
+    static PassRefPtrWillBeRawPtr<CacheStorage> create();
 
     ScriptPromise createFunction(ScriptState*, const String& key);
     ScriptPromise rename(ScriptState*, const String& oldKey, const String& newKey);
     ScriptPromise get(ScriptState*, const String& key);
     ScriptPromise deleteFunction(ScriptState*, const String& key);
     ScriptPromise keys(ScriptState*);
+
+    void trace(Visitor*) { }
 
 private:
     CacheStorage();
