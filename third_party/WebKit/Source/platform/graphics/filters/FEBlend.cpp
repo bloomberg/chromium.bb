@@ -214,22 +214,22 @@ static TextStream& operator<<(TextStream& ts, const BlendModeType& type)
 {
     switch (type) {
     case FEBLEND_MODE_UNKNOWN:
-        ts << "UNKNOWN";
+        ts << "unknown";
         break;
     case FEBLEND_MODE_NORMAL:
-        ts << "NORMAL";
+        ts << "normal";
         break;
     case FEBLEND_MODE_MULTIPLY:
-        ts << "MULTIPLY";
+        ts << "multiply";
         break;
     case FEBLEND_MODE_SCREEN:
-        ts << "SCREEN";
+        ts << "screen";
         break;
     case FEBLEND_MODE_DARKEN:
-        ts << "DARKEN";
+        ts << "darken";
         break;
     case FEBLEND_MODE_LIGHTEN:
-        ts << "LIGHTEN";
+        ts << "lighten";
         break;
     }
     return ts;

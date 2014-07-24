@@ -1441,6 +1441,18 @@ crbug.com/392764 [ Linux ] webaudio/distance-linear.html [ Pass Failure ]
 # Flaky
 crbug.com/395127 http/tests/w3c/webperf/approved/UserTiming/test_user_timing_measure_navigation_timing.htm [ Failure Pass ]
 
+crbug.com/389594 css3/filters/effect-reference-colorspace-hw.html [ NeedsRebaseline ]
+crbug.com/389594 css3/filters/effect-reference-colorspace.html [ NeedsRebaseline ]
+crbug.com/389594 css3/filters/effect-reference-hw.html [ NeedsRebaseline ]
+crbug.com/389594 css3/filters/effect-reference-subregion-hw.html [ NeedsRebaseline ]
+crbug.com/389594 css3/filters/effect-reference-subregion.html [ NeedsRebaseline ]
+crbug.com/389594 css3/filters/effect-reference-zoom-hw.html [ NeedsRebaseline ]
+crbug.com/389594 css3/filters/effect-reference-zoom.html [ NeedsRebaseline ]
+crbug.com/389594 css3/filters/effect-reference.html [ NeedsRebaseline ]
+crbug.com/389594 svg/W3C-SVG-1.1/filters-blend-01-b.svg [ NeedsRebaseline ]
+crbug.com/389594 svg/css/path-gradient-stroke-shadow.svg [ NeedsRebaseline ]
+crbug.com/389594 svg/css/rect-gradient-stroke-shadow.svg [ NeedsRebaseline ]
+
 crbug.com/390587 [ XP ] css3/flexbox/repaint-during-resize-no-flex.html [ NeedsRebaseline ]
 crbug.com/390587 [ XP ] css3/flexbox/repaint-rtl-column.html [ NeedsRebaseline ]
 crbug.com/390587 [ XP ] css3/flexbox/repaint.html [ NeedsRebaseline ]
