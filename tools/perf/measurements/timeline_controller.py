@@ -21,7 +21,7 @@ class TimelineController(object):
     self._smooth_records = []
     self._interaction = None
 
-  def SetUp(self, page, tab):
+  def Start(self, page, tab):
     """Starts gathering timeline data.
 
     """
@@ -36,8 +36,6 @@ class TimelineController(object):
     else:
       categories = page.GetSyntheticDelayCategories()
     tab.browser.StartTracing(','.join(categories))
-
-  def Start(self, tab):
     # Start the smooth marker for all actions.
     runner = action_runner.ActionRunner(tab)
     self._interaction = runner.BeginInteraction(

@@ -27,7 +27,7 @@ class SmoothnessController(object):
     self._tracing_timeline_data = None
     self._interaction = None
 
-  def SetUp(self, page, tab):
+  def Start(self, page, tab):
     # FIXME: Remove webkit.console when blink.console lands in chromium and
     # the ref builds are updated. crbug.com/386847
     custom_categories = ['webkit.console', 'blink.console', 'benchmark']
@@ -35,8 +35,6 @@ class SmoothnessController(object):
     tab.browser.StartTracing(','.join(custom_categories), 60)
     if tab.browser.platform.IsRawDisplayFrameRateSupported():
       tab.browser.platform.StartRawDisplayFrameRateMeasurement()
-
-  def Start(self, tab):
     # Start the smooth marker for all smooth actions.
     runner = action_runner.ActionRunner(tab)
     self._interaction = runner.BeginInteraction(

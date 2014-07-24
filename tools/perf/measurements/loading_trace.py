@@ -17,8 +17,7 @@ class LoadingTrace(page_measurement.PageMeasurement):
     return False
 
   def WillNavigateToPage(self, page, tab):
-    self._timeline_controller.SetUp(page, tab)
-    self._timeline_controller.Start(tab)
+    self._timeline_controller.Start(page, tab)
 
   def MeasurePage(self, page, tab, results):
     # In current telemetry tests, all tests wait for DocumentComplete state,

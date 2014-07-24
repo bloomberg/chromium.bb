@@ -22,13 +22,10 @@ class Smoothness(page_measurement.PageMeasurement):
   def WillStartBrowser(self, browser):
     self._power_metric = power.PowerMetric(browser)
 
-  def WillNavigateToPage(self, page, tab):
+  def WillRunActions(self, page, tab):
     self._power_metric.Start(page, tab)
     self._smoothness_controller = smoothness_controller.SmoothnessController()
-    self._smoothness_controller.SetUp(page, tab)
-
-  def WillRunActions(self, page, tab):
-    self._smoothness_controller.Start(tab)
+    self._smoothness_controller.Start(page, tab)
 
   def DidRunActions(self, page, tab):
     self._power_metric.Stop(page, tab)
