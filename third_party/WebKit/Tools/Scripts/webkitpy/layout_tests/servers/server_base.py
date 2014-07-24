@@ -76,6 +76,7 @@ class ServerBase(object):
         self._stderr = self._executive.PIPE
         self._process = None
         self._pid = None
+        self._error_log_path = None
 
     def start(self):
         """Starts the server. It is an error to start an already started server.
@@ -87,6 +88,7 @@ class ServerBase(object):
         if self._filesystem.exists(self._pid_file):
             try:
                 self._pid = int(self._filesystem.read_text_file(self._pid_file))
+                _log.debug('stale %s pid file, pid %d' % (self._name, self._pid))
                 self._stop_running_server()
             except (ValueError, UnicodeDecodeError):
                 # These could be raised if the pid file is corrupt.
@@ -102,6 +104,7 @@ class ServerBase(object):
         if self._wait_for_action(self._is_server_running_on_all_ports):
             _log.debug("%s successfully started (pid = %d)" % (self._name, self._pid))
         else:
+            self._log_errors_from_subprocess()
             self._stop_running_server()
             raise ServerError('Failed to start %s server' % self._name)
 
@@ -171,9 +174,13 @@ class ServerBase(object):
 
     def _check_and_kill(self):
         if self._executive.check_running_pid(self._pid):
+            _log.debug('pid %d is running, killing it' % self._pid)
             host = self._port_obj.host
             self._executive.kill_process(self._pid)
             return False
+        else:
+            _log.debug('pid %d is not running' % self._pid)
+
         return True
 
     def _remove_pid_file(self):
@@ -186,6 +193,34 @@ class ServerBase(object):
             if file.startswith(starts_with):
                 full_path = self._filesystem.join(folder, file)
                 self._filesystem.remove(full_path)
+
+    def _log_errors_from_subprocess(self):
+        _log.error('logging %s errors, if any' % self._name)
+        if self._process:
+            _log.error('%s returncode %s' % (self._name, str(self._process.returncode)))
+            if self._process.stderr:
+                stderr_text = self._process.stderr.read()
+                if stderr_text:
+                    _log.error('%s stderr:' % self._name)
+                    for line in stderr_text.splitlines():
+                        _log.error('  %s' % line)
+                else:
+                    _log.error('%s no stderr' % self._name)
+            else:
+                _log.error('%s no stderr handle' % self._name)
+        else:
+            _log.error('%s no process' % self._name)
+        if self._error_log_path:
+            error_log_text = self._filesystem.read_text_file(self._error_log_path)
+            if error_log_text:
+                _log.error('%s error log (%s) contents:' % (self._name, self._error_log_path))
+                for line in error_log_text.splitlines():
+                    _log.error('  %s' % line)
+            else:
+                _log.error('%s error log empty' % self._name)
+            _log.error('')
+        else:
+            _log.error('%s no error log' % self._name)
 
     def _wait_for_action(self, action, wait_secs=20.0, sleep_secs=1.0):
         """Repeat the action for wait_sec or until it succeeds, sleeping for sleep_secs
@@ -202,7 +237,8 @@ class ServerBase(object):
     def _is_server_running_on_all_ports(self):
         """Returns whether the server is running on all the desired ports."""
         if not self._executive.check_running_pid(self._pid):
-            _log.debug("Server isn't running at all")
+            _log.error("Server isn't running at all")
+            self._log_errors_from_subprocess()
             raise ServerError("Server exited")
 
         for mapping in self._mappings:
@@ -223,7 +259,7 @@ class ServerBase(object):
     def _check_that_all_ports_are_available(self):
         for mapping in self._mappings:
             s = socket.socket()
-            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            # s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             port = mapping['port']
             try:
                 s.bind(('localhost', port))
@@ -236,3 +272,4 @@ class ServerBase(object):
                     raise
             finally:
                 s.close()
+        _log.debug('all ports are available')

@@ -44,6 +44,7 @@ class ApacheHTTP(server_base.ServerBase):
         # We use the name "httpd" instead of "apache" to make our paths (e.g. the pid file: /tmp/WebKit/httpd.pid)
         # match old-run-webkit-tests: https://bugs.webkit.org/show_bug.cgi?id=63956
         self._name = 'httpd'
+        self._log_prefixes = ('access_log', 'error_log')
         self._mappings = [{'port': 8000},
                           {'port': 8080},
                           {'port': 8443, 'sslcert': True}]
@@ -61,8 +62,8 @@ class ApacheHTTP(server_base.ServerBase):
         mime_types_path = self._filesystem.join(test_dir, "http", "conf", "mime.types")
         cert_file = self._filesystem.join(test_dir, "http", "conf", "webkit-httpd.pem")
 
-        access_log = self._filesystem.join(output_dir, "access_log.txt")
-        error_log = self._filesystem.join(output_dir, "error_log.txt")
+        self._access_log_path = self._filesystem.join(output_dir, "access_log.txt")
+        self._error_log_path = self._filesystem.join(output_dir, "error_log.txt")
 
         self._is_win = self._port_obj.host.platform.is_win()
 
@@ -73,8 +74,8 @@ class ApacheHTTP(server_base.ServerBase):
             '-c', 'Alias /js-test-resources "%s"' % js_test_resources_dir,
             '-c', 'Alias /media-resources "%s"' % media_resources_dir,
             '-c', 'TypesConfig "%s"' % mime_types_path,
-            '-c', 'CustomLog "%s" common' % access_log,
-            '-c', 'ErrorLog "%s"' % error_log,
+            '-c', 'CustomLog "%s" common' % self._access_log_path,
+            '-c', 'ErrorLog "%s"' % self._error_log_path,
             '-c', 'PidFile %s' % self._pid_file,
             '-c', 'SSLCertificateFile "%s"' % cert_file,
             ]
@@ -125,7 +126,7 @@ class ApacheHTTP(server_base.ServerBase):
 
     def _spawn_process(self):
         _log.debug('Starting %s server, cmd="%s"' % (self._name, str(self._start_cmd)))
-        self._process = self._executive.popen(self._start_cmd)
+        self._process = self._executive.popen(self._start_cmd, stderr=self._executive.PIPE)
         if self._process.returncode is not None:
             retval = self._process.returncode
             err = self._process.stderr.read()
@@ -135,6 +136,7 @@ class ApacheHTTP(server_base.ServerBase):
         # For some reason apache isn't guaranteed to have created the pid file before
         # the process exits, so we wait a little while longer.
         if not self._wait_for_action(lambda: self._filesystem.exists(self._pid_file)):
+            self._log_errors_from_subprocess()
             raise server_base.ServerError('Failed to start %s: no pid file found' % self._name)
 
         return int(self._filesystem.read_text_file(self._pid_file))
