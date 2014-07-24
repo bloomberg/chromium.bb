@@ -663,7 +663,7 @@ class GLHelperTest : public testing::Test {
         dst_texture,
         gfx::Rect(0, 0, scaled_xsize, scaled_ysize),
         static_cast<unsigned char*>(output_pixels.getPixels()),
-        kN32_SkColorType);
+        kRGBA_8888_SkColorType);
     if (flip) {
       // Flip the pixels back.
       FlipSKBitmap(&output_pixels);
@@ -859,7 +859,8 @@ class GLHelperTest : public testing::Test {
       for (int x = 0; x < w; ++x) {
         bool on_grid = (y_on_grid || ((x % grid_pitch) < grid_width));
 
-        if (bmp.colorType() == kN32_SkColorType) {
+        if (bmp.colorType() == kRGBA_8888_SkColorType ||
+            bmp.colorType() == kBGRA_8888_SkColorType) {
           *bmp.getAddr32(x, y) = (on_grid ? grid_color : background_color);
         } else if (bmp.colorType() == kRGB_565_SkColorType) {
           *bmp.getAddr16(x, y) = (on_grid ? grid_color : background_color);
@@ -883,7 +884,8 @@ class GLHelperTest : public testing::Test {
         bool x_bit = (((x / rect_w) & 0x1) == 0);
 
         bool use_color2 = (x_bit != y_bit);  // xor
-        if (bmp.colorType() == kN32_SkColorType) {
+        if (bmp.colorType() == kRGBA_8888_SkColorType ||
+            bmp.colorType() == kBGRA_8888_SkColorType) {
           *bmp.getAddr32(x, y) = (use_color2 ? color2 : color1);
         } else if (bmp.colorType() == kRGB_565_SkColorType) {
           *bmp.getAddr16(x, y) = (use_color2 ? color2 : color1);
@@ -899,7 +901,8 @@ class GLHelperTest : public testing::Test {
     int c2 = static_cast<int>(component2);
     bool result = false;
     switch (color_type) {
-      case kN32_SkColorType:
+      case kRGBA_8888_SkColorType:
+      case kBGRA_8888_SkColorType:
         result = (std::abs(c1 - c2) == 0);
         break;
       case kRGB_565_SkColorType:
@@ -961,8 +964,20 @@ class GLHelperTest : public testing::Test {
                                       const gfx::Size& src_size,
                                       const SkBitmap& input_pixels) {
     context_->bindTexture(GL_TEXTURE_2D, src_texture);
-    GLenum format = (color_type == kRGB_565_SkColorType) ?
-                    GL_RGB : GL_RGBA;
+    GLenum format = 0;
+    switch (color_type) {
+      case kBGRA_8888_SkColorType:
+        format = GL_BGRA_EXT;
+        break;
+      case kRGBA_8888_SkColorType:
+        format = GL_RGBA;
+        break;
+      case kRGB_565_SkColorType:
+        format = GL_RGB;
+        break;
+      default:
+        NOTREACHED();
+    }
     GLenum type = (color_type == kRGB_565_SkColorType) ?
                   GL_UNSIGNED_SHORT_5_6_5 : GL_UNSIGNED_BYTE;
     context_->texImage2D(GL_TEXTURE_2D,
@@ -1453,10 +1468,19 @@ class GLHelperPixelTest : public GLHelperTest {
   gfx::DisableNullDrawGLBindings enable_pixel_output_;
 };
 
-TEST_F(GLHelperTest, ARGBSyncReadbackTest) {
+TEST_F(GLHelperTest, RGBASyncReadbackTest) {
   const int kTestSize = 64;
   bool result = TestTextureFormatReadback(gfx::Size(kTestSize,kTestSize),
-                                          kN32_SkColorType,
+                                          kRGBA_8888_SkColorType,
+                                          false);
+  EXPECT_EQ(result, true);
+}
+
+
+TEST_F(GLHelperTest, BGRASyncReadbackTest) {
+  const int kTestSize = 64;
+  bool result = TestTextureFormatReadback(gfx::Size(kTestSize,kTestSize),
+                                          kBGRA_8888_SkColorType,
                                           false);
   EXPECT_EQ(result, true);
 }
@@ -1469,10 +1493,18 @@ TEST_F(GLHelperTest, RGB565SyncReadbackTest) {
   EXPECT_EQ(result, true);
 }
 
-TEST_F(GLHelperTest, ARGBASyncReadbackTest) {
+TEST_F(GLHelperTest, RGBAASyncReadbackTest) {
   const int kTestSize = 64;
   bool result = TestTextureFormatReadback(gfx::Size(kTestSize,kTestSize),
-                                          kN32_SkColorType,
+                                          kRGBA_8888_SkColorType,
+                                          true);
+  EXPECT_EQ(result, true);
+}
+
+TEST_F(GLHelperTest, BGRAASyncReadbackTest) {
+  const int kTestSize = 64;
+  bool result = TestTextureFormatReadback(gfx::Size(kTestSize,kTestSize),
+                                          kBGRA_8888_SkColorType,
                                           true);
   EXPECT_EQ(result, true);
 }

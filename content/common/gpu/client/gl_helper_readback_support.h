@@ -13,29 +13,35 @@ namespace content {
 
 class CONTENT_EXPORT GLHelperReadbackSupport {
  public:
+  enum FormatSupport { SUPPORTED, SWIZZLE, NOT_SUPPORTED };
+
   GLHelperReadbackSupport(gpu::gles2::GLES2Interface* gl);
 
   ~GLHelperReadbackSupport();
 
-  // Checks whether the readback (Color read format and type) is supported
-  // for the requested texture format  by the hardware or not.
-  // For ex: some hardwares have rgb565 readback
-  // support when binded with the frame buffer for others it may fail.
-  // Here we pass the internal textureformat as skia config.
-  bool IsReadbackConfigSupported(SkColorType texture_format);
-
+  // For a given color type retrieve whether readback is supported and if so
+  // how it should be performed. The |format|, |type| and |bytes_per_pixel| are
+  // the values that should be used with glReadPixels to facilitate the
+  // readback. If |can_swizzle| is true then this method will return SWIZZLE if
+  // the data needs to be swizzled before using the returned |format| otherwise
+  // the method will return SUPPORTED to indicate that readback is permitted of
+  // this color othewise NOT_SUPPORTED will be returned.  This method always
+  // overwrites the out values irrespective of the return value.
+  FormatSupport GetReadbackConfig(SkColorType color_type,
+                                  bool can_swizzle,
+                                  GLenum* format,
+                                  GLenum* type,
+                                  size_t* bytes_per_pixel);
   // Provides the additional readback format/type pairing for a render target
   // of a given format/type pairing
-  void GetAdditionalFormat(GLint format, GLint type, GLint *format_out,
-                           GLint *type_out);
+  void GetAdditionalFormat(GLenum format, GLenum type, GLenum *format_out,
+                           GLenum *type_out);
  private:
-  enum FormatSupport { FORMAT_NOT_SUPPORTED = 0, FORMAT_SUPPORTED, };
-
   struct FormatCacheEntry {
-    GLint format;
-    GLint type;
-    GLint read_format;
-    GLint read_type;
+    GLenum format;
+    GLenum type;
+    GLenum read_format;
+    GLenum read_type;
   };
 
   // This populates the format_support_table with the list of supported
@@ -51,7 +57,7 @@ class CONTENT_EXPORT GLHelperReadbackSupport {
   // Helper functions for checking the supported texture formats.
   // Avoid using this API in between texture operations, as this does some
   // teture opertions (bind, attach) internally.
-  bool SupportsFormat(GLint format, GLint type);
+  bool SupportsFormat(GLenum format, GLenum type);
 
   FormatSupport format_support_table_[kLastEnum_SkColorType + 1];
 

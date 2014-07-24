@@ -4,6 +4,8 @@
 
 #include "content/common/gpu/client/gl_helper_readback_support.h"
 #include "base/logging.h"
+#include "gpu/GLES2/gl2extchromium.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 
 namespace content {
 
@@ -15,17 +17,18 @@ GLHelperReadbackSupport::GLHelperReadbackSupport(gpu::gles2::GLES2Interface* gl)
 GLHelperReadbackSupport::~GLHelperReadbackSupport() {}
 
 void GLHelperReadbackSupport::InitializeReadbackSupport() {
-  // We are concerned about 16, 32-bit formats only.
-  // The below are the most used 16, 32-bit formats.
-  // In future if any new format support is needed that should be added here.
-  // Initialize the array with FORMAT_NOT_SUPPORTED as we dont know the
-  // supported formats yet.
+  // We are concerned about 16, 32-bit formats only.  The below are the most
+  // used 16, 32-bit formats.  In future if any new format support is needed
+  // that should be added here.  Initialize the array with
+  // GLHelperReadbackSupport::NOT_SUPPORTED as we dont know the supported
+  // formats yet.
   for (int i = 0; i <= kLastEnum_SkColorType; ++i) {
-    format_support_table_[i] = FORMAT_NOT_SUPPORTED;
+    format_support_table_[i] = GLHelperReadbackSupport::NOT_SUPPORTED;
   }
   CheckForReadbackSupport(kRGB_565_SkColorType);
   CheckForReadbackSupport(kARGB_4444_SkColorType);
-  CheckForReadbackSupport(kN32_SkColorType);
+  CheckForReadbackSupport(kRGBA_8888_SkColorType);
+  CheckForReadbackSupport(kBGRA_8888_SkColorType);
   // Further any formats, support should be checked here.
 }
 
@@ -36,9 +39,12 @@ void GLHelperReadbackSupport::CheckForReadbackSupport(
     case kRGB_565_SkColorType:
       supports_format = SupportsFormat(GL_RGB, GL_UNSIGNED_SHORT_5_6_5);
       break;
-    case kN32_SkColorType:
+    case kRGBA_8888_SkColorType:
       // This is the baseline, assume always true.
       supports_format = true;
+      break;
+    case kBGRA_8888_SkColorType:
+      supports_format = SupportsFormat(GL_BGRA_EXT, GL_UNSIGNED_BYTE);
       break;
     case kARGB_4444_SkColorType:
       supports_format = false;
@@ -50,12 +56,14 @@ void GLHelperReadbackSupport::CheckForReadbackSupport(
   }
   DCHECK((int)texture_format <= (int)kLastEnum_SkColorType);
   format_support_table_[texture_format] =
-      supports_format ? FORMAT_SUPPORTED : FORMAT_NOT_SUPPORTED;
+      supports_format ? GLHelperReadbackSupport::SUPPORTED
+                      : GLHelperReadbackSupport::NOT_SUPPORTED;
 }
 
-void GLHelperReadbackSupport::GetAdditionalFormat(GLint format, GLint type,
-                                                  GLint *format_out,
-                                                  GLint *type_out) {
+void GLHelperReadbackSupport::GetAdditionalFormat(GLenum format,
+                                                  GLenum type,
+                                                  GLenum* format_out,
+                                                  GLenum* type_out) {
   for (unsigned int i = 0; i < format_cache_.size(); i++) {
     if (format_cache_[i].format == format && format_cache_[i].type == type) {
       *format_out = format_cache_[i].read_format;
@@ -78,20 +86,33 @@ void GLHelperReadbackSupport::GetAdditionalFormat(GLint format, GLint type,
                                                              dst_framebuffer);
   gl_->FramebufferTexture2D(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dst_texture, 0);
-  gl_->GetIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, format_out);
-  gl_->GetIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, type_out);
+  GLint format_tmp = 0, type_tmp = 0;
+  gl_->GetIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, &format_tmp);
+  gl_->GetIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, &type_tmp);
+  *format_out = format_tmp;
+  *type_out = type_tmp;
 
   struct FormatCacheEntry entry = { format, type, *format_out, *type_out };
   format_cache_.push_back(entry);
 }
 
-bool GLHelperReadbackSupport::SupportsFormat(GLint format, GLint type) {
+bool GLHelperReadbackSupport::SupportsFormat(GLenum format, GLenum type) {
   // GLES2.0 Specification says this pairing is always supported
   // with additional format from GL_IMPLEMENTATION_COLOR_READ_FORMAT/TYPE
   if (format == GL_RGBA && type == GL_UNSIGNED_BYTE)
     return true;
+
+  if (format == GL_BGRA_EXT && type == GL_UNSIGNED_BYTE) {
+    const GLubyte* tmp = gl_->GetString(GL_EXTENSIONS);
+    std::string extensions =
+        " " + std::string(reinterpret_cast<const char*>(tmp)) + " ";
+    if (extensions.find(" GL_EXT_read_format_bgra ") != std::string::npos) {
+      return true;
+    }
+  }
+
   bool supports_format = false;
-  GLint ext_format = 0, ext_type = 0;
+  GLenum ext_format = 0, ext_type = 0;
   GetAdditionalFormat(format, type, &ext_format, &ext_type);
   if ((ext_format == format) && (ext_type == type)) {
     supports_format = true;
@@ -99,17 +120,60 @@ bool GLHelperReadbackSupport::SupportsFormat(GLint format, GLint type) {
   return supports_format;
 }
 
-bool GLHelperReadbackSupport::IsReadbackConfigSupported(
-    SkColorType texture_format) {
-  switch (format_support_table_[texture_format]) {
-    case FORMAT_SUPPORTED:
-      return true;
-    case FORMAT_NOT_SUPPORTED:
-      return false;
+GLHelperReadbackSupport::FormatSupport
+GLHelperReadbackSupport::GetReadbackConfig(SkColorType color_type,
+                                           bool can_swizzle,
+                                           GLenum* format,
+                                           GLenum* type,
+                                           size_t* bytes_per_pixel) {
+  DCHECK(format && type && bytes_per_pixel);
+  *bytes_per_pixel = 4;
+  *type = GL_UNSIGNED_BYTE;
+  GLenum new_format = 0, new_type = 0;
+  switch (color_type) {
+    case kRGB_565_SkColorType:
+      if (format_support_table_[color_type] ==
+          GLHelperReadbackSupport::SUPPORTED) {
+        *format = GL_RGB;
+        *type = GL_UNSIGNED_SHORT_5_6_5;
+        *bytes_per_pixel = 2;
+        return GLHelperReadbackSupport::SUPPORTED;
+      }
+      break;
+    case kRGBA_8888_SkColorType:
+      *format = GL_RGBA;
+      if (can_swizzle) {
+        // If GL_BGRA_EXT is advertised as the readback format through
+        // GL_IMPLEMENTATION_COLOR_READ_FORMAT then assume it is preferred by
+        // the implementation for performance.
+        GetAdditionalFormat(*format, *type, &new_format, &new_type);
+
+        if (new_format == GL_BGRA_EXT && new_type == GL_UNSIGNED_BYTE) {
+          *format = GL_BGRA_EXT;
+          return GLHelperReadbackSupport::SWIZZLE;
+        }
+      }
+      return GLHelperReadbackSupport::SUPPORTED;
+    case kBGRA_8888_SkColorType:
+      *format = GL_BGRA_EXT;
+      if (format_support_table_[color_type] ==
+          GLHelperReadbackSupport::SUPPORTED)
+        return GLHelperReadbackSupport::SUPPORTED;
+
+      if (can_swizzle) {
+        *format = GL_RGBA;
+        return GLHelperReadbackSupport::SWIZZLE;
+      }
+
+      break;
+    case kARGB_4444_SkColorType:
+      return GLHelperReadbackSupport::NOT_SUPPORTED;
     default:
       NOTREACHED();
-      return false;
+      break;
   }
+
+  return GLHelperReadbackSupport::NOT_SUPPORTED;
 }
 
 }  // namespace content
