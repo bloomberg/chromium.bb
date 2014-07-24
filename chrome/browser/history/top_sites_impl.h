@@ -19,7 +19,6 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/page_usage_data.h"
@@ -79,7 +78,8 @@ class TopSitesImpl : public TopSites {
   virtual bool IsBlacklisted(const GURL& url) OVERRIDE;
   virtual void ClearBlacklistedURLs() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
-  virtual CancelableRequestProvider::Handle StartQueryForMostVisited() OVERRIDE;
+  virtual base::CancelableTaskTracker::TaskId StartQueryForMostVisited()
+      OVERRIDE;
   virtual bool IsKnownURL(const GURL& url) OVERRIDE;
   virtual const std::string& GetCanonicalURLString(
       const GURL& url) const OVERRIDE;
@@ -233,9 +233,7 @@ class TopSitesImpl : public TopSites {
   // Lock used to access |thread_safe_cache_|.
   mutable base::Lock lock_;
 
-  // Need a separate consumer for each CancelableRequestProvider we interact
-  // with (HistoryService and TopSitesBackend).
-  CancelableRequestConsumer history_consumer_;
+  // Task tracker for history and backend requests.
   base::CancelableTaskTracker cancelable_task_tracker_;
 
   // Timer that asks history for the top sites. This is used to make sure our

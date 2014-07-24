@@ -70,9 +70,6 @@ class JumpList : public TabRestoreServiceObserver,
 
   // Observer callback for TabRestoreService::Observer to notify when a tab is
   // added or removed.
-  // This function sends a query that retrieves "Most Visited" pages to
-  // HistoryService. When the query finishes successfully, HistoryService call
-  // OnSegmentUsageAvailable().
   virtual void TabRestoreServiceChanged(TabRestoreService* service);
 
   // Observer callback to notice when our associated TabRestoreService
@@ -108,13 +105,6 @@ class JumpList : public TabRestoreServiceObserver,
   // When finishing loading all favicons, this function posts a task that
   // decompresses collected favicons and updates a JumpList.
   void StartLoadingFavicon();
-
-  // A callback function for HistoryService that notify when the "Most Visited"
-  // list is available.
-  // This function updates the ShellLinkItemList objects and send another query
-  // that retrieves a favicon for each URL in the list.
-  void OnSegmentUsageAvailable(CancelableRequestProvider::Handle handle,
-                               std::vector<PageUsageData*>* data);
 
   // A callback function for HistoryService that notify when a requested favicon
   // is available.

@@ -114,8 +114,7 @@ class HistoryFunctionWithCallback : public HistoryFunction {
   // This method calls Release().
   virtual void SendAsyncResponse();
 
-  // The consumer for the HistoryService callbacks.
-  CancelableRequestConsumer cancelable_consumer_;
+  // The task tracker for the HistoryService callbacks.
   base::CancelableTaskTracker task_tracker_;
 
  private:

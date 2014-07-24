@@ -378,7 +378,7 @@ void TopSitesImpl::Shutdown() {
   // Cancel all requests so that the service doesn't callback to us after we've
   // invoked Shutdown (this could happen if we have a pending request and
   // Shutdown is invoked).
-  history_consumer_.CancelAllRequests();
+  cancelable_task_tracker_.TryCancelAll();
   backend_->Shutdown();
 }
 
@@ -444,10 +444,10 @@ void TopSitesImpl::DiffMostVisited(const MostVisitedURLList& old_list,
   }
 }
 
-CancelableRequestProvider::Handle TopSitesImpl::StartQueryForMostVisited() {
+base::CancelableTaskTracker::TaskId TopSitesImpl::StartQueryForMostVisited() {
   DCHECK(loaded_);
   if (!profile_)
-    return 0;
+    return base::CancelableTaskTracker::kBadTaskId;
 
   HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, Profile::EXPLICIT_ACCESS);
@@ -460,7 +460,7 @@ CancelableRequestProvider::Handle TopSitesImpl::StartQueryForMostVisited() {
                    base::Unretained(this)),
         &cancelable_task_tracker_);
   }
-  return 0;
+  return base::CancelableTaskTracker::kBadTaskId;
 }
 
 bool TopSitesImpl::IsKnownURL(const GURL& url) {

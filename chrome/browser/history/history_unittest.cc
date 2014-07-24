@@ -983,10 +983,6 @@ class HistoryTest : public testing::Test {
   virtual ~HistoryTest() {
   }
 
-  void OnDeleteURLsDone(CancelableRequestProvider::Handle handle) {
-    base::MessageLoop::current()->Quit();
-  }
-
   void OnMostVisitedURLsAvailable(const MostVisitedURLList* url_list) {
     most_visited_urls_ = *url_list;
     base::MessageLoop::current()->Quit();
@@ -1107,7 +1103,6 @@ class HistoryTest : public testing::Test {
 
   // For history requests.
   base::CancelableTaskTracker tracker_;
-  CancelableRequestConsumer consumer_;
 
   // For saving URL info after a call to QueryURL
   bool query_url_success_;
