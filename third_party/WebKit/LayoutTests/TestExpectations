@@ -377,12 +377,19 @@ crbug.com/242735 [ XP ] svg/custom/svg-font-support.html [ ImageOnlyFailure ]
 
 # Reftests that needs investigation.
 crbug.com/378610 [ Win7 ] css3/flexbox/auto-margins.html [ ImageOnlyFailure ]
-crbug.com/378610 [ Win7 ] fast/sub-pixel/file-upload-control-at-fractional-offset.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] fast/writing-mode/table-vertical-child-width.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] svg/transforms/transformed-text-fill-gradient.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] svg/custom/focus-ring-text.svg [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] svg/text/tspan-outline.html [ ImageOnlyFailure ]
+crbug.com/396940 ietestcenter/css3/multicolumn/column-containing-block-001.htm [ ImageOnlyFailure ]
+crbug.com/396940 ietestcenter/css3/multicolumn/column-containing-block-002.htm [ ImageOnlyFailure ]
+crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-007.htm [ ImageOnlyFailure ]
+crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-009.htm [ ImageOnlyFailure ]
+crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-010.htm [ ImageOnlyFailure ]
+crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-012.htm [ ImageOnlyFailure ]
+crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-015.htm [ ImageOnlyFailure ]
+crbug.com/396945 ietestcenter/css3/namespaces/syntax-021.xml [ ImageOnlyFailure ]
 
 # Text tests that needs investigation or test changes (mostly due to precision).
 crbug.com/378610 [ Win7 ] fast/forms/cursor-at-editable-content-boundary.html [ Failure ]
@@ -1463,3 +1470,17 @@ crbug.com/396791 [ Debug ] virtual/threaded/printing/print-close-crash.html [ Pa
 crbug.com/396798 virtual/softwarecompositing/culling/tile-occlusion-boundaries.html [ Pass ImageOnlyFailure ]
 
 crbug.com/396851 [ Lion ] inspector/console/console-stack-overflow.html [ Timeout ]
+
+crbug.com/396936 [ Lion ] fast/writing-mode/broken-ideograph-small-caps.html [ Crash ]
+crbug.com/396936 [ Lion ] fast/writing-mode/broken-ideographic-font.html [ Crash ]
+crbug.com/396936 [ Lion ] fast/writing-mode/japanese-rl-text-with-broken-font.html [ Crash ]
+
+crbug.com/243248 [ Mac ] fast/events/attempt-scroll-with-no-scrollbars.html [ NeedsRebaseline ]
+webkit.org/b/82297 [ Mac ] fast/events/platform-wheelevent-paging-x-in-scrolling-page.html [ NeedsRebaseline ]
+webkit.org/b/82297 [ Mac ] fast/events/platform-wheelevent-paging-xy-in-scrolling-page.html [ NeedsRebaseline ]
+webkit.org/b/82297 [ Mac ] fast/events/platform-wheelevent-paging-y-in-scrolling-page.html [ NeedsRebaseline ]
+crbug.com/23476 [ Mac ] fast/frames/inline-object-inside-frameset.html [ NeedsRebaseline ]
+webkit.org/b/81145 [ SnowLeopard Lion ] fast/frames/invalid.html [ NeedsRebaseline ]
+webkit.org/b/98811 [ Mac ] fast/transforms/transformed-focused-text-input.html [ NeedsRebaseline ]
+webkit.org/b/78830 [ Mac ] svg/custom/mask-invalidation.svg [ NeedsRebaseline ]
+crbug.com/243732 [ Mac ] transforms/3d/point-mapping/3d-point-mapping-3.html [ NeedsRebaseline ]

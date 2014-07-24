@@ -37,13 +37,6 @@
 
 # webkit.org/b/74746 [ Win ] http/tests/xmlhttprequest/workers/methods.html [ WontFix ]
 
-# webkit.org/b/81145 [ SnowLeopard Lion ] fast/frames/invalid.html [ WontFix ]
-# webkit.org/b/81145 [ Lion ] fast/writing-mode/broken-ideograph-small-caps.html [ WontFix ]
-# webkit.org/b/81145 [ Lion ] fast/writing-mode/broken-ideographic-font.html [ WontFix ]
-# webkit.org/b/81145 [ Lion ] fast/writing-mode/japanese-rl-text-with-broken-font.html [ WontFix ]
-# webkit.org/b/82297 [ Lion MountainLion Mavericks Retina ] fast/events/platform-wheelevent-paging-x-in-scrolling-page.html [ WontFix ]
-# webkit.org/b/82297 [ Lion MountainLion Mavericks Retina ] fast/events/platform-wheelevent-paging-xy-in-scrolling-page.html [ WontFix ]
-# webkit.org/b/82297 [ Lion MountainLion Mavericks Retina ] fast/events/platform-wheelevent-paging-y-in-scrolling-page.html [ WontFix ]
 # webkit.org/b/ [ Win7 ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ WontFix ]
 # webkit.org/b/83647 [ Linux Win ] fast/multicol/cell-shrinkback.html [ WontFix ]
 
@@ -56,14 +49,12 @@
 # webkit.org/b/94017 [ Win ] css2.1/20110323/c541-word-sp-000.htm [ WontFix ]
 
 # webkit.org/b/97296 [ Win ] fast/text/international/hebrew-selection.html [ WontFix ]
-# webkit.org/b/98811 [ Mac ] fast/transforms/transformed-focused-text-input.html [ WontFix ]
 # webkit.org/b/99604 [ Win ] http/tests/workers/text-encoding.html [ WontFix ]
 
 # This ref-test doesn't work on Chromium Mac ("Test" is offset).
 # webkit.org/b/101093 [ Mac ] fast/sub-pixel/float-wrap-zoom.html [ WontFix ]
 
 # webkit.org/b/78830 [ Win Linux ] svg/repaint/image-with-clip-path.svg [ WontFix ]
-# webkit.org/b/100023 [ Mac ] fast/sub-pixel/file-upload-control-at-fractional-offset.html [ WontFix ]
 # webkit.org/b/104489 [ Win ] http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_mark.html [ WontFix ]
 # webkit.org/b/104489 [ Win ] http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_clearMarks.html [ WontFix ]
 # webkit.org/b/104489 [ Win ] http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_measure_associate_with_navigation_timing.html [ WontFix ]
@@ -72,23 +63,11 @@
 
 # webkit.org/b/112610 [ Win ] fast/text/word-space-with-kerning-3.html [ WontFix ]
 
-# webkit.org/b/78830 [ Mac ] svg/custom/mask-invalidation.svg [ WontFix ]
 # webkit.org/b/91183 [ Win ] http/tests/w3c/webperf/approved/HighResolutionTime/test_cross_frame_start.html [ WontFix ]
 
 # IETC imported test suites
 # webkit.org/b/83912 ietestcenter/css3/grid/grid-items-002.htm [ WontFix ]
 # webkit.org/b/83913 ietestcenter/css3/grid/grid-items-003.htm [ WontFix ]
-# webkit.org/b/84759 ietestcenter/css3/multicolumn/column-containing-block-001.htm [ WontFix ]
-# webkit.org/b/84760 ietestcenter/css3/multicolumn/column-containing-block-002.htm [ WontFix ]
-# webkit.org/b/84761 ietestcenter/css3/multicolumn/column-filling-001.htm [ WontFix ]
-# webkit.org/b/84770 ietestcenter/css3/multicolumn/column-width-applies-to-007.htm [ WontFix ]
-# webkit.org/b/84771 ietestcenter/css3/multicolumn/column-width-applies-to-009.htm [ WontFix ]
-# webkit.org/b/84772 ietestcenter/css3/multicolumn/column-width-applies-to-010.htm [ WontFix ]
-# webkit.org/b/84773 ietestcenter/css3/multicolumn/column-width-applies-to-012.htm [ WontFix ]
-# webkit.org/b/84777 ietestcenter/css3/multicolumn/column-width-applies-to-015.htm [ WontFix ]
-# webkit.org/b/85211 ietestcenter/css3/flexbox/flexbox-align-stretch-001.htm [ WontFix ]
-# webkit.org/b/85212 ietestcenter/css3/flexbox/flexbox-layout-002.htm [ WontFix ]
-# webkit.org/b/86142 ietestcenter/css3/namespaces/syntax-021.xml [ WontFix ]
 
 # crbug.com/239465 [ Win ] fast/canvas/webgl/premultiplyalpha-test.html [ WontFix ]
 
@@ -105,12 +84,9 @@
 
 # crbug.com/250935 [ Win ] fast/multicol/shrink-to-column-height-for-pagination.html [ WontFix ]
 
-# Unexpected gray
-# crbug.com/23476 [ Mac ] fast/frames/inline-object-inside-frameset.html [ WontFix ]
-
 # We could fix this test for us and upstream it if the test shell user agent
 # would let us differentiate test_shell and WebKit DumpTreeNode.
-# crbug.com/7482 [ Win Lion MountainLion Mavericks Retina ] http/tests/misc/timer-vs-loading.html [ WontFix ]
+crbug.com/7482 [ Win Mac ] http/tests/misc/timer-vs-loading.html [ WontFix ]
 
 # This test isn't just slow -- sometimes it times out indefinitely.
 # crbug.com/27569 [ Win ] http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html [ Pass Timeout ] # Also Slow
@@ -165,8 +141,6 @@
 # crbug.com/260660 [ Linux ] fast/canvas/webgl/array-large-array-tests.html [ WontFix ]
 # crbug.com/260660 [ Linux ] virtual/gpu/fast/canvas/webgl/array-large-array-tests.html [ WontFix ]
 # crbug.com/178745 plugins/open-and-close-window-with-plugin.html [ WontFix ]
-# crbug.com/243248 [ Mac Win ] fast/events/attempt-scroll-with-no-scrollbars.html [ WontFix ]
-# crbug.com/243732 [ Mac ] transforms/3d/point-mapping/3d-point-mapping-3.html [ WontFix ]
 # crbug.com/243738 [ Win ] http/tests/loading/preload-append-scan.php [ WontFix ]
 # crbug.com/244123 [ Win ] fast/forms/suggestion-picker/date-suggestion-picker-key-operations.html [ WontFix ]
 # crbug.com/244123 [ Win ] fast/forms/suggestion-picker/month-suggestion-picker-key-operations.html [ WontFix ]
@@ -188,12 +162,8 @@
 # These tests are too slow with our MESA backend.  We can re-enable when we have
 # bots running tests on real hardware. Don't want to just delete these because they
 # pass in the virtual test suite version.
-# webkit.org/b/49629 compositing/lots-of-img-layers.html [ WontFix ]
-# webkit.org/b/49629 compositing/lots-of-img-layers-with-opacity.html [ WontFix ]
+webkit.org/b/49629 compositing/lots-of-img-layers.html [ WontFix ]
+webkit.org/b/49629 compositing/lots-of-img-layers-with-opacity.html [ WontFix ]
 
 # Don't want to just delete this test since the virtual/softwarecompositing version passes.
 # crbug.com/245630 compositing/overflow/overflow-positioning.html [ WontFix ]
-
-# Out-of-date imported test; spec now supports ImageData constructors.
-# crbug.com/338804 canvas/philip/tests/2d.imageData.object.ctor.html [ WontFix ]
-# crbug.com/338804 virtual/gpu/canvas/philip/tests/2d.imageData.object.ctor.html [ WontFix ]
