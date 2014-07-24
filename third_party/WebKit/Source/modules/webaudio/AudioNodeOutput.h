@@ -137,8 +137,11 @@ private:
     // This RefPtr<AudioNode> is connection reference. We must call AudioNode::
     // makeConnection() after ref(), and call AudioNode::breakConnection()
     // before deref().
-    WillBeHeapHashMap<RawPtrWillBeMember<AudioNodeInput>, RefPtr<AudioNode> > m_inputs;
-    typedef WillBeHeapHashMap<RawPtrWillBeMember<AudioNodeInput>, RefPtr<AudioNode> >::iterator InputsIterator;
+    // Oilpan: This HashMap holds connection references. We must call
+    // AudioNode::makeConnection when we add an AudioNode to this, and must call
+    // AudioNode::breakConnection() when we remove an AudioNode from this.
+    WillBeHeapHashMap<RawPtrWillBeMember<AudioNodeInput>, RefPtrWillBeMember<AudioNode> > m_inputs;
+    typedef WillBeHeapHashMap<RawPtrWillBeMember<AudioNodeInput>, RefPtrWillBeMember<AudioNode> >::iterator InputsIterator;
     bool m_isEnabled;
 
     // For the purposes of rendering, keeps track of the number of inputs and AudioParams we're connected to.

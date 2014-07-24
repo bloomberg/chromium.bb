@@ -142,10 +142,12 @@ public:
 
 #if ENABLE(OILPAN)
     void registerLiveAudioSummingJunction(AudioSummingJunction&);
-#endif
+    void registerLiveNode(AudioNode&);
+#else
     // We schedule deletion of all marked nodes at the end of each realtime render quantum.
     void markForDeletion(AudioNode*);
     void deleteMarkedNodes();
+#endif
 
     // AudioContext can pull node(s) at the end of each render quantum even when they are not connected to any downstream nodes.
     // These two methods are called by the nodes who want to add/remove themselves into/from the automatic pull lists.
@@ -209,7 +211,9 @@ public:
     // In AudioNode::breakConnection() and deref(), a tryLock() is used for
     // calling actual processing, but if it fails keep track here.
     void addDeferredBreakConnection(AudioNode&);
+#if !ENABLE(OILPAN)
     void addDeferredFinishDeref(AudioNode*);
+#endif
 
     // In the audio thread at the start of each render cycle, we'll call this.
     void handleDeferredAudioNodeTasks();
@@ -250,8 +254,10 @@ private:
     bool m_isCleared;
     void clear();
 
+#if !ENABLE(OILPAN)
     void scheduleNodeDeletion();
     static void deleteMarkedNodesDispatch(void* userData);
+#endif
 
     // Set to true when the destination node has been initialized and is ready to process data.
     bool m_isInitialized;
@@ -278,9 +284,22 @@ private:
     // This RefPtr is connection reference. We must call AudioNode::
     // makeConnection() after ref(), and call AudioNode::breakConnection()
     // before deref().
-    Vector<RefPtr<AudioNode> > m_referencedNodes;
+    // Oilpan: This Vector holds connection references. We must call
+    // AudioNode::makeConnection when we add an AudioNode to this, and must call
+    // AudioNode::breakConnection() when we remove an AudioNode from this.
+    WillBeHeapVector<RefPtrWillBeMember<AudioNode> > m_referencedNodes;
 
 #if ENABLE(OILPAN)
+    class AudioNodeDisposer {
+    public:
+        explicit AudioNodeDisposer(AudioNode& node) : m_node(node) { }
+        ~AudioNodeDisposer();
+
+    private:
+        AudioNode& m_node;
+    };
+    HeapHashMap<WeakMember<AudioNode>, OwnPtr<AudioNodeDisposer> > m_liveNodes;
+
     class AudioSummingJunctionDisposer {
     public:
         explicit AudioSummingJunctionDisposer(AudioSummingJunction& junction) : m_junction(junction) { }
@@ -294,7 +313,7 @@ private:
     // AudioSummingJunction objects to m_liveAudioSummingJunctions to avoid
     // concurrent access to m_liveAudioSummingJunctions.
     HeapHashMap<WeakMember<AudioSummingJunction>, OwnPtr<AudioSummingJunctionDisposer> > m_liveAudioSummingJunctions;
-#endif
+#else
     // Accumulate nodes which need to be deleted here.
     // This is copied to m_nodesToDelete at the end of a render cycle in handlePostRenderTasks(), where we're assured of a stable graph
     // state which will have no references to any of the nodes in m_nodesToDelete once the context lock is released
@@ -304,6 +323,7 @@ private:
     // They will be scheduled for deletion (on the main thread) at the end of a render cycle (in realtime thread).
     Vector<AudioNode*> m_nodesToDelete;
     bool m_isDeletionScheduled;
+#endif
 
     // These two HashSet must be accessed only when the graph lock is held.
     // Oilpan: These HashSet should be HeapHashSet<WeakMember<AudioNodeOutput>>

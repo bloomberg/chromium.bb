@@ -48,12 +48,11 @@ AudioNode::AudioNode(AudioContext* context, float sampleRate)
     , m_nodeType(NodeTypeUnknown)
     , m_context(context)
     , m_sampleRate(sampleRate)
-#if ENABLE(OILPAN)
-    , m_keepAlive(adoptPtr(new Persistent<AudioNode>(this)))
-#endif
     , m_lastProcessingTime(-1)
     , m_lastNonSilentTime(-1)
+#if !ENABLE(OILPAN)
     , m_normalRefCount(1) // start out with normal refCount == 1 (like WTF::RefCounted class)
+#endif
     , m_connectionRefCount(0)
     , m_isMarkedForDeletion(false)
     , m_isDisabled(false)
@@ -62,6 +61,9 @@ AudioNode::AudioNode(AudioContext* context, float sampleRate)
     , m_channelInterpretation(AudioBus::Speakers)
 {
     ScriptWrappable::init(this);
+#if ENABLE(OILPAN)
+    m_context->registerLiveNode(*this);
+#endif
 #if DEBUG_AUDIONODE_REFERENCES
     if (!s_isNodeCountInitialized) {
         s_isNodeCountInitialized = true;
@@ -74,7 +76,11 @@ AudioNode::~AudioNode()
 {
 #if DEBUG_AUDIONODE_REFERENCES
     --s_nodeCount[nodeType()];
+#if ENABLE(OILPAN)
+    fprintf(stderr, "%p: %d: AudioNode::~AudioNode() %d\n", this, nodeType(), m_connectionRefCount);
+#else
     fprintf(stderr, "%p: %d: AudioNode::~AudioNode() %d %d\n", this, nodeType(), m_normalRefCount, m_connectionRefCount);
+#endif
 #endif
 }
 
@@ -92,6 +98,12 @@ void AudioNode::dispose()
 {
     ASSERT(isMainThread());
     ASSERT(context()->isGraphOwner());
+#if ENABLE(OILPAN)
+    context()->removeAutomaticPullNode(this);
+    for (unsigned i = 0; i < m_outputs.size(); ++i)
+        output(i)->disconnectAll();
+    m_isMarkedForDeletion = true;
+#endif
     context()->unmarkDirtyNode(*this);
 }
 
@@ -474,17 +486,16 @@ void AudioNode::disableOutputsIfNecessary()
     }
 }
 
+#if !ENABLE(OILPAN)
 void AudioNode::ref()
 {
-#if ENABLE(OILPAN)
-    ASSERT(m_keepAlive);
-#endif
     atomicIncrement(&m_normalRefCount);
 
 #if DEBUG_AUDIONODE_REFERENCES
     fprintf(stderr, "%p: %d: AudioNode::ref() %d %d\n", this, nodeType(), m_normalRefCount, m_connectionRefCount);
 #endif
 }
+#endif
 
 void AudioNode::makeConnection()
 {
@@ -495,6 +506,7 @@ void AudioNode::makeConnection()
     enableOutputsIfNecessary();
 }
 
+#if !ENABLE(OILPAN)
 void AudioNode::deref()
 {
     // The actual work for deref happens completely within the audio context's
@@ -529,6 +541,7 @@ void AudioNode::deref()
     if (!context()->isInitialized())
         context()->deleteMarkedNodes();
 }
+#endif
 
 void AudioNode::breakConnection()
 {
@@ -561,12 +574,19 @@ void AudioNode::breakConnection()
 
 void AudioNode::breakConnectionWithLock()
 {
+#if ENABLE(OILPAN)
+    atomicDecrement(&m_connectionRefCount);
+    if (m_connectionRefCount == 0)
+        disableOutputsIfNecessary();
+#else
     ASSERT(m_normalRefCount > 0);
     atomicDecrement(&m_connectionRefCount);
     if (m_connectionRefCount == 0 && m_normalRefCount > 1)
         disableOutputsIfNecessary();
+#endif
 }
 
+#if !ENABLE(OILPAN)
 void AudioNode::finishDeref()
 {
     ASSERT(context()->isGraphOwner());
@@ -589,6 +609,7 @@ void AudioNode::finishDeref()
         m_isMarkedForDeletion = true;
     }
 }
+#endif
 
 #if DEBUG_AUDIONODE_REFERENCES
 
@@ -617,19 +638,6 @@ void AudioNode::trace(Visitor* visitor)
     visitor->trace(m_outputs);
     EventTargetWithInlineData::trace(visitor);
 }
-
-#if ENABLE(OILPAN)
-void AudioNode::clearKeepAlive()
-{
-    // It is safe to drop the self-persistent when the ref count
-    // of a AudioNode reaches zero. At that point, the
-    // AudioNode node is removed from the AudioContext and
-    // it cannot be reattached. Therefore, the reference count
-    // will not go above zero again.
-    ASSERT(m_keepAlive);
-    m_keepAlive = nullptr;
-}
-#endif
 
 } // namespace blink
 

@@ -96,9 +96,11 @@ public:
     String nodeTypeName() const;
     void setNodeType(NodeType);
 
+#if !ENABLE(OILPAN)
     // Can be called from main thread or context's audio thread.
     void ref();
     void deref();
+#endif
 
     // This object has been connected to another object. This might have
     // existing connections from others.
@@ -110,7 +112,9 @@ public:
     void breakConnection();
 
     // Can be called from main thread or context's audio thread.  It must be called while the context's graph lock is held.
+#if !ENABLE(OILPAN)
     void finishDeref();
+#endif
     void breakConnectionWithLock();
 
     // The AudioNodeInput(s) (if any) will already have their input data available when process() is called.
@@ -190,10 +194,6 @@ public:
 
     virtual void trace(Visitor*) OVERRIDE;
 
-#if ENABLE(OILPAN)
-    void clearKeepAlive();
-#endif
-
 protected:
     // Inputs and outputs must be created before the AudioNode is initialized.
     void addInput();
@@ -215,23 +215,13 @@ private:
     WillBeHeapVector<OwnPtrWillBeMember<AudioNodeInput> > m_inputs;
     WillBeHeapVector<OwnPtrWillBeMember<AudioNodeOutput> > m_outputs;
 
-#if ENABLE(OILPAN)
-    // AudioNodes are in the oilpan heap but they are still reference counted at
-    // the same time. This is because we are not allowed to stop the audio
-    // thread and thus the audio thread cannot allocate objects in the oilpan
-    // heap.
-    // The m_keepAlive handle is used to keep a persistent reference to this
-    // AudioNode while someone has a reference to this AudioNode through a
-    // RefPtr.
-    GC_PLUGIN_IGNORE("http://crbug.com/353083")
-    OwnPtr<Persistent<AudioNode> > m_keepAlive;
-#endif
-
     double m_lastProcessingTime;
     double m_lastNonSilentTime;
 
+#if !ENABLE(OILPAN)
     // Ref-counting
     volatile int m_normalRefCount;
+#endif
     volatile int m_connectionRefCount;
 
     bool m_isMarkedForDeletion;

@@ -111,7 +111,9 @@ AudioContext::AudioContext(Document* document)
     , m_isCleared(false)
     , m_isInitialized(false)
     , m_destinationNode(nullptr)
+#if !ENABLE(OILPAN)
     , m_isDeletionScheduled(false)
+#endif
     , m_automaticPullNodesNeedUpdating(false)
     , m_connectionCount(0)
     , m_audioThread(0)
@@ -132,7 +134,9 @@ AudioContext::AudioContext(Document* document, unsigned numberOfChannels, size_t
     , m_isCleared(false)
     , m_isInitialized(false)
     , m_destinationNode(nullptr)
+#if !ENABLE(OILPAN)
     , m_isDeletionScheduled(false)
+#endif
     , m_automaticPullNodesNeedUpdating(false)
     , m_connectionCount(0)
     , m_audioThread(0)
@@ -156,8 +160,10 @@ AudioContext::~AudioContext()
 #endif
     // AudioNodes keep a reference to their context, so there should be no way to be in the destructor if there are still AudioNodes around.
     ASSERT(!m_isInitialized);
+#if !ENABLE(OILPAN)
     ASSERT(!m_nodesToDelete.size());
     ASSERT(!m_referencedNodes.size());
+#endif
     ASSERT(!m_finishedNodes.size());
     ASSERT(!m_automaticPullNodes.size());
     if (m_automaticPullNodesNeedUpdating)
@@ -194,7 +200,8 @@ void AudioContext::clear()
 #if ENABLE(OILPAN)
     // We need to run disposers before destructing m_contextGraphMutex.
     m_liveAudioSummingJunctions.clear();
-#endif
+    m_liveNodes.clear();
+#else
 
     // We have to release our reference to the destination node before the context will ever be deleted since the destination node holds a reference to the context.
     if (m_destinationNode)
@@ -206,6 +213,7 @@ void AudioContext::clear()
         m_nodesMarkedForDeletion.clear();
         deleteMarkedNodes();
     } while (m_nodesToDelete.size());
+#endif
 
     m_isCleared = true;
 }
@@ -693,11 +701,13 @@ void AudioContext::addDeferredBreakConnection(AudioNode& node)
     m_deferredBreakConnectionList.append(&node);
 }
 
+#if !ENABLE(OILPAN)
 void AudioContext::addDeferredFinishDeref(AudioNode* node)
 {
     ASSERT(isAudioThread());
     m_deferredFinishDerefList.append(node);
 }
+#endif
 
 void AudioContext::handlePreRenderTasks()
 {
@@ -733,9 +743,11 @@ void AudioContext::handlePostRenderTasks()
         // Dynamically clean up nodes which are no longer needed.
         derefFinishedSourceNodes();
 
+#if !ENABLE(OILPAN)
         // Don't delete in the real-time thread. Let the main thread do it.
         // Ref-counted objects held by certain AudioNodes may not be thread-safe.
         scheduleNodeDeletion();
+#endif
 
         // Fixup the state of any dirty AudioSummingJunctions and AudioNodeOutputs.
         handleDirtyAudioSummingJunctions();
@@ -756,12 +768,27 @@ void AudioContext::handleDeferredAudioNodeTasks()
         m_deferredBreakConnectionList[i]->breakConnectionWithLock();
     m_deferredBreakConnectionList.clear();
 
+#if !ENABLE(OILPAN)
     for (unsigned i = 0; i < m_deferredFinishDerefList.size(); ++i)
         m_deferredFinishDerefList[i]->finishDeref();
     m_deferredFinishDerefList.clear();
+#endif
 }
 
 #if ENABLE(OILPAN)
+void AudioContext::registerLiveNode(AudioNode& node)
+{
+    ASSERT(isMainThread());
+    m_liveNodes.add(&node, adoptPtr(new AudioNodeDisposer(node)));
+}
+
+AudioContext::AudioNodeDisposer::~AudioNodeDisposer()
+{
+    ASSERT(isMainThread());
+    AudioContext::AutoLocker locker(m_node.context());
+    m_node.dispose();
+}
+
 void AudioContext::registerLiveAudioSummingJunction(AudioSummingJunction& junction)
 {
     ASSERT(isMainThread());
@@ -773,7 +800,7 @@ AudioContext::AudioSummingJunctionDisposer::~AudioSummingJunctionDisposer()
     ASSERT(isMainThread());
     m_junction.context()->removeMarkedSummingJunction(&m_junction);
 }
-#endif
+#else
 
 void AudioContext::markForDeletion(AudioNode* node)
 {
@@ -838,26 +865,24 @@ void AudioContext::deleteMarkedNodes()
 
             node->dispose();
 
-#if ENABLE(OILPAN)
-            // Finally, clear the keep alive handle that keeps this
-            // object from being collected.
-            node->clearKeepAlive();
-#else
             // Finally, delete it.
             delete node;
-#endif
         }
         m_isDeletionScheduled = false;
     }
 }
+#endif
 
 void AudioContext::unmarkDirtyNode(AudioNode& node)
 {
+    ASSERT(isGraphOwner());
+#if !ENABLE(OILPAN)
     // Before deleting the node, clear out any AudioNodeInputs from
     // m_dirtySummingJunctions.
     unsigned numberOfInputs = node.numberOfInputs();
     for (unsigned i = 0; i < numberOfInputs; ++i)
         m_dirtySummingJunctions.remove(node.input(i));
+#endif
 
     // Before deleting the node, clear out any AudioNodeOutputs from
     // m_dirtyAudioNodeOutputs.
@@ -992,6 +1017,8 @@ void AudioContext::trace(Visitor* visitor)
     visitor->trace(m_destinationNode);
     visitor->trace(m_listener);
 #if ENABLE(OILPAN)
+    visitor->trace(m_referencedNodes);
+    visitor->trace(m_liveNodes);
     visitor->trace(m_liveAudioSummingJunctions);
 #endif
     EventTargetWithInlineData::trace(visitor);

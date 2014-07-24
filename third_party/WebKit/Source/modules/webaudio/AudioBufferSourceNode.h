@@ -136,7 +136,10 @@ private:
     // This RefPtr is connection reference. We must call AudioNode::
     // makeConnection() after ref(), and call AudioNode::breakConnection()
     // before deref().
-    RefPtr<PannerNode> m_pannerNode;
+    // Oilpan: This holds connection references. We must call
+    // AudioNode::makeConnection when we add an AudioNode to this, and must call
+    // AudioNode::breakConnection() when we remove an AudioNode from this.
+    RefPtrWillBeMember<PannerNode> m_pannerNode;
 
     // This synchronizes process() with setBuffer() which can cause dynamic channel count changes.
     mutable Mutex m_processLock;

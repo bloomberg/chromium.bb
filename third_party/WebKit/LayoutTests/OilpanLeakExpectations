@@ -5,8 +5,4 @@
 # Gardeners are welcome to touch this file, but you can ignore the failures
 # and wait for kouhei@ or hajimehoshi@ to maintain this file.
 
-# FIXME: AudioNode objects are not destructed.
-crbug.com/389041 webaudio/mediaelementaudiosourcenode.html [ Leak ]
-crbug.com/389041 webaudio/mediaelementaudiosourcenode-gc.html [ Leak ]
-
 crbug.com/390094 svg/custom/svg-element-destructor-iteration-crash.html [ Leak ]

@@ -455,7 +455,7 @@ bool AudioBufferSourceNode::propagatesSilence() const
 void AudioBufferSourceNode::setPannerNode(PannerNode* pannerNode)
 {
     if (m_pannerNode != pannerNode && !hasFinished()) {
-        RefPtr<PannerNode> oldPannerNode(m_pannerNode.release());
+        RefPtrWillBeRawPtr<PannerNode> oldPannerNode(m_pannerNode.release());
         m_pannerNode = pannerNode;
         if (pannerNode)
             pannerNode->makeConnection();
@@ -483,6 +483,7 @@ void AudioBufferSourceNode::trace(Visitor* visitor)
 {
     visitor->trace(m_buffer);
     visitor->trace(m_playbackRate);
+    visitor->trace(m_pannerNode);
     AudioScheduledSourceNode::trace(visitor);
 }
 
