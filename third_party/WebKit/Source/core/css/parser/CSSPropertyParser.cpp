@@ -570,9 +570,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitBorderAfterColor:
     case CSSPropertyColor: // <color> | inherit
     case CSSPropertyTextDecorationColor: // CSS3 text decoration colors
-    case CSSPropertyTextLineThroughColor:
-    case CSSPropertyTextUnderlineColor:
-    case CSSPropertyTextOverlineColor:
     case CSSPropertyWebkitColumnRuleColor:
     case CSSPropertyWebkitTextEmphasisColor:
     case CSSPropertyWebkitTextFillColor:
@@ -1285,15 +1282,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         }
         return false;
     }
-    case CSSPropertyTextLineThroughWidth:
-    case CSSPropertyTextOverlineWidth:
-    case CSSPropertyTextUnderlineWidth:
-        if (id == CSSValueAuto || id == CSSValueNormal || id == CSSValueThin ||
-            id == CSSValueMedium || id == CSSValueThick)
-            validPrimitive = true;
-        else
-            validPrimitive = !id && validUnit(value, FNumber | FLength | FPercent);
-        break;
     case CSSPropertyWebkitColumnCount:
         parsedValue = parseColumnCount();
         break;
@@ -1554,15 +1542,9 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyTableLayout:
     case CSSPropertyTextAlignLast:
     case CSSPropertyTextJustify:
-    case CSSPropertyTextLineThroughMode:
-    case CSSPropertyTextLineThroughStyle:
     case CSSPropertyTextOverflow:
-    case CSSPropertyTextOverlineMode:
-    case CSSPropertyTextOverlineStyle:
     case CSSPropertyTextRendering:
     case CSSPropertyTextTransform:
-    case CSSPropertyTextUnderlineMode:
-    case CSSPropertyTextUnderlineStyle:
     case CSSPropertyTouchActionDelay:
     case CSSPropertyVisibility:
     case CSSPropertyWebkitAppearance:

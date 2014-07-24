@@ -209,9 +209,6 @@ static inline bool isColorPropertyID(CSSPropertyID propertyId)
     case CSSPropertyBorderRightColor:
     case CSSPropertyBorderTopColor:
     case CSSPropertyOutlineColor:
-    case CSSPropertyTextLineThroughColor:
-    case CSSPropertyTextOverlineColor:
-    case CSSPropertyTextUnderlineColor:
     case CSSPropertyWebkitBorderAfterColor:
     case CSSPropertyWebkitBorderBeforeColor:
     case CSSPropertyWebkitBorderEndColor:
@@ -454,14 +451,6 @@ bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, CSSValueID valueID
         // auto | none | inter-word | distribute
         return RuntimeEnabledFeatures::css3TextEnabled()
             && (valueID == CSSValueInterWord || valueID == CSSValueDistribute || valueID == CSSValueAuto || valueID == CSSValueNone);
-    case CSSPropertyTextLineThroughMode:
-    case CSSPropertyTextOverlineMode:
-    case CSSPropertyTextUnderlineMode:
-        return valueID == CSSValueContinuous || valueID == CSSValueSkipWhiteSpace;
-    case CSSPropertyTextLineThroughStyle:
-    case CSSPropertyTextOverlineStyle:
-    case CSSPropertyTextUnderlineStyle:
-        return valueID == CSSValueNone || valueID == CSSValueSolid || valueID == CSSValueDouble || valueID == CSSValueDashed || valueID == CSSValueDotDash || valueID == CSSValueDotDotDash || valueID == CSSValueWave;
     case CSSPropertyTextOverflow: // clip | ellipsis
         return valueID == CSSValueClip || valueID == CSSValueEllipsis;
     case CSSPropertyTextRendering: // auto | optimizeSpeed | optimizeLegibility | geometricPrecision
@@ -609,15 +598,9 @@ bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyTableLayout:
     case CSSPropertyTextAlignLast:
     case CSSPropertyTextJustify:
-    case CSSPropertyTextLineThroughMode:
-    case CSSPropertyTextLineThroughStyle:
     case CSSPropertyTextOverflow:
-    case CSSPropertyTextOverlineMode:
-    case CSSPropertyTextOverlineStyle:
     case CSSPropertyTextRendering:
     case CSSPropertyTextTransform:
-    case CSSPropertyTextUnderlineMode:
-    case CSSPropertyTextUnderlineStyle:
     case CSSPropertyTouchActionDelay:
     case CSSPropertyVisibility:
     case CSSPropertyWebkitAppearance:

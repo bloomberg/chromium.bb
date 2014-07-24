@@ -168,22 +168,10 @@ text-decoration-style
 text-decoration-color
 text-indent
 text-justify
-text-line-through-color
-text-line-through-mode
-text-line-through-style
-text-line-through-width
 text-overflow
-text-overline-color
-text-overline-mode
-text-overline-style
-text-overline-width
 text-shadow
 text-transform
 -epub-text-transform alias_for=text-transform
-text-underline-color
-text-underline-mode
-text-underline-style
-text-underline-width
 text-underline-position
 top
 touch-action

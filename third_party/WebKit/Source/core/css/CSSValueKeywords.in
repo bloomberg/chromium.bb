@@ -593,19 +593,6 @@ ellipsis
 discard
 
 //
-// text-*-color
-//
-dot-dash
-dot-dot-dash
-wave
-
-//
-// text-*-mode
-//
-continuous
-skip-white-space
-
-//
 // word-break
 //
 break-all
