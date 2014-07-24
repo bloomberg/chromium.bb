@@ -158,6 +158,13 @@ TEST_LINK_FLAGS=\
 	-lgtest
 
 all: $(SONAME)
+
+ifneq ($(USE_X11),0)
+all: lid_touchpad_helper_all
+install: lid_touchpad_helper_install
+endif
+
+lid_touchpad_helper_all:
 	$(MAKE) -C $(LID_TOUCHPAD_HELPER)
 
 $(SONAME): $(SO_OBJECTS)
@@ -174,8 +181,10 @@ $(OBJDIR)/%.o : src/%.cc
 
 LIBDIR = /usr/lib
 
-install: $(SONAME)
+lid_touchpad_helper_install:
 	$(MAKE) -C $(LID_TOUCHPAD_HELPER) install
+
+install: $(SONAME)
 	install -D -m 0755 $(SONAME) \
 		$(DESTDIR)$(LIBDIR)/$(SONAME:$(OBJDIR)/%=%)
 	ln -s $(SONAME:$(OBJDIR)/%=%) \
@@ -218,6 +227,6 @@ cov: $(TEST_EXE) $(LCOV_EXE)
 		genhtml -o html $(OBJDIR)/app.info
 	./tools/local_coverage_rate.sh $(OBJDIR)/app.info
 
-.PHONY : clean cov all
+.PHONY : clean cov all lid_touchpad_helper_all lid_touchpad_helper_install
 
 -include $(ALL_OBJECT_FILES:$(OBJDIR)/%.o=$(DEPDIR)/%.d)
