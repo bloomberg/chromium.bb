@@ -41,6 +41,10 @@ bool ExtensionAPI::IsAvailableInUntrustedContext(const std::string& full_name,
   return false;
 }
 
+bool ExtensionAPI::IsAvailableToWebUI(const std::string& name) {
+  return false;
+}
+
 const base::DictionaryValue* ExtensionAPI::GetSchema(
     const std::string& full_name) {
   return NULL;

@@ -106,12 +106,6 @@ class ExtensionFunctionDispatcher
   // TODO (jam): convert all callers to use RenderFrameHost.
   void Dispatch(const ExtensionHostMsg_Request_Params& params,
                 content::RenderViewHost* render_view_host);
-  // Dispatch an extension function and calls |callback| when the execution
-  // completes.
-  void DispatchWithCallback(
-      const ExtensionHostMsg_Request_Params& params,
-      content::RenderFrameHost* render_frame_host,
-      const ExtensionFunction::ResponseCallback& callback);
 
   // Called when an ExtensionFunction is done executing, after it has sent
   // a response (if any) to the extension.
@@ -134,7 +128,6 @@ class ExtensionFunctionDispatcher
   // is returned. |function| must not be run in that case.
   static bool CheckPermissions(
       ExtensionFunction* function,
-      const Extension* extension,
       const ExtensionHostMsg_Request_Params& params,
       const ExtensionFunction::ResponseCallback& callback);
 

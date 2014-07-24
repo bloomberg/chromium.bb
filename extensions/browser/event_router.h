@@ -322,6 +322,9 @@ struct Event {
   // allowing the caller to provide different arguments depending on the
   // extension and profile. This is guaranteed to be called synchronously with
   // DispatchEvent, so callers don't need to worry about lifetime.
+  //
+  // NOTE: the Extension argument to this may be NULL because it's possible for
+  // this event to be dispatched to non-extension processes, like WebUI.
   WillDispatchCallback will_dispatch_callback;
 
   // If true, this event will always be dispatched to ephemeral apps, regardless

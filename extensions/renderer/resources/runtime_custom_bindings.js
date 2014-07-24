@@ -83,7 +83,8 @@ binding.registerCustomHook(function(binding, id, contextType) {
   // Unprivileged APIs.
   //
 
-  runtime.id = id;
+  if (id != '')
+    runtime.id = id;
 
   apiFunctions.setHandleRequest('getManifest', function() {
     return runtimeNatives.GetManifest();

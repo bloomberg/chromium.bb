@@ -56,6 +56,7 @@ struct Mappings {
     contexts["content_script"] = Feature::CONTENT_SCRIPT_CONTEXT;
     contexts["web_page"] = Feature::WEB_PAGE_CONTEXT;
     contexts["blessed_web_page"] = Feature::BLESSED_WEB_PAGE_CONTEXT;
+    contexts["webui"] = Feature::WEBUI_CONTEXT;
 
     locations["component"] = SimpleFeature::COMPONENT_LOCATION;
     locations["policy"] = SimpleFeature::POLICY_LOCATION;
@@ -212,6 +213,8 @@ std::string GetDisplayName(Feature::Context context) {
       return "web page";
     case Feature::BLESSED_WEB_PAGE_CONTEXT:
       return "hosted app";
+    case Feature::WEBUI_CONTEXT:
+      return "webui";
   }
   NOTREACHED();
   return "";

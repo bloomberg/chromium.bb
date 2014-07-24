@@ -66,6 +66,9 @@ class TestSendMessageFunction : public AsyncExtensionFunction {
   // a reply and will just ignore it.
   void Reply(const std::string& message);
 
+  // Sends an error back to the calling extension.
+  void ReplyWithError(const std::string& error);
+
  protected:
   virtual ~TestSendMessageFunction();
 

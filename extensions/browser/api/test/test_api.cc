@@ -93,6 +93,11 @@ void TestSendMessageFunction::Reply(const std::string& message) {
   SendResponse(true);
 }
 
+void TestSendMessageFunction::ReplyWithError(const std::string& error) {
+  error_ = error;
+  SendResponse(false);
+}
+
 // static
 void TestGetConfigFunction::set_test_config_state(
     base::DictionaryValue* value) {

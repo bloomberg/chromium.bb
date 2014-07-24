@@ -1123,6 +1123,7 @@ bool ChromeContentRendererClient::AllowPopup() {
     case extensions::Feature::UNSPECIFIED_CONTEXT:
     case extensions::Feature::WEB_PAGE_CONTEXT:
     case extensions::Feature::UNBLESSED_EXTENSION_CONTEXT:
+    case extensions::Feature::WEBUI_CONTEXT:
       return false;
     case extensions::Feature::BLESSED_EXTENSION_CONTEXT:
     case extensions::Feature::CONTENT_SCRIPT_CONTEXT:

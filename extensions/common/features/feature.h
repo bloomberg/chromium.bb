@@ -44,6 +44,9 @@ class Feature {
     // will be via the installation of a hosted app, so this may host an
     // extension. This is not affected by the URL matching pattern.
     BLESSED_WEB_PAGE_CONTEXT,
+
+    // A page within webui.
+    WEBUI_CONTEXT,
   };
 
   // The platforms the feature is supported in.

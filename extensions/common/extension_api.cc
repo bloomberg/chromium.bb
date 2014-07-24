@@ -303,6 +303,10 @@ bool ExtensionAPI::IsAvailableInUntrustedContext(const std::string& name,
              .is_available();
 }
 
+bool ExtensionAPI::IsAvailableToWebUI(const std::string& name) {
+  return IsAvailable(name, NULL, Feature::WEBUI_CONTEXT, GURL()).is_available();
+}
+
 const base::DictionaryValue* ExtensionAPI::GetSchema(
     const std::string& full_name) {
   std::string child_name;

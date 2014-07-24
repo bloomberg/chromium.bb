@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api_activity_monitor.h"
@@ -512,47 +513,74 @@ void EventRouter::DispatchLazyEvent(
 void EventRouter::DispatchEventToProcess(const std::string& extension_id,
                                          content::RenderProcessHost* process,
                                          const linked_ptr<Event>& event) {
+  BrowserContext* listener_context = process->GetBrowserContext();
+  ProcessMap* process_map = ProcessMap::Get(listener_context);
+
   const Extension* extension =
       ExtensionRegistry::Get(browser_context_)->enabled_extensions().GetByID(
           extension_id);
+  // NOTE: |extension| being NULL does not necessarily imply that this event
+  // shouldn't be dispatched. Events can be dispatched to WebUI as well.
 
-  // The extension could have been removed, but we do not unregister it until
-  // the extension process is unloaded.
-  if (!extension)
-    return;
-
-  BrowserContext* listener_context = process->GetBrowserContext();
-  ProcessMap* process_map = ProcessMap::Get(listener_context);
-  // If the event is privileged, only send to extension processes. Otherwise,
-  // it's OK to send to normal renderers (e.g., for content scripts).
-  if (!process_map->Contains(extension->id(), process->GetID()) &&
-      !ExtensionAPI::GetSharedInstance()->IsAvailableInUntrustedContext(
-          event->event_name, extension)) {
+  if (!extension && !extension_id.empty()) {
+    // Trying to dispatch an event to an extension that doesn't exist. The
+    // extension could have been removed, but we do not unregister it until the
+    // extension process is unloaded.
     return;
   }
 
-  // If the event is restricted to a URL, only dispatch if the extension has
-  // permission for it (or if the event originated from itself).
-  if (!event->event_url.is_empty() &&
-      event->event_url.host() != extension->id() &&
-      !extension->permissions_data()
-           ->active_permissions()
-           ->HasEffectiveAccessToURL(event->event_url)) {
+  if (extension) {
+    // Dispatching event to an extension.
+    // If the event is privileged, only send to extension processes. Otherwise,
+    // it's OK to send to normal renderers (e.g., for content scripts).
+    if (!process_map->Contains(extension->id(), process->GetID()) &&
+        !ExtensionAPI::GetSharedInstance()->IsAvailableInUntrustedContext(
+            event->event_name, extension)) {
+      return;
+    }
+
+    // If the event is restricted to a URL, only dispatch if the extension has
+    // permission for it (or if the event originated from itself).
+    if (!event->event_url.is_empty() &&
+        event->event_url.host() != extension->id() &&
+        !extension->permissions_data()
+             ->active_permissions()
+             ->HasEffectiveAccessToURL(event->event_url)) {
+      return;
+    }
+
+    if (!CanDispatchEventToBrowserContext(listener_context, extension, event)) {
+      return;
+    }
+  } else if (content::ChildProcessSecurityPolicy::GetInstance()
+                 ->HasWebUIBindings(process->GetID())) {
+    // Dispatching event to WebUI.
+    if (!ExtensionAPI::GetSharedInstance()->IsAvailableToWebUI(
+            event->event_name)) {
+      return;
+    }
+  } else {
+    // Dispatching event to a webpage - however, all such events (e.g.
+    // messaging) don't go through EventRouter so this should be impossible.
+    NOTREACHED();
     return;
   }
-
-  if (!CanDispatchEventToBrowserContext(listener_context, extension, event))
-    return;
 
   if (!event->will_dispatch_callback.is_null()) {
-    event->will_dispatch_callback.Run(listener_context, extension,
-                                      event->event_args.get());
+    event->will_dispatch_callback.Run(
+        listener_context, extension, event->event_args.get());
   }
 
-  DispatchExtensionMessage(process, listener_context, extension->id(),
-                           event->event_name, event->event_args.get(),
-                           event->user_gesture, event->filter_info);
-  IncrementInFlightEvents(listener_context, extension);
+  DispatchExtensionMessage(process,
+                           listener_context,
+                           extension_id,
+                           event->event_name,
+                           event->event_args.get(),
+                           event->user_gesture,
+                           event->filter_info);
+
+  if (extension)
+    IncrementInFlightEvents(listener_context, extension);
 }
 
 bool EventRouter::CanDispatchEventToBrowserContext(

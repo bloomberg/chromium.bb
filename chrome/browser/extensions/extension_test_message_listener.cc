@@ -61,6 +61,15 @@ void ExtensionTestMessageListener::Reply(int message) {
   Reply(base::IntToString(message));
 }
 
+void ExtensionTestMessageListener::ReplyWithError(const std::string& error) {
+  CHECK(satisfied_);
+  CHECK(!replied_);
+
+  replied_ = true;
+  function_->ReplyWithError(error);
+  function_ = NULL;
+}
+
 void ExtensionTestMessageListener::Reset() {
   satisfied_ = false;
   failed_ = false;
@@ -72,6 +81,8 @@ void ExtensionTestMessageListener::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE, type);
+
   // Return immediately if we're already satisfied or it's not the right
   // extension.
   extensions::TestSendMessageFunction* function =

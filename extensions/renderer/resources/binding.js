@@ -419,10 +419,36 @@ Binding.prototype = {
 
     addProperties(mod, schema);
 
-    var availability = GetAvailability(schema.namespace);
-    if (!availability.is_available && $Object.keys(mod).length == 0) {
+    // This generate() call is considered successful if any functions,
+    // properties, or events were created.
+    var success = ($Object.keys(mod).length > 0);
+
+    // Special case: webViewRequest is a vacuous API which just copies its
+    // implementation from declarativeWebRequest.
+    //
+    // TODO(kalman): This would be unnecessary if we did these checks after the
+    // hooks (i.e. this.runHooks_(mod)). The reason we don't is to be very
+    // conservative with running any JS which might actually be for an API
+    // which isn't available, but this is probably overly cautious given the
+    // C++ is only giving us APIs which are available. FIXME.
+    if (schema.namespace == 'webViewRequest') {
+      success = true;
+    }
+
+    // Special case: runtime.lastError is only occasionally set, so
+    // specifically check its availability.
+    if (schema.namespace == 'runtime' &&
+        GetAvailability('runtime.lastError').is_available) {
+      success = true;
+    }
+
+    if (!success) {
+      var availability = GetAvailability(schema.namespace);
+      // If an API was available it should have been successfully generated.
+      logging.DCHECK(!availability.is_available,
+                     schema.namespace + ' was available but not generated');
       console.error('chrome.' + schema.namespace + ' is not available: ' +
-                        availability.message);
+                    availability.message);
       return;
     }
 

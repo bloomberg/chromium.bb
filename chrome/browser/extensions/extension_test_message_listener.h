@@ -106,6 +106,8 @@ class ExtensionTestMessageListener : public content::NotificationObserver {
   // Convenience method that formats int as a string and sends it.
   void Reply(int message);
 
+  void ReplyWithError(const std::string& error);
+
   // Reset the listener to listen again. No settings (such as messages to
   // listen for) are modified.
   void Reset();

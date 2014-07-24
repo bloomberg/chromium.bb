@@ -42,6 +42,7 @@ ScriptContext::ScriptContext(const v8::Handle<v8::Context>& v8_context,
   VLOG(1) << "Created context:\n"
           << "  extension id: " << GetExtensionID() << "\n"
           << "  frame:        " << web_frame_ << "\n"
+          << "  URL:          " << GetURL() << "\n"
           << "  context type: " << GetContextTypeDescription();
   gin::PerContextData::From(v8_context)->set_runner(this);
 }
@@ -137,6 +138,8 @@ std::string ScriptContext::GetContextTypeDescription() {
       return "WEB_PAGE";
     case Feature::BLESSED_WEB_PAGE_CONTEXT:
       return "BLESSED_WEB_PAGE";
+    case Feature::WEBUI_CONTEXT:
+      return "WEBUI";
   }
   NOTREACHED();
   return std::string();

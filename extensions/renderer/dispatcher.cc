@@ -376,12 +376,6 @@ bool Dispatcher::CheckContextAccessToExtensionAPI(
     return false;
   }
 
-  if (!context->extension()) {
-    context->isolate()->ThrowException(v8::Exception::Error(
-        v8::String::NewFromUtf8(context->isolate(), "Not in an extension.")));
-    return false;
-  }
-
   // Theoretically we could end up with bindings being injected into sandboxed
   // frames, for example content scripts. Don't let them execute API functions.
   blink::WebFrame* frame = context->web_frame();
@@ -884,7 +878,8 @@ void Dispatcher::UpdateBindingsForContext(ScriptContext* context) {
 
     case Feature::BLESSED_EXTENSION_CONTEXT:
     case Feature::UNBLESSED_EXTENSION_CONTEXT:
-    case Feature::CONTENT_SCRIPT_CONTEXT: {
+    case Feature::CONTENT_SCRIPT_CONTEXT:
+    case Feature::WEBUI_CONTEXT: {
       // Extension context; iterate through all the APIs and bind the available
       // ones.
       const FeatureProvider* api_feature_provider =
@@ -1162,10 +1157,13 @@ Feature::Context Dispatcher::ClassifyJavaScriptContext(
                                       : Feature::UNBLESSED_EXTENSION_CONTEXT;
   }
 
-  if (url.is_valid())
-    return Feature::WEB_PAGE_CONTEXT;
+  if (!url.is_valid())
+    return Feature::UNSPECIFIED_CONTEXT;
 
-  return Feature::UNSPECIFIED_CONTEXT;
+  if (url.SchemeIs(content::kChromeUIScheme))
+    return Feature::WEBUI_CONTEXT;
+
+  return Feature::WEB_PAGE_CONTEXT;
 }
 
 v8::Handle<v8::Object> Dispatcher::GetOrCreateObject(

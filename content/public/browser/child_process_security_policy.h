@@ -145,6 +145,11 @@ class ChildProcessSecurityPolicy {
   // Returns true if delete-from access has been granted to |filesystem_id|.
   virtual bool CanDeleteFromFileSystem(int child_id,
                                        const std::string& filesystem_id) = 0;
+
+  // Returns true if the specified child_id has been granted WebUI bindings.
+  // The browser should check this property before assuming the child process
+  // is allowed to use WebUI bindings.
+  virtual bool HasWebUIBindings(int child_id) = 0;
 };
 
 }  // namespace content
