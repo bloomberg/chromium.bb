@@ -1,5 +1,0 @@
-This tests verifies that hit testing can be disabled.
-
-normalFlow: no rects
-
-

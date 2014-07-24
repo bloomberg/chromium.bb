@@ -74,7 +74,6 @@ public:
     virtual void setCaretBrowsingEnabled(bool) OVERRIDE;
     virtual void setClobberUserAgentInitialScaleQuirk(bool) OVERRIDE;
     virtual void setCompositedScrollingForFramesEnabled(bool) OVERRIDE;
-    virtual void setCompositorTouchHitTesting(bool) OVERRIDE;
     virtual void setContainerCullingEnabled(bool) OVERRIDE;
     virtual void setCookieEnabled(bool) OVERRIDE;
     virtual void setNavigateOnDragDrop(bool) OVERRIDE;

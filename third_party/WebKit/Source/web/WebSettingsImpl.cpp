@@ -661,11 +661,6 @@ void WebSettingsImpl::setCompositedScrollingForFramesEnabled(bool enabled)
     m_settings->setCompositedScrollingForFramesEnabled(enabled);
 }
 
-void WebSettingsImpl::setCompositorTouchHitTesting(bool enabled)
-{
-    m_settings->setCompositorTouchHitTesting(enabled);
-}
-
 void WebSettingsImpl::setSelectTrailingWhitespaceEnabled(bool enabled)
 {
     m_settings->setSelectTrailingWhitespaceEnabled(enabled);

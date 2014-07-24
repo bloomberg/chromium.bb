@@ -135,7 +135,6 @@ private:
 
     bool hasVisibleSlowRepaintViewportConstrainedObjects(FrameView*) const;
 
-    bool touchHitTestingEnabled() const;
     void setShouldHandleScrollGestureOnMainThreadRegion(const Region&);
     void setTouchEventTargetRects(LayerHitTestRects&);
     void computeTouchEventTargetRects(LayerHitTestRects&);

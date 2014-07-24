@@ -147,9 +147,6 @@ maxTouchPoints type=int, initial=0
 # crbug.com/304895 tracks removal once we're satisfied with the algorithm.
 touchAdjustmentEnabled initial=true
 
-# A mostly-stable performance optimization. crbug.com/304518 tracks removal.
-compositorTouchHitTesting initial=true
-
 syncXHRInDocumentsEnabled initial=true
 cookieEnabled initial=true
 navigateOnDragDrop initial=true
