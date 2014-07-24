@@ -324,10 +324,15 @@ source_set("browser") {
     sources -= [
       "battery_status/battery_status_manager_default.cc",
       "geolocation/wifi_data_provider_linux.cc",
-      "power_save_blocker_ozone.cc",
       "power_save_blocker_x11.cc",
     ]
     deps += [ "//chromeos:power_manager_proto" ]
+  }
+
+  if (!use_ozone || is_chromeos) {
+    sources -= [
+      "power_save_blocker_ozone.cc",
+    ]
   }
 
   if (use_aura) {
@@ -374,6 +379,15 @@ source_set("browser") {
       ]
     }
     deps += [ "//ui/compositor" ]
+  }
+
+  if (!use_ozone) {
+    sources -= [
+      "compositor/overlay_candidate_validator_ozone.cc",
+      "compositor/overlay_candidate_validator_ozone.h",
+      "compositor/software_output_device_ozone.cc",
+      "compositor/software_output_device_ozone.h",
+    ]
   }
 
   if (enable_web_speech) {

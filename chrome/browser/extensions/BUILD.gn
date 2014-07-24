@@ -221,5 +221,11 @@ static_library("extensions") {
           gypi_values.chrome_browser_extensions_app_list_sources,
           ".", "//chrome")
     }
+
+    if (!use_ozone) {
+      sources -= [
+        "global_shortcut_listener_ozone.cc",
+      ]
+    }
   }
 }

@@ -124,6 +124,7 @@ source_set("common") {
     sources -= [
       "cursors/webcursor_ozone.cc",
       "font_list_ozone.cc",
+      "gpu/gpu_memory_buffer_factory_ozone.cc",
     ]
   }
 

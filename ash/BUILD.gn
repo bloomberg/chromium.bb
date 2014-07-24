@@ -114,6 +114,12 @@ component("ash") {
       "display/mouse_cursor_event_filter_ozone.cc",
     ]
   }
+
+  if (!use_ozone) {
+    sources -= [
+      "host/ash_window_tree_host_ozone.cc",
+    ]
+  }
 }
 
 component("ash_with_content") {
