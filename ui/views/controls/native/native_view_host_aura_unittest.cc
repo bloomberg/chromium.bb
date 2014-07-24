@@ -109,13 +109,12 @@ class NativeViewHostAuraTest : public ViewsTestBase {
     toplevel_->Init(toplevel_params);
 
     // And the child widget.
-    View* test_view = new View;
     child_.reset(new Widget);
     Widget::InitParams child_params(Widget::InitParams::TYPE_CONTROL);
     child_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     child_params.parent = toplevel_->GetNativeView();
     child_->Init(child_params);
-    child_->SetContentsView(test_view);
+    child_->SetContentsView(new View);
 
     // Owned by |toplevel|.
     host_.reset(new NativeViewHostTesting);
