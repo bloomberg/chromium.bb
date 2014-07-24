@@ -6,8 +6,10 @@
 #include <OpenGL/CGLIOSurface.h>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/common/gpu/media/vt_video_decode_accelerator.h"
+#include "content/public/common/content_switches.h"
 #include "media/filters/h264_parser.h"
 
 using content_common_gpu_media::kModuleVt;
@@ -62,8 +64,11 @@ bool VTVideoDecodeAccelerator::Initialize(
   if (profile < media::H264PROFILE_MIN || profile > media::H264PROFILE_MAX)
     return false;
 
-  // TODO(sandersd): Move VideoToolbox library loading to sandbox startup;
-  // until then, --no-sandbox is required.
+  // Require --no-sandbox until VideoToolbox library loading is part of sandbox
+  // startup (and this VDA is ready for regular users).
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoSandbox))
+    return false;
+
   if (!IsVtInitialized()) {
     StubPathMap paths;
     // CoreVideo is also required, but the loader stops after the first
@@ -80,7 +85,6 @@ bool VTVideoDecodeAccelerator::Initialize(
   if (!decoder_thread_.Start())
     return false;
 
-  // Note that --ignore-gpu-blacklist is still required to get here.
   return true;
 }
 
