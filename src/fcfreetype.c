@@ -1446,10 +1446,10 @@ FcFreeTypeQueryFace (const FT_Face  face,
 		    free (utf8);
 		    if (lang)
 		    {
-			/* pad lang list with 'xx' to line up with elt */
+			/* pad lang list with 'und' to line up with elt */
 			while (*nlangp < *np)
 			{
-			    if (!FcPatternAddString (pat, eltlang, (FcChar8 *) "xx"))
+			    if (!FcPatternAddString (pat, eltlang, (FcChar8 *) "und"))
 				goto bail1;
 			    ++*nlangp;
 			}
