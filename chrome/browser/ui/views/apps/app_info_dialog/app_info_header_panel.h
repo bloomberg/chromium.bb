@@ -36,7 +36,6 @@ class AppInfoHeaderPanel : public AppInfoPanel,
 
  private:
   void CreateControls();
-  void LayoutAppNameAndVersionInto(views::View* parent_view);
   void LayoutControls();
 
   // Overridden from views::LinkListener:
@@ -46,9 +45,6 @@ class AppInfoHeaderPanel : public AppInfoPanel,
   void LoadAppImageAsync();
   // Called when the app's icon is loaded.
   void OnAppImageLoaded(const gfx::Image& image);
-
-  // Returns true if the app has a version number that makes sense to display.
-  bool HasVersion() const;
 
   // Opens the app in the web store. Must only be called if
   // CanShowAppInWebStore() returns true.
@@ -63,7 +59,6 @@ class AppInfoHeaderPanel : public AppInfoPanel,
   // UI elements on the dialog. Elements are NULL if they are not displayed.
   views::ImageView* app_icon_;
   views::Label* app_name_label_;
-  views::Label* app_version_label_;
   views::Link* view_in_store_link_;
   views::Link* licenses_link_;
 

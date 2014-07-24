@@ -34,11 +34,17 @@ class AppInfoSummaryPanel : public AppInfoPanel,
  private:
   // Internal initialisation methods.
   void CreateDescriptionControl();
+  void CreateDetailsControl();
   void CreateLaunchOptionControl();
+
   void LayoutDescriptionControl();
+  void LayoutDetailsControl();
 
   // Overridden from views::ComboboxListener:
   virtual void OnPerformAction(views::Combobox* combobox) OVERRIDE;
+
+  // Returns true if the app has a version number that makes sense to display.
+  bool HasVersion() const;
 
   // Returns the launch type of the app (e.g. pinned tab, fullscreen, etc).
   extensions::LaunchType GetLaunchType() const;
@@ -51,6 +57,10 @@ class AppInfoSummaryPanel : public AppInfoPanel,
   // UI elements on the dialog.
   views::Label* description_heading_;
   views::Label* description_label_;
+
+  views::Label* details_heading_;
+  views::Label* version_title_;
+  views::Label* version_value_;
 
   scoped_ptr<LaunchOptionsComboboxModel> launch_options_combobox_model_;
   views::Combobox* launch_options_combobox_;

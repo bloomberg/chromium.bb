@@ -2181,8 +2181,14 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_APPLICATION_INFO_LICENSES_BUTTON_TEXT" desc="Text for the button that displays the licenses for the app.">
           Licenses
         </message>
-        <message name="IDS_APPLICATION_INFO_DESCRIPTION_TITLE" desc="Title of the first section in the dialog, which displays a general summary of the app (the app's description).">
-          Summary
+        <message name="IDS_APPLICATION_INFO_DESCRIPTION_TITLE" desc="Title of the first section in the dialog, which displays a high-level overview of the app (the app's description).">
+          Overview
+        </message>
+        <message name="IDS_APPLICATION_INFO_DETAILS_TITLE" desc="Title of the section in the dialog which displays the app's details (such as the version, size, etc).">
+          Details
+        </message>
+        <message name="IDS_APPLICATION_INFO_VERSION_LABEL" desc="Text displayed before the app's version in the details section of the dialog.">
+          Version:
         </message>
         <message name="IDS_APPLICATION_INFO_ACTIVE_PERMISSIONS_TEXT" desc="Heading above the current permissions for the app (the permissions that the user has granted the app upon installation).">
           Permissions
@@ -2207,8 +2213,14 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_APPLICATION_INFO_LICENSES_BUTTON_TEXT" desc="In Title Case: Text for the button that displays the licenses for the app.">
           Licenses
         </message>
-        <message name="IDS_APPLICATION_INFO_DESCRIPTION_TITLE" desc="In Title Case: Title of the first section in the dialog, which displays a general summary of the app (the app's description).">
-          Summary
+        <message name="IDS_APPLICATION_INFO_DESCRIPTION_TITLE" desc="In Title Case: Title of the first section in the dialog, which displays a high-level overview of the app (the app's description).">
+          Overview
+        </message>
+        <message name="IDS_APPLICATION_INFO_DETAILS_TITLE" desc="In Title Case: Title of the section in the dialog which displays the app's details (such as the version, size, etc).">
+          Details
+        </message>
+        <message name="IDS_APPLICATION_INFO_VERSION_LABEL" desc="In Title Case: Text displayed before the app's version in the details section of the dialog.">
+          Version:
         </message>
         <message name="IDS_APPLICATION_INFO_ACTIVE_PERMISSIONS_TEXT" desc="In Title Case: Heading above the current permissions for the app (the permissions that the user has granted the app upon installation).">
           Permissions

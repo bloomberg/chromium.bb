@@ -18,6 +18,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
@@ -27,6 +28,12 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+
+namespace {
+
+// The spacing between the key and the value labels in the Details section.
+const int kSpacingBetweenKeyAndStartOfValue = 3;
+}
 
 // A model for a combobox selecting the launch options for a hosted app.
 // Displays different options depending on the host OS.
@@ -127,9 +134,13 @@ AppInfoSummaryPanel::AppInfoSummaryPanel(Profile* profile,
     : AppInfoPanel(profile, app),
       description_heading_(NULL),
       description_label_(NULL),
+      details_heading_(NULL),
+      version_title_(NULL),
+      version_value_(NULL),
       launch_options_combobox_(NULL) {
   // Create UI elements.
   CreateDescriptionControl();
+  CreateDetailsControl();
   CreateLaunchOptionControl();
 
   // Layout elements.
@@ -140,6 +151,7 @@ AppInfoSummaryPanel::AppInfoSummaryPanel(Profile* profile,
                            views::kUnrelatedControlVerticalSpacing));
 
   LayoutDescriptionControl();
+  LayoutDetailsControl();
 
   if (launch_options_combobox_)
     AddChildView(launch_options_combobox_);
@@ -168,6 +180,21 @@ void AppInfoSummaryPanel::CreateDescriptionControl() {
   }
 }
 
+void AppInfoSummaryPanel::CreateDetailsControl() {
+  if (HasVersion()) {
+    details_heading_ = CreateHeading(
+        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_DETAILS_TITLE));
+
+    version_title_ = new views::Label(
+        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_VERSION_LABEL));
+    version_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+    version_value_ =
+        new views::Label(base::ASCIIToUTF16(app_->VersionString()));
+    version_value_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  }
+}
+
 void AppInfoSummaryPanel::CreateLaunchOptionControl() {
   if (CanSetLaunchType()) {
     launch_options_combobox_model_.reset(new LaunchOptionsComboboxModel());
@@ -190,6 +217,26 @@ void AppInfoSummaryPanel::LayoutDescriptionControl() {
   }
 }
 
+void AppInfoSummaryPanel::LayoutDetailsControl() {
+  if (details_heading_) {
+    views::View* details_stack =
+        CreateVerticalStack(views::kRelatedControlSmallVerticalSpacing);
+
+    if (version_title_ && version_value_) {
+      views::View* horizontal_stack =
+          CreateHorizontalStack(kSpacingBetweenKeyAndStartOfValue);
+      horizontal_stack->AddChildView(version_title_);
+      horizontal_stack->AddChildView(version_value_);
+      details_stack->AddChildView(horizontal_stack);
+    }
+
+    views::View* vertical_stack = CreateVerticalStack();
+    vertical_stack->AddChildView(details_heading_);
+    vertical_stack->AddChildView(details_stack);
+    AddChildView(vertical_stack);
+  }
+}
+
 void AppInfoSummaryPanel::OnPerformAction(views::Combobox* combobox) {
   if (combobox == launch_options_combobox_) {
     SetLaunchType(launch_options_combobox_model_->GetLaunchTypeAtIndex(
@@ -197,6 +244,12 @@ void AppInfoSummaryPanel::OnPerformAction(views::Combobox* combobox) {
   } else {
     NOTREACHED();
   }
+}
+
+bool AppInfoSummaryPanel::HasVersion() const {
+  // The version number doesn't make sense for bookmark or component apps.
+  return !app_->from_bookmark() &&
+         app_->location() != extensions::Manifest::COMPONENT;
 }
 
 extensions::LaunchType AppInfoSummaryPanel::GetLaunchType() const {

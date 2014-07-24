@@ -19,7 +19,6 @@ APP_LIST_EXPORT extern const SkColor kTopSeparatorColor;
 APP_LIST_EXPORT extern const SkColor kBottomSeparatorColor;
 
 APP_LIST_EXPORT extern const SkColor kDialogSeparatorColor;
-APP_LIST_EXPORT extern const SkColor kDialogSubtitleColor;
 
 APP_LIST_EXPORT extern const SkColor kHighlightedColor;
 APP_LIST_EXPORT extern const SkColor kSelectedColor;
