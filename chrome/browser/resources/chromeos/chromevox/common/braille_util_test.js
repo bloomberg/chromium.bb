@@ -206,6 +206,7 @@ TEST_F('CvoxBrailleUtilUnitTest', 'TextFieldSelection', function() {
       );
 
   var inputElem = $('1');
+  inputElem.focus();
   var input = cvox.CursorSelection.fromNode(inputElem);
 
   // Selection.
