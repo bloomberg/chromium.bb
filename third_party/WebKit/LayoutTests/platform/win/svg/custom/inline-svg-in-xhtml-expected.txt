@@ -23,12 +23,12 @@ layer at (48,38) size 722x542 layerType: foreground only
               text run at (0,1) width 110: "Enter something:"
           RenderText {#text} at (109,1) size 5x17
             text run at (109,1) width 5: " "
-          RenderTextControl {input} at (113.75,0) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          RenderTextControl {input} at (113.75,0) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderText {#text} at (0,0) size 0x0
         RenderBlock {p} at (14,76.59) size 688x21
           RenderButton {button} at (0,0) size 67.13x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
             RenderBlock (anonymous) at (8,3) size 51.13x15
               RenderText {#text} at (0,0) size 52x15
                 text run at (0,0) width 52: "Activate!"
-layer at (181,82) size 140x15
-  RenderBlock {div} at (2,3) size 140x15
+layer at (181,82) size 169x15
+  RenderBlock {div} at (2,3) size 169x15

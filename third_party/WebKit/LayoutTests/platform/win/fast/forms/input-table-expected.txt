@@ -66,13 +66,13 @@ layer at (0,0) size 785x691
       RenderBlock {P} at (0,574) size 769x18
         RenderText {#text} at (0,0) size 72x17
           text run at (0,0) width 72: "Test case 6"
-      RenderTable {TABLE} at (0,608) size 162x67 [border: (3px solid #0000FF)]
-        RenderTableSection {TBODY} at (3,3) size 156x61
-          RenderTableRow {TR} at (0,2) size 156x29
-            RenderTableCell {TD} at (2,2) size 152x29 [border: (3px solid #FF0000)] [r=0 c=0 rs=1 cs=1]
-              RenderTextControl {INPUT} at (4,4) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderTableRow {TR} at (0,33) size 156x26
-            RenderTableCell {TD} at (2,33) size 152x26 [border: (3px solid #FF0000)] [r=1 c=0 rs=1 cs=1]
+      RenderTable {TABLE} at (0,608) size 191x67 [border: (3px solid #0000FF)]
+        RenderTableSection {TBODY} at (3,3) size 185x61
+          RenderTableRow {TR} at (0,2) size 185x29
+            RenderTableCell {TD} at (2,2) size 181x29 [border: (3px solid #FF0000)] [r=0 c=0 rs=1 cs=1]
+              RenderTextControl {INPUT} at (4,4) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          RenderTableRow {TR} at (0,33) size 185x26
+            RenderTableCell {TD} at (2,33) size 181x26 [border: (3px solid #FF0000)] [r=1 c=0 rs=1 cs=1]
               RenderBlock {DIV} at (4,4) size 70x18
                 RenderText {#text} at (0,0) size 32x17
                   text run at (0,0) width 32: "70px"
@@ -92,7 +92,7 @@ layer at (19,539) size 66x15
   RenderBlock {DIV} at (2,3) size 66x15
     RenderText {#text} at (0,0) size 58x15
       text run at (0,0) width 58: "max 70px"
-layer at (19,628) size 140x15
-  RenderBlock {DIV} at (2,3) size 140x15
+layer at (19,628) size 169x15
+  RenderBlock {DIV} at (2,3) size 169x15
     RenderText {#text} at (0,0) size 98x15
       text run at (0,0) width 98: "min-width 100px"

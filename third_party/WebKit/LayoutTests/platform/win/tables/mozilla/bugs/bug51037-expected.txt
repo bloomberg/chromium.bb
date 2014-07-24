@@ -9,22 +9,22 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,34) size 784x21
         RenderText {#text} at (0,1) size 36x17
           text run at (0,1) width 36: "Left: "
-        RenderTextControl {INPUT} at (35.09,0) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderTextControl {INPUT} at (35.09,0) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       RenderBlock {P} at (0,71) size 784x21
         RenderText {#text} at (0,1) size 35x17
           text run at (0,1) width 35: "Top: "
-        RenderTextControl {INPUT} at (34.22,0) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderTextControl {INPUT} at (34.22,0) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       RenderBlock {P} at (0,108) size 784x21
         RenderButton {INPUT} at (0,0) size 48.61x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,3) size 32.61x15
             RenderText {#text} at (0,0) size 33x15
               text run at (0,0) width 33: "Move"
-layer at (45,45) size 140x15
-  RenderBlock {DIV} at (2,3) size 140x15
+layer at (45,45) size 169x15
+  RenderBlock {DIV} at (2,3) size 169x15
     RenderText {#text} at (0,0) size 37x15
       text run at (0,0) width 37: "120px"
-layer at (44,82) size 140x15
-  RenderBlock {DIV} at (2,3) size 140x15
+layer at (44,82) size 169x15
+  RenderBlock {DIV} at (2,3) size 169x15
     RenderText {#text} at (0,0) size 37x15
       text run at (0,0) width 37: "120px"
 layer at (250,120) size 30x48

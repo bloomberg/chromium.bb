@@ -6,11 +6,11 @@ layer at (0,0) size 800x600
       RenderTable {TABLE} at (0,0) size 784x49
         RenderTableSection {TBODY} at (0,0) size 784x49
           RenderTableRow {TR} at (0,2) size 784x23
-            RenderTableCell {TD} at (2,3) size 54x20 [r=0 c=0 rs=1 cs=1]
+            RenderTableCell {TD} at (2,3) size 46x20 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 37x17
                 text run at (1,1) width 37: "URL:"
-            RenderTableCell {TD} at (58,2) size 724x23 [r=0 c=1 rs=1 cs=1]
-              RenderTextControl {INPUT} at (1,1) size 722x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+            RenderTableCell {TD} at (50,2) size 732x23 [r=0 c=1 rs=1 cs=1]
+              RenderTextControl {INPUT} at (1,1) size 730x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderTableRow {TR} at (0,27) size 784x20
             RenderTableCell {TD} at (2,27) size 780x20 [bgcolor=#FF0000] [r=1 c=0 rs=1 cs=2]
               RenderText {#text} at (1,1) size 257x17
@@ -74,8 +74,8 @@ layer at (0,0) size 800x600
                   text run at (0,0) width 147: "I should have nowrap. "
                   text run at (146,0) width 101: "I really should. "
                   text run at (246,0) width 123: "Definitely. Should."
-layer at (69,14) size 718x15
-  RenderBlock {DIV} at (2,3) size 718x15
+layer at (61,14) size 726x15
+  RenderBlock {DIV} at (2,3) size 726x15
 layer at (14,237) size 179x32 clip at (15,238) size 177x30
   RenderTextControl {TEXTAREA} at (2,2) size 179x32 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {DIV} at (3,3) size 175x15

@@ -9,16 +9,16 @@ layer at (0,0) size 800x600
       RenderBlock {FORM} at (0,18) size 784x253
         RenderText {#text} at (0,1) size 37x17
           text run at (0,1) width 37: "input "
-        RenderTextControl {INPUT} at (36.89,0) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderText {#text} at (180,1) size 5x17
-          text run at (180,1) width 5: " "
-        RenderBR {BR} at (184,15) size 1x0
+        RenderTextControl {INPUT} at (36.89,0) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (209,1) size 5x17
+          text run at (209,1) width 5: " "
+        RenderBR {BR} at (213,15) size 1x0
         RenderText {#text} at (0,22) size 28x17
           text run at (0,22) width 28: "text "
-        RenderTextControl {INPUT} at (27.98,21) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderText {#text} at (171,22) size 5x17
-          text run at (171,22) width 5: " "
-        RenderBR {BR} at (175,36) size 1x0
+        RenderTextControl {INPUT} at (27.98,21) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (200,22) size 5x17
+          text run at (200,22) width 5: " "
+        RenderBR {BR} at (204,36) size 1x0
         RenderText {#text} at (0,44) size 66x17
           text run at (0,44) width 66: "checkbox "
         RenderBlock {INPUT} at (69.30,45) size 13x13
@@ -76,32 +76,32 @@ layer at (0,0) size 800x600
         RenderBR {BR} at (109,184) size 1x0
         RenderText {#text} at (0,191) size 51x17
           text run at (0,191) width 51: "isindex "
-        RenderTextControl {INPUT} at (50.22,190) size 146x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderText {#text} at (196,191) size 5x17
-          text run at (196,191) width 5: " "
-        RenderBR {BR} at (200,205) size 1x0
+        RenderTextControl {INPUT} at (50.22,190) size 175x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (225,191) size 5x17
+          text run at (225,191) width 5: " "
+        RenderBR {BR} at (229,205) size 1x0
         RenderText {#text} at (0,212) size 65x17
           text run at (0,212) width 65: "password "
-        RenderTextControl {INPUT} at (64.44,211) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderText {#text} at (208,212) size 5x17
-          text run at (208,212) width 5: " "
-        RenderBR {BR} at (212,226) size 1x0
+        RenderTextControl {INPUT} at (64.44,211) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (237,212) size 5x17
+          text run at (237,212) width 5: " "
+        RenderBR {BR} at (241,226) size 1x0
         RenderText {#text} at (0,233) size 45x17
           text run at (0,233) width 45: "search "
-        RenderTextControl {INPUT} at (44.86,232) size 146x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (3,3) size 140x15
+        RenderTextControl {INPUT} at (44.86,232) size 175x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          RenderFlexibleBox {DIV} at (3,3) size 169x15
             RenderBlock {DIV} at (0,2) size 1x11
-            RenderBlock {DIV} at (1,0) size 126x15
+            RenderBlock {DIV} at (1,0) size 155x15
         RenderText {#text} at (0,0) size 0x0
-layer at (47,29) size 140x15
-  RenderBlock {DIV} at (2,3) size 140x15
-layer at (38,50) size 140x15
-  RenderBlock {DIV} at (2,3) size 140x15
-layer at (61,219) size 140x15
-  RenderBlock {DIV} at (3,3) size 140x15
-layer at (74,240) size 140x15
-  RenderBlock {DIV} at (2,3) size 140x15
-layer at (57,261) size 126x15
-  RenderBlock {DIV} at (0,0) size 126x15
-layer at (184,264) size 9x9 transparent
-  RenderBlock {DIV} at (128,3) size 9x9
+layer at (47,29) size 169x15
+  RenderBlock {DIV} at (2,3) size 169x15
+layer at (38,50) size 169x15
+  RenderBlock {DIV} at (2,3) size 169x15
+layer at (61,219) size 169x15
+  RenderBlock {DIV} at (3,3) size 169x15
+layer at (74,240) size 169x15
+  RenderBlock {DIV} at (2,3) size 169x15
+layer at (57,261) size 155x15
+  RenderBlock {DIV} at (0,0) size 155x15
+layer at (213,264) size 9x9 transparent
+  RenderBlock {DIV} at (157,3) size 9x9

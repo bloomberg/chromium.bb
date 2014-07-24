@@ -11,11 +11,11 @@ layer at (0,0) size 800x600
                 RenderTableSection {TBODY} at (2,2) size 234x126
                   RenderTableRow {TR} at (0,2) size 234x85
                     RenderTableCell {TD} at (2,2) size 230x85 [border: (1px solid #C0C0C0)] [r=0 c=0 rs=1 cs=1]
-                      RenderTable {TABLE} at (2,2) size 156x33 [border: (2px solid #FF0000)]
-                        RenderTableSection {TBODY} at (2,2) size 152x29
-                          RenderTableRow {TR} at (0,2) size 152x25
-                            RenderTableCell {TD} at (2,2) size 148x25 [border: (1px solid #C0C0C0)] [r=0 c=0 rs=1 cs=1]
-                              RenderTextControl {INPUT} at (2,2) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                      RenderTable {TABLE} at (2,2) size 185x33 [border: (2px solid #FF0000)]
+                        RenderTableSection {TBODY} at (2,2) size 181x29
+                          RenderTableRow {TR} at (0,2) size 181x25
+                            RenderTableCell {TD} at (2,2) size 177x25 [border: (1px solid #C0C0C0)] [r=0 c=0 rs=1 cs=1]
+                              RenderTextControl {INPUT} at (2,2) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                               RenderText {#text} at (0,0) size 0x0
                       RenderTable {TABLE} at (2,35) size 226x48 [border: (2px solid #FF0000)]
                         RenderTableSection {TBODY} at (2,2) size 222x44
@@ -39,7 +39,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 754x35
                 text run at (2,2) width 754: "KEEPoTHEoTEXToHEREoASoLONGoASoPOSSIBLEooKEEPoTHEoTEXToHEREoASoLONGoASoPOSSIBLE"
                 text run at (2,20) width 608: "THIS SIMULATES THE PROBLEM ON THE WWW.MAPBLAST.COM/ \"CREATE MAP\""
-layer at (28,29) size 140x15 scrollWidth 162
-  RenderBlock {DIV} at (2,3) size 140x15
+layer at (28,29) size 169x15
+  RenderBlock {DIV} at (2,3) size 169x15
     RenderText {#text} at (0,0) size 162x15
       text run at (0,0) width 162: "THIS NEEDS THIS VALUE"

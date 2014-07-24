@@ -190,10 +190,10 @@ layer at (0,0) size 785x2597
                 text run at (4,1) width 489: "The tests all render identically, and this browser may or may not grok CSS2 tables."
           RenderText {#text} at (514,19) size 4x17
             text run at (514,19) width 4: " "
-          RenderInline {LABEL} at (0,0) size 216x17
+          RenderInline {LABEL} at (0,0) size 245x17
             RenderText {#text} at (518,19) size 72x17
               text run at (518,19) width 72: "Comment: "
-            RenderTextControl {INPUT} at (589.55,18) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+            RenderTextControl {INPUT} at (589.55,18) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderText {#text} at (0,0) size 0x0
           RenderButton {INPUT} at (0,39) size 57.50x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
             RenderBlock (anonymous) at (8,3) size 41.50x15
@@ -239,5 +239,5 @@ layer at (0,0) size 785x2597
       RenderBlock {P} at (0,2541.78) size 769x18
         RenderText {#text} at (0,0) size 185x17
           text run at (0,0) width 185: "Last updated in March 1999."
-layer at (600,2354) size 140x15
-  RenderBlock {DIV} at (2,3) size 140x15
+layer at (600,2354) size 169x15
+  RenderBlock {DIV} at (2,3) size 169x15

@@ -25,16 +25,16 @@ layer at (0,0) size 800x600
           text run at (487,0) width 181: "no text is currently selected."
       RenderBlock {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,96) size 784x21
-        RenderTextControl {INPUT} at (0,0) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderText {#text} at (144,1) size 4x17
-          text run at (144,1) width 4: " "
+        RenderTextControl {INPUT} at (0,0) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (173,1) size 4x17
+          text run at (173,1) width 4: " "
         RenderInline {A} at (0,0) size 167x17 [color=#0000EE]
-          RenderText {#text} at (148,1) size 167x17
-            text run at (148,1) width 167: "drop me into the text field"
+          RenderText {#text} at (177,1) size 167x17
+            text run at (177,1) width 167: "drop me into the text field"
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
-layer at (10,107) size 140x15
-  RenderBlock {DIV} at (2,3) size 140x15
+layer at (10,107) size 169x15
+  RenderBlock {DIV} at (2,3) size 169x15
     RenderText {#text} at (0,0) size 120x15
       text run at (0,0) width 120: "http://www.ibm.com/"
 selection start: position 0 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 7 {INPUT} of body

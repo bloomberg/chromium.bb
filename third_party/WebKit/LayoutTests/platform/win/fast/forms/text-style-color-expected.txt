@@ -3,30 +3,30 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderTextControl {INPUT} at (0,0) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (144,1) size 4x17
-        text run at (144,1) width 4: " "
-      RenderTextControl {INPUT} at (148,0) size 144x21 [color=#FF0000] [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (292,1) size 4x17
-        text run at (292,1) width 4: " "
-      RenderTextControl {INPUT} at (296,0) size 144x21 [bgcolor=#008000] [border: (2px inset #EEEEEE)]
-      RenderText {#text} at (440,1) size 4x17
-        text run at (440,1) width 4: " "
-      RenderTextControl {INPUT} at (444,0) size 144x21 [color=#FF0000] [bgcolor=#008000] [border: (2px inset #EEEEEE)]
+      RenderTextControl {INPUT} at (0,0) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderText {#text} at (173,1) size 4x17
+        text run at (173,1) width 4: " "
+      RenderTextControl {INPUT} at (177,0) size 173x21 [color=#FF0000] [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderText {#text} at (350,1) size 4x17
+        text run at (350,1) width 4: " "
+      RenderTextControl {INPUT} at (354,0) size 173x21 [bgcolor=#008000] [border: (2px inset #EEEEEE)]
+      RenderText {#text} at (527,1) size 4x17
+        text run at (527,1) width 4: " "
+      RenderTextControl {INPUT} at (531,0) size 173x21 [color=#FF0000] [bgcolor=#008000] [border: (2px inset #EEEEEE)]
       RenderText {#text} at (0,0) size 0x0
-layer at (10,11) size 140x15
-  RenderBlock {DIV} at (2,3) size 140x15
+layer at (10,11) size 169x15
+  RenderBlock {DIV} at (2,3) size 169x15
     RenderText {#text} at (0,0) size 41x15
       text run at (0,0) width 41: "default"
-layer at (158,11) size 140x15
-  RenderBlock {DIV} at (2,3) size 140x15
+layer at (187,11) size 169x15
+  RenderBlock {DIV} at (2,3) size 169x15
     RenderText {#text} at (0,0) size 20x15
       text run at (0,0) width 20: "red"
-layer at (306,11) size 140x15
-  RenderBlock {DIV} at (2,3) size 140x15
+layer at (364,11) size 169x15
+  RenderBlock {DIV} at (2,3) size 169x15
     RenderText {#text} at (0,0) size 97x15
       text run at (0,0) width 97: "default on green"
-layer at (454,11) size 140x15
-  RenderBlock {DIV} at (2,3) size 140x15
+layer at (541,11) size 169x15
+  RenderBlock {DIV} at (2,3) size 169x15
     RenderText {#text} at (0,0) size 76x15
       text run at (0,0) width 76: "red on green"

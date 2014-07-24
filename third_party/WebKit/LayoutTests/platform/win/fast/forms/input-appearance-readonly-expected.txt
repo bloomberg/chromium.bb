@@ -6,10 +6,10 @@ layer at (0,0) size 800x600
       RenderText {#text} at (0,0) size 411x17
         text run at (0,0) width 411: "This tests that text can not be inserted into a readonly text field. "
       RenderBR {BR} at (410,14) size 1x0
-      RenderTextControl {INPUT} at (0,18) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderTextControl {INPUT} at (0,18) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       RenderText {#text} at (0,0) size 0x0
-layer at (10,29) size 140x15
-  RenderBlock {DIV} at (2,3) size 140x15
+layer at (10,29) size 169x15
+  RenderBlock {DIV} at (2,3) size 169x15
     RenderText {#text} at (0,0) size 75x15
       text run at (0,0) width 75: "Test Passed"
 caret: position 0 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 2 {INPUT} of body

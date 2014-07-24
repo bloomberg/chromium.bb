@@ -13,10 +13,10 @@ layer at (0,0) size 800x600
             text run at (0,1) width 48: "Search"
         RenderText {#text} at (47,1) size 5x17
           text run at (47,1) width 5: " "
-        RenderTextControl {INPUT} at (51.09,0) size 130x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderText {#text} at (181,1) size 5x17
-          text run at (181,1) width 5: " "
-        RenderMenuList {SELECT} at (185.09,1) size 76x19 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        RenderTextControl {INPUT} at (51.09,0) size 159x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (210,1) size 5x17
+          text run at (210,1) width 5: " "
+        RenderMenuList {SELECT} at (214.09,1) size 76x19 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           RenderBlock (anonymous) at (1,1) size 74x17
             RenderText at (4,1) size 37x15
               text run at (4,1) width 37: "Excite"
@@ -31,5 +31,5 @@ layer at (0,0) size 800x600
           RenderBlock (anonymous) at (1,1) size 235x17
             RenderText at (4,1) size 63x15
               text run at (4,1) width 63: "Quick Link"
-layer at (61,29) size 126x15
-  RenderBlock {DIV} at (2,3) size 126x15
+layer at (61,29) size 155x15
+  RenderBlock {DIV} at (2,3) size 155x15

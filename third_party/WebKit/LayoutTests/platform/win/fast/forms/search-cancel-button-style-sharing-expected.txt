@@ -7,25 +7,25 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 392x17
           text run at (0,0) width 392: "Only the second search field should have a cancel button (\x{D7})."
       RenderBlock (anonymous) at (0,34) size 784x21
-        RenderTextControl {INPUT} at (0,0) size 146x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (3,3) size 140x15
+        RenderTextControl {INPUT} at (0,0) size 175x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          RenderFlexibleBox {DIV} at (3,3) size 169x15
             RenderBlock {DIV} at (0,2) size 1x11
-            RenderBlock {DIV} at (1,0) size 126x15
-        RenderText {#text} at (146,1) size 4x17
-          text run at (146,1) width 4: " "
-        RenderTextControl {INPUT} at (150,0) size 146x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (3,3) size 140x15
+            RenderBlock {DIV} at (1,0) size 155x15
+        RenderText {#text} at (175,1) size 4x17
+          text run at (175,1) width 4: " "
+        RenderTextControl {INPUT} at (179,0) size 175x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          RenderFlexibleBox {DIV} at (3,3) size 169x15
             RenderBlock {DIV} at (0,2) size 1x11
-            RenderBlock {DIV} at (1,0) size 126x15
-            RenderBlock {DIV} at (128,3) size 9x9
+            RenderBlock {DIV} at (1,0) size 155x15
+            RenderBlock {DIV} at (157,3) size 9x9
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
-layer at (12,45) size 126x15
-  RenderBlock {DIV} at (0,0) size 126x15
-layer at (162,45) size 126x15
-  RenderBlock {DIV} at (0,0) size 126x15
+layer at (12,45) size 155x15
+  RenderBlock {DIV} at (0,0) size 155x15
+layer at (191,45) size 155x15
+  RenderBlock {DIV} at (0,0) size 155x15
     RenderText {#text} at (0,0) size 47x15
       text run at (0,0) width 47: "this one"
-layer at (139,48) size 9x9 transparent
-  RenderBlock {DIV} at (128,3) size 9x9
+layer at (168,48) size 9x9 transparent
+  RenderBlock {DIV} at (157,3) size 9x9
 caret: position 0 of child 0 {#text} of child 0 {DIV} of child 1 {DIV} of child 0 {DIV} of {#document-fragment} of child 4 {INPUT} of body

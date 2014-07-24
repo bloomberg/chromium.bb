@@ -33,9 +33,9 @@ layer at (0,0) size 800x600
               text run at (0,0) width 78: "Change Font"
         RenderText {#text} at (159,19) size 9x17
           text run at (159,19) width 9: "  "
-        RenderTextControl {INPUT} at (167.33,18) size 144x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderTextControl {INPUT} at (167.33,18) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
-layer at (177,94) size 140x15
-  RenderBlock {DIV} at (2,3) size 140x15
+layer at (177,94) size 169x15
+  RenderBlock {DIV} at (2,3) size 169x15
     RenderText {#text} at (0,0) size 8x15
       text run at (0,0) width 8: "6"

@@ -3,30 +3,30 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderTextControl {INPUT} at (0,0) size 406x80 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderFlexibleBox {DIV} at (3,3) size 400x45
+      RenderTextControl {INPUT} at (0,0) size 493x80 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderFlexibleBox {DIV} at (3,3) size 487x45
           RenderBlock {DIV} at (0,17) size 1x11
-          RenderBlock {DIV} at (1,0) size 374x45
-      RenderBR {BR} at (406,39) size 0x0
-      RenderTextControl {INPUT} at (0,80) size 404x80 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-      RenderBR {BR} at (404,119) size 0x0
-      RenderTextControl {INPUT} at (0,160) size 212x25 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderFlexibleBox {DIV} at (6,1) size 200x23
+          RenderBlock {DIV} at (1,0) size 461x45
+      RenderBR {BR} at (493,39) size 0x0
+      RenderTextControl {INPUT} at (0,80) size 491x80 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderBR {BR} at (491,119) size 0x0
+      RenderTextControl {INPUT} at (0,160) size 255x25 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderFlexibleBox {DIV} at (6,1) size 243x23
           RenderBlock {DIV} at (0,6) size 1x11
-          RenderBlock {DIV} at (1,0) size 181x23
-layer at (12,11) size 374x45
-  RenderBlock {DIV} at (0,0) size 374x45
+          RenderBlock {DIV} at (1,0) size 224x23
+layer at (12,11) size 461x45
+  RenderBlock {DIV} at (0,0) size 461x45
     RenderText {#text} at (0,0) size 365x44
       text run at (0,0) width 365: "value jgq not clipped"
-layer at (10,91) size 400x45
-  RenderBlock {DIV} at (2,3) size 400x45
+layer at (10,91) size 487x45
+  RenderBlock {DIV} at (2,3) size 487x45
     RenderText {#text} at (0,0) size 365x44
       text run at (0,0) width 365: "value jgq not clipped"
-layer at (15,169) size 181x23
-  RenderBlock {DIV} at (0,0) size 181x23
+layer at (15,169) size 224x23
+  RenderBlock {DIV} at (0,0) size 224x23
     RenderText {#text} at (0,0) size 118x22
       text run at (0,0) width 118: "Sample Input"
-layer at (387,23) size 21x21 transparent
-  RenderBlock {DIV} at (376,12) size 21x21
-layer at (197,174) size 14x14 transparent
-  RenderBlock {DIV} at (183,4.50) size 14x14
+layer at (474,23) size 21x21 transparent
+  RenderBlock {DIV} at (463,12) size 21x21
+layer at (240,174) size 14x14 transparent
+  RenderBlock {DIV} at (226,4.50) size 14x14
