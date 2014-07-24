@@ -144,8 +144,16 @@ def GetNaClArch(platform):
   # If CHROME_PATH is set to point to google-chrome or google-chrome
   # was found in the PATH and we are running on UNIX then google-chrome
   # is a bash script that points to 'chrome' in the same folder.
-  if os.path.basename(chrome_path) == 'google-chrome':
+  #
+  # When running beta or dev branch, the name is google-chrome-{beta,dev}.
+  if os.path.basename(chrome_path).startswith('google-chrome'):
     chrome_path = os.path.join(os.path.dirname(chrome_path), 'chrome')
+
+  if not os.path.exists(chrome_path):
+    raise Error("File %s does not exist." % chrome_path)
+
+  if not os.access(chrome_path, os.X_OK):
+    raise Error("File %s is not executable" % chrome_path)
 
   try:
     pobj = subprocess.Popen(['objdump', '-f', chrome_path],
