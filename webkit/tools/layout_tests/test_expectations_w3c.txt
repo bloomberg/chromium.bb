@@ -4,6 +4,53 @@
 #
 
 #
+# DO NOT MODIFY THIS FILE WITHOUT TALKING TO DPRANKE. See crbug.com/395862.
+#
+
+# Failures cloned from TestExpectations
+
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/elements-001.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/non-element-nodes-001.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/events/event-dispatch/test-001.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/events/event-dispatch/test-003.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/events/event-retargeting/test-004.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/events/retargeting-relatedtarget/test-003.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/html-elements-and-their-shadow-trees/test-001.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/html-elements-and-their-shadow-trees/test-002.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/html-elements-and-their-shadow-trees/test-003.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/html-elements-in-shadow-trees/html-forms/test-003.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/custom-pseudo-elements/test-001.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/distributed-pseudo-element/test-001.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/distributed-pseudo-element/test-002.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/lower-boundary-encapsulation/test-004.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/satisfying-matching-criteria/test-007.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-001.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/ownerdocument-002.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/styles/css-variables/test-001.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/styles/test-003.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/styles/test-010.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-003.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-004.html [ Failure ]
+
+crbug.com/330083 w3c/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars-first-char.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/custom-elements/concepts/custom-elements-type-naming.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/custom-elements/creating-and-passing-registries/no-registry-test.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/custom-elements/creating-and-passing-registries/share-registry-import-document.html [ Timeout ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-014.html [ Timeout Failure ]
+crbug.com/330083 w3c/web-platform-tests/webrtc/simplecall.html [ Failure ]
+
+crbug.com/334152 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-001.html [ Failure ]
+
+crbug.com/323130 w3c/web-platform-tests/shadow-dom/styles/test-001.html [ Skip ]
+crbug.com/323130 w3c/web-platform-tests/shadow-dom/styles/test-002.html [ Skip ]
+
+crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-content-html-element/test-004.html [ Failure ]
+crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-003.html [ Failure ]
+
+# end of failures cloned from TestExpectations
+
+#
 # Expectations to delete on the next W3C roll.
 #
 
