@@ -378,12 +378,14 @@ crbug.com/377696 printing/width-overflow.html [ Skip ]
 crbug.com/242735 [ XP ] svg/custom/svg-font-support.html [ ImageOnlyFailure ]
 
 # Reftests that needs investigation.
+crbug.com/397232 [ XP ] css2.1/20110323/c541-word-sp-000.htm [ ImageOnlyFailure ]
+crbug.com/397232 [ XP ] css2.1/20110323/vertical-align-boxes-001.htm [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] css3/flexbox/auto-margins.html [ ImageOnlyFailure ]
+crbug.com/397255 [ Linux XP ] css3/masking/clip-path-reference-userSpaceOnUse.html [ ImageOnlyFailure ]
+crbug.com/397257 [ Linux Win ] fast/multicol/cell-shrinkback.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
+crbug.com/232061 [ Linux ] fast/text/zero-font-size-2.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] fast/writing-mode/table-vertical-child-width.html [ ImageOnlyFailure ]
-crbug.com/378610 [ Win7 ] svg/transforms/transformed-text-fill-gradient.html [ ImageOnlyFailure ]
-crbug.com/378610 [ Win7 ] svg/custom/focus-ring-text.svg [ ImageOnlyFailure ]
-crbug.com/378610 [ Win7 ] svg/text/tspan-outline.html [ ImageOnlyFailure ]
 crbug.com/396940 ietestcenter/css3/multicolumn/column-containing-block-001.htm [ ImageOnlyFailure ]
 crbug.com/396940 ietestcenter/css3/multicolumn/column-containing-block-002.htm [ ImageOnlyFailure ]
 crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-007.htm [ ImageOnlyFailure ]
@@ -392,6 +394,9 @@ crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-010.htm [
 crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-012.htm [ ImageOnlyFailure ]
 crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-015.htm [ ImageOnlyFailure ]
 crbug.com/396945 ietestcenter/css3/namespaces/syntax-021.xml [ ImageOnlyFailure ]
+crbug.com/378610 [ Win7 ] svg/transforms/transformed-text-fill-gradient.html [ ImageOnlyFailure ]
+crbug.com/378610 [ Win7 ] svg/custom/focus-ring-text.svg [ ImageOnlyFailure ]
+crbug.com/378610 [ Win7 ] svg/text/tspan-outline.html [ ImageOnlyFailure ]
 
 # Text tests that needs investigation or test changes (mostly due to precision).
 crbug.com/378610 [ Win7 ] fast/forms/cursor-at-editable-content-boundary.html [ Failure ]
@@ -420,6 +425,7 @@ crbug.com/231866 [ Lion ] fast/backgrounds/animated-gif-as-background.html [ Pas
 crbug.com/243599 [ Debug ] http/tests/plugins/interrupted-get-url.html [ Crash Pass ]
 crbug.com/243782 fullscreen/full-screen-remove-ancestor.html [ Pass Timeout ]
 crbug.com/246077 fullscreen/full-screen-render-inline.html [ ImageOnlyFailure ]
+crbug.com/246077 [ Linux ] virtual/android/fullscreen/full-screen-render-inline.html [ ImageOnlyFailure ]
 crbug.com/318210 svg/text/text-style-recalc-crash.html [ Pass Timeout ]
 
 # Seems to be hit by the try jobs only.
@@ -1488,12 +1494,24 @@ crbug.com/396936 [ Lion ] fast/writing-mode/broken-ideograph-small-caps.html [ C
 crbug.com/396936 [ Lion ] fast/writing-mode/broken-ideographic-font.html [ Crash ]
 crbug.com/396936 [ Lion ] fast/writing-mode/japanese-rl-text-with-broken-font.html [ Crash ]
 
+crbug.com/397244 [ Snowleopard Debug ] inspector/elements/edit-dom-actions.html [ Crash ]
+
+# Might need to be marked Timeout
+crbug.com/259547 virtual/gpu/fast/canvas/canvas-blend-image.html [ Slow ]
+crbug.com/259547 virtual/gpu/fast/canvas/canvas-blend-solid.html [ Slow ]
+
 crbug.com/243248 [ Mac ] fast/events/attempt-scroll-with-no-scrollbars.html [ NeedsRebaseline ]
 webkit.org/b/82297 [ Mac ] fast/events/platform-wheelevent-paging-x-in-scrolling-page.html [ NeedsRebaseline ]
 webkit.org/b/82297 [ Mac ] fast/events/platform-wheelevent-paging-xy-in-scrolling-page.html [ NeedsRebaseline ]
 webkit.org/b/82297 [ Mac ] fast/events/platform-wheelevent-paging-y-in-scrolling-page.html [ NeedsRebaseline ]
 crbug.com/23476 [ Mac ] fast/frames/inline-object-inside-frameset.html [ NeedsRebaseline ]
-webkit.org/b/81145 [ SnowLeopard Lion ] fast/frames/invalid.html [ NeedsRebaseline ]
+webkit.org/b/81145 [ Mac ] fast/frames/invalid.html [ NeedsRebaseline ]
 webkit.org/b/98811 [ Mac ] fast/transforms/transformed-focused-text-input.html [ NeedsRebaseline ]
+crbug.com/108833 [ Win ] plugins/geturlnotify-during-document-teardown.html [ NeedsRebaseline ]
+crbug.com/178745 [ Win ] plugins/open-and-close-window-with-plugin.html [ NeedsRebaseline ]
 webkit.org/b/78830 [ Mac ] svg/custom/mask-invalidation.svg [ NeedsRebaseline ]
+webkit.org/b/78830 [ Win Linux ] svg/repaint/image-with-clip-path.svg [ NeedsRebaseline ]
+webkit.org/b/82509 [ Linux ] svg/text/append-text-node-to-tspan.html [ NeedsRebaseline ]
+crbug.com/248065 [ Linux ] svg/text/foreignObject-text-clipping-bug.xml [ NeedsRebaseline ]
+webkit.org/b/79454 [ Linux ] svg/text/text-viewbox-rescale.html [ NeedsRebaseline ]
 crbug.com/243732 [ Mac ] transforms/3d/point-mapping/3d-point-mapping-3.html [ NeedsRebaseline ]

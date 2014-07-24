@@ -19,14 +19,6 @@
 # webkit.org/b/48655 [ Debug ] plugins/js-from-destroy.html [ WontFix ]
 # webkit.org/b/60118 [ Win Debug ] svg/dom/SVGScriptElement/script-set-href.svg [ WontFix ]
 
-# Failing since added by r108699
-# webkit.org/b/79454 [ Linux ] svg/text/text-viewbox-rescale.html [ WontFix ]
-
-# webkit.org/b/82509 [ Linux ] svg/text/append-text-node-to-tspan.html [ WontFix ]
-
-# Clipping differences between Chromium platforms. Needs investigation.
-# webkit.org/b/98599 [ Linux Win ] css3/masking/clip-path-reference-userSpaceOnUse.html [ WontFix ]
-
 # webkit.org/b/110296 [ Linux ] fast/multicol/newmulticol/column-rules-fixed-height.html [ WontFix ]
 # webkit.org/b/91429 [ Debug ] fast/frames/calculate-round.html [ WontFix ]
 
@@ -38,15 +30,9 @@
 # webkit.org/b/74746 [ Win ] http/tests/xmlhttprequest/workers/methods.html [ WontFix ]
 
 # webkit.org/b/ [ Win7 ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ WontFix ]
-# webkit.org/b/83647 [ Linux Win ] fast/multicol/cell-shrinkback.html [ WontFix ]
-
-# Fails since creation in 122663
-# webkit.org/b/91372 [ Win ] css2.1/20110323/vertical-align-boxes-001.htm [ WontFix ]
 
 # Added by bug 89826
 # webkit.org/b/94003 [ Win ] fast/css/word-spacing-characters-complex-text.html [ WontFix ]
-
-# webkit.org/b/94017 [ Win ] css2.1/20110323/c541-word-sp-000.htm [ WontFix ]
 
 # webkit.org/b/97296 [ Win ] fast/text/international/hebrew-selection.html [ WontFix ]
 # webkit.org/b/99604 [ Win ] http/tests/workers/text-encoding.html [ WontFix ]
@@ -54,7 +40,6 @@
 # This ref-test doesn't work on Chromium Mac ("Test" is offset).
 # webkit.org/b/101093 [ Mac ] fast/sub-pixel/float-wrap-zoom.html [ WontFix ]
 
-# webkit.org/b/78830 [ Win Linux ] svg/repaint/image-with-clip-path.svg [ WontFix ]
 # webkit.org/b/104489 [ Win ] http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_mark.html [ WontFix ]
 # webkit.org/b/104489 [ Win ] http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_clearMarks.html [ WontFix ]
 # webkit.org/b/104489 [ Win ] http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_measure_associate_with_navigation_timing.html [ WontFix ]
@@ -74,10 +59,6 @@
 # LightTPD doesn't accept unknown HTTP methods
 # crbug.com/30536 [ Win ] http/tests/xmlhttprequest/methods-lower-case.html [ WontFix ]
 # crbug.com/30536 [ Win ] http/tests/xmlhttprequest/methods-async.html [ WontFix ]
-
-# Tests differences from switching to webkit.org's test netscape plugin rather
-# than chromium's old forked copy.
-# crbug.com/108833 plugins/geturlnotify-during-document-teardown.html [ WontFix ]
 
 # This test sometimes fails indefinitely, other times it takes 1-2 seconds.
 # crbug.com/14009 [ Win ] http/tests/misc/dns-prefetch-control.html [ WontFix ]
@@ -111,9 +92,6 @@ crbug.com/7482 [ Win Mac ] http/tests/misc/timer-vs-loading.html [ WontFix ]
 # crbug.com/227473 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ WontFix ]
 # crbug.com/227473 [ Debug ] compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ WontFix ]
 
-# The image output is wrong (some red dots can be seen).
-# crbug.com/232061 [ Linux ] fast/text/zero-font-size-2.html [ WontFix ]
-
 # crbug.com/234758 [ Lion ] virtual/softwarecompositing/scrollbars/custom-composited-different-track-parts.html [ WontFix ]
 # crbug.com/251129 [ Linux Win Debug ] http/tests/history/redirect-js-form-submit-0-seconds.html [ WontFix ]
 
@@ -140,19 +118,11 @@ crbug.com/7482 [ Win Mac ] http/tests/misc/timer-vs-loading.html [ WontFix ]
 
 # crbug.com/260660 [ Linux ] fast/canvas/webgl/array-large-array-tests.html [ WontFix ]
 # crbug.com/260660 [ Linux ] virtual/gpu/fast/canvas/webgl/array-large-array-tests.html [ WontFix ]
-# crbug.com/178745 plugins/open-and-close-window-with-plugin.html [ WontFix ]
 # crbug.com/243738 [ Win ] http/tests/loading/preload-append-scan.php [ WontFix ]
 # crbug.com/244123 [ Win ] fast/forms/suggestion-picker/date-suggestion-picker-key-operations.html [ WontFix ]
 # crbug.com/244123 [ Win ] fast/forms/suggestion-picker/month-suggestion-picker-key-operations.html [ WontFix ]
 # crbug.com/244123 [ Win ] fast/forms/suggestion-picker/week-suggestion-picker-key-operations.html [ WontFix ]
 # crbug.com/247889 [ Win ] http/tests/navigation/back-send-referrer.html [ WontFix ]
-# crbug.com/247979 [ Win Mac Release ] inspector/elements/edit-dom-actions.html [ WontFix ]
-# crbug.com/247979 [ Win7 Debug ] inspector/elements/edit-dom-actions.html [ WontFix ]
-# crbug.com/247979 [ Mac Linux Debug ] inspector/elements/edit-dom-actions.html [ WontFix ]
-# crbug.com/248065 [ Linux ] svg/text/foreignObject-text-clipping-bug.xml [ WontFix ]
-# crbug.com/246077 virtual/android/fullscreen/full-screen-render-inline.html [ WontFix ]
-# crbug.com/259547 virtual/gpu/fast/canvas/canvas-blend-image.html [ WontFix ]
-# crbug.com/259547 virtual/gpu/fast/canvas/canvas-blend-solid.html [ WontFix ]
 # crbug.com/240374 virtual/softwarecompositing/overlap-blending/preserves3d-opacity.html [ WontFix ]
 
 # started failing around Chrome r207326 to r207404, but only on main waterfall
