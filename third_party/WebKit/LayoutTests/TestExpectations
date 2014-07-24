@@ -837,7 +837,6 @@ crbug.com/357437 web-animations-api/change-in-animation-frame.html [ Failure Pas
 crbug.com/357438 [ Mac Win ] compositing/plugins/invalidate_rect.html [ Failure Pass ]
 crbug.com/357438 [ Mac Win ] virtual/softwarecompositing/plugins/invalidate_rect.html [ Failure Pass ]
 crbug.com/357459 [ Linux Win ] virtual/threaded/animations/3d/matrix-transform-type-animation.html [ Pass Timeout ]
-crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-cross-none-block.html [ Failure Pass ]
 crbug.com/357464 [ Linux ] virtual/softwarecompositing/visibility/visibility-composited-incremental-update.html [ Pass Timeout ]
 crbug.com/357464 [ Win Debug ] virtual/softwarecompositing/visibility/visibility-composited-incremental-update.html [ Pass Timeout ]
 crbug.com/357465 [ Debug ] virtual/threaded/animations/keyframe-timing-functions-multiple-animations.html [ Pass Timeout ]
@@ -847,8 +846,6 @@ crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-
 crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-003.html [ Failure ]
 crbug.com/353727 virtual/threaded/animations/keyframe-timing-functions-multiple-properties.html [ Pass Timeout ]
 crbug.com/24182 [ Win ] jquery/manipulation.html [ Pass Timeout ]
-crbug.com/353751 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-same-in-same-none-block.html [ Pass Failure ]
-crbug.com/353763 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-same-in-same-url-block.html [ Pass Failure ]
 crbug.com/353754 fast/scrolling/hover-during-scroll.html [ Pass Failure ]
 crbug.com/353790 [ Linux Win ] virtual/threaded/animations/import.html [ Pass Timeout ]
 
@@ -1356,6 +1353,28 @@ crbug.com/396936 [ Lion ] fast/writing-mode/broken-ideographic-font.html [ Crash
 crbug.com/396936 [ Lion ] fast/writing-mode/japanese-rl-text-with-broken-font.html [ Crash ]
 
 crbug.com/397244 [ Snowleopard Debug ] inspector/elements/edit-dom-actions.html [ Crash ]
+
+crbug.com/397321 compositing/repaint/should-not-repaint-composited-opacity.html [ Crash Pass ]
+crbug.com/397321 svg/custom/pattern-3-step-cycle.html [ Crash Pass ]
+crbug.com/397321 svg/filters/filter-refresh.svg [ Crash Pass ]
+crbug.com/397321 virtual/softwarecompositing/repaint/repaint-into-ancestor-after-layout.html [ Crash Pass ]
+
+crbug.com/397324 media/avtrack/addtrack.html [ Pass Timeout ]
+
+crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-cross-none-block.html [ Failure Pass Timeout ]
+crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-cross-self-block.html [ Failure Pass Timeout ]
+crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-cross-star-allow.html [ Failure Pass Timeout ]
+crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-cross-url-block.html [ Failure Pass Timeout ]
+crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-same-none-block.html [ Failure Pass Timeout ]
+crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-same-self-block.html [ Failure Pass Timeout ]
+crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Failure Pass Timeout ]
+crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-same-url-block.html [ Failure Pass Timeout ]
+crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-same-in-cross-none-block.html [ Failure Pass Timeout ]
+crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-same-in-cross-self-block.html [ Failure Pass Timeout ]
+crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-same-in-cross-url-block.html [ Failure Pass Timeout ]
+crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-same-in-same-none-block.html [ Failure Pass Timeout ]
+crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-same-in-same-url-block.html [ Failure Pass Timeout ]
+crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-star-allow-crossorigin.html [ Failure Pass Timeout ]
 
 # Might need to be marked Timeout
 crbug.com/259547 virtual/gpu/fast/canvas/canvas-blend-image.html [ Slow ]
