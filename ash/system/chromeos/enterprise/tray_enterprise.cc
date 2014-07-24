@@ -9,6 +9,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/user/login_status.h"
 #include "base/logging.h"
+#include "base/strings/string16.h"
 #include "grit/ash_resources.h"
 
 namespace ash {
