@@ -260,6 +260,9 @@ const char kSetPolicyMethod[] = "SetPolicy";
 const char kRegisterSuspendDelayMethod[] = "RegisterSuspendDelay";
 const char kUnregisterSuspendDelayMethod[] = "UnregisterSuspendDelay";
 const char kHandleSuspendReadinessMethod[] = "HandleSuspendReadiness";
+const char kRegisterDarkSuspendDelayMethod[] = "RegisterDarkSuspendDelay";
+const char kUnregisterDarkSuspendDelayMethod[] = "UnregisterDarkSuspendDelay";
+const char kHandleDarkSuspendReadinessMethod[] = "HandleDarkSuspendReadiness";
 const char kHandlePowerButtonAcknowledgmentMethod[] =
     "HandlePowerButtonAcknowledgment";
 // Signals emitted by powerd.
@@ -268,6 +271,7 @@ const char kKeyboardBrightnessChangedSignal[] = "KeyboardBrightnessChanged";
 const char kPeripheralBatteryStatusSignal[] = "PeripheralBatteryStatus";
 const char kPowerSupplyPollSignal[] = "PowerSupplyPoll";
 const char kSuspendImminentSignal[] = "SuspendImminent";
+const char kDarkSuspendImminentSignal[] = "DarkSuspendImminent";
 const char kSuspendDoneSignal[] = "SuspendDone";
 const char kInputEventSignal[] = "InputEvent";
 const char kIdleActionImminentSignal[] = "IdleActionImminent";
