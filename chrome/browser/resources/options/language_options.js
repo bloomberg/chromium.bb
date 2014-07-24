@@ -253,6 +253,10 @@ cr.define('options', function() {
 
       $('language-confirm').onclick =
           OptionsPage.closeOverlay.bind(OptionsPage);
+
+      // Public session users cannot change the locale.
+      if (cr.isChromeOS && UIAccountTweaks.loggedInAsPublicAccount())
+        $('language-options-ui-language-section').hidden = true;
     },
 
     /**

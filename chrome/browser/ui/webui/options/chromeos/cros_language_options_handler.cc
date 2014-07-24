@@ -25,6 +25,7 @@
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/input_method_manager.h"
+#include "components/user_manager/user_type.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -199,9 +200,11 @@ void CrosLanguageOptionsHandler::SetApplicationLocale(
   Profile* profile = Profile::FromWebUI(web_ui());
   UserManager* user_manager = UserManager::Get();
 
-  // Only the primary user can change the locale.
+  // Secondary users and public session users cannot change the locale.
   user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
-  if (user && user->email() == user_manager->GetPrimaryUser()->email()) {
+  if (user &&
+      user->email() == user_manager->GetPrimaryUser()->email() &&
+      user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
     profile->ChangeAppLocale(language_code,
                              Profile::APP_LOCALE_CHANGED_VIA_SETTINGS);
   }
