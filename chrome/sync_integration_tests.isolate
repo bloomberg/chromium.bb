@@ -45,12 +45,16 @@
         ],
       },
     }],
-    ['OS=="mac"', {
+    ['OS=="mac" or OS=="win"', {
       'variables': {
         'command': [
           '<(PRODUCT_DIR)/sync_integration_tests<(EXECUTABLE_SUFFIX)',
           '--test-launcher-bot-mode',
         ],
+      },
+    }],
+    ['OS=="mac"', {
+      'variables': {
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/ffmpegsumo.so',
         ],
