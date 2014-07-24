@@ -537,7 +537,9 @@ void ProfileChooserView::Init() {
   // If view mode is PROFILE_CHOOSER but there is an auth error, force
   // ACCOUNT_MANAGEMENT mode.
   if (view_mode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER &&
-      HasAuthError(browser_->profile())) {
+      HasAuthError(browser_->profile()) &&
+      avatar_menu_->GetItemAt(avatar_menu_->GetActiveProfileIndex()).
+          signed_in) {
     view_mode_ = profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT;
   }
 

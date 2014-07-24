@@ -949,7 +949,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     // If view mode is PROFILE_CHOOSER but there is an auth error, force
     // ACCOUNT_MANAGEMENT mode.
     if (viewMode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER &&
-        HasAuthError(browser_->profile())) {
+        HasAuthError(browser_->profile()) &&
+        avatarMenu_->GetItemAt(avatarMenu_->GetActiveProfileIndex()).
+            signed_in) {
       viewMode_ = profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT;
     }
 
