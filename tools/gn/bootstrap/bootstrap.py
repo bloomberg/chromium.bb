@@ -10,6 +10,7 @@ it with its own BUILD.gn to the final destination.
 """
 
 import contextlib
+import errno
 import logging
 import optparse
 import os
@@ -22,15 +23,21 @@ BOOTSTRAP_DIR = os.path.dirname(os.path.abspath(__file__))
 GN_ROOT = os.path.dirname(BOOTSTRAP_DIR)
 SRC_ROOT = os.path.dirname(os.path.dirname(GN_ROOT))
 
-
-def is_linux():
-  return sys.platform.startswith('linux')
-
+is_linux = sys.platform.startswith('linux')
+is_mac = sys.platform.startswith('darwin')
+is_posix = is_linux or is_mac
 
 def check_call(cmd, **kwargs):
   logging.debug('Running: %s', ' '.join(cmd))
   subprocess.check_call(cmd, cwd=GN_ROOT, **kwargs)
 
+def mkdir_p(path):
+  try:
+    os.makedirs(path)
+  except OSError as e:
+    if e.errno == errno.EEXIST and os.path.isdir(path):
+      pass
+    else: raise
 
 @contextlib.contextmanager
 def scoped_tempdir():
@@ -47,6 +54,8 @@ def main(argv):
                     help='Do a debug build. Defaults to release build.')
   parser.add_option('-o', '--output',
                     help='place output in PATH', metavar='PATH')
+  parser.add_option('-s', '--no-rebuild', action='store_true',
+                    help='Do not rebuild GN with GN.')
   parser.add_option('-v', '--verbose', action='store_true',
                     help='Log more details')
   options, args = parser.parse_args(argv)
@@ -65,30 +74,51 @@ def main(argv):
   try:
     with scoped_tempdir() as tempdir:
       print 'Building gn manually in a temporary directory for bootstrapping...'
-      build_gn_with_ninja_manually(tempdir)
+      build_gn_with_ninja_manually(tempdir, options)
+      temp_gn = os.path.join(tempdir, 'gn')
+      out_gn = os.path.join(build_root, 'gn')
 
-      print 'Building gn using itself to %s...' % build_rel
-      build_gn_with_gn(os.path.join(tempdir, 'gn'), build_rel, options.debug)
+      if options.no_bootstrap:
+        mkdir_p(build_root)
+        shutil.copy2(temp_gn, out_gn)
+      else:
+        print 'Building gn using itself to %s...' % build_rel
+        build_gn_with_gn(temp_gn, build_rel, options)
 
       if options.output:
         # Preserve the executable permission bit.
-        shutil.copy2(os.path.join(build_root, 'gn'), options.output)
+        shutil.copy2(out_gn, options.output)
   except subprocess.CalledProcessError as e:
     print >> sys.stderr, str(e)
     return 1
   return 0
 
 
-def build_gn_with_ninja_manually(tempdir):
-  write_ninja(os.path.join(tempdir, 'build.ninja'))
-  check_call(['ninja', '-C', tempdir, 'gn'])
+def build_gn_with_ninja_manually(tempdir, options):
+  write_ninja(os.path.join(tempdir, 'build.ninja'), options)
+  cmd = ['ninja', '-C', tempdir]
+  if options.verbose:
+    cmd.append('-v')
+  cmd.append('gn')
+  check_call(cmd)
 
-
-def write_ninja(path):
+def write_ninja(path, options):
+  cc = os.environ.get('CC', '')
+  cxx = os.environ.get('CXX', '')
   cflags = os.environ.get('CFLAGS', '').split()
+  cflags_cc = os.environ.get('CXXFLAGS', '').split()
   ldflags = os.environ.get('LDFLAGS', '').split()
   include_dirs = [SRC_ROOT]
   libs = []
+
+  if is_posix:
+    if options.debug:
+      cflags.extend(['-O0', '-g'])
+    else:
+      cflags.extend(['-O2', '-g0'])
+
+    cflags.extend(['-D_FILE_OFFSET_BITS=64 -pthread', '-pipe'])
+    cflags_cc.extend(['-std=gnu++11', '-Wno-c++11-narrowing'])
 
   static_libraries = {
       'base': {'sources': [], 'tool': 'cxx'},
@@ -203,11 +233,33 @@ def write_ninja(path):
       'base/vlog.cc',
   ])
 
-  if is_linux():
+  if is_posix:
+    static_libraries['base']['sources'].extend([
+        'base/base_paths_posix.cc',
+        'base/debug/debugger_posix.cc',
+        'base/debug/stack_trace_posix.cc',
+        'base/file_util_posix.cc',
+        'base/files/file_enumerator_posix.cc',
+        'base/files/file_posix.cc',
+        'base/message_loop/message_pump_libevent.cc',
+        'base/posix/file_descriptor_shuffle.cc',
+        'base/process/kill_posix.cc',
+        'base/process/process_handle_posix.cc',
+        'base/process/process_metrics_posix.cc',
+        'base/process/process_posix.cc',
+        'base/safe_strerror_posix.cc',
+        'base/synchronization/condition_variable_posix.cc',
+        'base/synchronization/lock_impl_posix.cc',
+        'base/synchronization/waitable_event_posix.cc',
+        'base/sys_info_posix.cc',
+        'base/threading/platform_thread_posix.cc',
+        'base/threading/thread_local_posix.cc',
+        'base/threading/thread_local_storage_posix.cc',
+        'base/time/time_posix.cc',
+    ])
     static_libraries['libevent'] = {
         'sources': [
             'third_party/libevent/buffer.c',
-            'third_party/libevent/epoll.c',
             'third_party/libevent/evbuffer.c',
             'third_party/libevent/evdns.c',
             'third_party/libevent/event.c',
@@ -222,11 +274,15 @@ def write_ninja(path):
             'third_party/libevent/strlcpy.c',
         ],
         'tool': 'cc',
-        'include_dirs': [
-            os.path.join(SRC_ROOT, 'third_party', 'libevent', 'linux')
-         ],
+        'include_dirs': [],
         'cflags': cflags + ['-DHAVE_CONFIG_H'],
     }
+
+
+  if is_linux:
+    libs.extend(['-lrt'])
+    ldflags.extend(['-pthread'])
+
     static_libraries['xdg_user_dirs'] = {
         'sources': [
             'base/third_party/xdg_user_dirs/xdg_user_dir_lookup.cc',
@@ -234,52 +290,54 @@ def write_ninja(path):
         'tool': 'cxx',
     }
     static_libraries['base']['sources'].extend([
-        'base/base_paths_posix.cc',
-        'base/debug/debugger_posix.cc',
-        'base/debug/stack_trace_posix.cc',
-        'base/file_util_posix.cc',
-        'base/files/file_enumerator_posix.cc',
-        'base/files/file_posix.cc',
-        'base/message_loop/message_pump_glib.cc',
-        'base/message_loop/message_pump_libevent.cc',
         'base/nix/xdg_util.cc',
-        'base/posix/file_descriptor_shuffle.cc',
         'base/process/internal_linux.cc',
-        'base/process/kill_posix.cc',
         'base/process/process_handle_linux.cc',
-        'base/process/process_handle_posix.cc',
         'base/process/process_iterator_linux.cc',
         'base/process/process_linux.cc',
         'base/process/process_metrics_linux.cc',
-        'base/process/process_metrics_posix.cc',
-        'base/process/process_posix.cc',
-        'base/safe_strerror_posix.cc',
         'base/strings/sys_string_conversions_posix.cc',
-        'base/synchronization/condition_variable_posix.cc',
-        'base/synchronization/lock_impl_posix.cc',
-        'base/synchronization/waitable_event_posix.cc',
         'base/sys_info_linux.cc',
-        'base/sys_info_posix.cc',
         'base/threading/platform_thread_linux.cc',
-        'base/threading/platform_thread_posix.cc',
-        'base/threading/thread_local_posix.cc',
-        'base/threading/thread_local_storage_posix.cc',
-        'base/time/time_posix.cc',
+    ])
+    static_libraries['libevent']['include_dirs'].extend([
+        os.path.join(SRC_ROOT, 'third_party', 'libevent', 'linux')
+    ])
+    static_libraries['libevent']['sources'].extend([
+        'third_party/libevent/epoll.c',
     ])
 
-    cflags.extend(['-O2', '-pthread', '-pipe'])
 
-    static_libraries['base'].setdefault('cflags', []).extend(
-        subprocess.check_output(
-            ['pkg-config', 'gtk+-2.0', 'x11', '--cflags']).split())
-    ldflags.extend(['-pthread'])
-    ldflags.extend(subprocess.check_output(
-        ['pkg-config', 'gtk+-2.0', 'x11',
-         '--libs-only-L', '--libs-only-other']).split())
-    libs.extend(subprocess.check_output(
-        ['pkg-config', 'gtk+-2.0', 'x11', '--libs-only-l']).split())
+  if is_mac:
+    static_libraries['base']['sources'].extend([
+        'base/base_paths_mac.mm',
+        'base/file_util_mac.mm',
+        'base/mac/bundle_locations.mm',
+        'base/mac/foundation_util.mm',
+        'base/mac/mach_logging.cc',
+        'base/mac/scoped_mach_port.cc',
+        'base/mac/scoped_nsautorelease_pool.mm',
+        'base/message_loop/message_pump_mac.mm',
+        'base/process/process_handle_mac.cc',
+        'base/process/process_iterator_mac.cc',
+        'base/strings/sys_string_conversions_mac.mm',
+        'base/time/time_mac.cc',
+        'base/threading/platform_thread_mac.mm',
+    ])
+    static_libraries['libevent']['include_dirs'].extend([
+        os.path.join(SRC_ROOT, 'third_party', 'libevent', 'mac')
+    ])
+    static_libraries['libevent']['sources'].extend([
+        'third_party/libevent/kqueue.c',
+    ])
 
-  with open(os.path.join(GN_ROOT, 'bootstrap', 'build.ninja.template')) as f:
+
+  if is_mac:
+    template_filename = 'build_mac.ninja.template'
+  else:
+    template_filename = 'build.ninja.template'
+
+  with open(os.path.join(GN_ROOT, 'bootstrap', template_filename)) as f:
     ninja_template = f.read()
 
   def src_to_obj(path):
@@ -296,11 +354,25 @@ def write_ninja(path):
               ['-I' + dirname for dirname in
                include_dirs + settings.get('include_dirs', [])]),
           '  cflags = %s' % ' '.join(cflags + settings.get('cflags', [])),
+          '  cflags_cc = %s' %
+              ' '.join(cflags_cc + settings.get('cflags_cc', [])),
       ])
+      if cc:
+        ninja_lines.append('  cc = %s' % cc)
+      if cxx:
+        ninja_lines.append('  cxx = %s' % cxx)
 
     ninja_lines.append('build %s.a: alink_thin %s' % (
         library,
         ' '.join([src_to_obj(src_file) for src_file in settings['sources']])))
+
+  if is_mac:
+    libs.extend([
+        '-framework', 'AppKit',
+        '-framework', 'CoreFoundation',
+        '-framework', 'Foundation',
+        '-framework', 'Security',
+    ]);
 
   ninja_lines.extend([
       'build gn: link %s' % (
@@ -315,12 +387,18 @@ def write_ninja(path):
     f.write(ninja_template + '\n'.join(ninja_lines))
 
 
-def build_gn_with_gn(temp_gn, build_dir, debug):
+def build_gn_with_gn(temp_gn, build_dir, options):
   cmd = [temp_gn, 'gen', build_dir]
-  if not debug:
+  if not options.debug:
     cmd.append('--args=is_debug=false')
   check_call(cmd)
-  check_call(['ninja', '-C', build_dir, 'gn'])
+
+  cmd = ['ninja', '-C', build_dir]
+  if options.verbose:
+    cmd.append('-v')
+  cmd.append('gn')
+  check_call(cmd)
+
   if not debug:
     check_call(['strip', os.path.join(build_dir, 'gn')])
 
