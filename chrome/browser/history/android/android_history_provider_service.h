@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/android/android_history_types.h"
 #include "sql/statement.h"
 
@@ -18,7 +17,7 @@ class Profile;
 // for the Android content provider.
 // The methods of this class must run on the UI thread to cooperate with the
 // BookmarkModel task posted in the DB thread.
-class AndroidHistoryProviderService : public CancelableRequestProvider {
+class AndroidHistoryProviderService {
  public:
   explicit AndroidHistoryProviderService(Profile* profile);
   virtual ~AndroidHistoryProviderService();

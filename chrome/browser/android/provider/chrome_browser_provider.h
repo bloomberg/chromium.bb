@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/android/android_history_types.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "content/public/browser/notification_observer.h"
@@ -193,14 +192,6 @@ class ChromeBrowserProvider : public BaseBookmarkModelObserver,
 
   scoped_ptr<AndroidHistoryProviderService> service_;
   scoped_ptr<FaviconService> favicon_service_;
-
-  // Different cancelable request consumers must be used for each service.
-  // This because a synchronization issue that could lead to flaky assertion
-  // failures otherwise.
-  // TODO(leandrogracia): use a single consumer once http://crbug.com/85970
-  // is fixed.
-  CancelableRequestConsumer android_history_consumer_;
-  CancelableRequestConsumer favicon_consumer_;
 
   base::CancelableTaskTracker cancelable_task_tracker_;
 

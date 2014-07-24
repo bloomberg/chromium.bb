@@ -38,6 +38,7 @@ struct ThumbnailScore;
 
 namespace base {
 class MessageLoop;
+class SingleThreadTaskRunner;
 }
 
 namespace history {
@@ -50,8 +51,8 @@ struct DownloadRow;
 class HistoryClient;
 class HistoryDBTask;
 class InMemoryHistoryBackend;
-class VisitFilter;
 class TypedUrlSyncableService;
+class VisitFilter;
 
 // The maximum number of icons URLs per page which can be stored in the
 // thumbnail database.

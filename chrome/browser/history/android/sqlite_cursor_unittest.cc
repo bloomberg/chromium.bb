@@ -105,7 +105,6 @@ class SQLiteCursorTest : public testing::Test,
   content::TestBrowserThread file_thread_;
   scoped_ptr<AndroidHistoryProviderService> service_;
   base::CancelableTaskTracker cancelable_tracker_;
-  CancelableRequestConsumer cancelable_consumer_;
   TestingProfile* testing_profile_;
   HistoryService* hs_;
 
