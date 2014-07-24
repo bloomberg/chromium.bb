@@ -35,7 +35,8 @@ class Repaint(page_measurement.PageMeasurement):
   def WillRunActions(self, page, tab):
     tab.WaitForDocumentReadyStateToBeComplete()
     self._smoothness_controller = smoothness_controller.SmoothnessController()
-    self._smoothness_controller.Start(page, tab)
+    self._smoothness_controller.SetUp(page, tab)
+    self._smoothness_controller.Start(tab)
     # Rasterize only what's visible.
     tab.ExecuteJavaScript(
         'chrome.gpuBenchmarking.setRasterizeOnlyVisibleContent();')

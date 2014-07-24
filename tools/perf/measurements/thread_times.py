@@ -22,7 +22,7 @@ class ThreadTimes(page_measurement.PageMeasurement):
   def results_are_the_same_on_every_page(self):
     return False
 
-  def WillRunActions(self, page, tab):
+  def WillNavigateToPage(self, page, tab):
     self._timeline_controller = timeline_controller.TimelineController()
     if self.options.report_silk_details:
       # We need the other traces in order to have any details to report.
@@ -31,7 +31,10 @@ class ThreadTimes(page_measurement.PageMeasurement):
     else:
       self._timeline_controller.trace_categories = \
           tracing_backend.MINIMAL_TRACE_CATEGORIES
-    self._timeline_controller.Start(page, tab)
+    self._timeline_controller.SetUp(page, tab)
+
+  def WillRunActions(self, page, tab):
+    self._timeline_controller.Start(tab)
 
   def DidRunActions(self, page, tab):
     self._timeline_controller.Stop(tab)
