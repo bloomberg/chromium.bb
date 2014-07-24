@@ -9,7 +9,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
-#include "sync/internal_api/public/base/invalidation_util.h"
+#include "components/invalidation/invalidation_util.h"
 
 namespace invalidation {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/public/base/invalidation_util.h"
+#include "components/invalidation/invalidation_util.h"
 
 #include <ostream>
 #include <sstream>
@@ -10,9 +10,9 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "components/invalidation/invalidation.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/types.pb.h"
-#include "sync/internal_api/public/base/invalidation.h"
 
 namespace syncer {
 
@@ -22,9 +22,8 @@ bool ObjectIdLessThan::operator()(const invalidation::ObjectId& lhs,
          (lhs.source() == rhs.source() && lhs.name() < rhs.name());
 }
 
-bool InvalidationVersionLessThan::operator()(
-    const Invalidation& a,
-    const Invalidation& b) const {
+bool InvalidationVersionLessThan::operator()(const Invalidation& a,
+                                             const Invalidation& b) const {
   DCHECK(a.object_id() == b.object_id())
       << "a: " << ObjectIdToString(a.object_id()) << ", "
       << "b: " << ObjectIdToString(a.object_id());
@@ -54,16 +53,14 @@ bool ObjectIdFromValue(const base::DictionaryValue& value,
   *out = invalidation::ObjectId();
   std::string name;
   int source = 0;
-  if (!value.GetInteger("source", &source) ||
-      !value.GetString("name", &name)) {
+  if (!value.GetInteger("source", &source) || !value.GetString("name", &name)) {
     return false;
   }
   *out = invalidation::ObjectId(source, name);
   return true;
 }
 
-std::string ObjectIdToString(
-    const invalidation::ObjectId& object_id) {
+std::string ObjectIdToString(const invalidation::ObjectId& object_id) {
   scoped_ptr<base::DictionaryValue> value(ObjectIdToValue(object_id));
   std::string str;
   base::JSONWriter::Write(value.get(), &str);

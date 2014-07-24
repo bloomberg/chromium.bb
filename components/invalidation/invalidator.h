@@ -13,9 +13,8 @@
 
 #include "base/callback.h"
 #include "components/invalidation/invalidation_export.h"
-#include "sync/internal_api/public/base/invalidation_util.h"
-#include "sync/internal_api/public/base/invalidator_state.h"
-#include "sync/internal_api/public/base/model_type.h"
+#include "components/invalidation/invalidation_util.h"
+#include "components/invalidation/invalidator_state.h"
 
 namespace syncer {
 class InvalidationHandler;

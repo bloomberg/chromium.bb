@@ -16,11 +16,9 @@ include_rules = [
   "+net/http/http_status_code.h",
   "+net/url_request",
 
-  # sync_notifier depends on the xmpp part of libjingle.
+  # invalidation_notifier depends on the xmpp part of libjingle.
   "+talk/xmpp",
 
-  #TODO(rlarocque): Move these dependencies into this component.
-  # See crbug.com/259559.
-  "+sync/internal_api/public/base",
-  "+sync/internal_api/public/util",
+  #TODO(rlarocque): Remove this dependency. See crbug.com/394925.
+  "+sync/internal_api/public/util/weak_handle.h",
 ]

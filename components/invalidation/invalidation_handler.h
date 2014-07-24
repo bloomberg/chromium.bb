@@ -8,7 +8,7 @@
 #include <string>
 
 #include "components/invalidation/invalidation_export.h"
-#include "sync/internal_api/public/base/invalidator_state.h"
+#include "components/invalidation/invalidator_state.h"
 
 namespace syncer {
 

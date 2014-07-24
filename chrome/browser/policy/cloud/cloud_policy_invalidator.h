@@ -13,11 +13,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "components/invalidation/invalidation.h"
 #include "components/invalidation/invalidation_handler.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "google/cacheinvalidation/include/types.h"
-#include "sync/internal_api/public/base/invalidation.h"
 
 namespace base {
 class Clock;

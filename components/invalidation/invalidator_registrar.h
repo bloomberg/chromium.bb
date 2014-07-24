@@ -12,7 +12,7 @@
 #include "base/threading/thread_checker.h"
 #include "components/invalidation/invalidation_export.h"
 #include "components/invalidation/invalidation_handler.h"
-#include "sync/internal_api/public/base/invalidation_util.h"
+#include "components/invalidation/invalidation_util.h"
 
 namespace invalidation {
 class ObjectId;

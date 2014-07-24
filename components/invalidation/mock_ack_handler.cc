@@ -4,8 +4,8 @@
 
 #include "components/invalidation/mock_ack_handler.h"
 
-#include "sync/internal_api/public/base/ack_handle.h"
-#include "sync/internal_api/public/base/invalidation.h"
+#include "components/invalidation/ack_handle.h"
+#include "components/invalidation/invalidation.h"
 
 namespace syncer {
 

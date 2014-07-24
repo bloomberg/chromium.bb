@@ -16,9 +16,9 @@
 #include "base/timer/timer.h"
 // For invalidation::InvalidationListener::RegistrationState.
 #include "components/invalidation/invalidation_export.h"
+#include "components/invalidation/invalidation_util.h"
 #include "google/cacheinvalidation/include/invalidation-listener.h"
 #include "google/cacheinvalidation/include/types.h"
-#include "sync/internal_api/public/base/invalidation_util.h"
 
 namespace syncer {
 

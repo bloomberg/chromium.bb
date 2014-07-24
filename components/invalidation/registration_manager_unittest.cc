@@ -13,8 +13,8 @@
 #include "base/basictypes.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "components/invalidation/invalidation_util.h"
 #include "google/cacheinvalidation/include/invalidation-client.h"
-#include "sync/internal_api/public/base/invalidation_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

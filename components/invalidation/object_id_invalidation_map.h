@@ -8,10 +8,10 @@
 #include <map>
 #include <vector>
 
+#include "components/invalidation/invalidation.h"
 #include "components/invalidation/invalidation_export.h"
+#include "components/invalidation/invalidation_util.h"
 #include "components/invalidation/single_object_invalidation_set.h"
-#include "sync/internal_api/public/base/invalidation.h"
-#include "sync/internal_api/public/base/invalidation_util.h"
 
 namespace syncer {
 

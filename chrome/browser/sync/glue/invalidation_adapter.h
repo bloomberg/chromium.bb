@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_INVALIDATION_ADAPTER_H_
 #define CHROME_BROWSER_SYNC_GLUE_INVALIDATION_ADAPTER_H_
 
-#include "sync/internal_api/public/base/invalidation.h"
+#include "components/invalidation/invalidation.h"
 #include "sync/internal_api/public/base/invalidation_interface.h"
 
 namespace browser_sync {

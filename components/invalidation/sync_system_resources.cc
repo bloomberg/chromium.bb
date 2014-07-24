@@ -16,11 +16,11 @@
 #include "base/strings/stringprintf.h"
 #include "components/invalidation/gcm_network_channel.h"
 #include "components/invalidation/gcm_network_channel_delegate.h"
+#include "components/invalidation/invalidation_util.h"
 #include "components/invalidation/push_client_channel.h"
 #include "google/cacheinvalidation/deps/callback.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "jingle/notifier/listener/push_client.h"
-#include "sync/internal_api/public/base/invalidation_util.h"
 
 namespace syncer {
 

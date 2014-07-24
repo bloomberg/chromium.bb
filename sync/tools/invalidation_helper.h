@@ -5,8 +5,8 @@
 #ifndef SYNC_TOOLS_INVALIDATION_HELPER_H_
 #define SYNC_TOOLS_INVALIDATION_HELPER_H_
 
+#include "components/invalidation/invalidation_util.h"
 #include "google/cacheinvalidation/include/types.h"
-#include "sync/internal_api/public/base/invalidation_util.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 namespace syncer {

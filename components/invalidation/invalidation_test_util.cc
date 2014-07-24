@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/public/base/invalidation_test_util.h"
+#include "components/invalidation/invalidation_test_util.h"
 
 #include "base/basictypes.h"
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
 #include "base/values.h"
-#include "sync/internal_api/public/base/invalidation.h"
+#include "components/invalidation/invalidation.h"
 
 namespace syncer {
 
@@ -20,8 +20,7 @@ using ::testing::PrintToString;
 
 namespace {
 
-class AckHandleEqMatcher
-    : public MatcherInterface<const AckHandle&> {
+class AckHandleEqMatcher : public MatcherInterface<const AckHandle&> {
  public:
   explicit AckHandleEqMatcher(const AckHandle& expected);
 
@@ -53,8 +52,7 @@ void AckHandleEqMatcher::DescribeNegationTo(::std::ostream* os) const {
   *os << " isn't equal to " << PrintToString(expected_);
 }
 
-class InvalidationEqMatcher
-    : public MatcherInterface<const Invalidation&> {
+class InvalidationEqMatcher : public MatcherInterface<const Invalidation&> {
  public:
   explicit InvalidationEqMatcher(const Invalidation& expected);
 
@@ -69,12 +67,13 @@ class InvalidationEqMatcher
   DISALLOW_COPY_AND_ASSIGN(InvalidationEqMatcher);
 };
 
-InvalidationEqMatcher::InvalidationEqMatcher(
-    const Invalidation& expected) : expected_(expected) {
+InvalidationEqMatcher::InvalidationEqMatcher(const Invalidation& expected)
+    : expected_(expected) {
 }
 
 bool InvalidationEqMatcher::MatchAndExplain(
-    const Invalidation& actual, MatchResultListener* listener) const {
+    const Invalidation& actual,
+    MatchResultListener* listener) const {
   if (!(expected_.object_id() == actual.object_id())) {
     return false;
   }
@@ -84,8 +83,8 @@ bool InvalidationEqMatcher::MatchAndExplain(
     return false;
   } else {
     // Neither is unknown version.
-    return expected_.payload() == actual.payload()
-        && expected_.version() == actual.version();
+    return expected_.payload() == actual.payload() &&
+           expected_.version() == actual.version();
   }
 }
 
@@ -99,7 +98,7 @@ void InvalidationEqMatcher::DescribeNegationTo(::std::ostream* os) const {
 
 }  // namespace
 
-void PrintTo(const AckHandle& ack_handle, ::std::ostream* os ) {
+void PrintTo(const AckHandle& ack_handle, ::std::ostream* os) {
   scoped_ptr<base::Value> value(ack_handle.ToValue());
   std::string printable_ack_handle;
   base::JSONWriter::Write(value.get(), &printable_ack_handle);

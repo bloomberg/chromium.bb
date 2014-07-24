@@ -17,11 +17,11 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/invalidation/fake_invalidator.h"
+#include "components/invalidation/invalidation.h"
 #include "components/invalidation/invalidation_service.h"
 #include "components/invalidation/profile_invalidation_provider.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "google/cacheinvalidation/types.pb.h"
-#include "sync/internal_api/public/base/invalidation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::SaveArg;

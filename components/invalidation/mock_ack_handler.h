@@ -10,9 +10,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "components/invalidation/ack_handler.h"
 #include "components/invalidation/invalidation_export.h"
-#include "sync/internal_api/public/base/ack_handler.h"
-#include "sync/internal_api/public/base/invalidation_util.h"
+#include "components/invalidation/invalidation_util.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 
 namespace syncer {

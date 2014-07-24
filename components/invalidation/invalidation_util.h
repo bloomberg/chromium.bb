@@ -4,37 +4,35 @@
 //
 // Various utilities for dealing with invalidation data types.
 
-#ifndef SYNC_INTERNAL_API_PUBLIC_BASE_INVALIDATION_UTIL_H_
-#define SYNC_INTERNAL_API_PUBLIC_BASE_INVALIDATION_UTIL_H_
+#ifndef COMPONENTS_INVALIDATION_INVALIDATION_UTIL_H_
+#define COMPONENTS_INVALIDATION_INVALIDATION_UTIL_H_
 
 #include <map>
 #include <set>
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "sync/base/sync_export.h"
+#include "components/invalidation/invalidation_export.h"
 
 namespace base {
 class DictionaryValue;
 }  // namespace
 
 namespace invalidation {
-
 class Invalidation;
 class ObjectId;
-
 }  // namespace invalidation
 
 namespace syncer {
 
 class Invalidation;
 
-struct SYNC_EXPORT ObjectIdLessThan {
+struct INVALIDATION_EXPORT ObjectIdLessThan {
   bool operator()(const invalidation::ObjectId& lhs,
                   const invalidation::ObjectId& rhs) const;
 };
 
-struct SYNC_EXPORT InvalidationVersionLessThan {
+struct INVALIDATION_EXPORT InvalidationVersionLessThan {
   bool operator()(const syncer::Invalidation& a,
                   const syncer::Invalidation& b) const;
 };
@@ -51,9 +49,9 @@ scoped_ptr<base::DictionaryValue> ObjectIdToValue(
 bool ObjectIdFromValue(const base::DictionaryValue& value,
                        invalidation::ObjectId* out);
 
-SYNC_EXPORT_PRIVATE std::string ObjectIdToString(
+INVALIDATION_EXPORT std::string ObjectIdToString(
     const invalidation::ObjectId& object_id);
 
 }  // namespace syncer
 
-#endif  // SYNC_INTERNAL_API_PUBLIC_BASE_INVALIDATION_UTIL_H_
+#endif  // COMPONENTS_INVALIDATION_INVALIDATION_UTIL_H_

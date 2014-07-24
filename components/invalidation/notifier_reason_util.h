@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_INVALIDATION_NOTIFIER_REASON_UTIL_H_
 #define COMPONENTS_INVALIDATION_NOTIFIER_REASON_UTIL_H_
 
+#include "components/invalidation/invalidator_state.h"
 #include "jingle/notifier/listener/push_client_observer.h"
-#include "sync/internal_api/public/base/invalidator_state.h"
 
 namespace syncer {
 

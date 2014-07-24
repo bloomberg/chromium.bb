@@ -4,8 +4,8 @@
 
 #include "components/invalidation/single_object_invalidation_set.h"
 
+#include "components/invalidation/invalidation_test_util.h"
 #include "google/cacheinvalidation/types.pb.h"
-#include "sync/internal_api/public/base/invalidation_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

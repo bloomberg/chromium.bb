@@ -16,14 +16,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "components/invalidation/ack_handler.h"
 #include "components/invalidation/invalidation_export.h"
 #include "components/invalidation/invalidation_state_tracker.h"
+#include "components/invalidation/invalidator_state.h"
 #include "components/invalidation/state_writer.h"
 #include "components/invalidation/sync_system_resources.h"
 #include "components/invalidation/unacked_invalidation_set.h"
 #include "google/cacheinvalidation/include/invalidation-listener.h"
-#include "sync/internal_api/public/base/ack_handler.h"
-#include "sync/internal_api/public/base/invalidator_state.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 
 namespace buzz {

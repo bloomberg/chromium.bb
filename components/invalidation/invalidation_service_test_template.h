@@ -73,14 +73,14 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "components/invalidation/ack_handle.h"
 #include "components/invalidation/fake_invalidation_handler.h"
+#include "components/invalidation/invalidation.h"
 #include "components/invalidation/invalidation_service.h"
 #include "components/invalidation/object_id_invalidation_map.h"
 #include "components/invalidation/object_id_invalidation_map_test_util.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/types.pb.h"
-#include "sync/internal_api/public/base/ack_handle.h"
-#include "sync/internal_api/public/base/invalidation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 template <typename InvalidatorTestDelegate>

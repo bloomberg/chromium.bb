@@ -20,10 +20,10 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/values.h"
 #include "components/invalidation/invalidation_export.h"
+#include "components/invalidation/invalidator_state.h"
 #include "components/invalidation/state_writer.h"
 #include "google/cacheinvalidation/include/system-resources.h"
 #include "jingle/notifier/base/notifier_options.h"
-#include "sync/internal_api/public/base/invalidator_state.h"
 
 namespace syncer {
 

@@ -10,8 +10,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "sync/internal_api/public/base/invalidation_util.h"
-#include "sync/internal_api/public/base/invalidator_state.h"
+#include "components/invalidation/invalidation_util.h"
+#include "components/invalidation/invalidator_state.h"
 
 namespace base {
 class DictionaryValue;

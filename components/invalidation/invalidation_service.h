@@ -6,8 +6,8 @@
 #define COMPONENTS_INVALIDATION_INVALIDATION_SERVICE_H_
 
 #include "base/callback_forward.h"
-#include "sync/internal_api/public/base/invalidation_util.h"
-#include "sync/internal_api/public/base/invalidator_state.h"
+#include "components/invalidation/invalidation_util.h"
+#include "components/invalidation/invalidator_state.h"
 
 class IdentityProvider;
 

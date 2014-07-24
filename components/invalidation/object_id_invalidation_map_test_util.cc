@@ -39,8 +39,6 @@ ObjectIdInvalidationMapEqMatcher::ObjectIdInvalidationMapEqMatcher(
     const ObjectIdInvalidationMap& expected) : expected_(expected) {
 }
 
-namespace {
-
 struct InvalidationEqPredicate {
   InvalidationEqPredicate(const Invalidation& inv1)
       : inv1_(inv1) { }
@@ -51,8 +49,6 @@ struct InvalidationEqPredicate {
 
   const Invalidation& inv1_;
 };
-
-}
 
 bool ObjectIdInvalidationMapEqMatcher::MatchAndExplain(
     const ObjectIdInvalidationMap& actual,

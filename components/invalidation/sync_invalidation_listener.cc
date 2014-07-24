@@ -11,12 +11,12 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/tracked_objects.h"
+#include "components/invalidation/invalidation_util.h"
 #include "components/invalidation/object_id_invalidation_map.h"
 #include "components/invalidation/registration_manager.h"
 #include "google/cacheinvalidation/include/invalidation-client.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "jingle/notifier/listener/push_client.h"
-#include "sync/internal_api/public/base/invalidation_util.h"
 
 namespace {
 

@@ -18,11 +18,11 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "components/invalidation/invalidation.h"
 #include "components/invalidation/invalidation_export.h"
+#include "components/invalidation/invalidation_util.h"
 #include "components/invalidation/unacked_invalidation_set.h"
 #include "google/cacheinvalidation/include/types.h"
-#include "sync/internal_api/public/base/invalidation.h"
-#include "sync/internal_api/public/base/invalidation_util.h"
 
 namespace base {
 class TaskRunner;

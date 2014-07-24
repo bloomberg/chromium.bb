@@ -39,16 +39,7 @@ specific_include_rules = {
     "+content/test/net",
   ],
 
-  r"cloud_policy_browsertest.cc": [
-    "+sync/internal_api/public/base/invalidation.h",
-  ],
-
-  r"cloud_policy_invalidator.h": [
-    "+sync/internal_api/public/base/invalidation.h",
-  ],
-
   r"cloud_policy_invalidator_unittest\.cc": [
     "+chrome/browser/invalidation/fake_invalidation_service.h",
-    "+sync/internal_api/public/base/invalidation_util.h",
   ],
 }

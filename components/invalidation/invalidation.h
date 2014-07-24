@@ -1,18 +1,18 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_INTERNAL_API_PUBLIC_BASE_INVALIDATION_H_
-#define SYNC_INTERNAL_API_PUBLIC_BASE_INVALIDATION_H_
+#ifndef COMPONENTS_INVALIDATION_INVALIDATION_H_
+#define COMPONENTS_INVALIDATION_INVALIDATION_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "components/invalidation/ack_handle.h"
+#include "components/invalidation/invalidation_export.h"
 #include "google/cacheinvalidation/include/types.h"
-#include "sync/base/sync_export.h"
-#include "sync/internal_api/public/base/ack_handle.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 
 namespace syncer {
@@ -23,13 +23,12 @@ class AckHandler;
 // Represents a local invalidation, and is roughly analogous to
 // invalidation::Invalidation.  Unlike invalidation::Invalidation, this class
 // supports "local" ack-tracking and simple serialization to pref values.
-class SYNC_EXPORT Invalidation {
+class INVALIDATION_EXPORT Invalidation {
  public:
   // Factory functions.
-  static Invalidation Init(
-      const invalidation::ObjectId& id,
-      int64 version,
-      const std::string& payload);
+  static Invalidation Init(const invalidation::ObjectId& id,
+                           int64 version,
+                           const std::string& payload);
   static Invalidation InitUnknownVersion(const invalidation::ObjectId& id);
   static Invalidation InitFromDroppedInvalidation(const Invalidation& dropped);
   static scoped_ptr<Invalidation> InitFromValue(
@@ -119,4 +118,4 @@ class SYNC_EXPORT Invalidation {
 
 }  // namespace syncer
 
-#endif  // SYNC_INTERNAL_API_PUBLIC_BASE_INVALIDATION_H_
+#endif  // COMPONENTS_INVALIDATION_INVALIDATION_H_

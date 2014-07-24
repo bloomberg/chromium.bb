@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_INVALIDATION_UNACKED_INVALIDATION_SET_H_
 #define COMPONENTS_INVALIDATION_UNACKED_INVALIDATION_SET_H_
 
-#include <vector>
+#include <set>
 
+#include "components/invalidation/invalidation.h"
 #include "components/invalidation/invalidation_export.h"
-#include "sync/internal_api/public/base/invalidation.h"
-#include "sync/internal_api/public/base/invalidation_util.h"
+#include "components/invalidation/invalidation_util.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 
 namespace base {

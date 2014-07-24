@@ -5,8 +5,8 @@
 #include "components/invalidation/unacked_invalidation_set.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "components/invalidation/ack_handle.h"
 #include "components/invalidation/object_id_invalidation_map.h"
-#include "sync/internal_api/public/base/ack_handle.h"
 
 namespace {
 

@@ -1,8 +1,4 @@
 include_rules = [
-  # Invalidations headers depend on this.  We should move them to sync/notifier
-  # then remove this rule.
-  "+google/cacheinvalidation",
-
   "-sync",
   "+sync/base",
   "+sync/internal_api/public/base",

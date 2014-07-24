@@ -7,10 +7,10 @@
 #include <cstddef>
 
 #include "components/invalidation/fake_invalidation_handler.h"
+#include "components/invalidation/invalidator_state.h"
 #include "components/invalidation/invalidator_test_template.h"
 #include "components/invalidation/notifier_reason_util.h"
 #include "jingle/notifier/listener/fake_push_client.h"
-#include "sync/internal_api/public/base/invalidator_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

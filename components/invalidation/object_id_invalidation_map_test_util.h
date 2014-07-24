@@ -6,8 +6,8 @@
 #define COMPONENTS_INVALIDATION_OBJECT_ID_INVALIDATION_MAP_TEST_UTIL_H_
 
 // Convince googletest to use the correct overload for PrintTo().
+#include "components/invalidation/invalidation_test_util.h"
 #include "components/invalidation/object_id_invalidation_map.h"
-#include "sync/internal_api/public/base/invalidation_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace syncer {

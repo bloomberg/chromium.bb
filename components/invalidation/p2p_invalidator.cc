@@ -12,10 +12,10 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "components/invalidation/invalidation_handler.h"
+#include "components/invalidation/invalidation_util.h"
 #include "components/invalidation/notifier_reason_util.h"
 #include "components/invalidation/object_id_invalidation_map.h"
 #include "jingle/notifier/listener/push_client.h"
-#include "sync/internal_api/public/base/invalidation_util.h"
 
 namespace syncer {
 

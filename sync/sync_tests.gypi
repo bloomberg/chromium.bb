@@ -168,19 +168,15 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
-        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         'sync',
         'test_support_sync_core',
       ],
       'export_dependent_settings': [
         '../testing/gtest.gyp:gtest',
-        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         'sync',
         'test_support_sync_core',
       ],
       'sources': [
-        'internal_api/public/base/invalidation_test_util.cc',
-        'internal_api/public/base/invalidation_test_util.h',
         'internal_api/public/test/fake_sync_manager.h',
         'internal_api/public/test/null_sync_context_proxy.h',
         'internal_api/public/test/sync_manager_factory_for_profile_sync_test.h',

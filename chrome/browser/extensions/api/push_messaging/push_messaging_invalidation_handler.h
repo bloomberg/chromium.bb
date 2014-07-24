@@ -14,7 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_mapper.h"
 #include "components/invalidation/invalidation_handler.h"
-#include "sync/internal_api/public/base/invalidation_util.h"
+#include "components/invalidation/invalidation_util.h"
 
 namespace invalidation {
 class InvalidationService;

@@ -19,6 +19,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/invalidation/invalidator_state.h"
 #include "components/invalidation/profile_invalidation_provider.h"
 #include "components/invalidation/ticl_invalidation_service.h"
 #include "content/public/browser/notification_details.h"
@@ -26,7 +27,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
-#include "sync/internal_api/public/base/invalidator_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {

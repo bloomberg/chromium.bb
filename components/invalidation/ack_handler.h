@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_INTERNAL_API_PUBLIC_BASE_ACK_HANDLER_H_
-#define SYNC_INTERNAL_API_PUBLIC_BASE_ACK_HANDLER_H_
+#ifndef COMPONENTS_INVALIDATION_ACK_HANDLER_H_
+#define COMPONENTS_INVALIDATION_ACK_HANDLER_H_
 
 #include <vector>
 
-#include "sync/base/sync_export.h"
+#include "components/invalidation/invalidation_export.h"
 
 namespace invalidation {
 class ObjectId;
@@ -21,22 +21,20 @@ class AckHandle;
 //
 // We don't expect to support more than one "real" implementation of AckHandler,
 // but this interface is very useful for testing and implementation hiding.
-class SYNC_EXPORT AckHandler {
+class INVALIDATION_EXPORT AckHandler {
  public:
   AckHandler();
   virtual ~AckHandler() = 0;
 
   // Record the local acknowledgement of an invalidation identified by |handle|.
-  virtual void Acknowledge(
-      const invalidation::ObjectId& id,
-      const AckHandle& handle) = 0;
+  virtual void Acknowledge(const invalidation::ObjectId& id,
+                           const AckHandle& handle) = 0;
 
   // Record the drop of an invalidation identified by |handle|.
-  virtual void Drop(
-      const invalidation::ObjectId& id,
-      const AckHandle& handle) = 0;
+  virtual void Drop(const invalidation::ObjectId& id,
+                    const AckHandle& handle) = 0;
 };
 
 }  // namespace syncer
 
-#endif  // SYNC_INTERNAL_API_PUBLIC_BASE_ACK_HANDLER_H_
+#endif  // COMPONENTS_INVALIDATION_ACK_HANDLER_H_

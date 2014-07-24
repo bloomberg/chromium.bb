@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_INTERNAL_API_PUBLIC_BASE_INVALIDATOR_STATE_H_
-#define SYNC_INTERNAL_API_PUBLIC_BASE_INVALIDATOR_STATE_H_
+#ifndef COMPONENTS_INVALIDATION_INVALIDATOR_STATE_H_
+#define COMPONENTS_INVALIDATION_INVALIDATOR_STATE_H_
 
-#include "sync/base/sync_export.h"
+#include "components/invalidation/invalidation_export.h"
 
 namespace syncer {
 
@@ -23,8 +23,9 @@ enum InvalidatorState {
   INVALIDATIONS_ENABLED
 };
 
-SYNC_EXPORT const char* InvalidatorStateToString(InvalidatorState state);
+INVALIDATION_EXPORT const char* InvalidatorStateToString(
+    InvalidatorState state);
 
 }  // namespace syncer
 
-#endif  // SYNC_INTERNAL_API_PUBLIC_BASE_INVALIDATOR_STATE_H_
+#endif  // COMPONENTS_INVALIDATION_INVALIDATOR_STATE_H_

@@ -1,8 +1,8 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/public/base/invalidation.h"
+#include "components/invalidation/invalidation.h"
 
 #include <cstddef>
 
@@ -10,8 +10,8 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "sync/internal_api/public/base/ack_handler.h"
-#include "sync/internal_api/public/base/invalidation_util.h"
+#include "components/invalidation/ack_handler.h"
+#include "components/invalidation/invalidation_util.h"
 
 namespace syncer {
 
@@ -23,23 +23,22 @@ const char kPayloadKey[] = "payload";
 const int64 kInvalidVersion = -1;
 }
 
-Invalidation Invalidation::Init(
-    const invalidation::ObjectId& id,
-    int64 version,
-    const std::string& payload) {
+Invalidation Invalidation::Init(const invalidation::ObjectId& id,
+                                int64 version,
+                                const std::string& payload) {
   return Invalidation(id, false, version, payload, AckHandle::CreateUnique());
 }
 
 Invalidation Invalidation::InitUnknownVersion(
     const invalidation::ObjectId& id) {
-  return Invalidation(id, true, kInvalidVersion,
-                      std::string(), AckHandle::CreateUnique());
+  return Invalidation(
+      id, true, kInvalidVersion, std::string(), AckHandle::CreateUnique());
 }
 
 Invalidation Invalidation::InitFromDroppedInvalidation(
     const Invalidation& dropped) {
-  return Invalidation(dropped.id_, true, kInvalidVersion,
-                      std::string(), dropped.ack_handle_);
+  return Invalidation(
+      dropped.id_, true, kInvalidVersion, std::string(), dropped.ack_handle_);
 }
 
 scoped_ptr<Invalidation> Invalidation::InitFromValue(
@@ -47,8 +46,8 @@ scoped_ptr<Invalidation> Invalidation::InitFromValue(
   invalidation::ObjectId id;
 
   const base::DictionaryValue* object_id_dict;
-  if (!value.GetDictionary(kObjectIdKey, &object_id_dict)
-      || !ObjectIdFromValue(*object_id_dict, &id)) {
+  if (!value.GetDictionary(kObjectIdKey, &object_id_dict) ||
+      !ObjectIdFromValue(*object_id_dict, &id)) {
     DLOG(WARNING) << "Failed to parse id";
     return scoped_ptr<Invalidation>();
   }
@@ -85,7 +84,8 @@ scoped_ptr<Invalidation> Invalidation::InitFromValue(
       AckHandle::CreateUnique()));
 }
 
-Invalidation::~Invalidation() {}
+Invalidation::~Invalidation() {
+}
 
 invalidation::ObjectId Invalidation::object_id() const {
   return id_;
@@ -119,27 +119,19 @@ bool Invalidation::SupportsAcknowledgement() const {
 
 void Invalidation::Acknowledge() const {
   if (SupportsAcknowledgement()) {
-    ack_handler_.Call(FROM_HERE,
-                      &AckHandler::Acknowledge,
-                      id_,
-                      ack_handle_);
+    ack_handler_.Call(FROM_HERE, &AckHandler::Acknowledge, id_, ack_handle_);
   }
 }
 
 void Invalidation::Drop() {
   if (SupportsAcknowledgement()) {
-    ack_handler_.Call(FROM_HERE,
-                      &AckHandler::Drop,
-                      id_,
-                      ack_handle_);
+    ack_handler_.Call(FROM_HERE, &AckHandler::Drop, id_, ack_handle_);
   }
 }
 
 bool Invalidation::Equals(const Invalidation& other) const {
-  return id_ == other.id_
-      && is_unknown_version_ == other.is_unknown_version_
-      && version_ == other.version_
-      && payload_ == other.payload_;
+  return id_ == other.id_ && is_unknown_version_ == other.is_unknown_version_ &&
+         version_ == other.version_ && payload_ == other.payload_;
 }
 
 scoped_ptr<base::DictionaryValue> Invalidation::ToValue() const {
@@ -163,16 +155,16 @@ std::string Invalidation::ToString() const {
   return output;
 }
 
-Invalidation::Invalidation(
-    const invalidation::ObjectId& id,
-    bool is_unknown_version,
-    int64 version,
-    const std::string& payload,
-    AckHandle ack_handle)
-  : id_(id),
-    is_unknown_version_(is_unknown_version),
-    version_(version),
-    payload_(payload),
-    ack_handle_(ack_handle) {}
+Invalidation::Invalidation(const invalidation::ObjectId& id,
+                           bool is_unknown_version,
+                           int64 version,
+                           const std::string& payload,
+                           AckHandle ack_handle)
+    : id_(id),
+      is_unknown_version_(is_unknown_version),
+      version_(version),
+      payload_(payload),
+      ack_handle_(ack_handle) {
+}
 
 }  // namespace syncer

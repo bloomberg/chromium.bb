@@ -23,7 +23,6 @@
 #include "components/invalidation/invalidator.h"
 #include "components/invalidation/invalidator_registrar.h"
 #include "components/invalidation/sync_invalidation_listener.h"
-#include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 
 namespace notifier {

@@ -5,7 +5,7 @@
 #include "components/invalidation/single_object_invalidation_set.h"
 
 #include "base/values.h"
-#include "sync/internal_api/public/base/invalidation_util.h"
+#include "components/invalidation/invalidation_util.h"
 
 namespace syncer {
 

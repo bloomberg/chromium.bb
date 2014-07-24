@@ -15,7 +15,6 @@
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/fake_push_client.h"
 #include "net/url_request/url_request_test_util.h"
-#include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

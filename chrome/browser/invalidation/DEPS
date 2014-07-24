@@ -2,8 +2,6 @@ include_rules = [
   # Needed for P2PInvalidationService construction.
   "+jingle/notifier",
 
-  "+sync/internal_api/public/base",
-
   # Needed for InvalidationController JNI methods.
   "+chrome/jni/InvalidationController_jni.h",
 

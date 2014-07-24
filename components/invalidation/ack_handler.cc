@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/public/base/ack_handler.h"
+#include "components/invalidation/ack_handler.h"
 
-#include "sync/internal_api/public/base/invalidation.h"
+#include "components/invalidation/invalidation.h"
 
 namespace syncer {
 
-AckHandler::AckHandler() {}
+AckHandler::AckHandler() {
+}
 
-AckHandler::~AckHandler() {}
+AckHandler::~AckHandler() {
+}
 
 }  // namespace syncer

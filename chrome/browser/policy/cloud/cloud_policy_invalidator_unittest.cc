@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "chrome/browser/invalidation/fake_invalidation_service.h"
 #include "chrome/browser/policy/cloud/cloud_policy_invalidator.h"
+#include "components/invalidation/invalidation_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
@@ -29,7 +30,6 @@
 #include "components/policy/core/common/policy_types.h"
 #include "policy/policy_constants.h"
 #include "policy/proto/device_management_backend.pb.h"
-#include "sync/internal_api/public/base/invalidation_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

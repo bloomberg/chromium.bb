@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "components/invalidation/fake_invalidation_state_tracker.h"
+#include "components/invalidation/invalidation_util.h"
 #include "components/invalidation/object_id_invalidation_map.h"
 #include "components/invalidation/push_client_channel.h"
 #include "components/invalidation/sync_invalidation_listener.h"
@@ -19,7 +20,6 @@
 #include "google/cacheinvalidation/include/invalidation-client.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "jingle/notifier/listener/fake_push_client.h"
-#include "sync/internal_api/public/base/invalidation_util.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
