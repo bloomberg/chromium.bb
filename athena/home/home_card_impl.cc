@@ -183,10 +183,11 @@ class HomeCardImpl : public HomeCard,
   virtual bool OnAcceleratorFired(int command_id,
                                   const ui::Accelerator& accelerator) OVERRIDE {
     DCHECK_EQ(COMMAND_SHOW_HOME_CARD, command_id);
-    if (state_ == HIDDEN)
+
+    if (state_ == VISIBLE_CENTERED && original_state_ != VISIBLE_BOTTOM)
+      SetState(VISIBLE_MINIMIZED);
+    else if (state_ == VISIBLE_MINIMIZED)
       SetState(VISIBLE_CENTERED);
-    else
-      SetState(HIDDEN);
     return true;
   }
 

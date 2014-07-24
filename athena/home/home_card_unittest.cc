@@ -8,6 +8,7 @@
 #include "athena/activity/public/activity_manager.h"
 #include "athena/test/athena_test_base.h"
 #include "athena/wm/public/window_manager.h"
+#include "ui/aura/test/event_generator.h"
 
 namespace athena {
 
@@ -56,6 +57,33 @@ TEST_F(HomeCardTest, AppSelection) {
       athena::ActivityFactory::Get()->CreateWebActivity(
           NULL, GURL("http://www.google.com/")));
   EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
+
+  // Overview mode has to finish before ending test, otherwise it crashes.
+  // TODO(mukai): fix this.
+  WindowManager::GetInstance()->ToggleOverview();
+}
+
+TEST_F(HomeCardTest, Accelerators) {
+  EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
+
+  aura::test::EventGenerator generator(root_window());
+  generator.PressKey(ui::VKEY_L, ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(HomeCard::VISIBLE_CENTERED, HomeCard::Get()->GetState());
+
+  generator.PressKey(ui::VKEY_L, ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
+
+  // Do nothing for BOTTOM.
+  WindowManager::GetInstance()->ToggleOverview();
+  EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
+  generator.PressKey(ui::VKEY_L, ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
+
+  // Do nothing if the centered state is a temporary state.
+  HomeCard::Get()->UpdateVirtualKeyboardBounds(gfx::Rect(0, 0, 100, 100));
+  EXPECT_EQ(HomeCard::VISIBLE_CENTERED, HomeCard::Get()->GetState());
+  generator.PressKey(ui::VKEY_L, ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(HomeCard::VISIBLE_CENTERED, HomeCard::Get()->GetState());
 
   // Overview mode has to finish before ending test, otherwise it crashes.
   // TODO(mukai): fix this.
