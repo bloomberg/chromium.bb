@@ -37,19 +37,9 @@ class EVENTS_EXPORT MotionEventAura : public MotionEvent {
   virtual float GetRawY(size_t pointer_index) const OVERRIDE;
   virtual float GetTouchMajor(size_t pointer_index) const OVERRIDE;
   virtual float GetPressure(size_t pointer_index) const OVERRIDE;
-  virtual base::TimeTicks GetEventTime() const OVERRIDE;
-
-  virtual size_t GetHistorySize() const OVERRIDE;
-  virtual base::TimeTicks GetHistoricalEventTime(size_t historical_index) const
-      OVERRIDE;
-  virtual float GetHistoricalTouchMajor(size_t pointer_index,
-                                        size_t historical_index) const OVERRIDE;
-  virtual float GetHistoricalX(size_t pointer_index,
-                               size_t historical_index) const OVERRIDE;
-  virtual float GetHistoricalY(size_t pointer_index,
-                               size_t historical_index) const OVERRIDE;
   virtual ToolType GetToolType(size_t pointer_index) const OVERRIDE;
   virtual int GetButtonState() const OVERRIDE;
+  virtual base::TimeTicks GetEventTime() const OVERRIDE;
 
   virtual scoped_ptr<MotionEvent> Clone() const OVERRIDE;
   virtual scoped_ptr<MotionEvent> Cancel() const OVERRIDE;

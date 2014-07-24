@@ -57,19 +57,19 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
   virtual float GetRawY(size_t pointer_index) const = 0;
   virtual float GetTouchMajor(size_t pointer_index) const = 0;
   virtual float GetPressure(size_t pointer_index) const = 0;
-  virtual base::TimeTicks GetEventTime() const = 0;
-
-  virtual size_t GetHistorySize() const = 0;
-  virtual base::TimeTicks GetHistoricalEventTime(
-      size_t historical_index) const = 0;
-  virtual float GetHistoricalTouchMajor(size_t pointer_index,
-                                        size_t historical_index) const = 0;
-  virtual float GetHistoricalX(size_t pointer_index,
-                               size_t historical_index) const = 0;
-  virtual float GetHistoricalY(size_t pointer_index,
-                               size_t historical_index) const = 0;
   virtual ToolType GetToolType(size_t pointer_index) const = 0;
   virtual int GetButtonState() const = 0;
+  virtual base::TimeTicks GetEventTime() const = 0;
+
+  // Optional historical data, default implementation provides an empty history.
+  virtual size_t GetHistorySize() const;
+  virtual base::TimeTicks GetHistoricalEventTime(size_t historical_index) const;
+  virtual float GetHistoricalTouchMajor(size_t pointer_index,
+                                        size_t historical_index) const;
+  virtual float GetHistoricalX(size_t pointer_index,
+                               size_t historical_index) const;
+  virtual float GetHistoricalY(size_t pointer_index,
+                               size_t historical_index) const;
 
   virtual scoped_ptr<MotionEvent> Clone() const = 0;
   virtual scoped_ptr<MotionEvent> Cancel() const = 0;
@@ -84,6 +84,11 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
   float GetTouchMajor() const { return GetTouchMajor(0); }
   float GetPressure() const { return GetPressure(0); }
 };
+
+GESTURE_DETECTION_EXPORT bool operator==(const MotionEvent& lhs,
+                                         const MotionEvent& rhs);
+GESTURE_DETECTION_EXPORT bool operator!=(const MotionEvent& lhs,
+                                         const MotionEvent& rhs);
 
 }  // namespace ui
 

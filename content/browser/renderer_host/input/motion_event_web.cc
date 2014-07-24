@@ -117,32 +117,6 @@ base::TimeTicks MotionEventWeb::GetEventTime() const {
                                            base::Time::kMicrosecondsPerSecond);
 }
 
-size_t MotionEventWeb::GetHistorySize() const { return 0; }
-
-base::TimeTicks MotionEventWeb::GetHistoricalEventTime(
-    size_t historical_index) const {
-  NOTIMPLEMENTED();
-  return base::TimeTicks();
-}
-
-float MotionEventWeb::GetHistoricalTouchMajor(size_t pointer_index,
-                                              size_t historical_index) const {
-  NOTIMPLEMENTED();
-  return 0.f;
-}
-
-float MotionEventWeb::GetHistoricalX(size_t pointer_index,
-                                     size_t historical_index) const {
-  NOTIMPLEMENTED();
-  return 0.f;
-}
-
-float MotionEventWeb::GetHistoricalY(size_t pointer_index,
-                                     size_t historical_index) const {
-  NOTIMPLEMENTED();
-  return 0.f;
-}
-
 ui::MotionEvent::ToolType MotionEventWeb::GetToolType(
     size_t pointer_index) const {
   NOTIMPLEMENTED();

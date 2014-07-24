@@ -37,9 +37,9 @@ class TouchDispositionGestureFilterTest
     last_sent_gesture_location_ = gfx::PointF(event.x, event.y);
     last_sent_gesture_raw_location_ = gfx::PointF(event.raw_x, event.raw_y);
     if (cancel_after_next_gesture_) {
+      cancel_after_next_gesture_ = false;
       CancelTouchPoint();
       SendTouchNotConsumedAck();
-      cancel_after_next_gesture_ = false;
     }
   }
 
@@ -101,7 +101,7 @@ class TouchDispositionGestureFilterTest
   }
 
   void SendTouchGestures() {
-    touch_event_.SetTime(base::TimeTicks::Now());
+    touch_event_.set_event_time(base::TimeTicks::Now());
     EXPECT_EQ(TouchDispositionGestureFilter::SUCCESS,
               SendTouchGestures(touch_event_, pending_gesture_packet_));
     GestureEventDataPacket gesture_packet;
@@ -143,11 +143,13 @@ class TouchDispositionGestureFilterTest
 
   void PressTouchPoint(int x, int y) {
     touch_event_.PressPoint(x, y);
+    touch_event_.SetRawOffset(raw_offset_.x(), raw_offset_.y());
     SendTouchGestures();
   }
 
   void MoveTouchPoint(size_t index, int x, int y) {
     touch_event_.MovePoint(index, x, y);
+    touch_event_.SetRawOffset(raw_offset_.x(), raw_offset_.y());
     SendTouchGestures();
   }
 
@@ -162,7 +164,7 @@ class TouchDispositionGestureFilterTest
   }
 
   void SetRawTouchOffset(const gfx::Vector2dF& raw_offset) {
-    touch_event_.SetRawOffset(raw_offset.x(), raw_offset.y());
+    raw_offset_ = raw_offset;
   }
 
   void ResetTouchPoints() { touch_event_ = MockMotionEvent(); }
@@ -217,6 +219,7 @@ class TouchDispositionGestureFilterTest
   size_t sent_gesture_count_;
   base::TimeTicks last_sent_gesture_time_;
   GestureList sent_gestures_;
+  gfx::Vector2dF raw_offset_;
   gfx::PointF last_sent_gesture_location_;
   gfx::PointF last_sent_gesture_raw_location_;
 };
@@ -575,6 +578,7 @@ TEST_F(TouchDispositionGestureFilterTest, MultipleTouchSequences) {
 TEST_F(TouchDispositionGestureFilterTest, FlingCancelledOnNewTouchSequence) {
   const gfx::Vector2dF raw_offset(1.3f, 3.7f);
   SetRawTouchOffset(raw_offset);
+
   // Simulate a fling.
   PushGesture(ET_GESTURE_TAP_DOWN);
   PushGesture(ET_GESTURE_SCROLL_BEGIN);
@@ -909,6 +913,7 @@ TEST_F(TouchDispositionGestureFilterTest, ShowPressNotInsertedIfAlreadySent) {
 TEST_F(TouchDispositionGestureFilterTest, TapAndScrollCancelledOnTouchCancel) {
   const gfx::Vector2dF raw_offset(1.3f, 3.7f);
   SetRawTouchOffset(raw_offset);
+
   PushGesture(ET_GESTURE_TAP_DOWN);
   PressTouchPoint(1, 1);
   SendTouchNotConsumedAck();

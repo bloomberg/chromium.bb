@@ -213,7 +213,10 @@
         'gesture_detection/gesture_event_data_packet.h',
         'gesture_detection/gesture_provider.cc',
         'gesture_detection/gesture_provider.h',
+        'gesture_detection/motion_event.cc',
         'gesture_detection/motion_event.h',
+        'gesture_detection/motion_event_generic.cc',
+        'gesture_detection/motion_event_generic.h',
         'gesture_detection/scale_gesture_detector.cc',
         'gesture_detection/scale_gesture_detector.h',
         'gesture_detection/snap_scroll_controller.cc',
@@ -285,7 +288,7 @@
       ],
     },
     {
-      # GN vesrion: //ui/events:events_unittests
+      # GN version: //ui/events:events_unittests
       'target_name': 'events_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
@@ -316,6 +319,7 @@
         'gesture_detection/bitset_32_unittest.cc',
         'gesture_detection/gesture_event_data_packet_unittest.cc',
         'gesture_detection/gesture_provider_unittest.cc',
+        'gesture_detection/motion_event_generic_unittest.cc',
         'gesture_detection/velocity_tracker_unittest.cc',
         'gesture_detection/touch_disposition_gesture_filter_unittest.cc',
         'keycodes/dom4/keycode_converter_unittest.cc',

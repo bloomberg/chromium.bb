@@ -126,36 +126,6 @@ float MotionEventAura::GetPressure(size_t pointer_index) const {
   return active_touches_[pointer_index].pressure;
 }
 
-base::TimeTicks MotionEventAura::GetEventTime() const {
-  return last_touch_time_;
-}
-
-size_t MotionEventAura::GetHistorySize() const { return 0; }
-
-base::TimeTicks MotionEventAura::GetHistoricalEventTime(
-    size_t historical_index) const {
-  NOTIMPLEMENTED();
-  return base::TimeTicks();
-}
-
-float MotionEventAura::GetHistoricalTouchMajor(size_t pointer_index,
-                                             size_t historical_index) const {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
-float MotionEventAura::GetHistoricalX(size_t pointer_index,
-                                    size_t historical_index) const {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
-float MotionEventAura::GetHistoricalY(size_t pointer_index,
-                                    size_t historical_index) const {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
 MotionEvent::ToolType MotionEventAura::GetToolType(size_t pointer_index) const {
   NOTIMPLEMENTED();
   return MotionEvent::TOOL_TYPE_UNKNOWN;
@@ -164,6 +134,10 @@ MotionEvent::ToolType MotionEventAura::GetToolType(size_t pointer_index) const {
 int MotionEventAura::GetButtonState() const {
   NOTIMPLEMENTED();
   return 0;
+}
+
+base::TimeTicks MotionEventAura::GetEventTime() const {
+  return last_touch_time_;
 }
 
 scoped_ptr<MotionEvent> MotionEventAura::Clone() const {
