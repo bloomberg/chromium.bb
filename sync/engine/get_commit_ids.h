@@ -23,14 +23,11 @@ class BaseTransaction;
 // specified |type| and are ready for commit.
 //
 // This function returns handles in "commit order".  A valid commit ordering is
-// one where parents are placed before children, predecessors are placed before
-// successors, and deletes appear after creates and moves.
+// one where server-unknown items are committed parents-first, and deletions
+// are committed children-first.
 //
-// The predecessor to successor rule was implemented when we tracked positions
-// within a folder that was sensitive to such things.  The current positioning
-// system can handle receiving the elements within a folder out of order, so we
-// may be able to remove that functionality in the future.
-// See crbug.com/287938.
+// This function also enforces some position ordering constraints that are no
+// longer necessary.  We should relax those constraints.  See crbug.com/287938.
 SYNC_EXPORT_PRIVATE void GetCommitIdsForType(
     syncable::BaseTransaction* trans,
     ModelType type,

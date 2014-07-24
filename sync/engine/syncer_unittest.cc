@@ -797,6 +797,64 @@ TEST_F(SyncerTest, GetCommitIdsFiltersUnreadyEntries) {
   }
 }
 
+// This test uses internal knowledge of the directory to test correctness of
+// GetCommitIds.  In almost every other test, the hierarchy is created from
+// parent to child order, and so parents always have metahandles that are
+// smaller than those of their children.  This makes it very difficult to test
+// some GetCommitIds edge cases, since it uses metahandle ordering as
+// a starting point.
+TEST_F(SyncerTest, GetCommitIds_VerifyDeletionCommitOrder) {
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
+
+    // Create four bookmarks folders at the root node.
+    for (int i = 1; i < 5; ++i) {
+      MutableEntry entry(&trans, CREATE, BOOKMARKS, trans.root_id(), "");
+      entry.PutId(ids_.FromNumber(i));
+      entry.PutIsDir(true);
+      entry.PutBaseVersion(5);
+      entry.PutServerVersion(5);
+      entry.PutServerParentId(trans.root_id());
+      entry.PutServerIsDir(true);
+      entry.PutIsUnsynced(true);
+      entry.PutSpecifics(DefaultBookmarkSpecifics());
+    }
+
+    // Now iterate in reverse order make a hierarchy of them.
+    // While we're at it, also mark them as deleted.
+    syncable::Id parent_id = trans.root_id();
+    for (int i = 4; i > 0; --i) {
+      MutableEntry entry(&trans, GET_BY_ID, ids_.FromNumber(i));
+      entry.PutParentId(parent_id);
+      entry.PutServerParentId(parent_id);
+      entry.PutIsDel(true);
+      parent_id = ids_.FromNumber(i);
+    }
+  }
+
+  {
+    // Run GetCommitIds, the function being tested.
+    syncable::Directory::Metahandles result_handles;
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    GetCommitIdsForType(&trans, BOOKMARKS, 100, &result_handles);
+
+    // Now verify the output.  We expect four results in child to parent order.
+    ASSERT_EQ(4U, result_handles.size());
+
+    Entry entry0(&trans, GET_BY_HANDLE, result_handles[0]);
+    EXPECT_EQ(ids_.FromNumber(1), entry0.GetId());
+
+    Entry entry1(&trans, GET_BY_HANDLE, result_handles[1]);
+    EXPECT_EQ(ids_.FromNumber(2), entry1.GetId());
+
+    Entry entry2(&trans, GET_BY_HANDLE, result_handles[2]);
+    EXPECT_EQ(ids_.FromNumber(3), entry2.GetId());
+
+    Entry entry3(&trans, GET_BY_HANDLE, result_handles[3]);
+    EXPECT_EQ(ids_.FromNumber(4), entry3.GetId());
+  }
+}
+
 TEST_F(SyncerTest, EncryptionAwareConflicts) {
   KeyParams key_params = {"localhost", "dummy", "foobar"};
   Cryptographer other_cryptographer(&encryptor_);
@@ -1296,8 +1354,8 @@ TEST_F(SyncerTest,
 
 TEST_F(SyncerTest, TestCommitListOrderingTwoLongDeletedItemWithUnroll) {
   CommitOrderingTest items[] = {
-    {0, ids_.FromNumber(1000), ids_.FromNumber(0), {DELETED, OLD_MTIME}},
-    {-1, ids_.FromNumber(1001), ids_.FromNumber(1000), {DELETED, OLD_MTIME}},
+    {1, ids_.FromNumber(1000), ids_.FromNumber(0), {DELETED, OLD_MTIME}},
+    {0, ids_.FromNumber(1001), ids_.FromNumber(1000), {DELETED, OLD_MTIME}},
     CommitOrderingTest::MakeLastCommitItem(),
   };
   RunCommitOrderingTest(items);
@@ -1306,9 +1364,9 @@ TEST_F(SyncerTest, TestCommitListOrderingTwoLongDeletedItemWithUnroll) {
 TEST_F(SyncerTest, TestCommitListOrdering3LongDeletedItemsWithSizeLimit) {
   context_->set_max_commit_batch_size(2);
   CommitOrderingTest items[] = {
-    {0, ids_.FromNumber(1000), ids_.FromNumber(0), {DELETED, OLD_MTIME}},
-    {1, ids_.FromNumber(1001), ids_.FromNumber(0), {DELETED, OLD_MTIME}},
-    {2, ids_.FromNumber(1002), ids_.FromNumber(0), {DELETED, OLD_MTIME}},
+    {2, ids_.FromNumber(1000), ids_.FromNumber(0), {DELETED, OLD_MTIME}},
+    {1, ids_.FromNumber(1001), ids_.FromNumber(1000), {DELETED, OLD_MTIME}},
+    {0, ids_.FromNumber(1002), ids_.FromNumber(1001), {DELETED, OLD_MTIME}},
     CommitOrderingTest::MakeLastCommitItem(),
   };
   RunCommitOrderingTest(items);
@@ -1316,8 +1374,8 @@ TEST_F(SyncerTest, TestCommitListOrdering3LongDeletedItemsWithSizeLimit) {
 
 TEST_F(SyncerTest, TestCommitListOrderingTwoDeletedItemsWithUnroll) {
   CommitOrderingTest items[] = {
-    {0, ids_.FromNumber(1000), ids_.FromNumber(0), {DELETED}},
-    {-1, ids_.FromNumber(1001), ids_.FromNumber(1000), {DELETED}},
+    {1, ids_.FromNumber(1000), ids_.FromNumber(0), {DELETED}},
+    {0, ids_.FromNumber(1001), ids_.FromNumber(1000), {DELETED}},
     CommitOrderingTest::MakeLastCommitItem(),
   };
   RunCommitOrderingTest(items);
@@ -1325,11 +1383,11 @@ TEST_F(SyncerTest, TestCommitListOrderingTwoDeletedItemsWithUnroll) {
 
 TEST_F(SyncerTest, TestCommitListOrderingComplexDeletionScenario) {
   CommitOrderingTest items[] = {
-    { 0, ids_.FromNumber(1000), ids_.FromNumber(0), {DELETED, OLD_MTIME}},
+    {2, ids_.FromNumber(1000), ids_.FromNumber(0), {DELETED, OLD_MTIME}},
     {-1, ids_.FromNumber(1001), ids_.FromNumber(0), {SYNCED}},
     {1, ids_.FromNumber(1002), ids_.FromNumber(1001), {DELETED, OLD_MTIME}},
     {-1, ids_.FromNumber(1003), ids_.FromNumber(1001), {SYNCED}},
-    {2, ids_.FromNumber(1004), ids_.FromNumber(1003), {DELETED}},
+    {0, ids_.FromNumber(1004), ids_.FromNumber(1003), {DELETED}},
     CommitOrderingTest::MakeLastCommitItem(),
   };
   RunCommitOrderingTest(items);
@@ -1338,12 +1396,12 @@ TEST_F(SyncerTest, TestCommitListOrderingComplexDeletionScenario) {
 TEST_F(SyncerTest,
        TestCommitListOrderingComplexDeletionScenarioWith2RecentDeletes) {
   CommitOrderingTest items[] = {
-    { 0, ids_.FromNumber(1000), ids_.FromNumber(0), {DELETED, OLD_MTIME}},
+    {3, ids_.FromNumber(1000), ids_.FromNumber(0), {DELETED, OLD_MTIME}},
     {-1, ids_.FromNumber(1001), ids_.FromNumber(0), {SYNCED}},
-    {1, ids_.FromNumber(1002), ids_.FromNumber(1001), {DELETED, OLD_MTIME}},
+    {2, ids_.FromNumber(1002), ids_.FromNumber(1001), {DELETED, OLD_MTIME}},
     {-1, ids_.FromNumber(1003), ids_.FromNumber(1001), {SYNCED}},
-    {2, ids_.FromNumber(1004), ids_.FromNumber(1003), {DELETED}},
-    {3, ids_.FromNumber(1005), ids_.FromNumber(1003), {DELETED}},
+    {1, ids_.FromNumber(1004), ids_.FromNumber(1003), {DELETED}},
+    {0, ids_.FromNumber(1005), ids_.FromNumber(1003), {DELETED}},
     CommitOrderingTest::MakeLastCommitItem(),
   };
   RunCommitOrderingTest(items);

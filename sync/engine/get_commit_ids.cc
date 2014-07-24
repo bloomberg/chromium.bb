@@ -249,6 +249,11 @@ class Traversal {
       const syncable::Entry& item,
       syncable::Directory::Metahandles* result) const;
 
+  bool AddDeletedParents(const std::set<int64>& ready_unsynced_set,
+                         const syncable::Entry& item,
+                         const syncable::Directory::Metahandles& traversed,
+                         syncable::Directory::Metahandles* result) const;
+
   // Returns true if we've collected enough items.
   bool IsFull() const;
 
@@ -375,6 +380,66 @@ void Traversal::AddPredecessorsThenItem(
   result->insert(result->end(), dependencies.rbegin(), dependencies.rend());
 }
 
+// Traverses the tree from bottom to top, adding the deleted parents of the
+// given |item|.  Stops traversing if it encounters a non-deleted node, or
+// a node that was already listed in the |traversed| list.  Returns an error
+// (false) if a node along the traversal is in a conflict state.
+//
+// The result list is reversed before it is returned, so the resulting
+// traversal is in top to bottom order.  Also note that this function appends
+// to the result list without clearing it.
+bool Traversal::AddDeletedParents(
+    const std::set<int64>& ready_unsynced_set,
+    const syncable::Entry& item,
+    const syncable::Directory::Metahandles& traversed,
+    syncable::Directory::Metahandles* result) const {
+  syncable::Directory::Metahandles dependencies;
+  syncable::Id parent_id = item.GetParentId();
+
+  // Climb the tree adding entries leaf -> root.
+  while (!parent_id.IsRoot()) {
+    syncable::Entry parent(trans_, syncable::GET_BY_ID, parent_id);
+
+    if (!parent.good()) {
+      // This is valid because the parent could have gone away a long time ago
+      //
+      // Consider the case where a folder is server-unknown and locally
+      // deleted, and has a child that is server-known, deleted, and unsynced.
+      // The parent could be dropped from memory at any time, but its child
+      // needs to be committed first.
+      break;
+    }
+    int64 handle = parent.GetMetahandle();
+    if (!parent.GetIsUnsynced()) {
+      // In some rare cases, our parent can be both deleted and unsynced.
+      // (ie. the server-unknown parent case).
+      break;
+    }
+    if (!parent.GetIsDel()) {
+      // We're not intersted in non-deleted parents.
+      break;
+    }
+    if (std::find(traversed.begin(), traversed.end(), handle) !=
+        traversed.end()) {
+      // We've already added this parent (and therefore all of its parents).
+      // We can return early.
+      break;
+    }
+    if (IsEntryInConflict(parent)) {
+      // We ignore all entries that are children of a conflicing item.  Return
+      // false immediately to forget the traversal we've built up so far.
+      DVLOG(1) << "Parent was in conflict, omitting " << item;
+      return false;
+    }
+    TryAddItem(ready_unsynced_set, parent, &dependencies);
+    parent_id = parent.GetParentId();
+  }
+
+  // Reverse what we added to get the correct order.
+  result->insert(result->end(), dependencies.rbegin(), dependencies.rend());
+  return true;
+}
+
 bool Traversal::IsFull() const {
   return out_->size() >= max_entries_;
 }
@@ -428,80 +493,49 @@ void Traversal::AddCreatesAndMoves(
     out_->resize(max_entries_);
 }
 
-void Traversal::AddDeletes(
-    const std::set<int64>& ready_unsynced_set) {
-  set<syncable::Id> legal_delete_parents;
+void Traversal::AddDeletes(const std::set<int64>& ready_unsynced_set) {
+  syncable::Directory::Metahandles deletion_list;
 
   for (std::set<int64>::const_iterator iter = ready_unsynced_set.begin();
        !IsFull() && iter != ready_unsynced_set.end(); ++iter) {
     int64 metahandle = *iter;
+
     if (HaveItem(metahandle))
       continue;
+
+    if (std::find(deletion_list.begin(), deletion_list.end(), metahandle) !=
+        deletion_list.end()) {
+      continue;
+    }
 
     syncable::Entry entry(trans_, syncable::GET_BY_HANDLE,
                           metahandle);
 
     if (entry.GetIsDel()) {
-      syncable::Entry parent(trans_, syncable::GET_BY_ID,
-                             entry.GetParentId());
-      // If the parent is deleted and unsynced, then any children of that
-      // parent don't need to be added to the delete queue.
-      //
-      // Note: the parent could be synced if there was an update deleting a
-      // folder when we had a deleted all items in it.
-      // We may get more updates, or we may want to delete the entry.
-      if (parent.good() && parent.GetIsDel() && parent.GetIsUnsynced()) {
-        // However, if an entry is moved, these rules can apply differently.
-        //
-        // If the entry was moved, then the destination parent was deleted,
-        // then we'll miss it in the roll up. We have to add it in manually.
-        // TODO(chron): Unit test for move / delete cases:
-        // Case 1: Locally moved, then parent deleted
-        // Case 2: Server moved, then locally issue recursive delete.
-        if (entry.GetId().ServerKnows() &&
-            entry.GetParentId() != entry.GetServerParentId()) {
-          DVLOG(1) << "Inserting moved and deleted entry, will be missed by "
-                   << "delete roll." << entry.GetId();
-
-          AppendToTraversal(metahandle);
-        }
-
-        // Skip this entry since it's a child of a parent that will be
-        // deleted. The server will unroll the delete and delete the
-        // child as well.
-        continue;
-      }
-
-      legal_delete_parents.insert(entry.GetParentId());
-    }
-  }
-
-  // We could store all the potential entries with a particular parent during
-  // the above scan, but instead we rescan here. This is less efficient, but
-  // we're dropping memory alloc/dealloc in favor of linear scans of recently
-  // examined entries.
-  //
-  // Scan through the UnsyncedMetaHandles again. If we have a deleted
-  // entry, then check if the parent is in legal_delete_parents.
-  //
-  // Parent being in legal_delete_parents means for the child:
-  //   a recursive delete is not currently happening (no recent deletes in same
-  //     folder)
-  //   parent did expect at least one old deleted child
-  //   parent was not deleted
-  for (std::set<int64>::const_iterator iter = ready_unsynced_set.begin();
-       !IsFull() && iter != ready_unsynced_set.end(); ++iter) {
-    int64 metahandle = *iter;
-    if (HaveItem(metahandle))
-      continue;
-    syncable::Entry entry(trans_, syncable::GET_BY_HANDLE, metahandle);
-    if (entry.GetIsDel()) {
-      syncable::Id parent_id = entry.GetParentId();
-      if (legal_delete_parents.count(parent_id)) {
-        AppendToTraversal(metahandle);
+      syncable::Directory::Metahandles parents;
+      if (AddDeletedParents(
+              ready_unsynced_set, entry, deletion_list, &parents)) {
+        // Append parents and chilren in top to bottom order.
+        deletion_list.insert(deletion_list.end(),
+                             parents.begin(),
+                             parents.end());
+        deletion_list.push_back(metahandle);
       }
     }
+
+    if (deletion_list.size() + out_->size() > max_entries_)
+      break;
   }
+
+  // We've been gathering deletions in top to bottom order.  Now we reverse the
+  // order as we prepare the list.
+  std::reverse(deletion_list.begin(), deletion_list.end());
+  AppendManyToTraversal(deletion_list);
+
+  // It's possible that we overcommitted while trying to expand dependent
+  // items.  If so, truncate the set down to the allowed size.
+  if (out_->size() > max_entries_)
+    out_->resize(max_entries_);
 }
 
 void OrderCommitIds(
