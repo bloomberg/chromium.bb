@@ -594,6 +594,30 @@ uint32 GLES2Util::IndexToGLFaceTarget(int index) {
   return faces[index];
 }
 
+size_t GLES2Util::GLTargetToFaceIndex(uint32 target) {
+  switch (target) {
+    case GL_TEXTURE_2D:
+    case GL_TEXTURE_EXTERNAL_OES:
+    case GL_TEXTURE_RECTANGLE_ARB:
+      return 0;
+    case GL_TEXTURE_CUBE_MAP_POSITIVE_X:
+      return 0;
+    case GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
+      return 1;
+    case GL_TEXTURE_CUBE_MAP_POSITIVE_Y:
+      return 2;
+    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Y:
+      return 3;
+    case GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
+      return 4;
+    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
+      return 5;
+    default:
+      NOTREACHED();
+      return 0;
+  }
+}
+
 uint32 GLES2Util::GetPreferredGLReadPixelsFormat(uint32 internal_format) {
   switch (internal_format) {
     case GL_RGB16F_EXT:

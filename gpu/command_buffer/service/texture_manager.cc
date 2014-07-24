@@ -21,50 +21,6 @@
 namespace gpu {
 namespace gles2 {
 
-static size_t GLTargetToFaceIndex(GLenum target) {
-  switch (target) {
-    case GL_TEXTURE_2D:
-    case GL_TEXTURE_EXTERNAL_OES:
-    case GL_TEXTURE_RECTANGLE_ARB:
-      return 0;
-    case GL_TEXTURE_CUBE_MAP_POSITIVE_X:
-      return 0;
-    case GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
-      return 1;
-    case GL_TEXTURE_CUBE_MAP_POSITIVE_Y:
-      return 2;
-    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Y:
-      return 3;
-    case GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
-      return 4;
-    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
-      return 5;
-    default:
-      NOTREACHED();
-      return 0;
-  }
-}
-
-static size_t FaceIndexToGLTarget(size_t index) {
-  switch (index) {
-    case 0:
-      return GL_TEXTURE_CUBE_MAP_POSITIVE_X;
-    case 1:
-      return GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
-    case 2:
-      return GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
-    case 3:
-      return GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
-    case 4:
-      return GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
-    case 5:
-      return GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
-    default:
-      NOTREACHED();
-      return 0;
-  }
-}
-
 TextureManager::DestructionObserver::DestructionObserver() {}
 
 TextureManager::DestructionObserver::~DestructionObserver() {}
@@ -257,12 +213,13 @@ void Texture::AddToSignature(
   DCHECK(feature_info);
   DCHECK(signature);
   DCHECK_GE(level, 0);
-  DCHECK_LT(static_cast<size_t>(GLTargetToFaceIndex(target)),
+  size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
+  DCHECK_LT(static_cast<size_t>(face_index),
             level_infos_.size());
   DCHECK_LT(static_cast<size_t>(level),
-            level_infos_[GLTargetToFaceIndex(target)].size());
+            level_infos_[face_index].size());
   const Texture::LevelInfo& info =
-      level_infos_[GLTargetToFaceIndex(target)][level];
+      level_infos_[face_index][level];
   *signature += base::StringPrintf(
       "|Texture|target=%04x|level=%d|internal_format=%04x"
       "|width=%d|height=%d|depth=%d|border=%d|format=%04x|type=%04x"
@@ -293,7 +250,7 @@ bool Texture::MarkMipmapsGenerated(
     GLsizei height = info1.height;
     GLsizei depth = info1.depth;
     GLenum target = target_ == GL_TEXTURE_2D ? GL_TEXTURE_2D :
-                               FaceIndexToGLTarget(ii);
+                               GLES2Util::IndexToGLFaceTarget(ii);
     int num_mips =
         TextureManager::ComputeMipMapCount(target_, width, height, depth);
     for (int level = 1; level < num_mips; ++level) {
@@ -374,12 +331,13 @@ bool Texture::CanGenerateMipmaps(
 
 void Texture::SetLevelCleared(GLenum target, GLint level, bool cleared) {
   DCHECK_GE(level, 0);
-  DCHECK_LT(static_cast<size_t>(GLTargetToFaceIndex(target)),
+  size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
+  DCHECK_LT(static_cast<size_t>(face_index),
             level_infos_.size());
   DCHECK_LT(static_cast<size_t>(level),
-            level_infos_[GLTargetToFaceIndex(target)].size());
+            level_infos_[face_index].size());
   Texture::LevelInfo& info =
-      level_infos_[GLTargetToFaceIndex(target)][level];
+      level_infos_[face_index][level];
   UpdateMipCleared(&info, cleared);
   UpdateCleared();
 }
@@ -483,15 +441,16 @@ void Texture::SetLevelInfo(
     GLenum type,
     bool cleared) {
   DCHECK_GE(level, 0);
-  DCHECK_LT(static_cast<size_t>(GLTargetToFaceIndex(target)),
+  size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
+  DCHECK_LT(static_cast<size_t>(face_index),
             level_infos_.size());
   DCHECK_LT(static_cast<size_t>(level),
-            level_infos_[GLTargetToFaceIndex(target)].size());
+            level_infos_[face_index].size());
   DCHECK_GE(width, 0);
   DCHECK_GE(height, 0);
   DCHECK_GE(depth, 0);
   Texture::LevelInfo& info =
-      level_infos_[GLTargetToFaceIndex(target)][level];
+      level_infos_[face_index][level];
   info.target = target;
   info.level = level;
   info.internal_format = internal_format;
@@ -529,10 +488,10 @@ bool Texture::ValidForTexture(
     GLsizei width,
     GLsizei height,
     GLenum type) const {
-  size_t face_index = GLTargetToFaceIndex(target);
+  size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
   if (level >= 0 && face_index < level_infos_.size() &&
       static_cast<size_t>(level) < level_infos_[face_index].size()) {
-    const LevelInfo& info = level_infos_[GLTargetToFaceIndex(target)][level];
+    const LevelInfo& info = level_infos_[face_index][level];
     int32 right;
     int32 top;
     return SafeAddInt32(xoffset, width, &right) &&
@@ -550,10 +509,10 @@ bool Texture::GetLevelSize(
     GLint target, GLint level, GLsizei* width, GLsizei* height) const {
   DCHECK(width);
   DCHECK(height);
-  size_t face_index = GLTargetToFaceIndex(target);
+  size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
   if (level >= 0 && face_index < level_infos_.size() &&
       static_cast<size_t>(level) < level_infos_[face_index].size()) {
-    const LevelInfo& info = level_infos_[GLTargetToFaceIndex(target)][level];
+    const LevelInfo& info = level_infos_[face_index][level];
     if (info.target != 0) {
       *width = info.width;
       *height = info.height;
@@ -567,10 +526,10 @@ bool Texture::GetLevelType(
     GLint target, GLint level, GLenum* type, GLenum* internal_format) const {
   DCHECK(type);
   DCHECK(internal_format);
-  size_t face_index = GLTargetToFaceIndex(target);
+  size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
   if (level >= 0 && face_index < level_infos_.size() &&
       static_cast<size_t>(level) < level_infos_[face_index].size()) {
-    const LevelInfo& info = level_infos_[GLTargetToFaceIndex(target)][level];
+    const LevelInfo& info = level_infos_[face_index][level];
     if (info.target != 0) {
       *type = info.type;
       *internal_format = info.internal_format;
@@ -780,7 +739,7 @@ bool Texture::ClearRenderableLevels(GLES2Decoder* decoder) {
 }
 
 bool Texture::IsLevelCleared(GLenum target, GLint level) const {
-  size_t face_index = GLTargetToFaceIndex(target);
+  size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
   if (face_index >= level_infos_.size() ||
       level >= static_cast<GLint>(level_infos_[face_index].size())) {
     return true;
@@ -802,7 +761,7 @@ void Texture::InitTextureMaxAnisotropyIfNeeded(GLenum target) {
 bool Texture::ClearLevel(
     GLES2Decoder* decoder, GLenum target, GLint level) {
   DCHECK(decoder);
-  size_t face_index = GLTargetToFaceIndex(target);
+  size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
   if (face_index >= level_infos_.size() ||
       level >= static_cast<GLint>(level_infos_[face_index].size())) {
     return true;
@@ -836,12 +795,13 @@ void Texture::SetLevelImage(
     GLint level,
     gfx::GLImage* image) {
   DCHECK_GE(level, 0);
-  DCHECK_LT(static_cast<size_t>(GLTargetToFaceIndex(target)),
+  size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
+  DCHECK_LT(static_cast<size_t>(face_index),
             level_infos_.size());
   DCHECK_LT(static_cast<size_t>(level),
-            level_infos_[GLTargetToFaceIndex(target)].size());
+            level_infos_[face_index].size());
   Texture::LevelInfo& info =
-      level_infos_[GLTargetToFaceIndex(target)][level];
+      level_infos_[face_index][level];
   DCHECK_EQ(info.target, target);
   DCHECK_EQ(info.level, level);
   info.image = image;
@@ -855,15 +815,15 @@ gfx::GLImage* Texture::GetLevelImage(GLint target, GLint level) const {
     return NULL;
   }
 
-  size_t face_index = GLTargetToFaceIndex(target);
+  size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
   if (level >= 0 && face_index < level_infos_.size() &&
       static_cast<size_t>(level) < level_infos_[face_index].size()) {
-    const LevelInfo& info = level_infos_[GLTargetToFaceIndex(target)][level];
+    const LevelInfo& info = level_infos_[face_index][level];
     if (info.target != 0) {
       return info.image.get();
     }
   }
-  return 0;
+  return NULL;
 }
 
 void Texture::OnWillModifyPixels() {
