@@ -152,6 +152,12 @@ void SimpleFontData::platformInit()
     // m_avgCharWidth in order for text entry widgets to be sized correctly.
 #if OS(WIN)
     m_maxCharWidth = SkScalarRoundToInt(metrics.fMaxCharWidth);
+
+    // Older version of the DirectWrite API doesn't implement support for max
+    // char width. Fall back on a multiple of the ascent. This is entirely
+    // arbitrary but comes pretty close to the expected value in most cases.
+    if (m_maxCharWidth < 1)
+        m_maxCharWidth = ascent * 2;
 #else
     // FIXME: This seems incorrect and should probably use fMaxCharWidth as
     // the code path above.
