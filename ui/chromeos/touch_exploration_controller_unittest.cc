@@ -72,6 +72,24 @@ int Factorial(int n) {
   return n * Factorial(n - 1);
 }
 
+class MockTouchExplorationControllerDelegate
+    : public ui::TouchExplorationControllerDelegate {
+ public:
+  virtual void PlayVolumeAdjustSound() OVERRIDE {
+    ++num_times_adjust_sound_played_;
+  }
+  virtual void SetOutputLevel(int volume) OVERRIDE {
+    volume_changes_.push_back(volume);
+  }
+
+  const std::vector<float> VolumeChanges() { return volume_changes_; }
+  const size_t NumAdjustSounds() { return num_times_adjust_sound_played_; }
+
+ private:
+  std::vector<float> volume_changes_;
+  size_t num_times_adjust_sound_played_ = 0;
+};
+
 }  // namespace
 
 class TouchExplorationControllerTestApi {
@@ -110,10 +128,27 @@ class TouchExplorationControllerTestApi {
            touch_exploration_controller_->GESTURE_IN_PROGRESS;
   }
 
+  bool IsInSlideGestureStateForTesting() const {
+    return touch_exploration_controller_->state_ ==
+           touch_exploration_controller_->SLIDE_GESTURE;
+  }
+
+  gfx::Rect BoundsOfRootWindowInDIPForTesting() const {
+    return touch_exploration_controller_->root_window_->GetBoundsInScreen();
+  }
+
   // VLOGs should be suppressed in tests that generate a lot of logs,
   // for example permutations of nine touch events.
   void SuppressVLOGsForTesting(bool suppress) {
     touch_exploration_controller_->VLOG_on_ = !suppress;
+  }
+
+  float GetMaxDistanceFromEdge() const {
+    return touch_exploration_controller_->kMaxDistanceFromEdge;
+  }
+
+  float GetSlopDistanceFromEdge() const {
+    return touch_exploration_controller_->kSlopDistanceFromEdge;
   }
 
  private:
@@ -212,8 +247,9 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     if (!on && touch_exploration_controller_.get()) {
       touch_exploration_controller_.reset();
     } else if (on && !touch_exploration_controller_.get()) {
-      touch_exploration_controller_.reset(new TouchExplorationControllerTestApi(
-          new ui::TouchExplorationController(root_window())));
+      touch_exploration_controller_.reset(
+          new ui::TouchExplorationControllerTestApi(
+              new TouchExplorationController(root_window(), &delegate_)));
       touch_exploration_controller_->SetEventHandlerForTesting(
           &event_capturer_);
       cursor_client()->ShowCursor();
@@ -256,6 +292,22 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
         ->IsInGestureInProgressStateForTesting();
   }
 
+  bool IsInSlideGestureState() {
+    return touch_exploration_controller_->IsInSlideGestureStateForTesting();
+  }
+
+  gfx::Rect BoundsOfRootWindowInDIP() {
+    return touch_exploration_controller_->BoundsOfRootWindowInDIPForTesting();
+  }
+
+  float GetMaxDistanceFromEdge() const{
+    return touch_exploration_controller_->GetMaxDistanceFromEdge();
+  }
+
+  float GetSlopDistanceFromEdge() const{
+    return touch_exploration_controller_->GetSlopDistanceFromEdge();
+  }
+
   base::TimeDelta Now() {
     // This is the same as what EventTimeForNow() does, but here we do it
     // with our simulated clock.
@@ -267,6 +319,7 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
   ui::GestureDetector::Config gesture_detector_config_;
   // Owned by |generator_|.
   base::SimpleTestTickClock* simulated_clock_;
+  MockTouchExplorationControllerDelegate delegate_;
 
  private:
   EventCapturer event_capturer_;
@@ -508,6 +561,9 @@ TEST_F(TouchExplorationTest, TurnOnMidTouch) {
 // before the timer has fired, a mouse move should still be generated.
 TEST_F(TouchExplorationTest, TimerFiresLateDuringTouchExploration) {
   SwitchTouchExplorationMode(true);
+
+  // Make sure the touch is not in a corner of the screen.
+  generator_->MoveTouch(gfx::Point(100, 200));
 
   // Send a press, then add another finger after the double-tap timeout.
   generator_->PressTouchId(1);
@@ -1357,10 +1413,11 @@ TEST_F(TouchExplorationTest, FromGestureToPassthrough) {
   EXPECT_FALSE(IsInGestureInProgressState());
 
   float distance = gesture_detector_config_.touch_slop + 1;
-  ui::TouchEvent first_press(ui::ET_TOUCH_PRESSED, gfx::Point(0, 1), 0, Now());
+  ui::TouchEvent first_press(
+      ui::ET_TOUCH_PRESSED, gfx::Point(100, 200), 0, Now());
   generator_->Dispatch(&first_press);
   simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
-  gfx::Point second_location(distance, 1);
+  gfx::Point second_location(100 + distance, 200);
   generator_->MoveTouch(second_location);
   EXPECT_TRUE(IsInGestureInProgressState());
   EXPECT_FALSE(IsInTouchToMouseMode());
@@ -1386,6 +1443,195 @@ TEST_F(TouchExplorationTest, FromGestureToPassthrough) {
   ClearCapturedEvents();
   generator_->ReleaseTouchId(1);
   ASSERT_EQ(0U, captured_events.size());
+}
+
+TEST_F(TouchExplorationTest, EnterSlideGestureState) {
+  SwitchTouchExplorationMode(true);
+  EXPECT_FALSE(IsInTouchToMouseMode());
+  EXPECT_FALSE(IsInGestureInProgressState());
+
+  int window_right = BoundsOfRootWindowInDIP().right();
+  float distance = gesture_detector_config_.touch_slop + 1;
+  ui::TouchEvent first_press(
+      ui::ET_TOUCH_PRESSED, gfx::Point(window_right, 1), 0, Now());
+  gfx::Point second_location(window_right, 1 + distance / 2);
+  gfx::Point third_location(window_right, 1 + distance);
+
+  generator_->Dispatch(&first_press);
+  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+
+  // Since we haven't moved past slop yet, we should not be in slide gesture.
+  generator_->MoveTouch(second_location);
+  EXPECT_FALSE(IsInTouchToMouseMode());
+  EXPECT_FALSE(IsInGestureInProgressState());
+  EXPECT_FALSE(IsInSlideGestureState());
+  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+
+  // Once we are out of slop, we should be in slide gesture since we are along
+  // the edge of the screen.
+  generator_->MoveTouch(third_location);
+  EXPECT_FALSE(IsInGestureInProgressState());
+  EXPECT_TRUE(IsInSlideGestureState());
+  EXPECT_FALSE(IsInTouchToMouseMode());
+  const ScopedVector<ui::Event>& captured_events = GetCapturedEvents();
+  ASSERT_EQ(0U, captured_events.size());
+
+  // Since we are at the right edge of the screen, but the sound timer has not
+  // elapsed, there should have two sounds that fired and two volume
+  // changes (one for each movement).
+  size_t num_adjust_sounds = delegate_.NumAdjustSounds();
+  ASSERT_EQ(2U, num_adjust_sounds);
+  ASSERT_EQ(2U, delegate_.VolumeChanges().size());
+
+  // Exit out of slide gesture once touch is lifted, but not before even if the
+  // grace period is over.
+
+  AdvanceSimulatedTimePastPotentialTapDelay();
+  ASSERT_EQ(0U, captured_events.size());
+  EXPECT_FALSE(IsInTouchToMouseMode());
+  EXPECT_FALSE(IsInGestureInProgressState());
+  EXPECT_TRUE(IsInSlideGestureState());
+
+  generator_->ReleaseTouch();
+  ASSERT_EQ(0U, captured_events.size());
+  EXPECT_FALSE(IsInTouchToMouseMode());
+  EXPECT_FALSE(IsInGestureInProgressState());
+  EXPECT_FALSE(IsInSlideGestureState());
+}
+
+// If a press + move occurred outside the boundaries, but within the slop
+// boundaries and then moved into the boundaries of an edge, there still should
+// not be a slide gesture.
+TEST_F(TouchExplorationTest, AvoidEnteringSlideGesture) {
+  SwitchTouchExplorationMode(true);
+
+  gfx::Rect window = BoundsOfRootWindowInDIP();
+  float distance = gesture_detector_config_.touch_slop + 1;
+  ui::TouchEvent first_press(
+      ui::ET_TOUCH_PRESSED,
+      gfx::Point(window.right() - GetSlopDistanceFromEdge(), 1),
+      0,
+      Now());
+  gfx::Point out_of_slop(window.right() - GetSlopDistanceFromEdge() + distance,
+                         1);
+  gfx::Point into_boundaries(window.right() - GetMaxDistanceFromEdge() / 2, 1);
+
+  generator_->Dispatch(&first_press);
+  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+
+  generator_->MoveTouch(out_of_slop);
+  EXPECT_FALSE(IsInTouchToMouseMode());
+  EXPECT_TRUE(IsInGestureInProgressState());
+  EXPECT_FALSE(IsInSlideGestureState());
+  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+
+  // Since we did not start moving while in the boundaries, we should not be in
+  // slide gestures.
+  generator_->MoveTouch(into_boundaries);
+  EXPECT_TRUE(IsInGestureInProgressState());
+  EXPECT_FALSE(IsInSlideGestureState());
+  EXPECT_FALSE(IsInTouchToMouseMode());
+  const ScopedVector<ui::Event>& captured_events = GetCapturedEvents();
+  ASSERT_EQ(0U, captured_events.size());
+
+  generator_->ReleaseTouch();
+}
+
+// If the slide gesture begins within the boundaries and then moves
+// SlopDistanceFromEdge there should still be a sound change. If the finger
+// moves into the center screen, there should no longer be a sound change but it
+// should still be in slide gesture. If the finger moves back into the edges
+// without lifting, it should start changing sound again.
+TEST_F(TouchExplorationTest, TestingBoundaries) {
+  SwitchTouchExplorationMode(true);
+
+  gfx::Rect window = BoundsOfRootWindowInDIP();
+  gfx::Point initial_press(window.right() - GetMaxDistanceFromEdge() / 2, 1);
+  ui::TouchEvent first_press(ui::ET_TOUCH_PRESSED, initial_press, 0, Now());
+  gfx::Point touch_move(initial_press.x() + gesture_detector_config_.touch_slop,
+                        1);
+  gfx::Point into_slop_boundaries(
+      window.right() - GetSlopDistanceFromEdge() / 2, 1);
+  gfx::Point center_screen(window.right() / 2, window.bottom() / 2);
+
+  generator_->Dispatch(&first_press);
+  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+
+  generator_->MoveTouch(touch_move);
+  EXPECT_FALSE(IsInTouchToMouseMode());
+  EXPECT_FALSE(IsInGestureInProgressState());
+  EXPECT_FALSE(IsInSlideGestureState());
+  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+
+  // Move the touch into slop boundaries. It should stil be in slide gestures
+  // and adjust the volume.
+  generator_->MoveTouch(into_slop_boundaries);
+  EXPECT_FALSE(IsInGestureInProgressState());
+  EXPECT_TRUE(IsInSlideGestureState());
+  EXPECT_FALSE(IsInTouchToMouseMode());
+
+  // The sound is rate limiting so it only activates every 150ms.
+  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(200));
+
+  size_t num_adjust_sounds = delegate_.NumAdjustSounds();
+  ASSERT_EQ(2U, num_adjust_sounds);
+  ASSERT_EQ(2U, delegate_.VolumeChanges().size());
+
+  // Move the touch into the center of the window. It should still be in slide
+  // gestures, but there should not be anymore volume adjustments.
+  generator_->MoveTouch(center_screen);
+  EXPECT_FALSE(IsInGestureInProgressState());
+  EXPECT_TRUE(IsInSlideGestureState());
+  EXPECT_FALSE(IsInTouchToMouseMode());
+
+  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(200));
+  num_adjust_sounds = delegate_.NumAdjustSounds();
+  ASSERT_EQ(2U, num_adjust_sounds);
+  ASSERT_EQ(2U, delegate_.VolumeChanges().size());
+
+  // Move the touch back into slop edge distance and volume should be changing
+  // again.
+  generator_->MoveTouch(into_slop_boundaries);
+  EXPECT_FALSE(IsInGestureInProgressState());
+  EXPECT_TRUE(IsInSlideGestureState());
+  EXPECT_FALSE(IsInTouchToMouseMode());
+
+  generator_->MoveTouch(
+      gfx::Point(into_slop_boundaries.x() + gesture_detector_config_.touch_slop,
+                 into_slop_boundaries.y()));
+  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(200));
+
+  num_adjust_sounds = delegate_.NumAdjustSounds();
+  ASSERT_EQ(3U, num_adjust_sounds);
+  ASSERT_EQ(3U, delegate_.VolumeChanges().size());
+
+  const ScopedVector<ui::Event>& captured_events = GetCapturedEvents();
+  ASSERT_EQ(0U, captured_events.size());
+
+  generator_->ReleaseTouch();
+}
+
+// Even if the gesture starts within bounds, if it has not moved past slop
+// within the grace period, it should go to touch exploration.
+TEST_F(TouchExplorationTest, InBoundariesTouchExploration) {
+  SwitchTouchExplorationMode(true);
+
+  gfx::Rect window = BoundsOfRootWindowInDIP();
+  gfx::Point initial_press(window.right() - GetMaxDistanceFromEdge() / 2, 1);
+  ui::TouchEvent first_press(
+      ui::ET_TOUCH_PRESSED,
+      initial_press,
+      0,
+      Now());
+  generator_->Dispatch(&first_press);
+  EXPECT_FALSE(IsInGestureInProgressState());
+  EXPECT_FALSE(IsInSlideGestureState());
+  EXPECT_FALSE(IsInTouchToMouseMode());
+
+  AdvanceSimulatedTimePastTapDelay();
+  EXPECT_FALSE(IsInGestureInProgressState());
+  EXPECT_FALSE(IsInSlideGestureState());
+  EXPECT_TRUE(IsInTouchToMouseMode());
 }
 
 }  // namespace ui

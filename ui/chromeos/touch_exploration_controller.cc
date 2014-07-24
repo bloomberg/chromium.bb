@@ -4,7 +4,6 @@
 
 #include "ui/chromeos/touch_exploration_controller.h"
 
-#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
@@ -12,6 +11,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
 #include "ui/events/event_processor.h"
+#include "ui/gfx/geometry/rect.h"
 
 #define VLOG_STATE() if (VLOG_IS_ON(0)) VlogState(__func__)
 #define VLOG_EVENT(event) if (VLOG_IS_ON(0)) VlogEvent(event, __func__)
@@ -19,13 +19,19 @@
 namespace ui {
 
 namespace {
+
+// Delay between adjustment sounds.
+const base::TimeDelta kSoundDelay = base::TimeDelta::FromMilliseconds(150);
+
 // In ChromeOS, VKEY_LWIN is synonymous for the search key.
 const ui::KeyboardCode kChromeOSSearchKey = ui::VKEY_LWIN;
 }  // namespace
 
 TouchExplorationController::TouchExplorationController(
-    aura::Window* root_window)
+    aura::Window* root_window,
+    TouchExplorationControllerDelegate* delegate)
     : root_window_(root_window),
+      delegate_(delegate),
       state_(NO_FINGERS_DOWN),
       event_handler_for_testing_(NULL),
       gesture_provider_(this),
@@ -77,6 +83,15 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
     current_touch_ids_.push_back(touch_id);
     touch_locations_.insert(std::pair<int, gfx::PointF>(touch_id, location));
   } else if (type == ui::ET_TOUCH_RELEASED || type == ui::ET_TOUCH_CANCELLED) {
+    // In order to avoid accidentally double tapping when moving off the edge of
+    // the screen, the state will be rewritten to NoFingersDown.
+    TouchEvent touch_event = static_cast<const TouchEvent&>(event);
+    if (FindEdgesWithinBounds(touch_event.location(), kLeavingScreenEdge) !=
+        NO_EDGE) {
+      if (current_touch_ids_.size() == 0)
+        ResetToNoFingersDown();
+    }
+
     std::vector<int>::iterator it = std::find(
         current_touch_ids_.begin(), current_touch_ids_.end(), touch_id);
 
@@ -121,6 +136,8 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
       return InPassthrough(touch_event, rewritten_event);
     case WAIT_FOR_RELEASE:
       return InWaitForRelease(touch_event, rewritten_event);
+    case SLIDE_GESTURE:
+      return InSlideGesture(touch_event, rewritten_event);
   }
   NOTREACHED();
   return ui::EVENT_REWRITE_CONTINUE;
@@ -190,6 +207,14 @@ ui::EventRewriteStatus TouchExplorationController::InSingleTapPressed(
             << "\n Velocity of click: " << velocity
             << "\n Minimum swipe velocity: "
             << gesture_detector_config_.minimum_swipe_velocity;
+
+    // Change to slide gesture if the slide occurred at the right edge.
+    int edge = FindEdgesWithinBounds(event.location(), kMaxDistanceFromEdge);
+    if (edge & RIGHT_EDGE) {
+      state_ = SLIDE_GESTURE;
+      VLOG_STATE();
+      return InSlideGesture(event, rewritten_event);
+    }
 
     // If the user moves fast enough from the initial touch location, start
     // gesture detection. Otherwise, jump to the touch exploration mode early.
@@ -326,7 +351,7 @@ ui::EventRewriteStatus TouchExplorationController::InGestureInProgress(
     if (tap_timer_.IsRunning())
       tap_timer_.Stop();
     // Discard any pending gestures.
-    ignore_result(gesture_provider_.GetAndResetPendingGestures());
+    delete gesture_provider_.GetAndResetPendingGestures();
     state_ = TWO_TO_ONE_FINGER;
     last_two_to_one_.reset(new TouchEvent(event));
     rewritten_event->reset(new ui::TouchEvent(ui::ET_TOUCH_PRESSED,
@@ -497,6 +522,69 @@ ui::EventRewriteStatus TouchExplorationController::InWaitForRelease(
   return EVENT_REWRITE_DISCARD;
 }
 
+void TouchExplorationController::PlaySoundForTimer() {
+  delegate_->PlayVolumeAdjustSound();
+}
+
+ui::EventRewriteStatus TouchExplorationController::InSlideGesture(
+    const ui::TouchEvent& event,
+    scoped_ptr<ui::Event>* rewritten_event) {
+  // The timer should not fire when sliding.
+  if (tap_timer_.IsRunning())
+    tap_timer_.Stop();
+
+  ui::EventType type = event.type();
+  // If additional fingers are added before a swipe gesture has been registered,
+  // then wait until all fingers have been lifted.
+  if (type == ui::ET_TOUCH_PRESSED ||
+      event.touch_id() != initial_press_->touch_id()) {
+    if (sound_timer_.IsRunning())
+      sound_timer_.Stop();
+    // Discard any pending gestures.
+    delete gesture_provider_.GetAndResetPendingGestures();
+    state_ = WAIT_FOR_RELEASE;
+    return EVENT_REWRITE_DISCARD;
+  }
+
+  // Allows user to return to the edge to adjust the sound if they have left the
+  // boundaries.
+  int edge = FindEdgesWithinBounds(event.location(), kSlopDistanceFromEdge);
+  if (!(edge & RIGHT_EDGE) && (type != ui::ET_TOUCH_RELEASED)) {
+    if (sound_timer_.IsRunning()) {
+      sound_timer_.Stop();
+    }
+    return EVENT_REWRITE_DISCARD;
+  }
+
+  // This can occur if the user leaves the screen edge and then returns to it to
+  // continue adjusting the sound.
+  if (!sound_timer_.IsRunning()) {
+    sound_timer_.Start(FROM_HERE,
+                       kSoundDelay,
+                       this,
+                       &ui::TouchExplorationController::PlaySoundForTimer);
+    delegate_->PlayVolumeAdjustSound();
+  }
+
+  // There should not be more than one finger down.
+  DCHECK(current_touch_ids_.size() <= 1);
+  if (type == ui::ET_TOUCH_MOVED) {
+    gesture_provider_.OnTouchEvent(event);
+    gesture_provider_.OnTouchEventAck(false);
+  }
+  if (type == ui::ET_TOUCH_RELEASED || type == ui::ET_TOUCH_CANCELLED) {
+    gesture_provider_.OnTouchEvent(event);
+    gesture_provider_.OnTouchEventAck(false);
+    delete gesture_provider_.GetAndResetPendingGestures();
+    if (current_touch_ids_.size() == 0)
+      ResetToNoFingersDown();
+    return ui::EVENT_REWRITE_DISCARD;
+  }
+
+  ProcessGestureEvents();
+  return ui::EVENT_REWRITE_DISCARD;
+}
+
 void TouchExplorationController::OnTapTimerFired() {
   switch (state_) {
     case SINGLE_TAP_RELEASED:
@@ -509,7 +597,7 @@ void TouchExplorationController::OnTapTimerFired() {
     case SINGLE_TAP_PRESSED:
     case GESTURE_IN_PROGRESS:
       // Discard any pending gestures.
-      ignore_result(gesture_provider_.GetAndResetPendingGestures());
+      delete gesture_provider_.GetAndResetPendingGestures();
       EnterTouchToMouseMode();
       state_ = TOUCH_EXPLORATION;
       VLOG_STATE();
@@ -521,7 +609,7 @@ void TouchExplorationController::OnTapTimerFired() {
       CreateMouseMoveEvent(initial_press_->location(), initial_press_->flags());
   DispatchEvent(mouse_move.get());
   last_touch_exploration_.reset(new TouchEvent(*initial_press_));
- }
+}
 
 void TouchExplorationController::DispatchEvent(ui::Event* event) {
   if (event_handler_for_testing_) {
@@ -532,12 +620,14 @@ void TouchExplorationController::DispatchEvent(ui::Event* event) {
       root_window_->GetHost()->dispatcher()->OnEventFromSource(event);
 }
 
-void TouchExplorationController::OnGestureEvent(ui::GestureEvent* gesture) {
+void TouchExplorationController::OnGestureEvent(
+    ui::GestureEvent* gesture) {
   CHECK(gesture->IsGestureEvent());
+  ui::EventType type = gesture->type();
   VLOG(0) << " \n Gesture Triggered: " << gesture->name();
-  if (gesture->type() == ui::ET_GESTURE_SWIPE) {
-    if (tap_timer_.IsRunning())
-      tap_timer_.Stop();
+  if (type == ui::ET_GESTURE_SWIPE && state_ != SLIDE_GESTURE) {
+    VLOG(0) << "Swipe!";
+    delete gesture_provider_.GetAndResetPendingGestures();
     OnSwipeEvent(gesture);
     return;
   }
@@ -550,10 +640,60 @@ void TouchExplorationController::ProcessGestureEvents() {
     for (ScopedVector<GestureEvent>::iterator i = gestures->begin();
          i != gestures->end();
          ++i) {
-      OnGestureEvent(*i);
+      if (state_ == SLIDE_GESTURE)
+        SideSlideControl(*i);
+      else
+        OnGestureEvent(*i);
     }
   }
 }
+
+void TouchExplorationController::SideSlideControl(ui::GestureEvent* gesture) {
+  ui::EventType type = gesture->type();
+  if (!gesture->IsScrollGestureEvent())
+    return;
+
+  if (type == ET_GESTURE_SCROLL_BEGIN) {
+    delegate_->PlayVolumeAdjustSound();
+  }
+
+  if (type == ET_GESTURE_SCROLL_END) {
+    if (sound_timer_.IsRunning())
+      sound_timer_.Stop();
+    delegate_->PlayVolumeAdjustSound();
+  }
+
+  // If the user is in the corner of the right side of the screen, the volume
+  // will be automatically set to 100% or muted depending on which corner they
+  // are in. Otherwise, the user will be able to adjust the volume by sliding
+  // their finger along the right side of the screen. Volume is relative to
+  // where they are on the right side of the screen.
+  gfx::Point location = gesture->location();
+  int edge = FindEdgesWithinBounds(location, kSlopDistanceFromEdge);
+  if (!(edge & RIGHT_EDGE))
+    return;
+
+  if (edge & TOP_EDGE) {
+    delegate_->SetOutputLevel(100);
+    return;
+  }
+  if (edge & BOTTOM_EDGE) {
+    delegate_->SetOutputLevel(0);
+    return;
+  }
+
+  location = gesture->location();
+  root_window_->GetHost()->ConvertPointFromNativeScreen(&location);
+  float volume_adjust_height =
+      root_window_->bounds().height() - 2 * kMaxDistanceFromEdge;
+  float ratio = (location.y() - kMaxDistanceFromEdge) / volume_adjust_height;
+  float volume = 100 - 100 * ratio;
+  VLOG(0) << "\n Volume = " << volume << "\n Location = " << location.ToString()
+          << "\n Bounds = " << root_window_->bounds().right();
+
+  delegate_->SetOutputLevel(int(volume));
+}
+
 
 void TouchExplorationController::OnSwipeEvent(ui::GestureEvent* swipe_gesture) {
   // A swipe gesture contains details for the direction in which the swipe
@@ -572,6 +712,34 @@ void TouchExplorationController::OnSwipeEvent(ui::GestureEvent* swipe_gesture) {
     DispatchShiftSearchKeyEvent(ui::VKEY_DOWN);
     return;
   }
+}
+
+int TouchExplorationController::FindEdgesWithinBounds(gfx::Point point,
+                                                      float bounds) {
+  // Since GetBoundsInScreen is in DIPs but point is not, then point needs to be
+  // converted.
+  root_window_->GetHost()->ConvertPointFromNativeScreen(&point);
+  gfx::Rect window = root_window_->GetBoundsInScreen();
+
+  float left_edge_limit = window.x() + bounds;
+  float right_edge_limit = window.right() - bounds;
+  float top_edge_limit = window.y() + bounds;
+  float bottom_edge_limit = window.bottom() - bounds;
+
+  // Bitwise manipulation in order to determine where on the screen the point
+  // lies. If more than one bit is turned on, then it is a corner where the two
+  // bit/edges intersect. Otherwise, if no bits are turned on, the point must be
+  // in the center of the screen.
+  int result = NO_EDGE;
+  if (point.x() < left_edge_limit)
+    result |= LEFT_EDGE;
+  if (point.x() > right_edge_limit)
+    result |= RIGHT_EDGE;
+  if (point.y() < top_edge_limit)
+    result |= TOP_EDGE;
+  if (point.y() > bottom_edge_limit)
+    result |= BOTTOM_EDGE;
+  return result;
 }
 
 void TouchExplorationController::DispatchShiftSearchKeyEvent(
@@ -623,6 +791,9 @@ void TouchExplorationController::EnterTouchToMouseMode() {
 }
 
 void TouchExplorationController::ResetToNoFingersDown() {
+  ProcessGestureEvents();
+  if (sound_timer_.IsRunning())
+    sound_timer_.Stop();
   state_ = NO_FINGERS_DOWN;
   VLOG_STATE();
   if (tap_timer_.IsRunning())
@@ -694,6 +865,8 @@ const char* TouchExplorationController::EnumStateToString(State state) {
       return "PASSTHROUGH";
     case WAIT_FOR_RELEASE:
       return "WAIT_FOR_RELEASE";
+    case SLIDE_GESTURE:
+      return "SLIDE_GESTURE";
   }
   return "Not a state";
 }
