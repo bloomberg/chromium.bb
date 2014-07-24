@@ -616,7 +616,7 @@ function htmlForTestResults(test, revisions)
             + ' title="' + resultString + '. Click for more info."'
             + ' class="results ' + cell.className + '"'
             + ' onclick=\'showPopupForBuild(event,'
-            + ' "' + builder + '","' + i + '","' + test.test + '")\'>'
+            + ' "' + builder + '",' + i + ',"' + test.test + '")\'>'
             + (currentTime || (cell.hasResult ? '' : '?')) + '</td>';
     }
 
