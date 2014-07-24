@@ -53,6 +53,15 @@ class InfoBarDelegate;
 class ExtensionInstallPrompt
     : public base::SupportsWeakPtr<ExtensionInstallPrompt> {
  public:
+  // A setting to cause extension/app installs from the webstore skip the normal
+  // confirmation dialog. This should only be used in tests.
+  enum AutoConfirmForTests {
+    NONE,    // The prompt will show normally.
+    ACCEPT,  // The prompt will always accept.
+    CANCEL,  // The prompt will always cancel.
+  };
+  static AutoConfirmForTests g_auto_confirm_for_tests;
+
   // This enum is associated with Extensions.InstallPrompt_Type UMA histogram.
   // Do not modify existing values and add new values only to the end.
   enum PromptType {

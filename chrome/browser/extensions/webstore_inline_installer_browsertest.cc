@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -13,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
@@ -147,8 +145,8 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest,
 IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest,
                        ReinstallDisabledExtension) {
   // Install an extension via inline install, and confirm it is successful.
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
+  ExtensionInstallPrompt::g_auto_confirm_for_tests =
+      ExtensionInstallPrompt::ACCEPT;
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "install.html"));
   RunTest("runTest");
@@ -176,8 +174,8 @@ class WebstoreInlineInstallerListenerTest : public WebstoreInlineInstallerTest {
 
  protected:
   void RunTest(const std::string& file_name) {
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
+    ExtensionInstallPrompt::g_auto_confirm_for_tests =
+        ExtensionInstallPrompt::ACCEPT;
     ui_test_utils::NavigateToURL(browser(),
                                  GenerateTestServerUrl(kAppDomain, file_name));
     WebstoreInstallerTest::RunTest("runTest");

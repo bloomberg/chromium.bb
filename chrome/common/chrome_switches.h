@@ -42,7 +42,6 @@ extern const char kApp[];
 extern const char kAppListStartPageURL[];
 extern const char kAppsCheckoutURL[];
 extern const char kAppsGalleryDownloadURL[];
-extern const char kAppsGalleryInstallAutoConfirmForTests[];
 extern const char kAppsGalleryURL[];
 extern const char kAppsGalleryUpdateURL[];
 extern const char kAppModeAuthCode[];

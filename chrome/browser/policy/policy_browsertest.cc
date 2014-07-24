@@ -1751,8 +1751,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionAllowedTypes) {
 #define MAYBE_ExtensionInstallSources ExtensionInstallSources
 #endif
 IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallSources) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
+  ExtensionInstallPrompt::g_auto_confirm_for_tests =
+      ExtensionInstallPrompt::ACCEPT;
 
   const GURL install_source_url(URLRequestMockHTTPJob::GetMockUrl(
       base::FilePath(FILE_PATH_LITERAL("extensions/*"))));

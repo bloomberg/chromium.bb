@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -16,7 +15,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_prefs.h"
@@ -71,21 +69,19 @@ SimpleExtensionLoadPrompt::~SimpleExtensionLoadPrompt() {
 }
 
 void SimpleExtensionLoadPrompt::ShowPrompt() {
-  std::string confirm = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kAppsGalleryInstallAutoConfirmForTests);
-  if (confirm == "accept") {
-    InstallUIProceed();
-    return;
+  switch (ExtensionInstallPrompt::g_auto_confirm_for_tests) {
+    case ExtensionInstallPrompt::NONE:
+      install_ui_->ConfirmInstall(
+          this,
+          extension_.get(),
+          ExtensionInstallPrompt::GetDefaultShowDialogCallback());
+      break;
+    case ExtensionInstallPrompt::ACCEPT:
+      InstallUIProceed();
+      break;
+    case ExtensionInstallPrompt::CANCEL:
+      InstallUIAbort(false);
   }
-  if (confirm == "cancel") {
-    InstallUIAbort(false);
-    return;
-  }
-
-  install_ui_->ConfirmInstall(
-      this,
-      extension_.get(),
-      ExtensionInstallPrompt::GetDefaultShowDialogCallback());
 }
 
 void SimpleExtensionLoadPrompt::InstallUIProceed() {

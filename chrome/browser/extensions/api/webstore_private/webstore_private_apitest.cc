@@ -113,8 +113,6 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
     command_line->AppendSwitchASCII(
         switches::kAppsGalleryURL,
         "http://www.example.com/files/extensions/api_test");
-    command_line->AppendSwitchASCII(
-        switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
@@ -147,6 +145,9 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     ExtensionApiTest::SetUpOnMainThread();
+
+    ExtensionInstallPrompt::g_auto_confirm_for_tests =
+        ExtensionInstallPrompt::ACCEPT;
 
     // Grab references to the fake signin manager and token service.
     signin_manager_ =
@@ -299,8 +300,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallLocalized) {
 
 // Now test the case where the user cancels the confirmation dialog.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallCancelled) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
+  ExtensionInstallPrompt::g_auto_confirm_for_tests =
+      ExtensionInstallPrompt::CANCEL;
   ASSERT_TRUE(RunInstallTest("cancelled.html", "extension.crx"));
 }
 

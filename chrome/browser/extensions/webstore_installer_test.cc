@@ -137,11 +137,11 @@ void WebstoreInstallerTest::RunTestAsync(
 void WebstoreInstallerTest::AutoAcceptInstall() {
   // TODO(tmdiep): Refactor and remove the use of the command line flag.
   // See crbug.com/357774.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
+  ExtensionInstallPrompt::g_auto_confirm_for_tests =
+      ExtensionInstallPrompt::ACCEPT;
 }
 
 void WebstoreInstallerTest::AutoCancelInstall() {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
+  ExtensionInstallPrompt::g_auto_confirm_for_tests =
+      ExtensionInstallPrompt::CANCEL;
 }

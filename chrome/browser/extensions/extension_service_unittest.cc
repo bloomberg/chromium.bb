@@ -2796,9 +2796,8 @@ TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
   service()->set_show_extensions_prompts(true);
 
   // Start by canceling any install prompts.
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kAppsGalleryInstallAutoConfirmForTests,
-      "cancel");
+  ExtensionInstallPrompt::g_auto_confirm_for_tests =
+      ExtensionInstallPrompt::CANCEL;
 
   // The extension that has a plugin should not install.
   extensions::UnpackedInstaller::Create(service())
@@ -2821,9 +2820,8 @@ TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
   EXPECT_TRUE(registry()->enabled_extensions().Contains(good2));
 
   // The plugin extension should install if we accept the dialog.
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kAppsGalleryInstallAutoConfirmForTests,
-      "accept");
+  ExtensionInstallPrompt::g_auto_confirm_for_tests =
+      ExtensionInstallPrompt::ACCEPT;
 
   ExtensionErrorReporter::GetInstance()->ClearErrors();
   extensions::UnpackedInstaller::Create(service())
@@ -2846,9 +2844,8 @@ TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
 
   // We should be able to reload the extension without getting another prompt.
   loaded_.clear();
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kAppsGalleryInstallAutoConfirmForTests,
-      "cancel");
+  ExtensionInstallPrompt::g_auto_confirm_for_tests =
+      ExtensionInstallPrompt::CANCEL;
 
   service()->ReloadExtension(good1);
   base::RunLoop().RunUntilIdle();

@@ -81,19 +81,6 @@ const char kAppsCheckoutURL[]               = "apps-checkout-url";
 // Note: the URL must contain one '%s' for the extension ID.
 const char kAppsGalleryDownloadURL[]        = "apps-gallery-download-url";
 
-// A setting to cause extension/app installs from the webstore skip the normal
-// confirmation dialog. A value of 'accept' means to always act as if the dialog
-// was accepted, and 'cancel' means to always act as if the dialog was
-// cancelled.
-//
-// TODO (rdevlin.cronin): Remove this.
-// This is not a good use of a command-line flag, as it would be equally
-// effective as a global boolean. Additionally, this opens up a dangerous way
-// for attackers to append a commandline flag and circumvent all user action for
-// installing an extension.
-const char kAppsGalleryInstallAutoConfirmForTests[] =
-    "apps-gallery-install-auto-confirm-for-tests";
-
 // The URL to use for the gallery link in the app launcher.
 const char kAppsGalleryURL[]                = "apps-gallery-url";
 

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_util.h"
@@ -16,7 +15,6 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -290,8 +288,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
   SetEnabled(true, false, keys::kGestureNeededForEscalationError);
 
   // Expect an error that user cancelled the dialog.
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
+  ExtensionInstallPrompt::g_auto_confirm_for_tests =
+      ExtensionInstallPrompt::CANCEL;
   SetEnabled(true, true, keys::kUserDidNotReEnableError);
 
   // This should succeed when user accepts dialog.  We must wait for the process
@@ -301,8 +299,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_EXTENSION_HOST_CREATED,
       content::NotificationService::AllSources());
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
+  ExtensionInstallPrompt::g_auto_confirm_for_tests =
+      ExtensionInstallPrompt::ACCEPT;
   SetEnabled(true, true, std::string());
   observer.Wait();
 
