@@ -1085,6 +1085,31 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
   request(0)->handle()->Reset();
 }
 
+// Sockets should not be leaked if CancelRequest() is called in between
+// SetSocket() being called on the ClientSocketHandle and InvokeUserCallback().
+TEST_F(WebSocketTransportClientSocketPoolTest, CancelRequestReclaimsSockets) {
+  host_resolver_->set_synchronous_mode(true);
+  MockTransportClientSocketFactory::ClientSocketType socket_types[] = {
+      MockTransportClientSocketFactory::MOCK_TRIGGERABLE_CLIENT_SOCKET,
+      MockTransportClientSocketFactory::MOCK_CLIENT_SOCKET};
+
+  client_socket_factory_.set_client_socket_types(socket_types,
+                                                 arraysize(socket_types));
+
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+
+  base::Closure connect_trigger =
+      client_socket_factory_.WaitForTriggerableSocketCreation();
+
+  connect_trigger.Run();  // Calls InvokeUserCallbackLater()
+
+  request(0)->handle()->Reset();  // calls CancelRequest()
+
+  // We should now be able to create a new connection without blocking on the
+  // endpoint lock.
+  EXPECT_EQ(OK, StartRequest("a", kDefaultPriority));
+}
+
 }  // namespace
 
 }  // namespace net

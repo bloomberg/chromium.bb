@@ -360,8 +360,12 @@ void WebSocketTransportClientSocketPool::RequestSockets(
 void WebSocketTransportClientSocketPool::CancelRequest(
     const std::string& group_name,
     ClientSocketHandle* handle) {
+  DCHECK(!handle->is_initialized());
   if (DeleteStalledRequest(handle))
     return;
+  scoped_ptr<StreamSocket> socket = handle->PassSocket();
+  if (socket)
+    ReleaseSocket(handle->group_name(), socket.Pass(), handle->id());
   if (!DeleteJob(handle))
     pending_callbacks_.erase(handle);
   if (!ReachedMaxSocketsLimit() && !stalled_request_queue_.empty())
