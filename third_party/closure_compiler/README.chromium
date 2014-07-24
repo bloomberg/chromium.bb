@@ -1,0 +1,17 @@
+Name: Closure compiler
+Short Name: closure-compiler
+URL: https://developers.google.com/closure/compiler/
+Version: v20140508-220-g8b4b812
+Date: 2014/06/20 12:20
+Revision: g8b4b812
+License: Apache 2.0
+License File: LICENSE
+Security Critical: no
+
+Description:
+The Closure Compiler provides warnings for illegal JavaScript and warnings for
+potentially dangerous operations, helping you to produce JavaScript that is less
+buggy and easier to maintain.
+
+Local modifications:
+
