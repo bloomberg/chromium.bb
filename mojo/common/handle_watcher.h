@@ -27,6 +27,8 @@ class HandleWatcherTest;
 class MOJO_COMMON_EXPORT HandleWatcher {
  public:
   HandleWatcher();
+
+  // The destructor implicitly stops listening. See Stop() for details.
   ~HandleWatcher();
 
   // Starts listening for |handle|. This implicitly invokes Stop(). In other
@@ -41,7 +43,8 @@ class MOJO_COMMON_EXPORT HandleWatcher {
              MojoDeadline deadline,
              const base::Callback<void(MojoResult)>& callback);
 
-  // Stops listening. Does nothing if not in the process of listening.
+  // Stops listening. Does nothing if not in the process of listening. Blocks
+  // until no longer listening on the handle.
   void Stop();
 
  private:

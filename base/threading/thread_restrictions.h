@@ -61,6 +61,11 @@ class InFlightIO;
 namespace media {
 class AudioOutputController;
 }
+namespace mojo {
+namespace common {
+class WatcherThreadManager;
+}
+}
 namespace net {
 class FileStreamPosix;
 class FileStreamWin;
@@ -186,6 +191,7 @@ class BASE_EXPORT ThreadRestrictions {
   friend class ::ScopedAllowWaitForLegacyWebViewApi;
   friend class ::TestingAutomationProvider;
   friend class cc::CompletionEvent;
+  friend class mojo::common::WatcherThreadManager;
   friend class remoting::AutoThread;
   friend class MessagePumpDefault;
   friend class SequencedWorkerPool;

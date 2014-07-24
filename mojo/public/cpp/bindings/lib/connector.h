@@ -85,6 +85,9 @@ class Connector : public MessageReceiver {
 
   void NotifyError();
 
+  // Cancels any calls made to |waiter_|.
+  void CancelWait();
+
   ErrorHandler* error_handler_;
   const MojoAsyncWaiter* waiter_;
 

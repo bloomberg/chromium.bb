@@ -157,7 +157,6 @@ void MessagePumpMojo::DoInternalWork(const RunState& run_state, bool block) {
     switch (result) {
       case MOJO_RESULT_CANCELLED:
       case MOJO_RESULT_FAILED_PRECONDITION:
-      case MOJO_RESULT_INVALID_ARGUMENT:
         RemoveFirstInvalidHandle(wait_state);
         break;
       case MOJO_RESULT_DEADLINE_EXCEEDED:
@@ -190,9 +189,13 @@ void MessagePumpMojo::RemoveFirstInvalidHandle(const WaitState& wait_state) {
   for (size_t i = 1; i < wait_state.handles.size(); ++i) {
     const MojoResult result =
         Wait(wait_state.handles[i], wait_state.wait_signals[i], 0);
-    if (result == MOJO_RESULT_INVALID_ARGUMENT ||
-        result == MOJO_RESULT_FAILED_PRECONDITION ||
-        result == MOJO_RESULT_CANCELLED) {
+    if (result == MOJO_RESULT_INVALID_ARGUMENT) {
+      // We should never have an invalid argument. If we do it indicates
+      // RemoveHandler() was not invoked and is likely to cause problems else
+      // where in the stack if we ignore it.
+      CHECK(false);
+    } else if (result == MOJO_RESULT_FAILED_PRECONDITION ||
+               result == MOJO_RESULT_CANCELLED) {
       // Remove the handle first, this way if OnHandleError() tries to remove
       // the handle our iterator isn't invalidated.
       DCHECK(handlers_.find(wait_state.handles[i]) != handlers_.end());

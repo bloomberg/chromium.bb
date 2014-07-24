@@ -34,19 +34,16 @@ Connector::~Connector() {
   if (destroyed_flag_)
     *destroyed_flag_ = true;
 
-  if (async_wait_id_)
-    waiter_->CancelWait(async_wait_id_);
+  CancelWait();
 }
 
 void Connector::CloseMessagePipe() {
+  CancelWait();
   Close(message_pipe_.Pass());
 }
 
 ScopedMessagePipeHandle Connector::PassMessagePipe() {
-  if (async_wait_id_) {
-    waiter_->CancelWait(async_wait_id_);
-    async_wait_id_ = 0;
-  }
+  CancelWait();
   return message_pipe_.Pass();
 }
 
@@ -136,6 +133,7 @@ void Connector::OnHandleReady(MojoResult result) {
 }
 
 void Connector::WaitToReadMore() {
+  MOJO_DCHECK(!async_wait_id_);
   async_wait_id_ = waiter_->AsyncWait(message_pipe_.get().value(),
                                       MOJO_HANDLE_SIGNAL_READABLE,
                                       MOJO_DEADLINE_INDEFINITE,
@@ -188,6 +186,14 @@ void Connector::ReadAllAvailableMessages() {
       break;
     }
   }
+}
+
+void Connector::CancelWait() {
+  if (!async_wait_id_)
+    return;
+
+  waiter_->CancelWait(async_wait_id_);
+  async_wait_id_ = 0;
 }
 
 void Connector::NotifyError() {

@@ -14,7 +14,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "mojo/common/message_pump_mojo.h"
 #include "mojo/common/message_pump_mojo_handler.h"
@@ -68,7 +70,10 @@ class WatcherBackend : public MessagePumpMojoHandler {
   virtual ~WatcherBackend();
 
   void StartWatching(const WatchData& data);
-  void StopWatching(WatcherID watcher_id);
+
+  // Cancels a previously schedule request to start a watch. When done signals
+  // |event|.
+  void StopWatching(WatcherID watcher_id, base::WaitableEvent* event);
 
  private:
   typedef std::map<Handle, WatchData> HandleToWatchDataMap;
@@ -107,15 +112,16 @@ void WatcherBackend::StartWatching(const WatchData& data) {
                                 data.deadline);
 }
 
-void WatcherBackend::StopWatching(WatcherID watcher_id) {
+void WatcherBackend::StopWatching(WatcherID watcher_id,
+                                  base::WaitableEvent* event) {
   // Because of the thread hop it is entirely possible to get here and not
   // have a valid handle registered for |watcher_id|.
   Handle handle;
-  if (!GetMojoHandleByWatcherID(watcher_id, &handle))
-    return;
-
-  handle_to_data_.erase(handle);
-  message_pump_mojo->RemoveHandler(handle);
+  if (GetMojoHandleByWatcherID(watcher_id, &handle)) {
+    handle_to_data_.erase(handle);
+    message_pump_mojo->RemoveHandler(handle);
+  }
+  event->Signal();
 }
 
 void WatcherBackend::RemoveAndNotify(const Handle& handle,
@@ -153,6 +159,8 @@ void WatcherBackend::OnHandleError(const Handle& handle, MojoResult result) {
 
 // WatcherThreadManager manages the background thread that listens for handles
 // to be ready. All requests are handled by WatcherBackend.
+}  // namespace
+
 class WatcherThreadManager {
  public:
   ~WatcherThreadManager();
@@ -208,7 +216,7 @@ WatcherID WatcherThreadManager::StartWatching(
   data.message_loop = base::MessageLoopProxy::current();
   DCHECK_NE(static_cast<base::MessageLoopProxy*>(NULL),
             data.message_loop.get());
-  // We outlive |thread_|, so it's safe to use Unretained() here.
+  // We own |thread_|, so it's safe to use Unretained() here.
   thread_.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&WatcherBackend::StartWatching,
@@ -218,12 +226,18 @@ WatcherID WatcherThreadManager::StartWatching(
 }
 
 void WatcherThreadManager::StopWatching(WatcherID watcher_id) {
-  // We outlive |thread_|, so it's safe to use Unretained() here.
+  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  base::WaitableEvent event(true, false);
+  // We own |thread_|, so it's safe to use Unretained() here.
   thread_.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&WatcherBackend::StopWatching,
                  base::Unretained(&backend_),
-                 watcher_id));
+                 watcher_id,
+                 &event));
+
+  // We need to block until the handle is actually removed.
+  event.Wait();
 }
 
 WatcherThreadManager::WatcherThreadManager()
@@ -232,8 +246,6 @@ WatcherThreadManager::WatcherThreadManager()
   thread_options.message_pump_factory = base::Bind(&CreateMessagePumpMojo);
   thread_.StartWithOptions(thread_options);
 }
-
-}  // namespace
 
 // HandleWatcher::State --------------------------------------------------------
 
