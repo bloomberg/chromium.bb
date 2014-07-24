@@ -2764,18 +2764,13 @@
         # chrome://translate-internals
         'defines': ['CLD2_DATA_SOURCE=<(cld2_data_source)'],
       }],
-      ['cld2_data_source=="static"', {
+      ['cld_version==2 and cld2_data_source=="static"', {
         'defines': ['CLD_DATA_FROM_STATIC'],
-      }, {
-        # CLD2 headers use this #define to control the visibility of dynamic
-        # mode functions. We use these functions, so we must define here for
-        # our #includes to work right.
-        'defines': ['CLD2_DYNAMIC_MODE'],
       }],
-      ['cld2_data_source=="standalone"', {
+      ['cld_version==2 and cld2_data_source=="standalone"', {
         'defines': ['CLD_DATA_FROM_STANDALONE'],
       }],
-      ['cld2_data_source=="component"', {
+      ['cld_version==2 and cld2_data_source=="component"', {
         'defines': ['CLD_DATA_FROM_COMPONENT'],
       }],
       ['enable_printing==1', {
