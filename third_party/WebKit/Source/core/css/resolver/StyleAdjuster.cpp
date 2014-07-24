@@ -166,9 +166,6 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
 {
     ASSERT(parentStyle);
 
-    // Cache our original display.
-    style->setOriginalDisplay(style->display());
-
     if (style->display() != NONE) {
         if (e)
             adjustStyleForTagName(style, parentStyle, *e);

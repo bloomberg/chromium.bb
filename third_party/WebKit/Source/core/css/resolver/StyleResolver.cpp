@@ -669,6 +669,9 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         addContentAttrValuesToFeatures(state.contentAttrValues(), m_features);
     }
 
+    // Cache our original display.
+    state.style()->setOriginalDisplay(state.style()->display());
+
     adjustRenderStyle(state, element);
 
     // FIXME: The CSSWG wants to specify that the effects of animations are applied before
@@ -839,6 +842,9 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
 
         addContentAttrValuesToFeatures(state.contentAttrValues(), m_features);
     }
+
+    // Cache our original display.
+    state.style()->setOriginalDisplay(state.style()->display());
 
     // FIXME: Passing 0 as the Element* introduces a lot of complexity
     // in the adjustRenderStyle code.
