@@ -544,10 +544,9 @@ TEST_F(ImmersiveFullscreenControllerTest, MouseEventsVerticalDisplayLayout) {
   EXPECT_TRUE(top_edge_hover_timer_running());
 
   // TODO(oshima): Provide a test API to handle mouse warp more easily.
-  if (!MouseCursorEventFilter::IsMouseWarpInNativeCoordsEnabled()) {
-    EXPECT_NE(y_top_edge,
-              aura::Env::GetInstance()->last_mouse_location().y());
-  }
+#if defined(USE_OZONE)
+  EXPECT_NE(y_top_edge, aura::Env::GetInstance()->last_mouse_location().y());
+#endif
 
   // The timer should continue running if the user overshoots the top edge
   // a bit.

@@ -26,8 +26,6 @@ class SharedDisplayEdgeIndicator;
 class ASH_EXPORT MouseCursorEventFilter : public ui::EventHandler,
                                           public DisplayController::Observer {
  public:
-  static bool IsMouseWarpInNativeCoordsEnabled();
-
   enum MouseWarpMode {
     WARP_ALWAYS,   // Always warp the mouse when possible.
     WARP_DRAG,     // Used when dragging a window. Top and bottom
@@ -71,16 +69,25 @@ class ASH_EXPORT MouseCursorEventFilter : public ui::EventHandler,
 
   FRIEND_TEST_ALL_PREFIXES(DragWindowResizerTest, WarpMousePointer);
 
+  // Moves the cursor to the point inside the root that is closest to
+  // the point_in_screen, which is outside of the root window.
+  static void MoveCursorTo(aura::Window* root,
+                           const gfx::Point& point_in_screen);
+
   // Warps the mouse cursor to an alternate root window when the
   // mouse location in |event|, hits the edge of the event target's root and
   // the mouse cursor is considered to be in an alternate display.
   // Returns true if/ the cursor was moved.
   bool WarpMouseCursorIfNecessary(ui::MouseEvent* event);
 
-  bool WarpMouseCursorInNativeCoords(const gfx::Point& point_in_native,
-                                     const gfx::Point& point_in_screen);
+#if defined(USE_OZONE)
   bool WarpMouseCursorInScreenCoords(aura::Window* target_root,
                                      const gfx::Point& point_in_screen);
+
+#else
+  bool WarpMouseCursorInNativeCoords(const gfx::Point& point_in_native,
+                                     const gfx::Point& point_in_screen);
+#endif
 
   // Update the edge/indicator bounds based on the current
   // display configuration.

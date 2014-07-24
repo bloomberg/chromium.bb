@@ -88,6 +88,7 @@
       'display/mirror_window_controller.h',
       'display/mouse_cursor_event_filter.cc',
       'display/mouse_cursor_event_filter.h',
+      'display/mouse_cursor_event_filter_ozone.cc',
       'display/projecting_observer_chromeos.cc',
       'display/projecting_observer_chromeos.h',
       'display/resolution_notification_controller.cc',

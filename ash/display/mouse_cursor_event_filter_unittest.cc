@@ -134,12 +134,10 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentSizeDisplays) {
             aura::Env::GetInstance()->last_mouse_location().ToString());
 }
 
+#if defined(USE_OZONE)
 // Verifies if the mouse pointer correctly moves between displays with
 // different scale factors.
 TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplays) {
-  if (MouseCursorEventFilter::IsMouseWarpInNativeCoordsEnabled())
-    return;
-
   if (!SupportsMultipleDisplays())
     return;
 
@@ -181,14 +179,13 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplays) {
   EXPECT_EQ("246,123",
             aura::Env::GetInstance()->last_mouse_location().ToString());
 }
+#endif
 
+#if !defined(USE_OZONE)
 // Verifies if the mouse pointer correctly moves between displays with
 // different scale factors. In native coords mode, there is no
 // difference between drag and move.
 TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplaysInNative) {
-  if (!MouseCursorEventFilter::IsMouseWarpInNativeCoordsEnabled())
-    return;
-
   if (!SupportsMultipleDisplays())
     return;
 
@@ -217,11 +214,10 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplaysInNative) {
   EXPECT_EQ("498,123",
             aura::Env::GetInstance()->last_mouse_location().ToString());
 }
+#endif
 
+#if defined(USE_OZONE)
 TEST_F(MouseCursorEventFilterTest, DoNotWarpTwice) {
-  if (MouseCursorEventFilter::IsMouseWarpInNativeCoordsEnabled())
-    return;
-
   if (!SupportsMultipleDisplays())
     return;
 
@@ -248,6 +244,7 @@ TEST_F(MouseCursorEventFilterTest, DoNotWarpTwice) {
   EXPECT_EQ("498,11",  // by 2px.
             aura::Env::GetInstance()->last_mouse_location().ToString());
 }
+#endif
 
 // Verifies if MouseCursorEventFilter::set_mouse_warp_mode() works as expected.
 TEST_F(MouseCursorEventFilterTest, SetMouseWarpModeFlag) {

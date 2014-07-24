@@ -108,6 +108,12 @@ component("ash") {
       "touch/touch_transformer_controller.h",
     ]
   }
+
+  if (!use_ozone) {
+    sources -= [
+      "display/mouse_cursor_event_filter_ozone.cc",
+    ]
+  }
 }
 
 component("ash_with_content") {
