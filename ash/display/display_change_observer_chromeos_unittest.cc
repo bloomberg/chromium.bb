@@ -82,4 +82,29 @@ TEST_F(DisplayChangeObserverTest, GetDisplayModeList) {
   EXPECT_EQ(0u, display_modes.size());
 }
 
+TEST_F(DisplayChangeObserverTest, FindDeviceScaleFactor) {
+  // 19.5" 1600x900
+  EXPECT_EQ(1.0f, DisplayChangeObserver::FindDeviceScaleFactor(94.14f));
+
+  // 21.5" 1920x1080
+  EXPECT_EQ(1.0f, DisplayChangeObserver::FindDeviceScaleFactor(102.46f));
+
+  // 12.1" 1280x800
+  EXPECT_EQ(1.0f, DisplayChangeObserver::FindDeviceScaleFactor(124.75f));
+
+  // 13.3" 1920x1080
+  EXPECT_EQ(1.25f, DisplayChangeObserver::FindDeviceScaleFactor(157.35f));
+
+  // 14" 1920x1080
+  EXPECT_EQ(1.25f, DisplayChangeObserver::FindDeviceScaleFactor(165.63f));
+
+  // 12.85" 2560x1700
+  EXPECT_EQ(2.0f, DisplayChangeObserver::FindDeviceScaleFactor(239.15f));
+
+  // Erroneous values should still work.
+  EXPECT_EQ(1.0f, DisplayChangeObserver::FindDeviceScaleFactor(-100.0f));
+  EXPECT_EQ(1.0f, DisplayChangeObserver::FindDeviceScaleFactor(0.0f));
+  EXPECT_EQ(2.0f, DisplayChangeObserver::FindDeviceScaleFactor(10000.0f));
+}
+
 }  // namespace ash

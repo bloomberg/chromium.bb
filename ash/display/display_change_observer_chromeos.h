@@ -40,6 +40,9 @@ class DisplayChangeObserver : public ui::DisplayConfigurator::StateController,
   // Overriden from ShellObserver:
   virtual void OnAppTerminating() OVERRIDE;
 
+  // Exposed for testing.
+  ASH_EXPORT static float FindDeviceScaleFactor(float dpi);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DisplayChangeObserver);
 };

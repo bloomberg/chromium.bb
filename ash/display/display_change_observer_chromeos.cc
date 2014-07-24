@@ -30,9 +30,18 @@ using ui::DisplayConfigurator;
 
 namespace {
 
-// The DPI threshold to detect high density screen.
-// Higher DPI than this will use device_scale_factor=2.
-const unsigned int kHighDensityDPIThreshold = 170;
+// The DPI threshold to determine the device scale factor.
+// DPI higher than |dpi| will use |device_scale_factor|.
+struct DeviceScaleFactorDPIThreshold {
+  float dpi;
+  float device_scale_factor;
+};
+
+const DeviceScaleFactorDPIThreshold kThresholdTable[] = {
+  {180.0f, 2.0f},
+  {150.0f, 1.25f},
+  {0.0f, 1.0f},
+};
 
 // 1 inch in mm.
 const float kInchInMm = 25.4f;
@@ -134,10 +143,10 @@ void DisplayChangeObserver::OnDisplayModeChanged(
       continue;
 
     float device_scale_factor = 1.0f;
-    if (!ui::IsDisplaySizeBlackListed(state.display->physical_size()) &&
-        (kInchInMm * mode_info->size().width() /
-         state.display->physical_size().width()) > kHighDensityDPIThreshold) {
-      device_scale_factor = 2.0f;
+    if (!ui::IsDisplaySizeBlackListed(state.display->physical_size())) {
+      device_scale_factor =
+          FindDeviceScaleFactor((kInchInMm * mode_info->size().width() /
+                                 state.display->physical_size().width()));
     }
     gfx::Rect display_bounds(state.display->origin(), mode_info->size());
 
@@ -182,6 +191,15 @@ void DisplayChangeObserver::OnAppTerminating() {
   // process starts. crbug.com/177014.
   Shell::GetInstance()->display_configurator()->PrepareForExit();
 #endif
+}
+
+// static
+float DisplayChangeObserver::FindDeviceScaleFactor(float dpi) {
+  for (size_t i = 0; i < arraysize(kThresholdTable); ++i) {
+    if (dpi > kThresholdTable[i].dpi)
+      return kThresholdTable[i].device_scale_factor;
+  }
+  return 1.0f;
 }
 
 }  // namespace ash
