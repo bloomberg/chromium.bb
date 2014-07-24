@@ -17,7 +17,7 @@ namespace {
 // ASan/TSan/MSan instrument each memory access. This may slow the execution
 // down significantly.
 #if defined(MEMORY_SANITIZER)
-static const int kTimeoutMultiplier = 3;
+static const int kTimeoutMultiplier = 4;
 #elif defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || \
     defined(SYZYASAN)
 static const int kTimeoutMultiplier = 2;
