@@ -46,6 +46,9 @@
             'content_browser',
             'content_common',
           ],
+          'export_dependent_settings': [
+            'content_common',
+          ],
           'conditions': [
             ['OS != "ios"', {
               'dependencies': [
@@ -70,6 +73,9 @@
           'dependencies': [
             'content_common',
           ],
+          'export_dependent_settings': [
+            'content_common',
+          ],
           'conditions': [
             ['chrome_multiple_dll', {
               'defines': [
@@ -86,6 +92,9 @@
             'content_app.gypi',
           ],
           'dependencies': [
+            'content_common',
+          ],
+          'export_dependent_settings': [
             'content_common',
           ],
           'conditions': [
@@ -120,6 +129,9 @@
           'dependencies': [
             'content_common',
             'content_resources.gyp:content_resources',
+          ],
+          'export_dependent_settings': [
+            'content_common',
           ],
           'conditions': [
             ['java_bridge==1', {
