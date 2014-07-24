@@ -291,7 +291,6 @@
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/base.gyp:run_all_unittests',
         '../testing/gtest.gyp:gtest',
         'mojo_common_test_support',
         'mojo_system_impl',
@@ -315,6 +314,7 @@
         'system/raw_channel_unittest.cc',
         'system/raw_shared_buffer_unittest.cc',
         'system/remote_message_pipe_unittest.cc',
+        'system/run_all_unittests.cc',
         'system/shared_buffer_dispatcher_unittest.cc',
         'system/simple_dispatcher_unittest.cc',
         'system/test_utils.cc',
