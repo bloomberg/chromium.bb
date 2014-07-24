@@ -564,7 +564,7 @@ bool AXNodeObject::isNativeImage() const
     if (isHTMLImageElement(*node))
         return true;
 
-    if (isHTMLAppletElement(*node) || isHTMLEmbedElement(*node) || isHTMLObjectElement(*node))
+    if (isHTMLPlugInElement(*node))
         return true;
 
     if (isHTMLInputElement(*node))
