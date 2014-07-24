@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
+#include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -12,7 +13,41 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 
-typedef InProcessBrowserTest BrowserViewTest;
+class BrowserViewTest : public InProcessBrowserTest {
+ public:
+  BrowserViewTest() : InProcessBrowserTest(), devtools_(NULL) {}
+
+ protected:
+  BrowserView* browser_view() {
+    return BrowserView::GetBrowserViewForBrowser(browser());
+  }
+
+  views::WebView* devtools_web_view() {
+    return browser_view()->GetDevToolsWebViewForTest();
+  }
+
+  views::WebView* contents_web_view() {
+    return browser_view()->GetContentsWebViewForTest();
+  }
+
+  void OpenDevToolsWindow(bool docked) {
+    devtools_ =
+        DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), docked);
+  }
+
+  void CloseDevToolsWindow() {
+    DevToolsWindowTesting::CloseDevToolsWindowSync(devtools_);
+  }
+
+  void SetDevToolsBounds(const gfx::Rect& bounds) {
+    DevToolsWindowTesting::Get(devtools_)->SetInspectedPageBounds(bounds);
+  }
+
+  DevToolsWindow* devtools_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserViewTest);
+};
 
 namespace {
 
@@ -67,4 +102,67 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, CloseWithTabsStartWithActive) {
       browser2->tab_strip_model()->GetWebContentsAt(0),
       browser2->tab_strip_model()->GetWebContentsAt(1));
   BrowserView::GetBrowserViewForBrowser(browser2)->GetWidget()->CloseNow();
+}
+
+// Verifies that page and devtools WebViews are being correctly layed out
+// when DevTools is opened/closed/updated/undocked.
+IN_PROC_BROWSER_TEST_F(BrowserViewTest, DevToolsUpdatesBrowserWindow) {
+  gfx::Rect full_bounds =
+      browser_view()->GetContentsContainerForTest()->GetLocalBounds();
+  gfx::Rect small_bounds(10, 20, 30, 40);
+
+  browser_view()->UpdateDevTools();
+  EXPECT_FALSE(devtools_web_view()->web_contents());
+  EXPECT_EQ(full_bounds, devtools_web_view()->bounds());
+  EXPECT_EQ(full_bounds, contents_web_view()->bounds());
+
+  // Docked.
+  OpenDevToolsWindow(true);
+  EXPECT_TRUE(devtools_web_view()->web_contents());
+  EXPECT_EQ(full_bounds, devtools_web_view()->bounds());
+
+  SetDevToolsBounds(small_bounds);
+  EXPECT_TRUE(devtools_web_view()->web_contents());
+  EXPECT_EQ(full_bounds, devtools_web_view()->bounds());
+  EXPECT_EQ(small_bounds, contents_web_view()->bounds());
+
+  browser_view()->UpdateDevTools();
+  EXPECT_TRUE(devtools_web_view()->web_contents());
+  EXPECT_EQ(full_bounds, devtools_web_view()->bounds());
+  EXPECT_EQ(small_bounds, contents_web_view()->bounds());
+
+  CloseDevToolsWindow();
+  EXPECT_FALSE(devtools_web_view()->web_contents());
+  EXPECT_EQ(full_bounds, devtools_web_view()->bounds());
+  EXPECT_EQ(full_bounds, contents_web_view()->bounds());
+
+  browser_view()->UpdateDevTools();
+  EXPECT_FALSE(devtools_web_view()->web_contents());
+  EXPECT_EQ(full_bounds, devtools_web_view()->bounds());
+  EXPECT_EQ(full_bounds, contents_web_view()->bounds());
+
+  // Undocked.
+  OpenDevToolsWindow(false);
+  EXPECT_TRUE(devtools_web_view()->web_contents());
+  EXPECT_EQ(full_bounds, devtools_web_view()->bounds());
+
+  SetDevToolsBounds(small_bounds);
+  EXPECT_TRUE(devtools_web_view()->web_contents());
+  EXPECT_EQ(full_bounds, devtools_web_view()->bounds());
+  EXPECT_EQ(small_bounds, contents_web_view()->bounds());
+
+  browser_view()->UpdateDevTools();
+  EXPECT_TRUE(devtools_web_view()->web_contents());
+  EXPECT_EQ(full_bounds, devtools_web_view()->bounds());
+  EXPECT_EQ(small_bounds, contents_web_view()->bounds());
+
+  CloseDevToolsWindow();
+  EXPECT_FALSE(devtools_web_view()->web_contents());
+  EXPECT_EQ(full_bounds, devtools_web_view()->bounds());
+  EXPECT_EQ(full_bounds, contents_web_view()->bounds());
+
+  browser_view()->UpdateDevTools();
+  EXPECT_FALSE(devtools_web_view()->web_contents());
+  EXPECT_EQ(full_bounds, devtools_web_view()->bounds());
+  EXPECT_EQ(full_bounds, contents_web_view()->bounds());
 }
