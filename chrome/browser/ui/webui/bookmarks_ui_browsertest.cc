@@ -58,14 +58,19 @@ IN_PROC_BROWSER_TEST_F(BookmarksTest, CommandOpensBookmarksTab) {
   AssertIsBookmarksPage(browser()->tab_strip_model()->GetActiveWebContents());
 }
 
-// TODO(linux_aura) http://crbug.com/163931
+// TODO(linux_aura): http://crbug.com/163931
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
-#define MAYBE_CommandAgainGoesBackToBookmarksTab DISABLED_CommandAgainGoesBackToBookmarksTab
+#define MAYBE_CommandAgainGoesBackToBookmarksTab \
+  DISABLED_CommandAgainGoesBackToBookmarksTab
+// Flaky on Mac: http://crbug.com/87200
+#elif defined(OS_MACOSX)
+#define MAYBE_CommandAgainGoesBackToBookmarksTab \
+  DISABLED_CommandAgainGoesBackToBookmarksTab
 #else
-#define MAYBE_CommandAgainGoesBackToBookmarksTab CommandAgainGoesBackToBookmarksTab
+#define MAYBE_CommandAgainGoesBackToBookmarksTab \
+  CommandAgainGoesBackToBookmarksTab
 #endif
 
-// If this flakes on Mac, use: http://crbug.com/87200
 IN_PROC_BROWSER_TEST_F(BookmarksTest,
                        MAYBE_CommandAgainGoesBackToBookmarksTab) {
   ui_test_utils::NavigateToURL(
