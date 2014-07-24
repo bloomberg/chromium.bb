@@ -158,7 +158,8 @@ PassRefPtrWillBeRawPtr<ServiceWorker> ServiceWorker::from(ScriptPromiseResolver*
 {
     RefPtrWillBeRawPtr<ServiceWorker> serviceWorker = ServiceWorker::from(resolver->scriptState()->executionContext(), worker);
     ScriptState::Scope scope(resolver->scriptState());
-    serviceWorker->waitOnPromise(resolver->promise());
+    if (serviceWorker->m_proxyState == Initial)
+        serviceWorker->waitOnPromise(resolver->promise());
     return serviceWorker;
 }
 
