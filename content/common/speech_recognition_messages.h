@@ -70,11 +70,18 @@ IPC_MESSAGE_CONTROL1(SpeechRecognitionHostMsg_StartRequest,
                      SpeechRecognitionHostMsg_StartRequest_Params)
 
 // Requests the speech recognition service to abort speech recognition on
-// behalf of the given |render_view_id|. If speech recognition is not happening
-// or is happening on behalf of some other render view, this call does nothing.
+// behalf of the given |render_view_id| and |request_id|. If there are no
+// sessions associated with the |request_id| in the render view, this call
+// does nothing.
 IPC_MESSAGE_CONTROL2(SpeechRecognitionHostMsg_AbortRequest,
                      int /* render_view_id */,
                      int /* request_id */)
+
+// Requests the speech recognition service to abort all speech recognitions on
+// behalf of the given |render_view_id|. If speech recognition is not happening
+// or is happening on behalf of some other render view, this call does nothing.
+IPC_MESSAGE_CONTROL1(SpeechRecognitionHostMsg_AbortAllRequests,
+                     int /* render_view_id */)
 
 // Requests the speech recognition service to stop audio capture on behalf of
 // the given |render_view_id|. Any audio recorded so far will be fed to the

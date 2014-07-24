@@ -138,6 +138,10 @@ class MediaStreamDevicesController : public PermissionBubbleRequest {
   bool IsDeviceAudioCaptureRequestedAndAllowed() const;
   bool IsDeviceVideoCaptureRequestedAndAllowed() const;
 
+  // Returns true if media capture device is allowed to be used. This could
+  // return false when tab goes to background.
+  bool IsCaptureDeviceRequestAllowed() const;
+
   content::WebContents* web_contents_;
 
   // The owner of this class needs to make sure it does not outlive the profile.

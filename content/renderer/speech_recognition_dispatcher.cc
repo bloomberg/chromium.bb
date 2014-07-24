@@ -35,6 +35,11 @@ SpeechRecognitionDispatcher::SpeechRecognitionDispatcher(
 SpeechRecognitionDispatcher::~SpeechRecognitionDispatcher() {
 }
 
+void SpeechRecognitionDispatcher::AbortAllRecognitions() {
+  Send(new SpeechRecognitionHostMsg_AbortAllRequests(
+      routing_id()));
+}
+
 bool SpeechRecognitionDispatcher::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;

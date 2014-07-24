@@ -72,6 +72,7 @@ class CONTENT_EXPORT SpeechRecognitionDispatcherHost
       bool filter_profanities);
   void OnAbortRequest(int render_view_id, int request_id);
   void OnStopCaptureRequest(int render_view_id, int request_id);
+  void OnAbortAllRequests(int render_view_id);
 
   int render_process_id_;
   scoped_refptr<net::URLRequestContextGetter> context_getter_;

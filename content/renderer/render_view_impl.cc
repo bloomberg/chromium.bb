@@ -3563,6 +3563,8 @@ void RenderViewImpl::OnWasHidden() {
 #if defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
   RenderThreadImpl::current()->video_capture_impl_manager()->
       SuspendDevices(true);
+  if (speech_recognition_dispatcher_)
+    speech_recognition_dispatcher_->AbortAllRecognitions();
 #endif
 
   if (webview())
