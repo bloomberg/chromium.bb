@@ -291,10 +291,8 @@ NetworkPortalDetectorImpl::CaptivePortalState
 NetworkPortalDetectorImpl::GetCaptivePortalState(const std::string& guid) {
   DCHECK(CalledOnValidThread());
   CaptivePortalStateMap::const_iterator it = portal_state_map_.find(guid);
-  if (it == portal_state_map_.end()) {
-    VLOG(1) << "CaptivePortalState not found for: " << guid;
+  if (it == portal_state_map_.end())
     return CaptivePortalState();
-  }
   return it->second;
 }
 
