@@ -27,7 +27,11 @@ using std::vector;
 using syncer::ModelType;
 
 // The separator used when formatting IDs.
-const char kIdSeparator[] = "/";
+//
+// We chose the underscore character because it doesn't conflict with the
+// special characters used by base/base64.h's encoding, which is also used in
+// the construction of some IDs.
+const char kIdSeparator[] = "_";
 
 namespace fake_server {
 

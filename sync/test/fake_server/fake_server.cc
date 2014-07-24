@@ -336,13 +336,7 @@ string FakeServer::CommitEntity(
         client_entity,
         entities_[client_entity.id_string()]);
   } else if (client_entity.has_client_defined_unique_tag()) {
-    if (entities_.find(client_entity.id_string()) != entities_.end()) {
-      entity = UniqueClientEntity::CreateUpdatedVersion(
-          client_entity,
-          entities_[client_entity.id_string()]);
-    } else {
-      entity = UniqueClientEntity::CreateNew(client_entity);
-    }
+    entity = UniqueClientEntity::Create(client_entity);
   } else {
     // TODO(pvalenzuela): Validate entity's parent ID.
     if (entities_.find(client_entity.id_string()) != entities_.end()) {

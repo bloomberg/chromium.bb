@@ -19,14 +19,12 @@ class UniqueClientEntity : public FakeServerEntity {
  public:
   virtual ~UniqueClientEntity();
 
-  // Factory function for UniqueClientEntity.
-  static FakeServerEntity* CreateNew(const sync_pb::SyncEntity& client_entity);
+  // Factory function for creating a UniqueClientEntity.
+  static FakeServerEntity* Create(const sync_pb::SyncEntity& client_entity);
 
-  // Factory function for creating a new version of an existing
-  // UniqueClientEntity.
-  static FakeServerEntity* CreateUpdatedVersion(
-      const sync_pb::SyncEntity& client_entity,
-      FakeServerEntity* current_server_entity);
+  // Derives an ID from a unique client tagged entity.
+  static std::string EffectiveIdForClientTaggedEntity(
+      const sync_pb::SyncEntity& entity);
 
   // FakeServerEntity implementation.
   virtual std::string GetParentId() const OVERRIDE;
