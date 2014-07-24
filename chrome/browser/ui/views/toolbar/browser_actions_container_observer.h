@@ -9,7 +9,6 @@ class BrowserActionsContainerObserver {
  public:
   virtual void OnBrowserActionsContainerAnimationEnded() {}
   virtual void OnBrowserActionsContainerDestroyed() {}
-  virtual void OnBrowserActionDragDone() {}
 
  protected:
   virtual ~BrowserActionsContainerObserver() {}

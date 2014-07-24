@@ -100,10 +100,6 @@ class ToolbarView : public views::AccessiblePaneView,
   // Shows the extension's browser action, if present.
   void ShowBrowserActionPopup(const extensions::Extension* extension);
 
-  // Shows the app (wrench) menu. |for_drop| indicates whether the menu is
-  // opened for a drag-and-drop operation.
-  void ShowAppMenu(bool for_drop);
-
   // Accessors.
   Browser* browser() const { return browser_; }
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }

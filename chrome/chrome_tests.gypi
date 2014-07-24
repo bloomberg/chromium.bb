@@ -143,7 +143,6 @@
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h',
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest_win.cc',
         'browser/ui/views/toolbar/toolbar_button_test.cc',
-        'browser/ui/views/toolbar/toolbar_view_interactive_uitest.cc',
         'test/base/interactive_test_utils.cc',
         'test/base/interactive_test_utils.h',
         'test/base/interactive_test_utils_aura.cc',

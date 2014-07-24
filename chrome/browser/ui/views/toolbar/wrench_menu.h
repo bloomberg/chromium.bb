@@ -37,16 +37,10 @@ class WrenchMenu : public views::MenuDelegate,
                    public BaseBookmarkModelObserver,
                    public content::NotificationObserver {
  public:
-  enum RunFlags {
-    // TODO: remove |USE_NEW_MENU| and |SUPPORTS_NEW_SEPARATORS|.
-    USE_NEW_MENU            = 1 << 0,
-    SUPPORTS_NEW_SEPARATORS = 1 << 1,
-
-    // Indicates that the menu was opened for a drag-and-drop operation.
-    FOR_DROP                = 1 << 2,
-  };
-
-  WrenchMenu(Browser* browser, int run_flags);
+  // TODO: remove |use_new_menu| and |supports_new_separators|.
+  WrenchMenu(Browser* browser,
+             bool use_new_menu,
+             bool supports_new_separators);
   virtual ~WrenchMenu();
 
   void Init(ui::MenuModel* model);
@@ -54,14 +48,10 @@ class WrenchMenu : public views::MenuDelegate,
   // Shows the menu relative to the specified view.
   void RunMenu(views::MenuButton* host);
 
-  // Closes the menu if it is open, otherwise does nothing.
-  void CloseMenu();
-
   // Whether the menu is currently visible to the user.
   bool IsShowing();
 
-  bool use_new_menu() const { return (run_flags_ & USE_NEW_MENU) != 0; }
-  bool for_drop() const { return (run_flags_ & FOR_DROP) != 0; }
+  bool use_new_menu() const { return use_new_menu_; }
 
   void AddObserver(WrenchMenuObserver* observer);
   void RemoveObserver(WrenchMenuObserver* observer);
@@ -120,10 +110,6 @@ class WrenchMenu : public views::MenuDelegate,
 
   typedef std::pair<ui::MenuModel*,int> Entry;
   typedef std::map<int,Entry> CommandIDToEntry;
-
-  bool supports_new_separators() const {
-    return (run_flags_ & SUPPORTS_NEW_SEPARATORS) != 0;
-  }
 
   // Populates |parent| with all the child menus in |model|. Recursively invokes
   // |PopulateMenu| for any submenu.
@@ -191,8 +177,9 @@ class WrenchMenu : public views::MenuDelegate,
 
   content::NotificationRegistrar registrar_;
 
-  // The bit mask of RunFlags.
-  const int run_flags_;
+  const bool use_new_menu_;
+
+  const bool supports_new_separators_;
 
   ObserverList<WrenchMenuObserver> observer_list_;
 

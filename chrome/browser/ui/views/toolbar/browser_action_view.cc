@@ -158,10 +158,6 @@ void BrowserActionButton::ViewHierarchyChanged(
   MenuButton::ViewHierarchyChanged(details);
 }
 
-void BrowserActionButton::OnDragDone() {
-  delegate_->OnBrowserActionViewDragDone();
-}
-
 bool BrowserActionButton::CanHandleAccelerators() const {
   // View::CanHandleAccelerators() checks to see if the view is visible before
   // allowing it to process accelerators. This is not appropriate for browser

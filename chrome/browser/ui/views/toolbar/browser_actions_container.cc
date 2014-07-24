@@ -265,15 +265,6 @@ bool BrowserActionsContainer::ShownInsideMenu() const {
   return in_overflow_mode();
 }
 
-void BrowserActionsContainer::OnBrowserActionViewDragDone() {
-  // We notify here as well as in OnPerformDrop because the dragged view is
-  // removed in OnPerformDrop, so it will never get its OnDragDone() call.
-  // TODO(devlin): we should see about fixing that.
-  FOR_EACH_OBSERVER(BrowserActionsContainerObserver,
-                    observers_,
-                    OnBrowserActionDragDone());
-}
-
 void BrowserActionsContainer::AddObserver(
     BrowserActionsContainerObserver* observer) {
   observers_.AddObserver(observer);
@@ -382,15 +373,18 @@ void BrowserActionsContainer::Layout() {
 bool BrowserActionsContainer::GetDropFormats(
     int* formats,
     std::set<OSExchangeData::CustomFormat>* custom_formats) {
-  return BrowserActionDragData::GetDropFormats(custom_formats);
+  custom_formats->insert(BrowserActionDragData::GetBrowserActionCustomFormat());
+
+  return true;
 }
 
 bool BrowserActionsContainer::AreDropTypesRequired() {
-  return BrowserActionDragData::AreDropTypesRequired();
+  return true;
 }
 
 bool BrowserActionsContainer::CanDrop(const OSExchangeData& data) {
-  return BrowserActionDragData::CanDrop(data, profile_);
+  BrowserActionDragData drop_data;
+  return drop_data.Read(data) ? drop_data.IsFromProfile(profile_) : false;
 }
 
 void BrowserActionsContainer::OnDragEntered(
@@ -505,9 +499,6 @@ int BrowserActionsContainer::OnPerformDrop(
       browser_action_views_[data.index()]->button()->extension(), i);
 
   OnDragExited();  // Perform clean up after dragging.
-  FOR_EACH_OBSERVER(BrowserActionsContainerObserver,
-                    observers_,
-                    OnBrowserActionDragDone());
   return ui::DragDropTypes::DRAG_MOVE;
 }
 

@@ -15,7 +15,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/search.h"
@@ -741,12 +740,8 @@ void WrenchMenuModel::AddGlobalErrorMenuItems() {
 void WrenchMenuModel::CreateExtensionToolbarOverflowMenu() {
 #if defined(TOOLKIT_VIEWS)
   AddItem(IDC_EXTENSIONS_OVERFLOW_MENU, base::string16());
-  // We only add the separator if there are > 0 items to show in the overflow.
-  extensions::ExtensionToolbarModel* toolbar_model =
-      extensions::ExtensionToolbarModel::Get(browser_->profile());
-  // A count of -1 means all actions are visible.
-  if (toolbar_model->GetVisibleIconCount() != -1)
-    AddSeparator(ui::UPPER_SEPARATOR);
+  // TODO(devlin): Add the separator only if there are > 0 icons to show.
+  AddSeparator(ui::UPPER_SEPARATOR);
 #endif  // defined(TOOLKIT_VIEWS)
 }
 
