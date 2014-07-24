@@ -19,55 +19,59 @@ namespace {
 
 // Apps/extensions explicitly whitelisted for use in public sessions.
 const char* kPublicSessionWhitelist[] = {
-  // Public sessions in general:
-  "cbkkbcmdlboombapidmoeolnmdacpkch",  // Chrome RDP
-  "djflhoibgkdhkhhcedjiklpkjnoahfmg",  // User Agent Switcher
-  "iabmpiboiopbgfabjmgeedhcmjenhbla",  // VNC Viewer
+    // Public sessions in general:
+    "cbkkbcmdlboombapidmoeolnmdacpkch",  // Chrome RDP
+    "djflhoibgkdhkhhcedjiklpkjnoahfmg",  // User Agent Switcher
+    "iabmpiboiopbgfabjmgeedhcmjenhbla",  // VNC Viewer
 
-  // Retail mode:
-  "ehcabepphndocfmgbdkbjibfodelmpbb",  // Angry Birds demo
-  "kgimkbnclbekdkabkpjhpakhhalfanda",  // Bejeweled demo
-  "joodangkbfjnajiiifokapkpmhfnpleo",  // Calculator
-  "fpgfohogebplgnamlafljlcidjedbdeb",  // Calendar demo
-  "hfhhnacclhffhdffklopdkcgdhifgngh",  // Camera
-  "cdjikkcakjcdjemakobkmijmikhkegcj",  // Chrome Remote Desktop demo
-  "jkoildpomkimndcphjpffmephmcmkfhn",  // Chromebook Demo App
-  "ielkookhdphmgbipcfmafkaiagademfp",  // Custom bookmarks
-  "kogjlbfgggambihdjcpijgcbmenblimd",  // Custom bookmarks
-  "ogbkmlkceflgpilgbmbcfbifckpkfacf",  // Custom bookmarks
-  "pbbbjjecobhljkkcenlakfnkmkfkfamd",  // Custom bookmarks
-  "jkbfjmnjcdmhlfpephomoiipbhcoiffb",  // Custom bookmarks
-  "dgmblbpgafgcgpkoiilhjifindhinmai",  // Custom bookmarks
-  "iggnealjakkgfofealilhkkclnbnfnmo",  // Custom bookmarks
-  "lplkobnahgbopmpkdapaihnnojkphahc",  // Custom bookmarks
-  "lejnflfhjpcannpaghnahbedlabpmhoh",  // Custom bookmarks
-  "ebkhfdfghngbimnpgelagnfacdafhaba",  // Deezer demo
-  "npnjdccdffhdndcbeappiamcehbhjibf",  // Docs.app demo
-  "iddohohhpmajlkbejjjcfednjnhlnenk",  // Evernote demo
-  "bjdhhokmhgelphffoafoejjmlfblpdha",  // Gmail demo
-  "mdhnphfgagkpdhndljccoackjjhghlif",  // Google Drive demo
-  "dondgdlndnpianbklfnehgdhkickdjck",  // Google Keep demo
-  "fgjnkhlabjcaajddbaenilcmpcidahll",  // Google+ demo
-  "ifpkhncdnjfipfjlhfidljjffdgklanh",  // Google+ Photos demo
-  "cgmlfbhkckbedohgdepgbkflommbfkep",  // Hangouts.app demo
-  "edhhaiphkklkcfcbnlbpbiepchnkgkpn",  // Helper.extension demo
-  "diehajhcjifpahdplfdkhiboknagmfii",  // Kindle demo
-  "nhpmmldpbfjofkipjaieeomhnmcgihfm",  // Menu.app demo
-  "onbhgdmifjebcabplolilidlpgeknifi",  // Music.app demo
-  "kkkbcoabfhgekpnddfkaphobhinociem",  // Netflix demo
-  "adlphlfdhhjenpgimjochcpelbijkich",  // New York Times demo
-  "cgefhjmlaifaamhhoojmpcnihlbddeki",  // Pandora demo
-  "kpjjigggmcjinapdeipapdcnmnjealll",  // Pixlr demo
-  "aleodiobpjillgfjdkblghiiaegggmcm",  // Quickoffice demo
-  "nifkmgcdokhkjghdlgflonppnefddien",  // Sheets demo
-  "hdmobeajeoanbanmdlabnbnlopepchip",  // Slides demo
-  "dgohlccohkojjgkkfholmobjjoledflp",  // Spotify demo
-  "dhmdaeekeihmajjnmichlhiffffdbpde",  // Store.app demo
-  "jeabmjjifhfcejonjjhccaeigpnnjaak",  // TweetDeck demo
-  "pbdihpaifchmclcmkfdgffnnpfbobefh",  // YouTube demo
+    // Libraries:
+    "aclofikceldphonlfmghmimkodjdmhck",  // Ancoris login component
+    "eilbnahdgoddoedakcmfkcgfoegeloil",  // Ancoris proxy component
 
-  // Testing extensions:
-  "ongnjlefhnoajpbodoldndkbkdgfomlp",  // Show Managed Storage
+    // Retail mode:
+    "ehcabepphndocfmgbdkbjibfodelmpbb",  // Angry Birds demo
+    "kgimkbnclbekdkabkpjhpakhhalfanda",  // Bejeweled demo
+    "joodangkbfjnajiiifokapkpmhfnpleo",  // Calculator
+    "fpgfohogebplgnamlafljlcidjedbdeb",  // Calendar demo
+    "hfhhnacclhffhdffklopdkcgdhifgngh",  // Camera
+    "cdjikkcakjcdjemakobkmijmikhkegcj",  // Chrome Remote Desktop demo
+    "jkoildpomkimndcphjpffmephmcmkfhn",  // Chromebook Demo App
+    "ielkookhdphmgbipcfmafkaiagademfp",  // Custom bookmarks
+    "kogjlbfgggambihdjcpijgcbmenblimd",  // Custom bookmarks
+    "ogbkmlkceflgpilgbmbcfbifckpkfacf",  // Custom bookmarks
+    "pbbbjjecobhljkkcenlakfnkmkfkfamd",  // Custom bookmarks
+    "jkbfjmnjcdmhlfpephomoiipbhcoiffb",  // Custom bookmarks
+    "dgmblbpgafgcgpkoiilhjifindhinmai",  // Custom bookmarks
+    "iggnealjakkgfofealilhkkclnbnfnmo",  // Custom bookmarks
+    "lplkobnahgbopmpkdapaihnnojkphahc",  // Custom bookmarks
+    "lejnflfhjpcannpaghnahbedlabpmhoh",  // Custom bookmarks
+    "ebkhfdfghngbimnpgelagnfacdafhaba",  // Deezer demo
+    "npnjdccdffhdndcbeappiamcehbhjibf",  // Docs.app demo
+    "iddohohhpmajlkbejjjcfednjnhlnenk",  // Evernote demo
+    "bjdhhokmhgelphffoafoejjmlfblpdha",  // Gmail demo
+    "mdhnphfgagkpdhndljccoackjjhghlif",  // Google Drive demo
+    "dondgdlndnpianbklfnehgdhkickdjck",  // Google Keep demo
+    "fgjnkhlabjcaajddbaenilcmpcidahll",  // Google+ demo
+    "ifpkhncdnjfipfjlhfidljjffdgklanh",  // Google+ Photos demo
+    "cgmlfbhkckbedohgdepgbkflommbfkep",  // Hangouts.app demo
+    "edhhaiphkklkcfcbnlbpbiepchnkgkpn",  // Helper.extension demo
+    "diehajhcjifpahdplfdkhiboknagmfii",  // Kindle demo
+    "nhpmmldpbfjofkipjaieeomhnmcgihfm",  // Menu.app demo
+    "onbhgdmifjebcabplolilidlpgeknifi",  // Music.app demo
+    "kkkbcoabfhgekpnddfkaphobhinociem",  // Netflix demo
+    "adlphlfdhhjenpgimjochcpelbijkich",  // New York Times demo
+    "cgefhjmlaifaamhhoojmpcnihlbddeki",  // Pandora demo
+    "kpjjigggmcjinapdeipapdcnmnjealll",  // Pixlr demo
+    "aleodiobpjillgfjdkblghiiaegggmcm",  // Quickoffice demo
+    "nifkmgcdokhkjghdlgflonppnefddien",  // Sheets demo
+    "hdmobeajeoanbanmdlabnbnlopepchip",  // Slides demo
+    "dgohlccohkojjgkkfholmobjjoledflp",  // Spotify demo
+    "dhmdaeekeihmajjnmichlhiffffdbpde",  // Store.app demo
+    "jeabmjjifhfcejonjjhccaeigpnnjaak",  // TweetDeck demo
+    "pbdihpaifchmclcmkfdgffnnpfbobefh",  // YouTube demo
+
+    // Testing extensions:
+    "ongnjlefhnoajpbodoldndkbkdgfomlp",  // Show Managed Storage
 };
 
 }  // namespace
