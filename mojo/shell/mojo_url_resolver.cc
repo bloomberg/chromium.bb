@@ -38,6 +38,19 @@ MojoURLResolver::MojoURLResolver() {
 MojoURLResolver::~MojoURLResolver() {
 }
 
+void MojoURLResolver::SetBaseURL(const GURL& base_url) {
+  DCHECK(base_url.is_valid());
+  base_url_ = base_url;
+  // Force a trailing slash on the base_url to simplify resolving
+  // relative files and URLs below.
+  if (base_url.has_path() && *base_url.path().rbegin() != '/') {
+    std::string path(base_url.path() + '/');
+    GURL::Replacements replacements;
+    replacements.SetPathStr(path);
+    base_url_ = base_url_.ReplaceComponents(replacements);
+  }
+}
+
 void MojoURLResolver::AddCustomMapping(const GURL& mojo_url,
                                        const GURL& resolved_url) {
   url_map_[mojo_url] = resolved_url;
@@ -62,8 +75,8 @@ GURL MojoURLResolver::Resolve(const GURL& mojo_url) const {
     return net::FilePathToFileURL(path);
   }
 
-  // Otherwise, resolve to an URL relative to origin_.
-  return GURL(origin_ + "/" + lib);
+  // Otherwise, resolve to an URL relative to base_url_.
+  return base_url_.Resolve(lib);
 }
 
 }  // namespace shell

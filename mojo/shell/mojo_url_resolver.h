@@ -22,9 +22,10 @@ class MojoURLResolver {
   ~MojoURLResolver();
 
   // If specified, then unknown "mojo:" URLs will be resolved relative to this
-  // origin. That is, the portion after the colon will be appeneded to origin
-  // with platform-specific shared library prefix and suffix inserted.
-  void set_origin(const std::string& origin) { origin_ = origin; }
+  // base URL. That is, the portion after the colon will be appeneded to
+  // |base_url| with platform-specific shared library prefix and suffix
+  // inserted.
+  void SetBaseURL(const GURL& base_url);
 
   // Add a custom mapping for a particular "mojo:" URL.
   void AddCustomMapping(const GURL& mojo_url, const GURL& resolved_url);
@@ -40,7 +41,7 @@ class MojoURLResolver {
  private:
   std::map<GURL, GURL> url_map_;
   std::set<GURL> local_file_set_;
-  std::string origin_;
+  GURL base_url_;
 };
 
 }  // namespace shell

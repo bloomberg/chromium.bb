@@ -675,6 +675,7 @@
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
+        '../net/net.gyp:net_test_support',
         # TODO(vtl): We don't currently need this, but I imagine we will soon.
         # '../ui/gl/gl.gyp:gl',
         '../url/url.gyp:url_lib',

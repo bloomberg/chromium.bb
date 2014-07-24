@@ -81,6 +81,11 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
   // Allows to interpose a debugger to service connections.
   void SetInterceptor(Interceptor* interceptor);
 
+  // Destroys all Shell-ends of connections established with Applications.
+  // Applications connected by this ServiceManager will observe pipe errors
+  // and have a chance to shutdown.
+  void TerminateShellConnections();
+
  private:
   class ShellImpl;
   typedef std::map<std::string, ServiceLoader*> SchemeToLoaderMap;

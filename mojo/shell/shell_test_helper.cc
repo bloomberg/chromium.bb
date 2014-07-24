@@ -28,8 +28,8 @@ void ShellTestHelper::Init() {
   test_api_.reset(new ServiceManager::TestAPI(context_->service_manager()));
   base::FilePath service_dir;
   CHECK(PathService::Get(base::DIR_MODULE, &service_dir));
-  context_->mojo_url_resolver()->set_origin(
-      net::FilePathToFileURL(service_dir).spec());
+  context_->mojo_url_resolver()->SetBaseURL(
+      net::FilePathToFileURL(service_dir));
 }
 
 void ShellTestHelper::SetLoaderForURL(scoped_ptr<ServiceLoader> loader,

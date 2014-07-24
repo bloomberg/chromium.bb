@@ -9,7 +9,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/scoped_native_library.h"
 #include "mojo/public/platform/native/system_thunks.h"
 
 namespace mojo {
@@ -26,6 +25,11 @@ InProcessDynamicServiceRunner::~InProcessDynamicServiceRunner() {
     DCHECK(!thread_.HasBeenJoined());
     thread_.Join();
   }
+
+  // It is important to let the thread exit before unloading the DSO because
+  // the library may have registered thread-local data and destructors to run
+  // on thread termination.
+  app_library_.Reset(base::NativeLibrary());
 }
 
 void InProcessDynamicServiceRunner::Start(
@@ -53,16 +57,15 @@ void InProcessDynamicServiceRunner::Run() {
 
   do {
     base::NativeLibraryLoadError error;
-    base::ScopedNativeLibrary app_library(
-        base::LoadNativeLibrary(app_path_, &error));
-    if (!app_library.is_valid()) {
+    app_library_.Reset(base::LoadNativeLibrary(app_path_, &error));
+    if (!app_library_.is_valid()) {
       LOG(ERROR) << "Failed to load app library (error: " << error.ToString()
                  << ")";
       break;
     }
 
     MojoSetSystemThunksFn mojo_set_system_thunks_fn =
-        reinterpret_cast<MojoSetSystemThunksFn>(app_library.GetFunctionPointer(
+        reinterpret_cast<MojoSetSystemThunksFn>(app_library_.GetFunctionPointer(
             "MojoSetSystemThunks"));
     if (mojo_set_system_thunks_fn) {
       MojoSystemThunks system_thunks = MojoMakeSystemThunks();
@@ -84,7 +87,7 @@ void InProcessDynamicServiceRunner::Run() {
 
     typedef MojoResult (*MojoMainFunction)(MojoHandle);
     MojoMainFunction main_function = reinterpret_cast<MojoMainFunction>(
-        app_library.GetFunctionPointer("MojoMain"));
+        app_library_.GetFunctionPointer("MojoMain"));
     if (!main_function) {
       LOG(ERROR) << "Entrypoint MojoMain not found";
       break;

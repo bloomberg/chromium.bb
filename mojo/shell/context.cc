@@ -150,7 +150,7 @@ Context::Context()
 #endif
 }
 
-Context::~Context() {
+void Context::Shutdown() {
   // mojo_view_manager uses native_viewport. Destroy mojo_view_manager first so
   // that there aren't shutdown ordering issues. Once native viewport service is
   // moved into its own process this can likely be nuked.
@@ -160,6 +160,11 @@ Context::~Context() {
       GURL("mojo:mojo_view_manager"));
 #endif
   service_manager_.set_default_loader(scoped_ptr<ServiceLoader>());
+  service_manager_.TerminateShellConnections();
+}
+
+Context::~Context() {
+  Shutdown();
 }
 
 }  // namespace shell

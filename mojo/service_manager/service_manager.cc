@@ -94,9 +94,13 @@ ServiceManager::ServiceManager() : interceptor_(NULL) {
 }
 
 ServiceManager::~ServiceManager() {
-  STLDeleteValues(&url_to_shell_impl_);
+  TerminateShellConnections();
   STLDeleteValues(&url_to_loader_);
   STLDeleteValues(&scheme_to_loader_);
+}
+
+void ServiceManager::TerminateShellConnections() {
+  STLDeleteValues(&url_to_shell_impl_);
 }
 
 // static
@@ -157,7 +161,6 @@ ServiceLoader* ServiceManager::GetLoaderForURL(const GURL& url) {
       scheme_to_loader_.find(url.scheme());
   if (scheme_it != scheme_to_loader_.end())
     return scheme_it->second;
-  DCHECK(default_loader_);
   return default_loader_.get();
 }
 

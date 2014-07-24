@@ -33,8 +33,8 @@ int main(int argc, char** argv) {
     const base::CommandLine& command_line =
         *base::CommandLine::ForCurrentProcess();
     if (command_line.HasSwitch(switches::kOrigin)) {
-      shell_context.mojo_url_resolver()->set_origin(
-          command_line.GetSwitchValueASCII(switches::kOrigin));
+      shell_context.mojo_url_resolver()->SetBaseURL(
+          GURL(command_line.GetSwitchValueASCII(switches::kOrigin)));
     }
 
     std::vector<GURL> app_urls;

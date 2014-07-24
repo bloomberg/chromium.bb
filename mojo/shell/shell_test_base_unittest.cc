@@ -108,7 +108,8 @@ TEST_F(ShellTestBaseTest, ConnectBasic) {
 }
 
 // Tests that trying to connect to a service fails properly if the service
-// doesn't exist.
+// doesn't exist. Implicit in this test is verification that the shell
+// terminates if no services are running.
 TEST_F(ShellTestBaseTest, ConnectInvalidService) {
   InterfacePtr<TestService> test_service;
   test_service.Bind(ConnectToService(GURL("mojo:non_existent_service"),
@@ -130,6 +131,47 @@ TEST_F(ShellTestBaseTest, ConnectInvalidService) {
   }
 
   test_service.reset();
+}
+
+// Tests that we can connect to a single service within a single app using
+// a network based loader instead of local files.
+// TODO(tim): Bug 394477. NetworkService doesn't currently terminate.
+TEST_F(ShellTestBaseTest, DISABLED_ConnectBasicNetwork) {
+  InterfacePtr<TestService> service;
+  service.Bind(ConnectToServiceViaNetwork(
+      test_app_url(), TestService::Name_).Pass());
+
+  bool was_run = false;
+  service->Ping(SetAndQuit<bool>(&was_run, true));
+  message_loop()->Run();
+  EXPECT_TRUE(was_run);
+  EXPECT_FALSE(service.encountered_error());
+
+  // Note that use of the network service is implicit in this test.
+  // Since TestService is not the only service in use, the shell won't auto
+  // magically exit when TestService is destroyed (unlike ConnectBasic).
+  // Tearing down the shell context will kill connections. The shell loop will
+  // exit as soon as no more apps are connected.
+  shell_context()->Shutdown();
+  message_loop()->Run();
+}
+
+// Tests that trying to connect to a service over network fails preoprly
+// if the service doesn't exist.
+// TODO(tim): Bug 394477. NetworkService doesn't currently terminate.
+TEST_F(ShellTestBaseTest, DISABLED_ConnectInvalidServiceNetwork) {
+  InterfacePtr<TestService> test_service;
+  test_service.Bind(ConnectToServiceViaNetwork(
+      GURL("mojo:non_existent_service"), TestService::Name_).Pass());
+  QuitMessageLoopErrorHandler quitter;
+  test_service.set_error_handler(&quitter);
+  bool was_run = false;
+  test_service->Ping(SetAndQuit<bool>(&was_run, true));
+  message_loop()->Run();
+  EXPECT_TRUE(test_service.encountered_error());
+
+  shell_context()->Shutdown();
+  message_loop()->Run();
 }
 
 // Similar to ConnectBasic, but causes the app to instantiate multiple

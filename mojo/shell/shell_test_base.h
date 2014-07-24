@@ -15,6 +15,12 @@
 
 class GURL;
 
+namespace net {
+namespace test_server {
+class EmbeddedTestServer;
+}
+}  // namespace net
+
 namespace mojo {
 namespace shell {
 namespace test {
@@ -24,6 +30,8 @@ class ShellTestBase : public testing::Test {
   ShellTestBase();
   virtual ~ShellTestBase();
 
+  virtual void SetUp() OVERRIDE;
+
   // |application_url| should typically be a mojo: URL (the origin will be set
   // to an "appropriate" file: URL).
   // TODO(tim): Should the test base be a ServiceProvider?
@@ -31,10 +39,15 @@ class ShellTestBase : public testing::Test {
       const GURL& application_url,
       const std::string& service_name);
 
+  ScopedMessagePipeHandle ConnectToServiceViaNetwork(
+      const GURL& application_url,
+      const std::string& service_name);
+
   base::MessageLoop* message_loop() { return &message_loop_; }
   Context* shell_context() { return &shell_context_; }
 
  private:
+  scoped_ptr<net::test_server::EmbeddedTestServer> test_server_;
   base::MessageLoop message_loop_;
   Context shell_context_;
 
