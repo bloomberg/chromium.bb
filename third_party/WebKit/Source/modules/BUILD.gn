@@ -37,7 +37,6 @@ source_set("modules") {
 
   deps = [
     ":make_modules_generated",
-    ":modules_fetch_polyfill",
     ":modules_cache_polyfill",
     ":modules_cache_storage_polyfill",
     "//third_party/WebKit/Source/core",
@@ -51,15 +50,6 @@ source_set("modules") {
       "/wd4334",  # Result of 32-bit shift implicitly converted to 64 bits.
     ]
   }
-}
-
-# GYP version: WebKit/Source/modules/modules.gyp:modules (FetchPolyfill action)
-make_file_arrays("modules_fetch_polyfill") {
-  filename = "modules/FetchPolyfill"
-  resources = [
-    "serviceworkers/polyfills/fetchPolyfill.js",
-  ]
-  namespace = "WebCore"
 }
 
 # GYP version: WebKit/Source/modules/modules.gyp:modules (CachePolyfill action)

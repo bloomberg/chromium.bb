@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<title>XMLHttpRequest is not exposed to Service Workers</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../resources/test-helpers.js"></script>
+<body>
+<script>
+service_worker_test(
+    'resources/xhr-is-not-exposed-to-service-workers.js',
+    'XMLHttpRequest is not exposed to ServiceWorkerGlobalScope');
+</script>

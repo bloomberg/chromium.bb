@@ -39,7 +39,6 @@
 #include "modules/CachePolyfill.h"
 #include "modules/CacheStoragePolyfill.h"
 #include "modules/EventTargetModules.h"
-#include "modules/FetchPolyfill.h"
 #include "modules/serviceworkers/CacheStorage.h"
 #include "modules/serviceworkers/FetchManager.h"
 #include "modules/serviceworkers/Request.h"
@@ -60,7 +59,6 @@ PassRefPtrWillBeRawPtr<ServiceWorkerGlobalScope> ServiceWorkerGlobalScope::creat
 
     context->applyContentSecurityPolicyFromString(startupData->m_contentSecurityPolicy, startupData->m_contentSecurityPolicyType);
 
-    context->script()->evaluate(String(fetchPolyfillJs, sizeof(fetchPolyfillJs)));
     context->script()->evaluate(String(cachePolyfillJs, sizeof(cachePolyfillJs)));
     context->script()->evaluate(String(cacheStoragePolyfillJs, sizeof(cacheStoragePolyfillJs)));
 

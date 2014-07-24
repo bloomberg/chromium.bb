@@ -35,4 +35,3 @@
     readonly attribute DOMString name;
              attribute EventHandler onconnect;
 };
-

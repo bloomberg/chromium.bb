@@ -56,32 +56,6 @@
     ],
     'actions': [
       {
-        # GN version: //third_party/WebKit/Source/modules:modules_fetch_polyfill
-        'action_name': 'FetchPolyfill',
-        'process_outputs_as_sources': 1,
-        'variables': {
-            'resources': [
-                 'serviceworkers/polyfills/fetchPolyfill.js',
-            ],
-        },
-        'inputs': [
-            '../build/scripts/make-file-arrays.py',
-            '<@(resources)',
-        ],
-        'outputs': [
-            '<(blink_modules_output_dir)/FetchPolyfill.h',
-            '<(blink_modules_output_dir)/FetchPolyfill.cpp',
-        ],
-        'action': [
-            'python',
-            '../build/scripts/make-file-arrays.py',
-            '--out-h=<(blink_modules_output_dir)/FetchPolyfill.h',
-            '--out-cpp=<(blink_modules_output_dir)/FetchPolyfill.cpp',
-            '--namespace=WebCore',
-            '<@(resources)',
-        ],
-      },
-      {
         # GN version: //third_party/WebKit/Source/modules:modules_cache_polyfill
         'action_name': 'CachePolyfill',
         'process_outputs_as_sources': 1,
