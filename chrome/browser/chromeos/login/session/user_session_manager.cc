@@ -334,9 +334,10 @@ bool UserSessionManager::RespectLocalePreference(
     return false;
 
   UserManager* user_manager = UserManager::Get();
-  if ((user == NULL) || (user != user_manager->GetPrimaryUser()) ||
-      (!user->is_profile_created()))
+  if (!user || (user_manager->IsUserLoggedIn() &&
+                user != user_manager->GetPrimaryUser())) {
     return false;
+  }
 
   // In case of multi-profiles session we don't apply profile locale
   // because it is unsafe.

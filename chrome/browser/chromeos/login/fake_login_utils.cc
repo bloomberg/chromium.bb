@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/fake_login_utils.h"
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -28,6 +29,11 @@ namespace chromeos {
 FakeLoginUtils::FakeLoginUtils() : should_launch_browser_(false) {}
 
 FakeLoginUtils::~FakeLoginUtils() {}
+
+void FakeLoginUtils::RespectLocalePreference(Profile*,
+                                             const base::Closure& callback) {
+  callback.Run();
+}
 
 void FakeLoginUtils::DoBrowserLaunch(Profile* profile,
                                      LoginDisplayHost* login_host) {

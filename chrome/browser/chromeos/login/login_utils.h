@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 
 class GURL;
@@ -52,6 +53,10 @@ class LoginUtils {
   static bool IsWhitelisted(const std::string& username, bool* wildcard_match);
 
   virtual ~LoginUtils() {}
+
+  // Switch to the locale that |profile| wishes to use and invoke |callback|.
+  virtual void RespectLocalePreference(Profile* profile,
+                                       const base::Closure& callback) = 0;
 
   // Thin wrapper around StartupBrowserCreator::LaunchBrowser().  Meant to be
   // used in a Task posted to the UI thread.  Once the browser is launched the

@@ -30,6 +30,8 @@ class MockLoginUtils : public LoginUtils {
   MockLoginUtils();
   virtual ~MockLoginUtils();
 
+  MOCK_METHOD2(RespectLocalePreference, void(Profile*,
+                                             const base::Closure& callback));
   MOCK_METHOD2(DoBrowserLaunch, void(Profile*, LoginDisplayHost*));
   MOCK_METHOD4(PrepareProfile,
                void(const UserContext&,

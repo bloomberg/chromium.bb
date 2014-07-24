@@ -24,6 +24,8 @@ class TestLoginUtils : public LoginUtils {
   virtual ~TestLoginUtils();
 
   // LoginUtils:
+  virtual void RespectLocalePreference(Profile* profile,
+                                       const base::Closure& callback) OVERRIDE;
   virtual void DoBrowserLaunch(Profile* profile,
                                LoginDisplayHost* login_host) OVERRIDE {}
   virtual void PrepareProfile(const UserContext& user_context,
