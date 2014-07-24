@@ -527,7 +527,7 @@ views::NonClientFrameView* ChromeNativeAppWindowViews::CreateNonClientFrameView(
       return frame_view;
     }
 
-    if (IsFrameless())
+    if (IsFrameless() || has_frame_color_)
       return CreateNonStandardAppFrame();
 
     ash::CustomFrameViewAsh* custom_frame_view =
