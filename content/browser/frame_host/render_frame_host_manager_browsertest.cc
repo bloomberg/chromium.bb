@@ -411,9 +411,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
 // Test that setting the opener to null in a window affects cross-process
 // navigations, including those to existing entries.  http://crbug.com/156669.
+// Flaky on android: http://crbug.com/397185
 // Flaky on windows: http://crbug.com/291249
 // This test also crashes under ThreadSanitizer, http://crbug.com/356758.
-#if defined(OS_WIN) || defined(THREAD_SANITIZER)
+#if defined(OS_ANDROID) || defined(OS_WIN) || defined(THREAD_SANITIZER)
 #define MAYBE_DisownOpener DISABLED_DisownOpener
 #else
 #define MAYBE_DisownOpener DisownOpener
