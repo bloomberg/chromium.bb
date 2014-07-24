@@ -10,10 +10,12 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/interface_factory_with_context.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
+#include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
@@ -26,17 +28,37 @@ using mojo::view_manager::NodeObserver;
 using mojo::view_manager::View;
 using mojo::view_manager::ViewManager;
 using mojo::view_manager::ViewManagerDelegate;
+using mojo::view_manager::ViewManagerClientFactory;
 using mojo::view_manager::ViewObserver;
 
 namespace mojo {
 namespace examples {
+class EmbeddedApp;
+
+class Navigator : public InterfaceImpl<navigation::Navigator> {
+ public:
+  explicit Navigator(EmbeddedApp* app) : app_(app) {}
+
+ private:
+  virtual void Navigate(
+      uint32 node_id,
+      navigation::NavigationDetailsPtr navigation_details,
+      navigation::ResponseDetailsPtr response_details) OVERRIDE;
+
+  EmbeddedApp* app_;
+  DISALLOW_COPY_AND_ASSIGN(Navigator);
+};
 
 class EmbeddedApp : public ApplicationDelegate,
                     public ViewManagerDelegate,
                     public ViewObserver,
-                    public NodeObserver {
+                    public NodeObserver,
+                    public InterfaceFactoryWithContext<Navigator, EmbeddedApp> {
  public:
-  EmbeddedApp() : view_manager_(NULL) {
+  EmbeddedApp()
+      : InterfaceFactoryWithContext(this),
+        view_manager_(NULL),
+        view_manager_client_factory_(this) {
     url::AddStandardScheme("mojo");
   }
   virtual ~EmbeddedApp() {}
@@ -47,31 +69,6 @@ class EmbeddedApp : public ApplicationDelegate,
   }
 
  private:
-  class Navigator : public InterfaceImpl<navigation::Navigator> {
-   public:
-    Navigator(ApplicationConnection* connection,
-              EmbeddedApp* app) : app_(app) {}
-   private:
-    virtual void Navigate(
-        uint32 node_id,
-        navigation::NavigationDetailsPtr navigation_details,
-        navigation::ResponseDetailsPtr response_details) OVERRIDE {
-      GURL url(navigation_details->url.To<std::string>());
-      if (!url.is_valid()) {
-        LOG(ERROR) << "URL is invalid.";
-        return;
-      }
-      // TODO(aa): Verify new URL is same origin as current origin.
-      SkColor color = 0x00;
-      if (!base::HexStringToUInt(url.path().substr(1), &color)) {
-        LOG(ERROR) << "Invalid URL, path not convertible to integer";
-        return;
-      }
-      app_->SetNodeColor(node_id, color);
-    }
-    EmbeddedApp* app_;
-    DISALLOW_COPY_AND_ASSIGN(Navigator);
-  };
 
   // Overridden from ApplicationDelegate:
   virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
@@ -83,8 +80,8 @@ class EmbeddedApp : public ApplicationDelegate,
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       MOJO_OVERRIDE {
-    ViewManager::ConfigureIncomingConnection(connection, this);
-    connection->AddService<Navigator>(this);
+    connection->AddService(&view_manager_client_factory_);
+    connection->AddService(this);
     return true;
   }
 
@@ -147,6 +144,7 @@ class EmbeddedApp : public ApplicationDelegate,
   view_manager::ViewManager* view_manager_;
   navigation::NavigatorHostPtr navigator_host_;
   std::map<Node*, View*> views_to_reap_;
+  ViewManagerClientFactory view_manager_client_factory_;
 
   typedef std::map<view_manager::Id, Node*> RootMap;
   RootMap roots_;
@@ -157,6 +155,23 @@ class EmbeddedApp : public ApplicationDelegate,
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedApp);
 };
+
+void Navigator::Navigate(uint32 node_id,
+                         navigation::NavigationDetailsPtr navigation_details,
+                         navigation::ResponseDetailsPtr response_details) {
+  GURL url(navigation_details->url.To<std::string>());
+  if (!url.is_valid()) {
+    LOG(ERROR) << "URL is invalid.";
+    return;
+  }
+  // TODO(aa): Verify new URL is same origin as current origin.
+  SkColor color = 0x00;
+  if (!base::HexStringToUInt(url.path().substr(1), &color)) {
+    LOG(ERROR) << "Invalid URL, path not convertible to integer";
+    return;
+  }
+  app_->SetNodeColor(node_id, color);
+}
 
 }  // namespace examples
 

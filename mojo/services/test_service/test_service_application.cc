@@ -22,9 +22,19 @@ TestServiceApplication::~TestServiceApplication() {
 
 bool TestServiceApplication::ConfigureIncomingConnection(
     ApplicationConnection* connection) {
-  connection->AddService<TestServiceImpl>(this);
-  connection->AddService<TestTimeServiceImpl>();
+  connection->AddService<TestService>(this);
+  connection->AddService<TestTimeService>(this);
   return true;
+}
+
+void TestServiceApplication::Create(ApplicationConnection* connection,
+                                    InterfaceRequest<TestService> request) {
+  BindToRequest(new TestServiceImpl(connection, this), &request);
+}
+
+void TestServiceApplication::Create(ApplicationConnection* connection,
+                                    InterfaceRequest<TestTimeService> request) {
+  BindToRequest(new TestTimeServiceImpl(connection), &request);
 }
 
 void TestServiceApplication::AddRef() {

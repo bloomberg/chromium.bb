@@ -10,12 +10,17 @@
 extern "C" APPLICATION_EXPORT MojoResult CDECL MojoMain(
     MojoHandle shell_handle) {
   mojo::Environment env;
-  mojo::RunLoop loop;
-  mojo::ApplicationDelegate* delegate = mojo::ApplicationDelegate::Create();
+  mojo::ApplicationDelegate* delegate = NULL;
   {
-    mojo::ApplicationImpl app(delegate);
-    app.BindShell(shell_handle);
-    loop.Run();
+    // We have to shut down the RunLoop before destroying the
+    // ApplicationDelegate.
+    mojo::RunLoop loop;
+    delegate = mojo::ApplicationDelegate::Create();
+    {
+      mojo::ApplicationImpl app(delegate);
+      app.BindShell(shell_handle);
+      loop.Run();
+    }
   }
   delete delegate;
 

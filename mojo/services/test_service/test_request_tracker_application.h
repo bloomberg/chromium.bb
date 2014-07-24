@@ -6,23 +6,39 @@
 #define MOJO_SERVICES_TEST_SERVICE_TEST_REQUEST_TRACKER_APPLICATION_H_
 
 #include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/interface_factory.h"
+#include "mojo/public/cpp/application/interface_factory_with_context.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/services/test_service/test_request_tracker_impl.h"
 
 namespace mojo {
 namespace test {
+class TestTimeService;
 
 // Embeds TestRequestTracker mojo services into an application.
-class TestRequestTrackerApplication : public ApplicationDelegate {
+class TestRequestTrackerApplication : public ApplicationDelegate,
+                                      public InterfaceFactory<TestTimeService> {
  public:
   TestRequestTrackerApplication();
   virtual ~TestRequestTrackerApplication();
 
+  // ApplicationDelegate methods:
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       MOJO_OVERRIDE;
 
+  // InterfaceFactory<TestTimeService> methods:
+  virtual void Create(ApplicationConnection* connection,
+                      InterfaceRequest<TestTimeService> request) MOJO_OVERRIDE;
+
  private:
   TrackingContext context_;
+  typedef InterfaceFactoryWithContext<TestTrackedRequestServiceImpl,
+                                      TrackingContext>
+      TestTrackedRequestFactory;
+  TestTrackedRequestFactory test_tracked_request_factory_;
+  typedef InterfaceFactoryWithContext<TestRequestTrackerImpl, TrackingContext>
+      TestRequestTrackerFactory;
+  TestRequestTrackerFactory test_request_tracker_factory_;
   MOJO_DISALLOW_COPY_AND_ASSIGN(TestRequestTrackerApplication);
 };
 

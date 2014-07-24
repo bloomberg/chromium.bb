@@ -14,6 +14,7 @@
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
+#include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
@@ -152,7 +153,11 @@ class Browser : public ApplicationDelegate,
                 public views::TextfieldController,
                 public view_manager::NodeObserver {
  public:
-  Browser() : view_manager_(NULL), root_(NULL), widget_(NULL) {}
+  Browser()
+      : view_manager_(NULL),
+        view_manager_client_factory_(this),
+        root_(NULL),
+        widget_(NULL) {}
 
   virtual ~Browser() {
     if (root_)
@@ -169,7 +174,7 @@ class Browser : public ApplicationDelegate,
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       MOJO_OVERRIDE {
-    view_manager::ViewManager::ConfigureIncomingConnection(connection, this);
+    connection->AddService(&view_manager_client_factory_);
     return true;
   }
 
@@ -250,6 +255,7 @@ class Browser : public ApplicationDelegate,
   scoped_ptr<ViewsInit> views_init_;
 
   view_manager::ViewManager* view_manager_;
+  view_manager::ViewManagerClientFactory view_manager_client_factory_;
   view_manager::Node* root_;
   views::Widget* widget_;
   navigation::NavigatorHostPtr navigator_host_;

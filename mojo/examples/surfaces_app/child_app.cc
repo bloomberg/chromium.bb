@@ -11,28 +11,31 @@
 namespace mojo {
 namespace examples {
 
-class ChildApp : public ApplicationDelegate, public ChildImpl::Context {
+class ChildApp : public ApplicationDelegate, public InterfaceFactory<Child> {
  public:
   ChildApp() {}
   virtual ~ChildApp() {}
 
-  virtual void Initialize(ApplicationImpl* app) OVERRIDE { app_ = app; }
+  virtual void Initialize(ApplicationImpl* app) OVERRIDE {
+    surfaces_service_connection_ =
+        app->ConnectToApplication("mojo:mojo_surfaces_service");
+  }
 
   // ApplicationDelegate implementation.
   virtual bool ConfigureIncomingConnection(
       ApplicationConnection* connection) OVERRIDE {
-    connection->AddService<ChildImpl, ChildImpl::Context>(this);
+    connection->AddService(this);
     return true;
   }
 
-  // ChildImpl::Context implementation.
-  virtual ApplicationConnection* ShellConnection(
-      const mojo::String& application_url) OVERRIDE {
-    return app_->ConnectToApplication(application_url);
+  // InterfaceFactory<Child> implementation.
+  virtual void Create(ApplicationConnection* connection,
+                      InterfaceRequest<Child> request) OVERRIDE {
+    BindToRequest(new ChildImpl(surfaces_service_connection_), &request);
   }
 
  private:
-  ApplicationImpl* app_;
+  ApplicationConnection* surfaces_service_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildApp);
 };

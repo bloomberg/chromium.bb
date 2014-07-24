@@ -16,10 +16,13 @@
 namespace mojo {
 namespace surfaces {
 
-SurfacesImpl::SurfacesImpl(ApplicationConnection* app, Context* context)
-    : context_(context),
-      factory_(context_->Manager(), this),
-      id_namespace_(context->IdNamespace()) {
+SurfacesImpl::SurfacesImpl(cc::SurfaceManager* manager,
+                           uint32_t id_namespace,
+                           Client* client)
+    : manager_(manager),
+      factory_(manager, this),
+      id_namespace_(id_namespace),
+      client_(client) {
 }
 
 SurfacesImpl::~SurfacesImpl() {
@@ -47,7 +50,7 @@ void SurfacesImpl::SubmitFrame(SurfaceIdPtr id, FramePtr frame_ptr) {
     return;
   }
   factory_.SubmitFrame(id.To<cc::SurfaceId>(), mojo::ConvertTo(frame_ptr));
-  context_->FrameSubmitted();
+  client_->FrameSubmitted();
 }
 
 void SurfacesImpl::DestroySurface(SurfaceIdPtr id) {
@@ -72,8 +75,8 @@ void SurfacesImpl::CreateGLES2BoundSurface(CommandBufferPtr gles2_client,
     return;
   }
   if (!display_) {
-    display_.reset(new cc::Display(this, context_->Manager(), NULL));
-    context_->SetDisplay(display_.get());
+    display_.reset(new cc::Display(this, manager_, NULL));
+    client_->SetDisplay(display_.get());
   }
   factory_.Create(cc_id, size.To<gfx::Size>());
   display_->Resize(cc_id, size.To<gfx::Size>());

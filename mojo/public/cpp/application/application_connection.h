@@ -21,51 +21,26 @@ namespace mojo {
 // to implement a service named Foo.
 // That class must subclass an InterfaceImpl specialization.
 //
-// If there is context that is to be shared amongst all instances, define a
-// constructor with that class as its only argument, otherwise define an empty
-// constructor.
+// Then implement an InterfaceFactory<Foo> that binds instances of FooImpl to
+// InterfaceRequest<Foo>s and register that on the connection.
 //
-// class FooImpl : public InterfaceImpl<Foo> {
-//  public:
-//   explicit FooImpl(ApplicationConnnection* connection) {}
-// };
+// connection->AddService(&factory);
 //
-// or
+// Or if you have multiple factories implemented by the same type, explicitly
+// specify the interface to register the factory for:
 //
-// class BarImpl : public InterfaceImpl<Bar> {
-//  public:
-//   // contexts will remain valid for the lifetime of BarImpl.
-//   BarImpl(ApplicationConnnection* connection, BarContext* service_context)
-//          : connection_(connection), servicecontext_(context) {}
+// connection->AddService<Foo>(&my_foo_and_bar_factory_);
+// connection->AddService<Bar>(&my_foo_and_bar_factory_);
 //
-// Create an ApplicationDelegate instance and pass it to the constructor
-// of an ApplicationImpl. The delegate will be called when new connections are
-// made to other applications.
-//
-// connection->AddService<FooImpl>();
-//
-// BarContext context;
-// connection->AddService<BarImpl>(&context);
+// The InterfaceFactory must outlive the ApplicationConnection.
 class ApplicationConnection {
  public:
   virtual ~ApplicationConnection();
 
-  // Impl’s constructor will receive two arguments:
-  // Impl::Impl(Application::Context* app_context,
-  //            ServiceContext* svc_context)
-  template <typename Impl, typename ServiceContext>
-  void AddService(ServiceContext* context) {
+  template <typename Interface>
+  void AddService(InterfaceFactory<Interface>* factory) {
     AddServiceConnector(
-        new internal::ServiceConnector<Impl, ServiceContext>(Impl::Name_,
-                                                             context));
-  }
-
-  // Impl’s constructor will receive one argument:
-  // Impl::Impl(Application::Context* app_context)
-  template <typename Impl>
-  void AddService() {
-    AddServiceConnector(
-        new internal::ServiceConnector<Impl, void>(Impl::Name_, NULL));
+        new internal::InterfaceFactoryConnector<Interface>(factory));
   }
 
   // Connect to the service implementing |Interface|.
@@ -96,8 +71,8 @@ class ApplicationConnection {
   // Raw ServiceProvider interface to remote application.
   virtual ServiceProvider* GetServiceProvider() = 0;
 
-private:
- virtual void AddServiceConnector(
+ private:
+  virtual void AddServiceConnector(
       internal::ServiceConnectorBase* service_connector) = 0;
 };
 

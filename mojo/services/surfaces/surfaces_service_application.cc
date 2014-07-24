@@ -18,16 +18,14 @@ SurfacesServiceApplication::~SurfacesServiceApplication() {
 
 bool SurfacesServiceApplication::ConfigureIncomingConnection(
     ApplicationConnection* connection) {
-  connection->AddService<SurfacesImpl, SurfacesImpl::Context>(this);
+  connection->AddService(this);
   return true;
 }
 
-cc::SurfaceManager* SurfacesServiceApplication::Manager() {
-  return &manager_;
-}
-
-uint32_t SurfacesServiceApplication::IdNamespace() {
-  return next_id_namespace_++;
+void SurfacesServiceApplication::Create(ApplicationConnection* connection,
+                                        InterfaceRequest<Surface> request) {
+  BindToRequest(new SurfacesImpl(&manager_, next_id_namespace_++, this),
+                &request);
 }
 
 void SurfacesServiceApplication::FrameSubmitted() {

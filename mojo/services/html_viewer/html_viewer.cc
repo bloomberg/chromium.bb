@@ -6,12 +6,14 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/interface_factory_with_context.h"
 #include "mojo/services/html_viewer/blink_platform_impl.h"
 #include "mojo/services/html_viewer/html_document_view.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
+#include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
 #include "third_party/WebKit/public/web/WebKit.h"
@@ -22,8 +24,7 @@ class HTMLViewer;
 
 class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
  public:
-  explicit NavigatorImpl(ApplicationConnection* connection,
-                         HTMLViewer* viewer) : viewer_(viewer) {}
+  explicit NavigatorImpl(HTMLViewer* viewer) : viewer_(viewer) {}
   virtual ~NavigatorImpl() {}
 
  private:
@@ -38,11 +39,16 @@ class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
   DISALLOW_COPY_AND_ASSIGN(NavigatorImpl);
 };
 
-class HTMLViewer : public ApplicationDelegate,
-                   public view_manager::ViewManagerDelegate {
+class HTMLViewer
+    : public ApplicationDelegate,
+      public view_manager::ViewManagerDelegate,
+      public InterfaceFactoryWithContext<NavigatorImpl, HTMLViewer> {
  public:
-  HTMLViewer() : application_impl_(NULL), document_view_(NULL) {
-  }
+  HTMLViewer()
+      : InterfaceFactoryWithContext(this),
+        application_impl_(NULL),
+        document_view_(NULL),
+        view_manager_client_factory_(this) {}
   virtual ~HTMLViewer() {
     blink::shutdown();
   }
@@ -63,8 +69,8 @@ class HTMLViewer : public ApplicationDelegate,
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       OVERRIDE {
-    connection->AddService<NavigatorImpl>(this);
-    view_manager::ViewManager::ConfigureIncomingConnection(connection, this);
+    connection->AddService(this);
+    connection->AddService(&view_manager_client_factory_);
     return true;
   }
 
@@ -94,6 +100,7 @@ class HTMLViewer : public ApplicationDelegate,
   // TODO(darin): Figure out proper ownership of this instance.
   HTMLDocumentView* document_view_;
   URLResponsePtr response_;
+  view_manager::ViewManagerClientFactory view_manager_client_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLViewer);
 };

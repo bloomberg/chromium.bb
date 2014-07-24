@@ -275,10 +275,6 @@ class IntegrationTestInterface1Impl
 
   virtual void Method0(BasicStructPtr param0) MOJO_OVERRIDE {
   }
-
-  virtual void OnConnectionError() MOJO_OVERRIDE {
-    delete this;
-  }
 };
 
 TEST_F(ValidationTest, InputParser) {

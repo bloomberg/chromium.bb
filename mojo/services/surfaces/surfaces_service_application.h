@@ -16,7 +16,8 @@ class ApplicationConnection;
 namespace surfaces {
 
 class SurfacesServiceApplication : public ApplicationDelegate,
-                                   public SurfacesImpl::Context {
+                                   public InterfaceFactory<Surface>,
+                                   public SurfacesImpl::Client {
  public:
   SurfacesServiceApplication();
   virtual ~SurfacesServiceApplication();
@@ -25,9 +26,11 @@ class SurfacesServiceApplication : public ApplicationDelegate,
   virtual bool ConfigureIncomingConnection(
       ApplicationConnection* connection) OVERRIDE;
 
-  // SurfacesImpl::Context implementation.
-  virtual cc::SurfaceManager* Manager() OVERRIDE;
-  virtual uint32_t IdNamespace() OVERRIDE;
+  // InterfaceFactory<Surface> implementation.
+  virtual void Create(ApplicationConnection* connection,
+                      InterfaceRequest<Surface> request) OVERRIDE;
+
+  // SurfacesImpl::Client implementation.
   virtual void FrameSubmitted() OVERRIDE;
   virtual void SetDisplay(cc::Display*) OVERRIDE;
 

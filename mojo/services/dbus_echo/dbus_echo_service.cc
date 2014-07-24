@@ -18,7 +18,7 @@
 namespace {
 class EchoServiceImpl : public mojo::InterfaceImpl<mojo::EchoService> {
  public:
-  explicit EchoServiceImpl(mojo::ApplicationConnection* connection) {}
+  EchoServiceImpl() {}
   virtual ~EchoServiceImpl() {}
 
  protected:

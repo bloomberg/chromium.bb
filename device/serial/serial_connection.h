@@ -29,7 +29,6 @@ class SerialConnection : public mojo::InterfaceImpl<serial::Connection> {
   virtual void GetControlSignals(const mojo::Callback<
       void(serial::DeviceControlSignalsPtr)>& callback) OVERRIDE;
   virtual void Flush(const mojo::Callback<void(bool)>& callback) OVERRIDE;
-  virtual void OnConnectionError() OVERRIDE;
 
  private:
   scoped_refptr<SerialIoHandler> io_handler_;

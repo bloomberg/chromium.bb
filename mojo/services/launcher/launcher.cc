@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/interface_factory_with_context.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/interfaces/launcher/launcher.mojom.h"
 #include "mojo/services/public/interfaces/network/network_service.mojom.h"
@@ -30,8 +31,7 @@ class LauncherApp;
 
 class LauncherConnection : public InterfaceImpl<Launcher> {
  public:
-  LauncherConnection(ApplicationConnection* connection, LauncherApp* app)
-      : app_(app) {}
+  explicit LauncherConnection(LauncherApp* app) : app_(app) {}
   virtual ~LauncherConnection() {}
 
  private:
@@ -86,9 +86,11 @@ class LaunchInstance {
   DISALLOW_COPY_AND_ASSIGN(LaunchInstance);
 };
 
-class LauncherApp : public ApplicationDelegate {
+class LauncherApp
+    : public ApplicationDelegate,
+      public InterfaceFactoryWithContext<LauncherConnection, LauncherApp> {
  public:
-  LauncherApp() {
+  LauncherApp() : InterfaceFactoryWithContext(this) {
     handler_map_["text/html"] = "mojo:mojo_html_viewer";
     handler_map_["image/png"] = "mojo:mojo_media_viewer";
   }
@@ -115,7 +117,7 @@ class LauncherApp : public ApplicationDelegate {
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       MOJO_OVERRIDE {
-    connection->AddService<LauncherConnection>(this);
+    connection->AddService(this);
     return true;
   }
 

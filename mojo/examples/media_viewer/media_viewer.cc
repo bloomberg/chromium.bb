@@ -12,11 +12,13 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/interface_factory_with_context.h"
 #include "mojo/public/cpp/bindings/interface_impl.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
+#include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
 #include "mojo/views/native_widget_view_manager.h"
@@ -185,8 +187,7 @@ class ControlPanel : public views::ButtonListener {
 
 class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
  public:
-  NavigatorImpl(ApplicationConnection* connection,
-                MediaViewer* viewer) : viewer_(viewer) {}
+  explicit NavigatorImpl(MediaViewer* viewer) : viewer_(viewer) {}
   virtual ~NavigatorImpl() {}
 
  private:
@@ -201,17 +202,22 @@ class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
   DISALLOW_COPY_AND_ASSIGN(NavigatorImpl);
 };
 
-class MediaViewer : public ApplicationDelegate,
-                    public view_manager::ViewManagerDelegate,
-                    public ControlPanel::Delegate,
-                    public view_manager::NodeObserver {
+class MediaViewer
+    : public ApplicationDelegate,
+      public view_manager::ViewManagerDelegate,
+      public ControlPanel::Delegate,
+      public view_manager::NodeObserver,
+      public InterfaceFactoryWithContext<NavigatorImpl, MediaViewer> {
  public:
-  MediaViewer() : app_(NULL),
-                  view_manager_(NULL),
-                  root_node_(NULL),
-                  control_node_(NULL),
-                  content_node_(NULL),
-                  control_panel_(this) {
+  MediaViewer()
+      : InterfaceFactoryWithContext(this),
+        app_(NULL),
+        view_manager_(NULL),
+        view_manager_client_factory_(this),
+        root_node_(NULL),
+        control_node_(NULL),
+        content_node_(NULL),
+        control_panel_(this) {
     handler_map_["image/png"] = "mojo:mojo_png_viewer";
   }
 
@@ -271,8 +277,8 @@ class MediaViewer : public ApplicationDelegate,
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       OVERRIDE {
-    connection->AddService<NavigatorImpl>(this);
-    view_manager::ViewManager::ConfigureIncomingConnection(connection, this);
+    connection->AddService(this);
+    connection->AddService(&view_manager_client_factory_);
     return true;
   }
 
@@ -355,6 +361,7 @@ class MediaViewer : public ApplicationDelegate,
   ApplicationImpl* app_;
   scoped_ptr<ViewsInit> views_init_;
   view_manager::ViewManager* view_manager_;
+  view_manager::ViewManagerClientFactory view_manager_client_factory_;
   view_manager::Node* root_node_;
   view_manager::Node* control_node_;
   view_manager::Node* content_node_;

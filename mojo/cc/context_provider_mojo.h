@@ -44,6 +44,7 @@ class ContextProviderMojo : public cc::ContextProvider {
   cc::ContextProvider::Capabilities capabilities_;
   ScopedMessagePipeHandle command_buffer_handle_;
   MojoGLES2Context context_;
+  bool context_lost_;
 };
 
 }  // namespace mojo

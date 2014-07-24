@@ -12,7 +12,6 @@ namespace mojo {
 // WindowManagerServiceImpl, public:
 
 WindowManagerServiceImpl::WindowManagerServiceImpl(
-    ApplicationConnection* connection,
     WindowManagerApp* window_manager)
     : window_manager_(window_manager) {
   window_manager_->AddConnection(this);

@@ -29,20 +29,21 @@ class Surface;
 
 namespace examples {
 
-class SurfaceClientImpl;
-
 // Simple example of a child app using surfaces.
-class ChildImpl : public InterfaceImpl<Child> {
+class ChildImpl : public InterfaceImpl<Child>, public surfaces::SurfaceClient {
  public:
   class Context {
    public:
     virtual ApplicationConnection* ShellConnection(
         const mojo::String& application_url) = 0;
   };
-  ChildImpl(ApplicationConnection* connection, Context* context);
+  explicit ChildImpl(ApplicationConnection* surfaces_service_connection);
   virtual ~ChildImpl();
 
-  void SetIdNamespace(uint32_t id_namespace);
+  // surfaces::SurfaceClient implementation
+  virtual void SetIdNamespace(uint32_t id_namespace) OVERRIDE;
+  virtual void ReturnResources(
+      Array<surfaces::ReturnedResourcePtr> resources) OVERRIDE;
 
  private:
   // Child implementation.
@@ -58,7 +59,6 @@ class ChildImpl : public InterfaceImpl<Child> {
   scoped_ptr<cc::SurfaceIdAllocator> allocator_;
   surfaces::SurfacePtr surface_;
   cc::SurfaceId id_;
-  scoped_ptr<SurfaceClientImpl> surface_client_;
   mojo::Callback<void(surfaces::SurfaceIdPtr id)> produce_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildImpl);

@@ -118,10 +118,6 @@ URLLoaderImpl::URLLoaderImpl(NetworkContext* context)
 URLLoaderImpl::~URLLoaderImpl() {
 }
 
-void URLLoaderImpl::OnConnectionError() {
-  delete this;
-}
-
 void URLLoaderImpl::Start(URLRequestPtr request,
                           const Callback<void(URLResponsePtr)>& callback) {
   if (url_request_) {

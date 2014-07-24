@@ -10,7 +10,9 @@ namespace mojo {
 
 ContextProviderMojo::ContextProviderMojo(
     ScopedMessagePipeHandle command_buffer_handle)
-    : command_buffer_handle_(command_buffer_handle.Pass()) {}
+    : command_buffer_handle_(command_buffer_handle.Pass()),
+      context_lost_(false) {
+}
 
 bool ContextProviderMojo::BindToCurrentThread() {
   DCHECK(command_buffer_handle_.is_valid());
@@ -42,7 +44,9 @@ cc::ContextProvider::Capabilities ContextProviderMojo::ContextCapabilities() {
   return capabilities_;
 }
 
-bool ContextProviderMojo::IsContextLost() { return !context_; }
+bool ContextProviderMojo::IsContextLost() {
+  return context_lost_;
+}
 bool ContextProviderMojo::DestroyedOnMainThread() { return !context_; }
 
 ContextProviderMojo::~ContextProviderMojo() {
@@ -51,10 +55,7 @@ ContextProviderMojo::~ContextProviderMojo() {
 }
 
 void ContextProviderMojo::ContextLost() {
-  if (context_) {
-    MojoGLES2DestroyContext(context_);
-    context_ = NULL;
-  }
+  context_lost_ = true;
 }
 
 }  // namespace mojo

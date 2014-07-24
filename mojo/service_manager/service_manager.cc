@@ -117,7 +117,7 @@ void ServiceManager::ConnectToApplication(const GURL& url,
   } else {
     MessagePipe pipe;
     GetLoaderForURL(url)->LoadService(this, url, pipe.handle0.Pass());
-    shell_impl = BindToPipe(new ShellImpl(this, url), pipe.handle1.Pass());
+    shell_impl = WeakBindToPipe(new ShellImpl(this, url), pipe.handle1.Pass());
     url_to_shell_impl_[url] = shell_impl;
   }
   if (interceptor_) {

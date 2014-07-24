@@ -6,19 +6,34 @@
 #define MOJO_SERVICES_TEST_SERVICE_TEST_SERVICE_APPLICATION_H_
 
 #include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/interface_factory.h"
 #include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 class ApplicationConnection;
-namespace test {
 
-class TestServiceApplication : public ApplicationDelegate {
+namespace test {
+class TestService;
+class TestTimeService;
+
+class TestServiceApplication : public ApplicationDelegate,
+                               public InterfaceFactory<TestService>,
+                               public InterfaceFactory<TestTimeService> {
  public:
   TestServiceApplication();
   virtual ~TestServiceApplication();
 
+  // ApplicationDelegate implementation.
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       MOJO_OVERRIDE;
+
+  // InterfaceFactory<TestService> implementation.
+  virtual void Create(ApplicationConnection* connection,
+                      InterfaceRequest<TestService> request) MOJO_OVERRIDE;
+
+  // InterfaceFactory<TestTimeService> implementation.
+  virtual void Create(ApplicationConnection* connection,
+                      InterfaceRequest<TestTimeService> request) MOJO_OVERRIDE;
 
   void AddRef();
   void ReleaseRef();

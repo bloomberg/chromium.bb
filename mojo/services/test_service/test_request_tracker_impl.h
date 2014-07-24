@@ -27,8 +27,7 @@ struct TrackingContext {
 
 class TestRequestTrackerImpl : public InterfaceImpl<TestRequestTracker> {
  public:
-  TestRequestTrackerImpl(ApplicationConnection* connection,
-                         TrackingContext* context);
+  explicit TestRequestTrackerImpl(TrackingContext* context);
   virtual ~TestRequestTrackerImpl();
 
   // TestRequestTracker.
@@ -48,9 +47,7 @@ class TestRequestTrackerImpl : public InterfaceImpl<TestRequestTracker> {
 class TestTrackedRequestServiceImpl
     : public InterfaceImpl<TestTrackedRequestService> {
  public:
-  TestTrackedRequestServiceImpl(
-      ApplicationConnection* connection,
-      TrackingContext* context);
+  explicit TestTrackedRequestServiceImpl(TrackingContext* context);
   virtual ~TestTrackedRequestServiceImpl();
 
   // |TestTrackedRequestService| implementation.

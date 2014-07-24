@@ -42,8 +42,4 @@ void SerialConnection::Flush(const mojo::Callback<void(bool)>& callback) {
   callback.Run(io_handler_->Flush());
 }
 
-void SerialConnection::OnConnectionError() {
-  delete this;
-}
-
 }  // namespace device

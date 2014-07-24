@@ -11,7 +11,6 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
-#include "mojo/services/window_manager/window_manager_service_impl.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/wm/core/capture_controller.h"
@@ -71,7 +70,12 @@ class WMFocusRules : public wm::FocusRules {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowManagerApp, public:
 
-WindowManagerApp::WindowManagerApp() : view_manager_(NULL), root_(NULL) {}
+WindowManagerApp::WindowManagerApp()
+    : InterfaceFactoryWithContext(this),
+      view_manager_(NULL),
+      view_manager_client_factory_(this),
+      root_(NULL) {
+}
 WindowManagerApp::~WindowManagerApp() {
   // TODO(beng): Figure out if this should be done in
   //             OnViewManagerDisconnected().
@@ -136,8 +140,8 @@ void WindowManagerApp::Initialize(ApplicationImpl* impl) {
 
 bool WindowManagerApp::ConfigureIncomingConnection(
     ApplicationConnection* connection) {
-  connection->AddService<WindowManagerServiceImpl>(this);
-  view_manager::ViewManager::ConfigureIncomingConnection(connection, this);
+  connection->AddService(this);
+  connection->AddService(&view_manager_client_factory_);
   return true;
 }
 

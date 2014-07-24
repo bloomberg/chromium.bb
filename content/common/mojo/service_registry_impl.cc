@@ -27,7 +27,7 @@ void ServiceRegistryImpl::BindRemoteServiceProvider(
     mojo::ScopedMessagePipeHandle handle) {
   DCHECK(!bound_);
   bound_ = true;
-  mojo::BindToPipe(this, handle.Pass());
+  mojo::WeakBindToPipe(this, handle.Pass());
   while (!pending_connects_.empty()) {
     client()->ConnectToService(
         mojo::String::From(pending_connects_.front().first),

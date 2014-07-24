@@ -41,10 +41,6 @@ class MathCalculatorImpl : public InterfaceImpl<math::Calculator> {
     got_connection_ = true;
   }
 
-  virtual void OnConnectionError() MOJO_OVERRIDE {
-    delete this;
-  }
-
   virtual void Clear() MOJO_OVERRIDE {
     client()->Output(total_);
   }
@@ -162,10 +158,6 @@ class ReentrantServiceImpl : public InterfaceImpl<sample::Service> {
 
   virtual void OnConnectionEstablished() MOJO_OVERRIDE {
     got_connection_ = true;
-  }
-
-  virtual void OnConnectionError() MOJO_OVERRIDE {
-    delete this;
   }
 
   bool got_connection() const {

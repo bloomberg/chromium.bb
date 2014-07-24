@@ -11,13 +11,11 @@
 
 namespace mojo {
 
-class ApplicationConnection;
 class WindowManagerApp;
 
 class WindowManagerServiceImpl : public InterfaceImpl<WindowManagerService> {
  public:
-  WindowManagerServiceImpl(ApplicationConnection* connection,
-                           WindowManagerApp* manager);
+  explicit WindowManagerServiceImpl(WindowManagerApp* manager);
   virtual ~WindowManagerServiceImpl();
 
   void NotifyReady();

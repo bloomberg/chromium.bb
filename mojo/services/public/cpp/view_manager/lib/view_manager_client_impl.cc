@@ -523,13 +523,13 @@ class SetVisibleTransaction : public ViewManagerTransaction {
   DISALLOW_COPY_AND_ASSIGN(SetVisibleTransaction);
 };
 
-ViewManagerClientImpl::ViewManagerClientImpl(ApplicationConnection* connection,
-                                             ViewManagerDelegate* delegate)
+ViewManagerClientImpl::ViewManagerClientImpl(ViewManagerDelegate* delegate)
     : connected_(false),
       connection_id_(0),
       next_id_(1),
       delegate_(delegate),
-      window_manager_delegate_(NULL) {}
+      window_manager_delegate_(NULL) {
+}
 
 ViewManagerClientImpl::~ViewManagerClientImpl() {
   while (!nodes_.empty()) {
@@ -875,16 +875,6 @@ void ViewManagerClientImpl::RemoveRoot(Node* root) {
       std::find(roots_.begin(), roots_.end(), root);
   if (it != roots_.end())
     roots_.erase(it);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ViewManager, public:
-
-// static
-void ViewManager::ConfigureIncomingConnection(
-    ApplicationConnection* connection,
-    ViewManagerDelegate* delegate) {
-  connection->AddService<ViewManagerClientImpl>(delegate);
 }
 
 }  // namespace view_manager

@@ -11,9 +11,8 @@ namespace test {
  TrackingContext::TrackingContext() : next_id(1) {}
  TrackingContext::~TrackingContext() {}
 
- TestRequestTrackerImpl::TestRequestTrackerImpl(
-     ApplicationConnection* connection,
-     TrackingContext* context) : context_(context), weak_factory_(this) {
+ TestRequestTrackerImpl::TestRequestTrackerImpl(TrackingContext* context)
+     : context_(context), weak_factory_(this) {
  }
 
  TestRequestTrackerImpl::~TestRequestTrackerImpl() {
@@ -42,8 +41,8 @@ void TestRequestTrackerImpl::UploaderNameCallback(
 }
 
 TestTrackedRequestServiceImpl::TestTrackedRequestServiceImpl(
-    ApplicationConnection* connection,
-    TrackingContext* context) : context_(context) {
+    TrackingContext* context)
+    : context_(context) {
 }
 
 TestTrackedRequestServiceImpl::~TestTrackedRequestServiceImpl() {

@@ -8,6 +8,7 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/interface_factory.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/service_manager/service_loader.h"
 #include "mojo/service_manager/service_manager.h"
@@ -44,8 +45,7 @@ class QuitMessageLoopErrorHandler : public ErrorHandler {
 
 class TestServiceImpl : public InterfaceImpl<TestService> {
  public:
-  explicit TestServiceImpl(ApplicationConnection* connection,
-                           TestContext* context) : context_(context) {
+  explicit TestServiceImpl(TestContext* context) : context_(context) {
     ++context_->num_impls;
   }
 
@@ -98,7 +98,8 @@ class TestClientImpl : public TestClient {
 };
 
 class TestServiceLoader : public ServiceLoader,
-                          public ApplicationDelegate {
+                          public ApplicationDelegate,
+                          public InterfaceFactory<TestService> {
  public:
   TestServiceLoader()
       : context_(NULL),
@@ -115,6 +116,7 @@ class TestServiceLoader : public ServiceLoader,
   int num_loads() const { return num_loads_; }
 
  private:
+  // ServiceLoader implementation.
   virtual void LoadService(
       ServiceManager* manager,
       const GURL& url,
@@ -127,10 +129,17 @@ class TestServiceLoader : public ServiceLoader,
                               const GURL& url) OVERRIDE {
   }
 
+  // ApplicationDelegate implementation.
   virtual bool ConfigureIncomingConnection(
       ApplicationConnection* connection) OVERRIDE {
-    connection->AddService<TestServiceImpl>(context_);
+    connection->AddService(this);
     return true;
+  }
+
+  // InterfaceFactory implementation.
+  virtual void Create(ApplicationConnection* connection,
+                      InterfaceRequest<TestService> request) OVERRIDE {
+    BindToRequest(new TestServiceImpl(context_), &request);
   }
 
   scoped_ptr<ApplicationImpl> test_app_;
@@ -160,8 +169,7 @@ struct TesterContext {
 // Used to test that the requestor url will be correctly passed.
 class TestAImpl : public InterfaceImpl<TestA> {
  public:
-  explicit TestAImpl(ApplicationConnection* connection,
-                     TesterContext* test_context)
+  TestAImpl(ApplicationConnection* connection, TesterContext* test_context)
       : test_context_(test_context) {
     connection->ConnectToApplication(kTestBURLString)->ConnectToService(&b_);
   }
@@ -187,8 +195,7 @@ class TestAImpl : public InterfaceImpl<TestA> {
 
 class TestBImpl : public InterfaceImpl<TestB> {
  public:
-  explicit TestBImpl(ApplicationConnection* connection,
-                     TesterContext* test_context)
+  TestBImpl(ApplicationConnection* connection, TesterContext* test_context)
       : test_context_(test_context) {
     connection->ConnectToService(&c_);
   }
@@ -217,10 +224,8 @@ class TestBImpl : public InterfaceImpl<TestB> {
 
 class TestCImpl : public InterfaceImpl<TestC> {
  public:
-  explicit TestCImpl(ApplicationConnection* connection,
-                     TesterContext* test_context)
-      : test_context_(test_context) {
-  }
+  TestCImpl(ApplicationConnection* connection, TesterContext* test_context)
+      : test_context_(test_context) {}
 
   virtual ~TestCImpl() { test_context_->num_c_deletes++; }
 
@@ -232,7 +237,11 @@ class TestCImpl : public InterfaceImpl<TestC> {
   TesterContext* test_context_;
 };
 
-class Tester : public ApplicationDelegate, public ServiceLoader {
+class Tester : public ApplicationDelegate,
+               public ServiceLoader,
+               public InterfaceFactory<TestA>,
+               public InterfaceFactory<TestB>,
+               public InterfaceFactory<TestC> {
  public:
   Tester(TesterContext* context, const std::string& requestor_url)
       : context_(context),
@@ -260,9 +269,9 @@ class Tester : public ApplicationDelegate, public ServiceLoader {
     }
     // If we're coming from A, then add B, otherwise A.
     if (connection->GetRemoteApplicationURL() == kTestAURLString)
-      connection->AddService<TestBImpl>(context_);
+      connection->AddService<TestB>(this);
     else
-      connection->AddService<TestAImpl>(context_);
+      connection->AddService<TestA>(this);
     return true;
   }
 
@@ -270,8 +279,23 @@ class Tester : public ApplicationDelegate, public ServiceLoader {
       ApplicationConnection* connection) OVERRIDE {
     // If we're connecting to B, then add C.
     if (connection->GetRemoteApplicationURL() == kTestBURLString)
-      connection->AddService<TestCImpl>(context_);
+      connection->AddService<TestC>(this);
     return true;
+  }
+
+  virtual void Create(ApplicationConnection* connection,
+                      InterfaceRequest<TestA> request) OVERRIDE {
+    BindToRequest(new TestAImpl(connection, context_), &request);
+  }
+
+  virtual void Create(ApplicationConnection* connection,
+                      InterfaceRequest<TestB> request) OVERRIDE {
+    BindToRequest(new TestBImpl(connection, context_), &request);
+  }
+
+  virtual void Create(ApplicationConnection* connection,
+                      InterfaceRequest<TestC> request) OVERRIDE {
+    BindToRequest(new TestCImpl(connection, context_), &request);
   }
 
   TesterContext* context_;
@@ -418,7 +442,8 @@ TEST_F(ServiceManagerTest, SetLoaders) {
 
 // Confirm that the url of a service is correctly passed to another service that
 // it loads.
-TEST_F(ServiceManagerTest, ACallB) {
+// http://crbug.com/396300
+TEST_F(ServiceManagerTest, DISABLED_ACallB) {
   TesterContext context;
   ServiceManager sm;
 
@@ -442,7 +467,8 @@ TEST_F(ServiceManagerTest, ACallB) {
 }
 
 // A calls B which calls C.
-TEST_F(ServiceManagerTest, BCallC) {
+// http://crbug.com/396300
+TEST_F(ServiceManagerTest, DISABLED_BCallC) {
   TesterContext context;
   ServiceManager sm;
 
@@ -469,7 +495,8 @@ TEST_F(ServiceManagerTest, BCallC) {
 
 // Confirm that a service impl will be deleted if the app that connected to
 // it goes away.
-TEST_F(ServiceManagerTest, BDeleted) {
+// http://crbug.com/396300
+TEST_F(ServiceManagerTest, DISABLED_BDeleted) {
   TesterContext context;
   ServiceManager sm;
 

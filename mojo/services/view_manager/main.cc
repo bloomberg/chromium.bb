@@ -10,17 +10,24 @@ namespace mojo {
 namespace view_manager {
 namespace service {
 
-class ViewManagerApp : public ApplicationDelegate {
+class ViewManagerApp : public ApplicationDelegate,
+                       public InterfaceFactory<ViewManagerInitService> {
  public:
   ViewManagerApp() {}
   virtual ~ViewManagerApp() {}
 
-  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
-      MOJO_OVERRIDE {
+  virtual bool ConfigureIncomingConnection(
+      ApplicationConnection* connection) OVERRIDE {
     // TODO(sky): this needs some sort of authentication as well as making sure
     // we only ever have one active at a time.
-    connection->AddService<ViewManagerInitServiceImpl>();
+    connection->AddService(this);
     return true;
+  }
+
+  virtual void Create(
+      ApplicationConnection* connection,
+      InterfaceRequest<ViewManagerInitService> request) OVERRIDE {
+    BindToRequest(new ViewManagerInitServiceImpl(connection), &request);
   }
 
  private:

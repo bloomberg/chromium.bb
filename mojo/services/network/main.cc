@@ -11,25 +11,38 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/interface_factory_with_context.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/network/network_context.h"
 #include "mojo/services/network/network_service_impl.h"
 
-class Delegate : public mojo::ApplicationDelegate {
+class Delegate : public mojo::ApplicationDelegate,
+                 public mojo::InterfaceFactory<mojo::NetworkService> {
  public:
   Delegate() {}
 
-  virtual void Initialize(mojo::ApplicationImpl* app) MOJO_OVERRIDE {
+  virtual void Initialize(mojo::ApplicationImpl* app) OVERRIDE {
     base::FilePath base_path;
     CHECK(PathService::Get(base::DIR_TEMP, &base_path));
     base_path = base_path.Append(FILE_PATH_LITERAL("network_service"));
     context_.reset(new mojo::NetworkContext(base_path));
   }
 
+  // mojo::ApplicationDelegate implementation.
   virtual bool ConfigureIncomingConnection(
-      mojo::ApplicationConnection* connection) MOJO_OVERRIDE {
+      mojo::ApplicationConnection* connection) OVERRIDE {
     DCHECK(context_);
-    connection->AddService<mojo::NetworkServiceImpl>(context_.get());
+    connection->AddService(this);
     return true;
+  }
+
+  // mojo::InterfaceFactory<mojo::NetworkService> implementation.
+  virtual void Create(
+      mojo::ApplicationConnection* connection,
+      mojo::InterfaceRequest<mojo::NetworkService> request) OVERRIDE {
+    mojo::BindToRequest(
+        new mojo::NetworkServiceImpl(connection, context_.get()), &request);
   }
 
  private:

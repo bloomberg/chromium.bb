@@ -307,8 +307,7 @@ bool ViewManagerProxy::in_embed_ = false;
 class TestViewManagerClientConnection
     : public InterfaceImpl<ViewManagerClient> {
  public:
-  TestViewManagerClientConnection(ApplicationConnection* app_connection) :
-      connection_(&tracker_) {
+  explicit TestViewManagerClientConnection() : connection_(&tracker_) {
     tracker_.set_delegate(&connection_);
   }
 
@@ -379,12 +378,14 @@ class TestViewManagerClientConnection
 
 // Used with ViewManagerService::Embed(). Creates a
 // TestViewManagerClientConnection, which creates and owns the ViewManagerProxy.
-class EmbedServiceLoader : public ServiceLoader, ApplicationDelegate {
+class EmbedServiceLoader : public ServiceLoader,
+                           ApplicationDelegate,
+                           public InterfaceFactory<ViewManagerClient> {
  public:
   EmbedServiceLoader() {}
   virtual ~EmbedServiceLoader() {}
 
-  // ServiceLoader:
+  // ServiceLoader implementation:
   virtual void LoadService(ServiceManager* manager,
                            const GURL& url,
                            ScopedMessagePipeHandle shell_handle) OVERRIDE {
@@ -396,11 +397,17 @@ class EmbedServiceLoader : public ServiceLoader, ApplicationDelegate {
                               const GURL& url) OVERRIDE {
   }
 
-  // ApplicationDelegate
+  // ApplicationDelegate implementation:
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       OVERRIDE {
-    connection->AddService<TestViewManagerClientConnection>();
+    connection->AddService(this);
     return true;
+  }
+
+  // InterfaceFactory<ViewManagerClient> implementation:
+  virtual void Create(ApplicationConnection* connection,
+                      InterfaceRequest<ViewManagerClient> request) OVERRIDE {
+    BindToRequest(new TestViewManagerClientConnection, &request);
   }
 
  private:
@@ -526,8 +533,8 @@ class ViewManagerTest : public testing::Test {
   }
 
   base::ShadowingAtExitManager at_exit_;
-  base::MessageLoop loop_;
   shell::ShellTestHelper test_helper_;
+  base::MessageLoop loop_;
 
   ViewManagerInitServicePtr view_manager_init_;
 

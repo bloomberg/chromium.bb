@@ -62,10 +62,6 @@ void SerialServiceImpl::Connect(
       path, options.Pass(), connection_request.Pass());
 }
 
-void SerialServiceImpl::OnConnectionError() {
-  delete this;
-}
-
 SerialDeviceEnumerator* SerialServiceImpl::GetDeviceEnumerator() {
   if (!device_enumerator_)
     device_enumerator_ = SerialDeviceEnumerator::Create();

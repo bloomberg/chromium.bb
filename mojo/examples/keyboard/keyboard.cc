@@ -10,9 +10,11 @@
 #include "mojo/examples/keyboard/keyboard_view.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/interface_factory_with_context.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
+#include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
@@ -33,7 +35,7 @@ class Keyboard;
 
 class KeyboardServiceImpl : public InterfaceImpl<KeyboardService> {
  public:
-  KeyboardServiceImpl(ApplicationConnection* connection, Keyboard* keyboard);
+  explicit KeyboardServiceImpl(Keyboard* keyboard);
   virtual ~KeyboardServiceImpl() {}
 
   // KeyboardService:
@@ -45,11 +47,18 @@ class KeyboardServiceImpl : public InterfaceImpl<KeyboardService> {
   DISALLOW_COPY_AND_ASSIGN(KeyboardServiceImpl);
 };
 
-class Keyboard : public ApplicationDelegate,
-                 public view_manager::ViewManagerDelegate,
-                 public KeyboardDelegate {
+class Keyboard
+    : public ApplicationDelegate,
+      public view_manager::ViewManagerDelegate,
+      public KeyboardDelegate,
+      public InterfaceFactoryWithContext<KeyboardServiceImpl, Keyboard> {
  public:
-  Keyboard() : view_manager_(NULL), keyboard_service_(NULL), target_(0) {}
+  Keyboard()
+      : InterfaceFactoryWithContext(this),
+        view_manager_(NULL),
+        view_manager_client_factory_(this),
+        keyboard_service_(NULL),
+        target_(0) {}
 
   virtual ~Keyboard() {
   }
@@ -65,8 +74,8 @@ class Keyboard : public ApplicationDelegate,
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       MOJO_OVERRIDE {
     views_init_.reset(new ViewsInit);
-    view_manager::ViewManager::ConfigureIncomingConnection(connection, this);
-    connection->AddService<KeyboardServiceImpl>(this);
+    connection->AddService(&view_manager_client_factory_);
+    connection->AddService(this);
     return true;
   }
 
@@ -111,6 +120,7 @@ class Keyboard : public ApplicationDelegate,
   scoped_ptr<ViewsInit> views_init_;
 
   view_manager::ViewManager* view_manager_;
+  view_manager::ViewManagerClientFactory view_manager_client_factory_;
 
   KeyboardServiceImpl* keyboard_service_;
 
@@ -119,8 +129,7 @@ class Keyboard : public ApplicationDelegate,
   DISALLOW_COPY_AND_ASSIGN(Keyboard);
 };
 
-KeyboardServiceImpl::KeyboardServiceImpl(ApplicationConnection* connection,
-                                         Keyboard* keyboard)
+KeyboardServiceImpl::KeyboardServiceImpl(Keyboard* keyboard)
     : keyboard_(keyboard) {
   keyboard_->set_keyboard_service(this);
 }

@@ -27,30 +27,9 @@ using cc::SolidColorDrawQuad;
 using cc::DelegatedFrameData;
 using cc::CompositorFrame;
 
-class SurfaceClientImpl : public surfaces::SurfaceClient {
- public:
-  explicit SurfaceClientImpl(ChildImpl* impl) : impl_(impl) {}
-  virtual ~SurfaceClientImpl() {}
-
-  // surfaces::SurfaceClient implementation
-  virtual void SetIdNamespace(uint32_t id_namespace) OVERRIDE {
-    impl_->SetIdNamespace(id_namespace);
-  }
-
-  virtual void ReturnResources(
-      Array<surfaces::ReturnedResourcePtr> resources) OVERRIDE {
-    DCHECK(!resources.size());
-  }
-
- private:
-  ChildImpl* impl_;
-};
-
-ChildImpl::ChildImpl(ApplicationConnection* connection, Context* context)
-    : surface_client_(new SurfaceClientImpl(this)) {
-  context->ShellConnection("mojo:mojo_surfaces_service")
-      ->ConnectToService(&surface_);
-  surface_.set_client(surface_client_.get());
+ChildImpl::ChildImpl(ApplicationConnection* surfaces_service_connection) {
+  surfaces_service_connection->ConnectToService(&surface_);
+  surface_.set_client(this);
 }
 
 ChildImpl::~ChildImpl() {
@@ -72,6 +51,11 @@ void ChildImpl::SetIdNamespace(uint32_t id_namespace) {
   allocator_.reset(new cc::SurfaceIdAllocator(id_namespace));
   if (!produce_callback_.is_null())
     Draw();
+}
+
+void ChildImpl::ReturnResources(
+    Array<surfaces::ReturnedResourcePtr> resources) {
+  DCHECK(!resources.size());
 }
 
 void ChildImpl::Draw() {

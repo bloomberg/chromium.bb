@@ -22,14 +22,14 @@ class ApplicationConnection;
 namespace view_manager {
 
 class ViewManager;
+class ViewManagerDelegate;
 class ViewManagerTransaction;
 
 // Manages the connection with the View Manager service.
 class ViewManagerClientImpl : public ViewManager,
                               public InterfaceImpl<ViewManagerClient> {
  public:
-  explicit ViewManagerClientImpl(ApplicationConnection* connection,
-                                 ViewManagerDelegate* delegate);
+  explicit ViewManagerClientImpl(ViewManagerDelegate* delegate);
   virtual ~ViewManagerClientImpl();
 
   bool connected() const { return connected_; }

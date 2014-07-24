@@ -36,7 +36,6 @@ class SerialServiceImpl : public mojo::InterfaceImpl<serial::SerialService> {
       const mojo::String& path,
       serial::ConnectionOptionsPtr options,
       mojo::InterfaceRequest<serial::Connection> connection_request) OVERRIDE;
-  virtual void OnConnectionError() OVERRIDE;
 
  private:
   SerialDeviceEnumerator* GetDeviceEnumerator();

@@ -16,6 +16,7 @@
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
+#include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/shell/shell_test_helper.h"
@@ -54,8 +55,7 @@ class ConnectServiceLoader : public ServiceLoader,
   typedef base::Callback<void(ViewManager*, Node*)> LoadedCallback;
 
   explicit ConnectServiceLoader(const LoadedCallback& callback)
-      : callback_(callback) {
-  }
+      : callback_(callback), view_manager_client_factory_(this) {}
   virtual ~ConnectServiceLoader() {}
 
  private:
@@ -74,7 +74,7 @@ class ConnectServiceLoader : public ServiceLoader,
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       OVERRIDE {
-    ViewManager::ConfigureIncomingConnection(connection, this);
+    connection->AddService(&view_manager_client_factory_);
     return true;
   }
 
@@ -87,6 +87,7 @@ class ConnectServiceLoader : public ServiceLoader,
 
   ScopedVector<ApplicationImpl> apps_;
   LoadedCallback callback_;
+  ViewManagerClientFactory view_manager_client_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectServiceLoader);
 };
@@ -397,9 +398,9 @@ class ViewManagerTest : public testing::Test {
     connect_loop_ = NULL;
   }
 
-  base::MessageLoop loop_;
   base::RunLoop* connect_loop_;
   shell::ShellTestHelper test_helper_;
+  base::MessageLoop loop_;
   ViewManagerInitServicePtr view_manager_init_;
   // Used to receive the most recent view manager loaded by an embed action.
   ViewManager* loaded_view_manager_;
@@ -508,7 +509,8 @@ TEST_F(ViewManagerTest, NodeDestroyed) {
   EXPECT_EQ(NULL, embedded->GetNodeById(id));
 }
 
-TEST_F(ViewManagerTest, ViewManagerDestroyed_CleanupNode) {
+// http://crbug.com/396300
+TEST_F(ViewManagerTest, DISABLED_ViewManagerDestroyed_CleanupNode) {
   Node* node = Node::Create(window_manager());
   window_manager()->GetRoots().front()->AddChild(node);
   ViewManager* embedded = Embed(window_manager(), node);
@@ -563,7 +565,8 @@ TEST_F(ViewManagerTest, DestroyView) {
 
 // Destroying the connection that created a node and view should result in that
 // node and view disappearing from all connections that see them.
-TEST_F(ViewManagerTest, ViewManagerDestroyed_CleanupNodeAndView) {
+// http://crbug.com/396300
+TEST_F(ViewManagerTest, DISABLED_ViewManagerDestroyed_CleanupNodeAndView) {
   Node* node = Node::Create(window_manager());
   window_manager()->GetRoots().front()->AddChild(node);
   View* view = View::Create(window_manager());
@@ -592,8 +595,10 @@ TEST_F(ViewManagerTest, ViewManagerDestroyed_CleanupNodeAndView) {
 // +  the connection originating the node is destroyed
 // -> the view should still exist (since the second connection is live) but
 //    should be disconnected from any nodes.
-TEST_F(ViewManagerTest,
-       ViewManagerDestroyed_CleanupNodeAndViewFromDifferentConnections) {
+// http://crbug.com/396300
+TEST_F(
+    ViewManagerTest,
+    DISABLED_ViewManagerDestroyed_CleanupNodeAndViewFromDifferentConnections) {
   Node* node = Node::Create(window_manager());
   window_manager()->GetRoots().front()->AddChild(node);
   ViewManager* embedded = Embed(window_manager(), node);

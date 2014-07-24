@@ -22,10 +22,6 @@ class WindowManagerDelegate;
 
 class ViewManager {
  public:
-  // Delegate is owned by the caller.
-  static void ConfigureIncomingConnection(ApplicationConnection* connection,
-                                          ViewManagerDelegate* delegate);
-
   // Sets the window manager delegate. Can only be called by the app embedded at
   // the service root node.
   virtual void SetWindowManagerDelegate(

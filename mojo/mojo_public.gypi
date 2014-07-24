@@ -185,11 +185,11 @@
       'sources': [
         'public/cpp/application/application_impl.h',
         'public/cpp/application/connect.h',
+        'public/cpp/application/lib/application_connection.cc',
+        'public/cpp/application/lib/application_delegate.cc',
         'public/cpp/application/lib/application_impl.cc',
         'public/cpp/application/lib/service_connector.cc',
         'public/cpp/application/lib/service_connector.h',
-        'public/cpp/application/lib/application_connection.cc',
-        'public/cpp/application/lib/application_delegate.cc',
         'public/cpp/application/lib/service_registry.cc',
         'public/cpp/application/lib/service_registry.h',
       ],

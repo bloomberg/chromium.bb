@@ -11,6 +11,8 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/interface_factory.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/shell/external_service.mojom.h"
 
@@ -50,8 +52,10 @@ class DBusExternalServiceBase {
 };
 
 template <class ServiceImpl>
-class DBusExternalService : public DBusExternalServiceBase,
-                            public ApplicationDelegate {
+class DBusExternalService
+    : public DBusExternalServiceBase,
+      public ApplicationDelegate,
+      public InterfaceFactory<typename ServiceImpl::ImplementedInterface> {
  public:
   explicit DBusExternalService(const std::string& service_name)
       : DBusExternalServiceBase(service_name) {
@@ -60,8 +64,15 @@ class DBusExternalService : public DBusExternalServiceBase,
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       MOJO_OVERRIDE {
-    connection->AddService<ServiceImpl>();
+    connection->AddService(this);
     return true;
+  }
+
+  virtual void Create(
+      ApplicationConnection* connection,
+      InterfaceRequest<typename ServiceImpl::ImplementedInterface> request)
+      MOJO_OVERRIDE {
+    BindToRequest(new ServiceImpl, &request);
   }
 
  protected:

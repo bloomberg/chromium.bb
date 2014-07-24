@@ -265,7 +265,7 @@ ViewManagerServiceImpl* RootNodeManager::EmbedImpl(
                                  creator_url,
                                  url.To<std::string>(),
                                  root_id);
-  BindToPipe(connection, pipe.handle0.Pass());
+  WeakBindToPipe(connection, pipe.handle0.Pass());
   connections_created_by_connect_.insert(connection);
   OnConnectionMessagedClient(connection->id());
   return connection;

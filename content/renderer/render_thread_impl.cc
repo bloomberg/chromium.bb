@@ -289,8 +289,6 @@ class RenderFrameSetupImpl : public mojo::InterfaceImpl<RenderFrameSetup> {
 
     frame->BindServiceRegistry(request.PassMessagePipe());
   }
-
-  virtual void OnConnectionError() OVERRIDE { delete this; }
 };
 
 void CreateRenderFrameSetup(mojo::InterfaceRequest<RenderFrameSetup> request) {

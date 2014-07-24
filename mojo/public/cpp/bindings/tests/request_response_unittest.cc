@@ -15,10 +15,6 @@ namespace {
 
 class ProviderImpl : public InterfaceImpl<sample::Provider> {
  public:
-  virtual void OnConnectionError() MOJO_OVERRIDE {
-    delete this;
-  }
-
   virtual void EchoString(
       const String& a,
       const Callback<void(String)>& callback) MOJO_OVERRIDE {

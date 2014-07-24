@@ -107,7 +107,7 @@ bool CommandBufferClientImpl::Initialize() {
 
   CommandBufferSyncClientPtr sync_client;
   sync_client_impl_.reset(
-      BindToProxy(new SyncClientImpl(), &sync_client, async_waiter_));
+      WeakBindToProxy(new SyncClientImpl(), &sync_client, async_waiter_));
 
   command_buffer_->Initialize(sync_client.Pass(), duped.Pass());
 

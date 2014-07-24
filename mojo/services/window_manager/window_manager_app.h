@@ -10,10 +10,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "mojo/aura/window_tree_host_mojo_delegate.h"
 #include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/interface_factory_with_context.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
+#include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
+#include "mojo/services/window_manager/window_manager_service_impl.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
@@ -35,12 +38,15 @@ class AuraInit;
 class WindowManagerServiceImpl;
 class WindowTreeHostMojo;
 
-class WindowManagerApp : public ApplicationDelegate,
-                         public view_manager::ViewManagerDelegate,
-                         public view_manager::NodeObserver,
-                         public WindowTreeHostMojoDelegate,
-                         public aura::client::FocusChangeObserver,
-                         public aura::client::ActivationChangeObserver {
+class WindowManagerApp
+    : public ApplicationDelegate,
+      public view_manager::ViewManagerDelegate,
+      public view_manager::NodeObserver,
+      public WindowTreeHostMojoDelegate,
+      public aura::client::FocusChangeObserver,
+      public aura::client::ActivationChangeObserver,
+      public InterfaceFactoryWithContext<WindowManagerServiceImpl,
+                                         WindowManagerApp> {
  public:
   WindowManagerApp();
   virtual ~WindowManagerApp();
@@ -98,6 +104,7 @@ class WindowManagerApp : public ApplicationDelegate,
   void UnregisterSubtree(view_manager::Id id);
 
   view_manager::ViewManager* view_manager_;
+  view_manager::ViewManagerClientFactory view_manager_client_factory_;
   view_manager::Node* root_;
 
   scoped_ptr<AuraInit> aura_init_;

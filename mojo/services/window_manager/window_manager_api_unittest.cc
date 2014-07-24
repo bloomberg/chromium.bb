@@ -10,6 +10,7 @@
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
+#include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 #include "mojo/services/public/interfaces/window_manager/window_manager.mojom.h"
@@ -121,7 +122,8 @@ class TestServiceLoader : public ServiceLoader,
   typedef base::Callback<void(view_manager::Node*)> RootAddedCallback;
 
   explicit TestServiceLoader(const RootAddedCallback& root_added_callback)
-      : root_added_callback_(root_added_callback) {}
+      : root_added_callback_(root_added_callback),
+        view_manager_client_factory_(this) {}
   virtual ~TestServiceLoader() {}
 
  private:
@@ -140,7 +142,7 @@ class TestServiceLoader : public ServiceLoader,
   // Overridden from ApplicationDelegate:
   virtual bool ConfigureIncomingConnection(
       ApplicationConnection* connection) MOJO_OVERRIDE {
-    view_manager::ViewManager::ConfigureIncomingConnection(connection, this);
+    connection->AddService(&view_manager_client_factory_);
     return true;
   }
 
@@ -156,6 +158,7 @@ class TestServiceLoader : public ServiceLoader,
   RootAddedCallback root_added_callback_;
 
   ScopedVector<ApplicationImpl> apps_;
+  view_manager::ViewManagerClientFactory view_manager_client_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestServiceLoader);
 };
@@ -265,8 +268,8 @@ class WindowManagerApiTest : public testing::Test {
     run_loop->Quit();
   }
 
-  base::MessageLoop loop_;
   shell::ShellTestHelper test_helper_;
+  base::MessageLoop loop_;
   view_manager::ViewManagerInitServicePtr view_manager_init_;
   scoped_ptr<TestWindowManagerClient> window_manager_client_;
   TestServiceLoader::RootAddedCallback root_added_callback_;
@@ -274,7 +277,8 @@ class WindowManagerApiTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WindowManagerApiTest);
 };
 
-TEST_F(WindowManagerApiTest, OpenWindow) {
+// http://crbug.com/396295
+TEST_F(WindowManagerApiTest, DISABLED_OpenWindow) {
   OpenWindow(window_manager_.get());
   view_manager::Id created_node =
       OpenWindowWithURL(window_manager_.get(), kTestServiceURL);
@@ -282,7 +286,8 @@ TEST_F(WindowManagerApiTest, OpenWindow) {
   EXPECT_EQ(created_node, embed_node);
 }
 
-TEST_F(WindowManagerApiTest, FocusAndActivateWindow) {
+// http://crbug.com/396295
+TEST_F(WindowManagerApiTest, DISABLED_FocusAndActivateWindow) {
   view_manager::Id first_window = OpenWindow(window_manager_.get());
   window_manager_->FocusWindow(first_window,
                                base::Bind(&EmptyResultCallback));

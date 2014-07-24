@@ -27,9 +27,6 @@ class URLLoaderImpl : public InterfaceImpl<URLLoader>,
   class PendingWriteToDataPipe;
   class DependentIOBuffer;
 
-  // InterfaceImpl<> methods:
-  virtual void OnConnectionError() OVERRIDE;
-
   // URLLoader methods:
   virtual void Start(
       URLRequestPtr request,

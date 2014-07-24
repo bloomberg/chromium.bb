@@ -9,11 +9,13 @@
 #include "mojo/examples/media_viewer/media_viewer.mojom.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/interface_factory_with_context.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
+#include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
 #include "skia/ext/platform_canvas.h"
@@ -31,8 +33,7 @@ class PNGViewer;
 
 class ZoomableMediaImpl : public InterfaceImpl<ZoomableMedia> {
  public:
-  ZoomableMediaImpl(ApplicationConnection* connection,
-                    PNGViewer* viewer) : viewer_(viewer) {}
+  explicit ZoomableMediaImpl(PNGViewer* viewer) : viewer_(viewer) {}
   virtual ~ZoomableMediaImpl() {}
 
  private:
@@ -48,8 +49,7 @@ class ZoomableMediaImpl : public InterfaceImpl<ZoomableMedia> {
 
 class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
  public:
-  NavigatorImpl(ApplicationConnection* connection,
-                PNGViewer* viewer) : viewer_(viewer) {}
+  explicit NavigatorImpl(PNGViewer* viewer) : viewer_(viewer) {}
   virtual ~NavigatorImpl() {}
 
  private:
@@ -111,14 +111,20 @@ class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
   DISALLOW_COPY_AND_ASSIGN(NavigatorImpl);
 };
 
-class PNGViewer : public ApplicationDelegate,
-                  public view_manager::ViewManagerDelegate,
-                  public view_manager::NodeObserver {
+class PNGViewer
+    : public ApplicationDelegate,
+      public view_manager::ViewManagerDelegate,
+      public view_manager::NodeObserver,
+      public InterfaceFactoryWithContext<NavigatorImpl, PNGViewer>,
+      public InterfaceFactoryWithContext<ZoomableMediaImpl, PNGViewer> {
  public:
   PNGViewer()
-      : content_view_(NULL),
+      : InterfaceFactoryWithContext<NavigatorImpl, PNGViewer>(this),
+        InterfaceFactoryWithContext<ZoomableMediaImpl, PNGViewer>(this),
+        content_view_(NULL),
         root_(NULL),
-        zoom_percentage_(kDefaultZoomPercentage) {}
+        zoom_percentage_(kDefaultZoomPercentage),
+        view_manager_client_factory_(this) {}
   virtual ~PNGViewer() {
     if (root_)
       root_->RemoveObserver(this);
@@ -160,9 +166,9 @@ class PNGViewer : public ApplicationDelegate,
   // Overridden from ApplicationDelegate:
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       MOJO_OVERRIDE {
-    connection->AddService<NavigatorImpl>(this);
-    connection->AddService<ZoomableMediaImpl>(this);
-    view_manager::ViewManager::ConfigureIncomingConnection(connection, this);
+    connection->AddService<navigation::Navigator>(this);
+    connection->AddService<ZoomableMedia>(this);
+    connection->AddService(&view_manager_client_factory_);
     return true;
   }
 
@@ -216,6 +222,7 @@ class PNGViewer : public ApplicationDelegate,
   view_manager::Node* root_;
   SkBitmap bitmap_;
   uint16_t zoom_percentage_;
+  view_manager::ViewManagerClientFactory view_manager_client_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PNGViewer);
 };

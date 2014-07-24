@@ -10,12 +10,14 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/interface_factory_with_context.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
+#include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/window_manager_delegate.h"
 #include "mojo/services/public/interfaces/input_events/input_events.mojom.h"
@@ -35,6 +37,7 @@ using mojo::view_manager::Node;
 using mojo::view_manager::NodeObserver;
 using mojo::view_manager::View;
 using mojo::view_manager::ViewManager;
+using mojo::view_manager::ViewManagerClientFactory;
 using mojo::view_manager::ViewManagerDelegate;
 using mojo::view_manager::ViewObserver;
 using mojo::view_manager::WindowManagerDelegate;
@@ -54,8 +57,7 @@ const int kTextfieldHeight = 25;
 
 class WindowManagerConnection : public InterfaceImpl<IWindowManager> {
  public:
-  explicit WindowManagerConnection(ApplicationConnection* connection,
-                                   WindowManager* window_manager)
+  explicit WindowManagerConnection(WindowManager* window_manager)
       : window_manager_(window_manager) {}
   virtual ~WindowManagerConnection() {}
 
@@ -72,10 +74,8 @@ class WindowManagerConnection : public InterfaceImpl<IWindowManager> {
 
 class NavigatorHost : public InterfaceImpl<navigation::NavigatorHost> {
  public:
-  explicit NavigatorHost(ApplicationConnection* connection,
-                         WindowManager* window_manager)
-      : window_manager_(window_manager) {
-  }
+  explicit NavigatorHost(WindowManager* window_manager)
+      : window_manager_(window_manager) {}
   virtual ~NavigatorHost() {
   }
 
@@ -249,16 +249,23 @@ class RootLayoutManager : public NodeObserver {
   DISALLOW_COPY_AND_ASSIGN(RootLayoutManager);
 };
 
-class WindowManager : public ApplicationDelegate,
-                      public DebugPanel::Delegate,
-                      public ViewManagerDelegate,
-                      public WindowManagerDelegate {
+class WindowManager
+    : public ApplicationDelegate,
+      public DebugPanel::Delegate,
+      public ViewManagerDelegate,
+      public WindowManagerDelegate,
+      public InterfaceFactoryWithContext<WindowManagerConnection,
+                                         WindowManager>,
+      public InterfaceFactoryWithContext<NavigatorHost, WindowManager> {
  public:
   WindowManager()
-      : launcher_ui_(NULL),
+      : InterfaceFactoryWithContext<WindowManagerConnection, WindowManager>(
+            this),
+        InterfaceFactoryWithContext<NavigatorHost, WindowManager>(this),
+        launcher_ui_(NULL),
         view_manager_(NULL),
-        app_(NULL) {
-  }
+        view_manager_client_factory_(this),
+        app_(NULL) {}
 
   virtual ~WindowManager() {}
 
@@ -329,9 +336,9 @@ class WindowManager : public ApplicationDelegate,
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       MOJO_OVERRIDE {
-    connection->AddService<WindowManagerConnection>(this);
-    connection->AddService<NavigatorHost>(this);
-    ViewManager::ConfigureIncomingConnection(connection, this);
+    connection->AddService<IWindowManager>(this);
+    connection->AddService<navigation::NavigatorHost>(this);
+    connection->AddService(&view_manager_client_factory_);
     return true;
   }
 
@@ -505,6 +512,7 @@ class WindowManager : public ApplicationDelegate,
   Node* launcher_ui_;
   std::vector<Node*> windows_;
   ViewManager* view_manager_;
+  ViewManagerClientFactory view_manager_client_factory_;
   scoped_ptr<RootLayoutManager> root_layout_manager_;
 
   // Id of the node most content is added to. The keyboard is NOT added here.

@@ -11,7 +11,7 @@
 
 namespace mojo {
 
-class Application;
+class ApplicationConnection;
 
 namespace test {
 
@@ -19,7 +19,7 @@ class TestRequestTrackerClientImpl;
 
 class TestTimeServiceImpl : public InterfaceImpl<TestTimeService> {
  public:
-  TestTimeServiceImpl(ApplicationConnection* application);
+  explicit TestTimeServiceImpl(ApplicationConnection* application);
   virtual ~TestTimeServiceImpl();
 
   // |TestTimeService| methods:

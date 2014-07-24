@@ -53,8 +53,13 @@ void NetworkServiceLoader::Initialize(ApplicationImpl* app) {
 
 bool NetworkServiceLoader::ConfigureIncomingConnection(
     ApplicationConnection* connection) {
-  connection->AddService<NetworkServiceImpl>(context_.get());
+  connection->AddService(this);
   return true;
+}
+
+void NetworkServiceLoader::Create(ApplicationConnection* connection,
+                                  InterfaceRequest<NetworkService> request) {
+  BindToRequest(new NetworkServiceImpl(connection, context_.get()), &request);
 }
 
 }  // namespace shell

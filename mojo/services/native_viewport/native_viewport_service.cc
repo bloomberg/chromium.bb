@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/interface_factory.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/gles2/command_buffer_impl.h"
 #include "mojo/services/native_viewport/native_viewport.h"
@@ -29,11 +30,10 @@ bool IsRateLimitedEventType(ui::Event* event) {
 
 }  // namespace
 
-class NativeViewportImpl
-    : public InterfaceImpl<mojo::NativeViewport>,
-      public NativeViewportDelegate {
+class NativeViewportImpl : public InterfaceImpl<mojo::NativeViewport>,
+                           public NativeViewportDelegate {
  public:
-  explicit NativeViewportImpl(ApplicationConnection* connection)
+  NativeViewportImpl()
       : widget_(gfx::kNullAcceleratedWidget),
         waiting_for_event_ack_(false),
         weak_factory_(this) {}
@@ -93,7 +93,7 @@ class NativeViewportImpl
       return;
     command_buffer_.reset(
         new CommandBufferImpl(widget_, native_viewport_->GetSize()));
-    BindToRequest(command_buffer_.get(), &command_buffer_request_);
+    WeakBindToRequest(command_buffer_.get(), &command_buffer_request_);
   }
 
   virtual bool OnEvent(ui::Event* ui_event) OVERRIDE {
@@ -151,15 +151,23 @@ class NativeViewportImpl
   base::WeakPtrFactory<NativeViewportImpl> weak_factory_;
 };
 
-class NVSDelegate : public ApplicationDelegate {
+class NVSDelegate : public ApplicationDelegate,
+                    public InterfaceFactory<mojo::NativeViewport> {
  public:
   NVSDelegate() {}
   virtual ~NVSDelegate() {}
 
+  // ApplicationDelegate implementation.
   virtual bool ConfigureIncomingConnection(
-      mojo::ApplicationConnection* connection) MOJO_OVERRIDE {
-    connection->AddService<NativeViewportImpl>();
+      mojo::ApplicationConnection* connection) OVERRIDE {
+    connection->AddService(this);
     return true;
+  }
+
+  // ServiceFactory<mojo::NativeViewport> implementation.
+  virtual void Create(ApplicationConnection* connection,
+                      InterfaceRequest<mojo::NativeViewport> request) OVERRIDE {
+    BindToRequest(new NativeViewportImpl, &request);
   }
 };
 

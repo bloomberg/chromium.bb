@@ -29,10 +29,6 @@ class StringRecorder {
 class ImportedInterfaceImpl
     : public InterfaceImpl<imported::ImportedInterface> {
  public:
-  virtual void OnConnectionError() MOJO_OVERRIDE {
-    delete this;
-  }
-
   virtual void DoSomething() MOJO_OVERRIDE {
     do_something_count_++;
   }
@@ -46,10 +42,6 @@ int ImportedInterfaceImpl::do_something_count_ = 0;
 
 class SampleNamedObjectImpl : public InterfaceImpl<sample::NamedObject> {
  public:
-  virtual void OnConnectionError() MOJO_OVERRIDE {
-    delete this;
-  }
-
   virtual void SetName(const mojo::String& name) MOJO_OVERRIDE {
     name_ = name;
   }
@@ -65,10 +57,6 @@ class SampleNamedObjectImpl : public InterfaceImpl<sample::NamedObject> {
 
 class SampleFactoryImpl : public InterfaceImpl<sample::Factory> {
  public:
-  virtual void OnConnectionError() MOJO_OVERRIDE {
-    delete this;
-  }
-
   virtual void DoStuff(sample::RequestPtr request,
                        ScopedMessagePipeHandle pipe) MOJO_OVERRIDE {
     std::string text1;

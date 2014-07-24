@@ -34,7 +34,6 @@ class CommandBufferImpl : public InterfaceImpl<CommandBuffer> {
                     const gfx::Size& size);
   virtual ~CommandBufferImpl();
 
-  virtual void OnConnectionError() OVERRIDE;
   virtual void Initialize(CommandBufferSyncClientPtr sync_client,
                           mojo::ScopedSharedBufferHandle shared_state) OVERRIDE;
   virtual void SetGetBuffer(int32_t buffer) OVERRIDE;

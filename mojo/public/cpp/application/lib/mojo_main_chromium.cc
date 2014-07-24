@@ -14,12 +14,16 @@ extern "C" APPLICATION_EXPORT MojoResult CDECL MojoMain(
 #if !defined(COMPONENT_BUILD)
   base::AtExitManager at_exit;
 #endif
-  base::MessageLoop loop;
-  scoped_ptr<mojo::ApplicationDelegate> delegate(
-      mojo::ApplicationDelegate::Create());
-  mojo::ApplicationImpl app(delegate.get());
-  app.BindShell(shell_handle);
-  loop.Run();
+  scoped_ptr<mojo::ApplicationDelegate> delegate;
+  {
+    // We have to shut down the MessageLoop before destroying the
+    // ApplicationDelegate.
+    base::MessageLoop loop;
+    delegate.reset(mojo::ApplicationDelegate::Create());
+    mojo::ApplicationImpl app(delegate.get());
+    app.BindShell(shell_handle);
+    loop.Run();
+  }
 
   return MOJO_RESULT_OK;
 }

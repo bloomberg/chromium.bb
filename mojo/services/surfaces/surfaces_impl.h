@@ -28,14 +28,15 @@ class SurfacesImpl : public InterfaceImpl<Surface>,
                      public cc::SurfaceFactoryClient,
                      public cc::DisplayClient {
  public:
-  class Context {
+  class Client {
    public:
-    virtual cc::SurfaceManager* Manager() = 0;
-    virtual uint32_t IdNamespace() = 0;
     virtual void FrameSubmitted() = 0;
     virtual void SetDisplay(cc::Display*) = 0;
   };
-  SurfacesImpl(ApplicationConnection* app, Context* context);
+
+  SurfacesImpl(cc::SurfaceManager* manager,
+               uint32_t id_namespace,
+               Client* client);
   virtual ~SurfacesImpl();
 
   // InterfaceImpl<Surface> implementation.
@@ -59,9 +60,10 @@ class SurfacesImpl : public InterfaceImpl<Surface>,
   cc::SurfaceFactory* factory() { return &factory_; }
 
  private:
-  Context* context_;
+  cc::SurfaceManager* manager_;
   cc::SurfaceFactory factory_;
   uint32_t id_namespace_;
+  Client* client_;
   scoped_ptr<cc::Display> display_;
   ScopedMessagePipeHandle command_buffer_handle_;
 

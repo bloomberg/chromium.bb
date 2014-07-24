@@ -12,7 +12,9 @@
 namespace mojo {
 namespace test {
 
-TestRequestTrackerApplication::TestRequestTrackerApplication() {
+TestRequestTrackerApplication::TestRequestTrackerApplication()
+    : test_tracked_request_factory_(&context_),
+      test_request_tracker_factory_(&context_) {
 }
 
 TestRequestTrackerApplication::~TestRequestTrackerApplication() {
@@ -22,17 +24,23 @@ bool TestRequestTrackerApplication::ConfigureIncomingConnection(
     ApplicationConnection* connection) {
   // Every instance of the service and recorder shares the context.
   // Note, this app is single-threaded, so this is thread safe.
-  connection->AddService<TestTrackedRequestServiceImpl>(&context_);
-  connection->AddService<TestRequestTrackerImpl>(&context_);
-  connection->AddService<TestTimeServiceImpl>();
+  connection->AddService(&test_tracked_request_factory_);
+  connection->AddService(&test_request_tracker_factory_);
+  connection->AddService(this);
   return true;
+}
+
+void TestRequestTrackerApplication::Create(
+    ApplicationConnection* connection,
+    InterfaceRequest<TestTimeService> request) {
+  BindToRequest(new TestTimeServiceImpl(connection), &request);
 }
 
 }  // namespace test
 
 // static
 ApplicationDelegate* ApplicationDelegate::Create() {
-  return new mojo::test::TestRequestTrackerApplication();
+  return new test::TestRequestTrackerApplication();
 }
 
 }  // namespace mojo

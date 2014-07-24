@@ -58,10 +58,6 @@ CommandBufferImpl::~CommandBufferImpl() {
   }
 }
 
-void CommandBufferImpl::OnConnectionError() {
-  // TODO(darin): How should we handle this error?
-}
-
 void CommandBufferImpl::Initialize(
     CommandBufferSyncClientPtr sync_client,
     mojo::ScopedSharedBufferHandle shared_state) {

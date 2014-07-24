@@ -10,12 +10,14 @@
 #include "mojo/aura/screen_mojo.h"
 #include "mojo/aura/window_tree_host_mojo.h"
 #include "mojo/aura/window_tree_host_mojo_delegate.h"
+#include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
+#include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/interfaces/native_viewport/native_viewport.mojom.h"
 #include "ui/aura/client/default_capture_client.h"
@@ -111,8 +113,8 @@ class AuraDemo : public ApplicationDelegate,
       : window1_(NULL),
         window2_(NULL),
         window21_(NULL),
-        view_(NULL) {
-  }
+        view_(NULL),
+        view_manager_client_factory_(this) {}
   virtual ~AuraDemo() {}
 
  private:
@@ -172,7 +174,7 @@ class AuraDemo : public ApplicationDelegate,
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       MOJO_OVERRIDE {
-    view_manager::ViewManager::ConfigureIncomingConnection(connection, this);
+    connection->AddService(&view_manager_client_factory_);
     return true;
   }
 
@@ -191,6 +193,8 @@ class AuraDemo : public ApplicationDelegate,
   aura::Window* window21_;
 
   view_manager::View* view_;
+
+  view_manager::ViewManagerClientFactory view_manager_client_factory_;
 
   scoped_ptr<aura::WindowTreeHost> window_tree_host_;
 
