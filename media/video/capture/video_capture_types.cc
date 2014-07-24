@@ -4,6 +4,7 @@
 
 #include "media/video/capture/video_capture_types.h"
 
+#include "base/logging.h"
 #include "media/base/limits.h"
 
 namespace media {
@@ -27,6 +28,35 @@ bool VideoCaptureFormat::IsValid() const {
          (frame_rate < media::limits::kMaxFramesPerSecond) &&
          (pixel_format >= PIXEL_FORMAT_UNKNOWN) &&
          (pixel_format < PIXEL_FORMAT_MAX);
+}
+
+std::string VideoCaptureFormat::PixelFormatToString(VideoPixelFormat format) {
+  switch (format) {
+  case PIXEL_FORMAT_UNKNOWN:
+    return "UNKNOWN";
+  case PIXEL_FORMAT_I420:
+    return "I420";
+  case PIXEL_FORMAT_YUY2:
+    return "YUY2";
+  case PIXEL_FORMAT_UYVY:
+    return "UYUY";
+  case PIXEL_FORMAT_RGB24:
+    return "RGB24";
+  case PIXEL_FORMAT_ARGB:
+    return "ARGB";
+  case PIXEL_FORMAT_MJPEG:
+    return "MJPEG";
+  case PIXEL_FORMAT_NV21:
+    return "YV12";
+  case PIXEL_FORMAT_YV12:
+    return "YV12";
+  case PIXEL_FORMAT_TEXTURE:
+    return "TEXTURE";
+  case PIXEL_FORMAT_MAX:
+    break;
+  }
+  NOTREACHED() << "Invalid VideoPixelFormat provided: " << format;
+  return "";
 }
 
 VideoCaptureParams::VideoCaptureParams() : allow_resolution_change(false) {}
