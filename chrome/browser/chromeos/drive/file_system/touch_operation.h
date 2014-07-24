@@ -31,12 +31,12 @@ class ResourceEntry;
 
 namespace file_system {
 
-class OperationObserver;
+class OperationDelegate;
 
 class TouchOperation {
  public:
   TouchOperation(base::SequencedTaskRunner* blocking_task_runner,
-                 OperationObserver* observer,
+                 OperationDelegate* delegate,
                  internal::ResourceMetadata* metadata);
   ~TouchOperation();
 
@@ -57,7 +57,7 @@ class TouchOperation {
                                       FileError error);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  OperationObserver* observer_;
+  OperationDelegate* delegate_;
   internal::ResourceMetadata* metadata_;
 
   // Note: This should remain the last member so it'll be destroyed and

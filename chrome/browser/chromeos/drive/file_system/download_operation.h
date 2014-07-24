@@ -34,12 +34,12 @@ class ResourceMetadata;
 
 namespace file_system {
 
-class OperationObserver;
+class OperationDelegate;
 
 class DownloadOperation {
  public:
   DownloadOperation(base::SequencedTaskRunner* blocking_task_runner,
-                    OperationObserver* observer,
+                    OperationDelegate* delegate,
                     JobScheduler* scheduler,
                     internal::ResourceMetadata* metadata,
                     internal::FileCache* cache,
@@ -112,7 +112,7 @@ class DownloadOperation {
   void CancelJob(JobID job_id);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  OperationObserver* observer_;
+  OperationDelegate* delegate_;
   JobScheduler* scheduler_;
   internal::ResourceMetadata* metadata_;
   internal::FileCache* cache_;

@@ -27,7 +27,7 @@ class DownloadOperationTest : public OperationTestBase {
     OperationTestBase::SetUp();
 
     operation_.reset(new DownloadOperation(
-        blocking_task_runner(), observer(), scheduler(), metadata(), cache(),
+        blocking_task_runner(), delegate(), scheduler(), metadata(), cache(),
         temp_dir()));
   }
 
@@ -63,8 +63,8 @@ TEST_F(DownloadOperationTest,
 
   // The transfered file is cached and the change of "offline available"
   // attribute is notified.
-  EXPECT_EQ(1U, observer()->get_changed_files().size());
-  EXPECT_EQ(1U, observer()->get_changed_files().count(file_in_root));
+  EXPECT_EQ(1U, delegate()->get_changed_files().size());
+  EXPECT_EQ(1U, delegate()->get_changed_files().count(file_in_root));
 }
 
 TEST_F(DownloadOperationTest,
@@ -137,9 +137,9 @@ TEST_F(DownloadOperationTest,
 
   // The transfered file is cached and the change of "offline available"
   // attribute is notified.
-  EXPECT_EQ(2U, observer()->get_changed_files().size());
-  EXPECT_TRUE(observer()->get_changed_files().count(file_in_root));
-  EXPECT_TRUE(observer()->get_changed_files().count(cached_file));
+  EXPECT_EQ(2U, delegate()->get_changed_files().size());
+  EXPECT_TRUE(delegate()->get_changed_files().count(file_in_root));
+  EXPECT_TRUE(delegate()->get_changed_files().count(cached_file));
 
   // The cache for the other file should be removed in order to free up space.
   ResourceEntry cached_file_entry;
@@ -269,8 +269,8 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByLocalId) {
 
   // The transfered file is cached and the change of "offline available"
   // attribute is notified.
-  EXPECT_EQ(1U, observer()->get_changed_files().size());
-  EXPECT_EQ(1U, observer()->get_changed_files().count(file_in_root));
+  EXPECT_EQ(1U, delegate()->get_changed_files().size());
+  EXPECT_EQ(1U, delegate()->get_changed_files().count(file_in_root));
 }
 
 TEST_F(DownloadOperationTest,
@@ -306,8 +306,8 @@ TEST_F(DownloadOperationTest,
 
     // The transfered file is cached and the change of "offline available"
     // attribute is notified.
-    EXPECT_EQ(1U, observer()->get_changed_files().size());
-    EXPECT_EQ(1U, observer()->get_changed_files().count(file_in_root));
+    EXPECT_EQ(1U, delegate()->get_changed_files().size());
+    EXPECT_EQ(1U, delegate()->get_changed_files().count(file_in_root));
   }
 
   {

@@ -20,7 +20,7 @@ namespace internal {
 typedef file_system::OperationTestBase RemovePerformerTest;
 
 TEST_F(RemovePerformerTest, RemoveFile) {
-  RemovePerformer performer(blocking_task_runner(), observer(), scheduler(),
+  RemovePerformer performer(blocking_task_runner(), delegate(), scheduler(),
                             metadata());
 
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
@@ -69,7 +69,7 @@ TEST_F(RemovePerformerTest, RemoveFile) {
 }
 
 TEST_F(RemovePerformerTest, RemoveShared) {
-  RemovePerformer performer(blocking_task_runner(), observer(), scheduler(),
+  RemovePerformer performer(blocking_task_runner(), delegate(), scheduler(),
                             metadata());
 
   const base::FilePath kPathInMyDrive(FILE_PATH_LITERAL(
@@ -119,7 +119,7 @@ TEST_F(RemovePerformerTest, RemoveShared) {
 }
 
 TEST_F(RemovePerformerTest, RemoveLocallyCreatedFile) {
-  RemovePerformer performer(blocking_task_runner(), observer(), scheduler(),
+  RemovePerformer performer(blocking_task_runner(), delegate(), scheduler(),
                             metadata());
 
   // Add an entry without resource ID.

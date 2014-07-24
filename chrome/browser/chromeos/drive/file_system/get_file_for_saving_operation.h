@@ -33,18 +33,18 @@ namespace file_system {
 
 class CreateFileOperation;
 class DownloadOperation;
-class OperationObserver;
+class OperationDelegate;
 
 // Implements GetFileForSaving() operation that prepares a local cache for
 // a Drive file whose next modification is monitored and notified to the
-// OperationObserver.
+// OperationDelegate.
 // TODO(kinaba): crbug.com/269424: we might want to monitor all the changes
 // to the cache directory, not just the one immediately after the save dialog.
 class GetFileForSavingOperation {
  public:
   GetFileForSavingOperation(EventLogger* logger,
                             base::SequencedTaskRunner* blocking_task_runner,
-                            OperationObserver* observer,
+                            OperationDelegate* delegate,
                             JobScheduler* scheduler,
                             internal::ResourceMetadata* metadata,
                             internal::FileCache* cache,
@@ -53,7 +53,7 @@ class GetFileForSavingOperation {
 
   // Makes sure that |file_path| in the file system is available in the local
   // cache, and marks it as dirty. The next modification to the cache file is
-  // watched and is automatically notified to the observer. If the entry is not
+  // watched and is automatically notified to the delegate. If the entry is not
   // present in the file system, it is created.
   void GetFileForSaving(const base::FilePath& file_path,
                         const GetFileCallback& callback);
@@ -89,7 +89,7 @@ class GetFileForSavingOperation {
   scoped_ptr<DownloadOperation> download_operation_;
   scoped_ptr<internal::FileWriteWatcher> file_write_watcher_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  OperationObserver* observer_;
+  OperationDelegate* delegate_;
   internal::ResourceMetadata* metadata_;
   internal::FileCache* cache_;
 

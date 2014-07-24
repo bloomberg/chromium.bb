@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_change.h"
-#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
@@ -187,23 +187,23 @@ FileError FinishUpdate(ResourceMetadata* metadata,
 
 EntryUpdatePerformer::EntryUpdatePerformer(
     base::SequencedTaskRunner* blocking_task_runner,
-    file_system::OperationObserver* observer,
+    file_system::OperationDelegate* delegate,
     JobScheduler* scheduler,
     ResourceMetadata* metadata,
     FileCache* cache,
     LoaderController* loader_controller)
     : blocking_task_runner_(blocking_task_runner),
-      observer_(observer),
+      delegate_(delegate),
       scheduler_(scheduler),
       metadata_(metadata),
       cache_(cache),
       loader_controller_(loader_controller),
       remove_performer_(new RemovePerformer(blocking_task_runner,
-                                            observer,
+                                            delegate,
                                             scheduler,
                                             metadata)),
       entry_revert_performer_(new EntryRevertPerformer(blocking_task_runner,
-                                                       observer,
+                                                       delegate,
                                                        scheduler,
                                                        metadata)),
       weak_ptr_factory_(this) {
@@ -398,7 +398,7 @@ void EntryUpdatePerformer::UpdateEntryAfterFinish(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  observer_->OnFileChangedByOperation(*changed_files);
+  delegate_->OnFileChangedByOperation(*changed_files);
   callback.Run(error);
 }
 

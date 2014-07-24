@@ -28,7 +28,7 @@ class ResourceMetadata;
 
 namespace file_system {
 
-class OperationObserver;
+class OperationDelegate;
 class DownloadOperation;
 
 // This class encapsulates the drive Truncate function. It is responsible for
@@ -38,7 +38,7 @@ class DownloadOperation;
 class TruncateOperation {
  public:
   TruncateOperation(base::SequencedTaskRunner* blocking_task_runner,
-                    OperationObserver* observer,
+                    OperationDelegate* delegate,
                     JobScheduler* scheduler,
                     internal::ResourceMetadata* metadata,
                     internal::FileCache* cache,
@@ -67,7 +67,7 @@ class TruncateOperation {
       FileError error);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  OperationObserver* observer_;
+  OperationDelegate* delegate_;
   internal::ResourceMetadata* metadata_;
   internal::FileCache* cache_;
 

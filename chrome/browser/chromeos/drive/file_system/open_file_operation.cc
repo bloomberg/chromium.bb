@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system/create_file_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
-#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -27,18 +27,18 @@ namespace file_system {
 
 OpenFileOperation::OpenFileOperation(
     base::SequencedTaskRunner* blocking_task_runner,
-    OperationObserver* observer,
+    OperationDelegate* delegate,
     JobScheduler* scheduler,
     internal::ResourceMetadata* metadata,
     internal::FileCache* cache,
     const base::FilePath& temporary_file_directory)
     : blocking_task_runner_(blocking_task_runner),
-      observer_(observer),
+      delegate_(delegate),
       cache_(cache),
       create_file_operation_(new CreateFileOperation(
-          blocking_task_runner, observer, metadata)),
+          blocking_task_runner, delegate, metadata)),
       download_operation_(new DownloadOperation(
-          blocking_task_runner, observer, scheduler,
+          blocking_task_runner, delegate, scheduler,
           metadata, cache, temporary_file_directory)),
       weak_ptr_factory_(this) {
 }
@@ -170,7 +170,7 @@ void OpenFileOperation::CloseFile(
   if (--open_files_[local_id] == 0) {
     // All clients closes this file, so notify to upload the file.
     open_files_.erase(local_id);
-    observer_->OnEntryUpdatedByOperation(local_id);
+    delegate_->OnEntryUpdatedByOperation(local_id);
 
     // Clients may have enlarged the file. By FreeDiskpSpaceIfNeededFor(0),
     // we try to ensure (0 + the-minimum-safe-margin = 512MB as of now) space.

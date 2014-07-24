@@ -26,7 +26,7 @@ class CreateDirectoryOperationTest : public OperationTestBase {
 
 TEST_F(CreateDirectoryOperationTest, CreateDirectory) {
   CreateDirectoryOperation operation(blocking_task_runner(),
-                                     observer(),
+                                     delegate(),
                                      metadata());
 
   const base::FilePath kExistingFile(
@@ -50,10 +50,10 @@ TEST_F(CreateDirectoryOperationTest, CreateDirectory) {
   content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(FILE_ERROR_OK, FindDirectory(kNewDirectory1));
-  EXPECT_EQ(1U, observer()->get_changed_files().size());
+  EXPECT_EQ(1U, delegate()->get_changed_files().size());
   EXPECT_EQ(
       1U,
-      observer()->get_changed_files().CountDirectory(kNewDirectory1.DirName()));
+      delegate()->get_changed_files().CountDirectory(kNewDirectory1.DirName()));
 
   ResourceEntry entry;
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(kNewDirectory1, &entry));
@@ -63,8 +63,8 @@ TEST_F(CreateDirectoryOperationTest, CreateDirectory) {
       entry.file_info().last_modified()).is_null());
   EXPECT_FALSE(base::Time::FromInternalValue(
       entry.file_info().last_accessed()).is_null());
-  EXPECT_EQ(1U, observer()->updated_local_ids().size());
-  EXPECT_EQ(1U, observer()->updated_local_ids().count(entry.local_id()));
+  EXPECT_EQ(1U, delegate()->updated_local_ids().size());
+  EXPECT_EQ(1U, delegate()->updated_local_ids().count(entry.local_id()));
 
   // Create a new directory recursively.
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, FindDirectory(kNewDirectory2));

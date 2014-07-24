@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
-#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
@@ -340,13 +340,13 @@ class DownloadOperation::DownloadParams {
 
 DownloadOperation::DownloadOperation(
     base::SequencedTaskRunner* blocking_task_runner,
-    OperationObserver* observer,
+    OperationDelegate* delegate,
     JobScheduler* scheduler,
     internal::ResourceMetadata* metadata,
     internal::FileCache* cache,
     const base::FilePath& temporary_file_directory)
     : blocking_task_runner_(blocking_task_runner),
-      observer_(observer),
+      delegate_(delegate),
       scheduler_(scheduler),
       metadata_(metadata),
       cache_(cache),
@@ -534,7 +534,7 @@ void DownloadOperation::EnsureFileDownloadedAfterUpdateLocalState(
   changed_files.Update(
       file_path, FileChange::FILE_TYPE_FILE, FileChange::ADD_OR_UPDATE);
   // Storing to cache changes the "offline available" status, hence notify.
-  observer_->OnFileChangedByOperation(changed_files);
+  delegate_->OnFileChangedByOperation(changed_files);
   params->OnDownloadCompleted(*cache_file_path, entry_after_update.Pass());
 }
 

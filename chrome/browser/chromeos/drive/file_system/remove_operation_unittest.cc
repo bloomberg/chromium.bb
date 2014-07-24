@@ -17,7 +17,7 @@ namespace file_system {
 typedef OperationTestBase RemoveOperationTest;
 
 TEST_F(RemoveOperationTest, RemoveFile) {
-  RemoveOperation operation(blocking_task_runner(), observer(), metadata(),
+  RemoveOperation operation(blocking_task_runner(), delegate(), metadata(),
                             cache());
 
   base::FilePath nonexisting_file(
@@ -69,18 +69,18 @@ TEST_F(RemoveOperationTest, RemoveFile) {
   content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
 
-  // Verify observer notifications.
-  EXPECT_EQ(2U, observer()->get_changed_files().size());
-  EXPECT_TRUE(observer()->get_changed_files().count(file_in_root));
-  EXPECT_TRUE(observer()->get_changed_files().count(file_in_subdir));
+  // Verify delegate notifications.
+  EXPECT_EQ(2U, delegate()->get_changed_files().size());
+  EXPECT_TRUE(delegate()->get_changed_files().count(file_in_root));
+  EXPECT_TRUE(delegate()->get_changed_files().count(file_in_subdir));
 
-  EXPECT_EQ(2U, observer()->updated_local_ids().size());
-  EXPECT_TRUE(observer()->updated_local_ids().count(id_file_in_root));
-  EXPECT_TRUE(observer()->updated_local_ids().count(id_file_in_subdir));
+  EXPECT_EQ(2U, delegate()->updated_local_ids().size());
+  EXPECT_TRUE(delegate()->updated_local_ids().count(id_file_in_root));
+  EXPECT_TRUE(delegate()->updated_local_ids().count(id_file_in_subdir));
 }
 
 TEST_F(RemoveOperationTest, RemoveDirectory) {
-  RemoveOperation operation(blocking_task_runner(), observer(), metadata(),
+  RemoveOperation operation(blocking_task_runner(), delegate(), metadata(),
                             cache());
 
   base::FilePath empty_dir(FILE_PATH_LITERAL(

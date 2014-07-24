@@ -28,14 +28,14 @@ class ResourceMetadata;
 
 namespace file_system {
 
-class OperationObserver;
+class OperationDelegate;
 
 // This class encapsulates the drive Remove function.  It is responsible for
 // moving the removed entry to the trash.
 class RemoveOperation {
  public:
   RemoveOperation(base::SequencedTaskRunner* blocking_task_runner,
-                  OperationObserver* observer,
+                  OperationDelegate* delegate,
                   internal::ResourceMetadata* metadata,
                   internal::FileCache* cache);
   ~RemoveOperation();
@@ -58,7 +58,7 @@ class RemoveOperation {
                                    FileError error);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  OperationObserver* observer_;
+  OperationDelegate* delegate_;
   internal::ResourceMetadata* metadata_;
   internal::FileCache* cache_;
 

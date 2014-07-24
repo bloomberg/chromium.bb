@@ -30,7 +30,7 @@ struct ClientContext;
 
 namespace file_system {
 class DownloadOperation;
-class OperationObserver;
+class OperationDelegate;
 }
 
 namespace internal {
@@ -50,7 +50,7 @@ class ResourceMetadata;
 class SyncClient {
  public:
   SyncClient(base::SequencedTaskRunner* blocking_task_runner,
-             file_system::OperationObserver* observer,
+             file_system::OperationDelegate* delegate,
              JobScheduler* scheduler,
              ResourceMetadata* metadata,
              FileCache* cache,
@@ -164,7 +164,7 @@ class SyncClient {
                            scoped_ptr<ResourceEntry> entry);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  file_system::OperationObserver* operation_observer_;
+  file_system::OperationDelegate* operation_delegate_;
   ResourceMetadata* metadata_;
   FileCache* cache_;
 

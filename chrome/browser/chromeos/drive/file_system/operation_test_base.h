@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
-#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,17 +45,17 @@ namespace file_system {
 // FakeDriveService for testing.
 class OperationTestBase : public testing::Test {
  protected:
-  // OperationObserver that records all the events.
-  class LoggingObserver : public OperationObserver {
+  // OperationDelegate that records all the events.
+  class LoggingDelegate : public OperationDelegate {
    public:
     typedef base::Callback<bool(
         const std::string& local_id,
         const FileOperationCallback& callback)> WaitForSyncCompleteHandler;
 
-    LoggingObserver();
-    ~LoggingObserver();
+    LoggingDelegate();
+    ~LoggingDelegate();
 
-    // OperationObserver overrides.
+    // OperationDelegate overrides.
     virtual void OnFileChangedByOperation(
         const FileChange& changed_files) OVERRIDE;
     virtual void OnEntryUpdatedByOperation(
@@ -124,7 +124,7 @@ class OperationTestBase : public testing::Test {
     return fake_drive_service_.get();
   }
   EventLogger* logger() { return logger_.get(); }
-  LoggingObserver* observer() { return &observer_; }
+  LoggingDelegate* delegate() { return &delegate_; }
   JobScheduler* scheduler() { return scheduler_.get(); }
   base::SequencedTaskRunner* blocking_task_runner() {
     return blocking_task_runner_.get();
@@ -147,7 +147,7 @@ class OperationTestBase : public testing::Test {
   scoped_ptr<TestingPrefServiceSimple> pref_service_;
   base::ScopedTempDir temp_dir_;
 
-  LoggingObserver observer_;
+  LoggingDelegate delegate_;
   scoped_ptr<EventLogger> logger_;
   scoped_ptr<FakeDriveService> fake_drive_service_;
   scoped_ptr<JobScheduler> scheduler_;

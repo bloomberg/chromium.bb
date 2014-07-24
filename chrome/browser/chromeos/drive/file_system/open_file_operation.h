@@ -34,12 +34,12 @@ namespace file_system {
 
 class CreateFileOperation;
 class DownloadOperation;
-class OperationObserver;
+class OperationDelegate;
 
 class OpenFileOperation {
  public:
   OpenFileOperation(base::SequencedTaskRunner* blocking_task_runner,
-                    OperationObserver* observer,
+                    OperationDelegate* delegate,
                     JobScheduler* scheduler,
                     internal::ResourceMetadata* metadata,
                     internal::FileCache* cache,
@@ -84,7 +84,7 @@ class OpenFileOperation {
                  scoped_ptr<base::ScopedClosureRunner> file_closer);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  OperationObserver* observer_;
+  OperationDelegate* delegate_;
   internal::FileCache* cache_;
 
   scoped_ptr<CreateFileOperation> create_file_operation_;

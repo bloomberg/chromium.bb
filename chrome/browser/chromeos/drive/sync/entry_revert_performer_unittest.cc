@@ -23,7 +23,7 @@ class EntryRevertPerformerTest : public file_system::OperationTestBase {
   virtual void SetUp() OVERRIDE {
    OperationTestBase::SetUp();
    performer_.reset(new EntryRevertPerformer(blocking_task_runner(),
-                                             observer(),
+                                             delegate(),
                                              scheduler(),
                                              metadata()));
   }
@@ -71,9 +71,9 @@ TEST_F(EntryRevertPerformerTest, RevertEntry) {
   EXPECT_EQ(src_entry.title(), result_entry.title());
   EXPECT_EQ(ResourceEntry::CLEAN, result_entry.metadata_edit_state());
 
-  EXPECT_EQ(2U, observer()->get_changed_files().size());
-  EXPECT_TRUE(observer()->get_changed_files().count(path));
-  EXPECT_TRUE(observer()->get_changed_files().count(updated_path));
+  EXPECT_EQ(2U, delegate()->get_changed_files().size());
+  EXPECT_TRUE(delegate()->get_changed_files().count(path));
+  EXPECT_TRUE(delegate()->get_changed_files().count(updated_path));
 }
 
 TEST_F(EntryRevertPerformerTest, RevertEntry_NotFoundOnServer) {
@@ -110,8 +110,8 @@ TEST_F(EntryRevertPerformerTest, RevertEntry_NotFoundOnServer) {
   // Verify the entry was deleted locally.
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, GetLocalResourceEntryById(local_id, &entry));
 
-  EXPECT_EQ(1U, observer()->get_changed_files().size());
-  EXPECT_TRUE(observer()->get_changed_files().CountDirectory(
+  EXPECT_EQ(1U, delegate()->get_changed_files().size());
+  EXPECT_TRUE(delegate()->get_changed_files().CountDirectory(
       util::GetDriveMyDriveRootPath()));
 }
 
@@ -143,8 +143,8 @@ TEST_F(EntryRevertPerformerTest, RevertEntry_TrashedOnServer) {
   EXPECT_EQ(FILE_ERROR_NOT_FOUND,
             GetLocalResourceEntryById(entry.local_id(), &entry));
 
-  EXPECT_EQ(1U, observer()->get_changed_files().size());
-  EXPECT_TRUE(observer()->get_changed_files().count(path));
+  EXPECT_EQ(1U, delegate()->get_changed_files().size());
+  EXPECT_TRUE(delegate()->get_changed_files().count(path));
 }
 
 }  // namespace internal

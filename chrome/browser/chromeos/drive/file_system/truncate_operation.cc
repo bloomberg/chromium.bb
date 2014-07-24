@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
-#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -56,17 +56,17 @@ FileError TruncateOnBlockingPool(internal::ResourceMetadata* metadata,
 
 TruncateOperation::TruncateOperation(
     base::SequencedTaskRunner* blocking_task_runner,
-    OperationObserver* observer,
+    OperationDelegate* delegate,
     JobScheduler* scheduler,
     internal::ResourceMetadata* metadata,
     internal::FileCache* cache,
     const base::FilePath& temporary_file_directory)
     : blocking_task_runner_(blocking_task_runner),
-      observer_(observer),
+      delegate_(delegate),
       metadata_(metadata),
       cache_(cache),
       download_operation_(new DownloadOperation(blocking_task_runner,
-                                                observer,
+                                                delegate,
                                                 scheduler,
                                                 metadata,
                                                 cache,
@@ -139,7 +139,7 @@ void TruncateOperation::TruncateAfterTruncateOnBlockingPool(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  observer_->OnEntryUpdatedByOperation(local_id);
+  delegate_->OnEntryUpdatedByOperation(local_id);
 
   callback.Run(error);
 }

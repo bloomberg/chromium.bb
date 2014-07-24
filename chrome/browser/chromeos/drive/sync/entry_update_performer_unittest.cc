@@ -28,7 +28,7 @@ class EntryUpdatePerformerTest : public file_system::OperationTestBase {
   virtual void SetUp() OVERRIDE {
     OperationTestBase::SetUp();
     performer_.reset(new EntryUpdatePerformer(blocking_task_runner(),
-                                              observer(),
+                                              delegate(),
                                               scheduler(),
                                               metadata(),
                                               cache(),
@@ -130,7 +130,7 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_WithNonDirtyCache) {
 
   // Download the file content to prepare a non-dirty cache file.
   file_system::DownloadOperation download_operation(
-      blocking_task_runner(), observer(), scheduler(), metadata(), cache(),
+      blocking_task_runner(), delegate(), scheduler(), metadata(), cache(),
       temp_dir());
   FileError error = FILE_ERROR_FAILED;
   base::FilePath cache_file_path;

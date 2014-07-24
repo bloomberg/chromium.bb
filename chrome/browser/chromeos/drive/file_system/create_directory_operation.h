@@ -28,7 +28,7 @@ class ResourceMetadata;
 
 namespace file_system {
 
-class OperationObserver;
+class OperationDelegate;
 
 // This class encapsulates the drive Create Directory function.  It is
 // responsible for sending the request to the drive API, then updating the
@@ -36,7 +36,7 @@ class OperationObserver;
 class CreateDirectoryOperation {
  public:
   CreateDirectoryOperation(base::SequencedTaskRunner* blocking_task_runner,
-                           OperationObserver* observer,
+                           OperationDelegate* delegate,
                            internal::ResourceMetadata* metadata);
   ~CreateDirectoryOperation();
 
@@ -61,7 +61,7 @@ class CreateDirectoryOperation {
       FileError error);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  OperationObserver* observer_;
+  OperationDelegate* delegate_;
   internal::ResourceMetadata* metadata_;
 
   // Note: This should remain the last member so it'll be destroyed and

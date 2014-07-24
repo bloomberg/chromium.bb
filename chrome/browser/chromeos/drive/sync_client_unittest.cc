@@ -17,7 +17,7 @@
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system/move_operation.h"
-#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
@@ -96,12 +96,6 @@ class SyncClientTestDriveService : public ::drive::FakeDriveService {
   base::Closure paused_action_;
 };
 
-class DummyOperationObserver : public file_system::OperationObserver {
-  // OperationObserver override:
-  virtual void OnFileChangedByOperation(
-      const FileChange& changed_files) OVERRIDE {}
-};
-
 }  // namespace
 
 class SyncClientTest : public testing::Test {
@@ -151,7 +145,7 @@ class SyncClientTest : public testing::Test {
     ASSERT_NO_FATAL_FAILURE(SetUpTestData());
 
     sync_client_.reset(new SyncClient(base::MessageLoopProxy::current().get(),
-                                      &observer_,
+                                      &delegate_,
                                       scheduler_.get(),
                                       metadata_.get(),
                                       cache_.get(),
@@ -223,7 +217,7 @@ class SyncClientTest : public testing::Test {
 
     // Prepare a removed file.
     file_system::RemoveOperation remove_operation(
-        base::MessageLoopProxy::current().get(), &observer_, metadata_.get(),
+        base::MessageLoopProxy::current().get(), &delegate_, metadata_.get(),
         cache_.get());
     remove_operation.Remove(
         util::GetDriveMyDriveRootPath().AppendASCII("removed"),
@@ -234,7 +228,7 @@ class SyncClientTest : public testing::Test {
 
     // Prepare a moved file.
     file_system::MoveOperation move_operation(
-        base::MessageLoopProxy::current().get(), &observer_, metadata_.get());
+        base::MessageLoopProxy::current().get(), &delegate_, metadata_.get());
     move_operation.Move(
         util::GetDriveMyDriveRootPath().AppendASCII("moved"),
         util::GetDriveMyDriveRootPath().AppendASCII("moved_new_title"),
@@ -259,7 +253,7 @@ class SyncClientTest : public testing::Test {
       fake_network_change_notifier_;
   scoped_ptr<EventLogger> logger_;
   scoped_ptr<SyncClientTestDriveService> drive_service_;
-  DummyOperationObserver observer_;
+  file_system::OperationDelegate delegate_;
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<ResourceMetadataStorage,
              test_util::DestroyHelperForTests> metadata_storage_;

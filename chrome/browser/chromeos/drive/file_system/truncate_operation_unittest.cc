@@ -22,7 +22,7 @@ class TruncateOperationTest : public OperationTestBase {
     OperationTestBase::SetUp();
 
     operation_.reset(new TruncateOperation(
-        blocking_task_runner(), observer(), scheduler(),
+        blocking_task_runner(), delegate(), scheduler(),
         metadata(), cache(), temp_dir()));
   }
 

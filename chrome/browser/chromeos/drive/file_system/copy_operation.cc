@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system/create_file_operation.h"
-#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
@@ -276,19 +276,19 @@ FileError LocalWorkForTransferJsonGdocFile(
 }  // namespace
 
 CopyOperation::CopyOperation(base::SequencedTaskRunner* blocking_task_runner,
-                             OperationObserver* observer,
+                             OperationDelegate* delegate,
                              JobScheduler* scheduler,
                              internal::ResourceMetadata* metadata,
                              internal::FileCache* cache,
                              const ResourceIdCanonicalizer& id_canonicalizer)
   : blocking_task_runner_(blocking_task_runner),
-    observer_(observer),
+    delegate_(delegate),
     scheduler_(scheduler),
     metadata_(metadata),
     cache_(cache),
     id_canonicalizer_(id_canonicalizer),
     create_file_operation_(new CreateFileOperation(blocking_task_runner,
-                                                   observer,
+                                                   delegate,
                                                    metadata)),
     weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -335,7 +335,7 @@ void CopyOperation::CopyAfterTryToCopyLocally(
   DCHECK(!params->callback.is_null());
 
   for (size_t i = 0; i < updated_local_ids->size(); ++i)
-    observer_->OnEntryUpdatedByOperation((*updated_local_ids)[i]);
+    delegate_->OnEntryUpdatedByOperation((*updated_local_ids)[i]);
 
   if (*directory_changed) {
     FileChange changed_file;
@@ -343,7 +343,7 @@ void CopyOperation::CopyAfterTryToCopyLocally(
     changed_file.Update(params->dest_file_path,
                         FileChange::FILE_TYPE_FILE,
                         FileChange::ADD_OR_UPDATE);
-    observer_->OnFileChangedByOperation(changed_file);
+    delegate_->OnFileChangedByOperation(changed_file);
   }
 
   if (error != FILE_ERROR_OK || !*should_copy_on_server) {
@@ -353,7 +353,7 @@ void CopyOperation::CopyAfterTryToCopyLocally(
 
   if (params->parent_entry.resource_id().empty()) {
     // Parent entry may be being synced.
-    const bool waiting = observer_->WaitForSyncComplete(
+    const bool waiting = delegate_->WaitForSyncComplete(
         params->parent_entry.local_id(),
         base::Bind(&CopyOperation::CopyAfterParentSync,
                    weak_ptr_factory_.GetWeakPtr(), *params));
@@ -503,14 +503,14 @@ void CopyOperation::TransferJsonGdocFileAfterLocalWork(
     // This reparenting is already done in LocalWorkForTransferJsonGdocFile().
     case IS_ORPHAN: {
       DCHECK(!params->changed_path.empty());
-      observer_->OnEntryUpdatedByOperation(params->local_id);
+      delegate_->OnEntryUpdatedByOperation(params->local_id);
 
       FileChange changed_file;
       changed_file.Update(
           params->changed_path,
           FileChange::FILE_TYPE_FILE,  // This must be a hosted document.
           FileChange::ADD_OR_UPDATE);
-      observer_->OnFileChangedByOperation(changed_file);
+      delegate_->OnFileChangedByOperation(changed_file);
       params->callback.Run(error);
       break;
     }
@@ -593,7 +593,7 @@ void CopyOperation::UpdateAfterLocalStateUpdate(
   if (error == FILE_ERROR_OK) {
     FileChange changed_file;
     changed_file.Update(*file_path, *entry, FileChange::ADD_OR_UPDATE);
-    observer_->OnFileChangedByOperation(changed_file);
+    delegate_->OnFileChangedByOperation(changed_file);
   }
   callback.Run(error);
 }
@@ -660,8 +660,8 @@ void CopyOperation::ScheduleTransferRegularFileAfterUpdateLocalState(
   if (error == FILE_ERROR_OK) {
     FileChange changed_file;
     changed_file.Update(remote_dest_path, *entry, FileChange::ADD_OR_UPDATE);
-    observer_->OnFileChangedByOperation(changed_file);
-    observer_->OnEntryUpdatedByOperation(*local_id);
+    delegate_->OnFileChangedByOperation(changed_file);
+    delegate_->OnEntryUpdatedByOperation(*local_id);
   }
   callback.Run(error);
 }

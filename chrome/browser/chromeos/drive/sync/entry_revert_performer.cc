@@ -7,7 +7,7 @@
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_change.h"
-#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
@@ -85,11 +85,11 @@ FileError FinishRevert(ResourceMetadata* metadata,
 
 EntryRevertPerformer::EntryRevertPerformer(
     base::SequencedTaskRunner* blocking_task_runner,
-    file_system::OperationObserver* observer,
+    file_system::OperationDelegate* delegate,
     JobScheduler* scheduler,
     ResourceMetadata* metadata)
     : blocking_task_runner_(blocking_task_runner),
-      observer_(observer),
+      delegate_(delegate),
       scheduler_(scheduler),
       metadata_(metadata),
       weak_ptr_factory_(this) {
@@ -172,7 +172,7 @@ void EntryRevertPerformer::RevertEntryAfterFinishRevert(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  observer_->OnFileChangedByOperation(*changed_files);
+  delegate_->OnFileChangedByOperation(*changed_files);
 
   callback.Run(error);
 }

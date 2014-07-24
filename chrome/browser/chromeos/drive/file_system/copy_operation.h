@@ -37,7 +37,7 @@ class ResourceMetadata;
 namespace file_system {
 
 class CreateFileOperation;
-class OperationObserver;
+class OperationDelegate;
 
 // This class encapsulates the drive Copy function.  It is responsible for
 // sending the request to the drive API, then updating the local state and
@@ -45,7 +45,7 @@ class OperationObserver;
 class CopyOperation {
  public:
   CopyOperation(base::SequencedTaskRunner* blocking_task_runner,
-                OperationObserver* observer,
+                OperationDelegate* delegate,
                 JobScheduler* scheduler,
                 internal::ResourceMetadata* metadata,
                 internal::FileCache* cache,
@@ -158,7 +158,7 @@ class CopyOperation {
       FileError error);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  OperationObserver* observer_;
+  OperationDelegate* delegate_;
   JobScheduler* scheduler_;
   internal::ResourceMetadata* metadata_;
   internal::FileCache* cache_;

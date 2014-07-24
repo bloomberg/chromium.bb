@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_OPERATION_OBSERVER_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_OPERATION_OBSERVER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_OPERATION_DELEGATE_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_OPERATION_DELEGATE_H_
 
 #include "chrome/browser/chromeos/drive/file_errors.h"
 
@@ -28,13 +28,12 @@ enum DriveSyncErrorType {
 };
 
 // Passes notifications from Drive operations back to the file system.
-// TODO(hashimoto): Give this class a more appropriate name.
-class OperationObserver {
+class OperationDelegate {
  public:
   // Sent when a content of a directory has been changed.
   // |directory_path| is a virtual directory path representing the
   // changed directory.
-  virtual void OnFileChangedByOperation(const FileChange& changed_files) = 0;
+  virtual void OnFileChangedByOperation(const FileChange& changed_files) {}
 
   // Sent when an entry is updated and sync is needed.
   virtual void OnEntryUpdatedByOperation(const std::string& local_id) {}
@@ -53,4 +52,4 @@ class OperationObserver {
 }  // namespace file_system
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_OPERATION_OBSERVER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_OPERATION_DELEGATE_H_

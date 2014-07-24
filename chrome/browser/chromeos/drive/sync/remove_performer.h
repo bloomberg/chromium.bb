@@ -27,7 +27,7 @@ class ResourceEntry;
 struct ClientContext;
 
 namespace file_system {
-class OperationObserver;
+class OperationDelegate;
 }  // namespace file_system
 
 namespace internal {
@@ -41,7 +41,7 @@ class ResourceMetadata;
 class RemovePerformer {
  public:
   RemovePerformer(base::SequencedTaskRunner* blocking_task_runner,
-                  file_system::OperationObserver* observer,
+                  file_system::OperationDelegate* delegate,
                   JobScheduler* scheduler,
                   ResourceMetadata* metadata);
   ~RemovePerformer();
@@ -94,7 +94,7 @@ class RemovePerformer {
       google_apis::GDataErrorCode status);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  file_system::OperationObserver* observer_;
+  file_system::OperationDelegate* delegate_;
   JobScheduler* scheduler_;
   ResourceMetadata* metadata_;
   scoped_ptr<EntryRevertPerformer> entry_revert_performer_;

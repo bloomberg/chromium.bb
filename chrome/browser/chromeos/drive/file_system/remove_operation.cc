@@ -8,7 +8,7 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_change.h"
-#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "content/public/browser/browser_thread.h"
@@ -61,11 +61,11 @@ FileError UpdateLocalState(internal::ResourceMetadata* metadata,
 
 RemoveOperation::RemoveOperation(
     base::SequencedTaskRunner* blocking_task_runner,
-    OperationObserver* observer,
+    OperationDelegate* delegate,
     internal::ResourceMetadata* metadata,
     internal::FileCache* cache)
     : blocking_task_runner_(blocking_task_runner),
-      observer_(observer),
+      delegate_(delegate),
       metadata_(metadata),
       cache_(cache),
       weak_ptr_factory_(this) {
@@ -117,8 +117,8 @@ void RemoveOperation::RemoveAfterUpdateLocalState(
     FileChange changed_file;
     changed_file.Update(*changed_path, *entry, FileChange::DELETE);
     if (error == FILE_ERROR_OK) {
-      observer_->OnFileChangedByOperation(changed_file);
-      observer_->OnEntryUpdatedByOperation(*local_id);
+      delegate_->OnFileChangedByOperation(changed_file);
+      delegate_->OnEntryUpdatedByOperation(*local_id);
     }
   }
 

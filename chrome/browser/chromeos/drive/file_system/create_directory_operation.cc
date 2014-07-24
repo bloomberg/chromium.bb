@@ -6,7 +6,7 @@
 
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_change.h"
-#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "content/public/browser/browser_thread.h"
@@ -121,10 +121,10 @@ FileError UpdateLocalState(internal::ResourceMetadata* metadata,
 
 CreateDirectoryOperation::CreateDirectoryOperation(
     base::SequencedTaskRunner* blocking_task_runner,
-    OperationObserver* observer,
+    OperationDelegate* delegate,
     internal::ResourceMetadata* metadata)
     : blocking_task_runner_(blocking_task_runner),
-      observer_(observer),
+      delegate_(delegate),
       metadata_(metadata),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -172,9 +172,9 @@ void CreateDirectoryOperation::CreateDirectoryAfterUpdateLocalState(
 
   for (std::set<std::string>::const_iterator it = updated_local_ids->begin();
        it != updated_local_ids->end(); ++it)
-    observer_->OnEntryUpdatedByOperation(*it);
+    delegate_->OnEntryUpdatedByOperation(*it);
 
-  observer_->OnFileChangedByOperation(*changed_files);
+  delegate_->OnFileChangedByOperation(*changed_files);
 
   callback.Run(error);
 }

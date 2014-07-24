@@ -7,7 +7,7 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_change.h"
-#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -67,10 +67,10 @@ FileError UpdateLocalState(internal::ResourceMetadata* metadata,
 }  // namespace
 
 MoveOperation::MoveOperation(base::SequencedTaskRunner* blocking_task_runner,
-                             OperationObserver* observer,
+                             OperationDelegate* delegate,
                              internal::ResourceMetadata* metadata)
     : blocking_task_runner_(blocking_task_runner),
-      observer_(observer),
+      delegate_(delegate),
       metadata_(metadata),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -112,8 +112,8 @@ void MoveOperation::MoveAfterUpdateLocalState(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (error == FILE_ERROR_OK) {
     // Notify the change of directory.
-    observer_->OnFileChangedByOperation(*changed_files);
-    observer_->OnEntryUpdatedByOperation(*local_id);
+    delegate_->OnFileChangedByOperation(*changed_files);
+    delegate_->OnEntryUpdatedByOperation(*local_id);
   }
   callback.Run(error);
 }

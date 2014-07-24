@@ -6,7 +6,7 @@
 
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
@@ -51,15 +51,15 @@ void RemoveEntryOnUIThread(base::SequencedTaskRunner* blocking_task_runner,
 
 RemovePerformer::RemovePerformer(
     base::SequencedTaskRunner* blocking_task_runner,
-    file_system::OperationObserver* observer,
+    file_system::OperationDelegate* delegate,
     JobScheduler* scheduler,
     ResourceMetadata* metadata)
     : blocking_task_runner_(blocking_task_runner),
-      observer_(observer),
+      delegate_(delegate),
       scheduler_(scheduler),
       metadata_(metadata),
       entry_revert_performer_(new EntryRevertPerformer(blocking_task_runner,
-                                                       observer,
+                                                       delegate,
                                                        scheduler,
                                                        metadata)),
       weak_ptr_factory_(this) {
@@ -153,7 +153,7 @@ void RemovePerformer::TrashResourceAfterUpdateRemoteState(
   if (status == google_apis::HTTP_FORBIDDEN) {
     // Editing this entry is not allowed, revert local changes.
     entry_revert_performer_->RevertEntry(local_id, context, callback);
-    observer_->OnDriveSyncError(
+    delegate_->OnDriveSyncError(
         file_system::DRIVE_SYNC_ERROR_DELETE_WITHOUT_PERMISSION, local_id);
     return;
   }

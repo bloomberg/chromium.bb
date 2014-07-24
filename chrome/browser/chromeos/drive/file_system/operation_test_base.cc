@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_change.h"
-#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/drive/event_logger.h"
@@ -23,28 +23,28 @@
 namespace drive {
 namespace file_system {
 
-OperationTestBase::LoggingObserver::LoggingObserver() {
+OperationTestBase::LoggingDelegate::LoggingDelegate() {
 }
 
-OperationTestBase::LoggingObserver::~LoggingObserver() {
+OperationTestBase::LoggingDelegate::~LoggingDelegate() {
 }
 
-void OperationTestBase::LoggingObserver::OnFileChangedByOperation(
+void OperationTestBase::LoggingDelegate::OnFileChangedByOperation(
     const FileChange& changed_files) {
   changed_files_.Apply(changed_files);
 }
 
-void OperationTestBase::LoggingObserver::OnEntryUpdatedByOperation(
+void OperationTestBase::LoggingDelegate::OnEntryUpdatedByOperation(
     const std::string& local_id) {
   updated_local_ids_.insert(local_id);
 }
 
-void OperationTestBase::LoggingObserver::OnDriveSyncError(
+void OperationTestBase::LoggingDelegate::OnDriveSyncError(
     DriveSyncErrorType type, const std::string& local_id) {
   drive_sync_errors_.push_back(type);
 }
 
-bool OperationTestBase::LoggingObserver::WaitForSyncComplete(
+bool OperationTestBase::LoggingDelegate::WaitForSyncComplete(
     const std::string& local_id,
     const FileOperationCallback& callback) {
   return wait_for_sync_complete_handler_.is_null() ?

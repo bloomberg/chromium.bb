@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/create_file_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
-#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/file_write_watcher.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/drive/event_logger.h"
@@ -40,24 +40,24 @@ FileError OpenCacheFileForWrite(
 GetFileForSavingOperation::GetFileForSavingOperation(
     EventLogger* logger,
     base::SequencedTaskRunner* blocking_task_runner,
-    OperationObserver* observer,
+    OperationDelegate* delegate,
     JobScheduler* scheduler,
     internal::ResourceMetadata* metadata,
     internal::FileCache* cache,
     const base::FilePath& temporary_file_directory)
     : logger_(logger),
       create_file_operation_(new CreateFileOperation(blocking_task_runner,
-                                                     observer,
+                                                     delegate,
                                                      metadata)),
       download_operation_(new DownloadOperation(blocking_task_runner,
-                                                observer,
+                                                delegate,
                                                 scheduler,
                                                 metadata,
                                                 cache,
                                                 temporary_file_directory)),
       file_write_watcher_(new internal::FileWriteWatcher),
       blocking_task_runner_(blocking_task_runner),
-      observer_(observer),
+      delegate_(delegate),
       metadata_(metadata),
       cache_(cache),
       weak_ptr_factory_(this) {
@@ -193,7 +193,7 @@ void GetFileForSavingOperation::OnWriteEvent(
   logger_->Log(logging::LOG_INFO, "Detected modification to %s.",
                local_id.c_str());
 
-  observer_->OnEntryUpdatedByOperation(local_id);
+  delegate_->OnEntryUpdatedByOperation(local_id);
 
   // Clients may have enlarged the file. By FreeDiskpSpaceIfNeededFor(0),
   // we try to ensure (0 + the-minimum-safe-margin = 512MB as of now) space.

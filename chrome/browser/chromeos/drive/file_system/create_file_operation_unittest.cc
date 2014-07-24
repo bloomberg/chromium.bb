@@ -17,7 +17,7 @@ typedef OperationTestBase CreateFileOperationTest;
 
 TEST_F(CreateFileOperationTest, CreateFile) {
   CreateFileOperation operation(blocking_task_runner(),
-                                observer(),
+                                delegate(),
                                 metadata());
 
   const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root/New File.txt"));
@@ -38,15 +38,15 @@ TEST_F(CreateFileOperationTest, CreateFile) {
   EXPECT_FALSE(base::Time::FromInternalValue(
       entry.file_info().last_accessed()).is_null());
 
-  EXPECT_EQ(1u, observer()->get_changed_files().size());
-  EXPECT_EQ(1u, observer()->get_changed_files().count(kFilePath));
-  EXPECT_EQ(1u, observer()->updated_local_ids().size());
-  EXPECT_EQ(1u, observer()->updated_local_ids().count(entry.local_id()));
+  EXPECT_EQ(1u, delegate()->get_changed_files().size());
+  EXPECT_EQ(1u, delegate()->get_changed_files().count(kFilePath));
+  EXPECT_EQ(1u, delegate()->updated_local_ids().size());
+  EXPECT_EQ(1u, delegate()->updated_local_ids().count(entry.local_id()));
 }
 
 TEST_F(CreateFileOperationTest, CreateFileIsExclusive) {
   CreateFileOperation operation(blocking_task_runner(),
-                                observer(),
+                                delegate(),
                                 metadata());
 
   const base::FilePath kExistingFile(
@@ -107,7 +107,7 @@ TEST_F(CreateFileOperationTest, CreateFileIsExclusive) {
 
 TEST_F(CreateFileOperationTest, CreateFileMimeType) {
   CreateFileOperation operation(blocking_task_runner(),
-                                observer(),
+                                delegate(),
                                 metadata());
 
   const base::FilePath kPng1(FILE_PATH_LITERAL("drive/root/1.png"));

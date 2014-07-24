@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 
 namespace drive {
 namespace file_system {
 
-bool OperationObserver::WaitForSyncComplete(
+bool OperationDelegate::WaitForSyncComplete(
     const std::string& local_id,
     const FileOperationCallback& callback) {
   return false;
