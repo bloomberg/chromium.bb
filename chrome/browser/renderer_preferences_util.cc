@@ -26,50 +26,6 @@
 
 namespace renderer_preferences_util {
 
-namespace {
-
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-content::RendererPreferencesHintingEnum GetRendererPreferencesHintingEnum(
-    gfx::FontRenderParams::Hinting hinting) {
-  switch (hinting) {
-    case gfx::FontRenderParams::HINTING_NONE:
-      return content::RENDERER_PREFERENCES_HINTING_NONE;
-    case gfx::FontRenderParams::HINTING_SLIGHT:
-      return content::RENDERER_PREFERENCES_HINTING_SLIGHT;
-    case gfx::FontRenderParams::HINTING_MEDIUM:
-      return content::RENDERER_PREFERENCES_HINTING_MEDIUM;
-    case gfx::FontRenderParams::HINTING_FULL:
-      return content::RENDERER_PREFERENCES_HINTING_FULL;
-    default:
-      NOTREACHED() << "Unhandled hinting style " << hinting;
-      return content::RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT;
-  }
-}
-
-content::RendererPreferencesSubpixelRenderingEnum
-GetRendererPreferencesSubpixelRenderingEnum(
-    gfx::FontRenderParams::SubpixelRendering subpixel_rendering) {
-  switch (subpixel_rendering) {
-    case gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE:
-      return content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_NONE;
-    case gfx::FontRenderParams::SUBPIXEL_RENDERING_RGB:
-      return content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_RGB;
-    case gfx::FontRenderParams::SUBPIXEL_RENDERING_BGR:
-      return content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_BGR;
-    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VRGB:
-      return content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VRGB;
-    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VBGR:
-      return content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VBGR;
-    default:
-      NOTREACHED() << "Unhandled subpixel rendering style "
-                   << subpixel_rendering;
-      return content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT;
-  }
-}
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
-
-}  // namespace
-
 void UpdateFromSystemSettings(
     content::RendererPreferences* prefs, Profile* profile) {
   const PrefService* pref_service = profile->GetPrefs();
@@ -134,11 +90,10 @@ void UpdateFromSystemSettings(
   const gfx::FontRenderParams& params = gfx::GetDefaultWebKitFontRenderParams();
   prefs->should_antialias_text = params.antialiasing;
   prefs->use_subpixel_positioning = params.subpixel_positioning;
-  prefs->hinting = GetRendererPreferencesHintingEnum(params.hinting);
+  prefs->hinting = params.hinting;
   prefs->use_autohinter = params.autohinter;
   prefs->use_bitmaps = params.use_bitmaps;
-  prefs->subpixel_rendering =
-      GetRendererPreferencesSubpixelRenderingEnum(params.subpixel_rendering);
+  prefs->subpixel_rendering = params.subpixel_rendering;
 #endif
 
 #if !defined(OS_MACOSX)
