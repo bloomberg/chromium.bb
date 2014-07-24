@@ -48,6 +48,9 @@ per-file search_types.*=brettw@chromium.org
 per-file search_types.*=jered@chromium.org
 per-file search_types.*=samarth@chromium.org
 
+#Content settings
+per-file content_settings*=markusheintz@chromium.org
+
 # Other stuff.
 per-file autocomplete_match_type.*=mpearson@chromium.org
 per-file autocomplete_match_type.*=pkasting@chromium.org
