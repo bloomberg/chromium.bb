@@ -20,7 +20,7 @@ TEST(LoggerTest, Basic) {
   logger->LogMessage(MOJO_LOG_LEVEL_ERROR, "Logged at ERROR level");
 
   // This should kill us:
-  EXPECT_DEATH({
+  EXPECT_DEATH_IF_SUPPORTED({
     logger->LogMessage(MOJO_LOG_LEVEL_FATAL, "Logged at FATAL level");
   }, "");
 }
@@ -46,7 +46,7 @@ TEST(LoggerTest, LogLevels) {
     logger->LogMessage(MOJO_LOG_LEVEL_ERROR, "Logged at ERROR level");
 
     // This should kill us:
-    EXPECT_DEATH({
+    EXPECT_DEATH_IF_SUPPORTED({
       logger->LogMessage(MOJO_LOG_LEVEL_FATAL, "Logged at FATAL level");
     }, "");
   }

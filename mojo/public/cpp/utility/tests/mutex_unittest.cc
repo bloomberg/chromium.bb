@@ -225,33 +225,33 @@ TEST(MutexTest, TryLock) {
 // Test |AssertHeld()| (which is an actual user API).
 TEST(MutexTest, DebugAssertHeldFailure) {
   Mutex mutex;
-  EXPECT_DEATH(mutex.AssertHeld(), "");
+  EXPECT_DEATH_IF_SUPPORTED(mutex.AssertHeld(), "");
 }
 
 // Test other consistency checks.
 TEST(MutexTest, DebugAssertionFailures) {
   // Unlock without lock held.
-  EXPECT_DEATH({
+  EXPECT_DEATH_IF_SUPPORTED({
     Mutex mutex;
     mutex.Unlock();
   }, "");
 
   // Lock with lock held (on same thread).
-  EXPECT_DEATH({
+  EXPECT_DEATH_IF_SUPPORTED({
     Mutex mutex;
     mutex.Lock();
     mutex.Lock();
   }, "");
 
   // Try lock with lock held.
-  EXPECT_DEATH({
+  EXPECT_DEATH_IF_SUPPORTED({
     Mutex mutex;
     mutex.Lock();
     mutex.TryLock();
   }, "");
 
   // Destroy lock with lock held.
-  EXPECT_DEATH({
+  EXPECT_DEATH_IF_SUPPORTED({
     Mutex mutex;
     mutex.Lock();
   }, "");

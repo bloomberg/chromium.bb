@@ -635,7 +635,7 @@ TEST_F(ViewManagerTest, SetActiveViewAcrossConnection) {
   ViewManager* embedded = Embed(window_manager(), node);
 
   View* view_in_embedded = View::Create(embedded);
-  EXPECT_DEATH(node->SetActiveView(view_in_embedded), "");
+  EXPECT_DEATH_IF_SUPPORTED(node->SetActiveView(view_in_embedded), "");
 }
 
 // This test verifies that a node hierarchy constructed in one connection

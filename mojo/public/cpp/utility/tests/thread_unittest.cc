@@ -70,7 +70,7 @@ TEST(ThreadTest, CreateAndJoin) {
 #if !defined(NDEBUG)
 TEST(ThreadTest, DebugAssertionFailures) {
   // Can only start once.
-  EXPECT_DEATH({
+  EXPECT_DEATH_IF_SUPPORTED({
     int value = 0;
     SetIntThread thread(&value, 1);
     thread.Start();
@@ -78,14 +78,14 @@ TEST(ThreadTest, DebugAssertionFailures) {
   }, "");
 
   // Must join (if you start).
-  EXPECT_DEATH({
+  EXPECT_DEATH_IF_SUPPORTED({
     int value = 0;
     SetIntThread thread(&value, 2);
     thread.Start();
   }, "");
 
   // Can only join once.
-  EXPECT_DEATH({
+  EXPECT_DEATH_IF_SUPPORTED({
     int value = 0;
     SetIntThread thread(&value, 3);
     thread.Start();
@@ -94,7 +94,7 @@ TEST(ThreadTest, DebugAssertionFailures) {
   }, "");
 
   // Stack too big (we're making certain assumptions here).
-  EXPECT_DEATH({
+  EXPECT_DEATH_IF_SUPPORTED({
     int value = 0;
     Thread::Options options;
     options.set_stack_size(static_cast<size_t>(-1));
