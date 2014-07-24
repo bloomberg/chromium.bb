@@ -31,6 +31,9 @@ This directory contains the source code of ICU 52.1 for C/C++
     Upstream bug for QNX : http://bugs.icu-project.org/trac/ticket/10811
     Upstream bug for newlib : http://bugs.icu-project.org/trac/ticket/10873
 
+ - patches/platform_nacl.patch to add U_PF_NATIVE_CLIENT
+   Upstream bug : http://bugs.icu-project.org/trac/ticket/11033
+
 
 3. Breakiterator patches
 
