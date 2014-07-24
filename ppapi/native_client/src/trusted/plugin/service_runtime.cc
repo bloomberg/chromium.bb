@@ -466,10 +466,16 @@ void ServiceRuntime::SignalNexeStarted(bool ok) {
   NaClXCondVarSignal(&cond_);
 }
 
-void ServiceRuntime::StartNexe() {
-  bool ok = StartNexeInternal();
+void ServiceRuntime::LoadNexeAndStart(PP_NaClFileInfo file_info) {
+  NaClLog(4, "ServiceRuntime::LoadNexeAndStart (handle_valid=%d "
+             "token_lo=%" NACL_PRIu64 " token_hi=%" NACL_PRIu64 ")\n",
+      file_info.handle != PP_kInvalidFileHandle,
+      file_info.token_lo,
+      file_info.token_hi);
+
+  bool ok = LoadNexeAndStartInternal(file_info);
   if (ok) {
-    NaClLog(4, "ServiceRuntime::StartNexe (success)\n");
+    NaClLog(4, "ServiceRuntime::LoadNexeAndStart (success)\n");
   } else {
     ReapLogs();
   }
@@ -478,12 +484,47 @@ void ServiceRuntime::StartNexe() {
   SignalNexeStarted(ok);
 }
 
-bool ServiceRuntime::StartNexeInternal() {
-  if (!SetupCommandChannel())
+bool ServiceRuntime::LoadNexeAndStartInternal(
+    const PP_NaClFileInfo& file_info) {
+  if(!SetupCommandChannel()) {
     return false;
-  if (!InitReverseService())
+  }
+  if (!InitReverseService()) {
     return false;
-  return StartModule();
+  }
+  if (!LoadModule(file_info)) {
+    ErrorInfo error_info;
+    error_info.SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
+                         "ServiceRuntime: load module failed");
+    ReportLoadError(error_info);
+    return false;
+  }
+  if (!StartModule()) {
+    return false;
+  }
+  return true;
+}
+
+bool ServiceRuntime::LoadModule(const PP_NaClFileInfo& file_info) {
+  if (uses_nonsfi_mode_) {
+    // In non-SFI mode, loading is done a part of LaunchSelLdr.
+    return true;
+  }
+
+  NaClFileInfo nacl_file_info;
+  nacl_file_info.desc = ConvertFileDescriptor(file_info.handle, true);
+  nacl_file_info.file_token.lo = file_info.token_lo;
+  nacl_file_info.file_token.hi = file_info.token_hi;
+  NaClDesc* desc = NaClDescIoFromFileInfo(nacl_file_info, O_RDONLY);
+  if (desc == NULL) {
+    return false;
+  }
+  // We don't use a scoped_ptr here since we would immediately release the
+  // DescWrapper to LoadModule().
+  nacl::DescWrapper* wrapper =
+    plugin_->wrapper_factory()->MakeGenericCleanup(desc);
+  // TODO(teravest, hidehiko): Replace this by Chrome IPC.
+  return subprocess_->LoadModule(&command_channel_, wrapper);
 }
 
 void ServiceRuntime::ReapLogs() {

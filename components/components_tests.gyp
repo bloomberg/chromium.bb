@@ -497,12 +497,6 @@
               ],
             }],
             ['disable_nacl==0', {
-              'includes': [
-                'nacl/nacl_defines.gypi',
-              ],
-              'defines': [
-                '<@(nacl_defines)',
-              ],
               'sources': [
                 'nacl/browser/nacl_file_host_unittest.cc',
                 'nacl/browser/nacl_process_host_unittest.cc',

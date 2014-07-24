@@ -18,7 +18,6 @@
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "ipc/ipc_channel_handle.h"
-#include "native_client/src/public/nacl_file_info.h"
 #include "net/socket/socket_descriptor.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "url/gurl.h"
@@ -47,8 +46,6 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
  public:
   // manifest_url: the URL of the manifest of the Native Client plugin being
   // executed.
-  // nexe_file: A file that corresponds to the nexe module to be loaded.
-  // nexe_token: A cache validation token for nexe_file.
   // permissions: PPAPI permissions, to control access to private APIs.
   // render_view_id: RenderView routing id, to control access to private APIs.
   // permission_bits: controls which interfaces the NaCl plugin can use.
@@ -66,7 +63,6 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // profile_directory: is the path of current profile directory.
   NaClProcessHost(const GURL& manifest_url,
                   base::File nexe_file,
-                  NaClFileToken nexe_token,
                   ppapi::PpapiPermissions permissions,
                   int render_view_id,
                   uint32 permission_bits,
@@ -193,7 +189,6 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 
   GURL manifest_url_;
   base::File nexe_file_;
-  NaClFileToken nexe_token_;
 
   ppapi::PpapiPermissions permissions_;
 

@@ -5,7 +5,6 @@
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
-import("//native_client/build/config/nacl_defines.gni")
 import("//tools/grit/grit_rule.gni")
 
 about_credits_file = "$target_gen_dir/about_credits.html"
@@ -129,7 +128,8 @@ static_library("browser") {
     #        # chrome/browser/metrics/variations/generate_resources_map.py
     #        '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/metrics/variations/generated_resources_map.cc',
 
-    defines = nacl_defines
+    # TODO(GYP) Also add these nacl_defines to direct dependents.
+    #defines = nacl_defines
 
     # TODO(GYP) remove this when the real webrtc target is used below.
     configs += [ "//content:webrtc_stub_config" ]

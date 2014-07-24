@@ -346,25 +346,12 @@ void LaunchSelLdr(PP_Instance instance,
   std::string error_message_string;
   NaClLaunchResult launch_result;
 
-  IPC::PlatformFileForTransit nexe_for_transit =
-      IPC::InvalidPlatformFileForTransit();
-#if defined(OS_POSIX)
-  if (nexe_file_info->handle != PP_kInvalidFileHandle)
-    nexe_for_transit = base::FileDescriptor(nexe_file_info->handle, true);
-#elif defined(OS_WIN)
-  // Duplicate the handle on the browser side instead of the renderer.
-  // This is because BrokerGetFileForProcess isn't part of content/public, and
-  // it's simpler to do the duplication in the browser anyway.
-  nexe_for_transit = nexe_file_info->handle;
-#else
-#error Unsupported target platform.
-#endif
+  content::RendererPpapiHost* host =
+      content::RendererPpapiHost::GetForPPInstance(instance);
   if (!sender->Send(new NaClHostMsg_LaunchNaCl(
           NaClLaunchParams(
               instance_info.url.spec(),
-              nexe_for_transit,
-              nexe_file_info->token_lo,
-              nexe_file_info->token_hi,
+              host->ShareHandleWithRemote(nexe_file_info->handle, true),
               routing_id,
               perm_bits,
               PP_ToBool(uses_irt),
