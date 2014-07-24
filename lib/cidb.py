@@ -517,4 +517,17 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                                           'final' : True})
 
 
+def GetCIDBConnectionForBuilder(builer_run):
+  """Get a CIDBConnection.
+
+  Args:
+    builder_run: BuildRun instance for this builder.
+
+  Returns:
+    A CIDBConnection instance.
+  """
+  if builder_run.options.test_cidb:
+    return CIDBConnection(constants.CIDB_TEST_BOT_CREDS)
+  else:
+    return CIDBConnection(constants.CIDB_PROD_BOT_CREDS)
 

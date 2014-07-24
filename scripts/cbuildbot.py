@@ -1357,6 +1357,10 @@ def _CreateParser():
             'MasterSlaveSyncCompletionStage, by specifying a file with a '
             'pickle of the result to be returned.'))
 
+  group.add_remote_option(
+      '--test-cidb', dest='test_cidb', default=False, action='store_true',
+      help='Use test instance of cidb database, instead of prod instance.')
+
   parser.add_option_group(group)
 
   #
