@@ -37,15 +37,14 @@ bool RenderPictureToCanvas(SkPicture* picture, SkCanvas* canvas) {
 }
 }
 
-void AwPicture::Draw(JNIEnv* env, jobject obj, jobject canvas,
-                     jint left, jint top, jint right, jint bottom) {
+void AwPicture::Draw(JNIEnv* env, jobject obj, jobject canvas) {
   bool ok = JavaBrowserViewRendererHelper::GetInstance()
                 ->RenderViaAuxilaryBitmapIfNeeded(
-                      canvas,
-                      gfx::Vector2d(),
-                      gfx::Rect(left, top, right - left, bottom - top),
-                      base::Bind(&RenderPictureToCanvas,
-                                 base::Unretained(picture_.get())));
+                    canvas,
+                    gfx::Vector2d(),
+                    gfx::Size(picture_->width(), picture_->height()),
+                    base::Bind(&RenderPictureToCanvas,
+                               base::Unretained(picture_.get())));
   LOG_IF(ERROR, !ok) << "Couldn't draw picture";
 }
 

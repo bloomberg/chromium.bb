@@ -47,7 +47,7 @@ class BrowserViewRendererJavaHelper {
   virtual bool RenderViaAuxilaryBitmapIfNeeded(
       jobject java_canvas,
       const gfx::Vector2d& scroll_correction,
-      const gfx::Rect& auxiliary_bitmap_size,
+      const gfx::Size& auxiliary_bitmap_size,
       RenderMethod render_source) = 0;
 
  protected:

@@ -306,13 +306,19 @@ bool BrowserViewRenderer::OnDrawSoftware(jobject java_canvas) {
     return false;
   }
 
+  // TODO(hush): right now webview size is passed in as the auxiliary bitmap
+  // size, which might hurt performace (only for software draws with auxiliary
+  // bitmap). For better performance, get global visible rect, transform it
+  // from screen space to view space, then intersect with the webview in
+  // viewspace.  Use the resulting rect as the auxiliary
+  // bitmap.
   return BrowserViewRendererJavaHelper::GetInstance()
       ->RenderViaAuxilaryBitmapIfNeeded(
-            java_canvas,
-            last_on_draw_scroll_offset_,
-            gfx::Rect(width_, height_),
-            base::Bind(&BrowserViewRenderer::CompositeSW,
-                       base::Unretained(this)));
+          java_canvas,
+          last_on_draw_scroll_offset_,
+          gfx::Size(width_, height_),
+          base::Bind(&BrowserViewRenderer::CompositeSW,
+                     base::Unretained(this)));
 }
 
 skia::RefPtr<SkPicture> BrowserViewRenderer::CapturePicture(int width,

@@ -26,8 +26,7 @@ class AwPicture {
   void Destroy(JNIEnv* env, jobject obj);
   jint GetWidth(JNIEnv* env, jobject obj);
   jint GetHeight(JNIEnv* env, jobject obj);
-  void Draw(JNIEnv* env, jobject obj, jobject canvas,
-            jint left, jint top, jint right, jint bottom);
+  void Draw(JNIEnv* env, jobject obj, jobject canvas);
 
  private:
   skia::RefPtr<SkPicture> picture_;
