@@ -45,6 +45,7 @@
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
+#include "cc/resources/eviction_tile_priority_queue.h"
 #include "cc/resources/gpu_raster_worker_pool.h"
 #include "cc/resources/image_copy_raster_worker_pool.h"
 #include "cc/resources/image_raster_worker_pool.h"
@@ -52,6 +53,7 @@
 #include "cc/resources/picture_layer_tiling.h"
 #include "cc/resources/pixel_buffer_raster_worker_pool.h"
 #include "cc/resources/prioritized_resource_manager.h"
+#include "cc/resources/raster_tile_priority_queue.h"
 #include "cc/resources/raster_worker_pool.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/texture_mailbox_deleter.h"
@@ -1244,7 +1246,54 @@ void LayerTreeHostImpl::DidInitializeVisibleTile() {
     client_->DidInitializeVisibleTileOnImplThread();
 }
 
-const std::vector<PictureLayerImpl*>& LayerTreeHostImpl::GetPictureLayers() {
+void LayerTreeHostImpl::GetPictureLayerImplPairs(
+    std::vector<PictureLayerImpl::Pair>* layer_pairs) const {
+  DCHECK(layer_pairs->empty());
+  for (std::vector<PictureLayerImpl*>::const_iterator it =
+           picture_layers_.begin();
+       it != picture_layers_.end();
+       ++it) {
+    PictureLayerImpl* layer = *it;
+
+    // TODO(vmpstr): Iterators and should handle this instead. crbug.com/381704
+    if (!layer->HasValidTilePriorities())
+      continue;
+
+    PictureLayerImpl* twin_layer = layer->GetTwinLayer();
+
+    // Ignore the twin layer when tile priorities are invalid.
+    // TODO(vmpstr): Iterators should handle this instead. crbug.com/381704
+    if (twin_layer && !twin_layer->HasValidTilePriorities())
+      twin_layer = NULL;
+
+    // If the current tree is ACTIVE_TREE, then always generate a layer_pair.
+    // If current tree is PENDING_TREE, then only generate a layer_pair if
+    // there is no twin layer.
+    if (layer->GetTree() == ACTIVE_TREE) {
+      DCHECK(!twin_layer || twin_layer->GetTree() == PENDING_TREE);
+      layer_pairs->push_back(PictureLayerImpl::Pair(layer, twin_layer));
+    } else if (!twin_layer) {
+      layer_pairs->push_back(PictureLayerImpl::Pair(NULL, layer));
+    }
+  }
+}
+
+void LayerTreeHostImpl::BuildRasterQueue(RasterTilePriorityQueue* queue,
+                                         TreePriority tree_priority) {
+  picture_layer_pairs_.clear();
+  GetPictureLayerImplPairs(&picture_layer_pairs_);
+  queue->Build(picture_layer_pairs_, tree_priority);
+}
+
+void LayerTreeHostImpl::BuildEvictionQueue(EvictionTilePriorityQueue* queue,
+                                           TreePriority tree_priority) {
+  picture_layer_pairs_.clear();
+  GetPictureLayerImplPairs(&picture_layer_pairs_);
+  queue->Build(picture_layer_pairs_, tree_priority);
+}
+
+const std::vector<PictureLayerImpl*>& LayerTreeHostImpl::GetPictureLayers()
+    const {
   return picture_layers_;
 }
 
