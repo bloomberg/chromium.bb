@@ -5,7 +5,6 @@
 #include "content/public/common/renderer_preferences.h"
 
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/font_render_params.h"
 
 namespace {
 // The touchpad / touchscreen fling profiles are a matched set
@@ -22,11 +21,12 @@ namespace content {
 RendererPreferences::RendererPreferences()
     : can_accept_load_drops(true),
       should_antialias_text(true),
-      hinting(gfx::FontRenderParams::HINTING_MEDIUM),
+      hinting(RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT),
       use_autohinter(false),
       use_bitmaps(false),
-      subpixel_rendering(gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE),
-      use_subpixel_positioning(true),
+      subpixel_rendering(
+          RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT),
+      use_subpixel_positioning(false),
       focus_ring_color(SkColorSetARGB(255, 229, 151, 0)),
       thumb_active_color(SkColorSetRGB(244, 244, 244)),
       thumb_inactive_color(SkColorSetRGB(234, 234, 234)),
