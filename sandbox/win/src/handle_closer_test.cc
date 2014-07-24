@@ -73,7 +73,7 @@ SBOX_TESTS_COMMAND int CheckForFileHandles(int argc, wchar_t **argv) {
       // Brute force the handle table to find what we're looking for.
       DWORD handle_count = UINT_MAX;
       const int kInvalidHandleThreshold = 100;
-      const size_t kHandleOffset = sizeof(HANDLE);
+      const size_t kHandleOffset = 4;  // Handles are always a multiple of 4.
       HANDLE handle = NULL;
       int invalid_count = 0;
       base::string16 handle_name;

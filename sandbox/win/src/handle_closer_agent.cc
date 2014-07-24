@@ -78,7 +78,7 @@ void HandleCloserAgent::InitializeHandlesToClose() {
 bool HandleCloserAgent::CloseHandles() {
   DWORD handle_count = UINT_MAX;
   const int kInvalidHandleThreshold = 100;
-  const size_t kHandleOffset = sizeof(HANDLE);
+  const size_t kHandleOffset = 4;  // Handles are always a multiple of 4.
 
   if (!::GetProcessHandleCount(::GetCurrentProcess(), &handle_count))
     return false;
