@@ -172,10 +172,16 @@ JSON_RESULTS_TEST_LIST_TEMPLATE = '{"Webkit":{"tests":{[TESTDATA_TESTS]}}}'
 
 
 class MockFile(object):
+    @property
+    def file_information(self):
+        return "master: %s, builder: %s, test_type: %s, build_number: %r, name: %s." % (
+            self.master, self.builder, self.test_type, self.build_number, self.name)
+
     def __init__(self, name='results.json', data=''):
         self.master = 'MockMasterName'
         self.builder = 'MockBuilderName'
         self.test_type = 'MockTestType'
+        self.build_number = 0
         self.name = name
         self.data = data
 
@@ -241,8 +247,9 @@ class JsonResultsTest(unittest.TestCase):
 
     def _test_merge(self, aggregated_data, incremental_data, expected_data, max_builds=jsonresults.JSON_RESULTS_MAX_BUILDS):
         aggregated_results = self._make_test_json(aggregated_data, builder_name=self._builder)
-        incremental_json, _ = JsonResults._get_incremental_json(self._builder, self._make_test_json(incremental_data, builder_name=self._builder), is_full_results_format=False)
-        merged_results, status_code = JsonResults.merge(self._builder, aggregated_results, incremental_json, num_runs=max_builds, sort_keys=True)
+        incremental_results = self._make_test_json(incremental_data, builder_name=self._builder)
+        incremental_json, _ = JsonResults._get_incremental_json(self._builder, JsonResults._load_json(aggregated_results), is_full_results_format=False)
+        merged_results, status_code = JsonResults.merge(self._builder, aggregated_results, JsonResults._load_json(incremental_results), num_runs=max_builds, sort_keys=True)
 
         if expected_data:
             expected_results = self._make_test_json(expected_data, builder_name=self._builder)
@@ -271,8 +278,9 @@ class JsonResultsTest(unittest.TestCase):
             }
         }
         incremental_string = self._make_test_json(incremental_data, builder_name=small_file.builder)
+        incremental_json = JsonResults._load_json(incremental_string)
 
-        self.assertTrue(JsonResults.update_files(small_file.builder, incremental_string, small_file, large_file, is_full_results_format=False))
+        self.assertTrue(JsonResults.update_files(small_file.builder, incremental_json, small_file, large_file, is_full_results_format=False))
         self.assert_json_equal(small_file.data, incremental_string)
         self.assert_json_equal(large_file.data, incremental_string)
 
@@ -338,7 +346,8 @@ class JsonResultsTest(unittest.TestCase):
                 }
             }
         }
-        incremental_results, _ = JsonResults._get_incremental_json(self._builder, self._make_test_json(incremental_data), is_full_results_format=False)
+        incremental_json = JsonResults._load_json(self._make_test_json(incremental_data))
+        incremental_results, _ = JsonResults._get_incremental_json(self._builder, incremental_json, is_full_results_format=False)
         aggregated_results = ""
         merged_results, _ = JsonResults.merge(self._builder, aggregated_results, incremental_results, num_runs=jsonresults.JSON_RESULTS_MAX_BUILDS, sort_keys=True)
         self.assert_json_equal(merged_results, incremental_results)
@@ -362,7 +371,7 @@ class JsonResultsTest(unittest.TestCase):
                 }
             }
         }, json_string=JSON_RESULTS_OLD_TEMPLATE)
-        incremental_json, _ = JsonResults._get_incremental_json(self._builder, incremental_results, is_full_results_format=False)
+        incremental_json, _ = JsonResults._get_incremental_json(self._builder, JsonResults._load_json(incremental_results), is_full_results_format=False)
         merged_results, _ = JsonResults.merge(self._builder, aggregated_results, incremental_json, num_runs=201, sort_keys=True)
         self.assert_json_equal(merged_results, self._make_test_json({
             "builds": ["3", "2", "1"],
@@ -438,7 +447,7 @@ class JsonResultsTest(unittest.TestCase):
         }
 
         aggregated_results = ""
-        incremental_json, _ = JsonResults._get_incremental_json(self._builder, FULL_RESULT_EXAMPLE, is_full_results_format=True)
+        incremental_json, _ = JsonResults._get_incremental_json(self._builder, JsonResults._load_json(FULL_RESULT_EXAMPLE), is_full_results_format=True)
         merged_results, _ = JsonResults.merge("Webkit", aggregated_results, incremental_json, num_runs=jsonresults.JSON_RESULTS_MAX_BUILDS, sort_keys=True)
         self.assert_json_equal(merged_results, expected_incremental_results)
 

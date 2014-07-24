@@ -18,6 +18,12 @@ indexes:
 
 - kind: TestFile
   properties:
+  - name: build_number
+  - name: date
+    direction: desc
+
+- kind: TestFile
+  properties:
   - name: builder
   - name: date
     direction: desc

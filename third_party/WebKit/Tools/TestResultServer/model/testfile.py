@@ -38,9 +38,15 @@ class TestFile(DataStoreFile):
     master = db.StringProperty()
     builder = db.StringProperty()
     test_type = db.StringProperty()
+    build_number = db.IntegerProperty()
+
+    @property
+    def file_information(self):
+        return "master: %s, builder: %s, test_type: %s, build_number: %r, name: %s." % (
+            self.master, self.builder, self.test_type, self.build_number, self.name)
 
     @classmethod
-    def delete_file(cls, key, master, builder, test_type, name, before, limit):
+    def delete_file(cls, key, master, builder, test_type, build_number, name, before, limit):
         if key:
             file = db.get(key)
             if not file:
@@ -50,7 +56,7 @@ class TestFile(DataStoreFile):
             file._delete_all()
             return 1
 
-        files = cls.get_files(master, builder, test_type, name, before, load_data=False, limit=limit)
+        files = cls.get_files(master, builder, test_type, build_number, name, before, load_data=False, limit=limit)
         if not files:
             logging.warning(
                 "File not found, master: %s, builder: %s, test_type:%s, name: %s, before: %s.",
@@ -63,7 +69,7 @@ class TestFile(DataStoreFile):
         return len(files)
 
     @classmethod
-    def get_files(cls, master, builder, test_type, name, before=None, load_data=True, limit=1):
+    def get_files(cls, master, builder, test_type, build_number, name, before=None, load_data=True, limit=1):
         query = TestFile.all()
         if master:
             query = query.filter("master =", master)
@@ -71,6 +77,19 @@ class TestFile(DataStoreFile):
             query = query.filter("builder =", builder)
         if test_type:
             query = query.filter("test_type =", test_type)
+        if build_number == 'latest':
+            query = query.sort('-build_number')
+        elif build_number is not None and build_number != 'None':
+            # TestFile objects that were added to the persistent DB before the build_number
+            # property was added will have a default build_number of None.  When those files
+            # appear in a list view generated from templates/showfilelist.html, the URL
+            # to get the individual file contents will have '&buildnumber=None' in it.
+            # Hence, we ignore the string 'None' in build_number query parameter.
+            try:
+                query = query.filter("build_number =", int(build_number))
+            except (TypeError, ValueError):
+                logging.error("Could not convert buildnumber parameter '%s' to an integer", build_number)
+                return None
         if name:
             query = query.filter("name =", name)
         if before:
@@ -86,28 +105,21 @@ class TestFile(DataStoreFile):
 
     @classmethod
     def save_file(cls, file, data):
-        file_information = "master: %s, builder: %s, test_type: %s, name: %s." % (file.master, file.builder, file.test_type, file.name)
         if file.save(data):
-            status_string = "Saved file. %s" % file_information
+            status_string = "Saved file. %s" % file.file_information
             status_code = 200
         else:
-            status_string = "Couldn't save file. %s" % file_information
+            status_string = "Couldn't save file. %s" % file.file_information
             status_code = 500
         return status_string, status_code
 
     @classmethod
-    def overwrite_or_add_file(cls, master, builder, test_type, name, data):
-        files = TestFile.get_files(master, builder, test_type, name)
-        if not files:
-            return cls.add_file(master, builder, test_type, name, data)
-        return cls.save_file(files[0], data)
-
-    @classmethod
-    def add_file(cls, master, builder, test_type, name, data):
+    def add_file(cls, master, builder, test_type, build_number, name, data):
         file = TestFile()
         file.master = master
         file.builder = builder
         file.test_type = test_type
+        file.build_number = build_number
         file.name = name
         return cls.save_file(file, data)
 

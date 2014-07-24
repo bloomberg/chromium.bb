@@ -16,6 +16,7 @@
             <th>Master</th>
             <th>Builder</th>
             <th>Test Type</th>
+            <th>Build Number</th>
             <th>File</th>
             <th>Date</th>
             {% if admin %}
@@ -37,7 +38,12 @@
                 </a>
                 {% endif %}
             </td>
-            <td><a href="/testfile?builder={{ file.builder }}&name={{ file.name }}&master={{ file.master }}&testtype={{ file.test_type }}" >
+            <td>
+                <a href="/testfile?buildnumber={{ file.build_number }}" >
+                {{ file.build_number }}
+                </a>
+            </td>
+            <td><a href="/testfile?builder={{ file.builder }}&name={{ file.name }}&master={{ file.master }}&testtype={{ file.test_type }}&buildnumber={{ file.build_number }}" >
                 {{ file.name }}
                 </a>
             </td>

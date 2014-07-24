@@ -397,24 +397,19 @@ class JsonResults(object):
         return aggregate_results_format
 
     @classmethod
-    def _get_incremental_json(cls, builder, incremental_string, is_full_results_format):
-        if not incremental_string:
+    def _get_incremental_json(cls, builder, results_json, is_full_results_format):
+        if not results_json:
             return "No incremental JSON data to merge.", 403
-
-        logging.info("Loading incremental json.")
-        incremental_json = cls._load_json(incremental_string)
-        if not incremental_json:
-            return "Incremental JSON data is not valid JSON.", 403
 
         if is_full_results_format:
             logging.info("Converting full results format to aggregate.")
-            incremental_json = cls._convert_full_results_format_to_aggregate(incremental_json)
+            results_json = cls._convert_full_results_format_to_aggregate(results_json)
 
         logging.info("Checking incremental json.")
-        check_json_error_string = cls._check_json(builder, incremental_json)
+        check_json_error_string = cls._check_json(builder, results_json)
         if check_json_error_string:
             return check_json_error_string, 403
-        return incremental_json, 200
+        return results_json, 200
 
     @classmethod
     def _get_aggregated_json(cls, builder, aggregated_string):
@@ -457,8 +452,8 @@ class JsonResults(object):
         return cls._generate_file_data(aggregated_json, sort_keys), 200
 
     @classmethod
-    def _get_file(cls, master, builder, test_type, filename):
-        files = TestFile.get_files(master, builder, test_type, filename)
+    def _get_aggregate_file(cls, master, builder, test_type, filename):
+        files = TestFile.get_files(master, builder, test_type, None, filename)
         if files:
             return files[0]
 
@@ -466,20 +461,21 @@ class JsonResults(object):
         file.master = master
         file.builder = builder
         file.test_type = test_type
+        file.build_number = None
         file.name = filename
         file.data = ""
         return file
 
     @classmethod
-    def update(cls, master, builder, test_type, incremental_string, is_full_results_format):
+    def update(cls, master, builder, test_type, results_json, is_full_results_format):
         logging.info("Updating %s and %s." % (JSON_RESULTS_FILE_SMALL, JSON_RESULTS_FILE))
-        small_file = cls._get_file(master, builder, test_type, JSON_RESULTS_FILE_SMALL)
-        large_file = cls._get_file(master, builder, test_type, JSON_RESULTS_FILE)
-        return cls.update_files(builder, incremental_string, small_file, large_file, is_full_results_format)
+        small_file = cls._get_aggregate_file(master, builder, test_type, JSON_RESULTS_FILE_SMALL)
+        large_file = cls._get_aggregate_file(master, builder, test_type, JSON_RESULTS_FILE)
+        return cls.update_files(builder, results_json, small_file, large_file, is_full_results_format)
 
     @classmethod
-    def update_files(cls, builder, incremental_string, small_file, large_file, is_full_results_format):
-        incremental_json, status_code = cls._get_incremental_json(builder, incremental_string, is_full_results_format)
+    def update_files(cls, builder, results_json, small_file, large_file, is_full_results_format):
+        incremental_json, status_code = cls._get_incremental_json(builder, results_json, is_full_results_format)
         if status_code != 200:
             return incremental_json, status_code
 
