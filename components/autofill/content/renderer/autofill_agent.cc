@@ -206,7 +206,7 @@ void AutofillAgent::WillSubmitForm(WebLocalFrame* frame,
   FormData form_data;
   if (WebFormElementToFormData(form,
                                WebFormControlElement(),
-                               REQUIRE_AUTOCOMPLETE,
+                               REQUIRE_NONE,
                                static_cast<ExtractMask>(
                                    EXTRACT_VALUE | EXTRACT_OPTION_TEXT),
                                &form_data,

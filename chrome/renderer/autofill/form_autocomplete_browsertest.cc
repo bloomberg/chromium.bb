@@ -49,7 +49,7 @@ TEST_F(FormAutocompleteTest, NormalFormSubmit) {
   EXPECT_EQ(WebString("Deckard"), form_field.value);
 }
 
-// Tests that submitting a form that has autocomplete="off" does not generate a
+// Tests that submitting a form that has autocomplete="off" generates a
 // FormSubmitted message.
 TEST_F(FormAutocompleteTest, AutoCompleteOffFormSubmit) {
   // Load a form.
@@ -62,12 +62,25 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffFormSubmit) {
   ExecuteJavaScript("document.getElementById('myForm').submit();");
   ProcessPendingMessages();
 
-  // No FormSubmitted message should have been sent.
-  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
-      AutofillHostMsg_FormSubmitted::ID));
+  const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_FormSubmitted::ID);
+  ASSERT_TRUE(message != NULL);
+
+  // The tuple also includes a timestamp, which is ignored.
+  Tuple2<FormData, base::TimeTicks> forms;
+  AutofillHostMsg_FormSubmitted::Read(message, &forms);
+  ASSERT_EQ(2U, forms.a.fields.size());
+
+  FormFieldData& form_field = forms.a.fields[0];
+  EXPECT_EQ(WebString("fname"), form_field.name);
+  EXPECT_EQ(WebString("Rick"), form_field.value);
+
+  form_field = forms.a.fields[1];
+  EXPECT_EQ(WebString("lname"), form_field.name);
+  EXPECT_EQ(WebString("Deckard"), form_field.value);
 }
 
-// Tests that fields with autocomplete off are not submitted.
+// Tests that fields with autocomplete off are submitted.
 TEST_F(FormAutocompleteTest, AutoCompleteOffInputSubmit) {
   // Load a form.
   LoadHTML("<html><form id='myForm'>"
@@ -79,7 +92,6 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffInputSubmit) {
   ExecuteJavaScript("document.getElementById('myForm').submit();");
   ProcessPendingMessages();
 
-  // No FormSubmitted message should have been sent.
   const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_FormSubmitted::ID);
   ASSERT_TRUE(message != NULL);
@@ -87,16 +99,20 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffInputSubmit) {
   // The tuple also includes a timestamp, which is ignored.
   Tuple2<FormData, base::TimeTicks> forms;
   AutofillHostMsg_FormSubmitted::Read(message, &forms);
-  ASSERT_EQ(1U, forms.a.fields.size());
+  ASSERT_EQ(2U, forms.a.fields.size());
 
   FormFieldData& form_field = forms.a.fields[0];
   EXPECT_EQ(WebString("fname"), form_field.name);
   EXPECT_EQ(WebString("Rick"), form_field.value);
+
+  form_field = forms.a.fields[1];
+  EXPECT_EQ(WebString("lname"), form_field.name);
+  EXPECT_EQ(WebString("Deckard"), form_field.value);
 }
 
 // Tests that submitting a form that has been dynamically set as autocomplete
-// off does not generate a FormSubmitted message.
-// http://crbug.com/36520
+// off generates a FormSubmitted message.
+// Note: We previously did the opposite, for bug http://crbug.com/36520
 TEST_F(FormAutocompleteTest, DynamicAutoCompleteOffFormSubmit) {
   LoadHTML("<html><form id='myForm'><input name='fname' value='Rick'/>"
            "<input name='lname' value='Deckard'/></form></html>");
@@ -117,9 +133,22 @@ TEST_F(FormAutocompleteTest, DynamicAutoCompleteOffFormSubmit) {
   ExecuteJavaScript("document.getElementById('myForm').submit();");
   ProcessPendingMessages();
 
-  // No FormSubmitted message should have been sent.
-  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
-      AutofillHostMsg_FormSubmitted::ID));
+  const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_FormSubmitted::ID);
+  ASSERT_TRUE(message != NULL);
+
+  // The tuple also includes a timestamp, which is ignored.
+  Tuple2<FormData, base::TimeTicks> forms;
+  AutofillHostMsg_FormSubmitted::Read(message, &forms);
+  ASSERT_EQ(2U, forms.a.fields.size());
+
+  FormFieldData& form_field = forms.a.fields[0];
+  EXPECT_EQ(WebString("fname"), form_field.name);
+  EXPECT_EQ(WebString("Rick"), form_field.value);
+
+  form_field = forms.a.fields[1];
+  EXPECT_EQ(WebString("lname"), form_field.name);
+  EXPECT_EQ(WebString("Deckard"), form_field.value);
 }
 
 }  // namespace autofill
