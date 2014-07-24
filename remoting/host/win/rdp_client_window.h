@@ -104,14 +104,18 @@ class RdpClientWindow
   void OnDestroy();
 
   BEGIN_SINK_MAP(RdpClientWindow)
-    SINK_ENTRY_EX(1, __uuidof(mstsc::IMsTscAxEvents), 2, OnConnected)
-    SINK_ENTRY_EX(1, __uuidof(mstsc::IMsTscAxEvents), 4, OnDisconnected)
-    SINK_ENTRY_EX(1, __uuidof(mstsc::IMsTscAxEvents), 10, OnFatalError)
-    SINK_ENTRY_EX(1, __uuidof(mstsc::IMsTscAxEvents), 15, OnConfirmClose)
+    SINK_ENTRY_EX(1, __uuidof(mstsc::IMsTscAxEvents), 2,
+                  &RdpClientWindow::OnConnected)
+    SINK_ENTRY_EX(1, __uuidof(mstsc::IMsTscAxEvents), 4,
+                  &RdpClientWindow::OnDisconnected)
+    SINK_ENTRY_EX(1, __uuidof(mstsc::IMsTscAxEvents), 10,
+                  &RdpClientWindow::OnFatalError)
+    SINK_ENTRY_EX(1, __uuidof(mstsc::IMsTscAxEvents), 15,
+                  &RdpClientWindow::OnConfirmClose)
     SINK_ENTRY_EX(1, __uuidof(mstsc::IMsTscAxEvents), 18,
-                  OnAuthenticationWarningDisplayed)
+                  &RdpClientWindow::OnAuthenticationWarningDisplayed)
     SINK_ENTRY_EX(1, __uuidof(mstsc::IMsTscAxEvents), 19,
-                  OnAuthenticationWarningDismissed)
+                  &RdpClientWindow::OnAuthenticationWarningDismissed)
   END_SINK_MAP()
 
   // mstsc::IMsTscAxEvents notifications.
