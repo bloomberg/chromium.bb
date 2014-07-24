@@ -188,6 +188,7 @@
         'function_get_target_outputs_unittest.cc',
         'function_rebase_path_unittest.cc',
         'function_write_file_unittest.cc',
+        'functions_target_unittest.cc',
         'functions_unittest.cc',
         'header_checker_unittest.cc',
         'input_conversion_unittest.cc',

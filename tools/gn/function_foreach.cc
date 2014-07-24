@@ -70,7 +70,7 @@ Value RunForEach(Scope* scope,
   const Value* list_value = NULL;
   const IdentifierNode* list_identifier = args_vector[1]->AsIdentifier();
   if (list_identifier) {
-    list_value = scope->GetValue(list_identifier->value().value());
+    list_value = scope->GetValue(list_identifier->value().value(), true);
     if (!list_value) {
       *err = Err(args_vector[1], "Undefined identifier.");
       return Value();

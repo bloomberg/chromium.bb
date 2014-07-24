@@ -51,3 +51,25 @@ TEST(FunctionForeach, UniqueLoopVar) {
   input_bad.parsed()->Execute(setup.scope(), &err);
   ASSERT_TRUE(err.has_error());  // Shouldn't actually run.
 }
+
+// Checks that the identifier used as the list is marked as "used".
+TEST(FunctionForeach, MarksIdentAsUsed) {
+  TestWithScope setup;
+  TestParseInput input_good(
+      "a = [1, 2]\n"
+      "foreach(i, a) {\n"
+      "  print(i)\n"
+      "}\n");
+  ASSERT_FALSE(input_good.has_error());
+
+  Err err;
+  input_good.parsed()->Execute(setup.scope(), &err);
+  ASSERT_FALSE(err.has_error()) << err.message();
+
+  EXPECT_EQ("1\n2\n", setup.print_output());
+  setup.print_output().clear();
+
+  // Check for unused vars.
+  EXPECT_TRUE(setup.scope()->CheckForUnusedVars(&err));
+  EXPECT_FALSE(err.has_error());
+}

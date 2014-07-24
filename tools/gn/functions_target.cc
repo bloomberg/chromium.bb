@@ -292,6 +292,8 @@ Value RunComponent(Scope* scope,
 
   TargetGenerator::GenerateTarget(&block_scope, function, args,
                                   component_mode, err);
+
+  block_scope.CheckForUnusedVars(err);
   return Value();
 }
 

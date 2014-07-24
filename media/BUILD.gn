@@ -42,6 +42,28 @@ config("media_dependent_config") {
   }
 }
 
+if (use_ozone) {
+  action("generate_ozone_constructor_list") {
+    # Ozone platform objects are auto-generated using similar
+    # patterns for naming and classes constructors. Here we build the
+    # object MediaOzonePlatform.
+    script = "../ui/ozone/generate_constructor_list.py"
+
+    platform_list_txt_file = "$target_gen_dir/ui/ozone/platform_list.txt"
+    constructor_list_cc_file = "$target_gen_dir/media/ozone/constructor_list.cc"
+
+    sources = [ platform_list_txt_file ]
+    outputs = [ constructor_list_cc_file ]
+    args = [
+      "--platform_list=$platform_list_txt_file",
+      "--output_cc=$constructor_list_cc_file",
+      "--namespace=media",
+      "--typename=MediaOzonePlatform",
+      "--include=\"media/ozone/media_ozone_platform.h\""
+    ]
+  }
+}
+
 component("media") {
   sources = [
     "base/audio_block_fifo.cc",
@@ -506,35 +528,18 @@ component("media") {
   }
 
   if (use_ozone) {
-    platform_list_txt_file = "$target_gen_dir/ui/ozone/platform_list.txt"
-    constructor_list_cc_file = "$target_gen_dir/media/ozone/constructor_list.cc"
-
     # Used for the generated listing header (ui/ozone/platform_list.h)
     include_dirs += [ target_gen_dir ]
 
     sources += [
-      constructor_list_cc_file,
       "ozone/media_ozone_platform.cc",
       "ozone/media_ozone_platform.h",
+    ] + get_target_outputs(":generate_ozone_constructor_list")
+
+    deps += [
+      ":generate_ozone_constructor_list",
+      "//ui/ozone",
     ]
-
-    deps += [ "//ui/ozone/ozone" ]
-
-    action("generate_constructor_list") {
-      # Ozone platform objects are auto-generated using similar
-      # patterns for naming and classes constructors. Here we build the
-      # object MediaOzonePlatform.
-      script = "../ui/ozone/generate_constructor_list.py"
-      sources = [ platform_list_txt_file ]
-      outputs = [ constructor_list_cc_file ]
-      args += [
-        "--platform_list=$platform_list_txt_file",
-        "--output_cc=$constructor_list_cc_file",
-        "--namespace=media",
-        "--typename=MediaOzonePlatform",
-        "--include=\"media/ozone/media_ozone_platform.h\""
-      ]
-    }
   }
 
   if (is_mac) {

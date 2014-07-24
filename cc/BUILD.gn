@@ -473,7 +473,7 @@ component("cc") {
     "//skia",
   ]
 
-  defined = [ "CC_IMPLEMENTATION=1" ]
+  defines = [ "CC_IMPLEMENTATION=1" ]
 
   if (!is_debug && is_win) {
     configs -= [ "//build/config/compiler:optimize" ]
