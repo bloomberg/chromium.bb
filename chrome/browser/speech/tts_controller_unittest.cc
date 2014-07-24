@@ -5,7 +5,7 @@
 // Unit tests for the TTS Controller.
 
 #include "base/values.h"
-#include "chrome/browser/speech/tts_controller.h"
+#include "chrome/browser/speech/tts_controller_impl.h"
 #include "chrome/browser/speech/tts_platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,7 +37,7 @@ class DummyTtsPlatformImpl : public TtsPlatformImpl {
 };
 
 // Subclass of TtsController with a public ctor and dtor.
-class TestableTtsController : public TtsController {
+class TestableTtsController : public TtsControllerImpl {
  public:
   TestableTtsController() {}
   virtual ~TestableTtsController() {}
