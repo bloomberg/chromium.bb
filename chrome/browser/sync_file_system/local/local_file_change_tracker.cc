@@ -79,7 +79,7 @@ LocalFileChangeTracker::LocalFileChangeTracker(
     : initialized_(false),
       file_task_runner_(file_task_runner),
       tracker_db_(new TrackerDB(base_path, env_override)),
-      current_change_seq_(0),
+      current_change_seq_number_(0),
       num_changes_(0) {
 }
 
@@ -90,7 +90,7 @@ LocalFileChangeTracker::~LocalFileChangeTracker() {
 
 void LocalFileChangeTracker::OnStartUpdate(const FileSystemURL& url) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
-  if (ContainsKey(changes_, url))
+  if (ContainsKey(changes_, url) || ContainsKey(demoted_changes_, url))
     return;
   // TODO(nhiroki): propagate the error code (see http://crbug.com/152127).
   MarkDirtyOnDatabase(url);
@@ -186,7 +186,7 @@ void LocalFileChangeTracker::RemoveMirrorAndCommitChangesForURL(
     return;
   mirror_changes_.erase(found);
 
-  if (ContainsKey(changes_, url))
+  if (ContainsKey(changes_, url) || ContainsKey(demoted_changes_, url))
     MarkDirtyOnDatabase(url);
   else
     ClearDirtyOnDatabase(url);
@@ -202,29 +202,28 @@ void LocalFileChangeTracker::ResetToMirrorAndCommitChangesForURL(
     return;
   }
   const ChangeInfo& info = found->second;
-  change_seqs_[info.change_seq] = url;
-  changes_[url] = info;
+  if (ContainsKey(demoted_changes_, url)) {
+    DCHECK(!ContainsKey(changes_, url));
+    demoted_changes_[url] = info;
+  } else {
+    DCHECK(!ContainsKey(demoted_changes_, url));
+    change_seqs_[info.change_seq] = url;
+    changes_[url] = info;
+  }
   RemoveMirrorAndCommitChangesForURL(url);
 }
 
 void LocalFileChangeTracker::DemoteChangesForURL(
     const fileapi::FileSystemURL& url) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
+
   FileChangeMap::iterator found = changes_.find(url);
   if (found == changes_.end())
     return;
-  FileChangeList changes = found->second.change_list;
-
-  mirror_changes_.erase(url);
+  DCHECK(!ContainsKey(demoted_changes_, url));
   change_seqs_.erase(found->second.change_seq);
+  demoted_changes_.insert(*found);
   changes_.erase(found);
-
-  FileChangeList::List change_list = changes.list();
-  while (!change_list.empty()) {
-    RecordChangeToChangeMaps(url, change_list.front(), 0,
-                             &demoted_changes_, NULL);
-    change_list.pop_front();
-  }
   UpdateNumChanges();
 }
 
@@ -238,15 +237,12 @@ void LocalFileChangeTracker::PromoteDemotedChangesForURL(
 
   FileChangeList::List change_list = iter->second.change_list.list();
   // Make sure that this URL is in no queues.
+  DCHECK(!ContainsKey(change_seqs_, iter->second.change_seq));
   DCHECK(!ContainsKey(changes_, url));
-  DCHECK(!ContainsKey(mirror_changes_, url));
 
+  change_seqs_[iter->second.change_seq] = url;
+  changes_.insert(*iter);
   demoted_changes_.erase(iter);
-
-  while (!change_list.empty()) {
-    RecordChange(url, change_list.front());
-    change_list.pop_front();
-  }
 }
 
 bool LocalFileChangeTracker::PromoteDemotedChanges() {
@@ -281,24 +277,25 @@ void LocalFileChangeTracker::ResetForFileSystem(
   for (FileChangeMap::iterator iter = changes_.begin();
        iter != changes_.end();) {
     fileapi::FileSystemURL url = iter->first;
-    if (url.origin() != origin || url.type() != type) {
-      ++iter;
-      continue;
-    }
-    mirror_changes_.erase(url);
-    demoted_changes_.erase(url);
-    change_seqs_.erase(iter->second.change_seq);
-    changes_.erase(iter++);
-
-    std::string serialized_url;
-    const bool should_success =
-        SerializeSyncableFileSystemURL(url, &serialized_url);
-    if (!should_success) {
-      NOTREACHED() << "Failed to serialize: " << url.DebugString();
-      continue;
-    }
-    batch->Delete(serialized_url);
+    int change_seq = iter->second.change_seq;
+    // Advance |iter| before calling ResetForURL to avoid the iterator
+    // invalidation in it.
+    ++iter;
+    if (url.origin() == origin && url.type() == type)
+      ResetForURL(url, change_seq, batch.get());
   }
+
+  for (FileChangeMap::iterator iter = demoted_changes_.begin();
+       iter != demoted_changes_.end();) {
+    fileapi::FileSystemURL url = iter->first;
+    int change_seq = iter->second.change_seq;
+    // Advance |iter| before calling ResetForURL to avoid the iterator
+    // invalidation in it.
+    ++iter;
+    if (url.origin() == origin && url.type() == type)
+      ResetForURL(url, change_seq, batch.get());
+  }
+
   // Fail to apply batch to database wouldn't have critical effect, they'll be
   // just marked deleted on next relaunch.
   tracker_db_->WriteBatch(batch.Pass());
@@ -415,12 +412,13 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
 void LocalFileChangeTracker::RecordChange(
     const FileSystemURL& url, const FileChange& change) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
+  int change_seq = current_change_seq_number_++;
   if (ContainsKey(demoted_changes_, url)) {
-    RecordChangeToChangeMaps(url, change, 0, &demoted_changes_, NULL);
-    return;
+    RecordChangeToChangeMaps(url, change, change_seq,
+                             &demoted_changes_, NULL);
+  } else {
+    RecordChangeToChangeMaps(url, change, change_seq, &changes_, &change_seqs_);
   }
-  int change_seq = current_change_seq_++;
-  RecordChangeToChangeMaps(url, change, change_seq, &changes_, &change_seqs_);
   if (ContainsKey(mirror_changes_, url))
     RecordChangeToChangeMaps(url, change, change_seq, &mirror_changes_, NULL);
   UpdateNumChanges();
@@ -444,6 +442,22 @@ void LocalFileChangeTracker::RecordChangeToChangeMaps(
   info.change_seq = new_change_seq;
   if (change_seqs)
     (*change_seqs)[info.change_seq] = url;
+}
+
+void LocalFileChangeTracker::ResetForURL(const fileapi::FileSystemURL& url,
+                                         int change_seq,
+                                         leveldb::WriteBatch* batch) {
+  mirror_changes_.erase(url);
+  demoted_changes_.erase(url);
+  change_seqs_.erase(change_seq);
+  changes_.erase(url);
+
+  std::string serialized_url;
+  if (!SerializeSyncableFileSystemURL(url, &serialized_url)) {
+    NOTREACHED() << "Failed to serialize: " << url.DebugString();
+    return;
+  }
+  batch->Delete(serialized_url);
 }
 
 // TrackerDB -------------------------------------------------------------------

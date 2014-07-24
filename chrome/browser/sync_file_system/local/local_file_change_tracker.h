@@ -31,6 +31,7 @@ class FileSystemURL;
 
 namespace leveldb {
 class Env;
+class WriteBatch;
 }
 
 namespace sync_file_system {
@@ -164,6 +165,10 @@ class LocalFileChangeTracker
                                        FileChangeMap* changes,
                                        ChangeSeqMap* change_seqs);
 
+  void ResetForURL(const fileapi::FileSystemURL& url,
+                   int change_seq,
+                   leveldb::WriteBatch* batch);
+
   bool initialized_;
 
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
@@ -179,7 +184,7 @@ class LocalFileChangeTracker
   // Change sequence number. Briefly gives a hint about the order of changes,
   // but they are updated when a new change comes on the same file (as
   // well as Drive's changestamps).
-  int64 current_change_seq_;
+  int64 current_change_seq_number_;
 
   // This can be accessed on any threads (with num_changes_lock_).
   int64 num_changes_;

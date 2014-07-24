@@ -236,13 +236,11 @@ TEST_F(LocalFileChangeTrackerTest, GetChanges) {
   urls_to_process.clear();
   change_tracker()->GetNextChangedURLs(&urls_to_process, 0);
   ASSERT_EQ(5U, urls_to_process.size());
-  EXPECT_EQ(URL(kPath2), urls_to_process[0]);
-  EXPECT_EQ(URL(kPath5), urls_to_process[1]);
-  EXPECT_EQ(URL(kPath4), urls_to_process[2]);
-  EXPECT_TRUE(URL(kPath1) == urls_to_process[3] ||
-              URL(kPath1) == urls_to_process[4]);
-  EXPECT_TRUE(URL(kPath3) == urls_to_process[3] ||
-              URL(kPath3) == urls_to_process[4]);
+  EXPECT_EQ(URL(kPath1), urls_to_process[0]);
+  EXPECT_EQ(URL(kPath2), urls_to_process[1]);
+  EXPECT_EQ(URL(kPath3), urls_to_process[2]);
+  EXPECT_EQ(URL(kPath5), urls_to_process[3]);
+  EXPECT_EQ(URL(kPath4), urls_to_process[4]);
 
   // No changes to promote any more.
   EXPECT_FALSE(change_tracker()->PromoteDemotedChanges());
