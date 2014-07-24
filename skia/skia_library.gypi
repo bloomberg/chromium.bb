@@ -52,6 +52,7 @@
     '../third_party/skia/src/ports/SkFontConfigParser_android.cpp',
     '../third_party/skia/src/ports/SkFontHost_mac.cpp',
     '../third_party/skia/src/ports/SkFontHost_win.cpp',
+    "../third_party/skia/src/ports/SkFontMgr_android.cpp",
     '../third_party/skia/src/ports/SkFontMgr_win_dw.cpp',
     '../third_party/skia/src/ports/SkGlobalInitialization_chromium.cpp',
     '../third_party/skia/src/ports/SkOSFile_posix.cpp',

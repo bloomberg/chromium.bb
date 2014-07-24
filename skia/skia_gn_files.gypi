@@ -22,6 +22,7 @@
     '<(skia_src_path)/ports/SkFontHost_FreeType.cpp',
     '<(skia_src_path)/ports/SkFontHost_mac.cpp',
     '<(skia_src_path)/ports/SkFontHost_win.cpp',
+    '<(skia_src_path)/ports/SkFontMgr_android.cpp',
     '<(skia_src_path)/ports/SkFontMgr_win_dw.cpp',
     '<(skia_src_path)/ports/SkGlobalInitialization_chromium.cpp',
     '<(skia_src_path)/ports/SkImageDecoder_empty.cpp',
