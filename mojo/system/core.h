@@ -15,6 +15,7 @@
 #include "mojo/public/c/system/types.h"
 #include "mojo/system/handle_table.h"
 #include "mojo/system/mapping_table.h"
+#include "mojo/system/memory.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
@@ -44,61 +45,64 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   MojoResult Wait(MojoHandle handle,
                   MojoHandleSignals signals,
                   MojoDeadline deadline);
-  MojoResult WaitMany(const MojoHandle* handles,
-                      const MojoHandleSignals* signals,
+  MojoResult WaitMany(UserPointer<const MojoHandle> handles,
+                      UserPointer<const MojoHandleSignals> signals,
                       uint32_t num_handles,
                       MojoDeadline deadline);
-  MojoResult CreateMessagePipe(const MojoCreateMessagePipeOptions* options,
-                               MojoHandle* message_pipe_handle0,
-                               MojoHandle* message_pipe_handle1);
+  MojoResult CreateMessagePipe(
+      UserPointer<const MojoCreateMessagePipeOptions> options,
+      UserPointer<MojoHandle> message_pipe_handle0,
+      UserPointer<MojoHandle> message_pipe_handle1);
   MojoResult WriteMessage(MojoHandle message_pipe_handle,
-                          const void* bytes,
+                          UserPointer<const void> bytes,
                           uint32_t num_bytes,
-                          const MojoHandle* handles,
+                          UserPointer<const MojoHandle> handles,
                           uint32_t num_handles,
                           MojoWriteMessageFlags flags);
   MojoResult ReadMessage(MojoHandle message_pipe_handle,
-                         void* bytes,
-                         uint32_t* num_bytes,
-                         MojoHandle* handles,
-                         uint32_t* num_handles,
+                         UserPointer<void> bytes,
+                         UserPointer<uint32_t> num_bytes,
+                         UserPointer<MojoHandle> handles,
+                         UserPointer<uint32_t> num_handles,
                          MojoReadMessageFlags flags);
-  MojoResult CreateDataPipe(const MojoCreateDataPipeOptions* options,
-                            MojoHandle* data_pipe_producer_handle,
-                            MojoHandle* data_pipe_consumer_handle);
+  MojoResult CreateDataPipe(
+      UserPointer<const MojoCreateDataPipeOptions> options,
+      UserPointer<MojoHandle> data_pipe_producer_handle,
+      UserPointer<MojoHandle> data_pipe_consumer_handle);
   MojoResult WriteData(MojoHandle data_pipe_producer_handle,
-                       const void* elements,
-                       uint32_t* num_bytes,
+                       UserPointer<const void> elements,
+                       UserPointer<uint32_t> num_bytes,
                        MojoWriteDataFlags flags);
   MojoResult BeginWriteData(MojoHandle data_pipe_producer_handle,
-                            void** buffer,
-                            uint32_t* buffer_num_bytes,
+                            UserPointer<void*> buffer,
+                            UserPointer<uint32_t> buffer_num_bytes,
                             MojoWriteDataFlags flags);
   MojoResult EndWriteData(MojoHandle data_pipe_producer_handle,
                           uint32_t num_bytes_written);
   MojoResult ReadData(MojoHandle data_pipe_consumer_handle,
-                      void* elements,
-                      uint32_t* num_bytes,
+                      UserPointer<void> elements,
+                      UserPointer<uint32_t> num_bytes,
                       MojoReadDataFlags flags);
   MojoResult BeginReadData(MojoHandle data_pipe_consumer_handle,
-                           const void** buffer,
-                           uint32_t* buffer_num_bytes,
+                           UserPointer<const void*> buffer,
+                           UserPointer<uint32_t> buffer_num_bytes,
                            MojoReadDataFlags flags);
   MojoResult EndReadData(MojoHandle data_pipe_consumer_handle,
                          uint32_t num_bytes_read);
-  MojoResult CreateSharedBuffer(const MojoCreateSharedBufferOptions* options,
-                                uint64_t num_bytes,
-                                MojoHandle* shared_buffer_handle);
+  MojoResult CreateSharedBuffer(
+      UserPointer<const MojoCreateSharedBufferOptions> options,
+      uint64_t num_bytes,
+      UserPointer<MojoHandle> shared_buffer_handle);
   MojoResult DuplicateBufferHandle(
       MojoHandle buffer_handle,
-      const MojoDuplicateBufferHandleOptions* options,
-      MojoHandle* new_buffer_handle);
+      UserPointer<const MojoDuplicateBufferHandleOptions> options,
+      UserPointer<MojoHandle> new_buffer_handle);
   MojoResult MapBuffer(MojoHandle buffer_handle,
                        uint64_t offset,
                        uint64_t num_bytes,
-                       void** buffer,
+                       UserPointer<void*> buffer,
                        MojoMapBufferFlags flags);
-  MojoResult UnmapBuffer(void* buffer);
+  MojoResult UnmapBuffer(UserPointerValue<void> buffer);
 
  private:
   friend bool internal::ShutdownCheckNoLeaks(Core*);

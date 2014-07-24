@@ -33,9 +33,8 @@ MojoResult MappingTable::AddMapping(
   return MOJO_RESULT_OK;
 }
 
-MojoResult MappingTable::RemoveMapping(void* address) {
-  AddressToMappingMap::iterator it =
-      address_to_mapping_map_.find(reinterpret_cast<uintptr_t>(address));
+MojoResult MappingTable::RemoveMapping(uintptr_t address) {
+  AddressToMappingMap::iterator it = address_to_mapping_map_.find(address);
   if (it == address_to_mapping_map_.end())
     return MOJO_RESULT_INVALID_ARGUMENT;
   RawSharedBufferMapping* mapping_to_delete = it->second;

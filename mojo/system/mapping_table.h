@@ -39,7 +39,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MappingTable {
   // Tries to add a mapping. (Takes ownership of the mapping in all cases; on
   // failure, it will be destroyed.)
   MojoResult AddMapping(scoped_ptr<RawSharedBufferMapping> mapping);
-  MojoResult RemoveMapping(void* address);
+  MojoResult RemoveMapping(uintptr_t address);
 
  private:
   friend bool internal::ShutdownCheckNoLeaks(Core*);

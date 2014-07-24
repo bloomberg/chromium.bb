@@ -29,6 +29,11 @@ bool IsAligned<8>(const void* pointer) {
 #endif
 
 template <size_t size, size_t alignment>
+void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointerHelper(const void* pointer) {
+  CHECK(pointer && IsAligned<alignment>(pointer));
+}
+
+template <size_t size, size_t alignment>
 bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerHelper(const void* pointer) {
   // TODO(vtl): If running in kernel mode, do a full verification. For now, just
   // check that it's non-null and aligned. (A faster user mode implementation is
@@ -37,6 +42,12 @@ bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerHelper(const void* pointer) {
 }
 
 // Explicitly instantiate the sizes we need. Add instantiations as needed.
+template void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointerHelper<1, 1>(
+    const void*);
+template void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointerHelper<4, 4>(
+    const void*);
+template void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointerHelper<8, 8>(
+    const void*);
 template bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerHelper<1, 1>(
     const void*);
 template bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerHelper<4, 4>(
@@ -49,14 +60,37 @@ template bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerHelper<8, 8>(
 // this in particular to check that various Options structs are aligned.
 #if defined(COMPILER_MSVC) && defined(ARCH_CPU_32_BITS)
 template <>
+void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointerHelper<4, 8>(
+    const void* pointer) {
+  CHECK(pointer && reinterpret_cast<uintptr_t>(pointer) % 8 == 0);
+}
+template <>
 bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerHelper<4, 8>(
     const void* pointer) {
   return !!pointer && reinterpret_cast<uintptr_t>(pointer) % 8 == 0;
 }
 #else
+template MOJO_SYSTEM_IMPL_EXPORT void CheckUserPointerHelper<4, 8>(
+    const void*);
 template MOJO_SYSTEM_IMPL_EXPORT bool VerifyUserPointerHelper<4, 8>(
     const void*);
 #endif
+
+template <size_t size, size_t alignment>
+void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointerWithCountHelper(
+    const void* pointer,
+    size_t count) {
+  CHECK_LE(count, std::numeric_limits<size_t>::max() / size);
+  CHECK(count == 0 || (pointer && IsAligned<alignment>(pointer)));
+}
+
+// Explicitly instantiate the sizes we need. Add instantiations as needed.
+template void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointerWithCountHelper<1, 1>(
+    const void*, size_t);
+template void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointerWithCountHelper<4, 4>(
+    const void*, size_t);
+template void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointerWithCountHelper<8, 8>(
+    const void*, size_t);
 
 template <size_t size, size_t alignment>
 bool VerifyUserPointerWithCountHelper(const void* pointer, size_t count) {
@@ -77,7 +111,7 @@ template bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerWithCountHelper<4, 4>(
 template bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerWithCountHelper<8, 8>(
     const void*, size_t);
 
-}  // nameespace internal
+}  // namespace internal
 
 template <size_t alignment>
 bool VerifyUserPointerWithSize(const void* pointer, size_t size) {
