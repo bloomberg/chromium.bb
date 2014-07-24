@@ -2238,10 +2238,12 @@ class PBXNativeTarget(XCTarget):
   # Mapping from Xcode product-types to settings.  The settings are:
   #  filetype : used for explicitFileType in the project file
   #  prefix : the prefix for the file name
-  #  suffix : the suffix for the filen ame
+  #  suffix : the suffix for the file name
   _product_filetypes = {
     'com.apple.product-type.application':       ['wrapper.application',
                                                  '', '.app'],
+    'com.apple.product-type.app-extension':     ['wrapper.app-extension',
+                                                 '', '.appex'],
     'com.apple.product-type.bundle':            ['wrapper.cfbundle',
                                                  '', '.bundle'],
     'com.apple.product-type.framework':         ['wrapper.framework',

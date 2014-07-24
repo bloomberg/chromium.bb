@@ -69,6 +69,7 @@ generator_additional_path_sections = [
 # The Xcode-specific keys that exist on targets and aren't moved down to
 # configurations.
 generator_additional_non_configuration_keys = [
+  'ios_app_extension',
   'mac_bundle',
   'mac_bundle_resources',
   'mac_framework_headers',
@@ -644,14 +645,15 @@ def GenerateOutput(target_list, target_dicts, data, params):
     # com.googlecode.gyp.xcode.bundle, a pseudo-type that xcode.py interprets
     # to create a single-file mh_bundle.
     _types = {
-      'executable':             'com.apple.product-type.tool',
-      'loadable_module':        'com.googlecode.gyp.xcode.bundle',
-      'shared_library':         'com.apple.product-type.library.dynamic',
-      'static_library':         'com.apple.product-type.library.static',
-      'executable+bundle':      'com.apple.product-type.application',
-      'loadable_module+bundle': 'com.apple.product-type.bundle',
-      'loadable_module+xctest': 'com.apple.product-type.bundle.unit-test',
-      'shared_library+bundle':  'com.apple.product-type.framework',
+      'executable':                  'com.apple.product-type.tool',
+      'loadable_module':             'com.googlecode.gyp.xcode.bundle',
+      'shared_library':              'com.apple.product-type.library.dynamic',
+      'static_library':              'com.apple.product-type.library.static',
+      'executable+bundle':           'com.apple.product-type.application',
+      'loadable_module+bundle':      'com.apple.product-type.bundle',
+      'loadable_module+xctest':      'com.apple.product-type.bundle.unit-test',
+      'shared_library+bundle':       'com.apple.product-type.framework',
+      'executable+extension+bundle': 'com.apple.product-type.app-extension',
     }
 
     target_properties = {
@@ -662,6 +664,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     type = spec['type']
     is_xctest = int(spec.get('mac_xctest_bundle', 0))
     is_bundle = int(spec.get('mac_bundle', 0)) or is_xctest
+    is_extension = int(spec.get('ios_app_extension', 0))
     if type != 'none':
       type_bundle_key = type
       if is_xctest:
@@ -669,6 +672,10 @@ def GenerateOutput(target_list, target_dicts, data, params):
         assert type == 'loadable_module', (
             'mac_xctest_bundle targets must have type loadable_module '
             '(target %s)' % target_name)
+      elif is_extension:
+        assert is_bundle, ('ios_app_extension flag requires mac_bundle '
+            '(target %s)' % target_name)
+        type_bundle_key += '+extension+bundle'
       elif is_bundle:
         type_bundle_key += '+bundle'
 

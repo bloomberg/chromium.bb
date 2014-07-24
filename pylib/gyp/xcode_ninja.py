@@ -90,6 +90,7 @@ def _TargetFromSpec(old_spec, params):
           new_xcode_settings
 
   ninja_target['mac_bundle'] = old_spec.get('mac_bundle', 0)
+  ninja_target['ios_app_extension'] = old_spec.get('ios_app_extension', 0)
   ninja_target['type'] = old_spec['type']
   if ninja_toplevel:
     ninja_target['actions'] = [

@@ -218,6 +218,9 @@ class XcodeSettings(object):
   def _IsBundle(self):
     return int(self.spec.get('mac_bundle', 0)) != 0
 
+  def _IsIosAppExtension(self):
+    return int(self.spec.get('ios_app_extension', 0)) != 0
+
   def GetFrameworkVersion(self):
     """Returns the framework version of the current target. Only valid for
     bundles."""
@@ -237,7 +240,10 @@ class XcodeSettings(object):
           'WRAPPER_EXTENSION', default=default_wrapper_extension)
       return '.' + self.spec.get('product_extension', wrapper_extension)
     elif self.spec['type'] == 'executable':
-      return '.' + self.spec.get('product_extension', 'app')
+      if self._IsIosAppExtension():
+        return '.' + self.spec.get('product_extension', 'appex')
+      else:
+        return '.' + self.spec.get('product_extension', 'app')
     else:
       assert False, "Don't know extension for '%s', target '%s'" % (
           self.spec['type'], self.spec['target_name'])
@@ -292,6 +298,10 @@ class XcodeSettings(object):
 
   def GetProductType(self):
     """Returns the PRODUCT_TYPE of this target."""
+    if self._IsIosAppExtension():
+      assert self._IsBundle(), ('ios_app_extension flag requires mac_bundle '
+          '(target %s)' % self.spec['target_name'])
+      return 'com.apple.product-type.app-extension'
     if self._IsBundle():
       return {
         'executable': 'com.apple.product-type.application',
@@ -794,6 +804,18 @@ class XcodeSettings(object):
     for directory in framework_dirs:
       ldflags.append('-F' + directory.replace('$(SDKROOT)', sdk_root))
 
+    if sdk_root and self._IsIosAppExtension():
+      # Adds the link flags for extensions. These flags are common for all
+      # extensions and provide loader and main function.
+      # These flags reflect the compilation options used by xcode to compile
+      # extensions.
+      ldflags.append('-lpkstart')
+      ldflags.append(sdk_root +
+          '/System/Library/PrivateFrameworks/PlugInKit.framework/PlugInKit')
+      ldflags.append('-fapplication-extension')
+      ldflags.append('-Xlinker -rpath '
+          '-Xlinker @executable_path/../../Frameworks')
+
     self._Appendf(ldflags, 'CLANG_CXX_LIBRARY', '-stdlib=%s')
 
     self.configname = None
@@ -921,7 +943,7 @@ class XcodeSettings(object):
     """Return a shell command to codesign the iOS output binary so it can
     be deployed to a device.  This should be run as the very last step of the
     build."""
-    if not (self.isIOS and self.spec['type'] == "executable"):
+    if not (self.isIOS and self.spec['type'] == 'executable'):
       return []
 
     settings = self.xcode_settings[configname]
