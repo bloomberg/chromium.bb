@@ -1112,14 +1112,12 @@ void RenderBox::paintRootBoxFillLayers(const PaintInfo& paintInfo)
     paintFillLayers(paintInfo, bgColor, bgLayer, view()->backgroundRect(this), BackgroundBleedNone, CompositeSourceOver, rootBackgroundRenderer);
 }
 
-BackgroundBleedAvoidance RenderBox::determineBackgroundBleedAvoidance(GraphicsContext* context) const
+BackgroundBleedAvoidance RenderBox::determineBackgroundBleedAvoidance(GraphicsContext* context, const BoxDecorationData& boxDecorationData) const
 {
     if (context->paintingDisabled())
         return BackgroundBleedNone;
 
-    const RenderStyle* style = this->style();
-
-    if (!style->hasBackground() || !style->hasBorder() || !style->hasBorderRadius() || canRenderBorderImage())
+    if (!boxDecorationData.hasBackground || !boxDecorationData.hasBorder || !style()->hasBorderRadius() || canRenderBorderImage())
         return BackgroundBleedNone;
 
     // FIXME: See crbug.com/382491. getCTM does not accurately reflect the scale at the time content is
@@ -1143,7 +1141,7 @@ BackgroundBleedAvoidance RenderBox::determineBackgroundBleedAvoidance(GraphicsCo
 
     if (borderObscuresBackgroundEdge(contextScaling))
         return BackgroundBleedShrinkBackground;
-    if (!style->hasAppearance() && borderObscuresBackground() && backgroundHasOpaqueTopLayer())
+    if (!boxDecorationData.hasAppearance && borderObscuresBackground() && backgroundHasOpaqueTopLayer())
         return BackgroundBleedBackgroundOverBorder;
 
     return BackgroundBleedClipBackground;
@@ -1161,41 +1159,43 @@ void RenderBox::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutP
 
 void RenderBox::paintBoxDecorationBackgroundWithRect(PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutRect& paintRect)
 {
-    BackgroundBleedAvoidance bleedAvoidance = determineBackgroundBleedAvoidance(paintInfo.context);
+    RenderStyle* style = this->style();
+    BoxDecorationData boxDecorationData(*style);
+    BackgroundBleedAvoidance bleedAvoidance = determineBackgroundBleedAvoidance(paintInfo.context, boxDecorationData);
 
     // FIXME: Should eventually give the theme control over whether the box shadow should paint, since controls could have
     // custom shadows of their own.
     if (!boxShadowShouldBeAppliedToBackground(bleedAvoidance))
-        paintBoxShadow(paintInfo, paintRect, style(), Normal);
+        paintBoxShadow(paintInfo, paintRect, style, Normal);
 
     GraphicsContextStateSaver stateSaver(*paintInfo.context, false);
     if (bleedAvoidance == BackgroundBleedClipBackground) {
         stateSaver.save();
-        RoundedRect border = style()->getRoundedBorderFor(paintRect);
+        RoundedRect border = style->getRoundedBorderFor(paintRect);
         paintInfo.context->clipRoundedRect(border);
     }
 
     // If we have a native theme appearance, paint that before painting our background.
     // The theme will tell us whether or not we should also paint the CSS background.
     IntRect snappedPaintRect(pixelSnappedIntRect(paintRect));
-    bool themePainted = style()->hasAppearance() && !RenderTheme::theme().paint(this, paintInfo, snappedPaintRect);
+    bool themePainted = boxDecorationData.hasAppearance && !RenderTheme::theme().paint(this, paintInfo, snappedPaintRect);
     if (!themePainted) {
         if (bleedAvoidance == BackgroundBleedBackgroundOverBorder)
-            paintBorder(paintInfo, paintRect, style(), bleedAvoidance);
+            paintBorder(paintInfo, paintRect, style, bleedAvoidance);
 
-        paintBackground(paintInfo, paintRect, bleedAvoidance);
+        paintBackground(paintInfo, paintRect, boxDecorationData.backgroundColor, bleedAvoidance);
 
-        if (style()->hasAppearance())
+        if (boxDecorationData.hasAppearance)
             RenderTheme::theme().paintDecorations(this, paintInfo, snappedPaintRect);
     }
-    paintBoxShadow(paintInfo, paintRect, style(), Inset);
+    paintBoxShadow(paintInfo, paintRect, style, Inset);
 
     // The theme will tell us whether or not we should also paint the CSS border.
-    if (bleedAvoidance != BackgroundBleedBackgroundOverBorder && (!style()->hasAppearance() || (!themePainted && RenderTheme::theme().paintBorderOnly(this, paintInfo, snappedPaintRect))) && style()->hasBorder() && !(isTable() && toRenderTable(this)->collapseBorders()))
-        paintBorder(paintInfo, paintRect, style(), bleedAvoidance);
+    if (boxDecorationData.hasBorder && bleedAvoidance != BackgroundBleedBackgroundOverBorder && (!boxDecorationData.hasAppearance || (!themePainted && RenderTheme::theme().paintBorderOnly(this, paintInfo, snappedPaintRect))) && !(isTable() && toRenderTable(this)->collapseBorders()))
+        paintBorder(paintInfo, paintRect, style, bleedAvoidance);
 }
 
-void RenderBox::paintBackground(const PaintInfo& paintInfo, const LayoutRect& paintRect, BackgroundBleedAvoidance bleedAvoidance)
+void RenderBox::paintBackground(const PaintInfo& paintInfo, const LayoutRect& paintRect, const Color& backgroundColor, BackgroundBleedAvoidance bleedAvoidance)
 {
     if (isDocumentElement()) {
         paintRootBoxFillLayers(paintInfo);
@@ -1205,7 +1205,7 @@ void RenderBox::paintBackground(const PaintInfo& paintInfo, const LayoutRect& pa
         return;
     if (boxDecorationBackgroundIsKnownToBeObscured())
         return;
-    paintFillLayers(paintInfo, resolveColor(CSSPropertyBackgroundColor), style()->backgroundLayers(), paintRect, bleedAvoidance);
+    paintFillLayers(paintInfo, backgroundColor, style()->backgroundLayers(), paintRect, bleedAvoidance);
 }
 
 bool RenderBox::getBackgroundPaintedExtent(LayoutRect& paintedExtent) const
@@ -4675,6 +4675,15 @@ void RenderBox::savePreviousBorderBoxSizeIfNeeded()
     }
 
     ensureRareData().m_previousBorderBoxSize = size();
+}
+
+RenderBox::BoxDecorationData::BoxDecorationData(const RenderStyle& style)
+{
+    backgroundColor = style.visitedDependentColor(CSSPropertyBackgroundColor);
+    hasBackground = backgroundColor.alpha() || style.hasBackgroundImage();
+    ASSERT(hasBackground == style.hasBackground());
+    hasBorder = style.hasBorder();
+    hasAppearance = style.hasAppearance();
 }
 
 } // namespace blink
