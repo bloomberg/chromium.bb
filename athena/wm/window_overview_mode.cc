@@ -302,11 +302,12 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
 
 }  // namespace
 
+// static
 scoped_ptr<WindowOverviewMode> WindowOverviewMode::Create(
-    aura::Window* window,
+    aura::Window* container,
     WindowOverviewModeDelegate* delegate) {
   return scoped_ptr<WindowOverviewMode>(
-      new WindowOverviewModeImpl(window, delegate));
+      new WindowOverviewModeImpl(container, delegate));
 }
 
 }  // namespace athena

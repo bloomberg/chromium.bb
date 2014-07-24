@@ -6,7 +6,9 @@
 
 #include "athena/input/public/accelerator_manager.h"
 #include "athena/screen/public/screen_manager.h"
+#include "athena/wm/bezel_controller.h"
 #include "athena/wm/public/window_manager_observer.h"
+#include "athena/wm/split_view_controller.h"
 #include "athena/wm/window_overview_mode.h"
 #include "base/logging.h"
 #include "base/observer_list.h"
@@ -94,6 +96,8 @@ class WindowManagerImpl : public WindowManager,
 
   scoped_ptr<aura::Window> container_;
   scoped_ptr<WindowOverviewMode> overview_;
+  scoped_ptr<BezelController> bezel_controller_;
+  scoped_ptr<SplitViewController> split_view_controller_;
   ObserverList<WindowManagerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerImpl);
@@ -135,13 +139,19 @@ WindowManagerImpl::WindowManagerImpl() {
   container_.reset(ScreenManager::Get()->CreateDefaultContainer(params));
   container_->SetLayoutManager(new AthenaContainerLayoutManager);
   container_->AddObserver(this);
+  bezel_controller_.reset(new BezelController(container_.get()));
+  split_view_controller_.reset(new SplitViewController());
+  bezel_controller_->set_left_right_delegate(split_view_controller_.get());
+  container_->AddPreTargetHandler(bezel_controller_.get());
   instance = this;
   InstallAccelerators();
 }
 
 WindowManagerImpl::~WindowManagerImpl() {
-  if (container_)
+  if (container_) {
     container_->RemoveObserver(this);
+    container_->RemovePreTargetHandler(bezel_controller_.get());
+  }
   container_.reset();
   instance = NULL;
 }
