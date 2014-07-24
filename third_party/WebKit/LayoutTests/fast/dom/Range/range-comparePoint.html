@@ -78,7 +78,15 @@ function test()
     } catch (e) {
         document.getElementById("test10").innerHTML = "test 10 passed"; 
     }
-        
+
+    // test 11 - should throw TypeError when node is not an object
+    try {
+        range.comparePoint(null, 0);
+    } catch (e) {
+        if (e.name == 'TypeError')
+            document.getElementById("test11").innerHTML = "test 11 passed"; 
+    }
+
     if (window.testRunner)
         testRunner.dumpAsText();
 }
@@ -98,6 +106,7 @@ function test()
 <div id=test8><span style="color: red;">test 8 failed</span></div><br>
 <div id=test9><span style="color: red;">test 9 failed</span></div><br>
 <div id=test10><span style="color: red;">test 10 failed</span></div><br>
+<div id=test11><span style="color: red;">test 11 failed</span></div><br>
 
 <!-- hidden area to create the ranges being tested -->
 <div style="visibility: hidden">
