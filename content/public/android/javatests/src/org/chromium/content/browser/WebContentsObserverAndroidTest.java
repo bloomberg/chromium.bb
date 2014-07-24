@@ -49,7 +49,7 @@ public class WebContentsObserverAndroidTest extends ContentShellTestBase {
     }
 
     @SmallTest
-    @Feature({"AndroidWebView", "Android-PostMessage"})
+    @Feature({"Navigation"})
     public void testDidFirstVisuallyNonEmptyPaint() throws Throwable {
         TestWebContentsObserverAndroid observer = ThreadUtils.runOnUiThreadBlocking(
                 new Callable<TestWebContentsObserverAndroid>() {
@@ -64,8 +64,7 @@ public class WebContentsObserverAndroidTest extends ContentShellTestBase {
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                getActivity().getActiveShell().getContentViewCore().loadUrl(
-                        new LoadUrlParams(URL));
+                getContentViewCore().loadUrl(new LoadUrlParams(URL));
             }
         });
         observer.getDidFirstVisuallyNonEmptyPaintCallbackHelper().waitForCallback(callCount);
