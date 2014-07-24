@@ -12,7 +12,6 @@
 #include "base/location.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/capture_client.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -24,6 +23,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_types.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/events/test/events_test_utils.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/image/image_skia_rep.h"
@@ -359,8 +359,8 @@ TEST_F(DragDropControllerTest, MAYBE_DragDropInSingleViewTest) {
   AddViewToWidgetAndResize(widget.get(), drag_view);
   ui::OSExchangeData data;
   data.SetString(base::UTF8ToUTF16("I am being dragged"));
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                       widget->GetNativeView());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     widget->GetNativeView());
   generator.PressLeftButton();
 
   int num_drags = 17;
@@ -405,8 +405,8 @@ TEST_F(DragDropControllerTest, DragDropWithZeroDragUpdates) {
   AddViewToWidgetAndResize(widget.get(), drag_view);
   ui::OSExchangeData data;
   data.SetString(base::UTF8ToUTF16("I am being dragged"));
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                       widget->GetNativeView());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     widget->GetNativeView());
   generator.PressLeftButton();
 
   int num_drags = drag_view->VerticalDragThreshold() + 1;
@@ -453,7 +453,7 @@ TEST_F(DragDropControllerTest, MAYBE_DragDropInMultipleViewsSingleWidgetTest) {
   ui::OSExchangeData data;
   data.SetString(base::UTF8ToUTF16("I am being dragged"));
 
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.MoveMouseRelativeTo(widget->GetNativeView(),
                                 drag_view1->bounds().CenterPoint());
   generator.PressLeftButton();
@@ -519,8 +519,8 @@ TEST_F(DragDropControllerTest, MAYBE_DragDropInMultipleViewsMultipleWidgetsTest)
   ui::OSExchangeData data;
   data.SetString(base::UTF8ToUTF16("I am being dragged"));
 
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                       widget1->GetNativeView());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     widget1->GetNativeView());
   generator.PressLeftButton();
 
   int num_drags = drag_view1->width();
@@ -577,7 +577,7 @@ TEST_F(DragDropControllerTest, MAYBE_ViewRemovedWhileInDragDropTest) {
   ui::OSExchangeData data;
   data.SetString(base::UTF8ToUTF16("I am being dragged"));
 
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.MoveMouseToCenterOf(widget->GetNativeView());
   generator.PressLeftButton();
 
@@ -638,8 +638,8 @@ TEST_F(DragDropControllerTest, DragLeavesClipboardAloneTest) {
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
 
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                       widget->GetNativeView());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     widget->GetNativeView());
   ui::OSExchangeData data;
   std::string data_str("I am being dragged");
   data.SetString(base::ASCIIToUTF16(data_str));
@@ -669,8 +669,8 @@ TEST_F(DragDropControllerTest, WindowDestroyedDuringDragDrop) {
 
   ui::OSExchangeData data;
   data.SetString(base::UTF8ToUTF16("I am being dragged"));
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                       widget->GetNativeView());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     widget->GetNativeView());
   generator.PressLeftButton();
 
   int num_drags = 17;
@@ -713,8 +713,8 @@ TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
   AddViewToWidgetAndResize(widget.get(), drag_view);
   ui::OSExchangeData data;
   data.SetString(base::UTF8ToUTF16("I am being dragged"));
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                       widget->GetNativeView());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     widget->GetNativeView());
   generator.PressLeftButton();
 
   int num_drags = 17;
@@ -769,8 +769,8 @@ TEST_F(DragDropControllerTest, MAYBE_PressingEscapeCancelsDragDrop) {
   AddViewToWidgetAndResize(widget.get(), drag_view);
   ui::OSExchangeData data;
   data.SetString(base::UTF8ToUTF16("I am being dragged"));
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                       widget->GetNativeView());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     widget->GetNativeView());
   generator.PressLeftButton();
 
   int num_drags = 17;
@@ -811,8 +811,8 @@ TEST_F(DragDropControllerTest, MAYBE_CaptureLostCancelsDragDrop) {
   AddViewToWidgetAndResize(widget.get(), drag_view);
   ui::OSExchangeData data;
   data.SetString(base::UTF8ToUTF16("I am being dragged"));
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                       widget->GetNativeView());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     widget->GetNativeView());
   generator.PressLeftButton();
 
   int num_drags = 17;
@@ -873,8 +873,8 @@ TEST_F(DragDropControllerTest, TouchDragDropInMultipleWindows) {
   ui::OSExchangeData data;
   data.SetString(base::UTF8ToUTF16("I am being dragged"));
 
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                       widget1->GetNativeView());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     widget1->GetNativeView());
   generator.PressTouch();
   gfx::Point point = gfx::Rect(drag_view1->bounds()).CenterPoint();
   DispatchGesture(ui::ET_GESTURE_LONG_PRESS, point);
@@ -923,8 +923,8 @@ TEST_F(DragDropControllerTest, TouchDragDropCancelsOnLongTap) {
   scoped_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                       widget->GetNativeView());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     widget->GetNativeView());
 
   generator.PressTouch();
   gfx::Point point = gfx::Rect(drag_view->bounds()).CenterPoint();
@@ -949,8 +949,8 @@ TEST_F(DragDropControllerTest, TouchDragDropLongTapGestureIsForwarded) {
   scoped_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                       widget->GetNativeView());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     widget->GetNativeView());
 
   generator.PressTouch();
   gfx::Point point = gfx::Rect(drag_view->bounds()).CenterPoint();

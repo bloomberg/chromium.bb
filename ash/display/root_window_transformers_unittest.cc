@@ -17,10 +17,10 @@
 #include "ash/test/mirror_window_test_api.h"
 #include "base/synchronization/waitable_event.h"
 #include "ui/aura/env.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/events/event_handler.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
@@ -144,8 +144,8 @@ TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
   int64 display2_id = ScreenUtil::GetSecondaryDisplay().id();
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  aura::test::EventGenerator generator1(root_windows[0]);
-  aura::test::EventGenerator generator2(root_windows[1]);
+  ui::test::EventGenerator generator1(root_windows[0]);
+  ui::test::EventGenerator generator2(root_windows[1]);
 
   magnifier->SetEnabled(true);
   EXPECT_EQ(2.0f, magnifier->GetScale());
@@ -247,7 +247,7 @@ TEST_F(RootWindowTransformersTest, ScaleAndMagnify) {
   EXPECT_EQ(1.5f, GetStoredUIScale(display1.id()));
   EXPECT_EQ(1.0f, GetStoredUIScale(display2.id()));
 
-  aura::test::EventGenerator generator(root_windows[0]);
+  ui::test::EventGenerator generator(root_windows[0]);
   generator.MoveMouseToInHost(500, 200);
   EXPECT_EQ("299,150", event_handler.GetLocationAndReset());
   magnifier->SetEnabled(false);
@@ -276,7 +276,7 @@ TEST_F(RootWindowTransformersTest, MAYBE_TouchScaleAndMagnify) {
   gfx::Display display = Shell::GetScreen()->GetPrimaryDisplay();
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   aura::Window* root_window = root_windows[0];
-  aura::test::EventGenerator generator(root_window);
+  ui::test::EventGenerator generator(root_window);
   MagnificationController* magnifier =
       Shell::GetInstance()->magnification_controller();
 
@@ -319,7 +319,7 @@ TEST_F(RootWindowTransformersTest, MAYBE_ConvertHostToRootCoords) {
   EXPECT_EQ("0,0 300x450", root_windows[0]->bounds().ToString());
   EXPECT_EQ(1.5f, GetStoredUIScale(display1.id()));
 
-  aura::test::EventGenerator generator(root_windows[0]);
+  ui::test::EventGenerator generator(root_windows[0]);
   generator.MoveMouseToInHost(300, 200);
   magnifier->SetEnabled(true);
   EXPECT_EQ("150,224", event_handler.GetLocationAndReset());

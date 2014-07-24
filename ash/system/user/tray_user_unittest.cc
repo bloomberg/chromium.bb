@@ -16,7 +16,7 @@
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "components/user_manager/user_info.h"
-#include "ui/aura/test/event_generator.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/animation/animation_container_element.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -34,13 +34,13 @@ class TrayUserTest : public ash::test::AshTestBase {
   void InitializeParameters(int users_logged_in, bool multiprofile);
 
   // Show the system tray menu using the provided event generator.
-  void ShowTrayMenu(aura::test::EventGenerator* generator);
+  void ShowTrayMenu(ui::test::EventGenerator* generator);
 
   // Move the mouse over the user item.
-  void MoveOverUserItem(aura::test::EventGenerator* generator, int index);
+  void MoveOverUserItem(ui::test::EventGenerator* generator, int index);
 
   // Click on the user item. Note that the tray menu needs to be shown.
-  void ClickUserItem(aura::test::EventGenerator* generator, int index);
+  void ClickUserItem(ui::test::EventGenerator* generator, int index);
 
   // Accessors to various system components.
   ShelfLayoutManager* shelf() { return shelf_; }
@@ -104,7 +104,7 @@ void TrayUserTest::InitializeParameters(int users_logged_in,
   tray_->AddTrayItem(tray_user_separator_);
 }
 
-void TrayUserTest::ShowTrayMenu(aura::test::EventGenerator* generator) {
+void TrayUserTest::ShowTrayMenu(ui::test::EventGenerator* generator) {
   gfx::Point center = tray()->GetBoundsInScreen().CenterPoint();
 
   generator->MoveMouseTo(center.x(), center.y());
@@ -112,15 +112,15 @@ void TrayUserTest::ShowTrayMenu(aura::test::EventGenerator* generator) {
   generator->ClickLeftButton();
 }
 
-void TrayUserTest::MoveOverUserItem(aura::test::EventGenerator* generator,
-    int index) {
+void TrayUserTest::MoveOverUserItem(ui::test::EventGenerator* generator,
+                                    int index) {
   gfx::Point center =
       tray_user(index)->GetUserPanelBoundsInScreenForTest().CenterPoint();
 
   generator->MoveMouseTo(center.x(), center.y());
 }
 
-void TrayUserTest::ClickUserItem(aura::test::EventGenerator* generator,
+void TrayUserTest::ClickUserItem(ui::test::EventGenerator* generator,
                                  int index) {
   MoveOverUserItem(generator, index);
   generator->ClickLeftButton();
@@ -143,7 +143,7 @@ TEST_F(TrayUserTest, SingleUserModeDoesNotAllowAddingUser) {
   InitializeParameters(1, false);
 
   // Move the mouse over the status area and click to open the status menu.
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
 
   EXPECT_FALSE(tray()->IsAnyBubbleVisible());
 
@@ -172,7 +172,7 @@ TEST_F(TrayUserTest, MutiUserModeDoesNotAllowToAddUser) {
   InitializeParameters(1, true);
 
   // Move the mouse over the status area and click to open the status menu.
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.set_async(false);
 
   int max_users = delegate()->GetMaximumNumberOfLoggedInUsers();
@@ -232,7 +232,7 @@ TEST_F(TrayUserTest, MutiUserModeDoesNotAllowToAddUser) {
 TEST_F(TrayUserTest, MutiUserModeButtonClicks) {
   // Have two users.
   InitializeParameters(2, true);
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   ShowTrayMenu(&generator);
 
   // Switch to a new user - which has a capitalized name.

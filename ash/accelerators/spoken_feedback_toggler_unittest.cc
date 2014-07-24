@@ -7,8 +7,8 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/events/test/event_generator.h"
 
 namespace ash {
 
@@ -18,7 +18,7 @@ TEST_F(SpokenFeedbackTogglerTest, Basic) {
   SpokenFeedbackToggler::ScopedEnablerForTest scoped;
   Shell* shell = Shell::GetInstance();
   AccessibilityDelegate* delegate = shell->accessibility_delegate();
-  aura::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator& generator = GetEventGenerator();
   EXPECT_FALSE(delegate->IsSpokenFeedbackEnabled());
 
   generator.PressKey(ui::VKEY_F6, ui::EF_SHIFT_DOWN);

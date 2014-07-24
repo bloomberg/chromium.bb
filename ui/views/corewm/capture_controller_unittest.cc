@@ -7,13 +7,13 @@
 #include "base/logging.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_base.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/root_view.h"
@@ -137,7 +137,7 @@ TEST_F(CaptureControllerTest, ResetOtherWindowCaptureOnCapture) {
 TEST_F(CaptureControllerTest, TouchTargetResetOnCaptureChange) {
   // Create a window inside the WindowEventDispatcher.
   scoped_ptr<aura::Window> w1(CreateNormalWindow(1, root_window(), NULL));
-  aura::test::EventGenerator event_generator1(root_window());
+  ui::test::EventGenerator event_generator1(root_window());
   event_generator1.PressTouch();
   w1->SetCapture();
   // Both capture clients should return the same capture window.

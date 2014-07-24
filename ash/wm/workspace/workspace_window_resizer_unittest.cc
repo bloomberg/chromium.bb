@@ -20,11 +20,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/gestures/gesture_configuration.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
@@ -514,7 +514,7 @@ TEST_F(WorkspaceWindowResizerTest, MouseMoveWithTouchDrag) {
   window2_->SetBounds(gfx::Rect(400, 200, 100, 200));
 
   Shell* shell = Shell::GetInstance();
-  aura::test::EventGenerator generator(window_->GetRootWindow());
+  ui::test::EventGenerator generator(window_->GetRootWindow());
 
   // The cursor should not be locked initially.
   EXPECT_FALSE(shell->cursor_manager()->IsCursorLocked());
@@ -1739,8 +1739,8 @@ TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_RIGHT) {
   EXPECT_EQ(gfx::Rect(100, 100, 600, kRootHeight - 200).ToString(),
             touch_resize_window_->bounds().ToString());
 
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                       touch_resize_window_.get());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     touch_resize_window_.get());
 
   // Drag out of the right border a bit and check if the border is aligned with
   // the touch point.
@@ -1773,8 +1773,8 @@ TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_LEFT) {
   EXPECT_EQ(gfx::Rect(100, 100, 600, kRootHeight - 200).ToString(),
             touch_resize_window_->bounds().ToString());
 
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                       touch_resize_window_.get());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     touch_resize_window_.get());
 
   // Drag out of the left border a bit and check if the border is aligned with
   // the touch point.
@@ -1807,8 +1807,8 @@ TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_TOP) {
   EXPECT_EQ(gfx::Rect(100, 100, 600, kRootHeight - 200).ToString(),
             touch_resize_window_->bounds().ToString());
 
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                       touch_resize_window_.get());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     touch_resize_window_.get());
 
   // Drag out of the top border a bit and check if the border is aligned with
   // the touch point.
@@ -1841,8 +1841,8 @@ TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_BOTTOM) {
   EXPECT_EQ(gfx::Rect(100, 100, 600, kRootHeight - 200).ToString(),
             touch_resize_window_->bounds().ToString());
 
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                       touch_resize_window_.get());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     touch_resize_window_.get());
 
   // Drag out of the bottom border a bit and check if the border is aligned with
   // the touch point.

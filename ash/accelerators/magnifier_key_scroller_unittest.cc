@@ -8,8 +8,8 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/events/test/event_generator.h"
 
 namespace ash {
 namespace {
@@ -52,7 +52,7 @@ TEST_F(MagnifierKeyScrollerTest, Basic) {
   controller->SetEnabled(true);
 
   EXPECT_EQ("200,150", controller->GetWindowPosition().ToString());
-  aura::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator& generator = GetEventGenerator();
 
   // Click and Release generates the press event upon release.
   generator.PressKey(ui::VKEY_DOWN, ui::EF_SHIFT_DOWN);

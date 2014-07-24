@@ -6,11 +6,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/touch/touch_editing_controller.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -543,7 +543,7 @@ TEST_F(TouchSelectionControllerImplTest,
        DoubleTapInTextfieldWithCursorHandleShouldSelectText) {
   CreateTextfield();
   textfield_->SetText(ASCIIToUTF16("some text"));
-  aura::test::EventGenerator generator(
+  ui::test::EventGenerator generator(
       textfield_->GetWidget()->GetNativeView()->GetRootWindow());
 
   // Tap the textfield to invoke touch selection.
@@ -804,7 +804,7 @@ TEST_F(TouchSelectionControllerImplTest, MouseEventDeactivatesTouchSelection) {
   CreateTextfield();
   EXPECT_FALSE(GetSelectionController());
 
-  aura::test::EventGenerator generator(
+  ui::test::EventGenerator generator(
       textfield_widget_->GetNativeView()->GetRootWindow());
 
   generator.set_current_location(gfx::Point(5, 5));
@@ -845,7 +845,7 @@ TEST_F(TouchSelectionControllerImplTest, KeyEventDeactivatesTouchSelection) {
   CreateTextfield();
   EXPECT_FALSE(GetSelectionController());
 
-  aura::test::EventGenerator generator(
+  ui::test::EventGenerator generator(
       textfield_widget_->GetNativeView()->GetRootWindow());
 
   RunPendingMessages();

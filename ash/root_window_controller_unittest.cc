@@ -19,7 +19,6 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -30,6 +29,7 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_focus_manager.h"
 #include "ui/base/ui_base_switches_util.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/events/test/test_event_handler.h"
 #include "ui/keyboard/keyboard_controller_proxy.h"
 #include "ui/keyboard/keyboard_switches.h"
@@ -281,7 +281,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Modal) {
       modal->GetNativeView()));
   EXPECT_TRUE(wm::IsActiveWindow(modal->GetNativeView()));
 
-  aura::test::EventGenerator generator_1st(root_windows[0]);
+  ui::test::EventGenerator generator_1st(root_windows[0]);
   generator_1st.ClickLeftButton();
   EXPECT_TRUE(wm::IsActiveWindow(modal->GetNativeView()));
 
@@ -688,7 +688,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   ui::test::TestEventHandler handler;
   root_window->AddPreTargetHandler(&handler);
 
-  aura::test::EventGenerator event_generator(root_window, keyboard_window);
+  ui::test::EventGenerator event_generator(root_window, keyboard_window);
   event_generator.ClickLeftButton();
   int expected_mouse_presses = 1;
   EXPECT_EQ(expected_mouse_presses, handler.num_mouse_events() / 2);
@@ -773,9 +773,9 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ClickWithActiveModalDialog) {
 
   ui::test::TestEventHandler handler;
   root_window->AddPreTargetHandler(&handler);
-  aura::test::EventGenerator root_window_event_generator(root_window);
-  aura::test::EventGenerator keyboard_event_generator(root_window,
-                                                      keyboard_window);
+  ui::test::EventGenerator root_window_event_generator(root_window);
+  ui::test::EventGenerator keyboard_event_generator(root_window,
+                                                    keyboard_window);
 
   views::Widget* modal_widget =
       CreateModalWidget(gfx::Rect(300, 10, 100, 100));

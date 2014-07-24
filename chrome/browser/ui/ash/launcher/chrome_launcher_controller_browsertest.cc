@@ -58,9 +58,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
+#include "ui/events/test/event_generator.h"
 
 using apps::AppWindow;
 using extensions::Extension;
@@ -268,7 +268,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
 
   // Try to rip off |item_index|.
   void RipOffItemIndex(int index,
-                       aura::test::EventGenerator* generator,
+                       ui::test::EventGenerator* generator,
                        ash::test::ShelfViewTestAPI* test,
                        RipOffCommand command) {
     ash::ShelfButton* button = test->GetButton(index);
@@ -1607,8 +1607,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ActivateAfterSessionRestore) {
 // TODO(skuhne): Test is flaky with a real compositor: crbug.com/331924
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragAndDrop) {
   // Get a number of interfaces we need.
-  aura::test::EventGenerator generator(
-      ash::Shell::GetPrimaryRootWindow(), gfx::Point());
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow(),
+                                     gfx::Point());
   ash::test::ShelfViewTestAPI test(
       ash::test::ShelfTestAPI(shelf_).shelf_view());
   AppListService* service = AppListService::Get(chrome::GetActiveDesktop());
@@ -1753,7 +1753,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestWithMultiMonitor,
   aura::Window* secondary_root_window = ash::Shell::GetAllRootWindows()[1];
   ash::Shelf* secondary_shelf = ash::Shelf::ForWindow(secondary_root_window);
 
-  aura::test::EventGenerator generator(secondary_root_window, gfx::Point());
+  ui::test::EventGenerator generator(secondary_root_window, gfx::Point());
   ash::test::ShelfViewTestAPI test(
       ash::test::ShelfTestAPI(secondary_shelf).shelf_view());
   AppListService* service = AppListService::Get(chrome::GetActiveDesktop());
@@ -1832,8 +1832,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestWithMultiMonitor,
 
 // Do tests for removal of items from the shelf by dragging.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DragOffShelf) {
-  aura::test::EventGenerator generator(
-      ash::Shell::GetPrimaryRootWindow(), gfx::Point());
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow(),
+                                     gfx::Point());
   ash::test::ShelfViewTestAPI test(
       ash::test::ShelfTestAPI(shelf_).shelf_view());
   test.SetAnimationDuration(1);  // Speed up animations for test.
@@ -1935,8 +1935,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DragOffShelf) {
 // Check that clicking on an app shelf item launches a new browser.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ClickItem) {
   // Get a number of interfaces we need.
-  aura::test::EventGenerator generator(
-      ash::Shell::GetPrimaryRootWindow(), gfx::Point());
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow(),
+                                     gfx::Point());
   ash::test::ShelfViewTestAPI test(
       ash::test::ShelfTestAPI(shelf_).shelf_view());
   AppListService* service = AppListService::Get(chrome::GetActiveDesktop());

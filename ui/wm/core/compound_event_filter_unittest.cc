@@ -7,13 +7,13 @@
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_base.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_cursor_client.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -180,7 +180,7 @@ TEST_F(CompoundEventFilterTest, FilterConsumedGesture) {
 
   // Tap on the window should not focus it since the filter will be consuming
   // the gestures.
-  aura::test::EventGenerator generator(root_window(), gfx::Point(50, 50));
+  ui::test::EventGenerator generator(root_window(), gfx::Point(50, 50));
   generator.PressTouch();
   EXPECT_FALSE(window->HasFocus());
 
@@ -191,7 +191,7 @@ TEST_F(CompoundEventFilterTest, FilterConsumedGesture) {
 // Verifies we don't attempt to hide the mouse when the mouse is down and a
 // touch event comes in.
 TEST_F(CompoundEventFilterTest, DontHideWhenMouseDown) {
-  aura::test::EventGenerator event_generator(root_window());
+  ui::test::EventGenerator event_generator(root_window());
 
   scoped_ptr<CompoundEventFilter> compound_filter(new CompoundEventFilter);
   aura::Env::GetInstance()->AddPreTargetHandler(compound_filter.get());

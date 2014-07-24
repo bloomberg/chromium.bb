@@ -31,12 +31,12 @@
 #include "base/i18n/rtl.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -220,7 +220,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     int index = model->ItemIndexByID(GetShelfIDForWindow(window));
     gfx::Rect bounds = test_api.GetButton(index)->GetBoundsInScreen();
 
-    aura::test::EventGenerator& event_generator = GetEventGenerator();
+    ui::test::EventGenerator& event_generator = GetEventGenerator();
     event_generator.MoveMouseTo(bounds.CenterPoint());
     event_generator.ClickLeftButton();
 

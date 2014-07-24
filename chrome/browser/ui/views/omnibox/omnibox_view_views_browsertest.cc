@@ -18,7 +18,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "grit/generated_resources.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -28,6 +27,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
 
 class OmniboxViewViewsTest : public InProcessBrowserTest {
@@ -73,8 +73,8 @@ class OmniboxViewViewsTest : public InProcessBrowserTest {
   void TapBrowserWindowCenter() {
     gfx::Point center = BrowserView::GetBrowserViewForBrowser(
         browser())->GetBoundsInScreen().CenterPoint();
-    aura::test::EventGenerator generator(browser()->window()->
-        GetNativeWindow()->GetRootWindow());
+    ui::test::EventGenerator generator(
+        browser()->window()->GetNativeWindow()->GetRootWindow());
     generator.GestureTapAt(center);
   }
 

@@ -18,10 +18,10 @@
 #include "ash/wm/window_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
@@ -417,8 +417,8 @@ TEST_F(SystemTrayTest, PersistentBubble) {
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
   ASSERT_TRUE(tray->HasSystemBubble());
   {
-    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                         gfx::Point(5, 5));
+    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       gfx::Point(5, 5));
     generator.ClickLeftButton();
     ASSERT_FALSE(tray->HasSystemBubble());
   }
@@ -431,8 +431,8 @@ TEST_F(SystemTrayTest, PersistentBubble) {
   ASSERT_TRUE(tray->HasSystemBubble());
 
   {
-    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                         gfx::Point(5, 5));
+    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       gfx::Point(5, 5));
     generator.ClickLeftButton();
     ASSERT_TRUE(tray->HasSystemBubble());
   }

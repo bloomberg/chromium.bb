@@ -9,12 +9,12 @@
 #include "ash/test/child_modal_window.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/test/capture_tracking_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
@@ -189,8 +189,8 @@ TEST_F(WindowModalityControllerTest, Events) {
 
   {
     // Clicking a point within w1 should activate that window.
-    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                         gfx::Point(10, 10));
+    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       gfx::Point(10, 10));
     generator.ClickLeftButton();
     EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
   }
@@ -199,8 +199,8 @@ TEST_F(WindowModalityControllerTest, Events) {
 
   {
     // Clicking a point within w1 should activate w11.
-    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                         gfx::Point(10, 10));
+    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       gfx::Point(10, 10));
     generator.ClickLeftButton();
     EXPECT_TRUE(wm::IsActiveWindow(w11.get()));
   }
@@ -223,8 +223,8 @@ TEST_F(WindowModalityControllerTest, EventsForEclipsedWindows) {
   wm::ActivateWindow(w2.get());
   {
     // Clicking a point on w1 that is not eclipsed by w2.
-    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                         gfx::Point(90, 90));
+    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       gfx::Point(90, 90));
     generator.ClickLeftButton();
     EXPECT_TRUE(wm::IsActiveWindow(w11.get()));
   }
@@ -276,7 +276,7 @@ TEST_F(WindowModalityControllerTest, ChangeCapture) {
 
   gfx::Point center(view->width() / 2, view->height() / 2);
   views::View::ConvertPointToScreen(view, &center);
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), center);
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), center);
   generator.PressLeftButton();
   EXPECT_TRUE(view->got_press());
 
@@ -347,8 +347,8 @@ TEST_F(WindowModalityControllerTest, TouchEvent) {
   TouchTrackerWindowDelegate d11;
   scoped_ptr<aura::Window> w11(CreateTestWindowInShellWithDelegate(&d11,
       -11, gfx::Rect(20, 20, 50, 50)));
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                       gfx::Point(10, 10));
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     gfx::Point(10, 10));
 
   ::wm::AddTransientChild(w1.get(), w11.get());
   d1.reset();
@@ -479,7 +479,7 @@ TEST_F(WindowModalityControllerTest, ChildModalEventGenerator) {
   EXPECT_FALSE(parent->HasFocus());
 
   {
-    aura::test::EventGenerator generator(
+    ui::test::EventGenerator generator(
         Shell::GetPrimaryRootWindow(),
         parent->bounds().origin() +
             gfx::Vector2d(10, parent->bounds().height() - 10));
@@ -496,7 +496,7 @@ TEST_F(WindowModalityControllerTest, ChildModalEventGenerator) {
   }
 
   {
-    aura::test::EventGenerator generator(
+    ui::test::EventGenerator generator(
         Shell::GetPrimaryRootWindow(),
         parent->bounds().origin() + gfx::Vector2d(10, 10));
     generator.ClickLeftButton();
@@ -511,7 +511,7 @@ TEST_F(WindowModalityControllerTest, ChildModalEventGenerator) {
   }
 
   {
-    aura::test::EventGenerator generator(
+    ui::test::EventGenerator generator(
         Shell::GetPrimaryRootWindow(),
         child->bounds().origin() + gfx::Vector2d(10, 10));
     generator.ClickLeftButton();

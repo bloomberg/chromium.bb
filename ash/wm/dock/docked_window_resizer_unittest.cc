@@ -28,11 +28,11 @@
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_tree_client.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
 
@@ -1588,7 +1588,7 @@ TEST_P(DockedWindowResizerTest, MaximizedDuringDrag) {
   // ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowStateTypeChanged()
   // must be called in order for the maximized window's size to be correct.
   delegate()->set_window_component(HTCAPTION);
-  aura::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseTo(window->GetBoundsInScreen().origin());
   generator.PressLeftButton();
   generator.MoveMouseBy(10, 10);

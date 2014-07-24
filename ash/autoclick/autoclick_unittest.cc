@@ -5,7 +5,6 @@
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -13,6 +12,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/test/event_generator.h"
 
 namespace ash {
 
@@ -227,7 +227,7 @@ TEST_F(AutoclickTest, ExtendedDisplay) {
   std::vector<ui::MouseEvent> events;
 
   // Test first root window.
-  aura::test::EventGenerator generator1(root_windows[0]);
+  ui::test::EventGenerator generator1(root_windows[0]);
   generator1.MoveMouseTo(100, 200);
   events = WaitForMouseEvents();
   EXPECT_EQ(2u, events.size());
@@ -235,7 +235,7 @@ TEST_F(AutoclickTest, ExtendedDisplay) {
   EXPECT_EQ(200, events[0].root_location().y());
 
   // Test second root window.
-  aura::test::EventGenerator generator2(root_windows[1]);
+  ui::test::EventGenerator generator2(root_windows[1]);
   generator2.MoveMouseTo(300, 400);
   events = WaitForMouseEvents();
   EXPECT_EQ(2u, events.size());
