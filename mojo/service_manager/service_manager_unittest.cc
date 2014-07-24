@@ -522,7 +522,8 @@ TEST_F(ServiceManagerTest, DISABLED_BDeleted) {
 
 // Confirm that the url of a service is correctly passed to another service that
 // it loads, and that it can be rejected.
-TEST_F(ServiceManagerTest, ANoLoadB) {
+// http://crbug.com/396300
+TEST_F(ServiceManagerTest, DISABLED_ANoLoadB) {
   TesterContext context;
   ServiceManager sm;
 
