@@ -54,7 +54,8 @@ ManagedTileState::ManagedTileState()
       visible_and_ready_to_draw(false),
       scheduled_priority(0) {}
 
-ManagedTileState::TileVersion::TileVersion() : mode_(RESOURCE_MODE) {
+ManagedTileState::TileVersion::TileVersion()
+    : mode_(RESOURCE_MODE), solid_color_(SK_ColorWHITE) {
 }
 
 ManagedTileState::TileVersion::~TileVersion() { DCHECK(!resource_); }
