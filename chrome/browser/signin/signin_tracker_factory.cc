@@ -19,7 +19,8 @@ scoped_ptr<SigninTracker> SigninTrackerFactory::CreateForProfile(
     SigninTracker::Observer* observer) {
   // Determine whether to use the AccountReconcilor.
   AccountReconcilor* account_reconcilor = NULL;
-  if (!switches::IsEnableWebBasedSignin() && switches::IsNewProfileManagement())
+  if (!switches::IsEnableWebBasedSignin() &&
+      switches::IsEnableAccountConsistency())
     account_reconcilor = AccountReconcilorFactory::GetForProfile(profile);
 
   return scoped_ptr<SigninTracker>(new SigninTracker(

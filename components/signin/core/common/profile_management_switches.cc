@@ -140,9 +140,8 @@ bool IsNewProfileManagement() {
 }
 
 bool IsNewProfileManagementPreviewEnabled() {
-  bool is_new_avatar_menu =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewAvatarMenu);
-  return is_new_avatar_menu && IsNewProfileManagement();
+  // No promotion to Enable Account Consistency.
+  return false;
 }
 
 void EnableNewProfileManagementForTesting(base::CommandLine* command_line) {

@@ -336,7 +336,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   // TODO(guohui): needs to forward the new-profile-management switch to
   // renderer processes.
-  if (switches::IsNewProfileManagement())
+  if (switches::IsEnableAccountConsistency())
     thread->RegisterExtension(extensions_v8::PrincipalsExtension::Get());
 
   // chrome:, chrome-search:, chrome-devtools:, and chrome-distiller: pages

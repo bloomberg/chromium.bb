@@ -1099,7 +1099,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     [tutorialView setFrameOrigin:NSMakePoint(0, yOffset)];
     [container addSubview:tutorialView];
     yOffset = NSMaxY([tutorialView frame]);
-    if (!switches::IsNewProfileManagement() &&
+    if (!switches::IsEnableAccountConsistency() &&
         tutorialMode_ != lastTutorialMode) {
       ProfileMetrics::LogProfileUpgradeEnrollment(
           ProfileMetrics::PROFILE_ENROLLMENT_SHOW_PREVIEW_PROMO);
@@ -1113,7 +1113,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (NSView*)buildPreviewTutorialIfNeeded:(const AvatarMenu::Item&)item {
-  if (!switches::IsNewProfileManagement()) {
+  if (!switches::IsEnableAccountConsistency()) {
     return [self tutorialViewWithMode:profiles::TUTORIAL_MODE_ENABLE_PREVIEW
                          titleMessage:IDS_PROFILES_PREVIEW_TUTORIAL_TITLE
                        contentMessage:IDS_PROFILES_PREVIEW_TUTORIAL_CONTENT_TEXT
@@ -1169,6 +1169,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                   buttonMessage:(int)buttonMessageId
                      linkAction:(SEL)linkAction
                    buttonAction:(SEL)buttonAction {
+  // No promotion to Enable Accounst Consistency.
+  if (mode == profiles::TUTORIAL_MODE_ENABLE_PREVIEW)
+    return nil;
+
   tutorialMode_ = mode;
 
   NSColor* tutorialBackgroundColor =
@@ -1364,7 +1368,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // The available links depend on the type of profile that is active.
   NSButton* link;
   if (item.signed_in) {
-    if (switches::IsNewProfileManagement()) {
+    if (switches::IsEnableAccountConsistency()) {
       NSString* linkTitle = l10n_util::GetNSString(
           viewMode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER ?
               IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON :

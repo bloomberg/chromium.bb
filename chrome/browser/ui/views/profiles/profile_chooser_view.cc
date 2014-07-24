@@ -822,21 +822,19 @@ views::View* ProfileChooserView::CreateProfileChooserView(
   views::View* current_profile_view = NULL;
   views::View* current_profile_accounts = NULL;
   views::View* option_buttons_view = NULL;
-  bool is_new_profile_management = switches::IsNewProfileManagement();
+  bool is_enable_account_consistency = switches::IsEnableAccountConsistency();
   for (size_t i = 0; i < avatar_menu->GetNumberOfItems(); ++i) {
     const AvatarMenu::Item& item = avatar_menu->GetItemAt(i);
     if (item.active) {
       option_buttons_view = CreateOptionsView(item.signed_in);
       current_profile_view = CreateCurrentProfileView(item, false);
       if (view_mode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
-        if (is_new_profile_management) {
+        if (is_enable_account_consistency) {
           tutorial_view =
               last_tutorial_mode == profiles::TUTORIAL_MODE_SEND_FEEDBACK ?
               CreateSendPreviewFeedbackView() :
               CreatePreviewEnabledTutorialView(
                   item, last_tutorial_mode == profiles::TUTORIAL_MODE_WELCOME);
-        } else {
-          tutorial_view = CreateNewProfileManagementPreviewView();
         }
       } else {
         current_profile_accounts = CreateCurrentProfileAccountsView(item);
@@ -849,7 +847,8 @@ views::View* ProfileChooserView::CreateProfileChooserView(
   if (tutorial_view) {
     // Be sure not to track the tutorial display on View refresh, and only count
     // the preview-promo view, shown when New Profile Management is off.
-    if (tutorial_mode_ != last_tutorial_mode && !is_new_profile_management) {
+    if (tutorial_mode_ != last_tutorial_mode &&
+        !is_enable_account_consistency) {
       ProfileMetrics::LogProfileUpgradeEnrollment(
           ProfileMetrics::PROFILE_ENROLLMENT_SHOW_PREVIEW_PROMO);
     }
@@ -1106,7 +1105,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
   // The available links depend on the type of profile that is active.
   if (avatar_item.signed_in) {
     layout->StartRow(1, 0);
-    if (switches::IsNewProfileManagement()) {
+    if (switches::IsEnableAccountConsistency()) {
       base::string16 link_title = l10n_util::GetStringUTF16(
           view_mode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER ?
               IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON :

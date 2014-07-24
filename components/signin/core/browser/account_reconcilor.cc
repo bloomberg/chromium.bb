@@ -360,7 +360,7 @@ void AccountReconcilor::GoogleSignedOut(const std::string& username) {
 }
 
 void AccountReconcilor::PerformMergeAction(const std::string& account_id) {
-  if (!switches::IsNewProfileManagement()) {
+  if (!switches::IsEnableAccountConsistency()) {
     MarkAccountAsAddedToCookie(account_id);
     return;
   }
@@ -381,7 +381,7 @@ void AccountReconcilor::PerformFinishRemoveAction(
     const std::string& account_id,
     const GoogleServiceAuthError& error,
     const std::vector<std::pair<std::string, bool> >& accounts) {
-  if (!switches::IsNewProfileManagement())
+  if (!switches::IsEnableAccountConsistency())
     return;
   VLOG(1) << "AccountReconcilor::PerformFinishRemoveAction:"
           << " account=" << account_id << " error=" << error.ToString();
@@ -403,7 +403,7 @@ void AccountReconcilor::PerformAddToChromeAction(
     const std::string& account_id,
     int session_index,
     const std::string& signin_scoped_device_id) {
-  if (!switches::IsNewProfileManagement()) {
+  if (!switches::IsEnableAccountConsistency()) {
     MarkAccountAsAddedToChrome(account_id);
     return;
   }
@@ -417,7 +417,7 @@ void AccountReconcilor::PerformAddToChromeAction(
 }
 
 void AccountReconcilor::PerformLogoutAllAccountsAction() {
-  if (!switches::IsNewProfileManagement())
+  if (!switches::IsEnableAccountConsistency())
     return;
   VLOG(1) << "AccountReconcilor::PerformLogoutAllAccountsAction";
   merge_session_helper_.LogOutAllAccounts();
@@ -763,7 +763,7 @@ void AccountReconcilor::PerformAddAccountToTokenService(
     const std::string& refresh_token) {
   // The flow should never get to this method if new_profile_management is
   // false, but better safe than sorry.
-  if (!switches::IsNewProfileManagement())
+  if (!switches::IsEnableAccountConsistency())
     return;
   token_service_->UpdateCredentials(account_id, refresh_token);
 }

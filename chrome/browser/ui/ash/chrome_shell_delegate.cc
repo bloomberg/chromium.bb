@@ -88,7 +88,7 @@ bool ChromeShellDelegate::IsRunningInForcedAppMode() const {
 
 bool ChromeShellDelegate::IsMultiAccountEnabled() const {
 #if defined(OS_CHROMEOS)
-  return switches::IsNewProfileManagement();
+  return switches::IsEnableAccountConsistency();
 #endif
   return false;
 }

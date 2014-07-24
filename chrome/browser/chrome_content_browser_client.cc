@@ -898,7 +898,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
 #if defined(OS_ANDROID)
   host->AddFilter(new cdm::CdmMessageFilterAndroid());
 #endif
-  if (switches::IsNewProfileManagement())
+  if (switches::IsEnableAccountConsistency())
     host->AddFilter(new PrincipalsMessageFilter(id));
 
   host->Send(new ChromeViewMsg_SetIsIncognitoProcess(

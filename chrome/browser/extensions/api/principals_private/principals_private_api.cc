@@ -15,9 +15,9 @@
 namespace extensions {
 
 bool PrincipalsPrivateExtensionFunction::RunSync() {
-  if (!switches::IsNewProfileManagement()) {
+  if (!switches::IsEnableAccountConsistency()) {
     SetError(
-        "Need to enable new-profile-management to use principalsPrivate API.");
+        "Need to enable account consistency to use principalsPrivate API.");
     return false;
   }
   return RunSyncSafe();

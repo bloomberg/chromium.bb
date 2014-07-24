@@ -156,10 +156,10 @@ net::URLRequestContextGetter* ChromeSigninClient::GetURLRequestContext() {
 }
 
 bool ChromeSigninClient::ShouldMergeSigninCredentialsIntoCookieJar() {
-  // If inline sign in is enabled, but new profile management is not, the user's
+  // If inline sign in is enabled, but account consistency is not, the user's
   // credentials should be merge into the cookie jar.
   return !switches::IsEnableWebBasedSignin() &&
-         !switches::IsNewProfileManagement();
+         !switches::IsEnableAccountConsistency();
 }
 
 std::string ChromeSigninClient::GetProductVersion() {
@@ -186,8 +186,8 @@ void ChromeSigninClient::SetCookieChangedCallback(
 void ChromeSigninClient::GoogleSigninSucceeded(const std::string& username,
                                                const std::string& password) {
 #if !defined(OS_ANDROID)
-  // Don't store password hash except for users of new profile features.
-  if (switches::IsNewProfileManagement())
+  // Don't store password hash except for users of account consistency features.
+  if (switches::IsEnableAccountConsistency())
     chrome::SetLocalAuthCredentials(profile_, password);
 #endif
 }

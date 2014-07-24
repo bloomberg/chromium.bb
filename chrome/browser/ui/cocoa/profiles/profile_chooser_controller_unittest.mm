@@ -151,9 +151,8 @@ TEST_F(ProfileChooserControllerTest, InitialLayoutWithNewMenu) {
   subviews = [[subviews objectAtIndex:0] subviews];
 
   // Three profiles means we should have one active card and a
-  // fast user switcher which has two "other" profiles and 2 separators. In
-  // this flow we also have the tutorial view.
-  EXPECT_EQ(6U, [subviews count]);
+  // fast user switcher which has two "other" profiles and 2 separators.
+  EXPECT_EQ(5U, [subviews count]);
 
   // There should be two "other profiles" items. The items are drawn from the
   // bottom up, so in the opposite order of those in the AvatarMenu.
@@ -192,9 +191,6 @@ TEST_F(ProfileChooserControllerTest, InitialLayoutWithNewMenu) {
   NSButton* link = static_cast<NSButton*>([linksSubviews objectAtIndex:0]);
   EXPECT_EQ(@selector(showTabbedSigninPage:), [link action]);
   EXPECT_EQ(controller(), [link target]);
-
-  // There is a tutorial view card at the top.
-  EXPECT_TRUE([[subviews objectAtIndex:5] isKindOfClass:[NSView class]]);
 }
 
 TEST_F(ProfileChooserControllerTest, InitialLayoutWithFastUserSwitcher) {
@@ -265,9 +261,9 @@ TEST_F(ProfileChooserControllerTest, OtherProfilesSortedAlphabetically) {
                               @"New Profile",
                               @"Test 1",
                               @"Test 2" };
-  // There are four "other" profiles, each with a button and a separator, an
-  // active profile card, and a tutorial card.
-  EXPECT_EQ(10U, [subviews count]);
+  // There are four "other" profiles, each with a button and a separator, and an
+  // active profile card.
+  EXPECT_EQ(9U, [subviews count]);
   // There should be four "other profiles" items, sorted alphabetically.
   // The "other profiles" start at index 0, and each have a separator. We
   // need to iterate through the profiles in the order displayed in the bubble,
@@ -319,8 +315,8 @@ TEST_F(ProfileChooserControllerTest,
 }
 
 TEST_F(ProfileChooserControllerTest,
-       SignedInProfileActiveCardLinksWithNewManagement) {
-  switches::EnableNewProfileManagementForTesting(
+       SignedInProfileActiveCardLinksWithAccountConsistency) {
+  switches::EnableAccountConsistencyForTesting(
       CommandLine::ForCurrentProcess());
   // Sign in the first profile.
   ProfileInfoCache* cache = testing_profile_manager()->profile_info_cache();
@@ -365,7 +361,7 @@ TEST_F(ProfileChooserControllerTest,
 }
 
 TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
-  switches::EnableNewProfileManagementForTesting(
+  switches::EnableAccountConsistencyForTesting(
       CommandLine::ForCurrentProcess());
   // Sign in the first profile.
   ProfileInfoCache* cache = testing_profile_manager()->profile_info_cache();
