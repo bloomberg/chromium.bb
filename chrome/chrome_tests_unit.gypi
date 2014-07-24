@@ -567,7 +567,6 @@
         '../extensions/browser/info_map_unittest.cc',
         '../extensions/browser/lazy_background_task_queue_unittest.cc',
         '../extensions/browser/management_policy_unittest.cc',
-        '../extensions/browser/process_manager_unittest.cc',
         '../extensions/browser/process_map_unittest.cc',
         '../extensions/browser/quota_service_unittest.cc',
         '../extensions/browser/runtime_data_unittest.cc',

@@ -8,6 +8,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/common/content_client.h"
 #include "content/public/test/test_browser_context.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager_delegate.h"
@@ -21,6 +22,26 @@ using content::TestBrowserContext;
 namespace extensions {
 
 namespace {
+
+// Sets up a temporary ContentClient and ContentBrowserClient for testing.
+class ScopedContentClient {
+ public:
+  ScopedContentClient() {
+    content::SetContentClient(&content_client_);
+    content::SetBrowserClientForTesting(&content_browser_client_);
+  }
+
+  ~ScopedContentClient() {
+    content::SetBrowserClientForTesting(NULL);
+    content::SetContentClient(NULL);
+  }
+
+ private:
+  content::ContentClient content_client_;
+  content::ContentBrowserClient content_browser_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedContentClient);
+};
 
 // An incognito version of a TestBrowserContext.
 class TestBrowserContextIncognito : public TestBrowserContext {
@@ -61,7 +82,8 @@ class TestProcessManagerDelegate : public ProcessManagerDelegate {
 class ProcessManagerTest : public testing::Test {
  public:
   ProcessManagerTest()
-      : extension_registry_(&original_context_),
+      : notification_service_(content::NotificationService::Create()),
+        extension_registry_(&original_context_),
         extensions_browser_client_(&original_context_) {
     extensions_browser_client_.SetIncognitoContext(&incognito_context_);
     extensions_browser_client_.set_process_manager_delegate(
@@ -90,8 +112,13 @@ class ProcessManagerTest : public testing::Test {
   }
 
  private:
+  // Content module setup.
+  ScopedContentClient content_client_;
+  scoped_ptr<content::NotificationService> notification_service_;
+
   TestBrowserContext original_context_;
   TestBrowserContextIncognito incognito_context_;
+
   ExtensionRegistry extension_registry_;  // Shared between BrowserContexts.
   TestProcessManagerDelegate process_manager_delegate_;
   TestExtensionsBrowserClient extensions_browser_client_;
@@ -241,9 +268,6 @@ TEST_F(ProcessManagerTest, IsBackgroundHostAllowed) {
 // Test that extensions get grouped in the right SiteInstance (and therefore
 // process) based on their URLs.
 TEST_F(ProcessManagerTest, ProcessGrouping) {
-  content::ContentBrowserClient content_browser_client;
-  content::SetBrowserClientForTesting(&content_browser_client);
-
   // Extensions in different browser contexts should always be different
   // SiteInstances.
   scoped_ptr<ProcessManager> manager1(ProcessManager::CreateForTesting(

@@ -237,6 +237,8 @@
       'target_name': 'extensions_browser',
       'type': 'static_library',
       'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:base_prefs',
         '../components/components.gyp:keyed_service_content',
         '../components/components.gyp:keyed_service_core',
         '../components/components.gyp:pref_registry',
@@ -708,6 +710,7 @@
         'extensions_test_support',
       ],
       'sources': [
+        'browser/process_manager_unittest.cc',
         'common/api/sockets/sockets_manifest_permission_unittest.cc',
         'common/csp_validator_unittest.cc',
         'common/event_filter_unittest.cc',
