@@ -89,6 +89,282 @@ namespace dom_distiller {
         }
       };
 
+      class MarkupArticle {
+       public:
+        static dom_distiller::proto::MarkupArticle ReadFromValue(const base::Value* json) {
+          dom_distiller::proto::MarkupArticle message;
+          const base::DictionaryValue* dict;
+          if (!json->GetAsDictionary(&dict)) goto error;
+          if (dict->HasKey("1")) {
+            std::string field_value;
+            if (!dict->GetString("1", &field_value)) {
+              goto error;
+            }
+            message.set_published_time(field_value);
+          }
+          if (dict->HasKey("2")) {
+            std::string field_value;
+            if (!dict->GetString("2", &field_value)) {
+              goto error;
+            }
+            message.set_modified_time(field_value);
+          }
+          if (dict->HasKey("3")) {
+            std::string field_value;
+            if (!dict->GetString("3", &field_value)) {
+              goto error;
+            }
+            message.set_expiration_time(field_value);
+          }
+          if (dict->HasKey("4")) {
+            std::string field_value;
+            if (!dict->GetString("4", &field_value)) {
+              goto error;
+            }
+            message.set_section(field_value);
+          }
+          if (dict->HasKey("5")) {
+            const base::ListValue* field_list;
+            if (!dict->GetList("5", &field_list)) {
+              goto error;
+            }
+            for (size_t i = 0; i < field_list->GetSize(); ++i) {
+              std::string field_value;
+              if (!field_list->GetString(i, &field_value)) {
+                goto error;
+              }
+              message.add_authors(field_value);
+            }
+          }
+          return message;
+
+        error:
+          return dom_distiller::proto::MarkupArticle();
+        }
+
+        static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::MarkupArticle& message) {
+          scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+          if (message.has_published_time()) {
+            dict->SetString("1", message.published_time());
+          }
+          if (message.has_modified_time()) {
+            dict->SetString("2", message.modified_time());
+          }
+          if (message.has_expiration_time()) {
+            dict->SetString("3", message.expiration_time());
+          }
+          if (message.has_section()) {
+            dict->SetString("4", message.section());
+          }
+          base::ListValue* field_list = new base::ListValue();
+          dict->Set("5", field_list);
+          for (int i = 0; i < message.authors_size(); ++i) {
+            field_list->AppendString(message.authors(i));
+          }
+          return dict.PassAs<base::Value>();
+        }
+      };
+
+      class MarkupImage {
+       public:
+        static dom_distiller::proto::MarkupImage ReadFromValue(const base::Value* json) {
+          dom_distiller::proto::MarkupImage message;
+          const base::DictionaryValue* dict;
+          if (!json->GetAsDictionary(&dict)) goto error;
+          if (dict->HasKey("1")) {
+            std::string field_value;
+            if (!dict->GetString("1", &field_value)) {
+              goto error;
+            }
+            message.set_url(field_value);
+          }
+          if (dict->HasKey("2")) {
+            std::string field_value;
+            if (!dict->GetString("2", &field_value)) {
+              goto error;
+            }
+            message.set_secure_url(field_value);
+          }
+          if (dict->HasKey("3")) {
+            std::string field_value;
+            if (!dict->GetString("3", &field_value)) {
+              goto error;
+            }
+            message.set_type(field_value);
+          }
+          if (dict->HasKey("4")) {
+            std::string field_value;
+            if (!dict->GetString("4", &field_value)) {
+              goto error;
+            }
+            message.set_caption(field_value);
+          }
+          if (dict->HasKey("5")) {
+            int field_value;
+            if (!dict->GetInteger("5", &field_value)) {
+              goto error;
+            }
+            message.set_width(field_value);
+          }
+          if (dict->HasKey("6")) {
+            int field_value;
+            if (!dict->GetInteger("6", &field_value)) {
+              goto error;
+            }
+            message.set_height(field_value);
+          }
+          return message;
+
+        error:
+          return dom_distiller::proto::MarkupImage();
+        }
+
+        static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::MarkupImage& message) {
+          scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+          if (message.has_url()) {
+            dict->SetString("1", message.url());
+          }
+          if (message.has_secure_url()) {
+            dict->SetString("2", message.secure_url());
+          }
+          if (message.has_type()) {
+            dict->SetString("3", message.type());
+          }
+          if (message.has_caption()) {
+            dict->SetString("4", message.caption());
+          }
+          if (message.has_width()) {
+            dict->SetInteger("5", message.width());
+          }
+          if (message.has_height()) {
+            dict->SetInteger("6", message.height());
+          }
+          return dict.PassAs<base::Value>();
+        }
+      };
+
+      class MarkupInfo {
+       public:
+        static dom_distiller::proto::MarkupInfo ReadFromValue(const base::Value* json) {
+          dom_distiller::proto::MarkupInfo message;
+          const base::DictionaryValue* dict;
+          if (!json->GetAsDictionary(&dict)) goto error;
+          if (dict->HasKey("1")) {
+            std::string field_value;
+            if (!dict->GetString("1", &field_value)) {
+              goto error;
+            }
+            message.set_title(field_value);
+          }
+          if (dict->HasKey("2")) {
+            std::string field_value;
+            if (!dict->GetString("2", &field_value)) {
+              goto error;
+            }
+            message.set_type(field_value);
+          }
+          if (dict->HasKey("3")) {
+            std::string field_value;
+            if (!dict->GetString("3", &field_value)) {
+              goto error;
+            }
+            message.set_url(field_value);
+          }
+          if (dict->HasKey("4")) {
+            std::string field_value;
+            if (!dict->GetString("4", &field_value)) {
+              goto error;
+            }
+            message.set_description(field_value);
+          }
+          if (dict->HasKey("5")) {
+            std::string field_value;
+            if (!dict->GetString("5", &field_value)) {
+              goto error;
+            }
+            message.set_publisher(field_value);
+          }
+          if (dict->HasKey("6")) {
+            std::string field_value;
+            if (!dict->GetString("6", &field_value)) {
+              goto error;
+            }
+            message.set_copyright(field_value);
+          }
+          if (dict->HasKey("7")) {
+            std::string field_value;
+            if (!dict->GetString("7", &field_value)) {
+              goto error;
+            }
+            message.set_author(field_value);
+          }
+          if (dict->HasKey("8")) {
+            const base::Value* inner_message_value;
+            if (!dict->Get("8", &inner_message_value)) {
+              goto error;
+            }
+            *message.mutable_article() =
+                dom_distiller::proto::json::MarkupArticle::ReadFromValue(inner_message_value);
+          }
+          if (dict->HasKey("9")) {
+            const base::ListValue* field_list;
+            if (!dict->GetList("9", &field_list)) {
+              goto error;
+            }
+            for (size_t i = 0; i < field_list->GetSize(); ++i) {
+              const base::Value* inner_message_value;
+              if (!field_list->Get(i, &inner_message_value)) {
+                goto error;
+              }
+              *message.add_images() =
+                  dom_distiller::proto::json::MarkupImage::ReadFromValue(inner_message_value);
+            }
+          }
+          return message;
+
+        error:
+          return dom_distiller::proto::MarkupInfo();
+        }
+
+        static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::MarkupInfo& message) {
+          scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+          if (message.has_title()) {
+            dict->SetString("1", message.title());
+          }
+          if (message.has_type()) {
+            dict->SetString("2", message.type());
+          }
+          if (message.has_url()) {
+            dict->SetString("3", message.url());
+          }
+          if (message.has_description()) {
+            dict->SetString("4", message.description());
+          }
+          if (message.has_publisher()) {
+            dict->SetString("5", message.publisher());
+          }
+          if (message.has_copyright()) {
+            dict->SetString("6", message.copyright());
+          }
+          if (message.has_author()) {
+            dict->SetString("7", message.author());
+          }
+          if (message.has_article()) {
+            scoped_ptr<base::Value> inner_message_value =
+                dom_distiller::proto::json::MarkupArticle::WriteToValue(message.article());
+            dict->Set("8", inner_message_value.release());
+          }
+          base::ListValue* field_list = new base::ListValue();
+          dict->Set("9", field_list);
+          for (int i = 0; i < message.images_size(); ++i) {
+            scoped_ptr<base::Value> inner_message_value =
+                dom_distiller::proto::json::MarkupImage::WriteToValue(message.images(i));
+            field_list->Append(inner_message_value.release());
+          }
+          return dict.PassAs<base::Value>();
+        }
+      };
+
       class DomDistillerResult {
        public:
         static dom_distiller::proto::DomDistillerResult ReadFromValue(const base::Value* json) {
@@ -131,6 +407,14 @@ namespace dom_distiller {
               message.add_image_urls(field_value);
             }
           }
+          if (dict->HasKey("5")) {
+            const base::Value* inner_message_value;
+            if (!dict->Get("5", &inner_message_value)) {
+              goto error;
+            }
+            *message.mutable_markup_info() =
+                dom_distiller::proto::json::MarkupInfo::ReadFromValue(inner_message_value);
+          }
           return message;
 
         error:
@@ -156,6 +440,11 @@ namespace dom_distiller {
           dict->Set("4", field_list);
           for (int i = 0; i < message.image_urls_size(); ++i) {
             field_list->AppendString(message.image_urls(i));
+          }
+          if (message.has_markup_info()) {
+            scoped_ptr<base::Value> inner_message_value =
+                dom_distiller::proto::json::MarkupInfo::WriteToValue(message.markup_info());
+            dict->Set("5", inner_message_value.release());
           }
           return dict.PassAs<base::Value>();
         }
