@@ -97,14 +97,12 @@ class RsaSsaImplementation : public RsaHashedAlgorithm {
       return Status::OperationError();
     }
 
-    // This function takes a non-const pointer to the signature, however does
-    // not mutate it, so casting is safe.
-    // Also note that the return value can be:
+    // Note that the return value can be:
     //   1 --> Success
     //   0 --> Verification failed
     //  <0 --> Operation error
     int rv = EVP_DigestVerifyFinal(ctx.get(),
-                                   const_cast<uint8_t*>(signature.bytes()),
+                                   signature.bytes(),
                                    signature.byte_length());
     *signature_match = rv == 1;
     return rv >= 0 ? Status::Success() : Status::OperationError();

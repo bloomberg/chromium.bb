@@ -112,7 +112,7 @@ bool CTLogVerifier::VerifySignature(const base::StringPiece& data_to_sign,
           &ctx, data_to_sign.data(), data_to_sign.size()) &&
       1 == EVP_DigestVerifyFinal(
           &ctx,
-          reinterpret_cast<unsigned char*>(const_cast<char*>(signature.data())),
+          reinterpret_cast<const uint8_t*>(signature.data()),
           signature.size()));
 
   EVP_MD_CTX_cleanup(&ctx);
