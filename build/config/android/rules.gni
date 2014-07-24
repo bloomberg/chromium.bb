@@ -362,7 +362,6 @@ template("java_strings_grd") {
       "-E", "ANDROID_JAVA_TAGGED_ONLY=false",
     ]
     output_dir = grit_output_dir
-    print("output_dir", output_dir)
     resource_ids = ""
     source = invoker.grd_file
     outputs = invoker.outputs
@@ -371,7 +370,6 @@ template("java_strings_grd") {
   # This needs to get outputs from grit's internal target, not the final
   # source_set.
   generate_strings_outputs = get_target_outputs(":${grit_target_name}_grit")
-  print("gen outputs", generate_strings_outputs)
 
   zip("${target_name}__zip") {
     base_dir = grit_output_dir

@@ -23,6 +23,7 @@ component("ash") {
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//cc",
+    "//components/user_manager",
     "//content/public/browser",
     "//media",
     "//net",
@@ -46,7 +47,6 @@ component("ash") {
     "//ui/web_dialogs",
     "//ui/wm",
     "//url",
-    #'../components/components.gyp:user_manager',  TODO(GYP)
   ]
 
   forward_dependent_configs_from = [
@@ -152,10 +152,10 @@ component("ash_with_content") {
     "//ui/gfx/geometry",
     "//ui/resources",
     "//ui/strings",
+    "//ui/views",
+    "//ui/views/controls/webview",
     "//ui/web_dialogs",
     "//url",
-    #'../ui/views/controls/webview/webview.gyp:webview',  TODO(GYP)
-    #'../ui/views/views.gyp:views',  TODO(GYP)
   ]
 
   forward_dependent_configs_from = [
@@ -204,6 +204,7 @@ static_library("ash_shell_lib") {
     "//base:i18n",
     #"//chrome:packed_resources",  TODO(GYP)
     "//content",
+    "//content/shell:content_shell_lib",
     "//skia",
     "//third_party/icu",
     "//ui/app_list",
@@ -218,7 +219,6 @@ static_library("ash_shell_lib") {
     "//ui/resources",
     "//ui/views",
     "//ui/views:test_support",
-    #'../content/content_shell_and_tests.gyp:content_shell_lib',  TODO(GYP)
     #'../ui/views/examples/examples.gyp:views_examples_lib',  TODO(GYP)
     #'../ui/views/examples/examples.gyp:views_examples_with_content_lib',  TODO(GYP)
   ]
@@ -238,7 +238,9 @@ test("ash_unittests") {
     "//base",
     "//base/allocator",
     "//base/test:test_support",
+    "//components/user_manager",
     "//content/public/browser",
+    "//content/test:test_support",
     "//skia",
     "//testing/gtest",
     "//third_party/icu",
@@ -264,8 +266,6 @@ test("ash_unittests") {
     "//ui/web_dialogs",
     "//ui/wm",
     "//url",
-    #'../components/components.gyp:user_manager',  TODO(GYP)
-    #'../content/content_shell_and_tests.gyp:test_support_content',  TODO(GYP)
   ]
 
   if (!is_chromeos) {
@@ -284,7 +284,7 @@ test("ash_unittests") {
       "system/tray/media_security/multi_profile_media_tray_item_unittest.cc",
       "autoclick/autoclick_unittest.cc",
     ]
-    source += [
+    sources += [
       #'<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_unscaled_resources.rc',  TODO(GYP)
     ]
   }
@@ -335,7 +335,7 @@ executable("ash_shell") {
 
   deps = [
     ":ash_shell_lib",
-    #'../components/components.gyp:user_manager',  TODO(GYP)
+    "//components/user_manager",
   ]
 
   if (is_win) {
@@ -361,11 +361,11 @@ test("ash_shell_unittests") {
 
   deps = [
     "//base/test:test_support",
+    "//components/user_manager",
+    "//content/test:test_support",
     "//skia",
     "//testing/gtest",
     "//ui/aaccessibility",
-    #'../components/components.gyp:user_manager',  TODO(GYP)
-    #'../content/content_shell_and_tests.gyp:test_support_content',  TODO(GYP)
   ]
 
   if (is_chromeos) {

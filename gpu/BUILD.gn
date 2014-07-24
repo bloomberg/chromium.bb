@@ -246,10 +246,6 @@ test("angle_unittests") {
     "angle_unittest_main.cc",
   ]
 
-  # TODO(GYP) / TODO(brettw) remove this when angle is rolled to include:
-  # https://chromium-review.googlesource.com/#/c/209452/
-  include_dirs = [ "//third_party/angle/include" ]
-
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",

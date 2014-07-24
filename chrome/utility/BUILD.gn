@@ -17,11 +17,11 @@ static_library("utility") {
 
   deps = [
     "//base",
-    #"../components/components_strings.gyp:components_strings",  TODO(GYP)
-    #"../components/components.gyp:url_fixer",  TODO(GYP)
+    "//components/strings",
+    "//components/url_fixer",
     "//content/public/common",
     "//content/public/utility",
-    #"../media/media.gyp:media",  TODO(GYP)
+    "//media",
     "//skia",
     "//third_party/libxml",
     "//chrome:resources",
@@ -52,7 +52,7 @@ static_library("utility") {
     if (is_win || is_mac) {
       sources += rebase_path(
           gypi_values.chrome_utility_win_mac_media_gallery_sources, ".", "..")
-      #deps += [ "//components/wifi" ]  TODO(GYP)
+      deps += [ "//components/wifi" ]
     } else {
       sources += [ "image_writer/image_writer_stub.cc" ]
     }

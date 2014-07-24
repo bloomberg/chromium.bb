@@ -38,12 +38,17 @@ static_library("ui") {
     "//chrome/app/theme:theme_resources",
     "//chrome/browser/history:in_memory_url_index_cache_proto",
     "//chrome/browser/net:cert_logger_proto",
+    "//chrome/browser/ui/views",
     "//chrome/common",
     "//chrome/common/net",
+    "//components/auto_login_parser",
     "//components/dom_distiller/core",
     "//components/dom_distiller/webui",
     "//components/feedback/proto",
+    "//components/invalidation",
+    "//components/omaha_query_params",
     "//components/onc",
+    "//components/password_manager/core/browser",
     "//components/resources",
     "//components/strings",
     "//content/public/browser",
@@ -66,11 +71,6 @@ static_library("ui") {
     "//ui/resources",
     "//ui/snapshot",
     "//ui/strings",
-    #'chrome_browser_ui_views.gyp:browser_ui_views',  TODO(GYP)
-    #'../components/components.gyp:auto_login_parser',  TODO(GYP)
-    #'../components/components.gyp:invalidation',  TODO(GYP)
-    #'../components/components.gyp:omaha_query_params',  TODO(GYP)
-    #'../components/components.gyp:password_manager_core_browser',  TODO(GYP)
   ]
 
   forward_dependent_configs_from = [
@@ -89,6 +89,7 @@ static_library("ui") {
       "//components/autofill/content/browser:risk_proto",
       "//device/bluetooth",
       "//device/nfc",
+      "//media",
       "//mojo/system",
       "//net:net_with_v8",
       "//third_party/adobe/flash:flapper_version_h",
@@ -99,6 +100,7 @@ static_library("ui") {
       "//third_party/re2",
       "//ui/compositor",
       "//ui/surface",
+      "//ui/web_dialogs",
       "//v8",
       "//webkit:resources",
       "//webkit/browser:storage",
@@ -106,9 +108,7 @@ static_library("ui") {
       "//webkit/common:storage",
       #'debugger',  TODO(GYP)
       #'installer_util',  TODO(GYP)
-      #'../media/media.gyp:media',  TODO(GYP)
       #'../third_party/libjingle/libjingle.gyp:libjingle',  TODO(GYP)
-      #'../ui/web_dialogs/web_dialogs.gyp:web_dialogs',  TODO(GYP)
     ]
     # TODO(GYP)
     #'defines': [
@@ -187,9 +187,7 @@ static_library("ui") {
     sources += rebase_path(gypi_values.chrome_browser_ui_ash_sources,
                            ".", "//chrome")
     deps += [
-      "//ash",
-      #"../ash/ash.gyp:ash_with_content",  TODO(GYP)
-      #"../ash/ash_strings.gyp:ash_strings",  TODO(GYP)
+      "//ash:ash_with_content",
     ]
     if (!is_chromeos) {
       sources += rebase_path(gypi_values.chrome_browser_ui_ash_non_chromeos,
@@ -234,7 +232,7 @@ static_library("ui") {
                            ".", "//chrome")
     deps += [
       # aura uses some of ash resources.
-      #'../ash/ash_resources.gyp:ash_resources',  TODO(GYP)
+      "//ash/resources",
       "//ui/aura",
       "//ui/keyboard",
       "//ui/keyboard:resources",
@@ -270,14 +268,14 @@ static_library("ui") {
   if (is_android) {
     deps += [
       "//crypto:platform",
-      #'../components/components.gyp:web_conten  TODO(GYP)ts_delegate_android',
+      #'../components/components.gyp:web_contents_delegate_android',  TODO(GYP)
       #'chrome_browser_jni_headers',  TODO(GYP)
     ]
     deps -= [
+      "//chrome/browser/ui/views",
       "//components/feedback/proto",
       "//third_party/libusb",
       "//ui/events",
-      #'chrome_browser_ui_views.gyp:browser_ui_views',  TODO(GYP)
     ]
     sources += rebase_path(gypi_values.chrome_browser_ui_android_sources,
                            ".", "//chrome")
@@ -338,23 +336,27 @@ static_library("ui") {
       "//third_party/wtl",
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
+      "//ui/app_list",
+      "//ui/views",
+      "//ui/views/controls/webview",
       #'installer_util_strings',  TODO(GYP)
       #'launcher_support',  TODO(GYP)
       #'metro_utils',  TODO(GYP)
       #'../google_update/google_update.gyp:google_update',  TODO(GYP)
-      #'../ui/app_list/app_list.gyp:app_list',  TODO(GYP)
-      #'../ui/views/controls/webview/webview.gyp:webview',  TODO(GYP)
-      #'../ui/views/views.gyp:views',  TODO(GYP)
     ]
     forward_dependent_configs_from += [
-      #'../ui/views/controls/webview/webview.gyp:webview',  TODO(GYP)
-      #'../ui/views/views.gyp:views',  TODO(GYP)
+      "//ui/views",
+      "//ui/views/controls/webview",
     ]
   } else {  # 'OS!="win"
     if (use_aura) {
       deps += [
-        #'../ui/views/controls/webview/webview.gyp:webview',  TODO(GYP)
-        #'../ui/views/views.gyp:views',  TODO(GYP)
+        "//ui/views",
+        "//ui/views/controls/webview",
+      ]
+      forward_dependent_configs_from += [
+        "//ui/views",
+        "//ui/views/controls/webview",
       ]
     }
   }
@@ -380,7 +382,7 @@ static_library("ui") {
   if (enable_app_list) {
     sources += rebase_path(gypi_values.chrome_browser_ui_app_list_sources,
                            ".", "//chrome")
-    #deps += [ '../ui/app_list/app_list.gyp:app_list' ]  TODO(GYP)
+    deps += [ "//ui/app_list" ]
   } else {
     sources += rebase_path(gypi_values.chrome_browser_ui_non_app_list_sources,
                            ".", "//chrome")

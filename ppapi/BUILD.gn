@@ -12,7 +12,7 @@ gypi_values = exec_script(
 #if (chrome_multiple_dll) {
 #  blink_target = "//third_party/WebKit/public:blink_minimal"
 #} else {
-#  blink_target = "//third_party/WebKit/public:blink"
+  blink_target = "//third_party/WebKit/public:blink"
 #}
 
 # These are just headers.
@@ -404,7 +404,7 @@ component("ppapi_shared") {
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/common",
     "//ipc",
-    #"//media:shared_memory_support",  TODO(GYP)
+    "//media:shared_memory_support",
     "//skia",
     "//third_party/icu:icuuc",
     "//ui/surface",
@@ -417,9 +417,8 @@ component("ppapi_shared") {
     cflags = [ "/wd4267" ]  # size_t to int truncation.
   }
 
-  # TODO(GYP)
-  #deps += [ blink_target ]
-  #forward_dependent_configs_from = [ blink_target ]
+  deps += [ blink_target ]
+  forward_dependent_configs_from = [ blink_target ]
 }
 
 source_set("ppapi_ipc") {
@@ -722,12 +721,12 @@ component("ppapi_proxy") {
     "//base/third_party/dynamic_annotations",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/ipc",
-    #"//media:shared_memory_support",  # TODO(GYP)
+    "//media:shared_memory_support",
     "//ipc",
     "//skia",
     "//third_party/icu",
     "//ui/surface",
-    #blink_target,  TODO(GYP)
+    blink_target,
   ]
 
   if (is_win) {
@@ -767,9 +766,9 @@ component("ppapi_host") {
     ":ppapi_shared",
     "//base",
     "//ipc",
+    "//media:shared_memory_support",
     "//ui/surface",
     "//url",
-    #'../media/media.gyp:shared_memory_support',  TODO(GYP)
   ]
 }
 
