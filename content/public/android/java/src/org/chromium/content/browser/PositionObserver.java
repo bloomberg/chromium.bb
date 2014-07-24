@@ -34,4 +34,9 @@ public interface PositionObserver {
      * Remove a previously installed listener.
      */
     void removeListener(Listener listener);
+
+    /**
+     * Clears registerned listener(s).
+     */
+    void clearListener();
 }

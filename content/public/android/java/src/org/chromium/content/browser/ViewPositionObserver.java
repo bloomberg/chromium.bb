@@ -99,5 +99,13 @@ public class ViewPositionObserver implements PositionObserver {
             notifyListeners();
         }
     }
+
+    /**
+     * Clears installed listener(s).
+     */
+    @Override
+    public void clearListener() {
+        mListeners.clear();
+    }
 }
 

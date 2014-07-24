@@ -793,6 +793,7 @@ public class ContentViewCore
         unregisterAccessibilityContentObserver();
         mGestureStateListeners.clear();
         ScreenOrientationListener.getInstance().removeObserver(this);
+        mPositionObserver.clearListener();
     }
 
     private void unregisterAccessibilityContentObserver() {
