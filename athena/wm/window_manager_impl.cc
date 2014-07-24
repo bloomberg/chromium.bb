@@ -31,68 +31,29 @@ class WindowManagerImpl : public WindowManager,
   void Layout();
 
   // WindowManager:
-  virtual void ToggleOverview() OVERRIDE {
-    if (overview_) {
-      overview_.reset();
-      FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
-                        OnOverviewModeExit());
-    } else {
-      overview_ = WindowOverviewMode::Create(container_.get(), this);
-      FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
-                        OnOverviewModeEnter());
-    }
-  }
+  virtual void ToggleOverview() OVERRIDE;
 
  private:
   enum Command {
     COMMAND_TOGGLE_OVERVIEW,
   };
 
-  void InstallAccelerators() {
-    const AcceleratorData accelerator_data[] = {
-        {TRIGGER_ON_PRESS, ui::VKEY_F6, ui::EF_NONE, COMMAND_TOGGLE_OVERVIEW,
-         AF_NONE},
-    };
-    AcceleratorManager::Get()->RegisterAccelerators(
-        accelerator_data, arraysize(accelerator_data), this);
-  }
+  void InstallAccelerators();
 
   // WindowManager:
-  virtual void AddObserver(WindowManagerObserver* observer) OVERRIDE {
-    observers_.AddObserver(observer);
-  }
-
-  virtual void RemoveObserver(WindowManagerObserver* observer) OVERRIDE {
-    observers_.RemoveObserver(observer);
-  }
+  virtual void AddObserver(WindowManagerObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(WindowManagerObserver* observer) OVERRIDE;
 
   // WindowOverviewModeDelegate:
-  virtual void OnSelectWindow(aura::Window* window) OVERRIDE {
-    CHECK_EQ(container_.get(), window->parent());
-    container_->StackChildAtTop(window);
-    wm::ActivateWindow(window);
-    overview_.reset();
-    FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
-                      OnOverviewModeExit());
-  }
+  virtual void OnSelectWindow(aura::Window* window) OVERRIDE;
 
   // aura::WindowObserver
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
-    if (window == container_)
-      container_.reset();
-  }
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   // AcceleratorHandler:
-  virtual bool IsCommandEnabled(int command_id) const OVERRIDE { return true; }
+  virtual bool IsCommandEnabled(int command_id) const OVERRIDE;
   virtual bool OnAcceleratorFired(int command_id,
-                                  const ui::Accelerator& accelerator) OVERRIDE {
-    switch (command_id) {
-      case COMMAND_TOGGLE_OVERVIEW:
-        ToggleOverview();
-        break;
-    }
-    return true;
-  }
+                                  const ui::Accelerator& accelerator) OVERRIDE;
 
   scoped_ptr<aura::Window> container_;
   scoped_ptr<WindowOverviewMode> overview_;
@@ -103,35 +64,26 @@ class WindowManagerImpl : public WindowManager,
   DISALLOW_COPY_AND_ASSIGN(WindowManagerImpl);
 };
 
-class WindowManagerImpl* instance = NULL;
-
 class AthenaContainerLayoutManager : public aura::LayoutManager {
  public:
-  AthenaContainerLayoutManager() {}
-  virtual ~AthenaContainerLayoutManager() {}
+  AthenaContainerLayoutManager();
+  virtual ~AthenaContainerLayoutManager();
 
  private:
   // aura::LayoutManager:
-  virtual void OnWindowResized() OVERRIDE { instance->Layout(); }
-  virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE {
-    instance->Layout();
-  }
-  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE {}
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) OVERRIDE {
-    instance->Layout();
-  }
+  virtual void OnWindowResized() OVERRIDE;
+  virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE;
+  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE;
+  virtual void OnWindowRemovedFromLayout(aura::Window* child) OVERRIDE;
   virtual void OnChildWindowVisibilityChanged(aura::Window* child,
-                                              bool visible) OVERRIDE {
-    instance->Layout();
-  }
+                                              bool visible) OVERRIDE;
   virtual void SetChildBounds(aura::Window* child,
-                              const gfx::Rect& requested_bounds) OVERRIDE {
-    if (!requested_bounds.IsEmpty())
-      SetChildBoundsDirect(child, requested_bounds);
-  }
+                              const gfx::Rect& requested_bounds) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AthenaContainerLayoutManager);
 };
+
+class WindowManagerImpl* instance = NULL;
 
 WindowManagerImpl::WindowManagerImpl() {
   ScreenManager::ContainerParams params("DefaultContainer");
@@ -168,6 +120,99 @@ void WindowManagerImpl::Layout() {
         (*iter)->type() == ui::wm::WINDOW_TYPE_POPUP)
       (*iter)->SetBounds(bounds);
   }
+}
+
+void WindowManagerImpl::ToggleOverview() {
+  if (overview_) {
+    overview_.reset();
+    FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
+                      OnOverviewModeExit());
+  } else {
+    overview_ = WindowOverviewMode::Create(container_.get(), this);
+    FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
+                      OnOverviewModeEnter());
+  }
+}
+
+void WindowManagerImpl::InstallAccelerators() {
+  const AcceleratorData accelerator_data[] = {
+      {TRIGGER_ON_PRESS, ui::VKEY_F6, ui::EF_NONE, COMMAND_TOGGLE_OVERVIEW,
+       AF_NONE},
+  };
+  AcceleratorManager::Get()->RegisterAccelerators(
+      accelerator_data, arraysize(accelerator_data), this);
+}
+
+void WindowManagerImpl::AddObserver(WindowManagerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void WindowManagerImpl::RemoveObserver(WindowManagerObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void WindowManagerImpl::OnSelectWindow(aura::Window* window) {
+  CHECK_EQ(container_.get(), window->parent());
+  container_->StackChildAtTop(window);
+  wm::ActivateWindow(window);
+  overview_.reset();
+  FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
+                    OnOverviewModeExit());
+}
+
+void WindowManagerImpl::OnWindowDestroying(aura::Window* window) {
+  if (window == container_)
+    container_.reset();
+}
+
+bool WindowManagerImpl::IsCommandEnabled(int command_id) const {
+  return true;
+}
+
+bool WindowManagerImpl::OnAcceleratorFired(int command_id,
+                                           const ui::Accelerator& accelerator) {
+  switch (command_id) {
+    case COMMAND_TOGGLE_OVERVIEW:
+      ToggleOverview();
+      break;
+  }
+  return true;
+}
+
+AthenaContainerLayoutManager::AthenaContainerLayoutManager() {
+}
+
+AthenaContainerLayoutManager::~AthenaContainerLayoutManager() {
+}
+
+void AthenaContainerLayoutManager::OnWindowResized() {
+  instance->Layout();
+}
+
+void AthenaContainerLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
+  instance->Layout();
+}
+
+void AthenaContainerLayoutManager::OnWillRemoveWindowFromLayout(
+    aura::Window* child) {
+}
+
+void AthenaContainerLayoutManager::OnWindowRemovedFromLayout(
+    aura::Window* child) {
+  instance->Layout();
+}
+
+void AthenaContainerLayoutManager::OnChildWindowVisibilityChanged(
+    aura::Window* child,
+    bool visible) {
+  instance->Layout();
+}
+
+void AthenaContainerLayoutManager::SetChildBounds(
+    aura::Window* child,
+    const gfx::Rect& requested_bounds) {
+  if (!requested_bounds.IsEmpty())
+    SetChildBoundsDirect(child, requested_bounds);
 }
 
 }  // namespace
