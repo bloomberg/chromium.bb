@@ -9,6 +9,7 @@ Classes to represent and generate USB descriptors.
 
 import struct
 
+import hid_constants
 import usb_constants
 
 
@@ -374,7 +375,8 @@ class HidDescriptor(Descriptor):
                   .format(typ, length) for typ, length in self._descriptors))
 
 HidDescriptor.AddComputedField('bLength', 'B', 'struct_size')
-HidDescriptor.AddFixedField('bDescriptorType', 'B', 33)
+HidDescriptor.AddFixedField('bDescriptorType', 'B',
+                            hid_constants.DescriptorType.HID)
 HidDescriptor.AddField('bcdHID', 'H', default=0x0111, str_fmt='0x{:04X}')
 HidDescriptor.AddField('bCountryCode', 'B', default=0)
 HidDescriptor.AddComputedField('bNumDescriptors', 'B', 'num_descriptors')

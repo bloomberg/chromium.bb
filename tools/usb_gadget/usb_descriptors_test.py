@@ -5,6 +5,7 @@
 
 import unittest
 
+import hid_constants
 import usb_descriptors
 
 
@@ -195,15 +196,15 @@ class TestUsbDescriptors(unittest.TestCase):
 
   def test_encode_hid_descriptor(self):
     hid_desc = usb_descriptors.HidDescriptor()
-    hid_desc.AddDescriptor(0x22, 0x80)
-    hid_desc.AddDescriptor(0x23, 0x60)
+    hid_desc.AddDescriptor(hid_constants.DescriptorType.REPORT, 0x80)
+    hid_desc.AddDescriptor(hid_constants.DescriptorType.PHYSICAL, 0x60)
     encoded_desc = '\x0C\x21\x11\x01\x00\x02\x22\x80\x00\x23\x60\x00'
     self.assertEquals(hid_desc.Encode(), encoded_desc)
 
   def test_print_hid_descriptor(self):
     hid_desc = usb_descriptors.HidDescriptor()
-    hid_desc.AddDescriptor(0x22, 0x80)
-    hid_desc.AddDescriptor(0x23, 0x60)
+    hid_desc.AddDescriptor(hid_constants.DescriptorType.REPORT, 0x80)
+    hid_desc.AddDescriptor(hid_constants.DescriptorType.PHYSICAL, 0x60)
     string = str(hid_desc)
     self.assertIn('0x22', string)
     self.assertIn('0x23', string)
