@@ -11,9 +11,9 @@
       'target_name': 'athena_pak',
       'type': 'none',
       'dependencies': [
-        '../../apps/shell/app_shell.gyp:app_shell_pak',
         '../../ash/ash_resources.gyp:ash_resources',
         '../../content/content_resources.gyp:content_resources',
+        '../../extensions/shell/app_shell.gyp:app_shell_pak',
         '../../webkit/webkit_resources.gyp:webkit_resources',
         '../../webkit/webkit_resources.gyp:webkit_strings',
       ],

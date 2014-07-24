@@ -14,7 +14,6 @@
         '../athena.gyp:athena_lib',
         '../athena.gyp:athena_content_lib',
         '../resources/athena_resources.gyp:athena_pak',
-        '../../apps/shell/app_shell.gyp:app_shell_lib',
 	# debug_widow.cc depends on this. Remove this once debug_window
 	# is removed.
         '../../ash/ash_resources.gyp:ash_resources',
@@ -27,6 +26,7 @@
         # TODO(mukai): declare those symbols for Athena.
         '../../components/components.gyp:infobars_test_support',
         '../../components/components.gyp:search_engines',
+        '../../extensions/shell/app_shell.gyp:app_shell_lib',
         '../../skia/skia.gyp:skia',
         '../../ui/accessibility/accessibility.gyp:ax_gen',
         '../../ui/app_list/app_list.gyp:app_list',

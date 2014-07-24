@@ -1,0 +1,4 @@
+include_rules = [
+  # Testing utilities can access anything in extensions/shell.
+  "+extensions/shell",
+]

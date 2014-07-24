@@ -24,14 +24,14 @@ include_rules = [
 
 specific_include_rules = {
   "athena_main\.cc": [
-    "+apps/shell/app",
-    "+apps/shell/browser",
-    "+apps/shell/common",
-    "+apps/shell/renderer",
     "+content/public/app",
+    "+extensions/shell/app",
+    "+extensions/shell/browser",
+    "+extensions/shell/common",
+    "+extensions/shell/renderer",
   ],
   "athena_app_window_controller\.*": [
-    "+apps/shell/browser",
+    "+extensions/shell/browser",
   ],
   "athena_shell\.cc": [
     "+athena/test",

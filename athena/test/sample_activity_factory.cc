@@ -35,7 +35,7 @@ Activity* SampleActivityFactory::CreateWebActivity(
 }
 
 Activity* SampleActivityFactory::CreateAppActivity(
-    apps::ShellAppWindow* app_window) {
+    extensions::ShellAppWindow* app_window) {
   // SampleActivityFactory can't own the |app_window|, so it must be NULL.
   DCHECK(app_window == NULL);
   return new SampleActivity(

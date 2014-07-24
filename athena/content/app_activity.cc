@@ -4,15 +4,15 @@
 
 #include "athena/content/app_activity.h"
 
-#include "apps/shell/browser/shell_app_window.h"
 #include "athena/activity/public/activity_manager.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/shell/browser/shell_app_window.h"
 #include "ui/views/controls/webview/webview.h"
 
 namespace athena {
 
 // TODO(mukai): specifies the same accelerators of WebActivity.
-AppActivity::AppActivity(apps::ShellAppWindow* app_window)
+AppActivity::AppActivity(extensions::ShellAppWindow* app_window)
     : app_window_(app_window),
       web_view_(NULL),
       current_state_(ACTIVITY_UNLOADED) {

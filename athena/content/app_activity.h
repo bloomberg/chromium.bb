@@ -10,7 +10,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/image/image_skia.h"
 
-namespace apps {
+namespace extensions {
 class ShellAppWindow;
 }
 
@@ -24,7 +24,7 @@ class AppActivity : public Activity,
                     public ActivityViewModel,
                     public content::WebContentsObserver {
  public:
-  explicit AppActivity(apps::ShellAppWindow* app_window);
+  explicit AppActivity(extensions::ShellAppWindow* app_window);
   virtual ~AppActivity();
 
  protected:
@@ -51,7 +51,7 @@ class AppActivity : public Activity,
       const std::vector<content::FaviconURL>& candidates) OVERRIDE;
 
  private:
-  scoped_ptr<apps::ShellAppWindow> app_window_;
+  scoped_ptr<extensions::ShellAppWindow> app_window_;
   views::WebView* web_view_;
 
   // The current state for this activity.

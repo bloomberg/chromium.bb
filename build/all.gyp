@@ -235,7 +235,7 @@
         }],
         ['chromeos==1 or (OS=="linux" and use_aura==1)', {
           'dependencies': [
-            '../apps/shell/app_shell.gyp:*',
+            '../extensions/shell/app_shell.gyp:*',
           ],
         }],
         ['chromeos==1', {

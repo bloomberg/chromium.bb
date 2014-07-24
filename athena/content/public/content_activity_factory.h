@@ -20,7 +20,7 @@ class ATHENA_EXPORT ContentActivityFactory : public ActivityFactory {
   virtual Activity* CreateWebActivity(content::BrowserContext* browser_context,
                                       const GURL& url) OVERRIDE;
   virtual Activity* CreateAppActivity(
-      apps::ShellAppWindow* app_window) OVERRIDE;
+      extensions::ShellAppWindow* app_window) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentActivityFactory);

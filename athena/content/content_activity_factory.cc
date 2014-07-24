@@ -22,7 +22,7 @@ Activity* ContentActivityFactory::CreateWebActivity(
 }
 
 Activity* ContentActivityFactory::CreateAppActivity(
-    apps::ShellAppWindow* app_window) {
+    extensions::ShellAppWindow* app_window) {
   return new AppActivity(app_window);
 }
 

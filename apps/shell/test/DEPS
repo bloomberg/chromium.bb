@@ -1,4 +1,0 @@
-include_rules = [
-  # Testing utilities can access anything in apps/shell.
-  "+apps/shell",
-]

@@ -1,0 +1,7 @@
+include_rules = [
+  "+extensions/shell",
+  "+chromeos",
+  "+content/public/app",
+  "+content/public/browser",
+  "+sandbox",
+]

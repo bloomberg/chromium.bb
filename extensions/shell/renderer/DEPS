@@ -1,0 +1,7 @@
+include_rules = [
+  # Only allow includes the renderer can use.
+  "+content/public/renderer",
+
+  "+third_party/WebKit/public",
+  "+v8/include",
+]

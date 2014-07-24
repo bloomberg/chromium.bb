@@ -1,6 +1,4 @@
 include_rules = [
-  "-content",
-  "+content/public/common",
   "+content/public/renderer",
 
   "+gin",

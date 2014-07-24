@@ -177,7 +177,7 @@
   "extensions/extensions_strings.grd": {
     "messages": [27000],
   },
-  "apps/shell/app_shell_resources.grd": {
+  "extensions/shell/app_shell_resources.grd": {
     "includes": [27400],
   },
   "chrome/browser/resources/memory_internals_resources.grd": {
