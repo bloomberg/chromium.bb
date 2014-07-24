@@ -17,16 +17,32 @@ class DistilledPagePrefsAndroid {
  public:
   DistilledPagePrefsAndroid(JNIEnv* env,
                             jobject obj,
-                            DistilledPagePrefs* distillerPagePrefsPtr);
+                            DistilledPagePrefs* distilled_page_prefs_ptr);
   virtual ~DistilledPagePrefsAndroid();
   static bool Register(JNIEnv* env);
   void SetTheme(JNIEnv* env, jobject obj, jint theme);
   jint GetTheme(JNIEnv* env, jobject obj);
+  void AddObserver(JNIEnv* env, jobject obj, jlong obs);
+  void RemoveObserver(JNIEnv* env, jobject obj, jlong obs);
 
  private:
   DistilledPagePrefs* distilled_page_prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(DistilledPagePrefsAndroid);
+};
+
+class DistilledPagePrefsObserverAndroid : public DistilledPagePrefs::Observer {
+ public:
+  DistilledPagePrefsObserverAndroid(JNIEnv* env, jobject obj);
+  virtual ~DistilledPagePrefsObserverAndroid();
+
+  // DistilledPagePrefs::Observer implementation.
+  virtual void OnChangeTheme(DistilledPagePrefs::Theme new_theme) OVERRIDE;
+
+  virtual void DestroyObserverAndroid(JNIEnv* env, jobject obj);
+
+ private:
+  base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 };
 
 }  // namespace android
