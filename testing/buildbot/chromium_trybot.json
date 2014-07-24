@@ -65,10 +65,6 @@
     },
     "gcm_unit_tests",
     "gfx_unittests",
-    {
-      "test": "gn_unittests",
-      "platforms": ["linux"]
-    },
     "google_apis_unittests",
     "gpu_unittests",
     {
