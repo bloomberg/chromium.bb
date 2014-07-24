@@ -40,6 +40,7 @@
 #include "modules/CacheStoragePolyfill.h"
 #include "modules/EventTargetModules.h"
 #include "modules/FetchPolyfill.h"
+#include "modules/serviceworkers/CacheStorage.h"
 #include "modules/serviceworkers/FetchManager.h"
 #include "modules/serviceworkers/Request.h"
 #include "modules/serviceworkers/ServiceWorkerClients.h"
@@ -85,6 +86,13 @@ void ServiceWorkerGlobalScope::stopFetch()
 String ServiceWorkerGlobalScope::scope(ExecutionContext* context)
 {
     return ServiceWorkerGlobalScopeClient::from(context)->scope().string();
+}
+
+PassRefPtr<CacheStorage> ServiceWorkerGlobalScope::caches(ExecutionContext* context)
+{
+    if (!m_cacheStorage)
+        m_cacheStorage = CacheStorage::create();
+    return m_cacheStorage;
 }
 
 ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, Request* request)

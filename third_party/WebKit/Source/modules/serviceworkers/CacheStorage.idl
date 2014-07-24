@@ -1,0 +1,17 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[
+    NoInterfaceObject,
+    Exposed=ServiceWorker,
+    RuntimeEnabled=ServiceWorker,
+] interface CacheStorage {
+  [CallWith=ScriptState, ImplementedAs=createFunction] Promise create(ScalarValueString key);
+  [CallWith=ScriptState] Promise rename(ScalarValueString oldKey, ScalarValueString newKey);
+  [CallWith=ScriptState] Promise get(ScalarValueString key);
+  [CallWith=ScriptState, ImplementedAs=deleteFunction] Promise delete(ScalarValueString key);
+  [CallWith=ScriptState] Promise keys();
+  // FIXME: There are a number of other missing methods here and an active discussion ongoing on https://github.com/slightlyoff/ServiceWorker/issue/314
+  // and https://github.com/slightlyoff/ServiceWorker/issues/315 about which should stay in. Once that discussion resolves, add the rest of the methods.
+};

@@ -33,9 +33,12 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace blink {
 
+class CacheStorage;
 class FetchManager;
 class Request;
 class ScriptPromise;
@@ -55,6 +58,9 @@ public:
     // ServiceWorkerGlobalScope.idl
     PassRefPtrWillBeRawPtr<ServiceWorkerClients> clients();
     String scope(ExecutionContext*);
+
+    PassRefPtr<CacheStorage> caches(ExecutionContext*);
+
     ScriptPromise fetch(ScriptState*, Request*);
     ScriptPromise fetch(ScriptState*, const String&);
 
@@ -75,6 +81,7 @@ private:
 
     RefPtrWillBeMember<ServiceWorkerClients> m_clients;
     OwnPtr<FetchManager> m_fetchManager;
+    RefPtrWillBeMember<CacheStorage> m_cacheStorage;
 };
 
 } // namespace blink
