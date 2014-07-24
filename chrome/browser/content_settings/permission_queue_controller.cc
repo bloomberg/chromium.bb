@@ -11,6 +11,7 @@
 #include "chrome/browser/geolocation/geolocation_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/midi_permission_infobar_delegate.h"
+#include "chrome/browser/notifications/desktop_notification_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/push_messaging_infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -112,6 +113,13 @@ void PermissionQueueController::PendingInfobarRequest::CreateInfoBar(
           GetInfoBarService(id_), controller, id_, requesting_frame_,
           display_languages, accept_button_label_);
       break;
+#if defined(ENABLE_NOTIFICATIONS)
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      infobar_ = DesktopNotificationInfoBarDelegate::Create(
+          GetInfoBarService(id_), controller, id_, requesting_frame_,
+          display_languages);
+      break;
+#endif  // ENABLE_NOTIFICATIONS
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       infobar_ = MidiPermissionInfoBarDelegate::Create(
           GetInfoBarService(id_), controller, id_, requesting_frame_,

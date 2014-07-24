@@ -1143,7 +1143,7 @@
         'browser/net/sqlite_server_bound_cert_store_unittest.cc',
         'browser/net/ssl_config_service_manager_pref_unittest.cc',
         'browser/net/url_info_unittest.cc',
-        'browser/notifications/desktop_notification_service_unittest.cc',
+        'browser/notifications/desktop_notification_profile_util_unittest.cc',
         'browser/notifications/extension_welcome_notification_unittest.cc',
         'browser/notifications/login_state_notification_blocker_chromeos_unittest.cc',
         'browser/notifications/message_center_notifications_unittest.cc',

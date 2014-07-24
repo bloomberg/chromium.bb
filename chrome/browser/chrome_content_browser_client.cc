@@ -2132,8 +2132,24 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
     return;
   }
 
+  WebContents* web_contents = WebContents::FromRenderFrameHost(
+      render_frame_host);
+  int render_process_id = render_frame_host->GetProcess()->GetID();
+  const PermissionRequestID request_id(render_process_id,
+      web_contents->GetRoutingID(),
+      -1 /* bridge id */,
+      GURL());
+
   notification_service->RequestPermission(
-      source_origin, render_frame_host, callback);
+      web_contents,
+      request_id,
+      source_origin,
+      // TODO(peter): plumb user_gesture over IPC
+      true,
+      base::Bind(&ChromeContentBrowserClient::NotificationPermissionRequested,
+                 weak_factory_.GetWeakPtr(),
+                 callback));
+
 #else
   NOTIMPLEMENTED();
 #endif
@@ -2937,5 +2953,11 @@ void ChromeContentBrowserClient::MaybeCopyDisableWebRtcEncryptionSwitch(
   }
 }
 #endif  // defined(ENABLE_WEBRTC)
+
+
+void ChromeContentBrowserClient::NotificationPermissionRequested(
+    const base::Closure& callback, bool result) {
+  callback.Run();
+}
 
 }  // namespace chrome

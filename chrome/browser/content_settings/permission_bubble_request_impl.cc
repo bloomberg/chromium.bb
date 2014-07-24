@@ -37,6 +37,11 @@ PermissionBubbleRequestImpl::~PermissionBubbleRequestImpl() {
 int PermissionBubbleRequestImpl::GetIconID() const {
   int icon_id;
   switch (type_) {
+#if defined(ENABLE_NOTIFICATIONS)
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      icon_id = IDR_INFOBAR_DESKTOP_NOTIFICATIONS;
+      break;
+#endif
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       icon_id = IDR_ALLOWED_MIDI_SYSEX;
       break;
@@ -53,6 +58,11 @@ int PermissionBubbleRequestImpl::GetIconID() const {
 base::string16 PermissionBubbleRequestImpl::GetMessageText() const {
   int message_id;
   switch (type_) {
+#if defined(ENABLE_NOTIFICATIONS)
+      case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+        message_id = IDS_NOTIFICATION_PERMISSIONS;
+        break;
+#endif
       case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
         message_id = IDS_MIDI_SYSEX_INFOBAR_QUESTION;
         break;
@@ -74,6 +84,11 @@ base::string16 PermissionBubbleRequestImpl::GetMessageText() const {
 base::string16 PermissionBubbleRequestImpl::GetMessageTextFragment() const {
   int message_id;
   switch (type_) {
+#if defined(ENABLE_NOTIFICATIONS)
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      message_id = IDS_NOTIFICATION_PERMISSIONS_FRAGMENT;
+      break;
+#endif
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       message_id = IDS_MIDI_SYSEX_PERMISSION_FRAGMENT;
       break;

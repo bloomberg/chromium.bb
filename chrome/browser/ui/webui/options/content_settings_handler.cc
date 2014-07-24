@@ -18,13 +18,13 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
+#include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
-#include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
@@ -677,15 +677,9 @@ std::string ContentSettingsHandler::GetSettingDefaultFromModel(
     ContentSettingsType type, std::string* provider_id) {
   Profile* profile = Profile::FromWebUI(web_ui());
   ContentSetting default_setting;
-  if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
-    default_setting =
-        DesktopNotificationServiceFactory::GetForProfile(profile)->
-            GetDefaultContentSetting(provider_id);
-  } else {
-    default_setting =
-        profile->GetHostContentSettingsMap()->
-            GetDefaultContentSetting(type, provider_id);
-  }
+  default_setting =
+      profile->GetHostContentSettingsMap()->GetDefaultContentSetting(
+          type, provider_id);
 
   return ContentSettingToString(default_setting);
 }
@@ -849,11 +843,8 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
 
 void ContentSettingsHandler::UpdateNotificationExceptionsView() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  DesktopNotificationService* service =
-      DesktopNotificationServiceFactory::GetForProfile(profile);
-
   ContentSettingsForOneType settings;
-  service->GetNotificationsSettings(&settings);
+  DesktopNotificationProfileUtil::GetNotificationsSettings(profile, &settings);
 
   base::ListValue exceptions;
   AddExceptionsGrantedByHostedApps(profile,
@@ -1170,8 +1161,8 @@ void ContentSettingsHandler::RemoveNotificationException(
 
   DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
          content_setting == CONTENT_SETTING_BLOCK);
-  DesktopNotificationServiceFactory::GetForProfile(profile)->
-      ClearSetting(ContentSettingsPattern::FromString(origin));
+  DesktopNotificationProfileUtil::ClearSetting(profile,
+      ContentSettingsPattern::FromString(origin));
 }
 
 void ContentSettingsHandler::RemoveMediaException(const base::ListValue* args) {
@@ -1313,14 +1304,11 @@ void ContentSettingsHandler::SetContentFilter(const base::ListValue* args) {
     profile = profile->GetOriginalProfile();
 #endif
 
-  if (content_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
-    DesktopNotificationServiceFactory::GetForProfile(profile)->
-        SetDefaultContentSetting(default_setting);
-  } else {
-    HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
-    ApplyWhitelist(content_type, default_setting);
-    map->SetDefaultContentSetting(content_type, default_setting);
-  }
+
+  HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
+  ApplyWhitelist(content_type, default_setting);
+  map->SetDefaultContentSetting(content_type, default_setting);
+
   switch (content_type) {
     case CONTENT_SETTINGS_TYPE_COOKIES:
       content::RecordAction(

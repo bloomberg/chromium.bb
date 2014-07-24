@@ -19,8 +19,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -127,10 +126,10 @@ class NotificationsTest : public InProcessBrowserTest {
   void CloseBrowserWindow(Browser* browser);
   void CrashTab(Browser* browser, int index);
 
-  void SetDefaultPermissionSetting(ContentSetting setting);
   void DenyOrigin(const GURL& origin);
   void AllowOrigin(const GURL& origin);
   void AllowAllOrigins();
+  void SetDefaultContentSetting(ContentSetting setting);
 
   void VerifyInfoBar(const Browser* browser, int index);
   std::string CreateNotification(Browser* browser,
@@ -159,7 +158,6 @@ class NotificationsTest : public InProcessBrowserTest {
 
  private:
   void DropOriginPreference(const GURL& origin);
-  DesktopNotificationService* GetDesktopNotificationService();
 };
 
 int NotificationsTest::GetNotificationCount() {
@@ -178,25 +176,26 @@ void NotificationsTest::CrashTab(Browser* browser, int index) {
   content::CrashTab(browser->tab_strip_model()->GetWebContentsAt(index));
 }
 
-void NotificationsTest::SetDefaultPermissionSetting(ContentSetting setting) {
-  DesktopNotificationService* service = GetDesktopNotificationService();
-  service->SetDefaultContentSetting(setting);
-}
-
 void NotificationsTest::DenyOrigin(const GURL& origin) {
   DropOriginPreference(origin);
-  GetDesktopNotificationService()->DenyPermission(origin);
+  DesktopNotificationProfileUtil::DenyPermission(browser()->profile(), origin);
 }
 
 void NotificationsTest::AllowOrigin(const GURL& origin) {
   DropOriginPreference(origin);
-  GetDesktopNotificationService()->GrantPermission(origin);
+  DesktopNotificationProfileUtil::GrantPermission(browser()->profile(), origin);
 }
 
 void NotificationsTest::AllowAllOrigins() {
-  GetDesktopNotificationService()->ResetAllOrigins();
-  GetDesktopNotificationService()->SetDefaultContentSetting(
-      CONTENT_SETTING_ALLOW);
+  // Reset all origins
+  browser()->profile()->GetHostContentSettingsMap()->ClearSettingsForOneType(
+       CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  SetDefaultContentSetting(CONTENT_SETTING_ALLOW);
+ }
+
+void NotificationsTest::SetDefaultContentSetting(ContentSetting setting) {
+  browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, setting);
 }
 
 void NotificationsTest::VerifyInfoBar(const Browser* browser, int index) {
@@ -328,8 +327,8 @@ bool NotificationsTest::PerformActionOnInfoBar(
 void NotificationsTest::GetPrefsByContentSetting(
     ContentSetting setting,
     ContentSettingsForOneType* settings) {
-  DesktopNotificationService* service = GetDesktopNotificationService();
-  service->GetNotificationsSettings(settings);
+  DesktopNotificationProfileUtil::GetNotificationsSettings(
+      browser()->profile(), settings);
   for (ContentSettingsForOneType::iterator it = settings->begin();
        it != settings->end(); ) {
     if (it->setting != setting || it->source.compare("preference") != 0)
@@ -353,13 +352,8 @@ bool NotificationsTest::CheckOriginInSetting(
 }
 
 void NotificationsTest::DropOriginPreference(const GURL& origin) {
-  GetDesktopNotificationService()->ClearSetting(
+  DesktopNotificationProfileUtil::ClearSetting(browser()->profile(),
       ContentSettingsPattern::FromURLNoWildcard(origin));
-}
-
-DesktopNotificationService* NotificationsTest::GetDesktopNotificationService() {
-  Profile* profile = browser()->profile();
-  return DesktopNotificationServiceFactory::GetForProfile(profile);
 }
 
 // If this flakes, use http://crbug.com/62311 and http://crbug.com/74428.
@@ -500,7 +494,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestAllowNotificationsFromAllSites) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Verify that all domains can be allowed to show notifications.
-  SetDefaultPermissionSetting(CONTENT_SETTING_ALLOW);
+  SetDefaultContentSetting(CONTENT_SETTING_ALLOW);
   ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
 
   std::string result = CreateSimpleNotification(browser(), true);
@@ -516,7 +510,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestDenyNotificationsFromAllSites) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Verify that no domain can show notifications.
-  SetDefaultPermissionSetting(CONTENT_SETTING_BLOCK);
+  SetDefaultContentSetting(CONTENT_SETTING_BLOCK);
   ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
 
   std::string result = CreateSimpleNotification(browser(), false);
@@ -531,7 +525,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestDenyDomainAndAllowAll) {
   // Verify that denying a domain and allowing all shouldn't show
   // notifications from the denied domain.
   DenyOrigin(GetTestPageURL().GetOrigin());
-  SetDefaultPermissionSetting(CONTENT_SETTING_ALLOW);
+  SetDefaultContentSetting(CONTENT_SETTING_ALLOW);
 
   ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
 
@@ -547,7 +541,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestAllowDomainAndDenyAll) {
   // Verify that allowing a domain and denying all others should show
   // notifications from the allowed domain.
   AllowOrigin(GetTestPageURL().GetOrigin());
-  SetDefaultPermissionSetting(CONTENT_SETTING_BLOCK);
+  SetDefaultContentSetting(CONTENT_SETTING_BLOCK);
 
   ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
 

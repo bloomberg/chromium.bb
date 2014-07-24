@@ -5,8 +5,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 
 #include "chrome/browser/extensions/lazy_background_page_test_util.h"
-#include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "extensions/browser/process_manager.h"
@@ -40,9 +39,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NotificationsNoPermission) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NotificationsHasPermission) {
-  DesktopNotificationServiceFactory::GetForProfile(browser()->profile())
-      ->GrantPermission(GURL(
-          "chrome-extension://peoadpeiejnhkmpaakpnompolbglelel"));
+  DesktopNotificationProfileUtil::GrantPermission(browser()->profile(),
+      GURL("chrome-extension://peoadpeiejnhkmpaakpnompolbglelel"));
+
   ASSERT_TRUE(RunExtensionTest("notifications/has_permission_prefs"))
       << message_;
 }

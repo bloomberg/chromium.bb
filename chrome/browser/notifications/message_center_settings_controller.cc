@@ -13,11 +13,13 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/app_icon_loader_impl.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
@@ -249,7 +251,8 @@ void MessageCenterSettingsController::GetNotifierList(
   int app_count = notifiers->size();
 
   ContentSettingsForOneType settings;
-  notification_service->GetNotificationsSettings(&settings);
+  DesktopNotificationProfileUtil::GetNotificationsSettings(profile, &settings);
+
   FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS);
   favicon_tracker_.reset(new base::CancelableTaskTracker());
@@ -320,7 +323,9 @@ void MessageCenterSettingsController::SetNotifierEnabled(
     // since it has the exact URL pattern.
     // TODO(mukai): fix this.
     ContentSetting default_setting =
-        notification_service->GetDefaultContentSetting(NULL);
+        profile->GetHostContentSettingsMap()->GetDefaultContentSetting(
+            CONTENT_SETTINGS_TYPE_NOTIFICATIONS, NULL);
+
     DCHECK(default_setting == CONTENT_SETTING_ALLOW ||
            default_setting == CONTENT_SETTING_BLOCK ||
            default_setting == CONTENT_SETTING_ASK);
@@ -328,9 +333,11 @@ void MessageCenterSettingsController::SetNotifierEnabled(
         (!enabled && default_setting == CONTENT_SETTING_ALLOW)) {
       if (notifier.notifier_id.url.is_valid()) {
         if (enabled)
-          notification_service->GrantPermission(notifier.notifier_id.url);
+          DesktopNotificationProfileUtil::GrantPermission(
+              profile, notifier.notifier_id.url);
         else
-          notification_service->DenyPermission(notifier.notifier_id.url);
+          DesktopNotificationProfileUtil::DenyPermission(
+              profile, notifier.notifier_id.url);
       } else {
         LOG(ERROR) << "Invalid url pattern: "
                    << notifier.notifier_id.url.spec();
@@ -339,7 +346,7 @@ void MessageCenterSettingsController::SetNotifierEnabled(
       std::map<base::string16, ContentSettingsPattern>::const_iterator iter =
           patterns_.find(notifier.name);
       if (iter != patterns_.end()) {
-        notification_service->ClearSetting(iter->second);
+        DesktopNotificationProfileUtil::ClearSetting(profile, iter->second);
       } else {
         LOG(ERROR) << "Invalid url pattern: "
                    << notifier.notifier_id.url.spec();

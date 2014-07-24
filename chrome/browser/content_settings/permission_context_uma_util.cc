@@ -24,17 +24,14 @@ enum PermissionAction {
 // permission actions. Never delete or reorder an entry; only add new entries
 // immediately before PERMISSION_NUM
 enum PermissionType {
-  PERMISSION_UNKNOWN,
-  PERMISSION_MIDI_SYSEX,
-  PERMISSION_PUSH_MESSAGING,
+  PERMISSION_UNKNOWN = 0,
+  PERMISSION_MIDI_SYSEX = 1,
+  PERMISSION_PUSH_MESSAGING = 2,
+  PERMISSION_NOTIFICATIONS = 3,
 
   // Always keep this at the end.
   PERMISSION_NUM,
 };
-
-static const char* kMidiUmaKey = "ContentSettings.PermisionActions_MidiSysEx";
-static const char* kPushMessageUmaKey =
-    "ContentSettings.PermisionActions_PushMessaging";
 
 void RecordPermissionAction(
       ContentSettingsType permission, PermissionAction action) {
@@ -43,15 +40,22 @@ void RecordPermissionAction(
         // TODO(miguelg): support geolocation through
         // the generic permission class.
         break;
+      case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+        UMA_HISTOGRAM_ENUMERATION(
+            "ContentSettings.PermisionActions_Notifications",
+            action,
+            PERMISSION_ACTION_NUM);
+        break;
       case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
-        UMA_HISTOGRAM_ENUMERATION(kMidiUmaKey,
+        UMA_HISTOGRAM_ENUMERATION("ContentSettings.PermisionActions_MidiSysEx",
                                   action,
                                   PERMISSION_ACTION_NUM);
         break;
       case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
-        UMA_HISTOGRAM_ENUMERATION(kPushMessageUmaKey,
-                                  action,
-                                  PERMISSION_ACTION_NUM);
+        UMA_HISTOGRAM_ENUMERATION(
+            "ContentSettings.PermisionActions_PushMessaging",
+            action,
+            PERMISSION_ACTION_NUM);
         break;
 #if defined(OS_ANDROID)
       case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
@@ -68,6 +72,9 @@ void RecordPermissionRequest(
     ContentSettingsType permission) {
   PermissionType type;
   switch (permission) {
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      type = PERMISSION_NOTIFICATIONS;
+      break;
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       type = PERMISSION_MIDI_SYSEX;
       break;

@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/content_browser_client.h"
 
@@ -297,6 +298,12 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
  private:
   friend class DisableWebRtcEncryptionFlagTest;
 
+  // Used as a callback once a permission has been decided.
+  // TODO(peter) remove once the notification callback returns
+  // a boolean.
+  void NotificationPermissionRequested(
+      const base::Closure& callback, bool result);
+
 #if defined(ENABLE_WEBRTC)
   // Copies disable WebRTC encryption switch depending on the channel.
   static void MaybeCopyDisableWebRtcEncryptionSwitch(
@@ -346,6 +353,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   // created. It is used only the IO thread.
   prerender::PrerenderTracker* prerender_tracker_;
 
+  // TODO(peter) remove once NotificationPermissionRequested is removed.
   base::WeakPtrFactory<ChromeContentBrowserClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentBrowserClient);
