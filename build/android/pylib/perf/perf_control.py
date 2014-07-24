@@ -68,7 +68,10 @@ class PerfControl(object):
   def _AllCpusAreOnline(self):
     for cpu in range(self._num_cpu_cores):
       online_path = PerfControl._CPU_ONLINE_FMT % cpu
-      if self._device.ReadFile(online_path)[0] == '0':
+      # TODO(epenner): Investigate why file may be missing
+      # (http://crbug.com/397118)
+      if not self._device.FileExists(online_path) or \
+            self._device.ReadFile(online_path)[0] == '0':
         return False
     return True
 

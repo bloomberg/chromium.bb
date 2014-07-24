@@ -597,8 +597,8 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    # TODO(jbudorick) Evaluate whether we actually want to return a list of
-    # lines after the implementation switch.
+    # TODO(jbudorick) Evaluate whether we awant to return a list of lines after
+    # the implementation switch, and if file not found should raise exception.
     if as_root:
       if not self.old_interface.CanAccessProtectedFileContents():
         raise device_errors.CommandFailedError(
