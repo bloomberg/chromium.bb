@@ -132,6 +132,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableSpeechSynthesis))
     WebRuntimeFeatures::enableSpeechSynthesis(true);
 
+  if (command_line.HasSwitch(switches::kEnableDisplayList2dCanvas))
+    WebRuntimeFeatures::enableDisplayList2dCanvas(true);
+
   if (command_line.HasSwitch(switches::kEnableWebGLDraftExtensions))
     WebRuntimeFeatures::enableWebGLDraftExtensions(true);
 

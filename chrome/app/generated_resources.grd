@@ -5724,6 +5724,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_ACCELERATED_2D_CANVAS_DESCRIPTION" desc="Description of the 'Disable accelerated 2D canvas' lab.">
         Disables the use of the GPU to perform 2d canvas rendering and instead uses software rendering.
       </message>
+      <message name="IDS_FLAGS_ENABLE_DISPLAY_LIST_2D_CANVAS_NAME" desc="Name of the 'Enable display list 2D canvas' lab.">
+        Enable display list 2D canvas
+      </message>
+      <message name="IDS_FLAGS_ENABLE_DISPLAY_LIST_2D_CANVAS_DESCRIPTION" desc="Description of the 'Enable display list 2D canvas' lab.">
+        Enables the use of display lists to record 2D canvas commands. This allows 2D canvas rasterization to be performed on separate thread.
+      </message>
       <message name="IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_NAME" desc="Name of the 'Experimental Extension APIs' lab.">
         Experimental Extension APIs
       </message>

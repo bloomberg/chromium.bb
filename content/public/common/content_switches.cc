@@ -349,6 +349,9 @@ const char kEnableDeferredImageDecoding[]   = "enable-deferred-image-decoding";
 // Enables delegated renderer.
 const char kEnableDelegatedRenderer[]       = "enable-delegated-renderer";
 
+// Enables display list based 2d canvas implementation.
+const char kEnableDisplayList2dCanvas[]     = "enable-display-list-2d-canvas";
+
 // Enables restarting interrupted downloads.
 const char kEnableDownloadResumption[]      = "enable-download-resumption";
 

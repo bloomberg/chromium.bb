@@ -575,6 +575,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableAccelerated2dCanvas)
   },
   {
+    "enable-display-list-2d-canvas",
+    IDS_FLAGS_ENABLE_DISPLAY_LIST_2D_CANVAS_NAME,
+    IDS_FLAGS_ENABLE_DISPLAY_LIST_2D_CANVAS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableDisplayList2dCanvas)
+  },
+  {
     "composited-layer-borders",
     IDS_FLAGS_COMPOSITED_LAYER_BORDERS,
     IDS_FLAGS_COMPOSITED_LAYER_BORDERS_DESCRIPTION,
