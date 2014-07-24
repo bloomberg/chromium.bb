@@ -311,7 +311,10 @@ class DevServerWrapper(multiprocessing.Process):
   def TailLog(self, num_lines=50):
     """Returns the most recent |num_lines| lines of the devserver log file."""
     fname = self.log_file
-    if os.path.exists(fname):
+    # We use self._RunCommand here to check the existence of the log
+    # file, so it works for RemoteDevserverWrapper as well.
+    if self._RunCommand(
+        ['test', '-f', fname], error_code_ok=True).returncode == 0:
       result = self._RunCommand(['tail', '-n', str(num_lines), fname],
                                 capture_output=True)
       output = '--- Start output from %s ---' % fname
@@ -437,8 +440,7 @@ You can fix this with one of the following three options:
     if self.static_dir:
       cmd.append('--static_dir=%s' % self.static_dir)
 
-    logging.info('Starting devserver %s', self.GetDevServerURL(ip=self.hostname,
-                                                               port=self.port))
+    logging.info('Starting devserver on %s', self.hostname)
     result = self._RunCommand(cmd, error_code_ok=True, redirect_stdout=True,
                               combine_stdout_stderr=True)
     if result.returncode != 0:

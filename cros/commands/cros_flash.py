@@ -548,7 +548,10 @@ class RemoteDeviceUpdater(object):
     logging.info('Updating rootfs partition')
     try:
       ds.Start()
-      omaha_url = ds.GetURL(sub_dir='update/pregenerated')
+      # Use the localhost IP address to ensure that update engine
+      # client can connect to the devserver.
+      omaha_url = ds.GetDevServerURL(
+          ip='127.0.0.1', port=ds.port, sub_dir='update/pregenerated')
       cmd = [self.UPDATE_ENGINE_BIN, '-check_for_update',
              '-omaha_url=%s' % omaha_url]
       device.RunCommand(cmd)
