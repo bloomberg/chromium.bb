@@ -4,6 +4,7 @@
 
 #include "athena/virtual_keyboard/public/virtual_keyboard_manager.h"
 
+#include "athena/common/container_priorities.h"
 #include "athena/common/fill_layout_manager.h"
 #include "athena/screen/public/screen_manager.h"
 #include "athena/virtual_keyboard/vk_webui_controller.h"
@@ -76,7 +77,8 @@ class VirtualKeyboardManagerImpl : public VirtualKeyboardManager {
 
  private:
   void Init() {
-    athena::ScreenManager::ContainerParams params("VirtualKeyboardContainer");
+    athena::ScreenManager::ContainerParams params("VirtualKeyboardContainer",
+                                                  CP_VIRTUAL_KEYBOARD);
     container_ = athena::ScreenManager::Get()->CreateContainer(params);
     container_->SetLayoutManager(new FillLayoutManager(container_));
     keyboard::SetOverrideContentUrl(GURL(keyboard::kKeyboardURL));

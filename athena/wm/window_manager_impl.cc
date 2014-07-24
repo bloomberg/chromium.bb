@@ -4,6 +4,7 @@
 
 #include "athena/wm/public/window_manager.h"
 
+#include "athena/common/container_priorities.h"
 #include "athena/input/public/accelerator_manager.h"
 #include "athena/screen/public/screen_manager.h"
 #include "athena/wm/bezel_controller.h"
@@ -86,7 +87,7 @@ class AthenaContainerLayoutManager : public aura::LayoutManager {
 class WindowManagerImpl* instance = NULL;
 
 WindowManagerImpl::WindowManagerImpl() {
-  ScreenManager::ContainerParams params("DefaultContainer");
+  ScreenManager::ContainerParams params("DefaultContainer", CP_DEFAULT);
   params.can_activate_children = true;
   container_.reset(ScreenManager::Get()->CreateDefaultContainer(params));
   container_->SetLayoutManager(new AthenaContainerLayoutManager);

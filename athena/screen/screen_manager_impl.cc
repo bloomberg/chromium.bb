@@ -4,6 +4,7 @@
 
 #include "athena/screen/public/screen_manager.h"
 
+#include "athena/common/container_priorities.h"
 #include "athena/common/fill_layout_manager.h"
 #include "athena/input/public/accelerator_manager.h"
 #include "athena/screen/background_controller.h"
@@ -127,10 +128,24 @@ class ScreenManagerImpl : public ScreenManager {
   DISALLOW_COPY_AND_ASSIGN(ScreenManagerImpl);
 };
 
+ScreenManagerImpl::ScreenManagerImpl(aura::Window* root_window)
+    : root_window_(root_window) {
+  DCHECK(root_window_);
+  DCHECK(!instance);
+  instance = this;
+}
+
+ScreenManagerImpl::~ScreenManagerImpl() {
+  aura::client::SetScreenPositionClient(root_window_, NULL);
+  aura::client::SetWindowTreeClient(root_window_, NULL);
+  instance = NULL;
+}
+
 void ScreenManagerImpl::Init() {
   // TODO(oshima): Move the background out from ScreenManager.
   root_window_->SetLayoutManager(new FillLayoutManager(root_window_));
-  background_window_ = CreateContainer(ContainerParams("AthenaBackground"));
+  background_window_ =
+      CreateContainer(ContainerParams("AthenaBackground", CP_BACKGROUND));
 
   background_window_->SetLayoutManager(
       new FillLayoutManager(background_window_));
@@ -153,14 +168,56 @@ aura::Window* ScreenManagerImpl::CreateDefaultContainer(
   return container;
 }
 
+// A functor to find a container that has the higher priority.
+struct HigherPriorityFinder {
+  HigherPriorityFinder(int p) : priority(p) {}
+  bool operator()(aura::Window* window) {
+    return window->GetProperty(kContainerParamsKey)->z_order_priority >
+           priority;
+  }
+  int priority;
+};
+
+#if !defined(NDEBUG)
+struct PriorityMatcher {
+  PriorityMatcher(int p) : priority(p) {}
+  bool operator()(aura::Window* window) {
+    return window->GetProperty(kContainerParamsKey)->z_order_priority ==
+           priority;
+  }
+  int priority;
+};
+#endif
+
 aura::Window* ScreenManagerImpl::CreateContainer(
     const ContainerParams& params) {
   aura::Window* container = new aura::Window(NULL);
+  CHECK_GE(params.z_order_priority, 0);
   container->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   container->SetName(params.name);
-  root_window_->AddChild(container);
-  container->Show();
+
+  const aura::Window::Windows& children = root_window_->children();
+
+#if !defined(NDEBUG)
+  DCHECK(std::find_if(children.begin(),
+                      children.end(),
+                      PriorityMatcher(params.z_order_priority))
+         == children.end())
+      << "The container with the priority "
+      << params.z_order_priority << " already exists.";
+#endif
+
   container->SetProperty(kContainerParamsKey, new ContainerParams(params));
+  root_window_->AddChild(container);
+
+  aura::Window::Windows::const_iterator iter =
+      std::find_if(children.begin(),
+                   children.end(),
+                   HigherPriorityFinder(params.z_order_priority));
+  if (iter != children.end())
+    root_window_->StackChildBelow(container, *iter);
+
+  container->Show();
   return container;
 }
 
@@ -168,24 +225,11 @@ void ScreenManagerImpl::SetBackgroundImage(const gfx::ImageSkia& image) {
   background_controller_->SetImage(image);
 }
 
-ScreenManagerImpl::ScreenManagerImpl(aura::Window* root_window)
-    : root_window_(root_window) {
-  DCHECK(root_window_);
-  DCHECK(!instance);
-  instance = this;
-}
-
-ScreenManagerImpl::~ScreenManagerImpl() {
-  aura::client::SetScreenPositionClient(root_window_, NULL);
-  aura::client::SetWindowTreeClient(root_window_, NULL);
-  instance = NULL;
-}
-
 }  // namespace
 
-ScreenManager::ContainerParams::ContainerParams(const std::string& n)
-    : name(n),
-      can_activate_children(false) {
+ScreenManager::ContainerParams::ContainerParams(const std::string& n,
+                                                int priority)
+    : name(n), can_activate_children(false), z_order_priority(priority) {
 }
 
 // static

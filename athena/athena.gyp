@@ -36,8 +36,8 @@
         'activity/public/activity_manager.h',
         'activity/public/activity_view_manager.h',
         'activity/public/activity_view_model.h',
-        # move athena_export.h to common/
         'athena_export.h',
+        'common/container_priorities.h',
         'common/fill_layout_manager.cc',
         'common/fill_layout_manager.h',
         'common/switches.cc',
@@ -158,6 +158,7 @@
         'activity/activity_manager_unittest.cc',
         'home/home_card_unittest.cc',
         'input/accelerator_manager_unittest.cc',
+        'screen/screen_manager_unittest.cc',
         'wm/window_manager_unittest.cc',
       ],
     }

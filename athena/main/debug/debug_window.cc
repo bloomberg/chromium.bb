@@ -4,6 +4,7 @@
 
 #include "athena/main/debug/debug_window.h"
 
+#include "athena/common/container_priorities.h"
 #include "athena/resources/athena_resources.h"
 #include "athena/screen/public/screen_manager.h"
 #include "base/bind.h"
@@ -168,7 +169,8 @@ class DebugWidget {
 
  private:
   void CreateContainer() {
-    athena::ScreenManager::ContainerParams params("DebugContainer");
+    athena::ScreenManager::ContainerParams params("DebugContainer",
+                                                  athena::CP_DEBUG);
     container_ = athena::ScreenManager::Get()->CreateContainer(params);
   }
 

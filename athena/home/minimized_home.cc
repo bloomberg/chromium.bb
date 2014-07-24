@@ -40,7 +40,7 @@ class MinimizedHomeView : public views::View {
   }
 
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
-    if (event.IsLeftMouseButton() && event.GetClickCount() > 1) {
+    if (event.IsLeftMouseButton() && event.GetClickCount() == 1) {
       delegate_->OnDragUpCompleted();
       SetColor(kDragHandleColorNormal);
       return true;

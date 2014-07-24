@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "athena/common/container_priorities.h"
 #include "athena/home/app_list_view_delegate.h"
 #include "athena/home/bottom_home_view.h"
 #include "athena/home/minimized_home.h"
@@ -329,7 +330,7 @@ void HomeCardImpl::UpdateVirtualKeyboardBounds(
 
 void HomeCardImpl::Init() {
   InstallAccelerators();
-  ScreenManager::ContainerParams params("HomeCardContainer");
+  ScreenManager::ContainerParams params("HomeCardContainer", CP_HOME_CARD);
   params.can_activate_children = true;
   aura::Window* container = ScreenManager::Get()->CreateContainer(params);
   layout_manager_ = new HomeCardLayoutManager(this);
