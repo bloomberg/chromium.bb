@@ -559,10 +559,11 @@ LayoutPoint RenderLayer::positionFromPaintInvalidationContainer(const RenderObje
         return renderObject->positionFromPaintInvalidationContainer(paintInvalidationContainer, paintInvalidationState);
 
     RenderLayerModelObject* transformedAncestor = paintInvalidationContainer->layer()->enclosingTransformedAncestor()->renderer();
+    LayoutPoint point = renderObject->positionFromPaintInvalidationContainer(paintInvalidationContainer, paintInvalidationState);
     if (!transformedAncestor)
-        return renderObject->positionFromPaintInvalidationContainer(paintInvalidationContainer, paintInvalidationState);
+        return point;
 
-    LayoutPoint point = renderObject->positionFromPaintInvalidationContainer(transformedAncestor, paintInvalidationState);
+    point = LayoutPoint(paintInvalidationContainer->localToContainerPoint(point, transformedAncestor));
     point.moveBy(-paintInvalidationContainer->layer()->groupedMapping()->squashingOffsetFromTransformedAncestor());
     return point;
 }
