@@ -391,8 +391,8 @@ void RegisterComponentsForUpdate() {
   RegisterRecoveryComponent(cus, g_browser_process->local_state());
   RegisterPepperFlashComponent(cus);
   RegisterSwiftShaderComponent(cus);
-  g_browser_process->pnacl_component_installer()->RegisterPnaclComponent(cus);
   RegisterWidevineCdmComponent(cus);
+  g_browser_process->pnacl_component_installer()->RegisterPnaclComponent(cus);
 #endif
 
 #if defined(CLD_DATA_FROM_COMPONENT)
