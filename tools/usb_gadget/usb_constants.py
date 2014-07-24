@@ -159,3 +159,8 @@ class Speed(object):
 
 class VendorID(object):
   GOOGLE = 0x18D1
+
+
+class ProductID(object):
+  # TODO(reillyg): Get officially assigned IDs for these devices.
+  GOOGLE_KEYBOARD_GADGET = 0x2001
