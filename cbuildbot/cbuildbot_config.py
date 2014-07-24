@@ -1356,6 +1356,7 @@ _arm_release_boards = frozenset([
   'nyan',
   'nyan_big',
   'nyan_blaze',
+  'nyan_freon',
   'peach_pi',
   'peach_pit',
 ])
@@ -1927,6 +1928,12 @@ internal_notest_paladin.add_config('storm-paladin',
   brillo_non_testable,
   boards=['storm'],
   paladin_builder_name='storm paladin',
+)
+
+internal_notest_paladin.add_config('nyan-freon-paladin',
+  boards=['nyan_freon'],
+  paladin_builder_name='nyan_freon paladin',
+  important=False,
 )
 
 internal_brillo_paladin = internal_paladin.derive(brillo)
