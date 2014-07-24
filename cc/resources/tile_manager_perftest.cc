@@ -175,27 +175,54 @@ class TileManagerPerfTest : public testing::Test {
     pending_root_layer_->SetAllTilesVisible();
   }
 
-  void RunRasterIteratorTest(const std::string& test_name,
-                             unsigned tile_count) {
+  void RunRasterQueueConstructTest(const std::string& test_name) {
+    TreePriority priorities[] = {SAME_PRIORITY_FOR_BOTH_TREES,
+                                 SMOOTHNESS_TAKES_PRIORITY,
+                                 NEW_CONTENT_TAKES_PRIORITY};
+    int priority_count = 0;
     timer_.Reset();
     do {
-      int count = tile_count;
       RasterTilePriorityQueue queue;
-      host_impl_.BuildRasterQueue(&queue, SAME_PRIORITY_FOR_BOTH_TREES);
-      while (count--) {
-        ASSERT_FALSE(queue.IsEmpty());
-        ASSERT_TRUE(queue.Top() != NULL);
-        queue.Pop();
-      }
+      host_impl_.BuildRasterQueue(&queue, priorities[priority_count]);
+      priority_count = (priority_count + 1) % arraysize(priorities);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("tile_manager_raster_tile_iterator",
+    perf_test::PrintResult("tile_manager_raster_tile_queue_construct",
                            "",
                            test_name,
                            timer_.LapsPerSecond(),
                            "runs/s",
                            true);
+  }
+
+  void RunRasterQueueConstructAndIterateTest(const std::string& test_name,
+                                             unsigned tile_count) {
+    TreePriority priorities[] = {SAME_PRIORITY_FOR_BOTH_TREES,
+                                 SMOOTHNESS_TAKES_PRIORITY,
+                                 NEW_CONTENT_TAKES_PRIORITY};
+    int priority_count = 0;
+    timer_.Reset();
+    do {
+      int count = tile_count;
+      RasterTilePriorityQueue queue;
+      host_impl_.BuildRasterQueue(&queue, priorities[priority_count]);
+      while (count--) {
+        ASSERT_FALSE(queue.IsEmpty());
+        ASSERT_TRUE(queue.Top() != NULL);
+        queue.Pop();
+      }
+      priority_count = (priority_count + 1) % arraysize(priorities);
+      timer_.NextLap();
+    } while (!timer_.HasTimeLimitExpired());
+
+    perf_test::PrintResult(
+        "tile_manager_raster_tile_queue_construct_and_iterate",
+        "",
+        test_name,
+        timer_.LapsPerSecond(),
+        "runs/s",
+        true);
   }
 
   std::vector<LayerImpl*> CreateLayers(int layer_count,
@@ -323,15 +350,38 @@ TEST_F(TileManagerPerfTest, ManageTiles) {
   RunManageTilesTest("100_1000", 100, 1000);
 }
 
-TEST_F(TileManagerPerfTest, RasterTileIterator) {
+TEST_F(TileManagerPerfTest, RasterTileQueueConstruct) {
   SetupDefaultTrees(gfx::Size(10000, 10000));
   active_root_layer_->CreateDefaultTilingsAndTiles();
   pending_root_layer_->CreateDefaultTilingsAndTiles();
 
-  RunRasterIteratorTest("2_16", 16);
-  RunRasterIteratorTest("2_32", 32);
-  RunRasterIteratorTest("2_64", 64);
-  RunRasterIteratorTest("2_128", 128);
+  RunRasterQueueConstructTest("2");
+
+  for (int i = 0; i < 8; ++i) {
+    PictureLayerTiling* tiling = active_root_layer_->AddTiling(i * 0.3f);
+    tiling->CreateAllTilesForTesting();
+  }
+
+  RunRasterQueueConstructTest("10");
+
+  for (int i = 0; i < 90; ++i) {
+    PictureLayerTiling* tiling =
+        active_root_layer_->AddTiling(1.0f + i * 0.03f);
+    tiling->CreateAllTilesForTesting();
+  }
+
+  RunRasterQueueConstructTest("100");
+}
+
+TEST_F(TileManagerPerfTest, RasterTileQueueConstructAndIterate) {
+  SetupDefaultTrees(gfx::Size(10000, 10000));
+  active_root_layer_->CreateDefaultTilingsAndTiles();
+  pending_root_layer_->CreateDefaultTilingsAndTiles();
+
+  RunRasterQueueConstructAndIterateTest("2_16", 16);
+  RunRasterQueueConstructAndIterateTest("2_32", 32);
+  RunRasterQueueConstructAndIterateTest("2_64", 64);
+  RunRasterQueueConstructAndIterateTest("2_128", 128);
 }
 
 }  // namespace
