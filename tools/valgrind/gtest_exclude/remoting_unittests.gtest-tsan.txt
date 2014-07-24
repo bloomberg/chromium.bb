@@ -1,4 +1,0 @@
-# Times out. http://crbug.com/385222
-VideoDecoderVp8Test.*
-VideoEncoderVpxTest.*
-ChromotingHostTest.*
