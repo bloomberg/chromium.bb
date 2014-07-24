@@ -2696,6 +2696,7 @@
           'features': {
             'dynamic_refresh': False,
             'per_profile': True,
+            'can_be_recommended': True,
           },
           'example_value': [{'protocol': 'mailto', 'url': 'https://mail.google.com/mail/?extsrc=mailto&url=%s', 'default': 'true'}],
           'id': 268,
