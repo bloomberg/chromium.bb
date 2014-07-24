@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_EXTENDED_AUTHENTICATOR_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_EXTENDED_AUTHENTICATOR_H_
+#ifndef CHROMEOS_LOGIN_AUTH_EXTENDED_AUTHENTICATOR_H_
+#define CHROMEOS_LOGIN_AUTH_EXTENDED_AUTHENTICATOR_H_
 
 #include <string>
 
@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "chromeos/chromeos_export.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -26,7 +27,7 @@ class UserContext;
 // Typical flow:
 // AuthenticateToMount() calls cryptohomed to perform offline login,
 // AuthenticateToCreate() calls cryptohomed to create new cryptohome.
-class ExtendedAuthenticator
+class CHROMEOS_EXPORT ExtendedAuthenticator
     : public base::RefCountedThreadSafe<ExtendedAuthenticator> {
  public:
   enum AuthState {
@@ -158,4 +159,4 @@ class ExtendedAuthenticator
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_EXTENDED_AUTHENTICATOR_H_
+#endif  // CHROMEOS_LOGIN_AUTH_EXTENDED_AUTHENTICATOR_H_

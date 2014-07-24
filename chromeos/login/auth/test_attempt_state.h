@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_TEST_ATTEMPT_STATE_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_TEST_ATTEMPT_STATE_H_
+#ifndef CHROMEOS_LOGIN_AUTH_TEST_ATTEMPT_STATE_H_
+#define CHROMEOS_LOGIN_AUTH_TEST_ATTEMPT_STATE_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/chromeos/login/auth/auth_attempt_state.h"
+#include "chromeos/chromeos_export.h"
+#include "chromeos/login/auth/auth_attempt_state.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 
@@ -14,7 +15,7 @@ namespace chromeos {
 
 class UserContext;
 
-class TestAttemptState : public AuthAttemptState {
+class CHROMEOS_EXPORT TestAttemptState : public AuthAttemptState {
  public:
   TestAttemptState(const UserContext& credentials, const bool user_is_new);
 
@@ -45,4 +46,4 @@ class TestAttemptState : public AuthAttemptState {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_TEST_ATTEMPT_STATE_H_
+#endif  // CHROMEOS_LOGIN_AUTH_TEST_ATTEMPT_STATE_H_

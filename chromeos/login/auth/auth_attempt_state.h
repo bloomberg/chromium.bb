@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_AUTH_ATTEMPT_STATE_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_AUTH_ATTEMPT_STATE_H_
+#ifndef CHROMEOS_LOGIN_AUTH_AUTH_ATTEMPT_STATE_H_
+#define CHROMEOS_LOGIN_AUTH_AUTH_ATTEMPT_STATE_H_
 
 #include <string>
 
+#include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user_type.h"
@@ -18,7 +19,7 @@ namespace chromeos {
 
 // Tracks the state associated with a single attempt to log in to chromium OS.
 // Enforces that methods are only called on the UI thread.
-class AuthAttemptState {
+class CHROMEOS_EXPORT AuthAttemptState {
  public:
   // Used to initialize for a login attempt.
   AuthAttemptState(const UserContext& user_context,
@@ -114,4 +115,4 @@ class AuthAttemptState {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_AUTH_ATTEMPT_STATE_H_
+#endif  // CHROMEOS_LOGIN_AUTH_AUTH_ATTEMPT_STATE_H_

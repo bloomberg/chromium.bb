@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/auth/mock_authenticator.h"
+#include "chromeos/login/auth/mock_authenticator.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace chromeos {
 
 MockAuthenticator::MockAuthenticator(AuthStatusConsumer* consumer,
                                      const UserContext& expected_user_context)
-    : Authenticator(consumer), expected_user_context_(expected_user_context) {
+    : Authenticator(consumer),
+      expected_user_context_(expected_user_context),
+      message_loop_(base::MessageLoopProxy::current()) {
 }
 
 void MockAuthenticator::CompleteLogin(Profile* profile,
@@ -27,29 +27,24 @@ void MockAuthenticator::CompleteLogin(Profile* profile,
 void MockAuthenticator::AuthenticateToLogin(Profile* profile,
                                             const UserContext& user_context) {
   if (user_context == expected_user_context_) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&MockAuthenticator::OnAuthSuccess, this));
+    message_loop_->PostTask(
+        FROM_HERE, base::Bind(&MockAuthenticator::OnAuthSuccess, this));
     return;
   }
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  BrowserThread::PostTask(
-      BrowserThread::UI,
+  message_loop_->PostTask(
       FROM_HERE,
       base::Bind(&MockAuthenticator::OnAuthFailure,
                  this,
                  AuthFailure::FromNetworkAuthFailure(error)));
 }
 
-void MockAuthenticator::AuthenticateToUnlock(
-    const UserContext& user_context) {
+void MockAuthenticator::AuthenticateToUnlock(const UserContext& user_context) {
   AuthenticateToLogin(NULL /* not used */, user_context);
 }
 
-void MockAuthenticator::LoginAsSupervisedUser(
-    const UserContext& user_context) {
+void MockAuthenticator::LoginAsSupervisedUser(const UserContext& user_context) {
   UserContext new_user_context = user_context;
   new_user_context.SetUserIDHash(user_context.GetUserID());
   consumer_->OnAuthSuccess(new_user_context);

@@ -13,9 +13,9 @@
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/auth/extended_authenticator.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_controller.h"
 #include "chrome/browser/supervised_user/supervised_user_registration_utility.h"
+#include "chromeos/login/auth/extended_authenticator.h"
 
 class Profile;
 
