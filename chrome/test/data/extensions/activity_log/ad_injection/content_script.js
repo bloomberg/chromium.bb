@@ -191,6 +191,18 @@ var getAnchorAd = function() {
   return kAnchorAdTemplate.cloneNode(true);
 };
 
+// Creates a script ad, like so:
+// <script href="http://www.known-ads.adnetwork"></a>
+var kScriptAdTemplate = document.createElement('script');
+kScriptAdTemplate.src = kAdNetwork;
+
+/**
+ * @return A script element which will count as ad injection in the tests.
+ */
+var getScriptAd = function() {
+  return kScriptAdTemplate.cloneNode(true);
+};
+
 // This series constructs a nested ad, which looks like this:
 // <div>
 //   <div>
@@ -339,6 +351,12 @@ functions.push(function ReplaceAnchorAd2() {
 functions.push(function RemoveAdBySettingSrc() {
   $('ad-iframe').src = kMaybeAdNetwork;
   return INJECTION_REMOVED_AD;
+});
+
+// Add an ad network script to the DOM.
+functions.push(function AddNewScriptAd() {
+  document.body.appendChild(getScriptAd());
+  return INJECTION_NEW_AD;
 });
 
 // Ensure that we flag actions that look a lot like ad injection, even if we're

@@ -73,6 +73,7 @@ class Action : public base::RefCountedThreadSafe<Action> {
     AD_TYPE_IFRAME,
     AD_TYPE_EMBED,
     AD_TYPE_ANCHOR,
+    AD_TYPE_SCRIPT,
 
     // Place any new injection types above this entry.
     NUM_AD_TYPES

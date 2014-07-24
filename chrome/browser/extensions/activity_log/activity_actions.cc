@@ -46,6 +46,7 @@ const char kBlinkAddElementEvent[] = "blinkAddElement";
 
 const char kIframe[] = "iframe";
 const char kAnchor[] = "a";
+const char kScript[] = "script";
 
 const char kSrc[] = "src";
 const char kHref[] = "href";
@@ -121,10 +122,14 @@ Action::InjectionType Action::DidInjectAd(
       args_->GetString(0u, &element_name);
       args_->GetString(1u, &attr_name);
     }
-    if (element_name == kIframe && attr_name == kSrc)
-      ad_type = AD_TYPE_IFRAME;
-    else if (element_name == kAnchor && attr_name == kHref)
+    if (attr_name == kSrc) {
+      if (element_name == kIframe)
+        ad_type = AD_TYPE_IFRAME;
+      else if (element_name == kScript)
+        ad_type = AD_TYPE_SCRIPT;
+    } else if (element_name == kAnchor && attr_name == kHref) {
       ad_type = AD_TYPE_ANCHOR;
+    }
 
     if (ad_type != AD_TYPE_NONE)
       injection_type = CheckAttrModification();
@@ -136,6 +141,8 @@ Action::InjectionType Action::DidInjectAd(
       ad_type = AD_TYPE_IFRAME;
     else if (element_name == kAnchor)
       ad_type = AD_TYPE_ANCHOR;
+    else if (element_name == kScript)
+      ad_type = AD_TYPE_SCRIPT;
 
     if (ad_type != AD_TYPE_NONE)
       injection_type = CheckElementAddition();
@@ -462,8 +469,7 @@ Action::InjectionType Action::CheckAttrModification() const {
 }
 
 Action::InjectionType Action::CheckElementAddition() const {
-  if (api_name_ != kBlinkAddElementEvent)
-    return NO_AD_INJECTION;
+  DCHECK_EQ(kBlinkAddElementEvent, api_name_);
 
   GURL url;
   std::string url_string;
