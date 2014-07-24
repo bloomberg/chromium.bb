@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
@@ -327,11 +326,6 @@ class LocationBarView : public LocationBar,
   // Helper to show the first run info bubble.
   void ShowFirstRunBubbleInternal();
 
-  // Handles a request to change the value of this text field from software
-  // using an accessibility API (typically automation software, screen readers
-  // don't normally use this). Sets the value and clears the selection.
-  void AccessibilitySetValue(const base::string16& new_value);
-
   // Returns true if the suggest text is valid.
   bool HasValidSuggestText() const;
 
@@ -568,9 +562,6 @@ class LocationBarView : public LocationBar,
 
   // Used to register for notifications received by NotificationObserver.
   content::NotificationRegistrar registrar_;
-
-  // Used to bind callback functions to this object.
-  base::WeakPtrFactory<LocationBarView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarView);
 };

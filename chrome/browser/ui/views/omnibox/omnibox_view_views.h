@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "ui/base/window_open_disposition.h"
@@ -108,6 +109,11 @@ class OmniboxViewViews
 
   // Handle keyword hint tab-to-search and tabbing through dropdown results.
   bool HandleEarlyTabActions(const ui::KeyEvent& event);
+
+  // Handles a request to change the value of this text field from software
+  // using an accessibility API (typically automation software, screen readers
+  // don't normally use this). Sets the value and clears the selection.
+  void AccessibilitySetValue(const base::string16& new_value);
 
   // OmniboxView:
   virtual void SetWindowTextAndCaretPos(const base::string16& text,
@@ -222,6 +228,9 @@ class OmniboxViewViews
   // GESTURE_TAP. We want to select all only when the textfield is not in focus
   // and gets a tap. So we use this variable to remember focus state before tap.
   bool select_all_on_gesture_tap_;
+
+  // Used to bind callback functions to this object.
+  base::WeakPtrFactory<OmniboxViewViews> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewViews);
 };

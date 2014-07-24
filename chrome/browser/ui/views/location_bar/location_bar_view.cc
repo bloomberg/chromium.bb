@@ -233,8 +233,7 @@ LocationBarView::LocationBarView(Browser* browser,
       starting_omnibox_leading_inset_(0),
       current_omnibox_leading_inset_(0),
       current_omnibox_width_(0),
-      ending_omnibox_width_(0),
-      weak_ptr_factory_(this) {
+      ending_omnibox_width_(0) {
   edit_bookmarks_enabled_.Init(
       prefs::kEditBookmarksEnabled, profile->GetPrefs(),
       base::Bind(&LocationBarView::Update, base::Unretained(this),
@@ -635,26 +634,7 @@ bool LocationBarView::HasFocus() const {
 }
 
 void LocationBarView::GetAccessibleState(ui::AXViewState* state) {
-  if (!IsInitialized())
-    return;
-
-  state->role = ui::AX_ROLE_LOCATION_BAR;
-  state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_LOCATION);
-  state->value = omnibox_view_->GetText();
-
-  base::string16::size_type entry_start;
-  base::string16::size_type entry_end;
-  omnibox_view_->GetSelectionBounds(&entry_start, &entry_end);
-  state->selection_start = entry_start;
-  state->selection_end = entry_end;
-
-  if (is_popup_mode_) {
-    state->AddStateFlag(ui::AX_STATE_READ_ONLY);
-  } else {
-    state->set_value_callback =
-        base::Bind(&LocationBarView::AccessibilitySetValue,
-                   weak_ptr_factory_.GetWeakPtr());
-  }
+  state->role = ui::AX_ROLE_GROUP;
 }
 
 gfx::Size LocationBarView::GetPreferredSize() const {
@@ -1290,10 +1270,6 @@ void LocationBarView::ShowFirstRunBubbleInternal() {
   if (browser)
     FirstRunBubble::ShowBubble(browser, location_icon_view_);
 #endif
-}
-
-void LocationBarView::AccessibilitySetValue(const base::string16& new_value) {
-  omnibox_view_->SetUserText(new_value, new_value, true);
 }
 
 bool LocationBarView::HasValidSuggestText() const {

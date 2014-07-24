@@ -148,7 +148,8 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       location_bar_view_(location_bar),
       ime_candidate_window_open_(false),
       select_all_on_mouse_release_(false),
-      select_all_on_gesture_tap_(false) {
+      select_all_on_gesture_tap_(false),
+      weak_ptr_factory_(this) {
   SetBorder(views::Border::NullBorder());
   set_id(VIEW_ID_OMNIBOX);
   SetFontList(font_list);
@@ -413,6 +414,10 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
     model()->OnUpOrDownKeyPressed(event.IsShiftDown() ? -1 : 1);
 
   return true;
+}
+
+void OmniboxViewViews::AccessibilitySetValue(const base::string16& new_value) {
+  SetUserText(new_value, new_value, true);
 }
 
 void OmniboxViewViews::SetWindowTextAndCaretPos(const base::string16& text,
@@ -798,8 +803,24 @@ bool OmniboxViewViews::SkipDefaultKeyEventProcessing(
 }
 
 void OmniboxViewViews::GetAccessibleState(ui::AXViewState* state) {
-  location_bar_view_->GetAccessibleState(state);
   state->role = ui::AX_ROLE_TEXT_FIELD;
+  state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_LOCATION);
+  state->value = GetText();
+
+  base::string16::size_type entry_start;
+  base::string16::size_type entry_end;
+  GetSelectionBounds(&entry_start, &entry_end);
+  state->selection_start = entry_start;
+  state->selection_end = entry_end;
+
+  if (popup_window_mode_) {
+    state->AddStateFlag(ui::AX_STATE_READ_ONLY);
+  } else {
+    state->set_value_callback =
+        base::Bind(&OmniboxViewViews::AccessibilitySetValue,
+                   weak_ptr_factory_.GetWeakPtr());
+  }
+
 }
 
 void OmniboxViewViews::OnFocus() {
