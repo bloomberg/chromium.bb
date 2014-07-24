@@ -493,22 +493,22 @@ inline int InlineBidiResolver::findFirstTrailingSpaceAtRun(BidiRun* run)
 }
 
 template <>
-inline BidiRun* InlineBidiResolver::addTrailingRun(int start, int stop, BidiRun* run, BidiContext* context, TextDirection direction)
+inline BidiRun* InlineBidiResolver::addTrailingRun(BidiRunList<BidiRun>& runs, int start, int stop, BidiRun* run, BidiContext* context, TextDirection direction) const
 {
     BidiRun* newTrailingRun = new BidiRun(start, stop, run->m_object, context, WTF::Unicode::OtherNeutral);
     if (direction == LTR)
-        m_runs.addRun(newTrailingRun);
+        runs.addRun(newTrailingRun);
     else
-        m_runs.prependRun(newTrailingRun);
+        runs.prependRun(newTrailingRun);
 
     return newTrailingRun;
 }
 
 template <>
-inline bool InlineBidiResolver::needsToApplyL1Rule()
+inline bool InlineBidiResolver::needsToApplyL1Rule(BidiRunList<BidiRun>& runs)
 {
-    if (!m_runs.logicallyLastRun()->m_object->style()->breakOnlyAfterWhiteSpace()
-        || !m_runs.logicallyLastRun()->m_object->style()->autoWrap())
+    if (!runs.logicallyLastRun()->m_object->style()->breakOnlyAfterWhiteSpace()
+        || !runs.logicallyLastRun()->m_object->style()->autoWrap())
         return false;
     return true;
 }
@@ -676,7 +676,7 @@ static inline void addFakeRunIfNecessary(RenderObject* obj, unsigned start, unsi
 }
 
 template <>
-inline void InlineBidiResolver::appendRun()
+inline void InlineBidiResolver::appendRun(BidiRunList<BidiRun>& runs)
 {
     if (!m_emptyRun && !m_eor.atEnd() && !m_reachedEndOfLine) {
         // Keep track of when we enter/leave "unicode-bidi: isolate" inlines.
