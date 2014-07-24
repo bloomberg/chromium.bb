@@ -18,10 +18,6 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
-#include "chrome/browser/chromeos/login/screens/wizard_screen.h"
-#include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
-#include "ui/gfx/rect.h"
-#include "url/gurl.h"
 
 class PrefRegistrySimple;
 class PrefService;
