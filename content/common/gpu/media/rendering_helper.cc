@@ -363,6 +363,10 @@ void RenderingHelper::RenderThumbnail(uint32 texture_target,
   GLSetViewPort(area);
   RenderTexture(texture_target, texture_id);
   glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+
+  // Need to flush the GL commands before we return the tnumbnail texture to
+  // the decoder.
+  glFlush();
   ++frame_count_;
 }
 
