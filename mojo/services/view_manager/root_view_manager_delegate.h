@@ -8,7 +8,6 @@
 #include "mojo/services/view_manager/view_manager_export.h"
 
 namespace mojo {
-namespace view_manager {
 namespace service {
 
 class MOJO_VIEW_MANAGER_EXPORT RootViewManagerDelegate {
@@ -21,7 +20,6 @@ class MOJO_VIEW_MANAGER_EXPORT RootViewManagerDelegate {
 };
 
 }  // namespace service
-}  // namespace view_manager
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_VIEW_MANAGER_ROOT_VIEW_MANAGER_H_

@@ -18,23 +18,21 @@
 
 namespace mojo {
 
-namespace view_manager {
 class Node;
 class ViewManager;
 class View;
-}
 
 // A view for a single HTML document.
 class HTMLDocumentView : public blink::WebViewClient,
                          public blink::WebFrameClient,
-                         public view_manager::ViewObserver,
-                         public view_manager::NodeObserver {
+                         public ViewObserver,
+                         public NodeObserver {
  public:
   HTMLDocumentView(ServiceProvider* service_provider,
-                   view_manager::ViewManager* view_manager);
+                   ViewManager* view_manager);
   virtual ~HTMLDocumentView();
 
-  void AttachToNode(view_manager::Node* node);
+  void AttachToNode(Node* node);
 
   void Load(URLResponsePtr response);
 
@@ -63,21 +61,20 @@ class HTMLDocumentView : public blink::WebViewClient,
       blink::WebHistoryCommitType commit_type);
 
   // ViewObserver methods:
-  virtual void OnViewInputEvent(view_manager::View* view,
-                                const EventPtr& event) OVERRIDE;
+  virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE;
 
   // NodeObserver methods:
-  virtual void OnNodeBoundsChanged(view_manager::Node* node,
+  virtual void OnNodeBoundsChanged(Node* node,
                                    const gfx::Rect& old_bounds,
                                    const gfx::Rect& new_bounds) OVERRIDE;
-  virtual void OnNodeDestroyed(view_manager::Node* node) OVERRIDE;
+  virtual void OnNodeDestroyed(Node* node) OVERRIDE;
 
   void Repaint();
 
-  view_manager::ViewManager* view_manager_;
-  view_manager::View* view_;
+  ViewManager* view_manager_;
+  View* view_;
   blink::WebView* web_view_;
-  view_manager::Node* root_;
+  Node* root_;
   bool repaint_pending_;
   LazyInterfacePtr<navigation::NavigatorHost> navigator_host_;
 

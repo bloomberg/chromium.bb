@@ -9,7 +9,6 @@
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 
 namespace mojo {
-namespace view_manager {
 
 class ViewManagerDelegate;
 
@@ -30,7 +29,6 @@ class ViewManagerClientFactory : public InterfaceFactory<ViewManagerClient> {
   ViewManagerDelegate* delegate_;
 };
 
-}  // namespace view_manager
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_VIEW_MANAGER_CLIENT_FACTORY_H_

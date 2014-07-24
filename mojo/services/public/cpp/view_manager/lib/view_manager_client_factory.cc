@@ -7,7 +7,6 @@
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_client_impl.h"
 
 namespace mojo {
-namespace view_manager {
 
 ViewManagerClientFactory::ViewManagerClientFactory(
     ViewManagerDelegate* delegate)
@@ -24,5 +23,4 @@ void ViewManagerClientFactory::Create(
   BindToRequest(new ViewManagerClientImpl(delegate_), &request);
 }
 
-}  // namespace view_manager
 }  // namespace mojo

@@ -24,7 +24,7 @@ const int kNavigationTargetGroupId = 1;
 
 }  // namespace
 
-DebugPanel::DebugPanel(Delegate* delegate, view_manager::Node* node)
+DebugPanel::DebugPanel(Delegate* delegate, Node* node)
     : delegate_(delegate),
       node_(node),
       navigation_target_label_(new views::Label(

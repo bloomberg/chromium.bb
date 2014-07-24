@@ -13,8 +13,6 @@
 
 namespace mojo {
 class ApplicationConnection;
-namespace view_manager {
-
 class Node;
 class View;
 class ViewManagerDelegate;
@@ -46,7 +44,6 @@ class ViewManager {
 
 };
 
-}  // namespace view_manager
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_VIEW_MANAGER_H_

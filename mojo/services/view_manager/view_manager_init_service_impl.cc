@@ -12,7 +12,6 @@
 
 namespace mojo {
 class ApplicationConnection;
-namespace view_manager {
 namespace service {
 
 ViewManagerInitServiceImpl::ConnectParams::ConnectParams() {}
@@ -64,5 +63,4 @@ void ViewManagerInitServiceImpl::Embed(
 }
 
 }  // namespace service
-}  // namespace view_manager
 }  // namespace mojo

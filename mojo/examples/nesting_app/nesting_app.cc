@@ -21,14 +21,6 @@
 #include "ui/events/event_constants.h"
 #include "url/gurl.h"
 
-using mojo::view_manager::Node;
-using mojo::view_manager::NodeObserver;
-using mojo::view_manager::View;
-using mojo::view_manager::ViewManager;
-using mojo::view_manager::ViewManagerClientFactory;
-using mojo::view_manager::ViewManagerDelegate;
-using mojo::view_manager::ViewObserver;
-
 namespace mojo {
 namespace examples {
 

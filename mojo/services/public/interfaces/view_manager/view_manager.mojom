@@ -6,7 +6,7 @@ import "mojo/services/public/interfaces/geometry/geometry.mojom"
 import "mojo/services/public/interfaces/input_events/input_events.mojom"
 import "mojo/services/public/interfaces/view_manager/view_manager_constants.mojom"
 
-module mojo.view_manager {
+module mojo {
 
 struct NodeData {
   uint32 parent_id;

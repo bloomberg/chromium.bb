@@ -16,7 +16,6 @@ class Rect;
 }
 
 namespace mojo {
-namespace view_manager {
 
 class Node;
 class View;
@@ -74,7 +73,6 @@ class NodeObserver {
   virtual ~NodeObserver() {}
 };
 
-}  // namespace view_manager
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_NODE_OBSERVER_H_

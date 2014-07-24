@@ -77,9 +77,9 @@ bool CanNavigateLocally(blink::WebFrame* frame,
 }  // namespace
 
 HTMLDocumentView::HTMLDocumentView(ServiceProvider* service_provider,
-                                   view_manager::ViewManager* view_manager)
+                                   ViewManager* view_manager)
     : view_manager_(view_manager),
-      view_(view_manager::View::Create(view_manager_)),
+      view_(View::Create(view_manager_)),
       web_view_(NULL),
       root_(NULL),
       repaint_pending_(false),
@@ -96,7 +96,7 @@ HTMLDocumentView::~HTMLDocumentView() {
     root_->RemoveObserver(this);
 }
 
-void HTMLDocumentView::AttachToNode(view_manager::Node* node) {
+void HTMLDocumentView::AttachToNode(Node* node) {
   root_ = node;
   root_->SetActiveView(view_);
   view_->SetColor(SK_ColorCYAN);  // Dummy background color.
@@ -185,7 +185,7 @@ void HTMLDocumentView::didNavigateWithinPage(
                                       history_item.urlString().utf8());
 }
 
-void HTMLDocumentView::OnViewInputEvent(view_manager::View* view,
+void HTMLDocumentView::OnViewInputEvent(View* view,
                                         const EventPtr& event) {
   scoped_ptr<blink::WebInputEvent> web_event =
       TypeConverter<EventPtr, scoped_ptr<blink::WebInputEvent> >::ConvertTo(
@@ -194,14 +194,14 @@ void HTMLDocumentView::OnViewInputEvent(view_manager::View* view,
     web_view_->handleInputEvent(*web_event);
 }
 
-void HTMLDocumentView::OnNodeBoundsChanged(view_manager::Node* node,
+void HTMLDocumentView::OnNodeBoundsChanged(Node* node,
                                            const gfx::Rect& old_bounds,
                                            const gfx::Rect& new_bounds) {
   DCHECK_EQ(node, root_);
   web_view_->resize(node->bounds().size());
 }
 
-void HTMLDocumentView::OnNodeDestroyed(view_manager::Node* node) {
+void HTMLDocumentView::OnNodeDestroyed(Node* node) {
   DCHECK_EQ(node, root_);
   node->RemoveObserver(this);
   root_ = NULL;

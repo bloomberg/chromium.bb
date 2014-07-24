@@ -33,7 +33,7 @@ void ResultCallback(bool* result_cache, base::RunLoop* run_loop, bool result) {
 
 // Responsible for establishing the initial ViewManagerService connection.
 // Blocks until result is determined.
-bool InitEmbed(view_manager::ViewManagerInitService* view_manager_init,
+bool InitEmbed(ViewManagerInitService* view_manager_init,
                const std::string& url) {
   bool result = false;
   base::RunLoop run_loop;
@@ -43,26 +43,26 @@ bool InitEmbed(view_manager::ViewManagerInitService* view_manager_init,
   return result;
 }
 
-void OpenWindowCallback(view_manager::Id* id,
+void OpenWindowCallback(Id* id,
                         base::RunLoop* run_loop,
-                        view_manager::Id window_id) {
+                        Id window_id) {
   *id = window_id;
   run_loop->Quit();
 }
 
-view_manager::Id OpenWindow(WindowManagerService* window_manager) {
+Id OpenWindow(WindowManagerService* window_manager) {
   base::RunLoop run_loop;
-  view_manager::Id id;
+  Id id;
   window_manager->OpenWindow(
       base::Bind(&OpenWindowCallback, &id, &run_loop));
   run_loop.Run();
   return id;
 }
 
-view_manager::Id OpenWindowWithURL(WindowManagerService* window_manager,
+Id OpenWindowWithURL(WindowManagerService* window_manager,
                                    const std::string& url) {
   base::RunLoop run_loop;
-  view_manager::Id id;
+  Id id;
   window_manager->OpenWindowWithURL(
       url,
       base::Bind(&OpenWindowCallback, &id, &run_loop));
@@ -72,7 +72,7 @@ view_manager::Id OpenWindowWithURL(WindowManagerService* window_manager,
 
 class TestWindowManagerClient : public WindowManagerClient {
  public:
-  typedef base::Callback<void(view_manager::Id, view_manager::Id)>
+  typedef base::Callback<void(Id, Id)>
       TwoNodeCallback;
 
   explicit TestWindowManagerClient(base::RunLoop* run_loop)
@@ -92,18 +92,18 @@ class TestWindowManagerClient : public WindowManagerClient {
     run_loop_->Quit();
   }
   virtual void OnCaptureChanged(
-      view_manager::Id old_capture_node_id,
-      view_manager::Id new_capture_node_id) MOJO_OVERRIDE {
+      Id old_capture_node_id,
+      Id new_capture_node_id) MOJO_OVERRIDE {
   }
   virtual void OnFocusChanged(
-      view_manager::Id old_focused_node_id,
-      view_manager::Id new_focused_node_id) MOJO_OVERRIDE {
+      Id old_focused_node_id,
+      Id new_focused_node_id) MOJO_OVERRIDE {
     if (!focus_changed_callback_.is_null())
       focus_changed_callback_.Run(old_focused_node_id, new_focused_node_id);
   }
   virtual void OnActiveWindowChanged(
-      view_manager::Id old_active_window,
-      view_manager::Id new_active_window) MOJO_OVERRIDE {
+      Id old_active_window,
+      Id new_active_window) MOJO_OVERRIDE {
     if (!active_window_changed_callback_.is_null())
       active_window_changed_callback_.Run(old_active_window, new_active_window);
   }
@@ -117,9 +117,9 @@ class TestWindowManagerClient : public WindowManagerClient {
 
 class TestServiceLoader : public ServiceLoader,
                           public ApplicationDelegate,
-                          public view_manager::ViewManagerDelegate {
+                          public ViewManagerDelegate {
  public:
-  typedef base::Callback<void(view_manager::Node*)> RootAddedCallback;
+  typedef base::Callback<void(Node*)> RootAddedCallback;
 
   explicit TestServiceLoader(const RootAddedCallback& root_added_callback)
       : root_added_callback_(root_added_callback),
@@ -147,18 +147,18 @@ class TestServiceLoader : public ServiceLoader,
   }
 
   // Overridden from ViewManagerDelegate:
-  virtual void OnRootAdded(view_manager::ViewManager* view_manager,
-                           view_manager::Node* root) MOJO_OVERRIDE {
+  virtual void OnRootAdded(ViewManager* view_manager,
+                           Node* root) MOJO_OVERRIDE {
     root_added_callback_.Run(root);
   }
   virtual void OnViewManagerDisconnected(
-      view_manager::ViewManager* view_manager) MOJO_OVERRIDE {
+      ViewManager* view_manager) MOJO_OVERRIDE {
   }
 
   RootAddedCallback root_added_callback_;
 
   ScopedVector<ApplicationImpl> apps_;
-  view_manager::ViewManagerClientFactory view_manager_client_factory_;
+  ViewManagerClientFactory view_manager_client_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestServiceLoader);
 };
@@ -171,10 +171,10 @@ class WindowManagerApiTest : public testing::Test {
   virtual ~WindowManagerApiTest() {}
 
  protected:
-  typedef std::pair<view_manager::Id, view_manager::Id> TwoIds;
+  typedef std::pair<Id, Id> TwoIds;
 
-  view_manager::Id WaitForEmbed() {
-    view_manager::Id id;
+  Id WaitForEmbed() {
+    Id id;
     base::RunLoop run_loop;
     root_added_callback_ = base::Bind(&WindowManagerApiTest::OnEmbed,
                                       base::Unretained(this), &id, &run_loop);
@@ -236,22 +236,22 @@ class WindowManagerApiTest : public testing::Test {
     connect_loop.Run();
   }
 
-  void OnRootAdded(view_manager::Node* root) {
+  void OnRootAdded(Node* root) {
     if (!root_added_callback_.is_null())
       root_added_callback_.Run(root);
   }
 
-  void OnEmbed(view_manager::Id* root_id,
+  void OnEmbed(Id* root_id,
                base::RunLoop* loop,
-               view_manager::Node* root) {
+               Node* root) {
     *root_id = root->id();
     loop->Quit();
   }
 
   void OnFocusChanged(TwoIds* old_and_new,
                       base::RunLoop* run_loop,
-                      view_manager::Id old_focused_node_id,
-                      view_manager::Id new_focused_node_id) {
+                      Id old_focused_node_id,
+                      Id new_focused_node_id) {
     DCHECK(old_and_new);
     old_and_new->first = old_focused_node_id;
     old_and_new->second = new_focused_node_id;
@@ -260,8 +260,8 @@ class WindowManagerApiTest : public testing::Test {
 
   void OnActiveWindowChanged(TwoIds* old_and_new,
                              base::RunLoop* run_loop,
-                             view_manager::Id old_focused_node_id,
-                             view_manager::Id new_focused_node_id) {
+                             Id old_focused_node_id,
+                             Id new_focused_node_id) {
     DCHECK(old_and_new);
     old_and_new->first = old_focused_node_id;
     old_and_new->second = new_focused_node_id;
@@ -270,7 +270,7 @@ class WindowManagerApiTest : public testing::Test {
 
   shell::ShellTestHelper test_helper_;
   base::MessageLoop loop_;
-  view_manager::ViewManagerInitServicePtr view_manager_init_;
+  ViewManagerInitServicePtr view_manager_init_;
   scoped_ptr<TestWindowManagerClient> window_manager_client_;
   TestServiceLoader::RootAddedCallback root_added_callback_;
 
@@ -280,22 +280,22 @@ class WindowManagerApiTest : public testing::Test {
 // http://crbug.com/396295
 TEST_F(WindowManagerApiTest, DISABLED_OpenWindow) {
   OpenWindow(window_manager_.get());
-  view_manager::Id created_node =
+  Id created_node =
       OpenWindowWithURL(window_manager_.get(), kTestServiceURL);
-  view_manager::Id embed_node = WaitForEmbed();
+  Id embed_node = WaitForEmbed();
   EXPECT_EQ(created_node, embed_node);
 }
 
 // http://crbug.com/396295
 TEST_F(WindowManagerApiTest, DISABLED_FocusAndActivateWindow) {
-  view_manager::Id first_window = OpenWindow(window_manager_.get());
+  Id first_window = OpenWindow(window_manager_.get());
   window_manager_->FocusWindow(first_window,
                                base::Bind(&EmptyResultCallback));
   TwoIds ids = WaitForFocusChange();
   EXPECT_TRUE(ids.first == 0);
   EXPECT_EQ(ids.second, first_window);
 
-  view_manager::Id second_window = OpenWindow(window_manager_.get());
+  Id second_window = OpenWindow(window_manager_.get());
   window_manager_->ActivateWindow(second_window,
                                   base::Bind(&EmptyResultCallback));
   ids = WaitForActiveWindowChange();

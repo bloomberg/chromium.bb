@@ -20,9 +20,7 @@ class RadioButton;
 
 namespace mojo {
 
-namespace view_manager {
 class Node;
-}
 
 namespace examples {
 
@@ -47,7 +45,7 @@ class DebugPanel : public views::LayoutManager, public views::ButtonListener {
     virtual ~Delegate(){}
   };
 
-  DebugPanel(Delegate* delegate, view_manager::Node* node);
+  DebugPanel(Delegate* delegate, Node* node);
   virtual ~DebugPanel();
 
   navigation::Target navigation_target() const;
@@ -62,7 +60,7 @@ class DebugPanel : public views::LayoutManager, public views::ButtonListener {
   void Navigate(const std::string& url);
 
   Delegate* delegate_;
-  view_manager::Node* node_;
+  Node* node_;
 
   views::Label* navigation_target_label_;
   views::RadioButton* navigation_target_new_;

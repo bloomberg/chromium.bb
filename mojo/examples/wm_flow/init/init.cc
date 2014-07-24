@@ -31,7 +31,7 @@ class WMFlowInit : public mojo::ApplicationDelegate {
 
   void OnConnect(bool success) {}
 
-  mojo::view_manager::ViewManagerInitServicePtr view_manager_init_;
+  mojo::ViewManagerInitServicePtr view_manager_init_;
 
   DISALLOW_COPY_AND_ASSIGN(WMFlowInit);
 };

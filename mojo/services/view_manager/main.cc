@@ -8,7 +8,6 @@
 #include "mojo/services/view_manager/view_manager_init_service_impl.h"
 
 namespace mojo {
-namespace view_manager {
 namespace service {
 
 class ViewManagerApp : public ApplicationDelegate,
@@ -40,11 +39,10 @@ class ViewManagerApp : public ApplicationDelegate,
 };
 
 }  // namespace service
-}  // namespace view_manager
 
 // static
 ApplicationDelegate* ApplicationDelegate::Create() {
-  return new mojo::view_manager::service::ViewManagerApp();
+  return new mojo::service::ViewManagerApp();
 }
 
 }  // namespace mojo

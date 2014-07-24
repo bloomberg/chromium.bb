@@ -9,7 +9,6 @@
 #include "mojo/services/view_manager/view_manager_init_service_impl.h"
 
 namespace mojo {
-namespace view_manager {
 namespace service {
 
 ViewManagerInitServiceContext::ViewManagerInitServiceContext()
@@ -65,5 +64,4 @@ void ViewManagerInitServiceContext::OnRootViewManagerWindowTreeHostCreated() {
 }
 
 }  // namespace service
-}  // namespace view_manager
 }  // namespace mojo

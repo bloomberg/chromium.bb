@@ -12,7 +12,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-namespace view_manager {
 
 // Node ------------------------------------------------------------------------
 
@@ -542,5 +541,4 @@ TEST_F(NodeObserverTest, SetBounds) {
   }
 }
 
-}  // namespace view_manager
 }  // namespace mojo

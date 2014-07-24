@@ -33,7 +33,7 @@ class DemoLauncher : public ApplicationDelegate {
 
   void OnConnect(bool success) {}
 
-  view_manager::ViewManagerInitServicePtr view_manager_init_;
+  ViewManagerInitServicePtr view_manager_init_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoLauncher);
 };

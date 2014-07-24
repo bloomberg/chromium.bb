@@ -26,7 +26,7 @@ const SkColor kColors[] = { SK_ColorRED, SK_ColorGREEN, SK_ColorYELLOW };
 // connection by connecting to the ViewManagerInit service and asking to be
 // embed without a node context.
 class WMFlowApp : public mojo::ApplicationDelegate,
-                  public mojo::view_manager::ViewManagerDelegate {
+                  public mojo::ViewManagerDelegate {
  public:
   WMFlowApp() : embed_count_(0), view_manager_client_factory_(this) {}
   virtual ~WMFlowApp() {}
@@ -34,7 +34,7 @@ class WMFlowApp : public mojo::ApplicationDelegate,
  private:
   // Overridden from Application:
   virtual void Initialize(mojo::ApplicationImpl* app) MOJO_OVERRIDE {
-    mojo::view_manager::ViewManagerInitServicePtr init_svc;
+    mojo::ViewManagerInitServicePtr init_svc;
     app->ConnectToService("mojo:mojo_view_manager", &init_svc);
     init_svc->Embed("mojo:mojo_wm_flow_app", base::Bind(&ConnectCallback));
     init_svc->Embed("mojo:mojo_wm_flow_app", base::Bind(&ConnectCallback));
@@ -48,19 +48,19 @@ class WMFlowApp : public mojo::ApplicationDelegate,
 
   void OnConnect(bool success) {}
 
-  // Overridden from mojo::view_manager::ViewManagerDelegate:
-  virtual void OnRootAdded(mojo::view_manager::ViewManager* view_manager,
-                           mojo::view_manager::Node* root) MOJO_OVERRIDE {
-    mojo::view_manager::View* view =
-        mojo::view_manager::View::Create(view_manager);
+  // Overridden from mojo::ViewManagerDelegate:
+  virtual void OnRootAdded(mojo::ViewManager* view_manager,
+                           mojo::Node* root) MOJO_OVERRIDE {
+    mojo::View* view =
+        mojo::View::Create(view_manager);
     root->SetActiveView(view);
     view->SetColor(kColors[embed_count_++ % arraysize(kColors)]);
   }
   virtual void OnViewManagerDisconnected(
-      mojo::view_manager::ViewManager* view_manager) MOJO_OVERRIDE {}
+      mojo::ViewManager* view_manager) MOJO_OVERRIDE {}
 
   int embed_count_;
-  mojo::view_manager::ViewManagerClientFactory view_manager_client_factory_;
+  mojo::ViewManagerClientFactory view_manager_client_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WMFlowApp);
 };

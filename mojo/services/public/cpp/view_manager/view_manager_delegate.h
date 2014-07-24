@@ -6,7 +6,6 @@
 #define MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_VIEW_MANAGER_DELEGATE_H_
 
 namespace mojo {
-namespace view_manager {
 
 class Node;
 class ViewManager;
@@ -20,7 +19,6 @@ class ViewManagerDelegate {
   virtual ~ViewManagerDelegate() {}
 };
 
-}  // namespace view_manager
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_VIEW_MANAGER_DELEGATE_H_

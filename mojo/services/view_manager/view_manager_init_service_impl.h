@@ -19,7 +19,6 @@ namespace mojo {
 class ApplicationConnection;
 class ServiceProvider;
 
-namespace view_manager {
 namespace service {
 
 class ViewManagerInitServiceContext;
@@ -77,7 +76,6 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerInitServiceImpl
 #endif
 
 }  // namespace service
-}  // namespace view_manager
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_VIEW_MANAGER_VIEW_MANAGER_INIT_SERVICE_IMPL_H_

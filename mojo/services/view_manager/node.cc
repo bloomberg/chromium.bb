@@ -13,10 +13,9 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(mojo::view_manager::service::Node*);
+DECLARE_WINDOW_PROPERTY_TYPE(mojo::service::Node*);
 
 namespace mojo {
-namespace view_manager {
 namespace service {
 
 DEFINE_WINDOW_PROPERTY_KEY(Node*, kNodeKey, NULL);
@@ -213,5 +212,4 @@ void Node::OnEvent(ui::Event* event) {
 }
 
 }  // namespace service
-}  // namespace view_manager
 }  // namespace mojo

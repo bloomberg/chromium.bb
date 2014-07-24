@@ -11,7 +11,6 @@
 #endif
 
 namespace mojo {
-namespace view_manager {
 
 ViewManagerTestSuite::ViewManagerTestSuite(int argc, char** argv)
     : TestSuite(argc, argv) {}
@@ -30,5 +29,4 @@ void ViewManagerTestSuite::Initialize() {
   gfx::GLSurface::InitializeOneOffForTests();
 }
 
-}  // namespace view_manager
 }  // namespace mojo

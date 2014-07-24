@@ -25,7 +25,6 @@ namespace mojo {
 
 class ApplicationConnection;
 
-namespace view_manager {
 namespace service {
 
 class RootViewManagerDelegate;
@@ -222,7 +221,6 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
 };
 
 }  // namespace service
-}  // namespace view_manager
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_VIEW_MANAGER_ROOT_NODE_MANAGER_H_

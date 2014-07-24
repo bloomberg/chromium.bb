@@ -87,7 +87,7 @@ class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
 }  // namespace
 
 NativeWidgetViewManager::NativeWidgetViewManager(
-    views::internal::NativeWidgetDelegate* delegate, view_manager::Node* node)
+    views::internal::NativeWidgetDelegate* delegate, Node* node)
     : NativeWidgetAura(delegate),
       node_(node),
       view_(node_->active_view()) {
@@ -135,23 +135,23 @@ void NativeWidgetViewManager::CompositorContentsChanged(
     view_->SetContents(bitmap);
 }
 
-void NativeWidgetViewManager::OnNodeDestroyed(view_manager::Node* node) {
+void NativeWidgetViewManager::OnNodeDestroyed(Node* node) {
   DCHECK_EQ(node, node_);
   node->RemoveObserver(this);
   node_ = NULL;
   window_tree_host_.reset();
 }
 
-void NativeWidgetViewManager::OnNodeBoundsChanged(view_manager::Node* node,
+void NativeWidgetViewManager::OnNodeBoundsChanged(Node* node,
                                                   const gfx::Rect& old_bounds,
                                                   const gfx::Rect& new_bounds) {
   GetWidget()->SetBounds(gfx::Rect(node->bounds().size()));
 }
 
 void NativeWidgetViewManager::OnNodeActiveViewChanged(
-    view_manager::Node* node,
-    view_manager::View* old_view,
-    view_manager::View* new_view) {
+    Node* node,
+    View* old_view,
+    View* new_view) {
   if (old_view)
     old_view->RemoveObserver(this);
   if (new_view)
@@ -159,14 +159,14 @@ void NativeWidgetViewManager::OnNodeActiveViewChanged(
   view_ = new_view;
 }
 
-void NativeWidgetViewManager::OnViewInputEvent(view_manager::View* view,
+void NativeWidgetViewManager::OnViewInputEvent(View* view,
                                                const EventPtr& event) {
   scoped_ptr<ui::Event> ui_event(event.To<scoped_ptr<ui::Event> >());
   if (ui_event)
     window_tree_host_->SendEventToProcessor(ui_event.get());
 }
 
-void NativeWidgetViewManager::OnViewDestroyed(view_manager::View* view) {
+void NativeWidgetViewManager::OnViewDestroyed(View* view) {
   DCHECK_EQ(view, view_);
   view->RemoveObserver(this);
   view_ = NULL;

@@ -23,7 +23,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-namespace view_manager {
 namespace {
 
 const char kWindowManagerURL[] = "mojo:window_manager";
@@ -782,5 +781,4 @@ TEST_F(ViewManagerTest, Reorder) {
 // - focus between nodes unknown to one of the connections.
 // - focus between nodes unknown to either connection.
 
-}  // namespace view_manager
 }  // namespace mojo

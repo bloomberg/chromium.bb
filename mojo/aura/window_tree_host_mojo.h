@@ -22,10 +22,9 @@ class WindowTreeHostMojoDelegate;
 
 class WindowTreeHostMojo : public aura::WindowTreeHost,
                            public ui::EventSource,
-                           public view_manager::NodeObserver {
+                           public NodeObserver {
  public:
-  WindowTreeHostMojo(view_manager::Node* node,
-                     WindowTreeHostMojoDelegate* delegate);
+  WindowTreeHostMojo(Node* node, WindowTreeHostMojoDelegate* delegate);
   virtual ~WindowTreeHostMojo();
 
   // Returns the WindowTreeHostMojo for the specified compositor.
@@ -60,13 +59,13 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
   // ui::EventSource:
   virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
 
-  // view_manager::NodeObserver:
+  // NodeObserver:
   virtual void OnNodeBoundsChanged(
-      view_manager::Node* node,
+      Node* node,
       const gfx::Rect& old_bounds,
       const gfx::Rect& new_bounds) OVERRIDE;
 
-  view_manager::Node* node_;
+  Node* node_;
 
   gfx::Rect bounds_;
 

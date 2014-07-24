@@ -12,7 +12,6 @@
 #include "mojo/services/public/interfaces/input_events/input_events.mojom.h"
 
 namespace mojo {
-namespace view_manager {
 
 class View;
 
@@ -29,7 +28,6 @@ class ViewObserver {
   virtual ~ViewObserver() {}
 };
 
-}  // namespace view_manager
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_VIEW_OBSERVER_H_

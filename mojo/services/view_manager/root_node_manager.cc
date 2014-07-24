@@ -14,7 +14,6 @@
 #include "ui/aura/env.h"
 
 namespace mojo {
-namespace view_manager {
 namespace service {
 
 RootNodeManager::ScopedChange::ScopedChange(
@@ -300,5 +299,4 @@ void RootNodeManager::OnViewInputEvent(const View* view,
 }
 
 }  // namespace service
-}  // namespace view_manager
 }  // namespace mojo

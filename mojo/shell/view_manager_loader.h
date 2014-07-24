@@ -23,7 +23,7 @@ namespace shell {
 class ViewManagerLoader
     : public ServiceLoader,
       public ApplicationDelegate,
-      public InterfaceFactory<view_manager::ViewManagerInitService> {
+      public InterfaceFactory<ViewManagerInitService> {
  public:
   ViewManagerLoader();
   virtual ~ViewManagerLoader();
@@ -41,13 +41,13 @@ class ViewManagerLoader
   virtual bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) OVERRIDE;
 
-  // InterfaceFactory<view_manager::ViewManagerInitService> overrides.
+  // InterfaceFactory<ViewManagerInitService> overrides.
   virtual void Create(
       ApplicationConnection* connection,
-      InterfaceRequest<view_manager::ViewManagerInitService> request) OVERRIDE;
+      InterfaceRequest<ViewManagerInitService> request) OVERRIDE;
 
   ScopedVector<Application> apps_;
-  view_manager::service::ViewManagerInitServiceContext context_;
+  service::ViewManagerInitServiceContext context_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerLoader);
 };

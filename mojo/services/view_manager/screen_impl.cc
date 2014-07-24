@@ -8,7 +8,6 @@
 #include "ui/gfx/rect_conversions.h"
 
 namespace mojo {
-namespace view_manager {
 namespace service {
 
 // static
@@ -76,5 +75,4 @@ ScreenImpl::ScreenImpl(const gfx::Rect& screen_bounds) {
 }
 
 }  // namespace service
-}  // namespace view_manager
 }  // namespace mojo

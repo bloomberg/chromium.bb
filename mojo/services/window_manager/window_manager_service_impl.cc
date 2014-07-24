@@ -25,15 +25,13 @@ void WindowManagerServiceImpl::NotifyReady() {
   client()->OnWindowManagerReady();
 }
 
-void WindowManagerServiceImpl::NotifyNodeFocused(
-    view_manager::Id new_focused_id,
-    view_manager::Id old_focused_id) {
+void WindowManagerServiceImpl::NotifyNodeFocused(Id new_focused_id,
+                                                 Id old_focused_id) {
   client()->OnFocusChanged(old_focused_id, new_focused_id);
 }
 
-void WindowManagerServiceImpl::NotifyWindowActivated(
-    view_manager::Id new_active_id,
-    view_manager::Id old_active_id) {
+void WindowManagerServiceImpl::NotifyWindowActivated(Id new_active_id,
+                                                     Id old_active_id) {
   client()->OnActiveWindowChanged(old_active_id, new_active_id);
 }
 
@@ -41,10 +39,10 @@ void WindowManagerServiceImpl::NotifyWindowActivated(
 // WindowManagerServiceImpl, WindowManager implementation:
 
 void WindowManagerServiceImpl::OpenWindow(
-    const Callback<void(view_manager::Id)>& callback) {
+    const Callback<void(Id)>& callback) {
   bool success = window_manager_->IsReady();
   if (success) {
-    view_manager::Id id = window_manager_->OpenWindow();
+    Id id = window_manager_->OpenWindow();
     callback.Run(id);
   } else {
     // TODO(beng): perhaps should take an error code for this.
@@ -54,10 +52,10 @@ void WindowManagerServiceImpl::OpenWindow(
 
 void WindowManagerServiceImpl::OpenWindowWithURL(
     const String& url,
-    const Callback<void(view_manager::Id)>& callback) {
+    const Callback<void(Id)>& callback) {
   bool success = window_manager_->IsReady();
   if (success) {
-    view_manager::Id id = window_manager_->OpenWindowWithURL(url);
+    Id id = window_manager_->OpenWindowWithURL(url);
     callback.Run(id);
   } else {
     // TODO(beng): perhaps should take an error code for this.
@@ -66,7 +64,7 @@ void WindowManagerServiceImpl::OpenWindowWithURL(
 }
 
 void WindowManagerServiceImpl::SetCapture(
-    view_manager::Id node,
+    Id node,
     const Callback<void(bool)>& callback) {
   bool success = window_manager_->IsReady();
   if (success)
@@ -75,7 +73,7 @@ void WindowManagerServiceImpl::SetCapture(
 }
 
 void WindowManagerServiceImpl::FocusWindow(
-    view_manager::Id node,
+    Id node,
     const Callback<void(bool)>& callback) {
   bool success = window_manager_->IsReady();
   if (success)
@@ -84,7 +82,7 @@ void WindowManagerServiceImpl::FocusWindow(
 }
 
 void WindowManagerServiceImpl::ActivateWindow(
-    view_manager::Id node,
+    Id node,
     const Callback<void(bool)>& callback) {
   bool success = window_manager_->IsReady();
   if (success)

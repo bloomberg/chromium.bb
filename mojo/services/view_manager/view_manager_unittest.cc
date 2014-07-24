@@ -31,7 +31,6 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace mojo {
-namespace view_manager {
 namespace service {
 
 namespace {
@@ -1546,5 +1545,4 @@ TEST_F(ViewManagerTest, EmbedWithSameNodeId2) {
 // - focus between nodes unknown to either connection.
 
 }  // namespace service
-}  // namespace view_manager
 }  // namespace mojo

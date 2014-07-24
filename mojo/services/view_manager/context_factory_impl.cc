@@ -14,7 +14,6 @@
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 namespace mojo {
-namespace view_manager {
 namespace service {
 
 ContextFactoryImpl::ContextFactoryImpl(
@@ -76,5 +75,4 @@ base::MessageLoopProxy* ContextFactoryImpl::GetCompositorMessageLoop() {
 }
 
 }  // namespace service
-}  // namespace view_manager
 }  // namespace mojo

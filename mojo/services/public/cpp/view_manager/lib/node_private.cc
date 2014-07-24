@@ -5,7 +5,6 @@
 #include "mojo/services/public/cpp/view_manager/lib/node_private.h"
 
 namespace mojo {
-namespace view_manager {
 
 NodePrivate::NodePrivate(Node* node)
     : node_(node) {
@@ -19,5 +18,4 @@ Node* NodePrivate::LocalCreate() {
   return new Node;
 }
 
-}  // namespace view_manager
 }  // namespace mojo

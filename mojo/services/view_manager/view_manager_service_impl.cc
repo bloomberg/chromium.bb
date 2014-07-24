@@ -15,7 +15,6 @@
 #include "ui/gfx/codec/png_codec.h"
 
 namespace mojo {
-namespace view_manager {
 namespace service {
 
 ViewManagerServiceImpl::ViewManagerServiceImpl(
@@ -855,5 +854,4 @@ void ViewManagerServiceImpl::OnConnectionEstablished() {
 }
 
 }  // namespace service
-}  // namespace view_manager
 }  // namespace mojo

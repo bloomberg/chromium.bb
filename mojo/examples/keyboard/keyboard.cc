@@ -26,8 +26,6 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "url/gurl.h"
 
-using mojo::view_manager::Id;
-
 namespace mojo {
 namespace examples {
 
@@ -49,7 +47,7 @@ class KeyboardServiceImpl : public InterfaceImpl<KeyboardService> {
 
 class Keyboard
     : public ApplicationDelegate,
-      public view_manager::ViewManagerDelegate,
+      public ViewManagerDelegate,
       public KeyboardDelegate,
       public InterfaceFactoryWithContext<KeyboardServiceImpl, Keyboard> {
  public:
@@ -79,7 +77,7 @@ class Keyboard
     return true;
   }
 
-  void CreateWidget(view_manager::Node* node) {
+  void CreateWidget(Node* node) {
     views::WidgetDelegateView* widget_delegate = new views::WidgetDelegateView;
     widget_delegate->GetContentsView()->AddChildView(new KeyboardView(this));
     widget_delegate->GetContentsView()->SetLayoutManager(new views::FillLayout);
@@ -94,16 +92,15 @@ class Keyboard
     widget->Show();
   }
 
-  // view_manager::ViewManagerDelegate:
-  virtual void OnRootAdded(view_manager::ViewManager* view_manager,
-                           view_manager::Node* root) OVERRIDE {
+  // ViewManagerDelegate:
+  virtual void OnRootAdded(ViewManager* view_manager, Node* root) OVERRIDE {
     // TODO: deal with OnRootAdded() being invoked multiple times.
     view_manager_ = view_manager;
-    root->SetActiveView(view_manager::View::Create(view_manager));
+    root->SetActiveView(View::Create(view_manager));
     CreateWidget(root);
   }
   virtual void OnViewManagerDisconnected(
-      view_manager::ViewManager* view_manager) OVERRIDE {
+      ViewManager* view_manager) OVERRIDE {
     DCHECK_EQ(view_manager_, view_manager);
     view_manager_ = NULL;
     base::MessageLoop::current()->Quit();
@@ -119,8 +116,8 @@ class Keyboard
 
   scoped_ptr<ViewsInit> views_init_;
 
-  view_manager::ViewManager* view_manager_;
-  view_manager::ViewManagerClientFactory view_manager_client_factory_;
+  ViewManager* view_manager_;
+  ViewManagerClientFactory view_manager_client_factory_;
 
   KeyboardServiceImpl* keyboard_service_;
 

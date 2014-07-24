@@ -32,16 +32,6 @@
 #undef CreateWindow
 #endif
 
-using mojo::view_manager::Id;
-using mojo::view_manager::Node;
-using mojo::view_manager::NodeObserver;
-using mojo::view_manager::View;
-using mojo::view_manager::ViewManager;
-using mojo::view_manager::ViewManagerClientFactory;
-using mojo::view_manager::ViewManagerDelegate;
-using mojo::view_manager::ViewObserver;
-using mojo::view_manager::WindowManagerDelegate;
-
 namespace mojo {
 namespace examples {
 
@@ -488,9 +478,9 @@ class WindowManager
         keyboard_manager_->node()->Contains(target->node());
   }
 
-  Id CreateControlPanel(view_manager::Node* root) {
+  Id CreateControlPanel(Node* root) {
     Node* node = Node::Create(view_manager_);
-    View* view = view_manager::View::Create(view_manager_);
+    View* view = View::Create(view_manager_);
     root->AddChild(node);
     node->SetActiveView(view);
 

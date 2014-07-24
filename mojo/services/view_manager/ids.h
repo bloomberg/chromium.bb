@@ -10,7 +10,6 @@
 #include "mojo/services/view_manager/view_manager_export.h"
 
 namespace mojo {
-namespace view_manager {
 namespace service {
 
 // Connection id reserved for the root.
@@ -88,7 +87,6 @@ inline NodeId InvalidNodeId() {
 }
 
 }  // namespace service
-}  // namespace view_manager
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_VIEW_MANAGER_IDS_H_

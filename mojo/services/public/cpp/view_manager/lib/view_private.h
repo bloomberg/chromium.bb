@@ -10,7 +10,6 @@
 #include "mojo/services/public/cpp/view_manager/view.h"
 
 namespace mojo {
-namespace view_manager {
 
 class ViewPrivate {
  public:
@@ -38,7 +37,6 @@ class ViewPrivate {
   DISALLOW_COPY_AND_ASSIGN(ViewPrivate);
 };
 
-}  // namespace view_manager
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_LIB_VIEW_PRIVATE_H_

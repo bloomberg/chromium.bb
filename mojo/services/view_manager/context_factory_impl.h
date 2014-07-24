@@ -15,7 +15,6 @@ class ContextProviderInProcess;
 }
 
 namespace mojo {
-namespace view_manager {
 namespace service {
 
 // The default factory that creates in-process contexts.
@@ -53,7 +52,6 @@ class ContextFactoryImpl : public ui::ContextFactory {
 };
 
 }  // namespace service
-}  // namespace view_manager
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_VIEW_MANAGER_CONTEXT_FACTORY_IMPL_H_

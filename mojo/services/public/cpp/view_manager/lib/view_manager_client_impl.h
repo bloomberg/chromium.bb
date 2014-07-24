@@ -19,8 +19,6 @@ class SkBitmap;
 
 namespace mojo {
 class ApplicationConnection;
-namespace view_manager {
-
 class ViewManager;
 class ViewManagerDelegate;
 class ViewManagerTransaction;
@@ -154,7 +152,6 @@ class ViewManagerClientImpl : public ViewManager,
   DISALLOW_COPY_AND_ASSIGN(ViewManagerClientImpl);
 };
 
-}  // namespace view_manager
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_LIB_VIEW_MANAGER_CLIENT_IMPL_H_

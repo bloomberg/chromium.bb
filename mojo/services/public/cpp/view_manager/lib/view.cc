@@ -11,7 +11,6 @@
 #include "ui/gfx/canvas.h"
 
 namespace mojo {
-namespace view_manager {
 
 // static
 View* View::Create(ViewManager* manager) {
@@ -71,5 +70,4 @@ void View::LocalDestroy() {
   delete this;
 }
 
-}  // namespace view_manager
 }  // namespace mojo

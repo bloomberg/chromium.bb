@@ -137,7 +137,7 @@ class ControlPanel : public views::ButtonListener {
 
   virtual ~ControlPanel() {}
 
-  void Initialize(view_manager::Node* node) {
+  void Initialize(Node* node) {
     const char* kNames[] = { "Zoom In", "Actual Size", "Zoom Out" };
 
     views::WidgetDelegateView* widget_delegate = new views::WidgetDelegateView;
@@ -204,9 +204,9 @@ class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
 
 class MediaViewer
     : public ApplicationDelegate,
-      public view_manager::ViewManagerDelegate,
+      public ViewManagerDelegate,
       public ControlPanel::Delegate,
-      public view_manager::NodeObserver,
+      public NodeObserver,
       public InterfaceFactoryWithContext<NavigatorImpl, MediaViewer> {
  public:
   MediaViewer()
@@ -283,7 +283,7 @@ class MediaViewer
   }
 
   void LayoutNodes() {
-    view_manager::Node* root = content_node_->parent();
+    Node* root = content_node_->parent();
     gfx::Rect control_bounds(root->bounds().width(), 28);
     control_node_->SetBounds(control_bounds);
     gfx::Rect content_bounds(0, control_bounds.height(), root->bounds().width(),
@@ -291,19 +291,18 @@ class MediaViewer
     content_node_->SetBounds(content_bounds);
   }
 
-  // Overridden from view_manager::ViewManagerDelegate:
-  virtual void OnRootAdded(view_manager::ViewManager* view_manager,
-                           view_manager::Node* root) OVERRIDE {
+  // Overridden from ViewManagerDelegate:
+  virtual void OnRootAdded(ViewManager* view_manager, Node* root) OVERRIDE {
     root_node_ = root;
     view_manager_ = view_manager;
 
-    control_node_ = view_manager::Node::Create(view_manager_);
+    control_node_ = Node::Create(view_manager_);
     root_node_->AddChild(control_node_);
 
-    content_node_ = view_manager::Node::Create(view_manager_);
+    content_node_ = Node::Create(view_manager_);
     root_node_->AddChild(content_node_);
 
-    control_node_->SetActiveView(view_manager::View::Create(view_manager_));
+    control_node_->SetActiveView(View::Create(view_manager_));
     control_panel_.Initialize(control_node_);
 
     LayoutNodes();
@@ -318,7 +317,7 @@ class MediaViewer
     }
   }
   virtual void OnViewManagerDisconnected(
-      view_manager::ViewManager* view_manager) OVERRIDE {
+      ViewManager* view_manager) OVERRIDE {
     DCHECK_EQ(view_manager_, view_manager);
     view_manager_ = NULL;
     base::MessageLoop::current()->Quit();
@@ -342,12 +341,12 @@ class MediaViewer
   }
 
   // NodeObserver:
-  virtual void OnNodeBoundsChanged(view_manager::Node* node,
+  virtual void OnNodeBoundsChanged(Node* node,
                                    const gfx::Rect& old_bounds,
                                    const gfx::Rect& new_bounds) OVERRIDE {
     LayoutNodes();
   }
-  virtual void OnNodeDestroyed(view_manager::Node* node) OVERRIDE {
+  virtual void OnNodeDestroyed(Node* node) OVERRIDE {
     DCHECK_EQ(node, root_node_);
     node->RemoveObserver(this);
     root_node_ = NULL;
@@ -360,11 +359,11 @@ class MediaViewer
 
   ApplicationImpl* app_;
   scoped_ptr<ViewsInit> views_init_;
-  view_manager::ViewManager* view_manager_;
-  view_manager::ViewManagerClientFactory view_manager_client_factory_;
-  view_manager::Node* root_node_;
-  view_manager::Node* control_node_;
-  view_manager::Node* content_node_;
+  ViewManager* view_manager_;
+  ViewManagerClientFactory view_manager_client_factory_;
+  Node* root_node_;
+  Node* control_node_;
+  Node* content_node_;
   ControlPanel control_panel_;
   ZoomableMediaPtr zoomable_media_;
   HandlerMap handler_map_;

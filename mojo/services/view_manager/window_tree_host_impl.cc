@@ -19,7 +19,6 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace mojo {
-namespace view_manager {
 namespace service {
 
 // TODO(sky): nuke this. It shouldn't be static.
@@ -194,5 +193,4 @@ void WindowTreeHostImpl::OnEvent(EventPtr event,
 };
 
 }  // namespace service
-}  // namespace view_manager
 }  // namespace mojo

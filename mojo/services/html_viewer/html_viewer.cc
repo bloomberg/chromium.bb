@@ -41,7 +41,7 @@ class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
 
 class HTMLViewer
     : public ApplicationDelegate,
-      public view_manager::ViewManagerDelegate,
+      public ViewManagerDelegate,
       public InterfaceFactoryWithContext<NavigatorImpl, HTMLViewer> {
  public:
   HTMLViewer()
@@ -74,9 +74,8 @@ class HTMLViewer
     return true;
   }
 
-  // Overridden from view_manager::ViewManagerDelegate:
-  virtual void OnRootAdded(view_manager::ViewManager* view_manager,
-                           view_manager::Node* root) OVERRIDE {
+  // Overridden from ViewManagerDelegate:
+  virtual void OnRootAdded(ViewManager* view_manager, Node* root) OVERRIDE {
     document_view_ = new HTMLDocumentView(
         application_impl_->ConnectToApplication("mojo://mojo_window_manager/")->
             GetServiceProvider(),
@@ -84,8 +83,7 @@ class HTMLViewer
     document_view_->AttachToNode(root);
     MaybeLoad();
   }
-  virtual void OnViewManagerDisconnected(
-      view_manager::ViewManager* view_manager) OVERRIDE {
+  virtual void OnViewManagerDisconnected(ViewManager* view_manager) OVERRIDE {
     base::MessageLoop::current()->Quit();
   }
 
@@ -100,7 +98,7 @@ class HTMLViewer
   // TODO(darin): Figure out proper ownership of this instance.
   HTMLDocumentView* document_view_;
   URLResponsePtr response_;
-  view_manager::ViewManagerClientFactory view_manager_client_factory_;
+  ViewManagerClientFactory view_manager_client_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLViewer);
 };

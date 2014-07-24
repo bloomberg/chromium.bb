@@ -16,7 +16,6 @@ class ContextFactory;
 }
 
 namespace mojo {
-namespace view_manager {
 namespace service {
 
 class ContextFactoryImpl;
@@ -72,7 +71,6 @@ class WindowTreeHostImpl : public aura::WindowTreeHost,
 };
 
 }  // namespace service
-}  // namespace view_manager
 }  // namespace mojo
 
 #endif  // MOJO_AURA_WINDOW_TREE_HOST_MOJO_H_

@@ -14,7 +14,6 @@
 #include "ui/gfx/rect.h"
 
 namespace mojo {
-namespace view_manager {
 namespace service {
 
 enum ChangeType {
@@ -125,7 +124,6 @@ class TestChangeTracker {
 };
 
 }  // namespace service
-}  // namespace view_manager
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_VIEW_MANAGER_TEST_CHANGE_TRACKER_H_

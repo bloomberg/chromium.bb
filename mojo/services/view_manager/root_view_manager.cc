@@ -19,7 +19,6 @@
 #include "ui/aura/window_observer.h"
 
 namespace mojo {
-namespace view_manager {
 namespace service {
 
 // TODO(sky): revisit this, we may need a more sophisticated FocusClient
@@ -166,5 +165,4 @@ void RootViewManager::OnCompositorCreated() {
 }
 
 }  // namespace service
-}  // namespace view_manager
 }  // namespace mojo

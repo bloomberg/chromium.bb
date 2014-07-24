@@ -14,7 +14,6 @@
 #include "mojo/services/view_manager/view_manager_export.h"
 
 namespace mojo {
-namespace view_manager {
 namespace service {
 
 class RootNodeManager;
@@ -53,7 +52,6 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerInitServiceContext
 };
 
 }  // namespace service
-}  // namespace view_manager
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_VIEW_MANAGER_VIEW_MANAGER_INIT_SERVICE_CONTEXT_H_

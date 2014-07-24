@@ -16,7 +16,6 @@
 #include "ui/aura/window_observer.h"
 
 namespace mojo {
-namespace view_manager {
 namespace service {
 
 class NodeDelegate;
@@ -113,7 +112,6 @@ class MOJO_VIEW_MANAGER_EXPORT Node
 };
 
 }  // namespace service
-}  // namespace view_manager
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_VIEW_MANAGER_NODE_H_

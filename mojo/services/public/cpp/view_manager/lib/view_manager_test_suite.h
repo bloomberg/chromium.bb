@@ -8,7 +8,6 @@
 #include "base/test/test_suite.h"
 
 namespace mojo {
-namespace view_manager {
 
 class ViewManagerTestSuite : public base::TestSuite {
  public:
@@ -22,7 +21,6 @@ class ViewManagerTestSuite : public base::TestSuite {
   DISALLOW_COPY_AND_ASSIGN(ViewManagerTestSuite);
 };
 
-}  // namespace view_manager
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_LIB_VIEW_MANAGER_TEST_SUITE_H_

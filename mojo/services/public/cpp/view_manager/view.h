@@ -13,7 +13,6 @@
 class SkBitmap;
 
 namespace mojo {
-namespace view_manager {
 
 class Node;
 class ViewManager;
@@ -54,7 +53,6 @@ class View {
   DISALLOW_COPY_AND_ASSIGN(View);
 };
 
-}  // namespace view_manager
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_VIEW_H_

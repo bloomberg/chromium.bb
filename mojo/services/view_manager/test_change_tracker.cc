@@ -11,7 +11,6 @@
 #include "mojo/services/public/cpp/view_manager/util.h"
 
 namespace mojo {
-namespace view_manager {
 namespace service {
 
 std::string NodeIdToString(Id id) {
@@ -246,5 +245,4 @@ std::string TestNode::ToString() const {
 }
 
 }  // namespace service
-}  // namespace view_manager
 }  // namespace mojo

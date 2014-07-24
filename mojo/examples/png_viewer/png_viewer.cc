@@ -89,7 +89,7 @@ class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
     delete[] data;
   }
 
-  void UpdateView(view_manager::Id node_id, const SkBitmap& bitmap);
+  void UpdateView(Id node_id, const SkBitmap& bitmap);
 
   int GetContentLength(const Array<String>& headers) {
     for (size_t i = 0; i < headers.size(); ++i) {
@@ -113,8 +113,8 @@ class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
 
 class PNGViewer
     : public ApplicationDelegate,
-      public view_manager::ViewManagerDelegate,
-      public view_manager::NodeObserver,
+      public ViewManagerDelegate,
+      public NodeObserver,
       public InterfaceFactoryWithContext<NavigatorImpl, PNGViewer>,
       public InterfaceFactoryWithContext<ZoomableMediaImpl, PNGViewer> {
  public:
@@ -130,7 +130,7 @@ class PNGViewer
       root_->RemoveObserver(this);
   }
 
-  void UpdateView(view_manager::Id node_id, const SkBitmap& bitmap) {
+  void UpdateView(Id node_id, const SkBitmap& bitmap) {
     bitmap_ = bitmap;
     zoom_percentage_ = kDefaultZoomPercentage;
     DrawBitmap();
@@ -172,19 +172,18 @@ class PNGViewer
     return true;
   }
 
-  // Overridden from view_manager::ViewManagerDelegate:
-  virtual void OnRootAdded(view_manager::ViewManager* view_manager,
-                           view_manager::Node* root) OVERRIDE {
+  // Overridden from ViewManagerDelegate:
+  virtual void OnRootAdded(ViewManager* view_manager, Node* root) OVERRIDE {
     root_ = root;
     root_->AddObserver(this);
-    content_view_ = view_manager::View::Create(view_manager);
+    content_view_ = View::Create(view_manager);
     root_->SetActiveView(content_view_);
     content_view_->SetColor(SK_ColorGRAY);
     if (!bitmap_.isNull())
       DrawBitmap();
   }
   virtual void OnViewManagerDisconnected(
-      view_manager::ViewManager* view_manager) OVERRIDE {
+      ViewManager* view_manager) OVERRIDE {
     base::MessageLoop::current()->Quit();
   }
 
@@ -206,23 +205,23 @@ class PNGViewer
   }
 
   // NodeObserver:
-  virtual void OnNodeBoundsChanged(view_manager::Node* node,
+  virtual void OnNodeBoundsChanged(Node* node,
                                    const gfx::Rect& old_bounds,
                                    const gfx::Rect& new_bounds) OVERRIDE {
     DCHECK_EQ(node, root_);
     DrawBitmap();
   }
-  virtual void OnNodeDestroyed(view_manager::Node* node) OVERRIDE {
+  virtual void OnNodeDestroyed(Node* node) OVERRIDE {
     DCHECK_EQ(node, root_);
     node->RemoveObserver(this);
     root_ = NULL;
   }
 
-  view_manager::View* content_view_;
-  view_manager::Node* root_;
+  View* content_view_;
+  Node* root_;
   SkBitmap bitmap_;
   uint16_t zoom_percentage_;
-  view_manager::ViewManagerClientFactory view_manager_client_factory_;
+  ViewManagerClientFactory view_manager_client_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PNGViewer);
 };
@@ -239,7 +238,7 @@ void ZoomableMediaImpl::ZoomToActualSize() {
   viewer_->ZoomToActualSize();
 }
 
-void NavigatorImpl::UpdateView(view_manager::Id node_id,
+void NavigatorImpl::UpdateView(Id node_id,
                                const SkBitmap& bitmap) {
   viewer_->UpdateView(node_id, bitmap);
 }

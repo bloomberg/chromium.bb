@@ -15,7 +15,6 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace mojo {
-namespace view_manager {
 
 class View;
 class ViewManager;
@@ -106,7 +105,6 @@ class Node {
   DISALLOW_COPY_AND_ASSIGN(Node);
 };
 
-}  // namespace view_manager
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_NODE_H_

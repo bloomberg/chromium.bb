@@ -10,8 +10,7 @@
 
 namespace mojo {
 
-using view_manager::ViewManagerInitService;
-using view_manager::service::ViewManagerInitServiceImpl;
+using service::ViewManagerInitServiceImpl;
 
 namespace shell {
 

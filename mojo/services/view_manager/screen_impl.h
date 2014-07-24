@@ -15,7 +15,6 @@ class Transform;
 }
 
 namespace mojo {
-namespace view_manager {
 namespace service {
 
 // A minimal implementation of gfx::Screen for the view manager.
@@ -52,7 +51,6 @@ class ScreenImpl : public gfx::Screen {
 };
 
 }  // namespace service
-}  // namespace view_manager
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_VIEW_MANAGER_SCREEN_IMPL_H_

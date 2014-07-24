@@ -107,7 +107,7 @@ class DemoWindowTreeClient : public aura::client::WindowTreeClient {
 
 class AuraDemo : public ApplicationDelegate,
                  public WindowTreeHostMojoDelegate,
-                 public view_manager::ViewManagerDelegate {
+                 public ViewManagerDelegate {
  public:
   AuraDemo()
       : window1_(NULL),
@@ -118,11 +118,10 @@ class AuraDemo : public ApplicationDelegate,
   virtual ~AuraDemo() {}
 
  private:
-  // Overridden from view_manager::ViewManagerDelegate:
-  virtual void OnRootAdded(view_manager::ViewManager* view_manager,
-                           view_manager::Node* root) OVERRIDE {
+  // Overridden from ViewManagerDelegate:
+  virtual void OnRootAdded(ViewManager* view_manager, Node* root) OVERRIDE {
     // TODO(beng): this function could be called multiple times!
-    view_ = view_manager::View::Create(view_manager);
+    view_ = View::Create(view_manager);
     root->SetActiveView(view_);
 
     window_tree_host_.reset(new WindowTreeHostMojo(root, this));
@@ -155,7 +154,7 @@ class AuraDemo : public ApplicationDelegate,
     window_tree_host_->Show();
   }
   virtual void OnViewManagerDisconnected(
-      view_manager::ViewManager* view_manager) OVERRIDE {
+      ViewManager* view_manager) OVERRIDE {
     base::MessageLoop::current()->Quit();
   }
 
@@ -192,9 +191,9 @@ class AuraDemo : public ApplicationDelegate,
   aura::Window* window2_;
   aura::Window* window21_;
 
-  view_manager::View* view_;
+  View* view_;
 
-  view_manager::ViewManagerClientFactory view_manager_client_factory_;
+  ViewManagerClientFactory view_manager_client_factory_;
 
   scoped_ptr<aura::WindowTreeHost> window_tree_host_;
 

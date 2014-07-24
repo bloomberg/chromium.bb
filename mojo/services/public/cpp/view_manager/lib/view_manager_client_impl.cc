@@ -20,7 +20,6 @@
 #include "ui/gfx/codec/png_codec.h"
 
 namespace mojo {
-namespace view_manager {
 
 Id MakeTransportId(ConnectionSpecificId connection_id,
                    ConnectionSpecificId local_id) {
@@ -477,5 +476,4 @@ base::Callback<void(ErrorCode)>
                     base::Unretained(this));
 }
 
-}  // namespace view_manager
 }  // namespace mojo

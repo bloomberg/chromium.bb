@@ -13,7 +13,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace mojo {
-namespace view_manager {
 namespace service {
 class Node;
 
@@ -44,7 +43,6 @@ class MOJO_VIEW_MANAGER_EXPORT View {
 };
 
 }  // namespace service
-}  // namespace view_manager
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_VIEW_MANAGER_VIEW_H_

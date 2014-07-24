@@ -11,7 +11,6 @@
 #include "mojo/services/public/cpp/view_manager/view.h"
 
 namespace mojo {
-namespace view_manager {
 
 namespace {
 
@@ -395,5 +394,4 @@ void Node::LocalSetBounds(const gfx::Rect& old_bounds,
   bounds_ = new_bounds;
 }
 
-}  // namespace view_manager
 }  // namespace mojo

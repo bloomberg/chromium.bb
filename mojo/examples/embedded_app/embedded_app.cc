@@ -23,14 +23,6 @@
 #include "url/gurl.h"
 #include "url/url_util.h"
 
-using mojo::view_manager::Node;
-using mojo::view_manager::NodeObserver;
-using mojo::view_manager::View;
-using mojo::view_manager::ViewManager;
-using mojo::view_manager::ViewManagerDelegate;
-using mojo::view_manager::ViewManagerClientFactory;
-using mojo::view_manager::ViewObserver;
-
 namespace mojo {
 namespace examples {
 class EmbeddedApp;
@@ -141,12 +133,12 @@ class EmbeddedApp : public ApplicationDelegate,
     pending_node_colors_.erase(color);
   }
 
-  view_manager::ViewManager* view_manager_;
+  ViewManager* view_manager_;
   navigation::NavigatorHostPtr navigator_host_;
   std::map<Node*, View*> views_to_reap_;
   ViewManagerClientFactory view_manager_client_factory_;
 
-  typedef std::map<view_manager::Id, Node*> RootMap;
+  typedef std::map<Id, Node*> RootMap;
   RootMap roots_;
 
   // We can receive navigations for nodes we don't have yet.
