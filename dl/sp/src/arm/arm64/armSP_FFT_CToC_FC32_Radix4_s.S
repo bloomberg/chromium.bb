@@ -108,7 +108,7 @@
 #define dZr3    v26.2s
 #define dZi3    v27.2s
 
-        .MACRO FFTSTAGE scaled, inverse , name
+        .macro FFTSTAGE scaled, inverse , name
 
         // Define stack arguments
 

@@ -124,7 +124,7 @@
 #define dZip                    v24.2s
 #define dZip8b                  v24.8b
 
-        .MACRO FFTSTAGE scaled, inverse , name
+        .macro FFTSTAGE scaled, inverse , name
 
         // Define stack arguments
 

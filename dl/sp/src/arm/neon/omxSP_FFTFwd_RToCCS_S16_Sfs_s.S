@@ -636,4 +636,4 @@ End:
         @ Write function tail
         M_END
 
-    .END
+    .end

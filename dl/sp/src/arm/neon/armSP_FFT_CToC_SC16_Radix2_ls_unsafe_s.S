@@ -91,7 +91,7 @@
 #define qT1                             Q6.S32
 
 
-        .MACRO FFTSTAGE scaled, inverse, name
+        .macro FFTSTAGE scaled, inverse, name
 
 
         MOV     outPointStep,subFFTSize,LSL #2
@@ -129,13 +129,13 @@ grpLoop\name:
             VMULL   qT1,dXi1,dWr
             VMLSL   qT1,dXr1,dWi                       @// imag part
 
-        .ELSE
+        .else
             VMULL   qT0,dXr1,dWr
             VMLSL   qT0,dXi1,dWi                       @// real part
             VMULL   qT1,dXi1,dWr
             VMLAL   qT1,dXr1,dWi                       @// imag part
 
-        .ENDIF
+        .endif
 
         VRSHRN  dXr1,qT0,#15
         VRSHRN  dXi1,qT1,#15
@@ -148,7 +148,7 @@ grpLoop\name:
             VHADD    dYr1,dXr0,dXr1
             VHADD    dYi1,dXi0,dXi1
 
-        .ELSE
+        .else
 
             VSUB    dYr0,dXr0,dXr1
             VSUB    dYi0,dXi0,dXi1
@@ -156,7 +156,7 @@ grpLoop\name:
             VADD    dYi1,dXi0,dXi1
 
 
-        .ENDIF
+        .endif
 
         VST2    {dYr0[0],dYi0[0]},[pDst]!
         VST2    {dYr0[1],dYi0[1]},[pDst],step               @// step = -4+outPointStep
@@ -207,4 +207,4 @@ grpLoop\name:
 
 
 
-    .END
+    .end

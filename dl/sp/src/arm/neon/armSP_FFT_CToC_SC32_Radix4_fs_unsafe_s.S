@@ -114,7 +114,7 @@
 #define qZ3	Q11.S32
 
     
-        .MACRO FFTSTAGE scaled, inverse, name
+        .macro FFTSTAGE scaled, inverse, name
         
         @// Define stack arguments
         

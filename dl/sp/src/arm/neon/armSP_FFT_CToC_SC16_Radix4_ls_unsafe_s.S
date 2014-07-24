@@ -158,7 +158,7 @@
 #define qZ3                             Q14.S16
 
 
-        .MACRO FFTSTAGE scaled, inverse , name
+        .macro FFTSTAGE scaled, inverse , name
 
         @// Define stack arguments
 
@@ -218,13 +218,13 @@ grpLoop\name:
             VMULL   qT1,dXi1,dW1r
             VMLSL   qT1,dXr1,dW1i                       @// imag part
 
-        .ELSE
+        .else
             VMULL   qT0,dXr1,dW1r
             VMLSL   qT0,dXi1,dW1i                       @// real part
             VMULL   qT1,dXi1,dW1r
             VMLAL   qT1,dXr1,dW1i                       @// imag part
 
-        .ENDIF
+        .endif
 
         @// Load the first twiddle for 4 groups : w^1
         @// w^1 twiddle (i+0,i+1,i+2,i+3)       for group 0,1,2,3
@@ -235,13 +235,13 @@ grpLoop\name:
             VMULL   qT3,dXi2,dW2r
             VMLSL   qT3,dXr2,dW2i                       @// imag part
 
-        .ELSE
+        .else
             VMULL   qT2,dXr2,dW2r
             VMLSL   qT2,dXi2,dW2i                       @// real part
             VMULL   qT3,dXi2,dW2r
             VMLAL   qT3,dXr2,dW2i                       @// imag part
 
-        .ENDIF
+        .endif
 
         VRSHRN  dZr1,qT0,#15
         VRSHRN  dZi1,qT1,#15
@@ -254,13 +254,13 @@ grpLoop\name:
             VMULL   qT1,dXi3,dW3r
             VMLSL   qT1,dXr3,dW3i                       @// imag part
 
-        .ELSE
+        .else
             VMULL   qT0,dXr3,dW3r
             VMLSL   qT0,dXi3,dW3i                       @// real part
             VMULL   qT1,dXi3,dW3r
             VMLAL   qT1,dXr3,dW3i                       @// imag part
 
-        .ENDIF
+        .endif
 
         VRSHRN  dZr2,qT2,#15
         VRSHRN  dZi2,qT3,#15
@@ -296,7 +296,7 @@ grpLoop\name:
                 VST2    {dZr2,dZi2},[pDst :128],outPointStep
                 VST2    {dZr1,dZi1},[pDst :128],dstStep              @// dstStep = -3*outPointStep + 16
 
-            .ELSE
+            .else
 
                 VHSUB    dZr1,dYr0,dYi3                          @// y1 = u0+ju3
                 VHADD    dZi1,dYi0,dYr3
@@ -308,9 +308,9 @@ grpLoop\name:
                 VST2    {dZr2,dZi2},[pDst :128],outPointStep
                 VST2    {dZr3,dZi3},[pDst :128],dstStep              @// dstStep = -3*outPointStep + 16
 
-            .ENDIF
+            .endif
 
-        .ELSE
+        .else
 
             @// finish first stage of 4 point FFT
 
@@ -338,7 +338,7 @@ grpLoop\name:
                 VST2    {dZr2,dZi2},[pDst :128],outPointStep
                 VST2    {dZr1,dZi1},[pDst :128],dstStep              @// dstStep = -3*outPointStep + 16
 
-            .ELSE
+            .else
 
                 VSUB    dZr1,dYr0,dYi3                          @// y1 = u0+ju3
                 VADD    dZi1,dYi0,dYr3
@@ -350,12 +350,12 @@ grpLoop\name:
                 VST2    {dZr2,dZi2},[pDst :128],outPointStep
                 VST2    {dZr3,dZi3},[pDst :128],dstStep              @// dstStep = -3*outPointStep + 16
 
-            .ENDIF
+            .endif
 
 
 
 
-        .ENDIF
+        .endif
 
         BGT     grpLoop\name
 
@@ -392,4 +392,4 @@ grpLoop\name:
 
 
 
-    .END
+    .end

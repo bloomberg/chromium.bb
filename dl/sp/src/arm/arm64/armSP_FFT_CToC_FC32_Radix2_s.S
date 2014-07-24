@@ -81,7 +81,7 @@
 #define qT0     v10.2s
 #define qT1     v11.2s
 
-        .MACRO FFTSTAGE scaled, inverse, name
+        .macro FFTSTAGE scaled, inverse, name
 
         // Define stack arguments
 

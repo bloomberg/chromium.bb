@@ -74,7 +74,7 @@
 #define qT0     v10.2s
 #define qT1     v12.2s
 
-        .MACRO FFTSTAGE scaled, inverse, name
+        .macro FFTSTAGE scaled, inverse, name
 
         // Move parameters into our work registers
         ldr     subFFTSize, [pSubFFTSize]

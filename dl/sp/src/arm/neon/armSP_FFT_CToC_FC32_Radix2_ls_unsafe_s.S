@@ -73,7 +73,7 @@
 #define qT0     d10.f32
 #define qT1     d12.f32
 
-        .MACRO FFTSTAGE scaled, inverse, name
+        .macro FFTSTAGE scaled, inverse, name
 
 
         MOV     outPointStep,subFFTSize,LSL #3

@@ -93,7 +93,7 @@
 
 @// Define constants
 
-        .MACRO FFTSTAGE scaled, inverse , name
+        .macro FFTSTAGE scaled, inverse , name
 
         @// Define stack arguments
 
@@ -342,7 +342,7 @@ grpZeroSetLoop\name:
         mov     pDst, pPingPongBuf
 
 
-        .ENDM
+        .endm
 
 
 
@@ -383,4 +383,4 @@ grpZeroSetLoop\name:
 @// Guarding implementation by the processor name
 
 
-    .END
+    .end

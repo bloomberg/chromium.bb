@@ -86,7 +86,7 @@
 
 
 
-        .MACRO FFTSTAGE scaled, inverse , name
+        .macro FFTSTAGE scaled, inverse , name
 
         @// Define stack arguments
 

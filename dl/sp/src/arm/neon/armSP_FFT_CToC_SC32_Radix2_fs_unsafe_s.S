@@ -81,7 +81,7 @@
 #define dY1	D3.S32
 
 
-        .MACRO FFTSTAGE scaled, inverse, name
+        .macro FFTSTAGE scaled, inverse, name
         
         @// Define stack arguments
         
@@ -116,13 +116,13 @@ grpZeroSetLoop\name :
             VHADD    dY0,dX0,dX1
             VHSUB    dY1,dX0,dX1
         
-        .ELSE
+        .else
         
             VADD    dY0,dX0,dX1
             VSUB    dY1,dX0,dX1
         
          
-        .ENDIF
+        .endif
         
         VST1    dY0,[pDst],outPointStep
         VST1    dY1,[pDst],dstStep                  @// dstStep =  step = -pointStep + 8

@@ -127,7 +127,7 @@
 #define qZ3                             Q13.S16
 
 
-        .MACRO FFTSTAGE scaled, inverse , name
+        .macro FFTSTAGE scaled, inverse , name
 
         @// Define stack arguments
 
@@ -190,13 +190,13 @@ setLoop\name:
             VMULL   qT1,dXi1,dW1[0]
             VMLSL   qT1,dXr1,dW1[1]                       @// imag part
 
-        .ELSE
+        .else
             VMULL   qT0,dXr1,dW1[0]
             VMLSL   qT0,dXi1,dW1[1]                       @// real part
             VMULL   qT1,dXi1,dW1[0]
             VMLAL   qT1,dXr1,dW1[1]                       @// imag part
 
-        .ENDIF
+        .endif
 
         .ifeqs  "\inverse", "TRUE"
             VMULL   qT2,dXr2,dW2[0]
@@ -204,13 +204,13 @@ setLoop\name:
             VMULL   qT3,dXi2,dW2[0]
             VMLSL   qT3,dXr2,dW2[1]                       @// imag part
 
-        .ELSE
+        .else
             VMULL   qT2,dXr2,dW2[0]
             VMLSL   qT2,dXi2,dW2[1]                       @// real part
             VMULL   qT3,dXi2,dW2[0]
             VMLAL   qT3,dXr2,dW2[1]                       @// imag part
 
-        .ENDIF
+        .endif
 
         VLD2    {dXr3,dXi3},[pSrc :128],setStep            @//  data[3] & update pSrc for the next set
 
@@ -226,13 +226,13 @@ setLoop\name:
             VMULL   qT1,dXi3,dW3[0]
             VMLSL   qT1,dXr3,dW3[1]                       @// imag part
 
-        .ELSE
+        .else
             VMULL   qT0,dXr3,dW3[0]
             VMLSL   qT0,dXi3,dW3[1]                       @// real part
             VMULL   qT1,dXi3,dW3[0]
             VMLAL   qT1,dXr3,dW3[1]                       @// imag part
 
-        .ENDIF
+        .endif
 
         VRSHRN  dZr2,qT2,#15
         VRSHRN  dZi2,qT3,#15
@@ -271,7 +271,7 @@ setLoop\name:
                 VST2    {dZr3,dZi3},[pDst :128],dstStep
 
 
-            .ELSE
+            .else
 
                 VHSUB    qZ0,qY2,qY1
 
@@ -288,10 +288,10 @@ setLoop\name:
                 VST2    {dZr2,dZi2},[pDst :128],dstStep
 
 
-            .ENDIF
+            .endif
 
 
-        .ELSE
+        .else
 
             @// finish first stage of 4 point FFT
             VADD    qY0,qX0,qZ2
@@ -321,7 +321,7 @@ setLoop\name:
                 VST2    {dZr3,dZi3},[pDst :128],dstStep
 
 
-            .ELSE
+            .else
 
                 VSUB    qZ0,qY2,qY1
 
@@ -338,11 +338,11 @@ setLoop\name:
                 VST2    {dZr2,dZi2},[pDst :128],dstStep
 
 
-            .ENDIF
+            .endif
 
 
 
-        .ENDIF
+        .endif
 
         BGT     setLoop\name
 
@@ -389,4 +389,4 @@ setLoop\name:
 
 
 
-    .END
+    .end

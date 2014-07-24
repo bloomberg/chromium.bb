@@ -113,7 +113,7 @@
 #define qZ1                             Q9.S16
 
 
-        .MACRO FFTSTAGE scaled, inverse, name
+        .macro FFTSTAGE scaled, inverse, name
 
         @// Define stack arguments
 
@@ -147,9 +147,9 @@
 
         .ifeqs  "\scaled", "TRUE"
             VHADD    qY0,qX0,qX2             @// u0
-        .ELSE
+        .else
             VADD   qY0,qX0,qX2               @// u0
-        .ENDIF
+        .endif
         RSB     step3,pointStep,#0
 
         @// grp = 0 a special case since all the twiddle factors are 1
@@ -195,7 +195,7 @@ grpZeroSetLoop\name:
                 VST2    {dZr2,dZi2},[pDst :128],setStep
 
 
-            .ELSE
+            .else
 
                 VHADD    dZr2,dYr2,dYi3                  @// y1
                 VHSUB    dZi2,dYi2,dYr3
@@ -210,10 +210,10 @@ grpZeroSetLoop\name:
                 VHADD    qY0,qX0,qX2                     @// u0 (next loop)
                 VST2    {dZr3,dZi3},[pDst :128],setStep
 
-            .ENDIF
+            .endif
 
 
-        .ELSE
+        .else
 
             @// finish first stage of 4 point FFT
 
@@ -249,7 +249,7 @@ grpZeroSetLoop\name:
                 VST2    {dZr2,dZi2},[pDst :128],setStep
 
 
-            .ELSE
+            .else
 
                 VADD    dZr2,dYr2,dYi3                  @// y1
                 VSUB    dZi2,dYi2,dYr3
@@ -264,10 +264,10 @@ grpZeroSetLoop\name:
                 VADD    qY0,qX0,qX2                     @// u0 (next loop)
                 VST2    {dZr3,dZi3},[pDst :128],setStep
 
-            .ENDIF
+            .endif
 
 
-        .ENDIF
+        .endif
 
         BGT     grpZeroSetLoop\name
 
@@ -305,4 +305,4 @@ grpZeroSetLoop\name:
 
 
 
-    .END
+    .end

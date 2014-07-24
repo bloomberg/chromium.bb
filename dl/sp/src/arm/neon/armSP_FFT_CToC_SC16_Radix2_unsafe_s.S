@@ -89,7 +89,7 @@
 
 
 
-        .MACRO FFTSTAGE scaled, inverse, name
+        .macro FFTSTAGE scaled, inverse, name
 
         @// Define stack arguments
 
@@ -141,14 +141,14 @@ setLoop\name:
             VMULL   qT1,dX3,dW[0]
             VMLSL   qT1,dX2,dW[1]                       @// imag part
 
-        .ELSE
+        .else
 
             VMULL   qT0,dX2,dW[0]
             VMLSL   qT0,dX3,dW[1]                       @// real part
             VMULL   qT1,dX3,dW[0]
             VMLAL   qT1,dX2,dW[1]                       @// imag part
 
-        .ENDIF
+        .endif
 
         VRSHRN  dX2,qT0,#15
         VRSHRN  dX3,qT1,#15
@@ -159,13 +159,13 @@ setLoop\name:
             VHADD    dY2,dX0,dX2
             VHADD    dY3,dX1,dX3
 
-        .ELSE
+        .else
             VSUB    dY0,dX0,dX2
             VSUB    dY1,dX1,dX3
             VADD    dY2,dX0,dX2
             VADD    dY3,dX1,dX3
 
-        .ENDIF
+        .endif
 
         VST2    {dY0,dY1},[pDst],outPointStep
         VST2    {dY2,dY3},[pDst],dstStep              @// dstStep = -outPointStep + 16
@@ -216,4 +216,4 @@ setLoop\name:
 
 
 
-    .END
+    .end

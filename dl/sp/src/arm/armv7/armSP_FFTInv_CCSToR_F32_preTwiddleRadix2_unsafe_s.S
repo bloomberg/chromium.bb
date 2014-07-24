@@ -101,7 +101,7 @@
 
 
 
-        .MACRO FFTSTAGE scaled, inverse,name
+        .macro FFTSTAGE scaled, inverse,name
 
         @// Initialize half now.
         movw    N, #0x0000

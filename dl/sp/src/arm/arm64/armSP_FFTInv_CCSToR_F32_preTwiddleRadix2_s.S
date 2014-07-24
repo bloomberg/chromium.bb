@@ -113,7 +113,7 @@
 #define dZip8b  v19.8b
 #define half    v13.2s
 
-        .MACRO FFTSTAGE scaled, inverse, name
+        .macro FFTSTAGE scaled, inverse, name
 
         fmov    half, 0.5
 

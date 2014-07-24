@@ -82,7 +82,7 @@
 #define qT1     D11.F32
 
 
-        .MACRO FFTSTAGE scaled, inverse, name
+        .macro FFTSTAGE scaled, inverse, name
 
         @// Define stack arguments
 

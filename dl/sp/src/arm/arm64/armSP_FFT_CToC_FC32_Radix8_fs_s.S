@@ -174,7 +174,7 @@
 #define dT0s    v14.s
 #define dT1     v15.2s
 
-        .MACRO FFTSTAGE scaled, inverse, name
+        .macro FFTSTAGE scaled, inverse, name
 
         // Define stack arguments
 
@@ -294,7 +294,7 @@ radix8fsGrpZeroSetLoop\name :
 
             st2     {dYr6,dYi6},[pDst],step1     // store y6
 
-        .ELSE
+        .else
 
             fadd    dYr6,dVr2,dVi6
             fsub    dYi6,dVi2,dVr6
@@ -320,7 +320,7 @@ radix8fsGrpZeroSetLoop\name :
             st2     {dYr2,dYi2},[pDst],step1     // store y6
 
 
-        .ENDIF
+        .endif
 
         // finish first stage of 8 point FFT
 
@@ -396,7 +396,7 @@ radix8SkipLastUpdateInv\name:
             st2     {dYr7,dYi7},[pDst]           // store y7
             ADD pDst, pDst, #16
 
-        .ELSE
+        .else
 
             // calculate  b*v7
             fmul    dT1,dVr7,dT0[0]
@@ -442,7 +442,7 @@ radix8SkipLastUpdateFwd\name:
             st2     {dYr3,dYi3},[pDst],step1     // store y5
             st2     {dYr1,dYi1},[pDst],#16       // store y7
 
-        .ENDIF
+        .endif
 
 
         // update pDst for the next set

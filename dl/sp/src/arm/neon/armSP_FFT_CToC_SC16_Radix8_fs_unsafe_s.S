@@ -196,7 +196,7 @@
         .set   ONEBYSQRT2, 0x00005A82        @// Q15 format
 
 
-        .MACRO FFTSTAGE scaled, inverse , name
+        .macro FFTSTAGE scaled, inverse , name
 
         @// Define stack arguments
 
@@ -281,7 +281,7 @@ grpZeroSetLoop\name:
                 VHSUB    qU5,qX2,qX6
                 VST2    {dYr6,dYi6},[pDst :128],step1                    @// store y6
 
-            .ELSE
+            .else
 
                 VHADD    dYr6,dVr2,dVi6
                 VHSUB    dYi6,dVi2,dVr6
@@ -298,7 +298,7 @@ grpZeroSetLoop\name:
                 VST2    {dYr2,dYi2},[pDst :128],step1                    @// store y6
 
 
-            .ENDIF
+            .endif
 
             @// finish first stage of 8 point FFT
 
@@ -362,7 +362,7 @@ grpZeroSetLoop\name:
 #else
                 VST2    {dYr7,dYi7},[pDst :128]!                      @// store y7
 #endif
-            .ELSE
+            .else
 
                 @// calculate  b*v7
                 VQRDMULH    dT1,dVr7,dT0[0]
@@ -402,11 +402,11 @@ grpZeroSetLoop\name:
                 VST2    {dYr1,dYi1},[pDst :128]!                      @// store y7
 #endif
 
-            .ENDIF
+            .endif
 
 
 
-        .ELSE
+        .else
             @// finish first stage of 8 point FFT
 
             VADD    qU0,qX0,qX4
@@ -443,7 +443,7 @@ grpZeroSetLoop\name:
                 VSUB    qU5,qX2,qX6
                 VST2    {dYr6,dYi6},[pDst :128],step1                    @// store y6
 
-            .ELSE
+            .else
 
                 VADD    dYr6,dVr2,dVi6
                 VSUB    dYi6,dVi2,dVr6
@@ -460,7 +460,7 @@ grpZeroSetLoop\name:
                 VST2    {dYr2,dYi2},[pDst :128],step1                    @// store y6
 
 
-            .ENDIF
+            .endif
 
             @// finish first stage of 8 point FFT
 
@@ -524,7 +524,7 @@ grpZeroSetLoop\name:
 #else
                 VST2    {dYr7,dYi7},[pDst :128]!                      @// store y7
 #endif
-            .ELSE
+            .else
 
                 @// calculate  b*v7
                 VQRDMULH    dT1,dVr7,dT0[0]
@@ -564,10 +564,10 @@ grpZeroSetLoop\name:
                 VST2    {dYr1,dYi1},[pDst :128]!                      @// store y7
 #endif
 
-            .ENDIF
+            .endif
 
 
-        .ENDIF
+        .endif
 
         SUB     pDst, pDst, step2                               @// update pDst for the next set
         BGT     grpZeroSetLoop\name
@@ -608,4 +608,4 @@ grpZeroSetLoop\name:
 
 
 
-    .END
+    .end

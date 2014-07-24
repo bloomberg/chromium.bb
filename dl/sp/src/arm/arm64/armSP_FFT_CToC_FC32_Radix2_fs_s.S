@@ -72,7 +72,7 @@
 #define dY0     v2.2s
 #define dY1     v3.2s
 
-        .MACRO FFTSTAGE scaled, inverse, name
+        .macro FFTSTAGE scaled, inverse, name
 
         // Define stack arguments
 

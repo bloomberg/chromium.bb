@@ -73,7 +73,7 @@
 
 
 
-        .MACRO FFTSTAGE scaled, inverse, name
+        .macro FFTSTAGE scaled, inverse, name
 
         @// Update grpCount and grpSize rightaway inorder to reuse pGrpCount 
 	@// and pGrpSize regs

@@ -73,7 +73,7 @@
 #define dY1     D3.F32
 
 
-        .MACRO FFTSTAGE scaled, inverse, name
+        .macro FFTSTAGE scaled, inverse, name
 
         @// Define stack arguments
 

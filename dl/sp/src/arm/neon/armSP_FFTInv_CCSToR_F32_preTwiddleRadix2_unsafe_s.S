@@ -126,7 +126,7 @@
         .set    ARMsFFTSpec_pTwiddle, 8
         .set    ARMsFFTSpec_pBuf, 12
 
-        .MACRO FFTSTAGE scaled, inverse, name
+        .macro FFTSTAGE scaled, inverse, name
 
         @// Read the size from structure and take log
         LDR     N, [pFFTSpec, #ARMsFFTSpec_N]
