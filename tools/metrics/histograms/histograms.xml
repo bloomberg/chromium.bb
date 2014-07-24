@@ -48088,7 +48088,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="Signature Missing"/>
   <int value="1" label="Signature Decode Failed"/>
   <int value="2" label="Invalid Signature"/>
-  <int value="3" label="Invalid Seed"/>
+  <int value="3" label="Invalid Signature for Seed"/>
   <int value="4" label="Valid Signature for Seed"/>
 </enum>
 
