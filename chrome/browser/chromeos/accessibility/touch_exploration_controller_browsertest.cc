@@ -15,12 +15,12 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
-#include "ui/events/test/event_generator.h"
 #include "ui/events/test/test_event_handler.h"
 
 namespace ui {
@@ -81,7 +81,7 @@ private:
 // after the touch exploration mode is turned off.
 IN_PROC_BROWSER_TEST_F(TouchExplorationTest, ToggleOnOff) {
   SwitchTouchExplorationMode(true);
-  ui::test::EventGenerator generator(root_window_);
+  aura::test::EventGenerator generator(root_window_);
 
   base::TimeDelta initial_time = Now();
   ui::TouchEvent initial_press(
@@ -133,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, ToggleOnOff) {
 // finger is still on the screen.
 IN_PROC_BROWSER_TEST_F(TouchExplorationTest, SplitTapExplore) {
   SwitchTouchExplorationMode(true);
-  ui::test::EventGenerator generator(root_window_);
+  aura::test::EventGenerator generator(root_window_);
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window_);
 

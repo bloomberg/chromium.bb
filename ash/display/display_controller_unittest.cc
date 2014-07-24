@@ -23,10 +23,10 @@
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_handler.h"
-#include "ui/events/test/event_generator.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
@@ -1024,7 +1024,7 @@ TEST_F(DisplayControllerTest, OverscanInsets) {
   EXPECT_EQ("80,0 150x200",
             ScreenUtil::GetSecondaryDisplay().bounds().ToString());
 
-  ui::test::EventGenerator generator(root_windows[0]);
+  aura::test::EventGenerator generator(root_windows[0]);
   generator.MoveMouseToInHost(20, 25);
   EXPECT_EQ("5,15", event_handler.GetLocationAndReset());
 
@@ -1066,7 +1066,7 @@ TEST_F(DisplayControllerTest, Rotate) {
   gfx::Display display1 = Shell::GetScreen()->GetPrimaryDisplay();
   int64 display2_id = ScreenUtil::GetSecondaryDisplay().id();
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  ui::test::EventGenerator generator1(root_windows[0]);
+  aura::test::EventGenerator generator1(root_windows[0]);
 
   TestObserver observer;
   EXPECT_EQ("120x200", root_windows[0]->bounds().size().ToString());
@@ -1107,7 +1107,7 @@ TEST_F(DisplayControllerTest, Rotate) {
   EXPECT_EQ(1, observer.GetRotationChangedCountAndReset());
 
 #if !defined(OS_WIN)
-  ui::test::EventGenerator generator2(root_windows[1]);
+  aura::test::EventGenerator generator2(root_windows[1]);
   generator2.MoveMouseToInHost(50, 40);
   EXPECT_EQ("179,25", event_handler.GetLocationAndReset());
   display_manager->SetDisplayRotation(display1.id(),
@@ -1149,7 +1149,7 @@ TEST_F(DisplayControllerTest, ScaleRootWindow) {
   EXPECT_EQ(1.5f, GetStoredUIScale(display1.id()));
   EXPECT_EQ(1.0f, GetStoredUIScale(display2.id()));
 
-  ui::test::EventGenerator generator(root_windows[0]);
+  aura::test::EventGenerator generator(root_windows[0]);
   generator.MoveMouseToInHost(599, 200);
   EXPECT_EQ("449,150", event_handler.GetLocationAndReset());
 
@@ -1177,7 +1177,7 @@ TEST_F(DisplayControllerTest, TouchScale) {
   gfx::Display display = Shell::GetScreen()->GetPrimaryDisplay();
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   aura::Window* root_window = root_windows[0];
-  ui::test::EventGenerator generator(root_window);
+  aura::test::EventGenerator generator(root_window);
 
   generator.PressMoveAndReleaseTouchTo(50, 50);
   // Default test touches have radius_x/y = 1.0, with device scale
@@ -1213,7 +1213,7 @@ TEST_F(DisplayControllerTest, ConvertHostToRootCoords) {
   EXPECT_EQ("0,0 300x450", root_windows[0]->bounds().ToString());
   EXPECT_EQ(1.5f, GetStoredUIScale(display1.id()));
 
-  ui::test::EventGenerator generator(root_windows[0]);
+  aura::test::EventGenerator generator(root_windows[0]);
   generator.MoveMouseToInHost(0, 0);
   EXPECT_EQ("0,449", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(599, 0);

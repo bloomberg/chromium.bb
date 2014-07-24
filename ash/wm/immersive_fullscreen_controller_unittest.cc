@@ -15,11 +15,11 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event_utils.h"
-#include "ui/events/test/event_generator.h"
 #include "ui/events/test/test_event_handler.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/bubble/bubble_delegate.h"
@@ -231,7 +231,7 @@ class ImmersiveFullscreenControllerTest : public ash::test::AshTestBase {
       case MODALITY_GESTURE_TAP: {
         gfx::Point screen_position = event_position;
         views::View::ConvertPointToScreen(top_container_, &screen_position);
-        ui::test::EventGenerator& event_generator(GetEventGenerator());
+        aura::test::EventGenerator& event_generator(GetEventGenerator());
         event_generator.MoveTouch(event_position);
         event_generator.PressTouch();
         event_generator.ReleaseTouch();
@@ -243,7 +243,7 @@ class ImmersiveFullscreenControllerTest : public ash::test::AshTestBase {
         gfx::Point end = revealed ? start + scroll_delta : start - scroll_delta;
         views::View::ConvertPointToScreen(top_container_, &start);
         views::View::ConvertPointToScreen(top_container_, &end);
-        ui::test::EventGenerator& event_generator(GetEventGenerator());
+        aura::test::EventGenerator& event_generator(GetEventGenerator());
         event_generator.GestureScrollSequence(
             start, end,
             base::TimeDelta::FromMilliseconds(30), 1);
@@ -349,7 +349,7 @@ TEST_F(ImmersiveFullscreenControllerTest, OnMouseEvent) {
   ASSERT_TRUE(controller()->IsEnabled());
   ASSERT_FALSE(controller()->IsRevealed());
 
-  ui::test::EventGenerator& event_generator(GetEventGenerator());
+  aura::test::EventGenerator& event_generator(GetEventGenerator());
 
   gfx::Rect top_container_bounds_in_screen =
       top_container()->GetBoundsInScreen();
@@ -528,7 +528,7 @@ TEST_F(ImmersiveFullscreenControllerTest, MouseEventsVerticalDisplayLayout) {
   // The y position of the top edge of the primary display.
   int y_top_edge = primary_root_window_bounds_in_screen.y();
 
-  ui::test::EventGenerator& event_generator(GetEventGenerator());
+  aura::test::EventGenerator& event_generator(GetEventGenerator());
 
   // Moving right below the top edge starts the hover timer running. We
   // cannot use MoveMouse() because MoveMouse() stops the timer if it started

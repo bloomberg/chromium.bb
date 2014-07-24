@@ -12,6 +12,7 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/cursor/cursor.h"
@@ -19,7 +20,6 @@
 #include "ui/events/event.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
-#include "ui/events/test/event_generator.h"
 #include "ui/events/test/test_event_handler.h"
 #include "ui/gfx/screen.h"
 #include "ui/wm/core/compound_event_filter.h"
@@ -174,7 +174,8 @@ TEST_F(WindowManagerTest, Focus) {
       SK_ColorGRAY, -13, gfx::Rect(5, 470, 50, 50), w1.get()));
 
   // Click on a sub-window (w121) to focus it.
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), w121.get());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       w121.get());
   generator.ClickLeftButton();
 
   aura::client::FocusClient* focus_client =
@@ -286,7 +287,8 @@ TEST_F(WindowManagerTest, ActivateOnMouse) {
 
   {
     // Click on window2.
-    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), w2.get());
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                         w2.get());
     generator.ClickLeftButton();
 
     // Window2 should have become active.
@@ -302,7 +304,8 @@ TEST_F(WindowManagerTest, ActivateOnMouse) {
 
   {
     // Click back on window1, but set it up so w1 doesn't activate on click.
-    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), w1.get());
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                         w1.get());
     d1.set_activate(false);
     generator.ClickLeftButton();
 
@@ -332,8 +335,8 @@ TEST_F(WindowManagerTest, ActivateOnMouse) {
   {
     scoped_ptr<aura::Window> w11(CreateTestWindowWithDelegate(
           &wd, -11, gfx::Rect(10, 10, 10, 10), w1.get()));
-    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                       w11.get());
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                         w11.get());
     // First set the focus to the child |w11|.
     generator.ClickLeftButton();
     EXPECT_EQ(w11.get(), focus_client->GetFocusedWindow());
@@ -358,7 +361,8 @@ TEST_F(WindowManagerTest, ActivateOnMouse) {
     // Move focus to |w2| first.
     scoped_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
           &wd, -1, gfx::Rect(70, 70, 50, 50)));
-    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), w2.get());
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                         w2.get());
     generator.ClickLeftButton();
     EXPECT_EQ(w2.get(), focus_client->GetFocusedWindow());
     EXPECT_FALSE(w11->CanFocus());
@@ -399,8 +403,8 @@ TEST_F(WindowManagerTest, PanelActivation) {
     NonFocusableDelegate nfd;
     scoped_ptr<aura::Window> w3(CreateTestWindowInShellWithDelegate(
           &nfd, -1, gfx::Rect(70, 70, 50, 50)));
-    ui::test::EventGenerator generator3(Shell::GetPrimaryRootWindow(),
-                                        w3.get());
+    aura::test::EventGenerator generator3(Shell::GetPrimaryRootWindow(),
+                                         w3.get());
     wm::ActivateWindow(p1.get());
     EXPECT_TRUE(wm::IsActiveWindow(p1.get()));
     generator3.ClickLeftButton();
@@ -727,7 +731,7 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
 // Touch visually hides the cursor on ChromeOS and Windows
 TEST_F(WindowManagerTest, UpdateCursorVisibility) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  aura::test::EventGenerator& generator = GetEventGenerator();
   ::wm::CursorManager* cursor_manager =
       ash::Shell::GetInstance()->cursor_manager();
 
@@ -750,7 +754,7 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
 // ChromeOS is the only platform for which the cursor is hidden on keypress
 // (crbug.com/304296).
 TEST_F(WindowManagerTest, UpdateCursorVisibilityOnKeyEvent) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  aura::test::EventGenerator& generator = GetEventGenerator();
   ::wm::CursorManager* cursor_manager =
       ash::Shell::GetInstance()->cursor_manager();
 
@@ -773,7 +777,7 @@ TEST_F(WindowManagerTest, UpdateCursorVisibilityOnKeyEvent) {
 }
 
 TEST_F(WindowManagerTest, TestCursorClientObserver) {
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  aura::test::EventGenerator& generator = GetEventGenerator();
   ::wm::CursorManager* cursor_manager =
       ash::Shell::GetInstance()->cursor_manager();
 

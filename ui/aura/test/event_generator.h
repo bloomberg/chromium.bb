@@ -1,9 +1,11 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_TEST_EVENT_GENERATOR_DELEGATE_AURA_H_
-#define UI_AURA_TEST_EVENT_GENERATOR_DELEGATE_AURA_H_
+// TODO(tapted): Rename this file event_generator_delegate_aura.h.
+
+#ifndef UI_AURA_TEST_EVENT_GENERATOR_H_
+#define UI_AURA_TEST_EVENT_GENERATOR_H_
 
 #include "ui/events/test/event_generator.h"
 
@@ -49,7 +51,11 @@ class EventGeneratorDelegateAura : public ui::test::EventGeneratorDelegate {
   DISALLOW_COPY_AND_ASSIGN(EventGeneratorDelegateAura);
 };
 
+// Expose the EventGenerator from ui::test in the aura::test namespace.
+// TODO(tapted): Remove this.
+using ui::test::EventGenerator;
+
 }  // namespace test
 }  // namespace aura
 
-#endif  // UI_AURA_TEST_EVENT_GENERATOR_DELEGATE_AURA_H_
+#endif  // UI_AURA_TEST_EVENT_GENERATOR_H_

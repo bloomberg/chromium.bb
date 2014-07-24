@@ -22,9 +22,9 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_utils.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/events/event_utils.h"
-#include "ui/events/test/event_generator.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"
@@ -80,7 +80,7 @@ class TabScrubberTest : public InProcessBrowserTest,
   void SendScrubEvent(Browser* browser, int index) {
     aura::Window* window = browser->window()->GetNativeWindow();
     aura::Window* root = window->GetRootWindow();
-    ui::test::EventGenerator event_generator(root, window);
+    aura::test::EventGenerator event_generator(root, window);
     int active_index = browser->tab_strip_model()->active_index();
     TabScrubber::Direction direction = index < active_index ?
         TabScrubber::LEFT : TabScrubber::RIGHT;
@@ -107,7 +107,7 @@ class TabScrubberTest : public InProcessBrowserTest,
   void Scrub(Browser* browser, int index, ScrubType scrub_type) {
     aura::Window* window = browser->window()->GetNativeWindow();
     aura::Window* root = window->GetRootWindow();
-    ui::test::EventGenerator event_generator(root, window);
+    aura::test::EventGenerator event_generator(root, window);
     event_generator.set_async(true);
     activation_order_.clear();
     int active_index = browser->tab_strip_model()->active_index();
@@ -150,7 +150,7 @@ class TabScrubberTest : public InProcessBrowserTest,
   void SendScrubSequence(Browser* browser, int x_offset, int index) {
     aura::Window* window = browser->window()->GetNativeWindow();
     aura::Window* root = window->GetRootWindow();
-    ui::test::EventGenerator event_generator(root, window);
+    aura::test::EventGenerator event_generator(root, window);
     bool wait_for_active = false;
     if (index != browser->tab_strip_model()->active_index()) {
       wait_for_active = true;

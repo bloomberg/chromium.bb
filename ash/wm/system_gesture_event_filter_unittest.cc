@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/aura/env.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -30,7 +31,6 @@
 #include "ui/events/event_handler.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_configuration.h"
-#include "ui/events/test/event_generator.h"
 #include "ui/events/test/test_event_handler.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
@@ -249,7 +249,8 @@ TEST_F(SystemGestureEventFilterTest, TwoFingerDrag) {
     gfx::Point(350, 350),
   };
 
-  ui::test::EventGenerator generator(root_window, toplevel->GetNativeWindow());
+  aura::test::EventGenerator generator(root_window,
+                                       toplevel->GetNativeWindow());
 
   wm::WindowState* toplevel_state =
       wm::GetWindowState(toplevel->GetNativeWindow());
@@ -315,7 +316,7 @@ TEST_F(SystemGestureEventFilterTest, TwoFingerDragTwoWindows) {
     second_bounds.origin() + gfx::Vector2d(40, 20)
   };
 
-  ui::test::EventGenerator generator(root_window);
+  aura::test::EventGenerator generator(root_window);
   // Do not drag too fast to avoid fling.
   generator.GestureMultiFingerScroll(kTouchPoints, points,
       50, kSteps, 0, 150);
@@ -340,7 +341,8 @@ TEST_F(SystemGestureEventFilterTest, WindowsWithMaxSizeDontSnap) {
     gfx::Point(bounds.x() + 30, bounds.y() + 20),
   };
 
-  ui::test::EventGenerator generator(root_window, toplevel->GetNativeWindow());
+  aura::test::EventGenerator generator(root_window,
+                                       toplevel->GetNativeWindow());
 
   // Swipe down to minimize.
   generator.GestureMultiFingerScroll(kTouchPoints, points, 15, kSteps, 0, 150);
@@ -403,7 +405,8 @@ TEST_F(SystemGestureEventFilterTest, DISABLED_TwoFingerDragEdge) {
   EXPECT_EQ(HTLEFT, toplevel->GetNativeWindow()->delegate()->
         GetNonClientComponent(points[1]));
 
-  ui::test::EventGenerator generator(root_window, toplevel->GetNativeWindow());
+  aura::test::EventGenerator generator(root_window,
+                                       toplevel->GetNativeWindow());
 
   bounds = toplevel->GetNativeWindow()->bounds();
   // Swipe down. Nothing should happen.
@@ -463,7 +466,8 @@ TEST_F(SystemGestureEventFilterTest, TwoFingerDragDelayed) {
   EXPECT_EQ(HTCAPTION, toplevel->GetNativeWindow()->delegate()->
         GetNonClientComponent(points[1]));
 
-  ui::test::EventGenerator generator(root_window, toplevel->GetNativeWindow());
+  aura::test::EventGenerator generator(root_window,
+                                       toplevel->GetNativeWindow());
 
   bounds = toplevel->GetNativeWindow()->bounds();
   // Swipe right and down starting with one finger.
@@ -498,7 +502,8 @@ TEST_F(SystemGestureEventFilterTest, ThreeFingerGestureStopsDrag) {
   EXPECT_EQ(HTCAPTION, toplevel->GetNativeWindow()->delegate()->
         GetNonClientComponent(points[1]));
 
-  ui::test::EventGenerator generator(root_window, toplevel->GetNativeWindow());
+  aura::test::EventGenerator generator(root_window,
+                                       toplevel->GetNativeWindow());
 
   bounds = toplevel->GetNativeWindow()->bounds();
   // Swipe right and down starting with two fingers.
@@ -527,7 +532,7 @@ TEST_F(SystemGestureEventFilterTest, DragLeftNearEdgeSnaps) {
     gfx::Point(bounds.x() + bounds.width() / 2, bounds.y() + 5),
   };
   aura::Window* toplevel_window = toplevel->GetNativeWindow();
-  ui::test::EventGenerator generator(root_window, toplevel_window);
+  aura::test::EventGenerator generator(root_window, toplevel_window);
 
   // Check that dragging left snaps before reaching the screen edge.
   gfx::Rect work_area =
@@ -555,7 +560,7 @@ TEST_F(SystemGestureEventFilterTest, DragRightNearEdgeSnaps) {
     gfx::Point(bounds.x() + bounds.width() / 2, bounds.y() + 5),
   };
   aura::Window* toplevel_window = toplevel->GetNativeWindow();
-  ui::test::EventGenerator generator(root_window, toplevel_window);
+  aura::test::EventGenerator generator(root_window, toplevel_window);
 
   // Check that dragging right snaps before reaching the screen edge.
   gfx::Rect work_area =

@@ -7,11 +7,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/events/test/event_generator.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/test/views_test_base.h"
@@ -290,7 +290,7 @@ TEST_F(DesktopScreenX11Test, DoubleClickHeaderMaximizes) {
       DesktopWindowTreeHostX11::GetHostForXID(window->GetHost()->
           GetAcceleratedWidget());
 
-  ui::test::EventGenerator generator(window);
+  aura::test::EventGenerator generator(window);
   generator.ClickLeftButton();
   generator.DoubleClickLeftButton();
   RunPendingMessages();
@@ -316,7 +316,7 @@ TEST_F(DesktopScreenX11Test, DoubleClickTwoDifferentTargetsDoesntMaximizes) {
       DesktopWindowTreeHostX11::GetHostForXID(window->GetHost()->
           GetAcceleratedWidget());
 
-  ui::test::EventGenerator generator(window);
+  aura::test::EventGenerator generator(window);
   native_widget->set_window_component(HTCLIENT);
   generator.ClickLeftButton();
   native_widget->set_window_component(HTCAPTION);
@@ -343,7 +343,7 @@ TEST_F(DesktopScreenX11Test, RightClickDuringDoubleClickDoesntMaximize) {
       DesktopWindowTreeHostX11::GetHostForXID(window->GetHost()->
           GetAcceleratedWidget()));
 
-  ui::test::EventGenerator generator(window);
+  aura::test::EventGenerator generator(window);
   native_widget->set_window_component(HTCLIENT);
   generator.ClickLeftButton();
   native_widget->set_window_component(HTCAPTION);

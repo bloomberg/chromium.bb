@@ -24,11 +24,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
-#include "ui/events/test/event_generator.h"
 
 namespace ash {
 
@@ -945,7 +945,7 @@ TEST_F(MaximizeModeWindowManagerTest, TryToDesktopSizeDragUnmaximizable) {
 
   // 1. Move the mouse over the caption and check that dragging the window does
   // change the location.
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.MoveMouseTo(gfx::Point(rect.x() + 2, rect.y() + 2));
   generator.PressLeftButton();
   generator.MoveMouseBy(10, 5);
@@ -1033,7 +1033,7 @@ TEST_F(MaximizeModeWindowManagerTest, ExitFullScreenWithEdgeSwipeFromTop) {
   EXPECT_EQ(foreground_window.get(), wm::GetActiveWindow());
 
   // Do an edge swipe top into screen.
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.GestureScrollSequence(gfx::Point(50, 0),
                                   gfx::Point(50, 100),
                                   base::TimeDelta::FromMilliseconds(20),
@@ -1077,7 +1077,7 @@ TEST_F(MaximizeModeWindowManagerTest, ExitFullScreenWithEdgeSwipeFromBottom) {
   EXPECT_EQ(foreground_window.get(), wm::GetActiveWindow());
 
   // Do an edge swipe bottom into screen.
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   int y = Shell::GetPrimaryRootWindow()->bounds().bottom();
   generator.GestureScrollSequence(gfx::Point(50, y),
                                   gfx::Point(50, y - 100),
@@ -1113,7 +1113,7 @@ TEST_F(MaximizeModeWindowManagerTest, ExitFullScreenWithEdgeTouchAtTop) {
   EXPECT_EQ(foreground_window.get(), wm::GetActiveWindow());
 
   // Touch tap on the top edge.
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.GestureTapAt(gfx::Point(100, 0));
   EXPECT_FALSE(foreground_window_state->IsFullscreen());
   EXPECT_TRUE(background_window_state->IsFullscreen());
@@ -1149,7 +1149,7 @@ TEST_F(MaximizeModeWindowManagerTest, ExitFullScreenWithEdgeTouchAtBottom) {
   EXPECT_EQ(foreground_window.get(), wm::GetActiveWindow());
 
   // Touch tap on the bottom edge.
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.GestureTapAt(
       gfx::Point(100, Shell::GetPrimaryRootWindow()->bounds().bottom() - 1));
   EXPECT_FALSE(foreground_window_state->IsFullscreen());
@@ -1183,7 +1183,7 @@ TEST_F(MaximizeModeWindowManagerTest, NoExitImmersiveModeWithEdgeSwipeFromTop) {
   window_state->set_in_immersive_fullscreen(true);
 
   // Do an edge swipe top into screen.
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.GestureScrollSequence(gfx::Point(50, 0),
                                   gfx::Point(50, 100),
                                   base::TimeDelta::FromMilliseconds(20),
@@ -1215,7 +1215,7 @@ TEST_F(MaximizeModeWindowManagerTest,
   EXPECT_TRUE(window_state->in_immersive_fullscreen());
 
   // Do an edge swipe bottom into screen.
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   int y = Shell::GetPrimaryRootWindow()->bounds().bottom();
   generator.GestureScrollSequence(gfx::Point(50, y),
                                   gfx::Point(50, y - 100),

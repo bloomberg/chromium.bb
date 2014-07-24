@@ -8,12 +8,12 @@
 #include "base/time/time.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_cursor_client.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_provider_aura.h"
-#include "ui/events/test/event_generator.h"
 #include "ui/events/test/events_test_utils.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gl/gl_implementation.h"
@@ -171,7 +171,7 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     aura::test::AuraTestBase::SetUp();
     cursor_client_.reset(new aura::test::TestCursorClient(root_window()));
     root_window()->AddPreTargetHandler(&event_capturer_);
-    generator_.reset(new test::EventGenerator(root_window()));
+    generator_.reset(new aura::test::EventGenerator(root_window()));
     // The generator takes ownership of the clock.
     generator_->SetTickClock(scoped_ptr<base::TickClock>(simulated_clock_));
     cursor_client()->ShowCursor();
@@ -315,7 +315,7 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
         simulated_clock_->NowTicks().ToInternalValue());
   }
 
-  scoped_ptr<test::EventGenerator> generator_;
+  scoped_ptr<aura::test::EventGenerator> generator_;
   ui::GestureDetector::Config gesture_detector_config_;
   // Owned by |generator_|.
   base::SimpleTestTickClock* simulated_clock_;

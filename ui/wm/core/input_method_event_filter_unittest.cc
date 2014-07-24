@@ -7,20 +7,20 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_focus_manager.h"
 #include "ui/base/ui_base_switches_util.h"
-#include "ui/events/test/event_generator.h"
 #include "ui/events/test/test_event_handler.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/public/activation_client.h"
 
 #if !defined(OS_WIN) && !defined(USE_X11)
-// On platforms except Windows and X11, ui::test::EventGenerator::PressKey
+// On platforms except Windows and X11, aura::test::EventGenerator::PressKey
 // generates a key event without native_event(), which is not supported by
 // ui::MockInputMethod.
 #define TestInputMethodKeyEventPropagation \
@@ -103,7 +103,7 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
   // automatically set up by AshTestBase, consumes it and sends a new
   // ui::ET_TRANSLATED_KEY_* event to the root window, which will be consumed by
   // the test event filter.
-  ui::test::EventGenerator generator(root_window());
+  aura::test::EventGenerator generator(root_window());
   EXPECT_EQ(0, test_filter_.num_key_events());
   generator.PressKey(ui::VKEY_SPACE, 0);
   EXPECT_EQ(1, test_filter_.num_key_events());

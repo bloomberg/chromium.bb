@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
-#include "ui/events/test/event_generator.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -57,7 +57,7 @@ class CandidateViewTest : public views::ViewsTestBase,
     widget_->Show();
 
     aura::Window* native_window = widget_->GetNativeWindow();
-    event_generator_.reset(new ui::test::EventGenerator(
+    event_generator_.reset(new aura::test::EventGenerator(
         native_window->GetRootWindow(), native_window));
   }
 
@@ -97,7 +97,9 @@ class CandidateViewTest : public views::ViewsTestBase,
     return -1;
   }
 
-  ui::test::EventGenerator* event_generator() { return event_generator_.get(); }
+  aura::test::EventGenerator* event_generator() {
+    return event_generator_.get();
+  }
 
  private:
   virtual void ButtonPressed(views::Button* sender,
@@ -107,7 +109,7 @@ class CandidateViewTest : public views::ViewsTestBase,
 
   views::Widget* widget_;
   views::View* container_;
-  scoped_ptr<ui::test::EventGenerator> event_generator_;
+  scoped_ptr<aura::test::EventGenerator> event_generator_;
   views::View* last_pressed_;
 
   DISALLOW_COPY_AND_ASSIGN(CandidateViewTest);

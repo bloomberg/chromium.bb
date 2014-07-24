@@ -17,13 +17,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/test/window_test_api.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/events/event_handler.h"
-#include "ui/events/test/event_generator.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -214,7 +214,7 @@ TEST_F(ExtendedDesktopTest, Activation) {
             aura::client::GetFocusClient(root_windows[0])->GetFocusedWindow());
   EXPECT_TRUE(wm::IsActiveWindow(widget_on_2nd->GetNativeView()));
 
-  ui::test::EventGenerator& event_generator(GetEventGenerator());
+  aura::test::EventGenerator& event_generator(GetEventGenerator());
   // Clicking a window changes the active window and active root window.
   event_generator.MoveMouseToCenterOf(widget_on_1st->GetNativeView());
   event_generator.ClickLeftButton();
@@ -253,7 +253,7 @@ TEST_F(ExtendedDesktopTest, SystemModal) {
   EXPECT_EQ(root_windows[1], modal_widget->GetNativeView()->GetRootWindow());
   EXPECT_EQ(root_windows[1], Shell::GetTargetRootWindow());
 
-  ui::test::EventGenerator& event_generator(GetEventGenerator());
+  aura::test::EventGenerator& event_generator(GetEventGenerator());
 
   // Clicking a widget on widget_on_1st display should not change activation.
   event_generator.MoveMouseToCenterOf(widget_on_1st->GetNativeView());
@@ -391,7 +391,7 @@ TEST_F(ExtendedDesktopTest, Capture) {
   EXPECT_EQ(r1_w1.get(),
             aura::client::GetCaptureWindow(r2_w1->GetRootWindow()));
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  aura::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseToCenterOf(r2_w1.get());
   // |r1_w1| will receive the events because it has capture.
   EXPECT_EQ("1 1 0", r1_d1.GetMouseMotionCountsAndReset());
@@ -458,7 +458,7 @@ TEST_F(ExtendedDesktopTest, CaptureEventLocation) {
 
   r1_w1->SetCapture();
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  aura::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseToCenterOf(r2_w1.get());
   EXPECT_EQ(gfx::Point(1060, 60).ToString(),
             generator.current_location().ToString());
@@ -493,7 +493,7 @@ TEST_F(ExtendedDesktopTest, CaptureEventLocationHighDPI) {
 
   r1_w1->SetCapture();
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  aura::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseToCenterOf(r2_w1.get());
   EXPECT_EQ(gfx::Point(560, 60).ToString(),
             generator.current_location().ToString());
@@ -528,7 +528,7 @@ TEST_F(ExtendedDesktopTest, CaptureEventLocationHighDPI_2) {
 
   r1_w1->SetCapture();
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
+  aura::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseToCenterOf(r2_w1.get());
   EXPECT_EQ(gfx::Point(1060, 60).ToString(),
             generator.current_location().ToString());
@@ -597,7 +597,7 @@ TEST_F(ExtendedDesktopTest, MoveWindowByMouseClick) {
   MoveWindowByClickEventHandler event_handler(window.get());
   window->AddPreTargetHandler(&event_handler);
 
-  ui::test::EventGenerator& event_generator(GetEventGenerator());
+  aura::test::EventGenerator& event_generator(GetEventGenerator());
 
   event_generator.MoveMouseToCenterOf(window.get());
   event_generator.ClickLeftButton();
@@ -764,7 +764,7 @@ TEST_F(ExtendedDesktopTest, OpenSystemTray) {
   SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
   ASSERT_FALSE(tray->HasSystemBubble());
 
-  ui::test::EventGenerator& event_generator(GetEventGenerator());
+  aura::test::EventGenerator& event_generator(GetEventGenerator());
 
   // Opens the tray by a dummy click event and makes sure that adding/removing
   // displays doesn't break anything.
@@ -866,7 +866,7 @@ TEST_F(ExtendedDesktopTest, KeyEventsOnLockScreen) {
   EXPECT_EQ(lock_widget->GetNativeView(), focus_client->GetFocusedWindow());
 
   // The lock window should get events on both root windows.
-  ui::test::EventGenerator& event_generator(GetEventGenerator());
+  aura::test::EventGenerator& event_generator(GetEventGenerator());
 
   event_generator.set_current_target(root_windows[0]);
   event_generator.PressKey(ui::VKEY_A, 0);
@@ -917,7 +917,7 @@ TEST_F(ExtendedDesktopTest, PassiveGrab) {
   widget->Show();
   ASSERT_EQ("50,50 200x200", widget->GetWindowBoundsInScreen().ToString());
 
-  ui::test::EventGenerator& generator(GetEventGenerator());
+  aura::test::EventGenerator& generator(GetEventGenerator());
   generator.MoveMouseTo(150, 150);
   EXPECT_EQ("100,100 150,150", event_handler.GetLocationsAndReset());
 

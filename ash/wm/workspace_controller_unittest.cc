@@ -22,6 +22,7 @@
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -31,7 +32,6 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/event_utils.h"
-#include "ui/events/test/event_generator.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_animations.h"
@@ -367,8 +367,8 @@ TEST_F(WorkspaceControllerTest, MinimizeFullscreenWindow) {
 TEST_F(WorkspaceControllerTest, ShelfStateUpdated) {
   // Since ShelfLayoutManager queries for mouse location, move the mouse so
   // it isn't over the shelf.
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                     gfx::Point());
+  aura::test::EventGenerator generator(
+      Shell::GetPrimaryRootWindow(), gfx::Point());
   generator.MoveMouseTo(0, 0);
 
   scoped_ptr<Window> w1(CreateTestWindow());
@@ -575,8 +575,8 @@ TEST_F(WorkspaceControllerTest, VisibilityTests) {
 
 // Verifies windows that are offscreen don't move when switching workspaces.
 TEST_F(WorkspaceControllerTest, DontMoveOnSwitch) {
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                     gfx::Point());
+  aura::test::EventGenerator generator(
+      Shell::GetPrimaryRootWindow(), gfx::Point());
   generator.MoveMouseTo(0, 0);
 
   scoped_ptr<Window> w1(CreateTestWindow());
@@ -603,8 +603,8 @@ TEST_F(WorkspaceControllerTest, DontMoveOnSwitch) {
 // Verifies that windows that are completely offscreen move when switching
 // workspaces.
 TEST_F(WorkspaceControllerTest, MoveOnSwitch) {
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                     gfx::Point());
+  aura::test::EventGenerator generator(
+      Shell::GetPrimaryRootWindow(), gfx::Point());
   generator.MoveMouseTo(0, 0);
 
   scoped_ptr<Window> w1(CreateTestWindow());
@@ -1397,8 +1397,8 @@ TEST_F(WorkspaceControllerTestDragging, DragWindowOverlapShelf) {
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
   // Drag near the shelf.
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                     gfx::Point());
+  aura::test::EventGenerator generator(
+      Shell::GetPrimaryRootWindow(), gfx::Point());
   generator.MoveMouseTo(10, 10);
   generator.PressLeftButton();
   generator.MoveMouseTo(100, shelf->GetIdealBounds().y() - 70);
@@ -1428,8 +1428,8 @@ TEST_F(WorkspaceControllerTestDragging, DragWindowKeepsShelfAutohidden) {
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 
   // Drag very little.
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                     gfx::Point());
+  aura::test::EventGenerator generator(
+      Shell::GetPrimaryRootWindow(), gfx::Point());
   generator.MoveMouseTo(10, 10);
   generator.PressLeftButton();
   generator.MoveMouseTo(12, 12);

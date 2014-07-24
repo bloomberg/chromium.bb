@@ -15,11 +15,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "ui/aura/env.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/events/test/event_generator.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/display_observer.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/screen_type_delegate.h"
 
@@ -613,7 +613,7 @@ TEST_F(DisplayManagerTest, MAYBE_EnsurePointerInDisplays) {
 
   aura::Env* env = aura::Env::GetInstance();
 
-  ui::test::EventGenerator generator(root_windows[0]);
+  aura::test::EventGenerator generator(root_windows[0]);
 
   // Set the initial position.
   generator.MoveMouseToInHost(350, 150);
@@ -1019,8 +1019,8 @@ TEST_F(DisplayManagerTest, MAYBE_UpdateMouseCursorAfterRotateZoom) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   aura::Env* env = aura::Env::GetInstance();
 
-  ui::test::EventGenerator generator1(root_windows[0]);
-  ui::test::EventGenerator generator2(root_windows[1]);
+  aura::test::EventGenerator generator1(root_windows[0]);
+  aura::test::EventGenerator generator2(root_windows[1]);
 
   // Test on 1st display.
   generator1.MoveMouseToInHost(150, 50);

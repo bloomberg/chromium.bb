@@ -19,12 +19,12 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/event_utils.h"
-#include "ui/events/test/event_generator.h"
 
 using blink::WebInputEvent;
 
@@ -149,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
   RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
       web_contents->GetRenderWidgetHostView());
   aura::Window* content = web_contents->GetContentNativeView();
-  ui::test::EventGenerator generator(content->GetRootWindow(), content);
+  aura::test::EventGenerator generator(content->GetRootWindow(), content);
   gfx::Rect bounds = content->GetBoundsInRootWindow();
 
   touch_editable->Reset();
@@ -331,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
   RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
       web_contents->GetRenderWidgetHostView());
   aura::Window* content = web_contents->GetContentNativeView();
-  ui::test::EventGenerator generator(content->GetRootWindow(), content);
+  aura::test::EventGenerator generator(content->GetRootWindow(), content);
   gfx::Rect bounds = content->GetBoundsInRootWindow();
   EXPECT_EQ(GetRenderWidgetHostViewAura(touch_editable), rwhva);
 

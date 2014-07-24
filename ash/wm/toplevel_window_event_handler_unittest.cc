@@ -20,11 +20,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
-#include "ui/events/test/event_generator.h"
 #include "ui/gfx/screen.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/window_move_client.h"
@@ -80,12 +80,12 @@ class ToplevelWindowEventHandlerTest : public AshTestBase {
   }
 
   void DragFromCenterBy(aura::Window* window, int dx, int dy) {
-    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), window);
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), window);
     generator.DragMouseBy(dx, dy);
   }
 
   void TouchDragFromCenterBy(aura::Window* window, int dx, int dy) {
-    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), window);
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), window);
     generator.PressMoveAndReleaseTouchBy(dx, dy);
   }
 
@@ -130,7 +130,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GrowBox) {
   window_delegate->set_minimum_size(gfx::Size(40, 40));
 
   gfx::Point position = w1->bounds().origin();
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.MoveMouseToCenterOf(w1.get());
   generator.DragMouseBy(100, 100);
   // Position should not have changed.
@@ -374,8 +374,8 @@ TEST_F(ToplevelWindowEventHandlerTest, DontDragIfModalChild) {
 // Verifies we don't let windows drag to a -y location.
 TEST_F(ToplevelWindowEventHandlerTest, DontDragToNegativeY) {
   scoped_ptr<aura::Window> target(CreateWindow(HTTOP));
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                     target.get());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       target.get());
   generator.MoveMouseTo(0, 5);
   generator.DragMouseBy(0, -5);
   // The y location and height should not have changed.
@@ -401,8 +401,8 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
           0,
           gfx::Rect(0, 0, 100, 100)));
   wm::WindowState* window_state = wm::GetWindowState(target.get());
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                     target.get());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       target.get());
   gfx::Rect old_bounds = target->bounds();
   gfx::Point location(5, 5);
   target->SetProperty(aura::client::kCanMaximizeKey, true);
@@ -481,8 +481,8 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragMinimizeLoginScreen) {
       RootWindowController::ForWindow(target.get())
           ->GetContainer(kShellWindowId_LockSystemModalContainer);
   lock->AddChild(target.get());
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                     target.get());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       target.get());
   gfx::Rect old_bounds = target->bounds();
   gfx::Point location(5, 5);
   target->SetProperty(aura::client::kCanMaximizeKey, true);
@@ -506,8 +506,8 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragToRestore) {
   wm::WindowState* window_state = wm::GetWindowState(window.get());
   window_state->Activate();
 
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                     window.get());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       window.get());
   gfx::Rect old_bounds = window->bounds();
   gfx::Point location, end;
   end = location = window->GetBoundsInRootWindow().CenterPoint();
@@ -528,8 +528,8 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragForUnresizableWindow) {
   scoped_ptr<aura::Window> target(CreateWindow(HTCAPTION));
   wm::WindowState* window_state = wm::GetWindowState(target.get());
 
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                     target.get());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       target.get());
   gfx::Rect old_bounds = target->bounds();
   gfx::Point location(5, 5);
 
@@ -583,8 +583,8 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragMultipleWindows) {
           new TestWindowDelegate(HTCAPTION),
           1, gfx::Rect(100, 0, 100, 100)));
 
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                     target.get());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       target.get());
   gfx::Rect old_bounds = target->bounds();
   gfx::Point location(5, 5);
   target->SetProperty(aura::client::kCanMaximizeKey, true);
@@ -598,7 +598,8 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragMultipleWindows) {
   // Try to drag |notmoved| window. This should not move the window.
   {
     gfx::Rect bounds = notmoved->bounds();
-    ui::test::EventGenerator gen(Shell::GetPrimaryRootWindow(), notmoved.get());
+    aura::test::EventGenerator gen(Shell::GetPrimaryRootWindow(),
+                                   notmoved.get());
     gfx::Point start = notmoved->bounds().origin() + gfx::Vector2d(10, 10);
     gfx::Point end = start + gfx::Vector2d(100, 10);
     gen.GestureScrollSequence(start, end,
@@ -617,8 +618,8 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragMultipleWindows) {
 #endif
 TEST_F(ToplevelWindowEventHandlerTest, MAYBE_EscapeReverts) {
   scoped_ptr<aura::Window> target(CreateWindow(HTBOTTOMRIGHT));
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                     target.get());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       target.get());
   generator.PressLeftButton();
   generator.MoveMouseBy(10, 11);
 
@@ -643,8 +644,8 @@ TEST_F(ToplevelWindowEventHandlerTest, MAYBE_MinimizeMaximizeCompletes) {
   {
     scoped_ptr<aura::Window> target(CreateWindow(HTCAPTION));
     target->Focus();
-    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                       target.get());
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                         target.get());
     generator.PressLeftButton();
     generator.MoveMouseBy(10, 11);
     RunAllPendingInMessageLoop();
@@ -663,8 +664,8 @@ TEST_F(ToplevelWindowEventHandlerTest, MAYBE_MinimizeMaximizeCompletes) {
   {
     scoped_ptr<aura::Window> target(CreateWindow(HTCAPTION));
     target->Focus();
-    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                       target.get());
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                         target.get());
     generator.PressLeftButton();
     generator.MoveMouseBy(10, 11);
     RunAllPendingInMessageLoop();
@@ -688,8 +689,8 @@ TEST_F(ToplevelWindowEventHandlerTest, RunMoveLoopFailsDuringInProgressDrag) {
   EXPECT_EQ("0,0 100x100", window1->bounds().ToString());
   scoped_ptr<aura::Window> window2(CreateWindow(HTCAPTION));
 
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                     window1.get());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       window1.get());
   window1->Focus();
   generator.PressLeftButton();
   generator.MoveMouseBy(10, 11);
@@ -707,7 +708,7 @@ TEST_F(ToplevelWindowEventHandlerTest, RunMoveLoopFailsDuringInProgressDrag) {
 
 namespace {
 
-void SendMouseReleaseAndReleaseCapture(ui::test::EventGenerator* generator,
+void SendMouseReleaseAndReleaseCapture(aura::test::EventGenerator* generator,
                                        aura::Window* window) {
   generator->ReleaseLeftButton();
   window->ReleaseCapture();
@@ -719,8 +720,8 @@ void SendMouseReleaseAndReleaseCapture(ui::test::EventGenerator* generator,
 // immediately after the mouse release. views::Widget has this behavior.
 TEST_F(ToplevelWindowEventHandlerTest, CaptureLossAfterMouseRelease) {
   scoped_ptr<aura::Window> window(CreateWindow(HTNOWHERE));
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                     window.get());
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       window.get());
   generator.PressLeftButton();
   window->SetCapture();
 

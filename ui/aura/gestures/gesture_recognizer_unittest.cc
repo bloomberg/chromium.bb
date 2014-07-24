@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -23,7 +24,6 @@
 #include "ui/events/gestures/gesture_recognizer_impl.h"
 #include "ui/events/gestures/gesture_sequence.h"
 #include "ui/events/gestures/gesture_types.h"
-#include "ui/events/test/event_generator.h"
 #include "ui/events/test/events_test_utils.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -2472,7 +2472,7 @@ TEST_P(GestureRecognizerTest, GestureEndLocation) {
   GestureEventConsumeDelegate delegate;
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
       &delegate, -1234, gfx::Rect(10, 10, 300, 300), root_window()));
-  ui::test::EventGenerator generator(root_window(), window.get());
+  EventGenerator generator(root_window(), window.get());
   const gfx::Point begin(20, 20);
   const gfx::Point end(150, 150);
   const gfx::Vector2d window_offset =
@@ -2495,7 +2495,7 @@ TEST_P(GestureRecognizerTest, CaptureSendsGestureEnd) {
 
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
       delegate.get(), -1234, gfx::Rect(10, 10, 300, 300), root_window()));
-  ui::test::EventGenerator generator(root_window());
+  EventGenerator generator(root_window());
 
   generator.MoveMouseRelativeTo(window.get(), gfx::Point(10, 10));
   generator.PressTouch();
@@ -2526,7 +2526,7 @@ TEST_P(GestureRecognizerTest, CaptureDoesNotCancelFinishedTouches) {
       -1234, gfx::Rect(10, 10, 300, 300), root_window()));
   window1->SetCapture();
 
-  ui::test::EventGenerator generator(root_window());
+  EventGenerator generator(root_window());
   TimedEvents tes;
 
   // Generate two touch-press events on the window.
@@ -2865,7 +2865,7 @@ TEST_P(GestureRecognizerTest, MultiFingerSwipe) {
     gfx::Point(80, 50)
   };
 
-  ui::test::EventGenerator generator(root_window(), window.get());
+  aura::test::EventGenerator generator(root_window(), window.get());
 
   // The unified gesture recognizer assumes a finger has stopped if it hasn't
   // moved for too long. See ui/events/gesture_detection/velocity_tracker.cc's

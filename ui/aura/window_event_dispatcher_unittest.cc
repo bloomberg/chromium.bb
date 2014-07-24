@@ -15,6 +15,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/env_test_helper.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_cursor_client.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -27,7 +28,6 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_configuration.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/events/test/event_generator.h"
 #include "ui/events/test/test_event_handler.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -318,7 +318,7 @@ TEST_F(WindowEventDispatcherTest, CanProcessEventsWithinSubtree) {
   {
     // Attempting to send a key event to w1 (not in the lock container) should
     // cause focus to be reset.
-    ui::test::EventGenerator generator(root_window());
+    test::EventGenerator generator(root_window());
     generator.PressKey(ui::VKEY_SPACE, 0);
     EXPECT_EQ(NULL, client::GetFocusClient(w1)->GetFocusedWindow());
     EXPECT_FALSE(IsFocusedWindow(w1));
@@ -327,12 +327,12 @@ TEST_F(WindowEventDispatcherTest, CanProcessEventsWithinSubtree) {
   {
     // Events sent to a window not in the lock container will not be processed.
     // i.e. never sent to the non-lock container's event filter.
-    ui::test::EventGenerator generator(root_window(), w1);
+    test::EventGenerator generator(root_window(), w1);
     generator.ClickLeftButton();
     EXPECT_EQ(0, nonlock_ef.num_mouse_events());
 
     // Events sent to a window in the lock container will be processed.
-    ui::test::EventGenerator generator3(root_window(), w3.get());
+    test::EventGenerator generator3(root_window(), w3.get());
     generator3.PressLeftButton();
     EXPECT_EQ(1, lock_ef.num_mouse_events());
   }
@@ -826,7 +826,7 @@ TEST_F(WindowEventDispatcherTest, TouchMovesHeldOnScroll) {
       &delegate, 1, gfx::Rect(50, 50, 100, 100), root_window()));
   window->AddPreTargetHandler(&handler);
 
-  ui::test::EventGenerator generator(root_window());
+  test::EventGenerator generator(root_window());
   generator.GestureScrollSequence(
       gfx::Point(60, 60), gfx::Point(10, 60),
       base::TimeDelta::FromMilliseconds(100), 25);
@@ -1163,7 +1163,7 @@ TEST_F(WindowEventDispatcherTest, DeleteWindowDuringDispatch) {
   w1->AddPreTargetHandler(&w1_filter);
   client::GetFocusClient(w1.get())->FocusWindow(w11);
 
-  ui::test::EventGenerator generator(root_window(), w11);
+  test::EventGenerator generator(root_window(), w11);
 
   // First up, no one deletes anything.
   tracker.Add(w11);
@@ -1227,7 +1227,7 @@ TEST_F(WindowEventDispatcherTest,
   DetachesParentOnTapDelegate delegate;
   scoped_ptr<Window> parent(CreateNormalWindow(22, w1.get(), NULL));
   Window* child = CreateNormalWindow(11, parent.get(), &delegate);
-  ui::test::EventGenerator generator(root_window(), child);
+  test::EventGenerator generator(root_window(), child);
   generator.GestureTapAt(gfx::Point(40, 40));
 }
 
@@ -1236,7 +1236,7 @@ namespace {
 // A window delegate that processes nested gestures on tap.
 class NestedGestureDelegate : public test::TestWindowDelegate {
  public:
-  NestedGestureDelegate(ui::test::EventGenerator* generator,
+  NestedGestureDelegate(test::EventGenerator* generator,
                         const gfx::Point tap_location)
       : generator_(generator),
         tap_location_(tap_location),
@@ -1264,7 +1264,7 @@ class NestedGestureDelegate : public test::TestWindowDelegate {
     }
   }
 
-  ui::test::EventGenerator* generator_;
+  test::EventGenerator* generator_;
   const gfx::Point tap_location_;
   int gesture_end_count_;
   DISALLOW_COPY_AND_ASSIGN(NestedGestureDelegate);
@@ -1278,13 +1278,13 @@ TEST_F(WindowEventDispatcherTest, GestureEndDeliveredAfterNestedGestures) {
   scoped_ptr<Window> w1(CreateNormalWindow(1, root_window(), &d1));
   w1->SetBounds(gfx::Rect(0, 0, 100, 100));
 
-  ui::test::EventGenerator nested_generator(root_window(), w1.get());
+  test::EventGenerator nested_generator(root_window(), w1.get());
   NestedGestureDelegate d2(&nested_generator, w1->bounds().CenterPoint());
   scoped_ptr<Window> w2(CreateNormalWindow(1, root_window(), &d2));
   w2->SetBounds(gfx::Rect(100, 0, 100, 100));
 
   // Tap on w2 which triggers nested gestures for w1.
-  ui::test::EventGenerator generator(root_window(), w2.get());
+  test::EventGenerator generator(root_window(), w2.get());
   generator.GestureTapAt(w2->bounds().CenterPoint());
 
   // Both windows should get their gesture end events.
@@ -1401,11 +1401,11 @@ TEST_F(WindowEventDispatcherTest, GestureRepostEventOrder) {
 
   // Generate a tap down gesture for the repost_source. This will be reposted
   // to repost_target.
-  ui::test::EventGenerator repost_generator(root_window(), repost_source.get());
+  test::EventGenerator repost_generator(root_window(), repost_source.get());
   repost_generator.GestureTapAt(gfx::Point(40, 40));
   RunAllPendingInMessageLoop();
 
-  ui::test::EventGenerator scroll_generator(root_window(), repost_target.get());
+  test::EventGenerator scroll_generator(root_window(), repost_target.get());
   scroll_generator.GestureScrollSequence(
       gfx::Point(80, 80),
       gfx::Point(100, 100),
@@ -1465,7 +1465,7 @@ TEST_F(WindowEventDispatcherTest, DeleteWindowDuringMouseMovedDispatch) {
   w1->SetBounds(gfx::Rect(20, 20, 60, 60));
   EXPECT_EQ(NULL, host()->dispatcher()->mouse_moved_handler());
 
-  ui::test::EventGenerator generator(root_window(), w1.get());
+  test::EventGenerator generator(root_window(), w1.get());
 
   // Move mouse over window 1 to set it as the |mouse_moved_handler_| for the
   // root window.
@@ -1966,7 +1966,7 @@ TEST_F(WindowEventDispatcherTestInHighDPI, TouchMovesHeldOnScroll) {
       &delegate, 1, gfx::Rect(50, 50, 100, 100), root_window()));
   window->AddPreTargetHandler(&handler);
 
-  ui::test::EventGenerator generator(root_window());
+  test::EventGenerator generator(root_window());
   generator.GestureScrollSequence(
       gfx::Point(120, 120), gfx::Point(20, 120),
       base::TimeDelta::FromMilliseconds(100), 25);
@@ -2008,7 +2008,7 @@ class SelfDestructDelegate : public test::TestWindowDelegate {
 };
 
 TEST_F(WindowEventDispatcherTest, SynthesizedLocatedEvent) {
-  ui::test::EventGenerator generator(root_window());
+  test::EventGenerator generator(root_window());
   generator.MoveMouseTo(10, 10);
   EXPECT_EQ("10,10",
             Env::GetInstance()->last_mouse_location().ToString());
