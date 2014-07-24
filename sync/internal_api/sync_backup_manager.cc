@@ -38,27 +38,17 @@ void SyncBackupManager::Init(
       ReportUnrecoverableErrorFunction
           report_unrecoverable_error_function,
       CancelationSignal* cancelation_signal) {
-  SyncRollbackManagerBase::Init(database_location, event_handler,
-                                sync_server_and_path, sync_server_port,
-                                use_ssl, post_factory.Pass(),
-                                workers, extensions_activity, change_delegate,
-                                credentials, invalidator_client_id,
-                                restored_key_for_bootstrapping,
-                                restored_keystore_key_for_bootstrapping,
-                                internal_components_factory, encryptor,
-                                unrecoverable_error_handler.Pass(),
-                                report_unrecoverable_error_function,
-                                cancelation_signal);
+  if (SyncRollbackManagerBase::InitInternal(
+          database_location,
+          internal_components_factory,
+          unrecoverable_error_handler.Pass(),
+          report_unrecoverable_error_function)) {
+    GetUserShare()->directory->CollectMetaHandleCounts(
+        &status_.num_entries_by_type, &status_.num_to_delete_entries_by_type);
 
-  if (!initialized())
-    return;
-
-  GetUserShare()->directory->CollectMetaHandleCounts(
-    &status_.num_entries_by_type,
-    &status_.num_to_delete_entries_by_type);
-
-  HideSyncPreference(PRIORITY_PREFERENCES);
-  HideSyncPreference(PREFERENCES);
+    HideSyncPreference(PRIORITY_PREFERENCES);
+    HideSyncPreference(PREFERENCES);
+  }
 }
 
 void SyncBackupManager::SaveChanges() {
