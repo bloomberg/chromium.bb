@@ -271,7 +271,7 @@ void Dispatcher::DidCreateScriptContext(
   // Initialize origin permissions for content scripts, which can't be
   // initialized in |OnActivateExtension|.
   if (context_type == Feature::CONTENT_SCRIPT_CONTEXT)
-    UpdateOriginPermissions(extension);
+    InitOriginPermissions(extension);
 
   {
     scoped_ptr<ModuleSystem> module_system(
@@ -517,7 +517,7 @@ void Dispatcher::WebKitInitialized() {
     const Extension* extension = extensions_.GetByID(*iter);
     CHECK(extension);
 
-    UpdateOriginPermissions(extension);
+    InitOriginPermissions(extension);
   }
 
   EnableCustomElementWhiteList();
@@ -576,7 +576,7 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
     extensions::DOMActivityLogger::AttachToWorld(
         extensions::DOMActivityLogger::kMainWorldId, extension_id);
 
-    UpdateOriginPermissions(extension);
+    InitOriginPermissions(extension);
   }
 
   UpdateActiveExtensions();
@@ -752,8 +752,14 @@ void Dispatcher::OnUpdatePermissions(
   scoped_refptr<const PermissionSet> withheld =
       params.withheld_permissions.ToPermissionSet();
 
+  if (is_webkit_initialized_) {
+    UpdateOriginPermissions(
+        extension,
+        extension->permissions_data()->GetEffectiveHostPermissions(),
+        active->effective_hosts());
+  }
+
   extension->permissions_data()->SetPermissions(active, withheld);
-  UpdateOriginPermissions(extension);
   UpdateBindings(extension->id());
 }
 
@@ -782,28 +788,48 @@ void Dispatcher::UpdateActiveExtensions() {
   delegate_->OnActiveExtensionsUpdated(active_extensions);
 }
 
-void Dispatcher::UpdateOriginPermissions(const Extension* extension) {
-  const URLPatternSet& hosts =
-      extension->permissions_data()->GetEffectiveHostPermissions();
-  WebSecurityPolicy::resetOriginAccessWhitelists();
+void Dispatcher::InitOriginPermissions(const Extension* extension) {
   delegate_->InitOriginPermissions(extension,
                                    IsExtensionActive(extension->id()));
-  for (URLPatternSet::const_iterator iter = hosts.begin(); iter != hosts.end();
-       ++iter) {
-    const char* schemes[] = {
-        url::kHttpScheme,
-        url::kHttpsScheme,
-        url::kFileScheme,
-        content::kChromeUIScheme,
-        url::kFtpScheme,
-    };
-    for (size_t j = 0; j < arraysize(schemes); ++j) {
-      if (iter->MatchesScheme(schemes[j])) {
+  UpdateOriginPermissions(
+      extension,
+      URLPatternSet(),  // No old permissions.
+      extension->permissions_data()->GetEffectiveHostPermissions());
+}
+
+void Dispatcher::UpdateOriginPermissions(
+    const Extension* extension,
+    const URLPatternSet& old_patterns,
+    const URLPatternSet& new_patterns) {
+  static const char* kSchemes[] = {
+      url::kHttpScheme,
+      url::kHttpsScheme,
+      url::kFileScheme,
+      content::kChromeUIScheme,
+      url::kFtpScheme,
+  };
+  for (size_t i = 0; i < arraysize(kSchemes); ++i) {
+    const char* scheme = kSchemes[i];
+    // Remove all old patterns...
+    for (URLPatternSet::const_iterator pattern = old_patterns.begin();
+         pattern != old_patterns.end(); ++pattern) {
+      if (pattern->MatchesScheme(scheme)) {
+        WebSecurityPolicy::removeOriginAccessWhitelistEntry(
+            extension->url(),
+            WebString::fromUTF8(scheme),
+            WebString::fromUTF8(pattern->host()),
+            pattern->match_subdomains());
+      }
+    }
+    // ...And add the new ones.
+    for (URLPatternSet::const_iterator pattern = new_patterns.begin();
+         pattern != new_patterns.end(); ++pattern) {
+      if (pattern->MatchesScheme(scheme)) {
         WebSecurityPolicy::addOriginAccessWhitelistEntry(
             extension->url(),
-            WebString::fromUTF8(schemes[j]),
-            WebString::fromUTF8(iter->host()),
-            iter->match_subdomains());
+            WebString::fromUTF8(scheme),
+            WebString::fromUTF8(pattern->host()),
+            pattern->match_subdomains());
       }
     }
   }
