@@ -102,6 +102,9 @@ public:
     {
 #if ENABLE(OILPAN)
         channel()->disconnect();
+        m_channelClient.clear();
+        m_channel.clear();
+        Heap::collectAllGarbage();
 #endif
     }
 

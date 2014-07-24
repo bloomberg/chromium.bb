@@ -34,6 +34,7 @@
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/heap/Handle.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
@@ -44,6 +45,13 @@ namespace {
 class DocumentTest : public ::testing::Test {
 protected:
     virtual void SetUp() OVERRIDE;
+
+#if ENABLE(OILPAN)
+    virtual void TearDown() OVERRIDE
+    {
+        Heap::collectAllGarbage();
+    }
+#endif
 
     Document& document() const { return m_dummyPageHolder->document(); }
     Page& page() const { return m_dummyPageHolder->page(); }
