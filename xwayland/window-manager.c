@@ -1371,15 +1371,15 @@ weston_wm_window_handle_surface_id(struct weston_wm_window *window,
 	 * hasn't been created yet.  In that case put the window on
 	 * the unpaired window list and continue when the surface gets
 	 * created. */
-	uint32_t surface = client_message->data.data32[0];
-	resource = wl_client_get_object(wm->server->client, surface);
+	uint32_t id = client_message->data.data32[0];
+	resource = wl_client_get_object(wm->server->client, id);
 	if (resource) {
 		window->surface_id = 0;
 		xserver_map_shell_surface(window,
 					  wl_resource_get_user_data(resource));
 	}
 	else {
-		window->surface_id = surface;
+		window->surface_id = id;
 		wl_list_insert(&wm->unpaired_window_list, &window->link);
 	}
 }
