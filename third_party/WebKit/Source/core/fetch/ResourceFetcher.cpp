@@ -337,22 +337,6 @@ ResourcePtr<CSSStyleSheetResource> ResourceFetcher::fetchCSSStyleSheet(FetchRequ
     return toCSSStyleSheetResource(requestResource(Resource::CSSStyleSheet, request));
 }
 
-ResourcePtr<CSSStyleSheetResource> ResourceFetcher::fetchUserCSSStyleSheet(FetchRequest& request)
-{
-    ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
-    request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextStyle);
-    KURL url = MemoryCache::removeFragmentIdentifierIfNeeded(request.resourceRequest().url());
-
-    if (Resource* existing = memoryCache()->resourceForURL(url)) {
-        if (existing->type() == Resource::CSSStyleSheet)
-            return toCSSStyleSheetResource(existing);
-        memoryCache()->remove(existing);
-    }
-
-    request.setOptions(ResourceLoaderOptions(SniffContent, BufferData, AllowStoredCredentials, ClientRequestedCredentials, CheckContentSecurityPolicy, DocumentContext));
-    return toCSSStyleSheetResource(requestResource(Resource::CSSStyleSheet, request));
-}
-
 ResourcePtr<ScriptResource> ResourceFetcher::fetchScript(FetchRequest& request)
 {
     ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
