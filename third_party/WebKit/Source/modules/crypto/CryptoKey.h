@@ -45,7 +45,7 @@ class KeyAlgorithm;
 
 class CryptoKey : public GarbageCollectedFinalized<CryptoKey>, public ScriptWrappable {
 public:
-    static CryptoKey* create(const blink::WebCryptoKey& key)
+    static CryptoKey* create(const WebCryptoKey& key)
     {
         return new CryptoKey(key);
     }
@@ -56,22 +56,22 @@ public:
     bool extractable() const;
     Vector<String> usages() const;
 
-    const blink::WebCryptoKey& key() const { return m_key; }
+    const WebCryptoKey& key() const { return m_key; }
 
     // If the key cannot be used with the indicated algorithm, returns false
     // and completes the CryptoResult with an error.
-    bool canBeUsedForAlgorithm(const blink::WebCryptoAlgorithm&, blink::WebCryptoOperation, CryptoResult*) const;
+    bool canBeUsedForAlgorithm(const WebCryptoAlgorithm&, WebCryptoOperation, CryptoResult*) const;
 
     // On failure, these return false and complete the CryptoResult with an error.
-    static bool parseFormat(const String&, blink::WebCryptoKeyFormat&, CryptoResult*);
-    static bool parseUsageMask(const Vector<String>&, blink::WebCryptoKeyUsageMask&, CryptoResult*);
+    static bool parseFormat(const String&, WebCryptoKeyFormat&, CryptoResult*);
+    static bool parseUsageMask(const Vector<String>&, WebCryptoKeyUsageMask&, CryptoResult*);
 
     void trace(Visitor*) { }
 
 protected:
-    explicit CryptoKey(const blink::WebCryptoKey&);
+    explicit CryptoKey(const WebCryptoKey&);
 
-    const blink::WebCryptoKey m_key;
+    const WebCryptoKey m_key;
 };
 
 } // namespace blink

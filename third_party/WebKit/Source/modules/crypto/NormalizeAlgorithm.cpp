@@ -52,7 +52,7 @@ struct AlgorithmNameMapping {
     const char* const algorithmName;
     // Must be strlen(algorithmName).
     unsigned char algorithmNameLength;
-    blink::WebCryptoAlgorithmId algorithmId;
+    WebCryptoAlgorithmId algorithmId;
 
 #if ENABLE(ASSERT)
     bool operator<(const AlgorithmNameMapping&) const;
@@ -62,17 +62,17 @@ struct AlgorithmNameMapping {
 // Must be sorted by length, and then by reverse string.
 // Also all names must be upper case ASCII.
 const AlgorithmNameMapping algorithmNameMappings[] = {
-    {"HMAC", 4, blink::WebCryptoAlgorithmIdHmac},
-    {"SHA-1", 5, blink::WebCryptoAlgorithmIdSha1},
-    {"AES-KW", 6, blink::WebCryptoAlgorithmIdAesKw},
-    {"SHA-512", 7, blink::WebCryptoAlgorithmIdSha512},
-    {"SHA-384", 7, blink::WebCryptoAlgorithmIdSha384},
-    {"SHA-256", 7, blink::WebCryptoAlgorithmIdSha256},
-    {"AES-CBC", 7, blink::WebCryptoAlgorithmIdAesCbc},
-    {"AES-GCM", 7, blink::WebCryptoAlgorithmIdAesGcm},
-    {"AES-CTR", 7, blink::WebCryptoAlgorithmIdAesCtr},
-    {"RSA-OAEP", 8, blink::WebCryptoAlgorithmIdRsaOaep},
-    {"RSASSA-PKCS1-V1_5", 17, blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5},
+    {"HMAC", 4, WebCryptoAlgorithmIdHmac},
+    {"SHA-1", 5, WebCryptoAlgorithmIdSha1},
+    {"AES-KW", 6, WebCryptoAlgorithmIdAesKw},
+    {"SHA-512", 7, WebCryptoAlgorithmIdSha512},
+    {"SHA-384", 7, WebCryptoAlgorithmIdSha384},
+    {"SHA-256", 7, WebCryptoAlgorithmIdSha256},
+    {"AES-CBC", 7, WebCryptoAlgorithmIdAesCbc},
+    {"AES-GCM", 7, WebCryptoAlgorithmIdAesGcm},
+    {"AES-CTR", 7, WebCryptoAlgorithmIdAesCtr},
+    {"RSA-OAEP", 8, WebCryptoAlgorithmIdRsaOaep},
+    {"RSASSA-PKCS1-V1_5", 17, WebCryptoAlgorithmIdRsaSsaPkcs1v1_5},
 };
 
 #if ENABLE(ASSERT)
@@ -161,7 +161,7 @@ bool algorithmNameComparator(const AlgorithmNameMapping& a, StringImpl* b)
     return false;
 }
 
-bool lookupAlgorithmIdByName(const String& algorithmName, blink::WebCryptoAlgorithmId& id)
+bool lookupAlgorithmIdByName(const String& algorithmName, WebCryptoAlgorithmId& id)
 {
     const AlgorithmNameMapping* begin = algorithmNameMappings;
     const AlgorithmNameMapping* end = algorithmNameMappings + WTF_ARRAY_LENGTH(algorithmNameMappings);
@@ -186,19 +186,19 @@ bool lookupAlgorithmIdByName(const String& algorithmName, blink::WebCryptoAlgori
 
 void setSyntaxError(const String& message, AlgorithmError* error)
 {
-    error->errorType = blink::WebCryptoErrorTypeSyntax;
+    error->errorType = WebCryptoErrorTypeSyntax;
     error->errorDetails = message;
 }
 
 void setNotSupportedError(const String& message, AlgorithmError* error)
 {
-    error->errorType = blink::WebCryptoErrorTypeNotSupported;
+    error->errorType = WebCryptoErrorTypeNotSupported;
     error->errorDetails = message;
 }
 
 void setDataError(const String& message, AlgorithmError* error)
 {
-    error->errorType = blink::WebCryptoErrorTypeData;
+    error->errorType = WebCryptoErrorTypeData;
     error->errorDetails = message;
 }
 
@@ -410,7 +410,7 @@ bool getOptionalUint32(const Dictionary& raw, const char* propertyName, bool& ha
 //    dictionary AesCbcParams : Algorithm {
 //      CryptoOperationData iv;
 //    };
-bool parseAesCbcParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
+bool parseAesCbcParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
     RefPtr<ArrayBufferView> iv;
     if (!getCryptoOperationData(raw, "iv", iv, context, error))
@@ -421,7 +421,7 @@ bool parseAesCbcParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmPa
         return false;
     }
 
-    params = adoptPtr(new blink::WebCryptoAesCbcParams(static_cast<unsigned char*>(iv->baseAddress()), iv->byteLength()));
+    params = adoptPtr(new WebCryptoAesCbcParams(static_cast<unsigned char*>(iv->baseAddress()), iv->byteLength()));
     return true;
 }
 
@@ -430,19 +430,19 @@ bool parseAesCbcParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmPa
 //    dictionary AesKeyGenParams : Algorithm {
 //      [EnforceRange] unsigned short length;
 //    };
-bool parseAesKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
+bool parseAesKeyGenParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
     uint16_t length;
     if (!getUint16(raw, "length", length, context, error))
         return false;
 
-    params = adoptPtr(new blink::WebCryptoAesKeyGenParams(length));
+    params = adoptPtr(new WebCryptoAesKeyGenParams(length));
     return true;
 }
 
-bool parseAlgorithm(const Dictionary&, blink::WebCryptoOperation, blink::WebCryptoAlgorithm&, ErrorContext, AlgorithmError*);
+bool parseAlgorithm(const Dictionary&, WebCryptoOperation, WebCryptoAlgorithm&, ErrorContext, AlgorithmError*);
 
-bool parseHash(const Dictionary& raw, blink::WebCryptoAlgorithm& hash, ErrorContext context, AlgorithmError* error)
+bool parseHash(const Dictionary& raw, WebCryptoAlgorithm& hash, ErrorContext context, AlgorithmError* error)
 {
     Dictionary rawHash;
     if (!DictionaryHelper::get(raw, "hash", rawHash)) {
@@ -451,7 +451,7 @@ bool parseHash(const Dictionary& raw, blink::WebCryptoAlgorithm& hash, ErrorCont
     }
 
     context.add("hash");
-    return parseAlgorithm(rawHash, blink::WebCryptoOperationDigest, hash, context, error);
+    return parseAlgorithm(rawHash, WebCryptoOperationDigest, hash, context, error);
 }
 
 // Defined by the WebCrypto spec as:
@@ -459,13 +459,13 @@ bool parseHash(const Dictionary& raw, blink::WebCryptoAlgorithm& hash, ErrorCont
 //    dictionary HmacImportParams : Algorithm {
 //      AlgorithmIdentifier hash;
 //    };
-bool parseHmacImportParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
+bool parseHmacImportParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
-    blink::WebCryptoAlgorithm hash;
+    WebCryptoAlgorithm hash;
     if (!parseHash(raw, hash, context, error))
         return false;
 
-    params = adoptPtr(new blink::WebCryptoHmacImportParams(hash));
+    params = adoptPtr(new WebCryptoHmacImportParams(hash));
     return true;
 }
 
@@ -478,9 +478,9 @@ bool parseHmacImportParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorit
 //      // size.
 //      unsigned long length;
 //    };
-bool parseHmacKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
+bool parseHmacKeyGenParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
-    blink::WebCryptoAlgorithm hash;
+    WebCryptoAlgorithm hash;
     if (!parseHash(raw, hash, context, error))
         return false;
 
@@ -489,7 +489,7 @@ bool parseHmacKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorit
     if (!getOptionalUint32(raw, "length", hasLength, length, context, error))
         return false;
 
-    params = adoptPtr(new blink::WebCryptoHmacKeyGenParams(hash, hasLength, length));
+    params = adoptPtr(new WebCryptoHmacKeyGenParams(hash, hasLength, length));
     return true;
 }
 
@@ -498,13 +498,13 @@ bool parseHmacKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorit
 //    dictionary RsaHashedImportParams {
 //      AlgorithmIdentifier hash;
 //    };
-bool parseRsaHashedImportParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
+bool parseRsaHashedImportParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
-    blink::WebCryptoAlgorithm hash;
+    WebCryptoAlgorithm hash;
     if (!parseHash(raw, hash, context, error))
         return false;
 
-    params = adoptPtr(new blink::WebCryptoRsaHashedImportParams(hash));
+    params = adoptPtr(new WebCryptoRsaHashedImportParams(hash));
     return true;
 }
 
@@ -518,7 +518,7 @@ bool parseRsaHashedImportParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAl
 //      unsigned long modulusLength;
 //      BigInteger publicExponent;
 //    };
-bool parseRsaHashedKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
+bool parseRsaHashedKeyGenParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
     uint32_t modulusLength;
     if (!getUint32(raw, "modulusLength", modulusLength, context, error))
@@ -528,11 +528,11 @@ bool parseRsaHashedKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAl
     if (!getBigInteger(raw, "publicExponent", publicExponent, context, error))
         return false;
 
-    blink::WebCryptoAlgorithm hash;
+    WebCryptoAlgorithm hash;
     if (!parseHash(raw, hash, context, error))
         return false;
 
-    params = adoptPtr(new blink::WebCryptoRsaHashedKeyGenParams(hash, modulusLength, static_cast<const unsigned char*>(publicExponent->baseAddress()), publicExponent->byteLength()));
+    params = adoptPtr(new WebCryptoRsaHashedKeyGenParams(hash, modulusLength, static_cast<const unsigned char*>(publicExponent->baseAddress()), publicExponent->byteLength()));
     return true;
 }
 
@@ -542,7 +542,7 @@ bool parseRsaHashedKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAl
 //      CryptoOperationData counter;
 //      [EnforceRange] octet length;
 //    };
-bool parseAesCtrParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
+bool parseAesCtrParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
     RefPtr<ArrayBufferView> counter;
     if (!getCryptoOperationData(raw, "counter", counter, context, error))
@@ -552,7 +552,7 @@ bool parseAesCtrParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmPa
     if (!getUint8(raw, "length", length, context, error))
         return false;
 
-    params = adoptPtr(new blink::WebCryptoAesCtrParams(length, static_cast<const unsigned char*>(counter->baseAddress()), counter->byteLength()));
+    params = adoptPtr(new WebCryptoAesCtrParams(length, static_cast<const unsigned char*>(counter->baseAddress()), counter->byteLength()));
     return true;
 }
 
@@ -563,7 +563,7 @@ bool parseAesCtrParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmPa
 //       CryptoOperationData? additionalData;
 //       [EnforceRange] octet? tagLength;  // May be 0-128
 //     }
-bool parseAesGcmParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
+bool parseAesGcmParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
     RefPtr<ArrayBufferView> iv;
     if (!getCryptoOperationData(raw, "iv", iv, context, error))
@@ -585,7 +585,7 @@ bool parseAesGcmParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmPa
     const unsigned char* additionalDataStart = hasAdditionalData ? static_cast<const unsigned char*>(additionalData->baseAddress()) : 0;
     unsigned additionalDataLength = hasAdditionalData ? additionalData->byteLength() : 0;
 
-    params = adoptPtr(new blink::WebCryptoAesGcmParams(ivStart, ivLength, hasAdditionalData, additionalDataStart, additionalDataLength, hasTagLength, tagLength));
+    params = adoptPtr(new WebCryptoAesGcmParams(ivStart, ivLength, hasAdditionalData, additionalDataStart, additionalDataLength, hasTagLength, tagLength));
     return true;
 }
 
@@ -594,7 +594,7 @@ bool parseAesGcmParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmPa
 //     dictionary RsaOaepParams : Algorithm {
 //       CryptoOperationData? label;
 //     };
-bool parseRsaOaepParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
+bool parseRsaOaepParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
     bool hasLabel;
     RefPtr<ArrayBufferView> label;
@@ -604,40 +604,40 @@ bool parseRsaOaepParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmP
     const unsigned char* labelStart = hasLabel ? static_cast<const unsigned char*>(label->baseAddress()) : 0;
     unsigned labelLength = hasLabel ? label->byteLength() : 0;
 
-    params = adoptPtr(new blink::WebCryptoRsaOaepParams(hasLabel, labelStart, labelLength));
+    params = adoptPtr(new WebCryptoRsaOaepParams(hasLabel, labelStart, labelLength));
     return true;
 }
 
-bool parseAlgorithmParams(const Dictionary& raw, blink::WebCryptoAlgorithmParamsType type, OwnPtr<blink::WebCryptoAlgorithmParams>& params, ErrorContext& context, AlgorithmError* error)
+bool parseAlgorithmParams(const Dictionary& raw, WebCryptoAlgorithmParamsType type, OwnPtr<WebCryptoAlgorithmParams>& params, ErrorContext& context, AlgorithmError* error)
 {
     switch (type) {
-    case blink::WebCryptoAlgorithmParamsTypeNone:
+    case WebCryptoAlgorithmParamsTypeNone:
         return true;
-    case blink::WebCryptoAlgorithmParamsTypeAesCbcParams:
+    case WebCryptoAlgorithmParamsTypeAesCbcParams:
         context.add("AesCbcParams");
         return parseAesCbcParams(raw, params, context, error);
-    case blink::WebCryptoAlgorithmParamsTypeAesKeyGenParams:
+    case WebCryptoAlgorithmParamsTypeAesKeyGenParams:
         context.add("AesKeyGenParams");
         return parseAesKeyGenParams(raw, params, context, error);
-    case blink::WebCryptoAlgorithmParamsTypeHmacImportParams:
+    case WebCryptoAlgorithmParamsTypeHmacImportParams:
         context.add("HmacImportParams");
         return parseHmacImportParams(raw, params, context, error);
-    case blink::WebCryptoAlgorithmParamsTypeHmacKeyGenParams:
+    case WebCryptoAlgorithmParamsTypeHmacKeyGenParams:
         context.add("HmacKeyGenParams");
         return parseHmacKeyGenParams(raw, params, context, error);
-    case blink::WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams:
+    case WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams:
         context.add("RsaHashedKeyGenParams");
         return parseRsaHashedKeyGenParams(raw, params, context, error);
-    case blink::WebCryptoAlgorithmParamsTypeRsaHashedImportParams:
+    case WebCryptoAlgorithmParamsTypeRsaHashedImportParams:
         context.add("RsaHashedImportParams");
         return parseRsaHashedImportParams(raw, params, context, error);
-    case blink::WebCryptoAlgorithmParamsTypeAesCtrParams:
+    case WebCryptoAlgorithmParamsTypeAesCtrParams:
         context.add("AesCtrParams");
         return parseAesCtrParams(raw, params, context, error);
-    case blink::WebCryptoAlgorithmParamsTypeAesGcmParams:
+    case WebCryptoAlgorithmParamsTypeAesGcmParams:
         context.add("AesGcmParams");
         return parseAesGcmParams(raw, params, context, error);
-    case blink::WebCryptoAlgorithmParamsTypeRsaOaepParams:
+    case WebCryptoAlgorithmParamsTypeRsaOaepParams:
         context.add("RsaOaepParams");
         return parseRsaOaepParams(raw, params, context, error);
         break;
@@ -646,36 +646,36 @@ bool parseAlgorithmParams(const Dictionary& raw, blink::WebCryptoAlgorithmParams
     return false;
 }
 
-const char* operationToString(blink::WebCryptoOperation op)
+const char* operationToString(WebCryptoOperation op)
 {
     switch (op) {
-    case blink::WebCryptoOperationEncrypt:
+    case WebCryptoOperationEncrypt:
         return "encrypt";
-    case blink::WebCryptoOperationDecrypt:
+    case WebCryptoOperationDecrypt:
         return "decrypt";
-    case blink::WebCryptoOperationSign:
+    case WebCryptoOperationSign:
         return "sign";
-    case blink::WebCryptoOperationVerify:
+    case WebCryptoOperationVerify:
         return "verify";
-    case blink::WebCryptoOperationDigest:
+    case WebCryptoOperationDigest:
         return "digest";
-    case blink::WebCryptoOperationGenerateKey:
+    case WebCryptoOperationGenerateKey:
         return "generateKey";
-    case blink::WebCryptoOperationImportKey:
+    case WebCryptoOperationImportKey:
         return "importKey";
-    case blink::WebCryptoOperationDeriveKey:
+    case WebCryptoOperationDeriveKey:
         return "deriveKey";
-    case blink::WebCryptoOperationDeriveBits:
+    case WebCryptoOperationDeriveBits:
         return "deriveBits";
-    case blink::WebCryptoOperationWrapKey:
+    case WebCryptoOperationWrapKey:
         return "wrapKey";
-    case blink::WebCryptoOperationUnwrapKey:
+    case WebCryptoOperationUnwrapKey:
         return "unwrapKey";
     }
     return 0;
 }
 
-bool parseAlgorithm(const Dictionary& raw, blink::WebCryptoOperation op, blink::WebCryptoAlgorithm& algorithm, ErrorContext context, AlgorithmError* error)
+bool parseAlgorithm(const Dictionary& raw, WebCryptoOperation op, WebCryptoAlgorithm& algorithm, ErrorContext context, AlgorithmError* error)
 {
     context.add("Algorithm");
 
@@ -690,7 +690,7 @@ bool parseAlgorithm(const Dictionary& raw, blink::WebCryptoOperation op, blink::
         return false;
     }
 
-    blink::WebCryptoAlgorithmId algorithmId;
+    WebCryptoAlgorithmId algorithmId;
     if (!lookupAlgorithmIdByName(algorithmName, algorithmId)) {
         // FIXME: The spec says to return a SyntaxError if the input contains
         //        any non-ASCII characters.
@@ -701,27 +701,27 @@ bool parseAlgorithm(const Dictionary& raw, blink::WebCryptoOperation op, blink::
     // Remove the "Algorithm:" prefix for all subsequent errors.
     context.removeLast();
 
-    const blink::WebCryptoAlgorithmInfo* algorithmInfo = blink::WebCryptoAlgorithm::lookupAlgorithmInfo(algorithmId);
+    const WebCryptoAlgorithmInfo* algorithmInfo = WebCryptoAlgorithm::lookupAlgorithmInfo(algorithmId);
 
-    if (algorithmInfo->operationToParamsType[op] == blink::WebCryptoAlgorithmInfo::Undefined) {
+    if (algorithmInfo->operationToParamsType[op] == WebCryptoAlgorithmInfo::Undefined) {
         context.add(algorithmInfo->name);
         setNotSupportedError(context.toString("Unsupported operation", operationToString(op)), error);
         return false;
     }
 
-    blink::WebCryptoAlgorithmParamsType paramsType = static_cast<blink::WebCryptoAlgorithmParamsType>(algorithmInfo->operationToParamsType[op]);
+    WebCryptoAlgorithmParamsType paramsType = static_cast<WebCryptoAlgorithmParamsType>(algorithmInfo->operationToParamsType[op]);
 
-    OwnPtr<blink::WebCryptoAlgorithmParams> params;
+    OwnPtr<WebCryptoAlgorithmParams> params;
     if (!parseAlgorithmParams(raw, paramsType, params, context, error))
         return false;
 
-    algorithm = blink::WebCryptoAlgorithm(algorithmId, params.release());
+    algorithm = WebCryptoAlgorithm(algorithmId, params.release());
     return true;
 }
 
 } // namespace
 
-bool normalizeAlgorithm(const Dictionary& raw, blink::WebCryptoOperation op, blink::WebCryptoAlgorithm& algorithm, AlgorithmError* error)
+bool normalizeAlgorithm(const Dictionary& raw, WebCryptoOperation op, WebCryptoAlgorithm& algorithm, AlgorithmError* error)
 {
     return parseAlgorithm(raw, op, algorithm, ErrorContext(), error);
 }

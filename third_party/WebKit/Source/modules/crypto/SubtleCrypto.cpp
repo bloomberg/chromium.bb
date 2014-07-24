@@ -50,7 +50,7 @@ static bool ensureNotNull(const ArrayPiece& x, const char* paramName, CryptoResu
 {
     if (x.isNull()) {
         String message = String("Invalid ") + paramName + String(" argument");
-        result->completeWithError(blink::WebCryptoErrorTypeType, blink::WebString(message));
+        result->completeWithError(WebCryptoErrorTypeType, WebString(message));
         return false;
     }
     return true;
@@ -60,13 +60,13 @@ static bool ensureNotNull(CryptoKey* key, const char* paramName, CryptoResult* r
 {
     if (!key) {
         String message = String("Invalid ") + paramName + String(" argument");
-        result->completeWithError(blink::WebCryptoErrorTypeType, blink::WebString(message));
+        result->completeWithError(WebCryptoErrorTypeType, WebString(message));
         return false;
     }
     return true;
 }
 
-static bool parseAlgorithm(const Dictionary& raw, blink::WebCryptoOperation op, blink::WebCryptoAlgorithm& algorithm, CryptoResult* result)
+static bool parseAlgorithm(const Dictionary& raw, WebCryptoOperation op, WebCryptoAlgorithm& algorithm, CryptoResult* result)
 {
     AlgorithmError error;
     bool success = normalizeAlgorithm(raw, op, algorithm, &error);
@@ -79,14 +79,14 @@ static bool canAccessWebCrypto(ScriptState* scriptState, CryptoResult* result)
 {
     const SecurityOrigin* origin = scriptState->executionContext()->securityOrigin();
     if (!origin->canAccessFeatureRequiringSecureOrigin()) {
-        result->completeWithError(blink::WebCryptoErrorTypeNotSupported, "WebCrypto is only supported over secure origins. See http://crbug.com/373032");
+        result->completeWithError(WebCryptoErrorTypeNotSupported, "WebCrypto is only supported over secure origins. See http://crbug.com/373032");
         return false;
     }
 
     return true;
 }
 
-static ScriptPromise startCryptoOperation(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, blink::WebCryptoOperation operationType, const ArrayPiece& signature, const ArrayPiece& dataBuffer)
+static ScriptPromise startCryptoOperation(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, WebCryptoOperation operationType, const ArrayPiece& signature, const ArrayPiece& dataBuffer)
 {
     RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
@@ -94,16 +94,16 @@ static ScriptPromise startCryptoOperation(ScriptState* scriptState, const Dictio
     if (!canAccessWebCrypto(scriptState, result.get()))
         return promise;
 
-    bool requiresKey = operationType != blink::WebCryptoOperationDigest;
+    bool requiresKey = operationType != WebCryptoOperationDigest;
 
     if (requiresKey && !ensureNotNull(key, "key", result.get()))
         return promise;
-    if (operationType == blink::WebCryptoOperationVerify && !ensureNotNull(signature, "signature", result.get()))
+    if (operationType == WebCryptoOperationVerify && !ensureNotNull(signature, "signature", result.get()))
         return promise;
     if (!ensureNotNull(dataBuffer, "dataBuffer", result.get()))
         return promise;
 
-    blink::WebCryptoAlgorithm algorithm;
+    WebCryptoAlgorithm algorithm;
     if (!parseAlgorithm(rawAlgorithm, operationType, algorithm, result.get()))
         return promise;
 
@@ -114,20 +114,20 @@ static ScriptPromise startCryptoOperation(ScriptState* scriptState, const Dictio
     unsigned dataSize = dataBuffer.byteLength();
 
     switch (operationType) {
-    case blink::WebCryptoOperationEncrypt:
-        blink::Platform::current()->crypto()->encrypt(algorithm, key->key(), data, dataSize, result->result());
+    case WebCryptoOperationEncrypt:
+        Platform::current()->crypto()->encrypt(algorithm, key->key(), data, dataSize, result->result());
         break;
-    case blink::WebCryptoOperationDecrypt:
-        blink::Platform::current()->crypto()->decrypt(algorithm, key->key(), data, dataSize, result->result());
+    case WebCryptoOperationDecrypt:
+        Platform::current()->crypto()->decrypt(algorithm, key->key(), data, dataSize, result->result());
         break;
-    case blink::WebCryptoOperationSign:
-        blink::Platform::current()->crypto()->sign(algorithm, key->key(), data, dataSize, result->result());
+    case WebCryptoOperationSign:
+        Platform::current()->crypto()->sign(algorithm, key->key(), data, dataSize, result->result());
         break;
-    case blink::WebCryptoOperationVerify:
-        blink::Platform::current()->crypto()->verifySignature(algorithm, key->key(), signature.bytes(), signature.byteLength(), data, dataSize, result->result());
+    case WebCryptoOperationVerify:
+        Platform::current()->crypto()->verifySignature(algorithm, key->key(), signature.bytes(), signature.byteLength(), data, dataSize, result->result());
         break;
-    case blink::WebCryptoOperationDigest:
-        blink::Platform::current()->crypto()->digest(algorithm, data, dataSize, result->result());
+    case WebCryptoOperationDigest:
+        Platform::current()->crypto()->digest(algorithm, data, dataSize, result->result());
         break;
     default:
         ASSERT_NOT_REACHED();
@@ -167,7 +167,7 @@ static bool copyJwkDictionaryToJson(const Dictionary& dict, CString& jsonUtf8, C
     RefPtr<JSONObject> jsonObject = JSONObject::create();
 
     if (!copyStringProperty("kty", dict, jsonObject.get())) {
-        result->completeWithError(blink::WebCryptoErrorTypeData, "The required JWK property \"kty\" was missing");
+        result->completeWithError(WebCryptoErrorTypeData, "The required JWK property \"kty\" was missing");
         return false;
     }
 
@@ -195,27 +195,27 @@ SubtleCrypto::SubtleCrypto()
 
 ScriptPromise SubtleCrypto::encrypt(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, const ArrayPiece& data)
 {
-    return startCryptoOperation(scriptState, rawAlgorithm, key, blink::WebCryptoOperationEncrypt, ArrayPiece(), data);
+    return startCryptoOperation(scriptState, rawAlgorithm, key, WebCryptoOperationEncrypt, ArrayPiece(), data);
 }
 
 ScriptPromise SubtleCrypto::decrypt(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, const ArrayPiece& data)
 {
-    return startCryptoOperation(scriptState, rawAlgorithm, key, blink::WebCryptoOperationDecrypt, ArrayPiece(), data);
+    return startCryptoOperation(scriptState, rawAlgorithm, key, WebCryptoOperationDecrypt, ArrayPiece(), data);
 }
 
 ScriptPromise SubtleCrypto::sign(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, const ArrayPiece& data)
 {
-    return startCryptoOperation(scriptState, rawAlgorithm, key, blink::WebCryptoOperationSign, ArrayPiece(), data);
+    return startCryptoOperation(scriptState, rawAlgorithm, key, WebCryptoOperationSign, ArrayPiece(), data);
 }
 
 ScriptPromise SubtleCrypto::verifySignature(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, const ArrayPiece& signature, const ArrayPiece& data)
 {
-    return startCryptoOperation(scriptState, rawAlgorithm, key, blink::WebCryptoOperationVerify, signature, data);
+    return startCryptoOperation(scriptState, rawAlgorithm, key, WebCryptoOperationVerify, signature, data);
 }
 
 ScriptPromise SubtleCrypto::digest(ScriptState* scriptState, const Dictionary& rawAlgorithm, const ArrayPiece& data)
 {
-    return startCryptoOperation(scriptState, rawAlgorithm, 0, blink::WebCryptoOperationDigest, ArrayPiece(), data);
+    return startCryptoOperation(scriptState, rawAlgorithm, 0, WebCryptoOperationDigest, ArrayPiece(), data);
 }
 
 ScriptPromise SubtleCrypto::generateKey(ScriptState* scriptState, const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages)
@@ -226,15 +226,15 @@ ScriptPromise SubtleCrypto::generateKey(ScriptState* scriptState, const Dictiona
     if (!canAccessWebCrypto(scriptState, result.get()))
         return promise;
 
-    blink::WebCryptoKeyUsageMask keyUsages;
+    WebCryptoKeyUsageMask keyUsages;
     if (!CryptoKey::parseUsageMask(rawKeyUsages, keyUsages, result.get()))
         return promise;
 
-    blink::WebCryptoAlgorithm algorithm;
-    if (!parseAlgorithm(rawAlgorithm, blink::WebCryptoOperationGenerateKey, algorithm, result.get()))
+    WebCryptoAlgorithm algorithm;
+    if (!parseAlgorithm(rawAlgorithm, WebCryptoOperationGenerateKey, algorithm, result.get()))
         return promise;
 
-    blink::Platform::current()->crypto()->generateKey(algorithm, extractable, keyUsages, result->result());
+    Platform::current()->crypto()->generateKey(algorithm, extractable, keyUsages, result->result());
     return promise;
 }
 
@@ -249,24 +249,24 @@ ScriptPromise SubtleCrypto::importKey(ScriptState* scriptState, const String& ra
     if (!ensureNotNull(keyData, "keyData", result.get()))
         return promise;
 
-    blink::WebCryptoKeyFormat format;
+    WebCryptoKeyFormat format;
     if (!CryptoKey::parseFormat(rawFormat, format, result.get()))
         return promise;
 
-    if (format == blink::WebCryptoKeyFormatJwk) {
-        result->completeWithError(blink::WebCryptoErrorTypeData, "Key data must be an object for JWK import");
+    if (format == WebCryptoKeyFormatJwk) {
+        result->completeWithError(WebCryptoErrorTypeData, "Key data must be an object for JWK import");
         return promise;
     }
 
-    blink::WebCryptoKeyUsageMask keyUsages;
+    WebCryptoKeyUsageMask keyUsages;
     if (!CryptoKey::parseUsageMask(rawKeyUsages, keyUsages, result.get()))
         return promise;
 
-    blink::WebCryptoAlgorithm algorithm;
-    if (!parseAlgorithm(rawAlgorithm, blink::WebCryptoOperationImportKey, algorithm, result.get()))
+    WebCryptoAlgorithm algorithm;
+    if (!parseAlgorithm(rawAlgorithm, WebCryptoOperationImportKey, algorithm, result.get()))
         return promise;
 
-    blink::Platform::current()->crypto()->importKey(format, keyData.bytes(), keyData.byteLength(), algorithm, extractable, keyUsages, result->result());
+    Platform::current()->crypto()->importKey(format, keyData.bytes(), keyData.byteLength(), algorithm, extractable, keyUsages, result->result());
     return promise;
 }
 
@@ -278,28 +278,28 @@ ScriptPromise SubtleCrypto::importKey(ScriptState* scriptState, const String& ra
     if (!canAccessWebCrypto(scriptState, result.get()))
         return promise;
 
-    blink::WebCryptoKeyFormat format;
+    WebCryptoKeyFormat format;
     if (!CryptoKey::parseFormat(rawFormat, format, result.get()))
         return promise;
 
-    blink::WebCryptoKeyUsageMask keyUsages;
+    WebCryptoKeyUsageMask keyUsages;
     if (!CryptoKey::parseUsageMask(rawKeyUsages, keyUsages, result.get()))
         return promise;
 
-    if (format != blink::WebCryptoKeyFormatJwk) {
-        result->completeWithError(blink::WebCryptoErrorTypeData, "Key data must be a buffer for non-JWK formats");
+    if (format != WebCryptoKeyFormatJwk) {
+        result->completeWithError(WebCryptoErrorTypeData, "Key data must be a buffer for non-JWK formats");
         return promise;
     }
 
-    blink::WebCryptoAlgorithm algorithm;
-    if (!parseAlgorithm(rawAlgorithm, blink::WebCryptoOperationImportKey, algorithm, result.get()))
+    WebCryptoAlgorithm algorithm;
+    if (!parseAlgorithm(rawAlgorithm, WebCryptoOperationImportKey, algorithm, result.get()))
         return promise;
 
     CString jsonUtf8;
     if (!copyJwkDictionaryToJson(keyData, jsonUtf8, result.get()))
         return promise;
 
-    blink::Platform::current()->crypto()->importKey(format, reinterpret_cast<const unsigned char*>(jsonUtf8.data()), jsonUtf8.length(), algorithm, extractable, keyUsages, result->result());
+    Platform::current()->crypto()->importKey(format, reinterpret_cast<const unsigned char*>(jsonUtf8.data()), jsonUtf8.length(), algorithm, extractable, keyUsages, result->result());
     return promise;
 }
 
@@ -314,16 +314,16 @@ ScriptPromise SubtleCrypto::exportKey(ScriptState* scriptState, const String& ra
     if (!ensureNotNull(key, "key", result.get()))
         return promise;
 
-    blink::WebCryptoKeyFormat format;
+    WebCryptoKeyFormat format;
     if (!CryptoKey::parseFormat(rawFormat, format, result.get()))
         return promise;
 
     if (!key->extractable()) {
-        result->completeWithError(blink::WebCryptoErrorTypeInvalidAccess, "key is not extractable");
+        result->completeWithError(WebCryptoErrorTypeInvalidAccess, "key is not extractable");
         return promise;
     }
 
-    blink::Platform::current()->crypto()->exportKey(format, key->key(), result->result());
+    Platform::current()->crypto()->exportKey(format, key->key(), result->result());
     return promise;
 }
 
@@ -341,23 +341,23 @@ ScriptPromise SubtleCrypto::wrapKey(ScriptState* scriptState, const String& rawF
     if (!ensureNotNull(wrappingKey, "wrappingKey", result.get()))
         return promise;
 
-    blink::WebCryptoKeyFormat format;
+    WebCryptoKeyFormat format;
     if (!CryptoKey::parseFormat(rawFormat, format, result.get()))
         return promise;
 
-    blink::WebCryptoAlgorithm wrapAlgorithm;
-    if (!parseAlgorithm(rawWrapAlgorithm, blink::WebCryptoOperationWrapKey, wrapAlgorithm, result.get()))
+    WebCryptoAlgorithm wrapAlgorithm;
+    if (!parseAlgorithm(rawWrapAlgorithm, WebCryptoOperationWrapKey, wrapAlgorithm, result.get()))
         return promise;
 
     if (!key->extractable()) {
-        result->completeWithError(blink::WebCryptoErrorTypeInvalidAccess, "key is not extractable");
+        result->completeWithError(WebCryptoErrorTypeInvalidAccess, "key is not extractable");
         return promise;
     }
 
-    if (!wrappingKey->canBeUsedForAlgorithm(wrapAlgorithm, blink::WebCryptoOperationWrapKey, result.get()))
+    if (!wrappingKey->canBeUsedForAlgorithm(wrapAlgorithm, WebCryptoOperationWrapKey, result.get()))
         return promise;
 
-    blink::Platform::current()->crypto()->wrapKey(format, key->key(), wrappingKey->key(), wrapAlgorithm, result->result());
+    Platform::current()->crypto()->wrapKey(format, key->key(), wrappingKey->key(), wrapAlgorithm, result->result());
     return promise;
 }
 
@@ -374,26 +374,26 @@ ScriptPromise SubtleCrypto::unwrapKey(ScriptState* scriptState, const String& ra
     if (!ensureNotNull(unwrappingKey, "unwrappingKey", result.get()))
         return promise;
 
-    blink::WebCryptoKeyFormat format;
+    WebCryptoKeyFormat format;
     if (!CryptoKey::parseFormat(rawFormat, format, result.get()))
         return promise;
 
-    blink::WebCryptoKeyUsageMask keyUsages;
+    WebCryptoKeyUsageMask keyUsages;
     if (!CryptoKey::parseUsageMask(rawKeyUsages, keyUsages, result.get()))
         return promise;
 
-    blink::WebCryptoAlgorithm unwrapAlgorithm;
-    if (!parseAlgorithm(rawUnwrapAlgorithm, blink::WebCryptoOperationUnwrapKey, unwrapAlgorithm, result.get()))
+    WebCryptoAlgorithm unwrapAlgorithm;
+    if (!parseAlgorithm(rawUnwrapAlgorithm, WebCryptoOperationUnwrapKey, unwrapAlgorithm, result.get()))
         return promise;
 
-    blink::WebCryptoAlgorithm unwrappedKeyAlgorithm;
-    if (!parseAlgorithm(rawUnwrappedKeyAlgorithm, blink::WebCryptoOperationImportKey, unwrappedKeyAlgorithm, result.get()))
+    WebCryptoAlgorithm unwrappedKeyAlgorithm;
+    if (!parseAlgorithm(rawUnwrappedKeyAlgorithm, WebCryptoOperationImportKey, unwrappedKeyAlgorithm, result.get()))
         return promise;
 
-    if (!unwrappingKey->canBeUsedForAlgorithm(unwrapAlgorithm, blink::WebCryptoOperationUnwrapKey, result.get()))
+    if (!unwrappingKey->canBeUsedForAlgorithm(unwrapAlgorithm, WebCryptoOperationUnwrapKey, result.get()))
         return promise;
 
-    blink::Platform::current()->crypto()->unwrapKey(format, wrappedKey.bytes(), wrappedKey.byteLength(), unwrappingKey->key(), unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages, result->result());
+    Platform::current()->crypto()->unwrapKey(format, wrappedKey.bytes(), wrappedKey.byteLength(), unwrappingKey->key(), unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages, result->result());
     return promise;
 }
 

@@ -42,14 +42,14 @@ namespace blink {
 
 namespace {
 
-const char* keyTypeToString(blink::WebCryptoKeyType type)
+const char* keyTypeToString(WebCryptoKeyType type)
 {
     switch (type) {
-    case blink::WebCryptoKeyTypeSecret:
+    case WebCryptoKeyTypeSecret:
         return "secret";
-    case blink::WebCryptoKeyTypePublic:
+    case WebCryptoKeyTypePublic:
         return "public";
-    case blink::WebCryptoKeyTypePrivate:
+    case WebCryptoKeyTypePrivate:
         return "private";
     }
     ASSERT_NOT_REACHED();
@@ -57,7 +57,7 @@ const char* keyTypeToString(blink::WebCryptoKeyType type)
 }
 
 struct KeyUsageMapping {
-    blink::WebCryptoKeyUsage value;
+    WebCryptoKeyUsage value;
     const char* const name;
 };
 
@@ -65,19 +65,19 @@ struct KeyUsageMapping {
 // CryptoKey.usages. It must be kept ordered as described by the Web Crypto
 // spec.
 const KeyUsageMapping keyUsageMappings[] = {
-    { blink::WebCryptoKeyUsageEncrypt, "encrypt" },
-    { blink::WebCryptoKeyUsageDecrypt, "decrypt" },
-    { blink::WebCryptoKeyUsageSign, "sign" },
-    { blink::WebCryptoKeyUsageVerify, "verify" },
-    { blink::WebCryptoKeyUsageDeriveKey, "deriveKey" },
-    { blink::WebCryptoKeyUsageDeriveBits, "deriveBits" },
-    { blink::WebCryptoKeyUsageWrapKey, "wrapKey" },
-    { blink::WebCryptoKeyUsageUnwrapKey, "unwrapKey" },
+    { WebCryptoKeyUsageEncrypt, "encrypt" },
+    { WebCryptoKeyUsageDecrypt, "decrypt" },
+    { WebCryptoKeyUsageSign, "sign" },
+    { WebCryptoKeyUsageVerify, "verify" },
+    { WebCryptoKeyUsageDeriveKey, "deriveKey" },
+    { WebCryptoKeyUsageDeriveBits, "deriveBits" },
+    { WebCryptoKeyUsageWrapKey, "wrapKey" },
+    { WebCryptoKeyUsageUnwrapKey, "unwrapKey" },
 };
 
-COMPILE_ASSERT(blink::EndOfWebCryptoKeyUsage == (1 << 7) + 1, update_keyUsageMappings);
+COMPILE_ASSERT(EndOfWebCryptoKeyUsage == (1 << 7) + 1, update_keyUsageMappings);
 
-const char* keyUsageToString(blink::WebCryptoKeyUsage usage)
+const char* keyUsageToString(WebCryptoKeyUsage usage)
 {
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(keyUsageMappings); ++i) {
         if (keyUsageMappings[i].value == usage)
@@ -87,7 +87,7 @@ const char* keyUsageToString(blink::WebCryptoKeyUsage usage)
     return 0;
 }
 
-blink::WebCryptoKeyUsageMask keyUsageStringToMask(const String& usageString)
+WebCryptoKeyUsageMask keyUsageStringToMask(const String& usageString)
 {
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(keyUsageMappings); ++i) {
         if (keyUsageMappings[i].name == usageString)
@@ -96,28 +96,28 @@ blink::WebCryptoKeyUsageMask keyUsageStringToMask(const String& usageString)
     return 0;
 }
 
-blink::WebCryptoKeyUsageMask toKeyUsage(blink::WebCryptoOperation operation)
+WebCryptoKeyUsageMask toKeyUsage(WebCryptoOperation operation)
 {
     switch (operation) {
-    case blink::WebCryptoOperationEncrypt:
-        return blink::WebCryptoKeyUsageEncrypt;
-    case blink::WebCryptoOperationDecrypt:
-        return blink::WebCryptoKeyUsageDecrypt;
-    case blink::WebCryptoOperationSign:
-        return blink::WebCryptoKeyUsageSign;
-    case blink::WebCryptoOperationVerify:
-        return blink::WebCryptoKeyUsageVerify;
-    case blink::WebCryptoOperationDeriveKey:
-        return blink::WebCryptoKeyUsageDeriveKey;
-    case blink::WebCryptoOperationDeriveBits:
-        return blink::WebCryptoKeyUsageDeriveBits;
-    case blink::WebCryptoOperationWrapKey:
-        return blink::WebCryptoKeyUsageWrapKey;
-    case blink::WebCryptoOperationUnwrapKey:
-        return blink::WebCryptoKeyUsageUnwrapKey;
-    case blink::WebCryptoOperationDigest:
-    case blink::WebCryptoOperationGenerateKey:
-    case blink::WebCryptoOperationImportKey:
+    case WebCryptoOperationEncrypt:
+        return WebCryptoKeyUsageEncrypt;
+    case WebCryptoOperationDecrypt:
+        return WebCryptoKeyUsageDecrypt;
+    case WebCryptoOperationSign:
+        return WebCryptoKeyUsageSign;
+    case WebCryptoOperationVerify:
+        return WebCryptoKeyUsageVerify;
+    case WebCryptoOperationDeriveKey:
+        return WebCryptoKeyUsageDeriveKey;
+    case WebCryptoOperationDeriveBits:
+        return WebCryptoKeyUsageDeriveBits;
+    case WebCryptoOperationWrapKey:
+        return WebCryptoKeyUsageWrapKey;
+    case WebCryptoOperationUnwrapKey:
+        return WebCryptoKeyUsageUnwrapKey;
+    case WebCryptoOperationDigest:
+    case WebCryptoOperationGenerateKey:
+    case WebCryptoOperationImportKey:
         break;
     }
 
@@ -131,7 +131,7 @@ CryptoKey::~CryptoKey()
 {
 }
 
-CryptoKey::CryptoKey(const blink::WebCryptoKey& key)
+CryptoKey::CryptoKey(const WebCryptoKey& key)
     : m_key(key)
 {
     ScriptWrappable::init(this);
@@ -155,59 +155,59 @@ Vector<String> CryptoKey::usages() const
 {
     Vector<String> result;
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(keyUsageMappings); ++i) {
-        blink::WebCryptoKeyUsage usage = keyUsageMappings[i].value;
+        WebCryptoKeyUsage usage = keyUsageMappings[i].value;
         if (m_key.usages() & usage)
             result.append(keyUsageToString(usage));
     }
     return result;
 }
 
-bool CryptoKey::canBeUsedForAlgorithm(const blink::WebCryptoAlgorithm& algorithm, blink::WebCryptoOperation op, CryptoResult* result) const
+bool CryptoKey::canBeUsedForAlgorithm(const WebCryptoAlgorithm& algorithm, WebCryptoOperation op, CryptoResult* result) const
 {
     if (!(m_key.usages() & toKeyUsage(op))) {
-        result->completeWithError(blink::WebCryptoErrorTypeInvalidAccess, "key.usages does not permit this operation");
+        result->completeWithError(WebCryptoErrorTypeInvalidAccess, "key.usages does not permit this operation");
         return false;
     }
 
     if (m_key.algorithm().id() != algorithm.id()) {
-        result->completeWithError(blink::WebCryptoErrorTypeInvalidAccess, "key.algorithm does not match that of operation");
+        result->completeWithError(WebCryptoErrorTypeInvalidAccess, "key.algorithm does not match that of operation");
         return false;
     }
 
     return true;
 }
 
-bool CryptoKey::parseFormat(const String& formatString, blink::WebCryptoKeyFormat& format, CryptoResult* result)
+bool CryptoKey::parseFormat(const String& formatString, WebCryptoKeyFormat& format, CryptoResult* result)
 {
     // There are few enough values that testing serially is fast enough.
     if (formatString == "raw") {
-        format = blink::WebCryptoKeyFormatRaw;
+        format = WebCryptoKeyFormatRaw;
         return true;
     }
     if (formatString == "pkcs8") {
-        format = blink::WebCryptoKeyFormatPkcs8;
+        format = WebCryptoKeyFormatPkcs8;
         return true;
     }
     if (formatString == "spki") {
-        format = blink::WebCryptoKeyFormatSpki;
+        format = WebCryptoKeyFormatSpki;
         return true;
     }
     if (formatString == "jwk") {
-        format = blink::WebCryptoKeyFormatJwk;
+        format = WebCryptoKeyFormatJwk;
         return true;
     }
 
-    result->completeWithError(blink::WebCryptoErrorTypeSyntax, "Invalid keyFormat argument");
+    result->completeWithError(WebCryptoErrorTypeSyntax, "Invalid keyFormat argument");
     return false;
 }
 
-bool CryptoKey::parseUsageMask(const Vector<String>& usages, blink::WebCryptoKeyUsageMask& mask, CryptoResult* result)
+bool CryptoKey::parseUsageMask(const Vector<String>& usages, WebCryptoKeyUsageMask& mask, CryptoResult* result)
 {
     mask = 0;
     for (size_t i = 0; i < usages.size(); ++i) {
-        blink::WebCryptoKeyUsageMask usage = keyUsageStringToMask(usages[i]);
+        WebCryptoKeyUsageMask usage = keyUsageStringToMask(usages[i]);
         if (!usage) {
-            result->completeWithError(blink::WebCryptoErrorTypeSyntax, "Invalid keyUsages argument");
+            result->completeWithError(WebCryptoErrorTypeSyntax, "Invalid keyUsages argument");
             return false;
         }
         mask |= usage;

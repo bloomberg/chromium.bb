@@ -71,24 +71,24 @@ private:
     RefPtr<CryptoResultImpl> m_result;
 };
 
-ExceptionCode webCryptoErrorToExceptionCode(blink::WebCryptoErrorType errorType)
+ExceptionCode webCryptoErrorToExceptionCode(WebCryptoErrorType errorType)
 {
     switch (errorType) {
-    case blink::WebCryptoErrorTypeNotSupported:
+    case WebCryptoErrorTypeNotSupported:
         return NotSupportedError;
-    case blink::WebCryptoErrorTypeSyntax:
+    case WebCryptoErrorTypeSyntax:
         return SyntaxError;
-    case blink::WebCryptoErrorTypeInvalidState:
+    case WebCryptoErrorTypeInvalidState:
         return InvalidStateError;
-    case blink::WebCryptoErrorTypeInvalidAccess:
+    case WebCryptoErrorTypeInvalidAccess:
         return InvalidAccessError;
-    case blink::WebCryptoErrorTypeUnknown:
+    case WebCryptoErrorTypeUnknown:
         return UnknownError;
-    case blink::WebCryptoErrorTypeData:
+    case WebCryptoErrorTypeData:
         return DataError;
-    case blink::WebCryptoErrorTypeOperation:
+    case WebCryptoErrorTypeOperation:
         return OperationError;
-    case blink::WebCryptoErrorTypeType:
+    case WebCryptoErrorTypeType:
         // FIXME: This should construct a TypeError instead. For now do
         //        something to facilitate refactor, but this will need to be
         //        revisited.
@@ -108,13 +108,13 @@ PassRefPtr<CryptoResultImpl> CryptoResultImpl::create(ScriptState* scriptState)
     return adoptRef(new CryptoResultImpl(scriptState));
 }
 
-void CryptoResultImpl::completeWithError(blink::WebCryptoErrorType errorType, const blink::WebString& errorDetails)
+void CryptoResultImpl::completeWithError(WebCryptoErrorType errorType, const WebString& errorDetails)
 {
     if (m_resolver)
         m_resolver->reject(DOMException::create(webCryptoErrorToExceptionCode(errorType), errorDetails));
 }
 
-void CryptoResultImpl::completeWithBuffer(const blink::WebArrayBuffer& buffer)
+void CryptoResultImpl::completeWithBuffer(const WebArrayBuffer& buffer)
 {
     if (m_resolver)
         m_resolver->resolve(PassRefPtr<ArrayBuffer>(buffer));
@@ -146,13 +146,13 @@ void CryptoResultImpl::completeWithBoolean(bool b)
         m_resolver->resolve(b);
 }
 
-void CryptoResultImpl::completeWithKey(const blink::WebCryptoKey& key)
+void CryptoResultImpl::completeWithKey(const WebCryptoKey& key)
 {
     if (m_resolver)
         m_resolver->resolve(CryptoKey::create(key));
 }
 
-void CryptoResultImpl::completeWithKeyPair(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey)
+void CryptoResultImpl::completeWithKeyPair(const WebCryptoKey& publicKey, const WebCryptoKey& privateKey)
 {
     if (m_resolver) {
         ScriptState* scriptState = m_resolver->scriptState();

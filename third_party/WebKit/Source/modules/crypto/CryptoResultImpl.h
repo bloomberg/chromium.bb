@@ -41,7 +41,7 @@
 namespace blink {
 
 class ScriptPromiseResolver;
-ExceptionCode webCryptoErrorToExceptionCode(blink::WebCryptoErrorType);
+ExceptionCode webCryptoErrorToExceptionCode(WebCryptoErrorType);
 
 // Wrapper around a Promise to notify completion of the crypto operation.
 //
@@ -59,12 +59,12 @@ public:
 
     static PassRefPtr<CryptoResultImpl> create(ScriptState*);
 
-    virtual void completeWithError(blink::WebCryptoErrorType, const blink::WebString&) OVERRIDE;
-    virtual void completeWithBuffer(const blink::WebArrayBuffer&) OVERRIDE;
+    virtual void completeWithError(WebCryptoErrorType, const WebString&) OVERRIDE;
+    virtual void completeWithBuffer(const WebArrayBuffer&) OVERRIDE;
     virtual void completeWithJson(const char* utf8Data, unsigned length) OVERRIDE;
     virtual void completeWithBoolean(bool) OVERRIDE;
-    virtual void completeWithKey(const blink::WebCryptoKey&) OVERRIDE;
-    virtual void completeWithKeyPair(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey) OVERRIDE;
+    virtual void completeWithKey(const WebCryptoKey&) OVERRIDE;
+    virtual void completeWithKeyPair(const WebCryptoKey& publicKey, const WebCryptoKey& privateKey) OVERRIDE;
     virtual bool cancelled() const OVERRIDE;
 
     // If called after completion (including cancellation) will return an empty
