@@ -772,13 +772,27 @@ void TouchExplorationController::DispatchShiftSearchKeyEvent(
 scoped_ptr<ui::Event> TouchExplorationController::CreateMouseMoveEvent(
     const gfx::PointF& location,
     int flags) {
+  // The "synthesized" flag should be set on all events that don't have a
+  // backing native event.
+  flags |= ui::EF_IS_SYNTHESIZED;
+
+  // This flag is used to identify mouse move events that were generated from
+  // touch exploration in Chrome code.
+  flags |= ui::EF_TOUCH_ACCESSIBILITY;
+
+  // TODO(dmazzoni) http://crbug.com/391008 - get rid of this hack.
+  // This is a short-term workaround for the limitation that we're using
+  // the ChromeVox content script to process touch exploration events, but
+  // ChromeVox needs a way to distinguish between a real mouse move and a
+  // mouse move generated from touch exploration, so we have touch exploration
+  // pretend that the command key was down (which becomes the "meta" key in
+  // JavaScript). We can remove this hack when the ChromeVox content script
+  // goes away and native accessibility code sends a touch exploration
+  // event to the new ChromeVox background page via the automation api.
+  flags |= ui::EF_COMMAND_DOWN;
+
   return scoped_ptr<ui::Event>(
-      new ui::MouseEvent(
-          ui::ET_MOUSE_MOVED,
-          location,
-          location,
-          flags | ui::EF_IS_SYNTHESIZED | ui::EF_TOUCH_ACCESSIBILITY,
-          0));
+      new ui::MouseEvent(ui::ET_MOUSE_MOVED, location, location, flags, 0));
 }
 
 void TouchExplorationController::EnterTouchToMouseMode() {
