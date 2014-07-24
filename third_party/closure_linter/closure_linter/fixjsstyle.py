@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# python2.6 for command-line runs using p4lib.  pylint: disable-msg=C6301
 #
 # Copyright 2007 The Closure Linter Authors. All Rights Reserved.
 #
@@ -22,8 +21,9 @@ __author__ = 'robbyw@google.com (Robert Walker)'
 import sys
 
 import gflags as flags
-from closure_linter import checker
+
 from closure_linter import error_fixer
+from closure_linter import runner
 from closure_linter.common import simplefileflags as fileflags
 
 FLAGS = flags.FLAGS
@@ -32,7 +32,7 @@ flags.DEFINE_list('additional_extensions', None, 'List of additional file '
                   'JavaScript files.')
 
 
-def main(argv = None):
+def main(argv=None):
   """Main function.
 
   Args:
@@ -47,11 +47,12 @@ def main(argv = None):
 
   files = fileflags.GetFileList(argv, 'JavaScript', suffixes)
 
-  style_checker = checker.JavaScriptStyleChecker(error_fixer.ErrorFixer())
+  fixer = error_fixer.ErrorFixer()
 
   # Check the list of files.
   for filename in files:
-    style_checker.Check(filename)
+    runner.Run(filename, fixer)
+
 
 if __name__ == '__main__':
   main()

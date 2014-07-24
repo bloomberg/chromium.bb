@@ -53,35 +53,47 @@ class DocFlag(object):
   STANDARD_DOC = frozenset([
       'author',
       'bug',
+      'classTemplate',
+      'consistentIdGenerator',
       'const',
       'constructor',
       'define',
       'deprecated',
+      'dict',
       'enum',
       'export',
+      'expose',
       'extends',
       'externs',
       'fileoverview',
+      'idGenerator',
       'implements',
       'implicitCast',
       'interface',
       'lends',
       'license',
+      'ngInject',  # This annotation is specific to AngularJS.
       'noalias',
       'nocompile',
       'nosideeffects',
       'override',
       'owner',
+      'package',
       'param',
       'preserve',
       'private',
+      'protected',
+      'public',
       'return',
       'see',
+      'stableIdGenerator',
+      'struct',
       'supported',
       'template',
       'this',
       'type',
       'typedef',
+      'unrestricted',
       ])
 
   ANNOTATION = frozenset(['preserveTry', 'suppress'])
@@ -100,6 +112,7 @@ class DocFlag(object):
       'accessControls',
       'ambiguousFunctionDecl',
       'checkRegExp',
+      'checkStructDictInheritance',
       'checkTypes',
       'checkVars',
       'const',
@@ -117,6 +130,7 @@ class DocFlag(object):
       'missingProperties',
       'missingProvide',
       'missingRequire',
+      'missingReturn',
       'nonStandardJsDocs',
       'strictModuleDepCheck',
       'tweakValidation',
@@ -125,19 +139,25 @@ class DocFlag(object):
       'undefinedVars',
       'underscore',
       'unknownDefines',
+      'unnecessaryCasts',
+      'unusedPrivateMembers',
       'uselessCode',
       'visibility',
       'with'])
 
   HAS_DESCRIPTION = frozenset([
-    'define', 'deprecated', 'desc', 'fileoverview', 'license', 'param',
-    'preserve', 'return', 'supported'])
+      'define', 'deprecated', 'desc', 'fileoverview', 'license', 'param',
+      'preserve', 'return', 'supported'])
 
   HAS_TYPE = frozenset([
       'define', 'enum', 'extends', 'implements', 'param', 'return', 'type',
-      'suppress'])
+      'suppress', 'const', 'package', 'private', 'protected', 'public'])
 
-  TYPE_ONLY = frozenset(['enum', 'extends', 'implements',  'suppress', 'type'])
+  CAN_OMIT_TYPE = frozenset(['enum', 'const', 'package', 'private',
+      'protected', 'public'])
+
+  TYPE_ONLY = frozenset(['enum', 'extends', 'implements', 'suppress', 'type',
+      'const', 'package', 'private', 'protected', 'public'])
 
   HAS_NAME = frozenset(['param'])
 
@@ -166,7 +186,11 @@ class DocFlag(object):
         self.type_start_token = brace
         self.type_end_token = end_token
       elif (self.flag_type in self.TYPE_ONLY and
-          flag_token.next.type not in Type.FLAG_ENDING_TYPES):
+            flag_token.next.type not in Type.FLAG_ENDING_TYPES and
+            flag_token.line_number == flag_token.next.line_number):
+        # b/10407058. If the flag is expected to be followed by a type then
+        # search for type in same line only. If no token after flag in same
+        # line then conclude that no type is specified.
         self.type_start_token = flag_token.next
         self.type_end_token, self.type = _GetEndTokenAndContents(
             self.type_start_token)
@@ -178,13 +202,14 @@ class DocFlag(object):
     self.name = None
     if self.flag_type in self.HAS_NAME:
       # Handle bad case, name could be immediately after flag token.
-      self.name_token = _GetNextIdentifierToken(flag_token)
+      self.name_token = _GetNextPartialIdentifierToken(flag_token)
 
       # Handle good case, if found token is after type start, look for
-      # identifier after type end, since types contain identifiers.
+      # a identifier (substring to cover cases like [cnt] b/4197272) after
+      # type end, since types contain identifiers.
       if (self.type and self.name_token and
           tokenutil.Compare(self.name_token, self.type_start_token) > 0):
-        self.name_token = _GetNextIdentifierToken(self.type_end_token)
+        self.name_token = _GetNextPartialIdentifierToken(self.type_end_token)
 
       if self.name_token:
         self.name = self.name_token.string
@@ -228,13 +253,20 @@ class DocComment(object):
     Args:
       start_token: The first token in the doc comment.
     """
-    self.__params = {}
-    self.ordered_params = []
-    self.__flags = {}
+    self.__flags = []
     self.start_token = start_token
     self.end_token = None
     self.suppressions = {}
     self.invalidated = False
+
+  @property
+  def ordered_params(self):
+    """Gives the list of parameter names as a list of strings."""
+    params = []
+    for flag in self.__flags:
+      if flag.flag_type == 'param' and flag.name:
+        params.append(flag.name)
+    return params
 
   def Invalidate(self):
     """Indicate that the JSDoc is well-formed but we had problems parsing it.
@@ -248,16 +280,6 @@ class DocComment(object):
   def IsInvalidated(self):
     """Test whether Invalidate() has been called."""
     return self.invalidated
-
-  def AddParam(self, name, param_type):
-    """Add a new documented parameter.
-
-    Args:
-      name: The name of the parameter to document.
-      param_type: The parameter's declared JavaScript type.
-    """
-    self.ordered_params.append(name)
-    self.__params[name] = param_type
 
   def AddSuppression(self, token):
     """Add a new error suppression flag.
@@ -275,9 +297,13 @@ class DocComment(object):
 
   def SuppressionOnly(self):
     """Returns whether this comment contains only suppression flags."""
-    for flag_type in self.__flags.keys():
-      if flag_type != 'suppress':
+    if not self.__flags:
+      return False
+
+    for flag in self.__flags:
+      if flag.flag_type != 'suppress':
         return False
+
     return True
 
   def AddFlag(self, flag):
@@ -286,7 +312,7 @@ class DocComment(object):
     Args:
       flag: DocFlag object.
     """
-    self.__flags[flag.flag_type] = flag
+    self.__flags.append(flag)
 
   def InheritsDocumentation(self):
     """Test if the jsdoc implies documentation inheritance.
@@ -305,7 +331,10 @@ class DocComment(object):
     Returns:
       True if the flag is set.
     """
-    return flag_type in self.__flags
+    for flag in self.__flags:
+      if flag.flag_type == flag_type:
+        return True
+    return False
 
   def GetFlag(self, flag_type):
     """Gets the last flag of the given type.
@@ -316,7 +345,101 @@ class DocComment(object):
     Returns:
       The last instance of the given flag type in this doc comment.
     """
-    return self.__flags[flag_type]
+    for flag in reversed(self.__flags):
+      if flag.flag_type == flag_type:
+        return flag
+
+  def GetDocFlags(self):
+    """Return the doc flags for this comment."""
+    return list(self.__flags)
+
+  def _YieldDescriptionTokens(self):
+    for token in self.start_token:
+
+      if (token is self.end_token or
+          token.type is javascripttokens.JavaScriptTokenType.DOC_FLAG or
+          token.type not in javascripttokens.JavaScriptTokenType.COMMENT_TYPES):
+        return
+
+      if token.type not in [
+          javascripttokens.JavaScriptTokenType.START_DOC_COMMENT,
+          javascripttokens.JavaScriptTokenType.END_DOC_COMMENT,
+          javascripttokens.JavaScriptTokenType.DOC_PREFIX]:
+        yield token
+
+  @property
+  def description(self):
+    return tokenutil.TokensToString(
+        self._YieldDescriptionTokens())
+
+  def GetTargetIdentifier(self):
+    """Returns the identifier (as a string) that this is a comment for.
+
+    Note that this uses method uses GetIdentifierForToken to get the full
+    identifier, even if broken up by whitespace, newlines, or comments,
+    and thus could be longer than GetTargetToken().string.
+
+    Returns:
+      The identifier for the token this comment is for.
+    """
+    token = self.GetTargetToken()
+    if token:
+      return tokenutil.GetIdentifierForToken(token)
+
+  def GetTargetToken(self):
+    """Get this comment's target token.
+
+    Returns:
+      The token that is the target of this comment, or None if there isn't one.
+    """
+
+    # File overviews describe the file, not a token.
+    if self.HasFlag('fileoverview'):
+      return
+
+    skip_types = frozenset([
+        Type.WHITESPACE,
+        Type.BLANK_LINE,
+        Type.START_PAREN])
+
+    target_types = frozenset([
+        Type.FUNCTION_NAME,
+        Type.IDENTIFIER,
+        Type.SIMPLE_LVALUE])
+
+    token = self.end_token.next
+    while token:
+      if token.type in target_types:
+        return token
+
+      # Handles the case of a comment on "var foo = ...'
+      if token.IsKeyword('var'):
+        next_code_token = tokenutil.CustomSearch(
+            token,
+            lambda t: t.type not in Type.NON_CODE_TYPES)
+
+        if (next_code_token and
+            next_code_token.IsType(Type.SIMPLE_LVALUE)):
+          return next_code_token
+
+        return
+
+      # Handles the case of a comment on "function foo () {}"
+      if token.type is Type.FUNCTION_DECLARATION:
+        next_code_token = tokenutil.CustomSearch(
+            token,
+            lambda t: t.type not in Type.NON_CODE_TYPES)
+
+        if next_code_token.IsType(Type.FUNCTION_NAME):
+          return next_code_token
+
+        return
+
+      # Skip types will end the search.
+      if token.type not in skip_types:
+        return
+
+      token = token.next
 
   def CompareParameters(self, params):
     """Computes the edit distance and list from the function params to the docs.
@@ -386,7 +509,8 @@ class DocComment(object):
     Returns:
       A string representation of this object.
     """
-    return '<DocComment: %s, %s>' % (str(self.__params), str(self.__flags))
+    return '<DocComment: %s, %s>' % (
+        str(self.ordered_params), str(self.__flags))
 
 
 #
@@ -435,28 +559,25 @@ def _GetMatchingEndBraceAndContents(start_brace):
   return token, ''.join(contents)
 
 
-def _GetNextIdentifierToken(start_token):
-  """Searches for and returns the first identifier at the beginning of a token.
+def _GetNextPartialIdentifierToken(start_token):
+  """Returns the first token having identifier as substring after a token.
 
-  Searches each token after the start to see if it starts with an identifier.
-  If found, will split the token into at most 3 piecies: leading whitespace,
-  identifier, rest of token, returning the identifier token. If no identifier is
-  found returns None and changes no tokens. Search is abandoned when a
-  FLAG_ENDING_TYPE token is found.
+  Searches each token after the start to see if it contains an identifier.
+  If found, token is returned. If no identifier is found returns None.
+  Search is abandoned when a FLAG_ENDING_TYPE token is found.
 
   Args:
     start_token: The token to start searching after.
 
   Returns:
-    The identifier token is found, None otherwise.
+    The token found containing identifier, None otherwise.
   """
   token = start_token.next
 
-  while token and not token.type in Type.FLAG_ENDING_TYPES:
-    match = javascripttokenizer.JavaScriptTokenizer.IDENTIFIER.match(
+  while token and token.type not in Type.FLAG_ENDING_TYPES:
+    match = javascripttokenizer.JavaScriptTokenizer.IDENTIFIER.search(
         token.string)
-    if (match is not None and token.type == Type.COMMENT and
-        len(token.string) == len(match.group(0))):
+    if match is not None and token.type == Type.COMMENT:
       return token
 
     token = token.next
@@ -539,6 +660,9 @@ class Function(object):
     is_constructor: If the function is a constructor.
     name: The name of the function, whether given in the function keyword or
         as the lvalue the function is assigned to.
+    start_token: First token of the function (the function' keyword token).
+    end_token: Last token of the function (the closing '}' token).
+    parameters: List of parameter names.
   """
 
   def __init__(self, block_depth, is_assigned, doc, name):
@@ -551,6 +675,9 @@ class Function(object):
     self.has_this = False
     self.name = name
     self.doc = doc
+    self.start_token = None
+    self.end_token = None
+    self.parameters = None
 
 
 class StateTracker(object):
@@ -577,7 +704,7 @@ class StateTracker(object):
     self._block_depth = 0
     self._is_block_close = False
     self._paren_depth = 0
-    self._functions = []
+    self._function_stack = []
     self._functions_by_name = {}
     self._last_comment = None
     self._doc_comment = None
@@ -587,6 +714,7 @@ class StateTracker(object):
     self._last_line = None
     self._first_token = None
     self._documented_identifiers = set()
+    self._variables_in_scope = []
 
   def InFunction(self):
     """Returns true if the current token is within a function.
@@ -594,7 +722,7 @@ class StateTracker(object):
     Returns:
       True if the current token is within a function.
     """
-    return bool(self._functions)
+    return bool(self._function_stack)
 
   def InConstructor(self):
     """Returns true if the current token is within a constructor.
@@ -602,7 +730,7 @@ class StateTracker(object):
     Returns:
       True if the current token is within a constructor.
     """
-    return self.InFunction() and self._functions[-1].is_constructor
+    return self.InFunction() and self._function_stack[-1].is_constructor
 
   def InInterfaceMethod(self):
     """Returns true if the current token is within an interface method.
@@ -611,10 +739,10 @@ class StateTracker(object):
       True if the current token is within an interface method.
     """
     if self.InFunction():
-      if self._functions[-1].is_interface:
+      if self._function_stack[-1].is_interface:
         return True
       else:
-        name = self._functions[-1].name
+        name = self._function_stack[-1].name
         prototype_index = name.find('.prototype.')
         if prototype_index != -1:
           class_function_name = name[0:prototype_index]
@@ -630,7 +758,7 @@ class StateTracker(object):
     Returns:
       True if the current token is within a top level function.
     """
-    return len(self._functions) == 1 and self.InTopLevel()
+    return len(self._function_stack) == 1 and self.InTopLevel()
 
   def InAssignedFunction(self):
     """Returns true if the current token is within a function variable.
@@ -638,7 +766,7 @@ class StateTracker(object):
     Returns:
       True if if the current token is within a function variable
     """
-    return self.InFunction() and self._functions[-1].is_assigned
+    return self.InFunction() and self._function_stack[-1].is_assigned
 
   def IsFunctionOpen(self):
     """Returns true if the current token is a function block open.
@@ -646,8 +774,8 @@ class StateTracker(object):
     Returns:
       True if the current token is a function block open.
     """
-    return (self._functions and
-            self._functions[-1].block_depth == self._block_depth - 1)
+    return (self._function_stack and
+            self._function_stack[-1].block_depth == self._block_depth - 1)
 
   def IsFunctionClose(self):
     """Returns true if the current token is a function block close.
@@ -655,8 +783,8 @@ class StateTracker(object):
     Returns:
       True if the current token is a function block close.
     """
-    return (self._functions and
-            self._functions[-1].block_depth == self._block_depth)
+    return (self._function_stack and
+            self._function_stack[-1].block_depth == self._block_depth)
 
   def InBlock(self):
     """Returns true if the current token is within a block.
@@ -697,6 +825,30 @@ class StateTracker(object):
       True if the current token is within parentheses.
     """
     return bool(self._paren_depth)
+
+  def ParenthesesDepth(self):
+    """Returns the number of parens surrounding the token.
+
+    Returns:
+      The number of parenthesis surrounding the token.
+    """
+    return self._paren_depth
+
+  def BlockDepth(self):
+    """Returns the number of blocks in which the token is nested.
+
+    Returns:
+      The number of blocks in which the token is nested.
+    """
+    return self._block_depth
+
+  def FunctionDepth(self):
+    """Returns the number of functions in which the token is nested.
+
+    Returns:
+      The number of functions in which the token is nested.
+    """
+    return len(self._function_stack)
 
   def InTopLevel(self):
     """Whether we are at the top level in the class.
@@ -791,7 +943,8 @@ class StateTracker(object):
         Type.DOC_FLAG, Type.DOC_INLINE_FLAG, Type.DOC_PREFIX):
       f = tokenutil.SearchUntil(t, [Type.DOC_FLAG], [Type.START_DOC_COMMENT],
                                 None, True)
-      if f and f.attached_object.type_start_token is not None:
+      if (f and f.attached_object.type_start_token is not None and
+          f.attached_object.type_end_token is not None):
         return (tokenutil.Compare(t, f.attached_object.type_start_token) > 0 and
                 tokenutil.Compare(t, f.attached_object.type_end_token) < 0)
     return False
@@ -802,8 +955,8 @@ class StateTracker(object):
     Returns:
       The current Function object.
     """
-    if self._functions:
-      return self._functions[-1]
+    if self._function_stack:
+      return self._function_stack[-1]
 
   def GetBlockDepth(self):
     """Return the block depth.
@@ -824,6 +977,29 @@ class StateTracker(object):
   def GetFirstToken(self):
     """Return the very first token in the file."""
     return self._first_token
+
+  def IsVariableInScope(self, token_string):
+    """Checks if string is variable in current scope.
+
+    For given string it checks whether the string is a defined variable
+    (including function param) in current state.
+
+    E.g. if variables defined (variables in current scope) is docs
+    then docs, docs.length etc will be considered as variable in current
+    scope. This will help in avoding extra goog.require for variables.
+
+    Args:
+      token_string: String to check if its is a variable in current scope.
+
+    Returns:
+      true if given string is a variable in current scope.
+    """
+    for variable in self._variables_in_scope:
+      if (token_string == variable
+          or token_string.startswith(variable + '.')):
+        return True
+
+    return False
 
   def HandleToken(self, token, last_non_space_token):
     """Handles the given token and updates state.
@@ -846,6 +1022,12 @@ class StateTracker(object):
       # whether a block is a CODE or OBJECT_LITERAL block varies significantly
       # by language.
       self._block_types.append(self.GetBlockType(token))
+
+      # When entering a function body, record its parameters.
+      if self.InFunction():
+        function = self._function_stack[-1]
+        if self._block_depth == function.block_depth + 1:
+          function.parameters = self.GetParams()
 
     # Track block depth.
     elif type == Type.END_BLOCK:
@@ -876,9 +1058,7 @@ class StateTracker(object):
       token.attached_object = flag
       self._doc_comment.AddFlag(flag)
 
-      if flag.flag_type == 'param' and flag.name:
-        self._doc_comment.AddParam(flag.name, flag.type)
-      elif flag.flag_type == 'suppress':
+      if flag.flag_type == 'suppress':
         self._doc_comment.AddSuppression(token)
 
     elif type == Type.FUNCTION_DECLARATION:
@@ -916,14 +1096,22 @@ class StateTracker(object):
           next_token = tokenutil.Search(next_token, Type.FUNCTION_NAME, 2)
 
       function = Function(self._block_depth, is_assigned, doc, name)
-      self._functions.append(function)
+      function.start_token = token
+
+      self._function_stack.append(function)
       self._functions_by_name[name] = function
+
+      # Add a delimiter in stack for scope variables to define start of
+      # function. This helps in popping variables of this function when
+      # function declaration ends.
+      self._variables_in_scope.append('')
 
     elif type == Type.START_PARAMETERS:
       self._cumulative_params = ''
 
     elif type == Type.PARAMETERS:
       self._cumulative_params += token.string
+      self._variables_in_scope.extend(self.GetParams())
 
     elif type == Type.KEYWORD and token.string == 'return':
       next_token = tokenutil.SearchExcept(token, Type.NON_CODE_TYPES)
@@ -936,6 +1124,17 @@ class StateTracker(object):
       function = self.GetFunction()
       if function:
         function.has_throw = True
+
+    elif type == Type.KEYWORD and token.string == 'var':
+      function = self.GetFunction()
+      next_token = tokenutil.Search(token, [Type.IDENTIFIER,
+                                            Type.SIMPLE_LVALUE])
+
+      if next_token:
+        if next_token.type == Type.SIMPLE_LVALUE:
+          self._variables_in_scope.append(next_token.values['identifier'])
+        else:
+          self._variables_in_scope.append(next_token.string)
 
     elif type == Type.SIMPLE_LVALUE:
       identifier = token.values['identifier']
@@ -950,7 +1149,7 @@ class StateTracker(object):
 
       # Detect documented non-assignments.
       next_token = tokenutil.SearchExcept(token, Type.NON_CODE_TYPES)
-      if next_token.IsType(Type.SEMICOLON):
+      if next_token and next_token.IsType(Type.SEMICOLON):
         if (self._last_non_space_token and
             self._last_non_space_token.IsType(Type.END_DOC_COMMENT)):
           self._documented_identifiers.add(token.string)
@@ -969,7 +1168,6 @@ class StateTracker(object):
       function = self.GetFunction()
       if function:
         function.has_this = True
-
 
   def HandleAfterToken(self, token):
     """Handle updating state after a token has been checked.
@@ -996,7 +1194,17 @@ class StateTracker(object):
 
       if self.InFunction() and self.IsFunctionClose():
         # TODO(robbyw): Detect the function's name for better errors.
-        self._functions.pop()
+        function = self._function_stack.pop()
+        function.end_token = token
+
+        # Pop all variables till delimiter ('') those were defined in the
+        # function being closed so make them out of scope.
+        while self._variables_in_scope and self._variables_in_scope[-1]:
+          self._variables_in_scope.pop()
+
+        # Pop delimiter
+        if self._variables_in_scope:
+          self._variables_in_scope.pop()
 
     elif type == Type.END_PARAMETERS and self._doc_comment:
       self._doc_comment = None

@@ -16,6 +16,9 @@
 
 """Main class responsible for automatically fixing simple style violations."""
 
+# Allow non-Google copyright
+# pylint: disable=g-bad-file-header
+
 __author__ = 'robbyw@google.com (Robert Walker)'
 
 import re
@@ -37,12 +40,12 @@ END_OF_FLAG_TYPE = re.compile(r'(}?\s*)$')
 # Regex to represent common mistake inverting author name and email as
 # @author User Name (user@company)
 INVERTED_AUTHOR_SPEC = re.compile(r'(?P<leading_whitespace>\s*)'
-                                  '(?P<name>[^(]+)'
-                                  '(?P<whitespace_after_name>\s+)'
-                                  '\('
-                                  '(?P<email>[^\s]+@[^)\s]+)'
-                                  '\)'
-                                  '(?P<trailing_characters>.*)')
+                                  r'(?P<name>[^(]+)'
+                                  r'(?P<whitespace_after_name>\s+)'
+                                  r'\('
+                                  r'(?P<email>[^\s]+@[^)\s]+)'
+                                  r'\)'
+                                  r'(?P<trailing_characters>.*)')
 
 FLAGS = flags.FLAGS
 flags.DEFINE_boolean('disable_indentation_fixing', False,
@@ -73,6 +76,7 @@ class ErrorFixer(errorhandler.ErrorHandler):
       first_token: The first token in the file.
     """
     self._file_name = filename
+    self._file_is_html = filename.endswith('.html') or filename.endswith('.htm')
     self._file_token = first_token
     self._file_fix_count = 0
     self._file_changed_lines = set()
@@ -131,6 +135,19 @@ class ErrorFixer(errorhandler.ErrorHandler):
       token.attached_object = javascriptstatetracker.JsDocFlag(token)
       self._AddFix(token)
 
+    elif code == errors.JSDOC_MISSING_VAR_ARGS_TYPE:
+      iterator = token.attached_object.type_start_token
+      if iterator.type == Type.DOC_START_BRACE or iterator.string.isspace():
+        iterator = iterator.next
+
+      starting_space = len(iterator.string) - len(iterator.string.lstrip())
+      iterator.string = '%s...%s' % (' ' * starting_space,
+                                     iterator.string.lstrip())
+
+      # Create a new flag object with updated type info.
+      token.attached_object = javascriptstatetracker.JsDocFlag(token)
+      self._AddFix(token)
+
     elif code in (errors.MISSING_SEMICOLON_AFTER_FUNCTION,
                   errors.MISSING_SEMICOLON):
       semicolon_token = Token(';', Type.SEMICOLON, token.line,
@@ -143,7 +160,7 @@ class ErrorFixer(errorhandler.ErrorHandler):
     elif code in (errors.ILLEGAL_SEMICOLON_AFTER_FUNCTION,
                   errors.REDUNDANT_SEMICOLON,
                   errors.COMMA_AT_END_OF_LITERAL):
-      tokenutil.DeleteToken(token)
+      self._DeleteToken(token)
       self._AddFix(token)
 
     elif code == errors.INVALID_JSDOC_TAG:
@@ -156,7 +173,10 @@ class ErrorFixer(errorhandler.ErrorHandler):
       self._AddFix(token)
 
     elif code == errors.MISSING_SPACE:
-      if error.position:
+      if error.fix_data:
+        token.string = error.fix_data
+        self._AddFix(token)
+      elif error.position:
         if error.position.IsAtBeginning():
           tokenutil.InsertSpaceTokenAfter(token.previous)
         elif error.position.IsAtEnd(token.string):
@@ -170,10 +190,6 @@ class ErrorFixer(errorhandler.ErrorHandler):
         token.string = error.position.Set(token.string, '')
         self._AddFix(token)
 
-    elif code == errors.JSDOC_TAG_DESCRIPTION_ENDS_WITH_INVALID_CHARACTER:
-      token.string = error.position.Set(token.string, '.')
-      self._AddFix(token)
-
     elif code == errors.MISSING_LINE:
       if error.position.IsAtBeginning():
         tokenutil.InsertBlankLineAfter(token.previous)
@@ -182,7 +198,7 @@ class ErrorFixer(errorhandler.ErrorHandler):
       self._AddFix(token)
 
     elif code == errors.EXTRA_LINE:
-      tokenutil.DeleteToken(token)
+      self._DeleteToken(token)
       self._AddFix(token)
 
     elif code == errors.WRONG_BLANK_LINE_COUNT:
@@ -197,10 +213,10 @@ class ErrorFixer(errorhandler.ErrorHandler):
         num_lines *= -1
         should_delete = True
 
-      for i in xrange(1, num_lines + 1):
+      for unused_i in xrange(1, num_lines + 1):
         if should_delete:
           # TODO(user): DeleteToken should update line numbers.
-          tokenutil.DeleteToken(token.previous)
+          self._DeleteToken(token.previous)
         else:
           tokenutil.InsertBlankLineAfter(token.previous)
         self._AddFix(token)
@@ -216,8 +232,8 @@ class ErrorFixer(errorhandler.ErrorHandler):
 
         tokenutil.InsertTokenAfter(single_quote_start, token)
         tokenutil.InsertTokenAfter(single_quote_end, end_quote)
-        tokenutil.DeleteToken(token)
-        tokenutil.DeleteToken(end_quote)
+        self._DeleteToken(token)
+        self._DeleteToken(end_quote)
         self._AddFix([token, end_quote])
 
     elif code == errors.MISSING_BRACES_AROUND_TYPE:
@@ -285,8 +301,8 @@ class ErrorFixer(errorhandler.ErrorHandler):
 
     elif code == errors.UNNECESSARY_BRACES_AROUND_INHERIT_DOC:
       if token.previous.string == '{' and token.next.string == '}':
-        tokenutil.DeleteToken(token.previous)
-        tokenutil.DeleteToken(token.next)
+        self._DeleteToken(token.previous)
+        self._DeleteToken(token.next)
         self._AddFix([token])
 
     elif code == errors.INVALID_AUTHOR_TAG_DESCRIPTION:
@@ -304,6 +320,12 @@ class ErrorFixer(errorhandler.ErrorHandler):
       token = tokenutil.GetFirstTokenInSameLine(token)
       actual = error.position.start
       expected = error.position.length
+
+      # Cases where first token is param but with leading spaces.
+      if (len(token.string.lstrip()) == len(token.string) - actual and
+          token.string.lstrip()):
+        token.string = token.string.lstrip()
+        actual = 0
 
       if token.type in (Type.WHITESPACE, Type.PARAMETERS) and actual != 0:
         token.string = token.string.lstrip() + (' ' * expected)
@@ -337,7 +359,7 @@ class ErrorFixer(errorhandler.ErrorHandler):
             return
 
         if removed_tokens:
-          tokenutil.DeleteTokens(removed_tokens[0], len(removed_tokens))
+          self._DeleteTokens(removed_tokens[0], len(removed_tokens))
 
         whitespace_token = Token('  ', Type.WHITESPACE, token.line,
                                  token.line_number)
@@ -353,7 +375,7 @@ class ErrorFixer(errorhandler.ErrorHandler):
 
     elif code in [errors.EXTRA_GOOG_PROVIDE, errors.EXTRA_GOOG_REQUIRE]:
       tokens_in_line = tokenutil.GetAllTokensInSameLine(token)
-      tokenutil.DeleteTokens(tokens_in_line[0], len(tokens_in_line))
+      self._DeleteTokens(tokens_in_line[0], len(tokens_in_line))
       self._AddFix(tokens_in_line)
 
     elif code in [errors.MISSING_GOOG_PROVIDE, errors.MISSING_GOOG_REQUIRE]:
@@ -415,25 +437,86 @@ class ErrorFixer(errorhandler.ErrorHandler):
         Token(';', Type.SEMICOLON, line_text, line_number)
         ]
 
+  def _DeleteToken(self, token):
+    """Deletes the specified token from the linked list of tokens.
+
+    Updates instance variables pointing to tokens such as _file_token if
+    they reference the deleted token.
+
+    Args:
+      token: The token to delete.
+    """
+    if token == self._file_token:
+      self._file_token = token.next
+
+    tokenutil.DeleteToken(token)
+
+  def _DeleteTokens(self, token, token_count):
+    """Deletes the given number of tokens starting with the given token.
+
+    Updates instance variables pointing to tokens such as _file_token if
+    they reference the deleted token.
+
+    Args:
+      token: The first token to delete.
+      token_count: The total number of tokens to delete.
+    """
+    if token == self._file_token:
+      for unused_i in xrange(token_count):
+        self._file_token = self._file_token.next
+
+    tokenutil.DeleteTokens(token, token_count)
+
   def FinishFile(self):
     """Called when the current file has finished style checking.
 
-    Used to go back and fix any errors in the file.
+    Used to go back and fix any errors in the file. It currently supports both
+    js and html files. For js files it does a simple dump of all tokens, but in
+    order to support html file, we need to merge the original file with the new
+    token set back together. This works because the tokenized html file is the
+    original html file with all non js lines kept but blanked out with one blank
+    line token per line of html.
     """
     if self._file_fix_count:
+      # Get the original file content for html.
+      if self._file_is_html:
+        f = open(self._file_name, 'r')
+        original_lines = f.readlines()
+        f.close()
+
       f = self._external_file
       if not f:
-        print 'Fixed %d errors in %s' % (self._file_fix_count, self._file_name)
+        error_noun = 'error' if self._file_fix_count == 1 else 'errors'
+        print 'Fixed %d %s in %s' % (
+            self._file_fix_count, error_noun, self._file_name)
         f = open(self._file_name, 'w')
 
       token = self._file_token
+      # Finding the first not deleted token.
+      while token.is_deleted:
+        token = token.next
+      # If something got inserted before first token (e.g. due to sorting)
+      # then move to start. Bug 8398202.
+      while token.previous:
+        token = token.previous
       char_count = 0
+      line = ''
       while token:
-        f.write(token.string)
+        line += token.string
         char_count += len(token.string)
 
         if token.IsLastInLine():
-          f.write('\n')
+          # We distinguish if a blank line in html was from stripped original
+          # file or newly added error fix by looking at the "org_line_number"
+          # field on the token. It is only set in the tokenizer, so for all
+          # error fixes, the value should be None.
+          if (line or not self._file_is_html or
+              token.orig_line_number is None):
+            f.write(line)
+            f.write('\n')
+          else:
+            f.write(original_lines[token.orig_line_number - 1])
+          line = ''
           if char_count > 80 and token.line_number in self._file_changed_lines:
             print 'WARNING: Line %d of %s is now longer than 80 characters.' % (
                 token.line_number, self._file_name)
