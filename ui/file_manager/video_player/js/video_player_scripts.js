@@ -31,7 +31,6 @@
 //<include src="../../file_manager/foreground/js/media/media_controls.js"/>
 //<include src="../../file_manager/foreground/js/media/mouse_inactivity_watcher.js"/>
 
-//<include src="cast/cast_extension_discoverer.js"/>
 //<include src="cast/cast_video_element.js"/>
 //<include src="cast/load_cast_extension_api.js"/>
 //<include src="cast/caster.js"/>
