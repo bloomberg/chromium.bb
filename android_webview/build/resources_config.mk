@@ -19,6 +19,5 @@ android_webview_resources_dirs := \
     $(call intermediates-dir-for,GYP,content_strings_grd)/content_strings_grd/res_grit
 
 android_webview_aapt_flags := --auto-add-overlay
-android_webview_aapt_flags += --custom-package com.android.webview.chromium
 android_webview_aapt_flags += --extra-packages org.chromium.ui
 android_webview_aapt_flags += --extra-packages org.chromium.content
