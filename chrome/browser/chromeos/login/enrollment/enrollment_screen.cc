@@ -127,8 +127,7 @@ void EnrollmentScreen::OnAuthError(const GoogleServiceAuthError& error) {
   UMAFailure(policy::kMetricEnrollmentOtherFailed);
 }
 
-void EnrollmentScreen::OnOAuthTokenAvailable(
-    const std::string& token) {
+void EnrollmentScreen::OnOAuthTokenAvailable(const std::string& token) {
   RegisterForDevicePolicy(token);
 }
 
@@ -182,8 +181,7 @@ void EnrollmentScreen::OnConfirmationClosed() {
   }
 }
 
-void EnrollmentScreen::RegisterForDevicePolicy(
-    const std::string& token) {
+void EnrollmentScreen::RegisterForDevicePolicy(const std::string& token) {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   if (connector->IsEnterpriseManaged() &&
@@ -218,10 +216,7 @@ void EnrollmentScreen::ShowEnrollmentStatusOnSuccess(
   StartupUtils::MarkOobeCompleted();
 }
 
-void EnrollmentScreen::ReportEnrollmentStatus(
-    policy::EnrollmentStatus status) {
-  bool success = status.status() == policy::EnrollmentStatus::STATUS_SUCCESS;
-  enrollment_failed_once_ |= !success;
+void EnrollmentScreen::ReportEnrollmentStatus(policy::EnrollmentStatus status) {
   if (status.status() == policy::EnrollmentStatus::STATUS_SUCCESS) {
     StartupUtils::MarkDeviceRegistered(
         base::Bind(&EnrollmentScreen::ShowEnrollmentStatusOnSuccess,
@@ -230,6 +225,8 @@ void EnrollmentScreen::ReportEnrollmentStatus(
     UMA(is_auto_enrollment() ? policy::kMetricEnrollmentAutoOK
                              : policy::kMetricEnrollmentOK);
     return;
+  } else {
+    enrollment_failed_once_ = true;
   }
   actor_->ShowEnrollmentStatus(status);
 
