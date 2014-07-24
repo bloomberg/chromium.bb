@@ -48,6 +48,9 @@ class AppLoadService : public KeyedService,
   // event.
   void RestartApplication(const std::string& extension_id);
 
+  // Reload the application with the given id if it is currently running.
+  void RestartApplicationIfRunning(const std::string& extension_id);
+
   // Loads (or reloads) the app with |extension_path|, then launches it. Any
   // command line parameters from |command_line| will be passed along via
   // launch parameters. Returns true if loading the extension has begun

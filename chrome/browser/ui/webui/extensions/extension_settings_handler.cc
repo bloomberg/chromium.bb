@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
 
 #include "apps/app_load_service.h"
-#include "apps/app_restore_service.h"
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
 #include "apps/saved_files_service.h"
@@ -780,11 +779,8 @@ void ExtensionSettingsHandler::InstallUIProceed() {
   Profile* profile = Profile::FromWebUI(web_ui());
   apps::SavedFilesService::Get(profile)->ClearQueue(
       extension_service_->GetExtensionById(extension_id_prompting_, true));
-  if (apps::AppRestoreService::Get(profile)->
-          IsAppRestorable(extension_id_prompting_)) {
-    apps::AppLoadService::Get(profile)->RestartApplication(
-        extension_id_prompting_);
-  }
+  apps::AppLoadService::Get(profile)
+      ->RestartApplicationIfRunning(extension_id_prompting_);
   extension_id_prompting_.clear();
 }
 

@@ -5,6 +5,7 @@
 #include "apps/app_load_service.h"
 
 #include "apps/app_load_service_factory.h"
+#include "apps/app_restore_service.h"
 #include "apps/app_window_registry.h"
 #include "apps/launcher.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -48,6 +49,12 @@ void AppLoadService::RestartApplication(const std::string& extension_id) {
       extension_service();
   DCHECK(service);
   service->ReloadExtension(extension_id);
+}
+
+void AppLoadService::RestartApplicationIfRunning(
+    const std::string& extension_id) {
+  if (apps::AppRestoreService::Get(profile_)->IsAppRestorable(extension_id))
+    RestartApplication(extension_id);
 }
 
 bool AppLoadService::LoadAndLaunch(const base::FilePath& extension_path,

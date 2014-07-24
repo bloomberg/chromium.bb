@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "apps/app_load_service.h"
-#include "apps/app_restore_service.h"
 #include "apps/saved_files_service.h"
 #include "base/files/file_path.h"
 #include "extensions/common/extension.h"
@@ -210,11 +209,7 @@ AppInfoPermissionsPanel::GetRetainedFilePaths() const {
 
 void AppInfoPermissionsPanel::RevokeFilePermissions() {
   apps::SavedFilesService::Get(profile_)->ClearQueue(app_);
-
-  // TODO(benwells): Fix this to call something like
-  // AppLoadService::RestartApplicationIfRunning.
-  if (apps::AppRestoreService::Get(profile_)->IsAppRestorable(app_->id()))
-    apps::AppLoadService::Get(profile_)->RestartApplication(app_->id());
+  apps::AppLoadService::Get(profile_)->RestartApplicationIfRunning(app_->id());
 
   GetWidget()->Close();
 }

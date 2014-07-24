@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
 
 #include "apps/app_load_service.h"
-#include "apps/app_restore_service.h"
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
 #include "apps/saved_files_service.h"
@@ -774,8 +773,8 @@ void DeveloperPrivateShowPermissionsDialogFunction::InstallUIProceed() {
   const Extension* extension = ExtensionRegistry::Get(
       profile)->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
   apps::SavedFilesService::Get(profile)->ClearQueue(extension);
-  if (apps::AppRestoreService::Get(profile)->IsAppRestorable(extension_id_))
-    apps::AppLoadService::Get(profile)->RestartApplication(extension_id_);
+  apps::AppLoadService::Get(profile)
+      ->RestartApplicationIfRunning(extension_id_);
   SendResponse(true);
   Release();
 }
