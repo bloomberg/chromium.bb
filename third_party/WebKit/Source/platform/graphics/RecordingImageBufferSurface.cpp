@@ -18,7 +18,6 @@ namespace WebCore {
 RecordingImageBufferSurface::RecordingImageBufferSurface(const IntSize& size, OpacityMode opacityMode)
     : ImageBufferSurface(size, opacityMode)
     , m_graphicsContext(0)
-    , m_initialSaveCount(0)
     , m_frameWasCleared(true)
 {
     initializeCurrentFrame();
@@ -32,7 +31,6 @@ void RecordingImageBufferSurface::initializeCurrentFrame()
     static SkRTreeFactory rTreeFactory;
     m_currentFrame = adoptPtr(new SkPictureRecorder);
     m_currentFrame->beginRecording(size().width(), size().height(), &rTreeFactory);
-    m_initialSaveCount = m_currentFrame->getRecordingCanvas()->getSaveCount();
     if (m_graphicsContext) {
         m_graphicsContext->resetCanvas(m_currentFrame->getRecordingCanvas());
         m_graphicsContext->setTrackOpaqueRegion(true);
@@ -107,19 +105,16 @@ bool RecordingImageBufferSurface::handleOpaqueFrame()
     if (!m_currentFrame)
         return false;
     IntRect canvasRect(IntPoint(0, 0), size());
-    if (!m_frameWasCleared && !m_graphicsContext->opaqueRegion().asRect().contains(canvasRect)) {
+    if (!m_frameWasCleared && !m_graphicsContext->opaqueRegion().asRect().contains(canvasRect))
         return false;
-    }
 
     SkCanvas* oldCanvas = m_currentFrame->getRecordingCanvas(); // Could be raster or picture
 
     // FIXME(crbug.com/392614): handle transferring complex state from the current picture to the new one.
-    if (oldCanvas->getSaveCount() > m_initialSaveCount) {
+    if (oldCanvas->getSaveCount())
         return false;
-    }
-    if (!oldCanvas->isClipRect()) {
+    if (!oldCanvas->isClipRect())
         return false;
-    }
 
     SkMatrix ctm = oldCanvas->getTotalMatrix();
     SkRect clip;
