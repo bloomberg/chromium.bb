@@ -58,11 +58,15 @@
 #define DT_PREINIT_ARRAYSZ 33
 #endif
 
-// Processor-specific extension dynamic tags for packed relocations.
+#ifndef DT_LOOS
+#define DT_LOOS 0x6000000d
+#endif
+
+// Extension dynamic tags for packed relocations.
 #ifdef __arm__
 
-#define DT_ANDROID_ARM_REL_OFFSET (DT_LOPROC)
-#define DT_ANDROID_ARM_REL_SIZE (DT_LOPROC + 1)
+#define DT_ANDROID_REL_OFFSET (DT_LOOS)
+#define DT_ANDROID_REL_SIZE (DT_LOOS + 1)
 
 #endif  // __arm__
 
@@ -336,13 +340,13 @@ bool SharedLibrary::Load(const char* full_path,
           has_DT_SYMBOLIC_ = true;
         break;
 #if defined(__arm__)
-      case DT_ANDROID_ARM_REL_OFFSET:
+      case DT_ANDROID_REL_OFFSET:
         arm_packed_relocs_offset = dyn.GetOffset();
-        LOG("  DT_ANDROID_ARM_REL_OFFSET addr=%p\n", arm_packed_relocs_offset);
+        LOG("  DT_ANDROID_REL_OFFSET addr=%p\n", arm_packed_relocs_offset);
         break;
-      case DT_ANDROID_ARM_REL_SIZE:
+      case DT_ANDROID_REL_SIZE:
         arm_packed_relocs_size = dyn.GetValue();
-        LOG("  DT_ANDROID_ARM_REL_SIZE=%d\n", arm_packed_relocs_size);
+        LOG("  DT_ANDROID_REL_SIZE=%d\n", arm_packed_relocs_size);
         break;
 #endif
 #if defined(__mips__)

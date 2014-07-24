@@ -22,8 +22,8 @@ static const uint32_t kStubIdentifier = 0x4c4c554eu;
 
 // Out-of-band dynamic tags used to indicate the offset and size of the
 // .android.rel.dyn section.
-static const ELF::Sword DT_ANDROID_REL_OFFSET = DT_LOPROC;
-static const ELF::Sword DT_ANDROID_REL_SIZE = DT_LOPROC + 1;
+static const ELF::Sword DT_ANDROID_REL_OFFSET = DT_LOOS;
+static const ELF::Sword DT_ANDROID_REL_SIZE = DT_LOOS + 1;
 
 // Alignment to preserve, in bytes.  This must be at least as large as the
 // largest d_align and sh_addralign values found in the loaded file.

@@ -31,9 +31,9 @@ Unpacking on the device requires the explicit support of an extended crazy
 linker.  Adds the following new .dynamic tags, used by the crazy linker to
 find the packed .android.rel.dyn section data:
 
-  DT_ANDROID_ARM_REL_OFFSET = DT_LOPROC    (Processor specific: 0x70000000)
+  DT_ANDROID_REL_OFFSET = DT_LOOS    (Operating System specific: 0x6000000d)
     - The offset of .android.rel.dyn data in libchrome.<version>.so
-  DT_ANDROID_ARM_REL_SIZE = DT_LOPROC + 1  (Processor Specific: 0x70000001)
+  DT_ANDROID_REL_SIZE = DT_LOOS + 1  (Operating System Specific: 0x6000000e)
     - The size of .android.rel.dyn data in bytes
 
 The format of .android.rel.dyn data is:
