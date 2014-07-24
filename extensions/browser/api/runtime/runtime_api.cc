@@ -137,19 +137,13 @@ BrowserContextKeyedAPIFactory<RuntimeAPI>* RuntimeAPI::GetFactoryInstance() {
 }
 
 RuntimeAPI::RuntimeAPI(content::BrowserContext* context)
-    : browser_context_(context), dispatch_chrome_updated_event_(false) {
+    : browser_context_(context),
+      dispatch_chrome_updated_event_(false),
+      extension_registry_observer_(this) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSIONS_READY,
                  content::Source<BrowserContext>(context));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<BrowserContext>(context));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-                 content::Source<BrowserContext>(context));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
-                 content::Source<BrowserContext>(context));
+  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 
   delegate_ = ExtensionsBrowserClient::Get()->CreateRuntimeAPIDelegate(
       browser_context_);
@@ -167,36 +161,7 @@ RuntimeAPI::~RuntimeAPI() {
 void RuntimeAPI::Observe(int type,
                          const content::NotificationSource& source,
                          const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSIONS_READY: {
-      OnExtensionsReady();
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
-      const Extension* extension =
-          content::Details<const Extension>(details).ptr();
-      OnExtensionLoaded(extension);
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED: {
-      const Extension* extension =
-          content::Details<const InstalledExtensionInfo>(details)->extension;
-      OnExtensionInstalled(extension);
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED: {
-      const Extension* extension =
-          content::Details<const Extension>(details).ptr();
-      OnExtensionUninstalled(extension);
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
-  }
-}
-
-void RuntimeAPI::OnExtensionsReady() {
+  DCHECK_EQ(chrome::NOTIFICATION_EXTENSIONS_READY, type);
   // We're done restarting Chrome after an update.
   dispatch_chrome_updated_event_ = false;
 
@@ -212,7 +177,8 @@ void RuntimeAPI::OnExtensionsReady() {
     extension_system->process_manager()->AddObserver(this);
 }
 
-void RuntimeAPI::OnExtensionLoaded(const Extension* extension) {
+void RuntimeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
+                                   const Extension* extension) {
   if (!dispatch_chrome_updated_event_)
     return;
 
@@ -226,7 +192,12 @@ void RuntimeAPI::OnExtensionLoaded(const Extension* extension) {
                  true));
 }
 
-void RuntimeAPI::OnExtensionInstalled(const Extension* extension) {
+void RuntimeAPI::OnExtensionWillBeInstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    bool is_update,
+    bool from_ephemeral,
+    const std::string& old_name) {
   // Ephemeral apps are not considered to be installed and do not receive
   // the onInstalled() event.
   if (util::IsEphemeralApp(extension->id(), browser_context_))
@@ -244,13 +215,17 @@ void RuntimeAPI::OnExtensionInstalled(const Extension* extension) {
                  false));
 }
 
-void RuntimeAPI::OnExtensionUninstalled(const Extension* extension) {
+void RuntimeAPI::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UninstallReason reason) {
   // Ephemeral apps are not considered to be installed, so the uninstall URL
   // is not invoked when they are removed.
   if (util::IsEphemeralApp(extension->id(), browser_context_))
     return;
 
-  RuntimeEventRouter::OnExtensionUninstalled(browser_context_, extension->id());
+  RuntimeEventRouter::OnExtensionUninstalled(
+      browser_context_, extension->id(), reason);
 }
 
 void RuntimeAPI::Shutdown() {
@@ -412,7 +387,13 @@ void RuntimeEventRouter::DispatchOnRestartRequiredEvent(
 // static
 void RuntimeEventRouter::OnExtensionUninstalled(
     content::BrowserContext* context,
-    const std::string& extension_id) {
+    const std::string& extension_id,
+    UninstallReason reason) {
+  if (!(reason == UNINSTALL_REASON_USER_INITIATED ||
+        reason == UNINSTALL_REASON_MANAGEMENT_API)) {
+    return;
+  }
+
   GURL uninstall_url(
       GetUninstallURL(ExtensionPrefs::Get(context), extension_id));
 

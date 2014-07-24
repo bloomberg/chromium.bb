@@ -7,11 +7,13 @@
 
 #include <string>
 
+#include "base/scoped_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/api/runtime/runtime_api_delegate.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/process_manager_observer.h"
 #include "extensions/browser/update_observer.h"
 #include "extensions/common/api/runtime.h"
@@ -34,12 +36,14 @@ struct PlatformInfo;
 
 class Extension;
 class ExtensionHost;
+class ExtensionRegistry;
 
 // Runtime API dispatches onStartup, onInstalled, and similar events to
 // extensions. There is one instance shared between a browser context and
 // its related incognito instance.
 class RuntimeAPI : public BrowserContextKeyedAPI,
                    public content::NotificationObserver,
+                   public ExtensionRegistryObserver,
                    public UpdateObserver,
                    public ProcessManagerObserver {
  public:
@@ -63,10 +67,18 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
  private:
   friend class BrowserContextKeyedAPIFactory<RuntimeAPI>;
 
-  void OnExtensionsReady();
-  void OnExtensionLoaded(const Extension* extension);
-  void OnExtensionInstalled(const Extension* extension);
-  void OnExtensionUninstalled(const Extension* extension);
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+  virtual void OnExtensionWillBeInstalled(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      bool is_update,
+      bool from_ephemeral,
+      const std::string& old_name) OVERRIDE;
+  virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                                      const Extension* extension,
+                                      UninstallReason reason) OVERRIDE;
 
   // BrowserContextKeyedAPI implementation:
   static const char* service_name() { return "RuntimeAPI"; }
@@ -90,6 +102,10 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
   bool dispatch_chrome_updated_event_;
 
   content::NotificationRegistrar registrar_;
+
+  // Listen to extension notifications.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(RuntimeAPI);
 };
@@ -124,7 +140,8 @@ class RuntimeEventRouter {
 
   // Does any work needed at extension uninstall (e.g. load uninstall url).
   static void OnExtensionUninstalled(content::BrowserContext* context,
-                                     const std::string& extension_id);
+                                     const std::string& extension_id,
+                                     UninstallReason reason);
 };
 
 class RuntimeGetBackgroundPageFunction : public UIThreadExtensionFunction {
