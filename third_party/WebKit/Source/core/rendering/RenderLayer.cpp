@@ -1832,15 +1832,17 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     if (renderer()->hasClipPath() && !context->paintingDisabled() && style && (!needsCompositedScrolling() || paintFlags & PaintLayerPaintingChildClippingMaskPhase)) {
         ASSERT(style->clipPath());
         if (style->clipPath()->type() == ClipPathOperation::SHAPE) {
-            clipStateSaver.save();
             ShapeClipPathOperation* clipPath = toShapeClipPathOperation(style->clipPath());
+            if (clipPath->isValid()) {
+                clipStateSaver.save();
 
-            if (!rootRelativeBoundsComputed) {
-                rootRelativeBounds = physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
-                rootRelativeBoundsComputed = true;
+                if (!rootRelativeBoundsComputed) {
+                    rootRelativeBounds = physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
+                    rootRelativeBoundsComputed = true;
+                }
+
+                context->clipPath(clipPath->path(rootRelativeBounds), clipPath->windRule());
             }
-
-            context->clipPath(clipPath->path(rootRelativeBounds), clipPath->windRule());
         } else if (style->clipPath()->type() == ClipPathOperation::REFERENCE) {
             ReferenceClipPathOperation* referenceClipPathOperation = toReferenceClipPathOperation(style->clipPath());
             Document& document = renderer()->document();

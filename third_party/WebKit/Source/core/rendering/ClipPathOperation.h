@@ -100,6 +100,7 @@ public:
     }
 
     const BasicShape* basicShape() const { return m_shape.get(); }
+    bool isValid() const { return m_shape.get(); }
     WindRule windRule() const { return m_shape->windRule(); }
     const Path& path(const FloatRect& boundingRect)
     {
