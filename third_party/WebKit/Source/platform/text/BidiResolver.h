@@ -242,7 +242,7 @@ public:
     bool inIsolate() const { return m_nestedIsolateCount; }
 
     void embed(WTF::Unicode::Direction, BidiEmbeddingSource);
-    bool commitExplicitEmbedding();
+    bool commitExplicitEmbedding(BidiRunList<Run>&);
 
     void createBidiRunsForLine(const Iterator& end, VisualDirectionOverride = NoVisualOverride, bool hardLineBreak = false, bool reorderRuns = true);
 
@@ -299,8 +299,8 @@ protected:
     TextDirection m_paragraphDirectionality;
 
 private:
-    void raiseExplicitEmbeddingLevel(WTF::Unicode::Direction from, WTF::Unicode::Direction to);
-    void lowerExplicitEmbeddingLevel(WTF::Unicode::Direction from);
+    void raiseExplicitEmbeddingLevel(BidiRunList<Run>&, WTF::Unicode::Direction from, WTF::Unicode::Direction to);
+    void lowerExplicitEmbeddingLevel(BidiRunList<Run>&, WTF::Unicode::Direction from);
     void checkDirectionInLowerRaiseEmbeddingLevel();
 
     void updateStatusLastFromCurrentDirection(WTF::Unicode::Direction);
@@ -377,7 +377,7 @@ void BidiResolver<Iterator, Run>::checkDirectionInLowerRaiseEmbeddingLevel()
 }
 
 template <class Iterator, class Run>
-void BidiResolver<Iterator, Run>::lowerExplicitEmbeddingLevel(WTF::Unicode::Direction from)
+void BidiResolver<Iterator, Run>::lowerExplicitEmbeddingLevel(BidiRunList<Run>& runs, WTF::Unicode::Direction from)
 {
     using namespace WTF::Unicode;
 
@@ -389,23 +389,23 @@ void BidiResolver<Iterator, Run>::lowerExplicitEmbeddingLevel(WTF::Unicode::Dire
             if (m_status.eor == EuropeanNumber) {
                 if (m_status.lastStrong != LeftToRight) {
                     m_direction = EuropeanNumber;
-                    appendRun(m_runs);
+                    appendRun(runs);
                 }
             } else if (m_status.eor == ArabicNumber) {
                 m_direction = ArabicNumber;
-                appendRun(m_runs);
+                appendRun(runs);
             } else if (m_status.lastStrong != LeftToRight) {
-                appendRun(m_runs);
+                appendRun(runs);
                 m_direction = LeftToRight;
             }
         } else if (m_status.eor == EuropeanNumber || m_status.eor == ArabicNumber || m_status.lastStrong == LeftToRight) {
-            appendRun(m_runs);
+            appendRun(runs);
             m_direction = RightToLeft;
         }
         m_eor = m_last;
     }
 
-    appendRun(m_runs);
+    appendRun(runs);
     m_emptyRun = true;
 
     // sor for the new run is determined by the higher level (rule X10)
@@ -415,7 +415,7 @@ void BidiResolver<Iterator, Run>::lowerExplicitEmbeddingLevel(WTF::Unicode::Dire
 }
 
 template <class Iterator, class Run>
-void BidiResolver<Iterator, Run>::raiseExplicitEmbeddingLevel(WTF::Unicode::Direction from, WTF::Unicode::Direction to)
+void BidiResolver<Iterator, Run>::raiseExplicitEmbeddingLevel(BidiRunList<Run>& runs, WTF::Unicode::Direction from, WTF::Unicode::Direction to)
 {
     using namespace WTF::Unicode;
 
@@ -427,25 +427,25 @@ void BidiResolver<Iterator, Run>::raiseExplicitEmbeddingLevel(WTF::Unicode::Dire
             if (m_status.eor == EuropeanNumber) {
                 if (m_status.lastStrong != LeftToRight) {
                     m_direction = EuropeanNumber;
-                    appendRun(m_runs);
+                    appendRun(runs);
                 }
             } else if (m_status.eor == ArabicNumber) {
                 m_direction = ArabicNumber;
-                appendRun(m_runs);
+                appendRun(runs);
             } else if (m_status.lastStrong != LeftToRight && from == LeftToRight) {
-                appendRun(m_runs);
+                appendRun(runs);
                 m_direction = LeftToRight;
             }
         } else if (m_status.eor == ArabicNumber
             || (m_status.eor == EuropeanNumber && (m_status.lastStrong != LeftToRight || from == RightToLeft))
             || (m_status.eor != EuropeanNumber && m_status.lastStrong == LeftToRight && from == RightToLeft)) {
-            appendRun(m_runs);
+            appendRun(runs);
             m_direction = RightToLeft;
         }
         m_eor = m_last;
     }
 
-    appendRun(m_runs);
+    appendRun(runs);
     m_emptyRun = true;
 
     setLastDir(to);
@@ -493,7 +493,7 @@ void BidiResolver<Iterator, Run>::applyL1Rule(BidiRunList<Run>& runs)
 }
 
 template <class Iterator, class Run>
-bool BidiResolver<Iterator, Run>::commitExplicitEmbedding()
+bool BidiResolver<Iterator, Run>::commitExplicitEmbedding(BidiRunList<Run>& runs)
 {
     // When we're "inIsolate()" we're resolving the parent context which
     // ignores (skips over) the isolated content, including embedding levels.
@@ -526,9 +526,9 @@ bool BidiResolver<Iterator, Run>::commitExplicitEmbedding()
     unsigned char toLevel = toContext->level();
 
     if (toLevel > fromLevel)
-        raiseExplicitEmbeddingLevel(fromLevel % 2 ? RightToLeft : LeftToRight, toLevel % 2 ? RightToLeft : LeftToRight);
+        raiseExplicitEmbeddingLevel(runs, fromLevel % 2 ? RightToLeft : LeftToRight, toLevel % 2 ? RightToLeft : LeftToRight);
     else if (toLevel < fromLevel)
-        lowerExplicitEmbeddingLevel(fromLevel % 2 ? RightToLeft : LeftToRight);
+        lowerExplicitEmbeddingLevel(runs, fromLevel % 2 ? RightToLeft : LeftToRight);
 
     setContext(toContext);
 
@@ -760,7 +760,7 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
         case LeftToRightOverride:
         case PopDirectionalFormat:
             embed(dirCurrent, FromUnicode);
-            commitExplicitEmbedding();
+            commitExplicitEmbedding(m_runs);
             break;
 
         // strong types
@@ -1042,7 +1042,7 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
 
         increment();
         if (!m_currentExplicitEmbeddingSequence.isEmpty()) {
-            bool committed = commitExplicitEmbedding();
+            bool committed = commitExplicitEmbedding(m_runs);
             if (committed && lastLineEnded) {
                 m_current = end;
                 m_status = stateAtEnd.m_status;

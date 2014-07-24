@@ -47,7 +47,7 @@ void LineBreaker::skipLeadingWhitespace(InlineBidiResolver& resolver, LineInfo& 
         }
         resolver.position().increment(&resolver);
     }
-    resolver.commitExplicitEmbedding();
+    resolver.commitExplicitEmbedding(resolver.runs());
 }
 
 void LineBreaker::reset()
