@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-<include src="../../../../third_party/polymer/platform/platform.js">
-<include src="../../../../third_party/polymer/polymer/polymer.js">
+<include src="../../../../third_party/polymer_legacy/platform/platform.js">
+<include src="../../../../third_party/polymer_legacy/polymer/polymer.js">
 
 /**
  * Formats size to a human readable form.
