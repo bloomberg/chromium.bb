@@ -27,7 +27,8 @@ class GuestModeOptionsBrowserTest : public options::OptionsUIBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(GuestModeOptionsBrowserTest, LoadOptionsByURL) {
+// Disabled, see http://crbug.com/396752.
+IN_PROC_BROWSER_TEST_F(GuestModeOptionsBrowserTest, DISABLED_LoadOptionsByURL) {
   NavigateToSettings();
   VerifyTitle();
   VerifyNavbar();
