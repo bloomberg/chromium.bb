@@ -245,11 +245,6 @@ short Range::comparePoint(Node* refNode, int offset, ExceptionState& exceptionSt
     // This method returns -1, 0 or 1 depending on if the point described by the
     // refNode node and an offset within the node is before, same as, or after the range respectively.
 
-    if (!refNode) {
-        exceptionState.throwDOMException(HierarchyRequestError, "The node provided was null.");
-        return 0;
-    }
-
     if (!refNode->inActiveDocument()) {
         exceptionState.throwDOMException(WrongDocumentError, "The node provided is not in an active document.");
         return 0;
