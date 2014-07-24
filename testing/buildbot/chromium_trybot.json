@@ -123,7 +123,13 @@
       "platforms": ["win"]
     },
     "sql_unittests",
-    "sync_integration_tests",
+    {
+      "test": "sync_integration_tests",
+      "swarming": {
+        "can_use_on_swarming_builders": true,
+        "shards": 3
+      }
+    },
     "sync_unit_tests",
     "ui_unittests",
     {

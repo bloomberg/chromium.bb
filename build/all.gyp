@@ -1261,8 +1261,7 @@
             '../base/base.gyp:base_unittests_run',
             '../chrome/chrome.gyp:browser_tests_run',
             '../chrome/chrome.gyp:interactive_ui_tests_run',
-            # http://crbug.com/157234
-            #'../chrome/chrome.gyp:sync_integration_tests_run',
+            '../chrome/chrome.gyp:sync_integration_tests_run',
             '../chrome/chrome.gyp:unit_tests_run',
             '../content/content_shell_and_tests.gyp:content_browsertests_run',
             '../content/content_shell_and_tests.gyp:content_unittests_run',
