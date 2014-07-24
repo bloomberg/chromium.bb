@@ -23,7 +23,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/media_stream_request.h"
 #include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
@@ -663,7 +662,7 @@ bool MediaStreamDevicesController::IsDeviceAudioCaptureRequestedAndAllowed()
     const {
   MediaStreamTypeSettingsMap::const_iterator it =
       request_permissions_.find(content::MEDIA_DEVICE_AUDIO_CAPTURE);
-  return (it != request_permissions_.end() && IsCaptureDeviceRequestAllowed() &&
+  return (it != request_permissions_.end() &&
           it->second.permission == MEDIA_ALLOWED);
 }
 
@@ -671,15 +670,6 @@ bool MediaStreamDevicesController::IsDeviceVideoCaptureRequestedAndAllowed()
     const {
   MediaStreamTypeSettingsMap::const_iterator it =
       request_permissions_.find(content::MEDIA_DEVICE_VIDEO_CAPTURE);
-  return (it != request_permissions_.end() && IsCaptureDeviceRequestAllowed() &&
+  return (it != request_permissions_.end() &&
           it->second.permission == MEDIA_ALLOWED);
-}
-
-bool MediaStreamDevicesController::IsCaptureDeviceRequestAllowed() const {
-#if defined(OS_ANDROID)
-  // Don't approve device requests if the tab was hidden.
-  // TODO(qinmin): Add a test for this. http://crbug.com/396869.
-  return web_contents_->GetRenderWidgetHostView()->IsShowing();
-#endif
-  return true;
 }
