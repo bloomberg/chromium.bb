@@ -95,6 +95,11 @@ INTERRUPT_REASON(SERVER_PRECONDITION, 32)
 // "Unable to get file".
 INTERRUPT_REASON(SERVER_BAD_CONTENT, 33)
 
+// Server didn't authorize access to resource.
+INTERRUPT_REASON(SERVER_UNAUTHORIZED, 34)
+
+// Server certificate problem.
+INTERRUPT_REASON(SERVER_CERT_PROBLEM, 35)
 
 // User input.
 

@@ -1984,7 +1984,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
   ASSERT_TRUE(WaitForInterruption(
       item,
-      content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
+      content::DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED,
       base::StringPrintf("[{\"danger\": \"safe\","
                          "  \"incognito\": false,"
                          "  \"mime\": \"text/html\","

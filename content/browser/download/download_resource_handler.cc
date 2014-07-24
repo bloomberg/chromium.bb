@@ -383,7 +383,10 @@ void DownloadResourceHandler::OnResponseCompleted(
     // to a user action.
     // TODO(ahendrickson) -- Find a better set of codes to use here, as
     // CANCELED/ERR_ABORTED can occur for reasons other than user cancel.
-    reason = DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;
+    if (net::IsCertStatusError(request()->ssl_info().cert_status))
+      reason = DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM;
+    else
+      reason = DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;
   }
 
   if (status.is_success() &&
@@ -413,6 +416,10 @@ void DownloadResourceHandler::OnResponseCompleted(
         // Retry by downloading from the start automatically:
         // If we haven't received data when we get this error, we won't.
         reason = DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE;
+        break;
+      case net::HTTP_UNAUTHORIZED:
+        // Server didn't authorize this request.
+        reason = DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED;
         break;
       default:    // All other errors.
         // Redirection and informational codes should have been handled earlier

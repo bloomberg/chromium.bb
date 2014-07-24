@@ -1772,6 +1772,22 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
                desc="Download page message: Browser Crash.">
         The browser crashed before the download completed.
       </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_UNAUTHORIZED"
+               desc="Not authorized.">
+        Needs authorization
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_UNAUTHORIZED"
+               desc="Download page message: Not authorized.">
+        Server did not authorize you to access this resource.
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_SERVER_CERT_PROBLEM"
+               desc="Server certificate problem.">
+        Bad certificate
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_SERVER_CERT_PROBLEM"
+               desc="Download page message: Server certificate problem.">
+        There was a problem with server's certificate.
+      </message>
 
       <!-- Download Shelf Items -->
       <message name="IDS_DOWNLOAD_STATUS_STARTING"
