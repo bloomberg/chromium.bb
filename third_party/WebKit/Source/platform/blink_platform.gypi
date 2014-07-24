@@ -923,6 +923,7 @@
       'geometry/RegionTest.cpp',
       'geometry/RoundedRectTest.cpp',
       'graphics/GraphicsContextTest.cpp',
+      'graphics/RecordingImageBufferSurfaceTest.cpp',
       'graphics/ThreadSafeDataTransportTest.cpp',
       'graphics/filters/FilterOperationsTest.cpp',
       'graphics/filters/ImageFilterBuilderTest.cpp',

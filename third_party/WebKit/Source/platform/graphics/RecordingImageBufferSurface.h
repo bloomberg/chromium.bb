@@ -11,6 +11,7 @@
 
 class SkPicture;
 class SkPictureRecorder;
+class RecordingImageBufferSurfaceTest;
 
 namespace WebCore {
 
@@ -31,6 +32,7 @@ public:
     virtual void setImageBuffer(ImageBuffer*) OVERRIDE;
 
 private:
+    friend class ::RecordingImageBufferSurfaceTest; // for unit testing
     void fallBackToRasterCanvas();
     void initializeCurrentFrame();
     bool handleOpaqueFrame();
@@ -39,6 +41,7 @@ private:
     RefPtr<SkPicture> m_previousFrame;
     OwnPtr<SkCanvas> m_rasterCanvas;
     GraphicsContext* m_graphicsContext;
+    int m_initialSaveCount;
     bool m_frameWasCleared;
 };
 
