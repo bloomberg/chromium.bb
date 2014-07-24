@@ -37,29 +37,11 @@
   <message name="IDS_ASH_STATUS_TRAY_IP" desc="The label for the IP address of the network:">
     IP Address
   </message>
-  <message name="IDS_ASH_STATUS_TRAY_NO_NETWORKS" desc="The message to display in the network info bubble when it is otherwise empty.">
-    No network information available
-  </message>
-  <message name="IDS_ASH_STATUS_TRAY_NO_CELLULAR_NETWORKS" desc="The message to display in the network list when no cellular networks are available.">
-    No cellular network available
-  </message>
-  <message name="IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED" desc="The label used in system tray bubble to display vpn is disconnected.">
-    VPN disconnected
-  </message>
   <message name="IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS" desc="The label used in the settings entry in the network dialog.">
     Settings...
   </message>
   <message name="IDS_ASH_STATUS_TRAY_NETWORK_PROXY_SETTINGS" desc="The label used in the proxy settings entry in the network dialog in the login screen.">
     Proxy...
-  </message>
-  <message name="IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED" desc="The label used in the tray popup to notify that Wi-Fi is turned on.">
-    Wi-Fi is turned on.
-  </message>
-  <message name="IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED" desc="The label used in the tray popup to notify that Wi-Fi is turned off.">
-    Wi-Fi is turned off.
-  </message>
-  <message name="IDS_ASH_STATUS_TRAY_NETWORK_NO_VPN" desc="The label used in the tray popup to notify no vpn is configured.">
-    VPN is not configured.
   </message>
   <message name="IDS_ASH_STATUS_TRAY_ENABLE_WIFI" desc="The label used for the item to enable wifi.">
     Enable Wi-Fi
@@ -90,9 +72,6 @@
   </message>
   <message name="IDS_ASH_STATUS_TRAY_MOBILE_VIEW_ACCOUNT" desc="In the network popup bubble, the text of the top-up URL link.">
     View mobile account
-  </message>
-  <message name="IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE" desc="Scanning for wifi networks">
-    Searching for Wi-Fi networks...
   </message>
   <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERABLE" desc="Notification shown when a Bluetooth adapter is discoverable.">
     Your computer is discoverable to nearby Bluetooth devices and will appear as "<ph name="NAME">$1<ex>Chromebook</ex></ph>" with address <ph name="ADDRESS">$2<ex>01:23:45:67:89:0A</ex></ph>

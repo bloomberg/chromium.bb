@@ -5,17 +5,15 @@
 #ifndef ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_STATE_LIST_DETAILED_VIEW_H
 #define ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_STATE_LIST_DETAILED_VIEW_H
 
-#include <map>
 #include <string>
-#include <vector>
 
 #include "ash/system/chromeos/network/network_detailed_view.h"
 #include "ash/system/tray/view_click_listener.h"
 #include "ash/system/user/login_status.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/chromeos/network/network_icon.h"
-#include "ui/chromeos/network/network_icon_animation_observer.h"
+#include "ui/chromeos/network/network_list.h"
+#include "ui/chromeos/network/network_list_delegate.h"
 #include "ui/views/controls/button/button.h"
 
 namespace chromeos {
@@ -33,13 +31,11 @@ class TrayPopupLabelButton;
 
 namespace tray {
 
-struct NetworkInfo;
-
 class NetworkStateListDetailedView
     : public NetworkDetailedView,
       public views::ButtonListener,
       public ViewClickListener,
-      public ui::network_icon::AnimationObserver,
+      public ui::NetworkListDelegate,
       public base::SupportsWeakPtr<NetworkStateListDetailedView> {
  public:
   enum ListType {
@@ -60,9 +56,6 @@ class NetworkStateListDetailedView
   virtual void NetworkServiceChanged(
       const chromeos::NetworkState* network) OVERRIDE;
 
-  // ui::network_icon::AnimationObserver overrides
-  virtual void NetworkIconChanged() OVERRIDE;
-
  protected:
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
@@ -74,9 +67,6 @@ class NetworkStateListDetailedView
  private:
   class InfoBubble;
 
-  typedef std::map<views::View*, std::string> NetworkMap;
-  typedef std::map<std::string, HoverHighlightView*> ServicePathMap;
-
   // Create UI components.
   void CreateHeaderEntry();
   void CreateHeaderButtons();
@@ -87,14 +77,10 @@ class NetworkStateListDetailedView
   void UpdateTechnologyButton(TrayPopupHeaderButton* button,
                               const chromeos::NetworkTypePattern& technology);
 
-  void UpdateNetworks(
-      const chromeos::NetworkStateHandler::NetworkStateList& networks);
   void UpdateNetworkList();
-  bool CreateOrUpdateInfoLabel(
-      int index, const base::string16& text, views::Label** label);
-  bool UpdateNetworkChild(int index, const NetworkInfo* info);
+
   bool OrderChild(views::View* view, int index);
-  bool UpdateNetworkListEntries(std::set<std::string>* new_service_paths);
+
   void UpdateNetworkExtra();
 
   // Adds a settings entry when logged in, and an entry for changing proxy
@@ -113,20 +99,21 @@ class NetworkStateListDetailedView
   // Handle toggile mobile action
   void ToggleMobile();
 
+  // ui::NetworkListDelegate:
+  virtual views::View* CreateViewForNetwork(
+      const ui::NetworkInfo& info) OVERRIDE;
+  virtual bool IsViewHovered(views::View* view) OVERRIDE;
+  virtual chromeos::NetworkTypePattern GetNetworkTypePattern() const OVERRIDE;
+  virtual void UpdateViewForNetwork(views::View* view,
+                                    const ui::NetworkInfo& info) OVERRIDE;
+  virtual views::Label* CreateInfoLabel() OVERRIDE;
+  virtual void RelayoutScrollList() OVERRIDE;
+
   // Type of list (all networks or vpn)
   ListType list_type_;
 
   // Track login state.
   user::LoginStatus login_;
-
-  // A map of child views to their network service path.
-  NetworkMap network_map_;
-
-  // A map of network service paths to their view.
-  ServicePathMap service_path_map_;
-
-  // An owned list of network info.
-  ScopedVector<NetworkInfo> network_list_;
 
   // Child views.
   TrayPopupHeaderButton* info_icon_;
@@ -138,12 +125,11 @@ class NetworkStateListDetailedView
   TrayPopupLabelButton* other_vpn_;
   TrayPopupLabelButton* settings_;
   TrayPopupLabelButton* proxy_settings_;
-  views::Label* scanning_view_;
-  views::Label* no_wifi_networks_view_;
-  views::Label* no_cellular_networks_view_;
 
   // A small bubble for displaying network info.
   views::BubbleDelegateView* info_bubble_;
+
+  ui::NetworkListView network_list_view_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStateListDetailedView);
 };

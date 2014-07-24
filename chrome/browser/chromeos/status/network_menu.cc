@@ -27,6 +27,7 @@
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/ui_chromeos_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
