@@ -32,7 +32,7 @@ RawChannel::ReadBuffer::~ReadBuffer() {
 }
 
 void RawChannel::ReadBuffer::GetBuffer(char** addr, size_t* size) {
-  DCHECK_GE(buffer_.size(), num_valid_bytes_ + kReadSize);
+  CHECK_GE(buffer_.size(), num_valid_bytes_ + kReadSize);
   *addr = &buffer_[0] + num_valid_bytes_;
   *size = kReadSize;
 }
@@ -61,11 +61,11 @@ bool RawChannel::WriteBuffer::HavePlatformHandlesToSend() const {
   const embedder::PlatformHandleVector* all_platform_handles =
       transport_data->platform_handles();
   if (!all_platform_handles) {
-    DCHECK_EQ(platform_handles_offset_, 0u);
+    CHECK_EQ(platform_handles_offset_, 0u);
     return false;
   }
   if (platform_handles_offset_ >= all_platform_handles->size()) {
-    DCHECK_EQ(platform_handles_offset_, all_platform_handles->size());
+    CHECK_EQ(platform_handles_offset_, all_platform_handles->size());
     return false;
   }
 
@@ -76,7 +76,7 @@ void RawChannel::WriteBuffer::GetPlatformHandlesToSend(
     size_t* num_platform_handles,
     embedder::PlatformHandle** platform_handles,
     void** serialization_data) {
-  DCHECK(HavePlatformHandlesToSend());
+  CHECK(HavePlatformHandlesToSend());
 
   TransportData* transport_data = message_queue_.front()->transport_data();
   embedder::PlatformHandleVector* all_platform_handles =
@@ -86,7 +86,7 @@ void RawChannel::WriteBuffer::GetPlatformHandlesToSend(
   *platform_handles = &(*all_platform_handles)[platform_handles_offset_];
   size_t serialization_data_offset =
       transport_data->platform_handle_table_offset();
-  DCHECK_GT(serialization_data_offset, 0u);
+  CHECK_GT(serialization_data_offset, 0u);
   serialization_data_offset +=
       platform_handles_offset_ * serialized_platform_handle_size_;
   *serialization_data =
@@ -100,7 +100,7 @@ void RawChannel::WriteBuffer::GetBuffers(std::vector<Buffer>* buffers) const {
     return;
 
   MessageInTransit* message = message_queue_.front();
-  DCHECK_LT(data_offset_, message->total_size());
+  CHECK_LT(data_offset_, message->total_size());
   size_t bytes_to_write = message->total_size() - data_offset_;
 
   size_t transport_data_buffer_size = message->transport_data() ?
@@ -108,8 +108,8 @@ void RawChannel::WriteBuffer::GetBuffers(std::vector<Buffer>* buffers) const {
 
   if (!transport_data_buffer_size) {
     // Only write from the main buffer.
-    DCHECK_LT(data_offset_, message->main_buffer_size());
-    DCHECK_LE(bytes_to_write, message->main_buffer_size());
+    CHECK_LT(data_offset_, message->main_buffer_size());
+    CHECK_LE(bytes_to_write, message->main_buffer_size());
     Buffer buffer = {
         static_cast<const char*>(message->main_buffer()) + data_offset_,
         bytes_to_write};
@@ -119,9 +119,9 @@ void RawChannel::WriteBuffer::GetBuffers(std::vector<Buffer>* buffers) const {
 
   if (data_offset_ >= message->main_buffer_size()) {
     // Only write from the transport data buffer.
-    DCHECK_LT(data_offset_ - message->main_buffer_size(),
-              transport_data_buffer_size);
-    DCHECK_LE(bytes_to_write, transport_data_buffer_size);
+    CHECK_LT(data_offset_ - message->main_buffer_size(),
+             transport_data_buffer_size);
+    CHECK_LE(bytes_to_write, transport_data_buffer_size);
     Buffer buffer = {
         static_cast<const char*>(message->transport_data()->buffer()) +
             (data_offset_ - message->main_buffer_size()),
@@ -135,8 +135,8 @@ void RawChannel::WriteBuffer::GetBuffers(std::vector<Buffer>* buffers) const {
   // attached.
 
   // Write from both buffers.
-  DCHECK_EQ(bytes_to_write, message->main_buffer_size() - data_offset_ +
-                                transport_data_buffer_size);
+  CHECK_EQ(bytes_to_write, message->main_buffer_size() - data_offset_ +
+                               transport_data_buffer_size);
   Buffer buffer1 = {
     static_cast<const char*>(message->main_buffer()) + data_offset_,
     message->main_buffer_size() - data_offset_
@@ -160,30 +160,30 @@ RawChannel::RawChannel()
 }
 
 RawChannel::~RawChannel() {
-  DCHECK(!read_buffer_);
-  DCHECK(!write_buffer_);
+  CHECK(!read_buffer_);
+  CHECK(!write_buffer_);
 
   // No need to take the |write_lock_| here -- if there are still weak pointers
   // outstanding, then we're hosed anyway (since we wouldn't be able to
   // invalidate them cleanly, since we might not be on the I/O thread).
-  DCHECK(!weak_ptr_factory_.HasWeakPtrs());
+  CHECK(!weak_ptr_factory_.HasWeakPtrs());
 }
 
 bool RawChannel::Init(Delegate* delegate) {
-  DCHECK(delegate);
+  CHECK(delegate);
 
-  DCHECK(!delegate_);
+  CHECK(!delegate_);
   delegate_ = delegate;
 
   CHECK_EQ(base::MessageLoop::current()->type(), base::MessageLoop::TYPE_IO);
-  DCHECK(!message_loop_for_io_);
+  CHECK(!message_loop_for_io_);
   message_loop_for_io_ =
       static_cast<base::MessageLoopForIO*>(base::MessageLoop::current());
 
   // No need to take the lock. No one should be using us yet.
-  DCHECK(!read_buffer_);
+  CHECK(!read_buffer_);
   read_buffer_.reset(new ReadBuffer);
-  DCHECK(!write_buffer_);
+  CHECK(!write_buffer_);
   write_buffer_.reset(new WriteBuffer(GetSerializedPlatformHandleSize()));
 
   if (!OnInit()) {
@@ -209,7 +209,7 @@ bool RawChannel::Init(Delegate* delegate) {
 }
 
 void RawChannel::Shutdown() {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io_);
+  CHECK_EQ(base::MessageLoop::current(), message_loop_for_io_);
 
   base::AutoLock locker(write_lock_);
 
@@ -227,7 +227,7 @@ void RawChannel::Shutdown() {
 
 // Reminder: This must be thread-safe.
 bool RawChannel::WriteMessage(scoped_ptr<MessageInTransit> message) {
-  DCHECK(message);
+  CHECK(message);
 
   base::AutoLock locker(write_lock_);
   if (write_stopped_)
@@ -239,7 +239,7 @@ bool RawChannel::WriteMessage(scoped_ptr<MessageInTransit> message) {
   }
 
   EnqueueMessageNoLock(message.Pass());
-  DCHECK_EQ(write_buffer_->data_offset_, 0u);
+  CHECK_EQ(write_buffer_->data_offset_, 0u);
 
   size_t platform_handles_written = 0;
   size_t bytes_written = 0;
@@ -270,7 +270,7 @@ bool RawChannel::IsWriteBufferEmpty() {
 }
 
 void RawChannel::OnReadCompleted(bool result, size_t bytes_read) {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io_);
+  CHECK_EQ(base::MessageLoop::current(), message_loop_for_io_);
 
   if (read_stopped_) {
     NOTREACHED();
@@ -314,12 +314,12 @@ void RawChannel::OnReadCompleted(bool result, size_t bytes_read) {
            remaining_bytes >= message_size) {
       MessageInTransit::View
           message_view(message_size, &read_buffer_->buffer_[read_buffer_start]);
-      DCHECK_EQ(message_view.total_size(), message_size);
+      CHECK_EQ(message_view.total_size(), message_size);
 
       const char* error_message = NULL;
       if (!message_view.IsValid(GetSerializedPlatformHandleSize(),
                                 &error_message)) {
-        DCHECK(error_message);
+        CHECK(error_message);
         LOG(WARNING) << "Received invalid message: " << error_message;
         read_stopped_ = true;
         CallOnFatalError(Delegate::FATAL_ERROR_READ);
@@ -359,7 +359,7 @@ void RawChannel::OnReadCompleted(bool result, size_t bytes_read) {
         // for the POSIX implementation, we should confirm that none are stored.
 
         // Dispatch the message.
-        DCHECK(delegate_);
+        CHECK(delegate_);
         delegate_->OnReadMessage(message_view, platform_handles.Pass());
         if (read_stopped_) {
           // |Shutdown()| was called in |OnReadMessage()|.
@@ -416,12 +416,12 @@ void RawChannel::OnReadCompleted(bool result, size_t bytes_read) {
 void RawChannel::OnWriteCompleted(bool result,
                                   size_t platform_handles_written,
                                   size_t bytes_written) {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io_);
+  CHECK_EQ(base::MessageLoop::current(), message_loop_for_io_);
 
   bool did_fail = false;
   {
     base::AutoLock locker(write_lock_);
-    DCHECK_EQ(write_stopped_, write_buffer_->message_queue_.empty());
+    CHECK_EQ(write_stopped_, write_buffer_->message_queue_.empty());
 
     if (write_stopped_) {
       NOTREACHED();
@@ -451,7 +451,7 @@ bool RawChannel::OnReadMessageForRawChannel(
 }
 
 void RawChannel::CallOnFatalError(Delegate::FatalError fatal_error) {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io_);
+  CHECK_EQ(base::MessageLoop::current(), message_loop_for_io_);
   // TODO(vtl): Add a "write_lock_.AssertNotAcquired()"?
   if (delegate_)
     delegate_->OnFatalError(fatal_error);
@@ -462,8 +462,8 @@ bool RawChannel::OnWriteCompletedNoLock(bool result,
                                         size_t bytes_written) {
   write_lock_.AssertAcquired();
 
-  DCHECK(!write_stopped_);
-  DCHECK(!write_buffer_->message_queue_.empty());
+  CHECK(!write_stopped_);
+  CHECK(!write_buffer_->message_queue_.empty());
 
   if (result) {
     write_buffer_->platform_handles_offset_ += platform_handles_written;
@@ -472,7 +472,7 @@ bool RawChannel::OnWriteCompletedNoLock(bool result,
     MessageInTransit* message = write_buffer_->message_queue_.front();
     if (write_buffer_->data_offset_ >= message->total_size()) {
       // Complete write.
-      DCHECK_EQ(write_buffer_->data_offset_, message->total_size());
+      CHECK_EQ(write_buffer_->data_offset_, message->total_size());
       write_buffer_->message_queue_.pop_front();
       delete message;
       write_buffer_->platform_handles_offset_ = 0;
@@ -486,7 +486,7 @@ bool RawChannel::OnWriteCompletedNoLock(bool result,
     IOResult io_result = ScheduleWriteNoLock();
     if (io_result == IO_PENDING)
       return true;
-    DCHECK_EQ(io_result, IO_FAILED);
+    CHECK_EQ(io_result, IO_FAILED);
   }
 
   write_stopped_ = true;
