@@ -12,63 +12,48 @@ div#img-container {
 <script src="../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
-function display()
-{
-    if (window.testRunner)
-        testRunner.displayAsync();
-}
+var images = [
+    ["resources/test.bmp", "25", "25"],
+    ["resources/test.gif", "25", "25"],
+    ["resources/test.ico", "25", "25"],
+    ["resources/test.jpg", "25", "25"],
+    ["resources/test.png", "25", "25"],
+    ["resources/test.webp", "25", "25"],
+    ["resources/big.png", "150", "150"]
+];
 
-function addImage(src, width, height)
+function displayImages(callback)
 {
+    var currentImage = 0;
+
     var img = document.getElementById("img-container").firstElementChild;
-    img.width = width;
-    img.height = height;
-    img.src = src;
+    img.addEventListener("load", onImageLoaded, false);
+
+    if (window.testRunner)
+        testRunner.displayAsyncThen(showNextImage);
+
+    function showNextImage()
+    {
+        if (currentImage >= images.length) {
+            callback();
+            return;
+        }
+        img.width = images[currentImage][1];
+        img.height = images[currentImage][2];
+        img.src = images[currentImage][0];
+        currentImage++;
+    }
+
+    function onImageLoaded()
+    {
+        if (window.testRunner)
+            testRunner.displayAsyncThen(showNextImage);
+    }
 }
 
 function test()
 {
-    var images = [
-        ["resources/test.bmp", "25", "25"],
-        ["resources/test.gif", "25", "25"],
-        ["resources/test.ico", "25", "25"],
-        ["resources/test.jpg", "25", "25"],
-        ["resources/test.png", "25", "25"],
-        ["resources/test.webp", "25", "25"],
-        ["resources/big.png", "150", "150"]
-    ];
-    var imageCount = 0;
-    WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, recordSniffer);
-    InspectorTest.startTimeline(showImage);
-
-    function showImage()
-    {
-        if (imageCount >= images.length) {
-            allImagesShown();
-            return;
-        }
-        InspectorTest.evaluateInPage('addImage("' + images[imageCount].join('", "') + '");');
-        imageCount++;
-    }
-
-    function recordSniffer(event)
-    {
-        processRecord(event.data);
-    }
-
-    function processRecord(record)
-    {
-        if (record.type === WebInspector.TimelineModel.RecordType.DecodeImage) {
-            showImage();
-        }
-        (record.children || []).forEach(processRecord);
-    }
-
-    function allImagesShown()
-    {
-        WebInspector.timelineManager.removeEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, recordSniffer);
-        InspectorTest.stopTimeline(dumpRecords);
-    }
+    InspectorTest.invokeAsyncWithTimeline("displayImages", dumpRecords);
 
     function dumpRecords(records)
     {
@@ -91,6 +76,6 @@ function test()
 <p>
 Tests the Timeline API instrumentation of a DecodeImage and ResizeImage events
 </p>
-<div id="img-container"><img onload="display()"></div>
+<div id="img-container"><img></div>
 </body>
 </html>
