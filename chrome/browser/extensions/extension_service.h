@@ -226,11 +226,6 @@ class ExtensionService
   virtual void OnExternalProviderReady(
       const extensions::ExternalProviderInterface* provider) OVERRIDE;
 
-  // Getter and setter for the flag that specifies whether the extension is
-  // being reloaded.
-  bool IsBeingReloaded(const std::string& extension_id) const;
-  void SetBeingReloaded(const std::string& extension_id, bool value);
-
   // Initialize and start all installed extensions.
   void Init();
 
@@ -659,11 +654,6 @@ class ExtensionService
   // first time.
   bool is_first_run_;
 
-  // TODO(rdevlin.cronin): Okay, clearly something is very wrong with this
-  // picture...
-  // A set of the extension ids currently being reloaded.  We use this to
-  // avoid showing a "new install" notice for an extension reinstall.
-  std::set<std::string> extensions_being_reloaded_;
   // Store the ids of reloading extensions. We use this to re-enable extensions
   // which were disabled for a reload.
   std::set<std::string> reloading_extensions_;

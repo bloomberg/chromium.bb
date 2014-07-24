@@ -637,15 +637,12 @@ void ExtensionService::ReloadExtensionImpl(
   // If we're reloading a component extension, use the component extension
   // loader's reloader.
   if (component_loader_->Exists(extension_id)) {
-    SetBeingReloaded(extension_id, true);
     component_loader_->Reload(extension_id);
-    SetBeingReloaded(extension_id, false);
     return;
   }
 
   // Check the installed extensions to see if what we're reloading was already
   // installed.
-  SetBeingReloaded(extension_id, true);
   scoped_ptr<ExtensionInfo> installed_extension(
       extension_prefs_->GetInstalledExtensionInfo(extension_id));
   if (installed_extension.get() &&
@@ -661,8 +658,6 @@ void ExtensionService::ReloadExtensionImpl(
     unpacked_installer->set_be_noisy_on_failure(be_noisy);
     unpacked_installer->Load(path);
   }
-  // When reloading is done, mark this extension as done reloading.
-  SetBeingReloaded(extension_id, false);
 #endif  // defined(ENABLE_EXTENSIONS)
 }
 
@@ -2094,19 +2089,6 @@ void ExtensionService::Observe(int type,
 void ExtensionService::OnExtensionInstallPrefChanged() {
   error_controller_->ShowErrorIfNeeded();
   CheckManagementPolicy();
-}
-
-bool ExtensionService::IsBeingReloaded(
-    const std::string& extension_id) const {
-  return ContainsKey(extensions_being_reloaded_, extension_id);
-}
-
-void ExtensionService::SetBeingReloaded(const std::string& extension_id,
-                                        bool isBeingReloaded) {
-  if (isBeingReloaded)
-    extensions_being_reloaded_.insert(extension_id);
-  else
-    extensions_being_reloaded_.erase(extension_id);
 }
 
 bool ExtensionService::ShouldEnableOnInstall(const Extension* extension) {
