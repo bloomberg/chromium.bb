@@ -251,6 +251,8 @@ public:
     bool recalcChildOverflowAfterStyleChange();
     bool recalcOverflowAfterStyleChange();
 
+    void invalidatePositionedObjectsAffectedByOverflowClip();
+
 protected:
     virtual void willBeDestroyed() OVERRIDE;
 
@@ -439,6 +441,8 @@ private:
     RenderBlockFlow* columnsBlockForSpanningElement(RenderObject* newChild);
 
     // End helper functions and structs used by layoutBlockChildren.
+
+    bool widthAvailableToChildrenHasChanged();
 
 protected:
     // Returns the logicalOffset at the top of the next page. If the offset passed in is already at the top of the current page,

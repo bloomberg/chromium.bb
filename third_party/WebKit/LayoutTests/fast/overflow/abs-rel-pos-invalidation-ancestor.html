@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<script src="../repaint/resources/text-based-repaint.js"></script>
+<script>
+    function repaintTest()
+    {
+        var content = document.getElementById("content");
+        var containerWrapper = document.getElementById("containerWrapper");
+        containerWrapper.style.overflow = 'visible';
+        content.style.display = 'block';
+        document.body.offsetTop;
+        containerWrapper.style.overflow = 'hidden';
+        content.style.display = 'none';
+    }
+</script>
+<style>
+#fixedPosition {
+    position:fixed;
+}
+
+#content {
+    position:absolute;
+    left: 200px;
+    display: none;
+    width: 100px;
+    height: 100px;
+    background-color: red;
+}
+
+#container {
+    background-color: green;
+    height: 100px;
+    width: 100px;
+}
+
+#container:hover #content {
+    display:block;
+}
+
+#containerWrapper {
+    position:relative;
+    overflow:hidden;
+}
+
+#containerWrapper:hover {
+    overflow:visible
+}
+</style>
+<div id="fixedPosition">
+    <div id="containerWrapper">
+            <div id="container">
+                <div id="content"></div>
+            </div>
+    </div>
+</div>
+<p>crbug.com/321264: Invalidate the rect of an element that is being removed from the tree even when it is overflow-clipped at the time of invalidation.</p>
+<script>runRepaintTest();</script>
