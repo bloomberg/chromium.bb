@@ -459,9 +459,11 @@ function handleCanExecuteForDocument(e) {
           !isUnmodifiable(tree.getBookmarkNodeById(list.parentId));
       break;
     case 'undo-command':
-      // The global undo command has no visible UI, so always enable it, and
+      // If the search box is active, pass the undo command through
+      // (fixes http://crbug.com/278112). Otherwise, because
+      // the global undo command has no visible UI, always enable it, and
       // just make it a no-op if undo is not possible.
-      e.canExecute = true;
+      e.canExecute = e.currentTarget.activeElement !== $('term');
       break;
     default:
       canExecuteForList(e);
