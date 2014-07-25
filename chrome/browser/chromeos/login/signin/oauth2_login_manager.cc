@@ -14,11 +14,13 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -219,9 +221,15 @@ void OAuth2LoginManager::FetchOAuth2Tokens() {
   // If we have authenticated cookie jar, get OAuth1 token first, then fetch
   // SID/LSID cookies through OAuthLogin call.
   if (restore_strategy_ == RESTORE_FROM_COOKIE_JAR) {
+    SigninClient* signin_client =
+        ChromeSigninClientFactory::GetForProfile(user_profile_);
+    std::string signin_scoped_device_id =
+        signin_client->GetSigninScopedDeviceId();
+
     oauth2_token_fetcher_.reset(
         new OAuth2TokenFetcher(this, auth_request_context_.get()));
-    oauth2_token_fetcher_->StartExchangeFromCookies(std::string());
+    oauth2_token_fetcher_->StartExchangeFromCookies(std::string(),
+                                                    signin_scoped_device_id);
   } else if (restore_strategy_ == RESTORE_FROM_AUTH_CODE) {
     DCHECK(!auth_code_.empty());
     oauth2_token_fetcher_.reset(

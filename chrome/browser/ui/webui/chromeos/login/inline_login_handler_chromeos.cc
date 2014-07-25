@@ -6,11 +6,13 @@
 
 #include "chrome/browser/chromeos/login/signin/oauth2_token_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -81,7 +83,12 @@ void InlineLoginHandlerChromeOS::CompleteLogin(const base::ListValue* args) {
           ->GetURLRequestContext();
   oauth2_token_fetcher_.reset(
       new OAuth2TokenFetcher(oauth2_delegate_.get(), request_context));
-  oauth2_token_fetcher_->StartExchangeFromCookies(session_index);
+  SigninClient* signin_client =
+      ChromeSigninClientFactory::GetForProfile(profile);
+  std::string signin_scoped_device_id =
+      signin_client->GetSigninScopedDeviceId();
+  oauth2_token_fetcher_->StartExchangeFromCookies(session_index,
+                                                  signin_scoped_device_id);
 }
 
 } // namespace chromeos

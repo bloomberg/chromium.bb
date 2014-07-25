@@ -40,9 +40,11 @@ OAuth2TokenFetcher::~OAuth2TokenFetcher() {
 }
 
 void OAuth2TokenFetcher::StartExchangeFromCookies(
-    const std::string& session_index) {
+    const std::string& session_index,
+    const std::string& signin_scoped_device_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   session_index_ = session_index;
+  signin_scoped_device_id_ = signin_scoped_device_id;
   // Delay the verification if the network is not connected or on a captive
   // portal.
   const NetworkState* default_network =
@@ -56,11 +58,13 @@ void OAuth2TokenFetcher::StartExchangeFromCookies(
         FROM_HERE,
         base::Bind(&OAuth2TokenFetcher::StartExchangeFromCookies,
                    AsWeakPtr(),
-                   session_index),
+                   session_index,
+                   signin_scoped_device_id),
         base::TimeDelta::FromMilliseconds(kRequestRestartDelay));
     return;
   }
-  auth_fetcher_.StartCookieForOAuthLoginTokenExchange(session_index);
+  auth_fetcher_.StartCookieForOAuthLoginTokenExchangeWithDeviceId(
+      session_index, signin_scoped_device_id);
 }
 
 void OAuth2TokenFetcher::StartExchangeFromAuthCode(
@@ -102,7 +106,8 @@ void OAuth2TokenFetcher::OnClientOAuthFailure(
                auth_code_.empty()
                    ? base::Bind(&OAuth2TokenFetcher::StartExchangeFromCookies,
                                 AsWeakPtr(),
-                                session_index_)
+                                session_index_,
+                                signin_scoped_device_id_)
                    : base::Bind(&OAuth2TokenFetcher::StartExchangeFromAuthCode,
                                 AsWeakPtr(),
                                 auth_code_),
