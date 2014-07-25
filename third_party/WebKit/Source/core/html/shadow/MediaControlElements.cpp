@@ -402,7 +402,6 @@ void MediaControlTimelineElement::setDuration(double duration)
     setFloatingPointAttribute(maxAttr, std::isfinite(duration) ? duration : 0);
 }
 
-
 const AtomicString& MediaControlTimelineElement::shadowPseudoId() const
 {
     DEFINE_STATIC_LOCAL(AtomicString, id, ("-webkit-media-controls-timeline", AtomicString::ConstructFromLiteral));

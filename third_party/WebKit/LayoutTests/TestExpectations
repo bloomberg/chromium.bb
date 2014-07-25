@@ -1,3 +1,4 @@
+crbug.com/392694 media/video-paint-invalidation.html [ NeedsRebaseline ]
 
 # This directly has manual tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]

@@ -139,6 +139,11 @@ void RenderSliderContainer::layout()
     else
         thumbLocation.setX(thumbLocation.x() - offset);
     thumb->setLocation(thumbLocation);
+
+    // We need one-off invalidation code here because painting of the timeline element does not go through style.
+    // Instead it has a custom implementation in C++ code.
+    // Therefore the style system cannot understand when it needs to be repainted.
+    setShouldDoFullPaintInvalidation(true);
 }
 
 } // namespace blink
