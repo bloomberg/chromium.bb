@@ -1105,7 +1105,7 @@ public class Tab implements NavigationClient {
      * @param id The current id.  Maybe {@link #INVALID_TAB_ID}.
      * @return   A new id if {@code id} was {@link #INVALID_TAB_ID}, or {@code id}.
      */
-    private static int generateValidId(int id) {
+    public static int generateValidId(int id) {
         if (id == INVALID_TAB_ID) id = generateNextId();
         incrementIdCounterTo(id + 1);
 
