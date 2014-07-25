@@ -199,13 +199,13 @@
       
       <!-- Host access permissions. Please keep alphabetized. -->
       <message name="IDS_EXTENSION_PROMPT_WARNING_1_HOST" desc="Permission string for access to data on one website.">
-        Read and modify your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>
+        Read and change your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_2_HOSTS" desc="Permission string for access to data on two websites.">
-        Read and modify your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph> and <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>
+        Read and change your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph> and <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_3_HOSTS" desc="Permission string for access to data on three websites.">
-        Read and modify your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>, and <ph name="WEBSITE_3">$3<ex>news.ycombinator.com</ex></ph>
+        Read and change your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>, and <ph name="WEBSITE_3">$3<ex>news.ycombinator.com</ex></ph>
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_HOST_AND_SUBDOMAIN" desc="Permission string requesting access to data on a website and its sub-domains.">
         all <ph name="WEBSITE_1">$1<ex>google.com</ex></ph> sites
@@ -214,7 +214,7 @@
         All <ph name="WEBSITE_1">$1<ex>google.com</ex></ph> sites
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_LIST" desc="Permission string for access to data for an arbitrary list of websites.">
-        Read and modify your data on a number of websites
+        Read and change your data on a number of websites
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_HOST_LIST_ENTRY" desc="Single entry in a list of websites.">
         - <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>

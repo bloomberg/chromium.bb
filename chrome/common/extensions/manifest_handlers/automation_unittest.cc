@@ -50,7 +50,7 @@ TEST_F(AutomationManifestTest, AsBooleanTrue) {
   std::vector<base::string16> warnings =
       extension->permissions_data()->GetPermissionMessageStrings();
   ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ("Read and modify your data on www.google.com",
+  EXPECT_EQ("Read and change your data on www.google.com",
             base::UTF16ToUTF8(warnings[0]));
 
   const AutomationInfo* info = AutomationInfo::Get(extension.get());
@@ -69,7 +69,7 @@ TEST_F(AutomationManifestTest, InteractTrue) {
   std::vector<base::string16> warnings =
       extension->permissions_data()->GetPermissionMessageStrings();
   ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ("Read and modify your data on www.google.com",
+  EXPECT_EQ("Read and change your data on www.google.com",
             base::UTF16ToUTF8(warnings[0]));
 
   const AutomationInfo* info = AutomationInfo::Get(extension.get());
@@ -93,7 +93,7 @@ TEST_F(AutomationManifestTest, Matches) {
   std::vector<base::string16> warnings =
       extension->permissions_data()->GetPermissionMessageStrings();
   ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ("Read and modify your data on www.google.com and www.twitter.com",
+  EXPECT_EQ("Read and change your data on www.google.com and www.twitter.com",
             base::UTF16ToUTF8(warnings[0]));
 
   const AutomationInfo* info = AutomationInfo::Get(extension.get());
@@ -120,9 +120,9 @@ TEST_F(AutomationManifestTest, MatchesAndPermissions) {
   std::vector<base::string16> warnings =
       extension->permissions_data()->GetPermissionMessageStrings();
   ASSERT_EQ(2u, warnings.size());
-  EXPECT_EQ("Read and modify your data on www.google.com",
+  EXPECT_EQ("Read and change your data on www.google.com",
             base::UTF16ToUTF8(warnings[0]));
-  EXPECT_EQ("Read and modify your data on www.twitter.com",
+  EXPECT_EQ("Read and change your data on www.twitter.com",
             base::UTF16ToUTF8(warnings[1]));
 
   const AutomationInfo* info = AutomationInfo::Get(extension.get());
@@ -190,7 +190,7 @@ TEST_F(AutomationManifestTest, DesktopFalse) {
   std::vector<base::string16> warnings =
       extension->permissions_data()->GetPermissionMessageStrings();
   ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ("Read and modify your data on www.google.com",
+  EXPECT_EQ("Read and change your data on www.google.com",
             base::UTF16ToUTF8(warnings[0]));
 
   const AutomationInfo* info = AutomationInfo::Get(extension.get());

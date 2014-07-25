@@ -282,7 +282,7 @@ TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyAPIPermissions) {
       extension->permissions_data()->GetPermissionMessageStrings();
   // Warning for "tabs" is suppressed by "history" permission.
   ASSERT_EQ(5u, warnings.size());
-  EXPECT_EQ("Read and modify your data on api.flickr.com",
+  EXPECT_EQ("Read and change your data on api.flickr.com",
             UTF16ToUTF8(warnings[0]));
   EXPECT_EQ("Read and change your bookmarks", UTF16ToUTF8(warnings[1]));
   EXPECT_EQ("Detect your physical location", UTF16ToUTF8(warnings[2]));
@@ -300,7 +300,7 @@ TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyHostsPermissions) {
       extension->permissions_data()->GetPermissionMessageDetailsStrings();
   ASSERT_EQ(1u, warnings.size());
   ASSERT_EQ(1u, warnings_details.size());
-  EXPECT_EQ("Read and modify your data on a number of websites",
+  EXPECT_EQ("Read and change your data on a number of websites",
             UTF16ToUTF8(warnings[0]));
   EXPECT_EQ("- www.a.com\n- www.b.com\n- www.c.com\n- www.d.com\n- www.e.com",
             UTF16ToUTF8(warnings_details[0]));
@@ -325,7 +325,7 @@ TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyHosts) {
       extension->permissions_data()->GetPermissionMessageStrings();
   ASSERT_EQ(1u, warnings.size());
   EXPECT_EQ(
-      "Read and modify your data on encrypted.google.com and www.google.com",
+      "Read and change your data on encrypted.google.com and www.google.com",
       UTF16ToUTF8(warnings[0]));
 }
 

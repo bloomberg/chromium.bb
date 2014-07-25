@@ -1083,7 +1083,7 @@ TEST(PermissionsTest, GetWarningMessages_ManyHosts) {
       extension->permissions_data()->GetPermissionMessageStrings();
   ASSERT_EQ(1u, warnings.size());
   EXPECT_EQ(
-      "Read and modify your data on encrypted.google.com and "
+      "Read and change your data on encrypted.google.com and "
       "www.google.com",
       base::UTF16ToUTF8(warnings[0]));
 }
