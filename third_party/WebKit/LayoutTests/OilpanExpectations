@@ -43,3 +43,5 @@ Bug(alph) [ Win ] virtual/windows-directwrite/fast/text/orientation-sideways.htm
 crbug.com/377567 [ Debug ] editing/selection/extend-selection-character.html [ Timeout Pass ]
 crbug.com/377567 [ Debug ] editing/selection/programmatic-selection-on-mac-is-directionless.html [ Timeout Pass ]
 crbug.com/377567 [ Debug ] fast/css/large-list-of-rules-crash.html [ Timeout Pass ]
+
+crbug.com/397425 [ Debug ] fast/forms/select/menulist-appearance-basic.html [ Timeout Pass ]
