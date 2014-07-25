@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -131,6 +132,27 @@ void RecordCreationFlags(const Extension* extension) {
       UMA_HISTOGRAM_ENUMERATION(
           "Extensions.LoadCreationFlags", i, Extension::kInitFromValueFlagBits);
     }
+  }
+}
+
+// Helper to record a single disable reason histogram value (see
+// RecordDisableReasons below).
+void RecordDisbleReasonHistogram(int reason) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Extensions.DisableReason", reason);
+}
+
+// Records the disable reasons for a single extension grouped by
+// Extension::DisableReason.
+void RecordDisableReasons(int reasons) {
+  // |reasons| is a bitmask with values from Extension::DisabledReason
+  // which are increasing powers of 2.
+  if (reasons == Extension::DISABLE_NONE) {
+    RecordDisbleReasonHistogram(Extension::DISABLE_NONE);
+    return;
+  }
+  for (int reason = 1; reason < Extension::DISABLE_REASON_LAST; reason <<= 1) {
+    if (reasons & reason)
+      RecordDisbleReasonHistogram(reason);
   }
 }
 
@@ -473,6 +495,7 @@ void InstalledLoader::LoadAllExtensions() {
     if (extension_prefs_->DidExtensionEscalatePermissions((*ex)->id())) {
       ++disabled_for_permissions_count;
     }
+    RecordDisableReasons(extension_prefs_->GetDisableReasons((*ex)->id()));
     if (Manifest::IsExternalLocation((*ex)->location())) {
       // See loop above for ENABLED.
       if (ManifestURL::UpdatesFromGallery(*ex)) {
@@ -542,6 +565,8 @@ void InstalledLoader::LoadAllExtensions() {
     UMA_HISTOGRAM_COUNTS_100("Extensions.FileAccessNotAllowed",
                              file_access_not_allowed_count);
   }
+  UMA_HISTOGRAM_COUNTS_100("Extensions.CorruptExtensionTotalDisables",
+                           extension_prefs_->GetCorruptedDisableCount());
 }
 
 int InstalledLoader::GetCreationFlags(const ExtensionInfo* info) {

@@ -195,6 +195,8 @@ const char kInstallSignature[] = "extensions.install_signature";
 // synced. Default value is false.
 const char kPrefDoNotSync[] = "do_not_sync";
 
+const char kCorruptedDisableCount[] = "extensions.corrupted_disable_count";
+
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
  public:
@@ -1895,6 +1897,15 @@ void ExtensionPrefs::SetInstallParam(const std::string& extension_id,
                       new base::StringValue(install_parameter));
 }
 
+int ExtensionPrefs::GetCorruptedDisableCount() {
+  return prefs_->GetInteger(kCorruptedDisableCount);
+}
+
+void ExtensionPrefs::IncrementCorruptedDisableCount() {
+  int count = prefs_->GetInteger(kCorruptedDisableCount);
+  prefs_->SetInteger(kCorruptedDisableCount, count + 1);
+}
+
 ExtensionPrefs::ExtensionPrefs(
     PrefService* prefs,
     const base::FilePath& root_dir,
@@ -2001,6 +2012,10 @@ void ExtensionPrefs::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       pref_names::kNativeMessagingUserLevelHosts,
       true,  // default value
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      kCorruptedDisableCount,
+      0,  // default value
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 

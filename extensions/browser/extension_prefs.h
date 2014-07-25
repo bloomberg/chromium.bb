@@ -561,6 +561,11 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   void SetInstallParam(const std::string& extension_id,
                        const std::string& install_parameter);
 
+  // The total number of times we've disabled an extension due to corrupted
+  // contents.
+  int GetCorruptedDisableCount();
+  void IncrementCorruptedDisableCount();
+
  private:
   friend class ExtensionPrefsBlacklistedExtensions;  // Unit test.
   friend class ExtensionPrefsUninstallExtension;     // Unit test.

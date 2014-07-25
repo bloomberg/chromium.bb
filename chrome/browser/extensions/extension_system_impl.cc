@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_tokenizer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
@@ -227,12 +228,19 @@ class ContentVerifierDelegateImpl : public ContentVerifierDelegate {
       return;
     ExtensionRegistry* registry = ExtensionRegistry::Get(service_->profile());
     const Extension* extension =
-        registry->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
+        registry->GetExtensionById(extension_id, ExtensionRegistry::ENABLED);
     if (!extension)
       return;
     Mode mode = ShouldBeVerified(*extension);
-    if (mode >= ContentVerifierDelegate::ENFORCE)
+    if (mode >= ContentVerifierDelegate::ENFORCE) {
       service_->DisableExtension(extension_id, Extension::DISABLE_CORRUPTED);
+      ExtensionPrefs::Get(service_->profile())
+          ->IncrementCorruptedDisableCount();
+      UMA_HISTOGRAM_BOOLEAN("Extensions.CorruptExtensionBecameDisabled", true);
+    } else if (!ContainsKey(would_be_disabled_ids_, extension_id)) {
+      UMA_HISTOGRAM_BOOLEAN("Extensions.CorruptExtensionWouldBeDisabled", true);
+      would_be_disabled_ids_.insert(extension_id);
+    }
   }
 
   static Mode GetDefaultMode() {
@@ -287,6 +295,11 @@ class ContentVerifierDelegateImpl : public ContentVerifierDelegate {
  private:
   base::WeakPtr<ExtensionService> service_;
   ContentVerifierDelegate::Mode default_mode_;
+
+  // For reporting metrics in BOOTSTRAP mode, when an extension would be
+  // disabled if content verification was in ENFORCE mode.
+  std::set<std::string> would_be_disabled_ids_;
+
   DISALLOW_COPY_AND_ASSIGN(ContentVerifierDelegateImpl);
 };
 

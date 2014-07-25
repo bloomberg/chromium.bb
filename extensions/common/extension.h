@@ -77,6 +77,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     DEPRECATED_DISABLE_LAST,  // Not used.
   };
 
+  // Reasons an extension may be disabled. These are used in histograms, so do
+  // not remove/reorder entries - only add at the end just before
+  // DISABLE_REASON_LAST (and update the shift value for it). Also remember to
+  // update the enum listing in tools/metrics/histograms.xml.
   enum DisableReason {
     DISABLE_NONE = 0,
     DISABLE_USER_ACTION = 1 << 0,
@@ -91,7 +95,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                                     // the install.
     DISABLE_GREYLIST = 1 << 9,
     DISABLE_CORRUPTED = 1 << 10,
-    DISABLE_REMOTE_INSTALL = 1 << 11
+    DISABLE_REMOTE_INSTALL = 1 << 11,
+    DISABLE_REASON_LAST = 1 << 12,  // This should always be the last value
   };
 
   // A base class for parsed manifest data that APIs want to store on
