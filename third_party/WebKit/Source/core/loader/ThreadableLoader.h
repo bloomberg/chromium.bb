@@ -32,6 +32,7 @@
 #define ThreadableLoader_h
 
 #include "core/fetch/ResourceLoaderOptions.h"
+#include "platform/CrossThreadCopier.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -69,11 +70,48 @@ namespace blink {
             , contentSecurityPolicyEnforcement(EnforceConnectSrcDirective)
             , timeoutMilliseconds(0) { }
 
+        // When adding members, CrossThreadThreadableLoaderOptionsData should
+        // be updated.
         PreflightPolicy preflightPolicy; // If AccessControl is used, how to determine if a preflight is needed.
         CrossOriginRequestPolicy crossOriginRequestPolicy;
         AtomicString initiator;
         ContentSecurityPolicyEnforcement contentSecurityPolicyEnforcement;
         unsigned long timeoutMilliseconds;
+    };
+
+    // Encode AtomicString as String to cross threads.
+    struct CrossThreadThreadableLoaderOptionsData {
+        explicit CrossThreadThreadableLoaderOptionsData(const ThreadableLoaderOptions& options)
+            : preflightPolicy(options.preflightPolicy)
+            , crossOriginRequestPolicy(options.crossOriginRequestPolicy)
+            , initiator(options.initiator.string().isolatedCopy())
+            , contentSecurityPolicyEnforcement(options.contentSecurityPolicyEnforcement)
+            , timeoutMilliseconds(options.timeoutMilliseconds) { }
+
+        operator ThreadableLoaderOptions() const
+        {
+            ThreadableLoaderOptions options;
+            options.preflightPolicy = preflightPolicy;
+            options.crossOriginRequestPolicy = crossOriginRequestPolicy;
+            options.initiator = AtomicString(initiator);
+            options.contentSecurityPolicyEnforcement = contentSecurityPolicyEnforcement;
+            options.timeoutMilliseconds = timeoutMilliseconds;
+            return options;
+        }
+
+        PreflightPolicy preflightPolicy;
+        CrossOriginRequestPolicy crossOriginRequestPolicy;
+        String initiator;
+        ContentSecurityPolicyEnforcement contentSecurityPolicyEnforcement;
+        unsigned long timeoutMilliseconds;
+    };
+
+    template<> struct CrossThreadCopierBase<false, false, false, ThreadableLoaderOptions> {
+        typedef CrossThreadThreadableLoaderOptionsData Type;
+        static Type copy(const ThreadableLoaderOptions& options)
+        {
+            return CrossThreadThreadableLoaderOptionsData(options);
+        }
     };
 
     // Useful for doing loader operations from any thread (not threadsafe,

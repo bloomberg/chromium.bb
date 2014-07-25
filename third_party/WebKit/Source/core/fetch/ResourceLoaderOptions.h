@@ -32,6 +32,7 @@
 #define ResourceLoaderOptions_h
 
 #include "core/fetch/FetchInitiatorInfo.h"
+#include "platform/CrossThreadCopier.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {
@@ -140,6 +141,8 @@ struct ResourceLoaderOptions {
         // securityOrigin has more complicated checks which callers are responsible for.
     }
 
+    // When adding members, CrossThreadResourceLoaderOptionsData should be
+    // updated.
     ContentSniffingPolicy sniffContent; // FIXME: Dead code, please remove.
     DataBufferingPolicy dataBufferingPolicy;
     StoredCredentials allowCredentials; // Whether HTTP credentials and cookies are sent with the request.
@@ -151,6 +154,59 @@ struct ResourceLoaderOptions {
     SynchronousPolicy synchronousPolicy;
     CORSEnabled corsEnabled; // If the resource is loaded out-of-origin, whether or not to use CORS.
     RefPtr<SecurityOrigin> securityOrigin;
+};
+
+// Encode AtomicString (in FetchInitiatorInfo) as String to cross threads.
+struct CrossThreadResourceLoaderOptionsData {
+    explicit CrossThreadResourceLoaderOptionsData(const ResourceLoaderOptions& options)
+        : sniffContent(options.sniffContent)
+        , dataBufferingPolicy(options.dataBufferingPolicy)
+        , allowCredentials(options.allowCredentials)
+        , credentialsRequested(options.credentialsRequested)
+        , contentSecurityPolicyOption(options.contentSecurityPolicyOption)
+        , initiatorInfo(options.initiatorInfo)
+        , requestInitiatorContext(options.requestInitiatorContext)
+        , mixedContentBlockingTreatment(options.mixedContentBlockingTreatment)
+        , synchronousPolicy(options.synchronousPolicy)
+        , corsEnabled(options.corsEnabled)
+        , securityOrigin(options.securityOrigin) { }
+
+    operator ResourceLoaderOptions() const
+    {
+        ResourceLoaderOptions options;
+        options.sniffContent = sniffContent;
+        options.dataBufferingPolicy = dataBufferingPolicy;
+        options.allowCredentials = allowCredentials;
+        options.credentialsRequested = credentialsRequested;
+        options.contentSecurityPolicyOption = contentSecurityPolicyOption;
+        options.initiatorInfo = initiatorInfo;
+        options.requestInitiatorContext = requestInitiatorContext;
+        options.mixedContentBlockingTreatment = mixedContentBlockingTreatment;
+        options.synchronousPolicy = synchronousPolicy;
+        options.corsEnabled = corsEnabled;
+        options.securityOrigin = securityOrigin;
+        return options;
+    }
+
+    ContentSniffingPolicy sniffContent;
+    DataBufferingPolicy dataBufferingPolicy;
+    StoredCredentials allowCredentials;
+    CredentialRequest credentialsRequested;
+    ContentSecurityPolicyCheck contentSecurityPolicyOption;
+    CrossThreadFetchInitiatorInfoData initiatorInfo;
+    RequestInitiatorContext requestInitiatorContext;
+    MixedContentBlockingTreatment mixedContentBlockingTreatment;
+    SynchronousPolicy synchronousPolicy;
+    CORSEnabled corsEnabled;
+    RefPtr<SecurityOrigin> securityOrigin;
+};
+
+template<> struct CrossThreadCopierBase<false, false, false, ResourceLoaderOptions> {
+    typedef CrossThreadResourceLoaderOptionsData Type;
+    static Type copy(const ResourceLoaderOptions& options)
+    {
+        return CrossThreadResourceLoaderOptionsData(options);
+    }
 };
 
 } // namespace blink

@@ -39,7 +39,32 @@ struct FetchInitiatorInfo {
     {
     }
 
+    // When adding members, CrossThreadFetchInitiatorInfoData should be
+    // updated.
     AtomicString name;
+    TextPosition position;
+    double startTime;
+};
+
+// Encode AtomicString as String to cross threads.
+struct CrossThreadFetchInitiatorInfoData {
+    explicit CrossThreadFetchInitiatorInfoData(const FetchInitiatorInfo& info)
+        : name(info.name.string().isolatedCopy())
+        , position(info.position)
+        , startTime(info.startTime)
+    {
+    }
+
+    operator FetchInitiatorInfo() const
+    {
+        FetchInitiatorInfo info;
+        info.name = AtomicString(name);
+        info.position = position;
+        info.startTime = startTime;
+        return info;
+    }
+
+    String name;
     TextPosition position;
     double startTime;
 };

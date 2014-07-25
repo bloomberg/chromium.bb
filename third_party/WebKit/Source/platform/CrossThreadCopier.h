@@ -52,8 +52,6 @@ namespace blink {
     class ResourceResponse;
     struct CrossThreadResourceResponseData;
     struct CrossThreadResourceRequestData;
-    struct ThreadableLoaderOptions;
-    struct ResourceLoaderOptions;
 
     template<typename T> struct CrossThreadCopierPassThrough {
         typedef T Type;
@@ -71,12 +69,6 @@ namespace blink {
 
     // To allow a type to be passed across threads using its copy constructor, add a forward declaration of the type and
     // a CopyThreadCopierBase<false, false, TypeName> : public CrossThreadCopierPassThrough<TypeName> { }; to this file.
-    template<> struct CrossThreadCopierBase<false, false, false, ThreadableLoaderOptions> : public CrossThreadCopierPassThrough<ThreadableLoaderOptions> {
-    };
-
-    template<> struct CrossThreadCopierBase<false, false, false, ResourceLoaderOptions> : public CrossThreadCopierPassThrough<ResourceLoaderOptions> {
-    };
-
     template<> struct CrossThreadCopierBase<false, false, false, IntRect> : public CrossThreadCopierPassThrough<IntRect> {
     };
 
