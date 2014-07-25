@@ -12,15 +12,9 @@
 
 namespace prefetch {
 
-bool IsPrefetchFieldTrialEnabled() {
+bool DisableForFieldTrial() {
   std::string experiment = base::FieldTrialList::FindFullName("Prefetch");
-  if (StartsWithASCII(experiment, "ExperimentYes", false))
-    return true;
-  // If this client needs to prefetch for the Prerender Local Predictor,
-  // enable prefetching.
-  if (prerender::IsLocalPredictorPrerenderPrefetchEnabled())
-    return true;
-  return false;
+  return StartsWithASCII(experiment, "ExperimentDisable", false);
 }
 
 }  // namespace prefetch

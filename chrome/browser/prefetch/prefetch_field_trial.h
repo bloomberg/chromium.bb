@@ -7,7 +7,7 @@
 
 namespace prefetch {
 
-bool IsPrefetchFieldTrialEnabled();
+bool DisableForFieldTrial();
 
 }  // namespace prefetch
 

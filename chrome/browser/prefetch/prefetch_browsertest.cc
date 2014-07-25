@@ -36,10 +36,10 @@ class PrefetchBrowserTestBase : public InProcessBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     if (do_prefetch_field_trial_) {
       command_line->AppendSwitchASCII(switches::kForceFieldTrials,
-                                      "Prefetch/ExperimentYes/");
+                                      "Prefetch/ExperimentDisabled/");
     } else {
       command_line->AppendSwitchASCII(switches::kForceFieldTrials,
-                                      "Prefetch/ExperimentNo/");
+                                      "Prefetch/ExperimentEnabled/");
     }
   }
 
@@ -136,12 +136,12 @@ void CreateHangingRequestInterceptorOnIO(const GURL& url,
 
 // Privacy option is on, experiment is on.  Prefetch should succeed.
 IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPredictionOnExpOn, PredOnExpOn) {
-  EXPECT_TRUE(RunPrefetchExperiment(true, browser()));
+  EXPECT_TRUE(RunPrefetchExperiment(false, browser()));
 }
 
 // Privacy option is on, experiment is off.  Prefetch should be dropped.
 IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPredictionOnExpOff, PredOnExpOff) {
-  EXPECT_TRUE(RunPrefetchExperiment(false, browser()));
+  EXPECT_TRUE(RunPrefetchExperiment(true, browser()));
 }
 
 // Privacy option is off, experiment is on.  Prefetch should be dropped.
@@ -156,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPredictionOffExpOff, PredOffExpOff) {
 
 // Bug 339909: When in incognito mode the browser crashed due to an
 // uninitialized preference member. Verify that it no longer does.
-IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPredictionOnExpOn, IncognitoTest) {
+IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPredictionOnExpOff, IncognitoTest) {
   Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
   Browser* incognito_browser = new Browser(
       Browser::CreateParams(incognito_profile, browser()->host_desktop_type()));
@@ -173,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPredictionOnExpOn, IncognitoTest) {
 // - if a prefetch is in progress, but the originating renderer is destroyed,
 //   that the pending prefetch request is cleaned up cleanly and does not
 //   result in a crash.
-IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPredictionOnExpOn,
+IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPredictionOnExpOff,
                        PrefetchFromBrowser) {
   const GURL kHangingUrl("http://hanging-url.com");
   base::RunLoop loop_;

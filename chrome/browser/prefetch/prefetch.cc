@@ -22,8 +22,8 @@ bool IsPrefetchEnabled(content::ResourceContext* resource_context) {
 
   DCHECK(io_data);
 
-  return IsPrefetchFieldTrialEnabled() &&
-      chrome_browser_net::CanPredictNetworkActionsIO(io_data);
+  return chrome_browser_net::CanPredictNetworkActionsIO(io_data) &&
+         !DisableForFieldTrial();
 }
 
 }  // namespace prefetch
