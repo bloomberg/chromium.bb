@@ -98,7 +98,7 @@ class CONTENT_EXPORT BufferedDataSource : public media::DataSource {
 
   // media::DataSource implementation.
   // Called from demuxer thread.
-  virtual void Stop(const base::Closure& closure) OVERRIDE;
+  virtual void Stop() OVERRIDE;
 
   virtual void Read(int64 position, int size, uint8* data,
                     const media::DataSource::ReadCB& read_cb) OVERRIDE;

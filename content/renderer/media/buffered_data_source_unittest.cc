@@ -178,7 +178,7 @@ class BufferedDataSourceTest : public testing::Test {
       message_loop_.RunUntilIdle();
     }
 
-    data_source_->Stop(media::NewExpectedClosure());
+    data_source_->Stop();
     message_loop_.RunUntilIdle();
   }
 
@@ -505,31 +505,6 @@ TEST_F(BufferedDataSourceTest, File_Successful) {
   Stop();
 }
 
-static void SetTrue(bool* value) {
-  *value = true;
-}
-
-// This test makes sure that Stop() does not require a task to run on
-// |message_loop_| before it calls its callback. This prevents accidental
-// introduction of a pipeline teardown deadlock. The pipeline owner blocks
-// the render message loop while waiting for Stop() to complete. Since this
-// object runs on the render message loop, Stop() will not complete if it
-// requires a task to run on the the message loop that is being blocked.
-TEST_F(BufferedDataSourceTest, StopDoesNotUseMessageLoopForCallback) {
-  InitializeWith206Response();
-
-  // Stop() the data source, using a callback that lets us verify that it was
-  // called before Stop() returns. This is to make sure that the callback does
-  // not require |message_loop_| to execute tasks before being called.
-  bool stop_done_called = false;
-  EXPECT_TRUE(data_source_->loading());
-  data_source_->Stop(base::Bind(&SetTrue, &stop_done_called));
-
-  // Verify that the callback was called inside the Stop() call.
-  EXPECT_TRUE(stop_done_called);
-  message_loop_.RunUntilIdle();
-}
-
 TEST_F(BufferedDataSourceTest, StopDuringRead) {
   InitializeWith206Response();
 
@@ -541,7 +516,7 @@ TEST_F(BufferedDataSourceTest, StopDuringRead) {
   {
     InSequence s;
     EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));
-    data_source_->Stop(media::NewExpectedClosure());
+    data_source_->Stop();
   }
   message_loop_.RunUntilIdle();
 }

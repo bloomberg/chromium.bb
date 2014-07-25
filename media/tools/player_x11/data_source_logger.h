@@ -22,7 +22,7 @@ class DataSourceLogger : public media::DataSource {
   virtual ~DataSourceLogger();
 
   // media::DataSource implementation.
-  virtual void Stop(const base::Closure& closure) OVERRIDE;
+  virtual void Stop() OVERRIDE;
   virtual void Read(
       int64 position, int size, uint8* data,
       const media::DataSource::ReadCB& read_cb) OVERRIDE;

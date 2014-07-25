@@ -21,9 +21,8 @@ IPCDataSource::~IPCDataSource() {
   DCHECK(utility_thread_checker_.CalledOnValidThread());
 }
 
-void IPCDataSource::Stop(const base::Closure& callback) {
+void IPCDataSource::Stop() {
   DCHECK(data_source_thread_checker_.CalledOnValidThread());
-  callback.Run();
 }
 
 void IPCDataSource::Read(int64 position, int size, uint8* data,

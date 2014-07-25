@@ -6,11 +6,6 @@
 #include "base/logging.h"
 #include "media/tools/player_x11/data_source_logger.h"
 
-static void LogAndRunStopClosure(const base::Closure& closure) {
-  VLOG(1) << "Stop() finished";
-  closure.Run();
-}
-
 static void LogAndRunReadCB(
     int64 position, int size,
     const media::DataSource::ReadCB& read_cb, int result) {
@@ -25,9 +20,9 @@ DataSourceLogger::DataSourceLogger(
       streaming_(streaming) {
 }
 
-void DataSourceLogger::Stop(const base::Closure& closure) {
-  VLOG(1) << "Stop() started";
-  data_source_->Stop(base::Bind(&LogAndRunStopClosure, closure));
+void DataSourceLogger::Stop() {
+  VLOG(1) << "Stop()";
+  data_source_->Stop();
 }
 
 void DataSourceLogger::Read(

@@ -25,7 +25,7 @@ class MEDIA_EXPORT FileDataSource : public DataSource {
   bool Initialize(const base::FilePath& file_path);
 
   // Implementation of DataSource.
-  virtual void Stop(const base::Closure& callback) OVERRIDE;
+  virtual void Stop() OVERRIDE;
   virtual void Read(int64 position, int size, uint8* data,
                     const DataSource::ReadCB& read_cb) OVERRIDE;
   virtual bool GetSize(int64* size_out) OVERRIDE;
