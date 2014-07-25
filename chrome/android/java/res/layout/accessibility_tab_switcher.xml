@@ -36,7 +36,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="@drawable/ntp_toolbar_button_background_selected"
-            android:src="@drawable/tabstrip_incognito_switch_normal"
+            android:src="@drawable/btn_tabstrip_incognito_switch"
             android:contentDescription="@string/accessibility_tab_switcher_standard_stack"
             style="?android:attr/borderlessButtonStyle" />
 
@@ -51,7 +51,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:src="@drawable/tabstrip_incognito_switch_incognito"
+            android:src="@drawable/btn_tabstrip_incognito_switch_incognito"
             android:background="@drawable/ntp_toolbar_button_background"
             android:contentDescription="@string/accessibility_tab_switcher_incognito_stack"
             style="?android:attr/borderlessButtonStyle" />

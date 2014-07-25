@@ -49,7 +49,7 @@
             android:padding="4dp"
             android:background="?android:attr/selectableItemBackground"
             android:contentDescription="@string/accessibility_tabstrip_btn_close_tab"
-            android:src="@drawable/close_tab_incognito"
+            android:src="@drawable/btn_tab_close"
             android:gravity="end|center_vertical" />
     </LinearLayout>
 
