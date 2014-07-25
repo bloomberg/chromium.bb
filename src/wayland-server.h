@@ -168,7 +168,7 @@ wl_client_post_no_memory(struct wl_client *client);
  * }
  * \endcode
  *
- * If you need to remove a listener from a signal, use #wl_list_remove.
+ * If you need to remove a listener from a signal, use wl_list_remove().
  *
  * \code
  * wl_list_remove(&your_listener.link);
@@ -189,7 +189,7 @@ struct wl_listener {
  * Compositors as well as the server can provide signals. Observers are
  * wl_listener's that are added through #wl_signal_add. Signals are emitted
  * using #wl_signal_emit, which will invoke all listeners until that
- * listener is removed by #wl_list_remove (or whenever the signal is
+ * listener is removed by wl_list_remove() (or whenever the signal is
  * destroyed).
  *
  * \sa wl_listener for more information on using wl_signal
