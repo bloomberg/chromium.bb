@@ -74,8 +74,6 @@ bool DefaultComponentInstaller::InstallHelper(
 
 bool DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
                                         const base::FilePath& unpack_path) {
-  DCHECK(task_runner_);
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   std::string manifest_version;
   manifest.GetStringASCII("version", &manifest_version);
   base::Version version(manifest_version.c_str());
