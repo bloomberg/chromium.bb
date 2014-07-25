@@ -282,7 +282,6 @@
             '../ui/compositor/compositor.gyp:compositor_test_support',
             '../ui/surface/surface.gyp:surface',
             '../v8/tools/gyp/v8.gyp:v8',
-            '../webkit/child/webkit_child.gyp:webkit_child',
             '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
             '../webkit/storage_browser.gyp:webkit_storage_browser',
             '../webkit/storage_common.gyp:webkit_storage_common',
@@ -370,6 +369,7 @@
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
+        '../webkit/child/webkit_child.gyp:webkit_child',
       ],
       'include_dirs': [
         '..',
@@ -748,7 +748,6 @@
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/libjingle/libjingle.gyp:libjingle',
             '../ui/gl/gl.gyp:gl',
-            '../webkit/child/webkit_child.gyp:webkit_child',
             '../webkit/storage_browser.gyp:webkit_storage_browser',
             '../webkit/storage_common.gyp:webkit_storage_common',
           ],
@@ -1096,7 +1095,6 @@
             '../ui/resources/ui_resources.gyp:ui_resources',
             '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
             '../ui/snapshot/snapshot.gyp:snapshot',
-            '../webkit/child/webkit_child.gyp:webkit_child',
             '../ui/accessibility/accessibility.gyp:ax_gen',
           ],
           'include_dirs': [
@@ -1356,9 +1354,6 @@
             '../ui/gfx/gfx.gyp:gfx_test_support',
             '../ui/gl/gl.gyp:gl',
             '../v8/tools/gyp/v8.gyp:v8',
-            # The following dependency provides the missing symbol
-            # HeapProfilerStart in Linux component builds.
-            '../webkit/child/webkit_child.gyp:webkit_child',
           ],
           'include_dirs': [
             '..',
@@ -1388,9 +1383,6 @@
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_geometry',
             '../ui/gl/gl.gyp:gl',
-            # The following two dependencies provide the missing
-            # symbol HeapProfilerStart in Linux component builds.
-            '../webkit/child/webkit_child.gyp:webkit_child',
           ],
           'include_dirs': [
             '..',

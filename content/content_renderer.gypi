@@ -30,7 +30,6 @@
     '../ui/native_theme/native_theme.gyp:native_theme',
     '../ui/surface/surface.gyp:surface',
     '../v8/tools/gyp/v8.gyp:v8',
-    '../webkit/child/webkit_child.gyp:webkit_child',
     '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
     '../webkit/storage_common.gyp:webkit_storage_common',
   ],

@@ -312,7 +312,6 @@
             '../ppapi/ppapi_internal.gyp:ppapi_shared',
             '../sql/sql.gyp:test_support_sql',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-            '../webkit/child/webkit_child.gyp:webkit_child',
           ],
           'export_dependent_settings': [
             'renderer',
