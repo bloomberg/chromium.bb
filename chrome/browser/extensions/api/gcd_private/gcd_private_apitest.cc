@@ -213,6 +213,13 @@ class GcdPrivateAPITest : public ExtensionApiTest {
 #endif  // ENABLE_MDNS
   }
 
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(
+        extensions::switches::kWhitelistedExtensionID,
+        "ddchlicdkolnonkihahngkmmmjnjlkkf");
+  }
+
  protected:
   FakeGCDApiFlowFactory api_flow_factory_;
 

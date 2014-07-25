@@ -503,8 +503,14 @@
     "extension_types": ["extension", "legacy_packaged_app"]
   },
   "gcdPrivate": {
-    "channel": "trunk",
-    "extension_types": ["extension", "platform_app"]
+    "channel": "dev",
+    "extension_types": ["extension", "platform_app"],
+    "whitelist": [
+      "11B478CEC461C766A2DC1E5BEEB7970AE06DC9C2",  // http://crbug.com/394124
+      "0EFB879311E9EFBB7C45251F89EC655711B1F6ED",  // http://crbug.com/394124
+      "9193D3A51E2FE33B496CDA53EA330423166E7F02",  // http://crbug.com/394124
+      "F9119B8B18C7C82B51E7BC6FF816B694F2EC3E89"   // http://crbug.com/394124
+    ]
   },
   "gcm": {
     "channel": "stable",
