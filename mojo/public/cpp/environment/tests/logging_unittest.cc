@@ -45,9 +45,18 @@ class LoggingTest : public testing::Test {
     last_message_.clear();
   }
 
+  // A function returning |bool| that shouldn't be called.
+  static bool NotCalledCondition() {
+    not_called_condition_was_called_ = true;
+    return false;
+  }
+
   static bool log_message_was_called() { return log_message_was_called_; }
   static MojoLogLevel last_log_level() { return last_log_level_; }
   static const std::string& last_message() { return last_message_; }
+  static bool not_called_condition_was_called() {
+    return not_called_condition_was_called_;
+  }
 
  private:
   // Note: We record calls even if |log_level| is below |minimum_log_level_|
@@ -74,6 +83,7 @@ class LoggingTest : public testing::Test {
   static bool log_message_was_called_;
   static MojoLogLevel last_log_level_;
   static std::string last_message_;
+  static bool not_called_condition_was_called_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(LoggingTest);
 };
@@ -97,18 +107,13 @@ MojoLogLevel LoggingTest::last_log_level_ = MOJO_LOG_LEVEL_INFO;
 // static
 std::string LoggingTest::last_message_;
 
+// static
+bool LoggingTest::not_called_condition_was_called_ = false;
+
 std::string ExpectedLogMessage(int line, const char* message) {
   std::ostringstream s;
   s << OUR_FILENAME "(" << line << "): " << message;
   return s.str();
-}
-
-// A function returning |bool| that shouldn't be called.
-bool NotCalled() {
-  abort();
-  // I think all compilers are smart enough to recognize that nothing is run
-  // after |abort()|. (Some definitely complain that things after it are
-  // unreachable.)
 }
 
 TEST_F(LoggingTest, InternalLogMessage) {
@@ -336,7 +341,8 @@ TEST_F(LoggingTest, LogIf) {
 
   // |MOJO_LOG_IF()| shouldn't evaluate its condition if the level is below the
   // minimum.
-  MOJO_LOG_IF(INFO, NotCalled()) << "hello";
+  MOJO_LOG_IF(INFO, NotCalledCondition()) << "hello";
+  EXPECT_FALSE(not_called_condition_was_called());
   EXPECT_FALSE(log_message_was_called());
 }
 
@@ -388,7 +394,8 @@ TEST_F(LoggingTest, Dlog) {
 TEST_F(LoggingTest, DlogIf) {
   // We start at |MOJO_LOG_LEVEL_INFO|. It shouldn't evaluate the condition in
   // this case.
-  MOJO_DLOG_IF(VERBOSE, NotCalled()) << "hello";
+  MOJO_DLOG_IF(VERBOSE, NotCalledCondition()) << "hello";
+  EXPECT_FALSE(not_called_condition_was_called());
   EXPECT_FALSE(log_message_was_called());
 
   ResetMockLogger();
