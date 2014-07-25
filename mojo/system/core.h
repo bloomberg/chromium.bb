@@ -108,11 +108,14 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   friend bool internal::ShutdownCheckNoLeaks(Core*);
 
   // Internal implementation of |Wait()| and |WaitMany()|; doesn't do basic
-  // validation of arguments.
+  // validation of arguments. |*result_index| is only set if the result (whether
+  // success or failure) applies to a specific handle, so its value should be
+  // preinitialized to |static_cast<uint32_t>(-1)|.
   MojoResult WaitManyInternal(const MojoHandle* handles,
                               const MojoHandleSignals* signals,
                               uint32_t num_handles,
-                              MojoDeadline deadline);
+                              MojoDeadline deadline,
+                              uint32_t* result_index);
 
   // ---------------------------------------------------------------------------
 

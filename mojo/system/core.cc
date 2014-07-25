@@ -120,7 +120,8 @@ MojoResult Core::Close(MojoHandle handle) {
 MojoResult Core::Wait(MojoHandle handle,
                       MojoHandleSignals signals,
                       MojoDeadline deadline) {
-  return WaitManyInternal(&handle, &signals, 1, deadline);
+  uint32_t unused = static_cast<uint32_t>(-1);
+  return WaitManyInternal(&handle, &signals, 1, deadline, &unused);
 }
 
 MojoResult Core::WaitMany(UserPointer<const MojoHandle> handles,
@@ -131,11 +132,16 @@ MojoResult Core::WaitMany(UserPointer<const MojoHandle> handles,
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (num_handles > kMaxWaitManyNumHandles)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
+
   UserPointer<const MojoHandle>::Reader handles_reader(handles, num_handles);
   UserPointer<const MojoHandleSignals>::Reader signals_reader(signals,
                                                               num_handles);
-  return WaitManyInternal(handles_reader.GetPointer(),
-                          signals_reader.GetPointer(), num_handles, deadline);
+  uint32_t result_index = static_cast<uint32_t>(-1);
+  MojoResult result = WaitManyInternal(handles_reader.GetPointer(),
+                                       signals_reader.GetPointer(), num_handles,
+                                       deadline, &result_index);
+  return (result == MOJO_RESULT_OK) ? static_cast<MojoResult>(result_index) :
+                                      result;
 }
 
 MojoResult Core::CreateMessagePipe(
@@ -516,15 +522,19 @@ MojoResult Core::UnmapBuffer(UserPointerValue<void> buffer) {
 MojoResult Core::WaitManyInternal(const MojoHandle* handles,
                                   const MojoHandleSignals* signals,
                                   uint32_t num_handles,
-                                  MojoDeadline deadline) {
+                                  MojoDeadline deadline,
+                                  uint32_t* result_index) {
   DCHECK_GT(num_handles, 0u);
+  DCHECK_EQ(*result_index, static_cast<uint32_t>(-1));
 
   DispatcherVector dispatchers;
   dispatchers.reserve(num_handles);
   for (uint32_t i = 0; i < num_handles; i++) {
     scoped_refptr<Dispatcher> dispatcher = GetDispatcher(handles[i]);
-    if (!dispatcher)
+    if (!dispatcher) {
+      *result_index = i;
       return MOJO_RESULT_INVALID_ARGUMENT;
+    }
     dispatchers.push_back(dispatcher);
   }
 
@@ -536,19 +546,17 @@ MojoResult Core::WaitManyInternal(const MojoHandle* handles,
   MojoResult rv = MOJO_RESULT_OK;
   for (i = 0; i < num_handles; i++) {
     rv = dispatchers[i]->AddWaiter(&waiter, signals[i], i);
-    if (rv != MOJO_RESULT_OK)
+    if (rv != MOJO_RESULT_OK) {
+      *result_index = i;
       break;
+    }
   }
   uint32_t num_added = i;
 
-  if (rv == MOJO_RESULT_ALREADY_EXISTS) {
-    rv = static_cast<MojoResult>(i);  // The i-th one is already "triggered".
-  } else if (rv == MOJO_RESULT_OK) {
-    uint32_t context = static_cast<uint32_t>(-1);
-    rv = waiter.Wait(deadline, &context);
-    if (rv == MOJO_RESULT_OK)
-      rv = static_cast<MojoResult>(context);
-  }
+  if (rv == MOJO_RESULT_ALREADY_EXISTS)
+    rv = MOJO_RESULT_OK;  // The i-th one is already "triggered".
+  else if (rv == MOJO_RESULT_OK)
+    rv = waiter.Wait(deadline, result_index);
 
   // Make sure no other dispatchers try to wake |waiter| for the current
   // |Wait()|/|WaitMany()| call. (Only after doing this can |waiter| be
