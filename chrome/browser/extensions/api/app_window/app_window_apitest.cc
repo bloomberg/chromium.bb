@@ -51,8 +51,13 @@ namespace extensions {
 IN_PROC_BROWSER_TEST_F(ExperimentalPlatformAppBrowserTest, WindowsApiSetIcon) {
   scoped_ptr<TestAppWindowRegistryObserver> test_observer(
       new TestAppWindowRegistryObserver(browser()->profile()));
-  LoadAndLaunchPlatformApp("windows_api_set_icon", "IconSet");
+  ExtensionTestMessageListener listener("ready", true);
+
+  // Launch the app and wait for it to be ready.
+  LoadAndLaunchPlatformApp("windows_api_set_icon", &listener);
   EXPECT_EQ(0, test_observer->icon_updates());
+  listener.Reply("");
+
   // Now wait until the WebContent has decoded the icon and chrome has
   // processed it. This needs to be in a loop since the renderer runs in a
   // different process.

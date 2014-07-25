@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 chrome.app.runtime.onLaunched.addListener(function() {
-  chrome.test.sendMessage("Launched");
   chrome.app.window.create('test.html', {}, function(win) {
-    win.setIcon("icon.png");
-    chrome.test.sendMessage('IconSet');
+    chrome.test.sendMessage('ready', function() {
+      win.setIcon("icon.png");
+    });
   });
 });
