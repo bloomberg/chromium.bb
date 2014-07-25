@@ -73,16 +73,6 @@ class CC_EXPORT PictureLayerTiling {
 
     TilingRasterTileIterator& operator++();
 
-    gfx::Rect TileBounds() const {
-      DCHECK(*this);
-      if (phase_ == VISIBLE_RECT) {
-        return tiling_->tiling_data_.TileBounds(visible_iterator_.index_x(),
-                                                visible_iterator_.index_y());
-      }
-      return tiling_->tiling_data_.TileBounds(spiral_iterator_.index_x(),
-                                              spiral_iterator_.index_y());
-    }
-
    private:
     enum Phase {
       VISIBLE_RECT,
@@ -100,10 +90,6 @@ class CC_EXPORT PictureLayerTiling {
     PictureLayerTiling* tiling_;
 
     Phase phase_;
-    gfx::Rect visible_rect_in_content_space_;
-    gfx::Rect skewport_in_content_space_;
-    gfx::Rect eventually_rect_in_content_space_;
-    gfx::Rect soon_border_rect_in_content_space_;
     WhichTree tree_;
 
     Tile* current_tile_;
@@ -323,6 +309,11 @@ class CC_EXPORT PictureLayerTiling {
   gfx::Rect current_skewport_rect_;
   gfx::Rect current_soon_border_rect_;
   gfx::Rect current_eventually_rect_;
+
+  bool has_visible_rect_tiles_;
+  bool has_skewport_rect_tiles_;
+  bool has_soon_border_rect_tiles_;
+  bool has_eventually_rect_tiles_;
 
   std::vector<Tile*> eviction_tiles_cache_;
   bool eviction_tiles_cache_valid_;

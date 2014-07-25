@@ -77,6 +77,10 @@ PictureLayerTiling::PictureLayerTiling(float contents_scale,
       client_(client),
       tiling_data_(gfx::Size(), gfx::Size(), true),
       last_impl_frame_time_in_seconds_(0.0),
+      has_visible_rect_tiles_(false),
+      has_skewport_rect_tiles_(false),
+      has_soon_border_rect_tiles_(false),
+      has_eventually_rect_tiles_(false),
       eviction_tiles_cache_valid_(false),
       eviction_cache_tree_priority_(SAME_PRIORITY_FOR_BOTH_TREES) {
   gfx::Size content_bounds =
@@ -489,6 +493,7 @@ void PictureLayerTiling::UpdateTilePriorities(
 
   // Assign now priority to all visible tiles.
   bool include_borders = true;
+  has_visible_rect_tiles_ = false;
   for (TilingData::Iterator iter(
            &tiling_data_, visible_rect_in_content_space, include_borders);
        iter;
@@ -496,6 +501,7 @@ void PictureLayerTiling::UpdateTilePriorities(
     TileMap::iterator find = tiles_.find(iter.index());
     if (find == tiles_.end())
       continue;
+    has_visible_rect_tiles_ = true;
     Tile* tile = find->second.get();
 
     tile->SetPriority(tree, now_priority);
@@ -515,6 +521,7 @@ void PictureLayerTiling::UpdateTilePriorities(
   }
 
   // Assign soon priority to skewport tiles.
+  has_skewport_rect_tiles_ = false;
   for (TilingData::DifferenceIterator iter(
            &tiling_data_, skewport, visible_rect_in_content_space);
        iter;
@@ -522,6 +529,7 @@ void PictureLayerTiling::UpdateTilePriorities(
     TileMap::iterator find = tiles_.find(iter.index());
     if (find == tiles_.end())
       continue;
+    has_skewport_rect_tiles_ = true;
     Tile* tile = find->second.get();
 
     gfx::Rect tile_bounds =
@@ -536,6 +544,7 @@ void PictureLayerTiling::UpdateTilePriorities(
   }
 
   // Assign eventually priority to interest rect tiles.
+  has_eventually_rect_tiles_ = false;
   for (TilingData::DifferenceIterator iter(
            &tiling_data_, eventually_rect, skewport);
        iter;
@@ -543,6 +552,7 @@ void PictureLayerTiling::UpdateTilePriorities(
     TileMap::iterator find = tiles_.find(iter.index());
     if (find == tiles_.end())
       continue;
+    has_eventually_rect_tiles_ = true;
     Tile* tile = find->second.get();
 
     gfx::Rect tile_bounds =
@@ -560,6 +570,7 @@ void PictureLayerTiling::UpdateTilePriorities(
   gfx::Rect soon_border_rect = visible_rect_in_content_space;
   float border = kSoonBorderDistanceInScreenPixels / content_to_screen_scale;
   soon_border_rect.Inset(-border, -border, -border, -border);
+  has_soon_border_rect_tiles_ = false;
   for (TilingData::DifferenceIterator iter(
            &tiling_data_, soon_border_rect, skewport);
        iter;
@@ -567,6 +578,7 @@ void PictureLayerTiling::UpdateTilePriorities(
     TileMap::iterator find = tiles_.find(iter.index());
     if (find == tiles_.end())
       continue;
+    has_soon_border_rect_tiles_ = true;
     Tile* tile = find->second.get();
 
     TilePriority priority(resolution_,
@@ -839,21 +851,15 @@ PictureLayerTiling::TilingRasterTileIterator::TilingRasterTileIterator()
 PictureLayerTiling::TilingRasterTileIterator::TilingRasterTileIterator(
     PictureLayerTiling* tiling,
     WhichTree tree)
-    : tiling_(tiling),
-      phase_(VISIBLE_RECT),
-      visible_rect_in_content_space_(tiling_->current_visible_rect_),
-      skewport_in_content_space_(tiling_->current_skewport_rect_),
-      eventually_rect_in_content_space_(tiling_->current_eventually_rect_),
-      soon_border_rect_in_content_space_(tiling_->current_soon_border_rect_),
-      tree_(tree),
-      current_tile_(NULL),
-      visible_iterator_(&tiling->tiling_data_,
-                        visible_rect_in_content_space_,
-                        true /* include_borders */),
-      spiral_iterator_(&tiling->tiling_data_,
-                       skewport_in_content_space_,
-                       visible_rect_in_content_space_,
-                       visible_rect_in_content_space_) {
+    : tiling_(tiling), phase_(VISIBLE_RECT), tree_(tree), current_tile_(NULL) {
+  if (!tiling_->has_visible_rect_tiles_) {
+    AdvancePhase();
+    return;
+  }
+
+  visible_iterator_ = TilingData::Iterator(&tiling_->tiling_data_,
+                                           tiling_->current_visible_rect_,
+                                           true /* include_borders */);
   if (!visible_iterator_) {
     AdvancePhase();
     return;
@@ -872,19 +878,42 @@ void PictureLayerTiling::TilingRasterTileIterator::AdvancePhase() {
 
   do {
     phase_ = static_cast<Phase>(phase_ + 1);
+    switch (phase_) {
+      case VISIBLE_RECT:
+        NOTREACHED();
+        return;
+      case SKEWPORT_RECT:
+        if (!tiling_->has_skewport_rect_tiles_)
+          continue;
 
-    if (phase_ == SOON_BORDER_RECT) {
-      spiral_iterator_ = TilingData::SpiralDifferenceIterator(
-          &tiling_->tiling_data_,
-          soon_border_rect_in_content_space_,
-          skewport_in_content_space_,
-          visible_rect_in_content_space_);
-    } else if (phase_ == EVENTUALLY_RECT) {
-      spiral_iterator_ = TilingData::SpiralDifferenceIterator(
-          &tiling_->tiling_data_,
-          eventually_rect_in_content_space_,
-          skewport_in_content_space_,
-          soon_border_rect_in_content_space_);
+        spiral_iterator_ = TilingData::SpiralDifferenceIterator(
+            &tiling_->tiling_data_,
+            tiling_->current_skewport_rect_,
+            tiling_->current_visible_rect_,
+            tiling_->current_visible_rect_);
+        break;
+      case SOON_BORDER_RECT:
+        if (!tiling_->has_soon_border_rect_tiles_)
+          continue;
+
+        spiral_iterator_ = TilingData::SpiralDifferenceIterator(
+            &tiling_->tiling_data_,
+            tiling_->current_soon_border_rect_,
+            tiling_->current_skewport_rect_,
+            tiling_->current_visible_rect_);
+        break;
+      case EVENTUALLY_RECT:
+        if (!tiling_->has_eventually_rect_tiles_) {
+          current_tile_ = NULL;
+          return;
+        }
+
+        spiral_iterator_ = TilingData::SpiralDifferenceIterator(
+            &tiling_->tiling_data_,
+            tiling_->current_eventually_rect_,
+            tiling_->current_skewport_rect_,
+            tiling_->current_soon_border_rect_);
+        break;
     }
 
     while (spiral_iterator_) {
