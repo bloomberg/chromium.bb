@@ -465,6 +465,9 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
             "  return xhr.getResponseHeader('" + headerName + "');" +
             "})();";
         String header = executeJavaScriptAndWaitForResult(awContents, contentsClient, syncGetJs);
+
+        if (header.equals("null"))
+            return null;
         // JSON stringification applied by executeJavaScriptAndWaitForResult adds quotes
         // around returned strings.
         assertTrue(header.length() > 2);
@@ -514,6 +517,20 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
                 new AwWebResourceResponse("text/html", "UTF-8", null, 0, null, headers));
         assertEquals(clientResponseHeaderValue,
                 getHeaderValue(mAwContents, mContentsClient, syncGetUrl, clientResponseHeaderName));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testNullHttpResponseHeaders() throws Throwable {
+        final String syncGetUrl = mWebServer.getResponseUrl("/intercept_me");
+        enableJavaScriptOnUiThread(mAwContents);
+
+        final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), aboutPageUrl);
+
+        mShouldInterceptRequestHelper.setReturnValue(
+                new AwWebResourceResponse("text/html", "UTF-8", null, 0, null, null));
+        assertEquals(null, getHeaderValue(mAwContents, mContentsClient, syncGetUrl, "Some-Header"));
     }
 
     private String makePageWithTitle(String title) {

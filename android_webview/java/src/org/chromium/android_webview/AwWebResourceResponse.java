@@ -36,13 +36,15 @@ public class AwWebResourceResponse {
         mStatusCode = statusCode;
         mReasonPhrase = reasonPhrase;
 
-        mResponseHeaderNames = new String[responseHeaders.size()];
-        mResponseHeaderValues = new String[responseHeaders.size()];
-        int i = 0;
-        for (Map.Entry<String, String> entry : responseHeaders.entrySet()) {
-            mResponseHeaderNames[i] = entry.getKey();
-            mResponseHeaderValues[i] = entry.getValue();
-            i++;
+        if (responseHeaders != null) {
+            mResponseHeaderNames = new String[responseHeaders.size()];
+            mResponseHeaderValues = new String[responseHeaders.size()];
+            int i = 0;
+            for (Map.Entry<String, String> entry : responseHeaders.entrySet()) {
+                mResponseHeaderNames[i] = entry.getKey();
+                mResponseHeaderValues[i] = entry.getValue();
+                i++;
+            }
         }
     }
 
