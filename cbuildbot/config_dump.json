@@ -13030,7 +13030,8 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt_cq\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
         ],
         "hwqual": false,
         "image_test": false,
@@ -16013,7 +16014,8 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"pfq\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"bvt\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"pfq\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"bvt-inline\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"pfq\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
         ],
         "hwqual": false,
         "image_test": false,
@@ -16407,7 +16409,8 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt_cq\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
         ],
         "hwqual": false,
         "image_test": false,
@@ -21152,7 +21155,8 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"pfq\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"bvt\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"pfq\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"bvt-inline\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"pfq\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
         ],
         "hwqual": false,
         "image_test": false,
@@ -33982,7 +33986,8 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt_cq\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
         ],
         "hwqual": false,
         "image_test": false,
@@ -35048,7 +35053,8 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"tot-cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt_cq\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"tot-cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"tot-cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
         ],
         "hwqual": false,
         "image_test": false,
@@ -35948,7 +35954,8 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt_cq\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
         ],
         "hwqual": false,
         "image_test": false,
@@ -50563,7 +50570,8 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt_cq\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
         ],
         "hwqual": false,
         "image_test": false,
@@ -55649,7 +55657,8 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt_cq\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
         ],
         "hwqual": false,
         "image_test": false,
@@ -78263,7 +78272,8 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt_cq\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
         ],
         "hwqual": false,
         "image_test": false,
@@ -85187,7 +85197,8 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt_cq\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
         ],
         "hwqual": false,
         "image_test": false,
@@ -87138,7 +87149,8 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt_cq\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
         ],
         "hwqual": false,
         "image_test": false,

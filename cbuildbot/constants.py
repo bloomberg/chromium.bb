@@ -288,6 +288,8 @@ HWTEST_TRYBOT_POOL = 'try-bot'
 
 # Defines for special purpose Hardware tests suites.
 HWTEST_AU_SUITE = 'au'
+HWTEST_BVT_SUITE = 'bvt-inline'
+HWTEST_CQ_SUITE = 'bvt-cq'
 HWTEST_QAV_SUITE = 'qav'
 HWTEST_AFDO_SUITE = 'AFDO_record'
 

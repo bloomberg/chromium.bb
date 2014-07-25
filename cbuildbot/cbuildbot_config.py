@@ -670,7 +670,6 @@ class HWTestConfig(object):
   """
 
   DEFAULT_HW_TEST = 'bvt'
-  CQ_HW_TEST = 'bvt_cq'
 
   # This timeout is larger than it needs to be because of autotest overhead.
   # TODO(davidjames): Reduce this timeout once http://crbug.com/366141 is fixed.
@@ -733,28 +732,42 @@ class HWTestConfig(object):
             cls('perf_v2', **afdo_dict)]
 
   @classmethod
+  def DefaultListNonCanary(cls, **kwargs):
+    """Return a default list of HWTestConfig's for a non-canary build.
+
+    Optional arguments may be overridden in `kwargs`, except that
+    the `blocking` setting cannot be provided.
+    """
+    return [cls(constants.HWTEST_BVT_SUITE, blocking=True, **kwargs),
+            cls(constants.HWTEST_CQ_SUITE, **kwargs)]
+
+  @classmethod
   def DefaultListCQ(cls, **kwargs):
-    """Returns a default list of HWTestConfig's for a CQ build,
-    with overrides for optional args.
+    """Return a default list of HWTestConfig's for a CQ build.
+
+    Optional arguments may be overridden in `kwargs`, except that
+    the `blocking` setting cannot be provided.
     """
     default_dict = dict(pool=constants.HWTEST_PALADIN_POOL, timeout=120 * 60,
                         file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY,
                         minimum_duts=4)
     # Allows kwargs overrides to default_dict for cq.
     default_dict.update(kwargs)
-    return [cls(cls.CQ_HW_TEST, **default_dict)]
+    return cls.DefaultListNonCanary(**default_dict)
 
   @classmethod
   def DefaultListPFQ(cls, **kwargs):
-    """Returns a default list of HWTestConfig's for a PFQ build,
-    with overrides for optional args.
+    """Return a default list of HWTestConfig's for a PFQ build.
+
+    Optional arguments may be overridden in `kwargs`, except that
+    the `blocking` setting cannot be provided.
     """
     default_dict = dict(pool=constants.HWTEST_PFQ_POOL, file_bugs=True,
                         priority=constants.HWTEST_PFQ_PRIORITY,
                         retry=False, minimum_duts=4)
     # Allows kwargs overrides to default_dict for pfq.
     default_dict.update(kwargs)
-    return [cls(cls.DEFAULT_HW_TEST, **default_dict)]
+    return cls.DefaultListNonCanary(**default_dict)
 
   def __init__(self, suite, num=constants.HWTEST_DEFAULT_NUM,
                pool=constants.HWTEST_MACH_POOL, timeout=DEFAULT_HW_TEST_TIMEOUT,
