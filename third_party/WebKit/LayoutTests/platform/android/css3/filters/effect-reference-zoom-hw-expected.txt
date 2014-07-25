@@ -9,7 +9,7 @@ layer at (0,0) size 800x600
             [feGaussianBlur stdDeviation="0.00, 5.00"]
               [SourceGraphic]
           RenderSVGResourceFilter {filter} [id="lighting"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
-            [feBlend mode="multiply"]
+            [feBlend mode="MULTIPLY"]
               [feColorMatrix type="MATRIX" values="0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00"]
                 [feSpecularLighting surfaceScale="1.00" specualConstant="1.00" specularExponent="1.00"]
                   [SourceGraphic]
@@ -36,40 +36,41 @@ layer at (0,0) size 800x600
                   [SourceGraphic]
           RenderSVGResourceFilter {filter} [id="turbulence"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feTurbulence type="TURBULENCE" baseFrequency="0.05, 0.05" seed="0.00" numOctaves="2" stitchTiles="0"]
-      RenderText {#text} at (0,47) size 3x10
-        text run at (0,47) width 3: " "
+      RenderText {#text} at (0,45) size 2x12
+        text run at (0,45) width 2: " "
       RenderText {#text} at (0,0) size 0x0
-      RenderImage {IMG} at (7.25,5) size 80x45
-      RenderText {#text} at (92,47) size 3x10
-        text run at (92,47) width 3: " "
-      RenderText {#text} at (184,47) size 3x10
-        text run at (184,47) width 3: " "
-      RenderText {#text} at (276,47) size 3x10
-        text run at (276,47) width 3: " "
-      RenderText {#text} at (369,47) size 3x10
-        text run at (369,47) width 3: " "
-      RenderText {#text} at (461,47) size 3x10
-        text run at (461,47) width 3: " "
-      RenderText {#text} at (553,47) size 3x10
-        text run at (553,47) width 3: " "
-      RenderText {#text} at (645,47) size 3x10
-        text run at (645,47) width 3: " "
-      RenderText {#text} at (738,47) size 3x10
-        text run at (738,47) width 3: " "
+      RenderText {#text} at (92,45) size 2x12
+        text run at (92,45) width 2: " "
+      RenderText {#text} at (184,45) size 2x12
+        text run at (184,45) width 2: " "
+      RenderText {#text} at (276,45) size 2x12
+        text run at (276,45) width 2: " "
+      RenderText {#text} at (368,45) size 2x12
+        text run at (368,45) width 2: " "
+      RenderText {#text} at (460,45) size 2x12
+        text run at (460,45) width 2: " "
+      RenderText {#text} at (552,45) size 2x12
+        text run at (552,45) width 2: " "
+      RenderText {#text} at (644,45) size 2x12
+        text run at (644,45) width 2: " "
+      RenderText {#text} at (736,45) size 2x12
+        text run at (736,45) width 2: " "
       RenderText {#text} at (0,0) size 0x0
-layer at (104,9) size 80x45
-  RenderImage {IMG} at (99.50,5) size 80x45
-layer at (196,9) size 80x45
-  RenderImage {IMG} at (191.75,5) size 80x45
-layer at (288,9) size 80x45
-  RenderImage {IMG} at (284,5) size 80x45
-layer at (380,9) size 80x45
-  RenderImage {IMG} at (376.25,5) size 80x45
-layer at (473,9) size 80x45
-  RenderImage {IMG} at (468.50,5) size 80x45
-layer at (565,9) size 80x45
-  RenderImage {IMG} at (560.75,5) size 80x45
-layer at (657,9) size 80x45
-  RenderImage {IMG} at (653,5) size 80x45
+layer at (11,9) size 80x45
+  RenderImage {IMG} at (7,5) size 80x45
+layer at (103,9) size 80x45
+  RenderImage {IMG} at (99,5) size 80x45
+layer at (195,9) size 80x45
+  RenderImage {IMG} at (191,5) size 80x45
+layer at (287,9) size 80x45
+  RenderImage {IMG} at (283,5) size 80x45
+layer at (379,9) size 80x45
+  RenderImage {IMG} at (375,5) size 80x45
+layer at (471,9) size 80x45
+  RenderImage {IMG} at (467,5) size 80x45
+layer at (563,9) size 80x45
+  RenderImage {IMG} at (559,5) size 80x45
+layer at (655,9) size 80x45
+  RenderImage {IMG} at (651,5) size 80x45
 layer at (9,66) size 80x45
   RenderImage {IMG} at (5,62) size 80x45
