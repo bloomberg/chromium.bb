@@ -116,8 +116,9 @@ ImageView.prototype.draw = function() {
  */
 ImageView.prototype.applyViewportChange = function() {
   if (this.screenImage_) {
-    this.setTransform(
+    this.setTransform_(
         this.screenImage_,
+        this.viewport_,
         new ImageView.Effect.None(),
         ImageView.Effect.DEFAULT_DURATION);
   }
@@ -224,7 +225,7 @@ ImageView.prototype.setupDeviceBuffer = function(canvas) {
   canvas.style.width = imageBounds.width + 'px';
   canvas.style.height = imageBounds.height + 'px';
 
-  this.setTransform(canvas);
+  this.setTransform_(canvas, this.viewport_);
 
   return needRepaint;
 };
@@ -448,7 +449,7 @@ ImageView.prototype.unload = function(zoomToRect) {
   }
   if (zoomToRect && this.screenImage_) {
     var effect = this.createZoomEffect(zoomToRect);
-    this.setTransform(this.screenImage_, effect);
+    this.setTransform_(this.screenImage_, this.viewport_, effect);
     this.screenImage_.setAttribute('fade', true);
     this.unloadTimer_ = setTimeout(function() {
         this.unloadTimer_ = null;
@@ -552,6 +553,7 @@ ImageView.prototype.updateThumbnail_ = function(canvas) {
 ImageView.prototype.replace = function(
     content, opt_effect, opt_width, opt_height, opt_preview) {
   var oldScreenImage = this.screenImage_;
+  var oldViewport = this.viewport_.clone();
 
   this.replaceContent_(content, opt_width, opt_height, opt_preview);
   if (!opt_effect) {
@@ -561,41 +563,50 @@ ImageView.prototype.replace = function(
   }
 
   var newScreenImage = this.screenImage_;
+  this.viewport_.resetView();
 
   if (oldScreenImage)
     ImageUtil.setAttribute(newScreenImage, 'fade', true);
-  this.setTransform(newScreenImage, opt_effect, 0 /* instant */);
+  this.setTransform_(
+      newScreenImage, this.viewport_, opt_effect, 0 /* instant */);
 
   setTimeout(function() {
-    this.setTransform(newScreenImage, null,
+    this.setTransform_(
+        newScreenImage,
+        this.viewport_,
+        null,
         opt_effect && opt_effect.getDuration());
     if (oldScreenImage) {
       ImageUtil.setAttribute(newScreenImage, 'fade', false);
       ImageUtil.setAttribute(oldScreenImage, 'fade', true);
       console.assert(opt_effect.getReverse, 'Cannot revert an effect.');
       var reverse = opt_effect.getReverse();
-      this.setTransform(oldScreenImage, reverse);
+      this.setTransform_(oldScreenImage, oldViewport, reverse);
       setTimeout(function() {
         if (oldScreenImage.parentNode)
           oldScreenImage.parentNode.removeChild(oldScreenImage);
       }, reverse.getSafeInterval());
     }
-  }.bind(this), 0);
+  }.bind(this));
 };
 
 /**
  * @param {HTMLCanvasElement} element The element to transform.
+ * @param {Viewport} viewport Viewport to be used for calculating
+ *     transformation.
  * @param {ImageView.Effect=} opt_effect The effect to apply.
  * @param {number=} opt_duration Transition duration.
+ * @private
  */
-ImageView.prototype.setTransform = function(element, opt_effect, opt_duration) {
+ImageView.prototype.setTransform_ = function(
+    element, viewport, opt_effect, opt_duration) {
   if (!opt_effect)
     opt_effect = new ImageView.Effect.None();
   if (typeof opt_duration !== 'number')
     opt_duration = opt_effect.getDuration();
   element.style.webkitTransitionDuration = opt_duration + 'ms';
   element.style.webkitTransitionTimingFunction = opt_effect.getTiming();
-  element.style.webkitTransform = opt_effect.transform(element, this.viewport_);
+  element.style.webkitTransform = opt_effect.transform(element, viewport);
 };
 
 /**
@@ -632,15 +643,15 @@ ImageView.prototype.replaceAndAnimate = function(
       new ImageView.Effect.Zoom(
           oldImageBounds.width, oldImageBounds.height, imageCropRect);
 
-  this.setTransform(newScreenImage, effect, 0 /* instant */);
+  this.setTransform_(newScreenImage, this.viewport_, effect, 0 /* instant */);
 
   oldScreenImage.parentNode.appendChild(newScreenImage);
   oldScreenImage.parentNode.removeChild(oldScreenImage);
 
   // Let the layout fire, then animate back to non-transformed state.
   setTimeout(
-      this.setTransform.bind(
-          this, newScreenImage, null, effect.getDuration()),
+      this.setTransform_.bind(
+          this, newScreenImage, this.viewport_, null, effect.getDuration()),
       0);
 
   return effect.getSafeInterval();
@@ -667,7 +678,7 @@ ImageView.prototype.animateAndReplace = function(canvas, imageCropRect) {
       imageCropRect);
 
   // Animate to the transformed state.
-  this.setTransform(oldScreenImage, effect);
+  this.setTransform_(oldScreenImage, this,viewport_, effect);
   setTimeout(setFade.bind(null, false), 0);
   setTimeout(function() {
     if (oldScreenImage.parentNode)

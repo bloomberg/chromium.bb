@@ -1372,6 +1372,13 @@ function TouchHandler(targetElement, slideMode) {
   this.gestureStartEvent_ = null;
 
   /**
+   * Rotation value on beginning of the current gesture.
+   * @type {number}
+   * @private
+   */
+  this.gestureStartRotation_ = 0;
+
+  /**
    * Last touch event.
    * @type {TouchEvent}
    * @private
@@ -1400,6 +1407,13 @@ function TouchHandler(targetElement, slideMode) {
 TouchHandler.SWIPE_THRESHOLD = 100;
 
 /**
+ * Rotation threshold in degrees.
+ * @type {number}
+ * @const
+ */
+TouchHandler.ROTATION_THRESHOLD = 25;
+
+/**
  * Obtains distance between fingers.
  * @param {TouchEvent} event Touch event. It should include more than two
  *     touches.
@@ -1422,6 +1436,24 @@ TouchHandler.prototype = {
     if (!this.enabled_)
       this.stopOperation();
   }
+};
+
+/**
+ * Obtains the degrees of the pinch twist angle.
+ * @param {TouchEvent} event1 Start touch event. It should include more than two
+ *     touches.
+ * @param {TouchEvent} event2 Current touch event. It should include more than
+ *     two touches.
+ * @return {number} Degrees of the pinch twist angle.
+ */
+TouchHandler.getTwistAngle = function(event1, event2) {
+  var dx1 = event1.touches[1].clientX - event1.touches[0].clientX;
+  var dy1 = event1.touches[1].clientY - event1.touches[0].clientY;
+  var dx2 = event2.touches[1].clientX - event2.touches[0].clientX;
+  var dy2 = event2.touches[1].clientY - event2.touches[0].clientY;
+  var innerProduct = dx1 * dx2 + dy1 * dy2;  // |v1| * |v2| * cos(t) = x / r
+  var outerProduct = dx1 * dy2 - dy1 * dx2;  // |v1| * |v2| * sin(t) = y / r
+  return Math.atan2(outerProduct, innerProduct) * 180 / Math.PI;  // atan(y / x)
 };
 
 /**
@@ -1456,15 +1488,18 @@ TouchHandler.prototype.onTouchEvent_ = function(event) {
   }
 
   // Check if a new gesture started or not.
+  var viewport = this.slideMode_.getViewport();
   if (!this.lastEvent_ ||
       this.lastEvent_.touches.length !== event.touches.length) {
     if (event.touches.length === 2 ||
         event.touches.length === 1) {
       this.gestureStartEvent_ = event;
+      this.gestureStartRotation_ = viewport.getRotation();
       this.lastEvent_ = event;
-      this.lastZoom_ = this.slideMode_.getViewport().getZoom();
+      this.lastZoom_ = viewport.getZoom();
     } else {
       this.gestureStartEvent_ = null;
+      this.gestureStartRotation_ = 0;
       this.lastEvent_ = null;
       this.lastZoom_ = 1.0;
     }
@@ -1472,7 +1507,6 @@ TouchHandler.prototype.onTouchEvent_ = function(event) {
   }
 
   // Handle the gesture movement.
-  var viewport = this.slideMode_.getViewport();
   switch (event.touches.length) {
     case 1:
       if (viewport.isZoomed()) {
@@ -1507,6 +1541,15 @@ TouchHandler.prototype.onTouchEvent_ = function(event) {
         break;
       var zoom = distance2 / distance1 * this.lastZoom_;
       viewport.setZoom(zoom);
+
+      // Pinch rotation.
+      var angle = TouchHandler.getTwistAngle(this.gestureStartEvent_, event);
+      if (angle > TouchHandler.ROTATION_THRESHOLD)
+        viewport.setRotation(this.gestureStartRotation_ + 1);
+      else if (angle < -TouchHandler.ROTATION_THRESHOLD)
+        viewport.setRotation(this.gestureStartRotation_ - 1);
+      else
+        viewport.setRotation(this.gestureStartRotation_);
       this.slideMode_.applyViewportChange();
       break;
   }

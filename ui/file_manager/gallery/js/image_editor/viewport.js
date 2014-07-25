@@ -72,6 +72,13 @@ function Viewport() {
   this.offsetY_ = 0;
 
   /**
+   * Integer Rotation value.
+   * The rotation angle is this.rotation_ * 90.
+   * @type {number}
+   */
+  this.rotation_ = 0;
+
+  /**
    * Generation of the screen size image cache.
    * This is incremented every time when the size of image cache is changed.
    * @type {number}
@@ -161,6 +168,24 @@ Viewport.prototype.zoomOut = function() {
  */
 Viewport.prototype.isZoomed = function() {
   return this.zoom_ !== 1;
+};
+
+/**
+ * Sets the rotation value.
+ * @param {number} rotation New rotation value.
+ */
+Viewport.prototype.setRotation = function(rotation) {
+  this.rotation_ = rotation;
+  this.update_();
+};
+
+
+/**
+ * Obtains the rotation value.
+ * @return {number} Current rotation value.
+ */
+Viewport.prototype.getRotation = function() {
+  return this.rotation_;
 };
 
 /**
@@ -327,53 +352,6 @@ Viewport.prototype.imageToScreenRect = function(rect) {
 };
 
 /**
- * @return {boolean} True if some part of the image is clipped by the screen.
- */
-Viewport.prototype.isClipped = function() {
-  return this.getMarginX_() < 0 || this.getMarginY_() < 0;
-};
-
-/**
- * @return {number} Horizontal margin.
- *   Negative if the image is clipped horizontally.
- * @private
- */
-Viewport.prototype.getMarginX_ = function() {
-  return Math.round(
-    (this.screenBounds_.width - this.imageBounds_.width * this.scale_) / 2);
-};
-
-/**
- * @return {number} Vertical margin.
- *   Negative if the image is clipped vertically.
- * @private
- */
-Viewport.prototype.getMarginY_ = function() {
-  return Math.round(
-    (this.screenBounds_.height - this.imageBounds_.height * this.scale_) / 2);
-};
-
-/**
- * @param {number} x X-offset.
- * @return {number} X-offset clamped to the valid range.
- * @private
- */
-Viewport.prototype.clampOffsetX_ = function(x) {
-  var limit = Math.round(Math.max(0, -this.getMarginX_() / this.scale_));
-  return ImageUtil.clamp(-limit, x, limit);
-};
-
-/**
- * @param {number} y Y-offset.
- * @return {number} Y-offset clamped to the valid range.
- * @private
- */
-Viewport.prototype.clampOffsetY_ = function(y) {
-  var limit = Math.round(Math.max(0, -this.getMarginY_() / this.scale_));
-  return ImageUtil.clamp(-limit, y, limit);
-};
-
-/**
  * @private
  */
 Viewport.prototype.getCenteredRect_ = function(
@@ -392,6 +370,7 @@ Viewport.prototype.resetView = function() {
   this.zoom_ = 1;
   this.offsetX_ = 0;
   this.offsetY_ = 0;
+  this.rotation_ = 0;
   this.update_();
 };
 
@@ -405,8 +384,17 @@ Viewport.prototype.update_ = function() {
       this.imageBounds_.width, this.imageBounds_.height);
 
   // Limit offset values.
-  var zoomedWidht = ~~(this.imageBounds_.width * this.scale_ * this.zoom_);
-  var zoomedHeight = ~~(this.imageBounds_.height * this.scale_ * this.zoom_);
+  var zoomedWidht;
+  var zoomedHeight;
+  if (this.rotation_ % 2 == 0) {
+    zoomedWidht = ~~(this.imageBounds_.width * this.scale_ * this.zoom_);
+    zoomedHeight = ~~(this.imageBounds_.height * this.scale_ * this.zoom_);
+  } else {
+    var scale = this.getFittingScaleForImageSize_(
+        this.imageBounds_.height, this.imageBounds_.width);
+    zoomedWidht = ~~(this.imageBounds_.height * scale * this.zoom_);
+    zoomedHeight = ~~(this.imageBounds_.width * scale * this.zoom_);
+  }
   var dx = Math.max(zoomedWidht - this.screenBounds_.width, 0) / 2;
   var dy = Math.max(zoomedHeight - this.screenBounds_.height, 0) /2;
   this.offsetX_ = ImageUtil.clamp(-dx, this.offsetX_, dx);
@@ -441,12 +429,40 @@ Viewport.prototype.update_ = function() {
 };
 
 /**
+ * Clones the viewport.
+ * @return {Viewport} New instance.
+ */
+Viewport.prototype.clone = function() {
+  var viewport = new Viewport();
+  viewport.imageBounds_ = new Rect(this.imageBounds_);
+  viewport.screenBounds_ = new Rect(this.screenBounds_);
+  viewport.scale_ = this.scale_;
+  viewport.zoom_ = this.zoom_;
+  viewport.offsetX_ = this.offsetX_;
+  viewport.offsetY_ = this.offsetY_;
+  viewport.rotation_ = this.rotation_;
+  viewport.generation_ = this.generation_;
+  viewport.update_();
+  return viewport;
+};
+
+/**
  * Obtains CSS transformation for the screen image.
  * @return {string} Transformation description.
  */
 Viewport.prototype.getTransformation = function() {
-  return 'translate(' + this.offsetX_ + 'px, ' + this.offsetY_ + 'px) ' +
-      'scale(' + this.zoom_ + ')';
+  var rotationScaleAdjustment;
+  if (this.rotation_ % 2) {
+    rotationScaleAdjustment = this.getFittingScaleForImageSize_(
+        this.imageBounds_.height, this.imageBounds_.width) / this.scale_;
+  } else {
+    rotationScaleAdjustment = 1;
+  }
+  return [
+    'translate(' + this.offsetX_ + 'px, ' + this.offsetY_ + 'px) ',
+    'rotate(' + (this.rotation_ * 90)  + 'deg)',
+    'scale(' + (this.zoom_ * rotationScaleAdjustment) + ')'
+  ].join(' ');
 };
 
 /**
