@@ -180,10 +180,8 @@ class AppListSyncableService : public syncer::SyncableService,
   void DeleteSyncItemSpecifics(const sync_pb::AppListSpecifics& specifics);
 
   // Creates the OEM folder and sets its name if necessary. Returns the OEM
-  // folder id or an empty string if the folder can not be created. |item_id|
-  // is the item that needs to be placed in the folder, used only for tracking
-  // if the folder can not be created.
-  std::string FindOrCreateOemFolder(const std::string& item_id);
+  // folder id.
+  std::string FindOrCreateOemFolder();
 
   // Gets the location for the OEM folder. Called when the folder is first
   // created.
@@ -205,7 +203,6 @@ class AppListSyncableService : public syncer::SyncableService,
   syncer::SyncableService::StartSyncFlare flare_;
   bool first_app_list_sync_;
   std::string oem_folder_name_;
-  std::vector<std::string> oem_folder_item_ids_;
 
   // Provides integration with Drive apps.
   scoped_ptr<DriveAppProvider> drive_app_provider_;
