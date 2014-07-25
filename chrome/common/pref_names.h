@@ -138,6 +138,7 @@ extern const char kSafeBrowsingDownloadFeedbackEnabled[];
 extern const char kSafeBrowsingReportingEnabled[];
 extern const char kSafeBrowsingProceedAnywayDisabled[];
 extern const char kSafeBrowsingIncidentReportSent[];
+extern const char kSafeBrowsingIncidentsSent[];
 extern const char kIncognitoModeAvailability[];
 extern const char kSearchSuggestEnabled[];
 #if defined(OS_ANDROID)

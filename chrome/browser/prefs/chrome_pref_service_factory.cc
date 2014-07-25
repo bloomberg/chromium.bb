@@ -195,10 +195,15 @@ const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
     PrefHashFilter::ENFORCE_ON_LOAD,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
+  {
+    18, prefs::kSafeBrowsingIncidentsSent,
+    PrefHashFilter::ENFORCE_ON_LOAD,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+  },
 };
 
 // The count of tracked preferences IDs across all platforms.
-const size_t kTrackedPrefsReportingIDsCount = 18;
+const size_t kTrackedPrefsReportingIDsCount = 19;
 COMPILE_ASSERT(kTrackedPrefsReportingIDsCount >= arraysize(kTrackedPrefs),
                need_to_increment_ids_count);
 

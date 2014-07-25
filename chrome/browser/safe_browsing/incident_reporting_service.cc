@@ -11,9 +11,12 @@
 
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/prefs/scoped_user_pref_update.h"
 #include "base/process/process_info.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/tracked/tracked_preference_validation_delegate.h"
@@ -23,6 +26,7 @@
 #include "chrome/browser/safe_browsing/incident_report_uploader_impl.h"
 #include "chrome/browser/safe_browsing/preference_validation_delegate.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/tracked_preference_incident_handlers.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
@@ -33,34 +37,123 @@ namespace safe_browsing {
 
 namespace {
 
+// The type of an incident. Used for user metrics and for pruning of
+// previously-reported incidents.
 enum IncidentType {
   // Start with 1 rather than zero; otherwise there won't be enough buckets for
   // the histogram.
   TRACKED_PREFERENCE = 1,
+  // Values for new incident types go here.
   NUM_INCIDENT_TYPES
 };
 
+// The action taken for an incident; used for user metrics (see
+// LogIncidentDataType).
 enum IncidentDisposition {
   DROPPED,
   ACCEPTED,
 };
 
+// The state persisted for a specific instance of an incident to enable pruning
+// of previously-reported incidents.
+struct PersistentIncidentState {
+  // The type of the incident.
+  IncidentType type;
+
+  // The key for a specific instance of an incident.
+  std::string key;
+
+  // A hash digest representing a specific instance of an incident.
+  uint32_t digest;
+};
+
+// The amount of time the service will wait to collate incidents.
 const int64 kDefaultUploadDelayMs = 1000 * 60;  // one minute
 
+// Returns the number of incidents contained in |incident|. The result is
+// expected to be 1. Used in DCHECKs.
+size_t CountIncidents(const ClientIncidentReport_IncidentData& incident) {
+  size_t result = 0;
+  if (incident.has_tracked_preference())
+    ++result;
+  // Add detection for new incident types here.
+  return result;
+}
+
+// Returns the type of incident contained in |incident_data|.
+IncidentType GetIncidentType(
+    const ClientIncidentReport_IncidentData& incident_data) {
+  if (incident_data.has_tracked_preference())
+    return TRACKED_PREFERENCE;
+
+  // Add detection for new incident types here.
+  COMPILE_ASSERT(TRACKED_PREFERENCE + 1 == NUM_INCIDENT_TYPES,
+                 add_support_for_new_types);
+  NOTREACHED();
+  return NUM_INCIDENT_TYPES;
+}
+
+// Logs the type of incident in |incident_data| to a user metrics histogram.
 void LogIncidentDataType(
     IncidentDisposition disposition,
     const ClientIncidentReport_IncidentData& incident_data) {
-  IncidentType type = TRACKED_PREFERENCE;
-
-  // Add a switch statement once other types are supported.
-  DCHECK(incident_data.has_tracked_preference());
-
+  IncidentType type = GetIncidentType(incident_data);
   if (disposition == ACCEPTED) {
     UMA_HISTOGRAM_ENUMERATION("SBIRS.Incident", type, NUM_INCIDENT_TYPES);
   } else {
     DCHECK_EQ(disposition, DROPPED);
     UMA_HISTOGRAM_ENUMERATION("SBIRS.DroppedIncident", type,
                               NUM_INCIDENT_TYPES);
+  }
+}
+
+// Computes the persistent state for an incident.
+PersistentIncidentState ComputeIncidentState(
+    const ClientIncidentReport_IncidentData& incident) {
+  PersistentIncidentState state = {GetIncidentType(incident)};
+  switch (state.type) {
+    case TRACKED_PREFERENCE:
+      state.key = GetTrackedPreferenceIncidentKey(incident);
+      state.digest = GetTrackedPreferenceIncidentDigest(incident);
+      break;
+    // Add handling for new incident types here.
+    default:
+      COMPILE_ASSERT(TRACKED_PREFERENCE + 1 == NUM_INCIDENT_TYPES,
+                     add_support_for_new_types);
+      NOTREACHED();
+      break;
+  }
+  return state;
+}
+
+// Returns true if the incident described by |state| has already been reported
+// based on the bookkeeping in the |incidents_sent| preference dictionary.
+bool IncidentHasBeenReported(const base::DictionaryValue* incidents_sent,
+                             const PersistentIncidentState& state) {
+  const base::DictionaryValue* type_dict = NULL;
+  std::string digest_string;
+  return (incidents_sent &&
+          incidents_sent->GetDictionaryWithoutPathExpansion(
+              base::IntToString(state.type), &type_dict) &&
+          type_dict->GetStringWithoutPathExpansion(state.key, &digest_string) &&
+          digest_string == base::UintToString(state.digest));
+}
+
+// Marks the incidents described by |states| as having been reported
+// in |incidents_set|.
+void MarkIncidentsAsReported(const std::vector<PersistentIncidentState>& states,
+                             base::DictionaryValue* incidents_sent) {
+  for (size_t i = 0; i < states.size(); ++i) {
+    const PersistentIncidentState& data = states[i];
+    base::DictionaryValue* type_dict = NULL;
+    const std::string type_string(base::IntToString(data.type));
+    if (!incidents_sent->GetDictionaryWithoutPathExpansion(type_string,
+                                                           &type_dict)) {
+      type_dict = new base::DictionaryValue();
+      incidents_sent->SetWithoutPathExpansion(type_string, type_dict);
+    }
+    type_dict->SetStringWithoutPathExpansion(data.key,
+                                             base::UintToString(data.digest));
   }
 }
 
@@ -82,6 +175,9 @@ struct IncidentReportingService::ProfileContext {
 
 class IncidentReportingService::UploadContext {
  public:
+  typedef std::map<Profile*, std::vector<PersistentIncidentState> >
+      PersistentIncidentStateCollection;
+
   explicit UploadContext(scoped_ptr<ClientIncidentReport> report);
   ~UploadContext();
 
@@ -91,8 +187,8 @@ class IncidentReportingService::UploadContext {
   // The uploader in use. This is NULL until the CSD killswitch is checked.
   scoped_ptr<IncidentReportUploader> uploader;
 
-  // The set of profiles from which incidents in |report| originated.
-  std::vector<Profile*> profiles;
+  // A mapping of profiles to the data to be persisted upon successful upload.
+  PersistentIncidentStateCollection profiles_to_state;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UploadContext);
@@ -261,17 +357,9 @@ void IncidentReportingService::OnProfileDestroyed(Profile* profile) {
   delete it->second;
   profiles_.erase(it);
 
-  // Remove the association with this profile from any pending uploads.
-  for (size_t i = 0; i < uploads_.size(); ++i) {
-    UploadContext* upload = uploads_[i];
-    std::vector<Profile*>::iterator it =
-        std::find(upload->profiles.begin(), upload->profiles.end(), profile);
-    if (it != upload->profiles.end()) {
-      *it = upload->profiles.back();
-      upload->profiles.resize(upload->profiles.size() - 1);
-      break;
-    }
-  }
+  // Remove the association with this profile from all pending uploads.
+  for (size_t i = 0; i < uploads_.size(); ++i)
+    uploads_[i]->profiles_to_state.erase(profile);
 }
 
 void IncidentReportingService::AddIncident(
@@ -280,6 +368,7 @@ void IncidentReportingService::AddIncident(
   DCHECK(thread_checker_.CalledOnValidThread());
   // Incidents outside the context of a profile are not supported at the moment.
   DCHECK(profile);
+  DCHECK_EQ(1U, CountIncidents(*incident_data));
 
   ProfileContext* context = GetProfileContext(profile);
   // It is forbidden to call this function with a destroyed profile.
@@ -516,10 +605,10 @@ void IncidentReportingService::UploadIfCollectionComplete() {
   process->set_extended_consent(false);
   // Collect incidents across all profiles participating in safe browsing. Drop
   // incidents if the profile stopped participating before collection completed.
-  // Prune incidents if the profile has already submitted any incidents.
-  // Associate the participating profiles with the upload.
+  // Prune previously submitted incidents.
+  // Associate the profiles and their incident data with the upload.
   size_t prune_count = 0;
-  std::vector<Profile*> profiles;
+  UploadContext::PersistentIncidentStateCollection profiles_to_state;
   for (ProfileContextCollection::iterator scan = profiles_.begin();
        scan != profiles_.end();
        ++scan) {
@@ -537,21 +626,48 @@ void IncidentReportingService::UploadIfCollectionComplete() {
         LogIncidentDataType(DROPPED, *context->incidents[i]);
       }
       context->incidents.clear();
-    } else if (prefs->GetBoolean(prefs::kSafeBrowsingIncidentReportSent)) {
-      // Prune all incidents.
-      // TODO(grt): Only prune previously submitted incidents;
-      // http://crbug.com/383043.
-      prune_count += context->incidents.size();
+      continue;
+    }
+    std::vector<PersistentIncidentState> states;
+    const base::DictionaryValue* incidents_sent =
+        prefs->GetDictionary(prefs::kSafeBrowsingIncidentsSent);
+    // Prep persistent data and prune any incidents already sent.
+    for (size_t i = 0; i < context->incidents.size(); ++i) {
+      ClientIncidentReport_IncidentData* incident = context->incidents[i];
+      const PersistentIncidentState state = ComputeIncidentState(*incident);
+      if (IncidentHasBeenReported(incidents_sent, state)) {
+        ++prune_count;
+        delete context->incidents[i];
+        context->incidents[i] = NULL;
+      } else {
+        states.push_back(state);
+      }
+    }
+    if (prefs->GetBoolean(prefs::kSafeBrowsingIncidentReportSent)) {
+      // Prune all incidents as if they had been reported, migrating to the new
+      // technique. TODO(grt): remove this branch after it has shipped.
+      for (size_t i = 0; i < context->incidents.size(); ++i) {
+        if (context->incidents[i])
+          ++prune_count;
+      }
       context->incidents.clear();
+      prefs->ClearPref(prefs::kSafeBrowsingIncidentReportSent);
+      DictionaryPrefUpdate pref_update(prefs,
+                                       prefs::kSafeBrowsingIncidentsSent);
+      MarkIncidentsAsReported(states, pref_update.Get());
     } else {
       for (size_t i = 0; i < context->incidents.size(); ++i) {
         ClientIncidentReport_IncidentData* incident = context->incidents[i];
-        LogIncidentDataType(ACCEPTED, *incident);
-        // Ownership of the incident is passed to the report.
-        report->mutable_incident()->AddAllocated(incident);
+        if (incident) {
+          LogIncidentDataType(ACCEPTED, *incident);
+          // Ownership of the incident is passed to the report.
+          report->mutable_incident()->AddAllocated(incident);
+        }
       }
       context->incidents.weak_clear();
-      profiles.push_back(scan->first);
+      std::vector<PersistentIncidentState>& profile_states =
+          profiles_to_state[scan->first];
+      profile_states.swap(states);
     }
   }
 
@@ -573,7 +689,7 @@ void IncidentReportingService::UploadIfCollectionComplete() {
     return;
 
   scoped_ptr<UploadContext> context(new UploadContext(report.Pass()));
-  context->profiles.swap(profiles);
+  context->profiles_to_state.swap(profiles_to_state);
   if (!database_manager_) {
     // No database manager during testing. Take ownership of the context and
     // continue processing.
@@ -628,9 +744,13 @@ void IncidentReportingService::OnKillSwitchResult(UploadContext* context,
 }
 
 void IncidentReportingService::HandleResponse(const UploadContext& context) {
-  for (size_t i = 0; i < context.profiles.size(); ++i) {
-    context.profiles[i]->GetPrefs()->SetBoolean(
-        prefs::kSafeBrowsingIncidentReportSent, true);
+  for (UploadContext::PersistentIncidentStateCollection::const_iterator scan =
+           context.profiles_to_state.begin();
+       scan != context.profiles_to_state.end();
+       ++scan) {
+    DictionaryPrefUpdate pref_update(scan->first->GetPrefs(),
+                                     prefs::kSafeBrowsingIncidentsSent);
+    MarkIncidentsAsReported(scan->second, pref_update.Get());
   }
 }
 

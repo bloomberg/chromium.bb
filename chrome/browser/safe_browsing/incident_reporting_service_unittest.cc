@@ -135,6 +135,7 @@ class IncidentReportingServiceTest : public testing::Test {
   static const int64 kIncidentTimeMsec;
   static const char kFakeOsName[];
   static const char kFakeDownloadToken[];
+  static const char kTestTrackedPrefPath[];
 
   IncidentReportingServiceTest()
       : task_runner_(new base::TestSimpleTaskRunner),
@@ -212,7 +213,9 @@ class IncidentReportingServiceTest : public testing::Test {
     scoped_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
         new safe_browsing::ClientIncidentReport_IncidentData());
     incident->set_incident_time_msec(kIncidentTimeMsec);
-    incident->mutable_tracked_preference();
+    safe_browsing::ClientIncidentReport_IncidentData_TrackedPreferenceIncident*
+        tp_incident = incident->mutable_tracked_preference();
+    tp_incident->set_path(kTestTrackedPrefPath);
     return incident.Pass();
   }
 
@@ -230,6 +233,11 @@ class IncidentReportingServiceTest : public testing::Test {
       ASSERT_TRUE(uploaded_report_->incident(i).has_incident_time_msec());
       ASSERT_EQ(kIncidentTimeMsec,
                 uploaded_report_->incident(i).incident_time_msec());
+      ASSERT_TRUE(uploaded_report_->incident(i).has_tracked_preference());
+      ASSERT_TRUE(
+          uploaded_report_->incident(i).tracked_preference().has_path());
+      ASSERT_EQ(std::string(kTestTrackedPrefPath),
+                uploaded_report_->incident(i).tracked_preference().path());
     }
     ASSERT_TRUE(uploaded_report_->has_environment());
     ASSERT_TRUE(uploaded_report_->environment().has_os());
@@ -440,6 +448,7 @@ base::LazyInstance<base::ThreadLocalPointer<
 const int64 IncidentReportingServiceTest::kIncidentTimeMsec = 47LL;
 const char IncidentReportingServiceTest::kFakeOsName[] = "fakedows";
 const char IncidentReportingServiceTest::kFakeDownloadToken[] = "fakedlt";
+const char IncidentReportingServiceTest::kTestTrackedPrefPath[] = "some_pref";
 
 // Tests that an incident added during profile initialization when safe browsing
 // is on is uploaded.
@@ -543,8 +552,8 @@ TEST_F(IncidentReportingServiceTest, NoProfilesNoUpload) {
   EXPECT_FALSE(DownloadFinderDestroyed());
 }
 
-// Tests that an incident added after upload is not uploaded again.
-TEST_F(IncidentReportingServiceTest, OnlyOneUpload) {
+// Tests that an identical incident added after upload is not uploaded again.
+TEST_F(IncidentReportingServiceTest, OneIncidentOneUpload) {
   // Create the profile, thereby causing the test to begin.
   Profile* profile = CreateProfile(
       "profile1", SAFE_BROWSING_OPT_IN, ON_PROFILE_ADDITION_ADD_INCIDENT);
@@ -564,6 +573,33 @@ TEST_F(IncidentReportingServiceTest, OnlyOneUpload) {
 
   // Verify that no additional report upload took place.
   AssertNoUpload();
+}
+
+// Tests that two incidents of the same type with different payloads lead to two
+// uploads.
+TEST_F(IncidentReportingServiceTest, TwoIncidentsTwoUploads) {
+  // Create the profile, thereby causing the test to begin.
+  Profile* profile = CreateProfile(
+      "profile1", SAFE_BROWSING_OPT_IN, ON_PROFILE_ADDITION_ADD_INCIDENT);
+
+  // Let all tasks run.
+  task_runner_->RunUntilIdle();
+
+  // Verify that report upload took place and contained the incident and
+  // environment data.
+  ExpectTestIncidentUploaded(1);
+
+  // Add a variation on the incident to the service.
+  scoped_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
+      MakeTestIncident());
+  incident->mutable_tracked_preference()->set_atomic_value("leeches");
+  instance_->GetAddIncidentCallback(profile).Run(incident.Pass());
+
+  // Let all tasks run.
+  task_runner_->RunUntilIdle();
+
+  // Verify that an additional report upload took place.
+  ExpectTestIncidentUploaded(1);
 }
 
 // Tests that the same incident added for two different profiles in sequence
@@ -611,6 +647,37 @@ TEST_F(IncidentReportingServiceTest, ProfileDestroyedDuringUpload) {
 
   // The lack of a crash indicates that the deleted profile was not accessed by
   // the service while handling the upload response.
+}
+
+// Tests that no upload takes place if the old pref was present.
+TEST_F(IncidentReportingServiceTest, MigrateOldPref) {
+  Profile* profile = CreateProfile(
+      "profile1", SAFE_BROWSING_OPT_IN, ON_PROFILE_ADDITION_NO_ACTION);
+
+  // This is a legacy profile.
+  profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingIncidentReportSent, true);
+
+  // Add the test incident.
+  AddTestIncident(profile);
+
+  // Let all tasks run.
+  task_runner_->RunUntilIdle();
+
+  // No upload should have taken place.
+  AssertNoUpload();
+
+  // The legacy pref should have been cleared.
+  ASSERT_FALSE(
+      profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingIncidentReportSent));
+
+  // Adding the same incident again should still result in no upload.
+  AddTestIncident(profile);
+
+  // Let all tasks run.
+  task_runner_->RunUntilIdle();
+
+  // No upload should have taken place.
+  AssertNoUpload();
 }
 
 // Parallel uploads
