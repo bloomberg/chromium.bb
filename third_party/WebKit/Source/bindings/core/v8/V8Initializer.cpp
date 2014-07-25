@@ -226,8 +226,12 @@ static void messageHandlerInWorker(v8::Handle<v8::Message> message, v8::Handle<v
         RefPtrWillBeRawPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, sourceURL, message->GetLineNumber(), message->GetStartColumn() + 1, &DOMWrapperWorld::current(isolate));
         AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
 
-        V8ErrorHandler::storeExceptionOnErrorEventWrapper(event.get(), data, scriptState->context()->Global(), isolate);
-        context->reportException(event.release(), nullptr, corsStatus);
+        // If execution termination has been triggered as part of constructing
+        // the error event from the v8::Message, quietly leave.
+        if (!v8::V8::IsExecutionTerminating(isolate)) {
+            V8ErrorHandler::storeExceptionOnErrorEventWrapper(event.get(), data, scriptState->context()->Global(), isolate);
+            context->reportException(event.release(), nullptr, corsStatus);
+        }
     }
 
     isReportingException = false;
