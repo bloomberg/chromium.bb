@@ -47,6 +47,10 @@ DatabaseBackend::DatabaseBackend(DatabaseContext* databaseContext, const String&
 {
 }
 
+DatabaseBackend::~DatabaseBackend()
+{
+}
+
 void DatabaseBackend::trace(Visitor* visitor)
 {
     visitor->trace(m_transactionQueue);
