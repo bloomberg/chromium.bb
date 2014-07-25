@@ -74,10 +74,10 @@ void ExtensionsTestSuite::Initialize() {
 
   extensions::RegisterPathProvider();
 
-  base::FilePath resources_pack_path;
-  PathService::Get(base::DIR_MODULE, &resources_pack_path);
-  ResourceBundle::InitSharedInstanceWithPakPath(
-      resources_pack_path.AppendASCII("extensions_unittests_resources.pak"));
+  base::FilePath extensions_pak_path;
+  PathService::Get(base::DIR_MODULE, &extensions_pak_path);
+  ui::ResourceBundle::InitSharedInstanceWithPakPath(
+      extensions_pak_path.AppendASCII("extensions.pak"));
 
   client_.reset(new extensions::TestExtensionsClient());
   extensions::ExtensionsClient::Set(client_.get());
@@ -87,7 +87,7 @@ void ExtensionsTestSuite::Shutdown() {
   extensions::ExtensionsClient::Set(NULL);
   client_.reset();
 
-  ResourceBundle::CleanupSharedInstance();
+  ui::ResourceBundle::CleanupSharedInstance();
   content::ContentTestSuiteBase::Shutdown();
 }
 
