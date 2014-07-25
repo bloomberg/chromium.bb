@@ -3,6 +3,7 @@
  * found in the LICENSE file. */
 
 /* The order of z-index:
+ * - -1: text-measure
  * - 2: drag-selection-border
  * - 3: preview-panel
  * - 500: scrollbar
@@ -1963,4 +1964,12 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
 
 #progress-center li:not(.cancelable) button.cancel {
   visibility: hidden;
+}
+
+.text-measure {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  visibility: hidden;
+  z-index: -1;
 }

@@ -17,25 +17,28 @@
  *     width of text is measures like as it is rendered in this element.
  */
 var TextMeasure = function(element) {
-  var doc = element.ownerDocument;
-  this.dummySpan_ = doc.createElement('span');
-  this.dummySpan_ = doc.getElementsByTagName('body')[0].
-                        appendChild(this.dummySpan_);
-  this.dummySpan_.style.position = 'absolute';
-  this.dummySpan_.style.visibility = 'hidden';
+  this.dummySpan_ = createElementWithClassName('span', 'text-measure');
   var styles = window.getComputedStyle(element, '');
-  var stylesToBeCopied = [
-    'fontSize',
-    'fontStyle',
-    'fontWeight',
-    'fontFamily',
-    'letterSpacing'
-  ];
-  for (var i = 0; i < stylesToBeCopied.length; i++) {
-    this.dummySpan_.style[stylesToBeCopied[i]] = styles[stylesToBeCopied[i]];
+  for (var i = 0; i < TextMeasure.STYLES_TO_BE_COPYED.length; i++) {
+    var name = TextMeasure.STYLES_TO_BE_COPYED[i];
+    this.dummySpan_.style[name] = styles[name];
   }
+  element.ownerDocument.body.appendChild(this.dummySpan_);
   Object.seal(this);
 };
+
+/**
+ * Style names to be copied to the measured dummy span.
+ * @type {Array.<String>}
+ * @const
+ */
+TextMeasure.STYLES_TO_BE_COPYED = Object.freeze([
+  'fontSize',
+  'fontStyle',
+  'fontWeight',
+  'fontFamily',
+  'letterSpacing'
+]);
 
 /**
  * Measures the width of text.
