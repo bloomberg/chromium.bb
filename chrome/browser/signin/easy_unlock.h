@@ -19,6 +19,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 // Launches Easy Unlock Setup app.
 void LaunchEasyUnlockSetup(Profile* profile);
 
+// Whether easy unlock is enabled. The feature is enabled when either the
+// flag is enabled or its field trial is enabled.
+bool IsEnabled();
+
 }  // namespace easy_unlock
 
 #endif  // CHROME_BROWSER_SIGNIN_EASY_UNLOCK_H_

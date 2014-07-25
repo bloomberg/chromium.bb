@@ -4,10 +4,13 @@
 
 #include "chrome/browser/signin/easy_unlock.h"
 
+#include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "extensions/browser/extension_system.h"
@@ -38,6 +41,18 @@ void LaunchEasyUnlockSetup(Profile* profile) {
 
   OpenApplication(AppLaunchParams(
       profile, extension, extensions::LAUNCH_CONTAINER_WINDOW, NEW_WINDOW));
+}
+
+bool IsEnabled() {
+  // FindFullName() call needs to happen before command line check to activate
+  // the trial in the right group. See go/finch-and-flags.
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("EasyUnlock");
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableEasyUnlock)) {
+    return true;
+  }
+  return group_name == "Enable";
 }
 
 }  // namespace easy_unlock

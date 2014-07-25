@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/path_service.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/signin/easy_unlock.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -592,8 +593,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
   AddNetworkSpeechSynthesisExtension();
 #endif
 
-  if (!skip_session_components &&
-      command_line->HasSwitch(switches::kEnableEasyUnlock)) {
+  if (!skip_session_components && easy_unlock::IsEnabled()) {
     if (command_line->HasSwitch(switches::kEasyUnlockAppPath)) {
       base::FilePath easy_unlock_path(
           command_line->GetSwitchValuePath(switches::kEasyUnlockAppPath));

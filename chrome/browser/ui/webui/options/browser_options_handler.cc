@@ -597,9 +597,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   values->SetString("languagesLearnMoreURL",
                     chrome::kLanguageSettingsLearnMoreUrl);
 
-  values->SetBoolean(
-      "easyUnlockEnabled",
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableEasyUnlock));
+  values->SetBoolean("easyUnlockEnabled", easy_unlock::IsEnabled());
   values->SetString("easyUnlockLearnMoreURL", chrome::kEasyUnlockLearnMoreUrl);
   values->SetString("easyUnlockManagementURL",
                     chrome::kEasyUnlockManagementUrl);
