@@ -101,7 +101,9 @@ void SoftwareOutputDeviceOzoneTest::SetUp() {
   const gfx::Size size(500, 400);
   const gfx::AcceleratedWidget kTestAcceleratedWidget = 1;
   compositor_.reset(
-      new ui::Compositor(kTestAcceleratedWidget, context_factory));
+      new ui::Compositor(kTestAcceleratedWidget,
+                         context_factory,
+                         base::MessageLoopProxy::current()));
   compositor_->SetScaleAndSize(1.0f, size);
 
   output_device_.reset(new content::SoftwareOutputDeviceOzone(

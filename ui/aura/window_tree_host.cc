@@ -5,6 +5,7 @@
 #include "ui/aura/window_tree_host.h"
 
 #include "base/debug/trace_event.h"
+#include "base/message_loop/message_loop.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
@@ -204,7 +205,9 @@ void WindowTreeHost::CreateCompositor(
   ui::ContextFactory* context_factory = Env::GetInstance()->context_factory();
   DCHECK(context_factory);
   compositor_.reset(
-      new ui::Compositor(GetAcceleratedWidget(), context_factory));
+      new ui::Compositor(GetAcceleratedWidget(),
+                         context_factory,
+                         base::MessageLoopProxy::current()));
   // TODO(beng): I think this setup should probably all move to a "accelerated
   // widget available" function.
   if (!dispatcher()) {

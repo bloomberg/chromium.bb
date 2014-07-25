@@ -5,6 +5,7 @@
 #include "content/browser/compositor/browser_compositor_view_private_mac.h"
 
 #include "base/debug/trace_event.h"
+#include "base/message_loop/message_loop.h"
 #include "content/browser/compositor/gpu_process_transport_factory.h"
 #include "content/browser/renderer_host/compositing_iosurface_context_mac.h"
 #include "content/browser/renderer_host/compositing_iosurface_mac.h"
@@ -39,7 +40,9 @@ BrowserCompositorViewMacInternal::BrowserCompositorViewMacInternal()
 
   // Create a compositor to draw the contents of |cocoa_view_|.
   compositor_.reset(new ui::Compositor(
-      cocoa_view_, content::GetContextFactory()));
+      cocoa_view_,
+      content::GetContextFactory(),
+      base::MessageLoopProxy::current()));
 }
 
 BrowserCompositorViewMacInternal::~BrowserCompositorViewMacInternal() {

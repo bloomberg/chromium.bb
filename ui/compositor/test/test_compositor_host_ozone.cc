@@ -54,7 +54,9 @@ void TestCompositorHostOzone::Show() {
   // with a non-0 widget.
   // TODO(rjkroege): Use a "real" ozone widget when it is
   // available: http://crbug.com/255128
-  compositor_.reset(new ui::Compositor(1, context_factory_));
+  compositor_.reset(new ui::Compositor(1,
+                                       context_factory_,
+                                       base::MessageLoopProxy::current()));
   compositor_->SetScaleAndSize(1.0f, bounds_.size());
 }
 

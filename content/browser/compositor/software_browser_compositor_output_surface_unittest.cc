@@ -94,7 +94,8 @@ void SoftwareBrowserCompositorOutputSurfaceTest::SetUp() {
       ui::InitializeContextFactoryForTests(enable_pixel_output);
 
   compositor_.reset(new ui::Compositor(gfx::kNullAcceleratedWidget,
-                                       context_factory));
+                                       context_factory,
+                                       base::MessageLoopProxy::current()));
   surface_proxy_ =
       new content::BrowserCompositorOutputSurfaceProxy(&surface_map_);
 }
