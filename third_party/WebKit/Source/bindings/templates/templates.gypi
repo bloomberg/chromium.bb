@@ -8,6 +8,8 @@
       'attributes.cpp',
       'callback_interface.cpp',
       'callback_interface.h',
+      'dictionary_v8.cpp',
+      'dictionary_v8.h',
       'interface_base.cpp',
       'interface.cpp',
       'interface.h',

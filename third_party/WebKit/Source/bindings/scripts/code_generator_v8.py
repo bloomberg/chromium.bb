@@ -73,10 +73,26 @@ import jinja2
 import idl_types
 from idl_types import IdlType
 import v8_callback_interface
+import v8_dictionary
 from v8_globals import includes, interfaces
 import v8_interface
 import v8_types
 from v8_utilities import capitalize, cpp_name, conditional_string, v8_class_name
+
+
+def render_template(interface_info, header_template, cpp_template,
+                    template_context):
+    template_context['code_generator'] = module_pyname
+
+    # Add includes for any dependencies
+    template_context['header_includes'] = sorted(
+        template_context['header_includes'])
+    includes.update(interface_info.get('dependencies_include_paths', []))
+    template_context['cpp_includes'] = sorted(includes)
+
+    header_text = header_template.render(template_context)
+    cpp_text = cpp_template.render(template_context)
+    return header_text, cpp_text
 
 
 class CodeGeneratorV8(object):
@@ -94,6 +110,10 @@ class CodeGeneratorV8(object):
             interface_name
             for interface_name, interface_info in interfaces_info.iteritems()
             if interface_info['is_callback_interface']))
+        IdlType.set_dictionaries(set(
+            dictionary_name
+            for dictionary_name, interface_info in interfaces_info.iteritems()
+            if interface_info['is_dictionary']))
         IdlType.set_implemented_as_interfaces(dict(
             (interface_name, interface_info['implemented_as'])
             for interface_name, interface_info in interfaces_info.iteritems()
@@ -110,20 +130,26 @@ class CodeGeneratorV8(object):
             (interface_name, interface_info['component_dir'])
             for interface_name, interface_info in interfaces_info.iteritems()))
 
-    def generate_code(self, definitions, interface_name):
+    def generate_code(self, definitions, definition_name):
         """Returns .h/.cpp code as (header_text, cpp_text)."""
-        try:
-            interface = definitions.interfaces[interface_name]
-        except KeyError:
-            raise Exception('%s not in IDL definitions' % interface_name)
-
-        # Store other interfaces for introspection
-        interfaces.update(definitions.interfaces)
-
         # Set local type info
         IdlType.set_callback_functions(definitions.callback_functions.keys())
         IdlType.set_enums((enum.name, enum.values)
                           for enum in definitions.enumerations.values())
+
+        if definition_name in definitions.interfaces:
+            return self.generate_interface_code(
+                definitions, definition_name,
+                definitions.interfaces[definition_name])
+        if definition_name in definitions.dictionaries:
+            return self.generate_dictionary_code(
+                definitions, definition_name,
+                definitions.dictionaries[definition_name])
+        raise ValueError('%s is not in IDL definitions' % definition_name)
+
+    def generate_interface_code(self, definitions, interface_name, interface):
+        # Store other interfaces for introspection
+        interfaces.update(definitions.interfaces)
 
         # Select appropriate Jinja template and contents function
         if interface.is_callback:
@@ -137,20 +163,31 @@ class CodeGeneratorV8(object):
         header_template = self.jinja_env.get_template(header_template_filename)
         cpp_template = self.jinja_env.get_template(cpp_template_filename)
 
-        # Compute context (input values for Jinja)
-        template_context = interface_context(interface)
-        template_context['code_generator'] = module_pyname
-
-        # Add includes for interface itself and any dependencies
         interface_info = self.interfaces_info[interface_name]
-        template_context['header_includes'].add(interface_info['include_path'])
-        template_context['header_includes'] = sorted(template_context['header_includes'])
-        includes.update(interface_info.get('dependencies_include_paths', []))
-        template_context['cpp_includes'] = sorted(includes)
 
-        # Render Jinja templates
-        header_text = header_template.render(template_context)
-        cpp_text = cpp_template.render(template_context)
+        template_context = interface_context(interface)
+        # Add the include for interface itself
+        template_context['header_includes'].add(interface_info['include_path'])
+        header_text, cpp_text = render_template(
+            interface_info, header_template, cpp_template, template_context)
+        return header_text, cpp_text
+
+    def generate_dictionary_code(self, definitions, dictionary_name,
+                                 dictionary):
+        interface_info = self.interfaces_info[dictionary_name]
+        # FIXME: Generate impl class
+        return self.generate_dictionary_bindings(
+            dictionary_name, interface_info, dictionary)
+
+    def generate_dictionary_bindings(self, dictionary_name,
+                                     interface_info, dictionary):
+        header_template = self.jinja_env.get_template('dictionary_v8.h')
+        cpp_template = self.jinja_env.get_template('dictionary_v8.cpp')
+        template_context = v8_dictionary.dictionary_context(dictionary)
+        # Add the include for interface itself
+        template_context['header_includes'].add(interface_info['include_path'])
+        header_text, cpp_text = render_template(
+            interface_info, header_template, cpp_template, template_context)
         return header_text, cpp_text
 
 

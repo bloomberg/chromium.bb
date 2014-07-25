@@ -47,7 +47,7 @@ import os
 import posixpath
 import sys
 
-from utilities import get_file_contents, read_file_to_list, idl_filename_to_interface_name, write_pickle_file, get_interface_extended_attributes_from_idl, is_callback_interface_from_idl, get_partial_interface_name_from_idl, get_implements_from_idl, get_parent_interface, get_put_forward_interfaces_from_idl
+from utilities import get_file_contents, read_file_to_list, idl_filename_to_interface_name, write_pickle_file, get_interface_extended_attributes_from_idl, is_callback_interface_from_idl, is_dictionary_from_idl, get_partial_interface_name_from_idl, get_implements_from_idl, get_parent_interface, get_put_forward_interfaces_from_idl
 
 module_path = os.path.dirname(__file__)
 source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir))
@@ -140,10 +140,11 @@ def compute_info_individual(idl_filename, component_dir):
         'implemented_by_interfaces': left_interfaces,  # private, merged to next
         'implements_interfaces': right_interfaces,
         'include_path': this_include_path,
+        'is_callback_interface': is_callback_interface_from_idl(idl_file_contents),
+        'is_dictionary': is_dictionary_from_idl(idl_file_contents),
         # FIXME: temporary private field, while removing old treatement of
         # 'implements': http://crbug.com/360435
         'is_legacy_treat_as_partial_interface': 'LegacyTreatAsPartialInterface' in extended_attributes,
-        'is_callback_interface': is_callback_interface_from_idl(idl_file_contents),
         'parent': get_parent_interface(idl_file_contents),
         # Interfaces that are referenced (used as types) and that we introspect
         # during code generation (beyond interface-level data ([ImplementedAs],

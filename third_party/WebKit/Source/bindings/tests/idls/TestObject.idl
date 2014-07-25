@@ -33,16 +33,6 @@ enum TestEnum {"", "EnumValue1", "EnumValue2", "EnumValue3"};
 callback VoidCallbackFunction = void ();
 callback AnyCallbackFunctionOptionalAnyArg = any (optional any optionalAnyArg);
 
-dictionary TestDict {
-    boolean booleanMember;
-    long longMember1 = 1;
-};
-
-dictionary TestDictDerived : TestDict {
-    unsigned short unsignedShortMember;
-    float floatMember4 = 4.0;
-};
-
 // No extended attributes on the interface; those go in TestInterface.idl
 interface TestObject {
     // Constants

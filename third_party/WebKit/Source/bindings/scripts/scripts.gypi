@@ -35,6 +35,7 @@
       'code_generator_v8.py',
       'v8_attributes.py',
       'v8_callback_interface.py',
+      'v8_dictionary.py',
       'v8_globals.py',
       'v8_interface.py',
       'v8_methods.py',

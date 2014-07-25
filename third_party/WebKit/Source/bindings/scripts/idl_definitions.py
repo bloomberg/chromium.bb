@@ -206,15 +206,20 @@ class IdlCallbackFunction(TypedObject):
 
 class IdlDictionary(object):
     def __init__(self, node):
-        self.parent = None
+        self.extended_attributes = {}
+        self.is_partial = node.GetProperty('Partial') or False
         self.name = node.GetName()
         self.members = []
+        self.parent = None
         for child in node.GetChildren():
             child_class = child.GetClass()
             if child_class == 'Inherit':
                 self.parent = child.GetName()
             elif child_class == 'Key':
                 self.members.append(IdlDictionaryMember(child))
+            elif child_class == 'ExtAttributes':
+                self.extended_attributes = (
+                    ext_attributes_node_to_extended_attributes(child))
             else:
                 raise ValueError('Unrecognized node class: %s' % child_class)
 
@@ -230,9 +235,10 @@ class IdlDictionaryMember(object):
             if child_class == 'Type':
                 self.idl_type = type_node_to_type(child)
             elif child_class == 'Default':
-                self.default_value = child.GetProperty('VALUE')
+                self.default_value = default_node_to_idl_literal(child)
             elif child_class == 'ExtAttributes':
-                self.extended_attributes = ext_attributes_node_to_extended_attributes(child)
+                self.extended_attributes = (
+                    ext_attributes_node_to_extended_attributes(child))
             else:
                 raise ValueError('Unrecognized node class: %s' % child_class)
 

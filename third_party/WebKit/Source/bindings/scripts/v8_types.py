@@ -458,6 +458,8 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index, isolat
         cpp_expression_format = (
             '{v8_value}->Is{idl_type}() ? '
             'V8{idl_type}::toNative(v8::Handle<v8::{idl_type}>::Cast({v8_value})) : 0')
+    elif idl_type.is_dictionary:
+        cpp_expression_format = 'V8{idl_type}::toNative({isoalte}, {v8_value})'
     else:
         cpp_expression_format = (
             'V8{idl_type}::toNativeWithTypeCheck({isolate}, {v8_value})')

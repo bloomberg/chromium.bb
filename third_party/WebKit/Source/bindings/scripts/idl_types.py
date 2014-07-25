@@ -121,6 +121,10 @@ class IdlTypeBase(object):
         return False
 
     @property
+    def is_dictionary(self):
+        return False
+
+    @property
     def is_enum(self):
         return False
 
@@ -169,6 +173,7 @@ class IdlType(IdlTypeBase):
     # as orthogonal properties (via flags).
     callback_functions = set()
     callback_interfaces = set()
+    dictionaries = set()
     enums = {}  # name -> values
 
     def __init__(self, base_type, is_array=False, is_sequence=False, is_nullable=False, is_unrestricted=False):
@@ -221,6 +226,10 @@ class IdlType(IdlTypeBase):
         return self.base_type in IdlType.callback_interfaces
 
     @property
+    def is_dictionary(self):
+        return self.base_type in IdlType.dictionaries
+
+    @property
     def is_composite_type(self):
         return (self.name == 'Any' or
                 self.array_element_type or
@@ -258,6 +267,7 @@ class IdlType(IdlTypeBase):
         return not(self.is_basic_type or
                    self.is_composite_type or
                    self.is_callback_function or
+                   self.is_dictionary or
                    self.is_enum or
                    self.name == 'Object' or
                    self.name == 'Promise')  # Promise will be basic in future
@@ -302,6 +312,10 @@ class IdlType(IdlTypeBase):
     @classmethod
     def set_callback_interfaces(cls, new_callback_interfaces):
         cls.callback_interfaces.update(new_callback_interfaces)
+
+    @classmethod
+    def set_dictionaries(cls, new_dictionaries):
+        cls.dictionaries.update(new_dictionaries)
 
     @classmethod
     def set_enums(cls, new_enums):

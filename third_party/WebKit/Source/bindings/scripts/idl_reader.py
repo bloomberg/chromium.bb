@@ -73,21 +73,23 @@ class IdlReader(object):
 
         # Validate file contents with filename convention
         # The Blink IDL filenaming convention is that the file
-        # <interface_name>.idl MUST contain exactly 1 interface (or exception),
-        # and the interface name must agree with the file's basename,
-        # unless it is a partial interface.
+        # <definition_name>.idl MUST contain exactly 1 definition
+        # (interface, dictionary or exception), and the definition name must
+        # agree with the file's basename, unless it is a partial definition.
         # (e.g., 'partial interface Foo' can be in FooBar.idl).
-        number_of_interfaces = len(definitions.interfaces)
-        if number_of_interfaces != 1:
+        targets = (definitions.interfaces.values() +
+                   definitions.dictionaries.values())
+        number_of_targets = len(targets)
+        if number_of_targets != 1:
             raise Exception(
-                'Expected exactly 1 interface in file {0}, but found {1}'
-                .format(idl_filename, number_of_interfaces))
-        interface = next(definitions.interfaces.itervalues())
+                'Expected exactly 1 definition in file {0}, but found {1}'
+                .format(idl_filename, number_of_targets))
+        target = targets[0]
         idl_file_basename, _ = os.path.splitext(os.path.basename(idl_filename))
-        if not interface.is_partial and interface.name != idl_file_basename:
+        if not target.is_partial and target.name != idl_file_basename:
             raise Exception(
-                'Interface name "{0}" disagrees with IDL file basename "{1}".'
-                .format(interface.name, idl_file_basename))
+                'Definition name "{0}" disagrees with IDL file basename "{1}".'
+                .format(target.name, idl_file_basename))
 
         # Validate extended attributes
         if not self.extended_attribute_validator:

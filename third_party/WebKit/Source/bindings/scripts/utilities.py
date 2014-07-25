@@ -119,6 +119,11 @@ def is_callback_interface_from_idl(file_contents):
     return bool(match)
 
 
+def is_dictionary_from_idl(file_contents):
+    match = re.search(r'dictionary\s+\w+\s*{', file_contents)
+    return bool(match)
+
+
 def get_parent_interface(file_contents):
     match = re.search(r'interface\s+'
                       r'\w+\s*'
