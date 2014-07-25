@@ -121,7 +121,6 @@ extern int PpapiBrokerMain(const MainFunctionParams&);
 #endif
 extern int RendererMain(const content::MainFunctionParams&);
 extern int UtilityMain(const MainFunctionParams&);
-extern int WorkerMain(const MainFunctionParams&);
 }  // namespace content
 
 namespace content {
@@ -296,7 +295,6 @@ int RunZygote(const MainFunctionParams& main_function_params,
               ContentMainDelegate* delegate) {
   static const MainFunction kMainFunctions[] = {
     { switches::kRendererProcess,    RendererMain },
-    { switches::kWorkerProcess,      WorkerMain },
 #if defined(ENABLE_PLUGINS)
     { switches::kPpapiPluginProcess, PpapiPluginMain },
 #endif
@@ -386,7 +384,6 @@ int RunNamedProcessTypeMain(
 #if !defined(OS_LINUX)
     { switches::kPluginProcess,      PluginMain },
 #endif
-    { switches::kWorkerProcess,      WorkerMain },
     { switches::kPpapiPluginProcess, PpapiPluginMain },
     { switches::kPpapiBrokerProcess, PpapiBrokerMain },
 #endif  // ENABLE_PLUGINS

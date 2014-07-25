@@ -17,6 +17,15 @@
 
 namespace content {
 
+// Called on the UI thread.
+// static
+scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForWorker(
+    int worker_process_id,
+    int worker_route_id) {
+  return EmbeddedWorkerDevToolsManager::GetInstance()
+      ->GetDevToolsAgentHostForWorker(worker_process_id, worker_route_id);
+}
+
 namespace {
 
 bool SendMessageToWorker(

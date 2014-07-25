@@ -208,7 +208,6 @@ static_library("content_shell_lib") {
     "//content/public/plugin",
     "//content/public/renderer",
     "//content/public/utility",
-    "//content/worker",
     "//content/test:layouttest_support",
     "//gin",
     "//gpu",

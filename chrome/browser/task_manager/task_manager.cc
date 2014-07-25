@@ -27,7 +27,6 @@
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/tab_contents_information.h"
 #include "chrome/browser/task_manager/web_contents_resource_provider.h"
-#include "chrome/browser/task_manager/worker_resource_provider.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -271,11 +270,6 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
       task_manager,
       scoped_ptr<WebContentsInformation>(
           new task_manager::GuestInformation())));
-
-  // We don't need to show the worker processes if "embedded-shared-worker" flag
-  // is enabled.
-  if (!content::WorkerService::EmbeddedSharedWorkerEnabled())
-    AddResourceProvider(new task_manager::WorkerResourceProvider(task_manager));
 }
 
 void TaskManagerModel::AddObserver(TaskManagerModelObserver* observer) {

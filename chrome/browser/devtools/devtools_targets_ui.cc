@@ -246,19 +246,12 @@ class WorkerObserver
 // WorkerTargetsUIHandler -----------------------------------------------------
 
 class WorkerTargetsUIHandler
-    : public DevToolsTargetsUIHandler,
-      public content::BrowserChildProcessObserver {
+    : public DevToolsTargetsUIHandler {
  public:
   explicit WorkerTargetsUIHandler(const Callback& callback);
   virtual ~WorkerTargetsUIHandler();
 
  private:
-  // content::BrowserChildProcessObserver overrides.
-  virtual void BrowserChildProcessHostConnected(
-      const content::ChildProcessData& data) OVERRIDE;
-  virtual void BrowserChildProcessHostDisconnected(
-      const content::ChildProcessData& data) OVERRIDE;
-
   void UpdateTargets(const DevToolsTargetImpl::List& targets);
 
   scoped_refptr<WorkerObserver> observer_;
@@ -269,24 +262,10 @@ WorkerTargetsUIHandler::WorkerTargetsUIHandler(const Callback& callback)
       observer_(new WorkerObserver()) {
   observer_->Start(base::Bind(&WorkerTargetsUIHandler::UpdateTargets,
                               base::Unretained(this)));
-  BrowserChildProcessObserver::Add(this);
 }
 
 WorkerTargetsUIHandler::~WorkerTargetsUIHandler() {
-  BrowserChildProcessObserver::Remove(this);
   observer_->Stop();
-}
-
-void WorkerTargetsUIHandler::BrowserChildProcessHostConnected(
-    const content::ChildProcessData& data) {
-  if (data.process_type == content::PROCESS_TYPE_WORKER)
-    observer_->Enumerate();
-}
-
-void WorkerTargetsUIHandler::BrowserChildProcessHostDisconnected(
-    const content::ChildProcessData& data) {
-  if (data.process_type == content::PROCESS_TYPE_WORKER)
-    observer_->Enumerate();
 }
 
 void WorkerTargetsUIHandler::UpdateTargets(

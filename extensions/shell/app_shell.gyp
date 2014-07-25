@@ -79,7 +79,6 @@
         '<(DEPTH)/content/content.gyp:content',
         '<(DEPTH)/content/content.gyp:content_gpu',
         '<(DEPTH)/content/content.gyp:content_ppapi_plugin',
-        '<(DEPTH)/content/content.gyp:content_worker',
         '<(DEPTH)/content/content_shell_and_tests.gyp:content_shell_lib',
         '<(DEPTH)/extensions/common/api/api.gyp:extensions_api',
         '<(DEPTH)/extensions/extensions.gyp:extensions_browser',

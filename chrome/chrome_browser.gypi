@@ -1739,8 +1739,6 @@
       'browser/task_manager/web_contents_information.h',
       'browser/task_manager/web_contents_resource_provider.cc',
       'browser/task_manager/web_contents_resource_provider.h',
-      'browser/task_manager/worker_resource_provider.cc',
-      'browser/task_manager/worker_resource_provider.h',
     ],
     'chrome_browser_spellchecker_sources': [
       'browser/spellchecker/feedback.cc',

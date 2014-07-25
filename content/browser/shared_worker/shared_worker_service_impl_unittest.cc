@@ -16,7 +16,7 @@
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/shared_worker/shared_worker_message_filter.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
-#include "content/browser/worker_host/worker_storage_partition.h"
+#include "content/browser/shared_worker/worker_storage_partition.h"
 #include "content/common/message_port_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"

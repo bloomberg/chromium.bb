@@ -7,7 +7,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
-#include "content/browser/worker_host/worker_storage_partition.h"
+#include "content/browser/shared_worker/worker_storage_partition.h"
 #include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

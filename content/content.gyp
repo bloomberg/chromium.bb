@@ -58,7 +58,6 @@
                 'content_ppapi_plugin',
                 'content_renderer',
                 'content_utility',
-                'content_worker',
               ],
             }],
           ],
@@ -253,19 +252,6 @@
                 'content_common',
               ],
             },
-            {
-              # GN version: //content/worker
-              'target_name': 'content_worker',
-              'type': 'static_library',
-              'variables': { 'enable_wexit_time_destructors': 1, },
-              'includes': [
-                'content_worker.gypi',
-              ],
-              'dependencies': [
-                'content_child',
-                'content_common',
-              ],
-            },
           ],
         }],
       ],
@@ -296,7 +282,6 @@
             'content_ppapi_plugin.gypi',
             'content_renderer.gypi',
             'content_utility.gypi',
-            'content_worker.gypi',
           ],
           'msvs_settings': {
             'VCLinkerTool': {
@@ -370,11 +355,6 @@
           'type': 'none',
           'dependencies': ['content'],
           'export_dependent_settings': ['content'],
-        },
-        {
-          'target_name': 'content_worker',
-          'type': 'none',
-          'dependencies': ['content'],
         },
       ],
     }],

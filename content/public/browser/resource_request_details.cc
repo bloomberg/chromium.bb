@@ -4,7 +4,6 @@
 
 #include "content/public/browser/resource_request_details.h"
 
-#include "content/browser/worker_host/worker_service_impl.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
@@ -29,19 +28,7 @@ ResourceRequestDetails::ResourceRequestDetails(const net::URLRequest* request,
   http_response_code =
       request->response_info().headers.get() ?
           request->response_info().headers.get()->response_code() : -1;
-
-  // If request is from the worker process on behalf of a renderer, use
-  // the renderer process id, since it consumes the notification response
-  // such as ssl state etc.
-  // TODO(atwilson): need to notify all associated renderers in the case
-  // of ssl state change (http://crbug.com/25357). For now, just notify
-  // the first one (works for dedicated workers and shared workers with
-  // a single process).
-  int worker_render_frame_id;
-  if (!WorkerServiceImpl::GetInstance()->GetRendererForWorker(
-          info->GetChildID(), &origin_child_id, &worker_render_frame_id)) {
-    origin_child_id = info->GetChildID();
-  }
+  origin_child_id = info->GetChildID();
 }
 
 ResourceRequestDetails::~ResourceRequestDetails() {}

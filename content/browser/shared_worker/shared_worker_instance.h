@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "content/browser/worker_host/worker_storage_partition.h"
+#include "content/browser/shared_worker/worker_storage_partition.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebContentSecurityPolicy.h"
 #include "url/gurl.h"

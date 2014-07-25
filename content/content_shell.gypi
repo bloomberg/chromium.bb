@@ -35,7 +35,6 @@
         'content.gyp:content_ppapi_plugin',
         'content.gyp:content_renderer',
         'content.gyp:content_utility',
-        'content.gyp:content_worker',
         'content_resources.gyp:content_resources',
         'content_shell_resources',
         'copy_test_netscape_plugin',

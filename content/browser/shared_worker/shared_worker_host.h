@@ -13,7 +13,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/browser/shared_worker/shared_worker_message_filter.h"
-#include "content/browser/worker_host/worker_document_set.h"
+#include "content/browser/shared_worker/worker_document_set.h"
 
 class GURL;
 

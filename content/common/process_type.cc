@@ -17,8 +17,6 @@ std::string GetProcessTypeNameInEnglish(int type) {
       return "Tab";
     case PROCESS_TYPE_PLUGIN:
       return "Plug-in";
-    case PROCESS_TYPE_WORKER:
-      return "Web Worker";
     case PROCESS_TYPE_UTILITY:
       return "Utility";
     case PROCESS_TYPE_ZYGOTE:

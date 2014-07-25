@@ -1790,13 +1790,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableEasyUnlock)
   },
 #endif
-  {
-    "disable-embedded-shared-worker",
-    IDS_FLAGS_DISABLE_EMBEDDED_SHARED_WORKER_NAME,
-    IDS_FLAGS_DISABLE_EMBEDDED_SHARED_WORKER_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kDisableEmbeddedSharedWorker)
-  },
 #if defined(OS_CHROMEOS)
   {
     "enable-filemanager-mtp",

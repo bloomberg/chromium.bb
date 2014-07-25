@@ -130,9 +130,6 @@ const char kDisableDirectNPAPIRequests[]    = "disable-direct-npapi-requests";
 extern const char kDisableDomainBlockingFor3DAPIs[] =
     "disable-domain-blocking-for-3d-apis";
 
-// Disable running the SharedWorker inside the renderer process.
-const char kDisableEmbeddedSharedWorker[]    = "disable-embedded-shared-worker";
-
 // Disable experimental WebGL support.
 const char kDisableExperimentalWebGL[]      = "disable-webgl";
 

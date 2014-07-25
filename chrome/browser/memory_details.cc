@@ -472,10 +472,6 @@ void MemoryDetails::UpdateHistograms() {
         UMA_HISTOGRAM_MEMORY_KB("Memory.Plugin", sample);
         plugin_count++;
         continue;
-      case content::PROCESS_TYPE_WORKER:
-        UMA_HISTOGRAM_MEMORY_KB("Memory.Worker", sample);
-        worker_count++;
-        continue;
       case content::PROCESS_TYPE_UTILITY:
         UMA_HISTOGRAM_MEMORY_KB("Memory.Utility", sample);
         other_count++;
@@ -583,9 +579,6 @@ void MemoryDetails::UpdateSwapHistograms() {
       }
       case content::PROCESS_TYPE_PLUGIN:
         UMA_HISTOGRAM_MEMORY_KB("Memory.Swap.Plugin", sample);
-        continue;
-      case content::PROCESS_TYPE_WORKER:
-        UMA_HISTOGRAM_MEMORY_KB("Memory.Swap.Worker", sample);
         continue;
       case content::PROCESS_TYPE_UTILITY:
         UMA_HISTOGRAM_MEMORY_KB("Memory.Swap.Utility", sample);

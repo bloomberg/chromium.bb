@@ -114,13 +114,6 @@ void ProcessMetricsHistory::RunPerformanceTriggers() {
       if (min_cpu_usage_ > kHighCPUUtilizationThreshold)
         UMA_HISTOGRAM_BOOLEAN("PerformanceMonitor.HighCPU.PluginProcess", true);
       break;
-    case content::PROCESS_TYPE_WORKER:
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "PerformanceMonitor.AverageCPU.WorkerProcess", average_cpu_usage,
-          kHistogramMin, kHistogramMax, kHistogramBucketCount);
-      if (min_cpu_usage_ > kHighCPUUtilizationThreshold)
-        UMA_HISTOGRAM_BOOLEAN("PerformanceMonitor.HighCPU.WorkerProcess", true);
-      break;
     case content::PROCESS_TYPE_GPU:
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "PerformanceMonitor.AverageCPU.GPUProcess", average_cpu_usage,

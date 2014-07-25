@@ -46,7 +46,6 @@ static_library("test_support") {
       "//content/ppapi_plugin",
       "//content/public/renderer",
       "//content/public/utility",
-      "//content/worker",
       "//cc",
       "//cc:test_support",
       "//media",

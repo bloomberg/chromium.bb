@@ -193,10 +193,6 @@ base::string16 ChildProcessResource::GetLocalizedTitle() const {
     case content::PROCESS_TYPE_MAX:
       NOTREACHED();
       break;
-
-    case content::PROCESS_TYPE_WORKER:
-      NOTREACHED() << "Workers are not handled by this provider.";
-      break;
     case content::PROCESS_TYPE_UNKNOWN:
       NOTREACHED() << "Need localized name for child process type.";
   }
@@ -259,9 +255,6 @@ void ChildProcessResourceProvider::BrowserChildProcessHostConnected(
     const content::ChildProcessData& data) {
   DCHECK(updating_);
 
-  // Workers are handled by WorkerResourceProvider.
-  if (data.process_type == content::PROCESS_TYPE_WORKER)
-    return;
   if (resources_.count(data.handle)) {
     // The case may happen that we have added a child_process_info as part of
     // the iteration performed during StartUpdating() call but the notification
@@ -277,8 +270,6 @@ void ChildProcessResourceProvider::
         const content::ChildProcessData& data) {
   DCHECK(updating_);
 
-  if (data.process_type == content::PROCESS_TYPE_WORKER)
-    return;
   ChildProcessMap::iterator iter = resources_.find(data.handle);
   if (iter == resources_.end()) {
     // ChildProcessData disconnection notifications are asynchronous, so we
@@ -321,8 +312,6 @@ void ChildProcessResourceProvider::RetrieveChildProcessData() {
   for (BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
     // Only add processes which are already started, since we need their handle.
     if (iter.GetData().handle == base::kNullProcessHandle)
-      continue;
-    if (iter.GetData().process_type == content::PROCESS_TYPE_WORKER)
       continue;
     child_processes.push_back(iter.GetData());
   }

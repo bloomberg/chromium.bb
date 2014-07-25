@@ -301,7 +301,6 @@
             '../content/content.gyp:content_ppapi_plugin',
             '../content/content.gyp:content_renderer',
             '../content/content.gyp:content_utility',
-            '../content/content.gyp:content_worker',
             '../components/components.gyp:autofill_core_test_support',
             '../components/components.gyp:captive_portal_test_support',
             '../components/components.gyp:sessions_test_support',

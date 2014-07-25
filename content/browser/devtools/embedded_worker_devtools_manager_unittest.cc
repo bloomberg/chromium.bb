@@ -10,7 +10,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/devtools/devtools_manager_impl.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
-#include "content/browser/worker_host/worker_storage_partition.h"
+#include "content/browser/shared_worker/worker_storage_partition.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/test/test_browser_context.h"

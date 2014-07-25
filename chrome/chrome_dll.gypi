@@ -244,7 +244,6 @@
               'dependencies': [
                 '<@(chromium_child_dependencies)',
                 '../content/content.gyp:content_app_both',
-                '../content/content.gyp:content_worker',
               ],
               'dependencies!': [
                 '../content/content.gyp:content_app_browser',
@@ -339,7 +338,6 @@
           'dependencies': [
             '<@(chromium_child_dependencies)',
             '../content/content.gyp:content_app_child',
-            '../content/content.gyp:content_worker',
             'chrome_version_resources',
             'policy_path_parser',
           ],

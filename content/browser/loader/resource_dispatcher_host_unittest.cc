@@ -23,7 +23,6 @@
 #include "content/browser/loader/resource_loader.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_request_info_impl.h"
-#include "content/browser/worker_host/worker_service_impl.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/resource_messages.h"
@@ -777,8 +776,6 @@ class ResourceDispatcherHostTest : public testing::Test,
     if (ResourceDispatcherHostImpl::Get())
       ResourceDispatcherHostImpl::Get()->CancelRequestsForContext(
           browser_context_->GetResourceContext());
-
-    WorkerServiceImpl::GetInstance()->PerformTeardownForTesting();
 
     browser_context_.reset();
     base::RunLoop().RunUntilIdle();

@@ -23,7 +23,6 @@ content_components = [
   "//content/public/renderer",
   "//content/renderer",
   "//content/utility",
-  "//content/worker",
 ]
 
 if (is_component_build) {

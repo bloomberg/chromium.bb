@@ -26,9 +26,6 @@ class WorkerService {
   // Returns the WorkerService singleton.
   CONTENT_EXPORT static WorkerService* GetInstance();
 
-  // Determines whether embedded SharedWorker is enabled.
-  CONTENT_EXPORT static bool EmbeddedSharedWorkerEnabled();
-
   // Terminates the given worker. Returns true if the process was found.
   virtual bool TerminateWorker(int process_id, int route_id) = 0;
 
