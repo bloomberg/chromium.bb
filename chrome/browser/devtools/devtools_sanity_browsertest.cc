@@ -876,17 +876,8 @@ IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, MAYBE_InspectSharedWorker) {
 }
 
 // http://crbug.com/100538
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_PauseInSharedWorkerInitialization DISABLED_PauseInSharedWorkerInitialization
-#else
-#define MAYBE_PauseInSharedWorkerInitialization PauseInSharedWorkerInitialization
-#endif
-
-// http://crbug.com/106114 is masking
-// MAYBE_PauseInSharedWorkerInitialization into
-// DISABLED_PauseInSharedWorkerInitialization
 IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest,
-                       MAYBE_PauseInSharedWorkerInitialization) {
+                       DISABLED_PauseInSharedWorkerInitialization) {
   ASSERT_TRUE(test_server()->Start());
   GURL url = test_server()->GetURL(kReloadSharedWorkerTestPage);
   ui_test_utils::NavigateToURL(browser(), url);
