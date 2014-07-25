@@ -11,6 +11,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
@@ -145,7 +146,7 @@ bool OpenFileWithBrowser(Profile* profile, const base::FilePath& file_path) {
     return true;
   }
 
-  if (drive::util::HasGDocFileExtension(file_path)) {
+  if (drive::util::HasHostedDocumentExtension(file_path)) {
     if (drive::util::IsUnderDriveMountPoint(file_path)) {
       // The file is on Google Docs. Open with drive URL.
       GURL url = drive::util::FilePathToDriveURL(

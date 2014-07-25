@@ -164,5 +164,27 @@ TEST(DriveAPIUtilTest, GetMd5Digest) {
   EXPECT_EQ(base::MD5String(kTestData), GetMd5Digest(path));
 }
 
+TEST(DriveAPIUtilTest, HasHostedDocumentExtension) {
+  EXPECT_TRUE(
+      HasHostedDocumentExtension(base::FilePath::FromUTF8Unsafe("xx.gdoc")));
+  EXPECT_TRUE(
+      HasHostedDocumentExtension(base::FilePath::FromUTF8Unsafe("xx.gsheet")));
+  EXPECT_TRUE(
+      HasHostedDocumentExtension(base::FilePath::FromUTF8Unsafe("xx.gslides")));
+  EXPECT_TRUE(
+      HasHostedDocumentExtension(base::FilePath::FromUTF8Unsafe("xx.gdraw")));
+  EXPECT_TRUE(
+      HasHostedDocumentExtension(base::FilePath::FromUTF8Unsafe("xx.gtable")));
+  EXPECT_TRUE(
+      HasHostedDocumentExtension(base::FilePath::FromUTF8Unsafe("xx.gform")));
+
+  EXPECT_FALSE(
+      HasHostedDocumentExtension(base::FilePath::FromUTF8Unsafe("xx.gdocs")));
+  EXPECT_FALSE(
+      HasHostedDocumentExtension(base::FilePath::FromUTF8Unsafe("xx.docx")));
+  EXPECT_FALSE(
+      HasHostedDocumentExtension(base::FilePath::FromUTF8Unsafe("xx.jpg")));
+}
+
 }  // namespace util
 }  // namespace drive

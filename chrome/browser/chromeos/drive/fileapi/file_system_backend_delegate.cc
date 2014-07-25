@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/drive/fileapi/fileapi_worker.h"
 #include "chrome/browser/chromeos/drive/fileapi/webkit_file_stream_reader_impl.h"
 #include "chrome/browser/chromeos/drive/fileapi/webkit_file_stream_writer_impl.h"
+#include "chrome/browser/drive/drive_api_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/async_file_util.h"
@@ -66,7 +67,7 @@ FileSystemBackendDelegate::CreateFileStreamWriter(
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   // Hosted documents don't support stream writer.
-  if (file_path.empty() || util::HasGDocFileExtension(file_path))
+  if (file_path.empty() || util::HasHostedDocumentExtension(file_path))
     return scoped_ptr<fileapi::FileStreamWriter>();
 
   return scoped_ptr<fileapi::FileStreamWriter>(

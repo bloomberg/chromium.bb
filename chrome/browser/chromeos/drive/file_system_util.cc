@@ -29,7 +29,6 @@
 #include "chrome/browser/chromeos/drive/write_on_cache_file.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_util.h"
-#include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
@@ -342,11 +341,6 @@ bool CreateGDocFile(const base::FilePath& file_path,
       url.spec().c_str(), resource_id.c_str());
   return base::WriteFile(file_path, content.data(), content.size()) ==
       static_cast<int>(content.size());
-}
-
-bool HasGDocFileExtension(const base::FilePath& file_path) {
-  std::string extension = base::FilePath(file_path.Extension()).AsUTF8Unsafe();
-  return IsHostedDocumentByExtension(extension);
 }
 
 GURL ReadUrlFromGDocFile(const base::FilePath& file_path) {

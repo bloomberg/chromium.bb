@@ -179,9 +179,6 @@ bool CreateGDocFile(const base::FilePath& file_path,
                     const GURL& url,
                     const std::string& resource_id);
 
-// Returns true if |file_path| has a GDoc file extension. (e.g. ".gdoc")
-bool HasGDocFileExtension(const base::FilePath& file_path);
-
 // Reads URL from a GDoc file.
 GURL ReadUrlFromGDocFile(const base::FilePath& file_path);
 

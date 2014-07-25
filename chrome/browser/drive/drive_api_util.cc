@@ -357,7 +357,8 @@ bool IsHostedDocument(const std::string& mime_type) {
   return false;
 }
 
-bool IsHostedDocumentByExtension(const std::string& extension) {
+bool HasHostedDocumentExtension(const base::FilePath& path) {
+  const std::string extension = base::FilePath(path.Extension()).AsUTF8Unsafe();
   for (size_t i = 0; i < arraysize(kHostedDocumentKinds); ++i) {
     if (extension == kHostedDocumentKinds[i].extension)
       return true;

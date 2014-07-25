@@ -234,7 +234,7 @@ FileError PrepareTransferFileFromLocalToRemote(
 
   // Try to parse GDoc File and extract the resource id, if necessary.
   // Failing isn't problem. It'd be handled as a regular file, then.
-  if (util::HasGDocFileExtension(local_src_path))
+  if (util::HasHostedDocumentExtension(local_src_path))
     *gdoc_resource_id = util::ReadResourceIdFromGDocFile(local_src_path);
   return FILE_ERROR_OK;
 }

@@ -89,9 +89,7 @@ const size_t kDriveTaskExtensionPrefixLength =
 bool ContainsGoogleDocument(const PathAndMimeTypeSet& path_mime_set) {
   for (PathAndMimeTypeSet::const_iterator iter = path_mime_set.begin();
        iter != path_mime_set.end(); ++iter) {
-    std::string extension =
-        base::FilePath(iter->first.Extension()).AsUTF8Unsafe();
-    if (drive::util::IsHostedDocumentByExtension(extension))
+    if (drive::util::HasHostedDocumentExtension(iter->first))
       return true;
   }
   return false;

@@ -252,35 +252,30 @@ TEST(FileSystemUtilTest, GDocFile) {
   // Read and write gdoc.
   base::FilePath file = temp_dir.path().AppendASCII("test.gdoc");
   EXPECT_TRUE(CreateGDocFile(file, url, resource_id));
-  EXPECT_TRUE(HasGDocFileExtension(file));
   EXPECT_EQ(url, ReadUrlFromGDocFile(file));
   EXPECT_EQ(resource_id, ReadResourceIdFromGDocFile(file));
 
   // Read and write gsheet.
   file = temp_dir.path().AppendASCII("test.gsheet");
   EXPECT_TRUE(CreateGDocFile(file, url, resource_id));
-  EXPECT_TRUE(HasGDocFileExtension(file));
   EXPECT_EQ(url, ReadUrlFromGDocFile(file));
   EXPECT_EQ(resource_id, ReadResourceIdFromGDocFile(file));
 
   // Read and write gslides.
   file = temp_dir.path().AppendASCII("test.gslides");
   EXPECT_TRUE(CreateGDocFile(file, url, resource_id));
-  EXPECT_TRUE(HasGDocFileExtension(file));
   EXPECT_EQ(url, ReadUrlFromGDocFile(file));
   EXPECT_EQ(resource_id, ReadResourceIdFromGDocFile(file));
 
   // Read and write gdraw.
   file = temp_dir.path().AppendASCII("test.gdraw");
   EXPECT_TRUE(CreateGDocFile(file, url, resource_id));
-  EXPECT_TRUE(HasGDocFileExtension(file));
   EXPECT_EQ(url, ReadUrlFromGDocFile(file));
   EXPECT_EQ(resource_id, ReadResourceIdFromGDocFile(file));
 
   // Read and write gtable.
   file = temp_dir.path().AppendASCII("test.gtable");
   EXPECT_TRUE(CreateGDocFile(file, url, resource_id));
-  EXPECT_TRUE(HasGDocFileExtension(file));
   EXPECT_EQ(url, ReadUrlFromGDocFile(file));
   EXPECT_EQ(resource_id, ReadResourceIdFromGDocFile(file));
 
@@ -288,7 +283,6 @@ TEST(FileSystemUtilTest, GDocFile) {
   file = temp_dir.path().AppendASCII("test.txt");
   std::string data = "Hello world!";
   EXPECT_TRUE(google_apis::test_util::WriteStringToFile(file, data));
-  EXPECT_FALSE(HasGDocFileExtension(file));
   EXPECT_TRUE(ReadUrlFromGDocFile(file).is_empty());
   EXPECT_TRUE(ReadResourceIdFromGDocFile(file).empty());
 }

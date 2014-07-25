@@ -118,9 +118,9 @@ std::string GetHostedDocumentExtension(const std::string& mime_type);
 // documents.
 bool IsHostedDocument(const std::string& mime_type);
 
-// Returns true if the given extension is corresponding to one of hosted
-// documents.
-bool IsHostedDocumentByExtension(const std::string& extension);
+// Returns true if the given file path has an extension corresponding to one of
+// hosted document types.
+bool HasHostedDocumentExtension(const base::FilePath& path);
 
 }  // namespace util
 }  // namespace drive
