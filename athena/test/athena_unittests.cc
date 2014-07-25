@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,9 +29,10 @@ class AthenaTestSuite : public base::TestSuite {
     gfx::RegisterPathProvider();
     ui::RegisterPathProvider();
 
-    // Force unittests to run using en-US so if we test against string
-    // output, it'll pass regardless of the system language.
-    ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
+    base::FilePath test_pak_path;
+    ASSERT_TRUE(PathService::Get(base::DIR_MODULE, &test_pak_path));
+    test_pak_path = test_pak_path.AppendASCII("athena_resources.pak");
+    ui::ResourceBundle::InitSharedInstanceWithPakPath(test_pak_path);
   }
   virtual void Shutdown() OVERRIDE {
     ui::ResourceBundle::CleanupSharedInstance();
