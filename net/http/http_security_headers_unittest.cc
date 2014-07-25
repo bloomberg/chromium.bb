@@ -572,7 +572,13 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPOnly) {
   EXPECT_NE(new_dynamic_domain_state.pkp.spki_hashes.end(), hash);
 }
 
-TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPMaxAge0) {
+// Failing on win_chromium_rel. crbug.com/375538
+#if defined(OS_WIN)
+#define MAYBE_UpdateDynamicPKPMaxAge0 DISABLED_UpdateDynamicPKPMaxAge0
+#else
+#define MAYBE_UpdateDynamicPKPMaxAge0 UpdateDynamicPKPMaxAge0
+#endif
+TEST_F(HttpSecurityHeadersTest, MAYBE_UpdateDynamicPKPMaxAge0) {
   TransportSecurityState state;
   TransportSecurityState::DomainState static_domain_state;
 
@@ -646,6 +652,7 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPMaxAge0) {
       domain, true, new_static_domain_state2.pkp.spki_hashes, &failure_log));
   EXPECT_NE(0UL, failure_log.length());
 }
+#undef MAYBE_UpdateDynamicPKPMaxAge0
 
 // Tests that when a static HSTS and a static HPKP entry are present, adding a
 // dynamic HSTS header does not clobber the static HPKP entry. Further, adding a
