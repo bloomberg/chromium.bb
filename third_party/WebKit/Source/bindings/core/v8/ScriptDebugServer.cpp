@@ -318,12 +318,12 @@ int ScriptDebugServer::frameCount()
     return 0;
 }
 
-PassRefPtrWillBeRawPtr<JavaScriptCallFrame> ScriptDebugServer::toJavaScriptCallFrame(const ScriptValue& value)
+PassRefPtrWillBeRawPtr<JavaScriptCallFrame> ScriptDebugServer::toJavaScriptCallFrameUnsafe(const ScriptValue& value)
 {
     if (value.isEmpty())
         return nullptr;
     ASSERT(value.isObject());
-    return V8JavaScriptCallFrame::toNative(v8::Handle<v8::Object>::Cast(value.v8Value()));
+    return V8JavaScriptCallFrame::toNative(v8::Handle<v8::Object>::Cast(value.v8ValueUnsafe()));
 }
 
 PassRefPtrWillBeRawPtr<JavaScriptCallFrame> ScriptDebugServer::wrapCallFrames(int maximumLimit, ScopeInfoDetails scopeDetails)

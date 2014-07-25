@@ -147,6 +147,7 @@ public:
     }
 
     v8::Handle<v8::Value> v8Value() const;
+    v8::Handle<v8::Value> v8ValueUnsafe() const;
 
     bool toString(String&) const;
     PassRefPtr<JSONValue> toJSONValue(ScriptState*) const;

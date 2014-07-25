@@ -84,7 +84,7 @@ public:
     PassRefPtrWillBeRawPtr<JavaScriptCallFrame> topCallFrameNoScopes();
     int frameCount();
 
-    static PassRefPtrWillBeRawPtr<JavaScriptCallFrame> toJavaScriptCallFrame(const ScriptValue&);
+    static PassRefPtrWillBeRawPtr<JavaScriptCallFrame> toJavaScriptCallFrameUnsafe(const ScriptValue&);
 
     class Task {
     public:
