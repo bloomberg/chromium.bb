@@ -840,7 +840,7 @@ PictureLayerTiling::TilingRasterTileIterator::TilingRasterTileIterator(
     PictureLayerTiling* tiling,
     WhichTree tree)
     : tiling_(tiling),
-      type_(TilePriority::NOW),
+      phase_(VISIBLE_RECT),
       visible_rect_in_content_space_(tiling_->current_visible_rect_),
       skewport_in_content_space_(tiling_->current_skewport_rect_),
       eventually_rect_in_content_space_(tiling_->current_eventually_rect_),
@@ -853,8 +853,7 @@ PictureLayerTiling::TilingRasterTileIterator::TilingRasterTileIterator(
       spiral_iterator_(&tiling->tiling_data_,
                        skewport_in_content_space_,
                        visible_rect_in_content_space_,
-                       visible_rect_in_content_space_),
-      skewport_processed_(false) {
+                       visible_rect_in_content_space_) {
   if (!visible_iterator_) {
     AdvancePhase();
     return;
@@ -869,16 +868,23 @@ PictureLayerTiling::TilingRasterTileIterator::TilingRasterTileIterator(
 PictureLayerTiling::TilingRasterTileIterator::~TilingRasterTileIterator() {}
 
 void PictureLayerTiling::TilingRasterTileIterator::AdvancePhase() {
-  DCHECK_LT(type_, TilePriority::EVENTUALLY);
+  DCHECK_LT(phase_, EVENTUALLY_RECT);
 
   do {
-    type_ = static_cast<TilePriority::PriorityBin>(type_ + 1);
-    if (type_ == TilePriority::EVENTUALLY) {
+    phase_ = static_cast<Phase>(phase_ + 1);
+
+    if (phase_ == SOON_BORDER_RECT) {
+      spiral_iterator_ = TilingData::SpiralDifferenceIterator(
+          &tiling_->tiling_data_,
+          soon_border_rect_in_content_space_,
+          skewport_in_content_space_,
+          visible_rect_in_content_space_);
+    } else if (phase_ == EVENTUALLY_RECT) {
       spiral_iterator_ = TilingData::SpiralDifferenceIterator(
           &tiling_->tiling_data_,
           eventually_rect_in_content_space_,
           skewport_in_content_space_,
-          visible_rect_in_content_space_);
+          soon_border_rect_in_content_space_);
     }
 
     while (spiral_iterator_) {
@@ -889,7 +895,7 @@ void PictureLayerTiling::TilingRasterTileIterator::AdvancePhase() {
       ++spiral_iterator_;
     }
 
-    if (!spiral_iterator_ && type_ == TilePriority::EVENTUALLY) {
+    if (!spiral_iterator_ && phase_ == EVENTUALLY_RECT) {
       current_tile_ = NULL;
       break;
     }
@@ -902,8 +908,8 @@ operator++() {
   current_tile_ = NULL;
   while (!current_tile_ || !TileNeedsRaster(current_tile_)) {
     std::pair<int, int> next_index;
-    switch (type_) {
-      case TilePriority::NOW:
+    switch (phase_) {
+      case VISIBLE_RECT:
         ++visible_iterator_;
         if (!visible_iterator_) {
           AdvancePhase();
@@ -911,27 +917,16 @@ operator++() {
         }
         next_index = visible_iterator_.index();
         break;
-      case TilePriority::SOON:
+      case SKEWPORT_RECT:
+      case SOON_BORDER_RECT:
         ++spiral_iterator_;
         if (!spiral_iterator_) {
-          if (skewport_processed_) {
-            AdvancePhase();
-            return *this;
-          }
-          skewport_processed_ = true;
-          spiral_iterator_ = TilingData::SpiralDifferenceIterator(
-              &tiling_->tiling_data_,
-              soon_border_rect_in_content_space_,
-              skewport_in_content_space_,
-              visible_rect_in_content_space_);
-          if (!spiral_iterator_) {
-            AdvancePhase();
-            return *this;
-          }
+          AdvancePhase();
+          return *this;
         }
         next_index = spiral_iterator_.index();
         break;
-      case TilePriority::EVENTUALLY:
+      case EVENTUALLY_RECT:
         ++spiral_iterator_;
         if (!spiral_iterator_) {
           current_tile_ = NULL;

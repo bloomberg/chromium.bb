@@ -57,13 +57,25 @@ class CC_EXPORT PictureLayerTiling {
     operator bool() const { return !!current_tile_; }
     const Tile* operator*() const { return current_tile_; }
     Tile* operator*() { return current_tile_; }
-    TilePriority::PriorityBin get_type() const { return type_; }
+    TilePriority::PriorityBin get_type() const {
+      switch (phase_) {
+        case VISIBLE_RECT:
+          return TilePriority::NOW;
+        case SKEWPORT_RECT:
+        case SOON_BORDER_RECT:
+          return TilePriority::SOON;
+        case EVENTUALLY_RECT:
+          return TilePriority::EVENTUALLY;
+      }
+      NOTREACHED();
+      return TilePriority::EVENTUALLY;
+    }
 
     TilingRasterTileIterator& operator++();
 
     gfx::Rect TileBounds() const {
       DCHECK(*this);
-      if (type_ == TilePriority::NOW) {
+      if (phase_ == VISIBLE_RECT) {
         return tiling_->tiling_data_.TileBounds(visible_iterator_.index_x(),
                                                 visible_iterator_.index_y());
       }
@@ -72,6 +84,13 @@ class CC_EXPORT PictureLayerTiling {
     }
 
    private:
+    enum Phase {
+      VISIBLE_RECT,
+      SKEWPORT_RECT,
+      SOON_BORDER_RECT,
+      EVENTUALLY_RECT
+    };
+
     void AdvancePhase();
     bool TileNeedsRaster(Tile* tile) const {
       RasterMode mode = tile->DetermineRasterModeForTree(tree_);
@@ -80,7 +99,7 @@ class CC_EXPORT PictureLayerTiling {
 
     PictureLayerTiling* tiling_;
 
-    TilePriority::PriorityBin type_;
+    Phase phase_;
     gfx::Rect visible_rect_in_content_space_;
     gfx::Rect skewport_in_content_space_;
     gfx::Rect eventually_rect_in_content_space_;
@@ -90,7 +109,6 @@ class CC_EXPORT PictureLayerTiling {
     Tile* current_tile_;
     TilingData::Iterator visible_iterator_;
     TilingData::SpiralDifferenceIterator spiral_iterator_;
-    bool skewport_processed_;
   };
 
   class CC_EXPORT TilingEvictionTileIterator {
