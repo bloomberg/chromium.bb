@@ -30,7 +30,7 @@ deps = {
     'src/media/cdm/ppapi/api':
         Var('git_url') + '/chromium/cdm.git@400ae69a79d6b8b531c6960d0558d13cde600879',
     'src/native_client':
-        Var('git_url') + '/native_client/src/native_client.git@371866fb11eb522fb31ef393d4e5be9c5cf0aa91',
+        Var('git_url') + '/native_client/src/native_client.git@3a5e0c3fe9c5f1f7dbbf3505217e05e82544affe',
     'src/sdch/open-vcdiff':
         Var('git_url') + '/external/open-vcdiff.git@438f2a5be6d809bc21611a94cd37bfc8c28ceb33',
     'src/testing/gmock':
@@ -66,7 +66,7 @@ deps = {
     'src/third_party/hunspell_dictionaries':
         Var('git_url') + '/chromium/deps/hunspell_dictionaries.git@4560bdd463a3500e2334e85c8a0e9e5d5d6774e7',
     'src/third_party/icu':
-        Var('git_url') + '/chromium/deps/icu52.git@533466397f1085e135e82a308ea4d9d83373e91a',
+        Var('git_url') + '/chromium/deps/icu52.git@26d8859357ac0bfb86b939bf21c087b8eae22494',
     'src/third_party/jsoncpp/source/include':
         Var('git_url') + '/external/jsoncpp/jsoncpp/include.git@b0dd48e02b6e6248328db78a65b5c601f150c349',
     'src/third_party/jsoncpp/source/src/lib_json':
