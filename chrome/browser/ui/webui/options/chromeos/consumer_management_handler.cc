@@ -7,7 +7,13 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/prefs/pref_service.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/common/pref_names.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -69,37 +75,23 @@ void ConsumerManagementHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void ConsumerManagementHandler::InitializeHandler() {
-  // TODO(davidyu): Get the real enrollment status. http://crbug.com/353050.
-  SetEnrollmentStatus(false);
-}
-
 void ConsumerManagementHandler::HandleEnrollConsumerManagement(
     const base::ListValue* args) {
-  StartEnrollment();
-  SetEnrollmentStatus(true);
+  if (!chromeos::UserManager::Get()->IsCurrentUserOwner()) {
+    LOG(ERROR) << "Received enrollConsumerManagement, but the current user is "
+               << "not the owner.";
+    return;
+  }
+
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetBoolean(prefs::kConsumerManagementEnrollmentRequested, true);
+  prefs->CommitPendingWrite();
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
 }
 
 void ConsumerManagementHandler::HandleUnenrollConsumerManagement(
     const base::ListValue* args) {
-  StartUnenrollment();
-  SetEnrollmentStatus(false);
-}
-
-void ConsumerManagementHandler::StartEnrollment() {
   NOTIMPLEMENTED();
-}
-
-void ConsumerManagementHandler::StartUnenrollment() {
-  NOTIMPLEMENTED();
-}
-
-void ConsumerManagementHandler::SetEnrollmentStatus(
-    bool is_enrolled) {
-  base::FundamentalValue is_enrolled_value(is_enrolled);
-  web_ui()->CallJavascriptFunction(
-      "BrowserOptions.setConsumerManagementEnrollmentStatus",
-      is_enrolled_value);
 }
 
 }  // namespace options

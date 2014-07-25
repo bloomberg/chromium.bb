@@ -1901,6 +1901,10 @@ const char kCustomizationDefaultWallpaperURL[] =
 // System uptime, when last logout started.
 // This is saved to file and cleared after chrome process starts.
 const char kLogoutStartedLast[] = "chromeos.logout-started";
+
+// A boolean pref of the consumer management enrollment requested flag.
+const char kConsumerManagementEnrollmentRequested[] =
+    "consumer_management.enrollment_requested";
 #endif
 
 // Whether there is a Flash version installed that supports clearing LSO data.

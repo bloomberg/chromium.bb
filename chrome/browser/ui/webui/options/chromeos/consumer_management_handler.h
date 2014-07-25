@@ -23,21 +23,11 @@ class ConsumerManagementHandler : public ::options::OptionsPageUIHandler {
   virtual void GetLocalizedValues(
       base::DictionaryValue* localized_strings) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
-  virtual void InitializeHandler() OVERRIDE;
 
  private:
   // Handles the button click events from the browser options page.
   void HandleEnrollConsumerManagement(const base::ListValue* args);
   void HandleUnenrollConsumerManagement(const base::ListValue* args);
-
-  // Starts the enrollment process.
-  void StartEnrollment();
-
-  // Starts the unenrollment process.
-  void StartUnenrollment();
-
-  // Updates the options page UI with the enrollment status.
-  void SetEnrollmentStatus(bool is_enrolled);
 
   DISALLOW_COPY_AND_ASSIGN(ConsumerManagementHandler);
 };

@@ -17,6 +17,10 @@ cr.define('options', function() {
         loadTimeData.getString('consumerManagementOverlayTabTitle'),
         'consumer-management-overlay');
 
+    var isEnrolled = loadTimeData.getBoolean('consumerManagementEnrolled');
+    $('enroll-content').hidden = isEnrolled;
+    $('unenroll-content').hidden = !isEnrolled;
+
     $('consumer-management-overlay-enroll').onclick = function(event) {
       chrome.send('enrollConsumerManagement');
       OptionsPage.closeOverlay();
@@ -37,14 +41,6 @@ cr.define('options', function() {
 
   ConsumerManagementOverlay.prototype = {
     __proto__: OptionsPage.prototype,
-  };
-
-  /**
-   * Shows enrollment or unenrollment content based on the enrollment status.
-   * @param {boolean} isEnrolled Whether the device is enrolled.
-   */
-  ConsumerManagementOverlay.setEnrollmentStatus = function(isEnrolled) {
-    $('unenroll-content').hidden = !($('enroll-content').hidden = isEnrolled);
   };
 
   // Export

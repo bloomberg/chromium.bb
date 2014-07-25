@@ -419,8 +419,13 @@ cr.define('options', function() {
 
       // Device control section.
       if (cr.isChromeOS &&
+          UIAccountTweaks.currentUserIsOwner() &&
           loadTimeData.getBoolean('consumerManagementEnabled')) {
         $('device-control-section').hidden = false;
+
+        var isEnrolled = loadTimeData.getBoolean('consumerManagementEnrolled');
+        $('consumer-management-enroll').hidden = isEnrolled;
+        $('consumer-management-unenroll').hidden = !isEnrolled;
 
         $('consumer-management-section').onclick = function(event) {
           // If either button is clicked.
@@ -1831,7 +1836,6 @@ cr.define('options', function() {
     'setAutoOpenFileTypesDisplayed',
     'setBluetoothState',
     'setCanSetTime',
-    'setConsumerManagementEnrollmentStatus',
     'setFontSize',
     'setNativeThemeButtonEnabled',
     'setHighContrastCheckboxState',
@@ -1876,17 +1880,6 @@ cr.define('options', function() {
     // TODO(jhawkins): Investigate the use case for this method.
     BrowserOptions.getLoggedInUsername = function() {
       return BrowserOptions.getInstance().username_;
-    };
-
-    /**
-     * Shows enroll or unenroll button based on the enrollment status.
-     * @param {boolean} isEnrolled Whether the device is enrolled.
-     */
-    BrowserOptions.setConsumerManagementEnrollmentStatus =
-        function(isEnrolled) {
-      $('consumer-management-enroll').hidden = isEnrolled;
-      $('consumer-management-unenroll').hidden = !isEnrolled;
-      ConsumerManagementOverlay.setEnrollmentStatus(isEnrolled);
     };
   }
 
