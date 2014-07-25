@@ -9,11 +9,15 @@
 extern "C" {
 #endif
 
+static const int kAwDrawGLInfoVersion = 1;
+
 // Holds the information required to trigger an OpenGL drawing operation.
 struct AwDrawGLInfo {
+  int version;  // The AwDrawGLInfo this struct was built with.
+
   // Input: tells the draw function what action to perform.
   enum Mode {
-    kModeDraw,
+    kModeDraw = 0,
     kModeProcess,
     kModeProcessNoContext,
     kModeSync,

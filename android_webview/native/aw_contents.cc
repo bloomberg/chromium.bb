@@ -342,6 +342,12 @@ jlong AwContents::GetAwDrawGLViewContext(JNIEnv* env, jobject obj) {
 }
 
 void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
+  if (draw_info->mode == AwDrawGLInfo::kModeSync) {
+    if (hardware_renderer_)
+      hardware_renderer_->CommitFrame();
+    return;
+  }
+
   {
     GLViewRendererManager* manager = GLViewRendererManager::GetInstance();
     base::AutoLock lock(render_thread_lock_);
@@ -366,6 +372,7 @@ void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
 
   if (!hardware_renderer_) {
     hardware_renderer_.reset(new HardwareRenderer(&shared_renderer_state_));
+    hardware_renderer_->CommitFrame();
   }
 
   hardware_renderer_->DrawGL(state_restore.stencil_enabled(),

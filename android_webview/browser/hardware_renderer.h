@@ -35,6 +35,7 @@ class HardwareRenderer : public cc::LayerTreeHostClient,
   void DrawGL(bool stencil_enabled,
               int framebuffer_binding_ext,
               AwDrawGLInfo* draw_info);
+  void CommitFrame();
 
   // cc::LayerTreeHostClient overrides.
   virtual void WillBeginMainFrame(int frame_id) OVERRIDE {}
