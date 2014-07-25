@@ -15,7 +15,10 @@ if env.Bit('bitcode'):
 #    linking this test with '-Wl,-u,have_nacl_valgrind_interceptors'.
 #  * The Valgrind interceptors don't work because we use malloc() in
 #    __pthread_initialize() and the intercepted malloc() uses TLS.
-is_broken = env.Bit('running_on_valgrind')
+is_broken = (env.Bit('running_on_valgrind') or
+# This test is flaky on mac10.7-newlib-dbg-asan.
+# See https://code.google.com/p/nativeclient/issues/detail?id=3906
+             (env.Bit('asan') and env.Bit('host_mac')))
 
 irt_thread_test_raw = env.ComponentProgram(
     'irt_thread_test_raw', ['irt_thread_test.c'],

@@ -9,6 +9,9 @@ valgrind = env.ComponentObject(
     'valgrind_annotations.o',
     '${MAIN_DIR}/src/untrusted/valgrind/dynamic_annotations.c')
 
+# These tests are flaky on mac10.7-newlib-dbg-asan.
+# See https://code.google.com/p/nativeclient/issues/detail?id=3906
+is_broken = env.Bit('asan') and env.Bit('host_mac'))
 
 # TEST_IRT_FUTEX=0 works with nacl-glibc (since it has its own futex
 # implementation) and with libpthread_private, but not with
@@ -23,9 +26,7 @@ if env.Bit('nacl_glibc') or not env.Bit('tests_use_irt'):
 
   node = env.CommandSelLdrTestNacl('futex_test.out', nexe)
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_futex_test',
-# This test is flaky on mac10.7-newlib-dbg-asan.
-# See https://code.google.com/p/nativeclient/issues/detail?id=3906
-                         is_broken=(env.Bit('asan') and env.Bit('host_mac')))
+                         is_broken=is_broken)
 
 
 if env.Bit('tests_use_irt'):
@@ -39,10 +40,7 @@ if env.Bit('tests_use_irt'):
 
   node = env.CommandSelLdrTestNacl('irt_futex_test.out', nexe)
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_futex_test',
-# This test is flaky on mac10.7-newlib-dbg-asan.
-# See https://code.google.com/p/nativeclient/issues/detail?id=3906
-                         is_broken=(env.Bit('asan') and env.Bit('host_mac') and
-                                    env.Bit('tests_use_irt')))
+                         is_broken=is_broken)
 
 
 test_env = env.Clone()
@@ -55,4 +53,5 @@ nexe = test_env.ComponentProgram(
     EXTRA_LIBS=['${NONIRT_LIBS}', '${PTHREAD_LIBS}'])
 
 node = env.CommandSelLdrTestNacl('futex_syscalls_test.out', nexe)
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_futex_syscalls_test')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_futex_syscalls_test',
+                       is_broken=is_broken)
