@@ -74,6 +74,7 @@
         'base/text/bytes_formatting_unittest.cc',
         'base/view_prop_unittest.cc',
         'base/webui/web_ui_util_unittest.cc',
+        'base/x/selection_requestor_unittest.cc',
         'gfx/canvas_unittest_mac.mm',
         'gfx/platform_font_mac_unittest.mm',
       ],
@@ -216,6 +217,7 @@
           ],
           'sources!': [
             'base/dragdrop/os_exchange_data_provider_aurax11_unittest.cc',
+            'base/x/selection_requestor_unittest.cc',
           ],
         }],
         ['chromeos==0 or use_x11==0', {

@@ -5,18 +5,14 @@
 #ifndef UI_BASE_X_SELECTION_REQUESTOR_H_
 #define UI_BASE_X_SELECTION_REQUESTOR_H_
 
-#include <X11/Xlib.h>
-
-// Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
-#undef RootWindow
-
-#include <list>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/event_types.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
@@ -29,74 +25,98 @@ class SelectionData;
 // system.
 //
 // X11 uses a system called "selections" to implement clipboards and drag and
-// drop. This class interprets messages from the statefull selection request
+// drop. This class interprets messages from the stateful selection request
 // API. SelectionRequestor should only deal with the X11 details; it does not
 // implement per-component fast-paths.
 class UI_BASE_EXPORT SelectionRequestor {
  public:
   SelectionRequestor(XDisplay* xdisplay,
                      XID xwindow,
-                     XAtom selection_name,
                      PlatformEventDispatcher* dispatcher);
   ~SelectionRequestor();
 
-  // Does the work of requesting |target| from the selection we handle,
-  // spinning up the nested message loop, and reading the resulting data
-  // back. The result is stored in |out_data|.
+  // Does the work of requesting |target| from |selection|, spinning up the
+  // nested message loop, and reading the resulting data back. The result is
+  // stored in |out_data|.
   // |out_data_items| is the length of |out_data| in |out_type| items.
   bool PerformBlockingConvertSelection(
+      XAtom selection,
       XAtom target,
       scoped_refptr<base::RefCountedMemory>* out_data,
       size_t* out_data_items,
       XAtom* out_type);
 
-  // Requests |target| from the selection that we handle, passing |parameter|
-  // as a parameter to XConvertSelection().
+  // Requests |target| from |selection|, passing |parameter| as a parameter to
+  // XConvertSelection().
   void PerformBlockingConvertSelectionWithParameter(
+      XAtom selection,
       XAtom target,
       const std::vector<XAtom>& parameter);
 
-  // Returns the first of |types| offered by the current selection holder, or
-  // returns NULL if none of those types are available.
-  SelectionData RequestAndWaitForTypes(const std::vector<XAtom>& types);
+  // Returns the first of |types| offered by the current owner of |selection|.
+  // Returns an empty SelectionData object if none of |types| are available.
+  SelectionData RequestAndWaitForTypes(XAtom selection,
+                                       const std::vector<XAtom>& types);
 
   // It is our owner's responsibility to plumb X11 SelectionNotify events on
   // |xwindow_| to us.
   void OnSelectionNotify(const XEvent& event);
 
  private:
-  // A request that has been issued and we are waiting for a response to.
-  struct PendingRequest {
-    explicit PendingRequest(XAtom target);
-    ~PendingRequest();
+  friend class SelectionRequestorTest;
 
-    // Data to the current XConvertSelection request. Used for error detection;
-    // we verify it on the return message.
+  // A request that has been issued.
+  struct Request {
+    Request(XAtom selection, XAtom target, base::TimeTicks timeout);
+    ~Request();
+
+    // The target and selection requested in the XConvertSelection() request.
+    // Used for error detection.
+    XAtom selection;
     XAtom target;
+
+    // The result data for the XConvertSelection() request.
+    scoped_refptr<base::RefCountedMemory> out_data;
+    size_t out_data_items;
+    XAtom out_type;
+
+    // Whether the XConvertSelection() request was successful.
+    bool success;
+
+    // The time when the request should be aborted.
+    base::TimeTicks timeout;
 
     // Called to terminate the nested message loop.
     base::Closure quit_closure;
 
-    // The property in the returning SelectNotify message is used to signal
-    // success. If None, our request failed somehow. If equal to the property
-    // atom that we sent in the XConvertSelection call, we can read that
-    // property on |x_window_| for the requested data.
-    XAtom returned_property;
-
-    // Set to true when return_property is populated.
-    bool returned;
+    // True if the request is complete.
+    bool completed;
   };
+
+  // Aborts requests which have timed out.
+  void AbortStaleRequests();
+
+  // Mark |request| as completed. If the current request is completed, converts
+  // the selection for the next request.
+  void CompleteRequest(size_t index);
+
+  // Converts the selection for the request at |current_request_index_|.
+  void ConvertSelectionForCurrentRequest();
 
   // Blocks till SelectionNotify is received for the target specified in
   // |request|.
-  void BlockTillSelectionNotifyForRequest(PendingRequest* request);
+  void BlockTillSelectionNotifyForRequest(Request* request);
+
+  // Returns the request at |current_request_index_| or NULL if there isn't any.
+  Request* GetCurrentRequest();
 
   // Our X11 state.
   XDisplay* x_display_;
   XID x_window_;
 
-  // The X11 selection that this instance communicates on.
-  XAtom selection_name_;
+  // The property on |x_window_| set by the selection owner with the value of
+  // the selection.
+  XAtom x_property_;
 
   // Dispatcher which handles SelectionNotify and SelectionRequest for
   // |selection_name_|. PerformBlockingConvertSelection() calls the
@@ -105,8 +125,18 @@ class UI_BASE_EXPORT SelectionRequestor {
   // Not owned.
   PlatformEventDispatcher* dispatcher_;
 
-  // A list of requests for which we are waiting for responses.
-  std::list<PendingRequest*> pending_requests_;
+  // In progress requests. Requests are added to the list at the start of
+  // PerformBlockingConvertSelection() and are removed and destroyed right
+  // before the method terminates.
+  std::vector<Request*> requests_;
+
+  // The index of the currently active request in |requests_|. The active
+  // request is the request for which XConvertSelection() has been
+  // called and for which we are waiting for a SelectionNotify response.
+  size_t current_request_index_;
+
+  // Used to abort requests if the selection owner takes too long to respond.
+  base::RepeatingTimer<SelectionRequestor> abort_timer_;
 
   X11AtomCache atom_cache_;
 

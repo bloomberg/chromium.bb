@@ -241,9 +241,6 @@ class Clipboard::AuraX11Details : public PlatformEventDispatcher {
   // CLIPBOARD_TYPE_COPY_PASTE.
   ::Atom GetCopyPasteSelection() const;
 
-  // Returns the object which is responsible for communication on |type|.
-  SelectionRequestor* GetSelectionRequestorForClipboardType(ClipboardType type);
-
   // Finds the SelectionFormatMap for the incoming selection atom.
   const SelectionFormatMap& LookupStorageForAtom(::Atom atom);
 
@@ -305,10 +302,8 @@ class Clipboard::AuraX11Details : public PlatformEventDispatcher {
 
   X11AtomCache atom_cache_;
 
-  // Objects which request and receive selection data.
-  SelectionRequestor clipboard_requestor_;
-  SelectionRequestor primary_requestor_;
-  SelectionRequestor clipboard_manager_requestor_;
+  // Object which requests and receives selection data.
+  SelectionRequestor selection_requestor_;
 
   // Temporary target map that we write to during DispatchObects.
   SelectionFormatMap clipboard_data_;
@@ -333,12 +328,7 @@ Clipboard::AuraX11Details::AuraX11Details()
           0,
           NULL)),
       atom_cache_(x_display_, kAtomsToCache),
-      clipboard_requestor_(x_display_, x_window_,
-                           atom_cache_.GetAtom(kClipboard), this),
-      primary_requestor_(x_display_, x_window_, XA_PRIMARY, this),
-      clipboard_manager_requestor_(x_display_, x_window_,
-                                   atom_cache_.GetAtom(kClipboardManager),
-                                   this),
+      selection_requestor_(x_display_, x_window_, this),
       clipboard_owner_(x_display_, x_window_, atom_cache_.GetAtom(kClipboard)),
       primary_owner_(x_display_, x_window_, XA_PRIMARY) {
   // We don't know all possible MIME types at compile time.
@@ -379,15 +369,6 @@ const SelectionFormatMap& Clipboard::AuraX11Details::LookupStorageForAtom(
   return clipboard_owner_.selection_format_map();
 }
 
-ui::SelectionRequestor*
-Clipboard::AuraX11Details::GetSelectionRequestorForClipboardType(
-    ClipboardType type) {
-  if (type == CLIPBOARD_TYPE_COPY_PASTE)
-    return &clipboard_requestor_;
-  else
-    return &primary_requestor_;
-}
-
 void Clipboard::AuraX11Details::CreateNewClipboardData() {
   clipboard_data_ = SelectionFormatMap();
 }
@@ -423,11 +404,12 @@ SelectionData Clipboard::AuraX11Details::RequestAndWaitForTypes(
     }
   } else {
     TargetList targets = WaitAndGetTargetsList(type);
-    SelectionRequestor* receiver = GetSelectionRequestorForClipboardType(type);
 
+    ::Atom selection_name = LookupSelectionForClipboardType(type);
     std::vector< ::Atom> intersection;
     ui::GetAtomIntersection(types, targets.target_list(), &intersection);
-    return receiver->RequestAndWaitForTypes(intersection);
+    return selection_requestor_.RequestAndWaitForTypes(selection_name,
+                                                       intersection);
   }
 
   return SelectionData();
@@ -450,11 +432,12 @@ TargetList Clipboard::AuraX11Details::WaitAndGetTargetsList(
     size_t out_data_items = 0;
     ::Atom out_type = None;
 
-    SelectionRequestor* receiver = GetSelectionRequestorForClipboardType(type);
-    if (receiver->PerformBlockingConvertSelection(atom_cache_.GetAtom(kTargets),
-                                                  &data,
-                                                  &out_data_items,
-                                                  &out_type)) {
+    if (selection_requestor_.PerformBlockingConvertSelection(
+            selection_name,
+            atom_cache_.GetAtom(kTargets),
+            &data,
+            &out_data_items,
+            &out_type)) {
       // Some apps return an |out_type| of "TARGETS". (crbug.com/377893)
       if (out_type == XA_ATOM || out_type == atom_cache_.GetAtom(kTargets)) {
         const ::Atom* atom_array =
@@ -473,10 +456,11 @@ TargetList Clipboard::AuraX11Details::WaitAndGetTargetsList(
       for (std::vector< ::Atom>::const_iterator it = types.begin();
            it != types.end(); ++it) {
         ::Atom type = None;
-        if (receiver->PerformBlockingConvertSelection(*it,
-                                                      NULL,
-                                                      NULL,
-                                                      &type) &&
+        if (selection_requestor_.PerformBlockingConvertSelection(selection_name,
+                                                                 *it,
+                                                                 NULL,
+                                                                 NULL,
+                                                                 &type) &&
             type == *it) {
           out.push_back(*it);
         }
@@ -520,8 +504,10 @@ void Clipboard::AuraX11Details::StoreCopyPasteDataAndWait() {
   std::vector<Atom> targets = format_map.GetTypes();
 
   base::TimeTicks start = base::TimeTicks::Now();
-  clipboard_manager_requestor_.PerformBlockingConvertSelectionWithParameter(
-      atom_cache_.GetAtom(kSaveTargets), targets);
+  selection_requestor_.PerformBlockingConvertSelectionWithParameter(
+      atom_cache_.GetAtom(kClipboardManager),
+      atom_cache_.GetAtom(kSaveTargets),
+      targets);
   UMA_HISTOGRAM_TIMES("Clipboard.X11StoreCopyPasteDuration",
                       base::TimeTicks::Now() - start);
 }
@@ -544,13 +530,7 @@ uint32_t Clipboard::AuraX11Details::DispatchEvent(const PlatformEvent& xev) {
       break;
     }
     case SelectionNotify: {
-      ::Atom selection = xev->xselection.selection;
-      if (selection == XA_PRIMARY)
-        primary_requestor_.OnSelectionNotify(*xev);
-      else if (selection == GetCopyPasteSelection())
-        clipboard_requestor_.OnSelectionNotify(*xev);
-      else if (selection == atom_cache_.GetAtom(kClipboardManager))
-        clipboard_manager_requestor_.OnSelectionNotify(*xev);
+      selection_requestor_.OnSelectionNotify(*xev);
       break;
     }
     case SelectionClear: {

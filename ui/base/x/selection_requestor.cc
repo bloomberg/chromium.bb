@@ -4,6 +4,7 @@
 
 #include "ui/base/x/selection_requestor.h"
 
+#include <algorithm>
 #include <X11/Xlib.h>
 
 #include "base/run_loop.h"
@@ -24,69 +25,80 @@ const char* kAtomsToCache[] = {
   NULL
 };
 
+// The amount of time to wait for a request to complete.
+const int kRequestTimeoutMs = 300;
+
 }  // namespace
 
 SelectionRequestor::SelectionRequestor(XDisplay* x_display,
                                        XID x_window,
-                                       XAtom selection_name,
                                        PlatformEventDispatcher* dispatcher)
     : x_display_(x_display),
       x_window_(x_window),
-      selection_name_(selection_name),
+      x_property_(None),
       dispatcher_(dispatcher),
+      current_request_index_(0u),
       atom_cache_(x_display_, kAtomsToCache) {
+  x_property_ = atom_cache_.GetAtom(kChromeSelection);
 }
 
 SelectionRequestor::~SelectionRequestor() {}
 
 bool SelectionRequestor::PerformBlockingConvertSelection(
+    XAtom selection,
     XAtom target,
     scoped_refptr<base::RefCountedMemory>* out_data,
     size_t* out_data_items,
     XAtom* out_type) {
-  // The name of the property that we are either:
-  // - Passing as a parameter with the XConvertSelection() request.
-  // OR
-  // - Asking the selection owner to set on |x_window_|.
-  XAtom property = atom_cache_.GetAtom(kChromeSelection);
+  base::TimeTicks timeout =
+      base::TimeTicks::Now() +
+      base::TimeDelta::FromMilliseconds(kRequestTimeoutMs);
+  Request request(selection, target, timeout);
+  requests_.push_back(&request);
+  if (requests_.size() == 1u)
+    ConvertSelectionForCurrentRequest();
+  BlockTillSelectionNotifyForRequest(&request);
 
-  XConvertSelection(x_display_,
-                    selection_name_,
-                    target,
-                    property,
-                    x_window_,
-                    CurrentTime);
-
-  // Now that we've thrown our message off to the X11 server, we block waiting
-  // for a response.
-  PendingRequest pending_request(target);
-  BlockTillSelectionNotifyForRequest(&pending_request);
-
-  bool success = false;
-  if (pending_request.returned_property == property) {
-    success =  ui::GetRawBytesOfProperty(x_window_,
-                                         pending_request.returned_property,
-                                         out_data, out_data_items, out_type);
+  std::vector<Request*>::iterator request_it = std::find(
+      requests_.begin(), requests_.end(), &request);
+  CHECK(request_it != requests_.end());
+  if (static_cast<int>(current_request_index_) >
+      request_it - requests_.begin()) {
+    --current_request_index_;
   }
-  if (pending_request.returned_property != None)
-    XDeleteProperty(x_display_, x_window_, pending_request.returned_property);
-  return success;
+  requests_.erase(request_it);
+
+  if (requests_.empty())
+    abort_timer_.Stop();
+
+  if (request.success) {
+    if (out_data)
+      *out_data = request.out_data;
+    if (out_data_items)
+      *out_data_items = request.out_data_items;
+    if (out_type)
+      *out_type = request.out_type;
+  }
+  return request.success;
 }
 
 void SelectionRequestor::PerformBlockingConvertSelectionWithParameter(
+    XAtom selection,
     XAtom target,
     const std::vector<XAtom>& parameter) {
   SetAtomArrayProperty(x_window_, kChromeSelection, "ATOM", parameter);
-  PerformBlockingConvertSelection(target, NULL, NULL, NULL);
+  PerformBlockingConvertSelection(selection, target, NULL, NULL, NULL);
 }
 
 SelectionData SelectionRequestor::RequestAndWaitForTypes(
+    XAtom selection,
     const std::vector<XAtom>& types) {
   for (std::vector<XAtom>::const_iterator it = types.begin();
        it != types.end(); ++it) {
     scoped_refptr<base::RefCountedMemory> data;
     XAtom type = None;
-    if (PerformBlockingConvertSelection(*it,
+    if (PerformBlockingConvertSelection(selection,
+                                        *it,
                                         &data,
                                         NULL,
                                         &type) &&
@@ -99,88 +111,122 @@ SelectionData SelectionRequestor::RequestAndWaitForTypes(
 }
 
 void SelectionRequestor::OnSelectionNotify(const XEvent& event) {
-  // Find the PendingRequest for the corresponding XConvertSelection call. If
-  // there are multiple pending requests on the same target, satisfy them in
-  // FIFO order.
-  PendingRequest* request_notified = NULL;
-  if (selection_name_ == event.xselection.selection) {
-    for (std::list<PendingRequest*>::iterator iter = pending_requests_.begin();
-         iter != pending_requests_.end(); ++iter) {
-      PendingRequest* request = *iter;
-      if (request->returned)
-        continue;
-      if (request->target != event.xselection.target)
-        continue;
-      request_notified = request;
-      break;
-    }
-  }
-
-  // This event doesn't correspond to any XConvertSelection calls that we
-  // issued in PerformBlockingConvertSelection. This shouldn't happen, but any
-  // client can send any message, so it can happen.
-  XAtom returned_property = event.xselection.property;
-  if (!request_notified) {
-    // ICCCM requires us to delete the property passed into SelectionNotify. If
-    // |request_notified| is true, the property will be deleted when the run
-    // loop has quit.
-    if (returned_property != None)
-      XDeleteProperty(x_display_, x_window_, returned_property);
+  Request* request = GetCurrentRequest();
+  XAtom event_property = event.xselection.property;
+  if (!request ||
+      request->completed ||
+      request->selection != event.xselection.selection ||
+      request->target != event.xselection.target) {
+    // ICCCM requires us to delete the property passed into SelectionNotify.
+    if (event_property != None)
+      XDeleteProperty(x_display_, x_window_, event_property);
     return;
   }
 
-  request_notified->returned_property = returned_property;
-  request_notified->returned = true;
+  request->success = false;
+  if (event_property == x_property_) {
+    request->success = ui::GetRawBytesOfProperty(x_window_,
+                                                 x_property_,
+                                                 &request->out_data,
+                                                 &request->out_data_items,
+                                                 &request->out_type);
+  }
+  if (event_property != None)
+    XDeleteProperty(x_display_, x_window_, event_property);
 
-  if (!request_notified->quit_closure.is_null())
-    request_notified->quit_closure.Run();
+  CompleteRequest(current_request_index_);
 }
 
-void SelectionRequestor::BlockTillSelectionNotifyForRequest(
-    PendingRequest* request) {
-  pending_requests_.push_back(request);
+void SelectionRequestor::AbortStaleRequests() {
+  base::TimeTicks now = base::TimeTicks::Now();
+  for (size_t i = current_request_index_;
+       i < requests_.size() && requests_[i]->timeout <= now;
+       ++i) {
+    CompleteRequest(i);
+  }
+}
 
-  const int kMaxWaitTimeForClipboardResponse = 300;
+void SelectionRequestor::CompleteRequest(size_t index) {
+   if (index >= requests_.size())
+     return;
+
+  Request* request = requests_[index];
+  if (request->completed)
+    return;
+  request->completed = true;
+
+  if (index == current_request_index_) {
+    ++current_request_index_;
+    ConvertSelectionForCurrentRequest();
+  }
+
+  if (!request->quit_closure.is_null())
+    request->quit_closure.Run();
+}
+
+void SelectionRequestor::ConvertSelectionForCurrentRequest() {
+  Request* request = GetCurrentRequest();
+  if (request) {
+    XConvertSelection(x_display_,
+                      request->selection,
+                      request->target,
+                      x_property_,
+                      x_window_,
+                      CurrentTime);
+  }
+}
+
+void SelectionRequestor::BlockTillSelectionNotifyForRequest(Request* request) {
   if (PlatformEventSource::GetInstance()) {
-    base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
-    base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
+    if (!abort_timer_.IsRunning()) {
+      abort_timer_.Start(FROM_HERE,
+                         base::TimeDelta::FromMilliseconds(kRequestTimeoutMs),
+                         this,
+                         &SelectionRequestor::AbortStaleRequests);
+    }
+
+    base::MessageLoop::ScopedNestableTaskAllower allow_nested(
+        base::MessageLoopForUI::current());
     base::RunLoop run_loop;
-
     request->quit_closure = run_loop.QuitClosure();
-    loop->PostDelayedTask(
-        FROM_HERE,
-        request->quit_closure,
-        base::TimeDelta::FromMilliseconds(kMaxWaitTimeForClipboardResponse));
-
     run_loop.Run();
+
+    // We cannot put logic to process the next request here because the RunLoop
+    // might be nested. For instance, request 'B' may start a RunLoop while the
+    // RunLoop for request 'A' is running. It is not possible to end the RunLoop
+    // for request 'A' without first ending the RunLoop for request 'B'.
   } else {
     // This occurs if PerformBlockingConvertSelection() is called during
     // shutdown and the PlatformEventSource has already been destroyed.
-    base::TimeTicks start = base::TimeTicks::Now();
-    while (!request->returned) {
+    while (!request->completed &&
+           request->timeout > base::TimeTicks::Now()) {
       if (XPending(x_display_)) {
         XEvent event;
         XNextEvent(x_display_, &event);
         dispatcher_->DispatchEvent(&event);
       }
-      base::TimeDelta wait_time = base::TimeTicks::Now() - start;
-      if (wait_time.InMilliseconds() > kMaxWaitTimeForClipboardResponse)
-        break;
     }
   }
-
-  DCHECK(!pending_requests_.empty());
-  DCHECK_EQ(request, pending_requests_.back());
-  pending_requests_.pop_back();
 }
 
-SelectionRequestor::PendingRequest::PendingRequest(XAtom target)
-    : target(target),
-      returned_property(None),
-      returned(false) {
+SelectionRequestor::Request* SelectionRequestor::GetCurrentRequest() {
+  return current_request_index_ == requests_.size() ?
+      NULL : requests_[current_request_index_];
 }
 
-SelectionRequestor::PendingRequest::~PendingRequest() {
+SelectionRequestor::Request::Request(XAtom selection,
+                                     XAtom target,
+                                     base::TimeTicks timeout)
+    : selection(selection),
+      target(target),
+      out_data_items(0u),
+      out_type(None),
+      success(false),
+      timeout(timeout),
+      completed(false) {
+}
+
+SelectionRequestor::Request::~Request() {
 }
 
 }  // namespace ui
