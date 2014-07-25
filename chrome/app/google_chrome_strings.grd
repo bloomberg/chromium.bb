@@ -1188,6 +1188,9 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
           Chrome can't establish a private connection to &lt;strong&gt;<ph name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;. This is probably because your computer's date is set incorrectly (<ph name="DATE">$2<ex>Jan 1, 1970</ex></ph>). You should refresh this page after <ph name="BEGIN_LINK">&lt;a href="#" id="clock-link"&gt;</ph>you update your computer's date and time<ph name="END_LINK">&lt;/a&gt;</ph>.
         </message>
       </if>
+      <message name="IDS_SSL_NONOVERRIDABLE_MORE_INVALID_SP3" desc="Body text for the explanation shown if the user clicks on the details windows, the certificate is invalid and the user has an old version of Windows (before WINDOWS XP SP3) running.">
+      Your computer is running an old version of Microsoft Windows that cannot process this website's security certificate. Because of this problem, Google Chrome can't tell whether the certificate came from <ph name="SITE">$1<ex>google.com</ex></ph> or from someone on your network pretending to be <ph name="SITE">$1<ex>google.com</ex></ph>. Please update your computer to a more recent version of Windows.
+      </message>
 
       <!-- OOBE -->
       <if expr="chromeos">

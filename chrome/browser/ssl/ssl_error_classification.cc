@@ -16,6 +16,10 @@ using base::Time;
 using base::TimeTicks;
 using base::TimeDelta;
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace {
 
 // Events for UMA. Do not reorder or change!
@@ -113,6 +117,16 @@ bool SSLErrorClassification::IsUserClockInTheFuture(base::Time time_now) {
   base::Time build_time = base::GetBuildTime();
   if (time_now > build_time + base::TimeDelta::FromDays(365))
     return true;
+  return false;
+}
+
+bool SSLErrorClassification::IsWindowsVersionSP3OrLower() {
+#if defined(OS_WIN)
+  const base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
+  base::win::OSInfo::ServicePack service_pack = os_info->service_pack();
+  if (os_info->version() < base::win::VERSION_VISTA && service_pack.major < 3)
+    return true;
+#endif
   return false;
 }
 

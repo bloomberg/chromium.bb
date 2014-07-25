@@ -613,17 +613,25 @@ std::string SSLBlockingPage::GetHTMLContentsV2() {
         l10n_util::GetStringFUTF16(IDS_SSL_OVERRIDABLE_PROCEED_PARAGRAPH, url));
   } else {  // Non-overridable.
     load_time_data.SetBoolean("overridable", false);
-    load_time_data.SetString(
-        "explanationParagraph",
-        l10n_util::GetStringFUTF16(IDS_SSL_NONOVERRIDABLE_MORE, url));
+    SSLErrorInfo::ErrorType type =
+        SSLErrorInfo::NetErrorToErrorType(cert_error_);
+    if (type == SSLErrorInfo::CERT_INVALID && SSLErrorClassification::
+        IsWindowsVersionSP3OrLower()) {
+      load_time_data.SetString(
+          "explanationParagraph",
+          l10n_util::GetStringFUTF16(
+              IDS_SSL_NONOVERRIDABLE_MORE_INVALID_SP3, url));
+    } else {
+      load_time_data.SetString("explanationParagraph",
+                               l10n_util::GetStringFUTF16(
+                                   IDS_SSL_NONOVERRIDABLE_MORE, url));
+    }
     load_time_data.SetString(
         "primaryButtonText",
         l10n_util::GetStringUTF16(IDS_SSL_NONOVERRIDABLE_RELOAD_BUTTON));
     // Customize the help link depending on the specific error type.
     // Only mark as HSTS if none of the more specific error types apply, and use
     // INVALID as a fallback if no other string is appropriate.
-    SSLErrorInfo::ErrorType type =
-        SSLErrorInfo::NetErrorToErrorType(cert_error_);
     load_time_data.SetInteger("errorType", type);
     int help_string = IDS_SSL_NONOVERRIDABLE_INVALID;
     switch (type) {

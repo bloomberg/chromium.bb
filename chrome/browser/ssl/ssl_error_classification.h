@@ -23,6 +23,8 @@ class SSLErrorClassification {
   // the user is using a version of Chrome which is more than 1 year old.
   static bool IsUserClockInTheFuture(base::Time time_now);
 
+  static bool IsWindowsVersionSP3OrLower();
+
   // A method which calculates the severity score when the ssl error is
   // CERT_DATE_INVALID.
   float InvalidDateSeverityScore() const;
