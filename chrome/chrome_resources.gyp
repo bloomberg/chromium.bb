@@ -444,6 +444,7 @@
             '<(DEPTH)/content/content_resources.gyp:content_resources',
             '<(DEPTH)/device/bluetooth/bluetooth_strings.gyp:device_bluetooth_strings',
             '<(DEPTH)/extensions/extensions_strings.gyp:extensions_strings',
+            '<(DEPTH)/third_party/WebKit/public/blink_resources.gyp:blink_resources',
             '<(DEPTH)/webkit/webkit_resources.gyp:webkit_resources',
             '<(DEPTH)/webkit/webkit_resources.gyp:webkit_strings',
           ],

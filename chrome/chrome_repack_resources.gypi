@@ -28,11 +28,11 @@
       }],
       ['OS != "ios"', {
         'pak_inputs': [
+          '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources.pak',
           '<(SHARED_INTERMEDIATE_DIR)/content/browser/tracing/tracing_resources.pak',
           '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
           '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_renderer_resources.pak', 
           '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_resources.pak',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/blink_resources.pak',
         ],
       }],
       ['OS != "ios" and OS != "android"', {

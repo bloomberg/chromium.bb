@@ -14,7 +14,7 @@
         '../../ash/ash_resources.gyp:ash_resources',
         '../../content/content_resources.gyp:content_resources',
         '../../extensions/shell/app_shell.gyp:app_shell_pak',
-        '../../webkit/webkit_resources.gyp:webkit_resources',
+        '../../third_party/WebKit/public/blink_resources.gyp:blink_resources',
         '../../webkit/webkit_resources.gyp:webkit_strings',
       ],
       'actions': [{
@@ -23,8 +23,8 @@
           'pak_inputs': [
             '<(PRODUCT_DIR)/app_shell.pak',
             '<(SHARED_INTERMEDIATE_DIR)/ash/resources/ash_resources_100_percent.pak',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources.pak',
             '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/blink_resources.pak',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.pak',
           ],
           'pak_output': '<(PRODUCT_DIR)/athena_resources.pak',
