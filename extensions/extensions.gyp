@@ -703,6 +703,7 @@
         '../content/content_shell_and_tests.gyp:test_support_content',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../ui/strings/ui_strings.gyp:ui_strings',
         'extensions_common',
         'extensions_renderer',
         'extensions_resources.gyp:extensions_resources',
@@ -743,11 +744,17 @@
       ],
       'actions': [
         {
+          # TODO(jamescook): Use the same .pak file for both app_shell and
+          # extensions_unittests by creating an extensions_resources.pak file
+          # that can be used in both places. This will save build time.
+          # http://crbug.com/397250
           'action_name': 'repack_extensions_unittests_pak',
           'variables': {
             'pak_inputs': [
               '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_renderer_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/ui/strings/app_locale_settings_en-US.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/ui/strings/ui_strings_en-US.pak',
             ],
             'pak_output': '<(PRODUCT_DIR)/extensions_unittests_resources.pak',
           },

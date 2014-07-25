@@ -46,7 +46,7 @@
               '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/chrome/extensions_api_resources.pak',
               # TODO(jamescook): Extract the extension/app related resources
-              # from generated_resources_en-US.pak.
+              # from generated_resources_en-US.pak. http://crbug.com/397250
               '<(SHARED_INTERMEDIATE_DIR)/chrome/generated_resources_en-US.pak',
               '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources_100_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/shell_resources.pak',
