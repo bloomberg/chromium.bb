@@ -6,6 +6,8 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -143,6 +145,22 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
     context_value.type = input_ime::InputContext::ParseType(context.type);
 
     scoped_ptr<base::ListValue> args(input_ime::OnFocus::Create(context_value));
+
+    // The component IME extensions need to know the current screen type (e.g.
+    // lock screen, login screen, etc.) so that its on-screen keyboard page
+    // won't open new windows/pages. See crbug.com/395621.
+    base::DictionaryValue* val = NULL;
+    if (args->GetDictionary(0, &val)) {
+      std::string screen_type;
+      if (!UserManager::Get()->IsUserLoggedIn()) {
+        screen_type = "login";
+      } else if (chromeos::ScreenLocker::default_screen_locker() &&
+               chromeos::ScreenLocker::default_screen_locker()->locked()) {
+        screen_type = "lock";
+      }
+      if (!screen_type.empty())
+        val->SetStringWithoutPathExpansion("screen", screen_type);
+    }
 
     DispatchEventToExtension(profile_, extension_id_,
                              input_ime::OnFocus::kEventName, args.Pass());
