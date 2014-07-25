@@ -276,7 +276,7 @@ void TrayBackgroundView::TrayContainer::UpdateLayout() {
 
     views::BoxLayout* layout =
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
-    layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_FILL);
+    layout->SetDefaultFlex(1);
     views::View::SetLayoutManager(layout);
   } else {
     SetBorder(views::Border::CreateEmptyBorder(
@@ -287,7 +287,7 @@ void TrayBackgroundView::TrayContainer::UpdateLayout() {
 
     views::BoxLayout* layout =
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
-    layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_FILL);
+    layout->SetDefaultFlex(1);
     views::View::SetLayoutManager(layout);
   }
   PreferredSizeChanged();

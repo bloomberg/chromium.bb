@@ -20,88 +20,138 @@ BoxLayout::BoxLayout(BoxLayout::Orientation orientation,
                             inside_border_horizontal_spacing),
       between_child_spacing_(between_child_spacing),
       main_axis_alignment_(MAIN_AXIS_ALIGNMENT_START),
-      cross_axis_alignment_(CROSS_AXIS_ALIGNMENT_STRETCH) {
+      cross_axis_alignment_(CROSS_AXIS_ALIGNMENT_STRETCH),
+      default_flex_(0),
+      host_(NULL) {
 }
 
 BoxLayout::~BoxLayout() {
 }
 
+void BoxLayout::SetFlexForView(const View* view, int flex_weight) {
+  DCHECK(host_);
+  DCHECK(view);
+  DCHECK_EQ(host_, view->parent());
+  DCHECK_GE(flex_weight, 0);
+  flex_map_[view] = flex_weight;
+}
+
+void BoxLayout::ClearFlexForView(const View* view) {
+  DCHECK(view);
+  flex_map_.erase(view);
+}
+
+void BoxLayout::SetDefaultFlex(int default_flex) {
+  DCHECK_GE(default_flex, 0);
+  default_flex_ = default_flex;
+}
+
 void BoxLayout::Layout(View* host) {
+  DCHECK_EQ(host_, host);
   gfx::Rect child_area(host->GetLocalBounds());
   child_area.Inset(host->GetInsets());
   child_area.Inset(inside_border_insets_);
 
-  int padding = 0;
-  if (main_axis_alignment_ != MAIN_AXIS_ALIGNMENT_START) {
-    int total_main_axis_size = 0;
-    int num_visible = 0;
-    for (int i = 0; i < host->child_count(); ++i) {
-      View* child = host->child_at(i);
-      if (!child->visible())
-        continue;
-      total_main_axis_size += MainAxisSizeForView(child, child_area.width()) +
-                              between_child_spacing_;
-      ++num_visible;
-    }
+  int total_main_axis_size = 0;
+  int num_visible = 0;
+  int flex_sum = 0;
+  // Calculate the total size of children in the main axis.
+  for (int i = 0; i < host->child_count(); ++i) {
+    View* child = host->child_at(i);
+    if (!child->visible())
+      continue;
+    total_main_axis_size +=
+        MainAxisSizeForView(child, child_area.width()) + between_child_spacing_;
+    ++num_visible;
+    flex_sum += GetFlexForView(child);
+  }
 
-    if (num_visible) {
-      total_main_axis_size -= between_child_spacing_;
-      int free_space = MainAxisSize(child_area) - total_main_axis_size;
-      int position = MainAxisPosition(child_area);
-      int size = MainAxisSize(child_area);
+  if (!num_visible)
+    return;
+
+  total_main_axis_size -= between_child_spacing_;
+  // Free space can be negative indicating that the views want to overflow.
+  int main_free_space = MainAxisSize(child_area) - total_main_axis_size;
+  {
+    int position = MainAxisPosition(child_area);
+    int size = MainAxisSize(child_area);
+    if (!flex_sum) {
       switch (main_axis_alignment_) {
-        case MAIN_AXIS_ALIGNMENT_FILL:
-          padding = std::max(free_space / num_visible, 0);
+        case MAIN_AXIS_ALIGNMENT_START:
           break;
         case MAIN_AXIS_ALIGNMENT_CENTER:
-          position += free_space / 2;
+          position += main_free_space / 2;
           size = total_main_axis_size;
           break;
         case MAIN_AXIS_ALIGNMENT_END:
-          position += free_space;
+          position += main_free_space;
           size = total_main_axis_size;
           break;
         default:
           NOTREACHED();
           break;
       }
-      gfx::Rect new_child_area(child_area);
-      SetMainAxisPosition(position, &new_child_area);
-      SetMainAxisSize(size, &new_child_area);
-      child_area.Intersect(new_child_area);
     }
+    gfx::Rect new_child_area(child_area);
+    SetMainAxisPosition(position, &new_child_area);
+    SetMainAxisSize(size, &new_child_area);
+    child_area.Intersect(new_child_area);
   }
 
   int main_position = MainAxisPosition(child_area);
+  int total_padding = 0;
+  int current_flex = 0;
   for (int i = 0; i < host->child_count(); ++i) {
     View* child = host->child_at(i);
-    if (child->visible()) {
-      gfx::Rect bounds(child_area);
-      SetMainAxisPosition(main_position, &bounds);
-      if (cross_axis_alignment_ != CROSS_AXIS_ALIGNMENT_STRETCH) {
-        int free_space = CrossAxisSize(bounds) - CrossAxisSizeForView(child);
-        int position = CrossAxisPosition(bounds);
-        if (cross_axis_alignment_ == CROSS_AXIS_ALIGNMENT_CENTER) {
-          position += free_space / 2;
-        } else if (cross_axis_alignment_ == CROSS_AXIS_ALIGNMENT_END) {
-          position += free_space;
-        }
-        SetCrossAxisPosition(position, &bounds);
-        SetCrossAxisSize(CrossAxisSizeForView(child), &bounds);
-      }
-      int child_main_axis_size = MainAxisSizeForView(child, child_area.width());
-      SetMainAxisSize(child_main_axis_size + padding, &bounds);
-      if (MainAxisSize(bounds) > 0)
-        main_position += MainAxisSize(bounds) + between_child_spacing_;
+    if (!child->visible())
+      continue;
 
-      // Clamp child view bounds to |child_area|.
-      bounds.Intersect(child_area);
-      child->SetBoundsRect(bounds);
+    // Calculate cross axis size.
+    gfx::Rect bounds(child_area);
+    SetMainAxisPosition(main_position, &bounds);
+    if (cross_axis_alignment_ != CROSS_AXIS_ALIGNMENT_STRETCH) {
+      int free_space = CrossAxisSize(bounds) - CrossAxisSizeForView(child);
+      int position = CrossAxisPosition(bounds);
+      if (cross_axis_alignment_ == CROSS_AXIS_ALIGNMENT_CENTER) {
+        position += free_space / 2;
+      } else if (cross_axis_alignment_ == CROSS_AXIS_ALIGNMENT_END) {
+        position += free_space;
+      }
+      SetCrossAxisPosition(position, &bounds);
+      SetCrossAxisSize(CrossAxisSizeForView(child), &bounds);
     }
+
+    // Calculate flex padding.
+    int current_padding = 0;
+    if (GetFlexForView(child) > 0) {
+      current_flex += GetFlexForView(child);
+      int quot = (main_free_space * current_flex) / flex_sum;
+      int rem = (main_free_space * current_flex) % flex_sum;
+      current_padding = quot - total_padding;
+      // Use the current remainder to round to the nearest pixel.
+      if (std::abs(rem) * 2 >= flex_sum)
+        current_padding += main_free_space > 0 ? 1 : -1;
+      total_padding += current_padding;
+    }
+
+    // Set main axis size.
+    int child_main_axis_size = MainAxisSizeForView(child, child_area.width());
+    SetMainAxisSize(child_main_axis_size + current_padding, &bounds);
+    if (MainAxisSize(bounds) > 0 || GetFlexForView(child) > 0)
+      main_position += MainAxisSize(bounds) + between_child_spacing_;
+
+    // Clamp child view bounds to |child_area|.
+    bounds.Intersect(child_area);
+    child->SetBoundsRect(bounds);
   }
+
+  // Flex views should have grown/shrunk to consume all free space.
+  if (flex_sum)
+    DCHECK_EQ(total_padding, main_free_space);
 }
 
 gfx::Size BoxLayout::GetPreferredSize(const View* host) const {
+  DCHECK_EQ(host_, host);
   // Calculate the child views' preferred width.
   int width = 0;
   if (orientation_ == kVertical) {
@@ -118,8 +168,32 @@ gfx::Size BoxLayout::GetPreferredSize(const View* host) const {
 }
 
 int BoxLayout::GetPreferredHeightForWidth(const View* host, int width) const {
+  DCHECK_EQ(host_, host);
   int child_width = width - NonChildSize(host).width();
   return GetPreferredSizeForChildWidth(host, child_width).height();
+}
+
+void BoxLayout::Installed(View* host) {
+  DCHECK(!host_);
+  host_ = host;
+}
+
+void BoxLayout::Uninstalled(View* host) {
+  DCHECK_EQ(host_, host);
+  host_ = NULL;
+  flex_map_.clear();
+}
+
+void BoxLayout::ViewRemoved(View* host, View* view) {
+  ClearFlexForView(view);
+}
+
+int BoxLayout::GetFlexForView(const View* view) const {
+  std::map<const View*, int>::const_iterator it = flex_map_.find(view);
+  if (it == flex_map_.end())
+    return default_flex_;
+
+  return it->second;
 }
 
 int BoxLayout::MainAxisSize(const gfx::Rect& rect) const {

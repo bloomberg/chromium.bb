@@ -49,7 +49,7 @@ MessageCenterWidgetDelegate::MessageCenterWidgetDelegate(
 
   views::BoxLayout* layout =
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
-  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_FILL);
+  layout->SetDefaultFlex(1);
   SetLayoutManager(layout);
 
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));

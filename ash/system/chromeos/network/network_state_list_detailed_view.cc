@@ -336,7 +336,7 @@ void NetworkStateListDetailedView::CreateNetworkExtra() {
       kTrayMenuBottomRowPadding,
       kTrayMenuBottomRowPadding,
       kTrayMenuBottomRowPaddingBetweenItems);
-  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_FILL);
+  layout->SetDefaultFlex(1);
   bottom_row->SetLayoutManager(layout);
 
   if (list_type_ != LIST_TYPE_VPN) {

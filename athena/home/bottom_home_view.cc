@@ -30,8 +30,7 @@ BottomHomeView::BottomHomeView(app_list::AppListViewDelegate* view_delegate)
 
   views::BoxLayout* items_layout = new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 0, 0);
-  items_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_FILL);
+  items_layout->SetDefaultFlex(1);
   items_container->SetLayoutManager(items_layout);
   for (size_t i = 0; i < top_level->item_count(); ++i) {
     app_list::TileItemView* tile_item_view = new app_list::TileItemView();

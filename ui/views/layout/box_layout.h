@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_LAYOUT_BOX_LAYOUT_H_
 #define UI_VIEWS_LAYOUT_BOX_LAYOUT_H_
 
+#include <map>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/gfx/insets.h"
@@ -38,11 +40,6 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
     MAIN_AXIS_ALIGNMENT_START,
     MAIN_AXIS_ALIGNMENT_CENTER,
     MAIN_AXIS_ALIGNMENT_END,
-
-    // This distributes extra space among the child views. This increases the
-    // size of child views along the main axis rather than the space between
-    // them.
-    MAIN_AXIS_ALIGNMENT_FILL,
     // TODO(calamity): Add MAIN_AXIS_ALIGNMENT_JUSTIFY which spreads blank space
     // in-between the child views.
   };
@@ -80,13 +77,35 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
     inside_border_insets_ = insets;
   }
 
+  // Sets the flex weight for the given |view|. Using the preferred size as
+  // the basis, free space along the main axis is distributed to views in the
+  // ratio of their flex weights. Similarly, if the views will overflow the
+  // parent, space is subtracted in these ratios.
+  //
+  // A flex of 0 means this view is not resized. Flex values must not be
+  // negative.
+  void SetFlexForView(const View* view, int flex);
+
+  // Clears the flex for the given |view|, causing it to use the default
+  // flex.
+  void ClearFlexForView(const View* view);
+
+  // Sets the flex for views to use when none is specified.
+  void SetDefaultFlex(int default_flex);
+
   // Overridden from views::LayoutManager:
+  virtual void Installed(View* host) OVERRIDE;
+  virtual void Uninstalled(View* host) OVERRIDE;
+  virtual void ViewRemoved(View* host, View* view) OVERRIDE;
   virtual void Layout(View* host) OVERRIDE;
   virtual gfx::Size GetPreferredSize(const View* host) const OVERRIDE;
   virtual int GetPreferredHeightForWidth(const View* host,
                                          int width) const OVERRIDE;
 
  private:
+  // Returns the flex for the specified |view|.
+  int GetFlexForView(const View* view) const;
+
   // Returns the size and position along the main axis of |rect|.
   int MainAxisSize(const gfx::Rect& rect) const;
   int MainAxisPosition(const gfx::Rect& rect) const;
@@ -133,6 +152,15 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
   // The alignment of children in the cross axis. This is
   // CROSS_AXIS_ALIGNMENT_STRETCH by default.
   CrossAxisAlignment cross_axis_alignment_;
+
+  // A map of views to their flex weights.
+  std::map<const View*, int> flex_map_;
+
+  // The flex weight for views if none is set. Defaults to 0.
+  int default_flex_;
+
+  // The view that this BoxLayout is managing the layout for.
+  views::View* host_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(BoxLayout);
 };
