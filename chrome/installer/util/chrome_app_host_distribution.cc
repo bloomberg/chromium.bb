@@ -127,8 +127,10 @@ void ChromeAppHostDistribution::UpdateInstallStatus(bool system_install,
     installer::ArchiveType archive_type,
     installer::InstallStatus install_status) {
 #if defined(GOOGLE_CHROME_BUILD)
-  GoogleUpdateSettings::UpdateInstallStatus(system_install,
-      archive_type, InstallUtil::GetInstallReturnCode(install_status),
-      kChromeAppHostGuid);
+  GoogleUpdateSettings::UpdateInstallStatus(
+      system_install,
+      archive_type,
+      InstallUtil::GetInstallReturnCode(install_status),
+      installer::kAppLauncherGuid);
 #endif
 }
