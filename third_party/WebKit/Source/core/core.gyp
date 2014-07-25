@@ -732,6 +732,7 @@
       ],
     },
     {
+      # GN version: //third_party/WebKit/Source/core:testing
       'target_name': 'webcore_testing',
       'type': 'static_library',
       'dependencies': [
@@ -748,6 +749,7 @@
         'testing/v8',
       ],
       'sources': [
+        # Note: file list duplicated in GN build.
         '<@(webcore_testing_files)',
         '<(bindings_core_v8_output_dir)/V8GarbageCollectedScriptWrappable.cpp',
         '<(bindings_core_v8_output_dir)/V8GarbageCollectedScriptWrappable.h',

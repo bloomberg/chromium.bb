@@ -290,7 +290,6 @@ source_set("rendering") {
 }
 
 # GYP version: WebKit/Source/core/core.gyp:webcore_testing
-
 source_set("testing") {
   configs += [
     "//third_party/WebKit/Source:inside_blink",
@@ -303,10 +302,14 @@ source_set("testing") {
 
   sources = webcore_testing_files
   sources += [
+    "$bindings_core_v8_output_dir/V8GarbageCollectedScriptWrappable.cpp",
+    "$bindings_core_v8_output_dir/V8GarbageCollectedScriptWrappable.h",
     "$bindings_core_v8_output_dir/V8GCObservation.cpp",
     "$bindings_core_v8_output_dir/V8GCObservation.h",
     "$bindings_core_v8_output_dir/V8MallocStatistics.cpp",
     "$bindings_core_v8_output_dir/V8MallocStatistics.h",
+    "$bindings_core_v8_output_dir/V8PrivateScriptTest.cpp",
+    "$bindings_core_v8_output_dir/V8PrivateScriptTest.h",
     "$bindings_core_v8_output_dir/V8TypeConversions.cpp",
     "$bindings_core_v8_output_dir/V8TypeConversions.h",
     "$bindings_core_v8_output_dir/V8Internals.cpp",
@@ -323,6 +326,8 @@ source_set("testing") {
     "$bindings_core_v8_output_dir/V8LayerRect.h",
     "$bindings_core_v8_output_dir/V8LayerRectList.cpp",
     "$bindings_core_v8_output_dir/V8LayerRectList.h",
+    "$bindings_core_v8_output_dir/V8RefCountedScriptWrappable.cpp",
+    "$bindings_core_v8_output_dir/V8RefCountedScriptWrappable.h",
   ]
 }
 
