@@ -155,7 +155,7 @@ void Module::GetFiles(vector<File *> *vec) {
     vec->push_back(it->second);
 }
 
-void Module::GetStackFrameEntries(vector<StackFrameEntry *> *vec) {
+void Module::GetStackFrameEntries(vector<StackFrameEntry *> *vec) const {
   *vec = stack_frame_entries_;
 }
 

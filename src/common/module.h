@@ -247,7 +247,7 @@ class Module {
   // effectively a copy of the stack frame entry list, this is mostly
   // useful for testing; other uses should probably get
   // a more appropriate interface.)
-  void GetStackFrameEntries(vector<StackFrameEntry *> *vec);
+  void GetStackFrameEntries(vector<StackFrameEntry *> *vec) const;
 
   // Find those files in this module that are actually referred to by
   // functions' line number data, and assign them source id numbers.
@@ -269,6 +269,11 @@ class Module {
   // Addresses in the output are all relative to the load address
   // established by SetLoadAddress.
   bool Write(std::ostream &stream, SymbolData symbol_data);
+
+  string name() const { return name_; }
+  string os() const { return os_; }
+  string architecture() const { return architecture_; }
+  string identifier() const { return id_; }
 
  private:
   // Report an error that has occurred writing the symbol file, using
