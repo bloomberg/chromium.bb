@@ -1171,7 +1171,8 @@ void IOThread::ConfigureQuicGlobals(
 
   std::string quic_user_agent_id =
       chrome::VersionInfo::GetVersionStringModifier();
-  quic_user_agent_id.append(1, ' ');
+  if (!quic_user_agent_id.empty())
+    quic_user_agent_id.push_back(' ');
   chrome::VersionInfo version_info;
   quic_user_agent_id.append(version_info.ProductNameAndVersionForUserAgent());
   globals->quic_user_agent_id.set(quic_user_agent_id);
