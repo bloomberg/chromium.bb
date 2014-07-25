@@ -104,6 +104,17 @@ class AccessibilityButtonInfo : public AccessibilityControlInfo {
   virtual const char* type() const OVERRIDE;
 };
 
+// Accessibility information about static text passed to onControlFocused
+// and onControlAction event listeners.
+class AccessibilityStaticTextInfo : public AccessibilityControlInfo {
+ public:
+  AccessibilityStaticTextInfo(Profile* profile,
+                          const std::string& text,
+                          const std::string& context);
+
+  virtual const char* type() const OVERRIDE;
+};
+
 // Accessibility information about a hyperlink passed to onControlFocused
 // and onControlAction event listeners.
 class AccessibilityLinkInfo : public AccessibilityControlInfo {

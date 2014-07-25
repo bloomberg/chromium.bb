@@ -88,6 +88,10 @@ class AccessibilityEventRouterViews : public content::NotificationObserver {
       views::View* view,
       ui::AXEvent event,
       Profile* profile);
+  static void SendStaticTextNotification(
+      views::View* view,
+      ui::AXEvent event,
+      Profile* profile);
   static void SendLinkNotification(
       views::View* view,
       ui::AXEvent event,

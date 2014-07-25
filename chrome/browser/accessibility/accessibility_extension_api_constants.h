@@ -38,6 +38,7 @@ extern const char kTypeMenu[];
 extern const char kTypeMenuItem[];
 extern const char kTypeRadioButton[];
 extern const char kTypeSlider[];
+extern const char kTypeStaticText[];
 extern const char kTypeTab[];
 extern const char kTypeTextBox[];
 extern const char kTypeTree[];

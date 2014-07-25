@@ -35,6 +35,7 @@ const char kTypeMenu[] = "menu";
 const char kTypeMenuItem[] = "menuitem";
 const char kTypeRadioButton[] = "radiobutton";
 const char kTypeSlider[] = "slider";
+const char kTypeStaticText[] = "statictext";
 const char kTypeTab[] = "tab";
 const char kTypeTextBox[] = "textbox";
 const char kTypeTree[] = "tree";

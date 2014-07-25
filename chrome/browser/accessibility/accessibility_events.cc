@@ -48,7 +48,6 @@ void SendWindowAccessibilityNotification(
   }
 }
 
-
 AccessibilityControlInfo::AccessibilityControlInfo(
     Profile* profile, const std::string& name)
     : AccessibilityEventInfo(profile),
@@ -84,6 +83,17 @@ AccessibilityButtonInfo::AccessibilityButtonInfo(Profile* profile,
 
 const char* AccessibilityButtonInfo::type() const {
   return keys::kTypeButton;
+}
+
+AccessibilityStaticTextInfo::AccessibilityStaticTextInfo(Profile* profile,
+                                                 const std::string& text,
+                                                 const std::string& context)
+    : AccessibilityControlInfo(profile, text) {
+  set_context(context);
+}
+
+const char* AccessibilityStaticTextInfo::type() const {
+  return keys::kTypeStaticText;
 }
 
 AccessibilityLinkInfo::AccessibilityLinkInfo(Profile* profile,

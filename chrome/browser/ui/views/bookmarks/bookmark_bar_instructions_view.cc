@@ -99,7 +99,7 @@ void BookmarkBarInstructionsView::ViewHierarchyChanged(
 
 void BookmarkBarInstructionsView::GetAccessibleState(
     ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_GROUP;
+  instructions_->GetAccessibleState(state);
 }
 
 void BookmarkBarInstructionsView::LinkClicked(views::Link* source,

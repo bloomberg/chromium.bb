@@ -226,6 +226,9 @@ void AccessibilityEventRouterViews::DispatchAccessibilityEvent(
   case ui::AX_ROLE_SLIDER:
     SendSliderNotification(view, type, profile);
     break;
+  case ui::AX_ROLE_STATIC_TEXT:
+    SendStaticTextNotification(view, type, profile);
+    break;
   case ui::AX_ROLE_TREE:
     SendTreeNotification(view, type, profile);
     break;
@@ -268,6 +271,16 @@ void AccessibilityEventRouterViews::SendButtonNotification(
     ui::AXEvent event,
     Profile* profile) {
   AccessibilityButtonInfo info(
+      profile, GetViewName(view), GetViewContext(view));
+  SendControlAccessibilityNotification(event, &info);
+}
+
+// static
+void AccessibilityEventRouterViews::SendStaticTextNotification(
+    views::View* view,
+    ui::AXEvent event,
+    Profile* profile) {
+  AccessibilityStaticTextInfo info(
       profile, GetViewName(view), GetViewContext(view));
   SendControlAccessibilityNotification(event, &info);
 }

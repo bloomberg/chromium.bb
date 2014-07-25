@@ -632,6 +632,9 @@ cvox.AccessibilityApiHandler.prototype.describe = function(control, isSelect) {
       s += msg('describe_button', [name]);
       braille.roleMsg = 'tag_button';
       break;
+    case 'statictext':
+      s += control.name;
+      break;
     case 'combobox':
     case 'listbox':
       earcon = cvox.AbstractEarcons.LISTBOX;
