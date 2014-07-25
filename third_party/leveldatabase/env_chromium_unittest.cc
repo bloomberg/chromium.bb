@@ -8,50 +8,62 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/test_suite.h"
-#include "env_chromium_stdio.h"
+#include "third_party/leveldatabase/env_chromium_stdio.h"
 #if defined(OS_WIN)
-#include "env_chromium_win.h"
+#include "third_party/leveldatabase/env_chromium_win.h"
 #endif
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_idb.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
-using namespace leveldb_env;
-using namespace leveldb;
-
 #define FPL FILE_PATH_LITERAL
 
+using leveldb::DB;
+using leveldb::Env;
+using leveldb::IDBEnv;
+using leveldb::Options;
+using leveldb::ReadOptions;
+using leveldb::Slice;
+using leveldb::Status;
+using leveldb::WritableFile;
+using leveldb::WriteOptions;
+using leveldb_env::ChromiumEnvStdio;
+#if defined(OS_WIN)
+using leveldb_env::ChromiumEnvWin;
+#endif
+using leveldb_env::MethodID;
+
 TEST(ErrorEncoding, OnlyAMethod) {
-  const MethodID in_method = kSequentialFileRead;
+  const MethodID in_method = leveldb_env::kSequentialFileRead;
   const Status s = MakeIOError("Somefile.txt", "message", in_method);
   MethodID method;
   int error = -75;
-  EXPECT_EQ(METHOD_ONLY,
+  EXPECT_EQ(leveldb_env::METHOD_ONLY,
             ParseMethodAndError(s.ToString().c_str(), &method, &error));
   EXPECT_EQ(in_method, method);
   EXPECT_EQ(-75, error);
 }
 
 TEST(ErrorEncoding, FileError) {
-  const MethodID in_method = kWritableFileClose;
+  const MethodID in_method = leveldb_env::kWritableFileClose;
   const base::File::Error fe = base::File::FILE_ERROR_INVALID_OPERATION;
   const Status s = MakeIOError("Somefile.txt", "message", in_method, fe);
   MethodID method;
   int error;
-  EXPECT_EQ(METHOD_AND_PFE,
+  EXPECT_EQ(leveldb_env::METHOD_AND_PFE,
             ParseMethodAndError(s.ToString().c_str(), &method, &error));
   EXPECT_EQ(in_method, method);
   EXPECT_EQ(fe, error);
 }
 
 TEST(ErrorEncoding, Errno) {
-  const MethodID in_method = kWritableFileFlush;
+  const MethodID in_method = leveldb_env::kWritableFileFlush;
   const int some_errno = ENOENT;
   const Status s =
       MakeIOError("Somefile.txt", "message", in_method, some_errno);
   MethodID method;
   int error;
-  EXPECT_EQ(METHOD_AND_ERRNO,
+  EXPECT_EQ(leveldb_env::METHOD_AND_ERRNO,
             ParseMethodAndError(s.ToString().c_str(), &method, &error));
   EXPECT_EQ(in_method, method);
   EXPECT_EQ(some_errno, error);
@@ -59,13 +71,13 @@ TEST(ErrorEncoding, Errno) {
 
 #if defined(OS_WIN)
 TEST(ErrorEncoding, ErrnoWin32) {
-  const MethodID in_method = kWritableFileFlush;
+  const MethodID in_method = leveldb_env::kWritableFileFlush;
   const DWORD some_errno = ERROR_FILE_NOT_FOUND;
   const Status s =
       MakeIOErrorWin("Somefile.txt", "message", in_method, some_errno);
   MethodID method;
   int error;
-  EXPECT_EQ(METHOD_AND_ERRNO,
+  EXPECT_EQ(leveldb_env::METHOD_AND_ERRNO,
             ParseMethodAndError(s.ToString().c_str(), &method, &error));
   EXPECT_EQ(in_method, method);
   EXPECT_EQ(some_errno, error);
@@ -74,10 +86,11 @@ TEST(ErrorEncoding, ErrnoWin32) {
 
 TEST(ErrorEncoding, NoEncodedMessage) {
   Status s = Status::IOError("Some message", "from leveldb itself");
-  MethodID method = kRandomAccessFileRead;
+  MethodID method = leveldb_env::kRandomAccessFileRead;
   int error = 4;
-  EXPECT_EQ(NONE, ParseMethodAndError(s.ToString().c_str(), &method, &error));
-  EXPECT_EQ(kRandomAccessFileRead, method);
+  EXPECT_EQ(leveldb_env::NONE,
+            ParseMethodAndError(s.ToString().c_str(), &method, &error));
+  EXPECT_EQ(leveldb_env::kRandomAccessFileRead, method);
   EXPECT_EQ(4, error);
 }
 
@@ -90,7 +103,7 @@ class MyEnv : public T {
  protected:
   virtual void DidSyncDir(const std::string& fname) {
     ++directory_syncs_;
-    ChromiumEnv::DidSyncDir(fname);
+    leveldb_env::ChromiumEnv::DidSyncDir(fname);
   }
 
  private:
@@ -103,11 +116,13 @@ class ChromiumEnvMultiPlatformTests : public ::testing::Test {
 };
 
 #if defined(OS_WIN)
-typedef ::testing::Types<ChromiumEnvStdio, ChromiumEnvWin> ChromiumEnvMultiPlatformTestsTypes;
+typedef ::testing::Types<ChromiumEnvStdio, ChromiumEnvWin>
+    ChromiumEnvMultiPlatformTestsTypes;
 #else
 typedef ::testing::Types<ChromiumEnvStdio> ChromiumEnvMultiPlatformTestsTypes;
 #endif
-TYPED_TEST_CASE(ChromiumEnvMultiPlatformTests, ChromiumEnvMultiPlatformTestsTypes);
+TYPED_TEST_CASE(ChromiumEnvMultiPlatformTests,
+                ChromiumEnvMultiPlatformTestsTypes);
 
 TYPED_TEST(ChromiumEnvMultiPlatformTests, DirectorySyncing) {
   MyEnv<TypeParam> env;
@@ -118,8 +133,8 @@ TYPED_TEST(ChromiumEnvMultiPlatformTests, DirectorySyncing) {
   std::string some_data = "some data";
   Slice data = some_data;
 
-  std::string manifest_file_name =
-      FilePathToString(dir_path.Append(FILE_PATH_LITERAL("MANIFEST-001")));
+  std::string manifest_file_name = leveldb_env::FilePathToString(
+      dir_path.Append(FILE_PATH_LITERAL("MANIFEST-001")));
   WritableFile* manifest_file_ptr;
   Status s = env.NewWritableFile(manifest_file_name, &manifest_file_ptr);
   EXPECT_TRUE(s.ok());
@@ -129,8 +144,8 @@ TYPED_TEST(ChromiumEnvMultiPlatformTests, DirectorySyncing) {
   manifest_file->Append(data);
   EXPECT_EQ(0, env.directory_syncs());
 
-  std::string sst_file_name =
-      FilePathToString(dir_path.Append(FILE_PATH_LITERAL("000003.sst")));
+  std::string sst_file_name = leveldb_env::FilePathToString(
+      dir_path.Append(FILE_PATH_LITERAL("000003.sst")));
   WritableFile* sst_file_ptr;
   s = env.NewWritableFile(sst_file_name, &sst_file_ptr);
   EXPECT_TRUE(s.ok());

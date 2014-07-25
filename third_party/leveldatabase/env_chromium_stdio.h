@@ -5,7 +5,10 @@
 #ifndef THIRD_PARTY_LEVELDATABASE_ENV_CHROMIUM_STDIO_H_
 #define THIRD_PARTY_LEVELDATABASE_ENV_CHROMIUM_STDIO_H_
 
-#include "env_chromium.h"
+#include <string>
+#include <vector>
+
+#include "third_party/leveldatabase/env_chromium.h"
 
 namespace leveldb_env {
 
@@ -70,4 +73,4 @@ class ChromiumEnvStdio : public ChromiumEnv {
 
 }  // namespace leveldb_env
 
-#endif
+#endif  // THIRD_PARTY_LEVELDATABASE_ENV_CHROMIUM_STDIO_H_

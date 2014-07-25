@@ -5,23 +5,25 @@
 #ifndef THIRD_PARTY_LEVELDATABASE_CHROMIUM_LOGGER_H_
 #define THIRD_PARTY_LEVELDATABASE_CHROMIUM_LOGGER_H_
 
-#include <algorithm>
 #include <stdio.h>
+
+#include <algorithm>
+
 #include "base/format_macros.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "leveldb/env.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
 
 namespace leveldb {
 
 class ChromiumLogger : public Logger {
  public:
-  ChromiumLogger(FILE* f) : file_(f) { }
+  explicit ChromiumLogger(FILE* f) : file_(f) {}
   virtual ~ChromiumLogger() {
     fclose(file_);
   }
   virtual void Logv(const char* format, va_list ap) {
-    const long long unsigned int thread_id =
+    const base::PlatformThreadId thread_id =
         ::base::PlatformThread::CurrentId();
 
     // We try twice: the first time with a fixed-size stack allocated buffer,
@@ -52,7 +54,7 @@ class ChromiumLogger : public Logger {
                     t.minute,
                     t.second,
                     t.millisecond,
-                    thread_id);
+                    static_cast<long long unsigned int>(thread_id));
 
       // Print the message
       if (p < limit) {
@@ -85,6 +87,7 @@ class ChromiumLogger : public Logger {
       break;
     }
   }
+
  private:
   FILE* file_;
 };

@@ -2,22 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
+#include "third_party/leveldatabase/env_chromium.h"
+
+#if defined(OS_WIN)
+#include <io.h>
+#endif
+
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
-#include "env_chromium_stdio.h"
+#include "third_party/leveldatabase/env_chromium_stdio.h"
 #include "third_party/re2/re2/re2.h"
 
 #if defined(OS_WIN)
-#include <io.h>
 #include "base/command_line.h"
 #include "base/win/win_util.h"
-#include "env_chromium_win.h"
+#include "third_party/leveldatabase/env_chromium_win.h"
 #endif
 
-using namespace leveldb;
+using leveldb::FileLock;
+using leveldb::Slice;
+using leveldb::Status;
 
 namespace leveldb_env {
 
@@ -52,7 +59,7 @@ class Retrier {
     if (success_) {
       provider_->GetRetryTimeHistogram(method_)->AddTime(last_ - start_);
       if (last_error_ != base::File::FILE_OK) {
-        DCHECK(last_error_ < 0);
+        DCHECK_LT(last_error_, 0);
         provider_->GetRecoveredFromErrorHistogram(method_)->Add(-last_error_);
       }
     }
@@ -182,7 +189,7 @@ Status MakeIOError(Slice filename,
                    const char* message,
                    MethodID method,
                    base::File::Error error) {
-  DCHECK(error < 0);
+  DCHECK_LT(error, 0);
   char buf[512];
   snprintf(buf,
            sizeof(buf),
@@ -344,8 +351,7 @@ bool ChromiumEnv::MakeBackup(const std::string& fname) {
   return base::CopyFile(original_table_name, backup_table_name);
 }
 
-bool ChromiumEnv::HasTableExtension(const base::FilePath& path)
-{
+bool ChromiumEnv::HasTableExtension(const base::FilePath& path) {
   return path.MatchesExtension(table_extension);
 }
 
@@ -673,13 +679,13 @@ void ChromiumEnv::RecordLockFileAncestors(int num_missing_ancestors) const {
 
 void ChromiumEnv::RecordOSError(MethodID method,
                                 base::File::Error error) const {
-  DCHECK(error < 0);
+  DCHECK_LT(error, 0);
   RecordErrorAt(method);
   GetOSErrorHistogram(method, -base::File::FILE_ERROR_MAX)->Add(-error);
 }
 
 void ChromiumEnv::RecordOSError(MethodID method, int error) const {
-  DCHECK(error > 0);
+  DCHECK_GT(error, 0);
   RecordErrorAt(method);
   GetOSErrorHistogram(method, ERANGE + 1)->Add(error);
 }
@@ -774,7 +780,7 @@ class Thread : public ::base::PlatformThread::Delegate {
   void* arg_;
 };
 
-void ChromiumEnv::Schedule(void (*function)(void*), void* arg) {
+void ChromiumEnv::Schedule(ScheduleFunc* function, void* arg) {
   mu_.Acquire();
 
   // Start background thread if necessary
@@ -818,7 +824,7 @@ void ChromiumEnv::BGThread() {
 }
 
 void ChromiumEnv::StartThread(void (*function)(void* arg), void* arg) {
-  new Thread(function, arg); // Will self-delete.
+  new Thread(function, arg);  // Will self-delete.
 }
 
 static std::string GetDirName(const std::string& filename) {

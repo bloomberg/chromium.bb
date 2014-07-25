@@ -2,16 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
+#include "third_party/leveldatabase/env_chromium_win.h"
+
 #include "base/debug/trace_event.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/win_util.h"
-#include "chromium_logger.h"
-#include "env_chromium_stdio.h"
-#include "env_chromium_win.h"
+#include "third_party/leveldatabase/chromium_logger.h"
+#include "third_party/leveldatabase/env_chromium_stdio.h"
 
-using namespace leveldb;
+using leveldb::ChromiumLogger;
+using leveldb::Logger;
+using leveldb::RandomAccessFile;
+using leveldb::SequentialFile;
+using leveldb::Slice;
+using leveldb::Status;
+using leveldb::WritableFile;
 
 namespace leveldb_env {
 

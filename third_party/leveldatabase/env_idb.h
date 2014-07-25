@@ -11,4 +11,4 @@ Env* IDBEnv();
 
 }
 
-#endif
+#endif  // THIRD_PARTY_LEVELDATABASE_ENV_IDB_H_

@@ -8,8 +8,11 @@
 #include <deque>
 #include <map>
 #include <set>
+#include <string>
+#include <vector>
 
 #include "base/files/file.h"
+#include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
 #include "leveldb/env.h"
 #include "port/port_chromium.h"
@@ -103,6 +106,8 @@ class ChromiumEnv : public leveldb::Env,
                     public RetrierProvider,
                     public WriteTracker {
  public:
+  typedef void(ScheduleFunc)(void*);
+
   static bool MakeBackup(const std::string& fname);
   static base::FilePath CreateFilePath(const std::string& file_path);
   static const char* FileErrorString(::base::File::Error error);
@@ -121,7 +126,7 @@ class ChromiumEnv : public leveldb::Env,
   virtual leveldb::Status LockFile(const std::string& fname,
                                    leveldb::FileLock** lock);
   virtual leveldb::Status UnlockFile(leveldb::FileLock* lock);
-  virtual void Schedule(void (*function)(void*), void* arg);
+  virtual void Schedule(ScheduleFunc*, void* arg);
   virtual void StartThread(void (*function)(void* arg), void* arg);
   virtual leveldb::Status GetTestDirectory(std::string* path);
   virtual uint64_t NowMicros();
@@ -206,4 +211,4 @@ class ChromiumEnv : public leveldb::Env,
 
 }  // namespace leveldb_env
 
-#endif
+#endif  // THIRD_PARTY_LEVELDATABASE_ENV_CHROMIUM_H_

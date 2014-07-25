@@ -2,27 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
+#include "third_party/leveldatabase/env_chromium_stdio.h"
+
+#if defined(OS_POSIX)
+#include <dirent.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <sys/resource.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#endif
+
+#if defined(OS_WIN)
+#include <io.h>
+#endif
 
 #include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromium_logger.h"
-#include "env_chromium_stdio.h"
+#include "third_party/leveldatabase/chromium_logger.h"
 
 #if defined(OS_WIN)
-#include <io.h>
 #include "base/win/win_util.h"
 #endif
 
-#if defined(OS_POSIX)
-#include <dirent.h>
-#include <fcntl.h>
-#include <sys/resource.h>
-#endif
-
-using namespace leveldb;
+using leveldb::ChromiumLogger;
+using leveldb::Logger;
+using leveldb::RandomAccessFile;
+using leveldb::SequentialFile;
+using leveldb::Slice;
+using leveldb::Status;
+using leveldb::WritableFile;
 
 namespace leveldb_env {
 
@@ -176,7 +187,7 @@ Status ChromiumWritableFile::SyncParent() {
     int saved_errno = errno;
     s = MakeIOError(
         parent_dir_, strerror(saved_errno), kSyncParent, saved_errno);
-  };
+  }
   close(parent_fd);
 #endif
   return s;
