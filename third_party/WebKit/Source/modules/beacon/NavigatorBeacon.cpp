@@ -11,6 +11,7 @@
 #include "core/fileapi/Blob.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/DOMFormData.h"
 #include "core/loader/BeaconLoader.h"
@@ -76,10 +77,15 @@ int NavigatorBeacon::maxAllowance() const
     return m_transmittedBytes;
 }
 
-void NavigatorBeacon::updateTransmittedBytes(int length)
+bool NavigatorBeacon::beaconResult(ExecutionContext* context, bool allowed, int sentBytes)
 {
-    ASSERT(length >= 0);
-    m_transmittedBytes += length;
+    if (allowed) {
+        ASSERT(sentBytes >= 0);
+        m_transmittedBytes += sentBytes;
+    } else {
+        UseCounter::count(context, UseCounter::SendBeaconQuotaExceeded);
+    }
+    return allowed;
 }
 
 bool NavigatorBeacon::sendBeacon(ExecutionContext* context, Navigator& navigator, const String& urlstring, const String& data, ExceptionState& exceptionState)
@@ -95,10 +101,7 @@ bool NavigatorBeacon::sendBeacon(ExecutionContext* context, const String& urlstr
 
     int bytes = 0;
     bool result = BeaconLoader::sendBeacon(m_navigator.frame(), maxAllowance(), url, data, bytes);
-    if (result)
-        updateTransmittedBytes(bytes);
-
-    return result;
+    return beaconResult(context, result, bytes);
 }
 
 bool NavigatorBeacon::sendBeacon(ExecutionContext* context, Navigator& navigator, const String& urlstring, PassRefPtr<ArrayBufferView> data, ExceptionState& exceptionState)
@@ -114,10 +117,7 @@ bool NavigatorBeacon::sendBeacon(ExecutionContext* context, const String& urlstr
 
     int bytes = 0;
     bool result = BeaconLoader::sendBeacon(m_navigator.frame(), maxAllowance(), url, data, bytes);
-    if (result)
-        updateTransmittedBytes(bytes);
-
-    return result;
+    return beaconResult(context, result, bytes);
 }
 
 bool NavigatorBeacon::sendBeacon(ExecutionContext* context, Navigator& navigator, const String& urlstring, PassRefPtrWillBeRawPtr<Blob> data, ExceptionState& exceptionState)
@@ -133,10 +133,7 @@ bool NavigatorBeacon::sendBeacon(ExecutionContext* context, const String& urlstr
 
     int bytes = 0;
     bool result = BeaconLoader::sendBeacon(m_navigator.frame(), maxAllowance(), url, data, bytes);
-    if (result)
-        updateTransmittedBytes(bytes);
-
-    return result;
+    return beaconResult(context, result, bytes);
 }
 
 bool NavigatorBeacon::sendBeacon(ExecutionContext* context, Navigator& navigator, const String& urlstring, PassRefPtrWillBeRawPtr<DOMFormData> data, ExceptionState& exceptionState)
@@ -152,10 +149,7 @@ bool NavigatorBeacon::sendBeacon(ExecutionContext* context, const String& urlstr
 
     int bytes = 0;
     bool result = BeaconLoader::sendBeacon(m_navigator.frame(), maxAllowance(), url, data, bytes);
-    if (result)
-        updateTransmittedBytes(bytes);
-
-    return result;
+    return beaconResult(context, result, bytes);
 }
 
 } // namespace blink

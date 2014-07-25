@@ -43,7 +43,7 @@ private:
 
     bool canSendBeacon(ExecutionContext*, const KURL&, ExceptionState&);
     int maxAllowance() const;
-    void updateTransmittedBytes(int);
+    bool beaconResult(ExecutionContext*, bool allowed, int sentBytes);
 
     int m_transmittedBytes;
     Navigator& m_navigator;
