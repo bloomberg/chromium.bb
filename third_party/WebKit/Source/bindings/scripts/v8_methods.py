@@ -98,6 +98,7 @@ def method_context(interface, method):
     if is_implemented_in_private_script:
         includes.add('bindings/core/v8/PrivateScriptRunner.h')
         includes.add('core/frame/LocalFrame.h')
+        includes.add('platform/ScriptForbiddenScope.h')
     is_call_with_script_arguments = has_extended_attribute_value(method, 'CallWith', 'ScriptArguments')
     if is_call_with_script_arguments:
         includes.update(['bindings/core/v8/ScriptCallStackFactory.h',

@@ -61,6 +61,7 @@
 #include "core/html/HTMLTableRowsCollection.h"
 #include "core/inspector/ScriptArguments.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"
@@ -10625,6 +10626,8 @@ bool V8TestObject::voidMethodImplementedInPrivateScriptMethodImplementedInPrivat
 {
     if (!frame)
         return false;
+    v8::HandleScope handleScope(toIsolate(frame));
+    ScriptForbiddenScope::AllowUserAgentScript script;
     v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
     if (context.IsEmpty())
         return false;
@@ -10651,6 +10654,8 @@ bool V8TestObject::shortMethodImplementedInPrivateScriptMethodImplementedInPriva
 {
     if (!frame)
         return false;
+    v8::HandleScope handleScope(toIsolate(frame));
+    ScriptForbiddenScope::AllowUserAgentScript script;
     v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
     if (context.IsEmpty())
         return false;
@@ -10683,6 +10688,8 @@ bool V8TestObject::shortMethodWithShortArgumentImplementedInPrivateScriptMethodI
 {
     if (!frame)
         return false;
+    v8::HandleScope handleScope(toIsolate(frame));
+    ScriptForbiddenScope::AllowUserAgentScript script;
     v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
     if (context.IsEmpty())
         return false;
@@ -10716,6 +10723,8 @@ bool V8TestObject::stringMethodWithStringArgumentImplementedInPrivateScriptMetho
 {
     if (!frame)
         return false;
+    v8::HandleScope handleScope(toIsolate(frame));
+    ScriptForbiddenScope::AllowUserAgentScript script;
     v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
     if (context.IsEmpty())
         return false;
@@ -10749,6 +10758,8 @@ bool V8TestObject::nodeMethodWithNodeArgumentImplementedInPrivateScriptMethodImp
 {
     if (!frame)
         return false;
+    v8::HandleScope handleScope(toIsolate(frame));
+    ScriptForbiddenScope::AllowUserAgentScript script;
     v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
     if (context.IsEmpty())
         return false;
@@ -10782,6 +10793,8 @@ bool V8TestObject::nodeMethodWithVariousArgumentsImplementedInPrivateScriptMetho
 {
     if (!frame)
         return false;
+    v8::HandleScope handleScope(toIsolate(frame));
+    ScriptForbiddenScope::AllowUserAgentScript script;
     v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
     if (context.IsEmpty())
         return false;
@@ -10819,6 +10832,8 @@ bool V8TestObject::addIntegerForPrivateScriptOnlyMethodImplementedInPrivateScrip
 {
     if (!frame)
         return false;
+    v8::HandleScope handleScope(toIsolate(frame));
+    ScriptForbiddenScope::AllowUserAgentScript script;
     v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
     if (context.IsEmpty())
         return false;
@@ -10853,6 +10868,8 @@ bool V8TestObject::readonlyShortAttributeAttributeGetterImplementedInPrivateScri
 {
     if (!frame)
         return false;
+    v8::HandleScope handleScope(toIsolate(frame));
+    ScriptForbiddenScope::AllowUserAgentScript script;
     v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
     if (context.IsEmpty())
         return false;
@@ -10884,6 +10901,8 @@ bool V8TestObject::shortAttributeAttributeGetterImplementedInPrivateScript(Local
 {
     if (!frame)
         return false;
+    v8::HandleScope handleScope(toIsolate(frame));
+    ScriptForbiddenScope::AllowUserAgentScript script;
     v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
     if (context.IsEmpty())
         return false;
@@ -10915,6 +10934,8 @@ bool V8TestObject::shortAttributeAttributeSetterImplementedInPrivateScript(Local
 {
     if (!frame)
         return false;
+    v8::HandleScope handleScope(toIsolate(frame));
+    ScriptForbiddenScope::AllowUserAgentScript script;
     v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
     if (context.IsEmpty())
         return false;
@@ -10943,6 +10964,8 @@ bool V8TestObject::stringAttributeAttributeGetterImplementedInPrivateScript(Loca
 {
     if (!frame)
         return false;
+    v8::HandleScope handleScope(toIsolate(frame));
+    ScriptForbiddenScope::AllowUserAgentScript script;
     v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
     if (context.IsEmpty())
         return false;
@@ -10974,6 +10997,8 @@ bool V8TestObject::stringAttributeAttributeSetterImplementedInPrivateScript(Loca
 {
     if (!frame)
         return false;
+    v8::HandleScope handleScope(toIsolate(frame));
+    ScriptForbiddenScope::AllowUserAgentScript script;
     v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
     if (context.IsEmpty())
         return false;
@@ -11002,6 +11027,8 @@ bool V8TestObject::nodeAttributeAttributeGetterImplementedInPrivateScript(LocalF
 {
     if (!frame)
         return false;
+    v8::HandleScope handleScope(toIsolate(frame));
+    ScriptForbiddenScope::AllowUserAgentScript script;
     v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
     if (context.IsEmpty())
         return false;
@@ -11033,6 +11060,8 @@ bool V8TestObject::nodeAttributeAttributeSetterImplementedInPrivateScript(LocalF
 {
     if (!frame)
         return false;
+    v8::HandleScope handleScope(toIsolate(frame));
+    ScriptForbiddenScope::AllowUserAgentScript script;
     v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
     if (context.IsEmpty())
         return false;
@@ -11061,6 +11090,8 @@ bool V8TestObject::stringAttributeForPrivateScriptOnlyAttributeGetterImplemented
 {
     if (!frame)
         return false;
+    v8::HandleScope handleScope(toIsolate(frame));
+    ScriptForbiddenScope::AllowUserAgentScript script;
     v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
     if (context.IsEmpty())
         return false;
@@ -11092,6 +11123,8 @@ bool V8TestObject::stringAttributeForPrivateScriptOnlyAttributeSetterImplemented
 {
     if (!frame)
         return false;
+    v8::HandleScope handleScope(toIsolate(frame));
+    ScriptForbiddenScope::AllowUserAgentScript script;
     v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
     if (context.IsEmpty())
         return false;

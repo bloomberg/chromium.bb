@@ -345,6 +345,8 @@ bool {{v8_class}}::{{attribute.name}}AttributeGetterImplementedInPrivateScript(L
 {
     if (!frame)
         return false;
+    v8::HandleScope handleScope(toIsolate(frame));
+    ScriptForbiddenScope::AllowUserAgentScript script;
     v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
     if (context.IsEmpty())
         return false;
@@ -379,6 +381,8 @@ bool {{v8_class}}::{{attribute.name}}AttributeSetterImplementedInPrivateScript(L
 {
     if (!frame)
         return false;
+    v8::HandleScope handleScope(toIsolate(frame));
+    ScriptForbiddenScope::AllowUserAgentScript script;
     v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
     if (context.IsEmpty())
         return false;

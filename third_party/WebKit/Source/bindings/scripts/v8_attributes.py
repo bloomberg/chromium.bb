@@ -76,6 +76,7 @@ def attribute_context(interface, attribute):
     if is_implemented_in_private_script:
         includes.add('bindings/core/v8/PrivateScriptRunner.h')
         includes.add('core/frame/LocalFrame.h')
+        includes.add('platform/ScriptForbiddenScope.h')
 
     if (base_idl_type == 'EventHandler' and
         interface.name in ['Window', 'WorkerGlobalScope'] and
