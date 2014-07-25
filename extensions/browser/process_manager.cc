@@ -263,12 +263,6 @@ ProcessManager::ProcessManager(BrowserContext* context,
                  content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                 content::Source<BrowserContext>(context));
-  if (context->IsOffTheRecord()) {
-    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                   content::Source<BrowserContext>(original_context));
-  }
 
   // Note: event_page_idle_time_ must be sufficiently larger (e.g. 2x) than
   // kKeepaliveThrottleIntervalInSeconds in ppapi/proxy/plugin_globals.
@@ -633,6 +627,14 @@ void ProcessManager::CancelSuspend(const Extension* extension) {
   }
 }
 
+void ProcessManager::CloseBackgroundHosts() {
+  for (ExtensionHostSet::iterator iter = background_hosts_.begin();
+       iter != background_hosts_.end();) {
+    ExtensionHostSet::iterator current = iter++;
+    delete *current;
+  }
+}
+
 content::BrowserContext* ProcessManager::GetBrowserContext() const {
   return site_instance_->GetBrowserContext();
 }
@@ -745,14 +747,6 @@ void ProcessManager::Observe(int type,
       break;
     }
 
-    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      // Close background hosts when the last browser is closed so that they
-      // have time to shutdown various objects on different threads. Our
-      // destructor is called too late in the shutdown sequence.
-      CloseBackgroundHosts();
-      break;
-    }
-
     default:
       NOTREACHED();
   }
@@ -852,14 +846,6 @@ void ProcessManager::CloseBackgroundHost(ExtensionHost* host) {
   delete host;
   // |host| should deregister itself from our structures.
   CHECK(background_hosts_.find(host) == background_hosts_.end());
-}
-
-void ProcessManager::CloseBackgroundHosts() {
-  for (ExtensionHostSet::iterator iter = background_hosts_.begin();
-       iter != background_hosts_.end(); ) {
-    ExtensionHostSet::iterator current = iter++;
-    delete *current;
-  }
 }
 
 void ProcessManager::UnregisterExtension(const std::string& extension_id) {

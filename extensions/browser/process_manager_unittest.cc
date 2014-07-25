@@ -169,23 +169,10 @@ TEST_F(ProcessManagerTest, ExtensionNotificationRegistration) {
                            chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                            incognito_context()));
 
-  // Some notifications are observed for both incognito and original.
-  EXPECT_TRUE(IsRegistered(manager2.get(),
-                           chrome::NOTIFICATION_PROFILE_DESTROYED,
-                           original_context()));
-  EXPECT_TRUE(IsRegistered(manager2.get(),
-                           chrome::NOTIFICATION_PROFILE_DESTROYED,
-                           incognito_context()));
-
   // Some are not observed at all.
   EXPECT_FALSE(IsRegistered(manager2.get(),
                             chrome::NOTIFICATION_EXTENSIONS_READY,
                             original_context()));
-
-  // This notification is observed for incognito contexts only.
-  EXPECT_TRUE(IsRegistered(manager2.get(),
-                           chrome::NOTIFICATION_PROFILE_DESTROYED,
-                           incognito_context()));
 }
 
 // Test that startup background hosts are created when the extension system

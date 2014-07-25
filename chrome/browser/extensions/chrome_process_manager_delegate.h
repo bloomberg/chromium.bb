@@ -39,6 +39,7 @@ class ChromeProcessManagerDelegate : public ProcessManagerDelegate,
   // Notification handlers.
   void OnBrowserWindowReady(Browser* browser);
   void OnProfileCreated(Profile* profile);
+  void OnProfileDestroyed(Profile* profile);
 
   content::NotificationRegistrar registrar_;
 

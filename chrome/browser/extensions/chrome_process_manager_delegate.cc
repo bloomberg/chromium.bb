@@ -30,8 +30,9 @@ ChromeProcessManagerDelegate::ChromeProcessManagerDelegate() {
   registrar_.Add(this,
                  chrome::NOTIFICATION_PROFILE_CREATED,
                  content::NotificationService::AllSources());
-  // TODO(jamescook): Move observation of NOTIFICATION_PROFILE_DESTROYED here.
-  // http://crbug.com/392658
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_PROFILE_DESTROYED,
+                 content::NotificationService::AllSources());
 }
 
 ChromeProcessManagerDelegate::~ChromeProcessManagerDelegate() {
@@ -85,7 +86,11 @@ void ChromeProcessManagerDelegate::Observe(
       OnProfileCreated(profile);
       break;
     }
-
+    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
+      Profile* profile = content::Source<Profile>(source).ptr();
+      OnProfileDestroyed(profile);
+      break;
+    }
     default:
       NOTREACHED();
   }
@@ -138,6 +143,27 @@ void ChromeProcessManagerDelegate::OnProfileCreated(Profile* profile) {
   // extension system startup). Now that initialization is complete the
   // ProcessManager can load deferred background pages.
   manager->MaybeCreateStartupBackgroundHosts();
+}
+
+void ChromeProcessManagerDelegate::OnProfileDestroyed(Profile* profile) {
+  // Close background hosts when the last profile is closed so that they
+  // have time to shutdown various objects on different threads. The
+  // ProfileManager destructor is called too late in the shutdown sequence.
+  // http://crbug.com/15708
+  ProcessManager* manager = ExtensionSystem::Get(profile)->process_manager();
+  if (manager)
+    manager->CloseBackgroundHosts();
+
+  // If this profile owns an incognito profile, but it is destroyed before the
+  // incognito profile is destroyed, then close the incognito background hosts
+  // as well. This happens in a few tests. http://crbug.com/138843
+  if (!profile->IsOffTheRecord() && profile->HasOffTheRecordProfile()) {
+    ProcessManager* incognito_manager =
+        ExtensionSystem::Get(profile->GetOffTheRecordProfile())
+            ->process_manager();
+    if (incognito_manager)
+      incognito_manager->CloseBackgroundHosts();
+  }
 }
 
 }  // namespace extensions

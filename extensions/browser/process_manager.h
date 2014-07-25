@@ -128,6 +128,9 @@ class ProcessManager : public content::NotificationObserver {
   // loaded.
   void MaybeCreateStartupBackgroundHosts();
 
+  // Called on shutdown to close our extension hosts.
+  void CloseBackgroundHosts();
+
   // Gets the BrowserContext associated with site_instance_ and all other
   // related SiteInstances.
   content::BrowserContext* GetBrowserContext() const;
@@ -164,9 +167,6 @@ class ProcessManager : public content::NotificationObserver {
   ProcessManager(content::BrowserContext* context,
                  content::BrowserContext* original_context,
                  ExtensionRegistry* registry);
-
-  // Called on browser shutdown to close our extension hosts.
-  void CloseBackgroundHosts();
 
   // content::NotificationObserver:
   virtual void Observe(int type,
