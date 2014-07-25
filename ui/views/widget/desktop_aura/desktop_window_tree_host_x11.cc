@@ -682,9 +682,22 @@ void DesktopWindowTreeHostX11::SetFullscreen(bool fullscreen) {
   if (is_fullscreen_ == fullscreen)
     return;
   is_fullscreen_ = fullscreen;
+
+  // Work around a bug where if we try to unfullscreen, metacity immediately
+  // fullscreens us again. This is a little flickery and not necessary if
+  // there's a gnome-panel, but it's not easy to detect whether there's a
+  // panel or not.
+  bool unmaximize_and_remaximize = !fullscreen && IsMaximized() &&
+                                   ui::GuessWindowManager() == ui::WM_METACITY;
+
+  if (unmaximize_and_remaximize)
+    Restore();
   SetWMSpecState(fullscreen,
                  atom_cache_.GetAtom("_NET_WM_STATE_FULLSCREEN"),
                  None);
+  if (unmaximize_and_remaximize)
+    Maximize();
+
   // Try to guess the size we will have after the switch to/from fullscreen:
   // - (may) avoid transient states
   // - works around Flash content which expects to have the size updated
