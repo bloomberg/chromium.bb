@@ -891,8 +891,6 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
     bool input_multiple_words,
     const base::string16& input_text,
     bool is_keyword) {
-  AutocompleteClassifier* classifier =
-      AutocompleteClassifierFactory::GetForProfile(profile_);
   SuggestResults scored_results;
   // True if the user has asked this exact query previously.
   bool found_what_you_typed_match = false;
@@ -911,28 +909,6 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
     bool prevent_inline_autocomplete = base_prevent_inline_autocomplete ||
         (!input_multiple_words && (i->visits < 2) &&
          HasMultipleWords(trimmed_suggestion));
-
-    // Don't autocomplete search terms that would normally be treated as URLs
-    // when typed. For example, if the user searched for "google.com" and types
-    // "goog", don't autocomplete to the search term "google.com". Otherwise,
-    // the input will look like a URL but act like a search, which is confusing.
-    // NOTE: We don't check this in the following cases:
-    //  * When inline autocomplete is disabled, we won't be inline
-    //    autocompleting this term, so we don't need to worry about confusion as
-    //    much.  This also prevents calling Classify() again from inside the
-    //    classifier (which will corrupt state and likely crash), since the
-    //    classifier always disables inline autocomplete.
-    //  * When the user has typed the whole term, the "what you typed" history
-    //    match will outrank us for URL-like inputs anyway, so we need not do
-    //    anything special.
-    if (!prevent_inline_autocomplete && classifier &&
-        (trimmed_suggestion != trimmed_input)) {
-      AutocompleteMatch match;
-      classifier->Classify(trimmed_suggestion, false, false,
-                           input_.current_page_classification(), &match, NULL);
-      prevent_inline_autocomplete =
-          !AutocompleteMatch::IsSearchType(match.type);
-    }
 
     int relevance = CalculateRelevanceForHistory(
         i->time, is_keyword, !prevent_inline_autocomplete,
@@ -962,10 +938,55 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
                        (found_what_you_typed_match ? 1 : 0),
                    scored_results.end(),
                    CompareScoredResults());
+
+  // Don't autocomplete to search terms that would normally be treated as URLs
+  // when typed. For example, if the user searched for "google.com" and types
+  // "goog", don't autocomplete to the search term "google.com". Otherwise,
+  // the input will look like a URL but act like a search, which is confusing.
+  // The 1200 relevance score threshold in the test below is the lowest
+  // possible score in CalculateRelevanceForHistory()'s aggressive-scoring
+  // curve.  This is an appropriate threshold to use to decide if we're overly
+  // aggressively inlining because, if we decide the answer is yes, the
+  // way we resolve it it to not use the aggressive-scoring curve.
+  // NOTE: We don't check for autocompleting to URLs in the following cases:
+  //  * When inline autocomplete is disabled, we won't be inline autocompleting
+  //    this term, so we don't need to worry about confusion as much.  This
+  //    also prevents calling Classify() again from inside the classifier
+  //    (which will corrupt state and likely crash), since the classifier
+  //    always disables inline autocomplete.
+  //  * When the user has typed the whole string before as a query, then it's
+  //    likely the user has no expectation that term should be interpreted as
+  //    as a URL, so we need not do anything special to preserve user
+  //    expectation.
+  AutocompleteClassifier* classifier =
+      AutocompleteClassifierFactory::GetForProfile(profile_);
   int last_relevance = 0;
+  if (!base_prevent_inline_autocomplete && !found_what_you_typed_match &&
+      classifier && (scored_results.front().relevance() >= 1200)) {
+    AutocompleteMatch match;
+    classifier->Classify(scored_results.front().suggestion(), false, false,
+                         input_.current_page_classification(), &match, NULL);
+    // Demote this match that would normally be interpreted as a URL to have
+    // the highest score a previously-issued search query could have when
+    // scoring with the non-aggressive method.  A consequence of demoting
+    // by revising |last_relevance| is that this match and all following
+    // matches get demoted; the relative order of matches is preserved.
+    // One could imagine demoting only those matches that might cause
+    // confusion (which, by the way, might change the relative order of
+    // matches.  We have decided to go with the simple demote-all approach
+    // because selective demotion requires multiple Classify() calls and
+    // such calls can be expensive (as expensive as running the whole
+    // autocomplete system).
+    if (!AutocompleteMatch::IsSearchType(match.type)) {
+      last_relevance = CalculateRelevanceForHistory(
+          base::Time::Now(), is_keyword, false,
+          prevent_search_history_inlining);
+    }
+  }
+
   for (SuggestResults::iterator i(scored_results.begin());
        i != scored_results.end(); ++i) {
-    if ((i != scored_results.begin()) && (i->relevance() >= last_relevance))
+    if ((last_relevance != 0) && (i->relevance() >= last_relevance))
       i->set_relevance(last_relevance - 1);
     last_relevance = i->relevance();
   }
