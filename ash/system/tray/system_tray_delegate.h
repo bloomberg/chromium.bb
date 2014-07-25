@@ -53,37 +53,6 @@ struct ASH_EXPORT BluetoothDeviceInfo {
 
 typedef std::vector<BluetoothDeviceInfo> BluetoothDeviceList;
 
-// Structure that packs progress information of each operation.
-struct ASH_EXPORT DriveOperationStatus {
-  enum OperationType {
-    OPERATION_UPLOAD,
-    OPERATION_DOWNLOAD
-  };
-
-  enum OperationState {
-    OPERATION_NOT_STARTED,
-    OPERATION_IN_PROGRESS,
-    OPERATION_COMPLETED,
-    OPERATION_FAILED,
-  };
-
-  DriveOperationStatus();
-  ~DriveOperationStatus();
-
-  // Unique ID for the operation.
-  int32 id;
-
-  // File path.
-  base::FilePath file_path;
-  // Current operation completion progress [0.0 - 1.0].
-  double progress;
-  OperationType type;
-  OperationState state;
-};
-
-typedef std::vector<DriveOperationStatus> DriveOperationStatusList;
-
-
 struct ASH_EXPORT IMEPropertyInfo {
   IMEPropertyInfo();
   ~IMEPropertyInfo();
@@ -185,9 +154,6 @@ class ASH_EXPORT SystemTrayDelegate {
   // should appear.
   virtual bool ShouldShowDisplayNotification() = 0;
 
-  // Shows settings related to Google Drive.
-  virtual void ShowDriveSettings() = 0;
-
   // Shows settings related to input methods.
   virtual void ShowIMESettings() = 0;
 
@@ -263,13 +229,6 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Activates an IME property.
   virtual void ActivateIMEProperty(const std::string& key) = 0;
-
-  // Cancels ongoing drive operation.
-  virtual void CancelDriveOperation(int32 operation_id) = 0;
-
-  // Returns information about the ongoing drive operations.
-  virtual void GetDriveOperationStatusList(
-      DriveOperationStatusList* list) = 0;
 
   // Shows UI to configure or activate the network specified by |network_id|,
   // which may include showing Payment or Portal UI when appropriate.

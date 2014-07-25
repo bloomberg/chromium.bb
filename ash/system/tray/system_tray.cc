@@ -13,7 +13,6 @@
 #include "ash/system/audio/tray_audio.h"
 #include "ash/system/bluetooth/tray_bluetooth.h"
 #include "ash/system/date/tray_date.h"
-#include "ash/system/drive/tray_drive.h"
 #include "ash/system/ime/tray_ime.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -183,7 +182,6 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(new TrayVPN(this));
   AddTrayItem(new TraySms(this));
   AddTrayItem(new TrayBluetooth(this));
-  AddTrayItem(new TrayDrive(this));
   AddTrayItem(new TrayDisplay(this));
   AddTrayItem(new ScreenCaptureTrayItem(this));
   AddTrayItem(new ScreenShareTrayItem(this));
@@ -205,7 +203,6 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(new TrayIME(this));
   AddTrayItem(tray_accessibility_);
   AddTrayItem(new TrayBluetooth(this));
-  AddTrayItem(new TrayDrive(this));
   AddTrayItem(new TrayUpdate(this));
   AddTrayItem(tray_date_);
 #endif

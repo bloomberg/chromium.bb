@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/system/chromeos/label_tray_view.h"
 #include "ash/system/system_notifier.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_notification_view.h"
 #include "ash/system/user/login_status.h"

@@ -25,16 +25,6 @@ BluetoothDeviceInfo::BluetoothDeviceInfo()
 BluetoothDeviceInfo::~BluetoothDeviceInfo() {
 }
 
-DriveOperationStatus::DriveOperationStatus()
-    : id(-1),
-      progress(0.0),
-      type(OPERATION_DOWNLOAD),
-      state(OPERATION_NOT_STARTED) {
-}
-
-DriveOperationStatus::~DriveOperationStatus() {
-}
-
 IMEInfo::IMEInfo()
     : selected(false),
       third_party(false) {

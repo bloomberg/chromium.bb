@@ -40,7 +40,6 @@ class ASH_EXPORT DefaultSystemTrayDelegate : public SystemTrayDelegate {
   virtual void ShowDisplaySettings() OVERRIDE;
   virtual void ShowChromeSlow() OVERRIDE;
   virtual bool ShouldShowDisplayNotification() OVERRIDE;
-  virtual void ShowDriveSettings() OVERRIDE;
   virtual void ShowIMESettings() OVERRIDE;
   virtual void ShowHelp() OVERRIDE;
   virtual void ShowAccessibilityHelp() OVERRIDE;
@@ -65,9 +64,6 @@ class ASH_EXPORT DefaultSystemTrayDelegate : public SystemTrayDelegate {
   virtual void GetCurrentIMEProperties(IMEPropertyInfoList* list) OVERRIDE;
   virtual void SwitchIME(const std::string& ime_id) OVERRIDE;
   virtual void ActivateIMEProperty(const std::string& key) OVERRIDE;
-  virtual void CancelDriveOperation(int32 operation_id) OVERRIDE;
-  virtual void GetDriveOperationStatusList(
-      ash::DriveOperationStatusList*) OVERRIDE;
   virtual void ShowNetworkConfigure(const std::string& network_id,
                                     gfx::NativeWindow parent_window) OVERRIDE;
   virtual bool EnrollNetwork(const std::string& network_id,

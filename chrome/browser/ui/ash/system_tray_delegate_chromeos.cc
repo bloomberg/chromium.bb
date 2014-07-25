@@ -22,7 +22,6 @@
 #include "ash/system/bluetooth/bluetooth_observer.h"
 #include "ash/system/chromeos/session/logout_button_observer.h"
 #include "ash/system/date/clock_observer.h"
-#include "ash/system/drive/drive_observer.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -48,8 +47,6 @@
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_pairing_dialog.h"
 #include "chrome/browser/chromeos/charger_replace/charger_replacement_dialog.h"
-#include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/chromeos/events/system_key_event_listener.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
@@ -70,7 +67,6 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/chromeos/ui/choose_mobile_network_dialog.h"
-#include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
@@ -116,9 +112,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 
-using drive::DriveIntegrationService;
-using drive::DriveIntegrationServiceFactory;
-
 namespace chromeos {
 
 namespace {
@@ -131,9 +124,6 @@ const int kSessionLengthLimitMaxMs = 24 * 60 * 60 * 1000;  // 24 hours.
 
 const char kDisplaySettingsSubPageName[] = "display";
 const char kDisplayOverscanSettingsSubPageName[] = "displayOverscan";
-
-// The URL for the Google Drive settings page.
-const char kDriveSettingsPageURL[] = "https://drive.google.com";
 
 void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
                     const input_method::InputMethodUtil& util,
@@ -154,58 +144,6 @@ gfx::NativeWindow GetNativeWindowByStatus(ash::user::LoginStatus login_status,
           : ash::kShellWindowId_SystemModalContainer;
   return ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
                                   container_id);
-}
-
-// Converts drive::JobInfo to ash::DriveOperationStatus.
-// If the job is not of type that ash tray is interested, returns false.
-bool ConvertToDriveOperationStatus(const drive::JobInfo& info,
-                                   ash::DriveOperationStatus* status) {
-  if (info.job_type == drive::TYPE_DOWNLOAD_FILE) {
-    status->type = ash::DriveOperationStatus::OPERATION_DOWNLOAD;
-  } else if (info.job_type == drive::TYPE_UPLOAD_NEW_FILE ||
-             info.job_type == drive::TYPE_UPLOAD_EXISTING_FILE) {
-    status->type = ash::DriveOperationStatus::OPERATION_UPLOAD;
-  } else {
-    return false;
-  }
-
-  if (info.state == drive::STATE_NONE)
-    status->state = ash::DriveOperationStatus::OPERATION_NOT_STARTED;
-  else
-    status->state = ash::DriveOperationStatus::OPERATION_IN_PROGRESS;
-
-  status->id = info.job_id;
-  status->file_path = info.file_path;
-  status->progress = info.num_total_bytes == 0 ? 0.0 :
-      static_cast<double>(info.num_completed_bytes) /
-          static_cast<double>(info.num_total_bytes);
-  return true;
-}
-
-// Converts drive::JobInfo that has finished in |error| state
-// to ash::DriveOperationStatus.
-// If the job is not of type that ash tray is interested, returns false.
-bool ConvertToFinishedDriveOperationStatus(const drive::JobInfo& info,
-                                           drive::FileError error,
-                                           ash::DriveOperationStatus* status) {
-  if (!ConvertToDriveOperationStatus(info, status))
-    return false;
-  status->state = (error == drive::FILE_ERROR_OK)
-                      ? ash::DriveOperationStatus::OPERATION_COMPLETED
-                      : ash::DriveOperationStatus::OPERATION_FAILED;
-  return true;
-}
-
-// Converts a list of drive::JobInfo to a list of ash::DriveOperationStatusList.
-ash::DriveOperationStatusList ConvertToDriveStatusList(
-    const std::vector<drive::JobInfo>& list) {
-  ash::DriveOperationStatusList results;
-  for (size_t i = 0; i < list.size(); ++i) {
-    ash::DriveOperationStatus status;
-    if (ConvertToDriveOperationStatus(list[i], &status))
-      results.push_back(status);
-  }
-  return results;
 }
 
 void BluetoothPowerFailure() {
@@ -365,9 +303,6 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
 
   BrowserList::RemoveObserver(this);
   StopObservingAppWindowRegistry();
-
-  // Stop observing Drive operations.
-  UnobserveDriveUpdates();
 
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
@@ -529,17 +464,6 @@ bool SystemTrayDelegateChromeOS::ShouldShowDisplayNotification() {
       chrome::GetSettingsUrl(kDisplayOverscanSettingsSubPageName);
   return (visible_url != display_settings_url &&
           visible_url != display_overscan_url);
-}
-
-void SystemTrayDelegateChromeOS::ShowDriveSettings() {
-  // TODO(tengs): Open the drive-specific settings page once we put it in.
-  // For now just show Google Drive main page.
-  chrome::ScopedTabbedBrowserDisplayer displayer(
-      ProfileManager::GetActiveUserProfile(), chrome::HOST_DESKTOP_TYPE_ASH);
-  chrome::ShowSingletonTabOverwritingNTP(
-      displayer.browser(),
-      chrome::GetSingletonTabNavigateParams(displayer.browser(),
-                                            GURL(kDriveSettingsPageURL)));
 }
 
 void SystemTrayDelegateChromeOS::ShowIMESettings() {
@@ -789,24 +713,6 @@ void SystemTrayDelegateChromeOS::ActivateIMEProperty(const std::string& key) {
   input_method::InputMethodManager::Get()->ActivateInputMethodMenuItem(key);
 }
 
-void SystemTrayDelegateChromeOS::CancelDriveOperation(int32 operation_id) {
-  DriveIntegrationService* integration_service = FindDriveIntegrationService();
-  if (!integration_service)
-    return;
-
-  integration_service->job_list()->CancelJob(operation_id);
-}
-
-void SystemTrayDelegateChromeOS::GetDriveOperationStatusList(
-    ash::DriveOperationStatusList* list) {
-  DriveIntegrationService* integration_service = FindDriveIntegrationService();
-  if (!integration_service)
-    return;
-
-  *list = ConvertToDriveStatusList(
-      integration_service->job_list()->GetJobInfoList());
-}
-
 void SystemTrayDelegateChromeOS::ShowNetworkConfigure(
     const std::string& network_id,
     gfx::NativeWindow parent_window) {
@@ -929,16 +835,12 @@ ash::SystemTrayNotifier* SystemTrayDelegateChromeOS::GetSystemTrayNotifier() {
 }
 
 void SystemTrayDelegateChromeOS::SetProfile(Profile* profile) {
-  // Stop observing the Drive integration status and the AppWindowRegistry of
-  // the current |user_profile_|.
-  UnobserveDriveUpdates();
+  // Stop observing the AppWindowRegistry of the current |user_profile_|.
   StopObservingAppWindowRegistry();
 
   user_profile_ = profile;
 
-  // Start observing the Drive integration status and the AppWindowRegistry of
-  // the newly set |user_profile_|.
-  ObserveDriveUpdates();
+  // Start observing the AppWindowRegistry of the newly set |user_profile_|.
   apps::AppWindowRegistry::Get(user_profile_)->AddObserver(this);
 
   PrefService* prefs = profile->GetPrefs();
@@ -994,18 +896,6 @@ bool SystemTrayDelegateChromeOS::UnsetProfile(Profile* profile) {
   user_pref_registrar_.reset();
   user_profile_ = NULL;
   return true;
-}
-
-void SystemTrayDelegateChromeOS::ObserveDriveUpdates() {
-  DriveIntegrationService* integration_service = FindDriveIntegrationService();
-  if (integration_service)
-    integration_service->job_list()->AddObserver(this);
-}
-
-void SystemTrayDelegateChromeOS::UnobserveDriveUpdates() {
-  DriveIntegrationService* integration_service = FindDriveIntegrationService();
-  if (integration_service)
-    integration_service->job_list()->RemoveObserver(this);
 }
 
 bool SystemTrayDelegateChromeOS::GetShouldUse24HourClockForTesting() const {
@@ -1280,31 +1170,6 @@ void SystemTrayDelegateChromeOS::OnActiveOutputNodeChanged() {
 
 void SystemTrayDelegateChromeOS::OnActiveInputNodeChanged() {
   GetSystemTrayNotifier()->NotifyAudioActiveInputNodeChanged();
-}
-
-// drive::JobListObserver overrides.
-void SystemTrayDelegateChromeOS::OnJobAdded(const drive::JobInfo& job_info) {
-  OnJobUpdated(job_info);
-}
-
-void SystemTrayDelegateChromeOS::OnJobDone(const drive::JobInfo& job_info,
-                                           drive::FileError error) {
-  ash::DriveOperationStatus status;
-  if (ConvertToFinishedDriveOperationStatus(job_info, error, &status))
-    GetSystemTrayNotifier()->NotifyDriveJobUpdated(status);
-}
-
-void SystemTrayDelegateChromeOS::OnJobUpdated(const drive::JobInfo& job_info) {
-  ash::DriveOperationStatus status;
-  if (ConvertToDriveOperationStatus(job_info, &status))
-    GetSystemTrayNotifier()->NotifyDriveJobUpdated(status);
-}
-
-DriveIntegrationService*
-SystemTrayDelegateChromeOS::FindDriveIntegrationService() {
-  return user_profile_
-             ? DriveIntegrationServiceFactory::FindForProfile(user_profile_)
-             : NULL;
 }
 
 // Overridden from BluetoothAdapter::Observer.

@@ -13,7 +13,6 @@
 #include "ash/system/bluetooth/bluetooth_observer.h"
 #include "ash/system/chromeos/tray_tracing.h"
 #include "ash/system/date/clock_observer.h"
-#include "ash/system/drive/drive_observer.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/locale/locale_observer.h"
 #include "ash/system/tray_accessibility.h"
@@ -56,9 +55,6 @@ class ASH_EXPORT SystemTrayNotifier {
 
   void AddClockObserver(ClockObserver* observer);
   void RemoveClockObserver(ClockObserver* observer);
-
-  void AddDriveObserver(DriveObserver* observer);
-  void RemoveDriveObserver(DriveObserver* observer);
 
   void AddIMEObserver(IMEObserver* observer);
   void RemoveIMEObserver(IMEObserver* observer);
@@ -120,7 +116,6 @@ class ASH_EXPORT SystemTrayNotifier {
   void NotifyDateFormatChanged();
   void NotifySystemClockTimeUpdated();
   void NotifySystemClockCanSetTimeChanged(bool can_set_time);
-  void NotifyDriveJobUpdated(const DriveOperationStatus& status);
   void NotifyRefreshIME();
   void NotifyLocaleChanged(LocaleObserver::Delegate* delegate,
                            const std::string& cur_locale,
@@ -156,7 +151,6 @@ class ASH_EXPORT SystemTrayNotifier {
   ObserverList<AudioObserver> audio_observers_;
   ObserverList<BluetoothObserver> bluetooth_observers_;
   ObserverList<ClockObserver> clock_observers_;
-  ObserverList<DriveObserver> drive_observers_;
   ObserverList<IMEObserver> ime_observers_;
   ObserverList<LocaleObserver> locale_observers_;
   ObserverList<TracingObserver> tracing_observers_;

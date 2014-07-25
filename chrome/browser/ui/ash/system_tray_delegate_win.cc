@@ -121,9 +121,6 @@ class SystemTrayDelegateWin : public ash::SystemTrayDelegate,
     return false;
   }
 
-  virtual void ShowDriveSettings() OVERRIDE {
-  }
-
   virtual void ShowIMESettings() OVERRIDE {
   }
 
@@ -208,13 +205,6 @@ class SystemTrayDelegateWin : public ash::SystemTrayDelegate,
   }
 
   virtual void ActivateIMEProperty(const std::string& key) OVERRIDE {
-  }
-
-  virtual void CancelDriveOperation(int32 operation_id) OVERRIDE {
-  }
-
-  virtual void GetDriveOperationStatusList(
-      ash::DriveOperationStatusList* list) OVERRIDE {
   }
 
   virtual void ShowNetworkConfigure(const std::string& network_id,

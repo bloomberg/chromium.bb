@@ -53,14 +53,6 @@ void SystemTrayNotifier::RemoveClockObserver(ClockObserver* observer) {
   clock_observers_.RemoveObserver(observer);
 }
 
-void SystemTrayNotifier::AddDriveObserver(DriveObserver* observer) {
-  drive_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveDriveObserver(DriveObserver* observer) {
-  drive_observers_.RemoveObserver(observer);
-}
-
 void SystemTrayNotifier::AddIMEObserver(IMEObserver* observer) {
   ime_observers_.AddObserver(observer);
 }
@@ -274,13 +266,6 @@ void SystemTrayNotifier::NotifySystemClockCanSetTimeChanged(bool can_set_time) {
   FOR_EACH_OBSERVER(ClockObserver,
                     clock_observers_,
                     OnSystemClockCanSetTimeChanged(can_set_time));
-}
-
-void SystemTrayNotifier::NotifyDriveJobUpdated(
-    const DriveOperationStatus& status) {
-  FOR_EACH_OBSERVER(DriveObserver,
-                    drive_observers_,
-                    OnDriveJobUpdated(status));
 }
 
 void SystemTrayNotifier::NotifyRefreshIME() {

@@ -124,9 +124,6 @@ bool DefaultSystemTrayDelegate::ShouldShowDisplayNotification() {
   return false;
 }
 
-void DefaultSystemTrayDelegate::ShowDriveSettings() {
-}
-
 void DefaultSystemTrayDelegate::ShowIMESettings() {
 }
 
@@ -203,13 +200,6 @@ void DefaultSystemTrayDelegate::SwitchIME(const std::string& ime_id) {
 }
 
 void DefaultSystemTrayDelegate::ActivateIMEProperty(const std::string& key) {
-}
-
-void DefaultSystemTrayDelegate::CancelDriveOperation(int32 operation_id) {
-}
-
-void DefaultSystemTrayDelegate::GetDriveOperationStatusList(
-    ash::DriveOperationStatusList*) {
 }
 
 void DefaultSystemTrayDelegate::ShowNetworkConfigure(
