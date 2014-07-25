@@ -1125,9 +1125,18 @@ void PictureLayerImpl::RecalculateRasterScales() {
 
   // Since we're not re-rasterizing during animation, rasterize at the maximum
   // scale that will occur during the animation, if the maximum scale is
-  // known.
+  // known. However, to avoid excessive memory use, don't rasterize at a scale
+  // at which this layer would become larger than the viewport.
   if (draw_properties().screen_space_transform_is_animating) {
+    bool can_raster_at_maximum_scale = false;
     if (draw_properties().maximum_animation_contents_scale > 0.f) {
+      gfx::Size bounds_at_maximum_scale = gfx::ToCeiledSize(gfx::ScaleSize(
+          bounds(), draw_properties().maximum_animation_contents_scale));
+      if (bounds_at_maximum_scale.GetArea() <=
+          layer_tree_impl()->device_viewport_size().GetArea())
+        can_raster_at_maximum_scale = true;
+    }
+    if (can_raster_at_maximum_scale) {
       raster_contents_scale_ =
           std::max(raster_contents_scale_,
                    draw_properties().maximum_animation_contents_scale);

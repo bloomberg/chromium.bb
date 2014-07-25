@@ -1863,8 +1863,10 @@ TEST_F(DeferredInitPictureLayerImplTest, PreventUpdateTilesDuringLostContext) {
 }
 
 TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForCpuRasterization) {
-  gfx::Size tile_size(host_impl_.settings().default_tile_size);
-  SetupDefaultTrees(tile_size);
+  gfx::Size layer_bounds(100, 100);
+  gfx::Size viewport_size(1000, 1000);
+  SetupDefaultTrees(layer_bounds);
+  host_impl_.SetViewportSize(viewport_size);
 
   float contents_scale = 1.f;
   float device_scale = 1.3f;
@@ -1948,6 +1950,58 @@ TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForCpuRasterization) {
                                maximum_animation_scale,
                                animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 4.f);
+
+  // When animating with a maxmium animation scale factor that is so large
+  // that the layer grows larger than the viewport at this scale, a new
+  // high-res tiling should get created at the animation's initial scale, not
+  // at its maximum scale.
+  animating_transform = true;
+  contents_scale = 2.f;
+  maximum_animation_scale = 11.f;
+
+  SetContentsScaleOnBothLayers(contents_scale,
+                               device_scale,
+                               page_scale,
+                               maximum_animation_scale,
+                               animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 2.f);
+
+  // Once we stop animating, a new high-res tiling should be created.
+  animating_transform = false;
+  contents_scale = 11.f;
+
+  SetContentsScaleOnBothLayers(contents_scale,
+                               device_scale,
+                               page_scale,
+                               maximum_animation_scale,
+                               animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 11.f);
+
+  // When animating with a maxmium animation scale factor that is so large
+  // that the layer grows larger than the viewport at this scale, and where
+  // the intial source scale is < 1, a new high-res tiling should get created
+  // at source scale 1.
+  animating_transform = true;
+  contents_scale = 0.1f;
+  maximum_animation_scale = 11.f;
+
+  SetContentsScaleOnBothLayers(contents_scale,
+                               device_scale,
+                               page_scale,
+                               maximum_animation_scale,
+                               animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), device_scale * page_scale);
+
+  // Once we stop animating, a new high-res tiling should be created.
+  animating_transform = false;
+  contents_scale = 11.f;
+
+  SetContentsScaleOnBothLayers(contents_scale,
+                               device_scale,
+                               page_scale,
+                               maximum_animation_scale,
+                               animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 11.f);
 }
 
 TEST_F(PictureLayerImplTest, LayerRasterTileIterator) {
