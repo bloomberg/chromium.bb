@@ -26,6 +26,7 @@ component("boringssl") {
   direct_dependent_configs = [ ":openssl_config" ]
 
   cflags = []
+  defines = []
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
