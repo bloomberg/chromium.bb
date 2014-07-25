@@ -300,7 +300,13 @@ void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
     SkColorType color_type,
     gfx::Rect src_subrect,
     const base::Callback<void(bool, const SkBitmap&)>& result_callback) {
+  if (!host_ || host_->is_hidden()) {
+    result_callback.Run(false, SkBitmap());
+    return;
+  }
   if (!IsSurfaceAvailableForCopy()) {
+    // TODO(Sikugu): allow a read-back request to wait for a first frame if it
+    // was invoked while no frame was received yet
     result_callback.Run(false, SkBitmap());
     return;
   }
@@ -713,7 +719,8 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
     const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     const SkColorType color_type) {
-  if (!IsReadbackConfigSupported(color_type)) {
+  if ((!host_ || host_->is_hidden()) ||
+      !IsReadbackConfigSupported(color_type)) {
     callback.Run(false, SkBitmap());
     return;
   }
