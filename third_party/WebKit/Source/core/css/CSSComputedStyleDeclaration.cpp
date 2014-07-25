@@ -129,6 +129,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyFontFamily,
     CSSPropertyFontKerning,
     CSSPropertyFontSize,
+    CSSPropertyFontStretch,
     CSSPropertyFontStyle,
     CSSPropertyFontVariant,
     CSSPropertyFontVariantLigatures,
@@ -1407,6 +1408,32 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontSize(RenderStyle& s
     return zoomAdjustedPixelValue(style.fontDescription().computedPixelSize(), style);
 }
 
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontStretch(RenderStyle& style)
+{
+    switch (style.fontDescription().stretch()) {
+    case FontStretchUltraCondensed:
+        return cssValuePool().createIdentifierValue(CSSValueUltraCondensed);
+    case FontStretchExtraCondensed:
+        return cssValuePool().createIdentifierValue(CSSValueExtraCondensed);
+    case FontStretchCondensed:
+        return cssValuePool().createIdentifierValue(CSSValueCondensed);
+    case FontStretchSemiCondensed:
+        return cssValuePool().createIdentifierValue(CSSValueSemiCondensed);
+    case FontStretchNormal:
+        return cssValuePool().createIdentifierValue(CSSValueNormal);
+    case FontStretchSemiExpanded:
+        return cssValuePool().createIdentifierValue(CSSValueSemiExpanded);
+    case FontStretchExpanded:
+        return cssValuePool().createIdentifierValue(CSSValueExpanded);
+    case FontStretchExtraExpanded:
+        return cssValuePool().createIdentifierValue(CSSValueExtraExpanded);
+    case FontStretchUltraExpanded:
+        return cssValuePool().createIdentifierValue(CSSValueUltraExpanded);
+    }
+    ASSERT_NOT_REACHED();
+    return cssValuePool().createIdentifierValue(CSSValueNormal);
+}
+
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontStyle(RenderStyle& style)
 {
     if (style.fontDescription().style() == FontStyleItalic)
@@ -1925,6 +1952,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             computedFont->style = valueForFontStyle(*style);
             computedFont->variant = valueForFontVariant(*style);
             computedFont->weight = valueForFontWeight(*style);
+            computedFont->stretch = valueForFontStretch(*style);
             computedFont->size = valueForFontSize(*style);
             computedFont->lineHeight = valueForLineHeight(*style);
             computedFont->family = valueForFontFamily(*style);
@@ -1940,6 +1968,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         }
         case CSSPropertyFontSize:
             return valueForFontSize(*style);
+        case CSSPropertyFontStretch:
+            return valueForFontStretch(*style);
         case CSSPropertyFontStyle:
             return valueForFontStyle(*style);
         case CSSPropertyFontVariant:
@@ -2837,7 +2867,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             break;
 
         /* Unimplemented @font-face properties */
-        case CSSPropertyFontStretch:
         case CSSPropertySrc:
         case CSSPropertyUnicodeRange:
             break;

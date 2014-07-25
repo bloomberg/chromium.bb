@@ -130,6 +130,7 @@ String StylePropertySerializer::asText() const
         case CSSPropertyFontFamily:
         case CSSPropertyLineHeight:
         case CSSPropertyFontSize:
+        case CSSPropertyFontStretch:
         case CSSPropertyFontStyle:
         case CSSPropertyFontVariant:
         case CSSPropertyFontWeight:
@@ -365,6 +366,7 @@ void StylePropertySerializer::appendFontLonghandValueIfExplicit(CSSPropertyID pr
     case CSSPropertyFontStyle:
         break; // No prefix.
     case CSSPropertyFontFamily:
+    case CSSPropertyFontStretch:
     case CSSPropertyFontVariant:
     case CSSPropertyFontWeight:
         prefix = ' ';
@@ -401,6 +403,7 @@ String StylePropertySerializer::fontValue() const
     appendFontLonghandValueIfExplicit(CSSPropertyFontStyle, result, commonValue);
     appendFontLonghandValueIfExplicit(CSSPropertyFontVariant, result, commonValue);
     appendFontLonghandValueIfExplicit(CSSPropertyFontWeight, result, commonValue);
+    appendFontLonghandValueIfExplicit(CSSPropertyFontStretch, result, commonValue);
     if (!result.isEmpty())
         result.append(' ');
     result.append(fontSizeProperty.value()->cssText());

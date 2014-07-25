@@ -84,6 +84,18 @@ lighter
 900
 
 //
+// font-stretch
+//
+ultra-condensed
+extra-condensed
+condensed
+semi-condensed
+semi-expanded
+expanded
+extra-expanded
+ultra-expanded
+
+//
 // font-size
 //
 xx-small

@@ -64,6 +64,7 @@ font custom_all
 font-family custom_all
 font-kerning font, type_name=FontDescription::Kerning, name_for_methods=Kerning
 font-size custom_all
+font-stretch custom_all
 font-style font, type_name=FontStyle, name_for_methods=Style
 font-variant font, type_name=FontVariant, name_for_methods=Variant
 font-variant-ligatures custom_all
@@ -355,7 +356,6 @@ transition-delay skip
 transition-duration skip
 transition-property skip
 transition-timing-function skip
-font-stretch skip
 page skip
 src skip
 unicode-range skip

@@ -397,6 +397,8 @@ bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, CSSValueID valueID
         return valueID == CSSValueLeft || valueID == CSSValueRight || valueID == CSSValueNone || valueID == CSSValueCenter;
     case CSSPropertyFontStyle: // normal | italic | oblique
         return valueID == CSSValueNormal || valueID == CSSValueItalic || valueID == CSSValueOblique;
+    case CSSPropertyFontStretch: // normal | ultra-condensed | extra-condensed | condensed | semi-condensed | semi-expanded | expanded | extra-expanded | ultra-expanded
+        return valueID == CSSValueNormal || valueID == CSSValueUltraCondensed || valueID == CSSValueExtraCondensed || valueID == CSSValueCondensed || valueID == CSSValueSemiCondensed || valueID == CSSValueSemiExpanded || valueID == CSSValueExpanded || valueID == CSSValueExtraExpanded || valueID == CSSValueUltraExpanded;
     case CSSPropertyImageRendering: // auto | optimizeContrast | pixelated
         return valueID == CSSValueAuto || valueID == CSSValueWebkitOptimizeContrast || (RuntimeEnabledFeatures::imageRenderingPixelatedEnabled() && valueID == CSSValuePixelated);
     case CSSPropertyIsolation: // auto | isolate
@@ -579,6 +581,7 @@ bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyEmptyCells:
     case CSSPropertyFloat:
     case CSSPropertyFontStyle:
+    case CSSPropertyFontStretch:
     case CSSPropertyImageRendering:
     case CSSPropertyListStylePosition:
     case CSSPropertyListStyleType:

@@ -1121,6 +1121,7 @@ float RenderStyle::specifiedFontSize() const { return fontDescription().specifie
 float RenderStyle::computedFontSize() const { return fontDescription().computedSize(); }
 int RenderStyle::fontSize() const { return fontDescription().computedPixelSize(); }
 FontWeight RenderStyle::fontWeight() const { return fontDescription().weight(); }
+FontStretch RenderStyle::fontStretch() const { return fontDescription().stretch(); }
 
 TextDecoration RenderStyle::textDecorationsInEffect() const
 {
@@ -1293,6 +1294,15 @@ void RenderStyle::clearAppliedTextDecorations()
 
     if (rareInheritedData->appliedTextDecorations)
         rareInheritedData.access()->appliedTextDecorations = nullptr;
+}
+
+void RenderStyle::setFontStretch(FontStretch stretch)
+{
+    FontSelector* currentFontSelector = font().fontSelector();
+    FontDescription desc(fontDescription());
+    desc.setStretch(stretch);
+    setFontDescription(desc);
+    font().update(currentFontSelector);
 }
 
 void RenderStyle::getShadowExtent(const ShadowList* shadowList, LayoutUnit &top, LayoutUnit &right, LayoutUnit &bottom, LayoutUnit &left) const

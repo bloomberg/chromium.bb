@@ -552,6 +552,7 @@ crbug.com/363280 [ Debug ] inspector-protocol/debugger/debugger-terminate-dedica
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 
 crbug.com/305345 fast/events/mouseover-mouseout.html [ Failure Pass ]
+crbug.com/331119 fast/css/css2-system-fonts.html [ NeedsRebaseline ]
 
 # Android virtual suite shares the same expectation.
 crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed.html [ Failure Pass ]

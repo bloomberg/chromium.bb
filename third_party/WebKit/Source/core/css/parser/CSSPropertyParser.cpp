@@ -530,6 +530,13 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
             return false;
         return parseFontWeight(important);
     }
+
+    case CSSPropertyFontStretch: { // normal | ultra-condensed | extra-condensed | condensed | semi-condensed | semi-expanded | expanded | extra-expanded | ultra-expanded
+        if (m_valueList->size() != 1)
+            return false;
+        return parseFontStretch(important);
+    }
+
     case CSSPropertyBorderSpacing: {
         if (num == 1) {
             ShorthandScope scope(this, CSSPropertyBorderSpacing);
@@ -1444,8 +1451,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         return false;
     case CSSPropertyPage:
         return parsePage(propId, important);
-    case CSSPropertyFontStretch:
-        return false;
     // CSS Text Layout Module Level 3: Vertical writing support
     case CSSPropertyWebkitTextEmphasis:
         return parseShorthand(propId, webkitTextEmphasisShorthand(), important);
@@ -4537,6 +4542,7 @@ bool CSSPropertyParser::parseFont(bool important)
     bool fontStyleParsed = false;
     bool fontVariantParsed = false;
     bool fontWeightParsed = false;
+    bool fontStretchParsed = false;
     CSSParserValue* value = m_valueList->current();
     for (; value; value = m_valueList->next()) {
         if (!fontStyleParsed && isValidKeywordPropertyAndValue(CSSPropertyFontStyle, value->id, m_context)) {
@@ -4546,10 +4552,13 @@ bool CSSPropertyParser::parseFont(bool important)
             // Font variant in the shorthand is particular, it only accepts normal or small-caps.
             addProperty(CSSPropertyFontVariant, cssValuePool().createIdentifierValue(value->id), important);
             fontVariantParsed = true;
-        } else if (!fontWeightParsed && parseFontWeight(important))
+        } else if (!fontWeightParsed && parseFontWeight(important)) {
             fontWeightParsed = true;
-        else
+        } else if (!fontStretchParsed && parseFontStretch(important)) {
+            fontStretchParsed = true;
+        } else {
             break;
+        }
     }
 
     if (!value)
@@ -4561,6 +4570,8 @@ bool CSSPropertyParser::parseFont(bool important)
         addProperty(CSSPropertyFontVariant, cssValuePool().createIdentifierValue(CSSValueNormal), important, true);
     if (!fontWeightParsed)
         addProperty(CSSPropertyFontWeight, cssValuePool().createIdentifierValue(CSSValueNormal), important, true);
+    if (!fontStretchParsed)
+        addProperty(CSSPropertyFontStretch, cssValuePool().createIdentifierValue(CSSValueNormal), important, true);
 
     // Now a font size _must_ come.
     // <absolute-size> | <relative-size> | <length> | <percentage> | inherit
@@ -4797,6 +4808,16 @@ bool CSSPropertyParser::parseFontWeight(bool important)
             addProperty(CSSPropertyFontWeight, cssValuePool().createIdentifierValue(static_cast<CSSValueID>(CSSValue100 + weight / 100 - 1)), important);
             return true;
         }
+    }
+    return false;
+}
+
+bool CSSPropertyParser::parseFontStretch(bool important)
+{
+    CSSParserValue* value = m_valueList->current();
+    if (value->id == CSSValueNormal || (value->id >= CSSValueUltraCondensed && value->id <= CSSValueUltraExpanded)) {
+        addProperty(CSSPropertyFontStretch, cssValuePool().createIdentifierValue(value->id), important);
+        return true;
     }
     return false;
 }

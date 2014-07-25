@@ -1081,6 +1081,7 @@ static inline bool isValidCueStyleProperty(CSSPropertyID id)
     case CSSPropertyFont:
     case CSSPropertyFontFamily:
     case CSSPropertyFontSize:
+    case CSSPropertyFontStretch:
     case CSSPropertyFontStyle:
     case CSSPropertyFontVariant:
     case CSSPropertyFontWeight:
@@ -1247,7 +1248,7 @@ template<> CSSPropertyID StyleResolver::firstCSSPropertyId<StyleResolver::HighPr
 // This method returns the last CSSPropertyId of high priority properties.
 template<> CSSPropertyID StyleResolver::lastCSSPropertyId<StyleResolver::HighPriorityProperties>()
 {
-    COMPILE_ASSERT(CSSPropertyLineHeight == CSSPropertyColor + 17, CSS_line_height_is_end_of_high_prioity_property_range);
+    COMPILE_ASSERT(CSSPropertyLineHeight == CSSPropertyColor + 18, CSS_line_height_is_end_of_high_prioity_property_range);
     COMPILE_ASSERT(CSSPropertyZoom == CSSPropertyLineHeight - 1, CSS_zoom_is_before_line_height);
     return CSSPropertyLineHeight;
 }

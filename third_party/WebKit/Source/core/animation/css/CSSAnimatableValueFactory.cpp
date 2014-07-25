@@ -225,6 +225,16 @@ inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromShapeValue(Shape
     return AnimatableUnknown::create(CSSValueNone);
 }
 
+static double fontStretchToDouble(FontStretch fontStretch)
+{
+    return static_cast<unsigned>(fontStretch);
+}
+
+static PassRefPtr<AnimatableValue> createFromFontStretch(FontStretch fontStretch)
+{
+    return createFromDouble(fontStretchToDouble(fontStretch));
+}
+
 static double fontWeightToDouble(FontWeight fontWeight)
 {
     switch (fontWeight) {
@@ -341,6 +351,8 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
         // FIXME: Should we introduce an option to pass the computed font size here, allowing consumers to
         // enable text zoom rather than Text Autosizing? See http://crbug.com/227545.
         return createFromDouble(style.specifiedFontSize());
+    case CSSPropertyFontStretch:
+        return createFromFontStretch(style.fontStretch());
     case CSSPropertyFontWeight:
         return createFromFontWeight(style.fontWeight());
     case CSSPropertyHeight:

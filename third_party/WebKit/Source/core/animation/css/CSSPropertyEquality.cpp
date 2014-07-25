@@ -142,6 +142,8 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
         // FIXME: Should we introduce an option to pass the computed font size here, allowing consumers to
         // enable text zoom rather than Text Autosizing? See http://crbug.com/227545.
         return a.specifiedFontSize() == b.specifiedFontSize();
+    case CSSPropertyFontStretch:
+        return a.fontStretch() == b.fontStretch();
     case CSSPropertyFontWeight:
         return a.fontWeight() == b.fontWeight();
     case CSSPropertyHeight:

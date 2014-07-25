@@ -533,6 +533,7 @@ bool FontFaceSet::resolveFontStyle(const String& fontString, Font& font)
     // Now map the font property longhands into the style.
     CSSPropertyValue properties[] = {
         CSSPropertyValue(CSSPropertyFontFamily, *parsedStyle),
+        CSSPropertyValue(CSSPropertyFontStretch, *parsedStyle),
         CSSPropertyValue(CSSPropertyFontStyle, *parsedStyle),
         CSSPropertyValue(CSSPropertyFontVariant, *parsedStyle),
         CSSPropertyValue(CSSPropertyFontWeight, *parsedStyle),

@@ -208,6 +208,26 @@ void setOnFillLayers(FillLayer& fillLayers, const AnimatableValue* value, StyleR
     }
 }
 
+FontStretch animatableValueToFontStretch(const AnimatableValue* value)
+{
+    ASSERT(FontStretchUltraCondensed == 1 && FontStretchUltraExpanded == 9);
+    unsigned index = round(toAnimatableDouble(value)->toDouble()) - 1;
+    static const FontStretch stretchValues[] = {
+        FontStretchUltraCondensed,
+        FontStretchExtraCondensed,
+        FontStretchCondensed,
+        FontStretchSemiCondensed,
+        FontStretchNormal,
+        FontStretchSemiExpanded,
+        FontStretchExpanded,
+        FontStretchExtraExpanded,
+        FontStretchUltraExpanded
+    };
+
+    index = clampTo<unsigned>(index, 0, WTF_ARRAY_LENGTH(stretchValues) - 1);
+    return stretchValues[index];
+}
+
 FontWeight animatableValueToFontWeight(const AnimatableValue* value)
 {
     int index = round(toAnimatableDouble(value)->toDouble() / 100) - 1;
@@ -354,6 +374,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         return;
     case CSSPropertyFontSize:
         style->setFontSize(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0));
+        return;
+    case CSSPropertyFontStretch:
+        style->setFontStretch(animatableValueToFontStretch(value));
         return;
     case CSSPropertyFontWeight:
         style->setFontWeight(animatableValueToFontWeight(value));

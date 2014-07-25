@@ -16,6 +16,7 @@ font
 font-family
 font-kerning
 font-size
+font-stretch
 font-style
 font-variant
 font-variant-ligatures
@@ -101,7 +102,6 @@ counter-reset
 cursor
 empty-cells
 float
-font-stretch
 height
 image-rendering
 isolation
