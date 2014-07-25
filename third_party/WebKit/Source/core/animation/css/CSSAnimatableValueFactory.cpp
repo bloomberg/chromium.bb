@@ -230,7 +230,7 @@ static double fontStretchToDouble(FontStretch fontStretch)
     return static_cast<unsigned>(fontStretch);
 }
 
-static PassRefPtr<AnimatableValue> createFromFontStretch(FontStretch fontStretch)
+static PassRefPtrWillBeRawPtr<AnimatableValue> createFromFontStretch(FontStretch fontStretch)
 {
     return createFromDouble(fontStretchToDouble(fontStretch));
 }
