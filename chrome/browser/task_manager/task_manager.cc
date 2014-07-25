@@ -38,6 +38,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/worker_service.h"
 #include "content/public/common/result_codes.h"
 #include "extensions/browser/extension_system.h"
 #include "grit/generated_resources.h"
@@ -271,7 +272,10 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
       scoped_ptr<WebContentsInformation>(
           new task_manager::GuestInformation())));
 
-  AddResourceProvider(new task_manager::WorkerResourceProvider(task_manager));
+  // We don't need to show the worker processes if "embedded-shared-worker" flag
+  // is enabled.
+  if (!content::WorkerService::EmbeddedSharedWorkerEnabled())
+    AddResourceProvider(new task_manager::WorkerResourceProvider(task_manager));
 }
 
 void TaskManagerModel::AddObserver(TaskManagerModelObserver* observer) {
