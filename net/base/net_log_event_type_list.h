@@ -1351,6 +1351,12 @@ EVENT_TYPE(QUIC_SESSION)
 //   }
 EVENT_TYPE(QUIC_SESSION_CLOSE_ON_ERROR)
 
+// Session verified a certificate from the server.
+//   {
+//     "subjects": <list of DNS names that the certificate is valid for>,
+//   }
+EVENT_TYPE(QUIC_SESSION_CERTIFICATE_VERIFIED)
+
 // Session received a QUIC packet.
 //   {
 //     "peer_address": <The ip:port of the peer>,
