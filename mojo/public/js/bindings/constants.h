@@ -8,6 +8,7 @@
 namespace mojo {
 
 // JavaScript module names:
+extern const char kBufferModuleName[];
 extern const char kCodecModuleName[];
 extern const char kConnectionModuleName[];
 extern const char kConnectorModuleName[];

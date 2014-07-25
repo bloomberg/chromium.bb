@@ -98,8 +98,8 @@ define('mojo/apps/js/test/js_to_cpp_unittest', [
       var value;
       if (offset < message.buffer.arrayBuffer.byteLength) {
         mask = 1 << (iteration % 8);
-        value = message.buffer.dataView.getUint8(offset) ^ mask;
-        message.buffer.dataView.setUint8(offset, value);
+        value = message.buffer.getUint8(offset) ^ mask;
+        message.buffer.setUint8(offset, value);
         return this.realAccept(message);
       }
       stopSignalled = true;

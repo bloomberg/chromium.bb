@@ -40,7 +40,8 @@ bool got_message = false;
 bool GetResource(const std::string& id,
                  const WebUIDataSource::GotDataCallback& callback) {
   // These are handled by the WebUIDataSource that AddMojoDataSource() creates.
-  if (id == mojo::kCodecModuleName ||
+  if (id == mojo::kBufferModuleName ||
+      id == mojo::kCodecModuleName ||
       id == mojo::kConnectionModuleName ||
       id == mojo::kConnectorModuleName ||
       id == mojo::kUnicodeModuleName ||

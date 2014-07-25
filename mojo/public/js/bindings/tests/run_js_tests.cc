@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "gin/modules/console.h"
@@ -11,7 +10,6 @@
 #include "gin/test/file_runner.h"
 #include "gin/test/gtest.h"
 #include "mojo/bindings/js/core.h"
-#include "mojo/common/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -33,8 +31,9 @@ void RunTest(std::string test, bool run_until_idle) {
   base::FilePath path;
   PathService::Get(base::DIR_SOURCE_ROOT, &path);
   path = path.AppendASCII("mojo")
-             .AppendASCII("bindings")
+             .AppendASCII("public")
              .AppendASCII("js")
+             .AppendASCII("bindings")
              .AppendASCII(test);
   TestRunnerDelegate delegate;
   gin::RunTestFromFile(path, &delegate, run_until_idle);
@@ -46,17 +45,11 @@ TEST(JSTest, core) {
 }
 
 TEST(JSTest, codec) {
-  // TODO(yzshen): Remove this check once isolated tests are supported on the
-  // Chromium waterfall. (http://crbug.com/351214)
-  const base::FilePath test_file_path(
-      test::GetFilePathForJSResource(
-          "mojo/public/interfaces/bindings/tests/sample_service.mojom"));
-  if (!base::PathExists(test_file_path)) {
-    LOG(WARNING) << "Mojom binding files don't exist. Skipping the test.";
-    return;
-  }
-
   RunTest("codec_unittests.js", true);
+}
+
+TEST(JSTest, validation) {
+  RunTest("validation_unittests.js", true);
 }
 
 }  // namespace

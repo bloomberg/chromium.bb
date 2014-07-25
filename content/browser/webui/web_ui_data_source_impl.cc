@@ -31,6 +31,7 @@ WebUIDataSource* WebUIDataSource::AddMojoDataSource(
     const char* path;
     int id;
   } resources[] = {
+    { mojo::kBufferModuleName, IDR_MOJO_BUFFER_JS },
     { mojo::kCodecModuleName, IDR_MOJO_CODEC_JS },
     { mojo::kConnectionModuleName, IDR_MOJO_CONNECTION_JS },
     { mojo::kConnectorModuleName, IDR_MOJO_CONNECTOR_JS },

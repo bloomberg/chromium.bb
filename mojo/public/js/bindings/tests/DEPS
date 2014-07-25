@@ -1,0 +1,6 @@
+include_rules = [
+  "+base",
+  "+gin",
+  "+v8",
+  "+mojo/bindings/js/core.h",
+]

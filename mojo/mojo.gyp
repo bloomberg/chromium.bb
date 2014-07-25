@@ -751,20 +751,6 @@
       ],
     },
     {
-      'target_name': 'mojo_js_unittests',
-      'type': 'executable',
-      'dependencies': [
-        '../gin/gin.gyp:gin_test',
-        'mojo_common_test_support',
-        'mojo_js_bindings_lib',
-        'mojo_run_all_unittests',
-        'mojo_public_test_interfaces',
-      ],
-      'sources': [
-        'bindings/js/run_js_tests.cc',
-      ],
-    },
-    {
       'target_name': 'mojo_message_generator',
       'type': 'executable',
       'dependencies': [

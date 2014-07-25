@@ -3,111 +3,19 @@
 // found in the LICENSE file.
 
 define("mojo/public/js/bindings/codec", [
-  "mojo/public/js/bindings/unicode"
-], function(unicode) {
+  "mojo/public/js/bindings/unicode",
+  "mojo/public/js/bindings/buffer"
+  ], function(unicode, buffer) {
 
   var kErrorUnsigned = "Passing negative value to unsigned";
 
   // Memory -------------------------------------------------------------------
 
   var kAlignment = 8;
-  var kHighWordMultiplier = 0x100000000;
-  var kHostIsLittleEndian = (function () {
-    var endianArrayBuffer = new ArrayBuffer(2);
-    var endianUint8Array = new Uint8Array(endianArrayBuffer);
-    var endianUint16Array = new Uint16Array(endianArrayBuffer);
-    endianUint16Array[0] = 1;
-    return endianUint8Array[0] == 1;
-  })();
 
   function align(size) {
     return size + (kAlignment - (size % kAlignment)) % kAlignment;
   }
-
-  function getInt64(dataView, byteOffset, value) {
-    var lo, hi;
-    if (kHostIsLittleEndian) {
-      lo = dataView.getUint32(byteOffset, kHostIsLittleEndian);
-      hi = dataView.getInt32(byteOffset + 4, kHostIsLittleEndian);
-    } else {
-      hi = dataView.getInt32(byteOffset, kHostIsLittleEndian);
-      lo = dataView.getUint32(byteOffset + 4, kHostIsLittleEndian);
-    }
-    return lo + hi * kHighWordMultiplier;
-  }
-
-  function getUint64(dataView, byteOffset, value) {
-    var lo, hi;
-    if (kHostIsLittleEndian) {
-      lo = dataView.getUint32(byteOffset, kHostIsLittleEndian);
-      hi = dataView.getUint32(byteOffset + 4, kHostIsLittleEndian);
-    } else {
-      hi = dataView.getUint32(byteOffset, kHostIsLittleEndian);
-      lo = dataView.getUint32(byteOffset + 4, kHostIsLittleEndian);
-    }
-    return lo + hi * kHighWordMultiplier;
-  }
-
-  function setInt64(dataView, byteOffset, value) {
-    var hi = Math.floor(value / kHighWordMultiplier);
-    if (kHostIsLittleEndian) {
-      dataView.setInt32(byteOffset, value, kHostIsLittleEndian);
-      dataView.setInt32(byteOffset + 4, hi, kHostIsLittleEndian);
-    } else {
-      dataView.setInt32(byteOffset, hi, kHostIsLittleEndian);
-      dataView.setInt32(byteOffset + 4, value, kHostIsLittleEndian);
-    }
-  }
-
-  function setUint64(dataView, byteOffset, value) {
-    var hi = (value / kHighWordMultiplier) | 0;
-    if (kHostIsLittleEndian) {
-      dataView.setInt32(byteOffset, value, kHostIsLittleEndian);
-      dataView.setInt32(byteOffset + 4, hi, kHostIsLittleEndian);
-    } else {
-      dataView.setInt32(byteOffset, hi, kHostIsLittleEndian);
-      dataView.setInt32(byteOffset + 4, value, kHostIsLittleEndian);
-    }
-  }
-
-  function copyArrayBuffer(dstArrayBuffer, srcArrayBuffer) {
-    (new Uint8Array(dstArrayBuffer)).set(new Uint8Array(srcArrayBuffer));
-  }
-
-  // Buffer -------------------------------------------------------------------
-
-  function Buffer(sizeOrArrayBuffer) {
-    if (sizeOrArrayBuffer instanceof ArrayBuffer) {
-      this.arrayBuffer = sizeOrArrayBuffer;
-    } else {
-      this.arrayBuffer = new ArrayBuffer(sizeOrArrayBuffer);
-    };
-
-    this.dataView = new DataView(this.arrayBuffer);
-    this.next = 0;
-  }
-
-  Buffer.prototype.alloc = function(size) {
-    var pointer = this.next;
-    this.next += size;
-    if (this.next > this.arrayBuffer.byteLength) {
-      var newSize = (1.5 * (this.arrayBuffer.byteLength + size)) | 0;
-      this.grow(newSize);
-    }
-    return pointer;
-  };
-
-  Buffer.prototype.grow = function(size) {
-    var newArrayBuffer = new ArrayBuffer(size);
-    copyArrayBuffer(newArrayBuffer, this.arrayBuffer);
-    this.arrayBuffer = newArrayBuffer;
-    this.dataView = new DataView(this.arrayBuffer);
-  };
-
-  Buffer.prototype.trim = function() {
-    this.arrayBuffer = this.arrayBuffer.slice(0, this.next);
-    this.dataView = new DataView(this.arrayBuffer);
-  };
 
   // Constants ----------------------------------------------------------------
 
@@ -130,64 +38,61 @@ define("mojo/public/js/bindings/codec", [
   };
 
   Decoder.prototype.readInt8 = function() {
-    var result = this.buffer.dataView.getInt8(this.next, kHostIsLittleEndian);
+    var result = this.buffer.getInt8(this.next);
     this.next += 1;
     return result;
   };
 
   Decoder.prototype.readUint8 = function() {
-    var result = this.buffer.dataView.getUint8(this.next, kHostIsLittleEndian);
+    var result = this.buffer.getUint8(this.next);
     this.next += 1;
     return result;
   };
 
   Decoder.prototype.readInt16 = function() {
-    var result = this.buffer.dataView.getInt16(this.next, kHostIsLittleEndian);
+    var result = this.buffer.getInt16(this.next);
     this.next += 2;
     return result;
   };
 
   Decoder.prototype.readUint16 = function() {
-    var result = this.buffer.dataView.getUint16(this.next, kHostIsLittleEndian);
+    var result = this.buffer.getUint16(this.next);
     this.next += 2;
     return result;
   };
 
   Decoder.prototype.readInt32 = function() {
-    var result = this.buffer.dataView.getInt32(this.next, kHostIsLittleEndian);
+    var result = this.buffer.getInt32(this.next);
     this.next += 4;
     return result;
   };
 
   Decoder.prototype.readUint32 = function() {
-    var result = this.buffer.dataView.getUint32(this.next, kHostIsLittleEndian);
+    var result = this.buffer.getUint32(this.next);
     this.next += 4;
     return result;
   };
 
   Decoder.prototype.readInt64 = function() {
-    var result = getInt64(this.buffer.dataView, this.next, kHostIsLittleEndian);
+    var result = this.buffer.getInt64(this.next);
     this.next += 8;
     return result;
   };
 
   Decoder.prototype.readUint64 = function() {
-    var result = getUint64(
-        this.buffer.dataView, this.next, kHostIsLittleEndian);
+    var result = this.buffer.getUint64(this.next);
     this.next += 8;
     return result;
   };
 
   Decoder.prototype.readFloat = function() {
-    var result = this.buffer.dataView.getFloat32(
-        this.next, kHostIsLittleEndian);
+    var result = this.buffer.getFloat32(this.next);
     this.next += 4;
     return result;
   };
 
   Decoder.prototype.readDouble = function() {
-    var result = this.buffer.dataView.getFloat64(
-        this.next, kHostIsLittleEndian);
+    var result = this.buffer.getFloat64(this.next);
     this.next += 8;
     return result;
   };
@@ -293,8 +198,7 @@ define("mojo/public/js/bindings/codec", [
   };
 
   Encoder.prototype.writeInt8 = function(val) {
-    // NOTE: Endianness doesn't come into play for single bytes.
-    this.buffer.dataView.setInt8(this.next, val);
+    this.buffer.setInt8(this.next, val);
     this.next += 1;
   };
 
@@ -302,13 +206,12 @@ define("mojo/public/js/bindings/codec", [
     if (val < 0) {
       throw new Error(kErrorUnsigned);
     }
-    // NOTE: Endianness doesn't come into play for single bytes.
-    this.buffer.dataView.setUint8(this.next, val);
+    this.buffer.setUint8(this.next, val);
     this.next += 1;
   };
 
   Encoder.prototype.writeInt16 = function(val) {
-    this.buffer.dataView.setInt16(this.next, val, kHostIsLittleEndian);
+    this.buffer.setInt16(this.next, val);
     this.next += 2;
   };
 
@@ -316,12 +219,12 @@ define("mojo/public/js/bindings/codec", [
     if (val < 0) {
       throw new Error(kErrorUnsigned);
     }
-    this.buffer.dataView.setUint16(this.next, val, kHostIsLittleEndian);
+    this.buffer.setUint16(this.next, val);
     this.next += 2;
   };
 
   Encoder.prototype.writeInt32 = function(val) {
-    this.buffer.dataView.setInt32(this.next, val, kHostIsLittleEndian);
+    this.buffer.setInt32(this.next, val);
     this.next += 4;
   };
 
@@ -329,12 +232,12 @@ define("mojo/public/js/bindings/codec", [
     if (val < 0) {
       throw new Error(kErrorUnsigned);
     }
-    this.buffer.dataView.setUint32(this.next, val, kHostIsLittleEndian);
+    this.buffer.setUint32(this.next, val);
     this.next += 4;
   };
 
   Encoder.prototype.writeInt64 = function(val) {
-    setInt64(this.buffer.dataView, this.next, val);
+    this.buffer.setInt64(this.next, val);
     this.next += 8;
   };
 
@@ -342,17 +245,17 @@ define("mojo/public/js/bindings/codec", [
     if (val < 0) {
       throw new Error(kErrorUnsigned);
     }
-    setUint64(this.buffer.dataView, this.next, val);
+    this.buffer.setUint64(this.next, val);
     this.next += 8;
   };
 
   Encoder.prototype.writeFloat = function(val) {
-    this.buffer.dataView.setFloat32(this.next, val, kHostIsLittleEndian);
+    this.buffer.setFloat32(this.next, val);
     this.next += 4;
   };
 
   Encoder.prototype.writeDouble = function(val) {
-    this.buffer.dataView.setFloat64(this.next, val, kHostIsLittleEndian);
+    this.buffer.setFloat64(this.next, val);
     this.next += 8;
   };
 
@@ -465,11 +368,11 @@ define("mojo/public/js/bindings/codec", [
 
   Message.prototype.setRequestID = function(requestID) {
     // TODO(darin): Verify that space was reserved for this field!
-    setUint64(this.buffer.dataView, kRequestIDOffset, requestID);
+    this.buffer.setUint64(kRequestIDOffset, requestID);
   };
 
   Message.prototype.getFlags = function() {
-    return this.buffer.dataView.getUint32(kFlagsOffset, kHostIsLittleEndian);
+    return this.buffer.getUint32(kFlagsOffset);
   };
 
   // MessageBuilder -----------------------------------------------------------
@@ -478,7 +381,7 @@ define("mojo/public/js/bindings/codec", [
     // Currently, we don't compute the payload size correctly ahead of time.
     // Instead, we resize the buffer at the end.
     var numberOfBytes = kMessageHeaderSize + payloadSize;
-    this.buffer = new Buffer(numberOfBytes);
+    this.buffer = new buffer.Buffer(numberOfBytes);
     this.handles = [];
     var encoder = this.createEncoder(kMessageHeaderSize);
     encoder.writeUint32(kMessageHeaderSize);
@@ -514,7 +417,7 @@ define("mojo/public/js/bindings/codec", [
     // Currently, we don't compute the payload size correctly ahead of time.
     // Instead, we resize the buffer at the end.
     var numberOfBytes = kMessageWithRequestIDHeaderSize + payloadSize;
-    this.buffer = new Buffer(numberOfBytes);
+    this.buffer = new buffer.Buffer(numberOfBytes);
     this.handles = [];
     var encoder = this.createEncoder(kMessageWithRequestIDHeaderSize);
     encoder.writeUint32(kMessageWithRequestIDHeaderSize);
@@ -535,8 +438,7 @@ define("mojo/public/js/bindings/codec", [
   function MessageReader(message) {
     this.decoder = new Decoder(message.buffer, message.handles, 0);
     var messageHeaderSize = this.decoder.readUint32();
-    this.payloadSize =
-        message.buffer.arrayBuffer.byteLength - messageHeaderSize;
+    this.payloadSize = message.buffer.byteLength - messageHeaderSize;
     var numFields = this.decoder.readUint32();
     this.messageName = this.decoder.readUint32();
     this.flags = this.decoder.readUint32();
@@ -764,7 +666,6 @@ define("mojo/public/js/bindings/codec", [
 
   var exports = {};
   exports.align = align;
-  exports.Buffer = Buffer;
   exports.Message = Message;
   exports.MessageBuilder = MessageBuilder;
   exports.MessageWithRequestIDBuilder = MessageWithRequestIDBuilder;

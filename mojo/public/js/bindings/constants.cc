@@ -6,6 +6,7 @@
 
 namespace mojo {
 
+const char kBufferModuleName[] = "mojo/public/js/bindings/buffer";
 const char kCodecModuleName[] = "mojo/public/js/bindings/codec";
 const char kConnectionModuleName[] = "mojo/public/js/bindings/connection";
 const char kConnectorModuleName[] = "mojo/public/js/bindings/connector";
