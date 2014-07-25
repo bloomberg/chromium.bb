@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.printing;
 
-import android.app.Activity;
+import android.content.Context;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -18,12 +18,12 @@ import org.chromium.printing.PrintingControllerImpl;
  * Also, sets the default title of {@link TabPrinter}.
  */
 public class PrintingControllerFactory {
-    public static PrintingController create(Activity activity) {
+    public static PrintingController create(Context context) {
         if (ApiCompatibilityUtils.isPrintingSupported()) {
-            String defaultJobTitle = activity.getResources().getString(R.string.menu_print);
+            String defaultJobTitle = context.getResources().getString(R.string.menu_print);
             TabPrinter.setDefaultTitle(defaultJobTitle);
 
-            String errorText = activity.getResources().getString(R.string.error_printing_failed);
+            String errorText = context.getResources().getString(R.string.error_printing_failed);
             return PrintingControllerImpl.create(new PrintDocumentAdapterWrapper(), errorText);
         }
         return null;
