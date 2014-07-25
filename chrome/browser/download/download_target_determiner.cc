@@ -519,8 +519,10 @@ DownloadTargetDeterminer::Result
 #if defined(OS_WIN)
   if (!local_path_.MatchesExtension(FILE_PATH_LITERAL(".pdf")))
     return CONTINUE;
-  if (!IsAdobeReaderDefaultPDFViewer())
+  if (!IsAdobeReaderDefaultPDFViewer()) {
+    g_is_adobe_reader_up_to_date_ = false;
     return CONTINUE;
+  }
 
   base::PostTaskAndReplyWithResult(
       BrowserThread::GetBlockingPool(),
