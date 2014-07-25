@@ -106,6 +106,11 @@ void ReleaseCopiedNativeEvent(
 // Gets the touch id from a native event.
 EVENTS_EXPORT int GetTouchId(const base::NativeEvent& native_event);
 
+// Increases the number of times |ClearTouchIdIfReleased| needs to be called on
+// an event with a given touch id before it will actually be cleared.
+EVENTS_EXPORT void IncrementTouchIdRefCount(
+    const base::NativeEvent& native_event);
+
 // Clear the touch id from bookkeeping if it is a release/cancel event.
 EVENTS_EXPORT void ClearTouchIdIfReleased(
     const base::NativeEvent& native_event);

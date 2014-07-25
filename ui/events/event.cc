@@ -481,6 +481,9 @@ TouchEvent::TouchEvent(const base::NativeEvent& native_event)
       1);
 
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+
+  if (type() == ET_TOUCH_PRESSED)
+    IncrementTouchIdRefCount(native_event);
 }
 
 TouchEvent::TouchEvent(EventType type,

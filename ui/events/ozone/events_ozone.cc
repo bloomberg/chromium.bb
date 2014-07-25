@@ -78,6 +78,9 @@ base::NativeEvent CopyNativeEvent(const base::NativeEvent& event) {
 void ReleaseCopiedNativeEvent(const base::NativeEvent& event) {
 }
 
+void IncrementTouchIdRefCount(const base::NativeEvent& event) {
+}
+
 void ClearTouchIdIfReleased(const base::NativeEvent& xev) {
 }
 

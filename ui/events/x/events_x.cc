@@ -682,6 +682,18 @@ void ReleaseCopiedNativeEvent(const base::NativeEvent& event) {
   delete event;
 }
 
+void IncrementTouchIdRefCount(const base::NativeEvent& xev) {
+  ui::DeviceDataManagerX11* manager = ui::DeviceDataManagerX11::GetInstance();
+  double tracking_id;
+  if (!manager->GetEventData(
+          *xev, ui::DeviceDataManagerX11::DT_TOUCH_TRACKING_ID, &tracking_id)) {
+    return;
+  }
+
+  ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
+  factory->AcquireSlotForTrackingID(tracking_id);
+}
+
 void ClearTouchIdIfReleased(const base::NativeEvent& xev) {
   ui::EventType type = ui::EventTypeFromNative(xev);
   if (type == ui::ET_TOUCH_CANCELLED ||

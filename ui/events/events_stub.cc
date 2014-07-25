@@ -12,7 +12,7 @@
 namespace ui {
 
 // Stub implementations of platform-specific methods in events_util.h, built
-// on platform sthat currently do not have a complete implementation of events.
+// on platforms that currently do not have a complete implementation of events.
 
 void UpdateDeviceList() {
   NOTIMPLEMENTED();
@@ -67,6 +67,10 @@ base::NativeEvent CopyNativeEvent(const base::NativeEvent& event) {
 }
 
 void ReleaseCopiedNativeEvent(const base::NativeEvent& event) {
+}
+
+void IncrementTouchIdRefCount(const base::NativeEvent& native_event) {
+  NOTIMPLEMENTED();
 }
 
 void ClearTouchIdIfReleased(const base::NativeEvent& native_event) {
