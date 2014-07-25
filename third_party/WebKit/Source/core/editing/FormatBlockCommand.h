@@ -54,7 +54,7 @@ private:
     FormatBlockCommand(Document&, const QualifiedName& tagName);
 
     virtual void formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection) OVERRIDE;
-    virtual void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtrWillBeRawPtr<Element>&) OVERRIDE;
+    virtual void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtrWillBeRawPtr<HTMLElement>&) OVERRIDE;
     virtual EditAction editingAction() const OVERRIDE { return EditActionFormatBlock; }
 
     bool m_didApply;

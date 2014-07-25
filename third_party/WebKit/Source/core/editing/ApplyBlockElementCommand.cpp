@@ -111,7 +111,7 @@ void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSel
     // and there's nothing to move.
     Position start = startOfSelection.deepEquivalent().downstream();
     if (isAtUnsplittableElement(start)) {
-        RefPtrWillBeRawPtr<Element> blockquote = createBlockElement();
+        RefPtrWillBeRawPtr<HTMLElement> blockquote = createBlockElement();
         insertNodeAt(blockquote, start);
         RefPtrWillBeRawPtr<Element> placeholder = createBreakElement(document());
         appendNode(placeholder, blockquote);
@@ -119,7 +119,7 @@ void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSel
         return;
     }
 
-    RefPtrWillBeRawPtr<Element> blockquoteForNextIndent = nullptr;
+    RefPtrWillBeRawPtr<HTMLElement> blockquoteForNextIndent = nullptr;
     VisiblePosition endOfCurrentParagraph = endOfParagraph(startOfSelection);
     VisiblePosition endOfLastParagraph = endOfParagraph(endOfSelection);
     VisiblePosition endAfterSelection = endOfParagraph(endOfLastParagraph.next());
@@ -280,9 +280,9 @@ VisiblePosition ApplyBlockElementCommand::endOfNextParagrahSplittingTextNodesIfN
     return VisiblePosition(Position(text.get(), position.offsetInContainerNode() - 1));
 }
 
-PassRefPtrWillBeRawPtr<Element> ApplyBlockElementCommand::createBlockElement() const
+PassRefPtrWillBeRawPtr<HTMLElement> ApplyBlockElementCommand::createBlockElement() const
 {
-    RefPtrWillBeRawPtr<Element> element = createHTMLElement(document(), m_tagName);
+    RefPtrWillBeRawPtr<HTMLElement> element = createHTMLElement(document(), m_tagName);
     if (m_inlineStyle.length())
         element->setAttribute(styleAttr, m_inlineStyle);
     return element.release();
