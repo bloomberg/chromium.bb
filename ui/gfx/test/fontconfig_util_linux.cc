@@ -142,4 +142,14 @@ std::string CreateFontconfigTestStanza(const std::string& name,
       name.c_str(), op.c_str(), type.c_str(), value.c_str(), type.c_str());
 }
 
+std::string CreateFontconfigAliasStanza(const std::string& original_family,
+                                        const std::string& preferred_family) {
+  return base::StringPrintf(
+      "  <alias>\n"
+      "    <family>%s</family>\n"
+      "    <prefer><family>%s</family></prefer>\n"
+      "  </alias>\n",
+      original_family.c_str(), preferred_family.c_str());
+}
+
 }  // namespace gfx

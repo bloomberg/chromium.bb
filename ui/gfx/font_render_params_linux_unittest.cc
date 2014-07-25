@@ -317,4 +317,44 @@ TEST_F(FontRenderParamsTest, NoFontconfigMatch) {
   EXPECT_EQ(query.families[0], suggested_family);
 }
 
+TEST_F(FontRenderParamsTest, MissingFamily) {
+  // With Arial and Verdana installed, request (in order) Helvetica, Arial, and
+  // Verdana and check that Arial is returned.
+  ASSERT_TRUE(LoadSystemFont("arial.ttf"));
+  ASSERT_TRUE(LoadSystemFont("verdana.ttf"));
+  FontRenderParamsQuery query(false);
+  query.families.push_back("Helvetica");
+  query.families.push_back("Arial");
+  query.families.push_back("Verdana");
+  std::string suggested_family;
+  GetFontRenderParams(query, &suggested_family);
+  EXPECT_EQ("Arial", suggested_family);
+}
+
+TEST_F(FontRenderParamsTest, SubstituteFamily) {
+  // Configure Fontconfig to use Verdana for both Helvetica and Arial.
+  ASSERT_TRUE(LoadSystemFont("arial.ttf"));
+  ASSERT_TRUE(LoadSystemFont("verdana.ttf"));
+  ASSERT_TRUE(LoadConfigDataIntoFontconfig(temp_dir_.path(),
+      std::string(kFontconfigFileHeader) +
+      CreateFontconfigAliasStanza("Helvetica", "Verdana") +
+      kFontconfigMatchHeader +
+      CreateFontconfigTestStanza("family", "eq", "string", "Arial") +
+      CreateFontconfigEditStanza("family", "string", "Verdana") +
+      kFontconfigMatchFooter +
+      kFontconfigFileFooter));
+
+  FontRenderParamsQuery query(false);
+  query.families.push_back("Helvetica");
+  std::string suggested_family;
+  GetFontRenderParams(query, &suggested_family);
+  EXPECT_EQ("Verdana", suggested_family);
+
+  query.families.clear();
+  query.families.push_back("Arial");
+  suggested_family.clear();
+  GetFontRenderParams(query, &suggested_family);
+  EXPECT_EQ("Verdana", suggested_family);
+}
+
 }  // namespace gfx

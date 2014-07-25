@@ -54,6 +54,10 @@ std::string CreateFontconfigTestStanza(const std::string& name,
                                        const std::string& type,
                                        const std::string& value);
 
+// Returns a Fontconfig <alias> stanza.
+std::string CreateFontconfigAliasStanza(const std::string& original_family,
+                                        const std::string& preferred_family);
+
 }  // namespace gfx
 
 #endif  // UI_GFX_TEST_FONTCONFIG_UTIL_LINUX_H_
