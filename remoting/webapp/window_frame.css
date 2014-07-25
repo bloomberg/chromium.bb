@@ -170,8 +170,9 @@ body.fullscreen .window-controls-hover-target {
 }
 
 body.fullscreen .window-controls-hover-target:hover,
+body.fullscreen .window-controls-hover-target.menu-opened,
 body.fullscreen .window-controls-hover-target.opened,
-body.fullscreen .window-controls-hover-target.menu-opened {
+body.fullscreen .window-controls-hover-target.preview {
   top: -4px;
   opacity: 1.0;
   box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.5);

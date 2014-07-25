@@ -97,6 +97,8 @@ remoting.WindowFrame = function(titleBar) {
       this.updateMaximizeOrRestoreIconTitle_.bind(this));
   chrome.app.window.current().onFullscreened.addListener(
       this.updateMaximizeOrRestoreIconTitle_.bind(this));
+  chrome.app.window.current().onFullscreened.addListener(
+      this.showWindowControlsPreview_.bind(this));
 };
 
 /**
@@ -223,6 +225,24 @@ remoting.WindowFrame.prototype.onShowOptionsMenu_ = function() {
  */
 remoting.WindowFrame.prototype.onHideOptionsMenu_ = function() {
   this.hoverTarget_.classList.remove('menu-opened');
+};
+
+/**
+ * Show the window controls for a few seconds
+ *
+ * @private
+ */
+remoting.WindowFrame.prototype.showWindowControlsPreview_ = function() {
+  /**
+   * @type {HTMLElement}
+   */
+  var target =  this.hoverTarget_;
+  var kPreviewTimeoutMs = 3000;
+  var hidePreview = function() {
+    target.classList.remove('preview');
+  };
+  target.classList.add('preview');
+  window.setTimeout(hidePreview, kPreviewTimeoutMs);
 };
 
 
