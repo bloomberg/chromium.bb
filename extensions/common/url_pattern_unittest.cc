@@ -45,6 +45,15 @@ TEST(ExtensionURLPatternTest, ParseInvalid) {
               pattern.Parse(kInvalidPatterns[i].pattern))
         << kInvalidPatterns[i].pattern;
   }
+
+  {
+    // Cannot use a C string, because this contains a null byte.
+    std::string null_host("http://\0www/", 12);
+    URLPattern pattern(URLPattern::SCHEME_ALL);
+    EXPECT_EQ(URLPattern::PARSE_ERROR_INVALID_HOST,
+              pattern.Parse(null_host))
+        << null_host;
+  }
 };
 
 TEST(ExtensionURLPatternTest, Ports) {
