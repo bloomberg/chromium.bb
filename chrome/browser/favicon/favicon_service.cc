@@ -403,7 +403,6 @@ void FaviconService::RunFaviconRawBitmapCallbackWithBitmapResults(
     return;
   }
 
-  DCHECK_EQ(1u, favicon_bitmap_results.size());
   favicon_base::FaviconRawBitmapResult bitmap_result =
       favicon_bitmap_results[0];
 
