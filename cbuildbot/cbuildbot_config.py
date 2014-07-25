@@ -1377,6 +1377,7 @@ _x86_release_boards = frozenset([
   'glimmer',
   'gnawty',
   'kip',
+  'lemmings',
   'leon',
   'link',
   'lumpy',
@@ -1944,6 +1945,14 @@ internal_brillo_paladin.add_config('duck-paladin',
   trybot_list=True,
 )
 
+internal_brillo_paladin.add_config('lemmings-paladin',
+  boards=['lemmings'],
+  paladin_builder_name='lemmings paladin',
+  trybot_list=True,
+  important=False,
+)
+
+
 external_brillo_paladin = paladin.derive(brillo)
 
 external_brillo_paladin.add_config('gizmo-paladin',
@@ -2261,6 +2270,16 @@ _brillo_release.add_config('duck-release',
 
 _brillo_release.add_config('gizmo-release',
    boards=['gizmo'],
+
+   # This build doesn't generate signed images, so don't try to release them.
+   paygen=False,
+)
+
+_brillo_release.add_config('lemmings-release',
+   boards=['lemmings'],
+
+   # Hw Lab can't test, yet.
+   paygen_skip_testing=True,
 
    # This build doesn't generate signed images, so don't try to release them.
    paygen=False,
