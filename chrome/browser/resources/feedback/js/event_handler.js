@@ -38,6 +38,7 @@ var whitelistedExtensionIds = [
   'icljpnebmoleodmchaaajbkpoipfoahp', // Play Movies Nightly
   'mjekoljodoiapgkggnlmbecndfpbbcch', // Play Movies Beta
   'gdijeikdkaembjbdobgfkoidjkpbmlkd', // Play Movies Stable
+  'knipolnnllmklapflnccelgolnpehhpl', // Hangouts Extension
 ];
 
 /**
