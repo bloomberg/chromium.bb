@@ -84,20 +84,6 @@ class MetricsLogManager {
   // This should only be called if there is not a current log.
   void ResumePausedLog();
 
-  // Saves the staged log, then clears staged_log().
-  // If |store_type| is PROVISIONAL_STORE, it can be dropped from storage with
-  // a later call to DiscardLastProvisionalStore (if it hasn't already been
-  // staged again).
-  // This is intended to be used when logs are being saved while an upload is in
-  // progress, in case the upload later succeeds.
-  // This can only be called if has_staged_log() is true.
-  void StoreStagedLogAsUnsent(PersistedLogs::StoreType store_type);
-
-  // Discards the last log stored with StoreStagedLogAsUnsent with |store_type|
-  // set to PROVISIONAL_STORE, as long as it hasn't already been re-staged. If
-  // the log is no longer present, this is a no-op.
-  void DiscardLastProvisionalStore();
-
   // Saves any unsent logs to persistent storage.
   void PersistUnsentLogs();
 

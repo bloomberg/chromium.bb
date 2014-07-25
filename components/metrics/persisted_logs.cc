@@ -65,16 +65,6 @@ void PersistedLogs::LogHashPair::Init(const std::string& log_data) {
   hash = base::SHA1HashString(log_data);
 }
 
-void PersistedLogs::LogHashPair::Clear() {
-  compressed_log_data.clear();
-  hash.clear();
-}
-
-void PersistedLogs::LogHashPair::Swap(PersistedLogs::LogHashPair* input) {
-  compressed_log_data.swap(input->compressed_log_data);
-  hash.swap(input->hash);
-}
-
 PersistedLogs::PersistedLogs(PrefService* local_state,
                              const char* pref_name,
                              const char* old_pref_name,
@@ -87,7 +77,7 @@ PersistedLogs::PersistedLogs(PrefService* local_state,
       min_log_count_(min_log_count),
       min_log_bytes_(min_log_bytes),
       max_log_size_(max_log_size != 0 ? max_log_size : static_cast<size_t>(-1)),
-      last_provisional_store_index_(-1) {
+      staged_log_index_(-1) {
   DCHECK(local_state_);
   // One of the limit arguments must be non-zero.
   DCHECK(min_log_count_ > 0 || min_log_bytes_ > 0);
@@ -125,33 +115,15 @@ void PersistedLogs::StageLog() {
   // hard-to-identify crashes much later.
   CHECK(!list_.empty());
   DCHECK(!has_staged_log());
-  staged_log_.Swap(&list_.back());
-  list_.pop_back();
-
-  // If the staged log was the last provisional store, clear that.
-  if (static_cast<size_t>(last_provisional_store_index_) == list_.size())
-    last_provisional_store_index_ = -1;
+  staged_log_index_ = list_.size() - 1;
   DCHECK(has_staged_log());
 }
 
 void PersistedLogs::DiscardStagedLog() {
   DCHECK(has_staged_log());
-  staged_log_.Clear();
-}
-
-void PersistedLogs::StoreStagedLogAsUnsent(StoreType store_type) {
-  list_.push_back(LogHashPair());
-  list_.back().Swap(&staged_log_);
-  if (store_type == PROVISIONAL_STORE)
-    last_provisional_store_index_ = list_.size() - 1;
-}
-
-void PersistedLogs::DiscardLastProvisionalStore() {
-  if (last_provisional_store_index_ == -1)
-    return;
-  DCHECK_LT(static_cast<size_t>(last_provisional_store_index_), list_.size());
-  list_.erase(list_.begin() + last_provisional_store_index_);
-  last_provisional_store_index_ = -1;
+  DCHECK_LT(static_cast<size_t>(staged_log_index_), list_.size());
+  list_.erase(list_.begin() + staged_log_index_);
+  staged_log_index_ = -1;
 }
 
 void PersistedLogs::WriteLogsToPrefList(base::ListValue* list_value) const {

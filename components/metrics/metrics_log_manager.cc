@@ -115,22 +115,6 @@ void MetricsLogManager::StoreLog(const std::string& log_data,
   }
 }
 
-void MetricsLogManager::StoreStagedLogAsUnsent(
-    PersistedLogs::StoreType store_type) {
-  DCHECK(has_staged_log());
-  if (initial_log_queue_.has_staged_log())
-    initial_log_queue_.StoreStagedLogAsUnsent(store_type);
-  else
-    ongoing_log_queue_.StoreStagedLogAsUnsent(store_type);
-}
-
-void MetricsLogManager::DiscardLastProvisionalStore() {
-  // We have at most one provisional store, (since at most one log is being
-  // uploaded at a time), so at least one of these will be a no-op.
-  initial_log_queue_.DiscardLastProvisionalStore();
-  ongoing_log_queue_.DiscardLastProvisionalStore();
-}
-
 void MetricsLogManager::PersistUnsentLogs() {
   DCHECK(unsent_logs_loaded_);
   if (!unsent_logs_loaded_)
