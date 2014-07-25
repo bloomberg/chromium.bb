@@ -63,9 +63,8 @@ TEST(MessagePipeDispatcherTest, Basic) {
               d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 1));
     buffer[0] = 123456789;
     EXPECT_EQ(MOJO_RESULT_OK,
-              d1->WriteMessage(buffer, kBufferSize,
-                               NULL,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+              d1->WriteMessage(UserPointer<const void>(buffer), kBufferSize,
+                               NULL, MOJO_WRITE_MESSAGE_FLAG_NONE));
     stopwatch.Start();
     EXPECT_EQ(MOJO_RESULT_OK, w.Wait(MOJO_DEADLINE_INDEFINITE, &context));
     EXPECT_EQ(1u, context);
@@ -128,16 +127,53 @@ TEST(MessagePipeDispatcherTest, InvalidParams) {
   }
 
   // |WriteMessage|:
-  // Null buffer with nonzero buffer size.
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d0->WriteMessage(NULL, 1,
-                             NULL,
-                             MOJO_WRITE_MESSAGE_FLAG_NONE));
   // Huge buffer size.
   EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
-            d0->WriteMessage(buffer, std::numeric_limits<uint32_t>::max(),
-                             NULL,
+            d0->WriteMessage(UserPointer<const void>(buffer),
+                             std::numeric_limits<uint32_t>::max(), NULL,
                              MOJO_WRITE_MESSAGE_FLAG_NONE));
+
+  EXPECT_EQ(MOJO_RESULT_OK, d0->Close());
+  EXPECT_EQ(MOJO_RESULT_OK, d1->Close());
+}
+
+// These test invalid arguments that should cause death if we're being paranoid
+// about checking arguments (which we would want to do if, e.g., we were in a
+// true "kernel" situation, but we might not want to do otherwise for
+// performance reasons). Probably blatant errors like passing in null pointers
+// (for required pointer arguments) will still cause death, but perhaps not
+// predictably.
+TEST(MessagePipeDispatcherTest, InvalidParamsDeath) {
+  const char kMemoryCheckFailedRegex[] = "Check failed";
+
+  scoped_refptr<MessagePipeDispatcher> d0(new MessagePipeDispatcher(
+        MessagePipeDispatcher::kDefaultCreateOptions));
+  scoped_refptr<MessagePipeDispatcher> d1(new MessagePipeDispatcher(
+        MessagePipeDispatcher::kDefaultCreateOptions));
+  {
+    scoped_refptr<MessagePipe> mp(new MessagePipe());
+    d0->Init(mp, 0);
+    d1->Init(mp, 1);
+  }
+
+  // |WriteMessage|:
+  // Null buffer with nonzero buffer size.
+  EXPECT_DEATH_IF_SUPPORTED(
+      d0->WriteMessage(NullUserPointer(), 1, NULL,
+                       MOJO_WRITE_MESSAGE_FLAG_NONE),
+      kMemoryCheckFailedRegex);
+
+  // |ReadMessage|:
+  // Null buffer with nonzero buffer size.
+  // First write something so that we actually have something to read.
+  EXPECT_EQ(MOJO_RESULT_OK,
+            d1->WriteMessage(UserPointer<const void>("x"), 1, NULL,
+                             MOJO_WRITE_MESSAGE_FLAG_NONE));
+  uint32_t buffer_size = 1;
+  EXPECT_DEATH_IF_SUPPORTED(
+      d0->ReadMessage(NullUserPointer(), MakeUserPointer(&buffer_size), 0, NULL,
+                      MOJO_READ_MESSAGE_FLAG_NONE),
+      kMemoryCheckFailedRegex);
 
   EXPECT_EQ(MOJO_RESULT_OK, d0->Close());
   EXPECT_EQ(MOJO_RESULT_OK, d1->Close());
@@ -165,14 +201,12 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     // Write (twice) to |d1|.
     buffer[0] = 123456789;
     EXPECT_EQ(MOJO_RESULT_OK,
-              d1->WriteMessage(buffer, kBufferSize,
-                               NULL,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+              d1->WriteMessage(UserPointer<const void>(buffer), kBufferSize,
+                               NULL, MOJO_WRITE_MESSAGE_FLAG_NONE));
     buffer[0] = 234567890;
     EXPECT_EQ(MOJO_RESULT_OK,
-              d1->WriteMessage(buffer, kBufferSize,
-                               NULL,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+              d1->WriteMessage(UserPointer<const void>(buffer), kBufferSize,
+                               NULL, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // Try waiting for readable on |d0|; should fail (already satisfied).
     w.Init();
@@ -242,9 +276,8 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     // Try writing to |d0|; should fail (other end closed).
     buffer[0] = 345678901;
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              d0->WriteMessage(buffer, kBufferSize,
-                               NULL,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+              d0->WriteMessage(UserPointer<const void>(buffer), kBufferSize,
+                               NULL, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     EXPECT_EQ(MOJO_RESULT_OK, d0->Close());
   }
@@ -291,9 +324,8 @@ TEST(MessagePipeDispatcherTest, MAYBE_BasicThreaded) {
       // Wake it up by writing to |d0|.
       buffer[0] = 123456789;
       EXPECT_EQ(MOJO_RESULT_OK,
-                d0->WriteMessage(buffer, kBufferSize,
-                                 NULL,
-                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
+                d0->WriteMessage(UserPointer<const void>(buffer), kBufferSize,
+                                 NULL, MOJO_WRITE_MESSAGE_FLAG_NONE));
     }  // Joins the thread.
     elapsed = stopwatch.Elapsed();
     EXPECT_GT(elapsed, (2-1) * test::EpsilonTimeout());
@@ -421,16 +453,16 @@ class WriterThread : public base::SimpleThread {
       uint32_t bytes_to_write = static_cast<uint32_t>(
           base::RandInt(1, static_cast<int>(kMaxMessageSize)));
       EXPECT_EQ(MOJO_RESULT_OK,
-                write_dispatcher_->WriteMessage(buffer, bytes_to_write,
-                                                NULL,
+                write_dispatcher_->WriteMessage(UserPointer<const void>(buffer),
+                                                bytes_to_write, NULL,
                                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
       *bytes_written_ += bytes_to_write;
     }
 
     // Write one last "quit" message.
     EXPECT_EQ(MOJO_RESULT_OK,
-              write_dispatcher_->WriteMessage("quit", 4,
-                                              NULL,
+              write_dispatcher_->WriteMessage(UserPointer<const void>("quit"),
+                                              4, NULL,
                                               MOJO_WRITE_MESSAGE_FLAG_NONE));
   }
 

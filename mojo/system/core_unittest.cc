@@ -41,10 +41,6 @@ TEST_F(CoreTest, Basic) {
             core()->WriteMessage(h, NullUserPointer(), 0, NullUserPointer(), 0,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(1u, info.GetWriteMessageCallCount());
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            core()->WriteMessage(h, NullUserPointer(), 1, NullUserPointer(), 0,
-                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
-  EXPECT_EQ(2u, info.GetWriteMessageCallCount());
 
   EXPECT_EQ(0u, info.GetReadMessageCallCount());
   uint32_t num_bytes = 0;

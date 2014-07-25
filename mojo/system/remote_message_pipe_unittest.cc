@@ -202,9 +202,8 @@ TEST_F(RemoteMessagePipeTest, Basic) {
 
   // Write to MP 0, port 0.
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp0->WriteMessage(0,
-                              kHello, sizeof(kHello),
-                              NULL,
+            mp0->WriteMessage(0, UserPointer<const void>(kHello),
+                              sizeof(kHello), NULL,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // Wait.
@@ -227,9 +226,8 @@ TEST_F(RemoteMessagePipeTest, Basic) {
             mp0->AddWaiter(0, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 456));
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp1->WriteMessage(1,
-                              kWorld, sizeof(kWorld),
-                              NULL,
+            mp1->WriteMessage(1, UserPointer<const void>(kWorld),
+                              sizeof(kWorld), NULL,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
@@ -301,9 +299,8 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
             mp3->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 789));
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp2->WriteMessage(0,
-                              kHello, sizeof(kHello),
-                              NULL,
+            mp2->WriteMessage(0, UserPointer<const void>(kHello),
+                              sizeof(kHello), NULL,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
@@ -343,9 +340,8 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
             mp1->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123));
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp0->WriteMessage(0,
-                              kWorld, sizeof(kWorld),
-                              NULL,
+            mp0->WriteMessage(0, UserPointer<const void>(kWorld),
+                              sizeof(kWorld), NULL,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
@@ -400,9 +396,8 @@ TEST_F(RemoteMessagePipeTest, CloseBeforeConnect) {
 
   // Write to MP 0, port 0.
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp0->WriteMessage(0,
-                              kHello, sizeof(kHello),
-                              NULL,
+            mp0->WriteMessage(0, UserPointer<const void>(kHello),
+                              sizeof(kHello), NULL,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   BootstrapMessagePipeNoWait(0, mp0);
@@ -474,7 +469,8 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
     std::vector<DispatcherTransport> transports;
     transports.push_back(transport);
     EXPECT_EQ(MOJO_RESULT_OK,
-              mp0->WriteMessage(0, kHello, sizeof(kHello), &transports,
+              mp0->WriteMessage(0, UserPointer<const void>(kHello),
+                                sizeof(kHello), &transports,
                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
     transport.End();
 
@@ -516,7 +512,8 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
 
   // Write to "local_mp", port 1.
   EXPECT_EQ(MOJO_RESULT_OK,
-            local_mp->WriteMessage(1, kHello, sizeof(kHello), NULL,
+            local_mp->WriteMessage(1, UserPointer<const void>(kHello),
+                                   sizeof(kHello), NULL,
                                    MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // TODO(vtl): FIXME -- We (racily) crash if I close |dispatcher| immediately
@@ -544,7 +541,8 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
 
   // Write to the dispatcher.
   EXPECT_EQ(MOJO_RESULT_OK,
-            dispatcher->WriteMessage(kHello, sizeof(kHello), NULL,
+            dispatcher->WriteMessage(UserPointer<const void>(kHello),
+                                     sizeof(kHello), NULL,
                                      MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // Wait.
@@ -627,7 +625,8 @@ TEST_F(RemoteMessagePipeTest, MAYBE_SharedBufferPassing) {
     std::vector<DispatcherTransport> transports;
     transports.push_back(transport);
     EXPECT_EQ(MOJO_RESULT_OK,
-              mp0->WriteMessage(0, kHello, sizeof(kHello), &transports,
+              mp0->WriteMessage(0, UserPointer<const void>(kHello),
+                                sizeof(kHello), &transports,
                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
     transport.End();
 
@@ -743,7 +742,8 @@ TEST_F(RemoteMessagePipeTest, MAYBE_PlatformHandlePassing) {
     std::vector<DispatcherTransport> transports;
     transports.push_back(transport);
     EXPECT_EQ(MOJO_RESULT_OK,
-              mp0->WriteMessage(0, kWorld, sizeof(kWorld), &transports,
+              mp0->WriteMessage(0, UserPointer<const void>(kWorld),
+                                sizeof(kWorld), &transports,
                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
     transport.End();
 

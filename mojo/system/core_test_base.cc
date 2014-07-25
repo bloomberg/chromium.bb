@@ -47,15 +47,13 @@ class MockDispatcher : public Dispatcher {
   }
 
   virtual MojoResult WriteMessageImplNoLock(
-      const void* bytes,
+      UserPointer<const void> bytes,
       uint32_t num_bytes,
       std::vector<DispatcherTransport>* transports,
       MojoWriteMessageFlags /*flags*/) OVERRIDE {
     info_->IncrementWriteMessageCallCount();
     lock().AssertAcquired();
 
-    if (!VerifyUserPointerWithSize<1>(bytes, num_bytes))
-      return MOJO_RESULT_INVALID_ARGUMENT;
     if (num_bytes > kMaxMessageNumBytes)
       return MOJO_RESULT_RESOURCE_EXHAUSTED;
 

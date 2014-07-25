@@ -80,7 +80,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   // written; not that |this| must not be in |transports|. On success, all the
   // dispatchers in |transports| must have been moved to a closed state; on
   // failure, they should remain in their original state.
-  MojoResult WriteMessage(const void* bytes,
+  MojoResult WriteMessage(UserPointer<const void> bytes,
                           uint32_t num_bytes,
                           std::vector<DispatcherTransport>* transports,
                           MojoWriteMessageFlags flags);
@@ -213,7 +213,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   // See the descriptions of the methods without the "ImplNoLock" for more
   // information.
   virtual MojoResult WriteMessageImplNoLock(
-      const void* bytes,
+      UserPointer<const void> bytes,
       uint32_t num_bytes,
       std::vector<DispatcherTransport>* transports,
       MojoWriteMessageFlags flags);

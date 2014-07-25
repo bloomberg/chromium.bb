@@ -79,7 +79,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
   virtual scoped_refptr<Dispatcher>
       CreateEquivalentDispatcherAndCloseImplNoLock() OVERRIDE;
   virtual MojoResult WriteMessageImplNoLock(
-      const void* bytes,
+      UserPointer<const void> bytes,
       uint32_t num_bytes,
       std::vector<DispatcherTransport>* transports,
       MojoWriteMessageFlags flags) OVERRIDE;

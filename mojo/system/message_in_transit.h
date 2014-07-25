@@ -14,6 +14,7 @@
 #include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/system/dispatcher.h"
+#include "mojo/system/memory.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
@@ -134,6 +135,11 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
                    Subtype subtype,
                    uint32_t num_bytes,
                    const void* bytes);
+  // |bytes| should be valid (and non-null), unless |num_bytes| is zero.
+  MessageInTransit(Type type,
+                   Subtype subtype,
+                   uint32_t num_bytes,
+                   UserPointer<const void> bytes);
   // Constructs a |MessageInTransit| from a |View|.
   explicit MessageInTransit(const View& message_view);
 
@@ -236,6 +242,9 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   }
   Header* header() { return reinterpret_cast<Header*>(main_buffer_.get()); }
 
+  void ConstructorHelper(Type type,
+                         Subtype subtype,
+                         uint32_t num_bytes);
   void UpdateTotalSize();
 
   const size_t main_buffer_size_;

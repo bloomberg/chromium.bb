@@ -53,7 +53,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe :
   // Unlike |MessagePipeDispatcher::WriteMessage()|, this does not validate its
   // arguments.
   MojoResult WriteMessage(unsigned port,
-                          const void* bytes,
+                          UserPointer<const void> bytes,
                           uint32_t num_bytes,
                           std::vector<DispatcherTransport>* transports,
                           MojoWriteMessageFlags flags);

@@ -67,7 +67,7 @@ void MessagePipe::Close(unsigned port) {
 // TODO(vtl): Handle flags.
 MojoResult MessagePipe::WriteMessage(
     unsigned port,
-    const void* bytes,
+    UserPointer<const void> bytes,
     uint32_t num_bytes,
     std::vector<DispatcherTransport>* transports,
     MojoWriteMessageFlags flags) {
@@ -76,9 +76,7 @@ MojoResult MessagePipe::WriteMessage(
       GetPeerPort(port),
       make_scoped_ptr(new MessageInTransit(
           MessageInTransit::kTypeMessagePipeEndpoint,
-          MessageInTransit::kSubtypeMessagePipeEndpointData,
-          num_bytes,
-          bytes)),
+          MessageInTransit::kSubtypeMessagePipeEndpointData, num_bytes, bytes)),
       transports);
 }
 

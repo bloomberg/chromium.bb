@@ -106,7 +106,7 @@ MojoResult Dispatcher::Close() {
 }
 
 MojoResult Dispatcher::WriteMessage(
-    const void* bytes,
+    UserPointer<const void> bytes,
     uint32_t num_bytes,
     std::vector<DispatcherTransport>* transports,
     MojoWriteMessageFlags flags) {
@@ -255,7 +255,7 @@ void Dispatcher::CloseImplNoLock() {
 }
 
 MojoResult Dispatcher::WriteMessageImplNoLock(
-    const void* /*bytes*/,
+    UserPointer<const void> /*bytes*/,
     uint32_t /*num_bytes*/,
     std::vector<DispatcherTransport>* /*transports*/,
     MojoWriteMessageFlags /*flags*/) {

@@ -92,19 +92,7 @@ MessageInTransit::MessageInTransit(Type type,
     : main_buffer_size_(RoundUpMessageAlignment(sizeof(Header) + num_bytes)),
       main_buffer_(static_cast<char*>(base::AlignedAlloc(main_buffer_size_,
                                                          kMessageAlignment))) {
-  DCHECK_LE(num_bytes, kMaxMessageNumBytes);
-
-  // |total_size| is updated below, from the other values.
-  header()->type = type;
-  header()->subtype = subtype;
-  header()->source_id = kInvalidEndpointId;
-  header()->destination_id = kInvalidEndpointId;
-  header()->num_bytes = num_bytes;
-  header()->unused = 0;
-  // Note: If dispatchers are subsequently attached, then |total_size| will have
-  // to be adjusted.
-  UpdateTotalSize();
-
+  ConstructorHelper(type, subtype, num_bytes);
   if (bytes) {
     memcpy(MessageInTransit::bytes(), bytes, num_bytes);
     memset(static_cast<char*>(MessageInTransit::bytes()) + num_bytes, 0,
@@ -112,6 +100,17 @@ MessageInTransit::MessageInTransit(Type type,
   } else {
     memset(MessageInTransit::bytes(), 0, main_buffer_size_ - sizeof(Header));
   }
+}
+
+MessageInTransit::MessageInTransit(Type type,
+                                   Subtype subtype,
+                                   uint32_t num_bytes,
+                                   UserPointer<const void> bytes)
+    : main_buffer_size_(RoundUpMessageAlignment(sizeof(Header) + num_bytes)),
+      main_buffer_(static_cast<char*>(base::AlignedAlloc(main_buffer_size_,
+                                                         kMessageAlignment))) {
+  ConstructorHelper(type, subtype, num_bytes);
+  bytes.GetArray(MessageInTransit::bytes(), num_bytes);
 }
 
 MessageInTransit::MessageInTransit(const View& message_view)
@@ -190,6 +189,23 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
   transport_data_.reset(new TransportData(dispatchers_.Pass(), channel));
 
   // Update the sizes in the message header.
+  UpdateTotalSize();
+}
+
+void MessageInTransit::ConstructorHelper(Type type,
+                                         Subtype subtype,
+                                         uint32_t num_bytes) {
+  DCHECK_LE(num_bytes, kMaxMessageNumBytes);
+
+  // |total_size| is updated below, from the other values.
+  header()->type = type;
+  header()->subtype = subtype;
+  header()->source_id = kInvalidEndpointId;
+  header()->destination_id = kInvalidEndpointId;
+  header()->num_bytes = num_bytes;
+  header()->unused = 0;
+  // Note: If dispatchers are subsequently attached, then |total_size| will have
+  // to be adjusted.
   UpdateTotalSize();
 }
 

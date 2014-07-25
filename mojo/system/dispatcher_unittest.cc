@@ -46,7 +46,8 @@ TEST(DispatcherTest, Basic) {
   EXPECT_EQ(Dispatcher::kTypeUnknown, d->GetType());
 
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->WriteMessage(NULL, 0, NULL, MOJO_WRITE_MESSAGE_FLAG_NONE));
+            d->WriteMessage(NullUserPointer(), 0, NULL,
+                            MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             d->ReadMessage(NullUserPointer(), NullUserPointer(), NULL, NULL,
                            MOJO_WRITE_MESSAGE_FLAG_NONE));
@@ -75,7 +76,8 @@ TEST(DispatcherTest, Basic) {
   EXPECT_EQ(MOJO_RESULT_OK, d->Close());
 
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->WriteMessage(NULL, 0, NULL, MOJO_WRITE_MESSAGE_FLAG_NONE));
+            d->WriteMessage(NullUserPointer(), 0, NULL,
+                            MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             d->ReadMessage(NullUserPointer(), NullUserPointer(), NULL, NULL,
                            MOJO_WRITE_MESSAGE_FLAG_NONE));
@@ -147,7 +149,7 @@ class ThreadSafetyStressThread : public base::SimpleThread {
       }
       case WRITE_MESSAGE:
         EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-                  dispatcher_->WriteMessage(NULL, 0, NULL,
+                  dispatcher_->WriteMessage(NullUserPointer(), 0, NULL,
                                             MOJO_WRITE_MESSAGE_FLAG_NONE));
         break;
       case READ_MESSAGE:

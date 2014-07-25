@@ -129,7 +129,17 @@ class UserPointer {
     return *pointer_;
   }
 
-  // TODO(vtl): Add a |GetArray()| method (see |PutArray()|).
+  // Gets an array (of type |Type|, or just a buffer if |Type| is |void| or
+  // |const void|) of |count| elements (or bytes if |Type| is |void| or |const
+  // void|) from the location pointed to by this user pointer. Use this when
+  // you'd do something like |memcpy(destination, user_pointer, count *
+  // sizeof(Type)|.
+  void GetArray(typename internal::remove_const<Type>::type* destination,
+                size_t count) {
+    internal::CheckUserPointerWithCountHelper<
+        sizeof(NonVoidType), MOJO_ALIGNOF(NonVoidType)>(pointer_, count);
+    memcpy(destination, pointer_, count * sizeof(NonVoidType));
+  }
 
   // Puts a value (of type |Type|, or of type |char| if |Type| is |void|) to the
   // location pointed to by this user pointer. Use this when you'd use the
@@ -158,17 +168,16 @@ class UserPointer {
     *pointer_ = value;
   }
 
-  // Puts an array (of type |Type|, or just a buffer if |Type| is |void|) and
-  // size |count| (number of elements, or number of bytes if |Type| is |void|)
-  // to the location pointed to by this user pointer. Use this when you'd do
-  // something like |memcpy(user_pointer, source, count * sizeof(Type))|.
+  // Puts an array (of type |Type|, or just a buffer if |Type| is |void|) with
+  // |count| elements (or bytes |Type| is |void|) to the location pointed to by
+  // this user pointer. Use this when you'd do something like
+  // |memcpy(user_pointer, source, count * sizeof(Type))|.
   //
   // Note: The same comments about the validity of |Put()| (except for the part
   // about |void|) apply here.
   void PutArray(const Type* source, size_t count) {
-    internal::CheckUserPointerWithCountHelper<sizeof(NonVoidType),
-                                              MOJO_ALIGNOF(NonVoidType)>(source,
-                                                                         count);
+    internal::CheckUserPointerWithCountHelper<
+        sizeof(NonVoidType), MOJO_ALIGNOF(NonVoidType)>(pointer_, count);
     memcpy(pointer_, source, count * sizeof(NonVoidType));
   }
 

@@ -179,7 +179,7 @@ MessagePipeDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
 }
 
 MojoResult MessagePipeDispatcher::WriteMessageImplNoLock(
-    const void* bytes,
+    UserPointer<const void> bytes,
     uint32_t num_bytes,
     std::vector<DispatcherTransport>* transports,
     MojoWriteMessageFlags flags) {
@@ -188,8 +188,6 @@ MojoResult MessagePipeDispatcher::WriteMessageImplNoLock(
 
   lock().AssertAcquired();
 
-  if (!VerifyUserPointerWithSize<1>(bytes, num_bytes))
-    return MOJO_RESULT_INVALID_ARGUMENT;
   if (num_bytes > kMaxMessageNumBytes)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 

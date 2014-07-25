@@ -200,10 +200,8 @@ MojoResult Core::WriteMessage(MojoHandle message_pipe_handle,
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   // Easy case: not sending any handles.
-  if (num_handles == 0) {
-    return dispatcher->WriteMessage(bytes.GetPointerUnsafe(), num_bytes, NULL,
-                                    flags);
-  }
+  if (num_handles == 0)
+    return dispatcher->WriteMessage(bytes, num_bytes, NULL, flags);
 
   // We have to handle |handles| here, since we have to mark them busy in the
   // global handle table. We can't delegate this to the dispatcher, since the
@@ -237,8 +235,8 @@ MojoResult Core::WriteMessage(MojoHandle message_pipe_handle,
       return result;
   }
 
-  MojoResult rv = dispatcher->WriteMessage(bytes.GetPointerUnsafe(), num_bytes,
-                                           &transports, flags);
+  MojoResult rv = dispatcher->WriteMessage(bytes, num_bytes, &transports,
+                                           flags);
 
   // We need to release the dispatcher locks before we take the handle table
   // lock.
