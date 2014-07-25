@@ -177,6 +177,7 @@
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGFontFaceElement.h"
+#include "core/svg/SVGTitleElement.h"
 #include "core/svg/SVGUseElement.h"
 #include "core/workers/SharedWorkerRepositoryClient.h"
 #include "core/xml/XSLTProcessor.h"
@@ -462,7 +463,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_updateFocusAppearanceRestoresSelection(false)
     , m_containsPlugins(false)
     , m_ignoreDestructiveWriteCount(0)
-    , m_titleSetExplicitly(false)
     , m_markers(adoptPtrWillBeNoop(new DocumentMarkerController))
     , m_updateFocusAppearanceTimer(this, &Document::updateFocusAppearanceTimerFired)
     , m_cssTarget(nullptr)
@@ -1381,14 +1381,14 @@ void Document::updateTitle(const String& title)
 void Document::setTitle(const String& title)
 {
     // Title set by JavaScript -- overrides any title elements.
-    m_titleSetExplicitly = true;
     if (!isHTMLDocument() && !isXHTMLDocument())
         m_titleElement = nullptr;
     else if (!m_titleElement) {
-        if (HTMLElement* headElement = head()) {
-            m_titleElement = HTMLTitleElement::create(*this);
-            headElement->appendChild(m_titleElement.get());
-        }
+        HTMLElement* headElement = head();
+        if (!headElement)
+            return;
+        m_titleElement = HTMLTitleElement::create(*this);
+        headElement->appendChild(m_titleElement.get());
     }
 
     if (isHTMLTitleElement(m_titleElement))
@@ -1397,16 +1397,23 @@ void Document::setTitle(const String& title)
         updateTitle(title);
 }
 
-void Document::setTitleElement(const String& title, Element* titleElement)
+void Document::setTitleElement(Element* titleElement)
 {
-    if (titleElement != m_titleElement) {
-        if (m_titleElement || m_titleSetExplicitly)
-            // Only allow the first title element to change the title -- others have no effect.
-            return;
+    // Only allow the first title element to change the title -- others have no effect.
+    if (m_titleElement && m_titleElement != titleElement) {
+        if (isHTMLDocument() || isXHTMLDocument()) {
+            m_titleElement = Traversal<HTMLTitleElement>::firstWithin(*this);
+        } else if (isSVGDocument()) {
+            m_titleElement = Traversal<SVGTitleElement>::firstWithin(*this);
+        }
+    } else {
         m_titleElement = titleElement;
     }
 
-    updateTitle(title);
+    if (isHTMLTitleElement(m_titleElement))
+        updateTitle(toHTMLTitleElement(m_titleElement)->text());
+    else if (isSVGTitleElement(m_titleElement))
+        updateTitle(toSVGTitleElement(m_titleElement)->textContent());
 }
 
 void Document::removeTitle(Element* titleElement)
@@ -1415,13 +1422,14 @@ void Document::removeTitle(Element* titleElement)
         return;
 
     m_titleElement = nullptr;
-    m_titleSetExplicitly = false;
 
-    // FIXME: This is broken for SVG.
-    // Update title based on first title element in the head, if one exists.
-    if (HTMLElement* headElement = head()) {
-        if (HTMLTitleElement* title = Traversal<HTMLTitleElement>::firstChild(*headElement))
-            setTitleElement(title->text(), title);
+    // Update title based on first title element in the document, if one exists.
+    if (isHTMLDocument() || isXHTMLDocument()) {
+        if (HTMLTitleElement* title = Traversal<HTMLTitleElement>::firstWithin(*this))
+            setTitleElement(title);
+    } else if (isSVGDocument()) {
+        if (SVGTitleElement* title = Traversal<SVGTitleElement>::firstWithin(*this))
+            setTitleElement(title);
     }
 
     if (!m_titleElement)

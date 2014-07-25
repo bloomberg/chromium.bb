@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+PASS document.title with head blown away 
+PASS document.title with head blown away 1 
+PASS Untitled 2 
+PASS PASS 3 
+Harness: the test ran to completion.
+

@@ -43,6 +43,8 @@ function test()
     expect('First title', document.title);
     document.documentElement.appendChild(createTitleElement('Second title'));
     expect('First title', document.title);
+    document.documentElement.removeChild(document.getElementsByTagName('title')[0]);
+    expect('Second title', document.title);
 }
 </script>
 <g id="console">

@@ -718,7 +718,7 @@ public:
     void setTitle(const String&);
 
     Element* titleElement() const { return m_titleElement.get(); }
-    void setTitleElement(const String& title, Element* titleElement);
+    void setTitleElement(Element*);
     void removeTitle(Element* titleElement);
 
     const AtomicString& dir();
@@ -1258,7 +1258,6 @@ private:
 
     String m_title;
     String m_rawTitle;
-    bool m_titleSetExplicitly;
     RefPtrWillBeMember<Element> m_titleElement;
 
     OwnPtr<AXObjectCache> m_axObjectCache;

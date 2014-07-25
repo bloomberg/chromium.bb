@@ -50,7 +50,7 @@ Node::InsertionNotificationRequest HTMLTitleElement::insertedInto(ContainerNode*
 {
     HTMLElement::insertedInto(insertionPoint);
     if (inDocument() && !isInShadowTree())
-        document().setTitleElement(text(), this);
+        document().setTitleElement(this);
     return InsertionDone;
 }
 
@@ -65,7 +65,7 @@ void HTMLTitleElement::childrenChanged(const ChildrenChange& change)
 {
     HTMLElement::childrenChanged(change);
     if (inDocument() && !isInShadowTree() && !m_ignoreTitleUpdatesWhenChildrenChange)
-        document().setTitleElement(text(), this);
+        document().setTitleElement(this);
 }
 
 String HTMLTitleElement::text() const
