@@ -32,7 +32,6 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8InspectorOverlayHost.h"
-#include "core/InspectorOverlayPage.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/PseudoElement.h"
@@ -56,6 +55,8 @@
 #include "platform/PlatformMouseEvent.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebData.h"
 #include "wtf/text/StringBuilder.h"
 #include <v8.h>
 
@@ -717,7 +718,8 @@ Page* InspectorOverlay::overlayPage()
     frame->view()->setCanHaveScrollbars(false);
     frame->view()->setTransparent(true);
 
-    RefPtr<SharedBuffer> data = SharedBuffer::create(reinterpret_cast<const char*>(InspectorOverlayPage_html), sizeof(InspectorOverlayPage_html));
+    const blink::WebData& overlayPageHTMLResource = blink::Platform::current()->loadResource("InspectorOverlayPage.html");
+    RefPtr<SharedBuffer> data = SharedBuffer::create(overlayPageHTMLResource.data(), overlayPageHTMLResource.size());
     loader.load(FrameLoadRequest(0, blankURL(), SubstituteData(data, "text/html", "UTF-8", KURL(), ForceSynchronousLoad)));
     v8::Isolate* isolate = toIsolate(frame.get());
     ScriptState* scriptState = ScriptState::forMainWorld(frame.get());

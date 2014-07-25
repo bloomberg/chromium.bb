@@ -39,10 +39,11 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8JavaScriptCallFrame.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
-#include "core/DebuggerScriptSource.h"
 #include "core/inspector/JavaScriptCallFrame.h"
 #include "core/inspector/ScriptDebugListener.h"
 #include "platform/JSONValues.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebData.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 #include "wtf/dtoa/utils.h"
@@ -556,7 +557,8 @@ void ScriptDebugServer::ensureDebuggerScriptCompiled()
 
     v8::HandleScope scope(m_isolate);
     v8::Context::Scope contextScope(v8::Debug::GetDebugContext());
-    v8::Handle<v8::String> source = v8String(m_isolate, String(reinterpret_cast<const char*>(DebuggerScriptSource_js), sizeof(DebuggerScriptSource_js)));
+    const blink::WebData& debuggerScriptSourceResource = blink::Platform::current()->loadResource("DebuggerScriptSource.js");
+    v8::Handle<v8::String> source = v8String(m_isolate, String(debuggerScriptSourceResource.data(), debuggerScriptSourceResource.size()));
     v8::Local<v8::Value> value = V8ScriptRunner::compileAndRunInternalScript(source, m_isolate);
     ASSERT(!value.IsEmpty());
     ASSERT(value->IsObject());

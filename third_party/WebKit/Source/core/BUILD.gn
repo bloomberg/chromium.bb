@@ -52,11 +52,7 @@ source_set("generated") {
   deps = [
     ":make_core_generated",
     ":prerequisites",
-    "inspector:debugger_script_source",
-    "inspector:inspector_overlay_page",
     "inspector:protocol_sources",
-    "inspector:injected_script_source",
-    "inspector:injected_canvas_script_source",
     "inspector:instrumentation_sources",
     "//gin",
     "//skia",
@@ -102,10 +98,6 @@ source_set("prerequisites") {
 
   deps = [
     ":make_core_generated",
-    "inspector:debugger_script_source",
-    "inspector:injected_canvas_script_source",
-    "inspector:injected_script_source",
-    "inspector:inspector_overlay_page",
     "inspector:protocol_sources",
     "inspector:instrumentation_sources",
     "//third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated",
@@ -431,12 +423,8 @@ source_set("core_generated") {
   deps = [
     ":make_core_generated",
     ":prerequisites",
-    "inspector:inspector_overlay_page",
     "inspector:protocol_sources",
     "inspector:instrumentation_sources",
-    "inspector:injected_canvas_script_source",
-    "inspector:injected_script_source",
-    "inspector:debugger_script_source",
     "//gin",
     "//skia",
     "//third_party/iccjpeg",

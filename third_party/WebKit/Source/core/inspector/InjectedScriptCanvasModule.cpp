@@ -33,7 +33,8 @@
 
 #include "bindings/core/v8/ScriptFunctionCall.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "core/InjectedScriptCanvasModuleSource.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebData.h"
 
 using blink::TypeBuilder::Array;
 using blink::TypeBuilder::Canvas::ResourceId;
@@ -58,7 +59,8 @@ InjectedScriptCanvasModule InjectedScriptCanvasModule::moduleForState(InjectedSc
 
 String InjectedScriptCanvasModule::source() const
 {
-    return String(reinterpret_cast<const char*>(InjectedScriptCanvasModuleSource_js), sizeof(InjectedScriptCanvasModuleSource_js));
+    const blink::WebData& canvasModuleSourceResource = blink::Platform::current()->loadResource("InjectedScriptCanvasModuleSource.js");
+    return String(canvasModuleSourceResource.data(), canvasModuleSourceResource.size());
 }
 
 ScriptValue InjectedScriptCanvasModule::wrapCanvas2DContext(const ScriptValue& context)

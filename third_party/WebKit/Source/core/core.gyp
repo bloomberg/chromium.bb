@@ -163,50 +163,6 @@
       ]
     },
     {
-      # GN version: //third_party/WebKit/Source/core/inspector:inspector_overlay_page
-      'target_name': 'inspector_overlay_page',
-      'type': 'none',
-      'variables': {
-        'input_file_path': 'inspector/InspectorOverlayPage.html',
-        'output_file_path': '<(blink_core_output_dir)/InspectorOverlayPage.h',
-        'character_array_name': 'InspectorOverlayPage_html',
-      },
-      'includes': [ '../build/ConvertFileToHeaderWithCharacterArray.gypi' ],
-    },
-    {
-      # GN version: //third_party/WebKit/Source/core/inspector:injected_canvas_script_source
-      'target_name': 'injected_canvas_script_source',
-      'type': 'none',
-      'variables': {
-        'input_file_path': 'inspector/InjectedScriptCanvasModuleSource.js',
-        'output_file_path': '<(blink_core_output_dir)/InjectedScriptCanvasModuleSource.h',
-        'character_array_name': 'InjectedScriptCanvasModuleSource_js',
-      },
-      'includes': [ '../build/ConvertFileToHeaderWithCharacterArray.gypi' ],
-    },
-    {
-      # GN version: //third_party/WebKit/Source/core/inspector:injected_script_source
-      'target_name': 'injected_script_source',
-      'type': 'none',
-      'variables': {
-        'input_file_path': 'inspector/InjectedScriptSource.js',
-        'output_file_path': '<(blink_core_output_dir)/InjectedScriptSource.h',
-        'character_array_name': 'InjectedScriptSource_js',
-      },
-      'includes': [ '../build/ConvertFileToHeaderWithCharacterArray.gypi' ],
-    },
-    {
-      # GN version: //third_party/WebKit/Source/core/inspector:debugger_script_source
-      'target_name': 'debugger_script_source',
-      'type': 'none',
-      'variables': {
-        'input_file_path': '<(bindings_core_v8_dir)/DebuggerScript.js',
-        'output_file_path': '<(blink_core_output_dir)/DebuggerScriptSource.h',
-        'character_array_name': 'DebuggerScriptSource_js',
-      },
-      'includes': [ '../build/ConvertFileToHeaderWithCharacterArray.gypi' ],
-    },
-    {
       # GN version: //third_party/WebKit/Source/core:core_generated
       'target_name': 'webcore_generated',
       'type': 'static_library',
@@ -214,12 +170,8 @@
       'dependencies': [
         'webcore_prerequisites',
         'core_generated.gyp:make_core_generated',
-        'inspector_overlay_page',
         'inspector_protocol_sources',
         'inspector_instrumentation_sources',
-        'injected_canvas_script_source',
-        'injected_script_source',
-        'debugger_script_source',
         '../bindings/core/v8/generated.gyp:bindings_core_v8_generated',
         # FIXME: don't depend on bindings_modules http://crbug.com/358074
         '../bindings/modules/generated.gyp:modules_event_generated',
@@ -354,10 +306,6 @@
       'target_name': 'webcore_prerequisites',
       'type': 'none',
       'dependencies': [
-        'debugger_script_source',
-        'injected_canvas_script_source',
-        'injected_script_source',
-        'inspector_overlay_page',
         'inspector_protocol_sources',
         'inspector_instrumentation_sources',
         'core_generated.gyp:make_core_generated',

@@ -32,11 +32,12 @@
 #include "core/inspector/InjectedScriptManager.h"
 
 #include "bindings/core/v8/ScriptValue.h"
-#include "core/InjectedScriptSource.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/JSONParser.h"
 #include "platform/JSONValues.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebData.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -157,7 +158,8 @@ void InjectedScriptManager::releaseObjectGroup(const String& objectGroup)
 
 String InjectedScriptManager::injectedScriptSource()
 {
-    return String(reinterpret_cast<const char*>(InjectedScriptSource_js), sizeof(InjectedScriptSource_js));
+    const blink::WebData& injectedScriptSourceResource = blink::Platform::current()->loadResource("InjectedScriptSource.js");
+    return String(injectedScriptSourceResource.data(), injectedScriptSourceResource.size());
 }
 
 InjectedScript InjectedScriptManager::injectedScriptFor(ScriptState* inspectedScriptState)
