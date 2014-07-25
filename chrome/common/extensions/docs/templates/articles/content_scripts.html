@@ -123,7 +123,7 @@ can have the following properties:</p>
     <th>Type</th>
     <th>Description</th>
   </tr>
-  <tr>
+  <tr id="matches">
     <td><code>matches</code></td>
     <td>array of strings</td>
     <td><em>Required.</em>
@@ -133,7 +133,7 @@ can have the following properties:</p>
     and <a href="#match-patterns-globs">Match patterns and globs</a>
     for information on how to exclude URLs.</td>
   </tr>
-  <tr>
+  <tr id="exclude_matches">
     <td><code>exclude_matches</code></td>
     <td>array of strings</td>
     <td><em>Optional.</em>
@@ -144,7 +144,7 @@ can have the following properties:</p>
     and <a href="#match-patterns-globs">Match patterns and globs</a>
     for information on how to exclude URLs.</td>
   </tr>
-  <tr>
+  <tr id="match_about_blank">
     <td><code>match_about_blank<code></td>
     <td>boolean</td>
     <td><em>Optional.</em>
@@ -158,13 +158,13 @@ can have the following properties:</p>
     <br><br>
     Defaults to <code>false</code>.</td>
   </tr>
-  <tr>
+  <tr id="css">
     <td><code>css<code></td>
     <td>array of strings</td>
     <td><em>Optional.</em>
     The list of CSS files to be injected into matching pages. These are injected in the order they appear in this array, before any DOM is constructed or displayed for the page.</td>
   </tr>
-  <tr>
+  <tr id="js">
     <td><code>js<code></td>
     <td><nobr>array of strings</nobr></td>
     <td><em>Optional.</em>
@@ -193,7 +193,7 @@ can have the following properties:</p>
     <b>Note:</b> With "document_idle", content scripts may not necessarily receive the <code>window.onload</code> event, because they may run after it has
     already fired. In most cases, listening for the <code>onload</code> event is unnecessary for content scripts running at "document_idle" because they are guaranteed to run after the DOM is complete. If your script definitely needs to run after <code>window.onload</code>, you can check if <code>onload</code> has already fired by using the <code><a href="http://www.whatwg.org/specs/web-apps/current-work/#dom-document-readystate">document.readyState</a></code> property.</td>
   </tr>
-  <tr>
+  <tr id="all_frames">
     <td><code>all_frames<code></td>
     <td>boolean</td>
     <td><em>Optional.</em>
@@ -201,14 +201,14 @@ can have the following properties:</p>
     <br><br>
     Defaults to <code>false</code>, meaning that only the top frame is matched.</td>
   </tr>
-  <tr>
+  <tr id="include_globs">
     <td><code>include_globs</code></td>
     <td>array of string</td>
     <td><em>Optional.</em>
     Applied after <code>matches</code> to include only those URLs that also match this glob. Intended to emulate the <a href="http://wiki.greasespot.net/Metadata_Block#.40include"><code>@include</code></a> Greasemonkey keyword.
     See <a href="#match-patterns-globs">Match patterns and globs</a> below for more details.</td>
   </tr>
-  <tr>
+  <tr id="exclude_globs">
     <td><code>exclude_globs</code></td>
     <td>array of string</td>
     <td><em>Optional.</em>
