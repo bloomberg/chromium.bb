@@ -68,9 +68,7 @@ class FirefoxProxySettings {
     return proxy_bypass_list_;
   }
 
-  const std::string autoconfig_url() const {
-    return autoconfig_url_;
-  }
+  const std::string& autoconfig_url() const { return autoconfig_url_; }
 
   // Converts a FirefoxProxySettings object to a net::ProxyConfig.
   // On success returns true and fills |config| with the result.

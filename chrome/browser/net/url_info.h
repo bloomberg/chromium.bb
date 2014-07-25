@@ -110,7 +110,6 @@ class UrlInfo {
     return ASSIGNED == state_ || ASSIGNED_BUT_MARKED == state_;
   }
   bool is_marked_to_delete() const { return ASSIGNED_BUT_MARKED == state_; }
-  const GURL url() const { return url_; }
 
   bool HasUrl(const GURL& url) const {
     return url_ == url;
