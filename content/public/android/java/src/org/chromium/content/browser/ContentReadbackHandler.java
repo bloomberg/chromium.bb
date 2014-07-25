@@ -24,10 +24,10 @@ public abstract class ContentReadbackHandler {
     public static interface GetBitmapCallback {
         /**
          * Called when the content readback finishes.
-         * @param success    Indicates whether the readback succeeded or not.
-         * @param bitmap     The {@link Bitmap} of the content.
+         * @param bitmap     The {@link Bitmap} of the content.  Null will be passed for readback
+         *                   failure.
          */
-        public void onFinishGetBitmap(boolean success, Bitmap bitmap);
+        public void onFinishGetBitmap(Bitmap bitmap);
     }
 
     private int mNextReadbackId = 1;
@@ -59,11 +59,11 @@ public abstract class ContentReadbackHandler {
 
 
     @CalledByNative
-    private void notifyGetBitmapFinished(int readbackId, boolean success, Bitmap bitmap) {
+    private void notifyGetBitmapFinished(int readbackId, Bitmap bitmap) {
         GetBitmapCallback callback = mGetBitmapRequests.get(readbackId);
         if (callback != null) {
             mGetBitmapRequests.delete(readbackId);
-            callback.onFinishGetBitmap(success, bitmap);
+            callback.onFinishGetBitmap(bitmap);
         } else {
             // readback Id is unregistered.
             assert false : "Readback finished for unregistered Id: " + readbackId;
@@ -83,7 +83,7 @@ public abstract class ContentReadbackHandler {
     public void getContentBitmapAsync(float scale, Rect srcRect, ContentViewCore view,
             GetBitmapCallback callback) {
         if (!readyForReadback()) {
-            callback.onFinishGetBitmap(false, null);
+            callback.onFinishGetBitmap(null);
             return;
         }
         ThreadUtils.assertOnUiThread();
@@ -103,7 +103,7 @@ public abstract class ContentReadbackHandler {
      */
     public void getCompositorBitmapAsync(WindowAndroid windowAndroid, GetBitmapCallback callback) {
         if (!readyForReadback()) {
-            callback.onFinishGetBitmap(false, null);
+            callback.onFinishGetBitmap(null);
             return;
         }
         ThreadUtils.assertOnUiThread();
