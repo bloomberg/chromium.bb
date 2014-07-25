@@ -243,7 +243,7 @@ void ProfileResetBubbleView::SetupLayoutManager(bool report_checked) {
   // For the Resetting... text to fit.
   gfx::Size reset_button_size = controls_.reset_button->GetPreferredSize();
   reset_button_size.set_width(100);
-  controls_.reset_button->set_min_size(reset_button_size);
+  controls_.reset_button->SetMinSize(reset_button_size);
 
   // No thanks button.
   controls_.no_thanks_button = new views::LabelButton(

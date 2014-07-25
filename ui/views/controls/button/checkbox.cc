@@ -67,7 +67,7 @@ Checkbox::Checkbox(const base::string16& label)
 
   // Limit the checkbox height to match the legacy appearance.
   const gfx::Size preferred_size(LabelButton::GetPreferredSize());
-  set_min_size(gfx::Size(0, preferred_size.height() + 4));
+  SetMinSize(gfx::Size(0, preferred_size.height() + 4));
 }
 
 Checkbox::~Checkbox() {

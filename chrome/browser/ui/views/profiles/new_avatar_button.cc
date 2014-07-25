@@ -150,7 +150,7 @@ void NewAvatarButton::OnErrorChanged() {
 void NewAvatarButton::UpdateAvatarButtonAndRelayoutParent() {
   // We want the button to resize if the new text is shorter.
   SetText(profiles::GetAvatarButtonTextForProfile(browser_->profile()));
-  set_min_size(gfx::Size());
+  SetMinSize(gfx::Size());
   InvalidateLayout();
 
   // Because the width of the button might have changed, the parent browser

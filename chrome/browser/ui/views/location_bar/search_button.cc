@@ -15,7 +15,7 @@ SearchButton::SearchButton(views::ButtonListener* listener)
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON);
   SetStyle(views::Button::STYLE_BUTTON);
   SetFocusable(false);
-  set_min_size(gfx::Size());
+  SetMinSize(gfx::Size());
   scoped_ptr<views::LabelButtonBorder> border(
       new views::LabelButtonBorder(style()));
   border->set_insets(gfx::Insets());
@@ -40,7 +40,7 @@ SearchButton::SearchButton(views::ButtonListener* listener)
   border->SetPainter(true, views::Button::STATE_DISABLED, NULL);
   SetBorder(border.PassAs<views::Border>());
   const int kSearchButtonWidth = 56;
-  set_min_size(gfx::Size(kSearchButtonWidth, 0));
+  SetMinSize(gfx::Size(kSearchButtonWidth, 0));
 }
 
 SearchButton::~SearchButton() {

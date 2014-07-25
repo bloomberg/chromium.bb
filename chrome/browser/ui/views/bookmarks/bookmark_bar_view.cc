@@ -1496,7 +1496,7 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
         GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
   }
 
-  button->set_min_size(gfx::Size());
+  button->SetMinSize(gfx::Size());
   button->set_context_menu_controller(this);
   button->set_drag_controller(this);
   if (node->is_url()) {
@@ -1506,7 +1506,7 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
     else
       button->SetImage(views::Button::STATE_NORMAL, GetDefaultFavicon());
   }
-  button->set_max_size(gfx::Size(kMaxButtonWidth, 0));
+  button->SetMaxSize(gfx::Size(kMaxButtonWidth, 0));
 }
 
 void BookmarkBarView::BookmarkNodeAddedImpl(BookmarkModel* model,

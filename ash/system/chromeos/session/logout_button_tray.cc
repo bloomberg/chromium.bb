@@ -86,7 +86,7 @@ LogoutButton::LogoutButton(views::ButtonListener* listener)
   SetBorder(border.PassAs<views::Border>());
   set_animate_on_state_change(false);
 
-  set_min_size(gfx::Size(0, kShelfItemHeight));
+  SetMinSize(gfx::Size(0, kShelfItemHeight));
 }
 
 LogoutButton::~LogoutButton() {

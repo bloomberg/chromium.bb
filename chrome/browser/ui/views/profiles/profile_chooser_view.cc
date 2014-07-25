@@ -149,7 +149,7 @@ BackgroundColorHoverButton::BackgroundColorHoverButton(
     : views::LabelButton(listener, text) {
   SetBorder(views::Border::CreateEmptyBorder(0, views::kButtonHEdgeMarginNew,
                                              0, views::kButtonHEdgeMarginNew));
-  set_min_size(gfx::Size(0, kButtonHeight));
+  SetMinSize(gfx::Size(0, kButtonHeight));
   SetImage(STATE_NORMAL, normal_icon);
   SetImage(STATE_HOVERED, hover_icon);
   SetImage(STATE_PRESSED, hover_icon);
@@ -1168,7 +1168,7 @@ views::View* ProfileChooserView::CreateOtherProfilesView(
         item.name,
         *image.ToImageSkia(),
         *image.ToImageSkia());
-    button->set_min_size(gfx::Size(
+    button->SetMinSize(gfx::Size(
         0, kButtonHeight + views::kRelatedControlVerticalSpacing));
 
     open_other_profile_indexes_map_[button] = index;
@@ -1218,7 +1218,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool enable_lock) {
       text,
       *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_AVATAR),
       *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_AVATAR));
-  users_button_->set_min_size(gfx::Size(
+  users_button_->SetMinSize(gfx::Size(
       0, kButtonHeight + views::kRelatedControlVerticalSpacing));
 
   layout->StartRow(1, 0);
@@ -1230,7 +1230,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool enable_lock) {
         base::string16(),
         *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_LOCK),
         *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_LOCK));
-    lock_button_->set_min_size(gfx::Size(
+    lock_button_->SetMinSize(gfx::Size(
       0, kButtonHeight + views::kRelatedControlVerticalSpacing));
     layout->AddView(lock_button_);
   }

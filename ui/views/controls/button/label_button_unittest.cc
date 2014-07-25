@@ -69,11 +69,11 @@ TEST_F(LabelButtonTest, Label) {
   EXPECT_GT(button.GetPreferredSize().width(), long_text_width);
 
   // Clamp the size to a maximum value.
-  button.set_max_size(gfx::Size(long_text_width, 1));
+  button.SetMaxSize(gfx::Size(long_text_width, 1));
   EXPECT_EQ(button.GetPreferredSize(), gfx::Size(long_text_width, 1));
 
   // Clear the monotonically increasing minimum size.
-  button.set_min_size(gfx::Size());
+  button.SetMinSize(gfx::Size());
   EXPECT_GT(button.GetPreferredSize().width(), short_text_width);
   EXPECT_LT(button.GetPreferredSize().width(), long_text_width);
 }
@@ -101,11 +101,11 @@ TEST_F(LabelButtonTest, Image) {
   EXPECT_GT(button.GetPreferredSize().height(), large_size);
 
   // Clamp the size to a maximum value.
-  button.set_max_size(gfx::Size(large_size, 1));
+  button.SetMaxSize(gfx::Size(large_size, 1));
   EXPECT_EQ(button.GetPreferredSize(), gfx::Size(large_size, 1));
 
   // Clear the monotonically increasing minimum size.
-  button.set_min_size(gfx::Size());
+  button.SetMinSize(gfx::Size());
   EXPECT_GT(button.GetPreferredSize().width(), small_size);
   EXPECT_LT(button.GetPreferredSize().width(), large_size);
 }
@@ -157,11 +157,11 @@ TEST_F(LabelButtonTest, LabelAndImage) {
   EXPECT_GT(button.GetPreferredSize().height(), image_size);
 
   // Clamp the size to a maximum value.
-  button.set_max_size(gfx::Size(image_size, 1));
+  button.SetMaxSize(gfx::Size(image_size, 1));
   EXPECT_EQ(button.GetPreferredSize(), gfx::Size(image_size, 1));
 
   // Clear the monotonically increasing minimum size.
-  button.set_min_size(gfx::Size());
+  button.SetMinSize(gfx::Size());
   EXPECT_LT(button.GetPreferredSize().width(), text_width);
   EXPECT_LT(button.GetPreferredSize().width(), image_size);
   EXPECT_LT(button.GetPreferredSize().height(), image_size);
@@ -184,10 +184,27 @@ TEST_F(LabelButtonTest, FontList) {
 
   // The button returns to its original size when the minimal size is cleared
   // and the original font size is restored.
-  button.set_min_size(gfx::Size());
+  button.SetMinSize(gfx::Size());
   button.SetFontList(original_font_list);
   EXPECT_EQ(original_width, button.GetPreferredSize().width());
   EXPECT_EQ(original_height, button.GetPreferredSize().height());
+}
+
+TEST_F(LabelButtonTest, ChangeTextSize) {
+  const base::string16 text(ASCIIToUTF16("abc"));
+  const base::string16 longer_text(ASCIIToUTF16("abcdefghijklm"));
+  LabelButton button(NULL, text);
+
+  const int original_width = button.GetPreferredSize().width();
+
+  // The button size increases when the text size is increased.
+  button.SetText(longer_text);
+  EXPECT_GT(button.GetPreferredSize().width(), original_width);
+
+  // The button returns to its original size when the original text is restored.
+  button.SetMinSize(gfx::Size());
+  button.SetText(text);
+  EXPECT_EQ(original_width, button.GetPreferredSize().width());
 }
 
 }  // namespace views

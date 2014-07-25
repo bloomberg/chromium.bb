@@ -225,7 +225,7 @@ void FullscreenExitBubbleViews::FullscreenExitView::UpdateContent(
     mouse_lock_exit_instruction_->SetVisible(false);
     button_view_->SetVisible(true);
     button_view_->deny_button()->SetText(bubble_->GetCurrentDenyButtonText());
-    button_view_->deny_button()->set_min_size(gfx::Size());
+    button_view_->deny_button()->SetMinSize(gfx::Size());
   } else {
     bool link_visible = true;
     base::string16 accelerator;

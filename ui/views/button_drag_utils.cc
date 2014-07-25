@@ -51,7 +51,7 @@ void SetDragImage(const GURL& url,
   gfx::ShadowValues shadows(10, gfx::ShadowValue(gfx::Point(0,0), 1.0f,
       theme->GetSystemColor(ui::NativeTheme::kColorId_LabelBackgroundColor)));
   button.SetTextShadows(shadows);
-  button.set_max_size(gfx::Size(kLinkDragImageMaxWidth, 0));
+  button.SetMaxSize(gfx::Size(kLinkDragImageMaxWidth, 0));
   if (icon.isNull()) {
     button.SetImage(views::Button::STATE_NORMAL,
                     *ui::ResourceBundle::GetSharedInstance().GetImageNamed(

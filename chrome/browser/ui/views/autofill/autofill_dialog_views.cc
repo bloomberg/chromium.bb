@@ -508,7 +508,7 @@ void AutofillDialogViews::AccountChooser::Update() {
   gfx::Image icon = delegate_->AccountChooserImage();
   image_->SetImage(icon.AsImageSkia());
   menu_button_->SetText(delegate_->AccountChooserText());
-  menu_button_->set_min_size(gfx::Size());
+  menu_button_->SetMinSize(gfx::Size());
 
   bool show_link = !delegate_->MenuModelForAccountChooser();
   menu_button_->SetVisible(!show_link);

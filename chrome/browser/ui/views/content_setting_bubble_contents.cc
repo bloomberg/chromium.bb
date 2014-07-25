@@ -503,7 +503,7 @@ void ContentSettingBubbleContents::UpdateMenuButtonSizes(
 
   for (MediaMenuPartsMap::const_iterator i = media_menus_.begin();
        i != media_menus_.end(); ++i) {
-    i->first->set_min_size(gfx::Size(menu_width, 0));
-    i->first->set_max_size(gfx::Size(menu_width, 0));
+    i->first->SetMinSize(gfx::Size(menu_width, 0));
+    i->first->SetMaxSize(gfx::Size(menu_width, 0));
   }
 }
