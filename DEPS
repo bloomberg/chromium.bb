@@ -88,10 +88,6 @@ vars = {
   "boringssl_revision": "de620d9c87293fd0ed3b0a348550833565a0b61a",
 }
 
-# recursedeps controls which sub-repos are also searched for DEPS files
-# that we should also import repos from.
-recursedeps = [ 'src/third_party/WebKit' ]
-
 deps = {
   "src/breakpad/src":
     (Var("googlecode_url") % "google-breakpad") + "/trunk/src@1356",
