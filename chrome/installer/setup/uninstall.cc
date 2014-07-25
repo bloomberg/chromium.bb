@@ -26,6 +26,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
+#include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/setup_constants.h"
@@ -1280,18 +1281,24 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
 
     // TODO(huangs): Implement actual migration code and remove the hack below.
     // Remove the "shadow" App Launcher registry keys.
-    // TODO(hunags): Management of this key should not be conditional on
-    // multi-install since the app list feature is available regardless of how
-    // chrome is installed.
     if (installer_state.is_multi_install()) {
-      // Delete the "shadow" keys.
-      BrowserDistribution* shadow_app_launcher_dist =
-          BrowserDistribution::GetSpecificDistribution(
-              BrowserDistribution::CHROME_APP_HOST);
-      InstallUtil::DeleteRegistryKey(
-          reg_root,
-          shadow_app_launcher_dist->GetVersionKey(),
-          KEY_WOW64_32KEY);
+      // If we're not uninstalling the legacy App Launcher, and if it was
+      // not installed in the first place, then delete the "shadow" keys.
+      chrome_launcher_support::InstallationState level_to_check =
+          installer_state.system_install() ?
+              chrome_launcher_support::INSTALLED_AT_SYSTEM_LEVEL :
+              chrome_launcher_support::INSTALLED_AT_USER_LEVEL;
+      bool has_legacy_app_launcher = level_to_check ==
+          chrome_launcher_support::GetAppLauncherInstallationState();
+      if (!has_legacy_app_launcher) {
+        BrowserDistribution* shadow_app_launcher_dist =
+            BrowserDistribution::GetSpecificDistribution(
+                BrowserDistribution::CHROME_APP_HOST);
+        InstallUtil::DeleteRegistryKey(
+            reg_root,
+            shadow_app_launcher_dist->GetVersionKey(),
+            KEY_WOW64_32KEY);
+      }
     }
   }
 

@@ -1134,6 +1134,7 @@
         }],
         ['OS=="win"', {
           'dependencies': [
+            'launcher_support',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
           ],

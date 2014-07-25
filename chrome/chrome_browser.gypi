@@ -3332,6 +3332,7 @@
           'dependencies': [
             'chrome_process_finder',
             'installer_util_strings',
+            'launcher_support',
             '../chrome/chrome.gyp:chrome_version_header',
             '../chrome_elf/chrome_elf.gyp:chrome_elf',
             '../chrome_elf/chrome_elf.gyp:chrome_elf_constants',

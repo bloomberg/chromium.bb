@@ -20,6 +20,8 @@ extern const wchar_t kInstallSourceChromeDir[];
 
 extern const wchar_t kMediaPlayerRegPath[];
 
+extern const char kInstallFromWebstore[];
+
 }  // namespace installer
 
 #endif  // CHROME_INSTALLER_SETUP_SETUP_CONSTANTS_H__

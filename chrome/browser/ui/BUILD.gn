@@ -340,6 +340,7 @@ static_library("ui") {
       "//ui/views",
       "//ui/views/controls/webview",
       #'installer_util_strings',  TODO(GYP)
+      #'launcher_support',  TODO(GYP)
       #'metro_utils',  TODO(GYP)
       #'../google_update/google_update.gyp:google_update',  TODO(GYP)
     ]

@@ -21,11 +21,17 @@
 
 #include "installer_util_strings.h"  // NOLINT
 
+namespace {
+
+const wchar_t kChromeAppHostGuid[] = L"{FDA71E6F-AC4C-4a00-8B70-9958A68906BF}";
+
+}  // namespace
+
 ChromeAppHostDistribution::ChromeAppHostDistribution()
     : BrowserDistribution(
           CHROME_APP_HOST,
           scoped_ptr<AppRegistrationData>(
-              new UpdatingAppRegistrationData(installer::kAppLauncherGuid))) {
+              new UpdatingAppRegistrationData(kChromeAppHostGuid))) {
 }
 
 base::string16 ChromeAppHostDistribution::GetBaseAppName() {

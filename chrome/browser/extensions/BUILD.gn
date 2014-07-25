@@ -196,6 +196,7 @@ static_library("extensions") {
       deps += [
         "//third_party/iaccessible2",
         "//third_party/isimpledom",
+        #'launcher_support',  TODO(GYP)
       ]
     } else if (!is_chromeos) {
       sources += [ "api/system_display/display_info_provider_aura.cc" ]

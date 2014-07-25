@@ -23,8 +23,10 @@
 #include "ui/views/widget/widget.h"
 
 UninstallView::UninstallView(int* user_selection,
-                             const base::Closure& quit_closure)
+                             const base::Closure& quit_closure,
+                             bool show_delete_profile)
     : confirm_label_(NULL),
+      show_delete_profile_(show_delete_profile),
       delete_profile_(NULL),
       change_default_browser_(NULL),
       browsers_combo_(NULL),
@@ -62,15 +64,17 @@ void UninstallView::SetupControls() {
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   // The "delete profile" check box.
-  ++column_set_id;
-  column_set = layout->AddColumnSet(column_set_id);
-  column_set->AddPaddingColumn(0, views::kPanelHorizIndentation);
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
-                        GridLayout::USE_PREF, 0, 0);
-  layout->StartRow(0, column_set_id);
-  delete_profile_ = new views::Checkbox(
-      l10n_util::GetStringUTF16(IDS_UNINSTALL_DELETE_PROFILE));
-  layout->AddView(delete_profile_);
+  if (show_delete_profile_) {
+    ++column_set_id;
+    column_set = layout->AddColumnSet(column_set_id);
+    column_set->AddPaddingColumn(0, views::kPanelHorizIndentation);
+    column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
+                          GridLayout::USE_PREF, 0, 0);
+    layout->StartRow(0, column_set_id);
+    delete_profile_ = new views::Checkbox(
+        l10n_util::GetStringUTF16(IDS_UNINSTALL_DELETE_PROFILE));
+    layout->AddView(delete_profile_);
+  }
 
   // Set default browser combo box. If the default should not or cannot be
   // changed, widgets are not shown. We assume here that if Chrome cannot
@@ -111,7 +115,7 @@ void UninstallView::SetupControls() {
 
 bool UninstallView::Accept() {
   user_selection_ = content::RESULT_CODE_NORMAL_EXIT;
-  if (delete_profile_->checked())
+  if (show_delete_profile_ && delete_profile_->checked())
     user_selection_ = chrome::RESULT_CODE_UNINSTALL_DELETE_PROFILE;
   if (change_default_browser_ && change_default_browser_->checked()) {
     BrowsersMap::const_iterator i = browsers_->begin();
@@ -163,7 +167,7 @@ base::string16 UninstallView::GetItemAt(int index) {
 
 namespace chrome {
 
-int ShowUninstallBrowserPrompt() {
+int ShowUninstallBrowserPrompt(bool show_delete_profile) {
   DCHECK(base::MessageLoopForUI::IsCurrent());
   int result = content::RESULT_CODE_NORMAL_EXIT;
 
@@ -178,7 +182,8 @@ int ShowUninstallBrowserPrompt() {
 
   base::RunLoop run_loop;
   UninstallView* view = new UninstallView(&result,
-                                          run_loop.QuitClosure());
+                                          run_loop.QuitClosure(),
+                                          show_delete_profile);
   views::DialogDelegate::CreateDialogWidget(view, NULL, NULL)->Show();
   run_loop.Run();
   return result;
