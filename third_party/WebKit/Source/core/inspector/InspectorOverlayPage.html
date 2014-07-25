@@ -600,8 +600,8 @@ function drawNodeHighlight(highlight)
         for (var i = 0; i < highlight.quads.length; ++i) {
             var quad = highlight.quads[i];
             for (var j = 0; j < quad.length; ++j) {
-                quad[j].x = Math.round(quad[j].x * pageScaleFactor - scrollX);
-                quad[j].y = Math.round(quad[j].y * pageScaleFactor - scrollY);
+                quad[j].x = Math.round(quad[j].x * pageScaleFactor);
+                quad[j].y = Math.round(quad[j].y * pageScaleFactor);
             }
         }
     }

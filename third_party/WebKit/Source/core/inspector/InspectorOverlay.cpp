@@ -65,7 +65,6 @@ namespace blink {
 namespace {
 
 struct PathApplyInfo {
-    FrameView* rootView;
     FrameView* view;
     TypeBuilder::Array<JSONValue>* array;
     RenderObject* renderer;
@@ -139,13 +138,12 @@ void drawOutlinedQuad(GraphicsContext* context, const FloatQuad& quad, const Col
     context->fillPath(quadPath);
 }
 
-static void contentsQuadToPage(const FrameView* mainView, const FrameView* view, FloatQuad& quad)
+static void contentsQuadToScreen(const FrameView* view, FloatQuad& quad)
 {
     quad.setP1(view->contentsToRootView(roundedIntPoint(quad.p1())));
     quad.setP2(view->contentsToRootView(roundedIntPoint(quad.p2())));
     quad.setP3(view->contentsToRootView(roundedIntPoint(quad.p3())));
     quad.setP4(view->contentsToRootView(roundedIntPoint(quad.p4())));
-    quad += mainView->scrollOffset();
 }
 
 static bool buildNodeQuads(Node* node, Vector<FloatQuad>& quads)
@@ -157,15 +155,12 @@ static bool buildNodeQuads(Node* node, Vector<FloatQuad>& quads)
         return false;
 
     FrameView* containingView = containingFrame->view();
-    FrameView* mainView = containingFrame->page()->deprecatedLocalMainFrame()->view();
-    IntRect boundingBox = pixelSnappedIntRect(containingView->contentsToRootView(renderer->absoluteBoundingBoxRect()));
-    boundingBox.move(mainView->scrollOffset());
 
     // RenderSVGRoot should be highlighted through the isBox() code path, all other SVG elements should just dump their absoluteQuads().
     if (renderer->node() && renderer->node()->isSVGElement() && !renderer->isSVGRoot()) {
         renderer->absoluteQuads(quads);
         for (size_t i = 0; i < quads.size(); ++i)
-            contentsQuadToPage(mainView, containingView, quads[i]);
+            contentsQuadToScreen(containingView, quads[i]);
         return false;
     }
 
@@ -210,10 +205,10 @@ static bool buildNodeQuads(Node* node, Vector<FloatQuad>& quads)
     FloatQuad absBorderQuad = renderer->localToAbsoluteQuad(FloatRect(borderBox));
     FloatQuad absMarginQuad = renderer->localToAbsoluteQuad(FloatRect(marginBox));
 
-    contentsQuadToPage(mainView, containingView, absContentQuad);
-    contentsQuadToPage(mainView, containingView, absPaddingQuad);
-    contentsQuadToPage(mainView, containingView, absBorderQuad);
-    contentsQuadToPage(mainView, containingView, absMarginQuad);
+    contentsQuadToScreen(containingView, absContentQuad);
+    contentsQuadToScreen(containingView, absPaddingQuad);
+    contentsQuadToScreen(containingView, absBorderQuad);
+    contentsQuadToScreen(containingView, absMarginQuad);
 
     quads.append(absMarginQuad);
     quads.append(absBorderQuad);
@@ -555,9 +550,8 @@ PassRefPtr<TypeBuilder::DOM::ShapeOutsideInfo> InspectorOverlay::buildObjectForS
 
     LayoutRect shapeBounds = shapeOutsideInfo->computedShapePhysicalBoundingBox();
     FloatQuad shapeQuad = renderBox->localToAbsoluteQuad(FloatRect(shapeBounds));
-    FrameView* mainView = containingFrame->page()->deprecatedLocalMainFrame()->view();
     FrameView* containingView = containingFrame->view();
-    contentsQuadToPage(mainView, containingView, shapeQuad);
+    contentsQuadToScreen(containingView, shapeQuad);
 
     Shape::DisplayPaths paths;
     shapeOutsideInfo->computedShape().buildDisplayPaths(paths);
@@ -566,7 +560,6 @@ PassRefPtr<TypeBuilder::DOM::ShapeOutsideInfo> InspectorOverlay::buildObjectForS
 
     if (paths.shape.length()) {
         PathApplyInfo info;
-        info.rootView = mainView;
         info.view = containingView;
         info.array = shapePath.get();
         info.renderer = renderBox;
