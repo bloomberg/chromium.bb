@@ -31,11 +31,17 @@ bool WebScrollbarBehaviorImpl::shouldSnapBackToDragOrigin(
   // guessing/extrapolation.
   static const int kOffEndMultiplier = 3;
   static const int kOffSideMultiplier = 8;
+  static const int kDefaultWinScrollbarThickness = 17;
 
   // Find the rect within which we shouldn't snap, by expanding the track rect
   // in both dimensions.
   gfx::Rect noSnapRect(scrollbarRect);
-  const int thickness = isHorizontal ? noSnapRect.height() : noSnapRect.width();
+  int thickness = isHorizontal ? noSnapRect.height() : noSnapRect.width();
+  // Even if the platform's scrollbar is narrower than the default Windows one,
+  // we still want to provide at least as much slop area, since a slightly
+  // narrower scrollbar doesn't necessarily imply that users will drag
+  // straighter.
+  thickness = std::max(thickness, kDefaultWinScrollbarThickness);
   noSnapRect.Inset(
       (isHorizontal ? kOffEndMultiplier : kOffSideMultiplier) * -thickness,
       (isHorizontal ? kOffSideMultiplier : kOffEndMultiplier) * -thickness);
