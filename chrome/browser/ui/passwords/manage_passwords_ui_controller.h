@@ -94,7 +94,7 @@ class ManagePasswordsUIController
   // or not to save it.
   bool PasswordPendingUserDecision() const;
 
-  const autofill::ConstPasswordFormMap best_matches() const {
+  const autofill::ConstPasswordFormMap& best_matches() const {
     return password_form_map_;
   }
 
