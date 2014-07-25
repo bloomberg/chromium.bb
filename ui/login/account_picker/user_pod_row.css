@@ -83,12 +83,17 @@ html[dir=rtl] .user-image-pane {
 
 .pod .user-image {
   flex: none;
+}
+
+/* TODO(noms): Refactor this out into a CrOS-specific file and simplify the
+ style rule once it is included on CrOS only. crbug.com/397638 */
+html:not([screen=login-add-user]) .pod .user-image {
   max-height: 160px;
   max-width: 160px;
   opacity: 0.7;
 }
 
-.pod.focused .user-image {
+html:not([screen=login-add-user]) .pod.focused .user-image {
   opacity: 1;
 }
 

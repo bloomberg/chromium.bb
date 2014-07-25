@@ -58,9 +58,8 @@ html[dir=rtl] .user-image-pane {
 }
 
 .pod .user-image {
-  max-height: 180px;
-  max-width: 180px;
-  opacity: 1;
+  height: 180px;
+  width: 180px;
 }
 
 .pod input[type='password'] {
