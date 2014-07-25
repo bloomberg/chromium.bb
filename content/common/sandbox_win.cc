@@ -351,6 +351,12 @@ bool AddPolicyForSandboxedProcess(sandbox::TargetPolicy* policy) {
   if (base::win::GetVersion() > base::win::VERSION_WIN7)
     policy->AddKernelObjectToClose(L"File", L"\\Device\\DeviceApi");
 
+  // Close the proxy settings on XP.
+  if (base::win::GetVersion() <= base::win::VERSION_SERVER_2003)
+    policy->AddKernelObjectToClose(L"Key",
+        L"HKCU\\Software\\Microsoft\\Windows\\" \
+            L"CurrentVersion\\Internet Settings");
+
   sandbox::TokenLevel initial_token = sandbox::USER_UNPROTECTED;
   if (base::win::GetVersion() > base::win::VERSION_XP) {
     // On 2003/Vista the initial token has to be restricted if the main
