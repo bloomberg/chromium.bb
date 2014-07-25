@@ -35,10 +35,17 @@ const char kRapporRolloutFieldTrialName[] = "RapporRollout";
 // Constant for the finch parameter name for the server URL
 const char kRapporRolloutServerUrlParam[] = "ServerUrl";
 
+// The rappor server's URL.
+const char kDefaultServerUrl[] = "https://clients4.google.com/rappor";
+
 GURL GetServerUrl() {
-  return GURL(chrome_variations::GetVariationParamValue(
+  std::string server_url = chrome_variations::GetVariationParamValue(
       kRapporRolloutFieldTrialName,
-      kRapporRolloutServerUrlParam));
+      kRapporRolloutServerUrlParam);
+  if (!server_url.empty())
+    return GURL(server_url);
+  else
+    return GURL(kDefaultServerUrl);
 }
 
 const RapporParameters kRapporParametersForType[NUM_RAPPOR_TYPES] = {
