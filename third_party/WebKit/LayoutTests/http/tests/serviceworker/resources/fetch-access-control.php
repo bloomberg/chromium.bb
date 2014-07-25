@@ -24,11 +24,15 @@ if ((isset($_GET['Auth']) and !isset($_SERVER['PHP_AUTH_USER'])) || isset($_GET[
 
 $username = 'undefined';
 $password = 'undefined';
+$cookie = 'undefined';
 if (isset($_SERVER['PHP_AUTH_USER'])) {
     $username = $_SERVER['PHP_AUTH_USER'];
 }
 if (isset($_SERVER['PHP_AUTH_PW'])) {
     $password = $_SERVER['PHP_AUTH_PW'];
+}
+if (isset($_COOKIE['cookie'])) {
+    $cookie = $_COOKIE['cookie'];
 }
 
 header('Content-Type: application/json');
@@ -36,7 +40,8 @@ $arr = array('jsonpResult' => 'success',
              'method' => $_SERVER['REQUEST_METHOD'],
              'headers' => getallheaders(),
              'username' => $username,
-             'password' => $password);
+             'password' => $password,
+             'cookie' => $cookie);
 $json = json_encode($arr);
 echo "report( $json );";
 ?>

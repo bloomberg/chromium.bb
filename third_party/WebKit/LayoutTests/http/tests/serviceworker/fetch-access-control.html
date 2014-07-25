@@ -98,6 +98,9 @@ var checkJsonpAuth = function (username, password, url, data) {
   assert_equals(data.password,
                 password,
                 'Password must match. url: ' + url);
+  assert_equals(data.cookie,
+                username,
+                'Cookie must match. url: ' + url);
 };
 var checkJsonpError = checkJsonpResult.bind(this, 'error');
 var checkJsonpSuccess = checkJsonpResult.bind(this, 'success');
@@ -109,13 +112,14 @@ var methodIsGET = checkJsonpMethod.bind(this, 'GET');
 var methodIsPOST = checkJsonpMethod.bind(this, 'POST');
 var methodIsPUT = checkJsonpMethod.bind(this, 'PUT');
 var methodIsXXX = checkJsonpMethod.bind(this, 'XXX');
+var authCheckNone = checkJsonpAuth.bind(this, 'undefined', 'undefined');
 var authCheck1 = checkJsonpAuth.bind(this, 'username1', 'password1');
 var authCheck2 = checkJsonpAuth.bind(this, 'username2', 'password2');
 
 var TEST_TARGETS = [
   [BASE_URL + 'method=GET',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
-   [methodIsGET]],
+   [methodIsGET, authCheckNone]],
   [BASE_URL + 'method=GET&headers={}',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
    [methodIsGET]],
@@ -132,7 +136,7 @@ var TEST_TARGETS = [
 
   [BASE_URL + 'mode=same-origin&method=GET',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
-   [methodIsGET]],
+   [methodIsGET, authCheckNone]],
   [BASE_URL + 'mode=same-origin&method=GET&headers={}',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
    [methodIsGET]],
@@ -151,7 +155,7 @@ var TEST_TARGETS = [
 
   [BASE_URL + 'mode=no-cors&method=GET',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
-   [methodIsGET]],
+   [methodIsGET, authCheckNone]],
   [BASE_URL + 'mode=no-cors&method=GET&headers={}',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
    [methodIsGET]],
@@ -168,7 +172,7 @@ var TEST_TARGETS = [
 
   [BASE_URL + 'mode=cors&method=GET',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
-   [methodIsGET]],
+   [methodIsGET, authCheckNone]],
   [BASE_URL + 'mode=cors&method=GET&headers={}',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
    [methodIsGET]],
@@ -188,7 +192,7 @@ var TEST_TARGETS = [
   // CORS test
   [OTHER_BASE_URL + 'method=GET&headers=CUSTOM',
    [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
-   [methodIsGET, noCustomHeader]],
+   [methodIsGET, noCustomHeader, authCheckNone]],
   [OTHER_BASE_URL + 'method=POST&headers=CUSTOM',
    [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
    [methodIsPOST, noCustomHeader]],
@@ -204,7 +208,7 @@ var TEST_TARGETS = [
 
   [OTHER_BASE_URL + 'mode=no-cors&method=GET&headers=CUSTOM',
    [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
-   [methodIsGET, noCustomHeader]],
+   [methodIsGET, noCustomHeader, authCheckNone]],
   [OTHER_BASE_URL + 'mode=no-cors&method=POST&headers=CUSTOM',
    [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
    [methodIsPOST, noCustomHeader]],
@@ -217,7 +221,7 @@ var TEST_TARGETS = [
    [fetchRejected]],
   [OTHER_BASE_URL + 'mode=cors&method=GET&ACAOrigin=*',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
-   [methodIsGET]],
+   [methodIsGET, authCheckNone]],
   [OTHER_BASE_URL + 'mode=cors&method=GET&ACAOrigin=http://127.0.0.1:8000',
    [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
    [methodIsGET]],
