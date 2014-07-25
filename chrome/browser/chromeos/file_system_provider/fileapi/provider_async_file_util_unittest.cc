@@ -322,9 +322,10 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, Truncate) {
       file_url_,
       0,  // length
       base::Bind(&EventLogger::OnStatus, base::Unretained(&logger)));
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(logger.result());
-  EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.result());
+  EXPECT_EQ(base::File::FILE_OK, *logger.result());
 }
 
 TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CopyFileLocal) {

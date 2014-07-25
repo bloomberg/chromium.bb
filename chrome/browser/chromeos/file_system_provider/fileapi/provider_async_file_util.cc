@@ -213,6 +213,28 @@ void OnMoveEntry(const fileapi::AsyncFileUtil::StatusCallback& callback,
       BrowserThread::IO, FROM_HERE, base::Bind(callback, result));
 }
 
+// Executes Truncate on the UI thread.
+void TruncateOnUIThread(
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
+    const fileapi::FileSystemURL& url,
+    int64 length,
+    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+  util::FileSystemURLParser parser(url);
+  if (!parser.Parse()) {
+    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+    return;
+  }
+
+  parser.file_system()->Truncate(parser.file_path(), length, callback);
+}
+
+// Routes the response of Truncate back to the IO thread.
+void OnTruncate(const fileapi::AsyncFileUtil::StatusCallback& callback,
+                base::File::Error result) {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE, base::Bind(callback, result));
+}
+
 }  // namespace
 
 ProviderAsyncFileUtil::ProviderAsyncFileUtil() {}
@@ -312,7 +334,13 @@ void ProviderAsyncFileUtil::Truncate(
     int64 length,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  callback.Run(base::File::FILE_ERROR_ACCESS_DENIED);
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&TruncateOnUIThread,
+                                     base::Passed(&context),
+                                     url,
+                                     length,
+                                     base::Bind(&OnTruncate, callback)));
 }
 
 void ProviderAsyncFileUtil::CopyFileLocal(

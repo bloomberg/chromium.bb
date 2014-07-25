@@ -266,6 +266,14 @@ void FakeProvidedFileSystem::MoveEntry(
       FROM_HERE, base::Bind(callback, base::File::FILE_OK));
 }
 
+void FakeProvidedFileSystem::Truncate(
+    const base::FilePath& file_path,
+    int64 length,
+    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(callback, base::File::FILE_OK));
+}
+
 const ProvidedFileSystemInfo& FakeProvidedFileSystem::GetFileSystemInfo()
     const {
   return file_system_info_;

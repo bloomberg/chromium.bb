@@ -136,6 +136,12 @@ class ProvidedFileSystemInterface {
       const base::FilePath& target_path,
       const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
 
+  // Requests truncating a file to the desired length.
+  virtual void Truncate(
+      const base::FilePath& file_path,
+      int64 length,
+      const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
+
   // Returns a provided file system info for this file system.
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const = 0;
 

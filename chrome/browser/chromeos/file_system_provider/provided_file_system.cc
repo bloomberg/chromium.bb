@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/file_system_provider/operations/open_file.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/read_directory.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/read_file.h"
+#include "chrome/browser/chromeos/file_system_provider/operations/truncate.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/unmount.h"
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -209,6 +210,22 @@ void ProvidedFileSystem::MoveEntry(
                                         source_path,
                                         target_path,
                                         callback)))) {
+    callback.Run(base::File::FILE_ERROR_SECURITY);
+  }
+}
+
+void ProvidedFileSystem::Truncate(
+    const base::FilePath& file_path,
+    int64 length,
+    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+  if (!request_manager_.CreateRequest(
+          TRUNCATE,
+          scoped_ptr<RequestManager::HandlerInterface>(
+              new operations::Truncate(event_router_,
+                                       file_system_info_,
+                                       file_path,
+                                       length,
+                                       callback)))) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
   }
 }

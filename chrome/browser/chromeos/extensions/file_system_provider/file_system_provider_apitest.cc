@@ -104,4 +104,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, MoveEntry) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Truncate) {
+  ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/truncate",
+                                          kFlagLoadAsComponent))
+      << message_;
+}
+
 }  // namespace extensions

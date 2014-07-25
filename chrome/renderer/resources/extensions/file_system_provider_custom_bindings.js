@@ -220,4 +220,8 @@ eventBindings.registerArgumentMassager(
     'fileSystemProvider.onMoveEntryRequested',
     massageArgumentsDefault);
 
+eventBindings.registerArgumentMassager(
+    'fileSystemProvider.onTruncateRequested',
+    massageArgumentsDefault);
+
 exports.binding = binding.generate();

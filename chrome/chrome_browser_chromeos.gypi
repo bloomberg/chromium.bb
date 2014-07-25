@@ -421,6 +421,8 @@
         'browser/chromeos/file_system_provider/operations/read_directory.h',
         'browser/chromeos/file_system_provider/operations/read_file.cc',
         'browser/chromeos/file_system_provider/operations/read_file.h',
+        'browser/chromeos/file_system_provider/operations/truncate.cc',
+        'browser/chromeos/file_system_provider/operations/truncate.h',
         'browser/chromeos/file_system_provider/operations/unmount.cc',
         'browser/chromeos/file_system_provider/operations/unmount.h',
         'browser/chromeos/file_system_provider/provided_file_system.cc',
