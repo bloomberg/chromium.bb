@@ -24,6 +24,13 @@ SymmetricKey::~SymmetricKey() {
 SymmetricKey* SymmetricKey::GenerateRandomKey(Algorithm algorithm,
                                               size_t key_size_in_bits) {
   DCHECK_EQ(AES, algorithm);
+
+  // Whitelist supported key sizes to avoid accidentaly relying on
+  // algorithms available in NSS but not BoringSSL and vice
+  // versa. Note that BoringSSL does not support AES-192.
+  if (key_size_in_bits != 128 && key_size_in_bits != 256)
+    return NULL;
+
   size_t key_size_in_bytes = key_size_in_bits / 8;
   DCHECK_EQ(key_size_in_bits, key_size_in_bytes * 8);
 
@@ -46,6 +53,15 @@ SymmetricKey* SymmetricKey::DeriveKeyFromPassword(Algorithm algorithm,
                                                   size_t iterations,
                                                   size_t key_size_in_bits) {
   DCHECK(algorithm == AES || algorithm == HMAC_SHA1);
+
+  if (algorithm == AES) {
+    // Whitelist supported key sizes to avoid accidentaly relying on
+    // algorithms available in NSS but not BoringSSL and vice
+    // versa. Note that BoringSSL does not support AES-192.
+    if (key_size_in_bits != 128 && key_size_in_bits != 256)
+      return NULL;
+  }
+
   size_t key_size_in_bytes = key_size_in_bits / 8;
   DCHECK_EQ(key_size_in_bits, key_size_in_bytes * 8);
 
@@ -67,6 +83,14 @@ SymmetricKey* SymmetricKey::DeriveKeyFromPassword(Algorithm algorithm,
 // static
 SymmetricKey* SymmetricKey::Import(Algorithm algorithm,
                                    const std::string& raw_key) {
+  if (algorithm == AES) {
+    // Whitelist supported key sizes to avoid accidentaly relying on
+    // algorithms available in NSS but not BoringSSL and vice
+    // versa. Note that BoringSSL does not support AES-192.
+    if (raw_key.size() != 128/8 && raw_key.size() != 256/8)
+      return NULL;
+  }
+
   scoped_ptr<SymmetricKey> key(new SymmetricKey);
   key->key_ = raw_key;
   return key.release();

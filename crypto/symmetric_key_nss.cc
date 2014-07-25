@@ -20,7 +20,11 @@ SymmetricKey* SymmetricKey::GenerateRandomKey(Algorithm algorithm,
   DCHECK_EQ(AES, algorithm);
 
   EnsureNSSInit();
-  if (key_size_in_bits == 0)
+
+  // Whitelist supported key sizes to avoid accidentaly relying on
+  // algorithms available in NSS but not BoringSSL and vice
+  // versa. Note that BoringSSL does not support AES-192.
+  if (key_size_in_bits != 128 && key_size_in_bits != 256)
     return NULL;
 
   ScopedPK11Slot slot(PK11_GetInternalSlot());
@@ -44,6 +48,14 @@ SymmetricKey* SymmetricKey::DeriveKeyFromPassword(Algorithm algorithm,
   EnsureNSSInit();
   if (salt.empty() || iterations == 0 || key_size_in_bits == 0)
     return NULL;
+
+  if (algorithm == AES) {
+    // Whitelist supported key sizes to avoid accidentaly relying on
+    // algorithms available in NSS but not BoringSSL and vice
+    // versa. Note that BoringSSL does not support AES-192.
+    if (key_size_in_bits != 128 && key_size_in_bits != 256)
+      return NULL;
+  }
 
   SECItem password_item;
   password_item.type = siBuffer;
@@ -84,6 +96,15 @@ SymmetricKey* SymmetricKey::DeriveKeyFromPassword(Algorithm algorithm,
 SymmetricKey* SymmetricKey::Import(Algorithm algorithm,
                                    const std::string& raw_key) {
   EnsureNSSInit();
+
+  if (algorithm == AES) {
+    // Whitelist supported key sizes to avoid accidentaly relying on
+    // algorithms available in NSS but not BoringSSL and vice
+    // versa. Note that BoringSSL does not support AES-192.
+    if (raw_key.size() != 128/8 && raw_key.size() != 256/8)
+      return NULL;
+  }
+
   CK_MECHANISM_TYPE cipher =
       algorithm == AES ? CKM_AES_CBC : CKM_SHA_1_HMAC;
 

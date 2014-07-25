@@ -456,32 +456,6 @@ TEST(EncryptorTest, EncryptAES128CBCRegression) {
   EXPECT_EQ(plaintext, decrypted);
 }
 
-// Expected output derived from the NSS implementation.
-TEST(EncryptorTest, EncryptAES192CBCRegression) {
-  std::string key = "192bitsIsTwentyFourByte!";
-  std::string iv = "Sweet Sixteen IV";
-  std::string plaintext = "Small text";
-  std::string expected_ciphertext_hex = "78DE5D7C2714FC5C61346C5416F6C89A";
-
-  scoped_ptr<crypto::SymmetricKey> sym_key(crypto::SymmetricKey::Import(
-      crypto::SymmetricKey::AES, key));
-  ASSERT_TRUE(sym_key.get());
-
-  crypto::Encryptor encryptor;
-  // The IV must be exactly as long a the cipher block size.
-  EXPECT_EQ(16U, iv.size());
-  EXPECT_TRUE(encryptor.Init(sym_key.get(), crypto::Encryptor::CBC, iv));
-
-  std::string ciphertext;
-  EXPECT_TRUE(encryptor.Encrypt(plaintext, &ciphertext));
-  EXPECT_EQ(expected_ciphertext_hex, base::HexEncode(ciphertext.data(),
-                                                     ciphertext.size()));
-
-  std::string decrypted;
-  EXPECT_TRUE(encryptor.Decrypt(ciphertext, &decrypted));
-  EXPECT_EQ(plaintext, decrypted);
-}
-
 // Not all platforms allow import/generation of symmetric keys with an
 // unsupported size.
 #if !defined(USE_NSS) && !defined(OS_WIN) && !defined(OS_MACOSX)
