@@ -42,7 +42,7 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
     // Introduced in DOM Level 2:
 
-    [CustomElementCallbacks, RaisesException, TypeChecking=Interface] Node importNode(Node node, optional boolean deep);
+    [CustomElementCallbacks, RaisesException, TypeChecking=Interface] Node importNode(Node node, optional boolean deep = false);
     [CustomElementCallbacks, RaisesException] Element createElementNS(DOMString? namespaceURI, DOMString qualifiedName);
     [RaisesException, DeprecateAs=DocumentCreateAttributeNS] Attr createAttributeNS([Default=Undefined] optional DOMString? namespaceURI,
                                                                                     [Default=Undefined] optional DOMString? qualifiedName); // Removed from DOM4.

@@ -1,4 +1,3 @@
-CONSOLE WARNING: The behavior of importNode() with no boolean argument is about to change from doing a deep clone to doing a shallow clone.  Make sure to pass an explicit boolean argument to keep your current behavior.
 importNode should throw informative errors for unsupported node types
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

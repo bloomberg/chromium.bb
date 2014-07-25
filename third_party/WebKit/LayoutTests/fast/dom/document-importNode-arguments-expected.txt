@@ -1,8 +1,7 @@
-CONSOLE WARNING: The behavior of importNode() with no boolean argument is about to change from doing a deep clone to doing a shallow clone.  Make sure to pass an explicit boolean argument to keep your current behavior.
 This page tests calling document.importNode.
 
-PASS imported.childNodes.length is 2
-PASS imported.textContent == 'hello world' is true
+PASS imported.childNodes.length is 0
+PASS imported.textContent == '' is true
 PASS imported.childNodes.length is 2
 PASS imported.textContent == 'hello world' is true
 PASS imported.childNodes.length is 0

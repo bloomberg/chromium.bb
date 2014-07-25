@@ -368,7 +368,6 @@ public:
         PrefixedIDBTransactionConstructor = 370,
         NotificationPermission = 371,
         RangeDetach = 372,
-        DocumentImportNodeOptionalArgument = 373,
         HTMLTableElementVspace = 374,
         HTMLTableElementHspace = 375,
         PrefixedDocumentExitPointerLock = 376,

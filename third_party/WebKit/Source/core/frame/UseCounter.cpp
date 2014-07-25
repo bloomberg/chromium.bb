@@ -721,10 +721,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case RangeDetach:
         return "'Range.detach' is now a no-op, as per DOM (http://dom.spec.whatwg.org/#dom-range-detach).";
 
-    case DocumentImportNodeOptionalArgument:
-        return "The behavior of importNode() with no boolean argument is about to change from doing a deep clone to doing a shallow clone.  "
-            "Make sure to pass an explicit boolean argument to keep your current behavior.";
-
     case OverflowChangedEvent:
         return "The 'overflowchanged' event is deprecated and may be removed. Please do not use it.";
 

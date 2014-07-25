@@ -308,7 +308,6 @@ public:
     PassRefPtrWillBeRawPtr<ProcessingInstruction> createProcessingInstruction(const String& target, const String& data, ExceptionState&);
     PassRefPtrWillBeRawPtr<Attr> createAttribute(const AtomicString& name, ExceptionState&);
     PassRefPtrWillBeRawPtr<Attr> createAttributeNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState&, bool shouldIgnoreNamespaceChecks = false);
-    PassRefPtrWillBeRawPtr<Node> importNode(Node* importedNode, ExceptionState&);
     PassRefPtrWillBeRawPtr<Node> importNode(Node* importedNode, bool deep, ExceptionState&);
     PassRefPtrWillBeRawPtr<Element> createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState&);
     PassRefPtrWillBeRawPtr<Element> createElement(const QualifiedName&, bool createdByParser);

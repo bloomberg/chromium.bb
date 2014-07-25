@@ -15,8 +15,8 @@ var d = document.createElement("div");
 d.innerHTML = "<span>hello </span><span>world</span>";
 
 imported = document.importNode(d);
-shouldBe('imported.childNodes.length','2');
-shouldBeTrue("imported.textContent == 'hello world'");
+shouldBe('imported.childNodes.length','0');
+shouldBeTrue("imported.textContent == ''");
 
 imported = document.importNode(d, true);
 shouldBe('imported.childNodes.length','2');

@@ -956,12 +956,6 @@ bool Document::importContainerNodeChildren(ContainerNode* oldContainerNode, Pass
     return true;
 }
 
-PassRefPtrWillBeRawPtr<Node> Document::importNode(Node* importedNode, ExceptionState& ec)
-{
-    UseCounter::countDeprecation(this, UseCounter::DocumentImportNodeOptionalArgument);
-    return importNode(importedNode, true, ec);
-}
-
 PassRefPtrWillBeRawPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionState& exceptionState)
 {
     switch (importedNode->nodeType()) {
