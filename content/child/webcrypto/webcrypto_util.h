@@ -87,6 +87,17 @@ Status VerifyAesKeyLengthForImport(unsigned int keylen_bytes);
 Status CheckKeyCreationUsages(blink::WebCryptoKeyUsageMask all_possible_usages,
                               blink::WebCryptoKeyUsageMask actual_usages);
 
+// Extracts the public exponent and modulus length from the Blink parameters.
+// On success it is guaranteed that:
+//   * public_exponent is either 3 or 65537
+//   * modulus_length_bits is a multiple of 8
+//   * modulus_length is >= 256
+//   * modulus_length is <= 16K
+Status GetRsaKeyGenParameters(
+    const blink::WebCryptoRsaHashedKeyGenParams* params,
+    unsigned int* public_exponent,
+    unsigned int* modulus_length_bits);
+
 }  // namespace webcrypto
 
 }  // namespace content

@@ -176,8 +176,8 @@ class CONTENT_EXPORT Status {
   // The modulus bytes were empty when importing an RSA public key.
   static Status ErrorImportRsaEmptyModulus();
 
-  // The the modulus length was zero bits when generating an RSA public key.
-  static Status ErrorGenerateRsaZeroModulus();
+  // The modulus length was unsupported when generating an RSA key pair.
+  static Status ErrorGenerateRsaUnsupportedModulus();
 
   // The exponent bytes were empty when importing an RSA public key.
   static Status ErrorImportRsaEmptyExponent();

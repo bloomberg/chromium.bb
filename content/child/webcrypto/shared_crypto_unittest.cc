@@ -2524,7 +2524,7 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsa)) {
                                      blink::WebCryptoAlgorithmIdSha256,
                                      0,
                                      public_exponent);
-  EXPECT_EQ(Status::ErrorGenerateRsaZeroModulus(),
+  EXPECT_EQ(Status::ErrorGenerateRsaUnsupportedModulus(),
             GenerateKeyPair(
                 algorithm, extractable, usage_mask, &public_key, &private_key));
 
@@ -2627,32 +2627,33 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsa)) {
 }
 
 TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsaBadModulusLength)) {
-  const unsigned int kBadModulus[] = {
+  const unsigned int kBadModulusBits[] = {
       0,
-      255,         // Not a multiple of 8.
+      248,         // Too small.
+      257,         // Not a multiple of 8.
       1023,        // Not a multiple of 8.
-      0xFFFFFFFF,  // Cannot fit in a signed int.
+      0xFFFFFFFF,  // Too big.
       16384 + 8,   // 16384 is the maxmimum length that NSS succeeds for.
   };
 
   const std::vector<uint8_t> public_exponent = HexStringToBytes("010001");
 
-  for (size_t i = 0; i < arraysize(kBadModulus); ++i) {
-    const unsigned int modulus_length = kBadModulus[i];
+  for (size_t i = 0; i < arraysize(kBadModulusBits); ++i) {
+    const unsigned int modulus_length_bits = kBadModulusBits[i];
     blink::WebCryptoAlgorithm algorithm = CreateRsaHashedKeyGenAlgorithm(
         blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
         blink::WebCryptoAlgorithmIdSha256,
-        modulus_length,
+        modulus_length_bits,
         public_exponent);
     bool extractable = true;
     const blink::WebCryptoKeyUsageMask usage_mask = 0;
     blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
     blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
 
-    EXPECT_FALSE(
+    EXPECT_EQ(
+        Status::ErrorGenerateRsaUnsupportedModulus(),
         GenerateKeyPair(
-            algorithm, extractable, usage_mask, &public_key, &private_key)
-            .IsSuccess());
+            algorithm, extractable, usage_mask, &public_key, &private_key));
   }
 }
 

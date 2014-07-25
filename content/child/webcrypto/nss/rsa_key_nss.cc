@@ -5,7 +5,6 @@
 #include "content/child/webcrypto/nss/rsa_key_nss.h"
 
 #include "base/logging.h"
-#include "base/numerics/safe_math.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/jwk.h"
 #include "content/child/webcrypto/nss/key_nss.h"
@@ -21,27 +20,6 @@ namespace content {
 namespace webcrypto {
 
 namespace {
-
-// Converts a (big-endian) WebCrypto BigInteger, with or without leading zeros,
-// to unsigned long.
-bool BigIntegerToLong(const uint8_t* data,
-                      unsigned int data_size,
-                      unsigned long* result) {
-  // TODO(eroman): Fix handling of empty biginteger. http://crubg.com/373552
-  if (data_size == 0)
-    return false;
-
-  *result = 0;
-  for (size_t i = 0; i < data_size; ++i) {
-    size_t reverse_i = data_size - i - 1;
-
-    if (reverse_i >= sizeof(unsigned long) && data[i])
-      return false;  // Too large for a long.
-
-    *result |= data[i] << 8 * reverse_i;
-  }
-  return true;
-}
 
 bool CreatePublicKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
                               SECKEYPublicKey* key,
@@ -579,30 +557,20 @@ Status RsaHashedAlgorithm::GenerateKeyPair(
     blink::WebCryptoKeyUsageMask private_usage_mask,
     blink::WebCryptoKey* public_key,
     blink::WebCryptoKey* private_key) const {
-  const blink::WebCryptoRsaHashedKeyGenParams* params =
-      algorithm.rsaHashedKeyGenParams();
-
-  if (!params->modulusLengthBits())
-    return Status::ErrorGenerateRsaZeroModulus();
-
-  unsigned long public_exponent = 0;
-  if (!BigIntegerToLong(params->publicExponent().data(),
-                        params->publicExponent().size(),
-                        &public_exponent) ||
-      (public_exponent != 3 && public_exponent != 65537)) {
-    return Status::ErrorGenerateKeyPublicExponent();
-  }
+  unsigned int public_exponent = 0;
+  unsigned int modulus_length_bits = 0;
+  Status status = GetRsaKeyGenParameters(algorithm.rsaHashedKeyGenParams(),
+                                         &public_exponent,
+                                         &modulus_length_bits);
+  if (status.IsError())
+    return status;
 
   crypto::ScopedPK11Slot slot(PK11_GetInternalKeySlot());
   if (!slot)
     return Status::OperationError();
 
   PK11RSAGenParams rsa_gen_params;
-  // keySizeInBits is a signed type, don't pass in a negative value.
-  base::CheckedNumeric<int> signed_modulus(params->modulusLengthBits());
-  if (!signed_modulus.IsValid())
-    return Status::OperationError();
-  rsa_gen_params.keySizeInBits = signed_modulus.ValueOrDie();
+  rsa_gen_params.keySizeInBits = modulus_length_bits;
   rsa_gen_params.pe = public_exponent;
 
   const CK_FLAGS operation_flags_mask =
@@ -633,7 +601,7 @@ Status RsaHashedAlgorithm::GenerateKeyPair(
     return Status::ErrorUnexpected();
 
   std::vector<uint8_t> spki_data;
-  Status status = ExportKeySpkiNss(sec_public_key, &spki_data);
+  status = ExportKeySpkiNss(sec_public_key, &spki_data);
   if (status.IsError())
     return status;
 

@@ -190,9 +190,10 @@ Status Status::ErrorImportRsaEmptyModulus() {
   return Status(blink::WebCryptoErrorTypeData, "The modulus is empty");
 }
 
-Status Status::ErrorGenerateRsaZeroModulus() {
-  return Status(blink::WebCryptoErrorTypeData,
-                "The modulus bit length cannot be zero");
+Status Status::ErrorGenerateRsaUnsupportedModulus() {
+  return Status(blink::WebCryptoErrorTypeNotSupported,
+                "The modulus length must be a multiple of 8 bits and >= 256 "
+                "and <= 16384");
 }
 
 Status Status::ErrorImportRsaEmptyExponent() {
