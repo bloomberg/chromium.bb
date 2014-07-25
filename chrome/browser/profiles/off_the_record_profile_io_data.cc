@@ -209,6 +209,9 @@ void OffTheRecordProfileIOData::InitializeInternal(
   main_context->set_throttler_manager(
       io_thread_globals->throttler_manager.get());
 
+  main_context->set_cert_transparency_verifier(
+      io_thread_globals->cert_transparency_verifier.get());
+
   // For incognito, we use the default non-persistent HttpServerPropertiesImpl.
   set_http_server_properties(
       scoped_ptr<net::HttpServerProperties>(
@@ -286,6 +289,9 @@ void OffTheRecordProfileIOData::
 
   extensions_context->set_throttler_manager(
       io_thread_globals->throttler_manager.get());
+
+  extensions_context->set_cert_transparency_verifier(
+      io_thread_globals->cert_transparency_verifier.get());
 
   // All we care about for extensions is the cookie store. For incognito, we
   // use a non-persistent cookie store.
