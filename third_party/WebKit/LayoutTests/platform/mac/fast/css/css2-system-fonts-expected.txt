@@ -1,7 +1,7 @@
 This tests platform specific system font styles. If any of the styles appear in monospace the test fails.
-caption: normal normal normal 13px/normal 'Lucida Grande'
-icon: normal normal normal 13px/normal 'Lucida Grande'
-menu: normal normal normal 13px/normal 'Lucida Grande'
-message-box: normal normal normal 13px/normal 'Lucida Grande'
-small-caption: normal normal normal 11px/normal 'Lucida Grande'
-status-bar: normal normal normal 10px/normal 'Lucida Grande'
+caption: normal normal normal normal 13px/normal 'Lucida Grande'
+icon: normal normal normal normal 13px/normal 'Lucida Grande'
+menu: normal normal normal normal 13px/normal 'Lucida Grande'
+message-box: normal normal normal normal 13px/normal 'Lucida Grande'
+small-caption: normal normal normal normal 11px/normal 'Lucida Grande'
+status-bar: normal normal normal normal 10px/normal 'Lucida Grande'
