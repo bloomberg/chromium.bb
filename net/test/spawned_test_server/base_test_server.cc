@@ -435,8 +435,7 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
       arguments->SetString("ocsp", ocsp_arg);
 
     if (ssl_options_.cert_serial != 0) {
-      arguments->Set("cert-serial",
-                     base::Value::CreateIntegerValue(ssl_options_.cert_serial));
+      arguments->SetInteger("cert-serial", ssl_options_.cert_serial);
     }
 
     // Check key exchange argument.
@@ -452,8 +451,7 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
     if (ssl_options_.record_resume)
       arguments->Set("https-record-resume", base::Value::CreateNullValue());
     if (ssl_options_.tls_intolerant != SSLOptions::TLS_INTOLERANT_NONE) {
-      arguments->Set("tls-intolerant",
-                     new base::FundamentalValue(ssl_options_.tls_intolerant));
+      arguments->SetInteger("tls-intolerant", ssl_options_.tls_intolerant);
       arguments->Set("tls-intolerance-type", GetTLSIntoleranceType(
           ssl_options_.tls_intolerance_type));
     }

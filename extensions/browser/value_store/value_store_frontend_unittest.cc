@@ -86,8 +86,7 @@ TEST_F(ValueStoreFrontendTest, GetExistingData) {
 }
 
 TEST_F(ValueStoreFrontendTest, ChangesPersistAfterReload) {
-  storage_->Set("key0",
-      scoped_ptr<base::Value>(base::Value::CreateIntegerValue(0)));
+  storage_->Set("key0", scoped_ptr<base::Value>(new base::FundamentalValue(0)));
   storage_->Set("key1", scoped_ptr<base::Value>(new base::StringValue("new1")));
   storage_->Remove("key2");
 

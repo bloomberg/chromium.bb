@@ -26,8 +26,8 @@ class Value;
 // id ascending.
 //
 // DownloadQuery query;
-// scoped_ptr<base::Value> start_time(base::Balue::CreateIntegerValue(0));
-// CHECK(query.AddFilter(FILTER_START_TIME, *start_time.get()));
+// base::FundamentalValue start_time(0);
+// CHECK(query.AddFilter(FILTER_START_TIME, start_time));
 // bool FilterOutOddDownloads(const DownloadItem& item) {
 //   return 0 == (item.GetId() % 2);
 // }

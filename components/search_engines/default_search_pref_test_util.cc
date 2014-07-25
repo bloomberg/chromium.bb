@@ -29,17 +29,17 @@ DefaultSearchPrefTestUtil::CreateDefaultSearchPreferenceValue(
   EXPECT_FALSE(keyword.empty());
   EXPECT_FALSE(search_url.empty());
   value->Set(DefaultSearchManager::kShortName,
-             base::Value::CreateStringValue(name));
+             new base::StringValue(name));
   value->Set(DefaultSearchManager::kKeyword,
-             base::Value::CreateStringValue(keyword));
+             new base::StringValue(keyword));
   value->Set(DefaultSearchManager::kURL,
-             base::Value::CreateStringValue(search_url));
+             new base::StringValue(search_url));
   value->Set(DefaultSearchManager::kSuggestionsURL,
-             base::Value::CreateStringValue(suggest_url));
+             new base::StringValue(suggest_url));
   value->Set(DefaultSearchManager::kFaviconURL,
-             base::Value::CreateStringValue(icon_url));
+             new base::StringValue(icon_url));
   value->Set(DefaultSearchManager::kSearchTermsReplacementKey,
-             base::Value::CreateStringValue(search_terms_replacement_key));
+             new base::StringValue(search_terms_replacement_key));
 
   std::vector<std::string> encodings_items;
   base::SplitString(encodings, ';', &encodings_items);
@@ -53,7 +53,7 @@ DefaultSearchPrefTestUtil::CreateDefaultSearchPreferenceValue(
 
   scoped_ptr<base::ListValue> alternate_url_list(new base::ListValue());
   if (!alternate_url.empty())
-    alternate_url_list->Append(base::Value::CreateStringValue(alternate_url));
+    alternate_url_list->Append(new base::StringValue(alternate_url));
   value->Set(DefaultSearchManager::kAlternateURLs,
              alternate_url_list.release());
   return value.Pass();

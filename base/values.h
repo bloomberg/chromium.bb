@@ -64,13 +64,6 @@ class BASE_EXPORT Value {
   virtual ~Value();
 
   static Value* CreateNullValue();
-  // DEPRECATED: Do not use the following 5 functions. Instead, use
-  // new FundamentalValue or new StringValue.
-  static FundamentalValue* CreateBooleanValue(bool in_value);
-  static FundamentalValue* CreateIntegerValue(int in_value);
-  static FundamentalValue* CreateDoubleValue(double in_value);
-  static StringValue* CreateStringValue(const std::string& in_value);
-  static StringValue* CreateStringValue(const string16& in_value);
 
   // Returns the type of the value stored by the current Value object.
   // Each type will be implemented by only one subclass of Value, so it's

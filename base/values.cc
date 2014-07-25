@@ -89,31 +89,6 @@ Value* Value::CreateNullValue() {
   return new Value(TYPE_NULL);
 }
 
-// static
-FundamentalValue* Value::CreateBooleanValue(bool in_value) {
-  return new FundamentalValue(in_value);
-}
-
-// static
-FundamentalValue* Value::CreateIntegerValue(int in_value) {
-  return new FundamentalValue(in_value);
-}
-
-// static
-FundamentalValue* Value::CreateDoubleValue(double in_value) {
-  return new FundamentalValue(in_value);
-}
-
-// static
-StringValue* Value::CreateStringValue(const std::string& in_value) {
-  return new StringValue(in_value);
-}
-
-// static
-StringValue* Value::CreateStringValue(const string16& in_value) {
-  return new StringValue(in_value);
-}
-
 bool Value::GetAsBoolean(bool* out_value) const {
   return false;
 }
