@@ -40,7 +40,8 @@ bool MaybeBypassProxyAndPrepareToRetry(
     const DataReductionProxyParams* data_reduction_proxy_params,
     net::URLRequest* request,
     const net::HttpResponseHeaders* original_response_headers,
-    scoped_refptr<net::HttpResponseHeaders>* override_response_headers) {
+    scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
+    net::ProxyService::DataReductionProxyBypassType* proxy_bypass_type) {
   if (!data_reduction_proxy_params)
     return false;
   std::pair<GURL, GURL> data_reduction_proxies;
@@ -59,11 +60,12 @@ bool MaybeBypassProxyAndPrepareToRetry(
 
   DataReductionProxyInfo data_reduction_proxy_info;
   net::ProxyService::DataReductionProxyBypassType bypass_type =
-      GetDataReductionProxyBypassType(
-          original_response_headers, &data_reduction_proxy_info);
-  if (bypass_type == net::ProxyService::BYPASS_EVENT_TYPE_MAX) {
+      GetDataReductionProxyBypassType(original_response_headers,
+                                      &data_reduction_proxy_info);
+  if (proxy_bypass_type)
+    *proxy_bypass_type = bypass_type;
+  if (bypass_type == net::ProxyService::BYPASS_EVENT_TYPE_MAX)
     return false;
-  }
 
   DCHECK(request->context());
   DCHECK(request->context()->proxy_service());

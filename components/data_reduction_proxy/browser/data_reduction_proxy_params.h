@@ -11,7 +11,12 @@
 
 #include "base/macros.h"
 #include "net/base/host_port_pair.h"
+#include "net/proxy/proxy_retry_info.h"
 #include "url/gurl.h"
+
+namespace base {
+class TimeDelta;
+}
 
 namespace net {
 class URLRequest;
@@ -103,6 +108,25 @@ class DataReductionProxyParams {
   // based on applying the param rules to the URL. We do not check bad proxy
   // list.
   virtual bool IsDataReductionProxyEligible(const net::URLRequest* request);
+
+  // Checks if all configured data reduction proxies are in the retry map.
+  // Returns true if the request is bypassed by all configured data reduction
+  // proxies and returns the bypass delay in delay_seconds (if not NULL). If
+  // there are no configured data reduction proxies, returns false. If
+  // the request is bypassed by more than one proxy, delay_seconds returns
+  // the shortest delay.
+  bool AreDataReductionProxiesBypassed(const net::URLRequest& request,
+                                       base::TimeDelta* min_retry_delay) const;
+
+  // Checks if all configured data reduction proxies are in the retry map.
+  // Returns true if the request is bypassed by all configured data reduction
+  // proxies and returns the bypass delay in delay_seconds (if not NULL). If
+  // there are no configured data reduction proxies, returns false. If
+  // the request is bypassed by more than one proxy, delay_seconds returns
+  // the shortest delay.
+  bool AreProxiesBypassed(const net::ProxyRetryInfoMap& retry_map,
+                          bool is_https,
+                          base::TimeDelta* min_retry_delay) const;
 
   // Returns the data reduction proxy primary origin.
   const GURL& origin() const {
@@ -204,6 +228,15 @@ class DataReductionProxyParams {
   virtual std::string GetDefaultWarmupURL() const;
 
  private:
+  // Checks if the primary and fallback data reduction proxies are in the retry
+  // map. Returns true if the request is bypassed by both data reduction
+  // proxies and returns the shortest bypass delay in delay_seconds (if not
+  // NULL). If the fallback proxy is not valid, returns true if primary proxy
+  // was bypassed and returns its bypass delay.
+  bool ArePrimaryAndFallbackBypassed(const net::ProxyRetryInfoMap& retry_map,
+                                     const GURL& primary,
+                                     const GURL& fallback,
+                                     base::TimeDelta* min_retry_delay) const;
   GURL origin_;
   GURL fallback_origin_;
   GURL ssl_origin_;

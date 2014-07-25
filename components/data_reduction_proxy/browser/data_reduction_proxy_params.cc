@@ -6,11 +6,16 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/time/time.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_switches.h"
+#include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_info.h"
+#include "net/proxy/proxy_retry_info.h"
+#include "net/proxy/proxy_server.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "url/url_constants.h"
 
 using base::FieldTrialList;
 
@@ -167,7 +172,6 @@ bool DataReductionProxyParams::Init(
   return true;
 
 }
-
 
 void DataReductionProxyParams::InitWithoutChecks() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -334,6 +338,79 @@ std::string DataReductionProxyParams::GetDefaultDevOrigin() const {
   }
 #endif
   return std::string();
+}
+
+bool DataReductionProxyParams::AreDataReductionProxiesBypassed(
+    const net::URLRequest& request, base::TimeDelta* min_retry_delay) const {
+  if (request.context() != NULL &&
+      request.context()->proxy_service() != NULL) {
+    return AreProxiesBypassed(
+        request.context()->proxy_service()->proxy_retry_info(),
+        request.url().SchemeIs(url::kHttpsScheme),
+        min_retry_delay);
+  }
+
+  return false;
+}
+
+bool DataReductionProxyParams::AreProxiesBypassed(
+    const net::ProxyRetryInfoMap& retry_map,
+    bool is_https,
+    base::TimeDelta* min_retry_delay) const {
+  if (retry_map.size() == 0)
+    return false;
+
+  if (is_https && alt_allowed_) {
+    return ArePrimaryAndFallbackBypassed(
+        retry_map, ssl_origin_, GURL(), min_retry_delay);
+  }
+
+  if (allowed_ && ArePrimaryAndFallbackBypassed(
+      retry_map, origin_, fallback_origin_, min_retry_delay)) {
+    return true;
+  }
+
+  if (alt_allowed_ && ArePrimaryAndFallbackBypassed(
+      retry_map, alt_origin_, alt_fallback_origin_, min_retry_delay)) {
+    return true;
+  }
+
+  return false;
+}
+
+bool DataReductionProxyParams::ArePrimaryAndFallbackBypassed(
+    const net::ProxyRetryInfoMap& retry_map,
+    const GURL& primary,
+    const GURL& fallback,
+    base::TimeDelta* min_retry_delay) const {
+  net::ProxyRetryInfoMap::const_iterator found = retry_map.find(
+      net::ProxyServer(primary.SchemeIs(url::kHttpsScheme) ?
+          net::ProxyServer::SCHEME_HTTPS : net::ProxyServer::SCHEME_HTTP,
+          net::HostPortPair::FromURL(primary)).ToURI());
+
+  if (found == retry_map.end())
+    return false;
+
+  base::TimeDelta min_delay = found->second.current_delay;
+  if (!fallback_allowed_ || !fallback.is_valid()) {
+    if (min_retry_delay != NULL)
+      *min_retry_delay = min_delay;
+    return true;
+  }
+
+  found = retry_map.find(
+      net::ProxyServer(fallback.SchemeIs(url::kHttpsScheme) ?
+          net::ProxyServer::SCHEME_HTTPS : net::ProxyServer::SCHEME_HTTP,
+          net::HostPortPair::FromURL(fallback)).ToURI());
+
+  if (found == retry_map.end())
+    return false;
+
+  if (min_delay > found->second.current_delay)
+    min_delay = found->second.current_delay;
+  if (min_retry_delay != NULL)
+    *min_retry_delay = min_delay;
+  return true;
 }
 
 std::string DataReductionProxyParams::GetDefaultOrigin() const {

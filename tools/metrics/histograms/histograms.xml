@@ -3084,6 +3084,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.BypassedBytes" units="bytes">
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Counts the response bytes that did not go through the data reduction proxy
+    as the result of a bypass event.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.BypassInfoFallback"
     enum="DataReductionProxyBypassEventType_Deprecated">
   <obsolete>
@@ -49108,6 +49116,43 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <affected-histogram name="PLT.PT_RequestToStart"/>
   <affected-histogram name="PLT.PT_StartToCommit"/>
   <affected-histogram name="PLT.PT_StartToFinish"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="DataReductionProxyBypassedBytes" separator=".">
+  <suffix name="NotBypassed" label="Not bypassed"/>
+  <suffix name="SSL" label="Bypass due to SSL"/>
+  <suffix name="LocalBypassRules"
+      label="Bypass due to client-side bypass rules"/>
+  <suffix name="Current" label="Bypass due to explicit instruction"/>
+  <suffix name="ShortAll" label="Short bypass"/>
+  <suffix name="ShortTriggeringRequest"
+      label="Triggering request short bypass"/>
+  <suffix name="ShortAudioVideo"
+      label="Audio/Video bypass due to short bypass"/>
+  <suffix name="MediumAll" label="Medium bypass"/>
+  <suffix name="MediumTriggeringRequest"
+      label="Triggering request medium bypass"/>
+  <suffix name="LongAll" label="Long bypass"/>
+  <suffix name="LongTriggering_Request" label="Triggering request long bypass"/>
+  <suffix name="MissingViaHeader4xx"
+      label="Bypass due to a 4xx missing via header"/>
+  <suffix name="MissingViaHeaderOther"
+      label="Bypass due to other missing via header"/>
+  <suffix name="Malformed407"
+      label="Bypass due to 407 response from proxy without a challenge"/>
+  <suffix name="Status500HttpInternalServerError"
+      label="Bypass due to internal server error"/>
+  <suffix name="Status502HttpBadGateway"
+      label="Bypass because the request URI was too long"/>
+  <suffix name="Status503HttpServiceUnavailable"
+      label="Bypass due to a 503 response"/>
+  <suffix name="NetworkErrorTimedOut" label="Bypass due to network timeout"/>
+  <suffix name="NetworkErrorProxyConnectionFailed"
+      label="Bypass due to failed proxy connection"/>
+  <suffix name="NetworkErrorProxyCertificateInvalid"
+      label="Bypass due to invalid proxy certificate"/>
+  <suffix name="NetworkErrorOther" label="Bypass due to any network error"/>
+  <affected-histogram name="DataReductionProxy.BypassedBytes"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="DefaultAppsExperiment">

@@ -122,6 +122,11 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
     force_google_safe_search_ = force_google_safe_search;
   }
 
+  void set_data_reduction_proxy_enabled_pref(
+      BooleanPrefMember* data_reduction_proxy_enabled) {
+    data_reduction_proxy_enabled_ = data_reduction_proxy_enabled;
+  }
+
   void set_domain_reliability_monitor(
       domain_reliability::DomainReliabilityMonitor* monitor) {
     domain_reliability_monitor_ = monitor;
@@ -255,6 +260,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   BooleanPrefMember* enable_referrers_;
   BooleanPrefMember* enable_do_not_track_;
   BooleanPrefMember* force_google_safe_search_;
+  BooleanPrefMember* data_reduction_proxy_enabled_;
 
   // Weak, owned by our owner.
 #if defined(ENABLE_CONFIGURATION_POLICY)

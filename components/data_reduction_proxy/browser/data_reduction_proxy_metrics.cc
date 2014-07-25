@@ -22,8 +22,10 @@ namespace data_reduction_proxy {
 
 namespace {
 
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
 // A bypass delay more than this is treated as a long delay.
 const int kLongBypassDelayInSeconds = 30 * 60;
+#endif
 
 // Increments an int64, stored as a string, in a ListPref at the specified
 // index.  The value must already exist and be a string representation of a
@@ -290,56 +292,6 @@ class DailyDataSavingUpdate {
   DailyContentLengthUpdate received_;
 };
 
-// Returns true if the request is bypassed by all configured data reduction
-// proxies. It returns the bypass delay in delay_seconds (if not NULL). If
-// the request is bypassed by more than one proxy, delay_seconds returns
-// shortest delay.
-bool IsBypassRequest(const net::URLRequest* request, int64* delay_seconds) {
-  // TODO(bengr): Add support for other data reduction proxy configurations.
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-  DataReductionProxyParams params(
-      DataReductionProxyParams::kAllowed |
-      DataReductionProxyParams::kFallbackAllowed |
-      DataReductionProxyParams::kPromoAllowed);
-  DataReductionProxyParams::DataReductionProxyList proxies =
-      params.GetAllowedProxies();
-  if (proxies.size() == 0)
-    return false;
-
-  if (request == NULL || request->context() == NULL ||
-      request->context()->proxy_service() == NULL) {
-    return false;
-  }
-
-  const net::ProxyRetryInfoMap& retry_map =
-      request->context()->proxy_service()->proxy_retry_info();
-  if (retry_map.size() == 0)
-    return false;
-
-  int64 shortest_delay = 0;
-  // The request is bypassed if all configured proxies are in the retry map.
-  for (size_t i = 0; i < proxies.size(); ++i) {
-    std::string proxy = net::HostPortPair::FromURL(proxies[i]).ToString();
-    // The retry list has the scheme prefix for https but not for http.
-    if (proxies[i].SchemeIs("https"))
-      proxy = std::string("https://") + proxy;
-
-    net::ProxyRetryInfoMap::const_iterator found = retry_map.find(proxy);
-    if (found == retry_map.end())
-      return false;
-    if (shortest_delay == 0 ||
-        shortest_delay > found->second.current_delay.InSeconds()) {
-      shortest_delay = found->second.current_delay.InSeconds();
-    }
-  }
-  if (delay_seconds != NULL)
-    *delay_seconds = shortest_delay;
-  return true;
-#else
-  return false;
-#endif
-}
-
 }  // namespace
 
 DataReductionProxyRequestType GetDataReductionProxyRequestType(
@@ -350,11 +302,18 @@ DataReductionProxyRequestType GetDataReductionProxyRequestType(
     NOTREACHED();
     return UNKNOWN_TYPE;
   }
-  int64 bypass_delay = 0;
-  if (IsBypassRequest(request, &bypass_delay)) {
-    return (bypass_delay > kLongBypassDelayInSeconds) ?
-      LONG_BYPASS : SHORT_BYPASS;
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  DataReductionProxyParams params(
+        DataReductionProxyParams::kAllowed |
+        DataReductionProxyParams::kFallbackAllowed |
+        DataReductionProxyParams::kPromoAllowed);
+  base::TimeDelta bypass_delay;
+  if (params.AreDataReductionProxiesBypassed(*request, &bypass_delay)) {
+    if (bypass_delay > base::TimeDelta::FromSeconds(kLongBypassDelayInSeconds))
+      return LONG_BYPASS;
+    return SHORT_BYPASS;
   }
+#endif
   if (request->response_info().headers &&
       HasDataReductionProxyViaHeader(request->response_info().headers)) {
     return VIA_DATA_REDUCTION_PROXY;

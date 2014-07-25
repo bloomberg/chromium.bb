@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "net/proxy/proxy_service.h"
 
 namespace base {
 class TimeDelta;
@@ -27,12 +28,14 @@ class DataReductionProxyParams;
 
 // Decides whether to mark the data reduction proxy as temporarily bad and
 // put it on the proxy retry list. Returns true if the request should be
-// retried. Sets |override_response_headers| to redirect if so.
+// retried. Sets |override_response_headers| to redirect if so. Returns
+// the DataReductionProxyBypassType (if not NULL).
 bool MaybeBypassProxyAndPrepareToRetry(
     const DataReductionProxyParams* params,
     net::URLRequest* request,
     const net::HttpResponseHeaders* original_response_headers,
-    scoped_refptr<net::HttpResponseHeaders>* override_response_headers);
+    scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
+    net::ProxyService::DataReductionProxyBypassType* proxy_bypass_type);
 
 // Configure |result| to proceed directly to the origin if |result|'s current
 // proxy is the data reduction proxy, the

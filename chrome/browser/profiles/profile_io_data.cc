@@ -1028,6 +1028,10 @@ void ProfileIOData::Init(
   network_delegate->set_cookie_settings(profile_params_->cookie_settings.get());
   network_delegate->set_enable_do_not_track(&enable_do_not_track_);
   network_delegate->set_force_google_safe_search(&force_safesearch_);
+#if defined(OS_ANDROID)
+  network_delegate->set_data_reduction_proxy_enabled_pref(
+      &data_reduction_proxy_enabled_);
+#endif
   network_delegate->set_prerender_tracker(profile_params_->prerender_tracker);
   network_delegate_.reset(network_delegate);
 

@@ -114,6 +114,9 @@ GetDataReductionProxyBypassType(
     // A chrome-proxy response header is only present in a 502. For proper
     // reporting, this check must come before the 5xx checks below.
     const TimeDelta& duration = data_reduction_proxy_info->bypass_duration;
+    // bypass=0 means bypass for a random duration between 1 to 5 minutes
+    if (duration == TimeDelta())
+      return ProxyService::MEDIUM_BYPASS;
     if (duration <= TimeDelta::FromSeconds(kShortBypassMaxSeconds))
       return ProxyService::SHORT_BYPASS;
     if (duration <= TimeDelta::FromSeconds(kMediumBypassMaxSeconds))

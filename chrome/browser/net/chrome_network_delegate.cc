@@ -241,6 +241,7 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
       enable_referrers_(enable_referrers),
       enable_do_not_track_(NULL),
       force_google_safe_search_(NULL),
+      data_reduction_proxy_enabled_(NULL),
 #if defined(ENABLE_CONFIGURATION_POLICY)
       url_blacklist_manager_(NULL),
 #endif
@@ -468,11 +469,15 @@ int ChromeNetworkDelegate::OnHeadersReceived(
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
+  net::ProxyService::DataReductionProxyBypassType bypass_type;
   if (data_reduction_proxy::MaybeBypassProxyAndPrepareToRetry(
       data_reduction_proxy_params_,
       request,
       original_response_headers,
-      override_response_headers)) {
+      override_response_headers,
+      &bypass_type)) {
+    if (data_reduction_proxy_usage_stats_)
+      data_reduction_proxy_usage_stats_->SetBypassType(bypass_type);
     return net::OK;
   }
 
@@ -562,6 +567,10 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
       RecordContentLengthHistograms(received_content_length,
                                     original_content_length,
                                     freshness_lifetime);
+      if (data_reduction_proxy_enabled_ && data_reduction_proxy_usage_stats_) {
+        data_reduction_proxy_usage_stats_->RecordBypassedBytesHistograms(
+            *request, *data_reduction_proxy_enabled_);
+      }
       DVLOG(2) << __FUNCTION__
           << " received content length: " << received_content_length
           << " original content length: " << original_content_length

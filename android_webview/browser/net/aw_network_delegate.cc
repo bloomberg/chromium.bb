@@ -69,7 +69,8 @@ int AwNetworkDelegate::OnHeadersReceived(
       data_reduction_proxy_params_,
       request,
       original_response_headers,
-      override_response_headers);
+      override_response_headers,
+      NULL /* returned bypass type */);
 
   return net::OK;
 }

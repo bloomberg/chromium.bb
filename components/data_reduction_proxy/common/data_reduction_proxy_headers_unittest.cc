@@ -274,6 +274,11 @@ TEST_F(DataReductionProxyHeadersTest, GetDataReductionProxyBypassEventType) {
     { "HTTP/1.1 200 OK\n"
       "Chrome-Proxy: bypass=0\n"
       "Via: 1.1 Chrome-Compression-Proxy\n",
+      net::ProxyService::MEDIUM_BYPASS,
+    },
+    { "HTTP/1.1 200 OK\n"
+      "Chrome-Proxy: bypass=1\n"
+      "Via: 1.1 Chrome-Compression-Proxy\n",
       net::ProxyService::SHORT_BYPASS,
     },
     { "HTTP/1.1 200 OK\n"
