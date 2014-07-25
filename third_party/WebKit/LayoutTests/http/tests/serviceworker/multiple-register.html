@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.js"></script>
+<script>
+var worker_url = 'resources/empty-worker.js';
+
+async_test(function(t) {
+  var scope = 'subsequent-register'
+  var worker;
+
+  service_worker_unregister_and_register(t, worker_url, scope)
+    .then(function(registered_worker) {
+        worker = registered_worker;
+        return wait_for_state(t, worker, 'activated');
+      })
+    .then(function() {
+        return navigator.serviceWorker.register(worker_url, { scope: scope });
+      })
+    .then(function(registered_worker) {
+        assert_equals(registered_worker, worker,
+                      'register should resolve to the same worker');
+        assert_equals(registered_worker.state, 'activated',
+                      'the worker should be in state "activated"');
+      })
+    .then(service_worker_unregister_and_done(t, scope))
+    .catch(unreached_rejection(t));
+}, 'Subsequent registrations resolve to the same worker');
+
+async_test(function(t) {
+  var scope = 'concurrent-register'
+  var worker;
+
+  navigator.serviceWorker.unregister(scope)
+    .then(function() {
+        var promises = [];
+        for (var i = 0; i < 100; ++i) {
+          promises.push(navigator.serviceWorker.register(worker_url,
+                                                         { scope: scope }));
+        }
+        return Promise.all(promises);
+      })
+    .then(function(workers) {
+        workers.forEach(function(worker) {
+            assert_equals(worker, workers[0],
+                          'register should resolve to the same worker');
+        });
+      })
+    .then(service_worker_unregister_and_done(t, scope))
+    .catch(unreached_rejection(t));
+}, 'Concurrent registrations resolve to the same worker');
+</script>
