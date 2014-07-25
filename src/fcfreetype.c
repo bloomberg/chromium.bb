@@ -1628,32 +1628,7 @@ FcFreeTypeQueryFace (const FT_Face  face,
 
     if (os2 && os2->version != 0xffff)
     {
-	if (os2->usWeightClass == 0)
-	    ;
-	else if (os2->usWeightClass < 150)
-	    weight = FC_WEIGHT_THIN;
-	else if (os2->usWeightClass < 250)
-	    weight = FC_WEIGHT_EXTRALIGHT;
-	else if (os2->usWeightClass < 325)
-	    weight = FC_WEIGHT_LIGHT;
-	else if (os2->usWeightClass < 365)
-	    weight = FC_WEIGHT_SEMILIGHT;
-	else if (os2->usWeightClass < 390)
-	    weight = FC_WEIGHT_BOOK;
-	else if (os2->usWeightClass < 450)
-	    weight = FC_WEIGHT_REGULAR;
-	else if (os2->usWeightClass < 550)
-	    weight = FC_WEIGHT_MEDIUM;
-	else if (os2->usWeightClass < 650)
-	    weight = FC_WEIGHT_SEMIBOLD;
-	else if (os2->usWeightClass < 750)
-	    weight = FC_WEIGHT_BOLD;
-	else if (os2->usWeightClass < 850)
-	    weight = FC_WEIGHT_EXTRABOLD;
-	else if (os2->usWeightClass < 925)
-	    weight = FC_WEIGHT_BLACK;
-	else if (os2->usWeightClass < 1000)
-	    weight = FC_WEIGHT_EXTRABLACK;
+	weight = FcWeightFromOpenType (os2->usWeightClass);
 	if ((FcDebug() & FC_DBG_SCANV) && weight != -1)
 	    printf ("\tos2 weight class %d maps to weight %d\n",
 		    os2->usWeightClass, weight);

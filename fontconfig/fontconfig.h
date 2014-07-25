@@ -908,6 +908,13 @@ FcRangeDestroy (FcRange *range);
 FcPublic FcRange *
 FcRangeCopy (const FcRange *r);
 
+/* fcweight.c */
+
+FcPublic int
+FcWeightFromOpenType (int ot_weight);
+
+FcPublic int
+FcWeightToOpenType (int fc_weight);
 
 /* fcstr.c */
 
