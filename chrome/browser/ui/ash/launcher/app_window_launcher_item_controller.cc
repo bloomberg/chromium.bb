@@ -10,6 +10,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/extensions/webstore_install_with_prompt.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_v2app.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -33,22 +34,21 @@ const int kAppListIconSize = 24;
 
 // This will return a slightly smaller icon than the app icon to be used in
 // the application list menu.
-scoped_ptr<gfx::Image> GetAppListIcon(AppWindow* app_window) {
+gfx::Image GetAppListIcon(AppWindow* app_window) {
   // TODO(skuhne): We instead might want to use LoadImages in
   // AppWindow::UpdateExtensionAppIcon() to let the extension give us
   // pre-defined icons in the launcher and the launcher list sizes. Since there
   // is no mock yet, doing this now seems a bit premature and we scale for the
   // time being.
   if (app_window->app_icon().IsEmpty())
-    return make_scoped_ptr(new gfx::Image());
+    return gfx::Image();
 
   SkBitmap bmp =
       skia::ImageOperations::Resize(*app_window->app_icon().ToSkBitmap(),
                                     skia::ImageOperations::RESIZE_BEST,
                                     kAppListIconSize,
                                     kAppListIconSize);
-  return make_scoped_ptr(
-      new gfx::Image(gfx::ImageSkia::CreateFrom1xBitmap(bmp)));
+  return gfx::Image(gfx::ImageSkia::CreateFrom1xBitmap(bmp));
 }
 
 // Returns true if the app window is visible on screen, i.e. not hidden or
@@ -201,10 +201,18 @@ ChromeLauncherAppMenuItems AppWindowLauncherItemController::GetApplicationList(
        iter != app_windows_.end();
        ++iter) {
     AppWindow* app_window = *iter;
-    scoped_ptr<gfx::Image> image(GetAppListIcon(app_window));
+
+    // If the app's web contents provides a favicon, use it. Otherwise, use a
+    // scaled down app icon.
+    FaviconTabHelper* favicon_tab_helper =
+        FaviconTabHelper::FromWebContents(app_window->web_contents());
+    gfx::Image result = favicon_tab_helper->GetFavicon();
+    if (result.IsEmpty())
+      result = GetAppListIcon(app_window);
+
     items.push_back(new ChromeLauncherAppMenuItemV2App(
         app_window->GetTitle(),
-        image.get(),  // Will be copied
+        &result,  // Will be copied
         app_id(),
         launcher_controller(),
         index,
