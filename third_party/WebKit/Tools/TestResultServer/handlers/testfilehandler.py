@@ -203,7 +203,7 @@ class GetFile(webapp2.RequestHandler):
             json, date = self._get_file_content_from_key(key)
         elif test_list_json:
             json, date = self._get_test_list_json(master, builder, test_type, build_number)
-        elif num_files or not master or not builder or not test_type or not build_number or not name:
+        elif num_files or not master or not builder or not test_type or (not build_number and not JsonResults.is_aggregate_file(name)) or not name:
             limit = int(num_files) if num_files else 100
             self._get_file_list(master, builder, test_type, build_number, name, before, limit, callback_name)
             return

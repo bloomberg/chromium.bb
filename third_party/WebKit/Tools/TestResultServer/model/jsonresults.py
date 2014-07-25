@@ -114,6 +114,10 @@ def _is_directory(subtree):
 
 
 class JsonResults(object):
+    @staticmethod
+    def is_aggregate_file(name):
+        return name in (JSON_RESULTS_FILE, JSON_RESULTS_FILE_SMALL)
+
     @classmethod
     def _strip_prefix_suffix(cls, data):
         if data.startswith(JSON_RESULTS_PREFIX) and data.endswith(JSON_RESULTS_SUFFIX):
