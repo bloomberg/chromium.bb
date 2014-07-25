@@ -116,11 +116,7 @@ void RenderFlexibleBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidt
                 minLogicalWidth += minPreferredLogicalWidth;
         } else {
             minLogicalWidth = std::max(minPreferredLogicalWidth, minLogicalWidth);
-            if (isMultiline()) {
-                // For multiline, the max preferred width is if you never break between items.
-                maxLogicalWidth += maxPreferredLogicalWidth;
-            } else
-                maxLogicalWidth = std::max(maxPreferredLogicalWidth, maxLogicalWidth);
+            maxLogicalWidth = std::max(maxPreferredLogicalWidth, maxLogicalWidth);
         }
     }
 
