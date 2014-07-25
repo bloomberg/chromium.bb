@@ -7,6 +7,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -155,8 +156,10 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
       if (!UserManager::Get()->IsUserLoggedIn()) {
         screen_type = "login";
       } else if (chromeos::ScreenLocker::default_screen_locker() &&
-               chromeos::ScreenLocker::default_screen_locker()->locked()) {
+                 chromeos::ScreenLocker::default_screen_locker()->locked()) {
         screen_type = "lock";
+      } else if (UserAddingScreen::Get()->IsRunning()) {
+        screen_type = "secondary-login";
       }
       if (!screen_type.empty())
         val->SetStringWithoutPathExpansion("screen", screen_type);
