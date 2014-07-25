@@ -169,9 +169,9 @@ per-file sync_driver*=zea@chromium.org
 per-file tracing*=jbauman@chromium.org
 per-file tracing*=nduca@chromium.org
 
+per-file translate.gypi=andrewhayden@chromium.org
 per-file translate.gypi=droger@chromium.org
 per-file translate.gypi=hajimehoshi@chromium.org
-per-file translate.gypi=mad@chromium.org
 per-file translate.gypi=toyoshim@chromium.org
 
 per-file startup_metric_utils.gypi=jeremy@chromium.org
