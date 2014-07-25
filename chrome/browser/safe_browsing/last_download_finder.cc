@@ -145,6 +145,14 @@ void LastDownloadFinder::SearchInProfile(Profile* profile) {
     return;
   }
 
+  // Exit early if already processing this profile. This could happen if, for
+  // example, NOTIFICATION_PROFILE_ADDED arrives after construction while
+  // waiting for NOTIFICATION_HISTORY_LOADED.
+  if (std::find(profiles_.begin(), profiles_.end(), profile) !=
+      profiles_.end()) {
+    return;
+  }
+
   HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS);
   // No history service is returned for profiles that do not save history.
