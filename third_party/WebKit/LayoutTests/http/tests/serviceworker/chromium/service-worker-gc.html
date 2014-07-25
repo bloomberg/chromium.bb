@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <script src="/js-test-resources/js-test.js"></script>
-<body>
 <script>
 window.jsTestIsAsync = true;
 description('Test that a registered Service Worker with an event handler is not garbage collected prematurely');
-swObservation = null;
-scope = 'gc';
+var swObservation = null;
+var scope = 'gc';
 
 if (!window.internals) {
     testFailed('This test requires internals.observeGC');
@@ -15,7 +14,7 @@ if (!window.internals) {
 }
 
 function setup() {
-    var worker = 'resources/empty-worker.js';
+    var worker = '../resources/empty-worker.js';
     unregisterAndRegister(worker, scope).then(onRegister);
 }
 
@@ -28,31 +27,38 @@ function unregisterAndRegister(url, scope) {
     });
 }
 
-function assertServiceWorkerIsNotCollected() {
-    gc();
-    shouldBeFalse('swObservation.wasCollected')
-}
-
 function onRegister(sw) {
     swObservation = internals.observeGC(sw);
     sw.addEventListener('statechange', onStateChange);
-    setTimeout(assertServiceWorkerIsNotCollected, 0);
 }
 
 function onStateChange(event) {
-    assertServiceWorkerIsNotCollected();
-
-    if (event.target.state != 'activated')
-        return;
-    navigator.serviceWorker.unregister(scope).then(onUnregister);
+    // Use setTimeout to ensure a fresh stack with no references to the worker.
+    switch (event.target.state) {
+    case 'activated':
+        setTimeout(unregister, 0);
+        break;
+    case 'redundant':
+        setTimeout(finish, 0);
+        break;
+    }
 }
 
-function onUnregister()
+function unregister() {
+    // The worker has an event handler that can still receive the state change
+    // to 'redundant', so it shouldn't be collected yet.
+    gc();
+    shouldBeFalse('swObservation.wasCollected');
+    navigator.serviceWorker.unregister(scope).catch(function(error) {
+        testFailed('Could not unregister worker: ' + error);
+        finishJSTest();
+    });
+}
+
+function finish()
 {
     gc();
     shouldBeTrue('swObservation.wasCollected');
-
     finishJSTest();
 }
 </script>
-</body>
