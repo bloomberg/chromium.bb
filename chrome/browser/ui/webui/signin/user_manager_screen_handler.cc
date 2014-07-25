@@ -564,9 +564,13 @@ void UserManagerScreenHandler::GetLocalizedValues(
   // Strings needed for the user_pod_template public account div, but not ever
   // actually displayed for desktop users.
   localized_strings->SetString("publicAccountReminder", base::string16());
+  localized_strings->SetString("publicSessionLanguageAndInput",
+                               base::string16());
   localized_strings->SetString("publicAccountEnter", base::string16());
   localized_strings->SetString("publicAccountEnterAccessibleName",
                                base::string16());
+  localized_strings->SetString("publicSessionSelectLanguage", base::string16());
+  localized_strings->SetString("publicSessionSelectKeyboard", base::string16());
   localized_strings->SetString("signinBannerText", base::string16());
   localized_strings->SetString("launchAppButton", base::string16());
   localized_strings->SetString("multiProfilesRestrictedPolicyTitle",
@@ -574,6 +578,8 @@ void UserManagerScreenHandler::GetLocalizedValues(
   localized_strings->SetString("multiProfilesNotAllowedPolicyMsg",
                                 base::string16());
   localized_strings->SetString("multiProfilesPrimaryOnlyPolicyMsg",
+                                base::string16());
+  localized_strings->SetString("multiProfilesOwnerPrimaryOnlyMsg",
                                 base::string16());
 }
 
