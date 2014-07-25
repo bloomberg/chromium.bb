@@ -101,10 +101,6 @@ CodePath Character::characterRangeCodePath(const UChar* characters, unsigned len
         0x1A00, 0x1CFF,
         // U+1DC0 through U+1DFF Comining diacritical mark supplement
         0x1DC0, 0x1DFF,
-        // RIGHT-TO-LEFT MARK
-        0x200B, 0x200F,
-        // RIGHT-TO-LEFT OVERRIDE
-        0x202A, 0x202E,
         // Nominal Digit Shape
         0x2060, 0x206F,
         // U+20D0 through U+20FF Combining marks for symbols
