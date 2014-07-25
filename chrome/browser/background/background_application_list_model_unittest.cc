@@ -20,6 +20,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
@@ -156,6 +157,20 @@ void RemoveBackgroundPermission(ExtensionService* service,
   extensions::PermissionsUpdater(service->profile()).RemovePermissions(
       extension, extension->permissions_data()->active_permissions().get());
 }
+
+void AddEphemeralApp(const Extension* extension, ExtensionService* service) {
+  extensions::ExtensionPrefs* prefs =
+      extensions::ExtensionPrefs::Get(service->profile());
+  ASSERT_TRUE(prefs);
+  prefs->OnExtensionInstalled(extension,
+                              extensions::Extension::ENABLED,
+                              syncer::StringOrdinal(),
+                              extensions::kInstallFlagIsEphemeral,
+                              std::string());
+
+  service->AddExtension(extension);
+}
+
 }  // namespace
 
 // Crashes on Mac tryslaves.
@@ -316,7 +331,50 @@ TEST_F(BackgroundApplicationListModelTest, PushMessagingTest) {
   ASSERT_EQ(0U, model->size());
 }
 
+// Verifies that an ephemeral app cannot trigger background mode.
+TEST_F(BackgroundApplicationListModelTest, EphemeralAppTest) {
+  InitializeAndLoadEmptyExtensionService();
+  ExtensionService* service = extensions::ExtensionSystem::Get(profile_.get())->
+      extension_service();
+  ASSERT_TRUE(service);
+  ASSERT_TRUE(service->is_ready());
+  ASSERT_TRUE(service->extensions());
+  ASSERT_TRUE(service->extensions()->is_empty());
+  scoped_ptr<BackgroundApplicationListModel> model(
+      new BackgroundApplicationListModel(profile_.get()));
+  ASSERT_EQ(0U, model->size());
 
+  scoped_refptr<Extension> installed =
+      CreateExtensionBase("installed", false, PUSH_MESSAGING_PERMISSION);
+  scoped_refptr<Extension> ephemeral =
+      CreateExtensionBase("ephemeral", false, PUSH_MESSAGING_PERMISSION);
+  scoped_refptr<Extension> background = CreateExtension("background", true);
+
+  // Installed app with push messaging permissions can trigger background mode.
+  ASSERT_TRUE(IsBackgroundApp(*installed.get()));
+  service->AddExtension(installed.get());
+  ASSERT_EQ(1U, service->extensions()->size());
+  ASSERT_EQ(1U, model->size());
+  // An ephemeral app with push messaging permissions should not trigger
+  // background mode.
+  AddEphemeralApp(ephemeral.get(), service);
+  ASSERT_FALSE(IsBackgroundApp(*ephemeral.get()));
+  ASSERT_EQ(2U, service->extensions()->size());
+  ASSERT_EQ(1U, model->size());
+  // An ephemeral app with the background permission should not trigger
+  // background mode.
+  AddEphemeralApp(background.get(), service);
+  ASSERT_FALSE(IsBackgroundApp(*background.get()));
+  ASSERT_EQ(3U, service->extensions()->size());
+  ASSERT_EQ(1U, model->size());
+
+  // If the ephemeral app becomes promoted to an installed app, it can now
+  // trigger background mode.
+  service->PromoteEphemeralApp(ephemeral.get(), false /*from sync*/);
+  ASSERT_TRUE(IsBackgroundApp(*ephemeral.get()));
+  ASSERT_EQ(3U, service->extensions()->size());
+  ASSERT_EQ(2U, model->size());
+}
 
 // With minimal test logic, verifies behavior with dynamic permissions.
 TEST_F(BackgroundApplicationListModelTest, AddRemovePermissionsTest) {

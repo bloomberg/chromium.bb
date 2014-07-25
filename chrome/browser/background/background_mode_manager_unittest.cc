@@ -19,6 +19,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
@@ -267,6 +268,20 @@ class BackgroundModeManagerWithExtensionsTest
 
  protected:
   scoped_ptr<SimpleTestBackgroundModeManager> manager_;
+
+  void AddEphemeralApp(const extensions::Extension* extension,
+                       ExtensionService* service) {
+    extensions::ExtensionPrefs* prefs =
+        extensions::ExtensionPrefs::Get(service->profile());
+    ASSERT_TRUE(prefs);
+    prefs->OnExtensionInstalled(extension,
+                                extensions::Extension::ENABLED,
+                                syncer::StringOrdinal(),
+                                extensions::kInstallFlagIsEphemeral,
+                                std::string());
+
+    service->AddExtension(extension);
+  }
 
  private:
   // Required for extension service.
@@ -818,6 +833,15 @@ TEST_F(BackgroundModeManagerWithExtensionsTest, BalloonDisplay) {
         "\"permissions\": [\"background\"]}",
         "ID-2"));
 
+  scoped_refptr<extensions::Extension> ephemeral_app(
+    CreateExtension(
+        extensions::Manifest::COMMAND_LINE,
+        "{\"name\": \"Ephemeral App\", "
+        "\"version\": \"1.0\","
+        "\"manifest_version\": 2,"
+        "\"permissions\": [\"pushMessaging\"]}",
+        "ID-3"));
+
   static_cast<extensions::TestExtensionSystem*>(
       extensions::ExtensionSystem::Get(profile_))->CreateExtensionService(
           CommandLine::ForCurrentProcess(),
@@ -849,5 +873,15 @@ TEST_F(BackgroundModeManagerWithExtensionsTest, BalloonDisplay) {
   // Upgrading an extension that didn't have background to one that does should
   // show the balloon.
   service->AddExtension(upgraded_no_bg_ext_has_bg);
+  EXPECT_TRUE(manager_->HasShownBalloon());
+
+  // Installing an ephemeral app should not show the balloon.
+  manager_->SetHasShownBalloon(false);
+  AddEphemeralApp(ephemeral_app.get(), service);
+  EXPECT_FALSE(manager_->HasShownBalloon());
+
+  // Promoting the ephemeral app to a regular installed app should now show
+  // the balloon.
+  service->PromoteEphemeralApp(ephemeral_app.get(), false /*from sync*/);
   EXPECT_TRUE(manager_->HasShownBalloon());
 }
