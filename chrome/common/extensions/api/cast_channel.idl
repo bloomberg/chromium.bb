@@ -42,6 +42,8 @@ namespace cast.channel {
     invalid_message,
     // An invalid channel id was passed.
     invalid_channel_id,
+    // The connection could not be established before timing out.
+    connect_timeout,
     // Unspecified error.
     unknown
   };
@@ -63,6 +65,11 @@ namespace cast.channel {
 
     // The port number to connect to, 0-65535.
     long port;
+
+    // The amount of time to wait in milliseconds before stopping the
+    // connection process. Timeouts are disabled if the value is zero.
+    // The default timeout is 8000ms.
+    long? timeout;
 
     // The authentication method required for the channel.
     ChannelAuthType auth;

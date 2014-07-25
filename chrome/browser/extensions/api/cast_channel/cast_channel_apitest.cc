@@ -39,6 +39,7 @@ using ::testing::Return;
 namespace {
 
 const char kTestExtensionId[] = "ddchlicdkolnonkihahngkmmmjnjlkkf";
+const int64 kTimeoutMs = 10000;
 
 static void FillMessageInfo(MessageInfo* message_info,
                             const std::string& message) {
@@ -64,7 +65,8 @@ class MockCastSocket : public CastSocket {
                           net::IPEndPoint ip_endpoint,
                           net::NetLog* net_log)
     : CastSocket(kTestExtensionId, ip_endpoint,
-                 cast_channel::CHANNEL_AUTH_TYPE_SSL, delegate, net_log) {}
+                 cast_channel::CHANNEL_AUTH_TYPE_SSL, delegate, net_log,
+                 base::TimeDelta::FromMilliseconds(kTimeoutMs)) {}
   virtual ~MockCastSocket() {}
 
   virtual bool CalledOnValidThread() const OVERRIDE {

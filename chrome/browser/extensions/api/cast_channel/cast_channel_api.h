@@ -46,7 +46,8 @@ class CastChannelAPI : public BrowserContextKeyedAPI,
   scoped_ptr<cast_channel::CastSocket> CreateCastSocket(
       const std::string& extension_id,
       const net::IPEndPoint& ip_endpoint,
-      cast_channel::ChannelAuthType channel_auth);
+      cast_channel::ChannelAuthType channel_auth,
+      const base::TimeDelta& timeout);
 
   // Sets the CastSocket instance to be returned by CreateCastSocket for
   // testing.

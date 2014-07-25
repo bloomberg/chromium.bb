@@ -4,10 +4,12 @@
 
 #include "chrome/browser/extensions/api/cast_channel/cast_socket.h"
 
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
+#include "base/timer/mock_timer.h"
 #include "chrome/browser/extensions/api/cast_channel/cast_channel.pb.h"
 #include "chrome/browser/extensions/api/cast_channel/cast_message_util.h"
 #include "net/base/address_list.h"
@@ -20,6 +22,8 @@
 #include "net/ssl/ssl_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+const int64 kDistantTimeoutMillis = 100000;  // 100 seconds (never hit).
 
 using ::testing::_;
 using ::testing::A;
@@ -77,9 +81,21 @@ class MockTCPSocket : public net::TCPClientSocket {
  public:
   explicit MockTCPSocket(const net::MockConnect& connect_data) :
       TCPClientSocket(net::AddressList(), NULL, net::NetLog::Source()),
-      connect_data_(connect_data) { }
+      connect_data_(connect_data),
+      do_nothing_(false) { }
+
+  explicit MockTCPSocket(bool do_nothing) :
+      TCPClientSocket(net::AddressList(), NULL, net::NetLog::Source()) {
+    CHECK(do_nothing);
+    do_nothing_ = do_nothing;
+  }
 
   virtual int Connect(const net::CompletionCallback& callback) OVERRIDE {
+    if (do_nothing_) {
+      // Stall the I/O event loop.
+      return net::ERR_IO_PENDING;
+    }
+
     if (connect_data_.mode == net::ASYNC) {
       CHECK_NE(connect_data_.result, net::ERR_IO_PENDING);
       base::MessageLoop::current()->PostTask(
@@ -112,6 +128,7 @@ class MockTCPSocket : public net::TCPClientSocket {
 
  private:
   net::MockConnect connect_data_;
+  bool do_nothing_;
 };
 
 class CompleteHandler {
@@ -130,26 +147,34 @@ class TestCastSocket : public CastSocket {
       MockCastSocketDelegate* delegate) {
     return scoped_ptr<TestCastSocket>(
         new TestCastSocket(delegate, CreateIPEndPoint(),
-                           CHANNEL_AUTH_TYPE_SSL));
+                           CHANNEL_AUTH_TYPE_SSL,
+                           kDistantTimeoutMillis));
   }
 
   static scoped_ptr<TestCastSocket> CreateSecure(
       MockCastSocketDelegate* delegate) {
     return scoped_ptr<TestCastSocket>(
         new TestCastSocket(delegate, CreateIPEndPoint(),
-                           CHANNEL_AUTH_TYPE_SSL_VERIFIED));
+                           CHANNEL_AUTH_TYPE_SSL_VERIFIED,
+                           kDistantTimeoutMillis));
   }
 
   explicit TestCastSocket(MockCastSocketDelegate* delegate,
                           const net::IPEndPoint& ip_endpoint,
-                          ChannelAuthType channel_auth) :
-        CastSocket("abcdefg", ip_endpoint, channel_auth, delegate,
-                   &capturing_net_log_),
-      ip_(ip_endpoint),
-      connect_index_(0),
-      extract_cert_result_(true),
-      verify_challenge_result_(true) {
-  }
+                          ChannelAuthType channel_auth,
+                          int64 timeout_ms)
+      : CastSocket("abcdefg",
+                   ip_endpoint,
+                   channel_auth,
+                   delegate,
+                   &capturing_net_log_,
+                   base::TimeDelta::FromMilliseconds(timeout_ms)),
+        ip_(ip_endpoint),
+        connect_index_(0),
+        extract_cert_result_(true),
+        verify_challenge_result_(true),
+        tcp_unresponsive_(false),
+        mock_timer_(new base::MockTimer(false, false)) {}
 
   static net::IPEndPoint CreateIPEndPoint() {
     net::IPAddressNumber number;
@@ -180,6 +205,9 @@ class TestCastSocket : public CastSocket {
   }
   void SetupSsl2Connect(net::IoMode mode, int result) {
     ssl_connect_data_[1].reset(new net::MockConnect(mode, result));
+  }
+  void SetupTcp1ConnectUnresponsive() {
+    tcp_unresponsive_ = true;
   }
   void AddWriteResult(const net::MockWrite& write) {
     writes_.push_back(write);
@@ -235,11 +263,19 @@ class TestCastSocket : public CastSocket {
     verify_challenge_result_ = value;
   }
 
+  void TriggerTimeout() {
+    mock_timer_->Fire();
+  }
+
  private:
   virtual scoped_ptr<net::TCPClientSocket> CreateTcpSocket() OVERRIDE {
-    net::MockConnect* connect_data = tcp_connect_data_[connect_index_].get();
-    connect_data->peer_addr = ip_;
-    return scoped_ptr<net::TCPClientSocket>(new MockTCPSocket(*connect_data));
+    if (tcp_unresponsive_) {
+      return scoped_ptr<net::TCPClientSocket>(new MockTCPSocket(true));
+    } else {
+      net::MockConnect* connect_data = tcp_connect_data_[connect_index_].get();
+      connect_data->peer_addr = ip_;
+      return scoped_ptr<net::TCPClientSocket>(new MockTCPSocket(*connect_data));
+    }
   }
 
   virtual scoped_ptr<net::SSLClientSocket> CreateSslSocket(
@@ -267,6 +303,10 @@ class TestCastSocket : public CastSocket {
     return verify_challenge_result_;
   }
 
+  virtual base::Timer* GetTimer() OVERRIDE {
+    return mock_timer_.get();
+  }
+
   net::CapturingNetLog capturing_net_log_;
   net::IPEndPoint ip_;
   // Simulated connect data
@@ -282,6 +322,9 @@ class TestCastSocket : public CastSocket {
   bool extract_cert_result_;
   // Simulated result of verifying challenge reply.
   bool verify_challenge_result_;
+  // If true, makes TCP connection process stall. For timeout testing.
+  bool tcp_unresponsive_;
+  scoped_ptr<base::MockTimer> mock_timer_;
 };
 
 class CastSocketTest : public testing::Test {
@@ -520,6 +563,25 @@ TEST_F(CastSocketTest, TestConnectTcpConnectErrorSync) {
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_CONNECT_ERROR, socket_->error_state());
 }
 
+// Test connection error - timeout
+TEST_F(CastSocketTest, TestConnectTcpTimeoutError) {
+  CreateCastSocketSecure();
+  socket_->SetupTcp1ConnectUnresponsive();
+  EXPECT_CALL(handler_, OnConnectComplete(net::ERR_TIMED_OUT));
+  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
+                              base::Unretained(&handler_)));
+  RunPendingTasks();
+
+  EXPECT_EQ(cast_channel::READY_STATE_CONNECTING, socket_->ready_state());
+  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
+  socket_->TriggerTimeout();
+  RunPendingTasks();
+
+  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
+  EXPECT_EQ(cast_channel::CHANNEL_ERROR_CONNECT_TIMEOUT,
+            socket_->error_state());
+}
+
 // Test connection error - SSL connect fails (async)
 TEST_F(CastSocketTest, TestConnectSslConnectErrorAsync) {
   CreateCastSocketSecure();
@@ -536,7 +598,7 @@ TEST_F(CastSocketTest, TestConnectSslConnectErrorAsync) {
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_CONNECT_ERROR, socket_->error_state());
 }
 
-// Test connection error - SSL connect fails (async)
+// Test connection error - SSL connect fails (sync)
 TEST_F(CastSocketTest, TestConnectSslConnectErrorSync) {
   CreateCastSocketSecure();
 

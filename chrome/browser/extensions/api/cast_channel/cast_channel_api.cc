@@ -21,6 +21,10 @@
 #include "net/base/net_util.h"
 #include "url/gurl.h"
 
+// Default timeout interval for connection setup.
+// Used if not otherwise specified at ConnectInfo::timeout.
+const int kDefaultConnectTimeoutMillis = 5000;  // 5 seconds.
+
 namespace extensions {
 
 namespace Close = cast_channel::Close;
@@ -99,13 +103,14 @@ CastChannelAPI::GetFactoryInstance() {
 
 scoped_ptr<CastSocket> CastChannelAPI::CreateCastSocket(
     const std::string& extension_id, const net::IPEndPoint& ip_endpoint,
-    ChannelAuthType channel_auth) {
+    ChannelAuthType channel_auth, const base::TimeDelta& timeout) {
   if (socket_for_test_.get()) {
     return socket_for_test_.Pass();
   } else {
     return scoped_ptr<CastSocket>(
         new CastSocket(extension_id, ip_endpoint, channel_auth, this,
-                       g_browser_process->net_log()));
+                       g_browser_process->net_log(),
+                       timeout));
   }
 }
 
@@ -321,7 +326,12 @@ void CastChannelOpenFunction::AsyncWorkStart() {
   DCHECK(api_);
   DCHECK(ip_endpoint_.get());
   scoped_ptr<CastSocket> socket = api_->CreateCastSocket(
-      extension_->id(), *ip_endpoint_, channel_auth_);
+      extension_->id(),
+      *ip_endpoint_,
+      channel_auth_,
+      base::TimeDelta::FromMilliseconds(connect_info_->timeout.get()
+                                            ? *connect_info_->timeout
+                                            : kDefaultConnectTimeoutMillis));
   new_channel_id_ = AddSocket(socket.release());
   GetSocket(new_channel_id_)->Connect(
       base::Bind(&CastChannelOpenFunction::OnOpen, this));
@@ -329,6 +339,7 @@ void CastChannelOpenFunction::AsyncWorkStart() {
 
 void CastChannelOpenFunction::OnOpen(int result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  VLOG(1) << "Connect finished, OnOpen invoked.";
   SetResultFromSocket(new_channel_id_);
   AsyncWorkCompleted();
 }

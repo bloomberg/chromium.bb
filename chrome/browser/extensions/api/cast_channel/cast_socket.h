@@ -10,10 +10,12 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/cancelable_callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "base/timer/timer.h"
 #include "chrome/common/extensions/api/cast_channel.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
@@ -68,7 +70,8 @@ class CastSocket : public ApiResource,
              const net::IPEndPoint& ip_endpoint,
              ChannelAuthType channel_auth,
              CastSocket::Delegate* delegate,
-             net::NetLog* net_log);
+             net::NetLog* net_log,
+             const base::TimeDelta& connect_timeout);
   virtual ~CastSocket();
 
   // The IP endpoint for the destination of the channel.
@@ -144,6 +147,7 @@ class CastSocket : public ApiResource,
  private:
   friend class ApiResourceManager<CastSocket>;
   friend class CastSocketTest;
+  friend class TestCastSocket;
 
   static const char* service_name() { return "CastSocketManager"; }
 
@@ -190,6 +194,10 @@ class CastSocket : public ApiResource,
   // 1. Signature in the reply is valid.
   // 2. Certificate is rooted to a trusted CA.
   virtual bool VerifyChallengeReply();
+
+  // Invoked by a cancelable closure when connection setup time
+  // exceeds the interval specified at |connect_timeout|.
+  void CancelConnect();
 
   /////////////////////////////////////////////////////////////////////////////
   // Following methods work together to implement the following flow:
@@ -267,6 +275,8 @@ class CastSocket : public ApiResource,
 
   virtual bool CalledOnValidThread() const;
 
+  virtual base::Timer* GetTimer();
+
   base::ThreadChecker thread_checker_;
 
   // The id of the channel.
@@ -311,8 +321,16 @@ class CastSocket : public ApiResource,
   // Reply received from the receiver to a challenge request.
   scoped_ptr<CastMessage> challenge_reply_;
 
-  // Callback invoked when the socket is connected.
+  // Callback invoked when the socket is connected or fails to connect.
   net::CompletionCallback connect_callback_;
+
+  // Duration to wait before timing out.
+  base::TimeDelta connect_timeout_;
+  // Timer invoked when the connection has timed out.
+  scoped_ptr<base::Timer> connect_timeout_timer_;
+  // Set when a timeout is triggered and the connection process has
+  // canceled.
+  bool is_canceled_;
 
   // Connection flow state machine state.
   ConnectionState connect_state_;

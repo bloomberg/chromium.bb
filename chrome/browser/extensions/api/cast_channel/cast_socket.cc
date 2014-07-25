@@ -67,7 +67,8 @@ CastSocket::CastSocket(const std::string& owner_extension_id,
                        const net::IPEndPoint& ip_endpoint,
                        ChannelAuthType channel_auth,
                        CastSocket::Delegate* delegate,
-                       net::NetLog* net_log) :
+                       net::NetLog* net_log,
+                       const base::TimeDelta& timeout) :
     ApiResource(owner_extension_id),
     channel_id_(0),
     ip_endpoint_(ip_endpoint),
@@ -76,6 +77,9 @@ CastSocket::CastSocket(const std::string& owner_extension_id,
     current_message_size_(0),
     current_message_(new CastMessage()),
     net_log_(net_log),
+    connect_timeout_(timeout),
+    connect_timeout_timer_(new base::OneShotTimer<CastSocket>),
+    is_canceled_(false),
     connect_state_(CONN_STATE_NONE),
     write_state_(WRITE_STATE_NONE),
     read_state_(READ_STATE_NONE),
@@ -171,6 +175,12 @@ void CastSocket::Connect(const net::CompletionCallback& callback) {
   ready_state_ = READY_STATE_CONNECTING;
   connect_callback_ = callback;
   connect_state_ = CONN_STATE_TCP_CONNECT;
+  if (connect_timeout_.InMicroseconds() > 0) {
+    GetTimer()->Start(
+        FROM_HERE,
+        connect_timeout_,
+        base::Bind(&CastSocket::CancelConnect, AsWeakPtr()));
+  }
   DoConnectLoop(net::OK);
 }
 
@@ -181,11 +191,23 @@ void CastSocket::PostTaskToStartConnectLoop(int result) {
       base::Bind(&CastSocket::DoConnectLoop, AsWeakPtr(), result));
 }
 
+void CastSocket::CancelConnect() {
+  DCHECK(CalledOnValidThread());
+  // Stop all pending connection setup tasks and report back to the client.
+  is_canceled_ = true;
+  VLOG_WITH_CONNECTION(1) << "Timeout while establishing a connection.";
+  DoConnectCallback(net::ERR_TIMED_OUT);
+}
+
 // This method performs the state machine transitions for connection flow.
 // There are two entry points to this method:
 // 1. Connect method: this starts the flow
 // 2. Callback from network operations that finish asynchronously
 void CastSocket::DoConnectLoop(int result) {
+  if (is_canceled_) {
+    LOG(ERROR) << "CANCELLED - Aborting DoConnectLoop.";
+    return;
+  }
   // Network operations can either finish synchronously or asynchronously.
   // This method executes the state machine transitions in a loop so that
   // correct state transitions happen even when network operations finish
@@ -229,8 +251,10 @@ void CastSocket::DoConnectLoop(int result) {
   // b. The Do* method called did not change state
 
   // Connect loop is finished: if there is no pending IO invoke the callback.
-  if (rv != net::ERR_IO_PENDING)
+  if (rv != net::ERR_IO_PENDING) {
+    GetTimer()->Stop();
     DoConnectCallback(rv);
+  }
 }
 
 int CastSocket::DoTcpConnect() {
@@ -284,7 +308,8 @@ int CastSocket::DoAuthChallengeSend() {
   // code decoupled from connect loop code.
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&CastSocket::SendCastMessageInternal, AsWeakPtr(),
+      base::Bind(&CastSocket::SendCastMessageInternal,
+                 AsWeakPtr(),
                  challenge_message,
                  base::Bind(&CastSocket::DoConnectLoop, AsWeakPtr())));
   // Always return IO_PENDING since the result is always asynchronous.
@@ -316,10 +341,15 @@ int CastSocket::DoAuthChallengeReplyComplete(int result) {
 
 void CastSocket::DoConnectCallback(int result) {
   ready_state_ = (result == net::OK) ? READY_STATE_OPEN : READY_STATE_CLOSED;
-  error_state_ = (result == net::OK) ?
-      CHANNEL_ERROR_NONE : CHANNEL_ERROR_CONNECT_ERROR;
-  if (result == net::OK)  // Start the read loop
+  if (result == net::OK) {
+    error_state_ = CHANNEL_ERROR_NONE;
     PostTaskToStartReadLoop();
+  } else if (result == net::ERR_TIMED_OUT) {
+    error_state_ = CHANNEL_ERROR_CONNECT_TIMEOUT;
+  } else {
+    error_state_ = CHANNEL_ERROR_CONNECT_ERROR;
+  }
+  VLOG_WITH_CONNECTION(1) << "Calling Connect_Callback";
   base::ResetAndReturn(&connect_callback_).Run(result);
 }
 
@@ -682,7 +712,7 @@ bool CastSocket::Serialize(const CastMessage& message_proto,
   header.SetMessageSize(message_size);
   header.PrependToString(message_data);
   return true;
-};
+}
 
 void CastSocket::CloseWithError(ChannelError error) {
   DCHECK(CalledOnValidThread());
@@ -700,6 +730,10 @@ std::string CastSocket::CastUrl() const {
 
 bool CastSocket::CalledOnValidThread() const {
   return thread_checker_.CalledOnValidThread();
+}
+
+base::Timer* CastSocket::GetTimer() {
+  return connect_timeout_timer_.get();
 }
 
 CastSocket::MessageHeader::MessageHeader() : message_size(0) { }
