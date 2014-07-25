@@ -1339,9 +1339,8 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl,
     }
 
     const unsigned char* client_cert_types;
-    size_t num_client_cert_types;
-    SSL_get_client_certificate_types(ssl, &client_cert_types,
-                                     &num_client_cert_types);
+    size_t num_client_cert_types =
+        SSL_get0_certificate_types(ssl, &client_cert_types);
     for (size_t i = 0; i < num_client_cert_types; i++) {
       cert_key_types_.push_back(
           static_cast<SSLClientCertType>(client_cert_types[i]));
