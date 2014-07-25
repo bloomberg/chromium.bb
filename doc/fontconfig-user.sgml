@@ -473,6 +473,8 @@ symbolic names for common font values:
   extralight      weight          40
   ultralight      weight          40
   light           weight          50
+  demilight       weight          65
+  semilight       weight          65
   book            weight          75
   regular         weight          80
   normal          weight          80

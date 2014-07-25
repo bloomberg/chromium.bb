@@ -1095,6 +1095,8 @@ static const FcStringConst  weightConsts[] = {
     { (FC8) "thin",		FC_WEIGHT_THIN },
     { (FC8) "extralight",	FC_WEIGHT_EXTRALIGHT },
     { (FC8) "ultralight",	FC_WEIGHT_ULTRALIGHT },
+    { (FC8) "demilight",	FC_WEIGHT_DEMILIGHT },
+    { (FC8) "semilight",	FC_WEIGHT_SEMILIGHT },
     { (FC8) "light",		FC_WEIGHT_LIGHT },
     { (FC8) "book",		FC_WEIGHT_BOOK },
     { (FC8) "regular",		FC_WEIGHT_REGULAR },
@@ -1632,8 +1634,12 @@ FcFreeTypeQueryFace (const FT_Face  face,
 	    weight = FC_WEIGHT_THIN;
 	else if (os2->usWeightClass < 250)
 	    weight = FC_WEIGHT_EXTRALIGHT;
-	else if (os2->usWeightClass < 350)
+	else if (os2->usWeightClass < 325)
 	    weight = FC_WEIGHT_LIGHT;
+	else if (os2->usWeightClass < 365)
+	    weight = FC_WEIGHT_SEMILIGHT;
+	else if (os2->usWeightClass < 390)
+	    weight = FC_WEIGHT_BOOK;
 	else if (os2->usWeightClass < 450)
 	    weight = FC_WEIGHT_REGULAR;
 	else if (os2->usWeightClass < 550)
