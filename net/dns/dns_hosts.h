@@ -44,6 +44,17 @@ inline size_t hash_value(const net::DnsHostsKey& key) {
 
 namespace net {
 
+// There are OS-specific variations in how commas in the hosts file behave.
+enum ParseHostsCommaMode {
+  // Comma is treated as part of a hostname:
+  // "127.0.0.1 foo,bar" parses as "foo,bar" mapping to "127.0.0.1".
+  PARSE_HOSTS_COMMA_IS_TOKEN,
+
+  // Comma is treated as a hostname separator:
+  // "127.0.0.1 foo,bar" parses as "foo" and "bar" both mapping to "127.0.0.1".
+  PARSE_HOSTS_COMMA_IS_WHITESPACE,
+};
+
 // Parsed results of a Hosts file.
 //
 // Although Hosts files map IP address to a list of domain names, for name
@@ -61,6 +72,15 @@ typedef base::hash_map<DnsHostsKey, IPAddressNumber> DnsHosts;
 // Android doesn't use the built-in DNS resolver anyway, so it's irrelevant.)
 typedef std::map<DnsHostsKey, IPAddressNumber> DnsHosts;
 #endif
+
+// Parses |contents| (as read from /etc/hosts or equivalent) and stores results
+// in |dns_hosts|. Invalid lines are ignored (as in most implementations).
+// Overrides the OS-specific default handling of commas, so unittests can test
+// both modes.
+void NET_EXPORT_PRIVATE ParseHostsWithCommaModeForTesting(
+    const std::string& contents,
+    DnsHosts* dns_hosts,
+    ParseHostsCommaMode comma_mode);
 
 // Parses |contents| (as read from /etc/hosts or equivalent) and stores results
 // in |dns_hosts|. Invalid lines are ignored (as in most implementations).

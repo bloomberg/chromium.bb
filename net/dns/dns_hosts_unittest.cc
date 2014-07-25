@@ -10,8 +10,27 @@ namespace net {
 
 namespace {
 
+struct ExpectedHostsEntry {
+  const char* host;
+  AddressFamily family;
+  const char* ip;
+};
+
+void PopulateExpectedHosts(const ExpectedHostsEntry* entries,
+                           size_t num_entries,
+                           DnsHosts* expected_hosts_out) {
+  for (size_t i = 0; i < num_entries; ++i) {
+    DnsHostsKey key(entries[i].host, entries[i].family);
+    IPAddressNumber& ip_ref = (*expected_hosts_out)[key];
+    ASSERT_TRUE(ip_ref.empty());
+    ASSERT_TRUE(ParseIPLiteralToNumber(entries[i].ip, &ip_ref));
+    ASSERT_EQ(ip_ref.size(),
+        (entries[i].family == ADDRESS_FAMILY_IPV4) ? 4u : 16u);
+  }
+}
+
 TEST(DnsHostsTest, ParseHosts) {
-  std::string contents =
+  const std::string kContents =
       "127.0.0.1       localhost\tlocalhost.localdomain # standard\n"
       "\n"
       "1.0.0.1 localhost # ignored, first hit above\n"
@@ -30,11 +49,7 @@ TEST(DnsHostsTest, ParseHosts) {
       "127.0.0.2 cache5\n"
       "gibberish";
 
-  const struct {
-    const char* host;
-    AddressFamily family;
-    const char* ip;
-  } entries[] = {
+  const ExpectedHostsEntry kEntries[] = {
     { "localhost", ADDRESS_FAMILY_IPV4, "127.0.0.1" },
     { "localhost.localdomain", ADDRESS_FAMILY_IPV4, "127.0.0.1" },
     { "company", ADDRESS_FAMILY_IPV4, "1.0.0.1" },
@@ -50,18 +65,60 @@ TEST(DnsHostsTest, ParseHosts) {
     { "cache5", ADDRESS_FAMILY_IPV4, "127.0.0.2" },
   };
 
-  DnsHosts expected;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(entries); ++i) {
-    DnsHostsKey key(entries[i].host, entries[i].family);
-    IPAddressNumber& ip = expected[key];
-    ASSERT_TRUE(ip.empty());
-    ASSERT_TRUE(ParseIPLiteralToNumber(entries[i].ip, &ip));
-    ASSERT_EQ(ip.size(), (entries[i].family == ADDRESS_FAMILY_IPV4) ? 4u : 16u);
-  }
+  DnsHosts expected_hosts, actual_hosts;
+  PopulateExpectedHosts(kEntries, ARRAYSIZE_UNSAFE(kEntries), &expected_hosts);
+  ParseHosts(kContents, &actual_hosts);
+  ASSERT_EQ(expected_hosts, actual_hosts);
+}
 
-  DnsHosts hosts;
-  ParseHosts(contents, &hosts);
-  ASSERT_EQ(expected, hosts);
+TEST(DnsHostsTest, ParseHosts_CommaIsToken) {
+  const std::string kContents = "127.0.0.1 comma1,comma2";
+
+  const ExpectedHostsEntry kEntries[] = {
+    { "comma1,comma2", ADDRESS_FAMILY_IPV4, "127.0.0.1" },
+  };
+
+  DnsHosts expected_hosts, actual_hosts;
+  PopulateExpectedHosts(kEntries, ARRAYSIZE_UNSAFE(kEntries), &expected_hosts);
+  ParseHostsWithCommaModeForTesting(
+      kContents, &actual_hosts, PARSE_HOSTS_COMMA_IS_TOKEN);
+  ASSERT_EQ(expected_hosts, actual_hosts);
+}
+
+TEST(DnsHostsTest, ParseHosts_CommaIsWhitespace) {
+  std::string kContents = "127.0.0.1 comma1,comma2";
+
+  const ExpectedHostsEntry kEntries[] = {
+    { "comma1", ADDRESS_FAMILY_IPV4, "127.0.0.1" },
+    { "comma2", ADDRESS_FAMILY_IPV4, "127.0.0.1" },
+  };
+
+  DnsHosts expected_hosts, actual_hosts;
+  PopulateExpectedHosts(kEntries, ARRAYSIZE_UNSAFE(kEntries), &expected_hosts);
+  ParseHostsWithCommaModeForTesting(
+      kContents, &actual_hosts, PARSE_HOSTS_COMMA_IS_WHITESPACE);
+  ASSERT_EQ(expected_hosts, actual_hosts);
+}
+
+// Test that the right comma mode is used on each platform.
+TEST(DnsHostsTest, ParseHosts_CommaModeByPlatform) {
+  std::string kContents = "127.0.0.1 comma1,comma2";
+
+#if defined(OS_MACOSX)
+  const ExpectedHostsEntry kEntries[] = {
+    { "comma1", ADDRESS_FAMILY_IPV4, "127.0.0.1" },
+    { "comma2", ADDRESS_FAMILY_IPV4, "127.0.0.1" },
+  };
+#else
+  const ExpectedHostsEntry kEntries[] = {
+    { "comma1,comma2", ADDRESS_FAMILY_IPV4, "127.0.0.1" },
+  };
+#endif
+
+  DnsHosts expected_hosts, actual_hosts;
+  PopulateExpectedHosts(kEntries, ARRAYSIZE_UNSAFE(kEntries), &expected_hosts);
+  ParseHosts(kContents, &actual_hosts);
+  ASSERT_EQ(expected_hosts, actual_hosts);
 }
 
 TEST(DnsHostsTest, HostsParser_Empty) {

@@ -8,24 +8,25 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
-#include "base/strings/string_tokenizer.h"
 
 using base::StringPiece;
 
 namespace net {
+
+namespace {
 
 // Parses the contents of a hosts file.  Returns one token (IP or hostname) at
 // a time.  Doesn't copy anything; accepts the file as a StringPiece and
 // returns tokens as StringPieces.
 class HostsParser {
  public:
-  explicit HostsParser(const StringPiece& text)
+  explicit HostsParser(const StringPiece& text, ParseHostsCommaMode comma_mode)
       : text_(text),
         data_(text.data()),
         end_(text.size()),
         pos_(0),
-        token_(),
-        token_is_ip_(false) {}
+        token_is_ip_(false),
+        comma_mode_(comma_mode) {}
 
   // Advances to the next token (IP or hostname).  Returns whether another
   // token was available.  |token_is_ip| and |token| can be used to find out
@@ -49,6 +50,14 @@ class HostsParser {
           SkipRestOfLine();
           break;
 
+        case ',':
+          if (comma_mode_ == PARSE_HOSTS_COMMA_IS_WHITESPACE) {
+            SkipWhitespace();
+            break;
+          }
+
+          // If comma_mode_ is COMMA_IS_TOKEN, fall through:
+
         default: {
           size_t token_start = pos_;
           SkipToken();
@@ -62,7 +71,6 @@ class HostsParser {
       }
     }
 
-    text_ = StringPiece();
     return false;
   }
 
@@ -85,14 +93,28 @@ class HostsParser {
 
  private:
   void SkipToken() {
-    pos_ = text_.find_first_of(" \t\n\r#", pos_);
+    switch (comma_mode_) {
+      case PARSE_HOSTS_COMMA_IS_TOKEN:
+        pos_ = text_.find_first_of(" \t\n\r#", pos_);
+        break;
+      case PARSE_HOSTS_COMMA_IS_WHITESPACE:
+        pos_ = text_.find_first_of(" ,\t\n\r#", pos_);
+        break;
+    }
   }
 
   void SkipWhitespace() {
-    pos_ = text_.find_first_not_of(" \t", pos_);
+    switch (comma_mode_) {
+      case PARSE_HOSTS_COMMA_IS_TOKEN:
+        pos_ = text_.find_first_not_of(" \t", pos_);
+        break;
+      case PARSE_HOSTS_COMMA_IS_WHITESPACE:
+        pos_ = text_.find_first_not_of(" ,\t", pos_);
+        break;
+    }
   }
 
-  StringPiece text_;
+  const StringPiece text_;
   const char* data_;
   const size_t end_;
 
@@ -100,19 +122,21 @@ class HostsParser {
   StringPiece token_;
   bool token_is_ip_;
 
+  const ParseHostsCommaMode comma_mode_;
+
   DISALLOW_COPY_AND_ASSIGN(HostsParser);
 };
 
-
-
-void ParseHosts(const std::string& contents, DnsHosts* dns_hosts) {
+void ParseHostsWithCommaMode(const std::string& contents,
+                             DnsHosts* dns_hosts,
+                             ParseHostsCommaMode comma_mode) {
   CHECK(dns_hosts);
   DnsHosts& hosts = *dns_hosts;
 
   StringPiece ip_text;
   IPAddressNumber ip;
   AddressFamily family = ADDRESS_FAMILY_IPV4;
-  HostsParser parser(contents);
+  HostsParser parser(contents, comma_mode);
   while (parser.Advance()) {
     if (parser.token_is_ip()) {
       StringPiece new_ip_text = parser.token();
@@ -138,6 +162,27 @@ void ParseHosts(const std::string& contents, DnsHosts* dns_hosts) {
       // else ignore this entry (first hit counts)
     }
   }
+}
+
+}  // namespace
+
+void ParseHostsWithCommaModeForTesting(const std::string& contents,
+                                       DnsHosts* dns_hosts,
+                                       ParseHostsCommaMode comma_mode) {
+  ParseHostsWithCommaMode(contents, dns_hosts, comma_mode);
+}
+
+void ParseHosts(const std::string& contents, DnsHosts* dns_hosts) {
+  ParseHostsCommaMode comma_mode;
+#if defined(OS_MACOSX)
+  // Mac OS X allows commas to separate hostnames.
+  comma_mode = PARSE_HOSTS_COMMA_IS_WHITESPACE;
+#else
+  // Linux allows commas in hostnames.
+  comma_mode = PARSE_HOSTS_COMMA_IS_TOKEN;
+#endif
+
+  ParseHostsWithCommaMode(contents, dns_hosts, comma_mode);
 }
 
 bool ParseHostsFile(const base::FilePath& path, DnsHosts* dns_hosts) {
