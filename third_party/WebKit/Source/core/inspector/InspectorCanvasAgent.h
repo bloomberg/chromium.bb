@@ -54,11 +54,12 @@ typedef String ErrorString;
 
 class InspectorCanvasAgent FINAL : public InspectorBaseAgent<InspectorCanvasAgent>, public InspectorBackendDispatcher::CanvasCommandHandler {
 public:
-    static PassOwnPtr<InspectorCanvasAgent> create(InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager)
+    static PassOwnPtrWillBeRawPtr<InspectorCanvasAgent> create(InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager)
     {
-        return adoptPtr(new InspectorCanvasAgent(pageAgent, injectedScriptManager));
+        return adoptPtrWillBeNoop(new InspectorCanvasAgent(pageAgent, injectedScriptManager));
     }
     virtual ~InspectorCanvasAgent();
+    virtual void trace(Visitor*) OVERRIDE;
 
     virtual void setFrontend(InspectorFrontend*) OVERRIDE;
     virtual void clearFrontend() OVERRIDE;
@@ -96,7 +97,8 @@ private:
     bool checkIsEnabled(ErrorString*) const;
     ScriptValue notifyRenderingContextWasWrapped(const ScriptValue&);
 
-    InspectorPageAgent* m_pageAgent;
+    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
+    // FIXME: Oilpan: Move InjectedScriptManager to heap in follow-up CL.
     InjectedScriptManager* m_injectedScriptManager;
     InspectorFrontend::Canvas* m_frontend;
     bool m_enabled;

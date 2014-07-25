@@ -288,11 +288,23 @@ static PassRefPtr<TypeBuilder::Network::Response> buildObjectForResourceResponse
 
 InspectorResourceAgent::~InspectorResourceAgent()
 {
+#if !ENABLE(OILPAN)
     if (m_state->getBoolean(ResourceAgentState::resourceAgentEnabled)) {
         ErrorString error;
         disable(&error);
     }
     ASSERT(!m_instrumentingAgents->inspectorResourceAgent());
+#endif
+}
+
+void InspectorResourceAgent::trace(Visitor* visitor)
+{
+    visitor->trace(m_pageAgent);
+#if ENABLE(OILPAN)
+    visitor->trace(m_replayXHRs);
+    visitor->trace(m_replayXHRsToBeDeleted);
+#endif
+    InspectorBaseAgent::trace(visitor);
 }
 
 void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentLoader* loader, ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)

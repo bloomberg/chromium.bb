@@ -80,7 +80,7 @@ public:
     bool hasMatchingTimelineAgentId(int id) const { return m_timelineAgentId == id; }
 
 private:
-    RefPtr<InstrumentingAgents> m_instrumentingAgents;
+    RefPtrWillBePersistent<InstrumentingAgents> m_instrumentingAgents;
     int m_timelineAgentId;
 };
 

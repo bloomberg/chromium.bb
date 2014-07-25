@@ -83,9 +83,9 @@ public:
     String m_title;
 };
 
-PassOwnPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
+PassOwnPtrWillBeRawPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
 {
-    return adoptPtr(new InspectorProfilerAgent(injectedScriptManager, overlay));
+    return adoptPtrWillBeNoop(new InspectorProfilerAgent(injectedScriptManager, overlay));
 }
 
 InspectorProfilerAgent::InspectorProfilerAgent(InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)

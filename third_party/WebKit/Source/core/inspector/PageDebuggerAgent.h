@@ -48,10 +48,11 @@ class PageDebuggerAgent FINAL :
     public InspectorDebuggerAgent,
     public InspectorOverlayHost::Listener {
     WTF_MAKE_NONCOPYABLE(PageDebuggerAgent);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<PageDebuggerAgent> create(PageScriptDebugServer*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
+    static PassOwnPtrWillBeRawPtr<PageDebuggerAgent> create(PageScriptDebugServer*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
     virtual ~PageDebuggerAgent();
+    virtual void trace(Visitor*) OVERRIDE;
 
     void didClearDocumentOfWindowObject(LocalFrame*);
     String preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName);
@@ -77,8 +78,9 @@ private:
     virtual void setOverlayMessage(ErrorString*, const String*) OVERRIDE;
 
     PageDebuggerAgent(PageScriptDebugServer*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
+    // FIXME: Oilpan: Move PageScriptDebugServer to heap in follow-up CL.
     PageScriptDebugServer* m_pageScriptDebugServer;
-    InspectorPageAgent* m_pageAgent;
+    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     InspectorOverlay* m_overlay;
 };
 

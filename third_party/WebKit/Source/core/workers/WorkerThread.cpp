@@ -30,6 +30,7 @@
 
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/WorkerInspectorController.h"
 #include "core/workers/DedicatedWorkerGlobalScope.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerReportingProxy.h"
@@ -99,6 +100,13 @@ bool WorkerThread::start()
 void WorkerThread::workerThreadStart(void* thread)
 {
     static_cast<WorkerThread*>(thread)->workerThread();
+}
+
+void WorkerThread::interruptAndDispatchInspectorCommands()
+{
+    MutexLocker locker(m_workerInspectorControllerMutex);
+    if (m_workerInspectorController)
+        m_workerInspectorController->interruptAndDispatchInspectorCommands();
 }
 
 void WorkerThread::workerThread()
@@ -258,6 +266,12 @@ void WorkerThread::postDebuggerTask(PassOwnPtr<ExecutionContextTask> task)
 MessageQueueWaitResult WorkerThread::runDebuggerTask(WorkerRunLoop::WaitMode waitMode)
 {
     return m_runLoop.runDebuggerTask(waitMode);
+}
+
+void WorkerThread::setWorkerInspectorController(WorkerInspectorController* workerInspectorController)
+{
+    MutexLocker locker(m_workerInspectorControllerMutex);
+    m_workerInspectorController = workerInspectorController;
 }
 
 } // namespace blink

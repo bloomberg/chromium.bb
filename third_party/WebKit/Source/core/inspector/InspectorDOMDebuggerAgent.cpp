@@ -75,9 +75,9 @@ static const char pauseOnAllXHRs[] = "pauseOnAllXHRs";
 static const char xhrBreakpoints[] = "xhrBreakpoints";
 }
 
-PassOwnPtr<InspectorDOMDebuggerAgent> InspectorDOMDebuggerAgent::create(InspectorDOMAgent* domAgent, InspectorDebuggerAgent* debuggerAgent)
+PassOwnPtrWillBeRawPtr<InspectorDOMDebuggerAgent> InspectorDOMDebuggerAgent::create(InspectorDOMAgent* domAgent, InspectorDebuggerAgent* debuggerAgent)
 {
-    return adoptPtr(new InspectorDOMDebuggerAgent(domAgent, debuggerAgent));
+    return adoptPtrWillBeNoop(new InspectorDOMDebuggerAgent(domAgent, debuggerAgent));
 }
 
 InspectorDOMDebuggerAgent::InspectorDOMDebuggerAgent(InspectorDOMAgent* domAgent, InspectorDebuggerAgent* debuggerAgent)
@@ -92,8 +92,20 @@ InspectorDOMDebuggerAgent::InspectorDOMDebuggerAgent(InspectorDOMAgent* domAgent
 
 InspectorDOMDebuggerAgent::~InspectorDOMDebuggerAgent()
 {
+#if !ENABLE(OILPAN)
     ASSERT(!m_debuggerAgent);
     ASSERT(!m_instrumentingAgents->inspectorDOMDebuggerAgent());
+#endif
+}
+
+void InspectorDOMDebuggerAgent::trace(Visitor* visitor)
+{
+    visitor->trace(m_domAgent);
+    visitor->trace(m_debuggerAgent);
+#if ENABLE(OILPAN)
+    visitor->trace(m_domBreakpoints);
+#endif
+    InspectorBaseAgent::trace(visitor);
 }
 
 // Browser debugger agent enabled only when JS debugger is enabled.
@@ -152,7 +164,7 @@ void InspectorDOMDebuggerAgent::clearFrontend()
 void InspectorDOMDebuggerAgent::discardAgent()
 {
     m_debuggerAgent->setListener(0);
-    m_debuggerAgent = 0;
+    m_debuggerAgent = nullptr;
 }
 
 void InspectorDOMDebuggerAgent::setEventListenerBreakpoint(ErrorString* error, const String& eventName, const String* targetName)

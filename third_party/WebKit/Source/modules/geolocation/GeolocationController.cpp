@@ -47,15 +47,14 @@ GeolocationController::GeolocationController(LocalFrame& frame, GeolocationClien
     // it and this class. Until then, there's one GeolocationInspectorAgent per page that the main
     // frame is responsible for creating.
     if (frame.isMainFrame()) {
-        OwnPtr<GeolocationInspectorAgent> geolocationAgent(GeolocationInspectorAgent::create());
+        OwnPtrWillBeRawPtr<GeolocationInspectorAgent> geolocationAgent(GeolocationInspectorAgent::create());
         m_inspectorAgent = geolocationAgent.get();
         frame.page()->inspectorController().registerModuleAgent(geolocationAgent.release());
     } else if (frame.page()->mainFrame()->isLocalFrame()) {
         m_inspectorAgent = GeolocationController::from(frame.page()->deprecatedLocalMainFrame())->m_inspectorAgent;
     }
 
-    if (m_inspectorAgent)
-        m_inspectorAgent->AddController(this);
+    m_inspectorAgent->addController(this);
 
     if (!frame.isMainFrame() && frame.page()->mainFrame()->isLocalFrame()) {
         // internals.setGeolocationClientMock is per page.
@@ -89,10 +88,12 @@ GeolocationController::~GeolocationController()
 
 void GeolocationController::detach()
 {
+#if !ENABLE(OILPAN)
     if (page() && m_inspectorAgent) {
-        m_inspectorAgent->RemoveController(this);
-        m_inspectorAgent = 0;
+        m_inspectorAgent->removeController(this);
+        m_inspectorAgent = nullptr;
     }
+#endif
 
     if (m_hasClientForTest) {
         m_client->controllerForTestRemoved(this);
@@ -230,6 +231,7 @@ void GeolocationController::trace(Visitor* visitor)
     visitor->trace(m_lastPosition);
     visitor->trace(m_observers);
     visitor->trace(m_highAccuracyObservers);
+    visitor->trace(m_inspectorAgent);
     WillBeHeapSupplement<LocalFrame>::trace(visitor);
 }
 

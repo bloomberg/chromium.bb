@@ -46,7 +46,7 @@ typedef String ErrorString;
 
 class InspectorWorkerAgent FINAL : public InspectorBaseAgent<InspectorWorkerAgent>, public InspectorBackendDispatcher::WorkerCommandHandler {
 public:
-    static PassOwnPtr<InspectorWorkerAgent> create();
+    static PassOwnPtrWillBeRawPtr<InspectorWorkerAgent> create();
     virtual ~InspectorWorkerAgent();
 
     virtual void init() OVERRIDE;

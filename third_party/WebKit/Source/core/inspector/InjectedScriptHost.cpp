@@ -43,13 +43,13 @@
 
 namespace blink {
 
-PassRefPtr<InjectedScriptHost> InjectedScriptHost::create()
+PassRefPtrWillBeRawPtr<InjectedScriptHost> InjectedScriptHost::create()
 {
-    return adoptRef(new InjectedScriptHost());
+    return adoptRefWillBeNoop(new InjectedScriptHost());
 }
 
 InjectedScriptHost::InjectedScriptHost()
-    : m_instrumentingAgents(0)
+    : m_instrumentingAgents(nullptr)
     , m_scriptDebugServer(0)
 {
     ScriptWrappable::init(this);
@@ -60,9 +60,14 @@ InjectedScriptHost::~InjectedScriptHost()
 {
 }
 
+void InjectedScriptHost::trace(Visitor* visitor)
+{
+    visitor->trace(m_instrumentingAgents);
+}
+
 void InjectedScriptHost::disconnect()
 {
-    m_instrumentingAgents = 0;
+    m_instrumentingAgents = nullptr;
     m_scriptDebugServer = 0;
 }
 

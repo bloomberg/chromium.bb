@@ -47,7 +47,15 @@ PageConsoleAgent::PageConsoleAgent(InjectedScriptManager* injectedScriptManager,
 
 PageConsoleAgent::~PageConsoleAgent()
 {
-    m_inspectorDOMAgent = 0;
+#if !ENABLE(OILPAN)
+    m_inspectorDOMAgent = nullptr;
+#endif
+}
+
+void PageConsoleAgent::trace(Visitor* visitor)
+{
+    visitor->trace(m_inspectorDOMAgent);
+    InspectorConsoleAgent::trace(visitor);
 }
 
 void PageConsoleAgent::clearMessages(ErrorString* errorString)

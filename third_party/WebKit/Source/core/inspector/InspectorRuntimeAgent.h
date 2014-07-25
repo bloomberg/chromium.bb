@@ -102,6 +102,7 @@ protected:
     ScriptStateToId m_scriptStateToId;
 
 private:
+    // FIXME: Oilpan: Move InjectedScriptManager to heap in follow-up CL.
     InjectedScriptManager* m_injectedScriptManager;
     ScriptDebugServer* m_scriptDebugServer;
 };

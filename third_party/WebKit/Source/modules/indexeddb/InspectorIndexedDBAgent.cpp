@@ -554,7 +554,7 @@ LocalFrame* findFrameWithSecurityOrigin(Page* page, const String& securityOrigin
 
 void InspectorIndexedDBAgent::provideTo(Page* page)
 {
-    OwnPtr<InspectorIndexedDBAgent> agent(adoptPtr(new InspectorIndexedDBAgent(page)));
+    OwnPtrWillBeRawPtr<InspectorIndexedDBAgent> agent(adoptPtrWillBeNoop(new InspectorIndexedDBAgent(page)));
     page->inspectorController().registerModuleAgent(agent.release());
 }
 
@@ -772,6 +772,12 @@ void InspectorIndexedDBAgent::clearObjectStore(ErrorString* errorString, const S
     ScriptState::Scope scope(scriptState);
     RefPtr<ClearObjectStore> clearObjectStore = ClearObjectStore::create(scriptState, objectStoreName, requestCallback);
     clearObjectStore->start(idbFactory, document->securityOrigin(), databaseName);
+}
+
+void InspectorIndexedDBAgent::trace(Visitor* visitor)
+{
+    visitor->trace(m_page);
+    InspectorBaseAgent::trace(visitor);
 }
 
 } // namespace blink

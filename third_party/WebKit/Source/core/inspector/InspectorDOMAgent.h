@@ -86,7 +86,7 @@ struct EventListenerInfo {
 class InspectorDOMAgent FINAL : public InspectorBaseAgent<InspectorDOMAgent>, public InspectorBackendDispatcher::DOMCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorDOMAgent);
 public:
-    struct DOMListener {
+    struct DOMListener : public WillBeGarbageCollectedMixin {
         virtual ~DOMListener()
         {
         }
@@ -95,20 +95,21 @@ public:
         virtual void didModifyDOMAttr(Element*) = 0;
     };
 
-    static PassOwnPtr<InspectorDOMAgent> create(InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
+    static PassOwnPtrWillBeRawPtr<InspectorDOMAgent> create(InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
     {
-        return adoptPtr(new InspectorDOMAgent(pageAgent, injectedScriptManager, overlay));
+        return adoptPtrWillBeNoop(new InspectorDOMAgent(pageAgent, injectedScriptManager, overlay));
     }
 
     static String toErrorString(ExceptionState&);
 
     virtual ~InspectorDOMAgent();
+    virtual void trace(Visitor*) OVERRIDE;
 
     virtual void setFrontend(InspectorFrontend*) OVERRIDE;
     virtual void clearFrontend() OVERRIDE;
     virtual void restore() OVERRIDE;
 
-    Vector<Document*> documents();
+    WillBeHeapVector<RawPtrWillBeMember<Document> > documents();
     void reset();
 
     // Methods called from the frontend for DOM nodes inspection.
@@ -154,7 +155,7 @@ public:
 
     static void getEventListeners(EventTarget*, Vector<EventListenerInfo>& listenersArray, bool includeAncestors);
 
-    class Listener {
+    class Listener : public WillBeGarbageCollectedMixin {
     public:
         virtual ~Listener() { }
         virtual void domAgentWasEnabled() = 0;
@@ -256,29 +257,30 @@ private:
 
     bool pushDocumentUponHandlelessOperation(ErrorString*);
 
-    InspectorPageAgent* m_pageAgent;
+    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
+    // FIXME: Oilpan: Move InjectedScriptManager to heap in follow-up CL.
     InjectedScriptManager* m_injectedScriptManager;
     InspectorOverlay* m_overlay;
     InspectorFrontend::DOM* m_frontend;
-    DOMListener* m_domListener;
-    OwnPtrWillBePersistent<NodeToIdMap> m_documentNodeToIdMap;
+    RawPtrWillBeMember<DOMListener> m_domListener;
+    OwnPtrWillBeMember<NodeToIdMap> m_documentNodeToIdMap;
     // Owns node mappings for dangling nodes.
-    WillBePersistentHeapVector<OwnPtrWillBeMember<NodeToIdMap> > m_danglingNodeToIdMaps;
-    WillBePersistentHeapHashMap<int, RawPtrWillBeMember<Node> > m_idToNode;
-    WillBePersistentHeapHashMap<int, RawPtrWillBeMember<NodeToIdMap> > m_idToNodesMap;
+    WillBeHeapVector<OwnPtrWillBeMember<NodeToIdMap> > m_danglingNodeToIdMaps;
+    WillBeHeapHashMap<int, RawPtrWillBeMember<Node> > m_idToNode;
+    WillBeHeapHashMap<int, RawPtrWillBeMember<NodeToIdMap> > m_idToNodesMap;
     HashSet<int> m_childrenRequested;
     HashMap<int, int> m_cachedChildCount;
     int m_lastNodeId;
-    RefPtrWillBePersistent<Document> m_document;
-    typedef WillBePersistentHeapHashMap<String, WillBeHeapVector<RefPtrWillBeMember<Node> > > SearchResults;
+    RefPtrWillBeMember<Document> m_document;
+    typedef WillBeHeapHashMap<String, WillBeHeapVector<RefPtrWillBeMember<Node> > > SearchResults;
     SearchResults m_searchResults;
     OwnPtr<RevalidateStyleAttributeTask> m_revalidateStyleAttrTask;
     SearchMode m_searchingForNode;
     OwnPtr<HighlightConfig> m_inspectModeHighlightConfig;
-    OwnPtrWillBePersistent<InspectorHistory> m_history;
-    OwnPtrWillBePersistent<DOMEditor> m_domEditor;
+    OwnPtrWillBeMember<InspectorHistory> m_history;
+    OwnPtrWillBeMember<DOMEditor> m_domEditor;
     bool m_suppressAttributeModifiedEvent;
-    Listener* m_listener;
+    RawPtrWillBeMember<Listener> m_listener;
 };
 
 

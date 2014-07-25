@@ -44,9 +44,9 @@ typedef String ErrorString;
 class InspectorMemoryAgent FINAL : public InspectorBaseAgent<InspectorMemoryAgent>, public InspectorBackendDispatcher::MemoryCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorMemoryAgent);
 public:
-    static PassOwnPtr<InspectorMemoryAgent> create()
+    static PassOwnPtrWillBeRawPtr<InspectorMemoryAgent> create()
     {
-        return adoptPtr(new InspectorMemoryAgent());
+        return adoptPtrWillBeNoop(new InspectorMemoryAgent());
     }
     virtual ~InspectorMemoryAgent();
 

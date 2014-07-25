@@ -21,9 +21,9 @@ class InspectorTracingAgent FINAL
     , public InspectorBackendDispatcher::TracingCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorTracingAgent);
 public:
-    static PassOwnPtr<InspectorTracingAgent> create(InspectorClient* client)
+    static PassOwnPtrWillBeRawPtr<InspectorTracingAgent> create(InspectorClient* client)
     {
-        return adoptPtr(new InspectorTracingAgent(client));
+        return adoptPtrWillBeNoop(new InspectorTracingAgent(client));
     }
 
     // Base agent methods.

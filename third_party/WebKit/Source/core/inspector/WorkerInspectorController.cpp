@@ -99,8 +99,10 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
 {
     m_agents.append(WorkerRuntimeAgent::create(m_injectedScriptManager.get(), m_debugServer.get(), workerGlobalScope));
 
-    OwnPtr<InspectorTimelineAgent> timelineAgent = InspectorTimelineAgent::create(0, 0, 0, InspectorTimelineAgent::WorkerInspector, 0);
-    m_agents.append(WorkerDebuggerAgent::create(m_debugServer.get(), workerGlobalScope, m_injectedScriptManager.get()));
+    OwnPtrWillBeRawPtr<InspectorTimelineAgent> timelineAgent = InspectorTimelineAgent::create(0, 0, 0, InspectorTimelineAgent::WorkerInspector, 0);
+    OwnPtrWillBeRawPtr<WorkerDebuggerAgent> workerDebuggerAgent = WorkerDebuggerAgent::create(m_debugServer.get(), workerGlobalScope, m_injectedScriptManager.get());
+    m_workerDebuggerAgent = workerDebuggerAgent.get();
+    m_agents.append(workerDebuggerAgent.release());
 
     m_agents.append(InspectorProfilerAgent::create(m_injectedScriptManager.get(), 0));
     m_agents.append(InspectorHeapProfilerAgent::create(m_injectedScriptManager.get()));
@@ -112,8 +114,6 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
 
 WorkerInspectorController::~WorkerInspectorController()
 {
-    m_instrumentingAgents->reset();
-    disconnectFrontend();
 }
 
 void WorkerInspectorController::connectFrontend()
@@ -164,6 +164,25 @@ void WorkerInspectorController::resume()
         ErrorString unused;
         runtimeAgent->run(&unused);
     }
+}
+
+void WorkerInspectorController::dispose()
+{
+    m_instrumentingAgents->reset();
+    disconnectFrontend();
+}
+
+void WorkerInspectorController::interruptAndDispatchInspectorCommands()
+{
+    m_workerDebuggerAgent->interruptAndDispatchInspectorCommands();
+}
+
+void WorkerInspectorController::trace(Visitor* visitor)
+{
+    visitor->trace(m_workerGlobalScope);
+    visitor->trace(m_instrumentingAgents);
+    m_agents.trace(visitor);
+    visitor->trace(m_workerDebuggerAgent);
 }
 
 }

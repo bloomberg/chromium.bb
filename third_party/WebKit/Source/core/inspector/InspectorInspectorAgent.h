@@ -51,12 +51,13 @@ typedef String ErrorString;
 class InspectorInspectorAgent FINAL : public InspectorBaseAgent<InspectorInspectorAgent>, public InspectorBackendDispatcher::InspectorCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorInspectorAgent);
 public:
-    static PassOwnPtr<InspectorInspectorAgent> create(Page* page, InjectedScriptManager* injectedScriptManager)
+    static PassOwnPtrWillBeRawPtr<InspectorInspectorAgent> create(Page* page, InjectedScriptManager* injectedScriptManager)
     {
-        return adoptPtr(new InspectorInspectorAgent(page, injectedScriptManager));
+        return adoptPtrWillBeNoop(new InspectorInspectorAgent(page, injectedScriptManager));
     }
 
     virtual ~InspectorInspectorAgent();
+    virtual void trace(Visitor*) OVERRIDE;
 
     // Inspector front-end API.
     virtual void enable(ErrorString*) OVERRIDE;
@@ -83,8 +84,9 @@ public:
 private:
     InspectorInspectorAgent(Page*, InjectedScriptManager*);
 
-    Page* m_inspectedPage;
+    RawPtrWillBeMember<Page> m_inspectedPage;
     InspectorFrontend* m_frontend;
+    // FIXME: Oilpan: Move InjectedScriptManager to heap in follow-up CL.
     InjectedScriptManager* m_injectedScriptManager;
 
     Vector<pair<long, String> > m_pendingEvaluateTestCommands;

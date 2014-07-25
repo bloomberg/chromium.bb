@@ -73,10 +73,18 @@ InspectorConsoleAgent::InspectorConsoleAgent(InspectorTimelineAgent* timelineAge
 
 InspectorConsoleAgent::~InspectorConsoleAgent()
 {
+#if !ENABLE(OILPAN)
     m_instrumentingAgents->setInspectorConsoleAgent(0);
-    m_instrumentingAgents = 0;
+    m_instrumentingAgents = nullptr;
+#endif
     m_state = 0;
     m_injectedScriptManager = 0;
+}
+
+void InspectorConsoleAgent::trace(Visitor* visitor)
+{
+    visitor->trace(m_timelineAgent);
+    InspectorBaseAgent::trace(visitor);
 }
 
 void InspectorConsoleAgent::init()

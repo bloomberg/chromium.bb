@@ -64,6 +64,7 @@ class InspectorCSSAgent FINAL
     , public InspectorBackendDispatcher::CSSCommandHandler
     , public InspectorStyleSheetBase::Listener {
     WTF_MAKE_NONCOPYABLE(InspectorCSSAgent);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorCSSAgent);
 public:
     enum MediaListSource {
         MediaListSourceLinkedSheet,
@@ -96,14 +97,15 @@ public:
 
     static CSSStyleRule* asCSSStyleRule(CSSRule*);
 
-    static PassOwnPtr<InspectorCSSAgent> create(InspectorDOMAgent* domAgent, InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent)
+    static PassOwnPtrWillBeRawPtr<InspectorCSSAgent> create(InspectorDOMAgent* domAgent, InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent)
     {
-        return adoptPtr(new InspectorCSSAgent(domAgent, pageAgent, resourceAgent));
+        return adoptPtrWillBeNoop(new InspectorCSSAgent(domAgent, pageAgent, resourceAgent));
     }
 
-    static void collectAllDocumentStyleSheets(Document*, Vector<CSSStyleSheet*>&);
+    static void collectAllDocumentStyleSheets(Document*, WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> >&);
 
     virtual ~InspectorCSSAgent();
+    virtual void trace(Visitor*) OVERRIDE;
 
     bool forcePseudoState(Element*, CSSSelector::PseudoType);
     virtual void setFrontend(InspectorFrontend*) OVERRIDE;
@@ -152,7 +154,7 @@ private:
     class AddRuleAction;
     class InspectorResourceContentLoaderCallback;
 
-    static void collectStyleSheets(CSSStyleSheet*, Vector<CSSStyleSheet*>&);
+    static void collectStyleSheets(CSSStyleSheet*, WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> >&);
 
     InspectorCSSAgent(InspectorDOMAgent*, InspectorPageAgent*, InspectorResourceAgent*);
 
@@ -167,7 +169,7 @@ private:
     Element* elementForId(ErrorString*, int nodeId);
 
     void updateActiveStyleSheets(Document*, StyleSheetsUpdateType);
-    void setActiveStyleSheets(Document*, const Vector<CSSStyleSheet*>&, StyleSheetsUpdateType);
+    void setActiveStyleSheets(Document*, const WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> >&, StyleSheetsUpdateType);
 
     void collectPlatformFontsForRenderer(RenderText*, HashCountedSet<String>*);
 
@@ -196,22 +198,22 @@ private:
     void resetPseudoStates();
 
     InspectorFrontend::CSS* m_frontend;
-    InspectorDOMAgent* m_domAgent;
-    InspectorPageAgent* m_pageAgent;
-    InspectorResourceAgent* m_resourceAgent;
+    RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
+    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
+    RawPtrWillBeMember<InspectorResourceAgent> m_resourceAgent;
 
     IdToInspectorStyleSheet m_idToInspectorStyleSheet;
     IdToInspectorStyleSheetForInlineStyle m_idToInspectorStyleSheetForInlineStyle;
-    HashMap<CSSStyleSheet*, RefPtr<InspectorStyleSheet> > m_cssStyleSheetToInspectorStyleSheet;
-    typedef HashMap<Document*, OwnPtr<HashSet<CSSStyleSheet*> > > DocumentStyleSheets;
+    WillBeHeapHashMap<RawPtrWillBeMember<CSSStyleSheet>, RefPtr<InspectorStyleSheet> > m_cssStyleSheetToInspectorStyleSheet;
+    typedef WillBeHeapHashMap<RawPtrWillBeMember<Document>, OwnPtrWillBeMember<WillBeHeapHashSet<RawPtrWillBeMember<CSSStyleSheet> > > > DocumentStyleSheets;
     DocumentStyleSheets m_documentToCSSStyleSheets;
-    HashSet<Document*> m_invalidatedDocuments;
+    WillBeHeapHashSet<RawPtrWillBeMember<Document> > m_invalidatedDocuments;
 
     NodeToInspectorStyleSheet m_nodeToInspectorStyleSheet;
-    WillBePersistentHeapHashMap<RefPtrWillBeMember<Document>, RefPtr<InspectorStyleSheet> > m_documentToViaInspectorStyleSheet; // "via inspector" stylesheets
+    WillBeHeapHashMap<RefPtrWillBeMember<Document>, RefPtr<InspectorStyleSheet> > m_documentToViaInspectorStyleSheet; // "via inspector" stylesheets
     NodeIdToForcedPseudoState m_nodeIdToForcedPseudoState;
 
-    RefPtrWillBePersistent<CSSStyleSheet> m_inspectorUserAgentStyleSheet;
+    RefPtrWillBeMember<CSSStyleSheet> m_inspectorUserAgentStyleSheet;
 
     int m_lastStyleSheetId;
     int m_styleSheetsPendingMutation;

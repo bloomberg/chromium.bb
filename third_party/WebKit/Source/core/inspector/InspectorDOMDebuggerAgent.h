@@ -61,10 +61,12 @@ class InspectorDOMDebuggerAgent FINAL :
     public InspectorDOMAgent::Listener,
     public InspectorBackendDispatcher::DOMDebuggerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorDOMDebuggerAgent);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorDOMDebuggerAgent);
 public:
-    static PassOwnPtr<InspectorDOMDebuggerAgent> create(InspectorDOMAgent*, InspectorDebuggerAgent*);
+    static PassOwnPtrWillBeRawPtr<InspectorDOMDebuggerAgent> create(InspectorDOMAgent*, InspectorDebuggerAgent*);
 
     virtual ~InspectorDOMDebuggerAgent();
+    virtual void trace(Visitor*) OVERRIDE;
 
     // DOMDebugger API for InspectorFrontend
     virtual void setXHRBreakpoint(ErrorString*, const String& url) OVERRIDE;
@@ -126,9 +128,9 @@ private:
 
     void clear();
 
-    InspectorDOMAgent* m_domAgent;
-    InspectorDebuggerAgent* m_debuggerAgent;
-    HashMap<Node*, uint32_t> m_domBreakpoints;
+    RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
+    RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
+    WillBeHeapHashMap<RawPtrWillBeMember<Node>, uint32_t> m_domBreakpoints;
     bool m_pauseInNextEventListener;
 };
 

@@ -443,8 +443,10 @@ static void dispatchOnInspectorBackendTask(ExecutionContext* context, const Stri
 
 void WebSharedWorkerImpl::dispatchDevToolsMessage(const WebString& message)
 {
+    if (m_askedToTerminate)
+        return;
     workerThread()->postDebuggerTask(createCrossThreadTask(dispatchOnInspectorBackendTask, String(message)));
-    WorkerDebuggerAgent::interruptAndDispatchInspectorCommands(workerThread());
+    workerThread()->interruptAndDispatchInspectorCommands();
 }
 
 WebSharedWorker* WebSharedWorker::create(WebSharedWorkerClient* client)

@@ -47,35 +47,40 @@ class InspectorFrontendChannel;
 class InspectorState;
 class InspectorStateClient;
 class InstrumentingAgents;
+class WorkerDebuggerAgent;
 class WorkerGlobalScope;
 class WorkerScriptDebugServer;
 
-class WorkerInspectorController {
+class WorkerInspectorController : public RefCountedWillBeGarbageCollectedFinalized<WorkerInspectorController> {
     WTF_MAKE_NONCOPYABLE(WorkerInspectorController);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    WorkerInspectorController(WorkerGlobalScope*);
+    explicit WorkerInspectorController(WorkerGlobalScope*);
     ~WorkerInspectorController();
+    void trace(Visitor*);
 
     void connectFrontend();
     void disconnectFrontend();
     void restoreInspectorStateFromCookie(const String& inspectorCookie);
     void dispatchMessageFromFrontend(const String&);
     void resume();
+    void dispose();
+    void interruptAndDispatchInspectorCommands();
 
 private:
     friend InstrumentingAgents* instrumentationForWorkerGlobalScope(WorkerGlobalScope*);
 
-    WorkerGlobalScope* m_workerGlobalScope;
+    RawPtrWillBeMember<WorkerGlobalScope> m_workerGlobalScope;
     OwnPtr<InspectorStateClient> m_stateClient;
     OwnPtr<InspectorCompositeState> m_state;
-    RefPtr<InstrumentingAgents> m_instrumentingAgents;
+    RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
     OwnPtr<InjectedScriptManager> m_injectedScriptManager;
     OwnPtr<WorkerScriptDebugServer> m_debugServer;
     InspectorAgentRegistry m_agents;
     OwnPtr<InspectorFrontendChannel> m_frontendChannel;
     OwnPtr<InspectorFrontend> m_frontend;
     RefPtr<InspectorBackendDispatcher> m_backendDispatcher;
+    RawPtrWillBeMember<WorkerDebuggerAgent> m_workerDebuggerAgent;
 };
 
 }

@@ -261,8 +261,10 @@ void WebEmbeddedWorkerImpl::detachDevTools()
 
 void WebEmbeddedWorkerImpl::dispatchDevToolsMessage(const WebString& message)
 {
+    if (m_askedToTerminate)
+        return;
     m_workerThread->runLoop().postDebuggerTask(createCrossThreadTask(dispatchOnInspectorBackendTask, String(message)));
-    WorkerDebuggerAgent::interruptAndDispatchInspectorCommands(m_workerThread.get());
+    m_workerThread->interruptAndDispatchInspectorCommands();
 }
 
 void WebEmbeddedWorkerImpl::prepareShadowPageForLoader()

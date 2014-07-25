@@ -60,9 +60,9 @@ private:
     Timer<HeapStatsUpdateTask> m_timer;
 };
 
-PassOwnPtr<InspectorHeapProfilerAgent> InspectorHeapProfilerAgent::create(InjectedScriptManager* injectedScriptManager)
+PassOwnPtrWillBeRawPtr<InspectorHeapProfilerAgent> InspectorHeapProfilerAgent::create(InjectedScriptManager* injectedScriptManager)
 {
-    return adoptPtr(new InspectorHeapProfilerAgent(injectedScriptManager));
+    return adoptPtrWillBeNoop(new InspectorHeapProfilerAgent(injectedScriptManager));
 }
 
 InspectorHeapProfilerAgent::InspectorHeapProfilerAgent(InjectedScriptManager* injectedScriptManager)

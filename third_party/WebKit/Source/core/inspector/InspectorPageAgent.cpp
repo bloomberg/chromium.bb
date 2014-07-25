@@ -305,9 +305,9 @@ bool InspectorPageAgent::dataContent(const char* data, unsigned size, const Stri
     return decodeBuffer(data, size, textEncodingName, result);
 }
 
-PassOwnPtr<InspectorPageAgent> InspectorPageAgent::create(Page* page, InjectedScriptManager* injectedScriptManager, InspectorClient* client, InspectorOverlay* overlay)
+PassOwnPtrWillBeRawPtr<InspectorPageAgent> InspectorPageAgent::create(Page* page, InjectedScriptManager* injectedScriptManager, InspectorClient* client, InspectorOverlay* overlay)
 {
-    return adoptPtr(new InspectorPageAgent(page, injectedScriptManager, client, overlay));
+    return adoptPtrWillBeNoop(new InspectorPageAgent(page, injectedScriptManager, client, overlay));
 }
 
 Resource* InspectorPageAgent::cachedResource(LocalFrame* frame, const KURL& url)
@@ -1435,6 +1435,12 @@ bool InspectorPageAgent::getEditedResourceContent(const String& url, String* con
         return false;
     *content = m_editedResourceContent.get(url);
     return true;
+}
+
+void InspectorPageAgent::trace(Visitor* visitor)
+{
+    visitor->trace(m_page);
+    InspectorBaseAgent::trace(visitor);
 }
 
 } // namespace blink

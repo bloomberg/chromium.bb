@@ -49,9 +49,10 @@ class ScriptHeapSnapshot;
 typedef String ErrorString;
 
 class InspectorHeapProfilerAgent FINAL : public InspectorBaseAgent<InspectorHeapProfilerAgent>, public InspectorBackendDispatcher::HeapProfilerCommandHandler {
-    WTF_MAKE_NONCOPYABLE(InspectorHeapProfilerAgent); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(InspectorHeapProfilerAgent);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<InspectorHeapProfilerAgent> create(InjectedScriptManager*);
+    static PassOwnPtrWillBeRawPtr<InspectorHeapProfilerAgent> create(InjectedScriptManager*);
     virtual ~InspectorHeapProfilerAgent();
 
     virtual void collectGarbage(ErrorString*) OVERRIDE;
@@ -82,6 +83,7 @@ private:
     void startTrackingHeapObjectsInternal(bool trackAllocations);
     void stopTrackingHeapObjectsInternal();
 
+    // FIXME: Oilpan: Move InjectedScriptManager to heap in follow-up CL.
     InjectedScriptManager* m_injectedScriptManager;
     InspectorFrontend::HeapProfiler* m_frontend;
     unsigned m_nextUserInitiatedHeapSnapshotNumber;

@@ -41,13 +41,15 @@ class InstrumentingAgents;
 typedef String ErrorString;
 
 class InspectorApplicationCacheAgent FINAL : public InspectorBaseAgent<InspectorApplicationCacheAgent>, public InspectorBackendDispatcher::ApplicationCacheCommandHandler {
-    WTF_MAKE_NONCOPYABLE(InspectorApplicationCacheAgent); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(InspectorApplicationCacheAgent);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<InspectorApplicationCacheAgent> create(InspectorPageAgent* pageAgent)
+    static PassOwnPtrWillBeRawPtr<InspectorApplicationCacheAgent> create(InspectorPageAgent* pageAgent)
     {
-        return adoptPtr(new InspectorApplicationCacheAgent(pageAgent));
+        return adoptPtrWillBeNoop(new InspectorApplicationCacheAgent(pageAgent));
     }
     virtual ~InspectorApplicationCacheAgent() { }
+    virtual void trace(Visitor*) OVERRIDE;
 
     // InspectorBaseAgent
     virtual void setFrontend(InspectorFrontend*) OVERRIDE;
@@ -72,7 +74,7 @@ private:
 
     DocumentLoader* assertFrameWithDocumentLoader(ErrorString*, String frameId);
 
-    InspectorPageAgent* m_pageAgent;
+    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     InspectorFrontend::ApplicationCache* m_frontend;
 };
 

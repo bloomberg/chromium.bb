@@ -250,7 +250,7 @@ void WorkerMessagingProxy::sendMessageToInspector(const String& message)
     if (m_askedToTerminate)
         return;
     m_workerThread->postDebuggerTask(createCrossThreadTask(dispatchOnInspectorBackendTask, String(message)));
-    WorkerDebuggerAgent::interruptAndDispatchInspectorCommands(m_workerThread.get());
+    m_workerThread->interruptAndDispatchInspectorCommands();
 }
 
 void WorkerMessagingProxy::workerGlobalScopeDestroyed()

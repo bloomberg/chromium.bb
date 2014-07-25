@@ -46,6 +46,7 @@ namespace blink {
     class WorkerLoaderProxy;
     class WorkerReportingProxy;
     class WorkerThreadStartupData;
+    class WorkerInspectorController;
 
     enum WorkerThreadStartMode { DontPauseWorkerGlobalScopeOnStart, PauseWorkerGlobalScopeOnStart };
 
@@ -74,6 +75,11 @@ namespace blink {
         // Number of active worker threads.
         static unsigned workerThreadCount();
 
+        WorkerGlobalScope* workerGlobalScope() { return m_workerGlobalScope.get(); }
+
+        void interruptAndDispatchInspectorCommands();
+        void setWorkerInspectorController(WorkerInspectorController*);
+
     protected:
         WorkerThread(WorkerLoaderProxy&, WorkerReportingProxy&, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
 
@@ -82,8 +88,6 @@ namespace blink {
 
         // Executes the event loop for the worker thread. Derived classes can override to perform actions before/after entering the event loop.
         virtual void runEventLoop();
-
-        WorkerGlobalScope* workerGlobalScope() { return m_workerGlobalScope.get(); }
 
     private:
         // Static function executed as the core routine on the new thread. Passed a pointer to a WorkerThread object.
@@ -98,6 +102,9 @@ namespace blink {
 
         RefPtrWillBePersistent<WorkerGlobalScope> m_workerGlobalScope;
         Mutex m_threadCreationMutex;
+
+        RefPtrWillBePersistent<WorkerInspectorController> m_workerInspectorController;
+        Mutex m_workerInspectorControllerMutex;
 
         OwnPtrWillBePersistent<WorkerThreadStartupData> m_startupData;
 

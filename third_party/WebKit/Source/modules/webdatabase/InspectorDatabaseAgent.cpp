@@ -313,4 +313,12 @@ Database* InspectorDatabaseAgent::databaseForId(const String& databaseId)
     return it->value->database();
 }
 
+void InspectorDatabaseAgent::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_resources);
+#endif
+    InspectorBaseAgent::trace(visitor);
+}
+
 } // namespace blink

@@ -48,7 +48,7 @@ namespace blink {
 
 struct InjectedScriptManager::CallbackData {
     ScopedPersistent<v8::Object> handle;
-    RefPtr<InjectedScriptHost> host;
+    RefPtrWillBePersistent<InjectedScriptHost> host;
 };
 
 static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(InjectedScriptHost* host, v8::Isolate* isolate)
@@ -63,7 +63,11 @@ static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(InjectedScriptHos
         // Avoid setting the wrapper if allocation failed.
         return v8::Local<v8::Object>();
     }
+#if ENABLE(OILPAN)
+    V8DOMWrapper::setNativeInfoWithPersistentHandle(instanceTemplate, &V8InjectedScriptHost::wrapperTypeInfo, host, new Persistent<InjectedScriptHost>(host));
+#else
     V8DOMWrapper::setNativeInfo(instanceTemplate, &V8InjectedScriptHost::wrapperTypeInfo, host);
+#endif
     // Create a weak reference to the v8 wrapper of InspectorBackend to deref
     // InspectorBackend when the wrapper is garbage collected.
     InjectedScriptManager::CallbackData* data = new InjectedScriptManager::CallbackData;

@@ -56,10 +56,11 @@ struct EventListenerInfo;
 // InjectedScriptHost must never implemment methods that have more power over the page than the
 // page already has itself (e.g. origin restriction bypasses).
 
-class InjectedScriptHost : public RefCounted<InjectedScriptHost>, public ScriptWrappable {
+class InjectedScriptHost : public RefCountedWillBeGarbageCollectedFinalized<InjectedScriptHost>, public ScriptWrappable {
 public:
-    static PassRefPtr<InjectedScriptHost> create();
+    static PassRefPtrWillBeRawPtr<InjectedScriptHost> create();
     ~InjectedScriptHost();
+    void trace(Visitor*);
 
     void init(InstrumentingAgents* instrumentingAgents, ScriptDebugServer* scriptDebugServer)
     {
@@ -96,7 +97,7 @@ public:
 private:
     InjectedScriptHost();
 
-    InstrumentingAgents* m_instrumentingAgents;
+    RawPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
     ScriptDebugServer* m_scriptDebugServer;
     Vector<OwnPtr<InspectableObject> > m_inspectedObjects;
     OwnPtr<InspectableObject> m_defaultInspectableObject;

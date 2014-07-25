@@ -32,6 +32,7 @@
 #include "core/inspector/WorkerDebuggerAgent.h"
 
 #include "bindings/core/v8/ScriptDebugServer.h"
+#include "core/inspector/WorkerInspectorController.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "wtf/MessageQueue.h"
@@ -39,21 +40,6 @@
 namespace blink {
 
 namespace {
-
-Mutex& workerDebuggerAgentsMutex()
-{
-    AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
-    return mutex;
-}
-
-typedef HashMap<WorkerThread*, WorkerDebuggerAgent*> WorkerDebuggerAgents;
-
-WorkerDebuggerAgents& workerDebuggerAgents()
-{
-    DEFINE_STATIC_LOCAL(WorkerDebuggerAgents, agents, ());
-    return agents;
-}
-
 
 class RunInspectorCommandsTask FINAL : public ScriptDebugServer::Task {
 public:
@@ -73,9 +59,9 @@ private:
 
 } // namespace
 
-PassOwnPtr<WorkerDebuggerAgent> WorkerDebuggerAgent::create(WorkerScriptDebugServer* scriptDebugServer, WorkerGlobalScope* inspectedWorkerGlobalScope, InjectedScriptManager* injectedScriptManager)
+PassOwnPtrWillBeRawPtr<WorkerDebuggerAgent> WorkerDebuggerAgent::create(WorkerScriptDebugServer* scriptDebugServer, WorkerGlobalScope* inspectedWorkerGlobalScope, InjectedScriptManager* injectedScriptManager)
 {
-    return adoptPtr(new WorkerDebuggerAgent(scriptDebugServer, inspectedWorkerGlobalScope, injectedScriptManager));
+    return adoptPtrWillBeNoop(new WorkerDebuggerAgent(scriptDebugServer, inspectedWorkerGlobalScope, injectedScriptManager));
 }
 
 WorkerDebuggerAgent::WorkerDebuggerAgent(WorkerScriptDebugServer* scriptDebugServer, WorkerGlobalScope* inspectedWorkerGlobalScope, InjectedScriptManager* injectedScriptManager)
@@ -83,23 +69,21 @@ WorkerDebuggerAgent::WorkerDebuggerAgent(WorkerScriptDebugServer* scriptDebugSer
     , m_scriptDebugServer(scriptDebugServer)
     , m_inspectedWorkerGlobalScope(inspectedWorkerGlobalScope)
 {
-    MutexLocker lock(workerDebuggerAgentsMutex());
-    workerDebuggerAgents().set(inspectedWorkerGlobalScope->thread(), this);
 }
 
 WorkerDebuggerAgent::~WorkerDebuggerAgent()
 {
-    MutexLocker lock(workerDebuggerAgentsMutex());
-    ASSERT(workerDebuggerAgents().contains(m_inspectedWorkerGlobalScope->thread()));
-    workerDebuggerAgents().remove(m_inspectedWorkerGlobalScope->thread());
 }
 
-void WorkerDebuggerAgent::interruptAndDispatchInspectorCommands(WorkerThread* thread)
+void WorkerDebuggerAgent::trace(Visitor* visitor)
 {
-    MutexLocker lock(workerDebuggerAgentsMutex());
-    WorkerDebuggerAgent* agent = workerDebuggerAgents().get(thread);
-    if (agent)
-        agent->m_scriptDebugServer->interruptAndRunTask(adoptPtr(new RunInspectorCommandsTask(thread)));
+    visitor->trace(m_inspectedWorkerGlobalScope);
+    InspectorDebuggerAgent::trace(visitor);
+}
+
+void WorkerDebuggerAgent::interruptAndDispatchInspectorCommands()
+{
+    scriptDebugServer().interruptAndRunTask(adoptPtr(new RunInspectorCommandsTask(m_inspectedWorkerGlobalScope->thread())));
 }
 
 void WorkerDebuggerAgent::startListeningScriptDebugServer()

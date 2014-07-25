@@ -141,6 +141,37 @@ static const char EmbedderCallback[] = "EmbedderCallback";
 
 using TypeBuilder::Timeline::TimelineEvent;
 
+class InspectorTimelineAgentTraceEventListener : public TraceEventDispatcher::TraceEventListener {
+public:
+    typedef void (InspectorTimelineAgent::*TraceEventHandlerMethod)(const TraceEventDispatcher::TraceEvent&);
+    static PassOwnPtrWillBeRawPtr<InspectorTimelineAgentTraceEventListener> create(InspectorTimelineAgent* instance, TraceEventHandlerMethod method)
+    {
+        return adoptPtrWillBeNoop(new InspectorTimelineAgentTraceEventListener(instance, method));
+    }
+    virtual void call(const TraceEventDispatcher::TraceEvent& event) OVERRIDE
+    {
+        (m_instance->*m_method)(event);
+    }
+    virtual void* target() OVERRIDE
+    {
+        return m_instance;
+    }
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_instance);
+        TraceEventDispatcher::TraceEventListener::trace(visitor);
+    }
+
+private:
+    InspectorTimelineAgentTraceEventListener(InspectorTimelineAgent* instance, TraceEventHandlerMethod method)
+        : m_instance(instance)
+        , m_method(method)
+    {
+    }
+    RawPtrWillBeMember<InspectorTimelineAgent> m_instance;
+    TraceEventHandlerMethod m_method;
+};
+
 struct TimelineRecordEntry {
     TimelineRecordEntry(PassRefPtr<TimelineEvent> record, PassRefPtr<JSONObject> data, PassRefPtr<TypeBuilder::Array<TimelineEvent> > children, const String& type)
         : record(record)
@@ -261,6 +292,13 @@ InspectorTimelineAgent::~InspectorTimelineAgent()
 {
 }
 
+void InspectorTimelineAgent::trace(Visitor* visitor)
+{
+    visitor->trace(m_pageAgent);
+    visitor->trace(m_layerTreeAgent);
+    InspectorBaseAgent::trace(visitor);
+}
+
 void InspectorTimelineAgent::setFrontend(InspectorFrontend* frontend)
 {
     m_frontend = frontend->timeline();
@@ -350,23 +388,23 @@ void InspectorTimelineAgent::innerStart()
     ScriptGCEvent::addEventListener(this);
     if (m_client) {
         TraceEventDispatcher* dispatcher = TraceEventDispatcher::instance();
-        dispatcher->addListener(InstrumentationEvents::BeginFrame, TRACE_EVENT_PHASE_INSTANT, this, &InspectorTimelineAgent::onBeginImplSideFrame, m_client);
-        dispatcher->addListener(InstrumentationEvents::PaintSetup, TRACE_EVENT_PHASE_BEGIN, this, &InspectorTimelineAgent::onPaintSetupBegin, m_client);
-        dispatcher->addListener(InstrumentationEvents::PaintSetup, TRACE_EVENT_PHASE_END, this, &InspectorTimelineAgent::onPaintSetupEnd, m_client);
-        dispatcher->addListener(InstrumentationEvents::RasterTask, TRACE_EVENT_PHASE_BEGIN, this, &InspectorTimelineAgent::onRasterTaskBegin, m_client);
-        dispatcher->addListener(InstrumentationEvents::RasterTask, TRACE_EVENT_PHASE_END, this, &InspectorTimelineAgent::onRasterTaskEnd, m_client);
-        dispatcher->addListener(InstrumentationEvents::Layer, TRACE_EVENT_PHASE_DELETE_OBJECT, this, &InspectorTimelineAgent::onLayerDeleted, m_client);
-        dispatcher->addListener(InstrumentationEvents::RequestMainThreadFrame, TRACE_EVENT_PHASE_INSTANT, this, &InspectorTimelineAgent::onRequestMainThreadFrame, m_client);
-        dispatcher->addListener(InstrumentationEvents::ActivateLayerTree, TRACE_EVENT_PHASE_INSTANT, this, &InspectorTimelineAgent::onActivateLayerTree, m_client);
-        dispatcher->addListener(InstrumentationEvents::DrawFrame, TRACE_EVENT_PHASE_INSTANT, this, &InspectorTimelineAgent::onDrawFrame, m_client);
-        dispatcher->addListener(PlatformInstrumentation::ImageDecodeEvent, TRACE_EVENT_PHASE_BEGIN, this, &InspectorTimelineAgent::onImageDecodeBegin, m_client);
-        dispatcher->addListener(PlatformInstrumentation::ImageDecodeEvent, TRACE_EVENT_PHASE_END, this, &InspectorTimelineAgent::onImageDecodeEnd, m_client);
-        dispatcher->addListener(PlatformInstrumentation::DrawLazyPixelRefEvent, TRACE_EVENT_PHASE_INSTANT, this, &InspectorTimelineAgent::onDrawLazyPixelRef, m_client);
-        dispatcher->addListener(PlatformInstrumentation::DecodeLazyPixelRefEvent, TRACE_EVENT_PHASE_BEGIN, this, &InspectorTimelineAgent::onDecodeLazyPixelRefBegin, m_client);
-        dispatcher->addListener(PlatformInstrumentation::DecodeLazyPixelRefEvent, TRACE_EVENT_PHASE_END, this, &InspectorTimelineAgent::onDecodeLazyPixelRefEnd, m_client);
-        dispatcher->addListener(PlatformInstrumentation::LazyPixelRef, TRACE_EVENT_PHASE_DELETE_OBJECT, this, &InspectorTimelineAgent::onLazyPixelRefDeleted, m_client);
-        dispatcher->addListener(InstrumentationEvents::EmbedderCallback, TRACE_EVENT_PHASE_BEGIN, this, &InspectorTimelineAgent::onEmbedderCallbackBegin, m_client);
-        dispatcher->addListener(InstrumentationEvents::EmbedderCallback, TRACE_EVENT_PHASE_END, this, &InspectorTimelineAgent::onEmbedderCallbackEnd, m_client);
+        dispatcher->addListener(InstrumentationEvents::BeginFrame, TRACE_EVENT_PHASE_INSTANT, InspectorTimelineAgentTraceEventListener::create(this, &InspectorTimelineAgent::onBeginImplSideFrame), m_client);
+        dispatcher->addListener(InstrumentationEvents::PaintSetup, TRACE_EVENT_PHASE_BEGIN, InspectorTimelineAgentTraceEventListener::create(this, &InspectorTimelineAgent::onPaintSetupBegin), m_client);
+        dispatcher->addListener(InstrumentationEvents::PaintSetup, TRACE_EVENT_PHASE_END, InspectorTimelineAgentTraceEventListener::create(this, &InspectorTimelineAgent::onPaintSetupEnd), m_client);
+        dispatcher->addListener(InstrumentationEvents::RasterTask, TRACE_EVENT_PHASE_BEGIN, InspectorTimelineAgentTraceEventListener::create(this, &InspectorTimelineAgent::onRasterTaskBegin), m_client);
+        dispatcher->addListener(InstrumentationEvents::RasterTask, TRACE_EVENT_PHASE_END, InspectorTimelineAgentTraceEventListener::create(this, &InspectorTimelineAgent::onRasterTaskEnd), m_client);
+        dispatcher->addListener(InstrumentationEvents::Layer, TRACE_EVENT_PHASE_DELETE_OBJECT, InspectorTimelineAgentTraceEventListener::create(this, &InspectorTimelineAgent::onLayerDeleted), m_client);
+        dispatcher->addListener(InstrumentationEvents::RequestMainThreadFrame, TRACE_EVENT_PHASE_INSTANT, InspectorTimelineAgentTraceEventListener::create(this, &InspectorTimelineAgent::onRequestMainThreadFrame), m_client);
+        dispatcher->addListener(InstrumentationEvents::ActivateLayerTree, TRACE_EVENT_PHASE_INSTANT, InspectorTimelineAgentTraceEventListener::create(this, &InspectorTimelineAgent::onActivateLayerTree), m_client);
+        dispatcher->addListener(InstrumentationEvents::DrawFrame, TRACE_EVENT_PHASE_INSTANT, InspectorTimelineAgentTraceEventListener::create(this, &InspectorTimelineAgent::onDrawFrame), m_client);
+        dispatcher->addListener(PlatformInstrumentation::ImageDecodeEvent, TRACE_EVENT_PHASE_BEGIN, InspectorTimelineAgentTraceEventListener::create(this, &InspectorTimelineAgent::onImageDecodeBegin), m_client);
+        dispatcher->addListener(PlatformInstrumentation::ImageDecodeEvent, TRACE_EVENT_PHASE_END, InspectorTimelineAgentTraceEventListener::create(this, &InspectorTimelineAgent::onImageDecodeEnd), m_client);
+        dispatcher->addListener(PlatformInstrumentation::DrawLazyPixelRefEvent, TRACE_EVENT_PHASE_INSTANT, InspectorTimelineAgentTraceEventListener::create(this, &InspectorTimelineAgent::onDrawLazyPixelRef), m_client);
+        dispatcher->addListener(PlatformInstrumentation::DecodeLazyPixelRefEvent, TRACE_EVENT_PHASE_BEGIN, InspectorTimelineAgentTraceEventListener::create(this, &InspectorTimelineAgent::onDecodeLazyPixelRefBegin), m_client);
+        dispatcher->addListener(PlatformInstrumentation::DecodeLazyPixelRefEvent, TRACE_EVENT_PHASE_END, InspectorTimelineAgentTraceEventListener::create(this, &InspectorTimelineAgent::onDecodeLazyPixelRefEnd), m_client);
+        dispatcher->addListener(PlatformInstrumentation::LazyPixelRef, TRACE_EVENT_PHASE_DELETE_OBJECT, InspectorTimelineAgentTraceEventListener::create(this, &InspectorTimelineAgent::onLazyPixelRefDeleted), m_client);
+        dispatcher->addListener(InstrumentationEvents::EmbedderCallback, TRACE_EVENT_PHASE_BEGIN, InspectorTimelineAgentTraceEventListener::create(this, &InspectorTimelineAgent::onEmbedderCallbackBegin), m_client);
+        dispatcher->addListener(InstrumentationEvents::EmbedderCallback, TRACE_EVENT_PHASE_END, InspectorTimelineAgentTraceEventListener::create(this, &InspectorTimelineAgent::onEmbedderCallbackEnd), m_client);
 
         if (m_state->getBoolean(TimelineAgentState::includeGPUEvents)) {
             m_pendingGPURecord.clear();

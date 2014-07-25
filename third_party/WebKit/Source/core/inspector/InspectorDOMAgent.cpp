@@ -231,19 +231,21 @@ InspectorDOMAgent::InspectorDOMAgent(InspectorPageAgent* pageAgent, InjectedScri
     , m_injectedScriptManager(injectedScriptManager)
     , m_overlay(overlay)
     , m_frontend(0)
-    , m_domListener(0)
+    , m_domListener(nullptr)
     , m_documentNodeToIdMap(adoptPtrWillBeNoop(new NodeToIdMap()))
     , m_lastNodeId(1)
     , m_searchingForNode(NotSearching)
     , m_suppressAttributeModifiedEvent(false)
-    , m_listener(0)
+    , m_listener(nullptr)
 {
 }
 
 InspectorDOMAgent::~InspectorDOMAgent()
 {
+#if !ENABLE(OILPAN)
     reset();
     ASSERT(m_searchingForNode == NotSearching);
+#endif
 }
 
 void InspectorDOMAgent::setFrontend(InspectorFrontend* frontend)
@@ -282,9 +284,9 @@ void InspectorDOMAgent::restore()
     notifyDocumentUpdated();
 }
 
-Vector<Document*> InspectorDOMAgent::documents()
+WillBeHeapVector<RawPtrWillBeMember<Document> > InspectorDOMAgent::documents()
 {
-    Vector<Document*> result;
+    WillBeHeapVector<RawPtrWillBeMember<Document> > result;
     for (Frame* frame = m_document->frame(); frame; frame = frame->tree().traverseNext()) {
         if (!frame->isLocalFrame())
             continue;
@@ -964,10 +966,10 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
     if (endQuoteFound)
         attributeQuery = attributeQuery.left(attributeQuery.length() - 1);
 
-    Vector<Document*> docs = documents();
+    WillBeHeapVector<RawPtrWillBeMember<Document> > docs = documents();
     WillBeHeapListHashSet<RawPtrWillBeMember<Node> > resultCollector;
 
-    for (Vector<Document*>::iterator it = docs.begin(); it != docs.end(); ++it) {
+    for (WillBeHeapVector<RawPtrWillBeMember<Document> >::iterator it = docs.begin(); it != docs.end(); ++it) {
         Document* document = *it;
         Node* node = document->documentElement();
         if (!node)
@@ -1021,7 +1023,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
         }
 
         // XPath evaluation
-        for (Vector<Document*>::iterator it = docs.begin(); it != docs.end(); ++it) {
+        for (WillBeHeapVector<RawPtrWillBeMember<Document> >::iterator it = docs.begin(); it != docs.end(); ++it) {
             Document* document = *it;
             ASSERT(document);
             TrackExceptionState exceptionState;
@@ -1042,7 +1044,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
         }
 
         // Selector evaluation
-        for (Vector<Document*>::iterator it = docs.begin(); it != docs.end(); ++it) {
+        for (WillBeHeapVector<RawPtrWillBeMember<Document> >::iterator it = docs.begin(); it != docs.end(); ++it) {
             Document* document = *it;
             TrackExceptionState exceptionState;
             RefPtrWillBeRawPtr<StaticNodeList> nodeList = document->querySelectorAll(AtomicString(whitespaceTrimmedQuery), exceptionState);
@@ -2121,6 +2123,24 @@ bool InspectorDOMAgent::pushDocumentUponHandlelessOperation(ErrorString* errorSt
         return errorString->isEmpty();
     }
     return true;
+}
+
+void InspectorDOMAgent::trace(Visitor* visitor)
+{
+    visitor->trace(m_domListener);
+    visitor->trace(m_pageAgent);
+#if ENABLE(OILPAN)
+    visitor->trace(m_documentNodeToIdMap);
+    visitor->trace(m_danglingNodeToIdMaps);
+    visitor->trace(m_idToNode);
+    visitor->trace(m_idToNodesMap);
+    visitor->trace(m_document);
+    visitor->trace(m_searchResults);
+#endif
+    visitor->trace(m_history);
+    visitor->trace(m_domEditor);
+    visitor->trace(m_listener);
+    InspectorBaseAgent::trace(visitor);
 }
 
 } // namespace blink

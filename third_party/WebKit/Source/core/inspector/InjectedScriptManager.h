@@ -79,7 +79,7 @@ private:
     int m_nextInjectedScriptId;
     typedef HashMap<int, InjectedScript> IdToInjectedScriptMap;
     IdToInjectedScriptMap m_idToInjectedScript;
-    RefPtr<InjectedScriptHost> m_injectedScriptHost;
+    RefPtrWillBePersistent<InjectedScriptHost> m_injectedScriptHost;
     InspectedStateAccessCheck m_inspectedStateAccessCheck;
     typedef HashMap<RefPtr<ScriptState>, int> ScriptStateToId;
     ScriptStateToId m_scriptStateToId;

@@ -105,9 +105,9 @@ private:
 
 int InspectorWorkerAgent::WorkerFrontendChannel::s_nextId = 1;
 
-PassOwnPtr<InspectorWorkerAgent> InspectorWorkerAgent::create()
+PassOwnPtrWillBeRawPtr<InspectorWorkerAgent> InspectorWorkerAgent::create()
 {
-    return adoptPtr(new InspectorWorkerAgent());
+    return adoptPtrWillBeNoop(new InspectorWorkerAgent());
 }
 
 InspectorWorkerAgent::InspectorWorkerAgent()
@@ -118,7 +118,9 @@ InspectorWorkerAgent::InspectorWorkerAgent()
 
 InspectorWorkerAgent::~InspectorWorkerAgent()
 {
+#if !ENABLE(OILPAN)
     m_instrumentingAgents->setInspectorWorkerAgent(0);
+#endif
 }
 
 void InspectorWorkerAgent::init()

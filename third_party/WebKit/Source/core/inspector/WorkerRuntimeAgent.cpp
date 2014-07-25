@@ -51,7 +51,15 @@ WorkerRuntimeAgent::WorkerRuntimeAgent(InjectedScriptManager* injectedScriptMana
 
 WorkerRuntimeAgent::~WorkerRuntimeAgent()
 {
+#if !ENABLE(OILPAN)
     m_instrumentingAgents->setWorkerRuntimeAgent(0);
+#endif
+}
+
+void WorkerRuntimeAgent::trace(Visitor* visitor)
+{
+    visitor->trace(m_workerGlobalScope);
+    InspectorRuntimeAgent::trace(visitor);
 }
 
 void WorkerRuntimeAgent::init()

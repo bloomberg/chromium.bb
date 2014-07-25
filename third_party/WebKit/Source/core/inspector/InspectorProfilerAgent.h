@@ -52,9 +52,10 @@ class ScriptProfile;
 typedef String ErrorString;
 
 class InspectorProfilerAgent FINAL : public InspectorBaseAgent<InspectorProfilerAgent>, public InspectorBackendDispatcher::ProfilerCommandHandler {
-    WTF_MAKE_NONCOPYABLE(InspectorProfilerAgent); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(InspectorProfilerAgent);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<InspectorProfilerAgent> create(InjectedScriptManager*, InspectorOverlay*);
+    static PassOwnPtrWillBeRawPtr<InspectorProfilerAgent> create(InjectedScriptManager*, InspectorOverlay*);
     virtual ~InspectorProfilerAgent();
 
     void consoleProfile(const String& title, ScriptState*);
@@ -82,6 +83,7 @@ private:
     void stop(ErrorString*, RefPtr<TypeBuilder::Profiler::CPUProfile>*);
     String nextProfileId();
 
+    // FIXME: Oilpan: Move InjectedScriptManager to heap in follow-up CL.
     InjectedScriptManager* m_injectedScriptManager;
     InspectorFrontend::Profiler* m_frontend;
     bool m_recordingCPUProfile;

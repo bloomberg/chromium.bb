@@ -49,11 +49,12 @@ typedef String ErrorString;
 
 class InspectorDatabaseAgent FINAL : public InspectorBaseAgent<InspectorDatabaseAgent>, public InspectorBackendDispatcher::DatabaseCommandHandler {
 public:
-    static PassOwnPtr<InspectorDatabaseAgent> create()
+    static PassOwnPtrWillBeRawPtr<InspectorDatabaseAgent> create()
     {
-        return adoptPtr(new InspectorDatabaseAgent());
+        return adoptPtrWillBeNoop(new InspectorDatabaseAgent());
     }
     virtual ~InspectorDatabaseAgent();
+    virtual void trace(Visitor*) OVERRIDE;
 
     virtual void setFrontend(InspectorFrontend*) OVERRIDE;
     virtual void clearFrontend() OVERRIDE;
@@ -75,7 +76,7 @@ private:
     InspectorDatabaseResource* findByFileName(const String& fileName);
 
     InspectorFrontend::Database* m_frontend;
-    typedef WillBePersistentHeapHashMap<String, RefPtrWillBeMember<InspectorDatabaseResource> > DatabaseResourcesHeapMap;
+    typedef WillBeHeapHashMap<String, RefPtrWillBeMember<InspectorDatabaseResource> > DatabaseResourcesHeapMap;
     DatabaseResourcesHeapMap m_resources;
     bool m_enabled;
 };

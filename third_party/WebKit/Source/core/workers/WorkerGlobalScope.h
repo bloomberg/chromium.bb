@@ -170,7 +170,7 @@ namespace blink {
         OwnPtr<WorkerScriptController> m_script;
         WorkerThread* m_thread;
 
-        OwnPtr<WorkerInspectorController> m_workerInspectorController;
+        RefPtrWillBeMember<WorkerInspectorController> m_workerInspectorController;
         bool m_closing;
 
         OwnPtrWillBeMember<WorkerEventQueue> m_eventQueue;

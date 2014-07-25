@@ -51,11 +51,12 @@ typedef String ErrorString;
 
 class InspectorLayerTreeAgent FINAL : public InspectorBaseAgent<InspectorLayerTreeAgent>, public InspectorBackendDispatcher::LayerTreeCommandHandler {
 public:
-    static PassOwnPtr<InspectorLayerTreeAgent> create(Page* page)
+    static PassOwnPtrWillBeRawPtr<InspectorLayerTreeAgent> create(Page* page)
     {
-        return adoptPtr(new InspectorLayerTreeAgent(page));
+        return adoptPtrWillBeNoop(new InspectorLayerTreeAgent(page));
     }
     virtual ~InspectorLayerTreeAgent();
+    virtual void trace(Visitor*) OVERRIDE;
 
     virtual void setFrontend(InspectorFrontend*) OVERRIDE;
     virtual void clearFrontend() OVERRIDE;
@@ -98,7 +99,7 @@ private:
     int idForNode(Node*);
 
     InspectorFrontend::LayerTree* m_frontend;
-    Page* m_page;
+    RawPtrWillBeMember<Page> m_page;
     Vector<int, 2> m_pageOverlayLayerIds;
 
     typedef HashMap<String, RefPtr<GraphicsContextSnapshot> > SnapshotById;

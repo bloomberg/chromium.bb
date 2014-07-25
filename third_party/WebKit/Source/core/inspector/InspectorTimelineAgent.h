@@ -89,8 +89,7 @@ class XMLHttpRequest;
 typedef String ErrorString;
 
 class InspectorTimelineAgent FINAL
-    : public TraceEventTarget<InspectorTimelineAgent>
-    , public InspectorBaseAgent<InspectorTimelineAgent>
+    : public InspectorBaseAgent<InspectorTimelineAgent>
     , public ScriptGCEventListener
     , public InspectorBackendDispatcher::TimelineCommandHandler
     , public PlatformInstrumentationClient {
@@ -114,13 +113,14 @@ public:
         uint64_t limitGPUMemoryBytes;
     };
 
-    static PassOwnPtr<InspectorTimelineAgent> create(InspectorPageAgent* pageAgent, InspectorLayerTreeAgent* layerTreeAgent,
+    static PassOwnPtrWillBeRawPtr<InspectorTimelineAgent> create(InspectorPageAgent* pageAgent, InspectorLayerTreeAgent* layerTreeAgent,
         InspectorOverlay* overlay, InspectorType type, InspectorClient* client)
     {
-        return adoptPtr(new InspectorTimelineAgent(pageAgent, layerTreeAgent, overlay, type, client));
+        return adoptPtrWillBeNoop(new InspectorTimelineAgent(pageAgent, layerTreeAgent, overlay, type, client));
     }
 
     virtual ~InspectorTimelineAgent();
+    virtual void trace(Visitor*) OVERRIDE;
 
     virtual void setFrontend(InspectorFrontend*) OVERRIDE;
     virtual void clearFrontend() OVERRIDE;
@@ -286,8 +286,8 @@ private:
     void innerStop(bool fromConsole);
     void setLiveEvents(const String&);
 
-    InspectorPageAgent* m_pageAgent;
-    InspectorLayerTreeAgent* m_layerTreeAgent;
+    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
+    RawPtrWillBeMember<InspectorLayerTreeAgent> m_layerTreeAgent;
     InspectorFrontend::Timeline* m_frontend;
     InspectorClient* m_client;
     InspectorOverlay* m_overlay;

@@ -44,9 +44,9 @@
 
 namespace blink {
 
-PassOwnPtr<PageDebuggerAgent> PageDebuggerAgent::create(PageScriptDebugServer* pageScriptDebugServer, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
+PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(PageScriptDebugServer* pageScriptDebugServer, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
 {
-    return adoptPtr(new PageDebuggerAgent(pageScriptDebugServer, pageAgent, injectedScriptManager, overlay));
+    return adoptPtrWillBeNoop(new PageDebuggerAgent(pageScriptDebugServer, pageAgent, injectedScriptManager, overlay));
 }
 
 PageDebuggerAgent::PageDebuggerAgent(PageScriptDebugServer* pageScriptDebugServer, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
@@ -60,6 +60,12 @@ PageDebuggerAgent::PageDebuggerAgent(PageScriptDebugServer* pageScriptDebugServe
 
 PageDebuggerAgent::~PageDebuggerAgent()
 {
+}
+
+void PageDebuggerAgent::trace(Visitor* visitor)
+{
+    visitor->trace(m_pageAgent);
+    InspectorDebuggerAgent::trace(visitor);
 }
 
 void PageDebuggerAgent::enable()

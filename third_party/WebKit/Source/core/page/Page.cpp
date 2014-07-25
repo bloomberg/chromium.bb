@@ -599,6 +599,7 @@ void Page::trace(Visitor* visitor)
 #if ENABLE(OILPAN)
     visitor->trace(m_dragCaretController);
     visitor->trace(m_dragController);
+    visitor->trace(m_inspectorController);
     visitor->trace(m_pointerLockController);
     visitor->trace(m_undoStack);
     visitor->trace(m_validationMessageClient);

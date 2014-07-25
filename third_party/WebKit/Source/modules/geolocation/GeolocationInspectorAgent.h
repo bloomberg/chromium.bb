@@ -46,8 +46,9 @@ typedef String ErrorString;
 class GeolocationInspectorAgent FINAL : public InspectorBaseAgent<GeolocationInspectorAgent>, public InspectorBackendDispatcher::GeolocationCommandHandler {
     WTF_MAKE_NONCOPYABLE(GeolocationInspectorAgent);
 public:
-    static PassOwnPtr<GeolocationInspectorAgent> create();
+    static PassOwnPtrWillBeRawPtr<GeolocationInspectorAgent> create();
     virtual ~GeolocationInspectorAgent();
+    virtual void trace(Visitor*) OVERRIDE;
 
     // Protocol methods.
     virtual void setGeolocationOverride(ErrorString*, const double*, const double*, const double*) OVERRIDE;
@@ -56,16 +57,16 @@ public:
     // Instrumentation method.
     GeolocationPosition* overrideGeolocationPosition(GeolocationPosition*);
 
-    void AddController(GeolocationController*);
-    void RemoveController(GeolocationController*);
+    void addController(GeolocationController*);
+    void removeController(GeolocationController*);
 
 private:
     GeolocationInspectorAgent();
-    typedef WillBeHeapHashSet<RawPtrWillBeMember<GeolocationController> > GeolocationControllers;
-    WillBePersistentHeapHashSet<RawPtrWillBeMember<GeolocationController> > m_controllers;
+    typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<GeolocationController> > GeolocationControllers;
+    GeolocationControllers m_controllers;
     bool m_geolocationOverridden;
-    Persistent<GeolocationPosition> m_geolocationPosition;
-    Persistent<GeolocationPosition> m_platformGeolocationPosition;
+    PersistentWillBeMember<GeolocationPosition> m_geolocationPosition;
+    PersistentWillBeMember<GeolocationPosition> m_platformGeolocationPosition;
 };
 
 

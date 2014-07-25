@@ -64,6 +64,7 @@ class InspectorConsoleAgent : public InspectorBaseAgent<InspectorConsoleAgent>, 
 public:
     InspectorConsoleAgent(InspectorTimelineAgent*, InjectedScriptManager*);
     virtual ~InspectorConsoleAgent();
+    virtual void trace(Visitor*) OVERRIDE;
 
     virtual void init() OVERRIDE;
     virtual void enable(ErrorString*) OVERRIDE FINAL;
@@ -108,7 +109,8 @@ public:
 protected:
     void addConsoleMessage(PassOwnPtr<InspectorConsoleMessage>);
 
-    InspectorTimelineAgent* m_timelineAgent;
+    RawPtrWillBeMember<InspectorTimelineAgent> m_timelineAgent;
+    // FIXME: Oilpan: Move InjectedScriptManager to heap in follow-up CL.
     InjectedScriptManager* m_injectedScriptManager;
     InspectorFrontend::Console* m_frontend;
     Vector<OwnPtr<InspectorConsoleMessage> > m_consoleMessages;

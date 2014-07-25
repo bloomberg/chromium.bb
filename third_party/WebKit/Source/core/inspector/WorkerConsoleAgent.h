@@ -39,9 +39,9 @@ namespace blink {
 class WorkerConsoleAgent FINAL : public InspectorConsoleAgent {
     WTF_MAKE_NONCOPYABLE(WorkerConsoleAgent);
 public:
-    static PassOwnPtr<WorkerConsoleAgent> create(InspectorTimelineAgent* timelineAgent, InjectedScriptManager* injectedScriptManager)
+    static PassOwnPtrWillBeRawPtr<WorkerConsoleAgent> create(InspectorTimelineAgent* timelineAgent, InjectedScriptManager* injectedScriptManager)
     {
-        return adoptPtr(new WorkerConsoleAgent(timelineAgent, injectedScriptManager));
+        return adoptPtrWillBeNoop(new WorkerConsoleAgent(timelineAgent, injectedScriptManager));
     }
     virtual ~WorkerConsoleAgent();
 

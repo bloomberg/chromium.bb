@@ -35,9 +35,9 @@
 
 namespace blink {
 
-PassOwnPtr<GeolocationInspectorAgent> GeolocationInspectorAgent::create()
+PassOwnPtrWillBeRawPtr<GeolocationInspectorAgent> GeolocationInspectorAgent::create()
 {
-    return adoptPtr(new GeolocationInspectorAgent());
+    return adoptPtrWillBeNoop(new GeolocationInspectorAgent());
 }
 
 GeolocationInspectorAgent::~GeolocationInspectorAgent()
@@ -89,14 +89,24 @@ GeolocationPosition* GeolocationInspectorAgent::overrideGeolocationPosition(Geol
     return position;
 }
 
-void GeolocationInspectorAgent::AddController(GeolocationController* controller)
+void GeolocationInspectorAgent::addController(GeolocationController* controller)
 {
     m_controllers.add(controller);
 }
 
-void GeolocationInspectorAgent::RemoveController(GeolocationController* controller)
+void GeolocationInspectorAgent::removeController(GeolocationController* controller)
 {
     m_controllers.remove(controller);
+}
+
+void GeolocationInspectorAgent::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_controllers);
+#endif
+    visitor->trace(m_geolocationPosition);
+    visitor->trace(m_platformGeolocationPosition);
+    InspectorBaseAgent::trace(visitor);
 }
 
 } // namespace blink

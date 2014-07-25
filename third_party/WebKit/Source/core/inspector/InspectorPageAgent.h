@@ -78,7 +78,7 @@ public:
         OtherResource
     };
 
-    static PassOwnPtr<InspectorPageAgent> create(Page*, InjectedScriptManager*, InspectorClient*, InspectorOverlay*);
+    static PassOwnPtrWillBeRawPtr<InspectorPageAgent> create(Page*, InjectedScriptManager*, InspectorClient*, InspectorOverlay*);
 
     // Settings overrides.
     void setTextAutosizingEnabled(bool);
@@ -170,6 +170,8 @@ public:
     void addEditedResourceContent(const String& url, const String& content);
     bool getEditedResourceContent(const String& url, String* content);
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     class GetResourceContentLoadListener;
 
@@ -188,7 +190,8 @@ private:
 
     PassRefPtr<TypeBuilder::Page::Frame> buildObjectForFrame(LocalFrame*);
     PassRefPtr<TypeBuilder::Page::FrameResourceTree> buildObjectForFrameTree(LocalFrame*);
-    Page* m_page;
+    RawPtrWillBeMember<Page> m_page;
+    // FIXME: Oilpan: Move InjectedScriptManager to heap in follow-up CL.
     InjectedScriptManager* m_injectedScriptManager;
     InspectorClient* m_client;
     InspectorFrontend::Page* m_frontend;

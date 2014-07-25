@@ -32,6 +32,8 @@
 #define InspectorBaseAgent_h
 
 #include "core/InspectorBackendDispatcher.h"
+#include "core/inspector/InstrumentingAgents.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -43,10 +45,11 @@ class InspectorCompositeState;
 class InspectorState;
 class InstrumentingAgents;
 
-class InspectorAgent {
+class InspectorAgent : public NoBaseWillBeGarbageCollectedFinalized<InspectorAgent> {
 public:
     explicit InspectorAgent(const String&);
     virtual ~InspectorAgent();
+    virtual void trace(Visitor*);
 
     virtual void init() { }
     virtual void setFrontend(InspectorFrontend*) { }
@@ -61,17 +64,19 @@ public:
     void appended(InstrumentingAgents*, InspectorState*);
 
 protected:
-    InstrumentingAgents* m_instrumentingAgents;
+    RawPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
+    // FIXME: Oilpan: Move InspectorState to heap in follow-up CL.
     InspectorState* m_state;
 
 private:
     String m_name;
 };
 
-class InspectorAgentRegistry {
+class InspectorAgentRegistry FINAL {
+    DISALLOW_ALLOCATION();
 public:
     InspectorAgentRegistry(InstrumentingAgents*, InspectorCompositeState*);
-    void append(PassOwnPtr<InspectorAgent>);
+    void append(PassOwnPtrWillBeRawPtr<InspectorAgent>);
 
     void setFrontend(InspectorFrontend*);
     void clearFrontend();
@@ -81,10 +86,13 @@ public:
     void flushPendingFrontendMessages();
     void didCommitLoadForMainFrame();
 
+    void trace(Visitor*);
+
 private:
-    InstrumentingAgents* m_instrumentingAgents;
+    RawPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
+    // FIXME: Oilpan: Move InspectorCompositeState to heap in follow-up CL.
     InspectorCompositeState* m_inspectorState;
-    Vector<OwnPtr<InspectorAgent> > m_agents;
+    WillBeHeapVector<OwnPtrWillBeMember<InspectorAgent> > m_agents;
 };
 
 template<typename T>
@@ -98,7 +106,7 @@ public:
     }
 
 protected:
-    InspectorBaseAgent(const String& name) : InspectorAgent(name)
+    explicit InspectorBaseAgent(const String& name) : InspectorAgent(name)
     {
     }
 };

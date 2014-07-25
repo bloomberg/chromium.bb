@@ -74,9 +74,9 @@ typedef String ErrorString;
 
 class InspectorResourceAgent FINAL : public InspectorBaseAgent<InspectorResourceAgent>, public InspectorBackendDispatcher::NetworkCommandHandler {
 public:
-    static PassOwnPtr<InspectorResourceAgent> create(InspectorPageAgent* pageAgent)
+    static PassOwnPtrWillBeRawPtr<InspectorResourceAgent> create(InspectorPageAgent* pageAgent)
     {
-        return adoptPtr(new InspectorResourceAgent(pageAgent));
+        return adoptPtrWillBeNoop(new InspectorResourceAgent(pageAgent));
     }
 
     virtual void setFrontend(InspectorFrontend*) OVERRIDE;
@@ -84,6 +84,7 @@ public:
     virtual void restore() OVERRIDE;
 
     virtual ~InspectorResourceAgent();
+    virtual void trace(Visitor*) OVERRIDE;
 
     // Called from instrumentation.
     void willSendRequest(unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
@@ -148,13 +149,13 @@ public:
     bool fetchResourceContent(Document*, const KURL&, String* content, bool* base64Encoded);
 
 private:
-    InspectorResourceAgent(InspectorPageAgent*);
+    explicit InspectorResourceAgent(InspectorPageAgent*);
 
     void enable();
     void delayedRemoveReplayXHR(XMLHttpRequest*);
     void removeFinishedReplayXHRFired(Timer<InspectorResourceAgent>*);
 
-    InspectorPageAgent* m_pageAgent;
+    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     InspectorFrontend::Network* m_frontend;
     String m_userAgentOverride;
     String m_hostId;
@@ -170,8 +171,8 @@ private:
     RefPtr<TypeBuilder::Network::Initiator> m_styleRecalculationInitiator;
     bool m_isRecalculatingStyle;
 
-    WillBePersistentHeapHashSet<RefPtrWillBeMember<XMLHttpRequest> > m_replayXHRs;
-    WillBePersistentHeapHashSet<RefPtrWillBeMember<XMLHttpRequest> > m_replayXHRsToBeDeleted;
+    WillBeHeapHashSet<RefPtrWillBeMember<XMLHttpRequest> > m_replayXHRs;
+    WillBeHeapHashSet<RefPtrWillBeMember<XMLHttpRequest> > m_replayXHRsToBeDeleted;
     Timer<InspectorResourceAgent> m_removeFinishedReplayXHRTimer;
 };
 

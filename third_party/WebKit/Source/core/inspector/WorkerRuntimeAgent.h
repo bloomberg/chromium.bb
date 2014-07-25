@@ -40,11 +40,12 @@ class WorkerGlobalScope;
 
 class WorkerRuntimeAgent FINAL : public InspectorRuntimeAgent {
 public:
-    static PassOwnPtr<WorkerRuntimeAgent> create(InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer, WorkerGlobalScope* context)
+    static PassOwnPtrWillBeRawPtr<WorkerRuntimeAgent> create(InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer, WorkerGlobalScope* context)
     {
-        return adoptPtr(new WorkerRuntimeAgent(injectedScriptManager, scriptDebugServer, context));
+        return adoptPtrWillBeNoop(new WorkerRuntimeAgent(injectedScriptManager, scriptDebugServer, context));
     }
     virtual ~WorkerRuntimeAgent();
+    virtual void trace(Visitor*) OVERRIDE;
 
     virtual void init() OVERRIDE;
     virtual void enable(ErrorString*) OVERRIDE;
@@ -60,7 +61,7 @@ private:
     virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) OVERRIDE;
     virtual void muteConsole() OVERRIDE;
     virtual void unmuteConsole() OVERRIDE;
-    WorkerGlobalScope* m_workerGlobalScope;
+    RawPtrWillBeMember<WorkerGlobalScope> m_workerGlobalScope;
     bool m_paused;
 };
 

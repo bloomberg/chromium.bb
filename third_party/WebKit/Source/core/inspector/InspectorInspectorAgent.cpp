@@ -63,7 +63,15 @@ InspectorInspectorAgent::InspectorInspectorAgent(Page* page, InjectedScriptManag
 
 InspectorInspectorAgent::~InspectorInspectorAgent()
 {
+#if !ENABLE(OILPAN)
     m_instrumentingAgents->setInspectorInspectorAgent(0);
+#endif
+}
+
+void InspectorInspectorAgent::trace(Visitor* visitor)
+{
+    visitor->trace(m_inspectedPage);
+    InspectorBaseAgent::trace(visitor);
 }
 
 void InspectorInspectorAgent::didClearDocumentOfWindowObject(LocalFrame* frame)

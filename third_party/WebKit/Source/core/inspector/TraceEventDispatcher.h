@@ -32,21 +32,17 @@
 #define TraceEventDispatcher_h
 
 #include "platform/TraceEvent.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
+#include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class InspectorClient;
-
-struct TraceEventTargetBase {
-    virtual ~TraceEventTargetBase() { }
-};
-
-template<typename C> struct TraceEventTarget;
 
 class TraceEventDispatcher {
     WTF_MAKE_NONCOPYABLE(TraceEventDispatcher);
@@ -140,7 +136,15 @@ public:
         String m_stringArguments[MaxArguments];
     };
 
-    typedef void (TraceEventTargetBase::*TraceEventHandlerMethod)(const TraceEvent&);
+    class TraceEventListener : public NoBaseWillBeGarbageCollected<TraceEventListener> {
+    public:
+#if !ENABLE(OILPAN)
+        virtual ~TraceEventListener() { }
+#endif
+        virtual void call(const TraceEventDispatcher::TraceEvent&) = 0;
+        virtual void* target() = 0;
+        virtual void trace(Visitor*) { }
+    };
 
     static TraceEventDispatcher* instance()
     {
@@ -148,32 +152,18 @@ public:
         return &instance;
     }
 
-    template<typename ListenerClass>
-    void addListener(const char* name, char phase, ListenerClass* instance, typename TraceEventTarget<ListenerClass>::TraceEventHandler handler, InspectorClient* client)
-    {
-        innerAddListener(name, phase, instance, static_cast<TraceEventHandlerMethod>(handler), client);
-    }
+    void addListener(const char* name, char phase, PassOwnPtrWillBeRawPtr<TraceEventListener>, InspectorClient*);
 
-    void removeAllListeners(TraceEventTargetBase*, InspectorClient*);
+    void removeAllListeners(void*, InspectorClient*);
     void processBackgroundEvents();
 
 private:
-    struct BoundTraceEventHandler {
-        TraceEventTargetBase* instance;
-        TraceEventHandlerMethod method;
-
-        BoundTraceEventHandler() : instance(0), method(0) { }
-        BoundTraceEventHandler(TraceEventTargetBase* instance, TraceEventHandlerMethod method)
-            : instance(instance)
-            , method(method)
-        {
-        }
-    };
     typedef std::pair<String, int> EventSelector;
-    typedef HashMap<EventSelector, Vector<BoundTraceEventHandler> > HandlersMap;
+    typedef WillBeHeapHashMap<EventSelector, OwnPtrWillBeMember<WillBeHeapVector<OwnPtrWillBeMember<TraceEventListener> > > > ListenersMap;
 
     TraceEventDispatcher()
-        : m_processEventsTaskInFlight(false)
+        : m_listeners(adoptPtrWillBeNoop(new ListenersMap()))
+        , m_processEventsTaskInFlight(false)
         , m_lastEventProcessingTime(0)
     {
     }
@@ -183,18 +173,13 @@ private:
         unsigned char flags, double timestamp);
 
     void enqueueEvent(const TraceEvent&);
-    void innerAddListener(const char* name, char phase, TraceEventTargetBase*, TraceEventHandlerMethod, InspectorClient*);
     void processBackgroundEventsTask();
 
     Mutex m_mutex;
-    HandlersMap m_handlers;
+    OwnPtrWillBePersistent<ListenersMap> m_listeners;
     Vector<TraceEvent> m_backgroundEvents;
     bool m_processEventsTaskInFlight;
     double m_lastEventProcessingTime;
-};
-
-template<typename C> struct TraceEventTarget : public TraceEventTargetBase {
-    typedef void (C::*TraceEventHandler)(const TraceEventDispatcher::TraceEvent&);
 };
 
 } // namespace blink

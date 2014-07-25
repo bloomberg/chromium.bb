@@ -120,7 +120,7 @@ InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedSc
     , m_debuggerStepScheduled(false)
     , m_steppingFromFramework(false)
     , m_pausingOnNativeEvent(false)
-    , m_listener(0)
+    , m_listener(nullptr)
     , m_skippedStepInCount(0)
     , m_skipAllPauses(false)
 {
@@ -128,7 +128,9 @@ InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedSc
 
 InspectorDebuggerAgent::~InspectorDebuggerAgent()
 {
+#if !ENABLE(OILPAN)
     ASSERT(!m_instrumentingAgents->inspectorDebuggerAgent());
+#endif
 }
 
 void InspectorDebuggerAgent::init()
@@ -1430,6 +1432,12 @@ void InspectorDebuggerAgent::reset()
     m_asyncCallStackTracker.clear();
     if (m_frontend)
         m_frontend->globalObjectCleared();
+}
+
+void InspectorDebuggerAgent::trace(Visitor* visitor)
+{
+    visitor->trace(m_listener);
+    InspectorBaseAgent::trace(visitor);
 }
 
 } // namespace blink

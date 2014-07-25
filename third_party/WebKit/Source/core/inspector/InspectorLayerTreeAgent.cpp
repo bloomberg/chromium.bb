@@ -151,6 +151,12 @@ InspectorLayerTreeAgent::~InspectorLayerTreeAgent()
 {
 }
 
+void InspectorLayerTreeAgent::trace(Visitor* visitor)
+{
+    visitor->trace(m_page);
+    InspectorBaseAgent::trace(visitor);
+}
+
 void InspectorLayerTreeAgent::setFrontend(InspectorFrontend* frontend)
 {
     m_frontend = frontend->layertree();

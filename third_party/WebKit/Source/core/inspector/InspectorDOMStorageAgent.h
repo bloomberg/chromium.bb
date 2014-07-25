@@ -48,11 +48,12 @@ typedef String ErrorString;
 
 class InspectorDOMStorageAgent FINAL : public InspectorBaseAgent<InspectorDOMStorageAgent>, public InspectorBackendDispatcher::DOMStorageCommandHandler {
 public:
-    static PassOwnPtr<InspectorDOMStorageAgent> create(InspectorPageAgent* pageAgent)
+    static PassOwnPtrWillBeRawPtr<InspectorDOMStorageAgent> create(InspectorPageAgent* pageAgent)
     {
-        return adoptPtr(new InspectorDOMStorageAgent(pageAgent));
+        return adoptPtrWillBeNoop(new InspectorDOMStorageAgent(pageAgent));
     }
     virtual ~InspectorDOMStorageAgent();
+    virtual void trace(Visitor*) OVERRIDE;
 
     virtual void setFrontend(InspectorFrontend*) OVERRIDE;
     virtual void clearFrontend() OVERRIDE;
@@ -70,13 +71,13 @@ public:
 
 private:
 
-    InspectorDOMStorageAgent(InspectorPageAgent*);
+    explicit InspectorDOMStorageAgent(InspectorPageAgent*);
 
     bool isEnabled() const;
     PassOwnPtrWillBeRawPtr<StorageArea> findStorageArea(ErrorString*, const RefPtr<JSONObject>&, LocalFrame*&);
     PassRefPtr<TypeBuilder::DOMStorage::StorageId> storageId(SecurityOrigin*, bool isLocalStorage);
 
-    InspectorPageAgent* m_pageAgent;
+    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     InspectorFrontend* m_frontend;
 };
 

@@ -91,7 +91,7 @@ private:
     ObserversSet m_observers;
     ObserversSet m_highAccuracyObservers;
     bool m_isClientUpdating;
-    GeolocationInspectorAgent* m_inspectorAgent;
+    RawPtrWillBeMember<GeolocationInspectorAgent> m_inspectorAgent;
 };
 
 } // namespace blink

@@ -76,9 +76,9 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     , m_injectedScriptManager(InjectedScriptManager::createForPage())
     , m_state(adoptPtr(new InspectorCompositeState(inspectorClient)))
     , m_overlay(InspectorOverlay::create(page, inspectorClient))
-    , m_resourceAgent(0)
-    , m_cssAgent(0)
-    , m_layerTreeAgent(0)
+    , m_cssAgent(nullptr)
+    , m_resourceAgent(nullptr)
+    , m_layerTreeAgent(nullptr)
     , m_page(page)
     , m_inspectorClient(inspectorClient)
     , m_agents(m_instrumentingAgents.get(), m_state.get())
@@ -90,24 +90,24 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
 
     m_agents.append(InspectorInspectorAgent::create(m_page, injectedScriptManager));
 
-    OwnPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(m_page, injectedScriptManager, inspectorClient, overlay));
+    OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(m_page, injectedScriptManager, inspectorClient, overlay));
     m_pageAgent = pageAgentPtr.get();
     m_agents.append(pageAgentPtr.release());
 
-    OwnPtr<InspectorDOMAgent> domAgentPtr(InspectorDOMAgent::create(m_pageAgent, injectedScriptManager, overlay));
+    OwnPtrWillBeRawPtr<InspectorDOMAgent> domAgentPtr(InspectorDOMAgent::create(m_pageAgent, injectedScriptManager, overlay));
     m_domAgent = domAgentPtr.get();
     m_agents.append(domAgentPtr.release());
 
 
-    OwnPtr<InspectorLayerTreeAgent> layerTreeAgentPtr(InspectorLayerTreeAgent::create(m_page));
+    OwnPtrWillBeRawPtr<InspectorLayerTreeAgent> layerTreeAgentPtr(InspectorLayerTreeAgent::create(m_page));
     m_layerTreeAgent = layerTreeAgentPtr.get();
     m_agents.append(layerTreeAgentPtr.release());
 
-    OwnPtr<InspectorTracingAgent> tracingAgentPtr = InspectorTracingAgent::create(inspectorClient);
+    OwnPtrWillBeRawPtr<InspectorTracingAgent> tracingAgentPtr = InspectorTracingAgent::create(inspectorClient);
     m_tracingAgent = tracingAgentPtr.get();
     m_agents.append(tracingAgentPtr.release());
 
-    OwnPtr<InspectorTimelineAgent> timelineAgentPtr(InspectorTimelineAgent::create(m_pageAgent, m_layerTreeAgent,
+    OwnPtrWillBeRawPtr<InspectorTimelineAgent> timelineAgentPtr(InspectorTimelineAgent::create(m_pageAgent, m_layerTreeAgent,
         overlay, InspectorTimelineAgent::PageInspector, inspectorClient));
     m_timelineAgent = timelineAgentPtr.get();
     m_agents.append(timelineAgentPtr.release());
@@ -128,9 +128,23 @@ InspectorController::~InspectorController()
 {
 }
 
-PassOwnPtr<InspectorController> InspectorController::create(Page* page, InspectorClient* client)
+void InspectorController::trace(Visitor* visitor)
 {
-    return adoptPtr(new InspectorController(page, client));
+    visitor->trace(m_instrumentingAgents);
+    visitor->trace(m_domAgent);
+    visitor->trace(m_pageAgent);
+    visitor->trace(m_timelineAgent);
+    visitor->trace(m_cssAgent);
+    visitor->trace(m_resourceAgent);
+    visitor->trace(m_layerTreeAgent);
+    visitor->trace(m_tracingAgent);
+    visitor->trace(m_page);
+    m_agents.trace(visitor);
+}
+
+PassOwnPtrWillBeRawPtr<InspectorController> InspectorController::create(Page* page, InspectorClient* client)
+{
+    return adoptPtrWillBeNoop(new InspectorController(page, client));
 }
 
 void InspectorController::setTextAutosizingEnabled(bool enabled)
@@ -152,11 +166,11 @@ void InspectorController::initializeDeferredAgents()
     InjectedScriptManager* injectedScriptManager = m_injectedScriptManager.get();
     InspectorOverlay* overlay = m_overlay.get();
 
-    OwnPtr<InspectorResourceAgent> resourceAgentPtr(InspectorResourceAgent::create(m_pageAgent));
+    OwnPtrWillBeRawPtr<InspectorResourceAgent> resourceAgentPtr(InspectorResourceAgent::create(m_pageAgent));
     m_resourceAgent = resourceAgentPtr.get();
     m_agents.append(resourceAgentPtr.release());
 
-    OwnPtr<InspectorCSSAgent> cssAgentPtr(InspectorCSSAgent::create(m_domAgent, m_pageAgent, m_resourceAgent));
+    OwnPtrWillBeRawPtr<InspectorCSSAgent> cssAgentPtr(InspectorCSSAgent::create(m_domAgent, m_pageAgent, m_resourceAgent));
     m_cssAgent = cssAgentPtr.get();
     m_agents.append(cssAgentPtr.release());
 
@@ -168,7 +182,7 @@ void InspectorController::initializeDeferredAgents()
 
     PageScriptDebugServer* pageScriptDebugServer = &PageScriptDebugServer::shared();
 
-    OwnPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(pageScriptDebugServer, m_pageAgent, injectedScriptManager, overlay));
+    OwnPtrWillBeRawPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(pageScriptDebugServer, m_pageAgent, injectedScriptManager, overlay));
     InspectorDebuggerAgent* debuggerAgent = debuggerAgentPtr.get();
     m_agents.append(debuggerAgentPtr.release());
 
@@ -188,12 +202,12 @@ void InspectorController::willBeDestroyed()
     disconnectFrontend();
     m_injectedScriptManager->disconnect();
     m_inspectorClient = 0;
-    m_page = 0;
+    m_page = nullptr;
     m_instrumentingAgents->reset();
     m_agents.discardAgents();
 }
 
-void InspectorController::registerModuleAgent(PassOwnPtr<InspectorAgent> agent)
+void InspectorController::registerModuleAgent(PassOwnPtrWillBeRawPtr<InspectorAgent> agent)
 {
     m_agents.append(agent);
 }

@@ -78,6 +78,12 @@ InspectorDOMStorageAgent::~InspectorDOMStorageAgent()
 {
 }
 
+void InspectorDOMStorageAgent::trace(Visitor* visitor)
+{
+    visitor->trace(m_pageAgent);
+    InspectorBaseAgent::trace(visitor);
+}
+
 void InspectorDOMStorageAgent::setFrontend(InspectorFrontend* frontend)
 {
     m_frontend = frontend;

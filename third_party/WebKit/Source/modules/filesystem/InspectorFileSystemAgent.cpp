@@ -597,9 +597,9 @@ bool DeleteEntryRequest::didDeleteEntry()
 } // anonymous namespace
 
 // static
-PassOwnPtr<InspectorFileSystemAgent> InspectorFileSystemAgent::create(Page* page)
+PassOwnPtrWillBeRawPtr<InspectorFileSystemAgent> InspectorFileSystemAgent::create(Page* page)
 {
-    return adoptPtr(new InspectorFileSystemAgent(page));
+    return adoptPtrWillBeNoop(new InspectorFileSystemAgent(page));
 }
 
 InspectorFileSystemAgent::~InspectorFileSystemAgent()
@@ -726,6 +726,12 @@ ExecutionContext* InspectorFileSystemAgent::assertExecutionContextForOrigin(Erro
 
     *error = "No frame is available for the request";
     return 0;
+}
+
+void InspectorFileSystemAgent::trace(Visitor* visitor)
+{
+    visitor->trace(m_page);
+    InspectorBaseAgent::trace(visitor);
 }
 
 } // namespace blink

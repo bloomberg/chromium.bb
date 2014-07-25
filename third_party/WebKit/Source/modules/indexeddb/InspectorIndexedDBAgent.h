@@ -46,6 +46,7 @@ public:
     static void provideTo(Page*);
 
     virtual ~InspectorIndexedDBAgent();
+    virtual void trace(Visitor*) OVERRIDE;
 
     virtual void clearFrontend() OVERRIDE;
     virtual void restore() OVERRIDE;
@@ -59,9 +60,9 @@ public:
     virtual void clearObjectStore(ErrorString*, const String& in_securityOrigin, const String& in_databaseName, const String& in_objectStoreName, PassRefPtr<ClearObjectStoreCallback>) OVERRIDE;
 
 private:
-    InspectorIndexedDBAgent(Page*);
+    explicit InspectorIndexedDBAgent(Page*);
 
-    Page* m_page;
+    RawPtrWillBeMember<Page> m_page;
 };
 
 } // namespace blink

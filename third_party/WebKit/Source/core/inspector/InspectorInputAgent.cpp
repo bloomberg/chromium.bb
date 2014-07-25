@@ -270,5 +270,11 @@ void InspectorInputAgent::dispatchTouchEvent(ErrorString* error, const String& t
     m_page->deprecatedLocalMainFrame()->eventHandler().handleTouchEvent(event);
 }
 
+void InspectorInputAgent::trace(Visitor* visitor)
+{
+    visitor->trace(m_page);
+    InspectorBaseAgent::trace(visitor);
+}
+
 } // namespace blink
 

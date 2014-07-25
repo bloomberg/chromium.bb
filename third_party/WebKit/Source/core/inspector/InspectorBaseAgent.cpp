@@ -45,6 +45,11 @@ InspectorAgent::~InspectorAgent()
 {
 }
 
+void InspectorAgent::trace(Visitor* visitor)
+{
+    visitor->trace(m_instrumentingAgents);
+}
+
 void InspectorAgent::appended(InstrumentingAgents* instrumentingAgents, InspectorState* inspectorState)
 {
     m_instrumentingAgents = instrumentingAgents;
@@ -58,7 +63,7 @@ InspectorAgentRegistry::InspectorAgentRegistry(InstrumentingAgents* instrumentin
 {
 }
 
-void InspectorAgentRegistry::append(PassOwnPtr<InspectorAgent> agent)
+void InspectorAgentRegistry::append(PassOwnPtrWillBeRawPtr<InspectorAgent> agent)
 {
     agent->appended(m_instrumentingAgents, m_inspectorState->createAgentState(agent->name()));
     m_agents.append(agent);
@@ -98,6 +103,14 @@ void InspectorAgentRegistry::flushPendingFrontendMessages()
 {
     for (size_t i = 0; i < m_agents.size(); i++)
         m_agents[i]->flushPendingFrontendMessages();
+}
+
+void InspectorAgentRegistry::trace(Visitor* visitor)
+{
+    visitor->trace(m_instrumentingAgents);
+#if ENABLE(OILPAN)
+    visitor->trace(m_agents);
+#endif
 }
 
 void InspectorAgentRegistry::didCommitLoadForMainFrame()
