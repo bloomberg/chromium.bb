@@ -53,23 +53,8 @@ browserTest.Update_PIN.prototype.run = function(data) {
 };
 
 browserTest.Update_PIN.prototype.changePIN_ = function(newPin) {
-  var AppMode = remoting.AppMode;
-  var HOST_RESTART_WAIT = 10000;
-
   browserTest.clickOnControl('change-daemon-pin');
-
-  return browserTest.onUIMode(AppMode.HOST_SETUP_ASK_PIN).then(function() {
-    var onSetupDone = browserTest.onUIMode(AppMode.HOST_SETUP_DONE);
-    document.getElementById('daemon-pin-entry').value = newPin;
-    document.getElementById('daemon-pin-confirm').value = newPin;
-    browserTest.clickOnControl('daemon-pin-ok');
-    return onSetupDone;
-  }).then(function() {
-    browserTest.clickOnControl('host-config-done-dismiss');
-    // On Linux, we restart the host after changing the PIN, need to sleep
-    // for ten seconds before the host is ready for connection.
-    return base.Promise.sleep(HOST_RESTART_WAIT);
-  });
+  return browserTest.setupPIN(newPin);
 };
 
 browserTest.Update_PIN.prototype.disconnect_ = function() {

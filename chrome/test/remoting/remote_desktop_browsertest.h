@@ -143,6 +143,10 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   // on the chromoting main page authenticated and ready to go.
   void Auth();
 
+  // Ensures that the host is started locally with |me2me_pin()|.
+  // Browser_test.js must be loaded before calling this function.
+  void EnsureRemoteConnectionEnabled();
+
   // Connect to the local host through Me2Me.
   void ConnectToLocalHost(bool remember_pin);
 

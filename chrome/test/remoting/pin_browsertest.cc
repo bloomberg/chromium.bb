@@ -29,7 +29,8 @@ IN_PROC_BROWSER_TEST_F(RemoteDesktopBrowserTest, MANUAL_Invalid_PIN) {
   LoadScript(content, FILE_PATH_LITERAL("invalid_pin_browser_test.js"));
 
   RunJavaScriptTest(content, "Invalid_PIN", "{"
-    "pin: '" + me2me_pin() + "'"
+    // Append arbitrary characters after the pin to make it invalid.
+    "pin: '" + me2me_pin() + "ABC'"
   "}");
 
   Cleanup();

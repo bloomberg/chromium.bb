@@ -169,7 +169,7 @@ browserTest.connectMe2Me = function() {
     }).then(function() {
       return browserTest.onUIMode(AppMode.CLIENT_PIN_PROMPT);
     });
-}
+};
 
 browserTest.expectMe2MeError = function(errorTag) {
   var AppMode = remoting.AppMode;
@@ -223,6 +223,64 @@ browserTest.runTest = function(testClass, data) {
   } catch (e) {
     browserTest.fail(e);
   }
+};
+
+browserTest.setupPIN = function(newPin) {
+  var AppMode = remoting.AppMode;
+  var HOST_SETUP_WAIT = 10000;
+  var Timeout = browserTest.Timeout;
+
+  return browserTest.onUIMode(AppMode.HOST_SETUP_ASK_PIN).then(function() {
+    document.getElementById('daemon-pin-entry').value = newPin;
+    document.getElementById('daemon-pin-confirm').value = newPin;
+    browserTest.clickOnControl('daemon-pin-ok');
+
+    var success = browserTest.onUIMode(AppMode.HOST_SETUP_DONE, Timeout.NONE);
+    var failure = browserTest.onUIMode(AppMode.HOST_SETUP_ERROR, Timeout.NONE);
+    failure = failure.then(function(){
+      return Promise.reject('Unexpected host setup failure');
+    });
+    return Promise.race([success, failure]);
+  }).then(function() {
+    console.log('browserTest: PIN Setup is done.');
+    browserTest.clickOnControl('host-config-done-dismiss');
+
+    // On Linux, we restart the host after changing the PIN, need to sleep
+    // for ten seconds before the host is ready for connection.
+    return base.Promise.sleep(HOST_SETUP_WAIT);
+  });
+};
+
+browserTest.isLocalHostStarted = function() {
+  return new Promise(function(resolve) {
+    remoting.hostController.getLocalHostState(function(state) {
+      resolve(remoting.HostController.State.STARTED == state);
+    });
+  });
+};
+
+browserTest.ensureHostStartedWithPIN = function(pin) {
+  // Return if host is already
+  return browserTest.isLocalHostStarted().then(function(started){
+    if (!started) {
+      console.log('browserTest: Enabling remote connection.');
+      browserTest.clickOnControl('start-daemon');
+    } else {
+      console.log('browserTest: Changing the PIN of the host to: ' + pin + '.');
+      browserTest.clickOnControl('change-daemon-pin');
+    }
+    return browserTest.setupPIN(pin);
+  });
+};
+
+// Called by Browser Test in C++
+browserTest.ensureRemoteConnectionEnabled = function(pin) {
+  browserTest.ensureHostStartedWithPIN(pin).then(function(){
+    browserTest.automationController_.send(true);
+  }).catch(function(errorMessage){
+    console.error(errorMessage);
+    browserTest.automationController_.send(false);
+  });
 };
 
 browserTest.init();

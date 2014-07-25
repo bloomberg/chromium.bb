@@ -21,13 +21,7 @@ class Me2MeBrowserTest : public RemoteDesktopBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest,
                        MANUAL_Me2Me_Connect_Local_Host) {
-  VerifyInternetAccess();
-  Install();
-  LaunchChromotingApp();
-
-  // Authorize, Authenticate, and Approve.
-  Auth();
-  ExpandMe2Me();
+  SetUpTestForMe2Me();
 
   ConnectToLocalHost(false);
 
@@ -61,13 +55,7 @@ IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest,
                        MANUAL_Me2Me_Connect_Pinless) {
-  VerifyInternetAccess();
-  Install();
-  LaunchChromotingApp();
-
-  // Authorize, Authenticate, and Approve.
-  Auth();
-  ExpandMe2Me();
+  SetUpTestForMe2Me();
 
   ASSERT_FALSE(HtmlElementVisible("paired-client-manager-message"))
       << "The host must have no pairings before running the pinless test.";
