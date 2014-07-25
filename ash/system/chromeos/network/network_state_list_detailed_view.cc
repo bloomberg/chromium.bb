@@ -94,7 +94,7 @@ class NetworkStateListDetailedView::InfoBubble
              NetworkStateListDetailedView* detailed_view)
       : views::BubbleDelegateView(anchor, views::BubbleBorder::TOP_RIGHT),
         detailed_view_(detailed_view) {
-    set_use_focusless(true);
+    set_can_activate(false);
     set_parent_window(ash::Shell::GetContainer(
         anchor->GetWidget()->GetNativeWindow()->GetRootWindow(),
         ash::kShellWindowId_SettingBubbleContainer));
@@ -105,8 +105,6 @@ class NetworkStateListDetailedView::InfoBubble
   virtual ~InfoBubble() {
     detailed_view_->OnInfoBubbleDestroyed();
   }
-
-  virtual bool CanActivate() const OVERRIDE { return false; }
 
  private:
   // Not owned.

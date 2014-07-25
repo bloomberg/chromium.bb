@@ -54,7 +54,7 @@ BubbleDelegateView::BubbleDelegateView()
       shadow_(BubbleBorder::SMALL_SHADOW),
       color_explicitly_set_(false),
       margins_(kDefaultMargin, kDefaultMargin, kDefaultMargin, kDefaultMargin),
-      use_focusless_(false),
+      can_activate_(true),
       accept_events_(true),
       border_accepts_events_(true),
       adjust_if_offscreen_(true),
@@ -74,7 +74,7 @@ BubbleDelegateView::BubbleDelegateView(
       shadow_(BubbleBorder::SMALL_SHADOW),
       color_explicitly_set_(false),
       margins_(kDefaultMargin, kDefaultMargin, kDefaultMargin, kDefaultMargin),
-      use_focusless_(false),
+      can_activate_(true),
       accept_events_(true),
       border_accepts_events_(true),
       adjust_if_offscreen_(true),
@@ -118,7 +118,7 @@ BubbleDelegateView* BubbleDelegateView::AsBubbleDelegate() {
 }
 
 bool BubbleDelegateView::CanActivate() const {
-  return !use_focusless();
+  return can_activate();
 }
 
 bool BubbleDelegateView::ShouldShowCloseButton() const {

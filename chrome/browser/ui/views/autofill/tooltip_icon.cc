@@ -114,7 +114,7 @@ void TooltipIcon::ShowBubble() {
   bubble_ = new TooltipBubble(this, tooltip_);
   // When shown due to a gesture event, close on deactivate (i.e. don't use
   // "focusless").
-  bubble_->set_use_focusless(mouse_inside_);
+  bubble_->set_can_activate(!mouse_inside_);
 
   bubble_->Show();
   observer_.Add(bubble_->GetWidget());

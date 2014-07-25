@@ -148,7 +148,7 @@ CandidateWindowView::CandidateWindowView(gfx::NativeView parent)
       should_show_at_composition_head_(false),
       should_show_upper_side_(false),
       was_candidate_window_open_(false) {
-  set_use_focusless(true);
+  set_can_activate(false);
   set_parent_window(parent);
   set_margins(gfx::Insets());
 

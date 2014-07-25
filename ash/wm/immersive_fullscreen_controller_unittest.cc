@@ -967,14 +967,14 @@ TEST_F(ImmersiveFullscreenControllerTest, Bubbles) {
 
   views::BubbleDelegateView* bubble_delegate4(new views::BubbleDelegateView(
       child_view, views::BubbleBorder::NONE));
-  bubble_delegate4->set_use_focusless(true);
+  bubble_delegate4->set_can_activate(false);
   views::Widget* bubble_widget4(views::BubbleDelegateView::CreateBubble(
       bubble_delegate4));
   bubble_widget4->Show();
 
   views::BubbleDelegateView* bubble_delegate5(new views::BubbleDelegateView(
       child_view, views::BubbleBorder::NONE));
-  bubble_delegate5->set_use_focusless(true);
+  bubble_delegate5->set_can_activate(false);
   views::Widget* bubble_widget5(views::BubbleDelegateView::CreateBubble(
       bubble_delegate5));
   bubble_widget5->Show();

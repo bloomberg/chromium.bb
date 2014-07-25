@@ -24,7 +24,7 @@ ValidationMessageBubbleDelegate::ValidationMessageBubbleDelegate(
     const base::string16& sub_text,
     Observer* observer)
     : observer_(observer), width_(0), height_(0) {
-  set_use_focusless(true);
+  set_can_activate(false);
   set_arrow(views::BubbleBorder::TOP_LEFT);
   SetAnchorRect(anchor_in_screen);
 

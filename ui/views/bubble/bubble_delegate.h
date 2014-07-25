@@ -83,8 +83,8 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   gfx::NativeView parent_window() const { return parent_window_; }
   void set_parent_window(gfx::NativeView window) { parent_window_ = window; }
 
-  bool use_focusless() const { return use_focusless_; }
-  void set_use_focusless(bool focusless) { use_focusless_ = focusless; }
+  bool can_activate() const { return can_activate_; }
+  void set_can_activate(bool focusless) { can_activate_ = focusless; }
 
   bool accept_events() const { return accept_events_; }
   void set_accept_events(bool accept_events) { accept_events_ = accept_events; }
@@ -183,8 +183,8 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // Insets applied to the |anchor_view_| bounds.
   gfx::Insets anchor_view_insets_;
 
-  // If true, the bubble does not take focus on display; default is false.
-  bool use_focusless_;
+  // If false, the bubble can't be activated; default is true.
+  bool can_activate_;
 
   // Specifies whether the bubble (or its border) handles mouse events, etc.
   bool accept_events_;

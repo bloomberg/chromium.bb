@@ -50,7 +50,7 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
   set_margins(gfx::Insets(kPadding, kPadding, kPadding, kPadding));
   // Overflow bubble should not get focus. If it get focus when it is shown,
   // active state item is changed to running state.
-  set_use_focusless(true);
+  set_can_activate(false);
 
   // Makes bubble view has a layer and clip its children layers.
   SetPaintToLayer(true);

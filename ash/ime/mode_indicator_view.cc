@@ -48,7 +48,7 @@ ModeIndicatorView::ModeIndicatorView(gfx::NativeView parent,
                                      const base::string16& label)
     : cursor_bounds_(cursor_bounds),
       label_view_(new views::Label(label)) {
-  set_use_focusless(true);
+  set_can_activate(false);
   set_accept_events(false);
   set_parent_window(parent);
   set_shadow(views::BubbleBorder::NO_SHADOW);

@@ -65,7 +65,7 @@ InfoBubble::InfoBubble(views::View* anchor,
                           kInfoBubbleHorizontalMargin,
                           kInfoBubbleVerticalMargin,
                           kInfoBubbleHorizontalMargin));
-  set_use_focusless(true);
+  set_can_activate(false);
 
   SetLayoutManager(new views::FillLayout);
   views::Label* label = new views::Label(message);

@@ -84,7 +84,7 @@ PopupMessage::MessageBubble::MessageBubble(const base::string16& caption,
   set_anchor_view_insets(insets);
   set_close_on_esc(false);
   set_close_on_deactivate(false);
-  set_use_focusless(true);
+  set_can_activate(false);
   set_accept_events(false);
 
   set_margins(gfx::Insets(kMessageTopBottomMargin, kMessageLeftRightMargin,

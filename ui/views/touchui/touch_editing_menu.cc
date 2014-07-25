@@ -47,7 +47,7 @@ TouchEditingMenuView::TouchEditingMenuView(
   set_shadow(views::BubbleBorder::SMALL_SHADOW);
   set_parent_window(context);
   set_margins(gfx::Insets(kMenuMargin, kMenuMargin, kMenuMargin, kMenuMargin));
-  set_use_focusless(true);
+  set_can_activate(false);
   set_adjust_if_offscreen(true);
 
   SetLayoutManager(new BoxLayout(BoxLayout::kHorizontal, 0, 0,

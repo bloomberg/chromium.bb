@@ -63,21 +63,18 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
       ZoomController::FromWebContents(web_contents);
   const extensions::Extension* extension = zoom_controller->last_extension();
 
-  // If the bubble is already showing in this window, its |auto_close_| value
-  // is equal to |auto_close|, and the zoom change was not initiated by an
-  // extension, then the bubble can be reused and only the label text needs to
-  // be updated.
+  // If the bubble is already showing in this window and the zoom change was not
+  // initiated by an extension, then the bubble can be reused and only the label
+  // text needs to be updated.
   if (zoom_bubble_ &&
       zoom_bubble_->GetAnchorView() == anchor_view &&
-      zoom_bubble_->auto_close_ == auto_close &&
       !extension) {
     zoom_bubble_->Refresh();
     return;
   }
 
-  // If the bubble is already showing but its |auto_close_| value is not equal
-  // to |auto_close|, the bubble's focus properties must change, so the
-  // current bubble must be closed and a new one created.
+  // If the bubble is already showing but in a different tab, the current
+  // bubble must be closed and a new one created.
   CloseBubble();
 
   zoom_bubble_ = new ZoomBubbleView(anchor_view,
@@ -101,7 +98,7 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
   if (is_fullscreen)
     zoom_bubble_->AdjustForFullscreen(browser_view->GetBoundsInScreen());
 
-  if (zoom_bubble_->use_focusless())
+  if (auto_close)
     zoom_bubble_->GetWidget()->ShowInactive();
   else
     zoom_bubble_->GetWidget()->Show();
@@ -139,7 +136,6 @@ ZoomBubbleView::ZoomBubbleView(
       immersive_mode_controller_(immersive_mode_controller) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
-  set_use_focusless(auto_close);
   set_notify_enter_exit_on_child(true);
 
   // Add observers to close the bubble if the fullscreen state or immersive
@@ -250,12 +246,10 @@ void ZoomBubbleView::OnExtensionIconImageChanged(
 }
 
 void ZoomBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
-  set_use_focusless(false);
   StopTimer();
 }
 
 void ZoomBubbleView::OnMouseExited(const ui::MouseEvent& event) {
-  set_use_focusless(auto_close_);
   StartTimerIfNecessary();
 }
 
@@ -265,9 +259,8 @@ void ZoomBubbleView::OnGestureEvent(ui::GestureEvent* event) {
     return;
   }
 
-  // If an auto-closing bubble was tapped, show a non-auto-closing bubble in
-  // its place.
-  ShowBubble(zoom_bubble_->web_contents_, false);
+  auto_close_ = false;
+  StopTimer();
   event->SetHandled();
 }
 
