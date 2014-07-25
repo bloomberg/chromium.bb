@@ -14,6 +14,7 @@
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/system/handle_signals_state.h"
+#include "mojo/system/memory.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
@@ -54,9 +55,8 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   MojoResult ProducerWriteData(const void* elements,
                                uint32_t* num_bytes,
                                bool all_or_none);
-  // This does not validate its arguments.
-  MojoResult ProducerBeginWriteData(void** buffer,
-                                    uint32_t* buffer_num_bytes,
+  MojoResult ProducerBeginWriteData(UserPointer<void*> buffer,
+                                    UserPointer<uint32_t> buffer_num_bytes,
                                     bool all_or_none);
   MojoResult ProducerEndWriteData(uint32_t num_bytes_written);
   MojoResult ProducerAddWaiter(Waiter* waiter,
@@ -102,9 +102,9 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
                                                  uint32_t* num_bytes,
                                                  bool all_or_none) = 0;
   virtual MojoResult ProducerBeginWriteDataImplNoLock(
-      void** buffer,
-      uint32_t* buffer_num_bytes,
-      bool all_or_none) = 0;
+      UserPointer<void*> buffer,
+      UserPointer<uint32_t> buffer_num_bytes,
+      uint32_t min_num_bytes_to_write) = 0;
   virtual MojoResult ProducerEndWriteDataImplNoLock(
       uint32_t num_bytes_written) = 0;
   // Note: A producer should not be writable during a two-phase write.

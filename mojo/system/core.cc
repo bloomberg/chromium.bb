@@ -371,8 +371,7 @@ MojoResult Core::BeginWriteData(MojoHandle data_pipe_producer_handle,
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return dispatcher->BeginWriteData(buffer.GetPointerUnsafe(),
-                                    buffer_num_bytes.GetPointerUnsafe(), flags);
+  return dispatcher->BeginWriteData(buffer, buffer_num_bytes, flags);
 }
 
 MojoResult Core::EndWriteData(MojoHandle data_pipe_producer_handle,

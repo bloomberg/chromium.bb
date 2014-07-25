@@ -146,8 +146,8 @@ MojoResult Dispatcher::WriteData(const void* elements,
   return WriteDataImplNoLock(elements, num_bytes, flags);
 }
 
-MojoResult Dispatcher::BeginWriteData(void** buffer,
-                                      uint32_t* buffer_num_bytes,
+MojoResult Dispatcher::BeginWriteData(UserPointer<void*> buffer,
+                                      UserPointer<uint32_t> buffer_num_bytes,
                                       MojoWriteDataFlags flags) {
   base::AutoLock locker(lock_);
   if (is_closed_)
@@ -285,9 +285,10 @@ MojoResult Dispatcher::WriteDataImplNoLock(const void* /*elements*/,
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
-MojoResult Dispatcher::BeginWriteDataImplNoLock(void** /*buffer*/,
-                                                uint32_t* /*buffer_num_bytes*/,
-                                                MojoWriteDataFlags /*flags*/) {
+MojoResult Dispatcher::BeginWriteDataImplNoLock(
+    UserPointer<void*> /*buffer*/,
+    UserPointer<uint32_t> /*buffer_num_bytes*/,
+    MojoWriteDataFlags /*flags*/) {
   lock_.AssertAcquired();
   DCHECK(!is_closed_);
   // By default, not supported. Only needed for data pipe dispatchers.

@@ -101,9 +101,9 @@ MojoResult LocalDataPipe::ProducerWriteDataImplNoLock(const void* elements,
 }
 
 MojoResult LocalDataPipe::ProducerBeginWriteDataImplNoLock(
-    void** buffer,
-    uint32_t* buffer_num_bytes,
-    bool all_or_none) {
+    UserPointer<void*> buffer,
+    UserPointer<uint32_t> buffer_num_bytes,
+    uint32_t min_num_bytes_to_write) {
   DCHECK(consumer_open_no_lock());
 
   // The index we need to start writing at.
@@ -111,17 +111,17 @@ MojoResult LocalDataPipe::ProducerBeginWriteDataImplNoLock(
       (start_index_ + current_num_bytes_) % capacity_num_bytes();
 
   size_t max_num_bytes_to_write = GetMaxNumBytesToWriteNoLock();
-  if (all_or_none && *buffer_num_bytes > max_num_bytes_to_write) {
+  if (min_num_bytes_to_write > max_num_bytes_to_write) {
     // In "may discard" mode, we can always write from the write index to the
     // end of the buffer.
     if (may_discard() &&
-        *buffer_num_bytes <= capacity_num_bytes() - write_index) {
+        min_num_bytes_to_write <= capacity_num_bytes() - write_index) {
       // To do so, we need to discard an appropriate amount of data.
       // We should only reach here if the start index is after the write index!
       DCHECK_GE(start_index_, write_index);
-      DCHECK_GT(*buffer_num_bytes - max_num_bytes_to_write, 0u);
-      MarkDataAsConsumedNoLock(*buffer_num_bytes - max_num_bytes_to_write);
-      max_num_bytes_to_write = *buffer_num_bytes;
+      DCHECK_GT(min_num_bytes_to_write - max_num_bytes_to_write, 0u);
+      MarkDataAsConsumedNoLock(min_num_bytes_to_write - max_num_bytes_to_write);
+      max_num_bytes_to_write = min_num_bytes_to_write;
     } else {
       // Don't return "should wait" since you can't wait for a specified amount
       // of data.
@@ -134,8 +134,8 @@ MojoResult LocalDataPipe::ProducerBeginWriteDataImplNoLock(
     return MOJO_RESULT_SHOULD_WAIT;
 
   EnsureBufferNoLock();
-  *buffer = buffer_.get() + write_index;
-  *buffer_num_bytes = static_cast<uint32_t>(max_num_bytes_to_write);
+  buffer.Put(buffer_.get() + write_index);
+  buffer_num_bytes.Put(static_cast<uint32_t>(max_num_bytes_to_write));
   set_producer_two_phase_max_num_bytes_written_no_lock(
       static_cast<uint32_t>(max_num_bytes_to_write));
   return MOJO_RESULT_OK;

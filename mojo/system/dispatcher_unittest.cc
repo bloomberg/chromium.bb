@@ -9,6 +9,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
+#include "mojo/system/memory.h"
 #include "mojo/system/raw_shared_buffer.h"
 #include "mojo/system/waiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,7 +53,8 @@ TEST(DispatcherTest, Basic) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             d->WriteData(NULL, NULL, MOJO_WRITE_DATA_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->BeginWriteData(NULL, NULL, MOJO_WRITE_DATA_FLAG_NONE));
+            d->BeginWriteData(NullUserPointer(), NullUserPointer(),
+                              MOJO_WRITE_DATA_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             d->EndWriteData(0));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
@@ -79,7 +81,8 @@ TEST(DispatcherTest, Basic) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             d->WriteData(NULL, NULL, MOJO_WRITE_DATA_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->BeginWriteData(NULL, NULL, MOJO_WRITE_DATA_FLAG_NONE));
+            d->BeginWriteData(NullUserPointer(), NullUserPointer(),
+                              MOJO_WRITE_DATA_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             d->EndWriteData(0));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
@@ -157,7 +160,8 @@ class ThreadSafetyStressThread : public base::SimpleThread {
         break;
       case BEGIN_WRITE_DATA:
         EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-                  dispatcher_->BeginWriteData(NULL, NULL,
+                  dispatcher_->BeginWriteData(NullUserPointer(),
+                                              NullUserPointer(),
                                               MOJO_WRITE_DATA_FLAG_NONE));
         break;
       case END_WRITE_DATA:

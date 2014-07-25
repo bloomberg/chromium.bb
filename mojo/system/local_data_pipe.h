@@ -35,9 +35,9 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalDataPipe : public DataPipe {
                                                  uint32_t* num_bytes,
                                                  bool all_or_none) OVERRIDE;
   virtual MojoResult ProducerBeginWriteDataImplNoLock(
-      void** buffer,
-      uint32_t* buffer_num_bytes,
-      bool all_or_none) OVERRIDE;
+      UserPointer<void*> buffer,
+      UserPointer<uint32_t> buffer_num_bytes,
+      uint32_t min_num_bytes_to_write) OVERRIDE;
   virtual MojoResult ProducerEndWriteDataImplNoLock(
       uint32_t num_bytes_written) OVERRIDE;
   virtual HandleSignalsState

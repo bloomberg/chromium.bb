@@ -41,8 +41,8 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher : public Dispatcher {
                                          uint32_t* num_bytes,
                                          MojoWriteDataFlags flags) OVERRIDE;
   virtual MojoResult BeginWriteDataImplNoLock(
-      void** buffer,
-      uint32_t* buffer_num_bytes,
+      UserPointer<void*> buffer,
+      UserPointer<uint32_t> buffer_num_bytes,
       MojoWriteDataFlags flags) OVERRIDE;
   virtual MojoResult EndWriteDataImplNoLock(
       uint32_t num_bytes_written) OVERRIDE;

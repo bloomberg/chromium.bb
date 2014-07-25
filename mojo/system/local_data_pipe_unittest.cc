@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/system/data_pipe.h"
+#include "mojo/system/memory.h"
 #include "mojo/system/waiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -250,7 +251,8 @@ TEST(LocalDataPipeTest, BasicProducerWaiting) {
   void* buffer = NULL;
   num_bytes = static_cast<uint32_t>(3u * sizeof(elements[0]));
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ProducerBeginWriteData(&buffer, &num_bytes, false));
+            dp->ProducerBeginWriteData(MakeUserPointer(&buffer),
+                                       MakeUserPointer(&num_bytes), false));
   EXPECT_TRUE(buffer != NULL);
   EXPECT_EQ(static_cast<uint32_t>(1u * sizeof(elements[0])), num_bytes);
 
@@ -419,7 +421,8 @@ TEST(LocalDataPipeTest, BasicConsumerWaiting) {
     // Request room for three (but we'll only write two).
     uint32_t num_bytes = static_cast<uint32_t>(3u * sizeof(elements[0]));
     EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ProducerBeginWriteData(&buffer, &num_bytes, true));
+              dp->ProducerBeginWriteData(MakeUserPointer(&buffer),
+                                         MakeUserPointer(&num_bytes), true));
     EXPECT_TRUE(buffer != NULL);
     EXPECT_GE(num_bytes, static_cast<uint32_t>(3u * sizeof(elements[0])));
     elements = static_cast<int32_t*>(buffer);
@@ -507,7 +510,8 @@ TEST(LocalDataPipeTest, BasicTwoPhaseWaiting) {
   uint32_t num_bytes = static_cast<uint32_t>(1u * sizeof(int32_t));
   void* write_ptr = NULL;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, false));
+            dp->ProducerBeginWriteData(MakeUserPointer(&write_ptr),
+                                       MakeUserPointer(&num_bytes), false));
   EXPECT_TRUE(write_ptr != NULL);
   EXPECT_GE(num_bytes, static_cast<uint32_t>(1u * sizeof(int32_t)));
 
@@ -545,7 +549,8 @@ TEST(LocalDataPipeTest, BasicTwoPhaseWaiting) {
   num_bytes = static_cast<uint32_t>(1u * sizeof(int32_t));
   write_ptr = NULL;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, false));
+            dp->ProducerBeginWriteData(MakeUserPointer(&write_ptr),
+                                       MakeUserPointer(&num_bytes), false));
   EXPECT_TRUE(write_ptr != NULL);
   EXPECT_GE(num_bytes, static_cast<uint32_t>(1u * sizeof(int32_t)));
 
@@ -778,7 +783,8 @@ TEST(LocalDataPipeTest, MayDiscard) {
   num_bytes = 0u;
   void* write_ptr = NULL;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, false));
+            dp->ProducerBeginWriteData(MakeUserPointer(&write_ptr),
+                                       MakeUserPointer(&num_bytes), false));
   EXPECT_TRUE(write_ptr != NULL);
   EXPECT_EQ(6u * sizeof(int32_t), num_bytes);
   Seq(400, 6, static_cast<int32_t*>(write_ptr));
@@ -791,7 +797,8 @@ TEST(LocalDataPipeTest, MayDiscard) {
   num_bytes = 6u * sizeof(int32_t);
   write_ptr = NULL;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, false));
+            dp->ProducerBeginWriteData(MakeUserPointer(&write_ptr),
+                                       MakeUserPointer(&num_bytes), false));
   EXPECT_EQ(4u * sizeof(int32_t), num_bytes);
   static_cast<int32_t*>(write_ptr)[0] = 500;
   EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerEndWriteData(1u * sizeof(int32_t)));
@@ -802,14 +809,16 @@ TEST(LocalDataPipeTest, MayDiscard) {
   num_bytes = 10u * sizeof(int32_t);
   write_ptr = NULL;
   EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
-            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, true));
+            dp->ProducerBeginWriteData(MakeUserPointer(&write_ptr),
+                                       MakeUserPointer(&num_bytes), true));
 
   // But requesting, say, a 5-element (up to 9, really) buffer should be okay.
   // It will discard two elements.
   num_bytes = 5u * sizeof(int32_t);
   write_ptr = NULL;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, true));
+            dp->ProducerBeginWriteData(MakeUserPointer(&write_ptr),
+                                       MakeUserPointer(&num_bytes), true));
   EXPECT_EQ(5u * sizeof(int32_t), num_bytes);
   // Only write 4 elements though.
   Seq(600, 4, static_cast<int32_t*>(write_ptr));
@@ -822,7 +831,8 @@ TEST(LocalDataPipeTest, MayDiscard) {
   num_bytes = 5u * sizeof(int32_t);
   write_ptr = NULL;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, true));
+            dp->ProducerBeginWriteData(MakeUserPointer(&write_ptr),
+                                       MakeUserPointer(&num_bytes), true));
   EXPECT_EQ(5u * sizeof(int32_t), num_bytes);
   // Only write 3 elements though.
   Seq(700, 3, static_cast<int32_t*>(write_ptr));
@@ -1096,7 +1106,8 @@ TEST(LocalDataPipeTest, TwoPhaseAllOrNone) {
   uint32_t num_bytes = 20u * sizeof(int32_t);
   void* write_ptr = NULL;
   EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
-            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, true));
+            dp->ProducerBeginWriteData(MakeUserPointer(&write_ptr),
+                                       MakeUserPointer(&num_bytes), true));
 
   // Try writing an amount which isn't a multiple of the element size
   // (two-phase).
@@ -1104,7 +1115,8 @@ TEST(LocalDataPipeTest, TwoPhaseAllOrNone) {
   num_bytes = 1u;
   write_ptr = NULL;
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, true));
+            dp->ProducerBeginWriteData(MakeUserPointer(&write_ptr),
+                                       MakeUserPointer(&num_bytes), true));
 
   // Try reading way too much (two-phase).
   num_bytes = 20u * sizeof(int32_t);
@@ -1116,7 +1128,8 @@ TEST(LocalDataPipeTest, TwoPhaseAllOrNone) {
   num_bytes = 5u * sizeof(int32_t);
   write_ptr = NULL;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, true));
+            dp->ProducerBeginWriteData(MakeUserPointer(&write_ptr),
+                                       MakeUserPointer(&num_bytes), true));
   // May provide more space than requested.
   EXPECT_GE(num_bytes, 5u * sizeof(int32_t));
   EXPECT_TRUE(write_ptr != NULL);
@@ -1149,7 +1162,8 @@ TEST(LocalDataPipeTest, TwoPhaseAllOrNone) {
   num_bytes = 6u * sizeof(int32_t);
   write_ptr = NULL;
   EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
-            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, true));
+            dp->ProducerBeginWriteData(MakeUserPointer(&write_ptr),
+                                       MakeUserPointer(&num_bytes), true));
 
   // Write six elements (simple), filling the buffer.
   num_bytes = 6u * sizeof(int32_t);
@@ -1242,7 +1256,8 @@ TEST(LocalDataPipeTest, WrapAround) {
   void* write_buffer_ptr = NULL;
   num_bytes = 0u;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ProducerBeginWriteData(&write_buffer_ptr, &num_bytes, false));
+            dp->ProducerBeginWriteData(MakeUserPointer(&write_buffer_ptr),
+                                       MakeUserPointer(&num_bytes), false));
   EXPECT_TRUE(write_buffer_ptr != NULL);
   EXPECT_EQ(80u, num_bytes);
   EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerEndWriteData(0u));
@@ -1315,7 +1330,8 @@ TEST(LocalDataPipeTest, CloseWriteRead) {
     void* write_buffer_ptr = NULL;
     num_bytes = 0u;
     EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ProducerBeginWriteData(&write_buffer_ptr, &num_bytes, false));
+              dp->ProducerBeginWriteData(MakeUserPointer(&write_buffer_ptr),
+                                         MakeUserPointer(&num_bytes), false));
     EXPECT_TRUE(write_buffer_ptr != NULL);
     EXPECT_GT(num_bytes, 0u);
 
@@ -1360,7 +1376,8 @@ TEST(LocalDataPipeTest, CloseWriteRead) {
     void* write_buffer_ptr = NULL;
     num_bytes = 0u;
     EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ProducerBeginWriteData(&write_buffer_ptr, &num_bytes, false));
+              dp->ProducerBeginWriteData(MakeUserPointer(&write_buffer_ptr),
+                                         MakeUserPointer(&num_bytes), false));
     EXPECT_TRUE(write_buffer_ptr != NULL);
     ASSERT_GT(num_bytes, kTestDataSize);
 
@@ -1391,7 +1408,8 @@ TEST(LocalDataPipeTest, CloseWriteRead) {
     write_buffer_ptr = NULL;
     num_bytes = 0u;
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              dp->ProducerBeginWriteData(&write_buffer_ptr, &num_bytes, false));
+              dp->ProducerBeginWriteData(MakeUserPointer(&write_buffer_ptr),
+                                         MakeUserPointer(&num_bytes), false));
 
     dp->ProducerClose();
   }
@@ -1405,7 +1423,8 @@ TEST(LocalDataPipeTest, CloseWriteRead) {
     void* write_buffer_ptr = NULL;
     uint32_t num_bytes = 0u;
     EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ProducerBeginWriteData(&write_buffer_ptr, &num_bytes, false));
+              dp->ProducerBeginWriteData(MakeUserPointer(&write_buffer_ptr),
+                                         MakeUserPointer(&num_bytes), false));
     EXPECT_TRUE(write_buffer_ptr != NULL);
     ASSERT_GT(num_bytes, kTestDataSize);
 
@@ -1485,7 +1504,8 @@ TEST(LocalDataPipeTest, TwoPhaseMoreInvalidArguments) {
   num_bytes = 0u;
   void* write_ptr = NULL;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, false));
+            dp->ProducerBeginWriteData(MakeUserPointer(&write_ptr),
+                                       MakeUserPointer(&num_bytes), false));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             dp->ProducerEndWriteData(
                 num_bytes + static_cast<uint32_t>(sizeof(int32_t))));
@@ -1503,7 +1523,8 @@ TEST(LocalDataPipeTest, TwoPhaseMoreInvalidArguments) {
   num_bytes = 0u;
   write_ptr = NULL;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, false));
+            dp->ProducerBeginWriteData(MakeUserPointer(&write_ptr),
+                                       MakeUserPointer(&num_bytes), false));
   EXPECT_GE(num_bytes, 1u);
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, dp->ProducerEndWriteData(1u));
 

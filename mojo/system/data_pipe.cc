@@ -120,9 +120,10 @@ MojoResult DataPipe::ProducerWriteData(const void* elements,
   return rv;
 }
 
-MojoResult DataPipe::ProducerBeginWriteData(void** buffer,
-                                            uint32_t* buffer_num_bytes,
-                                            bool all_or_none) {
+MojoResult DataPipe::ProducerBeginWriteData(
+    UserPointer<void*> buffer,
+    UserPointer<uint32_t> buffer_num_bytes,
+    bool all_or_none) {
   base::AutoLock locker(lock_);
   DCHECK(has_local_producer_no_lock());
 
@@ -131,11 +132,15 @@ MojoResult DataPipe::ProducerBeginWriteData(void** buffer,
   if (!consumer_open_no_lock())
     return MOJO_RESULT_FAILED_PRECONDITION;
 
-  if (all_or_none && *buffer_num_bytes % element_num_bytes_ != 0)
-    return MOJO_RESULT_INVALID_ARGUMENT;
+  uint32_t min_num_bytes_to_write = 0;
+  if (all_or_none) {
+    min_num_bytes_to_write = buffer_num_bytes.Get();
+    if (min_num_bytes_to_write % element_num_bytes_ != 0)
+      return MOJO_RESULT_INVALID_ARGUMENT;
+  }
 
   MojoResult rv = ProducerBeginWriteDataImplNoLock(buffer, buffer_num_bytes,
-                                                   all_or_none);
+                                                   min_num_bytes_to_write);
   if (rv != MOJO_RESULT_OK)
     return rv;
   // Note: No need to awake producer waiters, even though we're going from

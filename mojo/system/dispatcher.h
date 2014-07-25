@@ -20,6 +20,7 @@
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/c/system/types.h"
+#include "mojo/system/memory.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
@@ -94,8 +95,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   MojoResult WriteData(const void* elements,
                        uint32_t* elements_num_bytes,
                        MojoWriteDataFlags flags);
-  MojoResult BeginWriteData(void** buffer,
-                            uint32_t* buffer_num_bytes,
+  MojoResult BeginWriteData(UserPointer<void*> buffer,
+                            UserPointer<uint32_t> buffer_num_bytes,
                             MojoWriteDataFlags flags);
   MojoResult EndWriteData(uint32_t num_bytes_written);
   MojoResult ReadData(void* elements,
@@ -224,9 +225,10 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   virtual MojoResult WriteDataImplNoLock(const void* elements,
                                          uint32_t* num_bytes,
                                          MojoWriteDataFlags flags);
-  virtual MojoResult BeginWriteDataImplNoLock(void** buffer,
-                                              uint32_t* buffer_num_bytes,
-                                              MojoWriteDataFlags flags);
+  virtual MojoResult BeginWriteDataImplNoLock(
+      UserPointer<void*> buffer,
+      UserPointer<uint32_t> buffer_num_bytes,
+      MojoWriteDataFlags flags);
   virtual MojoResult EndWriteDataImplNoLock(uint32_t num_bytes_written);
   virtual MojoResult ReadDataImplNoLock(void* elements,
                                         uint32_t* num_bytes,

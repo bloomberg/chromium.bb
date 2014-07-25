@@ -66,15 +66,10 @@ MojoResult DataPipeProducerDispatcher::WriteDataImplNoLock(
 }
 
 MojoResult DataPipeProducerDispatcher::BeginWriteDataImplNoLock(
-    void** buffer,
-    uint32_t* buffer_num_bytes,
+    UserPointer<void*> buffer,
+    UserPointer<uint32_t> buffer_num_bytes,
     MojoWriteDataFlags flags) {
   lock().AssertAcquired();
-
-  if (!VerifyUserPointerWithCount<void*>(buffer, 1))
-    return MOJO_RESULT_INVALID_ARGUMENT;
-  if (!VerifyUserPointer<uint32_t>(buffer_num_bytes))
-    return MOJO_RESULT_INVALID_ARGUMENT;
 
   return data_pipe_->ProducerBeginWriteData(
       buffer, buffer_num_bytes, (flags & MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));

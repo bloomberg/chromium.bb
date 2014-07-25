@@ -98,8 +98,8 @@ class MockDispatcher : public Dispatcher {
   }
 
   virtual MojoResult BeginWriteDataImplNoLock(
-      void** /*buffer*/,
-      uint32_t* /*buffer_num_bytes*/,
+      UserPointer<void*> /*buffer*/,
+      UserPointer<uint32_t> /*buffer_num_bytes*/,
       MojoWriteDataFlags /*flags*/) OVERRIDE {
     info_->IncrementBeginWriteDataCallCount();
     lock().AssertAcquired();
