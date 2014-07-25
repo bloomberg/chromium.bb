@@ -46,6 +46,7 @@ DecoderStream<StreamType>::DecoderStream(
     : task_runner_(task_runner),
       state_(STATE_UNINITIALIZED),
       stream_(NULL),
+      low_delay_(false),
       decoder_selector_(
           new DecoderSelector<StreamType>(task_runner,
                                           decoders.Pass(),

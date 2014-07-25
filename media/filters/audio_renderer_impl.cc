@@ -47,6 +47,7 @@ AudioRendererImpl::AudioRendererImpl(
     const SetDecryptorReadyCB& set_decryptor_ready_cb,
     AudioHardwareConfig* hardware_config)
     : task_runner_(task_runner),
+      expecting_config_changes_(false),
       sink_(sink),
       audio_buffer_stream_(new AudioBufferStream(task_runner,
                                                  decoders.Pass(),

@@ -176,6 +176,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
           RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy()),
       media_log_(new RenderMediaLog()),
       pipeline_(media_loop_, media_log_.get()),
+      load_type_(LoadTypeURL),
       opaque_(false),
       paused_(true),
       seeking_(false),

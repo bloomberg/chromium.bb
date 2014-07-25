@@ -125,7 +125,8 @@ class KeySystems {
   friend struct base::DefaultLazyInstanceTraits<KeySystems>;
 
   struct KeySystemProperties {
-    KeySystemProperties() : use_aes_decryptor(false) {}
+    KeySystemProperties()
+        : use_aes_decryptor(false), supported_codecs(EME_CODEC_NONE) {}
 
     bool use_aes_decryptor;
 #if defined(ENABLE_PEPPER_CDMS)
