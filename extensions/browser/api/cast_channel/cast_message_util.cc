@@ -1,15 +1,15 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/cast_channel/cast_message_util.h"
+#include "extensions/browser/api/cast_channel/cast_message_util.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/cast_channel/cast_channel.pb.h"
-#include "chrome/common/extensions/api/cast_channel.h"
+#include "extensions/browser/api/cast_channel/cast_channel.pb.h"
+#include "extensions/common/api/cast_channel.h"
 
 namespace {
 static const char kAuthNamespace[] =
@@ -20,7 +20,7 @@ static const char kPlatformReceiverId[] = "receiver-0";
 }  // namespace
 
 namespace extensions {
-namespace api {
+namespace core_api {
 namespace cast_channel {
 
 bool MessageInfoToCastMessage(const MessageInfo& message,
@@ -146,5 +146,5 @@ bool IsAuthMessage(const CastMessage& message) {
 }
 
 }  // namespace cast_channel
-}  // namespace api
+}  // namespace core_api
 }  // namespace extensions

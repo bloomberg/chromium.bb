@@ -1,18 +1,18 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "chrome/browser/extensions/api/cast_channel/cast_channel_api.h"
-#include "chrome/browser/extensions/api/cast_channel/cast_socket.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/extensions/api/cast_channel.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/cast_channel/cast_channel_api.h"
+#include "extensions/browser/api/cast_channel/cast_socket.h"
+#include "extensions/common/api/cast_channel.h"
 #include "extensions/common/switches.h"
 #include "net/base/capturing_net_log.h"
 #include "net/base/completion_callback.h"
@@ -20,7 +20,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 
-namespace cast_channel =  extensions::api::cast_channel;
+namespace cast_channel = extensions::core_api::cast_channel;
 using cast_channel::CastSocket;
 using cast_channel::ChannelError;
 using cast_channel::MessageInfo;

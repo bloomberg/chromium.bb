@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/hid/hid_device_manager.h"
+#include "extensions/browser/api/hid/hid_device_manager.h"
 
 #include <limits>
 #include <vector>
@@ -47,7 +47,7 @@ scoped_ptr<base::ListValue> HidDeviceManager::GetApiDevices(
     if (hid_service->GetDeviceInfo(device_id, &device_info)) {
       if (device_info.vendor_id == vendor_id &&
           device_info.product_id == product_id) {
-        api::hid::HidDeviceInfo api_device_info;
+        core_api::hid::HidDeviceInfo api_device_info;
         api_device_info.device_id = resource_id;
         api_device_info.vendor_id = device_info.vendor_id;
         api_device_info.product_id = device_info.product_id;
@@ -69,8 +69,8 @@ scoped_ptr<base::ListValue> HidDeviceManager::GetApiDevices(
             continue;
           }
 
-          api::hid::HidCollectionInfo* api_collection =
-              new api::hid::HidCollectionInfo();
+          core_api::hid::HidCollectionInfo* api_collection =
+              new core_api::hid::HidCollectionInfo();
           api_collection->usage_page = collection.usage.usage_page;
           api_collection->usage = collection.usage.usage;
 

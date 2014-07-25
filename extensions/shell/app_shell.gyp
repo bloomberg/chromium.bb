@@ -80,6 +80,7 @@
         '<(DEPTH)/content/content.gyp:content_gpu',
         '<(DEPTH)/content/content.gyp:content_ppapi_plugin',
         '<(DEPTH)/content/content_shell_and_tests.gyp:content_shell_lib',
+        '<(DEPTH)/device/hid/hid.gyp:device_hid',
         '<(DEPTH)/extensions/common/api/api.gyp:extensions_api',
         '<(DEPTH)/extensions/extensions.gyp:extensions_browser',
         '<(DEPTH)/extensions/extensions.gyp:extensions_common',

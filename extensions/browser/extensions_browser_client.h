@@ -25,6 +25,7 @@ class WebContents;
 }
 
 namespace net {
+class NetLog;
 class NetworkDelegate;
 class URLRequest;
 class URLRequestJob;
@@ -176,6 +177,9 @@ class ExtensionsBrowserClient {
   // the manager doesn't exist.
   virtual ComponentExtensionResourceManager*
   GetComponentExtensionResourceManager() = 0;
+
+  // Returns the embedder's net::NetLog.
+  virtual net::NetLog* GetNetLog() = 0;
 
   // Returns the single instance of |this|.
   static ExtensionsBrowserClient* Get();

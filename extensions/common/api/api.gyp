@@ -27,8 +27,10 @@
             'schema_files': [
               'app_runtime.idl',
               'app_view_internal.json',
+              'cast_channel.idl',
               'dns.idl',
               'extensions_manifest_types.json',
+              'hid.idl',
               'power.idl',
               'runtime.json',
               'serial.idl',

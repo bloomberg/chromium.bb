@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-package extensions.api.cast_channel;
+package extensions.core_api.cast_channel;
 
 message CastMessage {
   // Always pass a version of the protocol for future compatibility
@@ -27,7 +27,7 @@ message CastMessage {
   //
   // For messages to or from the sender or receiver platform, the special ids
   // 'sender-0' and 'receiver-0' can be used.
-  // 
+  //
   // For messages intended for all endpoints using a given channel, the
   // wildcard destination_id '*' can be used.
   required string source_id = 2;

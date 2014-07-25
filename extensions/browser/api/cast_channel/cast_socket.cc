@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/cast_channel/cast_socket.h"
+#include "extensions/browser/api/cast_channel/cast_socket.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -13,9 +13,9 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
-#include "chrome/browser/extensions/api/cast_channel/cast_auth_util.h"
-#include "chrome/browser/extensions/api/cast_channel/cast_channel.pb.h"
-#include "chrome/browser/extensions/api/cast_channel/cast_message_util.h"
+#include "extensions/browser/api/cast_channel/cast_auth_util.h"
+#include "extensions/browser/api/cast_channel/cast_channel.pb.h"
+#include "extensions/browser/api/cast_channel/cast_message_util.h"
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -49,18 +49,18 @@ const int kTcpKeepAliveDelaySecs = 10;
 namespace extensions {
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<
-    ApiResourceManager<api::cast_channel::CastSocket> > > g_factory =
+    ApiResourceManager<core_api::cast_channel::CastSocket> > > g_factory =
     LAZY_INSTANCE_INITIALIZER;
 
 // static
 template <>
 BrowserContextKeyedAPIFactory<
-    ApiResourceManager<api::cast_channel::CastSocket> >*
-ApiResourceManager<api::cast_channel::CastSocket>::GetFactoryInstance() {
+    ApiResourceManager<core_api::cast_channel::CastSocket> >*
+ApiResourceManager<core_api::cast_channel::CastSocket>::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
-namespace api {
+namespace core_api {
 namespace cast_channel {
 
 CastSocket::CastSocket(const std::string& owner_extension_id,
@@ -739,8 +739,8 @@ base::Timer* CastSocket::GetTimer() {
 CastSocket::MessageHeader::MessageHeader() : message_size(0) { }
 
 void CastSocket::MessageHeader::SetMessageSize(size_t size) {
-  DCHECK(size < static_cast<size_t>(kuint32max));
-  DCHECK(size > 0);
+  DCHECK_LT(size, static_cast<size_t>(kuint32max));
+  DCHECK_GT(size, 0U);
   message_size = static_cast<size_t>(size);
 }
 
@@ -788,7 +788,7 @@ bool CastSocket::WriteRequest::SetContent(const CastMessage& message_proto) {
 CastSocket::WriteRequest::~WriteRequest() { }
 
 }  // namespace cast_channel
-}  // namespace api
+}  // namespace core_api
 }  // namespace extensions
 
 #undef VLOG_WITH_CONNECTION

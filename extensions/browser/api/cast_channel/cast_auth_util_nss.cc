@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/cast_channel/cast_auth_util.h"
+#include "extensions/browser/api/cast_channel/cast_auth_util.h"
 
 #include <cert.h>
 #include <cryptohi.h>
@@ -11,12 +11,16 @@
 #include <string>
 
 #include "base/logging.h"
-#include "chrome/browser/extensions/api/cast_channel/cast_channel.pb.h"
-#include "chrome/browser/extensions/api/cast_channel/cast_message_util.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
+#include "extensions/browser/api/cast_channel/cast_channel.pb.h"
+#include "extensions/browser/api/cast_channel/cast_message_util.h"
 #include "net/base/hash_value.h"
 #include "net/cert/x509_certificate.h"
+
+namespace extensions {
+namespace core_api {
+namespace cast_channel {
 
 namespace {
 
@@ -183,11 +187,9 @@ static int GetICAWithFingerprint(const net::SHA1HashValue& fingerprint) {
 }
 
 // Parses out DeviceAuthMessage from CastMessage
-static bool ParseAuthMessage(
-    const extensions::api::cast_channel::CastMessage& challenge_reply,
-    extensions::api::cast_channel::DeviceAuthMessage* auth_message) {
-  if (challenge_reply.payload_type() !=
-      extensions::api::cast_channel::CastMessage_PayloadType_BINARY) {
+static bool ParseAuthMessage(const CastMessage& challenge_reply,
+                             DeviceAuthMessage* auth_message) {
+  if (challenge_reply.payload_type() != CastMessage_PayloadType_BINARY) {
     VLOG(1) << "Wrong payload type in challenge reply";
     return false;
   }
@@ -214,9 +216,8 @@ static bool ParseAuthMessage(
 // Authenticates the given credentials:
 // 1. |signature| verification of |data| using |certificate|.
 // 2. |certificate| is signed by a trusted CA.
-bool VerifyCredentials(
-    const extensions::api::cast_channel::AuthResponse& response,
-    const std::string& data) {
+bool VerifyCredentials(const AuthResponse& response,
+                       const std::string& data) {
   const std::string& certificate = response.client_auth_certificate();
   const std::string& signature = response.signature();
 
@@ -302,10 +303,6 @@ bool VerifyCredentials(
 
 }  // namespace
 
-namespace extensions {
-namespace api {
-namespace cast_channel {
-
 bool AuthenticateChallengeReply(const CastMessage& challenge_reply,
                                 const std::string& peer_cert) {
   if (peer_cert.empty())
@@ -321,5 +318,5 @@ bool AuthenticateChallengeReply(const CastMessage& challenge_reply,
 }
 
 }  // namespace cast_channel
-}  // namespace api
+}  // namespace core_api
 }  // namespace extensions

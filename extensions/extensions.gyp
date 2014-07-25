@@ -247,6 +247,7 @@
         '../device/serial/serial.gyp:device_serial',
         '../skia/skia.gyp:skia',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+        'cast_channel_proto',
         'common/api/api.gyp:extensions_api',
         'extensions_common',
         'extensions_strings.gyp:extensions_strings',
@@ -273,12 +274,25 @@
         'browser/api/app_view/app_view_internal_api.h',
         'browser/api/async_api_function.cc',
         'browser/api/async_api_function.h',
+        'browser/api/cast_channel/cast_auth_util.h',
+        'browser/api/cast_channel/cast_channel_api.cc',
+        'browser/api/cast_channel/cast_channel_api.h',
+        'browser/api/cast_channel/cast_message_util.cc',
+        'browser/api/cast_channel/cast_message_util.h',
+        'browser/api/cast_channel/cast_socket.cc',
+        'browser/api/cast_channel/cast_socket.h',
         'browser/api/dns/dns_api.cc',
         'browser/api/dns/dns_api.h',
         'browser/api/dns/host_resolver_wrapper.cc',
         'browser/api/dns/host_resolver_wrapper.h',
         'browser/api/extensions_api_client.cc',
         'browser/api/extensions_api_client.h',
+        'browser/api/hid/hid_api.cc',
+        'browser/api/hid/hid_api.h',
+        'browser/api/hid/hid_connection_resource.cc',
+        'browser/api/hid/hid_connection_resource.h',
+        'browser/api/hid/hid_device_manager.cc',
+        'browser/api/hid/hid_device_manager.h',
         'browser/api/power/power_api.cc',
         'browser/api/power/power_api.h',
         'browser/api/power/power_api_manager.cc',
@@ -488,6 +502,27 @@
           'dependencies!': [
             '../components/components.gyp:usb_service',
             '../device/serial/serial.gyp:device_serial',
+          ],
+        }],
+        ['use_openssl==1', {
+          'sources': [
+            'browser/api/cast_channel/cast_auth_util_openssl.cc',
+          ],
+        }, {
+          'sources': [
+            # cast_auth_util_nss.cc uses NSS functions.
+            'browser/api/cast_channel/cast_auth_util_nss.cc',
+          ],
+        }],
+        ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
+          'dependencies': [
+            '../build/linux/system.gyp:ssl',
+          ],
+        }],
+        ['OS == "mac" or OS == "ios" or OS == "win"', {
+          'dependencies': [
+            '../third_party/nss/nss.gyp:nspr',
+            '../third_party/nss/nss.gyp:nss',
           ],
         }],
       ],
@@ -769,6 +804,18 @@
           ],
         }],
       ],
+    },
+    {
+      # Protobuf compiler / generator for chrome.cast.channel-related protocol buffers.
+      # GN version: //extensions/browser/api/cast_channel/BUILD.gn
+      'target_name': 'cast_channel_proto',
+      'type': 'static_library',
+      'sources': [ 'browser/api/cast_channel/cast_channel.proto' ],
+      'variables': {
+          'proto_in_dir': 'browser/api/cast_channel',
+          'proto_out_dir': 'extensions/browser/api/cast_channel',
+      },
+      'includes': [ '../build/protoc.gypi' ]
     },
   ]
 }

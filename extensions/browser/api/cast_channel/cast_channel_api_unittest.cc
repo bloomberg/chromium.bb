@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/cast_channel/cast_channel_api.h"
+#include "extensions/browser/api/cast_channel/cast_channel_api.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "net/base/ip_endpoint.h"
@@ -10,7 +10,7 @@
 #include "url/gurl.h"
 
 namespace extensions {
-namespace api {
+namespace core_api {
 namespace cast_channel {
 
 // Tests URL parsing and validation.
@@ -63,5 +63,5 @@ TEST(CastChannelOpenFunctionTest, TestParseConnectInfo) {
 }
 
 }  // namespace cast_channel
-}  // namespace api
+}  // namespace core_api
 }  // namespace extensions

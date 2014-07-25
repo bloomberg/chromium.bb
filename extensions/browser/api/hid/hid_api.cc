@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/hid/hid_api.h"
+#include "extensions/browser/api/hid/hid_api.h"
 
 #include <string>
 #include <vector>
 
-#include "chrome/common/extensions/api/hid.h"
 #include "device/hid/hid_connection.h"
 #include "device/hid/hid_device_info.h"
 #include "device/hid/hid_service.h"
 #include "extensions/browser/api/api_resource_manager.h"
+#include "extensions/common/api/hid.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
 #include "net/base/io_buffer.h"
 
-namespace hid = extensions::api::hid;
+namespace hid = extensions::core_api::hid;
 
 using device::HidConnection;
 using device::HidDeviceInfo;

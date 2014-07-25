@@ -92,6 +92,7 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
       content::BrowserContext* context) const OVERRIDE;
   virtual ComponentExtensionResourceManager*
   GetComponentExtensionResourceManager() OVERRIDE;
+  virtual net::NetLog* GetNetLog() OVERRIDE;
 
  private:
   friend struct base::DefaultLazyInstanceTraits<ChromeExtensionsBrowserClient>;

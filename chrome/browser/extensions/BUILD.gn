@@ -33,7 +33,6 @@ static_library("extensions") {
     "//chrome:resources",
     "//chrome:strings",
     "//chrome/app/resources:platform_locale_settings",
-    "//chrome/browser/extensions/api/cast_channel:cast_channel_proto",
     "//chrome/app/theme:theme_resources",
     "//chrome/browser/history:in_memory_url_index_cache_proto",
     "//chrome/browser/sync_file_system:sync_file_system_proto",
@@ -200,13 +199,6 @@ static_library("extensions") {
       ]
     } else if (!is_chromeos) {
       sources += [ "api/system_display/display_info_provider_aura.cc" ]
-    }
-
-    if (use_openssl) {
-      sources += [ "api/cast_channel/cast_auth_util_openssl.cc" ]
-    } else {
-      # cast_auth_util_nss.cc uses NSS functions.
-      sources += [ "api/cast_channel/cast_auth_util_nss.cc" ]
     }
 
     if (is_android) {

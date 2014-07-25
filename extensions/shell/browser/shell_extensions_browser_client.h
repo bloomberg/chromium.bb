@@ -74,6 +74,7 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
       content::BrowserContext* context) const OVERRIDE;
   virtual ComponentExtensionResourceManager*
       GetComponentExtensionResourceManager() OVERRIDE;
+  virtual net::NetLog* GetNetLog() OVERRIDE;
 
  private:
   // The single BrowserContext for app_shell. Not owned.

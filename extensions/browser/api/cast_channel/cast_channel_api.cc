@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/cast_channel/cast_channel_api.h"
+#include "extensions/browser/api/cast_channel/cast_channel_api.h"
 
 #include <limits>
 #include <string>
@@ -11,10 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/api/cast_channel/cast_socket.h"
-#include "chrome/browser/net/chrome_net_log.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/cast_channel/cast_socket.h"
 #include "extensions/browser/event_router.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -109,7 +107,7 @@ scoped_ptr<CastSocket> CastChannelAPI::CreateCastSocket(
   } else {
     return scoped_ptr<CastSocket>(
         new CastSocket(extension_id, ip_endpoint, channel_auth, this,
-                       g_browser_process->net_log(),
+                       ExtensionsBrowserClient::Get()->GetNetLog(),
                        timeout));
   }
 }

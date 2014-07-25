@@ -239,4 +239,8 @@ ShellExtensionsBrowserClient::GetComponentExtensionResourceManager() {
   return NULL;
 }
 
+net::NetLog* ShellExtensionsBrowserClient::GetNetLog() {
+  return NULL;
+}
+
 }  // namespace extensions

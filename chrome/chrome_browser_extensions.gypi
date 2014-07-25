@@ -450,13 +450,6 @@
       'browser/extensions/api/browsing_data/browsing_data_api.h',
       'browser/extensions/api/capture_web_contents_function.cc',
       'browser/extensions/api/capture_web_contents_function.h',
-      'browser/extensions/api/cast_channel/cast_auth_util.h',
-      'browser/extensions/api/cast_channel/cast_channel_api.cc',
-      'browser/extensions/api/cast_channel/cast_channel_api.h',
-      'browser/extensions/api/cast_channel/cast_message_util.cc',
-      'browser/extensions/api/cast_channel/cast_message_util.h',
-      'browser/extensions/api/cast_channel/cast_socket.cc',
-      'browser/extensions/api/cast_channel/cast_socket.h',
       'browser/extensions/api/chrome_extensions_api_client.cc',
       'browser/extensions/api/chrome_extensions_api_client.h',
       'browser/extensions/api/cloud_print_private/cloud_print_private_api.cc',
@@ -570,12 +563,6 @@
       'browser/extensions/api/gcm/gcm_api.h',
       'browser/extensions/api/guest_view/guest_view_internal_api.cc',
       'browser/extensions/api/guest_view/guest_view_internal_api.h',
-      'browser/extensions/api/hid/hid_api.cc',
-      'browser/extensions/api/hid/hid_api.h',
-      'browser/extensions/api/hid/hid_connection_resource.cc',
-      'browser/extensions/api/hid/hid_connection_resource.h',
-      'browser/extensions/api/hid/hid_device_manager.cc',
-      'browser/extensions/api/hid/hid_device_manager.h',
       'browser/extensions/api/history/history_api.cc',
       'browser/extensions/api/history/history_api.h',
       'browser/extensions/api/hotword_private/hotword_private_api.cc',
@@ -960,7 +947,6 @@
       # have the same dependencies. Once browser_extensions is untangled from
       # browser, then we can clean up these dependencies.
       'dependencies': [
-        'cast_channel_proto',
         'chrome_resources.gyp:chrome_extra_resources',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
@@ -1180,16 +1166,6 @@
             'browser/extensions/api/system_display/display_info_provider_aura.cc',
           ],
         }],
-        ['use_openssl==1', {
-          'sources': [
-            'browser/extensions/api/cast_channel/cast_auth_util_openssl.cc',
-          ],
-        }, {
-          'sources': [
-            # cast_auth_util_nss.cc uses NSS functions.
-            'browser/extensions/api/cast_channel/cast_auth_util_nss.cc',
-          ],
-        }],
         ['OS=="android"', {
           'sources': [
             '<@(chrome_browser_extensions_android_sources)',
@@ -1201,18 +1177,6 @@
           ],
         }]
       ],
-    },
-    {
-      # Protobuf compiler / generator for chrome.cast.channel-related protocol buffers.
-      # GN version: //chrome/browser/extensions/api/cast_channel:cast_channel_proto
-      'target_name': 'cast_channel_proto',
-      'type': 'static_library',
-      'sources': [ 'browser/extensions/api/cast_channel/cast_channel.proto' ],
-      'variables': {
-          'proto_in_dir': 'browser/extensions/api/cast_channel',
-          'proto_out_dir': 'chrome/browser/extensions/api/cast_channel',
-      },
-      'includes': [ '../build/protoc.gypi' ]
     },
   ],
 }

@@ -78,6 +78,7 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
       content::BrowserContext* context) const OVERRIDE;
   virtual ComponentExtensionResourceManager*
   GetComponentExtensionResourceManager() OVERRIDE;
+  virtual net::NetLog* GetNetLog() OVERRIDE;
 
  private:
   content::BrowserContext* main_context_;       // Not owned.

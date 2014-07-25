@@ -164,4 +164,8 @@ TestExtensionsBrowserClient::GetComponentExtensionResourceManager() {
   return NULL;
 }
 
+net::NetLog* TestExtensionsBrowserClient::GetNetLog() {
+  return NULL;
+}
+
 }  // namespace extensions

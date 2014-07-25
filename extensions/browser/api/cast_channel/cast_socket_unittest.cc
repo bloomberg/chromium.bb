@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/cast_channel/cast_socket.h"
+#include "extensions/browser/api/cast_channel/cast_socket.h"
 
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -10,8 +10,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
 #include "base/timer/mock_timer.h"
-#include "chrome/browser/extensions/api/cast_channel/cast_channel.pb.h"
-#include "chrome/browser/extensions/api/cast_channel/cast_message_util.h"
+#include "extensions/browser/api/cast_channel/cast_channel.pb.h"
+#include "extensions/browser/api/cast_channel/cast_message_util.h"
 #include "net/base/address_list.h"
 #include "net/base/capturing_net_log.h"
 #include "net/base/net_errors.h"
@@ -41,7 +41,7 @@ const char* kTestData[4] = {
 }  // namespace
 
 namespace extensions {
-namespace api {
+namespace core_api {
 namespace cast_channel {
 
 // Fills in |message| with a string message.
@@ -837,7 +837,6 @@ TEST_F(CastSocketTest, TestWriteErrorLargeMessage) {
 
   EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
-
 }
 
 // Test write error - network error (sync)
@@ -1060,5 +1059,5 @@ TEST_F(CastSocketTest, TestReadBodyParseError) {
 }
 
 }  // namespace cast_channel
-}  // namespace api
+}  // namespace core_api
 }  // namespace extensions

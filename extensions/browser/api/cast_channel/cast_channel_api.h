@@ -1,20 +1,20 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_CAST_CHANNEL_CAST_CHANNEL_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_CAST_CHANNEL_CAST_CHANNEL_API_H_
+#ifndef EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_CHANNEL_API_H_
+#define EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_CHANNEL_API_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/extensions/api/cast_channel/cast_socket.h"
-#include "chrome/common/extensions/api/cast_channel.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/async_api_function.h"
+#include "extensions/browser/api/cast_channel/cast_socket.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/common/api/cast_channel.h"
 
 class GURL;
 class CastChannelAPITest;
@@ -29,7 +29,7 @@ class IPEndPoint;
 
 namespace extensions {
 
-namespace cast_channel = api::cast_channel;
+namespace cast_channel = core_api::cast_channel;
 
 class CastChannelAPI : public BrowserContextKeyedAPI,
                        public cast_channel::CastSocket::Delegate {
@@ -205,4 +205,4 @@ class CastChannelCloseFunction : public CastChannelAsyncApiFunction {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_CAST_CHANNEL_CAST_CHANNEL_API_H_
+#endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_CHANNEL_API_H_
