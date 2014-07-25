@@ -1283,7 +1283,10 @@ bool WebPluginImpl::InitiateHTTPRequest(unsigned long resource_id,
   info.request.setFirstPartyForCookies(
       webframe_->document().firstPartyForCookies());
   info.request.setRequestorProcessID(delegate_->GetProcessId());
-  info.request.setTargetType(WebURLRequest::TargetIsObject);
+  // TODO(mkwst): Is this a request for a plugin object itself
+  // (RequestContextObject), or a request that the plugin makes
+  // (RequestContextPlugin)?
+  info.request.setRequestContext(WebURLRequest::RequestContextPlugin);
   info.request.setHTTPMethod(WebString::fromUTF8(method));
   info.pending_failure_notification = false;
   info.notify_redirects = notify_redirects;
