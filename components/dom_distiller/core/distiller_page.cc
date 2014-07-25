@@ -52,6 +52,18 @@ DistilledPageInfo::DistilledPageInfo() {}
 
 DistilledPageInfo::~DistilledPageInfo() {}
 
+DistilledPageInfo::MarkupArticle::MarkupArticle() {}
+
+DistilledPageInfo::MarkupArticle::~MarkupArticle() {}
+
+DistilledPageInfo::MarkupImage::MarkupImage() {}
+
+DistilledPageInfo::MarkupImage::~MarkupImage() {}
+
+DistilledPageInfo::MarkupInfo::MarkupInfo() {}
+
+DistilledPageInfo::MarkupInfo::~MarkupInfo() {}
+
 DistillerPageFactory::~DistillerPageFactory() {}
 
 DistillerPage::DistillerPage() : ready_(true) {}
@@ -90,6 +102,40 @@ void DistillerPage::OnDistillationDone(const GURL& page_url,
       if (GURL(image_url).is_valid()) {
         page_info->image_urls.push_back(image_url);
       }
+    }
+    const dom_distiller::proto::MarkupInfo& src_markup_info =
+        distiller_result.markup_info();
+    DistilledPageInfo::MarkupInfo& dst_markup_info = page_info->markup_info;
+    dst_markup_info.title = src_markup_info.title();
+    dst_markup_info.type = src_markup_info.type();
+    dst_markup_info.url = src_markup_info.url();
+    dst_markup_info.description = src_markup_info.description();
+    dst_markup_info.publisher = src_markup_info.publisher();
+    dst_markup_info.copyright = src_markup_info.copyright();
+    dst_markup_info.author = src_markup_info.author();
+
+    const dom_distiller::proto::MarkupArticle& src_article =
+        src_markup_info.article();
+    DistilledPageInfo::MarkupArticle& dst_article = dst_markup_info.article;
+    dst_article.published_time = src_article.published_time();
+    dst_article.modified_time = src_article.modified_time();
+    dst_article.expiration_time = src_article.expiration_time();
+    dst_article.section = src_article.section();
+    for (int i = 0; i < src_article.authors_size(); ++i) {
+      dst_article.authors.push_back(src_article.authors(i));
+    }
+
+    for (int i = 0; i < src_markup_info.images_size(); ++i) {
+      const dom_distiller::proto::MarkupImage& src_image =
+          src_markup_info.images(i);
+      DistilledPageInfo::MarkupImage dst_image;
+      dst_image.url = src_image.url();
+      dst_image.secure_url = src_image.secure_url();
+      dst_image.type = src_image.type();
+      dst_image.caption = src_image.caption();
+      dst_image.width = src_image.width();
+      dst_image.height = src_image.height();
+      dst_markup_info.images.push_back(dst_image);
     }
   }
 
