@@ -17,7 +17,6 @@
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_info.h"
 #include "net/websockets/websocket_channel.h"
-#include "net/websockets/websocket_errors.h"
 #include "net/websockets/websocket_event_interface.h"
 #include "net/websockets/websocket_frame.h"  // for WebSocketFrameHeader::OpCode
 #include "net/websockets/websocket_handshake_request_info.h"
@@ -330,10 +329,6 @@ WebSocketHost::WebSocketHost(int routing_id,
 }
 
 WebSocketHost::~WebSocketHost() {}
-
-void WebSocketHost::GoAway() {
-  OnDropChannel(false, static_cast<uint16>(net::kWebSocketErrorGoingAway), "");
-}
 
 bool WebSocketHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
