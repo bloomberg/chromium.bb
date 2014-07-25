@@ -19,6 +19,7 @@
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/browser/indexed_db/leveldb/leveldb_factory.h"
 #include "content/public/test/mock_special_storage_policy.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebIDBTypes.h"
@@ -347,6 +348,8 @@ class IndexedDBBackingStoreTest : public testing::Test {
   std::vector<IndexedDBBlobInfo> m_blob_info;
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
+
   DISALLOW_COPY_AND_ASSIGN(IndexedDBBackingStoreTest);
 };
 
