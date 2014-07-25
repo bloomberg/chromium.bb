@@ -41,10 +41,10 @@
 #include "ui/base/win/shell.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/updating_app_registration_data.h"
+#include "chrome/installer/util/util_constants.h"
 #endif  // GOOGLE_CHROME_BUILD
 
 // static
@@ -147,7 +147,7 @@ void SetDidRunForNDayActiveStats() {
   if (chrome_binaries_dist &&
       InstallUtil::IsMultiInstall(chrome_binaries_dist, system_install)) {
     UpdatingAppRegistrationData app_launcher_reg_data(
-        chrome_launcher_support::kAppLauncherGuid);
+        installer::kAppLauncherGuid);
     GoogleUpdateSettings::UpdateDidRunStateForApp(
         app_launcher_reg_data, true /* did_run */);
   }

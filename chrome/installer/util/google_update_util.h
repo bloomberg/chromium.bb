@@ -5,8 +5,6 @@
 #ifndef CHROME_INSTALLER_UTIL_GOOGLE_UPDATE_UTIL_H_
 #define CHROME_INSTALLER_UTIL_GOOGLE_UPDATE_UTIL_H_
 
-#include <string>
-
 namespace google_update {
 
 // If user-level Google Update is absent, calls the system-level
@@ -26,18 +24,6 @@ bool UninstallGoogleUpdate(bool system_install);
 // if needed. Setup.exe will call into
 // GoogleUpdateSettings::ReenableAutoupdatesForApp() to do the work.
 void ElevateIfNeededToReenableUpdates();
-
-// Returns the value corresponding to |key| in untrusted data passed from
-// Google Update.  Returns an empty string if |key| is absent or if its value
-// contains non-printable characters.
-std::string GetUntrustedDataValue(const std::string& key);
-
-// Returns the value corresponding to |key| in untrusted data passed from
-// |tag|.  |tag| should be a printable list of key-value pairs, e.g.
-// "key1=value1&key2=value2".  Returns an empty string if |key| is absent or if
-// its value contains non-printable characters.
-std::string GetUntrustedDataValueFromTag(const std::string& tag,
-                                         const std::string& key);
 
 }  // namespace google_update
 
