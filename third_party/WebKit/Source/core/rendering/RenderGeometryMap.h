@@ -50,11 +50,6 @@ public:
 
     MapCoordinatesFlags mapCoordinatesFlags() const { return m_mapCoordinatesFlags; }
 
-    FloatPoint absolutePoint(const FloatPoint& p) const
-    {
-        return mapToContainer(p, 0);
-    }
-
     FloatRect absoluteRect(const FloatRect& rect) const
     {
         return mapToContainer(rect, 0).boundingBox();
