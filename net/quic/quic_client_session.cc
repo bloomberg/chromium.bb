@@ -668,7 +668,6 @@ void QuicClientSession::OnProofVerifyDetailsAvailable(
   CertVerifyResult* result_copy = new CertVerifyResult;
   result_copy->CopyFrom(*cert_verify_result_other);
   cert_verify_result_.reset(result_copy);
-  logger_.OnCertificateVerified(*cert_verify_result_);
 }
 
 void QuicClientSession::StartReading() {

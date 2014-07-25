@@ -15,8 +15,6 @@
 #include "base/values.h"
 #include "net/base/net_log.h"
 #include "net/base/net_util.h"
-#include "net/cert/cert_verify_result.h"
-#include "net/cert/x509_certificate.h"
 #include "net/quic/crypto/crypto_handshake_message.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_address_mismatch.h"
@@ -238,23 +236,6 @@ base::Value* NetLogQuicOnConnectionClosedCallback(
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("quic_error", error);
   dict->SetBoolean("from_peer", from_peer);
-  return dict;
-}
-
-base::Value* NetLogQuicCertificateVerifiedCallback(
-    scoped_refptr<X509Certificate> cert,
-    NetLog::LogLevel /* log_level */) {
-  // Only the subjects are logged so that we can investigate connection pooling.
-  // More fields could be logged in the future.
-  std::vector<std::string> dns_names;
-  cert->GetDNSNames(&dns_names);
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  base::ListValue* subjects = new base::ListValue();
-  for (std::vector<std::string>::const_iterator it = dns_names.begin();
-       it != dns_names.end(); it++) {
-    subjects->Append(new base::StringValue(*it));
-  }
-  dict->Set("subjects", subjects);
   return dict;
 }
 
@@ -689,13 +670,6 @@ void QuicConnectionLogger::UpdateReceivedFrameCounts(
     num_frames_received_ += num_frames_received;
     num_duplicate_frames_received_ += num_duplicate_frames_received;
   }
-}
-
-void QuicConnectionLogger::OnCertificateVerified(
-    const CertVerifyResult& result) {
-  net_log_.AddEvent(
-      NetLog::TYPE_QUIC_SESSION_CERTIFICATE_VERIFIED,
-      base::Bind(&NetLogQuicCertificateVerifiedCallback, result.verified_cert));
 }
 
 base::HistogramBase* QuicConnectionLogger::GetPacketSequenceNumberHistogram(

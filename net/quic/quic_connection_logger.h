@@ -16,7 +16,6 @@
 namespace net {
 
 class CryptoHandshakeMessage;
-class CertVerifyResult;
 
 // This class is a debug visitor of a QuicConnection which logs
 // events to |net_log|.
@@ -72,7 +71,6 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   void UpdateReceivedFrameCounts(QuicStreamId stream_id,
                                  int num_frames_received,
                                  int num_duplicate_frames_received);
-  void OnCertificateVerified(const CertVerifyResult& result);
 
  private:
   // Do a factory get for a histogram for recording data, about individual
