@@ -94,17 +94,16 @@ public:
         WTF_MAKE_NONCOPYABLE(Peer);
         WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
     public:
+        static PassOwnPtrWillBeRawPtr<Peer> create(PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper>, WorkerLoaderProxy&, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelSyncHelper>);
         virtual ~Peer();
 
         // sourceURLAtConnection and lineNumberAtConnection parameters may
         // be shown when the connection fails.
-#if ENABLE(OILPAN)
-        static void initialize(ExecutionContext*, WeakMember<Peer>*, WorkerLoaderProxy*, RawPtr<ThreadableWebSocketChannelClientWrapper>, const String& sourceURLAtConnection, unsigned lineNumberAtConnection, RawPtr<ThreadableWebSocketChannelSyncHelper>);
-#else
-        static void initialize(ExecutionContext*, PassRefPtr<WeakReference<Peer> >, WorkerLoaderProxy*, PassRefPtr<ThreadableWebSocketChannelClientWrapper>, const String& sourceURLAtConnection, unsigned lineNumberAtConnection, PassRefPtr<ThreadableWebSocketChannelSyncHelper>);
-#endif
+        static void initialize(ExecutionContext* executionContext, Peer* peer, const String& sourceURLAtConnection, unsigned lineNumberAtConnection)
+        {
+            peer->initializeInternal(executionContext, sourceURLAtConnection, lineNumberAtConnection);
+        }
 
-        void destroy();
         void connect(const KURL&, const String& protocol);
         void send(const String& message);
         void sendArrayBuffer(PassOwnPtr<Vector<char> >);
@@ -126,27 +125,14 @@ public:
         virtual void didReceiveMessageError() OVERRIDE;
 
     private:
-#if ENABLE(OILPAN)
-        Peer(RawPtr<ThreadableWebSocketChannelClientWrapper>, WorkerLoaderProxy&, ExecutionContext*, const String& sourceURL, unsigned lineNumber, RawPtr<ThreadableWebSocketChannelSyncHelper>);
-#else
-        Peer(PassRefPtr<WeakReference<Peer> >, PassRefPtr<ThreadableWebSocketChannelClientWrapper>, WorkerLoaderProxy&, ExecutionContext*, const String& sourceURL, unsigned lineNumber, PassRefPtr<ThreadableWebSocketChannelSyncHelper>);
-#endif
+        Peer(PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper>, WorkerLoaderProxy&, PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelSyncHelper>);
+
+        void initializeInternal(ExecutionContext*, const String& sourceURLAtConnection, unsigned lineNumberAtConnection);
 
         const RefPtrWillBeMember<ThreadableWebSocketChannelClientWrapper> m_workerClientWrapper;
         WorkerLoaderProxy& m_loaderProxy;
         RefPtrWillBeMember<WebSocketChannel> m_mainWebSocketChannel;
         RefPtrWillBeMember<ThreadableWebSocketChannelSyncHelper> m_syncHelper;
-#if ENABLE(OILPAN)
-        // The lifetime of the Peer object is explicitly managed by the Bridge object.
-        // When the Bridge object calls Peer::initialize, the persistent handle is created.
-        // When the Bridge object calls Peer::destroy, the persistent handle is destroyed.
-        // This is because we cannot dispatch a disconnect chain from Peer's destructor since
-        // the disconnect chain touches on-heap objets.
-        GC_PLUGIN_IGNORE("")
-        Persistent<Peer> m_keepAlive;
-#else
-        WeakPtrFactory<Peer> m_weakFactory;
-#endif
     };
 
     // Bridge for Peer. Running on the worker thread.
@@ -182,17 +168,11 @@ public:
         // Returns false if shutdown event is received before method completion.
         bool waitForMethodCompletion(PassOwnPtr<ExecutionContextTask>);
 
-        void terminatePeer();
-
-        bool hasTerminatedPeer() { return !m_syncHelper; }
-
-        const RefPtrWillBeMember<ThreadableWebSocketChannelClientWrapper> m_workerClientWrapper;
+        RefPtrWillBeMember<ThreadableWebSocketChannelClientWrapper> m_workerClientWrapper;
         RefPtrWillBeMember<WorkerGlobalScope> m_workerGlobalScope;
         WorkerLoaderProxy& m_loaderProxy;
-        RawPtrWillBeMember<ThreadableWebSocketChannelSyncHelper> m_syncHelper;
-        // The value of this pointer is set when a Peer object is created in Peer::initilize()
-        // in the main thread.
-        WeakPtrWillBeWeakMember<Peer> m_peer;
+        RefPtrWillBeMember<ThreadableWebSocketChannelSyncHelper> m_syncHelper;
+        OwnPtrWillBeMember<Peer> m_peer;
     };
 
 private:
