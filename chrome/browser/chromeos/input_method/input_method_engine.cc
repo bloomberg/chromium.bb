@@ -83,8 +83,7 @@ std::string GetKeyFromEvent(const ui::KeyEvent& event) {
   if (event.flags() & ui::EF_CONTROL_DOWN) {
     ui::KeyEvent event_no_ctrl(event.type(),
                                event.key_code(),
-                               event.flags() ^ ui::EF_CONTROL_DOWN,
-                               false);
+                               event.flags() ^ ui::EF_CONTROL_DOWN);
     ch = event_no_ctrl.GetCharacter();
   } else {
     ch = event.GetCharacter();
@@ -317,8 +316,7 @@ bool InputMethodEngine::SendKeyEvents(
     ui::KeyEvent ui_event(type,
                           key_code,
                           event.code,
-                          flags,
-                          false /* is_char */);
+                          flags);
     if (!event.key.empty())
       ui_event.set_character(base::UTF8ToUTF16(event.key)[0]);
     base::AutoReset<const ui::KeyEvent*> reset_sent_key(&sent_key_event_,

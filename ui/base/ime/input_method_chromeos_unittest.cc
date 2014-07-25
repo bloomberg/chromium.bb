@@ -203,7 +203,7 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
                                 public TextInputClient {
  public:
   InputMethodChromeOSTest()
-      : dispatched_key_event_(ui::ET_UNKNOWN, ui::VKEY_UNKNOWN, 0, false) {
+      : dispatched_key_event_(ui::ET_UNKNOWN, ui::VKEY_UNKNOWN, ui::EF_NONE) {
     ResetFlags();
   }
 
@@ -335,8 +335,8 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
   }
 
   void ResetFlags() {
-    dispatched_key_event_ = ui::KeyEvent(ui::ET_UNKNOWN, ui::VKEY_UNKNOWN, 0,
-                                         false);
+    dispatched_key_event_ = ui::KeyEvent(ui::ET_UNKNOWN, ui::VKEY_UNKNOWN,
+                                         ui::EF_NONE);
 
     composition_text_.Clear();
     confirmed_text_.Clear();
@@ -957,7 +957,7 @@ TEST_F(InputMethodChromeOSKeyEventTest, KeyEventDelayResponseTest) {
   const int kFlags = ui::EF_SHIFT_DOWN;
   ScopedXI2Event xevent;
   xevent.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, kFlags);
-  const ui::KeyEvent event(xevent, true);
+  const ui::KeyEvent event(xevent);
 
   // Do key event.
   input_type_ = TEXT_INPUT_TYPE_TEXT;
@@ -993,7 +993,7 @@ TEST_F(InputMethodChromeOSKeyEventTest, MultiKeyEventDelayResponseTest) {
   const int kFlags = ui::EF_SHIFT_DOWN;
   ScopedXI2Event xevent;
   xevent.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_B, kFlags);
-  const ui::KeyEvent event(xevent, true);
+  const ui::KeyEvent event(xevent);
 
   // Do key event.
   ime_->DispatchKeyEvent(event);
@@ -1009,7 +1009,7 @@ TEST_F(InputMethodChromeOSKeyEventTest, MultiKeyEventDelayResponseTest) {
   // Do key event again.
   ScopedXI2Event xevent2;
   xevent2.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_C, kFlags);
-  const ui::KeyEvent event2(xevent2, true);
+  const ui::KeyEvent event2(xevent2);
 
   ime_->DispatchKeyEvent(event2);
   const ui::KeyEvent* key_event2 =
@@ -1048,7 +1048,7 @@ TEST_F(InputMethodChromeOSKeyEventTest, MultiKeyEventDelayResponseTest) {
 TEST_F(InputMethodChromeOSKeyEventTest, KeyEventDelayResponseResetTest) {
   ScopedXI2Event xevent;
   xevent.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_SHIFT_DOWN);
-  const ui::KeyEvent event(xevent, true);
+  const ui::KeyEvent event(xevent);
 
   // Do key event.
   input_type_ = TEXT_INPUT_TYPE_TEXT;

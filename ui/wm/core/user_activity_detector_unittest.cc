@@ -76,7 +76,7 @@ class UserActivityDetectorTest : public aura::test::AuraTestBase {
 // Checks that the observer is notified in response to different types of input
 // events.
 TEST_F(UserActivityDetectorTest, Basic) {
-  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE, false);
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   detector_->OnKeyEvent(&key_event);
   EXPECT_FALSE(key_event.handled());
   EXPECT_EQ(now_.ToInternalValue(),
@@ -153,7 +153,7 @@ TEST_F(UserActivityDetectorTest, Basic) {
 // Checks that observers aren't notified too frequently.
 TEST_F(UserActivityDetectorTest, RateLimitNotifications) {
   // The observer should be notified about a key event.
-  ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE, false);
+  ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   detector_->OnKeyEvent(&event);
   EXPECT_FALSE(event.handled());
   EXPECT_EQ(1, observer_->num_invocations());

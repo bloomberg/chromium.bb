@@ -42,7 +42,7 @@ class NestedAcceleratorDispatcherWin : public NestedAcceleratorDispatcher,
   // MessagePumpDispatcher:
   virtual uint32_t Dispatch(const MSG& event) OVERRIDE {
     if (IsKeyEvent(event)) {
-      ui::KeyEvent key_event(event, false);
+      ui::KeyEvent key_event(event);
       ui::Accelerator accelerator = CreateAcceleratorFromKeyEvent(key_event);
 
       switch (delegate_->ProcessAccelerator(accelerator)) {

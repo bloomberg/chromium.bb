@@ -58,7 +58,7 @@ class StickyKeysTest : public test::AshTestBase {
 
   ui::KeyEvent* GenerateKey(ui::EventType type, ui::KeyboardCode code) {
     scoped_xevent_.InitKeyEvent(type, code, 0);
-    ui::KeyEvent* event = new ui::KeyEvent(scoped_xevent_, false);
+    ui::KeyEvent* event = new ui::KeyEvent(scoped_xevent_);
     return event;
   }
 
@@ -122,7 +122,7 @@ class StickyKeysTest : public test::AshTestBase {
   // Creates a synthesized KeyEvent that is not backed by a native event.
   ui::KeyEvent* GenerateSynthesizedKeyEvent(ui::EventType type,
                                             ui::KeyboardCode code) {
-    return new ui::KeyEvent(type, code, 0, true);
+    return new ui::KeyEvent(type, code, ui::EF_NONE);
   }
 
   // Creates a synthesized MouseEvent that is not backed by a native event.

@@ -1582,7 +1582,11 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       compositor()->ScheduleRedrawRect(damage_rect);
       break;
     }
-    case KeyPress:
+    case KeyPress: {
+      ui::KeyEvent keydown_event(xev);
+      SendEventToProcessor(&keydown_event);
+      break;
+    }
     case KeyRelease: {
       // There is no way to deactivate a window in X11 so ignore input if
       // window is supposed to be 'inactive'. See comments in
@@ -1590,7 +1594,7 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       if (!IsActive() && !HasCapture())
         break;
 
-      ui::KeyEvent key_event(xev, false);
+      ui::KeyEvent key_event(xev);
       SendEventToProcessor(&key_event);
       break;
     }

@@ -171,7 +171,7 @@ class AppsGridViewTest : public views::ViewsTestBase {
   }
 
   void SimulateKeyPress(ui::KeyboardCode key_code) {
-    ui::KeyEvent key_event(ui::ET_KEY_PRESSED, key_code, 0, false);
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED, key_code, ui::EF_NONE);
     apps_grid_view_->OnKeyPressed(key_event);
   }
 

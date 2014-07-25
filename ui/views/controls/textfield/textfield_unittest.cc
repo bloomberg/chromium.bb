@@ -252,7 +252,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
                 (shift ? ui::EF_SHIFT_DOWN : 0) |
                 (control ? ui::EF_CONTROL_DOWN : 0) |
                 (caps_lock ? ui::EF_CAPS_LOCK_DOWN : 0);
-    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, flags, false);
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, flags);
     input_method_->DispatchKeyEvent(event);
   }
 
@@ -271,8 +271,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
           static_cast<ui::KeyboardCode>(ui::VKEY_A + ch - 'a');
       SendKeyEvent(code);
     } else {
-      ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0, false);
-      event.set_character(ch);
+      ui::KeyEvent event(ch, ui::VKEY_UNKNOWN, ui::EF_NONE);
       input_method_->DispatchKeyEvent(event);
     }
   }

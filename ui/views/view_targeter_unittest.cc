@@ -121,7 +121,7 @@ TEST_F(ViewTargeterTest, ViewTargeterForKeyEvents) {
   ui::EventTargeter* targeter = view_targeter;
   root_view->SetEventTargeter(make_scoped_ptr(view_targeter));
 
-  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0, true);
+  ui::KeyEvent key_event('a', ui::VKEY_A, ui::EF_NONE);
 
   // The focused view should be the initial target of the event.
   ui::EventTarget* current_target = targeter->FindTargetForEvent(root_view,

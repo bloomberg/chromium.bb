@@ -19,6 +19,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/test/events_test_utils.h"
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/events/x/device_data_manager_x11.h"
 #include "ui/events/x/touch_factory_x11.h"
@@ -71,7 +72,7 @@ bool HasFunctionKeyFlagSetIfSupported(Display* display, int x_keysym) {
   // Exclude keysyms for which the server has no corresponding keycode.
   if (x_keycode) {
     InitKeyEvent(display, &event, true, x_keycode, 0);
-    ui::KeyEvent ui_key_event(&event, false);
+    ui::KeyEvent ui_key_event(&event);
     return (ui_key_event.flags() & ui::EF_FUNCTION_KEY);
   }
   return true;
@@ -454,7 +455,7 @@ TEST_F(EventsXTest, NumpadKeyEvents) {
       InitKeyEvent(display, &event, true, x_keycode, 0);
       // int keysym = XLookupKeysym(&event.xkey, 0);
       // if (keysym) {
-      ui::KeyEvent ui_key_event(&event, false);
+      ui::KeyEvent ui_key_event(&event);
       EXPECT_EQ(keys[k].is_numpad_key ? ui::EF_NUMPAD_KEY : 0,
                 ui_key_event.flags() & ui::EF_NUMPAD_KEY);
     }
@@ -578,7 +579,11 @@ TEST_F(EventsXTest, ImeFabricatedKeyEvents) {
     for (int is_char = 0; is_char < 2; ++is_char) {
       XEvent x_event;
       InitKeyEvent(display, &x_event, true, 0, state);
-      ui::KeyEvent key_event(&x_event, is_char);
+      ui::KeyEvent key_event(&x_event);
+      if (is_char) {
+        KeyEventTestApi test_event(&key_event);
+        test_event.set_is_char(true);
+      }
       EXPECT_TRUE(key_event.flags() & ui::EF_IME_FABRICATED_KEY);
     }
   }
@@ -591,7 +596,11 @@ TEST_F(EventsXTest, ImeFabricatedKeyEvents) {
     for (int is_char = 0; is_char < 2; ++is_char) {
       XEvent x_event;
       InitKeyEvent(display, &x_event, true, 0, state);
-      ui::KeyEvent key_event(&x_event, is_char);
+      ui::KeyEvent key_event(&x_event);
+      if (is_char) {
+        KeyEventTestApi test_event(&key_event);
+        test_event.set_is_char(true);
+      }
       EXPECT_FALSE(key_event.flags() & ui::EF_IME_FABRICATED_KEY);
     }
   }

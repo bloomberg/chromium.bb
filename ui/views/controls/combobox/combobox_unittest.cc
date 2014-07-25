@@ -245,7 +245,7 @@ class ComboboxTest : public ViewsTestBase {
   }
 
   void SendKeyEventWithType(ui::KeyboardCode key_code, ui::EventType type) {
-    ui::KeyEvent event(type, key_code, 0, false);
+    ui::KeyEvent event(type, key_code, ui::EF_NONE);
     widget_->GetInputMethod()->DispatchKeyEvent(event);
   }
 
@@ -624,17 +624,17 @@ TEST_F(ComboboxTest, ConsumingPressKeyEvents) {
   InitCombobox(NULL);
 
   EXPECT_FALSE(combobox_->OnKeyPressed(
-      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0, false)));
+      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE)));
   EXPECT_FALSE(combobox_->OnKeyPressed(
-      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, 0, false)));
+      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, ui::EF_NONE)));
 
   // When the combobox's style is STYLE_ACTION, pressing events of a space key
   // or an enter key will be consumed.
   combobox_->SetStyle(Combobox::STYLE_ACTION);
   EXPECT_TRUE(combobox_->OnKeyPressed(
-      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0, false)));
+      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE)));
   EXPECT_TRUE(combobox_->OnKeyPressed(
-      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, 0, false)));
+      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, ui::EF_NONE)));
 }
 
 TEST_F(ComboboxTest, ContentWidth) {

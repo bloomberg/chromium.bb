@@ -92,7 +92,7 @@ TEST_F(AcceleratorFilterTest, CanConsumeSystemKeys) {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
 
   // Normal keys are not consumed.
-  ui::KeyEvent press_a(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE, false);
+  ui::KeyEvent press_a(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   {
     ui::Event::DispatcherApi dispatch_helper(&press_a);
     dispatch_helper.set_target(root_window);
@@ -102,7 +102,7 @@ TEST_F(AcceleratorFilterTest, CanConsumeSystemKeys) {
 
   // System keys are directly consumed.
   ui::KeyEvent press_mute(
-      ui::ET_KEY_PRESSED, ui::VKEY_VOLUME_MUTE, ui::EF_NONE, false);
+      ui::ET_KEY_PRESSED, ui::VKEY_VOLUME_MUTE, ui::EF_NONE);
   {
     ui::Event::DispatcherApi dispatch_helper(&press_mute);
     dispatch_helper.set_target(root_window);
@@ -114,7 +114,7 @@ TEST_F(AcceleratorFilterTest, CanConsumeSystemKeys) {
   scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(1));
   wm::GetWindowState(window.get())->set_can_consume_system_keys(true);
   ui::KeyEvent press_volume_up(
-      ui::ET_KEY_PRESSED, ui::VKEY_VOLUME_UP, ui::EF_NONE, false);
+      ui::ET_KEY_PRESSED, ui::VKEY_VOLUME_UP, ui::EF_NONE);
   ui::Event::DispatcherApi dispatch_helper(&press_volume_up);
   dispatch_helper.set_target(window.get());
   filter.OnKeyEvent(&press_volume_up);

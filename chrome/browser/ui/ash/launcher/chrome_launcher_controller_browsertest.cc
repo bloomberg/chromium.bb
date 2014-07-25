@@ -1590,8 +1590,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ActivateAfterSessionRestore) {
       controller_->GetLauncherItemController(shortcut_id);
   item_controller->ItemSelected(ui::KeyEvent(ui::ET_KEY_RELEASED,
                                         ui::VKEY_RETURN,
-                                        0,
-                                        false));
+                                        ui::EF_NONE));
 
   // Check that we have set focus on the existing application and nothing new
   // was created.

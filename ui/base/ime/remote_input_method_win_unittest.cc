@@ -548,7 +548,7 @@ TEST(RemoteInputMethodWinTest, DispatchKeyEvent_NativeKeyEvent) {
   scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
 
   const MSG wm_keydown = { NULL, WM_KEYDOWN, ui::VKEY_A };
-  ui::KeyEvent native_keydown(wm_keydown, false);
+  ui::KeyEvent native_keydown(wm_keydown);
 
   // This must not cause a crash.
   EXPECT_FALSE(input_method->DispatchKeyEvent(native_keydown));
@@ -590,7 +590,7 @@ TEST(RemoteInputMethodWinTest, DispatchKeyEvent_NativeCharEvent) {
   scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
 
   const MSG wm_char = { NULL, WM_CHAR, 'A', 0 };
-  ui::KeyEvent native_char(wm_char, true);
+  ui::KeyEvent native_char(wm_char);
 
   // This must not cause a crash.
   EXPECT_FALSE(input_method->DispatchKeyEvent(native_char));
@@ -633,7 +633,7 @@ TEST(RemoteInputMethodWinTest, DispatchKeyEvent_FabricatedKeyDown) {
   MockTextInputClient mock_text_input_client;
   scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
 
-  ui::KeyEvent fabricated_keydown(ui::ET_KEY_PRESSED, ui::VKEY_A, 0, false);
+  ui::KeyEvent fabricated_keydown(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   fabricated_keydown.set_character(L'A');
 
   // This must not cause a crash.
@@ -684,8 +684,7 @@ TEST(RemoteInputMethodWinTest, DispatchKeyEvent_FabricatedChar) {
   MockTextInputClient mock_text_input_client;
   scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
 
-  ui::KeyEvent fabricated_char(ui::ET_KEY_PRESSED, ui::VKEY_A, 0, true);
-  fabricated_char.set_character(L'A');
+  ui::KeyEvent fabricated_char(L'A', ui::VKEY_A, ui::EF_NONE);
 
   // This must not cause a crash.
   EXPECT_TRUE(input_method->DispatchKeyEvent(fabricated_char));

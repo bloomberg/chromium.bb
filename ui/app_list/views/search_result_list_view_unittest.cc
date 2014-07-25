@@ -83,7 +83,7 @@ class SearchResultListViewTest : public views::ViewsTestBase,
   }
 
   bool KeyPress(ui::KeyboardCode key_code) {
-    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, ui::EF_NONE, true);
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, ui::EF_NONE);
     return view_->OnKeyPressed(event);
   }
 

@@ -346,27 +346,27 @@ TEST_F(WindowEventDispatcherTest, IgnoreUnknownKeys) {
   ConsumeKeyHandler handler;
   root_window()->AddPreTargetHandler(&handler);
 
-  ui::KeyEvent unknown_event(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0, false);
+  ui::KeyEvent unknown_event(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, ui::EF_NONE);
   DispatchEventUsingWindowDispatcher(&unknown_event);
   EXPECT_FALSE(unknown_event.handled());
   EXPECT_EQ(0, handler.num_key_events());
 
   handler.Reset();
-  ui::KeyEvent known_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0, false);
+  ui::KeyEvent known_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   DispatchEventUsingWindowDispatcher(&known_event);
   EXPECT_TRUE(known_event.handled());
   EXPECT_EQ(1, handler.num_key_events());
 
   handler.Reset();
   ui::KeyEvent ime_event(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN,
-                         ui::EF_IME_FABRICATED_KEY, false);
+                         ui::EF_IME_FABRICATED_KEY);
   DispatchEventUsingWindowDispatcher(&ime_event);
   EXPECT_TRUE(ime_event.handled());
   EXPECT_EQ(1, handler.num_key_events());
 
   handler.Reset();
   ui::KeyEvent unknown_key_with_char_event(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN,
-                                           0, false);
+                                           ui::EF_NONE);
   unknown_key_with_char_event.set_character(0x00e4 /* "ä" */);
   DispatchEventUsingWindowDispatcher(&unknown_key_with_char_event);
   EXPECT_TRUE(unknown_key_with_char_event.handled());
@@ -380,7 +380,7 @@ TEST_F(WindowEventDispatcherTest, NoDelegateWindowReceivesKeyEvents) {
 
   ui::test::TestEventHandler handler;
   w1->AddPreTargetHandler(&handler);
-  ui::KeyEvent key_press(ui::ET_KEY_PRESSED, ui::VKEY_A, 0, false);
+  ui::KeyEvent key_press(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   DispatchEventUsingWindowDispatcher(&key_press);
   EXPECT_TRUE(key_press.handled());
   EXPECT_EQ(1, handler.num_key_events());

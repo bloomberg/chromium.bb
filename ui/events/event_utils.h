@@ -86,6 +86,10 @@ EVENTS_EXPORT const char* CodeFromNative(
 EVENTS_EXPORT uint32 PlatformKeycodeFromNative(
     const base::NativeEvent& native_event);
 
+// Returns true if the keyboard event is a character event rather than
+// a keystroke event.
+EVENTS_EXPORT bool IsCharFromNative(const base::NativeEvent& native_event);
+
 // Returns the flags of the button that changed during a press/release.
 EVENTS_EXPORT int GetChangedMouseButtonFlagsFromNative(
     const base::NativeEvent& native_event);

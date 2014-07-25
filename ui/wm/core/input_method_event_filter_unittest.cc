@@ -114,8 +114,7 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
 TEST_F(InputMethodEventFilterTest, TestEventDispatching) {
   ui::KeyEvent evt(ui::ET_KEY_PRESSED,
                    ui::VKEY_PROCESSKEY,
-                   ui::EF_IME_FABRICATED_KEY,
-                   false);
+                   ui::EF_IME_FABRICATED_KEY);
   // Calls DispatchKeyEventPostIME() without a focused text input client.
   if (switches::IsTextInputFocusManagerEnabled())
     ui::TextInputFocusManager::GetInstance()->FocusTextInputClient(NULL);

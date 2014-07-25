@@ -220,4 +220,8 @@ uint32 PlatformKeycodeFromNative(const base::NativeEvent& native_event) {
   return native_event.keyCode;
 }
 
+bool IsCharFromNative(const base::NativeEvent& native_event) {
+  return false;
+}
+
 }  // namespace ui

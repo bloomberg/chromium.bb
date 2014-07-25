@@ -33,7 +33,7 @@ void AppsGridViewTestApi::SetPageFlipDelay(int page_flip_delay_in_ms) {
 
 void AppsGridViewTestApi::PressItemAt(int index) {
   GetViewAtModelIndex(index)->OnKeyPressed(
-      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0, false));
+      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE));
 }
 
 void AppsGridViewTestApi::DisableSynchronousDrag() {

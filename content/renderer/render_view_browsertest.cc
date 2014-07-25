@@ -65,6 +65,7 @@
 #include <X11/Xlib.h>
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
+#include "ui/events/test/events_test_utils.h"
 #include "ui/events/test/events_test_utils_x11.h"
 #endif
 
@@ -188,7 +189,7 @@ class RenderViewImplTest : public RenderViewTest {
     // WM_CHAR sends a composed Unicode character.
     MSG msg1 = { NULL, WM_KEYDOWN, key_code, 0 };
 #if defined(USE_AURA)
-    ui::KeyEvent evt1(msg1, false);
+    ui::KeyEvent evt1(msg1);
     NativeWebKeyboardEvent keydown_event(&evt1);
 #else
     NativeWebKeyboardEvent keydown_event(msg1);
@@ -197,7 +198,7 @@ class RenderViewImplTest : public RenderViewTest {
 
     MSG msg2 = { NULL, WM_CHAR, (*output)[0], 0 };
 #if defined(USE_AURA)
-    ui::KeyEvent evt2(msg2, true);
+    ui::KeyEvent evt2(msg2);
     NativeWebKeyboardEvent char_event(&evt2);
 #else
     NativeWebKeyboardEvent char_event(msg2);
@@ -206,7 +207,7 @@ class RenderViewImplTest : public RenderViewTest {
 
     MSG msg3 = { NULL, WM_KEYUP, key_code, 0 };
 #if defined(USE_AURA)
-    ui::KeyEvent evt3(msg3, false);
+    ui::KeyEvent evt3(msg3);
     NativeWebKeyboardEvent keyup_event(&evt3);
 #else
     NativeWebKeyboardEvent keyup_event(msg3);
@@ -224,21 +225,25 @@ class RenderViewImplTest : public RenderViewTest {
     xevent.InitKeyEvent(ui::ET_KEY_PRESSED,
                         static_cast<ui::KeyboardCode>(key_code),
                         flags);
-    ui::KeyEvent event1(xevent, false);
+    ui::KeyEvent event1(xevent);
     NativeWebKeyboardEvent keydown_event(&event1);
     SendNativeKeyEvent(keydown_event);
 
+    // X11 doesn't actually have native character events, but give the test
+    // what it wants.
     xevent.InitKeyEvent(ui::ET_KEY_PRESSED,
                         static_cast<ui::KeyboardCode>(key_code),
                         flags);
-    ui::KeyEvent event2(xevent, true);
+    ui::KeyEvent event2(xevent);
+    ui::KeyEventTestApi test_event2(&event2);
+    test_event2.set_is_char(true);
     NativeWebKeyboardEvent char_event(&event2);
     SendNativeKeyEvent(char_event);
 
     xevent.InitKeyEvent(ui::ET_KEY_RELEASED,
                         static_cast<ui::KeyboardCode>(key_code),
                         flags);
-    ui::KeyEvent event3(xevent, false);
+    ui::KeyEvent event3(xevent);
     NativeWebKeyboardEvent keyup_event(&event3);
     SendNativeKeyEvent(keyup_event);
 
@@ -253,25 +258,22 @@ class RenderViewImplTest : public RenderViewTest {
     // then create the actual ui::KeyEvent with the native event.
     ui::KeyEvent keydown_native_event(ui::ET_KEY_PRESSED,
                                    static_cast<ui::KeyboardCode>(key_code),
-                                   flags,
-                                   true);
-    ui::KeyEvent keydown_event(&keydown_native_event, false);
+                                   flags);
+    ui::KeyEvent keydown_event(&keydown_native_event);
     NativeWebKeyboardEvent keydown_web_event(&keydown_event);
     SendNativeKeyEvent(keydown_web_event);
 
-    ui::KeyEvent char_native_event(ui::ET_KEY_PRESSED,
+    ui::KeyEvent char_native_event(static_cast<base::char16>(key_code),
                                    static_cast<ui::KeyboardCode>(key_code),
-                                   flags,
-                                   true);
-    ui::KeyEvent char_event(&char_native_event, true);
+                                   flags);
+    ui::KeyEvent char_event(&char_native_event);
     NativeWebKeyboardEvent char_web_event(&char_event);
     SendNativeKeyEvent(char_web_event);
 
     ui::KeyEvent keyup_native_event(ui::ET_KEY_RELEASED,
                                     static_cast<ui::KeyboardCode>(key_code),
-                                    flags,
-                                    true);
-    ui::KeyEvent keyup_event(&keyup_native_event, false);
+                                    flags);
+    ui::KeyEvent keyup_event(&keyup_native_event);
     NativeWebKeyboardEvent keyup_web_event(&keyup_event);
     SendNativeKeyEvent(keyup_web_event);
 

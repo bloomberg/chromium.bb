@@ -252,7 +252,7 @@ TEST_F(EventProcessorTest, DispatchToNextBestTarget) {
 
   // When the root has a BubblingEventTargeter installed, events targeted
   // at the grandchild target should be dispatched to all three targets.
-  KeyEvent key_event(ET_KEY_PRESSED, VKEY_ESCAPE, 0, false);
+  KeyEvent key_event(ET_KEY_PRESSED, VKEY_ESCAPE, EF_NONE);
   DispatchEvent(&key_event);
   EXPECT_TRUE(root()->DidReceiveEvent(ET_KEY_PRESSED));
   EXPECT_TRUE(child_r->DidReceiveEvent(ET_KEY_PRESSED));
@@ -265,7 +265,7 @@ TEST_F(EventProcessorTest, DispatchToNextBestTarget) {
   // as handled. No targets in the hierarchy should receive the event.
   TestEventHandler handler;
   child_r->AddPreTargetHandler(&handler);
-  key_event = KeyEvent(ET_KEY_PRESSED, VKEY_ESCAPE, 0, false);
+  key_event = KeyEvent(ET_KEY_PRESSED, VKEY_ESCAPE, EF_NONE);
   DispatchEvent(&key_event);
   EXPECT_FALSE(root()->DidReceiveEvent(ET_KEY_PRESSED));
   EXPECT_FALSE(child_r->DidReceiveEvent(ET_KEY_PRESSED));
@@ -278,7 +278,7 @@ TEST_F(EventProcessorTest, DispatchToNextBestTarget) {
   // event.
   child_r->RemovePreTargetHandler(&handler);
   child_r->AddPostTargetHandler(&handler);
-  key_event = KeyEvent(ET_KEY_PRESSED, VKEY_ESCAPE, 0, false);
+  key_event = KeyEvent(ET_KEY_PRESSED, VKEY_ESCAPE, EF_NONE);
   DispatchEvent(&key_event);
   EXPECT_FALSE(root()->DidReceiveEvent(ET_KEY_PRESSED));
   EXPECT_FALSE(child_r->DidReceiveEvent(ET_KEY_PRESSED));
@@ -292,7 +292,7 @@ TEST_F(EventProcessorTest, DispatchToNextBestTarget) {
   // dispatch at the child of the root. The child and grandchild
   // targets should both receive the event, but the root should not.
   child_r->set_mark_events_as_handled(true);
-  key_event = KeyEvent(ET_KEY_PRESSED, VKEY_ESCAPE, 0, false);
+  key_event = KeyEvent(ET_KEY_PRESSED, VKEY_ESCAPE, EF_NONE);
   DispatchEvent(&key_event);
   EXPECT_FALSE(root()->DidReceiveEvent(ET_KEY_PRESSED));
   EXPECT_TRUE(child_r->DidReceiveEvent(ET_KEY_PRESSED));

@@ -18,40 +18,40 @@
 namespace ui {
 
 TEST(EventTest, NoNativeEvent) {
-  KeyEvent keyev(ET_KEY_PRESSED, VKEY_SPACE, 0, false);
+  KeyEvent keyev(ET_KEY_PRESSED, VKEY_SPACE, EF_NONE);
   EXPECT_FALSE(keyev.HasNativeEvent());
 }
 
 TEST(EventTest, NativeEvent) {
 #if defined(OS_WIN)
   MSG native_event = { NULL, WM_KEYUP, VKEY_A, 0 };
-  KeyEvent keyev(native_event, false);
+  KeyEvent keyev(native_event);
   EXPECT_TRUE(keyev.HasNativeEvent());
 #elif defined(USE_X11)
   ScopedXI2Event event;
-  event.InitKeyEvent(ET_KEY_RELEASED, VKEY_A, 0);
-  KeyEvent keyev(event, false);
+  event.InitKeyEvent(ET_KEY_RELEASED, VKEY_A, EF_NONE);
+  KeyEvent keyev(event);
   EXPECT_TRUE(keyev.HasNativeEvent());
 #endif
 }
 
 TEST(EventTest, GetCharacter) {
   // Check if Control+Enter returns 10.
-  KeyEvent keyev1(ET_KEY_PRESSED, VKEY_RETURN, EF_CONTROL_DOWN, false);
+  KeyEvent keyev1(ET_KEY_PRESSED, VKEY_RETURN, EF_CONTROL_DOWN);
   EXPECT_EQ(10, keyev1.GetCharacter());
   // Check if Enter returns 13.
-  KeyEvent keyev2(ET_KEY_PRESSED, VKEY_RETURN, 0, false);
+  KeyEvent keyev2(ET_KEY_PRESSED, VKEY_RETURN, EF_NONE);
   EXPECT_EQ(13, keyev2.GetCharacter());
 
 #if defined(USE_X11)
   // For X11, test the functions with native_event() as well. crbug.com/107837
   ScopedXI2Event event;
   event.InitKeyEvent(ET_KEY_PRESSED, VKEY_RETURN, EF_CONTROL_DOWN);
-  KeyEvent keyev3(event, false);
+  KeyEvent keyev3(event);
   EXPECT_EQ(10, keyev3.GetCharacter());
 
-  event.InitKeyEvent(ET_KEY_PRESSED, VKEY_RETURN, 0);
-  KeyEvent keyev4(event, false);
+  event.InitKeyEvent(ET_KEY_PRESSED, VKEY_RETURN, EF_NONE);
+  KeyEvent keyev4(event);
   EXPECT_EQ(13, keyev4.GetCharacter());
 #endif
 }
@@ -238,20 +238,17 @@ TEST(EventTest, KeyEvent) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestData); ++i) {
     KeyEvent key(ET_KEY_PRESSED,
                  kTestData[i].key_code,
-                 kTestData[i].flags,
-                 false);
+                 kTestData[i].flags);
     EXPECT_EQ(kTestData[i].character, key.GetCharacter())
         << " Index:" << i << " key_code:" << kTestData[i].key_code;
   }
 }
 
 TEST(EventTest, KeyEventDirectUnicode) {
-  KeyEvent key(ET_KEY_PRESSED, VKEY_UNKNOWN, EF_SHIFT_DOWN, false);
-  key.set_character(0x1234U);
+  KeyEvent key(0x1234U, ui::VKEY_UNKNOWN, ui::EF_NONE);
   EXPECT_EQ(0x1234U, key.GetCharacter());
-  KeyEvent key2(ET_KEY_RELEASED, VKEY_UNKNOWN, EF_CONTROL_DOWN, false);
-  key2.set_character(0x4321U);
-  EXPECT_EQ(0x4321U, key2.GetCharacter());
+  EXPECT_EQ(ET_KEY_PRESSED, key.type());
+  EXPECT_TRUE(key.is_char());
 }
 
 TEST(EventTest, NormalizeKeyEventFlags) {
@@ -260,32 +257,32 @@ TEST(EventTest, NormalizeKeyEventFlags) {
   ScopedXI2Event event;
   {
     event.InitKeyEvent(ET_KEY_PRESSED, VKEY_SHIFT, EF_SHIFT_DOWN);
-    KeyEvent keyev(event, false);
+    KeyEvent keyev(event);
     EXPECT_EQ(EF_SHIFT_DOWN, keyev.flags());
   }
   {
     event.InitKeyEvent(ET_KEY_RELEASED, VKEY_SHIFT, EF_SHIFT_DOWN);
-    KeyEvent keyev(event, false);
+    KeyEvent keyev(event);
     EXPECT_EQ(EF_NONE, keyev.flags());
   }
   {
     event.InitKeyEvent(ET_KEY_PRESSED, VKEY_CONTROL, EF_CONTROL_DOWN);
-    KeyEvent keyev(event, false);
+    KeyEvent keyev(event);
     EXPECT_EQ(EF_CONTROL_DOWN, keyev.flags());
   }
   {
     event.InitKeyEvent(ET_KEY_RELEASED, VKEY_CONTROL, EF_CONTROL_DOWN);
-    KeyEvent keyev(event, false);
+    KeyEvent keyev(event);
     EXPECT_EQ(EF_NONE, keyev.flags());
   }
   {
     event.InitKeyEvent(ET_KEY_PRESSED, VKEY_MENU,  EF_ALT_DOWN);
-    KeyEvent keyev(event, false);
+    KeyEvent keyev(event);
     EXPECT_EQ(EF_ALT_DOWN, keyev.flags());
   }
   {
     event.InitKeyEvent(ET_KEY_RELEASED, VKEY_MENU, EF_ALT_DOWN);
-    KeyEvent keyev(event, false);
+    KeyEvent keyev(event);
     EXPECT_EQ(EF_NONE, keyev.flags());
   }
 #endif
@@ -293,31 +290,31 @@ TEST(EventTest, NormalizeKeyEventFlags) {
   // Do not normalize flags for synthesized events without
   // KeyEvent::NormalizeFlags called explicitly.
   {
-    KeyEvent keyev(ET_KEY_PRESSED, VKEY_SHIFT, EF_SHIFT_DOWN, false);
+    KeyEvent keyev(ET_KEY_PRESSED, VKEY_SHIFT, EF_SHIFT_DOWN);
     EXPECT_EQ(EF_SHIFT_DOWN, keyev.flags());
   }
   {
-    KeyEvent keyev(ET_KEY_RELEASED, VKEY_SHIFT, EF_SHIFT_DOWN, false);
+    KeyEvent keyev(ET_KEY_RELEASED, VKEY_SHIFT, EF_SHIFT_DOWN);
     EXPECT_EQ(EF_SHIFT_DOWN, keyev.flags());
     keyev.NormalizeFlags();
     EXPECT_EQ(EF_NONE, keyev.flags());
   }
   {
-    KeyEvent keyev(ET_KEY_PRESSED, VKEY_CONTROL, EF_CONTROL_DOWN, false);
+    KeyEvent keyev(ET_KEY_PRESSED, VKEY_CONTROL, EF_CONTROL_DOWN);
     EXPECT_EQ(EF_CONTROL_DOWN, keyev.flags());
   }
   {
-    KeyEvent keyev(ET_KEY_RELEASED, VKEY_CONTROL, EF_CONTROL_DOWN, false);
+    KeyEvent keyev(ET_KEY_RELEASED, VKEY_CONTROL, EF_CONTROL_DOWN);
     EXPECT_EQ(EF_CONTROL_DOWN, keyev.flags());
     keyev.NormalizeFlags();
     EXPECT_EQ(EF_NONE, keyev.flags());
   }
   {
-    KeyEvent keyev(ET_KEY_PRESSED, VKEY_MENU,  EF_ALT_DOWN, false);
+    KeyEvent keyev(ET_KEY_PRESSED, VKEY_MENU,  EF_ALT_DOWN);
     EXPECT_EQ(EF_ALT_DOWN, keyev.flags());
   }
   {
-    KeyEvent keyev(ET_KEY_RELEASED, VKEY_MENU, EF_ALT_DOWN, false);
+    KeyEvent keyev(ET_KEY_RELEASED, VKEY_MENU, EF_ALT_DOWN);
     EXPECT_EQ(EF_ALT_DOWN, keyev.flags());
     keyev.NormalizeFlags();
     EXPECT_EQ(EF_NONE, keyev.flags());
@@ -325,7 +322,7 @@ TEST(EventTest, NormalizeKeyEventFlags) {
 }
 
 TEST(EventTest, KeyEventCopy) {
-  KeyEvent key(ET_KEY_PRESSED, VKEY_A, EF_NONE, false);
+  KeyEvent key(ET_KEY_PRESSED, VKEY_A, EF_NONE);
   scoped_ptr<KeyEvent> copied_key(new KeyEvent(key));
   EXPECT_EQ(copied_key->type(), key.type());
   EXPECT_EQ(copied_key->key_code(), key.key_code());
@@ -339,20 +336,20 @@ TEST(EventTest, KeyEventCode) {
   ASSERT_NE(conv->InvalidNativeKeycode(), kNativeCodeSpace);
 
   {
-    KeyEvent key(ET_KEY_PRESSED, VKEY_SPACE, kCodeForSpace, EF_NONE, false);
+    KeyEvent key(ET_KEY_PRESSED, VKEY_SPACE, kCodeForSpace, EF_NONE);
     EXPECT_EQ(kCodeForSpace, key.code());
   }
   {
     // Regardless the KeyEvent.key_code (VKEY_RETURN), code should be
     // the specified value.
-    KeyEvent key(ET_KEY_PRESSED, VKEY_RETURN, kCodeForSpace, EF_NONE, false);
+    KeyEvent key(ET_KEY_PRESSED, VKEY_RETURN, kCodeForSpace, EF_NONE);
     EXPECT_EQ(kCodeForSpace, key.code());
   }
   {
     // If the synthetic event is initialized without code, it returns
     // an empty string.
     // TODO(komatsu): Fill a fallback value assuming the US keyboard layout.
-    KeyEvent key(ET_KEY_PRESSED, VKEY_SPACE, EF_NONE, false);
+    KeyEvent key(ET_KEY_PRESSED, VKEY_SPACE, EF_NONE);
     EXPECT_TRUE(key.code().empty());
   }
 #if defined(USE_X11)
@@ -360,7 +357,7 @@ TEST(EventTest, KeyEventCode) {
     // KeyEvent converts from the native keycode (XKB) to the code.
     ScopedXI2Event xevent;
     xevent.InitKeyEvent(ET_KEY_PRESSED, VKEY_SPACE, kNativeCodeSpace);
-    KeyEvent key(xevent, false);
+    KeyEvent key(xevent);
     EXPECT_EQ(kCodeForSpace, key.code());
   }
 #endif  // USE_X11
@@ -371,7 +368,7 @@ TEST(EventTest, KeyEventCode) {
 
     const LPARAM lParam = GetLParamFromScanCode(kNativeCodeSpace);
     MSG native_event = { NULL, WM_KEYUP, VKEY_SPACE, lParam };
-    KeyEvent key(native_event, false);
+    KeyEvent key(native_event);
 
     // KeyEvent converts from the native keycode (scan code) to the code.
     EXPECT_EQ(kCodeForSpace, key.code());
@@ -385,7 +382,7 @@ TEST(EventTest, KeyEventCode) {
     const LPARAM lParam = GetLParamFromScanCode(kNativeCodeHome);
 
     MSG native_event = { NULL, WM_KEYUP, VKEY_HOME, lParam };
-    KeyEvent key(native_event, false);
+    KeyEvent key(native_event);
 
     // KeyEvent converts from the native keycode (scan code) to the code.
     EXPECT_EQ(kCodeForHome, key.code());
@@ -419,37 +416,37 @@ TEST(EventTest, AutoRepeat) {
   MSG native_event_a_released = { NULL, WM_KEYUP, VKEY_A, lParam_a };
   MSG native_event_b_pressed = { NULL, WM_KEYUP, VKEY_B, lParam_b };
 #endif
-  KeyEvent key_a1(native_event_a_pressed, false);
+  KeyEvent key_a1(native_event_a_pressed);
   EXPECT_FALSE(key_a1.IsRepeat());
-  KeyEvent key_a1_released(native_event_a_released, false);
+  KeyEvent key_a1_released(native_event_a_released);
   EXPECT_FALSE(key_a1_released.IsRepeat());
 
-  KeyEvent key_a2(native_event_a_pressed, false);
+  KeyEvent key_a2(native_event_a_pressed);
   EXPECT_FALSE(key_a2.IsRepeat());
-  KeyEvent key_a2_repeated(native_event_a_pressed, false);
+  KeyEvent key_a2_repeated(native_event_a_pressed);
   EXPECT_TRUE(key_a2_repeated.IsRepeat());
-  KeyEvent key_a2_released(native_event_a_released, false);
+  KeyEvent key_a2_released(native_event_a_released);
   EXPECT_FALSE(key_a2_released.IsRepeat());
 
-  KeyEvent key_a3(native_event_a_pressed, false);
+  KeyEvent key_a3(native_event_a_pressed);
   EXPECT_FALSE(key_a3.IsRepeat());
-  KeyEvent key_b(native_event_b_pressed, false);
+  KeyEvent key_b(native_event_b_pressed);
   EXPECT_FALSE(key_b.IsRepeat());
-  KeyEvent key_a3_again(native_event_a_pressed, false);
+  KeyEvent key_a3_again(native_event_a_pressed);
   EXPECT_FALSE(key_a3_again.IsRepeat());
-  KeyEvent key_a3_repeated(native_event_a_pressed, false);
+  KeyEvent key_a3_repeated(native_event_a_pressed);
   EXPECT_TRUE(key_a3_repeated.IsRepeat());
-  KeyEvent key_a3_repeated2(native_event_a_pressed, false);
+  KeyEvent key_a3_repeated2(native_event_a_pressed);
   EXPECT_TRUE(key_a3_repeated2.IsRepeat());
-  KeyEvent key_a3_released(native_event_a_released, false);
+  KeyEvent key_a3_released(native_event_a_released);
   EXPECT_FALSE(key_a3_released.IsRepeat());
 
 #if defined(USE_X11)
-  KeyEvent key_a4_pressed(native_event_a_pressed, false);
+  KeyEvent key_a4_pressed(native_event_a_pressed);
   EXPECT_FALSE(key_a4_pressed.IsRepeat());
 
   KeyEvent key_a4_pressed_nonstandard_state(
-      native_event_a_pressed_nonstandard_state, false);
+      native_event_a_pressed_nonstandard_state);
   EXPECT_FALSE(key_a4_pressed_nonstandard_state.IsRepeat());
 #endif
 }

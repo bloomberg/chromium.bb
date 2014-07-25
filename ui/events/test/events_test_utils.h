@@ -51,6 +51,23 @@ class LocatedEventTestApi : public EventTestApi {
   DISALLOW_COPY_AND_ASSIGN(LocatedEventTestApi);
 };
 
+class KeyEventTestApi : public EventTestApi {
+ public:
+  explicit KeyEventTestApi(KeyEvent* key_event);
+  virtual ~KeyEventTestApi();
+
+  void set_is_char(bool is_char) {
+    key_event_->set_is_char(is_char);
+  }
+
+ private:
+  KeyEventTestApi();
+
+  KeyEvent* key_event_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeyEventTestApi);
+};
+
 class EventTargetTestApi {
  public:
   explicit EventTargetTestApi(EventTarget* target);

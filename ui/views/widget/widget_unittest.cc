@@ -993,10 +993,10 @@ TEST_F(WidgetTest, KeyboardInputEvent) {
   textfield->RequestFocus();
 
   // The press gets handled. The release doesn't have an effect.
-  ui::KeyEvent backspace_p(ui::ET_KEY_PRESSED, ui::VKEY_DELETE, 0, false);
+  ui::KeyEvent backspace_p(ui::ET_KEY_PRESSED, ui::VKEY_DELETE, ui::EF_NONE);
   toplevel->OnKeyEvent(&backspace_p);
   EXPECT_TRUE(backspace_p.stopped_propagation());
-  ui::KeyEvent backspace_r(ui::ET_KEY_RELEASED, ui::VKEY_DELETE, 0, false);
+  ui::KeyEvent backspace_r(ui::ET_KEY_RELEASED, ui::VKEY_DELETE, ui::EF_NONE);
   toplevel->OnKeyEvent(&backspace_r);
   EXPECT_FALSE(backspace_r.handled());
 

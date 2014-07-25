@@ -193,7 +193,7 @@ TEST_F(AutofillDialogViewsTest, ImeEventDoesntCrash) {
                focused_view->GetClassName());
   EXPECT_FALSE(dialog()->HandleKeyEvent(
       static_cast<views::Textfield*>(focused_view),
-      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, 0, false)));
+      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE)));
 }
 
 }  // namespace autofill

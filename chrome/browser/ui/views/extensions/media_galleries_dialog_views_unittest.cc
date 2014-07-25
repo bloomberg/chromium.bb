@@ -95,7 +95,7 @@ TEST_F(MediaGalleriesDialogTest, ToggleCheckboxes) {
   views::Checkbox* checkbox = dialog.checkbox_map_[1]->checkbox();
   EXPECT_TRUE(checkbox->checked());
 
-  ui::KeyEvent dummy_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE, false);
+  ui::KeyEvent dummy_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   EXPECT_CALL(*controller(), DidToggleEntry(1, false));
   checkbox->SetChecked(false);
   dialog.ButtonPressed(checkbox, dummy_event);

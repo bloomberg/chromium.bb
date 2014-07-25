@@ -169,8 +169,7 @@ void InputMethodAuraLinux::MaybeFireProcessKey() {
 
   const ui::KeyEvent fabricated_event(ET_KEY_PRESSED,
                                       VKEY_PROCESSKEY,
-                                      vkey_processkey_flags_,
-                                      false);  // is_char
+                                      vkey_processkey_flags_);
   DispatchKeyEventPostIME(fabricated_event);
   StopFiringProcessKey();
 }

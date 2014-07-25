@@ -130,16 +130,24 @@ class KeyboardManager : public KeyboardClient,
 #else
     const bool is_char = false;
 #endif
-    view_manager_->DispatchEvent(
-        view,
-        Event::From(ui::KeyEvent(ui::ET_KEY_PRESSED,
-                                 static_cast<ui::KeyboardCode>(code),
-                                 flags, is_char)));
+    if (is_char) {
+      view_manager_->DispatchEvent(
+          view,
+          Event::From(ui::KeyEvent(ui::ET_KEY_PRESSED,
+                                  static_cast<ui::KeyboardCode>(code),
+                                  flags)));
+    } else {
+      view_manager_->DispatchEvent(
+          view,
+          Event::From(ui::KeyEvent(static_cast<base::char16>(code),
+                                  static_cast<ui::KeyboardCode>(code),
+                                  flags)));
+    }
     view_manager_->DispatchEvent(
         view,
         Event::From(ui::KeyEvent(ui::ET_KEY_RELEASED,
                                  static_cast<ui::KeyboardCode>(code),
-                                 flags, false)));
+                                 flags)));
   }
 
   // Overridden from NodeObserver:

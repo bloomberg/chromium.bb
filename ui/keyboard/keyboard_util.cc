@@ -28,7 +28,7 @@ const char kKeyUp[] = "keyup";
 
 void SendProcessKeyEvent(ui::EventType type,
                          aura::WindowTreeHost* host) {
-  ui::KeyEvent event(type, ui::VKEY_PROCESSKEY, ui::EF_NONE, false);
+  ui::KeyEvent event(type, ui::VKEY_PROCESSKEY, ui::EF_NONE);
   event.SetTranslated(true);
   ui::EventDispatchDetails details =
       host->event_processor()->OnEventFromSource(&event);
@@ -208,22 +208,22 @@ bool MoveCursor(int swipe_direction,
 
   // First deal with the x movement.
   if (codex != ui::VKEY_UNKNOWN) {
-    ui::KeyEvent press_event(ui::ET_KEY_PRESSED, codex, modifier_flags, 0);
+    ui::KeyEvent press_event(ui::ET_KEY_PRESSED, codex, modifier_flags);
     ui::EventDispatchDetails details =
         host->event_processor()->OnEventFromSource(&press_event);
     CHECK(!details.dispatcher_destroyed);
-    ui::KeyEvent release_event(ui::ET_KEY_RELEASED, codex, modifier_flags, 0);
+    ui::KeyEvent release_event(ui::ET_KEY_RELEASED, codex, modifier_flags);
     details = host->event_processor()->OnEventFromSource(&release_event);
     CHECK(!details.dispatcher_destroyed);
   }
 
   // Then deal with the y movement.
   if (codey != ui::VKEY_UNKNOWN) {
-    ui::KeyEvent press_event(ui::ET_KEY_PRESSED, codey, modifier_flags, 0);
+    ui::KeyEvent press_event(ui::ET_KEY_PRESSED, codey, modifier_flags);
     ui::EventDispatchDetails details =
         host->event_processor()->OnEventFromSource(&press_event);
     CHECK(!details.dispatcher_destroyed);
-    ui::KeyEvent release_event(ui::ET_KEY_RELEASED, codey, modifier_flags, 0);
+    ui::KeyEvent release_event(ui::ET_KEY_RELEASED, codey, modifier_flags);
     details = host->event_processor()->OnEventFromSource(&release_event);
     CHECK(!details.dispatcher_destroyed);
   }
@@ -277,7 +277,7 @@ bool SendKeyEvent(const std::string type,
       }
     }
 
-    ui::KeyEvent event(event_type, code, key_name, modifiers, false);
+    ui::KeyEvent event(event_type, code, key_name, modifiers);
     ui::EventDispatchDetails details =
         host->event_processor()->OnEventFromSource(&event);
     CHECK(!details.dispatcher_destroyed);

@@ -263,7 +263,7 @@ void EventRewriter::BuildRewrittenKeyEvent(
     }
 
     UpdateX11EventMask(flags, &xkeyevent.xkey.state);
-    ui::KeyEvent x11_key_event(&xkeyevent, false);
+    ui::KeyEvent x11_key_event(&xkeyevent);
     rewritten_key_event = new ui::KeyEvent(x11_key_event);
   }
 #endif

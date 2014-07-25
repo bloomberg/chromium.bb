@@ -105,8 +105,7 @@ void Shelf::ActivateShelfItem(int index) {
   // next item if the current one is already active.
   ui::KeyEvent event(ui::ET_KEY_RELEASED,
                      ui::VKEY_UNKNOWN,  // The actual key gets ignored.
-                     ui::EF_NONE,
-                     false);
+                     ui::EF_NONE);
 
   const ShelfItem& item = shelf_view_->model()->items()[index];
   ShelfItemDelegate* item_delegate =

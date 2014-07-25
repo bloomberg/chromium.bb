@@ -72,7 +72,7 @@ void X11Window::ProcessXInput2Event(XEvent* xev) {
   switch (event_type) {
     case ET_KEY_PRESSED:
     case ET_KEY_RELEASED: {
-      KeyEvent key_event(xev, false);
+      KeyEvent key_event(xev);
       delegate_->DispatchEvent(&key_event);
       break;
     }
@@ -278,7 +278,7 @@ uint32_t X11Window::DispatchEvent(const PlatformEvent& event) {
 
     case KeyPress:
     case KeyRelease: {
-      KeyEvent key_event(xev, false);
+      KeyEvent key_event(xev);
       delegate_->DispatchEvent(&key_event);
       break;
     }

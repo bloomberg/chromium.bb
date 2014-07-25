@@ -183,7 +183,7 @@ TEST_F(ShelfTooltipManagerTest, ShouldHideForEvents) {
   ui::EventHandler* event_handler = GetEventHandler();
 
   // Should not hide for key events.
-  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE, false);
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   SetEventTarget(root_window, &key_event);
   event_handler->OnKeyEvent(&key_event);
   EXPECT_FALSE(key_event.handled());

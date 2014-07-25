@@ -201,7 +201,7 @@ class MenuControllerTest : public ViewsTestBase {
     memset(&msg, 0, sizeof(MSG));
     dispatcher_client_.dispatcher()->Dispatch(msg);
 #elif defined(USE_OZONE)
-    ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, 0, true);
+    ui::KeyEvent event(' ', ui::VKEY_SPACE, ui::EF_NONE);
     dispatcher_client_.dispatcher()->Dispatch(&event);
 #else
 #error Unsupported platform

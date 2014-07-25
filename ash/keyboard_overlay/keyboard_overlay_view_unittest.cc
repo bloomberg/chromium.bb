@@ -37,8 +37,7 @@ TEST_F(KeyboardOverlayViewTest, OpenAcceleratorsClose) {
     ui::KeyEvent open_key(open_key_data.trigger_on_press ?
                           ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED,
                           open_key_data.keycode,
-                          open_key_data.modifiers,
-                          false);
+                          open_key_data.modifiers);
     EXPECT_TRUE(view.IsCancelingKeyEvent(&open_key));
   }
 }

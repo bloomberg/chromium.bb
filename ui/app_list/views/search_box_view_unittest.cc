@@ -84,7 +84,7 @@ class SearchBoxViewTest : public views::test::WidgetTest,
   }
 
   void KeyPress(ui::KeyboardCode key_code) {
-    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, ui::EF_NONE, true);
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, ui::EF_NONE);
     view_->search_box()->OnKeyPressed(event);
     // Emulates the input method.
     if (::isalnum(static_cast<int>(key_code))) {

@@ -22,7 +22,7 @@ scoped_ptr<Event> EventFromNative(const base::NativeEvent& native_event) {
   switch(type) {
     case ET_KEY_PRESSED:
     case ET_KEY_RELEASED:
-      event.reset(new KeyEvent(native_event, false));
+      event.reset(new KeyEvent(native_event));
       break;
 
     case ET_TRANSLATED_KEY_PRESS:

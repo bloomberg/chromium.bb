@@ -16,6 +16,11 @@ LocatedEventTestApi::LocatedEventTestApi(LocatedEvent* event)
       located_event_(event) {}
 LocatedEventTestApi::~LocatedEventTestApi() {}
 
+KeyEventTestApi::KeyEventTestApi(KeyEvent* event)
+    : EventTestApi(event),
+      key_event_(event) {}
+KeyEventTestApi::~KeyEventTestApi() {}
+
 EventTargetTestApi::EventTargetTestApi(EventTarget* target)
     : target_(target) {}
 

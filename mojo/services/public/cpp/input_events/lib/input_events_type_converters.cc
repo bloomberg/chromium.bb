@@ -141,14 +141,21 @@ TypeConverter<EventPtr, scoped_ptr<ui::Event> >::ConvertTo(
   ui::EventType ui_event_type =
       TypeConverter<EventType, ui::EventType>::ConvertTo(input->action);
   switch (input->action) {
-    case EVENT_TYPE_KEY_PRESSED:
-    case EVENT_TYPE_KEY_RELEASED:
-      ui_event.reset(new ui::KeyEvent(
-                         ui_event_type,
-                         static_cast<ui::KeyboardCode>(
-                             input->key_data->key_code),
-                         ui::EventFlags(input->flags),
-                         input->key_data->is_char));
+    case ui::ET_KEY_PRESSED:
+    case ui::ET_KEY_RELEASED:
+      if (input->key_data->is_char) {
+        ui_event.reset(new ui::KeyEvent(
+                           static_cast<base::char16>(input->key_data->key_code),
+                           static_cast<ui::KeyboardCode>(
+                               input->key_data->key_code),
+                           input->flags));
+      } else {
+        ui_event.reset(new ui::KeyEvent(
+                           ui_event_type,
+                           static_cast<ui::KeyboardCode>(
+                               input->key_data->key_code),
+                           input->flags));
+      }
       break;
     case EVENT_TYPE_MOUSE_PRESSED:
     case EVENT_TYPE_MOUSE_DRAGGED:

@@ -222,7 +222,7 @@ class TableViewTest : public testing::Test {
   }
 
   void PressKey(ui::KeyboardCode code) {
-    ui::KeyEvent event(ui::ET_KEY_PRESSED, code, 0, false);
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, code, ui::EF_NONE);
     table_->OnKeyPressed(event);
   }
 

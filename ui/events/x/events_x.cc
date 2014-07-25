@@ -622,6 +622,10 @@ uint32 PlatformKeycodeFromNative(const base::NativeEvent& native_event) {
   return keysym;
 }
 
+bool IsCharFromNative(const base::NativeEvent& native_event) {
+  return false;
+}
+
 int GetChangedMouseButtonFlagsFromNative(
     const base::NativeEvent& native_event) {
   switch (native_event->type) {

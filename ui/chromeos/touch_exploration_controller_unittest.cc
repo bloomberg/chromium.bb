@@ -389,17 +389,17 @@ void AssertDirectionalNavigationEvents(const ScopedVector<ui::Event>& events,
                                        ui::KeyboardCode direction) {
   ASSERT_EQ(6U, events.size());
   ui::KeyEvent shift_pressed(
-      ui::ET_KEY_PRESSED, ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN, false);
+      ui::ET_KEY_PRESSED, ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN);
   ui::KeyEvent search_pressed(
-      ui::ET_KEY_PRESSED, ui::VKEY_LWIN, ui::EF_SHIFT_DOWN, false);
+      ui::ET_KEY_PRESSED, ui::VKEY_LWIN, ui::EF_SHIFT_DOWN);
   ui::KeyEvent direction_pressed(
-      ui::ET_KEY_PRESSED, direction, ui::EF_SHIFT_DOWN, false);
+      ui::ET_KEY_PRESSED, direction, ui::EF_SHIFT_DOWN);
   ui::KeyEvent direction_released(
-      ui::ET_KEY_RELEASED, direction, ui::EF_SHIFT_DOWN, false);
+      ui::ET_KEY_RELEASED, direction, ui::EF_SHIFT_DOWN);
   ui::KeyEvent search_released(
-      ui::ET_KEY_RELEASED, VKEY_LWIN, ui::EF_SHIFT_DOWN, false);
+      ui::ET_KEY_RELEASED, VKEY_LWIN, ui::EF_SHIFT_DOWN);
   ui::KeyEvent shift_released(
-      ui::ET_KEY_RELEASED, ui::VKEY_SHIFT, ui::EF_NONE, false);
+      ui::ET_KEY_RELEASED, ui::VKEY_SHIFT, ui::EF_NONE);
   CONFIRM_EVENTS_ARE_KEY_AND_EQUAL(&shift_pressed, events[0]);
   CONFIRM_EVENTS_ARE_KEY_AND_EQUAL(&search_pressed, events[1]);
   CONFIRM_EVENTS_ARE_KEY_AND_EQUAL(&direction_pressed, events[2]);

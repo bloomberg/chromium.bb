@@ -119,8 +119,7 @@ bool InputMethodWin::DispatchKeyEvent(const ui::KeyEvent& event) {
   if (ui::IMM32Manager::IsRTLKeyboardLayoutInstalled() &&
       !IsTextInputTypeNone()) {
     // TODO: shouldn't need to generate a KeyEvent here.
-    const ui::KeyEvent key(native_key_event,
-                           native_key_event.message == WM_CHAR);
+    const ui::KeyEvent key(native_key_event);
     ui::KeyboardCode code = key.key_code();
     if (key.type() == ui::ET_KEY_PRESSED) {
       if (code == ui::VKEY_SHIFT) {

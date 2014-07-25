@@ -366,7 +366,7 @@ uint32_t WindowTreeHostX11::DispatchEvent(const ui::PlatformEvent& event) {
     switch (ui::EventTypeFromNative(xev)) {
       case ui::ET_KEY_PRESSED:
       case ui::ET_KEY_RELEASED: {
-        ui::KeyEvent keydown_event(xev, false);
+        ui::KeyEvent keydown_event(xev);
         SendEventToProcessor(&keydown_event);
         break;
       }
@@ -687,7 +687,7 @@ void WindowTreeHostX11::DispatchXI2Event(const base::NativeEvent& event) {
     }
     case ui::ET_KEY_PRESSED:
     case ui::ET_KEY_RELEASED: {
-      ui::KeyEvent key_event(xev, false);
+      ui::KeyEvent key_event(xev);
       SendEventToProcessor(&key_event);
       break;
     }

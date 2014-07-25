@@ -748,18 +748,18 @@ void TouchExplorationController::DispatchShiftSearchKeyEvent(
   // three KeyPressed events must be dispatched in succession along
   // with three KeyReleased events.
   ui::KeyEvent shift_down = ui::KeyEvent(
-      ui::ET_KEY_PRESSED, ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN, false);
+      ui::ET_KEY_PRESSED, ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN);
   ui::KeyEvent search_down = ui::KeyEvent(
-      ui::ET_KEY_PRESSED, kChromeOSSearchKey, ui::EF_SHIFT_DOWN, false);
+      ui::ET_KEY_PRESSED, kChromeOSSearchKey, ui::EF_SHIFT_DOWN);
   ui::KeyEvent direction_down =
-      ui::KeyEvent(ui::ET_KEY_PRESSED, direction, ui::EF_SHIFT_DOWN, false);
+      ui::KeyEvent(ui::ET_KEY_PRESSED, direction, ui::EF_SHIFT_DOWN);
 
   ui::KeyEvent direction_up =
-      ui::KeyEvent(ui::ET_KEY_RELEASED, direction, ui::EF_SHIFT_DOWN, false);
+      ui::KeyEvent(ui::ET_KEY_RELEASED, direction, ui::EF_SHIFT_DOWN);
   ui::KeyEvent search_up = ui::KeyEvent(
-      ui::ET_KEY_RELEASED, kChromeOSSearchKey, ui::EF_SHIFT_DOWN, false);
+      ui::ET_KEY_RELEASED, kChromeOSSearchKey, ui::EF_SHIFT_DOWN);
   ui::KeyEvent shift_up =
-      ui::KeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_SHIFT, ui::EF_NONE, false);
+      ui::KeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_SHIFT, ui::EF_NONE);
 
   DispatchEvent(&shift_down);
   DispatchEvent(&search_down);

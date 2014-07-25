@@ -300,10 +300,7 @@ TEST_F(WindowSliderTest, WindowSlideIsCancelledOnEvent) {
                        gfx::Point(55, 10),
                        gfx::Point(55, 10),
                        0, 0),
-    new ui::KeyEvent(ui::ET_KEY_PRESSED,
-                     ui::VKEY_A,
-                     0,
-                     true),
+    new ui::KeyEvent('a', ui::VKEY_A, ui::EF_NONE),
     NULL
   };
 

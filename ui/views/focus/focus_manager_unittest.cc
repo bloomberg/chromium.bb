@@ -728,14 +728,10 @@ class FocusManagerArrowKeyTraversalTest : public FocusManagerTest {
 
 TEST_F(FocusManagerArrowKeyTraversalTest, ArrowKeyTraversal) {
   FocusManager* focus_manager = GetFocusManager();
-  const ui::KeyEvent left_key(
-      ui::ET_KEY_PRESSED, ui::VKEY_LEFT, ui::EF_NONE, false);
-  const ui::KeyEvent right_key(
-      ui::ET_KEY_PRESSED, ui::VKEY_RIGHT, ui::EF_NONE, false);
-  const ui::KeyEvent up_key(
-      ui::ET_KEY_PRESSED, ui::VKEY_UP, ui::EF_NONE, false);
-  const ui::KeyEvent down_key(
-      ui::ET_KEY_PRESSED, ui::VKEY_DOWN, ui::EF_NONE, false);
+  const ui::KeyEvent left_key(ui::ET_KEY_PRESSED, ui::VKEY_LEFT, ui::EF_NONE);
+  const ui::KeyEvent right_key(ui::ET_KEY_PRESSED, ui::VKEY_RIGHT, ui::EF_NONE);
+  const ui::KeyEvent up_key(ui::ET_KEY_PRESSED, ui::VKEY_UP, ui::EF_NONE);
+  const ui::KeyEvent down_key(ui::ET_KEY_PRESSED, ui::VKEY_DOWN, ui::EF_NONE);
 
   std::vector<views::View*> v;
   for (size_t i = 0; i < 2; ++i) {

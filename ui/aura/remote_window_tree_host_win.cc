@@ -499,11 +499,15 @@ void RemoteWindowTreeHostWin::DispatchKeyboardMessage(ui::EventType type,
                         message,
                         vkey,
                         repeat_count | scan_code >> 15);
+  } else if (is_character) {
+    ui::KeyEvent event(static_cast<base::char16>(vkey),
+                       ui::KeyboardCodeForWindowsKeyCode(vkey),
+                       flags);
+    SendEventToProcessor(&event);
   } else {
     ui::KeyEvent event(type,
                        ui::KeyboardCodeForWindowsKeyCode(vkey),
-                       flags,
-                       is_character);
+                       flags);
     SendEventToProcessor(&event);
   }
 }

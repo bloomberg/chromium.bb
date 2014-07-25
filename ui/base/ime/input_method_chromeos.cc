@@ -367,8 +367,7 @@ void InputMethodChromeOS::ProcessFilteredKeyPressEvent(
   } else {
     const ui::KeyEvent fabricated_event(ET_KEY_PRESSED,
                                         VKEY_PROCESSKEY,
-                                        event.flags(),
-                                        false);  // is_char
+                                        event.flags());
     DispatchKeyEventPostIME(fabricated_event);
   }
 }
@@ -444,8 +443,7 @@ void InputMethodChromeOS::SendFakeProcessKeyEvent(bool pressed) const {
     return;
   KeyEvent evt(pressed ? ET_KEY_PRESSED : ET_KEY_RELEASED,
                pressed ? VKEY_PROCESSKEY : VKEY_UNKNOWN,
-               EF_IME_FABRICATED_KEY,
-               false);  // is_char
+               EF_IME_FABRICATED_KEY);
   DispatchKeyEventPostIME(evt);
 }
 
