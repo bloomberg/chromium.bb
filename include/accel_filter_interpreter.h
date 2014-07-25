@@ -54,25 +54,41 @@ class AccelFilterInterpreter : public FilterInterpreter {
 
   // curves for sensitivity 1..5
   CurveSegment point_curves_[kMaxAccelCurves][kMaxCurveSegs];
+  CurveSegment old_mouse_point_curves_[kMaxAccelCurves][kMaxCurveSegs];
   CurveSegment mouse_point_curves_[kMaxAccelCurves][kMaxCurveSegs];
   CurveSegment scroll_curves_[kMaxAccelCurves][kMaxCurveSegs];
 
   // Custom curves
-  CurveSegment custom_point_[kMaxCustomCurveSegs];
-  CurveSegment custom_scroll_[kMaxCustomCurveSegs];
+  CurveSegment tp_custom_point_[kMaxCustomCurveSegs];
+  CurveSegment tp_custom_scroll_[kMaxCustomCurveSegs];
+  CurveSegment mouse_custom_point_[kMaxCustomCurveSegs];
+  // Note: there is no mouse_custom_scroll_ b/c mouse wheel accel is
+  // handled in the MouseInterpreter class.
 
-  IntProperty pointer_sensitivity_;  // [1..5] or 0 for custom
-  IntProperty scroll_sensitivity_;  // [1..5] or 0 for custom
+  // These properties expose the custom curves (just above) to the
+  // property system.
+  DoubleArrayProperty tp_custom_point_prop_;
+  DoubleArrayProperty tp_custom_scroll_prop_;
+  DoubleArrayProperty mouse_custom_point_prop_;
 
-  DoubleArrayProperty custom_point_prop_;
-  DoubleArrayProperty custom_scroll_prop_;
+  // These properties enable use of custom curves (just above).
+  BoolProperty use_custom_tp_point_curve_;
+  BoolProperty use_custom_tp_scroll_curve_;
+  BoolProperty use_custom_mouse_curve_;
+
+  IntProperty pointer_sensitivity_;  // [1..5]
+  IntProperty scroll_sensitivity_;  // [1..5]
 
   DoubleProperty point_x_out_scale_;
   DoubleProperty point_y_out_scale_;
   DoubleProperty scroll_x_out_scale_;
   DoubleProperty scroll_y_out_scale_;
-  BoolProperty use_mouse_point_curves_;
-  BoolProperty use_mouse_scroll_curves_;
+  // These properties are automatically set on mice-like devices:
+  BoolProperty use_mouse_point_curves_;  // set on {touch,nontouch} mice
+  BoolProperty use_mouse_scroll_curves_;  // set on nontouch mice
+  // If use_mouse_point_curves_ is true, this is consulted to see which
+  // curves to use:
+  BoolProperty use_old_mouse_point_curves_;
 
   // Sometimes on wireless hardware (e.g. Bluetooth), patckets need to be
   // resent. This can lead to a time between packets that very large followed

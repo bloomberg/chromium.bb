@@ -20,21 +20,32 @@ AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
                                                Interpreter* next,
                                                Tracer* tracer)
     : FilterInterpreter(NULL, next, tracer, false),
+      // Hack: cast tp_custom_point_/mouse_custom_point_/tp_custom_scroll_
+      // to float arrays.
+      tp_custom_point_prop_(prop_reg, "Pointer Accel Curve",
+                            reinterpret_cast<double*>(&tp_custom_point_),
+                            sizeof(tp_custom_point_) / sizeof(double)),
+      tp_custom_scroll_prop_(prop_reg, "Scroll Accel Curve",
+                             reinterpret_cast<double*>(&tp_custom_scroll_),
+                             sizeof(tp_custom_scroll_) / sizeof(double)),
+      mouse_custom_point_prop_(prop_reg, "Mouse Pointer Accel Curve",
+                               reinterpret_cast<double*>(&mouse_custom_point_),
+                               sizeof(mouse_custom_point_) / sizeof(double)),
+      use_custom_tp_point_curve_(
+          prop_reg, "Use Custom Touchpad Pointer Accel Curve", 0),
+      use_custom_tp_scroll_curve_(
+          prop_reg, "Use Custom Touchpad Scroll Accel Curve", 0),
+      use_custom_mouse_curve_(
+          prop_reg, "Use Custom Mouse Pointer Accel Curve", 0),
       pointer_sensitivity_(prop_reg, "Pointer Sensitivity", 3),
       scroll_sensitivity_(prop_reg, "Scroll Sensitivity", 3),
-      // Hack: cast custom_point_/custom_scroll_ to float arrays.
-      custom_point_prop_(prop_reg, "Pointer Accel Curve",
-                         reinterpret_cast<double*>(&custom_point_),
-                         sizeof(custom_point_) / sizeof(double)),
-      custom_scroll_prop_(prop_reg, "Scroll Accel Curve",
-                          reinterpret_cast<double*>(&custom_scroll_),
-                          sizeof(custom_scroll_) / sizeof(double)),
       point_x_out_scale_(prop_reg, "Point X Out Scale", 1.0),
       point_y_out_scale_(prop_reg, "Point Y Out Scale", 1.0),
       scroll_x_out_scale_(prop_reg, "Scroll X Out Scale", 3.0),
       scroll_y_out_scale_(prop_reg, "Scroll Y Out Scale", 3.0),
       use_mouse_point_curves_(prop_reg, "Mouse Accel Curves", 0),
       use_mouse_scroll_curves_(prop_reg, "Mouse Scroll Curves", 0),
+      use_old_mouse_point_curves_(prop_reg, "Old Mouse Accel Curves", 0),
       min_reasonable_dt_(prop_reg, "Accel Min dt", 0.003),
       max_reasonable_dt_(prop_reg, "Accel Max dt", 0.050),
       last_reasonable_dt_(0.05),
@@ -70,24 +81,40 @@ AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
     point_curves_[i][2] = CurveSegment(INFINITY, 0, slope, icept);
   }
 
-  const float mouse_speed_straight_cutoff[] = { 5.0, 5.0, 5.0, 8.0, 8.0 };
-  const float mouse_speed_accel[] = { 1.0, 1.4, 1.8, 2.0, 2.2 };
+  const float old_mouse_speed_straight_cutoff[] = { 5.0, 5.0, 5.0, 8.0, 8.0 };
+  const float old_mouse_speed_accel[] = { 1.0, 1.4, 1.8, 2.0, 2.2 };
 
   for (size_t i = 0; i < kMaxAccelCurves; ++i) {
     const float kParabolaA = 1.3;
     const float kParabolaB = 0.2;
-    const float cutoff_x = mouse_speed_straight_cutoff[i];
+    const float cutoff_x = old_mouse_speed_straight_cutoff[i];
     const float cutoff_y =
         kParabolaA * cutoff_x * cutoff_x + kParabolaB * cutoff_x;
     const float line_m = 2.0 * kParabolaA * cutoff_x + kParabolaB;
     const float line_b = cutoff_y - cutoff_x * line_m;
-    const float kOutMult = mouse_speed_accel[i];
+    const float kOutMult = old_mouse_speed_accel[i];
 
-    mouse_point_curves_[i][0] =
+    old_mouse_point_curves_[i][0] =
         CurveSegment(cutoff_x * 25.4, kParabolaA * kOutMult / 25.4,
                      kParabolaB * kOutMult, 0.0);
-    mouse_point_curves_[i][1] = CurveSegment(INFINITY, 0.0, line_m * kOutMult,
+    old_mouse_point_curves_[i][1] = CurveSegment(INFINITY, 0.0, line_m * kOutMult,
                                              line_b * kOutMult * 25.4);
+  }
+
+  // These values were determined empirically through user studies:
+  const float kMouseMultiplierA = 0.0311;
+  const float kMouseMultiplierB = 3.26;
+  const float kMouseCutoff = 195.0;
+  const float kMultipliers[] = { 1.2, 1.4, 1.6, 1.8, 2.0 };
+  for (size_t i = 0; i < kMaxAccelCurves; ++i) {
+    float mouse_a = kMouseMultiplierA * kMultipliers[i] * kMultipliers[i];
+    float mouse_b = kMouseMultiplierB * kMultipliers[i];
+    float cutoff = kMouseCutoff / kMultipliers[i];
+    float second_slope =
+        (2.0 * kMouseMultiplierA * kMouseCutoff + kMouseMultiplierB) *
+        kMultipliers[i];
+    mouse_point_curves_[i][0] = CurveSegment(cutoff, mouse_a, mouse_b, 0.0);
+    mouse_point_curves_[i][1] = CurveSegment(INFINITY, 0.0, second_slope, -1182);
   }
 
   const float scroll_divisors[] = { 0.0, // unused
@@ -162,14 +189,22 @@ void AccelFilterInterpreter::ConsumeGesture(const Gesture& gs) {
         scale_out_x = dx = &copy.details.swipe.dx;
         scale_out_y = dy = &copy.details.swipe.dy;
       }
-      if (pointer_sensitivity_.val_ >= 1 && pointer_sensitivity_.val_ <= 5) {
-        if (use_mouse_point_curves_.val_)
-          segs = mouse_point_curves_[pointer_sensitivity_.val_ - 1];
-        else
-          segs = point_curves_[pointer_sensitivity_.val_ - 1];
-      } else {
-        segs = custom_point_;
+      if (use_mouse_point_curves_.val_ && use_custom_mouse_curve_.val_) {
+        segs = mouse_custom_point_;
         max_segs = kMaxCustomCurveSegs;
+      } else if (!use_mouse_point_curves_.val_ &&
+                 use_custom_tp_point_curve_.val_) {
+        segs = tp_custom_point_;
+        max_segs = kMaxCustomCurveSegs;
+      } else {
+        if (use_mouse_point_curves_.val_) {
+          if (use_old_mouse_point_curves_.val_)
+            segs = old_mouse_point_curves_[pointer_sensitivity_.val_ - 1];
+          else
+            segs = mouse_point_curves_[pointer_sensitivity_.val_ - 1];
+        } else {
+          segs = point_curves_[pointer_sensitivity_.val_ - 1];
+        }
       }
       x_scale = point_x_out_scale_.val_;
       y_scale = point_y_out_scale_.val_;
@@ -196,10 +231,10 @@ void AccelFilterInterpreter::ConsumeGesture(const Gesture& gs) {
         ProduceGesture(gs);
         return;
       }
-      if (scroll_sensitivity_.val_ >= 1 && scroll_sensitivity_.val_ <= 5) {
+      if (!use_custom_tp_scroll_curve_.val_) {
         segs = scroll_curves_[scroll_sensitivity_.val_ - 1];
       } else {
-        segs = custom_scroll_;
+        segs = tp_custom_scroll_;
         max_segs = kMaxCustomCurveSegs;
       }
       x_scale = scroll_x_out_scale_.val_;
