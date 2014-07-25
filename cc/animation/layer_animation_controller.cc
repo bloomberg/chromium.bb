@@ -602,6 +602,9 @@ void LayerAnimationController::StartAnimations(base::TimeTicks monotonic_time) {
   // First collect running properties affecting each type of observer.
   TargetProperties blocked_properties_for_active_observers;
   TargetProperties blocked_properties_for_pending_observers;
+  std::vector<size_t> animations_waiting_for_target;
+
+  animations_waiting_for_target.reserve(animations_.size());
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->run_state() == Animation::Starting ||
         animations_[i]->run_state() == Animation::Running) {
@@ -613,22 +616,31 @@ void LayerAnimationController::StartAnimations(base::TimeTicks monotonic_time) {
         blocked_properties_for_pending_observers.insert(
             animations_[i]->target_property());
       }
+    } else if (animations_[i]->run_state() ==
+               Animation::WaitingForTargetAvailability) {
+      animations_waiting_for_target.push_back(i);
     }
   }
 
-  for (size_t i = 0; i < animations_.size(); ++i) {
-    if (animations_[i]->run_state() ==
-        Animation::WaitingForTargetAvailability) {
+  for (size_t i = 0; i < animations_waiting_for_target.size(); ++i) {
       // Collect all properties for animations with the same group id (they
       // should all also be in the list of animations).
+    size_t animation_index = animations_waiting_for_target[i];
+    Animation* animation_waiting_for_target = animations_[animation_index];
+    // Check for the run state again even though the animation was waiting
+    // for target because it might have changed the run state while handling
+    // previous animation in this loop (if they belong to same group).
+    if (animation_waiting_for_target->run_state() ==
+        Animation::WaitingForTargetAvailability) {
       TargetProperties enqueued_properties;
       bool affects_active_observers =
-          animations_[i]->affects_active_observers();
+          animation_waiting_for_target->affects_active_observers();
       bool affects_pending_observers =
-          animations_[i]->affects_pending_observers();
-      enqueued_properties.insert(animations_[i]->target_property());
-      for (size_t j = i + 1; j < animations_.size(); ++j) {
-        if (animations_[i]->group() == animations_[j]->group()) {
+          animation_waiting_for_target->affects_pending_observers();
+      enqueued_properties.insert(
+          animation_waiting_for_target->target_property());
+      for (size_t j = animation_index + 1; j < animations_.size(); ++j) {
+        if (animation_waiting_for_target->group() == animations_[j]->group()) {
           enqueued_properties.insert(animations_[j]->target_property());
           affects_active_observers |=
               animations_[j]->affects_active_observers();
@@ -657,9 +669,11 @@ void LayerAnimationController::StartAnimations(base::TimeTicks monotonic_time) {
       // If the intersection is null, then we are free to start the animations
       // in the group.
       if (null_intersection) {
-        animations_[i]->SetRunState(Animation::Starting, monotonic_time);
-        for (size_t j = i + 1; j < animations_.size(); ++j) {
-          if (animations_[i]->group() == animations_[j]->group()) {
+        animation_waiting_for_target->SetRunState(Animation::Starting,
+                                                  monotonic_time);
+        for (size_t j = animation_index + 1; j < animations_.size(); ++j) {
+          if (animation_waiting_for_target->group() ==
+              animations_[j]->group()) {
             animations_[j]->SetRunState(Animation::Starting, monotonic_time);
           }
         }
