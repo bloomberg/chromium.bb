@@ -176,6 +176,7 @@ html[dir=rtl] .main-pane {
 }
 
 .pod input[type='password'] {
+  background-color: white;
   border: none;
   padding: 4px 6px;
   position: relative;
