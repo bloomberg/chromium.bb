@@ -9,9 +9,9 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_runner.h"
 #include "base/test/test_simple_task_runner.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
@@ -67,7 +67,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
       const base::FilePath& path_base,
       net::URLRequestContext* request_context,
       LevelDBFactory* leveldb_factory,
-      base::TaskRunner* task_runner,
+      base::SequencedTaskRunner* task_runner,
       leveldb::Status* status) {
     DCHECK(!path_base.empty());
 
@@ -158,7 +158,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
                                 net::URLRequestContext* request_context,
                                 scoped_ptr<LevelDBDatabase> db,
                                 scoped_ptr<LevelDBComparator> comparator,
-                                base::TaskRunner* task_runner)
+                                base::SequencedTaskRunner* task_runner)
       : IndexedDBBackingStore(indexed_db_factory,
                               origin_url,
                               blob_path,

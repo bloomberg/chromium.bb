@@ -102,7 +102,7 @@ TEST(IndexedDBIOErrorTest, CleanUpTest) {
   blink::WebIDBDataLoss data_loss = blink::WebIDBDataLossNone;
   std::string data_loss_message;
   bool disk_full = false;
-  base::TaskRunner* task_runner = NULL;
+  base::SequencedTaskRunner* task_runner = NULL;
   bool clean_journal = false;
   leveldb::Status s;
   scoped_refptr<IndexedDBBackingStore> backing_store =
@@ -130,7 +130,7 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
       blink::WebIDBDataLossNone;
   std::string data_loss_reason;
   bool disk_full = false;
-  base::TaskRunner* task_runner = NULL;
+  base::SequencedTaskRunner* task_runner = NULL;
   bool clean_journal = false;
   leveldb::Status s;
 

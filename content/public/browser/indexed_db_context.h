@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_INDEXED_DB_CONTEXT_H_
 #define CONTENT_PUBLIC_BROWSER_INDEXED_DB_CONTEXT_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -15,7 +16,6 @@
 
 namespace base {
 class SequencedTaskRunner;
-class TaskRunner;
 }
 
 namespace content {
@@ -25,7 +25,7 @@ namespace content {
 class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
  public:
   // Only call the below methods by posting to this TaskRunner.
-  virtual base::TaskRunner* TaskRunner() const = 0;
+  virtual base::SequencedTaskRunner* TaskRunner() const = 0;
 
   // Methods used in response to QuotaManager requests.
   virtual std::vector<IndexedDBInfo> GetAllOriginsInfo() = 0;

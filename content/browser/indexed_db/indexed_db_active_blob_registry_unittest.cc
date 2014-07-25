@@ -55,7 +55,8 @@ class MockIDBFactory : public IndexedDBFactoryImpl {
 
 class MockIDBBackingStore : public IndexedDBFakeBackingStore {
  public:
-  MockIDBBackingStore(IndexedDBFactory* factory, base::TaskRunner* task_runner)
+  MockIDBBackingStore(IndexedDBFactory* factory,
+                      base::SequencedTaskRunner* task_runner)
       : IndexedDBFakeBackingStore(factory, task_runner),
         duplicate_calls_(false) {}
 

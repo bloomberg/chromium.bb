@@ -10,7 +10,7 @@
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 
 namespace base {
-class TaskRunner;
+class SequencedTaskRunner;
 }
 
 namespace content {
@@ -21,7 +21,7 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
  public:
   IndexedDBFakeBackingStore();
   IndexedDBFakeBackingStore(IndexedDBFactory* factory,
-                            base::TaskRunner* task_runner);
+                            base::SequencedTaskRunner* task_runner);
   virtual std::vector<base::string16> GetDatabaseNames(leveldb::Status* s)
       OVERRIDE;
   virtual leveldb::Status GetIDBDatabaseMetaData(const base::string16& name,

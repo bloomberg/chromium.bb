@@ -572,7 +572,7 @@ void IndexedDBContextImpl::ResetCaches() {
   space_available_map_.clear();
 }
 
-base::TaskRunner* IndexedDBContextImpl::TaskRunner() const {
+base::SequencedTaskRunner* IndexedDBContextImpl::TaskRunner() const {
   return task_runner_;
 }
 

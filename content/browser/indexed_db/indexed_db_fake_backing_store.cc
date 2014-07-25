@@ -20,7 +20,7 @@ IndexedDBFakeBackingStore::IndexedDBFakeBackingStore()
 }
 IndexedDBFakeBackingStore::IndexedDBFakeBackingStore(
     IndexedDBFactory* factory,
-    base::TaskRunner* task_runner)
+    base::SequencedTaskRunner* task_runner)
     : IndexedDBBackingStore(factory,
                             GURL("http://localhost:81"),
                             base::FilePath(),

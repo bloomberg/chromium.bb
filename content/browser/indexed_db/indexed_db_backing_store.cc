@@ -708,7 +708,7 @@ IndexedDBBackingStore::IndexedDBBackingStore(
     net::URLRequestContext* request_context,
     scoped_ptr<LevelDBDatabase> db,
     scoped_ptr<LevelDBComparator> comparator,
-    base::TaskRunner* task_runner)
+    base::SequencedTaskRunner* task_runner)
     : indexed_db_factory_(indexed_db_factory),
       origin_url_(origin_url),
       blob_path_(blob_path),
@@ -780,7 +780,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     blink::WebIDBDataLoss* data_loss,
     std::string* data_loss_message,
     bool* disk_full,
-    base::TaskRunner* task_runner,
+    base::SequencedTaskRunner* task_runner,
     bool clean_journal,
     leveldb::Status* status) {
   *data_loss = blink::WebIDBDataLossNone;
@@ -935,7 +935,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     std::string* data_loss_message,
     bool* is_disk_full,
     LevelDBFactory* leveldb_factory,
-    base::TaskRunner* task_runner,
+    base::SequencedTaskRunner* task_runner,
     bool clean_journal,
     leveldb::Status* status) {
   IDB_TRACE("IndexedDBBackingStore::Open");
@@ -1082,7 +1082,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
 // static
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
     const GURL& origin_url,
-    base::TaskRunner* task_runner,
+    base::SequencedTaskRunner* task_runner,
     leveldb::Status* status) {
   DefaultLevelDBFactory leveldb_factory;
   return IndexedDBBackingStore::OpenInMemory(
@@ -1093,7 +1093,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
     const GURL& origin_url,
     LevelDBFactory* leveldb_factory,
-    base::TaskRunner* task_runner,
+    base::SequencedTaskRunner* task_runner,
     leveldb::Status* status) {
   IDB_TRACE("IndexedDBBackingStore::OpenInMemory");
 
@@ -1126,7 +1126,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Create(
     net::URLRequestContext* request_context,
     scoped_ptr<LevelDBDatabase> db,
     scoped_ptr<LevelDBComparator> comparator,
-    base::TaskRunner* task_runner,
+    base::SequencedTaskRunner* task_runner,
     leveldb::Status* status) {
   // TODO(jsbell): Handle comparator name changes.
   scoped_refptr<IndexedDBBackingStore> backing_store(
@@ -2253,11 +2253,11 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
 };
 
 class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
-                          public base::RefCounted<LocalWriteClosure> {
+                          public base::RefCountedThreadSafe<LocalWriteClosure> {
  public:
   LocalWriteClosure(IndexedDBBackingStore::Transaction::ChainedBlobWriter*
                         chained_blob_writer,
-                    base::TaskRunner* task_runner)
+                    base::SequencedTaskRunner* task_runner)
       : chained_blob_writer_(chained_blob_writer),
         task_runner_(task_runner),
         bytes_written_(0) {}
@@ -2277,9 +2277,11 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
     }
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&LocalWriteClosure::callBlobCallbackOnIDBTaskRunner,
-                   this,
-                   write_status == FileWriterDelegate::SUCCESS_COMPLETED));
+        base::Bind(&IndexedDBBackingStore::Transaction::ChainedBlobWriter::
+                       ReportWriteCompletion,
+                   chained_blob_writer_,
+                   write_status == FileWriterDelegate::SUCCESS_COMPLETED,
+                   bytes_written_));
   }
 
   void writeBlobToFileOnIOThread(const FilePath& file_path,
@@ -2304,16 +2306,21 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
   }
 
  private:
-  virtual ~LocalWriteClosure() {}
-  friend class base::RefCounted<LocalWriteClosure>;
-
-  void callBlobCallbackOnIDBTaskRunner(bool succeeded) {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
-    chained_blob_writer_->ReportWriteCompletion(succeeded, bytes_written_);
+  virtual ~LocalWriteClosure() {
+    // Make sure the last reference to a ChainedBlobWriter is released (and
+    // deleted) on the IDB thread since it owns a transaction which has thread
+    // affinity.
+    IndexedDBBackingStore::Transaction::ChainedBlobWriter* raw_tmp =
+        chained_blob_writer_.get();
+    raw_tmp->AddRef();
+    chained_blob_writer_ = NULL;
+    task_runner_->ReleaseSoon(FROM_HERE, raw_tmp);
   }
+  friend class base::RefCountedThreadSafe<LocalWriteClosure>;
 
-  IndexedDBBackingStore::Transaction::ChainedBlobWriter* chained_blob_writer_;
-  base::TaskRunner* task_runner_;
+  scoped_refptr<IndexedDBBackingStore::Transaction::ChainedBlobWriter>
+      chained_blob_writer_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   int64 bytes_written_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalWriteClosure);

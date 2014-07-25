@@ -55,7 +55,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void SetForceKeepSessionState() { force_keep_session_state_ = true; }
 
   // IndexedDBContext implementation:
-  virtual base::TaskRunner* TaskRunner() const OVERRIDE;
+  virtual base::SequencedTaskRunner* TaskRunner() const OVERRIDE;
   virtual std::vector<IndexedDBInfo> GetAllOriginsInfo() OVERRIDE;
   virtual int64 GetOriginDiskUsage(const GURL& origin_url) OVERRIDE;
   virtual void DeleteForOrigin(const GURL& origin_url) OVERRIDE;
@@ -146,7 +146,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   bool force_keep_session_state_;
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
-  base::SequencedTaskRunner* task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_ptr<std::set<GURL> > origin_set_;
   OriginToSizeMap origin_size_map_;
   OriginToSizeMap space_available_map_;
