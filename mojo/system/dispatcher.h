@@ -87,8 +87,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   // |dispatchers| must be non-null but empty, if |num_dispatchers| is non-null
   // and nonzero. On success, it will be set to the dispatchers to be received
   // (and assigned handles) as part of the message.
-  MojoResult ReadMessage(void* bytes,
-                         uint32_t* num_bytes,
+  MojoResult ReadMessage(UserPointer<void> bytes,
+                         UserPointer<uint32_t> num_bytes,
                          DispatcherVector* dispatchers,
                          uint32_t* num_dispatchers,
                          MojoReadMessageFlags flags);
@@ -217,8 +217,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
       uint32_t num_bytes,
       std::vector<DispatcherTransport>* transports,
       MojoWriteMessageFlags flags);
-  virtual MojoResult ReadMessageImplNoLock(void* bytes,
-                                           uint32_t* num_bytes,
+  virtual MojoResult ReadMessageImplNoLock(UserPointer<void> bytes,
+                                           UserPointer<uint32_t> num_bytes,
                                            DispatcherVector* dispatchers,
                                            uint32_t* num_dispatchers,
                                            MojoReadMessageFlags flags);

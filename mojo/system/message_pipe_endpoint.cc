@@ -18,8 +18,8 @@ void MessagePipeEndpoint::CancelAllWaiters() {
   NOTREACHED();
 }
 
-MojoResult MessagePipeEndpoint::ReadMessage(void* /*bytes*/,
-                                            uint32_t* /*num_bytes*/,
+MojoResult MessagePipeEndpoint::ReadMessage(UserPointer<void> /*bytes*/,
+                                            UserPointer<uint32_t> /*num_bytes*/,
                                             DispatcherVector* /*dispatchers*/,
                                             uint32_t* /*num_dispatchers*/,
                                             MojoReadMessageFlags /*flags*/) {

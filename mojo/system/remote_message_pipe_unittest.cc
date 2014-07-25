@@ -214,9 +214,8 @@ TEST_F(RemoteMessagePipeTest, Basic) {
 
   // Read from MP 1, port 1.
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp1->ReadMessage(1,
-                             buffer, &buffer_size,
-                             NULL, NULL,
+            mp1->ReadMessage(1, UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size), NULL, NULL,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kHello), static_cast<size_t>(buffer_size));
   EXPECT_STREQ(kHello, buffer);
@@ -239,9 +238,8 @@ TEST_F(RemoteMessagePipeTest, Basic) {
 
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp0->ReadMessage(0,
-                             buffer, &buffer_size,
-                             NULL, NULL,
+            mp0->ReadMessage(0, UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size), NULL, NULL,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kWorld), static_cast<size_t>(buffer_size));
   EXPECT_STREQ(kWorld, buffer);
@@ -315,29 +313,25 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
   // Make sure there's nothing on MP 0, port 0 or MP 1, port 1 or MP 2, port 0.
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
-            mp0->ReadMessage(0,
-                             buffer, &buffer_size,
-                             NULL, NULL,
+            mp0->ReadMessage(0, UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size), NULL, NULL,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
-            mp1->ReadMessage(1,
-                             buffer, &buffer_size,
-                             NULL, NULL,
+            mp1->ReadMessage(1, UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size), NULL, NULL,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
-            mp2->ReadMessage(0,
-                             buffer, &buffer_size,
-                             NULL, NULL,
+            mp2->ReadMessage(0, UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size), NULL, NULL,
                              MOJO_READ_MESSAGE_FLAG_NONE));
 
   // Read from MP 3, port 1.
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp3->ReadMessage(1,
-                             buffer, &buffer_size,
-                             NULL, NULL,
+            mp3->ReadMessage(1, UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size), NULL, NULL,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kHello), static_cast<size_t>(buffer_size));
   EXPECT_STREQ(kHello, buffer);
@@ -361,28 +355,24 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
   // Make sure there's nothing on the other ports.
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
-            mp0->ReadMessage(0,
-                             buffer, &buffer_size,
-                             NULL, NULL,
+            mp0->ReadMessage(0, UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size), NULL, NULL,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
-            mp2->ReadMessage(0,
-                             buffer, &buffer_size,
-                             NULL, NULL,
+            mp2->ReadMessage(0, UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size), NULL, NULL,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
-            mp3->ReadMessage(1,
-                             buffer, &buffer_size,
-                             NULL, NULL,
+            mp3->ReadMessage(1, UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size), NULL, NULL,
                              MOJO_READ_MESSAGE_FLAG_NONE));
 
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp1->ReadMessage(1,
-                             buffer, &buffer_size,
-                             NULL, NULL,
+            mp1->ReadMessage(1, UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size), NULL, NULL,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kWorld), static_cast<size_t>(buffer_size));
   EXPECT_STREQ(kWorld, buffer);
@@ -440,9 +430,8 @@ TEST_F(RemoteMessagePipeTest, CloseBeforeConnect) {
 
   // Read from MP 1, port 1.
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp1->ReadMessage(1,
-                             buffer, &buffer_size,
-                             NULL, NULL,
+            mp1->ReadMessage(1, UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size), NULL, NULL,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kHello), static_cast<size_t>(buffer_size));
   EXPECT_STREQ(kHello, buffer);
@@ -506,7 +495,8 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   DispatcherVector read_dispatchers;
   uint32_t read_num_dispatchers = 10;  // Maximum to get.
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp1->ReadMessage(1, read_buffer, &read_buffer_size,
+            mp1->ReadMessage(1, UserPointer<void>(read_buffer),
+                             MakeUserPointer(&read_buffer_size),
                              &read_dispatchers, &read_num_dispatchers,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kHello), static_cast<size_t>(read_buffer_size));
@@ -541,7 +531,8 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   memset(read_buffer, 0, sizeof(read_buffer));
   read_buffer_size = static_cast<uint32_t>(sizeof(read_buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
-            dispatcher->ReadMessage(read_buffer, &read_buffer_size, 0, NULL,
+            dispatcher->ReadMessage(UserPointer<void>(read_buffer),
+                                    MakeUserPointer(&read_buffer_size), 0, NULL,
                                     MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kHello), static_cast<size_t>(read_buffer_size));
   EXPECT_STREQ(kHello, read_buffer);
@@ -565,8 +556,9 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   memset(read_buffer, 0, sizeof(read_buffer));
   read_buffer_size = static_cast<uint32_t>(sizeof(read_buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
-            local_mp->ReadMessage(1, read_buffer, &read_buffer_size, NULL, NULL,
-                                  MOJO_READ_MESSAGE_FLAG_NONE));
+            local_mp->ReadMessage(1, UserPointer<void>(read_buffer),
+                                  MakeUserPointer(&read_buffer_size), NULL,
+                                  NULL, MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kHello), static_cast<size_t>(read_buffer_size));
   EXPECT_STREQ(kHello, read_buffer);
 
@@ -656,7 +648,8 @@ TEST_F(RemoteMessagePipeTest, MAYBE_SharedBufferPassing) {
   DispatcherVector read_dispatchers;
   uint32_t read_num_dispatchers = 10;  // Maximum to get.
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp1->ReadMessage(1, read_buffer, &read_buffer_size,
+            mp1->ReadMessage(1, UserPointer<void>(read_buffer),
+                             MakeUserPointer(&read_buffer_size),
                              &read_dispatchers, &read_num_dispatchers,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kHello), static_cast<size_t>(read_buffer_size));
@@ -771,7 +764,8 @@ TEST_F(RemoteMessagePipeTest, MAYBE_PlatformHandlePassing) {
   DispatcherVector read_dispatchers;
   uint32_t read_num_dispatchers = 10;  // Maximum to get.
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp1->ReadMessage(1, read_buffer, &read_buffer_size,
+            mp1->ReadMessage(1, UserPointer<void>(read_buffer),
+                             MakeUserPointer(&read_buffer_size),
                              &read_dispatchers, &read_num_dispatchers,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kWorld), static_cast<size_t>(read_buffer_size));

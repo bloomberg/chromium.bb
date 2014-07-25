@@ -63,15 +63,16 @@ void LocalMessagePipeEndpoint::CancelAllWaiters() {
   waiter_list_.CancelAllWaiters();
 }
 
-MojoResult LocalMessagePipeEndpoint::ReadMessage(void* bytes,
-                                                 uint32_t* num_bytes,
-                                                 DispatcherVector* dispatchers,
-                                                 uint32_t* num_dispatchers,
-                                                 MojoReadMessageFlags flags) {
+MojoResult LocalMessagePipeEndpoint::ReadMessage(
+    UserPointer<void> bytes,
+    UserPointer<uint32_t> num_bytes,
+    DispatcherVector* dispatchers,
+    uint32_t* num_dispatchers,
+    MojoReadMessageFlags flags) {
   DCHECK(is_open_);
   DCHECK(!dispatchers || dispatchers->empty());
 
-  const uint32_t max_bytes = num_bytes ? *num_bytes : 0;
+  const uint32_t max_bytes = num_bytes.IsNull() ? 0 : num_bytes.Get();
   const uint32_t max_num_dispatchers = num_dispatchers ? *num_dispatchers : 0;
 
   if (message_queue_.IsEmpty()) {
@@ -83,10 +84,10 @@ MojoResult LocalMessagePipeEndpoint::ReadMessage(void* bytes,
   // and release the lock immediately.
   bool enough_space = true;
   MessageInTransit* message = message_queue_.PeekMessage();
-  if (num_bytes)
-    *num_bytes = message->num_bytes();
+  if (!num_bytes.IsNull())
+    num_bytes.Put(message->num_bytes());
   if (message->num_bytes() <= max_bytes)
-    memcpy(bytes, message->bytes(), message->num_bytes());
+    bytes.PutArray(message->bytes(), message->num_bytes());
   else
     enough_space = false;
 

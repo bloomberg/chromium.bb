@@ -83,8 +83,8 @@ MojoResult MessagePipe::WriteMessage(
 }
 
 MojoResult MessagePipe::ReadMessage(unsigned port,
-                                    void* bytes,
-                                    uint32_t* num_bytes,
+                                    UserPointer<void> bytes,
+                                    UserPointer<uint32_t> num_bytes,
                                     DispatcherVector* dispatchers,
                                     uint32_t* num_dispatchers,
                                     MojoReadMessageFlags flags) {

@@ -83,8 +83,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
       uint32_t num_bytes,
       std::vector<DispatcherTransport>* transports,
       MojoWriteMessageFlags flags) OVERRIDE;
-  virtual MojoResult ReadMessageImplNoLock(void* bytes,
-                                           uint32_t* num_bytes,
+  virtual MojoResult ReadMessageImplNoLock(UserPointer<void> bytes,
+                                           UserPointer<uint32_t> num_bytes,
                                            DispatcherVector* dispatchers,
                                            uint32_t* num_dispatchers,
                                            MojoReadMessageFlags flags) OVERRIDE;

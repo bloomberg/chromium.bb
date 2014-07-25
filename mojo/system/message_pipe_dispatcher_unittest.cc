@@ -82,8 +82,8 @@ TEST(MessagePipeDispatcherTest, Basic) {
     buffer[0] = 0;
     buffer_size = kBufferSize;
     EXPECT_EQ(MOJO_RESULT_OK,
-              d0->ReadMessage(buffer, &buffer_size,
-                              0, NULL,
+              d0->ReadMessage(UserPointer<void>(buffer),
+                              MakeUserPointer(&buffer_size), 0, NULL,
                               MOJO_READ_MESSAGE_FLAG_NONE));
     EXPECT_EQ(kBufferSize, buffer_size);
     EXPECT_EQ(123456789, buffer[0]);
@@ -139,14 +139,6 @@ TEST(MessagePipeDispatcherTest, InvalidParams) {
                              NULL,
                              MOJO_WRITE_MESSAGE_FLAG_NONE));
 
-  // |ReadMessage|:
-  // Null buffer with nonzero buffer size.
-  uint32_t buffer_size = 1;
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d0->ReadMessage(NULL, &buffer_size,
-                            0, NULL,
-                            MOJO_READ_MESSAGE_FLAG_NONE));
-
   EXPECT_EQ(MOJO_RESULT_OK, d0->Close());
   EXPECT_EQ(MOJO_RESULT_OK, d1->Close());
 }
@@ -191,8 +183,8 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     buffer[0] = 0;
     buffer_size = kBufferSize;
     EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
-              d1->ReadMessage(buffer, &buffer_size,
-                              0, NULL,
+              d1->ReadMessage(UserPointer<void>(buffer),
+                              MakeUserPointer(&buffer_size), 0, NULL,
                               MOJO_READ_MESSAGE_FLAG_NONE));
 
     // Close |d1|.
@@ -207,8 +199,8 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     buffer[0] = 0;
     buffer_size = kBufferSize;
     EXPECT_EQ(MOJO_RESULT_OK,
-              d0->ReadMessage(buffer, &buffer_size,
-                              0, NULL,
+              d0->ReadMessage(UserPointer<void>(buffer),
+                              MakeUserPointer(&buffer_size), 0, NULL,
                               MOJO_READ_MESSAGE_FLAG_NONE));
     EXPECT_EQ(kBufferSize, buffer_size);
     EXPECT_EQ(123456789, buffer[0]);
@@ -222,8 +214,8 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     buffer[0] = 0;
     buffer_size = kBufferSize;
     EXPECT_EQ(MOJO_RESULT_OK,
-              d0->ReadMessage(buffer, &buffer_size,
-                              0, NULL,
+              d0->ReadMessage(UserPointer<void>(buffer),
+                              MakeUserPointer(&buffer_size), 0, NULL,
                               MOJO_READ_MESSAGE_FLAG_NONE));
     EXPECT_EQ(kBufferSize, buffer_size);
     EXPECT_EQ(234567890, buffer[0]);
@@ -243,8 +235,8 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     buffer[0] = 0;
     buffer_size = kBufferSize;
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              d0->ReadMessage(buffer, &buffer_size,
-                              0, NULL,
+              d0->ReadMessage(UserPointer<void>(buffer),
+                              MakeUserPointer(&buffer_size), 0, NULL,
                               MOJO_READ_MESSAGE_FLAG_NONE));
 
     // Try writing to |d0|; should fail (other end closed).
@@ -328,8 +320,8 @@ TEST(MessagePipeDispatcherTest, MAYBE_BasicThreaded) {
     buffer[0] = 0;
     buffer_size = kBufferSize;
     EXPECT_EQ(MOJO_RESULT_OK,
-              d1->ReadMessage(buffer, &buffer_size,
-                              0, NULL,
+              d1->ReadMessage(UserPointer<void>(buffer),
+                              MakeUserPointer(&buffer_size), 0, NULL,
                               MOJO_READ_MESSAGE_FLAG_NONE));
     EXPECT_EQ(kBufferSize, buffer_size);
     EXPECT_EQ(123456789, buffer[0]);
@@ -489,9 +481,9 @@ class ReaderThread : public base::SimpleThread {
       // Clear the buffer so that we can check the result.
       memset(buffer, 0, sizeof(buffer));
       uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
-      result = read_dispatcher_->ReadMessage(buffer, &buffer_size,
-                                             0, NULL,
-                                             MOJO_READ_MESSAGE_FLAG_NONE);
+      result = read_dispatcher_->ReadMessage(UserPointer<void>(buffer),
+                                             MakeUserPointer(&buffer_size), 0,
+                                             NULL, MOJO_READ_MESSAGE_FLAG_NONE);
       EXPECT_TRUE(result == MOJO_RESULT_OK ||
                   result == MOJO_RESULT_SHOULD_WAIT) << "result: " << result;
       // We're racing with others to read, so maybe we failed.

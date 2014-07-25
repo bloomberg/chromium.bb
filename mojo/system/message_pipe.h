@@ -16,6 +16,7 @@
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/system/dispatcher.h"
+#include "mojo/system/memory.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/message_pipe_endpoint.h"
 #include "mojo/system/system_impl_export.h"
@@ -56,11 +57,9 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe :
                           uint32_t num_bytes,
                           std::vector<DispatcherTransport>* transports,
                           MojoWriteMessageFlags flags);
-  // Unlike |MessagePipeDispatcher::ReadMessage()|, this does not validate its
-  // arguments.
   MojoResult ReadMessage(unsigned port,
-                         void* bytes,
-                         uint32_t* num_bytes,
+                         UserPointer<void> bytes,
+                         UserPointer<uint32_t> num_bytes,
                          DispatcherVector* dispatchers,
                          uint32_t* num_dispatchers,
                          MojoReadMessageFlags flags);

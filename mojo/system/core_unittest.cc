@@ -54,18 +54,11 @@ TEST_F(CoreTest, Basic) {
                                 NullUserPointer(),
                                 MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(1u, info.GetReadMessageCallCount());
-  num_bytes = 1;
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            core()->ReadMessage(h, NullUserPointer(),
-                                MakeUserPointer(&num_bytes), NullUserPointer(),
-                                NullUserPointer(),
-                                MOJO_READ_MESSAGE_FLAG_NONE));
-  EXPECT_EQ(2u, info.GetReadMessageCallCount());
   EXPECT_EQ(MOJO_RESULT_OK,
             core()->ReadMessage(h, NullUserPointer(), NullUserPointer(),
                                 NullUserPointer(), NullUserPointer(),
                                 MOJO_READ_MESSAGE_FLAG_NONE));
-  EXPECT_EQ(3u, info.GetReadMessageCallCount());
+  EXPECT_EQ(2u, info.GetReadMessageCallCount());
 
   EXPECT_EQ(0u, info.GetWriteDataCallCount());
   EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED,

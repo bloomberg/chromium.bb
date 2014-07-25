@@ -89,6 +89,9 @@ struct NullUserPointer {};
 // in-out parameters (in which case the |Put()| method is available).
 template <typename Type>
 class UserPointer {
+ private:
+  typedef typename internal::VoidToChar<Type>::type NonVoidType;
+
  public:
   // Instead of explicitly using these constructors, you can often use
   // |MakeUserPointer()| (or |NullUserPointer()| for null pointers). (The common
@@ -115,13 +118,24 @@ class UserPointer {
     return !pointer_;
   }
 
-  // We want to force a copy here, so return |Type| not |const Type&|.
+  // Gets the value (of type |Type|) pointed to by this user pointer. Use this
+  // when you'd use the rvalue |*user_pointer|, but be aware that this may be
+  // costly -- so if the value will be used multiple times, you should save it.
+  //
+  // (We want to force a copy here, so return |Type| not |const Type&|.)
   Type Get() const {
     internal::CheckUserPointerHelper<sizeof(Type),
                                      MOJO_ALIGNOF(Type)>(pointer_);
     return *pointer_;
   }
 
+  // TODO(vtl): Add a |GetArray()| method (see |PutArray()|).
+
+  // Puts a value (of type |Type|, or of type |char| if |Type| is |void|) to the
+  // location pointed to by this user pointer. Use this when you'd use the
+  // lvalue |*user_pointer|. Since this may be costly, you should avoid using
+  // this (for the same user pointer) more than once.
+  //
   // Note: This |Put()| method is not valid when |T| is const, e.g., |const
   // uint32_t|, but it's okay to include them so long as this template is only
   // implicitly instantiated (see 14.7.1 of the C++11 standard) and not
@@ -138,12 +152,29 @@ class UserPointer {
   //       const _Type& value) { ... }
   // (which obviously be correct), but C++03 doesn't allow default function
   // template arguments.
-  void Put(const typename internal::VoidToChar<Type>::type& value) {
-    internal::CheckUserPointerHelper<sizeof(Type),
-                                     MOJO_ALIGNOF(Type)>(pointer_);
+  void Put(const NonVoidType& value) {
+    internal::CheckUserPointerHelper<sizeof(NonVoidType),
+                                     MOJO_ALIGNOF(NonVoidType)>(pointer_);
     *pointer_ = value;
   }
 
+  // Puts an array (of type |Type|, or just a buffer if |Type| is |void|) and
+  // size |count| (number of elements, or number of bytes if |Type| is |void|)
+  // to the location pointed to by this user pointer. Use this when you'd do
+  // something like |memcpy(user_pointer, source, count * sizeof(Type))|.
+  //
+  // Note: The same comments about the validity of |Put()| (except for the part
+  // about |void|) apply here.
+  void PutArray(const Type* source, size_t count) {
+    internal::CheckUserPointerWithCountHelper<sizeof(NonVoidType),
+                                              MOJO_ALIGNOF(NonVoidType)>(source,
+                                                                         count);
+    memcpy(pointer_, source, count * sizeof(NonVoidType));
+  }
+
+  // Gets a |UserPointer| at offset |i| (in |Type|s) relative to this. This
+  // method is not valid if |Type| is |void| (TODO(vtl): Maybe I should make it
+  // valid, with the offset in bytes?).
   UserPointer At(size_t i) const {
     return UserPointer(pointer_ + i);
   }

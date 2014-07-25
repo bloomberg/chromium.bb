@@ -273,13 +273,11 @@ MojoResult Core::ReadMessage(MojoHandle message_pipe_handle,
   MojoResult rv;
   if (num_handles_value == 0) {
     // Easy case: won't receive any handles.
-    rv = dispatcher->ReadMessage(bytes.GetPointerUnsafe(),
-                                 num_bytes.GetPointerUnsafe(), NULL,
-                                 &num_handles_value, flags);
+    rv = dispatcher->ReadMessage(bytes, num_bytes, NULL, &num_handles_value,
+                                 flags);
   } else {
     DispatcherVector dispatchers;
-    rv = dispatcher->ReadMessage(bytes.GetPointerUnsafe(),
-                                 num_bytes.GetPointerUnsafe(), &dispatchers,
+    rv = dispatcher->ReadMessage(bytes, num_bytes, &dispatchers,
                                  &num_handles_value, flags);
     if (!dispatchers.empty()) {
       DCHECK_EQ(rv, MOJO_RESULT_OK);

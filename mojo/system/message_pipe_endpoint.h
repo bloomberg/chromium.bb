@@ -15,6 +15,7 @@
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/system/dispatcher.h"
+#include "mojo/system/memory.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/system_impl_export.h"
 
@@ -61,8 +62,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeEndpoint {
   // operation involves both endpoints.
   virtual void Close();
   virtual void CancelAllWaiters();
-  virtual MojoResult ReadMessage(void* bytes,
-                                 uint32_t* num_bytes,
+  virtual MojoResult ReadMessage(UserPointer<void> bytes,
+                                 UserPointer<uint32_t> num_bytes,
                                  DispatcherVector* dispatchers,
                                  uint32_t* num_dispatchers,
                                  MojoReadMessageFlags flags);

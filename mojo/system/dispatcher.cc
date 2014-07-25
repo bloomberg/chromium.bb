@@ -120,8 +120,8 @@ MojoResult Dispatcher::WriteMessage(
   return WriteMessageImplNoLock(bytes, num_bytes, transports, flags);
 }
 
-MojoResult Dispatcher::ReadMessage(void* bytes,
-                                   uint32_t* num_bytes,
+MojoResult Dispatcher::ReadMessage(UserPointer<void> bytes,
+                                   UserPointer<uint32_t> num_bytes,
                                    DispatcherVector* dispatchers,
                                    uint32_t* num_dispatchers,
     MojoReadMessageFlags flags) {
@@ -265,11 +265,12 @@ MojoResult Dispatcher::WriteMessageImplNoLock(
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
-MojoResult Dispatcher::ReadMessageImplNoLock(void* /*bytes*/,
-                                             uint32_t* /*num_bytes*/,
-                                             DispatcherVector* /*dispatchers*/,
-                                             uint32_t* /*num_dispatchers*/,
-                                             MojoReadMessageFlags /*flags*/) {
+MojoResult Dispatcher::ReadMessageImplNoLock(
+    UserPointer<void> /*bytes*/,
+    UserPointer<uint32_t> /*num_bytes*/,
+    DispatcherVector* /*dispatchers*/,
+    uint32_t* /*num_dispatchers*/,
+    MojoReadMessageFlags /*flags*/) {
   lock_.AssertAcquired();
   DCHECK(!is_closed_);
   // By default, not supported. Only needed for message pipe dispatchers.

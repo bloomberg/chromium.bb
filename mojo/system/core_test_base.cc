@@ -66,16 +66,13 @@ class MockDispatcher : public Dispatcher {
   }
 
   virtual MojoResult ReadMessageImplNoLock(
-      void* bytes,
-      uint32_t* num_bytes,
+      UserPointer<void> bytes,
+      UserPointer<uint32_t> num_bytes,
       DispatcherVector* dispatchers,
       uint32_t* num_dispatchers,
       MojoReadMessageFlags /*flags*/) OVERRIDE {
     info_->IncrementReadMessageCallCount();
     lock().AssertAcquired();
-
-    if (num_bytes && !VerifyUserPointerWithSize<1>(bytes, *num_bytes))
-      return MOJO_RESULT_INVALID_ARGUMENT;
 
     if (num_dispatchers) {
       *num_dispatchers = 1;

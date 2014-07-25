@@ -31,8 +31,8 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
   // implement/override these:
   virtual void Close() OVERRIDE;
   virtual void CancelAllWaiters() OVERRIDE;
-  virtual MojoResult ReadMessage(void* bytes,
-                                 uint32_t* num_bytes,
+  virtual MojoResult ReadMessage(UserPointer<void> bytes,
+                                 UserPointer<uint32_t> num_bytes,
                                  DispatcherVector* dispatchers,
                                  uint32_t* num_dispatchers,
                                  MojoReadMessageFlags flags) OVERRIDE;
