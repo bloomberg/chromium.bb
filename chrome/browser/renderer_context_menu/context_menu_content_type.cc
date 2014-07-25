@@ -5,8 +5,6 @@
 #include "chrome/browser/renderer_context_menu/context_menu_content_type.h"
 
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -39,8 +37,6 @@ ContextMenuContentType::ContextMenuContentType(
     bool supports_custom_items)
     : params_(params),
       source_web_contents_(web_contents),
-      profile_(Profile::FromBrowserContext(
-                   source_web_contents_->GetBrowserContext())),
       supports_custom_items_(supports_custom_items) {
 }
 
@@ -48,8 +44,8 @@ ContextMenuContentType::~ContextMenuContentType() {
 }
 
 const Extension* ContextMenuContentType::GetExtension() const {
-  extensions::ExtensionSystem* system =
-      extensions::ExtensionSystem::Get(profile_);
+  extensions::ExtensionSystem* system = extensions::ExtensionSystem::Get(
+      source_web_contents_->GetBrowserContext());
   // There is no process manager in some tests.
   if (!system->process_manager())
     return NULL;

@@ -5,11 +5,8 @@
 #ifndef CHROME_BROWSER_RENDERER_CONTEXT_MENU_CONTEXT_MENU_CONTENT_TYPE_H_
 #define CHROME_BROWSER_RENDERER_CONTEXT_MENU_CONTEXT_MENU_CONTENT_TYPE_H_
 
-#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "content/public/common/context_menu_params.h"
 #include "ui/base/models/simple_menu_model.h"
-
-class Profile;
 
 namespace content {
 class WebContents;
@@ -76,7 +73,6 @@ class ContextMenuContentType {
 
   const content::ContextMenuParams params_;
   content::WebContents* source_web_contents_;
-  Profile* profile_;
   const bool supports_custom_items_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenuContentType);
