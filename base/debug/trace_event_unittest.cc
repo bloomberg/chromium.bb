@@ -2464,8 +2464,8 @@ TEST_F(TraceEventTestFixture, MAYBE_TraceBufferVectorReportFull) {
   EXPECT_TRUE(trace_parsed_.GetDictionary(trace_parsed_.GetSize() - 1,
                                           &last_trace_event));
   EXPECT_TRUE(last_trace_event->GetDouble("ts", &last_trace_event_timestamp));
-  EXPECT_LT(last_trace_event_timestamp, buffer_limit_reached_timestamp);
-  EXPECT_LT(buffer_limit_reached_timestamp,
+  EXPECT_LE(last_trace_event_timestamp, buffer_limit_reached_timestamp);
+  EXPECT_LE(buffer_limit_reached_timestamp,
             trace_log->OffsetNow().ToInternalValue());
 }
 
