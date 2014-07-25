@@ -50,22 +50,7 @@ struct GraphicsLayerPaintInfo {
     IntSize offsetFromRenderer;
     bool offsetFromRendererSet;
 
-    LayoutSize subpixelAccumulation;
-
-    GraphicsLayerPaintingPhase paintingPhase;
-
-    bool isBackgroundLayer;
-
-    GraphicsLayerPaintInfo() : renderLayer(0), offsetFromRendererSet(false), isBackgroundLayer(false) { }
-
-    bool isEquivalentForSquashing(const GraphicsLayerPaintInfo& other)
-    {
-        // FIXME: offsetFromRenderer and compositedBounds should not be checked here, because
-        // they are not yet fixed at the time this function is used.
-        return renderLayer == other.renderLayer
-            && paintingPhase == other.paintingPhase
-            && isBackgroundLayer == other.isBackgroundLayer;
-    }
+    GraphicsLayerPaintInfo() : renderLayer(0), offsetFromRendererSet(false) { }
 };
 
 enum GraphicsLayerUpdateScope {
@@ -300,7 +285,7 @@ private:
 
     static bool hasVisibleNonCompositingDescendant(RenderLayer* parent);
 
-    void doPaintTask(GraphicsLayerPaintInfo&, GraphicsContext*, const IntRect& clip);
+    void doPaintTask(const GraphicsLayerPaintInfo&, const PaintLayerFlags&, GraphicsContext*, const IntRect& clip);
 
     // Computes the background clip rect for the given squashed layer, up to any containing layer that is squashed into the
     // same squashing layer and contains this squashed layer's clipping ancestor.

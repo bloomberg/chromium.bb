@@ -1978,7 +1978,7 @@ IntRect CompositedLayerMapping::localClipRectForSquashedLayer(const RenderLayer&
     return parentClipRect;
 }
 
-void CompositedLayerMapping::doPaintTask(GraphicsLayerPaintInfo& paintInfo, GraphicsContext* context,
+void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo, const PaintLayerFlags& paintLayerFlags, GraphicsContext* context,
     const IntRect& clip) // In the coords of rootLayer.
 {
     if (paintsIntoCompositedAncestor()) {
@@ -1987,25 +1987,6 @@ void CompositedLayerMapping::doPaintTask(GraphicsLayerPaintInfo& paintInfo, Grap
     }
 
     FontCachePurgePreventer fontCachePurgePreventer;
-
-    PaintLayerFlags paintFlags = 0;
-    if (paintInfo.paintingPhase & GraphicsLayerPaintBackground)
-        paintFlags |= PaintLayerPaintingCompositingBackgroundPhase;
-    if (paintInfo.paintingPhase & GraphicsLayerPaintForeground)
-        paintFlags |= PaintLayerPaintingCompositingForegroundPhase;
-    if (paintInfo.paintingPhase & GraphicsLayerPaintMask)
-        paintFlags |= PaintLayerPaintingCompositingMaskPhase;
-    if (paintInfo.paintingPhase & GraphicsLayerPaintChildClippingMask)
-        paintFlags |= PaintLayerPaintingChildClippingMaskPhase;
-    if (paintInfo.paintingPhase & GraphicsLayerPaintOverflowContents)
-        paintFlags |= PaintLayerPaintingOverflowContents;
-    if (paintInfo.paintingPhase & GraphicsLayerPaintCompositedScroll)
-        paintFlags |= PaintLayerPaintingCompositingScrollingPhase;
-
-    if (paintInfo.isBackgroundLayer)
-        paintFlags |= (PaintLayerPaintingRootBackgroundOnly | PaintLayerPaintingCompositingForegroundPhase); // Need PaintLayerPaintingCompositingForegroundPhase to walk child layers.
-    else if (compositor()->fixedRootBackgroundLayer())
-        paintFlags |= PaintLayerPaintingSkipRootBackground;
 
     // Note carefully: in theory it is appropriate to invoke context->save() here
     // and restore the context after painting. For efficiency, we are assuming that
@@ -2020,7 +2001,7 @@ void CompositedLayerMapping::doPaintTask(GraphicsLayerPaintInfo& paintInfo, Grap
     IntRect dirtyRect(clip);
     dirtyRect.move(offset);
 
-    if (!(paintInfo.paintingPhase & GraphicsLayerPaintOverflowContents)) {
+    if (!(paintLayerFlags & PaintLayerPaintingOverflowContents)) {
         LayoutRect bounds = paintInfo.compositedBounds;
         bounds.move(paintInfo.renderLayer->subpixelAccumulation());
         dirtyRect.intersect(pixelSnappedIntRect(bounds));
@@ -2035,12 +2016,10 @@ void CompositedLayerMapping::doPaintTask(GraphicsLayerPaintInfo& paintInfo, Grap
     if (paintInfo.renderLayer->compositingState() != PaintsIntoGroupedBacking) {
         // FIXME: GraphicsLayers need a way to split for RenderRegions.
         LayerPaintingInfo paintingInfo(paintInfo.renderLayer, dirtyRect, PaintBehaviorNormal, paintInfo.renderLayer->subpixelAccumulation());
-        paintInfo.renderLayer->paintLayerContents(context, paintingInfo, paintFlags);
-
-        ASSERT(!paintInfo.isBackgroundLayer || paintFlags & PaintLayerPaintingRootBackgroundOnly);
+        paintInfo.renderLayer->paintLayerContents(context, paintingInfo, paintLayerFlags);
 
         if (paintInfo.renderLayer->containsDirtyOverlayScrollbars())
-            paintInfo.renderLayer->paintLayerContents(context, paintingInfo, paintFlags | PaintLayerPaintingOverlayScrollbars);
+            paintInfo.renderLayer->paintLayerContents(context, paintingInfo, paintLayerFlags | PaintLayerPaintingOverlayScrollbars);
     } else {
         ASSERT(compositor()->layerSquashingEnabled());
         LayerPaintingInfo paintingInfo(paintInfo.renderLayer, dirtyRect, PaintBehaviorNormal, paintInfo.renderLayer->subpixelAccumulation());
@@ -2051,7 +2030,7 @@ void CompositedLayerMapping::doPaintTask(GraphicsLayerPaintInfo& paintInfo, Grap
         context->save();
         dirtyRect.intersect(paintInfo.localClipRectForSquashedLayer);
         context->clip(dirtyRect);
-        paintInfo.renderLayer->paintLayer(context, paintingInfo, paintFlags);
+        paintInfo.renderLayer->paintLayer(context, paintingInfo, paintLayerFlags);
         context->restore();
     }
 
@@ -2076,7 +2055,7 @@ static void paintScrollbar(Scrollbar* scrollbar, GraphicsContext& context, const
 }
 
 // Up-call from compositing layer drawing callback.
-void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase paintingPhase, const IntRect& clip)
+void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase graphicsLayerPaintingPhase, const IntRect& clip)
 {
     // https://code.google.com/p/chromium/issues/detail?id=343772
     DisableCompositingQueryAsserts disabler;
@@ -2090,6 +2069,25 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::willPaint(m_owningLayer.renderer(), graphicsLayer);
 
+    PaintLayerFlags paintLayerFlags = 0;
+    if (graphicsLayerPaintingPhase & GraphicsLayerPaintBackground)
+        paintLayerFlags |= PaintLayerPaintingCompositingBackgroundPhase;
+    if (graphicsLayerPaintingPhase & GraphicsLayerPaintForeground)
+        paintLayerFlags |= PaintLayerPaintingCompositingForegroundPhase;
+    if (graphicsLayerPaintingPhase & GraphicsLayerPaintMask)
+        paintLayerFlags |= PaintLayerPaintingCompositingMaskPhase;
+    if (graphicsLayerPaintingPhase & GraphicsLayerPaintChildClippingMask)
+        paintLayerFlags |= PaintLayerPaintingChildClippingMaskPhase;
+    if (graphicsLayerPaintingPhase & GraphicsLayerPaintOverflowContents)
+        paintLayerFlags |= PaintLayerPaintingOverflowContents;
+    if (graphicsLayerPaintingPhase & GraphicsLayerPaintCompositedScroll)
+        paintLayerFlags |= PaintLayerPaintingCompositingScrollingPhase;
+
+    if (graphicsLayer == m_backgroundLayer)
+        paintLayerFlags |= (PaintLayerPaintingRootBackgroundOnly | PaintLayerPaintingCompositingForegroundPhase); // Need PaintLayerPaintingCompositingForegroundPhase to walk child layers.
+    else if (compositor()->fixedRootBackgroundLayer())
+        paintLayerFlags |= PaintLayerPaintingSkipRootBackground;
+
     if (graphicsLayer == m_graphicsLayer.get()
         || graphicsLayer == m_foregroundLayer.get()
         || graphicsLayer == m_backgroundLayer.get()
@@ -2102,15 +2100,13 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
         paintInfo.renderLayer = &m_owningLayer;
         paintInfo.compositedBounds = compositedBounds();
         paintInfo.offsetFromRenderer = graphicsLayer->offsetFromRenderer();
-        paintInfo.paintingPhase = paintingPhase;
-        paintInfo.isBackgroundLayer = (graphicsLayer == m_backgroundLayer);
 
         // We have to use the same root as for hit testing, because both methods can compute and cache clipRects.
-        doPaintTask(paintInfo, &context, clip);
+        doPaintTask(paintInfo, paintLayerFlags, &context, clip);
     } else if (graphicsLayer == m_squashingLayer.get()) {
         ASSERT(compositor()->layerSquashingEnabled());
         for (size_t i = 0; i < m_squashedLayers.size(); ++i)
-            doPaintTask(m_squashedLayers[i], &context, clip);
+            doPaintTask(m_squashedLayers[i], paintLayerFlags, &context, clip);
     } else if (graphicsLayer == layerForHorizontalScrollbar()) {
         paintScrollbar(m_owningLayer.scrollableArea()->horizontalScrollbar(), context, clip);
     } else if (graphicsLayer == layerForVerticalScrollbar()) {
@@ -2165,14 +2161,12 @@ bool CompositedLayerMapping::updateSquashingLayerAssignment(RenderLayer* squashe
     paintInfo.renderLayer = squashedLayer;
     // NOTE: composited bounds are updated elsewhere
     // NOTE: offsetFromRenderer is updated elsewhere
-    paintInfo.paintingPhase = GraphicsLayerPaintAllWithOverflowClip;
-    paintInfo.isBackgroundLayer = false;
 
     // Change tracking on squashing layers: at the first sign of something changed, just invalidate the layer.
     // FIXME: Perhaps we can find a tighter more clever mechanism later.
     bool updatedAssignment = false;
     if (nextSquashedLayerIndex < m_squashedLayers.size()) {
-        if (!paintInfo.isEquivalentForSquashing(m_squashedLayers[nextSquashedLayerIndex])) {
+        if (paintInfo.renderLayer != m_squashedLayers[nextSquashedLayerIndex].renderLayer) {
             compositor()->repaintOnCompositingChange(squashedLayer);
             updatedAssignment = true;
             m_squashedLayers[nextSquashedLayerIndex] = paintInfo;
