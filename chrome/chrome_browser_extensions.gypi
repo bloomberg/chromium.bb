@@ -922,8 +922,6 @@
       'browser/extensions/api/networking_private/networking_private_credentials_getter_mac.cc',
       'browser/extensions/api/networking_private/networking_private_credentials_getter_win.cc',
       'browser/extensions/api/networking_private/networking_private_event_router.h',
-      'browser/extensions/api/networking_private/networking_private_event_router_factory.cc',
-      'browser/extensions/api/networking_private/networking_private_event_router_factory.h',
       'browser/extensions/api/networking_private/networking_private_event_router_nonchromeos.cc',
       'browser/extensions/api/networking_private/networking_private_service_client.cc',
       'browser/extensions/api/networking_private/networking_private_service_client.h',
