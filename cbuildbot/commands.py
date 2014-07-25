@@ -4,6 +4,7 @@
 
 """Module containing the various individual commands a builder can run."""
 
+import collections
 import fnmatch
 import glob
 import logging
@@ -394,6 +395,36 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
   cmd.extend(packages)
   RunBuildScript(buildroot, cmd, extra_env=extra_env, chroot_args=chroot_args,
                  enter_chroot=True)
+
+
+FirmwareVersions = collections.namedtuple(
+    'FirmwareVersions',
+    ['main', 'ec']
+)
+
+
+def GetFirmwareVersions(buildroot):
+  """Extract version information from the firmware updater, if one exists.
+
+  Args:
+    buildroot: The buildroot of the current build.
+
+  Returns:
+    (main fw version, ec fw version)
+    Each element will either be set to the string output by the firmware
+    updater shellball, or None if there is no firmware updater.
+  """
+  updater = os.path.join(buildroot, 'usr', 'sbin', 'chromeos-firmwareupdate')
+  if not os.path.isfile(updater):
+    return FirmwareVersions(None, None)
+  updater = git.ReinterpretPathForChroot(updater)
+
+  result = cros_build_lib.RunCommand([updater, '-V'], enter_chroot=True,
+                                     capture_output=True, log_output=True)
+  main = re.search(r'BIOS version:\s*(?P<version>.*)', result.output)
+  ec = re.search(r'EC version:\s*(?P<version>.*)', result.output)
+  return (main.group('version') if main else None,
+          ec.group('version') if ec else None)
 
 
 def BuildImage(buildroot, board, images_to_build, version=None,

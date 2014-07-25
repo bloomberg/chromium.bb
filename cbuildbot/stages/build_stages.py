@@ -236,6 +236,14 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
                    noworkon=noworkon,
                    extra_env=self._portage_extra_env)
 
+    # Extract firmware version information from the newly created updater.
+    board_dir = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR,
+                             'build', self._current_board)
+    main, ec = commands.GetFirmwareVersions(board_dir)
+    self._run.attrs.metadata.UpdateBoardDictWithDict(
+        self._current_board,
+        {'main-firmware-version': main, 'ec-firmware-version': ec})
+
 
 class BuildImageStage(BuildPackagesStage):
   """Build standard Chromium OS images."""

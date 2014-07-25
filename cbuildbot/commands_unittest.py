@@ -250,6 +250,40 @@ class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     commands.Build(buildroot=self._buildroot, board='x86-generic', **kwargs)
     self.assertCommandContains(['./build_packages'])
 
+  def testGetFirmwareVersions(self):
+    self.rc.SetDefaultCmdResult(output='''
+
+flashrom(8): a273d7fd6663c665176159496bc014ff */build/nyan/usr/sbin/flashrom
+             ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV), statically linked, for GNU/Linux 2.6.16, BuildID[sha1]=61d8a9676e433414fb0e22fa819b55be86329e44, stripped
+
+
+BIOS image:   4aba4c07a65b7bf82d72d8ed892f5dc5 */build/nyan/tmp/portage/chromeos-base/chromeos-firmware-nyan-0.0.1-r20/work/chromeos-firmware-nyan-0.0.1/.dist/nyan_fw_5771.10.0.tbz2/image.bin
+BIOS version: Google_Nyan.5771.10.0
+EC image:     7b6bb5035fa8101b41c954bce5250dae */build/nyan/tmp/portage/chromeos-base/chromeos-firmware-nyan-0.0.1-r20/work/chromeos-firmware-nyan-0.0.1/.dist/nyan_ec_5771.10.0.tbz2/ec.bin
+EC version:   nyan_v1.1.1782-23f1337
+
+Package Content:
+d7124c9a2680ff57f1c7d6521ac5ef8c *./mosys
+ad9520c70add670d8f2770a2a3c4115a *./gbb_utility
+7b6bb5035fa8101b41c954bce5250dae *./ec.bin
+a273d7fd6663c665176159496bc014ff *./flashrom
+d149f6413749ca6a0edddd52926f95ca *./dump_fmap
+5bfe13d9b7fef1dfd9d3dac185f94994 *./crossystem
+3c3a99346d1ca1273cbcd86c104851ff *./shflags
+4aba4c07a65b7bf82d72d8ed892f5dc5 *./bios.bin
+2a484f3e107bf27a4d1068e03e74803c *./common.sh
+995a97518f90541d37c3f57a336d37db *./vpd
+b9270e726180af1ed59077d1ab2fc688 *./crosfw.sh
+f6b0b80d5f2d9a2fb41ebb6e2cee7ad8 *./updater4.sh
+4363fcfd6849b2ab1a7320b1c98a11f2 *./crosutil.sh
+''')
+    build_sbin = os.path.join(self._buildroot, 'usr', 'sbin')
+    osutils.Touch(os.path.join(build_sbin, 'chromeos-firmwareupdate'),
+                  makedirs=True)
+    result = commands.GetFirmwareVersions(self._buildroot)
+    versions = ('Google_Nyan.5771.10.0', 'nyan_v1.1.1782-23f1337')
+    self.assertEquals(result, versions)
+
   def testBuildMaximum(self):
     """Base case where Build is called with all options (except extra_env)."""
     self.testBuild(default=True)
