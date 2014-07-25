@@ -566,6 +566,12 @@ void IdentityGetAuthTokenFunction::OnIssueAdviceSuccess(
 }
 
 void IdentityGetAuthTokenFunction::SigninSuccess() {
+  // If there was no account associated this profile before the
+  // sign-in, we may not have an account_id in the token_key yet.
+  if (token_key_->account_id.empty()) {
+    token_key_->account_id = GetPrimaryAccountId(GetProfile());
+  }
+
   StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE);
 }
 
