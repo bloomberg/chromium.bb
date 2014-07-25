@@ -82,10 +82,11 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest,
   SetupPendingPassword();
 
   // Bubble should not be focused by default.
-  EXPECT_FALSE(
-      ManagePasswordsBubbleView::Bubble()->GetFocusManager()->GetFocusedView());
+  EXPECT_FALSE(ManagePasswordsBubbleView::manage_password_bubble()->
+      GetFocusManager()->GetFocusedView());
   // Bubble can be active if user clicks it.
-  EXPECT_TRUE(ManagePasswordsBubbleView::Bubble()->CanActivate());
+  EXPECT_TRUE(ManagePasswordsBubbleView::manage_password_bubble()->
+      CanActivate());
 
   scoped_ptr<base::HistogramSamples> samples(
       GetSamples(kDisplayDispositionMetric));

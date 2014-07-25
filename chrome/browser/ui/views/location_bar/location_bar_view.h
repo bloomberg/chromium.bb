@@ -320,9 +320,6 @@ class LocationBarView : public LocationBar,
   // Updates |manage_passwords_icon_view_|. Returns true if visibility changed.
   bool RefreshManagePasswordsIconView();
 
-  // Shows the manage passwords bubble if there is a savable password.
-  void ShowManagePasswordsBubbleIfNeeded();
-
   // Helper to show the first run info bubble.
   void ShowFirstRunBubbleInternal();
 

@@ -24,6 +24,7 @@ class ManagePasswordsIconView : public ManagePasswordsIcon,
   // BubbleIconView:
   virtual bool IsBubbleShowing() const OVERRIDE;
   virtual void OnExecuting(BubbleIconView::ExecuteSource source) OVERRIDE;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
 
 #if defined(UNIT_TEST)
   int icon_id() const { return icon_id_; }

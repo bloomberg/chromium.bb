@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_view_test.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
+#include "content/public/test/test_utils.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,4 +59,17 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsIconViewTest, BlacklistedState) {
   EXPECT_EQ(IDR_SAVE_PASSWORD_DISABLED_ACTIVE, view()->icon_id());
   view()->SetActive(false);
   EXPECT_EQ(IDR_SAVE_PASSWORD_DISABLED_INACTIVE, view()->icon_id());
+}
+
+IN_PROC_BROWSER_TEST_F(ManagePasswordsIconViewTest, CloseOnClick) {
+  SetupPendingPassword();
+  EXPECT_TRUE(view()->visible());
+  EXPECT_TRUE(view()->active());
+  ui::MouseEvent mouse_down(ui::ET_MOUSE_PRESSED,
+                            gfx::Point(10, 10), gfx::Point(900, 60),
+                            ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  static_cast<views::View*>(view())->OnMousePressed(mouse_down);
+  // Wait for the command execution to close the bubble.
+  content::RunAllPendingInMessageLoop();
+  EXPECT_FALSE(view()->active());
 }

@@ -139,6 +139,11 @@ void AddTitleRow(views::GridLayout* layout, ManagePasswordsBubbleModel* model) {
 namespace chrome {
 
 void ShowManagePasswordsBubble(content::WebContents* web_contents) {
+  if (ManagePasswordsBubbleView::IsShowing()) {
+    // The bubble is currently shown for some other tab. We should close it now
+    // and open for |web_contents|.
+    ManagePasswordsBubbleView::CloseBubble();
+  }
   ManagePasswordsUIController* controller =
       ManagePasswordsUIController::FromWebContents(web_contents);
   ManagePasswordsBubbleView::ShowBubble(
@@ -500,11 +505,6 @@ void ManagePasswordsBubbleView::SaveConfirmationView::ButtonPressed(
 // static
 ManagePasswordsBubbleView* ManagePasswordsBubbleView::manage_passwords_bubble_ =
     NULL;
-
-// static
-const ManagePasswordsBubbleView* ManagePasswordsBubbleView::Bubble() {
-  return ManagePasswordsBubbleView::manage_passwords_bubble_;
-}
 
 // static
 void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,

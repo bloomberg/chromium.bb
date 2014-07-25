@@ -163,7 +163,9 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   static bool IsShowing();
 
   // Returns a pointer to the bubble.
-  static const ManagePasswordsBubbleView* Bubble();
+  static const ManagePasswordsBubbleView* manage_password_bubble() {
+    return manage_passwords_bubble_;
+  }
 
  private:
   ManagePasswordsBubbleView(content::WebContents* web_contents,

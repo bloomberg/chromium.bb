@@ -66,3 +66,10 @@ bool ManagePasswordsIconView::IsBubbleShowing() const {
 void ManagePasswordsIconView::OnExecuting(
     BubbleIconView::ExecuteSource source) {
 }
+
+bool ManagePasswordsIconView::OnMousePressed(const ui::MouseEvent& event) {
+  bool result = BubbleIconView::OnMousePressed(event);
+  if (IsBubbleShowing())
+    ManagePasswordsBubbleView::CloseBubble();
+  return result;
+}
