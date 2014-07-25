@@ -341,8 +341,6 @@ public:
     virtual void startLoadingDynamicSheet() { ASSERT_NOT_REACHED(); }
 
     bool hasName() const { return !isTextNode() && getFlag(HasNameOrIsEditingTextFlag); }
-    bool hasID() const;
-    bool hasClass() const;
 
     bool isUserActionElement() const { return getFlag(IsUserActionElementFlag); }
     void setUserActionElement(bool flag) { setFlag(flag, IsUserActionElementFlag); }

@@ -788,17 +788,6 @@ inline UniqueElementData& Element::ensureUniqueElementData()
     return toUniqueElementData(*m_elementData);
 }
 
-// Put here to make them inline.
-inline bool Node::hasID() const
-{
-    return isElementNode() && toElement(this)->hasID();
-}
-
-inline bool Node::hasClass() const
-{
-    return isElementNode() && toElement(this)->hasClass();
-}
-
 inline Node::InsertionNotificationRequest Node::insertedInto(ContainerNode* insertionPoint)
 {
     ASSERT(!childNeedsStyleInvalidation());

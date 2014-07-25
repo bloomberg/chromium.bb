@@ -1698,20 +1698,23 @@ String Node::debugName() const
     StringBuilder name;
     name.append(nodeName());
 
-    if (hasID()) {
-        name.appendLiteral(" id=\'");
-        name.append(toElement(this)->getIdAttribute());
-        name.append('\'');
-    }
-
-    if (hasClass()) {
-        name.appendLiteral(" class=\'");
-        for (size_t i = 0; i < toElement(this)->classNames().size(); ++i) {
-            if (i > 0)
-                name.append(' ');
-            name.append(toElement(this)->classNames()[i]);
+    if (isElementNode()) {
+        const Element& thisElement = toElement(*this);
+        if (thisElement.hasID()) {
+            name.appendLiteral(" id=\'");
+            name.append(thisElement.getIdAttribute());
+            name.append('\'');
         }
-        name.append('\'');
+
+        if (thisElement.hasClass()) {
+            name.appendLiteral(" class=\'");
+            for (size_t i = 0; i < thisElement.classNames().size(); ++i) {
+                if (i > 0)
+                    name.append(' ');
+                name.append(thisElement.classNames()[i]);
+            }
+            name.append('\'');
+        }
     }
 
     return name.toString();

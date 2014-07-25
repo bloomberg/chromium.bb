@@ -348,17 +348,18 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
     }
 
     if (behavior & RenderAsTextShowIDAndClass) {
-        if (Node* node = o.node()) {
-            if (node->hasID())
-                ts << " id=\"" + toElement(node)->getIdAttribute() + "\"";
+        Node* node = o.node();
+        if (node && node->isElementNode()) {
+            Element& element = toElement(*node);
+            if (element.hasID())
+                ts << " id=\"" + element.getIdAttribute() + "\"";
 
-            if (node->hasClass()) {
+            if (element.hasClass()) {
                 ts << " class=\"";
-                Element* element = toElement(node);
-                for (size_t i = 0; i < element->classNames().size(); ++i) {
+                for (size_t i = 0; i < element.classNames().size(); ++i) {
                     if (i > 0)
                         ts << " ";
-                    ts << element->classNames()[i];
+                    ts << element.classNames()[i];
                 }
                 ts << "\"";
             }
