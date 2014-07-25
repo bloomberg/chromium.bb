@@ -144,7 +144,7 @@ function buildCardSet() {
             // Create it.
             console.log(
                 'cardManager.updateNotification ' + chromeNotificationId +
-                ' failed to update, creating');
+                ' not updated, creating instead');
             instrumented.notifications.create(
                 chromeNotificationId,
                 receivedNotification.chromeNotificationOptions,
