@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
+#include "chrome/browser/drive/drive_api_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -117,6 +118,8 @@ class SearchMetadataTest : public testing::Test {
         "Document 1 excludeDir-test", "doc1", 8, root_local_id);
     entry.mutable_file_specific_info()->set_is_hosted_document(true);
     entry.mutable_file_specific_info()->set_document_extension(".gdoc");
+    entry.mutable_file_specific_info()->set_content_mime_type(
+        drive::util::kGoogleDocumentMimeType);
     EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(entry, &local_id));
 
   }

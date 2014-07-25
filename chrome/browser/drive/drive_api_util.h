@@ -109,19 +109,10 @@ ConvertChangeListToResourceList(const google_apis::ChangeList& change_list);
 // or an empty string if an error is found.
 std::string GetMd5Digest(const base::FilePath& file_path);
 
-// The resource ID for the root directory for WAPI is defined in the spec:
-// https://developers.google.com/google-apps/documents-list/
-extern const char kWapiRootDirectoryResourceId[];
-
 // Returns preferred file extension for hosted documents which have given mime
 // type. If the given mime type is not known as one for hosted documents,
 // returns empty string.
 std::string GetHostedDocumentExtension(const std::string& mime_type);
-
-// Returns mime type for hosted documents which have given extension in form
-// ".xxx". If the given extension is not known as one for hosted documents,
-// returns empty string.
-std::string GetHostedDocumentMimeType(const std::string& extension);
 
 // Returns true if the given mime type is corresponding to one of hosted
 // documents.

@@ -166,8 +166,7 @@ bool IsEligibleEntry(const ResourceEntry& entry, int options) {
     if (entry.file_specific_info().is_hosted_document()) {
       // Not all hosted documents are cached by Drive offline app.
       // http://support.google.com/drive/bin/answer.py?hl=en&answer=1628467
-      std::string mime_type = drive::util::GetHostedDocumentMimeType(
-          entry.file_specific_info().document_extension());
+      std::string mime_type = entry.file_specific_info().content_mime_type();
       return mime_type == drive::util::kGoogleDocumentMimeType ||
              mime_type == drive::util::kGoogleSpreadsheetMimeType ||
              mime_type == drive::util::kGooglePresentationMimeType ||

@@ -44,7 +44,6 @@ const HostedDocumentKind kHostedDocumentKinds[] = {
 
 }  // namespace
 
-
 std::string EscapeQueryStringValue(const std::string& str) {
   std::string result;
   result.reserve(str.size());
@@ -342,20 +341,10 @@ std::string GetMd5Digest(const base::FilePath& file_path) {
   return MD5DigestToBase16(digest);
 }
 
-const char kWapiRootDirectoryResourceId[] = "folder:root";
-
 std::string GetHostedDocumentExtension(const std::string& mime_type) {
   for (size_t i = 0; i < arraysize(kHostedDocumentKinds); ++i) {
     if (mime_type == kHostedDocumentKinds[i].mime_type)
       return kHostedDocumentKinds[i].extension;
-  }
-  return std::string();
-}
-
-std::string GetHostedDocumentMimeType(const std::string& extension) {
-  for (size_t i = 0; i < arraysize(kHostedDocumentKinds); ++i) {
-    if (extension == kHostedDocumentKinds[i].extension)
-      return kHostedDocumentKinds[i].mime_type;
   }
   return std::string();
 }
