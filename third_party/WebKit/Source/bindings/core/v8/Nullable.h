@@ -33,7 +33,7 @@ public:
         return *this;
     }
 
-    T get() const { ASSERT(!m_isNull); return m_value; }
+    const T& get() const { ASSERT(!m_isNull); return m_value; }
     bool isNull() const { return m_isNull; }
 
     operator bool() const { return !m_isNull && m_value; }
