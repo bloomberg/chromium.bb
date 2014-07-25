@@ -267,7 +267,7 @@ static void stringArrayMethodStringArrayArgMethodCallback(const v8::FunctionCall
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (info.Length() < 1) {
+    if (UNLIKELY(info.Length() < 1)) {
         throwMinimumArityTypeErrorForConstructor("TestTypedefs", 1, info.Length(), info.GetIsolate());
         return;
     }

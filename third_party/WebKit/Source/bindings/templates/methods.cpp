@@ -573,7 +573,7 @@ static void {{name}}(const v8::FunctionCallbackInfo<v8::Value>& info)
     {% endif %}
     {# Overloaded constructors have length checked during overload resolution #}
     {% if constructor.number_of_required_arguments and not constructor.overload_index %}
-    if (info.Length() < {{constructor.number_of_required_arguments}}) {
+    if (UNLIKELY(info.Length() < {{constructor.number_of_required_arguments}})) {
         {{throw_minimum_arity_type_error(constructor, constructor.number_of_required_arguments)}};
         return;
     }

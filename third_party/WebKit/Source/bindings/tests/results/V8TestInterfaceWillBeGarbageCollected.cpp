@@ -98,7 +98,7 @@ static void funcMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (info.Length() < 1) {
+    if (UNLIKELY(info.Length() < 1)) {
         throwMinimumArityTypeErrorForConstructor("TestInterfaceWillBeGarbageCollected", 1, info.Length(), info.GetIsolate());
         return;
     }
@@ -135,7 +135,7 @@ static void V8TestInterfaceWillBeGarbageCollectedConstructorCallback(const v8::F
         v8SetReturnValue(info, info.Holder());
         return;
     }
-    if (info.Length() < 1) {
+    if (UNLIKELY(info.Length() < 1)) {
         throwMinimumArityTypeErrorForConstructor("TestInterfaceWillBeGarbageCollected", 1, info.Length(), info.GetIsolate());
         return;
     }
