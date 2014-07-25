@@ -56,8 +56,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/cookies/cookie_store.h"
-#include "net/ssl/server_bound_cert_service.h"
-#include "net/ssl/server_bound_cert_store.h"
+#include "net/ssl/channel_id_service.h"
+#include "net/ssl/channel_id_store.h"
 #include "net/ssl/ssl_client_cert_type.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -298,52 +298,53 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
 };
 #endif
 
-class RemoveServerBoundCertTester : public net::SSLConfigService::Observer {
+class RemoveChannelIDTester : public net::SSLConfigService::Observer {
  public:
-  explicit RemoveServerBoundCertTester(TestingProfile* profile)
+  explicit RemoveChannelIDTester(TestingProfile* profile)
       : ssl_config_changed_count_(0) {
-    server_bound_cert_service_ = profile->GetRequestContext()->
-        GetURLRequestContext()->server_bound_cert_service();
+    channel_id_service_ = profile->GetRequestContext()->
+        GetURLRequestContext()->channel_id_service();
     ssl_config_service_ = profile->GetSSLConfigService();
     ssl_config_service_->AddObserver(this);
   }
 
-  virtual ~RemoveServerBoundCertTester() {
+  virtual ~RemoveChannelIDTester() {
     ssl_config_service_->RemoveObserver(this);
   }
 
-  int ServerBoundCertCount() {
-    return server_bound_cert_service_->cert_count();
+  int ChannelIDCount() {
+    return channel_id_service_->cert_count();
   }
 
   // Add a server bound cert for |server| with specific creation and expiry
   // times.  The cert and key data will be filled with dummy values.
-  void AddServerBoundCertWithTimes(const std::string& server_identifier,
+  void AddChannelIDWithTimes(const std::string& server_identifier,
                                    base::Time creation_time,
                                    base::Time expiration_time) {
-    GetCertStore()->SetServerBoundCert(server_identifier,
-                                       creation_time,
-                                       expiration_time,
-                                       "a",
-                                       "b");
+    GetChannelIDStore()->SetChannelID(server_identifier,
+                                      creation_time,
+                                      expiration_time,
+                                      "a",
+                                      "b");
   }
 
   // Add a server bound cert for |server|, with the current time as the
   // creation time.  The cert and key data will be filled with dummy values.
-  void AddServerBoundCert(const std::string& server_identifier) {
+  void AddChannelID(const std::string& server_identifier) {
     base::Time now = base::Time::Now();
-    AddServerBoundCertWithTimes(server_identifier,
-                                now,
-                                now + base::TimeDelta::FromDays(1));
+    AddChannelIDWithTimes(server_identifier,
+                          now,
+                          now + base::TimeDelta::FromDays(1));
   }
 
-  void GetCertList(net::ServerBoundCertStore::ServerBoundCertList* certs) {
-    GetCertStore()->GetAllServerBoundCerts(
-        base::Bind(&RemoveServerBoundCertTester::GetAllCertsCallback, certs));
+  void GetChannelIDList(net::ChannelIDStore::ChannelIDList* channel_ids) {
+    GetChannelIDStore()->GetAllChannelIDs(
+        base::Bind(&RemoveChannelIDTester::GetAllChannelIDsCallback,
+                   channel_ids));
   }
 
-  net::ServerBoundCertStore* GetCertStore() {
-    return server_bound_cert_service_->GetCertStore();
+  net::ChannelIDStore* GetChannelIDStore() {
+    return channel_id_service_->GetChannelIDStore();
   }
 
   int ssl_config_changed_count() const {
@@ -356,17 +357,17 @@ class RemoveServerBoundCertTester : public net::SSLConfigService::Observer {
   }
 
  private:
-  static void GetAllCertsCallback(
-      net::ServerBoundCertStore::ServerBoundCertList* dest,
-      const net::ServerBoundCertStore::ServerBoundCertList& result) {
+  static void GetAllChannelIDsCallback(
+      net::ChannelIDStore::ChannelIDList* dest,
+      const net::ChannelIDStore::ChannelIDList& result) {
     *dest = result;
   }
 
-  net::ServerBoundCertService* server_bound_cert_service_;
+  net::ChannelIDService* channel_id_service_;
   scoped_refptr<net::SSLConfigService> ssl_config_service_;
   int ssl_config_changed_count_;
 
-  DISALLOW_COPY_AND_ASSIGN(RemoveServerBoundCertTester);
+  DISALLOW_COPY_AND_ASSIGN(RemoveChannelIDTester);
 };
 
 class RemoveHistoryTester {
@@ -886,44 +887,44 @@ TEST_F(BrowsingDataRemoverTest, RemoveSafeBrowsingCookieLastHour) {
 }
 #endif
 
-TEST_F(BrowsingDataRemoverTest, RemoveServerBoundCertForever) {
-  RemoveServerBoundCertTester tester(GetProfile());
+TEST_F(BrowsingDataRemoverTest, RemoveChannelIDForever) {
+  RemoveChannelIDTester tester(GetProfile());
 
-  tester.AddServerBoundCert(kTestOrigin1);
+  tester.AddChannelID(kTestOrigin1);
   EXPECT_EQ(0, tester.ssl_config_changed_count());
-  EXPECT_EQ(1, tester.ServerBoundCertCount());
+  EXPECT_EQ(1, tester.ChannelIDCount());
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
-      BrowsingDataRemover::REMOVE_SERVER_BOUND_CERTS, false);
+      BrowsingDataRemover::REMOVE_CHANNEL_IDS, false);
 
-  EXPECT_EQ(BrowsingDataRemover::REMOVE_SERVER_BOUND_CERTS, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_CHANNEL_IDS, GetRemovalMask());
   EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_EQ(1, tester.ssl_config_changed_count());
-  EXPECT_EQ(0, tester.ServerBoundCertCount());
+  EXPECT_EQ(0, tester.ChannelIDCount());
 }
 
-TEST_F(BrowsingDataRemoverTest, RemoveServerBoundCertLastHour) {
-  RemoveServerBoundCertTester tester(GetProfile());
+TEST_F(BrowsingDataRemoverTest, RemoveChannelIDLastHour) {
+  RemoveChannelIDTester tester(GetProfile());
 
   base::Time now = base::Time::Now();
-  tester.AddServerBoundCert(kTestOrigin1);
-  tester.AddServerBoundCertWithTimes(kTestOrigin2,
+  tester.AddChannelID(kTestOrigin1);
+  tester.AddChannelIDWithTimes(kTestOrigin2,
                                      now - base::TimeDelta::FromHours(2),
                                      now);
   EXPECT_EQ(0, tester.ssl_config_changed_count());
-  EXPECT_EQ(2, tester.ServerBoundCertCount());
+  EXPECT_EQ(2, tester.ChannelIDCount());
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::LAST_HOUR,
-      BrowsingDataRemover::REMOVE_SERVER_BOUND_CERTS, false);
+      BrowsingDataRemover::REMOVE_CHANNEL_IDS, false);
 
-  EXPECT_EQ(BrowsingDataRemover::REMOVE_SERVER_BOUND_CERTS, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_CHANNEL_IDS, GetRemovalMask());
   EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_EQ(1, tester.ssl_config_changed_count());
-  ASSERT_EQ(1, tester.ServerBoundCertCount());
-  net::ServerBoundCertStore::ServerBoundCertList certs;
-  tester.GetCertList(&certs);
-  ASSERT_EQ(1U, certs.size());
-  EXPECT_EQ(kTestOrigin2, certs.front().server_identifier());
+  ASSERT_EQ(1, tester.ChannelIDCount());
+  net::ChannelIDStore::ChannelIDList channel_ids;
+  tester.GetChannelIDList(&channel_ids);
+  ASSERT_EQ(1U, channel_ids.size());
+  EXPECT_EQ(kTestOrigin2, channel_ids.front().server_identifier());
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveUnprotectedLocalStorageForever) {

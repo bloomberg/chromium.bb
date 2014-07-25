@@ -512,7 +512,7 @@ int MapNSSClientError(PRErrorCode err) {
 // 2) NSS Task Runner: Prepare data to go from NSS to an IO function:
 //    (BufferRecv, BufferSend)
 // 3) Network Task Runner: Perform IO on that data (DoBufferRecv,
-//    DoBufferSend, DoGetDomainBoundCert, OnGetDomainBoundCertComplete)
+//    DoBufferSend, DoGetChannelID, OnGetChannelIDComplete)
 // 4) Both Task Runners: Callback for asynchronous completion or to marshal
 //    data from the network task runner back to NSS (BufferRecvComplete,
 //    BufferSendComplete, OnHandshakeIOComplete)
@@ -580,7 +580,7 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   // that their lifetimes match that of the owning SSLClientSocketNSS.
   //
   // The caller retains ownership of |transport|, |net_log|, and
-  // |server_bound_cert_service|, and they will not be accessed once Detach()
+  // |channel_id_service|, and they will not be accessed once Detach()
   // has been called.
   Core(base::SequencedTaskRunner* network_task_runner,
        base::SequencedTaskRunner* nss_task_runner,
@@ -588,7 +588,7 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
        const HostPortPair& host_and_port,
        const SSLConfig& ssl_config,
        BoundNetLog* net_log,
-       ServerBoundCertService* server_bound_cert_service);
+       ChannelIDService* channel_id_service);
 
   // Called on the network task runner.
   // Transfers ownership of |socket|, an NSS SSL socket, and |buffers|, the
@@ -742,7 +742,7 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   // key into a SECKEYPublicKey and SECKEYPrivateKey. Returns OK upon success
   // and an error code otherwise.
   // Requires |domain_bound_private_key_| and |domain_bound_cert_| to have been
-  // set by a call to ServerBoundCertService->GetDomainBoundCert. The caller
+  // set by a call to ChannelIDService->GetChannelID. The caller
   // takes ownership of the |*cert| and |*key|.
   int ImportChannelIDKeys(SECKEYPublicKey** public_key, SECKEYPrivateKey** key);
 
@@ -769,9 +769,9 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   ////////////////////////////////////////////////////////////////////////////
   int DoBufferRecv(IOBuffer* buffer, int len);
   int DoBufferSend(IOBuffer* buffer, int len);
-  int DoGetDomainBoundCert(const std::string& host);
+  int DoGetChannelID(const std::string& host);
 
-  void OnGetDomainBoundCertComplete(int result);
+  void OnGetChannelIDComplete(int result);
   void OnHandshakeStateUpdated(const HandshakeState& state);
   void OnNSSBufferUpdated(int amount_in_read_buffer);
   void DidNSSRead(int result);
@@ -820,8 +820,8 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   HandshakeState network_handshake_state_;
 
   // The service for retrieving Channel ID keys.  May be NULL.
-  ServerBoundCertService* server_bound_cert_service_;
-  ServerBoundCertService::RequestHandle domain_bound_cert_request_handle_;
+  ChannelIDService* channel_id_service_;
+  ChannelIDService::RequestHandle domain_bound_cert_request_handle_;
 
   // The information about NSS task runner.
   int unhandled_buffer_size_;
@@ -902,7 +902,7 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   // for the network task runner from the NSS task runner.
   base::WeakPtr<BoundNetLog> weak_net_log_;
 
-  // Written on the network task runner by the |server_bound_cert_service_|,
+  // Written on the network task runner by the |channel_id_service_|,
   // prior to invoking OnHandshakeIOComplete.
   // Read on the NSS task runner when once OnHandshakeIOComplete is invoked
   // on the NSS task runner.
@@ -919,11 +919,11 @@ SSLClientSocketNSS::Core::Core(
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     BoundNetLog* net_log,
-    ServerBoundCertService* server_bound_cert_service)
+    ChannelIDService* channel_id_service)
     : detached_(false),
       transport_(transport),
       weak_net_log_factory_(net_log),
-      server_bound_cert_service_(server_bound_cert_service),
+      channel_id_service_(channel_id_service),
       unhandled_buffer_size_(0),
       nss_waiting_read_(false),
       nss_waiting_write_(false),
@@ -1026,7 +1026,7 @@ bool SSLClientSocketNSS::Core::Init(PRFileDesc* socket,
     return false;
   }
 
-  if (IsChannelIDEnabled(ssl_config_, server_bound_cert_service_)) {
+  if (IsChannelIDEnabled(ssl_config_, channel_id_service_)) {
     rv = SSL_SetClientChannelIDCallback(
         nss_fd_, SSLClientSocketNSS::Core::ClientChannelIDHandler, this);
     if (rv != SECSuccess) {
@@ -2284,12 +2284,12 @@ SECStatus SSLClientSocketNSS::Core::ClientChannelIDHandler(
   std::string host = core->host_and_port_.host();
   int error = ERR_UNEXPECTED;
   if (core->OnNetworkTaskRunner()) {
-    error = core->DoGetDomainBoundCert(host);
+    error = core->DoGetChannelID(host);
   } else {
     bool posted = core->network_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(
-            IgnoreResult(&Core::DoGetDomainBoundCert),
+            IgnoreResult(&Core::DoGetChannelID),
             core, host));
     error = posted ? ERR_IO_PENDING : ERR_ABORTED;
   }
@@ -2337,7 +2337,7 @@ int SSLClientSocketNSS::Core::ImportChannelIDKeys(SECKEYPublicKey** public_key,
   // Set the private key.
   if (!crypto::ECPrivateKey::ImportFromEncryptedPrivateKeyInfo(
           slot.get(),
-          ServerBoundCertService::kEPKIPassword,
+          ChannelIDService::kEPKIPassword,
           reinterpret_cast<const unsigned char*>(
               domain_bound_private_key_.data()),
           domain_bound_private_key_.size(),
@@ -2557,7 +2557,7 @@ void SSLClientSocketNSS::Core::RecordChannelIDSupportOnNetworkTaskRunner(
     bool supports_ecc) const {
   DCHECK(OnNetworkTaskRunner());
 
-  RecordChannelIDSupport(server_bound_cert_service_,
+  RecordChannelIDSupport(channel_id_service_,
                          negotiated_channel_id,
                          channel_id_enabled,
                          supports_ecc);
@@ -2607,7 +2607,7 @@ int SSLClientSocketNSS::Core::DoBufferSend(IOBuffer* send_buffer, int len) {
   return rv;
 }
 
-int SSLClientSocketNSS::Core::DoGetDomainBoundCert(const std::string& host) {
+int SSLClientSocketNSS::Core::DoGetChannelID(const std::string& host) {
   DCHECK(OnNetworkTaskRunner());
 
   if (detached_)
@@ -2615,11 +2615,11 @@ int SSLClientSocketNSS::Core::DoGetDomainBoundCert(const std::string& host) {
 
   weak_net_log_->BeginEvent(NetLog::TYPE_SSL_GET_DOMAIN_BOUND_CERT);
 
-  int rv = server_bound_cert_service_->GetOrCreateDomainBoundCert(
+  int rv = channel_id_service_->GetOrCreateChannelID(
       host,
       &domain_bound_private_key_,
       &domain_bound_cert_,
-      base::Bind(&Core::OnGetDomainBoundCertComplete, base::Unretained(this)),
+      base::Bind(&Core::OnGetChannelIDComplete, base::Unretained(this)),
       &domain_bound_cert_request_handle_);
 
   if (rv != ERR_IO_PENDING && !OnNSSTaskRunner()) {
@@ -2699,7 +2699,7 @@ void SSLClientSocketNSS::Core::OnHandshakeIOComplete(int result) {
     DoConnectCallback(rv);
 }
 
-void SSLClientSocketNSS::Core::OnGetDomainBoundCertComplete(int result) {
+void SSLClientSocketNSS::Core::OnGetChannelIDComplete(int result) {
   DVLOG(1) << __FUNCTION__ << " " << result;
   DCHECK(OnNetworkTaskRunner());
 
@@ -2784,7 +2784,7 @@ SSLClientSocketNSS::SSLClientSocketNSS(
       ssl_config_(ssl_config),
       cert_verifier_(context.cert_verifier),
       cert_transparency_verifier_(context.cert_transparency_verifier),
-      server_bound_cert_service_(context.server_bound_cert_service),
+      channel_id_service_(context.channel_id_service),
       ssl_session_cache_shard_(context.ssl_session_cache_shard),
       completed_handshake_(false),
       next_handshake_state_(STATE_NONE),
@@ -3095,7 +3095,7 @@ void SSLClientSocketNSS::InitCore() {
                    host_and_port_,
                    ssl_config_,
                    &net_log_,
-                   server_bound_cert_service_);
+                   channel_id_service_);
 }
 
 int SSLClientSocketNSS::InitializeSSLOptions() {
@@ -3591,8 +3591,8 @@ SSLClientSocketNSS::GetUnverifiedServerCertificateChain() const {
   return core_->state().server_cert.get();
 }
 
-ServerBoundCertService* SSLClientSocketNSS::GetServerBoundCertService() const {
-  return server_bound_cert_service_;
+ChannelIDService* SSLClientSocketNSS::GetChannelIDService() const {
+  return channel_id_service_;
 }
 
 }  // namespace net

@@ -18,8 +18,8 @@
 #include "net/http/http_auth_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_transaction_factory.h"
-#include "net/ssl/server_bound_cert_service.h"
-#include "net/ssl/server_bound_cert_store.h"
+#include "net/ssl/channel_id_service.h"
+#include "net/ssl/channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -34,7 +34,7 @@ class ProfileAuthDataTransferer {
   ProfileAuthDataTransferer(
       content::BrowserContext* from_context,
       content::BrowserContext* to_context,
-      bool transfer_auth_cookies_and_server_bound_certs,
+      bool transfer_auth_cookies_and_channel_ids,
       const base::Closure& completion_callback);
 
   void BeginTransfer();
@@ -52,23 +52,23 @@ class ProfileAuthDataTransferer {
   void RetrieveCookiesToTransfer();
 
   // Callback that receives the contents of |from_context_|'s cookie jar. Calls
-  // MaybeTransferCookiesAndCerts() to try and perform the transfer.
+  // MaybeTransferCookiesAndChannelIDs() to try and perform the transfer.
   void OnCookiesToTransferRetrieved(const net::CookieList& cookies_to_transfer);
 
-  // Retrieve |from_context_|'s server bound certs. When the retrieval finishes,
-  // OnServerBoundCertsToTransferRetrieved will be called with the result.
-  void RetrieveServerBoundCertsToTransfer();
+  // Retrieve |from_context_|'s channel IDs. When the retrieval finishes,
+  // OnChannelIDsToTransferRetrieved will be called with the result.
+  void RetrieveChannelIDsToTransfer();
 
-  // Callback that receives |from_context_|'s server bound certs. Calls
-  // MaybeTransferCookiesAndCerts() to try and perform the transfer.
-  void OnServerBoundCertsToTransferRetrieved(
-      const net::ServerBoundCertStore::ServerBoundCertList& certs_to_transfer);
+  // Callback that receives |from_context_|'s channel IDs. Calls
+  // MaybeTransferCookiesAndChannelIDs() to try and perform the transfer.
+  void OnChannelIDsToTransferRetrieved(
+      const net::ChannelIDStore::ChannelIDList& channel_ids_to_transfer);
 
-  // If both auth cookies and server bound certs have been retrieved from
+  // If both auth cookies and channel IDs have been retrieved from
   // |from_context| already, retrieve the contents of |to_context|'s cookie jar
   // as well, allowing OnTargetCookieJarContentsRetrieved() to perform the
   // actual transfer.
-  void MaybeTransferCookiesAndCerts();
+  void MaybeTransferCookiesAndChannelIDs();
 
   // Transfer auth cookies and server bound certificates to the user's
   // |to_context_| if the user's cookie jar is empty. Call Finish() when done.
@@ -80,28 +80,28 @@ class ProfileAuthDataTransferer {
 
   scoped_refptr<net::URLRequestContextGetter> from_context_;
   scoped_refptr<net::URLRequestContextGetter> to_context_;
-  bool transfer_auth_cookies_and_server_bound_certs_;
+  bool transfer_auth_cookies_and_channel_ids_;
   base::Closure completion_callback_;
 
   net::CookieList cookies_to_transfer_;
-  net::ServerBoundCertStore::ServerBoundCertList certs_to_transfer_;
+  net::ChannelIDStore::ChannelIDList channel_ids_to_transfer_;
 
   bool got_cookies_;
-  bool got_server_bound_certs_;
+  bool got_channel_ids_;
 };
 
 ProfileAuthDataTransferer::ProfileAuthDataTransferer(
     content::BrowserContext* from_context,
     content::BrowserContext* to_context,
-    bool transfer_auth_cookies_and_server_bound_certs,
+    bool transfer_auth_cookies_and_channel_ids,
     const base::Closure& completion_callback)
     : from_context_(from_context->GetRequestContext()),
       to_context_(to_context->GetRequestContext()),
-      transfer_auth_cookies_and_server_bound_certs_(
-          transfer_auth_cookies_and_server_bound_certs),
+      transfer_auth_cookies_and_channel_ids_(
+          transfer_auth_cookies_and_channel_ids),
       completion_callback_(completion_callback),
       got_cookies_(false),
-      got_server_bound_certs_(false) {
+      got_channel_ids_(false) {
 }
 
 void ProfileAuthDataTransferer::BeginTransfer() {
@@ -109,7 +109,7 @@ void ProfileAuthDataTransferer::BeginTransfer() {
   // If we aren't transferring auth cookies or server bound certificates, post
   // the completion callback immediately. Otherwise, it will be called when both
   // auth cookies and server bound certificates have been transferred.
-  if (!transfer_auth_cookies_and_server_bound_certs_) {
+  if (!transfer_auth_cookies_and_channel_ids_) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, completion_callback_);
     // Null the callback so that when Finish is called, the callback won't be
     // called again.
@@ -124,9 +124,9 @@ void ProfileAuthDataTransferer::BeginTransfer() {
 void ProfileAuthDataTransferer::BeginTransferOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   TransferProxyAuthCache();
-  if (transfer_auth_cookies_and_server_bound_certs_) {
+  if (transfer_auth_cookies_and_channel_ids_) {
     RetrieveCookiesToTransfer();
-    RetrieveServerBoundCertsToTransfer();
+    RetrieveChannelIDsToTransfer();
   } else {
     Finish();
   }
@@ -156,30 +156,30 @@ void ProfileAuthDataTransferer::OnCookiesToTransferRetrieved(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   got_cookies_ = true;
   cookies_to_transfer_ = cookies_to_transfer;
-  MaybeTransferCookiesAndCerts();
+  MaybeTransferCookiesAndChannelIDs();
 }
 
-void ProfileAuthDataTransferer::RetrieveServerBoundCertsToTransfer() {
+void ProfileAuthDataTransferer::RetrieveChannelIDsToTransfer() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  net::ServerBoundCertService* from_service =
-      from_context_->GetURLRequestContext()->server_bound_cert_service();
-  from_service->GetCertStore()->GetAllServerBoundCerts(
+  net::ChannelIDService* from_service =
+      from_context_->GetURLRequestContext()->channel_id_service();
+  from_service->GetChannelIDStore()->GetAllChannelIDs(
       base::Bind(
-          &ProfileAuthDataTransferer::OnServerBoundCertsToTransferRetrieved,
+          &ProfileAuthDataTransferer::OnChannelIDsToTransferRetrieved,
           base::Unretained(this)));
 }
 
-void ProfileAuthDataTransferer::OnServerBoundCertsToTransferRetrieved(
-    const net::ServerBoundCertStore::ServerBoundCertList& certs_to_transfer) {
+void ProfileAuthDataTransferer::OnChannelIDsToTransferRetrieved(
+    const net::ChannelIDStore::ChannelIDList& channel_ids_to_transfer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  certs_to_transfer_ = certs_to_transfer;
-  got_server_bound_certs_ = true;
-  MaybeTransferCookiesAndCerts();
+  channel_ids_to_transfer_ = channel_ids_to_transfer;
+  got_channel_ids_ = true;
+  MaybeTransferCookiesAndChannelIDs();
 }
 
-void ProfileAuthDataTransferer::MaybeTransferCookiesAndCerts() {
+void ProfileAuthDataTransferer::MaybeTransferCookiesAndChannelIDs() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!(got_cookies_ && got_server_bound_certs_))
+  if (!(got_cookies_ && got_channel_ids_))
     return;
 
   // Nothing to transfer over?
@@ -205,9 +205,10 @@ void ProfileAuthDataTransferer::OnTargetCookieJarContentsRetrieved(
         to_context_->GetURLRequestContext()->cookie_store();
     net::CookieMonster* to_monster = to_store->GetCookieMonster();
     to_monster->InitializeFrom(cookies_to_transfer_);
-    net::ServerBoundCertService* to_cert_service =
-        to_context_->GetURLRequestContext()->server_bound_cert_service();
-    to_cert_service->GetCertStore()->InitializeFrom(certs_to_transfer_);
+    net::ChannelIDService* to_cert_service =
+        to_context_->GetURLRequestContext()->channel_id_service();
+    to_cert_service->GetChannelIDStore()->InitializeFrom(
+        channel_ids_to_transfer_);
   }
 
   Finish();
@@ -225,12 +226,12 @@ void ProfileAuthDataTransferer::Finish() {
 void ProfileAuthData::Transfer(
     content::BrowserContext* from_context,
     content::BrowserContext* to_context,
-    bool transfer_auth_cookies_and_server_bound_certs,
+    bool transfer_auth_cookies_and_channel_ids,
     const base::Closure& completion_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   (new ProfileAuthDataTransferer(from_context,
                                  to_context,
-                                 transfer_auth_cookies_and_server_bound_certs,
+                                 transfer_auth_cookies_and_channel_ids,
                                  completion_callback))->BeginTransfer();
 }
 

@@ -55,8 +55,8 @@ XmppClientSocketFactory::CreateSSLClientSocket(
   context.transport_security_state = request_context_getter_->
       GetURLRequestContext()->transport_security_state();
   DCHECK(context.transport_security_state);
-  // TODO(rkn): context.server_bound_cert_service is NULL because the
-  // ServerBoundCertService class is not thread safe.
+  // TODO(rkn): context.channel_id_service is NULL because the
+  // ChannelIDService class is not thread safe.
   return client_socket_factory_->CreateSSLClientSocket(
       transport_socket.Pass(), host_and_port, ssl_config_, context);
 }

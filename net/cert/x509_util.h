@@ -44,7 +44,7 @@ NET_EXPORT_PRIVATE bool IsSupportedValidityRange(base::Time not_valid_before,
 //
 // See Internet Draft draft-balfanz-tls-obc-00 for more details:
 // http://tools.ietf.org/html/draft-balfanz-tls-obc-00
-NET_EXPORT_PRIVATE bool CreateKeyAndDomainBoundCertEC(
+NET_EXPORT_PRIVATE bool CreateKeyAndChannelIDEC(
     const std::string& domain,
     uint32 serial_number,
     base::Time not_valid_before,
@@ -52,14 +52,14 @@ NET_EXPORT_PRIVATE bool CreateKeyAndDomainBoundCertEC(
     scoped_ptr<crypto::ECPrivateKey>* key,
     std::string* der_cert);
 
-// Helper function for CreateKeyAndDomainBoundCertEC.
-NET_EXPORT_PRIVATE bool CreateDomainBoundCertEC(crypto::ECPrivateKey* key,
-                                                DigestAlgorithm alg,
-                                                const std::string& domain,
-                                                uint32 serial_number,
-                                                base::Time not_valid_before,
-                                                base::Time not_valid_after,
-                                                std::string* der_cert);
+// Helper function for CreateKeyAndChannelIDEC.
+NET_EXPORT_PRIVATE bool CreateChannelIDEC(crypto::ECPrivateKey* key,
+                                          DigestAlgorithm alg,
+                                          const std::string& domain,
+                                          uint32 serial_number,
+                                          base::Time not_valid_before,
+                                          base::Time not_valid_after,
+                                          std::string* der_cert);
 
 // Creates a public-private keypair and a self-signed certificate.
 // Subject, serial number and validity period are given as parameters.

@@ -45,12 +45,12 @@ class InfoMap;
 }
 
 namespace net {
+class ChannelIDService;
 class CookieStore;
 class FraudulentCertificateReporter;
 class FtpTransactionFactory;
 class HttpServerProperties;
 class HttpTransactionFactory;
-class ServerBoundCertService;
 class ProxyConfigService;
 class ProxyService;
 class SSLConfigService;
@@ -361,12 +361,12 @@ class ProfileIOData {
   // Called when the profile is destroyed.
   void ShutdownOnUIThread();
 
-  // A ServerBoundCertService object is created by a derived class of
+  // A ChannelIDService object is created by a derived class of
   // ProfileIOData, and the derived class calls this method to set the
-  // server_bound_cert_service_ member and transfers ownership to the base
+  // channel_id_service_ member and transfers ownership to the base
   // class.
-  void set_server_bound_cert_service(
-      net::ServerBoundCertService* server_bound_cert_service) const;
+  void set_channel_id_service(
+      net::ChannelIDService* channel_id_service) const;
 
   ChromeNetworkDelegate* network_delegate() const {
     return network_delegate_.get();
@@ -574,7 +574,7 @@ class ProfileIOData {
 
   // Pointed to by URLRequestContext.
   mutable scoped_refptr<extensions::InfoMap> extension_info_map_;
-  mutable scoped_ptr<net::ServerBoundCertService> server_bound_cert_service_;
+  mutable scoped_ptr<net::ChannelIDService> channel_id_service_;
   mutable scoped_ptr<ChromeNetworkDelegate> network_delegate_;
   mutable scoped_ptr<net::FraudulentCertificateReporter>
       fraudulent_certificate_reporter_;

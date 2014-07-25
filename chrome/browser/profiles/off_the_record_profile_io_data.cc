@@ -34,8 +34,8 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
-#include "net/ssl/default_server_bound_cert_store.h"
-#include "net/ssl/server_bound_cert_service.h"
+#include "net/ssl/channel_id_service.h"
+#include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "webkit/browser/database/database_tracker.h"
 
@@ -215,13 +215,13 @@ void OffTheRecordProfileIOData::InitializeInternal(
           new net::HttpServerPropertiesImpl()));
   main_context->set_http_server_properties(http_server_properties());
 
-  // For incognito, we use a non-persistent server bound cert store.
-  net::ServerBoundCertService* server_bound_cert_service =
-      new net::ServerBoundCertService(
-          new net::DefaultServerBoundCertStore(NULL),
+  // For incognito, we use a non-persistent channel ID store.
+  net::ChannelIDService* channel_id_service =
+      new net::ChannelIDService(
+          new net::DefaultChannelIDStore(NULL),
           base::WorkerPool::GetTaskRunner(true));
-  set_server_bound_cert_service(server_bound_cert_service);
-  main_context->set_server_bound_cert_service(server_bound_cert_service);
+  set_channel_id_service(channel_id_service);
+  main_context->set_channel_id_service(channel_id_service);
 
   using content::CookieStoreConfig;
   main_context->set_cookie_store(

@@ -25,15 +25,17 @@
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 #include "chrome/browser/browsing_data/local_data_container.h"
 #include "chrome/common/content_settings.h"
-#include "net/ssl/server_bound_cert_store.h"
+#include "net/ssl/channel_id_store.h"
 #include "ui/base/models/tree_node_model.h"
 
+class BrowsingDataChannelIDHelper;
 class BrowsingDataCookieHelper;
-class BrowsingDataServerBoundCertHelper;
 class CookieSettings;
 class CookiesTreeModel;
 class CookieTreeAppCacheNode;
 class CookieTreeAppCachesNode;
+class CookieTreeChannelIDNode;
+class CookieTreeChannelIDsNode;
 class CookieTreeCookieNode;
 class CookieTreeCookiesNode;
 class CookieTreeDatabaseNode;
@@ -47,8 +49,6 @@ class CookieTreeIndexedDBsNode;
 class CookieTreeLocalStorageNode;
 class CookieTreeLocalStoragesNode;
 class CookieTreeQuotaNode;
-class CookieTreeServerBoundCertNode;
-class CookieTreeServerBoundCertsNode;
 class CookieTreeSessionStorageNode;
 class CookieTreeSessionStoragesNode;
 class ExtensionSpecialStoragePolicy;
@@ -91,8 +91,8 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
       TYPE_FILE_SYSTEMS,  // This is used for CookieTreeFileSystemsNode.
       TYPE_FILE_SYSTEM,  // This is used for CookieTreeFileSystemNode.
       TYPE_QUOTA,  // This is used for CookieTreeQuotaNode.
-      TYPE_SERVER_BOUND_CERTS, // Used for CookieTreeServerBoundCertsNode.
-      TYPE_SERVER_BOUND_CERT, // Used for CookieTreeServerBoundCertNode.
+      TYPE_CHANNEL_IDS, // Used for CookieTreeChannelIDsNode.
+      TYPE_CHANNEL_ID, // Used for CookieTreeChannelIDNode.
       TYPE_FLASH_LSO,  // This is used for CookieTreeFlashLSONode.
     };
 
@@ -118,8 +118,8 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
         const BrowsingDataFileSystemHelper::FileSystemInfo* file_system_info);
     DetailedInfo& InitQuota(
         const BrowsingDataQuotaHelper::QuotaInfo* quota_info);
-    DetailedInfo& InitServerBoundCert(
-        const net::ServerBoundCertStore::ServerBoundCert* server_bound_cert);
+    DetailedInfo& InitChannelID(
+        const net::ChannelIDStore::ChannelID* channel_id);
     DetailedInfo& InitFlashLSO(const std::string& flash_lso_domain);
 
     NodeType node_type;
@@ -133,7 +133,7 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
     const content::IndexedDBInfo* indexed_db_info;
     const BrowsingDataFileSystemHelper::FileSystemInfo* file_system_info;
     const BrowsingDataQuotaHelper::QuotaInfo* quota_info;
-    const net::ServerBoundCertStore::ServerBoundCert* server_bound_cert;
+    const net::ChannelIDStore::ChannelID* channel_id;
     std::string flash_lso_domain;
   };
 
@@ -199,7 +199,7 @@ class CookieTreeHostNode : public CookieTreeNode {
   CookieTreeAppCachesNode* GetOrCreateAppCachesNode();
   CookieTreeIndexedDBsNode* GetOrCreateIndexedDBsNode();
   CookieTreeFileSystemsNode* GetOrCreateFileSystemsNode();
-  CookieTreeServerBoundCertsNode* GetOrCreateServerBoundCertsNode();
+  CookieTreeChannelIDsNode* GetOrCreateChannelIDsNode();
   CookieTreeQuotaNode* UpdateOrCreateQuotaNode(
       std::list<BrowsingDataQuotaHelper::QuotaInfo>::iterator quota_info);
   CookieTreeFlashLSONode* GetOrCreateFlashLSONode(const std::string& domain);
@@ -230,7 +230,7 @@ class CookieTreeHostNode : public CookieTreeNode {
   CookieTreeIndexedDBsNode* indexed_dbs_child_;
   CookieTreeFileSystemsNode* file_systems_child_;
   CookieTreeQuotaNode* quota_child_;
-  CookieTreeServerBoundCertsNode* server_bound_certs_child_;
+  CookieTreeChannelIDsNode* channel_ids_child_;
   CookieTreeFlashLSONode* flash_lso_child_;
 
   // The URL for which this node was initially created.
@@ -530,42 +530,42 @@ class CookieTreeQuotaNode : public CookieTreeNode {
   DISALLOW_COPY_AND_ASSIGN(CookieTreeQuotaNode);
 };
 
-// CookieTreeServerBoundCertNode ---------------------------------------------
-class CookieTreeServerBoundCertNode : public CookieTreeNode {
+// CookieTreeChannelIDNode ---------------------------------------------
+class CookieTreeChannelIDNode : public CookieTreeNode {
  public:
-  friend class CookieTreeServerBoundCertsNode;
+  friend class CookieTreeChannelIDsNode;
 
   // The iterator should remain valid at least as long as the
-  // CookieTreeServerBoundCertNode is valid.
-  explicit CookieTreeServerBoundCertNode(
-      net::ServerBoundCertStore::ServerBoundCertList::iterator cert);
-  virtual ~CookieTreeServerBoundCertNode();
+  // CookieTreeChannelIDNode is valid.
+  explicit CookieTreeChannelIDNode(
+      net::ChannelIDStore::ChannelIDList::iterator cert);
+  virtual ~CookieTreeChannelIDNode();
 
   // CookieTreeNode methods:
   virtual void DeleteStoredObjects() OVERRIDE;
   virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
 
  private:
-  // server_bound_cert_ is expected to remain valid as long as the
-  // CookieTreeServerBoundCertNode is valid.
-  net::ServerBoundCertStore::ServerBoundCertList::iterator server_bound_cert_;
+  // channel_id_ is expected to remain valid as long as the
+  // CookieTreeChannelIDNode is valid.
+  net::ChannelIDStore::ChannelIDList::iterator channel_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(CookieTreeServerBoundCertNode);
+  DISALLOW_COPY_AND_ASSIGN(CookieTreeChannelIDNode);
 };
 
-class CookieTreeServerBoundCertsNode : public CookieTreeNode {
+class CookieTreeChannelIDsNode : public CookieTreeNode {
  public:
-  CookieTreeServerBoundCertsNode();
-  virtual ~CookieTreeServerBoundCertsNode();
+  CookieTreeChannelIDsNode();
+  virtual ~CookieTreeChannelIDsNode();
 
   virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
 
-  void AddServerBoundCertNode(CookieTreeServerBoundCertNode* child) {
+  void AddChannelIDNode(CookieTreeChannelIDNode* child) {
     AddChildSortedByTitle(child);
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CookieTreeServerBoundCertsNode);
+  DISALLOW_COPY_AND_ASSIGN(CookieTreeChannelIDsNode);
 };
 
 // CookieTreeFlashLSONode ----------------------------------------------------
@@ -664,7 +664,7 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   void PopulateIndexedDBInfo(LocalDataContainer* container);
   void PopulateFileSystemInfo(LocalDataContainer* container);
   void PopulateQuotaInfo(LocalDataContainer* container);
-  void PopulateServerBoundCertInfo(LocalDataContainer* container);
+  void PopulateChannelIDInfo(LocalDataContainer* container);
   void PopulateFlashLSOInfo(LocalDataContainer* container);
 
   BrowsingDataCookieHelper* GetCookieHelper(const std::string& app_id);
@@ -706,7 +706,7 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   void PopulateQuotaInfoWithFilter(LocalDataContainer* container,
                                    ScopedBatchUpdateNotifier* notifier,
                                    const base::string16& filter);
-  void PopulateServerBoundCertInfoWithFilter(
+  void PopulateChannelIDInfoWithFilter(
       LocalDataContainer* container,
       ScopedBatchUpdateNotifier* notifier,
       const base::string16& filter);

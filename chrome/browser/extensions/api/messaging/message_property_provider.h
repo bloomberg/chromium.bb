@@ -27,28 +27,28 @@ class MessagePropertyProvider {
  public:
   MessagePropertyProvider();
 
-  typedef base::Callback<void(const std::string&)> DomainBoundCertCallback;
+  typedef base::Callback<void(const std::string&)> ChannelIDCallback;
 
   // Gets the DER-encoded public key of the domain-bound cert,
   // aka TLS channel ID, for the given URL.
   // Runs |reply| on the current message loop.
-  void GetDomainBoundCert(Profile* profile,
-                          const GURL& source_url,
-                          const DomainBoundCertCallback& reply);
+  void GetChannelID(Profile* profile,
+                    const GURL& source_url,
+                    const ChannelIDCallback& reply);
 
  private:
-  struct GetDomainBoundCertOutput;
+  struct GetChannelIDOutput;
 
-  static void GetDomainBoundCertOnIOThread(
+  static void GetChannelIDOnIOThread(
       scoped_refptr<base::TaskRunner> original_task_runner,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       const std::string& host,
-      const DomainBoundCertCallback& reply);
+      const ChannelIDCallback& reply);
 
-  static void GotDomainBoundCert(
+  static void GotChannelID(
       scoped_refptr<base::TaskRunner> original_task_runner,
-      struct GetDomainBoundCertOutput* output,
-      const DomainBoundCertCallback& reply,
+      struct GetChannelIDOutput* output,
+      const ChannelIDCallback& reply,
       int status);
 
   DISALLOW_COPY_AND_ASSIGN(MessagePropertyProvider);

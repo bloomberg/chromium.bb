@@ -26,8 +26,8 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/transport_security_persister.h"
 #include "net/http/transport_security_state.h"
-#include "net/ssl/default_server_bound_cert_store.h"
-#include "net/ssl/server_bound_cert_service.h"
+#include "net/ssl/channel_id_service.h"
+#include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/static_http_user_agent_settings.h"
@@ -300,9 +300,9 @@ URLRequestContext* URLRequestContextBuilder::Build() {
 
   // TODO(mmenke):  This always creates a file thread, even when it ends up
   // not being used.  Consider lazily creating the thread.
-  storage->set_server_bound_cert_service(
-      new ServerBoundCertService(
-          new DefaultServerBoundCertStore(NULL),
+  storage->set_channel_id_service(
+      new ChannelIDService(
+          new DefaultChannelIDStore(NULL),
           context->GetFileThread()->message_loop_proxy()));
 
   storage->set_transport_security_state(new net::TransportSecurityState());
@@ -355,8 +355,8 @@ URLRequestContext* URLRequestContextBuilder::Build() {
 
   HttpTransactionFactory* http_transaction_factory = NULL;
   if (http_cache_enabled_) {
-    network_session_params.server_bound_cert_service =
-        context->server_bound_cert_service();
+    network_session_params.channel_id_service =
+        context->channel_id_service();
     HttpCache::BackendFactory* http_cache_backend = NULL;
     if (http_cache_params_.type == HttpCacheParams::DISK) {
       http_cache_backend = new HttpCache::DefaultBackend(

@@ -152,6 +152,7 @@ const base::FilePath::CharType kAndroidCacheFilename[] = FPL("AndroidCache");
 const base::FilePath::CharType kArchivedHistoryFilename[] =
     FPL("Archived History");
 const base::FilePath::CharType kCacheDirname[] = FPL("Cache");
+const base::FilePath::CharType kChannelIDFilename[] = FPL("Origin Bound Certs");
 const base::FilePath::CharType kCookieFilename[] = FPL("Cookies");
 const base::FilePath::CharType kCRLSetFilename[] =
     FPL("Certificate Revocation Lists");
@@ -172,7 +173,6 @@ const base::FilePath::CharType kLoginDataFileName[] = FPL("Login Data");
 const base::FilePath::CharType kMediaCacheDirname[] = FPL("Media Cache");
 const base::FilePath::CharType kNewTabThumbnailsFilename[] =
     FPL("Top Thumbnails");
-const base::FilePath::CharType kOBCertFilename[] = FPL("Origin Bound Certs");
 const base::FilePath::CharType kPreferencesFilename[] = FPL("Preferences");
 const base::FilePath::CharType kProtectedPreferencesFilenameDeprecated[] =
     FPL("Protected Preferences");

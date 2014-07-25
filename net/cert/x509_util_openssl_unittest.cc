@@ -43,8 +43,8 @@ void VerifyCertificateSignature(const std::string& der_cert,
 // Verify the attributes of a domain-bound certificate.
 // |domain| is the bound domain name.
 // |der_cert| is the DER-encoded X.509 certificate.
-void VerifyDomainBoundCert(const std::string& domain,
-                           const std::string& der_cert) {
+void VerifyChannelID(const std::string& domain,
+                     const std::string& der_cert) {
   // Origin Bound Cert OID.
   static const char oid_string[] = "1.3.6.1.4.1.11129.2.1.6";
   crypto::ScopedOpenSSL<ASN1_OBJECT, ASN1_OBJECT_free>::Type oid_obj(
@@ -112,7 +112,7 @@ TEST(X509UtilOpenSSLTest, IsSupportedValidityRange) {
   EXPECT_FALSE(x509_util::IsSupportedValidityRange(too_late, too_late));
 }
 
-TEST(X509UtilOpenSSLTest, CreateDomainBoundCertEC) {
+TEST(X509UtilOpenSSLTest, CreateChannelIDEC) {
   // Create a sample ASCII weborigin.
   std::string domain = "weborigin.com";
   base::Time now = base::Time::Now();
@@ -121,15 +121,15 @@ TEST(X509UtilOpenSSLTest, CreateDomainBoundCertEC) {
       crypto::ECPrivateKey::Create());
   std::string der_cert;
   ASSERT_TRUE(
-      x509_util::CreateDomainBoundCertEC(private_key.get(),
-                                         x509_util::DIGEST_SHA1,
-                                         domain,
-                                         1,
-                                         now,
-                                         now + base::TimeDelta::FromDays(1),
-                                         &der_cert));
+      x509_util::CreateChannelIDEC(private_key.get(),
+                                   x509_util::DIGEST_SHA1,
+                                   domain,
+                                   1,
+                                   now,
+                                   now + base::TimeDelta::FromDays(1),
+                                   &der_cert));
 
-  VerifyDomainBoundCert(domain, der_cert);
+  VerifyChannelID(domain, der_cert);
 
   // signature_verifier_win and signature_verifier_mac can't handle EC certs.
   std::vector<uint8> spki;

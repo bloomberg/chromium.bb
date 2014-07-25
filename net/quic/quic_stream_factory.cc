@@ -453,7 +453,7 @@ QuicStreamFactory::QuicStreamFactory(
     ClientSocketFactory* client_socket_factory,
     base::WeakPtr<HttpServerProperties> http_server_properties,
     CertVerifier* cert_verifier,
-    ServerBoundCertService* server_bound_cert_service,
+    ChannelIDService* channel_id_service,
     QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory,
     QuicRandom* random_generator,
     QuicClock* clock,
@@ -489,7 +489,7 @@ QuicStreamFactory::QuicStreamFactory(
   // caused by Channel ID lookup.
 #if 0
   crypto_config_.SetChannelIDSource(
-      new ChannelIDSourceChromium(server_bound_cert_service));
+      new ChannelIDSourceChromium(channel_id_service));
 #endif
   base::CPU cpu;
   if (cpu.has_aesni() && cpu.has_avx())

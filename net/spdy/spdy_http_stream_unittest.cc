@@ -27,7 +27,7 @@
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_test_util_common.h"
-#include "net/ssl/default_server_bound_cert_store.h"
+#include "net/ssl/default_channel_id_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -111,7 +111,7 @@ class SpdyHttpStreamTest : public testing::Test,
   }
 
   void TestSendCredentials(
-    ServerBoundCertService* server_bound_cert_service,
+    ChannelIDService* channel_id_service,
     const std::string& cert,
     const std::string& proof);
 

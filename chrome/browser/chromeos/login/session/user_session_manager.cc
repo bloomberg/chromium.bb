@@ -651,7 +651,7 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
     ProfileAuthData::Transfer(
         authenticator_->authentication_profile(),
         profile,
-        has_auth_cookies_,  // transfer_auth_cookies_and_server_bound_certs
+        has_auth_cookies_,  // transfer_auth_cookies_and_channel_ids
         base::Bind(&UserSessionManager::CompleteProfileCreateAfterAuthTransfer,
                    AsWeakPtr(),
                    profile));

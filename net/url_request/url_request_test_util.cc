@@ -16,8 +16,8 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/transport_security_state.h"
-#include "net/ssl/default_server_bound_cert_store.h"
-#include "net/ssl/server_bound_cert_service.h"
+#include "net/ssl/channel_id_service.h"
+#include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -115,11 +115,11 @@ void TestURLRequestContext::Init() {
   // In-memory cookie store.
   if (!cookie_store())
     context_storage_.set_cookie_store(new CookieMonster(NULL, NULL));
-  // In-memory origin bound cert service.
-  if (!server_bound_cert_service()) {
-    context_storage_.set_server_bound_cert_service(
-        new ServerBoundCertService(
-            new DefaultServerBoundCertStore(NULL),
+  // In-memory Channel ID service.
+  if (!channel_id_service()) {
+    context_storage_.set_channel_id_service(
+        new ChannelIDService(
+            new DefaultChannelIDStore(NULL),
             base::WorkerPool::GetTaskRunner(true)));
   }
   if (!http_user_agent_settings()) {

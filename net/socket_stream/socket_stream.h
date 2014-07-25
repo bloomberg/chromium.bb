@@ -28,13 +28,13 @@ namespace net {
 
 class AuthChallengeInfo;
 class CertVerifier;
+class ChannelIDService;
 class ClientSocketFactory;
 class ClientSocketHandle;
 class CookieOptions;
 class HostResolver;
 class HttpAuthController;
 class SSLInfo;
-class ServerBoundCertService;
 class SingleRequestHostResolver;
 class SocketStreamMetrics;
 class TransportSecurityState;

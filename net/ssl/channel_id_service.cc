@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/ssl/server_bound_cert_service.h"
+#include "net/ssl/channel_id_service.h"
 
 #include <algorithm>
 #include <limits>
@@ -42,9 +42,9 @@ const int kValidityPeriodInDays = 365;
 const int kSystemTimeValidityBufferInDays = 90;
 
 // Used by the GetDomainBoundCertResult histogram to record the final
-// outcome of each GetDomainBoundCert or GetOrCreateDomainBoundCert call.
+// outcome of each GetChannelID or GetOrCreateChannelID call.
 // Do not re-use values.
-enum GetCertResult {
+enum GetChannelIDResult {
   // Synchronously found and returned an existing domain bound cert.
   SYNC_SUCCESS = 0,
   // Retrieved or generated and returned a domain bound cert asynchronously.
@@ -57,7 +57,7 @@ enum GetCertResult {
   ASYNC_FAILURE_CREATE_CERT = 4,
   ASYNC_FAILURE_EXPORT_KEY = 5,
   ASYNC_FAILURE_UNKNOWN = 6,
-  // GetDomainBoundCert or GetOrCreateDomainBoundCert was called with
+  // GetChannelID or GetOrCreateChannelID was called with
   // invalid arguments.
   INVALID_ARGUMENT = 7,
   // We don't support any of the cert types the server requested.
@@ -66,15 +66,15 @@ enum GetCertResult {
   TYPE_MISMATCH = 9,
   // Couldn't start a worker to generate a cert.
   WORKER_FAILURE = 10,
-  GET_CERT_RESULT_MAX
+  GET_CHANNEL_ID_RESULT_MAX
 };
 
-void RecordGetDomainBoundCertResult(GetCertResult result) {
+void RecordGetChannelIDResult(GetChannelIDResult result) {
   UMA_HISTOGRAM_ENUMERATION("DomainBoundCerts.GetDomainBoundCertResult", result,
-                            GET_CERT_RESULT_MAX);
+                            GET_CHANNEL_ID_RESULT_MAX);
 }
 
-void RecordGetCertTime(base::TimeDelta request_time) {
+void RecordGetChannelIDTime(base::TimeDelta request_time) {
   UMA_HISTOGRAM_CUSTOM_TIMES("DomainBoundCerts.GetCertTime",
                              request_time,
                              base::TimeDelta::FromMilliseconds(1),
@@ -82,15 +82,15 @@ void RecordGetCertTime(base::TimeDelta request_time) {
                              50);
 }
 
-// On success, returns a ServerBoundCert object and sets |*error| to OK.
+// On success, returns a ChannelID object and sets |*error| to OK.
 // Otherwise, returns NULL, and |*error| will be set to a net error code.
 // |serial_number| is passed in because base::RandInt cannot be called from an
 // unjoined thread, due to relying on a non-leaked LazyInstance
-scoped_ptr<ServerBoundCertStore::ServerBoundCert> GenerateCert(
+scoped_ptr<ChannelIDStore::ChannelID> GenerateChannelID(
     const std::string& server_identifier,
     uint32 serial_number,
     int* error) {
-  scoped_ptr<ServerBoundCertStore::ServerBoundCert> result;
+  scoped_ptr<ChannelIDStore::ChannelID> result;
 
   base::TimeTicks start = base::TimeTicks::Now();
   base::Time not_valid_before = base::Time::Now();
@@ -99,18 +99,18 @@ scoped_ptr<ServerBoundCertStore::ServerBoundCert> GenerateCert(
   std::string der_cert;
   std::vector<uint8> private_key_info;
   scoped_ptr<crypto::ECPrivateKey> key;
-  if (!x509_util::CreateKeyAndDomainBoundCertEC(server_identifier,
-                                                serial_number,
-                                                not_valid_before,
-                                                not_valid_after,
-                                                &key,
-                                                &der_cert)) {
+  if (!x509_util::CreateKeyAndChannelIDEC(server_identifier,
+                                          serial_number,
+                                          not_valid_before,
+                                          not_valid_after,
+                                          &key,
+                                          &der_cert)) {
     DLOG(ERROR) << "Unable to create x509 cert for client";
     *error = ERR_ORIGIN_BOUND_CERT_GENERATION_FAILED;
     return result.Pass();
   }
 
-  if (!key->ExportEncryptedPrivateKey(ServerBoundCertService::kEPKIPassword,
+  if (!key->ExportEncryptedPrivateKey(ChannelIDService::kEPKIPassword,
                                       1, &private_key_info)) {
     DLOG(ERROR) << "Unable to export private key";
     *error = ERR_PRIVATE_KEY_EXPORT_FAILED;
@@ -121,7 +121,7 @@ scoped_ptr<ServerBoundCertStore::ServerBoundCert> GenerateCert(
   // std::string* to prevent this copying.
   std::string key_out(private_key_info.begin(), private_key_info.end());
 
-  result.reset(new ServerBoundCertStore::ServerBoundCert(
+  result.reset(new ChannelIDStore::ChannelID(
       server_identifier,
       not_valid_before,
       not_valid_after,
@@ -139,12 +139,12 @@ scoped_ptr<ServerBoundCertStore::ServerBoundCert> GenerateCert(
 }  // namespace
 
 // Represents the output and result callback of a request.
-class ServerBoundCertServiceRequest {
+class ChannelIDServiceRequest {
  public:
-  ServerBoundCertServiceRequest(base::TimeTicks request_start,
-                                const CompletionCallback& callback,
-                                std::string* private_key,
-                                std::string* cert)
+  ChannelIDServiceRequest(base::TimeTicks request_start,
+                          const CompletionCallback& callback,
+                          std::string* private_key,
+                          std::string* cert)
       : request_start_(request_start),
         callback_(callback),
         private_key_(private_key),
@@ -153,7 +153,7 @@ class ServerBoundCertServiceRequest {
 
   // Ensures that the result callback will never be made.
   void Cancel() {
-    RecordGetDomainBoundCertResult(ASYNC_CANCELLED);
+    RecordGetChannelIDResult(ASYNC_CANCELLED);
     callback_.Reset();
     private_key_ = NULL;
     cert_ = NULL;
@@ -172,24 +172,24 @@ class ServerBoundCertServiceRequest {
                                    base::TimeDelta::FromMilliseconds(1),
                                    base::TimeDelta::FromMinutes(5),
                                    50);
-        RecordGetCertTime(request_time);
-        RecordGetDomainBoundCertResult(ASYNC_SUCCESS);
+        RecordGetChannelIDTime(request_time);
+        RecordGetChannelIDResult(ASYNC_SUCCESS);
         break;
       }
       case ERR_KEY_GENERATION_FAILED:
-        RecordGetDomainBoundCertResult(ASYNC_FAILURE_KEYGEN);
+        RecordGetChannelIDResult(ASYNC_FAILURE_KEYGEN);
         break;
       case ERR_ORIGIN_BOUND_CERT_GENERATION_FAILED:
-        RecordGetDomainBoundCertResult(ASYNC_FAILURE_CREATE_CERT);
+        RecordGetChannelIDResult(ASYNC_FAILURE_CREATE_CERT);
         break;
       case ERR_PRIVATE_KEY_EXPORT_FAILED:
-        RecordGetDomainBoundCertResult(ASYNC_FAILURE_EXPORT_KEY);
+        RecordGetChannelIDResult(ASYNC_FAILURE_EXPORT_KEY);
         break;
       case ERR_INSUFFICIENT_RESOURCES:
-        RecordGetDomainBoundCertResult(WORKER_FAILURE);
+        RecordGetChannelIDResult(WORKER_FAILURE);
         break;
       default:
-        RecordGetDomainBoundCertResult(ASYNC_FAILURE_UNKNOWN);
+        RecordGetChannelIDResult(ASYNC_FAILURE_UNKNOWN);
         break;
     }
     if (!callback_.is_null()) {
@@ -209,17 +209,17 @@ class ServerBoundCertServiceRequest {
   std::string* cert_;
 };
 
-// ServerBoundCertServiceWorker runs on a worker thread and takes care of the
+// ChannelIDServiceWorker runs on a worker thread and takes care of the
 // blocking process of performing key generation. Will take care of deleting
 // itself once Start() is called.
-class ServerBoundCertServiceWorker {
+class ChannelIDServiceWorker {
  public:
   typedef base::Callback<void(
       const std::string&,
       int,
-      scoped_ptr<ServerBoundCertStore::ServerBoundCert>)> WorkerDoneCallback;
+      scoped_ptr<ChannelIDStore::ChannelID>)> WorkerDoneCallback;
 
-  ServerBoundCertServiceWorker(
+  ChannelIDServiceWorker(
       const std::string& server_identifier,
       const WorkerDoneCallback& callback)
       : server_identifier_(server_identifier),
@@ -236,15 +236,15 @@ class ServerBoundCertServiceWorker {
 
     return task_runner->PostTask(
         FROM_HERE,
-        base::Bind(&ServerBoundCertServiceWorker::Run, base::Owned(this)));
+        base::Bind(&ChannelIDServiceWorker::Run, base::Owned(this)));
   }
 
  private:
   void Run() {
     // Runs on a worker thread.
     int error = ERR_FAILED;
-    scoped_ptr<ServerBoundCertStore::ServerBoundCert> cert =
-        GenerateCert(server_identifier_, serial_number_, &error);
+    scoped_ptr<ChannelIDStore::ChannelID> cert =
+        GenerateChannelID(server_identifier_, serial_number_, &error);
     DVLOG(1) << "GenerateCert " << server_identifier_ << " returned " << error;
 #if defined(USE_NSS)
     // Detach the thread from NSPR.
@@ -268,24 +268,24 @@ class ServerBoundCertServiceWorker {
   scoped_refptr<base::SequencedTaskRunner> origin_loop_;
   WorkerDoneCallback callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServerBoundCertServiceWorker);
+  DISALLOW_COPY_AND_ASSIGN(ChannelIDServiceWorker);
 };
 
-// A ServerBoundCertServiceJob is a one-to-one counterpart of an
-// ServerBoundCertServiceWorker. It lives only on the ServerBoundCertService's
+// A ChannelIDServiceJob is a one-to-one counterpart of an
+// ChannelIDServiceWorker. It lives only on the ChannelIDService's
 // origin message loop.
-class ServerBoundCertServiceJob {
+class ChannelIDServiceJob {
  public:
-  ServerBoundCertServiceJob(bool create_if_missing)
+  ChannelIDServiceJob(bool create_if_missing)
       : create_if_missing_(create_if_missing) {
   }
 
-  ~ServerBoundCertServiceJob() {
+  ~ChannelIDServiceJob() {
     if (!requests_.empty())
       DeleteAllCanceled();
   }
 
-  void AddRequest(ServerBoundCertServiceRequest* request,
+  void AddRequest(ChannelIDServiceRequest* request,
                   bool create_if_missing = false) {
     create_if_missing_ |= create_if_missing;
     requests_.push_back(request);
@@ -303,43 +303,43 @@ class ServerBoundCertServiceJob {
   void PostAll(int error,
                const std::string& private_key,
                const std::string& cert) {
-    std::vector<ServerBoundCertServiceRequest*> requests;
+    std::vector<ChannelIDServiceRequest*> requests;
     requests_.swap(requests);
 
-    for (std::vector<ServerBoundCertServiceRequest*>::iterator
+    for (std::vector<ChannelIDServiceRequest*>::iterator
          i = requests.begin(); i != requests.end(); i++) {
       (*i)->Post(error, private_key, cert);
-      // Post() causes the ServerBoundCertServiceRequest to delete itself.
+      // Post() causes the ChannelIDServiceRequest to delete itself.
     }
   }
 
   void DeleteAllCanceled() {
-    for (std::vector<ServerBoundCertServiceRequest*>::iterator
+    for (std::vector<ChannelIDServiceRequest*>::iterator
          i = requests_.begin(); i != requests_.end(); i++) {
       if ((*i)->canceled()) {
         delete *i;
       } else {
-        LOG(DFATAL) << "ServerBoundCertServiceRequest leaked!";
+        LOG(DFATAL) << "ChannelIDServiceRequest leaked!";
       }
     }
   }
 
-  std::vector<ServerBoundCertServiceRequest*> requests_;
+  std::vector<ChannelIDServiceRequest*> requests_;
   bool create_if_missing_;
 };
 
 // static
-const char ServerBoundCertService::kEPKIPassword[] = "";
+const char ChannelIDService::kEPKIPassword[] = "";
 
-ServerBoundCertService::RequestHandle::RequestHandle()
+ChannelIDService::RequestHandle::RequestHandle()
     : service_(NULL),
       request_(NULL) {}
 
-ServerBoundCertService::RequestHandle::~RequestHandle() {
+ChannelIDService::RequestHandle::~RequestHandle() {
   Cancel();
 }
 
-void ServerBoundCertService::RequestHandle::Cancel() {
+void ChannelIDService::RequestHandle::Cancel() {
   if (request_) {
     service_->CancelRequest(request_);
     request_ = NULL;
@@ -347,9 +347,9 @@ void ServerBoundCertService::RequestHandle::Cancel() {
   }
 }
 
-void ServerBoundCertService::RequestHandle::RequestStarted(
-    ServerBoundCertService* service,
-    ServerBoundCertServiceRequest* request,
+void ChannelIDService::RequestHandle::RequestStarted(
+    ChannelIDService* service,
+    ChannelIDServiceRequest* request,
     const CompletionCallback& callback) {
   DCHECK(request_ == NULL);
   service_ = service;
@@ -357,17 +357,17 @@ void ServerBoundCertService::RequestHandle::RequestStarted(
   callback_ = callback;
 }
 
-void ServerBoundCertService::RequestHandle::OnRequestComplete(int result) {
+void ChannelIDService::RequestHandle::OnRequestComplete(int result) {
   request_ = NULL;
   // Running the callback might delete |this|, so we can't touch any of our
   // members afterwards. Reset callback_ first.
   base::ResetAndReturn(&callback_).Run(result);
 }
 
-ServerBoundCertService::ServerBoundCertService(
-    ServerBoundCertStore* server_bound_cert_store,
+ChannelIDService::ChannelIDService(
+    ChannelIDStore* channel_id_store,
     const scoped_refptr<base::TaskRunner>& task_runner)
-    : server_bound_cert_store_(server_bound_cert_store),
+    : channel_id_store_(channel_id_store),
       task_runner_(task_runner),
       requests_(0),
       cert_store_hits_(0),
@@ -380,12 +380,12 @@ ServerBoundCertService::ServerBoundCertService(
   is_system_time_valid_ = x509_util::IsSupportedValidityRange(start, end);
 }
 
-ServerBoundCertService::~ServerBoundCertService() {
+ChannelIDService::~ChannelIDService() {
   STLDeleteValues(&inflight_);
 }
 
 //static
-std::string ServerBoundCertService::GetDomainForHost(const std::string& host) {
+std::string ChannelIDService::GetDomainForHost(const std::string& host) {
   std::string domain =
       registry_controlled_domains::GetDomainAndRegistry(
           host, registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
@@ -394,7 +394,7 @@ std::string ServerBoundCertService::GetDomainForHost(const std::string& host) {
   return domain;
 }
 
-int ServerBoundCertService::GetOrCreateDomainBoundCert(
+int ChannelIDService::GetOrCreateChannelID(
     const std::string& host,
     std::string* private_key,
     std::string* cert,
@@ -405,13 +405,13 @@ int ServerBoundCertService::GetOrCreateDomainBoundCert(
   base::TimeTicks request_start = base::TimeTicks::Now();
 
   if (callback.is_null() || !private_key || !cert || host.empty()) {
-    RecordGetDomainBoundCertResult(INVALID_ARGUMENT);
+    RecordGetChannelIDResult(INVALID_ARGUMENT);
     return ERR_INVALID_ARGUMENT;
   }
 
   std::string domain = GetDomainForHost(host);
   if (domain.empty()) {
-    RecordGetDomainBoundCertResult(INVALID_ARGUMENT);
+    RecordGetChannelIDResult(INVALID_ARGUMENT);
     return ERR_INVALID_ARGUMENT;
   }
 
@@ -424,27 +424,26 @@ int ServerBoundCertService::GetOrCreateDomainBoundCert(
     return ERR_IO_PENDING;
   }
 
-  int err = LookupDomainBoundCert(request_start, domain, private_key, cert,
+  int err = LookupChannelID(request_start, domain, private_key, cert,
                                   create_if_missing, callback, out_req);
   if (err == ERR_FILE_NOT_FOUND) {
     // Sync lookup did not find a valid cert.  Start generating a new one.
     workers_created_++;
-    ServerBoundCertServiceWorker* worker = new ServerBoundCertServiceWorker(
+    ChannelIDServiceWorker* worker = new ChannelIDServiceWorker(
         domain,
-        base::Bind(&ServerBoundCertService::GeneratedServerBoundCert,
+        base::Bind(&ChannelIDService::GeneratedChannelID,
                    weak_ptr_factory_.GetWeakPtr()));
     if (!worker->Start(task_runner_)) {
       // TODO(rkn): Log to the NetLog.
-      LOG(ERROR) << "ServerBoundCertServiceWorker couldn't be started.";
-      RecordGetDomainBoundCertResult(WORKER_FAILURE);
+      LOG(ERROR) << "ChannelIDServiceWorker couldn't be started.";
+      RecordGetChannelIDResult(WORKER_FAILURE);
       return ERR_INSUFFICIENT_RESOURCES;
     }
     // We are waiting for cert generation.  Create a job & request to track it.
-    ServerBoundCertServiceJob* job =
-        new ServerBoundCertServiceJob(create_if_missing);
+    ChannelIDServiceJob* job = new ChannelIDServiceJob(create_if_missing);
     inflight_[domain] = job;
 
-    ServerBoundCertServiceRequest* request = new ServerBoundCertServiceRequest(
+    ChannelIDServiceRequest* request = new ChannelIDServiceRequest(
         request_start,
         base::Bind(&RequestHandle::OnRequestComplete,
                    base::Unretained(out_req)),
@@ -458,7 +457,7 @@ int ServerBoundCertService::GetOrCreateDomainBoundCert(
   return err;
 }
 
-int ServerBoundCertService::GetDomainBoundCert(
+int ChannelIDService::GetChannelID(
     const std::string& host,
     std::string* private_key,
     std::string* cert,
@@ -469,13 +468,13 @@ int ServerBoundCertService::GetDomainBoundCert(
   base::TimeTicks request_start = base::TimeTicks::Now();
 
   if (callback.is_null() || !private_key || !cert || host.empty()) {
-    RecordGetDomainBoundCertResult(INVALID_ARGUMENT);
+    RecordGetChannelIDResult(INVALID_ARGUMENT);
     return ERR_INVALID_ARGUMENT;
   }
 
   std::string domain = GetDomainForHost(host);
   if (domain.empty()) {
-    RecordGetDomainBoundCertResult(INVALID_ARGUMENT);
+    RecordGetChannelIDResult(INVALID_ARGUMENT);
     return ERR_INVALID_ARGUMENT;
   }
 
@@ -488,12 +487,12 @@ int ServerBoundCertService::GetDomainBoundCert(
     return ERR_IO_PENDING;
   }
 
-  int err = LookupDomainBoundCert(request_start, domain, private_key, cert,
-                                  create_if_missing, callback, out_req);
+  int err = LookupChannelID(request_start, domain, private_key, cert,
+                            create_if_missing, callback, out_req);
   return err;
 }
 
-void ServerBoundCertService::GotServerBoundCert(
+void ChannelIDService::GotChannelID(
     int err,
     const std::string& server_identifier,
     base::Time expiration_time,
@@ -501,7 +500,7 @@ void ServerBoundCertService::GotServerBoundCert(
     const std::string& cert) {
   DCHECK(CalledOnValidThread());
 
-  std::map<std::string, ServerBoundCertServiceJob*>::iterator j;
+  std::map<std::string, ChannelIDServiceJob*>::iterator j;
   j = inflight_.find(server_identifier);
   if (j == inflight_.end()) {
     NOTREACHED();
@@ -512,7 +511,7 @@ void ServerBoundCertService::GotServerBoundCert(
     // Async DB lookup found a valid cert.
     DVLOG(1) << "Cert store had valid cert for " << server_identifier;
     cert_store_hits_++;
-    // ServerBoundCertServiceRequest::Post will do the histograms and stuff.
+    // ChannelIDServiceRequest::Post will do the histograms and stuff.
     HandleResult(OK, server_identifier, key, cert);
     return;
   }
@@ -525,13 +524,13 @@ void ServerBoundCertService::GotServerBoundCert(
   }
   // At least one request asked to create a cert => start generating a new one.
   workers_created_++;
-  ServerBoundCertServiceWorker* worker = new ServerBoundCertServiceWorker(
+  ChannelIDServiceWorker* worker = new ChannelIDServiceWorker(
       server_identifier,
-      base::Bind(&ServerBoundCertService::GeneratedServerBoundCert,
+      base::Bind(&ChannelIDService::GeneratedChannelID,
                  weak_ptr_factory_.GetWeakPtr()));
   if (!worker->Start(task_runner_)) {
     // TODO(rkn): Log to the NetLog.
-    LOG(ERROR) << "ServerBoundCertServiceWorker couldn't be started.";
+    LOG(ERROR) << "ChannelIDServiceWorker couldn't be started.";
     HandleResult(ERR_INSUFFICIENT_RESOURCES,
                  server_identifier,
                  std::string(),
@@ -539,25 +538,25 @@ void ServerBoundCertService::GotServerBoundCert(
   }
 }
 
-ServerBoundCertStore* ServerBoundCertService::GetCertStore() {
-  return server_bound_cert_store_.get();
+ChannelIDStore* ChannelIDService::GetChannelIDStore() {
+  return channel_id_store_.get();
 }
 
-void ServerBoundCertService::CancelRequest(ServerBoundCertServiceRequest* req) {
+void ChannelIDService::CancelRequest(ChannelIDServiceRequest* req) {
   DCHECK(CalledOnValidThread());
   req->Cancel();
 }
 
-void ServerBoundCertService::GeneratedServerBoundCert(
+void ChannelIDService::GeneratedChannelID(
     const std::string& server_identifier,
     int error,
-    scoped_ptr<ServerBoundCertStore::ServerBoundCert> cert) {
+    scoped_ptr<ChannelIDStore::ChannelID> cert) {
   DCHECK(CalledOnValidThread());
 
   if (error == OK) {
     // TODO(mattm): we should just Pass() the cert object to
-    // SetServerBoundCert().
-    server_bound_cert_store_->SetServerBoundCert(
+    // SetChannelID().
+    channel_id_store_->SetChannelID(
         cert->server_identifier(),
         cert->creation_time(),
         cert->expiration_time(),
@@ -570,27 +569,27 @@ void ServerBoundCertService::GeneratedServerBoundCert(
   }
 }
 
-void ServerBoundCertService::HandleResult(
+void ChannelIDService::HandleResult(
     int error,
     const std::string& server_identifier,
     const std::string& private_key,
     const std::string& cert) {
   DCHECK(CalledOnValidThread());
 
-  std::map<std::string, ServerBoundCertServiceJob*>::iterator j;
+  std::map<std::string, ChannelIDServiceJob*>::iterator j;
   j = inflight_.find(server_identifier);
   if (j == inflight_.end()) {
     NOTREACHED();
     return;
   }
-  ServerBoundCertServiceJob* job = j->second;
+  ChannelIDServiceJob* job = j->second;
   inflight_.erase(j);
 
   job->HandleResult(error, private_key, cert);
   delete job;
 }
 
-bool ServerBoundCertService::JoinToInFlightRequest(
+bool ChannelIDService::JoinToInFlightRequest(
     const base::TimeTicks& request_start,
     const std::string& domain,
     std::string* private_key,
@@ -598,8 +597,8 @@ bool ServerBoundCertService::JoinToInFlightRequest(
     bool create_if_missing,
     const CompletionCallback& callback,
     RequestHandle* out_req) {
-  ServerBoundCertServiceJob* job = NULL;
-  std::map<std::string, ServerBoundCertServiceJob*>::const_iterator j =
+  ChannelIDServiceJob* job = NULL;
+  std::map<std::string, ChannelIDServiceJob*>::const_iterator j =
       inflight_.find(domain);
   if (j != inflight_.end()) {
     // A request for the same domain is in flight already. We'll attach our
@@ -607,7 +606,7 @@ bool ServerBoundCertService::JoinToInFlightRequest(
     job = j->second;
     inflight_joins_++;
 
-    ServerBoundCertServiceRequest* request = new ServerBoundCertServiceRequest(
+    ChannelIDServiceRequest* request = new ChannelIDServiceRequest(
         request_start,
         base::Bind(&RequestHandle::OnRequestComplete,
                    base::Unretained(out_req)),
@@ -620,7 +619,7 @@ bool ServerBoundCertService::JoinToInFlightRequest(
   return false;
 }
 
-int ServerBoundCertService::LookupDomainBoundCert(
+int ChannelIDService::LookupChannelID(
     const base::TimeTicks& request_start,
     const std::string& domain,
     std::string* private_key,
@@ -631,32 +630,31 @@ int ServerBoundCertService::LookupDomainBoundCert(
   // Check if a domain bound cert already exists for this domain. Note that
   // |expiration_time| is ignored, and expired certs are considered valid.
   base::Time expiration_time;
-  int err = server_bound_cert_store_->GetServerBoundCert(
+  int err = channel_id_store_->GetChannelID(
       domain,
       &expiration_time  /* ignored */,
       private_key,
       cert,
-      base::Bind(&ServerBoundCertService::GotServerBoundCert,
+      base::Bind(&ChannelIDService::GotChannelID,
                  weak_ptr_factory_.GetWeakPtr()));
 
   if (err == OK) {
     // Sync lookup found a valid cert.
     DVLOG(1) << "Cert store had valid cert for " << domain;
     cert_store_hits_++;
-    RecordGetDomainBoundCertResult(SYNC_SUCCESS);
+    RecordGetChannelIDResult(SYNC_SUCCESS);
     base::TimeDelta request_time = base::TimeTicks::Now() - request_start;
     UMA_HISTOGRAM_TIMES("DomainBoundCerts.GetCertTimeSync", request_time);
-    RecordGetCertTime(request_time);
+    RecordGetChannelIDTime(request_time);
     return OK;
   }
 
   if (err == ERR_IO_PENDING) {
     // We are waiting for async DB lookup.  Create a job & request to track it.
-    ServerBoundCertServiceJob* job =
-        new ServerBoundCertServiceJob(create_if_missing);
+    ChannelIDServiceJob* job = new ChannelIDServiceJob(create_if_missing);
     inflight_[domain] = job;
 
-    ServerBoundCertServiceRequest* request = new ServerBoundCertServiceRequest(
+    ChannelIDServiceRequest* request = new ChannelIDServiceRequest(
         request_start,
         base::Bind(&RequestHandle::OnRequestComplete,
                    base::Unretained(out_req)),
@@ -670,8 +668,8 @@ int ServerBoundCertService::LookupDomainBoundCert(
   return err;
 }
 
-int ServerBoundCertService::cert_count() {
-  return server_bound_cert_store_->GetCertCount();
+int ChannelIDService::cert_count() {
+  return channel_id_store_->GetChannelIDCount();
 }
 
 }  // namespace net

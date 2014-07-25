@@ -15,7 +15,7 @@ class ECPrivateKey;
 
 namespace net {
 
-class ServerBoundCertService;
+class ChannelIDService;
 
 class NET_EXPORT_PRIVATE ChannelIDKeyChromium: public ChannelIDKey {
  public:
@@ -35,7 +35,7 @@ class NET_EXPORT_PRIVATE ChannelIDKeyChromium: public ChannelIDKey {
 class ChannelIDSourceChromium : public ChannelIDSource {
  public:
   explicit ChannelIDSourceChromium(
-      ServerBoundCertService* server_bound_cert_service);
+      ChannelIDService* channel_id_service);
   virtual ~ChannelIDSourceChromium();
 
   // ChannelIDSource interface
@@ -54,7 +54,7 @@ class ChannelIDSourceChromium : public ChannelIDSource {
   JobSet active_jobs_;
 
   // The service for retrieving Channel ID keys.
-  ServerBoundCertService* const server_bound_cert_service_;
+  ChannelIDService* const channel_id_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelIDSourceChromium);
 };

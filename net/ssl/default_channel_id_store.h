@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SSL_DEFAULT_SERVER_BOUND_CERT_STORE_H_
-#define NET_SSL_DEFAULT_SERVER_BOUND_CERT_STORE_H_
+#ifndef NET_SSL_DEFAULT_CHANNEL_ID_STORE_H_
+#define NET_SSL_DEFAULT_CHANNEL_ID_STORE_H_
 
 #include <map>
 #include <string>
@@ -16,7 +16,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/net_export.h"
-#include "net/ssl/server_bound_cert_store.h"
+#include "net/ssl/channel_id_store.h"
 
 namespace net {
 
@@ -25,37 +25,38 @@ namespace net {
 // and synchronizes server bound certs to an optional permanent storage that
 // implements the PersistentStore interface. The use case is described in
 // http://balfanz.github.com/tls-obc-spec/draft-balfanz-tls-obc-00.html
-class NET_EXPORT DefaultServerBoundCertStore : public ServerBoundCertStore {
+// TODO(wtc): Update this comment.
+class NET_EXPORT DefaultChannelIDStore : public ChannelIDStore {
  public:
   class PersistentStore;
 
-  // The key for each ServerBoundCert* in ServerBoundCertMap is the
+  // The key for each ChannelID* in ChannelIDMap is the
   // corresponding server.
-  typedef std::map<std::string, ServerBoundCert*> ServerBoundCertMap;
+  typedef std::map<std::string, ChannelID*> ChannelIDMap;
 
   // The store passed in should not have had Init() called on it yet. This
   // class will take care of initializing it. The backing store is NOT owned by
   // this class, but it must remain valid for the duration of the
-  // DefaultServerBoundCertStore's existence. If |store| is NULL, then no
+  // DefaultChannelIDStore's existence. If |store| is NULL, then no
   // backing store will be updated.
-  explicit DefaultServerBoundCertStore(PersistentStore* store);
+  explicit DefaultChannelIDStore(PersistentStore* store);
 
-  virtual ~DefaultServerBoundCertStore();
+  virtual ~DefaultChannelIDStore();
 
-  // ServerBoundCertStore implementation.
-  virtual int GetServerBoundCert(
+  // ChannelIDStore implementation.
+  virtual int GetChannelID(
       const std::string& server_identifier,
       base::Time* expiration_time,
       std::string* private_key_result,
       std::string* cert_result,
-      const GetCertCallback& callback) OVERRIDE;
-  virtual void SetServerBoundCert(
+      const GetChannelIDCallback& callback) OVERRIDE;
+  virtual void SetChannelID(
       const std::string& server_identifier,
       base::Time creation_time,
       base::Time expiration_time,
       const std::string& private_key,
       const std::string& cert) OVERRIDE;
-  virtual void DeleteServerBoundCert(
+  virtual void DeleteChannelID(
       const std::string& server_identifier,
       const base::Closure& callback) OVERRIDE;
   virtual void DeleteAllCreatedBetween(
@@ -63,20 +64,18 @@ class NET_EXPORT DefaultServerBoundCertStore : public ServerBoundCertStore {
       base::Time delete_end,
       const base::Closure& callback) OVERRIDE;
   virtual void DeleteAll(const base::Closure& callback) OVERRIDE;
-  virtual void GetAllServerBoundCerts(
-      const GetCertListCallback& callback) OVERRIDE;
-  virtual int GetCertCount() OVERRIDE;
+  virtual void GetAllChannelIDs(
+      const GetChannelIDListCallback& callback) OVERRIDE;
+  virtual int GetChannelIDCount() OVERRIDE;
   virtual void SetForceKeepSessionState() OVERRIDE;
 
  private:
   class Task;
-  class GetServerBoundCertTask;
-  class SetServerBoundCertTask;
-  class DeleteServerBoundCertTask;
+  class GetChannelIDTask;
+  class SetChannelIDTask;
+  class DeleteChannelIDTask;
   class DeleteAllCreatedBetweenTask;
-  class GetAllServerBoundCertsTask;
-
-  static const size_t kMaxCerts;
+  class GetAllChannelIDsTask;
 
   // Deletes all of the certs. Does not delete them from |store_|.
   void DeleteAllInMemory();
@@ -102,20 +101,20 @@ class NET_EXPORT DefaultServerBoundCertStore : public ServerBoundCertStore {
   void InitStore();
 
   // Callback for backing store loading completion.
-  void OnLoaded(scoped_ptr<ScopedVector<ServerBoundCert> > certs);
+  void OnLoaded(scoped_ptr<ScopedVector<ChannelID> > certs);
 
   // Syncronous methods which do the actual work. Can only be called after
   // initialization is complete.
-  void SyncSetServerBoundCert(
+  void SyncSetChannelID(
       const std::string& server_identifier,
       base::Time creation_time,
       base::Time expiration_time,
       const std::string& private_key,
       const std::string& cert);
-  void SyncDeleteServerBoundCert(const std::string& server_identifier);
+  void SyncDeleteChannelID(const std::string& server_identifier);
   void SyncDeleteAllCreatedBetween(base::Time delete_begin,
                                    base::Time delete_end);
-  void SyncGetAllServerBoundCerts(ServerBoundCertList* cert_list);
+  void SyncGetAllChannelIDs(ChannelIDList* channel_id_list);
 
   // Add |task| to |waiting_tasks_|.
   void EnqueueTask(scoped_ptr<Task> task);
@@ -123,17 +122,18 @@ class NET_EXPORT DefaultServerBoundCertStore : public ServerBoundCertStore {
   // |waiting_tasks_|.
   void RunOrEnqueueTask(scoped_ptr<Task> task);
 
-  // Deletes the cert for the specified server, if such a cert exists, from the
-  // in-memory store. Deletes it from |store_| if |store_| is not NULL.
-  void InternalDeleteServerBoundCert(const std::string& server);
+  // Deletes the channel id for the specified server, if such a channel id
+  // exists, from the in-memory store. Deletes it from |store_| if |store_|
+  // is not NULL.
+  void InternalDeleteChannelID(const std::string& server);
 
-  // Takes ownership of *cert.
-  // Adds the cert for the specified server to the in-memory store. Deletes it
-  // from |store_| if |store_| is not NULL.
-  void InternalInsertServerBoundCert(const std::string& server_identifier,
-                                     ServerBoundCert* cert);
+  // Takes ownership of *channel_id.
+  // Adds the channel id for the specified server to the in-memory store.
+  // Deletes it from |store_| if |store_| is not NULL.
+  void InternalInsertChannelID(const std::string& server_identifier,
+                               ChannelID* channel_id);
 
-  // Indicates whether the cert store has been initialized. This happens
+  // Indicates whether the channel id store has been initialized. This happens
   // lazily in InitIfNecessary().
   bool initialized_;
 
@@ -147,31 +147,31 @@ class NET_EXPORT DefaultServerBoundCertStore : public ServerBoundCertStore {
 
   scoped_refptr<PersistentStore> store_;
 
-  ServerBoundCertMap server_bound_certs_;
+  ChannelIDMap channel_ids_;
 
-  base::WeakPtrFactory<DefaultServerBoundCertStore> weak_ptr_factory_;
+  base::WeakPtrFactory<DefaultChannelIDStore> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DefaultServerBoundCertStore);
+  DISALLOW_COPY_AND_ASSIGN(DefaultChannelIDStore);
 };
 
-typedef base::RefCountedThreadSafe<DefaultServerBoundCertStore::PersistentStore>
+typedef base::RefCountedThreadSafe<DefaultChannelIDStore::PersistentStore>
     RefcountedPersistentStore;
 
-class NET_EXPORT DefaultServerBoundCertStore::PersistentStore
+class NET_EXPORT DefaultChannelIDStore::PersistentStore
     : public RefcountedPersistentStore {
  public:
-  typedef base::Callback<void(scoped_ptr<ScopedVector<ServerBoundCert> >)>
+  typedef base::Callback<void(scoped_ptr<ScopedVector<ChannelID> >)>
       LoadedCallback;
 
-  // Initializes the store and retrieves the existing certs. This will be
-  // called only once at startup. Note that the certs are individually allocated
-  // and that ownership is transferred to the caller upon return.
+  // Initializes the store and retrieves the existing channel_ids. This will be
+  // called only once at startup. Note that the channel_ids are individually
+  // allocated and that ownership is transferred to the caller upon return.
   // The |loaded_callback| must not be called synchronously.
   virtual void Load(const LoadedCallback& loaded_callback) = 0;
 
-  virtual void AddServerBoundCert(const ServerBoundCert& cert) = 0;
+  virtual void AddChannelID(const ChannelID& channel_id) = 0;
 
-  virtual void DeleteServerBoundCert(const ServerBoundCert& cert) = 0;
+  virtual void DeleteChannelID(const ChannelID& channel_id) = 0;
 
   // When invoked, instructs the store to keep session related data on
   // destruction.
@@ -189,4 +189,4 @@ class NET_EXPORT DefaultServerBoundCertStore::PersistentStore
 
 }  // namespace net
 
-#endif  // NET_SSL_DEFAULT_SERVER_BOUND_CERT_STORE_H_
+#endif  // NET_SSL_DEFAULT_CHANNEL_ID_STORE_H_

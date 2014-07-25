@@ -9,12 +9,12 @@
 #include "base/memory/scoped_ptr.h"
 
 class CannedBrowsingDataAppCacheHelper;
+class CannedBrowsingDataChannelIDHelper;
 class CannedBrowsingDataCookieHelper;
 class CannedBrowsingDataDatabaseHelper;
 class CannedBrowsingDataFileSystemHelper;
 class CannedBrowsingDataIndexedDBHelper;
 class CannedBrowsingDataLocalStorageHelper;
-class CannedBrowsingDataServerBoundCertHelper;
 class CookiesTreeModel;
 class GURL;
 class Profile;
@@ -40,6 +40,9 @@ class LocalSharedObjectsContainer {
   CannedBrowsingDataAppCacheHelper* appcaches() const {
     return appcaches_.get();
   }
+  CannedBrowsingDataChannelIDHelper* channel_ids() const {
+    return channel_ids_.get();
+  }
   CannedBrowsingDataCookieHelper* cookies() const { return cookies_.get(); }
   CannedBrowsingDataDatabaseHelper* databases() const {
     return databases_.get();
@@ -53,21 +56,18 @@ class LocalSharedObjectsContainer {
   CannedBrowsingDataLocalStorageHelper* local_storages() const {
     return local_storages_.get();
   }
-  CannedBrowsingDataServerBoundCertHelper* server_bound_certs() const {
-    return server_bound_certs_.get();
-  }
   CannedBrowsingDataLocalStorageHelper* session_storages() const {
     return session_storages_.get();
   }
 
  private:
   scoped_refptr<CannedBrowsingDataAppCacheHelper> appcaches_;
+  scoped_refptr<CannedBrowsingDataChannelIDHelper> channel_ids_;
   scoped_refptr<CannedBrowsingDataCookieHelper> cookies_;
   scoped_refptr<CannedBrowsingDataDatabaseHelper> databases_;
   scoped_refptr<CannedBrowsingDataFileSystemHelper> file_systems_;
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> indexed_dbs_;
   scoped_refptr<CannedBrowsingDataLocalStorageHelper> local_storages_;
-  scoped_refptr<CannedBrowsingDataServerBoundCertHelper> server_bound_certs_;
   scoped_refptr<CannedBrowsingDataLocalStorageHelper> session_storages_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalSharedObjectsContainer);

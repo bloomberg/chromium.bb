@@ -23,7 +23,8 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/tcp_client_socket.h"
-#include "net/ssl/default_server_bound_cert_store.h"
+#include "net/ssl/channel_id_service.h"
+#include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/test/cert_test_util.h"
@@ -591,64 +592,64 @@ class DeleteSocketCallback : public TestCompletionCallbackBase {
   DISALLOW_COPY_AND_ASSIGN(DeleteSocketCallback);
 };
 
-// A ServerBoundCertStore that always returns an error when asked for a
-// certificate.
-class FailingServerBoundCertStore : public ServerBoundCertStore {
-  virtual int GetServerBoundCert(const std::string& server_identifier,
-                                 base::Time* expiration_time,
-                                 std::string* private_key_result,
-                                 std::string* cert_result,
-                                 const GetCertCallback& callback) OVERRIDE {
+// A ChannelIDStore that always returns an error when asked for a
+// channel id.
+class FailingChannelIDStore : public ChannelIDStore {
+  virtual int GetChannelID(const std::string& server_identifier,
+                           base::Time* expiration_time,
+                           std::string* private_key_result,
+                           std::string* cert_result,
+                           const GetChannelIDCallback& callback) OVERRIDE {
     return ERR_UNEXPECTED;
   }
-  virtual void SetServerBoundCert(const std::string& server_identifier,
-                                  base::Time creation_time,
-                                  base::Time expiration_time,
-                                  const std::string& private_key,
-                                  const std::string& cert) OVERRIDE {}
-  virtual void DeleteServerBoundCert(const std::string& server_identifier,
-                                     const base::Closure& completion_callback)
+  virtual void SetChannelID(const std::string& server_identifier,
+                            base::Time creation_time,
+                            base::Time expiration_time,
+                            const std::string& private_key,
+                            const std::string& cert) OVERRIDE {}
+  virtual void DeleteChannelID(const std::string& server_identifier,
+                               const base::Closure& completion_callback)
       OVERRIDE {}
   virtual void DeleteAllCreatedBetween(base::Time delete_begin,
                                        base::Time delete_end,
                                        const base::Closure& completion_callback)
       OVERRIDE {}
   virtual void DeleteAll(const base::Closure& completion_callback) OVERRIDE {}
-  virtual void GetAllServerBoundCerts(const GetCertListCallback& callback)
+  virtual void GetAllChannelIDs(const GetChannelIDListCallback& callback)
       OVERRIDE {}
-  virtual int GetCertCount() OVERRIDE { return 0; }
+  virtual int GetChannelIDCount() OVERRIDE { return 0; }
   virtual void SetForceKeepSessionState() OVERRIDE {}
 };
 
-// A ServerBoundCertStore that asynchronously returns an error when asked for a
-// certificate.
-class AsyncFailingServerBoundCertStore : public ServerBoundCertStore {
-  virtual int GetServerBoundCert(const std::string& server_identifier,
-                                 base::Time* expiration_time,
-                                 std::string* private_key_result,
-                                 std::string* cert_result,
-                                 const GetCertCallback& callback) OVERRIDE {
+// A ChannelIDStore that asynchronously returns an error when asked for a
+// channel id.
+class AsyncFailingChannelIDStore : public ChannelIDStore {
+  virtual int GetChannelID(const std::string& server_identifier,
+                           base::Time* expiration_time,
+                           std::string* private_key_result,
+                           std::string* cert_result,
+                           const GetChannelIDCallback& callback) OVERRIDE {
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, ERR_UNEXPECTED,
                               server_identifier, base::Time(), "", ""));
     return ERR_IO_PENDING;
   }
-  virtual void SetServerBoundCert(const std::string& server_identifier,
-                                  base::Time creation_time,
-                                  base::Time expiration_time,
-                                  const std::string& private_key,
-                                  const std::string& cert) OVERRIDE {}
-  virtual void DeleteServerBoundCert(const std::string& server_identifier,
-                                     const base::Closure& completion_callback)
+  virtual void SetChannelID(const std::string& server_identifier,
+                            base::Time creation_time,
+                            base::Time expiration_time,
+                            const std::string& private_key,
+                            const std::string& cert) OVERRIDE {}
+  virtual void DeleteChannelID(const std::string& server_identifier,
+                               const base::Closure& completion_callback)
       OVERRIDE {}
   virtual void DeleteAllCreatedBetween(base::Time delete_begin,
                                        base::Time delete_end,
                                        const base::Closure& completion_callback)
       OVERRIDE {}
   virtual void DeleteAll(const base::Closure& completion_callback) OVERRIDE {}
-  virtual void GetAllServerBoundCerts(const GetCertListCallback& callback)
+  virtual void GetAllChannelIDs(const GetChannelIDListCallback& callback)
       OVERRIDE {}
-  virtual int GetCertCount() OVERRIDE { return 0; }
+  virtual int GetChannelIDCount() OVERRIDE { return 0; }
   virtual void SetForceKeepSessionState() OVERRIDE {}
 };
 
@@ -904,27 +905,27 @@ class SSLClientSocketFalseStartTest : public SSLClientSocketTest {
 class SSLClientSocketChannelIDTest : public SSLClientSocketTest {
  protected:
   void EnableChannelID() {
-    cert_service_.reset(
-        new ServerBoundCertService(new DefaultServerBoundCertStore(NULL),
-                                   base::MessageLoopProxy::current()));
-    context_.server_bound_cert_service = cert_service_.get();
+    channel_id_service_.reset(
+        new ChannelIDService(new DefaultChannelIDStore(NULL),
+                             base::MessageLoopProxy::current()));
+    context_.channel_id_service = channel_id_service_.get();
   }
 
   void EnableFailingChannelID() {
-    cert_service_.reset(new ServerBoundCertService(
-        new FailingServerBoundCertStore(), base::MessageLoopProxy::current()));
-    context_.server_bound_cert_service = cert_service_.get();
+    channel_id_service_.reset(new ChannelIDService(
+        new FailingChannelIDStore(), base::MessageLoopProxy::current()));
+    context_.channel_id_service = channel_id_service_.get();
   }
 
   void EnableAsyncFailingChannelID() {
-    cert_service_.reset(new ServerBoundCertService(
-        new AsyncFailingServerBoundCertStore(),
+    channel_id_service_.reset(new ChannelIDService(
+        new AsyncFailingChannelIDStore(),
         base::MessageLoopProxy::current()));
-    context_.server_bound_cert_service = cert_service_.get();
+    context_.channel_id_service = channel_id_service_.get();
   }
 
  private:
-  scoped_ptr<ServerBoundCertService> cert_service_;
+  scoped_ptr<ChannelIDService> channel_id_service_;
 };
 
 //-----------------------------------------------------------------------------

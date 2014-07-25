@@ -57,6 +57,7 @@ extern const base::FilePath::CharType kAndroidCacheFilename[];
 #endif
 extern const base::FilePath::CharType kArchivedHistoryFilename[];
 extern const base::FilePath::CharType kCacheDirname[];
+extern const base::FilePath::CharType kChannelIDFilename[];
 extern const base::FilePath::CharType kCookieFilename[];
 extern const base::FilePath::CharType kCRLSetFilename[];
 extern const base::FilePath::CharType kCustomDictionaryFileName[];
@@ -72,7 +73,6 @@ extern const base::FilePath::CharType kLocalStorePoolName[];
 extern const base::FilePath::CharType kLoginDataFileName[];
 extern const base::FilePath::CharType kMediaCacheDirname[];
 extern const base::FilePath::CharType kNewTabThumbnailsFilename[];
-extern const base::FilePath::CharType kOBCertFilename[];
 extern const base::FilePath::CharType kPreferencesFilename[];
 extern const base::FilePath::CharType kProtectedPreferencesFilenameDeprecated[];
 extern const base::FilePath::CharType kReadmeFilename[];

@@ -76,8 +76,8 @@ void VerifyCertificateSignature(const std::string& der_cert,
 }
 #endif  // !defined(OS_WIN) && !defined(OS_MACOSX)
 
-void VerifyDomainBoundCert(const std::string& domain,
-                           const std::string& der_cert) {
+void VerifyChannelID(const std::string& domain,
+                     const std::string& der_cert) {
   // Origin Bound Cert OID.
   static const char oid_string[] = "1.3.6.1.4.1.11129.2.1.6";
 
@@ -143,21 +143,21 @@ void VerifyDomainBoundCert(const std::string& domain,
 
 // This test creates a domain-bound cert and an EC private key and
 // then verifies the content of the certificate.
-TEST(X509UtilNSSTest, CreateKeyAndDomainBoundCertEC) {
+TEST(X509UtilNSSTest, CreateKeyAndChannelIDEC) {
   // Create a sample ASCII weborigin.
   std::string domain = "weborigin.com";
   base::Time now = base::Time::Now();
 
   scoped_ptr<crypto::ECPrivateKey> private_key;
   std::string der_cert;
-  ASSERT_TRUE(x509_util::CreateKeyAndDomainBoundCertEC(
+  ASSERT_TRUE(x509_util::CreateKeyAndChannelIDEC(
       domain, 1,
       now,
       now + base::TimeDelta::FromDays(1),
       &private_key,
       &der_cert));
 
-  VerifyDomainBoundCert(domain, der_cert);
+  VerifyChannelID(domain, der_cert);
 
 #if !defined(OS_WIN) && !defined(OS_MACOSX)
   // signature_verifier_win and signature_verifier_mac can't handle EC certs.

@@ -223,7 +223,7 @@ bool IsSupportedValidityRange(base::Time not_valid_before,
   return true;
 }
 
-bool CreateDomainBoundCertEC(
+bool CreateChannelIDEC(
     crypto::ECPrivateKey* key,
     DigestAlgorithm alg,
     const std::string& domain,

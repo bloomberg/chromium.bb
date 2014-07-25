@@ -33,14 +33,14 @@ namespace net {
 
 namespace {
 
-class DomainBoundCertOIDWrapper {
+class ChannelIDOIDWrapper {
  public:
-  static DomainBoundCertOIDWrapper* GetInstance() {
+  static ChannelIDOIDWrapper* GetInstance() {
     // Instantiated as a leaky singleton to allow the singleton to be
     // constructed on a worker thead that is not joined when a process
     // shuts down.
-    return Singleton<DomainBoundCertOIDWrapper,
-                     LeakySingletonTraits<DomainBoundCertOIDWrapper> >::get();
+    return Singleton<ChannelIDOIDWrapper,
+                     LeakySingletonTraits<ChannelIDOIDWrapper> >::get();
   }
 
   SECOidTag domain_bound_cert_oid_tag() const {
@@ -48,16 +48,16 @@ class DomainBoundCertOIDWrapper {
   }
 
  private:
-  friend struct DefaultSingletonTraits<DomainBoundCertOIDWrapper>;
+  friend struct DefaultSingletonTraits<ChannelIDOIDWrapper>;
 
-  DomainBoundCertOIDWrapper();
+  ChannelIDOIDWrapper();
 
   SECOidTag domain_bound_cert_oid_tag_;
 
-  DISALLOW_COPY_AND_ASSIGN(DomainBoundCertOIDWrapper);
+  DISALLOW_COPY_AND_ASSIGN(ChannelIDOIDWrapper);
 };
 
-DomainBoundCertOIDWrapper::DomainBoundCertOIDWrapper()
+ChannelIDOIDWrapper::ChannelIDOIDWrapper()
     : domain_bound_cert_oid_tag_(SEC_OID_UNKNOWN) {
   // 1.3.6.1.4.1.11129.2.1.6
   // (iso.org.dod.internet.private.enterprises.google.googleSecurity.
@@ -291,13 +291,13 @@ bool IsSupportedValidityRange(base::Time not_valid_before,
   return true;
 }
 
-bool CreateDomainBoundCertEC(crypto::ECPrivateKey* key,
-                             DigestAlgorithm alg,
-                             const std::string& domain,
-                             uint32 serial_number,
-                             base::Time not_valid_before,
-                             base::Time not_valid_after,
-                             std::string* der_cert) {
+bool CreateChannelIDEC(crypto::ECPrivateKey* key,
+                       DigestAlgorithm alg,
+                       const std::string& domain,
+                       uint32 serial_number,
+                       base::Time not_valid_before,
+                       base::Time not_valid_after,
+                       std::string* der_cert) {
   DCHECK(key);
 
   CERTCertificate* cert = CreateCertificate(key->public_key(),
@@ -338,7 +338,7 @@ bool CreateDomainBoundCertEC(crypto::ECPrivateKey* key,
   // Add the extension to the opaque handle
   if (CERT_AddExtension(
       cert_handle,
-      DomainBoundCertOIDWrapper::GetInstance()->domain_bound_cert_oid_tag(),
+      ChannelIDOIDWrapper::GetInstance()->domain_bound_cert_oid_tag(),
       asn1_domain_string,
       PR_TRUE,
       PR_TRUE) != SECSuccess){

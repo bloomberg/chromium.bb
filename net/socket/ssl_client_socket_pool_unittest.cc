@@ -138,7 +138,7 @@ class SSLClientSocketPoolTest
         ssl_histograms_.get(),
         NULL /* host_resolver */,
         NULL /* cert_verifier */,
-        NULL /* server_bound_cert_service */,
+        NULL /* channel_id_service */,
         NULL /* transport_security_state */,
         NULL /* cert_transparency_verifier */,
         std::string() /* ssl_session_cache_shard */,

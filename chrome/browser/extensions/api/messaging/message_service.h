@@ -200,8 +200,8 @@ class MessageService : public BrowserContextKeyedAPI,
   // A process that might be in our list of channels has closed.
   void OnProcessClosed(content::RenderProcessHost* process);
 
-  void GotDomainBoundCert(scoped_ptr<OpenChannelParams> params,
-                          const std::string& tls_channel_id);
+  void GotChannelID(scoped_ptr<OpenChannelParams> params,
+                    const std::string& tls_channel_id);
 
   // Enqueues a message on a pending channel.
   void EnqueuePendingMessage(int port_id, int channel_id,

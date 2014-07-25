@@ -44,6 +44,7 @@ class Entry;
 namespace net {
 
 class CertVerifier;
+class ChannelIDService;
 class DiskBasedCertCache;
 class HostResolver;
 class HttpAuthHandlerFactory;
@@ -53,7 +54,6 @@ class HttpServerProperties;
 class IOBuffer;
 class NetLog;
 class NetworkDelegate;
-class ServerBoundCertService;
 class ProxyService;
 class SSLConfigService;
 class TransportSecurityState;

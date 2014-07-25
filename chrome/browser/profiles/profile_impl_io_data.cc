@@ -26,7 +26,7 @@
 #include "chrome/browser/net/cookie_store_util.h"
 #include "chrome/browser/net/http_server_properties_manager_factory.h"
 #include "chrome/browser/net/predictor.h"
-#include "chrome/browser/net/sqlite_server_bound_cert_store.h"
+#include "chrome/browser/net/sqlite_channel_id_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -46,7 +46,7 @@
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_server_properties_manager.h"
-#include "net/ssl/server_bound_cert_service.h"
+#include "net/ssl/channel_id_service.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "webkit/browser/quota/special_storage_policy.h"
 
@@ -108,7 +108,7 @@ ProfileImplIOData::Handle::~Handle() {
 
 void ProfileImplIOData::Handle::Init(
       const base::FilePath& cookie_path,
-      const base::FilePath& server_bound_cert_path,
+      const base::FilePath& channel_id_path,
       const base::FilePath& cache_path,
       int cache_max_size,
       const base::FilePath& media_cache_path,
@@ -128,7 +128,7 @@ void ProfileImplIOData::Handle::Init(
   LazyParams* lazy_params = new LazyParams();
 
   lazy_params->cookie_path = cookie_path;
-  lazy_params->server_bound_cert_path = server_bound_cert_path;
+  lazy_params->channel_id_path = channel_id_path;
   lazy_params->cache_path = cache_path;
   lazy_params->cache_max_size = cache_max_size;
   lazy_params->media_cache_path = media_cache_path;
@@ -404,7 +404,7 @@ void ProfileImplIOData::InitializeInternal(
   main_context->set_proxy_service(proxy_service());
 
   scoped_refptr<net::CookieStore> cookie_store = NULL;
-  net::ServerBoundCertService* server_bound_cert_service = NULL;
+  net::ChannelIDService* channel_id_service = NULL;
   if (chrome_browser_net::ShouldUseInMemoryCookiesAndCache()) {
     // Don't use existing cookies and use an in-memory store.
     using content::CookieStoreConfig;
@@ -413,9 +413,9 @@ void ProfileImplIOData::InitializeInternal(
         CookieStoreConfig::EPHEMERAL_SESSION_COOKIES,
         NULL,
         profile_params->cookie_monster_delegate.get()));
-    // Don't use existing server-bound certs and use an in-memory store.
-    server_bound_cert_service = new net::ServerBoundCertService(
-        new net::DefaultServerBoundCertStore(NULL),
+    // Don't use existing channel ids and use an in-memory store.
+    channel_id_service = new net::ChannelIDService(
+        new net::DefaultChannelIDStore(NULL),
         base::WorkerPool::GetTaskRunner(true));
   }
 
@@ -437,22 +437,22 @@ void ProfileImplIOData::InitializeInternal(
   main_context->set_cookie_store(cookie_store.get());
 
   // Setup server bound cert service.
-  if (!server_bound_cert_service) {
-    DCHECK(!lazy_params_->server_bound_cert_path.empty());
+  if (!channel_id_service) {
+    DCHECK(!lazy_params_->channel_id_path.empty());
 
-    scoped_refptr<SQLiteServerBoundCertStore> server_bound_cert_db =
-        new SQLiteServerBoundCertStore(
-            lazy_params_->server_bound_cert_path,
+    scoped_refptr<SQLiteChannelIDStore> channel_id_db =
+        new SQLiteChannelIDStore(
+            lazy_params_->channel_id_path,
             BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
                 BrowserThread::GetBlockingPool()->GetSequenceToken()),
             lazy_params_->special_storage_policy.get());
-    server_bound_cert_service = new net::ServerBoundCertService(
-        new net::DefaultServerBoundCertStore(server_bound_cert_db.get()),
+    channel_id_service = new net::ChannelIDService(
+        new net::DefaultChannelIDStore(channel_id_db.get()),
         base::WorkerPool::GetTaskRunner(true));
   }
 
-  set_server_bound_cert_service(server_bound_cert_service);
-  main_context->set_server_bound_cert_service(server_bound_cert_service);
+  set_channel_id_service(channel_id_service);
+  main_context->set_channel_id_service(channel_id_service);
 
   net::HttpCache::DefaultBackend* main_backend =
       new net::HttpCache::DefaultBackend(

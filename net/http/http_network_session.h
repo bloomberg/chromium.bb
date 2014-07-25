@@ -30,6 +30,7 @@ class Value;
 namespace net {
 
 class CertVerifier;
+class ChannelIDService;
 class ClientSocketFactory;
 class ClientSocketPoolManager;
 class CTVerifier;
@@ -42,7 +43,6 @@ class HttpResponseBodyDrainer;
 class HttpServerProperties;
 class NetLog;
 class NetworkDelegate;
-class ServerBoundCertService;
 class ProxyService;
 class QuicClock;
 class QuicCryptoClientStreamFactory;
@@ -65,7 +65,7 @@ class NET_EXPORT HttpNetworkSession
     ClientSocketFactory* client_socket_factory;
     HostResolver* host_resolver;
     CertVerifier* cert_verifier;
-    ServerBoundCertService* server_bound_cert_service;
+    ChannelIDService* channel_id_service;
     TransportSecurityState* transport_security_state;
     CTVerifier* cert_transparency_verifier;
     ProxyService* proxy_service;

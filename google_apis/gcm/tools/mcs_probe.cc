@@ -42,8 +42,8 @@
 #include "net/http/transport_security_state.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/ssl/default_server_bound_cert_store.h"
-#include "net/ssl/server_bound_cert_service.h"
+#include "net/ssl/channel_id_service.h"
+#include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/url_request_test_util.h"
 
 #if defined(OS_MACOSX)
@@ -234,7 +234,7 @@ class MCSProbe {
   scoped_ptr<base::Value> net_constants_;
   scoped_ptr<net::HostResolver> host_resolver_;
   scoped_ptr<net::CertVerifier> cert_verifier_;
-  scoped_ptr<net::ServerBoundCertService> system_server_bound_cert_service_;
+  scoped_ptr<net::ChannelIDService> system_channel_id_service_;
   scoped_ptr<net::TransportSecurityState> transport_security_state_;
   scoped_ptr<net::URLSecurityManager> url_security_manager_;
   scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory_;
@@ -377,9 +377,9 @@ void MCSProbe::InitializeNetworkState() {
   } else {
     cert_verifier_.reset(net::CertVerifier::CreateDefault());
   }
-  system_server_bound_cert_service_.reset(
-      new net::ServerBoundCertService(
-          new net::DefaultServerBoundCertStore(NULL),
+  system_channel_id_service_.reset(
+      new net::ChannelIDService(
+          new net::DefaultChannelIDStore(NULL),
           base::WorkerPool::GetTaskRunner(true)));
 
   transport_security_state_.reset(new net::TransportSecurityState());
@@ -401,8 +401,7 @@ void MCSProbe::BuildNetworkSession() {
   net::HttpNetworkSession::Params session_params;
   session_params.host_resolver = host_resolver_.get();
   session_params.cert_verifier = cert_verifier_.get();
-  session_params.server_bound_cert_service =
-      system_server_bound_cert_service_.get();
+  session_params.channel_id_service = system_channel_id_service_.get();
   session_params.transport_security_state = transport_security_state_.get();
   session_params.ssl_config_service = new net::SSLConfigServiceDefaults();
   session_params.http_auth_handler_factory = http_auth_handler_factory_.get();

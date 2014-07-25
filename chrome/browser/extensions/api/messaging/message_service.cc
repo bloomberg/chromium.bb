@@ -330,10 +330,10 @@ void MessageService::OpenChannelToExtension(
   if (include_tls_channel_id) {
     pending_tls_channel_id_channels_[GET_CHANNEL_ID(params->receiver_port_id)]
         = PendingMessagesQueue();
-    property_provider_.GetDomainBoundCert(
+    property_provider_.GetChannelID(
         Profile::FromBrowserContext(context),
         source_url,
-        base::Bind(&MessageService::GotDomainBoundCert,
+        base::Bind(&MessageService::GotChannelID,
                    weak_factory_.GetWeakPtr(),
                    base::Passed(make_scoped_ptr(params))));
     return;
@@ -693,8 +693,8 @@ bool MessageService::MaybeAddPendingLazyBackgroundPageOpenChannelTask(
   return true;
 }
 
-void MessageService::GotDomainBoundCert(scoped_ptr<OpenChannelParams> params,
-                                        const std::string& tls_channel_id) {
+void MessageService::GotChannelID(scoped_ptr<OpenChannelParams> params,
+                                  const std::string& tls_channel_id) {
   params->tls_channel_id.assign(tls_channel_id);
   int channel_id = GET_CHANNEL_ID(params->receiver_port_id);
 

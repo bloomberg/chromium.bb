@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "chrome/browser/net/sqlite_server_bound_cert_store.h"
+#include "chrome/browser/net/sqlite_channel_id_store.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -20,24 +20,24 @@
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class SQLiteServerBoundCertStoreTest : public testing::Test {
+class SQLiteChannelIDStoreTest : public testing::Test {
  public:
   void Load(
-      ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert>* certs) {
+      ScopedVector<net::DefaultChannelIDStore::ChannelID>* channel_ids) {
     base::RunLoop run_loop;
-    store_->Load(base::Bind(&SQLiteServerBoundCertStoreTest::OnLoaded,
+    store_->Load(base::Bind(&SQLiteChannelIDStoreTest::OnLoaded,
                             base::Unretained(this),
                             &run_loop));
     run_loop.Run();
-    certs->swap(certs_);
-    certs_.clear();
+    channel_ids->swap(channel_ids_);
+    channel_ids_.clear();
   }
 
   void OnLoaded(
       base::RunLoop* run_loop,
       scoped_ptr<ScopedVector<
-          net::DefaultServerBoundCertStore::ServerBoundCert> > certs) {
-    certs_.swap(*certs);
+          net::DefaultChannelIDStore::ChannelID> > channel_ids) {
+    channel_ids_.swap(*channel_ids);
     run_loop->Quit();
   }
 
@@ -75,16 +75,16 @@ class SQLiteServerBoundCertStoreTest : public testing::Test {
 
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    store_ = new SQLiteServerBoundCertStore(
-        temp_dir_.path().Append(chrome::kOBCertFilename),
+    store_ = new SQLiteChannelIDStore(
+        temp_dir_.path().Append(chrome::kChannelIDFilename),
         base::MessageLoopProxy::current(),
         NULL);
-    ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs;
-    Load(&certs);
-    ASSERT_EQ(0u, certs.size());
+    ScopedVector<net::DefaultChannelIDStore::ChannelID> channel_ids;
+    Load(&channel_ids);
+    ASSERT_EQ(0u, channel_ids.size());
     // Make sure the store gets written at least once.
-    store_->AddServerBoundCert(
-        net::DefaultServerBoundCertStore::ServerBoundCert(
+    store_->AddChannelID(
+        net::DefaultChannelIDStore::ChannelID(
             "google.com",
             base::Time::FromInternalValue(1),
             base::Time::FromInternalValue(2),
@@ -93,72 +93,72 @@ class SQLiteServerBoundCertStoreTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
-  scoped_refptr<SQLiteServerBoundCertStore> store_;
-  ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs_;
+  scoped_refptr<SQLiteChannelIDStore> store_;
+  ScopedVector<net::DefaultChannelIDStore::ChannelID> channel_ids_;
 };
 
 // Test if data is stored as expected in the SQLite database.
-TEST_F(SQLiteServerBoundCertStoreTest, TestPersistence) {
-  store_->AddServerBoundCert(
-      net::DefaultServerBoundCertStore::ServerBoundCert(
+TEST_F(SQLiteChannelIDStoreTest, TestPersistence) {
+  store_->AddChannelID(
+      net::DefaultChannelIDStore::ChannelID(
           "foo.com",
           base::Time::FromInternalValue(3),
           base::Time::FromInternalValue(4),
           "c", "d"));
 
-  ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs;
+  ScopedVector<net::DefaultChannelIDStore::ChannelID> channel_ids;
   // Replace the store effectively destroying the current one and forcing it
   // to write its data to disk. Then we can see if after loading it again it
   // is still there.
   store_ = NULL;
   // Make sure we wait until the destructor has run.
   base::RunLoop().RunUntilIdle();
-  store_ = new SQLiteServerBoundCertStore(
-      temp_dir_.path().Append(chrome::kOBCertFilename),
+  store_ = new SQLiteChannelIDStore(
+      temp_dir_.path().Append(chrome::kChannelIDFilename),
       base::MessageLoopProxy::current(),
       NULL);
 
   // Reload and test for persistence
-  Load(&certs);
-  ASSERT_EQ(2U, certs.size());
-  net::DefaultServerBoundCertStore::ServerBoundCert* goog_cert;
-  net::DefaultServerBoundCertStore::ServerBoundCert* foo_cert;
-  if (certs[0]->server_identifier() == "google.com") {
-    goog_cert = certs[0];
-    foo_cert = certs[1];
+  Load(&channel_ids);
+  ASSERT_EQ(2U, channel_ids.size());
+  net::DefaultChannelIDStore::ChannelID* goog_channel_id;
+  net::DefaultChannelIDStore::ChannelID* foo_channel_id;
+  if (channel_ids[0]->server_identifier() == "google.com") {
+    goog_channel_id = channel_ids[0];
+    foo_channel_id = channel_ids[1];
   } else {
-    goog_cert = certs[1];
-    foo_cert = certs[0];
+    goog_channel_id = channel_ids[1];
+    foo_channel_id = channel_ids[0];
   }
-  ASSERT_EQ("google.com", goog_cert->server_identifier());
-  ASSERT_STREQ("a", goog_cert->private_key().c_str());
-  ASSERT_STREQ("b", goog_cert->cert().c_str());
-  ASSERT_EQ(1, goog_cert->creation_time().ToInternalValue());
-  ASSERT_EQ(2, goog_cert->expiration_time().ToInternalValue());
-  ASSERT_EQ("foo.com", foo_cert->server_identifier());
-  ASSERT_STREQ("c", foo_cert->private_key().c_str());
-  ASSERT_STREQ("d", foo_cert->cert().c_str());
-  ASSERT_EQ(3, foo_cert->creation_time().ToInternalValue());
-  ASSERT_EQ(4, foo_cert->expiration_time().ToInternalValue());
+  ASSERT_EQ("google.com", goog_channel_id->server_identifier());
+  ASSERT_STREQ("a", goog_channel_id->private_key().c_str());
+  ASSERT_STREQ("b", goog_channel_id->cert().c_str());
+  ASSERT_EQ(1, goog_channel_id->creation_time().ToInternalValue());
+  ASSERT_EQ(2, goog_channel_id->expiration_time().ToInternalValue());
+  ASSERT_EQ("foo.com", foo_channel_id->server_identifier());
+  ASSERT_STREQ("c", foo_channel_id->private_key().c_str());
+  ASSERT_STREQ("d", foo_channel_id->cert().c_str());
+  ASSERT_EQ(3, foo_channel_id->creation_time().ToInternalValue());
+  ASSERT_EQ(4, foo_channel_id->expiration_time().ToInternalValue());
 
   // Now delete the cert and check persistence again.
-  store_->DeleteServerBoundCert(*certs[0]);
-  store_->DeleteServerBoundCert(*certs[1]);
+  store_->DeleteChannelID(*channel_ids[0]);
+  store_->DeleteChannelID(*channel_ids[1]);
   store_ = NULL;
   // Make sure we wait until the destructor has run.
   base::RunLoop().RunUntilIdle();
-  certs.clear();
-  store_ = new SQLiteServerBoundCertStore(
-      temp_dir_.path().Append(chrome::kOBCertFilename),
+  channel_ids.clear();
+  store_ = new SQLiteChannelIDStore(
+      temp_dir_.path().Append(chrome::kChannelIDFilename),
       base::MessageLoopProxy::current(),
       NULL);
 
   // Reload and check if the cert has been removed.
-  Load(&certs);
-  ASSERT_EQ(0U, certs.size());
+  Load(&channel_ids);
+  ASSERT_EQ(0U, channel_ids.size());
 }
 
-TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV1) {
+TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV1) {
   // Reset the store.  We'll be using a different database for this test.
   store_ = NULL;
 
@@ -201,14 +201,14 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV1) {
   for (int i = 0; i < 2; ++i) {
     SCOPED_TRACE(i);
 
-    ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs;
-    store_ = new SQLiteServerBoundCertStore(
+    ScopedVector<net::DefaultChannelIDStore::ChannelID> channel_ids;
+    store_ = new SQLiteChannelIDStore(
         v1_db_path, base::MessageLoopProxy::current(), NULL);
 
     // Load the database. Because the existing v1 certs are implicitly of type
     // RSA, which is unsupported, they're discarded.
-    Load(&certs);
-    ASSERT_EQ(0U, certs.size());
+    Load(&channel_ids);
+    ASSERT_EQ(0U, channel_ids.size());
 
     store_ = NULL;
     base::RunLoop().RunUntilIdle();
@@ -226,7 +226,7 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV1) {
   }
 }
 
-TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV2) {
+TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV2) {
   // Reset the store.  We'll be using a different database for this test.
   store_ = NULL;
 
@@ -273,25 +273,25 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV2) {
   for (int i = 0; i < 2; ++i) {
     SCOPED_TRACE(i);
 
-    ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs;
-    store_ = new SQLiteServerBoundCertStore(
+    ScopedVector<net::DefaultChannelIDStore::ChannelID> channel_ids;
+    store_ = new SQLiteChannelIDStore(
         v2_db_path, base::MessageLoopProxy::current(), NULL);
 
     // Load the database and ensure the certs can be read.
-    Load(&certs);
-    ASSERT_EQ(2U, certs.size());
+    Load(&channel_ids);
+    ASSERT_EQ(2U, channel_ids.size());
 
-    ASSERT_EQ("google.com", certs[0]->server_identifier());
+    ASSERT_EQ("google.com", channel_ids[0]->server_identifier());
     ASSERT_EQ(GetTestCertExpirationTime(),
-              certs[0]->expiration_time());
-    ASSERT_EQ(key_data, certs[0]->private_key());
-    ASSERT_EQ(cert_data, certs[0]->cert());
+              channel_ids[0]->expiration_time());
+    ASSERT_EQ(key_data, channel_ids[0]->private_key());
+    ASSERT_EQ(cert_data, channel_ids[0]->cert());
 
-    ASSERT_EQ("foo.com", certs[1]->server_identifier());
+    ASSERT_EQ("foo.com", channel_ids[1]->server_identifier());
     // Undecodable cert, expiration time will be uninitialized.
-    ASSERT_EQ(base::Time(), certs[1]->expiration_time());
-    ASSERT_STREQ("\xaa", certs[1]->private_key().c_str());
-    ASSERT_STREQ("\xbb", certs[1]->cert().c_str());
+    ASSERT_EQ(base::Time(), channel_ids[1]->expiration_time());
+    ASSERT_STREQ("\xaa", channel_ids[1]->private_key().c_str());
+    ASSERT_STREQ("\xbb", channel_ids[1]->cert().c_str());
 
     store_ = NULL;
     // Make sure we wait until the destructor has run.
@@ -310,7 +310,7 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV2) {
   }
 }
 
-TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV3) {
+TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV3) {
   // Reset the store.  We'll be using a different database for this test.
   store_ = NULL;
 
@@ -359,27 +359,27 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV3) {
   for (int i = 0; i < 2; ++i) {
     SCOPED_TRACE(i);
 
-    ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs;
-    store_ = new SQLiteServerBoundCertStore(
+    ScopedVector<net::DefaultChannelIDStore::ChannelID> channel_ids;
+    store_ = new SQLiteChannelIDStore(
         v3_db_path, base::MessageLoopProxy::current(), NULL);
 
     // Load the database and ensure the certs can be read.
-    Load(&certs);
-    ASSERT_EQ(2U, certs.size());
+    Load(&channel_ids);
+    ASSERT_EQ(2U, channel_ids.size());
 
-    ASSERT_EQ("google.com", certs[0]->server_identifier());
-    ASSERT_EQ(1000, certs[0]->expiration_time().ToInternalValue());
+    ASSERT_EQ("google.com", channel_ids[0]->server_identifier());
+    ASSERT_EQ(1000, channel_ids[0]->expiration_time().ToInternalValue());
     ASSERT_EQ(GetTestCertCreationTime(),
-              certs[0]->creation_time());
-    ASSERT_EQ(key_data, certs[0]->private_key());
-    ASSERT_EQ(cert_data, certs[0]->cert());
+              channel_ids[0]->creation_time());
+    ASSERT_EQ(key_data, channel_ids[0]->private_key());
+    ASSERT_EQ(cert_data, channel_ids[0]->cert());
 
-    ASSERT_EQ("foo.com", certs[1]->server_identifier());
-    ASSERT_EQ(2000, certs[1]->expiration_time().ToInternalValue());
+    ASSERT_EQ("foo.com", channel_ids[1]->server_identifier());
+    ASSERT_EQ(2000, channel_ids[1]->expiration_time().ToInternalValue());
     // Undecodable cert, creation time will be uninitialized.
-    ASSERT_EQ(base::Time(), certs[1]->creation_time());
-    ASSERT_STREQ("\xaa", certs[1]->private_key().c_str());
-    ASSERT_STREQ("\xbb", certs[1]->cert().c_str());
+    ASSERT_EQ(base::Time(), channel_ids[1]->creation_time());
+    ASSERT_STREQ("\xaa", channel_ids[1]->private_key().c_str());
+    ASSERT_STREQ("\xbb", channel_ids[1]->cert().c_str());
 
     store_ = NULL;
     // Make sure we wait until the destructor has run.
@@ -398,7 +398,7 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV3) {
   }
 }
 
-TEST_F(SQLiteServerBoundCertStoreTest, TestRSADiscarded) {
+TEST_F(SQLiteChannelIDStoreTest, TestRSADiscarded) {
   // Reset the store.  We'll be using a different database for this test.
   store_ = NULL;
 
@@ -452,20 +452,20 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestRSADiscarded) {
     ASSERT_TRUE(add_smt.Run());
   }
 
-  ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs;
-  store_ = new SQLiteServerBoundCertStore(
+  ScopedVector<net::DefaultChannelIDStore::ChannelID> channel_ids;
+  store_ = new SQLiteChannelIDStore(
       v4_db_path, base::MessageLoopProxy::current(), NULL);
 
   // Load the database and ensure the certs can be read.
-  Load(&certs);
+  Load(&channel_ids);
   // Only the ECDSA cert (for google.com) is read, the RSA one is discarded.
-  ASSERT_EQ(1U, certs.size());
+  ASSERT_EQ(1U, channel_ids.size());
 
-  ASSERT_EQ("google.com", certs[0]->server_identifier());
+  ASSERT_EQ("google.com", channel_ids[0]->server_identifier());
   ASSERT_EQ(GetTestCertExpirationTime(),
-            certs[0]->expiration_time());
-  ASSERT_EQ(key_data, certs[0]->private_key());
-  ASSERT_EQ(cert_data, certs[0]->cert());
+            channel_ids[0]->expiration_time());
+  ASSERT_EQ(key_data, channel_ids[0]->private_key());
+  ASSERT_EQ(cert_data, channel_ids[0]->cert());
 
   store_ = NULL;
   // Make sure we wait until the destructor has run.

@@ -68,8 +68,8 @@
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
+#include "net/ssl/channel_id_service.h"
 #include "net/ssl/client_cert_store.h"
-#include "net/ssl/server_bound_cert_service.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/ftp_protocol_handler.h"
@@ -1217,9 +1217,9 @@ void ProfileIOData::ShutdownOnUIThread() {
     delete this;
 }
 
-void ProfileIOData::set_server_bound_cert_service(
-    net::ServerBoundCertService* server_bound_cert_service) const {
-  server_bound_cert_service_.reset(server_bound_cert_service);
+void ProfileIOData::set_channel_id_service(
+    net::ChannelIDService* channel_id_service) const {
+  channel_id_service_.reset(channel_id_service);
 }
 
 void ProfileIOData::DestroyResourceContext() {
@@ -1238,7 +1238,7 @@ scoped_ptr<net::HttpCache> ProfileIOData::CreateMainHttpFactory(
 
   params.host_resolver = context->host_resolver();
   params.cert_verifier = context->cert_verifier();
-  params.server_bound_cert_service = context->server_bound_cert_service();
+  params.channel_id_service = context->channel_id_service();
   params.transport_security_state = context->transport_security_state();
   params.cert_transparency_verifier = context->cert_transparency_verifier();
   params.proxy_service = context->proxy_service();

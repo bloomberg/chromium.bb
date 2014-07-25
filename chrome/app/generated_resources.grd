@@ -10970,22 +10970,22 @@ Chrome ran out of memory.
       <message name="IDS_COOKIES_LAST_ACCESSED_LABEL" desc="The last access date label">
         Last accessed:
       </message>
-      <message name="IDS_COOKIES_SERVER_BOUND_CERT" desc="The text shown when there is a channel id in the Cookies table">
+      <message name="IDS_COOKIES_CHANNEL_ID" desc="The text shown when there is a channel id in the Cookies table">
         Channel ID
       </message>
-      <message name="IDS_COOKIES_SERVER_BOUND_CERTS" desc="Label for the folder under which a list of TLS Channel IDs (name of an internet standard) are displayed">
+      <message name="IDS_COOKIES_CHANNEL_IDS" desc="Label for the folder under which a list of TLS Channel IDs (name of an internet standard) are displayed">
         Channel IDs
       </message>
-      <message name="IDS_COOKIES_SERVER_BOUND_CERT_ORIGIN_LABEL" desc="The channel id label for the server domain">
+      <message name="IDS_COOKIES_CHANNEL_ID_ORIGIN_LABEL" desc="The channel id label for the server domain">
         Domain:
       </message>
-      <message name="IDS_COOKIES_SERVER_BOUND_CERT_TYPE_LABEL" desc="The channel id Type label">
+      <message name="IDS_COOKIES_CHANNEL_ID_TYPE_LABEL" desc="The channel id Type label">
         Certificate Type:
       </message>
-      <message name="IDS_COOKIES_SERVER_BOUND_CERT_CREATED_LABEL" desc="The channel id Created label">
+      <message name="IDS_COOKIES_CHANNEL_ID_CREATED_LABEL" desc="The channel id Created label">
         Created:
       </message>
-      <message name="IDS_COOKIES_SERVER_BOUND_CERT_EXPIRES_LABEL" desc="The channel id Expires label">
+      <message name="IDS_COOKIES_CHANNEL_ID_EXPIRES_LABEL" desc="The channel id Expires label">
         Expires:
       </message>
       <message name="IDS_CLIENT_CERT_RSA_SIGN" translateable="false" desc="">

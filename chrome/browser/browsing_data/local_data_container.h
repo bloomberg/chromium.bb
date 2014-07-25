@@ -14,14 +14,14 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_channel_id_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_server_bound_cert_helper.h"
-#include "net/ssl/server_bound_cert_store.h"
+#include "net/ssl/channel_id_store.h"
 
 class BrowsingDataFlashLSOHelper;
 class CookiesTreeModel;
@@ -45,7 +45,7 @@ typedef std::list<content::IndexedDBInfo>
 typedef std::list<BrowsingDataFileSystemHelper::FileSystemInfo>
     FileSystemInfoList;
 typedef std::list<BrowsingDataQuotaHelper::QuotaInfo> QuotaInfoList;
-typedef net::ServerBoundCertStore::ServerBoundCertList ServerBoundCertList;
+typedef net::ChannelIDStore::ChannelIDList ChannelIDList;
 typedef std::map<GURL, std::list<content::AppCacheInfo> > AppCacheInfoMap;
 typedef std::vector<std::string> FlashLSODomainList;
 
@@ -68,7 +68,7 @@ class LocalDataContainer {
       BrowsingDataIndexedDBHelper* indexed_db_helper,
       BrowsingDataFileSystemHelper* file_system_helper,
       BrowsingDataQuotaHelper* quota_helper,
-      BrowsingDataServerBoundCertHelper* server_bound_cert_helper,
+      BrowsingDataChannelIDHelper* channel_id_helper,
       BrowsingDataFlashLSOHelper* flash_data_helper);
   virtual ~LocalDataContainer();
 
@@ -86,7 +86,7 @@ class LocalDataContainer {
   friend class CookieTreeIndexedDBNode;
   friend class CookieTreeFileSystemNode;
   friend class CookieTreeQuotaNode;
-  friend class CookieTreeServerBoundCertNode;
+  friend class CookieTreeChannelIDNode;
   friend class CookieTreeFlashLSONode;
 
   // Callback methods to be invoked when fetching the data is complete.
@@ -102,7 +102,7 @@ class LocalDataContainer {
   void OnFileSystemModelInfoLoaded(
       const FileSystemInfoList& file_system_info);
   void OnQuotaModelInfoLoaded(const QuotaInfoList& quota_info);
-  void OnServerBoundCertModelInfoLoaded(const ServerBoundCertList& cert_list);
+  void OnChannelIDModelInfoLoaded(const ChannelIDList& channel_id_list);
   void OnFlashLSOInfoLoaded(const FlashLSODomainList& domains);
 
   // Pointers to the helper objects, needed to retreive all the types of locally
@@ -115,7 +115,7 @@ class LocalDataContainer {
   scoped_refptr<BrowsingDataIndexedDBHelper> indexed_db_helper_;
   scoped_refptr<BrowsingDataFileSystemHelper> file_system_helper_;
   scoped_refptr<BrowsingDataQuotaHelper> quota_helper_;
-  scoped_refptr<BrowsingDataServerBoundCertHelper> server_bound_cert_helper_;
+  scoped_refptr<BrowsingDataChannelIDHelper> channel_id_helper_;
   scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper_;
 
   // Storage for all the data that was retrieved through the helper objects.
@@ -128,7 +128,7 @@ class LocalDataContainer {
   IndexedDBInfoList indexed_db_info_list_;
   FileSystemInfoList file_system_info_list_;
   QuotaInfoList quota_info_list_;
-  ServerBoundCertList server_bound_cert_list_;
+  ChannelIDList channel_id_list_;
   FlashLSODomainList flash_lso_domain_list_;
 
   // A delegate, which must outlive this object. The update callbacks use the

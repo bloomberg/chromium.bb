@@ -406,7 +406,7 @@ CapturePreconnectsSSLSocketPool::CapturePreconnectsSocketPool(
                           NULL,           // ssl_histograms
                           host_resolver,
                           cert_verifier,
-                          NULL,           // server_bound_cert_store
+                          NULL,           // channel_id_store
                           NULL,           // transport_security_state
                           NULL,           // cert_transparency_verifier
                           std::string(),  // ssl_session_cache_shard

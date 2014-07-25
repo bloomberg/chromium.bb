@@ -776,7 +776,7 @@ int MockClientSocket::GetTLSUniqueChannelBinding(std::string* out) {
   return OK;
 }
 
-ServerBoundCertService* MockClientSocket::GetServerBoundCertService() const {
+ChannelIDService* MockClientSocket::GetChannelIDService() const {
   NOTREACHED();
   return NULL;
 }
@@ -1437,8 +1437,8 @@ void MockSSLClientSocket::set_channel_id_sent(bool channel_id_sent) {
   data_->channel_id_sent = channel_id_sent;
 }
 
-ServerBoundCertService* MockSSLClientSocket::GetServerBoundCertService() const {
-  return data_->server_bound_cert_service;
+ChannelIDService* MockSSLClientSocket::GetChannelIDService() const {
+  return data_->channel_id_service;
 }
 
 void MockSSLClientSocket::OnReadComplete(const MockRead& data) {

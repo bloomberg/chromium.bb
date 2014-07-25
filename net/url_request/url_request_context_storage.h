@@ -13,6 +13,7 @@
 namespace net {
 
 class CertVerifier;
+class ChannelIDService;
 class CookieStore;
 class FraudulentCertificateReporter;
 class FtpTransactionFactory;
@@ -23,7 +24,6 @@ class HttpTransactionFactory;
 class HttpUserAgentSettings;
 class NetLog;
 class NetworkDelegate;
-class ServerBoundCertService;
 class ProxyService;
 class SSLConfigService;
 class TransportSecurityState;
@@ -47,8 +47,8 @@ class NET_EXPORT URLRequestContextStorage {
   void set_net_log(NetLog* net_log);
   void set_host_resolver(scoped_ptr<HostResolver> host_resolver);
   void set_cert_verifier(CertVerifier* cert_verifier);
-  void set_server_bound_cert_service(
-      ServerBoundCertService* server_bound_cert_service);
+  void set_channel_id_service(
+      ChannelIDService* channel_id_service);
   void set_fraudulent_certificate_reporter(
       FraudulentCertificateReporter* fraudulent_certificate_reporter);
   void set_http_auth_handler_factory(
@@ -78,8 +78,8 @@ class NET_EXPORT URLRequestContextStorage {
   scoped_ptr<NetLog> net_log_;
   scoped_ptr<HostResolver> host_resolver_;
   scoped_ptr<CertVerifier> cert_verifier_;
-  // The ServerBoundCertService must outlive the HttpTransactionFactory.
-  scoped_ptr<ServerBoundCertService> server_bound_cert_service_;
+  // The ChannelIDService must outlive the HttpTransactionFactory.
+  scoped_ptr<ChannelIDService> channel_id_service_;
   scoped_ptr<FraudulentCertificateReporter> fraudulent_certificate_reporter_;
   scoped_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
   scoped_ptr<ProxyService> proxy_service_;

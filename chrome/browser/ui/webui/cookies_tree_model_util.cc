@@ -241,19 +241,19 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
                           quota_info.persistent_usage)));
       break;
     }
-    case CookieTreeNode::DetailedInfo::TYPE_SERVER_BOUND_CERT: {
-      dict->SetString(kKeyType, "server_bound_cert");
+    case CookieTreeNode::DetailedInfo::TYPE_CHANNEL_ID: {
+      dict->SetString(kKeyType, "channel_id");
       dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_ICON");
 
-      const net::ServerBoundCertStore::ServerBoundCert& server_bound_cert =
-          *node.GetDetailedInfo().server_bound_cert;
+      const net::ChannelIDStore::ChannelID& channel_id =
+          *node.GetDetailedInfo().channel_id;
 
-      dict->SetString(kKeyServerId, server_bound_cert.server_identifier());
+      dict->SetString(kKeyServerId, channel_id.server_identifier());
       dict->SetString(kKeyCertType,
                       ClientCertTypeToString(net::CLIENT_CERT_ECDSA_SIGN));
       dict->SetString(kKeyCreated, base::UTF16ToUTF8(
           base::TimeFormatFriendlyDateAndTime(
-              server_bound_cert.creation_time())));
+              channel_id.creation_time())));
       break;
     }
     case CookieTreeNode::DetailedInfo::TYPE_FLASH_LSO: {

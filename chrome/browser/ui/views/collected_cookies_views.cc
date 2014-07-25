@@ -6,12 +6,12 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_channel_id_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_server_bound_cert_helper.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings.h"

@@ -12,7 +12,7 @@
 #include "crypto/ec_signature_creator.h"
 #include "net/base/net_errors.h"
 #include "net/cert/asn1_util.h"
-#include "net/ssl/server_bound_cert_service.h"
+#include "net/ssl/channel_id_service.h"
 
 namespace net {
 
@@ -62,7 +62,7 @@ std::string ChannelIDKeyChromium::SerializeKey() const {
 class ChannelIDSourceChromium::Job {
  public:
   Job(ChannelIDSourceChromium* channel_id_source,
-      ServerBoundCertService* server_bound_cert_service);
+      ChannelIDService* channel_id_service);
 
   // Starts the channel ID lookup.  If |QUIC_PENDING| is returned, then
   // |callback| will be invoked asynchronously when the operation completes.
@@ -85,11 +85,11 @@ class ChannelIDSourceChromium::Job {
   // Channel ID source to notify when this jobs completes.
   ChannelIDSourceChromium* const channel_id_source_;
 
-  ServerBoundCertService* const server_bound_cert_service_;
+  ChannelIDService* const channel_id_service_;
 
   std::string channel_id_private_key_;
   std::string channel_id_cert_;
-  ServerBoundCertService::RequestHandle channel_id_request_handle_;
+  ChannelIDService::RequestHandle channel_id_request_handle_;
 
   // |hostname| specifies the hostname for which we need a channel ID.
   std::string hostname_;
@@ -105,9 +105,9 @@ class ChannelIDSourceChromium::Job {
 
 ChannelIDSourceChromium::Job::Job(
     ChannelIDSourceChromium* channel_id_source,
-    ServerBoundCertService* server_bound_cert_service)
+    ChannelIDService* channel_id_service)
     : channel_id_source_(channel_id_source),
-      server_bound_cert_service_(server_bound_cert_service),
+      channel_id_service_(channel_id_service),
       next_state_(STATE_NONE) {
 }
 
@@ -177,7 +177,7 @@ void ChannelIDSourceChromium::Job::OnIOComplete(int result) {
 int ChannelIDSourceChromium::Job::DoGetChannelIDKey(int result) {
   next_state_ = STATE_GET_CHANNEL_ID_KEY_COMPLETE;
 
-  return server_bound_cert_service_->GetOrCreateDomainBoundCert(
+  return channel_id_service_->GetOrCreateChannelID(
       hostname_,
       &channel_id_private_key_,
       &channel_id_cert_,
@@ -207,7 +207,7 @@ int ChannelIDSourceChromium::Job::DoGetChannelIDKeyComplete(int result) {
 
   crypto::ECPrivateKey* ec_private_key =
       crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
-          ServerBoundCertService::kEPKIPassword, encrypted_private_key_info,
+          ChannelIDService::kEPKIPassword, encrypted_private_key_info,
           subject_public_key_info);
   if (!ec_private_key) {
     // TODO(wtc): use the new error code ERR_CHANNEL_ID_IMPORT_FAILED to be
@@ -220,8 +220,8 @@ int ChannelIDSourceChromium::Job::DoGetChannelIDKeyComplete(int result) {
 }
 
 ChannelIDSourceChromium::ChannelIDSourceChromium(
-    ServerBoundCertService* server_bound_cert_service)
-    : server_bound_cert_service_(server_bound_cert_service) {
+    ChannelIDService* channel_id_service)
+    : channel_id_service_(channel_id_service) {
 }
 
 ChannelIDSourceChromium::~ChannelIDSourceChromium() {
@@ -232,7 +232,7 @@ QuicAsyncStatus ChannelIDSourceChromium::GetChannelIDKey(
     const std::string& hostname,
     scoped_ptr<ChannelIDKey>* channel_id_key,
     ChannelIDSourceCallback* callback) {
-  scoped_ptr<Job> job(new Job(this, server_bound_cert_service_));
+  scoped_ptr<Job> job(new Job(this, channel_id_service_));
   QuicAsyncStatus status = job->GetChannelIDKey(hostname, channel_id_key,
                                                 callback);
   if (status == QUIC_PENDING) {

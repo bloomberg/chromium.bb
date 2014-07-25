@@ -5,12 +5,12 @@
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_channel_id_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_server_bound_cert_helper.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/storage_partition.h"
@@ -32,6 +32,7 @@ bool SameDomainOrHost(const GURL& gurl1, const GURL& gurl2) {
 
 LocalSharedObjectsContainer::LocalSharedObjectsContainer(Profile* profile)
     : appcaches_(new CannedBrowsingDataAppCacheHelper(profile)),
+      channel_ids_(new CannedBrowsingDataChannelIDHelper()),
       cookies_(new CannedBrowsingDataCookieHelper(
           profile->GetRequestContext())),
       databases_(new CannedBrowsingDataDatabaseHelper(profile)),
@@ -40,7 +41,6 @@ LocalSharedObjectsContainer::LocalSharedObjectsContainer(Profile* profile)
           content::BrowserContext::GetDefaultStoragePartition(profile)->
               GetIndexedDBContext())),
       local_storages_(new CannedBrowsingDataLocalStorageHelper(profile)),
-      server_bound_certs_(new CannedBrowsingDataServerBoundCertHelper()),
       session_storages_(new CannedBrowsingDataLocalStorageHelper(profile)) {
 }
 
@@ -49,24 +49,24 @@ LocalSharedObjectsContainer::~LocalSharedObjectsContainer() {
 
 void LocalSharedObjectsContainer::Reset() {
   appcaches_->Reset();
+  channel_ids_->Reset();
   cookies_->Reset();
   databases_->Reset();
   file_systems_->Reset();
   indexed_dbs_->Reset();
   local_storages_->Reset();
-  server_bound_certs_->Reset();
   session_storages_->Reset();
 }
 
 size_t LocalSharedObjectsContainer::GetObjectCount() const {
   size_t count = 0;
   count += appcaches()->GetAppCacheCount();
+  count += channel_ids()->GetChannelIDCount();
   count += cookies()->GetCookieCount();
   count += databases()->GetDatabaseCount();
   count += file_systems()->GetFileSystemCount();
   count += indexed_dbs()->GetIndexedDBCount();
   count += local_storages()->GetLocalStorageCount();
-  count += server_bound_certs()->GetCertCount();
   count += session_storages()->GetLocalStorageCount();
   return count;
 }
@@ -192,7 +192,7 @@ LocalSharedObjectsContainer::CreateCookiesTreeModel() const {
       indexed_dbs(),
       file_systems(),
       NULL,
-      server_bound_certs(),
+      channel_ids(),
       NULL);
 
   return make_scoped_ptr(new CookiesTreeModel(container, NULL, true));

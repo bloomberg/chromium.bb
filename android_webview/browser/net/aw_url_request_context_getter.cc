@@ -32,7 +32,7 @@
 #include "net/http/http_stream_factory.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/next_proto.h"
-#include "net/ssl/default_server_bound_cert_store.h"
+#include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -85,7 +85,7 @@ void PopulateNetworkSessionParams(
     net::HttpNetworkSession::Params* params) {
   params->host_resolver = context->host_resolver();
   params->cert_verifier = context->cert_verifier();
-  params->server_bound_cert_service = context->server_bound_cert_service();
+  params->channel_id_service = context->channel_id_service();
   params->transport_security_state = context->transport_security_state();
   params->proxy_service = context->proxy_service();
   params->ssl_config_service = context->ssl_config_service();
@@ -199,12 +199,11 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   ApplyCmdlineOverridesToURLRequestContextBuilder(&builder);
 
   url_request_context_.reset(builder.Build());
-  server_bound_cert_service_.reset(
-      new net::ServerBoundCertService(
-          new net::DefaultServerBoundCertStore(NULL),
+  channel_id_service_.reset(
+      new net::ChannelIDService(
+          new net::DefaultChannelIDStore(NULL),
           base::WorkerPool::GetTaskRunner(true)));
-  url_request_context_->set_server_bound_cert_service(
-      server_bound_cert_service_.get());
+  url_request_context_->set_channel_id_service(channel_id_service_.get());
   // TODO(mnaganov): Fix URLRequestContextBuilder to use proper threads.
   net::HttpNetworkSession::Params network_session_params;
 

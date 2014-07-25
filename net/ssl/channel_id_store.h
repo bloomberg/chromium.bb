@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SSL_SERVER_BOUND_CERT_STORE_H_
-#define NET_SSL_SERVER_BOUND_CERT_STORE_H_
+#ifndef NET_SSL_CHANNEL_ID_STORE_H_
+#define NET_SSL_CHANNEL_ID_STORE_H_
 
 #include <list>
 #include <string>
@@ -19,23 +19,23 @@ namespace net {
 // There isn't a domain bound certs spec yet, but the old origin bound
 // certificates are specified in
 // http://balfanz.github.com/tls-obc-spec/draft-balfanz-tls-obc-01.html.
+// TODO(wtc): Update this comment.
 
-// Owned only by a single ServerBoundCertService object, which is responsible
+// Owned only by a single ChannelIDService object, which is responsible
 // for deleting it.
-class NET_EXPORT ServerBoundCertStore
+class NET_EXPORT ChannelIDStore
     : NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
-  // The ServerBoundCert class contains a private key in addition to the server
-  // cert.
-  class NET_EXPORT ServerBoundCert {
+  // The ChannelID class contains a private key in addition to the cert.
+  class NET_EXPORT ChannelID {
    public:
-    ServerBoundCert();
-    ServerBoundCert(const std::string& server_identifier,
-                    base::Time creation_time,
-                    base::Time expiration_time,
-                    const std::string& private_key,
-                    const std::string& cert);
-    ~ServerBoundCert();
+    ChannelID();
+    ChannelID(const std::string& server_identifier,
+              base::Time creation_time,
+              base::Time expiration_time,
+              const std::string& private_key,
+              const std::string& cert);
+    ~ChannelID();
 
     // Server identifier.  For domain bound certs, for instance "verisign.com".
     const std::string& server_identifier() const { return server_identifier_; }
@@ -59,33 +59,33 @@ class NET_EXPORT ServerBoundCertStore
     std::string cert_;
   };
 
-  typedef std::list<ServerBoundCert> ServerBoundCertList;
+  typedef std::list<ChannelID> ChannelIDList;
 
   typedef base::Callback<void(
       int,
       const std::string&,
       base::Time,
       const std::string&,
-      const std::string&)> GetCertCallback;
-  typedef base::Callback<void(const ServerBoundCertList&)> GetCertListCallback;
+      const std::string&)> GetChannelIDCallback;
+  typedef base::Callback<void(const ChannelIDList&)> GetChannelIDListCallback;
 
-  virtual ~ServerBoundCertStore() {}
+  virtual ~ChannelIDStore() {}
 
-  // GetServerBoundCert may return the result synchronously through the
+  // GetChannelID may return the result synchronously through the
   // output parameters, in which case it will return either OK if a cert is
   // found in the store, or ERR_FILE_NOT_FOUND if none is found.  If the
-  // result cannot be returned synchronously, GetServerBoundCert will
+  // result cannot be returned synchronously, GetChannelID will
   // return ERR_IO_PENDING and the callback will be called with the result
   // asynchronously.
-  virtual int GetServerBoundCert(
+  virtual int GetChannelID(
       const std::string& server_identifier,
       base::Time* expiration_time,
       std::string* private_key_result,
       std::string* cert_result,
-      const GetCertCallback& callback) = 0;
+      const GetChannelIDCallback& callback) = 0;
 
   // Adds a server bound cert and the corresponding private key to the store.
-  virtual void SetServerBoundCert(
+  virtual void SetChannelID(
       const std::string& server_identifier,
       base::Time creation_time,
       base::Time expiration_time,
@@ -94,7 +94,7 @@ class NET_EXPORT ServerBoundCertStore
 
   // Removes a server bound cert and the corresponding private key from the
   // store.
-  virtual void DeleteServerBoundCert(
+  virtual void DeleteChannelID(
       const std::string& server_identifier,
       const base::Closure& completion_callback) = 0;
 
@@ -111,15 +111,15 @@ class NET_EXPORT ServerBoundCertStore
   virtual void DeleteAll(const base::Closure& completion_callback) = 0;
 
   // Returns all server bound certs and the corresponding private keys.
-  virtual void GetAllServerBoundCerts(const GetCertListCallback& callback) = 0;
+  virtual void GetAllChannelIDs(const GetChannelIDListCallback& callback) = 0;
 
   // Helper function that adds all certs from |list| into this instance.
-  void InitializeFrom(const ServerBoundCertList& list);
+  void InitializeFrom(const ChannelIDList& list);
 
   // Returns the number of certs in the store.  May return 0 if the backing
   // store is not loaded yet.
   // Public only for unit testing.
-  virtual int GetCertCount() = 0;
+  virtual int GetChannelIDCount() = 0;
 
   // When invoked, instructs the store to keep session related data on
   // destruction.
@@ -128,4 +128,4 @@ class NET_EXPORT ServerBoundCertStore
 
 }  // namespace net
 
-#endif  // NET_SSL_SERVER_BOUND_CERT_STORE_H_
+#endif  // NET_SSL_CHANNEL_ID_STORE_H_

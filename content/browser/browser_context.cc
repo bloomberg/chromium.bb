@@ -17,8 +17,8 @@
 #include "content/public/browser/site_instance.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
-#include "net/ssl/server_bound_cert_service.h"
-#include "net/ssl/server_bound_cert_store.h"
+#include "net/ssl/channel_id_service.h"
+#include "net/ssl/channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "webkit/browser/database/database_tracker.h"
@@ -73,7 +73,7 @@ void SaveSessionStateOnIOThread(
   net::URLRequestContext* context = context_getter->GetURLRequestContext();
   context->cookie_store()->GetCookieMonster()->
       SetForceKeepSessionState();
-  context->server_bound_cert_service()->GetCertStore()->
+  context->channel_id_service()->GetChannelIDStore()->
       SetForceKeepSessionState();
   appcache_service->set_force_keep_session_state();
 }

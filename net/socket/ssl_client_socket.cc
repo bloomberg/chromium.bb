@@ -7,7 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "crypto/ec_private_key.h"
-#include "net/ssl/server_bound_cert_service.h"
+#include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_config_service.h"
 
 namespace net {
@@ -158,7 +158,7 @@ void SSLClientSocket::set_stapled_ocsp_response_received(
 
 // static
 void SSLClientSocket::RecordChannelIDSupport(
-    ServerBoundCertService* server_bound_cert_service,
+    ChannelIDService* channel_id_service,
     bool negotiated_channel_id,
     bool channel_id_enabled,
     bool supports_ecc) {
@@ -169,40 +169,40 @@ void SSLClientSocket::RecordChannelIDSupport(
     CLIENT_AND_SERVER = 2,
     CLIENT_NO_ECC = 3,
     CLIENT_BAD_SYSTEM_TIME = 4,
-    CLIENT_NO_SERVER_BOUND_CERT_SERVICE = 5,
-    DOMAIN_BOUND_CERT_USAGE_MAX
+    CLIENT_NO_CHANNEL_ID_SERVICE = 5,
+    CHANNEL_ID_USAGE_MAX
   } supported = DISABLED;
   if (negotiated_channel_id) {
     supported = CLIENT_AND_SERVER;
   } else if (channel_id_enabled) {
-    if (!server_bound_cert_service)
-      supported = CLIENT_NO_SERVER_BOUND_CERT_SERVICE;
+    if (!channel_id_service)
+      supported = CLIENT_NO_CHANNEL_ID_SERVICE;
     else if (!supports_ecc)
       supported = CLIENT_NO_ECC;
-    else if (!server_bound_cert_service->IsSystemTimeValid())
+    else if (!channel_id_service->IsSystemTimeValid())
       supported = CLIENT_BAD_SYSTEM_TIME;
     else
       supported = CLIENT_ONLY;
   }
   UMA_HISTOGRAM_ENUMERATION("DomainBoundCerts.Support", supported,
-                            DOMAIN_BOUND_CERT_USAGE_MAX);
+                            CHANNEL_ID_USAGE_MAX);
 }
 
 // static
 bool SSLClientSocket::IsChannelIDEnabled(
     const SSLConfig& ssl_config,
-    ServerBoundCertService* server_bound_cert_service) {
+    ChannelIDService* channel_id_service) {
   if (!ssl_config.channel_id_enabled)
     return false;
-  if (!server_bound_cert_service) {
-    DVLOG(1) << "NULL server_bound_cert_service_, not enabling channel ID.";
+  if (!channel_id_service) {
+    DVLOG(1) << "NULL channel_id_service_, not enabling channel ID.";
     return false;
   }
   if (!crypto::ECPrivateKey::IsSupported()) {
     DVLOG(1) << "Elliptic Curve not supported, not enabling channel ID.";
     return false;
   }
-  if (!server_bound_cert_service->IsSystemTimeValid()) {
+  if (!channel_id_service->IsSystemTimeValid()) {
     DVLOG(1) << "System time is not within the supported range for certificate "
                 "generation, not enabling channel ID.";
     return false;

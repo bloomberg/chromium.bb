@@ -39,7 +39,7 @@
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_stream.h"
-#include "net/ssl/server_bound_cert_service.h"
+#include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 
@@ -718,8 +718,8 @@ bool SpdySession::VerifyDomainAuthentication(const std::string& domain) {
   return
       !ssl_info.client_cert_sent &&
       (!ssl_info.channel_id_sent ||
-       (ServerBoundCertService::GetDomainForHost(domain) ==
-        ServerBoundCertService::GetDomainForHost(host_port_pair().host()))) &&
+       (ChannelIDService::GetDomainForHost(domain) ==
+        ChannelIDService::GetDomainForHost(host_port_pair().host()))) &&
       ssl_info.cert->VerifyNameMatch(domain, &unused);
 }
 

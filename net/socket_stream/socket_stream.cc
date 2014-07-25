@@ -1012,7 +1012,7 @@ int SocketStream::DoSecureProxyConnect() {
   SSLClientSocketContext ssl_context;
   ssl_context.cert_verifier = context_->cert_verifier();
   ssl_context.transport_security_state = context_->transport_security_state();
-  ssl_context.server_bound_cert_service = context_->server_bound_cert_service();
+  ssl_context.channel_id_service = context_->channel_id_service();
   scoped_ptr<StreamSocket> socket(factory_->CreateSSLClientSocket(
       connection_.Pass(),
       proxy_info_.proxy_server().host_port_pair(),
@@ -1068,7 +1068,7 @@ int SocketStream::DoSSLConnect() {
   SSLClientSocketContext ssl_context;
   ssl_context.cert_verifier = context_->cert_verifier();
   ssl_context.transport_security_state = context_->transport_security_state();
-  ssl_context.server_bound_cert_service = context_->server_bound_cert_service();
+  ssl_context.channel_id_service = context_->channel_id_service();
   scoped_ptr<StreamSocket> socket(
       factory_->CreateSSLClientSocket(connection_.Pass(),
                                       HostPortPair::FromURL(url_),

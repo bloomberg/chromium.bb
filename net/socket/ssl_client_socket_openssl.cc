@@ -356,7 +356,7 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       was_ever_used_(false),
       client_auth_cert_needed_(false),
       cert_verifier_(context.cert_verifier),
-      server_bound_cert_service_(context.server_bound_cert_service),
+      channel_id_service_(context.channel_id_service),
       ssl_(NULL),
       transport_bio_(NULL),
       transport_(transport_socket.Pass()),
@@ -387,9 +387,9 @@ SSLClientSocket::NextProtoStatus SSLClientSocketOpenSSL::GetNextProto(
   return npn_status_;
 }
 
-ServerBoundCertService*
-SSLClientSocketOpenSSL::GetServerBoundCertService() const {
-  return server_bound_cert_service_;
+ChannelIDService*
+SSLClientSocketOpenSSL::GetChannelIDService() const {
+  return channel_id_service_;
 }
 
 int SSLClientSocketOpenSSL::ExportKeyingMaterial(
@@ -571,7 +571,7 @@ bool SSLClientSocketOpenSSL::GetSSLInfo(SSLInfo* ssl_info) {
       ssl_config_.send_client_cert && ssl_config_.client_cert.get();
   ssl_info->channel_id_sent = WasChannelIDSent();
 
-  RecordChannelIDSupport(server_bound_cert_service_,
+  RecordChannelIDSupport(channel_id_service_,
                          channel_id_xtn_negotiated_,
                          ssl_config_.channel_id_enabled,
                          crypto::ECPrivateKey::IsSupported());
@@ -760,7 +760,7 @@ int SSLClientSocketOpenSSL::Init() {
                               "returned " << rv;
 
   // TLS channel ids.
-  if (IsChannelIDEnabled(ssl_config_, server_bound_cert_service_)) {
+  if (IsChannelIDEnabled(ssl_config_, channel_id_service_)) {
     SSL_enable_tls_channel_id(ssl_);
   }
 
@@ -865,7 +865,7 @@ int SSLClientSocketOpenSSL::DoHandshake() {
 
 int SSLClientSocketOpenSSL::DoChannelIDLookup() {
   GotoState(STATE_CHANNEL_ID_LOOKUP_COMPLETE);
-  return server_bound_cert_service_->GetOrCreateDomainBoundCert(
+  return channel_id_service_->GetOrCreateChannelID(
       host_and_port_.host(),
       &channel_id_private_key_,
       &channel_id_cert_,
@@ -890,7 +890,7 @@ int SSLClientSocketOpenSSL::DoChannelIDLookupComplete(int result) {
       channel_id_cert_.data() + channel_id_cert_.size());
   scoped_ptr<crypto::ECPrivateKey> ec_private_key(
       crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
-          ServerBoundCertService::kEPKIPassword,
+          ChannelIDService::kEPKIPassword,
           encrypted_private_key_info,
           subject_public_key_info));
   if (!ec_private_key) {

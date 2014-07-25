@@ -20,7 +20,7 @@
 #include "net/quic/quic_default_packet_writer.h"
 #include "net/quic/quic_server_id.h"
 #include "net/quic/quic_stream_factory.h"
-#include "net/ssl/server_bound_cert_service.h"
+#include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
 #include "net/udp/datagram_client_socket.h"
@@ -499,8 +499,8 @@ bool QuicClientSession::CanPool(const std::string& hostname) const {
     return false;
 
   if (ssl_info.channel_id_sent &&
-      ServerBoundCertService::GetDomainForHost(hostname) !=
-      ServerBoundCertService::GetDomainForHost(server_host_port_.host())) {
+      ChannelIDService::GetDomainForHost(hostname) !=
+      ChannelIDService::GetDomainForHost(server_host_port_.host())) {
     return false;
   }
 

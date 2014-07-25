@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browsing_data/browsing_data_server_bound_cert_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_channel_id_helper.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -10,33 +10,33 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/ssl/server_bound_cert_service.h"
+#include "net/ssl/channel_id_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
 
-class BrowsingDataServerBoundCertHelperImpl
-    : public BrowsingDataServerBoundCertHelper {
+class BrowsingDataChannelIDHelperImpl
+    : public BrowsingDataChannelIDHelper {
  public:
-  explicit BrowsingDataServerBoundCertHelperImpl(Profile* profile);
+  explicit BrowsingDataChannelIDHelperImpl(Profile* profile);
 
-  // BrowsingDataServerBoundCertHelper methods.
+  // BrowsingDataChannelIDHelper methods.
   virtual void StartFetching(const FetchResultCallback& callback) OVERRIDE;
-  virtual void DeleteServerBoundCert(const std::string& server_id) OVERRIDE;
+  virtual void DeleteChannelID(const std::string& server_id) OVERRIDE;
 
  private:
-  virtual ~BrowsingDataServerBoundCertHelperImpl();
+  virtual ~BrowsingDataChannelIDHelperImpl();
 
   // Fetch the certs. This must be called in the IO thread.
   void FetchOnIOThread();
 
   void OnFetchComplete(
-      const net::ServerBoundCertStore::ServerBoundCertList& cert_list);
+      const net::ChannelIDStore::ChannelIDList& channel_id_list);
 
   // Notifies the completion callback. This must be called in the UI thread.
   void NotifyInUIThread(
-      const net::ServerBoundCertStore::ServerBoundCertList& cert_list);
+      const net::ChannelIDStore::ChannelIDList& channel_id_list);
 
   // Delete a single cert. This must be called in IO thread.
   void DeleteOnIOThread(const std::string& server_id);
@@ -55,21 +55,21 @@ class BrowsingDataServerBoundCertHelperImpl
   // This only mutates on the UI thread.
   FetchResultCallback completion_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowsingDataServerBoundCertHelperImpl);
+  DISALLOW_COPY_AND_ASSIGN(BrowsingDataChannelIDHelperImpl);
 };
 
-BrowsingDataServerBoundCertHelperImpl::
-BrowsingDataServerBoundCertHelperImpl(Profile* profile)
+BrowsingDataChannelIDHelperImpl::
+BrowsingDataChannelIDHelperImpl(Profile* profile)
     : is_fetching_(false),
       request_context_getter_(profile->GetRequestContext()) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
-BrowsingDataServerBoundCertHelperImpl::
-~BrowsingDataServerBoundCertHelperImpl() {
+BrowsingDataChannelIDHelperImpl::
+~BrowsingDataChannelIDHelperImpl() {
 }
 
-void BrowsingDataServerBoundCertHelperImpl::StartFetching(
+void BrowsingDataChannelIDHelperImpl::StartFetching(
     const FetchResultCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!is_fetching_);
@@ -79,65 +79,65 @@ void BrowsingDataServerBoundCertHelperImpl::StartFetching(
   completion_callback_ = callback;
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&BrowsingDataServerBoundCertHelperImpl::FetchOnIOThread,
+      base::Bind(&BrowsingDataChannelIDHelperImpl::FetchOnIOThread,
                  this));
 }
 
-void BrowsingDataServerBoundCertHelperImpl::DeleteServerBoundCert(
+void BrowsingDataChannelIDHelperImpl::DeleteChannelID(
     const std::string& server_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&BrowsingDataServerBoundCertHelperImpl::DeleteOnIOThread,
+      base::Bind(&BrowsingDataChannelIDHelperImpl::DeleteOnIOThread,
                  this, server_id));
 }
 
-void BrowsingDataServerBoundCertHelperImpl::FetchOnIOThread() {
+void BrowsingDataChannelIDHelperImpl::FetchOnIOThread() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  net::ServerBoundCertStore* cert_store =
+  net::ChannelIDStore* cert_store =
       request_context_getter_->GetURLRequestContext()->
-      server_bound_cert_service()->GetCertStore();
+      channel_id_service()->GetChannelIDStore();
   if (cert_store) {
-    cert_store->GetAllServerBoundCerts(base::Bind(
-        &BrowsingDataServerBoundCertHelperImpl::OnFetchComplete, this));
+    cert_store->GetAllChannelIDs(base::Bind(
+        &BrowsingDataChannelIDHelperImpl::OnFetchComplete, this));
   } else {
-    OnFetchComplete(net::ServerBoundCertStore::ServerBoundCertList());
+    OnFetchComplete(net::ChannelIDStore::ChannelIDList());
   }
 }
 
-void BrowsingDataServerBoundCertHelperImpl::OnFetchComplete(
-    const net::ServerBoundCertStore::ServerBoundCertList& cert_list) {
+void BrowsingDataChannelIDHelperImpl::OnFetchComplete(
+    const net::ChannelIDStore::ChannelIDList& channel_id_list) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&BrowsingDataServerBoundCertHelperImpl::NotifyInUIThread,
-                 this, cert_list));
+      base::Bind(&BrowsingDataChannelIDHelperImpl::NotifyInUIThread,
+                 this, channel_id_list));
 }
 
-void BrowsingDataServerBoundCertHelperImpl::NotifyInUIThread(
-    const net::ServerBoundCertStore::ServerBoundCertList& cert_list) {
+void BrowsingDataChannelIDHelperImpl::NotifyInUIThread(
+    const net::ChannelIDStore::ChannelIDList& channel_id_list) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(is_fetching_);
   is_fetching_ = false;
-  completion_callback_.Run(cert_list);
+  completion_callback_.Run(channel_id_list);
   completion_callback_.Reset();
 }
 
-void BrowsingDataServerBoundCertHelperImpl::DeleteOnIOThread(
+void BrowsingDataChannelIDHelperImpl::DeleteOnIOThread(
     const std::string& server_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  net::ServerBoundCertStore* cert_store =
+  net::ChannelIDStore* cert_store =
       request_context_getter_->GetURLRequestContext()->
-      server_bound_cert_service()->GetCertStore();
+      channel_id_service()->GetChannelIDStore();
   if (cert_store) {
-    cert_store->DeleteServerBoundCert(
+    cert_store->DeleteChannelID(
         server_id,
-        base::Bind(&BrowsingDataServerBoundCertHelperImpl::DeleteCallback,
+        base::Bind(&BrowsingDataChannelIDHelperImpl::DeleteCallback,
                    this));
   }
 }
 
-void BrowsingDataServerBoundCertHelperImpl::DeleteCallback() {
+void BrowsingDataChannelIDHelperImpl::DeleteCallback() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   // Need to close open SSL connections which may be using the channel ids we
   // are deleting.
@@ -150,48 +150,48 @@ void BrowsingDataServerBoundCertHelperImpl::DeleteCallback() {
 }  // namespace
 
 // static
-BrowsingDataServerBoundCertHelper*
-BrowsingDataServerBoundCertHelper::Create(Profile* profile) {
-  return new BrowsingDataServerBoundCertHelperImpl(profile);
+BrowsingDataChannelIDHelper*
+BrowsingDataChannelIDHelper::Create(Profile* profile) {
+  return new BrowsingDataChannelIDHelperImpl(profile);
 }
 
-CannedBrowsingDataServerBoundCertHelper::
-CannedBrowsingDataServerBoundCertHelper() {}
+CannedBrowsingDataChannelIDHelper::
+CannedBrowsingDataChannelIDHelper() {}
 
-CannedBrowsingDataServerBoundCertHelper::
-~CannedBrowsingDataServerBoundCertHelper() {}
+CannedBrowsingDataChannelIDHelper::
+~CannedBrowsingDataChannelIDHelper() {}
 
-CannedBrowsingDataServerBoundCertHelper*
-CannedBrowsingDataServerBoundCertHelper::Clone() {
+CannedBrowsingDataChannelIDHelper*
+CannedBrowsingDataChannelIDHelper::Clone() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  CannedBrowsingDataServerBoundCertHelper* clone =
-      new CannedBrowsingDataServerBoundCertHelper();
+  CannedBrowsingDataChannelIDHelper* clone =
+      new CannedBrowsingDataChannelIDHelper();
 
-  clone->server_bound_cert_map_ = server_bound_cert_map_;
+  clone->channel_id_map_ = channel_id_map_;
   return clone;
 }
 
-void CannedBrowsingDataServerBoundCertHelper::AddServerBoundCert(
-    const net::ServerBoundCertStore::ServerBoundCert& server_bound_cert) {
+void CannedBrowsingDataChannelIDHelper::AddChannelID(
+    const net::ChannelIDStore::ChannelID& channel_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  server_bound_cert_map_[server_bound_cert.server_identifier()] =
-      server_bound_cert;
+  channel_id_map_[channel_id.server_identifier()] =
+      channel_id;
 }
 
-void CannedBrowsingDataServerBoundCertHelper::Reset() {
-  server_bound_cert_map_.clear();
+void CannedBrowsingDataChannelIDHelper::Reset() {
+  channel_id_map_.clear();
 }
 
-bool CannedBrowsingDataServerBoundCertHelper::empty() const {
-  return server_bound_cert_map_.empty();
+bool CannedBrowsingDataChannelIDHelper::empty() const {
+  return channel_id_map_.empty();
 }
 
-size_t CannedBrowsingDataServerBoundCertHelper::GetCertCount() const {
+size_t CannedBrowsingDataChannelIDHelper::GetChannelIDCount() const {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  return server_bound_cert_map_.size();
+  return channel_id_map_.size();
 }
 
-void CannedBrowsingDataServerBoundCertHelper::StartFetching(
+void CannedBrowsingDataChannelIDHelper::StartFetching(
     const FetchResultCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (callback.is_null())
@@ -200,20 +200,20 @@ void CannedBrowsingDataServerBoundCertHelper::StartFetching(
   completion_callback_ = callback;
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&CannedBrowsingDataServerBoundCertHelper::FinishFetching,
+      base::Bind(&CannedBrowsingDataChannelIDHelper::FinishFetching,
                  this));
 }
 
-void CannedBrowsingDataServerBoundCertHelper::FinishFetching() {
+void CannedBrowsingDataChannelIDHelper::FinishFetching() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  net::ServerBoundCertStore::ServerBoundCertList cert_list;
-  for (ServerBoundCertMap::iterator i = server_bound_cert_map_.begin();
-       i != server_bound_cert_map_.end(); ++i)
-    cert_list.push_back(i->second);
-  completion_callback_.Run(cert_list);
+  net::ChannelIDStore::ChannelIDList channel_id_list;
+  for (ChannelIDMap::iterator i = channel_id_map_.begin();
+       i != channel_id_map_.end(); ++i)
+    channel_id_list.push_back(i->second);
+  completion_callback_.Run(channel_id_list);
 }
 
-void CannedBrowsingDataServerBoundCertHelper::DeleteServerBoundCert(
+void CannedBrowsingDataChannelIDHelper::DeleteChannelID(
     const std::string& server_id) {
   NOTREACHED();
 }

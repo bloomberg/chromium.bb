@@ -15,7 +15,7 @@
 #include "net/base/completion_callback.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/jwk_serializer.h"
-#include "net/ssl/server_bound_cert_service.h"
+#include "net/ssl/channel_id_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
@@ -24,8 +24,8 @@ namespace extensions {
 
 MessagePropertyProvider::MessagePropertyProvider() {}
 
-void MessagePropertyProvider::GetDomainBoundCert(Profile* profile,
-    const GURL& source_url, const DomainBoundCertCallback& reply) {
+void MessagePropertyProvider::GetChannelID(Profile* profile,
+    const GURL& source_url, const ChannelIDCallback& reply) {
   if (!source_url.is_valid()) {
     // This isn't a real URL, so there's no sense in looking for a channel ID
     // for it. Dispatch with an empty tls channel ID.
@@ -35,7 +35,7 @@ void MessagePropertyProvider::GetDomainBoundCert(Profile* profile,
   scoped_refptr<net::URLRequestContextGetter> request_context_getter(
       profile->GetRequestContext());
   content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&MessagePropertyProvider::GetDomainBoundCertOnIOThread,
+      base::Bind(&MessagePropertyProvider::GetChannelIDOnIOThread,
                  base::MessageLoopProxy::current(),
                  request_context_getter,
                  source_url.host(),
@@ -43,31 +43,31 @@ void MessagePropertyProvider::GetDomainBoundCert(Profile* profile,
 }
 
 // Helper struct to bind the memory addresses that will be written to by
-// ServerBoundCertService::GetDomainBoundCert to the callback provided to
-// MessagePropertyProvider::GetDomainBoundCert.
-struct MessagePropertyProvider::GetDomainBoundCertOutput {
+// ChannelIDService::GetChannelID to the callback provided to
+// MessagePropertyProvider::GetChannelID.
+struct MessagePropertyProvider::GetChannelIDOutput {
   std::string domain_bound_private_key;
   std::string domain_bound_cert;
-  net::ServerBoundCertService::RequestHandle request_handle;
+  net::ChannelIDService::RequestHandle request_handle;
 };
 
 // static
-void MessagePropertyProvider::GetDomainBoundCertOnIOThread(
+void MessagePropertyProvider::GetChannelIDOnIOThread(
     scoped_refptr<base::TaskRunner> original_task_runner,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     const std::string& host,
-    const DomainBoundCertCallback& reply) {
+    const ChannelIDCallback& reply) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  net::ServerBoundCertService* server_bound_cert_service =
+  net::ChannelIDService* channel_id_service =
       request_context_getter->GetURLRequestContext()->
-          server_bound_cert_service();
-  GetDomainBoundCertOutput* output = new GetDomainBoundCertOutput();
+          channel_id_service();
+  GetChannelIDOutput* output = new GetChannelIDOutput();
   net::CompletionCallback net_completion_callback =
-      base::Bind(&MessagePropertyProvider::GotDomainBoundCert,
+      base::Bind(&MessagePropertyProvider::GotChannelID,
                  original_task_runner,
                  base::Owned(output),
                  reply);
-  int status = server_bound_cert_service->GetDomainBoundCert(
+  int status = channel_id_service->GetChannelID(
       host,
       &output->domain_bound_private_key,
       &output->domain_bound_cert,
@@ -75,14 +75,14 @@ void MessagePropertyProvider::GetDomainBoundCertOnIOThread(
       &output->request_handle);
   if (status == net::ERR_IO_PENDING)
     return;
-  GotDomainBoundCert(original_task_runner, output, reply, status);
+  GotChannelID(original_task_runner, output, reply, status);
 }
 
 // static
-void MessagePropertyProvider::GotDomainBoundCert(
+void MessagePropertyProvider::GotChannelID(
     scoped_refptr<base::TaskRunner> original_task_runner,
-    struct GetDomainBoundCertOutput* output,
-    const DomainBoundCertCallback& reply,
+    struct GetChannelIDOutput* output,
+    const ChannelIDCallback& reply,
     int status) {
   base::Closure no_tls_channel_id_closure = base::Bind(reply, "");
   if (status != net::OK) {

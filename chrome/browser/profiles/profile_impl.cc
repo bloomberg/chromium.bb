@@ -560,9 +560,8 @@ void ProfileImpl::DoFinalInit() {
 
   base::FilePath cookie_path = GetPath();
   cookie_path = cookie_path.Append(chrome::kCookieFilename);
-  base::FilePath server_bound_cert_path = GetPath();
-  server_bound_cert_path =
-      server_bound_cert_path.Append(chrome::kOBCertFilename);
+  base::FilePath channel_id_path = GetPath();
+  channel_id_path = channel_id_path.Append(chrome::kChannelIDFilename);
   base::FilePath cache_path = base_cache_path_;
   int cache_max_size;
   GetCacheParameters(false, &cache_path, &cache_max_size);
@@ -601,7 +600,7 @@ void ProfileImpl::DoFinalInit() {
   // Make sure we initialize the ProfileIOData after everything else has been
   // initialized that we might be reading from the IO thread.
 
-  io_data_.Init(cookie_path, server_bound_cert_path, cache_path,
+  io_data_.Init(cookie_path, channel_id_path, cache_path,
                 cache_max_size, media_cache_path, media_cache_max_size,
                 extensions_cookie_path, GetPath(), infinite_cache_path,
                 predictor_, session_cookie_mode, GetSpecialStoragePolicy(),

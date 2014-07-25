@@ -66,8 +66,8 @@
 #include "net/quic/quic_protocol.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/spdy/spdy_session.h"
-#include "net/ssl/default_server_bound_cert_store.h"
-#include "net/ssl/server_bound_cert_service.h"
+#include "net/ssl/channel_id_service.h"
+#include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/ftp_protocol_handler.h"
@@ -256,8 +256,8 @@ ConstructProxyScriptFetcherContext(IOThread::Globals* globals,
   context->set_job_factory(
       globals->proxy_script_fetcher_url_request_job_factory.get());
   context->set_cookie_store(globals->system_cookie_store.get());
-  context->set_server_bound_cert_service(
-      globals->system_server_bound_cert_service.get());
+  context->set_channel_id_service(
+      globals->system_channel_id_service.get());
   context->set_network_delegate(globals->system_network_delegate.get());
   context->set_http_user_agent_settings(
       globals->http_user_agent_settings.get());
@@ -285,8 +285,8 @@ ConstructSystemRequestContext(IOThread::Globals* globals,
       globals->system_http_transaction_factory.get());
   context->set_job_factory(globals->system_url_request_job_factory.get());
   context->set_cookie_store(globals->system_cookie_store.get());
-  context->set_server_bound_cert_service(
-      globals->system_server_bound_cert_service.get());
+  context->set_channel_id_service(
+      globals->system_channel_id_service.get());
   context->set_throttler_manager(globals->throttler_manager.get());
   context->set_network_delegate(globals->system_network_delegate.get());
   context->set_http_user_agent_settings(
@@ -678,10 +678,10 @@ void IOThread::InitAsync() {
   // In-memory cookie store.
   globals_->system_cookie_store =
         content::CreateCookieStore(content::CookieStoreConfig());
-  // In-memory server bound cert store.
-  globals_->system_server_bound_cert_service.reset(
-      new net::ServerBoundCertService(
-          new net::DefaultServerBoundCertStore(NULL),
+  // In-memory channel ID store.
+  globals_->system_channel_id_service.reset(
+      new net::ChannelIDService(
+          new net::DefaultChannelIDStore(NULL),
           base::WorkerPool::GetTaskRunner(true)));
   globals_->dns_probe_service.reset(new chrome_browser_net::DnsProbeService());
   globals_->host_mapping_rules.reset(new net::HostMappingRules());
@@ -1001,8 +1001,7 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
     net::HttpNetworkSession::Params* params) {
   params->host_resolver = globals.host_resolver.get();
   params->cert_verifier = globals.cert_verifier.get();
-  params->server_bound_cert_service =
-      globals.system_server_bound_cert_service.get();
+  params->channel_id_service = globals.system_channel_id_service.get();
   params->transport_security_state = globals.transport_security_state.get();
   params->ssl_config_service = globals.ssl_config_service.get();
   params->http_auth_handler_factory = globals.http_auth_handler_factory.get();

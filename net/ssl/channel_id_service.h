@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SSL_SERVER_BOUND_CERT_SERVICE_H_
-#define NET_SSL_SERVER_BOUND_CERT_SERVICE_H_
+#ifndef NET_SSL_CHANNEL_ID_SERVICE_H_
+#define NET_SSL_CHANNEL_ID_SERVICE_H_
 
 #include <map>
 #include <string>
@@ -16,7 +16,7 @@
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
-#include "net/ssl/server_bound_cert_store.h"
+#include "net/ssl/channel_id_store.h"
 
 namespace base {
 class TaskRunner;
@@ -24,11 +24,11 @@ class TaskRunner;
 
 namespace net {
 
-class ServerBoundCertServiceJob;
-class ServerBoundCertServiceRequest;
-class ServerBoundCertServiceWorker;
+class ChannelIDServiceJob;
+class ChannelIDServiceRequest;
+class ChannelIDServiceWorker;
 
-// A class for creating and fetching server bound certs. These certs are used
+// A class for creating and fetching domain bound certs. They are used
 // to identify users' machines; their public keys are used as channel IDs in
 // http://tools.ietf.org/html/draft-balfanz-tls-channelid-00.
 // As a result although certs are set to be invalid after one year, we don't
@@ -38,7 +38,7 @@ class ServerBoundCertServiceWorker;
 
 // Inherits from NonThreadSafe in order to use the function
 // |CalledOnValidThread|.
-class NET_EXPORT ServerBoundCertService
+class NET_EXPORT ChannelIDService
     : NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   class NET_EXPORT RequestHandle {
@@ -53,16 +53,16 @@ class NET_EXPORT ServerBoundCertService
     bool is_active() const { return request_ != NULL; }
 
    private:
-    friend class ServerBoundCertService;
+    friend class ChannelIDService;
 
-    void RequestStarted(ServerBoundCertService* service,
-                        ServerBoundCertServiceRequest* request,
+    void RequestStarted(ChannelIDService* service,
+                        ChannelIDServiceRequest* request,
                         const CompletionCallback& callback);
 
     void OnRequestComplete(int result);
 
-    ServerBoundCertService* service_;
-    ServerBoundCertServiceRequest* request_;
+    ChannelIDService* service_;
+    ChannelIDServiceRequest* request_;
     CompletionCallback callback_;
   };
 
@@ -71,14 +71,14 @@ class NET_EXPORT ServerBoundCertService
   // being unable to import unencrypted PrivateKeyInfo for EC keys.)
   static const char kEPKIPassword[];
 
-  // This object owns |server_bound_cert_store|.  |task_runner| will
+  // This object owns |channel_id_store|.  |task_runner| will
   // be used to post certificate generation worker tasks.  The tasks are
   // safe for use with WorkerPool and SequencedWorkerPool::CONTINUE_ON_SHUTDOWN.
-  ServerBoundCertService(
-      ServerBoundCertStore* server_bound_cert_store,
+  ChannelIDService(
+      ChannelIDStore* channel_id_store,
       const scoped_refptr<base::TaskRunner>& task_runner);
 
-  ~ServerBoundCertService();
+  ~ChannelIDService();
 
   // Returns the domain to be used for |host|.  The domain is the
   // "registry controlled domain", or the "ETLD + 1" where one exists, or
@@ -86,7 +86,7 @@ class NET_EXPORT ServerBoundCertService
   static std::string GetDomainForHost(const std::string& host);
 
   // Tests whether the system time is within the supported range for
-  // certificate generation.  This value is cached when ServerBoundCertService
+  // certificate generation.  This value is cached when ChannelIDService
   // is created, so if the system time is changed by a huge amount, this may no
   // longer hold.
   bool IsSystemTimeValid() const { return is_system_time_valid_; }
@@ -105,8 +105,8 @@ class NET_EXPORT ServerBoundCertService
   //
   // |*out_req| will be initialized with a handle to the async request. This
   // RequestHandle object must be cancelled or destroyed before the
-  // ServerBoundCertService is destroyed.
-  int GetOrCreateDomainBoundCert(
+  // ChannelIDService is destroyed.
+  int GetOrCreateChannelID(
       const std::string& host,
       std::string* private_key,
       std::string* cert,
@@ -124,22 +124,22 @@ class NET_EXPORT ServerBoundCertService
   // |callback| must not be null. ERR_IO_PENDING is returned if the operation
   // could not be completed immediately, in which case the result code will
   // be passed to the callback when available. If an in-flight
-  // GetDomainBoundCert is pending, and a new GetOrCreateDomainBoundCert
-  // request arrives for the same domain, the GetDomainBoundCert request will
+  // GetChannelID is pending, and a new GetOrCreateDomainBoundCert
+  // request arrives for the same domain, the GetChannelID request will
   // not complete until a new cert is created.
   //
   // |*out_req| will be initialized with a handle to the async request. This
   // RequestHandle object must be cancelled or destroyed before the
-  // ServerBoundCertService is destroyed.
-  int GetDomainBoundCert(
+  // ChannelIDService is destroyed.
+  int GetChannelID(
       const std::string& host,
       std::string* private_key,
       std::string* cert,
       const CompletionCallback& callback,
       RequestHandle* out_req);
 
-  // Returns the backing ServerBoundCertStore.
-  ServerBoundCertStore* GetCertStore();
+  // Returns the backing ChannelIDStore.
+  ChannelIDStore* GetChannelIDStore();
 
   // Public only for unit testing.
   int cert_count();
@@ -150,19 +150,19 @@ class NET_EXPORT ServerBoundCertService
 
  private:
   // Cancels the specified request. |req| is the handle stored by
-  // GetDomainBoundCert(). After a request is canceled, its completion
+  // GetChannelID(). After a request is canceled, its completion
   // callback will not be called.
-  void CancelRequest(ServerBoundCertServiceRequest* req);
+  void CancelRequest(ChannelIDServiceRequest* req);
 
-  void GotServerBoundCert(int err,
-                          const std::string& server_identifier,
-                          base::Time expiration_time,
-                          const std::string& key,
-                          const std::string& cert);
-  void GeneratedServerBoundCert(
+  void GotChannelID(int err,
+                    const std::string& server_identifier,
+                    base::Time expiration_time,
+                    const std::string& key,
+                    const std::string& cert);
+  void GeneratedChannelID(
       const std::string& server_identifier,
       int error,
-      scoped_ptr<ServerBoundCertStore::ServerBoundCert> cert);
+      scoped_ptr<ChannelIDStore::ChannelID> channel_id);
   void HandleResult(int error,
                     const std::string& server_identifier,
                     const std::string& private_key,
@@ -183,20 +183,20 @@ class NET_EXPORT ServerBoundCertService
   // Returns OK if it can be found synchronously, ERR_IO_PENDING if the
   // result cannot be obtained synchronously, or a network error code on
   // failure (including failure to find a domain-bound cert of |domain|).
-  int LookupDomainBoundCert(const base::TimeTicks& request_start,
-                            const std::string& domain,
-                            std::string* private_key,
-                            std::string* cert,
-                            bool create_if_missing,
-                            const CompletionCallback& callback,
-                            RequestHandle* out_req);
+  int LookupChannelID(const base::TimeTicks& request_start,
+                      const std::string& domain,
+                      std::string* private_key,
+                      std::string* cert,
+                      bool create_if_missing,
+                      const CompletionCallback& callback,
+                      RequestHandle* out_req);
 
-  scoped_ptr<ServerBoundCertStore> server_bound_cert_store_;
+  scoped_ptr<ChannelIDStore> channel_id_store_;
   scoped_refptr<base::TaskRunner> task_runner_;
 
   // inflight_ maps from a server to an active generation which is taking
   // place.
-  std::map<std::string, ServerBoundCertServiceJob*> inflight_;
+  std::map<std::string, ChannelIDServiceJob*> inflight_;
 
   uint64 requests_;
   uint64 cert_store_hits_;
@@ -205,11 +205,11 @@ class NET_EXPORT ServerBoundCertService
 
   bool is_system_time_valid_;
 
-  base::WeakPtrFactory<ServerBoundCertService> weak_ptr_factory_;
+  base::WeakPtrFactory<ChannelIDService> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServerBoundCertService);
+  DISALLOW_COPY_AND_ASSIGN(ChannelIDService);
 };
 
 }  // namespace net
 
-#endif  // NET_SSL_SERVER_BOUND_CERT_SERVICE_H_
+#endif  // NET_SSL_CHANNEL_ID_SERVICE_H_

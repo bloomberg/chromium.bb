@@ -37,9 +37,9 @@ cr.define('options', function() {
     'file_system': [['origin', 'label_file_system_origin'],
                     ['persistent', 'label_file_system_persistent_usage'],
                     ['temporary', 'label_file_system_temporary_usage']],
-    'server_bound_cert': [['serverId', 'label_server_bound_cert_server_id'],
-                          ['certType', 'label_server_bound_cert_type'],
-                          ['created', 'label_server_bound_cert_created']],
+    'channel_id': [['serverId', 'label_channel_id_server_id'],
+                          ['certType', 'label_channel_id_type'],
+                          ['created', 'label_channel_id_created']],
     'flash_lso': [['domain', 'label_cookie_domain']],
   };
 
@@ -246,7 +246,7 @@ cr.define('options', function() {
         appCache: false,
         indexedDb: false,
         fileSystem: false,
-        serverBoundCerts: 0,
+        channelIDs: 0,
       };
       if (this.origin)
         this.origin.collectSummaryInfo(info);
@@ -264,8 +264,8 @@ cr.define('options', function() {
         list.push(loadTimeData.getString('cookie_app_cache'));
       if (info.fileSystem)
         list.push(loadTimeData.getString('cookie_file_system'));
-      if (info.serverBoundCerts)
-        list.push(loadTimeData.getString('cookie_server_bound_cert'));
+      if (info.channelIDs)
+        list.push(loadTimeData.getString('cookie_channel_id'));
       if (info.flashLSO)
         list.push(loadTimeData.getString('cookie_flash_lso'));
 
@@ -480,8 +480,8 @@ cr.define('options', function() {
           info.fileSystem = true;
         } else if (this.data.type == 'quota') {
           info.quota = this.data;
-        } else if (this.data.type == 'server_bound_cert') {
-          info.serverBoundCerts++;
+        } else if (this.data.type == 'channel_id') {
+          info.channelIDs++;
         } else if (this.data.type == 'flash_lso') {
           info.flashLSO = true;
         }

@@ -231,7 +231,7 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
                        GetAsMask(data_to_remove, "webSQL",
                                  BrowsingDataRemover::REMOVE_WEBSQL) |
                        GetAsMask(data_to_remove, "serverBoundCertificates",
-                           BrowsingDataRemover::REMOVE_SERVER_BOUND_CERTS);
+                           BrowsingDataRemover::REMOVE_CHANNEL_IDS);
     EXPECT_EQ(expected_removal_mask, removal_mask);
   }
 
@@ -370,7 +370,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest,
       "localStorage", BrowsingDataRemover::REMOVE_LOCAL_STORAGE);
   RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
       "serverBoundCertificates",
-      BrowsingDataRemover::REMOVE_SERVER_BOUND_CERTS);
+      BrowsingDataRemover::REMOVE_CHANNEL_IDS);
   RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
       "passwords", BrowsingDataRemover::REMOVE_PASSWORDS);
   // We can't remove plugin data inside a test profile.
@@ -440,7 +440,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, ShortcutFunctionRemovalMask) {
       BrowsingDataRemover::REMOVE_CACHE);
   RunAndCompareRemovalMask<BrowsingDataRemoveCookiesFunction>(
       BrowsingDataRemover::REMOVE_COOKIES |
-      BrowsingDataRemover::REMOVE_SERVER_BOUND_CERTS);
+      BrowsingDataRemover::REMOVE_CHANNEL_IDS);
   RunAndCompareRemovalMask<BrowsingDataRemoveDownloadsFunction>(
       BrowsingDataRemover::REMOVE_DOWNLOADS);
   RunAndCompareRemovalMask<BrowsingDataRemoveFileSystemsFunction>(

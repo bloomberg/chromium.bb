@@ -47,8 +47,8 @@ enum {
 };
 
 class AsyncSocket;
+class ChannelIDService;
 class MockClientSocket;
-class ServerBoundCertService;
 class SSLClientSocket;
 class StreamSocket;
 
@@ -333,7 +333,7 @@ struct SSLSocketDataProvider {
   SSLCertRequestInfo* cert_request_info;
   scoped_refptr<X509Certificate> cert;
   bool channel_id_sent;
-  ServerBoundCertService* server_bound_cert_service;
+  ChannelIDService* channel_id_service;
   int connection_status;
 };
 
@@ -701,7 +701,7 @@ class MockClientSocket : public SSLClientSocket {
   virtual int GetTLSUniqueChannelBinding(std::string* out) OVERRIDE;
   virtual NextProtoStatus GetNextProto(std::string* proto,
                                        std::string* server_protos) OVERRIDE;
-  virtual ServerBoundCertService* GetServerBoundCertService() const OVERRIDE;
+  virtual ChannelIDService* GetChannelIDService() const OVERRIDE;
 
  protected:
   virtual ~MockClientSocket();
@@ -964,7 +964,7 @@ class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
 
   virtual bool WasChannelIDSent() const OVERRIDE;
   virtual void set_channel_id_sent(bool channel_id_sent) OVERRIDE;
-  virtual ServerBoundCertService* GetServerBoundCertService() const OVERRIDE;
+  virtual ChannelIDService* GetChannelIDService() const OVERRIDE;
 
  private:
   static void ConnectCallback(MockSSLClientSocket* ssl_client_socket,

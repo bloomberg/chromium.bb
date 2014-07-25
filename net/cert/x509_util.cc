@@ -19,7 +19,7 @@ namespace x509_util {
 static const uint16 kRSAKeyLength = 1024;
 
 // Certificates made by CreateKeyAndSelfSignedCert and
-//  CreateKeyAndDomainBoundCertEC will be signed using this digest algorithm.
+//  CreateKeyAndChannelIDEC will be signed using this digest algorithm.
 static const DigestAlgorithm kSignatureDigestAlgorithm = DIGEST_SHA256;
 
 ClientCertSorter::ClientCertSorter() : now_(base::Time::Now()) {}
@@ -55,23 +55,23 @@ bool ClientCertSorter::operator()(
   return a_intermediates.size() < b_intermediates.size();
 }
 
-bool CreateKeyAndDomainBoundCertEC(const std::string& domain,
-                                   uint32 serial_number,
-                                   base::Time not_valid_before,
-                                   base::Time not_valid_after,
-                                   scoped_ptr<crypto::ECPrivateKey>* key,
-                                   std::string* der_cert) {
+bool CreateKeyAndChannelIDEC(const std::string& domain,
+                             uint32 serial_number,
+                             base::Time not_valid_before,
+                             base::Time not_valid_after,
+                             scoped_ptr<crypto::ECPrivateKey>* key,
+                             std::string* der_cert) {
   scoped_ptr<crypto::ECPrivateKey> new_key(crypto::ECPrivateKey::Create());
   if (!new_key.get())
     return false;
 
-  bool success = CreateDomainBoundCertEC(new_key.get(),
-                                         kSignatureDigestAlgorithm,
-                                         domain,
-                                         serial_number,
-                                         not_valid_before,
-                                         not_valid_after,
-                                         der_cert);
+  bool success = CreateChannelIDEC(new_key.get(),
+                                   kSignatureDigestAlgorithm,
+                                   domain,
+                                   serial_number,
+                                   not_valid_before,
+                                   not_valid_after,
+                                   der_cert);
   if (success)
     key->reset(new_key.release());
 

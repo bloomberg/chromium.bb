@@ -41,7 +41,7 @@ class MockLoginUtils : public LoginUtils {
   MOCK_METHOD1(CreateAuthenticator,
                scoped_refptr<Authenticator>(AuthStatusConsumer*));
   MOCK_METHOD1(StartTokenServices, void(Profile*));
-  MOCK_METHOD2(TransferDefaultCookiesAndServerBoundCerts,
+  MOCK_METHOD2(TransferDefaultCookiesAndChannelIDs,
                void(Profile*, Profile*));
   MOCK_METHOD2(TransferDefaultAuthCache, void(Profile*, Profile*));
   MOCK_METHOD0(StopBackgroundFetchers, void(void));

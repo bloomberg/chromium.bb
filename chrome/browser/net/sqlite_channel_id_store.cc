@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/sqlite_server_bound_cert_store.h"
+#include "chrome/browser/net/sqlite_channel_id_store.h"
 
 #include <list>
 #include <set>
@@ -30,8 +30,8 @@
 
 // This class is designed to be shared between any calling threads and the
 // background task runner. It batches operations and commits them on a timer.
-class SQLiteServerBoundCertStore::Backend
-    : public base::RefCountedThreadSafe<SQLiteServerBoundCertStore::Backend> {
+class SQLiteChannelIDStore::Backend
+    : public base::RefCountedThreadSafe<SQLiteChannelIDStore::Backend> {
  public:
   Backend(
       const base::FilePath& path,
@@ -47,13 +47,13 @@ class SQLiteServerBoundCertStore::Backend
   // Creates or loads the SQLite database.
   void Load(const LoadedCallback& loaded_callback);
 
-  // Batch a server bound cert addition.
-  void AddServerBoundCert(
-      const net::DefaultServerBoundCertStore::ServerBoundCert& cert);
+  // Batch a channel ID addition.
+  void AddChannelID(
+      const net::DefaultChannelIDStore::ChannelID& channel_id);
 
-  // Batch a server bound cert deletion.
-  void DeleteServerBoundCert(
-      const net::DefaultServerBoundCertStore::ServerBoundCert& cert);
+  // Batch a channel ID deletion.
+  void DeleteChannelID(
+      const net::DefaultChannelIDStore::ChannelID& channel_id);
 
   // Commit any pending operations and close the database.  This must be called
   // before the object is destructed.
@@ -63,9 +63,9 @@ class SQLiteServerBoundCertStore::Backend
 
  private:
   void LoadOnDBThread(
-      ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert>* certs);
+      ScopedVector<net::DefaultChannelIDStore::ChannelID>* channel_ids);
 
-  friend class base::RefCountedThreadSafe<SQLiteServerBoundCertStore::Backend>;
+  friend class base::RefCountedThreadSafe<SQLiteChannelIDStore::Backend>;
 
   // You should call Close() before destructing this object.
   ~Backend() {
@@ -79,30 +79,30 @@ class SQLiteServerBoundCertStore::Backend
   class PendingOperation {
    public:
     typedef enum {
-      CERT_ADD,
-      CERT_DELETE
+      CHANNEL_ID_ADD,
+      CHANNEL_ID_DELETE
     } OperationType;
 
     PendingOperation(
         OperationType op,
-        const net::DefaultServerBoundCertStore::ServerBoundCert& cert)
-        : op_(op), cert_(cert) {}
+        const net::DefaultChannelIDStore::ChannelID& channel_id)
+        : op_(op), channel_id_(channel_id) {}
 
     OperationType op() const { return op_; }
-    const net::DefaultServerBoundCertStore::ServerBoundCert& cert() const {
-        return cert_;
+    const net::DefaultChannelIDStore::ChannelID& channel_id() const {
+        return channel_id_;
     }
 
    private:
     OperationType op_;
-    net::DefaultServerBoundCertStore::ServerBoundCert cert_;
+    net::DefaultChannelIDStore::ChannelID channel_id_;
   };
 
  private:
-  // Batch a server bound cert operation (add or delete).
+  // Batch a channel id operation (add or delete).
   void BatchOperation(
       PendingOperation::OperationType op,
-      const net::DefaultServerBoundCertStore::ServerBoundCert& cert);
+      const net::DefaultChannelIDStore::ChannelID& channel_id);
   // Commit our pending operations to the database.
   void Commit();
   // Close() executed on the background thread.
@@ -125,8 +125,8 @@ class SQLiteServerBoundCertStore::Backend
   // Guard |pending_|, |num_pending_| and |force_keep_session_state_|.
   base::Lock lock_;
 
-  // Cache of origins we have certificates stored for.
-  std::set<std::string> cert_origins_;
+  // Cache of origins we have channel IDs stored for.
+  std::set<std::string> channel_id_origins_;
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
@@ -147,7 +147,7 @@ namespace {
 // Initializes the certs table, returning true on success.
 bool InitTable(sql::Connection* db) {
   // The table is named "origin_bound_certs" for backwards compatability before
-  // we renamed this class to SQLiteServerBoundCertStore.  Likewise, the primary
+  // we renamed this class to SQLiteChannelIDStore.  Likewise, the primary
   // key is "origin", but now can be other things like a plain domain.
   if (!db->DoesTableExist("origin_bound_certs")) {
     if (!db->Execute("CREATE TABLE origin_bound_certs ("
@@ -165,24 +165,23 @@ bool InitTable(sql::Connection* db) {
 
 }  // namespace
 
-void SQLiteServerBoundCertStore::Backend::Load(
+void SQLiteChannelIDStore::Backend::Load(
     const LoadedCallback& loaded_callback) {
   // This function should be called only once per instance.
   DCHECK(!db_.get());
-  scoped_ptr<ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> >
-      certs(new ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert>(
-          ));
-  ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert>* certs_ptr =
-      certs.get();
+  scoped_ptr<ScopedVector<net::DefaultChannelIDStore::ChannelID> >
+      channel_ids(new ScopedVector<net::DefaultChannelIDStore::ChannelID>());
+  ScopedVector<net::DefaultChannelIDStore::ChannelID>* channel_ids_ptr =
+      channel_ids.get();
 
   background_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&Backend::LoadOnDBThread, this, certs_ptr),
-      base::Bind(loaded_callback, base::Passed(&certs)));
+      base::Bind(&Backend::LoadOnDBThread, this, channel_ids_ptr),
+      base::Bind(loaded_callback, base::Passed(&channel_ids)));
 }
 
-void SQLiteServerBoundCertStore::Backend::LoadOnDBThread(
-    ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert>* certs) {
+void SQLiteChannelIDStore::Backend::LoadOnDBThread(
+    ScopedVector<net::DefaultChannelIDStore::ChannelID>* channel_ids) {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   // This method should be called only once per instance.
@@ -205,7 +204,7 @@ void SQLiteServerBoundCertStore::Backend::LoadOnDBThread(
 
   // Unretained to avoid a ref loop with db_.
   db_->set_error_callback(
-      base::Bind(&SQLiteServerBoundCertStore::Backend::DatabaseErrorCallback,
+      base::Bind(&SQLiteChannelIDStore::Backend::DatabaseErrorCallback,
                  base::Unretained(this)));
 
   if (!db_->Open(path_)) {
@@ -247,29 +246,30 @@ void SQLiteServerBoundCertStore::Backend::LoadOnDBThread(
     std::string private_key_from_db, cert_from_db;
     smt.ColumnBlobAsString(1, &private_key_from_db);
     smt.ColumnBlobAsString(2, &cert_from_db);
-    scoped_ptr<net::DefaultServerBoundCertStore::ServerBoundCert> cert(
-        new net::DefaultServerBoundCertStore::ServerBoundCert(
+    scoped_ptr<net::DefaultChannelIDStore::ChannelID> channel_id(
+        new net::DefaultChannelIDStore::ChannelID(
             smt.ColumnString(0),  // origin
             base::Time::FromInternalValue(smt.ColumnInt64(5)),
             base::Time::FromInternalValue(smt.ColumnInt64(4)),
             private_key_from_db,
             cert_from_db));
-    cert_origins_.insert(cert->server_identifier());
-    certs->push_back(cert.release());
+    channel_id_origins_.insert(channel_id->server_identifier());
+    channel_ids->push_back(channel_id.release());
   }
 
-  UMA_HISTOGRAM_COUNTS_10000("DomainBoundCerts.DBLoadedCount", certs->size());
+  UMA_HISTOGRAM_COUNTS_10000("DomainBoundCerts.DBLoadedCount",
+                             channel_ids->size());
   base::TimeDelta load_time = base::TimeTicks::Now() - start;
   UMA_HISTOGRAM_CUSTOM_TIMES("DomainBoundCerts.DBLoadTime",
                              load_time,
                              base::TimeDelta::FromMilliseconds(1),
                              base::TimeDelta::FromMinutes(1),
                              50);
-  DVLOG(1) << "loaded " << certs->size() << " in " << load_time.InMilliseconds()
-           << " ms";
+  DVLOG(1) << "loaded " << channel_ids->size() << " in "
+           << load_time.InMilliseconds() << " ms";
 }
 
-bool SQLiteServerBoundCertStore::Backend::EnsureDatabaseVersion() {
+bool SQLiteChannelIDStore::Backend::EnsureDatabaseVersion() {
   // Version check.
   if (!meta_table_.Init(
       db_.get(), kCurrentVersionNumber, kCompatibleVersionNumber)) {
@@ -396,7 +396,7 @@ bool SQLiteServerBoundCertStore::Backend::EnsureDatabaseVersion() {
   return true;
 }
 
-void SQLiteServerBoundCertStore::Backend::DatabaseErrorCallback(
+void SQLiteChannelIDStore::Backend::DatabaseErrorCallback(
     int error,
     sql::Statement* stmt) {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
@@ -418,7 +418,7 @@ void SQLiteServerBoundCertStore::Backend::DatabaseErrorCallback(
                                     base::Bind(&Backend::KillDatabase, this));
 }
 
-void SQLiteServerBoundCertStore::Backend::KillDatabase() {
+void SQLiteChannelIDStore::Backend::KillDatabase() {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   if (db_) {
@@ -431,26 +431,26 @@ void SQLiteServerBoundCertStore::Backend::KillDatabase() {
   }
 }
 
-void SQLiteServerBoundCertStore::Backend::AddServerBoundCert(
-    const net::DefaultServerBoundCertStore::ServerBoundCert& cert) {
-  BatchOperation(PendingOperation::CERT_ADD, cert);
+void SQLiteChannelIDStore::Backend::AddChannelID(
+    const net::DefaultChannelIDStore::ChannelID& channel_id) {
+  BatchOperation(PendingOperation::CHANNEL_ID_ADD, channel_id);
 }
 
-void SQLiteServerBoundCertStore::Backend::DeleteServerBoundCert(
-    const net::DefaultServerBoundCertStore::ServerBoundCert& cert) {
-  BatchOperation(PendingOperation::CERT_DELETE, cert);
+void SQLiteChannelIDStore::Backend::DeleteChannelID(
+    const net::DefaultChannelIDStore::ChannelID& channel_id) {
+  BatchOperation(PendingOperation::CHANNEL_ID_DELETE, channel_id);
 }
 
-void SQLiteServerBoundCertStore::Backend::BatchOperation(
+void SQLiteChannelIDStore::Backend::BatchOperation(
     PendingOperation::OperationType op,
-    const net::DefaultServerBoundCertStore::ServerBoundCert& cert) {
+    const net::DefaultChannelIDStore::ChannelID& channel_id) {
   // Commit every 30 seconds.
   static const int kCommitIntervalMs = 30 * 1000;
   // Commit right away if we have more than 512 outstanding operations.
   static const size_t kCommitAfterBatchSize = 512;
 
   // We do a full copy of the cert here, and hopefully just here.
-  scoped_ptr<PendingOperation> po(new PendingOperation(op, cert));
+  scoped_ptr<PendingOperation> po(new PendingOperation(op, channel_id));
 
   PendingOperationsList::size_type num_pending;
   {
@@ -472,7 +472,7 @@ void SQLiteServerBoundCertStore::Backend::BatchOperation(
   }
 }
 
-void SQLiteServerBoundCertStore::Backend::Commit() {
+void SQLiteChannelIDStore::Backend::Commit() {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   PendingOperationsList ops;
@@ -506,25 +506,27 @@ void SQLiteServerBoundCertStore::Backend::Commit() {
     // Free the certs as we commit them to the database.
     scoped_ptr<PendingOperation> po(*it);
     switch (po->op()) {
-      case PendingOperation::CERT_ADD: {
-        cert_origins_.insert(po->cert().server_identifier());
+      case PendingOperation::CHANNEL_ID_ADD: {
+        channel_id_origins_.insert(po->channel_id().server_identifier());
         add_smt.Reset(true);
-        add_smt.BindString(0, po->cert().server_identifier());
-        const std::string& private_key = po->cert().private_key();
+        add_smt.BindString(0, po->channel_id().server_identifier());
+        const std::string& private_key = po->channel_id().private_key();
         add_smt.BindBlob(1, private_key.data(), private_key.size());
-        const std::string& cert = po->cert().cert();
+        const std::string& cert = po->channel_id().cert();
         add_smt.BindBlob(2, cert.data(), cert.size());
         add_smt.BindInt(3, net::CLIENT_CERT_ECDSA_SIGN);
-        add_smt.BindInt64(4, po->cert().expiration_time().ToInternalValue());
-        add_smt.BindInt64(5, po->cert().creation_time().ToInternalValue());
+        add_smt.BindInt64(4,
+                          po->channel_id().expiration_time().ToInternalValue());
+        add_smt.BindInt64(5,
+                          po->channel_id().creation_time().ToInternalValue());
         if (!add_smt.Run())
           NOTREACHED() << "Could not add a server bound cert to the DB.";
         break;
       }
-      case PendingOperation::CERT_DELETE:
-        cert_origins_.erase(po->cert().server_identifier());
+      case PendingOperation::CHANNEL_ID_DELETE:
+        channel_id_origins_.erase(po->channel_id().server_identifier());
         del_smt.Reset(true);
-        del_smt.BindString(0, po->cert().server_identifier());
+        del_smt.BindString(0, po->channel_id().server_identifier());
         if (!del_smt.Run())
           NOTREACHED() << "Could not delete a server bound cert from the DB.";
         break;
@@ -540,13 +542,13 @@ void SQLiteServerBoundCertStore::Backend::Commit() {
 // Fire off a close message to the background thread. We could still have a
 // pending commit timer that will be holding a reference on us, but if/when
 // this fires we will already have been cleaned up and it will be ignored.
-void SQLiteServerBoundCertStore::Backend::Close() {
+void SQLiteChannelIDStore::Backend::Close() {
   // Must close the backend on the background thread.
   background_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Backend::InternalBackgroundClose, this));
 }
 
-void SQLiteServerBoundCertStore::Backend::InternalBackgroundClose() {
+void SQLiteChannelIDStore::Backend::InternalBackgroundClose() {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
   // Commit any pending operations
   Commit();
@@ -560,13 +562,13 @@ void SQLiteServerBoundCertStore::Backend::InternalBackgroundClose() {
   db_.reset();
 }
 
-void SQLiteServerBoundCertStore::Backend::DeleteCertificatesOnShutdown() {
+void SQLiteChannelIDStore::Backend::DeleteCertificatesOnShutdown() {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   if (!db_.get())
     return;
 
-  if (cert_origins_.empty())
+  if (channel_id_origins_.empty())
     return;
 
   if (!special_storage_policy_.get())
@@ -585,8 +587,8 @@ void SQLiteServerBoundCertStore::Backend::DeleteCertificatesOnShutdown() {
     return;
   }
 
-  for (std::set<std::string>::iterator it = cert_origins_.begin();
-       it != cert_origins_.end(); ++it) {
+  for (std::set<std::string>::iterator it = channel_id_origins_.begin();
+       it != channel_id_origins_.end(); ++it) {
     const GURL url(net::cookie_util::CookieOriginToURL(*it, true));
     if (!url.is_valid() || !special_storage_policy_->IsStorageSessionOnly(url))
       continue;
@@ -600,12 +602,12 @@ void SQLiteServerBoundCertStore::Backend::DeleteCertificatesOnShutdown() {
     LOG(WARNING) << "Unable to delete certificates on shutdown.";
 }
 
-void SQLiteServerBoundCertStore::Backend::SetForceKeepSessionState() {
+void SQLiteChannelIDStore::Backend::SetForceKeepSessionState() {
   base::AutoLock locked(lock_);
   force_keep_session_state_ = true;
 }
 
-SQLiteServerBoundCertStore::SQLiteServerBoundCertStore(
+SQLiteChannelIDStore::SQLiteChannelIDStore(
     const base::FilePath& path,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     quota::SpecialStoragePolicy* special_storage_policy)
@@ -613,26 +615,26 @@ SQLiteServerBoundCertStore::SQLiteServerBoundCertStore(
                            background_task_runner,
                            special_storage_policy)) {}
 
-void SQLiteServerBoundCertStore::Load(
+void SQLiteChannelIDStore::Load(
     const LoadedCallback& loaded_callback) {
   backend_->Load(loaded_callback);
 }
 
-void SQLiteServerBoundCertStore::AddServerBoundCert(
-    const net::DefaultServerBoundCertStore::ServerBoundCert& cert) {
-  backend_->AddServerBoundCert(cert);
+void SQLiteChannelIDStore::AddChannelID(
+    const net::DefaultChannelIDStore::ChannelID& channel_id) {
+  backend_->AddChannelID(channel_id);
 }
 
-void SQLiteServerBoundCertStore::DeleteServerBoundCert(
-    const net::DefaultServerBoundCertStore::ServerBoundCert& cert) {
-  backend_->DeleteServerBoundCert(cert);
+void SQLiteChannelIDStore::DeleteChannelID(
+    const net::DefaultChannelIDStore::ChannelID& channel_id) {
+  backend_->DeleteChannelID(channel_id);
 }
 
-void SQLiteServerBoundCertStore::SetForceKeepSessionState() {
+void SQLiteChannelIDStore::SetForceKeepSessionState() {
   backend_->SetForceKeepSessionState();
 }
 
-SQLiteServerBoundCertStore::~SQLiteServerBoundCertStore() {
+SQLiteChannelIDStore::~SQLiteChannelIDStore() {
   backend_->Close();
   // We release our reference to the Backend, though it will probably still have
   // a reference if the background thread has not run Close() yet.

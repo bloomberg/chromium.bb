@@ -67,8 +67,8 @@
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
 #include "net/http/transport_security_state.h"
-#include "net/ssl/server_bound_cert_service.h"
-#include "net/ssl/server_bound_cert_store.h"
+#include "net/ssl/channel_id_service.h"
+#include "net/ssl/channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "webkit/browser/quota/quota_manager.h"
@@ -194,6 +194,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       deauthorize_content_licenses_request_id_(0),
       waiting_for_clear_autofill_origin_urls_(false),
       waiting_for_clear_cache_(false),
+      waiting_for_clear_channel_ids_(false),
       waiting_for_clear_content_licenses_(false),
       waiting_for_clear_cookies_count_(0),
       waiting_for_clear_domain_reliability_monitor_(false),
@@ -208,7 +209,6 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_platform_keys_(false),
       waiting_for_clear_plugin_data_(false),
       waiting_for_clear_pnacl_cache_(false),
-      waiting_for_clear_server_bound_certs_(false),
       waiting_for_clear_storage_partition_data_(false),
 #if defined(ENABLE_WEBRTC)
       waiting_for_clear_webrtc_logs_(false),
@@ -458,19 +458,19 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     MediaDeviceIDSalt::Reset(profile_->GetPrefs());
   }
 
-  // Server bound certs are not separated for protected and unprotected web
+  // Channel IDs are not separated for protected and unprotected web
   // origins. We check the origin_set_mask_ to prevent unintended deletion.
-  if (remove_mask & REMOVE_SERVER_BOUND_CERTS &&
+  if (remove_mask & REMOVE_CHANNEL_IDS &&
       origin_set_mask_ & BrowsingDataHelper::UNPROTECTED_WEB) {
     content::RecordAction(
-        UserMetricsAction("ClearBrowsingData_ServerBoundCerts"));
+        UserMetricsAction("ClearBrowsingData_ChannelIDs"));
     // Since we are running on the UI thread don't call GetURLRequestContext().
     net::URLRequestContextGetter* rq_context = profile_->GetRequestContext();
     if (rq_context) {
-      waiting_for_clear_server_bound_certs_ = true;
+      waiting_for_clear_channel_ids_ = true;
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&BrowsingDataRemover::ClearServerBoundCertsOnIOThread,
+          base::Bind(&BrowsingDataRemover::ClearChannelIDsOnIOThread,
                      base::Unretained(this), base::Unretained(rq_context)));
     }
   }
@@ -754,20 +754,23 @@ base::Time BrowsingDataRemover::CalculateBeginDeleteTime(
 }
 
 bool BrowsingDataRemover::AllDone() {
-  return !waiting_for_clear_keyword_data_ &&
-         !waiting_for_clear_autofill_origin_urls_ &&
-         !waiting_for_clear_cache_ && !waiting_for_clear_nacl_cache_ &&
-         !waiting_for_clear_cookies_count_ && !waiting_for_clear_history_ &&
+  return !waiting_for_clear_autofill_origin_urls_ &&
+         !waiting_for_clear_cache_ &&
+         !waiting_for_clear_content_licenses_ &&
+         !waiting_for_clear_channel_ids_ &&
+         !waiting_for_clear_cookies_count_ &&
          !waiting_for_clear_domain_reliability_monitor_ &&
+         !waiting_for_clear_form_ &&
+         !waiting_for_clear_history_ &&
+         !waiting_for_clear_hostname_resolution_cache_ &&
+         !waiting_for_clear_keyword_data_ &&
          !waiting_for_clear_logged_in_predictor_ &&
+         !waiting_for_clear_nacl_cache_ &&
+         !waiting_for_clear_network_predictor_ &&
          !waiting_for_clear_networking_history_ &&
-         !waiting_for_clear_server_bound_certs_ &&
+         !waiting_for_clear_platform_keys_ &&
          !waiting_for_clear_plugin_data_ &&
          !waiting_for_clear_pnacl_cache_ &&
-         !waiting_for_clear_content_licenses_ && !waiting_for_clear_form_ &&
-         !waiting_for_clear_hostname_resolution_cache_ &&
-         !waiting_for_clear_network_predictor_ &&
-         !waiting_for_clear_platform_keys_ &&
 #if defined(ENABLE_WEBRTC)
          !waiting_for_clear_webrtc_logs_ &&
 #endif
@@ -1117,18 +1120,18 @@ void BrowsingDataRemover::ClearCookiesOnIOThread(
                  base::Unretained(this)));
 }
 
-void BrowsingDataRemover::ClearServerBoundCertsOnIOThread(
+void BrowsingDataRemover::ClearChannelIDsOnIOThread(
     net::URLRequestContextGetter* rq_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  net::ServerBoundCertService* server_bound_cert_service =
-      rq_context->GetURLRequestContext()->server_bound_cert_service();
-  server_bound_cert_service->GetCertStore()->DeleteAllCreatedBetween(
+  net::ChannelIDService* channel_id_service =
+      rq_context->GetURLRequestContext()->channel_id_service();
+  channel_id_service->GetChannelIDStore()->DeleteAllCreatedBetween(
       delete_begin_, delete_end_,
-      base::Bind(&BrowsingDataRemover::OnClearedServerBoundCertsOnIOThread,
+      base::Bind(&BrowsingDataRemover::OnClearedChannelIDsOnIOThread,
                  base::Unretained(this), base::Unretained(rq_context)));
 }
 
-void BrowsingDataRemover::OnClearedServerBoundCertsOnIOThread(
+void BrowsingDataRemover::OnClearedChannelIDsOnIOThread(
     net::URLRequestContextGetter* rq_context) {
   // Need to close open SSL connections which may be using the channel ids we
   // are deleting.
@@ -1138,13 +1141,13 @@ void BrowsingDataRemover::OnClearedServerBoundCertsOnIOThread(
       NotifySSLConfigChange();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&BrowsingDataRemover::OnClearedServerBoundCerts,
+      base::Bind(&BrowsingDataRemover::OnClearedChannelIDs,
                  base::Unretained(this)));
 }
 
-void BrowsingDataRemover::OnClearedServerBoundCerts() {
+void BrowsingDataRemover::OnClearedChannelIDs() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  waiting_for_clear_server_bound_certs_ = false;
+  waiting_for_clear_channel_ids_ = false;
   NotifyAndDeleteIfDone();
 }
 

@@ -15,7 +15,7 @@
 #include "net/http/http_server_properties.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/proxy/proxy_service.h"
-#include "net/ssl/server_bound_cert_service.h"
+#include "net/ssl/channel_id_service.h"
 #include "net/url_request/fraudulent_certificate_reporter.h"
 #include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
@@ -47,10 +47,10 @@ void URLRequestContextStorage::set_cert_verifier(CertVerifier* cert_verifier) {
   cert_verifier_.reset(cert_verifier);
 }
 
-void URLRequestContextStorage::set_server_bound_cert_service(
-    ServerBoundCertService* server_bound_cert_service) {
-  context_->set_server_bound_cert_service(server_bound_cert_service);
-  server_bound_cert_service_.reset(server_bound_cert_service);
+void URLRequestContextStorage::set_channel_id_service(
+    ChannelIDService* channel_id_service) {
+  context_->set_channel_id_service(channel_id_service);
+  channel_id_service_.reset(channel_id_service);
 }
 
 void URLRequestContextStorage::set_fraudulent_certificate_reporter(

@@ -18,7 +18,7 @@ namespace net {
 
 class CertVerifier;
 class CTVerifier;
-class ServerBoundCertService;
+class ChannelIDService;
 class SSLCertRequestInfo;
 struct SSLConfig;
 class SSLInfo;
@@ -30,23 +30,23 @@ class X509Certificate;
 struct SSLClientSocketContext {
   SSLClientSocketContext()
       : cert_verifier(NULL),
-        server_bound_cert_service(NULL),
+        channel_id_service(NULL),
         transport_security_state(NULL),
         cert_transparency_verifier(NULL) {}
 
   SSLClientSocketContext(CertVerifier* cert_verifier_arg,
-                         ServerBoundCertService* server_bound_cert_service_arg,
+                         ChannelIDService* channel_id_service_arg,
                          TransportSecurityState* transport_security_state_arg,
                          CTVerifier* cert_transparency_verifier_arg,
                          const std::string& ssl_session_cache_shard_arg)
       : cert_verifier(cert_verifier_arg),
-        server_bound_cert_service(server_bound_cert_service_arg),
+        channel_id_service(channel_id_service_arg),
         transport_security_state(transport_security_state_arg),
         cert_transparency_verifier(cert_transparency_verifier_arg),
         ssl_session_cache_shard(ssl_session_cache_shard_arg) {}
 
   CertVerifier* cert_verifier;
-  ServerBoundCertService* server_bound_cert_service;
+  ChannelIDService* channel_id_service;
   TransportSecurityState* transport_security_state;
   CTVerifier* cert_transparency_verifier;
   // ssl_session_cache_shard is an opaque string that identifies a shard of the
@@ -121,9 +121,9 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
 
   virtual void set_protocol_negotiated(NextProto protocol_negotiated);
 
-  // Returns the ServerBoundCertService used by this socket, or NULL if
-  // server bound certificates are not supported.
-  virtual ServerBoundCertService* GetServerBoundCertService() const = 0;
+  // Returns the ChannelIDService used by this socket, or NULL if
+  // channel ids are not supported.
+  virtual ChannelIDService* GetChannelIDService() const = 0;
 
   // Returns true if a channel ID was sent on this connection.
   // This may be useful for protocols, like SPDY, which allow the same
@@ -145,7 +145,7 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   // Records histograms for channel id support during full handshakes - resumed
   // handshakes are ignored.
   static void RecordChannelIDSupport(
-      ServerBoundCertService* server_bound_cert_service,
+      ChannelIDService* channel_id_service,
       bool negotiated_channel_id,
       bool channel_id_enabled,
       bool supports_ecc);
@@ -153,7 +153,7 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   // Returns whether TLS channel ID is enabled.
   static bool IsChannelIDEnabled(
       const SSLConfig& ssl_config,
-      ServerBoundCertService* server_bound_cert_service);
+      ChannelIDService* channel_id_service);
 
   // For unit testing only.
   // Returns the unverified certificate chain as presented by server.

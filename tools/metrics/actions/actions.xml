@@ -1842,6 +1842,11 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ClearBrowsingData_ChannelIDs">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <description>Please enter the description of the metric.</description>
+</action>
+
 <action name="ClearBrowsingData_ContentLicenses">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -1915,6 +1920,7 @@ should be able to be added at any place in this file.
 <action name="ClearBrowsingData_ServerBoundCerts">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>This has been renamed ClearBrowsingData_ChannelIDs.</obsolete>
 </action>
 
 <action name="ClearBrowsingData_ShaderCache">
