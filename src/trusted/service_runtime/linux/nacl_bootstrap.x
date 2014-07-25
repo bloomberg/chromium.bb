@@ -131,5 +131,6 @@ SECTIONS {
     *(.reginfo)
     *(.rel*)
     *(.igot.plt)
+    *(.ARM.exidx)
   }
 }
