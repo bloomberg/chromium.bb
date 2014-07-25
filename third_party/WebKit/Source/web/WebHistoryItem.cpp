@@ -161,6 +161,16 @@ void WebHistoryItem::setDocumentSequenceNumber(long long documentSequenceNumber)
     m_private->setDocumentSequenceNumber(documentSequenceNumber);
 }
 
+long long WebHistoryItem::frameSequenceNumber() const
+{
+    return m_private->frameSequenceNumber();
+}
+
+void WebHistoryItem::setFrameSequenceNumber(long long frameSequenceNumber)
+{
+    m_private->setFrameSequenceNumber(frameSequenceNumber);
+}
+
 WebSerializedScriptValue WebHistoryItem::stateObject() const
 {
     return WebSerializedScriptValue(m_private->stateObject());

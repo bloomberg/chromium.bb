@@ -101,6 +101,9 @@ public:
     BLINK_EXPORT long long documentSequenceNumber() const;
     BLINK_EXPORT void setDocumentSequenceNumber(long long);
 
+    BLINK_EXPORT long long frameSequenceNumber() const;
+    BLINK_EXPORT void setFrameSequenceNumber(long long);
+
     BLINK_EXPORT WebSerializedScriptValue stateObject() const;
     BLINK_EXPORT void setStateObject(const WebSerializedScriptValue&);
 
