@@ -565,7 +565,7 @@ def SetBuildSystemDefault(build_system, use_goma, goma_dir):
     build_system: A string specifying build system. Currently only 'ninja' or
         'make' are supported."""
   if build_system == 'ninja':
-    gyp_var = os.getenv('GYP_GENERATORS')
+    gyp_var = os.getenv('GYP_GENERATORS', default='')
 
     if not gyp_var or not 'ninja' in gyp_var:
       if gyp_var:
@@ -584,8 +584,8 @@ def SetBuildSystemDefault(build_system, use_goma, goma_dir):
     raise RuntimeError('%s build not supported.' % build_system)
 
   if use_goma:
-    os.environ['GYP_DEFINES'] = '%s %s' % (os.getenv('GYP_DEFINES', ''),
-                                              'use_goma=1')
+    os.environ['GYP_DEFINES'] = '%s %s' % (os.getenv('GYP_DEFINES', default=''),
+                                           'use_goma=1')
     if goma_dir:
       os.environ['GYP_DEFINES'] += ' gomadir=%s' % goma_dir
 
@@ -680,7 +680,7 @@ class Builder(object):
                               opts.goma_dir)
     else:
       if not opts.build_preference:
-        if 'ninja' in os.getenv('GYP_GENERATORS'):
+        if 'ninja' in os.getenv('GYP_GENERATORS', default=''):
           opts.build_preference = 'ninja'
         else:
           opts.build_preference = 'make'
