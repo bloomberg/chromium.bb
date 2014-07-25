@@ -9,7 +9,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "ui/aura/env.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -19,9 +18,13 @@
 #include "ui/views/examples/example_base.h"
 #include "ui/views/examples/examples_window.h"
 #include "ui/views/test/desktop_test_views_delegate.h"
-#include "ui/wm/core/wm_state.h"
 
-#if !defined(OS_CHROMEOS)
+#if defined(USE_AURA)
+#include "ui/aura/env.h"
+#include "ui/wm/core/wm_state.h"
+#endif
+
+#if !defined(OS_CHROMEOS) && defined(USE_AURA)
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #endif
 
@@ -64,16 +67,18 @@ int main(int argc, char** argv) {
   DCHECK(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
   ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
 
+#if defined(USE_AURA)
   aura::Env::CreateInstance(true);
   aura::Env::GetInstance()->set_context_factory(context_factory.get());
-
+#endif
   ui::InitializeInputMethodForTesting();
 
   {
     views::DesktopTestViewsDelegate views_delegate;
+#if defined(USE_AURA)
     wm::WMState wm_state;
-
-#if !defined(OS_CHROMEOS)
+#endif
+#if !defined(OS_CHROMEOS) && defined(USE_AURA)
     scoped_ptr<gfx::Screen> desktop_screen(views::CreateDesktopScreen());
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
                                    desktop_screen.get());
@@ -91,7 +96,9 @@ int main(int argc, char** argv) {
 
   ui::ShutdownInputMethod();
 
+#if defined(USE_AURA)
   aura::Env::DeleteInstance();
+#endif
 
   return 0;
 }
