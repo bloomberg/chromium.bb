@@ -105,15 +105,12 @@ void IpcNetworkManager::OnNetworkListChanged(
     }
   }
 
-  if (ipv4_interfaces > 0) {
-    UMA_HISTOGRAM_COUNTS_100("WebRTC.PeerConnection.IPv4Interfaces",
-                             ipv4_interfaces);
-  }
 
-  if (ipv6_interfaces > 0) {
-    UMA_HISTOGRAM_COUNTS_100("WebRTC.PeerConnection.IPv6Interfaces",
-                             ipv6_interfaces);
-  }
+  // Send interface counts to UMA.
+  UMA_HISTOGRAM_COUNTS_100("WebRTC.PeerConnection.IPv4Interfaces",
+                           ipv4_interfaces);
+  UMA_HISTOGRAM_COUNTS_100("WebRTC.PeerConnection.IPv6Interfaces",
+                           ipv6_interfaces);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAllowLoopbackInPeerConnection)) {
