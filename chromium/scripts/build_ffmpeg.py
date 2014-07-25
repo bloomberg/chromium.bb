@@ -7,7 +7,6 @@
 from __future__ import print_function
 
 import collections
-import functools
 import multiprocessing
 import optparse
 import os
@@ -20,6 +19,14 @@ import sys
 
 SCRIPTS_DIR = os.path.abspath(os.path.dirname(__file__))
 FFMPEG_DIR = os.path.abspath(os.path.join(SCRIPTS_DIR, '..', '..'))
+
+
+BRANDINGS = [
+  'Chrome',
+  'ChromeOS',
+  'Chromium',
+  'ChromiumOS',
+]
 
 
 USAGE = """Usage: %prog TARGET_OS TARGET_ARCH [options] -- [configure_args]
@@ -113,8 +120,6 @@ def RewriteFile(path, search, replace):
 
 def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
                 config_only, config, configure_flags):
-  print('%s configure/build:' % config)
-
   config_dir = 'build.%s.%s/%s' % (target_arch, target_os, config)
   shutil.rmtree(config_dir, ignore_errors=True)
   os.makedirs(os.path.join(config_dir, 'out'))
@@ -165,6 +170,9 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
 
 def main(argv):
   parser = optparse.OptionParser(usage=USAGE)
+  parser.add_option('--branding', action='append', dest='brandings',
+                    choices=BRANDINGS,
+                    help='Branding to build; determines e.g. supported codecs')
   parser.add_option('--config-only', action='store_true',
                     help='Skip the build step. Useful when a given platform '
                     'is not necessary for generate_gyp.py')
@@ -426,9 +434,15 @@ def main(argv):
       '--enable-parser=gsm',
   ])
 
-  do_build_ffmpeg = functools.partial(
-      BuildFFmpeg, target_os, target_arch, host_os, host_arch, parallel_jobs,
-      options.config_only)
+  def do_build_ffmpeg(branding, configure_flags):
+    if options.brandings and branding not in options.brandings:
+      print('%s skipped' % branding)
+      return
+
+    print('%s configure/build:' % branding)
+    BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
+                options.config_only, branding, configure_flags)
+
   do_build_ffmpeg('Chromium',
                   configure_flags['Common'] +
                   configure_flags['Chromium'] +
