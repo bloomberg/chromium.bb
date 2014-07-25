@@ -61,7 +61,6 @@
 #include "components/sync_driver/shared_change_processor.h"
 #include "components/sync_driver/ui_data_type_controller.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/extension_system.h"
 #include "google_apis/gaia/oauth2_token_service_request.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "sync/api/attachments/attachment_downloader.h"
@@ -71,16 +70,16 @@
 #include "sync/internal_api/public/attachments/attachment_uploader_impl.h"
 #include "sync/internal_api/public/attachments/fake_attachment_store.h"
 
-#if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/api/storage/settings_sync_util.h"
-#include "chrome/browser/extensions/api/synced_notifications_private/synced_notifications_shim.h"
-#include "chrome/browser/extensions/extension_sync_service.h"
-#endif
-
 #if defined(ENABLE_APP_LIST)
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "ui/app_list/app_list_switches.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/api/storage/settings_sync_util.h"
+#include "chrome/browser/extensions/api/synced_notifications_private/synced_notifications_shim.h"
+#include "chrome/browser/extensions/extension_sync_service.h"
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
@@ -155,7 +154,6 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
     net::URLRequestContextGetter* url_request_context_getter)
     : profile_(profile),
       command_line_(command_line),
-      extension_system_(extensions::ExtensionSystem::Get(profile)),
       web_data_service_(WebDataServiceFactory::GetAutofillWebDataForProfile(
           profile_, Profile::EXPLICIT_ACCESS)),
       sync_service_url_(sync_service_url),
@@ -351,7 +349,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
             MakeDisableCallbackFor(syncer::PREFERENCES),
             syncer::PREFERENCES,
             this));
-
   }
 
   if (!disabled_types.Has(syncer::PRIORITY_PREFERENCES)) {

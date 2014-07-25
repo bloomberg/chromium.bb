@@ -102,10 +102,6 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
 
   Profile* profile_;
   base::CommandLine* command_line_;
-  // Set on the UI thread (since extensions::ExtensionSystemFactory is
-  // non-threadsafe); accessed on both the UI and FILE threads in
-  // GetSyncableServiceForType.
-  extensions::ExtensionSystem* extension_system_;
   scoped_refptr<autofill::AutofillWebDataService> web_data_service_;
 
   const GURL sync_service_url_;

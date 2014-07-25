@@ -40,8 +40,6 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/net_pref_observer.h"
@@ -71,7 +69,6 @@
 #include "chrome/browser/services/gcm/push_messaging_service_impl.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
-#include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
@@ -98,10 +95,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/page_zoom.h"
-#include "extensions/browser/extension_pref_store.h"
-#include "extensions/browser/extension_pref_value_map.h"
-#include "extensions/browser/extension_pref_value_map_factory.h"
-#include "extensions/browser/extension_system.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -133,7 +126,14 @@
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/guest_view/guest_view_manager.h"
+#include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
+#include "extensions/browser/extension_pref_store.h"
+#include "extensions/browser/extension_pref_value_map.h"
+#include "extensions/browser/extension_pref_value_map_factory.h"
+#include "extensions/browser/extension_system.h"
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
@@ -152,20 +152,20 @@ namespace {
 
 #if defined(ENABLE_SESSION_SERVICE)
 // Delay, in milliseconds, before we explicitly create the SessionService.
-static const int kCreateSessionServiceDelayMS = 500;
+const int kCreateSessionServiceDelayMS = 500;
 #endif
 
 // Text content of README file created in each profile directory. Both %s
 // placeholders must contain the product name. This is not localizable and hence
 // not in resources.
-static const char kReadmeText[] =
+const char kReadmeText[] =
     "%s settings and storage represent user-selected preferences and "
     "information and MUST not be extracted, overwritten or modified except "
     "through %s defined APIs.";
 
 // Value written to prefs for EXIT_CRASHED and EXIT_SESSION_ENDED.
-const char* const kPrefExitTypeCrashed = "Crashed";
-const char* const kPrefExitTypeSessionEnded = "SessionEnded";
+const char kPrefExitTypeCrashed[] = "Crashed";
+const char kPrefExitTypeSessionEnded[] = "SessionEnded";
 
 // Helper method needed because PostTask cannot currently take a Callback
 // function with non-void return type.
@@ -258,6 +258,17 @@ void RegisterDomDistillerViewerSource(Profile* profile) {
                                 new dom_distiller::DomDistillerViewerSource(
                                     lazy_service, chrome::kDomDistillerScheme));
   }
+}
+
+PrefStore* CreateExtensionPrefStore(Profile* profile,
+                                    bool incognito_pref_store) {
+#if defined(ENABLE_EXTENSIONS)
+  return new ExtensionPrefStore(
+      ExtensionPrefValueMapFactory::GetForBrowserContext(profile),
+      incognito_pref_store);
+#else
+  return NULL;
+#endif
 }
 
 }  // namespace
@@ -469,8 +480,7 @@ ProfileImpl::ProfileImpl(
         pref_validation_delegate_.get(),
         profile_policy_connector_->policy_service(),
         supervised_user_settings,
-        new ExtensionPrefStore(
-            ExtensionPrefValueMapFactory::GetForBrowserContext(this), false),
+        CreateExtensionPrefStore(this, false),
         pref_registry_,
         async_prefs).Pass();
     // Register on BrowserContext.
@@ -737,8 +747,10 @@ ProfileImpl::~ProfileImpl() {
     ProfileDestroyer::DestroyOffTheRecordProfileNow(
         off_the_record_profile_.get());
   } else {
+#if defined(ENABLE_EXTENSIONS)
     ExtensionPrefValueMapFactory::GetForBrowserContext(this)->
         ClearAllIncognitoSessionOnlyPreferences();
+#endif
   }
 
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
@@ -794,8 +806,10 @@ Profile* ProfileImpl::GetOffTheRecordProfile() {
 
 void ProfileImpl::DestroyOffTheRecordProfile() {
   off_the_record_profile_.reset();
+#if defined(ENABLE_EXTENSIONS)
   ExtensionPrefValueMapFactory::GetForBrowserContext(this)->
       ClearAllIncognitoSessionOnlyPreferences();
+#endif
 }
 
 bool ProfileImpl::HasOffTheRecordProfile() {
@@ -812,12 +826,16 @@ bool ProfileImpl::IsSupervised() {
 
 ExtensionSpecialStoragePolicy*
     ProfileImpl::GetExtensionSpecialStoragePolicy() {
+#if defined(ENABLE_EXTENSIONS)
   if (!extension_special_storage_policy_.get()) {
     TRACE_EVENT0("browser", "ProfileImpl::GetExtensionSpecialStoragePolicy")
     extension_special_storage_policy_ = new ExtensionSpecialStoragePolicy(
         CookieSettings::Factory::GetForProfile(this).get());
   }
   return extension_special_storage_policy_.get();
+#else
+  return NULL;
+#endif
 }
 
 void ProfileImpl::OnPrefsLoaded(bool success) {
@@ -925,8 +943,7 @@ PrefService* ProfileImpl::GetOffTheRecordPrefs() {
     // The new ExtensionPrefStore is ref_counted and the new PrefService
     // stores a reference so that we do not leak memory here.
     otr_prefs_.reset(prefs_->CreateIncognitoPrefService(
-        new ExtensionPrefStore(
-            ExtensionPrefValueMapFactory::GetForBrowserContext(this), true)));
+        CreateExtensionPrefStore(this, true)));
   }
   return otr_prefs_.get();
 }
@@ -1029,7 +1046,11 @@ DownloadManagerDelegate* ProfileImpl::GetDownloadManagerDelegate() {
 }
 
 quota::SpecialStoragePolicy* ProfileImpl::GetSpecialStoragePolicy() {
+#if defined(ENABLE_EXTENSIONS)
   return GetExtensionSpecialStoragePolicy();
+#else
+  return NULL;
+#endif
 }
 
 content::PushMessagingService* ProfileImpl::GetPushMessagingService() {

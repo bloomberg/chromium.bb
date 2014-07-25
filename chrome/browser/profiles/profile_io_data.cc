@@ -32,7 +32,6 @@
 #include "chrome/browser/devtools/devtools_network_transaction_factory.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/extensions/extension_resource_protocols.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/net/about_protocol_handler.h"
@@ -56,10 +55,6 @@
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_context.h"
-#include "extensions/browser/extension_protocols.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/browser/info_map.h"
-#include "extensions/common/constants.h"
 #include "net/base/keygen_handler.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/http/http_transaction_factory.h"
@@ -86,6 +81,14 @@
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"
 #include "components/policy/core/common/cloud/policy_header_service.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/extension_resource_protocols.h"
+#include "extensions/browser/extension_protocols.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/info_map.h"
+#include "extensions/common/constants.h"
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
@@ -335,8 +338,10 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->ssl_config_service = profile->GetSSLConfigService();
   params->cookie_monster_delegate =
       chrome_browser_net::CreateCookieDelegate(profile);
+#if defined(ENABLE_EXTENSIONS)
   params->extension_info_map =
       extensions::ExtensionSystem::Get(profile)->info_map();
+#endif
 
   ProtocolHandlerRegistry* protocol_handler_registry =
       ProtocolHandlerRegistryFactory::GetForProfile(profile);
@@ -675,8 +680,10 @@ bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
     url::kFileScheme,
     content::kChromeDevToolsScheme,
     chrome::kDomDistillerScheme,
+#if defined(ENABLE_EXTENSIONS)
     extensions::kExtensionScheme,
     extensions::kExtensionResourceScheme,
+#endif
     content::kChromeUIScheme,
     url::kDataScheme,
 #if defined(OS_CHROMEOS)
@@ -785,7 +792,11 @@ ChromeURLRequestContext* ProfileIOData::GetIsolatedMediaRequestContext(
 
 extensions::InfoMap* ProfileIOData::GetExtensionInfoMap() const {
   DCHECK(initialized_) << "ExtensionSystem not initialized";
+#if defined(ENABLE_EXTENSIONS)
   return extension_info_map_.get();
+#else
+  return NULL;
+#endif
 }
 
 CookieSettings* ProfileIOData::GetCookieSettings() const {
@@ -1018,8 +1029,10 @@ void ProfileIOData::Init(
       io_thread_globals->on_resolve_proxy_handler);
   if (command_line.HasSwitch(switches::kEnableClientHints))
     network_delegate->SetEnableClientHints();
+#if defined(ENABLE_EXTENSIONS)
   network_delegate->set_extension_info_map(
       profile_params_->extension_info_map.get());
+#endif
 #if defined(ENABLE_CONFIGURATION_POLICY)
   network_delegate->set_url_blacklist_manager(url_blacklist_manager_.get());
 #endif
@@ -1061,7 +1074,9 @@ void ProfileIOData::Init(
   // Take ownership over these parameters.
   cookie_settings_ = profile_params_->cookie_settings;
   host_content_settings_map_ = profile_params_->host_content_settings_map;
+#if defined(ENABLE_EXTENSIONS)
   extension_info_map_ = profile_params_->extension_info_map;
+#endif
 
   resource_context_->host_resolver_ = io_thread_globals->host_resolver.get();
   resource_context_->request_context_ = main_request_context_.get();
@@ -1121,6 +1136,7 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
                   base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
   DCHECK(set_protocol);
 
+#if defined(ENABLE_EXTENSIONS)
   DCHECK(extension_info_map_.get());
   // Check only for incognito (and not Chrome OS guest mode GUEST_PROFILE).
   bool is_incognito = profile_type() == Profile::INCOGNITO_PROFILE;
@@ -1133,6 +1149,7 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
       extensions::kExtensionResourceScheme,
       CreateExtensionResourceProtocolHandler());
   DCHECK(set_protocol);
+#endif
   set_protocol = job_factory->SetProtocolHandler(
       url::kDataScheme, new net::DataProtocolHandler());
   DCHECK(set_protocol);
