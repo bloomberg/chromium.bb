@@ -43,6 +43,7 @@ using namespace HTMLNames;
 inline HTMLOptGroupElement::HTMLOptGroupElement(Document& document)
     : HTMLElement(optgroupTag, document)
 {
+    setHasCustomStyleCallbacks();
     ScriptWrappable::init(this);
 }
 
@@ -79,6 +80,40 @@ void HTMLOptGroupElement::recalcSelectOptions()
 {
     if (HTMLSelectElement* select = Traversal<HTMLSelectElement>::firstAncestor(*this))
         select->setRecalcListItems();
+}
+
+void HTMLOptGroupElement::attach(const AttachContext& context)
+{
+    if (context.resolvedStyle) {
+        ASSERT(!m_style || m_style == context.resolvedStyle);
+        m_style = context.resolvedStyle;
+    }
+    HTMLElement::attach(context);
+}
+
+void HTMLOptGroupElement::detach(const AttachContext& context)
+{
+    m_style.clear();
+    HTMLElement::detach(context);
+}
+
+void HTMLOptGroupElement::updateNonRenderStyle()
+{
+    if (renderer()) {
+        if (HTMLSelectElement* select = ownerSelectElement())
+            select->updateListOnRenderer();
+    }
+}
+
+RenderStyle* HTMLOptGroupElement::nonRendererStyle() const
+{
+    return m_style.get();
+}
+
+PassRefPtr<RenderStyle> HTMLOptGroupElement::customStyleForRenderer()
+{
+    updateNonRenderStyle();
+    return m_style;
 }
 
 String HTMLOptGroupElement::groupLabelText() const

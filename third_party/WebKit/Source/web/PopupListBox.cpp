@@ -403,7 +403,6 @@ void PopupListBox::paintRow(GraphicsContext* gc, const IntRect& rect, int rowInd
     } else {
         backColor = style.backgroundColor();
         textColor = style.foregroundColor();
-
 #if OS(LINUX) || OS(ANDROID)
         // On other platforms, the <option> background color is the same as the
         // <select> background color. On Linux, that makes the <option>

@@ -51,6 +51,8 @@ public:
 
     String text() const;
 
+    virtual PopupMenuStyle itemStyle(unsigned listIndex) const OVERRIDE;
+
 private:
     HTMLSelectElement* selectElement() const;
 
@@ -82,7 +84,6 @@ private:
     virtual String itemToolTip(unsigned listIndex) const OVERRIDE;
     virtual String itemAccessibilityText(unsigned listIndex) const OVERRIDE;
     virtual bool itemIsEnabled(unsigned listIndex) const OVERRIDE;
-    virtual PopupMenuStyle itemStyle(unsigned listIndex) const OVERRIDE;
     virtual PopupMenuStyle menuStyle() const OVERRIDE;
     virtual LayoutUnit clientPaddingLeft() const OVERRIDE;
     virtual LayoutUnit clientPaddingRight() const OVERRIDE;

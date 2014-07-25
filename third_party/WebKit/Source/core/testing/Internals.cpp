@@ -2173,6 +2173,22 @@ bool Internals::isSelectPopupVisible(Node* node)
     return menuList->popupIsVisible();
 }
 
+bool Internals::selectPopupItemStyleIsRtl(Node* node, int itemIndex)
+{
+    if (!node || !isHTMLSelectElement(*node))
+        return false;
+
+    HTMLSelectElement& select = toHTMLSelectElement(*node);
+
+    RenderObject* renderer = select.renderer();
+    if (!renderer || !renderer->isMenuList())
+        return false;
+
+    RenderMenuList& menuList = toRenderMenuList(*renderer);
+    PopupMenuStyle itemStyle = menuList.itemStyle(itemIndex);
+    return itemStyle.textDirection() == RTL;
+}
+
 bool Internals::loseSharedGraphicsContext3D()
 {
     OwnPtr<blink::WebGraphicsContext3DProvider> sharedProvider = adoptPtr(blink::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());

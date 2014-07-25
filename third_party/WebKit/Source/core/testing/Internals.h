@@ -285,6 +285,7 @@ public:
     String getImageSourceURL(Element*, ExceptionState&);
 
     bool isSelectPopupVisible(Node*);
+    bool selectPopupItemStyleIsRtl(Node*, int);
 
     PassRefPtrWillBeRawPtr<ClientRect> selectionBounds(ExceptionState&);
     String baseURL(Document*, ExceptionState&);
