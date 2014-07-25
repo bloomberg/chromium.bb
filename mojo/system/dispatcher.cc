@@ -174,8 +174,8 @@ MojoResult Dispatcher::ReadData(void* elements,
   return ReadDataImplNoLock(elements, num_bytes, flags);
 }
 
-MojoResult Dispatcher::BeginReadData(const void** buffer,
-                                     uint32_t* buffer_num_bytes,
+MojoResult Dispatcher::BeginReadData(UserPointer<const void*> buffer,
+                                     UserPointer<uint32_t> buffer_num_bytes,
                                      MojoReadDataFlags flags) {
   base::AutoLock locker(lock_);
   if (is_closed_)
@@ -311,9 +311,10 @@ MojoResult Dispatcher::ReadDataImplNoLock(void* /*elements*/,
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
-MojoResult Dispatcher::BeginReadDataImplNoLock(const void** /*buffer*/,
-                                               uint32_t* /*buffer_num_bytes*/,
-                                               MojoReadDataFlags /*flags*/) {
+MojoResult Dispatcher::BeginReadDataImplNoLock(
+    UserPointer<const void*> /*buffer*/,
+    UserPointer<uint32_t> /*buffer_num_bytes*/,
+    MojoReadDataFlags /*flags*/) {
   lock_.AssertAcquired();
   DCHECK(!is_closed_);
   // By default, not supported. Only needed for data pipe dispatchers.

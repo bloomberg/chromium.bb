@@ -102,8 +102,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   MojoResult ReadData(void* elements,
                       uint32_t* num_bytes,
                       MojoReadDataFlags flags);
-  MojoResult BeginReadData(const void** buffer,
-                           uint32_t* buffer_num_bytes,
+  MojoResult BeginReadData(UserPointer<const void*> buffer,
+                           UserPointer<uint32_t> buffer_num_bytes,
                            MojoReadDataFlags flags);
   MojoResult EndReadData(uint32_t num_bytes_read);
   // |options| may be null. |new_dispatcher| must not be null, but
@@ -233,9 +233,10 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   virtual MojoResult ReadDataImplNoLock(void* elements,
                                         uint32_t* num_bytes,
                                         MojoReadDataFlags flags);
-  virtual MojoResult BeginReadDataImplNoLock(const void** buffer,
-                                             uint32_t* buffer_num_bytes,
-                                             MojoReadDataFlags flags);
+  virtual MojoResult BeginReadDataImplNoLock(
+      UserPointer<const void*> buffer,
+      UserPointer<uint32_t> buffer_num_bytes,
+      MojoReadDataFlags flags);
   virtual MojoResult EndReadDataImplNoLock(uint32_t num_bytes_read);
   virtual MojoResult DuplicateBufferHandleImplNoLock(
       const MojoDuplicateBufferHandleOptions* options,

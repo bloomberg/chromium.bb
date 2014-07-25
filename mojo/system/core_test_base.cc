@@ -122,8 +122,8 @@ class MockDispatcher : public Dispatcher {
   }
 
   virtual MojoResult BeginReadDataImplNoLock(
-      const void** /*buffer*/,
-      uint32_t* /*buffer_num_bytes*/,
+      UserPointer<const void*> /*buffer*/,
+      UserPointer<uint32_t> /*buffer_num_bytes*/,
       MojoReadDataFlags /*flags*/) OVERRIDE {
     info_->IncrementBeginReadDataCallCount();
     lock().AssertAcquired();

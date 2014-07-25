@@ -240,11 +240,11 @@ MojoResult LocalDataPipe::ConsumerQueryDataImplNoLock(uint32_t* num_bytes) {
 }
 
 MojoResult LocalDataPipe::ConsumerBeginReadDataImplNoLock(
-    const void** buffer,
-    uint32_t* buffer_num_bytes,
-    bool all_or_none) {
+    UserPointer<const void*> buffer,
+    UserPointer<uint32_t> buffer_num_bytes,
+    uint32_t min_num_bytes_to_read) {
   size_t max_num_bytes_to_read = GetMaxNumBytesToReadNoLock();
-  if (all_or_none && *buffer_num_bytes > max_num_bytes_to_read) {
+  if (min_num_bytes_to_read > max_num_bytes_to_read) {
     // Don't return "should wait" since you can't wait for a specified amount of
     // data.
     return producer_open_no_lock() ? MOJO_RESULT_OUT_OF_RANGE :
@@ -257,8 +257,8 @@ MojoResult LocalDataPipe::ConsumerBeginReadDataImplNoLock(
                                      MOJO_RESULT_FAILED_PRECONDITION;
   }
 
-  *buffer = buffer_.get() + start_index_;
-  *buffer_num_bytes = static_cast<uint32_t>(max_num_bytes_to_read);
+  buffer.Put(buffer_.get() + start_index_);
+  buffer_num_bytes.Put(static_cast<uint32_t>(max_num_bytes_to_read));
   set_consumer_two_phase_max_num_bytes_read_no_lock(
       static_cast<uint32_t>(max_num_bytes_to_read));
   return MOJO_RESULT_OK;

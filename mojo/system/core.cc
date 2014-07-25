@@ -412,8 +412,7 @@ MojoResult Core::BeginReadData(MojoHandle data_pipe_consumer_handle,
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return dispatcher->BeginReadData(buffer.GetPointerUnsafe(),
-                                   buffer_num_bytes.GetPointerUnsafe(), flags);
+  return dispatcher->BeginReadData(buffer, buffer_num_bytes, flags);
 }
 
 MojoResult Core::EndReadData(MojoHandle data_pipe_consumer_handle,

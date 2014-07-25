@@ -83,15 +83,11 @@ MojoResult DataPipeConsumerDispatcher::ReadDataImplNoLock(
 }
 
 MojoResult DataPipeConsumerDispatcher::BeginReadDataImplNoLock(
-    const void** buffer,
-    uint32_t* buffer_num_bytes,
+    UserPointer<const void*> buffer,
+    UserPointer<uint32_t> buffer_num_bytes,
     MojoReadDataFlags flags) {
   lock().AssertAcquired();
 
-  if (!VerifyUserPointerWithCount<const void*>(buffer, 1))
-    return MOJO_RESULT_INVALID_ARGUMENT;
-  if (!VerifyUserPointer<uint32_t>(buffer_num_bytes))
-    return MOJO_RESULT_INVALID_ARGUMENT;
   // These flags may not be used in two-phase mode.
   if ((flags & MOJO_READ_DATA_FLAG_DISCARD) ||
       (flags & MOJO_READ_DATA_FLAG_QUERY))

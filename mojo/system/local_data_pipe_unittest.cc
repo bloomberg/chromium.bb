@@ -270,7 +270,8 @@ TEST(LocalDataPipeTest, BasicProducerWaiting) {
   const void* read_buffer = NULL;
   num_bytes = 0u;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ConsumerBeginReadData(&read_buffer, &num_bytes, false));
+            dp->ConsumerBeginReadData(MakeUserPointer(&read_buffer),
+                                      MakeUserPointer(&num_bytes), false));
   EXPECT_TRUE(read_buffer != NULL);
   // Since we only read one element (after having written three in all), the
   // two-phase read should only allow us to read one. This checks an
@@ -442,7 +443,8 @@ TEST(LocalDataPipeTest, BasicConsumerWaiting) {
     const void* read_buffer = NULL;
     num_bytes = static_cast<uint32_t>(2u * sizeof(elements[0]));
     EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ConsumerBeginReadData(&read_buffer, &num_bytes, true));
+              dp->ConsumerBeginReadData(MakeUserPointer(&read_buffer),
+                                        MakeUserPointer(&num_bytes), true));
     EXPECT_TRUE(read_buffer != NULL);
     EXPECT_EQ(static_cast<uint32_t>(2u * sizeof(elements[0])), num_bytes);
     const int32_t* read_elements = static_cast<const int32_t*>(read_buffer);
@@ -461,7 +463,8 @@ TEST(LocalDataPipeTest, BasicConsumerWaiting) {
     read_buffer = NULL;
     num_bytes = static_cast<uint32_t>(3u * sizeof(elements[0]));
     EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ConsumerBeginReadData(&read_buffer, &num_bytes, false));
+              dp->ConsumerBeginReadData(MakeUserPointer(&read_buffer),
+                                        MakeUserPointer(&num_bytes), false));
     EXPECT_TRUE(read_buffer != NULL);
     EXPECT_EQ(static_cast<uint32_t>(1u * sizeof(elements[0])), num_bytes);
     read_elements = static_cast<const int32_t*>(read_buffer);
@@ -566,7 +569,8 @@ TEST(LocalDataPipeTest, BasicTwoPhaseWaiting) {
   num_bytes = static_cast<uint32_t>(1u * sizeof(int32_t));
   const void* read_ptr = NULL;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ConsumerBeginReadData(&read_ptr, &num_bytes, false));
+            dp->ConsumerBeginReadData(MakeUserPointer(&read_ptr),
+                                      MakeUserPointer(&num_bytes), false));
   EXPECT_TRUE(read_ptr != NULL);
   EXPECT_EQ(static_cast<uint32_t>(1u * sizeof(int32_t)), num_bytes);
 
@@ -1122,7 +1126,8 @@ TEST(LocalDataPipeTest, TwoPhaseAllOrNone) {
   num_bytes = 20u * sizeof(int32_t);
   const void* read_ptr = NULL;
   EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
-            dp->ConsumerBeginReadData(&read_ptr, &num_bytes, true));
+            dp->ConsumerBeginReadData(MakeUserPointer(&read_ptr),
+                                      MakeUserPointer(&num_bytes), true));
 
   // Write half (two-phase).
   num_bytes = 5u * sizeof(int32_t);
@@ -1141,13 +1146,15 @@ TEST(LocalDataPipeTest, TwoPhaseAllOrNone) {
   num_bytes = 1u;
   read_ptr = NULL;
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            dp->ConsumerBeginReadData(&read_ptr, &num_bytes, true));
+            dp->ConsumerBeginReadData(MakeUserPointer(&read_ptr),
+                                      MakeUserPointer(&num_bytes), true));
 
   // Read one (two-phase).
   num_bytes = 1u * sizeof(int32_t);
   read_ptr = NULL;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ConsumerBeginReadData(&read_ptr, &num_bytes, true));
+            dp->ConsumerBeginReadData(MakeUserPointer(&read_ptr),
+                                      MakeUserPointer(&num_bytes), true));
   EXPECT_GE(num_bytes, 1u * sizeof(int32_t));
   EXPECT_EQ(0, static_cast<const int32_t*>(read_ptr)[0]);
   EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerEndReadData(1u * sizeof(int32_t)));
@@ -1181,7 +1188,8 @@ TEST(LocalDataPipeTest, TwoPhaseAllOrNone) {
   num_bytes = 10u * sizeof(int32_t);
   read_ptr = NULL;
   EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
-            dp->ConsumerBeginReadData(&read_ptr, &num_bytes, true));
+            dp->ConsumerBeginReadData(MakeUserPointer(&read_ptr),
+                                      MakeUserPointer(&num_bytes), true));
 
   // Close the producer.
   dp->ProducerClose();
@@ -1190,7 +1198,8 @@ TEST(LocalDataPipeTest, TwoPhaseAllOrNone) {
   num_bytes = 9u * sizeof(int32_t);
   read_ptr = NULL;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ConsumerBeginReadData(&read_ptr, &num_bytes, true));
+            dp->ConsumerBeginReadData(MakeUserPointer(&read_ptr),
+                                      MakeUserPointer(&num_bytes), true));
   EXPECT_GE(num_bytes, 9u * sizeof(int32_t));
   EXPECT_EQ(1, static_cast<const int32_t*>(read_ptr)[0]);
   EXPECT_EQ(2, static_cast<const int32_t*>(read_ptr)[1]);
@@ -1207,7 +1216,8 @@ TEST(LocalDataPipeTest, TwoPhaseAllOrNone) {
   num_bytes = 2u * sizeof(int32_t);
   read_ptr = NULL;
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            dp->ConsumerBeginReadData(&read_ptr, &num_bytes, true));
+            dp->ConsumerBeginReadData(MakeUserPointer(&read_ptr),
+                                      MakeUserPointer(&num_bytes), true));
 
   dp->ConsumerClose();
 }
@@ -1275,7 +1285,8 @@ TEST(LocalDataPipeTest, WrapAround) {
   const void* read_buffer_ptr = NULL;
   num_bytes = 0u;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ConsumerBeginReadData(&read_buffer_ptr, &num_bytes, false));
+            dp->ConsumerBeginReadData(MakeUserPointer(&read_buffer_ptr),
+                                      MakeUserPointer(&num_bytes), false));
   EXPECT_TRUE(read_buffer_ptr != NULL);
   EXPECT_EQ(90u, num_bytes);
   EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerEndReadData(0u));
@@ -1339,7 +1350,8 @@ TEST(LocalDataPipeTest, CloseWriteRead) {
     const void* read_buffer_ptr = NULL;
     num_bytes = 0u;
     EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ConsumerBeginReadData(&read_buffer_ptr, &num_bytes, false));
+              dp->ConsumerBeginReadData(MakeUserPointer(&read_buffer_ptr),
+                                        MakeUserPointer(&num_bytes), false));
     EXPECT_TRUE(read_buffer_ptr != NULL);
     EXPECT_EQ(2u * kTestDataSize, num_bytes);
 
@@ -1354,7 +1366,8 @@ TEST(LocalDataPipeTest, CloseWriteRead) {
     read_buffer_ptr = NULL;
     num_bytes = 0u;
     EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ConsumerBeginReadData(&read_buffer_ptr, &num_bytes, false));
+              dp->ConsumerBeginReadData(MakeUserPointer(&read_buffer_ptr),
+                                        MakeUserPointer(&num_bytes), false));
     EXPECT_TRUE(read_buffer_ptr != NULL);
     EXPECT_EQ(kTestDataSize, num_bytes);
 
@@ -1385,7 +1398,8 @@ TEST(LocalDataPipeTest, CloseWriteRead) {
     const void* read_buffer_ptr = NULL;
     num_bytes = 0u;
     EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ConsumerBeginReadData(&read_buffer_ptr, &num_bytes, false));
+              dp->ConsumerBeginReadData(MakeUserPointer(&read_buffer_ptr),
+                                        MakeUserPointer(&num_bytes), false));
     EXPECT_TRUE(read_buffer_ptr != NULL);
     EXPECT_EQ(kTestDataSize, num_bytes);
 
@@ -1462,7 +1476,8 @@ TEST(LocalDataPipeTest, CloseWriteRead) {
     const void* read_buffer_ptr = NULL;
     num_bytes = 0u;
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              dp->ConsumerBeginReadData(&read_buffer_ptr, &num_bytes, false));
+              dp->ConsumerBeginReadData(MakeUserPointer(&read_buffer_ptr),
+                                        MakeUserPointer(&num_bytes), false));
 
     // Ditto for discard.
     num_bytes = 10u;
@@ -1559,7 +1574,8 @@ TEST(LocalDataPipeTest, TwoPhaseMoreInvalidArguments) {
   num_bytes = 0u;
   const void* read_ptr = NULL;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ConsumerBeginReadData(&read_ptr, &num_bytes, false));
+            dp->ConsumerBeginReadData(MakeUserPointer(&read_ptr),
+                                      MakeUserPointer(&num_bytes), false));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             dp->ConsumerEndReadData(
                 num_bytes + static_cast<uint32_t>(sizeof(int32_t))));
@@ -1574,7 +1590,8 @@ TEST(LocalDataPipeTest, TwoPhaseMoreInvalidArguments) {
   num_bytes = 0u;
   read_ptr = NULL;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ConsumerBeginReadData(&read_ptr, &num_bytes, false));
+            dp->ConsumerBeginReadData(MakeUserPointer(&read_ptr),
+                                      MakeUserPointer(&num_bytes), false));
   EXPECT_EQ(1u * sizeof(int32_t), num_bytes);
   EXPECT_EQ(123, static_cast<const int32_t*>(read_ptr)[0]);
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, dp->ConsumerEndReadData(1u));
@@ -1618,7 +1635,8 @@ TEST(LocalDataPipeTest, DISABLED_MayDiscardTwoPhaseConsistent) {
   const void* read_ptr = NULL;
   num_bytes = 2u;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ConsumerBeginReadData(&read_ptr, &num_bytes, false));
+            dp->ConsumerBeginReadData(MakeUserPointer(&read_ptr),
+                                      MakeUserPointer(&num_bytes), false));
   EXPECT_EQ(2u, num_bytes);
   EXPECT_EQ('a', static_cast<const char*>(read_ptr)[0]);
   EXPECT_EQ('b', static_cast<const char*>(read_ptr)[1]);
@@ -1648,7 +1666,8 @@ TEST(LocalDataPipeTest, DISABLED_MayDiscardTwoPhaseConsistent) {
   read_ptr = NULL;
   num_bytes = 2u;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ConsumerBeginReadData(&read_ptr, &num_bytes, false));
+            dp->ConsumerBeginReadData(MakeUserPointer(&read_ptr),
+                                      MakeUserPointer(&num_bytes), false));
   EXPECT_EQ(2u, num_bytes);
   EXPECT_EQ('x', static_cast<const char*>(read_ptr)[0]);
   EXPECT_EQ('y', static_cast<const char*>(read_ptr)[1]);

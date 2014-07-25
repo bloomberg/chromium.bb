@@ -286,20 +286,25 @@ MojoResult DataPipe::ConsumerQueryData(uint32_t* num_bytes) {
   return ConsumerQueryDataImplNoLock(num_bytes);
 }
 
-MojoResult DataPipe::ConsumerBeginReadData(const void** buffer,
-                                           uint32_t* buffer_num_bytes,
-                                           bool all_or_none) {
+MojoResult DataPipe::ConsumerBeginReadData(
+    UserPointer<const void*> buffer,
+    UserPointer<uint32_t> buffer_num_bytes,
+    bool all_or_none) {
   base::AutoLock locker(lock_);
   DCHECK(has_local_consumer_no_lock());
 
   if (consumer_in_two_phase_read_no_lock())
     return MOJO_RESULT_BUSY;
 
-  if (all_or_none && *buffer_num_bytes % element_num_bytes_ != 0)
-    return MOJO_RESULT_INVALID_ARGUMENT;
+  uint32_t min_num_bytes_to_read = 0;
+  if (all_or_none) {
+    min_num_bytes_to_read = buffer_num_bytes.Get();
+    if (min_num_bytes_to_read % element_num_bytes_ != 0)
+      return MOJO_RESULT_INVALID_ARGUMENT;
+  }
 
   MojoResult rv = ConsumerBeginReadDataImplNoLock(buffer, buffer_num_bytes,
-                                                  all_or_none);
+                                                  min_num_bytes_to_read);
   if (rv != MOJO_RESULT_OK)
     return rv;
   DCHECK(consumer_in_two_phase_read_no_lock());
