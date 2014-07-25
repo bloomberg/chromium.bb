@@ -1609,7 +1609,7 @@ const Experiment kExperiments[] = {
     "disable-views-rect-based-targeting",  // FLAGS:RECORD_UMA
     IDS_FLAGS_DISABLE_VIEWS_RECT_BASED_TARGETING_NAME,
     IDS_FLAGS_DISABLE_VIEWS_RECT_BASED_TARGETING_DESCRIPTION,
-    kOsCrOS | kOsWin,
+    kOsCrOS | kOsWin | kOsLinux,
     SINGLE_VALUE_TYPE(views::switches::kDisableViewsRectBasedTargeting)
   },
 #endif
