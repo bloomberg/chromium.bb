@@ -36,6 +36,9 @@ class MockWebRTCPeerConnectionHandler
   virtual void createOffer(
       const blink::WebRTCSessionDescriptionRequest& request,
       const blink::WebMediaConstraints& constraints) OVERRIDE;
+  virtual void createOffer(
+      const blink::WebRTCSessionDescriptionRequest& request,
+      const blink::WebRTCOfferOptions& options) OVERRIDE;
   virtual void createAnswer(
       const blink::WebRTCSessionDescriptionRequest& request,
       const blink::WebMediaConstraints& constraints) OVERRIDE;

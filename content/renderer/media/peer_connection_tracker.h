@@ -69,7 +69,7 @@ class CONTENT_EXPORT PeerConnectionTracker : public RenderProcessObserver {
   // page in which the PeerConnection is created.
   void RegisterPeerConnection(
       RTCPeerConnectionHandler* pc_handler,
-      const std::vector<webrtc::PeerConnectionInterface::IceServer>& servers,
+      const webrtc::PeerConnectionInterface::RTCConfiguration& config,
       const RTCMediaConstraints& constraints,
       const blink::WebFrame* frame);
 
@@ -92,7 +92,7 @@ class CONTENT_EXPORT PeerConnectionTracker : public RenderProcessObserver {
   // Sends an update when Ice candidates are updated.
   virtual void TrackUpdateIce(
       RTCPeerConnectionHandler* pc_handler,
-      const std::vector<webrtc::PeerConnectionInterface::IceServer>& servers,
+      const webrtc::PeerConnectionInterface::RTCConfiguration& config,
       const RTCMediaConstraints& options);
 
   // Sends an update when an Ice candidate is added.

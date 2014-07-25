@@ -103,7 +103,7 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   // The PeerConnection object is owned by PeerConnectionHandler.
   virtual scoped_refptr<webrtc::PeerConnectionInterface>
       CreatePeerConnection(
-          const webrtc::PeerConnectionInterface::IceServers& ice_servers,
+          const webrtc::PeerConnectionInterface::RTCConfiguration& config,
           const webrtc::MediaConstraintsInterface* constraints,
           blink::WebFrame* web_frame,
           webrtc::PeerConnectionObserver* observer);

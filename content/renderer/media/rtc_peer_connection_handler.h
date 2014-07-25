@@ -20,6 +20,7 @@
 namespace blink {
 class WebFrame;
 class WebRTCDataChannelHandler;
+class WebRTCOfferOptions;
 }
 
 namespace content {
@@ -27,6 +28,7 @@ namespace content {
 class PeerConnectionDependencyFactory;
 class PeerConnectionTracker;
 class RemoteMediaStreamImpl;
+class RTCMediaConstraints;
 class WebRtcMediaStreamAdapter;
 
 // Mockable wrapper for blink::WebRTCStatsResponse
@@ -91,6 +93,10 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // Destroy all existing RTCPeerConnectionHandler objects.
   static void DestructAllHandlers();
 
+  static void ConvertOfferOptionsToConstraints(
+      const blink::WebRTCOfferOptions& options,
+      RTCMediaConstraints* output);
+
   void associateWithFrame(blink::WebFrame* frame);
 
   // Initialize method only used for unit test.
@@ -107,6 +113,10 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   virtual void createOffer(
       const blink::WebRTCSessionDescriptionRequest& request,
       const blink::WebMediaConstraints& options) OVERRIDE;
+  virtual void createOffer(
+      const blink::WebRTCSessionDescriptionRequest& request,
+      const blink::WebRTCOfferOptions& options) OVERRIDE;
+
   virtual void createAnswer(
       const blink::WebRTCSessionDescriptionRequest& request,
       const blink::WebMediaConstraints& options) OVERRIDE;

@@ -375,7 +375,7 @@ bool PeerConnectionDependencyFactory::PeerConnectionFactoryCreated() {
 
 scoped_refptr<webrtc::PeerConnectionInterface>
 PeerConnectionDependencyFactory::CreatePeerConnection(
-    const webrtc::PeerConnectionInterface::IceServers& ice_servers,
+    const webrtc::PeerConnectionInterface::RTCConfiguration& config,
     const webrtc::MediaConstraintsInterface* constraints,
     blink::WebFrame* web_frame,
     webrtc::PeerConnectionObserver* observer) {
@@ -395,11 +395,11 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
       new PeerConnectionIdentityService(
           GURL(web_frame->document().url().spec()).GetOrigin());
 
-  return GetPcFactory()->CreatePeerConnection(ice_servers,
-                                            constraints,
-                                            pa_factory.get(),
-                                            identity_service,
-                                            observer).get();
+  return GetPcFactory()->CreatePeerConnection(config,
+                                              constraints,
+                                              pa_factory.get(),
+                                              identity_service,
+                                              observer).get();
 }
 
 scoped_refptr<webrtc::MediaStreamInterface>

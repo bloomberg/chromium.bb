@@ -143,8 +143,7 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
   MOCK_METHOD3(
       TrackUpdateIce,
       void(RTCPeerConnectionHandler* pc_handler,
-           const std::vector<
-               webrtc::PeerConnectionInterface::IceServer>& servers,
+           const webrtc::PeerConnectionInterface::RTCConfiguration& config,
            const RTCMediaConstraints& options));
   MOCK_METHOD3(TrackAddIceCandidate,
                void(RTCPeerConnectionHandler* pc_handler,

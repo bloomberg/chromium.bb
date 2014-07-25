@@ -175,7 +175,7 @@ class MockPeerConnectionDependencyFactory
   virtual ~MockPeerConnectionDependencyFactory();
 
   virtual scoped_refptr<webrtc::PeerConnectionInterface> CreatePeerConnection(
-      const webrtc::PeerConnectionInterface::IceServers& ice_servers,
+      const webrtc::PeerConnectionInterface::RTCConfiguration& config,
       const webrtc::MediaConstraintsInterface* constraints,
       blink::WebFrame* frame,
       webrtc::PeerConnectionObserver* observer) OVERRIDE;

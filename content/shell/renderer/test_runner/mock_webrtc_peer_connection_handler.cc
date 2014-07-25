@@ -187,6 +187,13 @@ void MockWebRTCPeerConnectionHandler::createOffer(
         new RTCSessionDescriptionRequestFailedTask(this, request));
 }
 
+void MockWebRTCPeerConnectionHandler::createOffer(
+    const WebRTCSessionDescriptionRequest& request,
+    const blink::WebRTCOfferOptions& options) {
+  interfaces_->delegate()->postTask(
+      new RTCSessionDescriptionRequestFailedTask(this, request));
+}
+
 void MockWebRTCPeerConnectionHandler::createAnswer(
     const WebRTCSessionDescriptionRequest& request,
     const WebMediaConstraints& constraints) {

@@ -12,7 +12,7 @@
 
 IPC_STRUCT_BEGIN(PeerConnectionInfo)
   IPC_STRUCT_MEMBER(int, lid)
-  IPC_STRUCT_MEMBER(std::string, servers)
+  IPC_STRUCT_MEMBER(std::string, rtc_configuration)
   IPC_STRUCT_MEMBER(std::string, constraints)
   IPC_STRUCT_MEMBER(std::string, url)
 IPC_STRUCT_END()

@@ -34,13 +34,14 @@ class CONTENT_EXPORT WebRTCInternals : public NotificationObserver,
   // render process terminates and we want to clean up.
   // |pid| is the renderer process id, |lid| is the renderer local id used to
   // identify a PeerConnection, |url| is the url of the tab owning the
-  // PeerConnection, |servers| is the servers configuration, |constraints| is
-  // the media constraints used to initialize the PeerConnection.
+  // PeerConnection, |rtc_configuration| is the serialized RTCConfiguration,
+  // |constraints| is the media constraints used to initialize the
+  // PeerConnection.
   void OnAddPeerConnection(int render_process_id,
                            base::ProcessId pid,
                            int lid,
                            const std::string& url,
-                           const std::string& servers,
+                           const std::string& rtc_configuration,
                            const std::string& constraints);
 
   // This method is called when PeerConnection is destroyed.

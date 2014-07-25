@@ -283,6 +283,24 @@
     detectVideoPlaying('remote-view-2', onCallEstablished);
   }
 
+  function testCreateOfferOptions() {
+    createConnections(null);
+    var offerOptions = {
+      'offerToReceiveAudio': false,
+      'offerToReceiveVideo': true
+    };
+
+    gFirstConnection.createOffer(
+        function(offer) {
+          assertEquals(-1, offer.sdp.search('m=audio'));
+          assertNotEquals(-1, offer.sdp.search('m=video'));
+
+          reportTestSuccess();
+        },
+        function(error) { failTest(error); },
+        offerOptions);
+  }
+
   function enableRemoteVideo(peerConnection, enabled) {
     remoteStream = peerConnection.getRemoteStreams()[0];
     remoteVideoTrack = remoteStream.getVideoTracks()[0];

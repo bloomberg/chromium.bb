@@ -45,7 +45,7 @@ void PeerConnectionTrackerHost::OnAddPeerConnection(
       peer_pid(),
       info.lid,
       info.url,
-      info.servers,
+      info.rtc_configuration,
       info.constraints);
 }
 

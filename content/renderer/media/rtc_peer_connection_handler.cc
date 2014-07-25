@@ -34,6 +34,7 @@
 #include "third_party/WebKit/public/platform/WebRTCConfiguration.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelInit.h"
 #include "third_party/WebKit/public/platform/WebRTCICECandidate.h"
+#include "third_party/WebKit/public/platform/WebRTCOfferOptions.h"
 #include "third_party/WebKit/public/platform/WebRTCSessionDescription.h"
 #include "third_party/WebKit/public/platform/WebRTCSessionDescriptionRequest.h"
 #include "third_party/WebKit/public/platform/WebRTCVoidRequest.h"
@@ -129,10 +130,10 @@ CreateWebKitSessionDescription(
 
 // Converter functions from WebKit types to libjingle types.
 
-static void GetNativeIceServers(
+static void GetNativeRtcConfiguration(
     const blink::WebRTCConfiguration& server_configuration,
-    webrtc::PeerConnectionInterface::IceServers* servers) {
-  if (server_configuration.isNull() || !servers)
+    webrtc::PeerConnectionInterface::RTCConfiguration* config) {
+  if (server_configuration.isNull() || !config)
     return;
   for (size_t i = 0; i < server_configuration.numberOfServers(); ++i) {
     webrtc::PeerConnectionInterface::IceServer server;
@@ -141,7 +142,21 @@ static void GetNativeIceServers(
     server.username = base::UTF16ToUTF8(webkit_server.username());
     server.password = base::UTF16ToUTF8(webkit_server.credential());
     server.uri = webkit_server.uri().spec();
-    servers->push_back(server);
+    config->servers.push_back(server);
+  }
+
+  switch (server_configuration.iceTransports()) {
+  case blink::WebRTCIceTransportsNone:
+    config->type = webrtc::PeerConnectionInterface::kNone;
+    break;
+  case blink::WebRTCIceTransportsRelay:
+    config->type = webrtc::PeerConnectionInterface::kRelay;
+    break;
+  case blink::WebRTCIceTransportsAll:
+    config->type = webrtc::PeerConnectionInterface::kAll;
+    break;
+  default:
+    NOTREACHED();
   }
 }
 
@@ -401,6 +416,32 @@ void RTCPeerConnectionHandler::DestructAllHandlers() {
   }
 }
 
+void RTCPeerConnectionHandler::ConvertOfferOptionsToConstraints(
+    const blink::WebRTCOfferOptions& options,
+    RTCMediaConstraints* output) {
+  output->AddMandatory(
+      webrtc::MediaConstraintsInterface::kOfferToReceiveAudio,
+      options.offerToReceiveAudio() > 0 ? "true" : "false",
+      true);
+
+  output->AddMandatory(
+      webrtc::MediaConstraintsInterface::kOfferToReceiveVideo,
+      options.offerToReceiveVideo() > 0 ? "true" : "false",
+      true);
+
+  if (!options.voiceActivityDetection()) {
+    output->AddMandatory(
+        webrtc::MediaConstraintsInterface::kVoiceActivityDetection,
+        "false",
+        true);
+  }
+
+  if (options.iceRestart()) {
+    output->AddMandatory(
+        webrtc::MediaConstraintsInterface::kIceRestart, "true", true);
+  }
+}
+
 void RTCPeerConnectionHandler::associateWithFrame(blink::WebFrame* frame) {
   DCHECK(frame);
   frame_ = frame;
@@ -414,21 +455,22 @@ bool RTCPeerConnectionHandler::initialize(
   peer_connection_tracker_ =
       RenderThreadImpl::current()->peer_connection_tracker();
 
-  webrtc::PeerConnectionInterface::IceServers servers;
-  GetNativeIceServers(server_configuration, &servers);
+  webrtc::PeerConnectionInterface::RTCConfiguration config;
+  GetNativeRtcConfiguration(server_configuration, &config);
 
   RTCMediaConstraints constraints(options);
 
   native_peer_connection_ =
       dependency_factory_->CreatePeerConnection(
-          servers, &constraints, frame_, this);
+          config, &constraints, frame_, this);
+
   if (!native_peer_connection_.get()) {
     LOG(ERROR) << "Failed to initialize native PeerConnection.";
     return false;
   }
   if (peer_connection_tracker_)
     peer_connection_tracker_->RegisterPeerConnection(
-        this, servers, constraints, frame_);
+        this, config, constraints, frame_);
 
   uma_observer_ = new talk_base::RefCountedObject<PeerConnectionUMAObserver>();
   native_peer_connection_->RegisterUMAObserver(uma_observer_.get());
@@ -439,13 +481,13 @@ bool RTCPeerConnectionHandler::InitializeForTest(
     const blink::WebRTCConfiguration& server_configuration,
     const blink::WebMediaConstraints& options,
     PeerConnectionTracker* peer_connection_tracker) {
-  webrtc::PeerConnectionInterface::IceServers servers;
-  GetNativeIceServers(server_configuration, &servers);
+  webrtc::PeerConnectionInterface::RTCConfiguration config;
+  GetNativeRtcConfiguration(server_configuration, &config);
 
   RTCMediaConstraints constraints(options);
   native_peer_connection_ =
       dependency_factory_->CreatePeerConnection(
-          servers, &constraints, NULL, this);
+          config, &constraints, NULL, this);
   if (!native_peer_connection_.get()) {
     LOG(ERROR) << "Failed to initialize native PeerConnection.";
     return false;
@@ -461,6 +503,21 @@ void RTCPeerConnectionHandler::createOffer(
       new talk_base::RefCountedObject<CreateSessionDescriptionRequest>(
           request, this, PeerConnectionTracker::ACTION_CREATE_OFFER));
   RTCMediaConstraints constraints(options);
+  native_peer_connection_->CreateOffer(description_request.get(), &constraints);
+
+  if (peer_connection_tracker_)
+    peer_connection_tracker_->TrackCreateOffer(this, constraints);
+}
+
+void RTCPeerConnectionHandler::createOffer(
+    const blink::WebRTCSessionDescriptionRequest& request,
+    const blink::WebRTCOfferOptions& options) {
+  scoped_refptr<CreateSessionDescriptionRequest> description_request(
+      new talk_base::RefCountedObject<CreateSessionDescriptionRequest>(
+          request, this, PeerConnectionTracker::ACTION_CREATE_OFFER));
+
+  RTCMediaConstraints constraints;
+  ConvertOfferOptionsToConstraints(options, &constraints);
   native_peer_connection_->CreateOffer(description_request.get(), &constraints);
 
   if (peer_connection_tracker_)
@@ -552,14 +609,14 @@ RTCPeerConnectionHandler::remoteDescription() {
 bool RTCPeerConnectionHandler::updateICE(
     const blink::WebRTCConfiguration& server_configuration,
     const blink::WebMediaConstraints& options) {
-  webrtc::PeerConnectionInterface::IceServers servers;
-  GetNativeIceServers(server_configuration, &servers);
+  webrtc::PeerConnectionInterface::RTCConfiguration config;
+  GetNativeRtcConfiguration(server_configuration, &config);
   RTCMediaConstraints constraints(options);
 
   if (peer_connection_tracker_)
-    peer_connection_tracker_->TrackUpdateIce(this, servers, constraints);
+    peer_connection_tracker_->TrackUpdateIce(this, config, constraints);
 
-  return native_peer_connection_->UpdateIce(servers,
+  return native_peer_connection_->UpdateIce(config.servers,
                                             &constraints);
 }
 

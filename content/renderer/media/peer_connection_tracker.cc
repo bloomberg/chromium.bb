@@ -121,6 +121,28 @@ static string SerializeMediaDescriptor(
   return result;
 }
 
+static std::string SerializeIceTransportType(
+    webrtc::PeerConnectionInterface::IceTransportsType type) {
+  string transport_type;
+  switch (type) {
+  case webrtc::PeerConnectionInterface::kNone:
+    transport_type = "none";
+    break;
+  case webrtc::PeerConnectionInterface::kRelay:
+    transport_type = "relay";
+    break;
+  case webrtc::PeerConnectionInterface::kAll:
+    transport_type = "all";
+    break;
+  case webrtc::PeerConnectionInterface::kNoHost:
+    transport_type = "noHost";
+    break;
+  default:
+    NOTREACHED();
+  };
+  return transport_type;
+}
+
 #define GET_STRING_OF_STATE(state)                \
   case WebRTCPeerConnectionHandlerClient::state:  \
     result = #state;                              \
@@ -277,14 +299,17 @@ void PeerConnectionTracker::OnGetAllStats() {
 
 void PeerConnectionTracker::RegisterPeerConnection(
     RTCPeerConnectionHandler* pc_handler,
-    const std::vector<webrtc::PeerConnectionInterface::IceServer>& servers,
+    const webrtc::PeerConnectionInterface::RTCConfiguration& config,
     const RTCMediaConstraints& constraints,
     const blink::WebFrame* frame) {
   DVLOG(1) << "PeerConnectionTracker::RegisterPeerConnection()";
   PeerConnectionInfo info;
 
   info.lid = GetNextLocalID();
-  info.servers = SerializeServers(servers);
+  info.rtc_configuration =
+      "{ servers: " +  SerializeServers(config.servers) + ", " +
+      "iceTransportType: " + SerializeIceTransportType(config.type) + " }";
+
   info.constraints = SerializeMediaConstraints(constraints);
   info.url = frame->document().url().spec();
   RenderThreadImpl::current()->Send(
@@ -346,14 +371,20 @@ void PeerConnectionTracker::TrackSetSessionDescription(
 
 void PeerConnectionTracker::TrackUpdateIce(
       RTCPeerConnectionHandler* pc_handler,
-      const std::vector<webrtc::PeerConnectionInterface::IceServer>& servers,
+      const webrtc::PeerConnectionInterface::RTCConfiguration& config,
       const RTCMediaConstraints& options) {
-  string servers_string = "servers: " + SerializeServers(servers);
+  string servers_string = "servers: " + SerializeServers(config.servers);
+
+  string transport_type =
+      "iceTransportType: " + SerializeIceTransportType(config.type);
+
   string constraints =
       "constraints: {" + SerializeMediaConstraints(options) + "}";
 
   SendPeerConnectionUpdate(
-      pc_handler, "updateIce", servers_string + ", " + constraints);
+      pc_handler,
+      "updateIce",
+      servers_string + ", " + transport_type + ", " + constraints);
 }
 
 void PeerConnectionTracker::TrackAddIceCandidate(

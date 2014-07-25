@@ -535,4 +535,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, MAYBE_TwoCallsWithAecDump) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, CreateOfferWithOfferOptions) {
+  MakeTypicalPeerConnectionCall("testCreateOfferOptions();");
+}
+
 }  // namespace content

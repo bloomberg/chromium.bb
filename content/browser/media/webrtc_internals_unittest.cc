@@ -15,7 +15,7 @@ namespace content {
 namespace {
 
 static const std::string kContraints = "c";
-static const std::string kServers = "s";
+static const std::string kRtcConfiguration = "r";
 static const std::string kUrl = "u";
 
 class MockWebRTCInternalsProxy : public WebRTCInternalsUIObserver {
@@ -99,7 +99,7 @@ TEST_F(WebRTCInternalsTest, AddRemoveObserver) {
   WebRTCInternals::GetInstance()->AddObserver(observer.get());
   WebRTCInternals::GetInstance()->RemoveObserver(observer.get());
   WebRTCInternals::GetInstance()->OnAddPeerConnection(
-      0, 3, 4, kUrl, kServers, kContraints);
+      0, 3, 4, kUrl, kRtcConfiguration, kContraints);
   EXPECT_EQ("", observer->command());
 
   WebRTCInternals::GetInstance()->OnRemovePeerConnection(3, 4);
@@ -110,7 +110,7 @@ TEST_F(WebRTCInternalsTest, SendAddPeerConnectionUpdate) {
       new MockWebRTCInternalsProxy());
   WebRTCInternals::GetInstance()->AddObserver(observer.get());
   WebRTCInternals::GetInstance()->OnAddPeerConnection(
-      0, 1, 2, kUrl, kServers, kContraints);
+      0, 1, 2, kUrl, kRtcConfiguration, kContraints);
   EXPECT_EQ("addPeerConnection", observer->command());
 
   base::DictionaryValue* dict = NULL;
@@ -119,7 +119,7 @@ TEST_F(WebRTCInternalsTest, SendAddPeerConnectionUpdate) {
   VerifyInt(dict, "pid", 1);
   VerifyInt(dict, "lid", 2);
   VerifyString(dict, "url", kUrl);
-  VerifyString(dict, "servers", kServers);
+  VerifyString(dict, "rtcConfiguration", kRtcConfiguration);
   VerifyString(dict, "constraints", kContraints);
 
   WebRTCInternals::GetInstance()->RemoveObserver(observer.get());
@@ -131,7 +131,7 @@ TEST_F(WebRTCInternalsTest, SendRemovePeerConnectionUpdate) {
       new MockWebRTCInternalsProxy());
   WebRTCInternals::GetInstance()->AddObserver(observer.get());
   WebRTCInternals::GetInstance()->OnAddPeerConnection(
-      0, 1, 2, kUrl, kServers, kContraints);
+      0, 1, 2, kUrl, kRtcConfiguration, kContraints);
   WebRTCInternals::GetInstance()->OnRemovePeerConnection(1, 2);
   EXPECT_EQ("removePeerConnection", observer->command());
 
@@ -149,7 +149,7 @@ TEST_F(WebRTCInternalsTest, SendUpdatePeerConnectionUpdate) {
       new MockWebRTCInternalsProxy());
   WebRTCInternals::GetInstance()->AddObserver(observer.get());
   WebRTCInternals::GetInstance()->OnAddPeerConnection(
-      0, 1, 2, kUrl, kServers, kContraints);
+      0, 1, 2, kUrl, kRtcConfiguration, kContraints);
 
   const std::string update_type = "fakeType";
   const std::string update_value = "fakeValue";
@@ -220,7 +220,7 @@ TEST_F(WebRTCInternalsTest, SendAllUpdatesWithPeerConnectionUpdate) {
   const std::string update_value = "fakeValue";
 
   WebRTCInternals::GetInstance()->OnAddPeerConnection(
-      rid, pid, lid, kUrl, kServers, kContraints);
+      rid, pid, lid, kUrl, kRtcConfiguration, kContraints);
   WebRTCInternals::GetInstance()->OnUpdatePeerConnection(
       pid, lid, update_type, update_value);
 
@@ -242,7 +242,7 @@ TEST_F(WebRTCInternalsTest, SendAllUpdatesWithPeerConnectionUpdate) {
   VerifyInt(dict, "pid", pid);
   VerifyInt(dict, "lid", lid);
   VerifyString(dict, "url", kUrl);
-  VerifyString(dict, "servers", kServers);
+  VerifyString(dict, "rtcConfiguration", kRtcConfiguration);
   VerifyString(dict, "constraints", kContraints);
 
   base::ListValue* log = NULL;
@@ -262,7 +262,7 @@ TEST_F(WebRTCInternalsTest, OnAddStats) {
   scoped_ptr<MockWebRTCInternalsProxy> observer(new MockWebRTCInternalsProxy());
   WebRTCInternals::GetInstance()->AddObserver(observer.get());
   WebRTCInternals::GetInstance()->OnAddPeerConnection(
-      rid, pid, lid, kUrl, kServers, kContraints);
+      rid, pid, lid, kUrl, kRtcConfiguration, kContraints);
 
   base::ListValue list;
   list.AppendString("xxx");

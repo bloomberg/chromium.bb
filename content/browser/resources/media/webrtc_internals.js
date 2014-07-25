@@ -21,7 +21,7 @@ var PeerConnectionRecord = (function() {
     /** @private */
     this.record_ = {
       constraints: {},
-      servers: [],
+      rtcConfiguration: [],
       stats: {},
       updateLog: [],
       url: '',
@@ -37,12 +37,12 @@ var PeerConnectionRecord = (function() {
     /**
      * Adds the initilization info of the peer connection.
      * @param {string} url The URL of the web page owning the peer connection.
-     * @param {Array} servers STUN servers used by the peer connection.
+     * @param {Array} rtcConfiguration
      * @param {!Object} constraints Media constraints.
      */
-    initialize: function(url, servers, constraints) {
+    initialize: function(url, rtcConfiguration, constraints) {
       this.record_.url = url;
-      this.record_.servers = servers;
+      this.record_.rtcConfiguration = rtcConfiguration;
       this.record_.constraints = constraints;
     },
 
@@ -189,8 +189,8 @@ function removePeerConnection(data) {
 /**
  * Adds a peer connection.
  *
- * @param {!Object} data The object containing the pid, lid, url, servers, and
- *     constraints of a peer connection.
+ * @param {!Object} data The object containing the pid, lid, url,
+ *     rtcConfiguration, and constraints of a peer connection.
  */
 function addPeerConnection(data) {
   var id = getPeerConnectionId(data);
@@ -199,14 +199,14 @@ function addPeerConnection(data) {
     peerConnectionDataStore[id] = new PeerConnectionRecord();
   }
   peerConnectionDataStore[id].initialize(
-      data.url, data.servers, data.constraints);
+      data.url, data.rtcConfiguration, data.constraints);
 
   var peerConnectionElement = $(id);
   if (!peerConnectionElement) {
     peerConnectionElement = tabView.addTab(id, data.url + ' [' + id + ']');
   }
   peerConnectionElement.innerHTML =
-      '<p>' + data.url + ' ' + data.servers + ' ' + data.constraints +
+      '<p>' + data.url + ' ' + data.rtcConfiguration + ' ' + data.constraints +
       '</p>';
 
   return peerConnectionElement;
@@ -228,7 +228,7 @@ function updatePeerConnection(data) {
  * Adds the information of all peer connections created so far.
  *
  * @param {Array.<!Object>} data An array of the information of all peer
- *     connections. Each array item contains pid, lid, url, servers,
+ *     connections. Each array item contains pid, lid, url, rtcConfiguration,
  *     constraints, and an array of updates as the log.
  */
 function updateAllPeerConnections(data) {

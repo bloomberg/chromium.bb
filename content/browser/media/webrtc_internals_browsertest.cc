@@ -175,7 +175,7 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
   void ExecuteAddPeerConnectionJs(const PeerConnectionEntry& pc) {
     std::stringstream ss;
     ss << "{pid:" << pc.pid_ <<", lid:" << pc.lid_ << ", " <<
-           "url:'u', servers:'s', constraints:'c'}";
+           "url:'u', rtcConfiguration:'s', constraints:'c'}";
     ASSERT_TRUE(ExecuteJavascript("addPeerConnection(" + ss.str() + ");"));
   }
 
