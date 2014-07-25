@@ -135,9 +135,9 @@ static bool setTextValueInDatabase(SQLiteDatabase& db, const String& query, cons
 }
 
 // FIXME: move all guid-related functions to a DatabaseVersionTracker class.
-static Mutex& guidMutex()
+static RecursiveMutex& guidMutex()
 {
-    AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
+    AtomicallyInitializedStatic(RecursiveMutex&, mutex = *new RecursiveMutex);
     return mutex;
 }
 
@@ -145,7 +145,7 @@ typedef HashMap<DatabaseGuid, String> GuidVersionMap;
 static GuidVersionMap& guidToVersionMap()
 {
     // Ensure the the mutex is locked.
-    ASSERT(!guidMutex().tryLock());
+    ASSERT(guidMutex().locked());
     DEFINE_STATIC_LOCAL(GuidVersionMap, map, ());
     return map;
 }
@@ -154,7 +154,7 @@ static GuidVersionMap& guidToVersionMap()
 static inline void updateGuidVersionMap(DatabaseGuid guid, String newVersion)
 {
     // Ensure the the mutex is locked.
-    ASSERT(!guidMutex().tryLock());
+    ASSERT(guidMutex().locked());
 
     // Note: It is not safe to put an empty string into the guidToVersionMap() map.
     // That's because the map is cross-thread, but empty strings are per-thread.
@@ -170,7 +170,7 @@ typedef HashMap<DatabaseGuid, HashSet<DatabaseBackendBase*>*> GuidDatabaseMap;
 static GuidDatabaseMap& guidToDatabaseMap()
 {
     // Ensure the the mutex is locked.
-    ASSERT(!guidMutex().tryLock());
+    ASSERT(guidMutex().locked());
     DEFINE_STATIC_LOCAL(GuidDatabaseMap, map, ());
     return map;
 }
@@ -178,7 +178,7 @@ static GuidDatabaseMap& guidToDatabaseMap()
 static DatabaseGuid guidForOriginAndName(const String& origin, const String& name)
 {
     // Ensure the the mutex is locked.
-    ASSERT(!guidMutex().tryLock());
+    ASSERT(guidMutex().locked());
 
     String stringID = origin + "/" + name;
 

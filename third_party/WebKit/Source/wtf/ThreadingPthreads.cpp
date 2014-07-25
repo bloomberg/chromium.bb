@@ -289,36 +289,63 @@ ThreadIdentifier currentThread()
     return id;
 }
 
-Mutex::Mutex()
+MutexBase::MutexBase(bool recursive)
 {
     pthread_mutexattr_t attr;
     pthread_mutexattr_init(&attr);
-    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_NORMAL);
+    pthread_mutexattr_settype(&attr, recursive ? PTHREAD_MUTEX_RECURSIVE : PTHREAD_MUTEX_NORMAL);
 
-    int result = pthread_mutex_init(&m_mutex, &attr);
+    int result = pthread_mutex_init(&m_mutex.m_internalMutex, &attr);
     ASSERT_UNUSED(result, !result);
+#if ENABLE(ASSERT)
+    m_mutex.m_recursionCount = 0;
+#endif
 
     pthread_mutexattr_destroy(&attr);
 }
 
-Mutex::~Mutex()
+MutexBase::~MutexBase()
 {
-    int result = pthread_mutex_destroy(&m_mutex);
+    int result = pthread_mutex_destroy(&m_mutex.m_internalMutex);
     ASSERT_UNUSED(result, !result);
 }
 
-void Mutex::lock()
+void MutexBase::lock()
 {
-    int result = pthread_mutex_lock(&m_mutex);
+    int result = pthread_mutex_lock(&m_mutex.m_internalMutex);
+    ASSERT_UNUSED(result, !result);
+#if ENABLE(ASSERT)
+    ++m_mutex.m_recursionCount;
+#endif
+}
+
+void MutexBase::unlock()
+{
+#if ENABLE(ASSERT)
+    ASSERT(m_mutex.m_recursionCount);
+    --m_mutex.m_recursionCount;
+#endif
+    int result = pthread_mutex_unlock(&m_mutex.m_internalMutex);
     ASSERT_UNUSED(result, !result);
 }
 
+// There is a separate tryLock implementation for the Mutex and the
+// RecursiveMutex since on Windows we need to manually check if tryLock should
+// succeed or not for the non-recursive mutex. On Linux the two implementations
+// are equal except we can assert the recursion count is always zero for the
+// non-recursive mutex.
 bool Mutex::tryLock()
 {
-    int result = pthread_mutex_trylock(&m_mutex);
-
-    if (result == 0)
+    int result = pthread_mutex_trylock(&m_mutex.m_internalMutex);
+    if (result == 0) {
+#if ENABLE(ASSERT)
+        // The Mutex class is not recursive, so the recursionCount should be
+        // zero after getting the lock.
+        ASSERT(!m_mutex.m_recursionCount);
+        ++m_mutex.m_recursionCount;
+#endif
         return true;
+    }
     if (result == EBUSY)
         return false;
 
@@ -326,10 +353,20 @@ bool Mutex::tryLock()
     return false;
 }
 
-void Mutex::unlock()
+bool RecursiveMutex::tryLock()
 {
-    int result = pthread_mutex_unlock(&m_mutex);
-    ASSERT_UNUSED(result, !result);
+    int result = pthread_mutex_trylock(&m_mutex.m_internalMutex);
+    if (result == 0) {
+#if ENABLE(ASSERT)
+        ++m_mutex.m_recursionCount;
+#endif
+        return true;
+    }
+    if (result == EBUSY)
+        return false;
+
+    ASSERT_NOT_REACHED();
+    return false;
 }
 
 ThreadCondition::ThreadCondition()
@@ -342,13 +379,17 @@ ThreadCondition::~ThreadCondition()
     pthread_cond_destroy(&m_condition);
 }
 
-void ThreadCondition::wait(Mutex& mutex)
+void ThreadCondition::wait(MutexBase& mutex)
 {
-    int result = pthread_cond_wait(&m_condition, &mutex.impl());
+    PlatformMutex& platformMutex = mutex.impl();
+    int result = pthread_cond_wait(&m_condition, &platformMutex.m_internalMutex);
     ASSERT_UNUSED(result, !result);
+#if ENABLE(ASSERT)
+    ++platformMutex.m_recursionCount;
+#endif
 }
 
-bool ThreadCondition::timedWait(Mutex& mutex, double absoluteTime)
+bool ThreadCondition::timedWait(MutexBase& mutex, double absoluteTime)
 {
     if (absoluteTime < currentTime())
         return false;
@@ -365,7 +406,12 @@ bool ThreadCondition::timedWait(Mutex& mutex, double absoluteTime)
     targetTime.tv_sec = timeSeconds;
     targetTime.tv_nsec = timeNanoseconds;
 
-    return pthread_cond_timedwait(&m_condition, &mutex.impl(), &targetTime) == 0;
+    PlatformMutex& platformMutex = mutex.impl();
+    int result = pthread_cond_timedwait(&m_condition, &platformMutex.m_internalMutex, &targetTime);
+#if ENABLE(ASSERT)
+    ++platformMutex.m_recursionCount;
+#endif
+    return result == 0;
 }
 
 void ThreadCondition::signal()

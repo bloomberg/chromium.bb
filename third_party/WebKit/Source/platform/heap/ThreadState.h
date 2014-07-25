@@ -618,7 +618,7 @@ public:
 class SafePointAwareMutexLocker {
     WTF_MAKE_NONCOPYABLE(SafePointAwareMutexLocker);
 public:
-    explicit SafePointAwareMutexLocker(Mutex& mutex, ThreadState::StackState stackState = ThreadState::HeapPointersOnStack)
+    explicit SafePointAwareMutexLocker(MutexBase& mutex, ThreadState::StackState stackState = ThreadState::HeapPointersOnStack)
         : m_mutex(mutex)
         , m_locked(false)
     {
@@ -661,7 +661,7 @@ private:
         m_locked = false;
     }
 
-    Mutex& m_mutex;
+    MutexBase& m_mutex;
     bool m_locked;
 };
 

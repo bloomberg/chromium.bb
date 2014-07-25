@@ -264,21 +264,28 @@ ThreadIdentifier currentThread()
     return static_cast<ThreadIdentifier>(GetCurrentThreadId());
 }
 
-Mutex::Mutex()
+MutexBase::MutexBase(bool recursive)
 {
     m_mutex.m_recursionCount = 0;
     InitializeCriticalSection(&m_mutex.m_internalMutex);
 }
 
-Mutex::~Mutex()
+MutexBase::~MutexBase()
 {
     DeleteCriticalSection(&m_mutex.m_internalMutex);
 }
 
-void Mutex::lock()
+void MutexBase::lock()
 {
     EnterCriticalSection(&m_mutex.m_internalMutex);
     ++m_mutex.m_recursionCount;
+}
+
+void MutexBase::unlock()
+{
+    ASSERT(m_mutex.m_recursionCount);
+    --m_mutex.m_recursionCount;
+    LeaveCriticalSection(&m_mutex.m_internalMutex);
 }
 
 bool Mutex::tryLock()
@@ -292,14 +299,16 @@ bool Mutex::tryLock()
     DWORD result = TryEnterCriticalSection(&m_mutex.m_internalMutex);
 
     if (result != 0) {       // We got the lock
-        // If this thread already had the lock, we must unlock and
-        // return false so that we mimic the behavior of POSIX's
-        // pthread_mutex_trylock:
+        // If this thread already had the lock, we must unlock and return
+        // false since this is a non-recursive mutex. This is to mimic the
+        // behavior of POSIX's pthread_mutex_trylock. We don't do this
+        // check in the lock method (presumably due to performance?). This
+        // means lock() will succeed even if the current thread has already
+        // entered the critical section.
         if (m_mutex.m_recursionCount > 0) {
             LeaveCriticalSection(&m_mutex.m_internalMutex);
             return false;
         }
-
         ++m_mutex.m_recursionCount;
         return true;
     }
@@ -307,11 +316,16 @@ bool Mutex::tryLock()
     return false;
 }
 
-void Mutex::unlock()
+bool RecursiveMutex::tryLock()
 {
-    ASSERT(m_mutex.m_recursionCount);
-    --m_mutex.m_recursionCount;
-    LeaveCriticalSection(&m_mutex.m_internalMutex);
+    // CRITICAL_SECTION is recursive/reentrant so TryEnterCriticalSection will
+    // succeed if the current thread is already in the critical section.
+    DWORD result = TryEnterCriticalSection(&m_mutex.m_internalMutex);
+    if (result == 0) { // We didn't get the lock.
+        return false;
+    }
+    ++m_mutex.m_recursionCount;
+    return true;
 }
 
 bool PlatformCondition::timedWait(PlatformMutex& mutex, DWORD durationMilliseconds)
@@ -444,12 +458,12 @@ ThreadCondition::~ThreadCondition()
     CloseHandle(m_condition.m_unblockLock);
 }
 
-void ThreadCondition::wait(Mutex& mutex)
+void ThreadCondition::wait(MutexBase& mutex)
 {
     m_condition.timedWait(mutex.impl(), INFINITE);
 }
 
-bool ThreadCondition::timedWait(Mutex& mutex, double absoluteTime)
+bool ThreadCondition::timedWait(MutexBase& mutex, double absoluteTime)
 {
     DWORD interval = absoluteTimeToWaitTimeoutInterval(absoluteTime);
 

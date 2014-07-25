@@ -48,7 +48,12 @@
 namespace WTF {
 
 #if USE(PTHREADS)
-typedef pthread_mutex_t PlatformMutex;
+struct PlatformMutex {
+    pthread_mutex_t m_internalMutex;
+#if ENABLE(ASSERT)
+    size_t m_recursionCount;
+#endif
+};
 typedef pthread_cond_t PlatformCondition;
 #elif OS(WIN)
 struct PlatformMutex {
@@ -71,23 +76,39 @@ typedef void* PlatformMutex;
 typedef void* PlatformCondition;
 #endif
 
-class WTF_EXPORT Mutex {
-    WTF_MAKE_NONCOPYABLE(Mutex); WTF_MAKE_FAST_ALLOCATED;
+class WTF_EXPORT MutexBase {
+    WTF_MAKE_NONCOPYABLE(MutexBase); WTF_MAKE_FAST_ALLOCATED;
 public:
-    Mutex();
-    ~Mutex();
+    ~MutexBase();
 
     void lock();
-    bool tryLock();
     void unlock();
+#if ENABLE(ASSERT)
+    bool locked() { return m_mutex.m_recursionCount > 0; }
+#endif
 
 public:
     PlatformMutex& impl() { return m_mutex; }
-private:
+
+protected:
+    MutexBase(bool recursive);
+
     PlatformMutex m_mutex;
 };
 
-typedef Locker<Mutex> MutexLocker;
+class WTF_EXPORT Mutex : public MutexBase {
+public:
+    Mutex() : MutexBase(false) { }
+    bool tryLock();
+};
+
+class WTF_EXPORT RecursiveMutex : public MutexBase {
+public:
+    RecursiveMutex() : MutexBase(true) { }
+    bool tryLock();
+};
+
+typedef Locker<MutexBase> MutexLocker;
 
 class MutexTryLocker {
     WTF_MAKE_NONCOPYABLE(MutexTryLocker);
@@ -112,10 +133,10 @@ public:
     ThreadCondition();
     ~ThreadCondition();
 
-    void wait(Mutex&);
+    void wait(MutexBase&);
     // Returns true if the condition was signaled before absoluteTime, false if the absoluteTime was reached or is in the past.
     // The absoluteTime is in seconds, starting on January 1, 1970. The time is assumed to use the same time zone as WTF::currentTime().
-    bool timedWait(Mutex&, double absoluteTime);
+    bool timedWait(MutexBase&, double absoluteTime);
     void signal();
     void broadcast();
 
@@ -131,7 +152,9 @@ DWORD absoluteTimeToWaitTimeoutInterval(double absoluteTime);
 
 } // namespace WTF
 
+using WTF::MutexBase;
 using WTF::Mutex;
+using WTF::RecursiveMutex;
 using WTF::MutexLocker;
 using WTF::MutexTryLocker;
 using WTF::ThreadCondition;

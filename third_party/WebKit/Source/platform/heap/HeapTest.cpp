@@ -4877,4 +4877,107 @@ TEST(HeapTest, GarbageCollectionDuringMixinConstruction)
     a->verify();
 }
 
+static RecursiveMutex& recursiveMutex()
+{
+    AtomicallyInitializedStatic(RecursiveMutex&, recursiveMutex = *new RecursiveMutex);
+    return recursiveMutex;
+}
+
+class DestructorLockingObject : public GarbageCollectedFinalized<DestructorLockingObject> {
+public:
+    static DestructorLockingObject* create()
+    {
+        return new DestructorLockingObject();
+    }
+
+    virtual ~DestructorLockingObject()
+    {
+        SafePointAwareMutexLocker lock(recursiveMutex());
+        ++s_destructorCalls;
+    }
+
+    static int s_destructorCalls;
+    void trace(Visitor* visitor) { }
+
+private:
+    DestructorLockingObject() { }
+};
+
+int DestructorLockingObject::s_destructorCalls = 0;
+
+class RecursiveLockingTester {
+public:
+    static void test()
+    {
+        DestructorLockingObject::s_destructorCalls = 0;
+
+        MutexLocker locker(mainThreadMutex());
+        createThread(&workerThreadMain, 0, "Worker Thread");
+
+        // Park the main thread until the worker thread has initialized.
+        parkMainThread();
+
+        {
+            SafePointAwareMutexLocker recursiveLocker(recursiveMutex());
+
+            // Let the worker try to acquire the above mutex. It won't get it
+            // until the main thread has done its GC.
+            wakeWorkerThread();
+
+            Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+
+            // The worker thread should not have swept yet since it is waiting
+            // to get the global mutex.
+            EXPECT_EQ(0, DestructorLockingObject::s_destructorCalls);
+        }
+        // At this point the main thread releases the global lock and the worker
+        // can acquire it and do its sweep of its heaps. Just wait for the worker
+        // to complete its sweep and check the result.
+        parkMainThread();
+        EXPECT_EQ(1, DestructorLockingObject::s_destructorCalls);
+    }
+
+private:
+    static void workerThreadMain(void* data)
+    {
+        MutexLocker locker(workerThreadMutex());
+        ThreadState::attach();
+
+        DestructorLockingObject* dlo = DestructorLockingObject::create();
+        ASSERT_UNUSED(dlo, dlo);
+
+        // Wake up the main thread which is waiting for the worker to do its
+        // allocation.
+        wakeMainThread();
+
+        // Wait for the main thread to get the global lock to ensure it has
+        // it before the worker tries to acquire it. We want the worker to
+        // block in the SafePointAwareMutexLocker until the main thread
+        // has done a GC. The GC will not mark the "dlo" object since the worker
+        // is entering the safepoint with NoHeapPointersOnStack. When the worker
+        // subsequently gets the global lock and leaves the safepoint it will
+        // sweep its heap and finalize "dlo". The destructor of "dlo" will try
+        // to acquire the same global lock that the thread just got and deadlock
+        // unless the global lock is recursive.
+        parkWorkerThread();
+        SafePointAwareMutexLocker recursiveLocker(recursiveMutex(), ThreadState::NoHeapPointersOnStack);
+
+        // We won't get here unless the lock is recursive since the sweep done
+        // in the constructor of SafePointAwareMutexLocker after
+        // getting the lock will not complete given the "dlo" destructor is
+        // waiting to get the same lock.
+        // Tell the main thread the worker has done its sweep.
+        wakeMainThread();
+
+        ThreadState::detach();
+    }
+
+    static volatile IntWrapper* s_workerObjectPointer;
+};
+
+TEST(HeapTest, RecursiveMutex)
+{
+    RecursiveLockingTester::test();
+}
+
 } // WebCore namespace
