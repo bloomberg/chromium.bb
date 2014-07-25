@@ -124,8 +124,9 @@ CheckQueryResultTask.prototype = {
     expectEquals(QueryResultType.SUCCESS, this.queryResultType_);
     expectEquals(this.stsSubdomains_, result.dynamic_sts_include_subdomains);
     expectEquals(this.pkpSubdomains_, result.dynamic_pkp_include_subdomains);
-    expectLE(this.stsObserved_, result.dynamic_sts_observed);
-    expectLE(this.pkpObserved_, result.dynamic_pkp_observed);
+    // Disabled because of http://crbug.com/397639
+    // expectLE(this.stsObserved_, result.dynamic_sts_observed);
+    // expectLE(this.pkpObserved_, result.dynamic_pkp_observed);
 
     // |public_key_hashes| is an old synonym for what is now
     // |preloaded_spki_hashes|, which in turn is a legacy synonym for
