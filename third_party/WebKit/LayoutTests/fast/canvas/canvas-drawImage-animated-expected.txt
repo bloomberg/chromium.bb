@@ -1,0 +1,13 @@
+When drawing an animated image to a canvas, the poster frame (or the first frame) should be printed.
+This test passes if the canvas is filled with the color rgb(64, 4, 30).
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+PASS imageData.data[0] is 64
+PASS imageData.data[1] is 4
+PASS imageData.data[2] is 30
+ 

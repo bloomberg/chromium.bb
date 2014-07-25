@@ -367,6 +367,14 @@ PassRefPtr<NativeImageSkia> BitmapImage::nativeImageForCurrentFrame()
     return frameAtIndex(currentFrame());
 }
 
+PassRefPtr<Image> BitmapImage::imageForDefaultFrame()
+{
+    if (isBitmapImage() && maybeAnimated())
+        return BitmapImage::create(frameAtIndex(0));
+
+    return Image::imageForDefaultFrame();
+}
+
 bool BitmapImage::frameHasAlphaAtIndex(size_t index)
 {
     if (m_frames.size() <= index)

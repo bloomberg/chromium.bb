@@ -79,6 +79,7 @@ public:
     virtual bool maybeAnimated() OVERRIDE;
 
     virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() OVERRIDE;
+    virtual PassRefPtr<Image> imageForDefaultFrame() OVERRIDE;
     virtual bool currentFrameKnownToBeOpaque() OVERRIDE;
 
     ImageOrientation currentFrameOrientation();

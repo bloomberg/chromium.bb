@@ -237,4 +237,11 @@ void Image::computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsic
     intrinsicHeight = Length(intrinsicRatio.height(), Fixed);
 }
 
+PassRefPtr<Image> Image::imageForDefaultFrame()
+{
+    RefPtr<Image> image(this);
+
+    return image.release();
+}
+
 }

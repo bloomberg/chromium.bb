@@ -523,7 +523,7 @@ PassRefPtr<Image> HTMLImageElement::getSourceImageForCanvas(SourceImageMode, Sou
         sourceImage->setContainerSize(sourceImage->size());
 
     *status = NormalSourceImageStatus;
-    return sourceImage.release();
+    return sourceImage->imageForDefaultFrame();
 }
 
 bool HTMLImageElement::wouldTaintOrigin(SecurityOrigin* destinationSecurityOrigin) const

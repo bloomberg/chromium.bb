@@ -115,6 +115,8 @@ public:
 
     virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() { return nullptr; }
 
+    virtual PassRefPtr<Image> imageForDefaultFrame();
+
     virtual void drawPattern(GraphicsContext*, const FloatRect&,
         const FloatSize&, const FloatPoint& phase, CompositeOperator,
         const FloatRect&, blink::WebBlendMode = blink::WebBlendModeNormal, const IntSize& repeatSpacing = IntSize());

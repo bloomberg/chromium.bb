@@ -1,0 +1,32 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+    <head>
+        <script src="../../resources/js-test.js"></script>
+    </head>
+    <body onload="javascript:ready()">
+
+        <!-- This image is an animated GIF (1px by 1px). Animation time is 0ms. First frame has the color rgb(64, 4, 30). The second one has the color rgb(10, 153, 30) -->
+        <img id="image" src="data:image/gif;base64,R0lGODlhAQABAIACAEAEHgqZHiH+EUNyZWF0ZWQgd2l0aCBHSU1QACH5BAkAAAEALAAAAAABAAEAAAICRAEAIfkECAAA/wAsAAAAAAEAAQAAAgJMAQA7" alt="Animated Image" />
+        <canvas id="canvas" width="1" height="1"></canvas>
+
+        <script>
+            description("When drawing an animated image to a canvas, the poster frame (or the first frame) should be printed.<br/>This test passes if the canvas is filled with the color rgb(64, 4, 30).");
+
+            function ready() {
+                var canvas = document.getElementById("canvas");
+                var image = document.getElementById("image");
+
+                var canvasContext = canvas.getContext("2d");
+
+                canvasContext.drawImage(image, 0, 0);
+
+                imageData = canvasContext.getImageData(0, 0, 1, 1);
+
+                shouldBe("imageData.data[0]", "64");
+                shouldBe("imageData.data[1]", "4");
+                shouldBe("imageData.data[2]", "30");
+            }
+        </script>
+
+    </body>
+</html>
