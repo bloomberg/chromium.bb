@@ -79,6 +79,10 @@ elif env.Bit('host_linux'):
 if env.UsingEmulator():
   # The CPU time test uses threads and fences, which are flaky under QEMU.
   cputime_test_enabled = False
+# This test is flaky on mac10.7-newlib-dbg-asan.
+# See https://code.google.com/p/nativeclient/issues/detail?id=3906
+if env.Bit('asan') and env.Bit('mac'):
+  cputime_test_enabled = False
 
 node = env.CommandSelLdrTestNacl(
     'clock_test.out',

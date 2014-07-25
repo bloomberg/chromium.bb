@@ -47,7 +47,10 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_thread_test',
                        is_broken=('TRUSTED_ENV' in env and
                                   env['TRUSTED_ENV'].Bit('windows') and
                                   env.Bit('build_x86_32') and
-                                  env.Bit('nacl_glibc')))
+                                  env.Bit('nacl_glibc')) or
+# This test is flaky on mac10.7-newlib-dbg-asan.
+# See https://code.google.com/p/nativeclient/issues/detail?id=3906
+                                 (env.Bit('asan') and env.Bit('mac')))
 
 
 simple_thread_test_nexe = env.ComponentProgram(
@@ -72,7 +75,10 @@ node = env.CommandSelLdrTestNacl(
     race_test_nexe,
     size='small',
     )
-env.AddNodeToTestSuite(node, ['small_tests', 'tsan_bot_tests'], 'run_race_test')
+env.AddNodeToTestSuite(node, ['small_tests', 'tsan_bot_tests'], 'run_race_test',
+# This test is flaky on mac10.7-newlib-dbg-asan.
+# See https://code.google.com/p/nativeclient/issues/detail?id=3906
+                       is_broken=(env.Bit('asan') and env.Bit('mac')))
 
 main_thread_pthread_exit_test_nexe = env.ComponentProgram(
     'main_thread_pthread_exit_test',
@@ -164,7 +170,10 @@ if not env.Bit('tests_use_irt'):
 
   node = env.CommandSelLdrTestNacl('second_tls_test.out',
                                    second_tls_test_nexe)
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_second_tls_test')
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_second_tls_test',
+  # This test is flaky on mac10.7-newlib-dbg-asan.
+  # See https://code.google.com/p/nativeclient/issues/detail?id=3906
+                         is_broken=(env.Bit('asan') and env.Bit('mac')))
 
 many_threads_sequential_nexe = env.ComponentProgram(
     'many_threads_sequential',
@@ -192,7 +201,10 @@ node = env.CommandSelLdrTestNacl('many_threads_sequential_test.out',
 env.AddNodeToTestSuite(node,
                        ['small_tests'],
                        'run_many_threads_sequential_test',
-                       is_broken = env.IsRunningUnderValgrind())
+                       is_broken = env.IsRunningUnderValgrind() or
+# This test is flaky on mac10.7-newlib-dbg-asan.
+# See https://code.google.com/p/nativeclient/issues/detail?id=3906
+                                   (env.Bit('asan') and env.Bit('mac')))
 
 mutex_leak_nexe = env.ComponentProgram('mutex_leak', ['mutex_leak.c'],
                                        EXTRA_LIBS=['${PTHREAD_LIBS}',

@@ -140,7 +140,10 @@ node = env.CommandSelLdrTestNacl(
       )
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
-                       'run_semaphore_tests')
+                       'run_semaphore_tests',
+# This test is flaky on mac10.7-newlib-dbg-asan.
+# See https://code.google.com/p/nativeclient/issues/detail?id=3906
+                         is_broken=(env.Bit('asan') and env.Bit('mac')))
 
 mem_test_nexe = env.ComponentProgram('mem_test',
                                      ['mem_test.cc'],

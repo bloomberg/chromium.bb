@@ -22,7 +22,10 @@ if env.Bit('nacl_glibc') or not env.Bit('tests_use_irt'):
       EXTRA_LIBS=['${NONIRT_LIBS}', '${PTHREAD_LIBS}'])
 
   node = env.CommandSelLdrTestNacl('futex_test.out', nexe)
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_futex_test')
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_futex_test',
+# This test is flaky on mac10.7-newlib-dbg-asan.
+# See https://code.google.com/p/nativeclient/issues/detail?id=3906
+                         is_broken=(env.Bit('asan') and env.Bit('mac')))
 
 
 if env.Bit('tests_use_irt'):
@@ -35,7 +38,11 @@ if env.Bit('tests_use_irt'):
       EXTRA_LIBS=['${NONIRT_LIBS}', '${PTHREAD_LIBS}'])
 
   node = env.CommandSelLdrTestNacl('irt_futex_test.out', nexe)
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_futex_test')
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_futex_test',
+# This test is flaky on mac10.7-newlib-dbg-asan.
+# See https://code.google.com/p/nativeclient/issues/detail?id=3906
+                         is_broken=(env.Bit('asan') and env.Bit('mac') and
+                                    env.Bit('tests_use_irt')))
 
 
 test_env = env.Clone()

@@ -109,7 +109,10 @@ node = env.CommandSelLdrTestNacl('dynamic_load_test.out',
                                  dynamic_load_test_nexe,
                                  sel_ldr_flags=sel_ldr_flags)
 env.AddNodeToTestSuite(node, test_suites, 'run_dynamic_load_test',
-                       is_broken=is_broken)
+                       is_broken=is_broken or
+# This test is flaky on mac10.7-newlib-dbg-asan.
+# See https://code.google.com/p/nativeclient/issues/detail?id=3906
+                                 (env.Bit('asan') and env.Bit('mac')))
 
 node = env.CommandSelLdrTestNacl(
     'write_to_dyncode_before_alloc.out',

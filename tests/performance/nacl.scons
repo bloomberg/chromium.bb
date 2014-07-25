@@ -54,4 +54,7 @@ node = env.CommandSelLdrTestNacl(
     # Buildbot logs so that Buildbot records the "RESULT" lines.
     capture_output=False)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_performance_test',
-                       is_broken=is_broken)
+                       is_broken=is_broken or
+# This test is flaky on mac10.7-newlib-dbg-asan.
+# See https://code.google.com/p/nativeclient/issues/detail?id=3906
+                                 (env.Bit('asan') and env.Bit('mac')))
