@@ -690,8 +690,6 @@
       ],
       'sources': [
         'shell/child_process_host_unittest.cc',
-        'shell/dynamic_service_loader_unittest.cc',
-        'shell/in_process_dynamic_service_runner_unittest.cc',
         'shell/shell_test_base.cc',
         'shell/shell_test_base.h',
         'shell/shell_test_base_unittest.cc',

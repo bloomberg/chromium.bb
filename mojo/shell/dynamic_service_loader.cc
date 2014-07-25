@@ -67,6 +67,8 @@ class LocalLoader : public Loader {
     base::FilePath path;
     net::FileURLToFilePath(url, &path);
 
+    // TODO(darin): Check if the given file path exists.
+
     // Complete asynchronously for consistency with NetworkServiceLoader.
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -74,7 +76,7 @@ class LocalLoader : public Loader {
                    base::Unretained(this),
                    path,
                    base::Passed(&service_handle),
-                   base::PathExists(path)));
+                   true));
   }
 };
 

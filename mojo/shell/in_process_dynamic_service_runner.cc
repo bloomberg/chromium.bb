@@ -16,14 +16,14 @@ namespace shell {
 
 InProcessDynamicServiceRunner::InProcessDynamicServiceRunner(
     Context* context)
-    : keep_alive_(context) {
+    : keep_alive_(context),
+      thread_(this, "app_thread") {
 }
 
 InProcessDynamicServiceRunner::~InProcessDynamicServiceRunner() {
-  if (thread_) {
-    DCHECK(thread_->HasBeenStarted());
-    DCHECK(!thread_->HasBeenJoined());
-    thread_->Join();
+  if (thread_.HasBeenStarted()) {
+    DCHECK(!thread_.HasBeenJoined());
+    thread_.Join();
   }
 
   // It is important to let the thread exit before unloading the DSO because
@@ -47,9 +47,8 @@ void InProcessDynamicServiceRunner::Start(
                                               FROM_HERE,
                                               app_completed_callback);
 
-  DCHECK(!thread_);
-  thread_.reset(new base::DelegateSimpleThread(this, "app_thread"));
-  thread_->Start();
+  DCHECK(!thread_.HasBeenStarted());
+  thread_.Start();
 }
 
 void InProcessDynamicServiceRunner::Run() {
