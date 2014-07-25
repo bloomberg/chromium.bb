@@ -28,11 +28,26 @@ std::string MakeSharedLibraryName(const std::string& host_name) {
 #endif
 }
 
+GURL AddTrailingSlashIfNeeded(const GURL& url) {
+  if (!url.has_path() || *url.path().rbegin() == '/')
+    return url;
+
+  std::string path(url.path() + '/');
+  GURL::Replacements replacements;
+  replacements.SetPathStr(path);
+  return url.ReplaceComponents(replacements);
+}
+
 }  // namespace
 
 MojoURLResolver::MojoURLResolver() {
   // Needed to treat first component of mojo URLs as host, not path.
   url::AddStandardScheme("mojo");
+
+  // By default, resolve mojo URLs to files living alongside the shell.
+  base::FilePath path;
+  PathService::Get(base::DIR_MODULE, &path);
+  default_base_url_ = AddTrailingSlashIfNeeded(net::FilePathToFileURL(path));
 }
 
 MojoURLResolver::~MojoURLResolver() {
@@ -40,15 +55,9 @@ MojoURLResolver::~MojoURLResolver() {
 
 void MojoURLResolver::SetBaseURL(const GURL& base_url) {
   DCHECK(base_url.is_valid());
-  base_url_ = base_url;
   // Force a trailing slash on the base_url to simplify resolving
   // relative files and URLs below.
-  if (base_url.has_path() && *base_url.path().rbegin() != '/') {
-    std::string path(base_url.path() + '/');
-    GURL::Replacements replacements;
-    replacements.SetPathStr(path);
-    base_url_ = base_url_.ReplaceComponents(replacements);
-  }
+  base_url_ = AddTrailingSlashIfNeeded(base_url);
 }
 
 void MojoURLResolver::AddCustomMapping(const GURL& mojo_url,
@@ -67,12 +76,10 @@ GURL MojoURLResolver::Resolve(const GURL& mojo_url) const {
 
   std::string lib = MakeSharedLibraryName(mojo_url.host());
 
-  if (local_file_set_.find(mojo_url) != local_file_set_.end()) {
+  if (!base_url_.is_valid() ||
+      local_file_set_.find(mojo_url) != local_file_set_.end()) {
     // Resolve to a local file URL.
-    base::FilePath path;
-    PathService::Get(base::DIR_MODULE, &path);
-    path = path.Append(base::FilePath::FromUTF8Unsafe(lib));
-    return net::FilePathToFileURL(path);
+    return default_base_url_.Resolve(lib);
   }
 
   // Otherwise, resolve to an URL relative to base_url_.

@@ -31,7 +31,7 @@ class MojoURLResolver {
   void AddCustomMapping(const GURL& mojo_url, const GURL& resolved_url);
 
   // Add a local file mapping for a particular "mojo:" URL. This causes the
-  // "mojo:" URL to be resolved to an base::DIR_EXE-relative shared library.
+  // "mojo:" URL to be resolved to a base::DIR_MODULE-relative shared library.
   void AddLocalFileMapping(const GURL& mojo_url);
 
   // Resolve the given "mojo:" URL to the URL that should be used to fetch the
@@ -41,6 +41,7 @@ class MojoURLResolver {
  private:
   std::map<GURL, GURL> url_map_;
   std::set<GURL> local_file_set_;
+  GURL default_base_url_;
   GURL base_url_;
 };
 
