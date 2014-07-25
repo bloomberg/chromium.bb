@@ -125,6 +125,9 @@ AudioContext::AudioContext(Document* document)
     m_destinationNode = DefaultAudioDestinationNode::create(this);
 
     initialize();
+#if DEBUG_AUDIONODE_REFERENCES
+    fprintf(stderr, "%p: AudioContext::AudioContext() #%u\n", this, AudioContext::s_hardwareContextCount);
+#endif
 }
 
 // Constructor for offline (non-realtime) rendering.
