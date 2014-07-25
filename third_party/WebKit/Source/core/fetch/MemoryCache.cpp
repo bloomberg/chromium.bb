@@ -334,7 +334,7 @@ bool MemoryCache::evict(MemoryCacheEntry* entry)
     return canDelete;
 }
 
-MemoryCache::LRUList* MemoryCache::lruListFor(unsigned accessCount, size_t size)
+MemoryCacheLRUList* MemoryCache::lruListFor(unsigned accessCount, size_t size)
 {
     ASSERT(accessCount > 0);
     unsigned queueIndex = WTF::fastLog2(size / accessCount);
@@ -343,7 +343,7 @@ MemoryCache::LRUList* MemoryCache::lruListFor(unsigned accessCount, size_t size)
     return &m_allResources[queueIndex];
 }
 
-void MemoryCache::removeFromLRUList(MemoryCacheEntry* entry, LRUList* list)
+void MemoryCache::removeFromLRUList(MemoryCacheEntry* entry, MemoryCacheLRUList* list)
 {
 #if ENABLE(ASSERT)
     // Verify that we are in fact in this list.
@@ -373,7 +373,7 @@ void MemoryCache::removeFromLRUList(MemoryCacheEntry* entry, LRUList* list)
         list->m_head = next;
 }
 
-void MemoryCache::insertInLRUList(MemoryCacheEntry* entry, LRUList* list)
+void MemoryCache::insertInLRUList(MemoryCacheEntry* entry, MemoryCacheLRUList* list)
 {
     ASSERT(!entry->m_nextInAllResourcesList && !entry->m_previousInAllResourcesList);
 
@@ -405,7 +405,7 @@ void MemoryCache::removeFromLiveDecodedResourcesList(MemoryCacheEntry* entry)
         return;
     entry->m_inLiveDecodedResourcesList = false;
 
-    LRUList* list = &m_liveDecodedResources[entry->m_liveResourcePriority];
+    MemoryCacheLRUList* list = &m_liveDecodedResources[entry->m_liveResourcePriority];
 
 #if ENABLE(ASSERT)
     // Verify that we are in fact in this list.
@@ -442,7 +442,7 @@ void MemoryCache::insertInLiveDecodedResourcesList(MemoryCacheEntry* entry)
     ASSERT(!entry->m_nextInLiveResourcesList && !entry->m_previousInLiveResourcesList && !entry->m_inLiveDecodedResourcesList);
     entry->m_inLiveDecodedResourcesList = true;
 
-    LRUList* list = &m_liveDecodedResources[entry->m_liveResourcePriority];
+    MemoryCacheLRUList* list = &m_liveDecodedResources[entry->m_liveResourcePriority];
     entry->m_nextInLiveResourcesList = list->m_head;
     if (list->m_head)
         list->m_head->m_previousInLiveResourcesList = entry;

@@ -73,47 +73,53 @@ enum UpdateReason {
     UpdateForPropertyChange
 };
 
+// MemoryCacheEntry class is used only in MemoryCache class, but we don't make
+// MemoryCacheEntry class an inner class of MemoryCache because of dependency
+// from MemoryCacheLRUList.
+class MemoryCacheEntry FINAL {
+public:
+    static PassOwnPtr<MemoryCacheEntry> create(Resource* resource) { return adoptPtr(new MemoryCacheEntry(resource)); }
+
+    ResourcePtr<Resource> m_resource;
+    bool m_inLiveDecodedResourcesList;
+    unsigned m_accessCount;
+    MemoryCacheLiveResourcePriority m_liveResourcePriority;
+    double m_lastDecodedAccessTime; // Used as a thrash guard
+
+    MemoryCacheEntry* m_previousInLiveResourcesList;
+    MemoryCacheEntry* m_nextInLiveResourcesList;
+    MemoryCacheEntry* m_previousInAllResourcesList;
+    MemoryCacheEntry* m_nextInAllResourcesList;
+
+private:
+    explicit MemoryCacheEntry(Resource* resource)
+        : m_resource(resource)
+        , m_inLiveDecodedResourcesList(false)
+        , m_accessCount(0)
+        , m_liveResourcePriority(MemoryCacheLiveResourcePriorityLow)
+        , m_lastDecodedAccessTime(0.0)
+        , m_previousInLiveResourcesList(0)
+        , m_nextInLiveResourcesList(0)
+        , m_previousInAllResourcesList(0)
+        , m_nextInAllResourcesList(0)
+    {
+    }
+};
+
+// MemoryCacheLRUList is used only in MemoryCache class, but we don't make
+// MemoryCacheLRUList an inner struct of MemoryCache because we can't define
+// VectorTraits for inner structs.
+struct MemoryCacheLRUList FINAL {
+    MemoryCacheEntry* m_head;
+    MemoryCacheEntry* m_tail;
+    MemoryCacheLRUList() : m_head(0), m_tail(0) { }
+};
+
 class MemoryCache FINAL : public blink::WebThread::TaskObserver {
     WTF_MAKE_NONCOPYABLE(MemoryCache); WTF_MAKE_FAST_ALLOCATED;
 public:
     MemoryCache();
     virtual ~MemoryCache();
-
-    class MemoryCacheEntry {
-    public:
-        static PassOwnPtr<MemoryCacheEntry> create(Resource* resource) { return adoptPtr(new MemoryCacheEntry(resource)); }
-
-        ResourcePtr<Resource> m_resource;
-        bool m_inLiveDecodedResourcesList;
-        unsigned m_accessCount;
-        MemoryCacheLiveResourcePriority m_liveResourcePriority;
-        double m_lastDecodedAccessTime; // Used as a thrash guard
-
-        MemoryCacheEntry* m_previousInLiveResourcesList;
-        MemoryCacheEntry* m_nextInLiveResourcesList;
-        MemoryCacheEntry* m_previousInAllResourcesList;
-        MemoryCacheEntry* m_nextInAllResourcesList;
-
-    private:
-        MemoryCacheEntry(Resource* resource)
-            : m_resource(resource)
-            , m_inLiveDecodedResourcesList(false)
-            , m_accessCount(0)
-            , m_liveResourcePriority(MemoryCacheLiveResourcePriorityLow)
-            , m_lastDecodedAccessTime(0.0)
-            , m_previousInLiveResourcesList(0)
-            , m_nextInLiveResourcesList(0)
-            , m_previousInAllResourcesList(0)
-            , m_nextInAllResourcesList(0)
-        {
-        }
-    };
-
-    struct LRUList {
-        MemoryCacheEntry* m_head;
-        MemoryCacheEntry* m_tail;
-        LRUList() : m_head(0), m_tail(0) { }
-    };
 
     struct TypeStatistic {
         int count;
@@ -197,7 +203,7 @@ public:
     virtual void didProcessTask() OVERRIDE;
 
 private:
-    LRUList* lruListFor(unsigned accessCount, size_t);
+    MemoryCacheLRUList* lruListFor(unsigned accessCount, size_t);
 
 #ifdef MEMORY_CACHE_STATS
     void dumpStats(Timer<MemoryCache>*);
@@ -205,8 +211,8 @@ private:
 #endif
 
     // Calls to put the cached resource into and out of LRU lists.
-    void insertInLRUList(MemoryCacheEntry*, LRUList*);
-    void removeFromLRUList(MemoryCacheEntry*, LRUList*);
+    void insertInLRUList(MemoryCacheEntry*, MemoryCacheLRUList*);
+    void removeFromLRUList(MemoryCacheEntry*, MemoryCacheLRUList*);
 
     // Track decoded resources that are in the cache and referenced by a Web page.
     void insertInLiveDecodedResourcesList(MemoryCacheEntry*);
@@ -243,11 +249,11 @@ private:
     // Size-adjusted and popularity-aware LRU list collection for cache objects. This collection can hold
     // more resources than the cached resource map, since it can also hold "stale" multiple versions of objects that are
     // waiting to die when the clients referencing them go away.
-    Vector<LRUList, 32> m_allResources;
+    Vector<MemoryCacheLRUList, 32> m_allResources;
 
     // Lists just for live resources with decoded data. Access to this list is based off of painting the resource.
     // The lists are ordered by decode priority, with higher indices having higher priorities.
-    LRUList m_liveDecodedResources[MemoryCacheLiveResourcePriorityHigh + 1];
+    MemoryCacheLRUList m_liveDecodedResources[MemoryCacheLiveResourcePriorityHigh + 1];
 
     // A URL-based map of all resources that are in the cache (including the freshest version of objects that are currently being
     // referenced by a Web page).
