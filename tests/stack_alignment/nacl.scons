@@ -50,4 +50,4 @@ if asm_allowed and not env.Bit('nacl_glibc'):
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_stack_alignment_asm_test',
 # This test is flaky on mac10.7-newlib-dbg-asan.
 # See https://code.google.com/p/nativeclient/issues/detail?id=3906
-                         is_broken=(env.Bit('asan') and env.Bit('mac')))
+                         is_broken=(env.Bit('asan') and env.Bit('host_mac')))

@@ -50,7 +50,7 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_thread_test',
                                   env.Bit('nacl_glibc')) or
 # This test is flaky on mac10.7-newlib-dbg-asan.
 # See https://code.google.com/p/nativeclient/issues/detail?id=3906
-                                 (env.Bit('asan') and env.Bit('mac')))
+                                 (env.Bit('asan') and env.Bit('host_mac')))
 
 
 simple_thread_test_nexe = env.ComponentProgram(
@@ -78,7 +78,7 @@ node = env.CommandSelLdrTestNacl(
 env.AddNodeToTestSuite(node, ['small_tests', 'tsan_bot_tests'], 'run_race_test',
 # This test is flaky on mac10.7-newlib-dbg-asan.
 # See https://code.google.com/p/nativeclient/issues/detail?id=3906
-                       is_broken=(env.Bit('asan') and env.Bit('mac')))
+                       is_broken=(env.Bit('asan') and env.Bit('host_mac')))
 
 main_thread_pthread_exit_test_nexe = env.ComponentProgram(
     'main_thread_pthread_exit_test',
@@ -173,7 +173,7 @@ if not env.Bit('tests_use_irt'):
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_second_tls_test',
   # This test is flaky on mac10.7-newlib-dbg-asan.
   # See https://code.google.com/p/nativeclient/issues/detail?id=3906
-                         is_broken=(env.Bit('asan') and env.Bit('mac')))
+                         is_broken=(env.Bit('asan') and env.Bit('host_mac')))
 
 many_threads_sequential_nexe = env.ComponentProgram(
     'many_threads_sequential',
@@ -204,7 +204,7 @@ env.AddNodeToTestSuite(node,
                        is_broken = env.IsRunningUnderValgrind() or
 # This test is flaky on mac10.7-newlib-dbg-asan.
 # See https://code.google.com/p/nativeclient/issues/detail?id=3906
-                                   (env.Bit('asan') and env.Bit('mac')))
+                                   (env.Bit('asan') and env.Bit('host_mac')))
 
 mutex_leak_nexe = env.ComponentProgram('mutex_leak', ['mutex_leak.c'],
                                        EXTRA_LIBS=['${PTHREAD_LIBS}',
