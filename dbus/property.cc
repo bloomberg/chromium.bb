@@ -478,4 +478,19 @@ void Property<std::vector<uint8> >::AppendSetValueToWriter(
   writer->CloseContainer(&variant_writer);
 }
 
+template class Property<uint8>;
+template class Property<bool>;
+template class Property<int16>;
+template class Property<uint16>;
+template class Property<int32>;
+template class Property<uint32>;
+template class Property<int64>;
+template class Property<uint64>;
+template class Property<double>;
+template class Property<std::string>;
+template class Property<ObjectPath>;
+template class Property<std::vector<std::string> >;
+template class Property<std::vector<ObjectPath> >;
+template class Property<std::vector<uint8> >;
+
 }  // namespace dbus
