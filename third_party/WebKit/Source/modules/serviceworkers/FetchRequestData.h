@@ -36,7 +36,6 @@ public:
     enum Tainting { BasicTainting, CORSTainting, OpaqueTainting };
 
     class Referrer {
-        WTF_MAKE_NONCOPYABLE(Referrer);
     public:
         Referrer() : m_type(ClientReferrer) { }
         ~Referrer() { }
@@ -68,6 +67,7 @@ public:
     static PassRefPtrWillBeRawPtr<FetchRequestData> create(ExecutionContext*);
     static PassRefPtrWillBeRawPtr<FetchRequestData> create(const blink::WebServiceWorkerRequest&);
     PassRefPtrWillBeRawPtr<FetchRequestData> createRestrictedCopy(ExecutionContext*, PassRefPtr<SecurityOrigin>) const;
+    PassRefPtrWillBeRawPtr<FetchRequestData> createCopy() const;
     ~FetchRequestData();
 
     void setMethod(AtomicString method) { m_method = method; }

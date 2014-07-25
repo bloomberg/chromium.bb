@@ -39,6 +39,7 @@
 namespace blink {
 
 class CacheStorage;
+class Dictionary;
 class FetchManager;
 class Request;
 class ScriptPromise;
@@ -62,7 +63,9 @@ public:
     PassRefPtrWillBeRawPtr<CacheStorage> caches(ExecutionContext*);
 
     ScriptPromise fetch(ScriptState*, Request*);
+    ScriptPromise fetch(ScriptState*, Request*, const Dictionary&);
     ScriptPromise fetch(ScriptState*, const String&);
+    ScriptPromise fetch(ScriptState*, const String&, const Dictionary&);
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;

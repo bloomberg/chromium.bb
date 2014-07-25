@@ -33,7 +33,9 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ThrowException.h"
+#include "core/fetch/ResourceLoaderOptions.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "core/loader/ThreadableLoader.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/CachePolyfill.h"
@@ -48,7 +50,6 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebURL.h"
-#include "public/platform/WebURLRequest.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
@@ -95,20 +96,66 @@ PassRefPtrWillBeRawPtr<CacheStorage> ServiceWorkerGlobalScope::caches(ExecutionC
 
 ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, Request* request)
 {
-    OwnPtr<ResourceRequest> resourceRequest(request->createResourceRequest());
-    resourceRequest->setRequestContext(blink::WebURLRequest::RequestContextFetch);
-    return m_fetchManager->fetch(scriptState, resourceRequest.release());
+    if (!m_fetchManager)
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError("ServiceWorkerGlobalScope is shutting down.", scriptState->isolate()));
+    // "Let |r| be the associated request of the result of invoking the initial
+    // value of Request as constructor with |input| and |init| as arguments. If
+    // this throws an exception, reject |p| with it."
+    TrackExceptionState exceptionState;
+    RefPtr<Request> r = Request::create(this, request, exceptionState);
+    if (exceptionState.hadException()) {
+        // FIXME: We should throw the caught error.
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(exceptionState.message(), scriptState->isolate()));
+    }
+    return m_fetchManager->fetch(scriptState, r->request());
+}
+
+ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, Request* request, const Dictionary& requestInit)
+{
+    if (!m_fetchManager)
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError("ServiceWorkerGlobalScope is shutting down.", scriptState->isolate()));
+    // "Let |r| be the associated request of the result of invoking the initial
+    // value of Request as constructor with |input| and |init| as arguments. If
+    // this throws an exception, reject |p| with it."
+    TrackExceptionState exceptionState;
+    RefPtr<Request> r = Request::create(this, request, requestInit, exceptionState);
+    if (exceptionState.hadException()) {
+        // FIXME: We should throw the caught error.
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(exceptionState.message(), scriptState->isolate()));
+    }
+    return m_fetchManager->fetch(scriptState, r->request());
 }
 
 ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, const String& urlstring)
 {
-    KURL url = completeURL(urlstring);
-    if (!url.isValid())
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError("Invalid URL", scriptState->isolate()));
-    OwnPtr<ResourceRequest> resourceRequest = adoptPtr(new ResourceRequest(url));
-    resourceRequest->setRequestContext(blink::WebURLRequest::RequestContextFetch);
-    resourceRequest->setHTTPMethod("GET");
-    return m_fetchManager->fetch(scriptState, resourceRequest.release());
+    if (!m_fetchManager)
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError("ServiceWorkerGlobalScope is shutting down.", scriptState->isolate()));
+    // "Let |r| be the associated request of the result of invoking the initial
+    // value of Request as constructor with |input| and |init| as arguments. If
+    // this throws an exception, reject |p| with it."
+    TrackExceptionState exceptionState;
+    RefPtr<Request> r = Request::create(this, urlstring, exceptionState);
+    if (exceptionState.hadException()) {
+        // FIXME: We should throw the caught error.
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(exceptionState.message(), scriptState->isolate()));
+    }
+    return m_fetchManager->fetch(scriptState, r->request());
+}
+
+ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, const String& urlstring, const Dictionary& requestInit)
+{
+    if (!m_fetchManager)
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError("ServiceWorkerGlobalScope is shutting down.", scriptState->isolate()));
+    // "Let |r| be the associated request of the result of invoking the initial
+    // value of Request as constructor with |input| and |init| as arguments. If
+    // this throws an exception, reject |p| with it."
+    TrackExceptionState exceptionState;
+    RefPtr<Request> r = Request::create(this, urlstring, requestInit, exceptionState);
+    if (exceptionState.hadException()) {
+        // FIXME: We should throw the caught error.
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(exceptionState.message(), scriptState->isolate()));
+    }
+    return m_fetchManager->fetch(scriptState, r->request());
 }
 
 PassRefPtrWillBeRawPtr<ServiceWorkerClients> ServiceWorkerGlobalScope::clients()

@@ -1,0 +1,19 @@
+<script>
+function onMessage(event) {
+  var script = document.createElement('script');
+  script.src = event.data.url;
+  script.addEventListener(
+    'error',
+    function() { report({jsonpResult:'error'}); });
+  document.body.appendChild(script);
+}
+function report(data) {
+  window.parent.postMessage(
+    data,
+    'http://127.0.0.1:8000');
+}
+function onload() {
+  window.addEventListener('message', onMessage, false);
+}
+window.addEventListener('load', onload);
+</script>

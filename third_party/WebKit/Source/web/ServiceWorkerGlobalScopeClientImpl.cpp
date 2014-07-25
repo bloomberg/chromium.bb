@@ -80,6 +80,11 @@ void ServiceWorkerGlobalScopeClientImpl::didHandleFetchEvent(int fetchEventID, P
 
     WebServiceWorkerResponse webResponse;
     response->populateWebServiceWorkerResponse(webResponse);
+    if (webResponse.status() == 0) {
+        // The status code is 0 means a network error.
+        m_client.didHandleFetchEvent(fetchEventID);
+        return;
+    }
     m_client.didHandleFetchEvent(fetchEventID, webResponse);
 }
 

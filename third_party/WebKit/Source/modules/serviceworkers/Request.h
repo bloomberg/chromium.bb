@@ -46,8 +46,6 @@ public:
     String mode() const;
     String credentials() const;
 
-    PassOwnPtr<ResourceRequest> createResourceRequest() const;
-
     void trace(Visitor*);
 
 private:

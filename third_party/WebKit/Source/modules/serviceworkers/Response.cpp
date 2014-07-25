@@ -153,6 +153,8 @@ PassRefPtrWillBeRawPtr<Headers> Response::headers() const
 
 PassRefPtrWillBeRawPtr<FetchBodyStream> Response::body(ExecutionContext* context)
 {
+    if (!m_response->blobDataHandle())
+        return nullptr;
     if (!m_fetchBodyStream)
         m_fetchBodyStream = FetchBodyStream::create(context, m_response->blobDataHandle());
     return m_fetchBodyStream;

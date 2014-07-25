@@ -121,6 +121,15 @@ void FetchHeaderList::clearList()
     m_headerList.clear();
 }
 
+bool FetchHeaderList::containsNonSimpleHeader() const
+{
+    for (size_t i = 0; i < m_headerList.size(); ++i) {
+        if (!isSimpleHeader(m_headerList[i]->first, m_headerList[i]->second))
+            return true;
+    }
+    return false;
+}
+
 bool FetchHeaderList::isValidHeaderName(const String& name)
 {
     // "A name is a case-insensitive byte sequence that matches the field-name

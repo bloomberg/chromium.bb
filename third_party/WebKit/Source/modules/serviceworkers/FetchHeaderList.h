@@ -37,6 +37,8 @@ public:
     bool has(const String&) const;
     void clearList();
 
+    bool containsNonSimpleHeader() const;
+
     const Vector<OwnPtr<Header> >& list() const { return m_headerList; }
 
     static bool isValidHeaderName(const String&);

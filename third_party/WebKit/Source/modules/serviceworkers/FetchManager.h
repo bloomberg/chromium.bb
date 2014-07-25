@@ -12,6 +12,7 @@
 namespace blink {
 
 class ExecutionContext;
+class FetchRequestData;
 class ScriptState;
 class ResourceRequest;
 
@@ -19,7 +20,7 @@ class FetchManager {
 public:
     FetchManager(ExecutionContext*);
     ~FetchManager();
-    ScriptPromise fetch(ScriptState*, PassOwnPtr<ResourceRequest>);
+    ScriptPromise fetch(ScriptState*, PassRefPtr<FetchRequestData>);
 
     static bool isSimpleMethod(const String&);
     static bool isForbiddenMethod(const String&);

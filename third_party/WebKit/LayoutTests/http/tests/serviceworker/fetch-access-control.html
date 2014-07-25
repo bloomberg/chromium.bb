@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<title>Service Worker: fetch()</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.js"></script>
+<body>
+<script>
+var SCOPE = 'resources/fetch-access-control-iframe.html';
+var BASE_URL = 'http://127.0.0.1:8000/serviceworker/resources/fetch-access-control.php?';
+var OTHER_BASE_URL = 'http://localhost:8000/serviceworker/resources/fetch-access-control.php?';
+var REDIRECT_URL = 'http://127.0.0.1:8000/serviceworker/resources/redirect.php?Redirect=';
+var IFRAME_URL = 'http://127.0.0.1:8000/serviceworker/resources/fetch-access-control-iframe.html';
+var WORKER_URL = 'http://127.0.0.1:8000/serviceworker/resources/fetch-access-control-worker.js';
+var IFRAME_ORIGIN = 'http://127.0.0.1:8000';
+
+// Functions to check the result from the ServiceWorker.
+var checkFetchResult = function (expected, url, data) {
+  assert_equals(data.fetchResult, expected, url + ' should be ' + expected);
+};
+var checkFetchResponseBody = function (hasBody, url, data) {
+  assert_equals(data.fetchResult,
+                'resolved',
+                'fetchResult must be resolved. url: ' + url);
+  assert_equals(data.hasBody,
+                hasBody,
+                'hasBody must match. url: ' + url);
+};
+var checkFetchResponseHeader = function (name, expected, url, data) {
+  assert_equals(data.fetchResult,
+                'resolved',
+                'fetchResult must be resolved. url: ' + url);
+  var exist = false;
+  for (var i = 0; i < data.headers.length; ++i) {
+    if (data.headers[i][0] === name) {
+      exist = true;
+    }
+  }
+  assert_equals(exist,
+                expected,
+                'header check failed url: ' + url + ' name: ' + name);
+};
+var checkFetchResponseType = function (type, url, data) {
+  assert_equals(data.fetchResult,
+                'resolved',
+                'fetchResult must be resolved. url = ' + url);
+  assert_equals(data.type,
+                type,
+                'type must match. url: ' + url);
+};
+var fetchIgnored = checkFetchResult.bind(this, 'ignored');
+var fetchResolved = checkFetchResult.bind(this, 'resolved');
+var fetchRejected = checkFetchResult.bind(this, 'rejected');
+var fetchError = checkFetchResult.bind(this, 'error');
+var hasBody = checkFetchResponseBody.bind(this, true);
+var noBody = checkFetchResponseBody.bind(this, false);
+var hasContentLength =
+    checkFetchResponseHeader.bind(this, 'content-length', true);
+var noContentLength =
+    checkFetchResponseHeader.bind(this, 'content-length', false);
+var hasServerHeader =
+    checkFetchResponseHeader.bind(this, 'x-serviceworker-serverheader', true);
+var noServerHeader =
+    checkFetchResponseHeader.bind(this, 'x-serviceworker-serverheader', false);
+var typeBasic = checkFetchResponseType.bind(this, 'basic');
+var typeCors = checkFetchResponseType.bind(this, 'cors');
+var typeOpaque = checkFetchResponseType.bind(this, 'opaque');
+
+// Functions to check the result of JSONP which is evaluated in
+// fetch-access-control-iframe.html by appending <script> element.
+var checkJsonpResult = function (expected, url, data) {
+  assert_equals(data.jsonpResult,
+                expected,
+                url + ' jsonpResult should match');
+};
+var checkJsonpHeader = function (name, value, url, data) {
+  assert_equals(data.jsonpResult,
+                'success',
+                url + ' jsonpResult must be success');
+  assert_equals(data.headers[name],
+                value,
+                'Request header check failed url:' + url + ' name:' + name);
+};
+var checkJsonpMethod = function (method, url, data) {
+  assert_equals(data.jsonpResult,
+                'success',
+                url + ' jsonpResult must be success');
+  assert_equals(data.method,
+                method,
+                'Method must match url:' + url);
+};
+var checkJsonpAuth = function (username, password, url, data) {
+  assert_equals(data.jsonpResult,
+                'success',
+                url + ' jsonpResult must be success');
+  assert_equals(data.username,
+                username,
+                'Username must match. url: ' + url);
+  assert_equals(data.password,
+                password,
+                'Password must match. url: ' + url);
+};
+var checkJsonpError = checkJsonpResult.bind(this, 'error');
+var checkJsonpSuccess = checkJsonpResult.bind(this, 'success');
+var hasCustomHeader =
+    checkJsonpHeader.bind(this, 'x-serviceworker-test', 'test');
+var noCustomHeader =
+    checkJsonpHeader.bind(this, 'x-serviceworker-test', undefined);
+var methodIsGET = checkJsonpMethod.bind(this, 'GET');
+var methodIsPOST = checkJsonpMethod.bind(this, 'POST');
+var methodIsPUT = checkJsonpMethod.bind(this, 'PUT');
+var methodIsXXX = checkJsonpMethod.bind(this, 'XXX');
+var authCheck1 = checkJsonpAuth.bind(this, 'username1', 'password1');
+var authCheck2 = checkJsonpAuth.bind(this, 'username2', 'password2');
+
+var TEST_TARGETS = [
+  [BASE_URL + 'method=GET',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsGET]],
+  [BASE_URL + 'method=GET&headers={}',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsGET]],
+  [BASE_URL + 'method=GET&headers=CUSTOM',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsGET, noCustomHeader]],
+  [BASE_URL + 'method=POST&headers=CUSTOM',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsPOST, noCustomHeader]],
+  [BASE_URL + 'method=PUT',
+   [fetchError]],
+  [BASE_URL + 'method=XXX',
+   [fetchError]],
+
+  [BASE_URL + 'mode=same-origin&method=GET',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsGET]],
+  [BASE_URL + 'mode=same-origin&method=GET&headers={}',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsGET]],
+  [BASE_URL + 'mode=same-origin&method=GET&headers=CUSTOM',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsGET, hasCustomHeader]],
+  [BASE_URL + 'mode=same-origin&method=POST&headers=CUSTOM',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsPOST, hasCustomHeader]],
+  [BASE_URL + 'mode=same-origin&method=PUT&headers=CUSTOM',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsPUT, hasCustomHeader]],
+  [BASE_URL + 'mode=same-origin&method=XXX&headers=CUSTOM',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsXXX, hasCustomHeader]],
+
+  [BASE_URL + 'mode=no-cors&method=GET',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsGET]],
+  [BASE_URL + 'mode=no-cors&method=GET&headers={}',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsGET]],
+  [BASE_URL + 'mode=no-cors&method=GET&headers=CUSTOM',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsGET, noCustomHeader]],
+  [BASE_URL + 'mode=no-cors&method=POST&headers=CUSTOM',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsPOST, noCustomHeader]],
+  [BASE_URL + 'mode=no-cors&method=PUT',
+   [fetchError]],
+  [BASE_URL + 'mode=no-cors&method=XXX',
+   [fetchError]],
+
+  [BASE_URL + 'mode=cors&method=GET',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsGET]],
+  [BASE_URL + 'mode=cors&method=GET&headers={}',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsGET]],
+  [BASE_URL + 'mode=cors&method=GET&headers=CUSTOM',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsGET, hasCustomHeader]],
+  [BASE_URL + 'mode=cors&method=POST&headers=CUSTOM',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsPOST, hasCustomHeader]],
+  [BASE_URL + 'mode=cors&method=PUT&headers=CUSTOM',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsPUT, hasCustomHeader]],
+  [BASE_URL + 'mode=cors&method=XXX&headers=CUSTOM',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
+   [methodIsXXX, hasCustomHeader]],
+
+  // CORS test
+  [OTHER_BASE_URL + 'method=GET&headers=CUSTOM',
+   [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
+   [methodIsGET, noCustomHeader]],
+  [OTHER_BASE_URL + 'method=POST&headers=CUSTOM',
+   [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
+   [methodIsPOST, noCustomHeader]],
+  [OTHER_BASE_URL + 'method=PUT&headers=CUSTOM',
+   [fetchError]],
+  [OTHER_BASE_URL + 'method=XXX&headers=CUSTOM',
+   [fetchError]],
+
+  [OTHER_BASE_URL + 'mode=same-origin&method=GET', [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=same-origin&method=POST', [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=same-origin&method=PUT', [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=same-origin&method=XXX', [fetchRejected]],
+
+  [OTHER_BASE_URL + 'mode=no-cors&method=GET&headers=CUSTOM',
+   [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
+   [methodIsGET, noCustomHeader]],
+  [OTHER_BASE_URL + 'mode=no-cors&method=POST&headers=CUSTOM',
+   [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
+   [methodIsPOST, noCustomHeader]],
+  [OTHER_BASE_URL + 'mode=no-cors&method=PUT&headers=CUSTOM',
+   [fetchError]],
+  [OTHER_BASE_URL + 'mode=no-cors&method=XXX&headers=CUSTOM',
+   [fetchError]],
+
+  [OTHER_BASE_URL + 'mode=cors&method=GET',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=GET&ACAOrigin=*',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET]],
+  [OTHER_BASE_URL + 'mode=cors&method=GET&ACAOrigin=http://127.0.0.1:8000',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET]],
+  [OTHER_BASE_URL + 'mode=cors&method=GET&ACAOrigin=http://127.0.0.1:8000,http://www.example.com',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=GET&ACAOrigin=http://www.example.com',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=GET&ACAOrigin=*&ACEHeaders=X-ServiceWorker-ServerHeader',
+   [fetchResolved, noContentLength, hasServerHeader, hasBody, typeCors],
+   [methodIsGET]],
+  [OTHER_BASE_URL + 'mode=cors&method=GET&ACAOrigin=http://127.0.0.1:8000&ACEHeaders=X-ServiceWorker-ServerHeader',
+   [fetchResolved, noContentLength, hasServerHeader, hasBody, typeCors],
+   [methodIsGET]],
+  [OTHER_BASE_URL + 'mode=cors&method=GET&ACAOrigin=*&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
+   [methodIsGET]],
+  [OTHER_BASE_URL + 'mode=cors&method=GET&ACAOrigin=http://127.0.0.1:8000&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
+   [methodIsGET]],
+  [OTHER_BASE_URL + 'mode=cors&method=GET&headers=CUSTOM',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=GET&headers=CUSTOM&ACAOrigin=*',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=GET&headers=CUSTOM&ACAOrigin=http://127.0.0.1:8000',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=GET&headers=CUSTOM&ACAOrigin=*&ACAHeaders=x-serviceworker-test',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET, hasCustomHeader]],
+  [OTHER_BASE_URL + 'mode=cors&method=GET&headers=CUSTOM&ACAOrigin=http://127.0.0.1:8000&ACAHeaders=x-serviceworker-test',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET, hasCustomHeader]],
+  [OTHER_BASE_URL + 'mode=cors&method=GET&headers=CUSTOM&ACAOrigin=*&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
+   [methodIsGET, hasCustomHeader]],
+  [OTHER_BASE_URL + 'mode=cors&method=GET&headers=CUSTOM&ACAOrigin=http://127.0.0.1:8000&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
+   [methodIsGET, hasCustomHeader]],
+
+  [OTHER_BASE_URL + 'mode=cors&method=POST',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=POST&ACAOrigin=*',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsPOST]],
+  [OTHER_BASE_URL + 'mode=cors&method=POST&ACAOrigin=http://127.0.0.1:8000',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsPOST]],
+  [OTHER_BASE_URL + 'mode=cors&method=POST&ACAOrigin=http://127.0.0.1:8000,http://www.example.com',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=POST&ACAOrigin=http://www.example.com',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=POST&ACAOrigin=*&ACEHeaders=X-ServiceWorker-ServerHeader',
+   [fetchResolved, noContentLength, hasServerHeader, hasBody, typeCors],
+   [methodIsPOST]],
+  [OTHER_BASE_URL + 'mode=cors&method=POST&ACAOrigin=http://127.0.0.1:8000&ACEHeaders=X-ServiceWorker-ServerHeader',
+   [fetchResolved, noContentLength, hasServerHeader, hasBody, typeCors],
+   [methodIsPOST]],
+  [OTHER_BASE_URL + 'mode=cors&method=POST&ACAOrigin=*&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
+   [methodIsPOST]],
+  [OTHER_BASE_URL + 'mode=cors&method=POST&ACAOrigin=http://127.0.0.1:8000&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
+   [methodIsPOST]],
+  [OTHER_BASE_URL + 'mode=cors&method=POST&headers=CUSTOM',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=POST&headers=CUSTOM&ACAOrigin=*',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=POST&headers=CUSTOM&ACAOrigin=*&ACAHeaders=x-serviceworker-test',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsPOST, hasCustomHeader]],
+  [OTHER_BASE_URL + 'mode=cors&method=POST&headers=CUSTOM&ACAOrigin=*&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
+   [methodIsPOST, hasCustomHeader]],
+  [OTHER_BASE_URL + 'mode=cors&method=POST&headers=CUSTOM&ACAOrigin=http://127.0.0.1:8000',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=POST&headers=CUSTOM&ACAOrigin=http://127.0.0.1:8000&ACAHeaders=x-serviceworker-test',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsPOST, hasCustomHeader]],
+  [OTHER_BASE_URL + 'mode=cors&method=POST&headers=CUSTOM&ACAOrigin=http://127.0.0.1:8000&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
+   [methodIsPOST, hasCustomHeader]],
+
+  [OTHER_BASE_URL + 'mode=cors&method=PUT',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAMethods=PUT',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=*',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=*&ACAMethods=PUT',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsPUT]],
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=*&headers=CUSTOM&ACAMethods=PUT',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=*&headers=CUSTOM&ACAMethods=PUT&ACAHeaders=x-serviceworker-test',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsPUT, hasCustomHeader]],
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=*&headers=CUSTOM&ACAMethods=PUT&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
+   [methodIsPUT, hasCustomHeader]],
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=*&headers=CUSTOM&ACAMethods=PUT, XXX',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=*&headers=CUSTOM&ACAMethods=PUT, XXX&ACAHeaders=x-serviceworker-test',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsPUT, hasCustomHeader]],
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=*&headers=CUSTOM&ACAMethods=PUT, XXX&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
+   [methodIsPUT, hasCustomHeader]],
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=http://127.0.0.1:8000',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=http://127.0.0.1:8000&ACAMethods=PUT',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsPUT]],
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=PUT',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=PUT&ACAHeaders=x-serviceworker-test',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsPUT, hasCustomHeader]],
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=PUT&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
+   [methodIsPUT, hasCustomHeader]],
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=PUT, XXX',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=PUT, XXX&ACAHeaders=x-serviceworker-test',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsPUT, hasCustomHeader]],
+  [OTHER_BASE_URL + 'mode=cors&method=PUT&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=PUT, XXX&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
+   [methodIsPUT, hasCustomHeader]],
+
+  [OTHER_BASE_URL + 'mode=cors&method=XXX',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAMethods=XXX',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=*',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=*&ACAMethods=XXX',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsXXX]],
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=*&headers=CUSTOM&ACAMethods=XXX',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=*&headers=CUSTOM&ACAMethods=XXX&ACAHeaders=x-serviceworker-test',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsXXX, hasCustomHeader]],
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=*&headers=CUSTOM&ACAMethods=XXX&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
+   [methodIsXXX, hasCustomHeader]],
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=*&headers=CUSTOM&ACAMethods=PUT, XXX',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=*&headers=CUSTOM&ACAMethods=PUT, XXX&ACAHeaders=x-serviceworker-test',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsXXX, hasCustomHeader]],
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=*&headers=CUSTOM&ACAMethods=PUT, XXX&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
+   [methodIsXXX, hasCustomHeader]],
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=http://127.0.0.1:8000',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=http://127.0.0.1:8000&ACAMethods=XXX',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsXXX]],
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=XXX',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=XXX&ACAHeaders=x-serviceworker-test',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsXXX, hasCustomHeader]],
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=XXX&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
+   [methodIsXXX, hasCustomHeader]],
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=PUT, XXX',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=PUT, XXX&ACAHeaders=x-serviceworker-test',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsXXX, hasCustomHeader]],
+  [OTHER_BASE_URL + 'mode=cors&method=XXX&ACAOrigin=http://127.0.0.1:8000&headers=CUSTOM&ACAMethods=PUT, XXX&ACAHeaders=x-serviceworker-test&ACEHeaders=Content-Length, X-ServiceWorker-ServerHeader',
+   [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeCors],
+   [methodIsXXX, hasCustomHeader]],
+
+  // Referer check
+  [BASE_URL + 'ignore=true',
+   [fetchIgnored],
+   [checkJsonpHeader.bind(this, 'Referer', IFRAME_URL)]],
+  [BASE_URL + 'noChange=true',
+   [fetchResolved],
+   [checkJsonpHeader.bind(this, 'Referer', WORKER_URL)]],
+  [BASE_URL ,
+   [fetchResolved],
+   [checkJsonpHeader.bind(this, 'Referer', WORKER_URL)]],
+
+  // Auth check
+  [BASE_URL + 'Auth',
+   [fetchResolved, hasBody], [checkJsonpError]],
+  [BASE_URL + 'Auth&credentials=omit',
+   [fetchResolved, hasBody], [checkJsonpError]],
+  [BASE_URL + 'Auth&credentials=include',
+   [fetchResolved, hasBody], [authCheck1]],
+  [BASE_URL + 'Auth&credentials=same-origin',
+   [fetchResolved, hasBody], [authCheck1]],
+
+  [BASE_URL + 'Auth&mode=no-cors&credentials=omit',
+   [fetchResolved, hasBody], [checkJsonpError]],
+  [BASE_URL + 'Auth&mode=no-cors&credentials=include',
+   [fetchResolved, hasBody], [authCheck1]],
+  [BASE_URL + 'Auth&mode=no-cors&credentials=same-origin',
+   [fetchResolved, hasBody], [authCheck1]],
+
+  [BASE_URL + 'Auth&mode=same-origin&credentials=omit',
+   [fetchResolved, hasBody], [checkJsonpError]],
+  [BASE_URL + 'Auth&mode=same-origin&credentials=include',
+   [fetchResolved, hasBody], [authCheck1]],
+  [BASE_URL + 'Auth&mode=same-origin&credentials=same-origin',
+   [fetchResolved, hasBody], [authCheck1]],
+
+  [BASE_URL + 'Auth&mode=cors&credentials=omit',
+   [fetchResolved, hasBody], [checkJsonpError]],
+  [BASE_URL + 'Auth&mode=cors&credentials=include',
+   [fetchResolved, hasBody], [authCheck1]],
+  [BASE_URL + 'Auth&mode=cors&credentials=same-origin',
+   [fetchResolved, hasBody], [authCheck1]],
+
+  [OTHER_BASE_URL + 'Auth',
+   [fetchResolved, noBody], [checkJsonpError]],
+  [OTHER_BASE_URL + 'Auth&credentials=omit',
+   [fetchResolved, noBody], [checkJsonpError]],
+  [OTHER_BASE_URL + 'Auth&credentials=include',
+   [fetchResolved, noBody], [authCheck2]],
+  [OTHER_BASE_URL + 'Auth&credentials=same-origin',
+   [fetchResolved, noBody], [authCheck2]],
+
+  [OTHER_BASE_URL + 'Auth&mode=no-cors&credentials=omit',
+   [fetchResolved, noBody], [checkJsonpError]],
+  [OTHER_BASE_URL + 'Auth&mode=no-cors&credentials=include',
+   [fetchResolved, noBody], [authCheck2]],
+  [OTHER_BASE_URL + 'Auth&mode=no-cors&credentials=same-origin',
+   [fetchResolved, noBody], [authCheck2]],
+
+  [OTHER_BASE_URL + 'Auth&mode=same-origin&credentials=omit',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'Auth&mode=same-origin&credentials=include',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'Auth&mode=same-origin&credentials=same-origin',
+   [fetchRejected]],
+
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=omit',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=same-origin',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=*',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=*&ACACredentials=true',
+   [fetchRejected]],
+  [OTHER_BASE_URL + 'Auth&mode=cors&credentials=include&ACAOrigin=http://127.0.0.1:8000&ACACredentials=true',
+   [fetchResolved, hasBody], [authCheck2]],
+
+  // Redirect
+  // FIXME: Currently we don't support redirect in Fech() API.
+  [REDIRECT_URL + encodeURIComponent(BASE_URL),
+   [fetchRejected]],
+  [REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL),
+   [fetchRejected]]
+];
+
+function login(test, origin, username, password) {
+  return new Promise(function(resolve, reject) {
+      with_iframe(
+        origin +
+        '/serviceworker/resources/fetch-access-control-login.html')
+        .then(test.step_func(function(frame) {
+            var channel = new MessageChannel();
+            channel.port1.onmessage = test.step_func(function() {
+                resolve();
+              });
+            frame.contentWindow.postMessage(
+              {username: username, password: password},
+              [channel.port2], origin);
+          }));
+    });
+}
+  
+var test = async_test('Verify access control of fetch() in a Service Worker');
+test.step(function() {
+    var login1 = login(test, 'http://127.0.0.1:8000', 'username1', 'password1');
+    var login2 = login(test, 'http://localhost:8000', 'username2', 'password2');
+    var workerScript = 'resources/fetch-access-control-worker.js';
+    var worker = undefined;
+    var frameWindow = {};
+    var counter = 0;
+    window.addEventListener('message', test.step_func(onMessage), false);
+
+    Promise.all([login1, login2])
+      .then(function() {
+          return service_worker_unregister_and_register(test,
+                                                        workerScript,
+                                                        SCOPE);
+        })
+      .then(function(sw) {
+          worker = sw;
+          var messageChannel = new MessageChannel();
+          messageChannel.port1.onmessage = test.step_func(onWorkerMessage);
+          sw.postMessage(
+            {port: messageChannel.port2}, [messageChannel.port2]);
+          return wait_for_state(test, sw, 'activated');
+        })
+      .then(function() { return with_iframe(SCOPE); })
+      .then(function(frame) {
+          frameWindow = frame.contentWindow;
+          // Start tests.
+          loadNext();
+        })
+      .catch(unreached_rejection(test));
+
+    var readyFromWorkerReceived = undefined;
+    var resultFromWorkerReceived = undefined;
+    var resultFromIframeReceived = undefined;
+
+    function onMessage(e) {
+      // The message is sent from fetch-access-control-iframe.html in report()
+      // which is called by appending <script> element which source code is
+      // generated by fetch-access-control.php.
+      if (TEST_TARGETS[counter][2]) {
+        TEST_TARGETS[counter][2].forEach(function(checkFunc) {
+            checkFunc.call(this,
+                           TEST_TARGETS[counter][0],
+                           e.data);
+          });
+      }
+      resultFromIframeReceived();
+    }
+
+    function onWorkerMessage(e) {
+      // The message is sent from the ServiceWorker.
+      var message = e.data;
+      if (message.msg === 'READY') {
+        readyFromWorkerReceived();
+        return;
+      }
+      TEST_TARGETS[counter][1].forEach(function(checkFunc) {
+          checkFunc.call(this,
+                         TEST_TARGETS[counter][0],
+                         message);
+        });
+      resultFromWorkerReceived();
+    }
+
+    function loadNext() {
+      var workerPromise = new Promise(function(resolve, reject) {
+          resultFromWorkerReceived = resolve;
+        });
+      var iframePromise = new Promise(function(resolve, reject) {
+          resultFromIframeReceived = resolve;
+        });
+      Promise.all([workerPromise, iframePromise])
+        .then(test.step_func(function() {
+            ++counter;
+            if (counter === TEST_TARGETS.length) {
+              service_worker_unregister_and_done(test, SCOPE);
+            } else {
+              loadNext();
+            }
+          }));
+      (new Promise(function(resolve, reject) {
+          readyFromWorkerReceived = resolve;
+          worker.postMessage({msg: 'START TEST CASE'});
+        }))
+        .then(test.step_func(function() {
+          frameWindow.postMessage(
+            {url: TEST_TARGETS[counter][0]},
+            IFRAME_ORIGIN);
+          }));
+    }
+});
+</script>
+</body>

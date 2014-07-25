@@ -186,6 +186,14 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
     ASSERT_UNUSED(resource, resource == this->resource());
 
     RefPtr<DocumentThreadableLoader> protect(this);
+
+    // FIXME: Support redirect in Fetch API.
+    if (resource->resourceRequest().requestContext() == blink::WebURLRequest::RequestContextFetch) {
+        m_client->didFailRedirectCheck();
+        request = ResourceRequest();
+        return;
+    }
+
     if (!isAllowedByPolicy(request.url())) {
         m_client->didFailRedirectCheck();
         request = ResourceRequest();
@@ -322,9 +330,27 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
         return;
     }
 
-    // FIXME: When response.wasFetchedViaServiceWorker() is true, we need to check the URL of the response for CSP and CORS.
-
-    if (!m_sameOriginRequest && m_options.crossOriginRequestPolicy == UseAccessControl) {
+    // If the response is fetched via ServiceWorker, the original URL of the response could be different from the URL of the request.
+    bool isCrossOriginResponse = false;
+    if (response.wasFetchedViaServiceWorker()) {
+        if (!isAllowedByPolicy(response.url())) {
+            m_client->didFailRedirectCheck();
+            return;
+        }
+        isCrossOriginResponse = !securityOrigin()->canRequest(response.url());
+        if (m_options.crossOriginRequestPolicy == DenyCrossOriginRequests && isCrossOriginResponse) {
+            m_client->didFail(ResourceError(errorDomainBlinkInternal, 0, response.url().string(), "Cross origin requests are not supported."));
+            return;
+        }
+        if (isCrossOriginResponse && m_resourceLoaderOptions.credentialsRequested == ClientDidNotRequestCredentials) {
+            // Since the request is no longer same-origin, if the user didn't request credentials in
+            // the first place, update our state so we neither request them nor expect they must be allowed.
+            m_forceDoNotAllowStoredCredentials = true;
+        }
+    } else {
+        isCrossOriginResponse = !m_sameOriginRequest;
+    }
+    if (isCrossOriginResponse && m_options.crossOriginRequestPolicy == UseAccessControl) {
         String accessControlErrorDescription;
         if (!passesAccessControlCheck(response, effectiveAllowCredentials(), securityOrigin(), accessControlErrorDescription)) {
             m_client->didFailAccessControlCheck(ResourceError(errorDomainBlinkInternal, 0, response.url().string(), accessControlErrorDescription));

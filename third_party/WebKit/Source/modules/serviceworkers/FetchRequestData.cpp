@@ -67,6 +67,24 @@ PassRefPtrWillBeRawPtr<FetchRequestData> FetchRequestData::createRestrictedCopy(
     return request.release();
 }
 
+PassRefPtrWillBeRawPtr<FetchRequestData> FetchRequestData::createCopy() const
+{
+    RefPtrWillBeRawPtr<FetchRequestData> request = FetchRequestData::create();
+    request->m_url = m_url;
+    request->m_method = m_method;
+    request->m_headerList = m_headerList->createCopy();
+    request->m_unsafeRequestFlag = m_unsafeRequestFlag;
+    // FIXME: Support body.
+    request->m_origin = m_origin;
+    request->m_sameOriginDataURLFlag = m_sameOriginDataURLFlag;
+    request->m_context = m_context;
+    request->m_referrer = m_referrer;
+    request->m_mode = m_mode;
+    request->m_credentials = m_credentials;
+    request->m_responseTainting = m_responseTainting;
+    return request.release();
+}
+
 FetchRequestData::~FetchRequestData()
 {
 }

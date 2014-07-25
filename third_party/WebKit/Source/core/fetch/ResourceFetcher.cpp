@@ -1320,7 +1320,14 @@ void ResourceFetcher::willSendRequest(unsigned long identifier, ResourceRequest&
 
 void ResourceFetcher::didReceiveResponse(const Resource* resource, const ResourceResponse& response)
 {
-    // FIXME: When response.wasFetchedViaServiceWorker() is true, we need to check the URL of the responce for CSP and CORS.
+    // If the response is fetched via ServiceWorker, the original URL of the response could be different from the URL of the request.
+    if (response.wasFetchedViaServiceWorker()) {
+        if (!canRequest(resource->type(), response.url(), resource->options(), false, FetchRequest::UseDefaultOriginRestrictionForType)) {
+            resource->loader()->cancel();
+            context().dispatchDidFail(m_documentLoader, resource->identifier(), ResourceError(errorDomainBlinkInternal, 0, response.url().string(), "Unsafe attempt to load URL " + response.url().elidedString() + " fetched by a ServiceWorker."));
+            return;
+        }
+    }
     context().dispatchDidReceiveResponse(m_documentLoader, resource->identifier(), response, resource->loader());
 }
 
