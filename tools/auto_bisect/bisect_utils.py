@@ -495,6 +495,38 @@ def CheckIfBisectDepotExists(opts):
   return os.path.exists(path_to_dir)
 
 
+def CheckRunGit(command, cwd=None):
+  """Run a git subcommand, returning its output and return code. Asserts if
+  the return code of the call is non-zero.
+
+  Args:
+    command: A list containing the args to git.
+
+  Returns:
+    A tuple of the output and return code.
+  """
+  (output, return_code) = RunGit(command, cwd=cwd)
+
+  assert not return_code, 'An error occurred while running'\
+                          ' "git %s"' % ' '.join(command)
+  return output
+
+
+def RunGit(command, cwd=None):
+  """Run a git subcommand, returning its output and return code.
+
+  Args:
+    command: A list containing the args to git.
+    cwd: A directory to change to while running the git command (optional).
+
+  Returns:
+    A tuple of the output and return code.
+  """
+  command = ['git'] + command
+
+  return RunProcessAndRetrieveOutput(command, cwd=cwd)
+
+
 def CreateBisectDirectoryAndSetupDepot(opts, custom_deps):
   """Sets up a subdirectory 'bisect' and then retrieves a copy of the depot
   there using gclient.
@@ -508,3 +540,126 @@ def CreateBisectDirectoryAndSetupDepot(opts, custom_deps):
 
   if not SetupGitDepot(opts, custom_deps):
     raise RuntimeError('Failed to grab source.')
+
+
+def RunProcess(command):
+  """Runs an arbitrary command.
+
+  If output from the call is needed, use RunProcessAndRetrieveOutput instead.
+
+  Args:
+    command: A list containing the command and args to execute.
+
+  Returns:
+    The return code of the call.
+  """
+  # On Windows, use shell=True to get PATH interpretation.
+  shell = IsWindowsHost()
+  return subprocess.call(command, shell=shell)
+
+
+def RunProcessAndRetrieveOutput(command, cwd=None):
+  """Runs an arbitrary command, returning its output and return code.
+
+  Since output is collected via communicate(), there will be no output until
+  the call terminates. If you need output while the program runs (ie. so
+  that the buildbot doesn't terminate the script), consider RunProcess().
+
+  Args:
+    command: A list containing the command and args to execute.
+    cwd: A directory to change to while running the command. The command can be
+        relative to this directory. If this is None, the command will be run in
+        the current directory.
+
+  Returns:
+    A tuple of the output and return code.
+  """
+  if cwd:
+    original_cwd = os.getcwd()
+    os.chdir(cwd)
+
+  # On Windows, use shell=True to get PATH interpretation.
+  shell = IsWindowsHost()
+  proc = subprocess.Popen(command, shell=shell, stdout=subprocess.PIPE)
+  (output, _) = proc.communicate()
+
+  if cwd:
+    os.chdir(original_cwd)
+
+  return (output, proc.returncode)
+
+
+def IsStringInt(string_to_check):
+  """Checks whether or not the given string can be converted to a integer.
+
+  Args:
+    string_to_check: Input string to check if it can be converted to an int.
+
+  Returns:
+    True if the string can be converted to an int.
+  """
+  try:
+    int(string_to_check)
+    return True
+  except ValueError:
+    return False
+
+
+def IsStringFloat(string_to_check):
+  """Checks whether or not the given string can be converted to a floating
+  point number.
+
+  Args:
+    string_to_check: Input string to check if it can be converted to a float.
+
+  Returns:
+    True if the string can be converted to a float.
+  """
+  try:
+    float(string_to_check)
+    return True
+  except ValueError:
+    return False
+
+
+def IsWindowsHost():
+  """Checks whether or not the script is running on Windows.
+
+  Returns:
+    True if running on Windows.
+  """
+  return sys.platform == 'cygwin' or sys.platform.startswith('win')
+
+
+def Is64BitWindows():
+  """Returns whether or not Windows is a 64-bit version.
+
+  Returns:
+    True if Windows is 64-bit, False if 32-bit.
+  """
+  platform = os.environ['PROCESSOR_ARCHITECTURE']
+  try:
+    platform = os.environ['PROCESSOR_ARCHITEW6432']
+  except KeyError:
+    # Must not be running in WoW64, so PROCESSOR_ARCHITECTURE is correct
+    pass
+
+  return platform in ['AMD64', 'I64']
+
+
+def IsLinuxHost():
+  """Checks whether or not the script is running on Linux.
+
+  Returns:
+    True if running on Linux.
+  """
+  return sys.platform.startswith('linux')
+
+
+def IsMacHost():
+  """Checks whether or not the script is running on Mac.
+
+  Returns:
+    True if running on Mac.
+  """
+  return sys.platform.startswith('darwin')

@@ -46,7 +46,6 @@ import re
 import shlex
 import shutil
 import StringIO
-import subprocess
 import sys
 import time
 import zipfile
@@ -55,6 +54,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'telemetry'))
 
 from auto_bisect import bisect_utils
 from auto_bisect import post_perf_builder_job as bisect_builder
+from auto_bisect import source_control as source_control_module
 from telemetry.util import cloud_storage
 
 # The additional repositories that might need to be bisected.
@@ -143,8 +143,8 @@ DEPOT_DEPS_NAME = {
 }
 
 DEPOT_NAMES = DEPOT_DEPS_NAME.keys()
+
 CROS_SDK_PATH = os.path.join('..', 'cros', 'chromite', 'bin', 'cros_sdk')
-CROS_VERSION_PATTERN = 'new version number from %s'
 CROS_CHROMEOS_PATTERN = 'chromeos-base/chromeos-chrome'
 CROS_TEST_KEY_PATH = os.path.join('..', 'cros', 'chromite', 'ssh_keys',
                                   'testing_rsa')
@@ -413,82 +413,6 @@ def CalculateStandardError(values):
   return std_dev / math.sqrt(len(values))
 
 
-def IsStringFloat(string_to_check):
-  """Checks whether or not the given string can be converted to a floating
-  point number.
-
-  Args:
-    string_to_check: Input string to check if it can be converted to a float.
-
-  Returns:
-    True if the string can be converted to a float.
-  """
-  try:
-    float(string_to_check)
-
-    return True
-  except ValueError:
-    return False
-
-
-def IsStringInt(string_to_check):
-  """Checks whether or not the given string can be converted to a integer.
-
-  Args:
-    string_to_check: Input string to check if it can be converted to an int.
-
-  Returns:
-    True if the string can be converted to an int.
-  """
-  try:
-    int(string_to_check)
-
-    return True
-  except ValueError:
-    return False
-
-
-def IsWindowsHost():
-  """Checks whether or not the script is running on Windows.
-
-  Returns:
-    True if running on Windows.
-  """
-  return sys.platform == 'cygwin' or sys.platform.startswith('win')
-
-
-def Is64BitWindows():
-  """Returns whether or not Windows is a 64-bit version.
-
-  Returns:
-    True if Windows is 64-bit, False if 32-bit.
-  """
-  platform = os.environ['PROCESSOR_ARCHITECTURE']
-  try:
-    platform = os.environ['PROCESSOR_ARCHITEW6432']
-  except KeyError:
-    # Must not be running in WoW64, so PROCESSOR_ARCHITECTURE is correct
-    pass
-
-  return platform in ['AMD64', 'I64']
-
-
-def IsLinuxHost():
-  """Checks whether or not the script is running on Linux.
-
-  Returns:
-    True if running on Linux.
-  """
-  return sys.platform.startswith('linux')
-
-
-def IsMacHost():
-  """Checks whether or not the script is running on Mac.
-
-  Returns:
-    True if running on Mac.
-  """
-  return sys.platform.startswith('darwin')
 
 
 def GetSHA1HexDigest(contents):
@@ -500,16 +424,16 @@ def GetZipFileName(build_revision=None, target_arch='ia32', patch_sha=None):
   """Gets the archive file name for the given revision."""
   def PlatformName():
     """Return a string to be used in paths for the platform."""
-    if IsWindowsHost():
+    if bisect_utils.IsWindowsHost():
       # Build archive for x64 is still stored with 'win32'suffix
       # (chromium_utils.PlatformName()).
-      if Is64BitWindows() and target_arch == 'x64':
+      if bisect_utils.Is64BitWindows() and target_arch == 'x64':
         return 'win32'
       return 'win32'
-    if IsLinuxHost():
+    if bisect_utils.IsLinuxHost():
       # Android builds too are archived with full-build-linux* prefix.
       return 'linux'
-    if IsMacHost():
+    if bisect_utils.IsMacHost():
       return 'mac'
     raise NotImplementedError('Unknown platform "%s".' % sys.platform)
 
@@ -526,15 +450,15 @@ def GetRemoteBuildPath(build_revision, target_platform='chromium',
   """Compute the url to download the build from."""
   def GetGSRootFolderName(target_platform):
     """Gets Google Cloud Storage root folder names"""
-    if IsWindowsHost():
-      if Is64BitWindows() and target_arch == 'x64':
+    if bisect_utils.IsWindowsHost():
+      if bisect_utils.Is64BitWindows() and target_arch == 'x64':
         return 'Win x64 Builder'
       return 'Win Builder'
-    if IsLinuxHost():
+    if bisect_utils.IsLinuxHost():
       if target_platform == 'android':
         return 'android_perf_rel'
       return 'Linux Builder'
-    if IsMacHost():
+    if bisect_utils.IsMacHost():
       return 'Mac Builder'
     raise NotImplementedError('Unsupported Platform "%s".' % sys.platform)
 
@@ -600,10 +524,12 @@ def ExtractZip(filename, output_dir, verbose=True):
   # On Windows, try to use 7z if it is installed, otherwise fall back to python
   # zip module and pray we don't have files larger than 512MB to unzip.
   unzip_cmd = None
-  if ((IsMacHost() and os.path.getsize(filename) < 4 * 1024 * 1024 * 1024)
-      or IsLinuxHost()):
+  if ((bisect_utils.IsMacHost()
+       and os.path.getsize(filename) < 4 * 1024 * 1024 * 1024)
+      or bisect_utils.IsLinuxHost()):
     unzip_cmd = ['unzip', '-o']
-  elif IsWindowsHost() and os.path.exists('C:\\Program Files\\7-Zip\\7z.exe'):
+  elif (bisect_utils.IsWindowsHost()
+        and os.path.exists('C:\\Program Files\\7-Zip\\7z.exe')):
     unzip_cmd = ['C:\\Program Files\\7-Zip\\7z.exe', 'x', '-y']
 
   if unzip_cmd:
@@ -612,100 +538,23 @@ def ExtractZip(filename, output_dir, verbose=True):
     saved_dir = os.getcwd()
     os.chdir(output_dir)
     command = unzip_cmd + [filepath]
-    result = RunProcess(command)
+    result = bisect_utils.RunProcess(command)
     os.chdir(saved_dir)
     if result:
       raise IOError('unzip failed: %s => %s' % (str(command), result))
   else:
-    assert IsWindowsHost() or IsMacHost()
+    assert bisect_utils.IsWindowsHost() or bisect_utils.IsMacHost()
     zf = zipfile.ZipFile(filename)
     for name in zf.namelist():
       if verbose:
         print 'Extracting %s' % name
       zf.extract(name, output_dir)
-      if IsMacHost():
+      if bisect_utils.IsMacHost():
         # Restore permission bits.
         os.chmod(os.path.join(output_dir, name),
                  zf.getinfo(name).external_attr >> 16L)
 
 
-def RunProcess(command):
-  """Runs an arbitrary command.
-
-  If output from the call is needed, use RunProcessAndRetrieveOutput instead.
-
-  Args:
-    command: A list containing the command and args to execute.
-
-  Returns:
-    The return code of the call.
-  """
-  # On Windows, use shell=True to get PATH interpretation.
-  shell = IsWindowsHost()
-  return subprocess.call(command, shell=shell)
-
-
-def RunProcessAndRetrieveOutput(command, cwd=None):
-  """Runs an arbitrary command, returning its output and return code.
-
-  Since output is collected via communicate(), there will be no output until
-  the call terminates. If you need output while the program runs (ie. so
-  that the buildbot doesn't terminate the script), consider RunProcess().
-
-  Args:
-    command: A list containing the command and args to execute.
-    cwd: A directory to change to while running the command. The command can be
-        relative to this directory. If this is None, the command will be run in
-        the current directory.
-
-  Returns:
-    A tuple of the output and return code.
-  """
-  if cwd:
-    original_cwd = os.getcwd()
-    os.chdir(cwd)
-
-  # On Windows, use shell=True to get PATH interpretation.
-  shell = IsWindowsHost()
-  proc = subprocess.Popen(command, shell=shell, stdout=subprocess.PIPE)
-  (output, _) = proc.communicate()
-
-  if cwd:
-    os.chdir(original_cwd)
-
-  return (output, proc.returncode)
-
-
-def RunGit(command, cwd=None):
-  """Run a git subcommand, returning its output and return code.
-
-  Args:
-    command: A list containing the args to git.
-    cwd: A directory to change to while running the git command (optional).
-
-  Returns:
-    A tuple of the output and return code.
-  """
-  command = ['git'] + command
-
-  return RunProcessAndRetrieveOutput(command, cwd=cwd)
-
-
-def CheckRunGit(command, cwd=None):
-  """Run a git subcommand, returning its output and return code. Asserts if
-  the return code of the call is non-zero.
-
-  Args:
-    command: A list containing the args to git.
-
-  Returns:
-    A tuple of the output and return code.
-  """
-  (output, return_code) = RunGit(command, cwd=cwd)
-
-  assert not return_code, 'An error occurred while running'\
-                          ' "git %s"' % ' '.join(command)
-  return output
 
 
 def SetBuildSystemDefault(build_system, use_goma, goma_dir):
@@ -724,7 +573,7 @@ def SetBuildSystemDefault(build_system, use_goma, goma_dir):
       else:
         os.environ['GYP_GENERATORS'] = 'ninja'
 
-      if IsWindowsHost():
+      if bisect_utils.IsWindowsHost():
         os.environ['GYP_DEFINES'] = 'component=shared_library '\
             'incremental_chrome_dll=1 disable_nacl=1 fastbuild=1 '\
             'chromium_win_pch=0'
@@ -749,7 +598,7 @@ def BuildWithMake(threads, targets, build_type='Release'):
 
   cmd += targets
 
-  return_code = RunProcess(cmd)
+  return_code = bisect_utils.RunProcess(cmd)
 
   return not return_code
 
@@ -762,7 +611,7 @@ def BuildWithNinja(threads, targets, build_type='Release'):
 
   cmd += targets
 
-  return_code = RunProcess(cmd)
+  return_code = bisect_utils.RunProcess(cmd)
 
   return not return_code
 
@@ -776,7 +625,7 @@ def BuildWithVisualStudio(targets, build_type='Release'):
   for t in targets:
     cmd.extend(['/Project', t])
 
-  return_code = RunProcess(cmd)
+  return_code = bisect_utils.RunProcess(cmd)
 
   return not return_code
 
@@ -818,7 +667,7 @@ class Builder(object):
     Args:
         opts: Options parsed from command line.
     """
-    if IsWindowsHost():
+    if bisect_utils.IsWindowsHost():
       if not opts.build_preference:
         opts.build_preference = 'msvs'
 
@@ -863,11 +712,11 @@ class Builder(object):
       Assumes that the current working directory is the checkout root.
     """
     src_dir = src_dir or 'src'
-    if opts.build_preference == 'ninja' or IsLinuxHost():
+    if opts.build_preference == 'ninja' or bisect_utils.IsLinuxHost():
       return os.path.join(src_dir, 'out')
-    if IsMacHost():
+    if bisect_utils.IsMacHost():
       return os.path.join(src_dir, 'xcodebuild')
-    if IsWindowsHost():
+    if bisect_utils.IsWindowsHost():
       return os.path.join(src_dir, 'build')
     raise NotImplementedError('Unexpected platform %s' % sys.platform)
 
@@ -900,7 +749,7 @@ class DesktopBuilder(Builder):
     elif opts.build_preference == 'ninja':
       build_success = BuildWithNinja(threads, targets, opts.target_build_type)
     elif opts.build_preference == 'msvs':
-      assert IsWindowsHost(), 'msvs is only supported on Windows.'
+      assert bisect_utils.IsWindowsHost(), 'msvs is only supported on Windows.'
       build_success = BuildWithVisualStudio(targets, opts.target_build_type)
     else:
       assert False, 'No build system defined.'
@@ -972,7 +821,7 @@ class CrosBuilder(Builder):
              '--remote=%s' % opts.cros_remote_ip,
              '--board=%s' % opts.cros_board, '--test', '--verbose']
 
-      return_code = RunProcess(cmd)
+      return_code = bisect_utils.RunProcess(cmd)
       return not return_code
     except OSError, e:
       return False
@@ -1000,7 +849,7 @@ class CrosBuilder(Builder):
 
     cmd += ['BUILDTYPE=%s' % opts.target_build_type, './build_packages',
         '--board=%s' % opts.cros_board]
-    return_code = RunProcess(cmd)
+    return_code = bisect_utils.RunProcess(cmd)
 
     return not return_code
 
@@ -1028,7 +877,7 @@ class CrosBuilder(Builder):
     cmd += ['BUILDTYPE=%s' % opts.target_build_type, '--', './build_image',
         '--board=%s' % opts.cros_board, 'test']
 
-    return_code = RunProcess(cmd)
+    return_code = bisect_utils.RunProcess(cmd)
 
     return not return_code
 
@@ -1048,261 +897,6 @@ class CrosBuilder(Builder):
     return False
 
 
-class SourceControl(object):
-  """SourceControl is an abstraction over the underlying source control
-  system used for chromium. For now only git is supported, but in the
-  future, the svn workflow could be added as well."""
-  def __init__(self):
-    super(SourceControl, self).__init__()
-
-  def SyncToRevisionWithGClient(self, revision):
-    """Uses gclient to sync to the specified revision.
-
-    ie. gclient sync --revision <revision>
-
-    Args:
-      revision: The git SHA1 or svn CL (depending on workflow).
-
-    Returns:
-      The return code of the call.
-    """
-    return bisect_utils.RunGClient(['sync', '--verbose', '--reset', '--force',
-        '--delete_unversioned_trees', '--nohooks', '--revision', revision])
-
-  def SyncToRevisionWithRepo(self, timestamp):
-    """Uses repo to sync all the underlying git depots to the specified
-    time.
-
-    Args:
-      timestamp: The unix timestamp to sync to.
-
-    Returns:
-      The return code of the call.
-    """
-    return bisect_utils.RunRepoSyncAtTimestamp(timestamp)
-
-
-class GitSourceControl(SourceControl):
-  """GitSourceControl is used to query the underlying source control. """
-  def __init__(self, opts):
-    super(GitSourceControl, self).__init__()
-    self.opts = opts
-
-  def IsGit(self):
-    return True
-
-  def GetRevisionList(self, revision_range_end, revision_range_start, cwd=None):
-    """Retrieves a list of revisions between |revision_range_start| and
-    |revision_range_end|.
-
-    Args:
-      revision_range_end: The SHA1 for the end of the range.
-      revision_range_start: The SHA1 for the beginning of the range.
-
-    Returns:
-      A list of the revisions between |revision_range_start| and
-      |revision_range_end| (inclusive).
-    """
-    revision_range = '%s..%s' % (revision_range_start, revision_range_end)
-    cmd = ['log', '--format=%H', '-10000', '--first-parent', revision_range]
-    log_output = CheckRunGit(cmd, cwd=cwd)
-
-    revision_hash_list = log_output.split()
-    revision_hash_list.append(revision_range_start)
-
-    return revision_hash_list
-
-  def SyncToRevision(self, revision, sync_client=None):
-    """Syncs to the specified revision.
-
-    Args:
-      revision: The revision to sync to.
-      use_gclient: Specifies whether or not we should sync using gclient or
-        just use source control directly.
-
-    Returns:
-      True if successful.
-    """
-
-    if not sync_client:
-      results = RunGit(['checkout', revision])[1]
-    elif sync_client == 'gclient':
-      results = self.SyncToRevisionWithGClient(revision)
-    elif sync_client == 'repo':
-      results = self.SyncToRevisionWithRepo(revision)
-
-    return not results
-
-  def ResolveToRevision(self, revision_to_check, depot, search, cwd=None):
-    """If an SVN revision is supplied, try to resolve it to a git SHA1.
-
-    Args:
-      revision_to_check: The user supplied revision string that may need to be
-        resolved to a git SHA1.
-      depot: The depot the revision_to_check is from.
-      search: The number of changelists to try if the first fails to resolve
-        to a git hash. If the value is negative, the function will search
-        backwards chronologically, otherwise it will search forward.
-
-    Returns:
-      A string containing a git SHA1 hash, otherwise None.
-    """
-    # Android-chrome is git only, so no need to resolve this to anything else.
-    if depot == 'android-chrome':
-      return revision_to_check
-
-    if depot != 'cros':
-      if not IsStringInt(revision_to_check):
-        return revision_to_check
-
-      depot_svn = 'svn://svn.chromium.org/chrome/trunk/src'
-
-      if depot != 'chromium':
-        depot_svn = DEPOT_DEPS_NAME[depot]['svn']
-
-      svn_revision = int(revision_to_check)
-      git_revision = None
-
-      if search > 0:
-        search_range = xrange(svn_revision, svn_revision + search, 1)
-      else:
-        search_range = xrange(svn_revision, svn_revision + search, -1)
-
-      for i in search_range:
-        svn_pattern = 'git-svn-id: %s@%d' % (depot_svn, i)
-        cmd = ['log', '--format=%H', '-1', '--grep', svn_pattern,
-               'origin/master']
-
-        (log_output, return_code) = RunGit(cmd, cwd=cwd)
-
-        assert not return_code, 'An error occurred while running'\
-                                ' "git %s"' % ' '.join(cmd)
-
-        if not return_code:
-          log_output = log_output.strip()
-
-          if log_output:
-            git_revision = log_output
-
-            break
-
-      return git_revision
-    else:
-      if IsStringInt(revision_to_check):
-        return int(revision_to_check)
-      else:
-        cwd = os.getcwd()
-        os.chdir(os.path.join(os.getcwd(), 'src', 'third_party',
-            'chromiumos-overlay'))
-        pattern = CROS_VERSION_PATTERN % revision_to_check
-        cmd = ['log', '--format=%ct', '-1', '--grep', pattern]
-
-        git_revision = None
-
-        log_output = CheckRunGit(cmd, cwd=cwd)
-        if log_output:
-          git_revision = log_output
-          git_revision = int(log_output.strip())
-        os.chdir(cwd)
-
-        return git_revision
-
-  def IsInProperBranch(self):
-    """Confirms they're in the master branch for performing the bisection.
-    This is needed or gclient will fail to sync properly.
-
-    Returns:
-      True if the current branch on src is 'master'
-    """
-    cmd = ['rev-parse', '--abbrev-ref', 'HEAD']
-    log_output = CheckRunGit(cmd)
-    log_output = log_output.strip()
-
-    return log_output == "master"
-
-  def SVNFindRev(self, revision, cwd=None):
-    """Maps directly to the 'git svn find-rev' command.
-
-    Args:
-      revision: The git SHA1 to use.
-
-    Returns:
-      An integer changelist #, otherwise None.
-    """
-
-    cmd = ['svn', 'find-rev', revision]
-
-    output = CheckRunGit(cmd, cwd)
-    svn_revision = output.strip()
-
-    if IsStringInt(svn_revision):
-      return int(svn_revision)
-
-    return None
-
-  def QueryRevisionInfo(self, revision, cwd=None):
-    """Gathers information on a particular revision, such as author's name,
-    email, subject, and date.
-
-    Args:
-      revision: Revision you want to gather information on.
-    Returns:
-      A dict in the following format:
-      {
-        'author': %s,
-        'email': %s,
-        'date': %s,
-        'subject': %s,
-        'body': %s,
-      }
-    """
-    commit_info = {}
-
-    formats = ['%cN', '%cE', '%s', '%cD', '%b']
-    targets = ['author', 'email', 'subject', 'date', 'body']
-
-    for i in xrange(len(formats)):
-      cmd = ['log', '--format=%s' % formats[i], '-1', revision]
-      output = CheckRunGit(cmd, cwd=cwd)
-      commit_info[targets[i]] = output.rstrip()
-
-    return commit_info
-
-  def CheckoutFileAtRevision(self, file_name, revision, cwd=None):
-    """Performs a checkout on a file at the given revision.
-
-    Returns:
-      True if successful.
-    """
-    return not RunGit(['checkout', revision, file_name], cwd=cwd)[1]
-
-  def RevertFileToHead(self, file_name):
-    """Unstages a file and returns it to HEAD.
-
-    Returns:
-      True if successful.
-    """
-    # Reset doesn't seem to return 0 on success.
-    RunGit(['reset', 'HEAD', file_name])
-
-    return not RunGit(['checkout', bisect_utils.FILE_DEPS_GIT])[1]
-
-  def QueryFileRevisionHistory(self, filename, revision_start, revision_end):
-    """Returns a list of commits that modified this file.
-
-    Args:
-        filename: Name of file.
-        revision_start: Start of revision range.
-        revision_end: End of revision range.
-
-    Returns:
-        Returns a list of commits that touched this file.
-    """
-    cmd = ['log', '--format=%H', '%s~1..%s' % (revision_start, revision_end),
-           filename]
-    output = CheckRunGit(cmd)
-
-    return [o for o in output.split('\n') if o]
 
 
 class BisectPerformanceMetrics(object):
@@ -1363,7 +957,7 @@ class BisectPerformanceMetrics(object):
       cmd = ['repo', 'forall', '-c',
           'git log --format=%%ct --before=%d --after=%d' % (
           revision_range_end, revision_range_start)]
-      (output, return_code) = RunProcessAndRetrieveOutput(cmd)
+      (output, return_code) = bisect_utils.RunProcessAndRetrieveOutput(cmd)
 
       assert not return_code, 'An error occurred while running'\
                               ' "%s"' % ' '.join(cmd)
@@ -1371,7 +965,7 @@ class BisectPerformanceMetrics(object):
       os.chdir(cwd)
 
       revision_work_list = list(set(
-          [int(o) for o in output.split('\n') if IsStringInt(o)]))
+          [int(o) for o in output.split('\n') if bisect_utils.IsStringInt(o)]))
       revision_work_list = sorted(revision_work_list, reverse=True)
     else:
       cwd = self._GetDepotDirectory(depot)
@@ -1383,7 +977,7 @@ class BisectPerformanceMetrics(object):
   def _GetV8BleedingEdgeFromV8TrunkIfMappable(self, revision):
     svn_revision = self.source_control.SVNFindRev(revision)
 
-    if IsStringInt(svn_revision):
+    if bisect_utils.IsStringInt(svn_revision):
       # V8 is tricky to bisect, in that there are only a few instances when
       # we can dive into bleeding_edge and get back a meaningful result.
       # Try to detect a V8 "business as usual" case, which is when:
@@ -1414,7 +1008,7 @@ class BisectPerformanceMetrics(object):
                 'bleeding_edge revision r')[1]
             bleeding_edge_revision = int(bleeding_edge_revision.split(')')[0])
             git_revision = self.source_control.ResolveToRevision(
-                bleeding_edge_revision, 'v8_bleeding_edge', 1,
+                bleeding_edge_revision, 'v8_bleeding_edge', DEPOT_DEPS_NAME, 1,
                 cwd=v8_bleeding_edge_dir)
             return git_revision
           except (IndexError, ValueError):
@@ -1423,7 +1017,7 @@ class BisectPerformanceMetrics(object):
         if not git_revision:
           # Wasn't successful, try the old way of looking for "Prepare push to"
           git_revision = self.source_control.ResolveToRevision(
-              int(svn_revision) - 1, 'v8_bleeding_edge', -1,
+              int(svn_revision) - 1, 'v8_bleeding_edge', DEPOT_DEPS_NAME, -1,
               cwd=v8_bleeding_edge_dir)
 
           if git_revision:
@@ -1437,21 +1031,21 @@ class BisectPerformanceMetrics(object):
   def _GetNearestV8BleedingEdgeFromTrunk(self, revision, search_forward=True):
     cwd = self._GetDepotDirectory('v8')
     cmd = ['log', '--format=%ct', '-1', revision]
-    output = CheckRunGit(cmd, cwd=cwd)
+    output = bisect_utils.CheckRunGit(cmd, cwd=cwd)
     commit_time = int(output)
     commits = []
 
     if search_forward:
       cmd = ['log', '--format=%H', '-10', '--after=%d' % commit_time,
           'origin/master']
-      output = CheckRunGit(cmd, cwd=cwd)
+      output = bisect_utils.CheckRunGit(cmd, cwd=cwd)
       output = output.split()
       commits = output
       commits = reversed(commits)
     else:
       cmd = ['log', '--format=%H', '-10', '--before=%d' % commit_time,
           'origin/master']
-      output = CheckRunGit(cmd, cwd=cwd)
+      output = bisect_utils.CheckRunGit(cmd, cwd=cwd)
       output = output.split()
       commits = output
 
@@ -1564,7 +1158,7 @@ class BisectPerformanceMetrics(object):
       cmd = [CROS_SDK_PATH, '--', 'portageq-%s' % self.opts.cros_board,
              'best_visible', '/build/%s' % self.opts.cros_board, 'ebuild',
              CROS_CHROMEOS_PATTERN]
-      (output, return_code) = RunProcessAndRetrieveOutput(cmd)
+      (output, return_code) = bisect_utils.RunProcessAndRetrieveOutput(cmd)
 
       assert not return_code, 'An error occurred while running' \
                               ' "%s"' % ' '.join(cmd)
@@ -1588,9 +1182,10 @@ class BisectPerformanceMetrics(object):
 
           cwd = os.getcwd()
           self.ChangeToDepotWorkingDirectory('chromium')
-          return_code = CheckRunGit(['log', '-1', '--format=%H',
-              '--author=chrome-release@google.com', '--grep=to %s' % version,
-              'origin/master'])
+          cmd = ['log', '-1', '--format=%H',
+                 '--author=chrome-release@google.com',
+                 '--grep=to %s' % version, 'origin/master']
+          return_code = bisect_utils.CheckRunGit(cmd)
           os.chdir(cwd)
 
           results['chromium'] = output.strip()
@@ -1804,15 +1399,15 @@ class BisectPerformanceMetrics(object):
       """Gets builder bot name and buildtime in seconds based on platform."""
       # Bot names should match the one listed in tryserver.chromium's
       # master.cfg which produces builds for bisect.
-      if IsWindowsHost():
-        if Is64BitWindows() and target_arch == 'x64':
+      if bisect_utils.IsWindowsHost():
+        if bisect_utils.Is64BitWindows() and target_arch == 'x64':
           return ('win_perf_bisect_builder', MAX_WIN_BUILD_TIME)
         return ('win_perf_bisect_builder', MAX_WIN_BUILD_TIME)
-      if IsLinuxHost():
+      if bisect_utils.IsLinuxHost():
         if target_platform == 'android':
           return ('android_perf_bisect_builder', MAX_LINUX_BUILD_TIME)
         return ('linux_perf_bisect_builder', MAX_LINUX_BUILD_TIME)
-      if IsMacHost():
+      if bisect_utils.IsMacHost():
         return ('mac_perf_bisect_builder', MAX_MAC_BUILD_TIME)
       raise NotImplementedError('Unsupported Platform "%s".' % sys.platform)
     if not fetch_build:
@@ -2008,7 +1603,8 @@ class BisectPerformanceMetrics(object):
     if not os.path.exists(deps_file_path):
       raise RuntimeError('DEPS file does not exists.[%s]' % deps_file_path)
     # Get current chromium revision (git hash).
-    chromium_sha = CheckRunGit(['rev-parse', 'HEAD']).strip()
+    cmd = ['rev-parse', 'HEAD']
+    chromium_sha = bisect_utils.CheckRunGit(cmd).strip()
     if not chromium_sha:
       raise RuntimeError('Failed to determine Chromium revision for %s' %
                          revision)
@@ -2024,7 +1620,8 @@ class BisectPerformanceMetrics(object):
                           '--dst-prefix=src/',
                           '--no-ext-diff',
                            bisect_utils.FILE_DEPS]
-          diff_text = CheckRunGit(diff_command, cwd=self.src_cwd)
+          diff_text = bisect_utils.CheckRunGit(
+              diff_command, cwd=self.src_cwd)
           return (chromium_sha, ChangeBackslashToSlashInPatch(diff_text))
         else:
           raise RuntimeError('Failed to update DEPS file for chromium: [%s]' %
@@ -2157,7 +1754,8 @@ class BisectPerformanceMetrics(object):
             mean_stddev_match.group('MEAN')):
         values_list += [mean_stddev_match.group('MEAN')]
 
-    values_list = [float(v) for v in values_list if IsStringFloat(v)]
+    values_list = [float(v) for v in values_list
+                   if bisect_utils.IsStringFloat(v)]
 
     # If the metric is times/t, we need to sum the timings in order to get
     # similar regression results as the try-bots.
@@ -2221,7 +1819,7 @@ class BisectPerformanceMetrics(object):
 
       if arg_dict.has_key('--profile-dir') and arg_dict.has_key('--browser'):
         profile_path, profile_type = os.path.split(arg_dict['--profile-dir'])
-        return not RunProcess(['python', path_to_generate,
+        return not bisect_utils.RunProcess(['python', path_to_generate,
             '--profile-type-to-generate', profile_type,
             '--browser', arg_dict['--browser'], '--output-dir', profile_path])
       return False
@@ -2245,13 +1843,14 @@ class BisectPerformanceMetrics(object):
     if self.opts.target_platform in ['android']:
       # When its a third_party depot, get the chromium revision.
       if depot != 'chromium':
-        revision = CheckRunGit(['rev-parse', 'HEAD'], cwd=self.src_cwd).strip()
+        revision = bisect_utils.CheckRunGit(
+            ['rev-parse', 'HEAD'], cwd=self.src_cwd).strip()
       svn_revision = self.source_control.SVNFindRev(revision, cwd=self.src_cwd)
       if not svn_revision:
         return command_to_run
       cmd_re = re.compile('--browser=(?P<browser_type>\S+)')
       matches = cmd_re.search(command_to_run)
-      if IsStringInt(svn_revision) and matches:
+      if bisect_utils.IsStringInt(svn_revision) and matches:
         cmd_browser = matches.group('browser_type')
         if svn_revision <= 274857 and cmd_browser == 'android-chrome-shell':
           return command_to_run.replace(cmd_browser,
@@ -2297,7 +1896,7 @@ class BisectPerformanceMetrics(object):
     # For Windows platform set posix=False, to parse windows paths correctly.
     # On Windows, path separators '\' or '\\' are replace by '' when posix=True,
     # refer to http://bugs.python.org/issue1724822. By default posix=True.
-    args = shlex.split(command_to_run, posix=not IsWindowsHost())
+    args = shlex.split(command_to_run, posix=not bisect_utils.IsWindowsHost())
 
     if not self._GenerateProfileIfNecessary(args):
       err_text = 'Failed to generate profile for performance test.'
@@ -2325,8 +1924,8 @@ class BisectPerformanceMetrics(object):
         if results_label:
           current_args.append('--results-label=%s' % results_label)
       try:
-        (output, return_code) = RunProcessAndRetrieveOutput(current_args,
-                                                            cwd=self.src_cwd)
+        (output, return_code) = bisect_utils.RunProcessAndRetrieveOutput(
+            current_args, cwd=self.src_cwd)
       except OSError, e:
         if e.errno == errno.ENOENT:
           err_text  = ('Something went wrong running the performance test. '
@@ -2435,7 +2034,8 @@ class BisectPerformanceMetrics(object):
       for d in DEPOT_DEPS_NAME[depot]['depends']:
         self.ChangeToDepotWorkingDirectory(d)
 
-        dependant_rev = self.source_control.ResolveToRevision(svn_rev, d, -1000)
+        dependant_rev = self.source_control.ResolveToRevision(
+            svn_rev, d, DEPOT_DEPS_NAME, -1000)
 
         if dependant_rev:
           revisions_to_sync.append([d, dependant_rev])
@@ -2501,7 +2101,7 @@ class BisectPerformanceMetrics(object):
     cwd = os.getcwd()
     self.ChangeToDepotWorkingDirectory('cros')
     cmd = [CROS_SDK_PATH, '--delete']
-    return_code = RunProcess(cmd)
+    return_code = bisect_utils.RunProcess(cmd)
     os.chdir(cwd)
     return not return_code
 
@@ -2514,7 +2114,7 @@ class BisectPerformanceMetrics(object):
     cwd = os.getcwd()
     self.ChangeToDepotWorkingDirectory('cros')
     cmd = [CROS_SDK_PATH, '--create']
-    return_code = RunProcess(cmd)
+    return_code = bisect_utils.RunProcess(cmd)
     os.chdir(cwd)
     return not return_code
 
@@ -2574,7 +2174,7 @@ class BisectPerformanceMetrics(object):
     if depot == 'chromium':
       if self.source_control.IsGit():
         cmd = ['diff-tree', '--no-commit-id', '--name-only', '-r', revision]
-        output = CheckRunGit(cmd)
+        output = bisect_utils.CheckRunGit(cmd)
 
         files = output.splitlines()
 
@@ -2931,7 +2531,7 @@ class BisectPerformanceMetrics(object):
         if len(changes_to_deps) != len(changes_to_gitdeps):
           # Grab the timestamp of the last DEPS change
           cmd = ['log', '--format=%ct', '-1', changes_to_deps[0]]
-          output = CheckRunGit(cmd)
+          output = bisect_utils.CheckRunGit(cmd)
           commit_time = int(output)
 
           # Try looking for a commit that touches the .DEPS.git file in the
@@ -2939,7 +2539,7 @@ class BisectPerformanceMetrics(object):
           cmd = ['log', '--format=%H', '-1',
               '--before=%d' % (commit_time + 900), '--after=%d' % commit_time,
               'origin/master', bisect_utils.FILE_DEPS_GIT]
-          output = CheckRunGit(cmd)
+          output = bisect_utils.CheckRunGit(cmd)
           output = output.strip()
           if output:
             self.warnings.append('Detected change to DEPS and modified '
@@ -2967,11 +2567,11 @@ class BisectPerformanceMetrics(object):
       cmd = ['log', '--format=%ct', '-1', good_revision]
       cwd = self._GetDepotDirectory(target_depot)
 
-      output = CheckRunGit(cmd, cwd=cwd)
+      output = bisect_utils.CheckRunGit(cmd, cwd=cwd)
       good_commit_time = int(output)
 
       cmd = ['log', '--format=%ct', '-1', bad_revision]
-      output = CheckRunGit(cmd, cwd=cwd)
+      output = bisect_utils.CheckRunGit(cmd, cwd=cwd)
       bad_commit_time = int(output)
 
       return good_commit_time <= bad_commit_time
@@ -2994,7 +2594,8 @@ class BisectPerformanceMetrics(object):
     """
     if self.opts.target_platform == 'android':
       revision_to_check = self.source_control.SVNFindRev(revision_to_check)
-      if IsStringInt(revision_to_check) and revision_to_check < 265549:
+      if (bisect_utils.IsStringInt(revision_to_check)
+          and revision_to_check < 265549):
         return {'error': (
             'Bisect cannot conitnue for the given revision range.\n'
             'It is impossible to bisect Android regressions '
@@ -3061,10 +2662,10 @@ class BisectPerformanceMetrics(object):
     self.ChangeToDepotWorkingDirectory(target_depot)
 
     # If they passed SVN CL's, etc... we can try match them to git SHA1's.
-    bad_revision = self.source_control.ResolveToRevision(bad_revision_in,
-                                                         target_depot, 100)
-    good_revision = self.source_control.ResolveToRevision(good_revision_in,
-                                                          target_depot, -100)
+    bad_revision = self.source_control.ResolveToRevision(
+        bad_revision_in, target_depot, DEPOT_DEPS_NAME, 100)
+    good_revision = self.source_control.ResolveToRevision(
+        good_revision_in, target_depot, DEPOT_DEPS_NAME, -100)
 
     os.chdir(cwd)
 
@@ -3656,7 +3257,7 @@ class BisectPerformanceMetrics(object):
         cmd = ['repo', 'forall', '-c',
             'pwd ; git log --pretty=oneline --before=%d --after=%d' % (
             last_broken_revision, first_working_revision + 1)]
-        (output, return_code) = RunProcessAndRetrieveOutput(cmd)
+        (output, return_code) = bisect_utils.RunProcessAndRetrieveOutput(cmd)
 
         changes = []
         assert not return_code, 'An error occurred while running'\
@@ -3782,23 +3383,6 @@ class BisectPerformanceMetrics(object):
     self._PrintThankYou()
     if self.opts.output_buildbot_annotations:
       bisect_utils.OutputAnnotationStepClosed()
-
-
-def DetermineAndCreateSourceControl(opts):
-  """Attempts to determine the underlying source control workflow and returns
-  a SourceControl object.
-
-  Returns:
-    An instance of a SourceControl object, or None if the current workflow
-    is unsupported.
-  """
-
-  (output, _) = RunGit(['rev-parse', '--is-inside-work-tree'])
-
-  if output.strip() == 'true':
-    return GitSourceControl(opts)
-
-  return None
 
 
 def IsPlatformSupported(opts):
@@ -4064,7 +3648,7 @@ class BisectOptions(object):
         # Run sudo up front to make sure credentials are cached for later.
         print 'Sudo is required to build cros:'
         print
-        RunProcess(['sudo', 'true'])
+        bisect_utils.RunProcess(['sudo', 'true'])
 
         if not opts.cros_board:
           raise RuntimeError('missing required parameter: --cros_board')
@@ -4152,9 +3736,9 @@ def main():
     if not IsPlatformSupported(opts):
       raise RuntimeError("Sorry, this platform isn't supported yet.")
 
-    # Check what source control method they're using. Only support git workflow
-    # at the moment.
-    source_control = DetermineAndCreateSourceControl(opts)
+    # Check what source control method is being used, and create a
+    # SourceControl object if possible.
+    source_control = source_control_module.DetermineAndCreateSourceControl(opts)
 
     if not source_control:
       raise RuntimeError("Sorry, only the git workflow is supported at the "
