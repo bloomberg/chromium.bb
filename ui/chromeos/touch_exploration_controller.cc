@@ -243,15 +243,12 @@ TouchExplorationController::InSingleTapOrTouchExploreReleased(
     state_ = WAIT_FOR_RELEASE;
     return ui::EVENT_REWRITE_DISCARD;
   }
-  // If there is no touch exploration yet, discard.
-  if (!last_touch_exploration_ || type == ui::ET_TOUCH_RELEASED) {
-    if (current_touch_ids_.size() == 0) {
-      ResetToNoFingersDown();
-    }
-    return ui::EVENT_REWRITE_DISCARD;
-  }
-
   if (type == ui::ET_TOUCH_PRESSED) {
+    // If there is no touch exploration yet, we can't send a click, so discard.
+    if (!last_touch_exploration_) {
+      tap_timer_.Stop();
+      return ui::EVENT_REWRITE_DISCARD;
+    }
     // This is the second tap in a double-tap (or double tap-hold).
     // Rewrite at location of last touch exploration.
     rewritten_event->reset(

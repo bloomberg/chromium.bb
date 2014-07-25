@@ -752,7 +752,13 @@ TEST_F(TouchExplorationTest, DoubleTapNoTouchExplore) {
   generator_->PressTouch();
   generator_->ReleaseTouch();
   generator_->PressTouch();
+  // Since the state stays in single_tap_released, we need to make sure the
+  // tap timer doesn't fire and set the state to no fingers down (since there
+  // is still a finger down).
+  AdvanceSimulatedTimePastPotentialTapDelay();
+  EXPECT_FALSE(IsInNoFingersDownState());
   generator_->ReleaseTouch();
+  EXPECT_TRUE(IsInNoFingersDownState());
 
   std::vector<ui::LocatedEvent*> captured_events = GetCapturedLocatedEvents();
   ASSERT_EQ(0U, captured_events.size());
