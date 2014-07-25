@@ -4,7 +4,7 @@
 
 'use strict';
 
-installClass('HTMLMarqueeElement', function(global) {
+installClass('HTMLMarqueeElement', function(global, HTMLMarqueeElementPrototype) {
 
     var kDefaultScrollAmount = 6;
     var kDefaultScrollDelayMS = 85;
@@ -106,8 +106,6 @@ installClass('HTMLMarqueeElement', function(global) {
             },
         });
     }
-
-    var HTMLMarqueeElementPrototype = Object.create(HTMLElement.prototype);
 
     reflectAttribute(HTMLMarqueeElementPrototype, 'behavior', 'behavior');
     reflectAttribute(HTMLMarqueeElementPrototype, 'bgcolor', 'bgColor');
@@ -425,6 +423,4 @@ installClass('HTMLMarqueeElement', function(global) {
     // global.document.registerElement('i-marquee', {
     //    prototype: HTMLMarqueeElementPrototype,
     // });
-
-    return HTMLMarqueeElementPrototype;
 });

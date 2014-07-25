@@ -4,8 +4,7 @@
 
 "use strict";
 
-installClass("PrivateScriptTest", function(global) {
-    var InternalsPrototype = Object.create(Element.prototype);
+installClass("PrivateScriptTest", function(global, InternalsPrototype) {
 
     InternalsPrototype.initialize = function() {
         this.m_shortAttribute = -1;
@@ -33,12 +32,16 @@ installClass("PrivateScriptTest", function(global) {
         return value;
     }
 
-    InternalsPrototype.addInteger = function(value1, value2) {
+    InternalsPrototype.addValues_ = function(value1, value2) {
         return value1 + value2;
     }
 
+    InternalsPrototype.addInteger = function(value1, value2) {
+        return this.addValues_(value1, value2);
+    }
+
     InternalsPrototype.addString = function(value1, value2) {
-        return value1 + value2;
+        return this.addValues_(value1, value2);
     }
 
     InternalsPrototype.setIntegerToDocument = function(document, value) {
@@ -128,6 +131,4 @@ installClass("PrivateScriptTest", function(global) {
         get: function() { return this.m_stringAttributeForPrivateScriptOnly; },
         set: function(value) { this.m_stringAttributeForPrivateScriptOnly = value; }
     });
-
-    return InternalsPrototype;
 });

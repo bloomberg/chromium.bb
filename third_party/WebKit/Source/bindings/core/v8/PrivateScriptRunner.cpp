@@ -98,6 +98,15 @@ static void initializeHolderIfNeeded(ScriptState* scriptState, v8::Handle<v8::Ob
                 RELEASE_ASSERT_NOT_REACHED();
             }
         }
+
+        // Inject the prototype object of the private script into the prototype chain of the holder object.
+        // This is necessary to let the holder object use properties defined on the prototype object
+        // of the private script. (e.g., if the prototype object has |foo|, the holder object should be able
+        // to use it with |this.foo|.)
+        if (classObject->GetPrototype() != holderObject->GetPrototype())
+            classObject->SetPrototype(holderObject->GetPrototype());
+        holderObject->SetPrototype(classObject);
+
         isInitialized = v8Boolean(true, isolate);
         V8HiddenValue::setHiddenValue(isolate, holderObject, V8HiddenValue::privateScriptObjectIsInitialized(isolate), isInitialized);
     }

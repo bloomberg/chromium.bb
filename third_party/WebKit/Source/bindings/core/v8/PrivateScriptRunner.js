@@ -81,9 +81,14 @@ function DOMExceptionInPrivateScript(code, message)
     this.type = "DOMExceptionInPrivateScript";
 }
 
+function privateScriptClass()
+{
+}
+
 function installClass(className, implementation)
 {
-    installedClasses[className] = implementation(window);
+    installedClasses[className] = new privateScriptClass();
+    implementation(window, installedClasses[className]);
 }
 
 init();
