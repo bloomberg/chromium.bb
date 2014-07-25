@@ -30,11 +30,16 @@ Utils.convertToArray = function(input) {
 };
 
 Utils.convertToUint8Array = function(msg) {
-  var ans = new Uint8Array(msg.length);
-  for (var i = 0; i < msg.length; i++) {
-    ans[i] = msg.charCodeAt(i);
+  if (typeof msg == 'string') {
+    var ans = new Uint8Array(msg.length);
+    for (var i = 0; i < msg.length; i++) {
+      ans[i] = msg.charCodeAt(i);
+    }
+    return ans;
   }
-  return ans;
+  // Assume it is an ArrayBuffer or ArrayBufferView. If it already is a
+  // Uint8Array, this will just make a copy of the view.
+  return new Uint8Array(msg);
 };
 
 Utils.createJWKData = function(keyId, key) {
@@ -150,7 +155,7 @@ Utils.getHexString = function(uintArray) {
 };
 
 Utils.getInitDataFromMessage = function(message, mediaType) {
-  var initData = message.message;
+  var initData = Utils.convertToUint8Array(message.message);
   if (mediaType.indexOf('mp4') != -1) {
     // Temporary hack for Clear Key in v0.1.
     // If content uses mp4, then message.message is PSSH data. Instead of
@@ -172,7 +177,7 @@ Utils.installTitleEventHandler = function(element, event) {
 };
 
 Utils.isHeartBeatMessage = function(msg) {
-  return Utils.hasPrefix(msg, HEART_BEAT_HEADER);
+  return Utils.hasPrefix(Utils.convertToUint8Array(msg), HEART_BEAT_HEADER);
 };
 
 Utils.resetTitleChange = function() {

@@ -32,7 +32,10 @@ WidevinePlayer.prototype.onMessage = function(message) {
     }
 
   }
-  Utils.sendRequest('POST', 'arraybuffer', message.message,
-                    this.testConfig.licenseServerURL, onSuccess,
+  Utils.sendRequest('POST',
+                    'arraybuffer',
+                    Utils.convertToUint8Array(message.message),
+                    this.testConfig.licenseServerURL,
+                    onSuccess,
                     this.testConfig.forceInvalidResponse);
 };
