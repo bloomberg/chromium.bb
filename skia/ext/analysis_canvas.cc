@@ -80,6 +80,7 @@ void AnalysisCanvas::SetForceNotTransparent(bool flag) {
 
 void AnalysisCanvas::clear(SkColor color) {
   is_transparent_ = (!is_forced_not_transparent_ && SkColorGetA(color) == 0);
+  has_text_ = false;
 
   if (!is_forced_not_solid_ && SkColorGetA(color) == 255) {
     is_solid_color_ = true;
@@ -97,7 +98,6 @@ void AnalysisCanvas::drawPaint(const SkPaint& paint) {
 
   is_solid_color_ = false;
   is_transparent_ = false;
-  ++draw_op_count_;
 }
 
 void AnalysisCanvas::drawPoints(SkCanvas::PointMode mode,
@@ -106,7 +106,6 @@ void AnalysisCanvas::drawPoints(SkCanvas::PointMode mode,
                                 const SkPaint& paint) {
   is_solid_color_ = false;
   is_transparent_ = false;
-  ++draw_op_count_;
 }
 
 void AnalysisCanvas::drawRect(const SkRect& rect, const SkPaint& paint) {
@@ -133,6 +132,7 @@ void AnalysisCanvas::drawRect(const SkRect& rect, const SkPaint& paint) {
       !is_forced_not_transparent_ &&
       xfermode == SkXfermode::kClear_Mode) {
     is_transparent_ = true;
+    has_text_ = false;
   } else if (paint.getAlpha() != 0 || xfermode != SkXfermode::kSrc_Mode) {
     is_transparent_ = false;
   }
@@ -145,16 +145,15 @@ void AnalysisCanvas::drawRect(const SkRect& rect, const SkPaint& paint) {
   if (!is_forced_not_solid_ && IsSolidColorPaint(paint) && does_cover_canvas) {
     is_solid_color_ = true;
     color_ = paint.getColor();
+    has_text_ = false;
   } else {
     is_solid_color_ = false;
   }
-  ++draw_op_count_;
 }
 
 void AnalysisCanvas::drawOval(const SkRect& oval, const SkPaint& paint) {
   is_solid_color_ = false;
   is_transparent_ = false;
-  ++draw_op_count_;
 }
 
 void AnalysisCanvas::drawRRect(const SkRRect& rr, const SkPaint& paint) {
@@ -163,13 +162,11 @@ void AnalysisCanvas::drawRRect(const SkRRect& rr, const SkPaint& paint) {
   // do the same work here.
   is_solid_color_ = false;
   is_transparent_ = false;
-  ++draw_op_count_;
 }
 
 void AnalysisCanvas::drawPath(const SkPath& path, const SkPaint& paint) {
   is_solid_color_ = false;
   is_transparent_ = false;
-  ++draw_op_count_;
 }
 
 void AnalysisCanvas::drawBitmap(const SkBitmap& bitmap,
@@ -178,7 +175,6 @@ void AnalysisCanvas::drawBitmap(const SkBitmap& bitmap,
                                 const SkPaint*) {
   is_solid_color_ = false;
   is_transparent_ = false;
-  ++draw_op_count_;
 }
 
 void AnalysisCanvas::drawBitmapRectToRect(const SkBitmap&,
@@ -193,7 +189,6 @@ void AnalysisCanvas::drawBitmapRectToRect(const SkBitmap&,
     paint = &tmpPaint;
   drawRect(dst, *paint);
   is_solid_color_ = false;
-  ++draw_op_count_;
 }
 
 void AnalysisCanvas::drawBitmapMatrix(const SkBitmap& bitmap,
@@ -201,7 +196,6 @@ void AnalysisCanvas::drawBitmapMatrix(const SkBitmap& bitmap,
                                       const SkPaint* paint) {
   is_solid_color_ = false;
   is_transparent_ = false;
-  ++draw_op_count_;
 }
 
 void AnalysisCanvas::drawBitmapNine(const SkBitmap& bitmap,
@@ -210,7 +204,6 @@ void AnalysisCanvas::drawBitmapNine(const SkBitmap& bitmap,
                                     const SkPaint* paint) {
   is_solid_color_ = false;
   is_transparent_ = false;
-  ++draw_op_count_;
 }
 
 void AnalysisCanvas::drawSprite(const SkBitmap& bitmap,
@@ -219,7 +212,6 @@ void AnalysisCanvas::drawSprite(const SkBitmap& bitmap,
                                 const SkPaint* paint) {
   is_solid_color_ = false;
   is_transparent_ = false;
-  ++draw_op_count_;
 }
 
 void AnalysisCanvas::onDrawText(const void* text,
@@ -229,7 +221,7 @@ void AnalysisCanvas::onDrawText(const void* text,
                                 const SkPaint& paint) {
   is_solid_color_ = false;
   is_transparent_ = false;
-  ++draw_op_count_;
+  has_text_ = true;
 }
 
 void AnalysisCanvas::onDrawPosText(const void* text,
@@ -238,7 +230,7 @@ void AnalysisCanvas::onDrawPosText(const void* text,
                                    const SkPaint& paint) {
   is_solid_color_ = false;
   is_transparent_ = false;
-  ++draw_op_count_;
+  has_text_ = true;
 }
 
 void AnalysisCanvas::onDrawPosTextH(const void* text,
@@ -248,7 +240,7 @@ void AnalysisCanvas::onDrawPosTextH(const void* text,
                                     const SkPaint& paint) {
   is_solid_color_ = false;
   is_transparent_ = false;
-  ++draw_op_count_;
+  has_text_ = true;
 }
 
 void AnalysisCanvas::onDrawTextOnPath(const void* text,
@@ -258,7 +250,7 @@ void AnalysisCanvas::onDrawTextOnPath(const void* text,
                                       const SkPaint& paint) {
   is_solid_color_ = false;
   is_transparent_ = false;
-  ++draw_op_count_;
+  has_text_ = true;
 }
 
 void AnalysisCanvas::onDrawDRRect(const SkRRect& outer,
@@ -266,7 +258,6 @@ void AnalysisCanvas::onDrawDRRect(const SkRRect& outer,
                                   const SkPaint& paint) {
   is_solid_color_ = false;
   is_transparent_ = false;
-  ++draw_op_count_;
 }
 
 void AnalysisCanvas::drawVertices(SkCanvas::VertexMode,
@@ -280,7 +271,6 @@ void AnalysisCanvas::drawVertices(SkCanvas::VertexMode,
                                   const SkPaint& paint) {
   is_solid_color_ = false;
   is_transparent_ = false;
-  ++draw_op_count_;
 }
 
 // Needed for now, since SkCanvas requires a bitmap, even if it is not backed
@@ -300,7 +290,7 @@ AnalysisCanvas::AnalysisCanvas(int width, int height)
       is_forced_not_transparent_(false),
       is_solid_color_(true),
       is_transparent_(true),
-      draw_op_count_(0) {}
+      has_text_(false) {}
 
 AnalysisCanvas::~AnalysisCanvas() {}
 
@@ -316,12 +306,11 @@ bool AnalysisCanvas::GetColorIfSolid(SkColor* color) const {
   return false;
 }
 
+bool AnalysisCanvas::HasText() const { return has_text_; }
+
 bool AnalysisCanvas::abortDrawing() {
-  // Early out as soon as we have more than one draw op.
-  // TODO(vmpstr): Investigate if 1 is the correct metric here. We need to
-  // balance the amount of time we spend analyzing vs how many tiles would be
-  // solid if the number was higher.
-  return draw_op_count_ > 1;
+  // Early out as soon as we have detected that the tile has text.
+  return HasText();
 }
 
 void AnalysisCanvas::onClipRect(const SkRect& rect, SkRegion::Op op, 

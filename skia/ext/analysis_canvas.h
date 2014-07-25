@@ -22,6 +22,7 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkDrawPictureCallback {
 
   // Returns true when a SkColor can be used to represent result.
   bool GetColorIfSolid(SkColor* color) const;
+  bool HasText() const;
 
   void SetForceNotSolid(bool flag);
   void SetForceNotTransparent(bool flag);
@@ -120,7 +121,7 @@ private:
   bool is_solid_color_;
   SkColor color_;
   bool is_transparent_;
-  int draw_op_count_;
+  bool has_text_;
 };
 
 }  // namespace skia
