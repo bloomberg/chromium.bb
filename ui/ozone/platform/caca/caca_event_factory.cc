@@ -191,7 +191,7 @@ void CacaEventFactory::OnInputEvent(caca_event_t* event, CacaWindow* window) {
         modifier_flags_ &= ~ModifierFromKey(*event);
 
       ui::KeyEvent key_event(
-          type, GetKeyboardCode(*event), modifier_flags_, false);
+          type, GetKeyboardCode(*event), modifier_flags_);
       window->OnCacaEvent(&key_event);
       break;
     }
