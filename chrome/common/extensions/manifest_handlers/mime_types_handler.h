@@ -39,7 +39,7 @@ class MimeTypesHandler {
     handler_url_ = handler_url;
   }
   // The URL that will be used to handle MIME type requests.
-  const std::string handler_url() const { return handler_url_; }
+  const std::string& handler_url() const { return handler_url_; }
 
   const std::set<std::string>& mime_type_set() const { return mime_type_set_; }
 

@@ -48,7 +48,7 @@ class FileBrowserHandler {
   void ClearPatterns();
 
   // Action icon path.
-  const std::string icon_path() const { return default_icon_path_; }
+  const std::string& icon_path() const { return default_icon_path_; }
   void set_icon_path(const std::string& path) {
     default_icon_path_ = path;
   }
