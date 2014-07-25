@@ -844,9 +844,6 @@ crbug.com/359960 compositing/iframes/scrolling-iframe.html [ Pass Failure ]
 crbug.com/359960 virtual/softwarecompositing/iframes/scrolling-iframe.html [ Pass Failure ]
 crbug.com/359961 inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 
-crbug.com/360308 fast/files/file-in-input-display.html [ NeedsRebaseline ]
-crbug.com/360308 http/tests/filesystem/input-display.html [ NeedsRebaseline ]
-
 crbug.com/361133 fast/frames/remove-frame-during-load-event.html [ Pass Crash ]
 
 crbug.com/393521 fast/workers/shared-worker-navigator.html  [ Pass Timeout ]
