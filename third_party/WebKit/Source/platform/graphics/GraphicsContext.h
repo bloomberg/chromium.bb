@@ -293,7 +293,7 @@ public:
         const FloatSize& tileScaleFactor, Image::TileRule hRule = Image::StretchTile, Image::TileRule vRule = Image::StretchTile,
         CompositeOperator = CompositeSourceOver);
 
-    void drawImageBuffer(ImageBuffer*, const FloatRect& destRect, const FloatRect* srcRect = 0, CompositeOperator = CompositeSourceOver);
+    void drawImageBuffer(ImageBuffer*, const FloatRect& destRect, const FloatRect* srcRect = 0, CompositeOperator = CompositeSourceOver, WebBlendMode = WebBlendModeNormal);
 
     void drawPicture(PassRefPtr<SkPicture>, const FloatRect& dest, const FloatRect& src, CompositeOperator, blink::WebBlendMode);
 

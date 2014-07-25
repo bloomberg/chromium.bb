@@ -1043,12 +1043,12 @@ void GraphicsContext::drawTiledImage(Image* image, const IntRect& dest, const In
 }
 
 void GraphicsContext::drawImageBuffer(ImageBuffer* image, const FloatRect& dest,
-    const FloatRect* src, CompositeOperator op)
+    const FloatRect* src, CompositeOperator op, WebBlendMode blendMode)
 {
     if (contextDisabled() || !image)
         return;
 
-    image->draw(this, dest, src, op);
+    image->draw(this, dest, src, op, blendMode);
 }
 
 void GraphicsContext::drawPicture(PassRefPtr<SkPicture> picture, const FloatRect& dest, const FloatRect& src, CompositeOperator op, WebBlendMode blendMode)

@@ -237,7 +237,7 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBu
         GL_UNSIGNED_BYTE, 0, true, false, fromFrontBuffer);
 }
 
-void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect* srcPtr, CompositeOperator op)
+void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect* srcPtr, CompositeOperator op, WebBlendMode blendMode)
 {
     if (!isSurfaceValid())
         return;
@@ -245,7 +245,7 @@ void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, cons
     FloatRect srcRect = srcPtr ? *srcPtr : FloatRect(FloatPoint(), size());
     RefPtr<SkPicture> picture = m_surface->getPicture();
     if (picture) {
-        context->drawPicture(picture.release(), destRect, srcRect, op, blink::WebBlendModeNormal);
+        context->drawPicture(picture.release(), destRect, srcRect, op, blendMode);
         return;
     }
 
@@ -259,7 +259,7 @@ void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, cons
 
     RefPtr<Image> image = BitmapImage::create(NativeImageSkia::create(drawNeedsCopy(m_context.get(), context) ? deepSkBitmapCopy(bitmap) : bitmap));
 
-    context->drawImage(image.get(), destRect, srcRect, op, blink::WebBlendModeNormal, DoNotRespectImageOrientation);
+    context->drawImage(image.get(), destRect, srcRect, op, blendMode, DoNotRespectImageOrientation);
 }
 
 void ImageBuffer::flush()

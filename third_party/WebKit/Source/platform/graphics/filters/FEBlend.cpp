@@ -31,6 +31,7 @@
 #include "platform/graphics/cpu/arm/filters/FEBlendNEON.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/text/TextStream.h"
 #include "wtf/Uint8ClampedArray.h"
 
@@ -62,84 +63,22 @@ bool FEBlend::setBlendMode(BlendModeType mode)
     return true;
 }
 
-static inline unsigned char fastDivideBy255(uint16_t value)
+static WebBlendMode toWebBlendMode(BlendModeType mode)
 {
-    // This is an approximate algorithm for division by 255, but it gives accurate results for 16bit values.
-    uint16_t quotient = value >> 8;
-    uint16_t remainder = value - (quotient * 255) + 1;
-    return quotient + (remainder >> 8);
-}
-
-inline unsigned char feBlendNormal(unsigned char colorA, unsigned char colorB, unsigned char alphaA, unsigned char)
-{
-    return fastDivideBy255((255 - alphaA) * colorB + colorA * 255);
-}
-
-inline unsigned char feBlendMultiply(unsigned char colorA, unsigned char colorB, unsigned char alphaA, unsigned char alphaB)
-{
-    return fastDivideBy255((255 - alphaA) * colorB + (255 - alphaB + colorB) * colorA);
-}
-
-inline unsigned char feBlendScreen(unsigned char colorA, unsigned char colorB, unsigned char, unsigned char)
-{
-    return fastDivideBy255((colorB + colorA) * 255 - colorA * colorB);
-}
-
-inline unsigned char feBlendDarken(unsigned char colorA, unsigned char colorB, unsigned char alphaA, unsigned char alphaB)
-{
-    return fastDivideBy255(std::min((255 - alphaA) * colorB + colorA * 255, (255 - alphaB) * colorA + colorB * 255));
-}
-
-inline unsigned char feBlendLighten(unsigned char colorA, unsigned char colorB, unsigned char alphaA, unsigned char alphaB)
-{
-    return fastDivideBy255(std::max((255 - alphaA) * colorB + colorA * 255, (255 - alphaB) * colorA + colorB * 255));
-}
-
-inline unsigned char feBlendUnknown(unsigned char, unsigned char, unsigned char, unsigned char)
-{
-    return 0;
-}
-
-template<BlendType BlendFunction>
-static void platformApply(unsigned char* sourcePixelA, unsigned char* sourcePixelB,
-                          unsigned char* destinationPixel, unsigned pixelArrayLength)
-{
-    unsigned len = pixelArrayLength / 4;
-    for (unsigned pixelOffset = 0; pixelOffset < len; pixelOffset++) {
-        unsigned char alphaA = sourcePixelA[3];
-        unsigned char alphaB = sourcePixelB[3];
-        destinationPixel[0] = BlendFunction(sourcePixelA[0], sourcePixelB[0], alphaA, alphaB);
-        destinationPixel[1] = BlendFunction(sourcePixelA[1], sourcePixelB[1], alphaA, alphaB);
-        destinationPixel[2] = BlendFunction(sourcePixelA[2], sourcePixelB[2], alphaA, alphaB);
-        destinationPixel[3] = 255 - fastDivideBy255((255 - alphaA) * (255 - alphaB));
-        sourcePixelA += 4;
-        sourcePixelB += 4;
-        destinationPixel += 4;
-    }
-}
-
-void FEBlend::platformApplyGeneric(unsigned char* sourcePixelA, unsigned char* sourcePixelB,
-                                   unsigned char* destinationPixel, unsigned pixelArrayLength)
-{
-    switch (m_mode) {
+    switch (mode) {
     case FEBLEND_MODE_NORMAL:
-        platformApply<feBlendNormal>(sourcePixelA, sourcePixelB, destinationPixel, pixelArrayLength);
-        break;
+        return WebBlendModeNormal;
     case FEBLEND_MODE_MULTIPLY:
-        platformApply<feBlendMultiply>(sourcePixelA, sourcePixelB, destinationPixel, pixelArrayLength);
-        break;
+        return WebBlendModeMultiply;
     case FEBLEND_MODE_SCREEN:
-        platformApply<feBlendScreen>(sourcePixelA, sourcePixelB, destinationPixel, pixelArrayLength);
-        break;
+        return WebBlendModeScreen;
     case FEBLEND_MODE_DARKEN:
-        platformApply<feBlendDarken>(sourcePixelA, sourcePixelB, destinationPixel, pixelArrayLength);
-        break;
+        return WebBlendModeDarken;
     case FEBLEND_MODE_LIGHTEN:
-        platformApply<feBlendLighten>(sourcePixelA, sourcePixelB, destinationPixel, pixelArrayLength);
-        break;
-    case FEBLEND_MODE_UNKNOWN:
-        platformApply<feBlendUnknown>(sourcePixelA, sourcePixelB, destinationPixel, pixelArrayLength);
-        break;
+        return WebBlendModeLighten;
+    default:
+        ASSERT_NOT_REACHED();
+        return WebBlendModeNormal;
     }
 }
 
@@ -148,9 +87,9 @@ void FEBlend::applySoftware()
     FilterEffect* in = inputEffect(0);
     FilterEffect* in2 = inputEffect(1);
 
-    ASSERT(m_mode > FEBLEND_MODE_UNKNOWN);
-    ASSERT(m_mode <= FEBLEND_MODE_LIGHTEN);
+    ASSERT(m_mode > FEBLEND_MODE_UNKNOWN && m_mode <= FEBLEND_MODE_LIGHTEN);
 
+#if HAVE(ARM_NEON_INTRINSICS)
     Uint8ClampedArray* dstPixelArray = createPremultipliedImageResult();
     if (!dstPixelArray)
         return;
@@ -164,11 +103,10 @@ void FEBlend::applySoftware()
     unsigned pixelArrayLength = srcPixelArrayA->length();
     ASSERT(pixelArrayLength == srcPixelArrayB->length());
 
-#if HAVE(ARM_NEON_INTRINSICS)
     if (pixelArrayLength >= 8) {
         platformApplyNEON(srcPixelArrayA->data(), srcPixelArrayB->data(), dstPixelArray->data(), pixelArrayLength);
-    }
-    else { // If there is just one pixel we expand it to two.
+    } else {
+        // If there is just one pixel we expand it to two.
         ASSERT(pixelArrayLength > 0);
         uint32_t sourceA[2] = {0, 0};
         uint32_t sourceBAndDest[2] = {0, 0};
@@ -179,35 +117,29 @@ void FEBlend::applySoftware()
         reinterpret_cast<uint32_t*>(dstPixelArray->data())[0] = sourceBAndDest[0];
     }
 #else
-    platformApplyGeneric(srcPixelArrayA->data(), srcPixelArrayB->data(), dstPixelArray->data(), pixelArrayLength);
-#endif
-}
+    ImageBuffer* resultImage = createImageBufferResult();
+    if (!resultImage)
+        return;
+    GraphicsContext* filterContext = resultImage->context();
 
-static SkXfermode::Mode toSkiaMode(BlendModeType mode)
-{
-    switch (mode) {
-    case FEBLEND_MODE_NORMAL:
-        return SkXfermode::kSrcOver_Mode;
-    case FEBLEND_MODE_MULTIPLY:
-        return SkXfermode::kMultiply_Mode;
-    case FEBLEND_MODE_SCREEN:
-        return SkXfermode::kScreen_Mode;
-    case FEBLEND_MODE_DARKEN:
-        return SkXfermode::kDarken_Mode;
-    case FEBLEND_MODE_LIGHTEN:
-        return SkXfermode::kLighten_Mode;
-    default:
-        return SkXfermode::kSrcOver_Mode;
-    }
+    ImageBuffer* imageBuffer = in->asImageBuffer();
+    ImageBuffer* imageBuffer2 = in2->asImageBuffer();
+    ASSERT(imageBuffer);
+    ASSERT(imageBuffer2);
+
+    WebBlendMode blendMode = toWebBlendMode(m_mode);
+    filterContext->drawImageBuffer(imageBuffer2, drawingRegionOfInputImage(in2->absolutePaintRect()));
+    filterContext->drawImageBuffer(imageBuffer, drawingRegionOfInputImage(in->absolutePaintRect()), 0, CompositeSourceOver, blendMode);
+#endif
 }
 
 PassRefPtr<SkImageFilter> FEBlend::createImageFilter(SkiaImageFilterBuilder* builder)
 {
     RefPtr<SkImageFilter> foreground(builder->build(inputEffect(0), operatingColorSpace()));
     RefPtr<SkImageFilter> background(builder->build(inputEffect(1), operatingColorSpace()));
-    SkAutoTUnref<SkXfermode> mode(SkXfermode::Create(toSkiaMode(m_mode)));
+    RefPtr<SkXfermode> mode(WebCoreCompositeToSkiaComposite(CompositeSourceOver, toWebBlendMode(m_mode)));
     SkImageFilter::CropRect cropRect = getCropRect(builder->cropOffset());
-    return adoptRef(SkXfermodeImageFilter::Create(mode, background.get(), foreground.get(), &cropRect));
+    return adoptRef(SkXfermodeImageFilter::Create(mode.get(), background.get(), foreground.get(), &cropRect));
 }
 
 static TextStream& operator<<(TextStream& ts, const BlendModeType& type)
