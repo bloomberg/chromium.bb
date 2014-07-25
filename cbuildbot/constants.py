@@ -36,11 +36,9 @@ HOME_DIRECTORY = os.path.expanduser('~')
 # available here. This directory will not exist otherwise.
 CIDB_PROD_BOT_CREDS = os.path.join(HOME_DIRECTORY, '.cidb_creds',
                                    'prod_cidb_bot')
+CIDB_DEBUG_BOT_CREDS = os.path.join(HOME_DIRECTORY, '.cidb_creds',
+                                    'debug_cidb_bot')
 
-# If the source checkout includes internal repos, then cidb test instance
-# credentials will be available. Otherwise, these directories will not exist.
-CIDB_TEST_BOT_CREDS = os.path.join(SOURCE_ROOT, 'crostools', 'cidb',
-                                   'cidb_test_bot')
 
 # TODO: Eliminate these or merge with manifest_version.py:STATUS_PASSED
 # crbug.com/318930

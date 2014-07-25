@@ -527,8 +527,8 @@ def GetCIDBConnectionForBuilder(builder_run):
   Returns:
     A CIDBConnection instance.
   """
-  if builder_run.options.test_cidb:
-    return CIDBConnection(constants.CIDB_TEST_BOT_CREDS)
+  if builder_run.options.debug:
+    return CIDBConnection(constants.CIDB_DEBUG_BOT_CREDS)
   else:
     return CIDBConnection(constants.CIDB_PROD_BOT_CREDS)
 
