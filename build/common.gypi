@@ -3999,7 +3999,6 @@
               ['OS=="mac"', {
                 'cflags': [
                   '-mllvm -asan-globals=0',  # http://crbug.com/352073
-                  '-Wno-error=unused-function',  # http://crbug.com/162783
                 ],
               }],
             ],
@@ -4016,13 +4015,6 @@
                   '-fsanitize=undefined',
                   # -fsanitize=vptr is incompatible with -fno-rtti.
                   '-fno-sanitize=vptr',
-                ],
-              }],
-            ],
-            'conditions': [
-              ['OS=="mac"', {
-                'cflags': [
-                  '-Wno-error=unused-function',  # http://crbug.com/162783
                 ],
               }],
             ],
@@ -4045,13 +4037,6 @@
                 ],
                 'defines': [
                   'UNDEFINED_SANITIZER',
-                ],
-              }],
-            ],
-            'conditions': [
-              ['OS=="mac"', {
-                'cflags': [
-                  '-Wno-error=unused-function',  # http://crbug.com/162783
                 ],
               }],
             ],
@@ -4638,13 +4623,6 @@
               '-Wl,--warn-shared-textrel',
               '-Wl,--fatal-warnings',
             ],
-            'conditions': [
-              ['OS=="mac"', {
-                'cflags!': [
-                  '-Wno-error=unused-function',  # http://crbug.com/162783
-                ],
-              }],
-            ],
           }],
           # Settings for building host targets on mac.
           ['_toolset=="host" and host_os=="mac"', {
@@ -4802,7 +4780,6 @@
               'OTHER_CFLAGS': [
                 '-fsanitize=address',
                 '-mllvm -asan-globals=0',  # http://crbug.com/352073
-                '-Wno-error=unused-function',  # http://crbug.com/162783
                 '-gline-tables-only',
               ],
             },
