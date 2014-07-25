@@ -82,7 +82,6 @@
         "syscalls/fchown.c",
         "syscalls/fcntl.c",
         "syscalls/fdatasync.c",
-        "syscalls/fdopen.c",
         "syscalls/freeaddrinfo.c",
         "syscalls/fsync.c",
         "syscalls/ftruncate.c",
