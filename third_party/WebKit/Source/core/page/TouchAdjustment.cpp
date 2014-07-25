@@ -473,6 +473,11 @@ bool findNodeWithLowestDistanceMetric(Node*& targetNode, IntPoint& targetPoint, 
             }
         }
     }
+
+    // As for HitTestResult.innerNode, we skip over pseudo elements.
+    if (targetNode && targetNode->isPseudoElement())
+        targetNode = targetNode->parentOrShadowHostNode();
+
     if (targetNode) {
         targetArea = targetNode->document().view()->contentsToWindow(targetArea);
     }
