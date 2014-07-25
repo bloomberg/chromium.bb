@@ -797,9 +797,11 @@ class ExecutionQueue(object):
     try:
       self.queued.append(d)
       total = len(self.queued) + len(self.ran) + len(self.running)
+      if self.jobs == 1:
+        total += 1
       logging.debug('enqueued(%s)' % d.name)
       if self.progress:
-        self.progress._total = total + 1
+        self.progress._total = total
         self.progress.update(0)
       self.ready_cond.notifyAll()
     finally:
