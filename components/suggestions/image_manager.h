@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SEARCH_SUGGESTIONS_IMAGE_MANAGER_H_
-#define CHROME_BROWSER_SEARCH_SUGGESTIONS_IMAGE_MANAGER_H_
+#ifndef COMPONENTS_SUGGESTIONS_IMAGE_MANAGER_H_
+#define COMPONENTS_SUGGESTIONS_IMAGE_MANAGER_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "chrome/browser/search/suggestions/proto/suggestions.pb.h"
+#include "components/suggestions/proto/suggestions.pb.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
@@ -35,4 +35,4 @@ class ImageManager {
 
 }  // namespace suggestions
 
-#endif  // CHROME_BROWSER_SEARCH_SUGGESTIONS_IMAGE_MANAGER_H_
+#endif  // COMPONENTS_SUGGESTIONS_IMAGE_MANAGER_H_

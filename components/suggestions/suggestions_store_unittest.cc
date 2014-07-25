@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search/suggestions/suggestions_store.h"
+#include "components/suggestions/suggestions_store.h"
 
-#include "chrome/browser/search/suggestions/proto/suggestions.pb.h"
-#include "chrome/test/base/testing_pref_service_syncable.h"
+#include "components/pref_registry/testing_pref_service_syncable.h"
+#include "components/suggestions/proto/suggestions.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using user_prefs::TestingPrefServiceSyncable;
 
 namespace suggestions {
 

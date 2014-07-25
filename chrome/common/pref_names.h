@@ -392,9 +392,6 @@ extern const char kEasyUnlockPairing[];
 
 extern const char kZeroSuggestCachedResults[];
 
-extern const char kSuggestionsData[];
-extern const char kSuggestionsBlacklist[];
-
 // Local state prefs. Please add Profile prefs above instead.
 extern const char kCertRevocationCheckingEnabled[];
 extern const char kCertRevocationCheckingRequiredLocalAnchors[];

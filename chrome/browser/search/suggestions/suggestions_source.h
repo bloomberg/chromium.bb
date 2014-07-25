@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/search/suggestions/proto/suggestions.pb.h"
+#include "components/suggestions/proto/suggestions.pb.h"
 #include "content/public/browser/url_data_source.h"
 #include "url/gurl.h"
 

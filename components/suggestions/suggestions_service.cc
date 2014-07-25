@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search/suggestions/suggestions_service.h"
+#include "components/suggestions/suggestions_service.h"
 
 #include <sstream>
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "chrome/browser/search/suggestions/blacklist_store.h"
-#include "chrome/browser/search/suggestions/suggestions_store.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/suggestions/blacklist_store.h"
+#include "components/suggestions/suggestions_store.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_http_header_provider.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -31,7 +31,6 @@
 #include "url/gurl.h"
 
 using base::CancelableClosure;
-using content::BrowserThread;
 
 namespace suggestions {
 
@@ -156,7 +155,7 @@ bool SuggestionsService::IsControlGroup() {
 
 void SuggestionsService::FetchSuggestionsData(
     SuggestionsService::ResponseCallback callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   FetchSuggestionsDataNoTimeout(callback);
 
@@ -164,14 +163,14 @@ void SuggestionsService::FetchSuggestionsData(
   // after some time. Cancels the previous such task, if one existed.
   pending_timeout_closure_.reset(new CancelableClosure(base::Bind(
       &SuggestionsService::OnRequestTimeout, weak_ptr_factory_.GetWeakPtr())));
-  BrowserThread::PostDelayedTask(
-      BrowserThread::UI, FROM_HERE, pending_timeout_closure_->callback(),
+  base::MessageLoopProxy::current()->PostDelayedTask(
+      FROM_HERE, pending_timeout_closure_->callback(),
       base::TimeDelta::FromMilliseconds(request_timeout_ms_));
 }
 
 void SuggestionsService::FetchSuggestionsDataNoTimeout(
     SuggestionsService::ResponseCallback callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (pending_request_.get()) {
     // Request already exists, so just add requestor to queue.
     waiting_requestors_.push_back(callback);
@@ -193,7 +192,7 @@ void SuggestionsService::GetPageThumbnail(
 void SuggestionsService::BlacklistURL(
     const GURL& candidate_url,
     const SuggestionsService::ResponseCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   waiting_requestors_.push_back(callback);
 
   // Blacklist locally, for immediate effect.
@@ -204,7 +203,6 @@ void SuggestionsService::BlacklistURL(
 
   // If there's an ongoing request, let it complete.
   if (pending_request_.get()) return;
-
   IssueRequest(BuildBlacklistRequestURL(blacklist_url_prefix_, candidate_url));
 }
 
@@ -255,14 +253,13 @@ net::URLFetcher* SuggestionsService::CreateSuggestionsRequest(const GURL& url) {
 }
 
 void SuggestionsService::OnRequestTimeout() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   ServeFromCache();
 }
 
 void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(pending_request_.get(), source);
-
   // We no longer need the timeout closure. Delete it whether or not it has run.
   // If it hasn't, this cancels it.
   pending_timeout_closure_.reset();
@@ -346,7 +343,7 @@ void SuggestionsService::FilterAndServe(SuggestionsProfile* suggestions) {
 }
 
 void SuggestionsService::ScheduleBlacklistUpload(bool last_request_successful) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   UpdateBlacklistDelay(last_request_successful);
 
@@ -356,14 +353,14 @@ void SuggestionsService::ScheduleBlacklistUpload(bool last_request_successful) {
     base::Closure blacklist_cb =
         base::Bind(&SuggestionsService::UploadOneFromBlacklist,
                    weak_ptr_factory_.GetWeakPtr());
-    BrowserThread::PostDelayedTask(
-        BrowserThread::UI, FROM_HERE, blacklist_cb,
+    base::MessageLoopProxy::current()->PostDelayedTask(
+        FROM_HERE, blacklist_cb,
         base::TimeDelta::FromSeconds(blacklist_delay_sec_));
   }
 }
 
 void SuggestionsService::UploadOneFromBlacklist() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // If there's an ongoing request, let it complete.
   if (pending_request_.get()) return;
@@ -377,7 +374,7 @@ void SuggestionsService::UploadOneFromBlacklist() {
 }
 
 void SuggestionsService::UpdateBlacklistDelay(bool last_request_successful) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (last_request_successful) {
     blacklist_delay_sec_ = kBlacklistDefaultDelaySec;

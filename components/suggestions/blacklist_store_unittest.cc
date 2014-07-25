@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search/suggestions/blacklist_store.h"
+#include "components/suggestions/blacklist_store.h"
 
 #include <set>
 #include <string>
@@ -11,9 +11,8 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/test/statistics_delta_reader.h"
-#include "chrome/browser/search/suggestions/proto/suggestions.pb.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "components/suggestions/proto/suggestions.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using user_prefs::TestingPrefServiceSyncable;
@@ -52,10 +51,27 @@ void ValidateSuggestions(const SuggestionsProfile& expected,
 
 }  // namespace
 
-TEST(BlacklistStoreTest, BasicInteractions) {
-  TestingPrefServiceSyncable prefs;
-  BlacklistStore::RegisterProfilePrefs(prefs.registry());
-  BlacklistStore blacklist_store(&prefs);
+class BlacklistStoreTest : public testing::Test {
+ public:
+  BlacklistStoreTest()
+    : pref_service_(new user_prefs::TestingPrefServiceSyncable) {}
+
+  virtual void SetUp() OVERRIDE {
+    BlacklistStore::RegisterProfilePrefs(pref_service()->registry());
+  }
+
+  user_prefs::TestingPrefServiceSyncable* pref_service() {
+    return pref_service_.get();
+  }
+
+ private:
+  scoped_ptr<user_prefs::TestingPrefServiceSyncable> pref_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(BlacklistStoreTest);
+};
+
+TEST_F(BlacklistStoreTest, BasicInteractions) {
+  BlacklistStore blacklist_store(pref_service());
 
   // Create suggestions with A, B and C. C and D will be added to the blacklist.
   std::set<std::string> suggested_urls;
@@ -87,25 +103,19 @@ TEST(BlacklistStoreTest, BasicInteractions) {
   ValidateSuggestions(original_suggestions, suggestions);
 }
 
-TEST(BlacklistStoreTest, BlacklistTwiceSuceeds) {
-  TestingPrefServiceSyncable prefs;
-  BlacklistStore::RegisterProfilePrefs(prefs.registry());
-  BlacklistStore blacklist_store(&prefs);
+TEST_F(BlacklistStoreTest, BlacklistTwiceSuceeds) {
+  BlacklistStore blacklist_store(pref_service());
   EXPECT_TRUE(blacklist_store.BlacklistUrl(GURL(kTestUrlA)));
   EXPECT_TRUE(blacklist_store.BlacklistUrl(GURL(kTestUrlA)));
 }
 
-TEST(BlacklistStoreTest, RemoveUnknownUrlSucceeds) {
-  TestingPrefServiceSyncable prefs;
-  BlacklistStore::RegisterProfilePrefs(prefs.registry());
-  BlacklistStore blacklist_store(&prefs);
+TEST_F(BlacklistStoreTest, RemoveUnknownUrlSucceeds) {
+  BlacklistStore blacklist_store(pref_service());
   EXPECT_TRUE(blacklist_store.RemoveUrl(GURL(kTestUrlA)));
 }
 
-TEST(BlacklistStoreTest, GetFirstUrlFromBlacklist) {
-  TestingPrefServiceSyncable prefs;
-  BlacklistStore::RegisterProfilePrefs(prefs.registry());
-  BlacklistStore blacklist_store(&prefs);
+TEST_F(BlacklistStoreTest, GetFirstUrlFromBlacklist) {
+  BlacklistStore blacklist_store(pref_service());
 
   // Expect GetFirstUrlFromBlacklist fails when blacklist empty.
   GURL retrieved;
@@ -122,14 +132,12 @@ TEST(BlacklistStoreTest, GetFirstUrlFromBlacklist) {
               retrieved_string == std::string(kTestUrlB));
 }
 
-TEST(BlacklistStoreLogTest, LogsBlacklistSize) {
-  content::TestBrowserThreadBundle bundle;
+TEST_F(BlacklistStoreTest, LogsBlacklistSize) {
   base::StatisticsDeltaReader statistics_delta_reader;
 
   // Create a first store - blacklist is empty at this point.
-  TestingPrefServiceSyncable prefs;
-  BlacklistStore::RegisterProfilePrefs(prefs.registry());
-  scoped_ptr<BlacklistStore> blacklist_store(new BlacklistStore(&prefs));
+  scoped_ptr<BlacklistStore> blacklist_store(
+      new BlacklistStore(pref_service()));
   scoped_ptr<base::HistogramSamples> samples(
       statistics_delta_reader.GetHistogramSamplesSinceCreation(
           "Suggestions.LocalBlacklistSize"));
@@ -141,7 +149,7 @@ TEST(BlacklistStoreLogTest, LogsBlacklistSize) {
   EXPECT_TRUE(blacklist_store->BlacklistUrl(GURL(kTestUrlB)));
 
   // Create a new BlacklistStore and verify the counts.
-  blacklist_store.reset(new BlacklistStore(&prefs));
+  blacklist_store.reset(new BlacklistStore(pref_service()));
   samples = statistics_delta_reader.GetHistogramSamplesSinceCreation(
       "Suggestions.LocalBlacklistSize");
   EXPECT_EQ(2, samples->TotalCount());

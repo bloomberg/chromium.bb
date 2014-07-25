@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search/suggestions/suggestions_store.h"
+#include "components/suggestions/suggestions_store.h"
 
 #include <string>
 
 #include "base/base64.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/suggestions/suggestions_pref_names.h"
 
 namespace suggestions {
 

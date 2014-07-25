@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search/suggestions/blacklist_store.h"
+#include "components/suggestions/blacklist_store.h"
 
 #include <set>
 #include <string>
@@ -10,8 +10,8 @@
 #include "base/base64.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/suggestions/suggestions_pref_names.h"
 
 namespace suggestions {
 

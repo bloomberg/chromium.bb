@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search/suggestions/suggestions_service.h"
+#include "components/suggestions/suggestions_service.h"
 
 #include <map>
 #include <sstream>
@@ -10,17 +10,16 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/search/suggestions/blacklist_store.h"
-#include "chrome/browser/search/suggestions/image_manager.h"
-#include "chrome/browser/search/suggestions/proto/suggestions.pb.h"
-#include "chrome/browser/search/suggestions/suggestions_service_factory.h"
-#include "chrome/browser/search/suggestions/suggestions_store.h"
+#include "components/suggestions/blacklist_store.h"
+#include "components/suggestions/image_manager.h"
+#include "components/suggestions/proto/suggestions.pb.h"
+#include "components/suggestions/suggestions_store.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -148,8 +147,8 @@ class SuggestionsServiceTest : public testing::Test {
   virtual ~SuggestionsServiceTest() {}
 
   virtual void SetUp() OVERRIDE {
-    request_context_ =
-        new net::TestURLRequestContextGetter(base::MessageLoopProxy::current());
+    request_context_ = new net::TestURLRequestContextGetter(
+        io_message_loop_.message_loop_proxy());
   }
 
   // Enables the "ChromeSuggestions.Group1" field trial.
@@ -233,20 +232,21 @@ class SuggestionsServiceTest : public testing::Test {
         &SuggestionsServiceTest::CheckSuggestionsData, base::Unretained(this)));
 
     if (!interleaved_requests)
-      base::MessageLoop::current()->RunUntilIdle();  // Let request complete.
+      io_message_loop_.RunUntilIdle();  // Let request complete.
 
     // Send the request a second time.
     suggestions_service->FetchSuggestionsDataNoTimeout(base::Bind(
         &SuggestionsServiceTest::CheckSuggestionsData, base::Unretained(this)));
 
     // (Testing only) wait until suggestion fetch is complete.
-    base::MessageLoop::current()->RunUntilIdle();
+    io_message_loop_.RunUntilIdle();
 
     // Ensure that CheckSuggestionsData() ran twice.
     EXPECT_EQ(2, suggestions_data_check_count_);
   }
 
  protected:
+  base::MessageLoopForIO io_message_loop_;
   net::FakeURLFetcherFactory factory_;
   // Only used if the SuggestionsService is built with mocks. Not owned.
   MockSuggestionsStore* mock_suggestions_store_;
@@ -255,7 +255,6 @@ class SuggestionsServiceTest : public testing::Test {
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<base::FieldTrialList> field_trial_list_;
   scoped_refptr<base::FieldTrial> field_trial_;
 
@@ -309,7 +308,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataRequestError) {
                  base::Unretained(this)));
 
   // (Testing only) wait until suggestion fetch is complete.
-  base::MessageLoop::current()->RunUntilIdle();
+  io_message_loop_.RunUntilIdle();
 
   // Ensure that ExpectEmptySuggestionsProfile ran once.
   EXPECT_EQ(1, suggestions_empty_data_count_);
@@ -344,7 +343,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataResponseNotOK) {
                  base::Unretained(this)));
 
   // (Testing only) wait until suggestion fetch is complete.
-  base::MessageLoop::current()->RunUntilIdle();
+  io_message_loop_.RunUntilIdle();
 
   // Ensure that ExpectEmptySuggestionsProfile ran once.
   EXPECT_EQ(1, suggestions_empty_data_count_);
@@ -385,7 +384,7 @@ TEST_F(SuggestionsServiceTest, BlacklistURL) {
                                 base::Unretained(this)));
 
   // (Testing only) wait until blacklist request is complete.
-  base::MessageLoop::current()->RunUntilIdle();
+  io_message_loop_.RunUntilIdle();
 
   // Ensure that CheckSuggestionsData() ran once.
   EXPECT_EQ(1, suggestions_data_check_count_);
@@ -441,7 +440,11 @@ TEST_F(SuggestionsServiceTest, BlacklistURLFails) {
                            net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
   // (Testing only) wait until both requests are complete.
+  io_message_loop_.RunUntilIdle();
+  // ... Other task gets posted to the message loop.
   base::MessageLoop::current()->RunUntilIdle();
+  // ... And completes.
+  io_message_loop_.RunUntilIdle();
 
   // Ensure that CheckSuggestionsData() ran once.
   EXPECT_EQ(1, suggestions_data_check_count_);

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SEARCH_SUGGESTIONS_SUGGESTIONS_SERVICE_H_
-#define CHROME_BROWSER_SEARCH_SUGGESTIONS_SUGGESTIONS_SERVICE_H_
+#ifndef COMPONENTS_SUGGESTIONS_SUGGESTIONS_SERVICE_H_
+#define COMPONENTS_SUGGESTIONS_SUGGESTIONS_SERVICE_H_
 
 #include <string>
 #include <vector>
@@ -14,10 +14,11 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "chrome/browser/search/suggestions/image_manager.h"
-#include "chrome/browser/search/suggestions/proto/suggestions.pb.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/suggestions/image_manager.h"
+#include "components/suggestions/proto/suggestions.pb.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
@@ -49,10 +50,11 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
  public:
   typedef base::Callback<void(const SuggestionsProfile&)> ResponseCallback;
 
-  SuggestionsService(net::URLRequestContextGetter* url_request_context,
-                     scoped_ptr<SuggestionsStore> suggestions_store,
-                     scoped_ptr<ImageManager> thumbnail_manager,
-                     scoped_ptr<BlacklistStore> blacklist_store);
+  SuggestionsService(
+      net::URLRequestContextGetter* url_request_context,
+      scoped_ptr<SuggestionsStore> suggestions_store,
+      scoped_ptr<ImageManager> thumbnail_manager,
+      scoped_ptr<BlacklistStore> blacklist_store);
   virtual ~SuggestionsService();
 
   // Whether this service is enabled.
@@ -135,6 +137,8 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   int blacklist_delay() const { return blacklist_delay_sec_; }
   void set_blacklist_delay(int delay) { blacklist_delay_sec_ = delay; }
 
+  base::ThreadChecker thread_checker_;
+
   // The cache for the suggestions.
   scoped_ptr<SuggestionsStore> suggestions_store_;
 
@@ -182,4 +186,4 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
 
 }  // namespace suggestions
 
-#endif  // CHROME_BROWSER_SEARCH_SUGGESTIONS_SUGGESTIONS_SERVICE_H_
+#endif  // COMPONENTS_SUGGESTIONS_SUGGESTIONS_SERVICE_H_

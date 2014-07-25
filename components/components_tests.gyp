@@ -186,6 +186,9 @@
             'storage_monitor/storage_monitor_mac_unittest.mm',
             'storage_monitor/storage_monitor_unittest.cc',
             'storage_monitor/storage_monitor_win_unittest.cc',
+            'suggestions/blacklist_store_unittest.cc',
+            'suggestions/suggestions_service_unittest.cc',
+            'suggestions/suggestions_store_unittest.cc',
             'sync_driver/non_ui_data_type_controller_unittest.cc',
             'sync_driver/data_type_manager_impl_unittest.cc',
             'sync_driver/generic_change_processor_unittest.cc',
@@ -366,6 +369,9 @@
             'components.gyp:signin_core_browser',
             'components.gyp:signin_core_browser_test_support',
             '../google_apis/google_apis.gyp:google_apis_test_support',
+
+            # Dependencies of suggestions
+            'components.gyp:suggestions',
 
             # Dependencies of sync_driver
             'components.gyp:sync_driver_test_support',
@@ -767,7 +773,7 @@
             'components.gyp:autofill_content_browser',
             'components.gyp:dom_distiller_content',
             'components.gyp:dom_distiller_core',
-            'components.gyp:pref_registry_test_support', 
+            'components.gyp:pref_registry_test_support',
             'components_resources.gyp:components_resources',
             '../content/content.gyp:content_common',
             '../content/content.gyp:content_gpu',

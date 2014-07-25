@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SEARCH_SUGGESTIONS_SUGGESTIONS_STORE_H_
-#define CHROME_BROWSER_SEARCH_SUGGESTIONS_SUGGESTIONS_STORE_H_
+#ifndef COMPONENTS_SUGGESTIONS_SUGGESTIONS_STORE_H_
+#define COMPONENTS_SUGGESTIONS_SUGGESTIONS_STORE_H_
 
 #include "base/macros.h"
-#include "chrome/browser/search/suggestions/proto/suggestions.pb.h"
+#include "components/suggestions/proto/suggestions.pb.h"
 
 class PrefService;
 
@@ -52,4 +52,4 @@ class SuggestionsStore {
 
 }  // namespace suggestions
 
-#endif  // CHROME_BROWSER_SEARCH_SUGGESTIONS_SUGGESTIONS_STORE_H_
+#endif  // COMPONENTS_SUGGESTIONS_SUGGESTIONS_STORE_H_

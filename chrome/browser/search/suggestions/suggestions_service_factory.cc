@@ -8,19 +8,20 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/suggestions/blacklist_store.h"
-#include "chrome/browser/search/suggestions/image_manager.h"
-#include "chrome/browser/search/suggestions/proto/suggestions.pb.h"
-#include "chrome/browser/search/suggestions/suggestions_service.h"
-#include "chrome/browser/search/suggestions/suggestions_store.h"
 #include "chrome/browser/search/suggestions/thumbnail_manager.h"
-#include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/leveldb_proto/proto_database.h"
 #include "components/leveldb_proto/proto_database_impl.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/suggestions/blacklist_store.h"
+#include "components/suggestions/image_manager.h"
+#include "components/suggestions/proto/suggestions.pb.h"
+#include "components/suggestions/suggestions_service.h"
+#include "components/suggestions/suggestions_store.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+
+using content::BrowserThread;
 
 namespace suggestions {
 
@@ -55,8 +56,8 @@ content::BrowserContext* SuggestionsServiceFactory::GetBrowserContextToUse(
 KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
-          content::BrowserThread::GetBlockingPool()->GetSequenceToken());
+      BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
+          BrowserThread::GetBlockingPool()->GetSequenceToken());
 
   Profile* the_profile = static_cast<Profile*>(profile);
   scoped_ptr<SuggestionsStore> suggestions_store(

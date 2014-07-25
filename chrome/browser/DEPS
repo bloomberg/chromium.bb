@@ -55,6 +55,7 @@ include_rules = [
   "+components/signin",
   "+components/startup_metric_utils",
   "+components/storage_monitor",
+  "+components/suggestions",
   "+components/sync_driver",
   "+components/translate/content/browser",
   "+components/translate/content/common",

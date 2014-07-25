@@ -1,0 +1,8 @@
+include_rules = [
+  "+components/keyed_service/core",
+  "+components/pref_registry",
+  "+components/variations",
+  "+net",
+  "+ui",
+  "+url",
+]

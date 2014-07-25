@@ -15,9 +15,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
-#include "chrome/browser/search/suggestions/image_manager.h"
-#include "chrome/browser/search/suggestions/proto/suggestions.pb.h"
 #include "components/leveldb_proto/proto_database.h"
+#include "components/suggestions/image_manager.h"
+#include "components/suggestions/proto/suggestions.pb.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
