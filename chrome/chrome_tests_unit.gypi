@@ -2344,6 +2344,7 @@
         ['chromeos==1', {
           'dependencies': [
             '../ash/ash_resources.gyp:ash_resources',
+            '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
           ],
           'sources!': [
             'browser/extensions/api/messaging/native_message_process_host_unittest.cc',

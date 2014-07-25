@@ -11,6 +11,10 @@
 #include "grit/theme_resources_map.h"
 #include "grit/ui_resources_map.h"
 
+#if defined(OS_CHROMEOS)
+#include "grit/ui_chromeos_resources_map.h"
+#endif
+
 namespace {
 
 // A wrapper class that holds a hash_map between resource strings and resource
@@ -25,6 +29,10 @@ class ThemeMap {
       id_map_[kThemeResources[i].name] = kThemeResources[i].value;
     for (size_t i = 0; i < kUiResourcesSize; ++i)
       id_map_[kUiResources[i].name] = kUiResources[i].value;
+#if defined(OS_CHROMEOS)
+    for (size_t i = 0; i < kUiChromeosResourcesSize; ++i)
+      id_map_[kUiChromeosResources[i].name] = kUiChromeosResources[i].value;
+#endif
   }
 
   int GetId(const std::string& resource_name) {
