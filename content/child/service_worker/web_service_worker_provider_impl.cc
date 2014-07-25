@@ -71,14 +71,14 @@ void WebServiceWorkerProviderImpl::setClient(
 void WebServiceWorkerProviderImpl::registerServiceWorker(
     const WebURL& pattern,
     const WebURL& script_url,
-    WebServiceWorkerCallbacks* callbacks) {
+    WebServiceWorkerRegistrationCallbacks* callbacks) {
   GetDispatcher()->RegisterServiceWorker(
       provider_id_, pattern, script_url, callbacks);
 }
 
 void WebServiceWorkerProviderImpl::unregisterServiceWorker(
     const WebURL& pattern,
-    WebServiceWorkerCallbacks* callbacks) {
+    WebServiceWorkerRegistrationCallbacks* callbacks) {
   GetDispatcher()->UnregisterServiceWorker(
       provider_id_, pattern, callbacks);
 }

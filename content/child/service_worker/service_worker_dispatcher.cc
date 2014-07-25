@@ -11,6 +11,7 @@
 #include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/child/service_worker/web_service_worker_impl.h"
+#include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
@@ -81,12 +82,12 @@ void ServiceWorkerDispatcher::RegisterServiceWorker(
     int provider_id,
     const GURL& pattern,
     const GURL& script_url,
-    WebServiceWorkerProvider::WebServiceWorkerCallbacks* callbacks) {
+    WebServiceWorkerRegistrationCallbacks* callbacks) {
   DCHECK(callbacks);
 
   if (pattern.possibly_invalid_spec().size() > GetMaxURLChars() ||
       script_url.possibly_invalid_spec().size() > GetMaxURLChars()) {
-    scoped_ptr<WebServiceWorkerProvider::WebServiceWorkerCallbacks>
+    scoped_ptr<WebServiceWorkerRegistrationCallbacks>
         owned_callbacks(callbacks);
     scoped_ptr<WebServiceWorkerError> error(new WebServiceWorkerError(
         WebServiceWorkerError::ErrorTypeSecurity, "URL too long"));
@@ -102,11 +103,11 @@ void ServiceWorkerDispatcher::RegisterServiceWorker(
 void ServiceWorkerDispatcher::UnregisterServiceWorker(
     int provider_id,
     const GURL& pattern,
-    WebServiceWorkerProvider::WebServiceWorkerCallbacks* callbacks) {
+    WebServiceWorkerRegistrationCallbacks* callbacks) {
   DCHECK(callbacks);
 
   if (pattern.possibly_invalid_spec().size() > GetMaxURLChars()) {
-    scoped_ptr<WebServiceWorkerProvider::WebServiceWorkerCallbacks>
+    scoped_ptr<WebServiceWorkerRegistrationCallbacks>
         owned_callbacks(callbacks);
     scoped_ptr<WebServiceWorkerError> error(new WebServiceWorkerError(
         WebServiceWorkerError::ErrorTypeSecurity, "URL too long"));
@@ -209,20 +210,24 @@ void ServiceWorkerDispatcher::OnRegistered(
     int thread_id,
     int request_id,
     const ServiceWorkerObjectInfo& info) {
-  WebServiceWorkerProvider::WebServiceWorkerCallbacks* callbacks =
+  WebServiceWorkerRegistrationCallbacks* callbacks =
       pending_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
   if (!callbacks)
     return;
 
+#ifdef DISABLE_SERVICE_WORKER_REGISTRATION
   callbacks->onSuccess(GetServiceWorker(info, true));
+#else
+  callbacks->onSuccess(new WebServiceWorkerRegistrationImpl(info));
+#endif
   pending_callbacks_.Remove(request_id);
 }
 
 void ServiceWorkerDispatcher::OnUnregistered(
     int thread_id,
     int request_id) {
-  WebServiceWorkerProvider::WebServiceWorkerCallbacks* callbacks =
+  WebServiceWorkerRegistrationCallbacks* callbacks =
       pending_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
   if (!callbacks)
@@ -237,7 +242,7 @@ void ServiceWorkerDispatcher::OnRegistrationError(
     int request_id,
     WebServiceWorkerError::ErrorType error_type,
     const base::string16& message) {
-  WebServiceWorkerProvider::WebServiceWorkerCallbacks* callbacks =
+  WebServiceWorkerRegistrationCallbacks* callbacks =
       pending_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
   if (!callbacks)
