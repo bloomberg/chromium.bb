@@ -96,6 +96,29 @@ def _GetRevision(options):
   return revision
 
 
+def _RunTest(options, cmd, suite):
+  """Run test command with runtest.py.
+
+  Args:
+    options: options object.
+    cmd: the command to run.
+    suite: test name.
+  """
+  property_args = bb_utils.EncodeProperties(options)
+  args = [os.path.join(SLAVE_SCRIPTS_DIR, 'runtest.py'),
+      '--test-type',
+      suite,
+      '--run-python-script'
+    ] + property_args
+  if options.factory_properties.get('generate_gtest_json'):
+    args.append('--generate-json-file')
+
+  if options.target == 'Release':
+    args += ['--target', 'Release']
+  args += cmd
+  RunCmd(args)
+
+
 def RunTestSuites(options, suites, suites_options=None):
   """Manages an invocation of test_runner.py for gtests.
 
@@ -125,7 +148,7 @@ def RunTestSuites(options, suites, suites_options=None):
     cmd += suites_options.get(suite, [])
     if suite == 'content_browsertests':
       cmd.append('--num_retries=1')
-    RunCmd(cmd)
+    _RunTest(options, cmd, suite)
 
 
 def RunChromeDriverTests(options):
