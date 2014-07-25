@@ -68,6 +68,8 @@ private:
     virtual String nodeName() const OVERRIDE;
     virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) OVERRIDE FINAL;
 
+    bool isTextNode() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
+
     bool needsWhitespaceRenderer();
 
     virtual PassRefPtrWillBeRawPtr<Text> cloneWithData(const String&);

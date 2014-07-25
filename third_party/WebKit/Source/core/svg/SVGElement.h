@@ -229,6 +229,9 @@ private:
     // https://bugs.webkit.org/show_bug.cgi?id=77938
     virtual bool areAuthorShadowsAllowed() const OVERRIDE FINAL { return false; }
 
+    bool isSVGElement() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
+    bool isStyledElement() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
+
     RenderStyle* computedStyle(PseudoId = NOPSEUDO);
     virtual RenderStyle* virtualComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) OVERRIDE FINAL { return computedStyle(pseudoElementSpecifier); }
     virtual void willRecalcStyle(StyleRecalcChange) OVERRIDE;

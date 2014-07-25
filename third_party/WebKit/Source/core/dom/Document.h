@@ -1073,6 +1073,10 @@ private:
     friend class Node;
     friend class IgnoreDestructiveWriteCountIncrementer;
 
+    bool isDocumentFragment() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
+    bool isDocumentNode() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
+    bool isElementNode() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
+
     ScriptedAnimationController& ensureScriptedAnimationController();
     virtual SecurityContext& securityContext() OVERRIDE FINAL { return *this; }
     virtual EventQueue* eventQueue() const OVERRIDE FINAL;

@@ -75,6 +75,9 @@ private:
     virtual int maxCharacterOffset() const OVERRIDE FINAL;
     virtual bool offsetInCharacters() const OVERRIDE FINAL;
     void setDataAndUpdate(const String&, unsigned offsetOfReplacedData, unsigned oldLength, unsigned newLength, RecalcStyleBehavior = DoNotRecalcStyle);
+
+    bool isContainerNode() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
+    bool isElementNode() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
 };
 
 DEFINE_NODE_TYPE_CASTS(CharacterData, isCharacterDataNode());

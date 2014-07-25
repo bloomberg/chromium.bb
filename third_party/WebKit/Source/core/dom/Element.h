@@ -561,6 +561,10 @@ private:
     void clearElementFlag(ElementFlags);
     bool hasElementFlagInternal(ElementFlags) const;
 
+    bool isElementNode() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
+    bool isDocumentFragment() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
+    bool isDocumentNode() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
+
     void styleAttributeChanged(const AtomicString& newStyleString, AttributeModificationReason);
 
     void updatePresentationAttributeStyle();

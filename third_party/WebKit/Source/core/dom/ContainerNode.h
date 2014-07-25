@@ -186,6 +186,9 @@ protected:
     void setLastChild(Node* child) { m_lastChild = child; }
 
 private:
+    bool isContainerNode() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
+    bool isTextNode() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
+
     void removeBetween(Node* previousChild, Node* nextChild, Node& oldChild);
     void insertBeforeCommon(Node& nextChild, Node& oldChild);
     void appendChildCommon(Node& child);

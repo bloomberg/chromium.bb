@@ -1591,7 +1591,6 @@ void Range::didSplitTextNode(Text& oldNode)
 {
     ASSERT(oldNode.document() == m_ownerDocument);
     ASSERT(oldNode.parentNode());
-    ASSERT(oldNode.isTextNode());
     ASSERT(oldNode.nextSibling());
     ASSERT(oldNode.nextSibling()->isTextNode());
     boundaryTextNodeSplit(m_start, oldNode);
