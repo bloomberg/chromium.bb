@@ -169,6 +169,7 @@
       'public/browser/power_save_blocker.h',
       'public/browser/profiler_controller.h',
       'public/browser/profiler_subscriber.h',
+      'public/browser/push_messaging_service.h',
       'public/browser/quota_permission_context.h',
       'public/browser/render_frame_host.h',
       'public/browser/render_process_host.h',

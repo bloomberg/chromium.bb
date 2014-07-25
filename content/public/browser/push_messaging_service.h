@@ -24,7 +24,8 @@ class CONTENT_EXPORT PushMessagingService {
       RegisterCallback;
 
   virtual ~PushMessagingService() {}
-  virtual void Register(const std::string& app_id,
+  virtual void Register(const GURL& origin,
+                        int64 service_worker_registration_id,
                         const std::string& sender_id,
                         int renderer_id,
                         int render_frame_id,

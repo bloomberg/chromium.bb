@@ -21,6 +21,7 @@ class PrefRegistrySyncable;
 namespace gcm {
 
 class GCMProfileService;
+struct PushMessagingApplicationId;
 
 class PushMessagingServiceImpl : public content::PushMessagingService,
                                  public GCMAppHandler {
@@ -47,7 +48,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   // content::PushMessagingService implementation:
   virtual void Register(
-      const std::string& app_id,
+      const GURL& origin,
+      int64 service_worker_registration_id,
       const std::string& sender_id,
       int renderer_id,
       int render_frame_id,
@@ -56,20 +58,18 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
  private:
   void RegisterEnd(
-      const std::string& app_id,
       const content::PushMessagingService::RegisterCallback& callback,
       const std::string& registration_id,
       content::PushMessagingStatus status);
 
   void DidRegister(
-      const std::string& app_id,
       const content::PushMessagingService::RegisterCallback& callback,
       const std::string& registration_id,
       GCMClient::Result result);
 
   void DidRequestPermission(
+      const PushMessagingApplicationId& application_id,
       const std::string& sender_id,
-      const std::string& app_id,
       const content::PushMessagingService::RegisterCallback& callback,
       bool allow);
 

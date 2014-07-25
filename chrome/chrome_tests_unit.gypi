@@ -1290,6 +1290,7 @@
         'browser/services/gcm/fake_signin_manager.h',
         'browser/services/gcm/gcm_account_tracker_unittest.cc',
         'browser/services/gcm/gcm_profile_service_unittest.cc',
+        'browser/services/gcm/push_messaging_application_id_unittest.cc',
         'browser/sessions/persistent_tab_restore_service_unittest.cc',
         'browser/sessions/restore_on_startup_policy_handler_unittest.cc',
         'browser/sessions/session_backend_unittest.cc',

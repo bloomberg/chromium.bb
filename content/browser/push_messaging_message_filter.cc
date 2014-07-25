@@ -84,10 +84,8 @@ void PushMessagingMessageFilter::DoRegister(
         PUSH_MESSAGING_STATUS_REGISTRATION_FAILED_SERVICE_NOT_AVAILABLE));
     return;
   }
-  // TODO(mvanouwerkerk): Is this the app_id format we want to use?
-  std::string app_id =
-      origin.spec() + " " + base::Int64ToString(service_worker_registration_id);
-  service()->Register(app_id,
+  service()->Register(origin,
+                      service_worker_registration_id,
                       sender_id,
                       render_process_id_,
                       render_frame_id,

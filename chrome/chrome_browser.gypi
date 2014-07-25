@@ -1179,6 +1179,8 @@
       'browser/services/gcm/gcm_profile_service.h',
       'browser/services/gcm/gcm_profile_service_factory.cc',
       'browser/services/gcm/gcm_profile_service_factory.h',
+      'browser/services/gcm/push_messaging_application_id.cc',
+      'browser/services/gcm/push_messaging_application_id.h',
       'browser/services/gcm/push_messaging_infobar_delegate.cc',
       'browser/services/gcm/push_messaging_infobar_delegate.h',
       'browser/services/gcm/push_messaging_permission_context.cc',
