@@ -1639,16 +1639,6 @@ InstallStatus InstallProductsHelper(
           RemoveChromeLegacyRegistryKeys(chrome->distribution(), chrome_exe);
         }
       }
-
-      if (prefs.install_chrome_app_launcher() &&
-          InstallUtil::GetInstallReturnCode(install_status) == 0) {
-        std::string webstore_item(google_update::GetUntrustedDataValue(
-            kInstallFromWebstore));
-        if (!webstore_item.empty()) {
-          bool success = InstallFromWebstore(webstore_item);
-          VLOG_IF(1, !success) << "Failed to launch app installation.";
-        }
-      }
     }
   }
 

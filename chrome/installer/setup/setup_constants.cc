@@ -20,8 +20,4 @@ const wchar_t kInstallSourceChromeDir[] = L"Chrome-bin";
 const wchar_t kMediaPlayerRegPath[] =
     L"Software\\Microsoft\\MediaPlayer\\ShimInclusionList";
 
-// Key names for values passed via the GoogleUpdateUntrustedData environment
-// variable.
-const char kInstallFromWebstore[] = "install-from-webstore";
-
 }  // namespace installer

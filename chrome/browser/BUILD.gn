@@ -505,7 +505,6 @@ static_library("browser") {
       "//third_party/wtl",
       #"chrome_process_finder",  TODO(GYP)
       #"installer_util_strings",  TODO(GYP)
-      #"launcher_support",  TODO(GYP)
       #"../chrome/chrome.gyp:chrome_version_header",  TODO(GYP)
       #"../chrome_elf/chrome_elf.gyp:chrome_elf",  TODO(GYP)
       #"../chrome_elf/chrome_elf.gyp:chrome_elf_constants",  TODO(GYP)

@@ -11,7 +11,7 @@ namespace chrome {
 // content::RESULT_CODE_NORMAL_EXIT,
 // chrome::RESULT_CODE_UNINSTALL_DELETE_PROFILE or
 // chrome::RESULT_CODE_UNINSTALL_USER_CANCEL.
-int ShowUninstallBrowserPrompt(bool show_delete_profile);
+int ShowUninstallBrowserPrompt();
 
 }  // namespace chrome
 
