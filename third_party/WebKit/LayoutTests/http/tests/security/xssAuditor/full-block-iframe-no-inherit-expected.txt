@@ -7,3 +7,5 @@ This tests that the header X-XSS-Protection is not inherited by the iframe below
 Frame: 'frame'
 --------
 If you see this message and no JavaScript alert() then the test PASSED.
+
+Page rendered here.

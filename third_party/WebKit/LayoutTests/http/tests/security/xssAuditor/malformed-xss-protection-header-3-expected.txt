@@ -8,3 +8,5 @@ This tests that a malformed X-XSS-Protection header is not ignored and an error 
 Frame: 'frame'
 --------
 If you see this message and no JavaScript alert() then the test PASSED.
+
+Page rendered here.

@@ -143,6 +143,7 @@ if ($cgi->param('alert-cookie')) {
 if ($cgi->param('echo-report')) {
     print "<script src=/security/contentSecurityPolicy/resources/go-to-echo-report.js></script>\n";
 }
+print "Page rendered here.\n";
 if ($cgi->param('inHead')) {
     print "</head>\n";
 } else {

@@ -3,4 +3,4 @@
 --------
 Frame: '<!--framePath //<!--frame0-->-->'
 --------
-"<[whatever]script>alert('innocent code')
+"<[whatever]script>alert('innocent code')Page rendered here.

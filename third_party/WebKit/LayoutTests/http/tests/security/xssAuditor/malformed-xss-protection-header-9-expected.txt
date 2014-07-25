@@ -8,3 +8,5 @@ This tests that the X-XSS-Protection header is not ignored when there is a dupli
 Frame: 'frame'
 --------
 If you see this message and no JavaScript alert() then the test PASSED.
+
+Page rendered here.
