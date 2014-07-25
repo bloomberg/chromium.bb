@@ -11,7 +11,7 @@ valgrind = env.ComponentObject(
 
 # These tests are flaky on mac10.7-newlib-dbg-asan.
 # See https://code.google.com/p/nativeclient/issues/detail?id=3906
-is_broken = env.Bit('asan') and env.Bit('host_mac'))
+is_broken = env.Bit('asan') and env.Bit('host_mac')
 
 # TEST_IRT_FUTEX=0 works with nacl-glibc (since it has its own futex
 # implementation) and with libpthread_private, but not with
