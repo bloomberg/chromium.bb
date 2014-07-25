@@ -16,8 +16,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/options/options_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/url_fixer/url_fixer.h"
@@ -52,7 +52,7 @@ bool AllowMetricsReportingChange(const base::Value* to_value) {
     return false;
   }
 
-  return enable == OptionsUtil::ResolveMetricsReportingEnabled(enable);
+  return enable == ResolveMetricsReportingEnabled(enable);
 }
 
 // Whether "controlledBy" property of pref value sent to options web UI needs to

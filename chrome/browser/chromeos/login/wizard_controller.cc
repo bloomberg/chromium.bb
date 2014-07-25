@@ -56,9 +56,9 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/timezone/timezone_provider.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/options/options_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
@@ -658,7 +658,7 @@ void WizardController::OnEulaAccepted() {
   time_eula_accepted_ = base::Time::Now();
   StartupUtils::MarkEulaAccepted();
   bool uma_enabled =
-      OptionsUtil::ResolveMetricsReportingEnabled(usage_statistics_reporting_);
+      ResolveMetricsReportingEnabled(usage_statistics_reporting_);
 
   CrosSettings::Get()->SetBoolean(kStatsReportingPref, uma_enabled);
   if (uma_enabled) {

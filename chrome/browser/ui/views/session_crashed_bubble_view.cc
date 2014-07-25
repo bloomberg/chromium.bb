@@ -14,10 +14,10 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
-#include "chrome/browser/ui/options/options_util.h"
 #include "chrome/browser/ui/startup/session_crashed_bubble.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -421,7 +421,7 @@ void SessionCrashedBubbleView::RestorePreviousSession(views::Button* sender) {
   if (uma_option_ && uma_option_->checked()) {
     // TODO: Clean up function ResolveMetricsReportingEnabled so that user pref
     // is stored automatically.
-    OptionsUtil::ResolveMetricsReportingEnabled(true);
+    ResolveMetricsReportingEnabled(true);
     g_browser_process->local_state()->SetBoolean(
         prefs::kMetricsReportingEnabled, true);
     RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_UMA_OPTIN);

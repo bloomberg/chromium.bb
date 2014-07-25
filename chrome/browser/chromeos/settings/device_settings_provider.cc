@@ -18,7 +18,7 @@
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_cache.h"
-#include "chrome/browser/ui/options/options_util.h"
+#include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -839,7 +839,7 @@ void DeviceSettingsProvider::ApplyMetricsSetting(bool use_file,
           << "(use file : " << use_file << ")";
   // TODO(pastarmovj): Remove this once we don't need to regenerate the
   // consent file for the GUID anymore.
-  OptionsUtil::ResolveMetricsReportingEnabled(new_value);
+  ResolveMetricsReportingEnabled(new_value);
 }
 
 void DeviceSettingsProvider::ApplySideEffects(

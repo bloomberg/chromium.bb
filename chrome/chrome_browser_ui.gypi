@@ -1455,8 +1455,6 @@
       'browser/ui/omnibox/omnibox_popup_model.h',
       'browser/ui/omnibox/omnibox_popup_model_observer.h',
       'browser/ui/omnibox/omnibox_popup_view.h',
-      'browser/ui/options/options_util.cc',
-      'browser/ui/options/options_util.h',
       'browser/ui/panels/detached_panel_collection.cc',
       'browser/ui/panels/detached_panel_collection.h',
       'browser/ui/panels/detached_panel_drag_handler.cc',
