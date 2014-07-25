@@ -128,15 +128,25 @@ FontRenderParams GetFontRenderParams(const FontRenderParamsQuery& query,
     params = delegate->GetDefaultFontRenderParams();
   QueryFontconfig(query, &params, family_out);
 
-  // Fontconfig doesn't support configuring subpixel positioning; check a flag.
-  params.subpixel_positioning = CommandLine::ForCurrentProcess()->HasSwitch(
-      query.for_web_contents ?
-      switches::kEnableWebkitTextSubpixelPositioning :
-      switches::kEnableBrowserTextSubpixelPositioning);
+  if (!params.antialiasing) {
+    // Cairo forces full hinting when antialiasing is disabled, since anything
+    // less than that looks awful; do the same here. Requesting subpixel
+    // rendering or positioning doesn't make sense either.
+    params.hinting = FontRenderParams::HINTING_FULL;
+    params.subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_NONE;
+    params.subpixel_positioning = false;
+  } else {
+    // Fontconfig doesn't support configuring subpixel positioning; check a
+    // flag.
+    params.subpixel_positioning = CommandLine::ForCurrentProcess()->HasSwitch(
+        query.for_web_contents ?
+        switches::kEnableWebkitTextSubpixelPositioning :
+        switches::kEnableBrowserTextSubpixelPositioning);
 
-  // To enable subpixel positioning, we need to disable hinting.
-  if (params.subpixel_positioning)
-    params.hinting = FontRenderParams::HINTING_NONE;
+    // To enable subpixel positioning, we need to disable hinting.
+    if (params.subpixel_positioning)
+      params.hinting = FontRenderParams::HINTING_NONE;
+  }
 
   // Use the first family from the list if Fontconfig didn't suggest a family.
   if (family_out && family_out->empty() && !query.families.empty())

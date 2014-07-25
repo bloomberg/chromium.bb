@@ -158,18 +158,19 @@ TEST_F(FontRenderParamsTest, Size) {
 
 TEST_F(FontRenderParamsTest, Style) {
   ASSERT_TRUE(LoadSystemFont("arial.ttf"));
-  // Load a config that disables antialiasing for bold text and disables
+  // Load a config that disables subpixel rendering for bold text and disables
   // hinting for italic text.
   ASSERT_TRUE(LoadConfigDataIntoFontconfig(temp_dir_.path(),
       std::string(kFontconfigFileHeader) +
       kFontconfigMatchHeader +
       CreateFontconfigEditStanza("antialias", "bool", "true") +
       CreateFontconfigEditStanza("hinting", "bool", "true") +
-      CreateFontconfigEditStanza("hintstyle", "const", "hintfull") +
+      CreateFontconfigEditStanza("hintstyle", "const", "hintslight") +
+      CreateFontconfigEditStanza("rgba", "const", "rgb") +
       kFontconfigMatchFooter +
       kFontconfigMatchHeader +
       CreateFontconfigTestStanza("weight", "eq", "const", "bold") +
-      CreateFontconfigEditStanza("antialias", "bool", "false") +
+      CreateFontconfigEditStanza("rgba", "const", "none") +
       kFontconfigMatchFooter +
       kFontconfigMatchHeader +
       CreateFontconfigTestStanza("slant", "eq", "const", "italic") +
@@ -180,23 +181,27 @@ TEST_F(FontRenderParamsTest, Style) {
   FontRenderParamsQuery query(false);
   query.style = Font::NORMAL;
   FontRenderParams params = GetFontRenderParams(query, NULL);
-  EXPECT_TRUE(params.antialiasing);
-  EXPECT_EQ(FontRenderParams::HINTING_FULL, params.hinting);
+  EXPECT_EQ(FontRenderParams::HINTING_SLIGHT, params.hinting);
+  EXPECT_EQ(FontRenderParams::SUBPIXEL_RENDERING_RGB,
+            params.subpixel_rendering);
 
   query.style = Font::BOLD;
   params = GetFontRenderParams(query, NULL);
-  EXPECT_FALSE(params.antialiasing);
-  EXPECT_EQ(FontRenderParams::HINTING_FULL, params.hinting);
+  EXPECT_EQ(FontRenderParams::HINTING_SLIGHT, params.hinting);
+  EXPECT_EQ(FontRenderParams::SUBPIXEL_RENDERING_NONE,
+            params.subpixel_rendering);
 
   query.style = Font::ITALIC;
   params = GetFontRenderParams(query, NULL);
-  EXPECT_TRUE(params.antialiasing);
   EXPECT_EQ(FontRenderParams::HINTING_NONE, params.hinting);
+  EXPECT_EQ(FontRenderParams::SUBPIXEL_RENDERING_RGB,
+            params.subpixel_rendering);
 
   query.style = Font::BOLD | Font::ITALIC;
   params = GetFontRenderParams(query, NULL);
-  EXPECT_FALSE(params.antialiasing);
   EXPECT_EQ(FontRenderParams::HINTING_NONE, params.hinting);
+  EXPECT_EQ(FontRenderParams::SUBPIXEL_RENDERING_NONE,
+            params.subpixel_rendering);
 }
 
 TEST_F(FontRenderParamsTest, Scalable) {
@@ -240,6 +245,31 @@ TEST_F(FontRenderParamsTest, UseBitmaps) {
   query.pixel_size = 5;
   params = GetFontRenderParams(query, NULL);
   EXPECT_TRUE(params.use_bitmaps);
+}
+
+TEST_F(FontRenderParamsTest, ForceFullHintingWhenAntialiasingIsDisabled) {
+  // Load a config that disables antialiasing and hinting while requesting
+  // subpixel rendering.
+  ASSERT_TRUE(LoadSystemFont("arial.ttf"));
+  ASSERT_TRUE(LoadConfigDataIntoFontconfig(temp_dir_.path(),
+      std::string(kFontconfigFileHeader) +
+      kFontconfigMatchHeader +
+      CreateFontconfigEditStanza("antialias", "bool", "false") +
+      CreateFontconfigEditStanza("hinting", "bool", "false") +
+      CreateFontconfigEditStanza("hintstyle", "const", "hintnone") +
+      CreateFontconfigEditStanza("rgba", "const", "rgb") +
+      kFontconfigMatchFooter +
+      kFontconfigFileFooter));
+
+  // Full hinting should be forced. See the comment in GetFontRenderParams() for
+  // more information.
+  FontRenderParams params = GetFontRenderParams(
+      FontRenderParamsQuery(false), NULL);
+  EXPECT_FALSE(params.antialiasing);
+  EXPECT_EQ(FontRenderParams::HINTING_FULL, params.hinting);
+  EXPECT_EQ(FontRenderParams::SUBPIXEL_RENDERING_NONE,
+            params.subpixel_rendering);
+  EXPECT_FALSE(params.subpixel_positioning);
 }
 
 TEST_F(FontRenderParamsTest, OnlySetConfiguredValues) {
