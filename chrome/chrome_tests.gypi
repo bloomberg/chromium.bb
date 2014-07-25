@@ -955,6 +955,8 @@
         'browser/chromeos/login/login_manager_test.h',
         'browser/chromeos/login/oobe_localization_browsertest.cc',
         'browser/chromeos/login/reset_browsertest.cc',
+        # TODO(nkostylev) Re-enable ResourceLoaderBrowserTest.
+        #'browser/chromeos/login/resource_loader_browsertest.cc',
         'browser/chromeos/login/saml/saml_browsertest.cc',
         'browser/chromeos/login/session_login_browsertest.cc',
         'browser/chromeos/login/screens/mock_error_screen.cc',
@@ -1787,6 +1789,7 @@
           'dependencies': [
             '../dbus/dbus.gyp:dbus_test_support',
             '../build/linux/system.gyp:dbus',
+            '../ui/login/login.gyp:login_resources',
           ],
         }],
         ['configuration_policy==0', {

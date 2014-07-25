@@ -14,7 +14,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/test/browser_test_utils.h"
-#include "grit/browser_resources.h"
+#include "grit/login_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 

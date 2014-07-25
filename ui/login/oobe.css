@@ -55,9 +55,9 @@ button.button-fancy {
 }
 
 button.button-blue {
-  background-image: -webkit-linear-gradient(rgb(93, 154, 255),
-                                            rgb(93, 154, 255) 38%,
-                                            rgb(88, 145, 240));
+  background-image: linear-gradient(rgb(93, 154, 255),
+                                    rgb(93, 154, 255) 38%,
+                                    rgb(88, 145, 240));
   border: 1px solid rgba(45, 102, 195, 1);
   border-radius: 2px;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15), inset 0 1px 2px
@@ -72,25 +72,25 @@ button.button-blue {
 
 
 button.button-blue:hover {
-  background-image: -webkit-linear-gradient(rgb(101, 158, 253),
-                                            rgb(101, 158, 253) 38%,
-                                            rgb(96, 151, 241));
+  background-image: linear-gradient(rgb(101, 158, 253),
+                                    rgb(101, 158, 253) 38%,
+                                    rgb(96, 151, 241));
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25), inset 0 1px 2px
               rgba(255, 255, 255, 0.4);
 }
 
 button.button-blue:active {
-  background-image: -webkit-linear-gradient(rgb(96, 149, 237),
-                                            rgb(96, 149, 237) 38%,
-                                            rgb(96, 149, 237));
+  background-image: linear-gradient(rgb(96, 149, 237),
+                                    rgb(96, 149, 237) 38%,
+                                    rgb(96, 149, 237));
   border: 1px solid rgba(38, 84, 160, 1);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.1);
 }
 
 button.button-red {
-  background-image: -webkit-linear-gradient(rgb(221, 75, 57),
-                                            rgb(221, 75, 57) 38%,
-                                            rgb(197, 66, 49));
+  background-image: linear-gradient(rgb(221, 75, 57),
+                                    rgb(221, 75, 57) 38%,
+                                    rgb(197, 66, 49));
   border: 1px solid rgba(167, 57, 44, 1);
   border-radius: 2px;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15), inset 0 1px 2px
@@ -103,9 +103,9 @@ button.button-red {
 }
 
 button.button-red:hover {
-  background-image: -webkit-linear-gradient(rgb(231, 78, 59),
-                                            rgb(231, 78, 59) 38%,
-                                            rgb(209, 70, 52));
+  background-image: linear-gradient(rgb(231, 78, 59),
+                                    rgb(231, 78, 59) 38%,
+                                    rgb(209, 70, 52));
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25), inset 0 1px 2px
       rgba(255, 255, 255, 0.4);
 }
@@ -143,7 +143,7 @@ button.button-red:active {
 #installation-settings-popup h1 {
   -webkit-padding-end: 24px;
   -webkit-user-select: none;
-  background: -webkit-linear-gradient(white, #F8F8F8);
+  background: linear-gradient(white, #F8F8F8);
   color: rgb(83, 99, 125);
   font-size: 105%;
   font-weight: bold;

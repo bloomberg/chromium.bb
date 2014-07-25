@@ -195,6 +195,9 @@
   "ui/file_manager/file_manager_resources.grd": {
     "includes": [28100],
   },
+  "ui/login/login_resources.grd": {
+    "includes": [28300],
+  },
   "chrome/browser/resources/translate_internals_resources.grd": {
     "includes": [28500],
   },

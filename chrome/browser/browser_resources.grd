@@ -68,7 +68,6 @@
       <if expr="chromeos">
         <structure name="IDR_OOBE_HTML" file="resources\chromeos\login\oobe.html" flattenhtml="true" type="chrome_html" variables="OOBE=oobe" expand_variables="true"/>
         <structure name="IDR_OOBE_JS" file="resources\chromeos\login\oobe.js" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_OOBE_RESOURCE_LOADER_JS" file="resources\login\resource_loader.js" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_OOBE_ENROLLMENT_HTML" file="resources\chromeos\login\oobe_screen_oauth_enrollment.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_OOBE_ENROLLMENT_CSS" file="resources\chromeos\login\oobe_screen_oauth_enrollment.css" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_OOBE_ENROLLMENT_JS" file="resources\chromeos\login\oobe_screen_oauth_enrollment.js" flattenhtml="true" type="chrome_html" />

@@ -6,12 +6,12 @@
  * @fileoverview Common OOBE controller methods.
  */
 
-<include src="../../login/screen.js">
+<include src="../../../../../ui/login/screen.js">
 <include src="screen_context.js">
 <include src="../user_images_grid.js">
 <include src="apps_menu.js">
-<include src="../../login/bubble.js">
-<include src="../../login/display_manager.js">
+<include src="../../../../../ui/login/bubble.js">
+<include src="../../../../../ui/login/display_manager.js">
 <include src="header_bar.js">
 <include src="network_dropdown.js">
 <include src="oobe_screen_reset.js">
@@ -19,7 +19,7 @@
 <include src="oobe_screen_enable_kiosk.js">
 <include src="oobe_screen_terms_of_service.js">
 <include src="oobe_screen_user_image.js">
-<include src="../../login/screen_account_picker.js">
+<include src="../../../../../ui/login/account_picker/screen_account_picker.js">
 <include src="screen_app_launch_splash.js">
 <include src="screen_error_message.js">
 <include src="screen_gaia_signin.js">
@@ -29,8 +29,8 @@
 <include src="screen_wrong_hwid.js">
 <include src="screen_confirm_password.js">
 <include src="screen_fatal_error.js">
-<include src="../../login/user_pod_row.js">
-<include src="../../login/resource_loader.js">
+<include src="../../../../../ui/login/account_picker/user_pod_row.js">
+<include src="../../../../../ui/login/resource_loader.js">
 
 cr.define('cr.ui', function() {
   var DisplayManager = cr.ui.login.DisplayManager;
