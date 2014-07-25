@@ -579,8 +579,11 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
             'mount',
             event.volumeMetadata.sourcePath);
 
-        var error = event.status === 'success' ? '' : event.status;
-        if (!error || event.status === 'error_unknown_filesystem') {
+        if (event.status === 'success' ||
+            event.status ===
+                VolumeManagerCommon.VolumeError.UNKNOWN_FILESYSTEM ||
+            event.status ===
+                VolumeManagerCommon.VolumeError.UNSUPPORTED_FILESYSTEM) {
           volumeManagerUtil.createVolumeInfo(
               event.volumeMetadata,
               function(volumeInfo) {

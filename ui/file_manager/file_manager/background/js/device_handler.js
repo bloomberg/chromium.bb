@@ -402,7 +402,7 @@ DeviceHandler.prototype.onMountCompleted_ = function(event) {
       break;
     case DeviceHandler.MountStatus.CHILD_ERROR:
     case DeviceHandler.MountStatus.ONLY_PARENT_ERROR:
-      if (event.status === 'error_unsuported_filesystem') {
+      if (event.status === 'error_unsupported_filesystem') {
         message = volume.deviceLabel ?
             strf('DEVICE_UNSUPPORTED_MESSAGE', volume.deviceLabel) :
             str('DEVICE_UNSUPPORTED_DEFAULT_MESSAGE');

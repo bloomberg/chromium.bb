@@ -166,7 +166,7 @@ function testUnsupportedDevice() {
   registerTypicalDevice();
 
   chrome.fileBrowserPrivate.onMountCompleted.dispatch({
-    status: 'error_unsuported_filesystem',
+    status: 'error_unsupported_filesystem',
     volumeMetadata: {
       isParentDevice: false,
       deviceType: 'usb',
@@ -197,7 +197,7 @@ function testUnsupportedWithUnknownParent() {
       chrome.notifications.items['deviceFail:/device/path'].message);
 
   chrome.fileBrowserPrivate.onMountCompleted.dispatch({
-    status: 'error_unsuported_filesystem',
+    status: 'error_unsupported_filesystem',
     volumeMetadata: {
       isParentDevice: false,
       deviceType: 'usb',
@@ -226,7 +226,7 @@ function testMountPartialSuccess() {
   assertEquals(0, Object.keys(chrome.notifications.items).length);
 
   chrome.fileBrowserPrivate.onMountCompleted.dispatch({
-    status: 'error_unsuported_filesystem',
+    status: 'error_unsupported_filesystem',
     volumeMetadata: {
       isParentDevice: false,
       deviceType: 'usb',
