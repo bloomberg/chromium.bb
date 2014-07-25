@@ -78,7 +78,7 @@ def main(argv):
       temp_gn = os.path.join(tempdir, 'gn')
       out_gn = os.path.join(build_root, 'gn')
 
-      if options.no_bootstrap:
+      if options.no_rebuild:
         mkdir_p(build_root)
         shutil.copy2(temp_gn, out_gn)
       else:
