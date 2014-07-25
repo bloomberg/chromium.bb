@@ -277,8 +277,7 @@ class WindowManagerApiTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WindowManagerApiTest);
 };
 
-// http://crbug.com/396295
-TEST_F(WindowManagerApiTest, DISABLED_OpenWindow) {
+TEST_F(WindowManagerApiTest, OpenWindow) {
   OpenWindow(window_manager_.get());
   Id created_node =
       OpenWindowWithURL(window_manager_.get(), kTestServiceURL);
@@ -286,8 +285,7 @@ TEST_F(WindowManagerApiTest, DISABLED_OpenWindow) {
   EXPECT_EQ(created_node, embed_node);
 }
 
-// http://crbug.com/396295
-TEST_F(WindowManagerApiTest, DISABLED_FocusAndActivateWindow) {
+TEST_F(WindowManagerApiTest, FocusAndActivateWindow) {
   Id first_window = OpenWindow(window_manager_.get());
   window_manager_->FocusWindow(first_window,
                                base::Bind(&EmptyResultCallback));

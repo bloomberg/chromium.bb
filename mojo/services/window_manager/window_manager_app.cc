@@ -171,7 +171,8 @@ void WindowManagerApp::OnRootAdded(ViewManager* view_manager,
   focus_client_->AddObserver(this);
   activation_client_->AddObserver(this);
 
-  wrapped_delegate_->OnRootAdded(view_manager, root);
+  if (wrapped_delegate_)
+    wrapped_delegate_->OnRootAdded(view_manager, root);
 
   for (Connections::const_iterator it = connections_.begin();
        it != connections_.end(); ++it) {
@@ -182,7 +183,8 @@ void WindowManagerApp::OnRootAdded(ViewManager* view_manager,
 void WindowManagerApp::OnViewManagerDisconnected(
     ViewManager* view_manager) {
   DCHECK_EQ(view_manager_, view_manager);
-  wrapped_delegate_->OnViewManagerDisconnected(view_manager);
+  if (wrapped_delegate_)
+    wrapped_delegate_->OnViewManagerDisconnected(view_manager);
   root_->RemoveObserver(this);
   root_ = NULL;
   view_manager_ = NULL;
