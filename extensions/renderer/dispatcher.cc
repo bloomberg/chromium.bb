@@ -830,10 +830,13 @@ void Dispatcher::UpdateOriginPermissions(
 }
 
 void Dispatcher::EnableCustomElementWhiteList() {
-  blink::WebCustomElement::addEmbedderCustomElementName("webview");
-  blink::WebCustomElement::addEmbedderCustomElementName("appview");
   blink::WebCustomElement::addEmbedderCustomElementName("appplugin");
+  blink::WebCustomElement::addEmbedderCustomElementName("appview");
   blink::WebCustomElement::addEmbedderCustomElementName("browserplugin");
+  blink::WebCustomElement::addEmbedderCustomElementName("extensionoptions");
+  blink::WebCustomElement::addEmbedderCustomElementName(
+      "extensionoptionsplugin");
+  blink::WebCustomElement::addEmbedderCustomElementName("webview");
 }
 
 void Dispatcher::UpdateBindings(const std::string& extension_id) {

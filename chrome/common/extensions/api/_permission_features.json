@@ -417,6 +417,10 @@
       "5894126C625EF31852F215ED301A5FF1F9B7D026"   // Test
     ]
   },
+  "embeddedExtensionOptions": {
+    "channel": "trunk",
+    "extension_types": ["extension"]
+  },
   "experimental": {
     "channel": "stable",
     "extension_types": [

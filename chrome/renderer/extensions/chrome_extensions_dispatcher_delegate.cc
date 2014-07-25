@@ -30,6 +30,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/feature_switch.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/manifest_permission_set.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -241,6 +242,7 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("appView", IDR_APP_VIEW_JS);
   source_map->RegisterSource("fileEntryBindingUtil",
                              IDR_FILE_ENTRY_BINDING_UTIL_JS);
+  source_map->RegisterSource("extensionOptions", IDR_EXTENSION_OPTIONS_JS);
   source_map->RegisterSource("tagWatcher", IDR_TAG_WATCHER_JS);
   source_map->RegisterSource("webViewInternal",
                              IDR_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS);
@@ -313,6 +315,13 @@ void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(
     } else {
       module_system->Require("denyAppView");
     }
+  }
+
+  if (context_type == extensions::Feature::BLESSED_EXTENSION_CONTEXT &&
+      extensions::FeatureSwitch::embedded_extension_options()->IsEnabled() &&
+      extension->permissions_data()->HasAPIPermission(
+          extensions::APIPermission::kEmbeddedExtensionOptions)) {
+    module_system->Require("extensionOptions");
   }
 }
 

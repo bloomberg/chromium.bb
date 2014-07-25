@@ -1232,6 +1232,7 @@
         'browser/first_run/try_chrome_dialog_view_browsertest.cc',
         'browser/geolocation/access_token_store_browsertest.cc',
         'browser/geolocation/geolocation_browsertest.cc',
+        'browser/guest_view/extension_options/extension_options_apitest.cc',
         'browser/history/history_browsertest.cc',
         'browser/history/redirect_browsertest.cc',
         'browser/iframe_browsertest.cc',

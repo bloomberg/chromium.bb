@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/guest_view/app_view/app_view_guest.h"
+#include "chrome/browser/guest_view/extension_options/extension_options_guest.h"
 #include "chrome/browser/guest_view/guest_view_constants.h"
 #include "chrome/browser/guest_view/guest_view_manager.h"
 #include "chrome/browser/guest_view/web_view/web_view_guest.h"
@@ -387,5 +388,6 @@ void GuestViewBase::CompleteInit(const std::string& embedder_extension_id,
 // static
 void GuestViewBase::RegisterGuestViewTypes() {
   AppViewGuest::Register();
+  ExtensionOptionsGuest::Register();
   WebViewGuest::Register();
 }

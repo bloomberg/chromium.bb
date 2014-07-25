@@ -64,6 +64,8 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        PermissionMessage::kIdentityEmail},
       {APIPermission::kExperimental, "experimental",
        APIPermissionInfo::kFlagCannotBeOptional},
+      {APIPermission::kEmbeddedExtensionOptions, "embeddedExtensionOptions",
+       APIPermissionInfo::kFlagCannotBeOptional},
       // NOTE(kalman): this is provided by a manifest property but needs to
       // appear in the install permission dialogue, so we need a fake
       // permission for it. See http://crbug.com/247857.
