@@ -25,6 +25,9 @@ def ParseArgs():
   parser.add_argument(
       '--hardware', default='beaglebone-black',
       help='Hardware configuration.')
+  parser.add_argument(
+      '--start-claimed',
+      help='Start with the device claimed by this client.')
   return parser.parse_args()
 
 
@@ -34,6 +37,7 @@ def main():
   server.interface = args.interface
   server.port = args.port
   server.hardware = args.hardware
+  server.claimed_by = args.start_claimed
 
   addrs = netifaces.ifaddresses(server.interface)
   ip_address = addrs[netifaces.AF_INET][0]['addr']

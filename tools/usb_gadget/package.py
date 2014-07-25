@@ -3,13 +3,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Utility to package the USB gadget framework.
+"""Utility to package and upload the USB gadget framework.
 """
 
 import argparse
 import hashlib
 import os
 import StringIO
+import urllib2
 import zipfile
 
 
@@ -37,6 +38,27 @@ def MakeZip(directory=None, files=None):
   return content, md5
 
 
+def EncodeBody(filename, buf):
+  return '\r\n'.join([
+      '--foo',
+      'Content-Disposition: form-data; name="file"; filename="{}"'
+      .format(filename),
+      'Content-Type: application/octet-stream',
+      '',
+      buf,
+      '--foo--',
+      ''
+  ])
+
+
+def UploadZip(content, md5, host):
+  filename = 'usb_gadget-{}.zip'.format(md5)
+  req = urllib2.Request(url='http://{}/update'.format(host),
+                        data=EncodeBody(filename, content))
+  req.add_header('Content-Type', 'multipart/form-data; boundary=foo')
+  urllib2.urlopen(req)
+
+
 def main():
   parser = argparse.ArgumentParser(
       description='Package (and upload) the USB gadget framework.')
@@ -50,6 +72,9 @@ def main():
       '--hash-file', type=str, metavar='FILE',
       help='save package hash as FILE')
   parser.add_argument(
+      '--upload', type=str, metavar='HOST[:PORT]',
+      help='upload package to target system')
+  parser.add_argument(
       'files', metavar='FILE', type=str, nargs='*',
       help='source files')
 
@@ -62,6 +87,8 @@ def main():
   if args.hash_file:
     with open(args.hash_file, 'w') as hash_file:
       hash_file.write(md5)
+  if args.upload:
+    UploadZip(content, md5, args.upload)
 
 
 if __name__ == '__main__':
