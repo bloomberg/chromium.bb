@@ -47,7 +47,6 @@ namespace blink {
 
 struct SameSizeAsScrollableArea {
     virtual ~SameSizeAsScrollableArea();
-    unsigned damageBits : 2;
     IntRect scrollbarDamage[2];
     void* pointer;
     unsigned bitfields : 16;
@@ -73,9 +72,7 @@ int ScrollableArea::maxOverlapBetweenPages()
 }
 
 ScrollableArea::ScrollableArea()
-    : m_hasHorizontalBarDamage(false)
-    , m_hasVerticalBarDamage(false)
-    , m_constrainsScrollingToContentEdge(true)
+    : m_constrainsScrollingToContentEdge(true)
     , m_inLiveResize(false)
     , m_verticalScrollElasticity(ScrollElasticityNone)
     , m_horizontalScrollElasticity(ScrollElasticityNone)

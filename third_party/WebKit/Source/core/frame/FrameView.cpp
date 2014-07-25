@@ -2344,17 +2344,10 @@ void FrameView::invalidateScrollbarRect(Scrollbar* scrollbar, const IntRect& rec
     IntRect dirtyRect = rect;
     dirtyRect.moveBy(scrollbar->location());
 
-    if (isInPerformLayout()) {
-        if (scrollbar == verticalScrollbar()) {
-            m_verticalBarDamage = dirtyRect;
-            m_hasVerticalBarDamage = true;
-        } else {
-            m_horizontalBarDamage = dirtyRect;
-            m_hasHorizontalBarDamage = true;
-        }
-    } else {
+    if (isInPerformLayout())
+        addScrollbarDamage(scrollbar, rect);
+    else
         invalidateRect(dirtyRect);
-    }
 }
 
 void FrameView::getTickmarks(Vector<IntRect>& tickmarks) const

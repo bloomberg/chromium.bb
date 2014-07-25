@@ -204,26 +204,25 @@ public:
     int maximumScrollPosition(ScrollbarOrientation orientation) { return orientation == HorizontalScrollbar ? maximumScrollPosition().x() : maximumScrollPosition().y(); }
     int clampScrollPosition(ScrollbarOrientation orientation, int pos)  { return std::max(std::min(pos, maximumScrollPosition(orientation)), minimumScrollPosition(orientation)); }
 
-    bool hasVerticalBarDamage() const { return m_hasVerticalBarDamage; }
-    bool hasHorizontalBarDamage() const { return m_hasHorizontalBarDamage; }
+    bool hasVerticalBarDamage() const { return !m_verticalBarDamage.isEmpty(); }
+    bool hasHorizontalBarDamage() const { return !m_horizontalBarDamage.isEmpty(); }
+    const IntRect& verticalBarDamage() const { return m_verticalBarDamage; }
+    const IntRect& horizontalBarDamage() const { return m_horizontalBarDamage; }
 
-    const IntRect& verticalBarDamage() const
+    void addScrollbarDamage(Scrollbar* scrollbar, const IntRect& rect)
     {
-        ASSERT(m_hasVerticalBarDamage);
-        return m_verticalBarDamage;
-    }
-
-    const IntRect& horizontalBarDamage() const
-    {
-        ASSERT(m_hasHorizontalBarDamage);
-        return m_horizontalBarDamage;
+        if (scrollbar == horizontalScrollbar())
+            m_horizontalBarDamage.unite(rect);
+        else
+            m_verticalBarDamage.unite(rect);
     }
 
     void resetScrollbarDamage()
     {
-        m_hasVerticalBarDamage = false;
-        m_hasHorizontalBarDamage = false;
+        m_verticalBarDamage = IntRect();
+        m_horizontalBarDamage = IntRect();
     }
+
     virtual GraphicsLayer* layerForContainer() const;
     virtual GraphicsLayer* layerForScrolling() const { return 0; }
     virtual GraphicsLayer* layerForHorizontalScrollbar() const { return 0; }
@@ -245,13 +244,6 @@ protected:
     virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) = 0;
     virtual void invalidateScrollCornerRect(const IntRect&) = 0;
 
-    // For repaint after layout, stores the damage to be repainted for the
-    // scrollbars.
-    unsigned m_hasHorizontalBarDamage : 1;
-    unsigned m_hasVerticalBarDamage : 1;
-    IntRect m_horizontalBarDamage;
-    IntRect m_verticalBarDamage;
-
 private:
     void scrollPositionChanged(const IntPoint&);
 
@@ -267,6 +259,10 @@ private:
     virtual int pageStep(ScrollbarOrientation) const;
     virtual int documentStep(ScrollbarOrientation) const;
     virtual float pixelStep(ScrollbarOrientation) const;
+
+    // Stores the paint invalidations for the scrollbars during layout.
+    IntRect m_horizontalBarDamage;
+    IntRect m_verticalBarDamage;
 
     struct ScrollableAreaAnimators {
         OwnPtr<ScrollAnimator> scrollAnimator;
