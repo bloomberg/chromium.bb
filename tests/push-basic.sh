@@ -47,8 +47,8 @@ setup_gitgit
   test_expect_success "Base URL contains branch name" \
       "curl -s $($GIT_CL_STATUS --field=url) | grep 'URL:[[:space:]]*[^<]' | grep -q '@master'"
 
-  test_expect_success "git-cl push ok" \
-    "$GIT_CL push -f"
+  test_expect_success "git-cl land ok" \
+    "$GIT_CL land -f"
 
   git checkout -q master > /dev/null 2>&1
   git pull -q > /dev/null 2>&1
