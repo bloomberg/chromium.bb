@@ -351,26 +351,28 @@ TEST_F(TileManagerPerfTest, ManageTiles) {
 }
 
 TEST_F(TileManagerPerfTest, RasterTileQueueConstruct) {
-  SetupDefaultTrees(gfx::Size(10000, 10000));
+  SetupDefaultTrees(gfx::Size(1000, 1000));
   active_root_layer_->CreateDefaultTilingsAndTiles();
   pending_root_layer_->CreateDefaultTilingsAndTiles();
 
   RunRasterQueueConstructTest("2");
 
-  for (int i = 0; i < 8; ++i) {
-    PictureLayerTiling* tiling = active_root_layer_->AddTiling(i * 0.3f);
+  int number_of_tilings = 2;
+  for (; number_of_tilings < 10; ++number_of_tilings) {
+    PictureLayerTiling* tiling =
+        active_root_layer_->AddTiling(1.0f + number_of_tilings * 0.3f);
     tiling->CreateAllTilesForTesting();
   }
 
   RunRasterQueueConstructTest("10");
 
-  for (int i = 0; i < 90; ++i) {
+  for (; number_of_tilings < 50; ++number_of_tilings) {
     PictureLayerTiling* tiling =
-        active_root_layer_->AddTiling(1.0f + i * 0.03f);
+        active_root_layer_->AddTiling(1.0f + number_of_tilings * 0.3f);
     tiling->CreateAllTilesForTesting();
   }
 
-  RunRasterQueueConstructTest("100");
+  RunRasterQueueConstructTest("50");
 }
 
 TEST_F(TileManagerPerfTest, RasterTileQueueConstructAndIterate) {
