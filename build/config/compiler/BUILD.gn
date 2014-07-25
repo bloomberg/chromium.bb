@@ -451,13 +451,12 @@ config("runtime_library") {
 # Toggles between higher and lower warnings for code that is (or isn't)
 # part of Chromium.
 
-# TODO: -Werror and /WX should always be on, independent of chromium_code
+# TODO: -Werror should always be on, independent of chromium_code
 # http://crbug.com/393046
 config("chromium_code") {
   if (is_win) {
     cflags = [
       "/W4",  # Warning level 4.
-      "/WX",  # Treat warnings as errors.
     ]
   } else {
     cflags = [
@@ -566,6 +565,7 @@ config("default_warnings") {
   if (is_win) {
     # Please keep ordered and add names if you add more.
     cflags = [
+      "/WX",      # Treat warnings as errors.
       "/wd4018",  # Comparing signed and unsigned values.
       "/wd4100",  # Unreferenced formal function parameter.
       "/wd4121",  # Alignment of a member was sensitive to packing.
