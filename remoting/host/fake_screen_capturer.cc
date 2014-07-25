@@ -4,7 +4,9 @@
 
 #include "remoting/host/fake_screen_capturer.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
@@ -24,18 +26,113 @@ COMPILE_ASSERT((kBoxWidth % kSpeed == 0) && (kWidth % kSpeed == 0) &&
                (kBoxHeight % kSpeed == 0) && (kHeight % kSpeed == 0),
                sizes_must_be_multiple_of_kSpeed);
 
-FakeScreenCapturer::FakeScreenCapturer()
-    : callback_(NULL),
-      mouse_shape_observer_(NULL),
-      bytes_per_row_(0),
-      box_pos_x_(0),
-      box_pos_y_(0),
-      box_speed_x_(kSpeed),
-      box_speed_y_(kSpeed) {
-  ScreenConfigurationChanged();
+namespace {
+
+class DefaultFrameGenerator
+    : public base::RefCountedThreadSafe<DefaultFrameGenerator> {
+ public:
+  DefaultFrameGenerator()
+      : bytes_per_row_(0),
+        box_pos_x_(0),
+        box_pos_y_(0),
+        box_speed_x_(kSpeed),
+        box_speed_y_(kSpeed),
+        first_frame_(true) {}
+
+  scoped_ptr<webrtc::DesktopFrame> GenerateFrame(
+      webrtc::ScreenCapturer::Callback* callback);
+
+ private:
+  friend class base::RefCountedThreadSafe<DefaultFrameGenerator>;
+  ~DefaultFrameGenerator() {}
+
+  webrtc::DesktopSize size_;
+  int bytes_per_row_;
+  int box_pos_x_;
+  int box_pos_y_;
+  int box_speed_x_;
+  int box_speed_y_;
+  bool first_frame_;
+
+  DISALLOW_COPY_AND_ASSIGN(DefaultFrameGenerator);
+};
+
+scoped_ptr<webrtc::DesktopFrame> DefaultFrameGenerator::GenerateFrame(
+    webrtc::ScreenCapturer::Callback* callback) {
+  const int kBytesPerPixel = webrtc::DesktopFrame::kBytesPerPixel;
+  int buffer_size = kWidth * kHeight * kBytesPerPixel;
+  webrtc::SharedMemory* shared_memory =
+      callback->CreateSharedMemory(buffer_size);
+  scoped_ptr<webrtc::DesktopFrame> frame;
+  if (shared_memory) {
+    frame.reset(new webrtc::SharedMemoryDesktopFrame(
+        webrtc::DesktopSize(kWidth, kHeight), bytes_per_row_, shared_memory));
+  } else {
+    frame.reset(
+        new webrtc::BasicDesktopFrame(webrtc::DesktopSize(kWidth, kHeight)));
+  }
+
+  // Move the box.
+  bool old_box_pos_x = box_pos_x_;
+  box_pos_x_ += box_speed_x_;
+  if (box_pos_x_ + kBoxWidth >= kWidth || box_pos_x_ == 0)
+    box_speed_x_ = -box_speed_x_;
+
+  bool old_box_pos_y = box_pos_y_;
+  box_pos_y_ += box_speed_y_;
+  if (box_pos_y_ + kBoxHeight >= kHeight || box_pos_y_ == 0)
+    box_speed_y_ = -box_speed_y_;
+
+  memset(frame->data(), 0xff, kHeight * frame->stride());
+
+  // Draw rectangle with the following colors in its corners:
+  //     cyan....yellow
+  //     ..............
+  //     blue.......red
+  uint8* row = frame->data() +
+      (box_pos_y_ * size_.width() + box_pos_x_) * kBytesPerPixel;
+  for (int y = 0; y < kBoxHeight; ++y) {
+    for (int x = 0; x < kBoxWidth; ++x) {
+      int r = x * 255 / kBoxWidth;
+      int g = y * 255 / kBoxHeight;
+      int b = 255 - (x * 255 / kBoxWidth);
+      row[x * kBytesPerPixel] = r;
+      row[x * kBytesPerPixel + 1] = g;
+      row[x * kBytesPerPixel + 2] = b;
+      row[x * kBytesPerPixel + 3] = 0xff;
+    }
+    row += frame->stride();
+  }
+
+  if (first_frame_) {
+    frame->mutable_updated_region()->SetRect(
+        webrtc::DesktopRect::MakeXYWH(0, 0, kWidth, kHeight));
+    first_frame_ = false;
+  } else {
+    frame->mutable_updated_region()->SetRect(webrtc::DesktopRect::MakeXYWH(
+        old_box_pos_x, old_box_pos_y, kBoxWidth, kBoxHeight));
+    frame->mutable_updated_region()->AddRect(webrtc::DesktopRect::MakeXYWH(
+        box_pos_x_, box_pos_y_, kBoxWidth, kBoxHeight));
+  }
+
+  return frame.Pass();
 }
 
-FakeScreenCapturer::~FakeScreenCapturer() {
+}  // namespace
+
+FakeScreenCapturer::FakeScreenCapturer()
+    : callback_(NULL),
+      mouse_shape_observer_(NULL) {
+  frame_generator_ = base::Bind(&DefaultFrameGenerator::GenerateFrame,
+                                new DefaultFrameGenerator());
+}
+
+FakeScreenCapturer::~FakeScreenCapturer() {}
+
+void FakeScreenCapturer::set_frame_generator(
+    const FrameGenerator& frame_generator) {
+  DCHECK(!callback_);
+  frame_generator_ = frame_generator;
 }
 
 void FakeScreenCapturer::Start(Callback* callback) {
@@ -46,33 +143,10 @@ void FakeScreenCapturer::Start(Callback* callback) {
 
 void FakeScreenCapturer::Capture(const webrtc::DesktopRegion& region) {
   base::Time capture_start_time = base::Time::Now();
-
-  queue_.MoveToNextFrame();
-
-  if (!queue_.current_frame()) {
-    int buffer_size = size_.height() * bytes_per_row_;
-    webrtc::SharedMemory* shared_memory =
-        callback_->CreateSharedMemory(buffer_size);
-    scoped_ptr<webrtc::DesktopFrame> frame;
-    webrtc::DesktopSize frame_size(size_.width(), size_.height());
-    if (shared_memory) {
-      frame.reset(new webrtc::SharedMemoryDesktopFrame(
-          frame_size, bytes_per_row_, shared_memory));
-    } else {
-      frame.reset(new webrtc::BasicDesktopFrame(frame_size));
-    }
-    queue_.ReplaceCurrentFrame(frame.release());
-  }
-
-  DCHECK(queue_.current_frame());
-  GenerateImage();
-
-  queue_.current_frame()->mutable_updated_region()->SetRect(
-      webrtc::DesktopRect::MakeSize(size_));
-  queue_.current_frame()->set_capture_time_ms(
+  scoped_ptr<webrtc::DesktopFrame> frame = frame_generator_.Run(callback_);
+  frame->set_capture_time_ms(
       (base::Time::Now() - capture_start_time).InMillisecondsRoundedUp());
-
-  callback_->OnCaptureCompleted(queue_.current_frame()->Share());
+  callback_->OnCaptureCompleted(frame.release());
 }
 
 void FakeScreenCapturer::SetMouseShapeObserver(
@@ -90,49 +164,6 @@ bool FakeScreenCapturer::GetScreenList(ScreenList* screens) {
 bool FakeScreenCapturer::SelectScreen(webrtc::ScreenId id) {
   NOTIMPLEMENTED();
   return false;
-}
-
-void FakeScreenCapturer::GenerateImage() {
-  webrtc::DesktopFrame* frame = queue_.current_frame();
-
-  const int kBytesPerPixel = webrtc::DesktopFrame::kBytesPerPixel;
-
-  memset(frame->data(), 0xff,
-         size_.width() * size_.height() * kBytesPerPixel);
-
-  uint8* row = frame->data() +
-      (box_pos_y_ * size_.width() + box_pos_x_) * kBytesPerPixel;
-
-  box_pos_x_ += box_speed_x_;
-  if (box_pos_x_ + kBoxWidth >= size_.width() || box_pos_x_ == 0)
-    box_speed_x_ = -box_speed_x_;
-
-  box_pos_y_ += box_speed_y_;
-  if (box_pos_y_ + kBoxHeight >= size_.height() || box_pos_y_ == 0)
-    box_speed_y_ = -box_speed_y_;
-
-  // Draw rectangle with the following colors in its corners:
-  //     cyan....yellow
-  //     ..............
-  //     blue.......red
-  for (int y = 0; y < kBoxHeight; ++y) {
-    for (int x = 0; x < kBoxWidth; ++x) {
-      int r = x * 255 / kBoxWidth;
-      int g = y * 255 / kBoxHeight;
-      int b = 255 - (x * 255 / kBoxWidth);
-      row[x * kBytesPerPixel] = r;
-      row[x * kBytesPerPixel + 1] = g;
-      row[x * kBytesPerPixel + 2] = b;
-      row[x * kBytesPerPixel + 3] = 0xff;
-    }
-    row += bytes_per_row_;
-  }
-}
-
-void FakeScreenCapturer::ScreenConfigurationChanged() {
-  size_.set(kWidth, kHeight);
-  queue_.Reset();
-  bytes_per_row_ = size_.width() * webrtc::DesktopFrame::kBytesPerPixel;
 }
 
 }  // namespace remoting

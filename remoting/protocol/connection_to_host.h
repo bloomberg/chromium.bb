@@ -20,6 +20,7 @@
 #include "remoting/protocol/message_reader.h"
 #include "remoting/protocol/monitored_video_stub.h"
 #include "remoting/protocol/session.h"
+#include "remoting/protocol/session_config.h"
 #include "remoting/protocol/session_manager.h"
 #include "remoting/signaling/signal_strategy.h"
 
@@ -82,6 +83,10 @@ class ConnectionToHost : public SignalStrategy::Listener,
 
   ConnectionToHost();
   virtual ~ConnectionToHost();
+
+  // Allows to set a custom protocol configuration (e.g. for tests). Cannot be
+  // called after Connect().
+  void set_candidate_config(scoped_ptr<CandidateSessionConfig> config);
 
   // Set the stubs which will handle messages from the host.
   // The caller must ensure that stubs out-live the connection.
@@ -155,6 +160,8 @@ class ConnectionToHost : public SignalStrategy::Listener,
   scoped_ptr<Authenticator> authenticator_;
 
   HostEventCallback* event_callback_;
+
+  scoped_ptr<CandidateSessionConfig> candidate_config_;
 
   // Stub for incoming messages.
   ClientStub* client_stub_;

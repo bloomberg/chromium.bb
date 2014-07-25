@@ -4,6 +4,53 @@
 
 {
   'targets': [
+    {
+      'target_name': 'remoting_test_common',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../net/net.gyp:net_test_support',
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+        'remoting_base',
+        'remoting_client',
+        'remoting_host',
+        'remoting_protocol',
+        'remoting_resources',
+      ],
+      'sources': [
+        'host/fake_desktop_environment.cc',
+        'host/fake_desktop_environment.h',
+        'host/fake_host_status_monitor.h',
+        'host/fake_screen_capturer.cc',
+        'host/fake_screen_capturer.h',
+        'host/policy_hack/fake_policy_watcher.cc',
+        'host/policy_hack/fake_policy_watcher.h',
+        'host/policy_hack/mock_policy_callback.cc',
+        'host/policy_hack/mock_policy_callback.h',
+        'protocol/fake_authenticator.cc',
+        'protocol/fake_authenticator.h',
+        'protocol/fake_session.cc',
+        'protocol/fake_session.h',
+        'protocol/protocol_mock_objects.cc',
+        'protocol/protocol_mock_objects.h',
+        'signaling/fake_signal_strategy.cc',
+        'signaling/fake_signal_strategy.h',
+        'signaling/mock_signal_strategy.cc',
+        'signaling/mock_signal_strategy.h',
+      ],
+      'conditions': [
+        ['enable_remoting_host == 0', {
+          'dependencies!': [
+            'remoting_host',
+          ],
+          'sources/': [
+            ['exclude', '^host/'],
+          ]
+        }],
+      ],
+    },
+
     # Remoting unit tests
     {
       'target_name': 'remoting_unittests',
@@ -32,6 +79,7 @@
         'remoting_native_messaging_base',
         'remoting_protocol',
         'remoting_resources',
+        'remoting_test_common',
       ],
       'defines': [
         'VERSION=<(version_full)',
@@ -98,10 +146,6 @@
         'host/pairing_registry_delegate_linux_unittest.cc',
         'host/pairing_registry_delegate_win_unittest.cc',
         'host/pin_hash_unittest.cc',
-        'host/policy_hack/fake_policy_watcher.cc',
-        'host/policy_hack/fake_policy_watcher.h',
-        'host/policy_hack/mock_policy_callback.cc',
-        'host/policy_hack/mock_policy_callback.h',
         'host/policy_hack/policy_watcher_unittest.cc',
         'host/register_support_host_request_unittest.cc',
         'host/remote_input_filter_unittest.cc',
@@ -132,10 +176,6 @@
         'protocol/connection_tester.h',
         'protocol/connection_to_client_unittest.cc',
         'protocol/content_description_unittest.cc',
-        'protocol/fake_authenticator.cc',
-        'protocol/fake_authenticator.h',
-        'protocol/fake_session.cc',
-        'protocol/fake_session.h',
         'protocol/input_event_tracker_unittest.cc',
         'protocol/input_filter_unittest.cc',
         'protocol/jingle_messages_unittest.cc',
@@ -148,8 +188,6 @@
         'protocol/network_settings_unittest.cc',
         'protocol/pairing_registry_unittest.cc',
         'protocol/ppapi_module_stub.cc',
-        'protocol/protocol_mock_objects.cc',
-        'protocol/protocol_mock_objects.h',
         'protocol/ssl_hmac_channel_authenticator_unittest.cc',
         'protocol/third_party_authenticator_unittest.cc',
         'protocol/v2_authenticator_unittest.cc',
@@ -157,8 +195,6 @@
         'signaling/fake_signal_strategy.h',
         'signaling/iq_sender_unittest.cc',
         'signaling/log_to_server_unittest.cc',
-        'signaling/mock_signal_strategy.cc',
-        'signaling/mock_signal_strategy.h',
         'signaling/server_log_entry_unittest.cc',
         'signaling/server_log_entry_unittest.h',
       ],
@@ -212,49 +248,6 @@
         }],
       ],  # end of 'conditions'
     },  # end of target 'remoting_unittests'
-    # Remoting performance tests
-    {
-      'target_name': 'remoting_perftests',
-      'type': '<(gtest_target_type)',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../base/base.gyp:test_support_base',
-        '../testing/gtest.gyp:gtest',
-        '../third_party/webrtc/modules/modules.gyp:desktop_capture',
-        'remoting_base',
-      ],
-      'defines': [
-        'VERSION=<(version_full)',
-      ],
-      'include_dirs': [
-        '../testing/gmock/include',
-      ],
-      'sources': [
-        'base/run_all_unittests.cc',
-        'codec/codec_test.cc',
-        'codec/codec_test.h',
-        'codec/video_encoder_vpx_perftest.cc',
-      ],
-      'conditions': [
-        [ 'OS=="mac" or (OS=="linux" and chromeos==0)', {
-          # RunAllTests calls chrome::RegisterPathProvider() under Mac and
-          # Linux, so we need the chrome_common.gypi dependency.
-          'dependencies': [
-            '../chrome/common_constants.gyp:common_constants',
-          ],
-        }],
-        [ 'OS=="android"', {
-          'dependencies': [
-            '../testing/android/native_test.gyp:native_test_native_code',
-          ],
-        }],
-        [ 'OS == "linux" and use_allocator!="none"', {
-          'dependencies': [
-            '../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
-      ],  # end of 'conditions'
-    },  # end of target 'remoting_perftests'
     {
       'target_name': 'remoting_browser_test_resources',
       'type': 'none',
@@ -361,4 +354,57 @@
       ],
     },  # end of target 'remoting_webapp_js_unittest'
   ],  # end of targets
+
+  'conditions': [
+    ['enable_remoting_host==1', {
+      'targets': [
+        # Remoting performance tests
+        {
+          'target_name': 'remoting_perftests',
+          'type': '<(gtest_target_type)',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../base/base.gyp:test_support_base',
+            '../testing/gtest.gyp:gtest',
+            '../third_party/webrtc/modules/modules.gyp:desktop_capture',
+            '../third_party/libjingle/libjingle.gyp:libjingle',
+            'remoting_base',
+            'remoting_test_common',
+          ],
+          'defines': [
+            'VERSION=<(version_full)',
+          ],
+          'include_dirs': [
+            '../testing/gmock/include',
+          ],
+          'sources': [
+            'base/run_all_unittests.cc',
+            'codec/codec_test.cc',
+            'codec/codec_test.h',
+            'codec/video_encoder_vpx_perftest.cc',
+            'test/protocol_perftest.cc',
+          ],
+          'conditions': [
+            [ 'OS=="mac" or (OS=="linux" and chromeos==0)', {
+              # RunAllTests calls chrome::RegisterPathProvider() under Mac and
+              # Linux, so we need the chrome_common.gypi dependency.
+              'dependencies': [
+                '../chrome/common_constants.gyp:common_constants',
+              ],
+            }],
+            [ 'OS=="android"', {
+              'dependencies': [
+                '../testing/android/native_test.gyp:native_test_native_code',
+              ],
+            }],
+            [ 'OS == "linux" and use_allocator!="none"', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],  # end of 'conditions'
+        },  # end of target 'remoting_perftests'
+      ]
+    }]
+  ]
 }

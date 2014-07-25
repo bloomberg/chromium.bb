@@ -63,4 +63,7 @@ message VideoPacket {
 
   // True when |desktop_shape_rects| should be used.
   optional bool use_desktop_shape = 11;
+
+  // Optional frame timestamp. Used in tests to estimate frame latency.
+  optional int64 timestamp = 12;
 }

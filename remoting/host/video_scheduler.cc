@@ -36,6 +36,13 @@ static const int kMaxPendingFrames = 2;
 // RTO used in PseudoTCP, which is 250ms.
 static const int kKeepAlivePacketIntervalMs = 200;
 
+static bool g_enable_timestamps = false;
+
+// static
+void VideoScheduler::EnableTimestampsForTests() {
+  g_enable_timestamps = true;
+}
+
 VideoScheduler::VideoScheduler(
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
@@ -86,7 +93,8 @@ void VideoScheduler::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
   // that we don't start capturing frame n+2 before frame n is freed.
   encode_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VideoScheduler::EncodeFrame, this,
-                            base::Passed(&owned_frame), sequence_number_));
+                            base::Passed(&owned_frame), sequence_number_,
+                            base::TimeTicks::Now()));
 
   // If a frame was skipped, try to capture it again.
   if (did_skip_frame_) {
@@ -337,7 +345,8 @@ void VideoScheduler::SendCursorShape(
 
 void VideoScheduler::EncodeFrame(
     scoped_ptr<webrtc::DesktopFrame> frame,
-    int64 sequence_number) {
+    int64 sequence_number,
+    base::TimeTicks timestamp) {
   DCHECK(encode_task_runner_->BelongsToCurrentThread());
 
   // Drop the frame if there were no changes.
@@ -350,6 +359,10 @@ void VideoScheduler::EncodeFrame(
 
   scoped_ptr<VideoPacket> packet = encoder_->Encode(*frame);
   packet->set_client_sequence_number(sequence_number);
+
+  if (g_enable_timestamps) {
+    packet->set_timestamp(timestamp.ToInternalValue());
+  }
 
   // Destroy the frame before sending |packet| because SendVideoPacket() may
   // trigger another frame to be captured, and the screen capturer expects the

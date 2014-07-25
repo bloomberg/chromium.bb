@@ -1,0 +1,8 @@
+include_rules = [
+  "+jingle/glue",
+  "+net",
+  "+remoting/client",
+  "+remoting/host",
+  "+remoting/protocol",
+  "+remoting/signaling",
+]

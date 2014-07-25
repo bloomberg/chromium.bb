@@ -25,6 +25,7 @@ class SingleThreadTaskRunner;
 namespace remoting {
 
 namespace protocol {
+class CandidateSessionConfig;
 class TransportFactory;
 }  // namespace protocol
 
@@ -47,6 +48,9 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
                    scoped_ptr<AudioPlayer> audio_player);
 
   virtual ~ChromotingClient();
+
+  void SetProtocolConfigForTests(
+      scoped_ptr<protocol::CandidateSessionConfig> config);
 
   // Start the client. Must be called on the main thread. |signal_strategy|
   // must outlive the client.

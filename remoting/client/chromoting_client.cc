@@ -41,7 +41,11 @@ ChromotingClient::ChromotingClient(
   }
 }
 
-ChromotingClient::~ChromotingClient() {
+ChromotingClient::~ChromotingClient() {}
+
+void ChromotingClient::SetProtocolConfigForTests(
+    scoped_ptr<protocol::CandidateSessionConfig> config) {
+  connection_.set_candidate_config(config.Pass());
 }
 
 void ChromotingClient::Start(

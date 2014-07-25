@@ -5,6 +5,7 @@
 #ifndef REMOTING_HOST_FAKE_SCREEN_CAPTURER_H_
 #define REMOTING_HOST_FAKE_SCREEN_CAPTURER_H_
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
@@ -18,41 +19,35 @@ namespace remoting {
 // FakeScreenCapturer is double-buffered as required by ScreenCapturer.
 class FakeScreenCapturer : public webrtc::ScreenCapturer {
  public:
-  // FakeScreenCapturer generates a picture of size kWidth x kHeight.
+  // By default FakeScreenCapturer generates frames of size kWidth x kHeight,
+  // but custom frame generator set using set_frame_generator() may generate
+  // frames of different size.
   static const int kWidth = 800;
   static const int kHeight = 600;
 
+  typedef base::Callback<scoped_ptr<webrtc::DesktopFrame>(
+      webrtc::ScreenCapturer::Callback* callback)> FrameGenerator;
+
   FakeScreenCapturer();
   virtual ~FakeScreenCapturer();
+
+  void set_frame_generator(const FrameGenerator& frame_generator);
 
   // webrtc::DesktopCapturer interface.
   virtual void Start(Callback* callback) OVERRIDE;
   virtual void Capture(const webrtc::DesktopRegion& rect) OVERRIDE;
 
-  // ScreenCapturer interface.
+  // webrtc::ScreenCapturer interface.
   virtual void SetMouseShapeObserver(
       MouseShapeObserver* mouse_shape_observer) OVERRIDE;
   virtual bool GetScreenList(ScreenList* screens) OVERRIDE;
   virtual bool SelectScreen(webrtc::ScreenId id) OVERRIDE;
 
  private:
-  // Generates an image in the front buffer.
-  void GenerateImage();
-
-  // Called when the screen configuration is changed.
-  void ScreenConfigurationChanged();
+  FrameGenerator frame_generator_;
 
   Callback* callback_;
   MouseShapeObserver* mouse_shape_observer_;
-
-  webrtc::DesktopSize size_;
-  int bytes_per_row_;
-  int box_pos_x_;
-  int box_pos_y_;
-  int box_speed_x_;
-  int box_speed_y_;
-
-  webrtc::ScreenCaptureFrameQueue queue_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeScreenCapturer);
 };

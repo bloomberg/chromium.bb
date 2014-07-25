@@ -482,6 +482,7 @@ void ChannelMultiplexer::NotifyWriteFailed(const std::string& name) {
 
 void ChannelMultiplexer::OnIncomingPacket(scoped_ptr<MultiplexPacket> packet,
                                           const base::Closure& done_task) {
+  DCHECK(packet->has_channel_id());
   if (!packet->has_channel_id()) {
     LOG(ERROR) << "Received packet without channel_id.";
     done_task.Run();

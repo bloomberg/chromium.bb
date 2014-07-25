@@ -489,6 +489,8 @@ scoped_ptr<VideoEncoder> ClientSession::CreateVideoEncoder(
     return remoting::VideoEncoderVpx::CreateForVP8().PassAs<VideoEncoder>();
   } else if (video_config.codec == protocol::ChannelConfig::CODEC_VP9) {
     return remoting::VideoEncoderVpx::CreateForVP9().PassAs<VideoEncoder>();
+  } else if (video_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
+    return scoped_ptr<VideoEncoder>(new remoting::VideoEncoderVerbatim());
   }
 
   NOTREACHED();

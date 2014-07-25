@@ -76,6 +76,9 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
                        public webrtc::DesktopCapturer::Callback,
                        public webrtc::ScreenCapturer::MouseShapeObserver {
  public:
+  // Enables timestamps for generated frames. Used for testing.
+  static void EnableTimestampsForTests();
+
   // Creates a VideoScheduler running capture, encode and network tasks on the
   // supplied TaskRunners.  Video and cursor shape updates will be pumped to
   // |video_stub| and |client_stub|, which must remain valid until Stop() is
@@ -160,7 +163,8 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
 
   // Encode a frame, passing generated VideoPackets to SendVideoPacket().
   void EncodeFrame(scoped_ptr<webrtc::DesktopFrame> frame,
-                   int64 sequence_number);
+                   int64 sequence_number,
+                   base::TimeTicks timestamp);
 
   void EncodedDataAvailableCallback(int64 sequence_number,
                                     scoped_ptr<VideoPacket> packet);
