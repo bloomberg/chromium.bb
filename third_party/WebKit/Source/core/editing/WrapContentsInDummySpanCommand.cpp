@@ -28,7 +28,7 @@
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/editing/ApplyStyleCommand.h"
-#include "core/html/HTMLElement.h"
+#include "core/html/HTMLSpanElement.h"
 
 namespace blink {
 

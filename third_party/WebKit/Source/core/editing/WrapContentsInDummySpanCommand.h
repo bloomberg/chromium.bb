@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class HTMLElement;
+class HTMLSpanElement;
 
 class WrapContentsInDummySpanCommand FINAL : public SimpleEditCommand {
 public:
@@ -50,7 +50,7 @@ private:
     void executeApply();
 
     RefPtrWillBeMember<Element> m_element;
-    RefPtrWillBeMember<HTMLElement> m_dummySpan;
+    RefPtrWillBeMember<HTMLSpanElement> m_dummySpan;
 };
 
 } // namespace blink
