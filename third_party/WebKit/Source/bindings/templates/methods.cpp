@@ -435,8 +435,6 @@ static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCall
     {% else %}
     if (contextData && contextData->activityLogger()) {
     {% endif %}
-        {# FIXME: replace toVectorOfArguments with toNativeArguments(info, 0)
-           and delete toVectorOfArguments #}
         Vector<v8::Handle<v8::Value> > loggerArgs = toNativeArguments<v8::Handle<v8::Value> >(info, 0);
         contextData->activityLogger()->logMethod("{{interface_name}}.{{method.name}}", info.Length(), loggerArgs.data());
     }
@@ -575,8 +573,7 @@ static void {{name}}(const v8::FunctionCallbackInfo<v8::Value>& info)
     {% endif %}
     {# Overloaded constructors have length checked during overload resolution #}
     {% if constructor.number_of_required_arguments and not constructor.overload_index %}
-    {# FIXME: remove UNLIKELY: constructors are expensive, so no difference. #}
-    if (UNLIKELY(info.Length() < {{constructor.number_of_required_arguments}})) {
+    if (info.Length() < {{constructor.number_of_required_arguments}}) {
         {{throw_minimum_arity_type_error(constructor, constructor.number_of_required_arguments)}};
         return;
     }

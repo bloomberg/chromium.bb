@@ -98,7 +98,7 @@ static void funcMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(info.Length() < 1)) {
+    if (info.Length() < 1) {
         throwMinimumArityTypeErrorForConstructor("TestInterfaceGarbageCollected", 1, info.Length(), info.GetIsolate());
         return;
     }

@@ -84,7 +84,7 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
         return;
     }
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceNamedConstructor", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
+    if (info.Length() < 1) {
         throwMinimumArityTypeError(exceptionState, 1, info.Length());
         return;
     }
