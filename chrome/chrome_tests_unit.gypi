@@ -409,7 +409,6 @@
         }],
         ['OS=="win" or OS=="mac"', {
           'sources': [
-            'common/extensions/api/networking_private/networking_private_crypto_unittest.cc',
             'common/media_galleries/picasa_test_util.cc',
             'common/media_galleries/picasa_test_util.cc',
             'common/media_galleries/pmp_test_util.cc',
@@ -2467,6 +2466,7 @@
           'sources': [
             'browser/media_galleries/fileapi/itunes_file_util_unittest.cc',
             'browser/media_galleries/fileapi/picasa_file_util_unittest.cc',
+            'common/extensions/api/networking_private/networking_private_crypto_unittest.cc',
             'utility/media_galleries/itunes_library_parser_unittest.cc',
             'utility/media_galleries/picasa_album_table_reader_unittest.cc',
             'utility/media_galleries/picasa_albums_indexer_unittest.cc',
@@ -2739,10 +2739,6 @@
           ],
         }],
         ['use_openssl==1', {
-          'sources!': [
-            # networking_private_crypto.cc uses NSS functions.
-            'common/extensions/api/networking_private/networking_private_crypto_unittest.cc',
-          ],
           'sources/': [
             # OpenSSL build does not support firefox importer. See
             # http://crbug.com/64926

@@ -113,6 +113,10 @@ static_library("common") {
       sources -= [
         "extensions/api/networking_private/networking_private_crypto_nss.cc",
       ]
+      # networking_private_crypto_openssl.cc depends on boringssl.
+      deps += [
+        "//third_party/boringssl",
+      ]
     } else {
       sources -= [
         "extensions/api/networking_private/networking_private_crypto_openssl.cc",

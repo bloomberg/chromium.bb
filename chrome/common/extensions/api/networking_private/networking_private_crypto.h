@@ -5,8 +5,11 @@
 #ifndef CHROME_COMMON_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_CRYPTO_H_
 #define CHROME_COMMON_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_CRYPTO_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
+
 #include "base/basictypes.h"
 
 // Implementation of Crypto support for networking private API.
@@ -34,9 +37,9 @@ class NetworkingPrivateCrypto {
   //
   // Returns true on success, storing the encrypted result in
   // |encrypted_output|.
-  bool EncryptByteString(const std::vector<uint8>& public_key,
+  bool EncryptByteString(const std::vector<uint8_t>& public_key,
                          const std::string& data,
-                         std::vector<uint8>* encrypted_output);
+                         std::vector<uint8_t>* encrypted_output);
 
  private:
   friend class NetworkingPrivateCryptoTest;
@@ -48,8 +51,15 @@ class NetworkingPrivateCrypto {
   // Returns true on success, storing the decrypted result in
   // |decrypted_output|.
   bool DecryptByteString(const std::string& private_key_pem,
-                         const std::vector<uint8>& encrypted_data,
+                         const std::vector<uint8_t>& encrypted_data,
                          std::string* decrypted_output);
+
+  // The trusted public key as a DER-encoded PKCS#1 RSAPublicKey
+  // structure.
+  static const uint8_t kTrustedCAPublicKeyDER[];
+
+  // The length of |kTrustedCAPublicKeyDER| in bytes.
+  static const size_t kTrustedCAPublicKeyDERLength;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateCrypto);
 };
