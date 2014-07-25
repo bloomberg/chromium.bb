@@ -261,7 +261,7 @@ int BackgroundContentsService::restart_delay_in_ms_ = 3000;  // 3 seconds.
 
 BackgroundContentsService::BackgroundContentsService(
     Profile* profile, const CommandLine* command_line)
-    : prefs_(NULL) {
+    : prefs_(NULL), extension_registry_observer_(this) {
   // Don't load/store preferences if the parent profile is incognito.
   if (!profile->IsOffTheRecord())
     prefs_ = profile->GetPrefs();
@@ -329,12 +329,6 @@ void BackgroundContentsService::StartObserving(Profile* profile) {
   registrar_.Add(this, chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED,
                  content::Source<Profile>(profile));
 
-  // Listen for new extension installs so that we can load any associated
-  // background page.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(profile));
-
   // Track when the extensions crash so that the user can be notified
   // about it, and the crashed contents can be restarted.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
@@ -342,18 +336,8 @@ void BackgroundContentsService::StartObserving(Profile* profile) {
   registrar_.Add(this, chrome::NOTIFICATION_BACKGROUND_CONTENTS_TERMINATED,
                  content::Source<Profile>(profile));
 
-  // Listen for extensions to be unloaded so we can shutdown associated
-  // BackgroundContents.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<Profile>(profile));
-
-  // Make sure the extension-crash balloons are removed when the extension is
-  // uninstalled/reloaded. We cannot do this from UNLOADED since a crashed
-  // extension is unloaded immediately after the crash, not when user reloads or
-  // uninstalls the extension.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
-                 content::Source<Profile>(profile));
+  // Listen for extension uninstall, load, unloaded notification.
+  extension_registry_observer_.Add(extensions::ExtensionRegistry::Get(profile));
 }
 
 void BackgroundContentsService::Observe(
@@ -401,35 +385,6 @@ void BackgroundContentsService::Observe(
       RegisterBackgroundContents(bgcontents);
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
-      const Extension* extension =
-          content::Details<const Extension>(details).ptr();
-      Profile* profile = content::Source<Profile>(source).ptr();
-      if (extension->is_hosted_app() &&
-          BackgroundInfo::HasBackgroundPage(extension)) {
-        // If there is a background page specified in the manifest for a hosted
-        // app, then blow away registered urls in the pref.
-        ShutdownAssociatedBackgroundContents(
-            base::ASCIIToUTF16(extension->id()));
-
-        ExtensionService* service =
-            extensions::ExtensionSystem::Get(profile)->extension_service();
-        if (service && service->is_ready()) {
-          // Now load the manifest-specified background page. If service isn't
-          // ready, then the background page will be loaded from the
-          // EXTENSIONS_READY callback.
-          LoadBackgroundContents(profile,
-                                 BackgroundInfo::GetBackgroundURL(extension),
-                                 base::ASCIIToUTF16("background"),
-                                 base::UTF8ToUTF16(extension->id()));
-        }
-      }
-
-      // Close the crash notification balloon for the app/extension, if any.
-      ScheduleCloseBalloon(extension->id());
-      SendChangeNotification(profile);
-      break;
-    }
     case chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED:
     case chrome::NOTIFICATION_BACKGROUND_CONTENTS_TERMINATED: {
       Profile* profile = content::Source<Profile>(source).ptr();
@@ -462,53 +417,83 @@ void BackgroundContentsService::Observe(
       }
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
-      switch (content::Details<UnloadedExtensionInfo>(details)->reason) {
-        case UnloadedExtensionInfo::REASON_DISABLE:    // Fall through.
-        case UnloadedExtensionInfo::REASON_TERMINATE:  // Fall through.
-        case UnloadedExtensionInfo::REASON_UNINSTALL:  // Fall through.
-        case UnloadedExtensionInfo::REASON_BLACKLIST:  // Fall through.
-        case UnloadedExtensionInfo::REASON_PROFILE_SHUTDOWN:
-          ShutdownAssociatedBackgroundContents(base::ASCIIToUTF16(
-              content::Details<UnloadedExtensionInfo>(details)->
-                  extension->id()));
-          SendChangeNotification(content::Source<Profile>(source).ptr());
-          break;
-        case UnloadedExtensionInfo::REASON_UPDATE: {
-          // If there is a manifest specified background page, then shut it down
-          // here, since if the updated extension still has the background page,
-          // then it will be loaded from LOADED callback. Otherwise, leave
-          // BackgroundContents in place.
-          // We don't call SendChangeNotification here - it will be generated
-          // from the LOADED callback.
-          const Extension* extension =
-              content::Details<UnloadedExtensionInfo>(details)->extension;
-          if (BackgroundInfo::HasBackgroundPage(extension)) {
-            ShutdownAssociatedBackgroundContents(
-                base::ASCIIToUTF16(extension->id()));
-          }
-          break;
-        }
-        default:
-          NOTREACHED();
-          ShutdownAssociatedBackgroundContents(base::ASCIIToUTF16(
-              content::Details<UnloadedExtensionInfo>(details)->
-                  extension->id()));
-          break;
-      }
-      break;
-
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED: {
-      // Close the crash notification balloon for the app/extension, if any.
-      ScheduleCloseBalloon(
-          content::Details<const Extension>(details).ptr()->id());
-      break;
-    }
 
     default:
       NOTREACHED();
       break;
   }
+}
+
+void BackgroundContentsService::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  if (extension->is_hosted_app() &&
+      BackgroundInfo::HasBackgroundPage(extension)) {
+    // If there is a background page specified in the manifest for a hosted
+    // app, then blow away registered urls in the pref.
+    ShutdownAssociatedBackgroundContents(base::ASCIIToUTF16(extension->id()));
+
+    ExtensionService* service =
+        extensions::ExtensionSystem::Get(browser_context)->extension_service();
+    if (service && service->is_ready()) {
+      // Now load the manifest-specified background page. If service isn't
+      // ready, then the background page will be loaded from the
+      // EXTENSIONS_READY callback.
+      LoadBackgroundContents(profile,
+                             BackgroundInfo::GetBackgroundURL(extension),
+                             base::ASCIIToUTF16("background"),
+                             base::UTF8ToUTF16(extension->id()));
+    }
+  }
+
+  // Close the crash notification balloon for the app/extension, if any.
+  ScheduleCloseBalloon(extension->id());
+  SendChangeNotification(profile);
+}
+
+void BackgroundContentsService::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionInfo::Reason reason) {
+  switch (reason) {
+    case UnloadedExtensionInfo::REASON_DISABLE:    // Fall through.
+    case UnloadedExtensionInfo::REASON_TERMINATE:  // Fall through.
+    case UnloadedExtensionInfo::REASON_UNINSTALL:  // Fall through.
+    case UnloadedExtensionInfo::REASON_BLACKLIST:  // Fall through.
+    case UnloadedExtensionInfo::REASON_PROFILE_SHUTDOWN:
+      ShutdownAssociatedBackgroundContents(base::ASCIIToUTF16(extension->id()));
+      SendChangeNotification(Profile::FromBrowserContext(browser_context));
+      break;
+    case UnloadedExtensionInfo::REASON_UPDATE: {
+      // If there is a manifest specified background page, then shut it down
+      // here, since if the updated extension still has the background page,
+      // then it will be loaded from LOADED callback. Otherwise, leave
+      // BackgroundContents in place.
+      // We don't call SendChangeNotification here - it will be generated
+      // from the LOADED callback.
+      if (BackgroundInfo::HasBackgroundPage(extension)) {
+        ShutdownAssociatedBackgroundContents(
+            base::ASCIIToUTF16(extension->id()));
+      }
+      break;
+    }
+    default:
+      NOTREACHED();
+      ShutdownAssociatedBackgroundContents(base::ASCIIToUTF16(extension->id()));
+      break;
+  }
+}
+
+void BackgroundContentsService::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UninstallReason reason) {
+  // Make sure the extension-crash balloons are removed when the extension is
+  // uninstalled/reloaded. We cannot do this from UNLOADED since a crashed
+  // extension is unloaded immediately after the crash, not when user reloads or
+  // uninstalls the extension.
+  ScheduleCloseBalloon(extension->id());
 }
 
 void BackgroundContentsService::RestartForceInstalledExtensionOnCrash(

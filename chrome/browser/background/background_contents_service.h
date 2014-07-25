@@ -11,11 +11,13 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/window_container_type.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
@@ -33,6 +35,7 @@ class SessionStorageNamespace;
 
 namespace extensions {
 class Extension;
+class ExtensionRegistry;
 }
 
 namespace gfx {
@@ -50,6 +53,7 @@ struct BackgroundContentsOpenedDetails;
 // BackgroundContents and their parent app, and shutting them down when the
 // parent app is unloaded.
 class BackgroundContentsService : private content::NotificationObserver,
+                                  public extensions::ExtensionRegistryObserver,
                                   public BackgroundContents::Delegate,
                                   public KeyedService {
  public:
@@ -140,6 +144,19 @@ class BackgroundContentsService : private content::NotificationObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // extensions::ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+  virtual void OnExtensionUninstalled(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UninstallReason reason) OVERRIDE;
+
   // Restarts a force-installed app/extension after a crash.
   void RestartForceInstalledExtensionOnCrash(
       const extensions::Extension* extension,
@@ -217,6 +234,10 @@ class BackgroundContentsService : private content::NotificationObserver,
   typedef std::map<base::string16, BackgroundContentsInfo>
       BackgroundContentsMap;
   BackgroundContentsMap contents_map_;
+
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundContentsService);
 };
