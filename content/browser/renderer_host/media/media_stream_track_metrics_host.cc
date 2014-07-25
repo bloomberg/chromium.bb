@@ -49,13 +49,16 @@ bool MediaStreamTrackMetricsHost::OnMessageReceived(
 void MediaStreamTrackMetricsHost::OnAddTrack(uint64 id,
                                              bool is_audio,
                                              bool is_remote) {
-  DCHECK(tracks_.find(id) == tracks_.end());
+  if (tracks_.find(id) != tracks_.end())
+    return;
+
   TrackInfo info = {is_audio, is_remote, base::TimeTicks::Now()};
   tracks_[id] = info;
 }
 
 void MediaStreamTrackMetricsHost::OnRemoveTrack(uint64 id) {
-  DCHECK(tracks_.find(id) != tracks_.end());
+  if (tracks_.find(id) == tracks_.end())
+    return;
 
   TrackInfo& info = tracks_[id];
   ReportDuration(info);
