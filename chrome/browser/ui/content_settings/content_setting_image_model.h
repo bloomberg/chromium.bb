@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/common/content_settings_types.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 
 namespace content {
 class WebContents;

@@ -9,7 +9,7 @@
 
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "chrome/common/content_settings_types.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "url/gurl.h"
 
 class Browser;

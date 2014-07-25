@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_CONTENT_SETTINGS_CONTENT_SETTING_BUBBLE_MODEL_DELEGATE_H_
 #define CHROME_BROWSER_UI_CONTENT_SETTINGS_CONTENT_SETTING_BUBBLE_MODEL_DELEGATE_H_
 
-#include "chrome/common/content_settings_types.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 
 namespace content {
 class WebContents;

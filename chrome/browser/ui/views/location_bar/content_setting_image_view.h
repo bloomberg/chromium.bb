@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_CONTENT_SETTING_IMAGE_VIEW_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/content_settings_types.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/painter.h"

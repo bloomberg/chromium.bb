@@ -9,6 +9,7 @@
 #include <set>
 
 #include "chrome/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "extensions/common/permissions/api_permission.h"

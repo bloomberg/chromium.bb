@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
-#include "chrome/common/content_settings_types.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "ui/base/base_window.h"
 #include "ui/base/window_open_disposition.h"

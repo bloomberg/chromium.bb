@@ -18,6 +18,7 @@
     'captive_portal.gypi',
     'cloud_devices.gypi',
     'component_updater.gypi',
+    'content_settings.gypi',
     'cronet.gypi',
     'data_reduction_proxy.gypi',
     'dom_distiller.gypi',

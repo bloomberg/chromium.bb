@@ -13,7 +13,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/common/content_settings.h"
-#include "chrome/common/content_settings_types.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/common/signed_certificate_timestamp_id_and_status.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"

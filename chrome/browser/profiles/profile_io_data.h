@@ -21,7 +21,7 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
-#include "chrome/common/content_settings_types.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_usage_stats.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"

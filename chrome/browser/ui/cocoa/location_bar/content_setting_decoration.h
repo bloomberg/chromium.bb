@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/location_bar/image_decoration.h"
-#include "chrome/common/content_settings_types.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 
 // ContentSettingDecoration is used to display the content settings
 // images on the current page.

@@ -23,6 +23,7 @@
 #include "chrome/common/ntp_logging_events.h"
 #include "chrome/common/omnibox_focus_state.h"
 #include "chrome/common/search_provider.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/nacl/common/nacl_types.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/referrer.h"

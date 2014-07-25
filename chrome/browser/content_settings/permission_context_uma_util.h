@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CONTENT_SETTINGS_PERMISSION_CONTEXT_UMA_UTIL_H_
 
 #include "base/logging.h"
-#include "chrome/common/content_settings_types.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 
 // Provides a convenient way of logging UMA for permission related
 // operations.

@@ -46,6 +46,7 @@ static_library("browser") {
     "//components/autofill/core/browser",
     "//components/captive_portal",
     "//components/cloud_devices/common",
+    "//components/content_settings/core/common",
     "//components/data_reduction_proxy/browser",
     "//components/domain_reliability",
     "//components/favicon_base",

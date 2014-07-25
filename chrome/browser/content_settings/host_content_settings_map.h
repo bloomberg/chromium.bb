@@ -20,7 +20,7 @@
 #include "chrome/browser/content_settings/content_settings_observer.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
-#include "chrome/common/content_settings_types.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 
 class ExtensionService;
 class GURL;

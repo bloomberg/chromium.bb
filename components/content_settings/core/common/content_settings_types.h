@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_CONTENT_SETTINGS_TYPES_H_
-#define CHROME_COMMON_CONTENT_SETTINGS_TYPES_H_
+#ifndef COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_CONTENT_SETTINGS_TYPES_H_
+#define COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_CONTENT_SETTINGS_TYPES_H_
 
 // A particular type of content to care about.  We give the user various types
 // of controls over each of these.
@@ -41,4 +41,4 @@ enum ContentSettingsType {
   CONTENT_SETTINGS_NUM_TYPES,
 };
 
-#endif  // CHROME_COMMON_CONTENT_SETTINGS_TYPES_H_
+#endif  // COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_CONTENT_SETTINGS_TYPES_H_

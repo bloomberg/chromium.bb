@@ -4,6 +4,7 @@ include_rules = [
   "+components/autofill/content/renderer",
   "+components/autofill/core/common",
   "+components/cdm/renderer",
+  "+components/content_settings/core/common",
   "+components/data_reduction_proxy/common",
   "+components/nacl/renderer",
   "+components/plugins/renderer",

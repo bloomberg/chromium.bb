@@ -19,6 +19,7 @@ include_rules = [
   "+components/breakpad",
   "+components/cdm/browser",
   "+components/cloud_devices/common",
+  "+components/content_settings",
   "+components/data_reduction_proxy",
   "+components/dom_distiller",
   "+components/domain_reliability",

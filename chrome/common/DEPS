@@ -6,6 +6,7 @@ include_rules = [
   "+components/autofill/core/common",
   "+components/bookmarks/common",
   "+components/cloud_devices/common",
+  "+components/content_settings/core/common",
   "+components/data_reduction_proxy/common",
   "+components/metrics/client_info.h",
   "+components/metrics/metrics_pref_names.h",

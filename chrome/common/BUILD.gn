@@ -50,6 +50,7 @@ static_library("common") {
     "//chrome/common/net",
     "//chrome/common/safe_browsing:proto",
     "//components/cloud_devices/common",
+    "//components/content_settings/core/common",
     "//components/json_schema",
     "//components/metrics",
     "//components/policy:policy_component_common",
