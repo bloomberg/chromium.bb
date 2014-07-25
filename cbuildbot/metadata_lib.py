@@ -131,6 +131,7 @@ class CBuildbotMetadata(object):
     # be copied into a normal list.
     temp = self._metadata_dict.copy()
     temp['cl_actions'] = list(self._cl_action_list)
+
     return temp
 
   def GetJSON(self):
@@ -157,6 +158,10 @@ class CBuildbotMetadata(object):
 
     self._cl_action_list.append(cl_action)
     return self
+
+  def SetFirmwareVersions(self, main=None, ec=None):
+    self._metadata_dict['main_fw_version'] = main or 'None'
+    self._metadata_dict['ec_fw_version'] = ec or 'None'
 
   @staticmethod
   def _ChangeAsSmallDictionary(change):
