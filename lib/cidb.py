@@ -330,7 +330,8 @@ class SchemaVersionedMySQLConnection(object):
                                    listeners=[StrictModeListener()])
       self._engine = e
       self._engine_pid = pid
-      logging.debug('Created engine %s for pid %s', e, pid)
+      logging.debug('Created cidb engine %s@%s for pid %s', e.url.username,
+                    e.url.host, pid)
       return self._engine
 
   def _InvalidateEngine(self):
@@ -517,7 +518,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                                           'final' : True})
 
 
-def GetCIDBConnectionForBuilder(builer_run):
+def GetCIDBConnectionForBuilder(builder_run):
   """Get a CIDBConnection.
 
   Args:
