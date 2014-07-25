@@ -31,7 +31,6 @@
 import errno
 import logging
 import socket
-import sys
 import tempfile
 import time
 
@@ -50,6 +49,7 @@ class ServerBase(object):
         self._port_obj = port_obj
         self._executive = port_obj._executive
         self._filesystem = port_obj._filesystem
+        self._platform = port_obj.host.platform
         self._output_dir = output_dir
 
         # We need a non-checkout-dependent place to put lock files, etc. We
@@ -57,7 +57,7 @@ class ServerBase(object):
         # randomly-generated directory under /var/folders and no one would ever
         # look there.
         tmpdir = tempfile.gettempdir()
-        if port_obj.host.platform.is_mac():
+        if self._platform.is_mac():
             tmpdir = '/tmp'
 
         self._runtime_path = self._filesystem.join(tmpdir, "WebKit")
@@ -236,8 +236,10 @@ class ServerBase(object):
 
     def _is_server_running_on_all_ports(self):
         """Returns whether the server is running on all the desired ports."""
-        if not self._executive.check_running_pid(self._pid):
-            _log.error("Server isn't running at all")
+
+        # TODO(dpranke): crbug/378444 maybe pid is unreliable on win?
+        if not self._platform.is_win() and not self._executive.check_running_pid(self._pid):
+            _log.debug("Server isn't running at all")
             self._log_errors_from_subprocess()
             raise ServerError("Server exited")
 
@@ -266,7 +268,7 @@ class ServerBase(object):
             except IOError, e:
                 if e.errno in (errno.EALREADY, errno.EADDRINUSE):
                     raise ServerError('Port %d is already in use.' % port)
-                elif sys.platform == 'win32' and e.errno in (errno.WSAEACCES,):  # pylint: disable=E1101
+                elif self._platform.is_win() and e.errno in (errno.WSAEACCES,):  # pylint: disable=E1101
                     raise ServerError('Port %d is already in use.' % port)
                 else:
                     raise
