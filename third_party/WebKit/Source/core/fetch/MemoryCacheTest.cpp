@@ -81,23 +81,15 @@ protected:
     virtual void SetUp()
     {
         // Save the global memory cache to restore it upon teardown.
-        m_globalMemoryCache = adoptPtr(memoryCache());
-        // Create the test memory cache instance and hook it in.
-        m_testingMemoryCache = adoptPtr(new MemoryCache());
-        setMemoryCacheForTesting(m_testingMemoryCache.leakPtr());
+        m_globalMemoryCache = replaceMemoryCacheForTesting(MemoryCache::create());
     }
 
     virtual void TearDown()
     {
-        // Regain the ownership of testing memory cache, so that it will be
-        // destroyed.
-        m_testingMemoryCache = adoptPtr(memoryCache());
-        // Yield the ownership of the global memory cache back.
-        setMemoryCacheForTesting(m_globalMemoryCache.leakPtr());
+        replaceMemoryCacheForTesting(m_globalMemoryCache.release());
     }
 
-    OwnPtr<MemoryCache> m_testingMemoryCache;
-    OwnPtr<MemoryCache> m_globalMemoryCache;
+    OwnPtrWillBePersistent<MemoryCache> m_globalMemoryCache;
 };
 
 // Verifies that setters and getters for cache capacities work correcty.

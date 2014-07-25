@@ -42,7 +42,7 @@
 
 namespace blink {
 
-static MemoryCache* gMemoryCache;
+static OwnPtrWillBePersistent<MemoryCache>* gMemoryCache;
 
 static const unsigned cDefaultCacheCapacity = 8192 * 1024;
 static const unsigned cDeferredPruneDeadCapacityFactor = 2;
@@ -54,16 +54,34 @@ MemoryCache* memoryCache()
 {
     ASSERT(WTF::isMainThread());
     if (!gMemoryCache)
-        gMemoryCache = new MemoryCache();
-    return gMemoryCache;
+        gMemoryCache = new OwnPtrWillBePersistent<MemoryCache>(MemoryCache::create());
+    return gMemoryCache->get();
 }
 
-void setMemoryCacheForTesting(MemoryCache* memoryCache)
+PassOwnPtrWillBeRawPtr<MemoryCache> replaceMemoryCacheForTesting(PassOwnPtrWillBeRawPtr<MemoryCache> cache)
 {
-    gMemoryCache = memoryCache;
+    // Make sure we have non-empty gMemoryCache.
+    memoryCache();
+    OwnPtrWillBeRawPtr<MemoryCache> oldCache = gMemoryCache->release();
+    *gMemoryCache = cache;
+    return oldCache.release();
 }
 
-MemoryCache::MemoryCache()
+void MemoryCacheEntry::trace(Visitor* visitor)
+{
+    visitor->trace(m_previousInLiveResourcesList);
+    visitor->trace(m_nextInLiveResourcesList);
+    visitor->trace(m_previousInAllResourcesList);
+    visitor->trace(m_nextInAllResourcesList);
+}
+
+void MemoryCacheLRUList::trace(Visitor* visitor)
+{
+    visitor->trace(m_head);
+    visitor->trace(m_tail);
+}
+
+inline MemoryCache::MemoryCache()
     : m_inPruneResources(false)
     , m_prunePending(false)
     , m_maxPruneDeferralDelay(cMaxPruneDeferralDelay)
@@ -85,10 +103,25 @@ MemoryCache::MemoryCache()
     m_pruneTimeStamp = m_pruneFrameTimeStamp = FrameView::currentFrameTimeStamp();
 }
 
+PassOwnPtrWillBeRawPtr<MemoryCache> MemoryCache::create()
+{
+    return adoptPtrWillBeNoop(new MemoryCache());
+}
+
 MemoryCache::~MemoryCache()
 {
     if (m_prunePending)
         blink::Platform::current()->currentThread()->removeTaskObserver(this);
+}
+
+void MemoryCache::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_allResources);
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(m_liveDecodedResources); ++i)
+        visitor->trace(m_liveDecodedResources[i]);
+    visitor->trace(m_resources);
+#endif
 }
 
 KURL MemoryCache::removeFragmentIdentifierIfNeeded(const KURL& originalURL)
@@ -328,8 +361,10 @@ bool MemoryCache::evict(MemoryCacheEntry* entry)
 
     ResourceMap::iterator it = m_resources.find(resource->url());
     ASSERT(it != m_resources.end());
+#if !ENABLE(OILPAN)
     OwnPtr<MemoryCacheEntry> entryPtr;
     entryPtr.swap(it->value);
+#endif
     m_resources.remove(it);
     return canDelete;
 }
@@ -359,8 +394,8 @@ void MemoryCache::removeFromLRUList(MemoryCacheEntry* entry, MemoryCacheLRUList*
 
     MemoryCacheEntry* next = entry->m_nextInAllResourcesList;
     MemoryCacheEntry* previous = entry->m_previousInAllResourcesList;
-    entry->m_nextInAllResourcesList = 0;
-    entry->m_previousInAllResourcesList = 0;
+    entry->m_nextInAllResourcesList = nullptr;
+    entry->m_previousInAllResourcesList = nullptr;
 
     if (next)
         next->m_previousInAllResourcesList = previous;
@@ -422,8 +457,8 @@ void MemoryCache::removeFromLiveDecodedResourcesList(MemoryCacheEntry* entry)
     MemoryCacheEntry* next = entry->m_nextInLiveResourcesList;
     MemoryCacheEntry* previous = entry->m_previousInLiveResourcesList;
 
-    entry->m_nextInLiveResourcesList = 0;
-    entry->m_previousInLiveResourcesList = 0;
+    entry->m_nextInLiveResourcesList = nullptr;
+    entry->m_previousInLiveResourcesList = nullptr;
 
     if (next)
         next->m_previousInLiveResourcesList = previous;

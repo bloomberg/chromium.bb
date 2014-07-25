@@ -139,10 +139,7 @@ private:
         blink::Platform::initialize(&m_proxyPlatform);
 
         // Save the global memory cache to restore it upon teardown.
-        m_globalMemoryCache = adoptPtr(memoryCache());
-        // Create the test memory cache instance and hook it in.
-        m_testingMemoryCache = adoptPtr(new MemoryCache());
-        setMemoryCacheForTesting(m_testingMemoryCache.leakPtr());
+        m_globalMemoryCache = replaceMemoryCacheForTesting(MemoryCache::create());
 
         // Create a ResourceFetcher that has a real DocumentLoader and Document, but is not attached to a LocalFrame.
         const KURL kDocumentURL(ParsedURLString, "http://document.com/");
@@ -156,12 +153,8 @@ private:
     {
         memoryCache()->evictResources();
 
-        // Regain the ownership of testing memory cache, so that it will be
-        // destroyed.
-        m_testingMemoryCache = adoptPtr(memoryCache());
-
         // Yield the ownership of the global memory cache back.
-        setMemoryCacheForTesting(m_globalMemoryCache.leakPtr());
+        replaceMemoryCacheForTesting(m_globalMemoryCache.release());
 
         blink::Platform::initialize(m_savedPlatform);
     }
@@ -169,8 +162,7 @@ private:
     blink::Platform* m_savedPlatform;
     ProxyPlatform m_proxyPlatform;
 
-    OwnPtr<MemoryCache> m_testingMemoryCache;
-    OwnPtr<MemoryCache> m_globalMemoryCache;
+    OwnPtrWillBePersistent<MemoryCache> m_globalMemoryCache;
 
     RefPtr<DocumentLoader> m_documentLoader;
 

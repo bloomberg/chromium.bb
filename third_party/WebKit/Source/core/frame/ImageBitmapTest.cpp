@@ -61,10 +61,7 @@ protected:
         m_bitmap2.eraseColor(0xAAAAAAAA);
 
         // Save the global memory cache to restore it upon teardown.
-        m_globalMemoryCache = adoptPtr(memoryCache());
-        // Create the test memory cache instance and hook it in.
-        m_testingMemoryCache = adoptPtr(new MemoryCache());
-        setMemoryCacheForTesting(m_testingMemoryCache.leakPtr());
+        m_globalMemoryCache = replaceMemoryCacheForTesting(MemoryCache::create());
     }
     virtual void TearDown()
     {
@@ -73,16 +70,11 @@ protected:
         // them from the cache.
         Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
 
-        // Regain the ownership of testing memory cache, so that it will be
-        // destroyed.
-        m_testingMemoryCache = adoptPtr(memoryCache());
-        // Yield the ownership of the global memory cache back.
-        setMemoryCacheForTesting(m_globalMemoryCache.leakPtr());
+        replaceMemoryCacheForTesting(m_globalMemoryCache.release());
     }
 
     SkBitmap m_bitmap, m_bitmap2;
-    OwnPtr<MemoryCache> m_testingMemoryCache;
-    OwnPtr<MemoryCache> m_globalMemoryCache;
+    OwnPtrWillBePersistent<MemoryCache> m_globalMemoryCache;
 };
 
 // Verifies that the image resource held by an ImageBitmap is the same as the

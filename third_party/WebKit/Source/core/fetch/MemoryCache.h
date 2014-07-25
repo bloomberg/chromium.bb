@@ -76,9 +76,10 @@ enum UpdateReason {
 // MemoryCacheEntry class is used only in MemoryCache class, but we don't make
 // MemoryCacheEntry class an inner class of MemoryCache because of dependency
 // from MemoryCacheLRUList.
-class MemoryCacheEntry FINAL {
+class MemoryCacheEntry FINAL : public NoBaseWillBeGarbageCollectedFinalized<MemoryCacheEntry> {
 public:
-    static PassOwnPtr<MemoryCacheEntry> create(Resource* resource) { return adoptPtr(new MemoryCacheEntry(resource)); }
+    static PassOwnPtrWillBeRawPtr<MemoryCacheEntry> create(Resource* resource) { return adoptPtrWillBeNoop(new MemoryCacheEntry(resource)); }
+    void trace(Visitor*);
 
     ResourcePtr<Resource> m_resource;
     bool m_inLiveDecodedResourcesList;
@@ -86,10 +87,10 @@ public:
     MemoryCacheLiveResourcePriority m_liveResourcePriority;
     double m_lastDecodedAccessTime; // Used as a thrash guard
 
-    MemoryCacheEntry* m_previousInLiveResourcesList;
-    MemoryCacheEntry* m_nextInLiveResourcesList;
-    MemoryCacheEntry* m_previousInAllResourcesList;
-    MemoryCacheEntry* m_nextInAllResourcesList;
+    RawPtrWillBeMember<MemoryCacheEntry> m_previousInLiveResourcesList;
+    RawPtrWillBeMember<MemoryCacheEntry> m_nextInLiveResourcesList;
+    RawPtrWillBeMember<MemoryCacheEntry> m_previousInAllResourcesList;
+    RawPtrWillBeMember<MemoryCacheEntry> m_nextInAllResourcesList;
 
 private:
     explicit MemoryCacheEntry(Resource* resource)
@@ -98,10 +99,10 @@ private:
         , m_accessCount(0)
         , m_liveResourcePriority(MemoryCacheLiveResourcePriorityLow)
         , m_lastDecodedAccessTime(0.0)
-        , m_previousInLiveResourcesList(0)
-        , m_nextInLiveResourcesList(0)
-        , m_previousInAllResourcesList(0)
-        , m_nextInAllResourcesList(0)
+        , m_previousInLiveResourcesList(nullptr)
+        , m_nextInLiveResourcesList(nullptr)
+        , m_previousInAllResourcesList(nullptr)
+        , m_nextInAllResourcesList(nullptr)
     {
     }
 };
@@ -110,16 +111,27 @@ private:
 // MemoryCacheLRUList an inner struct of MemoryCache because we can't define
 // VectorTraits for inner structs.
 struct MemoryCacheLRUList FINAL {
-    MemoryCacheEntry* m_head;
-    MemoryCacheEntry* m_tail;
-    MemoryCacheLRUList() : m_head(0), m_tail(0) { }
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
+    RawPtrWillBeMember<MemoryCacheEntry> m_head;
+    RawPtrWillBeMember<MemoryCacheEntry> m_tail;
+
+    MemoryCacheLRUList() : m_head(nullptr), m_tail(nullptr) { }
+    void trace(Visitor*);
 };
 
-class MemoryCache FINAL : public blink::WebThread::TaskObserver {
-    WTF_MAKE_NONCOPYABLE(MemoryCache); WTF_MAKE_FAST_ALLOCATED;
+}
+
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::MemoryCacheLRUList);
+
+namespace blink {
+
+class MemoryCache FINAL : public NoBaseWillBeGarbageCollectedFinalized<MemoryCache>, public WebThread::TaskObserver {
+    WTF_MAKE_NONCOPYABLE(MemoryCache); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    MemoryCache();
-    virtual ~MemoryCache();
+    static PassOwnPtrWillBeRawPtr<MemoryCache> create();
+    ~MemoryCache();
+    void trace(Visitor*);
 
     struct TypeStatistic {
         int count;
@@ -203,6 +215,8 @@ public:
     virtual void didProcessTask() OVERRIDE;
 
 private:
+    MemoryCache();
+
     MemoryCacheLRUList* lruListFor(unsigned accessCount, size_t);
 
 #ifdef MEMORY_CACHE_STATS
@@ -249,7 +263,7 @@ private:
     // Size-adjusted and popularity-aware LRU list collection for cache objects. This collection can hold
     // more resources than the cached resource map, since it can also hold "stale" multiple versions of objects that are
     // waiting to die when the clients referencing them go away.
-    Vector<MemoryCacheLRUList, 32> m_allResources;
+    WillBeHeapVector<MemoryCacheLRUList, 32> m_allResources;
 
     // Lists just for live resources with decoded data. Access to this list is based off of painting the resource.
     // The lists are ordered by decode priority, with higher indices having higher priorities.
@@ -257,7 +271,7 @@ private:
 
     // A URL-based map of all resources that are in the cache (including the freshest version of objects that are currently being
     // referenced by a Web page).
-    typedef HashMap<String, OwnPtr<MemoryCacheEntry> > ResourceMap;
+    typedef WillBeHeapHashMap<String, OwnPtrWillBeMember<MemoryCacheEntry> > ResourceMap;
     ResourceMap m_resources;
 
     friend class MemoryCacheTest;
@@ -269,8 +283,9 @@ private:
 // Returns the global cache.
 MemoryCache* memoryCache();
 
-// Sets the global cache, used to swap in a test instance.
-void setMemoryCacheForTesting(MemoryCache*);
+// Sets the global cache, used to swap in a test instance. Returns the old
+// MemoryCache object.
+PassOwnPtrWillBeRawPtr<MemoryCache> replaceMemoryCacheForTesting(PassOwnPtrWillBeRawPtr<MemoryCache>);
 
 }
 
