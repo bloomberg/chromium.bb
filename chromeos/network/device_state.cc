@@ -20,6 +20,7 @@ DeviceState::DeviceState(const std::string& path)
       provider_requires_roaming_(false),
       support_network_scan_(false),
       scanning_(false),
+      sim_retries_left_(0),
       sim_lock_enabled_(false),
       sim_present_(true),
       eap_authentication_completed_(false) {
