@@ -25,10 +25,6 @@ class Media(page_measurement.PageMeasurement):
     self._memory_metric = None
     self._power_metric = None
 
-  def results_are_the_same_on_every_page(self):
-    """Results can vary from page to page based on media events taking place."""
-    return False
-
   def WillStartBrowser(self, browser):
     self._power_metric = power.PowerMetric(browser)
 
@@ -70,4 +66,3 @@ class Media(page_measurement.PageMeasurement):
                                      trace_name=trace_name,
                                      exclude_metrics=exclude_metrics)
       self._power_metric.AddResults(tab, results)
-

@@ -63,10 +63,6 @@ class _BlinkPerfMeasurement(page_measurement.PageMeasurement):
                            'blink_perf.js'), 'r') as f:
       self._blink_perf_js = f.read()
 
-  @property
-  def results_are_the_same_on_every_page(self):
-    return False
-
   def WillNavigateToPage(self, page, tab):
     page.script_to_evaluate_on_commit = self._blink_perf_js
 

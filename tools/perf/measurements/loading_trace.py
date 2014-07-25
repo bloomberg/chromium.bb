@@ -12,10 +12,6 @@ class LoadingTrace(page_measurement.PageMeasurement):
     super(LoadingTrace, self).__init__(*args, **kwargs)
     self._timeline_controller = timeline_controller.TimelineController()
 
-  @property
-  def results_are_the_same_on_every_page(self):
-    return False
-
   def WillNavigateToPage(self, page, tab):
     self._timeline_controller.Start(page, tab)
 

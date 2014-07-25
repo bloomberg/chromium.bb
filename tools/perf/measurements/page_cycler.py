@@ -171,6 +171,3 @@ class PageCycler(page_measurement.PageMeasurement):
     # warm run, and clearing the cache before the load of the following
     # URL would eliminate the intended warmup for the previous URL.
     return (self._has_loaded_page[url] >= self._cold_run_start_index)
-
-  def results_are_the_same_on_every_page(self):
-    return False

@@ -38,10 +38,6 @@ SCORE_TRACE_NAME = 'score'
 
 
 class _DomPerfMeasurement(page_measurement.PageMeasurement):
-  @property
-  def results_are_the_same_on_every_page(self):
-    return False
-
   def MeasurePage(self, page, tab, results):
     try:
       def _IsDone():

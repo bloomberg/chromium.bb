@@ -18,10 +18,6 @@ class ThreadTimes(page_measurement.PageMeasurement):
     parser.add_option('--report-silk-details', action='store_true',
                       help='Report details relevant to silk.')
 
-  @property
-  def results_are_the_same_on_every_page(self):
-    return False
-
   def WillRunActions(self, page, tab):
     self._timeline_controller = timeline_controller.TimelineController()
     if self.options.report_silk_details:
