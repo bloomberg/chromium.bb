@@ -3177,6 +3177,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.ProbeURLNetError" enum="NetErrorCodes">
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
+  <summary>
+    Reports the type of network error when the data reduction proxy probe fails
+    due to a network error.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.PromoAction"
     enum="DataReductionProxyPromoAction">
   <owner>bengr@chromium.org</owner>

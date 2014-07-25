@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -52,6 +53,9 @@ const char kUMAProxyStartupStateHistogram[] =
 
 // Key of the UMA DataReductionProxy.ProbeURL histogram.
 const char kUMAProxyProbeURL[] = "DataReductionProxy.ProbeURL";
+
+// Key of the UMA DataReductionProxy.ProbeURLNetError histogram.
+const char kUMAProxyProbeURLNetError[] = "DataReductionProxy.ProbeURLNetError";
 
 // Record a network change event.
 void RecordNetworkChangeEvent(DataReductionProxyNetworkChangeEvent event) {
@@ -234,10 +238,16 @@ void DataReductionProxySettings::OnURLFetchComplete(
 
   DCHECK(source == fetcher_.get());
   net::URLRequestStatus status = source->GetStatus();
-  if (status.status() == net::URLRequestStatus::FAILED &&
-      status.error() == net::ERR_INTERNET_DISCONNECTED) {
-    RecordProbeURLFetchResult(INTERNET_DISCONNECTED);
-    return;
+  if (status.status() == net::URLRequestStatus::FAILED) {
+    if (status.error() == net::ERR_INTERNET_DISCONNECTED) {
+      RecordProbeURLFetchResult(INTERNET_DISCONNECTED);
+      return;
+    }
+    // TODO(bengr): Remove once we understand the reasons probes are failing.
+    // Probe errors are either due to fetcher-level errors or modified
+    // responses. This only tracks the former.
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        kUMAProxyProbeURLNetError, std::abs(status.error()));
   }
 
   std::string response;
