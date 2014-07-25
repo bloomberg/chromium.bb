@@ -223,6 +223,15 @@ public class AutocompleteController {
     }
 
     /**
+     * Use updateMatchDestinationUrlWithQueryFormulationTime instead.
+     */
+    @Deprecated
+    public String updateMatchDestinationUrl(int selectedIndex, long elapsedTimeSinceInputChange) {
+        return updateMatchDestinationUrlWithQueryFormulationTime(selectedIndex,
+                elapsedTimeSinceInputChange);
+    }
+
+    /**
      * Updates aqs parameters on the selected match that we will navigate to and returns the
      * updated URL. |selected_index| is the position of the selected match and
      * |elapsed_time_since_input_change| is the time in ms between the first typed input and match
@@ -235,9 +244,10 @@ public class AutocompleteController {
      * @return The url to navigate to for this match with aqs parameter updated, if we are
      *         making a Google search query.
      */
-    public String updateMatchDestinationUrl(int selectedIndex, long elapsedTimeSinceInputChange) {
-        return nativeUpdateMatchDestinationURL(mNativeAutocompleteControllerAndroid, selectedIndex,
-                elapsedTimeSinceInputChange);
+    public String updateMatchDestinationUrlWithQueryFormulationTime(int selectedIndex,
+            long elapsedTimeSinceInputChange) {
+        return nativeUpdateMatchDestinationURLWithQueryFormulationTime(
+                mNativeAutocompleteControllerAndroid, selectedIndex, elapsedTimeSinceInputChange);
     }
 
     /**
@@ -265,8 +275,9 @@ public class AutocompleteController {
             boolean focusedFromFakebox);
     private native void nativeDeleteSuggestion(long nativeAutocompleteControllerAndroid,
             int selectedIndex);
-    private native String nativeUpdateMatchDestinationURL(long nativeAutocompleteControllerAndroid,
-            int selectedIndex, long elapsedTimeSinceInputChange);
+    private native String nativeUpdateMatchDestinationURLWithQueryFormulationTime(
+            long nativeAutocompleteControllerAndroid, int selectedIndex,
+            long elapsedTimeSinceInputChange);
     private native OmniboxSuggestion nativeGetTopSynchronousMatch(
             long nativeAutocompleteControllerAndroid, String query);
 

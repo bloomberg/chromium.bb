@@ -76,8 +76,6 @@ class BaseSearchProvider : public AutocompleteProvider,
     return field_trial_triggered_in_session_;
   }
 
-  void set_in_app_list() { in_app_list_ = true; }
-
  protected:
   // The following keys are used to record additional information on matches.
 
@@ -340,7 +338,6 @@ class BaseSearchProvider : public AutocompleteProvider,
   // |append_extra_query_params| should be set if |template_url| is the default
   // search engine, so the destination URL will contain any
   // command-line-specified query params.
-  // |from_app_list| should be set if the search was made from the app list.
   static AutocompleteMatch CreateSearchSuggestion(
       AutocompleteProvider* autocomplete_provider,
       const AutocompleteInput& input,
@@ -348,8 +345,7 @@ class BaseSearchProvider : public AutocompleteProvider,
       const TemplateURL* template_url,
       const SearchTermsData& search_terms_data,
       int accepted_suggestion,
-      bool append_extra_query_params,
-      bool from_app_list);
+      bool append_extra_query_params);
 
   // Parses JSON response received from the provider, stripping XSSI
   // protection if needed. Returns the parsed data if successful, NULL
@@ -516,11 +512,6 @@ class BaseSearchProvider : public AutocompleteProvider,
   // that a server delete a personalized suggestion. Making this a ScopedVector
   // causes us to auto-cancel all such requests on shutdown.
   SuggestionDeletionHandlers deletion_handlers_;
-
-  // True if this provider's results are being displayed in the app list. By
-  // default this is false, meaning that the results will be shown in the
-  // omnibox.
-  bool in_app_list_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseSearchProvider);
 };

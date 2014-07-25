@@ -114,8 +114,15 @@ class AutocompleteController : public AutocompleteProviderListener {
   // parameters otherwise not available at initial construction time.  This
   // method should be called from OmniboxEditModel::OpenMatch() before the user
   // navigates to the selected match.
-  void UpdateMatchDestinationURL(base::TimeDelta query_formulation_time,
-                                 AutocompleteMatch* match) const;
+  void UpdateMatchDestinationURLWithQueryFormulationTime(
+      base::TimeDelta query_formulation_time,
+      AutocompleteMatch* match) const;
+
+  // Constructs the final destination URL for a given match using additional
+  // parameters otherwise not available at initial construction time.
+  void UpdateMatchDestinationURL(
+      const TemplateURLRef::SearchTermsArgs& search_terms_args,
+      AutocompleteMatch* match) const;
 
   HistoryURLProvider* history_url_provider() const {
     return history_url_provider_;

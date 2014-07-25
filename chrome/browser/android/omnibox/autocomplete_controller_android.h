@@ -62,11 +62,12 @@ class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,
                             jlong elapsed_time_since_first_modified,
                             jobject j_web_contents);
   void DeleteSuggestion(JNIEnv* env, jobject obj, int selected_index);
-  base::android::ScopedJavaLocalRef<jstring> UpdateMatchDestinationURL(
-      JNIEnv* env,
-      jobject obj,
-      jint selected_index,
-      jlong elapsed_time_since_input_change);
+  base::android::ScopedJavaLocalRef<jstring>
+      UpdateMatchDestinationURLWithQueryFormulationTime(
+          JNIEnv* env,
+          jobject obj,
+          jint selected_index,
+          jlong elapsed_time_since_input_change);
 
   base::android::ScopedJavaLocalRef<jobject> GetTopSynchronousMatch(
       JNIEnv* env,

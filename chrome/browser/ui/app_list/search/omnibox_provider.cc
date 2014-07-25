@@ -8,7 +8,6 @@
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
-#include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -66,15 +65,23 @@ void ACMatchClassificationsToTags(
 
 class OmniboxResult : public ChromeSearchResult {
  public:
-  OmniboxResult(Profile* profile, const AutocompleteMatch& match)
+  OmniboxResult(Profile* profile,
+                AutocompleteController* autocomplete_controller,
+                const AutocompleteMatch& match)
       : profile_(profile),
+        autocomplete_controller_(autocomplete_controller),
         match_(match) {
-    set_id(match.destination_url.spec());
+    if (match_.search_terms_args) {
+      match_.search_terms_args->from_app_list = true;
+      autocomplete_controller_->UpdateMatchDestinationURL(
+          *match_.search_terms_args, &match_);
+    }
+    set_id(match_.destination_url.spec());
 
     // Derive relevance from omnibox relevance and normalize it to [0, 1].
     // The magic number 1500 is the highest score of an omnibox result.
     // See comments in autocomplete_provider.h.
-    set_relevance(match.relevance / 1500.0);
+    set_relevance(match_.relevance / 1500.0);
 
     UpdateIcon();
     UpdateTitleAndDetails();
@@ -94,7 +101,7 @@ class OmniboxResult : public ChromeSearchResult {
 
   virtual scoped_ptr<ChromeSearchResult> Duplicate() OVERRIDE {
     return scoped_ptr<ChromeSearchResult>(
-        new OmniboxResult(profile_, match_)).Pass();
+        new OmniboxResult(profile_, autocomplete_controller_, match_)).Pass();
   }
 
   virtual ChromeSearchResultType GetType() OVERRIDE {
@@ -126,6 +133,7 @@ class OmniboxResult : public ChromeSearchResult {
   }
 
   Profile* profile_;
+  AutocompleteController* autocomplete_controller_;
   AutocompleteMatch match_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxResult);
@@ -141,7 +149,6 @@ OmniboxProvider::OmniboxProvider(Profile* profile)
           this,
           AutocompleteClassifier::kDefaultOmniboxProviders &
               ~AutocompleteProvider::TYPE_ZERO_SUGGEST)) {
-  controller_->search_provider()->set_in_app_list();
 }
 
 OmniboxProvider::~OmniboxProvider() {}
@@ -165,7 +172,8 @@ void OmniboxProvider::PopulateFromACResult(const AutocompleteResult& result) {
     if (!it->destination_url.is_valid())
       continue;
 
-    Add(scoped_ptr<SearchResult>(new OmniboxResult(profile_, *it)));
+    Add(scoped_ptr<SearchResult>(
+        new OmniboxResult(profile_, controller_.get(), *it)));
   }
 }
 

@@ -711,7 +711,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   const base::TimeTicks& now(base::TimeTicks::Now());
   base::TimeDelta elapsed_time_since_user_first_modified_omnibox(
       now - time_user_first_modified_omnibox_);
-  autocomplete_controller()->UpdateMatchDestinationURL(
+  autocomplete_controller()->UpdateMatchDestinationURLWithQueryFormulationTime(
       elapsed_time_since_user_first_modified_omnibox, &match);
 
   base::string16 input_text(pasted_text);

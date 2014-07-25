@@ -243,12 +243,12 @@ void AutocompleteControllerAndroid::DeleteSuggestion(JNIEnv* env,
     autocomplete_controller_->DeleteMatch(match);
 }
 
-ScopedJavaLocalRef<jstring>
-AutocompleteControllerAndroid::UpdateMatchDestinationURL(
-    JNIEnv* env,
-    jobject obj,
-    jint selected_index,
-    jlong elapsed_time_since_input_change) {
+ScopedJavaLocalRef<jstring> AutocompleteControllerAndroid::
+    UpdateMatchDestinationURLWithQueryFormulationTime(
+        JNIEnv* env,
+        jobject obj,
+        jint selected_index,
+        jlong elapsed_time_since_input_change) {
   // In rare cases, we navigate to cached matches and the underlying result
   // has already been cleared, in that case ignore the URL update.
   if (autocomplete_controller_->result().empty())
@@ -256,7 +256,7 @@ AutocompleteControllerAndroid::UpdateMatchDestinationURL(
 
   AutocompleteMatch match(
       autocomplete_controller_->result().match_at(selected_index));
-  autocomplete_controller_->UpdateMatchDestinationURL(
+  autocomplete_controller_->UpdateMatchDestinationURLWithQueryFormulationTime(
       base::TimeDelta::FromMilliseconds(elapsed_time_since_input_change),
       &match);
   return ConvertUTF8ToJavaString(env, match.destination_url.spec());

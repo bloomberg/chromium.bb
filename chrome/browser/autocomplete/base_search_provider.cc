@@ -133,8 +133,7 @@ BaseSearchProvider::BaseSearchProvider(AutocompleteProviderListener* listener,
       profile_(profile),
       field_trial_triggered_(false),
       field_trial_triggered_in_session_(false),
-      suggest_results_pending_(0),
-      in_app_list_(false) {
+      suggest_results_pending_(0) {
 }
 
 // static
@@ -154,7 +153,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
           suggestion, type, suggestion, base::string16(), base::string16(),
           base::string16(), base::string16(), std::string(), std::string(),
           from_keyword_provider, 0, false, false, base::string16()),
-      template_url, search_terms_data, 0, false, false);
+      template_url, search_terms_data, 0, false);
 }
 
 void BaseSearchProvider::Stop(bool clear_cached_results) {
@@ -482,8 +481,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
     const TemplateURL* template_url,
     const SearchTermsData& search_terms_data,
     int accepted_suggestion,
-    bool append_extra_query_params,
-    bool from_app_list) {
+    bool append_extra_query_params) {
   AutocompleteMatch match(autocomplete_provider, suggestion.relevance(), false,
                           suggestion.type());
 
@@ -540,7 +538,6 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
       suggestion.suggest_query_params();
   match.search_terms_args->append_extra_query_params =
       append_extra_query_params;
-  match.search_terms_args->from_app_list = from_app_list;
   // This is the destination URL sans assisted query stats.  This must be set
   // so the AutocompleteController can properly de-dupe; the controller will
   // eventually overwrite it before it reaches the user.
@@ -716,7 +713,7 @@ void BaseSearchProvider::AddMatchToMap(const SuggestResult& result,
       this, GetInput(result.from_keyword_provider()), result,
       GetTemplateURL(result.from_keyword_provider()),
       UIThreadSearchTermsData(profile_), accepted_suggestion,
-      ShouldAppendExtraParams(result), in_app_list_);
+      ShouldAppendExtraParams(result));
   if (!match.destination_url.is_valid())
     return;
   match.search_terms_args->bookmark_bar_pinned =

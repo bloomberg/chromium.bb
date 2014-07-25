@@ -452,7 +452,8 @@ void AutocompleteProviderTest::CopyResults() {
 GURL AutocompleteProviderTest::GetDestinationURL(
     AutocompleteMatch match,
     base::TimeDelta query_formulation_time) const {
-  controller_->UpdateMatchDestinationURL(query_formulation_time, &match);
+  controller_->UpdateMatchDestinationURLWithQueryFormulationTime(
+      query_formulation_time, &match);
   return match.destination_url;
 }
 

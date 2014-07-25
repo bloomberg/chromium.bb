@@ -389,12 +389,10 @@ void AutocompleteController::ResetSession() {
     (*i)->ResetSession();
 }
 
-void AutocompleteController::UpdateMatchDestinationURL(
+void AutocompleteController::UpdateMatchDestinationURLWithQueryFormulationTime(
     base::TimeDelta query_formulation_time,
     AutocompleteMatch* match) const {
-  TemplateURL* template_url = match->GetTemplateURL(
-      template_url_service_, false);
-  if (!template_url || !match->search_terms_args.get() ||
+  if (!match->search_terms_args.get() ||
       match->search_terms_args->assisted_query_stats.empty())
     return;
 
@@ -410,6 +408,17 @@ void AutocompleteController::UpdateMatchDestinationURL(
       (zero_suggest_provider_ &&
        zero_suggest_provider_->field_trial_triggered_in_session()),
       input_.current_page_classification());
+  UpdateMatchDestinationURL(search_terms_args, match);
+}
+
+void AutocompleteController::UpdateMatchDestinationURL(
+    const TemplateURLRef::SearchTermsArgs& search_terms_args,
+    AutocompleteMatch* match) const {
+  TemplateURL* template_url = match->GetTemplateURL(
+      template_url_service_, false);
+  if (!template_url)
+    return;
+
   match->destination_url = GURL(template_url->url_ref().ReplaceSearchTerms(
       search_terms_args, template_url_service_->search_terms_data()));
 }
