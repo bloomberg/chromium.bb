@@ -314,10 +314,15 @@ class BaselineOptimizer(object):
                 break
 
         _log.debug("Deleting redundant virtual root expected result.")
-        if self._skip_scm_commands:
-            self._files_to_delete.append(virtual_root_expected_baseline_path)
+        if self._scm.exists(virtual_root_expected_baseline_path):
+            _log.debug("    Deleting (SCM): " + virtual_root_expected_baseline_path)
+            if self._skip_scm_commands:
+                self._files_to_delete.append(virtual_root_expected_baseline_path)
+            else:
+                self._scm.delete(virtual_root_expected_baseline_path)
         else:
-            self._scm.delete(virtual_root_expected_baseline_path)
+            _log.debug("    Deleting (file system): " + virtual_root_expected_baseline_path)
+            self._filesystem.remove(virtual_root_expected_baseline_path)
 
     def optimize(self, baseline_name):
         # The virtual fallback path is the same as the non-virtual one tacked on to the bottom of the non-virtual path.

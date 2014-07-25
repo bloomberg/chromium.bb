@@ -100,8 +100,9 @@ class BaselineOptimizerTest(unittest.TestCase):
             '/mock-checkout/third_party/WebKit/LayoutTests/platform/linux/another/test-expected.txt',
         ])
 
-    def _assertOptimization(self, results_by_directory, expected_new_results_by_directory, baseline_dirname='', expected_files_to_delete=None):
-        host = MockHost()
+    def _assertOptimization(self, results_by_directory, expected_new_results_by_directory, baseline_dirname='', expected_files_to_delete=None, host=None):
+        if not host:
+            host = MockHost()
         fs = host.filesystem
         webkit_base = WebKitFinder(fs).webkit_base()
         baseline_name = 'mock-baseline-expected.txt'
@@ -252,6 +253,22 @@ class BaselineOptimizerTest(unittest.TestCase):
             '/mock-checkout/third_party/WebKit/LayoutTests/platform/mac/compositing/mock-baseline-expected.txt',
             '/mock-checkout/third_party/WebKit/LayoutTests/platform/win/compositing/mock-baseline-expected.txt',
         ])
+
+    def test_virtual_root_redundant_with_ancestors_skip_scm_commands_with_file_not_in_scm(self):
+        self._assertOptimization({
+            'virtual/softwarecompositing': '2',
+            'platform/mac/compositing': '2',
+            'platform/win/compositing': '2',
+        }, {
+            'virtual/softwarecompositing': None,
+            'compositing': '2',
+        },
+        baseline_dirname='virtual/softwarecompositing',
+        expected_files_to_delete=[
+            '/mock-checkout/third_party/WebKit/LayoutTests/platform/mac/compositing/mock-baseline-expected.txt',
+            '/mock-checkout/third_party/WebKit/LayoutTests/platform/win/compositing/mock-baseline-expected.txt',
+        ],
+        host=MockHost(scm=ExcludingMockSCM(['/mock-checkout/third_party/WebKit/LayoutTests/virtual/softwarecompositing/mock-baseline-expected.txt'])))
 
     def test_virtual_root_not_redundant_with_ancestors(self):
         self._assertOptimization({
