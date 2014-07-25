@@ -253,7 +253,7 @@ NotificationsApiFunction::~NotificationsApiFunction() {
 bool NotificationsApiFunction::CreateNotification(
     const std::string& id,
     api::notifications::NotificationOptions* options) {
-  // First, make sure the required fields exist: type, title, message,  icon.
+  // First, make sure the required fields exist: type, title, message, icon.
   // These fields are defined as optional in IDL such that they can be used as
   // optional for notification updates. But for notification creations, they
   // should be present.

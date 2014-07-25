@@ -5,9 +5,6 @@
 #ifndef UI_MESSAGE_CENTER_NOTIFICATION_TYPES_H_
 #define UI_MESSAGE_CENTER_NOTIFICATION_TYPES_H_
 
-
-#include <string>
-
 #include "ui/message_center/message_center_export.h"
 
 namespace message_center {
@@ -33,7 +30,7 @@ enum NotificationType {
   NOTIFICATION_TYPE_BASE_FORMAT,
   NOTIFICATION_TYPE_IMAGE,
   NOTIFICATION_TYPE_MULTIPLE,
-  NOTIFICATION_TYPE_PROGRESS
+  NOTIFICATION_TYPE_PROGRESS  // Notification with progress bar.
 };
 
 enum NotificationPriority {
