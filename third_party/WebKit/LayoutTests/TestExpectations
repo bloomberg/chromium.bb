@@ -1377,10 +1377,6 @@ crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/f
 crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-same-in-same-url-block.html [ Failure Pass Timeout ]
 crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-star-allow-crossorigin.html [ Failure Pass Timeout ]
 
-# Might need to be marked Timeout
-crbug.com/259547 virtual/gpu/fast/canvas/canvas-blend-image.html [ Slow ]
-crbug.com/259547 virtual/gpu/fast/canvas/canvas-blend-solid.html [ Slow ]
-
 crbug.com/243248 [ Mac ] fast/events/attempt-scroll-with-no-scrollbars.html [ NeedsRebaseline ]
 webkit.org/b/82297 [ Mac ] fast/events/platform-wheelevent-paging-x-in-scrolling-page.html [ NeedsRebaseline ]
 webkit.org/b/82297 [ Mac ] fast/events/platform-wheelevent-paging-xy-in-scrolling-page.html [ NeedsRebaseline ]
@@ -1396,3 +1392,5 @@ webkit.org/b/82509 [ Linux ] svg/text/append-text-node-to-tspan.html [ NeedsReba
 crbug.com/248065 [ Linux ] svg/text/foreignObject-text-clipping-bug.xml [ NeedsRebaseline ]
 webkit.org/b/79454 [ Linux ] svg/text/text-viewbox-rescale.html [ NeedsRebaseline ]
 crbug.com/243732 [ Mac ] transforms/3d/point-mapping/3d-point-mapping-3.html [ NeedsRebaseline ]
+crbug.com/259547 [ XP ] virtual/gpu/fast/canvas/canvas-blend-image.html [ NeedsRebaseline ]
+crbug.com/259547 [ XP ] virtual/gpu/fast/canvas/canvas-blend-solid.html [ NeedsRebaseline ]
