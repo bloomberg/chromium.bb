@@ -644,24 +644,18 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewPdfGeneratedBrowserTest,
   InitPdfFunctions();
   SetupStdinAndSavePath();
 
-  // There is no way to determine how many tests are to be run ahead of time
-  // without undesirable changes to the layout test framework. However, that is
-  // ok since whenever all the tests have been run, the layout test framework
-  // calls SIGKILL on this process, ending the test. This will end the while
-  // loop and cause the test to clean up after itself. For this to work, the
-  // browsertest must be run with '--single_process' not '--single-process.'
   while (true) {
     std::string input;
-    std::getline(std::cin, input);
-    if (input.empty()) {
-      while (std::cin.eof()) {
+    while (input.empty()) {
+      std::getline(std::cin, input);
+      if (std::cin.eof())
         std::cin.clear();
-        std::getline(std::cin, input);
-        if (!input.empty()) {
-          break;
-        }
-      }
     }
+
+    // If the layout test framework sends "QUIT" to this test, that means there
+    // are no more tests for this instance to run and it should quit.
+    if (input == "QUIT")
+      break;
 
     base::FilePath::StringType file_extension = FILE_PATH_LITERAL(".pdf");
     base::FilePath::StringType cmd;
