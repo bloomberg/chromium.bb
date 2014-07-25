@@ -94,6 +94,33 @@
           i18n-content="sendFunctionKeysDescription">
       </label>
     </div>
+    <div class="settings-row">
+      <div class="checkbox">
+        <input id="enable-auto-repeat" type="checkbox"
+            pref="settings.language.xkb_auto_repeat_enabled_r2"
+            metric="Options_KeyboardAutoRepeat" dialog-pref>
+        <label for="enable-auto-repeat" i18n-content="enableAutoRepeat"></label>
+      </div>
+      <div id="auto-repeat-settings-section">
+        <div class="row">
+          <span class="option-name" i18n-content="autoRepeatDelay"></span>
+            <span i18n-content="autoRepeatDelayLong"></span>
+            <input id="auto-repeat-delay-range" type="range"
+                class="touch-slider"
+                pref="settings.language.xkb_auto_repeat_delay_r2" dialog-pref>
+            <span i18n-content="autoRepeatDelayShort"></span>
+          </div>
+          <div class="row">
+            <span class="option-name" i18n-content="autoRepeatRate"></span>
+            <span i18n-content="autoRepeatRateSlow"></span>
+            <input id="auto-repeat-interval-range" type="range"
+                class="touch-slider"
+                pref="settings.language.xkb_auto_repeat_interval_r2"
+                dialog-pref>
+            <span i18n-content="autoRepeatRateFast"></span>
+          </div>
+      </div>
+    </div>
     <button id="keyboard-shortcuts" class="settings-row link-button"
         i18n-content="showKeyboardShortcuts"></button>
     <button id="languages-and-input-settings" class="settings-row link-button"

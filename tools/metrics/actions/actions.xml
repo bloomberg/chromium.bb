@@ -8548,6 +8548,26 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Options_KeyboardAutoRepeat_Delay">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Keyboard settings: Auto-repeat delay</description>
+</action>
+
+<action name="Options_KeyboardAutoRepeat_Disable">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Keyboard settings: Disable auto-repeat</description>
+</action>
+
+<action name="Options_KeyboardAutoRepeat_Enable">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Keyboard settings: Enable auto-repeat</description>
+</action>
+
+<action name="Options_KeyboardAutoRepeat_Interval">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Keyboard settings: Auto-repeat interval</description>
+</action>
+
 <action name="Options_KeyboardRemapAltKey">
   <owner>stevenjb@chromium.org</owner>
   <description>Settings: Keyboard settings: Alt</description>

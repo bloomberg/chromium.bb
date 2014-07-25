@@ -566,8 +566,10 @@ const char kLanguageXkbAutoRepeatDelay[] =
 // A integer pref which determines key repeat interval (in ms).
 const char kLanguageXkbAutoRepeatInterval[] =
     "settings.language.xkb_auto_repeat_interval_r2";
-// "_r2" suffixes are added to the three prefs above when we change the
-// preferences not user-configurable, not to sync them with cloud.
+// "_r2" suffixes were added to the three prefs above when we changed the
+// preferences to not be user-configurable or sync with the cloud. The prefs are
+// now user-configurable and syncable again, but we don't want to overwrite the
+// current values with the old synced values, so we continue to use this suffix.
 
 // A boolean pref which determines whether the large cursor feature is enabled.
 const char kAccessibilityLargeCursorEnabled[] =

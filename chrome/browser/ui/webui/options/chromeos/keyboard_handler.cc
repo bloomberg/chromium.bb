@@ -80,6 +80,27 @@ void KeyboardHandler::GetLocalizedValues(
   localized_strings->SetString("sendFunctionKeysDescription",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_SEND_FUNCTION_KEYS_DESCRIPTION));
+  localized_strings->SetString("enableAutoRepeat",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_AUTO_REPEAT_ENABLE));
+  localized_strings->SetString("autoRepeatDelay",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_AUTO_REPEAT_DELAY));
+  localized_strings->SetString("autoRepeatDelayLong",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_AUTO_REPEAT_DELAY_LONG));
+  localized_strings->SetString("autoRepeatDelayShort",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_AUTO_REPEAT_DELAY_SHORT));
+  localized_strings->SetString("autoRepeatRate",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_AUTO_REPEAT_RATE));
+  localized_strings->SetString("autoRepeatRateSlow",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_AUTO_REPEAT_RATE_SLOW));
+  localized_strings->SetString("autoRepeatRateFast",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_AUTO_REPEAT_RATE_FAST));
   localized_strings->SetString("changeLanguageAndInputSettings",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_CHANGE_LANGUAGE_AND_INPUT_SETTINGS));

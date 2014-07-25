@@ -5,3 +5,22 @@
 #send-function-keys-description {
   color: gray;
 }
+
+#auto-repeat-settings-section {
+  -webkit-margin-start: 30px;
+  display: table;
+  white-space: nowrap;
+}
+
+#auto-repeat-settings-section .row {
+  display: table-row;
+}
+
+#auto-repeat-settings-section .row > * {
+  display: table-cell;
+}
+
+#auto-repeat-settings-section input[type='range'] {
+  margin-left: 5px;
+  margin-right: 5px;
+}

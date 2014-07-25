@@ -81,12 +81,14 @@ cr.define('options', function() {
     },
 
     /**
-     * Update the input element's state when the associated pref changes.
+     * Handles changes to the pref. If a custom change handler does not suppress
+     * it, a default handler is invoked that update the input element's state.
      * @param {Event} event Pref change event.
      * @private
      */
     updateStateFromPref_: function(event) {
-      this.value = event.value.value;
+      if (!this.customPrefChangeHandler(event))
+        this.value = event.value.value;
     },
 
     /**
@@ -105,6 +107,17 @@ cr.define('options', function() {
      * @param {Event} event Input element change event.
      */
     customChangeHandler: function(event) {
+      return false;
+    },
+
+    /**
+     * Custom change handler that is invoked first when the preference
+     * associated with the input element changes. If it returns false, a default
+     * handler is invoked next that updates the input element. If it returns
+     * true, the default handler is suppressed.
+     * @param {Event} event Input element change event.
+     */
+    customPrefChangeHandler: function(event) {
       return false;
     },
   };
@@ -184,6 +197,8 @@ cr.define('options', function() {
      * @private
      */
     updateStateFromPref_: function(event) {
+      if (this.customPrefChangeHandler(event))
+        return;
       var value = Boolean(event.value.value);
       this.checked = this.inverted_pref ? !value : value;
     },
@@ -264,7 +279,8 @@ cr.define('options', function() {
      * @private
      */
     updateStateFromPref_: function(event) {
-      this.checked = this.value == String(event.value.value);
+      if (!this.customPrefChangeHandler(event))
+        this.checked = this.value == String(event.value.value);
     },
   };
 
@@ -330,11 +346,15 @@ cr.define('options', function() {
     },
 
     /**
-     * Update the slider position when the associated pref changes.
+     * Handles changes to the pref associated with the slider. If a custom
+     * change handler does not suppress it, a default handler is invoked that
+     * updates the slider position.
      * @param {Event} event Pref change event.
      * @private
      */
     updateStateFromPref_: function(event) {
+      if (this.customPrefChangeHandler(event))
+        return;
       var value = event.value.value;
       this.value = this.valueMap ? this.valueMap.indexOf(value) : value;
     },
@@ -394,6 +414,9 @@ cr.define('options', function() {
      * @private
      */
     updateStateFromPref_: function(event) {
+      if (this.customPrefChangeHandler(event))
+        return;
+
       // Make sure the value is a string, because the value is stored as a
       // string in the HTMLOptionElement.
       value = String(event.value.value);

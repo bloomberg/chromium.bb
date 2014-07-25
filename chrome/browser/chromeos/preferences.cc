@@ -260,20 +260,18 @@ void Preferences::RegisterProfilePrefs(
       prefs::kLanguageSendFunctionKeys,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  // We don't sync the following keyboard prefs since they are not user-
-  // configurable.
   registry->RegisterBooleanPref(
       prefs::kLanguageXkbAutoRepeatEnabled,
       true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kLanguageXkbAutoRepeatDelay,
       language_prefs::kXkbAutoRepeatDelayInMs,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kLanguageXkbAutoRepeatInterval,
       language_prefs::kXkbAutoRepeatIntervalInMs,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
   // Mobile plan notifications default to on.
   registry->RegisterBooleanPref(
