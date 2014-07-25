@@ -87,9 +87,17 @@ static INLINE void NaClFlushCacheForDoublyMappedCode(uint8_t *writable_addr,
    * as separate operations; it just provides a single syscall that
    * does both.  For background, see:
    * http://code.google.com/p/nativeclient/issues/detail?id=2443
+   *
+   * We use __builtin___clear_cache since __clear_cache is only available
+   * with gnu extensions available.
+   *
+   * Casts are needed since clang's prototype for __builtin___clear_cache
+   * doesn't match gcc's.
    */
-  __builtin___clear_cache(writable_addr, writable_addr + size);
-  __builtin___clear_cache(executable_addr, executable_addr + size);
+  __builtin___clear_cache((char *) writable_addr,
+                          (char *) writable_addr + size);
+  __builtin___clear_cache((char *) executable_addr,
+                          (char *) executable_addr + size);
 #else
   /*
    * Give an error in case we ever target a non-gcc compiler for ARM
