@@ -363,8 +363,10 @@ class Page19(KeySilkCasesPage):
     interaction.End()
 
     interaction = action_runner.BeginInteraction('Wait', is_smooth=True)
-    action_runner.WaitForJavaScriptCondition(
-        'document.getElementById("nav-drawer").active')
+    action_runner.WaitForJavaScriptCondition('''
+        document.getElementById("nav-drawer").active &&
+        document.getElementById("nav-drawer").children[0]
+            .getBoundingClientRect().left == 0''')
     interaction.End()
 
   def RunNavigateSteps(self, action_runner):
