@@ -162,7 +162,7 @@ std::string BuildUserAgentFromProduct(const std::string& product) {
       "";
 #elif defined(OS_MACOSX)
       "Macintosh; ";
-#elif defined(USE_X11)
+#elif defined(USE_X11) || defined(USE_OZONE)
       "X11; ";           // strange, but that's what Firefox uses
 #elif defined(OS_ANDROID)
       "Linux; ";
