@@ -22,6 +22,9 @@ const OncValueSignature kStringSignature = {
 const OncValueSignature kIntegerSignature = {
   base::Value::TYPE_INTEGER, NULL
 };
+const OncValueSignature kDoubleSignature = {
+  base::Value::TYPE_DOUBLE, NULL
+};
 const OncValueSignature kStringListSignature = {
   base::Value::TYPE_LIST, NULL, &kStringSignature
 };
@@ -33,6 +36,9 @@ const OncValueSignature kIPConfigListSignature = {
 };
 const OncValueSignature kCellularApnListSignature = {
   base::Value::TYPE_LIST, NULL, &kCellularApnSignature
+};
+const OncValueSignature kCellularFoundNetworkListSignature = {
+  base::Value::TYPE_LIST, NULL, &kCellularFoundNetworkSignature
 };
 
 const OncFieldSignature issuer_subject_pattern_fields[] = {
@@ -220,6 +226,22 @@ const OncFieldSignature cellular_apn_fields[] = {
     { ::onc::cellular_apn::kName, &kStringSignature},
     { ::onc::cellular_apn::kUsername, &kStringSignature},
     { ::onc::cellular_apn::kPassword, &kStringSignature},
+    { ::onc::cellular_apn::kLocalizedName, &kStringSignature},
+    { ::onc::cellular_apn::kLanguage, &kStringSignature},
+    {NULL}};
+
+const OncFieldSignature cellular_found_network_fields[] = {
+    { ::onc::cellular_found_network::kStatus, &kStringSignature},
+    { ::onc::cellular_found_network::kNetworkId, &kStringSignature},
+    { ::onc::cellular_found_network::kShortName, &kStringSignature},
+    { ::onc::cellular_found_network::kLongName, &kStringSignature},
+    { ::onc::cellular_found_network::kTechnology, &kStringSignature},
+    {NULL}};
+
+const OncFieldSignature sim_lock_status_fields[] = {
+    { ::onc::sim_lock_status::kLockEnabled, &kBoolSignature},
+    { ::onc::sim_lock_status::kLockType, &kStringSignature},
+    { ::onc::sim_lock_status::kRetriesLeft, &kDoubleSignature},
     {NULL}};
 
 const OncFieldSignature cellular_fields[] = {
@@ -236,7 +258,7 @@ const OncFieldSignature cellular_with_state_fields[] = {
     { ::onc::cellular::kESN, &kStringSignature},
     { ::onc::cellular::kFamily, &kStringSignature},
     { ::onc::cellular::kFirmwareRevision, &kStringSignature},
-    { ::onc::cellular::kFoundNetworks, &kStringSignature},
+    { ::onc::cellular::kFoundNetworks, &kCellularFoundNetworkListSignature},
     { ::onc::cellular::kHardwareRevision, &kStringSignature},
     { ::onc::cellular::kHomeProvider, &kCellularProviderSignature},
     { ::onc::cellular::kICCID, &kStringSignature},
@@ -248,17 +270,15 @@ const OncFieldSignature cellular_with_state_fields[] = {
     { ::onc::cellular::kMIN, &kStringSignature},
     { ::onc::cellular::kModelID, &kStringSignature},
     { ::onc::cellular::kNetworkTechnology, &kStringSignature},
-    { ::onc::cellular::kPRLVersion, &kStringSignature},
+    { ::onc::cellular::kPRLVersion, &kIntegerSignature},
     { ::onc::cellular::kProviderRequiresRoaming, &kBoolSignature},
     { ::onc::cellular::kRoamingState, &kStringSignature},
     { ::onc::cellular::kSelectedNetwork, &kStringSignature},
     { ::onc::cellular::kServingOperator, &kCellularProviderSignature},
-    { ::onc::cellular::kSIMLockEnabled, &kBoolSignature},
-    { ::onc::cellular::kSIMLockStatus, &kStringSignature},
-    { ::onc::cellular::kSIMLockType, &kStringSignature},
-    { ::onc::cellular::kSIMPresent, &kStringSignature},
-    { ::onc::cellular::kSupportedCarriers, &kStringSignature},
-    { ::onc::cellular::kSupportNetworkScan, &kStringSignature},
+    { ::onc::cellular::kSIMLockStatus, &kSIMLockStatusSignature},
+    { ::onc::cellular::kSIMPresent, &kBoolSignature},
+    { ::onc::cellular::kSupportNetworkScan, &kBoolSignature},
+    { ::onc::cellular::kSupportedCarriers, &kStringListSignature},
     {NULL}};
 
 const OncFieldSignature network_configuration_fields[] = {
@@ -408,6 +428,12 @@ const OncValueSignature kCellularProviderSignature = {
 };
 const OncValueSignature kCellularApnSignature = {
   base::Value::TYPE_DICTIONARY, cellular_apn_fields, NULL
+};
+const OncValueSignature kCellularFoundNetworkSignature = {
+  base::Value::TYPE_DICTIONARY, cellular_found_network_fields, NULL
+};
+const OncValueSignature kSIMLockStatusSignature = {
+  base::Value::TYPE_DICTIONARY, sim_lock_status_fields, NULL
 };
 
 const OncFieldSignature* GetFieldSignature(const OncValueSignature& signature,

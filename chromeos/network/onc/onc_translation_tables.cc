@@ -122,12 +122,28 @@ const FieldTranslationEntry cellular_apn_fields[] = {
     { ::onc::cellular_apn::kName, shill::kApnProperty},
     { ::onc::cellular_apn::kUsername, shill::kApnUsernameProperty},
     { ::onc::cellular_apn::kPassword, shill::kApnPasswordProperty},
+    { ::onc::cellular_apn::kLocalizedName, shill::kApnLocalizedNameProperty},
+    { ::onc::cellular_apn::kLanguage, shill::kApnLanguageProperty},
+    {NULL}};
+
+const FieldTranslationEntry cellular_found_network_fields[] = {
+    { ::onc::cellular_found_network::kNetworkId, shill::kNetworkIdProperty},
+    { ::onc::cellular_found_network::kStatus, shill::kStatusProperty},
+    { ::onc::cellular_found_network::kTechnology, shill::kTechnologyProperty},
+    { ::onc::cellular_found_network::kShortName, shill::kShortNameProperty},
+    { ::onc::cellular_found_network::kLongName, shill::kLongNameProperty},
     {NULL}};
 
 const FieldTranslationEntry cellular_provider_fields[] = {
     { ::onc::cellular_provider::kCode, shill::kOperatorCodeKey},
     { ::onc::cellular_provider::kCountry, shill::kOperatorCountryKey},
     { ::onc::cellular_provider::kName, shill::kOperatorNameKey},
+    {NULL}};
+
+const FieldTranslationEntry sim_lock_status_fields[] = {
+    { ::onc::sim_lock_status::kLockEnabled, shill::kSIMLockEnabledProperty},
+    { ::onc::sim_lock_status::kLockType, shill::kSIMLockTypeProperty},
+    { ::onc::sim_lock_status::kRetriesLeft, shill::kSIMLockRetriesLeftProperty},
     {NULL}};
 
 // This must only contain Service properties and not Device properties.
@@ -185,7 +201,9 @@ const OncValueTranslationEntry onc_value_translation_table[] = {
   { &kWiFiSignature, wifi_fields },
   { &kWiFiWithStateSignature, wifi_fields },
   { &kCellularApnSignature, cellular_apn_fields },
+  { &kCellularFoundNetworkSignature, cellular_found_network_fields },
   { &kCellularProviderSignature, cellular_provider_fields },
+  { &kSIMLockStatusSignature, sim_lock_status_fields },
   { &kCellularSignature, cellular_fields },
   { &kCellularWithStateSignature, cellular_fields },
   { &kNetworkWithStateSignature, network_fields },
@@ -258,12 +276,15 @@ const StringTranslationEntry kEAP_TTLS_InnerTable[] = {
 // This must contain only Shill Device properties and no Service properties.
 // For Service properties see cellular_fields.
 const FieldTranslationEntry kCellularDeviceTable[] = {
+    // This field is converted during translation, see onc_translator_*.
+    // { ::onc::cellular::kAPNList, shill::kCellularApnListProperty},
     { ::onc::cellular::kAllowRoaming, shill::kCellularAllowRoamingProperty},
     { ::onc::cellular::kCarrier, shill::kCarrierProperty},
     { ::onc::cellular::kESN, shill::kEsnProperty},
     { ::onc::cellular::kFamily, shill::kTechnologyFamilyProperty},
     { ::onc::cellular::kFirmwareRevision, shill::kFirmwareRevisionProperty},
-    { ::onc::cellular::kFoundNetworks, shill::kFoundNetworksProperty},
+    // This field is converted during translation, see onc_translator_*.
+    // { ::onc::cellular::kFoundNetworks, shill::kFoundNetworksProperty},
     { ::onc::cellular::kHardwareRevision, shill::kHardwareRevisionProperty},
     { ::onc::cellular::kHomeProvider, shill::kHomeProviderProperty},
     { ::onc::cellular::kICCID, shill::kIccidProperty},
@@ -278,9 +299,8 @@ const FieldTranslationEntry kCellularDeviceTable[] = {
     { ::onc::cellular::kProviderRequiresRoaming,
       shill::kProviderRequiresRoamingProperty},
     { ::onc::cellular::kSelectedNetwork, shill::kSelectedNetworkProperty},
-    { ::onc::cellular::kSIMLockEnabled, shill::kSIMLockEnabledProperty},
-    { ::onc::cellular::kSIMLockStatus, shill::kSIMLockStatusProperty},
-    { ::onc::cellular::kSIMLockType, shill::kSIMLockTypeProperty},
+    // This field is converted during translation, see onc_translator_*.
+    // { ::onc::cellular::kSIMLockStatus, shill::kSIMLockStatusProperty},
     { ::onc::cellular::kSIMPresent, shill::kSIMPresentProperty},
     { ::onc::cellular::kSupportedCarriers, shill::kSupportedCarriersProperty},
     { ::onc::cellular::kSupportNetworkScan, shill::kSupportNetworkScanProperty},

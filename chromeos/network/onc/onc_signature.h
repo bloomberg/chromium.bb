@@ -67,6 +67,8 @@ CHROMEOS_EXPORT extern const OncValueSignature kCellularSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kCellularWithStateSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kCellularProviderSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kCellularApnSignature;
+CHROMEOS_EXPORT extern const OncValueSignature kCellularFoundNetworkSignature;
+CHROMEOS_EXPORT extern const OncValueSignature kSIMLockStatusSignature;
 
 }  // namespace onc
 }  // namespace chromeos

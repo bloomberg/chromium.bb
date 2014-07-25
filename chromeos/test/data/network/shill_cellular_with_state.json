@@ -10,38 +10,43 @@
   },
   "Cellular.APN": {
     "apn": "test-apn",
+    "name": "test-apn-name",
     "username": "test-username",
     "password": "test-password"
   },
-  "Cellular.APNList": [
-    {
-      "apn": "test-apn0",
-      "username": "test-username0",
-      "password": "test-password0"
-    },
-    {
-      "apn": "test-apn1",
-      "username": "test-username1",
-      "password": "test-password1"
-    },
-    {
-      "apn": "test-apn2",
-      "username": "test-username2",
-      "password": "test-password2"
-    },
-    {
-      "apn": "test-apn3",
-      "username": "test-username3",
-      "password": "test-password3"
-    }
-  ],
   "Device": {
     // This dictionary contains Device properties and not Service properties as
     // above.
     "Cellular.AllowRoaming": true,
+    "Cellular.APNList": [
+      {
+	"apn": "test-apn0",
+	"username": "test-username0",
+	"password": "test-password0"
+      },
+      {
+	"apn": "test-apn1",
+	"username": "test-username1",
+	"password": "test-password1"
+      },
+      {
+	"apn": "test-apn2",
+	"username": "test-username2",
+	"password": "test-password2"
+      },
+      {
+	"apn": "test-apn3",
+	"username": "test-username3",
+	"password": "test-password3"
+      }
+    ],
     "Cellular.HomeProvider": {
       "country": "us",
       "name": "cellular_provider"
+    },
+    "Cellular.SIMLockStatus": {
+      "LockType": "sim-pin",
+      "LockEnabled": true
     }
   }
 }

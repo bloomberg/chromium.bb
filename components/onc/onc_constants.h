@@ -118,9 +118,7 @@ ONC_EXPORT extern const char kProviderRequiresRoaming[];
 ONC_EXPORT extern const char kRoamingState[];
 ONC_EXPORT extern const char kSelectedNetwork[];
 ONC_EXPORT extern const char kServingOperator[];
-ONC_EXPORT extern const char kSIMLockEnabled[];
 ONC_EXPORT extern const char kSIMLockStatus[];
-ONC_EXPORT extern const char kSIMLockType[];
 ONC_EXPORT extern const char kSIMPresent[];
 ONC_EXPORT extern const char kSupportedCarriers[];
 ONC_EXPORT extern const char kSupportNetworkScan[];
@@ -136,8 +134,23 @@ namespace cellular_apn {
 ONC_EXPORT extern const char kName[];
 ONC_EXPORT extern const char kUsername[];
 ONC_EXPORT extern const char kPassword[];
+ONC_EXPORT extern const char kLocalizedName[];
+ONC_EXPORT extern const char kLanguage[];
 }  // namespace cellular_apn
 
+namespace cellular_found_network {
+ONC_EXPORT extern const char kStatus[];
+ONC_EXPORT extern const char kNetworkId[];
+ONC_EXPORT extern const char kShortName[];
+ONC_EXPORT extern const char kLongName[];
+ONC_EXPORT extern const char kTechnology[];
+}  // namespace cellular_found_network
+
+namespace sim_lock_status {
+ONC_EXPORT extern const char kLockEnabled[];
+ONC_EXPORT extern const char kLockType[];
+ONC_EXPORT extern const char kRetriesLeft[];
+}  // namespace sim_lock_status
 
 namespace connection_state {
 ONC_EXPORT extern const char kConnected[];

@@ -55,6 +55,14 @@ class ShillToONCTranslator {
     field_translation_table_ = GetFieldTranslationTable(onc_signature);
   }
 
+  ShillToONCTranslator(const base::DictionaryValue& shill_dictionary,
+                       const OncValueSignature& onc_signature,
+                       const FieldTranslationEntry* field_translation_table)
+      : shill_dictionary_(&shill_dictionary),
+        onc_signature_(&onc_signature),
+        field_translation_table_(field_translation_table) {
+  }
+
   // Translates the associated Shill dictionary and creates an ONC object of the
   // given signature.
   scoped_ptr<base::DictionaryValue> CreateTranslatedONCObject();
@@ -66,6 +74,7 @@ class ShillToONCTranslator {
   void TranslateVPN();
   void TranslateWiFiWithState();
   void TranslateCellularWithState();
+  void TranslateCellularDevice();
   void TranslateNetworkWithState();
   void TranslateIPConfig();
 
@@ -132,7 +141,10 @@ ShillToONCTranslator::CreateTranslatedONCObject() {
   } else if (onc_signature_ == &kWiFiWithStateSignature) {
     TranslateWiFiWithState();
   } else if (onc_signature_ == &kCellularWithStateSignature) {
-    TranslateCellularWithState();
+    if (field_translation_table_ == kCellularDeviceTable)
+      TranslateCellularDevice();
+    else
+      TranslateCellularWithState();
   } else if (onc_signature_ == &kIPConfigSignature) {
     TranslateIPConfig();
   } else {
@@ -258,36 +270,39 @@ void ShillToONCTranslator::TranslateCellularWithState() {
         shill::kCellularApnProperty, &dictionary)) {
     TranslateAndAddNestedObject(::onc::cellular::kAPN, *dictionary);
   }
-  const base::ListValue* shill_apns = NULL;
-  if (shill_dictionary_->GetListWithoutPathExpansion(
-          shill::kCellularApnListProperty, &shill_apns)) {
-    TranslateAndAddListOfObjects(::onc::cellular::kAPNList, *shill_apns);
-  }
-
+  // Merge the Device dictionary with this one (Cellular) using the
+  // CellularDevice signature.
   const base::DictionaryValue* device_dictionary = NULL;
   if (!shill_dictionary_->GetDictionaryWithoutPathExpansion(
           shill::kDeviceProperty, &device_dictionary)) {
     return;
   }
+  ShillToONCTranslator nested_translator(*device_dictionary,
+                                         kCellularWithStateSignature,
+                                         kCellularDeviceTable);
+  scoped_ptr<base::DictionaryValue> nested_object =
+      nested_translator.CreateTranslatedONCObject();
+  onc_object_->MergeDictionary(nested_object.get());
+}
 
-  // Iterate through all fields of the CellularWithState signature and copy
-  // values from the device properties according to the separate
-  // CellularDeviceTable.
-  for (const OncFieldSignature* field_signature = onc_signature_->fields;
-       field_signature->onc_field_name != NULL; ++field_signature) {
-    const std::string& onc_field_name = field_signature->onc_field_name;
-
-    std::string shill_property_name;
-    const base::Value* shill_value = NULL;
-    if (!GetShillPropertyName(field_signature->onc_field_name,
-                              kCellularDeviceTable,
-                              &shill_property_name) ||
-        !device_dictionary->GetWithoutPathExpansion(shill_property_name,
-                                                    &shill_value)) {
-      continue;
-    }
-    onc_object_->SetWithoutPathExpansion(onc_field_name,
-                                         shill_value->DeepCopy());
+void ShillToONCTranslator::TranslateCellularDevice() {
+  CopyPropertiesAccordingToSignature();
+  const base::DictionaryValue* shill_sim_lock_status = NULL;
+  if (shill_dictionary_->GetDictionaryWithoutPathExpansion(
+          shill::kSIMLockStatusProperty, &shill_sim_lock_status)) {
+    TranslateAndAddNestedObject(::onc::cellular::kSIMLockStatus,
+                                *shill_sim_lock_status);
+  }
+  const base::ListValue* shill_apns = NULL;
+  if (shill_dictionary_->GetListWithoutPathExpansion(
+          shill::kCellularApnListProperty, &shill_apns)) {
+    TranslateAndAddListOfObjects(::onc::cellular::kAPNList, *shill_apns);
+  }
+  const base::ListValue* shill_found_networks = NULL;
+  if (shill_dictionary_->GetListWithoutPathExpansion(
+          shill::kFoundNetworksProperty, &shill_found_networks)) {
+    TranslateAndAddListOfObjects(::onc::cellular::kFoundNetworks,
+                                 *shill_found_networks);
   }
 }
 

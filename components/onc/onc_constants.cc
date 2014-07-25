@@ -101,9 +101,7 @@ const char kProviderRequiresRoaming[] = "ProviderRequiresRoaming";
 const char kRoamingState[] = "RoamingState";
 const char kSelectedNetwork[] = "SelectedNetwork";
 const char kServingOperator[] = "ServingOperator";
-const char kSIMLockEnabled[] = "SIMLockEnabled";
 const char kSIMLockStatus[] = "SIMLockStatus";
-const char kSIMLockType[] = "SIMLockType";
 const char kSIMPresent[] = "SIMPresent";
 const char kSupportedCarriers[] = "SupportedCarriers";
 const char kSupportNetworkScan[] = "SupportNetworkScan";
@@ -119,7 +117,23 @@ namespace cellular_apn {
 const char kName[] = "Name";
 const char kUsername[] = "Username";
 const char kPassword[] = "Password";
+const char kLocalizedName[] = "LocalizedName";
+const char kLanguage[] = "LocalizedName";
 }  // namespace cellular_apn
+
+namespace cellular_found_network {
+const char kStatus[] = "Status";
+const char kNetworkId[] = "NetworkId";
+const char kShortName[] = "ShortName";
+const char kLongName[] = "LongName";
+const char kTechnology[] = "Technology";
+}  // namespace cellular_apn
+
+namespace sim_lock_status {
+const char kLockEnabled[] = "LockEnabled";
+const char kLockType[] = "LockType";
+const char kRetriesLeft[] = "RetriesLeft";
+}
 
 namespace connection_state {
 const char kConnected[] = "Connected";
