@@ -43,5 +43,4 @@
         android:paddingStart="11dp"
         android:background="?android:attr/listChoiceBackgroundIndicator"
         android:scaleType="center" />
-
 </LinearLayout>

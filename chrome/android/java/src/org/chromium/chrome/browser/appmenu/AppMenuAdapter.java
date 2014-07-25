@@ -17,10 +17,13 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 import java.util.List;
@@ -29,7 +32,7 @@ import java.util.List;
  * ListAdapter to customize the view of items in the list.
  */
 class AppMenuAdapter extends BaseAdapter {
-    private static final int VIEW_TYPE_COUNT = 4;
+    private static final int VIEW_TYPE_COUNT = 5;
 
     /**
      * Regular Android menu item that contains a title and an icon if icon is specified.
@@ -48,6 +51,11 @@ class AppMenuAdapter extends BaseAdapter {
      * Menu item that has four buttons. Every one of these buttons is displayed as an icon.
      */
     private static final int FOUR_BUTTON_MENU_ITEM = 3;
+    /**
+     * Menu item that has two buttons, the first one is a title and the second is a menu icon.
+     * This is similar to {@link #TITLE_BUTTON_MENU_ITEM} but has some slight layout differences.
+     */
+    private static final int MENU_BUTTON_MENU_ITEM = 4;
 
     /** MenuItem Animation Constants */
     private static final int ENTER_ITEM_DURATION_MS = 350;
@@ -55,6 +63,10 @@ class AppMenuAdapter extends BaseAdapter {
     private static final int ENTER_ITEM_ADDL_DELAY_MS = 30;
     private static final float ENTER_STANDARD_ITEM_OFFSET_Y_DP = -10.f;
     private static final float ENTER_STANDARD_ITEM_OFFSET_X_DP = 10.f;
+
+    /** Menu Button Layout Constants */
+    private static final float MENU_BUTTON_WIDTH_DP = 59.f;
+    private static final float MENU_BUTTON_START_PADDING_DP = 19.f;
 
     private final AppMenu mAppMenu;
     private final LayoutInflater mInflater;
@@ -86,15 +98,16 @@ class AppMenuAdapter extends BaseAdapter {
     @Override
     public int getItemViewType(int position) {
         MenuItem item = getItem(position);
+        boolean hasMenuButton = mShowMenuButton && position == 0;
         int viewCount = item.hasSubMenu() ? item.getSubMenu().size() : 1;
-        if (mShowMenuButton && position == 0) viewCount++;
+        if (hasMenuButton) viewCount++;
 
         if (viewCount == 4) {
             return FOUR_BUTTON_MENU_ITEM;
         } else if (viewCount == 3) {
             return THREE_BUTTON_MENU_ITEM;
         } else if (viewCount == 2) {
-            return TITLE_BUTTON_MENU_ITEM;
+            return hasMenuButton ? MENU_BUTTON_MENU_ITEM : TITLE_BUTTON_MENU_ITEM;
         }
         return STANDARD_MENU_ITEM;
     }
@@ -204,16 +217,21 @@ class AppMenuAdapter extends BaseAdapter {
                 convertView.setEnabled(false);
                 break;
             }
-            case TITLE_BUTTON_MENU_ITEM: {
+            case TITLE_BUTTON_MENU_ITEM:
+                // Fall through.
+            case MENU_BUTTON_MENU_ITEM: {
                 TitleButtonMenuItemViewHolder holder = null;
                 if (convertView == null) {
                     holder = new TitleButtonMenuItemViewHolder();
                     convertView = mInflater.inflate(R.layout.title_button_menu_item, parent, false);
                     holder.title = (TextView) convertView.findViewById(R.id.title);
                     holder.button = (ImageButton) convertView.findViewById(R.id.button);
+
+                    View animatedView = hasMenuButton ? holder.title : convertView;
+
                     convertView.setTag(holder);
                     convertView.setTag(R.id.menu_item_enter_anim_id,
-                            buildStandardItemEnterAnimator(convertView, position));
+                            buildStandardItemEnterAnimator(animatedView, position));
                 } else {
                     holder = (TitleButtonMenuItemViewHolder) convertView.getTag();
                 }
@@ -275,6 +293,12 @@ class AppMenuAdapter extends BaseAdapter {
                 mAppMenu.dismiss();
             }
         });
+
+        // Set the button layout to make it properly line up with any underlying menu button
+        ApiCompatibilityUtils.setPaddingRelative(
+                button, (int) (MENU_BUTTON_START_PADDING_DP * mDpToPx), 0, 0, 0);
+        button.getLayoutParams().width = (int) (MENU_BUTTON_WIDTH_DP * mDpToPx);
+        button.setScaleType(ScaleType.CENTER);
     }
 
     /**
@@ -315,7 +339,8 @@ class AppMenuAdapter extends BaseAdapter {
      * @return             The {@link Animator}.
      */
     private Animator buildIconItemEnterAnimator(final ImageView[] views, boolean skipLastItem) {
-        final float offsetXPx = ENTER_STANDARD_ITEM_OFFSET_X_DP * mDpToPx;
+        final boolean rtl = LocalizationUtils.isLayoutRtl();
+        final float offsetXPx = ENTER_STANDARD_ITEM_OFFSET_X_DP * mDpToPx * (rtl ? -1.f : 1.f);
         final int maxViewsToAnimate = views.length - (skipLastItem ? 1 : 0);
 
         AnimatorSet animation = new AnimatorSet();

@@ -27,5 +27,5 @@
         android:background="?android:attr/listChoiceBackgroundIndicator"
         android:padding="10dp"
         android:scaleType="fitCenter" />
-
+    
 </LinearLayout>
