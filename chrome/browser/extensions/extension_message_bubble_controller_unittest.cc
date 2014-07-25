@@ -841,7 +841,8 @@ void SetInstallTime(const std::string& extension_id,
 
 // The feature this is meant to test is only implemented on Windows.
 #if defined(OS_WIN)
-#define MAYBE_ProxyOverriddenControllerTest ProxyOverriddenControllerTest
+// http://crbug.com/397426
+#define MAYBE_ProxyOverriddenControllerTest DISABLED_ProxyOverriddenControllerTest
 #else
 #define MAYBE_ProxyOverriddenControllerTest DISABLED_ProxyOverriddenControllerTest
 #endif
