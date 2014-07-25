@@ -20,7 +20,7 @@ class FetchManager {
 public:
     FetchManager(ExecutionContext*);
     ~FetchManager();
-    ScriptPromise fetch(ScriptState*, PassRefPtr<FetchRequestData>);
+    ScriptPromise fetch(ScriptState*, PassRefPtrWillBeRawPtr<FetchRequestData>);
 
     static bool isSimpleMethod(const String&);
     static bool isForbiddenMethod(const String&);

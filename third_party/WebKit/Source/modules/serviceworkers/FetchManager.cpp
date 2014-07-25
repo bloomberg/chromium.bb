@@ -26,7 +26,7 @@ namespace blink {
 
 class FetchManager::Loader : public ThreadableLoaderClient {
 public:
-    Loader(ExecutionContext*, FetchManager*, PassRefPtr<ScriptPromiseResolver>, PassRefPtr<FetchRequestData>);
+    Loader(ExecutionContext*, FetchManager*, PassRefPtr<ScriptPromiseResolver>, PassRefPtrWillBeRawPtr<FetchRequestData>);
     ~Loader();
     virtual void didReceiveResponse(unsigned long, const ResourceResponse&);
     virtual void didFinishLoading(unsigned long, double);
@@ -48,7 +48,7 @@ private:
     ExecutionContext* m_executionContext;
     FetchManager* m_fetchManager;
     RefPtr<ScriptPromiseResolver> m_resolver;
-    RefPtr<FetchRequestData> m_request;
+    RefPtrWillBePersistent<FetchRequestData> m_request;
     RefPtr<ThreadableLoader> m_loader;
     ResourceResponse m_response;
     long long m_downloadedBlobLength;
@@ -57,7 +57,7 @@ private:
     bool m_failed;
 };
 
-FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* fetchManager, PassRefPtr<ScriptPromiseResolver> resolver, PassRefPtr<FetchRequestData> request)
+FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* fetchManager, PassRefPtr<ScriptPromiseResolver> resolver, PassRefPtrWillBeRawPtr<FetchRequestData> request)
     : m_executionContext(executionContext)
     , m_fetchManager(fetchManager)
     , m_resolver(resolver)
@@ -88,7 +88,7 @@ void FetchManager::Loader::didFinishLoading(unsigned long, double)
         blobData->appendFile(filePath);
         blobData->setContentType(m_response.mimeType());
     }
-    RefPtr<FetchResponseData> response(FetchResponseData::create());
+    RefPtrWillBeRawPtr<FetchResponseData> response(FetchResponseData::create());
     response->setStatus(m_response.httpStatusCode());
     response->setStatusMessage(m_response.httpStatusText());
     HTTPHeaderMap::const_iterator end = m_response.httpHeaderFields().end();
@@ -336,7 +336,7 @@ FetchManager::~FetchManager()
     }
 }
 
-ScriptPromise FetchManager::fetch(ScriptState* scriptState, PassRefPtr<FetchRequestData> request)
+ScriptPromise FetchManager::fetch(ScriptState* scriptState, PassRefPtrWillBeRawPtr<FetchRequestData> request)
 {
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();

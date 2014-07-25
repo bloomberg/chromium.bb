@@ -102,7 +102,7 @@ ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, Request*
     // value of Request as constructor with |input| and |init| as arguments. If
     // this throws an exception, reject |p| with it."
     TrackExceptionState exceptionState;
-    RefPtr<Request> r = Request::create(this, request, exceptionState);
+    RefPtrWillBeRawPtr<Request> r = Request::create(this, request, exceptionState);
     if (exceptionState.hadException()) {
         // FIXME: We should throw the caught error.
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(exceptionState.message(), scriptState->isolate()));
@@ -118,7 +118,7 @@ ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, Request*
     // value of Request as constructor with |input| and |init| as arguments. If
     // this throws an exception, reject |p| with it."
     TrackExceptionState exceptionState;
-    RefPtr<Request> r = Request::create(this, request, requestInit, exceptionState);
+    RefPtrWillBeRawPtr<Request> r = Request::create(this, request, requestInit, exceptionState);
     if (exceptionState.hadException()) {
         // FIXME: We should throw the caught error.
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(exceptionState.message(), scriptState->isolate()));
@@ -134,7 +134,7 @@ ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, const St
     // value of Request as constructor with |input| and |init| as arguments. If
     // this throws an exception, reject |p| with it."
     TrackExceptionState exceptionState;
-    RefPtr<Request> r = Request::create(this, urlstring, exceptionState);
+    RefPtrWillBeRawPtr<Request> r = Request::create(this, urlstring, exceptionState);
     if (exceptionState.hadException()) {
         // FIXME: We should throw the caught error.
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(exceptionState.message(), scriptState->isolate()));
@@ -150,7 +150,7 @@ ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, const St
     // value of Request as constructor with |input| and |init| as arguments. If
     // this throws an exception, reject |p| with it."
     TrackExceptionState exceptionState;
-    RefPtr<Request> r = Request::create(this, urlstring, requestInit, exceptionState);
+    RefPtrWillBeRawPtr<Request> r = Request::create(this, urlstring, requestInit, exceptionState);
     if (exceptionState.hadException()) {
         // FIXME: We should throw the caught error.
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(exceptionState.message(), scriptState->isolate()));
