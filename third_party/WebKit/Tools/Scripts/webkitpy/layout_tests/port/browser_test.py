@@ -51,7 +51,7 @@ class BrowserTestPortOverrides(object):
         """Overriden function from the base port class. Redirects everything
         to src/chrome/test/data/printing/layout_tests.
         """
-        return self.path_from_chromium_base('chrome', 'test', 'data', 'printing', 'layout_tests', 'tests')  # pylint: disable=E1101
+        return self.path_from_chromium_base('chrome', 'test', 'data', 'printing', 'layout_tests')  # pylint: disable=E1101
 
 
 class BrowserTestLinuxPort(BrowserTestPortOverrides, linux.LinuxPort):

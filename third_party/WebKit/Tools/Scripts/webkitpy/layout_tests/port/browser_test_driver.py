@@ -36,7 +36,6 @@ class BrowserTestDriver(driver.Driver):
     def __init__(self, port, worker_number, pixel_tests, no_timeout=False):
         """Invokes the constructor of driver.Driver."""
         super(BrowserTestDriver, self).__init__(port, worker_number, pixel_tests, no_timeout)
-        self._stdin_directory = None
 
     def start(self, pixel_tests, per_test_args, deadline):
         """Same as Driver.start() however, it has an extra step. It waits for
@@ -67,10 +66,6 @@ class BrowserTestDriver(driver.Driver):
         if found:
             if test == False:
                 self._server_process._proc.stdin = open(path, 'wb', 0)
-            path_split = path.split(self._port.TEST_PATH_SEPARATOR)
-            if len(path_split) > 2:
-                del path_split[-1]
-                self._stdin_directory = self._port.TEST_PATH_SEPARATOR.join(path_split)
 
     def _read_stdin_path(self, deadline):
         # return (stdin_path, bool)
@@ -90,6 +85,7 @@ class BrowserTestDriver(driver.Driver):
         cmd.extend(self._port.get_option('additional_drt_flag', []))
         return cmd
 
-    def __del__(self):
-        if self._stdin_directory:
-            shutil.rmtree(self._stdin_directory, ignore_errors=True)
+    def stop(self):
+        if self._server_process:
+            self._server_process.write('QUIT')
+        super(BrowserTestDriver, self).stop(self._port.driver_stop_timeout())

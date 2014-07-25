@@ -45,7 +45,7 @@ class BrowserTestLinuxTest(port_testcase.PortTestCase):
         self.assertTrue(self.make_port(options=MockOptions(driver_name='browser_tests'))._path_to_driver().endswith('browser_tests'))
 
     def test_layout_tests_dir(self):
-        self.assertTrue(self.make_port().layout_tests_dir().endswith('chrome/test/data/printing/layout_tests/tests'))
+        self.assertTrue(self.make_port().layout_tests_dir().endswith('chrome/test/data/printing/layout_tests'))
 
     def test_driver_type(self):
         self.assertTrue(isinstance(self.make_port(options=MockOptions(driver_name='browser_tests')).create_driver(1), browser_test_driver.BrowserTestDriver))
@@ -61,7 +61,7 @@ class BrowserTestWinTest(port_testcase.PortTestCase):
         self.assertTrue(self.make_port(options=MockOptions(driver_name='browser_tests'))._path_to_driver().endswith('browser_tests.exe'))
 
     def test_layout_tests_dir(self):
-        self.assertTrue(self.make_port().layout_tests_dir().endswith('chrome/test/data/printing/layout_tests/tests'))
+        self.assertTrue(self.make_port().layout_tests_dir().endswith('chrome/test/data/printing/layout_tests'))
 
     def test_driver_type(self):
         self.assertTrue(isinstance(self.make_port(options=MockOptions(driver_name='browser_tests')).create_driver(1), browser_test_driver.BrowserTestDriver))
@@ -77,7 +77,7 @@ class BrowserTestMacTest(port_testcase.PortTestCase):
         self.assertTrue(self.make_port(options=MockOptions(driver_name='browser_tests'))._path_to_driver().endswith('browser_tests'))
 
     def test_layout_tests_dir(self):
-        self.assertTrue(self.make_port().layout_tests_dir().endswith('chrome/test/data/printing/layout_tests/tests'))
+        self.assertTrue(self.make_port().layout_tests_dir().endswith('chrome/test/data/printing/layout_tests'))
 
     def test_driver_type(self):
         self.assertTrue(isinstance(self.make_port(options=MockOptions(driver_name='browser_tests')).create_driver(1), browser_test_driver.BrowserTestDriver))

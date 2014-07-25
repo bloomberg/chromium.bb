@@ -48,19 +48,3 @@ class BrowserTestDriverTest(unittest.TestCase):
         content_block = driver._read_block(0)
         self.assertEqual(content_block.stdin_path, '/foo/bar')
         driver._stdin_directory = None
-
-    def test_open_stdin_path(self):
-        port = TestWebKitPort()
-        driver = browser_test_driver.BrowserTestDriver(port, 0, pixel_tests=True)
-        driver._server_process = MockServerProcess(lines=[
-            'StdinPath: /foo/bar', '#EOF'])
-        driver._open_stdin_path(10, True)
-        self.assertEqual(driver._stdin_directory, '/foo')
-        driver._stdin_directory = None
-
-        driver = browser_test_driver.BrowserTestDriver(port, 0, pixel_tests=True)
-        driver._server_process = MockServerProcess(lines=[
-            'StdinPath: /foo', '#EOF'])
-        driver._open_stdin_path(10, True)
-        self.assertEqual(driver._stdin_directory, None)
-        driver._stdin_directory = None

@@ -319,9 +319,9 @@ class Driver(object):
         # Remote drivers will override this method to return the pid on the device.
         return self._server_process.pid()
 
-    def stop(self):
+    def stop(self, timeout_secs=0.0):
         if self._server_process:
-            self._server_process.stop()
+            self._server_process.stop(timeout_secs)
             self._server_process = None
             if self._profiler:
                 self._profiler.profile_after_exit()
