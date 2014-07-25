@@ -39,6 +39,7 @@ class WebString;
 class WebURL;
 class WebServiceWorker;
 class WebServiceWorkerProviderClient;
+class WebServiceWorkerRegistration;
 struct WebServiceWorkerError;
 
 // Created on the main thread, and may be passed to another script context
@@ -46,18 +47,32 @@ struct WebServiceWorkerError;
 // on the single script context thread.
 class WebServiceWorkerProvider {
 public:
-    // Called when a client wants to start listening to the service worker events. Must be cleared before the client becomes invalid.
+    // Called when a client wants to start listening to the service worker
+    // events. Must be cleared before the client becomes invalid.
     virtual void setClient(WebServiceWorkerProviderClient*) { }
 
-    // The WebServiceWorker and WebServiceWorkerError ownership are passed to the WebServiceWorkerCallbacks implementation.
+    // FIXME: Remove this macro after two-side patches are landed
+    // (http://crbug.com/396400).
+#define DISABLE_SERVICE_WORKER_REGISTRATION
+#ifdef DISABLE_SERVICE_WORKER_REGISTRATION
+    // The WebServiceWorker and WebServiceWorkerError ownership are passed to
+    // the WebServiceWorkerCallbacks implementation.
     typedef WebCallbacks<WebServiceWorker, WebServiceWorkerError> WebServiceWorkerCallbacks;
-    virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptUrl, WebServiceWorkerCallbacks*) { }
+    typedef WebServiceWorkerCallbacks WebServiceWorkerRegistrationCallbacks;
+#else
+    // The WebServiceWorkerRegistration and WebServiceWorkerError ownership are
+    // passed to the WebServiceWorkerRegistrationCallbacks implementation.
+    typedef WebCallbacks<WebServiceWorkerRegistration, WebServiceWorkerError> WebServiceWorkerRegistrationCallbacks;
+#endif
+
+    virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptUrl, WebServiceWorkerRegistrationCallbacks*) { }
 
     // Unregisters the ServiceWorker for a given scope. The provider
     // must always pass null to onSuccess.
-    // FIXME: "unregister" does not provide a WebServiceWorker, revisit this
-    // to clean up the the callback type to not take a WebServiceWorker*.
-    virtual void unregisterServiceWorker(const WebURL& pattern, WebServiceWorkerCallbacks*) { }
+    // FIXME: "unregister" does not provide a WebServiceWorkerRegistration,
+    // revisit this to clean up the the callback type to not take a
+    // WebServiceWorkerRegistration*.
+    virtual void unregisterServiceWorker(const WebURL& pattern, WebServiceWorkerRegistrationCallbacks*) { }
 
     virtual ~WebServiceWorkerProvider() { }
 };

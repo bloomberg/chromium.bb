@@ -44,6 +44,7 @@
 #include "modules/serviceworkers/ServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
+#include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebServiceWorker.h"
 #include "public/platform/WebServiceWorkerProvider.h"
@@ -118,16 +119,26 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
         return promise;
     }
 
+#ifdef DISABLE_SERVICE_WORKER_REGISTRATION
     m_provider->registerServiceWorker(patternURL, scriptURL, new CallbackPromiseAdapter<ServiceWorker, ServiceWorkerError>(resolver));
+#else
+    m_provider->registerServiceWorker(patternURL, scriptURL, new CallbackPromiseAdapter<ServiceWorkerRegistration, ServiceWorkerError>(resolver));
+#endif
+
     return promise;
 }
 
 class UndefinedValue {
 public:
+
+#ifdef DISABLE_SERVICE_WORKER_REGISTRATION
     typedef WebServiceWorker WebType;
-    static V8UndefinedType from(ScriptPromiseResolver* resolver, WebServiceWorker* worker)
+#else
+    typedef WebServiceWorkerRegistration WebType;
+#endif
+    static V8UndefinedType from(ScriptPromiseResolver* resolver, WebType* registration)
     {
-        ASSERT(!worker); // Anything passed here will be leaked.
+        ASSERT(!registration); // Anything passed here will be leaked.
         return V8UndefinedType();
     }
 

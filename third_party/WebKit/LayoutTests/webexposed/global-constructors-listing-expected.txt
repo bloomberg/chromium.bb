@@ -419,6 +419,7 @@ SecurityPolicyViolationEvent
 Selection
 ServiceWorker
 ServiceWorkerContainer
+ServiceWorkerRegistration
 ShadowRoot
 SharedWorker
 SpeechSynthesisEvent
