@@ -2442,7 +2442,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportRsaPrivateKeyJwkIncorrectOptionalEmpty)) {
                                  &key));
 }
 
-TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsa)) {
+TEST_F(SharedCryptoTest, GenerateKeyPairRsa) {
   // Note: using unrealistic short key lengths here to avoid bogging down tests.
 
   // Successful WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 key generation (sha256)
@@ -2626,7 +2626,7 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsa)) {
             ExportKey(blink::WebCryptoKeyFormatSpki, private_key, &output));
 }
 
-TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsaBadModulusLength)) {
+TEST_F(SharedCryptoTest, GenerateKeyPairRsaBadModulusLength) {
   const unsigned int kBadModulusBits[] = {
       0,
       248,         // Too small.
@@ -2661,7 +2661,7 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsaBadModulusLength)) {
 // exponents of 3 and 65537 are supported. While both OpenSSL and NSS can
 // support other values, OpenSSL hangs when given invalid exponents, so use a
 // whitelist to validate the parameters.
-TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsaBadExponent)) {
+TEST_F(SharedCryptoTest, GenerateKeyPairRsaBadExponent) {
   const unsigned int modulus_length = 1024;
 
   const char* const kPublicExponents[] = {
@@ -4230,7 +4230,7 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateAesKeyBadUsages)) {
 
 // Generate an RSA-SSA key pair with invalid usages. RSA-SSA supports:
 //   'sign', 'verify'
-TEST_F(SharedCryptoTest, MAYBE(GenerateRsaSsaBadUsages)) {
+TEST_F(SharedCryptoTest, GenerateRsaSsaBadUsages) {
   blink::WebCryptoKeyUsageMask bad_usages[] = {
       blink::WebCryptoKeyUsageDecrypt,
       blink::WebCryptoKeyUsageVerify | blink::WebCryptoKeyUsageDecrypt,
@@ -4262,7 +4262,7 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateRsaSsaBadUsages)) {
 // Generate an RSA-SSA key pair. The public and private keys should select the
 // key usages which are applicable, and not have the exact same usages as was
 // specified to GenerateKey
-TEST_F(SharedCryptoTest, MAYBE(GenerateRsaSsaKeyPairIntersectUsages)) {
+TEST_F(SharedCryptoTest, GenerateRsaSsaKeyPairIntersectUsages) {
   const unsigned int modulus_length = 256;
   const std::vector<uint8_t> public_exponent = HexStringToBytes("010001");
 

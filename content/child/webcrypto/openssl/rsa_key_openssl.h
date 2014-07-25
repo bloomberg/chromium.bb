@@ -34,6 +34,19 @@ class RsaHashedAlgorithm : public AlgorithmImplementation {
       : all_public_key_usages_(all_public_key_usages),
         all_private_key_usages_(all_private_key_usages) {}
 
+  virtual Status VerifyKeyUsagesBeforeGenerateKeyPair(
+      blink::WebCryptoKeyUsageMask combined_usage_mask,
+      blink::WebCryptoKeyUsageMask* public_usage_mask,
+      blink::WebCryptoKeyUsageMask* private_usage_mask) const OVERRIDE;
+
+  virtual Status GenerateKeyPair(
+      const blink::WebCryptoAlgorithm& algorithm,
+      bool extractable,
+      blink::WebCryptoKeyUsageMask public_usage_mask,
+      blink::WebCryptoKeyUsageMask private_usage_mask,
+      blink::WebCryptoKey* public_key,
+      blink::WebCryptoKey* private_key) const OVERRIDE;
+
   virtual Status VerifyKeyUsagesBeforeImportKey(
       blink::WebCryptoKeyFormat format,
       blink::WebCryptoKeyUsageMask usage_mask) const OVERRIDE;
