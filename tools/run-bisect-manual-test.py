@@ -13,6 +13,9 @@ https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment
 to setup the sandbox manually before running the script. Otherwise the script
 fails to launch Chrome and exits with an error.
 
+This script serves a similar function to bisect-builds.py, except it uses
+the bisect-perf-regression.py. This means that that it can actually check out
+and build revisions of Chromium that are not available in cloud storage.
 """
 
 import os
@@ -28,18 +31,17 @@ from telemetry.core import browser_options
 
 
 def _RunBisectionScript(options):
-  """Attempts to execute src/tools/bisect-perf-regression.py with the parameters
-  passed in.
+  """Attempts to execute src/tools/bisect-perf-regression.py.
 
   Args:
     options: The configuration options to pass to the bisect script.
 
   Returns:
-    0 on success, otherwise 1.
+    The exit code of bisect-perf-regression.py: 0 on success, otherwise 1.
   """
-  test_command = 'python %s --browser=%s --chrome-root=.' %\
-      (os.path.join(_DIR_TOOLS_ROOT, 'bisect-manual-test.py'),
-       options.browser_type)
+  test_command = ('python %s --browser=%s --chrome-root=.' %
+                  (os.path.join(_DIR_TOOLS_ROOT, 'bisect-manual-test.py'),
+                   options.browser_type))
 
   cmd = ['python', os.path.join(_DIR_TOOLS_ROOT, 'bisect-perf-regression.py'),
          '-c', test_command,
@@ -62,9 +64,8 @@ def _RunBisectionScript(options):
       cmd.extend(['--cros_board', os.environ[CROS_BOARD_ENV]])
       cmd.extend(['--cros_remote_ip', os.environ[CROS_IP_ENV]])
     else:
-      print 'Error: Cros build selected, but BISECT_CROS_IP or'\
-            'BISECT_CROS_BOARD undefined.'
-      print
+      print ('Error: Cros build selected, but BISECT_CROS_IP or'
+             'BISECT_CROS_BOARD undefined.\n')
       return 1
   elif 'android-chrome' in options.browser_type:
     cmd.extend(['--target_platform', 'android-chrome'])
@@ -76,20 +77,23 @@ def _RunBisectionScript(options):
   if options.target_build_type:
     cmd.extend(['--target_build_type', options.target_build_type])
 
-
   cmd = [str(c) for c in cmd]
 
   return_code = subprocess.call(cmd)
 
   if return_code:
-    print 'Error: bisect-perf-regression.py returned with error %d' %\
-        return_code
+    print ('Error: bisect-perf-regression.py returned with error %d' %
+           return_code)
     print
 
   return return_code
 
 
 def main():
+  """Does a bisect based on the command-line arguments passed in.
+
+  The user will be prompted to classify each revision as good or bad.
+  """
   usage = ('%prog [options]\n'
            'Used to run the bisection script with a manual test.')
 
@@ -121,7 +125,7 @@ def main():
                      choices=['Release', 'Debug'],
                      help='The target build type. Choices are "Release" '
                      'or "Debug".')
-  options, args = parser.parse_args()
+  options, _ = parser.parse_args()
   error_msg = ''
   if not options.good_revision:
     error_msg += 'Error: missing required parameter: --good_revision\n'

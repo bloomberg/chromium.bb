@@ -20,17 +20,18 @@ def _StartManualTest(options):
   """Start browser then ask the user whether build is good or bad."""
   browser_to_create = browser_finder.FindBrowser(options)
   print 'Starting browser: %s.' % options.browser_type
-  with browser_to_create.Create() as browser:
+  with browser_to_create.Create() as _:
     # Loop until we get a response that we can parse.
     while True:
       sys.stderr.write('Revision is [(g)ood/(b)ad]: ')
       response = raw_input()
       if response and response in ('g', 'b'):
         if response in ('g'):
-          print "RESULT manual_test: manual_test= 1"
+          print 'RESULT manual_test: manual_test= 1'
         else:
-          print "RESULT manual_test: manual_test= 0"
+          print 'RESULT manual_test: manual_test= 0'
         break
+
 
 def main():
   usage = ('%prog [options]\n'
@@ -39,7 +40,7 @@ def main():
 
   options = browser_options.BrowserFinderOptions()
   parser = options.CreateParser(usage)
-  options, args = parser.parse_args()
+  options, _ = parser.parse_args()
 
   _StartManualTest(options)
 
