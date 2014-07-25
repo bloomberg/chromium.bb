@@ -5,10 +5,15 @@
 """WSGI application to manage a USB gadget.
 """
 
+import re
+import sys
+
 from tornado import httpserver
 from tornado import web
 
 import default_gadget
+
+VERSION_PATTERN = re.compile(r'.*usb_gadget-([a-z0-9]{32})\.zip')
 
 address = None
 chip = None
@@ -25,6 +30,19 @@ def SwitchGadget(new_gadget):
   gadget = new_gadget
   gadget.AddStringDescriptor(3, address)
   chip.Create(gadget)
+
+
+class VersionHandler(web.RequestHandler):
+
+  def get(self):
+    version = 'unpackaged'
+    for path in sys.path:
+      match = VERSION_PATTERN.match(path)
+      if match:
+        version = match.group(1)
+        break
+
+    self.write(version)
 
 
 class ClaimHandler(web.RequestHandler):
@@ -69,6 +87,7 @@ class ReconnectHandler(web.RequestHandler):
 
 
 app = web.Application([
+    (r'/version', VersionHandler),
     (r'/claim', ClaimHandler),
     (r'/unclaim', UnclaimHandler),
     (r'/unconfigure', UnconfigureHandler),
