@@ -20,6 +20,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/path_utils.h"
+#include "base/base_paths_android.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -434,8 +435,15 @@ bool PathProvider(int key, base::FilePath* result) {
     // will fail if executed from an installed executable (because the
     // generated path won't exist).
     case chrome::DIR_GEN_TEST_DATA:
+#if defined(OS_ANDROID)
+      // On Android, our tests don't have permission to write to DIR_MODULE.
+      // gtest/test_runner.py pushes data to external storage.
+      if (!PathService::Get(base::DIR_ANDROID_EXTERNAL_STORAGE, &cur))
+        return false;
+#else
       if (!PathService::Get(base::DIR_MODULE, &cur))
         return false;
+#endif
       cur = cur.Append(FILE_PATH_LITERAL("test_data"));
       if (!base::PathExists(cur))  // We don't want to create this.
         return false;

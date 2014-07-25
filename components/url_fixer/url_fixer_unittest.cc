@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -352,11 +353,11 @@ TEST(URLFixerTest, FixupURL) {
 // has to exist.
 TEST(URLFixerTest, FixupFile) {
   // this "original" filename is the one we tweak to get all the variations
-  base::FilePath dir;
+  base::ScopedTempDir temp_dir_;
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   base::FilePath original;
-  ASSERT_TRUE(PathService::Get(base::DIR_MODULE, &dir));
   ASSERT_TRUE(MakeTempFile(
-      dir,
+      temp_dir_.path(),
       base::FilePath(FILE_PATH_LITERAL("url fixer upper existing file.txt")),
       &original));
 
@@ -435,11 +436,12 @@ TEST(URLFixerTest, FixupFile) {
 }
 
 TEST(URLFixerTest, FixupRelativeFile) {
-  base::FilePath full_path, dir;
+  base::FilePath full_path;
   base::FilePath file_part(
       FILE_PATH_LITERAL("url_fixer_upper_existing_file.txt"));
-  ASSERT_TRUE(PathService::Get(base::DIR_MODULE, &dir));
-  ASSERT_TRUE(MakeTempFile(dir, file_part, &full_path));
+  base::ScopedTempDir temp_dir_;
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  ASSERT_TRUE(MakeTempFile(temp_dir_.path(), file_part, &full_path));
   full_path = base::MakeAbsoluteFilePath(full_path);
   ASSERT_FALSE(full_path.empty());
 
@@ -448,22 +450,23 @@ TEST(URLFixerTest, FixupRelativeFile) {
     FixupCase value = fixup_cases[i];
     base::FilePath input = base::FilePath::FromUTF8Unsafe(value.input);
     EXPECT_EQ(value.output,
-              url_fixer::FixupRelativeFile(dir, input).possibly_invalid_spec());
+              url_fixer::FixupRelativeFile(temp_dir_.path(),
+                  input).possibly_invalid_spec());
   }
 
   // make sure the existing file got fixed-up to a file URL, and that there
   // are no backslashes
   EXPECT_TRUE(IsMatchingFileURL(
-      url_fixer::FixupRelativeFile(dir, file_part).possibly_invalid_spec(),
-      full_path));
+      url_fixer::FixupRelativeFile(temp_dir_.path(),
+          file_part).possibly_invalid_spec(), full_path));
   EXPECT_TRUE(base::DeleteFile(full_path, false));
 
   // create a filename we know doesn't exist and make sure it doesn't get
   // fixed up to a file URL
   base::FilePath nonexistent_file(
       FILE_PATH_LITERAL("url_fixer_upper_nonexistent_file.txt"));
-  std::string fixedup(url_fixer::FixupRelativeFile(dir, nonexistent_file)
-                          .possibly_invalid_spec());
+  std::string fixedup(url_fixer::FixupRelativeFile(
+      temp_dir_.path(), nonexistent_file).possibly_invalid_spec());
   EXPECT_NE(std::string("file:///"), fixedup.substr(0, 8));
   EXPECT_FALSE(IsMatchingFileURL(fixedup, nonexistent_file));
 
@@ -473,7 +476,7 @@ TEST(URLFixerTest, FixupRelativeFile) {
   base::FilePath sub_dir(FILE_PATH_LITERAL("url fixer-upper dir"));
   base::FilePath sub_file(
       FILE_PATH_LITERAL("url fixer-upper existing file.txt"));
-  base::FilePath new_dir = dir.Append(sub_dir);
+  base::FilePath new_dir = temp_dir_.path().Append(sub_dir);
   base::CreateDirectory(new_dir);
   ASSERT_TRUE(MakeTempFile(new_dir, sub_file, &full_path));
   full_path = base::MakeAbsoluteFilePath(full_path);
@@ -482,8 +485,8 @@ TEST(URLFixerTest, FixupRelativeFile) {
   // test file in the subdir
   base::FilePath relative_file = sub_dir.Append(sub_file);
   EXPECT_TRUE(IsMatchingFileURL(
-      url_fixer::FixupRelativeFile(dir, relative_file).possibly_invalid_spec(),
-      full_path));
+      url_fixer::FixupRelativeFile(temp_dir_.path(),
+          relative_file).possibly_invalid_spec(), full_path));
 
   // test file in the subdir with different slashes and escaping.
   base::FilePath::StringType relative_file_str = sub_dir.value() +
@@ -491,18 +494,18 @@ TEST(URLFixerTest, FixupRelativeFile) {
   ReplaceSubstringsAfterOffset(&relative_file_str, 0,
       FILE_PATH_LITERAL(" "), FILE_PATH_LITERAL("%20"));
   EXPECT_TRUE(IsMatchingFileURL(
-      url_fixer::FixupRelativeFile(dir, base::FilePath(relative_file_str))
-          .possibly_invalid_spec(),
-      full_path));
+      url_fixer::FixupRelativeFile(temp_dir_.path(),
+          base::FilePath(relative_file_str)).possibly_invalid_spec(),
+              full_path));
 
   // test relative directories and duplicate slashes
   // (should resolve to the same file as above)
   relative_file_str = sub_dir.value() + FILE_PATH_LITERAL("/../") +
       sub_dir.value() + FILE_PATH_LITERAL("///./") + sub_file.value();
   EXPECT_TRUE(IsMatchingFileURL(
-      url_fixer::FixupRelativeFile(dir, base::FilePath(relative_file_str))
-          .possibly_invalid_spec(),
-      full_path));
+      url_fixer::FixupRelativeFile(temp_dir_.path(),
+          base::FilePath(relative_file_str)).possibly_invalid_spec(),
+              full_path));
 
   // done with the subdir
   EXPECT_TRUE(base::DeleteFile(full_path, false));
