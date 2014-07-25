@@ -1025,7 +1025,7 @@ env.AddNodeToTestSuite(node, ['small_tests'],
 
 exe = env.ComponentProgram('nacl_error_log_test',
                             ['nacl_error_log_test.c'],
-                            EXTRA_LIBS=sel_ldr_libs)
+                            EXTRA_LIBS=sel_ldr_libs + ['sel_main_chrome'])
 
 if env.Bit('coverage_enabled'):
   expected_exit = 'naclabort_coverage'

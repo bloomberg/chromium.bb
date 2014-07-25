@@ -47,6 +47,8 @@
 
 static int g_initialized = 0;
 
+static void (*g_fatal_error_handler)(const char *data, size_t bytes) = NULL;
+
 #if NACL_LINUX || NACL_OSX
 void NaClChromeMainSetUrandomFd(int urandom_fd) {
   CHECK(!g_initialized);
@@ -58,6 +60,21 @@ void NaClChromeMainInit(void) {
   CHECK(!g_initialized);
   NaClAllModulesInit();
   g_initialized = 1;
+}
+
+static void NaClFatalErrorHandlerCallback(void *state,
+                                          char *buf,
+                                          size_t buf_bytes) {
+  CHECK(state == NULL);
+  g_fatal_error_handler(buf, buf_bytes);
+}
+
+void NaClSetFatalErrorCallback(void (*func)(const char *data, size_t bytes)) {
+  CHECK(g_initialized);
+  if (g_fatal_error_handler != NULL)
+    NaClLog(LOG_FATAL, "NaClSetFatalErrorCallback called twice.\n");
+  g_fatal_error_handler = func;
+  NaClErrorLogHookInit(NaClFatalErrorHandlerCallback, NULL);
 }
 
 struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
@@ -145,8 +162,13 @@ static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
 
   CHECK(g_initialized);
 
-  NaClBootstrapChannelErrorReporterInit();
-  NaClErrorLogHookInit(NaClBootstrapChannelErrorReporter, nap);
+  /*
+   * TODO(teravest): Remove this once Chromium uses NaClSetFatalErrorCallback.
+   */
+  if (g_fatal_error_handler == NULL) {
+    NaClBootstrapChannelErrorReporterInit();
+    NaClErrorLogHookInit(NaClBootstrapChannelErrorReporter, nap);
+  }
 
   /* Allow or disallow dyncode API based on args. */
   nap->enable_dyncode_syscalls = args->enable_dyncode_syscalls;
