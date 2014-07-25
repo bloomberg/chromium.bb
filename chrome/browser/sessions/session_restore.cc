@@ -973,16 +973,16 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
         // Loads are scheduled for each restored tab unless the tab is going to
         // be selected as ShowBrowser() will load the selected tab.
-        bool is_not_selected_tab = (i != selected_tab_index);
+        bool is_selected_tab = (i == selected_tab_index);
         WebContents* restored_tab =
-            RestoreTab(tab, i, browser, is_not_selected_tab);
+            RestoreTab(tab, i, browser, is_selected_tab);
 
         // RestoreTab can return NULL if |tab| doesn't have valid data.
         if (!restored_tab)
           continue;
 
         // If this isn't the selected tab, there's nothing else to do.
-        if (is_not_selected_tab)
+        if (!is_selected_tab)
           continue;
 
         ShowBrowser(
@@ -1003,19 +1003,19 @@ class SessionRestoreImpl : public content::NotificationObserver {
       for (int i = 0; i < static_cast<int>(window.tabs.size()); ++i) {
         const SessionTab& tab = *(window.tabs[i]);
         // Always schedule loads as we will not be calling ShowBrowser().
-        RestoreTab(tab, tab_index_offset + i, browser, true);
+        RestoreTab(tab, tab_index_offset + i, browser, false);
       }
     }
   }
 
   // |tab_index| is ignored for pinned tabs which will always be pushed behind
   // the last existing pinned tab.
-  // |schedule_load| will let |tab_loader_| know that it should schedule this
-  // tab for loading.
+  // |tab_loader_| will schedule this tab for loading if |is_selected_tab| is
+  // false.
   WebContents* RestoreTab(const SessionTab& tab,
                           const int tab_index,
                           Browser* browser,
-                          bool schedule_load) {
+                          bool is_selected_tab) {
     // It's possible (particularly for foreign sessions) to receive a tab
     // without valid navigations. In that case, just skip it.
     // See crbug.com/154129.
@@ -1044,14 +1044,14 @@ class SessionRestoreImpl : public content::NotificationObserver {
                                tab_index,
                                selected_index,
                                tab.extension_app_id,
-                               !schedule_load,  // select
+                               is_selected_tab,  // select
                                tab.pinned,
                                true,
                                session_storage_namespace.get(),
                                tab.user_agent_override);
     // Regression check: check that the tab didn't start loading right away. The
     // focused tab will be loaded by Browser, and TabLoader will load the rest.
-    DCHECK(!schedule_load || web_contents->GetController().NeedsReload());
+    DCHECK(is_selected_tab || web_contents->GetController().NeedsReload());
 
     // Set up the file access rights for the selected navigation entry.
     const int id = web_contents->GetRenderProcessHost()->GetID();
@@ -1065,7 +1065,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
                                                                         *file);
     }
 
-    if (schedule_load)
+    if (!is_selected_tab)
       tab_loader_->ScheduleLoad(&web_contents->GetController());
     return web_contents;
   }
