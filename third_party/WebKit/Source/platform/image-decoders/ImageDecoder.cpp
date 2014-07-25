@@ -204,4 +204,32 @@ size_t ImageDecoder::findRequiredPreviousFrame(size_t frameIndex, bool frameRect
     }
 }
 
+ImagePlanes::ImagePlanes()
+{
+    for (int i = 0; i < 3; ++i) {
+        m_planes[i] = 0;
+        m_rowBytes[i] = 0;
+    }
+}
+
+void ImagePlanes::set(void* planes[3], size_t rowBytes[3])
+{
+    for (int i = 0; i < 3; ++i) {
+        m_planes[i] = planes[i];
+        m_rowBytes[i] = rowBytes[i];
+    }
+}
+
+void* ImagePlanes::plane(int i)
+{
+    ASSERT((i >= 0) && i < 3);
+    return m_planes[i];
+}
+
+size_t ImagePlanes::rowBytes(int i) const
+{
+    ASSERT((i >= 0) && i < 3);
+    return m_rowBytes[i];
+}
+
 } // namespace blink

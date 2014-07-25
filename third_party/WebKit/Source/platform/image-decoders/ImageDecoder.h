@@ -49,6 +49,20 @@
 
 namespace blink {
 
+// ImagePlanes can be used to decode color components into provided buffers instead of using an ImageFrame.
+class PLATFORM_EXPORT ImagePlanes {
+public:
+    ImagePlanes();
+
+    void set(void* planes[3], size_t rowBytes[3]);
+    void* plane(int);
+    size_t rowBytes(int) const;
+
+private:
+    void* m_planes[3];
+    size_t m_rowBytes[3];
+};
+
 // ImageDecoder is a base for all format-specific decoders
 // (e.g. JPEGImageDecoder). This base manages the ImageFrame cache.
 //
@@ -101,6 +115,10 @@ public:
     // Decoders which downsample images should override this method to
     // return the actual decoded size.
     virtual IntSize decodedSize() const { return size(); }
+
+    // Decoders which support YUV decoding can override this to
+    // give potentially different sizes per component.
+    virtual IntSize decodedYUVSize(int component) const { return decodedSize(); }
 
     // This will only differ from size() for ICO (where each frame is a
     // different icon) or other formats where different frames are different
@@ -251,6 +269,10 @@ public:
         }
         m_frameBufferCache[0].setMemoryAllocator(allocator);
     }
+
+    virtual bool YUVDecoding() const { return false; }
+    virtual bool decodeToYUV() { return false; }
+    virtual void setImagePlanes(OwnPtr<ImagePlanes>&) { }
 
 protected:
     // Calculates the most recent frame whose image data may be needed in
