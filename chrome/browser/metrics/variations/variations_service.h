@@ -41,11 +41,9 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-namespace variations {
-class VariationsSeed;
-}
-
 namespace chrome_variations {
+
+class VariationsSeed;
 
 // Used to setup field trials based on stored variations seed data, and fetch
 // new seed data from the variations server.
@@ -164,8 +162,7 @@ class VariationsService
   void FetchVariationsSeed();
 
   // Notify any observers of this service based on the simulation |result|.
-  void NotifyObservers(
-      const variations::VariationsSeedSimulator::Result& result);
+  void NotifyObservers(const VariationsSeedSimulator::Result& result);
 
   // net::URLFetcherDelegate implementation:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
@@ -175,7 +172,7 @@ class VariationsService
 
   // Performs a variations seed simulation with the given |seed| and |version|
   // and logs the simulation results as histograms.
-  void PerformSimulationWithVersion(scoped_ptr<variations::VariationsSeed> seed,
+  void PerformSimulationWithVersion(scoped_ptr<VariationsSeed> seed,
                                     const base::Version& version);
 
   // Record the time of the most recent successful fetch.

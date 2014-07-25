@@ -10,7 +10,7 @@
 
 #include "base/metrics/field_trial.h"
 
-namespace variations {
+namespace chrome_variations {
 
 class Study;
 
@@ -51,6 +51,6 @@ class ProcessedStudy {
   bool is_expired_;
 };
 
-}  // namespace variations
+}  // namespace chrome_variations
 
 #endif  // COMPONENTS_VARIATIONS_PROCESSED_STUDY_H_

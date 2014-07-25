@@ -18,7 +18,7 @@
 #include "components/variations/proto/study.pb.h"
 #include "components/variations/proto/variations_seed.pb.h"
 
-namespace variations {
+namespace chrome_variations {
 
 class ProcessedStudy;
 
@@ -75,6 +75,6 @@ class VariationsSeedProcessor {
   DISALLOW_COPY_AND_ASSIGN(VariationsSeedProcessor);
 };
 
-}  // namespace variations
+}  // namespace chrome_variations
 
 #endif  // COMPONENTS_VARIATIONS_VARIATIONS_SEED_PROCESSOR_H_

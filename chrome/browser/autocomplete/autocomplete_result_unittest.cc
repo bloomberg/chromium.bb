@@ -88,7 +88,7 @@ class AutocompleteResultTest : public testing::Test  {
     field_trial_list_.reset();
     field_trial_list_.reset(new base::FieldTrialList(
         new metrics::SHA1EntropyProvider("foo")));
-    variations::testing::ClearAllVariationParams();
+    chrome_variations::testing::ClearAllVariationParams();
   }
 
   virtual void SetUp() OVERRIDE {
@@ -445,7 +445,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
     std::map<std::string, std::string> params;
     params[std::string(OmniboxFieldTrial::kDemoteByTypeRule) + ":3:*"] =
         "1:50,7:100,2:0";  // 3 == HOME_PAGE
-    ASSERT_TRUE(variations::AssociateVariationParams(
+    ASSERT_TRUE(chrome_variations::AssociateVariationParams(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
   }
   base::FieldTrialList::CreateFieldTrial(
@@ -491,7 +491,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithMatchDupsAndDemotionsByType) {
     std::map<std::string, std::string> params;
     params[std::string(OmniboxFieldTrial::kDemoteByTypeRule) + ":8:*"] =
         "1:50";  // 8 == INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS
-    ASSERT_TRUE(variations::AssociateVariationParams(
+    ASSERT_TRUE(chrome_variations::AssociateVariationParams(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "C", params));
   }
   base::FieldTrialList::CreateFieldTrial(
@@ -604,7 +604,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDisableInlining) {
   {
     std::map<std::string, std::string> params;
     params[OmniboxFieldTrial::kDisableInliningRule] = "true";
-    ASSERT_TRUE(variations::AssociateVariationParams(
+    ASSERT_TRUE(chrome_variations::AssociateVariationParams(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "D", params));
   }
   base::FieldTrialList::CreateFieldTrial(

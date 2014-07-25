@@ -6,7 +6,7 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-package variations;
+package chrome_variations;
 
 // This defines the Protocol Buffer representation of a Chrome Variations study
 // as sent to clients of the Variations server.

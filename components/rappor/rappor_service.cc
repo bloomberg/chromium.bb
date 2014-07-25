@@ -39,7 +39,7 @@ const char kRapporRolloutServerUrlParam[] = "ServerUrl";
 const char kDefaultServerUrl[] = "https://clients4.google.com/rappor";
 
 GURL GetServerUrl() {
-  std::string server_url = variations::GetVariationParamValue(
+  std::string server_url = chrome_variations::GetVariationParamValue(
       kRapporRolloutFieldTrialName,
       kRapporRolloutServerUrlParam);
   if (!server_url.empty())

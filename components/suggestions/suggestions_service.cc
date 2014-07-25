@@ -53,7 +53,8 @@ void LogResponseState(SuggestionsResponseState state) {
 // Obtains the experiment parameter under the supplied |key|, or empty string
 // if the parameter does not exist.
 std::string GetExperimentParam(const std::string& key) {
-  return variations::GetVariationParamValue(kSuggestionsFieldTrialName, key);
+  return chrome_variations::GetVariationParamValue(kSuggestionsFieldTrialName,
+                                                   key);
 }
 
 GURL BuildBlacklistRequestURL(const std::string& blacklist_url_prefix,

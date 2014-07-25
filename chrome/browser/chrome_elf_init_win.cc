@@ -127,7 +127,7 @@ void AddFinchBlacklistToRegistry() {
       HKEY_CURRENT_USER, blacklist::kRegistryFinchListPath, KEY_SET_VALUE);
 
   std::map<std::string, std::string> params;
-  variations::GetVariationParams(kBrowserBlacklistTrialName, &params);
+  chrome_variations::GetVariationParams(kBrowserBlacklistTrialName, &params);
 
   for (std::map<std::string, std::string>::iterator it = params.begin();
        it != params.end();

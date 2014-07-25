@@ -18,6 +18,12 @@
 #include "net/http/http_request_headers.h"
 #include "url/gurl.h"
 
+// TODO(mathp): Once the move to variations namespace is complete, remove these.
+using chrome_variations::EMPTY_ID;
+using chrome_variations::GOOGLE_WEB_PROPERTIES;
+using chrome_variations::GOOGLE_WEB_PROPERTIES_TRIGGER;
+using chrome_variations::VariationID;
+
 namespace variations {
 
 namespace {

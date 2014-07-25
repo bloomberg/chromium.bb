@@ -254,10 +254,10 @@ base::TimeDelta OmniboxFieldTrial::StopTimerFieldTrialDuration() {
 }
 
 bool OmniboxFieldTrial::InZeroSuggestFieldTrial() {
-  if (variations::GetVariationParamValue(
+  if (chrome_variations::GetVariationParamValue(
           kBundledExperimentFieldTrialName, kZeroSuggestRule) == "true")
     return true;
-  if (variations::GetVariationParamValue(
+  if (chrome_variations::GetVariationParamValue(
           kBundledExperimentFieldTrialName, kZeroSuggestRule) == "false")
     return false;
 #if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX) || \
@@ -269,19 +269,19 @@ bool OmniboxFieldTrial::InZeroSuggestFieldTrial() {
 }
 
 bool OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial() {
-  return variations::GetVariationParamValue(
+  return chrome_variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
       kZeroSuggestVariantRule) == "MostVisited";
 }
 
 bool OmniboxFieldTrial::InZeroSuggestAfterTypingFieldTrial() {
-  return variations::GetVariationParamValue(
+  return chrome_variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
       kZeroSuggestVariantRule) == "AfterTyping";
 }
 
 bool OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial() {
-  return variations::GetVariationParamValue(
+  return chrome_variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
       kZeroSuggestVariantRule) == "Personalized";
 }
@@ -353,8 +353,8 @@ void OmniboxFieldTrial::GetExperimentalHUPScoringParams(
   scoring_params->experimental_scoring_enabled = false;
 
   VariationParams params;
-  if (!variations::GetVariationParams(kBundledExperimentFieldTrialName,
-                                      &params))
+  if (!chrome_variations::GetVariationParams(kBundledExperimentFieldTrialName,
+                                             &params))
     return;
 
   VariationParams::const_iterator it = params.find(kHUPNewScoringEnabledParam);
@@ -375,9 +375,9 @@ void OmniboxFieldTrial::GetExperimentalHUPScoringParams(
 }
 
 int OmniboxFieldTrial::HQPBookmarkValue() {
-  std::string bookmark_value_str =
-      variations::GetVariationParamValue(kBundledExperimentFieldTrialName,
-                                         kHQPBookmarkValueRule);
+  std::string bookmark_value_str = chrome_variations::
+      GetVariationParamValue(kBundledExperimentFieldTrialName,
+                             kHQPBookmarkValueRule);
   if (bookmark_value_str.empty())
     return 10;
   // This is a best-effort conversion; we trust the hand-crafted parameters
@@ -389,25 +389,25 @@ int OmniboxFieldTrial::HQPBookmarkValue() {
 }
 
 bool OmniboxFieldTrial::HQPAllowMatchInTLDValue() {
-  return variations::GetVariationParamValue(
+  return chrome_variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
       kHQPAllowMatchInTLDRule) == "true";
 }
 
 bool OmniboxFieldTrial::HQPAllowMatchInSchemeValue() {
-  return variations::GetVariationParamValue(
+  return chrome_variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
       kHQPAllowMatchInSchemeRule) == "true";
 }
 
 bool OmniboxFieldTrial::BookmarksIndexURLsValue() {
-  return variations::GetVariationParamValue(
+  return chrome_variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
       kBookmarksIndexURLsRule) == "true";
 }
 
 bool OmniboxFieldTrial::DisableInlining() {
-  return variations::GetVariationParamValue(
+  return chrome_variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
       kDisableInliningRule) == "true";
 }
@@ -419,19 +419,19 @@ bool OmniboxFieldTrial::EnableAnswersInSuggest() {
   if (cl->HasSwitch(switches::kEnableAnswersInSuggest))
     return true;
 
-  return variations::GetVariationParamValue(
+  return chrome_variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
       kAnswersInSuggestRule) == "true";
 }
 
 bool OmniboxFieldTrial::AddUWYTMatchEvenIfPromotedURLs() {
-  return variations::GetVariationParamValue(
+  return chrome_variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
       kAddUWYTMatchEvenIfPromotedURLsRule) == "true";
 }
 
 bool OmniboxFieldTrial::DisplayHintTextWhenPossible() {
-  return variations::GetVariationParamValue(
+  return chrome_variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
       kDisplayHintTextWhenPossibleRule) == "true";
 }
@@ -509,8 +509,8 @@ std::string OmniboxFieldTrial::GetValueForRuleInContext(
     const std::string& rule,
     OmniboxEventProto::PageClassification page_classification) {
   VariationParams params;
-  if (!variations::GetVariationParams(kBundledExperimentFieldTrialName,
-                                      &params)) {
+  if (!chrome_variations::GetVariationParams(kBundledExperimentFieldTrialName,
+                                             &params)) {
     return std::string();
   }
   const std::string page_classification_str =

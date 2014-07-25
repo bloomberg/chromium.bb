@@ -12,7 +12,7 @@
 #include "components/variations/study_filtering.h"
 #include "components/variations/variations_associated_data.h"
 
-namespace variations {
+namespace chrome_variations {
 
 namespace {
 
@@ -249,4 +249,4 @@ VariationsSeedSimulator::SessionStudyGroupChanged(
   return NO_CHANGE;
 }
 
-}  // namespace variations
+}  // namespace chrome_variations

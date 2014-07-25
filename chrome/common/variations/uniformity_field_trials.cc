@@ -23,7 +23,7 @@ namespace {
 void SetupSingleUniformityFieldTrial(
     base::FieldTrial::RandomizationType randomization_type,
     const std::string& trial_name_string,
-    const variations::VariationID trial_base_id,
+    const VariationID trial_base_id,
     int num_trial_groups) {
   // Probability per group remains constant for all uniformity trials, what
   // changes is the probability divisor.
@@ -42,9 +42,8 @@ void SetupSingleUniformityFieldTrial(
       base::FieldTrialList::FactoryGetFieldTrial(
           trial_name, divisor, kDefaultGroupName, 2015, 1, 1,
           randomization_type, NULL));
-  variations::AssociateGoogleVariationID(variations::GOOGLE_UPDATE_SERVICE,
-                                         trial_name, kDefaultGroupName,
-                                         trial_base_id);
+  AssociateGoogleVariationID(GOOGLE_UPDATE_SERVICE, trial_name,
+                             kDefaultGroupName, trial_base_id);
 
   // Loop starts with group 1 because the field trial automatically creates a
   // default group, which would be group 0.
@@ -53,9 +52,9 @@ void SetupSingleUniformityFieldTrial(
           base::StringPrintf("group_%02d", group_number);
     DVLOG(1) << "    Group name = " << group_name;
     trial->AppendGroup(group_name, kProbabilityPerGroup);
-    variations::AssociateGoogleVariationID(
-        variations::GOOGLE_UPDATE_SERVICE, trial_name, group_name,
-        static_cast<variations::VariationID>(trial_base_id + group_number));
+    AssociateGoogleVariationID(
+        GOOGLE_UPDATE_SERVICE, trial_name, group_name,
+        static_cast<VariationID>(trial_base_id + group_number));
   }
 
   // Now that all groups have been appended, call group() on the trial to
@@ -105,7 +104,7 @@ void SetupUniformityFieldTrials(const base::Time install_date) {
   // Declare our variation ID bases along side this array so we can loop over it
   // and assign the IDs appropriately. So for example, the 1 percent experiments
   // should have a size of 100 (100/100 = 1).
-  const variations::VariationID trial_base_ids[] = {
+  const VariationID trial_base_ids[] = {
     UNIFORMITY_1_PERCENT_BASE,
     UNIFORMITY_5_PERCENT_BASE,
     UNIFORMITY_10_PERCENT_BASE,

@@ -10,7 +10,12 @@
 
 #include "base/memory/singleton.h"
 
-namespace variations {
+namespace chrome_variations {
+
+// TODO(asvitkine): Delete these when this file moves to variations namespace.
+using variations::ActiveGroupId;
+using variations::ActiveGroupIdCompare;
+using variations::MakeActiveGroupId;
 
 namespace {
 
@@ -234,4 +239,4 @@ void ClearAllVariationParams() {
 
 }  // namespace testing
 
-}  // namespace variations
+}  // namespace chrome_variations
