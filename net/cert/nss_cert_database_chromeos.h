@@ -24,8 +24,6 @@ class NET_EXPORT NSSCertDatabaseChromeOS : public NSSCertDatabase {
   virtual void ListCertsSync(CertificateList* certs) OVERRIDE;
   virtual void ListCerts(const NSSCertDatabase::ListCertsCallback& callback)
       OVERRIDE;
-  virtual crypto::ScopedPK11Slot GetPublicSlot() const OVERRIDE;
-  virtual crypto::ScopedPK11Slot GetPrivateSlot() const OVERRIDE;
   virtual void ListModules(CryptoModuleList* modules, bool need_rw) const
       OVERRIDE;
 
@@ -41,8 +39,6 @@ class NET_EXPORT NSSCertDatabaseChromeOS : public NSSCertDatabase {
   static void ListCertsImpl(const NSSProfileFilterChromeOS& profile_filter,
                             CertificateList* certs);
 
-  crypto::ScopedPK11Slot public_slot_;
-  crypto::ScopedPK11Slot private_slot_;
   NSSProfileFilterChromeOS profile_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(NSSCertDatabaseChromeOS);

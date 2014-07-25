@@ -58,28 +58,27 @@ class CertDatabaseNSSTest : public testing::Test {
  public:
   virtual void SetUp() {
     ASSERT_TRUE(test_nssdb_.is_open());
-    cert_db_ = NSSCertDatabase::GetInstance();
-    slot_ = cert_db_->GetPublicModule();
+    cert_db_.reset(new NSSCertDatabase(
+        crypto::ScopedPK11Slot(crypto::GetPersistentNSSKeySlot()),
+        crypto::ScopedPK11Slot(crypto::GetPersistentNSSKeySlot())));
+    public_module_ = cert_db_->GetPublicModule();
 
     // Test db should be empty at start of test.
-    EXPECT_EQ(0U, ListCertsInSlot(slot_->os_module_handle()).size());
+    EXPECT_EQ(0U, ListCerts().size());
   }
 
   virtual void TearDown() {
-    // Don't try to cleanup if the setup failed.
-    ASSERT_TRUE(slot_->os_module_handle());
-
-    EXPECT_TRUE(CleanupSlotContents());
-
     // Run the message loop to process any observer callbacks (e.g. for the
     // ClientSocketFactory singleton) so that the scoped ref ptrs created in
     // NSSCertDatabase::NotifyObservers* get released.
     base::MessageLoop::current()->RunUntilIdle();
-
-    EXPECT_EQ(0U, ListCertsInSlot(slot_->os_module_handle()).size());
   }
 
  protected:
+  net::CryptoModule* GetPublicModule() {
+    return public_module_.get();
+  }
+
   static std::string ReadTestFile(const std::string& name) {
     std::string result;
     base::FilePath cert_path = GetTestCertsDirectory().AppendASCII(name);
@@ -98,9 +97,11 @@ class CertDatabaseNSSTest : public testing::Test {
     return true;
   }
 
-  static CertificateList ListCertsInSlot(PK11SlotInfo* slot) {
+  CertificateList ListCerts() {
     CertificateList result;
-    CERTCertList* cert_list = PK11_ListCertsInSlot(slot);
+
+    CERTCertList* cert_list =
+        PK11_ListCertsInSlot(cert_db_->GetPublicSlot().get());
     for (CERTCertListNode* node = CERT_LIST_HEAD(cert_list);
          !CERT_LIST_END(node, cert_list);
          node = CERT_LIST_NEXT(node)) {
@@ -114,30 +115,10 @@ class CertDatabaseNSSTest : public testing::Test {
     return result;
   }
 
-  scoped_refptr<CryptoModule> slot_;
-  NSSCertDatabase* cert_db_;
+  scoped_ptr<NSSCertDatabase> cert_db_;
   const CertificateList empty_cert_list_;
-
- private:
-  bool CleanupSlotContents() {
-    bool ok = true;
-    CertificateList certs = ListCertsInSlot(slot_->os_module_handle());
-    CERTCertTrust default_trust = {0};
-    for (size_t i = 0; i < certs.size(); ++i) {
-      // Reset cert trust values to defaults before deleting.  Otherwise NSS
-      // somehow seems to remember the trust which can break following tests.
-      SECStatus srv = CERT_ChangeCertTrust(
-          CERT_GetDefaultCertDB(), certs[i]->os_cert_handle(), &default_trust);
-      if (srv != SECSuccess)
-        ok = false;
-
-      if (!cert_db_->DeleteCertAndKey(certs[i].get()))
-        ok = false;
-    }
-    return ok;
-  }
-
   crypto::ScopedTestNSSDB test_nssdb_;
+  scoped_refptr<net::CryptoModule> public_module_;
 };
 
 TEST_F(CertDatabaseNSSTest, ListCertsSync) {
@@ -169,27 +150,27 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12WrongPassword) {
   std::string pkcs12_data = ReadTestFile("client.p12");
 
   EXPECT_EQ(ERR_PKCS12_IMPORT_BAD_PASSWORD,
-            cert_db_->ImportFromPKCS12(slot_.get(),
+            cert_db_->ImportFromPKCS12(GetPublicModule(),
                                        pkcs12_data,
                                        base::string16(),
                                        true,  // is_extractable
                                        NULL));
 
   // Test db should still be empty.
-  EXPECT_EQ(0U, ListCertsInSlot(slot_->os_module_handle()).size());
+  EXPECT_EQ(0U, ListCerts().size());
 }
 
 TEST_F(CertDatabaseNSSTest, ImportFromPKCS12AsExtractableAndExportAgain) {
   std::string pkcs12_data = ReadTestFile("client.p12");
 
   EXPECT_EQ(OK,
-            cert_db_->ImportFromPKCS12(slot_.get(),
+            cert_db_->ImportFromPKCS12(GetPublicModule(),
                                        pkcs12_data,
                                        ASCIIToUTF16("12345"),
                                        true,  // is_extractable
                                        NULL));
 
-  CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
+  CertificateList cert_list = ListCerts();
   ASSERT_EQ(1U, cert_list.size());
   scoped_refptr<X509Certificate> cert(cert_list[0]);
 
@@ -208,35 +189,35 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12Twice) {
   std::string pkcs12_data = ReadTestFile("client.p12");
 
   EXPECT_EQ(OK,
-            cert_db_->ImportFromPKCS12(slot_.get(),
+            cert_db_->ImportFromPKCS12(GetPublicModule(),
                                        pkcs12_data,
                                        ASCIIToUTF16("12345"),
                                        true,  // is_extractable
                                        NULL));
-  EXPECT_EQ(1U, ListCertsInSlot(slot_->os_module_handle()).size());
+  EXPECT_EQ(1U, ListCerts().size());
 
   // NSS has a SEC_ERROR_PKCS12_DUPLICATE_DATA error, but it doesn't look like
   // it's ever used.  This test verifies that.
   EXPECT_EQ(OK,
-            cert_db_->ImportFromPKCS12(slot_.get(),
+            cert_db_->ImportFromPKCS12(GetPublicModule(),
                                        pkcs12_data,
                                        ASCIIToUTF16("12345"),
                                        true,  // is_extractable
                                        NULL));
-  EXPECT_EQ(1U, ListCertsInSlot(slot_->os_module_handle()).size());
+  EXPECT_EQ(1U, ListCerts().size());
 }
 
 TEST_F(CertDatabaseNSSTest, ImportFromPKCS12AsUnextractableAndExportAgain) {
   std::string pkcs12_data = ReadTestFile("client.p12");
 
   EXPECT_EQ(OK,
-            cert_db_->ImportFromPKCS12(slot_.get(),
+            cert_db_->ImportFromPKCS12(GetPublicModule(),
                                        pkcs12_data,
                                        ASCIIToUTF16("12345"),
                                        false,  // is_extractable
                                        NULL));
 
-  CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
+  CertificateList cert_list = ListCerts();
   ASSERT_EQ(1U, cert_list.size());
   scoped_refptr<X509Certificate> cert(cert_list[0]);
 
@@ -253,25 +234,25 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12AsUnextractableAndExportAgain) {
 TEST_F(CertDatabaseNSSTest, ImportFromPKCS12OnlyMarkIncludedKey) {
   std::string pkcs12_data = ReadTestFile("client.p12");
   EXPECT_EQ(OK,
-            cert_db_->ImportFromPKCS12(slot_.get(),
+            cert_db_->ImportFromPKCS12(GetPublicModule(),
                                        pkcs12_data,
                                        ASCIIToUTF16("12345"),
                                        true,  // is_extractable
                                        NULL));
 
-  CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
+  CertificateList cert_list = ListCerts();
   ASSERT_EQ(1U, cert_list.size());
 
   // Now import a PKCS#12 file with just a certificate but no private key.
   pkcs12_data = ReadTestFile("client-nokey.p12");
   EXPECT_EQ(OK,
-            cert_db_->ImportFromPKCS12(slot_.get(),
+            cert_db_->ImportFromPKCS12(GetPublicModule(),
                                        pkcs12_data,
                                        ASCIIToUTF16("12345"),
                                        false,  // is_extractable
                                        NULL));
 
-  cert_list = ListCertsInSlot(slot_->os_module_handle());
+  cert_list = ListCerts();
   ASSERT_EQ(1U, cert_list.size());
 
   // Make sure the imported private key is still extractable.
@@ -285,14 +266,14 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12InvalidFile) {
   std::string pkcs12_data = "Foobarbaz";
 
   EXPECT_EQ(ERR_PKCS12_IMPORT_INVALID_FILE,
-            cert_db_->ImportFromPKCS12(slot_.get(),
+            cert_db_->ImportFromPKCS12(GetPublicModule(),
                                        pkcs12_data,
                                        base::string16(),
                                        true,  // is_extractable
                                        NULL));
 
   // Test db should still be empty.
-  EXPECT_EQ(0U, ListCertsInSlot(slot_->os_module_handle()).size());
+  EXPECT_EQ(0U, ListCerts().size());
 }
 
 TEST_F(CertDatabaseNSSTest, ImportCACert_SSLTrust) {
@@ -309,7 +290,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_SSLTrust) {
 
   EXPECT_EQ(0U, failed.size());
 
-  CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
+  CertificateList cert_list = ListCerts();
   ASSERT_EQ(1U, cert_list.size());
   scoped_refptr<X509Certificate> cert(cert_list[0]);
   EXPECT_EQ("Test Root CA", cert->subject().common_name);
@@ -340,7 +321,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_EmailTrust) {
 
   EXPECT_EQ(0U, failed.size());
 
-  CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
+  CertificateList cert_list = ListCerts();
   ASSERT_EQ(1U, cert_list.size());
   scoped_refptr<X509Certificate> cert(cert_list[0]);
   EXPECT_EQ("Test Root CA", cert->subject().common_name);
@@ -371,7 +352,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_ObjSignTrust) {
 
   EXPECT_EQ(0U, failed.size());
 
-  CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
+  CertificateList cert_list = ListCerts();
   ASSERT_EQ(1U, cert_list.size());
   scoped_refptr<X509Certificate> cert(cert_list[0]);
   EXPECT_EQ("Test Root CA", cert->subject().common_name);
@@ -406,7 +387,7 @@ TEST_F(CertDatabaseNSSTest, ImportCA_NotCACert) {
   EXPECT_EQ(certs[0], failed[0].certificate);
   EXPECT_EQ(ERR_IMPORT_CA_CERT_NOT_CA, failed[0].net_error);
 
-  EXPECT_EQ(0U, ListCertsInSlot(slot_->os_module_handle()).size());
+  EXPECT_EQ(0U, ListCerts().size());
 }
 
 TEST_F(CertDatabaseNSSTest, ImportCACertHierarchy) {
@@ -431,7 +412,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchy) {
   EXPECT_EQ("www.us.army.mil", failed[1].certificate->subject().common_name);
   EXPECT_EQ(ERR_IMPORT_CA_CERT_NOT_CA, failed[1].net_error);
 
-  CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
+  CertificateList cert_list = ListCerts();
   ASSERT_EQ(1U, cert_list.size());
   EXPECT_EQ("DoD Root CA 2", cert_list[0]->subject().common_name);
 }
@@ -447,7 +428,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyDupeRoot) {
       &failed));
 
   EXPECT_EQ(0U, failed.size());
-  CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
+  CertificateList cert_list = ListCerts();
   ASSERT_EQ(1U, cert_list.size());
   EXPECT_EQ("DoD Root CA 2", cert_list[0]->subject().common_name);
 
@@ -469,7 +450,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyDupeRoot) {
   EXPECT_EQ("www.us.army.mil", failed[2].certificate->subject().common_name);
   EXPECT_EQ(ERR_IMPORT_CA_CERT_NOT_CA, failed[2].net_error);
 
-  cert_list = ListCertsInSlot(slot_->os_module_handle());
+  cert_list = ListCerts();
   ASSERT_EQ(1U, cert_list.size());
   EXPECT_EQ("DoD Root CA 2", cert_list[0]->subject().common_name);
 }
@@ -490,7 +471,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyUntrusted) {
   // SEC_ERROR_UNTRUSTED_ISSUER
   EXPECT_EQ(ERR_FAILED, failed[0].net_error);
 
-  CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
+  CertificateList cert_list = ListCerts();
   ASSERT_EQ(1U, cert_list.size());
   EXPECT_EQ("DoD Root CA 2", cert_list[0]->subject().common_name);
 }
@@ -513,7 +494,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyTree) {
   EXPECT_EQ("DOD CA-17", failed[1].certificate->subject().common_name);
   EXPECT_EQ(ERR_FAILED, failed[1].net_error);  // The certificate expired.
 
-  CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
+  CertificateList cert_list = ListCerts();
   ASSERT_EQ(1U, cert_list.size());
   EXPECT_EQ("DoD Root CA 2", cert_list[0]->subject().common_name);
 }
@@ -540,7 +521,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertNotHierarchy) {
   EXPECT_EQ("DOD CA-17", failed[1].certificate->subject().common_name);
   EXPECT_EQ(ERR_FAILED, failed[1].net_error);
 
-  CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
+  CertificateList cert_list = ListCerts();
   ASSERT_EQ(1U, cert_list.size());
   EXPECT_EQ("Test Root CA", cert_list[0]->subject().common_name);
 }
@@ -562,7 +543,7 @@ TEST_F(CertDatabaseNSSTest, DISABLED_ImportServerCert) {
 
   EXPECT_EQ(0U, failed.size());
 
-  CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
+  CertificateList cert_list = ListCerts();
   ASSERT_EQ(2U, cert_list.size());
   scoped_refptr<X509Certificate> goog_cert(cert_list[0]);
   scoped_refptr<X509Certificate> thawte_cert(cert_list[1]);
@@ -597,7 +578,7 @@ TEST_F(CertDatabaseNSSTest, ImportServerCert_SelfSigned) {
 
   EXPECT_EQ(0U, failed.size());
 
-  CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
+  CertificateList cert_list = ListCerts();
   ASSERT_EQ(1U, cert_list.size());
   scoped_refptr<X509Certificate> puny_cert(cert_list[0]);
 
@@ -628,7 +609,7 @@ TEST_F(CertDatabaseNSSTest, ImportServerCert_SelfSigned_Trusted) {
 
   EXPECT_EQ(0U, failed.size());
 
-  CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
+  CertificateList cert_list = ListCerts();
   ASSERT_EQ(1U, cert_list.size());
   scoped_refptr<X509Certificate> puny_cert(cert_list[0]);
 
@@ -1011,7 +992,7 @@ TEST_F(CertDatabaseNSSTest, ImportDuplicateCommonName) {
                                     X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1U, certs.size());
 
-  EXPECT_EQ(0U, ListCertsInSlot(slot_->os_module_handle()).size());
+  EXPECT_EQ(0U, ListCerts().size());
 
   // Import server cert with default trust.
   NSSCertDatabase::ImportCertFailureList failed;
@@ -1021,7 +1002,7 @@ TEST_F(CertDatabaseNSSTest, ImportDuplicateCommonName) {
   EXPECT_EQ(NSSCertDatabase::TRUST_DEFAULT,
             cert_db_->GetCertTrust(certs[0].get(), SERVER_CERT));
 
-  CertificateList new_certs = ListCertsInSlot(slot_->os_module_handle());
+  CertificateList new_certs = ListCerts();
   ASSERT_EQ(1U, new_certs.size());
 
   // Now attempt to import a different certificate with the same common name.
@@ -1038,7 +1019,7 @@ TEST_F(CertDatabaseNSSTest, ImportDuplicateCommonName) {
   EXPECT_EQ(NSSCertDatabase::TRUST_DEFAULT,
             cert_db_->GetCertTrust(certs2[0].get(), SERVER_CERT));
 
-  new_certs = ListCertsInSlot(slot_->os_module_handle());
+  new_certs = ListCerts();
   ASSERT_EQ(2U, new_certs.size());
   EXPECT_STRNE(new_certs[0]->os_cert_handle()->nickname,
                new_certs[1]->os_cert_handle()->nickname);

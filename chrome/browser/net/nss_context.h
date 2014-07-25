@@ -40,7 +40,7 @@ crypto::ScopedPK11Slot GetPrivateNSSKeySlotForResourceContext(
 // |callback| will be run once the DB is initialized. Ownership is not
 // transferred, but the caller may save the pointer, which will remain valid for
 // the lifetime of the ResourceContext.
-// Should be called only on the IO thread.
+// Must be called only on the IO thread.
 net::NSSCertDatabase* GetNSSCertDatabaseForResourceContext(
     content::ResourceContext* context,
     const base::Callback<void(net::NSSCertDatabase*)>& callback)

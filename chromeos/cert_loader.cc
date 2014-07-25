@@ -88,8 +88,7 @@ int CertLoader::TPMTokenSlotID() const {
   if (!database_)
     return -1;
   crypto::ScopedPK11Slot slot(database_->GetPrivateSlot());
-  if (!slot)
-    return -1;
+  DCHECK(slot);
   return static_cast<int>(PK11_GetSlotID(slot.get()));
 }
 
@@ -99,8 +98,7 @@ bool CertLoader::IsHardwareBacked() const {
   if (!database_)
     return false;
   crypto::ScopedPK11Slot slot(database_->GetPrivateSlot());
-  if (!slot)
-    return false;
+  DCHECK(slot);
   return PK11_IsHW(slot.get());
 }
 

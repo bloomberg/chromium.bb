@@ -21,8 +21,7 @@ namespace net {
 NSSCertDatabaseChromeOS::NSSCertDatabaseChromeOS(
     crypto::ScopedPK11Slot public_slot,
     crypto::ScopedPK11Slot private_slot)
-    : public_slot_(public_slot.Pass()),
-      private_slot_(private_slot.Pass()) {
+    : NSSCertDatabase(public_slot.Pass(), private_slot.Pass()) {
   profile_filter_.Init(GetPublicSlot(), GetPrivateSlot());
 }
 
@@ -44,16 +43,6 @@ void NSSCertDatabaseChromeOS::ListCerts(
                  profile_filter_,
                  base::Unretained(raw_certs)),
       base::Bind(callback, base::Passed(&certs)));
-}
-
-crypto::ScopedPK11Slot NSSCertDatabaseChromeOS::GetPublicSlot() const {
-  return crypto::ScopedPK11Slot(
-      public_slot_ ? PK11_ReferenceSlot(public_slot_.get()) : NULL);
-}
-
-crypto::ScopedPK11Slot NSSCertDatabaseChromeOS::GetPrivateSlot() const {
-  return crypto::ScopedPK11Slot(
-      private_slot_ ? PK11_ReferenceSlot(private_slot_.get()) : NULL);
 }
 
 void NSSCertDatabaseChromeOS::ListModules(CryptoModuleList* modules,

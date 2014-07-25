@@ -11,6 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(USE_NSS)
+#include "crypto/nss_util_internal.h"
 #include "net/cert/nss_cert_database.h"
 #endif
 
@@ -223,9 +224,16 @@ TEST(X509CertificateModelTest, GetTypeCA) {
   EXPECT_EQ(net::CA_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));
 
+  // Additional parantheses required to disambiguate from function declaration.
+  net::NSSCertDatabase db(
+      (crypto::ScopedPK11Slot(
+          crypto::GetPersistentNSSKeySlot())) /* public slot */,
+      crypto::ScopedPK11Slot(
+          crypto::GetPersistentNSSKeySlot()) /* private lot */);
+
   // Test that explicitly distrusted CA certs are still returned as CA_CERT
   // type. See http://crbug.com/96654.
-  EXPECT_TRUE(net::NSSCertDatabase::GetInstance()->SetCertTrust(
+  EXPECT_TRUE(db.SetCertTrust(
       cert.get(), net::CA_CERT, net::NSSCertDatabase::DISTRUSTED_SSL));
 
   EXPECT_EQ(net::CA_CERT,
@@ -251,16 +259,22 @@ TEST(X509CertificateModelTest, GetTypeServer) {
   EXPECT_EQ(net::OTHER_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));
 
-  net::NSSCertDatabase* cert_db = net::NSSCertDatabase::GetInstance();
+  // Additional parantheses required to disambiguate from function declaration.
+  net::NSSCertDatabase db(
+      (crypto::ScopedPK11Slot(
+          crypto::GetPersistentNSSKeySlot())) /* public slot */,
+      crypto::ScopedPK11Slot(
+          crypto::GetPersistentNSSKeySlot()) /* private lot */);
+
   // Test GetCertType with server certs and explicit trust.
-  EXPECT_TRUE(cert_db->SetCertTrust(
+  EXPECT_TRUE(db.SetCertTrust(
       cert.get(), net::SERVER_CERT, net::NSSCertDatabase::TRUSTED_SSL));
 
   EXPECT_EQ(net::SERVER_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));
 
   // Test GetCertType with server certs and explicit distrust.
-  EXPECT_TRUE(cert_db->SetCertTrust(
+  EXPECT_TRUE(db.SetCertTrust(
       cert.get(), net::SERVER_CERT, net::NSSCertDatabase::DISTRUSTED_SSL));
 
   EXPECT_EQ(net::SERVER_CERT,
