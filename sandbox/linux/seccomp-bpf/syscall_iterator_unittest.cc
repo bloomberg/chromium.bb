@@ -29,7 +29,25 @@ SANDBOX_TEST(SyscallIterator, Monotonous) {
   }
 }
 
-SANDBOX_TEST(SyscallIterator, PublicSyscallRange) {
+#if defined(__mips__)
+SANDBOX_TEST(SyscallIterator, PublicSyscallRangeMIPS) {
+  SyscallIterator iter(false);
+  uint32_t next = iter.Next();
+  SANDBOX_ASSERT(next == 0);
+
+  // Since on MIPS MIN_SYSCALL != 0 we need to move iterator to valid range.
+  next = iter.Next();
+  SANDBOX_ASSERT(next == MIN_SYSCALL - 1);
+
+  // The iterator should cover the public syscall range
+  // MIN_SYSCALL..MAX_PUBLIC_SYSCALL, without skipping syscalls.
+  for (uint32_t last = next; next < MAX_PUBLIC_SYSCALL + 1; last = next) {
+    SANDBOX_ASSERT((next = iter.Next()) == last + 1);
+  }
+  SANDBOX_ASSERT(next == MAX_PUBLIC_SYSCALL + 1);
+}
+#else
+SANDBOX_TEST(SyscallIterator, PublicSyscallRangeIntelArm) {
   SyscallIterator iter(false);
   uint32_t next = iter.Next();
 
@@ -44,6 +62,7 @@ SANDBOX_TEST(SyscallIterator, PublicSyscallRange) {
   }
   SANDBOX_ASSERT(next == MAX_PUBLIC_SYSCALL + 1);
 }
+#endif  // defined(__mips__)
 
 #if defined(__arm__)
 SANDBOX_TEST(SyscallIterator, ARMPrivateSyscallRange) {
@@ -103,7 +122,27 @@ SANDBOX_TEST(SyscallIterator, Invalid) {
   }
 }
 
-SANDBOX_TEST(SyscallIterator, InvalidOnly) {
+#if defined(__mips__)
+SANDBOX_TEST(SyscallIterator, InvalidOnlyMIPS) {
+  bool invalid_only = true;
+  SyscallIterator iter(invalid_only);
+  uint32_t next = iter.Next();
+  SANDBOX_ASSERT(next == 0);
+  // For Mips O32 ABI we're assuming MIN_SYSCALL == 4000.
+  SANDBOX_ASSERT(MIN_SYSCALL == 4000);
+
+  // Since on MIPS MIN_SYSCALL != 0, we need to move iterator to valid range
+  // The iterator should skip until the last invalid syscall in this range.
+  next = iter.Next();
+  SANDBOX_ASSERT(next == MIN_SYSCALL - 1);
+  next = iter.Next();
+  // First next invalid syscall should then be |MAX_PUBLIC_SYSCALL + 1|.
+  SANDBOX_ASSERT(next == MAX_PUBLIC_SYSCALL + 1);
+}
+
+#else
+
+SANDBOX_TEST(SyscallIterator, InvalidOnlyIntelArm) {
   bool invalid_only = true;
   SyscallIterator iter(invalid_only);
   uint32_t next = iter.Next();
@@ -128,8 +167,9 @@ SANDBOX_TEST(SyscallIterator, InvalidOnly) {
     next = iter.Next();
   }
   SANDBOX_ASSERT(next == MAX_SYSCALL + 1);
-#endif
+#endif  // defined(__arm__)
 }
+#endif  // defined(__mips__)
 
 }  // namespace
 

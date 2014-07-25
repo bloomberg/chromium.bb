@@ -43,6 +43,9 @@ bool IsBaselinePolicyAllowed(int sysno) {
 #if defined(__arm__)
          SyscallSets::IsArmPrivate(sysno) ||
 #endif
+#if defined(__mips__)
+         SyscallSets::IsMipsPrivate(sysno) ||
+#endif
          SyscallSets::IsAllowedOperationOnFd(sysno);
 }
 
@@ -72,11 +75,14 @@ bool IsBaselinePolicyWatched(int sysno) {
          SyscallSets::IsNuma(sysno) ||
          SyscallSets::IsPrctl(sysno) ||
          SyscallSets::IsProcessGroupOrSession(sysno) ||
-#if defined(__i386__)
+#if defined(__i386__) || defined(__mips__)
          SyscallSets::IsSocketCall(sysno) ||
 #endif
 #if defined(__arm__)
          SyscallSets::IsArmPciConfig(sysno) ||
+#endif
+#if defined(__mips__)
+         SyscallSets::IsMipsMisc(sysno) ||
 #endif
          SyscallSets::IsTimer(sysno);
 }
@@ -116,7 +122,7 @@ ErrorCode EvaluateSyscallImpl(int fs_denied_errno,
   if (sysno == __NR_fcntl)
     return RestrictFcntlCommands(sandbox);
 
-#if defined(__i386__) || defined(__arm__)
+#if defined(__i386__) || defined(__arm__) || defined(__mips__)
   if (sysno == __NR_fcntl64)
     return RestrictFcntlCommands(sandbox);
 #endif
@@ -132,12 +138,12 @@ ErrorCode EvaluateSyscallImpl(int fs_denied_errno,
                          ErrorCode(EPERM));
   }
 
-#if defined(__i386__) || defined(__x86_64__)
+#if defined(__i386__) || defined(__x86_64__) || defined(__mips__)
   if (sysno == __NR_mmap)
     return RestrictMmapFlags(sandbox);
 #endif
 
-#if defined(__i386__) || defined(__arm__)
+#if defined(__i386__) || defined(__arm__) || defined(__mips__)
   if (sysno == __NR_mmap2)
     return RestrictMmapFlags(sandbox);
 #endif
@@ -148,7 +154,7 @@ ErrorCode EvaluateSyscallImpl(int fs_denied_errno,
   if (sysno == __NR_prctl)
     return sandbox::RestrictPrctl(sandbox);
 
-#if defined(__x86_64__) || defined(__arm__)
+#if defined(__x86_64__) || defined(__arm__) || defined(__mips__)
   if (sysno == __NR_socketpair) {
     // Only allow AF_UNIX, PF_UNIX. Crash if anything else is seen.
     COMPILE_ASSERT(AF_UNIX == PF_UNIX, af_unix_pf_unix_different);
@@ -178,7 +184,7 @@ ErrorCode EvaluateSyscallImpl(int fs_denied_errno,
     return ErrorCode(EPERM);
   }
 
-#if defined(__i386__)
+#if defined(__i386__) || defined(__mips__)
   if (SyscallSets::IsSocketCall(sysno))
     return RestrictSocketcallCommand(sandbox);
 #endif

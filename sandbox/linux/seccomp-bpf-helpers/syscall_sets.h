@@ -42,12 +42,12 @@ class SANDBOX_EXPORT SyscallSets {
   static bool IsAllowedGetOrModifySocket(int sysno);
   static bool IsDeniedGetOrModifySocket(int sysno);
 
-#if defined(__i386__)
+#if defined(__i386__) || defined(__mips__)
   // Big multiplexing system call for sockets.
   static bool IsSocketCall(int sysno);
 #endif
 
-#if defined(__x86_64__) || defined(__arm__)
+#if defined(__x86_64__) || defined(__arm__) || defined(__mips__)
   static bool IsNetworkSocketInformation(int sysno);
 #endif
 
@@ -80,7 +80,7 @@ class SANDBOX_EXPORT SyscallSets {
   static bool IsSystemVMessageQueue(int sysno);
 #endif
 
-#if defined(__i386__)
+#if defined(__i386__) || defined(__mips__)
   // Big system V multiplexing system call.
   static bool IsSystemVIpc(int sysno);
 #endif
@@ -97,6 +97,10 @@ class SANDBOX_EXPORT SyscallSets {
   static bool IsArmPciConfig(int sysno);
   static bool IsArmPrivate(int sysno);
 #endif  // defined(__arm__)
+#if defined(__mips__)
+  static bool IsMipsPrivate(int sysno);
+  static bool IsMipsMisc(int sysno);
+#endif  // defined(__mips__)
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SyscallSets);
 };

@@ -16,14 +16,25 @@ uint32_t SyscallIterator::Next() {
 
   uint32_t val;
   do {
+#if defined(__mips__) && (_MIPS_SIM == _MIPS_SIM_ABI32)
+    // |num_| has been initialized to 4000, which we assume is also MIN_SYSCALL.
+    // This is true for Mips O32 ABI.
+    COMPILE_ASSERT(MIN_SYSCALL == __NR_Linux, min_syscall_should_be_4000);
+#else
     // |num_| has been initialized to 0, which we assume is also MIN_SYSCALL.
     // This true for supported architectures (Intel and ARM EABI).
     COMPILE_ASSERT(MIN_SYSCALL == 0u, min_syscall_should_always_be_zero);
+#endif
     val = num_;
 
+    // The syscall iterator always starts at zero.
+    // If zero is not a valid system call, iterator first returns MIN_SYSCALL -1
+    // before continuing to iterate.
+    if (num_ == 0 && MIN_SYSCALL != num_) {
+      num_ = MIN_SYSCALL - 1;
     // First we iterate up to MAX_PUBLIC_SYSCALL, which is equal to MAX_SYSCALL
     // on Intel architectures, but leaves room for private syscalls on ARM.
-    if (num_ <= MAX_PUBLIC_SYSCALL) {
+    } else if (num_ <= MAX_PUBLIC_SYSCALL) {
       if (invalid_only_ && num_ < MAX_PUBLIC_SYSCALL) {
         num_ = MAX_PUBLIC_SYSCALL;
       } else {

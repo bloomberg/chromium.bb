@@ -33,7 +33,7 @@ ErrorCode RendererProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
     case __NR_fdatasync:
     case __NR_fsync:
     case __NR_getpriority:
-#if defined(__i386__) || defined(__x86_64__)
+#if defined(__i386__) || defined(__x86_64__) || defined(__mips__)
     case __NR_getrlimit:
 #endif
 #if defined(__i386__) || defined(__arm__)

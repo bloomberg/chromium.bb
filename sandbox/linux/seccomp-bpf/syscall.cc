@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 
 namespace sandbox {
 
@@ -171,6 +172,51 @@ asm(// We need to be able to tell the kernel exactly where we made a
 #endif
     ".fnend\n"
     "9:.size SyscallAsm, 9b-SyscallAsm\n"
+#elif defined(__mips__)
+    ".text\n"
+    ".align 4\n"
+    ".type SyscallAsm, @function\n"
+    "SyscallAsm:.ent SyscallAsm\n"
+    ".frame  $sp, 40, $ra\n"
+    ".set   push\n"
+    ".set   noreorder\n"
+    "addiu  $sp, $sp, -40\n"
+    "sw     $ra, 36($sp)\n"
+    // Check if "v0" is negative. If so, do not attempt to make a
+    // system call. Instead, compute the return address that is visible
+    // to the kernel after we execute "syscall". This address can be
+    // used as a marker that BPF code inspects.
+    "bgez   $v0, 1f\n"
+    " nop\n"
+    "la     $v0, 2f\n"
+    "b      2f\n"
+    " nop\n"
+    // On MIPS first four arguments go to registers a0 - a3 and any
+    // argument after that goes to stack. We can go ahead and directly
+    // copy the entries from the arguments array into the appropriate
+    // CPU registers and on the stack.
+    "1:lw     $a3, 28($a0)\n"
+    "lw     $a2, 24($a0)\n"
+    "lw     $a1, 20($a0)\n"
+    "lw     $t0, 16($a0)\n"
+    "sw     $a3, 28($sp)\n"
+    "sw     $a2, 24($sp)\n"
+    "sw     $a1, 20($sp)\n"
+    "sw     $t0, 16($sp)\n"
+    "lw     $a3, 12($a0)\n"
+    "lw     $a2, 8($a0)\n"
+    "lw     $a1, 4($a0)\n"
+    "lw     $a0, 0($a0)\n"
+    // Enter the kernel
+    "syscall\n"
+    // This is our "magic" return address that the BPF filter sees.
+    // Restore the return address from the stack.
+    "2:lw     $ra, 36($sp)\n"
+    "jr     $ra\n"
+    " addiu  $sp, $sp, 40\n"
+    ".set    pop\n"
+    ".end    SyscallAsm\n"
+    ".size   SyscallAsm,.-SyscallAsm\n"
 #endif
     );  // asm
 
@@ -197,11 +243,15 @@ intptr_t Syscall::Call(int nr,
 
   // TODO(nedeljko): Enable use of more than six parameters on architectures
   //                 where that makes sense.
+#if defined(__mips__)
+  const intptr_t args[8] = {p0, p1, p2, p3, p4, p5, p6, p7};
+#else
   DCHECK_EQ(p6, 0) << " Support for syscalls with more than six arguments not "
                       "added for this architecture";
   DCHECK_EQ(p7, 0) << " Support for syscalls with more than six arguments not "
                       "added for this architecture";
   const intptr_t args[6] = {p0, p1, p2, p3, p4, p5};
+#endif  // defined(__mips__)
 
 // Invoke our file-scope assembly code. The constraints have been picked
 // carefully to match what the rest of the assembly code expects in input,
@@ -268,10 +318,64 @@ intptr_t Syscall::Call(int nr,
         );
     ret = inout;
   }
+#elif defined(__mips__)
+  int err_status;
+  intptr_t ret = Syscall::SandboxSyscallRaw(nr, args, &err_status);
+
+  if (err_status) {
+    // On error, MIPS returns errno from syscall instead of -errno.
+    // The purpose of this negation is for SandboxSyscall() to behave
+    // more like it would on other architectures.
+    ret = -ret;
+  }
 #else
 #error "Unimplemented architecture"
 #endif
   return ret;
 }
+
+void Syscall::PutValueInUcontext(intptr_t ret_val, ucontext_t* ctx) {
+#if defined(__mips__)
+  // Mips ABI states that on error a3 CPU register has non zero value and if
+  // there is no error, it should be zero.
+  if (ret_val <= -1 && ret_val >= -4095) {
+    // |ret_val| followes the Syscall::Call() convention of being -errno on
+    // errors. In order to write correct value to return register this sign
+    // needs to be changed back.
+    ret_val = -ret_val;
+    SECCOMP_PARM4(ctx) = 1;
+  } else
+    SECCOMP_PARM4(ctx) = 0;
+#endif
+  SECCOMP_RESULT(ctx) = static_cast<greg_t>(ret_val);
+}
+
+#if defined(__mips__)
+intptr_t Syscall::SandboxSyscallRaw(int nr,
+                                    const intptr_t* args,
+                                    intptr_t* err_ret) {
+  register intptr_t ret __asm__("v0") = nr;
+  // a3 register becomes non zero on error.
+  register intptr_t err_stat __asm__("a3") = 0;
+  {
+    register const intptr_t* data __asm__("a0") = args;
+    asm volatile(
+        "la $t9, SyscallAsm\n"
+        "jalr $t9\n"
+        " nop\n"
+        : "=r"(ret), "=r"(err_stat)
+        : "0"(ret),
+          "r"(data)
+          // a2 is in the clober list so inline assembly can not change its
+          // value.
+        : "memory", "ra", "t9", "a2");
+  }
+
+  // Set an error status so it can be used outside of this function
+  *err_ret = err_stat;
+
+  return ret;
+}
+#endif  // defined(__mips__)
 
 }  // namespace sandbox

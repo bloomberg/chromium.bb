@@ -51,7 +51,7 @@ SANDBOX_EXPORT ErrorCode RestrictMprotectFlags(SandboxBPF* sandbox);
 // O_NONBLOCK | O_SYNC | O_LARGEFILE | O_CLOEXEC | O_NOATIME.
 SANDBOX_EXPORT ErrorCode RestrictFcntlCommands(SandboxBPF* sandbox);
 
-#if defined(__i386__)
+#if defined(__i386__) || defined(__mips__)
 // Restrict socketcall(2) to only allow socketpair(2), send(2), recv(2),
 // sendto(2), recvfrom(2), shutdown(2), sendmsg(2) and recvmsg(2).
 SANDBOX_EXPORT ErrorCode RestrictSocketcallCommand(SandboxBPF* sandbox);

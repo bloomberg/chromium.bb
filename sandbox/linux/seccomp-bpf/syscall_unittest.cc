@@ -54,6 +54,9 @@ TEST(Syscall, WellKnownEntryPoint) {
 #else
   EXPECT_EQ(0xEF000000u, ((uint32_t*)Syscall::Call(-1))[-1]);  // SVC 0
 #endif
+#elif defined(__mips__)
+  // Opcode for MIPS sycall is in the lower 16-bits
+  EXPECT_EQ(0x0cu, (((uint32_t*)Syscall::Call(-1))[-1]) & 0x0000FFFF);
 #else
 #warning Incomplete test case; need port for target platform
 #endif

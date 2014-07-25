@@ -45,6 +45,26 @@ void WriteToStdErr(const char* error_message, size_t size) {
   }
 }
 
+// Invalid syscall values are truncated to zero.
+// On architectures where base value is zero (Intel and Arm),
+// syscall number is the same as offset from base.
+// This function returns values between 0 and 1023 on all architectures.
+// On architectures where base value is different than zero (currently only
+// Mips), we are truncating valid syscall values to offset from base.
+uint32_t SyscallNumberToOffsetFromBase(uint32_t sysno) {
+#if defined(__mips__)
+  // On MIPS syscall numbers are in different range than on x86 and ARM.
+  // Valid MIPS O32 ABI syscall __NR_syscall will be truncated to zero for
+  // simplicity.
+  sysno = sysno - __NR_Linux;
+#endif
+
+  if (sysno >= 1024)
+    sysno = 0;
+
+  return sysno;
+}
+
 // Print a seccomp-bpf failure to handle |sysno| to stderr in an
 // async-signal safe way.
 void PrintSyscallError(uint32_t sysno) {
@@ -60,8 +80,13 @@ void PrintSyscallError(uint32_t sysno) {
     rem /= 10;
     sysno_base10[i] = '0' + mod;
   }
+#if defined(__mips__) && (_MIPS_SIM == _MIPS_SIM_ABI32)
+  static const char kSeccompErrorPrefix[] = __FILE__
+      ":**CRASHING**:" SECCOMP_MESSAGE_COMMON_CONTENT " in syscall 4000 + ";
+#else
   static const char kSeccompErrorPrefix[] =
       __FILE__":**CRASHING**:" SECCOMP_MESSAGE_COMMON_CONTENT " in syscall ";
+#endif
   static const char kSeccompErrorPostfix[] = "\n";
   WriteToStdErr(kSeccompErrorPrefix, sizeof(kSeccompErrorPrefix) - 1);
   WriteToStdErr(sysno_base10, sizeof(sysno_base10));
@@ -73,9 +98,8 @@ void PrintSyscallError(uint32_t sysno) {
 namespace sandbox {
 
 intptr_t CrashSIGSYS_Handler(const struct arch_seccomp_data& args, void* aux) {
-  uint32_t syscall = args.nr;
-  if (syscall >= 1024)
-    syscall = 0;
+  uint32_t syscall = SyscallNumberToOffsetFromBase(args.nr);
+
   PrintSyscallError(syscall);
 
   // Encode 8-bits of the 1st two arguments too, so we can discern which socket

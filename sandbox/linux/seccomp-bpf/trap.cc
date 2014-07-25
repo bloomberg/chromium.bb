@@ -150,10 +150,19 @@ void Trap::SigSys(int nr, siginfo_t* info, void* void_context) {
   struct arch_sigsys sigsys;
   memcpy(&sigsys, &info->_sifields, sizeof(sigsys));
 
+#if defined(__mips__)
+  // When indirect syscall (syscall(__NR_foo, ...)) is made on Mips, the
+  // number in register SECCOMP_SYSCALL(ctx) is always __NR_syscall and the
+  // real number of a syscall (__NR_foo) is in SECCOMP_PARM1(ctx)
+  bool sigsys_nr_is_bad = sigsys.nr != static_cast<int>(SECCOMP_SYSCALL(ctx)) &&
+                          sigsys.nr != static_cast<int>(SECCOMP_PARM1(ctx));
+#else
+  bool sigsys_nr_is_bad = sigsys.nr != static_cast<int>(SECCOMP_SYSCALL(ctx));
+#endif
+
   // Some more sanity checks.
   if (sigsys.ip != reinterpret_cast<void*>(SECCOMP_IP(ctx)) ||
-      sigsys.nr != static_cast<int>(SECCOMP_SYSCALL(ctx)) ||
-      sigsys.arch != SECCOMP_ARCH) {
+      sigsys_nr_is_bad || sigsys.arch != SECCOMP_ARCH) {
     // TODO(markus):
     // SANDBOX_DIE() can call LOG(FATAL). This is not normally async-signal
     // safe and can lead to bugs. We should eventually implement a different
@@ -168,13 +177,28 @@ void Trap::SigSys(int nr, siginfo_t* info, void* void_context) {
     if (sigsys.nr == __NR_clone) {
       RAW_SANDBOX_DIE("Cannot call clone() from an UnsafeTrap() handler.");
     }
-    rc = Syscall::Call(sigsys.nr,
+#if defined(__mips__)
+    // Mips supports up to eight arguments for syscall.
+    // However, seccomp bpf can filter only up to six arguments, so using eight
+    // arguments has sense only when using UnsafeTrap() handler.
+    rc = Syscall::Call(SECCOMP_SYSCALL(ctx),
+                       SECCOMP_PARM1(ctx),
+                       SECCOMP_PARM2(ctx),
+                       SECCOMP_PARM3(ctx),
+                       SECCOMP_PARM4(ctx),
+                       SECCOMP_PARM5(ctx),
+                       SECCOMP_PARM6(ctx),
+                       SECCOMP_PARM7(ctx),
+                       SECCOMP_PARM8(ctx));
+#else
+    rc = Syscall::Call(SECCOMP_SYSCALL(ctx),
                        SECCOMP_PARM1(ctx),
                        SECCOMP_PARM2(ctx),
                        SECCOMP_PARM3(ctx),
                        SECCOMP_PARM4(ctx),
                        SECCOMP_PARM5(ctx),
                        SECCOMP_PARM6(ctx));
+#endif  // defined(__mips__)
   } else {
     const ErrorCode& err = trap_array_[info->si_errno - 1];
     if (!err.safe_) {
@@ -185,7 +209,9 @@ void Trap::SigSys(int nr, siginfo_t* info, void* void_context) {
     // is what we are showing to TrapFnc callbacks that the system call
     // evaluator registered with the sandbox.
     struct arch_seccomp_data data = {
-        sigsys.nr, SECCOMP_ARCH, reinterpret_cast<uint64_t>(sigsys.ip),
+        static_cast<int>(SECCOMP_SYSCALL(ctx)),
+        SECCOMP_ARCH,
+        reinterpret_cast<uint64_t>(sigsys.ip),
         {static_cast<uint64_t>(SECCOMP_PARM1(ctx)),
          static_cast<uint64_t>(SECCOMP_PARM2(ctx)),
          static_cast<uint64_t>(SECCOMP_PARM3(ctx)),
@@ -201,7 +227,7 @@ void Trap::SigSys(int nr, siginfo_t* info, void* void_context) {
   // Update the CPU register that stores the return code of the system call
   // that we just handled, and restore "errno" to the value that it had
   // before entering the signal handler.
-  SECCOMP_RESULT(ctx) = static_cast<greg_t>(rc);
+  Syscall::PutValueInUcontext(rc, ctx);
   errno = old_errno;
 
   return;

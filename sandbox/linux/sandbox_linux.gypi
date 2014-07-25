@@ -12,7 +12,8 @@
         'compile_suid_client': 0,
         'compile_credentials': 0,
       }],
-      ['OS=="linux" and (target_arch=="ia32" or target_arch=="x64")', {
+      ['OS=="linux" and (target_arch=="ia32" or target_arch=="x64" or '
+         'target_arch=="mipsel")', {
         'compile_seccomp_bpf_demo': 1,
       }, {
         'compile_seccomp_bpf_demo': 0,
@@ -270,7 +271,9 @@
         'services/android_futex.h',
         'services/android_ucontext.h',
         'services/android_i386_ucontext.h',
+        'services/android_mips_ucontext.h',
         'services/arm_linux_syscalls.h',
+        'services/mips_linux_syscalls.h',
         'services/linux_syscalls.h',
         'services/x86_32_linux_syscalls.h',
         'services/x86_64_linux_syscalls.h',

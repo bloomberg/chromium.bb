@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <unistd.h>
+#include <sys/socket.h>
 
 #if defined(ANDROID)
 // Work-around for buggy headers in Android's NDK
@@ -662,7 +663,7 @@ BPF_TEST_C(SandboxBPF, SigBus, RedirectAllSyscallsPolicy) {
   // more complex uses of signals where our use of the SIGBUS mask is not
   // 100% transparent. This is expected behavior.
   int fds[2];
-  BPF_ASSERT(pipe(fds) == 0);
+  BPF_ASSERT(socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0);
   bus_handler_fd_ = fds[1];
   struct sigaction sa = {};
   sa.sa_sigaction = SigBusHandler;
@@ -1987,6 +1988,13 @@ SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(SeccompRetTrace)) {
 
 #if defined(__arm__)
   printf("This test is currently disabled on ARM due to a kernel bug.");
+  return;
+#endif
+
+#if defined(__mips__)
+  // TODO: Figure out how to support specificity of handling indirect syscalls
+  //        in this test and enable it.
+  printf("This test is currently disabled on MIPS.");
   return;
 #endif
 

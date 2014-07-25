@@ -41,9 +41,14 @@ class SANDBOX_EXPORT ErrorCode {
     //       indicate success, but it won't actually run the system call.
     //       This is very different from return ERR_ALLOWED.
     ERR_MIN_ERRNO = 0,
+#if defined(__mips__)
+    // MIPS only supports errno up to 1133
+    ERR_MAX_ERRNO = 1133,
+#else
     // TODO(markus): Android only supports errno up to 255
     // (crbug.com/181647).
     ERR_MAX_ERRNO = 4095,
+#endif
   };
 
   // While BPF filter programs always operate on 32bit quantities, the kernel

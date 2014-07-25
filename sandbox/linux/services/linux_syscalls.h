@@ -21,5 +21,9 @@
 #include "sandbox/linux/services/arm_linux_syscalls.h"
 #endif
 
+#if defined(__mips__)
+#include "sandbox/linux/services/mips_linux_syscalls.h"
+#endif
+
 #endif  // SANDBOX_LINUX_SERVICES_LINUX_SYSCALLS_H_
 

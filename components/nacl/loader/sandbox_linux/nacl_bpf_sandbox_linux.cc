@@ -51,7 +51,7 @@ sandbox::ErrorCode NaClBPFSandboxPolicy::EvaluateSyscall(
   switch (sysno) {
     // TODO(jln): NaCl's GDB debug stub uses the following socket system calls,
     // see if it can be restricted a bit.
-#if defined(__x86_64__) || defined(__arm__)
+#if defined(__x86_64__) || defined(__arm__) || defined(__mips__)
     // transport_common.cc needs this.
     case __NR_accept:
     case __NR_setsockopt:
@@ -61,7 +61,7 @@ sandbox::ErrorCode NaClBPFSandboxPolicy::EvaluateSyscall(
     // trusted/service_runtime/linux/thread_suspension.c needs sigwait() and is
     // used by NaCl's GDB debug stub.
     case __NR_rt_sigtimedwait:
-#if defined(__i386__)
+#if defined(__i386__) || defined(__mips__)
     // Needed on i386 to set-up the custom segments.
     case __NR_modify_ldt:
 #endif
@@ -70,7 +70,7 @@ sandbox::ErrorCode NaClBPFSandboxPolicy::EvaluateSyscall(
     // NaCl uses custom signal stacks.
     case __NR_sigaltstack:
     // Below is fairly similar to the policy for a Chromium renderer.
-#if defined(__i386__) || defined(__x86_64__)
+#if defined(__i386__) || defined(__x86_64__) || defined(__mips__)
     case __NR_getrlimit:
 #endif
 #if defined(__i386__) || defined(__arm__)
@@ -120,9 +120,7 @@ void RunSandboxSanityChecks() {
 
 #else
 
-#if !defined(ARCH_CPU_MIPS_FAMILY)
 #error "Seccomp-bpf disabled on supported architecture!"
-#endif  // !defined(ARCH_CPU_MIPS_FAMILY)
 
 #endif  // defined(USE_SECCOMP_BPF)
 

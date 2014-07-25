@@ -37,6 +37,9 @@
 #define MAP_STACK 0x20000  // Daisy build environment has old headers.
 #endif
 
+#if defined(__mips__) && !defined(MAP_STACK)
+#define MAP_STACK 0x40000
+#endif
 namespace {
 
 inline bool IsArchitectureX86_64() {
@@ -57,6 +60,14 @@ inline bool IsArchitectureI386() {
 
 inline bool IsAndroid() {
 #if defined(OS_ANDROID)
+  return true;
+#else
+  return false;
+#endif
+}
+
+inline bool IsArchitectureMips() {
+#if defined(__mips__)
   return true;
 #else
   return false;
@@ -158,7 +169,7 @@ ErrorCode RestrictFcntlCommands(SandboxBPF* sandbox) {
   // operator.
   // Glibc overrides the kernel's O_LARGEFILE value. Account for this.
   int kOLargeFileFlag = O_LARGEFILE;
-  if (IsArchitectureX86_64() || IsArchitectureI386())
+  if (IsArchitectureX86_64() || IsArchitectureI386() || IsArchitectureMips())
     kOLargeFileFlag = 0100000;
 
   // TODO(jln): add TP_LONG/TP_SIZET types.
@@ -205,7 +216,7 @@ ErrorCode RestrictFcntlCommands(SandboxBPF* sandbox) {
          sandbox->Trap(CrashSIGSYS_Handler, NULL))))))))));
 }
 
-#if defined(__i386__)
+#if defined(__i386__) || defined(__mips__)
 ErrorCode RestrictSocketcallCommand(SandboxBPF* sandbox) {
   // Unfortunately, we are unable to restrict the first parameter to
   // socketpair(2). Whilst initially sounding bad, it's noteworthy that very

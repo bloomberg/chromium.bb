@@ -2262,13 +2262,13 @@
         'chromium_win_pch': 0,
       }],
 
-      # The seccomp-bpf sandbox is only supported on three architectures
+      # The seccomp-bpf sandbox is only supported on four architectures
       # currently.
       # Do not disable seccomp_bpf anywhere without talking to
       # security@chromium.org!
       ['((OS=="linux" or OS=="android") and '
            '(target_arch=="ia32" or target_arch=="x64" or '
-             'target_arch=="arm"))', {
+             'target_arch=="arm" or target_arch=="mipsel"))', {
          'use_seccomp_bpf%': 1,
       }, {
          'use_seccomp_bpf%': 0,
