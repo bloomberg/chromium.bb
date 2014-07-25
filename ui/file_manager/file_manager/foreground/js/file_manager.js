@@ -1004,9 +1004,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.selectionHandler_ = new FileSelectionHandler(this);
 
     var dataModel = this.directoryModel_.getFileList();
-
-    this.table_.setupCompareFunctions(dataModel);
-
     dataModel.addEventListener('permuted',
                                this.updateStartupPrefs_.bind(this));
 

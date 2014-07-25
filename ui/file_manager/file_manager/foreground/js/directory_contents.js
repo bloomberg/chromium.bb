@@ -401,6 +401,109 @@ FileFilter.prototype.filter = function(entry) {
 };
 
 /**
+ * File list.
+ * @param {MetadataCache} metadataCache Metadata cache.
+ * @constructor
+ * @extends {cr.ui.ArrayDataModel}
+ */
+function FileListModel(metadataCache) {
+  cr.ui.ArrayDataModel.call(this, []);
+
+  /**
+   * Metadata cache.
+   * @type {MetadataCache}
+   */
+  this.metadataCache_ = metadataCache;
+
+  /**
+   * Collator for sorting.
+   * @type {Intl.Collator}
+   */
+  this.collator_ = new Intl.Collator([], {numeric: true, sensitivity: 'base'});
+
+  // Initialize compare functions.
+  this.setCompareFunction('name', this.compareName_.bind(this));
+  this.setCompareFunction('modificationTime', this.compareMtime_.bind(this));
+  this.setCompareFunction('size', this.compareSize_.bind(this));
+  this.setCompareFunction('type', this.compareType_.bind(this));
+}
+
+FileListModel.prototype = {
+  __proto__: cr.ui.ArrayDataModel.prototype
+};
+
+/**
+ * Compare by mtime first, then by name.
+ * @param {Entry} a First entry.
+ * @param {Entry} b Second entry.
+ * @return {number} Compare result.
+ * @private
+ */
+FileListModel.prototype.compareName_ = function(a, b) {
+  var result = this.collator_.compare(a.name, b.name);
+  return result !== 0 ? result : a.toURL().localeCompare(b.toURL());
+};
+
+/**
+ * Compare by mtime first, then by name.
+ * @param {Entry} a First entry.
+ * @param {Entry} b Second entry.
+ * @return {number} Compare result.
+ * @private
+ */
+FileListModel.prototype.compareMtime_ = function(a, b) {
+  var aCachedFilesystem = this.metadataCache_.getCached(a, 'filesystem');
+  var aTime = aCachedFilesystem ? aCachedFilesystem.modificationTime : 0;
+
+  var bCachedFilesystem = this.metadataCache_.getCached(b, 'filesystem');
+  var bTime = bCachedFilesystem ? bCachedFilesystem.modificationTime : 0;
+
+  if (aTime > bTime)
+    return 1;
+
+  if (aTime < bTime)
+    return -1;
+
+  return this.compareName_(a, b);
+};
+
+/**
+ * Compare by size first, then by name.
+ * @param {Entry} a First entry.
+ * @param {Entry} b Second entry.
+ * @return {number} Compare result.
+ * @private
+ */
+FileListModel.prototype.compareSize_ = function(a, b) {
+  var aCachedFilesystem = this.metadataCache_.getCached(a, 'filesystem');
+  var aSize = aCachedFilesystem ? aCachedFilesystem.size : 0;
+
+  var bCachedFilesystem = this.metadataCache_.getCached(b, 'filesystem');
+  var bSize = bCachedFilesystem ? bCachedFilesystem.size : 0;
+
+  return aSize !== bSize ? aSize - bSize : this.compareName_(a, b);
+};
+
+/**
+ * Compare by type first, then by subtype and then by name.
+ * @param {Entry} a First entry.
+ * @param {Entry} b Second entry.
+ * @return {number} Compare result.
+ * @private
+ */
+FileListModel.prototype.compareType_ = function(a, b) {
+  // Directories precede files.
+  if (a.isDirectory !== b.isDirectory)
+    return Number(b.isDirectory) - Number(a.isDirectory);
+
+  var aType = FileType.typeToString(FileType.getType(a));
+  var bType = FileType.typeToString(FileType.getType(b));
+
+  var result = this.collator_.compare(aType, bType);
+  return result !== 0 ? result : this.compareName_(a, b);
+};
+
+/**
  * A context of DirectoryContents.
  * TODO(yoshiki): remove this. crbug.com/224869.
  *
@@ -410,9 +513,9 @@ FileFilter.prototype.filter = function(entry) {
  */
 function FileListContext(fileFilter, metadataCache) {
   /**
-   * @type {cr.ui.ArrayDataModel}
+   * @type {FileListModel}
    */
-  this.fileList = new cr.ui.ArrayDataModel([]);
+  this.fileList = new FileListModel(metadataCache);
 
   /**
    * @type {MetadataCache}

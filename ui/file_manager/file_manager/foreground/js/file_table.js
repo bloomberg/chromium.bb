@@ -219,7 +219,6 @@ FileTable.decorate = function(self, metadataCache, volumeManager, fullPage) {
   self.__proto__ = FileTable.prototype;
   self.metadataCache_ = metadataCache;
   self.volumeManager_ = volumeManager;
-  self.collator_ = Intl.Collator([], {numeric: true, sensitivity: 'base'});
 
   var columns = [
     new cr.ui.table.TableColumn('name', str('NAME_COLUMN_LABEL'),
@@ -424,21 +423,6 @@ FileTable.prototype.shouldStartDragSelection_ = function(event) {
 };
 
 /**
- * Prepares the data model to be sorted by columns.
- * @param {cr.ui.ArrayDataModel} dataModel Data model to prepare.
- */
-FileTable.prototype.setupCompareFunctions = function(dataModel) {
-  dataModel.setCompareFunction('name',
-                               this.compareName_.bind(this));
-  dataModel.setCompareFunction('modificationTime',
-                               this.compareMtime_.bind(this));
-  dataModel.setCompareFunction('size',
-                               this.compareSize_.bind(this));
-  dataModel.setCompareFunction('type',
-                               this.compareType_.bind(this));
-};
-
-/**
  * Render the Name column of the detail table.
  *
  * Invoked by cr.ui.Table when a file needs to be rendered.
@@ -625,80 +609,6 @@ FileTable.prototype.updateListItemsMetadata = function(type, entries) {
       filelist.updateListItemDriveProps(listItem, props);
     });
   }
-};
-
-/**
- * Compare by mtime first, then by name.
- * @param {Entry} a First entry.
- * @param {Entry} b Second entry.
- * @return {number} Compare result.
- * @private
- */
-FileTable.prototype.compareName_ = function(a, b) {
-  return this.collator_.compare(a.name, b.name);
-};
-
-/**
- * Compare by mtime first, then by name.
- * @param {Entry} a First entry.
- * @param {Entry} b Second entry.
- * @return {number} Compare result.
- * @private
- */
-FileTable.prototype.compareMtime_ = function(a, b) {
-  var aCachedFilesystem = this.metadataCache_.getCached(a, 'filesystem');
-  var aTime = aCachedFilesystem ? aCachedFilesystem.modificationTime : 0;
-
-  var bCachedFilesystem = this.metadataCache_.getCached(b, 'filesystem');
-  var bTime = bCachedFilesystem ? bCachedFilesystem.modificationTime : 0;
-
-  if (aTime > bTime)
-    return 1;
-
-  if (aTime < bTime)
-    return -1;
-
-  return this.collator_.compare(a.name, b.name);
-};
-
-/**
- * Compare by size first, then by name.
- * @param {Entry} a First entry.
- * @param {Entry} b Second entry.
- * @return {number} Compare result.
- * @private
- */
-FileTable.prototype.compareSize_ = function(a, b) {
-  var aCachedFilesystem = this.metadataCache_.getCached(a, 'filesystem');
-  var aSize = aCachedFilesystem ? aCachedFilesystem.size : 0;
-
-  var bCachedFilesystem = this.metadataCache_.getCached(b, 'filesystem');
-  var bSize = bCachedFilesystem ? bCachedFilesystem.size : 0;
-
-  if (aSize !== bSize) return aSize - bSize;
-    return this.collator_.compare(a.name, b.name);
-};
-
-/**
- * Compare by type first, then by subtype and then by name.
- * @param {Entry} a First entry.
- * @param {Entry} b Second entry.
- * @return {number} Compare result.
- * @private
- */
-FileTable.prototype.compareType_ = function(a, b) {
-  // Directories precede files.
-  if (a.isDirectory !== b.isDirectory)
-    return Number(b.isDirectory) - Number(a.isDirectory);
-
-  var aType = FileType.typeToString(FileType.getType(a));
-  var bType = FileType.typeToString(FileType.getType(b));
-
-  var result = this.collator_.compare(aType, bType);
-  if (result !== 0)
-    return result;
-
-  return this.collator_.compare(a.name, b.name);
 };
 
 /**
