@@ -67,9 +67,10 @@ class CONTENT_EXPORT ServiceWorkerHandle
 
   ServiceWorkerObjectInfo GetObjectInfo();
 
+  int thread_id() const { return thread_id_; }
+  int handle_id() const { return handle_id_; }
   ServiceWorkerRegistration* registration() { return registration_.get(); }
   ServiceWorkerVersion* version() { return version_.get(); }
-  int handle_id() const { return handle_id_; }
 
   bool HasNoRefCount() const { return ref_count_ <= 0; }
   void IncrementRefCount();
