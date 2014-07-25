@@ -601,11 +601,11 @@ class SimpleBuilder(Builder):
     self._RunSetupBoard()
     self._RunStage(report_stages.RefreshPackageStatusStage)
 
-  def _RunMasterPaladinBuild(self):
-    """Runs through the stages of the paladin (commit queue) master build."""
+  def _RunMasterPaladinOrChromePFQBuild(self):
+    """Runs through the stages of the paladin or chrome PFQ master build."""
     self._RunStage(build_stages.InitSDKStage)
     self._RunStage(build_stages.UprevStage)
-    # The CQ (paladin) master will not actually run the SyncChrome stage, but
+    # The CQ/Chrome PFQ master will not actually run the SyncChrome stage, but
     # we want the logic that gets triggered when SyncChrome stage is skipped.
     self._RunStage(chrome_stages.SyncChromeStage)
     self._RunStage(artifact_stages.MasterUploadPrebuiltsStage)
@@ -693,9 +693,10 @@ class SimpleBuilder(Builder):
       self._RunChrootBuilderTypeBuild()
     elif self._run.config.build_type == constants.REFRESH_PACKAGES_TYPE:
       self._RunRefreshPackagesTypeBuild()
-    elif (self._run.config.build_type == constants.PALADIN_TYPE and
+    elif ((self._run.config.build_type == constants.PALADIN_TYPE or
+           self._run.config.build_type == constants.CHROME_PFQ_TYPE) and
           self._run.config.master):
-      self._RunMasterPaladinBuild()
+      self._RunMasterPaladinOrChromePFQBuild()
     elif self._run.config.build_type == constants.PAYLOADS_TYPE:
       self._RunPayloadsBuild()
     else:

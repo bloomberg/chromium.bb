@@ -495,11 +495,11 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
 class MasterUploadPrebuiltsStage(generic_stages.BuilderStage):
   """Syncs prebuilt binhost files across slaves."""
   # TODO(mtennant): This class represents logic spun out from
-  # UploadPrebuiltsStage that is specific to a master builder.  It will
-  # be used by commit queue to start, but could be used by other master
-  # builders that upload prebuilts.  Current examples are
-  # x86-alex-pre-flight-branch and x86-generic-chromium-pfq.  When
-  # completed the UploadPrebuiltsStage code can be thinned significantly.
+  # UploadPrebuiltsStage that is specific to a master builder. This is
+  # currently used by the Commit Queue and the Master PFQ builder, but
+  # could be used by other master builders that upload prebuilts,
+  # e.g., x86-alex-pre-flight-branch. When completed the
+  # UploadPrebuiltsStage code can be thinned significantly.
   option_name = 'prebuilts'
   config_name = 'prebuilts'
 
@@ -554,7 +554,6 @@ class MasterUploadPrebuiltsStage(generic_stages.BuilderStage):
     # Distributed builders that use manifest-versions to sync with one another
     # share prebuilt logic by passing around versions.
     assert cbuildbot_config.IsPFQType(self._prebuilt_type)
-    assert self._prebuilt_type != constants.CHROME_PFQ_TYPE
 
     # Public pfqs should upload host preflight prebuilts.
     public_args.append('--sync-host')
