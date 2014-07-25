@@ -254,6 +254,13 @@ TEST_F(AlternateProtocolServerPropertiesTest, Basic) {
   EXPECT_FALSE(impl_.HasAlternateProtocol(test_host_port_pair));
 }
 
+TEST_F(AlternateProtocolServerPropertiesTest, DefaultProbabilityExcluded) {
+  HostPortPair test_host_port_pair("foo", 80);
+  impl_.SetAlternateProtocol(test_host_port_pair, 443, NPN_SPDY_3, .99);
+
+  EXPECT_FALSE(impl_.HasAlternateProtocol(test_host_port_pair));
+}
+
 TEST_F(AlternateProtocolServerPropertiesTest, Probability) {
   impl_.SetAlternateProtocolProbabilityThreshold(.25);
 

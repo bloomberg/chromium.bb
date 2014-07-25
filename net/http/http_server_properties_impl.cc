@@ -26,7 +26,7 @@ HttpServerPropertiesImpl::HttpServerPropertiesImpl()
       alternate_protocol_experiment_(
           ALTERNATE_PROTOCOL_NOT_PART_OF_EXPERIMENT),
       spdy_settings_map_(SpdySettingsMap::NO_AUTO_EVICT),
-      alternate_protocol_probability_threshold_(0),
+      alternate_protocol_probability_threshold_(1),
       weak_ptr_factory_(this) {
   canoncial_suffixes_.push_back(".c.youtube.com");
   canoncial_suffixes_.push_back(".googlevideo.com");
@@ -198,7 +198,7 @@ bool HttpServerPropertiesImpl::HasAlternateProtocol(
     return true;
   AlternateProtocolMap::const_iterator it = alternate_protocol_map_.Get(server);
   if (it != alternate_protocol_map_.end() &&
-      it->second.probability > alternate_protocol_probability_threshold_) {
+      it->second.probability >= alternate_protocol_probability_threshold_) {
     return true;
   }
 
