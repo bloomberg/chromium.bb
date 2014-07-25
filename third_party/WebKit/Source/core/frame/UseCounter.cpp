@@ -733,6 +733,12 @@ String UseCounter::deprecationMessage(Feature feature)
     case SyncXHRWithCredentials:
         return "Setting 'XMLHttpRequest.withCredentials' for synchronous requests is deprecated.";
 
+    case OpenWebDatabaseInWorker:
+        return "'openDatabase' in Workers is deprecated. Please switch to Indexed Database API.";
+
+    case OpenWebDatabaseSyncInWorker:
+        return "'openDatabaseSync' is deprecated. Please switch to Indexed Database API.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

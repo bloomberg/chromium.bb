@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'openDatabaseSync' is deprecated. Please switch to Indexed Database API.
 This test makes sure that openDatabaseSync() accepts only valid parameters.
 PASS: Failed to execute 'openDatabaseSync' on 'WorkerGlobalScope': 4 arguments required, but only 0 present.
 PASS: Failed to execute 'openDatabaseSync' on 'WorkerGlobalScope': 4 arguments required, but only 2 present.

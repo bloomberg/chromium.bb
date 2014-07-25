@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'openDatabaseSync' is deprecated. Please switch to Indexed Database API.
 Test various inputs to executeSql().
 PASS: executeSql("") did not throw an exception.
 PASS: executeSql("", null) did not throw an exception.

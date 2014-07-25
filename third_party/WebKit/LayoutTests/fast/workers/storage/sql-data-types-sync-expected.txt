@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'openDatabaseSync' is deprecated. Please switch to Indexed Database API.
 Test that the values returned by DB queries are of the same type as the values inserted in the database.
 PASS: property 'timestamp' OK, type was number
 PASS: property 'id' OK, type was number

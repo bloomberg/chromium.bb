@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'openDatabaseSync' is deprecated. Please switch to Indexed Database API.
 Test that executeSql() accepts only one statement.
 PASS: INSERT INTO Test VALUES (1), 
 PASS: INSERT INTO Test VALUES (2);, 

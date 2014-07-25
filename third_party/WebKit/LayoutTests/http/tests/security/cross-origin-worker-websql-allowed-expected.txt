@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'openDatabase' in Workers is deprecated. Please switch to Indexed Database API.
 This iframe should not return any errors:
 
 

@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'openDatabaseSync' is deprecated. Please switch to Indexed Database API.
 Test that terminating the worker while it is performing synchronous file or database operations will not cause any crashes, asserts, etc.
 
 Starting test run.

@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'openDatabase' in Workers is deprecated. Please switch to Indexed Database API.
 PASS. executeSql(null) did not throw an exception
 PASS. executeSql(undefined) did not throw an exception
 PASS. executeSql(0) did not throw an exception

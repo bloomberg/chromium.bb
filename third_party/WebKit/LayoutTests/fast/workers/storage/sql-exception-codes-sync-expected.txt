@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'openDatabaseSync' is deprecated. Please switch to Indexed Database API.
 Test that the correct exceptions are thrown in exceptional situations.
 LOG: Exception thrown in transaction callback.
 PASS: expected and got error with message Exception thrown in transaction callback.

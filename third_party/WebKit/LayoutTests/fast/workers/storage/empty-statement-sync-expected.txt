@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'openDatabaseSync' is deprecated. Please switch to Indexed Database API.
 This test tries to execute an empty statement.
 PASS: result is null
 PASS
