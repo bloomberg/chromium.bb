@@ -87,7 +87,7 @@
           },
           {
             "description": "A launch of the same extension is in progress.",
-            "name": " launchInProgress"
+            "name": "launchInProgress"
           }
         ]
       }
