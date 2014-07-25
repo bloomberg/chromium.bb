@@ -91,7 +91,7 @@ class TrayAccessibilityTest
     InProcessBrowserTest::RunTestOnMainThreadLoop();
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     AccessibilityManager::SetBrailleControllerForTest(NULL);
   }
 

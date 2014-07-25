@@ -34,19 +34,6 @@ class SessionRestoreTestChromeOS : public InProcessBrowserTest {
     InProcessBrowserTest::SetUpCommandLine(command_line);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
-    InProcessBrowserTest::SetUpOnMainThread();
-  }
-
-  virtual void TearDownOnMainThread() OVERRIDE {
-    InProcessBrowserTest::TearDownOnMainThread();
-    for (std::list<Browser*>::iterator iter = browser_list_.begin();
-         iter != browser_list_.end(); ++iter) {
-      CloseBrowserSynchronously(*iter);
-    }
-    browser_list_.clear();
-  }
-
   Browser* CreateBrowserWithParams(Browser::CreateParams params) {
     Browser* browser = new Browser(params);
     AddBlankTabAndShow(browser);

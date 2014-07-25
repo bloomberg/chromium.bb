@@ -157,7 +157,7 @@ class PowerPolicyLoginScreenBrowserTest : public PowerPolicyBrowserTestBase {
   // PowerPolicyBrowserTestBase:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
   virtual void SetUpOnMainThread() OVERRIDE;
-  virtual void CleanUpOnMainThread() OVERRIDE;
+  virtual void TearDownOnMainThread() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(PowerPolicyLoginScreenBrowserTest);
 };
@@ -291,11 +291,11 @@ void PowerPolicyLoginScreenBrowserTest::SetUpOnMainThread() {
       content::NotificationService::AllSources()).Wait();
 }
 
-void PowerPolicyLoginScreenBrowserTest::CleanUpOnMainThread() {
+void PowerPolicyLoginScreenBrowserTest::TearDownOnMainThread() {
   base::MessageLoop::current()->PostTask(FROM_HERE,
                                          base::Bind(&chrome::AttemptExit));
   base::RunLoop().RunUntilIdle();
-  PowerPolicyBrowserTestBase::CleanUpOnMainThread();
+  PowerPolicyBrowserTestBase::TearDownOnMainThread();
 }
 
 PowerPolicyInSessionBrowserTest::PowerPolicyInSessionBrowserTest() {

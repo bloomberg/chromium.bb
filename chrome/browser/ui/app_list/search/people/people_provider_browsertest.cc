@@ -183,7 +183,7 @@ class PeopleProviderTest : public InProcessBrowserTest {
     people_provider_->set_use_throttling(false);
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     EXPECT_TRUE(test_server_->ShutdownAndWaitUntilComplete());
     test_server_.reset();
   }

@@ -61,7 +61,7 @@ class BluetoothPrivateApiTest : public ExtensionApiTest {
         .WillByDefault(Return(true));
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {}
+  virtual void TearDownOnMainThread() OVERRIDE {}
 
   extensions::BluetoothEventRouter* event_router() {
     return extensions::BluetoothAPI::Get(browser()->profile())

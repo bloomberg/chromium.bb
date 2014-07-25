@@ -429,7 +429,7 @@ class DnsProbeBrowserTest : public InProcessBrowserTest {
   virtual ~DnsProbeBrowserTest();
 
   virtual void SetUpOnMainThread() OVERRIDE;
-  virtual void CleanUpOnMainThread() OVERRIDE;
+  virtual void TearDownOnMainThread() OVERRIDE;
 
  protected:
   // Sets the browser object that other methods apply to, and that has the
@@ -509,7 +509,7 @@ void DnsProbeBrowserTest::SetUpOnMainThread() {
   SetActiveBrowser(browser());
 }
 
-void DnsProbeBrowserTest::CleanUpOnMainThread() {
+void DnsProbeBrowserTest::TearDownOnMainThread() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       Bind(&DnsProbeBrowserTestIOThreadHelper::CleanUpOnIOThreadAndDeleteHelper,

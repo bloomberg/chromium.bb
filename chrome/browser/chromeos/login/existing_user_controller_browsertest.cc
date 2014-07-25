@@ -176,14 +176,14 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
                    testing_profile_.get());
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     // ExistingUserController must be deleted before the thread is cleaned up:
     // If there is an outstanding login attempt when ExistingUserController is
     // deleted, its LoginPerformer instance will be deleted, which in turn
     // deletes its OnlineAttemptHost instance.  However, OnlineAttemptHost must
     // be deleted on the UI thread.
     existing_user_controller_.reset();
-    DevicePolicyCrosBrowserTest::InProcessBrowserTest::CleanUpOnMainThread();
+    DevicePolicyCrosBrowserTest::InProcessBrowserTest::TearDownOnMainThread();
     testing_profile_.reset(NULL);
     user_manager_enabler_.reset();
   }

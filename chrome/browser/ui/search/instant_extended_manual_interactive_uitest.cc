@@ -65,7 +65,7 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
         new net::NetworkChangeNotifier::DisableForTest());
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     disable_network_change_notifier_.reset();
   }
 

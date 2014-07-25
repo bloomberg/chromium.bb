@@ -597,7 +597,7 @@ class AndroidUsbDiscoveryTest : public InProcessBrowserTest {
     UsbService::SetInstanceForTest(new MockUsbService());
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
     UsbService* service = NULL;

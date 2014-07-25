@@ -253,11 +253,11 @@ class KioskTest : public OobeBaseTest {
     OobeBaseTest::TearDown();
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     AppLaunchController::SetNetworkTimeoutCallbackForTesting(NULL);
     AppLaunchSigninScreen::SetUserManagerForTesting(NULL);
 
-    OobeBaseTest::CleanUpOnMainThread();
+    OobeBaseTest::TearDownOnMainThread();
 
     // Clean up while main thread still runs.
     // See http://crbug.com/176659.

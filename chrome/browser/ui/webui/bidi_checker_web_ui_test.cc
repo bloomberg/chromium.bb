@@ -130,8 +130,8 @@ void WebUIBidiCheckerBrowserTestRTL::SetUpOnMainThread() {
   base::i18n::SetICUDefaultLocale("he");
 }
 
-void WebUIBidiCheckerBrowserTestRTL::CleanUpOnMainThread() {
-  WebUIBidiCheckerBrowserTest::CleanUpOnMainThread();
+void WebUIBidiCheckerBrowserTestRTL::TearDownOnMainThread() {
+  WebUIBidiCheckerBrowserTest::TearDownOnMainThread();
 
   base::i18n::SetICUDefaultLocale(app_locale_);
   ResourceBundle::GetSharedInstance().OverrideLocalePakForTest(

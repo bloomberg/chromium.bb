@@ -134,10 +134,9 @@ class ChromeResourceDispatcherHostDelegateBrowserTest :
     }
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     content::ResourceDispatcherHost::Get()->SetDelegate(NULL);
     dispatcher_host_delegate_.reset();
-    InProcessBrowserTest::CleanUpOnMainThread();
   }
 
  protected:

@@ -51,7 +51,7 @@ class OobeTest : public InProcessBrowserTest {
         ::switches::kGaiaUrl, embedded_test_server()->base_url().spec());
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     // If the login display is still showing, exit gracefully.
     if (LoginDisplayHostImpl::default_host()) {
       base::MessageLoop::current()->PostTask(FROM_HERE,

@@ -236,7 +236,7 @@ class CustomizationWallpaperDownloaderBrowserTest
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE { controller_ = NULL; }
+  virtual void TearDownOnMainThread() OVERRIDE { controller_ = NULL; }
 
  protected:
   void CreateCmdlineWallpapers() {

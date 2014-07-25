@@ -139,7 +139,7 @@ class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
     ASSERT_NE(first_tab, initiator_);
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     cloned_tab_observer_.reset();
     initiator_ = NULL;
   }

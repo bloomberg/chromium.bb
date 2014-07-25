@@ -103,10 +103,10 @@ class SharedOptionsTest : public LoginManagerTest {
     settings->AddSettingsProvider(device_settings_provider_);
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     CrosSettings* settings = CrosSettings::Get();
     settings->RemoveSettingsProvider(&stub_settings_provider_);
-    LoginManagerTest::CleanUpOnMainThread();
+    LoginManagerTest::TearDownOnMainThread();
   }
 
  protected:

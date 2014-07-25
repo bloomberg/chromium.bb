@@ -73,7 +73,7 @@ class PushMessagingCanaryTest : public ExtensionApiTest {
   // InProcessBrowserTest override. Destroys the sync client and sync
   // profile created by the test.  We must clean up ProfileSyncServiceHarness
   // now before the profile is cleaned up.
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     sync_setup_helper_.reset();
   }
 

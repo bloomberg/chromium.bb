@@ -23,10 +23,10 @@ class SSLClientCertificateSelectorTestBase : public InProcessBrowserTest {
   // InProcessBrowserTest:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
   virtual void SetUpOnMainThread() OVERRIDE;
-  virtual void CleanUpOnMainThread() OVERRIDE;
+  virtual void TearDownOnMainThread() OVERRIDE;
 
   virtual void SetUpOnIOThread();
-  virtual void CleanUpOnIOThread();
+  virtual void TearDownOnIOThread();
 
  protected:
   scoped_ptr<net::URLRequest> MakeURLRequest(

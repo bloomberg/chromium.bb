@@ -91,10 +91,10 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
     update_screen_->screen_observer_ = mock_screen_observer_.get();
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     mock_error_screen_.reset();
     mock_error_screen_actor_.reset();
-    WizardInProcessBrowserTest::CleanUpOnMainThread();
+    WizardInProcessBrowserTest::TearDownOnMainThread();
   }
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {

@@ -271,7 +271,7 @@ class SamlTest : public InProcessBrowserTest {
         content::NotificationService::AllSources()));
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     // If the login display is still showing, exit gracefully.
     if (LoginDisplayHostImpl::default_host()) {
       base::MessageLoop::current()->PostTask(FROM_HERE,

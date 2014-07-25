@@ -382,7 +382,7 @@ void WebUIBrowserTest::SetUpOnMainThread() {
                                     mock_provider_.Pointer());
 }
 
-void WebUIBrowserTest::CleanUpOnMainThread() {
+void WebUIBrowserTest::TearDownOnMainThread() {
   logging::SetLogMessageHandler(NULL);
 
   test_factory_->RemoveFactoryOverride(GURL(kDummyURL).host());

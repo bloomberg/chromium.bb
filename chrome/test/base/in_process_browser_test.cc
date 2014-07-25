@@ -432,7 +432,7 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 
   // Invoke cleanup and quit even if there are failures. This is similar to
   // gtest in that it invokes TearDown even if Setup fails.
-  CleanUpOnMainThread();
+  TearDownOnMainThread();
 #if defined(OS_MACOSX)
   autorelease_pool_->Recycle();
 #endif

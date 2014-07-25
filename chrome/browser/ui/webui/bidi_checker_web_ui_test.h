@@ -50,7 +50,7 @@ class WebUIBidiCheckerBrowserTestRTL : public WebUIBidiCheckerBrowserTest {
 
  protected:
   virtual void SetUpOnMainThread() OVERRIDE;
-  virtual void CleanUpOnMainThread() OVERRIDE;
+  virtual void TearDownOnMainThread() OVERRIDE;
 
   // The app locale before we change it
   std::string app_locale_;

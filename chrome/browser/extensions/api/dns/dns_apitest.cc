@@ -19,11 +19,11 @@ class DnsApiTest : public ExtensionApiTest {
         resolver_creator_->CreateMockHostResolver());
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() OVERRIDE {
     extensions::HostResolverWrapper::GetInstance()->
         SetHostResolverForTesting(NULL);
     resolver_creator_->DeleteMockHostResolver();
-    ExtensionApiTest::CleanUpOnMainThread();
+    ExtensionApiTest::TearDownOnMainThread();
   }
 
   // The MockHostResolver asserts that it's used on the same thread on which

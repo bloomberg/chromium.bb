@@ -790,7 +790,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest:
   virtual void SetUpOnMainThread() OVERRIDE;
-  virtual void CleanUpOnMainThread() OVERRIDE;
+  virtual void TearDownOnMainThread() OVERRIDE;
 
   // Sets the captive portal checking preference.  Does not affect the command
   // line flag, which is set in SetUpCommandLine.
@@ -968,7 +968,7 @@ void CaptivePortalBrowserTest::SetUpOnMainThread() {
                             GURL(kMockCaptivePortalTestUrl));
 }
 
-void CaptivePortalBrowserTest::CleanUpOnMainThread() {
+void CaptivePortalBrowserTest::TearDownOnMainThread() {
   // No test should have a captive portal check pending on quit.
   EXPECT_FALSE(CheckPending(browser()));
 }

@@ -38,7 +38,7 @@ class OobeBaseTest : public ExtensionApiTest {
   virtual void SetUp() OVERRIDE;
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
   virtual void SetUpOnMainThread() OVERRIDE;
-  virtual void CleanUpOnMainThread() OVERRIDE;
+  virtual void TearDownOnMainThread() OVERRIDE;
   virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
 
   // Network status control functions.
