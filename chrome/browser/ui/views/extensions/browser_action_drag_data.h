@@ -21,12 +21,20 @@ class BrowserActionDragData {
   BrowserActionDragData();
   BrowserActionDragData(const std::string& id, int index);
 
+  // These mirror the views::View and views::MenuDelegate methods for dropping,
+  // and return the appropriate results for being able to drop an extension's
+  // BrowserAction view.
+  static bool GetDropFormats(
+      std::set<ui::OSExchangeData::CustomFormat>* custom_formats);
+  static bool AreDropTypesRequired();
+  static bool CanDrop(const ui::OSExchangeData& data, const Profile* profile);
+
   const std::string& id() const { return id_; }
 
   size_t index() const { return index_; }
 
   // Returns true if this data is from the specified profile.
-  bool IsFromProfile(Profile* profile) const;
+  bool IsFromProfile(const Profile* profile) const;
 
 #if defined(TOOLKIT_VIEWS)
   void Write(Profile* profile, ui::OSExchangeData* data) const;
@@ -50,9 +58,6 @@ class BrowserActionDragData {
 
   // The index of the view being dragged.
   size_t index_;
-
-  // The MIME type for the clipboard format for BrowserActionDragData.
-  static const char* kClipboardFormatString;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionDragData);
 };

@@ -84,6 +84,7 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
                     const gfx::Rect& bounds,
                     MenuAnchorPosition position,
                     bool context_menu,
+                    bool is_nested_drag,
                     int* event_flags);
 
   // Whether or not Run blocks.
@@ -160,6 +161,9 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
 
   // WidgetObserver overrides:
   virtual void OnWidgetDestroying(Widget* widget) OVERRIDE;
+
+  // Only used for testing.
+  bool IsCancelAllTimerRunningForTest();
 
   // Only used for testing.
   static void TurnOffMenuSelectionHoldForTest();

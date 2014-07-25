@@ -57,6 +57,12 @@ class BrowserActionView : public views::View {
     // Whether the container for this button is shown inside a menu.
     virtual bool ShownInsideMenu() const = 0;
 
+    // Notifies that a drag completed. Note this will only happen if the view
+    // wasn't removed during the drag-and-drop process (i.e., not when there
+    // was a move in the browser actions, since we re-create the views each
+    // time we re-order the browser actions).
+    virtual void OnBrowserActionViewDragDone() = 0;
+
    protected:
     virtual ~Delegate() {}
   };
@@ -201,6 +207,7 @@ class BrowserActionButton : public views::MenuButton,
   // Overridden from views::View:
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
+  virtual void OnDragDone() OVERRIDE;
 
  private:
   virtual ~BrowserActionButton();

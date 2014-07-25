@@ -105,8 +105,7 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(Widget* parent,
 
   running_ = true;
   for_drop_ = (run_types & MenuRunner::FOR_DROP) != 0;
-  bool has_mnemonics =
-      (run_types & MenuRunner::HAS_MNEMONICS) != 0 && !for_drop_;
+  bool has_mnemonics = (run_types & MenuRunner::HAS_MNEMONICS) != 0;
   owns_controller_ = false;
   if (!controller) {
     // No menus are showing, show one.
@@ -131,6 +130,7 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(Widget* parent,
                       bounds,
                       anchor,
                       (run_types & MenuRunner::CONTEXT_MENU) != 0,
+                      (run_types & MenuRunner::NESTED_DRAG) != 0,
                       &mouse_event_flags);
   // Get the time of the event which closed this menu.
   closing_event_time_ = controller->closing_event_time();

@@ -37,18 +37,26 @@ void MenuTestBase::KeyPress(ui::KeyboardCode keycode,
       false, false, next);
 }
 
+int MenuTestBase::GetMenuRunnerFlags() {
+  return views::MenuRunner::HAS_MNEMONICS;
+}
+
 void MenuTestBase::SetUp() {
   button_ = new views::MenuButton(
       NULL, base::ASCIIToUTF16("Menu Test"), this, true);
   menu_ = new views::MenuItemView(this);
   BuildMenu(menu_);
-  menu_runner_.reset(
-      new views::MenuRunner(menu_, views::MenuRunner::HAS_MNEMONICS));
+  menu_runner_.reset(new views::MenuRunner(menu_, GetMenuRunnerFlags()));
 
   ViewEventTestBase::SetUp();
 }
 
 void MenuTestBase::TearDown() {
+  // We cancel the menu first because certain operations (like a menu opened
+  // with views::MenuRunner::FOR_DROP) don't take kindly to simply pulling the
+  // runner out from under them.
+  menu_runner_->Cancel();
+
   menu_runner_.reset();
   menu_ = NULL;
   ViewEventTestBase::TearDown();
