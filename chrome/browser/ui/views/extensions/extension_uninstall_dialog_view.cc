@@ -9,8 +9,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "extensions/common/extension.h"
 #include "grit/generated_resources.h"
@@ -31,20 +29,13 @@ const int kIconSize = 64;
 
 class ExtensionUninstallDialogDelegateView;
 
-// Returns parent window for extension uninstall dialog.
-gfx::NativeWindow GetParent(Browser* browser) {
-  if (browser && browser->window())
-    return browser->window()->GetNativeWindow();
-  return NULL;
-}
-
 // Views implementation of the uninstall dialog.
 class ExtensionUninstallDialogViews
     : public extensions::ExtensionUninstallDialog {
  public:
   ExtensionUninstallDialogViews(
       Profile* profile,
-      Browser* browser,
+      gfx::NativeWindow parent,
       extensions::ExtensionUninstallDialog::Delegate* delegate);
   virtual ~ExtensionUninstallDialogViews();
 
@@ -52,13 +43,10 @@ class ExtensionUninstallDialogViews
   void ExtensionUninstallAccepted();
   void ExtensionUninstallCanceled();
 
-  ExtensionUninstallDialogDelegateView* view() { return view_; }
-
  private:
   virtual void Show() OVERRIDE;
 
   ExtensionUninstallDialogDelegateView* view_;
-  bool show_in_app_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUninstallDialogViews);
 };
@@ -70,7 +58,7 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
       ExtensionUninstallDialogViews* dialog_view,
       const extensions::Extension* extension,
       const extensions::Extension* triggering_extension,
-      gfx::ImageSkia* icon);
+      gfx::ImageSkia* image);
   virtual ~ExtensionUninstallDialogDelegateView();
 
   // Called when the ExtensionUninstallDialog has been destroyed to make sure
@@ -111,11 +99,10 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
 
 ExtensionUninstallDialogViews::ExtensionUninstallDialogViews(
     Profile* profile,
-    Browser* browser,
+    gfx::NativeWindow parent,
     extensions::ExtensionUninstallDialog::Delegate* delegate)
-    : extensions::ExtensionUninstallDialog(profile, browser, delegate),
-      view_(NULL),
-      show_in_app_list_(!browser) {
+    : extensions::ExtensionUninstallDialog(profile, parent, delegate),
+      view_(NULL) {
 }
 
 ExtensionUninstallDialogViews::~ExtensionUninstallDialogViews() {
@@ -127,19 +114,9 @@ ExtensionUninstallDialogViews::~ExtensionUninstallDialogViews() {
 }
 
 void ExtensionUninstallDialogViews::Show() {
-  // TODO(tapted): A true |desktop_type| needs to be passed in at creation time
-  // to remove reliance on GetActiveDesktop(). http://crbug.com/308360
-  gfx::NativeWindow parent = show_in_app_list_ ?
-      AppListService::Get(chrome::GetActiveDesktop())->GetAppListWindow() :
-      GetParent(browser_);
-  if (browser_ && !parent) {
-    delegate_->ExtensionUninstallCanceled();
-    return;
-  }
-
   view_ = new ExtensionUninstallDialogDelegateView(
       this, extension_, triggering_extension_, &icon_);
-  CreateBrowserModalDialogViews(view_, parent)->Show();
+  CreateBrowserModalDialogViews(view_, parent_)->Show();
 }
 
 void ExtensionUninstallDialogViews::ExtensionUninstallAccepted() {
@@ -158,16 +135,16 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
     ExtensionUninstallDialogViews* dialog_view,
     const extensions::Extension* extension,
     const extensions::Extension* triggering_extension,
-    gfx::ImageSkia* icon)
+    gfx::ImageSkia* image)
     : dialog_(dialog_view),
       triggered_by_extension_(triggering_extension != NULL) {
   // Scale down to icon size, but allow smaller icons (don't scale up).
-  gfx::Size size(icon->width(), icon->height());
+  gfx::Size size(image->width(), image->height());
   if (size.width() > kIconSize || size.height() > kIconSize)
     size = gfx::Size(kIconSize, kIconSize);
   icon_ = new views::ImageView();
   icon_->SetImageSize(size);
-  icon_->SetImage(*icon);
+  icon_->SetImage(*image);
   AddChildView(icon_);
 
   heading_ = new views::Label(base::UTF8ToUTF16(dialog_->GetHeadingText()));
@@ -245,7 +222,7 @@ void ExtensionUninstallDialogDelegateView::Layout() {
 // static
 extensions::ExtensionUninstallDialog*
 extensions::ExtensionUninstallDialog::Create(Profile* profile,
-                                             Browser* browser,
+                                             gfx::NativeWindow parent,
                                              Delegate* delegate) {
-  return new ExtensionUninstallDialogViews(profile, browser, delegate);
+  return new ExtensionUninstallDialogViews(profile, parent, delegate);
 }

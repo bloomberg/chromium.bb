@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
@@ -347,7 +348,7 @@ void ExtensionDisabledGlobalError::BubbleViewCancelButtonPressed(
     Browser* browser) {
 #if !defined(OS_ANDROID)
   uninstall_dialog_.reset(extensions::ExtensionUninstallDialog::Create(
-      service_->profile(), browser, this));
+      service_->profile(), browser->window()->GetNativeWindow(), this));
   // Delay showing the uninstall dialog, so that this function returns
   // immediately, to close the bubble properly. See crbug.com/121544.
   base::MessageLoop::current()->PostTask(

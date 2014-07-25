@@ -7,13 +7,10 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/native_widget_types.h"
 
-class Browser;
 class Profile;
 
 namespace base {
@@ -28,8 +25,7 @@ namespace extensions {
 class Extension;
 
 class ExtensionUninstallDialog
-    : public content::NotificationObserver,
-      public base::SupportsWeakPtr<ExtensionUninstallDialog> {
+    : public base::SupportsWeakPtr<ExtensionUninstallDialog> {
  public:
   class Delegate {
    public:
@@ -43,12 +39,11 @@ class ExtensionUninstallDialog
     virtual ~Delegate() {}
   };
 
-  // Creates a platform specific implementation of ExtensionUninstallDialog.
-  // |profile| and |delegate| can never be NULL.
-  // |browser| can be NULL only for Ash when this is used with the applist
-  // window.
+  // Creates a platform specific implementation of ExtensionUninstallDialog. The
+  // dialog will be modal to |parent|, or a non-modal dialog if |parent| is
+  // NULL.
   static ExtensionUninstallDialog* Create(Profile* profile,
-                                          Browser* browser,
+                                          gfx::NativeWindow parent,
                                           Delegate* delegate);
 
   virtual ~ExtensionUninstallDialog();
@@ -69,12 +64,15 @@ class ExtensionUninstallDialog
  protected:
   // Constructor used by the derived classes.
   ExtensionUninstallDialog(Profile* profile,
-                           Browser* browser,
+                           gfx::NativeWindow parent,
                            Delegate* delegate);
 
+  // TODO(sashab): Remove protected members: crbug.com/397395
   Profile* const profile_;
 
-  Browser* browser_;
+  // TODO(sashab): Investigate lifetime issue of this window variable:
+  // crbug.com/397396
+  gfx::NativeWindow parent_;
 
   // The delegate we will call Accepted/Canceled on after confirmation dialog.
   Delegate* delegate_;
@@ -96,27 +94,11 @@ class ExtensionUninstallDialog
 
   void OnImageLoaded(const std::string& extension_id, const gfx::Image& image);
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // Displays the prompt. This should only be called after loading the icon.
   // The implementations of this method are platform-specific.
   virtual void Show() = 0;
 
-  // Keeps track of whether we're still waiting for an image to load before
-  // we show the dialog.
-  enum State {
-    kImageIsLoading,  // Image is loading asynchronously.
-    kDialogIsShowing, // Dialog is shown after image is loaded.
-    kBrowserIsClosing // Browser is closed while image is still loading.
-  };
-  State state_;
-
   base::MessageLoop* ui_loop_;
-
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUninstallDialog);
 };

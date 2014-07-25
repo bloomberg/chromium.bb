@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -45,7 +46,8 @@ class AsyncUninstaller : public extensions::ExtensionUninstallDialog::Delegate {
       : extension_(extension),
         profile_(browser->profile()) {
     extension_uninstall_dialog_.reset(
-        extensions::ExtensionUninstallDialog::Create(profile_, browser, this));
+        extensions::ExtensionUninstallDialog::Create(
+            profile_, browser->window()->GetNativeWindow(), this));
     extension_uninstall_dialog_->ConfirmUninstall(extension_);
   }
 

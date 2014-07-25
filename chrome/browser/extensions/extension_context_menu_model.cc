@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -125,7 +126,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
       AddRef();  // Balanced in Accepted() and Canceled()
       extension_uninstall_dialog_.reset(
           extensions::ExtensionUninstallDialog::Create(
-              profile_, browser_, this));
+              profile_, browser_->window()->GetNativeWindow(), this));
       extension_uninstall_dialog_->ConfirmUninstall(extension);
       break;
     }

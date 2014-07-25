@@ -8,12 +8,8 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/common/constants.h"
@@ -45,20 +41,14 @@ SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
 
 ExtensionUninstallDialog::ExtensionUninstallDialog(
     Profile* profile,
-    Browser* browser,
+    gfx::NativeWindow parent,
     ExtensionUninstallDialog::Delegate* delegate)
     : profile_(profile),
-      browser_(browser),
+      parent_(parent),
       delegate_(delegate),
       extension_(NULL),
       triggering_extension_(NULL),
-      state_(kImageIsLoading),
       ui_loop_(base::MessageLoop::current()) {
-  if (browser) {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_BROWSER_CLOSED,
-                   content::Source<Browser>(browser));
-  }
 }
 
 ExtensionUninstallDialog::~ExtensionUninstallDialog() {
@@ -82,9 +72,9 @@ void ExtensionUninstallDialog::ConfirmUninstall(const Extension* extension) {
       extension_, icon_size, ExtensionIconSet::MATCH_BIGGER);
 
   // Load the image asynchronously. The response will be sent to OnImageLoaded.
-  state_ = kImageIsLoading;
   ImageLoader* loader = ImageLoader::Get(profile_);
 
+  SetIcon(gfx::Image());
   std::vector<ImageLoader::ImageRepresentation> images_list;
   images_list.push_back(ImageLoader::ImageRepresentation(
       image,
@@ -123,30 +113,7 @@ void ExtensionUninstallDialog::OnImageLoaded(const std::string& extension_id,
   }
 
   SetIcon(image);
-
-  // Show the dialog unless the browser has been closed while we were waiting
-  // for the image.
-  DCHECK(state_ == kImageIsLoading || state_ == kBrowserIsClosing);
-  if (state_ == kImageIsLoading) {
-    state_ = kDialogIsShowing;
-    Show();
-  }
-}
-
-void ExtensionUninstallDialog::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_BROWSER_CLOSED);
-
-  browser_ = NULL;
-  // If the browser is closed while waiting for the image, we need to send a
-  // "cancel" event here, because there will not be another opportunity to
-  // notify the delegate of the cancellation as we won't open the dialog.
-  if (state_ == kImageIsLoading) {
-    state_ = kBrowserIsClosing;
-    delegate_->ExtensionUninstallCanceled();
-  }
+  Show();
 }
 
 std::string ExtensionUninstallDialog::GetHeadingText() {

@@ -169,7 +169,8 @@ bool AppInfoFooterPanel::CanSetPinnedToShelf() const {
 void AppInfoFooterPanel::UninstallApp() {
   DCHECK(CanUninstallApp());
   extension_uninstall_dialog_.reset(
-      extensions::ExtensionUninstallDialog::Create(profile_, NULL, this));
+      extensions::ExtensionUninstallDialog::Create(
+          profile_, GetWidget()->GetNativeWindow(), this));
   extension_uninstall_dialog_->ConfirmUninstall(app_);
 }
 

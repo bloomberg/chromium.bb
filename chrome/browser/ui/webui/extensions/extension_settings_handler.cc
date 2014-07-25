@@ -47,7 +47,9 @@
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/tab_contents/background_contents.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/webui/extensions/extension_basic_info.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -1369,7 +1371,8 @@ ExtensionSettingsHandler::GetExtensionUninstallDialog() {
         web_ui()->GetWebContents());
     extension_uninstall_dialog_.reset(
         ExtensionUninstallDialog::Create(extension_service_->profile(),
-                                         browser, this));
+                                         browser->window()->GetNativeWindow(),
+                                         this));
   }
   return extension_uninstall_dialog_.get();
 #else

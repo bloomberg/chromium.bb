@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/launch_util.h"
+#include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -610,8 +611,11 @@ bool ManagementUninstallFunctionBase::Uninstall(
   if (auto_confirm_for_test == DO_NOT_SKIP) {
     if (show_confirm_dialog) {
       AddRef();  // Balanced in ExtensionUninstallAccepted/Canceled
+      extensions::WindowController* controller = GetExtensionWindowController();
       extension_uninstall_dialog_.reset(ExtensionUninstallDialog::Create(
-          GetProfile(), GetCurrentBrowser(), this));
+          GetProfile(),
+          controller ? controller->window()->GetNativeWindow() : NULL,
+          this));
       if (extension_id() != target_extension_id) {
         extension_uninstall_dialog_->ConfirmProgrammaticUninstall(
             target_extension, GetExtension());
