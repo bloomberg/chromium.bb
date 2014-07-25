@@ -4,8 +4,9 @@
 """IDL type handling.
 
 Classes:
-IdlType
-IdlUnionType
+IdlTypeBase
+ IdlType
+ IdlUnionType
 """
 
 from collections import defaultdict
@@ -94,11 +95,74 @@ def set_ancestors(new_ancestors):
     ancestors.update(new_ancestors)
 
 
+class IdlTypeBase(object):
+    """Base class for IdlType and IdlUnionType."""
+
+    def __init__(self, is_array=False, is_sequence=False, is_nullable=False):
+        self.base_type = None
+        self.is_array = is_array
+        self.is_sequence = is_sequence
+        self.is_nullable = is_nullable
+
+    @property
+    def native_array_element_type(self):
+        return None
+
+    @property
+    def array_element_type(self):
+        return None
+
+    @property
+    def is_basic_type(self):
+        return False
+
+    @property
+    def is_callback_function(self):
+        return False
+
+    @property
+    def is_enum(self):
+        return False
+
+    @property
+    def is_integer_type(self):
+        return False
+
+    @property
+    def is_numeric_type(self):
+        return False
+
+    @property
+    def is_primitivee_type(self):
+        return False
+
+    @property
+    def is_string_type(self):
+        return False
+
+    @property
+    def is_union_type(self):
+        return False
+
+    @property
+    def may_raise_exception_on_conversion(self):
+        return False
+
+    @property
+    def name(self):
+        raise NotImplementedError(
+            'name property should be defined in subclasses')
+
+    def resolve_typedefs(self, typedefs):
+        raise NotImplementedError(
+            'resolve_typedefs should be defined in subclasses')
+
+
 ################################################################################
 # IdlType
 ################################################################################
 
-class IdlType(object):
+class IdlType(IdlTypeBase):
     # FIXME: incorporate Nullable, etc.
     # FIXME: use nested types: IdlArrayType, IdlNullableType, IdlSequenceType
     # to support types like short?[] vs. short[]?, instead of treating these
@@ -108,15 +172,13 @@ class IdlType(object):
     enums = {}  # name -> values
 
     def __init__(self, base_type, is_array=False, is_sequence=False, is_nullable=False, is_unrestricted=False):
+        super(IdlType, self).__init__(is_array=is_array, is_sequence=is_sequence, is_nullable=is_nullable)
         if is_array and is_sequence:
             raise ValueError('Array of Sequences are not allowed.')
         if is_unrestricted:
             self.base_type = 'unrestricted %s' % base_type
         else:
             self.base_type = base_type
-        self.is_array = is_array
-        self.is_sequence = is_sequence
-        self.is_nullable = is_nullable
 
     def __str__(self):
         type_string = self.base_type
@@ -271,71 +333,15 @@ class IdlType(object):
 # IdlUnionType
 ################################################################################
 
-class IdlUnionType(object):
+class IdlUnionType(IdlTypeBase):
     # http://heycam.github.io/webidl/#idl-union
-    # FIXME: derive from IdlType, instead of stand-alone class, to reduce
-    # duplication.
     def __init__(self, member_types, is_nullable=False):
+        super(IdlUnionType, self).__init__(is_nullable=is_nullable)
         self.member_types = member_types
-        self.is_nullable = is_nullable
-
-    @property
-    def native_array_element_type(self):
-        return None
-
-    @property
-    def array_element_type(self):
-        return None
-
-    @property
-    def is_array(self):
-        # We do not support arrays of union types
-        return False
-
-    @property
-    def base_type(self):
-        return None
-
-    @property
-    def is_basic_type(self):
-        return False
-
-    @property
-    def is_callback_function(self):
-        return False
-
-    @property
-    def is_enum(self):
-        return False
-
-    @property
-    def is_integer_type(self):
-        return False
-
-    @property
-    def is_numeric_type(self):
-        return False
-
-    @property
-    def is_primitivee_type(self):
-        return False
-
-    @property
-    def is_string_type(self):
-        return False
-
-    @property
-    def is_sequence(self):
-        # We do not support sequences of union types
-        return False
 
     @property
     def is_union_type(self):
         return True
-
-    @property
-    def may_raise_exception_on_conversion(self):
-        return False
 
     @property
     def name(self):
