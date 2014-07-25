@@ -97,7 +97,9 @@ static ResourceProvider::ResourceId ResourceRemapHelper(
 }
 
 bool SurfaceAggregator::TakeResources(Surface* surface,
-                                      DelegatedFrameData* frame_data) {
+                                      const DelegatedFrameData* frame_data,
+                                      RenderPassList* render_pass_list) {
+  RenderPass::CopyAll(frame_data->render_pass_list, render_pass_list);
   if (!provider_)  // TODO(jamesr): hack for unit tests that don't set up rp
     return false;
 
@@ -114,12 +116,11 @@ bool SurfaceAggregator::TakeResources(Surface* surface,
                  &invalid_frame,
                  provider_->GetChildToParentMap(child_id),
                  &referenced_resources);
-  const RenderPassList& referenced_passes = frame_data->render_pass_list;
-  for (RenderPassList::const_iterator it = referenced_passes.begin();
-       it != referenced_passes.end();
+  for (RenderPassList::iterator it = render_pass_list->begin();
+       it != render_pass_list->end();
        ++it) {
-    const QuadList& quad_list = (*it)->quad_list;
-    for (QuadList::const_iterator quad_it = quad_list.begin();
+    QuadList& quad_list = (*it)->quad_list;
+    for (QuadList::iterator quad_it = quad_list.begin();
          quad_it != quad_list.end();
          ++quad_it) {
       (*quad_it)->IterateResources(remap);
@@ -141,20 +142,21 @@ void SurfaceAggregator::HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
   Surface* surface = manager_->GetSurfaceForId(surface_id);
   if (!surface)
     return;
-  CompositorFrame* frame = surface->GetEligibleFrame();
+  const CompositorFrame* frame = surface->GetEligibleFrame();
   if (!frame)
     return;
-  DelegatedFrameData* frame_data = frame->delegated_frame_data.get();
+  const DelegatedFrameData* frame_data = frame->delegated_frame_data.get();
   if (!frame_data)
     return;
 
-  bool invalid_frame = TakeResources(surface, frame_data);
+  RenderPassList render_pass_list;
+  bool invalid_frame = TakeResources(surface, frame_data, &render_pass_list);
   if (invalid_frame)
     return;
 
   SurfaceSet::iterator it = referenced_surfaces_.insert(surface_id).first;
 
-  const RenderPassList& referenced_passes = frame_data->render_pass_list;
+  const RenderPassList& referenced_passes = render_pass_list;
   for (size_t j = 0; j + 1 < referenced_passes.size(); ++j) {
     const RenderPass& source = *referenced_passes[j];
 
@@ -186,7 +188,7 @@ void SurfaceAggregator::HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
   }
 
   // TODO(jamesr): Clean up last pass special casing.
-  const RenderPass& last_pass = *frame_data->render_pass_list.back();
+  const RenderPass& last_pass = *render_pass_list.back();
   const QuadList& quads = last_pass.quad_list;
 
   // TODO(jamesr): Make sure clipping is enforced.
@@ -288,7 +290,7 @@ void SurfaceAggregator::CopyPasses(const RenderPassList& source_pass_list,
 scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(SurfaceId surface_id) {
   Surface* surface = manager_->GetSurfaceForId(surface_id);
   DCHECK(surface);
-  CompositorFrame* root_surface_frame = surface->GetEligibleFrame();
+  const CompositorFrame* root_surface_frame = surface->GetEligibleFrame();
   if (!root_surface_frame)
     return scoped_ptr<CompositorFrame>();
   TRACE_EVENT0("cc", "SurfaceAggregator::Aggregate");
@@ -298,8 +300,7 @@ scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(SurfaceId surface_id) {
 
   DCHECK(root_surface_frame->delegated_frame_data);
 
-  const RenderPassList& source_pass_list =
-      root_surface_frame->delegated_frame_data->render_pass_list;
+  RenderPassList source_pass_list;
 
   SurfaceSet::iterator it = referenced_surfaces_.insert(surface_id).first;
 
@@ -307,7 +308,9 @@ scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(SurfaceId surface_id) {
   dest_pass_list_ = &frame->delegated_frame_data->render_pass_list;
 
   bool invalid_frame =
-      TakeResources(surface, root_surface_frame->delegated_frame_data.get());
+      TakeResources(surface,
+                    root_surface_frame->delegated_frame_data.get(),
+                    &source_pass_list);
   DCHECK(!invalid_frame);
 
   CopyPasses(source_pass_list, surface_id);

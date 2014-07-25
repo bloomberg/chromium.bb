@@ -28,7 +28,7 @@ class CC_SURFACES_EXPORT Surface {
 
   void QueueFrame(scoped_ptr<CompositorFrame> frame);
   // Returns the most recent frame that is eligible to be rendered.
-  CompositorFrame* GetEligibleFrame();
+  const CompositorFrame* GetEligibleFrame();
 
   SurfaceFactory* factory() { return factory_; }
 

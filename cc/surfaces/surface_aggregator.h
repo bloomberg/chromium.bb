@@ -47,7 +47,9 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
                        SurfaceId surface_id);
   void CopyPasses(const RenderPassList& source_pass_list, SurfaceId surface_id);
 
-  bool TakeResources(Surface* surface, DelegatedFrameData* frame_data);
+  bool TakeResources(Surface* surface,
+                     const DelegatedFrameData* frame_data,
+                     RenderPassList* render_pass_list);
   int ChildIdForSurface(Surface* surface);
 
   SurfaceManager* manager_;

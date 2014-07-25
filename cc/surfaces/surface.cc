@@ -38,6 +38,8 @@ void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame) {
   }
 }
 
-CompositorFrame* Surface::GetEligibleFrame() { return current_frame_.get(); }
+const CompositorFrame* Surface::GetEligibleFrame() {
+  return current_frame_.get();
+}
 
 }  // namespace cc

@@ -814,6 +814,7 @@ void SubmitFrameWithResources(ResourceProvider::ResourceId* resource_ids,
                               SurfaceId surface_id) {
   scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
   scoped_ptr<RenderPass> pass = RenderPass::Create();
+  pass->id = RenderPass::Id(1, 1);
   SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
   for (size_t i = 0u; i < num_resource_ids; ++i) {
     TransferableResource resource;

@@ -20,7 +20,7 @@ namespace cc {
 template <typename T>
 class ScopedPtrVector {
  public:
-  typedef typename std::vector<T*>::const_iterator const_iterator;
+  typedef typename std::vector<const T*>::const_iterator const_iterator;
   typedef typename std::vector<T*>::reverse_iterator reverse_iterator;
   typedef typename std::vector<T*>::const_reverse_iterator
       const_reverse_iterator;
