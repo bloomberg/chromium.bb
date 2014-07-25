@@ -22,6 +22,7 @@ const char kDefaultCellularDevicePath[] = "stub_cellular_device";
 const char kUnknownCellularDevicePath[] = "unknown_cellular_device";
 const char kDefaultWifiDevicePath[] = "stub_wifi_device";
 const char kResultSuccess[] = "success";
+const char kDefaultPin[] = "1111";
 
 }  // namespace
 
@@ -299,12 +300,10 @@ TEST_F(NetworkDeviceHandlerTest, SetCarrier) {
 }
 
 TEST_F(NetworkDeviceHandlerTest, RequirePin) {
-  const char kPin[] = "1234";
-
   // Test that the success callback gets called.
   network_device_handler_->RequirePin(kDefaultCellularDevicePath,
                                       true,
-                                      kPin,
+                                      kDefaultPin,
                                       success_callback_,
                                       error_callback_);
   message_loop_.RunUntilIdle();
@@ -313,7 +312,7 @@ TEST_F(NetworkDeviceHandlerTest, RequirePin) {
   // Test that the shill error propagates to the error callback.
   network_device_handler_->RequirePin(kUnknownCellularDevicePath,
                                       true,
-                                      kPin,
+                                      kDefaultPin,
                                       success_callback_,
                                       error_callback_);
   message_loop_.RunUntilIdle();
@@ -321,17 +320,19 @@ TEST_F(NetworkDeviceHandlerTest, RequirePin) {
 }
 
 TEST_F(NetworkDeviceHandlerTest, EnterPin) {
-  const char kPin[] = "1234";
-
   // Test that the success callback gets called.
-  network_device_handler_->EnterPin(
-      kDefaultCellularDevicePath, kPin, success_callback_, error_callback_);
+  network_device_handler_->EnterPin(kDefaultCellularDevicePath,
+                                    kDefaultPin,
+                                    success_callback_,
+                                    error_callback_);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(kResultSuccess, result_);
 
   // Test that the shill error propagates to the error callback.
-  network_device_handler_->EnterPin(
-      kUnknownCellularDevicePath, kPin, success_callback_, error_callback_);
+  network_device_handler_->EnterPin(kUnknownCellularDevicePath,
+                                    kDefaultPin,
+                                    success_callback_,
+                                    error_callback_);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(NetworkDeviceHandler::kErrorDeviceMissing, result_);
 }

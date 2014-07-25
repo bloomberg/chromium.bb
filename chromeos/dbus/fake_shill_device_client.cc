@@ -22,6 +22,8 @@ namespace chromeos {
 
 namespace {
 
+std::string kSimPin = "1111";
+
 void ErrorFunction(const std::string& device_path,
                    const std::string& error_name,
                    const std::string& error_message) {
@@ -129,10 +131,34 @@ void FakeShillDeviceClient::RequirePin(const dbus::ObjectPath& device_path,
                                        bool require,
                                        const base::Closure& callback,
                                        const ErrorCallback& error_callback) {
-  if (!stub_devices_.HasKey(device_path.value())) {
+  VLOG(1) << "RequirePin: " << device_path.value();
+  if (pin != kSimPin) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(error_callback, shill::kErrorResultIncorrectPin, ""));
+    return;
+  }
+  base::DictionaryValue* device_properties = NULL;
+  if (!stub_devices_.GetDictionaryWithoutPathExpansion(device_path.value(),
+                                                       &device_properties)) {
     PostDeviceNotFoundError(error_callback);
     return;
   }
+  base::DictionaryValue* simlock_dict = NULL;
+  if (!device_properties->GetDictionaryWithoutPathExpansion(
+          shill::kSIMLockStatusProperty, &simlock_dict)) {
+    simlock_dict = new base::DictionaryValue;
+    device_properties->SetWithoutPathExpansion(
+        shill::kSIMLockStatusProperty, simlock_dict);
+  }
+  simlock_dict->Clear();
+  simlock_dict->SetBoolean(shill::kSIMLockEnabledProperty, require);
+  // TODO(stevenjb): Investigate why non-empty value breaks UI.
+  std::string lock_type = "";  // shill::kSIMLockPin
+  simlock_dict->SetString(shill::kSIMLockTypeProperty, lock_type);
+  simlock_dict->SetInteger(shill::kSIMLockRetriesLeftProperty, 5);
+
+  NotifyObserversPropertyChanged(device_path, shill::kSIMLockStatusProperty);
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
@@ -140,6 +166,13 @@ void FakeShillDeviceClient::EnterPin(const dbus::ObjectPath& device_path,
                                      const std::string& pin,
                                      const base::Closure& callback,
                                      const ErrorCallback& error_callback) {
+  VLOG(1) << "EnterPin: " << device_path.value();
+  if (pin != kSimPin) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(error_callback, shill::kErrorResultIncorrectPin, ""));
+    return;
+  }
   if (!stub_devices_.HasKey(device_path.value())) {
     PostDeviceNotFoundError(error_callback);
     return;
@@ -152,6 +185,7 @@ void FakeShillDeviceClient::UnblockPin(const dbus::ObjectPath& device_path,
                                        const std::string& pin,
                                        const base::Closure& callback,
                                        const ErrorCallback& error_callback) {
+  VLOG(1) << "UnblockPin: " << device_path.value();
   if (!stub_devices_.HasKey(device_path.value())) {
     PostDeviceNotFoundError(error_callback);
     return;
@@ -164,6 +198,7 @@ void FakeShillDeviceClient::ChangePin(const dbus::ObjectPath& device_path,
                                       const std::string& new_pin,
                                       const base::Closure& callback,
                                       const ErrorCallback& error_callback) {
+  VLOG(1) << "ChangePin: " << device_path.value();
   if (!stub_devices_.HasKey(device_path.value())) {
     PostDeviceNotFoundError(error_callback);
     return;

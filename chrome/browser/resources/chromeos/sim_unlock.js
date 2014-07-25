@@ -207,7 +207,6 @@ cr.define('mobile', function() {
   };
 
   SimUnlock.cancel = function() {
-    chrome.send('cancel');
     SimUnlock.close();
   };
 

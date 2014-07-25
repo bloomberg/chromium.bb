@@ -435,20 +435,26 @@ cr.define('options.internet', function() {
       updateHidden('#details-internet-page .wimax-details', !this.wimax);
       updateHidden('#details-internet-page .vpn-details', !this.vpn);
       updateHidden('#details-internet-page .proxy-details', !this.showProxy);
+
+      // Cellular
+
       // Conditionally call updateHidden on .gsm-only, so that we don't unhide
       // a previously hidden element.
       if (this.gsm)
         updateHidden('#details-internet-page .cdma-only', true);
       else
         updateHidden('#details-internet-page .gsm-only', true);
-      /* Network information merged into the Wifi tab for wireless networks
-         unless the option is set for enabling a static IP configuration. */
+
+      // Wifi
+
+      // Network information merged into the Wifi tab for wireless networks
+      // unless the option is set for enabling a static IP configuration.
       updateHidden('#details-internet-page .network-details',
                    (this.wireless && !this.showStaticIPConfig) || this.vpn);
       updateHidden('#details-internet-page .wifi-network-setting',
                    this.showStaticIPConfig);
 
-      // Wifi - Password and shared.
+      // Password and shared.
       updateHidden('#details-internet-page #password-details',
                    !this.wireless || !this.hasSecurity);
       updateHidden('#details-internet-page #wifi-shared-network',
@@ -703,11 +709,6 @@ cr.define('options.internet', function() {
     DetailsInternetPage.showCarrierChangeSpinner(false);
   };
 
-  DetailsInternetPage.updateSecurityTab = function(requirePin) {
-    $('sim-card-lock-enabled').checked = requirePin;
-    $('change-pin').hidden = !requirePin;
-  };
-
   DetailsInternetPage.loginFromDetails = function() {
     var data = $('connection-state').data;
     var servicePath = data.servicePath;
@@ -881,6 +882,13 @@ cr.define('options.internet', function() {
       $('activate-details').hidden = !data.showActivateButton;
       if (data.showActivateButton)
         $('details-internet-login').hidden = true;
+
+      if (detailsPage.gsm) {
+        // TODO(stevenjb): Use managed properties for policy controlled values.
+        var lockEnabled = data.simCardLockEnabled.value;
+        $('sim-card-lock-enabled').checked = lockEnabled;
+        $('change-pin').hidden = !lockEnabled;
+      }
     }
 
     $('connection-state').data = data;
@@ -1223,7 +1231,10 @@ cr.define('options.internet', function() {
         apnSelector.selectedIndex = data.selectedApn;
         updateHidden('.apn-list-view', false);
         updateHidden('.apn-details-view', true);
-        DetailsInternetPage.updateSecurityTab(data.simCardLockEnabled.value);
+        // TODO(stevenjb): Used managed properties for policy controlled value.
+        var lockEnabled = data.simCardLockEnabled.value;
+        $('sim-card-lock-enabled').checked = lockEnabled;
+        $('change-pin').hidden = !lockEnabled;
       }
       $('auto-connect-network-cellular').checked = data.autoConnect.value;
       $('auto-connect-network-cellular').disabled = false;

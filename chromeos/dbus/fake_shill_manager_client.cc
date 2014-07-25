@@ -105,6 +105,7 @@ void UpdatePortaledWifiState(const std::string& service_path) {
 const char* kTechnologyUnavailable = "unavailable";
 const char* kNetworkActivated = "activated";
 const char* kNetworkDisabled = "disabled";
+const char* kCellularServicePath = "/service/cellular1";
 
 }  // namespace
 
@@ -582,9 +583,6 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
 
   const bool add_to_visible = true;
 
-  bool enabled;
-  std::string state;
-
   // IPConfigs
   base::DictionaryValue ipconfig_v4_dictionary;
   ipconfig_v4_dictionary.SetStringWithoutPathExpansion(
@@ -602,6 +600,9 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
   ipconfig_v6_dictionary.SetStringWithoutPathExpansion(
       shill::kMethodProperty, shill::kTypeIPv6);
   ip_configs->AddIPConfig("ipconfig_v6_path", ipconfig_v6_dictionary);
+
+  bool enabled;
+  std::string state;
 
   // Ethernet
   state = GetInitialStateForType(shill::kTypeEthernet, &enabled);
@@ -733,33 +734,33 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
                                shill::kCarrierProperty,
                                base::StringValue(shill::kCarrierSprint));
 
-    services->AddService("/service/cellular1",
+    services->AddService(kCellularServicePath,
                          "cellular1_guid",
                          "cellular1" /* name */,
                          shill::kTypeCellular,
                          state,
                          add_to_visible);
     base::StringValue technology_value(shill::kNetworkTechnologyGsm);
-    services->SetServiceProperty("/service/cellular1",
+    services->SetServiceProperty(kCellularServicePath,
                                  shill::kNetworkTechnologyProperty,
                                  technology_value);
 
     if (activated) {
       services->SetServiceProperty(
-          "/service/cellular1",
+          kCellularServicePath,
           shill::kActivationStateProperty,
           base::StringValue(shill::kActivationStateActivated));
-      services->SetServiceProperty("/service/cellular1",
+      services->SetServiceProperty(kCellularServicePath,
                                    shill::kConnectableProperty,
                                    base::FundamentalValue(true));
     } else {
       services->SetServiceProperty(
-          "/service/cellular1",
+          kCellularServicePath,
           shill::kActivationStateProperty,
           base::StringValue(shill::kActivationStateNotActivated));
     }
 
-    services->SetServiceProperty("/service/cellular1",
+    services->SetServiceProperty(kCellularServicePath,
                                  shill::kRoamingStateProperty,
                                  base::StringValue(shill::kRoamingStateHome));
   }
@@ -794,6 +795,18 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
                          add_to_visible);
     services->SetServiceProperty(
         "/service/vpn2", shill::kProviderProperty, provider_properties);
+  }
+
+  // Additional device states
+  for (DevicePropertyMap::iterator iter1 = shill_device_property_map_.begin();
+       iter1 != shill_device_property_map_.end(); ++iter1) {
+    std::string device_type = iter1->first;
+    std::string device_path = devices->GetDevicePathForType(device_type);
+    for (ShillPropertyMap::iterator iter2 = iter1->second.begin();
+         iter2 != iter1->second.end(); ++iter2) {
+      devices->SetDeviceProperty(device_path, iter2->first, *(iter2->second));
+      delete iter2->second;
+    }
   }
 
   SortManagerServices(true);
@@ -932,32 +945,55 @@ void FakeShillManagerClient::ScanCompleted(const std::string& device_path,
 }
 
 void FakeShillManagerClient::ParseCommandLineSwitch() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kShillStub)) {
-    std::string option_str =
-        command_line->GetSwitchValueASCII(switches::kShillStub);
-    base::StringPairs string_pairs;
-    base::SplitStringIntoKeyValuePairs(option_str, '=', ',', &string_pairs);
-    for (base::StringPairs::iterator iter = string_pairs.begin();
-         iter != string_pairs.end(); ++iter) {
-      ParseOption((*iter).first, (*iter).second);
-    }
-    return;
-  }
   // Default setup
   SetInitialNetworkState(shill::kTypeEthernet, shill::kStateOnline);
   SetInitialNetworkState(shill::kTypeWifi, shill::kStateOnline);
   SetInitialNetworkState(shill::kTypeCellular, shill::kStateIdle);
   SetInitialNetworkState(shill::kTypeVPN, shill::kStateIdle);
+
+  // Parse additional options
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kShillStub))
+    return;
+
+  std::string option_str =
+      command_line->GetSwitchValueASCII(switches::kShillStub);
+  VLOG(1) << "Parsing command line:" << option_str;
+  base::StringPairs string_pairs;
+  base::SplitStringIntoKeyValuePairs(option_str, '=', ',', &string_pairs);
+  for (base::StringPairs::iterator iter = string_pairs.begin();
+       iter != string_pairs.end(); ++iter) {
+    ParseOption((*iter).first, (*iter).second);
+  }
 }
 
 bool FakeShillManagerClient::ParseOption(const std::string& arg0,
                                          const std::string& arg1) {
-  if (arg0 == "interactive") {
+  VLOG(1) << "Parsing command line option: '" << arg0 << "=" << arg1 << "'";
+  if ((arg0 == "clear" || arg0 == "reset") && arg1 == "1") {
+    shill_initial_state_map_.clear();
+    return true;
+  } else if (arg0 == "interactive") {
     int seconds = 3;
     if (!arg1.empty())
       base::StringToInt(arg1, &seconds);
     interactive_delay_ = seconds;
+    return true;
+  } else if (arg0 == "sim_lock") {
+    bool locked = (arg1 == "1") ? true : false;
+    base::DictionaryValue* simlock_dict = new base::DictionaryValue;
+    simlock_dict->Set(shill::kSIMLockEnabledProperty,
+                      new base::FundamentalValue(locked));
+  // TODO(stevenjb): Investigate why non-empty value breaks UI.
+  std::string lock_type = "";  // shill::kSIMLockPin
+    simlock_dict->SetString(shill::kSIMLockTypeProperty, lock_type);
+    simlock_dict->SetInteger(shill::kSIMLockRetriesLeftProperty, 5);
+
+    shill_device_property_map_
+        [shill::kTypeCellular][shill::kSIMLockStatusProperty] = simlock_dict;
+    shill_device_property_map_
+        [shill::kTypeCellular][shill::kTechnologyFamilyProperty] =
+            new base::StringValue(shill::kNetworkTechnologyGsm);
     return true;
   }
   return SetInitialNetworkState(arg0, arg1);

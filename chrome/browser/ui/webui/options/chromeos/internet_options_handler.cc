@@ -18,7 +18,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/net/onc_utils.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
@@ -46,7 +45,6 @@
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translator.h"
 #include "components/onc/onc_constants.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -102,8 +100,6 @@ const char kUpdateConnectionDataFunction[] =
     "options.internet.DetailsInternetPage.updateConnectionData";
 const char kUpdateCarrierFunction[] =
     "options.internet.DetailsInternetPage.updateCarrier";
-const char kUpdateSecurityTabFunction[] =
-    "options.internet.DetailsInternetPage.updateSecurityTab";
 
 // These are used to register message handlers with JavaScript.
 const char kBuyDataPlanMessage[] = "buyDataPlan";
@@ -708,10 +704,6 @@ void RequestReconnect(const std::string& service_path,
 
 InternetOptionsHandler::InternetOptionsHandler()
     : weak_factory_(this) {
-  registrar_.Add(this, chrome::NOTIFICATION_REQUIRE_PIN_SETTING_CHANGE_ENDED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_ENTER_PIN_ENDED,
-                 content::NotificationService::AllSources());
   NetworkHandler::Get()->network_state_handler()->AddObserver(this, FROM_HERE);
 }
 
@@ -1004,7 +996,8 @@ void InternetOptionsHandler::SetSimCardLockCallback(
   // 2. Dialog will ask for current PIN in any case.
   // 3. If card is locked it will first call PIN unlock operation
   // 4. Then it will call Set RequirePin, passing the same PIN.
-  // 5. We'll get notified by REQUIRE_PIN_SETTING_CHANGE_ENDED notification.
+  // 5. The dialog may change device properties, in which case
+  //    DevicePropertiesUpdated() will get called which will update the UI.
   SimDialogDelegate::SimDialogMode mode;
   if (require_pin_new_value)
     mode = SimDialogDelegate::SIM_DIALOG_SET_LOCK_ON;
@@ -1091,24 +1084,17 @@ void InternetOptionsHandler::NetworkPropertiesUpdated(
   UpdateConnectionData(network->path());
 }
 
-void InternetOptionsHandler::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_REQUIRE_PIN_SETTING_CHANGE_ENDED) {
-    base::FundamentalValue require_pin(*content::Details<bool>(details).ptr());
-    web_ui()->CallJavascriptFunction(
-        kUpdateSecurityTabFunction, require_pin);
-  } else if (type == chrome::NOTIFICATION_ENTER_PIN_ENDED) {
-    // We make an assumption (which is valid for now) that the SIM
-    // unlock dialog is put up only when the user is trying to enable
-    // mobile data.
-    bool cancelled = *content::Details<bool>(details).ptr();
-    if (cancelled)
-      RefreshNetworkData();
-    // The case in which the correct PIN was entered and the SIM is
-    // now unlocked is handled in NetworkMenuButton.
-  }
+void InternetOptionsHandler::DevicePropertiesUpdated(
+    const DeviceState* device) {
+  if (!web_ui())
+    return;
+  if (device->type() != shill::kTypeCellular)
+    return;
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->FirstNetworkByType(
+          NetworkTypePattern::Cellular());
+  if (network)
+    UpdateConnectionData(network->path());  // Update sim lock status.
 }
 
 void InternetOptionsHandler::SetServerHostnameCallback(

@@ -16,7 +16,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
@@ -26,7 +25,6 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -46,7 +44,6 @@ using content::WebUIMessageHandler;
 namespace {
 
 // JS API callbacks names.
-const char kJsApiCancel[] = "cancel";
 const char kJsApiChangePinCode[] = "changePinCode";
 const char kJsApiEnterPinCode[] = "enterPinCode";
 const char kJsApiEnterPukCode[] = "enterPukCode";
@@ -162,11 +159,6 @@ class SimUnlockHandler : public WebUIMessageHandler,
           code_type_(code_type) {
     }
 
-    void HandleCancel() {
-      if (handler_)
-        handler_->CancelDialog();
-    }
-
     void HandleEnterCode() {
       if (handler_)
         handler_->EnterCode(code_, code_type_);
@@ -201,9 +193,6 @@ class SimUnlockHandler : public WebUIMessageHandler,
   // Returns the cellular device that this dialog currently corresponds to.
   const DeviceState* GetCellularDevice();
 
-  // Processing for the cases when dialog was cancelled.
-  void CancelDialog();
-
   // Pass PIN/PUK code to shill and check status.
   void EnterCode(const std::string& code, SimUnlockCode code_type);
 
@@ -224,7 +213,6 @@ class SimUnlockHandler : public WebUIMessageHandler,
   void HandleEnterCode(SimUnlockCode code_type, const std::string& code);
 
   // Handlers for JS WebUI messages.
-  void HandleCancel(const base::ListValue* args);
   void HandleChangePinCode(const base::ListValue* args);
   void HandleEnterPinCode(const base::ListValue* args);
   void HandleEnterPukCode(const base::ListValue* args);
@@ -233,14 +221,6 @@ class SimUnlockHandler : public WebUIMessageHandler,
 
   // Initialize current SIM card status, passes that to page.
   void InitializeSimStatus();
-
-  // Notifies SIM Security tab handler that RequirePin preference change
-  // has been ended (either updated or cancelled).
-  void NotifyOnRequirePinChangeEnded(bool new_value);
-
-  // Notifies observers that the EnterPin or EnterPuk dialog has been
-  // completed (either cancelled or with entry of PIN/PUK).
-  void NotifyOnEnterPinEnded(bool cancelled);
 
   // Checks whether SIM card is in PUK locked state and proceeds to PUK input.
   void ProceedToPukInput();
@@ -295,7 +275,6 @@ void SimUnlockUIHTMLSource::StartDataRequest(
   strings.SetString("title",
       l10n_util::GetStringUTF16(IDS_SIM_UNLOCK_ENTER_PIN_TITLE));
   strings.SetString("ok", l10n_util::GetStringUTF16(IDS_OK));
-  strings.SetString("cancel", l10n_util::GetStringUTF16(IDS_CANCEL));
   strings.SetString("enterPinTitle",
       l10n_util::GetStringUTF16(IDS_SIM_UNLOCK_ENTER_PIN_TITLE));
   strings.SetString("enterPinMessage",
@@ -373,9 +352,6 @@ SimUnlockHandler::~SimUnlockHandler() {
 }
 
 void SimUnlockHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(kJsApiCancel,
-      base::Bind(&SimUnlockHandler::HandleCancel,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kJsApiChangePinCode,
       base::Bind(&SimUnlockHandler::HandleChangePinCode,
                  base::Unretained(this)));
@@ -428,9 +404,6 @@ void SimUnlockHandler::OnPinOperationCompleted(PinOperationError error) {
   if (state_ == SIM_NOT_LOCKED_ASK_PIN && error == PIN_ERROR_NONE) {
     CHECK(dialog_mode_ == SimDialogDelegate::SIM_DIALOG_SET_LOCK_ON ||
           dialog_mode_ == SimDialogDelegate::SIM_DIALOG_SET_LOCK_OFF);
-    // Async change RequirePin operation has finished OK.
-    NotifyOnRequirePinChangeEnded(
-        dialog_mode_ == SimDialogDelegate::SIM_DIALOG_SET_LOCK_ON);
     // Dialog will close itself.
     state_ = SIM_ABSENT_NOT_LOCKED;
   } else if (state_ == SIM_NOT_LOCKED_CHANGE_PIN && error == PIN_ERROR_NONE) {
@@ -443,27 +416,10 @@ void SimUnlockHandler::OnPinOperationCompleted(PinOperationError error) {
   // NO_PIN_RETRIES_LEFT step.
   if (!(state_ == SIM_LOCKED_NO_PIN_TRIES_LEFT && error == PIN_ERROR_BLOCKED))
     ProcessSimCardState(cellular);
-  if (dialog_mode_ == SimDialogDelegate::SIM_DIALOG_UNLOCK &&
-      state_ == SIM_ABSENT_NOT_LOCKED)
-    NotifyOnEnterPinEnded(false);
 }
 
 const DeviceState* SimUnlockHandler::GetCellularDevice() {
   return GetNetworkStateHandler()->GetDeviceState(cellular_device_path_);
-}
-
-void SimUnlockHandler::CancelDialog() {
-  if (dialog_mode_ == SimDialogDelegate::SIM_DIALOG_SET_LOCK_ON ||
-      dialog_mode_ == SimDialogDelegate::SIM_DIALOG_SET_LOCK_OFF) {
-    // When async change RequirePin operation is performed,
-    // dialog UI controls such as Cancel button are disabled.
-    // If dialog was cancelled that means RequirePin preference hasn't been
-    // changed and is not in process of changing at the moment.
-    NotifyOnRequirePinChangeEnded(
-        !(dialog_mode_ == SimDialogDelegate::SIM_DIALOG_SET_LOCK_ON));
-  } else if (dialog_mode_ == SimDialogDelegate::SIM_DIALOG_UNLOCK) {
-    NotifyOnEnterPinEnded(true);
-  }
 }
 
 void SimUnlockHandler::EnterCode(const std::string& code,
@@ -603,31 +559,6 @@ void SimUnlockHandler::PinOperationErrorCallback(
   else
     pin_error = PIN_ERROR_UNKNOWN;
   OnPinOperationCompleted(pin_error);
-}
-
-void SimUnlockHandler::NotifyOnEnterPinEnded(bool cancelled) {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_ENTER_PIN_ENDED,
-      content::NotificationService::AllSources(),
-      content::Details<bool>(&cancelled));
-}
-
-void SimUnlockHandler::NotifyOnRequirePinChangeEnded(bool new_value) {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_REQUIRE_PIN_SETTING_CHANGE_ENDED,
-      content::NotificationService::AllSources(),
-      content::Details<bool>(&new_value));
-}
-
-void SimUnlockHandler::HandleCancel(const base::ListValue* args) {
-  const size_t kEnterCodeParamCount = 0;
-  if (args->GetSize() != kEnterCodeParamCount) {
-    NOTREACHED();
-    return;
-  }
-  scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr());
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&TaskProxy::HandleCancel, task.get()));
 }
 
 void SimUnlockHandler::HandleChangePinCode(const base::ListValue* args) {

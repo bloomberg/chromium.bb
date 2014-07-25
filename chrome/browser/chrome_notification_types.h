@@ -767,18 +767,6 @@ enum NotificationType {
   // Other singleton-based services can't use that because Observer
   // unregistration is impossible due to unpredictable deletion order.
   NOTIFICATION_OWNERSHIP_STATUS_CHANGED,
-
-  // Sent by SIM unlock dialog when it has finished with the process of
-  // updating RequirePin setting. RequirePin setting might have been changed
-  // to a new value or update might have been canceled.
-  // In either case notification is sent and details contain a bool
-  // that represents current value.
-  NOTIFICATION_REQUIRE_PIN_SETTING_CHANGE_ENDED,
-
-  // Sent by SIM unlock dialog when it has finished the EnterPin or
-  // EnterPuk dialog, either because the user cancelled, or entered a
-  // PIN or PUK.
-  NOTIFICATION_ENTER_PIN_ENDED,
 #endif
 
 #if defined(TOOLKIT_VIEWS)

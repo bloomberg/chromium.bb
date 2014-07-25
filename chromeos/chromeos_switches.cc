@@ -203,11 +203,12 @@ const char kOobeGuestSession[] = "oobe-guest-session";
 // See FakeDBusThreadManager::ParsePowerCommandLineSwitch for full details.
 const char kPowerStub[] = "power-stub";
 
-// Specifies network stub behavior. If this switch is not specified,
-// ethernet, wifi and vpn are enabled by default, and transitions occur
-// instantaneously. Multiple options can be comma separated (no spaces).
+// Overrides network stub behavior. By default, ethernet, wifi and vpn are
+// enabled, and transitions occur instantaneously. Multiple options can be
+// comma separated (no spaces). Note: all options are in the format 'foo=x'.
 // See FakeShillManagerClient::SetInitialNetworkState for implementation.
 // Examples:
+//  'clear=1' - Clears all default configurations
 //  'wifi=on' - A wifi network is initially connected ('1' also works)
 //  'wifi=off' - Wifi networks are all initially disconnected ('0' also works)
 //  'wifi=disabled' - Wifi is initially disabled
