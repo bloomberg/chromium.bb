@@ -31,19 +31,12 @@ interface CommandBuffer {
   DestroyTransferBuffer(int32 id);
   Echo() => ();
 
-  // TODO(piman): move to somewhere else (native_viewport?).
-  RequestAnimationFrames();
-  CancelAnimationFrames();
-
   // TODO(piman): sync points
 };
 
 interface CommandBufferClient {
   DidDestroy();
   LostContext(int32 lost_reason);  // TODO(piman): enum
-
-  // TODO(piman): move to somewhere else (native_viewport?).
-  DrawAnimationFrame();
 };
 
 }

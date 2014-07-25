@@ -19,7 +19,6 @@ bool ContextProviderMojo::BindToCurrentThread() {
   context_ = MojoGLES2CreateContext(
       command_buffer_handle_.release().value(),
       &ContextLostThunk,
-      NULL,
       this);
   return !!context_;
 }

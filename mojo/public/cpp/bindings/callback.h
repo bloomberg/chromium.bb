@@ -486,6 +486,8 @@ class Callback<void(A1, A2, A3, A4, A5, A6, A7)> {
   internal::SharedPtr<Runnable> sink_;
 };
 
+typedef Callback<void()> Closure;
+
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_CALLBACK_H_

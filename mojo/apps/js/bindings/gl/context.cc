@@ -157,7 +157,6 @@ Context::Context(v8::Isolate* isolate,
   context_ = MojoGLES2CreateContext(
       handle.value(),
       &ContextLostThunk,
-      NULL,
       this);
   MojoGLES2MakeCurrent(context_);
 }

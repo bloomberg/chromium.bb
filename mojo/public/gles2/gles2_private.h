@@ -29,13 +29,10 @@ class MOJO_GLES2_EXPORT GLES2Support {
   virtual MojoGLES2Context CreateContext(
       MessagePipeHandle handle,
       MojoGLES2ContextLost lost_callback,
-      MojoGLES2DrawAnimationFrame animation_callback,
       void* closure) = 0;
   virtual void DestroyContext(MojoGLES2Context context) = 0;
   virtual void MakeCurrent(MojoGLES2Context context) = 0;
   virtual void SwapBuffers() = 0;
-  virtual void RequestAnimationFrames(MojoGLES2Context context) = 0;
-  virtual void CancelAnimationFrames(MojoGLES2Context context) = 0;
   virtual void* GetGLES2Interface(MojoGLES2Context context) = 0;
   virtual void* GetContextSupport(MojoGLES2Context context) = 0;
   virtual GLES2Interface* GetGLES2InterfaceForCurrentContext() = 0;

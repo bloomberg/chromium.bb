@@ -23,13 +23,10 @@ class MOJO_GLES2_IMPL_EXPORT GLES2SupportImpl : public GLES2Support {
   virtual MojoGLES2Context CreateContext(
       MessagePipeHandle handle,
       MojoGLES2ContextLost lost_callback,
-      MojoGLES2DrawAnimationFrame animation_callback,
       void* closure) OVERRIDE;
   virtual void DestroyContext(MojoGLES2Context context) OVERRIDE;
   virtual void MakeCurrent(MojoGLES2Context context) OVERRIDE;
   virtual void SwapBuffers() OVERRIDE;
-  virtual void RequestAnimationFrames(MojoGLES2Context context) OVERRIDE;
-  virtual void CancelAnimationFrames(MojoGLES2Context context) OVERRIDE;
   virtual void* GetGLES2Interface(MojoGLES2Context context) OVERRIDE;
   virtual void* GetContextSupport(MojoGLES2Context context) OVERRIDE;
   virtual GLES2Interface* GetGLES2InterfaceForCurrentContext() OVERRIDE;

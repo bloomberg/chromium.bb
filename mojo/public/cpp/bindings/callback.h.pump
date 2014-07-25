@@ -84,6 +84,8 @@ class Callback<void($for ARG , [[A$(ARG)]])> {
 
 ]]  $$ for ARITY
 
+typedef Callback<void()> Closure;
+
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_CALLBACK_H_

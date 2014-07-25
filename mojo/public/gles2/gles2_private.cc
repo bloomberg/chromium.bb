@@ -28,11 +28,9 @@ void MojoGLES2Terminate() {
 MojoGLES2Context MojoGLES2CreateContext(
     MojoHandle handle,
     MojoGLES2ContextLost lost_callback,
-    MojoGLES2DrawAnimationFrame animation_callback,
     void* closure) {
   return g_gles2_support->CreateContext(mojo::MessagePipeHandle(handle),
                                         lost_callback,
-                                        animation_callback,
                                         closure);
 }
 
@@ -49,16 +47,6 @@ void MojoGLES2MakeCurrent(MojoGLES2Context context) {
 void MojoGLES2SwapBuffers() {
   assert(g_gles2_support);
   return g_gles2_support->SwapBuffers();
-}
-
-void MojoGLES2RequestAnimationFrames(MojoGLES2Context context) {
-  assert(g_gles2_support);
-  return g_gles2_support->RequestAnimationFrames(context);
-}
-
-void MojoGLES2CancelAnimationFrames(MojoGLES2Context context) {
-  assert(g_gles2_support);
-  return g_gles2_support->CancelAnimationFrames(context);
 }
 
 void* MojoGLES2GetGLES2Interface(MojoGLES2Context context) {

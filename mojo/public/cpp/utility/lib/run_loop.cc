@@ -36,7 +36,8 @@ struct RunLoop::RunState {
   bool should_quit;
 };
 
-RunLoop::RunLoop() : run_state_(NULL), next_handler_id_(0) {
+RunLoop::RunLoop()
+    : run_state_(NULL), next_handler_id_(0), next_sequence_number_(0) {
   assert(!current());
   current_run_loop.Set(this);
 }
@@ -95,8 +96,10 @@ void RunLoop::Run() {
   RunState* old_state = run_state_;
   RunState run_state;
   run_state_ = &run_state;
-  while (!run_state.should_quit)
+  while (!run_state.should_quit) {
+    DoDelayedWork();
     Wait(false);
+  }
   run_state_ = old_state;
 }
 
@@ -106,10 +109,20 @@ void RunLoop::RunUntilIdle() {
   RunState run_state;
   run_state_ = &run_state;
   while (!run_state.should_quit) {
-    if (!Wait(true))
+    DoDelayedWork();
+    if (!Wait(true) && delayed_tasks_.empty())
       break;
   }
   run_state_ = old_state;
+}
+
+void RunLoop::DoDelayedWork() {
+  MojoTimeTicks now = GetTimeTicksNow();
+  if (!delayed_tasks_.empty() && delayed_tasks_.top().run_time <= now) {
+    PendingTask task = delayed_tasks_.top();
+    delayed_tasks_.pop();
+    task.task.Run();
+  }
 }
 
 void RunLoop::Quit() {
@@ -118,9 +131,15 @@ void RunLoop::Quit() {
     run_state_->should_quit = true;
 }
 
+void RunLoop::PostDelayedTask(const Closure& task, MojoTimeTicks delay) {
+  assert(current() == this);
+  MojoTimeTicks run_time = delay + GetTimeTicksNow();
+  delayed_tasks_.push(PendingTask(task, run_time, next_sequence_number_++));
+}
+
 bool RunLoop::Wait(bool non_blocking) {
   const WaitState wait_state = GetWaitState(non_blocking);
-  if (wait_state.handles.empty()) {
+  if (wait_state.handles.empty() && delayed_tasks_.empty()) {
     Quit();
     return false;
   }
@@ -206,6 +225,13 @@ RunLoop::WaitState RunLoop::GetWaitState(bool non_blocking) const {
       min_time = i->second.deadline;
     }
   }
+  if (!delayed_tasks_.empty()) {
+    MojoTimeTicks delayed_min_time = delayed_tasks_.top().run_time;
+    if (min_time == kInvalidTimeTicks)
+      min_time = delayed_min_time;
+    else
+      min_time = std::min(min_time, delayed_min_time);
+  }
   if (non_blocking) {
     wait_state.deadline = static_cast<MojoDeadline>(0);
   } else if (min_time != kInvalidTimeTicks) {
@@ -216,6 +242,26 @@ RunLoop::WaitState RunLoop::GetWaitState(bool non_blocking) const {
       wait_state.deadline = static_cast<MojoDeadline>(min_time - now);
   }
   return wait_state;
+}
+
+RunLoop::PendingTask::PendingTask(const Closure& task,
+                                  MojoTimeTicks run_time,
+                                  uint64_t sequence_number)
+    : task(task), run_time(run_time), sequence_number(sequence_number) {
+}
+
+RunLoop::PendingTask::~PendingTask() {
+}
+
+bool RunLoop::PendingTask::operator<(const RunLoop::PendingTask& other) const {
+  if (run_time != other.run_time) {
+    // std::priority_queue<> puts the least element at the end of the queue. We
+    // want the soonest eligible task to be at the head of the queue, so
+    // run_times further in the future are considered lesser.
+    return run_time > other.run_time;
+  }
+
+  return sequence_number > other.sequence_number;
 }
 
 }  // namespace mojo

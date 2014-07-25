@@ -28,7 +28,6 @@ Graphics3DResource::Graphics3DResource(PP_Instance instance)
   ScopedMessagePipeHandle pipe = MojoPpapiGlobals::Get()->CreateGLES2Context();
   context_ = MojoGLES2CreateContext(pipe.release().value(),
                                     &ContextLostThunk,
-                                    &DrawAnimationFrameThunk,
                                     this);
 }
 
@@ -152,10 +151,6 @@ Graphics3DResource::~Graphics3DResource() {
 
 void Graphics3DResource::ContextLostThunk(void* closure) {
   static_cast<Graphics3DResource*>(closure)->ContextLost();
-}
-
-void Graphics3DResource::DrawAnimationFrameThunk(void* closure) {
-  // TODO(yzshen): Use this notification to drive the SwapBuffers() callback.
 }
 
 void Graphics3DResource::ContextLost() {

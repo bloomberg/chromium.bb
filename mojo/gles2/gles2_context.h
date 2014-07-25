@@ -30,7 +30,6 @@ class GLES2Context : public CommandBufferDelegate,
   explicit GLES2Context(const MojoAsyncWaiter* async_waiter,
                         ScopedMessagePipeHandle command_buffer_handle,
                         MojoGLES2ContextLost lost_callback,
-                        MojoGLES2DrawAnimationFrame animation_callback,
                         void* closure);
   virtual ~GLES2Context();
   bool Initialize();
@@ -39,19 +38,15 @@ class GLES2Context : public CommandBufferDelegate,
     return implementation_.get();
   }
   gpu::ContextSupport* context_support() const { return implementation_.get(); }
-  void RequestAnimationFrames();
-  void CancelAnimationFrames();
 
  private:
   virtual void ContextLost() OVERRIDE;
-  virtual void DrawAnimationFrame() OVERRIDE;
 
   CommandBufferClientImpl command_buffer_;
   scoped_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
   scoped_ptr<gpu::TransferBuffer> transfer_buffer_;
   scoped_ptr<gpu::gles2::GLES2Implementation> implementation_;
   MojoGLES2ContextLost lost_callback_;
-  MojoGLES2DrawAnimationFrame animation_callback_;
   void* closure_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(GLES2Context);

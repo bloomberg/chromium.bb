@@ -61,13 +61,11 @@ void GLES2SupportImpl::Terminate() {
 MojoGLES2Context GLES2SupportImpl::CreateContext(
     MessagePipeHandle handle,
     MojoGLES2ContextLost lost_callback,
-    MojoGLES2DrawAnimationFrame animation_callback,
     void* closure) {
   ScopedMessagePipeHandle scoped_handle(handle);
   scoped_ptr<GLES2Context> client(new GLES2Context(async_waiter_,
                                                    scoped_handle.Pass(),
                                                    lost_callback,
-                                                   animation_callback,
                                                    closure));
   if (!client->Initialize())
     client.reset();
@@ -90,14 +88,6 @@ void GLES2SupportImpl::MakeCurrent(MojoGLES2Context context) {
 
 void GLES2SupportImpl::SwapBuffers() {
   g_gles2_interface.Get().gpu_interface()->SwapBuffers();
-}
-
-void GLES2SupportImpl::RequestAnimationFrames(MojoGLES2Context context) {
-  static_cast<GLES2Context*>(context)->RequestAnimationFrames();
-}
-
-void GLES2SupportImpl::CancelAnimationFrames(MojoGLES2Context context) {
-  static_cast<GLES2Context*>(context)->CancelAnimationFrames();
 }
 
 void* GLES2SupportImpl::GetGLES2Interface(MojoGLES2Context context) {

@@ -19,15 +19,12 @@ class GLES2ClientImpl {
 
   void SetSize(const mojo::Size& size);
   void HandleInputEvent(const mojo::Event& event);
+  void Draw();
 
  private:
   void ContextLost();
   static void ContextLostThunk(void* closure);
-  void DrawAnimationFrame();
-  static void DrawAnimationFrameThunk(void* closure);
-
-  void RequestAnimationFrames();
-  void CancelAnimationFrames();
+  void WantToDraw();
 
   MojoTimeTicks last_time_;
   mojo::Size size_;
@@ -35,7 +32,7 @@ class GLES2ClientImpl {
   mojo::Point capture_point_;
   mojo::Point last_drag_point_;
   MojoTimeTicks drag_start_time_;
-  bool getting_animation_frames_;
+  bool waiting_to_draw_;
 
   MojoGLES2Context context_;
 

@@ -10,6 +10,7 @@
 #include <stdlib.h>
 
 #include "mojo/public/c/gles2/gles2.h"
+#include "mojo/public/cpp/utility/run_loop.h"
 
 namespace examples {
 namespace {
@@ -26,11 +27,10 @@ float GetRandomColor() {
 }
 
 GLES2ClientImpl::GLES2ClientImpl(mojo::CommandBufferPtr command_buffer)
-    : getting_animation_frames_(false) {
+    : last_time_(mojo::GetTimeTicksNow()), waiting_to_draw_(false) {
   context_ = MojoGLES2CreateContext(
       command_buffer.PassMessagePipe().release().value(),
       &ContextLostThunk,
-      &DrawAnimationFrameThunk,
       this);
   MojoGLES2MakeCurrent(context_);
 }
@@ -44,7 +44,7 @@ void GLES2ClientImpl::SetSize(const mojo::Size& size) {
   if (size_.width == 0 || size_.height == 0)
     return;
   cube_.Init(size_.width, size_.height);
-  RequestAnimationFrames();
+  WantToDraw();
 }
 
 void GLES2ClientImpl::HandleInputEvent(const mojo::Event& event) {
@@ -53,27 +53,26 @@ void GLES2ClientImpl::HandleInputEvent(const mojo::Event& event) {
   case mojo::EVENT_TYPE_TOUCH_PRESSED:
     if (event.flags & mojo::EVENT_FLAGS_RIGHT_MOUSE_BUTTON)
       break;
-    CancelAnimationFrames();
     capture_point_ = *event.location;
     last_drag_point_ = capture_point_;
     drag_start_time_ = mojo::GetTimeTicksNow();
     break;
   case mojo::EVENT_TYPE_MOUSE_DRAGGED:
-  case mojo::EVENT_TYPE_TOUCH_MOVED:
+  case mojo::EVENT_TYPE_TOUCH_MOVED: {
     if (event.flags & mojo::EVENT_FLAGS_RIGHT_MOUSE_BUTTON)
       break;
-    if (!getting_animation_frames_) {
-      int direction = event.location->y < last_drag_point_.y ||
-          event.location->x > last_drag_point_.x ? 1 : -1;
-      cube_.set_direction(direction);
-      cube_.UpdateForDragDistance(
-          CalculateDragDistance(last_drag_point_, *event.location));
-      cube_.Draw();
-      MojoGLES2SwapBuffers();
+    int direction = event.location->y < last_drag_point_.y ||
+                            event.location->x > last_drag_point_.x
+                        ? 1
+                        : -1;
+    cube_.set_direction(direction);
+    cube_.UpdateForDragDistance(
+        CalculateDragDistance(last_drag_point_, *event.location));
+    WantToDraw();
 
-      last_drag_point_ = *event.location;
-    }
+    last_drag_point_ = *event.location;
     break;
+  }
   case mojo::EVENT_TYPE_MOUSE_RELEASED:
   case mojo::EVENT_TYPE_TOUCH_RELEASED: {
     if (event.flags & mojo::EVENT_FLAGS_RIGHT_MOUSE_BUTTON) {
@@ -87,7 +86,7 @@ void GLES2ClientImpl::HandleInputEvent(const mojo::Event& event) {
         delta);
 
     capture_point_ = last_drag_point_ = mojo::Point();
-    RequestAnimationFrames();
+    WantToDraw();
     break;
   }
   default:
@@ -96,14 +95,31 @@ void GLES2ClientImpl::HandleInputEvent(const mojo::Event& event) {
 }
 
 void GLES2ClientImpl::ContextLost() {
-  CancelAnimationFrames();
 }
 
 void GLES2ClientImpl::ContextLostThunk(void* closure) {
   static_cast<GLES2ClientImpl*>(closure)->ContextLost();
 }
 
-void GLES2ClientImpl::DrawAnimationFrame() {
+struct DrawRunnable {
+  explicit DrawRunnable(GLES2ClientImpl* impl) : impl(impl) {}
+  virtual ~DrawRunnable() {}
+
+  void Run() const { impl->Draw(); }
+
+  GLES2ClientImpl* impl;
+};
+
+void GLES2ClientImpl::WantToDraw() {
+  if (waiting_to_draw_)
+    return;
+  waiting_to_draw_ = true;
+  mojo::RunLoop::current()->PostDelayedTask(mojo::Closure(DrawRunnable(this)),
+                                            MojoTimeTicks(16667));
+}
+
+void GLES2ClientImpl::Draw() {
+  waiting_to_draw_ = false;
   MojoTimeTicks now = mojo::GetTimeTicksNow();
   MojoTimeTicks offset = now - last_time_;
   float delta = static_cast<float>(offset) / 1000000.;
@@ -112,21 +128,7 @@ void GLES2ClientImpl::DrawAnimationFrame() {
   cube_.Draw();
 
   MojoGLES2SwapBuffers();
-}
-
-void GLES2ClientImpl::DrawAnimationFrameThunk(void* closure) {
-  static_cast<GLES2ClientImpl*>(closure)->DrawAnimationFrame();
-}
-
-void GLES2ClientImpl::RequestAnimationFrames() {
-  getting_animation_frames_ = true;
-  MojoGLES2RequestAnimationFrames(context_);
-  last_time_ = mojo::GetTimeTicksNow();
-}
-
-void GLES2ClientImpl::CancelAnimationFrames() {
-  getting_animation_frames_ = false;
-  MojoGLES2CancelAnimationFrames(context_);
+  WantToDraw();
 }
 
 }  // namespace examples

@@ -27,7 +27,6 @@ class CommandBufferDelegate {
  public:
   virtual ~CommandBufferDelegate();
   virtual void ContextLost();
-  virtual void DrawAnimationFrame();
 };
 
 class CommandBufferClientImpl : public CommandBufferClient,
@@ -72,16 +71,12 @@ class CommandBufferClientImpl : public CommandBufferClient,
   virtual void Echo(const base::Closure& callback) OVERRIDE;
   virtual uint32 CreateStreamTexture(uint32 texture_id) OVERRIDE;
 
-  void RequestAnimationFrames();
-  void CancelAnimationFrames();
-
  private:
   class SyncClientImpl;
 
   // CommandBufferClient implementation:
   virtual void DidDestroy() OVERRIDE;
   virtual void LostContext(int32_t lost_reason) OVERRIDE;
-  virtual void DrawAnimationFrame() OVERRIDE;
 
   // ErrorHandler implementation:
   virtual void OnConnectionError() OVERRIDE;

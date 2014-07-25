@@ -6,7 +6,9 @@
 #define MOJO_PUBLIC_CPP_UTILITY_RUN_LOOP_H_
 
 #include <map>
+#include <queue>
 
+#include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
@@ -49,6 +51,10 @@ class RunLoop {
 
   void Quit();
 
+  // Adds a task to be performed after delay has elapsed. Must be posted to the
+  // current thread's RunLoop.
+  void PostDelayedTask(const Closure& task, MojoTimeTicks delay);
+
  private:
   struct RunState;
   struct WaitState;
@@ -69,6 +75,9 @@ class RunLoop {
   };
 
   typedef std::map<Handle, HandlerData> HandleToHandlerData;
+
+  // Do one unit of delayed work, if eligible.
+  void DoDelayedWork();
 
   // Waits for a handle to be ready. Returns after servicing at least one
   // handle (or there are no more handles) unless |non_blocking| is true,
@@ -99,6 +108,24 @@ class RunLoop {
   // match it means the handler was removed then added so that we shouldn't
   // notify it.
   int next_handler_id_;
+
+  struct PendingTask {
+    PendingTask(const Closure& task,
+                MojoTimeTicks runtime,
+                uint64_t sequence_number);
+    ~PendingTask();
+
+    bool operator<(const PendingTask& other) const;
+
+    Closure task;
+    MojoTimeTicks run_time;
+    uint64_t sequence_number;
+  };
+  // An ever increasing sequence number attached to each pending task in order
+  // to preserve relative order of tasks posted at the 'same' time.
+  uint64_t next_sequence_number_;
+  typedef std::priority_queue<PendingTask> DelayedTaskQueue;
+  DelayedTaskQueue delayed_tasks_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(RunLoop);
 };

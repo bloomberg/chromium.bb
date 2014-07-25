@@ -44,7 +44,6 @@ bool CreateMapAndDupSharedBuffer(size_t size,
 CommandBufferDelegate::~CommandBufferDelegate() {}
 
 void CommandBufferDelegate::ContextLost() {}
-void CommandBufferDelegate::DrawAnimationFrame() {}
 
 class CommandBufferClientImpl::SyncClientImpl
     : public InterfaceImpl<CommandBufferSyncClient> {
@@ -252,14 +251,6 @@ uint32 CommandBufferClientImpl::CreateStreamTexture(uint32 texture_id) {
   return 0;
 }
 
-void CommandBufferClientImpl::RequestAnimationFrames() {
-  command_buffer_->RequestAnimationFrames();
-}
-
-void CommandBufferClientImpl::CancelAnimationFrames() {
-  command_buffer_->CancelAnimationFrames();
-}
-
 void CommandBufferClientImpl::DidDestroy() {
   LostContext(gpu::error::kUnknown);
 }
@@ -269,10 +260,6 @@ void CommandBufferClientImpl::LostContext(int32_t lost_reason) {
   last_state_.context_lost_reason =
       static_cast<gpu::error::ContextLostReason>(lost_reason);
   delegate_->ContextLost();
-}
-
-void CommandBufferClientImpl::DrawAnimationFrame() {
-  delegate_->DrawAnimationFrame();
 }
 
 void CommandBufferClientImpl::OnConnectionError() {

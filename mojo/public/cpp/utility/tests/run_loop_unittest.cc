@@ -284,5 +284,28 @@ TEST_F(RunLoopTest, NestedRun) {
   EXPECT_EQ(handler.last_error_result(), MOJO_RESULT_DEADLINE_EXCEEDED);
 }
 
+struct Task {
+  Task(int num, std::vector<int>* sequence) : num(num), sequence(sequence) {}
+
+  void Run() const { sequence->push_back(num); }
+
+  int num;
+  std::vector<int>* sequence;
+};
+
+TEST_F(RunLoopTest, DelayedTaskOrder) {
+  std::vector<int> sequence;
+  RunLoop run_loop;
+  run_loop.PostDelayedTask(Closure(Task(1, &sequence)), 0);
+  run_loop.PostDelayedTask(Closure(Task(2, &sequence)), 0);
+  run_loop.PostDelayedTask(Closure(Task(3, &sequence)), 0);
+  run_loop.RunUntilIdle();
+
+  ASSERT_EQ(3u, sequence.size());
+  EXPECT_EQ(1, sequence[0]);
+  EXPECT_EQ(2, sequence[1]);
+  EXPECT_EQ(3, sequence[2]);
+}
+
 }  // namespace
 }  // namespace mojo

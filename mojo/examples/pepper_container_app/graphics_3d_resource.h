@@ -61,7 +61,6 @@ class Graphics3DResource : public ppapi::Resource,
   virtual ~Graphics3DResource();
 
   static void ContextLostThunk(void* closure);
-  static void DrawAnimationFrameThunk(void* closure);
   void ContextLost();
 
   MojoGLES2Context context_;
