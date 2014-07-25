@@ -467,7 +467,7 @@ void SearchProviderTest::ResetFieldTrialList() {
   field_trial_list_.reset();
   field_trial_list_.reset(new base::FieldTrialList(
       new metrics::SHA1EntropyProvider("foo")));
-  chrome_variations::testing::ClearAllVariationParams();
+  variations::testing::ClearAllVariationParams();
   base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
       "AutocompleteDynamicTrial_0", "DefaultGroup");
   trial->group();
@@ -478,7 +478,7 @@ base::FieldTrial* SearchProviderTest::CreateZeroSuggestFieldTrial(
   std::map<std::string, std::string> params;
   params[std::string(OmniboxFieldTrial::kZeroSuggestRule)] = enabled ?
       "true" : "false";
-  chrome_variations::AssociateVariationParams(
+  variations::AssociateVariationParams(
       OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params);
   return base::FieldTrialList::CreateFieldTrial(
       OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");

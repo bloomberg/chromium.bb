@@ -358,7 +358,7 @@ bool ShouldQueryPrerenderServiceForCandidateURLs() {
 }
 
 string GetPrerenderServiceURLPrefix() {
-  string prefix = chrome_variations::GetVariationParamValue(
+  string prefix = variations::GetVariationParamValue(
       kLocalPredictorSpecTrialName,
       kPrerenderServiceURLPrefixParameterName);
   return prefix.empty() ? kDefaultPrerenderServiceURLPrefix : prefix;

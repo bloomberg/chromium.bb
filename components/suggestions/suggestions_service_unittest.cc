@@ -162,7 +162,7 @@ class SuggestionsServiceTest : public testing::Test {
     field_trial_list_.reset(
         new base::FieldTrialList(new metrics::SHA1EntropyProvider("foo")));
 
-    chrome_variations::testing::ClearAllVariationParams();
+    variations::testing::ClearAllVariationParams();
     std::map<std::string, std::string> params;
     params[kSuggestionsFieldTrialStateParam] =
         kSuggestionsFieldTrialStateEnabled;
@@ -174,8 +174,8 @@ class SuggestionsServiceTest : public testing::Test {
     params[kSuggestionsFieldTrialCommonParamsParam] = common_params;
     params[kSuggestionsFieldTrialBlacklistPathParam] = blacklist_path;
     params[kSuggestionsFieldTrialBlacklistUrlParam] = blacklist_url_param;
-    chrome_variations::AssociateVariationParams(kSuggestionsFieldTrialName,
-                                                "Group1", params);
+    variations::AssociateVariationParams(kSuggestionsFieldTrialName, "Group1",
+                                         params);
     field_trial_ = base::FieldTrialList::CreateFieldTrial(
         kSuggestionsFieldTrialName, "Group1");
     field_trial_->group();

@@ -18,10 +18,10 @@
 namespace chrome_variations {
 
 TEST(ExperimentLabelsTest, BuildGoogleUpdateExperimentLabel) {
-  const VariationID TEST_VALUE_A = 3300200;
-  const VariationID TEST_VALUE_B = 3300201;
-  const VariationID TEST_VALUE_C = 3300202;
-  const VariationID TEST_VALUE_D = 3300203;
+  const variations::VariationID TEST_VALUE_A = 3300200;
+  const variations::VariationID TEST_VALUE_B = 3300201;
+  const variations::VariationID TEST_VALUE_C = 3300202;
+  const variations::VariationID TEST_VALUE_D = 3300203;
 
   struct {
     const char* active_group_pairs;
@@ -45,14 +45,14 @@ TEST(ExperimentLabelsTest, BuildGoogleUpdateExperimentLabel) {
   };
 
   // Register a few VariationIDs.
-  AssociateGoogleVariationID(GOOGLE_UPDATE_SERVICE, "FieldTrialA", "Default",
-                             TEST_VALUE_A);
-  AssociateGoogleVariationID(GOOGLE_UPDATE_SERVICE, "FieldTrialB", "Group1",
-                             TEST_VALUE_B);
-  AssociateGoogleVariationID(GOOGLE_UPDATE_SERVICE, "FieldTrialC", "Default",
-                             TEST_VALUE_C);
-  AssociateGoogleVariationID(GOOGLE_UPDATE_SERVICE, "FieldTrialD", "Default",
-                             TEST_VALUE_D);  // Not actually used.
+  AssociateGoogleVariationID(variations::GOOGLE_UPDATE_SERVICE, "FieldTrialA",
+                             "Default", TEST_VALUE_A);
+  AssociateGoogleVariationID(variations::GOOGLE_UPDATE_SERVICE, "FieldTrialB",
+                             "Group1", TEST_VALUE_B);
+  AssociateGoogleVariationID(variations::GOOGLE_UPDATE_SERVICE, "FieldTrialC",
+                             "Default", TEST_VALUE_C);
+  AssociateGoogleVariationID(variations::GOOGLE_UPDATE_SERVICE, "FieldTrialD",
+                             "Default", TEST_VALUE_D);  // Not actually used.
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     // Parse the input groups.

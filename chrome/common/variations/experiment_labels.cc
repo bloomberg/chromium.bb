@@ -24,7 +24,8 @@ const char kVariationPrefix[] = "CrVar";
 // including a timestamp that is a year in the future from |current_time|. Since
 // multiple headers can be transmitted, |count| is a number that is appended
 // after the label key to differentiate the labels.
-base::string16 CreateSingleExperimentLabel(int count, VariationID id,
+base::string16 CreateSingleExperimentLabel(int count,
+                                           variations::VariationID id,
                                            const base::Time& current_time) {
   // Build the parts separately so they can be validated.
   const base::string16 key =
@@ -52,10 +53,11 @@ base::string16 BuildGoogleUpdateExperimentLabel(
   // Find all currently active VariationIDs associated with Google Update.
   for (base::FieldTrial::ActiveGroups::const_iterator it =
        active_groups.begin(); it != active_groups.end(); ++it) {
-    const VariationID id = GetGoogleVariationID(GOOGLE_UPDATE_SERVICE,
-                                                it->trial_name, it->group_name);
+    const variations::VariationID id =
+        variations::GetGoogleVariationID(variations::GOOGLE_UPDATE_SERVICE,
+                                         it->trial_name, it->group_name);
 
-    if (id == EMPTY_ID)
+    if (id == variations::EMPTY_ID)
       continue;
 
     if (!experiment_labels.empty())

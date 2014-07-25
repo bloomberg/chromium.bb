@@ -15,7 +15,7 @@
 #include "components/variations/proto/study.pb.h"
 #include "components/variations/proto/variations_seed.pb.h"
 
-namespace chrome_variations {
+namespace variations {
 
 // Internal functions exposed for testing purposes only.
 namespace internal {
@@ -74,6 +74,6 @@ void FilterAndValidateStudies(const VariationsSeed& seed,
                               const std::string& hardware_class,
                               std::vector<ProcessedStudy>* filtered_studies);
 
-}  // namespace chrome_variations
+}  // namespace variations
 
 #endif  // COMPONENTS_VARIATIONS_STUDY_FILTERING_H_

@@ -10,7 +10,7 @@
 #include "components/variations/processed_study.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome_variations {
+namespace variations {
 
 namespace {
 
@@ -476,4 +476,4 @@ TEST(VariationsStudyFilteringTest, ValidateStudy) {
   EXPECT_FALSE(processed_study.Init(&study, false));
 }
 
-}  // namespace chrome_variations
+}  // namespace variations

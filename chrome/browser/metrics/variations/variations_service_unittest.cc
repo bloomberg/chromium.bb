@@ -124,12 +124,12 @@ class TestVariationsServiceObserver : public VariationsService::Observer {
 // study called "test", which contains one experiment called "abc" with
 // probability weight 100. |seed|'s study field will be cleared before adding
 // the new study.
-VariationsSeed CreateTestSeed() {
-  VariationsSeed seed;
-  Study* study = seed.add_study();
+variations::VariationsSeed CreateTestSeed() {
+  variations::VariationsSeed seed;
+  variations::Study* study = seed.add_study();
   study->set_name("test");
   study->set_default_experiment_name("abc");
-  Study_Experiment* experiment = study->add_experiment();
+  variations::Study_Experiment* experiment = study->add_experiment();
   experiment->set_name("abc");
   experiment->set_probability_weight(100);
   seed.set_serial_number("123");
@@ -137,7 +137,7 @@ VariationsSeed CreateTestSeed() {
 }
 
 // Serializes |seed| to protobuf binary format.
-std::string SerializeSeed(const VariationsSeed& seed) {
+std::string SerializeSeed(const variations::VariationsSeed& seed) {
   std::string serialized_seed;
   seed.SerializeToString(&serialized_seed);
   return serialized_seed;
@@ -397,7 +397,7 @@ TEST_F(VariationsServiceTest, Observer) {
     TestVariationsServiceObserver observer;
     service.AddObserver(&observer);
 
-    VariationsSeedSimulator::Result result;
+    variations::VariationsSeedSimulator::Result result;
     result.normal_group_change_count = cases[i].normal_count;
     result.kill_best_effort_group_change_count = cases[i].best_effort_count;
     result.kill_critical_group_change_count = cases[i].critical_count;

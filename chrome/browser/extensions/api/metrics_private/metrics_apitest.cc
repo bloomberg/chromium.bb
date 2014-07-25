@@ -176,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Metrics) {
   std::map<std::string, std::string> params;
   params["a"] = "aa";
   params["b"] = "bb";
-  ASSERT_TRUE(chrome_variations::AssociateVariationParams(
+  ASSERT_TRUE(variations::AssociateVariationParams(
       "apitestfieldtrial2", "group1", params));
 
   ASSERT_TRUE(RunComponentExtensionTest("metrics")) << message_;

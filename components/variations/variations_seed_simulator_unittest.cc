@@ -12,7 +12,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome_variations {
+namespace variations {
 
 namespace {
 
@@ -110,7 +110,6 @@ class VariationsSeedSimulatorTest : public ::testing::Test {
     if (!ProcessedStudy::ValidateAndAppendStudy(study, false, &studies))
       return "invalid study";
     return ConvertSimulationResultToString(SimulateDifferences(studies));
-
   }
 
   // Simulates the differences between expired |study| and the current field
@@ -379,4 +378,4 @@ TEST_F(VariationsSeedSimulatorTest, ParamsAdded) {
   EXPECT_EQ("0 0 1", SimulateStudyDifferences(&study));
 }
 
-}  // namespace chrome_variations
+}  // namespace variations

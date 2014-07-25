@@ -6,7 +6,7 @@
 
 #include <set>
 
-namespace chrome_variations {
+namespace variations {
 
 namespace {
 
@@ -205,7 +205,6 @@ bool ShouldAddStudy(
                   " due to hardware_class.";
       return false;
     }
-
   }
 
   DVLOG(1) << "Kept study " << study.name() << ".";
@@ -255,4 +254,4 @@ void FilterAndValidateStudies(
   }
 }
 
-}  // namespace chrome_variations
+}  // namespace variations

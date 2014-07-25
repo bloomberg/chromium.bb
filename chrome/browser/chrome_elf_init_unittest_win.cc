@@ -170,7 +170,7 @@ TEST_F(ChromeBlacklistTrialTest, AddFinchBlacklistToRegistry) {
   desired_params["TestDllName1"] = "TestDll1.dll";
   desired_params["TestDllName2"] = "TestDll2.dll";
 
-  chrome_variations::AssociateVariationParams(
+  variations::AssociateVariationParams(
       kBrowserBlacklistTrialName,
       kBrowserBlacklistTrialEnabledGroupName,
       desired_params);

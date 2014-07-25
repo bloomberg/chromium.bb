@@ -66,16 +66,16 @@ const int64 kServerTimeResolutionMs = 1000;
 // that channel value. Otherwise, if the fake channel flag is provided, this
 // will return the fake channel. Failing that, this will return the UNKNOWN
 // channel.
-Study_Channel GetChannelForVariations() {
+variations::Study_Channel GetChannelForVariations() {
   switch (chrome::VersionInfo::GetChannel()) {
     case chrome::VersionInfo::CHANNEL_CANARY:
-      return Study_Channel_CANARY;
+      return variations::Study_Channel_CANARY;
     case chrome::VersionInfo::CHANNEL_DEV:
-      return Study_Channel_DEV;
+      return variations::Study_Channel_DEV;
     case chrome::VersionInfo::CHANNEL_BETA:
-      return Study_Channel_BETA;
+      return variations::Study_Channel_BETA;
     case chrome::VersionInfo::CHANNEL_STABLE:
-      return Study_Channel_STABLE;
+      return variations::Study_Channel_STABLE;
     case chrome::VersionInfo::CHANNEL_UNKNOWN:
       break;
   }
@@ -83,15 +83,15 @@ Study_Channel GetChannelForVariations() {
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kFakeVariationsChannel);
   if (forced_channel == "stable")
-    return Study_Channel_STABLE;
+    return variations::Study_Channel_STABLE;
   if (forced_channel == "beta")
-    return Study_Channel_BETA;
+    return variations::Study_Channel_BETA;
   if (forced_channel == "dev")
-    return Study_Channel_DEV;
+    return variations::Study_Channel_DEV;
   if (forced_channel == "canary")
-    return Study_Channel_CANARY;
+    return variations::Study_Channel_CANARY;
   DVLOG(1) << "Invalid channel provided: " << forced_channel;
-  return Study_Channel_UNKNOWN;
+  return variations::Study_Channel_UNKNOWN;
 }
 
 // Returns a string that will be used for the value of the 'osname' URL param
@@ -184,17 +184,17 @@ ResourceRequestsAllowedState ResourceRequestStateToHistogramValue(
 
 // Gets current form factor and converts it from enum DeviceFormFactor to enum
 // Study_FormFactor.
-Study_FormFactor GetCurrentFormFactor() {
+variations::Study_FormFactor GetCurrentFormFactor() {
   switch (ui::GetDeviceFormFactor()) {
     case ui::DEVICE_FORM_FACTOR_PHONE:
-      return Study_FormFactor_PHONE;
+      return variations::Study_FormFactor_PHONE;
     case ui::DEVICE_FORM_FACTOR_TABLET:
-      return Study_FormFactor_TABLET;
+      return variations::Study_FormFactor_TABLET;
     case ui::DEVICE_FORM_FACTOR_DESKTOP:
-      return Study_FormFactor_DESKTOP;
+      return variations::Study_FormFactor_DESKTOP;
   }
   NOTREACHED();
-  return Study_FormFactor_DESKTOP;
+  return variations::Study_FormFactor_DESKTOP;
 }
 
 // Gets the hardware class and returns it as a string. This returns an empty
@@ -254,7 +254,7 @@ VariationsService::~VariationsService() {
 bool VariationsService::CreateTrialsFromSeed() {
   create_trials_from_seed_called_ = true;
 
-  VariationsSeed seed;
+  variations::VariationsSeed seed;
   if (!seed_store_.LoadSeed(&seed))
     return false;
 
@@ -266,7 +266,7 @@ bool VariationsService::CreateTrialsFromSeed() {
   if (!current_version.IsValid())
     return false;
 
-  VariationsSeedProcessor().CreateTrialsFromSeed(
+  variations::VariationsSeedProcessor().CreateTrialsFromSeed(
       seed,
       g_browser_process->GetApplicationLocale(),
       GetReferenceDateForExpiryChecks(local_state_),
@@ -438,7 +438,7 @@ void VariationsService::DoActualFetch() {
 void VariationsService::StoreSeed(const std::string& seed_data,
                                   const std::string& seed_signature,
                                   const base::Time& date_fetched) {
-  scoped_ptr<VariationsSeed> seed(new VariationsSeed);
+  scoped_ptr<variations::VariationsSeed> seed(new variations::VariationsSeed);
   if (!seed_store_.StoreSeedData(seed_data, seed_signature, date_fetched,
                                  seed.get())) {
     return;
@@ -473,7 +473,7 @@ void VariationsService::FetchVariationsSeed() {
 }
 
 void VariationsService::NotifyObservers(
-    const VariationsSeedSimulator::Result& result) {
+    const variations::VariationsSeedSimulator::Result& result) {
   if (result.kill_critical_group_change_count > 0) {
     FOR_EACH_OBSERVER(Observer, observer_list_,
                       OnExperimentChangesDetected(Observer::CRITICAL));
@@ -569,7 +569,7 @@ void VariationsService::OnResourceRequestsAllowed() {
 }
 
 void VariationsService::PerformSimulationWithVersion(
-    scoped_ptr<VariationsSeed> seed,
+    scoped_ptr<variations::VariationsSeed> seed,
     const base::Version& version) {
   if (version.IsValid())
     return;
@@ -578,12 +578,14 @@ void VariationsService::PerformSimulationWithVersion(
 
   scoped_ptr<const base::FieldTrial::EntropyProvider> entropy_provider =
       state_manager_->CreateEntropyProvider();
-  VariationsSeedSimulator seed_simulator(*entropy_provider);
+  variations::VariationsSeedSimulator seed_simulator(*entropy_provider);
 
-  VariationsSeedSimulator::Result result = seed_simulator.SimulateSeedStudies(
-      *seed, g_browser_process->GetApplicationLocale(),
-      GetReferenceDateForExpiryChecks(local_state_), version,
-      GetChannelForVariations(), GetCurrentFormFactor(), GetHardwareClass());
+  const variations::VariationsSeedSimulator::Result result =
+      seed_simulator.SimulateSeedStudies(
+          *seed, g_browser_process->GetApplicationLocale(),
+          GetReferenceDateForExpiryChecks(local_state_), version,
+          GetChannelForVariations(), GetCurrentFormFactor(),
+          GetHardwareClass());
 
   UMA_HISTOGRAM_COUNTS_100("Variations.SimulateSeed.NormalChanges",
                            result.normal_group_change_count);

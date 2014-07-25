@@ -23,7 +23,7 @@ const char kFieldTrialName[] = "EnhancedBookmarks";
 
 // Get extension id from Finch EnhancedBookmarks group parameters.
 std::string GetEnhancedBookmarksExtensionIdFromFinch() {
-  return chrome_variations::GetVariationParamValue(kFieldTrialName, "id");
+  return variations::GetVariationParamValue(kFieldTrialName, "id");
 }
 
 // Returns true if enhanced bookmarks experiment is enabled from Finch.
@@ -184,7 +184,7 @@ bool IsEnhancedBookmarkImageFetchingEnabled() {
   // available so that in the future, when the feature is turned on, the user
   // experience is not a big list of flat colors. However as a precautionary
   // measure it is possible to disable this collection of images from finch.
-  std::string disable_fetching = chrome_variations::GetVariationParamValue(
+  std::string disable_fetching = variations::GetVariationParamValue(
       kFieldTrialName, "DisableImagesFetching");
   return disable_fetching.empty();
 }
@@ -195,7 +195,7 @@ bool IsEnableDomDistillerSet() {
       HasSwitch(switches::kEnableDomDistiller)) {
     return true;
   }
-  if (chrome_variations::GetVariationParamValue(
+  if (variations::GetVariationParamValue(
           kFieldTrialName, "enable-dom-distiller") == "1")
     return true;
 
@@ -207,7 +207,7 @@ bool IsEnableSyncArticlesSet() {
       HasSwitch(switches::kEnableSyncArticles)) {
     return true;
   }
-  if (chrome_variations::GetVariationParamValue(
+  if (variations::GetVariationParamValue(
           kFieldTrialName, "enable-sync-articles") == "1")
     return true;
 

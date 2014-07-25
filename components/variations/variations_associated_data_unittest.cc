@@ -7,16 +7,15 @@
 #include "base/metrics/field_trial.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome_variations {
+namespace variations {
 
 namespace {
 
 const VariationID TEST_VALUE_A = 3300200;
 const VariationID TEST_VALUE_B = 3300201;
 
-// Convenience helper to retrieve the chrome_variations::VariationID for a
-// FieldTrial. Note that this will do the group assignment in |trial| if not
-// already done.
+// Convenience helper to retrieve the variations::VariationID for a FieldTrial.
+// Note that this will do the group assignment in |trial| if not already done.
 VariationID GetIDForTrial(IDCollectionKey key, base::FieldTrial* trial) {
   return GetGoogleVariationID(key, trial->trial_name(), trial->group_name());
 }
@@ -329,4 +328,4 @@ TEST_F(VariationsAssociatedDataTest, GetVariationParamValue_ActivatesTrial) {
   ASSERT_TRUE(IsFieldTrialActive(kTrialName));
 }
 
-}  // namespace chrome_variations
+}  // namespace variations

@@ -24,7 +24,7 @@ jstring GetVariationParamValue(JNIEnv* env,
   std::string trial_name(ConvertJavaStringToUTF8(env, jtrial_name));
   std::string param_name(ConvertJavaStringToUTF8(env, jparam_name));
   std::string param_value =
-      chrome_variations::GetVariationParamValue(trial_name, param_name);
+      variations::GetVariationParamValue(trial_name, param_name);
   return ConvertUTF8ToJavaString(env, param_value).Release();
 }
 

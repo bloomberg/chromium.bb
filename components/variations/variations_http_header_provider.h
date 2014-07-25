@@ -96,12 +96,12 @@ class VariationsHttpHeaderProvider : base::FieldTrialList::Observer {
 
   // Keep a cache of variation IDs that are transmitted in headers to Google.
   // This consists of a list of valid IDs, and the actual transmitted header.
-  std::set<chrome_variations::VariationID> variation_ids_set_;
-  std::set<chrome_variations::VariationID> variation_trigger_ids_set_;
+  std::set<VariationID> variation_ids_set_;
+  std::set<VariationID> variation_trigger_ids_set_;
 
   // Provides the google experiment ids forced from command line.
-  std::set<chrome_variations::VariationID> default_variation_ids_set_;
-  std::set<chrome_variations::VariationID> default_trigger_id_set_;
+  std::set<VariationID> default_variation_ids_set_;
+  std::set<VariationID> default_trigger_id_set_;
 
   std::string variation_ids_header_;
 
