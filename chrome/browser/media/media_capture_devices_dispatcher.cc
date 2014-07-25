@@ -276,13 +276,15 @@ MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
       content::NotificationService::AllSources());
 
   // AVFoundation is used for video/audio device monitoring and video capture in
-  // Mac. Experimentally, connect it in Canary and Unkown (developer builds).
+  // Mac. Experimentally, connect it in Canary and Unknown (developer builds).
 #if defined(OS_MACOSX)
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_CANARY ||
-      channel == chrome::VersionInfo::CHANNEL_UNKNOWN) {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableAVFoundation);
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceQTKit)) {
+    if (channel == chrome::VersionInfo::CHANNEL_CANARY ||
+        channel == chrome::VersionInfo::CHANNEL_UNKNOWN) {
+      CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kEnableAVFoundation);
+    }
   }
 #endif
 }

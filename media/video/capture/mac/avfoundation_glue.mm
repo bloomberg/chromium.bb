@@ -110,12 +110,28 @@ bool AVFoundationGlue::IsAVFoundationSupported() {
   // once, during Chrome startup so this construction is thread safe.
   // Use AVFoundation if possible, enabled, and QTKit is not explicitly forced.
   static CommandLine* command_line = CommandLine::ForCurrentProcess();
-  static bool is_av_foundation_supported = base::mac::IsOSLionOrLater() &&
-      ((command_line->HasSwitch(switches::kEnableAVFoundation) &&
-      !command_line->HasSwitch(switches::kForceQTKit)) ||
+
+  // AVFoundation is only available on OS Lion and above.
+  if (!base::mac::IsOSLionOrLater())
+    return false;
+
+  // The force-qtkit flag takes precedence over enable-avfoundation.
+  if (command_line->HasSwitch(switches::kForceQTKit))
+    return false;
+
+  // Next in precedence is the enable-avfoundation flag.
+  // TODO(mcasas,vrk): There should be 3 states of AVFoundation: user forced on,
+  // user forced off (i.e. force QTKit), and default (respect field trial).
+  // crbug.com/396764
+  // TODO(vrk): Does this really need to be static?
+  static bool should_enable_avfoundation =
+      command_line->HasSwitch(switches::kEnableAVFoundation) ||
       base::FieldTrialList::FindFullName("AVFoundationMacVideoCapture")
-          == "Enabled") && [AVFoundationBundle() load];
-  return is_av_foundation_supported;
+          == "Enabled";
+  // Try to load AVFoundation. Save result in static bool to avoid loading
+  // AVFoundationBundle every call.
+  static bool loaded_successfully = [AVFoundationBundle() load];
+  return should_enable_avfoundation && loaded_successfully;
 }
 
 NSBundle const* AVFoundationGlue::AVFoundationBundle() {
