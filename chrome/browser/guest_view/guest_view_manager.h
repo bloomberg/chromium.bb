@@ -17,7 +17,6 @@
 class AppViewGuest;
 class GuestViewBase;
 class GuestViewManagerFactory;
-class GuestWebContentsObserver;
 class GURL;
 
 namespace content {
@@ -81,7 +80,6 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
  protected:
   friend class AppViewGuest;
   friend class GuestViewBase;
-  friend class GuestWebContentsObserver;
   friend class guestview::TestGuestViewManager;
   FRIEND_TEST_ALL_PREFIXES(GuestViewManagerTest, AddRemove);
 
