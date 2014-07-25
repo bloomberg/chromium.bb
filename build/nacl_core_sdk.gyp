@@ -6,6 +6,9 @@
   'includes': [
     'common.gypi',
   ],
+  'variables': {
+    'disable_cross_trusted%': 0,
+  },
   'targets': [
     {
       'target_name': 'nacl_core_sdk',
@@ -20,16 +23,21 @@
         '../src/untrusted/pthread/pthread.gyp:pthread_lib',
       ],
       'conditions': [
+        ['(target_arch!="arm" and target_arch!="mipsel") or (OS=="linux" and disable_cross_trusted!=1)', {
+          # cross compiling trusted binaries such as sel_ldr is only currently
+          # supported on linux, and requires specific cross compilers to be
+          # installed. It can be disabled with 'disable_cross_trusted=1'.
+          'dependencies': [
+            '../src/trusted/service_runtime/service_runtime.gyp:sel_ldr',
+          ],
+        }],
         ['(target_arch!="arm" and target_arch!="mipsel") or OS=="linux"', {
-          # cross compiling trusted binaries (e.g. sel_ldr) is only currently
-          # supported on linux.
-          # irt_core_nexe is untrusted but relies on tls_edit which also is not
-          # currently buildable on windows with target_arch != x86.
+          # irt_core_nexe relies on tls_edit which is not currently buildable
+          # on windows with target_arch != x86.
           # TODO(sbc): remove this restriction:
           # https://code.google.com/p/nativeclient/issues/detail?id=3810
           'dependencies': [
             '../src/untrusted/irt/irt.gyp:irt_core_nexe',
-            '../src/trusted/service_runtime/service_runtime.gyp:sel_ldr',
           ],
         }],
         ['target_arch!="arm" and target_arch!="mipsel"', {
