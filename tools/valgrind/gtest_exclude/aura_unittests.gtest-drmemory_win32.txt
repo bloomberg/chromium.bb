@@ -1,2 +1,0 @@
-# Dr.Memory i#1589: https://code.google.com/p/drmemory/issues/detail?id=1589
-WindowTest.TouchCaptureDoesntCancelCapturedTouches

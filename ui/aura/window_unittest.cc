@@ -874,19 +874,15 @@ TEST_F(WindowTest, TouchCaptureCancelsOtherTouches) {
   EXPECT_EQ(0, delegate2.touch_event_count());
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/396387
-#define MAYBE_TouchCaptureDoesntCancelCapturedTouches DISABLED_TouchCaptureDoesntCancelCapturedTouches
-#else
-#define MAYBE_TouchCaptureDoesntCancelCapturedTouches TouchCaptureDoesntCancelCapturedTouches
-#endif
-TEST_F(WindowTest, MAYBE_TouchCaptureDoesntCancelCapturedTouches) {
+TEST_F(WindowTest, TouchCaptureDoesntCancelCapturedTouches) {
   CaptureWindowDelegateImpl delegate;
   scoped_ptr<Window> window(CreateTestWindowWithDelegate(
       &delegate, 0, gfx::Rect(0, 0, 50, 50), root_window()));
+  base::TimeDelta time = getTime();
+  const int kTimeDelta = 100;
 
   ui::TouchEvent press(
-      ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 0, getTime());
+      ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 0, time);
   DispatchEventUsingWindowDispatcher(&press);
 
   // We will get both GESTURE_BEGIN and GESTURE_TAP_DOWN.
@@ -901,7 +897,8 @@ TEST_F(WindowTest, MAYBE_TouchCaptureDoesntCancelCapturedTouches) {
 
   // On move We will get TOUCH_MOVED, GESTURE_TAP_CANCEL,
   // GESTURE_SCROLL_START and GESTURE_SCROLL_UPDATE.
-  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(10, 20), 0, getTime());
+  time += base::TimeDelta::FromMilliseconds(kTimeDelta);
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(10, 20), 0, time);
   DispatchEventUsingWindowDispatcher(&move);
   EXPECT_EQ(1, delegate.touch_event_count());
   EXPECT_EQ(3, delegate.gesture_event_count());
@@ -914,15 +911,17 @@ TEST_F(WindowTest, MAYBE_TouchCaptureDoesntCancelCapturedTouches) {
   delegate.ResetCounts();
 
   // On move we still get TOUCH_MOVED and GESTURE_SCROLL_UPDATE.
-  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(10, 30), 0, getTime());
+  time += base::TimeDelta::FromMilliseconds(kTimeDelta);
+  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(10, 30), 0, time);
   DispatchEventUsingWindowDispatcher(&move2);
   EXPECT_EQ(1, delegate.touch_event_count());
   EXPECT_EQ(1, delegate.gesture_event_count());
   delegate.ResetCounts();
 
   // And on release we get TOUCH_RELEASED, GESTURE_SCROLL_END, GESTURE_END
+  time += base::TimeDelta::FromMilliseconds(kTimeDelta);
   ui::TouchEvent release(
-      ui::ET_TOUCH_RELEASED, gfx::Point(10, 20), 0, getTime());
+      ui::ET_TOUCH_RELEASED, gfx::Point(10, 20), 0, time);
   DispatchEventUsingWindowDispatcher(&release);
   EXPECT_EQ(1, delegate.touch_event_count());
   EXPECT_EQ(2, delegate.gesture_event_count());

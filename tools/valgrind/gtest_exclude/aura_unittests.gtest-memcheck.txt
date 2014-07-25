@@ -1,2 +1,0 @@
-# http://crbug.com/383386
-WindowTest.TouchCaptureDoesntCancelCapturedTouches
