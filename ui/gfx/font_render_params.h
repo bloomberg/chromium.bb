@@ -40,6 +40,8 @@ struct GFX_EXPORT FontRenderParams {
 
   // Should subpixel positioning (i.e. fractional X positions for glyphs) be
   // used?
+  // TODO(derat): Remove this; we don't set it in the browser and mostly ignore
+  // it in Blink: http://crbug.com/396659
   bool subpixel_positioning;
 
   // Should FreeType's autohinter be used (as opposed to Freetype's bytecode
@@ -57,23 +59,36 @@ struct GFX_EXPORT FontRenderParams {
   SubpixelRendering subpixel_rendering;
 };
 
-// Returns the system's default parameters for font rendering.
-GFX_EXPORT const FontRenderParams& GetDefaultFontRenderParams();
+// A query used to determine the appropriate FontRenderParams.
+struct GFX_EXPORT FontRenderParamsQuery {
+  explicit FontRenderParamsQuery(bool for_web_contents);
+  ~FontRenderParamsQuery();
 
-// Returns the system's default parameters for WebKit font rendering.
-// TODO(derat): Rename to GetDefaultFontRenderParamsForWebContents().
-GFX_EXPORT const FontRenderParams& GetDefaultWebKitFontRenderParams();
+  bool is_empty() const {
+    return families.empty() && pixel_size <= 0 && point_size <= 0 && style < 0;
+  }
 
-// Returns the appropriate parameters for rendering the font described by the
-// passed-in-arguments, any of which may be NULL. If |family_out| is non-NULL,
-// it will be updated to contain the recommended font family from |family_list|.
-// |style| optionally points to a bit field of Font::FontStyle values.
-GFX_EXPORT FontRenderParams GetCustomFontRenderParams(
-    bool for_web_contents,
-    const std::vector<std::string>* family_list,
-    const int* pixel_size,
-    const int* point_size,
-    const int* style,
+  // True if rendering text for the web.
+  // TODO(derat): Remove this once FontRenderParams::subpixel_positioning is
+  // gone: http://crbug.com/396659
+  bool for_web_contents;
+
+  // Requested font families, or empty if unset.
+  std::vector<std::string> families;
+
+  // Font size in pixels or points, or 0 if unset.
+  int pixel_size;
+  int point_size;
+
+  // gfx::Font::FontStyle bit field, or -1 if unset.
+  int style;
+};
+
+// Returns the appropriate parameters for rendering the font described by
+// |query|. If |family_out| is non-NULL, it will be updated to contain the
+// recommended font family from |query.families|.
+GFX_EXPORT FontRenderParams GetFontRenderParams(
+    const FontRenderParamsQuery& query,
     std::string* family_out);
 
 }  // namespace gfx

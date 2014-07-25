@@ -94,43 +94,40 @@ PlatformFontPango::PlatformFontPango() {
 }
 
 PlatformFontPango::PlatformFontPango(NativeFont native_font) {
-  std::string font_family;
-  std::vector<std::string> family_names;
+  FontRenderParamsQuery query(false);
   base::SplitString(pango_font_description_get_family(native_font), ',',
-                    &family_names);
+                    &query.families);
 
   const int pango_size =
       pango_font_description_get_size(native_font) / PANGO_SCALE;
-  const bool pango_using_pixels =
-      pango_font_description_get_size_is_absolute(native_font);
+  if (pango_font_description_get_size_is_absolute(native_font))
+    query.pixel_size = pango_size;
+  else
+    query.point_size = pango_size;
 
-  int style = 0;
-  // TODO(davemoore) What should we do about other weights? We currently only
-  // support BOLD.
+  query.style = gfx::Font::NORMAL;
+  // TODO(davemoore): Support weights other than bold?
   if (pango_font_description_get_weight(native_font) == PANGO_WEIGHT_BOLD)
-    style |= gfx::Font::BOLD;
-  // TODO(davemoore) What about PANGO_STYLE_OBLIQUE?
+    query.style |= gfx::Font::BOLD;
+  // TODO(davemoore): What about PANGO_STYLE_OBLIQUE?
   if (pango_font_description_get_style(native_font) == PANGO_STYLE_ITALIC)
-    style |= gfx::Font::ITALIC;
+    query.style |= gfx::Font::ITALIC;
 
-  const FontRenderParams params = GetCustomFontRenderParams(
-      false, &family_names,
-      pango_using_pixels ? &pango_size : NULL /* pixel_size */,
-      !pango_using_pixels ? &pango_size : NULL /* point_size */,
-      &style, &font_family);
-
+  std::string font_family;
+  const FontRenderParams params = gfx::GetFontRenderParams(query, &font_family);
   InitFromDetails(skia::RefPtr<SkTypeface>(), font_family,
-                  gfx::GetPangoFontSizeInPixels(native_font), style, params);
+                  gfx::GetPangoFontSizeInPixels(native_font),
+                  query.style, params);
 }
 
 PlatformFontPango::PlatformFontPango(const std::string& font_name,
                                      int font_size_pixels) {
-  const std::vector<std::string> font_list(1, font_name);
-  const int style = Font::NORMAL;
-  const FontRenderParams params = GetCustomFontRenderParams(
-      false, &font_list, &font_size_pixels, NULL, &style, NULL);
+  FontRenderParamsQuery query(false);
+  query.families.push_back(font_name);
+  query.pixel_size = font_size_pixels;
+  query.style = gfx::Font::NORMAL;
   InitFromDetails(skia::RefPtr<SkTypeface>(), font_name, font_size_pixels,
-                  style, params);
+                  query.style, gfx::GetFontRenderParams(query, NULL));
 }
 
 double PlatformFontPango::underline_position() const {
@@ -171,15 +168,13 @@ Font PlatformFontPango::DeriveFont(int size_delta, int style) const {
   skia::RefPtr<SkTypeface> typeface =
       (style == style_) ? typeface_ : CreateSkTypeface(style, &new_family);
 
-  const std::vector<std::string> family_list(1, new_family);
-  const FontRenderParams render_params = GetCustomFontRenderParams(
-      false, &family_list, &new_size, NULL, &style, NULL);
+  FontRenderParamsQuery query(false);
+  query.families.push_back(new_family);
+  query.pixel_size = new_size;
+  query.style = style;
 
-  return Font(new PlatformFontPango(typeface,
-                                    new_family,
-                                    new_size,
-                                    style,
-                                    render_params));
+  return Font(new PlatformFontPango(typeface, new_family, new_size, style,
+                                    gfx::GetFontRenderParams(query, NULL)));
 }
 
 int PlatformFontPango::GetHeight() const {

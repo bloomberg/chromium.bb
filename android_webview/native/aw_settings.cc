@@ -9,6 +9,7 @@
 #include "android_webview/native/aw_contents.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -74,7 +75,8 @@ void PopulateFixedRendererPreferences(RendererPreferences* prefs) {
       content::TAP_MULTIPLE_TARGETS_STRATEGY_NONE;
 
   // TODO(boliu): Deduplicate with chrome/ code.
-  const gfx::FontRenderParams& params = gfx::GetDefaultWebKitFontRenderParams();
+  CR_DEFINE_STATIC_LOCAL(const gfx::FontRenderParams, params,
+      (gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(true), NULL)));
   prefs->should_antialias_text = params.antialiasing;
   prefs->use_subpixel_positioning = params.subpixel_positioning;
   prefs->hinting = GetRendererPreferencesHintingEnum(params.hinting);

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/renderer_preferences_util.h"
 
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -131,7 +132,8 @@ void UpdateFromSystemSettings(
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-  const gfx::FontRenderParams& params = gfx::GetDefaultWebKitFontRenderParams();
+  CR_DEFINE_STATIC_LOCAL(const gfx::FontRenderParams, params,
+      (gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(true), NULL)));
   prefs->should_antialias_text = params.antialiasing;
   prefs->use_subpixel_positioning = params.subpixel_positioning;
   prefs->hinting = GetRendererPreferencesHintingEnum(params.hinting);

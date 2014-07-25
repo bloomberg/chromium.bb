@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
 #include "base/linux_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/shared_memory.h"
 #include "base/posix/eintr_wrapper.h"
@@ -41,8 +42,9 @@ SandboxIPCHandler::SandboxIPCHandler(int lifeline_fd, int browser_socket)
     : lifeline_fd_(lifeline_fd), browser_socket_(browser_socket) {
   // FontConfig doesn't provide a standard property to control subpixel
   // positioning, so we pass the current setting through to WebKit.
-  WebFontInfo::setSubpixelPositioning(
-      gfx::GetDefaultWebKitFontRenderParams().subpixel_positioning);
+  CR_DEFINE_STATIC_LOCAL(const gfx::FontRenderParams, params,
+      (gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(true), NULL)));
+  WebFontInfo::setSubpixelPositioning(params.subpixel_positioning);
 }
 
 void SandboxIPCHandler::Run() {

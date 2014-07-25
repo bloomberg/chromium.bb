@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -193,7 +194,9 @@ int PlatformFontWin::GetFontSize() const {
 }
 
 const FontRenderParams& PlatformFontWin::GetFontRenderParams() const {
-  return GetDefaultFontRenderParams();
+  CR_DEFINE_STATIC_LOCAL(const gfx::FontRenderParams, params,
+      (gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(false), NULL)));
+  return params;
 }
 
 NativeFont PlatformFontWin::GetNativeFont() const {

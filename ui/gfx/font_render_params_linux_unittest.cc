@@ -98,7 +98,8 @@ TEST_F(FontRenderParamsTest, Default) {
       kFontconfigMatchFooter +
       kFontconfigFileFooter));
 
-  FontRenderParams params = GetDefaultFontRenderParams();
+  FontRenderParams params = GetFontRenderParams(
+      FontRenderParamsQuery(true), NULL);
   EXPECT_TRUE(params.antialiasing);
   EXPECT_FALSE(params.autohinter);
   EXPECT_TRUE(params.use_bitmaps);
@@ -131,25 +132,24 @@ TEST_F(FontRenderParamsTest, Size) {
 
   // The defaults should be used when the supplied size isn't matched by the
   // second or third blocks.
-  int pixel_size = 12;
-  FontRenderParams params = GetCustomFontRenderParams(
-      false, NULL, &pixel_size, NULL, NULL, NULL);
+  FontRenderParamsQuery query(false);
+  query.pixel_size = 12;
+  FontRenderParams params = GetFontRenderParams(query, NULL);
   EXPECT_TRUE(params.antialiasing);
   EXPECT_EQ(FontRenderParams::HINTING_FULL, params.hinting);
   EXPECT_EQ(FontRenderParams::SUBPIXEL_RENDERING_NONE,
             params.subpixel_rendering);
 
-  pixel_size = 10;
-  params = GetCustomFontRenderParams(
-      false, NULL, &pixel_size, NULL, NULL, NULL);
+  query.pixel_size = 10;
+  params = GetFontRenderParams(query, NULL);
   EXPECT_FALSE(params.antialiasing);
   EXPECT_EQ(FontRenderParams::HINTING_FULL, params.hinting);
   EXPECT_EQ(FontRenderParams::SUBPIXEL_RENDERING_NONE,
             params.subpixel_rendering);
 
-  int point_size = 20;
-  params = GetCustomFontRenderParams(
-      false, NULL, NULL, &point_size, NULL, NULL);
+  query.pixel_size = 0;
+  query.point_size = 20;
+  params = GetFontRenderParams(query, NULL);
   EXPECT_TRUE(params.antialiasing);
   EXPECT_EQ(FontRenderParams::HINTING_SLIGHT, params.hinting);
   EXPECT_EQ(FontRenderParams::SUBPIXEL_RENDERING_RGB,
@@ -177,27 +177,24 @@ TEST_F(FontRenderParamsTest, Style) {
       kFontconfigMatchFooter +
       kFontconfigFileFooter));
 
-  int style = Font::NORMAL;
-  FontRenderParams params = GetCustomFontRenderParams(
-      false, NULL, NULL, NULL, &style, NULL);
+  FontRenderParamsQuery query(false);
+  query.style = Font::NORMAL;
+  FontRenderParams params = GetFontRenderParams(query, NULL);
   EXPECT_TRUE(params.antialiasing);
   EXPECT_EQ(FontRenderParams::HINTING_FULL, params.hinting);
 
-  style = Font::BOLD;
-  params = GetCustomFontRenderParams(
-      false, NULL, NULL, NULL, &style, NULL);
+  query.style = Font::BOLD;
+  params = GetFontRenderParams(query, NULL);
   EXPECT_FALSE(params.antialiasing);
   EXPECT_EQ(FontRenderParams::HINTING_FULL, params.hinting);
 
-  style = Font::ITALIC;
-  params = GetCustomFontRenderParams(
-      false, NULL, NULL, NULL, &style, NULL);
+  query.style = Font::ITALIC;
+  params = GetFontRenderParams(query, NULL);
   EXPECT_TRUE(params.antialiasing);
   EXPECT_EQ(FontRenderParams::HINTING_NONE, params.hinting);
 
-  style = Font::BOLD | Font::ITALIC;
-  params = GetCustomFontRenderParams(
-      false, NULL, NULL, NULL, &style, NULL);
+  query.style = Font::BOLD | Font::ITALIC;
+  params = GetFontRenderParams(query, NULL);
   EXPECT_FALSE(params.antialiasing);
   EXPECT_EQ(FontRenderParams::HINTING_NONE, params.hinting);
 }
@@ -217,8 +214,8 @@ TEST_F(FontRenderParamsTest, Scalable) {
       kFontconfigFileFooter));
 
   // Check that we specifically ask how scalable fonts should be rendered.
-  FontRenderParams params = GetCustomFontRenderParams(
-      false, NULL, NULL, NULL, NULL, NULL);
+  FontRenderParams params = GetFontRenderParams(
+      FontRenderParamsQuery(false), NULL);
   EXPECT_TRUE(params.antialiasing);
 }
 
@@ -236,13 +233,12 @@ TEST_F(FontRenderParamsTest, UseBitmaps) {
       kFontconfigMatchFooter +
       kFontconfigFileFooter));
 
-  FontRenderParams params = GetCustomFontRenderParams(
-      false, NULL, NULL, NULL, NULL, NULL);
+  FontRenderParamsQuery query(false);
+  FontRenderParams params = GetFontRenderParams(query, NULL);
   EXPECT_FALSE(params.use_bitmaps);
 
-  const int pixel_size = 5;
-  params = GetCustomFontRenderParams(
-      false, NULL, &pixel_size, NULL, NULL, NULL);
+  query.pixel_size = 5;
+  params = GetFontRenderParams(query, NULL);
   EXPECT_TRUE(params.use_bitmaps);
 }
 
@@ -264,8 +260,8 @@ TEST_F(FontRenderParamsTest, OnlySetConfiguredValues) {
       kFontconfigFileFooter));
 
   // The subpixel rendering setting from the delegate should make it through.
-  FontRenderParams params = GetCustomFontRenderParams(
-      false, NULL, NULL, NULL, NULL, NULL);
+  FontRenderParams params = GetFontRenderParams(
+      FontRenderParamsQuery(false), NULL);
   EXPECT_EQ(system_params.subpixel_rendering, params.subpixel_rendering);
 }
 
@@ -277,19 +273,18 @@ TEST_F(FontRenderParamsTest, NoFontconfigMatch) {
   system_params.subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_RGB;
   test_font_delegate_.set_params(system_params);
 
-  std::vector<std::string> families;
-  families.push_back("Arial");
-  families.push_back("Times New Roman");
-  const int pixel_size = 10;
+  FontRenderParamsQuery query(false);
+  query.families.push_back("Arial");
+  query.families.push_back("Times New Roman");
+  query.pixel_size = 10;
   std::string suggested_family;
-  FontRenderParams params = GetCustomFontRenderParams(
-      false, &families, &pixel_size, NULL, NULL, &suggested_family);
+  FontRenderParams params = GetFontRenderParams(query, &suggested_family);
 
   // The system params and the first requested family should be returned.
   EXPECT_EQ(system_params.antialiasing, params.antialiasing);
   EXPECT_EQ(system_params.hinting, params.hinting);
   EXPECT_EQ(system_params.subpixel_rendering, params.subpixel_rendering);
-  EXPECT_EQ("Arial", suggested_family);
+  EXPECT_EQ(query.families[0], suggested_family);
 }
 
 }  // namespace gfx

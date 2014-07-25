@@ -5,6 +5,7 @@
 #include "ui/gfx/font_render_params.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 
 namespace gfx {
 
@@ -29,24 +30,14 @@ FontRenderParams LoadDefaults() {
 
 }  // namespace
 
-const FontRenderParams& GetDefaultFontRenderParams() {
-  static FontRenderParams default_params = LoadDefaults();
-  return default_params;
-}
-
-const FontRenderParams& GetDefaultWebKitFontRenderParams() {
-  return GetDefaultFontRenderParams();
-}
-
-FontRenderParams GetCustomFontRenderParams(
-    bool for_web_contents,
-    const std::vector<std::string>* family_list,
-    const int* pixel_size,
-    const int* point_size,
-    const int* style,
-    std::string* family_out) {
-  NOTIMPLEMENTED();
-  return GetDefaultFontRenderParams();
+FontRenderParams GetFontRenderParams(const FontRenderParamsQuery& query,
+                                     std::string* family_out) {
+  // Customized font rendering settings are not supported, only defaults.
+  if (!query.is_empty() || family_out)
+    NOTIMPLEMENTED();
+  CR_DEFINE_STATIC_LOCAL(
+      const gfx::FontRenderParams, params, (LoadDefaults()));
+  return params;
 }
 
 }  // namespace gfx

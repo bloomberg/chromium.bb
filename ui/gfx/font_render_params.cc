@@ -17,4 +17,13 @@ FontRenderParams::FontRenderParams()
 
 FontRenderParams::~FontRenderParams() {}
 
+FontRenderParamsQuery::FontRenderParamsQuery(bool for_web_contents)
+    : for_web_contents(for_web_contents),
+      pixel_size(0),
+      point_size(0),
+      style(-1) {
+}
+
+FontRenderParamsQuery::~FontRenderParamsQuery() {}
+
 }  // namespace gfx
