@@ -1290,20 +1290,16 @@ void RenderWidgetHostViewAndroid::OnSetNeedsFlushInput() {
   content_view_core_->GetWindowAndroid()->RequestVSyncUpdate();
 }
 
-void RenderWidgetHostViewAndroid::CreateBrowserAccessibilityManagerIfNeeded() {
-  if (!host_ || host_->accessibility_mode() != AccessibilityModeComplete)
-    return;
-
-  if (!GetBrowserAccessibilityManager()) {
-    base::android::ScopedJavaLocalRef<jobject> obj;
-    if (content_view_core_)
-      obj = content_view_core_->GetJavaObject();
-    SetBrowserAccessibilityManager(
-        new BrowserAccessibilityManagerAndroid(
-            obj,
-            BrowserAccessibilityManagerAndroid::GetEmptyDocument(),
-            host_));
-  }
+BrowserAccessibilityManager*
+    RenderWidgetHostViewAndroid::CreateBrowserAccessibilityManager(
+        BrowserAccessibilityDelegate* delegate) {
+  base::android::ScopedJavaLocalRef<jobject> obj;
+  if (content_view_core_)
+    obj = content_view_core_->GetJavaObject();
+  return new BrowserAccessibilityManagerAndroid(
+      obj,
+      BrowserAccessibilityManagerAndroid::GetEmptyDocument(),
+      delegate);
 }
 
 bool RenderWidgetHostViewAndroid::LockMouse() {
@@ -1419,12 +1415,14 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
 
   content_view_core_ = content_view_core;
 
-  if (GetBrowserAccessibilityManager()) {
+  BrowserAccessibilityManager* manager = NULL;
+  if (host_)
+    manager = host_->GetRootBrowserAccessibilityManager();
+  if (manager) {
     base::android::ScopedJavaLocalRef<jobject> obj;
     if (content_view_core_)
       obj = content_view_core_->GetJavaObject();
-    GetBrowserAccessibilityManager()->ToBrowserAccessibilityManagerAndroid()->
-        SetContentViewCore(obj);
+    manager->ToBrowserAccessibilityManagerAndroid()->SetContentViewCore(obj);
   }
 
   AttachLayers();

@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
-#include "content/common/view_message_enums.h"
+#include "content/common/accessibility_mode_enums.h"
 #include "content/public/browser/browser_accessibility_state.h"
 
 namespace content {
@@ -76,9 +76,9 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
 
   void UpdatePlatformSpecificHistograms();
 
-  // Updates the accessibility mode of all render widgets, including swapped out
+  // Updates the accessibility mode of all web contents, including swapped out
   // ones. |add| specifies whether the mode should be added or removed.
-  void AddOrRemoveFromRenderWidgets(AccessibilityMode mode, bool add);
+  void AddOrRemoveFromAllWebContents(AccessibilityMode mode, bool add);
 
   AccessibilityMode accessibility_mode_;
 

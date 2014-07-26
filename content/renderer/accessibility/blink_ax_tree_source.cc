@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/accessibility/blink_ax_enum_conversion.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -32,6 +33,7 @@ using blink::WebAXObject;
 using blink::WebDocument;
 using blink::WebDocumentType;
 using blink::WebElement;
+using blink::WebFrame;
 using blink::WebLocalFrame;
 using blink::WebNode;
 using blink::WebVector;
@@ -93,8 +95,8 @@ void AddIntListAttributeFromWebObjects(ui::AXIntListAttribute attr,
 
 }  // Anonymous namespace
 
-BlinkAXTreeSource::BlinkAXTreeSource(RenderViewImpl* render_view)
-    : render_view_(render_view) {
+BlinkAXTreeSource::BlinkAXTreeSource(RenderFrameImpl* render_frame)
+    : render_frame_(render_frame) {
 }
 
 BlinkAXTreeSource::~BlinkAXTreeSource() {
@@ -550,13 +552,11 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
 }
 
 blink::WebDocument BlinkAXTreeSource::GetMainDocument() const {
-  WebView* view = render_view_->GetWebView();
-  WebLocalFrame* main_frame =
-      view ? view->mainFrame()->toWebLocalFrame() : NULL;
+  WebView* view = render_frame_->render_view()->GetWebView();
+  WebFrame* main_frame = view ? view->mainFrame() : NULL;
 
   if (main_frame)
     return main_frame->document();
-
   return WebDocument();
 }
 

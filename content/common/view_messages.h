@@ -68,7 +68,6 @@
 
 #define IPC_MESSAGE_START ViewMsgStart
 
-IPC_ENUM_TRAITS(AccessibilityMode)
 IPC_ENUM_TRAITS(blink::WebMediaPlayerAction::Type)
 IPC_ENUM_TRAITS(blink::WebPluginAction::Type)
 IPC_ENUM_TRAITS(blink::WebPopupType)
@@ -479,9 +478,6 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
 
   // The properties of the screen associated with the view.
   IPC_STRUCT_MEMBER(blink::WebScreenInfo, screen_info)
-
-  // The accessibility mode of the renderer.
-  IPC_STRUCT_MEMBER(AccessibilityMode, accessibility_mode)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewMsg_PostMessage_Params)
@@ -871,10 +867,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SavePageAsMHTML,
 // Temporary message to diagnose an unexpected condition in WebContentsImpl.
 IPC_MESSAGE_CONTROL1(ViewMsg_TempCrashWithData,
                      GURL /* data */)
-
-// Change the accessibility mode in the renderer process.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetAccessibilityMode,
-                    AccessibilityMode)
 
 // An acknowledge to ViewHostMsg_MultipleTargetsTouched to notify the renderer
 // process to release the magnified image.

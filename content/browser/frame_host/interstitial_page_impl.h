@@ -119,6 +119,7 @@ class CONTENT_EXPORT InterstitialPageImpl
                            int32 page_id,
                            const base::string16& title,
                            base::i18n::TextDirection title_direction) OVERRIDE;
+  virtual AccessibilityMode GetAccessibilityMode() const OVERRIDE;
 
   // RenderViewHostDelegate implementation:
   virtual RenderViewHostDelegateView* GetDelegateView() OVERRIDE;

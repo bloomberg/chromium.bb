@@ -23,6 +23,7 @@
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
+#include "content/common/accessibility_mode_enums.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/notification_observer.h"
@@ -95,6 +96,8 @@ class CONTENT_EXPORT WebContentsImpl
   static WebContentsImpl* CreateWithOpener(
       const WebContents::CreateParams& params,
       WebContentsImpl* opener);
+
+  static std::vector<WebContentsImpl*> GetAllWebContents();
 
   // Returns the opener WebContentsImpl, if any. This can be set to null if the
   // opener is closed or the page clears its window.opener.
@@ -172,6 +175,19 @@ class CONTENT_EXPORT WebContentsImpl
 
   bool should_normally_be_visible() { return should_normally_be_visible_; }
 
+  // Broadcasts the mode change to all frames.
+  void SetAccessibilityMode(AccessibilityMode mode);
+
+  // Adds the given accessibility mode to the current accessibility mode
+  // bitmap.
+  void AddAccessibilityMode(AccessibilityMode mode);
+
+  // Removes the given accessibility mode from the current accessibility
+  // mode bitmap, managing the bits that are shared with other modes such
+  // that a bit will only be turned off when all modes that depend on it
+  // have been removed.
+  void RemoveAccessibilityMode(AccessibilityMode mode);
+
   // WebContents ------------------------------------------------------
   virtual WebContentsDelegate* GetDelegate() OVERRIDE;
   virtual void SetDelegate(WebContentsDelegate* delegate) OVERRIDE;
@@ -197,6 +213,9 @@ class CONTENT_EXPORT WebContentsImpl
   virtual WebUI* GetCommittedWebUI() const OVERRIDE;
   virtual void SetUserAgentOverride(const std::string& override) OVERRIDE;
   virtual const std::string& GetUserAgentOverride() const OVERRIDE;
+  virtual void EnableTreeOnlyAccessibilityMode() OVERRIDE;
+  virtual bool IsTreeOnlyAccessibilityModeForTesting() const OVERRIDE;
+  virtual bool IsFullAccessibilityModeForTesting() const OVERRIDE;
 #if defined(OS_WIN)
   virtual void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent) OVERRIDE;
@@ -358,6 +377,12 @@ class CONTENT_EXPORT WebContentsImpl
                               const std::string& encoding) OVERRIDE;
   virtual WebContents* GetAsWebContents() OVERRIDE;
   virtual bool IsNeverVisible() OVERRIDE;
+  virtual AccessibilityMode GetAccessibilityMode() const OVERRIDE;
+  virtual void AccessibilityEventReceived(
+      const std::vector<AXEventNotificationDetails>& details) OVERRIDE;
+#if defined(OS_WIN)
+  virtual gfx::NativeViewAccessible GetParentNativeViewAccessible() OVERRIDE;
+#endif
 
   // RenderViewHostDelegate ----------------------------------------------------
   virtual RenderViewHostDelegateView* GetDelegateView() OVERRIDE;
@@ -446,8 +471,6 @@ class CONTENT_EXPORT WebContentsImpl
       SiteInstance* instance) OVERRIDE;
   virtual SessionStorageNamespaceMap GetSessionStorageNamespaceMap() OVERRIDE;
   virtual FrameTree* GetFrameTree() OVERRIDE;
-  virtual void AccessibilityEventReceived(
-      const std::vector<AXEventNotificationDetails>& details) OVERRIDE;
 
   // NavigatorDelegate ---------------------------------------------------------
 
@@ -512,9 +535,10 @@ class CONTENT_EXPORT WebContentsImpl
       const blink::WebGestureEvent& event) OVERRIDE;
   virtual void DidSendScreenRects(RenderWidgetHostImpl* rwh) OVERRIDE;
   virtual void OnTouchEmulationEnabled(bool enabled) OVERRIDE;
-#if defined(OS_WIN)
-  virtual gfx::NativeViewAccessible GetParentNativeViewAccessible() OVERRIDE;
-#endif
+  virtual BrowserAccessibilityManager* GetRootBrowserAccessibilityManager()
+      OVERRIDE;
+  virtual BrowserAccessibilityManager*
+      GetOrCreateRootBrowserAccessibilityManager() OVERRIDE;
 
   // RenderFrameHostManager::Delegate ------------------------------------------
 
@@ -1156,6 +1180,10 @@ class CONTENT_EXPORT WebContentsImpl
 
   scoped_ptr<ScreenOrientationDispatcherHost>
       screen_orientation_dispatcher_host_;
+
+  // The accessibility mode for all frames. This is queried when each frame
+  // is created, and broadcast to all frames when it changes.
+  AccessibilityMode accessibility_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsImpl);
 };

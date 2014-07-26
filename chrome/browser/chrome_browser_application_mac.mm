@@ -538,11 +538,6 @@ void SwizzleInit() {
   if ([attribute isEqualToString:@"AXEnhancedUserInterface"] &&
       [value intValue] == 1) {
     content::BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
-    for (TabContentsIterator it; !it.done(); it.Next()) {
-      if (content::WebContents* contents = *it)
-        if (content::RenderViewHost* rvh = contents->GetRenderViewHost())
-          rvh->EnableFullAccessibilityMode();
-    }
   }
   return [super accessibilitySetValue:value forAttribute:attribute];
 }

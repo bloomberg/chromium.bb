@@ -55,7 +55,7 @@ BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() {
     tracked_scroll_object_ = NULL;
   }
   if (accessible_hwnd_)
-    accessible_hwnd_->OnManagerDeleted();
+    accessible_hwnd_->OnManagerDeleted(this);
 }
 
 // static
@@ -75,7 +75,11 @@ ui::AXTreeUpdate BrowserAccessibilityManagerWin::GetEmptyDocument() {
 
 void BrowserAccessibilityManagerWin::SetAccessibleHWND(
     LegacyRenderWidgetHostHWND* accessible_hwnd) {
+  if (accessible_hwnd_)
+    accessible_hwnd_->OnManagerDeleted(this);
+
   accessible_hwnd_ = accessible_hwnd;
+
   if (accessible_hwnd_) {
     accessible_hwnd_->set_browser_accessibility_manager(this);
     parent_hwnd_ = accessible_hwnd_->GetParent();
