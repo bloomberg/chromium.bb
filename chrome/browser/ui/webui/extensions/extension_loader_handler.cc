@@ -233,7 +233,7 @@ void ExtensionLoaderHandler::OnLoadFailure(const base::FilePath& file_path,
   size_t line = 0u;
   size_t column = 0u;
   std::string regex =
-      base::StringPrintf("%s  Line: (\\d+), column: (\\d+), Syntax error.",
+      base::StringPrintf("%s  Line: (\\d+), column: (\\d+), .*",
                          manifest_errors::kManifestParseError);
   // If this was a JSON parse error, we can highlight the exact line with the
   // error. Otherwise, we should still display the manifest (for consistency,

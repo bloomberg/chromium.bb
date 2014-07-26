@@ -19,7 +19,7 @@ cr.define('extensions', function() {
   /**
    * Construct a Failure.
    * @param {string} filePath The path to the unpacked extension.
-   * @param {string} reason The reason the extension failed to load.
+   * @param {string} error The reason the extension failed to load.
    * @param {Object} manifest An object with three strings: beforeHighlight,
    *     afterHighlight, and highlight. These represent three portions of the
    *     file's content to display - the portion which is most relevant and
@@ -29,9 +29,9 @@ cr.define('extensions', function() {
    *     failure path for the additional failures UI.
    * @constructor
    */
-  function Failure(filePath, reason, manifest, listElement) {
+  function Failure(filePath, error, manifest, listElement) {
     this.path = filePath;
-    this.reason = reason;
+    this.error = error;
     this.manifest = manifest;
     this.listElement = listElement;
   }
@@ -106,13 +106,15 @@ cr.define('extensions', function() {
       // If a failure is already being displayed, unhide the last item.
       if (this.failures_.length > 0)
         this.failures_[this.failures_.length - 1].listElement.hidden = false;
-      for (var i = 0; i < failures.length; ++i) {
+      failures.forEach(function(failure) {
         var listItem = document.createElement('li');
-        listItem.textContent = failures[i].path;
+        listItem.textContent = failure.path;
         this.additional_.list.appendChild(listItem);
-        failures[i].listElement = listItem;
-        this.failures_.push(failures[i]);
-      }
+        this.failures_.push(new Failure(failure.path,
+                                        failure.error,
+                                        failure.manifest,
+                                        listItem));
+      }.bind(this));
       // Hide the last item because the UI is displaying its information.
       this.failures_[this.failures_.length - 1].listElement.hidden = true;
       this.show_();
@@ -146,9 +148,9 @@ cr.define('extensions', function() {
       assert(this.failures_.length >= 1);
       var failure = this.failures_[this.failures_.length - 1];
       this.path_.textContent = failure.path;
-      this.reason_.textContent = failure.reason;
+      this.reason_.textContent = failure.error;
 
-      failure.manifest.message = failure.reason;
+      failure.manifest.message = failure.error;
       this.manifest_.populate(
           failure.manifest,
           loadTimeData.getString('extensionLoadCouldNotLoadManifest'));
