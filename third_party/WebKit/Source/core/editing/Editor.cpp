@@ -344,7 +344,7 @@ void Editor::deleteSelectionWithSmartDelete(bool smartDelete)
 
 void Editor::pasteAsPlainText(const String& pastingText, bool smartReplace)
 {
-    Node* target = findEventTargetFromSelection();
+    Element* target = findEventTargetFromSelection();
     if (!target)
         return;
     target->dispatchEvent(TextEvent::createForPlainTextPaste(m_frame.domWindow(), pastingText, smartReplace), IGNORE_EXCEPTION);
@@ -352,7 +352,7 @@ void Editor::pasteAsPlainText(const String& pastingText, bool smartReplace)
 
 void Editor::pasteAsFragment(PassRefPtrWillBeRawPtr<DocumentFragment> pastingFragment, bool smartReplace, bool matchStyle)
 {
-    Node* target = findEventTargetFromSelection();
+    Element* target = findEventTargetFromSelection();
     if (!target)
         return;
     target->dispatchEvent(TextEvent::createForFragmentPaste(m_frame.domWindow(), pastingFragment, smartReplace, matchStyle), IGNORE_EXCEPTION);
@@ -457,11 +457,11 @@ static void writeImageNodeToPasteboard(Pasteboard* pasteboard, Node* node, const
     // FIXME: This should probably be reconciled with HitTestResult::absoluteImageURL.
     AtomicString urlString;
     if (isHTMLImageElement(*node) || isHTMLInputElement(*node))
-        urlString = toElement(node)->getAttribute(srcAttr);
+        urlString = toHTMLElement(node)->getAttribute(srcAttr);
     else if (isSVGImageElement(*node))
-        urlString = toElement(node)->getAttribute(XLinkNames::hrefAttr);
+        urlString = toSVGElement(node)->getAttribute(XLinkNames::hrefAttr);
     else if (isHTMLEmbedElement(*node) || isHTMLObjectElement(*node) || isHTMLCanvasElement(*node))
-        urlString = toElement(node)->imageSourceURL();
+        urlString = toHTMLElement(node)->imageSourceURL();
     KURL url = urlString.isEmpty() ? KURL() : node->document().completeURL(stripLeadingAndTrailingHTMLSpaces(urlString));
 
     pasteboard->writeImage(image.get(), url, title);
@@ -469,9 +469,9 @@ static void writeImageNodeToPasteboard(Pasteboard* pasteboard, Node* node, const
 
 // Returns whether caller should continue with "the default processing", which is the same as
 // the event handler NOT setting the return value to false
-bool Editor::dispatchCPPEvent(const AtomicString &eventType, DataTransferAccessPolicy policy, PasteMode pasteMode)
+bool Editor::dispatchCPPEvent(const AtomicString& eventType, DataTransferAccessPolicy policy, PasteMode pasteMode)
 {
-    Node* target = findEventTargetFromSelection();
+    Element* target = findEventTargetFromSelection();
     if (!target)
         return true;
 
@@ -569,16 +569,16 @@ void Editor::clearLastEditCommand()
     m_lastEditCommand.clear();
 }
 
-Node* Editor::findEventTargetFrom(const VisibleSelection& selection) const
+Element* Editor::findEventTargetFrom(const VisibleSelection& selection) const
 {
-    Node* target = selection.start().element();
+    Element* target = selection.start().element();
     if (!target)
         target = m_frame.document()->body();
 
     return target;
 }
 
-Node* Editor::findEventTargetFromSelection() const
+Element* Editor::findEventTargetFromSelection() const
 {
     return findEventTargetFrom(m_frame.selection().selection());
 }
@@ -749,7 +749,7 @@ void Editor::clear()
     m_defaultParagraphSeparator = EditorParagraphSeparatorIsDiv;
 }
 
-bool Editor::insertText(const String& text, Event* triggeringEvent)
+bool Editor::insertText(const String& text, KeyboardEvent* triggeringEvent)
 {
     return m_frame.eventHandler().handleTextInputEvent(text, triggeringEvent);
 }

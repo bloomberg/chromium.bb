@@ -160,7 +160,7 @@ public:
     bool executeCommand(const String&);
     bool executeCommand(const String& commandName, const String& value);
 
-    bool insertText(const String&, Event* triggeringEvent);
+    bool insertText(const String&, KeyboardEvent* triggeringEvent);
     bool insertTextWithoutSendingTextEvent(const String&, bool selectInsertedText, TextEvent* triggeringEvent);
     bool insertLineBreak();
     bool insertParagraphSeparator();
@@ -199,7 +199,7 @@ public:
     void pasteAsFragment(PassRefPtrWillBeRawPtr<DocumentFragment>, bool smartReplace, bool matchStyle);
     void pasteAsPlainText(const String&, bool smartReplace);
 
-    Node* findEventTargetFrom(const VisibleSelection&) const;
+    Element* findEventTargetFrom(const VisibleSelection&) const;
 
     bool findString(const String&, FindOptions);
     // FIXME: Switch callers over to the FindOptions version and retire this one.
@@ -269,7 +269,7 @@ private:
     void changeSelectionAfterCommand(const VisibleSelection& newSelection, FrameSelection::SetSelectionOptions);
     void notifyComponentsOnChangedSelection(const VisibleSelection& oldSelection, FrameSelection::SetSelectionOptions);
 
-    Node* findEventTargetFromSelection() const;
+    Element* findEventTargetFromSelection() const;
 
     PassRefPtrWillBeRawPtr<Range> rangeOfString(const String&, Range*, FindOptions);
 

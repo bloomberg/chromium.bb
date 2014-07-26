@@ -200,7 +200,7 @@ static bool executeInsertFragment(LocalFrame& frame, PassRefPtrWillBeRawPtr<Docu
     return true;
 }
 
-static bool executeInsertNode(LocalFrame& frame, PassRefPtrWillBeRawPtr<Node> content)
+static bool executeInsertElement(LocalFrame& frame, PassRefPtrWillBeRawPtr<HTMLElement> content)
 {
     ASSERT(frame.document());
     RefPtrWillBeRawPtr<DocumentFragment> fragment = DocumentFragment::create(*frame.document());
@@ -271,12 +271,13 @@ static unsigned verticalScrollDistance(LocalFrame& frame)
     RenderObject* renderer = focusedElement->renderer();
     if (!renderer || !renderer->isBox())
         return 0;
-    RenderStyle* style = renderer->style();
+    RenderBox& renderBox = toRenderBox(*renderer);
+    RenderStyle* style = renderBox.style();
     if (!style)
         return 0;
     if (!(style->overflowY() == OSCROLL || style->overflowY() == OAUTO || focusedElement->hasEditableStyle()))
         return 0;
-    int height = std::min<int>(toRenderBox(renderer)->clientHeight(), frame.view()->visibleHeight());
+    int height = std::min<int>(renderBox.clientHeight(), frame.view()->visibleHeight());
     return static_cast<unsigned>(max(max<int>(height * ScrollableArea::minFractionToStepWhenPaging(), height - ScrollableArea::maxOverlapBetweenPages()), 1));
 }
 
@@ -508,7 +509,7 @@ static bool executeInsertHorizontalRule(LocalFrame& frame, Event*, EditorCommand
     RefPtrWillBeRawPtr<HTMLHRElement> rule = HTMLHRElement::create(*frame.document());
     if (!value.isEmpty())
         rule->setIdAttribute(AtomicString(value));
-    return executeInsertNode(frame, rule.release());
+    return executeInsertElement(frame, rule.release());
 }
 
 static bool executeInsertHTML(LocalFrame& frame, Event*, EditorCommandSource, const String& value)
@@ -523,7 +524,7 @@ static bool executeInsertImage(LocalFrame& frame, Event*, EditorCommandSource, c
     ASSERT(frame.document());
     RefPtrWillBeRawPtr<HTMLImageElement> image = HTMLImageElement::create(*frame.document());
     image->setSrc(value);
-    return executeInsertNode(frame, image.release());
+    return executeInsertElement(frame, image.release());
 }
 
 static bool executeInsertLineBreak(LocalFrame& frame, Event* event, EditorCommandSource source, const String&)
