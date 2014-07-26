@@ -1418,13 +1418,29 @@ def CheckChangeOnUpload(input_api, output_api):
 def GetTryServerMasterForBot(bot):
   """Returns the Try Server master for the given bot.
 
-  Assumes that most Try Servers are on the tryserver.chromium master."""
-  non_default_master_map = {
+  It tries to guess the master from the bot name, but may still fail
+  and return None.  There is no longer a default master.
+  """
+  # Potentially ambiguous bot names are listed explicitly.
+  master_map = {
       'linux_gpu': 'tryserver.chromium.gpu',
       'mac_gpu': 'tryserver.chromium.gpu',
       'win_gpu': 'tryserver.chromium.gpu',
+      'chromium_presubmit': 'tryserver.chromium.linux',
+      'blink_presubmit': 'tryserver.chromium.linux',
+      'tools_build_presubmit': 'tryserver.chromium.linux',
   }
-  return non_default_master_map.get(bot, 'tryserver.chromium')
+  master = master_map.get(bot)
+  if not master:
+    if 'gpu' in bot:
+      master = 'tryserver.chromium.gpu'
+    elif 'linux' in bot or 'android' in bot or 'presubmit' in bot:
+      master = 'tryserver.chromium.linux'
+    elif 'win' in bot:
+      master = 'tryserver.chromium.win'
+    elif 'mac' in bot or 'ios' in bot:
+      master = 'tryserver.chromium.mac'
+  return master
 
 
 def GetDefaultTryConfigs(bots=None):
@@ -1495,7 +1511,7 @@ def GetDefaultTryConfigs(bots=None):
       'linux_chromium_chromeos_rel': ['defaulttests'],
       'linux_chromium_compile_dbg': ['defaulttests'],
       'linux_chromium_gn_rel': ['defaulttests'],
-      'linux_chromium_rel': ['defaulttests'],
+      'linux_chromium_rel_swarming': ['defaulttests'],
       'linux_chromium_clang_dbg': ['defaulttests'],
       'linux_gpu': ['defaulttests'],
       'linux_nacl_sdk_build': ['compile'],
@@ -1577,7 +1593,7 @@ def GetPreferredTryMasters(project, change):
       'linux_chromium_chromeos_rel',
       'linux_chromium_clang_dbg',
       'linux_chromium_gn_rel',
-      'linux_chromium_rel',
+      'linux_chromium_rel_swarming',
       'linux_gpu',
       'mac_chromium_compile_dbg',
       'mac_chromium_rel',

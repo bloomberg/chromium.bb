@@ -33,7 +33,7 @@ def CheckChangeOnCommit(input_api, output_api):
 
 def GetPreferredTryMasters(project, change):
   return {
-    'tryserver.chromium': {
+    'tryserver.chromium.win': {
       'win_drmemory': set(['defaulttests']),
     }
   }

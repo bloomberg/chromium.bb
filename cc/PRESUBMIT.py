@@ -293,7 +293,7 @@ def CheckChangeOnUpload(input_api, output_api):
 
 def GetPreferredTryMasters(project, change):
   return {
-    'tryserver.chromium': {
+    'tryserver.blink': {
       'linux_blink_rel': set(['defaulttests']),
     },
     'tryserver.chromium.gpu': {

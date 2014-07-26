@@ -79,8 +79,10 @@ def CheckChangeOnCommit(input_api, output_api):
 
 def GetPreferredTryMasters(project, change):
   return {
-    'tryserver.chromium': {
+    'tryserver.chromium.linux': {
       'linux_valgrind': set(['defaulttests']),
+    },
+    'tryserver.chromium.mac': {
       'mac_valgrind': set(['defaulttests']),
     }
   }

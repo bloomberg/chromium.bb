@@ -10,15 +10,19 @@ for more details on the presubmit API built into gcl.
 
 def GetPreferredTryMasters(project, change):
   masters = {
-    'tryserver.chromium': {
-      'linux_chromium_rel': set(['defaulttests']),
+    'tryserver.chromium.linux': {
+      'linux_chromium_rel_swarming': set(['defaulttests']),
+    },
+    'tryserver.chromium.mac': {
       'mac_chromium_rel': set(['defaulttests']),
+    },
+    'tryserver.chromium.win': {
       'win_chromium_rel': set(['defaulttests']),
     }
   }
   # Changes that touch NSS files will likely need a corresponding OpenSSL edit.
   # Conveniently, this one glob also matches _openssl.* changes too.
   if any('nss' in f.LocalPath() for f in change.AffectedFiles()):
-    masters['tryserver.chromium'].setdefault(
+    masters['tryserver.chromium.linux'].setdefault(
       'linux_redux', set()).add('defaulttests')
   return masters

@@ -11,7 +11,7 @@ for more details on the presubmit API built into gcl.
 def GetPreferredTryMasters(project, change):
   # Changes in crypto often need a corresponding OpenSSL edit.
   return {
-    'tryserver.chromium': {
+    'tryserver.chromium.linux': {
       'linux_redux': set(['defaulttests']),
     }
   }
