@@ -51,16 +51,10 @@ DataPipeProducerDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
 }
 
 MojoResult DataPipeProducerDispatcher::WriteDataImplNoLock(
-    const void* elements,
-    uint32_t* num_bytes,
+    UserPointer<const void> elements,
+    UserPointer<uint32_t> num_bytes,
     MojoWriteDataFlags flags) {
   lock().AssertAcquired();
-
-  if (!VerifyUserPointer<uint32_t>(num_bytes))
-    return MOJO_RESULT_INVALID_ARGUMENT;
-  if (!VerifyUserPointerWithSize<1>(elements, *num_bytes))
-    return MOJO_RESULT_INVALID_ARGUMENT;
-
   return data_pipe_->ProducerWriteData(
       elements, num_bytes, (flags & MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
 }

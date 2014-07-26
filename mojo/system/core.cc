@@ -360,8 +360,7 @@ MojoResult Core::WriteData(MojoHandle data_pipe_producer_handle,
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return dispatcher->WriteData(elements.GetPointerUnsafe(),
-                               num_bytes.GetPointerUnsafe(), flags);
+  return dispatcher->WriteData(elements, num_bytes, flags);
 }
 
 MojoResult Core::BeginWriteData(MojoHandle data_pipe_producer_handle,

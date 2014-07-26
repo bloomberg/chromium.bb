@@ -136,7 +136,8 @@ TEST(LocalDataPipeTest, SimpleReadWrite) {
   elements[1] = 456;
   num_bytes = static_cast<uint32_t>(2u * sizeof(elements[0]));
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ProducerWriteData(elements, &num_bytes, false));
+            dp->ProducerWriteData(UserPointer<const void>(elements),
+                                  MakeUserPointer(&num_bytes), false));
   // It should have written everything (even without "all or none").
   EXPECT_EQ(2u * sizeof(elements[0]), num_bytes);
 
@@ -224,7 +225,9 @@ TEST(LocalDataPipeTest, BasicProducerWaiting) {
   // Write two elements.
   int32_t elements[2] = { 123, 456 };
   uint32_t num_bytes = static_cast<uint32_t>(2u * sizeof(elements[0]));
-  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(elements, &num_bytes, true));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerWriteData(UserPointer<const void>(elements),
+                                  MakeUserPointer(&num_bytes), true));
   EXPECT_EQ(static_cast<uint32_t>(2u * sizeof(elements[0])), num_bytes);
 
   // Adding a waiter should now succeed.
@@ -299,7 +302,9 @@ TEST(LocalDataPipeTest, BasicProducerWaiting) {
   // Write one element.
   elements[0] = 123;
   num_bytes = static_cast<uint32_t>(1u * sizeof(elements[0]));
-  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(elements, &num_bytes, false));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerWriteData(UserPointer<const void>(elements),
+                                  MakeUserPointer(&num_bytes), false));
   EXPECT_EQ(static_cast<uint32_t>(1u * sizeof(elements[0])), num_bytes);
 
   // Add a waiter.
@@ -350,7 +355,8 @@ TEST(LocalDataPipeTest, BasicConsumerWaiting) {
     int32_t elements[2] = { 123, 456 };
     uint32_t num_bytes = static_cast<uint32_t>(2u * sizeof(elements[0]));
     EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ProducerWriteData(elements, &num_bytes, true));
+              dp->ProducerWriteData(UserPointer<const void>(elements),
+                                    MakeUserPointer(&num_bytes), true));
 
     // Should already be readable.
     waiter.Init();
@@ -389,7 +395,8 @@ TEST(LocalDataPipeTest, BasicConsumerWaiting) {
     elements[1] = -1;
     num_bytes = static_cast<uint32_t>(1u * sizeof(elements[0]));
     EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ProducerWriteData(elements, &num_bytes, true));
+              dp->ProducerWriteData(UserPointer<const void>(elements),
+                                    MakeUserPointer(&num_bytes), true));
 
     // Waiting should now succeed.
     EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(1000, &context));
@@ -642,7 +649,8 @@ TEST(LocalDataPipeTest, BasicMayDiscardWaiting) {
   uint32_t num_bytes = static_cast<uint32_t>(sizeof(int32_t));
   int32_t element = 123;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ProducerWriteData(&element, &num_bytes, false));
+            dp->ProducerWriteData(UserPointer<const void>(&element),
+                                  MakeUserPointer(&num_bytes), false));
   EXPECT_EQ(static_cast<uint32_t>(sizeof(int32_t)), num_bytes);
 
   // Still writable (even though it's full).
@@ -659,7 +667,8 @@ TEST(LocalDataPipeTest, BasicMayDiscardWaiting) {
   num_bytes = static_cast<uint32_t>(sizeof(int32_t));
   element = 456;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ProducerWriteData(&element, &num_bytes, false));
+            dp->ProducerWriteData(UserPointer<const void>(&element),
+                                  MakeUserPointer(&num_bytes), false));
   EXPECT_EQ(static_cast<uint32_t>(sizeof(int32_t)), num_bytes);
 
   // Still writable.
@@ -722,7 +731,9 @@ TEST(LocalDataPipeTest, MayDiscard) {
   Seq(0, arraysize(buffer), buffer);
   // Try writing more than capacity. (This test relies on the implementation
   // enforcing the capacity strictly.)
-  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(buffer, &num_bytes, false));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerWriteData(UserPointer<const void>(buffer),
+                                  MakeUserPointer(&num_bytes), false));
   EXPECT_EQ(10u * sizeof(int32_t), num_bytes);
 
   // Read half of what we wrote.
@@ -742,7 +753,9 @@ TEST(LocalDataPipeTest, MayDiscard) {
   // Write a bit more than the space that's available.
   num_bytes = 8u * sizeof(int32_t);
   Seq(100, arraysize(buffer), buffer);
-  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(buffer, &num_bytes, false));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerWriteData(UserPointer<const void>(buffer),
+                                  MakeUserPointer(&num_bytes), false));
   EXPECT_EQ(8u * sizeof(int32_t), num_bytes);
   // Internally, a circular buffer would now look like:
   //   100, 101, 102, 103, 104, 105, 106, 107, 8, 9
@@ -767,7 +780,9 @@ TEST(LocalDataPipeTest, MayDiscard) {
   // Write one integer.
   num_bytes = 1u * sizeof(int32_t);
   Seq(200, arraysize(buffer), buffer);
-  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(buffer, &num_bytes, false));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerWriteData(UserPointer<const void>(buffer),
+                                  MakeUserPointer(&num_bytes), false));
   EXPECT_EQ(1u * sizeof(int32_t), num_bytes);
   // Internally, a circular buffer would now look like:
   //   -, -, -, 103, 104, 105, 106, 107, 200, -
@@ -775,7 +790,9 @@ TEST(LocalDataPipeTest, MayDiscard) {
   // Write five more.
   num_bytes = 5u * sizeof(int32_t);
   Seq(300, arraysize(buffer), buffer);
-  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(buffer, &num_bytes, false));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerWriteData(UserPointer<const void>(buffer),
+                                  MakeUserPointer(&num_bytes), false));
   EXPECT_EQ(5u * sizeof(int32_t), num_bytes);
   // Internally, a circular buffer would now look like:
   //   301, 302, 303, 304, 104, 105, 106, 107, 200, 300
@@ -905,7 +922,8 @@ TEST(LocalDataPipeTest, AllOrNone) {
   int32_t buffer[100];
   Seq(0, arraysize(buffer), buffer);
   EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
-            dp->ProducerWriteData(buffer, &num_bytes, true));
+            dp->ProducerWriteData(UserPointer<const void>(buffer),
+                                  MakeUserPointer(&num_bytes), true));
 
   // Should still be empty.
   num_bytes = ~0u;
@@ -915,7 +933,9 @@ TEST(LocalDataPipeTest, AllOrNone) {
   // Write some data.
   num_bytes = 5u * sizeof(int32_t);
   Seq(100, arraysize(buffer), buffer);
-  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(buffer, &num_bytes, true));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerWriteData(UserPointer<const void>(buffer),
+                                  MakeUserPointer(&num_bytes), true));
   EXPECT_EQ(5u * sizeof(int32_t), num_bytes);
 
   // Half full.
@@ -927,7 +947,8 @@ TEST(LocalDataPipeTest, AllOrNone) {
   num_bytes = 6u * sizeof(int32_t);
   Seq(200, arraysize(buffer), buffer);
   EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
-            dp->ProducerWriteData(buffer, &num_bytes, true));
+            dp->ProducerWriteData(UserPointer<const void>(buffer),
+                                  MakeUserPointer(&num_bytes), true));
 
   // Try reading too much.
   num_bytes = 11u * sizeof(int32_t);
@@ -947,13 +968,17 @@ TEST(LocalDataPipeTest, AllOrNone) {
   // Just a little.
   num_bytes = 2u * sizeof(int32_t);
   Seq(300, arraysize(buffer), buffer);
-  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(buffer, &num_bytes, true));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerWriteData(UserPointer<const void>(buffer),
+                                  MakeUserPointer(&num_bytes), true));
   EXPECT_EQ(2u * sizeof(int32_t), num_bytes);
 
   // Just right.
   num_bytes = 3u * sizeof(int32_t);
   Seq(400, arraysize(buffer), buffer);
-  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(buffer, &num_bytes, true));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerWriteData(UserPointer<const void>(buffer),
+                                  MakeUserPointer(&num_bytes), true));
   EXPECT_EQ(3u * sizeof(int32_t), num_bytes);
 
   // Exactly full.
@@ -1057,18 +1082,23 @@ TEST(LocalDataPipeTest, AllOrNoneMayDiscard) {
   int32_t buffer[100];
   Seq(0, arraysize(buffer), buffer);
   EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
-            dp->ProducerWriteData(buffer, &num_bytes, true));
+            dp->ProducerWriteData(UserPointer<const void>(buffer),
+                                  MakeUserPointer(&num_bytes), true));
 
   // Write some stuff.
   num_bytes = 5u * sizeof(int32_t);
   Seq(100, arraysize(buffer), buffer);
-  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(buffer, &num_bytes, true));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerWriteData(UserPointer<const void>(buffer),
+                                  MakeUserPointer(&num_bytes), true));
   EXPECT_EQ(5u * sizeof(int32_t), num_bytes);
 
   // Write lots of stuff (discarding all but "104").
   num_bytes = 9u * sizeof(int32_t);
   Seq(200, arraysize(buffer), buffer);
-  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(buffer, &num_bytes, true));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerWriteData(UserPointer<const void>(buffer),
+                                  MakeUserPointer(&num_bytes), true));
   EXPECT_EQ(9u * sizeof(int32_t), num_bytes);
 
   // Read one.
@@ -1110,7 +1140,9 @@ TEST(LocalDataPipeTest, AllOrNoneMayDiscard) {
   // Write as much as possible.
   num_bytes = 10u * sizeof(int32_t);
   Seq(300, arraysize(buffer), buffer);
-  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(buffer, &num_bytes, true));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerWriteData(UserPointer<const void>(buffer),
+                                  MakeUserPointer(&num_bytes), true));
   EXPECT_EQ(10u * sizeof(int32_t), num_bytes);
 
   // Read everything.
@@ -1214,7 +1246,9 @@ TEST(LocalDataPipeTest, TwoPhaseAllOrNone) {
   num_bytes = 6u * sizeof(int32_t);
   int32_t buffer[100];
   Seq(100, 6, buffer);
-  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(buffer, &num_bytes, true));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerWriteData(UserPointer<const void>(buffer),
+                                  MakeUserPointer(&num_bytes), true));
   EXPECT_EQ(6u * sizeof(int32_t), num_bytes);
 
   // We have ten.
@@ -1287,7 +1321,8 @@ TEST(LocalDataPipeTest, WrapAround) {
   // Write 20 bytes.
   uint32_t num_bytes = 20u;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ProducerWriteData(&test_data[0], &num_bytes, false));
+            dp->ProducerWriteData(UserPointer<const void>(&test_data[0]),
+                                  MakeUserPointer(&num_bytes), false));
   EXPECT_EQ(20u, num_bytes);
 
   // Read 10 bytes.
@@ -1315,7 +1350,8 @@ TEST(LocalDataPipeTest, WrapAround) {
   // 90 bytes.
   num_bytes = 200u;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ProducerWriteData(&test_data[20], &num_bytes, false));
+            dp->ProducerWriteData(UserPointer<const void>(&test_data[20]),
+                                  MakeUserPointer(&num_bytes), false));
   EXPECT_EQ(90u, num_bytes);
 
   // Check that a two-phase read can now only read (at most) 90 bytes. (This
@@ -1368,13 +1404,15 @@ TEST(LocalDataPipeTest, CloseWriteRead) {
     // Write some data, so we'll have something to read.
     uint32_t num_bytes = kTestDataSize;
     EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ProducerWriteData(kTestData, &num_bytes, false));
+              dp->ProducerWriteData(UserPointer<const void>(kTestData),
+                                    MakeUserPointer(&num_bytes), false));
     EXPECT_EQ(kTestDataSize, num_bytes);
 
     // Write it again, so we'll have something left over.
     num_bytes = kTestDataSize;
     EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ProducerWriteData(kTestData, &num_bytes, false));
+              dp->ProducerWriteData(UserPointer<const void>(kTestData),
+                                    MakeUserPointer(&num_bytes), false));
     EXPECT_EQ(kTestDataSize, num_bytes);
 
     // Start two-phase write.
@@ -1422,7 +1460,8 @@ TEST(LocalDataPipeTest, CloseWriteRead) {
     // Write some data, so we'll have something to read.
     uint32_t num_bytes = kTestDataSize;
     EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ProducerWriteData(kTestData, &num_bytes, false));
+              dp->ProducerWriteData(UserPointer<const void>(kTestData),
+                                    MakeUserPointer(&num_bytes), false));
     EXPECT_EQ(kTestDataSize, num_bytes);
 
     // Start two-phase write.
@@ -1456,7 +1495,8 @@ TEST(LocalDataPipeTest, CloseWriteRead) {
     // But trying to write should result in failure.
     num_bytes = kTestDataSize;
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              dp->ProducerWriteData(kTestData, &num_bytes, false));
+              dp->ProducerWriteData(UserPointer<const void>(kTestData),
+                                    MakeUserPointer(&num_bytes), false));
 
     // As will trying to start another two-phase write.
     write_buffer_ptr = NULL;
@@ -1493,7 +1533,8 @@ TEST(LocalDataPipeTest, CloseWriteRead) {
     // Write some data, so we'll have something to read.
     uint32_t num_bytes = kTestDataSize;
     EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ProducerWriteData(kTestData, &num_bytes, false));
+              dp->ProducerWriteData(UserPointer<const void>(kTestData),
+                                    MakeUserPointer(&num_bytes), false));
     EXPECT_EQ(kTestDataSize, num_bytes);
 
     // Close the producer.
@@ -1596,7 +1637,9 @@ TEST(LocalDataPipeTest, TwoPhaseMoreInvalidArguments) {
   // Now write some data, so we'll be able to try reading.
   int32_t element = 123;
   num_bytes = 1u * sizeof(int32_t);
-  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(&element, &num_bytes, false));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerWriteData(UserPointer<const void>(&element),
+                                  MakeUserPointer(&num_bytes), false));
 
   // One element available.
   num_bytes = 0u;
@@ -1670,7 +1713,9 @@ TEST(LocalDataPipeTest, DISABLED_MayDiscardTwoPhaseConsistent) {
   // Write some elements.
   char elements[2] = { 'a', 'b' };
   uint32_t num_bytes = 2u;
-  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(elements, &num_bytes, false));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerWriteData(UserPointer<const void>(elements),
+                                  MakeUserPointer(&num_bytes), false));
   EXPECT_EQ(2u, num_bytes);
 
   // Begin reading.
@@ -1692,7 +1737,9 @@ TEST(LocalDataPipeTest, DISABLED_MayDiscardTwoPhaseConsistent) {
   //            dp->ProducerWriteData(elements, &num_bytes, false));
   // but we incorrectly think that the bytes being read are discardable. Letting
   // this through reveals the significant consequence.
-  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(elements, &num_bytes, false));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerWriteData(UserPointer<const void>(elements),
+                                  MakeUserPointer(&num_bytes), false));
 
   // Check that our read buffer hasn't changed underneath us.
   EXPECT_EQ('a', static_cast<const char*>(read_ptr)[0]);
@@ -1702,7 +1749,9 @@ TEST(LocalDataPipeTest, DISABLED_MayDiscardTwoPhaseConsistent) {
   EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerEndReadData(2u));
 
   // Now writing should succeed.
-  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(elements, &num_bytes, false));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerWriteData(UserPointer<const void>(elements),
+                                  MakeUserPointer(&num_bytes), false));
 
   // And if we read, we should get the new values.
   read_ptr = NULL;

@@ -44,19 +44,22 @@ void LocalDataPipe::ProducerCloseImplNoLock() {
   }
 }
 
-MojoResult LocalDataPipe::ProducerWriteDataImplNoLock(const void* elements,
-                                                      uint32_t* num_bytes,
-                                                      bool all_or_none) {
-  DCHECK_EQ(*num_bytes % element_num_bytes(), 0u);
-  DCHECK_GT(*num_bytes, 0u);
+MojoResult LocalDataPipe::ProducerWriteDataImplNoLock(
+    UserPointer<const void> elements,
+    UserPointer<uint32_t> num_bytes,
+    uint32_t max_num_bytes_to_write,
+    uint32_t min_num_bytes_to_write) {
+  DCHECK_EQ(max_num_bytes_to_write % element_num_bytes(), 0u);
+  DCHECK_EQ(min_num_bytes_to_write % element_num_bytes(), 0u);
+  DCHECK_GT(max_num_bytes_to_write, 0u);
   DCHECK(consumer_open_no_lock());
 
   size_t num_bytes_to_write = 0;
   if (may_discard()) {
-    if (all_or_none && *num_bytes > capacity_num_bytes())
+    if (min_num_bytes_to_write > capacity_num_bytes())
       return MOJO_RESULT_OUT_OF_RANGE;
 
-    num_bytes_to_write = std::min(static_cast<size_t>(*num_bytes),
+    num_bytes_to_write = std::min(static_cast<size_t>(max_num_bytes_to_write),
                                   capacity_num_bytes());
     if (num_bytes_to_write > capacity_num_bytes() - current_num_bytes_) {
       // Discard as much as needed (discard oldest first).
@@ -66,13 +69,13 @@ MojoResult LocalDataPipe::ProducerWriteDataImplNoLock(const void* elements,
       // the buffer full.
     }
   } else {
-    if (all_or_none && *num_bytes > capacity_num_bytes() - current_num_bytes_) {
+    if (min_num_bytes_to_write > capacity_num_bytes() - current_num_bytes_) {
       // Don't return "should wait" since you can't wait for a specified amount
       // of data.
       return MOJO_RESULT_OUT_OF_RANGE;
     }
 
-    num_bytes_to_write = std::min(static_cast<size_t>(*num_bytes),
+    num_bytes_to_write = std::min(static_cast<size_t>(max_num_bytes_to_write),
                                   capacity_num_bytes() - current_num_bytes_);
   }
   if (num_bytes_to_write == 0)
@@ -85,18 +88,18 @@ MojoResult LocalDataPipe::ProducerWriteDataImplNoLock(const void* elements,
   size_t first_write_index =
       (start_index_ + current_num_bytes_) % capacity_num_bytes();
   EnsureBufferNoLock();
-  memcpy(buffer_.get() + first_write_index, elements, num_bytes_to_write_first);
+  elements.GetArray(buffer_.get() + first_write_index,
+                    num_bytes_to_write_first);
 
   if (num_bytes_to_write_first < num_bytes_to_write) {
     // The "second write index" is zero.
-    memcpy(buffer_.get(),
-           static_cast<const char*>(elements) + num_bytes_to_write_first,
-           num_bytes_to_write - num_bytes_to_write_first);
+    elements.At(num_bytes_to_write_first).GetArray(
+        buffer_.get(), num_bytes_to_write - num_bytes_to_write_first);
   }
 
   current_num_bytes_ += num_bytes_to_write;
   DCHECK_LE(current_num_bytes_, capacity_num_bytes());
-  *num_bytes = static_cast<uint32_t>(num_bytes_to_write);
+  num_bytes.Put(static_cast<uint32_t>(num_bytes_to_write));
   return MOJO_RESULT_OK;
 }
 

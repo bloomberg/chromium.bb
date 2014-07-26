@@ -136,8 +136,8 @@ MojoResult Dispatcher::ReadMessage(UserPointer<void> bytes,
                                flags);
 }
 
-MojoResult Dispatcher::WriteData(const void* elements,
-                                 uint32_t* num_bytes,
+MojoResult Dispatcher::WriteData(UserPointer<const void> elements,
+                                 UserPointer<uint32_t> num_bytes,
                                  MojoWriteDataFlags flags) {
   base::AutoLock locker(lock_);
   if (is_closed_)
@@ -277,8 +277,8 @@ MojoResult Dispatcher::ReadMessageImplNoLock(
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
-MojoResult Dispatcher::WriteDataImplNoLock(const void* /*elements*/,
-                                           uint32_t* /*num_bytes*/,
+MojoResult Dispatcher::WriteDataImplNoLock(UserPointer<const void> /*elements*/,
+                                           UserPointer<uint32_t> /*num_bytes*/,
                                            MojoWriteDataFlags /*flags*/) {
   lock_.AssertAcquired();
   DCHECK(!is_closed_);

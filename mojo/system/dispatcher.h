@@ -92,8 +92,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
                          DispatcherVector* dispatchers,
                          uint32_t* num_dispatchers,
                          MojoReadMessageFlags flags);
-  MojoResult WriteData(const void* elements,
-                       uint32_t* elements_num_bytes,
+  MojoResult WriteData(UserPointer<const void> elements,
+                       UserPointer<uint32_t> elements_num_bytes,
                        MojoWriteDataFlags flags);
   MojoResult BeginWriteData(UserPointer<void*> buffer,
                             UserPointer<uint32_t> buffer_num_bytes,
@@ -222,8 +222,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
                                            DispatcherVector* dispatchers,
                                            uint32_t* num_dispatchers,
                                            MojoReadMessageFlags flags);
-  virtual MojoResult WriteDataImplNoLock(const void* elements,
-                                         uint32_t* num_bytes,
+  virtual MojoResult WriteDataImplNoLock(UserPointer<const void> elements,
+                                         UserPointer<uint32_t> num_bytes,
                                          MojoWriteDataFlags flags);
   virtual MojoResult BeginWriteDataImplNoLock(
       UserPointer<void*> buffer,

@@ -94,8 +94,8 @@ void DataPipe::ProducerClose() {
       ConsumerGetHandleSignalsStateNoLock());
 }
 
-MojoResult DataPipe::ProducerWriteData(const void* elements,
-                                       uint32_t* num_bytes,
+MojoResult DataPipe::ProducerWriteData(UserPointer<const void> elements,
+                                       UserPointer<uint32_t> num_bytes,
                                        bool all_or_none) {
   base::AutoLock locker(lock_);
   DCHECK(has_local_producer_no_lock());
@@ -106,14 +106,19 @@ MojoResult DataPipe::ProducerWriteData(const void* elements,
     return MOJO_RESULT_FAILED_PRECONDITION;
 
   // Returning "busy" takes priority over "invalid argument".
-  if (*num_bytes % element_num_bytes_ != 0)
+  uint32_t max_num_bytes_to_write = num_bytes.Get();
+  if (max_num_bytes_to_write % element_num_bytes_ != 0)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  if (*num_bytes == 0)
+  if (max_num_bytes_to_write == 0)
     return MOJO_RESULT_OK;  // Nothing to do.
 
+  uint32_t min_num_bytes_to_write = all_or_none ? max_num_bytes_to_write : 0;
+
   HandleSignalsState old_consumer_state = ConsumerGetHandleSignalsStateNoLock();
-  MojoResult rv = ProducerWriteDataImplNoLock(elements, num_bytes, all_or_none);
+  MojoResult rv = ProducerWriteDataImplNoLock(elements, num_bytes,
+                                              max_num_bytes_to_write,
+                                              min_num_bytes_to_write);
   HandleSignalsState new_consumer_state = ConsumerGetHandleSignalsStateNoLock();
   if (!new_consumer_state.equals(old_consumer_state))
     AwakeConsumerWaitersForStateChangeNoLock(new_consumer_state);

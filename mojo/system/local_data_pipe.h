@@ -31,9 +31,11 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalDataPipe : public DataPipe {
 
   // |DataPipe| implementation:
   virtual void ProducerCloseImplNoLock() OVERRIDE;
-  virtual MojoResult ProducerWriteDataImplNoLock(const void* elements,
-                                                 uint32_t* num_bytes,
-                                                 bool all_or_none) OVERRIDE;
+  virtual MojoResult ProducerWriteDataImplNoLock(
+      UserPointer<const void> elements,
+      UserPointer<uint32_t> num_bytes,
+      uint32_t max_num_bytes_to_write,
+      uint32_t min_num_bytes_to_write) OVERRIDE;
   virtual MojoResult ProducerBeginWriteDataImplNoLock(
       UserPointer<void*> buffer,
       UserPointer<uint32_t> buffer_num_bytes,

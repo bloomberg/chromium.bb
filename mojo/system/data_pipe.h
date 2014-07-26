@@ -50,10 +50,8 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   // corresponding names.
   void ProducerCancelAllWaiters();
   void ProducerClose();
-  // This does not validate its arguments, except to check that |*num_bytes| is
-  // a multiple of |element_num_bytes_|.
-  MojoResult ProducerWriteData(const void* elements,
-                               uint32_t* num_bytes,
+  MojoResult ProducerWriteData(UserPointer<const void> elements,
+                               UserPointer<uint32_t> num_bytes,
                                bool all_or_none);
   MojoResult ProducerBeginWriteData(UserPointer<void*> buffer,
                                     UserPointer<uint32_t> buffer_num_bytes,
@@ -96,10 +94,12 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   virtual ~DataPipe();
 
   virtual void ProducerCloseImplNoLock() = 0;
-  // |*num_bytes| will be a nonzero multiple of |element_num_bytes_|.
-  virtual MojoResult ProducerWriteDataImplNoLock(const void* elements,
-                                                 uint32_t* num_bytes,
-                                                 bool all_or_none) = 0;
+  // |num_bytes.Get()| will be a nonzero multiple of |element_num_bytes_|.
+  virtual MojoResult ProducerWriteDataImplNoLock(
+      UserPointer<const void> elements,
+      UserPointer<uint32_t> num_bytes,
+      uint32_t max_num_bytes_to_write,
+      uint32_t min_num_bytes_to_write) = 0;
   virtual MojoResult ProducerBeginWriteDataImplNoLock(
       UserPointer<void*> buffer,
       UserPointer<uint32_t> buffer_num_bytes,

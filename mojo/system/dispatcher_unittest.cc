@@ -52,7 +52,8 @@ TEST(DispatcherTest, Basic) {
             d->ReadMessage(NullUserPointer(), NullUserPointer(), NULL, NULL,
                            MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->WriteData(NULL, NULL, MOJO_WRITE_DATA_FLAG_NONE));
+            d->WriteData(NullUserPointer(), NullUserPointer(),
+                         MOJO_WRITE_DATA_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             d->BeginWriteData(NullUserPointer(), NullUserPointer(),
                               MOJO_WRITE_DATA_FLAG_NONE));
@@ -83,7 +84,8 @@ TEST(DispatcherTest, Basic) {
             d->ReadMessage(NullUserPointer(), NullUserPointer(), NULL, NULL,
                            MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->WriteData(NULL, NULL, MOJO_WRITE_DATA_FLAG_NONE));
+            d->WriteData(NullUserPointer(), NullUserPointer(),
+                         MOJO_WRITE_DATA_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             d->BeginWriteData(NullUserPointer(), NullUserPointer(),
                               MOJO_WRITE_DATA_FLAG_NONE));
@@ -162,7 +164,7 @@ class ThreadSafetyStressThread : public base::SimpleThread {
         break;
       case WRITE_DATA:
         EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-                  dispatcher_->WriteData(NULL, NULL,
+                  dispatcher_->WriteData(NullUserPointer(), NullUserPointer(),
                                          MOJO_WRITE_DATA_FLAG_NONE));
         break;
       case BEGIN_WRITE_DATA:
