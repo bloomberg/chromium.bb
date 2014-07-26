@@ -110,3 +110,28 @@ IN_PROC_BROWSER_TEST_F(SocketsTcpApiTest, SocketTcpExtension) {
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
+
+IN_PROC_BROWSER_TEST_F(SocketsTcpApiTest, SocketTcpExtensionTLS) {
+  scoped_ptr<net::SpawnedTestServer> test_https_server(
+      new net::SpawnedTestServer(
+          net::SpawnedTestServer::TYPE_HTTPS,
+          net::BaseTestServer::SSLOptions(),
+          base::FilePath(FILE_PATH_LITERAL("net/data"))));
+  EXPECT_TRUE(test_https_server->Start());
+
+  net::HostPortPair https_host_port_pair = test_https_server->host_port_pair();
+  int https_port = https_host_port_pair.port();
+  ASSERT_GT(https_port, 0);
+
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  ExtensionTestMessageListener listener("info_please", true);
+
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("sockets_tcp/api")));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+  listener.Reply(base::StringPrintf(
+      "https:%s:%d", https_host_port_pair.host().c_str(), https_port));
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}

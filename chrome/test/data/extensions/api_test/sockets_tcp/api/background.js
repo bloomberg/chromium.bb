@@ -9,17 +9,26 @@
 // The response is based on the request but obfuscated using a random key.
 const request = "0100000005320000005hello";
 var expectedResponsePattern = /0100000005320000005.{11}/;
+const http_get = "GET test.html HTTP/1.0\r\n\r\n";
+var expectedHTTPPattern = /HTTP.1.0 200 OK/;
 
-var address;
+var tcp_address;
+var https_address;
 var bytesSent = 0;
 var dataAsString;
 var dataRead = [];
-var port = -1;
+var tcp_port = -1;
+var https_port = -1;
 var protocol = "none";
-var socketId = 0;
+var tcp_socketId = 0;
+var https_socketId = 0;
 var echoDataSent = false;
 var succeeded = false;
 var waitCount = 0;
+
+// Keys are socketIds. Values are inner dictionaries with two keys: onReceive,
+// onReceiveError. Both are functions.
+var receive_dispatcher = {}
 
 // Many thanks to Dennis for his StackOverflow answer: http://goo.gl/UDanx
 // Since amended to handle BlobBuilder deprecation.
@@ -39,6 +48,25 @@ function arrayBuffer2String(buf, callback) {
     callback(e.target.result);
   };
   f.readAsText(blob);
+}
+
+function dispatchSocketReceive(receiveInfo) {
+  if (receive_dispatcher[receiveInfo.socketId] !== undefined) {
+    receive_dispatcher[receiveInfo.socketId].onReceive(receiveInfo);
+  } else {
+    console.log("dispatchSocketReceive: No handler for socket " +
+        receiveInfo.socketId);
+  }
+}
+
+function dispatchSocketReceiveError(receiveErrorInfo) {
+  if (receive_dispatcher[receiveErrorInfo.socketId] !== undefined) {
+    receive_dispatcher[receiveErrorInfo.socketId].onReceiveError(
+        receiveErrorInfo);
+  } else {
+    console.log("dispatchSocketReceiveError: No handler for socket " +
+        receiveErrorInfo.socketId);
+  }
 }
 
 var testSocketCreation = function() {
@@ -71,7 +99,6 @@ var testSocketCreation = function() {
   chrome.sockets.tcp.create({}, onCreate);
 };
 
-
 var testSending = function() {
   dataRead = "";
   succeeded = false;
@@ -92,14 +119,16 @@ var testSending = function() {
 
   function onCreateComplete(socketInfo) {
     console.log("onCreateComplete");
-    socketId = socketInfo.socketId;
-    chrome.test.assertTrue(socketId > 0, "failed to create socket");
+    tcp_socketId = socketInfo.socketId;
+    chrome.test.assertTrue(tcp_socketId > 0, "failed to create socket");
 
     console.log("add event listeners");
-    chrome.sockets.tcp.onReceive.addListener(onSocketReceive);
-    chrome.sockets.tcp.onReceiveError.addListener(onSocketReceiveError);
+    receive_dispatcher[tcp_socketId] = {
+      onReceive: onSocketReceive,
+      onReceiveError: onSocketReceiveError
+    };
 
-    chrome.sockets.tcp.getInfo(socketId, onGetInfoAfterCreateComplete);
+    chrome.sockets.tcp.getInfo(tcp_socketId, onGetInfoAfterCreateComplete);
   }
 
   function onGetInfoAfterCreateComplete(result) {
@@ -120,7 +149,7 @@ var testSending = function() {
     chrome.test.assertEq(104, result.bufferSize, "Buffer size did not persist");
     chrome.test.assertFalse(result.paused, "Socket should not be paused");
 
-    chrome.sockets.tcp.update(socketId, {
+    chrome.sockets.tcp.update(tcp_socketId, {
       "name": "test2",
       "persistent": false,
       bufferSize: 2048
@@ -129,7 +158,7 @@ var testSending = function() {
 
   function onUpdateComplete() {
     console.log("onUpdateComplete");
-    chrome.sockets.tcp.getInfo(socketId, onGetInfoAfterUpdateComplete);
+    chrome.sockets.tcp.getInfo(tcp_socketId, onGetInfoAfterUpdateComplete);
   }
 
   function onGetInfoAfterUpdateComplete(result) {
@@ -151,7 +180,8 @@ var testSending = function() {
                          "Buffer size did not persist");
     chrome.test.assertFalse(result.paused, "Socket should not be paused");
 
-    chrome.sockets.tcp.connect(socketId, address, port, onConnectComplete);
+    chrome.sockets.tcp.connect(tcp_socketId, tcp_address, tcp_port,
+                               onConnectComplete);
   }
 
   function onConnectComplete(result) {
@@ -159,7 +189,7 @@ var testSending = function() {
     chrome.test.assertEq(0, result,
                          "Connect failed with error " + result);
 
-    chrome.sockets.tcp.getInfo(socketId, onGetInfoAfterConnectComplete);
+    chrome.sockets.tcp.getInfo(tcp_socketId, onGetInfoAfterConnectComplete);
   }
 
   function onGetInfoAfterConnectComplete(result) {
@@ -173,33 +203,33 @@ var testSending = function() {
     // IPs, not names.
     chrome.test.assertEq(result.peerAddress, "127.0.0.1",
                          "Peer addresss should be the listen server");
-    chrome.test.assertEq(result.peerPort, port,
+    chrome.test.assertEq(result.peerPort, tcp_port,
                          "Peer port should be the listen server");
     chrome.test.assertTrue(result.connected, "Socket should be connected");
 
-    chrome.sockets.tcp.setPaused(socketId, true, onSetPausedComplete);
+    chrome.sockets.tcp.setPaused(tcp_socketId, true, onSetPausedComplete);
   }
 
   function onSetPausedComplete() {
     console.log("onSetPausedComplete");
-    chrome.sockets.tcp.getInfo(socketId, onGetInfoAfterSetPausedComplete);
+    chrome.sockets.tcp.getInfo(tcp_socketId, onGetInfoAfterSetPausedComplete);
   }
 
   function onGetInfoAfterSetPausedComplete(result) {
     console.log("onGetInfoAfterSetPausedComplete");
     chrome.test.assertTrue(result.paused, "Socket should be paused");
-    chrome.sockets.tcp.setPaused(socketId, false, onUnpauseComplete);
+    chrome.sockets.tcp.setPaused(tcp_socketId, false, onUnpauseComplete);
   }
 
   function onUnpauseComplete() {
     console.log("onUnpauseComplete");
-    chrome.sockets.tcp.getInfo(socketId, onGetInfoAfterUnpauseComplete);
+    chrome.sockets.tcp.getInfo(tcp_socketId, onGetInfoAfterUnpauseComplete);
   }
 
   function onGetInfoAfterUnpauseComplete(result) {
     console.log("onGetInfoAfterUnpauseComplete");
     chrome.test.assertFalse(result.paused, "Socket should not be paused");
-    chrome.sockets.tcp.setNoDelay(socketId, true, onSetNoDelayComplete);
+    chrome.sockets.tcp.setNoDelay(tcp_socketId, true, onSetNoDelayComplete);
   }
 
   function onSetNoDelayComplete(result) {
@@ -210,7 +240,7 @@ var testSending = function() {
           "lastError=" + chrome.runtime.lastError.message);
     }
     chrome.sockets.tcp.setKeepAlive(
-        socketId, true, 1000, onSetKeepAliveComplete);
+        tcp_socketId, true, 1000, onSetKeepAliveComplete);
   }
 
   function onSetKeepAliveComplete(result) {
@@ -223,7 +253,7 @@ var testSending = function() {
 
     string2ArrayBuffer(request, function(arrayBuffer) {
       echoDataSent = true;
-      chrome.sockets.tcp.send(socketId, arrayBuffer, onSendComplete);
+      chrome.sockets.tcp.send(tcp_socketId, arrayBuffer, onSendComplete);
     });
   }
 
@@ -237,13 +267,13 @@ var testSending = function() {
 
   function onSocketReceive(receiveInfo) {
     console.log("onSocketReceive");
-    chrome.test.assertEq(socketId, receiveInfo.socketId);
+    chrome.test.assertEq(tcp_socketId, receiveInfo.socketId);
     arrayBuffer2String(receiveInfo.data, function(s) {
       dataAsString = s;  // save this for error reporting
       var match = !!s.match(expectedResponsePattern);
       chrome.test.assertTrue(match, "Received data does not match.");
       console.log("echo data received, closing socket");
-      chrome.sockets.tcp.close(socketId, onCloseComplete);
+      chrome.sockets.tcp.close(tcp_socketId, onCloseComplete);
     });
   }
 
@@ -268,6 +298,128 @@ var testSending = function() {
 
 };  // testSending()
 
+var testSecure = function () {
+  var request_sent = false;
+  succeeded = false;
+  dataAsString = "";
+  setTimeout(waitForBlockingOperation, 1000);
+
+  // Run the test a few times. First with misuse_testing=MISUSE_NONE,
+  // to test that the API works correctly when used properly. Then
+  // with different values of misuse_mode, test that the API does
+  // not malfunction when used improperly. Upon success, each misuse
+  // must close the socket and call onCloseComplete().
+  var MISUSE_NONE = 0;
+  var MISUSE_SECURE_PENDING_READ = 1;
+  var MISUSE_LAST = MISUSE_SECURE_PENDING_READ;
+  var misuse_mode = MISUSE_NONE;
+
+  chrome.sockets.tcp.create({}, onCreateComplete);
+
+  function onCreateComplete(socketInfo) {
+    https_socketId = socketInfo.socketId;
+    receive_dispatcher[https_socketId] = {
+      onReceive: onSocketReceive,
+      onReceiveError: onSocketReceiveError
+    };
+
+    chrome.test.assertTrue(https_socketId > 0, "failed to create socket");
+    if (misuse_mode == MISUSE_SECURE_PENDING_READ) {
+      // Don't pause the socket. This will let the sockets runtime
+      // keep a pending read on it.
+      console.log("HTTPS onCreateComplete: in MISUSE_SECURE_PENDING_READ " +
+                  "mode, skipping setPaused(false).");
+      onPausedComplete();
+    } else {
+      chrome.sockets.tcp.setPaused(https_socketId, true, onPausedComplete);
+    }
+  }
+
+  function onPausedComplete() {
+    console.log("HTTPS onPausedComplete. Connecting to " + https_address + ":" +
+        https_port);
+    chrome.sockets.tcp.connect(https_socketId, https_address, https_port,
+                               onConnectComplete);
+  }
+
+  function onConnectComplete(result) {
+    console.log("HTTPS onConnectComplete");
+    chrome.test.assertEq(0, result,
+                         "Connect failed with error " + result);
+    chrome.sockets.tcp.secure(https_socketId, null, onSecureComplete);
+  }
+
+  function onSecureComplete(result) {
+    console.log("HTTPS onSecureComplete(" + result + ")");
+    if (misuse_mode == MISUSE_SECURE_PENDING_READ) {
+      chrome.test.assertFalse(result == 0,
+                              "Secure should have failed when a read " +
+                              "was pending (" + result + ")");
+      chrome.sockets.tcp.close(https_socketId, onCloseComplete);
+    } else {
+      chrome.test.assertEq(0, result,
+                           "Secure failed with error " + result);
+      chrome.sockets.tcp.setPaused(https_socketId, false, onUnpauseComplete);
+    }
+  }
+
+  function onUnpauseComplete() {
+    console.log("HTTPS onUnpauseComplete");
+    string2ArrayBuffer(http_get, function(arrayBuffer) {
+      request_sent = true;
+      chrome.sockets.tcp.send(https_socketId, arrayBuffer, onSendComplete);
+    });
+  }
+
+  function onSendComplete(sendInfo) {
+    console.log("HTTPS onSendComplete: " + sendInfo.bytesSent + " bytes.");
+    chrome.test.assertEq(0, sendInfo.resultCode, "Send failed.");
+    chrome.test.assertTrue(sendInfo.bytesSent > 0,
+        "Send didn't write bytes.");
+    bytesSent += sendInfo.bytesSent;
+  }
+
+  function onSocketReceive(receiveInfo) {
+    console.log("HTTPS onSocketReceive");
+    chrome.test.assertEq(https_socketId, receiveInfo.socketId);
+    arrayBuffer2String(receiveInfo.data, function(s) {
+      // we will get more data than we care about. We only care about the
+      // first segment of data (the HTTP 200 code). Ignore the rest, which
+      // won't match the pattern.
+      if (succeeded == false) {
+        dataAsString = s;  // for waitForBlockingOperation().
+        console.log("HTTPS receive: got " + s);
+        var match = !!s.match(expectedHTTPPattern);
+        chrome.test.assertTrue(match, "Received data does not match.");
+        console.log("HTTPS response received, closing socket.");
+        chrome.sockets.tcp.close(https_socketId, onCloseComplete);
+      }
+      succeeded = true;
+    });
+  }
+
+  function onSocketReceiveError(receiveErrorInfo) {
+    console.log("HTTPS onSocketReceiveError");
+    if (request_sent) {
+      return;
+    }
+    chrome.test.fail("Receive error on socket " + receiveErrorInfo.socketId +
+      ": result code=" + receiveErrorInfo.resultCode);
+  }
+
+  function onCloseComplete() {
+    console.log("HTTPS Test Succeeded");
+    if (misuse_mode == MISUSE_LAST) {
+        // The test has run in all misuse modes.
+        chrome.test.succeed();
+    } else {
+        // Run the test again in the next misuse mode.
+        misuse_mode += 1;
+        chrome.sockets.tcp.create({}, onCreateComplete);
+    }
+  }
+};  // testSecure()
+
 function waitForBlockingOperation() {
   if (++waitCount < 10) {
     setTimeout(waitForBlockingOperation, 1000);
@@ -279,18 +431,32 @@ function waitForBlockingOperation() {
 }
 
 var onMessageReply = function(message) {
-  var parts = message.split(":");
-  var test_type = parts[0];
-  address = parts[1];
-  port = parseInt(parts[2]);
-  console.log("Running tests, protocol " + test_type + ", echo server " +
-              address + ":" + port);
-  if (test_type == 'tcp') {
-    protocol = test_type;
-    chrome.test.runTests([testSocketCreation, testSending]);
-  } else {
-    chrome.test.fail("Invalid test type: " + test_type);
+  var components = message.split(',');
+  var tests = [];
+  for (var i = 0; i < components.length; ++i) {
+    var parts = components[i].split(":");
+    var test_type = parts[0];
+    if (test_type == 'tcp') {
+      tcp_address = parts[1];
+      tcp_port = parseInt(parts[2]);
+      console.log("Running tests for TCP, echo server " +
+          tcp_address + ":" + tcp_port);
+      tests = tests.concat([testSocketCreation, testSending]);
+    } else if (test_type == 'https') {
+      https_address = parts[1];
+      https_port = parseInt(parts[2]);
+      console.log("Running tests for HTTPS, server " +
+          https_address + ":" + https_port);
+      tests = tests.concat([testSecure]);
+    } else {
+      chrome.test.fail("Invalid test type: " + test_type);
+    }
   }
+  // Setup the suite-wide event listeners.
+  chrome.sockets.tcp.onReceive.addListener(dispatchSocketReceive);
+  chrome.sockets.tcp.onReceiveError.addListener(dispatchSocketReceiveError);
+
+  chrome.test.runTests(tests);
 };
 
 // Find out which protocol we're supposed to test, and which echo server we

@@ -80,6 +80,20 @@ namespace sockets.tcp {
   // A negative value indicates an error.
   callback SetNoDelayCallback = void (long result);
 
+  dictionary TLSVersionConstraints {
+    // The minimum and maximum acceptable versions of TLS. These will
+    // be <code>ssl3</code>, <code>tls1</code>, <code>tls1.1</code>,
+    // or <code>tls1.2</code>.
+    DOMString? min;
+    DOMString? max;
+  };
+
+  dictionary SecureOptions {
+    TLSVersionConstraints? tlsVersion;
+  };
+
+  callback SecureCallback = void (long result);
+
   // Result of the <code>getInfo</code> method.
   dictionary SocketInfo {
     // The socket identifier.
@@ -208,6 +222,14 @@ namespace sockets.tcp {
     // |callback| : Called when the disconnect attempt is complete.
     static void disconnect(long socketId,
                            optional DisconnectCallback callback);
+
+    // Start a TLS client connection over the connected TCP client socket.
+    // |socketId| : The existing, connected socket to use.
+    // |options| : Constraints and parameters for the TLS connection.
+    // |callback| : Called when the connection attempt is complete.
+    static void secure(long socketId,
+                       optional SecureOptions options,
+                       SecureCallback callback);
 
     // Sends data on the given TCP socket.
     // |socketId| : The socket identifier.

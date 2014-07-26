@@ -54,6 +54,12 @@ class TCPSocket : public Socket {
 
   virtual bool GetPeerAddress(net::IPEndPoint* address) OVERRIDE;
   virtual bool GetLocalAddress(net::IPEndPoint* address) OVERRIDE;
+
+  // Like Disconnect(), only Release() doesn't delete the underlying stream
+  // or attempt to close it. Useful when giving away ownership with
+  // ClientStream().
+  virtual void Release();
+
   virtual Socket::SocketType GetSocketType() const OVERRIDE;
 
   static TCPSocket* CreateSocketForTesting(
@@ -63,6 +69,13 @@ class TCPSocket : public Socket {
   static TCPSocket* CreateServerSocketForTesting(
       net::TCPServerSocket* tcp_server_socket,
       const std::string& owner_extension_id);
+
+  // Returns NULL if GetSocketType() isn't TYPE_TCP or if the connection
+  // wasn't set up via Connect() (vs Listen()/Accept()).
+  net::TCPClientSocket* ClientStream();
+
+  // Whether a Read() has been issued, that hasn't come back yet.
+  bool HasPendingRead() const;
 
  protected:
   virtual int WriteImpl(net::IOBuffer* io_buffer,

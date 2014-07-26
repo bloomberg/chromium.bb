@@ -314,6 +314,8 @@
         'browser/api/socket/socket_api.h',
         'browser/api/socket/tcp_socket.cc',
         'browser/api/socket/tcp_socket.h',
+        'browser/api/socket/tls_socket.cc',
+        'browser/api/socket/tls_socket.h',
         'browser/api/socket/udp_socket.cc',
         'browser/api/socket/udp_socket.h',
         'browser/api/sockets_tcp/sockets_tcp_api.cc',

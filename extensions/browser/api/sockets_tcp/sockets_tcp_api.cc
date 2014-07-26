@@ -4,11 +4,15 @@
 
 #include "extensions/browser/api/sockets_tcp/sockets_tcp_api.h"
 
+#include "content/public/browser/browser_context.h"
 #include "content/public/common/socket_permission_request.h"
 #include "extensions/browser/api/socket/tcp_socket.h"
+#include "extensions/browser/api/socket/tls_socket.h"
 #include "extensions/browser/api/sockets_tcp/tcp_socket_event_dispatcher.h"
 #include "extensions/common/api/sockets/sockets_manifest_data.h"
 #include "net/base/net_errors.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 
 using extensions::ResumableTCPSocket;
 using extensions::core_api::sockets_tcp::SocketInfo;
@@ -18,6 +22,9 @@ namespace {
 
 const char kSocketNotFoundError[] = "Socket not found";
 const char kPermissionError[] = "Does not have permission";
+const char kInvalidSocketStateError[] =
+    "Socket must be a connected client TCP socket.";
+const char kSocketNotConnectedError[] = "Socket not connected";
 
 linked_ptr<SocketInfo> CreateSocketInfo(int socket_id,
                                         ResumableTCPSocket* socket) {
@@ -261,6 +268,8 @@ void SocketsTcpConnectFunction::AsyncWorkStart() {
     return;
   }
 
+  socket->set_hostname(params_->peer_address);
+
   content::SocketPermissionRequest param(SocketPermissionRequest::TCP_CONNECT,
                                          params_->peer_address,
                                          params_->peer_port);
@@ -441,5 +450,99 @@ void SocketsTcpGetSocketsFunction::Work() {
   results_ = sockets_tcp::GetSockets::Results::Create(socket_infos);
 }
 
-}  // namespace core_api
+SocketsTcpSecureFunction::SocketsTcpSecureFunction() {
+}
+
+SocketsTcpSecureFunction::~SocketsTcpSecureFunction() {
+}
+
+bool SocketsTcpSecureFunction::Prepare() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  params_ = core_api::sockets_tcp::Secure::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+  url_request_getter_ = browser_context()->GetRequestContext();
+  return true;
+}
+
+// Override the regular implementation, which would call AsyncWorkCompleted
+// immediately after Work().
+void SocketsTcpSecureFunction::AsyncWorkStart() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+
+  ResumableTCPSocket* socket = GetTcpSocket(params_->socket_id);
+  if (!socket) {
+    SetResult(new base::FundamentalValue(net::ERR_INVALID_ARGUMENT));
+    error_ = kSocketNotFoundError;
+    AsyncWorkCompleted();
+    return;
+  }
+
+  paused_ = socket->paused();
+  persistent_ = socket->persistent();
+
+  // Make sure it's a connected TCP client socket. Error out if it's already
+  // secure()'d.
+  if (socket->GetSocketType() != Socket::TYPE_TCP ||
+      socket->ClientStream() == NULL) {
+    SetResult(new base::FundamentalValue(net::ERR_INVALID_ARGUMENT));
+    error_ = kInvalidSocketStateError;
+    AsyncWorkCompleted();
+    return;
+  }
+
+  if (!socket->IsConnected()) {
+    SetResult(new base::FundamentalValue(net::ERR_INVALID_ARGUMENT));
+    error_ = kSocketNotConnectedError;
+    AsyncWorkCompleted();
+    return;
+  }
+
+  net::URLRequestContext* url_request_context =
+      url_request_getter_->GetURLRequestContext();
+
+  // UpgradeSocketToTLS() uses the older API's SecureOptions. Copy over the
+  // only values inside -- TLSVersionConstraints's |min| and |max|,
+  core_api::socket::SecureOptions legacy_params;
+  if (params_->options.get() && params_->options->tls_version.get()) {
+    legacy_params.tls_version.reset(
+        new core_api::socket::TLSVersionConstraints);
+    if (params_->options->tls_version->min.get()) {
+      legacy_params.tls_version->min.reset(
+          new std::string(*params_->options->tls_version->min.get()));
+    }
+    if (params_->options->tls_version->max.get()) {
+      legacy_params.tls_version->max.reset(
+          new std::string(*params_->options->tls_version->max.get()));
+    }
+  }
+
+  TLSSocket::UpgradeSocketToTLS(
+      socket,
+      url_request_context->ssl_config_service(),
+      url_request_context->cert_verifier(),
+      url_request_context->transport_security_state(),
+      extension_id(),
+      &legacy_params,
+      base::Bind(&SocketsTcpSecureFunction::TlsConnectDone, this));
+}
+
+void SocketsTcpSecureFunction::TlsConnectDone(scoped_ptr<TLSSocket> socket,
+                                              int result) {
+  // If an error occurred, socket MUST be NULL
+  DCHECK(result == net::OK || socket == NULL);
+
+  if (socket && result == net::OK) {
+    socket->set_persistent(persistent_);
+    socket->set_paused(paused_);
+    ReplaceSocket(params_->socket_id, socket.release());
+  } else {
+    RemoveSocket(params_->socket_id);
+    error_ = net::ErrorToString(result);
+  }
+
+  results_ = core_api::sockets_tcp::Secure::Results::Create(result);
+  AsyncWorkCompleted();
+}
+
+}  // namespace api
 }  // namespace extensions

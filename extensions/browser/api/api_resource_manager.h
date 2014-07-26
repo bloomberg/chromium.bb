@@ -170,6 +170,16 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return T::service_name(); }
 
+  // Change the resource mapped to this |extension_id| at this
+  // |api_resource_id| to |resource|. Returns true and succeeds unless
+  // |api_resource_id| does not already identify a resource held by
+  // |extension_id|.
+  bool Replace(const std::string& extension_id,
+               int api_resource_id,
+               T* resource) {
+    return data_->Replace(extension_id, api_resource_id, resource);
+  }
+
  protected:
   // content::NotificationObserver:
   virtual void Observe(int type,
@@ -247,6 +257,22 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
     T* Get(const std::string& extension_id, int api_resource_id) {
       DCHECK(ThreadingTraits::IsCalledOnValidThread());
       return GetOwnedResource(extension_id, api_resource_id);
+    }
+
+    // Change the resource mapped to this |extension_id| at this
+    // |api_resource_id| to |resource|. Returns true and succeeds unless
+    // |api_resource_id| does not already identify a resource held by
+    // |extension_id|.
+    bool Replace(const std::string& extension_id,
+                 int api_resource_id,
+                 T* api_resource) {
+      DCHECK(ThreadingTraits::IsCalledOnValidThread());
+      T* old_resource = api_resource_map_[api_resource_id].get();
+      if (old_resource && extension_id == old_resource->owner_extension_id()) {
+        api_resource_map_[api_resource_id] = linked_ptr<T>(api_resource);
+        return true;
+      }
+      return false;
     }
 
     base::hash_set<int>* GetResourceIds(const std::string& extension_id) {

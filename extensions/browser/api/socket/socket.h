@@ -39,9 +39,24 @@ typedef base::Callback<void(int, net::TCPClientSocket*)>
 // we need to manage it in the context of an extension.
 class Socket : public ApiResource {
  public:
-  enum SocketType { TYPE_TCP, TYPE_UDP, };
+  enum SocketType { TYPE_TCP, TYPE_UDP, TYPE_TLS };
 
   virtual ~Socket();
+
+  // The hostname of the remote host that this socket is connected to.  This
+  // may be the empty string if the client does not intend to ever upgrade the
+  // socket to TLS, and thusly has not invoked set_hostname().
+  const std::string& hostname() const { return hostname_; }
+
+  // Set the hostname of the remote host that this socket is connected to.
+  // Note: This may be an IP literal. In the case of IDNs, this should be a
+  // series of U-LABELs (UTF-8), not A-LABELs. IP literals for IPv6 will be
+  // unbracketed.
+  void set_hostname(const std::string& hostname) { hostname_ = hostname; }
+
+  // Note: |address| contains the resolved IP address, not the hostname of
+  // the remote endpoint. In order to upgrade this socket to TLS, callers
+  // must also supply the hostname of the endpoint via set_hostname().
   virtual void Connect(const std::string& address,
                        int port,
                        const CompletionCallback& callback) = 0;
@@ -100,7 +115,7 @@ class Socket : public ApiResource {
                         const net::CompletionCallback& callback) = 0;
   virtual void OnWriteComplete(int result);
 
-  const std::string address_;
+  std::string hostname_;
   bool is_connected_;
 
  private:

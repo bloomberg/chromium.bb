@@ -24,10 +24,12 @@ class ResourceContext;
 
 namespace net {
 class IOBuffer;
+class URLRequestContextGetter;
+class SSLClientSocket;
 }
 
 namespace extensions {
-
+class TLSSocket;
 class Socket;
 
 // A simple interface to ApiResourceManager<Socket> or derived class. The goal
@@ -42,6 +44,9 @@ class SocketResourceManagerInterface {
   virtual int Add(Socket* socket) = 0;
   virtual Socket* Get(const std::string& extension_id, int api_resource_id) = 0;
   virtual void Remove(const std::string& extension_id, int api_resource_id) = 0;
+  virtual void Replace(const std::string& extension_id,
+                       int api_resource_id,
+                       Socket* socket) = 0;
   virtual base::hash_set<int>* GetResourceIds(
       const std::string& extension_id) = 0;
 };
@@ -71,6 +76,12 @@ class SocketResourceManager : public SocketResourceManagerInterface {
   virtual Socket* Get(const std::string& extension_id,
                       int api_resource_id) OVERRIDE {
     return manager_->Get(extension_id, api_resource_id);
+  }
+
+  virtual void Replace(const std::string& extension_id,
+                       int api_resource_id,
+                       Socket* socket) OVERRIDE {
+    manager_->Replace(extension_id, api_resource_id, static_cast<T*>(socket));
   }
 
   virtual void Remove(const std::string& extension_id,
@@ -103,6 +114,7 @@ class SocketAsyncApiFunction : public AsyncApiFunction {
 
   int AddSocket(Socket* socket);
   Socket* GetSocket(int api_resource_id);
+  void ReplaceSocket(int api_resource_id, Socket* socket);
   void RemoveSocket(int api_resource_id);
   base::hash_set<int>* GetSocketIds();
 
@@ -502,6 +514,29 @@ class SocketGetJoinedGroupsFunction : public SocketAsyncApiFunction {
  private:
   scoped_ptr<core_api::socket::GetJoinedGroups::Params> params_;
 };
+
+class SocketSecureFunction : public SocketAsyncApiFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("socket.secure", SOCKET_SECURE);
+  SocketSecureFunction();
+
+ protected:
+  virtual ~SocketSecureFunction();
+
+  // AsyncApiFunction
+  virtual bool Prepare() OVERRIDE;
+  virtual void AsyncWorkStart() OVERRIDE;
+
+ private:
+  // Callback from TLSSocket::UpgradeSocketToTLS().
+  void TlsConnectDone(scoped_ptr<TLSSocket> socket, int result);
+
+  scoped_ptr<core_api::socket::Secure::Params> params_;
+  scoped_refptr<net::URLRequestContextGetter> url_request_getter_;
+
+  DISALLOW_COPY_AND_ASSIGN(SocketSecureFunction);
+};
+
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_SOCKET_SOCKET_API_H_

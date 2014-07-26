@@ -10,6 +10,7 @@
 
 namespace extensions {
 class ResumableTCPSocket;
+class TLSSocket;
 }
 
 namespace extensions {
@@ -236,6 +237,29 @@ class SocketsTcpGetSocketsFunction : public TCPSocketAsyncApiFunction {
   // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
+};
+
+class SocketsTcpSecureFunction : public TCPSocketAsyncApiFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("sockets.tcp.secure", SOCKETS_TCP_SECURE);
+
+  SocketsTcpSecureFunction();
+
+ protected:
+  virtual ~SocketsTcpSecureFunction();
+  virtual bool Prepare() OVERRIDE;
+  virtual void AsyncWorkStart() OVERRIDE;
+
+ private:
+  virtual void TlsConnectDone(scoped_ptr<extensions::TLSSocket> sock,
+                              int result);
+
+  bool paused_;
+  bool persistent_;
+  scoped_ptr<sockets_tcp::Secure::Params> params_;
+  scoped_refptr<net::URLRequestContextGetter> url_request_getter_;
+
+  DISALLOW_COPY_AND_ASSIGN(SocketsTcpSecureFunction);
 };
 
 }  // namespace core_api

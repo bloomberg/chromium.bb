@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/socket/tcp_socket.h"
 
+#include "base/logging.h"
+#include "base/macros.h"
 #include "extensions/browser/api/api_resource.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"
@@ -298,6 +300,36 @@ void TCPSocket::OnAccept(int result) {
     accept_callback_.Run(result, NULL);
   }
   accept_callback_.Reset();
+}
+
+void TCPSocket::Release() {
+  // Release() is only invoked when the underlying sockets are taken (via
+  // ClientStream()) by TLSSocket. TLSSocket only supports CLIENT-mode
+  // sockets.
+  DCHECK(!server_socket_.release() && !accept_socket_.release() &&
+         socket_mode_ == CLIENT)
+      << "Called in server mode.";
+
+  // Release() doesn't disconnect the underlying sockets, but it does
+  // disconnect them from this TCPSocket.
+  is_connected_ = false;
+
+  connect_callback_.Reset();
+  read_callback_.Reset();
+  accept_callback_.Reset();
+
+  DCHECK(socket_.get()) << "Called on null client socket.";
+  ignore_result(socket_.release());
+}
+
+net::TCPClientSocket* TCPSocket::ClientStream() {
+  if (socket_mode_ != CLIENT || GetSocketType() != TYPE_TCP)
+    return NULL;
+  return socket_.get();
+}
+
+bool TCPSocket::HasPendingRead() const {
+  return !read_callback_.is_null();
 }
 
 ResumableTCPSocket::ResumableTCPSocket(const std::string& owner_extension_id)

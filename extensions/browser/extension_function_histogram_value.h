@@ -907,6 +907,8 @@ enum HistogramValue {
   LOGPRIVATE_STARTEVENTRECODER,
   LOGPRIVATE_STOPEVENTRECODER,
   LOGPRIVATE_DUMPLOGS,
+  SOCKET_SECURE,
+  SOCKETS_TCP_SECURE,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms/histograms.xml.
   ENUM_BOUNDARY

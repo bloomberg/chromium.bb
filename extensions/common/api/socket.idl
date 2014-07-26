@@ -29,6 +29,8 @@ namespace socket {
 
   callback ListenCallback = void (long result);
 
+  callback SecureCallback = void (long result);
+
   dictionary AcceptInfo {
     long resultCode;
     // The id of the accepted socket.
@@ -107,6 +109,18 @@ namespace socket {
 
     // The prefix length
     long prefixLength;
+  };
+
+  dictionary TLSVersionConstraints {
+    // The minimum and maximum acceptable versions of TLS. These will
+    // be <code>ssl3</code>, <code>tls1</code>, <code>tls1.1</code>,
+    // or <code>tls1.2</code>.
+    DOMString? min;
+    DOMString? max;
+  };
+
+  dictionary SecureOptions {
+    TLSVersionConstraints? tlsVersion;
   };
 
   callback RecvFromCallback = void (RecvFromInfo recvFromInfo);
@@ -334,6 +348,14 @@ namespace socket {
     // |callback| : Called with an array of strings of the result.
     static void getJoinedGroups(long socketId,
                                 GetJoinedGroupsCallback callback);
+
+    // Start a TLS client connection over a connected TCP client socket.
+    // |socketId| : The connected socket to use.
+    // |options| : Constraints and parameters for the TLS connection.
+    // |callback| : Called when the TLS connection attempt is complete.
+    static void secure(long socketId,
+                       optional SecureOptions options,
+                       SecureCallback callback);
   };
 
 };

@@ -936,6 +936,7 @@
         'browser/extensions/api/signed_in_devices/signed_in_devices_manager_unittest.cc',
         'browser/extensions/api/socket/socket_api_unittest.cc',
         'browser/extensions/api/socket/tcp_socket_unittest.cc',
+        'browser/extensions/api/socket/tls_socket_unittest.cc',
         'browser/extensions/api/socket/udp_socket_unittest.cc',
         'browser/extensions/api/sockets_tcp/sockets_tcp_api_unittest.cc',
         'browser/extensions/api/sockets_tcp_server/sockets_tcp_server_api_unittest.cc',
