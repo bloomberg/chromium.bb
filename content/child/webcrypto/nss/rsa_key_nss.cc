@@ -271,22 +271,18 @@ void AddAttribute(CK_ATTRIBUTE_TYPE type,
   templ->push_back(attribute);
 }
 
-// Helper to optionally add an attribute to a template, if the provided data is
-// non-empty.
-void AddOptionalAttribute(CK_ATTRIBUTE_TYPE type,
-                          const CryptoData& data,
-                          std::vector<CK_ATTRIBUTE>* templ) {
-  if (!data.byte_length())
-    return;
+void AddAttribute(CK_ATTRIBUTE_TYPE type,
+                  const CryptoData& data,
+                  std::vector<CK_ATTRIBUTE>* templ) {
   CK_ATTRIBUTE attribute = {type, const_cast<unsigned char*>(data.bytes()),
                             data.byte_length()};
   templ->push_back(attribute);
 }
 
-void AddOptionalAttribute(CK_ATTRIBUTE_TYPE type,
-                          const std::string& data,
-                          std::vector<CK_ATTRIBUTE>* templ) {
-  AddOptionalAttribute(type, CryptoData(data), templ);
+void AddAttribute(CK_ATTRIBUTE_TYPE type,
+                  const std::string& data,
+                  std::vector<CK_ATTRIBUTE>* templ) {
+  AddAttribute(type, CryptoData(data), templ);
 }
 
 Status ExportKeyPkcs8Nss(SECKEYPrivateKey* key, std::vector<uint8_t>* buffer) {
@@ -366,10 +362,10 @@ Status ImportRsaPrivateKey(const blink::WebCryptoAlgorithm& algorithm,
   AddAttribute(CKA_SENSITIVE, &ck_false, sizeof(ck_false), &key_template);
   AddAttribute(CKA_PRIVATE, &ck_false, sizeof(ck_false), &key_template);
 
-  // Required properties.
-  AddOptionalAttribute(CKA_MODULUS, params.n, &key_template);
-  AddOptionalAttribute(CKA_PUBLIC_EXPONENT, params.e, &key_template);
-  AddOptionalAttribute(CKA_PRIVATE_EXPONENT, params.d, &key_template);
+  // Required properties by JWA.
+  AddAttribute(CKA_MODULUS, params.n, &key_template);
+  AddAttribute(CKA_PUBLIC_EXPONENT, params.e, &key_template);
+  AddAttribute(CKA_PRIVATE_EXPONENT, params.d, &key_template);
 
   // Manufacture a CKA_ID so the created key can be retrieved later as a
   // SECKEYPrivateKey using FindKeyByKeyID(). Unfortunately there isn't a more
@@ -398,15 +394,16 @@ Status ImportRsaPrivateKey(const blink::WebCryptoAlgorithm& algorithm,
   //      marked sensitive) then this will break things.
   SECItem modulus_item = MakeSECItemForBuffer(CryptoData(params.n));
   crypto::ScopedSECItem object_id(PK11_MakeIDFromPubKey(&modulus_item));
-  AddOptionalAttribute(
+  AddAttribute(
       CKA_ID, CryptoData(object_id->data, object_id->len), &key_template);
 
-  // Optional properties (all of these will have been specified or none).
-  AddOptionalAttribute(CKA_PRIME_1, params.p, &key_template);
-  AddOptionalAttribute(CKA_PRIME_2, params.q, &key_template);
-  AddOptionalAttribute(CKA_EXPONENT_1, params.dp, &key_template);
-  AddOptionalAttribute(CKA_EXPONENT_2, params.dq, &key_template);
-  AddOptionalAttribute(CKA_COEFFICIENT, params.qi, &key_template);
+  // Optional properties by JWA, however guaranteed to be present by Chromium's
+  // implementation.
+  AddAttribute(CKA_PRIME_1, params.p, &key_template);
+  AddAttribute(CKA_PRIME_2, params.q, &key_template);
+  AddAttribute(CKA_EXPONENT_1, params.dp, &key_template);
+  AddAttribute(CKA_EXPONENT_2, params.dq, &key_template);
+  AddAttribute(CKA_COEFFICIENT, params.qi, &key_template);
 
   crypto::ScopedPK11Slot slot(PK11_GetInternalSlot());
 

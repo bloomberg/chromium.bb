@@ -103,9 +103,13 @@ class CONTENT_EXPORT Status {
   // given that is an error.
   static Status ErrorJwkIncorrectKeyLength();
 
-  // The JWK was for an RSA private key but only partially provided the optional
-  // parameters (p, q, dq, dq, qi).
-  static Status ErrorJwkIncompleteOptionalRsaPrivateKey();
+  // The JWK property |property| is supposed to represent a big-endian unsigned
+  // integer, however was the empty string.
+  static Status ErrorJwkEmptyBigInteger(const std::string& property);
+
+  // The big-endian unsigned integer |property| contained leading zeros. This
+  // violates the JWA requirement that such octet strings be minimal.
+  static Status ErrorJwkBigIntegerHasLeadingZero(const std::string& property);
 
   // ------------------------------------
   // Other errors

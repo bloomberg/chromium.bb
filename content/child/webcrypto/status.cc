@@ -105,10 +105,15 @@ Status Status::ErrorJwkIncorrectKeyLength() {
                 "of key data for the given algorithm.");
 }
 
-Status Status::ErrorJwkIncompleteOptionalRsaPrivateKey() {
+Status Status::ErrorJwkEmptyBigInteger(const std::string& property) {
   return Status(blink::WebCryptoErrorTypeData,
-                "The optional JWK properties p, q, dp, dq, qi must either all "
-                "be provided, or none provided");
+                "The JWK \"" + property + "\" property was empty.");
+}
+
+Status Status::ErrorJwkBigIntegerHasLeadingZero(const std::string& property) {
+  return Status(
+      blink::WebCryptoErrorTypeData,
+      "The JWK \"" + property + "\" property contained a leading zero.");
 }
 
 Status Status::ErrorImportEmptyKeyData() {

@@ -322,27 +322,23 @@ Status GetJwkBytes(base::DictionaryValue* dict,
   return Status::Success();
 }
 
-// Extracts the optional string property with key |path| from |dict| and saves
-// the base64url-decoded bytes to |*result|. If the property exist and is not a
-// string, or could not be base64url-decoded, returns an error. In the case
-// where the property does not exist, |result| is guaranteed to be empty.
-Status GetOptionalJwkBytes(base::DictionaryValue* dict,
-                           const std::string& path,
-                           std::string* result,
-                           bool* property_exists) {
-  std::string base64_string;
-  Status status =
-      GetOptionalJwkString(dict, path, &base64_string, property_exists);
+// Extracts the required base64url property, which is interpreted as being a
+// big-endian unsigned integer.
+Status GetJwkBigInteger(base::DictionaryValue* dict,
+                        const std::string& path,
+                        std::string* result) {
+  Status status = GetJwkBytes(dict, path, result);
   if (status.IsError())
     return status;
 
-  if (!*property_exists) {
-    result->clear();
-    return Status::Success();
-  }
+  if (result->empty())
+    return Status::ErrorJwkEmptyBigInteger(path);
 
-  if (!Base64DecodeUrlSafe(base64_string, result))
-    return Status::ErrorJwkBase64Decode(path);
+  // The JWA spec says that "The octet sequence MUST utilize the minimum number
+  // of octets to represent the value." This means there shouldn't be any
+  // leading zeros.
+  if (result->size() > 1 && (*result)[0] == 0)
+    return Status::ErrorJwkBigIntegerHasLeadingZero(path);
 
   return Status::Success();
 }
@@ -650,10 +646,10 @@ Status ReadRsaKeyJwk(const CryptoData& key_data,
   // (private exponent) entry.
   // See http://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-18,
   // section 6.3.
-  status = GetJwkBytes(dict.get(), "n", &result->n);
+  status = GetJwkBigInteger(dict.get(), "n", &result->n);
   if (status.IsError())
     return status;
-  status = GetJwkBytes(dict.get(), "e", &result->e);
+  status = GetJwkBigInteger(dict.get(), "e", &result->e);
   if (status.IsError())
     return status;
 
@@ -661,42 +657,32 @@ Status ReadRsaKeyJwk(const CryptoData& key_data,
   if (!result->is_private_key)
     return Status::Success();
 
-  status = GetJwkBytes(dict.get(), "d", &result->d);
+  status = GetJwkBigInteger(dict.get(), "d", &result->d);
   if (status.IsError())
     return status;
 
-  // The "p", "q", "dp", "dq", and "qi" properties are optional. Treat these
-  // properties the same if they are unspecified, as if they were specified-but
-  // empty, since ImportRsaPrivateKey() doesn't do validation checks anyway.
+  // The "p", "q", "dp", "dq", and "qi" properties are optional in the JWA
+  // spec. However they are required by Chromium's WebCrypto implementation.
 
-  bool has_p;
-  status = GetOptionalJwkBytes(dict.get(), "p", &result->p, &has_p);
+  status = GetJwkBigInteger(dict.get(), "p", &result->p);
   if (status.IsError())
     return status;
 
-  bool has_q;
-  status = GetOptionalJwkBytes(dict.get(), "q", &result->q, &has_q);
+  status = GetJwkBigInteger(dict.get(), "q", &result->q);
   if (status.IsError())
     return status;
 
-  bool has_dp;
-  status = GetOptionalJwkBytes(dict.get(), "dp", &result->dp, &has_dp);
+  status = GetJwkBigInteger(dict.get(), "dp", &result->dp);
   if (status.IsError())
     return status;
 
-  bool has_dq;
-  status = GetOptionalJwkBytes(dict.get(), "dq", &result->dq, &has_dq);
+  status = GetJwkBigInteger(dict.get(), "dq", &result->dq);
   if (status.IsError())
     return status;
 
-  bool has_qi;
-  status = GetOptionalJwkBytes(dict.get(), "qi", &result->qi, &has_qi);
+  status = GetJwkBigInteger(dict.get(), "qi", &result->qi);
   if (status.IsError())
     return status;
-
-  int num_optional_properties = has_p + has_q + has_dp + has_dq + has_qi;
-  if (num_optional_properties != 0 && num_optional_properties != 5)
-    return Status::ErrorJwkIncompleteOptionalRsaPrivateKey();
 
   return Status::Success();
 }

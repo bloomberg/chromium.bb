@@ -1674,7 +1674,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportJwkRsaFailures)) {
 
     // Fail on empty parameter.
     dict.SetString(kKtyParmName[idx], "");
-    EXPECT_NE(Status::Success(),
+    EXPECT_EQ(Status::ErrorJwkEmptyBigInteger(kKtyParmName[idx]),
               ImportKeyJwkFromDict(dict, algorithm, false, usage_mask, &key));
     RestoreJwkRsaDictionary(&dict);
   }
@@ -2390,7 +2390,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportRsaPrivateKeyJwkMissingOptionalParams)) {
                  "iUJyCod1Fyc6NWBT6iobwMlKpy1VxuhilrLfyWeUjApyy8zKfqyzVwbgmh31W"
                  "hU1vZs8w0Fgs7bc0-2o5kQw");
 
-  ASSERT_EQ(Status::ErrorJwkIncompleteOptionalRsaPrivateKey(),
+  ASSERT_EQ(Status::ErrorJwkPropertyMissing("q"),
             ImportKeyJwkFromDict(dict,
                                  CreateRsaHashedImportAlgorithm(
                                      blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
@@ -2402,10 +2402,10 @@ TEST_F(SharedCryptoTest, MAYBE(ImportRsaPrivateKeyJwkMissingOptionalParams)) {
 
 // Import a JWK RSA private key, without any of the optional parameters.
 //
-// This is expected to work, however based on the current NSS implementation it
-// does not.
-//
-// TODO(eroman): http://crbug/com/374927
+// According to JWA, such keys are valid, but applications SHOULD
+// include all the parameters when sending, and recipients MAY
+// accept them, but are not required to. Chromium's WebCrypto does
+// not allow such degenerate keys.
 TEST_F(SharedCryptoTest, MAYBE(ImportRsaPrivateKeyJwkIncorrectOptionalEmpty)) {
   if (!SupportsRsaKeyImport())
     return;
@@ -2428,17 +2428,37 @@ TEST_F(SharedCryptoTest, MAYBE(ImportRsaPrivateKeyJwkIncorrectOptionalEmpty)) {
       "kuiUpySsPFaMj5eFOtB8AmbIxqPKCSnx6PESMYhEKfxNmuVf7olqEM5wfD7X5zTkRyejlXRQ"
       "GlMmgxCcKrrKuig8MbS9L1PD7jfjUs7jT55QO9gMBiKtecbc7og1R8ajsyU");
 
-  // TODO(eroman): This should pass, see: http://crbug/com/374927
-  //
-  // Technically it is OK to fail since JWA says that consumer are not required
-  // to support lack of the optional parameters.
-  ASSERT_EQ(Status::OperationError(),
+  ASSERT_EQ(Status::ErrorJwkPropertyMissing("p"),
             ImportKeyJwkFromDict(dict,
                                  CreateRsaHashedImportAlgorithm(
                                      blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
                                      blink::WebCryptoAlgorithmIdSha1),
                                  true,
                                  blink::WebCryptoKeyUsageSign,
+                                 &key));
+}
+
+// Tries importing a public RSA key whose exponent contains leading zeros.
+TEST_F(SharedCryptoTest, MAYBE(ImportJwkRsaNonMinimalExponent)) {
+  base::DictionaryValue dict;
+
+  dict.SetString("kty", "RSA");
+  dict.SetString("e", "AAEAAQ");  // 00 01 00 01
+  dict.SetString(
+      "n",
+      "qLOyhK-OtQs4cDSoYPFGxJGfMYdjzWxVmMiuSBGh4KvEx-CwgtaTpef87Wdc9GaFEncsDLxk"
+      "p0LGxjD1M8jMcvYq6DPEC_JYQumEu3i9v5fAEH1VvbZi9cTg-rmEXLUUjvc5LdOq_5OuHmtm"
+      "e7PUJHYW1PW6ENTP0ibeiNOfFvs");
+
+  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+
+  EXPECT_EQ(Status::ErrorJwkBigIntegerHasLeadingZero("e"),
+            ImportKeyJwkFromDict(dict,
+                                 CreateRsaHashedImportAlgorithm(
+                                     blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                                     blink::WebCryptoAlgorithmIdSha256),
+                                 false,
+                                 blink::WebCryptoKeyUsageVerify,
                                  &key));
 }
 
