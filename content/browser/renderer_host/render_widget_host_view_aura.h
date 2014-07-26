@@ -220,6 +220,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
   virtual BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate) OVERRIDE;
+  virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() OVERRIDE;
+  virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible()
+      OVERRIDE;
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
   virtual void OnSwapCompositorFrame(

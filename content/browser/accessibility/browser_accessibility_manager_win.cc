@@ -20,9 +20,7 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory) {
-  return new BrowserAccessibilityManagerWin(
-      content::LegacyRenderWidgetHostHWND::Create(GetDesktopWindow()),
-      NULL, initial_tree, delegate, factory);
+  return new BrowserAccessibilityManagerWin(initial_tree, delegate, factory);
 }
 
 BrowserAccessibilityManagerWin*
@@ -31,22 +29,13 @@ BrowserAccessibilityManager::ToBrowserAccessibilityManagerWin() {
 }
 
 BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
-    LegacyRenderWidgetHostHWND* accessible_hwnd,
-    IAccessible* parent_iaccessible,
     const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(initial_tree, delegate, factory),
-      parent_hwnd_(NULL),
-      parent_iaccessible_(parent_iaccessible),
       tracked_scroll_object_(NULL),
-      accessible_hwnd_(accessible_hwnd),
       focus_event_on_root_needed_(false) {
   ui::win::CreateATLModuleIfNeeded();
-  if (accessible_hwnd_) {
-    accessible_hwnd_->set_browser_accessibility_manager(this);
-    parent_hwnd_ = accessible_hwnd_->GetParent();
-  }
 }
 
 BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() {
@@ -54,8 +43,6 @@ BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() {
     tracked_scroll_object_->Release();
     tracked_scroll_object_ = NULL;
   }
-  if (accessible_hwnd_)
-    accessible_hwnd_->OnManagerDeleted(this);
 }
 
 // static
@@ -73,33 +60,28 @@ ui::AXTreeUpdate BrowserAccessibilityManagerWin::GetEmptyDocument() {
   return update;
 }
 
-void BrowserAccessibilityManagerWin::SetAccessibleHWND(
-    LegacyRenderWidgetHostHWND* accessible_hwnd) {
-  if (accessible_hwnd_)
-    accessible_hwnd_->OnManagerDeleted(this);
+HWND BrowserAccessibilityManagerWin::GetParentHWND() {
+  if (!delegate_)
+    return NULL;
+  return delegate_->AccessibilityGetAcceleratedWidget();
+}
 
-  accessible_hwnd_ = accessible_hwnd;
-
-  if (accessible_hwnd_) {
-    accessible_hwnd_->set_browser_accessibility_manager(this);
-    parent_hwnd_ = accessible_hwnd_->GetParent();
-  }
+IAccessible* BrowserAccessibilityManagerWin::GetParentIAccessible() {
+  if (!delegate_)
+    return NULL;
+  return delegate_->AccessibilityGetNativeViewAccessible();
 }
 
 void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(DWORD event,
                                                              LONG child_id) {
-  // If on Win 7 and complete accessibility is enabled, use the fake child HWND
-  // to use as the root of the accessibility tree. See comments above
-  // LegacyRenderWidgetHostHWND for details.
-  if (accessible_hwnd_ &&
-      BrowserAccessibilityStateImpl::GetInstance()->IsAccessibleBrowser()) {
-    parent_hwnd_ = accessible_hwnd_->hwnd();
-    parent_iaccessible_ = accessible_hwnd_->window_accessible();
-  }
+  if (!delegate_)
+    return;
 
-  // Only fire events if this view is hooked up to its parent.
-  if (parent_iaccessible() && parent_hwnd())
-    ::NotifyWinEvent(event, parent_hwnd(), OBJID_CLIENT, child_id);
+  HWND hwnd = delegate_->AccessibilityGetAcceleratedWidget();
+  if (!hwnd)
+    return;
+
+  ::NotifyWinEvent(event, hwnd, OBJID_CLIENT, child_id);
 }
 
 
@@ -146,13 +128,8 @@ void BrowserAccessibilityManagerWin::OnWindowFocused() {
 void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     ui::AXEvent event_type,
     BrowserAccessibility* node) {
-  // If full accessibility is enabled, wait for the LegacyRenderWidgetHostHWND
-  // to be initialized before sending any events - otherwise we'd be firing
-  // events on the wrong HWND.
-  if (BrowserAccessibilityStateImpl::GetInstance()->IsAccessibleBrowser() &&
-      !accessible_hwnd_) {
+  if (!delegate_ || !delegate_->AccessibilityGetAcceleratedWidget())
     return;
-  }
 
   // Inline text boxes are an internal implementation detail, we don't
   // expose them to Windows.
@@ -308,17 +285,6 @@ BrowserAccessibilityWin* BrowserAccessibilityManagerWin::GetFromUniqueIdWin(
       return result->ToBrowserAccessibilityWin();
   }
   return NULL;
-}
-
-void BrowserAccessibilityManagerWin::OnAccessibleHwndDeleted() {
-  // If the AccessibleHWND is deleted, |parent_hwnd_| and
-  // |parent_iaccessible_| are no longer valid either, since they were
-  // derived from AccessibleHWND. We don't have to restore them to
-  // previous values, though, because this should only happen
-  // during the destruct sequence for this window.
-  accessible_hwnd_ = NULL;
-  parent_hwnd_ = NULL;
-  parent_iaccessible_ = NULL;
 }
 
 }  // namespace content

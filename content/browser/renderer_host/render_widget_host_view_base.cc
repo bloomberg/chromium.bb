@@ -498,6 +498,16 @@ gfx::Point RenderWidgetHostViewBase::AccessibilityOriginInScreen(
   return bounds.origin();
 }
 
+gfx::AcceleratedWidget
+    RenderWidgetHostViewBase::AccessibilityGetAcceleratedWidget() {
+  return gfx::kNullAcceleratedWidget;
+}
+
+gfx::NativeViewAccessible
+    RenderWidgetHostViewBase::AccessibilityGetNativeViewAccessible() {
+  return NULL;
+}
+
 void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
   RenderWidgetHostImpl* impl = NULL;
   if (GetRenderWidgetHost())

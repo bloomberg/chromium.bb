@@ -14,15 +14,11 @@
 namespace content {
 class BrowserAccessibilityWin;
 
-class LegacyRenderWidgetHostHWND;
-
 // Manages a tree of BrowserAccessibilityWin objects.
 class CONTENT_EXPORT BrowserAccessibilityManagerWin
     : public BrowserAccessibilityManager {
  public:
   BrowserAccessibilityManagerWin(
-      content::LegacyRenderWidgetHostHWND* accessible_hwnd,
-      IAccessible* parent_iaccessible,
       const ui::AXTreeUpdate& initial_tree,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
@@ -32,15 +28,10 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   static ui::AXTreeUpdate GetEmptyDocument();
 
   // Get the closest containing HWND.
-  HWND parent_hwnd() { return parent_hwnd_; }
+  HWND GetParentHWND();
 
   // The IAccessible for the parent window.
-  IAccessible* parent_iaccessible() { return parent_iaccessible_; }
-  void set_parent_iaccessible(IAccessible* parent_iaccessible) {
-    parent_iaccessible_ = parent_iaccessible;
-  }
-
-  void SetAccessibleHWND(LegacyRenderWidgetHostHWND* accessible_hwnd);
+  IAccessible* GetParentIAccessible();
 
   // Calls NotifyWinEvent if the parent window's IAccessible pointer is known.
   void MaybeCallNotifyWinEvent(DWORD event, LONG child_id);
@@ -71,12 +62,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   virtual void OnRootChanged(ui::AXNode* new_root) OVERRIDE;
 
  private:
-  // The closest ancestor HWND.
-  HWND parent_hwnd_;
-
-  // The accessibility instance for the parent window.
-  IAccessible* parent_iaccessible_;
-
   // Give BrowserAccessibilityManager::Create access to our constructor.
   friend class BrowserAccessibilityManager;
 
@@ -88,9 +73,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // A mapping from the Windows-specific unique IDs (unique within the
   // browser process) to accessibility ids within this page.
   base::hash_map<long, int32> unique_id_to_ax_id_map_;
-
-  // Owned by its parent; OnAccessibleHwndDeleted gets called upon deletion.
-  LegacyRenderWidgetHostHWND* accessible_hwnd_;
 
   // Set to true if we need to fire a focus event on the root as soon as
   // possible.

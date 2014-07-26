@@ -20,7 +20,6 @@ class WindowEventTarget;
 }
 
 namespace content {
-class BrowserAccessibilityManagerWin;
 class RenderWidgetHostViewAura;
 
 // Reasons for the existence of this class outlined below:-
@@ -94,13 +93,6 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
 
   IAccessible* window_accessible() { return window_accessible_; }
 
-  void set_browser_accessibility_manager(
-      content::BrowserAccessibilityManagerWin* manager) {
-    manager_ = manager;
-  }
-
-  void OnManagerDeleted(content::BrowserAccessibilityManagerWin* manager);
-
   // Functions to show and hide the window.
   void Show();
   void Hide();
@@ -145,7 +137,6 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   LRESULT OnSize(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnSysCommand(UINT message, WPARAM w_param, LPARAM l_param);
 
-  content::BrowserAccessibilityManagerWin* manager_;
   base::win::ScopedComPtr<IAccessible> window_accessible_;
 
   // Set to true if we turned on mouse tracking.

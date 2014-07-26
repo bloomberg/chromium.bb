@@ -100,6 +100,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const OVERRIDE;
   virtual void AccessibilityHitTest(const gfx::Point& point) OVERRIDE;
   virtual void AccessibilityFatalError() OVERRIDE;
+  virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() OVERRIDE;
+  virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible()
+      OVERRIDE;
 
   void Init();
   int routing_id() const { return routing_id_; }

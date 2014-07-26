@@ -500,7 +500,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accParent(IDispatch** disp_parent) {
     // This happens if we're the root of the tree;
     // return the IAccessible for the window.
     parent_obj =
-         manager()->ToBrowserAccessibilityManagerWin()->parent_iaccessible();
+        manager()->ToBrowserAccessibilityManagerWin()->GetParentIAccessible();
     // |parent| can only be NULL if the manager was created before the parent
     // IAccessible was known and it wasn't subsequently set before a client
     // requested it. This has been fixed. |parent| may also be NULL during
@@ -740,7 +740,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_windowHandle(HWND* window_handle) {
   if (!window_handle)
     return E_INVALIDARG;
 
-  *window_handle = manager()->ToBrowserAccessibilityManagerWin()->parent_hwnd();
+  *window_handle =
+      manager()->ToBrowserAccessibilityManagerWin()->GetParentHWND();
   if (!*window_handle)
     return E_FAIL;
 
@@ -996,7 +997,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_imagePosition(
 
   if (coordinate_type == IA2_COORDTYPE_SCREEN_RELATIVE) {
     HWND parent_hwnd =
-        manager()->ToBrowserAccessibilityManagerWin()->parent_hwnd();
+        manager()->ToBrowserAccessibilityManagerWin()->GetParentHWND();
     if (!parent_hwnd)
       return E_FAIL;
     POINT top_left = {0, 0};

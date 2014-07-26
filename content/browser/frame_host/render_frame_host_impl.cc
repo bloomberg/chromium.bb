@@ -428,6 +428,24 @@ void RenderFrameHostImpl::AccessibilityFatalError() {
   browser_accessibility_manager_.reset(NULL);
 }
 
+gfx::AcceleratedWidget
+    RenderFrameHostImpl::AccessibilityGetAcceleratedWidget() {
+  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
+      render_view_host_->GetView());
+  if (view)
+    return view->AccessibilityGetAcceleratedWidget();
+  return gfx::kNullAcceleratedWidget;
+}
+
+gfx::NativeViewAccessible
+    RenderFrameHostImpl::AccessibilityGetNativeViewAccessible() {
+  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
+      render_view_host_->GetView());
+  if (view)
+    return view->AccessibilityGetNativeViewAccessible();
+  return NULL;
+}
+
 void RenderFrameHostImpl::Init() {
   GetProcess()->ResumeRequestsForView(routing_id_);
 }

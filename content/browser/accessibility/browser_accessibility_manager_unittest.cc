@@ -90,6 +90,13 @@ class TestBrowserAccessibilityDelegate
   virtual void AccessibilityFatalError() OVERRIDE {
     got_fatal_error_ = true;
   }
+  virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() OVERRIDE {
+    return gfx::kNullAcceleratedWidget;
+  }
+  virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible()
+      OVERRIDE {
+    return NULL;
+  }
 
   bool got_fatal_error() const { return got_fatal_error_; }
   void reset_got_fatal_error() { got_fatal_error_ = false; }

@@ -153,6 +153,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   virtual void AccessibilityShowMenu(const gfx::Point& point);
   virtual gfx::Point AccessibilityOriginInScreen(const gfx::Rect& bounds);
+  virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget();
+  virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible();
 
   virtual SkColorType PreferredReadbackFormat();
 

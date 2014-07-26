@@ -9,6 +9,7 @@
 #include "base/win/windows_version.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/common/content_switches.h"
@@ -70,12 +71,6 @@ HWND LegacyRenderWidgetHostHWND::GetParent() {
   return ::GetParent(hwnd());
 }
 
-void LegacyRenderWidgetHostHWND::OnManagerDeleted(
-    content::BrowserAccessibilityManagerWin* manager) {
-  if (manager_ == manager)
-    manager_ = NULL;
-}
-
 void LegacyRenderWidgetHostHWND::Show() {
   ::ShowWindow(hwnd(), SW_SHOW);
 }
@@ -91,8 +86,6 @@ void LegacyRenderWidgetHostHWND::SetBounds(const gfx::Rect& bounds) {
 }
 
 void LegacyRenderWidgetHostHWND::OnFinalMessage(HWND hwnd) {
-  if (manager_)
-    manager_->OnAccessibleHwndDeleted();
   if (host_) {
     host_->OnLegacyWindowDestroyed();
     host_ = NULL;
@@ -101,8 +94,7 @@ void LegacyRenderWidgetHostHWND::OnFinalMessage(HWND hwnd) {
 }
 
 LegacyRenderWidgetHostHWND::LegacyRenderWidgetHostHWND(HWND parent)
-    : manager_(NULL),
-      mouse_tracking_enabled_(false),
+    : mouse_tracking_enabled_(false),
       host_(NULL) {
   RECT rect = {0};
   Base::Create(parent, rect, L"Chrome Legacy Window",
@@ -161,11 +153,22 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
     return static_cast<LRESULT>(0L);
   }
 
-  if (OBJID_CLIENT != obj_id || !manager_)
+  if (OBJID_CLIENT != obj_id || !host_)
+    return static_cast<LRESULT>(0L);
+
+  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(
+      host_->GetRenderWidgetHost());
+  if (!rwhi)
+    return static_cast<LRESULT>(0L);
+
+  BrowserAccessibilityManagerWin* manager =
+      static_cast<BrowserAccessibilityManagerWin*>(
+          rwhi->GetRootBrowserAccessibilityManager());
+  if (!manager)
     return static_cast<LRESULT>(0L);
 
   base::win::ScopedComPtr<IAccessible> root(
-      manager_->GetRoot()->ToBrowserAccessibilityWin());
+      manager->GetRoot()->ToBrowserAccessibilityWin());
   return LresultFromObject(IID_IAccessible, w_param,
       static_cast<IAccessible*>(root.Detach()));
 }

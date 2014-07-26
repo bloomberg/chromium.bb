@@ -1042,12 +1042,6 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
 #if defined(OS_WIN)
 void RenderWidgetHostViewAura::SetParentNativeViewAccessible(
     gfx::NativeViewAccessible accessible_parent) {
-  BrowserAccessibilityManager* manager =
-      host_->GetRootBrowserAccessibilityManager();
-  if (manager) {
-    manager->ToBrowserAccessibilityManagerWin()
-        ->set_parent_iaccessible(accessible_parent);
-  }
 }
 
 gfx::NativeViewId RenderWidgetHostViewAura::GetParentForWindowlessPlugin()
@@ -1197,16 +1191,32 @@ RenderWidgetHostViewAura::CreateBrowserAccessibilityManager(
     BrowserAccessibilityDelegate* delegate) {
   BrowserAccessibilityManager* manager = NULL;
 #if defined(OS_WIN)
-  gfx::NativeViewAccessible accessible_parent =
-      host_->GetParentNativeViewAccessible();
   manager = new BrowserAccessibilityManagerWin(
-      legacy_render_widget_host_HWND_, accessible_parent,
       BrowserAccessibilityManagerWin::GetEmptyDocument(), delegate);
 #else
   manager = BrowserAccessibilityManager::Create(
       BrowserAccessibilityManager::GetEmptyDocument(), delegate);
 #endif
   return manager;
+}
+
+gfx::AcceleratedWidget
+RenderWidgetHostViewAura::AccessibilityGetAcceleratedWidget() {
+#if defined(OS_WIN)
+  if (legacy_render_widget_host_HWND_)
+    return legacy_render_widget_host_HWND_->hwnd();
+#endif
+  return gfx::kNullAcceleratedWidget;
+}
+
+gfx::NativeViewAccessible
+RenderWidgetHostViewAura::AccessibilityGetNativeViewAccessible() {
+#if defined(OS_WIN)
+  if (legacy_render_widget_host_HWND_)
+    return legacy_render_widget_host_HWND_->window_accessible();
+#endif
+  return NULL;
+
 }
 
 gfx::GLSurfaceHandle RenderWidgetHostViewAura::GetCompositingSurface() {
@@ -2309,12 +2319,6 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
       // here.
       if (!host_->is_hidden())
         legacy_render_widget_host_HWND_->Show();
-
-      BrowserAccessibilityManagerWin* manager =
-          static_cast<BrowserAccessibilityManagerWin*>(
-              host_->GetRootBrowserAccessibilityManager());
-      if (manager)
-        manager->SetAccessibleHWND(legacy_render_widget_host_HWND_);
     }
   }
 

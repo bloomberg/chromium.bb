@@ -79,34 +79,6 @@ BrowserAccessibility* CountedBrowserAccessibilityFactory::Create() {
   return instance;
 }
 
-// Provides functionality for creating the accessible hwnd and ensures that
-// the hwnd along with the LegacyRenderWidgetHostHWND instance is destroyed
-// when this instance is destroyed.
-class TestLegacyRenderWidgetHostHWND {
- public:
-  TestLegacyRenderWidgetHostHWND()
-      : accessible_hwnd_(NULL) {}
-
-  ~TestLegacyRenderWidgetHostHWND() {
-    if (accessible_hwnd())
-      ::DestroyWindow(accessible_hwnd()->hwnd());
-  }
-
-  bool Initialize(HWND parent) {
-    accessible_hwnd_ = LegacyRenderWidgetHostHWND::Create(parent);
-    EXPECT_NE(accessible_hwnd_,
-              static_cast<LegacyRenderWidgetHostHWND*>(NULL));
-    return accessible_hwnd_ != NULL;
-  }
-
-  LegacyRenderWidgetHostHWND* accessible_hwnd() {
-    return accessible_hwnd_;
-  }
-
- private:
-  LegacyRenderWidgetHostHWND* accessible_hwnd_;
-};
-
 }  // namespace
 
 
@@ -633,13 +605,8 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   const int32 busy_state = 1 << ui::AX_STATE_BUSY;
   const int32 readonly_state = 1 << ui::AX_STATE_READ_ONLY;
   const int32 enabled_state = 1 << ui::AX_STATE_ENABLED;
-  scoped_ptr<TestLegacyRenderWidgetHostHWND> accessibility_test
-      (new TestLegacyRenderWidgetHostHWND);
-  EXPECT_EQ(accessibility_test->Initialize(GetDesktopWindow()), true);
   scoped_ptr<BrowserAccessibilityManager> manager(
       new BrowserAccessibilityManagerWin(
-          accessibility_test->accessible_hwnd(),
-          NULL,
           BrowserAccessibilityManagerWin::GetEmptyDocument(),
           NULL,
           new CountedBrowserAccessibilityFactory()));
@@ -710,62 +677,6 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   // Ensure we properly cleaned up.
   manager.reset();
   ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
-}
-
-TEST(BrowserAccessibilityManagerWinTest, TestAccessibleHWND) {
-  HWND desktop_hwnd = GetDesktopWindow();
-  base::win::ScopedComPtr<IAccessible> desktop_hwnd_iaccessible;
-  ASSERT_EQ(S_OK, AccessibleObjectFromWindow(
-      desktop_hwnd, static_cast<DWORD>(OBJID_CLIENT),
-      IID_IAccessible,
-      reinterpret_cast<void**>(desktop_hwnd_iaccessible.Receive())));
-
-  scoped_ptr<TestLegacyRenderWidgetHostHWND> accessibility_test
-      (new TestLegacyRenderWidgetHostHWND);
-  EXPECT_EQ(accessibility_test->Initialize(GetDesktopWindow()), true);
-
-  scoped_ptr<BrowserAccessibilityManagerWin> manager(
-      new BrowserAccessibilityManagerWin(
-          accessibility_test->accessible_hwnd(),
-          desktop_hwnd_iaccessible,
-          BrowserAccessibilityManagerWin::GetEmptyDocument(),
-          NULL));
-  ASSERT_EQ(desktop_hwnd, manager->parent_hwnd());
-
-  // Enabling screen reader support and calling MaybeCallNotifyWinEvent
-  // should trigger creating the AccessibleHWND, and we should now get a
-  // new parent_hwnd with the right window class to fool older screen
-  // readers.
-  BrowserAccessibilityStateImpl::GetInstance()->OnScreenReaderDetected();
-  manager->MaybeCallNotifyWinEvent(0, 0);
-  HWND new_parent_hwnd = manager->parent_hwnd();
-  ASSERT_NE(desktop_hwnd, new_parent_hwnd);
-  WCHAR hwnd_class_name[256];
-  ASSERT_NE(0, GetClassName(new_parent_hwnd, hwnd_class_name, 256));
-  ASSERT_STREQ(L"Chrome_RenderWidgetHostHWND", hwnd_class_name);
-
-  // Destroy the TestLegacyRenderWidgetHostHWND instance. That should in turn
-  // destroy the hwnd, which should clear the parent_hwnd().
-  accessibility_test.reset(NULL);
-  ASSERT_EQ(FALSE, ::IsWindow(new_parent_hwnd));
-  ASSERT_EQ(NULL, manager->parent_hwnd());
-
-  // Now create it again.
-  accessibility_test.reset(new TestLegacyRenderWidgetHostHWND);
-  EXPECT_EQ(accessibility_test->Initialize(::GetDesktopWindow()), true);
-  manager.reset(
-      new BrowserAccessibilityManagerWin(
-          accessibility_test->accessible_hwnd(),
-          desktop_hwnd_iaccessible,
-          BrowserAccessibilityManagerWin::GetEmptyDocument(),
-          NULL));
-  manager->MaybeCallNotifyWinEvent(0, 0);
-  new_parent_hwnd = manager->parent_hwnd();
-  ASSERT_FALSE(NULL == new_parent_hwnd);
-
-  // This time, destroy the manager first, make sure the AccessibleHWND doesn't
-  // crash on destruction (to be caught by SyzyASAN or other tools).
-  manager.reset(NULL);
 }
 
 }  // namespace content
