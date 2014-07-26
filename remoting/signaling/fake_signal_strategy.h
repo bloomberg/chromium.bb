@@ -15,11 +15,17 @@
 #include "remoting/signaling/iq_sender.h"
 #include "remoting/signaling/signal_strategy.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
+
 namespace remoting {
 
 class FakeSignalStrategy : public SignalStrategy,
                            public base::NonThreadSafe {
  public:
+  // Calls ConenctTo() to connect |peer1| and |peer2|. Both |peer1| and |peer2|
+  // must belong to the current thread.
   static void Connect(FakeSignalStrategy* peer1, FakeSignalStrategy* peer2);
 
   FakeSignalStrategy(const std::string& jid);
@@ -28,6 +34,9 @@ class FakeSignalStrategy : public SignalStrategy,
   const std::list<buzz::XmlElement*>& received_messages() {
     return received_messages_;
   }
+
+  // Connects current FakeSignalStrategy to receive messages from |peer|.
+  void ConnectTo(FakeSignalStrategy* peer);
 
   // SignalStrategy interface.
   virtual void Connect() OVERRIDE;
@@ -41,22 +50,28 @@ class FakeSignalStrategy : public SignalStrategy,
   virtual std::string GetNextId() OVERRIDE;
 
  private:
+  typedef base::Callback<void(scoped_ptr<buzz::XmlElement> message)>
+      PeerCallback;
+
+  static void DeliverMessageOnThread(
+      scoped_refptr<base::SingleThreadTaskRunner> thread,
+      base::WeakPtr<FakeSignalStrategy> target,
+      scoped_ptr<buzz::XmlElement> stanza);
+
   // Called by the |peer_|. Takes ownership of |stanza|.
   void OnIncomingMessage(scoped_ptr<buzz::XmlElement> stanza);
+  void SetPeerCallback(const PeerCallback& peer_callback);
 
-  void DeliverIncomingMessages();
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
 
   std::string jid_;
-  FakeSignalStrategy* peer_;
+  PeerCallback peer_callback_;
   ObserverList<Listener, true> listeners_;
 
   int last_id_;
 
   // All received messages, includes thouse still in |pending_messages_|.
   std::list<buzz::XmlElement*> received_messages_;
-
-  // Queue of messages that have yet to be delivered to observers.
-  std::queue<buzz::XmlElement*> pending_messages_;
 
   base::WeakPtrFactory<FakeSignalStrategy> weak_factory_;
 

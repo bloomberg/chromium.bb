@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"
+#include "jingle/glue/thread_wrapper.h"
 #include "net/base/test_data_directory.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/rsa_key_pair.h"
@@ -44,13 +45,19 @@ class ProtocolPerfTest : public testing::Test,
                          public HostStatusObserver {
  public:
   ProtocolPerfTest()
-      : capture_thread_("capture"),
+      : host_thread_("host"),
+        capture_thread_("capture"),
         encode_thread_("encode") {
     VideoScheduler::EnableTimestampsForTests();
+    host_thread_.StartWithOptions(
+        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
     capture_thread_.Start();
     encode_thread_.Start();
   }
   virtual ~ProtocolPerfTest() {
+    host_thread_.message_loop_proxy()->DeleteSoon(FROM_HERE, host_.release());
+    host_thread_.message_loop_proxy()->DeleteSoon(FROM_HERE,
+                                                  host_signaling_.release());
     message_loop_.RunUntilIdle();
   }
 
@@ -100,9 +107,10 @@ class ProtocolPerfTest : public testing::Test,
 
   // HostStatusObserver interface.
   virtual void OnClientConnected(const std::string& jid) OVERRIDE {
-    host_connected_ = true;
-    if (client_connected_)
-      connecting_loop_->Quit();
+    message_loop_.PostTask(
+        FROM_HERE,
+        base::Bind(&ProtocolPerfTest::OnHostConnectedMainThread,
+                   base::Unretained(this)));
   }
 
  protected:
@@ -114,6 +122,12 @@ class ProtocolPerfTest : public testing::Test,
     connecting_loop_->Run();
 
     ASSERT_TRUE(client_connected_ && host_connected_);
+  }
+
+  void OnHostConnectedMainThread() {
+    host_connected_ = true;
+    if (client_connected_)
+      connecting_loop_->Quit();
   }
 
   void ReceiveFrame(base::TimeDelta* latency) {
@@ -143,20 +157,37 @@ class ProtocolPerfTest : public testing::Test,
     }
   }
 
+  // Creates test host and client and starts connection between them. Caller
+  // should call WaitConnected() to wait until connection is established. The
+  // host is started on |host_thread_| while the client works on the main
+  // thread.
   void StartHostAndClient(protocol::ChannelConfig::Codec video_codec) {
-    host_signaling_.reset(new FakeSignalStrategy(kHostJid));
     client_signaling_.reset(new FakeSignalStrategy(kClientJid));
-    FakeSignalStrategy::Connect(host_signaling_.get(), client_signaling_.get());
+
+    jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
+
+    protocol_config_ = protocol::CandidateSessionConfig::CreateDefault();
+    protocol_config_->DisableAudioChannel();
+    protocol_config_->mutable_video_configs()->clear();
+    protocol_config_->mutable_video_configs()->push_back(
+        protocol::ChannelConfig(
+            protocol::ChannelConfig::TRANSPORT_STREAM, 2, video_codec));
+
+    host_thread_.message_loop_proxy()->PostTask(
+        FROM_HERE,
+        base::Bind(&ProtocolPerfTest::StartHost, base::Unretained(this)));
+  }
+
+  void StartHost() {
+    DCHECK(host_thread_.message_loop_proxy()->BelongsToCurrentThread());
+
+    jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
+
+    host_signaling_.reset(new FakeSignalStrategy(kHostJid));
+    host_signaling_->ConnectTo(client_signaling_.get());
 
     protocol::NetworkSettings network_settings(
         protocol::NetworkSettings::NAT_TRAVERSAL_OUTGOING);
-
-    scoped_ptr<protocol::CandidateSessionConfig> protocol_config =
-        protocol::CandidateSessionConfig::CreateDefault();
-    protocol_config->DisableAudioChannel();
-    protocol_config->mutable_video_configs()->clear();
-    protocol_config->mutable_video_configs()->push_back(protocol::ChannelConfig(
-        protocol::ChannelConfig::TRANSPORT_STREAM, 2, video_codec));
 
     // TODO(sergeyu): Replace with a fake port allocator.
     scoped_ptr<cricket::HttpPortAllocatorBase> host_port_allocator =
@@ -177,12 +208,12 @@ class ProtocolPerfTest : public testing::Test,
     host_.reset(new ChromotingHost(host_signaling_.get(),
                                    &desktop_environment_factory_,
                                    session_manager.Pass(),
-                                   message_loop_.message_loop_proxy(),
-                                   message_loop_.message_loop_proxy(),
+                                   host_thread_.message_loop_proxy(),
+                                   host_thread_.message_loop_proxy(),
                                    capture_thread_.message_loop_proxy(),
                                    encode_thread_.message_loop_proxy(),
-                                   message_loop_.message_loop_proxy(),
-                                   message_loop_.message_loop_proxy()));
+                                   host_thread_.message_loop_proxy(),
+                                   host_thread_.message_loop_proxy()));
 
     base::FilePath certs_dir(net::GetTestCertsDirectory());
 
@@ -208,8 +239,19 @@ class ProtocolPerfTest : public testing::Test,
     host_->SetAuthenticatorFactory(auth_factory.Pass());
 
     host_->AddStatusObserver(this);
-    host_->set_protocol_config(protocol_config->Clone());
+    host_->set_protocol_config(protocol_config_->Clone());
     host_->Start(kHostOwner);
+
+    message_loop_.PostTask(FROM_HERE,
+                           base::Bind(&ProtocolPerfTest::StartClientAfterHost,
+                                      base::Unretained(this)));
+  }
+
+  void StartClientAfterHost() {
+    client_signaling_->ConnectTo(host_signaling_.get());
+
+    protocol::NetworkSettings network_settings(
+        protocol::NetworkSettings::NAT_TRAVERSAL_OUTGOING);
 
     // Initialize client.
     client_context_.reset(
@@ -238,7 +280,7 @@ class ProtocolPerfTest : public testing::Test,
             auth_methods));
     client_.reset(new ChromotingClient(
         client_context_.get(), this, this, scoped_ptr<AudioPlayer>()));
-    client_->SetProtocolConfigForTests(protocol_config->Clone());
+    client_->SetProtocolConfigForTests(protocol_config_->Clone());
     client_->Start(
         client_signaling_.get(), client_authenticator.Pass(),
         client_transport_factory.Pass(), kHostJid, std::string());
@@ -252,9 +294,12 @@ class ProtocolPerfTest : public testing::Test,
 
   base::MessageLoopForIO message_loop_;
 
-  FakeDesktopEnvironmentFactory desktop_environment_factory_;
+  base::Thread host_thread_;
   base::Thread capture_thread_;
   base::Thread encode_thread_;
+  FakeDesktopEnvironmentFactory desktop_environment_factory_;
+
+  scoped_ptr<protocol::CandidateSessionConfig> protocol_config_;
 
   scoped_ptr<FakeSignalStrategy> host_signaling_;
   scoped_ptr<FakeSignalStrategy> client_signaling_;

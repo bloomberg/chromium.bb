@@ -19,13 +19,15 @@ namespace remoting {
 // static
 void FakeSignalStrategy::Connect(FakeSignalStrategy* peer1,
                                  FakeSignalStrategy* peer2) {
-  peer1->peer_ = peer2;
-  peer2->peer_ = peer1;
+  DCHECK(peer1->main_thread_->BelongsToCurrentThread());
+  DCHECK(peer2->main_thread_->BelongsToCurrentThread());
+  peer1->ConnectTo(peer2);
+  peer2->ConnectTo(peer1);
 }
 
 FakeSignalStrategy::FakeSignalStrategy(const std::string& jid)
-    : jid_(jid),
-      peer_(NULL),
+    : main_thread_(base::ThreadTaskRunnerHandle::Get()),
+      jid_(jid),
       last_id_(0),
       weak_factory_(this) {
 
@@ -35,6 +37,22 @@ FakeSignalStrategy::~FakeSignalStrategy() {
   while (!received_messages_.empty()) {
     delete received_messages_.front();
     received_messages_.pop_front();
+  }
+}
+
+void FakeSignalStrategy::ConnectTo(FakeSignalStrategy* peer) {
+  PeerCallback peer_callback =
+      base::Bind(&FakeSignalStrategy::DeliverMessageOnThread,
+                 main_thread_,
+                 weak_factory_.GetWeakPtr());
+  if (peer->main_thread_->BelongsToCurrentThread()) {
+    peer->SetPeerCallback(peer_callback);
+  } else {
+    peer->main_thread_->PostTask(
+        FROM_HERE,
+        base::Bind(&FakeSignalStrategy::SetPeerCallback,
+                   base::Unretained(peer),
+                   peer_callback));
   }
 }
 
@@ -78,8 +96,8 @@ bool FakeSignalStrategy::SendStanza(scoped_ptr<buzz::XmlElement> stanza) {
 
   stanza->SetAttr(buzz::QN_FROM, jid_);
 
-  if (peer_) {
-    peer_->OnIncomingMessage(stanza.Pass());
+  if (!peer_callback_.is_null()) {
+    peer_callback_.Run(stanza.Pass());
     return true;
   } else {
     return false;
@@ -91,35 +109,41 @@ std::string FakeSignalStrategy::GetNextId() {
   return base::IntToString(last_id_);
 }
 
-void FakeSignalStrategy::OnIncomingMessage(
+// static
+void FakeSignalStrategy::DeliverMessageOnThread(
+    scoped_refptr<base::SingleThreadTaskRunner> thread,
+    base::WeakPtr<FakeSignalStrategy> target,
     scoped_ptr<buzz::XmlElement> stanza) {
-  pending_messages_.push(stanza.get());
-  received_messages_.push_back(stanza.release());
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FakeSignalStrategy::DeliverIncomingMessages,
-                            weak_factory_.GetWeakPtr()));
+  thread->PostTask(FROM_HERE,
+                   base::Bind(&FakeSignalStrategy::OnIncomingMessage,
+                              target, base::Passed(&stanza)));
 }
 
-void FakeSignalStrategy::DeliverIncomingMessages() {
-  while (!pending_messages_.empty()) {
-    buzz::XmlElement* stanza = pending_messages_.front();
-    const std::string& to_field = stanza->Attr(buzz::QN_TO);
-    if (to_field != jid_) {
-      LOG(WARNING) << "Dropping stanza that is addressed to " << to_field
-                   << ". Local jid: " << jid_
-                   << ". Message content: " << stanza->Str();
-      return;
-    }
+void FakeSignalStrategy::OnIncomingMessage(
+    scoped_ptr<buzz::XmlElement> stanza) {
+  DCHECK(CalledOnValidThread());
 
-    ObserverListBase<Listener>::Iterator it(listeners_);
-    Listener* listener;
-    while ((listener = it.GetNext()) != NULL) {
-      if (listener->OnSignalStrategyIncomingStanza(stanza))
-        break;
-    }
+  buzz::XmlElement* stanza_ptr = stanza.get();
+  received_messages_.push_back(stanza.release());
 
-    pending_messages_.pop();
+  const std::string& to_field = stanza_ptr->Attr(buzz::QN_TO);
+  if (to_field != jid_) {
+    LOG(WARNING) << "Dropping stanza that is addressed to " << to_field
+                 << ". Local jid: " << jid_
+                 << ". Message content: " << stanza_ptr->Str();
+    return;
   }
+
+  ObserverListBase<Listener>::Iterator it(listeners_);
+  Listener* listener;
+  while ((listener = it.GetNext()) != NULL) {
+    if (listener->OnSignalStrategyIncomingStanza(stanza_ptr))
+      break;
+  }
+}
+
+void FakeSignalStrategy::SetPeerCallback(const PeerCallback& peer_callback) {
+  peer_callback_ = peer_callback;
 }
 
 }  // namespace remoting
