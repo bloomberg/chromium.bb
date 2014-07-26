@@ -37,6 +37,7 @@
     readonly attribute DOMString sessionId;
 
     // session operations
-    [CallWith=ScriptState] Promise update(Uint8Array response);
+    [CallWith=ScriptState] Promise update(ArrayBuffer response);
+    [CallWith=ScriptState] Promise update(ArrayBufferView response);
     [CallWith=ScriptState] Promise release();
 };

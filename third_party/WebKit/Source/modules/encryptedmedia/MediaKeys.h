@@ -52,7 +52,8 @@ public:
 
     const String& keySystem() const { return m_keySystem; }
 
-    ScriptPromise createSession(ScriptState*, const String& initDataType, Uint8Array* initData, const String& sessionType);
+    ScriptPromise createSession(ScriptState*, const String& initDataType, ArrayBuffer* initData, const String& sessionType);
+    ScriptPromise createSession(ScriptState*, const String& initDataType, ArrayBufferView* initData, const String& sessionType);
 
     static bool isTypeSupported(const String& keySystem, const String& contentType);
 
@@ -66,6 +67,8 @@ public:
 private:
     friend class MediaKeysInitializer;
     MediaKeys(ExecutionContext*, const String& keySystem, PassOwnPtr<blink::WebContentDecryptionModule>);
+
+    ScriptPromise createSessionInternal(ScriptState*, const String& initDataType, PassRefPtr<ArrayBuffer> initData, const String& sessionType);
 
     const String m_keySystem;
     OwnPtr<blink::WebContentDecryptionModule> m_cdm;

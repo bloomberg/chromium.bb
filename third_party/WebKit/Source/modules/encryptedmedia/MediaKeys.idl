@@ -36,7 +36,8 @@ enum SessionType {
     readonly attribute DOMString keySystem;
 
     [CallWith=ScriptState] static Promise create(DOMString keySystem);
-    [CallWith=ScriptState] Promise createSession(DOMString initDataType, Uint8Array initData, optional SessionType sessionType = "temporary");
+    [CallWith=ScriptState] Promise createSession(DOMString initDataType, ArrayBuffer initData, optional SessionType sessionType = "temporary");
+    [CallWith=ScriptState] Promise createSession(DOMString initDataType, ArrayBufferView initData, optional SessionType sessionType = "temporary");
 
     static boolean isTypeSupported(DOMString keySystem, optional DOMString contentType = null);
 };

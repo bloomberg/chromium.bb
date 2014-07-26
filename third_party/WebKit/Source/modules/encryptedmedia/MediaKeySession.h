@@ -66,7 +66,7 @@ class MediaKeySession FINAL
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<MediaKeySession>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaKeySession);
 public:
-    static ScriptPromise create(ScriptState*, MediaKeys*, const String& initDataType, PassRefPtr<Uint8Array> initData, const String& sessionType);
+    static ScriptPromise create(ScriptState*, MediaKeys*, const String& initDataType, PassRefPtr<ArrayBuffer> initData, const String& sessionType);
     virtual ~MediaKeySession();
 
     const String& keySystem() const { return m_keySystem; }
@@ -75,7 +75,8 @@ public:
     void setError(MediaKeyError*);
     MediaKeyError* error() { return m_error.get(); }
 
-    ScriptPromise update(ScriptState*, Uint8Array* response);
+    ScriptPromise update(ScriptState*, ArrayBuffer* response);
+    ScriptPromise update(ScriptState*, ArrayBufferView* response);
     ScriptPromise release(ScriptState*);
 
     void enqueueEvent(PassRefPtrWillBeRawPtr<Event>);
@@ -103,6 +104,8 @@ private:
     virtual void close() OVERRIDE;
     virtual void error(MediaKeyErrorCode, unsigned long systemCode) OVERRIDE;
     virtual void error(blink::WebContentDecryptionModuleException, unsigned long systemCode, const blink::WebString& errorMessage) OVERRIDE;
+
+    ScriptPromise updateInternal(ScriptState*, PassRefPtr<ArrayBuffer> response);
 
     String m_keySystem;
     RefPtrWillBeMember<MediaKeyError> m_error;

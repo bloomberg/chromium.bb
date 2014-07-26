@@ -42,8 +42,9 @@
 #include "platform/UUID.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebContentDecryptionModule.h"
+#include "wtf/ArrayBuffer.h"
+#include "wtf/ArrayBufferView.h"
 #include "wtf/RefPtr.h"
-#include "wtf/Uint8Array.h"
 
 #if ENABLE(ASSERT)
 namespace {
@@ -197,9 +198,21 @@ MediaKeys::~MediaKeys()
     WTF_LOG(Media, "MediaKeys(%p)::~MediaKeys", this);
 }
 
-ScriptPromise MediaKeys::createSession(ScriptState* scriptState, const String& initDataType, Uint8Array* initData, const String& sessionType)
+ScriptPromise MediaKeys::createSession(ScriptState* scriptState, const String& initDataType, ArrayBuffer* initData, const String& sessionType)
 {
-    WTF_LOG(Media, "MediaKeys(%p)::createSession(%s, %d)", this, initDataType.ascii().data(), initData->length());
+    RefPtr<ArrayBuffer> initDataCopy = ArrayBuffer::create(initData->data(), initData->byteLength());
+    return createSessionInternal(scriptState, initDataType, initDataCopy.release(), sessionType);
+}
+
+ScriptPromise MediaKeys::createSession(ScriptState* scriptState, const String& initDataType, ArrayBufferView* initData, const String& sessionType)
+{
+    RefPtr<ArrayBuffer> initDataCopy = ArrayBuffer::create(initData->baseAddress(), initData->byteLength());
+    return createSessionInternal(scriptState, initDataType, initDataCopy.release(), sessionType);
+}
+
+ScriptPromise MediaKeys::createSessionInternal(ScriptState* scriptState, const String& initDataType, PassRefPtr<ArrayBuffer> initData, const String& sessionType)
+{
+    WTF_LOG(Media, "MediaKeys(%p)::createSession(%s, %d)", this, initDataType.ascii().data(), initData->byteLength());
 
     // From <http://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-createsession>:
     // The createSession(initDataType, initData, sessionType) method creates a
@@ -213,7 +226,7 @@ ScriptPromise MediaKeys::createSession(ScriptState* scriptState, const String& i
 
     // 2. If initData is an empty array, return a promise rejected with a new
     //    DOMException whose name is"InvalidAccessError".
-    if (!initData->length()) {
+    if (!initData->byteLength()) {
         return createRejectedPromise(scriptState, InvalidAccessError, "The initData parameter is empty.");
     }
 
@@ -233,12 +246,11 @@ ScriptPromise MediaKeys::createSession(ScriptState* scriptState, const String& i
     ASSERT(sessionType == kTemporary || sessionType == kPersistent);
 
     // 5. Let init data be a copy of the contents of the initData parameter.
-    RefPtr<Uint8Array> initDataCopy = Uint8Array::create(initData->data(), initData->length());
-
+    //    (Copied in the caller.)
     // 6. Let promise be a new promise.
     // 7. Asynchronously create and initialize the session.
     // 8. Return promise.
-    return MediaKeySession::create(scriptState, this, initDataType, initDataCopy.release(), sessionType);
+    return MediaKeySession::create(scriptState, this, initDataType, initData, sessionType);
 }
 
 bool MediaKeys::isTypeSupported(const String& keySystem, const String& contentType)

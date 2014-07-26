@@ -27,7 +27,7 @@
     EventConstructor,
     RuntimeEnabled=EncryptedMedia
 ] interface MediaKeyMessageEvent : Event {
-    readonly attribute Uint8Array message;
+    readonly attribute ArrayBuffer message;
     [InitializedByEventConstructor] readonly attribute DOMString destinationURL;
 };
 

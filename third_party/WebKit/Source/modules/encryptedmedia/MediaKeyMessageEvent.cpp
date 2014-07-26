@@ -26,8 +26,6 @@
 #include "config.h"
 #include "modules/encryptedmedia/MediaKeyMessageEvent.h"
 
-#include "wtf/Uint8Array.h"
-
 namespace blink {
 
 MediaKeyMessageEventInit::MediaKeyMessageEventInit()

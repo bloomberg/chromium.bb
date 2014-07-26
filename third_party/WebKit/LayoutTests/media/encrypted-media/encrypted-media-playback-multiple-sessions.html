@@ -47,7 +47,7 @@
 
                 function onMessage(event)
                 {
-                    var keyId = event.message;
+                    var keyId = new Uint8Array(event.message);
                     if (event.target == videoMediaKeySession) {
                         assert_equals(String.fromCharCode.apply(null, keyId), videoKeyId);
                         var jwkSet = stringToUint8Array(createJWKSet(createJWK(keyId, videoKey)));
