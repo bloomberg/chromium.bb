@@ -264,10 +264,6 @@ crbug.com/237270 http/tests/images/png-partial-load-no-alpha.html [ Pass Timeout
 
 crbug.com/341435 http/tests/images/image-with-origin-header.html [ Pass Timeout ]
 
-crbug.com/394833 compositing/squashing/invalidations-with-large-negative-margin.html [ NeedsRebaseline ]
-crbug.com/394833 fast/repaint/scrollbar-parts.html [ NeedsRebaseline ]
-crbug.com/394833 virtual/softwarecompositing/squashing/invalidations-with-large-negative-margin.html [ NeedsRebaseline ]
-
 crbug.com/248938 virtual/threaded/animations/3d/transform-origin-vs-functions.html [ Pass Failure ]
 crbug.com/248938 [ Linux Win ] virtual/threaded/animations/animation-border-overflow.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/animation-direction-normal.html [ Pass ImageOnlyFailure Timeout ]
