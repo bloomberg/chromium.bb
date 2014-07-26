@@ -78,6 +78,9 @@ def attribute_context(interface, attribute):
         includes.add('core/frame/LocalFrame.h')
         includes.add('platform/ScriptForbiddenScope.h')
 
+    # [OnlyExposedToPrivateScript]
+    is_only_exposed_to_private_script = 'OnlyExposedToPrivateScript' in extended_attributes
+
     if (base_idl_type == 'EventHandler' and
         interface.name in ['Window', 'WorkerGlobalScope'] and
         attribute.name == 'onerror'):
@@ -128,7 +131,7 @@ def attribute_context(interface, attribute):
         'is_unforgeable': 'Unforgeable' in extended_attributes,
         'measure_as': v8_utilities.measure_as(attribute),  # [MeasureAs]
         'name': attribute.name,
-        'only_exposed_to_private_script': 'OnlyExposedToPrivateScript' in extended_attributes,
+        'only_exposed_to_private_script': is_only_exposed_to_private_script,
         'per_context_enabled_function': v8_utilities.per_context_enabled_function_name(attribute),  # [PerContextEnabled]
         'private_script_v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
             extended_attributes, 'v8Value', 'cppValue', isolate='scriptState->isolate()', used_in_private_script=True),
@@ -141,6 +144,7 @@ def attribute_context(interface, attribute):
             if 'ReflectOnly' in extended_attributes else None,
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(attribute),  # [RuntimeEnabled]
         'setter_callback': setter_callback_name(interface, attribute),
+        'should_be_exposed_to_script': not (is_implemented_in_private_script and is_only_exposed_to_private_script),
         'v8_type': v8_types.v8_type(base_idl_type),
         'world_suffixes': ['', 'ForMainWorld']
                           if 'PerWorldBindings' in extended_attributes

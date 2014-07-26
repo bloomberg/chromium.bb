@@ -66,6 +66,15 @@ shouldThrow('privateScriptTest.nodeAttributeThrowsIndexSizeError');
 shouldThrow('privateScriptTest.nodeAttributeThrowsIndexSizeError = null');
 shouldThrow('privateScriptTest.voidMethodThrowsSyntaxError()');
 
+shouldBe('privateScriptTest.addIntegerImplementedInCPP(111, 222)', '333');
+shouldBeEqualToString('privateScriptTest.stringAttributeImplementedInCPP', 'undefined');
+privateScriptTest.stringAttributeImplementedInCPP = "foo";
+shouldBeEqualToString('privateScriptTest.stringAttributeImplementedInCPP', 'foo');
+
+// These tests are important. [OnlyExposedToPrivateScript] APIs should not be visible to user's JavaScript.
+shouldBeUndefined('privateScriptTest.addIntegerImplementedInCPPForPrivateScriptOnly');
+shouldBeUndefined('privateScriptTest.stringAttributeImplementedInCPPForPrivateScriptOnly');
+
 </script>
 </body>
 </html>

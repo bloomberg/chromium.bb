@@ -43,6 +43,11 @@ public:
     // reduces the binary size by moving from code driven setup to data table
     // driven setup.
 
+    enum ExposeConfiguration {
+        ExposedToAllScripts,
+        OnlyExposedToPrivateScript,
+    };
+
     // AttributeConfiguration translates into calls to SetAccessor() on either
     // the instance or the prototype ObjectTemplate, based on |onPrototype|.
     struct AttributeConfiguration {
@@ -54,6 +59,7 @@ public:
         const WrapperTypeInfo* data;
         v8::AccessControl settings;
         v8::PropertyAttribute attribute;
+        ExposeConfiguration exposeConfiguration;
         bool onPrototype;
     };
 
@@ -68,6 +74,7 @@ public:
         const WrapperTypeInfo* data;
         v8::AccessControl settings;
         v8::PropertyAttribute attribute;
+        ExposeConfiguration exposeConfiguration;
     };
 
     static void installAttributes(v8::Handle<v8::ObjectTemplate>, v8::Handle<v8::ObjectTemplate>, const AttributeConfiguration*, size_t attributeCount, v8::Isolate*);
@@ -75,9 +82,13 @@ public:
     template<class ObjectOrTemplate>
     static inline void installAttribute(v8::Handle<ObjectOrTemplate> instanceTemplate, v8::Handle<ObjectOrTemplate> prototype, const AttributeConfiguration& attribute, v8::Isolate* isolate)
     {
+        DOMWrapperWorld& world = DOMWrapperWorld::current(isolate);
+        if (attribute.exposeConfiguration == OnlyExposedToPrivateScript && !world.isPrivateScriptIsolatedWorld())
+            return;
+
         v8::AccessorGetterCallback getter = attribute.getter;
         v8::AccessorSetterCallback setter = attribute.setter;
-        if (DOMWrapperWorld::current(isolate).isMainWorld()) {
+        if (world.isMainWorld()) {
             if (attribute.getterForMainWorld)
                 getter = attribute.getterForMainWorld;
             if (attribute.setterForMainWorld)
@@ -122,6 +133,7 @@ public:
         v8::FunctionCallback callback;
         v8::FunctionCallback callbackForMainWorld;
         int length;
+        ExposeConfiguration exposeConfiguration;
     };
 
     static void installMethods(v8::Handle<v8::ObjectTemplate>, v8::Handle<v8::Signature>, v8::PropertyAttribute, const MethodConfiguration*, size_t callbackCount, v8::Isolate*);

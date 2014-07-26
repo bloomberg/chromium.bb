@@ -31,6 +31,11 @@ PASS privateScriptTest.nodeAttribute is node8
 PASS privateScriptTest.nodeAttributeThrowsIndexSizeError threw exception IndexSizeError: Failed to read the 'nodeAttributeThrowsIndexSizeError' property from 'PrivateScriptTest': getter threw error.
 PASS privateScriptTest.nodeAttributeThrowsIndexSizeError = null threw exception IndexSizeError: Failed to set the 'nodeAttributeThrowsIndexSizeError' property on 'PrivateScriptTest': setter threw error.
 PASS privateScriptTest.voidMethodThrowsSyntaxError() threw exception SyntaxError: Failed to execute 'voidMethodThrowsSyntaxError' on 'PrivateScriptTest': method threw error.
+PASS privateScriptTest.addIntegerImplementedInCPP(111, 222) is 333
+PASS privateScriptTest.stringAttributeImplementedInCPP is "undefined"
+PASS privateScriptTest.stringAttributeImplementedInCPP is "foo"
+PASS privateScriptTest.addIntegerImplementedInCPPForPrivateScriptOnly is undefined.
+PASS privateScriptTest.stringAttributeImplementedInCPPForPrivateScriptOnly is undefined.
 PASS successfullyParsed is true
 
 TEST COMPLETE

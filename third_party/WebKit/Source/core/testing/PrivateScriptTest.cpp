@@ -18,4 +18,19 @@ PrivateScriptTest::PrivateScriptTest(LocalFrame* frame)
     RELEASE_ASSERT(!classObject.IsEmpty());
 }
 
+int PrivateScriptTest::addIntegerImplementedInCPPForPrivateScriptOnly(int value1, int value2)
+{
+    return value1 + value2;
+}
+
+String PrivateScriptTest::stringAttributeImplementedInCPPForPrivateScriptOnly()
+{
+    return m_stringAttributeImplementedInCPPForPrivateSriptOnly;
+}
+
+void PrivateScriptTest::setStringAttributeImplementedInCPPForPrivateScriptOnly(String value)
+{
+    m_stringAttributeImplementedInCPPForPrivateSriptOnly = value;
+}
+
 } // namespace blink

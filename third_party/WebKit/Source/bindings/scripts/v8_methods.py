@@ -99,6 +99,10 @@ def method_context(interface, method):
         includes.add('bindings/core/v8/PrivateScriptRunner.h')
         includes.add('core/frame/LocalFrame.h')
         includes.add('platform/ScriptForbiddenScope.h')
+
+    # [OnlyExposedToPrivateScript]
+    is_only_exposed_to_private_script = 'OnlyExposedToPrivateScript' in extended_attributes
+
     is_call_with_script_arguments = has_extended_attribute_value(method, 'CallWith', 'ScriptArguments')
     if is_call_with_script_arguments:
         includes.update(['bindings/core/v8/ScriptCallStackFactory.h',
@@ -176,12 +180,13 @@ def method_context(interface, method):
         'number_of_required_or_variadic_arguments': len([
             argument for argument in arguments
             if not argument.is_optional]),
-        'only_exposed_to_private_script': 'OnlyExposedToPrivateScript' in extended_attributes,
+        'only_exposed_to_private_script': is_only_exposed_to_private_script,
         'per_context_enabled_function': v8_utilities.per_context_enabled_function_name(method),  # [PerContextEnabled]
         'private_script_v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
             extended_attributes, 'v8Value', 'cppValue', isolate='scriptState->isolate()', used_in_private_script=True),
         'property_attributes': property_attributes(method),
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(method),  # [RuntimeEnabled]
+        'should_be_exposed_to_script': not (is_implemented_in_private_script and is_only_exposed_to_private_script),
         'signature': 'v8::Local<v8::Signature>()' if is_static or 'DoNotCheckSignature' in extended_attributes else 'defaultSignature',
         'union_arguments': idl_type.union_arguments,
         'use_local_result': use_local_result(method),

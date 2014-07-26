@@ -29,6 +29,7 @@
                         ' | '.join(attribute.access_control_list) %}
 {% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
                             ' | '.join(attribute.property_attributes) %}
+{% set only_exposed_to_private_script = 'V8DOMConfiguration::OnlyExposedToPrivateScript' if attribute.only_exposed_to_private_script else 'V8DOMConfiguration::ExposedToAllScripts' %}
 {% set on_prototype = '1 /* on prototype */'
        if interface_name == 'Window' and attribute.idl_type == 'EventHandler'
        else '0 /* on instance */' %}
@@ -41,6 +42,7 @@
        wrapper_type_info,
        access_control,
        property_attribute,
+       only_exposed_to_private_script,
    ] %}
 {% if not attribute.is_expose_js_accessors %}
 {% set attribute_configuration_list = attribute_configuration_list
@@ -57,7 +59,8 @@
 {% set method_callback_for_main_world =
    '%sV8Internal::%sMethodCallbackForMainWorld' % (cpp_class, method.name)
    if method.is_per_world_bindings else '0' %}
-{"{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method.length}}}
+{% set only_exposed_to_private_script = 'V8DOMConfiguration::OnlyExposedToPrivateScript' if method.only_exposed_to_private_script else 'V8DOMConfiguration::ExposedToAllScripts' %}
+{"{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method.length}}, {{only_exposed_to_private_script}}}
 {%- endmacro %}
 
 
@@ -727,11 +730,8 @@ void {{v8_class}}::visitDOMWrapper(void* object, const v8::Persistent<v8::Object
 {% block shadow_attributes %}
 {% if interface_name == 'Window' %}
 static const V8DOMConfiguration::AttributeConfiguration shadowAttributes[] = {
-    {% for attribute in attributes if attribute.is_unforgeable %}
-    {# FIXME: Expose [OnlyExposedToPrivateScript] attributes to window objects of private scripts #}
-    {% if not attribute.only_exposed_to_private_script %}
+    {% for attribute in attributes if attribute.is_unforgeable and attribute.should_be_exposed_to_script %}
     {{attribute_configuration(attribute)}},
-    {% endif %}
     {% endfor %}
 };
 
@@ -748,13 +748,11 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[]
                attribute.is_static or
                attribute.runtime_enabled_function or
                attribute.per_context_enabled_function or
-               (interface_name == 'Window' and attribute.is_unforgeable)) %}
-    {# FIXME: Expose [OnlyExposedToPrivateScript] attributes to window objects of private scripts #}
-    {% if not attribute.only_exposed_to_private_script %}
+               (interface_name == 'Window' and attribute.is_unforgeable))
+           and attribute.should_be_exposed_to_script %}
     {% filter conditional(attribute.conditional_string) %}
     {{attribute_configuration(attribute)}},
     {% endfilter %}
-    {% endif %}
     {% endfor %}
 };
 
@@ -766,11 +764,8 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[]
 {% block install_accessors %}
 {% if has_accessors %}
 static const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] = {
-    {% for attribute in attributes if attribute.is_expose_js_accessors %}
-    {# FIXME: Expose [OnlyExposedToPrivateScript] attributes to window objects of private scripts #}
-    {% if not attribute.only_exposed_to_private_script %}
+    {% for attribute in attributes if attribute.is_expose_js_accessors and attribute.should_be_exposed_to_script %}
     {{attribute_configuration(attribute)}},
-    {% endif %}
     {% endfor %}
 };
 
@@ -783,12 +778,9 @@ static const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] =
 {% if method_configuration_methods %}
 static const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
     {% for method in method_configuration_methods %}
-    {# FIXME: Expose [OnlyExposedToPrivateScript] methods to window objects of private scripts #}
-    {% if not method.only_exposed_to_private_script %}
     {% filter conditional(method.conditional_string) %}
     {{method_configuration(method)}},
     {% endfilter %}
-    {% endif %}
     {% endfor %}
 };
 
@@ -1059,8 +1051,9 @@ static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functio
 {% set property_attribute =
     'static_cast<v8::PropertyAttribute>(%s)' %
     ' | '.join(method.property_attributes or ['v8::DontDelete']) %}
+{% set only_exposed_to_private_script = 'V8DOMConfiguration::OnlyExposedToPrivateScript' if method.only_exposed_to_private_script else 'V8DOMConfiguration::ExposedToAllScripts' %}
 static const V8DOMConfiguration::AttributeConfiguration {{method.name}}OriginSafeAttributeConfiguration = {
-    "{{method.name}}", {{getter_callback}}, {{setter_callback}}, {{getter_callback_for_main_world}}, {{setter_callback_for_main_world}}, &{{v8_class}}::wrapperTypeInfo, v8::ALL_CAN_READ, {{property_attribute}}, false
+    "{{method.name}}", {{getter_callback}}, {{setter_callback}}, {{getter_callback_for_main_world}}, {{setter_callback_for_main_world}}, &{{v8_class}}::wrapperTypeInfo, v8::ALL_CAN_READ, {{property_attribute}}, {{only_exposed_to_private_script}}, false,
 };
 V8DOMConfiguration::installAttribute({{method.function_template}}, v8::Handle<v8::ObjectTemplate>(), {{method.name}}OriginSafeAttributeConfiguration, isolate);
 {%- endmacro %}
@@ -1074,8 +1067,9 @@ V8DOMConfiguration::installAttribute({{method.function_template}}, v8::Handle<v8
 {% set property_attribute =
   'static_cast<v8::PropertyAttribute>(%s)' % ' | '.join(method.property_attributes)
   if method.property_attributes else 'v8::None' %}
+{% set only_exposed_to_private_script = 'V8DOMConfiguration::OnlyExposedToPrivateScript' if method.only_exposed_to_private_script else 'V8DOMConfiguration::ExposedToAllScripts' %}
 static const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration = {
-    "{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method.length}}
+    "{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method.length}}, {{only_exposed_to_private_script}},
 };
 V8DOMConfiguration::installMethodCustomSignature({{method.function_template}}, {{method.signature}}, {{property_attribute}}, {{method.name}}MethodConfiguration, isolate);
 {%- endmacro %}

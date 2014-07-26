@@ -131,4 +131,13 @@ installClass("PrivateScriptTest", function(global, InternalsPrototype) {
         get: function() { return this.m_stringAttributeForPrivateScriptOnly; },
         set: function(value) { this.m_stringAttributeForPrivateScriptOnly = value; }
     });
+
+    InternalsPrototype.addIntegerImplementedInCPP = function(value1, value2) {
+        return this.addIntegerImplementedInCPPForPrivateScriptOnly(value1, value2);
+    }
+
+    Object.defineProperty(InternalsPrototype, "stringAttributeImplementedInCPP", {
+        get: function() { return this.m_stringAttributeImplementedInCPPForPrivateScriptOnly; },
+        set: function(value) { this.m_stringAttributeImplementedInCPPForPrivateScriptOnly = value; }
+    });
 });

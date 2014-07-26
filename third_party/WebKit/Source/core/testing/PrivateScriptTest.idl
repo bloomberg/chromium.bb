@@ -32,4 +32,8 @@
     [ImplementedInPrivateScript] void voidMethodThrowsSyntaxError();
     [ImplementedInPrivateScript, OnlyExposedToPrivateScript] short addIntegerForPrivateScriptOnly(short value1, short value2);
     [ImplementedInPrivateScript, OnlyExposedToPrivateScript] attribute DOMString stringAttributeForPrivateScriptOnly;
+    [ImplementedInPrivateScript] short addIntegerImplementedInCPP(short value1, short value2);
+    [OnlyExposedToPrivateScript] short addIntegerImplementedInCPPForPrivateScriptOnly(short value1, short value2);
+    [ImplementedInPrivateScript] attribute DOMString stringAttributeImplementedInCPP;
+    [OnlyExposedToPrivateScript] attribute DOMString stringAttributeImplementedInCPPForPrivateScriptOnly;
 };

@@ -439,14 +439,14 @@ void V8TestInterface2::visitDOMWrapper(void* object, const v8::Persistent<v8::Ob
 }
 
 static const V8DOMConfiguration::MethodConfiguration V8TestInterface2Methods[] = {
-    {"item", TestInterface2V8Internal::itemMethodCallback, 0, 1},
-    {"setItem", TestInterface2V8Internal::setItemMethodCallback, 0, 2},
-    {"deleteItem", TestInterface2V8Internal::deleteItemMethodCallback, 0, 1},
-    {"namedItem", TestInterface2V8Internal::namedItemMethodCallback, 0, 1},
-    {"setNamedItem", TestInterface2V8Internal::setNamedItemMethodCallback, 0, 2},
-    {"deleteNamedItem", TestInterface2V8Internal::deleteNamedItemMethodCallback, 0, 1},
-    {"stringifierMethod", TestInterface2V8Internal::stringifierMethodMethodCallback, 0, 0},
-    {"toString", TestInterface2V8Internal::toStringMethodCallback, 0, 0},
+    {"item", TestInterface2V8Internal::itemMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
+    {"setItem", TestInterface2V8Internal::setItemMethodCallback, 0, 2, V8DOMConfiguration::ExposedToAllScripts},
+    {"deleteItem", TestInterface2V8Internal::deleteItemMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
+    {"namedItem", TestInterface2V8Internal::namedItemMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
+    {"setNamedItem", TestInterface2V8Internal::setNamedItemMethodCallback, 0, 2, V8DOMConfiguration::ExposedToAllScripts},
+    {"deleteNamedItem", TestInterface2V8Internal::deleteNamedItemMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
+    {"stringifierMethod", TestInterface2V8Internal::stringifierMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"toString", TestInterface2V8Internal::toStringMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
 };
 
 void V8TestInterface2::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

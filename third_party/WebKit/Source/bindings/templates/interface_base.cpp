@@ -62,7 +62,7 @@ template <typename T> void V8_USE(T) { }
        attribute_setter_implemented_in_private_script
        with context %}
 {% for attribute in attributes if not attribute.constructor_type %}
-{% if not attribute.only_exposed_to_private_script %}
+{% if attribute.should_be_exposed_to_script %}
 {% for world_suffix in attribute.world_suffixes %}
 {% if not attribute.has_custom_getter %}
 {{attribute_getter(attribute, world_suffix)}}
@@ -91,7 +91,7 @@ template <typename T> void V8_USE(T) { }
        method_implemented_in_private_script
        with context %}
 {% for method in methods %}
-{% if not method.only_exposed_to_private_script %}
+{% if method.should_be_exposed_to_script %}
 {% for world_suffix in method.world_suffixes %}
 {% if not method.is_custom %}
 {{generate_method(method, world_suffix)}}

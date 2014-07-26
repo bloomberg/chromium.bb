@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -20,10 +21,16 @@ public:
         return new PrivateScriptTest(frame);
     }
 
+    int addIntegerImplementedInCPPForPrivateScriptOnly(int value1, int value2);
+    String stringAttributeImplementedInCPPForPrivateScriptOnly();
+    void setStringAttributeImplementedInCPPForPrivateScriptOnly(String);
+
     void trace(Visitor*) { }
 
 private:
-    PrivateScriptTest(LocalFrame*);
+    explicit PrivateScriptTest(LocalFrame*);
+
+    String m_stringAttributeImplementedInCPPForPrivateSriptOnly;
 };
 
 } // namespace blink
