@@ -82,3 +82,7 @@ FcWeightToOpenType (int fc_weight)
 	/* Interpolate between two items. */
 	return lerp (fc_weight, map[i-1].fc, map[i].fc, map[i-1].ot, map[i].ot);
 }
+
+#define __fcweight__
+#include "fcaliastail.h"
+#undef __fcweight__
