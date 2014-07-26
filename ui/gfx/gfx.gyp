@@ -131,7 +131,7 @@
         'break_list.h',
         'canvas.cc',
         'canvas.h',
-        'canvas_android.cc',
+        'canvas_notimplemented.cc',
         'canvas_paint_mac.h',
         'canvas_paint_mac.mm',
         'canvas_paint_win.cc',
@@ -321,7 +321,7 @@
         #                  http://crbug.com/105550
         ['use_canvas_skia==1', {
           'sources!': [
-            'canvas_android.cc',
+            'canvas_notimplemented.cc',
           ],
         }, {  # use_canvas_skia!=1
           'sources!': [

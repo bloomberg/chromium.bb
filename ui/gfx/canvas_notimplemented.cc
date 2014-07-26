@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,14 @@ void Canvas::DrawStringRectWithShadows(const base::string16& text,
                                        int flags,
                                        const ShadowValues& shadows) {
   NOTIMPLEMENTED();
+}
+
+void Canvas::DrawFadedString(const base::string16& text,
+                             const FontList& font_list,
+                             SkColor color,
+                             const Rect& display_rect,
+                             int flags) {
+   NOTIMPLEMENTED();
 }
 
 }  // namespace gfx

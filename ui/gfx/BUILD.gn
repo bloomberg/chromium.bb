@@ -55,7 +55,7 @@ component("gfx") {
     "break_list.h",
     "canvas.cc",
     "canvas.h",
-    "canvas_android.cc",
+    "canvas_notimplemented.cc",
     "canvas_paint_mac.h",
     "canvas_paint_mac.mm",
     "canvas_paint_win.cc",
@@ -291,6 +291,8 @@ component("gfx") {
       "android",
       "jnigraphics",
     ]
+  } else {
+    sources -= [ "canvas_notimplemented.cc" ]
   }
 
   # Windows.
