@@ -136,6 +136,30 @@
     detectVideoPlaying('remote-view-2', onRemoteStream2);
   }
 
+  // First makes a call between pc1 and pc2, and then construct a new media
+  // stream using the remote audio and video tracks, connect the new media
+  // stream to a video element. These operations should not crash Chrome.
+  function ConnectChromiumSinkToRemoteAudioTrack() {
+    createConnections(null);
+    navigator.webkitGetUserMedia({audio: true, video: true},
+                                 addStreamToBothConnectionsAndNegotiate,
+                                 printGetUserMediaError);
+
+    detectVideoPlaying('remote-view-2', function() {
+      // Construct a new media stream with remote tracks.
+      var newStream = new webkitMediaStream();
+      newStream.addTrack(
+          gSecondConnection.getRemoteStreams()[0].getAudioTracks()[0]);
+      newStream.addTrack(
+          gSecondConnection.getRemoteStreams()[0].getVideoTracks()[0]);
+      var videoElement = document.createElement('video');
+
+      // No crash for this operation.
+      videoElement.src = URL.createObjectURL(newStream);
+      waitForVideo('remote-view-2');
+    });
+  }
+  
   // Test that we can setup call with an audio and video track and
   // simulate that the remote peer don't support MSID.
   function callWithoutMsidAndBundle() {

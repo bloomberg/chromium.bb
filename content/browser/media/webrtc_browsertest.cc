@@ -208,6 +208,11 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, MAYBE_CanForwardRemoteStream720p) {
   MakeTypicalPeerConnectionCall(javascript);
 }
 
+IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
+                       NoCrashWhenConnectChromiumSinkToRemoteTrack) {
+  MakeTypicalPeerConnectionCall("ConnectChromiumSinkToRemoteAudioTrack();");
+}
+
 // This test will make a complete PeerConnection-based call but remove the
 // MSID and bundle attribute from the initial offer to verify that
 // video is playing for the call even if the initiating client don't support
