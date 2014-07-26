@@ -357,12 +357,6 @@ function testBlob(callback)
 {
     debug("Testing Blob");
 
-    // FIXME: Blob, File, and FileList support is incomplete.
-    // http://crbug.com/108012
-    debug("Skipping test");
-    callback();
-    return;
-
     shouldBeTrue("FileReader != null");
     evalAndLog("test_content = 'This is a test. This is only a test.'");
     evalAndLog("test_data = new Blob([test_content])");
@@ -399,12 +393,6 @@ function testFile(callback)
 {
     debug("Testing File");
 
-    // FIXME: Blob, File, and FileList support is incomplete.
-    // http://crbug.com/108012
-    debug("Skipping test");
-    callback();
-    return;
-
     evalAndLog("test_content = fileInput.files[0]");
 
     self.test_data = test_content;
@@ -418,12 +406,6 @@ function testFile(callback)
 function testFileList(callback)
 {
     debug("Testing FileList");
-
-    // FIXME: Blob, File, and FileList support is incomplete.
-    // http://crbug.com/108012
-    debug("Skipping test");
-    callback();
-    return;
 
     evalAndLog("test_content = fileInput.files");
 

@@ -581,13 +581,70 @@ PASS result.data.length is test_data.data.length
 PASS result data matches
 
 Testing Blob
-Skipping test
+PASS FileReader != null is true
+test_content = 'This is a test. This is only a test.'
+test_data = new Blob([test_content])
+transaction = db.transaction('storeName', 'readwrite')
+store = transaction.objectStore('storeName')
+store.put(value, 'key')
+store.get('key')
+PASS test_data !== result is true
+PASS Object.prototype.toString.call(result) is "[object Blob]"
+PASS result.size is test_data.size
+PASS result.type is test_data.type
+PASS text is "This is a test. This is only a test."
 
 Testing File
-Skipping test
+test_content = fileInput.files[0]
+transaction = db.transaction('storeName', 'readwrite')
+store = transaction.objectStore('storeName')
+store.put(value, 'key')
+store.get('key')
+PASS file1 !== file2 is true
+PASS Object.prototype.toString.call(file1) is "[object File]"
+PASS Object.prototype.toString.call(file2) is "[object File]"
+file1.size: 102
+PASS file1.size is file2.size
+file1.type: text/html
+PASS file1.type is file2.type
+file1.name: test-data.html
+PASS file1.name is file2.name
+PASS String(file1.lastModifiedDate) is String(file2.lastModifiedDate)
+PASS text2 is "<!DOCTYPE html>\n<title>This is some test data</title>\n<h1>Test data!</h1>\n<p>Get your test data here!\n"
 
 Testing FileList
-Skipping test
+test_content = fileInput.files
+transaction = db.transaction('storeName', 'readwrite')
+store = transaction.objectStore('storeName')
+store.put(value, 'key')
+store.get('key')
+PASS test_data !== result is true
+PASS Object.prototype.toString.call(result) is "[object FileList]"
+PASS result.length is test_data.length
+comparing file[0]
+PASS file1 !== file2 is true
+PASS Object.prototype.toString.call(file1) is "[object File]"
+PASS Object.prototype.toString.call(file2) is "[object File]"
+file1.size: 102
+PASS file1.size is file2.size
+file1.type: text/html
+PASS file1.type is file2.type
+file1.name: test-data.html
+PASS file1.name is file2.name
+PASS String(file1.lastModifiedDate) is String(file2.lastModifiedDate)
+PASS text2 is "<!DOCTYPE html>\n<title>This is some test data</title>\n<h1>Test data!</h1>\n<p>Get your test data here!\n"
+comparing file[1]
+PASS file1 !== file2 is true
+PASS Object.prototype.toString.call(file1) is "[object File]"
+PASS Object.prototype.toString.call(file2) is "[object File]"
+file1.size: 502
+PASS file1.size is file2.size
+file1.type: text/plain
+PASS file1.type is file2.type
+file1.name: test-data.txt
+PASS file1.name is file2.name
+PASS String(file1.lastModifiedDate) is String(file2.lastModifiedDate)
+PASS text2 is "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet. Nulla vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula. Sed volutpat, tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed nulla. Nunc quis porta elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.\n"
 
 Testing Array
 test_data = []
