@@ -424,6 +424,32 @@ TEST_F(AccessibilityEventRouterViewsTest, AlertsFromWindowAndControl) {
   window->CloseNow();
 }
 
+TEST_F(AccessibilityEventRouterViewsTest, AccessibilityFocusableView) {
+  // Create a view with a child view.
+  views::View* parent = new views::View();
+  views::View* child = new views::View();
+  parent->AddChildView(child);
+
+  // Put the view in a window.
+  views::Widget* window = CreateWindowWithContents(parent);
+
+  // Since the child view has no accessiblity focusable ancestors, this
+  // should still be the child view.
+  views::View* accessible_view =
+      AccessibilityEventRouterViews::FindFirstAccessibleAncestor(child);
+  EXPECT_EQ(accessible_view, child);
+
+  // Now make the parent view accessiblity focusable. Calling
+  // FindFirstAccessibleAncestor() again on child shoudl return the parent
+  // view.
+  parent->SetAccessibilityFocusable(true);
+  accessible_view =
+      AccessibilityEventRouterViews::FindFirstAccessibleAncestor(child);
+  EXPECT_EQ(accessible_view, parent);
+
+  window->CloseNow();
+}
+
 namespace {
 
 class SimpleMenuDelegate : public ui::SimpleMenuModel::Delegate {

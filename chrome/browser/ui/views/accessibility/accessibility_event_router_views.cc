@@ -604,8 +604,10 @@ std::string AccessibilityEventRouterViews::RecursiveGetStaticText(
 // static
 views::View* AccessibilityEventRouterViews::FindFirstAccessibleAncestor(
     views::View* view) {
-  while (view->parent() && !view->IsAccessibilityFocusable()) {
-    view = view->parent();
-  }
+  views::View* temp_view = view;
+  while (temp_view->parent() && !temp_view->IsAccessibilityFocusable())
+    temp_view = temp_view->parent();
+  if (temp_view->IsAccessibilityFocusable())
+    return temp_view;
   return view;
 }
