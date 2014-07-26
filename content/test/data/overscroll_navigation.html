@@ -62,7 +62,7 @@ function use_replace_state() {
 }
 
 function use_push_state() {
-  window.history.pushState({}, 'foo2');
+  window.history.pushState({}, 'foo2', 'newpath');
 }
 
 onload = function() {

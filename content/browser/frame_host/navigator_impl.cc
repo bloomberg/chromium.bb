@@ -441,22 +441,11 @@ void NavigatorImpl::DidNavigate(
       // change WebContents::GetRenderViewHost to return the new host, instead
       // of the one that may have just been swapped out.
       if (delegate_->CanOverscrollContent()) {
-        bool page_id_changed;
-        bool url_changed;
-        NavigationEntry* current_entry = controller_->GetLastCommittedEntry();
-        if (current_entry) {
-          page_id_changed = params.page_id > 0 &&
-              params.page_id != current_entry->GetPageID();
-          url_changed = params.url != current_entry->GetURL();
-        } else {
-          page_id_changed = params.page_id > 0;
-          url_changed = params.url != GURL::EmptyGURL();
-        }
-
-        // We only want to take the screenshot if the are navigating to a
-        // different history entry than the current one. So if neither the
-        // page id nor the url changed - don't take the screenshot.
-        if (page_id_changed || url_changed)
+        // Don't take screenshots if we are staying on the same page. We want
+        // in-page navigations to be super fast, and taking a screenshot
+        // currently blocks GPU for a longer time than we are willing to
+        // tolerate in this use case.
+        if (!params.was_within_same_page)
           controller_->TakeScreenshot();
       }
 
