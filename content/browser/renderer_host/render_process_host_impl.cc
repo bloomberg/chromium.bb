@@ -2033,7 +2033,9 @@ void RenderProcessHostImpl::SetBackgrounded(bool backgrounded) {
 #endif  // OS_WIN
 
   // Notify the child process of background state.
-  Send(new ChildProcessMsg_SetProcessBackgrounded(backgrounded));
+  // TODO(wfh): re-enable this after testing if dropping the priority of
+  // backgrounded tabs is the root cause of http://crbug.com/381820.
+  // Send(new ChildProcessMsg_SetProcessBackgrounded(backgrounded));
 
 #if !defined(OS_WIN)
   // Backgrounding may require elevated privileges not available to renderer

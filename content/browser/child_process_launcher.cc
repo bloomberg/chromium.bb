@@ -510,11 +510,13 @@ base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
 }
 
 void ChildProcessLauncher::SetProcessBackgrounded(bool background) {
-  BrowserThread::PostTask(
-      BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-      base::Bind(
-          &ChildProcessLauncher::Context::SetProcessBackgrounded,
-          GetHandle(), background));
+  // TODO(wfh): re-enable this after testing if dropping the priority of
+  // backgrounded tabs is the root cause of http://crbug.com/381820.
+  // BrowserThread::PostTask(
+  //     BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
+  //     base::Bind(
+  //         &ChildProcessLauncher::Context::SetProcessBackgrounded,
+  //         GetHandle(), background));
 }
 
 void ChildProcessLauncher::SetTerminateChildOnShutdown(
