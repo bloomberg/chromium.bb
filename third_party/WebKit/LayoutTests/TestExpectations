@@ -1311,17 +1311,6 @@ crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/f
 crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-same-in-same-url-block.html [ Failure Pass Timeout ]
 crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-star-allow-crossorigin.html [ Failure Pass Timeout ]
 
-# Need rebaseline for https://codereview.chromium.org/370523003/ patch which is related to Ignorable Unicodes
-crbug.com/377445 fast/text/international/bidi-LDB-2-formatting-characters.html [ NeedsRebaseline ]
-crbug.com/377445 fast/text/format-control.html [ NeedsRebaseline ]
-crbug.com/377445 [ Win ] virtual/antialiasedtext/fast/text/international/bidi-LDB-2-formatting-characters.html [ NeedsRebaseline ]
-crbug.com/377445 [ Win ] virtual/antialiasedtext/fast/text/drawBidiText.html [ NeedsRebaseline ]
-crbug.com/377445 [ Mac Win ] virtual/antialiasedtext/fast/text/format-control.html [ NeedsRebaseline ]
-crbug.com/377445 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/005.html [ NeedsRebaseline ]
-crbug.com/377445 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/016.html [ NeedsRebaseline ]
-crbug.com/377445 [ Win Mac ] virtual/softwarecompositing/culling/tile-occlusion-boundaries.html [ NeedsRebaseline ]
-crbug.com/377445 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/011.html [ NeedsRebaseline ]
-
 crbug.com/243248 [ Mac ] fast/events/attempt-scroll-with-no-scrollbars.html [ NeedsRebaseline ]
 webkit.org/b/82297 [ Mac ] fast/events/platform-wheelevent-paging-x-in-scrolling-page.html [ NeedsRebaseline ]
 webkit.org/b/82297 [ Mac ] fast/events/platform-wheelevent-paging-xy-in-scrolling-page.html [ NeedsRebaseline ]
@@ -1339,5 +1328,4 @@ webkit.org/b/79454 [ Linux ] svg/text/text-viewbox-rescale.html [ NeedsRebaselin
 crbug.com/243732 [ Mac ] transforms/3d/point-mapping/3d-point-mapping-3.html [ NeedsRebaseline ]
 crbug.com/259547 [ XP ] virtual/gpu/fast/canvas/canvas-blend-image.html [ NeedsRebaseline ]
 crbug.com/259547 [ XP ] virtual/gpu/fast/canvas/canvas-blend-solid.html [ NeedsRebaseline ]
-crbug.com/388780 webexposed/global-constructors-listing.html [ NeedsRebaseline ]
 
