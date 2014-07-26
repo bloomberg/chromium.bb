@@ -107,6 +107,34 @@ for SRC_NAME in "${SRC_NAMES[@]}"; do
   DSYM_PATH="${BUILT_PRODUCTS_DIR}/${DSYM_NAME}"
   DWARF_PATH="${DSYM_PATH}/Contents/Resources/DWARF/${SRC_STEM}"
 
+  # SRC_PATH is the path to the Mach-O file to which the DSYM_PATH corresponds.
+  # If this is a directory, it is a bundle, and the path to the actual image
+  # needs to be computed for dump_syms.
+  SRC_PREFIX="${BUILT_PRODUCTS_DIR}/${SRC_NAME}"
+  SRC_PATH=""
+  if [[ -d "${SRC_PREFIX}" ]]; then
+    BUNDLED_OPTIONS=(
+        # Executables and plugins:
+        "${SRC_PREFIX}/Contents/MacOS/${SRC_STEM}"
+        # Frameworks:
+        "${SRC_PREFIX}/Versions/Current/${SRC_STEM}"
+    )
+    for BUNDLED_OPTION in "${BUNDLED_OPTIONS[@]}"; do
+      if [[ -fx "${BUNDLED_OPTION}" ]]; then
+        SRC_PATH="${BUNDLED_OPTION}"
+        break
+      fi
+    done
+
+    if [[ -z "${SRC_PATH}" ]]; then
+      echo "${0}: Could not find bundled Mach-O file for ${SRC_NAME}"
+      exit 1
+    fi
+  else
+    # The Mach-O file is not a bundle.
+    SRC_PATH="${SRC_PREFIX}"
+  fi
+
   ARCHS=$(file "${DWARF_PATH}" | sed -Ene 's/^.*(i386|x86_64)$/\1/p')
   if [[ -z "${ARCHS}" ]]; then
     echo "${0}: expected something dumpable in ${DWARF_PATH}" >& 2
@@ -117,12 +145,12 @@ for SRC_NAME in "${SRC_NAMES[@]}"; do
     BPAD_SYM_NAME="${SRC_NAME}-${FULL_VERSION}-${ARCH}.breakpad"
     BPAD_SYM_PATH="${BUILT_PRODUCTS_DIR}/${BPAD_SYM_NAME}"
 
-    # Only run dump_syms if the file has changed since the last dump. Use -c
-    # to avoid dumping CFI, because the Breakpad stackwalk is incompatible
-    # with CFI produced by clang.
-    # http://code.google.com/p/google-breakpad/issues/detail?id=443
-    if [ "${DWARF_PATH}" -nt "${BPAD_SYM_PATH}" ] ; then
-      "${BREAKPAD_DUMP_SYMS}" -a "${ARCH}" -c "${DWARF_PATH}" > \
+    # Only run dump_syms if the file has changed since the last dump. Use -g
+    # to dump data from the dSYM and CFI data from the Mach-O library or
+    # executable.
+    if [ "${DWARF_PATH}" -nt "${BPAD_SYM_PATH}" -o \
+         "${SRC_PATH}" -nt "${BPAD_SYM_PATH}" ] ; then
+      "${BREAKPAD_DUMP_SYMS}" -a "${ARCH}" -g "${DWARF_PATH}" "${SRC_PATH}" > \
           "${BPAD_SYM_PATH}"
     fi
 
