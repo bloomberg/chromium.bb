@@ -116,7 +116,7 @@ static inline bool caretRendersInsideNode(Node* node)
     return node && !isRenderedTable(node) && !editingIgnoresContent(node);
 }
 
-RenderObject* CaretBase::caretRenderer(Node* node)
+RenderBlock* CaretBase::caretRenderer(Node* node)
 {
     if (!node)
         return 0;
@@ -127,7 +127,7 @@ RenderObject* CaretBase::caretRenderer(Node* node)
 
     // if caretNode is a block and caret is inside it then caret should be painted by that block
     bool paintedByBlock = renderer->isRenderBlock() && caretRendersInsideNode(node);
-    return paintedByBlock ? renderer : renderer->containingBlock();
+    return paintedByBlock ? toRenderBlock(renderer) : renderer->containingBlock();
 }
 
 bool CaretBase::updateCaretRect(Document* document, const VisiblePosition& caretPosition)
@@ -148,7 +148,7 @@ bool CaretBase::updateCaretRect(Document* document, const VisiblePosition& caret
 
     // Get the renderer that will be responsible for painting the caret
     // (which is either the renderer we just found, or one of its containers).
-    RenderObject* caretPainter = caretRenderer(caretPosition.deepEquivalent().deprecatedNode());
+    RenderBlock* caretPainter = caretRenderer(caretPosition.deepEquivalent().deprecatedNode());
 
     // Compute an offset between the renderer and the caretPainter.
     bool unrooted = false;
@@ -168,26 +168,25 @@ bool CaretBase::updateCaretRect(Document* document, const VisiblePosition& caret
     return true;
 }
 
-RenderObject* DragCaretController::caretRenderer() const
+RenderBlock* DragCaretController::caretRenderer() const
 {
     return CaretBase::caretRenderer(m_position.deepEquivalent().deprecatedNode());
 }
 
 IntRect CaretBase::absoluteBoundsForLocalRect(Node* node, const LayoutRect& rect) const
 {
-    RenderObject* caretPainter = caretRenderer(node);
+    RenderBlock* caretPainter = caretRenderer(node);
     if (!caretPainter)
         return IntRect();
 
     LayoutRect localRect(rect);
-    if (caretPainter->isBox())
-        toRenderBox(caretPainter)->flipForWritingMode(localRect);
+    caretPainter->flipForWritingMode(localRect);
     return caretPainter->localToAbsoluteQuad(FloatRect(localRect)).enclosingBoundingBox();
 }
 
 void CaretBase::repaintCaretForLocalRect(Node* node, const LayoutRect& rect)
 {
-    RenderObject* caretPainter = caretRenderer(node);
+    RenderBlock* caretPainter = caretRenderer(node);
     if (!caretPainter)
         return;
 
@@ -240,9 +239,8 @@ void CaretBase::paintCaret(Node* node, GraphicsContext* context, const LayoutPoi
         return;
 
     LayoutRect drawingRect = localCaretRectWithoutUpdate();
-    RenderObject* renderer = caretRenderer(node);
-    if (renderer && renderer->isBox())
-        toRenderBox(renderer)->flipForWritingMode(drawingRect);
+    if (RenderBlock* renderer = caretRenderer(node))
+        renderer->flipForWritingMode(drawingRect);
     drawingRect.moveBy(roundedIntPoint(paintOffset));
     LayoutRect caret = intersection(drawingRect, clipRect);
     if (caret.isEmpty())

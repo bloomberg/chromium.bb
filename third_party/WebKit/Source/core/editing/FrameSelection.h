@@ -137,7 +137,7 @@ public:
     Position end() const { return m_selection.end(); }
 
     // Return the renderer that is responsible for painting the caret (in the selection start node)
-    RenderObject* caretRenderer() const;
+    RenderBlock* caretRenderer() const;
 
     // Caret rect local to the caret's renderer
     LayoutRect localCaretRect();

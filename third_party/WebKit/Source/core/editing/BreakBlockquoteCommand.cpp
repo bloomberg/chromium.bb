@@ -173,7 +173,7 @@ void BreakBlockquoteCommand::doApply()
             moveRemainingSiblingsToNewParent(ancestor->nextSibling(), 0, clonedParent);
 
         // If the startNode's original parent is now empty, remove it
-        Node* originalParent = ancestors.first().get();
+        Element* originalParent = ancestors.first().get();
         if (!originalParent->hasChildren())
             removeNode(originalParent);
     }
