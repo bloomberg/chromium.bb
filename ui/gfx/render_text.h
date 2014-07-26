@@ -574,6 +574,11 @@ class GFX_EXPORT RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_Newline);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GlyphBounds);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_GlyphBounds);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest,
+                           MoveCursorLeftRight_MeiryoUILigatures);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Win_LogicalClusters);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, SameFontForParentheses);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, BreakRunsByUnicodeBlocks);
 
   // Creates a platform-specific RenderText instance.
   static RenderText* CreateNativeInstance();

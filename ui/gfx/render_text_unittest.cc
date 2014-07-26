@@ -824,8 +824,9 @@ TEST_F(RenderTextTest, MoveCursorLeftRight_ComplexScript) {
 }
 #endif
 
+// TODO(ckocagil): Enable for RenderTextHarfBuzz. http://crbug.com/383265
 TEST_F(RenderTextTest, MoveCursorLeftRight_MeiryoUILigatures) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  scoped_ptr<RenderText> render_text(RenderText::CreateNativeInstance());
   // Meiryo UI uses single-glyph ligatures for 'ff' and 'ffi', but each letter
   // (code point) has unique bounds, so mid-glyph cursoring should be possible.
   render_text->SetFontList(FontList("Meiryo UI, 12px"));
@@ -1279,10 +1280,11 @@ TEST_F(RenderTextTest, MoveLeftRightByWordInChineseText) {
 }
 #endif
 
+// TODO(ckocagil): Remove when RenderTextWin goes away.
 #if defined(OS_WIN)
 TEST_F(RenderTextTest, Win_LogicalClusters) {
   scoped_ptr<RenderTextWin> render_text(
-      static_cast<RenderTextWin*>(RenderText::CreateInstance()));
+      static_cast<RenderTextWin*>(RenderText::CreateNativeInstance()));
 
   const base::string16 test_string =
       WideToUTF16(L"\x0930\x0930\x0930\x0930\x0930");
@@ -1610,6 +1612,7 @@ TEST_F(RenderTextTest, SetDisplayOffset) {
   }
 }
 
+// TODO(ckocagil): Enable for RenderTextHarfBuzz. http://crbug.com/396776
 TEST_F(RenderTextTest, SameFontForParentheses) {
   struct {
     const base::char16 left_char;
@@ -1649,7 +1652,7 @@ TEST_F(RenderTextTest, SameFontForParentheses) {
     { WideToUTF16(L"Hello World(\x05e0\x05b8)Hello World") },
   };
 
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  scoped_ptr<RenderText> render_text(RenderText::CreateNativeInstance());
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     base::string16 text = cases[i].text;
     const size_t start_paren_char_index = text.find('(');
@@ -1907,13 +1910,14 @@ TEST_F(RenderTextTest, SelectionKeepsLigatures) {
 }
 
 #if defined(OS_WIN)
+// TODO(ckocagil): Enable for RenderTextHarfBuzz after implementing multiline.
 // Ensure strings wrap onto multiple lines for a small available width.
 TEST_F(RenderTextTest, Multiline_MinWidth) {
   const wchar_t* kTestStrings[] = { kWeak, kLtr, kLtrRtl, kLtrRtlLtr, kRtl,
                                     kRtlLtr, kRtlLtrRtl };
 
   scoped_ptr<RenderTextWin> render_text(
-      static_cast<RenderTextWin*>(RenderText::CreateInstance()));
+      static_cast<RenderTextWin*>(RenderText::CreateNativeInstance()));
   render_text->SetDisplayRect(Rect(1, 1000));
   render_text->SetMultiline(true);
   Canvas canvas;
@@ -1926,6 +1930,7 @@ TEST_F(RenderTextTest, Multiline_MinWidth) {
   }
 }
 
+// TODO(ckocagil): Enable for RenderTextHarfBuzz after implementing multiline.
 // Ensure strings wrap onto multiple lines for a normal available width.
 TEST_F(RenderTextTest, Multiline_NormalWidth) {
   const struct {
@@ -1940,7 +1945,7 @@ TEST_F(RenderTextTest, Multiline_NormalWidth) {
   };
 
   scoped_ptr<RenderTextWin> render_text(
-      static_cast<RenderTextWin*>(RenderText::CreateInstance()));
+      static_cast<RenderTextWin*>(RenderText::CreateNativeInstance()));
   render_text->SetDisplayRect(Rect(50, 1000));
   render_text->SetMultiline(true);
   Canvas canvas;
@@ -1959,6 +1964,7 @@ TEST_F(RenderTextTest, Multiline_NormalWidth) {
   }
 }
 
+// TODO(ckocagil): Enable for RenderTextHarfBuzz after implementing multiline.
 // Ensure strings don't wrap onto multiple lines for a sufficient available
 // width.
 TEST_F(RenderTextTest, Multiline_SufficientWidth) {
@@ -1966,7 +1972,7 @@ TEST_F(RenderTextTest, Multiline_SufficientWidth) {
                                     L"\x62E\x628\x632", L"\x62E \x628 \x632" };
 
   scoped_ptr<RenderTextWin> render_text(
-      static_cast<RenderTextWin*>(RenderText::CreateInstance()));
+      static_cast<RenderTextWin*>(RenderText::CreateNativeInstance()));
   render_text->SetDisplayRect(Rect(30, 1000));
   render_text->SetMultiline(true);
   Canvas canvas;
@@ -1979,6 +1985,7 @@ TEST_F(RenderTextTest, Multiline_SufficientWidth) {
   }
 }
 
+// TODO(ckocagil): Enable for RenderTextHarfBuzz after implementing multiline.
 TEST_F(RenderTextTest, Multiline_Newline) {
   const struct {
     const wchar_t* const text;
@@ -1992,7 +1999,7 @@ TEST_F(RenderTextTest, Multiline_Newline) {
   };
 
   scoped_ptr<RenderTextWin> render_text(
-      static_cast<RenderTextWin*>(RenderText::CreateInstance()));
+      static_cast<RenderTextWin*>(RenderText::CreateNativeInstance()));
   render_text->SetDisplayRect(Rect(200, 1000));
   render_text->SetMultiline(true);
   Canvas canvas;
@@ -2025,9 +2032,10 @@ TEST_F(RenderTextTest, Multiline_Newline) {
   }
 }
 
-TEST_F(RenderTextTest, Win_BreakRunsByUnicodeBlocks) {
+// TODO(ckocagil): Remove when RenderTextWin goes away.
+TEST_F(RenderTextTest, BreakRunsByUnicodeBlocks) {
   scoped_ptr<RenderTextWin> render_text(
-      static_cast<RenderTextWin*>(RenderText::CreateInstance()));
+      static_cast<RenderTextWin*>(RenderText::CreateNativeInstance()));
 
   // The '\x25B6' "play character" should break runs. http://crbug.com/278913
   render_text->SetText(WideToUTF16(L"x\x25B6y"));

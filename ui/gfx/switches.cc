@@ -12,14 +12,16 @@ namespace switches {
 const char kDisableArbitraryScaleFactorInImageSkia[] =
     "disable-arbitrary-scale-factor-in-image-skia";
 
+// Disables the HarfBuzz port of RenderText on all platforms.
+const char kDisableHarfBuzzRenderText[] = "disable-harfbuzz-rendertext";
+
 // Let text glyphs have X-positions that aren't snapped to the pixel grid in
 // the browser UI.
 const char kEnableBrowserTextSubpixelPositioning[] =
     "enable-browser-text-subpixel-positioning";
 
-// Uses the HarfBuzz port of RenderText on all platforms.
-const char kEnableHarfBuzzRenderText[] =
-    "enable-harfbuzz-rendertext";
+// Enables the HarfBuzz port of RenderText on all platforms.
+const char kEnableHarfBuzzRenderText[] = "enable-harfbuzz-rendertext";
 
 // Enable text glyphs to have X-positions that aren't snapped to the pixel grid
 // in webkit renderers.

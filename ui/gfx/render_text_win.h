@@ -90,6 +90,7 @@ class RenderTextWin : public RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Win_LogicalClusters);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_MinWidth);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_NormalWidth);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, BreakRunsByUnicodeBlocks);
 
   void ItemizeLogicalText();
   void LayoutVisualText();

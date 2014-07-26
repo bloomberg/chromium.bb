@@ -1863,11 +1863,12 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(extensions::switches::kEnableScriptsRequireAction)
   },
   {
-    "enable-harfbuzz-rendertext",
-    IDS_FLAGS_ENABLE_HARFBUZZ_RENDERTEXT_NAME,
-    IDS_FLAGS_ENABLE_HARFBUZZ_RENDERTEXT_DESCRIPTION,
+    "harfbuzz-rendertext",
+    IDS_FLAGS_HARFBUZZ_RENDERTEXT_NAME,
+    IDS_FLAGS_HARFBUZZ_RENDERTEXT_DESCRIPTION,
     kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEnableHarfBuzzRenderText)
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableHarfBuzzRenderText,
+                              switches::kDisableHarfBuzzRenderText)
   },
 #if defined(OS_ANDROID)
   {

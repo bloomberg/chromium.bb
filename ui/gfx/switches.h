@@ -11,6 +11,7 @@ namespace switches {
 
 GFX_EXPORT extern const char kAllowArbitraryScaleFactorInImageSkia[];
 GFX_EXPORT extern const char kDisableArbitraryScaleFactorInImageSkia[];
+GFX_EXPORT extern const char kDisableHarfBuzzRenderText[];
 GFX_EXPORT extern const char kEnableBrowserTextSubpixelPositioning[];
 GFX_EXPORT extern const char kEnableHarfBuzzRenderText[];
 GFX_EXPORT extern const char kEnableWebkitTextSubpixelPositioning[];

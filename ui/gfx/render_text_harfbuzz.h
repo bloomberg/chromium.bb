@@ -70,6 +70,7 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   virtual Size GetStringSize() OVERRIDE;
   virtual SelectionModel FindCursorPosition(const Point& point) OVERRIDE;
   virtual std::vector<FontSpan> GetFontSpansForTesting() OVERRIDE;
+  virtual Range GetGlyphBounds(size_t index) OVERRIDE;
 
  protected:
   // Overridden from RenderText.
@@ -80,7 +81,6 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   virtual SelectionModel AdjacentWordSelectionModel(
       const SelectionModel& selection,
       VisualCursorDirection direction) OVERRIDE;
-  virtual Range GetGlyphBounds(size_t index) OVERRIDE;
   virtual std::vector<Rect> GetSubstringBounds(const Range& range) OVERRIDE;
   virtual size_t TextIndexToLayoutIndex(size_t index) const OVERRIDE;
   virtual size_t LayoutIndexToTextIndex(size_t index) const OVERRIDE;

@@ -536,6 +536,18 @@ std::vector<RenderText::FontSpan> RenderTextHarfBuzz::GetFontSpansForTesting() {
   return std::vector<RenderText::FontSpan>();
 }
 
+Range RenderTextHarfBuzz::GetGlyphBounds(size_t index) {
+  EnsureLayout();
+  const size_t run_index =
+      GetRunContainingCaret(SelectionModel(index, CURSOR_FORWARD));
+  // Return edge bounds if the index is invalid or beyond the layout text size.
+  if (run_index >= runs_.size())
+    return Range(GetStringSize().width());
+  const size_t layout_index = TextIndexToLayoutIndex(index);
+  return Range(runs_[run_index]->GetGlyphXBoundary(layout_index, false),
+               runs_[run_index]->GetGlyphXBoundary(layout_index, true));
+}
+
 int RenderTextHarfBuzz::GetLayoutTextBaseline() {
   EnsureLayout();
   return lines()[0].baseline;
@@ -629,17 +641,6 @@ SelectionModel RenderTextHarfBuzz::AdjacentWordSelectionModel(
     }
   }
   return SelectionModel(pos, CURSOR_FORWARD);
-}
-
-Range RenderTextHarfBuzz::GetGlyphBounds(size_t index) {
-  const size_t run_index =
-      GetRunContainingCaret(SelectionModel(index, CURSOR_FORWARD));
-  // Return edge bounds if the index is invalid or beyond the layout text size.
-  if (run_index >= runs_.size())
-    return Range(GetStringSize().width());
-  const size_t layout_index = TextIndexToLayoutIndex(index);
-  return Range(runs_[run_index]->GetGlyphXBoundary(layout_index, false),
-               runs_[run_index]->GetGlyphXBoundary(layout_index, true));
 }
 
 std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {

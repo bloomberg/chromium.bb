@@ -6571,11 +6571,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_TEXT_INPUT_FOCUS_MANAGER_DESCRIPTION" desc="Description for the flag to enable the new text input focus manager.">
         Enable an experimental focus manager to track text input clients.
       </message>
-      <message name="IDS_FLAGS_ENABLE_HARFBUZZ_RENDERTEXT_NAME" desc="Name of the about:flags HarfBuzz RenderText experiment.">
-        Enable HarfBuzz for UI.
+      <message name="IDS_FLAGS_HARFBUZZ_RENDERTEXT_NAME" desc="Name of the about:flags HarfBuzz RenderText experiment.">
+        HarfBuzz for UI text.
       </message>
-      <message name="IDS_FLAGS_ENABLE_HARFBUZZ_RENDERTEXT_DESCRIPTION" desc="Description of the about:flags HarfBuzz RenderText experiment.">
-        Use the cross-platform HarfBuzz engine for UI text. Doesn't affect web content.
+      <message name="IDS_FLAGS_HARFBUZZ_RENDERTEXT_DESCRIPTION" desc="Description of the about:flags HarfBuzz RenderText experiment.">
+        Cross-platform HarfBuzz engine for UI text. Doesn't affect web content.
       </message>
       <if expr="is_android">
         <message name="IDS_FLAGS_ENABLE_ANSWERS_IN_SUGGEST_NAME" desc="Name of the about:flags Answers in Suggest experiment.">
