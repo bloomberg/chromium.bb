@@ -71,7 +71,7 @@ component("boringssl") {
     if (is_posix && !is_mac) {
       # Avoid link failures on Linux x86-64.
       # See http://rt.openssl.org/Ticket/Display.html?id=2466&user=guest&pass=guest
-      ldflags += [ "-Wl,-Bsymbolic" ]
+      ldflags = [ "-Wl,-Bsymbolic" ]
     }
   }
 }
