@@ -348,8 +348,10 @@ Node::InsertionNotificationRequest HTMLOptionElement::insertedInto(ContainerNode
 
 void HTMLOptionElement::removedFrom(ContainerNode* insertionPoint)
 {
-    if (HTMLSelectElement* select = Traversal<HTMLSelectElement>::firstAncestorOrSelf(*insertionPoint))
+    if (HTMLSelectElement* select = Traversal<HTMLSelectElement>::firstAncestorOrSelf(*insertionPoint)) {
+        select->setRecalcListItems();
         select->optionRemoved(*this);
+    }
     HTMLElement::removedFrom(insertionPoint);
 }
 

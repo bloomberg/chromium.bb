@@ -172,7 +172,7 @@ public:
 
     virtual void trace(Visitor*) OVERRIDE;
 
-    void notifyNodeInserted(Node&);
+    void notifyNodeInserted(Node&, ChildrenChangeSource = ChildrenChangeSourceAPI);
     void notifyNodeRemoved(Node&);
 
 protected:
