@@ -62,6 +62,11 @@ public:
         return layer.stackingNode()->isNormalFlowOnly() ? m_compositingAncestor : m_compositingStackingContext;
     }
 
+    const RenderLayer* compositingStackingContext() const
+    {
+        return m_compositingStackingContext;
+    }
+
 private:
     const RenderLayer* m_compositingStackingContext;
     const RenderLayer* m_compositingAncestor;
@@ -109,7 +114,7 @@ void GraphicsLayerUpdater::updateRecursive(RenderLayer& layer, UpdateType update
             if (mapping->updateGraphicsLayerConfiguration())
                 m_needsRebuildTree = true;
 
-            mapping->updateGraphicsLayerGeometry(compositingContainer, layersNeedingPaintInvalidation);
+            mapping->updateGraphicsLayerGeometry(compositingContainer, context.compositingStackingContext(), layersNeedingPaintInvalidation);
 
             if (mapping->hasUnpositionedOverflowControlsLayers())
                 layer.scrollableArea()->positionOverflowControls(IntSize());

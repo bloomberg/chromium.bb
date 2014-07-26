@@ -187,7 +187,7 @@ CompositedLayerMapping::~CompositedLayerMapping()
     }
 
     updateClippingLayers(false, false);
-    updateOverflowControlsLayers(false, false, false);
+    updateOverflowControlsLayers(false, false, false, false);
     updateChildTransformLayer(false);
     updateForegroundLayer(false);
     updateBackgroundLayer(false);
@@ -388,7 +388,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     if (updateClippingLayers(needsAncestorClip, needsDescendantsClippingLayer))
         layerConfigChanged = true;
 
-    if (updateOverflowControlsLayers(requiresHorizontalScrollbarLayer(), requiresVerticalScrollbarLayer(), requiresScrollCornerLayer()))
+    if (updateOverflowControlsLayers(requiresHorizontalScrollbarLayer(), requiresVerticalScrollbarLayer(), requiresScrollCornerLayer(), needsAncestorClip))
         layerConfigChanged = true;
 
     bool scrollingConfigChanged = false;
@@ -598,7 +598,7 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& off
         layers[i].localClipRectForSquashedLayer = localClipRectForSquashedLayer(referenceLayer, layers[i], layers);
 }
 
-void CompositedLayerMapping::updateGraphicsLayerGeometry(const RenderLayer* compositingContainer, Vector<RenderLayer*>& layersNeedingPaintInvalidation)
+void CompositedLayerMapping::updateGraphicsLayerGeometry(const RenderLayer* compositingContainer, const RenderLayer* compositingStackingContext, Vector<RenderLayer*>& layersNeedingPaintInvalidation)
 {
     ASSERT(m_owningLayer.compositor()->lifecycle().state() == DocumentLifecycle::InCompositingUpdate);
 
@@ -632,6 +632,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(const RenderLayer* comp
 
     // Might update graphicsLayerParentLocation.
     updateAncestorClippingLayerGeometry(compositingContainer, snappedOffsetFromCompositedAncestor, graphicsLayerParentLocation);
+    updateOverflowControlsHostLayerGeometry(compositingStackingContext);
 
     FloatSize contentsSize = relativeCompositingBounds.size();
 
@@ -746,6 +747,31 @@ void CompositedLayerMapping::updateAncestorClippingLayerGeometry(const RenderLay
     graphicsLayerParentLocation = parentClipRect.location();
 }
 
+void CompositedLayerMapping::updateOverflowControlsHostLayerGeometry(const RenderLayer* compositingStackingContext)
+{
+    if (!m_overflowControlsHostLayer)
+        return;
+
+    if (needsToReparentOverflowControls()) {
+        if (m_overflowControlsClippingLayer) {
+            m_overflowControlsClippingLayer->setPosition(m_ancestorClippingLayer->position());
+            m_overflowControlsClippingLayer->setSize(m_ancestorClippingLayer->size());
+            m_overflowControlsClippingLayer->setOffsetFromRenderer(m_ancestorClippingLayer->offsetFromRenderer());
+            m_overflowControlsClippingLayer->setMasksToBounds(true);
+
+            m_overflowControlsHostLayer->setPosition(IntPoint(-m_overflowControlsClippingLayer->offsetFromRenderer()));
+        } else {
+            ASSERT(m_owningLayer.transformAncestor() == compositingStackingContext->transformAncestor());
+            LayoutPoint localOffsetToTransformedAncestor = m_owningLayer.computeOffsetFromTransformedAncestor();
+            LayoutPoint compositingStackingContextOffsetToTransformedAncestor = compositingStackingContext->computeOffsetFromTransformedAncestor();
+
+            m_overflowControlsHostLayer->setPosition(FloatPoint(localOffsetToTransformedAncestor - compositingStackingContextOffsetToTransformedAncestor));
+        }
+    } else {
+        m_overflowControlsHostLayer->setPosition(FloatPoint());
+    }
+}
+
 void CompositedLayerMapping::updateChildContainmentLayerGeometry(const IntRect& clippingBox, const IntRect& localCompositingBounds)
 {
     if (!m_childContainmentLayer)
@@ -817,7 +843,7 @@ void CompositedLayerMapping::updateReflectionLayerGeometry(Vector<RenderLayer*>&
         return;
 
     CompositedLayerMappingPtr reflectionCompositedLayerMapping = m_owningLayer.reflectionInfo()->reflectionLayer()->compositedLayerMapping();
-    reflectionCompositedLayerMapping->updateGraphicsLayerGeometry(&m_owningLayer, layersNeedingPaintInvalidation);
+    reflectionCompositedLayerMapping->updateGraphicsLayerGeometry(&m_owningLayer, &m_owningLayer, layersNeedingPaintInvalidation);
 }
 
 void CompositedLayerMapping::updateScrollingLayerGeometry(const IntRect& localCompositingBounds)
@@ -983,8 +1009,14 @@ void CompositedLayerMapping::updateInternalHierarchy()
     // The clip for child layers does not include space for overflow controls, so they exist as
     // siblings of the clipping layer if we have one. Normal children of this layer are set as
     // children of the clipping layer.
-    if (m_overflowControlsHostLayer)
+    if (m_overflowControlsClippingLayer) {
+        ASSERT(m_overflowControlsHostLayer);
+        m_graphicsLayer->addChild(m_overflowControlsClippingLayer.get());
+        m_overflowControlsClippingLayer->addChild(m_overflowControlsHostLayer.get());
+    } else if (m_overflowControlsHostLayer) {
         m_graphicsLayer->addChild(m_overflowControlsHostLayer.get());
+    }
+
     if (m_layerForHorizontalScrollbar)
         m_overflowControlsHostLayer->addChild(m_layerForHorizontalScrollbar.get());
     if (m_layerForVerticalScrollbar)
@@ -1167,7 +1199,7 @@ bool CompositedLayerMapping::toggleScrollbarLayerIfNeeded(OwnPtr<GraphicsLayer>&
     return true;
 }
 
-bool CompositedLayerMapping::updateOverflowControlsLayers(bool needsHorizontalScrollbarLayer, bool needsVerticalScrollbarLayer, bool needsScrollCornerLayer)
+bool CompositedLayerMapping::updateOverflowControlsLayers(bool needsHorizontalScrollbarLayer, bool needsVerticalScrollbarLayer, bool needsScrollCornerLayer, bool needsAncestorClip)
 {
     bool horizontalScrollbarLayerChanged = toggleScrollbarLayerIfNeeded(m_layerForHorizontalScrollbar, needsHorizontalScrollbarLayer, CompositingReasonLayerForHorizontalScrollbar);
     bool verticalScrollbarLayerChanged = toggleScrollbarLayerIfNeeded(m_layerForVerticalScrollbar, needsVerticalScrollbarLayer, CompositingReasonLayerForVerticalScrollbar);
@@ -1175,6 +1207,8 @@ bool CompositedLayerMapping::updateOverflowControlsLayers(bool needsHorizontalSc
 
     bool needsOverflowControlsHostLayer = needsHorizontalScrollbarLayer || needsVerticalScrollbarLayer || needsScrollCornerLayer;
     toggleScrollbarLayerIfNeeded(m_overflowControlsHostLayer, needsOverflowControlsHostLayer, CompositingReasonLayerForOverflowControlsHost);
+    bool needsOverflowClipLayer = needsOverflowControlsHostLayer && needsAncestorClip;
+    toggleScrollbarLayerIfNeeded(m_overflowControlsClippingLayer, needsOverflowClipLayer, CompositingReasonLayerForOverflowControlsHost);
 
     if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer)) {
         if (horizontalScrollbarLayerChanged)
@@ -1791,13 +1825,20 @@ LayoutRect CompositedLayerMapping::contentsBox() const
     return contentsBox;
 }
 
+bool CompositedLayerMapping::needsToReparentOverflowControls() const
+{
+    return m_owningLayer.scrollableArea()
+        && m_owningLayer.scrollableArea()->hasOverlayScrollbars()
+        && m_owningLayer.scrollableArea()->topmostScrollChild();
+}
+
 GraphicsLayer* CompositedLayerMapping::detachLayerForOverflowControls(const RenderLayer& enclosingLayer)
 {
-    LayoutPoint localOffsetToTransformedAncestor = m_owningLayer.computeOffsetFromTransformedAncestor();
-    LayoutPoint enclosingLayerOffsetToTransformedAncestor = enclosingLayer.computeOffsetFromTransformedAncestor();
-    m_overflowControlsHostLayer->setPosition(FloatPoint(localOffsetToTransformedAncestor - enclosingLayerOffsetToTransformedAncestor));
-    m_overflowControlsHostLayer->removeFromParent();
-    return m_overflowControlsHostLayer.get();
+    GraphicsLayer* host = m_overflowControlsClippingLayer.get();
+    if (!host)
+        host = m_overflowControlsHostLayer.get();
+    host->removeFromParent();
+    return host;
 }
 
 GraphicsLayer* CompositedLayerMapping::parentForSublayers() const
@@ -2237,6 +2278,8 @@ String CompositedLayerMapping::debugName(const GraphicsLayer* graphicsLayer)
         name = "Scroll Corner Layer";
     } else if (graphicsLayer == m_overflowControlsHostLayer.get()) {
         name = "Overflow Controls Host Layer";
+    } else if (graphicsLayer == m_overflowControlsClippingLayer.get()) {
+        name = "Overflow Controls ClipLayer Layer";
     } else if (graphicsLayer == m_scrollingLayer.get()) {
         name = "Scrolling Layer";
     } else if (graphicsLayer == m_scrollingContentsLayer.get()) {

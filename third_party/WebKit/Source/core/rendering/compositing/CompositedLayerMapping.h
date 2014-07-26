@@ -75,7 +75,7 @@ public:
     RenderLayer& owningLayer() const { return m_owningLayer; }
 
     bool updateGraphicsLayerConfiguration();
-    void updateGraphicsLayerGeometry(const RenderLayer* compositingContainer, Vector<RenderLayer*>& layersNeedingPaintInvalidation);
+    void updateGraphicsLayerGeometry(const RenderLayer* compositingContainer, const RenderLayer* compositingStackingContext, Vector<RenderLayer*>& layersNeedingPaintInvalidation);
 
     // Update whether layer needs blending.
     void updateContentsOpaque();
@@ -170,6 +170,13 @@ public:
     GraphicsLayer* layerForVerticalScrollbar() const { return m_layerForVerticalScrollbar.get(); }
     GraphicsLayer* layerForScrollCorner() const { return m_layerForScrollCorner.get(); }
 
+    // Returns true if the overflow controls cannot be positioned within this
+    // CLM's internal hierarchy without incorrectly stacking under some
+    // scrolling content. If this returns true, these controls must be
+    // repositioned in the graphics layer tree to ensure that they stack above
+    // scrolling content.
+    bool needsToReparentOverflowControls() const;
+
     // Removes the overflow controls host layer from its parent and positions it
     // so that it can be inserted as a sibling to this CLM without changing
     // position.
@@ -211,6 +218,7 @@ private:
     void updateSquashingLayerGeometry(const LayoutPoint& offsetFromCompositedAncestor, const IntPoint& graphicsLayerParentLocation, const RenderLayer& referenceLayer, Vector<GraphicsLayerPaintInfo>& layers, GraphicsLayer*, LayoutPoint* offsetFromTransformedAncestor, Vector<RenderLayer*>& layersNeedingPaintInvalidation);
     void updateMainGraphicsLayerGeometry(const IntRect& relativeCompositingBounds, const IntRect& localCompositingBounds, IntPoint& graphicsLayerParentLocation);
     void updateAncestorClippingLayerGeometry(const RenderLayer* compositingContainer, const IntPoint& snappedOffsetFromCompositedAncestor, IntPoint& graphicsLayerParentLocation);
+    void updateOverflowControlsHostLayerGeometry(const RenderLayer* compositingStackingContext);
     void updateChildContainmentLayerGeometry(const IntRect& clippingBox, const IntRect& localCompositingBounds);
     void updateChildTransformLayerGeometry();
     void updateMaskLayerGeometry();
@@ -234,7 +242,7 @@ private:
     void updatePaintingPhases();
     bool updateClippingLayers(bool needsAncestorClip, bool needsDescendantClip);
     bool updateChildTransformLayer(bool needsChildTransformLayer);
-    bool updateOverflowControlsLayers(bool needsHorizontalScrollbarLayer, bool needsVerticalScrollbarLayer, bool needsScrollCornerLayer);
+    bool updateOverflowControlsLayers(bool needsHorizontalScrollbarLayer, bool needsVerticalScrollbarLayer, bool needsScrollCornerLayer, bool needsAncestorClip);
     bool updateForegroundLayer(bool needsForegroundLayer);
     bool updateBackgroundLayer(bool needsBackgroundLayer);
     bool updateMaskLayer(bool needsMaskLayer);
@@ -305,8 +313,14 @@ private:
     //  + m_ancestorClippingLayer [OPTIONAL]
     //     + m_graphicsLayer
     //        + m_childContainmentLayer [OPTIONAL] <-OR-> m_scrollingLayer [OPTIONAL] <-OR-> m_childTransformLayer
-    //                                                     + m_scrollingContentsLayer [Present iff m_scrollingLayer is present]
-    //                                                        + m_scrollingBlockSelectionLayer [Present iff m_scrollingLayer is present]
+    //        |                                            + m_scrollingContentsLayer [Present iff m_scrollingLayer is present]
+    //        |                                               + m_scrollingBlockSelectionLayer [Present iff m_scrollingLayer is present]
+    //        |
+    //        + m_overflowControlsClippingLayer [OPTIONAL] // *The overflow controls may need to be repositioned in the
+    //          + m_overflowControlsHostLayer              //  graphics layer tree by the RLC to ensure that they stack
+    //            + m_layerForVerticalScrollbar            //  above scrolling content.
+    //            + m_layerForHorizontalScrollbar
+    //            + m_layerForScrollCorner
     //
     // We need an ancestor clipping layer if our clipping ancestor is not our ancestor in the
     // clipping tree. Here's what that might look like.
@@ -370,7 +384,18 @@ private:
     OwnPtr<GraphicsLayer> m_layerForHorizontalScrollbar;
     OwnPtr<GraphicsLayer> m_layerForVerticalScrollbar;
     OwnPtr<GraphicsLayer> m_layerForScrollCorner;
+
+    // This layer exists to simplify the reparenting of overflow control that is occasionally required
+    // to ensure that scrollbars appear above scrolling content.
     OwnPtr<GraphicsLayer> m_overflowControlsHostLayer;
+
+    // The reparented overflow controls sometimes need to be clipped by a non-ancestor. In just the same
+    // way we need an ancestor clipping layer to clip this CLM's internal hierarchy, we add another layer
+    // to clip the overflow controls. It would be possible to make m_overflowControlsHostLayer be
+    // responsible for applying this clip, but that could require repositioning all of the overflow
+    // controls since the this clip may apply an offset. By using a separate layer, the overflow controls
+    // can remain ignorant of the layers above them and still work correctly.
+    OwnPtr<GraphicsLayer> m_overflowControlsClippingLayer;
 
     // A squashing CLM has two possible squashing-related structures.
     //
