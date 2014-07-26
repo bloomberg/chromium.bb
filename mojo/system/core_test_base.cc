@@ -108,8 +108,8 @@ class MockDispatcher : public Dispatcher {
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
-  virtual MojoResult ReadDataImplNoLock(void* /*elements*/,
-                                        uint32_t* /*num_bytes*/,
+  virtual MojoResult ReadDataImplNoLock(UserPointer<void> /*elements*/,
+                                        UserPointer<uint32_t> /*num_bytes*/,
                                         MojoReadDataFlags /*flags*/) OVERRIDE {
     info_->IncrementReadDataCallCount();
     lock().AssertAcquired();

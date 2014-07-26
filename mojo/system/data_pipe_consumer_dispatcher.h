@@ -37,8 +37,8 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher : public Dispatcher {
   virtual void CloseImplNoLock() OVERRIDE;
   virtual scoped_refptr<Dispatcher>
       CreateEquivalentDispatcherAndCloseImplNoLock() OVERRIDE;
-  virtual MojoResult ReadDataImplNoLock(void* elements,
-                                        uint32_t* num_bytes,
+  virtual MojoResult ReadDataImplNoLock(UserPointer<void> elements,
+                                        UserPointer<uint32_t> num_bytes,
                                         MojoReadDataFlags flags) OVERRIDE;
   virtual MojoResult BeginReadDataImplNoLock(
       UserPointer<const void*> buffer,

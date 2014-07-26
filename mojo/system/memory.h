@@ -181,11 +181,10 @@ class UserPointer {
     memcpy(pointer_, source, count * sizeof(NonVoidType));
   }
 
-  // Gets a |UserPointer| at offset |i| (in |Type|s) relative to this. This
-  // method is not valid if |Type| is |void| (TODO(vtl): Maybe I should make it
-  // valid, with the offset in bytes?).
+  // Gets a |UserPointer| at offset |i| (in |Type|s) relative to this.
   UserPointer At(size_t i) const {
-    return UserPointer(pointer_ + i);
+    return UserPointer(static_cast<Type*>(
+        static_cast<NonVoidType*>(pointer_) + i));
   }
 
   // TODO(vtl): This is temporary. Get rid of this. (We should pass

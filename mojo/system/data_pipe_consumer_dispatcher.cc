@@ -51,32 +51,27 @@ DataPipeConsumerDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
 }
 
 MojoResult DataPipeConsumerDispatcher::ReadDataImplNoLock(
-    void* elements,
-    uint32_t* num_bytes,
+    UserPointer<void> elements,
+    UserPointer<uint32_t> num_bytes,
     MojoReadDataFlags flags) {
   lock().AssertAcquired();
-
-  if (!VerifyUserPointer<uint32_t>(num_bytes))
-    return MOJO_RESULT_INVALID_ARGUMENT;
 
   if ((flags & MOJO_READ_DATA_FLAG_DISCARD)) {
     // These flags are mutally exclusive.
     if ((flags & MOJO_READ_DATA_FLAG_QUERY))
       return MOJO_RESULT_INVALID_ARGUMENT;
-    DVLOG_IF(2, elements) << "Discard mode: ignoring non-null |elements|";
+    DVLOG_IF(2, !elements.IsNull())
+        << "Discard mode: ignoring non-null |elements|";
     return data_pipe_->ConsumerDiscardData(
         num_bytes, (flags & MOJO_READ_DATA_FLAG_ALL_OR_NONE));
   }
 
   if ((flags & MOJO_READ_DATA_FLAG_QUERY)) {
     DCHECK(!(flags & MOJO_READ_DATA_FLAG_DISCARD));  // Handled above.
-    DVLOG_IF(2, elements) << "Query mode: ignoring non-null |elements|";
+    DVLOG_IF(2, !elements.IsNull())
+        << "Query mode: ignoring non-null |elements|";
     return data_pipe_->ConsumerQueryData(num_bytes);
   }
-
-  // Only verify |elements| if we're neither discarding nor querying.
-  if (!VerifyUserPointerWithSize<1>(elements, *num_bytes))
-    return MOJO_RESULT_INVALID_ARGUMENT;
 
   return data_pipe_->ConsumerReadData(
       elements, num_bytes, (flags & MOJO_READ_DATA_FLAG_ALL_OR_NONE));

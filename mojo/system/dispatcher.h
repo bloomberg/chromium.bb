@@ -99,8 +99,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
                             UserPointer<uint32_t> buffer_num_bytes,
                             MojoWriteDataFlags flags);
   MojoResult EndWriteData(uint32_t num_bytes_written);
-  MojoResult ReadData(void* elements,
-                      uint32_t* num_bytes,
+  MojoResult ReadData(UserPointer<void> elements,
+                      UserPointer<uint32_t> num_bytes,
                       MojoReadDataFlags flags);
   MojoResult BeginReadData(UserPointer<const void*> buffer,
                            UserPointer<uint32_t> buffer_num_bytes,
@@ -230,8 +230,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
       UserPointer<uint32_t> buffer_num_bytes,
       MojoWriteDataFlags flags);
   virtual MojoResult EndWriteDataImplNoLock(uint32_t num_bytes_written);
-  virtual MojoResult ReadDataImplNoLock(void* elements,
-                                        uint32_t* num_bytes,
+  virtual MojoResult ReadDataImplNoLock(UserPointer<void> elements,
+                                        UserPointer<uint32_t> num_bytes,
                                         MojoReadDataFlags flags);
   virtual MojoResult BeginReadDataImplNoLock(
       UserPointer<const void*> buffer,

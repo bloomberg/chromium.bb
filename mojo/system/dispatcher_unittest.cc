@@ -59,7 +59,8 @@ TEST(DispatcherTest, Basic) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             d->EndWriteData(0));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->ReadData(NULL, NULL, MOJO_READ_DATA_FLAG_NONE));
+            d->ReadData(NullUserPointer(), NullUserPointer(),
+                        MOJO_READ_DATA_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             d->BeginReadData(NullUserPointer(), NullUserPointer(),
                              MOJO_READ_DATA_FLAG_NONE));
@@ -89,7 +90,8 @@ TEST(DispatcherTest, Basic) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             d->EndWriteData(0));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->ReadData(NULL, NULL, MOJO_READ_DATA_FLAG_NONE));
+            d->ReadData(NullUserPointer(), NullUserPointer(),
+                        MOJO_READ_DATA_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             d->BeginReadData(NullUserPointer(), NullUserPointer(),
                              MOJO_READ_DATA_FLAG_NONE));
@@ -175,7 +177,8 @@ class ThreadSafetyStressThread : public base::SimpleThread {
         break;
       case READ_DATA:
         EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-                  dispatcher_->ReadData(NULL, NULL, MOJO_READ_DATA_FLAG_NONE));
+                  dispatcher_->ReadData(NullUserPointer(), NullUserPointer(),
+                                        MOJO_READ_DATA_FLAG_NONE));
         break;
       case BEGIN_READ_DATA:
         EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,

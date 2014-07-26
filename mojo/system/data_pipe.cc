@@ -230,8 +230,8 @@ void DataPipe::ConsumerClose() {
       ProducerGetHandleSignalsStateNoLock());
 }
 
-MojoResult DataPipe::ConsumerReadData(void* elements,
-                                      uint32_t* num_bytes,
+MojoResult DataPipe::ConsumerReadData(UserPointer<void> elements,
+                                      UserPointer<uint32_t> num_bytes,
                                       bool all_or_none) {
   base::AutoLock locker(lock_);
   DCHECK(has_local_consumer_no_lock());
@@ -239,21 +239,26 @@ MojoResult DataPipe::ConsumerReadData(void* elements,
   if (consumer_in_two_phase_read_no_lock())
     return MOJO_RESULT_BUSY;
 
-  if (*num_bytes % element_num_bytes_ != 0)
+  uint32_t max_num_bytes_to_read = num_bytes.Get();
+  if (max_num_bytes_to_read % element_num_bytes_ != 0)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  if (*num_bytes == 0)
+  if (max_num_bytes_to_read == 0)
     return MOJO_RESULT_OK;  // Nothing to do.
 
+  uint32_t min_num_bytes_to_read = all_or_none ? max_num_bytes_to_read : 0;
+
   HandleSignalsState old_producer_state = ProducerGetHandleSignalsStateNoLock();
-  MojoResult rv = ConsumerReadDataImplNoLock(elements, num_bytes, all_or_none);
+  MojoResult rv = ConsumerReadDataImplNoLock(elements, num_bytes,
+                                             max_num_bytes_to_read,
+                                             min_num_bytes_to_read);
   HandleSignalsState new_producer_state = ProducerGetHandleSignalsStateNoLock();
   if (!new_producer_state.equals(old_producer_state))
     AwakeProducerWaitersForStateChangeNoLock(new_producer_state);
   return rv;
 }
 
-MojoResult DataPipe::ConsumerDiscardData(uint32_t* num_bytes,
+MojoResult DataPipe::ConsumerDiscardData(UserPointer<uint32_t> num_bytes,
                                          bool all_or_none) {
   base::AutoLock locker(lock_);
   DCHECK(has_local_consumer_no_lock());
@@ -261,21 +266,27 @@ MojoResult DataPipe::ConsumerDiscardData(uint32_t* num_bytes,
   if (consumer_in_two_phase_read_no_lock())
     return MOJO_RESULT_BUSY;
 
-  if (*num_bytes % element_num_bytes_ != 0)
+  uint32_t max_num_bytes_to_discard = num_bytes.Get();
+  if (max_num_bytes_to_discard % element_num_bytes_ != 0)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  if (*num_bytes == 0)
+  if (max_num_bytes_to_discard == 0)
     return MOJO_RESULT_OK;  // Nothing to do.
 
+  uint32_t min_num_bytes_to_discard = all_or_none ? max_num_bytes_to_discard :
+                                                    0;
+
   HandleSignalsState old_producer_state = ProducerGetHandleSignalsStateNoLock();
-  MojoResult rv = ConsumerDiscardDataImplNoLock(num_bytes, all_or_none);
+  MojoResult rv = ConsumerDiscardDataImplNoLock(num_bytes,
+                                                max_num_bytes_to_discard,
+                                                min_num_bytes_to_discard);
   HandleSignalsState new_producer_state = ProducerGetHandleSignalsStateNoLock();
   if (!new_producer_state.equals(old_producer_state))
     AwakeProducerWaitersForStateChangeNoLock(new_producer_state);
   return rv;
 }
 
-MojoResult DataPipe::ConsumerQueryData(uint32_t* num_bytes) {
+MojoResult DataPipe::ConsumerQueryData(UserPointer<uint32_t> num_bytes) {
   base::AutoLock locker(lock_);
   DCHECK(has_local_consumer_no_lock());
 

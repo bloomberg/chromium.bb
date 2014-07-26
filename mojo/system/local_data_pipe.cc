@@ -6,7 +6,7 @@
 // E.g., |start_index_| and |current_num_bytes_| fit into a |uint32_t|, but
 // their sum may not. This is bad and poses a security risk. (We're currently
 // saved by the limit on capacity -- the maximum size of the buffer, checked in
-// |DataPipe::ValidateOptions()|, is currently sufficiently small.
+// |DataPipe::ValidateOptions()|, is currently sufficiently small.)
 
 #include "mojo/system/local_data_pipe.h"
 
@@ -171,13 +171,16 @@ void LocalDataPipe::ConsumerCloseImplNoLock() {
   current_num_bytes_ = 0;
 }
 
-MojoResult LocalDataPipe::ConsumerReadDataImplNoLock(void* elements,
-                                                     uint32_t* num_bytes,
-                                                     bool all_or_none) {
-  DCHECK_EQ(*num_bytes % element_num_bytes(), 0u);
-  DCHECK_GT(*num_bytes, 0u);
+MojoResult LocalDataPipe::ConsumerReadDataImplNoLock(
+    UserPointer<void> elements,
+    UserPointer<uint32_t> num_bytes,
+    uint32_t max_num_bytes_to_read,
+    uint32_t min_num_bytes_to_read) {
+  DCHECK_EQ(max_num_bytes_to_read % element_num_bytes(), 0u);
+  DCHECK_EQ(min_num_bytes_to_read % element_num_bytes(), 0u);
+  DCHECK_GT(max_num_bytes_to_read, 0u);
 
-  if (all_or_none && *num_bytes > current_num_bytes_) {
+  if (min_num_bytes_to_read > current_num_bytes_) {
     // Don't return "should wait" since you can't wait for a specified amount of
     // data.
     return producer_open_no_lock() ? MOJO_RESULT_OUT_OF_RANGE :
@@ -185,7 +188,7 @@ MojoResult LocalDataPipe::ConsumerReadDataImplNoLock(void* elements,
   }
 
   size_t num_bytes_to_read =
-      std::min(static_cast<size_t>(*num_bytes), current_num_bytes_);
+      std::min(static_cast<size_t>(max_num_bytes_to_read), current_num_bytes_);
   if (num_bytes_to_read == 0) {
     return producer_open_no_lock() ? MOJO_RESULT_SHOULD_WAIT :
                                      MOJO_RESULT_FAILED_PRECONDITION;
@@ -194,26 +197,28 @@ MojoResult LocalDataPipe::ConsumerReadDataImplNoLock(void* elements,
   // The amount we can read in our first |memcpy()|.
   size_t num_bytes_to_read_first =
       std::min(num_bytes_to_read, GetMaxNumBytesToReadNoLock());
-  memcpy(elements, buffer_.get() + start_index_, num_bytes_to_read_first);
+  elements.PutArray(buffer_.get() + start_index_, num_bytes_to_read_first);
 
   if (num_bytes_to_read_first < num_bytes_to_read) {
     // The "second read index" is zero.
-    memcpy(static_cast<char*>(elements) + num_bytes_to_read_first,
-           buffer_.get(),
-           num_bytes_to_read - num_bytes_to_read_first);
+    elements.At(num_bytes_to_read_first).PutArray(
+        buffer_.get(), num_bytes_to_read - num_bytes_to_read_first);
   }
 
   MarkDataAsConsumedNoLock(num_bytes_to_read);
-  *num_bytes = static_cast<uint32_t>(num_bytes_to_read);
+  num_bytes.Put(static_cast<uint32_t>(num_bytes_to_read));
   return MOJO_RESULT_OK;
 }
 
-MojoResult LocalDataPipe::ConsumerDiscardDataImplNoLock(uint32_t* num_bytes,
-                                                        bool all_or_none) {
-  DCHECK_EQ(*num_bytes % element_num_bytes(), 0u);
-  DCHECK_GT(*num_bytes, 0u);
+MojoResult LocalDataPipe::ConsumerDiscardDataImplNoLock(
+    UserPointer<uint32_t> num_bytes,
+    uint32_t max_num_bytes_to_discard,
+    uint32_t min_num_bytes_to_discard) {
+  DCHECK_EQ(max_num_bytes_to_discard % element_num_bytes(), 0u);
+  DCHECK_EQ(min_num_bytes_to_discard % element_num_bytes(), 0u);
+  DCHECK_GT(max_num_bytes_to_discard, 0u);
 
-  if (all_or_none && *num_bytes > current_num_bytes_) {
+  if (min_num_bytes_to_discard > current_num_bytes_) {
     // Don't return "should wait" since you can't wait for a specified amount of
     // data.
     return producer_open_no_lock() ? MOJO_RESULT_OUT_OF_RANGE :
@@ -227,15 +232,17 @@ MojoResult LocalDataPipe::ConsumerDiscardDataImplNoLock(uint32_t* num_bytes,
   }
 
   size_t num_bytes_to_discard =
-      std::min(static_cast<size_t>(*num_bytes), current_num_bytes_);
+      std::min(static_cast<size_t>(max_num_bytes_to_discard),
+                                   current_num_bytes_);
   MarkDataAsConsumedNoLock(num_bytes_to_discard);
-  *num_bytes = static_cast<uint32_t>(num_bytes_to_discard);
+  num_bytes.Put(static_cast<uint32_t>(num_bytes_to_discard));
   return MOJO_RESULT_OK;
 }
 
-MojoResult LocalDataPipe::ConsumerQueryDataImplNoLock(uint32_t* num_bytes) {
+MojoResult LocalDataPipe::ConsumerQueryDataImplNoLock(
+    UserPointer<uint32_t> num_bytes) {
   // Note: This cast is safe, since the capacity fits into a |uint32_t|.
-  *num_bytes = static_cast<uint32_t>(current_num_bytes_);
+  num_bytes.Put(static_cast<uint32_t>(current_num_bytes_));
   return MOJO_RESULT_OK;
 }
 

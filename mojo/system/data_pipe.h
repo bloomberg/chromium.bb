@@ -71,12 +71,12 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   void ConsumerClose();
   // This does not validate its arguments, except to check that |*num_bytes| is
   // a multiple of |element_num_bytes_|.
-  MojoResult ConsumerReadData(void* elements,
-                              uint32_t* num_bytes,
+  MojoResult ConsumerReadData(UserPointer<void> elements,
+                              UserPointer<uint32_t> num_bytes,
                               bool all_or_none);
-  MojoResult ConsumerDiscardData(uint32_t* num_bytes,
+  MojoResult ConsumerDiscardData(UserPointer<uint32_t> num_bytes,
                                  bool all_or_none);
-  MojoResult ConsumerQueryData(uint32_t* num_bytes);
+  MojoResult ConsumerQueryData(UserPointer<uint32_t> num_bytes);
   MojoResult ConsumerBeginReadData(UserPointer<const void*> buffer,
                                    UserPointer<uint32_t> buffer_num_bytes,
                                    bool all_or_none);
@@ -111,13 +111,18 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
 
   virtual void ConsumerCloseImplNoLock() = 0;
   // |*num_bytes| will be a nonzero multiple of |element_num_bytes_|.
-  virtual MojoResult ConsumerReadDataImplNoLock(void* elements,
-                                                uint32_t* num_bytes,
-                                                bool all_or_none) = 0;
-  virtual MojoResult ConsumerDiscardDataImplNoLock(uint32_t* num_bytes,
-                                                   bool all_or_none) = 0;
+  virtual MojoResult ConsumerReadDataImplNoLock(
+      UserPointer<void> elements,
+      UserPointer<uint32_t> num_bytes,
+      uint32_t max_num_bytes_to_read,
+      uint32_t min_num_bytes_to_read) = 0;
+  virtual MojoResult ConsumerDiscardDataImplNoLock(
+      UserPointer<uint32_t> num_bytes,
+      uint32_t max_num_bytes_to_discard,
+      uint32_t min_num_bytes_to_discard) = 0;
   // |*num_bytes| will be a nonzero multiple of |element_num_bytes_|.
-  virtual MojoResult ConsumerQueryDataImplNoLock(uint32_t* num_bytes) = 0;
+  virtual MojoResult ConsumerQueryDataImplNoLock(
+      UserPointer<uint32_t> num_bytes) = 0;
   virtual MojoResult ConsumerBeginReadDataImplNoLock(
       UserPointer<const void*> buffer,
       UserPointer<uint32_t> buffer_num_bytes,
