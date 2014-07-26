@@ -192,7 +192,7 @@ WebThemeEngine* TestInterfaces::themeEngine()
         return 0;
 #if defined(__APPLE__)
     if (!m_themeEngine.get())
-        m_themeEngine.reset(new WebTestThemeEngineMac());
+        m_themeEngine.reset(new MockWebThemeEngineMac());
 #else
     if (!m_themeEngine.get())
         m_themeEngine.reset(new MockWebThemeEngine());

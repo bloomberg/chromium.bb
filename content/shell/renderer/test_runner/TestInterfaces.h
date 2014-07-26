@@ -12,7 +12,7 @@
 #include "third_party/WebKit/public/platform/WebNonCopyable.h"
 
 #if defined(__APPLE__)
-#include "content/shell/renderer/test_runner/WebTestThemeEngineMac.h"
+#include "content/shell/renderer/test_runner/mock_web_theme_engine_mac.h"
 #else
 #include "content/shell/renderer/test_runner/mock_web_theme_engine.h"
 #endif
@@ -69,7 +69,7 @@ private:
 
     std::vector<WebTestProxyBase*> m_windowList;
 #if defined(__APPLE__)
-    scoped_ptr<WebTestThemeEngineMac> m_themeEngine;
+    scoped_ptr<MockWebThemeEngineMac> m_themeEngine;
 #else
     scoped_ptr<MockWebThemeEngine> m_themeEngine;
 #endif

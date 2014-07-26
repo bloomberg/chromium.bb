@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/renderer/test_runner/WebTestThemeEngineMac.h"
+#include "content/shell/renderer/test_runner/mock_web_theme_engine_mac.h"
 
 #import <AppKit/NSAffineTransform.h>
 #import <AppKit/NSGraphicsContext.h>
@@ -35,22 +35,19 @@ using blink::WebThemeEngine;
 static NSWindow* alwaysActiveWindow = nil;
 static NSWindow* alwaysInactiveWindow = nil;
 
-+ (NSWindow*)alwaysActiveWindow
-{
++ (NSWindow*)alwaysActiveWindow {
     if (alwaysActiveWindow == nil)
         alwaysActiveWindow = [[self alloc] initWithActiveControls:YES];
     return alwaysActiveWindow;
 }
 
-+ (NSWindow*)alwaysInactiveWindow
-{
++ (NSWindow*)alwaysInactiveWindow {
     if (alwaysInactiveWindow == nil)
         alwaysInactiveWindow = [[self alloc] initWithActiveControls:NO];
     return alwaysInactiveWindow;
 }
 
-- (id)initWithActiveControls:(BOOL)_hasActiveControls
-{
+- (id)initWithActiveControls:(BOOL)_hasActiveControls {
     if ((self = [super initWithContentRect:NSMakeRect(0, 0, 100, 100)
                                  styleMask:0
                                    backing:NSBackingStoreBuffered
@@ -71,27 +68,25 @@ namespace content {
 
 namespace {
 
-ThemeTrackEnableState stateToHIEnableState(WebThemeEngine::State state)
-{
-    switch (state) {
+ThemeTrackEnableState stateToHIEnableState(WebThemeEngine::State state) {
+  switch (state) {
     case WebThemeEngine::StateDisabled:
-        return kThemeTrackDisabled;
+      return kThemeTrackDisabled;
     case WebThemeEngine::StateInactive:
-        return kThemeTrackInactive;
+      return kThemeTrackInactive;
     default:
-        return kThemeTrackActive;
-    }
+      return kThemeTrackActive;
+  }
 }
 
 }  // namespace
 
-void WebTestThemeEngineMac::paintScrollbarThumb(
+void MockWebThemeEngineMac::paintScrollbarThumb(
     WebCanvas* canvas,
     WebThemeEngine::State state,
     WebThemeEngine::Size size,
     const WebRect& rect,
-    const WebThemeEngine::ScrollbarInfo& scrollbarInfo)
-{
+    const WebThemeEngine::ScrollbarInfo& scrollbarInfo) {
     // To match the Mac port, we still use HITheme for inner scrollbars.
     if (scrollbarInfo.parent == WebThemeEngine::ScrollbarParentRenderLayer)
         paintHIThemeScrollbarThumb(canvas, state, size, rect, scrollbarInfo);
@@ -101,13 +96,12 @@ void WebTestThemeEngineMac::paintScrollbarThumb(
 
 // Duplicated from webkit/glue/webthemeengine_impl_mac.cc in the downstream
 // Chromium WebThemeEngine implementation.
-void WebTestThemeEngineMac::paintHIThemeScrollbarThumb(
+void MockWebThemeEngineMac::paintHIThemeScrollbarThumb(
     WebCanvas* canvas,
     WebThemeEngine::State state,
     WebThemeEngine::Size size,
     const WebRect& rect,
-    const WebThemeEngine::ScrollbarInfo& scrollbarInfo)
-{
+    const WebThemeEngine::ScrollbarInfo& scrollbarInfo) {
     HIThemeTrackDrawInfo trackInfo;
     trackInfo.version = 0;
     trackInfo.kind = size == WebThemeEngine::SizeRegular ? kThemeMediumScrollBar : kThemeSmallScrollBar;
@@ -130,13 +124,12 @@ void WebTestThemeEngineMac::paintHIThemeScrollbarThumb(
     HIThemeDrawTrack(&trackInfo, 0, cgContext, kHIThemeOrientationNormal);
 }
 
-void WebTestThemeEngineMac::paintNSScrollerScrollbarThumb(
+void MockWebThemeEngineMac::paintNSScrollerScrollbarThumb(
     WebCanvas* canvas,
     WebThemeEngine::State state,
     WebThemeEngine::Size size,
     const WebRect& rect,
-    const WebThemeEngine::ScrollbarInfo& scrollbarInfo)
-{
+    const WebThemeEngine::ScrollbarInfo& scrollbarInfo) {
     [NSGraphicsContext saveGraphicsState];
     NSScroller* scroller = [[NSScroller alloc] initWithFrame:NSMakeRect(rect.x, rect.y, rect.width, rect.height)];
     [scroller setEnabled:state != WebThemeEngine::StateDisabled];
