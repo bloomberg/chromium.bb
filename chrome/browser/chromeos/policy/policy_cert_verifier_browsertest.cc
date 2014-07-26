@@ -176,8 +176,7 @@ TEST_F(PolicyCertVerifierTest, VerifyTrustedCert) {
   EXPECT_FALSE(WasTrustAnchorUsedAndReset());
 }
 
-// http://crbug.com/396497
-TEST_F(PolicyCertVerifierTest, DISABLED_VerifyUsingAdditionalTrustAnchor) {
+TEST_F(PolicyCertVerifierTest, VerifyUsingAdditionalTrustAnchor) {
   ASSERT_TRUE(SupportsAdditionalTrustAnchors());
 
   // |test_server_cert_| is untrusted, so Verify() fails.
