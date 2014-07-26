@@ -96,6 +96,10 @@ class NotificationPromo {
   // When max_views_ is 0, we don't cap the number of views.
   bool ExceedsMaxViews() const;
 
+  // Tests |first_view_time_| + |max_seconds_| and -now().
+  // When either is 0, we don't cap the number of seconds.
+  bool ExceedsMaxSeconds() const;
+
   // Returns false if this promo should not be displayed because it is a promo
   // for the app launcher, and the user has already enabled the app launcher.
   bool CheckAppLauncher() const;
@@ -118,6 +122,13 @@ class NotificationPromo {
 
   // When max_views_ is 0, we don't cap the number of views.
   int max_views_;
+
+  // When max_seconds_ is 0 or not set, we don't cap the number of seconds a
+  // promo can be visible.
+  int max_seconds_;
+
+  // Set when the promo is viewed for the first time.
+  double first_view_time_;
 
   int group_;
   int views_;

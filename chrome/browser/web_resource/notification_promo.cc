@@ -49,6 +49,8 @@ const char kPrefPromoIncrement[] = "increment";
 const char kPrefPromoIncrementFrequency[] = "increment_frequency";
 const char kPrefPromoIncrementMax[] = "increment_max";
 const char kPrefPromoMaxViews[] = "max_views";
+const char kPrefPromoMaxSeconds[] = "max_seconds";
+const char kPrefPromoFirstViewTime[] = "first_view_time";
 const char kPrefPromoGroup[] = "group";
 const char kPrefPromoViews[] = "views";
 const char kPrefPromoClosed[] = "closed";
@@ -199,6 +201,8 @@ NotificationPromo::NotificationPromo()
       time_slice_(0),
       max_group_(0),
       max_views_(0),
+      max_seconds_(0),
+      first_view_time_(0),
       group_(0),
       views_(0),
       closed_(false),
@@ -284,6 +288,9 @@ void NotificationPromo::InitFromJson(const base::DictionaryValue& json,
   promo->GetInteger("max_views", &max_views_);
   DVLOG(1) << "max_views_ " << max_views_;
 
+  promo->GetInteger("max_seconds", &max_seconds_);
+  DVLOG(1) << "max_seconds_ " << max_seconds_;
+
   CheckForNewNotification();
 }
 
@@ -341,6 +348,8 @@ void NotificationPromo::WritePrefs() {
   ntp_promo->SetInteger(kPrefPromoIncrementMax, max_group_);
 
   ntp_promo->SetInteger(kPrefPromoMaxViews, max_views_);
+  ntp_promo->SetInteger(kPrefPromoMaxSeconds, max_seconds_);
+  ntp_promo->SetDouble(kPrefPromoFirstViewTime, first_view_time_);
 
   ntp_promo->SetInteger(kPrefPromoGroup, group_);
   ntp_promo->SetInteger(kPrefPromoViews, views_);
@@ -388,6 +397,8 @@ void NotificationPromo::InitFromPrefs(PromoType promo_type) {
   ntp_promo->GetInteger(kPrefPromoIncrementMax, &max_group_);
 
   ntp_promo->GetInteger(kPrefPromoMaxViews, &max_views_);
+  ntp_promo->GetInteger(kPrefPromoMaxSeconds, &max_seconds_);
+  ntp_promo->GetDouble(kPrefPromoFirstViewTime, &first_view_time_);
 
   ntp_promo->GetInteger(kPrefPromoGroup, &group_);
   ntp_promo->GetInteger(kPrefPromoViews, &views_);
@@ -412,6 +423,7 @@ bool NotificationPromo::CanShow() const {
          !promo_text_.empty() &&
          !ExceedsMaxGroup() &&
          !ExceedsMaxViews() &&
+         !ExceedsMaxSeconds() &&
          CheckAppLauncher() &&
          base::Time::FromDoubleT(StartTimeForGroup()) < base::Time::Now() &&
          base::Time::FromDoubleT(EndTime()) > base::Time::Now();
@@ -434,8 +446,11 @@ bool NotificationPromo::HandleViewed(PromoType promo_type) {
   NotificationPromo promo;
   promo.InitFromPrefs(promo_type);
   ++promo.views_;
+  if (promo.first_view_time_ == 0) {
+    promo.first_view_time_ = base::Time::Now().ToDoubleT();
+  }
   promo.WritePrefs();
-  return promo.ExceedsMaxViews();
+  return promo.ExceedsMaxViews() || promo.ExceedsMaxSeconds();
 }
 
 bool NotificationPromo::ExceedsMaxGroup() const {
@@ -444,6 +459,15 @@ bool NotificationPromo::ExceedsMaxGroup() const {
 
 bool NotificationPromo::ExceedsMaxViews() const {
   return (max_views_ == 0) ? false : views_ >= max_views_;
+}
+
+bool NotificationPromo::ExceedsMaxSeconds() const {
+  if (max_seconds_ == 0 || first_view_time_ == 0)
+    return false;
+
+  const base::Time last_view_time = base::Time::FromDoubleT(first_view_time_) +
+                                    base::TimeDelta::FromSeconds(max_seconds_);
+  return last_view_time < base::Time::Now();
 }
 
 // static
