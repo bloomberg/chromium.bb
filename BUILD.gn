@@ -37,6 +37,7 @@ group("root") {
     "//device/bluetooth",
     "//device/nfc",
     "//device/usb",
+    "//extensions/browser",
     "//extensions/common",
     "//extensions/common/api",
     "//gin",
@@ -174,6 +175,7 @@ group("root") {
       "//content",
       "//content/shell:content_shell",  # Blocked on content.
       "//content/test:test_support",  # Blocked on content.
+      "//extensions/browser",
       "//extensions/common",
       "//extensions/common/api",
       "//pdf",  # Not compiled on Android in GYP yet, either.

@@ -234,6 +234,7 @@
       ],
     },
     {
+      # GN version: //extensions/browser
       'target_name': 'extensions_browser',
       'type': 'static_library',
       'dependencies': [
