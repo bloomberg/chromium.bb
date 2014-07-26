@@ -362,12 +362,9 @@ SSLBlockingPage::SSLBlockingPage(
                  content::Source<Profile>(profile));
 #endif
 
-  // chrome://interstitials page uses this class without actually creating an
-  // interstitial so that it can be debugged. Set |create_interstitial| to true
-  // if the page is going to be used as an actual interstitial and not just part
-  // of the chrome://interstitials webui.
   interstitial_page_ = InterstitialPage::Create(
       web_contents_, true, request_url, this);
+  interstitial_page_->Show();
 }
 
 SSLBlockingPage::~SSLBlockingPage() {
@@ -385,41 +382,6 @@ SSLBlockingPage::~SSLBlockingPage() {
     // deny.
     NotifyDenyCertificate();
   }
-}
-
-// static
-void SSLBlockingPage::Show(content::WebContents* web_contents,
-                           int cert_error,
-                           const net::SSLInfo& ssl_info,
-                           const GURL& request_url,
-                           bool overridable,
-                           bool strict_enforcement,
-                           const base::Callback<void(bool)>& callback) {
-  SSLBlockingPage* ssl_blocking_page = new SSLBlockingPage(web_contents,
-                                                           cert_error,
-                                                           ssl_info,
-                                                           request_url,
-                                                           overridable,
-                                                           strict_enforcement,
-                                                           callback);
-  ssl_blocking_page->interstitial_page_->Show();
-}
-
-// static
-SSLBlockingPage* SSLBlockingPage::CreateForWebUI(
-    content::WebContents* web_contents,
-    int cert_error,
-    const net::SSLInfo& ssl_info,
-    const GURL& request_url,
-    bool overridable,
-    bool strict_enforcement) {
-  return new SSLBlockingPage(web_contents,
-                             cert_error,
-                             ssl_info,
-                             request_url,
-                             overridable,
-                             strict_enforcement,
-                             base::Callback<void(bool)>());
 }
 
 std::string SSLBlockingPage::GetHTMLContents() {

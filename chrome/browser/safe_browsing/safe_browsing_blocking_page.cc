@@ -311,7 +311,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
   }
 
   interstitial_page_ = InterstitialPage::Create(
-      web_contents, is_main_frame_load_blocked_, url_, this);
+      web_contents, IsMainPageLoadBlocked(unsafe_resources), url_, this);
 }
 
 bool SafeBrowsingBlockingPage::CanShowMalwareDetailsOption() {
@@ -872,20 +872,6 @@ SafeBrowsingBlockingPage::UnsafeResourceMap*
 }
 
 // static
-SafeBrowsingBlockingPage* SafeBrowsingBlockingPage::CreateBlockingPage(
-    SafeBrowsingUIManager* ui_manager,
-    WebContents* web_contents,
-    const UnsafeResource& unsafe_resource) {
-  std::vector<UnsafeResource> resources;
-  resources.push_back(unsafe_resource);
-  // Set up the factory if this has not been done already (tests do that
-  // before this method is called).
-  if (!factory_)
-    factory_ = g_safe_browsing_blocking_page_factory_impl.Pointer();
-  return factory_->CreateSafeBrowsingPage(ui_manager, web_contents, resources);
-}
-
-// static
 void SafeBrowsingBlockingPage::ShowBlockingPage(
     SafeBrowsingUIManager* ui_manager,
     const UnsafeResource& unsafe_resource) {
@@ -906,8 +892,14 @@ void SafeBrowsingBlockingPage::ShowBlockingPage(
   if (!interstitial) {
     // There are no interstitial currently showing in that tab, go ahead and
     // show this interstitial.
+    std::vector<UnsafeResource> resources;
+    resources.push_back(unsafe_resource);
+    // Set up the factory if this has not been done already (tests do that
+    // before this method is called).
+    if (!factory_)
+      factory_ = g_safe_browsing_blocking_page_factory_impl.Pointer();
     SafeBrowsingBlockingPage* blocking_page =
-        CreateBlockingPage(ui_manager, web_contents, unsafe_resource);
+        factory_->CreateSafeBrowsingPage(ui_manager, web_contents, resources);
     blocking_page->interstitial_page_->Show();
     return;
   }

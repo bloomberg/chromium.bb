@@ -1472,7 +1472,6 @@
         'browser/ui/webui/identity_internals_ui_browsertest.h',
         'browser/ui/webui/identity_internals_ui_browsertest.js',
         'browser/ui/webui/inspect_ui_browsertest.cc',
-        'browser/ui/webui/interstitials/interstitial_ui_browsertest.cc',
         'browser/ui/webui/net_internals/net_internals_ui_browsertest.cc',
         'browser/ui/webui/net_internals/net_internals_ui_browsertest.h',
         'browser/ui/webui/ntp/most_visited_browsertest.cc',

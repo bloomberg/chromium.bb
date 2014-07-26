@@ -61,13 +61,6 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
 
   virtual ~SafeBrowsingBlockingPage();
 
-  // Creates a blocking page. Use ShowBlockingPage if you don't need to access
-  // the blocking page directly.
-  static SafeBrowsingBlockingPage* CreateBlockingPage(
-      SafeBrowsingUIManager* ui_manager,
-      content::WebContents* web_contents,
-      const UnsafeResource& unsafe_resource);
-
   // Shows a blocking page warning the user about phishing/malware for a
   // specific resource.
   // You can call this method several times, if an interstitial is already

@@ -48,28 +48,15 @@ class SSLBlockingPage : public content::InterstitialPageDelegate,
     CMD_CLOCK = 5
   };
 
+  SSLBlockingPage(
+      content::WebContents* web_contents,
+      int cert_error,
+      const net::SSLInfo& ssl_info,
+      const GURL& request_url,
+      bool overridable,
+      bool strict_enforcement,
+      const base::Callback<void(bool)>& callback);
   virtual ~SSLBlockingPage();
-
-  // Creates an SSL blocking page and an interstitial for it, and shows the
-  // interstitial. The interstitial owns the blocking page and is owned by
-  // |web_contents|.
-  static void Show(content::WebContents* web_contents,
-                   int cert_error,
-                   const net::SSLInfo& ssl_info,
-                   const GURL& request_url,
-                   bool overridable,
-                   bool strict_enforcement,
-                   const base::Callback<void(bool)>& callback);
-
-  // Creates an SSL blocking page and an interstitial for it without
-  // showing the interstitial. Since the interstitial isn't shown, the caller is
-  // responsible for cleaning up the blocking page.
-  static SSLBlockingPage* CreateForWebUI(content::WebContents* web_contents,
-                                         int cert_error,
-                                         const net::SSLInfo& ssl_info,
-                                         const GURL& request_url,
-                                         bool overridable,
-                                         bool strict_enforcement);
 
   // A method that sets strings in the specified dictionary from the passed
   // vector so that they can be used to resource the ssl_roadblock.html/
@@ -89,15 +76,6 @@ class SSLBlockingPage : public content::InterstitialPageDelegate,
   virtual void OnDontProceed() OVERRIDE;
 
  private:
-  SSLBlockingPage(
-      content::WebContents* web_contents,
-      int cert_error,
-      const net::SSLInfo& ssl_info,
-      const GURL& request_url,
-      bool overridable,
-      bool strict_enforcement,
-      const base::Callback<void(bool)>& callback);
-
   void NotifyDenyCertificate();
   void NotifyAllowCertificate();
 
