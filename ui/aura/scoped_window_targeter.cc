@@ -13,11 +13,14 @@ ScopedWindowTargeter::ScopedWindowTargeter(
     scoped_ptr<ui::EventTargeter> new_targeter)
     : window_(window),
       old_targeter_(window->SetEventTargeter(new_targeter.Pass())) {
+  window_->AddObserver(this);
 }
 
 ScopedWindowTargeter::~ScopedWindowTargeter() {
-  if (window_)
+  if (window_) {
+    window_->RemoveObserver(this);
     window_->SetEventTargeter(old_targeter_.Pass());
+  }
 }
 
 void ScopedWindowTargeter::OnWindowDestroyed(Window* window) {
