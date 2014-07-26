@@ -107,13 +107,6 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Attempts to focus the first element in the current dialog.
-     */
-    focusFirstElement: function() {
-      this.focusFirstElement_();
-    },
-
-    /**
      * Selects first appropriate focusable element according to the
      * current focus direction and element type.  If it is a radio button,
      * checked one is selected from the group.
