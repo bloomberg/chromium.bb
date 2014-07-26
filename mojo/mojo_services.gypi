@@ -709,6 +709,12 @@
           ],
           'sources': [
             'public/cpp/application/lib/mojo_main_chromium.cc',
+            'services/view_manager/access_policy.h',
+            'services/view_manager/access_policy_delegate.h',
+            'services/view_manager/default_access_policy.cc',
+            'services/view_manager/default_access_policy.h',
+            'services/view_manager/window_manager_access_policy.cc',
+            'services/view_manager/window_manager_access_policy.h',
             'services/view_manager/ids.h',
             'services/view_manager/main.cc',
             'services/view_manager/node.cc',

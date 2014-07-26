@@ -41,12 +41,6 @@ void QuitRunLoop() {
   current_run_loop->Quit();
 }
 
-void WaitForChangeToBeAcked(ViewManagerClientImpl* client) {
-  client->set_change_acked_callback(base::Bind(&QuitRunLoop));
-  DoRunLoop();
-  client->ClearChangeAckedCallback();
-}
-
 class ConnectServiceLoader : public ServiceLoader,
                              public ApplicationDelegate,
                              public ViewManagerDelegate {
@@ -179,16 +173,6 @@ class TreeSizeMatchesObserver : public NodeObserver {
 
   DISALLOW_COPY_AND_ASSIGN(TreeSizeMatchesObserver);
 };
-
-void WaitForTreeSizeToMatch(Node* node, size_t tree_size) {
-  TreeSizeMatchesObserver observer(node, tree_size);
-  if (observer.IsTreeCorrectSize())
-    return;
-  node->AddObserver(&observer);
-  DoRunLoop();
-  node->RemoveObserver(&observer);
-}
-
 
 // Utility class that waits for the destruction of some number of nodes and
 // views.
@@ -424,51 +408,10 @@ TEST_F(ViewManagerTest, Embed) {
   EXPECT_EQ(NULL, node_in_embedded->parent());
 }
 
-// When Window Manager embeds A @ N, then creates N2 and parents to N, N becomes
-// visible to A.
-// TODO(beng): verify whether or not this is a policy we like.
-TEST_F(ViewManagerTest, HierarchyChanged_NodeAdded) {
-  Node* node = Node::Create(window_manager());
-  window_manager()->GetRoots().front()->AddChild(node);
-  ViewManager* embedded = Embed(window_manager(), node);
-  Node* nested = Node::Create(window_manager());
-  node->AddChild(nested);
-  WaitForTreeSizeToMatch(embedded->GetRoots().front(), 2);
-  EXPECT_EQ(embedded->GetRoots().front()->children().front()->id(),
-            nested->id());
-}
-
-// Window manager has two nodes, N1 & N2. Embeds A at N1. Creates node N21,
-// a child of N2. Reparents N2 to N1. N1 should become visible to A.
-// TODO(beng): verify whether or not this is a policy we like.
-TEST_F(ViewManagerTest, HierarchyChanged_NodeMoved) {
-  Node* node1 = Node::Create(window_manager());
-  window_manager()->GetRoots().front()->AddChild(node1);
-  ViewManager* embedded = Embed(window_manager(), node1);
-  WaitForTreeSizeToMatch(embedded->GetRoots().front(), 1);
-
-  Node* node2 = Node::Create(window_manager());
-  window_manager()->GetRoots().front()->AddChild(node2);
-  WaitForTreeSizeToMatch(embedded->GetRoots().front(), 1);
-  EXPECT_TRUE(embedded->GetRoots().front()->children().empty());
-
-  Node* node21 = Node::Create(window_manager());
-  node2->AddChild(node21);
-  WaitForTreeSizeToMatch(embedded->GetRoots().front(), 1);
-  EXPECT_TRUE(embedded->GetRoots().front()->children().empty());
-
-  // Makes node21 visible to |embedded|.
-  node1->AddChild(node21);
-  WaitForTreeSizeToMatch(embedded->GetRoots().front(), 2);
-  EXPECT_FALSE(embedded->GetRoots().front()->children().empty());
-  EXPECT_EQ(embedded->GetRoots().front()->children().front()->id(),
-            node21->id());
-}
-
-// Window manager has two nodes, N1 and N11. Embeds A at N1. Removes N11 from
-// N1. N11 should disappear from A.
-// TODO(beng): verify whether or not this is a policy we like.
-TEST_F(ViewManagerTest, HierarchyChanged_NodeRemoved) {
+// Window manager has two nodes, N1 and N11. Embeds A at N1. A should not see
+// N11.
+// TODO(sky): Update client lib to match server.
+TEST_F(ViewManagerTest, DISABLED_EmbeddedDoesntSeeChild) {
   Node* node = Node::Create(window_manager());
   window_manager()->GetRoots().front()->AddChild(node);
   Node* nested = Node::Create(window_manager());
@@ -477,35 +420,8 @@ TEST_F(ViewManagerTest, HierarchyChanged_NodeRemoved) {
   ViewManager* embedded = Embed(window_manager(), node);
   EXPECT_EQ(embedded->GetRoots().front()->children().front()->id(),
             nested->id());
-
-  node->RemoveChild(nested);
-  WaitForTreeSizeToMatch(embedded->GetRoots().front(), 1);
   EXPECT_TRUE(embedded->GetRoots().front()->children().empty());
-}
-
-// Window manager has two nodes, N1 and N11. Embeds A at N1. Destroys N11.
-// N11 should disappear from A.
-// TODO(beng): verify whether or not this is a policy we like.
-TEST_F(ViewManagerTest, NodeDestroyed) {
-  Node* node = Node::Create(window_manager());
-  window_manager()->GetRoots().front()->AddChild(node);
-  Node* nested = Node::Create(window_manager());
-  node->AddChild(nested);
-
-  ViewManager* embedded = Embed(window_manager(), node);
-  EXPECT_EQ(embedded->GetRoots().front()->children().front()->id(),
-            nested->id());
-
-  // |nested| will be deleted after calling Destroy() below.
-  Id id = nested->id();
-  nested->Destroy();
-
-  std::set<Id> nodes;
-  nodes.insert(id);
-  WaitForDestruction(embedded, &nodes, NULL);
-
-  EXPECT_TRUE(embedded->GetRoots().front()->children().empty());
-  EXPECT_EQ(NULL, embedded->GetNodeById(id));
+  EXPECT_TRUE(nested->parent() == NULL);
 }
 
 // http://crbug.com/396300
@@ -539,7 +455,9 @@ TEST_F(ViewManagerTest, SetActiveView) {
   EXPECT_EQ(node_in_embedded->active_view()->id(), view->id());
 }
 
-TEST_F(ViewManagerTest, DestroyView) {
+// TODO(sky): rethink this and who should be notified when views are
+// detached/destroyed.
+TEST_F(ViewManagerTest, DISABLED_DestroyView) {
   Node* node = Node::Create(window_manager());
   window_manager()->GetRoots().front()->AddChild(node);
   ViewManager* embedded = Embed(window_manager(), node);
@@ -635,41 +553,6 @@ TEST_F(ViewManagerTest, SetActiveViewAcrossConnection) {
 
   View* view_in_embedded = View::Create(embedded);
   EXPECT_DEATH_IF_SUPPORTED(node->SetActiveView(view_in_embedded), "");
-}
-
-// This test verifies that a node hierarchy constructed in one connection
-// becomes entirely visible to the second connection when the hierarchy is
-// attached.
-TEST_F(ViewManagerTest, MapSubtreeOnAttach) {
-  Node* node = Node::Create(window_manager());
-  window_manager()->GetRoots().front()->AddChild(node);
-  ViewManager* embedded = Embed(window_manager(), node);
-
-  // Create a subtree private to the window manager and make some changes to it.
-  Node* child1 = Node::Create(window_manager());
-  Node* child11 = Node::Create(window_manager());
-  child1->AddChild(child11);
-  WaitForChangeToBeAcked(
-      static_cast<ViewManagerClientImpl*>(window_manager()));
-  gfx::Rect child11_bounds(800, 600);
-  child11->SetBounds(child11_bounds);
-  WaitForChangeToBeAcked(
-      static_cast<ViewManagerClientImpl*>(window_manager()));
-  View* view11 = View::Create(window_manager());
-  child11->SetActiveView(view11);
-  WaitForChangeToBeAcked(
-      static_cast<ViewManagerClientImpl*>(window_manager()));
-
-  // When added to the shared node, the entire hierarchy and all property
-  // changes should become visible to the embedded app.
-  node->AddChild(child1);
-  WaitForTreeSizeToMatch(embedded->GetRoots().front(), 3);
-
-  Node* child11_in_embedded = embedded->GetNodeById(child11->id());
-  View* view11_in_embedded = embedded->GetViewById(view11->id());
-  EXPECT_TRUE(child11_in_embedded != NULL);
-  EXPECT_EQ(view11_in_embedded, child11_in_embedded->active_view());
-  EXPECT_EQ(child11_bounds, child11_in_embedded->bounds());
 }
 
 // Verifies that bounds changes applied to a node hierarchy in one connection
