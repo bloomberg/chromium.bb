@@ -810,7 +810,6 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
         'stype': self.session_handlers.keys()}.items())
     response_func(200, info)
 
-  @post_provisioning
   @get_only
   def do_info(self, unused_request, response_func):
     specific_info = {

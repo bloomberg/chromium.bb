@@ -43,6 +43,9 @@ namespace gcdPrivate {
     // Error in establishing session.
     sessionError,
 
+    // Unknown session.
+    unknownSessionError,
+
     // Success.
     success
   };

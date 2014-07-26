@@ -6,16 +6,20 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/local_discovery/cloud_device_list.h"
 #include "chrome/browser/local_discovery/cloud_print_printer_list.h"
 #include "chrome/browser/local_discovery/gcd_constants.h"
 #include "chrome/browser/local_discovery/privet_device_lister_impl.h"
+#include "chrome/browser/local_discovery/privet_http_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "net/base/net_util.h"
 
 namespace extensions {
 
@@ -72,8 +76,70 @@ scoped_ptr<local_discovery::GCDApiFlow> MakeGCDApiFlow(Profile* profile) {
 
 }  // namespace
 
+class GcdPrivateRequest : public local_discovery::PrivetV3Session::Request {
+ public:
+  GcdPrivateRequest(const std::string& api,
+                    const base::DictionaryValue& input,
+                    const GcdPrivateAPI::MessageResponseCallback& callback,
+                    GcdPrivateSessionHolder* session_holder);
+  virtual ~GcdPrivateRequest();
+
+  // local_discovery::PrivetV3Session::Request implementation.
+  virtual std::string GetName() OVERRIDE;
+  virtual const base::DictionaryValue& GetInput() OVERRIDE;
+  virtual void OnError(
+      local_discovery::PrivetURLFetcher::ErrorType error) OVERRIDE;
+  virtual void OnParsedJson(const base::DictionaryValue& value,
+                            bool has_error) OVERRIDE;
+
+ private:
+  std::string api_;
+  scoped_ptr<base::DictionaryValue> input_;
+  GcdPrivateAPI::MessageResponseCallback callback_;
+  GcdPrivateSessionHolder* session_holder_;
+};
+
+class GcdPrivateSessionHolder
+    : public local_discovery::PrivetV3Session::Delegate {
+ public:
+  typedef base::Callback<void(api::gcd_private::Status status,
+                              const std::string& code,
+                              api::gcd_private::ConfirmationType type)>
+      ConfirmationCodeCallback;
+
+  GcdPrivateSessionHolder(const std::string& ip_address,
+                          int port,
+                          net::URLRequestContextGetter* request_context);
+  virtual ~GcdPrivateSessionHolder();
+
+  void Start(const ConfirmationCodeCallback& callback);
+
+  void ConfirmCode(const GcdPrivateAPI::SessionEstablishedCallback& callback);
+
+  void SendMessage(const std::string& api,
+                   const base::DictionaryValue& input,
+                   GcdPrivateAPI::MessageResponseCallback callback);
+
+  void DeleteRequest(GcdPrivateRequest* request);
+
+ private:
+  // local_discovery::PrivetV3Session::Delegate implementation.
+  virtual void OnSetupConfirmationNeeded(
+      const std::string& confirmation_code) OVERRIDE;
+  virtual void OnSessionEstablished() OVERRIDE;
+  virtual void OnCannotEstablishSession() OVERRIDE;
+
+  scoped_ptr<local_discovery::PrivetHTTPClient> http_client_;
+  scoped_ptr<local_discovery::PrivetV3Session> privet_session_;
+  typedef ScopedVector<GcdPrivateRequest> RequestVector;
+  RequestVector requests_;
+
+  ConfirmationCodeCallback confirm_callback_;
+  GcdPrivateAPI::SessionEstablishedCallback session_established_callback_;
+};
+
 GcdPrivateAPI::GcdPrivateAPI(content::BrowserContext* context)
-    : num_device_listeners_(0), browser_context_(context) {
+    : num_device_listeners_(0), last_session_id_(0), browser_context_(context) {
   DCHECK(browser_context_);
   if (EventRouter::Get(context)) {
     EventRouter::Get(context)
@@ -177,10 +243,165 @@ bool GcdPrivateAPI::QueryForDevices() {
   return true;
 }
 
+void GcdPrivateAPI::EstablishSession(const std::string& ip_address,
+                                     int port,
+                                     ConfirmationCodeCallback callback) {
+  int session_id = last_session_id_++;
+  linked_ptr<GcdPrivateSessionHolder> session_handler(
+      new GcdPrivateSessionHolder(
+          ip_address, port, browser_context_->GetRequestContext()));
+  sessions_[session_id] = session_handler;
+  session_handler->Start(base::Bind(callback, session_id));
+}
+
+void GcdPrivateAPI::ConfirmCode(int session_id,
+                                SessionEstablishedCallback callback) {
+  GCDSessionMap::iterator found = sessions_.find(session_id);
+
+  if (found == sessions_.end()) {
+    callback.Run(gcd_private::STATUS_UNKNOWNSESSIONERROR);
+    return;
+  }
+
+  found->second->ConfirmCode(callback);
+}
+
+void GcdPrivateAPI::SendMessage(int session_id,
+                                const std::string& api,
+                                const base::DictionaryValue& input,
+                                MessageResponseCallback callback) {
+  GCDSessionMap::iterator found = sessions_.find(session_id);
+
+  if (found == sessions_.end()) {
+    callback.Run(gcd_private::STATUS_UNKNOWNSESSIONERROR,
+                 base::DictionaryValue());
+    return;
+  }
+
+  found->second->SendMessage(api, input, callback);
+}
+
+void GcdPrivateAPI::RemoveSession(int session_id) {
+  sessions_.erase(session_id);
+}
+
 // static
 void GcdPrivateAPI::SetGCDApiFlowFactoryForTests(
     GCDApiFlowFactoryForTests* factory) {
   g_gcd_api_flow_factory = factory;
+}
+
+GcdPrivateRequest::GcdPrivateRequest(
+    const std::string& api,
+    const base::DictionaryValue& input,
+    const GcdPrivateAPI::MessageResponseCallback& callback,
+    GcdPrivateSessionHolder* session_holder)
+    : api_(api),
+      input_(input.DeepCopy()),
+      callback_(callback),
+      session_holder_(session_holder) {
+}
+
+GcdPrivateRequest::~GcdPrivateRequest() {
+}
+
+std::string GcdPrivateRequest::GetName() {
+  return api_;
+}
+
+const base::DictionaryValue& GcdPrivateRequest::GetInput() {
+  return *input_;
+}
+
+void GcdPrivateRequest::OnError(
+    local_discovery::PrivetURLFetcher::ErrorType error) {
+  callback_.Run(gcd_private::STATUS_CONNECTIONERROR, base::DictionaryValue());
+
+  session_holder_->DeleteRequest(this);
+}
+
+void GcdPrivateRequest::OnParsedJson(const base::DictionaryValue& value,
+                                     bool has_error) {
+  callback_.Run(gcd_private::STATUS_SUCCESS, value);
+
+  session_holder_->DeleteRequest(this);
+}
+
+GcdPrivateSessionHolder::GcdPrivateSessionHolder(
+    const std::string& ip_address,
+    int port,
+    net::URLRequestContextGetter* request_context) {
+  std::string host_string;
+  net::IPAddressNumber address_number;
+
+  if (net::ParseIPLiteralToNumber(ip_address, &address_number) &&
+      address_number.size() == net::kIPv6AddressSize) {
+    host_string = base::StringPrintf("[%s]", ip_address.c_str());
+  } else {
+    host_string = ip_address;
+  }
+
+  http_client_.reset(new local_discovery::PrivetHTTPClientImpl(
+      "", net::HostPortPair(host_string, port), request_context));
+}
+
+GcdPrivateSessionHolder::~GcdPrivateSessionHolder() {
+}
+
+void GcdPrivateSessionHolder::Start(const ConfirmationCodeCallback& callback) {
+  confirm_callback_ = callback;
+
+  privet_session_.reset(
+      new local_discovery::PrivetV3Session(http_client_.Pass(), this));
+  privet_session_->Start();
+}
+
+void GcdPrivateSessionHolder::ConfirmCode(
+    const GcdPrivateAPI::SessionEstablishedCallback& callback) {
+  session_established_callback_ = callback;
+  privet_session_->ConfirmCode();
+}
+
+void GcdPrivateSessionHolder::SendMessage(
+    const std::string& api,
+    const base::DictionaryValue& input,
+    GcdPrivateAPI::MessageResponseCallback callback) {
+  GcdPrivateRequest* request =
+      new GcdPrivateRequest(api, input, callback, this);
+  requests_.push_back(request);
+  privet_session_->StartRequest(request);
+}
+
+void GcdPrivateSessionHolder::DeleteRequest(GcdPrivateRequest* request) {
+  // TODO(noamsml): Does this need to be optimized?
+  for (RequestVector::iterator i = requests_.begin(); i != requests_.end();
+       i++) {
+    if (*i == request) {
+      requests_.erase(i);
+      break;
+    }
+  }
+}
+
+void GcdPrivateSessionHolder::OnSetupConfirmationNeeded(
+    const std::string& confirmation_code) {
+  confirm_callback_.Run(gcd_private::STATUS_SUCCESS,
+                        confirmation_code,
+                        gcd_private::CONFIRMATION_TYPE_DISPLAYCODE);
+
+  confirm_callback_.Reset();
+}
+
+void GcdPrivateSessionHolder::OnSessionEstablished() {
+  session_established_callback_.Run(gcd_private::STATUS_SUCCESS);
+
+  session_established_callback_.Reset();
+}
+
+void GcdPrivateSessionHolder::OnCannotEstablishSession() {
+  session_established_callback_.Run(gcd_private::STATUS_SESSIONERROR);
+
+  session_established_callback_.Reset();
 }
 
 GcdPrivateGetCloudDeviceListFunction::GcdPrivateGetCloudDeviceListFunction() {
@@ -303,7 +524,35 @@ GcdPrivateEstablishSessionFunction::~GcdPrivateEstablishSessionFunction() {
 }
 
 bool GcdPrivateEstablishSessionFunction::RunAsync() {
-  return false;
+  scoped_ptr<gcd_private::EstablishSession::Params> params =
+      gcd_private::EstablishSession::Params::Create(*args_);
+
+  if (!params)
+    return false;
+
+  GcdPrivateAPI* gcd_api =
+      BrowserContextKeyedAPIFactory<GcdPrivateAPI>::Get(GetProfile());
+
+  if (!gcd_api)
+    return false;
+
+  gcd_api->EstablishSession(
+      params->ip_address,
+      params->port,
+      base::Bind(&GcdPrivateEstablishSessionFunction::OnConfirmCodeCallback,
+                 this));
+
+  return true;
+}
+
+void GcdPrivateEstablishSessionFunction::OnConfirmCodeCallback(
+    int session_id,
+    gcd_private::Status status,
+    const std::string& confirm_code,
+    gcd_private::ConfirmationType confirmation_type) {
+  results_ = gcd_private::EstablishSession::Results::Create(
+      session_id, status, confirm_code, confirmation_type);
+  SendResponse(true);
 }
 
 GcdPrivateConfirmCodeFunction::GcdPrivateConfirmCodeFunction() {
@@ -313,7 +562,30 @@ GcdPrivateConfirmCodeFunction::~GcdPrivateConfirmCodeFunction() {
 }
 
 bool GcdPrivateConfirmCodeFunction::RunAsync() {
-  return false;
+  scoped_ptr<gcd_private::ConfirmCode::Params> params =
+      gcd_private::ConfirmCode::Params::Create(*args_);
+
+  if (!params)
+    return false;
+
+  GcdPrivateAPI* gcd_api =
+      BrowserContextKeyedAPIFactory<GcdPrivateAPI>::Get(GetProfile());
+
+  if (!gcd_api)
+    return false;
+
+  gcd_api->ConfirmCode(
+      params->session_id,
+      base::Bind(&GcdPrivateConfirmCodeFunction::OnSessionEstablishedCallback,
+                 this));
+
+  return true;
+}
+
+void GcdPrivateConfirmCodeFunction::OnSessionEstablishedCallback(
+    api::gcd_private::Status status) {
+  results_ = gcd_private::ConfirmCode::Results::Create(status);
+  SendResponse(true);
 }
 
 GcdPrivateSendMessageFunction::GcdPrivateSendMessageFunction() {
@@ -323,7 +595,35 @@ GcdPrivateSendMessageFunction::~GcdPrivateSendMessageFunction() {
 }
 
 bool GcdPrivateSendMessageFunction::RunAsync() {
-  return false;
+  scoped_ptr<gcd_private::PassMessage::Params> params =
+      gcd_private::PassMessage::Params::Create(*args_);
+
+  if (!params)
+    return false;
+
+  GcdPrivateAPI* gcd_api =
+      BrowserContextKeyedAPIFactory<GcdPrivateAPI>::Get(GetProfile());
+
+  if (!gcd_api)
+    return false;
+
+  gcd_api->SendMessage(
+      params->session_id,
+      params->api,
+      params->input.additional_properties,
+      base::Bind(&GcdPrivateSendMessageFunction::OnMessageSentCallback, this));
+
+  return true;
+}
+
+void GcdPrivateSendMessageFunction::OnMessageSentCallback(
+    api::gcd_private::Status status,
+    const base::DictionaryValue& value) {
+  gcd_private::PassMessage::Results::Response response;
+  response.additional_properties.MergeDictionary(&value);
+
+  results_ = gcd_private::PassMessage::Results::Create(status, response);
+  SendResponse(true);
 }
 
 GcdPrivateTerminateSessionFunction::GcdPrivateTerminateSessionFunction() {
@@ -333,7 +633,22 @@ GcdPrivateTerminateSessionFunction::~GcdPrivateTerminateSessionFunction() {
 }
 
 bool GcdPrivateTerminateSessionFunction::RunAsync() {
-  return false;
+  scoped_ptr<gcd_private::TerminateSession::Params> params =
+      gcd_private::TerminateSession::Params::Create(*args_);
+
+  if (!params)
+    return false;
+
+  GcdPrivateAPI* gcd_api =
+      BrowserContextKeyedAPIFactory<GcdPrivateAPI>::Get(GetProfile());
+
+  if (!gcd_api)
+    return false;
+
+  gcd_api->RemoveSession(params->session_id);
+
+  SendResponse(true);
+  return true;
 }
 
 GcdPrivateGetCommandDefinitionsFunction::

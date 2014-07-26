@@ -11,6 +11,7 @@
 #include "chrome/browser/local_discovery/cloud_device_list_delegate.h"
 #include "chrome/browser/local_discovery/gcd_api_flow.h"
 #include "chrome/browser/local_discovery/privet_device_lister.h"
+#include "chrome/browser/local_discovery/privetv3_session.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/common/extensions/api/gcd_private.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -18,10 +19,25 @@
 
 namespace extensions {
 
+class GcdPrivateSessionHolder;
+
 class GcdPrivateAPI : public BrowserContextKeyedAPI,
                       public EventRouter::Observer,
                       public local_discovery::PrivetDeviceLister::Delegate {
  public:
+  typedef base::Callback<void(int session_id,
+                              api::gcd_private::Status status,
+                              const std::string& code,
+                              api::gcd_private::ConfirmationType type)>
+      ConfirmationCodeCallback;
+
+  typedef base::Callback<void(api::gcd_private::Status status)>
+      SessionEstablishedCallback;
+
+  typedef base::Callback<void(api::gcd_private::Status status,
+                              const base::DictionaryValue& response)>
+      MessageResponseCallback;
+
   class GCDApiFlowFactoryForTests {
    public:
     virtual ~GCDApiFlowFactoryForTests() {}
@@ -39,11 +55,27 @@ class GcdPrivateAPI : public BrowserContextKeyedAPI,
 
   bool QueryForDevices();
 
+  void EstablishSession(const std::string& ip_address,
+                        int port,
+                        ConfirmationCodeCallback callback);
+
+  void ConfirmCode(int session_id, SessionEstablishedCallback callback);
+
+  void SendMessage(int session_id,
+                   const std::string& api,
+                   const base::DictionaryValue& input,
+                   MessageResponseCallback callback);
+
+  void RemoveSession(int session_id);
+
  private:
   friend class BrowserContextKeyedAPIFactory<GcdPrivateAPI>;
 
   typedef std::map<std::string /* id_string */,
                    linked_ptr<api::gcd_private::GCDDevice> > GCDDeviceMap;
+
+  typedef std::map<int /* session id*/, linked_ptr<GcdPrivateSessionHolder> >
+      GCDSessionMap;
 
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
@@ -65,6 +97,9 @@ class GcdPrivateAPI : public BrowserContextKeyedAPI,
       service_discovery_client_;
   scoped_ptr<local_discovery::PrivetDeviceLister> privet_device_lister_;
   GCDDeviceMap known_devices_;
+
+  GCDSessionMap sessions_;
+  int last_session_id_;
 
   content::BrowserContext* const browser_context_;
 };
@@ -141,6 +176,13 @@ class GcdPrivateEstablishSessionFunction : public ChromeAsyncExtensionFunction {
 
   // AsyncExtensionFunction overrides.
   virtual bool RunAsync() OVERRIDE;
+
+ private:
+  void OnConfirmCodeCallback(
+      int session_id,
+      api::gcd_private::Status status,
+      const std::string& confirm_code,
+      api::gcd_private::ConfirmationType confirmation_type);
 };
 
 class GcdPrivateConfirmCodeFunction : public ChromeAsyncExtensionFunction {
@@ -156,6 +198,7 @@ class GcdPrivateConfirmCodeFunction : public ChromeAsyncExtensionFunction {
   virtual bool RunAsync() OVERRIDE;
 
  private:
+  void OnSessionEstablishedCallback(api::gcd_private::Status status);
 };
 
 class GcdPrivateSendMessageFunction : public ChromeAsyncExtensionFunction {
@@ -171,6 +214,8 @@ class GcdPrivateSendMessageFunction : public ChromeAsyncExtensionFunction {
   virtual bool RunAsync() OVERRIDE;
 
  private:
+  void OnMessageSentCallback(api::gcd_private::Status status,
+                             const base::DictionaryValue& value);
 };
 
 class GcdPrivateTerminateSessionFunction : public ChromeAsyncExtensionFunction {

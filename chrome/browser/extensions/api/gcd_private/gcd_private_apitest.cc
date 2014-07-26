@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/api/mdns.h"
 #include "extensions/common/switches.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 #if defined(ENABLE_MDNS)
@@ -53,6 +54,16 @@ const char kGCDResponse[] =
     "  \"personalizedInfo\": {"
     "   \"maxRole\": \"owner\""
     "  }}]}";
+
+const char kPrivetInfoResponse[] =
+    "{"
+    "\"x-privet-token\": \"sample\""
+    "}";
+
+const char kPrivetPingResponse[] =
+    "{"
+    "\"response\": \"pong\""
+    "}";
 
 #if defined(ENABLE_MDNS)
 
@@ -205,7 +216,7 @@ class FakeGCDApiFlowFactory
 
 class GcdPrivateAPITest : public ExtensionApiTest {
  public:
-  GcdPrivateAPITest() {
+  GcdPrivateAPITest() : url_fetcher_factory_(NULL) {
 #if defined(ENABLE_MDNS)
     test_service_discovery_client_ =
         new local_discovery::TestServiceDiscoveryClient();
@@ -222,6 +233,7 @@ class GcdPrivateAPITest : public ExtensionApiTest {
 
  protected:
   FakeGCDApiFlowFactory api_flow_factory_;
+  net::FakeURLFetcherFactory url_fetcher_factory_;
 
 #if defined(ENABLE_MDNS)
   scoped_refptr<local_discovery::TestServiceDiscoveryClient>
@@ -237,6 +249,20 @@ IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, GetCloudList) {
       GURL("https://www.googleapis.com/clouddevices/v1/devices"), kGCDResponse);
 
   EXPECT_TRUE(RunExtensionSubtest("gcd_private/api", "get_cloud_list.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, Session) {
+  url_fetcher_factory_.SetFakeResponse(GURL("http://1.2.3.4:9090/privet/info"),
+                                       kPrivetInfoResponse,
+                                       net::HTTP_OK,
+                                       net::URLRequestStatus::SUCCESS);
+
+  url_fetcher_factory_.SetFakeResponse(GURL("http://1.2.3.4:9090/privet/ping"),
+                                       kPrivetPingResponse,
+                                       net::HTTP_OK,
+                                       net::URLRequestStatus::SUCCESS);
+
+  EXPECT_TRUE(RunExtensionSubtest("gcd_private/api", "session.html"));
 }
 
 #if defined(ENABLE_MDNS)
