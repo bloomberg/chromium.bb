@@ -230,9 +230,10 @@ v8::Local<v8::Value> ModuleSystem::RequireForJsInner(
 v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
     const std::string& module_name,
     const std::string& method_name) {
-  v8::HandleScope handle_scope(GetIsolate());
+  v8::EscapableHandleScope handle_scope(GetIsolate());
   v8::Handle<v8::Value> no_args;
-  return CallModuleMethod(module_name, method_name, 0, &no_args);
+  return handle_scope.Escape(
+      CallModuleMethod(module_name, method_name, 0, &no_args));
 }
 
 v8::Local<v8::Value> ModuleSystem::CallModuleMethod(

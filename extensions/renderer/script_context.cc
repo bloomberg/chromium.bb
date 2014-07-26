@@ -121,6 +121,8 @@ void ScriptContext::DispatchEvent(const char* event_name,
 }
 
 void ScriptContext::DispatchOnUnloadEvent() {
+  v8::HandleScope handle_scope(isolate());
+  v8::Context::Scope context_scope(v8_context());
   module_system_->CallModuleMethod("unload_event", "dispatch");
 }
 

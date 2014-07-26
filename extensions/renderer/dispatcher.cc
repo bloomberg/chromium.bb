@@ -75,7 +75,9 @@
 #include "extensions/renderer/user_gestures_native_handler.h"
 #include "extensions/renderer/utils_native_handler.h"
 #include "extensions/renderer/v8_context_native_handler.h"
+#include "grit/content_resources.h"
 #include "grit/extensions_renderer_resources.h"
+#include "mojo/public/js/bindings/constants.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebCustomElement.h"
@@ -455,6 +457,149 @@ void Dispatcher::ClearPortData(int port_id) {
   // |port_id| is a source port, std::map::erase() will just silently fail
   // here as a no-op.
   port_to_tab_id_map_.erase(port_id);
+}
+
+// static
+std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
+  std::vector<std::pair<std::string, int> > resources;
+
+  // Libraries.
+  resources.push_back(std::make_pair("entryIdManager", IDR_ENTRY_ID_MANAGER));
+  resources.push_back(std::make_pair(kEventBindings, IDR_EVENT_BINDINGS_JS));
+  resources.push_back(std::make_pair("imageUtil", IDR_IMAGE_UTIL_JS));
+  resources.push_back(std::make_pair("json_schema", IDR_JSON_SCHEMA_JS));
+  resources.push_back(std::make_pair("lastError", IDR_LAST_ERROR_JS));
+  resources.push_back(std::make_pair("messaging", IDR_MESSAGING_JS));
+  resources.push_back(
+      std::make_pair("messaging_utils", IDR_MESSAGING_UTILS_JS));
+  resources.push_back(std::make_pair(kSchemaUtils, IDR_SCHEMA_UTILS_JS));
+  resources.push_back(std::make_pair("sendRequest", IDR_SEND_REQUEST_JS));
+  resources.push_back(std::make_pair("setIcon", IDR_SET_ICON_JS));
+  resources.push_back(std::make_pair("test", IDR_TEST_CUSTOM_BINDINGS_JS));
+  resources.push_back(
+      std::make_pair("test_environment_specific_bindings",
+                     IDR_BROWSER_TEST_ENVIRONMENT_SPECIFIC_BINDINGS_JS));
+  resources.push_back(std::make_pair("uncaught_exception_handler",
+                                     IDR_UNCAUGHT_EXCEPTION_HANDLER_JS));
+  resources.push_back(std::make_pair("unload_event", IDR_UNLOAD_EVENT_JS));
+  resources.push_back(std::make_pair("utils", IDR_UTILS_JS));
+  resources.push_back(
+      std::make_pair(mojo::kBufferModuleName, IDR_MOJO_BUFFER_JS));
+  resources.push_back(
+      std::make_pair(mojo::kCodecModuleName, IDR_MOJO_CODEC_JS));
+  resources.push_back(
+      std::make_pair(mojo::kConnectionModuleName, IDR_MOJO_CONNECTION_JS));
+  resources.push_back(
+      std::make_pair(mojo::kConnectorModuleName, IDR_MOJO_CONNECTOR_JS));
+  resources.push_back(
+      std::make_pair(mojo::kRouterModuleName, IDR_MOJO_ROUTER_JS));
+  resources.push_back(
+      std::make_pair(mojo::kUnicodeModuleName, IDR_MOJO_UNICODE_JS));
+
+  // Custom bindings.
+  resources.push_back(
+      std::make_pair("app.runtime", IDR_APP_RUNTIME_CUSTOM_BINDINGS_JS));
+  resources.push_back(
+      std::make_pair("contextMenus", IDR_CONTEXT_MENUS_CUSTOM_BINDINGS_JS));
+  resources.push_back(
+      std::make_pair("extension", IDR_EXTENSION_CUSTOM_BINDINGS_JS));
+  resources.push_back(std::make_pair("i18n", IDR_I18N_CUSTOM_BINDINGS_JS));
+  resources.push_back(
+      std::make_pair("permissions", IDR_PERMISSIONS_CUSTOM_BINDINGS_JS));
+  resources.push_back(
+      std::make_pair("runtime", IDR_RUNTIME_CUSTOM_BINDINGS_JS));
+  resources.push_back(std::make_pair("binding", IDR_BINDING_JS));
+
+  // Custom types sources.
+  resources.push_back(std::make_pair("StorageArea", IDR_STORAGE_AREA_JS));
+
+  // Platform app sources that are not API-specific..
+  resources.push_back(std::make_pair("platformApp", IDR_PLATFORM_APP_JS));
+
+  return resources;
+}
+
+// NOTE: please use the naming convention "foo_natives" for these.
+// static
+void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
+                                        ScriptContext* context,
+                                        Dispatcher* dispatcher,
+                                        RequestSender* request_sender,
+                                        V8SchemaRegistry* v8_schema_registry) {
+  module_system->RegisterNativeHandler(
+      "chrome", scoped_ptr<NativeHandler>(new ChromeNativeHandler(context)));
+  module_system->RegisterNativeHandler(
+      "lazy_background_page",
+      scoped_ptr<NativeHandler>(new LazyBackgroundPageNativeHandler(context)));
+  module_system->RegisterNativeHandler(
+      "logging", scoped_ptr<NativeHandler>(new LoggingNativeHandler(context)));
+  module_system->RegisterNativeHandler("schema_registry",
+                                       v8_schema_registry->AsNativeHandler());
+  module_system->RegisterNativeHandler(
+      "print", scoped_ptr<NativeHandler>(new PrintNativeHandler(context)));
+  module_system->RegisterNativeHandler(
+      "test_features",
+      scoped_ptr<NativeHandler>(new TestFeaturesNativeHandler(context)));
+  module_system->RegisterNativeHandler(
+      "user_gestures",
+      scoped_ptr<NativeHandler>(new UserGesturesNativeHandler(context)));
+  module_system->RegisterNativeHandler(
+      "utils", scoped_ptr<NativeHandler>(new UtilsNativeHandler(context)));
+  module_system->RegisterNativeHandler(
+      "v8_context",
+      scoped_ptr<NativeHandler>(
+          new V8ContextNativeHandler(context, dispatcher)));
+  module_system->RegisterNativeHandler(
+      "event_natives",
+      scoped_ptr<NativeHandler>(new EventBindings(dispatcher, context)));
+  module_system->RegisterNativeHandler(
+      "messaging_natives",
+      scoped_ptr<NativeHandler>(MessagingBindings::Get(dispatcher, context)));
+  module_system->RegisterNativeHandler(
+      "apiDefinitions",
+      scoped_ptr<NativeHandler>(
+          new ApiDefinitionsNatives(dispatcher, context)));
+  module_system->RegisterNativeHandler(
+      "sendRequest",
+      scoped_ptr<NativeHandler>(
+          new SendRequestNatives(request_sender, context)));
+  module_system->RegisterNativeHandler(
+      "setIcon",
+      scoped_ptr<NativeHandler>(new SetIconNatives(request_sender, context)));
+  module_system->RegisterNativeHandler(
+      "activityLogger",
+      scoped_ptr<NativeHandler>(new APIActivityLogger(context)));
+  module_system->RegisterNativeHandler(
+      "renderViewObserverNatives",
+      scoped_ptr<NativeHandler>(new RenderViewObserverNatives(context)));
+
+  // Natives used by multiple APIs.
+  module_system->RegisterNativeHandler(
+      "file_system_natives",
+      scoped_ptr<NativeHandler>(new FileSystemNatives(context)));
+
+  // Custom bindings.
+  module_system->RegisterNativeHandler(
+      "app_runtime",
+      scoped_ptr<NativeHandler>(new AppRuntimeCustomBindings(context)));
+  module_system->RegisterNativeHandler(
+      "blob_natives",
+      scoped_ptr<NativeHandler>(new BlobNativeHandler(context)));
+  module_system->RegisterNativeHandler(
+      "context_menus",
+      scoped_ptr<NativeHandler>(new ContextMenusCustomBindings(context)));
+  module_system->RegisterNativeHandler(
+      "css_natives", scoped_ptr<NativeHandler>(new CssNativeHandler(context)));
+  module_system->RegisterNativeHandler(
+      "document_natives",
+      scoped_ptr<NativeHandler>(new DocumentCustomBindings(context)));
+  module_system->RegisterNativeHandler(
+      "i18n", scoped_ptr<NativeHandler>(new I18NCustomBindings(context)));
+  module_system->RegisterNativeHandler(
+      "id_generator",
+      scoped_ptr<NativeHandler>(new IdGeneratorCustomBindings(context)));
+  module_system->RegisterNativeHandler(
+      "runtime", scoped_ptr<NativeHandler>(new RuntimeCustomBindings(context)));
 }
 
 bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
@@ -962,29 +1107,11 @@ void Dispatcher::RegisterBinding(const std::string& api_name,
 // NOTE: please use the naming convention "foo_natives" for these.
 void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
                                         ScriptContext* context) {
-  module_system->RegisterNativeHandler(
-      "chrome", scoped_ptr<NativeHandler>(new ChromeNativeHandler(context)));
-  module_system->RegisterNativeHandler(
-      "lazy_background_page",
-      scoped_ptr<NativeHandler>(new LazyBackgroundPageNativeHandler(context)));
-  module_system->RegisterNativeHandler(
-      "logging", scoped_ptr<NativeHandler>(new LoggingNativeHandler(context)));
-  module_system->RegisterNativeHandler("schema_registry",
-                                       v8_schema_registry_->AsNativeHandler());
-  module_system->RegisterNativeHandler(
-      "print", scoped_ptr<NativeHandler>(new PrintNativeHandler(context)));
-  module_system->RegisterNativeHandler(
-      "test_features",
-      scoped_ptr<NativeHandler>(new TestFeaturesNativeHandler(context)));
-  module_system->RegisterNativeHandler(
-      "user_gestures",
-      scoped_ptr<NativeHandler>(new UserGesturesNativeHandler(context)));
-  module_system->RegisterNativeHandler(
-      "utils", scoped_ptr<NativeHandler>(new UtilsNativeHandler(context)));
-  module_system->RegisterNativeHandler(
-      "v8_context",
-      scoped_ptr<NativeHandler>(new V8ContextNativeHandler(context, this)));
-
+  RegisterNativeHandlers(module_system,
+                         context,
+                         this,
+                         request_sender_.get(),
+                         v8_schema_registry_.get());
   const Extension* extension = context->extension();
   int manifest_version = extension ? extension->manifest_version() : 1;
   bool send_request_disabled =
@@ -1000,95 +1127,17 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
           manifest_version,
           send_request_disabled)));
 
-  module_system->RegisterNativeHandler(
-      "event_natives",
-      scoped_ptr<NativeHandler>(new EventBindings(this, context)));
-  module_system->RegisterNativeHandler(
-      "messaging_natives",
-      scoped_ptr<NativeHandler>(MessagingBindings::Get(this, context)));
-  module_system->RegisterNativeHandler(
-      "apiDefinitions",
-      scoped_ptr<NativeHandler>(new ApiDefinitionsNatives(this, context)));
-  module_system->RegisterNativeHandler(
-      "sendRequest",
-      scoped_ptr<NativeHandler>(
-          new SendRequestNatives(request_sender_.get(), context)));
-  module_system->RegisterNativeHandler(
-      "setIcon",
-      scoped_ptr<NativeHandler>(
-          new SetIconNatives(request_sender_.get(), context)));
-  module_system->RegisterNativeHandler(
-      "activityLogger",
-      scoped_ptr<NativeHandler>(new APIActivityLogger(context)));
-  module_system->RegisterNativeHandler(
-      "renderViewObserverNatives",
-      scoped_ptr<NativeHandler>(new RenderViewObserverNatives(context)));
-
-  // Natives used by multiple APIs.
-  module_system->RegisterNativeHandler(
-      "file_system_natives",
-      scoped_ptr<NativeHandler>(new FileSystemNatives(context)));
-
-  // Custom bindings.
-  module_system->RegisterNativeHandler(
-      "app_runtime",
-      scoped_ptr<NativeHandler>(new AppRuntimeCustomBindings(context)));
-  module_system->RegisterNativeHandler(
-      "blob_natives",
-      scoped_ptr<NativeHandler>(new BlobNativeHandler(context)));
-  module_system->RegisterNativeHandler(
-      "context_menus",
-      scoped_ptr<NativeHandler>(new ContextMenusCustomBindings(context)));
-  module_system->RegisterNativeHandler(
-      "css_natives", scoped_ptr<NativeHandler>(new CssNativeHandler(context)));
-  module_system->RegisterNativeHandler(
-      "document_natives",
-      scoped_ptr<NativeHandler>(new DocumentCustomBindings(context)));
-  module_system->RegisterNativeHandler(
-      "i18n", scoped_ptr<NativeHandler>(new I18NCustomBindings(context)));
-  module_system->RegisterNativeHandler(
-      "id_generator",
-      scoped_ptr<NativeHandler>(new IdGeneratorCustomBindings(context)));
-  module_system->RegisterNativeHandler(
-      "runtime", scoped_ptr<NativeHandler>(new RuntimeCustomBindings(context)));
-
   delegate_->RegisterNativeHandlers(this, module_system, context);
 }
 
 void Dispatcher::PopulateSourceMap() {
-  // Libraries.
-  source_map_.RegisterSource("entryIdManager", IDR_ENTRY_ID_MANAGER);
-  source_map_.RegisterSource(kEventBindings, IDR_EVENT_BINDINGS_JS);
-  source_map_.RegisterSource("imageUtil", IDR_IMAGE_UTIL_JS);
-  source_map_.RegisterSource("json_schema", IDR_JSON_SCHEMA_JS);
-  source_map_.RegisterSource("lastError", IDR_LAST_ERROR_JS);
-  source_map_.RegisterSource("messaging", IDR_MESSAGING_JS);
-  source_map_.RegisterSource("messaging_utils", IDR_MESSAGING_UTILS_JS);
-  source_map_.RegisterSource(kSchemaUtils, IDR_SCHEMA_UTILS_JS);
-  source_map_.RegisterSource("sendRequest", IDR_SEND_REQUEST_JS);
-  source_map_.RegisterSource("setIcon", IDR_SET_ICON_JS);
-  source_map_.RegisterSource("test", IDR_TEST_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("uncaught_exception_handler",
-                             IDR_UNCAUGHT_EXCEPTION_HANDLER_JS);
-  source_map_.RegisterSource("unload_event", IDR_UNLOAD_EVENT_JS);
-  source_map_.RegisterSource("utils", IDR_UTILS_JS);
-
-  // Custom bindings.
-  source_map_.RegisterSource("app.runtime", IDR_APP_RUNTIME_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("contextMenus",
-                             IDR_CONTEXT_MENUS_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("extension", IDR_EXTENSION_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("i18n", IDR_I18N_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("permissions", IDR_PERMISSIONS_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("runtime", IDR_RUNTIME_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("binding", IDR_BINDING_JS);
-
-  // Custom types sources.
-  source_map_.RegisterSource("StorageArea", IDR_STORAGE_AREA_JS);
-
-  // Platform app sources that are not API-specific..
-  source_map_.RegisterSource("platformApp", IDR_PLATFORM_APP_JS);
-
+  const std::vector<std::pair<std::string, int> > resources = GetJsResources();
+  for (std::vector<std::pair<std::string, int> >::const_iterator resource =
+           resources.begin();
+       resource != resources.end();
+       ++resource) {
+    source_map_.RegisterSource(resource->first, resource->second);
+  }
   delegate_->PopulateSourceMap(&source_map_);
 }
 

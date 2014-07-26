@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/scoped_observer.h"
@@ -135,6 +136,15 @@ class Dispatcher : public content::RenderProcessObserver,
                                 bool user_gesture);
 
   void ClearPortData(int port_id);
+
+  // Returns a list of (module name, resource id) pairs for the JS modules to
+  // add to the source map.
+  static std::vector<std::pair<std::string, int> > GetJsResources();
+  static void RegisterNativeHandlers(ModuleSystem* module_system,
+                                     ScriptContext* context,
+                                     Dispatcher* dispatcher,
+                                     RequestSender* request_sender,
+                                     V8SchemaRegistry* v8_schema_registry);
 
  private:
   friend class ::ChromeRenderViewTest;

@@ -131,7 +131,7 @@ ModuleSystemTestEnvironment::ModuleSystemTestEnvironment(v8::Isolate* isolate)
   context_.reset(new ScriptContext(context_holder_->context(),
                                    NULL,  // WebFrame
                                    NULL,  // Extension
-                                   Feature::UNSPECIFIED_CONTEXT));
+                                   Feature::BLESSED_EXTENSION_CONTEXT));
   context_->v8_context()->Enter();
   assert_natives_ = new AssertNatives(context_.get());
 

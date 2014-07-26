@@ -7,10 +7,9 @@
 
 var binding = require('binding').Binding.create('test');
 
-var chrome = requireNative('chrome').GetChrome();
+var environmentSpecificBindings = require('test_environment_specific_bindings');
 var GetExtensionAPIDefinitionsForTest =
     requireNative('apiDefinitions').GetExtensionAPIDefinitionsForTest;
-var GetAvailability = requireNative('v8_context').GetAvailability;
 var GetAPIFeatures = requireNative('test_features').GetAPIFeatures;
 var uncaughtExceptionHandler = require('uncaught_exception_handler');
 var userGestures = requireNative('user_gestures');
@@ -37,9 +36,7 @@ binding.registerCustomHook(function(api) {
   }
 
   function testDone() {
-    // Use setTimeout here to allow previous test contexts to be
-    // eligible for garbage collection.
-    setTimeout(chromeTest.runNextTest, 0);
+    environmentSpecificBindings.testDone(chromeTest.runNextTest);
   }
 
   function allTestsDone() {
@@ -60,7 +57,7 @@ binding.registerCustomHook(function(api) {
     return function() {
       if (called != null) {
         var redundantPrefix = 'Error\n';
-        chrome.test.fail(
+        chromeTest.fail(
           'Callback has already been run. ' +
           'First call:\n' +
           $String.slice(called, redundantPrefix.length) + '\n' +
@@ -355,6 +352,8 @@ binding.registerCustomHook(function(api) {
     chromeTest.assertEq(typeof(callback), 'function');
     uncaughtExceptionHandler.setHandler(callback);
   });
+
+  environmentSpecificBindings.registerHooks(api);
 });
 
 exports.binding = binding.generate();

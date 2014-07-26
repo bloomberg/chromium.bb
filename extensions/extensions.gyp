@@ -535,7 +535,9 @@
       'dependencies': [
         'extensions_resources.gyp:extensions_resources',
         '../chrome/chrome_resources.gyp:chrome_resources',
+        '../content/content_resources.gyp:content_resources',
         '../gin/gin.gyp:gin',
+        '../mojo/mojo.gyp:mojo_js_bindings',
         '../third_party/WebKit/public/blink.gyp:blink',
       ],
       'include_dirs': [
@@ -733,6 +735,7 @@
       'target_name': 'extensions_pak',
       'type': 'none',
       'dependencies': [
+        '../content/content_resources.gyp:content_resources',
         '../ui/strings/ui_strings.gyp:ui_strings',
         'extensions_resources.gyp:extensions_resources',
       ],
@@ -741,6 +744,7 @@
           'action_name': 'repack_extensions_pak',
           'variables': {
             'pak_inputs': [
+              '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_renderer_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/strings/app_locale_settings_en-US.pak',
@@ -763,6 +767,11 @@
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
         '../content/content_shell_and_tests.gyp:test_support_content',
+        '../device/serial/serial.gyp:device_serial',
+        '../mojo/mojo.gyp:mojo_environment_chromium',
+        '../mojo/mojo.gyp:mojo_cpp_bindings',
+        '../mojo/mojo.gyp:mojo_js_bindings_lib',
+        '../mojo/mojo.gyp:mojo_system_impl',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         'extensions_common',
@@ -781,6 +790,9 @@
         'common/one_shot_event_unittest.cc',
         'common/permissions/manifest_permission_set_unittest.cc',
         'common/user_script_unittest.cc',
+        'renderer/api_test_base.cc',
+        'renderer/api_test_base.h',
+        'renderer/api_test_base_unittest.cc',
         'renderer/event_unittest.cc',
         'renderer/json_schema_unittest.cc',
         'renderer/messaging_utils_unittest.cc',
