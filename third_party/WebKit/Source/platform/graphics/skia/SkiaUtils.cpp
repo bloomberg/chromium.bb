@@ -199,20 +199,6 @@ InterpolationQuality limitInterpolationQuality(const GraphicsContext* context, I
     return std::min(resampling, context->imageInterpolationQuality());
 }
 
-SkPaint::FilterLevel convertToSkiaFilterLevel(bool useBicubicFilter, InterpolationQuality resampling)
-{
-    // FIXME: If we get rid of this special case, this function can go away entirely.
-    if (useBicubicFilter)
-        return SkPaint::kHigh_FilterLevel;
-
-    // InterpolationHigh if useBicubicFilter is false means that we do
-    // a manual high quality resampling before drawing to Skia.
-    if (resampling == InterpolationHigh)
-        return SkPaint::kNone_FilterLevel;
-
-    return static_cast<SkPaint::FilterLevel>(resampling);
-}
-
 InterpolationQuality computeInterpolationQuality(
     const SkMatrix& matrix,
     float srcWidth,

@@ -1897,9 +1897,7 @@ void GraphicsContext::preparePaintForDrawRectToRect(
         resampling = InterpolationLow;
     }
     resampling = limitInterpolationQuality(this, resampling);
-
-    bool useBicubicFilter = resampling == InterpolationHigh;
-    paint->setFilterLevel(convertToSkiaFilterLevel(useBicubicFilter, resampling));
+    paint->setFilterLevel(static_cast<SkPaint::FilterLevel>(resampling));
 }
 
 }

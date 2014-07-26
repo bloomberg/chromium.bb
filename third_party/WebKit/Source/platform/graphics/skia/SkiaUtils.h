@@ -95,8 +95,6 @@ bool nearlyIntegral(float value);
 
 InterpolationQuality limitInterpolationQuality(const GraphicsContext*, InterpolationQuality resampling);
 
-SkPaint::FilterLevel convertToSkiaFilterLevel(bool useBicubicFilter, InterpolationQuality resampling);
-
 InterpolationQuality computeInterpolationQuality(
     const SkMatrix&,
     float srcWidth,
