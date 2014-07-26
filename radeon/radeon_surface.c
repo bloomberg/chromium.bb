@@ -1914,7 +1914,7 @@ static void cik_get_2d_params(struct radeon_surface_manager *surf_man,
         sample_split = 1;
         break;
     case CIK__SAMPLE_SPLIT__2:
-        sample_split = 1;
+        sample_split = 2;
         break;
     case CIK__SAMPLE_SPLIT__4:
         sample_split = 4;
