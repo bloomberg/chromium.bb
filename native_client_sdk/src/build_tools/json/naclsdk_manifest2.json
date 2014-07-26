@@ -366,6 +366,16 @@
     },
     {
       "archives": [],
+      "description": "Chrome 37 bundle, revision xxxxx",
+      "name": "pepper_37",
+      "recommended": "no",
+      "repath": "pepper_37",
+      "revision": 0,
+      "stability": "post_stable",
+      "version": 37
+    },
+    {
+      "archives": [],
       "description": "Chrome Canary",
       "name": "pepper_canary",
       "recommended": "no",
