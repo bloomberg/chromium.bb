@@ -798,6 +798,7 @@
               },
               'mac_bundle_resources': [
                 '<(PRODUCT_DIR)/icudtl.dat',
+                'host/disconnect_window.xib',
                 'host/it2me/remote_assistance_host-Info.plist',
                 '<!@pymod_do_main(remoting_copy_locales -o -p <(OS) -x <(PRODUCT_DIR) <(remoting_locales))',
 
