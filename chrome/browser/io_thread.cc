@@ -1134,7 +1134,7 @@ void IOThread::ConfigureQuic(const CommandLine& command_line) {
   std::string group =
       base::FieldTrialList::FindFullName(kQuicFieldTrialName);
   VariationParameters params;
-  if (!chrome_variations::GetVariationParams(kQuicFieldTrialName, &params)) {
+  if (!variations::GetVariationParams(kQuicFieldTrialName, &params)) {
     params.clear();
   }
 

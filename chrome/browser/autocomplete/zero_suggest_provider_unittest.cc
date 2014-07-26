@@ -103,7 +103,7 @@ void ZeroSuggestProviderTest::ResetFieldTrialList() {
   field_trial_list_.reset();
   field_trial_list_.reset(new base::FieldTrialList(
       new metrics::SHA1EntropyProvider("foo")));
-  chrome_variations::testing::ClearAllVariationParams();
+  variations::testing::ClearAllVariationParams();
 }
 
 void ZeroSuggestProviderTest::CreatePersonalizedFieldTrial() {
@@ -111,7 +111,7 @@ void ZeroSuggestProviderTest::CreatePersonalizedFieldTrial() {
   params[std::string(OmniboxFieldTrial::kZeroSuggestRule)] = "true";
   params[std::string(OmniboxFieldTrial::kZeroSuggestVariantRule)] =
       "Personalized";
-  chrome_variations::AssociateVariationParams(
+  variations::AssociateVariationParams(
       OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params);
   base::FieldTrialList::CreateFieldTrial(
       OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");

@@ -14,7 +14,7 @@
 #include "components/variations/study_filtering.h"
 #include "components/variations/variations_associated_data.h"
 
-namespace chrome_variations {
+namespace variations {
 
 namespace {
 
@@ -186,4 +186,4 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
   }
 }
 
-}  // namespace chrome_variations
+}  // namespace variations

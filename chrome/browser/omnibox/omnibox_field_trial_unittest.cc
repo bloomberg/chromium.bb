@@ -30,7 +30,7 @@ class OmniboxFieldTrialTest : public testing::Test {
     field_trial_list_.reset();
     field_trial_list_.reset(new base::FieldTrialList(
         new metrics::SHA1EntropyProvider("foo")));
-    chrome_variations::testing::ClearAllVariationParams();
+    variations::testing::ClearAllVariationParams();
     OmniboxFieldTrial::ActivateDynamicTrials();
   }
 
@@ -47,7 +47,7 @@ class OmniboxFieldTrialTest : public testing::Test {
   static void CreateDisableZeroSuggestTrial() {
     std::map<std::string, std::string> params;
     params[std::string(OmniboxFieldTrial::kZeroSuggestRule)] = "false";
-    chrome_variations::AssociateVariationParams(
+    variations::AssociateVariationParams(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params);
     base::FieldTrialList::CreateFieldTrial(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
@@ -151,7 +151,7 @@ TEST_F(OmniboxFieldTrialTest, ZeroSuggestFieldTrial) {
     ResetFieldTrialList();
     std::map<std::string, std::string> params;
     params[std::string(OmniboxFieldTrial::kZeroSuggestRule)] = "true";
-    ASSERT_TRUE(chrome_variations::AssociateVariationParams(
+    ASSERT_TRUE(variations::AssociateVariationParams(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
     base::FieldTrialList::CreateFieldTrial(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
@@ -162,7 +162,7 @@ TEST_F(OmniboxFieldTrialTest, ZeroSuggestFieldTrial) {
     ResetFieldTrialList();
     params[std::string(OmniboxFieldTrial::kZeroSuggestVariantRule)] =
         "MostVisited";
-    ASSERT_TRUE(chrome_variations::AssociateVariationParams(
+    ASSERT_TRUE(variations::AssociateVariationParams(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
     base::FieldTrialList::CreateFieldTrial(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
@@ -175,7 +175,7 @@ TEST_F(OmniboxFieldTrialTest, ZeroSuggestFieldTrial) {
         "AfterTyping";
     base::FieldTrialList::CreateFieldTrial(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
-    ASSERT_TRUE(chrome_variations::AssociateVariationParams(
+    ASSERT_TRUE(variations::AssociateVariationParams(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
     EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
     EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
@@ -191,7 +191,7 @@ TEST_F(OmniboxFieldTrialTest, GetDemotionsByTypeWithFallback) {
     params[std::string(OmniboxFieldTrial::kDemoteByTypeRule) + ":3:*"] =
         "5:100";
     params[std::string(OmniboxFieldTrial::kDemoteByTypeRule) + ":*:*"] = "1:25";
-    ASSERT_TRUE(chrome_variations::AssociateVariationParams(
+    ASSERT_TRUE(variations::AssociateVariationParams(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
   }
   base::FieldTrialList::CreateFieldTrial(
@@ -232,7 +232,7 @@ TEST_F(OmniboxFieldTrialTest, GetValueForRuleInContext) {
     params["rule4:4:0"] = "rule4-4-0-value";  // OTHER
     // Add a malformed rule to make sure it doesn't screw things up.
     params["unrecognized"] = "unrecognized-value";
-    ASSERT_TRUE(chrome_variations::AssociateVariationParams(
+    ASSERT_TRUE(variations::AssociateVariationParams(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
   }
 
@@ -340,7 +340,7 @@ TEST_F(OmniboxFieldTrialTest, HUPNewScoringFieldTrial) {
     params[std::string(
         OmniboxFieldTrial::kHUPNewScoringVisitedCountScoreBucketsParam)] =
         "5:300,0:200";
-    ASSERT_TRUE(chrome_variations::AssociateVariationParams(
+    ASSERT_TRUE(variations::AssociateVariationParams(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
   }
   base::FieldTrialList::CreateFieldTrial(

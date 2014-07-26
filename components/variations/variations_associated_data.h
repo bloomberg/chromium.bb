@@ -37,11 +37,11 @@
 //
 // VariationID id = GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, "trial",
 //                                       "group1");
-// if (id != chrome_variations::kEmptyID) {
+// if (id != variations::kEmptyID) {
 //   // use |id|
 // }
 
-namespace chrome_variations {
+namespace variations {
 
 typedef int VariationID;
 
@@ -64,13 +64,13 @@ enum IDCollectionKey {
   ID_COLLECTION_COUNT,
 };
 
-// Associate a chrome_variations::VariationID value with a FieldTrial group for
+// Associate a variations::VariationID value with a FieldTrial group for
 // collection |key|. If an id was previously set for |trial_name| and
 // |group_name|, this does nothing. The group is denoted by |trial_name| and
 // |group_name|. This must be called whenever a FieldTrial is prepared (create
-// the trial and append groups) and needs to have a
-// chrome_variations::VariationID associated with it so Google servers can
-// recognize the FieldTrial. Thread safe.
+// the trial and append groups) and needs to have a variations::VariationID
+// associated with it so Google servers can recognize the FieldTrial.
+// Thread safe.
 void AssociateGoogleVariationID(IDCollectionKey key,
                                 const std::string& trial_name,
                                 const std::string& group_name,
@@ -82,12 +82,12 @@ void AssociateGoogleVariationIDForce(IDCollectionKey key,
                                      const std::string& group_name,
                                      VariationID id);
 
-// Retrieve the chrome_variations::VariationID associated with a FieldTrial
-// group for collection |key|. The group is denoted by |trial_name| and
-// |group_name|. This will return chrome_variations::kEmptyID if there is
-// currently no associated ID for the named group. This API can be nicely
-// combined with FieldTrial::GetActiveFieldTrialGroups() to enumerate the
-// variation IDs for all active FieldTrial groups. Thread safe.
+// Retrieve the variations::VariationID associated with a FieldTrial group for
+// collection |key|. The group is denoted by |trial_name| and |group_name|.
+// This will return variations::kEmptyID if there is currently no associated ID
+// for the named group. This API can be nicely combined with
+// FieldTrial::GetActiveFieldTrialGroups() to enumerate the variation IDs for
+// all active FieldTrial groups. Thread safe.
 VariationID GetGoogleVariationID(IDCollectionKey key,
                                  const std::string& trial_name,
                                  const std::string& group_name);
@@ -131,6 +131,6 @@ void ClearAllVariationParams();
 
 }  // namespace testing
 
-}  // namespace chrome_variations
+}  // namespace variations
 
 #endif  // COMPONENTS_VARIATIONS_VARIATIONS_ASSOCIATED_DATA_H_

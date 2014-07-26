@@ -59,8 +59,8 @@ bool MetricsPrivateGetVariationParamsFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   GetVariationParams::Results::Params result;
-  if (chrome_variations::GetVariationParams(
-      params->name, &result.additional_properties)) {
+  if (variations::GetVariationParams(params->name,
+                                     &result.additional_properties)) {
     SetResult(result.ToValue().release());
   }
   return true;

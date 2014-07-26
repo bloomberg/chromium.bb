@@ -119,7 +119,7 @@ VariationsSeedStore::VariationsSeedStore(PrefService* local_state)
 VariationsSeedStore::~VariationsSeedStore() {
 }
 
-bool VariationsSeedStore::LoadSeed(VariationsSeed* seed) {
+bool VariationsSeedStore::LoadSeed(variations::VariationsSeed* seed) {
   const std::string base64_seed_data =
       local_state_->GetString(prefs::kVariationsSeed);
   if (base64_seed_data.empty()) {
@@ -163,14 +163,14 @@ bool VariationsSeedStore::StoreSeedData(
     const std::string& seed_data,
     const std::string& base64_seed_signature,
     const base::Time& date_fetched,
-    VariationsSeed* parsed_seed) {
+    variations::VariationsSeed* parsed_seed) {
   if (seed_data.empty()) {
     VLOG(1) << "Variations seed data is empty, rejecting the seed.";
     return false;
   }
 
   // Only store the seed data if it parses correctly.
-  VariationsSeed seed;
+  variations::VariationsSeed seed;
   if (!seed.ParseFromString(seed_data)) {
     VLOG(1) << "Variations seed data is not in valid proto format, "
             << "rejecting the seed.";

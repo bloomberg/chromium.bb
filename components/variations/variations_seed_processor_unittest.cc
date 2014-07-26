@@ -15,7 +15,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome_variations {
+namespace variations {
 
 namespace {
 
@@ -463,4 +463,4 @@ TEST_F(VariationsSeedProcessorTest, StartsActiveWithFlag) {
             base::FieldTrialList::FindFullName(kFlagStudyName));
 }
 
-}  // namespace chrome_variations
+}  // namespace variations

@@ -516,7 +516,7 @@ class AutomaticProfileResetterTestBase : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    chrome_variations::testing::ClearAllVariationParams();
+    variations::testing::ClearAllVariationParams();
     base::FieldTrialList::CreateFieldTrial(kAutomaticProfileResetStudyName,
                                            experiment_group_name_);
     resetter_.reset(
@@ -551,7 +551,7 @@ class AutomaticProfileResetterTestBase : public testing::Test {
       std::map<std::string, std::string> variation_params;
       variation_params["program"] = testing_program_;
       variation_params["hash_seed"] = testing_hash_seed_;
-      ASSERT_TRUE(chrome_variations::AssociateVariationParams(
+      ASSERT_TRUE(variations::AssociateVariationParams(
           kAutomaticProfileResetStudyName,
           experiment_group_name_,
           variation_params));

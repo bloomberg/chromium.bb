@@ -106,8 +106,7 @@ bool GetProgramAndHashSeedOverridesFromExperiment(std::string* program,
   DCHECK(hash_seed);
 #if defined(GOOGLE_CHROME_BUILD)
   std::map<std::string, std::string> params;
-  chrome_variations::GetVariationParams(kAutomaticProfileResetStudyName,
-                                        &params);
+  variations::GetVariationParams(kAutomaticProfileResetStudyName, &params);
   if (params.count(kAutomaticProfileResetStudyProgramParameterName) &&
       params.count(kAutomaticProfileResetStudyHashSeedParameterName)) {
     program->swap(params[kAutomaticProfileResetStudyProgramParameterName]);

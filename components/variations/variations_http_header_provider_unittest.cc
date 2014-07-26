@@ -17,12 +17,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-// TODO(mathp): Remove once everything is under namespace 'variations'.
-using chrome_variations::GOOGLE_WEB_PROPERTIES;
-using chrome_variations::GOOGLE_WEB_PROPERTIES_TRIGGER;
-using chrome_variations::IDCollectionKey;
-using chrome_variations::VariationID;
-
 namespace variations {
 
 namespace {
@@ -44,13 +38,14 @@ bool ExtractVariationIds(const std::string& variations,
 }
 
 scoped_refptr<base::FieldTrial> CreateTrialAndAssociateId(
-    const std::string& trial_name, const std::string& default_group_name,
-    IDCollectionKey key, VariationID id) {
+    const std::string& trial_name,
+    const std::string& default_group_name,
+    IDCollectionKey key,
+    VariationID id) {
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::CreateFieldTrial(trial_name, default_group_name));
 
-  chrome_variations::AssociateGoogleVariationID(key, trial->trial_name(),
-                                                trial->group_name(), id);
+  AssociateGoogleVariationID(key, trial->trial_name(), trial->group_name(), id);
 
   return trial;
 }
@@ -64,7 +59,7 @@ class VariationsHttpHeaderProviderTest : public ::testing::Test {
   virtual ~VariationsHttpHeaderProviderTest() {}
 
   virtual void TearDown() OVERRIDE {
-    chrome_variations::testing::ClearAllVariationIDs();
+    testing::ClearAllVariationIDs();
   }
 };
 
@@ -156,7 +151,6 @@ TEST_F(VariationsHttpHeaderProviderTest, ShouldAppendHeaders) {
         {"http://ssl.gstatic.com", true},
         {"http://a.b.gstatic.com", true},
         {"http://a.b.ytimg.com", true},
-
     };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {

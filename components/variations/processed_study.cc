@@ -10,7 +10,7 @@
 #include "base/version.h"
 #include "components/variations/proto/study.pb.h"
 
-namespace chrome_variations {
+namespace variations {
 
 namespace {
 
@@ -114,4 +114,4 @@ bool ProcessedStudy::ValidateAndAppendStudy(
   return false;
 }
 
-}  // namespace chrome_variations
+}  // namespace variations
