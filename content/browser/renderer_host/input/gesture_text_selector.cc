@@ -40,15 +40,15 @@ bool GestureTextSelector::OnGestureEvent(const ui::GestureEventData& gesture) {
     }
     case ui::ET_GESTURE_SCROLL_BEGIN: {
       client_->Unselect();
-      // TODO(changwan): check if we can show handles on ET_GESTURE_SCROLL_END
-      // instead. Currently it is not possible as ShowSelectionHandles should
-      // be called before we change the selection.
-      client_->ShowSelectionHandlesAutomatically();
       anchor_x_ = gesture.x;
       anchor_y_ = gesture.y;
       break;
     }
     case ui::ET_GESTURE_SCROLL_UPDATE: {
+      // TODO(changwan): check if we can show handles on ET_GESTURE_SCROLL_END
+      // instead. Currently it is not possible as ShowSelectionHandles should
+      // be called before we change the selection.
+      client_->ShowSelectionHandlesAutomatically();
       client_->SelectRange(anchor_x_, anchor_y_, gesture.x, gesture.y);
       break;
     }
