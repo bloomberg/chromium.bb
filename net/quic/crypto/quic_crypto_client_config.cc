@@ -4,6 +4,7 @@
 
 #include "net/quic/crypto/quic_crypto_client_config.h"
 
+#include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -29,6 +30,30 @@ using std::vector;
 
 namespace net {
 
+namespace {
+
+enum ServerConfigState {
+  // WARNING: Do not change the numerical values of any of server config state.
+  // Do not remove deprecated server config states - just comment them as
+  // deprecated.
+  SERVER_CONFIG_EMPTY = 0,
+  SERVER_CONFIG_INVALID = 1,
+  SERVER_CONFIG_CORRUPTED = 2,
+  SERVER_CONFIG_EXPIRED = 3,
+
+  // NOTE: Add new server config states only immediately above this line. Make
+  // sure to update the QuicServerConfigState enum in
+  // tools/metrics/histograms/histograms.xml accordingly.
+  SERVER_CONFIG_COUNT
+};
+
+void RecordServerConfigState(ServerConfigState server_config_state) {
+  UMA_HISTOGRAM_ENUMERATION("Net.QuicClientHelloServerConfigState",
+                            server_config_state, SERVER_CONFIG_COUNT);
+}
+
+}  // namespace
+
 QuicCryptoClientConfig::QuicCryptoClientConfig()
     : disable_ecdsa_(false) {}
 
@@ -43,7 +68,13 @@ QuicCryptoClientConfig::CachedState::CachedState()
 QuicCryptoClientConfig::CachedState::~CachedState() {}
 
 bool QuicCryptoClientConfig::CachedState::IsComplete(QuicWallTime now) const {
-  if (server_config_.empty() || !server_config_valid_) {
+  if (server_config_.empty()) {
+    RecordServerConfigState(SERVER_CONFIG_EMPTY);
+    return false;
+  }
+
+  if (!server_config_valid_) {
+    RecordServerConfigState(SERVER_CONFIG_INVALID);
     return false;
   }
 
@@ -51,12 +82,14 @@ bool QuicCryptoClientConfig::CachedState::IsComplete(QuicWallTime now) const {
   if (!scfg) {
     // Should be impossible short of cache corruption.
     DCHECK(false);
+    RecordServerConfigState(SERVER_CONFIG_CORRUPTED);
     return false;
   }
 
   uint64 expiry_seconds;
   if (scfg->GetUint64(kEXPY, &expiry_seconds) != QUIC_NO_ERROR ||
       now.ToUNIXSeconds() >= expiry_seconds) {
+    RecordServerConfigState(SERVER_CONFIG_EXPIRED);
     return false;
   }
 
