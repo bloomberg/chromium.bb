@@ -50,6 +50,8 @@
         'test/engine/mock_nudge_handler.h',
         'test/engine/mock_update_handler.cc',
         'test/engine/mock_update_handler.h',
+        'test/engine/simple_cryptographer_provider.cc',
+        'test/engine/simple_cryptographer_provider.h',
         'test/engine/single_type_mock_server.cc',
         'test/engine/single_type_mock_server.h',
         'test/engine/test_directory_setter_upper.cc',
