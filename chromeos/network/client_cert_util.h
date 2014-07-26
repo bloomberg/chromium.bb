@@ -63,6 +63,11 @@ CHROMEOS_EXPORT scoped_refptr<net::X509Certificate> GetCertificateMatch(
     const CertificatePattern& pattern,
     const net::CertificateList& all_certs);
 
+// Returns the PKCS11 id part of |cert_id|, which is expected to be the value of
+// the Shill property kEapCertIdProperty or kEapKeyIdProperty.
+CHROMEOS_EXPORT std::string GetPkcs11IdFromEapCertId(
+    const std::string& cert_id);
+
 // If not empty, sets the TPM properties in |properties|. If |pkcs11_id| is not
 // NULL, also sets the ClientCertID. |cert_config_type| determines which
 // dictionary entries to set.

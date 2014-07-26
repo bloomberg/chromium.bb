@@ -218,6 +218,22 @@ scoped_refptr<net::X509Certificate> GetCertificateMatch(
   return latest;
 }
 
+std::string GetPkcs11IdFromEapCertId(const std::string& cert_id) {
+  if (cert_id.empty())
+    return std::string();
+
+  size_t delimiter_pos = cert_id.find(':');
+  if (delimiter_pos == std::string::npos) {
+    // No delimiter found, so |cert_id| only contains the PKCS11 id.
+    return cert_id;
+  }
+  if (delimiter_pos + 1 >= cert_id.size()) {
+    LOG(ERROR) << "Empty PKCS11 id in cert id.";
+    return std::string();
+  }
+  return cert_id.substr(delimiter_pos + 1);
+}
+
 void SetShillProperties(const ConfigType cert_config_type,
                         const std::string& tpm_slot,
                         const std::string& tpm_pin,

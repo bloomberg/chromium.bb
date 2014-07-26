@@ -1295,9 +1295,10 @@ void WifiConfigView::InitFromProperties(
     std::string eap_cert_id;
     properties.GetStringWithoutPathExpansion(
         shill::kEapCertIdProperty, &eap_cert_id);
-    if (!eap_cert_id.empty()) {
+    std::string pkcs11_id = client_cert::GetPkcs11IdFromEapCertId(eap_cert_id);
+    if (!pkcs11_id.empty()) {
       int cert_index =
-          CertLibrary::Get()->GetUserCertIndexByPkcs11Id(eap_cert_id);
+          CertLibrary::Get()->GetUserCertIndexByPkcs11Id(pkcs11_id);
       if (cert_index >= 0)
         user_cert_combobox_->SetSelectedIndex(cert_index);
     }
