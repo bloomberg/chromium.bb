@@ -105,17 +105,16 @@ static const int kAACSBRObjectType = 5;
 
 static int GetMP4AudioObjectType(const std::string& codec_id,
                                  const LogCB& log_cb) {
-  int audio_object_type;
   std::vector<std::string> tokens;
-  if (Tokenize(codec_id, ".", &tokens) != 3 ||
-      tokens[0] != "mp4a" || tokens[1] != "40" ||
-      !base::HexStringToInt(tokens[2], &audio_object_type)) {
-    MEDIA_LOG(log_cb) << "Malformed mimetype codec '" << codec_id << "'";
-    return -1;
+  if (Tokenize(codec_id, ".", &tokens) == 3 &&
+      tokens[0] == "mp4a" && tokens[1] == "40") {
+    int audio_object_type;
+    if (base::HexStringToInt(tokens[2], &audio_object_type))
+      return audio_object_type;
   }
 
-
-  return audio_object_type;
+  MEDIA_LOG(log_cb) << "Malformed mimetype codec '" << codec_id << "'";
+  return -1;
 }
 
 bool ValidateMP4ACodecID(const std::string& codec_id, const LogCB& log_cb) {

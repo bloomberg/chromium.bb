@@ -761,7 +761,7 @@ bool TrackFragmentRun::Parse(BoxReader* reader) {
     data_offset = 0;
   }
 
-  uint32 first_sample_flags;
+  uint32 first_sample_flags = 0;
   if (first_sample_flags_present)
     RCHECK(reader->Read4(&first_sample_flags));
 
