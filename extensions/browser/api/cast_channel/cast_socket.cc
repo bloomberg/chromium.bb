@@ -162,7 +162,7 @@ bool CastSocket::ExtractPeerCert(std::string* cert) {
 }
 
 bool CastSocket::VerifyChallengeReply() {
-  return AuthenticateChallengeReply(*challenge_reply_.get(), peer_cert_);
+  return AuthenticateChallengeReply(*challenge_reply_, peer_cert_);
 }
 
 void CastSocket::Connect(const net::CompletionCallback& callback) {
@@ -562,6 +562,7 @@ void CastSocket::DoReadLoop(int result) {
         break;
       case READ_STATE_ERROR:
         rv = DoReadError(rv);
+        DCHECK_EQ(read_state_, READ_STATE_NONE);
         break;
       default:
         NOTREACHED() << "BUG in read flow. Unknown state: " << state;
@@ -569,9 +570,17 @@ void CastSocket::DoReadLoop(int result) {
     }
   } while (rv != net::ERR_IO_PENDING && read_state_ != READ_STATE_NONE);
 
-  // Read loop is done - If the result is ERR_FAILED then close with error.
-  if (rv == net::ERR_FAILED)
-    CloseWithError(error_state_);
+  if (rv == net::ERR_FAILED) {
+    if (ready_state_ == READY_STATE_CONNECTING) {
+      // Read errors during the handshake should notify the caller via
+      // the connect callback, rather than the message event delegate.
+      PostTaskToStartConnectLoop(net::ERR_FAILED);
+    } else {
+      // Connection is already established.
+      // Close and send error status via the message event delegate.
+      CloseWithError(error_state_);
+    }
+  }
 }
 
 int CastSocket::DoRead() {
@@ -581,14 +590,14 @@ int CastSocket::DoRead() {
   if (header_read_buffer_->RemainingCapacity() > 0) {
     current_read_buffer_ = header_read_buffer_;
     num_bytes_to_read = header_read_buffer_->RemainingCapacity();
-    DCHECK_LE(num_bytes_to_read, MessageHeader::header_size());
+    CHECK_LE(num_bytes_to_read, MessageHeader::header_size());
   } else {
     DCHECK_GT(current_message_size_, 0U);
     num_bytes_to_read = current_message_size_ - body_read_buffer_->offset();
     current_read_buffer_ = body_read_buffer_;
-    DCHECK_LE(num_bytes_to_read, MessageHeader::max_message_size());
+    CHECK_LE(num_bytes_to_read, MessageHeader::max_message_size());
   }
-  DCHECK_GT(num_bytes_to_read, 0U);
+  CHECK_GT(num_bytes_to_read, 0U);
 
   // Read up to num_bytes_to_read into |current_read_buffer_|.
   return socket_->Read(
@@ -610,8 +619,8 @@ int CastSocket::DoReadComplete(int result) {
   }
 
   // Some data was read.  Move the offset in the current buffer forward.
-  DCHECK_LE(current_read_buffer_->offset() + result,
-            current_read_buffer_->capacity());
+  CHECK_LE(current_read_buffer_->offset() + result,
+           current_read_buffer_->capacity());
   current_read_buffer_->set_offset(current_read_buffer_->offset() + result);
   read_state_ = READ_STATE_READ;
 
@@ -639,40 +648,38 @@ int CastSocket::DoReadComplete(int result) {
 
 int CastSocket::DoReadCallback() {
   read_state_ = READ_STATE_READ;
-  const CastMessage& message = *(current_message_.get());
-  if (IsAuthMessage(message)) {
-    // An auth message is received, check that connect flow is running.
-    if (ready_state_ == READY_STATE_CONNECTING) {
+  const CastMessage& message = *current_message_;
+  if (ready_state_ == READY_STATE_CONNECTING) {
+    if (IsAuthMessage(message)) {
       challenge_reply_.reset(new CastMessage(message));
       PostTaskToStartConnectLoop(net::OK);
+      return net::OK;
     } else {
+      // Expected an auth message, got something else instead. Handle as error.
       read_state_ = READ_STATE_ERROR;
+      return net::ERR_INVALID_RESPONSE;
     }
-  } else if (delegate_) {
-    MessageInfo message_info;
-    if (CastMessageToMessageInfo(message, &message_info))
-      delegate_->OnMessage(this, message_info);
-    else
-      read_state_ = READ_STATE_ERROR;
   }
+
+  MessageInfo message_info;
+  if (!CastMessageToMessageInfo(message, &message_info)) {
+    current_message_->Clear();
+    read_state_ = READ_STATE_ERROR;
+    return net::ERR_INVALID_RESPONSE;
+  }
+  delegate_->OnMessage(this, message_info);
   current_message_->Clear();
   return net::OK;
 }
 
 int CastSocket::DoReadError(int result) {
   DCHECK_LE(result, 0);
-  // If inside connection flow, then get back to connect loop.
-  if (ready_state_ == READY_STATE_CONNECTING) {
-    PostTaskToStartConnectLoop(result);
-    // does not try to report error also.
-    return net::OK;
-  }
   return net::ERR_FAILED;
 }
 
 bool CastSocket::ProcessHeader() {
-  DCHECK_EQ(static_cast<uint32>(header_read_buffer_->offset()),
-            MessageHeader::header_size());
+  CHECK_EQ(static_cast<uint32>(header_read_buffer_->offset()),
+           MessageHeader::header_size());
   MessageHeader header;
   MessageHeader::ReadFromIOBuffer(header_read_buffer_.get(), &header);
   if (header.message_size > MessageHeader::max_message_size())
@@ -685,8 +692,8 @@ bool CastSocket::ProcessHeader() {
 }
 
 bool CastSocket::ProcessBody() {
-  DCHECK_EQ(static_cast<uint32>(body_read_buffer_->offset()),
-            current_message_size_);
+  CHECK_EQ(static_cast<uint32>(body_read_buffer_->offset()),
+           current_message_size_);
   if (!current_message_->ParseFromArray(
       body_read_buffer_->StartOfBuffer(), current_message_size_)) {
     return false;
@@ -741,7 +748,7 @@ CastSocket::MessageHeader::MessageHeader() : message_size(0) { }
 void CastSocket::MessageHeader::SetMessageSize(size_t size) {
   DCHECK_LT(size, static_cast<size_t>(kuint32max));
   DCHECK_GT(size, 0U);
-  message_size = static_cast<size_t>(size);
+  message_size = size;
 }
 
 // TODO(mfoltz): Investigate replacing header serialization with base::Pickle,

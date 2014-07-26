@@ -173,6 +173,7 @@ class TestCastSocket : public CastSocket {
         connect_index_(0),
         extract_cert_result_(true),
         verify_challenge_result_(true),
+        verify_challenge_disallow_(false),
         tcp_unresponsive_(false),
         mock_timer_(new base::MockTimer(false, false)) {}
 
@@ -267,6 +268,8 @@ class TestCastSocket : public CastSocket {
     mock_timer_->Fire();
   }
 
+  void DisallowVerifyChallengeResult() { verify_challenge_disallow_ = true; }
+
  private:
   virtual scoped_ptr<net::TCPClientSocket> CreateTcpSocket() OVERRIDE {
     if (tcp_unresponsive_) {
@@ -300,6 +303,7 @@ class TestCastSocket : public CastSocket {
   }
 
   virtual bool VerifyChallengeReply() OVERRIDE {
+    EXPECT_EQ(false, verify_challenge_disallow_);
     return verify_challenge_result_;
   }
 
@@ -322,6 +326,7 @@ class TestCastSocket : public CastSocket {
   bool extract_cert_result_;
   // Simulated result of verifying challenge reply.
   bool verify_challenge_result_;
+  bool verify_challenge_disallow_;
   // If true, makes TCP connection process stall. For timeout testing.
   bool tcp_unresponsive_;
   scoped_ptr<base::MockTimer> mock_timer_;
@@ -341,7 +346,18 @@ class CastSocketTest : public testing::Test {
           test_messages_[i], &test_protos_[i]));
       ASSERT_TRUE(CastSocket::Serialize(test_protos_[i], &test_proto_strs_[i]));
     }
+  }
 
+  virtual void TearDown() OVERRIDE {
+    EXPECT_CALL(handler_, OnCloseComplete(net::OK));
+    socket_->Close(base::Bind(&CompleteHandler::OnCloseComplete,
+                              base::Unretained(&handler_)));
+  }
+
+  // The caller can specify non-standard namespaces by setting "auth_namespace"
+  // (useful for negative test cases.)
+  void SetupAuthMessage(
+      const char* auth_namespace = "urn:x-cast:com.google.cast.tp.deviceauth") {
     // Create a test auth request.
     CastMessage request;
     CreateAuthChallengeMessage(&request);
@@ -349,20 +365,11 @@ class CastSocketTest : public testing::Test {
 
     // Create a test auth reply.
     MessageInfo reply;
-    CreateBinaryMessage("urn:x-cast:com.google.cast.tp.deviceauth",
-                        "sender-0",
-                        "receiver-0",
-                        "abcd",
-                        &reply);
+    CreateBinaryMessage(
+        auth_namespace, "sender-0", "receiver-0", "abcd", &reply);
     CastMessage reply_msg;
     ASSERT_TRUE(MessageInfoToCastMessage(reply, &reply_msg));
     ASSERT_TRUE(CastSocket::Serialize(reply_msg, &auth_reply_));
-  }
-
-  virtual void TearDown() OVERRIDE {
-    EXPECT_CALL(handler_, OnCloseComplete(net::OK));
-    socket_->Close(base::Bind(&CompleteHandler::OnCloseComplete,
-                              base::Unretained(&handler_)));
   }
 
   void CreateCastSocket() {
@@ -409,6 +416,7 @@ class CastSocketTest : public testing::Test {
 TEST_F(CastSocketTest, TestConnectAndClose) {
   CreateCastSocket();
   ConnectHelper();
+  SetupAuthMessage();
   EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
 
@@ -424,6 +432,7 @@ TEST_F(CastSocketTest, TestConnectAndClose) {
 // - SSL connection succeeds (async)
 TEST_F(CastSocketTest, TestConnect) {
   CreateCastSocket();
+  SetupAuthMessage();
   socket_->SetupTcp1Connect(net::ASYNC, net::OK);
   socket_->SetupSsl1Connect(net::ASYNC, net::OK);
   socket_->AddReadResult(net::ASYNC, net::ERR_IO_PENDING);
@@ -445,6 +454,7 @@ TEST_F(CastSocketTest, TestConnect) {
 // - Second SSL connection succeeds (async)
 TEST_F(CastSocketTest, TestConnectTwoStep) {
   CreateCastSocket();
+  SetupAuthMessage();
   socket_->SetupTcp1Connect(net::ASYNC, net::OK);
   socket_->SetupSsl1Connect(net::ASYNC, net::ERR_CERT_AUTHORITY_INVALID);
   socket_->SetupTcp2Connect(net::ASYNC, net::OK);
@@ -469,6 +479,7 @@ TEST_F(CastSocketTest, TestConnectTwoStep) {
 // - The flow should NOT be tried again
 TEST_F(CastSocketTest, TestConnectMaxTwoAttempts) {
   CreateCastSocket();
+  SetupAuthMessage();
   socket_->SetupTcp1Connect(net::ASYNC, net::OK);
   socket_->SetupSsl1Connect(net::ASYNC, net::ERR_CERT_AUTHORITY_INVALID);
   socket_->SetupTcp2Connect(net::ASYNC, net::OK);
@@ -494,6 +505,7 @@ TEST_F(CastSocketTest, TestConnectMaxTwoAttempts) {
 // - Credentials are verified successfuly
 TEST_F(CastSocketTest, TestConnectFullSecureFlowAsync) {
   CreateCastSocketSecure();
+  SetupAuthMessage();
 
   socket_->SetupTcp1Connect(net::ASYNC, net::OK);
   socket_->SetupSsl1Connect(net::ASYNC, net::ERR_CERT_AUTHORITY_INVALID);
@@ -515,6 +527,7 @@ TEST_F(CastSocketTest, TestConnectFullSecureFlowAsync) {
 // Same as TestFullSecureConnectionFlowAsync, but operations are synchronous.
 TEST_F(CastSocketTest, TestConnectFullSecureFlowSync) {
   CreateCastSocketSecure();
+  SetupAuthMessage();
 
   socket_->SetupTcp1Connect(net::SYNCHRONOUS, net::OK);
   socket_->SetupSsl1Connect(net::SYNCHRONOUS, net::ERR_CERT_AUTHORITY_INVALID);
@@ -533,9 +546,35 @@ TEST_F(CastSocketTest, TestConnectFullSecureFlowSync) {
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
 }
 
+// Test that an AuthMessage with a mangled namespace triggers cancelation
+// of the connection event loop.
+TEST_F(CastSocketTest, TestConnectAuthMessageCorrupted) {
+  CreateCastSocketSecure();
+  SetupAuthMessage("bogus_namespace");
+
+  socket_->SetupTcp1Connect(net::ASYNC, net::OK);
+  socket_->SetupSsl1Connect(net::ASYNC, net::ERR_CERT_AUTHORITY_INVALID);
+  socket_->SetupTcp2Connect(net::ASYNC, net::OK);
+  socket_->SetupSsl2Connect(net::ASYNC, net::OK);
+  socket_->AddWriteResultForMessage(net::ASYNC, auth_request_);
+  socket_->AddReadResultForMessage(net::ASYNC, auth_reply_);
+  socket_->AddReadResult(net::ASYNC, net::ERR_IO_PENDING);
+  // Guard against VerifyChallengeResult() being triggered.
+  socket_->DisallowVerifyChallengeResult();
+
+  EXPECT_CALL(handler_, OnConnectComplete(net::ERR_FAILED));
+  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
+                              base::Unretained(&handler_)));
+  RunPendingTasks();
+
+  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
+  EXPECT_EQ(cast_channel::CHANNEL_ERROR_CONNECT_ERROR, socket_->error_state());
+}
+
 // Test connection error - TCP connect fails (async)
 TEST_F(CastSocketTest, TestConnectTcpConnectErrorAsync) {
   CreateCastSocketSecure();
+  SetupAuthMessage();
 
   socket_->SetupTcp1Connect(net::ASYNC, net::ERR_FAILED);
 
@@ -551,6 +590,7 @@ TEST_F(CastSocketTest, TestConnectTcpConnectErrorAsync) {
 // Test connection error - TCP connect fails (sync)
 TEST_F(CastSocketTest, TestConnectTcpConnectErrorSync) {
   CreateCastSocketSecure();
+  SetupAuthMessage();
 
   socket_->SetupTcp1Connect(net::SYNCHRONOUS, net::ERR_FAILED);
 
@@ -585,6 +625,7 @@ TEST_F(CastSocketTest, TestConnectTcpTimeoutError) {
 // Test connection error - SSL connect fails (async)
 TEST_F(CastSocketTest, TestConnectSslConnectErrorAsync) {
   CreateCastSocketSecure();
+  SetupAuthMessage();
 
   socket_->SetupTcp1Connect(net::SYNCHRONOUS, net::OK);
   socket_->SetupSsl1Connect(net::SYNCHRONOUS, net::ERR_FAILED);
@@ -601,6 +642,7 @@ TEST_F(CastSocketTest, TestConnectSslConnectErrorAsync) {
 // Test connection error - SSL connect fails (sync)
 TEST_F(CastSocketTest, TestConnectSslConnectErrorSync) {
   CreateCastSocketSecure();
+  SetupAuthMessage();
 
   socket_->SetupTcp1Connect(net::SYNCHRONOUS, net::OK);
   socket_->SetupSsl1Connect(net::ASYNC, net::ERR_FAILED);
@@ -617,6 +659,7 @@ TEST_F(CastSocketTest, TestConnectSslConnectErrorSync) {
 // Test connection error - cert extraction error (async)
 TEST_F(CastSocketTest, TestConnectCertExtractionErrorAsync) {
   CreateCastSocket();
+  SetupAuthMessage();
   socket_->SetupTcp1Connect(net::ASYNC, net::OK);
   socket_->SetupSsl1Connect(net::ASYNC, net::ERR_CERT_AUTHORITY_INVALID);
   // Set cert extraction to fail
@@ -634,6 +677,7 @@ TEST_F(CastSocketTest, TestConnectCertExtractionErrorAsync) {
 // Test connection error - cert extraction error (sync)
 TEST_F(CastSocketTest, TestConnectCertExtractionErrorSync) {
   CreateCastSocket();
+  SetupAuthMessage();
   socket_->SetupTcp1Connect(net::SYNCHRONOUS, net::OK);
   socket_->SetupSsl1Connect(net::SYNCHRONOUS, net::ERR_CERT_AUTHORITY_INVALID);
   // Set cert extraction to fail
@@ -651,6 +695,7 @@ TEST_F(CastSocketTest, TestConnectCertExtractionErrorSync) {
 // Test connection error - challenge send fails
 TEST_F(CastSocketTest, TestConnectChallengeSendError) {
   CreateCastSocketSecure();
+  SetupAuthMessage();
 
   socket_->SetupTcp1Connect(net::SYNCHRONOUS, net::OK);
   socket_->SetupSsl1Connect(net::SYNCHRONOUS, net::OK);
@@ -668,6 +713,7 @@ TEST_F(CastSocketTest, TestConnectChallengeSendError) {
 // Test connection error - challenge reply receive fails
 TEST_F(CastSocketTest, TestConnectChallengeReplyReceiveError) {
   CreateCastSocketSecure();
+  SetupAuthMessage();
 
   socket_->SetupTcp1Connect(net::SYNCHRONOUS, net::OK);
   socket_->SetupSsl1Connect(net::SYNCHRONOUS, net::OK);
@@ -686,6 +732,7 @@ TEST_F(CastSocketTest, TestConnectChallengeReplyReceiveError) {
 // Test connection error - challenge reply verification fails
 TEST_F(CastSocketTest, TestConnectChallengeVerificationFails) {
   CreateCastSocketSecure();
+  SetupAuthMessage();
 
   socket_->SetupTcp1Connect(net::SYNCHRONOUS, net::OK);
   socket_->SetupSsl1Connect(net::SYNCHRONOUS, net::OK);
@@ -708,6 +755,7 @@ TEST_F(CastSocketTest, TestWriteAsync) {
   CreateCastSocket();
   socket_->AddWriteResultForMessage(net::ASYNC, test_proto_strs_[0]);
   ConnectHelper();
+  SetupAuthMessage();
 
   EXPECT_CALL(handler_, OnWriteComplete(test_proto_strs_[0].size()));
   socket_->SendMessage(test_messages_[0],
@@ -724,6 +772,7 @@ TEST_F(CastSocketTest, TestWriteSync) {
   CreateCastSocket();
   socket_->AddWriteResultForMessage(net::SYNCHRONOUS, test_proto_strs_[0]);
   ConnectHelper();
+  SetupAuthMessage();
 
   EXPECT_CALL(handler_, OnWriteComplete(test_proto_strs_[0].size()));
   socket_->SendMessage(test_messages_[0],
@@ -740,6 +789,7 @@ TEST_F(CastSocketTest, TestWriteChunkedAsync) {
   CreateCastSocket();
   socket_->AddWriteResultForMessage(net::ASYNC, test_proto_strs_[0], 2);
   ConnectHelper();
+  SetupAuthMessage();
 
   EXPECT_CALL(handler_, OnWriteComplete(test_proto_strs_[0].size()));
   socket_->SendMessage(test_messages_[0],
@@ -756,6 +806,7 @@ TEST_F(CastSocketTest, TestWriteChunkedSync) {
   CreateCastSocket();
   socket_->AddWriteResultForMessage(net::SYNCHRONOUS, test_proto_strs_[0], 2);
   ConnectHelper();
+  SetupAuthMessage();
 
   EXPECT_CALL(handler_, OnWriteComplete(test_proto_strs_[0].size()));
   socket_->SendMessage(test_messages_[0],
@@ -776,6 +827,7 @@ TEST_F(CastSocketTest, TestWriteManyAsync) {
     EXPECT_CALL(handler_, OnWriteComplete(msg_size));
   }
   ConnectHelper();
+  SetupAuthMessage();
 
   for (size_t i = 0; i < arraysize(test_messages_); i++) {
     socket_->SendMessage(test_messages_[i],
@@ -797,6 +849,7 @@ TEST_F(CastSocketTest, TestWriteManySync) {
     EXPECT_CALL(handler_, OnWriteComplete(msg_size));
   }
   ConnectHelper();
+  SetupAuthMessage();
 
   for (size_t i = 0; i < arraysize(test_messages_); i++) {
     socket_->SendMessage(test_messages_[i],
@@ -812,6 +865,7 @@ TEST_F(CastSocketTest, TestWriteManySync) {
 // Test write error - not connected
 TEST_F(CastSocketTest, TestWriteErrorNotConnected) {
   CreateCastSocket();
+  SetupAuthMessage();
 
   EXPECT_CALL(handler_, OnWriteComplete(net::ERR_FAILED));
   socket_->SendMessage(test_messages_[0],
@@ -826,6 +880,7 @@ TEST_F(CastSocketTest, TestWriteErrorNotConnected) {
 TEST_F(CastSocketTest, TestWriteErrorLargeMessage) {
   CreateCastSocket();
   ConnectHelper();
+  SetupAuthMessage();
 
   EXPECT_CALL(handler_, OnWriteComplete(net::ERR_FAILED));
   size_t size = CastSocket::MessageHeader::max_message_size() + 1;
@@ -844,6 +899,7 @@ TEST_F(CastSocketTest, TestWriteNetworkErrorSync) {
   CreateCastSocket();
   socket_->AddWriteResult(net::SYNCHRONOUS, net::ERR_FAILED);
   ConnectHelper();
+  SetupAuthMessage();
 
   EXPECT_CALL(handler_, OnWriteComplete(net::ERR_FAILED));
   EXPECT_CALL(mock_delegate_,
@@ -862,6 +918,7 @@ TEST_F(CastSocketTest, TestWriteErrorAsync) {
   CreateCastSocket();
   socket_->AddWriteResult(net::ASYNC, net::ERR_FAILED);
   ConnectHelper();
+  SetupAuthMessage();
 
   EXPECT_CALL(handler_, OnWriteComplete(net::ERR_FAILED));
   EXPECT_CALL(mock_delegate_,
@@ -880,6 +937,7 @@ TEST_F(CastSocketTest, TestWriteErrorZeroBytesWritten) {
   CreateCastSocket();
   socket_->AddWriteResult(net::SYNCHRONOUS, 0);
   ConnectHelper();
+  SetupAuthMessage();
 
   EXPECT_CALL(handler_, OnWriteComplete(net::ERR_FAILED));
   EXPECT_CALL(mock_delegate_,
@@ -899,6 +957,7 @@ TEST_F(CastSocketTest, TestWriteErrorWithMultiplePendingWritesAsync) {
   CreateCastSocket();
   socket_->AddWriteResult(net::ASYNC, net::ERR_SOCKET_NOT_CONNECTED);
   ConnectHelper();
+  SetupAuthMessage();
 
   const int num_writes = arraysize(test_messages_);
   EXPECT_CALL(handler_, OnWriteComplete(net::ERR_SOCKET_NOT_CONNECTED))
@@ -923,6 +982,7 @@ TEST_F(CastSocketTest, TestReadAsync) {
   EXPECT_CALL(mock_delegate_,
               OnMessage(socket_.get(), A<const MessageInfo&>()));
   ConnectHelper();
+  SetupAuthMessage();
 
   EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
@@ -931,6 +991,7 @@ TEST_F(CastSocketTest, TestReadAsync) {
 // Test read success - single message (sync)
 TEST_F(CastSocketTest, TestReadSync) {
   CreateCastSocket();
+  SetupAuthMessage();
   socket_->AddReadResultForMessage(net::SYNCHRONOUS, test_proto_strs_[0]);
   EXPECT_CALL(mock_delegate_,
               OnMessage(socket_.get(), A<const MessageInfo&>()));
@@ -943,6 +1004,7 @@ TEST_F(CastSocketTest, TestReadSync) {
 // Test read success - single message received in multiple chunks (async)
 TEST_F(CastSocketTest, TestReadChunkedAsync) {
   CreateCastSocket();
+  SetupAuthMessage();
   socket_->AddReadResultForMessage(net::ASYNC, test_proto_strs_[0], 2);
   EXPECT_CALL(mock_delegate_,
               OnMessage(socket_.get(), A<const MessageInfo&>()));
@@ -955,6 +1017,7 @@ TEST_F(CastSocketTest, TestReadChunkedAsync) {
 // Test read success - single message received in multiple chunks (sync)
 TEST_F(CastSocketTest, TestReadChunkedSync) {
   CreateCastSocket();
+  SetupAuthMessage();
   socket_->AddReadResultForMessage(net::SYNCHRONOUS, test_proto_strs_[0], 2);
   EXPECT_CALL(mock_delegate_,
               OnMessage(socket_.get(), A<const MessageInfo&>()));
@@ -967,6 +1030,7 @@ TEST_F(CastSocketTest, TestReadChunkedSync) {
 // Test read success - multiple messages (async)
 TEST_F(CastSocketTest, TestReadManyAsync) {
   CreateCastSocket();
+  SetupAuthMessage();
   size_t num_reads = arraysize(test_proto_strs_);
   for (size_t i = 0; i < num_reads; i++)
     socket_->AddReadResultForMessage(net::ASYNC, test_proto_strs_[i]);
@@ -982,6 +1046,7 @@ TEST_F(CastSocketTest, TestReadManyAsync) {
 // Test read success - multiple messages (sync)
 TEST_F(CastSocketTest, TestReadManySync) {
   CreateCastSocket();
+  SetupAuthMessage();
   size_t num_reads = arraysize(test_proto_strs_);
   for (size_t i = 0; i < num_reads; i++)
     socket_->AddReadResultForMessage(net::SYNCHRONOUS, test_proto_strs_[i]);
@@ -997,6 +1062,7 @@ TEST_F(CastSocketTest, TestReadManySync) {
 // Test read error - network error (async)
 TEST_F(CastSocketTest, TestReadErrorAsync) {
   CreateCastSocket();
+  SetupAuthMessage();
   socket_->AddReadResult(net::ASYNC, net::ERR_SOCKET_NOT_CONNECTED);
   EXPECT_CALL(mock_delegate_,
               OnError(socket_.get(),
@@ -1010,6 +1076,7 @@ TEST_F(CastSocketTest, TestReadErrorAsync) {
 // Test read error - network error (sync)
 TEST_F(CastSocketTest, TestReadErrorSync) {
   CreateCastSocket();
+  SetupAuthMessage();
   socket_->AddReadResult(net::SYNCHRONOUS, net::ERR_SOCKET_NOT_CONNECTED);
   EXPECT_CALL(mock_delegate_,
               OnError(socket_.get(),
@@ -1023,6 +1090,7 @@ TEST_F(CastSocketTest, TestReadErrorSync) {
 // Test read error - header parse error
 TEST_F(CastSocketTest, TestReadHeaderParseError) {
   CreateCastSocket();
+  SetupAuthMessage();
   uint32 body_size = base::HostToNet32(
       CastSocket::MessageHeader::max_message_size() + 1);
   // TODO(munjal): Add a method to cast_message_util.h to serialize messages
@@ -1042,6 +1110,7 @@ TEST_F(CastSocketTest, TestReadHeaderParseError) {
 // Test read error - body parse error
 TEST_F(CastSocketTest, TestReadBodyParseError) {
   CreateCastSocket();
+  SetupAuthMessage();
   char body[] = "some body";
   uint32 body_size = base::HostToNet32(arraysize(body));
   char header[sizeof(body_size)];
