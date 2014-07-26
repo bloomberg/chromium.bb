@@ -513,8 +513,6 @@ bool SimpleFeature::IsInternal() const {
   return false;
 }
 
-bool SimpleFeature::IsBlockedInServiceWorker() const { return false; }
-
 bool SimpleFeature::IsIdInBlacklist(const std::string& extension_id) const {
   return IsIdInList(extension_id, blacklist_);
 }

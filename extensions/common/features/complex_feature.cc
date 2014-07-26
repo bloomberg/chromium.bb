@@ -12,20 +12,14 @@ ComplexFeature::ComplexFeature(scoped_ptr<FeatureList> features) {
   no_parent_ = features_[0]->no_parent();
 
 #if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
-  // Verify IsInternal and IsBlockedInServiceWorker are consistent across all
-  // features.
+  // Verify IsInternal and no_parent is consistent across all features.
   bool first_is_internal = features_[0]->IsInternal();
-  bool first_blocked_in_service_worker =
-      features_[0]->IsBlockedInServiceWorker();
   for (FeatureList::const_iterator it = features_.begin() + 1;
        it != features_.end();
        ++it) {
     DCHECK(first_is_internal == (*it)->IsInternal())
         << "Complex feature must have consistent values of "
            "internal across all sub features.";
-    DCHECK(first_blocked_in_service_worker == (*it)->IsBlockedInServiceWorker())
-        << "Complex feature must have consistent values of "
-           "blocked_in_service_worker across all sub features.";
     DCHECK(no_parent_ == (*it)->no_parent())
         << "Complex feature must have consistent values of "
            "no_parent across all sub features.";
@@ -100,12 +94,6 @@ bool ComplexFeature::IsIdInWhitelist(const std::string& extension_id) const {
       return true;
   }
   return false;
-}
-
-bool ComplexFeature::IsBlockedInServiceWorker() const {
-  // Constructor verifies that composed features are consistent, thus we can
-  // return just the first feature's value.
-  return features_[0]->IsBlockedInServiceWorker();
 }
 
 bool ComplexFeature::IsInternal() const {

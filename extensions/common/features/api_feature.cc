@@ -7,7 +7,7 @@
 namespace extensions {
 
 APIFeature::APIFeature()
-    : internal_(false), blocked_in_service_worker_(false) {}
+    : internal_(false) {}
 
 APIFeature::~APIFeature() {
 }
@@ -16,17 +16,12 @@ bool APIFeature::IsInternal() const {
   return internal_;
 }
 
-bool APIFeature::IsBlockedInServiceWorker() const {
-  return blocked_in_service_worker_;
-}
-
 std::string APIFeature::Parse(const base::DictionaryValue* value) {
   std::string error = SimpleFeature::Parse(value);
   if (!error.empty())
     return error;
 
   value->GetBoolean("internal", &internal_);
-  value->GetBoolean("blocked_in_service_worker", &blocked_in_service_worker_);
 
   if (contexts()->empty())
     return name() + ": API features must specify at least one context.";

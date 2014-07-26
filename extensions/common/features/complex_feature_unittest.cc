@@ -6,14 +6,11 @@
 
 #include "chrome/common/extensions/features/chrome_channel_feature_filter.h"
 #include "chrome/common/extensions/features/feature_channel.h"
-#include "extensions/common/features/api_feature.h"
 #include "extensions/common/features/simple_feature.h"
-#include "extensions/common/test_util.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using chrome::VersionInfo;
-using extensions::APIFeature;
 using extensions::ComplexFeature;
 using extensions::DictionaryBuilder;
 using extensions::Feature;
@@ -21,7 +18,6 @@ using extensions::ListBuilder;
 using extensions::Manifest;
 using extensions::ScopedCurrentChannel;
 using extensions::SimpleFeature;
-using extensions::test_util::ParseJsonDictionaryWithSingleQuotes;
 
 namespace {
 
@@ -163,56 +159,6 @@ TEST_F(ExtensionComplexFeatureTest, MultipleRulesChannels) {
                                        Feature::UNSPECIFIED_PLATFORM,
                                        Feature::GetCurrentPlatform()).result());
   }
-}
-
-// Tests a complex feature with blocked_in_service_worker returns true for
-// IsBlockedInServiceWorker().
-TEST_F(ExtensionComplexFeatureTest, BlockedInServiceWorker) {
-  scoped_ptr<ComplexFeature::FeatureList> features(
-      new ComplexFeature::FeatureList());
-
-  // Two feature rules, both with blocked_in_service_worker: true.
-  scoped_ptr<SimpleFeature> api_feature(new APIFeature());
-  api_feature->Parse(ParseJsonDictionaryWithSingleQuotes(
-                         "{"
-                         "  'channel': 'trunk',"
-                         "  'blocked_in_service_worker': true"
-                         "}").get());
-  features->push_back(api_feature.release());
-
-  api_feature.reset(new APIFeature());
-  api_feature->Parse(ParseJsonDictionaryWithSingleQuotes(
-                         "{"
-                         "  'channel': 'stable',"
-                         "  'blocked_in_service_worker': true"
-                         "}").get());
-  features->push_back(api_feature.release());
-
-  EXPECT_TRUE(ComplexFeature(features.Pass()).IsBlockedInServiceWorker());
-}
-
-// Tests a complex feature without blocked_in_service_worker returns false for
-// IsBlockedInServiceWorker().
-TEST_F(ExtensionComplexFeatureTest, NotBlockedInServiceWorker) {
-  scoped_ptr<ComplexFeature::FeatureList> features(
-      new ComplexFeature::FeatureList());
-
-  // Two feature rules without blocked_in_service_worker.
-  scoped_ptr<SimpleFeature> api_feature(new APIFeature());
-  api_feature->Parse(ParseJsonDictionaryWithSingleQuotes(
-                         "{"
-                         "  'channel': 'trunk'"
-                         "}").get());
-  features->push_back(api_feature.release());
-
-  api_feature.reset(new APIFeature());
-  api_feature->Parse(ParseJsonDictionaryWithSingleQuotes(
-                         "{"
-                         "  'channel': 'stable'"
-                         "}").get());
-  features->push_back(api_feature.release());
-
-  EXPECT_FALSE(ComplexFeature(features.Pass()).IsBlockedInServiceWorker());
 }
 
 // Tests that dependencies are correctly checked.

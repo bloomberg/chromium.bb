@@ -106,7 +106,6 @@ class SimpleFeature : public Feature {
                                              Context context) const OVERRIDE;
 
   virtual bool IsInternal() const OVERRIDE;
-  virtual bool IsBlockedInServiceWorker() const OVERRIDE;
 
   virtual bool IsIdInBlacklist(const std::string& extension_id) const OVERRIDE;
   virtual bool IsIdInWhitelist(const std::string& extension_id) const OVERRIDE;

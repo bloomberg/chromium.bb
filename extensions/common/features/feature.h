@@ -114,9 +114,6 @@ class Feature {
   // Tests whether this is an internal API or not.
   virtual bool IsInternal() const = 0;
 
-  // Returns True for features excluded from service worker backed contexts.
-  virtual bool IsBlockedInServiceWorker() const = 0;
-
   // Returns true if the feature is available to be parsed into a new extension
   // manifest.
   Availability IsAvailableToManifest(const std::string& extension_id,

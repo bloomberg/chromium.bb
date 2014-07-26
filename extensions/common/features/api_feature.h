@@ -18,13 +18,11 @@ class APIFeature : public SimpleFeature {
 
   // extensions::Feature:
   virtual bool IsInternal() const OVERRIDE;
-  virtual bool IsBlockedInServiceWorker() const OVERRIDE;
 
   virtual std::string Parse(const base::DictionaryValue* value) OVERRIDE;
 
  private:
   bool internal_;
-  bool blocked_in_service_worker_;
 };
 
 }  // namespace extensions
