@@ -1931,7 +1931,7 @@ internal_notest_paladin.add_config('storm-paladin',
   paladin_builder_name='storm paladin',
 )
 
-internal_notest_paladin.add_config('nyan-freon-paladin',
+internal_notest_paladin.add_config('nyan_freon-paladin',
   boards=['nyan_freon'],
   paladin_builder_name='nyan_freon paladin',
   important=False,
