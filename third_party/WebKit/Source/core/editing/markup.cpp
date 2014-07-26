@@ -51,6 +51,7 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/frame/LocalFrame.h"
+#include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLSpanElement.h"
@@ -854,7 +855,7 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromText(Range* context, 
     if (shouldPreserveNewline(*context)) {
         fragment->appendChild(document.createTextNode(string));
         if (string.endsWith('\n')) {
-            RefPtrWillBeRawPtr<Element> element = createBreakElement(document);
+            RefPtrWillBeRawPtr<HTMLBRElement> element = createBreakElement(document);
             element->setAttribute(classAttr, AppleInterchangeNewline);
             fragment->appendChild(element.release());
         }

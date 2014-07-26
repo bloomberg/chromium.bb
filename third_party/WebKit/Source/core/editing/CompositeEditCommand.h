@@ -35,6 +35,7 @@ namespace blink {
 
 class EditingStyle;
 class Element;
+class HTMLBRElement;
 class HTMLElement;
 class Text;
 
@@ -141,16 +142,16 @@ protected:
     void deleteInsignificantText(const Position& start, const Position& end);
     void deleteInsignificantTextDownstream(const Position&);
 
-    PassRefPtrWillBeRawPtr<Node> appendBlockPlaceholder(PassRefPtrWillBeRawPtr<Element>);
-    PassRefPtrWillBeRawPtr<Node> insertBlockPlaceholder(const Position&);
-    PassRefPtrWillBeRawPtr<Node> addBlockPlaceholderIfNeeded(Element*);
+    PassRefPtrWillBeRawPtr<HTMLBRElement> appendBlockPlaceholder(PassRefPtrWillBeRawPtr<Element>);
+    PassRefPtrWillBeRawPtr<HTMLBRElement> insertBlockPlaceholder(const Position&);
+    PassRefPtrWillBeRawPtr<HTMLBRElement> addBlockPlaceholderIfNeeded(Element*);
     void removePlaceholderAt(const Position&);
 
-    PassRefPtrWillBeRawPtr<Element> insertNewDefaultParagraphElementAt(const Position&);
+    PassRefPtrWillBeRawPtr<HTMLElement> insertNewDefaultParagraphElementAt(const Position&);
 
-    PassRefPtrWillBeRawPtr<Element> moveParagraphContentsToNewBlockIfNecessary(const Position&);
+    PassRefPtrWillBeRawPtr<HTMLElement> moveParagraphContentsToNewBlockIfNecessary(const Position&);
 
-    void pushAnchorElementDown(Node*);
+    void pushAnchorElementDown(Element*);
 
     // FIXME: preserveSelection and preserveStyle should be enums
     void moveParagraph(const VisiblePosition&, const VisiblePosition&, const VisiblePosition&, bool preserveSelection = false, bool preserveStyle = true, Node* constrainingAncestor = 0);

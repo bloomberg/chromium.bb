@@ -49,6 +49,7 @@
 #include "core/events/BeforeTextInsertedEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
+#include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/rendering/RenderObject.h"
@@ -835,7 +836,7 @@ void ReplaceSelectionCommand::mergeEndIfNeeded()
     // Merging forward could result in deleting the destination anchor node.
     // To avoid this, we add a placeholder node before the start of the paragraph.
     if (endOfParagraph(startOfParagraphToMove) == destination) {
-        RefPtrWillBeRawPtr<Node> placeholder = createBreakElement(document());
+        RefPtrWillBeRawPtr<HTMLBRElement> placeholder = createBreakElement(document());
         insertNodeBefore(placeholder, startOfParagraphToMove.deepEquivalent().deprecatedNode());
         destination = VisiblePosition(positionBeforeNode(placeholder.get()));
     }

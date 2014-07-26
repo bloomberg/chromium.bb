@@ -32,6 +32,7 @@
 #include "core/editing/InsertListCommand.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/rendering/RenderObject.h"
 
@@ -193,7 +194,7 @@ void IndentOutdentCommand::outdentParagraph()
     VisiblePosition endOfParagraphToMove(endOfParagraph(visibleEndOfParagraph));
     if (startOfParagraphToMove.isNull() || endOfParagraphToMove.isNull())
         return;
-    RefPtrWillBeRawPtr<Node> placeholder = createBreakElement(document());
+    RefPtrWillBeRawPtr<HTMLBRElement> placeholder = createBreakElement(document());
     insertNodeBefore(placeholder, splitBlockquoteNode);
     moveParagraph(startOfParagraphToMove, endOfParagraphToMove, VisiblePosition(positionBeforeNode(placeholder.get())), true);
 }

@@ -800,7 +800,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> createDefaultParagraphElement(Document& docu
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<HTMLElement> createBreakElement(Document& document)
+PassRefPtrWillBeRawPtr<HTMLBRElement> createBreakElement(Document& document)
 {
     return HTMLBRElement::create(document);
 }
@@ -874,6 +874,11 @@ PassRefPtrWillBeRawPtr<HTMLSpanElement> createTabSpanElement(Document& document,
 PassRefPtrWillBeRawPtr<HTMLSpanElement> createTabSpanElement(Document& document)
 {
     return createTabSpanElement(document, PassRefPtrWillBeRawPtr<Text>(nullptr));
+}
+
+PassRefPtrWillBeRawPtr<HTMLBRElement> createBlockPlaceholderElement(Document& document)
+{
+    return toHTMLBRElement(document.createElement(brTag, false).get());
 }
 
 bool isNodeRendered(const Node *node)

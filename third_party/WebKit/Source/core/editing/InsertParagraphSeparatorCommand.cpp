@@ -34,6 +34,7 @@
 #include "core/editing/InsertLineBreakCommand.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/rendering/RenderObject.h"
 
@@ -311,7 +312,7 @@ void InsertParagraphSeparatorCommand::doApply()
     // it if visiblePos is at the start of a paragraph so that the
     // content will move down a line.
     if (isStartOfParagraph(visiblePos)) {
-        RefPtrWillBeRawPtr<Element> br = createBreakElement(document());
+        RefPtrWillBeRawPtr<HTMLBRElement> br = createBreakElement(document());
         insertNodeAt(br.get(), insertionPosition);
         insertionPosition = positionInParentAfterNode(*br);
         // If the insertion point is a break element, there is nothing else

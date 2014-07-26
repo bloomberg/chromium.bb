@@ -32,6 +32,7 @@
 #include "core/dom/Range.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLElement.h"
 
 namespace blink {

@@ -63,6 +63,7 @@
 #include "core/editing/markup.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/frame/LocalFrame.h"
+#include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLSpanElement.h"
 #include "core/rendering/InlineTextBox.h"
@@ -827,7 +828,7 @@ void CompositeEditCommand::deleteInsignificantTextDownstream(const Position& pos
     deleteInsignificantText(pos, end);
 }
 
-PassRefPtrWillBeRawPtr<Node> CompositeEditCommand::appendBlockPlaceholder(PassRefPtrWillBeRawPtr<Element> container)
+PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::appendBlockPlaceholder(PassRefPtrWillBeRawPtr<Element> container)
 {
     if (!container)
         return nullptr;
@@ -837,12 +838,12 @@ PassRefPtrWillBeRawPtr<Node> CompositeEditCommand::appendBlockPlaceholder(PassRe
     // Should assert isRenderBlockFlow || isInlineFlow when deletion improves. See 4244964.
     ASSERT(container->renderer());
 
-    RefPtrWillBeRawPtr<Node> placeholder = createBlockPlaceholderElement(document());
+    RefPtrWillBeRawPtr<HTMLBRElement> placeholder = createBlockPlaceholderElement(document());
     appendNode(placeholder, container);
     return placeholder.release();
 }
 
-PassRefPtrWillBeRawPtr<Node> CompositeEditCommand::insertBlockPlaceholder(const Position& pos)
+PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::insertBlockPlaceholder(const Position& pos)
 {
     if (pos.isNull())
         return nullptr;
@@ -850,12 +851,12 @@ PassRefPtrWillBeRawPtr<Node> CompositeEditCommand::insertBlockPlaceholder(const 
     // Should assert isRenderBlockFlow || isInlineFlow when deletion improves. See 4244964.
     ASSERT(pos.deprecatedNode()->renderer());
 
-    RefPtrWillBeRawPtr<Node> placeholder = createBlockPlaceholderElement(document());
+    RefPtrWillBeRawPtr<HTMLBRElement> placeholder = createBlockPlaceholderElement(document());
     insertNodeAt(placeholder, pos);
     return placeholder.release();
 }
 
-PassRefPtrWillBeRawPtr<Node> CompositeEditCommand::addBlockPlaceholderIfNeeded(Element* container)
+PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::addBlockPlaceholderIfNeeded(Element* container)
 {
     if (!container)
         return nullptr;
@@ -868,7 +869,7 @@ PassRefPtrWillBeRawPtr<Node> CompositeEditCommand::addBlockPlaceholderIfNeeded(E
 
     // append the placeholder to make sure it follows
     // any unrendered blocks
-    RenderBlock* block = toRenderBlock(renderer);
+    RenderBlockFlow* block = toRenderBlockFlow(renderer);
     if (block->height() == 0 || (block->isListItem() && toRenderListItem(block)->isEmpty()))
         return appendBlockPlaceholder(container);
 
@@ -889,9 +890,9 @@ void CompositeEditCommand::removePlaceholderAt(const Position& p)
     deleteTextFromNode(toText(p.anchorNode()), p.offsetInContainerNode(), 1);
 }
 
-PassRefPtrWillBeRawPtr<Element> CompositeEditCommand::insertNewDefaultParagraphElementAt(const Position& position)
+PassRefPtrWillBeRawPtr<HTMLElement> CompositeEditCommand::insertNewDefaultParagraphElementAt(const Position& position)
 {
-    RefPtrWillBeRawPtr<Element> paragraphElement = createDefaultParagraphElement(document());
+    RefPtrWillBeRawPtr<HTMLElement> paragraphElement = createDefaultParagraphElement(document());
     paragraphElement->appendChild(createBreakElement(document()));
     insertNodeAt(paragraphElement, position);
     return paragraphElement.release();
@@ -899,7 +900,7 @@ PassRefPtrWillBeRawPtr<Element> CompositeEditCommand::insertNewDefaultParagraphE
 
 // If the paragraph is not entirely within it's own block, create one and move the paragraph into
 // it, and return that block.  Otherwise return 0.
-PassRefPtrWillBeRawPtr<Element> CompositeEditCommand::moveParagraphContentsToNewBlockIfNecessary(const Position& pos)
+PassRefPtrWillBeRawPtr<HTMLElement> CompositeEditCommand::moveParagraphContentsToNewBlockIfNecessary(const Position& pos)
 {
     ASSERT(isEditablePosition(pos, ContentIsEditable, DoNotUpdateStyle));
 
@@ -947,7 +948,7 @@ PassRefPtrWillBeRawPtr<Element> CompositeEditCommand::moveParagraphContentsToNew
     if (visibleParagraphEnd.isNull())
         return nullptr;
 
-    RefPtrWillBeRawPtr<Element> newBlock = insertNewDefaultParagraphElementAt(upstreamStart);
+    RefPtrWillBeRawPtr<HTMLElement> newBlock = insertNewDefaultParagraphElementAt(upstreamStart);
 
     bool endWasBr = isHTMLBRElement(*visibleParagraphEnd.deepEquivalent().deprecatedNode());
 
@@ -964,7 +965,7 @@ PassRefPtrWillBeRawPtr<Element> CompositeEditCommand::moveParagraphContentsToNew
     return newBlock.release();
 }
 
-void CompositeEditCommand::pushAnchorElementDown(Node* anchorNode)
+void CompositeEditCommand::pushAnchorElementDown(Element* anchorNode)
 {
     if (!anchorNode)
         return;
@@ -972,7 +973,7 @@ void CompositeEditCommand::pushAnchorElementDown(Node* anchorNode)
     ASSERT(anchorNode->isLink());
 
     setEndingSelection(VisibleSelection::selectionFromContentsOfNode(anchorNode));
-    applyStyledElement(toElement(anchorNode));
+    applyStyledElement(anchorNode);
     // Clones of anchorNode have been pushed down, now remove it.
     if (anchorNode->inDocument())
         removeNodePreservingChildren(anchorNode);
@@ -1369,7 +1370,7 @@ bool CompositeEditCommand::breakOutOfEmptyMailBlockquotedParagraph()
     if (enclosingNodeOfType(previous.deepEquivalent(), &isMailBlockquote))
         return false;
 
-    RefPtrWillBeRawPtr<Node> br = createBreakElement(document());
+    RefPtrWillBeRawPtr<HTMLBRElement> br = createBreakElement(document());
     // We want to replace this quoted paragraph with an unquoted one, so insert a br
     // to hold the caret before the highest blockquote.
     insertNodeBefore(br, highestBlockquote);
@@ -1413,7 +1414,7 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Posi
         return original;
 
     VisiblePosition visiblePos(original);
-    Node* enclosingAnchor = enclosingAnchorElement(original);
+    Element* enclosingAnchor = enclosingAnchorElement(original);
     Position result = original;
 
     if (!enclosingAnchor)
@@ -1480,21 +1481,17 @@ PassRefPtrWillBeRawPtr<Node> CompositeEditCommand::splitTreeToNode(Node* start, 
     RefPtrWillBeRawPtr<Node> endNode = end;
     RefPtrWillBeRawPtr<Node> node = nullptr;
     for (node = start; node->parentNode() != endNode; node = node->parentNode()) {
-        if (!node->parentNode()->isElementNode())
+        Element* parentElement = node->parentElement();
+        if (!parentElement)
             break;
         // Do not split a node when doing so introduces an empty node.
-        VisiblePosition positionInParent(firstPositionInNode(node->parentNode()));
+        VisiblePosition positionInParent(firstPositionInNode(parentElement));
         VisiblePosition positionInNode(firstPositionInOrBeforeNode(node.get()));
         if (positionInParent != positionInNode)
-            splitElement(toElement(node->parentNode()), node);
+            splitElement(parentElement, node);
     }
 
     return node.release();
-}
-
-PassRefPtrWillBeRawPtr<Element> createBlockPlaceholderElement(Document& document)
-{
-    return document.createElement(brTag, false);
 }
 
 void CompositeEditCommand::trace(Visitor* visitor)

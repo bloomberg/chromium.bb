@@ -34,6 +34,7 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
@@ -113,7 +114,7 @@ void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSel
     if (isAtUnsplittableElement(start)) {
         RefPtrWillBeRawPtr<HTMLElement> blockquote = createBlockElement();
         insertNodeAt(blockquote, start);
-        RefPtrWillBeRawPtr<Element> placeholder = createBreakElement(document());
+        RefPtrWillBeRawPtr<HTMLBRElement> placeholder = createBreakElement(document());
         appendNode(placeholder, blockquote);
         setEndingSelection(VisibleSelection(positionBeforeNode(placeholder.get()), DOWNSTREAM, endingSelection().isDirectional()));
         return;

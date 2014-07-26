@@ -34,6 +34,7 @@
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLElement.h"
 
 namespace blink {
@@ -283,7 +284,7 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
     }
     // When removing a list, we must always create a placeholder to act as a point of insertion
     // for the list content being removed.
-    RefPtrWillBeRawPtr<Element> placeholder = createBreakElement(document());
+    RefPtrWillBeRawPtr<HTMLBRElement> placeholder = createBreakElement(document());
     RefPtrWillBeRawPtr<Element> nodeToInsert = placeholder;
     // If the content of the list item will be moved into another list, put it in a list item
     // so that we don't create an orphaned list child.
@@ -346,7 +347,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> InsertListCommand::listifyParagraph(const Vi
 
     // Check for adjoining lists.
     RefPtrWillBeRawPtr<HTMLElement> listItemElement = createListItemElement(document());
-    RefPtrWillBeRawPtr<HTMLElement> placeholder = createBreakElement(document());
+    RefPtrWillBeRawPtr<HTMLBRElement> placeholder = createBreakElement(document());
     appendNode(placeholder, listItemElement);
 
     // Place list item into adjoining lists.
@@ -366,7 +367,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> InsertListCommand::listifyParagraph(const Vi
             // Inserting the list into an empty paragraph that isn't held open
             // by a br or a '\n', will invalidate start and end.  Insert
             // a placeholder and then recompute start and end.
-            RefPtrWillBeRawPtr<Node> placeholder = insertBlockPlaceholder(start.deepEquivalent());
+            RefPtrWillBeRawPtr<HTMLBRElement> placeholder = insertBlockPlaceholder(start.deepEquivalent());
             start = VisiblePosition(positionBeforeNode(placeholder.get()));
             end = start;
         }

@@ -37,6 +37,7 @@ namespace blink {
 class Document;
 class Element;
 class ExceptionState;
+class HTMLBRElement;
 class HTMLElement;
 class HTMLSpanElement;
 class Node;
@@ -207,7 +208,7 @@ PassRefPtrWillBeRawPtr<Range> createRange(Document&, const VisiblePosition& star
 // Functions returning HTMLElement
 
 PassRefPtrWillBeRawPtr<HTMLElement> createDefaultParagraphElement(Document&);
-PassRefPtrWillBeRawPtr<HTMLElement> createBreakElement(Document&);
+PassRefPtrWillBeRawPtr<HTMLBRElement> createBreakElement(Document&);
 PassRefPtrWillBeRawPtr<HTMLElement> createOrderedListElement(Document&);
 PassRefPtrWillBeRawPtr<HTMLElement> createUnorderedListElement(Document&);
 PassRefPtrWillBeRawPtr<HTMLElement> createListItemElement(Document&);
@@ -227,7 +228,7 @@ Node* enclosingListChild(Node*);
 PassRefPtrWillBeRawPtr<HTMLSpanElement> createTabSpanElement(Document&);
 PassRefPtrWillBeRawPtr<HTMLSpanElement> createTabSpanElement(Document&, PassRefPtrWillBeRawPtr<Text> tabTextNode);
 PassRefPtrWillBeRawPtr<HTMLSpanElement> createTabSpanElement(Document&, const String& tabText);
-PassRefPtrWillBeRawPtr<Element> createBlockPlaceholderElement(Document&);
+PassRefPtrWillBeRawPtr<HTMLBRElement> createBlockPlaceholderElement(Document&);
 
 Element* editableRootForPosition(const Position&, EditableType = ContentIsEditable);
 Element* unsplittableElementForPosition(const Position&);

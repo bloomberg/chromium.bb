@@ -273,7 +273,7 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle *style)
             RefPtrWillBeRawPtr<Element> block = enclosingBlock(paragraphStart.deepEquivalent().deprecatedNode());
             const Position& paragraphStartToMove = paragraphStart.deepEquivalent();
             if (!m_removeOnly && isEditablePosition(paragraphStartToMove)) {
-                RefPtrWillBeRawPtr<Element> newBlock = moveParagraphContentsToNewBlockIfNecessary(paragraphStartToMove);
+                RefPtrWillBeRawPtr<HTMLElement> newBlock = moveParagraphContentsToNewBlockIfNecessary(paragraphStartToMove);
                 if (newBlock)
                     block = newBlock;
             }

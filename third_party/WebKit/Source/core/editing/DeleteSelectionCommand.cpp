@@ -36,6 +36,7 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/frame/LocalFrame.h"
+#include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/rendering/RenderTableCell.h"
 
@@ -836,7 +837,7 @@ void DeleteSelectionCommand::doApply()
         m_needPlaceholder = hasPlaceholder && lineBreakBeforeStart && !lineBreakAtEndOfSelectionToDelete;
     }
 
-    RefPtrWillBeRawPtr<Node> placeholder = m_needPlaceholder ? createBreakElement(document()) : nullptr;
+    RefPtrWillBeRawPtr<HTMLBRElement> placeholder = m_needPlaceholder ? createBreakElement(document()) : nullptr;
 
     if (placeholder) {
         if (m_sanitizeMarkup)
