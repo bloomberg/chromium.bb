@@ -355,6 +355,8 @@ cr.define('options', function() {
     // Blur the active element to ensure any changed pref value is saved.
     document.activeElement.blur();
     var overlay = this.getVisibleOverlay_();
+    if (!overlay)
+      return;
     // Let the overlay handle the <Esc> if it wants to.
     if (overlay.handleCancel) {
       overlay.handleCancel();
