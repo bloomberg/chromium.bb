@@ -806,6 +806,8 @@ int drmCheckModesettingSupported(const char *busid)
 			return -EINVAL;
 		return (modesetting ? 0 : -ENOSYS);
 	}
+#elif defined(__DragonFly__)
+	return 0;
 #endif
 	return -ENOSYS;
 
