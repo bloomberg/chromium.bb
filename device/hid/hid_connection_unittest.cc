@@ -76,7 +76,7 @@ class HidConnectionTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     message_loop_.reset(new base::MessageLoopForIO());
-    service_.reset(HidService::CreateInstance());
+    service_.reset(HidService::Create(message_loop_->message_loop_proxy()));
     ASSERT_TRUE(service_);
 
     std::vector<HidDeviceInfo> devices;

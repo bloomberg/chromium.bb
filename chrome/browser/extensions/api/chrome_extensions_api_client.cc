@@ -8,6 +8,8 @@
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
 #include "chrome/browser/guest_view/app_view/app_view_guest.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
+#include "device/hid/hid_service.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/extensions/api/storage/managed_value_store_cache.h"
@@ -54,6 +56,15 @@ bool ChromeExtensionsAPIClient::AppViewInternalDenyRequest(
                                               GURL(),
                                               guest_instance_id,
                                               guest_extension_id);
+}
+
+device::HidService* ChromeExtensionsAPIClient::GetHidService() {
+  if (!hid_service_) {
+    hid_service_.reset(device::HidService::Create(
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::UI)));
+  }
+  return hid_service_.get();
 }
 
 }  // namespace extensions

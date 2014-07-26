@@ -437,10 +437,6 @@
       "knipolnnllmklapflnccelgolnpehhpl"
     ]
   },
-  "hid": {
-    "dependencies": ["permission:hid"],
-    "contexts": ["blessed_extension"]
-  },
   "history": {
     "dependencies": ["permission:history"],
     "contexts": ["blessed_extension"]

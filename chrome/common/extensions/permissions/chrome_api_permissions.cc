@@ -313,8 +313,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        APIPermissionInfo::kFlagNone,
        IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_WRITE_DIRECTORY,
        PermissionMessage::kFileSystemWriteDirectory},
-      {APIPermission::kHid, "hid", APIPermissionInfo::kFlagNone,
-       IDS_EXTENSION_PROMPT_WARNING_HID, PermissionMessage::kHid},
       // Because warning messages for the "mediaGalleries" permission
       // vary based on the permissions parameters, no message ID or
       // message text is specified here.  The message ID and text used

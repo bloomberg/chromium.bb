@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_CHROME_EXTENSIONS_API_CLIENT_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "extensions/browser/api/extensions_api_client.h"
 
 namespace extensions {
@@ -32,8 +33,11 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
       content::BrowserContext* browser_context,
       int guest_instance_id,
       const std::string& guest_extension_id) OVERRIDE;
+  virtual device::HidService* GetHidService() OVERRIDE;
 
  private:
+  scoped_ptr<device::HidService> hid_service_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsAPIClient);
 };
 

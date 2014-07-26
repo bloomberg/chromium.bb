@@ -13,6 +13,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/tuple.h"

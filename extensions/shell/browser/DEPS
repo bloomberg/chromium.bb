@@ -12,6 +12,9 @@ include_rules = [
   "+content/shell/browser/shell_devtools_delegate.h",
   "+content/shell/browser/shell_net_log.h",
 
+  # For device backend support.
+  "+device/hid",
+
   # Only used in API tests that should be moved to extensions/browser/api/...
   "+net",
 

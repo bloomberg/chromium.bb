@@ -12,7 +12,7 @@ namespace device {
 
 TEST(HidServiceTest, Create) {
   base::MessageLoopForIO message_loop;
-  HidService* service = HidService::GetInstance();
+  HidService* service = HidService::Create(message_loop.message_loop_proxy());
   ASSERT_TRUE(service);
 
   std::vector<HidDeviceInfo> devices;

@@ -19,6 +19,10 @@ namespace content {
 class BrowserContext;
 }
 
+namespace device {
+class HidService;
+}
+
 namespace extensions {
 
 class SettingsObserver;
@@ -63,6 +67,9 @@ class ExtensionsAPIClient {
       content::BrowserContext* browser_context,
       int guest_instance_id,
       const std::string& guest_extension_id);
+
+  // Returns the HidService instance for this embedder.
+  virtual device::HidService* GetHidService();
 
   // NOTE: If this interface gains too many methods (perhaps more than 20) it
   // should be split into one interface per API.

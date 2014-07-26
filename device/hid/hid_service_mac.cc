@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"

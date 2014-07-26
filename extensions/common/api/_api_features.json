@@ -40,6 +40,10 @@
     "dependencies": ["permission:dns"],
     "contexts": ["blessed_extension"]
   },
+  "hid": {
+    "dependencies": ["permission:hid"],
+    "contexts": ["blessed_extension"]
+  },
   "power": {
     "dependencies": ["permission:power"],
     "contexts": ["blessed_extension"]

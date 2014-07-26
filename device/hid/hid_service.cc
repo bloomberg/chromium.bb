@@ -20,13 +20,22 @@
 
 namespace device {
 
-namespace {
+HidService* HidService::Create(
+    scoped_refptr<base::MessageLoopProxy> ui_message_loop) {
+#if defined(OS_LINUX) && defined(USE_UDEV)
+  return new HidServiceLinux(ui_message_loop);
+#elif defined(OS_MACOSX)
+  return new HidServiceMac();
+#elif defined(OS_WIN)
+  return new HidServiceWin();
+#else
+  return NULL;
+#endif
+}
 
-// The instance will be reset when message loop destroys.
-base::LazyInstance<scoped_ptr<HidService> >::Leaky g_hid_service_ptr =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
+HidService::~HidService() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void HidService::GetDevices(std::vector<HidDeviceInfo>* devices) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -48,32 +57,9 @@ bool HidService::GetDeviceInfo(const HidDeviceId& device_id,
   return true;
 }
 
-void HidService::WillDestroyCurrentMessageLoop() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  g_hid_service_ptr.Get().reset(NULL);
-}
-
 HidService::HidService() {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::MessageLoop::current()->AddDestructionObserver(this);
-}
-
-HidService::~HidService() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  base::MessageLoop::current()->RemoveDestructionObserver(this);
-}
-
-HidService* HidService::CreateInstance() {
-#if defined(OS_LINUX) && defined(USE_UDEV)
-    return new HidServiceLinux();
-#elif defined(OS_MACOSX)
-    return new HidServiceMac();
-#elif defined(OS_WIN)
-    return new HidServiceWin();
-#else
-    return NULL;
-#endif
 }
 
 void HidService::AddDevice(const HidDeviceInfo& info) {
@@ -92,12 +78,6 @@ void HidService::RemoveDevice(const HidDeviceId& device_id) {
 
 const HidService::DeviceMap& HidService::GetDevicesNoEnumerate() const {
   return devices_;
-}
-
-HidService* HidService::GetInstance() {
-  if (!g_hid_service_ptr.Get().get())
-    g_hid_service_ptr.Get().reset(CreateInstance());
-  return g_hid_service_ptr.Get().get();
 }
 
 }  // namespace device

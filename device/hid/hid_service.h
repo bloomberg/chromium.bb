@@ -10,8 +10,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/thread_checker.h"
 #include "device/hid/hid_device_info.h"
 
@@ -19,10 +18,12 @@ namespace device {
 
 class HidConnection;
 
-class HidService : public base::MessageLoop::DestructionObserver {
+class HidService {
  public:
-  // Must be called on FILE thread.
-  static HidService* GetInstance();
+  static HidService* Create(
+      scoped_refptr<base::MessageLoopProxy> ui_message_loop);
+
+  virtual ~HidService();
 
   // Enumerates and returns a list of device identifiers.
   virtual void GetDevices(std::vector<HidDeviceInfo>* devices);
@@ -34,19 +35,12 @@ class HidService : public base::MessageLoop::DestructionObserver {
   virtual scoped_refptr<HidConnection> Connect(
       const HidDeviceId& device_id) = 0;
 
-  // Implements base::MessageLoop::DestructionObserver
-  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
-
  protected:
-  friend struct base::DefaultDeleter<HidService>;
   friend class HidConnectionTest;
 
   typedef std::map<HidDeviceId, HidDeviceInfo> DeviceMap;
 
   HidService();
-  virtual ~HidService();
-
-  static HidService* CreateInstance();
 
   void AddDevice(const HidDeviceInfo& info);
   void RemoveDevice(const HidDeviceId& device_id);

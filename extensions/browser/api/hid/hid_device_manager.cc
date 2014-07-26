@@ -9,6 +9,7 @@
 
 #include "base/lazy_instance.h"
 #include "device/hid/hid_service.h"
+#include "extensions/browser/api/extensions_api_client.h"
 
 using device::HidService;
 using device::HidUsageAndPage;
@@ -33,7 +34,7 @@ scoped_ptr<base::ListValue> HidDeviceManager::GetApiDevices(
     uint16_t product_id) {
   UpdateDevices();
 
-  HidService* hid_service = HidService::GetInstance();
+  HidService* hid_service = ExtensionsAPIClient::Get()->GetHidService();
   DCHECK(hid_service);
   base::ListValue* api_devices = new base::ListValue();
   for (ResourceIdToDeviceIdMap::const_iterator device_iter =
@@ -96,7 +97,7 @@ scoped_ptr<base::ListValue> HidDeviceManager::GetApiDevices(
 bool HidDeviceManager::GetDeviceInfo(int resource_id,
                                      device::HidDeviceInfo* device_info) {
   UpdateDevices();
-  HidService* hid_service = HidService::GetInstance();
+  HidService* hid_service = ExtensionsAPIClient::Get()->GetHidService();
   DCHECK(hid_service);
 
   ResourceIdToDeviceIdMap::const_iterator device_iter =
@@ -109,7 +110,7 @@ bool HidDeviceManager::GetDeviceInfo(int resource_id,
 
 void HidDeviceManager::UpdateDevices() {
   thread_checker_.CalledOnValidThread();
-  HidService* hid_service = HidService::GetInstance();
+  HidService* hid_service = ExtensionsAPIClient::Get()->GetHidService();
   DCHECK(hid_service);
 
   std::vector<device::HidDeviceInfo> devices;

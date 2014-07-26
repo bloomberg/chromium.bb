@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/extensions_api_client.h"
 
+#include "base/logging.h"
+
 namespace extensions {
 namespace {
 
@@ -37,6 +39,12 @@ bool ExtensionsAPIClient::AppViewInternalDenyRequest(
     int guest_instance_id,
     const std::string& guest_extension_id) {
   return false;
+}
+
+device::HidService* ExtensionsAPIClient::GetHidService() {
+  // This should never be called by clients which don't support the HID API.
+  NOTIMPLEMENTED();
+  return NULL;
 }
 
 }  // namespace extensions

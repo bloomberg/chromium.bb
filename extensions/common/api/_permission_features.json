@@ -36,6 +36,20 @@
       ]
     }
   ],
+  "hid": [
+    {
+      "channel": "dev",
+      "extension_types": ["platform_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["extension"],
+      "whitelist": [
+        "496B6890097EB6E19809ADEADD095A8721FBB2E0",  // FIDO U2F APIs
+        "E24F1786D842E91E74C27929B0B3715A4689A473"   // CryptoToken
+      ]
+    }
+  ],
   "power": {
     "channel": "stable",
     "extension_types": [ "extension", "legacy_packaged_app", "platform_app" ]

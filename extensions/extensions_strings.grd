@@ -264,7 +264,10 @@
         Exchange data with the computers named: <ph name="HOSTNAMES">$1<ex>foo.example.com bar.example.com</ex></ph>
       </message>
       
-      <!-- USB API strings. Please keep alphabetized. -->
+      <!-- Device API strings. Please keep alphabetized. -->
+      <message name="IDS_EXTENSION_PROMPT_WARNING_HID" desc="Permission string for access to HID devices.">
+        Access your input devices
+      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_USB" desc="Permission string for access to USB devices.">
         Access your USB devices
       </message>

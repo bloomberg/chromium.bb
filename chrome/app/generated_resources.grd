@@ -4405,9 +4405,6 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_SIGNED_IN_DEVICES" desc="Permission string for access to privacy settings.">
         Read the list of your signed-in devices
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_HID" desc="Permission string for access to HID devices.">
-        Access your input devices
-      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_USB_BLUETOOTH" desc="Permission string for access to USB and Bluetooth devices.">
         Access your USB and Bluetooth devices
       </message>
