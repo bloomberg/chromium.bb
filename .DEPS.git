@@ -23,12 +23,16 @@ deps = {
         Var('git_url') + '/chromium/src/third_party/lcov.git@b37daf5968200da8ff520ce65c4e5bce4047dd15',
     'third_party/lss':
         Var('git_url') + '/external/linux-syscall-support/lss.git@2f724fced658cd6182096c615efdf3767b7c57fe',
+    'third_party/valgrind':
+        Var('git_url') + '/chromium/deps/valgrind.git@59886873b4b8258a8e0f098c23e1958e0d0c0a26',
     'tools/clang':
         Var('git_url') + '/chromium/src/tools/clang.git@7aa71664f527268776ce5b5bceae01a4bc6a1666',
     'tools/gyp':
         Var('git_url') + '/external/gyp.git@0ff4e1aa19641cda58e3ed98399e0d96e6ccd7c2',
     'tools/valgrind':
         Var('git_url') + '/chromium/src/tools/valgrind.git@4989a1b19c3a33c828e385d3a07e83e202e1e651',
+    'validator_snapshots':
+        Var('git_url') + '/native_client/src/validator_snapshots.git@4c1ea6b6ebe020993b0a091fd4e38a6487704b60',
 }
 
 deps_os = {
@@ -39,9 +43,17 @@ deps_os = {
     },
     'unix':
     {
+        'third_party/ragel':
+            Var('git_url') + '/native_client/deps/third_party/ragel.git@da42bb33f1b67c2d70b38ec1d2edf5263271b635',
     },
     'win':
     {
+        'third_party/NSIS':
+            Var('git_url') + '/native_client/deps/third_party/NSIS.git@21b6ad22daa7bfc04b9f1c1805a34622e2607a93',
+        'third_party/gnu_binutils':
+            Var('git_url') + '/native_client/deps/third_party/gnu_binutils.git@f4003433b61b25666565690caf3d7a7a1a4ec436',
+        'third_party/mingw-w64/mingw/bin':
+            Var('git_url') + '/native_client/deps/third_party/mingw-w64/mingw/bin.git@3cc8b140b883a9fe4986d12cfd46c16a093d3527',
     },
 }
 
