@@ -287,6 +287,13 @@ static void TestCalloc(size_t n, size_t s, bool ok) {
   }
 }
 
+// MSVC C4530 complains about exception handler usage when exceptions are
+// disabled.  Temporarily disable that warning so we can test that they are, in
+// fact, disabled.
+#if defined(OS_WIN)
+#pragma warning(push)
+#pragma warning(disable: 4530)
+#endif
 
 // A global test counter for number of times the NewHandler is called.
 static int news_handled = 0;
@@ -330,6 +337,10 @@ static void TestNothrowNew(void* (*func)(size_t)) {
   EXPECT_EQ(news_handled, 1) << "nothrow new_handler was not called.";
   std::set_new_handler(saved_handler);
 }
+
+#if defined(OS_WIN)
+#pragma warning(pop)
+#endif
 
 }  // namespace
 

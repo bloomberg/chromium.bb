@@ -590,13 +590,11 @@ PP_FileHandle CreateTemporaryFile(PP_Instance instance) {
 }
 
 int32_t GetNumberOfProcessors() {
-  int32_t num_processors;
   IPC::Sender* sender = content::RenderThread::Get();
   DCHECK(sender);
-  if(!sender->Send(new NaClHostMsg_NaClGetNumProcessors(&num_processors))) {
-    return 1;
-  }
-  return num_processors;
+  int32_t num_processors = 1;
+  return sender->Send(new NaClHostMsg_NaClGetNumProcessors(&num_processors)) ?
+      num_processors : 1;
 }
 
 PP_Bool PPIsNonSFIModeEnabled() {
@@ -787,15 +785,13 @@ void InstanceDestroyed(PP_Instance instance) {
 PP_Bool NaClDebugEnabledForURL(const char* alleged_nmf_url) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNaClDebug))
     return PP_FALSE;
-  bool should_debug;
   IPC::Sender* sender = content::RenderThread::Get();
   DCHECK(sender);
-  if(!sender->Send(new NaClHostMsg_NaClDebugEnabledForURL(
-         GURL(alleged_nmf_url),
-         &should_debug))) {
-    return PP_FALSE;
-  }
-  return PP_FromBool(should_debug);
+  bool should_debug = false;
+  return PP_FromBool(
+      sender->Send(new NaClHostMsg_NaClDebugEnabledForURL(GURL(alleged_nmf_url),
+                                                          &should_debug)) &&
+      should_debug);
 }
 
 void LogToConsole(PP_Instance instance, const char* message) {

@@ -130,7 +130,7 @@ BluetoothServiceRecordWin::BluetoothServiceRecordWin(
       name_(name),
       uuid_(gatt_uuid),
       supports_rfcomm_(false),
-      rfcomm_channel_(-1) {
+      rfcomm_channel_(0xFF) {
   // Bluetooth 2.0
   if (sdp_bytes.size() > 0) {
     LPBYTE blob_data = const_cast<LPBYTE>(&sdp_bytes[0]);

@@ -563,38 +563,70 @@ config("no_rtti") {
 
 config("default_warnings") {
   if (is_win) {
-    # Please keep ordered and add names if you add more.
     cflags = [
       "/WX",      # Treat warnings as errors.
-      "/wd4018",  # Comparing signed and unsigned values.
+
+      # Warnings permanently disabled:
+
+      # C4127: conditional expression is constant
+      # This warning can in theory catch dead code and other problems, but
+      # triggers in far too many desirable cases where the conditional
+      # expression is either set by macros or corresponds some legitimate
+      # compile-time constant expression (due to constant template args,
+      # conditionals comparing the sizes of different types, etc.).  Some of
+      # these can be worked around, but it's not worth it.
+      "/wd4127",
+
+      # C4251: 'identifier' : class 'type' needs to have dll-interface to be
+      #        used by clients of class 'type2'
+      # This is necessary for the shared library build.
+      "/wd4251",
+
+      # C4351: new behavior: elements of array 'array' will be default
+      #        initialized
+      # This is a silly "warning" that basically just alerts you that the
+      # compiler is going to actually follow the language spec like it's
+      # supposed to, instead of not following it like old buggy versions did.
+      # There's absolutely no reason to turn this on.
+      "/wd4351",
+
+      # C4355: 'this': used in base member initializer list
+      # It's commonly useful to pass |this| to objects in a class' initializer
+      # list.  While this warning can catch real bugs, most of the time the
+      # constructors in question don't attempt to call methods on the passed-in
+      # pointer (until later), and annotating every legit usage of this is
+      # simply more hassle than the warning is worth.
+      "/wd4355",
+
+      # C4503: 'identifier': decorated name length exceeded, name was
+      #        truncated
+      # This only means that some long error messages might have truncated
+      # identifiers in the presence of lots of templates.  It has no effect on
+      # program correctness and there's no real reason to waste time trying to
+      # prevent it.
+      "/wd4503",
+
+      # C4611: interaction between 'function' and C++ object destruction is
+      #        non-portable
+      # This warning is unavoidable when using e.g. setjmp/longjmp.  MSDN
+      # suggests using exceptions instead of setjmp/longjmp for C++, but
+      # Chromium code compiles without exception support.  We therefore have to
+      # use setjmp/longjmp for e.g. JPEG decode error handling, which means we
+      # have to turn off this warning (and be careful about how object
+      # destruction happens in such cases).
+      "/wd4611",
+
+
+      # Warnings to evaluate and possibly fix/reenable later:
+
       "/wd4100",  # Unreferenced formal function parameter.
-      "/wd4121",  # Alignment of a member was sensitive to packing.
-      "/wd4125",  # Decimal digit terminates octal escape sequence.
-      "/wd4127",  # Conditional expression is constant.
-      "/wd4130",  # Logical operation on address of string constant.
       "/wd4189",  # A variable was declared and initialized but never used.
-      "/wd4201",  # Nonstandard extension used: nameless struct/union.
-      "/wd4238",  # Nonstandard extension used: class rvalue used as lvalue.
       "/wd4244",  # Conversion: possible loss of data.
-      "/wd4245",  # Conversion: signed/unsigned mismatch,
-      "/wd4251",  # Class needs to have dll-interface.
-      "/wd4310",  # Cast truncates constant value.
-      "/wd4351",  # Elements of array will be default initialized.
-      "/wd4355",  # 'this' used in base member initializer list.
-      "/wd4396",  # Inline friend template thing.
-      "/wd4428",  # Universal character name encountered in source.
       "/wd4481",  # Nonstandard extension: override specifier.
-      "/wd4503",  # Decorated name length exceeded, name was truncated.
       "/wd4505",  # Unreferenced local function has been removed.
       "/wd4510",  # Default constructor could not be generated.
       "/wd4512",  # Assignment operator could not be generated.
-      "/wd4530",  # Exception handler used, but unwind semantics not enabled.
       "/wd4610",  # Class can never be instantiated, constructor required.
-      "/wd4611",  # C++ object destruction and 'catch'.
-      "/wd4701",  # Potentially uninitialized local variable name used.
-      "/wd4702",  # Unreachable code.
-      "/wd4706",  # Assignment within conditional expression.
-      "/wd4819",  # Character not in the current code page.
     ]
   } else {
     # Common GCC warning setup.
