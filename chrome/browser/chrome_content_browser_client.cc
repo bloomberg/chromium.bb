@@ -2019,8 +2019,8 @@ void ChromeContentBrowserClient::AllowCertificateError(
 #endif
 
   // Otherwise, display an SSL blocking page.
-  new SSLBlockingPage(tab, cert_error, ssl_info, request_url, overridable,
-                      strict_enforcement, callback);
+  SSLBlockingPage::Show(tab, cert_error, ssl_info, request_url, overridable,
+                        strict_enforcement, callback);
 }
 
 void ChromeContentBrowserClient::SelectClientCertificate(

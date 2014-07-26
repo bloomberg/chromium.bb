@@ -1058,6 +1058,8 @@
       'browser/ui/webui/history_ui.h',
       'browser/ui/webui/instant_ui.cc',
       'browser/ui/webui/instant_ui.h',
+      'browser/ui/webui/interstitials/interstitial_ui.cc',
+      'browser/ui/webui/interstitials/interstitial_ui.h',
       'browser/ui/webui/invalidations_message_handler.cc',
       'browser/ui/webui/invalidations_message_handler.h',
       'browser/ui/webui/invalidations_ui.cc',
