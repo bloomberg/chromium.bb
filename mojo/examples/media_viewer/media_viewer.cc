@@ -185,17 +185,17 @@ class ControlPanel : public views::ButtonListener {
   DISALLOW_COPY_AND_ASSIGN(ControlPanel);
 };
 
-class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
+class NavigatorImpl : public InterfaceImpl<Navigator> {
  public:
   explicit NavigatorImpl(MediaViewer* viewer) : viewer_(viewer) {}
   virtual ~NavigatorImpl() {}
 
  private:
-  // Overridden from navigation::Navigate:
+  // Overridden from Navigator:
   virtual void Navigate(
       uint32_t node_id,
-      navigation::NavigationDetailsPtr navigation_details,
-      navigation::ResponseDetailsPtr response_details) OVERRIDE;
+      NavigationDetailsPtr navigation_details,
+      ResponseDetailsPtr response_details) OVERRIDE;
 
   MediaViewer* viewer_;
 
@@ -228,8 +228,8 @@ class MediaViewer
 
   void Navigate(
       uint32_t node_id,
-      navigation::NavigationDetailsPtr navigation_details,
-      navigation::ResponseDetailsPtr response_details) {
+      NavigationDetailsPtr navigation_details,
+      ResponseDetailsPtr response_details) {
     // TODO(yzshen): This shouldn't be needed once FIFO is ready.
     if (!view_manager_) {
       pending_navigate_request_.reset(new PendingNavigateRequest);
@@ -248,7 +248,7 @@ class MediaViewer
     content_node_->Embed(handler);
 
     if (navigation_details) {
-      navigation::NavigatorPtr navigator;
+      NavigatorPtr navigator;
       app_->ConnectToService(handler, &navigator);
       navigator->Navigate(content_node_->id(), navigation_details.Pass(),
                           response_details.Pass());
@@ -264,8 +264,8 @@ class MediaViewer
 
   struct PendingNavigateRequest {
     uint32_t node_id;
-    navigation::NavigationDetailsPtr navigation_details;
-    navigation::ResponseDetailsPtr response_details;
+    NavigationDetailsPtr navigation_details;
+    ResponseDetailsPtr response_details;
   };
 
 
@@ -374,8 +374,8 @@ class MediaViewer
 
 void NavigatorImpl::Navigate(
     uint32_t node_id,
-    navigation::NavigationDetailsPtr navigation_details,
-    navigation::ResponseDetailsPtr response_details) {
+    NavigationDetailsPtr navigation_details,
+    ResponseDetailsPtr response_details) {
   viewer_->Navigate(node_id, navigation_details.Pass(),
                     response_details.Pass());
 }

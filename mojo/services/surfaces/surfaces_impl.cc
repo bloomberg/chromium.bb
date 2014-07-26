@@ -14,7 +14,6 @@
 #include "mojo/services/public/cpp/surfaces/surfaces_type_converters.h"
 
 namespace mojo {
-namespace surfaces {
 
 SurfacesImpl::SurfacesImpl(cc::SurfaceManager* manager,
                            uint32_t id_namespace,
@@ -97,5 +96,4 @@ scoped_ptr<cc::OutputSurface> SurfacesImpl::CreateOutputSurface() {
       new ContextProviderMojo(command_buffer_handle_.Pass())));
 }
 
-}  // namespace surfaces
 }  // namespace mojo

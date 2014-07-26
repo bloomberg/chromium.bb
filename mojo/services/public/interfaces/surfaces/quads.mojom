@@ -5,7 +5,7 @@
 import "mojo/services/public/interfaces/geometry/geometry.mojom"
 import "mojo/services/public/interfaces/surfaces/surface_id.mojom"
 
-module mojo.surfaces {
+module mojo {
 
 struct Color {
   uint32 rgba;
@@ -81,7 +81,7 @@ struct Quad {
   // Index into the containing pass' shared quad state array which has state
   // (transforms etc) shared by multiple quads.
   int32 shared_quad_state_index;
-  
+
   // Only one of the following will be set, depending on the material.
   CheckerboardQuadState checkerboard_quad_state;
   DebugBorderQuadState debug_border_quad_state;

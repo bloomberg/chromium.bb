@@ -20,8 +20,6 @@ class Display;
 namespace mojo {
 class ServiceManager;
 
-namespace surfaces {
-
 class SurfaceNativeViewportClient;
 
 class SurfacesImpl : public InterfaceImpl<Surface>,
@@ -70,7 +68,6 @@ class SurfacesImpl : public InterfaceImpl<Surface>,
   DISALLOW_COPY_AND_ASSIGN(SurfacesImpl);
 };
 
-}  // namespace surfaces
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_SURFACES_SURFACES_IMPL_H_

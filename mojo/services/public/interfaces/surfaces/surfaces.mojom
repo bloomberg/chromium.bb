@@ -7,7 +7,7 @@ import "mojo/services/gles2/command_buffer.mojom"
 import "mojo/services/public/interfaces/surfaces/quads.mojom"
 import "mojo/services/public/interfaces/surfaces/surface_id.mojom"
 
-module mojo.surfaces {
+module mojo {
 
 enum ResourceFormat {
   RGBA_8888,
@@ -32,7 +32,7 @@ struct TransferableResource {
   uint32 id;
   ResourceFormat format;
   uint32 filter;
-  mojo.Size size;
+  Size size;
   MailboxHolder mailbox_holder;
   bool is_repeated;
   bool is_software;
@@ -57,13 +57,13 @@ interface SurfaceClient {
 
 [Client=SurfaceClient]
 interface Surface {
-  CreateSurface(SurfaceId id, mojo.Size size);
+  CreateSurface(SurfaceId id, Size size);
   SubmitFrame(SurfaceId id, Frame frame);
   DestroySurface(SurfaceId id);
 
-  CreateGLES2BoundSurface(mojo.CommandBuffer gles2_client,
+  CreateGLES2BoundSurface(CommandBuffer gles2_client,
                           SurfaceId id,
-                          mojo.Size size);
+                          Size size);
 };
 
 }

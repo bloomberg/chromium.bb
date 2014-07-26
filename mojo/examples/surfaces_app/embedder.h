@@ -23,7 +23,7 @@ namespace examples {
 // Simple example of a surface embedder that embeds two other surfaces.
 class Embedder {
  public:
-  explicit Embedder(surfaces::Surface* surface);
+  explicit Embedder(Surface* surface);
   ~Embedder();
 
   void SetSurfaceId(cc::SurfaceId id) { id_ = id; }
@@ -35,7 +35,7 @@ class Embedder {
 
  private:
   cc::SurfaceId id_;
-  surfaces::Surface* surface_;
+  Surface* surface_;
 
   DISALLOW_COPY_AND_ASSIGN(Embedder);
 };

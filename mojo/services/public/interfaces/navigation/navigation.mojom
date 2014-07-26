@@ -4,7 +4,7 @@
 
 import "mojo/services/public/interfaces/network/url_loader.mojom"
 
-module mojo.navigation {
+module mojo {
 
 // Expresses a preference for where a navigation will be performed.
 enum Target {

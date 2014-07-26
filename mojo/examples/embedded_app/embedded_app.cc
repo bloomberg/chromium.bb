@@ -27,25 +27,26 @@ namespace mojo {
 namespace examples {
 class EmbeddedApp;
 
-class Navigator : public InterfaceImpl<navigation::Navigator> {
+class NavigatorImpl : public InterfaceImpl<Navigator> {
  public:
-  explicit Navigator(EmbeddedApp* app) : app_(app) {}
+  explicit NavigatorImpl(EmbeddedApp* app) : app_(app) {}
 
  private:
   virtual void Navigate(
       uint32 node_id,
-      navigation::NavigationDetailsPtr navigation_details,
-      navigation::ResponseDetailsPtr response_details) OVERRIDE;
+      NavigationDetailsPtr navigation_details,
+      ResponseDetailsPtr response_details) OVERRIDE;
 
   EmbeddedApp* app_;
-  DISALLOW_COPY_AND_ASSIGN(Navigator);
+  DISALLOW_COPY_AND_ASSIGN(NavigatorImpl);
 };
 
-class EmbeddedApp : public ApplicationDelegate,
-                    public ViewManagerDelegate,
-                    public ViewObserver,
-                    public NodeObserver,
-                    public InterfaceFactoryWithContext<Navigator, EmbeddedApp> {
+class EmbeddedApp
+    : public ApplicationDelegate,
+      public ViewManagerDelegate,
+      public ViewObserver,
+      public NodeObserver,
+      public InterfaceFactoryWithContext<NavigatorImpl, EmbeddedApp> {
  public:
   EmbeddedApp()
       : InterfaceFactoryWithContext(this),
@@ -95,11 +96,10 @@ class EmbeddedApp : public ApplicationDelegate,
   virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE {
     if (event->action == EVENT_TYPE_MOUSE_RELEASED) {
       if (event->flags & EVENT_FLAGS_LEFT_MOUSE_BUTTON) {
-        navigation::NavigationDetailsPtr nav_details(
-            navigation::NavigationDetails::New());
+        NavigationDetailsPtr nav_details(NavigationDetails::New());
         nav_details->url = "http://www.aaronboodman.com/z_dropbox/test.html";
         navigator_host_->RequestNavigate(view->node()->id(),
-                                         navigation::TARGET_SOURCE_NODE,
+                                         TARGET_SOURCE_NODE,
                                          nav_details.Pass());
       }
     }
@@ -134,7 +134,7 @@ class EmbeddedApp : public ApplicationDelegate,
   }
 
   ViewManager* view_manager_;
-  navigation::NavigatorHostPtr navigator_host_;
+  NavigatorHostPtr navigator_host_;
   std::map<Node*, View*> views_to_reap_;
   ViewManagerClientFactory view_manager_client_factory_;
 
@@ -148,9 +148,9 @@ class EmbeddedApp : public ApplicationDelegate,
   DISALLOW_COPY_AND_ASSIGN(EmbeddedApp);
 };
 
-void Navigator::Navigate(uint32 node_id,
-                         navigation::NavigationDetailsPtr navigation_details,
-                         navigation::ResponseDetailsPtr response_details) {
+void NavigatorImpl::Navigate(uint32 node_id,
+                             NavigationDetailsPtr navigation_details,
+                             ResponseDetailsPtr response_details) {
   GURL url(navigation_details->url.To<std::string>());
   if (!url.is_valid()) {
     LOG(ERROR) << "URL is invalid.";

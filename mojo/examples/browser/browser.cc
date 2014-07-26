@@ -225,11 +225,10 @@ class Browser : public ApplicationDelegate,
     if (key_event.key_code() == ui::VKEY_RETURN) {
       GURL url(sender->text());
       printf("User entered this URL: %s\n", url.spec().c_str());
-      navigation::NavigationDetailsPtr nav_details(
-          navigation::NavigationDetails::New());
+      NavigationDetailsPtr nav_details(NavigationDetails::New());
       nav_details->url = String::From(url);
       navigator_host_->RequestNavigate(view_manager_->GetRoots().front()->id(),
-                                       navigation::TARGET_NEW_NODE,
+                                       TARGET_NEW_NODE,
                                        nav_details.Pass());
     }
     return false;
@@ -257,7 +256,7 @@ class Browser : public ApplicationDelegate,
   ViewManagerClientFactory view_manager_client_factory_;
   Node* root_;
   views::Widget* widget_;
-  navigation::NavigatorHostPtr navigator_host_;
+  NavigatorHostPtr navigator_host_;
   IWindowManagerPtr window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);

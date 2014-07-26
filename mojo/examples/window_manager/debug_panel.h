@@ -39,8 +39,8 @@ class DebugPanel : public views::LayoutManager, public views::ButtonListener {
    public:
     virtual void CloseTopWindow() = 0;
     virtual void RequestNavigate(
-        uint32 source_node_id, navigation::Target target,
-        navigation::NavigationDetailsPtr nav_details) = 0;
+        uint32 source_node_id, Target target,
+        NavigationDetailsPtr nav_details) = 0;
    protected:
     virtual ~Delegate(){}
   };
@@ -48,7 +48,7 @@ class DebugPanel : public views::LayoutManager, public views::ButtonListener {
   DebugPanel(Delegate* delegate, Node* node);
   virtual ~DebugPanel();
 
-  navigation::Target navigation_target() const;
+  Target navigation_target() const;
 
  private:
   // LayoutManager overrides:

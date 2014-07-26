@@ -30,27 +30,28 @@ const char kEmbeddedAppURL[] = "mojo:mojo_embedded_app";
 
 class NestingApp;
 
-class Navigator : public InterfaceImpl<navigation::Navigator> {
+class NavigatorImpl : public InterfaceImpl<Navigator> {
  public:
-  explicit Navigator(NestingApp* app) : app_(app) {}
+  explicit NavigatorImpl(NestingApp* app) : app_(app) {}
 
  private:
   virtual void Navigate(
       uint32 node_id,
-      navigation::NavigationDetailsPtr navigation_details,
-      navigation::ResponseDetailsPtr response_details) OVERRIDE;
+      NavigationDetailsPtr navigation_details,
+      ResponseDetailsPtr response_details) OVERRIDE;
 
   NestingApp* app_;
-  DISALLOW_COPY_AND_ASSIGN(Navigator);
+  DISALLOW_COPY_AND_ASSIGN(NavigatorImpl);
 };
 
 // An app that embeds another app.
 // TODO(davemoore): Is this the right name?
-class NestingApp : public ApplicationDelegate,
-                   public ViewManagerDelegate,
-                   public ViewObserver,
-                   public NodeObserver,
-                   public InterfaceFactoryWithContext<Navigator, NestingApp> {
+class NestingApp
+    : public ApplicationDelegate,
+      public ViewManagerDelegate,
+      public ViewObserver,
+      public NodeObserver,
+      public InterfaceFactoryWithContext<NavigatorImpl, NestingApp> {
  public:
   NestingApp()
       : InterfaceFactoryWithContext(this),
@@ -62,12 +63,10 @@ class NestingApp : public ApplicationDelegate,
 
   void NavigateChild() {
     if (!color_.empty() && nested_) {
-      navigation::NavigationDetailsPtr details(
-          navigation::NavigationDetails::New());
+      NavigationDetailsPtr details(NavigationDetails::New());
       details->url =
           base::StringPrintf("%s/%s", kEmbeddedAppURL, color_.c_str());
-      navigation::ResponseDetailsPtr response_details(
-          navigation::ResponseDetails::New());
+      ResponseDetailsPtr response_details(ResponseDetails::New());
       navigator_->Navigate(
           nested_->id(), details.Pass(), response_details.Pass());
     }
@@ -122,16 +121,16 @@ class NestingApp : public ApplicationDelegate,
 
   std::string color_;
   Node* nested_;
-  navigation::NavigatorPtr navigator_;
+  NavigatorPtr navigator_;
   IWindowManagerPtr window_manager_;
   ViewManagerClientFactory view_manager_client_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NestingApp);
 };
 
-void Navigator::Navigate(uint32 node_id,
-                         navigation::NavigationDetailsPtr navigation_details,
-                         navigation::ResponseDetailsPtr response_details) {
+void NavigatorImpl::Navigate(uint32 node_id,
+                             NavigationDetailsPtr navigation_details,
+                             ResponseDetailsPtr response_details) {
   GURL url(navigation_details->url.To<std::string>());
   if (!url.is_valid()) {
     LOG(ERROR) << "URL is invalid.";

@@ -7,7 +7,6 @@
 #include "cc/surfaces/display.h"
 
 namespace mojo {
-namespace surfaces {
 
 SurfacesServiceApplication::SurfacesServiceApplication()
     : next_id_namespace_(1u), display_(NULL) {
@@ -37,11 +36,9 @@ void SurfacesServiceApplication::SetDisplay(cc::Display* display) {
   display_ = display;
 }
 
-}  // namespace surfaces
-
 // static
 ApplicationDelegate* ApplicationDelegate::Create() {
-  return new surfaces::SurfacesServiceApplication;
+  return new SurfacesServiceApplication;
 }
 
 }  // namespace mojo

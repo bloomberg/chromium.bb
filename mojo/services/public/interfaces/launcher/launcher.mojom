@@ -4,7 +4,7 @@
 
 import "mojo/services/public/interfaces/navigation/navigation.mojom"
 
-module mojo.launcher {
+module mojo {
 
 interface Launcher {
   // Determines the correct handler application that can render a given URL.
@@ -24,7 +24,7 @@ interface Launcher {
   // Note: |response| can be NULL in the case where a request was not needed to
   // determine the correct handler.
   Launch(string url) => (string handler_url, string view_url,
-                         mojo.navigation.ResponseDetails response);
+                         ResponseDetails response);
 };
 
 }

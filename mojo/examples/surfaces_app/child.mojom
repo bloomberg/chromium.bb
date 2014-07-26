@@ -7,6 +7,6 @@ import "mojo/services/public/interfaces/surfaces/quads.mojom"
 import "mojo/services/public/interfaces/surfaces/surface_id.mojom"
 
 interface Child {
-  ProduceFrame(mojo.surfaces.Color color, mojo.Size size) =>
-      (mojo.surfaces.SurfaceId id);
+  ProduceFrame(mojo.Color color, mojo.Size size) =>
+      (mojo.SurfaceId id);
 };

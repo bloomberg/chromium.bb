@@ -30,7 +30,7 @@ class Surface;
 namespace examples {
 
 // Simple example of a child app using surfaces.
-class ChildImpl : public InterfaceImpl<Child>, public surfaces::SurfaceClient {
+class ChildImpl : public InterfaceImpl<Child>, public SurfaceClient {
  public:
   class Context {
    public:
@@ -40,26 +40,26 @@ class ChildImpl : public InterfaceImpl<Child>, public surfaces::SurfaceClient {
   explicit ChildImpl(ApplicationConnection* surfaces_service_connection);
   virtual ~ChildImpl();
 
-  // surfaces::SurfaceClient implementation
+  // SurfaceClient implementation
   virtual void SetIdNamespace(uint32_t id_namespace) OVERRIDE;
   virtual void ReturnResources(
-      Array<surfaces::ReturnedResourcePtr> resources) OVERRIDE;
+      Array<ReturnedResourcePtr> resources) OVERRIDE;
 
  private:
   // Child implementation.
   virtual void ProduceFrame(
-      surfaces::ColorPtr color,
+      ColorPtr color,
       SizePtr size,
-      const mojo::Callback<void(surfaces::SurfaceIdPtr id)>& callback) OVERRIDE;
+      const mojo::Callback<void(SurfaceIdPtr id)>& callback) OVERRIDE;
 
   void Draw();
 
   SkColor color_;
   gfx::Size size_;
   scoped_ptr<cc::SurfaceIdAllocator> allocator_;
-  surfaces::SurfacePtr surface_;
+  SurfacePtr surface_;
   cc::SurfaceId id_;
-  mojo::Callback<void(surfaces::SurfaceIdPtr id)> produce_callback_;
+  mojo::Callback<void(SurfaceIdPtr id)> produce_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildImpl);
 };

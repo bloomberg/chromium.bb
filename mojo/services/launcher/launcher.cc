@@ -18,12 +18,11 @@
 #include "url/gurl.h"
 
 namespace mojo {
-namespace launcher {
 
 namespace {
 
 typedef mojo::Callback<void(String handler_url, String view_url,
-    navigation::ResponseDetailsPtr response)> LaunchCallback;
+    ResponseDetailsPtr response)> LaunchCallback;
 
 }
 
@@ -135,8 +134,7 @@ void LauncherConnection::Launch(const String& url_string,
   // For Mojo URLs, the handler can always be found at the origin.
   // TODO(aa): Return error for invalid URL?
   if (url.is_valid() && url.SchemeIs("mojo")) {
-    callback.Run(url.GetOrigin().spec(), url_string,
-                 navigation::ResponseDetailsPtr());
+    callback.Run(url.GetOrigin().spec(), url_string, ResponseDetailsPtr());
     return;
   }
   new LaunchInstance(app_, callback, url_string);
@@ -166,8 +164,7 @@ void LaunchInstance::OnReceivedResponse(URLResponsePtr response) {
     if (handler_url.empty()) {
       DLOG(WARNING) << "No handler for content type: " << content_type;
     } else {
-      navigation::ResponseDetailsPtr nav_response(
-          navigation::ResponseDetails::New());
+      ResponseDetailsPtr nav_response(ResponseDetails::New());
       nav_response->loader = url_loader_.Pass();
       nav_response->response = response.Pass();
       String response_url = nav_response->response->url;
@@ -177,11 +174,9 @@ void LaunchInstance::OnReceivedResponse(URLResponsePtr response) {
   ScheduleDestroy();
 }
 
-}  // namespace launcher
-
 // static
 ApplicationDelegate* ApplicationDelegate::Create() {
-  return new launcher::LauncherApp;
+  return new LauncherApp;
 }
 
 }  // namespace mojo

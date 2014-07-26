@@ -47,17 +47,17 @@ class ZoomableMediaImpl : public InterfaceImpl<ZoomableMedia> {
   DISALLOW_COPY_AND_ASSIGN(ZoomableMediaImpl);
 };
 
-class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
+class NavigatorImpl : public InterfaceImpl<Navigator> {
  public:
   explicit NavigatorImpl(PNGViewer* viewer) : viewer_(viewer) {}
   virtual ~NavigatorImpl() {}
 
  private:
-  // Overridden from navigation::Navigate:
+  // Overridden from Navigator:
   virtual void Navigate(
       uint32_t node_id,
-      navigation::NavigationDetailsPtr navigation_details,
-      navigation::ResponseDetailsPtr response_details) OVERRIDE {
+      NavigationDetailsPtr navigation_details,
+      ResponseDetailsPtr response_details) OVERRIDE {
     int content_length = GetContentLength(response_details->response->headers);
     unsigned char* data = new unsigned char[content_length];
     unsigned char* buf = data;
@@ -166,7 +166,7 @@ class PNGViewer
   // Overridden from ApplicationDelegate:
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       MOJO_OVERRIDE {
-    connection->AddService<navigation::Navigator>(this);
+    connection->AddService<Navigator>(this);
     connection->AddService<ZoomableMedia>(this);
     connection->AddService(&view_manager_client_factory_);
     return true;

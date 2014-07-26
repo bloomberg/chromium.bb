@@ -13,8 +13,6 @@
 namespace mojo {
 class ApplicationConnection;
 
-namespace surfaces {
-
 class SurfacesServiceApplication : public ApplicationDelegate,
                                    public InterfaceFactory<Surface>,
                                    public SurfacesImpl::Client {
@@ -42,7 +40,6 @@ class SurfacesServiceApplication : public ApplicationDelegate,
   DISALLOW_COPY_AND_ASSIGN(SurfacesServiceApplication);
 };
 
-}  // namespace surfaces
 }  // namespace mojo
 
 #endif  //  MOJO_SERVICES_SURFACES_SURFACES_SERVICE_APPLICATION_H_

@@ -22,17 +22,17 @@ namespace mojo {
 
 class HTMLViewer;
 
-class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
+class NavigatorImpl : public InterfaceImpl<Navigator> {
  public:
   explicit NavigatorImpl(HTMLViewer* viewer) : viewer_(viewer) {}
   virtual ~NavigatorImpl() {}
 
  private:
-  // Overridden from navigation::Navigator:
+  // Overridden from Navigator:
   virtual void Navigate(
       uint32_t node_id,
-      navigation::NavigationDetailsPtr navigation_details,
-      navigation::ResponseDetailsPtr response_details) OVERRIDE;
+      NavigationDetailsPtr navigation_details,
+      ResponseDetailsPtr response_details) OVERRIDE;
 
   HTMLViewer* viewer_;
 
@@ -105,8 +105,8 @@ class HTMLViewer
 
 void NavigatorImpl::Navigate(
     uint32_t node_id,
-    navigation::NavigationDetailsPtr navigation_details,
-    navigation::ResponseDetailsPtr response_details) {
+    NavigationDetailsPtr navigation_details,
+    ResponseDetailsPtr response_details) {
   viewer_->Load(response_details->response.Pass());
 }
 

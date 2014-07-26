@@ -74,12 +74,12 @@ gfx::Size DebugPanel::GetPreferredSize(const views::View* view) const {
   return gfx::Size();
 }
 
-navigation::Target DebugPanel::navigation_target() const {
+Target DebugPanel::navigation_target() const {
   if (navigation_target_new_->checked())
-    return navigation::TARGET_NEW_NODE;
+    return TARGET_NEW_NODE;
   if (navigation_target_source_->checked())
-    return navigation::TARGET_SOURCE_NODE;
-  return navigation::TARGET_DEFAULT;
+    return TARGET_SOURCE_NODE;
+  return TARGET_DEFAULT;
 }
 
 void DebugPanel::Layout(views::View* view) {
@@ -128,11 +128,9 @@ void DebugPanel::ButtonPressed(views::Button* sender, const ui::Event& event) {
 }
 
 void DebugPanel::Navigate(const std::string& url) {
-  navigation::NavigationDetailsPtr details(
-      navigation::NavigationDetails::New());
+  NavigationDetailsPtr details(NavigationDetails::New());
   details->url = url;
-  delegate_->RequestNavigate(
-      node_->id(), navigation::TARGET_NEW_NODE, details.Pass());
+  delegate_->RequestNavigate(node_->id(), TARGET_NEW_NODE, details.Pass());
 }
 
 }  // namespace examples

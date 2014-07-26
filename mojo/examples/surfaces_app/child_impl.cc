@@ -33,13 +33,13 @@ ChildImpl::ChildImpl(ApplicationConnection* surfaces_service_connection) {
 }
 
 ChildImpl::~ChildImpl() {
-  surface_->DestroySurface(mojo::surfaces::SurfaceId::From(id_));
+  surface_->DestroySurface(mojo::SurfaceId::From(id_));
 }
 
 void ChildImpl::ProduceFrame(
-    surfaces::ColorPtr color,
+    ColorPtr color,
     SizePtr size,
-    const mojo::Callback<void(surfaces::SurfaceIdPtr id)>& callback) {
+    const mojo::Callback<void(SurfaceIdPtr id)>& callback) {
   color_ = color.To<SkColor>();
   size_ = size.To<gfx::Size>();
   produce_callback_ = callback;
@@ -54,13 +54,13 @@ void ChildImpl::SetIdNamespace(uint32_t id_namespace) {
 }
 
 void ChildImpl::ReturnResources(
-    Array<surfaces::ReturnedResourcePtr> resources) {
+    Array<ReturnedResourcePtr> resources) {
   DCHECK(!resources.size());
 }
 
 void ChildImpl::Draw() {
   id_ = allocator_->GenerateId();
-  surface_->CreateSurface(mojo::surfaces::SurfaceId::From(id_),
+  surface_->CreateSurface(mojo::SurfaceId::From(id_),
                           mojo::Size::From(size_));
   gfx::Rect rect(size_);
   RenderPass::Id id(1, 1);
@@ -84,9 +84,9 @@ void ChildImpl::Draw() {
   scoped_ptr<CompositorFrame> frame(new CompositorFrame);
   frame->delegated_frame_data = delegated_frame_data.Pass();
 
-  surface_->SubmitFrame(mojo::surfaces::SurfaceId::From(id_),
-                        mojo::surfaces::Frame::From(*frame));
-  produce_callback_.Run(surfaces::SurfaceId::From(id_));
+  surface_->SubmitFrame(mojo::SurfaceId::From(id_),
+                        mojo::Frame::From(*frame));
+  produce_callback_.Run(SurfaceId::From(id_));
 }
 
 }  // namespace examples

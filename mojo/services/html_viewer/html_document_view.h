@@ -76,7 +76,7 @@ class HTMLDocumentView : public blink::WebViewClient,
   blink::WebView* web_view_;
   Node* root_;
   bool repaint_pending_;
-  LazyInterfacePtr<navigation::NavigatorHost> navigator_host_;
+  LazyInterfacePtr<NavigatorHost> navigator_host_;
 
   base::WeakPtrFactory<HTMLDocumentView> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(HTMLDocumentView);

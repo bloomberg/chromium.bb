@@ -40,18 +40,18 @@ void ConfigureSettings(blink::WebSettings* settings) {
   settings->setJavaScriptEnabled(true);
 }
 
-navigation::Target WebNavigationPolicyToNavigationTarget(
+Target WebNavigationPolicyToNavigationTarget(
     blink::WebNavigationPolicy policy) {
   switch (policy) {
     case blink::WebNavigationPolicyCurrentTab:
-      return navigation::TARGET_SOURCE_NODE;
+      return TARGET_SOURCE_NODE;
     case blink::WebNavigationPolicyNewBackgroundTab:
     case blink::WebNavigationPolicyNewForegroundTab:
     case blink::WebNavigationPolicyNewWindow:
     case blink::WebNavigationPolicyNewPopup:
-      return navigation::TARGET_NEW_NODE;
+      return TARGET_NEW_NODE;
     default:
-      return navigation::TARGET_DEFAULT;
+      return TARGET_DEFAULT;
   }
 }
 
@@ -160,8 +160,7 @@ blink::WebNavigationPolicy HTMLDocumentView::decidePolicyForNavigation(
   if (CanNavigateLocally(frame, request))
     return default_policy;
 
-  navigation::NavigationDetailsPtr nav_details(
-      navigation::NavigationDetails::New());
+  NavigationDetailsPtr nav_details(NavigationDetails::New());
   nav_details->url = request.url().string().utf8();
   navigator_host_->RequestNavigate(
       view_->node()->id(),
