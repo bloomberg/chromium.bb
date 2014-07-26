@@ -5,13 +5,11 @@
 #ifndef COMPONENTS_NACL_LOADER_NONSFI_NONSFI_MAIN_H_
 #define COMPONENTS_NACL_LOADER_NONSFI_NONSFI_MAIN_H_
 
-struct NaClDesc;
-
 namespace nacl {
 namespace nonsfi {
 
 // Launch NaCl with Non SFI mode. This takes the ownership of |nexe_file|.
-void MainStart(NaClDesc* nexe_file);
+void MainStart(int nexe_file);
 
 }  // namespace nonsfi
 }  // namespace nacl

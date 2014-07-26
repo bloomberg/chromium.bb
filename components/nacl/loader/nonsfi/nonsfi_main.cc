@@ -13,6 +13,8 @@
 #include "native_client/src/include/elf_auxv.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
+#include "native_client/src/trusted/desc/nacl_desc_io.h"
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 
 namespace nacl {
 namespace nonsfi {
@@ -64,8 +66,9 @@ struct NaClDescUnrefer {
 
 }  // namespace
 
-void MainStart(NaClDesc* nexe_file) {
-  ::scoped_ptr<struct NaClDesc, NaClDescUnrefer> desc(nexe_file);
+void MainStart(int nexe_file) {
+  ::scoped_ptr<struct NaClDesc, NaClDescUnrefer> desc(
+       NaClDescIoDescFromDescAllocCtor(nexe_file, NACL_ABI_O_RDONLY));
   ElfImage image;
   if (image.Read(desc.get()) != LOAD_OK) {
     LOG(ERROR) << "LoadModuleRpc: Failed to read binary.";

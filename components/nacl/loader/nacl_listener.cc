@@ -38,7 +38,6 @@
 #include "components/nacl/loader/nonsfi/irt_random.h"
 #include "components/nacl/loader/nonsfi/nonsfi_main.h"
 #include "content/public/common/child_process_sandbox_support_linux.h"
-#include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "ppapi/nacl_irt/plugin_startup.h"
 #endif
 
@@ -492,9 +491,7 @@ void NaClListener::StartNonSfi(const nacl::NaClStartParams& params) {
   CHECK(params.nexe_token_lo == 0);
   CHECK(params.nexe_token_hi == 0);
   nacl::nonsfi::MainStart(
-      NaClDescIoDescFromDescAllocCtor(
-          IPC::PlatformFileForTransitToPlatformFile(params.nexe_file),
-          NACL_ABI_O_RDONLY));
+      IPC::PlatformFileForTransitToPlatformFile(params.nexe_file));
 #endif  // defined(OS_LINUX)
 }
 
