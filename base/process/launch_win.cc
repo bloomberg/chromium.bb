@@ -10,7 +10,6 @@
 #include <windows.h>
 #include <userenv.h>
 #include <psapi.h>
-#include <stdlib.h>
 
 #include <ios>
 #include <limits>
@@ -206,16 +205,6 @@ bool LaunchProcess(const string16& cmdline,
                        startup_info, &temp_process_info)) {
       DPLOG(ERROR) << "Command line:" << std::endl << UTF16ToUTF8(cmdline)
                    << std::endl;;
-      // TODO(scottmg): Temporary code for debugging http://crbug.com/340422.
-      if (getenv("CHROME_HEADLESS") &&
-          strcmp(getenv("CHROME_HEADLESS"), "1") == 0 &&
-          getenv("COMPUTERNAME") &&
-          strcmp(getenv("COMPUTERNAME"), "VM898-M1") == 0) {
-        for (;;) {
-          DLOG(ERROR) << "Failed CreateProcess, waiting for debugger";
-          ::Sleep(1000);
-        }
-      }
       return false;
     }
   }
