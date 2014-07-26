@@ -7048,11 +7048,7 @@ TEST_F(HTTPSFallbackTest, TLSv1FallbackReset) {
 
 // Tests that we don't fallback on handshake failure with servers that implement
 // TLS_FALLBACK_SCSV. Also ensure that the original error code is reported.
-#if defined(USE_OPENSSL)
-TEST_F(HTTPSFallbackTest, DISABLED_FallbackSCSV) {
-#else
 TEST_F(HTTPSFallbackTest, FallbackSCSV) {
-#endif
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_OK);
   // Configure HTTPS server to be intolerant of TLS >= 1.0 in order to trigger
@@ -7074,11 +7070,7 @@ TEST_F(HTTPSFallbackTest, FallbackSCSV) {
 
 // Tests that we don't fallback on connection closed with servers that implement
 // TLS_FALLBACK_SCSV. Also ensure that the original error code is reported.
-#if defined(USE_OPENSSL)
-TEST_F(HTTPSFallbackTest, DISABLED_FallbackSCSVClosed) {
-#else
 TEST_F(HTTPSFallbackTest, FallbackSCSVClosed) {
-#endif
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_OK);
   // Configure HTTPS server to be intolerant of TLS >= 1.0 in order to trigger

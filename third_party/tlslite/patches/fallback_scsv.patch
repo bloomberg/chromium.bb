@@ -115,12 +115,13 @@ index 45b0bbb..bd92161 100755
          #Initialize acceptable cipher suites
          cipherSuites = []
          if verifierDB:
-@@ -1280,6 +1289,13 @@ class TLSConnection(TLSRecordLayer):
+@@ -1280,6 +1289,14 @@ class TLSConnection(TLSRecordLayer):
          elif clientHello.client_version > settings.maxVersion:
              self.version = settings.maxVersion
  
 +        #Detect if the client performed an inappropriate fallback.
 +        elif fallbackSCSV and clientHello.client_version < settings.maxVersion:
++            self.version = clientHello.client_version
 +            if CipherSuite.TLS_FALLBACK_SCSV in clientHello.cipher_suites:
 +                for result in self._sendError(\
 +                        AlertDescription.inappropriate_fallback):

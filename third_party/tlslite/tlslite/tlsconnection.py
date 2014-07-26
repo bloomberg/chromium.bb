@@ -1428,6 +1428,7 @@ class TLSConnection(TLSRecordLayer):
 
         #Detect if the client performed an inappropriate fallback.
         elif fallbackSCSV and clientHello.client_version < settings.maxVersion:
+            self.version = clientHello.client_version
             if CipherSuite.TLS_FALLBACK_SCSV in clientHello.cipher_suites:
                 for result in self._sendError(\
                         AlertDescription.inappropriate_fallback):
