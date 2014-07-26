@@ -31,6 +31,15 @@ NoTransportImageTransportFactory::GetSharedSurfaceHandle() {
   return gfx::GLSurfaceHandle();
 }
 
+scoped_ptr<cc::SurfaceIdAllocator>
+NoTransportImageTransportFactory::CreateSurfaceIdAllocator() {
+  return scoped_ptr<cc::SurfaceIdAllocator>();
+}
+
+cc::SurfaceManager* NoTransportImageTransportFactory::GetSurfaceManager() {
+  return NULL;
+}
+
 GLHelper* NoTransportImageTransportFactory::GetGLHelper() {
   if (!gl_helper_) {
     context_provider_ = context_factory_->SharedMainThreadContextProvider();

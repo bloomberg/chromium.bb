@@ -9,8 +9,13 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/surfaces/surface_id_allocator.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"
+
+namespace cc {
+class SurfaceManager;
+}
 
 namespace gfx {
 class Size;
@@ -67,6 +72,8 @@ class CONTENT_EXPORT ImageTransportFactory {
   virtual ui::ContextFactory* GetContextFactory() = 0;
 
   virtual gfx::GLSurfaceHandle GetSharedSurfaceHandle() = 0;
+  virtual scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() = 0;
+  virtual cc::SurfaceManager* GetSurfaceManager() = 0;
 
   // Gets a GLHelper instance, associated with the shared context. This
   // GLHelper will get destroyed whenever the shared context is lost

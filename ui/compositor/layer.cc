@@ -17,6 +17,7 @@
 #include "cc/layers/nine_patch_layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_layer.h"
+#include "cc/layers/surface_layer.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/delegated_frame_data.h"
@@ -496,6 +497,7 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   solid_color_layer_ = NULL;
   texture_layer_ = NULL;
   delegated_renderer_layer_ = NULL;
+  surface_layer_ = NULL;
 
   cc_layer_->AddLayerAnimationEventObserver(this);
   for (size_t i = 0; i < children_.size(); ++i) {
@@ -559,6 +561,18 @@ void Layer::SetShowDelegatedContent(cc::DelegatedFrameProvider* frame_provider,
       cc::DelegatedRendererLayer::Create(frame_provider);
   SwitchToLayer(new_layer);
   delegated_renderer_layer_ = new_layer;
+
+  frame_size_in_dip_ = frame_size_in_dip;
+  RecomputeDrawsContentAndUVRect();
+}
+
+void Layer::SetShowSurface(cc::SurfaceId id, gfx::Size frame_size_in_dip) {
+  DCHECK_EQ(type_, LAYER_TEXTURED);
+
+  scoped_refptr<cc::SurfaceLayer> new_layer = cc::SurfaceLayer::Create();
+  new_layer->SetSurfaceId(id);
+  SwitchToLayer(new_layer);
+  surface_layer_ = new_layer;
 
   frame_size_in_dip_ = frame_size_in_dip;
   RecomputeDrawsContentAndUVRect();
@@ -982,7 +996,7 @@ void Layer::RecomputeDrawsContentAndUVRect() {
         static_cast<float>(size.width()) / frame_size_in_dip_.width(),
         static_cast<float>(size.height()) / frame_size_in_dip_.height());
     texture_layer_->SetUV(uv_top_left, uv_bottom_right);
-  } else if (delegated_renderer_layer_.get()) {
+  } else if (delegated_renderer_layer_.get() || surface_layer_.get()) {
     size.SetToMin(frame_size_in_dip_);
   }
   cc_layer_->SetBounds(size);

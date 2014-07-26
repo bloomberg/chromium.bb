@@ -8,6 +8,7 @@
 #include "cc/layers/delegated_frame_provider.h"
 #include "cc/layers/delegated_frame_resource_collection.h"
 #include "cc/output/copy_output_result.h"
+#include "cc/surfaces/surface_factory_client.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/compositor/owned_mailbox.h"
 #include "content/browser/renderer_host/delegated_frame_evictor.h"
@@ -20,6 +21,10 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_owner_delegate.h"
 #include "ui/gfx/rect_conversions.h"
+
+namespace cc {
+class SurfaceFactory;
+}
 
 namespace media {
 class VideoFrame;
@@ -72,6 +77,7 @@ class CONTENT_EXPORT DelegatedFrameHost
       public ImageTransportFactoryObserver,
       public DelegatedFrameEvictorClient,
       public cc::DelegatedFrameResourceCollectionClient,
+      public cc::SurfaceFactoryClient,
       public base::SupportsWeakPtr<DelegatedFrameHost> {
  public:
   DelegatedFrameHost(DelegatedFrameHostClient* client);
@@ -212,9 +218,17 @@ class CONTENT_EXPORT DelegatedFrameHost
   // cc::DelegatedFrameProviderClient implementation.
   virtual void UnusedResourcesAreAvailable() OVERRIDE;
 
+  // cc::SurfaceFactoryClient implementation.
+  virtual void ReturnResources(
+      const cc::ReturnedResourceArray& resources) OVERRIDE;
+
   void DidReceiveFrameFromRenderer();
 
   DelegatedFrameHostClient* client_;
+
+  // True if this renders into a Surface, false if it renders into a delegated
+  // layer.
+  bool use_surfaces_;
 
   std::vector<base::Closure> on_compositing_did_commit_callbacks_;
 
@@ -242,6 +256,13 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // Provides delegated frame updates to the cc::DelegatedRendererLayer.
   scoped_refptr<cc::DelegatedFrameProvider> frame_provider_;
+
+  // State for rendering into a Surface.
+  scoped_ptr<cc::SurfaceIdAllocator> id_allocator_;
+  scoped_ptr<cc::SurfaceFactory> surface_factory_;
+  cc::SurfaceId surface_id_;
+  gfx::Size current_surface_size_;
+  cc::ReturnedResourceArray surface_returned_resources_;
 
   // This lock is the one waiting for a frame of the right size to come back
   // from the renderer/GPU process. It is set from the moment the aura window

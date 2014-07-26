@@ -11,6 +11,7 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
+#include "cc/surfaces/surface_factory.h"
 #include "content/browser/compositor/resize_lock.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
@@ -48,6 +49,8 @@ void DelegatedFrameHostClient::RequestCopyOfOutput(
 
 DelegatedFrameHost::DelegatedFrameHost(DelegatedFrameHostClient* client)
     : client_(client),
+      use_surfaces_(base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseSurfaces)),
       last_output_surface_id_(0),
       pending_delegated_ack_count_(0),
       skipped_frames_(false),
@@ -333,23 +336,47 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     DCHECK(frame_data->resource_list.empty());
     EvictDelegatedFrame();
   } else {
-    if (!resource_collection_) {
-      resource_collection_ = new cc::DelegatedFrameResourceCollection;
-      resource_collection_->SetClient(this);
-    }
-    // If the physical frame size changes, we need a new |frame_provider_|. If
-    // the physical frame size is the same, but the size in DIP changed, we
-    // need to adjust the scale at which the frames will be drawn, and we do
-    // this by making a new |frame_provider_| also to ensure the scale change
-    // is presented in sync with the new frame content.
-    if (!frame_provider_.get() || frame_size != frame_provider_->frame_size() ||
-        frame_size_in_dip != current_frame_size_in_dip_) {
-      frame_provider_ = new cc::DelegatedFrameProvider(
-          resource_collection_.get(), frame_data.Pass());
-      client_->GetLayer()->SetShowDelegatedContent(frame_provider_.get(),
-                                                   frame_size_in_dip);
+    if (use_surfaces_) {
+      if (!surface_factory_) {
+        ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+        cc::SurfaceManager* manager = factory->GetSurfaceManager();
+        id_allocator_ = factory->CreateSurfaceIdAllocator();
+        surface_factory_ =
+            make_scoped_ptr(new cc::SurfaceFactory(manager, this));
+      }
+      if (surface_id_.is_null() || frame_size != current_surface_size_ ||
+          frame_size_in_dip != current_frame_size_in_dip_) {
+        if (!surface_id_.is_null())
+          surface_factory_->Destroy(surface_id_);
+        surface_id_ = id_allocator_->GenerateId();
+        surface_factory_->Create(surface_id_, frame_size);
+        client_->GetLayer()->SetShowSurface(surface_id_, frame_size_in_dip);
+        current_surface_size_ = frame_size;
+      }
+      scoped_ptr<cc::CompositorFrame> compositor_frame =
+          make_scoped_ptr(new cc::CompositorFrame());
+      compositor_frame->delegated_frame_data = frame_data.Pass();
+      surface_factory_->SubmitFrame(surface_id_, compositor_frame.Pass());
     } else {
-      frame_provider_->SetFrameData(frame_data.Pass());
+      if (!resource_collection_) {
+        resource_collection_ = new cc::DelegatedFrameResourceCollection;
+        resource_collection_->SetClient(this);
+      }
+      // If the physical frame size changes, we need a new |frame_provider_|. If
+      // the physical frame size is the same, but the size in DIP changed, we
+      // need to adjust the scale at which the frames will be drawn, and we do
+      // this by making a new |frame_provider_| also to ensure the scale change
+      // is presented in sync with the new frame content.
+      if (!frame_provider_.get() ||
+          frame_size != frame_provider_->frame_size() ||
+          frame_size_in_dip != current_frame_size_in_dip_) {
+        frame_provider_ = new cc::DelegatedFrameProvider(
+            resource_collection_.get(), frame_data.Pass());
+        client_->GetLayer()->SetShowDelegatedContent(frame_provider_.get(),
+                                                     frame_size_in_dip);
+      } else {
+        frame_provider_->SetFrameData(frame_data.Pass());
+      }
     }
   }
   released_front_lock_ = NULL;
@@ -379,7 +406,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
                    output_surface_id));
   }
   DidReceiveFrameFromRenderer();
-  if (frame_provider_.get())
+  if (frame_provider_.get() || !surface_id_.is_null())
     delegated_frame_evictor_->SwappedFrame(!host->is_hidden());
   // Note: the frame may have been evicted immediately.
 }
@@ -387,6 +414,8 @@ void DelegatedFrameHost::SwapDelegatedFrame(
 void DelegatedFrameHost::SendDelegatedFrameAck(uint32 output_surface_id) {
   RenderWidgetHostImpl* host = client_->GetHost();
   cc::CompositorFrameAck ack;
+  if (!surface_returned_resources_.empty())
+    ack.resources.swap(surface_returned_resources_);
   if (resource_collection_)
     resource_collection_->TakeUnusedResourcesForChildCompositor(&ack.resources);
   RenderWidgetHostImpl::SendSwapCompositorFrameAck(host->GetRoutingID(),
@@ -407,10 +436,14 @@ void DelegatedFrameHost::UnusedResourcesAreAvailable() {
 void DelegatedFrameHost::SendReturnedDelegatedResources(
     uint32 output_surface_id) {
   RenderWidgetHostImpl* host = client_->GetHost();
-  DCHECK(resource_collection_);
 
   cc::CompositorFrameAck ack;
-  resource_collection_->TakeUnusedResourcesForChildCompositor(&ack.resources);
+  if (!surface_returned_resources_.empty()) {
+    ack.resources.swap(surface_returned_resources_);
+  } else {
+    DCHECK(resource_collection_);
+    resource_collection_->TakeUnusedResourcesForChildCompositor(&ack.resources);
+  }
   DCHECK(!ack.resources.empty());
 
   RenderWidgetHostImpl::SendReclaimCompositorResources(
@@ -420,9 +453,24 @@ void DelegatedFrameHost::SendReturnedDelegatedResources(
       ack);
 }
 
+void DelegatedFrameHost::ReturnResources(
+    const cc::ReturnedResourceArray& resources) {
+  if (resources.empty())
+    return;
+  std::copy(resources.begin(),
+            resources.end(),
+            std::back_inserter(surface_returned_resources_));
+  if (!pending_delegated_ack_count_)
+    SendReturnedDelegatedResources(last_output_surface_id_);
+}
+
 void DelegatedFrameHost::EvictDelegatedFrame() {
   client_->GetLayer()->SetShowPaintedContent();
   frame_provider_ = NULL;
+  if (!surface_id_.is_null()) {
+    surface_factory_->Destroy(surface_id_);
+    surface_id_ = cc::SurfaceId();
+  }
   delegated_frame_evictor_->DiscardedFrame();
 }
 
@@ -760,7 +808,7 @@ void DelegatedFrameHost::OnUpdateVSyncParameters(
 
 void DelegatedFrameHost::OnLostResources() {
   RenderWidgetHostImpl* host = client_->GetHost();
-  if (frame_provider_.get())
+  if (frame_provider_.get() || !surface_id_.is_null())
     EvictDelegatedFrame();
   idle_frame_subscriber_textures_.clear();
   yuv_readback_pipeline_.reset();
@@ -774,6 +822,8 @@ void DelegatedFrameHost::OnLostResources() {
 DelegatedFrameHost::~DelegatedFrameHost() {
   ImageTransportFactory::GetInstance()->RemoveObserver(this);
 
+  if (!surface_id_.is_null())
+    surface_factory_->Destroy(surface_id_);
   if (resource_collection_.get())
     resource_collection_->SetClient(NULL);
 
@@ -825,12 +875,12 @@ void DelegatedFrameHost::RemovingFromWindow() {
 }
 
 void DelegatedFrameHost::LockResources() {
-  DCHECK(frame_provider_);
+  DCHECK(frame_provider_ || !surface_id_.is_null());
   delegated_frame_evictor_->LockFrame();
 }
 
 void DelegatedFrameHost::UnlockResources() {
-  DCHECK(frame_provider_);
+  DCHECK(frame_provider_ || !surface_id_.is_null());
   delegated_frame_evictor_->UnlockFrame();
 }
 
@@ -845,6 +895,9 @@ void DelegatedFrameHost::OnLayerRecreated(ui::Layer* old_layer,
   if (frame_provider_.get()) {
     new_layer->SetShowDelegatedContent(frame_provider_.get(),
                                        current_frame_size_in_dip_);
+  }
+  if (!surface_id_.is_null()) {
+    new_layer->SetShowSurface(surface_id_, current_frame_size_in_dip_);
   }
 }
 

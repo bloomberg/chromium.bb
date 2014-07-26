@@ -315,6 +315,16 @@ gfx::GLSurfaceHandle GpuProcessTransportFactory::GetSharedSurfaceHandle() {
   return handle;
 }
 
+scoped_ptr<cc::SurfaceIdAllocator>
+GpuProcessTransportFactory::CreateSurfaceIdAllocator() {
+  return make_scoped_ptr(
+      new cc::SurfaceIdAllocator(next_surface_id_namespace_++));
+}
+
+cc::SurfaceManager* GpuProcessTransportFactory::GetSurfaceManager() {
+  return surface_manager_.get();
+}
+
 GLHelper* GpuProcessTransportFactory::GetGLHelper() {
   if (!gl_helper_ && !per_compositor_data_.empty()) {
     scoped_refptr<cc::ContextProvider> provider =
