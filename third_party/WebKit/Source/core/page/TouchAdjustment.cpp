@@ -163,7 +163,7 @@ static inline void appendContextSubtargetsForNode(Node* node, SubtargetGeometryL
         return appendBasicSubtargetsForNode(node, subtargets);
 
     Text* textNode = toText(node);
-    RenderText* textRenderer = toRenderText(textNode->renderer());
+    RenderText* textRenderer = textNode->renderer();
 
     if (textRenderer->frame()->editor().behavior().shouldSelectOnContextualMenuClick()) {
         // Make subtargets out of every word.

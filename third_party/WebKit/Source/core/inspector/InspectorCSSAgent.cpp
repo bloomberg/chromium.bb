@@ -49,6 +49,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Node.h"
 #include "core/dom/StyleEngine.h"
+#include "core/dom/Text.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/VoidCallback.h"
@@ -737,20 +738,20 @@ void InspectorCSSAgent::getPlatformFontsForNode(ErrorString* errorString, int no
     RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> computedStyleInfo = CSSComputedStyleDeclaration::create(node, true);
     *cssFamilyName = computedStyleInfo->getPropertyValue(CSSPropertyFontFamily);
 
-    WillBeHeapVector<RawPtrWillBeMember<Node> > textNodes;
+    WillBeHeapVector<RawPtrWillBeMember<Text> > textNodes;
     if (node->nodeType() == Node::TEXT_NODE) {
         if (node->renderer())
-            textNodes.append(node);
+            textNodes.append(toText(node));
     } else {
         for (Node* child = node->firstChild(); child; child = child->nextSibling()) {
             if (child->nodeType() == Node::TEXT_NODE && child->renderer())
-                textNodes.append(child);
+                textNodes.append(toText(child));
         }
     }
 
     HashCountedSet<String> fontStats;
     for (size_t i = 0; i < textNodes.size(); ++i) {
-        RenderText* renderer = toRenderText(textNodes[i]->renderer());
+        RenderText* renderer = textNodes[i]->renderer();
         collectPlatformFontsForRenderer(renderer, &fontStats);
         if (renderer->isTextFragment()) {
             RenderTextFragment* textFragment = toRenderTextFragment(renderer);

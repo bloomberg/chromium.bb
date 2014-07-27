@@ -37,14 +37,13 @@
 
 namespace blink {
 
-class LineLayoutState;
-class RenderInline;
-
-struct PaintInfo;
-class WordMeasurement;
-
 class LineInfo;
+class LineLayoutState;
+struct PaintInfo;
+class RenderInline;
 class RenderRubyRun;
+class RenderText;
+class WordMeasurement;
 
 template <class Run> class BidiRunList;
 typedef WTF::ListHashSet<RenderBox*, 16> TrackedRendererListHashSet;
@@ -358,7 +357,7 @@ private:
     void insertIntoTrackedRendererMaps(RenderBox* descendant, TrackedDescendantsMap*&, TrackedContainerMap*&);
     static void removeFromTrackedRendererMaps(RenderBox* descendant, TrackedDescendantsMap*&, TrackedContainerMap*&);
 
-    void createFirstLetterRenderer(RenderObject* firstLetterBlock, RenderObject* currentChild, unsigned length);
+    void createFirstLetterRenderer(RenderObject* firstLetterBlock, RenderText& currentChild, unsigned length);
     void updateFirstLetterStyle(RenderObject* firstLetterBlock, RenderObject* firstLetterContainer);
 
     Node* nodeForHitTest() const;

@@ -259,8 +259,8 @@ static inline void reverseInlineBoxRangeAndValueListsIfNeeded(void* userData, Ve
 
         // Reordering is only necessary for BiDi text that is _absolutely_ positioned.
         if (firstTextBox->len() == 1 && firstTextBox->len() == lastTextBox->len()) {
-            RenderSVGInlineText& firstContext = toRenderSVGInlineText(firstTextBox->textRenderer());
-            RenderSVGInlineText& lastContext = toRenderSVGInlineText(lastTextBox->textRenderer());
+            RenderSVGInlineText& firstContext = toRenderSVGInlineText(firstTextBox->renderer());
+            RenderSVGInlineText& lastContext = toRenderSVGInlineText(lastTextBox->renderer());
 
             SVGTextLayoutAttributes* firstAttributes = 0;
             SVGTextLayoutAttributes* lastAttributes = 0;

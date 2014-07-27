@@ -49,6 +49,8 @@ public:
     {
     }
 
+    RenderText& renderer() const { return toRenderText(InlineBox::renderer()); }
+
     virtual void destroy() OVERRIDE FINAL;
 
     InlineTextBox* prevTextBox() const { return m_prevTextBox; }
@@ -114,9 +116,6 @@ public:
 protected:
     virtual void paint(PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) OVERRIDE;
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) OVERRIDE;
-
-public:
-    RenderText& textRenderer() const { return toRenderText(renderer()); }
 
 private:
     virtual void deleteLine() OVERRIDE FINAL;

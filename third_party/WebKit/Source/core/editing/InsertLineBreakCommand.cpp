@@ -38,6 +38,7 @@
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/rendering/RenderObject.h"
+#include "core/rendering/RenderText.h"
 
 namespace blink {
 

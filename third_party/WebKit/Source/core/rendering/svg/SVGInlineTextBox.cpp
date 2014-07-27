@@ -86,7 +86,7 @@ int SVGInlineTextBox::offsetForPosition(float, bool) const
 
 int SVGInlineTextBox::offsetForPositionInFragment(const SVGTextFragment& fragment, float position, bool includePartialGlyphs) const
 {
-    RenderSVGInlineText& textRenderer = toRenderSVGInlineText(this->textRenderer());
+    RenderSVGInlineText& textRenderer = toRenderSVGInlineText(this->renderer());
 
     float scalingFactor = textRenderer.scalingFactor();
     ASSERT(scalingFactor);
@@ -120,7 +120,7 @@ FloatRect SVGInlineTextBox::selectionRectForTextFragment(const SVGTextFragment& 
 
     FontCachePurgePreventer fontCachePurgePreventer;
 
-    RenderSVGInlineText& textRenderer = toRenderSVGInlineText(this->textRenderer());
+    RenderSVGInlineText& textRenderer = toRenderSVGInlineText(this->renderer());
 
     float scalingFactor = textRenderer.scalingFactor();
     ASSERT(scalingFactor);
@@ -149,7 +149,7 @@ LayoutRect SVGInlineTextBox::localSelectionRect(int startPosition, int endPositi
     if (startPosition >= endPosition)
         return LayoutRect();
 
-    RenderStyle* style = textRenderer().style();
+    RenderStyle* style = renderer().style();
     ASSERT(style);
 
     AffineTransform fragmentTransform;
@@ -205,7 +205,7 @@ void SVGInlineTextBox::paintSelectionBackground(PaintInfo& paintInfo)
     if (!backgroundColor.alpha())
         return;
 
-    RenderSVGInlineText& textRenderer = toRenderSVGInlineText(this->textRenderer());
+    RenderSVGInlineText& textRenderer = toRenderSVGInlineText(this->renderer());
     if (!textShouldBePainted(textRenderer))
         return;
 
@@ -259,7 +259,7 @@ void SVGInlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffse
     if (!hasSelection && paintSelectedTextOnly)
         return;
 
-    RenderSVGInlineText& textRenderer = toRenderSVGInlineText(this->textRenderer());
+    RenderSVGInlineText& textRenderer = toRenderSVGInlineText(this->renderer());
     if (!textShouldBePainted(textRenderer))
         return;
 
@@ -427,7 +427,7 @@ TextRun SVGInlineTextBox::constructTextRun(RenderStyle* style, const SVGTextFrag
 {
     ASSERT(style);
 
-    RenderText* text = &textRenderer();
+    RenderText* text = &renderer();
 
     // FIXME(crbug.com/264211): This should not be necessary but can occur if we
     //                          layout during layout. Remove this when 264211 is fixed.
@@ -528,7 +528,7 @@ static inline RenderObject* findRenderObjectDefininingTextDecoration(InlineFlowB
 
 void SVGInlineTextBox::paintDecoration(GraphicsContext* context, TextDecoration decoration, const SVGTextFragment& fragment)
 {
-    if (textRenderer().style()->textDecorationsInEffect() == TextDecorationNone)
+    if (renderer().style()->textDecorationsInEffect() == TextDecorationNone)
         return;
 
     // Find out which render style defined the text-decoration, as its fill/stroke properties have to be used for drawing instead of ours.
@@ -606,7 +606,7 @@ void SVGInlineTextBox::paintTextWithShadows(GraphicsContext* context, RenderStyl
     TextRun& textRun, const SVGTextFragment& fragment, int startPosition, int endPosition,
     RenderSVGResourceModeFlags resourceMode)
 {
-    RenderSVGInlineText& textRenderer = toRenderSVGInlineText(this->textRenderer());
+    RenderSVGInlineText& textRenderer = toRenderSVGInlineText(this->renderer());
 
     float scalingFactor = textRenderer.scalingFactor();
     ASSERT(scalingFactor);
@@ -701,7 +701,7 @@ void SVGInlineTextBox::paintTextMatchMarker(GraphicsContext* context, const Floa
     if (marker->type() != DocumentMarker::TextMatch)
         return;
 
-    RenderSVGInlineText& textRenderer = toRenderSVGInlineText(this->textRenderer());
+    RenderSVGInlineText& textRenderer = toRenderSVGInlineText(this->renderer());
 
     FloatRect markerRect;
     AffineTransform fragmentTransform;
@@ -754,7 +754,7 @@ FloatRect SVGInlineTextBox::calculateBoundaries() const
 {
     FloatRect textRect;
 
-    RenderSVGInlineText& textRenderer = toRenderSVGInlineText(this->textRenderer());
+    RenderSVGInlineText& textRenderer = toRenderSVGInlineText(this->renderer());
 
     float scalingFactor = textRenderer.scalingFactor();
     ASSERT(scalingFactor);

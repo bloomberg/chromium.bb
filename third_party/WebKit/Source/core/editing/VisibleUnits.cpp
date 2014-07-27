@@ -297,10 +297,10 @@ static TextBreakIterator* wordBreakIteratorForMinOffsetBoundary(const VisiblePos
     string.clear();
     if (previousBox) {
         previousBoxLength = previousBox->len();
-        previousBox->textRenderer().text().appendTo(string, previousBox->start(), previousBoxLength);
+        previousBox->renderer().text().appendTo(string, previousBox->start(), previousBoxLength);
         len += previousBoxLength;
     }
-    textBox->textRenderer().text().appendTo(string, textBox->start(), textBox->len());
+    textBox->renderer().text().appendTo(string, textBox->start(), textBox->len());
     len += textBox->len();
 
     return wordBreakIterator(string.data(), len);
@@ -316,10 +316,10 @@ static TextBreakIterator* wordBreakIteratorForMaxOffsetBoundary(const VisiblePos
 
     int len = 0;
     string.clear();
-    textBox->textRenderer().text().appendTo(string, textBox->start(), textBox->len());
+    textBox->renderer().text().appendTo(string, textBox->start(), textBox->len());
     len += textBox->len();
     if (nextBox) {
-        nextBox->textRenderer().text().appendTo(string, nextBox->start(), nextBox->len());
+        nextBox->renderer().text().appendTo(string, nextBox->start(), nextBox->len());
         len += nextBox->len();
     }
 
@@ -386,7 +386,7 @@ static VisiblePosition visualWordPosition(const VisiblePosition& visiblePosition
         else if (offsetInBox == box->caretMaxOffset())
             iter = wordBreakIteratorForMaxOffsetBoundary(visiblePosition, textBox, nextBoxInDifferentBlock, string, leafBoxes);
         else if (movingIntoNewBox) {
-            iter = wordBreakIterator(textBox->textRenderer().text(), textBox->start(), textBox->len());
+            iter = wordBreakIterator(textBox->renderer().text(), textBox->start(), textBox->len());
             previouslyVisitedBox = box;
         }
 

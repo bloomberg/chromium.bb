@@ -381,7 +381,7 @@ float InlineFlowBox::placeBoxRangeInInlineDirection(InlineBox* firstChild, Inlin
     for (InlineBox* curr = firstChild; curr && curr != lastChild; curr = curr->nextOnLine()) {
         if (curr->renderer().isText()) {
             InlineTextBox* text = toInlineTextBox(curr);
-            RenderText& rt = toRenderText(text->renderer());
+            RenderText& rt = text->renderer();
             if (rt.textLength()) {
                 if (needsWordSpacing && isSpaceOrNewline(rt.characterAt(text->start())))
                     logicalLeft += rt.style(isFirstLineStyle())->font().fontDescription().wordSpacing();
@@ -956,7 +956,7 @@ void InlineFlowBox::computeOverflow(LayoutUnit lineTop, LayoutUnit lineBottom, G
 
         if (curr->renderer().isText()) {
             InlineTextBox* text = toInlineTextBox(curr);
-            RenderText& rt = toRenderText(text->renderer());
+            RenderText& rt = text->renderer();
             if (rt.isBR())
                 continue;
             LayoutRect textBoxOverflow(enclosingLayoutRect(text->logicalFrameRect()));

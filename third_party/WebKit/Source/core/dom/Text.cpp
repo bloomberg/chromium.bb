@@ -124,7 +124,7 @@ PassRefPtrWillBeRawPtr<Text> Text::splitText(unsigned offset, ExceptionState& ex
         return nullptr;
 
     if (renderer())
-        toRenderText(renderer())->setTextWithOffset(dataImpl(), 0, oldStr.length());
+        renderer()->setTextWithOffset(dataImpl(), 0, oldStr.length());
 
     if (parentNode())
         document().didSplitTextNode(*this);
@@ -310,7 +310,7 @@ void Text::attach(const AttachContext& context)
 
 void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling)
 {
-    if (RenderText* renderer = toRenderText(this->renderer())) {
+    if (RenderText* renderer = this->renderer()) {
         if (change != NoChange || needsStyleRecalc())
             renderer->setStyle(document().ensureStyleResolver().styleForText(this));
         if (needsStyleRecalc())
@@ -336,7 +336,7 @@ void Text::updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfRe
 {
     if (!inActiveDocument())
         return;
-    RenderText* textRenderer = toRenderText(renderer());
+    RenderText* textRenderer = renderer();
     if (!textRenderer || !textRendererIsNeeded(*textRenderer->style(), *textRenderer->parent())) {
         lazyReattachIfAttached();
         // FIXME: Editing should be updated so this is not neccesary.

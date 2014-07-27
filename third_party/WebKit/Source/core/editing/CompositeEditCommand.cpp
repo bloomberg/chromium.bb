@@ -613,7 +613,7 @@ bool CompositeEditCommand::canRebalance(const Position& position) const
     if (textNode->length() == 0)
         return false;
 
-    RenderObject* renderer = textNode->renderer();
+    RenderText* renderer = textNode->renderer();
     if (renderer && !renderer->style()->collapseWhiteSpace())
         return false;
 
@@ -682,7 +682,7 @@ void CompositeEditCommand::prepareWhitespaceAtPositionForSplit(Position& positio
 
     if (textNode->length() == 0)
         return;
-    RenderObject* renderer = textNode->renderer();
+    RenderText* renderer = textNode->renderer();
     if (renderer && !renderer->style()->collapseWhiteSpace())
         return;
 
@@ -725,7 +725,7 @@ void CompositeEditCommand::deleteInsignificantText(PassRefPtrWillBeRawPtr<Text> 
 
     document().updateLayout();
 
-    RenderText* textRenderer = toRenderText(textNode->renderer());
+    RenderText* textRenderer = textNode->renderer();
     if (!textRenderer)
         return;
 

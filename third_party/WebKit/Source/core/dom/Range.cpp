@@ -1659,14 +1659,13 @@ void Range::getBorderAndTextQuads(Vector<FloatQuad>& quads) const
                 }
             }
         } else if (node->isTextNode()) {
-            if (RenderObject* renderer = toText(node)->renderer()) {
-                RenderText& renderText = toRenderText(*renderer);
+            if (RenderText* renderText = toText(node)->renderer()) {
                 int startOffset = (node == startContainer) ? m_start.offset() : 0;
                 int endOffset = (node == endContainer) ? m_end.offset() : INT_MAX;
 
                 Vector<FloatQuad> textQuads;
-                renderText.absoluteQuadsForRange(textQuads, startOffset, endOffset);
-                m_ownerDocument->adjustFloatQuadsForScrollAndAbsoluteZoom(textQuads, renderText);
+                renderText->absoluteQuadsForRange(textQuads, startOffset, endOffset);
+                m_ownerDocument->adjustFloatQuadsForScrollAndAbsoluteZoom(textQuads, *renderText);
 
                 quads.appendVector(textQuads);
             }

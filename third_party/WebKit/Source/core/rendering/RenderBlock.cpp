@@ -4102,11 +4102,11 @@ static inline unsigned firstLetterLength(const String& text)
     return length;
 }
 
-void RenderBlock::createFirstLetterRenderer(RenderObject* firstLetterBlock, RenderObject* currentChild, unsigned length)
+void RenderBlock::createFirstLetterRenderer(RenderObject* firstLetterBlock, RenderText& currentChild, unsigned length)
 {
-    ASSERT(length && currentChild->isText());
+    ASSERT(length);
 
-    RenderObject* firstLetterContainer = currentChild->parent();
+    RenderObject* firstLetterContainer = currentChild.parent();
     RenderStyle* pseudoStyle = styleForFirstLetter(firstLetterBlock, firstLetterContainer);
     RenderBoxModelObject* firstLetter = 0;
     if (pseudoStyle->display() == INLINE)
@@ -4119,25 +4119,24 @@ void RenderBlock::createFirstLetterRenderer(RenderObject* firstLetterBlock, Rend
     // layout. crbug.com/370458
     DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
 
-    firstLetterContainer->addChild(firstLetter, currentChild);
-    RenderText* textObj = toRenderText(currentChild);
+    firstLetterContainer->addChild(firstLetter, &currentChild);
 
     // The original string is going to be either a generated content string or a DOM node's
     // string.  We want the original string before it got transformed in case first-letter has
     // no text-transform or a different text-transform applied to it.
-    String oldText = textObj->originalText();
+    String oldText = currentChild.originalText();
     ASSERT(oldText.impl());
 
     // Construct a text fragment for the text after the first letter.
     // This text fragment might be empty.
     RenderTextFragment* remainingText =
-        new RenderTextFragment(textObj->node() ? textObj->node() : &textObj->document(), oldText.impl(), length, oldText.length() - length);
-    remainingText->setStyle(textObj->style());
+        new RenderTextFragment(currentChild.node() ? currentChild.node() : &currentChild.document(), oldText.impl(), length, oldText.length() - length);
+    remainingText->setStyle(currentChild.style());
     if (remainingText->node())
         remainingText->node()->setRenderer(remainingText);
 
-    firstLetterContainer->addChild(remainingText, textObj);
-    firstLetterContainer->removeChild(textObj);
+    firstLetterContainer->addChild(remainingText, &currentChild);
+    firstLetterContainer->removeChild(&currentChild);
     remainingText->setFirstLetter(firstLetter);
     firstLetter->setFirstLetterRemainingText(remainingText);
 
@@ -4147,7 +4146,7 @@ void RenderBlock::createFirstLetterRenderer(RenderObject* firstLetterBlock, Rend
     letter->setStyle(pseudoStyle);
     firstLetter->addChild(letter);
 
-    textObj->destroy();
+    currentChild.destroy();
 }
 
 void RenderBlock::updateFirstLetter()
@@ -4209,7 +4208,7 @@ void RenderBlock::updateFirstLetter()
     if (!currChild->isText() || currChild->isBR() || toRenderText(currChild)->isWordBreak())
         return;
 
-    createFirstLetterRenderer(firstLetterBlock, currChild, length);
+    createFirstLetterRenderer(firstLetterBlock, toRenderText(*currChild), length);
 }
 
 // Helper methods for obtaining the last line, computing line counts and heights for line counts
