@@ -7,6 +7,7 @@
 #include "cc/output/software_frame_data.h"
 #include "content/browser/compositor/software_output_device_ozone.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/test/context_factories_for_test.h"
