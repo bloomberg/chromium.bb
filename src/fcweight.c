@@ -49,7 +49,7 @@ static int lerp(int x, int x1, int x2, int y1, int y2)
   return y1 + (dy*(x-x1) + dx/2) / dx;
 }
 
-FcPublic int
+int
 FcWeightFromOpenType (int ot_weight)
 {
 	int i;
@@ -66,7 +66,7 @@ FcWeightFromOpenType (int ot_weight)
 	return lerp (ot_weight, map[i-1].ot, map[i].ot, map[i-1].fc, map[i].fc);
 }
 
-FcPublic int
+int
 FcWeightToOpenType (int fc_weight)
 {
 	int i;
