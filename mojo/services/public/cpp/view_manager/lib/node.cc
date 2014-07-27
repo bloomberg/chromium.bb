@@ -216,8 +216,17 @@ void Node::Destroy() {
 
   if (manager_)
     static_cast<ViewManagerClientImpl*>(manager_)->DestroyNode(id_);
-  while (!children_.empty())
-    children_.front()->Destroy();
+  while (!children_.empty()) {
+    Node* child = children_.front();
+    if (!OwnsNode(manager_, child)) {
+      NodePrivate(child).ClearParent();
+      children_.erase(children_.begin());
+    } else {
+      child->Destroy();
+      DCHECK(std::find(children_.begin(), children_.end(), child) ==
+             children_.end());
+    }
+  }
   LocalDestroy();
 }
 

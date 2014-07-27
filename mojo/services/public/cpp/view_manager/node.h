@@ -81,6 +81,7 @@ class Node {
 
  private:
   friend class NodePrivate;
+  friend class ViewManagerClientImpl;
 
   explicit Node(ViewManager* manager);
 

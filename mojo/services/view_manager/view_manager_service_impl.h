@@ -235,12 +235,12 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   // The set of nodes that has been communicated to the client.
   NodeIdSet known_nodes_;
 
-  // This is the set of nodes the connection can parent nodes to (in addition to
-  // any nodes created by this connection). If empty the connection can
-  // manipulate any nodes (except for deleting other connections nodes/views).
-  // The connection can not delete or move these. If this is set to a non-empty
-  // value and all the nodes are deleted (by another connection), then an
-  // invalid node is added here to ensure this connection is still constrained.
+  // Set of root nodes from other connections. More specifically any time
+  // Embed() is invoked the id of the node is added to this set for the child
+  // connection. The connection Embed() was invoked on (the parent) doesn't
+  // directly track which connections are attached to which of its nodes. That
+  // information can be found by looking through the |roots_| of all
+  // connections.
   NodeIdSet roots_;
 
   // See description above setter.

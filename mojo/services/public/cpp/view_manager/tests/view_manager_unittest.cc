@@ -174,6 +174,15 @@ class TreeSizeMatchesObserver : public NodeObserver {
   DISALLOW_COPY_AND_ASSIGN(TreeSizeMatchesObserver);
 };
 
+void WaitForTreeSizeToMatch(Node* node, size_t tree_size) {
+  TreeSizeMatchesObserver observer(node, tree_size);
+  if (observer.IsTreeCorrectSize())
+    return;
+  node->AddObserver(&observer);
+  DoRunLoop();
+  node->RemoveObserver(&observer);
+}
+
 // Utility class that waits for the destruction of some number of nodes and
 // views.
 class DestructionObserver : public NodeObserver, public ViewObserver {
@@ -626,33 +635,36 @@ TEST_F(ViewManagerTest, Reorder) {
   Node* node1 = Node::Create(window_manager());
   window_manager()->GetRoots().front()->AddChild(node1);
 
-  Node* node11 = Node::Create(window_manager());
-  node1->AddChild(node11);
-  Node* node12 = Node::Create(window_manager());
-  node1->AddChild(node12);
-
   ViewManager* embedded = Embed(window_manager(), node1);
 
-  Node* node1_in_embedded = embedded->GetNodeById(node1->id());
+  Node* node11 = Node::Create(embedded);
+  embedded->GetRoots().front()->AddChild(node11);
+  Node* node12 = Node::Create(embedded);
+  embedded->GetRoots().front()->AddChild(node12);
+
+  Node* node1_in_wm = window_manager()->GetNodeById(node1->id());
 
   {
+    WaitForTreeSizeToMatch(node1, 2u);
     node11->MoveToFront();
-    WaitForOrderChange(embedded, embedded->GetNodeById(node11->id()));
+    WaitForOrderChange(window_manager(),
+                       window_manager()->GetNodeById(node11->id()));
 
-    EXPECT_EQ(node1_in_embedded->children().front(),
-              embedded->GetNodeById(node12->id()));
-    EXPECT_EQ(node1_in_embedded->children().back(),
-              embedded->GetNodeById(node11->id()));
+    EXPECT_EQ(node1_in_wm->children().front(),
+              window_manager()->GetNodeById(node12->id()));
+    EXPECT_EQ(node1_in_wm->children().back(),
+              window_manager()->GetNodeById(node11->id()));
   }
 
   {
     node11->MoveToBack();
-    WaitForOrderChange(embedded, embedded->GetNodeById(node11->id()));
+    WaitForOrderChange(window_manager(),
+                       window_manager()->GetNodeById(node11->id()));
 
-    EXPECT_EQ(node1_in_embedded->children().front(),
-              embedded->GetNodeById(node11->id()));
-    EXPECT_EQ(node1_in_embedded->children().back(),
-              embedded->GetNodeById(node12->id()));
+    EXPECT_EQ(node1_in_wm->children().front(),
+              window_manager()->GetNodeById(node11->id()));
+    EXPECT_EQ(node1_in_wm->children().back(),
+              window_manager()->GetNodeById(node12->id()));
   }
 }
 

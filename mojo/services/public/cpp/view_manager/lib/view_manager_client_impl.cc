@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
@@ -59,10 +60,13 @@ Node* AddNodeToViewManager(ViewManagerClientImpl* client,
 }
 
 Node* BuildNodeTree(ViewManagerClientImpl* client,
-                    const Array<NodeDataPtr>& nodes) {
+                    const Array<NodeDataPtr>& nodes,
+                    Node* initial_parent) {
   std::vector<Node*> parents;
   Node* root = NULL;
   Node* last_node = NULL;
+  if (initial_parent)
+    parents.push_back(initial_parent);
   for (size_t i = 0; i < nodes.size(); ++i) {
     if (last_node && nodes[i]->parent_id == last_node->id()) {
       parents.push_back(last_node);
@@ -137,12 +141,15 @@ ViewManagerClientImpl::ViewManagerClientImpl(ViewManagerDelegate* delegate)
 }
 
 ViewManagerClientImpl::~ViewManagerClientImpl() {
+  std::vector<Node*> non_owned;
   while (!nodes_.empty()) {
     IdToNodeMap::iterator it = nodes_.begin();
-    if (OwnsNode(it->second->id()))
+    if (OwnsNode(it->second->id())) {
       it->second->Destroy();
-    else
+    } else {
+      non_owned.push_back(it->second);
       nodes_.erase(it);
+    }
   }
   while (!views_.empty()) {
     IdToViewMap::iterator it = views_.begin();
@@ -151,6 +158,12 @@ ViewManagerClientImpl::~ViewManagerClientImpl() {
     else
       views_.erase(it);
   }
+  // Delete the non-owned nodes last. In the typical case these are roots. The
+  // exception is the window manager, which may know aboutother random nodes
+  // that it doesn't own.
+  // NOTE: we manually delete as we're a friend.
+  for (size_t i = 0; i < non_owned.size(); ++i)
+    delete non_owned[i];
   delegate_->OnViewManagerDisconnected(this);
 }
 
@@ -324,11 +337,11 @@ void ViewManagerClientImpl::OnViewManagerConnectionEstablished(
   connected_ = true;
   connection_id_ = connection_id;
   creator_url_ = TypeConverter<String, std::string>::ConvertFrom(creator_url);
-  AddRoot(BuildNodeTree(this, nodes));
+  AddRoot(BuildNodeTree(this, nodes, NULL));
 }
 
 void ViewManagerClientImpl::OnRootAdded(Array<NodeDataPtr> nodes) {
-  AddRoot(BuildNodeTree(this, nodes));
+  AddRoot(BuildNodeTree(this, nodes, NULL));
 }
 
 void ViewManagerClientImpl::OnNodeBoundsChanged(Id node_id,
@@ -344,7 +357,10 @@ void ViewManagerClientImpl::OnNodeHierarchyChanged(
     Id new_parent_id,
     Id old_parent_id,
     mojo::Array<NodeDataPtr> nodes) {
-  BuildNodeTree(this, nodes);
+  Node* initial_parent = nodes.size() ?
+      GetNodeById(nodes[0]->parent_id) : NULL;
+
+  BuildNodeTree(this, nodes, initial_parent);
 
   Node* new_parent = GetNodeById(new_parent_id);
   Node* old_parent = GetNodeById(old_parent_id);
