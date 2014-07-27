@@ -193,7 +193,7 @@ MojoResult Dispatcher::EndReadData(uint32_t num_bytes_read) {
 }
 
 MojoResult Dispatcher::DuplicateBufferHandle(
-    const MojoDuplicateBufferHandleOptions* options,
+    UserPointer<const MojoDuplicateBufferHandleOptions> options,
     scoped_refptr<Dispatcher>* new_dispatcher) {
   base::AutoLock locker(lock_);
   if (is_closed_)
@@ -330,7 +330,7 @@ MojoResult Dispatcher::EndReadDataImplNoLock(uint32_t /*num_bytes_read*/) {
 }
 
 MojoResult Dispatcher::DuplicateBufferHandleImplNoLock(
-      const MojoDuplicateBufferHandleOptions* /*options*/,
+      UserPointer<const MojoDuplicateBufferHandleOptions> /*options*/,
       scoped_refptr<Dispatcher>* /*new_dispatcher*/) {
   lock_.AssertAcquired();
   DCHECK(!is_closed_);

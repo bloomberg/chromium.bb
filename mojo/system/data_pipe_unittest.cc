@@ -34,7 +34,7 @@ void RevalidateCreateOptions(
 
   MojoCreateDataPipeOptions revalidated_options = {};
   EXPECT_EQ(MOJO_RESULT_OK,
-            DataPipe::ValidateCreateOptions(&validated_options,
+            DataPipe::ValidateCreateOptions(MakeUserPointer(&validated_options),
                                             &revalidated_options));
   EXPECT_EQ(validated_options.struct_size, revalidated_options.struct_size);
   EXPECT_EQ(validated_options.element_num_bytes,
@@ -60,7 +60,8 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
   {
     MojoCreateDataPipeOptions validated_options = {};
     EXPECT_EQ(MOJO_RESULT_OK,
-              DataPipe::ValidateCreateOptions(NULL, &validated_options));
+              DataPipe::ValidateCreateOptions(NullUserPointer(),
+                                              &validated_options));
     RevalidateCreateOptions(validated_options);
     CheckDefaultCapacity(validated_options);
   }
@@ -72,7 +73,8 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
     };
     MojoCreateDataPipeOptions validated_options = {};
     EXPECT_EQ(MOJO_RESULT_OK,
-              DataPipe::ValidateCreateOptions(&options, &validated_options));
+              DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
+                                              &validated_options));
     RevalidateCreateOptions(validated_options);
     CheckDefaultCapacity(validated_options);
   }
@@ -94,7 +96,8 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
       };
       MojoCreateDataPipeOptions validated_options = {};
       EXPECT_EQ(MOJO_RESULT_OK,
-                DataPipe::ValidateCreateOptions(&options, &validated_options));
+                DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
+                                                &validated_options));
       RevalidateCreateOptions(validated_options);
       EXPECT_EQ(options.flags, validated_options.flags);
       CheckDefaultCapacity(validated_options);
@@ -110,7 +113,8 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
       };
       MojoCreateDataPipeOptions validated_options = {};
       EXPECT_EQ(MOJO_RESULT_OK,
-                DataPipe::ValidateCreateOptions(&options, &validated_options))
+                DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
+                                                &validated_options))
           << capacity;
       RevalidateCreateOptions(validated_options);
       EXPECT_EQ(options.flags, validated_options.flags);
@@ -132,7 +136,8 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
         };
         MojoCreateDataPipeOptions validated_options = {};
         EXPECT_EQ(MOJO_RESULT_OK,
-                  DataPipe::ValidateCreateOptions(&options, &validated_options))
+                  DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
+                                                  &validated_options))
             << size << ", " << elements;
         RevalidateCreateOptions(validated_options);
         EXPECT_EQ(options.flags, validated_options.flags);
@@ -152,7 +157,8 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
         };
         MojoCreateDataPipeOptions validated_options = {};
         EXPECT_EQ(MOJO_RESULT_OK,
-                  DataPipe::ValidateCreateOptions(&options, &validated_options))
+                  DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
+                                                  &validated_options))
             << size;
         RevalidateCreateOptions(validated_options);
         EXPECT_EQ(options.flags, validated_options.flags);
@@ -171,7 +177,8 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
         };
         MojoCreateDataPipeOptions validated_options = {};
         EXPECT_EQ(MOJO_RESULT_OK,
-                  DataPipe::ValidateCreateOptions(&options, &validated_options))
+                  DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
+                                                  &validated_options))
             << size;
         RevalidateCreateOptions(validated_options);
         EXPECT_EQ(options.flags, validated_options.flags);
@@ -193,7 +200,8 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
         };
         MojoCreateDataPipeOptions validated_options = {};
         EXPECT_EQ(MOJO_RESULT_OK,
-                  DataPipe::ValidateCreateOptions(&options, &validated_options))
+                  DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
+                                                  &validated_options))
             << size;
         RevalidateCreateOptions(validated_options);
         EXPECT_EQ(options.flags, validated_options.flags);
@@ -213,7 +221,8 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
         };
         MojoCreateDataPipeOptions validated_options = {};
         EXPECT_EQ(MOJO_RESULT_OK,
-                  DataPipe::ValidateCreateOptions(&options, &validated_options))
+                  DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
+                                                  &validated_options))
             << size;
         RevalidateCreateOptions(validated_options);
         EXPECT_EQ(options.flags, validated_options.flags);
@@ -232,7 +241,8 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
         };
         MojoCreateDataPipeOptions validated_options = {};
         EXPECT_EQ(MOJO_RESULT_OK,
-                  DataPipe::ValidateCreateOptions(&options, &validated_options))
+                  DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
+                                                  &validated_options))
             << size;
         RevalidateCreateOptions(validated_options);
         EXPECT_EQ(options.flags, validated_options.flags);
@@ -255,7 +265,8 @@ TEST(DataPipeTest, ValidateCreateOptionsInvalid) {
     };
     MojoCreateDataPipeOptions unused;
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              DataPipe::ValidateCreateOptions(&options, &unused));
+              DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
+                                              &unused));
   }
 
   // Unknown |flags|.
@@ -268,7 +279,8 @@ TEST(DataPipeTest, ValidateCreateOptionsInvalid) {
     };
     MojoCreateDataPipeOptions unused;
     EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED,
-              DataPipe::ValidateCreateOptions(&options, &unused));
+              DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
+                                              &unused));
   }
 
   // Invalid |element_num_bytes|.
@@ -281,7 +293,8 @@ TEST(DataPipeTest, ValidateCreateOptionsInvalid) {
     };
     MojoCreateDataPipeOptions unused;
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              DataPipe::ValidateCreateOptions(&options, &unused));
+              DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
+                                              &unused));
   }
   // |element_num_bytes| too big.
   {
@@ -293,7 +306,8 @@ TEST(DataPipeTest, ValidateCreateOptionsInvalid) {
     };
     MojoCreateDataPipeOptions unused;
     EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
-              DataPipe::ValidateCreateOptions(&options, &unused));
+              DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
+                                              &unused));
   }
   {
     MojoCreateDataPipeOptions options = {
@@ -304,7 +318,8 @@ TEST(DataPipeTest, ValidateCreateOptionsInvalid) {
     };
     MojoCreateDataPipeOptions unused;
     EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
-              DataPipe::ValidateCreateOptions(&options, &unused));
+              DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
+                                              &unused));
   }
 
   // Invalid |capacity_num_bytes|.
@@ -317,7 +332,8 @@ TEST(DataPipeTest, ValidateCreateOptionsInvalid) {
     };
     MojoCreateDataPipeOptions unused;
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              DataPipe::ValidateCreateOptions(&options, &unused));
+              DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
+                                              &unused));
   }
   {
     MojoCreateDataPipeOptions options = {
@@ -328,7 +344,8 @@ TEST(DataPipeTest, ValidateCreateOptionsInvalid) {
     };
     MojoCreateDataPipeOptions unused;
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              DataPipe::ValidateCreateOptions(&options, &unused));
+              DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
+                                              &unused));
   }
   {
     MojoCreateDataPipeOptions options = {
@@ -339,7 +356,8 @@ TEST(DataPipeTest, ValidateCreateOptionsInvalid) {
     };
     MojoCreateDataPipeOptions unused;
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              DataPipe::ValidateCreateOptions(&options, &unused));
+              DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
+                                              &unused));
   }
   // |capacity_num_bytes| too big.
   {
@@ -351,7 +369,8 @@ TEST(DataPipeTest, ValidateCreateOptionsInvalid) {
     };
     MojoCreateDataPipeOptions unused;
     EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
-              DataPipe::ValidateCreateOptions(&options, &unused));
+              DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
+                                              &unused));
   }
 }
 

@@ -43,20 +43,24 @@ MessagePipeDispatcher::MessagePipeDispatcher(
 
 // static
 MojoResult MessagePipeDispatcher::ValidateCreateOptions(
-    const MojoCreateMessagePipeOptions* in_options,
+    UserPointer<const MojoCreateMessagePipeOptions> in_options,
     MojoCreateMessagePipeOptions* out_options) {
   const MojoCreateMessagePipeOptionsFlags kKnownFlags =
       MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE;
 
   *out_options = kDefaultCreateOptions;
-  if (!in_options)
+  if (in_options.IsNull())
     return MOJO_RESULT_OK;
 
-  MojoResult result =
-      ValidateOptionsStructPointerSizeAndFlags<MojoCreateMessagePipeOptions>(
-          in_options, kKnownFlags, out_options);
-  if (result != MOJO_RESULT_OK)
-    return result;
+  UserOptionsReader<MojoCreateMessagePipeOptions> reader(in_options);
+  if (!reader.is_valid())
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  if (!OPTIONS_STRUCT_HAS_MEMBER(MojoCreateMessagePipeOptions, flags, reader))
+    return MOJO_RESULT_OK;
+  if ((reader.options().flags & ~kKnownFlags))
+    return MOJO_RESULT_UNIMPLEMENTED;
+  out_options->flags = reader.options().flags;
 
   // Checks for fields beyond |flags|:
 

@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/system/dispatcher.h"
+#include "mojo/system/memory.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
@@ -37,7 +38,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
   // |MojoCreateMessagePipeOptions| and will be entirely overwritten on success
   // (it may be partly overwritten on failure).
   static MojoResult ValidateCreateOptions(
-      const MojoCreateMessagePipeOptions* in_options,
+      UserPointer<const MojoCreateMessagePipeOptions> in_options,
       MojoCreateMessagePipeOptions* out_options);
 
   // Must be called before any other methods. (This method is not thread-safe.)

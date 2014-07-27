@@ -43,7 +43,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   // |MojoCreateDataPipeOptions| and will be entirely overwritten on success (it
   // may be partly overwritten on failure).
   static MojoResult ValidateCreateOptions(
-      const MojoCreateDataPipeOptions* in_options,
+      UserPointer<const MojoCreateDataPipeOptions> in_options,
       MojoCreateDataPipeOptions* out_options);
 
   // These are called by the producer dispatcher to implement its methods of

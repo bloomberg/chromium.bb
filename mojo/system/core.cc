@@ -149,9 +149,8 @@ MojoResult Core::CreateMessagePipe(
     UserPointer<MojoHandle> message_pipe_handle0,
     UserPointer<MojoHandle> message_pipe_handle1) {
   MojoCreateMessagePipeOptions validated_options = {};
-  // This will verify the |options| pointer.
   MojoResult result = MessagePipeDispatcher::ValidateCreateOptions(
-      options.GetPointerUnsafe(), &validated_options);
+      options, &validated_options);
   if (result != MOJO_RESULT_OK)
     return result;
 
@@ -316,9 +315,8 @@ MojoResult Core::CreateDataPipe(
     UserPointer<MojoHandle> data_pipe_producer_handle,
     UserPointer<MojoHandle> data_pipe_consumer_handle) {
   MojoCreateDataPipeOptions validated_options = {};
-  // This will verify the |options| pointer.
-  MojoResult result = DataPipe::ValidateCreateOptions(
-      options.GetPointerUnsafe(), &validated_options);
+  MojoResult result = DataPipe::ValidateCreateOptions(options,
+                                                      &validated_options);
   if (result != MOJO_RESULT_OK)
     return result;
 
@@ -424,9 +422,8 @@ MojoResult Core::CreateSharedBuffer(
     uint64_t num_bytes,
     UserPointer<MojoHandle> shared_buffer_handle) {
   MojoCreateSharedBufferOptions validated_options = {};
-  // This will verify the |options| pointer.
   MojoResult result =
-      SharedBufferDispatcher::ValidateCreateOptions(options.GetPointerUnsafe(),
+      SharedBufferDispatcher::ValidateCreateOptions(options,
                                                     &validated_options);
   if (result != MOJO_RESULT_OK)
     return result;
@@ -460,8 +457,8 @@ MojoResult Core::DuplicateBufferHandle(
 
   // Don't verify |options| here; that's the dispatcher's job.
   scoped_refptr<Dispatcher> new_dispatcher;
-  MojoResult result = dispatcher->DuplicateBufferHandle(
-      options.GetPointerUnsafe(), &new_dispatcher);
+  MojoResult result = dispatcher->DuplicateBufferHandle(options,
+                                                        &new_dispatcher);
   if (result != MOJO_RESULT_OK)
     return result;
 

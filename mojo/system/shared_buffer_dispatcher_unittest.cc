@@ -34,7 +34,7 @@ void RevalidateCreateOptions(
   MojoCreateSharedBufferOptions revalidated_options = {};
   EXPECT_EQ(MOJO_RESULT_OK,
             SharedBufferDispatcher::ValidateCreateOptions(
-                &validated_options, &revalidated_options));
+                MakeUserPointer(&validated_options), &revalidated_options));
   EXPECT_EQ(validated_options.struct_size, revalidated_options.struct_size);
   EXPECT_EQ(validated_options.flags, revalidated_options.flags);
 }
@@ -46,7 +46,7 @@ TEST(SharedBufferDispatcherTest, ValidateCreateOptionsValid) {
     MojoCreateSharedBufferOptions validated_options = {};
     EXPECT_EQ(MOJO_RESULT_OK,
               SharedBufferDispatcher::ValidateCreateOptions(
-                  NULL, &validated_options));
+                  NullUserPointer(), &validated_options));
     RevalidateCreateOptions(validated_options);
   }
 
@@ -66,7 +66,7 @@ TEST(SharedBufferDispatcherTest, ValidateCreateOptionsValid) {
       MojoCreateSharedBufferOptions validated_options = {};
       EXPECT_EQ(MOJO_RESULT_OK,
                 SharedBufferDispatcher::ValidateCreateOptions(
-                    &options, &validated_options))
+                    MakeUserPointer(&options), &validated_options))
           << capacity;
       RevalidateCreateOptions(validated_options);
       EXPECT_EQ(options.flags, validated_options.flags);
@@ -83,7 +83,8 @@ TEST(SharedBufferDispatcherTest, ValidateCreateOptionsInvalid) {
     };
     MojoCreateSharedBufferOptions unused;
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              SharedBufferDispatcher::ValidateCreateOptions(&options, &unused));
+              SharedBufferDispatcher::ValidateCreateOptions(
+                  MakeUserPointer(&options), &unused));
   }
 
   // Unknown |flags|.
@@ -94,7 +95,8 @@ TEST(SharedBufferDispatcherTest, ValidateCreateOptionsInvalid) {
     };
     MojoCreateSharedBufferOptions unused;
     EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED,
-              SharedBufferDispatcher::ValidateCreateOptions(&options, &unused));
+              SharedBufferDispatcher::ValidateCreateOptions(
+                  MakeUserPointer(&options), &unused));
   }
 }
 
@@ -153,7 +155,8 @@ TEST(SharedBufferDispatcher, DuplicateBufferHandle) {
   // Duplicate |dispatcher1| and then close it.
   scoped_refptr<Dispatcher> dispatcher2;
   EXPECT_EQ(MOJO_RESULT_OK,
-            dispatcher1->DuplicateBufferHandle(NULL, &dispatcher2));
+            dispatcher1->DuplicateBufferHandle(NullUserPointer(),
+                                               &dispatcher2));
   ASSERT_TRUE(dispatcher2);
   EXPECT_EQ(Dispatcher::kTypeSharedBuffer, dispatcher2->GetType());
 
@@ -183,7 +186,8 @@ TEST(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsValid) {
   for (size_t i = 0; i < arraysize(options); i++) {
     scoped_refptr<Dispatcher> dispatcher2;
     EXPECT_EQ(MOJO_RESULT_OK,
-              dispatcher1->DuplicateBufferHandle(&options[i], &dispatcher2));
+              dispatcher1->DuplicateBufferHandle(MakeUserPointer(&options[i]),
+                                                 &dispatcher2));
     ASSERT_TRUE(dispatcher2);
     EXPECT_EQ(Dispatcher::kTypeSharedBuffer, dispatcher2->GetType());
     EXPECT_EQ(MOJO_RESULT_OK, dispatcher2->Close());
@@ -206,7 +210,8 @@ TEST(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsInvalid) {
     };
     scoped_refptr<Dispatcher> dispatcher2;
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              dispatcher1->DuplicateBufferHandle(&options, &dispatcher2));
+              dispatcher1->DuplicateBufferHandle(MakeUserPointer(&options),
+                                                 &dispatcher2));
     EXPECT_FALSE(dispatcher2);
   }
 
@@ -217,7 +222,8 @@ TEST(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsInvalid) {
     };
     scoped_refptr<Dispatcher> dispatcher2;
     EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED,
-              dispatcher1->DuplicateBufferHandle(&options, &dispatcher2));
+              dispatcher1->DuplicateBufferHandle(MakeUserPointer(&options),
+                                                 &dispatcher2));
     EXPECT_FALSE(dispatcher2);
   }
 

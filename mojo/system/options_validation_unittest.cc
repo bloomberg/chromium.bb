@@ -30,159 +30,105 @@ MOJO_COMPILE_ASSERT(sizeof(TestOptions) == 16, TestOptions_has_wrong_size);
 const uint32_t kSizeOfTestOptions = static_cast<uint32_t>(sizeof(TestOptions));
 
 TEST(OptionsValidationTest, Valid) {
-  const TestOptions kOptions1 = {
-    kSizeOfTestOptions
-  };
+  {
+    const TestOptions kOptions = {
+      kSizeOfTestOptions
+    };
+    UserOptionsReader<TestOptions> reader(MakeUserPointer(&kOptions));
+    EXPECT_TRUE(reader.is_valid());
+    EXPECT_TRUE(OPTIONS_STRUCT_HAS_MEMBER(TestOptions, flags, reader));
+    EXPECT_TRUE(OPTIONS_STRUCT_HAS_MEMBER(TestOptions, member1, reader));
+    EXPECT_TRUE(OPTIONS_STRUCT_HAS_MEMBER(TestOptions, member2, reader));
+  }
+  {
+    const TestOptions kOptions = {
+      static_cast<uint32_t>(offsetof(TestOptions, struct_size) +
+                                sizeof(uint32_t))
+    };
+    UserOptionsReader<TestOptions> reader(MakeUserPointer(&kOptions));
+    EXPECT_TRUE(reader.is_valid());
+    EXPECT_FALSE(OPTIONS_STRUCT_HAS_MEMBER(TestOptions, flags, reader));
+    EXPECT_FALSE(OPTIONS_STRUCT_HAS_MEMBER(TestOptions, member1, reader));
+    EXPECT_FALSE(OPTIONS_STRUCT_HAS_MEMBER(TestOptions, member2, reader));
+  }
 
-  EXPECT_TRUE(IsOptionsStructPointerAndSizeValid<TestOptions>(&kOptions1));
-  EXPECT_TRUE(HAS_OPTIONS_STRUCT_MEMBER(TestOptions, flags, &kOptions1));
-  EXPECT_TRUE(HAS_OPTIONS_STRUCT_MEMBER(TestOptions, member1, &kOptions1));
-  EXPECT_TRUE(HAS_OPTIONS_STRUCT_MEMBER(TestOptions, member2, &kOptions1));
-
-  const TestOptions kOptions2 = {
-    static_cast<uint32_t>(offsetof(TestOptions, struct_size) + sizeof(uint32_t))
-  };
-  EXPECT_TRUE(IsOptionsStructPointerAndSizeValid<TestOptions>(&kOptions2));
-  EXPECT_FALSE(HAS_OPTIONS_STRUCT_MEMBER(TestOptions, flags, &kOptions2));
-  EXPECT_FALSE(HAS_OPTIONS_STRUCT_MEMBER(TestOptions, member1, &kOptions2));
-  EXPECT_FALSE(HAS_OPTIONS_STRUCT_MEMBER(TestOptions, member2, &kOptions2));
-
-  const TestOptions kOptions3 = {
-    static_cast<uint32_t>(offsetof(TestOptions, flags) + sizeof(uint32_t))
-  };
-  EXPECT_TRUE(IsOptionsStructPointerAndSizeValid<TestOptions>(&kOptions3));
-  EXPECT_TRUE(HAS_OPTIONS_STRUCT_MEMBER(TestOptions, flags, &kOptions3));
-  EXPECT_FALSE(HAS_OPTIONS_STRUCT_MEMBER(TestOptions, member1, &kOptions3));
-  EXPECT_FALSE(HAS_OPTIONS_STRUCT_MEMBER(TestOptions, member2, &kOptions3));
-
-  MOJO_ALIGNAS(8) char buf[sizeof(TestOptions) + 100] = {};
-  TestOptions* options = reinterpret_cast<TestOptions*>(buf);
-  options->struct_size = kSizeOfTestOptions + 1;
-  EXPECT_TRUE(IsOptionsStructPointerAndSizeValid<TestOptions>(options));
-  EXPECT_TRUE(HAS_OPTIONS_STRUCT_MEMBER(TestOptions, flags, options));
-  EXPECT_TRUE(HAS_OPTIONS_STRUCT_MEMBER(TestOptions, member1, options));
-  EXPECT_TRUE(HAS_OPTIONS_STRUCT_MEMBER(TestOptions, member2, options));
-
-  options->struct_size = kSizeOfTestOptions + 4;
-  EXPECT_TRUE(IsOptionsStructPointerAndSizeValid<TestOptions>(options));
-  EXPECT_TRUE(HAS_OPTIONS_STRUCT_MEMBER(TestOptions, flags, options));
-  EXPECT_TRUE(HAS_OPTIONS_STRUCT_MEMBER(TestOptions, member1, options));
-  EXPECT_TRUE(HAS_OPTIONS_STRUCT_MEMBER(TestOptions, member2, options));
+  {
+    const TestOptions kOptions = {
+      static_cast<uint32_t>(offsetof(TestOptions, flags) + sizeof(uint32_t))
+    };
+    UserOptionsReader<TestOptions> reader(MakeUserPointer(&kOptions));
+    EXPECT_TRUE(reader.is_valid());
+    EXPECT_TRUE(OPTIONS_STRUCT_HAS_MEMBER(TestOptions, flags, reader));
+    EXPECT_FALSE(OPTIONS_STRUCT_HAS_MEMBER(TestOptions, member1, reader));
+    EXPECT_FALSE(OPTIONS_STRUCT_HAS_MEMBER(TestOptions, member2, reader));
+  }
+  {
+    MOJO_ALIGNAS(8) char buf[sizeof(TestOptions) + 100] = {};
+    TestOptions* options = reinterpret_cast<TestOptions*>(buf);
+    options->struct_size = kSizeOfTestOptions + 1;
+    UserOptionsReader<TestOptions> reader(MakeUserPointer(options));
+    EXPECT_TRUE(reader.is_valid());
+    EXPECT_TRUE(OPTIONS_STRUCT_HAS_MEMBER(TestOptions, flags, reader));
+    EXPECT_TRUE(OPTIONS_STRUCT_HAS_MEMBER(TestOptions, member1, reader));
+    EXPECT_TRUE(OPTIONS_STRUCT_HAS_MEMBER(TestOptions, member2, reader));
+  }
+  {
+    MOJO_ALIGNAS(8) char buf[sizeof(TestOptions) + 100] = {};
+    TestOptions* options = reinterpret_cast<TestOptions*>(buf);
+    options->struct_size = kSizeOfTestOptions + 4;
+    UserOptionsReader<TestOptions> reader(MakeUserPointer(options));
+    EXPECT_TRUE(reader.is_valid());
+    EXPECT_TRUE(OPTIONS_STRUCT_HAS_MEMBER(TestOptions, flags, reader));
+    EXPECT_TRUE(OPTIONS_STRUCT_HAS_MEMBER(TestOptions, member1, reader));
+    EXPECT_TRUE(OPTIONS_STRUCT_HAS_MEMBER(TestOptions, member2, reader));
+  }
 }
 
 TEST(OptionsValidationTest, Invalid) {
-  // Null:
-  EXPECT_FALSE(IsOptionsStructPointerAndSizeValid<TestOptions>(NULL));
-
-  // Unaligned:
-  EXPECT_FALSE(IsOptionsStructPointerAndSizeValid<TestOptions>(
-                   reinterpret_cast<const void*>(1)));
-  EXPECT_FALSE(IsOptionsStructPointerAndSizeValid<TestOptions>(
-                   reinterpret_cast<const void*>(4)));
-
   // Size too small:
   for (size_t i = 0; i < sizeof(uint32_t); i++) {
     TestOptions options = {static_cast<uint32_t>(i)};
-    EXPECT_FALSE(IsOptionsStructPointerAndSizeValid<TestOptions>(&options))
-        << i;
+    UserOptionsReader<TestOptions> reader(MakeUserPointer(&options));
+    EXPECT_FALSE(reader.is_valid()) << i;
   }
 }
 
-TEST(OptionsValidationTest, CheckFlags) {
-  const TestOptions kOptions1 = {kSizeOfTestOptions, 0};
-  EXPECT_TRUE(AreOptionsFlagsAllKnown<TestOptions>(&kOptions1, 0u));
-  EXPECT_TRUE(AreOptionsFlagsAllKnown<TestOptions>(&kOptions1, 1u));
-  EXPECT_TRUE(AreOptionsFlagsAllKnown<TestOptions>(&kOptions1, 3u));
-  EXPECT_TRUE(AreOptionsFlagsAllKnown<TestOptions>(&kOptions1, 7u));
-  EXPECT_TRUE(AreOptionsFlagsAllKnown<TestOptions>(&kOptions1, ~0u));
+// These test invalid arguments that should cause death if we're being paranoid
+// about checking arguments (which we would want to do if, e.g., we were in a
+// true "kernel" situation, but we might not want to do otherwise for
+// performance reasons). Probably blatant errors like passing in null pointers
+// (for required pointer arguments) will still cause death, but perhaps not
+// predictably.
+TEST(OptionsValidationTest, InvalidDeath) {
+  const char kMemoryCheckFailedRegex[] = "Check failed";
 
-  const TestOptions kOptions2 = {kSizeOfTestOptions, 1};
-  EXPECT_FALSE(AreOptionsFlagsAllKnown<TestOptions>(&kOptions2, 0u));
-  EXPECT_TRUE(AreOptionsFlagsAllKnown<TestOptions>(&kOptions2, 1u));
-  EXPECT_TRUE(AreOptionsFlagsAllKnown<TestOptions>(&kOptions2, 3u));
-  EXPECT_TRUE(AreOptionsFlagsAllKnown<TestOptions>(&kOptions2, 7u));
-  EXPECT_TRUE(AreOptionsFlagsAllKnown<TestOptions>(&kOptions2, ~0u));
-
-  const TestOptions kOptions3 = {kSizeOfTestOptions, 2};
-  EXPECT_FALSE(AreOptionsFlagsAllKnown<TestOptions>(&kOptions3, 0u));
-  EXPECT_FALSE(AreOptionsFlagsAllKnown<TestOptions>(&kOptions3, 1u));
-  EXPECT_TRUE(AreOptionsFlagsAllKnown<TestOptions>(&kOptions3, 3u));
-  EXPECT_TRUE(AreOptionsFlagsAllKnown<TestOptions>(&kOptions3, 7u));
-  EXPECT_TRUE(AreOptionsFlagsAllKnown<TestOptions>(&kOptions3, ~0u));
-
-  const TestOptions kOptions4 = {kSizeOfTestOptions, 5};
-  EXPECT_FALSE(AreOptionsFlagsAllKnown<TestOptions>(&kOptions4, 0u));
-  EXPECT_FALSE(AreOptionsFlagsAllKnown<TestOptions>(&kOptions4, 1u));
-  EXPECT_FALSE(AreOptionsFlagsAllKnown<TestOptions>(&kOptions4, 3u));
-  EXPECT_TRUE(AreOptionsFlagsAllKnown<TestOptions>(&kOptions4, 7u));
-  EXPECT_TRUE(AreOptionsFlagsAllKnown<TestOptions>(&kOptions4, ~0u));
-}
-
-TEST(OptionsValidationTest, ValidateOptionsStructPointerSizeAndFlags) {
-  const TestOptions kDefaultOptions = {kSizeOfTestOptions, 1u, 123u, 456u};
-
-  // Valid cases:
-
-  // "Normal":
-  {
-    const TestOptions kOptions = {kSizeOfTestOptions, 0u, 12u, 34u};
-    TestOptions validated_options = kDefaultOptions;
-    EXPECT_EQ(MOJO_RESULT_OK,
-              ValidateOptionsStructPointerSizeAndFlags<TestOptions>(
-                  &kOptions, 3u, &validated_options));
-    EXPECT_EQ(kDefaultOptions.struct_size, validated_options.struct_size);
-    // Copied |flags|.
-    EXPECT_EQ(kOptions.flags, validated_options.flags);
-    // Didn't touch subsequent members.
-    EXPECT_EQ(kDefaultOptions.member1, validated_options.member1);
-    EXPECT_EQ(kDefaultOptions.member2, validated_options.member2);
-  }
-
-  // Doesn't actually have |flags|:
-  {
-    const TestOptions kOptions = {
-      static_cast<uint32_t>(sizeof(uint32_t)), 0u, 12u, 34u
-    };
-    TestOptions validated_options = kDefaultOptions;
-    EXPECT_EQ(MOJO_RESULT_OK,
-              ValidateOptionsStructPointerSizeAndFlags<TestOptions>(
-                  &kOptions, 3u, &validated_options));
-    EXPECT_EQ(kDefaultOptions.struct_size, validated_options.struct_size);
-    // Didn't copy |flags|.
-    EXPECT_EQ(kDefaultOptions.flags, validated_options.flags);
-    // Didn't touch subsequent members.
-    EXPECT_EQ(kDefaultOptions.member1, validated_options.member1);
-    EXPECT_EQ(kDefaultOptions.member2, validated_options.member2);
-  }
-
-  // Invalid cases:
+  // Null:
+  EXPECT_DEATH_IF_SUPPORTED(
+      { UserOptionsReader<TestOptions> reader((NullUserPointer())); },
+      kMemoryCheckFailedRegex);
 
   // Unaligned:
-  {
-    TestOptions validated_options = kDefaultOptions;
-    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              ValidateOptionsStructPointerSizeAndFlags<TestOptions>(
-                  reinterpret_cast<const TestOptions*>(1), 3u,
-                  &validated_options));
-  }
-
-  // |struct_size| too small:
-  {
-    const TestOptions kOptions = {1u, 0u, 12u, 34u};
-    TestOptions validated_options = kDefaultOptions;
-    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              ValidateOptionsStructPointerSizeAndFlags<TestOptions>(
-                  &kOptions, 3u, &validated_options));
-  }
-
-  // Unknown |flag|:
-  {
-    const TestOptions kOptions = {kSizeOfTestOptions, 5u, 12u, 34u};
-    TestOptions validated_options = kDefaultOptions;
-    EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED,
-              ValidateOptionsStructPointerSizeAndFlags<TestOptions>(
-                  &kOptions, 3u, &validated_options));
-  }
+  EXPECT_DEATH_IF_SUPPORTED(
+      { UserOptionsReader<TestOptions> reader(
+            MakeUserPointer(reinterpret_cast<const TestOptions*>(1))); },
+      kMemoryCheckFailedRegex);
+// TODO(vtl): Broken on Windows. Fix this!
+#if 0
+  // Note: The current implementation checks the size only after checking the
+  // alignment versus that required for the |uint32_t| size, so it won't die in
+  // the expected way if you pass, e.g., 4. So we have to manufacture a valid
+  // pointer at an offset of alignment 4.
+  EXPECT_DEATH_IF_SUPPORTED(
+      {
+        uint32_t buffer[100] = {};
+        TestOptions* options = (reinterpret_cast<uintptr_t>(buffer) % 4 == 0) ?
+                                   reinterpret_cast<TestOptions*>(&buffer[1]) :
+                                   reinterpret_cast<TestOptions*>(&buffer[0]);
+        options->struct_size = static_cast<uint32_t>(sizeof(TestOptions));
+        UserOptionsReader<TestOptions> reader(MakeUserPointer(options));
+      },
+      kMemoryCheckFailedRegex);
+#endif
 }
 
 }  // namespace

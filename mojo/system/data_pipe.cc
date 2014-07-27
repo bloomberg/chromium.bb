@@ -29,33 +29,37 @@ const MojoCreateDataPipeOptions DataPipe::kDefaultCreateOptions = {
 
 // static
 MojoResult DataPipe::ValidateCreateOptions(
-    const MojoCreateDataPipeOptions* in_options,
+    UserPointer<const MojoCreateDataPipeOptions> in_options,
     MojoCreateDataPipeOptions* out_options) {
   const MojoCreateDataPipeOptionsFlags kKnownFlags =
       MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD;
 
   *out_options = kDefaultCreateOptions;
-  if (!in_options)
+  if (in_options.IsNull())
     return MOJO_RESULT_OK;
 
-  MojoResult result =
-      ValidateOptionsStructPointerSizeAndFlags<MojoCreateDataPipeOptions>(
-          in_options, kKnownFlags, out_options);
-  if (result != MOJO_RESULT_OK)
-    return result;
+  UserOptionsReader<MojoCreateDataPipeOptions> reader(in_options);
+  if (!reader.is_valid())
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  if (!OPTIONS_STRUCT_HAS_MEMBER(MojoCreateDataPipeOptions, flags, reader))
+    return MOJO_RESULT_OK;
+  if ((reader.options().flags & ~kKnownFlags))
+    return MOJO_RESULT_UNIMPLEMENTED;
+  out_options->flags = reader.options().flags;
 
   // Checks for fields beyond |flags|:
 
-  if (!HAS_OPTIONS_STRUCT_MEMBER(MojoCreateDataPipeOptions, element_num_bytes,
-                                 in_options))
+  if (!OPTIONS_STRUCT_HAS_MEMBER(MojoCreateDataPipeOptions, element_num_bytes,
+                                 reader))
     return MOJO_RESULT_OK;
-  if (in_options->element_num_bytes == 0)
+  if (reader.options().element_num_bytes == 0)
     return MOJO_RESULT_INVALID_ARGUMENT;
-  out_options->element_num_bytes = in_options->element_num_bytes;
+  out_options->element_num_bytes = reader.options().element_num_bytes;
 
-  if (!HAS_OPTIONS_STRUCT_MEMBER(MojoCreateDataPipeOptions, capacity_num_bytes,
-                                 in_options) ||
-      in_options->capacity_num_bytes == 0) {
+  if (!OPTIONS_STRUCT_HAS_MEMBER(MojoCreateDataPipeOptions, capacity_num_bytes,
+                                 reader) ||
+      reader.options().capacity_num_bytes == 0) {
     // Round the default capacity down to a multiple of the element size (but at
     // least one element).
     out_options->capacity_num_bytes = std::max(
@@ -64,11 +68,11 @@ MojoResult DataPipe::ValidateCreateOptions(
         out_options->element_num_bytes);
     return MOJO_RESULT_OK;
   }
-  if (in_options->capacity_num_bytes % out_options->element_num_bytes != 0)
+  if (reader.options().capacity_num_bytes % out_options->element_num_bytes != 0)
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (in_options->capacity_num_bytes > kMaxDataPipeCapacityBytes)
+  if (reader.options().capacity_num_bytes > kMaxDataPipeCapacityBytes)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
-  out_options->capacity_num_bytes = in_options->capacity_num_bytes;
+  out_options->capacity_num_bytes = reader.options().capacity_num_bytes;
 
   return MOJO_RESULT_OK;
 }
@@ -399,7 +403,8 @@ DataPipe::DataPipe(bool has_local_producer,
       consumer_two_phase_max_num_bytes_read_(0) {
   // Check that the passed in options actually are validated.
   MojoCreateDataPipeOptions unused ALLOW_UNUSED = { 0 };
-  DCHECK_EQ(ValidateCreateOptions(&validated_options, &unused), MOJO_RESULT_OK);
+  DCHECK_EQ(ValidateCreateOptions(MakeUserPointer(&validated_options), &unused),
+            MOJO_RESULT_OK);
 }
 
 DataPipe::~DataPipe() {

@@ -6,6 +6,7 @@
 #define MOJO_SYSTEM_SHARED_BUFFER_DISPATCHER_H_
 
 #include "base/macros.h"
+#include "mojo/system/memory.h"
 #include "mojo/system/raw_shared_buffer.h"
 #include "mojo/system/simple_dispatcher.h"
 #include "mojo/system/system_impl_export.h"
@@ -28,7 +29,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher : public SimpleDispatcher {
   // |MojoCreateSharedBufferOptions| and will be entirely overwritten on success
   // (it may be partly overwritten on failure).
   static MojoResult ValidateCreateOptions(
-      const MojoCreateSharedBufferOptions* in_options,
+      UserPointer<const MojoCreateSharedBufferOptions> in_options,
       MojoCreateSharedBufferOptions* out_options);
 
   // Static factory method: |validated_options| must be validated (obviously).
@@ -60,7 +61,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher : public SimpleDispatcher {
   // point to a (current) |MojoDuplicateBufferHandleOptions| and will be
   // entirely overwritten on success (it may be partly overwritten on failure).
   static MojoResult ValidateDuplicateOptions(
-      const MojoDuplicateBufferHandleOptions* in_options,
+      UserPointer<const MojoDuplicateBufferHandleOptions> in_options,
       MojoDuplicateBufferHandleOptions* out_options);
 
   // |Dispatcher| protected methods:
@@ -68,7 +69,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher : public SimpleDispatcher {
   virtual scoped_refptr<Dispatcher>
       CreateEquivalentDispatcherAndCloseImplNoLock() OVERRIDE;
   virtual MojoResult DuplicateBufferHandleImplNoLock(
-      const MojoDuplicateBufferHandleOptions* options,
+      UserPointer<const MojoDuplicateBufferHandleOptions> options,
       scoped_refptr<Dispatcher>* new_dispatcher) OVERRIDE;
   virtual MojoResult MapBufferImplNoLock(
       uint64_t offset,

@@ -195,7 +195,8 @@ class ThreadSafetyStressThread : public base::SimpleThread {
       case DUPLICATE_BUFFER_HANDLE: {
         scoped_refptr<Dispatcher> unused;
         EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-                  dispatcher_->DuplicateBufferHandle(NULL, &unused));
+                  dispatcher_->DuplicateBufferHandle(NullUserPointer(),
+                                                     &unused));
         break;
       }
       case MAP_BUFFER: {

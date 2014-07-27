@@ -35,20 +35,24 @@ const MojoCreateSharedBufferOptions
 
 // static
 MojoResult SharedBufferDispatcher::ValidateCreateOptions(
-    const MojoCreateSharedBufferOptions* in_options,
+    UserPointer<const MojoCreateSharedBufferOptions> in_options,
     MojoCreateSharedBufferOptions* out_options) {
   const MojoCreateSharedBufferOptionsFlags kKnownFlags =
       MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE;
 
   *out_options = kDefaultCreateOptions;
-  if (!in_options)
+  if (in_options.IsNull())
     return MOJO_RESULT_OK;
 
-  MojoResult result =
-      ValidateOptionsStructPointerSizeAndFlags<MojoCreateSharedBufferOptions>(
-          in_options, kKnownFlags, out_options);
-  if (result != MOJO_RESULT_OK)
-    return result;
+  UserOptionsReader<MojoCreateSharedBufferOptions> reader(in_options);
+  if (!reader.is_valid())
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  if (!OPTIONS_STRUCT_HAS_MEMBER(MojoCreateSharedBufferOptions, flags, reader))
+    return MOJO_RESULT_OK;
+  if ((reader.options().flags & ~kKnownFlags))
+    return MOJO_RESULT_UNIMPLEMENTED;
+  out_options->flags = reader.options().flags;
 
   // Checks for fields beyond |flags|:
 
@@ -140,7 +144,7 @@ SharedBufferDispatcher::~SharedBufferDispatcher() {
 
 // static
 MojoResult SharedBufferDispatcher::ValidateDuplicateOptions(
-    const MojoDuplicateBufferHandleOptions* in_options,
+    UserPointer<const MojoDuplicateBufferHandleOptions> in_options,
     MojoDuplicateBufferHandleOptions* out_options) {
   const MojoDuplicateBufferHandleOptionsFlags kKnownFlags =
       MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE;
@@ -150,15 +154,19 @@ MojoResult SharedBufferDispatcher::ValidateDuplicateOptions(
   };
 
   *out_options = kDefaultOptions;
-  if (!in_options)
+  if (in_options.IsNull())
     return MOJO_RESULT_OK;
 
-  MojoResult result =
-      ValidateOptionsStructPointerSizeAndFlags<
-          MojoDuplicateBufferHandleOptions>(
-              in_options, kKnownFlags, out_options);
-  if (result != MOJO_RESULT_OK)
-    return result;
+  UserOptionsReader<MojoDuplicateBufferHandleOptions> reader(in_options);
+  if (!reader.is_valid())
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  if (!OPTIONS_STRUCT_HAS_MEMBER(MojoDuplicateBufferHandleOptions, flags,
+                                 reader))
+    return MOJO_RESULT_OK;
+  if ((reader.options().flags & ~kKnownFlags))
+    return MOJO_RESULT_UNIMPLEMENTED;
+  out_options->flags = reader.options().flags;
 
   // Checks for fields beyond |flags|:
 
@@ -183,7 +191,7 @@ scoped_refptr<Dispatcher>
 }
 
 MojoResult SharedBufferDispatcher::DuplicateBufferHandleImplNoLock(
-    const MojoDuplicateBufferHandleOptions* options,
+    UserPointer<const MojoDuplicateBufferHandleOptions> options,
     scoped_refptr<Dispatcher>* new_dispatcher) {
   lock().AssertAcquired();
 
