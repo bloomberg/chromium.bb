@@ -7,7 +7,6 @@
 #include "base/values.h"
 #include "cc/base/math_util.h"
 #include "cc/output/filter_operation.h"
-#include "third_party/skia/include/core/SkMath.h"
 #include "ui/gfx/animation/tween.h"
 
 namespace cc {

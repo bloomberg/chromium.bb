@@ -10,8 +10,8 @@
 #include "cc/base/cc_export.h"
 #include "cc/output/viewport_selection_bound.h"
 #include "ui/events/latency_info.h"
-#include "ui/gfx/size_f.h"
-#include "ui/gfx/vector2d_f.h"
+#include "ui/gfx/geometry/size_f.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace cc {
 

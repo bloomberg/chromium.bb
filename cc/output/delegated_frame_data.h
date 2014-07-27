@@ -6,10 +6,8 @@
 #define CC_OUTPUT_DELEGATED_FRAME_DATA_H_
 
 #include "cc/base/cc_export.h"
-#include "cc/base/scoped_ptr_vector.h"
 #include "cc/quads/render_pass.h"
 #include "cc/resources/transferable_resource.h"
-#include "ui/gfx/size.h"
 
 namespace cc {
 

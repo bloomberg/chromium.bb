@@ -6,12 +6,9 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
 #include "cc/output/filter_operation.h"
 #include "cc/output/filter_operations.h"
 #include "skia/ext/refptr.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkFlattenableBuffers.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/effects/SkAlphaThresholdFilter.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
@@ -21,9 +18,7 @@
 #include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
 #include "third_party/skia/include/effects/SkMagnifierImageFilter.h"
 #include "third_party/skia/include/effects/SkRectShaderImageFilter.h"
-#include "third_party/skia/include/gpu/SkGpuDevice.h"
-#include "third_party/skia/include/gpu/SkGrPixelRef.h"
-#include "ui/gfx/size_f.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace cc {
 

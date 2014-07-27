@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "cc/output/gl_renderer.h"  // For the GLC() macro.
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "third_party/khronos/GLES2/gl2.h"
 
 #define SHADER0(Src) #Src
 #define VERTEX_SHADER(Src) SetVertexTexCoordPrecision(SHADER0(Src))

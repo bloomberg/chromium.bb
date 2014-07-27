@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "cc/output/software_frame_data.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
 
 namespace cc {

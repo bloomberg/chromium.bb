@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
-#include "third_party/skia/include/core/SkColorPriv.h"
 
 namespace gfx {
 class Point;

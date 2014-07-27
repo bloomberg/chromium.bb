@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 #include "cc/resources/resource_format.h"
 #include "ui/gfx/geometry/rect.h"

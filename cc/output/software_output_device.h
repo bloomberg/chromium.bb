@@ -9,11 +9,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "skia/ext/refptr.h"
-// TODO(robertphillips): change this to "class SkBaseDevice;"
-#include "third_party/skia/include/core/SkDevice.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/size.h"
-#include "ui/gfx/vector2d.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 class SkBitmap;
 class SkCanvas;

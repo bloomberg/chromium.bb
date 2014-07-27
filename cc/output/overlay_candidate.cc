@@ -4,7 +4,9 @@
 
 #include "cc/output/overlay_candidate.h"
 
-#include "ui/gfx/rect_conversions.h"
+#include <algorithm>
+#include "base/logging.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
 

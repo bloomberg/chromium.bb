@@ -7,7 +7,6 @@
 #include "base/debug/trace_event.h"
 #include "cc/output/geometry_binding.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "third_party/khronos/GLES2/gl2.h"
 
 using gpu::gles2::GLES2Interface;
 
