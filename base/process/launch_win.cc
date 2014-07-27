@@ -148,7 +148,7 @@ bool LaunchProcess(const string16& cmdline,
   }
 
   if (options.empty_desktop_name)
-    startup_info->lpDesktop = L"";
+    startup_info->lpDesktop = const_cast<wchar_t*>(L"");
   startup_info->dwFlags = STARTF_USESHOWWINDOW;
   startup_info->wShowWindow = options.start_hidden ? SW_HIDE : SW_SHOW;
 

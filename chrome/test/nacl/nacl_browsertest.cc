@@ -174,7 +174,7 @@ base::FilePath::StringType NumberOfCoresAsFilePathString() {
   SYSTEM_INFO system_info;
   GetSystemInfo(&system_info);
 #if TELEMETRY
-  fprintf(stderr, "browser says nprocessors = %d\n",
+  fprintf(stderr, "browser says nprocessors = %lu\n",
           system_info.dwNumberOfProcessors);
   fflush(NULL);
 #endif

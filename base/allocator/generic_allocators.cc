@@ -28,7 +28,7 @@ void* __cdecl operator new(size_t size) {
   return generic_cpp_alloc(size, false);
 }
 
-void operator delete(void* p) __THROW {
+void operator delete(void* p) throw() {
   free(p);
 }
 
@@ -36,15 +36,15 @@ void* operator new[](size_t size) {
   return generic_cpp_alloc(size, false);
 }
 
-void operator delete[](void* p) __THROW {
+void operator delete[](void* p) throw() {
   free(p);
 }
 
-void* operator new(size_t size, const std::nothrow_t& nt) __THROW {
+void* operator new(size_t size, const std::nothrow_t& nt) throw() {
   return generic_cpp_alloc(size, true);
 }
 
-void* operator new[](size_t size, const std::nothrow_t& nt) __THROW {
+void* operator new[](size_t size, const std::nothrow_t& nt) throw() {
   return generic_cpp_alloc(size, true);
 }
 
@@ -53,7 +53,7 @@ void* operator new[](size_t size, const std::nothrow_t& nt) __THROW {
 // If flag is 1, calls to malloc will behave like calls to new,
 // and the std_new_handler will be invoked on failure.
 // Returns the previous mode.
-int _set_new_mode(int flag) __THROW {
+int _set_new_mode(int flag) throw() {
   int old_mode = new_mode;
   new_mode = flag;
   return old_mode;
@@ -63,7 +63,7 @@ int _set_new_mode(int flag) __THROW {
 
 extern "C" {
 
-void* calloc(size_t n, size_t elem_size) __THROW {
+void* calloc(size_t n, size_t elem_size) {
   // Overflow check
   const size_t size = n * elem_size;
   if (elem_size != 0 && size / elem_size != n) return NULL;

@@ -16,13 +16,6 @@
 // TODO(mbelshe): Ensure that all calls to tcmalloc have the proper call depth
 // from the "user code" so that debugging tools (HeapChecker) can work.
 
-// __THROW is defined in glibc systems.  It means, counter-intuitively,
-// "This function will never throw an exception."  It's an optional
-// optimization tool, but we may need to use it to match glibc prototypes.
-#ifndef __THROW    // I guess we're not on a glibc system
-# define __THROW   // __THROW is just an optimization, so ok to make it ""
-#endif
-
 // new_mode behaves similarly to MSVC's _set_new_mode.
 // If flag is 0 (default), calls to malloc will behave normally.
 // If flag is 1, calls to malloc will behave like calls to new,
@@ -102,7 +95,7 @@ inline bool call_new_handler(bool nothrow) {
 }
 
 extern "C" {
-void* malloc(size_t size) __THROW {
+void* malloc(size_t size) {
   void* ptr;
   for (;;) {
     switch (allocator) {
@@ -124,7 +117,7 @@ void* malloc(size_t size) __THROW {
   return ptr;
 }
 
-void free(void* p) __THROW {
+void free(void* p) {
   switch (allocator) {
     case WINHEAP:
     case WINLFH:
@@ -136,7 +129,7 @@ void free(void* p) __THROW {
   }
 }
 
-void* realloc(void* ptr, size_t size) __THROW {
+void* realloc(void* ptr, size_t size) {
   // Webkit is brittle for allocators that return NULL for malloc(0).  The
   // realloc(0, 0) code path does not guarantee a non-NULL return, so be sure
   // to call malloc for this case.
@@ -168,7 +161,7 @@ void* realloc(void* ptr, size_t size) __THROW {
 }
 
 // TODO(mbelshe): Implement this for other allocators.
-void malloc_stats(void) __THROW {
+void malloc_stats(void) {
   switch (allocator) {
     case WINHEAP:
     case WINLFH:
