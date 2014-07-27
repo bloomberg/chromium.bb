@@ -77,30 +77,6 @@ class WMStateWaiter : public X11PropertyChangeWaiter {
   DISALLOW_COPY_AND_ASSIGN(WMStateWaiter);
 };
 
-// Blocks till |window| gets activated.
-class ActivationWaiter : public X11PropertyChangeWaiter {
- public:
-  explicit ActivationWaiter(XID window)
-      : X11PropertyChangeWaiter(ui::GetX11RootWindow(), "_NET_ACTIVE_WINDOW"),
-        window_(window) {
-  }
-
-  virtual ~ActivationWaiter() {
-  }
-
- private:
-  // X11PropertyChangeWaiter:
-  virtual bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) OVERRIDE {
-    XID xid = 0;
-    ui::GetXIDProperty(ui::GetX11RootWindow(), "_NET_ACTIVE_WINDOW", &xid);
-    return xid != window_;
-  }
-
-  XID window_;
-
-  DISALLOW_COPY_AND_ASSIGN(ActivationWaiter);
-};
-
 // A NonClientFrameView with a window mask with the bottom right corner cut out.
 class ShapedNonClientFrameView : public NonClientFrameView {
  public:
@@ -467,31 +443,6 @@ TEST_F(DesktopWindowTreeHostX11Test, ToggleMinimizePropogateToContentWindow) {
     waiter.Wait();
   }
   EXPECT_TRUE(widget.GetNativeWindow()->IsVisible());
-}
-
-// Test that calling Widget::Deactivate() sets the widget as inactive wrt to
-// Chrome even if it not possible to deactivate the window wrt to the x server.
-// This behavior is required by several interactive_ui_tests.
-TEST_F(DesktopWindowTreeHostX11Test, Deactivate) {
-  scoped_ptr<Widget> widget(CreateWidget(NULL));
-
-  ActivationWaiter waiter(
-      widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
-  widget->Show();
-  widget->Activate();
-  waiter.Wait();
-
-  widget->Deactivate();
-  // Regardless of whether |widget|'s X11 window eventually gets deactivated,
-  // |widget|'s "active" state should change.
-  EXPECT_FALSE(widget->IsActive());
-
-  // |widget|'s X11 window should still be active. Reactivating |widget| should
-  // update the widget's "active" state.
-  // Note: Activating a widget whose X11 window is not active does not
-  // synchronously update the widget's "active" state.
-  widget->Activate();
-  EXPECT_TRUE(widget->IsActive());
 }
 
 }  // namespace views

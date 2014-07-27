@@ -65,7 +65,7 @@
     }],
     ['<(use_x11)!=1 or >(nacl_untrusted_build)==1', {
       'sources/': [
-        ['exclude', '_(x|x11)(_unittest)?\\.(h|cc)$'],
+        ['exclude', '_(x|x11)(_interactive_uitest|_unittest)?\\.(h|cc)$'],
         ['exclude', '(^|/)x11_[^/]*\\.(h|cc)$'],
         ['exclude', '(^|/)x11/'],
         ['exclude', '(^|/)x/'],
