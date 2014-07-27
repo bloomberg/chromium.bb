@@ -1620,7 +1620,7 @@ void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
 
 void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
-  if (!host_)
+  if (!host_ || !window_->GetRootWindow())
     return;
 
   UpdateScreenInfo(window_);
