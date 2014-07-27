@@ -72,6 +72,13 @@
         ],
       },
     }],
+    ['chromeos==1', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/libexif.so',
+        ],
+      },
+    }],
   ],
   'includes': [
     '../third_party/icu/icu.isolate',

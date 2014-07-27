@@ -33,7 +33,6 @@
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
           '<(PRODUCT_DIR)/libppapi_tests.so',
-          '<(PRODUCT_DIR)/plugins/libtest_netscape_plugin.so',
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
       },

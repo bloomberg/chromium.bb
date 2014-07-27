@@ -41,11 +41,7 @@
     ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'isolate_dependency_tracked': [
-          '../media/test/data/90rotation.mp4',
-          '../media/test/data/bear-320x240-multitrack.webm',
-          '../media/test/data/id3_png_test.mp3',
-          '../media/test/data/no_streams.webm',
-          '../media/test/data/sfx.ogg',
+          '../media/test/data/',
           '../ppapi/tests/test_case.html',
           '../ppapi/tests/test_page.css',
           '../testing/test_env.py',
@@ -61,16 +57,13 @@
           'browser/policy/test/asn1der.py',
           'browser/policy/test/policy_testserver.py',
           'browser/safe_browsing/safe_browsing_testserver.py',
-          'common/extensions/docs/examples/apps/calculator/app/controller.js',
-          'common/extensions/docs/examples/apps/calculator/app/model.js',
-          'common/extensions/docs/examples/apps/calculator/app/view.js',
+          'common/extensions/docs/examples/apps/calculator/',
         ],
         'isolate_dependency_untracked': [
           '../content/test/data/',
           '../media/test/data/',
           '../net/data/',
           '../net/tools/testserver/',
-          '../third_party/WebKit/Tools/Scripts/',
           '../third_party/pyftpdlib/',
           '../third_party/pywebsocket/',
           '../third_party/safe_browsing/',
@@ -81,8 +74,7 @@
           '<(PRODUCT_DIR)/pseudo_locales/',
           '<(PRODUCT_DIR)/pyproto/',
           '<(PRODUCT_DIR)/remoting/unittests/',
-          '<(PRODUCT_DIR)/test_data/chrome/',
-          '<(PRODUCT_DIR)/test_data/ppapi/',
+          '<(PRODUCT_DIR)/test_data/',
           '<(PRODUCT_DIR)/test_url_loader_data/',
           'common/extensions/docs/examples/apps/calculator/tests/',
           'test/data/',
@@ -102,7 +94,6 @@
         'isolate_dependency_untracked': [
           '../third_party/bidichecker/',
           '<(PRODUCT_DIR)/lib64/',
-          '<(PRODUCT_DIR)/plugins/',
         ],
       },
     }],
@@ -146,6 +137,7 @@
         'isolate_dependency_untracked': [
           '../third_party/npapi/npspy/extern/plugin/',
           '../third_party/psyco_win32/psyco/',
+          '<(PRODUCT_DIR)/plugins/',
         ],
       },
     }],
@@ -158,8 +150,22 @@
     }],
     ['chromeos==1', {
       'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/keyboard_resources.pak',
+          '<(PRODUCT_DIR)/libexif.so',
+          '<(PRODUCT_DIR)/libppGoogleNaClPluginChrome.so',
+          '<(PRODUCT_DIR)/nacl_helper',
+          '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
+          'browser/chromeos/login/test/https_forwarder.py',
+        ],
         'isolate_dependency_untracked': [
+          '../chromeos/test/data/',
+          '../google_apis/test/',
+          '../ui/file_manager/file_manager/',
+          '../ui/webui/resources/js/',
           '<(PRODUCT_DIR)/chromevox_test_data/',
+          '<(PRODUCT_DIR)/locales/',
+          '<(PRODUCT_DIR)/resources/chromeos/',
         ],
       },
     }],
