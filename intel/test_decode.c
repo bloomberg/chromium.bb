@@ -21,7 +21,9 @@
  * IN THE SOFTWARE.
  */
 
-#define _GNU_SOURCE
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #include <string.h>
 #include <stdlib.h>
@@ -33,7 +35,6 @@
 #include <sys/mman.h>
 #include <err.h>
 
-#include "config.h"
 #include "intel_bufmgr.h"
 #include "intel_chipset.h"
 

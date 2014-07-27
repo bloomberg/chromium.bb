@@ -37,7 +37,9 @@
  * TODO: use cairo to write the mode info on the selected output once
  *       the mode has been programmed, along with possible test patterns.
  */
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <assert.h>
 #include <stdio.h>
