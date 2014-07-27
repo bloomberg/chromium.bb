@@ -53,4 +53,9 @@ LOCAL_COPY_HEADERS := \
 LOCAL_COPY_HEADERS_TO := libdrm
 include $(BUILD_SHARED_LIBRARY)
 
-include $(LOCAL_PATH)/intel/Android.mk
+SUBDIRS := \
+	intel \
+	radeon
+
+mkfiles := $(patsubst %,$(LIBDRM_TOP)/%/Android.mk,$(SUBDIRS))
+include $(mkfiles)
