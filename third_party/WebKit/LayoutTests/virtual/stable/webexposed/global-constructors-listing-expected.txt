@@ -403,6 +403,8 @@ StyleSheet
 StyleSheetList
 SyntaxError
 Text
+TextDecoder
+TextEncoder
 TextEvent
 TextMetrics
 TextTrack

@@ -52,7 +52,7 @@ DeviceLight status=test
 DialogElement status=stable
 DisplayList2dCanvas
 SVGFontsOnNonGDIPlatforms
-EncodingAPI status=experimental
+EncodingAPI status=stable
 EncryptedMedia status=test
 EncryptedMediaAnyVersion status=stable
 ExperimentalCanvasFeatures status=test
