@@ -143,7 +143,7 @@ StyleResolver::StyleResolver(Document& document)
     else
         m_medium = adoptPtr(new MediaQueryEvaluator("all"));
 
-    m_styleTree.ensureScopedStyleResolver(document);
+    m_scopedStyleResolvers.add(&document.ensureScopedStyleResolver());
 
     initWatchedSelectorRules(CSSSelectorWatch::from(document).watchedCallbackSelectors());
 
@@ -190,7 +190,8 @@ void StyleResolver::appendCSSStyleSheet(CSSStyleSheet* cssSheet)
     if (!scopingNode)
         return;
 
-    ScopedStyleResolver* resolver = m_styleTree.ensureScopedStyleResolver(*scopingNode);
+    ScopedStyleResolver* resolver = &scopingNode->treeScope().ensureScopedStyleResolver();
+    m_scopedStyleResolvers.add(resolver);
     ASSERT(resolver);
     resolver->addRulesFromSheet(cssSheet, *m_medium, this);
 }
@@ -237,8 +238,10 @@ void StyleResolver::resetRuleFeatures()
 void StyleResolver::processScopedRules(const RuleSet& authorRules, CSSStyleSheet* parentStyleSheet, ContainerNode& scope)
 {
     const WillBeHeapVector<RawPtrWillBeMember<StyleRuleKeyframes> > keyframesRules = authorRules.keyframesRules();
+    ScopedStyleResolver* resolver = &scope.treeScope().ensureScopedStyleResolver();
+    m_scopedStyleResolvers.add(resolver);
     for (unsigned i = 0; i < keyframesRules.size(); ++i)
-        m_styleTree.ensureScopedStyleResolver(scope)->addKeyframeStyle(keyframesRules[i]);
+        resolver->addKeyframeStyle(keyframesRules[i]);
 
     m_treeBoundaryCrossingRules.addTreeBoundaryCrossingRules(authorRules, scope, parentStyleSheet);
 
@@ -252,20 +255,22 @@ void StyleResolver::processScopedRules(const RuleSet& authorRules, CSSStyleSheet
     }
 }
 
-void StyleResolver::resetAuthorStyle(const ContainerNode* scopingNode)
+void StyleResolver::resetAuthorStyle(TreeScope& treeScope)
 {
-    ScopedStyleResolver* resolver = scopingNode ? scopingNode->treeScope().scopedStyleResolver() : m_document.scopedStyleResolver();
+    ScopedStyleResolver* resolver = treeScope.scopedStyleResolver();
     if (!resolver)
         return;
 
-    m_treeBoundaryCrossingRules.reset(scopingNode);
+    m_treeBoundaryCrossingRules.reset(&treeScope.rootNode());
 
     resolver->resetAuthorStyle();
     resetRuleFeatures();
-    if (!scopingNode)
+    if (treeScope.rootNode().isDocumentNode())
         return;
 
-    m_styleTree.remove(scopingNode);
+    // resolver is going to be freed below.
+    m_scopedStyleResolvers.remove(resolver);
+    treeScope.clearScopedStyleResolver();
 }
 
 static PassOwnPtrWillBeRawPtr<RuleSet> makeRuleSet(const WillBeHeapVector<RuleFeature>& rules)
@@ -300,7 +305,9 @@ void StyleResolver::collectFeatures()
 
     m_treeBoundaryCrossingRules.collectFeaturesTo(m_features);
 
-    m_styleTree.collectFeaturesTo(m_features);
+    HashSet<const StyleSheetContents*> visitedSharedStyleSheetContents;
+    for (WillBeHeapHashSet<RawPtrWillBeMember<const ScopedStyleResolver> >::iterator it = m_scopedStyleResolvers.begin(); it != m_scopedStyleResolvers.end(); ++it)
+        (*it)->collectFeaturesTo(m_features, visitedSharedStyleSheetContents);
 
     m_siblingRuleSet = makeRuleSet(m_features.siblingRules);
     m_uncommonAttributeRuleSet = makeRuleSet(m_features.uncommonAttributeRules);
@@ -355,9 +362,6 @@ void StyleResolver::pushParentElement(Element& parent)
         m_selectorFilter.setupParentStack(parent);
     else
         m_selectorFilter.pushParent(parent);
-
-    // Note: We mustn't skip ShadowRoot nodes for the scope stack.
-    m_styleTree.pushStyleCache(parent, parent.parentOrShadowHostNode());
 }
 
 void StyleResolver::popParentElement(Element& parent)
@@ -366,20 +370,6 @@ void StyleResolver::popParentElement(Element& parent)
     // Pause maintaining the stack in this case.
     if (m_selectorFilter.parentStackIsConsistent(&parent))
         m_selectorFilter.popParent();
-
-    m_styleTree.popStyleCache(parent);
-}
-
-void StyleResolver::pushParentShadowRoot(const ShadowRoot& shadowRoot)
-{
-    ASSERT(shadowRoot.host());
-    m_styleTree.pushStyleCache(shadowRoot, shadowRoot.host());
-}
-
-void StyleResolver::popParentShadowRoot(const ShadowRoot& shadowRoot)
-{
-    ASSERT(shadowRoot.host());
-    m_styleTree.popStyleCache(shadowRoot);
 }
 
 StyleResolver::~StyleResolver()
@@ -419,7 +409,7 @@ void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& col
     collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
 
     bool applyAuthorStyles = applyAuthorStylesOf(element);
-    if (m_styleTree.hasOnlyScopedResolverForDocument()) {
+    if (m_scopedStyleResolvers.size() == 1) {
         m_document.scopedStyleResolver()->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, ignoreCascadeScope);
         m_treeBoundaryCrossingRules.collectTreeBoundaryCrossingRules(element, collector, includeEmptyRules);
         collector.sortAndTransferMatchedRules();
@@ -1574,6 +1564,7 @@ void StyleResolver::trace(Visitor* visitor)
     visitor->trace(m_treeBoundaryCrossingRules);
     visitor->trace(m_pendingStyleSheets);
     visitor->trace(m_styleTree);
+    visitor->trace(m_scopedStyleResolvers);
 #endif
 }
 

@@ -80,7 +80,7 @@ void ScopedStyleResolver::addRulesFromSheet(CSSStyleSheet* cssSheet, const Media
     resolver->processScopedRules(ruleSet, cssSheet, treeScope().rootNode());
 }
 
-void ScopedStyleResolver::collectFeaturesTo(RuleFeatureSet& features, HashSet<const StyleSheetContents*>& visitedSharedStyleSheetContents)
+void ScopedStyleResolver::collectFeaturesTo(RuleFeatureSet& features, HashSet<const StyleSheetContents*>& visitedSharedStyleSheetContents) const
 {
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
         StyleSheetContents* contents = m_authorStyleSheets[i]->contents();

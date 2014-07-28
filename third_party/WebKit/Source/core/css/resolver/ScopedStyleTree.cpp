@@ -40,31 +40,6 @@ ScopedStyleTree::ScopedStyleTree()
 {
 }
 
-ScopedStyleTree::~ScopedStyleTree()
-{
-#if !ENABLE(OILPAN)
-    for (HashMap<RawPtr<const ContainerNode>, RawPtr<ScopedStyleResolver> >::iterator it = m_authorStyles.begin(); it != m_authorStyles.end(); ++it)
-        it->key->treeScope().clearScopedStyleResolver();
-#endif
-}
-
-ScopedStyleResolver* ScopedStyleTree::ensureScopedStyleResolver(ContainerNode& scopingNode)
-{
-    ASSERT(scopingNode.isShadowRoot() || scopingNode.isDocumentNode());
-
-    m_authorStyles.add(&scopingNode, &scopingNode.treeScope().ensureScopedStyleResolver());
-    return scopingNode.treeScope().scopedStyleResolver();
-}
-
-ScopedStyleResolver* ScopedStyleTree::scopedStyleResolverFor(const ContainerNode& scopingNode)
-{
-    if (!isShadowHost(&scopingNode)
-        && !scopingNode.isDocumentNode()
-        && !scopingNode.isShadowRoot())
-        return 0;
-    return scopingNode.treeScope().scopedStyleResolver();
-}
-
 void ScopedStyleTree::resolveScopedStyles(const Element* element, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolvers)
 {
     for (ScopedStyleResolver* scopedResolver = scopedResolverFor(element); scopedResolver; scopedResolver = scopedResolver->parent())
@@ -80,7 +55,7 @@ void ScopedStyleTree::collectScopedResolversForHostedShadowTrees(const Element* 
     // Adding scoped resolver for active shadow roots for shadow host styling.
     for (ShadowRoot* shadowRoot = shadow->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot()) {
         if (shadowRoot->numberOfStyles() > 0) {
-            if (ScopedStyleResolver* resolver = scopedStyleResolverFor(*shadowRoot))
+            if (ScopedStyleResolver* resolver = shadowRoot->scopedStyleResolver())
                 resolvers.append(resolver);
         }
     }
@@ -102,78 +77,17 @@ void ScopedStyleTree::resolveScopedKeyframesRules(const Element* element, WillBe
     }
 }
 
-inline ScopedStyleResolver* ScopedStyleTree::enclosingScopedStyleResolverFor(const ContainerNode* scopingNode)
+inline ScopedStyleResolver* ScopedStyleTree::scopedResolverFor(const Element* element)
 {
-    for (; scopingNode; scopingNode = scopingNode->parentOrShadowHostNode()) {
-        if (ScopedStyleResolver* scopedStyleResolver = scopedStyleResolverFor(*scopingNode))
+    for (TreeScope* treeScope = &element->treeScope(); treeScope; treeScope = treeScope->parentTreeScope()) {
+        if (ScopedStyleResolver* scopedStyleResolver = treeScope->scopedStyleResolver())
             return scopedStyleResolver;
     }
     return 0;
 }
 
-void ScopedStyleTree::resolveStyleCache(const ContainerNode* scopingNode)
-{
-    m_cache.scopedResolver = enclosingScopedStyleResolverFor(scopingNode);
-    m_cache.nodeForScopedStyles = scopingNode;
-}
-
-void ScopedStyleTree::pushStyleCache(const ContainerNode& scopingNode, const ContainerNode* parent)
-{
-    if (m_authorStyles.isEmpty())
-        return;
-
-    if (!cacheIsValid(parent)) {
-        resolveStyleCache(&scopingNode);
-        return;
-    }
-
-    ScopedStyleResolver* scopedResolver = scopedStyleResolverFor(scopingNode);
-    if (scopedResolver)
-        m_cache.scopedResolver = scopedResolver;
-    m_cache.nodeForScopedStyles = &scopingNode;
-}
-
-void ScopedStyleTree::popStyleCache(const ContainerNode& scopingNode)
-{
-    if (!cacheIsValid(&scopingNode))
-        return;
-
-    if (m_cache.scopedResolver && m_cache.scopedResolver->scopingNode() == scopingNode)
-        m_cache.scopedResolver = m_cache.scopedResolver->parent();
-    m_cache.nodeForScopedStyles = scopingNode.parentOrShadowHostNode();
-}
-
-void ScopedStyleTree::collectFeaturesTo(RuleFeatureSet& features)
-{
-    HashSet<const StyleSheetContents*> visitedSharedStyleSheetContents;
-    for (WillBeHeapHashMap<RawPtrWillBeMember<const ContainerNode>, RawPtrWillBeMember<ScopedStyleResolver> >::iterator it = m_authorStyles.begin(); it != m_authorStyles.end(); ++it)
-        it->value->collectFeaturesTo(features, visitedSharedStyleSheetContents);
-}
-
-void ScopedStyleTree::remove(const ContainerNode* scopingNode)
-{
-    if (!scopingNode || scopingNode->isDocumentNode())
-        return;
-
-    ScopedStyleResolver* resolver = scopingNode->treeScope().scopedStyleResolver();
-    if (!resolver)
-        return;
-
-    if (m_cache.scopedResolver == resolver)
-        m_cache.clear();
-
-    // resolver is going to be freed below.
-    resolver = 0;
-    m_authorStyles.remove(scopingNode);
-    scopingNode->treeScope().clearScopedStyleResolver();
-}
-
 void ScopedStyleTree::trace(Visitor* visitor)
 {
-#if ENABLE(OILPAN)
-    visitor->trace(m_authorStyles);
-    visitor->trace(m_cache);
-#endif
 }
 
 } // namespace blink

@@ -486,6 +486,11 @@ void StyleEngine::clearResolver()
 {
     ASSERT(!document().inStyleRecalc());
     ASSERT(isMaster() || !m_resolver);
+
+    m_document->clearScopedStyleResolver();
+    for (StyleSheetCollectionMap::iterator it = m_styleSheetCollectionMap.begin(); it != m_styleSheetCollectionMap.end(); ++it)
+        it->key->clearScopedStyleResolver();
+
     if (m_resolver)
         document().updateStyleInvalidationIfNeeded();
     m_resolver.clear();

@@ -66,7 +66,7 @@ public:
     void collectMatchingAuthorRules(ElementRuleCollector&, bool includeEmptyRules, bool applyAuthorStyles, CascadeScope, CascadeOrder = ignoreCascadeOrder);
     void matchPageRules(PageRuleCollector&);
     void addRulesFromSheet(CSSStyleSheet*, const MediaQueryEvaluator&, StyleResolver*);
-    void collectFeaturesTo(RuleFeatureSet&, HashSet<const StyleSheetContents*>& visitedSharedStyleSheetContents);
+    void collectFeaturesTo(RuleFeatureSet&, HashSet<const StyleSheetContents*>& visitedSharedStyleSheetContents) const;
     void resetAuthorStyle();
     void collectViewportRulesTo(StyleResolver*) const;
 

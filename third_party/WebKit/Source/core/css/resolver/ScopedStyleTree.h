@@ -39,70 +39,16 @@ class ScopedStyleTree {
     DISALLOW_ALLOCATION();
 public:
     ScopedStyleTree();
-    ~ScopedStyleTree();
-
-    ScopedStyleResolver* ensureScopedStyleResolver(ContainerNode& scopingNode);
-
-    ScopedStyleResolver* scopedStyleResolverFor(const ContainerNode& scopingNode);
-
-    // for fast-path.
-    bool hasOnlyScopedResolverForDocument() const { return m_authorStyles.size() == 1; }
 
     void resolveScopedStyles(const Element*, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>&);
     void collectScopedResolversForHostedShadowTrees(const Element*, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>&);
     void resolveScopedKeyframesRules(const Element*, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>&);
-    ScopedStyleResolver* scopedResolverFor(const Element*);
-
-    void remove(const ContainerNode* scopingNode);
-
-    void pushStyleCache(const ContainerNode& scopingNode, const ContainerNode* parent);
-    void popStyleCache(const ContainerNode& scopingNode);
-
-    void collectFeaturesTo(RuleFeatureSet& features);
 
     void trace(Visitor*);
 
 private:
-    bool cacheIsValid(const ContainerNode* parent) const { return parent && parent == m_cache.nodeForScopedStyles; }
-    void resolveStyleCache(const ContainerNode* scopingNode);
-    ScopedStyleResolver* enclosingScopedStyleResolverFor(const ContainerNode* scopingNode);
-
-    WillBeHeapHashMap<RawPtrWillBeMember<const ContainerNode>, RawPtrWillBeMember<ScopedStyleResolver> > m_authorStyles;
-
-    class ScopedStyleCache {
-        DISALLOW_ALLOCATION();
-    public:
-        RawPtrWillBeMember<ScopedStyleResolver> scopedResolver;
-        RawPtrWillBeMember<const ContainerNode> nodeForScopedStyles;
-
-        ScopedStyleCache()
-            : scopedResolver(nullptr)
-            , nodeForScopedStyles(nullptr)
-        {
-        }
-
-        void clear()
-        {
-            scopedResolver = nullptr;
-            nodeForScopedStyles = nullptr;
-        }
-
-        void trace(Visitor* visitor)
-        {
-            visitor->trace(scopedResolver);
-            visitor->trace(nodeForScopedStyles);
-        }
-    };
-    ScopedStyleCache m_cache;
+    ScopedStyleResolver* scopedResolverFor(const Element*);
 };
-
-inline ScopedStyleResolver* ScopedStyleTree::scopedResolverFor(const Element* element)
-{
-    if (!cacheIsValid(element))
-        resolveStyleCache(element);
-
-    return m_cache.scopedResolver;
-}
 
 } // namespace blink
 

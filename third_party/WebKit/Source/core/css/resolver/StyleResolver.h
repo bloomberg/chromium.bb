@@ -111,8 +111,6 @@ public:
     // Using these during tree walk will allow style selector to optimize child and descendant selector lookups.
     void pushParentElement(Element&);
     void popParentElement(Element&);
-    void pushParentShadowRoot(const ShadowRoot&);
-    void popParentShadowRoot(const ShadowRoot&);
 
     PassRefPtr<RenderStyle> styleForElement(Element*, RenderStyle* parentStyle = 0, StyleSharingBehavior = AllowStyleSharing,
         RuleMatchingBehavior = MatchAllRules);
@@ -136,7 +134,7 @@ public:
     // FIXME: It could be better to call appendAuthorStyleSheets() directly after we factor StyleResolver further.
     // https://bugs.webkit.org/show_bug.cgi?id=108890
     void appendAuthorStyleSheets(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >&);
-    void resetAuthorStyle(const ContainerNode*);
+    void resetAuthorStyle(TreeScope&);
     void finishAppendAuthorStyleSheets();
 
     void processScopedRules(const RuleSet& authorRules, CSSStyleSheet*, ContainerNode& scope);
@@ -148,7 +146,7 @@ public:
 
     SelectorFilter& selectorFilter() { return m_selectorFilter; }
 
-    bool styleTreeHasOnlyScopedResolverForDocument() const { return m_styleTree.hasOnlyScopedResolverForDocument(); }
+    bool styleTreeHasOnlyScopedResolverForDocument() const { return m_scopedStyleResolvers.size() == 1; }
 
     void styleTreeResolveScopedKeyframesRules(const Element* element, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolvers)
     {
@@ -300,6 +298,8 @@ private:
     WillBeHeapListHashSet<RawPtrWillBeMember<CSSStyleSheet>, 16> m_pendingStyleSheets;
 
     ScopedStyleTree m_styleTree;
+    // FIXME: Probably this should move to StyleEngine eventually.
+    WillBeHeapHashSet<RawPtrWillBeMember<const ScopedStyleResolver> > m_scopedStyleResolvers;
 
     // FIXME: The entire logic of collecting features on StyleResolver, as well as transferring them
     // between various parts of machinery smells wrong. This needs to be better somehow.

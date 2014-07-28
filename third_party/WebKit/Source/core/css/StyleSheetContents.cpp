@@ -618,10 +618,8 @@ RuleSet& StyleSheetContents::ensureRuleSet(const MediaQueryEvaluator& medium, Ad
 static void clearResolvers(WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyleSheet> >& clients)
 {
     for (WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyleSheet> >::iterator it = clients.begin(); it != clients.end(); ++it) {
-        if (Document* document = (*it)->ownerDocument()) {
+        if (Document* document = (*it)->ownerDocument())
             document->styleEngine()->clearResolver();
-            document->clearScopedStyleResolver();
-        }
     }
 }
 

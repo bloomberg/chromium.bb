@@ -51,8 +51,6 @@ inline StyleResolverParentScope::~StyleResolverParentScope()
         return;
     if (m_parent.isElementNode())
         m_resolver.popParentElement(toElement(m_parent));
-    else
-        m_resolver.popParentShadowRoot(toShadowRoot(m_parent));
 }
 
 inline void StyleResolverParentScope::ensureParentStackIsPushed()
@@ -69,8 +67,6 @@ inline void StyleResolverParentScope::pushParentIfNeeded()
         m_previous->pushParentIfNeeded();
     if (m_parent.isElementNode())
         m_resolver.pushParentElement(toElement(m_parent));
-    else
-        m_resolver.pushParentShadowRoot(toShadowRoot(m_parent));
     m_pushed = true;
 }
 
