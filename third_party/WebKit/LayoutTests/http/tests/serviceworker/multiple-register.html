@@ -22,8 +22,8 @@ async_test(function(t) {
                       'register should resolve to the same worker');
         assert_equals(registered_worker.state, 'activated',
                       'the worker should be in state "activated"');
+        service_worker_unregister_and_done(t, scope);
       })
-    .then(service_worker_unregister_and_done(t, scope))
     .catch(unreached_rejection(t));
 }, 'Subsequent registrations resolve to the same worker');
 
@@ -45,8 +45,8 @@ async_test(function(t) {
             assert_equals(worker, workers[0],
                           'register should resolve to the same worker');
         });
+        service_worker_unregister_and_done(t, scope);
       })
-    .then(service_worker_unregister_and_done(t, scope))
     .catch(unreached_rejection(t));
 }, 'Concurrent registrations resolve to the same worker');
 </script>

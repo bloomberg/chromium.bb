@@ -5,8 +5,6 @@
 # Gardeners are welcome to touch this file, but you can ignore the failures
 # and wait for kouhei@ or hajimehoshi@ to maintain this file.
 
-crbug.com/397892 LayoutTests/http/tests/serviceworker/multiple-register.html [ Crash ]
-
 # view-source:// tests are not supported by the leak detector
 crbug.com/364398 fast/frames/viewsource/viewsource-1.html [ Leak ]
 crbug.com/364398 fast/frames/viewsource/viewsource-2.html [ Leak ]
