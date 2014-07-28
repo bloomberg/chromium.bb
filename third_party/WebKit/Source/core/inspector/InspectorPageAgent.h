@@ -105,7 +105,6 @@ public:
     virtual void deleteCookie(ErrorString*, const String& cookieName, const String& url) OVERRIDE;
     virtual void getResourceTree(ErrorString*, RefPtr<TypeBuilder::Page::FrameResourceTree>&) OVERRIDE;
     virtual void getResourceContent(ErrorString*, const String& frameId, const String& url, PassRefPtr<GetResourceContentCallback>) OVERRIDE;
-    virtual void hasTouchInputs(ErrorString*, bool* result) OVERRIDE;
     virtual void searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const bool* optionalCaseSensitive, const bool* optionalIsRegex, RefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchMatch> >&) OVERRIDE;
     virtual void setDocumentContent(ErrorString*, const String& frameId, const String& html) OVERRIDE;
     virtual void setDeviceMetricsOverride(ErrorString*, int width, int height, double deviceScaleFactor, bool mobile, bool fitWindow, const double* optionalScale, const double* optionalOffsetX, const double* optionalOffsetY) OVERRIDE;

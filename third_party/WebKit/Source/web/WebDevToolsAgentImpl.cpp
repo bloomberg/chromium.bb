@@ -311,7 +311,7 @@ bool WebDevToolsAgentImpl::handleInputEvent(blink::Page* page, const WebInputEve
     // FIXME: This workaround is required for touch emulation on Mac, where
     // compositor-side pinch handling is not enabled. See http://crbug.com/138003.
     bool isPinch = inputEvent.type == WebInputEvent::GesturePinchBegin || inputEvent.type == WebInputEvent::GesturePinchUpdate || inputEvent.type == WebInputEvent::GesturePinchEnd;
-    if (isPinch && m_touchEventEmulationEnabled && m_emulateMobileEnabled) {
+    if (isPinch && m_touchEventEmulationEnabled) {
         FrameView* frameView = page->deprecatedLocalMainFrame()->view();
         PlatformGestureEventBuilder gestureEvent(frameView, static_cast<const WebGestureEvent&>(inputEvent));
         float pageScaleFactor = page->pageScaleFactor();
