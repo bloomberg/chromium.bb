@@ -2439,14 +2439,11 @@ void RenderFrameImpl::willSendRequest(
   // agent. This needs to be done here, after WebKit is through with setting the
   // user agent on its own.
   WebString custom_user_agent;
-  bool was_after_preconnect_request = false;
   if (request.extraData()) {
     RequestExtraData* old_extra_data =
         static_cast<RequestExtraData*>(
             request.extraData());
     custom_user_agent = old_extra_data->custom_user_agent();
-    was_after_preconnect_request =
-        old_extra_data->was_after_preconnect_request();
 
     if (!custom_user_agent.isNull()) {
       if (custom_user_agent.isEmpty())
@@ -2508,7 +2505,6 @@ void RenderFrameImpl::willSendRequest(
   RequestExtraData* extra_data = new RequestExtraData();
   extra_data->set_visibility_state(render_view_->visibilityState());
   extra_data->set_custom_user_agent(custom_user_agent);
-  extra_data->set_was_after_preconnect_request(was_after_preconnect_request);
   extra_data->set_render_frame_id(routing_id_);
   extra_data->set_is_main_frame(frame == top_frame);
   extra_data->set_frame_origin(
@@ -2532,9 +2528,6 @@ void RenderFrameImpl::willSendRequest(
     // if the rel=prerender rel type is sticking around.
     if (request.requestContext() == WebURLRequest::RequestContextPrefetch)
       top_document_state->set_was_prefetcher(true);
-
-    if (was_after_preconnect_request)
-      top_document_state->set_was_after_preconnect_request(true);
   }
 
   // This is an instance where we embed a copy of the routing id

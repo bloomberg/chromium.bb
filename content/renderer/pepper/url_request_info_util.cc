@@ -172,11 +172,9 @@ bool CreateWebURLRequest(PP_Instance instance,
   }
 
   if (data->has_custom_user_agent) {
-    bool was_after_preconnect_request = false;
     RequestExtraData* extra_data = new RequestExtraData();
     extra_data->set_custom_user_agent(
         WebString::fromUTF8(data->custom_user_agent));
-    extra_data->set_was_after_preconnect_request(was_after_preconnect_request);
     dest->setExtraData(extra_data);
   }
 

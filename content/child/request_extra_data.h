@@ -96,11 +96,6 @@ class CONTENT_EXPORT RequestExtraData
       const blink::WebString& custom_user_agent) {
     custom_user_agent_ = custom_user_agent;
   }
-  bool was_after_preconnect_request() { return was_after_preconnect_request_; }
-  void set_was_after_preconnect_request(
-      bool was_after_preconnect_request) {
-    was_after_preconnect_request_ = was_after_preconnect_request;
-  }
 
  private:
   blink::WebPageVisibilityState visibility_state_;
@@ -116,7 +111,6 @@ class CONTENT_EXPORT RequestExtraData
   int transferred_request_request_id_;
   int service_worker_provider_id_;
   blink::WebString custom_user_agent_;
-  bool was_after_preconnect_request_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestExtraData);
 };
