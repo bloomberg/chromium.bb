@@ -25,8 +25,8 @@ MOJO_SYSTEM_IMPL_EXPORT inline void CloseAllPlatformHandles(
 
 // Duplicates the given |PlatformHandle| (which must be valid). (Returns an
 // invalid |ScopedPlatformHandle| on failure.)
-MOJO_SYSTEM_IMPL_EXPORT ScopedPlatformHandle DuplicatePlatformHandle(
-    PlatformHandle platform_handle);
+MOJO_SYSTEM_IMPL_EXPORT ScopedPlatformHandle
+    DuplicatePlatformHandle(PlatformHandle platform_handle);
 
 }  // namespace embedder
 }  // namespace mojo

@@ -112,7 +112,7 @@ bool PlatformChannelSendHandles(PlatformHandle h,
   DCHECK_LE(num_handles, kPlatformChannelMaxNumHandles);
 
   // Note: |sendmsg()| fails on Mac if we don't write at least one character.
-  struct iovec iov = { const_cast<char*>(""), 1 };
+  struct iovec iov = {const_cast<char*>(""), 1};
   char cmsg_buf[CMSG_SPACE(kPlatformChannelMaxNumHandles * sizeof(int))];
   struct msghdr msg = {};
   msg.msg_iov = &iov;
@@ -147,7 +147,7 @@ ssize_t PlatformChannelRecvmsg(PlatformHandle h,
   DCHECK_GT(num_bytes, 0u);
   DCHECK(platform_handles);
 
-  struct iovec iov = { buf, num_bytes };
+  struct iovec iov = {buf, num_bytes};
   char cmsg_buf[CMSG_SPACE(kPlatformChannelMaxNumHandles * sizeof(int))];
   struct msghdr msg = {};
   msg.msg_iov = &iov;
@@ -165,8 +165,7 @@ ssize_t PlatformChannelRecvmsg(PlatformHandle h,
 
   DCHECK(!(msg.msg_flags & MSG_CTRUNC));
 
-  for (cmsghdr* cmsg = CMSG_FIRSTHDR(&msg);
-       cmsg;
+  for (cmsghdr* cmsg = CMSG_FIRSTHDR(&msg); cmsg;
        cmsg = CMSG_NXTHDR(&msg, cmsg)) {
     if (cmsg->cmsg_level == SOL_SOCKET && cmsg->cmsg_type == SCM_RIGHTS) {
       size_t payload_length = cmsg->cmsg_len - CMSG_LEN(0);

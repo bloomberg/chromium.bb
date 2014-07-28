@@ -22,9 +22,10 @@ namespace embedder {
 namespace {
 
 std::wstring GeneratePipeName() {
-  return base::StringPrintf(
-      L"\\\\.\\pipe\\mojo.%u.%u.%I64u",
-      GetCurrentProcessId(), GetCurrentThreadId(), base::RandUint64());
+  return base::StringPrintf(L"\\\\.\\pipe\\mojo.%u.%u.%I64u",
+                            GetCurrentProcessId(),
+                            GetCurrentThreadId(),
+                            base::RandUint64());
 }
 
 }  // namespace
@@ -32,37 +33,35 @@ std::wstring GeneratePipeName() {
 PlatformChannelPair::PlatformChannelPair() {
   std::wstring pipe_name = GeneratePipeName();
 
-  const DWORD kOpenMode = PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED |
-                          FILE_FLAG_FIRST_PIPE_INSTANCE;
+  const DWORD kOpenMode =
+      PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED | FILE_FLAG_FIRST_PIPE_INSTANCE;
   const DWORD kPipeMode = PIPE_TYPE_BYTE | PIPE_READMODE_BYTE;
-  server_handle_.reset(PlatformHandle(
-      CreateNamedPipeW(pipe_name.c_str(),
-                       kOpenMode,
-                       kPipeMode,
-                       1,  // Max instances.
-                       4096,  // Out buffer size.
-                       4096,  // In buffer size.
-                       5000,  // Timeout in milliseconds.
-                       NULL)));  // Default security descriptor.
+  server_handle_.reset(
+      PlatformHandle(CreateNamedPipeW(pipe_name.c_str(),
+                                      kOpenMode,
+                                      kPipeMode,
+                                      1,        // Max instances.
+                                      4096,     // Out buffer size.
+                                      4096,     // In buffer size.
+                                      5000,     // Timeout in milliseconds.
+                                      NULL)));  // Default security descriptor.
   PCHECK(server_handle_.is_valid());
 
   const DWORD kDesiredAccess = GENERIC_READ | GENERIC_WRITE;
   // The SECURITY_ANONYMOUS flag means that the server side cannot impersonate
   // the client.
-  const DWORD kFlags = SECURITY_SQOS_PRESENT | SECURITY_ANONYMOUS |
-                       FILE_FLAG_OVERLAPPED;
+  const DWORD kFlags =
+      SECURITY_SQOS_PRESENT | SECURITY_ANONYMOUS | FILE_FLAG_OVERLAPPED;
   // Allow the handle to be inherited by child processes.
-  SECURITY_ATTRIBUTES security_attributes = {
-    sizeof(SECURITY_ATTRIBUTES), NULL, TRUE
-  };
-  client_handle_.reset(PlatformHandle(
-      CreateFileW(pipe_name.c_str(),
-                  kDesiredAccess,
-                  0,  // No sharing.
-                  &security_attributes,
-                  OPEN_EXISTING,
-                  kFlags,
-                  NULL)));  // No template file.
+  SECURITY_ATTRIBUTES security_attributes = {sizeof(SECURITY_ATTRIBUTES), NULL,
+                                             TRUE};
+  client_handle_.reset(PlatformHandle(CreateFileW(pipe_name.c_str(),
+                                                  kDesiredAccess,
+                                                  0,  // No sharing.
+                                                  &security_attributes,
+                                                  OPEN_EXISTING,
+                                                  kFlags,
+                                                  NULL)));  // No template file.
   PCHECK(client_handle_.is_valid());
 
   // Since a client has connected, ConnectNamedPipe() should return zero and

@@ -46,10 +46,14 @@ PlatformChannelPair::PlatformChannelPair() {
   // fail with |EPIPE| instead). On Linux, we have to use |send...()| with
   // |MSG_NOSIGNAL| -- which is not supported on Mac -- instead.
   int no_sigpipe = 1;
-  PCHECK(setsockopt(fds[0], SOL_SOCKET, SO_NOSIGPIPE, &no_sigpipe,
-                    sizeof(no_sigpipe)) == 0);
-  PCHECK(setsockopt(fds[1], SOL_SOCKET, SO_NOSIGPIPE, &no_sigpipe,
-                    sizeof(no_sigpipe)) == 0);
+  PCHECK(
+      setsockopt(
+          fds[0], SOL_SOCKET, SO_NOSIGPIPE, &no_sigpipe, sizeof(no_sigpipe)) ==
+      0);
+  PCHECK(
+      setsockopt(
+          fds[1], SOL_SOCKET, SO_NOSIGPIPE, &no_sigpipe, sizeof(no_sigpipe)) ==
+      0);
 #endif  // defined(OS_MACOSX)
 
   server_handle_.reset(PlatformHandle(fds[0]));
@@ -92,8 +96,8 @@ void PlatformChannelPair::PrepareToPassClientHandleToChildProcess(
   while (IsTargetDescriptorUsed(*handle_passing_info, target_fd))
     target_fd++;
 
-  handle_passing_info->push_back(std::pair<int, int>(client_handle_.get().fd,
-                                                     target_fd));
+  handle_passing_info->push_back(
+      std::pair<int, int>(client_handle_.get().fd, target_fd));
   // Log a warning if the command line already has the switch, but "clobber" it
   // anyway, since it's reasonably likely that all the switches were just copied
   // from the parent.

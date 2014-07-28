@@ -47,11 +47,11 @@ MOJO_SYSTEM_IMPL_EXPORT void Init();
 // TODO(vtl): Figure out channel teardown.
 struct ChannelInfo;
 typedef base::Callback<void(ChannelInfo*)> DidCreateChannelCallback;
-MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle CreateChannel(
-    ScopedPlatformHandle platform_handle,
-    scoped_refptr<base::TaskRunner> io_thread_task_runner,
-    DidCreateChannelCallback callback,
-    scoped_refptr<base::TaskRunner> callback_thread_task_runner);
+MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
+    CreateChannel(ScopedPlatformHandle platform_handle,
+                  scoped_refptr<base::TaskRunner> io_thread_task_runner,
+                  DidCreateChannelCallback callback,
+                  scoped_refptr<base::TaskRunner> callback_thread_task_runner);
 
 MOJO_SYSTEM_IMPL_EXPORT void DestroyChannelOnIOThread(
     ChannelInfo* channel_info);
@@ -61,15 +61,15 @@ MOJO_SYSTEM_IMPL_EXPORT void DestroyChannelOnIOThread(
 // pipes. Note: This takes ownership (and thus closes) |platform_handle| even on
 // failure, which is different from what you'd expect from a Mojo API, but it
 // makes for a more convenient embedder API.
-MOJO_SYSTEM_IMPL_EXPORT MojoResult CreatePlatformHandleWrapper(
-    ScopedPlatformHandle platform_handle,
-    MojoHandle* platform_handle_wrapper_handle);
+MOJO_SYSTEM_IMPL_EXPORT MojoResult
+    CreatePlatformHandleWrapper(ScopedPlatformHandle platform_handle,
+                                MojoHandle* platform_handle_wrapper_handle);
 // Retrieves the |PlatformHandle| that was wrapped into a |MojoHandle| (using
 // |CreatePlatformHandleWrapper()| above). Note that the |MojoHandle| must still
 // be closed separately.
-MOJO_SYSTEM_IMPL_EXPORT MojoResult PassWrappedPlatformHandle(
-    MojoHandle platform_handle_wrapper_handle,
-    ScopedPlatformHandle* platform_handle);
+MOJO_SYSTEM_IMPL_EXPORT MojoResult
+    PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
+                              ScopedPlatformHandle* platform_handle);
 
 }  // namespace embedder
 }  // namespace mojo

@@ -83,9 +83,8 @@ void CreateChannelOnIOThread(
 
   // Hand the channel back to the embedder.
   if (callback_thread_task_runner) {
-    callback_thread_task_runner->PostTask(FROM_HERE,
-                                          base::Bind(callback,
-                                                     channel_info.release()));
+    callback_thread_task_runner->PostTask(
+        FROM_HERE, base::Bind(callback, channel_info.release()));
   } else {
     callback.Run(channel_info.release());
   }
@@ -170,8 +169,10 @@ MojoResult PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
   if (dispatcher->GetType() != system::Dispatcher::kTypePlatformHandle)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  *platform_handle = static_cast<system::PlatformHandleDispatcher*>(
-      dispatcher.get())->PassPlatformHandle().Pass();
+  *platform_handle =
+      static_cast<system::PlatformHandleDispatcher*>(dispatcher.get())
+          ->PassPlatformHandle()
+          .Pass();
   return MOJO_RESULT_OK;
 }
 

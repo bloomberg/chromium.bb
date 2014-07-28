@@ -47,9 +47,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ScopedPlatformHandle {
     handle_ = handle;
   }
 
-  bool is_valid() const {
-    return handle_.is_valid();
-  }
+  bool is_valid() const { return handle_.is_valid(); }
 
  private:
   PlatformHandle handle_;

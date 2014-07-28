@@ -38,10 +38,9 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelInit {
 
  private:
   // Invoked on the main thread once the channel has been established.
-  static void OnCreatedChannel(
-      base::WeakPtr<ChannelInit> host,
-      scoped_refptr<base::TaskRunner> io_thread,
-      embedder::ChannelInfo* channel);
+  static void OnCreatedChannel(base::WeakPtr<ChannelInit> host,
+                               scoped_refptr<base::TaskRunner> io_thread,
+                               embedder::ChannelInfo* channel);
 
   scoped_refptr<base::TaskRunner> io_thread_task_runner_;
 
