@@ -121,6 +121,7 @@ void MemoryCache::trace(Visitor* visitor)
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(m_liveDecodedResources); ++i)
         visitor->trace(m_liveDecodedResources[i]);
     visitor->trace(m_resources);
+    visitor->trace(m_liveResources);
 #endif
 }
 
@@ -715,6 +716,30 @@ void MemoryCache::pruneNow(double currentTime)
     m_pruneFrameTimeStamp = FrameView::currentFrameTimeStamp();
     m_pruneTimeStamp = currentTime;
 }
+
+#if ENABLE(OILPAN)
+void MemoryCache::registerLiveResource(Resource& resource)
+{
+    ASSERT(!m_liveResources.contains(&resource));
+    m_liveResources.add(&resource);
+}
+
+void MemoryCache::unregisterLiveResource(Resource& resource)
+{
+    ASSERT(m_liveResources.contains(&resource));
+    m_liveResources.remove(&resource);
+}
+
+#else
+
+void MemoryCache::registerLiveResource(Resource&)
+{
+}
+
+void MemoryCache::unregisterLiveResource(Resource&)
+{
+}
+#endif
 
 #ifdef MEMORY_CACHE_STATS
 

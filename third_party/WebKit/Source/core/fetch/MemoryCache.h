@@ -197,6 +197,11 @@ public:
     void makeLive(Resource*);
     void makeDead(Resource*);
 
+    // This should be called when a Resource object is created.
+    void registerLiveResource(Resource&);
+    // This should be called when a Resource object becomes unnecesarry.
+    void unregisterLiveResource(Resource&);
+
     static void removeURLFromCache(ExecutionContext*, const KURL&);
 
     Statistics getStatistics();
@@ -273,6 +278,14 @@ private:
     // referenced by a Web page).
     typedef WillBeHeapHashMap<String, OwnPtrWillBeMember<MemoryCacheEntry> > ResourceMap;
     ResourceMap m_resources;
+
+#if ENABLE(OILPAN)
+    // Unlike m_allResources, m_liveResources is a set of Resource objects which
+    // should not be deleted. m_allResources only contains on-cache Resource
+    // objects.
+    // FIXME: Can we remove manual lifetime management of Resource and this?
+    HeapHashSet<Member<Resource> > m_liveResources;
+#endif
 
     friend class MemoryCacheTest;
 #ifdef MEMORY_CACHE_STATS

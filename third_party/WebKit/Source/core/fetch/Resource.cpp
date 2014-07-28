@@ -116,13 +116,14 @@ Resource::Resource(const ResourceRequest& request, Type type)
 #ifdef ENABLE_RESOURCE_IS_DELETED_CHECK
     , m_deleted(false)
 #endif
-    , m_resourceToRevalidate(0)
-    , m_proxyResource(0)
+    , m_resourceToRevalidate(nullptr)
+    , m_proxyResource(nullptr)
 {
     ASSERT(m_type == unsigned(type)); // m_type is a bitfield, so this tests careless updates of the enum.
 #ifndef NDEBUG
     cachedResourceLeakCounter.increment();
 #endif
+    memoryCache()->registerLiveResource(*this);
 
     if (!m_resourceRequest.url().hasFragmentIdentifier())
         return;
@@ -152,6 +153,12 @@ Resource::~Resource()
 
 void Resource::dispose()
 {
+}
+
+void Resource::trace(Visitor* visitor)
+{
+    visitor->trace(m_resourceToRevalidate);
+    visitor->trace(m_proxyResource);
 }
 
 void Resource::failBeforeStarting()
@@ -556,7 +563,10 @@ bool Resource::deleteIfPossible()
     if (canDelete() && !memoryCache()->contains(this)) {
         InspectorInstrumentation::willDestroyResource(this);
         dispose();
+        memoryCache()->unregisterLiveResource(*this);
+#if !ENABLE(OILPAN)
         delete this;
+#endif
         return true;
     }
     return false;
@@ -654,11 +664,11 @@ void Resource::clearResourceToRevalidate()
 
     // A resource may start revalidation before this method has been called, so check that this resource is still the proxy resource before clearing it out.
     if (m_resourceToRevalidate->m_proxyResource == this) {
-        m_resourceToRevalidate->m_proxyResource = 0;
+        m_resourceToRevalidate->m_proxyResource = nullptr;
         m_resourceToRevalidate->deleteIfPossible();
     }
     m_handlesToRevalidate.clear();
-    m_resourceToRevalidate = 0;
+    m_resourceToRevalidate = nullptr;
     deleteIfPossible();
 }
 
@@ -668,7 +678,7 @@ void Resource::switchClientsToRevalidatedResource()
     ASSERT(memoryCache()->contains(m_resourceToRevalidate));
     ASSERT(!memoryCache()->contains(this));
 
-    WTF_LOG(ResourceLoading, "Resource %p switchClientsToRevalidatedResource %p", this, m_resourceToRevalidate);
+    WTF_LOG(ResourceLoading, "Resource %p switchClientsToRevalidatedResource %p", this, m_resourceToRevalidate.get());
 
     m_resourceToRevalidate->m_identifier = m_identifier;
 
