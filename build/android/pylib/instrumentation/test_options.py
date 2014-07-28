@@ -14,6 +14,7 @@ InstrumentationOptions = collections.namedtuple('InstrumentationOptions', [
     'exclude_annotations',
     'test_filter',
     'test_data',
+    'test_runner',
     'save_perf_json',
     'screenshot_failures',
     'wait_for_debugger',

@@ -334,9 +334,34 @@ class TestRunner(base_test_runner.BaseTestRunner):
                   "1 minute for timeout.").format(test))
     return 1 * 60
 
+  def RunInstrumentationTest(self, test, test_package, instr_args, timeout):
+    """Runs a single instrumentation test.
+
+    Args:
+      test: Test class/method.
+      test_package: Package name of test apk.
+      instr_args: Extra key/value to pass to am instrument.
+      timeout: Timeout time in seconds.
+
+    Returns:
+      An instance of am_instrument_parser.TestResult object.
+    """
+    instrumentation_path = (
+        '%s/%s' % (test_package, self.options.test_runner))
+    args_with_filter = dict(instr_args)
+    args_with_filter['class'] = test
+    logging.info(args_with_filter)
+    (raw_results, _) = self.device.old_interface.Adb().StartInstrumentation(
+        instrumentation_path=instrumentation_path,
+        instrumentation_args=args_with_filter,
+        timeout_time=timeout)
+    assert len(raw_results) == 1
+    return raw_results[0]
+
+
   def _RunTest(self, test, timeout):
     try:
-      return self.device.old_interface.RunInstrumentationTest(
+      return self.RunInstrumentationTest(
           test, self.test_pkg.GetPackageName(),
           self._GetInstrumentationArgs(), timeout)
     except (device_errors.CommandTimeoutError,

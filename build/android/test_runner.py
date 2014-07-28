@@ -35,6 +35,7 @@ from pylib.perf import test_options as perf_test_options
 from pylib.perf import test_runner as perf_test_runner
 from pylib.uiautomator import setup as uiautomator_setup
 from pylib.uiautomator import test_options as uiautomator_test_options
+from pylib.utils import apk_helper
 from pylib.utils import command_option_parser
 from pylib.utils import report_results
 from pylib.utils import reraiser_thread
@@ -269,17 +270,18 @@ def ProcessInstrumentationOptions(options, error_func):
     error_func('--test-apk must be specified.')
 
 
-  options.test_apk_path = os.path.join(constants.GetOutDirectory(),
-                                       constants.SDK_BUILD_APKS_DIR,
-                                       '%s.apk' % options.test_apk)
+  options.test_apk_path = os.path.join(
+      constants.GetOutDirectory(),
+      constants.SDK_BUILD_APKS_DIR,
+      '%s.apk' % options.test_apk)
   options.test_apk_jar_path = os.path.join(
       constants.GetOutDirectory(),
       constants.SDK_BUILD_TEST_JAVALIB_DIR,
       '%s.jar' %  options.test_apk)
-
   options.test_support_apk_path = '%sSupport%s' % (
-        os.path.splitext(options.test_apk_path))
+      os.path.splitext(options.test_apk_path))
 
+  options.test_runner = apk_helper.GetInstrumentationName(options.test_apk_path)
 
   return instrumentation_test_options.InstrumentationOptions(
       options.tool,
@@ -289,6 +291,7 @@ def ProcessInstrumentationOptions(options, error_func):
       options.exclude_annotations,
       options.test_filter,
       options.test_data,
+      options.test_runner,
       options.save_perf_json,
       options.screenshot_failures,
       options.wait_for_debugger,

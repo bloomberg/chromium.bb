@@ -1802,30 +1802,6 @@ class AndroidCommands(object):
     """
     self._util_wrapper = util_wrapper
 
-  def RunInstrumentationTest(self, test, test_package, instr_args, timeout):
-    """Runs a single instrumentation test.
-
-    Args:
-      test: Test class/method.
-      test_package: Package name of test apk.
-      instr_args: Extra key/value to pass to am instrument.
-      timeout: Timeout time in seconds.
-
-    Returns:
-      An instance of am_instrument_parser.TestResult object.
-    """
-    instrumentation_path = ('%s/android.test.InstrumentationTestRunner' %
-                            test_package)
-    args_with_filter = dict(instr_args)
-    args_with_filter['class'] = test
-    logging.info(args_with_filter)
-    (raw_results, _) = self._adb.StartInstrumentation(
-        instrumentation_path=instrumentation_path,
-        instrumentation_args=args_with_filter,
-        timeout_time=timeout)
-    assert len(raw_results) == 1
-    return raw_results[0]
-
   def RunUIAutomatorTest(self, test, test_package, timeout):
     """Runs a single uiautomator test.
 
