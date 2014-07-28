@@ -18,16 +18,10 @@
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "ipc/ipc_channel_handle.h"
+#include "native_client/src/public/nacl_file_info.h"
 #include "net/socket/socket_descriptor.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "url/gurl.h"
-
-// NaClFileToken here is forward declared here instead of including
-// nacl_file_info.h because that file isn't safe to include for disable_nacl=1
-// builds.
-// TODO(teravest): Stop building this header in disable_nacl=1 builds and
-// include nacl_file_info.h instead of forward declaring NaClFileToken.
-struct NaClFileToken;
 
 namespace content {
 class BrowserChildProcessHost;
@@ -199,11 +193,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 
   GURL manifest_url_;
   base::File nexe_file_;
-
-  // TODO(teravest): Use NaClFileInfo here, but without breaking the
-  // disable_nacl=1 build. (Why is this file even built with disable_nacl=1?)
-  uint64_t nexe_token_lo_;
-  uint64_t nexe_token_hi_;
+  NaClFileToken nexe_token_;
 
   ppapi::PpapiPermissions permissions_;
 

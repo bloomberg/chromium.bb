@@ -106,7 +106,6 @@
 #include "components/language_usage_metrics/language_usage_metrics.h"
 #include "components/metrics/metrics_service.h"
 #include "components/nacl/browser/nacl_browser.h"
-#include "components/nacl/browser/nacl_process_host.h"
 #include "components/rappor/rappor_service.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
@@ -185,6 +184,10 @@
 
 #if defined(CLD_DATA_FROM_COMPONENT)
 #include "chrome/browser/component_updater/cld_component_installer.h"
+#endif
+
+#if !defined(DISABLE_NACL)
+#include "components/nacl/browser/nacl_process_host.h"
 #endif
 
 #if defined(ENABLE_FULL_PRINTING) && !defined(OFFICIAL_BUILD)

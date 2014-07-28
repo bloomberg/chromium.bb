@@ -264,8 +264,7 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
                                  const base::FilePath& profile_directory)
     : manifest_url_(manifest_url),
       nexe_file_(nexe_file.Pass()),
-      nexe_token_lo_(nexe_token.lo),
-      nexe_token_hi_(nexe_token.hi),
+      nexe_token_(nexe_token),
       permissions_(permissions),
 #if defined(OS_WIN)
       process_launched_by_broker_(false),
@@ -840,8 +839,8 @@ bool NaClProcessHost::StartNaClExecution() {
 
     // TODO(teravest): Resolve the file tokens right now instead of making the
     // loader send IPC to resolve them later.
-    params.nexe_token_lo = nexe_token_lo_;
-    params.nexe_token_hi = nexe_token_hi_;
+    params.nexe_token_lo = nexe_token_.lo;
+    params.nexe_token_hi = nexe_token_.hi;
 
     const ChildProcessData& data = process_->GetData();
     if (!ShareHandleToSelLdr(data.handle,
