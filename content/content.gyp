@@ -40,6 +40,7 @@
       ],
       'targets': [
         {
+          # GN version: //content
           'target_name': 'content',
           'type': 'none',
           'dependencies': [
@@ -63,6 +64,7 @@
           ],
         },
         {
+          # GN version: //content/app:browser
           'target_name': 'content_app_browser',
           'type': 'static_library',
           'variables': { 'enable_wexit_time_destructors': 1, },
@@ -84,6 +86,7 @@
           ],
         },
         {
+          # GN version: //content/app:child
           'target_name': 'content_app_child',
           'type': 'static_library',
           'variables': { 'enable_wexit_time_destructors': 1, },
@@ -105,6 +108,7 @@
           ],
         },
         {
+          # GN version: //content/app:both
           'target_name': 'content_app_both',
           'type': 'static_library',
           'variables': { 'enable_wexit_time_destructors': 1, },
@@ -119,6 +123,7 @@
           ],
         },
         {
+          # GN version: //content/browser and //content/public/browser
           'target_name': 'content_browser',
           'type': 'static_library',
           'variables': { 'enable_wexit_time_destructors': 1, },
@@ -147,6 +152,7 @@
           ],
         },
         {
+          # GN version: //content/common and //content/public/common
           'target_name': 'content_common',
           'type': 'static_library',
           'variables': { 'enable_wexit_time_destructors': 1, },
@@ -259,6 +265,7 @@
     {  # component != static_library
       'targets': [
         {
+          # GN version: //content
           'target_name': 'content',
           'type': 'shared_library',
           'variables': { 'enable_wexit_time_destructors': 1, },
@@ -294,28 +301,33 @@
           },
         },
         {
+          # GN version: //content/app:browser
           'target_name': 'content_app_browser',
           'type': 'none',
           'dependencies': ['content', 'content_browser'],
         },
         {
+          # GN version: //content/app:child
           'target_name': 'content_app_child',
           'type': 'none',
           'dependencies': ['content', 'content_child'],
         },
         {
+          # GN version: //content/app:both
           'target_name': 'content_app_both',
           'type': 'none',
           'dependencies': ['content'],
           'export_dependent_settings': ['content'],
         },
         {
+          # GN version: //content/browser and //content/public/browser
           'target_name': 'content_browser',
           'type': 'none',
           'dependencies': ['content'],
           'export_dependent_settings': ['content'],
         },
         {
+          # GN version: //content/common and //content/public/common
           'target_name': 'content_common',
           'type': 'none',
           'dependencies': ['content', 'content_resources.gyp:content_resources'],
@@ -324,21 +336,25 @@
           'export_dependent_settings': ['content'],
         },
         {
+          # GN Version: //content/child
           'target_name': 'content_child',
           'type': 'none',
           'dependencies': ['content'],
         },
         {
+          # GN version: //content/gpu
           'target_name': 'content_gpu',
           'type': 'none',
           'dependencies': ['content'],
         },
         {
+          # GN version: //content/plugin
           'target_name': 'content_plugin',
           'type': 'none',
           'dependencies': ['content'],
         },
         {
+          # GN version: //content/ppapi_plugin
           'target_name': 'content_ppapi_plugin',
           'type': 'none',
           'dependencies': ['content'],
@@ -346,11 +362,13 @@
           'msvs_disabled_warnings': [ 4267, ],
         },
         {
+          # GN version: //content/renderer and //content/public/renderer
           'target_name': 'content_renderer',
           'type': 'none',
           'dependencies': ['content'],
         },
         {
+          # GN version: //content/utility
           'target_name': 'content_utility',
           'type': 'none',
           'dependencies': ['content'],

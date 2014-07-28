@@ -146,6 +146,8 @@ static_library("content_shell_lib") {
     "renderer/test_runner/event_sender.h",
     "renderer/test_runner/gamepad_controller.cc",
     "renderer/test_runner/gamepad_controller.h",
+    "renderer/test_runner/mock_color_chooser.cc",
+    "renderer/test_runner/mock_color_chooser.h",
     "renderer/test_runner/mock_constraints.cc",
     "renderer/test_runner/mock_constraints.h",
     "renderer/test_runner/mock_grammar_check.cc",
@@ -201,6 +203,7 @@ static_library("content_shell_lib") {
     "//cc",
     "//components/breakpad/app",
     "//content:resources",
+    "//content/app:both",
     "//content/gpu",
     "//content/ppapi_plugin",
     "//content/public/browser",
@@ -218,6 +221,7 @@ static_library("content_shell_lib") {
     "//skia",
     "//third_party/icu",
     "//third_party/WebKit/public:blink",
+    "//third_party/WebKit/public:test_support",
     "//ui/base",
     "//ui/events:events_base",
     "//ui/gfx",
@@ -228,9 +232,7 @@ static_library("content_shell_lib") {
     "//v8",
     "//webkit:resources",
     "//webkit/browser:storage",
-    #'content.gyp:content_app_both',  TODO(GYP)
     #'copy_test_netscape_plugin',  TODO(GYP)
-    #'../third_party/WebKit/public/blink.gyp:blink_test_support',  TODO(GYP)
   ]
 
   if (is_win) {
@@ -416,8 +418,6 @@ repack("pak") {
   }
 }
 
-if (false) {  # TODO(GYP) enable once this links.
-
 executable("content_shell") {
   # TODO(GYP) mac resource bundle stuff for this target.
   # TODO(GYP) Windows content shell settings:
@@ -454,11 +454,5 @@ executable("content_shell") {
     datadeps = [
       "//tools/imagediff($host_toolchain)",
     ]
-  }
-}
-
-} else {
-  # Content shell not ready, make a dummpy to make dependency management easier.
-  group("content_shell") {
   }
 }

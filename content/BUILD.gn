@@ -9,16 +9,14 @@ config("content_implementation") {
   defines = [ "CONTENT_IMPLEMENTATION" ]
 }
 
-content_components = [
-  "//content/app",
-  "//content/browser",
-  "//content/child",
+content_shared_components = [
   "//content/gpu",
   "//content/plugin",
   "//content/ppapi_plugin",
   "//content/public/app",
   "//content/public/browser",
   "//content/public/child",
+  "//content/public/common",
   "//content/public/plugin",
   "//content/public/renderer",
   "//content/renderer",
@@ -27,11 +25,13 @@ content_components = [
 
 if (is_component_build) {
   shared_library("content") {
-    deps = content_components
+    deps = content_shared_components + [
+      "//content/app",
+    ]
   }
 } else {
   group("content") {
-    deps = content_components
+    deps = content_shared_components
   }
 }
 

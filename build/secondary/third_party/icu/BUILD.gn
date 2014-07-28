@@ -5,7 +5,17 @@
 declare_args() {
   # Tells icu to load an external data file rather than rely on the icudata
   # being linked directly into the binary.
-  icu_use_data_file = false
+  #
+  # This flag is a bit confusing. As of this writing, icu.gyp set the value to
+  # 0 but common.gypi sets the value to 1 for most platforms (and the 1 takes
+  # precedence).
+  #
+  # TODO(GYP) We'll probably need to enhance this logic to set the value to
+  # true or false in similar circumstances. Note that in the GYP build, some
+  # other projects access this variable. If we need to do a similar thing,
+  # we should probably make an icu config file (//third_party/icu/config.gni)
+  # with this flag in it rather than making it global.
+  icu_use_data_file = true
 }
 
 # Meta target that includes both icuuc and icui18n. Most targets want both.
@@ -470,7 +480,7 @@ if (icu_use_data_file) {
   } else {
     copy("icudata") {
       if (is_android) {
-        sources = [ "android/icudt.dat" ]
+        sources = [ "android/icudtl.dat" ]
       } else {
         sources = [ "source/data/in/icudtl.dat" ]
       }

@@ -234,6 +234,11 @@ static_library("mesa_libglslcommon") {
     "//build/config/compiler:no_chromium_code",
   ]
 
+  if (is_clang) {
+    # Mesa triggers some of these Clang warnings.
+    configs -= [ "//build/config/clang:extra_warnings" ]
+  }
+
   deps = [
     ":mesa_headers",
   ]

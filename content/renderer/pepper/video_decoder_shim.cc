@@ -125,10 +125,13 @@ VideoDecoderShim::DecoderImpl::~DecoderImpl() {
 void VideoDecoderShim::DecoderImpl::Initialize(
     media::VideoDecoderConfig config) {
   DCHECK(!decoder_);
+#if !defined(MEDIA_DISABLE_LIBVPX)
   if (config.codec() == media::kCodecVP9) {
     decoder_.reset(
         new media::VpxVideoDecoder(base::MessageLoopProxy::current()));
-  } else {
+  } else
+#endif
+  {
     scoped_ptr<media::FFmpegVideoDecoder> ffmpeg_video_decoder(
         new media::FFmpegVideoDecoder(base::MessageLoopProxy::current()));
     ffmpeg_video_decoder->set_decode_nalus(true);

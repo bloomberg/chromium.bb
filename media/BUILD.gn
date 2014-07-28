@@ -15,9 +15,6 @@ config("media_config") {
   if (cpu_arch == "arm" && arm_use_neon) {
     defines += [ "USE_NEON" ]
   }
-  if (!media_use_libvpx) {
-    defines += [ "MEDIA_DISABLE_LIBVPX" ]
-  }
   if (use_pulseaudio) {
     defines += [ "USE_PULSEAUDIO" ]
     if (linux_link_pulseaudio) {
@@ -33,6 +30,9 @@ config("media_config") {
 }
 
 config("media_dependent_config") {
+  if (!media_use_libvpx) {
+    defines = [ "MEDIA_DISABLE_LIBVPX" ]
+  }
   if (is_win) {
     ldflags = [
       "/DELAYLOAD:mf.dll",

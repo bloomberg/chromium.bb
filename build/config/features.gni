@@ -29,6 +29,11 @@ declare_args() {
   # resources.pak. It is still possible to load JS files from disk by passing
   # --debug-devtools cmdline switch.
   debug_devtools = false
+
+  # Enables WebRTC.
+  #enable_webrtc = !is_ios  TODO(GYP) use this condition when WebRTC works in
+  #                         the GN build.
+  enable_webrtc = false
 }
 
 # Additional dependent variables -----------------------------------------------
@@ -67,8 +72,6 @@ if (is_android) {
 # security@chromium.org!
 use_seccomp_bpf = (is_linux || is_android) &&
   (cpu_arch == "x86" || cpu_arch == "x64" || cpu_arch == "arm")
-
-enable_webrtc = !is_ios
 
 # Enable notifications everywhere except Android/iOS.
 # Android is http://crbug.com/115320

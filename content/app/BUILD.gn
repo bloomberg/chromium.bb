@@ -2,62 +2,116 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("app") {
-  sources = [
-    "android/app_jni_registrar.cc",
-    "android/app_jni_registrar.h",
-    "android/child_process_service.cc",
-    "android/child_process_service.h",
-    "android/content_main.cc",
-    "android/content_main.h",
-    "android/library_loader_hooks.cc",
+content_app_sources = [
+  "android/app_jni_registrar.cc",
+  "android/app_jni_registrar.h",
+  "android/child_process_service.cc",
+  "android/child_process_service.h",
+  "android/content_main.cc",
+  "android/content_main.h",
+  "android/library_loader_hooks.cc",
+  "content_main.cc",
+  "content_main_runner.cc",
+  "mojo/mojo_init.cc",
+  "mojo/mojo_init.h",
+  "startup_helper_win.cc",
+]
+
+content_app_deps = [
+  "//base",
+  "//base:i18n",
+  # This is needed by app/content_main_runner.cc
+  # TODO(brettw) this shouldn't be here, only final executables should be
+  # picking the allocator.
+  "//base/allocator",
+  "//content:export",
+  "//content/public/common",
+  "//crypto",
+  "//ui/base",
+  "//ui/gfx",
+  "//ui/gfx/geometry",
+]
+
+if (is_win) {
+  content_app_deps += [ "//sandbox" ]
+} else if (is_android) {
+  content_app_sources -= [ "content_main.cc" ]
+  content_app_deps += [
+    "//content:content_jni_headers",
+    "//skia",
+    "//third_party/android_tools:cpu_features"
+  ]
+}
+
+if (is_ios) {
+  content_app_sources -= [
     "content_main.cc",
-    "content_main_runner.cc",
     "mojo/mojo_init.cc",
     "mojo/mojo_init.h",
-    "startup_helper_win.cc",
   ]
-
-  configs += [ "//content:content_implementation" ]
-
-  deps = [
-    "//base",
-    "//base:i18n",
-    # This is needed by app/content_main_runner.cc
-    # TODO(brettw) this shouldn't be here, only final executables should be
-    # picking the allocator.
-    "//base/allocator",
-    "//content:export",
-    "//content/public/common",
-    "//crypto",
-    "//ui/base",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
+} else {
+  content_app_deps += [
+    "//mojo/environment:chromium",
+    "//mojo/public/interfaces/service_provider",
+    "//mojo/service_manager",
+    "//mojo/system",
   ]
+}
 
-  if (is_win) {
-    deps += [ "//sandbox" ]
-  } else if (is_android) {
-    sources -= [ "content_main.cc" ]
-    deps += [
-      "//content:content_jni_headers",
-      "//skia",
-      "//third_party/android_tools:cpu_features"
-    ]
+content_app_extra_configs = [
+  "//build/config/compiler:wexit_time_destructors",
+  "//content:content_implementation",
+]
+
+if (is_component_build) {
+  source_set("app") {
+    sources = content_app_sources
+    configs += content_app_extra_configs
+    deps = content_app_deps
   }
 
-  if (is_ios) {
-    sources -= [
-      "content_main.cc",
-      "mojo/mojo_init.cc",
-      "mojo/mojo_init.h",
-    ]
-  } else {
-    deps += [
-      "//mojo/environment:chromium",
-      "//mojo/public/interfaces/service_provider",
-      "//mojo/service_manager",
-      "//mojo/system",
-    ]
+  # In the component build, all of these app targets redirect to the content
+  # component. The content component in turn references the "app" target above.
+  group("browser") {
+    deps = [ "//content" ]
+  }
+  group("child") {
+    deps = [ "//content" ]
+  }
+  group("both") {
+    deps = [ "//content" ]
+  }
+} else {
+  # Non-component build. In this case, we have different versions of
+  # "content/app" for the browser and child process.
+
+  # TODO(GYP) enable chrome_multiple_dll support
+  is_chrome_multiple_dll = false
+
+  source_set("browser") {
+    sources = content_app_sources
+    configs += content_app_extra_configs
+    deps = content_app_deps
+
+    if (is_chrome_multiple_dll) {
+      defines += [ "CHROME_MULTIPLE_DLL_BROWSER" ]
+    }
+  }
+
+  source_set("child") {
+    sources = content_app_sources
+    configs += content_app_extra_configs
+    deps = content_app_deps
+
+    if (is_chrome_multiple_dll) {
+      defines += [ "CHROME_MULTIPLE_DLL_CHILD" ]
+    }
+  }
+
+  # Includes both browser and child process app sources.
+  source_set("both") {
+    sources = content_app_sources
+    configs += content_app_extra_configs
+    deps = content_app_deps
   }
 }
