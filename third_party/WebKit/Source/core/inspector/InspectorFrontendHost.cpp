@@ -131,12 +131,17 @@ InspectorFrontendHost::~InspectorFrontendHost()
     ASSERT(!m_client);
 }
 
+void InspectorFrontendHost::trace(Visitor* visitor)
+{
+    visitor->trace(m_frontendPage);
+}
+
 void InspectorFrontendHost::disconnectClient()
 {
     m_client = 0;
     if (m_menuProvider)
         m_menuProvider->disconnect();
-    m_frontendPage = 0;
+    m_frontendPage = nullptr;
 }
 
 void InspectorFrontendHost::setZoomFactor(float zoom)

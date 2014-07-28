@@ -32,6 +32,7 @@
 #define InspectorController_h
 
 #include "core/inspector/InspectorBaseAgent.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
@@ -87,7 +88,7 @@ public:
     void willBeDestroyed();
     void registerModuleAgent(PassOwnPtrWillBeRawPtr<InspectorAgent>);
 
-    void setInspectorFrontendClient(PassOwnPtr<InspectorFrontendClient>);
+    void setInspectorFrontendClient(PassOwnPtrWillBeRawPtr<InspectorFrontendClient>);
     void didClearDocumentOfWindowObject(LocalFrame*);
     void setInjectedScriptForOrigin(const String& origin, const String& source);
     void showContextMenu(float x, float y, PassRefPtr<ContextMenuProvider>);
@@ -157,7 +158,7 @@ private:
     RawPtrWillBeMember<InspectorTracingAgent> m_tracingAgent;
 
     RefPtr<InspectorBackendDispatcher> m_inspectorBackendDispatcher;
-    OwnPtr<InspectorFrontendClient> m_inspectorFrontendClient;
+    OwnPtrWillBeMember<InspectorFrontendClient> m_inspectorFrontendClient;
     OwnPtr<InspectorFrontend> m_inspectorFrontend;
     RawPtrWillBeMember<Page> m_page;
     InspectorClient* m_inspectorClient;

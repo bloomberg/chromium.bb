@@ -140,6 +140,7 @@ void InspectorController::trace(Visitor* visitor)
     visitor->trace(m_resourceAgent);
     visitor->trace(m_layerTreeAgent);
     visitor->trace(m_tracingAgent);
+    visitor->trace(m_inspectorFrontendClient);
     visitor->trace(m_page);
     m_agents.trace(visitor);
 }
@@ -207,6 +208,8 @@ void InspectorController::willBeDestroyed()
     m_page = nullptr;
     m_instrumentingAgents->reset();
     m_agents.discardAgents();
+    if (m_inspectorFrontendClient)
+        m_inspectorFrontendClient->dispose();
 }
 
 void InspectorController::registerModuleAgent(PassOwnPtrWillBeRawPtr<InspectorAgent> agent)
@@ -214,7 +217,7 @@ void InspectorController::registerModuleAgent(PassOwnPtrWillBeRawPtr<InspectorAg
     m_agents.append(agent);
 }
 
-void InspectorController::setInspectorFrontendClient(PassOwnPtr<InspectorFrontendClient> inspectorFrontendClient)
+void InspectorController::setInspectorFrontendClient(PassOwnPtrWillBeRawPtr<InspectorFrontendClient> inspectorFrontendClient)
 {
     m_inspectorFrontendClient = inspectorFrontendClient;
 }

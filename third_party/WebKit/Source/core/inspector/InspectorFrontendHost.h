@@ -42,14 +42,15 @@ class FrontendMenuProvider;
 class InspectorFrontendClient;
 class Page;
 
-class InspectorFrontendHost : public RefCounted<InspectorFrontendHost>, public ScriptWrappable {
+class InspectorFrontendHost : public RefCountedWillBeGarbageCollectedFinalized<InspectorFrontendHost>, public ScriptWrappable {
 public:
-    static PassRefPtr<InspectorFrontendHost> create(InspectorFrontendClient* client, Page* frontendPage)
+    static PassRefPtrWillBeRawPtr<InspectorFrontendHost> create(InspectorFrontendClient* client, Page* frontendPage)
     {
-        return adoptRef(new InspectorFrontendHost(client, frontendPage));
+        return adoptRefWillBeNoop(new InspectorFrontendHost(client, frontendPage));
     }
 
     ~InspectorFrontendHost();
+    void trace(Visitor*);
     void disconnectClient();
 
     void setZoomFactor(float);
@@ -78,7 +79,7 @@ private:
     InspectorFrontendHost(InspectorFrontendClient* client, Page* frontendPage);
 
     InspectorFrontendClient* m_client;
-    Page* m_frontendPage;
+    RawPtrWillBeMember<Page> m_frontendPage;
     FrontendMenuProvider* m_menuProvider;
 };
 

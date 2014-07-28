@@ -97,7 +97,7 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
     , m_applicationLocale(applicationLocale)
     , m_inspectorFrontendDispatchTimer(this, &WebDevToolsFrontendImpl::maybeDispatch)
 {
-    m_webViewImpl->page()->inspectorController().setInspectorFrontendClient(adoptPtr(new InspectorFrontendClientImpl(m_webViewImpl->page(), m_client, this)));
+    m_webViewImpl->page()->inspectorController().setInspectorFrontendClient(adoptPtrWillBeNoop(new InspectorFrontendClientImpl(m_webViewImpl->page(), m_client, this)));
 }
 
 WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl()

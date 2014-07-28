@@ -49,6 +49,7 @@ class InspectorFrontendClientImpl FINAL : public blink::InspectorFrontendClient 
 public:
     InspectorFrontendClientImpl(blink::Page*, WebDevToolsFrontendClient*, WebDevToolsFrontendImpl*);
     virtual ~InspectorFrontendClientImpl();
+    virtual void trace(Visitor*) OVERRIDE;
 
     // InspectorFrontendClient methods:
     virtual void windowObjectCleared() OVERRIDE;
@@ -59,10 +60,12 @@ public:
 
     virtual bool isUnderTest() OVERRIDE;
 
+    virtual void dispose() OVERRIDE;
+
 private:
-    blink::Page* m_frontendPage;
+    RawPtrWillBeMember<blink::Page> m_frontendPage;
     WebDevToolsFrontendClient* m_client;
-    RefPtr<blink::InspectorFrontendHost> m_frontendHost;
+    RefPtrWillBeMember<blink::InspectorFrontendHost> m_frontendHost;
 };
 
 } // namespace blink
