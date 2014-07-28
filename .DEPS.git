@@ -132,7 +132,7 @@ deps = {
     'src/third_party/swig/Lib':
         Var('git_url') + '/chromium/deps/swig/Lib.git@f2a695d52e61e6a8d967731434f165ed400f0d69',
     'src/third_party/trace-viewer':
-        Var('git_url') + '/external/trace-viewer.git@d8e31e773eafdb2f79a3a6d8ceef6a22fe0f4440',
+        Var('git_url') + '/external/trace-viewer.git@b09a25a4532f2a6f240c59da1b7faca7178f04a6',
     'src/third_party/usrsctp/usrsctplib':
         Var('git_url') + '/external/usrsctplib.git@e6e18333da18c5bb7de7e9189e53403e2ffa7023',
     'src/third_party/webdriver/pylib':
