@@ -104,6 +104,12 @@ Node* NodeTraversal::lastWithin(const ContainerNode& current)
     return descendant;
 }
 
+Node& NodeTraversal::lastWithinOrSelf(Node& current)
+{
+    Node* lastDescendant = current.isContainerNode() ? NodeTraversal::lastWithin(toContainerNode(current)) : 0;
+    return lastDescendant ? *lastDescendant : current;
+}
+
 Node* NodeTraversal::previous(const Node& current, const Node* stayWithin)
 {
     if (current == stayWithin)

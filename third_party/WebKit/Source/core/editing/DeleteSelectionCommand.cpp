@@ -522,7 +522,7 @@ void DeleteSelectionCommand::handleGeneralDelete()
                 removeNode(node.get());
                 node = nextNode.get();
             } else {
-                Node& n = node->lastDescendantOrSelf();
+                Node& n = NodeTraversal::lastWithinOrSelf(*node);
                 if (m_downstreamEnd.deprecatedNode() == n && m_downstreamEnd.deprecatedEditingOffset() >= caretMaxOffset(&n)) {
                     removeNode(node.get());
                     node = nullptr;

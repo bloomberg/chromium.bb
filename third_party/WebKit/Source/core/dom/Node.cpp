@@ -407,15 +407,6 @@ PassRefPtrWillBeRawPtr<NodeList> Node::childNodes()
     return ensureRareData().ensureNodeLists().ensureEmptyChildNodeList(*this);
 }
 
-Node& Node::lastDescendantOrSelf() const
-{
-    Node* n = const_cast<Node*>(this);
-    while (n && n->lastChild())
-        n = n->lastChild();
-    ASSERT(n);
-    return *n;
-}
-
 Node* Node::pseudoAwarePreviousSibling() const
 {
     if (parentElement() && !previousSibling()) {

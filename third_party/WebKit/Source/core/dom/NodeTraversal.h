@@ -45,8 +45,10 @@ public:
     static Node* nextSkippingChildren(const Node&);
     static Node* nextSkippingChildren(const Node&, const Node* stayWithin);
 
-    // Does a reverse pre-order traversal to find the node that comes before the current one in document order
     static Node* lastWithin(const ContainerNode&);
+    static Node& lastWithinOrSelf(Node&);
+
+    // Does a reverse pre-order traversal to find the node that comes before the current one in document order
     static Node* previous(const Node&, const Node* stayWithin = 0);
 
     // Like previous, but skips children and starts with the next sibling.
