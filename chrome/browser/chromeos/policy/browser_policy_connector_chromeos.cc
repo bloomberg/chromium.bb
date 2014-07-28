@@ -166,6 +166,7 @@ void BrowserPolicyConnectorChromeOS::Init(
             state_keys_broker_.get(),
             device_cloud_policy_manager_->device_store(),
             device_cloud_policy_manager_,
+            chromeos::DeviceSettingsService::Get(),
             base::Bind(&BrowserPolicyConnectorChromeOS::
                            OnDeviceCloudPolicyManagerConnected,
                        base::Unretained(this))));

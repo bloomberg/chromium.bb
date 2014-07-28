@@ -37792,6 +37792,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Enrollment has been triggered, the credential screen has been shown.
   </int>
   <int value="25" label="Retried">The user retried to submit credentials.</int>
+  <int value="26" label="Store token and ID failed">
+    Enrollment failed because DM token and device ID couldn't be stored.
+  </int>
 </enum>
 
 <enum name="EnterprisePolicies" type="int">

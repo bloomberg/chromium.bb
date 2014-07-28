@@ -23,6 +23,7 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "policy/proto/device_management_backend.pb.h"
 
 namespace chromeos {
 
@@ -204,6 +205,7 @@ void EnrollmentScreen::RegisterForDevicePolicy(const std::string& token) {
       connector->GetDeviceCloudPolicyInitializer();
   CHECK(dcp_initializer);
   dcp_initializer->StartEnrollment(
+      enterprise_management::PolicyData::ENTERPRISE_MANAGED,
       connector->device_management_service(),
       token, is_auto_enrollment(), device_modes,
       base::Bind(&EnrollmentScreen::ReportEnrollmentStatus,
@@ -289,6 +291,11 @@ void EnrollmentScreen::ReportEnrollmentStatus(policy::EnrollmentStatus status) {
       return;
     case policy::EnrollmentStatus::STATUS_ROBOT_REFRESH_STORE_FAILED:
       UMAFailure(policy::kMetricEnrollmentRobotRefreshTokenStoreFailed);
+      return;
+    case policy::EnrollmentStatus::STATUS_STORE_TOKEN_AND_ID_FAILED:
+      // This error should not happen for enterprise enrollment.
+      UMAFailure(policy::kMetricEnrollmentStoreTokenAndIdFailed);
+      NOTREACHED();
       return;
     case policy::EnrollmentStatus::STATUS_SUCCESS:
       NOTREACHED();

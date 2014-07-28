@@ -349,6 +349,12 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
                                         status.validation_status())),
           true);
       return;
+    case policy::EnrollmentStatus::STATUS_STORE_TOKEN_AND_ID_FAILED:
+      // This error should not happen for enterprise enrollment.
+      ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_STORE_TOKEN_AND_ID_FAILED,
+                true);
+      NOTREACHED();
+      return;
   }
   NOTREACHED();
 }

@@ -17,11 +17,16 @@
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "policy/proto/device_management_backend.pb.h"
 
 class PrefService;
 
 namespace base {
 class SequencedTaskRunner;
+}
+
+namespace chromeos {
+class DeviceSettingsService;
 }
 
 namespace policy {
@@ -52,6 +57,7 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
       ServerBackedStateKeysBroker* state_keys_broker,
       DeviceCloudPolicyStoreChromeOS* device_store,
       DeviceCloudPolicyManagerChromeOS* manager,
+      chromeos::DeviceSettingsService* device_settings_service,
       const base::Closure& on_connected_callback);
 
   virtual ~DeviceCloudPolicyInitializer();
@@ -63,11 +69,14 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   // operation.
   // |allowed_modes| specifies acceptable DEVICE_MODE_* constants for
   // enrollment.
-  void StartEnrollment(DeviceManagementService* device_management_service,
-                       const std::string& auth_token,
-                       bool is_auto_enrollment,
-                       const AllowedDeviceModes& allowed_modes,
-                       const EnrollmentCallback& enrollment_callback);
+  // |management_mode| should be either ENTERPRISE_MANAGED or CONSUMER_MANAGED.
+  void StartEnrollment(
+      enterprise_management::PolicyData::ManagementMode management_mode,
+      DeviceManagementService* device_management_service,
+      const std::string& auth_token,
+      bool is_auto_enrollment,
+      const AllowedDeviceModes& allowed_modes,
+      const EnrollmentCallback& enrollment_callback);
 
   // Checks whether enterprise enrollment should be a regular step during OOBE.
   bool ShouldAutoStartEnrollment() const;
@@ -111,6 +120,7 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   ServerBackedStateKeysBroker* state_keys_broker_;
   DeviceCloudPolicyStoreChromeOS* device_store_;
   DeviceCloudPolicyManagerChromeOS* manager_;
+  chromeos::DeviceSettingsService* device_settings_service_;
   base::Closure on_connected_callback_;
 
   // Non-NULL if there is an enrollment operation pending.

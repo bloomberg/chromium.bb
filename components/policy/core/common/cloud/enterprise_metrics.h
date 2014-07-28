@@ -183,6 +183,8 @@ enum MetricEnrollment {
   kMetricEnrollmentTriggered = 24,
   // The user retried to submitted credentials.
   kMetricEnrollmentRetried = 25,
+  // Enrollment failed because DM token and device ID couldn't be stored.
+  kMetricEnrollmentStoreTokenAndIdFailed = 26,
 
   kMetricEnrollmentSize  // Must be the last.
 };
