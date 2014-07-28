@@ -24,6 +24,7 @@
     "mmap-gpu-transfer-ringbuffer",
     "mmap-gpu-gles2-createbuffer",
     "mmap-skia-font",
+    "mmap-partition-alloc",
     "mmap-catch-all",
     "tc-webcore-cachedmatchedproperties",
     "tc-webcore-fontcache",
@@ -193,6 +194,11 @@
     {
       "name": "mmap-skia-font",
       "stacktrace": ".*SkTypeface::openStream.*",
+      "allocator": "mmap"
+    },
+    {
+      "name": "mmap-partition-alloc",
+      "stacktrace": ".*WTF::partitionAllocSlowPath.*",
       "allocator": "mmap"
     },
     {
