@@ -75,8 +75,7 @@ def ZipBuild(options):
 def ExtractBuild(options):
   bb_annotations.PrintNamedStep('extract_build')
   RunCmd([os.path.join(SLAVE_SCRIPTS_DIR, 'extract_build.py')]
-         + bb_utils.EncodeProperties(options),
-         warning_code=1, cwd=DIR_BUILD_ROOT)
+         + bb_utils.EncodeProperties(options), cwd=DIR_BUILD_ROOT)
 
 
 def FindBugs(options):
