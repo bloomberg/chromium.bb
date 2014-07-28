@@ -627,7 +627,7 @@ def UmountDir(path, lazy=True, sudo=True, cleanup=True):
         # errno is bubbled up to us and we can detect it specifically without
         # potentially ignoring all other possible failures.
         return e.errno == errno.EBUSY
-    retry_util.GenericRetry(_retry, 9, RmDir, path, sudo=sudo, sleep=60)
+    retry_util.GenericRetry(_retry, 30, RmDir, path, sudo=sudo, sleep=60)
 
 
 def SetEnvironment(env):
@@ -959,7 +959,8 @@ class MountImageContext(object):
   def _Unmount(self, part):
     """Unmount a partition that was mounted by _Mount."""
     dest_number, dest_label = self._GetMountPointAndSymlink(part)
-    UmountDir(dest_number)
+    # Due to crosbug/358933, the RmDir call might fail. So we skip the cleanup.
+    UmountDir(dest_number, cleanup=False)
     self._mounted.remove(part)
 
     if dest_label in self._linked_labels:
@@ -968,8 +969,15 @@ class MountImageContext(object):
 
   def _CleanUp(self):
     """Unmount all mounted partitions."""
+    to_be_rmdir = []
     for part in list(self._mounted):
       self._Unmount(part)
+      dest_number, _ = self._GetMountPointAndSymlink(part)
+      to_be_rmdir.append(dest_number)
+    # Because _Unmount did not RmDir the mount points, we do that here.
+    for path in to_be_rmdir:
+      retry_util.RetryException(cros_build_lib.RunCommandError, 30,
+                                RmDir, path, sudo=True, sleep=60)
 
   def __enter__(self):
     for selector in self._part_selects:

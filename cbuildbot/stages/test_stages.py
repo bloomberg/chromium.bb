@@ -349,9 +349,9 @@ class ImageTestStage(generic_stages.BoardSpecificBuilderStage,
   option_name = 'image_test'
   config_name = 'image_test'
 
-  # Give the tests 20 minutes to run. Image tests should be really quick but
+  # Give the tests 60 minutes to run. Image tests should be really quick but
   # the umount/rmdir bug (see osutils.UmountDir) may take a long time.
-  IMAGE_TEST_TIMEOUT = 60 * 20
+  IMAGE_TEST_TIMEOUT = 60 * 60
 
   def __init__(self, *args, **kwargs):
     super(ImageTestStage, self).__init__(*args, **kwargs)

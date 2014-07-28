@@ -453,6 +453,7 @@ class MountImageTests(cros_test_lib.MockTempDirTestCase):
                      return_value=parts)
     mount_dir = self.PatchObject(osutils, 'MountDir')
     unmount_dir = self.PatchObject(osutils, 'UmountDir')
+    rmdir = self.PatchObject(osutils, 'RmDir')
     with osutils.MountImageContext('_ignored', self.tempdir, selectors):
       for _, part in parts.items():
         mount_point = os.path.join(self.tempdir, 'dir-%d' % part.number)
@@ -468,7 +469,8 @@ class MountImageTests(cros_test_lib.MockTempDirTestCase):
                            os.readlink(link))
     for _, part in parts.items():
       mount_point = os.path.join(self.tempdir, 'dir-%d' % part.number)
-      unmount_dir.assert_any_call(mount_point)
+      unmount_dir.assert_any_call(mount_point, cleanup=False)
+      rmdir.assert_any_call(mount_point, sudo=True)
       if check_links:
         link = os.path.join(self.tempdir, 'dir-%s' % part.name)
         self.assertFalse(os.path.lexists(link))
