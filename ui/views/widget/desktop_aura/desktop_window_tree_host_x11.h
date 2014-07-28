@@ -101,7 +101,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   virtual void ShowMaximizedWithBounds(
       const gfx::Rect& restored_bounds) OVERRIDE;
   virtual bool IsVisible() const OVERRIDE;
-  virtual void SetSize(const gfx::Size& size) OVERRIDE;
+  virtual void SetSize(const gfx::Size& requested_size) OVERRIDE;
   virtual void StackAtTop() OVERRIDE;
   virtual void CenterWindow(const gfx::Size& size) OVERRIDE;
   virtual void GetWindowPlacement(
@@ -154,7 +154,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual gfx::Rect GetBounds() const OVERRIDE;
-  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual void SetBounds(const gfx::Rect& requested_bounds) OVERRIDE;
   virtual gfx::Point GetLocationOnNativeScreen() const OVERRIDE;
   virtual void SetCapture() OVERRIDE;
   virtual void ReleaseCapture() OVERRIDE;
@@ -174,6 +174,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // Creates an aura::WindowEventDispatcher to contain the |content_window|,
   // along with all aura client objects that direct behavior.
   aura::WindowEventDispatcher* InitDispatcher(const Widget::InitParams& params);
+
+  // Adjusts |requested_size| to avoid the WM "feature" where setting the
+  // window size to the monitor size causes the WM to set the EWMH for
+  // fullscreen.
+  gfx::Size AdjustSize(const gfx::Size& requested_size);
 
   // Called when |xwindow_|'s _NET_WM_STATE property is updated.
   void OnWMStateUpdated();

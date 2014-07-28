@@ -30,6 +30,7 @@
 #include "ui/events/x/device_data_manager_x11.h"
 #include "ui/events/x/device_list_cache_x.h"
 #include "ui/events/x/touch_factory_x11.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/insets.h"
@@ -385,7 +386,8 @@ bool DesktopWindowTreeHostX11::IsVisible() const {
   return window_mapped_;
 }
 
-void DesktopWindowTreeHostX11::SetSize(const gfx::Size& size) {
+void DesktopWindowTreeHostX11::SetSize(const gfx::Size& requested_size) {
+  gfx::Size size = AdjustSize(requested_size);
   bool size_changed = bounds_.size() != size;
   XResizeWindow(xdisplay_, xwindow_, size.width(), size.height());
   bounds_.set_size(size);
@@ -520,6 +522,20 @@ bool DesktopWindowTreeHostX11::IsActive() const {
 }
 
 void DesktopWindowTreeHostX11::Maximize() {
+  if (HasWMSpecProperty("_NET_WM_STATE_FULLSCREEN")) {
+    // Unfullscreen the window if it is fullscreen.
+    SetWMSpecState(false,
+                   atom_cache_.GetAtom("_NET_WM_STATE_FULLSCREEN"),
+                   None);
+
+    // Resize the window so that it does not have the same size as a monitor.
+    // (Otherwise, some window managers immediately put the window back in
+    // fullscreen mode).
+    gfx::Rect adjusted_bounds(bounds_.origin(), AdjustSize(bounds_.size()));
+    if (adjusted_bounds != bounds_)
+      SetBounds(adjusted_bounds);
+  }
+
   // When we are in the process of requesting to maximize a window, we can
   // accurately keep track of our restored bounds instead of relying on the
   // heuristics that are in the PropertyNotify and ConfigureNotify handlers.
@@ -850,7 +866,9 @@ gfx::Rect DesktopWindowTreeHostX11::GetBounds() const {
   return bounds_;
 }
 
-void DesktopWindowTreeHostX11::SetBounds(const gfx::Rect& bounds) {
+void DesktopWindowTreeHostX11::SetBounds(const gfx::Rect& requested_bounds) {
+  gfx::Rect bounds(requested_bounds.origin(),
+                   AdjustSize(requested_bounds.size()));
   bool origin_changed = bounds_.origin() != bounds.origin();
   bool size_changed = bounds_.size() != bounds.size();
   XWindowChanges changes = {0};
@@ -1038,7 +1056,8 @@ void DesktopWindowTreeHostX11::InitX11Window(
     }
   }
 
-  bounds_ = params.bounds;
+  bounds_ = gfx::Rect(params.bounds.origin(),
+                      AdjustSize(params.bounds.size()));
   xwindow_ = XCreateWindow(
       xdisplay_, x_root_window_,
       bounds_.x(), bounds_.y(),
@@ -1169,6 +1188,21 @@ void DesktopWindowTreeHostX11::InitX11Window(
     SetWindowIcons(gfx::ImageSkia(), *window_icon);
   }
   CreateCompositor(GetAcceleratedWidget());
+}
+
+gfx::Size DesktopWindowTreeHostX11::AdjustSize(
+    const gfx::Size& requested_size) {
+  std::vector<gfx::Display> displays =
+      gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE)->GetAllDisplays();
+  // Compare against all monitor sizes. The window manager can move the window
+  // to whichever monitor it wants.
+  for (size_t i = 0; i < displays.size(); ++i) {
+    if (requested_size == displays[i].size()) {
+      return gfx::Size(requested_size.width() - 1,
+                       requested_size.height() - 1);
+    }
+  }
+  return requested_size;
 }
 
 void DesktopWindowTreeHostX11::OnWMStateUpdated() {
