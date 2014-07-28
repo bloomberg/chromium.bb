@@ -115,8 +115,8 @@ protected:
 private:
     virtual String nodeName() const OVERRIDE FINAL;
 
-    bool isHTMLElement() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
-    bool isStyledElement() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
+    bool isHTMLElement() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
+    bool isStyledElement() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
 
     void mapLanguageAttributeToLocale(const AtomicString&, MutableStylePropertySet*);
 

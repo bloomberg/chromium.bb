@@ -70,7 +70,7 @@ private:
     virtual String nodeName() const OVERRIDE;
     virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) OVERRIDE FINAL;
 
-    bool isTextNode() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
+    bool isTextNode() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
 
     bool needsWhitespaceRenderer();
 

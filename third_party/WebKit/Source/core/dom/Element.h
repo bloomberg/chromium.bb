@@ -561,9 +561,9 @@ private:
     void clearElementFlag(ElementFlags);
     bool hasElementFlagInternal(ElementFlags) const;
 
-    bool isElementNode() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
-    bool isDocumentFragment() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
-    bool isDocumentNode() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
+    bool isElementNode() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
+    bool isDocumentFragment() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
+    bool isDocumentNode() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
 
     void styleAttributeChanged(const AtomicString& newStyleString, AttributeModificationReason);
 

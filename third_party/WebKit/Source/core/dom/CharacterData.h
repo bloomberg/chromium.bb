@@ -76,8 +76,8 @@ private:
     virtual bool offsetInCharacters() const OVERRIDE FINAL;
     void setDataAndUpdate(const String&, unsigned offsetOfReplacedData, unsigned oldLength, unsigned newLength, RecalcStyleBehavior = DoNotRecalcStyle);
 
-    bool isContainerNode() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
-    bool isElementNode() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
+    bool isContainerNode() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
+    bool isElementNode() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
 };
 
 DEFINE_NODE_TYPE_CASTS(CharacterData, isCharacterDataNode());

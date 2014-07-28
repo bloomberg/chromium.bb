@@ -1073,9 +1073,9 @@ private:
     friend class Node;
     friend class IgnoreDestructiveWriteCountIncrementer;
 
-    bool isDocumentFragment() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
-    bool isDocumentNode() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
-    bool isElementNode() const WTF_DELETED_FUNCTION; // Hide to catch useless calls.
+    bool isDocumentFragment() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
+    bool isDocumentNode() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
+    bool isElementNode() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
 
     ScriptedAnimationController& ensureScriptedAnimationController();
     virtual SecurityContext& securityContext() OVERRIDE FINAL { return *this; }
