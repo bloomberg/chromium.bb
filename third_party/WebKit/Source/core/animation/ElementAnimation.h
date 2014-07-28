@@ -91,7 +91,11 @@ public:
 
     static WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > getAnimationPlayers(Element& element)
     {
-        WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > animationPlayers = WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> >();
+        WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > animationPlayers;
+
+        if (!element.hasActiveAnimations())
+            return animationPlayers;
+
         const AnimationPlayerCountedSet& players = element.activeAnimations()->players();
 
         for (AnimationPlayerCountedSet::const_iterator it = players.begin(); it != players.end(); ++it) {
