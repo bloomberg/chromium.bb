@@ -358,10 +358,14 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
     if line_len > extra_maxlen:
       return False
 
-    return (
-      any((url in line) for url in ('file://', 'http://', 'https://')) or
-        input_api.re.match(
-          r'.*[A-Za-z][A-Za-z_0-9]{%d,}.*' % long_symbol, line))
+    if any((url in line) for url in ('file://', 'http://', 'https://')):
+      return True
+
+    if 'url(' in line and file_extension == 'css':
+      return True
+
+    return input_api.re.match(
+        r'.*[A-Za-z][A-Za-z_0-9]{%d,}.*' % long_symbol, line)
 
   def format_error(filename, line_num, line):
     return '%s, line %s, %s chars' % (filename, line_num, len(line))

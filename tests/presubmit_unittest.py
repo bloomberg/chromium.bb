@@ -2253,6 +2253,16 @@ class CannedChecksUnittest(PresubmitTestsBase):
         None,
         presubmit.OutputApi.PresubmitPromptWarning)
 
+  def testCannedCheckLongLinesCssUrl(self):
+    check = lambda x, y, z: presubmit_canned_checks.CheckLongLines(x, y, 10, z)
+    self.ContentTest(
+        check,
+        ' url(some.png)',
+        'foo.css',
+        ' url(some.png)',
+        'foo.cc',
+        presubmit.OutputApi.PresubmitPromptWarning)
+
 
   def testCannedCheckLongLinesLongSymbol(self):
     check = lambda x, y, z: presubmit_canned_checks.CheckLongLines(x, y, 10, z)
