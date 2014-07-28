@@ -8,12 +8,15 @@
 #include "chrome/browser/extensions/api/networking_private/networking_private_delegate.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extensions_browser_client.h"
 
 namespace extensions {
 
+using content::BrowserContext;
+
 // static
 NetworkingPrivateDelegate* NetworkingPrivateDelegate::GetForBrowserContext(
-    content::BrowserContext* browser_context) {
+    BrowserContext* browser_context) {
   return NetworkingPrivateChromeOSFactory::GetForBrowserContext(
       browser_context);
 }
@@ -21,7 +24,7 @@ NetworkingPrivateDelegate* NetworkingPrivateDelegate::GetForBrowserContext(
 // static
 NetworkingPrivateChromeOS*
 NetworkingPrivateChromeOSFactory::GetForBrowserContext(
-    content::BrowserContext* browser_context) {
+    BrowserContext* browser_context) {
   return static_cast<NetworkingPrivateChromeOS*>(
       GetInstance()->GetServiceForBrowserContext(browser_context, true));
 }
@@ -42,9 +45,14 @@ NetworkingPrivateChromeOSFactory::~NetworkingPrivateChromeOSFactory() {
 }
 
 KeyedService* NetworkingPrivateChromeOSFactory::BuildServiceInstanceFor(
-    content::BrowserContext* browser_context) const {
+    BrowserContext* browser_context) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return new NetworkingPrivateChromeOS(browser_context);
+}
+
+BrowserContext* NetworkingPrivateChromeOSFactory::GetBrowserContextToUse(
+    BrowserContext* context) const {
+  return ExtensionsBrowserClient::Get()->GetOriginalContext(context);
 }
 
 bool NetworkingPrivateChromeOSFactory::ServiceIsCreatedWithBrowserContext()
