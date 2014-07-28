@@ -192,6 +192,7 @@
     { "name": "checkout.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "chrome.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "docs.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "domains.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "sites.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "spreadsheets.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "appengine.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
