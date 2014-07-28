@@ -4,17 +4,43 @@
 
 """
 This script is intended for use as a GYP_GENERATOR. It takes as input (by way of
-the generator flag file_path) the list of relative file paths to consider. If
-any target has at least one of the paths as a source (or input to an action or
-rule) then 'Found dependency' is output, otherwise 'No dependencies' is output.
+the generator flag config_path) the path of a json file that dictates the files
+and targets to search for. The following keys are supported:
+files: list of paths (relative) of the files to search for.
+targets: list of targets to search for. The target names are unqualified.
+
+The following (as JSON) is output:
+error: only supplied if there is an error.
+targets: the set of targets passed in via targets that either directly or
+  indirectly depend upon the set of paths supplied in files.
+status: indicates if any of the supplied files matched at least one target.
 """
 
 import gyp.common
 import gyp.ninja_syntax as ninja_syntax
+import json
 import os
 import posixpath
+import sys
 
 debug = False
+
+found_dependency_string = 'Found dependency'
+no_dependency_string = 'No dependencies'
+
+# MatchStatus is used indicate if and how a target depends upon the supplied
+# sources.
+# The target's sources contain one of the supplied paths.
+MATCH_STATUS_MATCHES = 1
+# The target has a dependency on another target that contains one of the
+# supplied paths.
+MATCH_STATUS_MATCHES_BY_DEPENDENCY = 2
+# The target's sources weren't in the supplied paths and none of the target's
+# dependencies depend upon a target that matched.
+MATCH_STATUS_DOESNT_MATCH = 3
+# The target doesn't contain the source, but the dependent targets have not yet
+# been visited to determine a more specific status yet.
+MATCH_STATUS_TBD = 4
 
 generator_supports_multiple_toolsets = True
 
@@ -126,20 +152,78 @@ def __ExtractSources(target, target_dict, toplevel_dir):
 
 class Target(object):
   """Holds information about a particular target:
-  sources: set of source files defined by this target. This includes inputs to
-           actions and rules.
-  deps: list of direct dependencies."""
+  deps: set of the names of direct dependent targets.
+  match_staus: one of the MatchStatus values"""
   def __init__(self):
-    self.sources = []
-    self.deps = []
+    self.deps = set()
+    self.match_status = MATCH_STATUS_TBD
 
-def __GenerateTargets(target_list, target_dicts, toplevel_dir):
+class Config(object):
+  """Details what we're looking for
+  look_for_dependency_only: if true only search for a target listing any of
+                            the files in files.
+  files: set of files to search for
+  targets: see file description for details"""
+  def __init__(self):
+    self.look_for_dependency_only = True
+    self.files = []
+    self.targets = []
+
+  def Init(self, params):
+    """Initializes Config. This is a separate method as it may raise an
+    exception if there is a parse error."""
+    generator_flags = params.get('generator_flags', {})
+    # TODO(sky): nuke file_path and look_for_dependency_only once migrate
+    # recipes.
+    file_path = generator_flags.get('file_path', None)
+    if file_path:
+      self._InitFromFilePath(file_path)
+      return
+
+    # If |file_path| wasn't specified then we look for config_path.
+    # TODO(sky): always look for config_path once migrated recipes.
+    config_path = generator_flags.get('config_path', None)
+    if not config_path:
+      return
+    self.look_for_dependency_only = False
+    try:
+      f = open(config_path, 'r')
+      config = json.load(f)
+      f.close()
+    except IOError:
+      raise Exception('Unable to open file ' + config_path)
+    except ValueError as e:
+      raise Exception('Unable to parse config file ' + config_path + str(e))
+    if not isinstance(config, dict):
+      raise Exception('config_path must be a JSON file containing a dictionary')
+    self.files = config.get('files', [])
+    # Coalesce duplicates
+    self.targets = list(set(config.get('targets', [])))
+
+  def _InitFromFilePath(self, file_path):
+    try:
+      f = open(file_path, 'r')
+      for file_name in f:
+        if file_name.endswith('\n'):
+          file_name = file_name[0:len(file_name) - 1]
+          if len(file_name):
+            self.files.append(file_name)
+      f.close()
+    except IOError:
+      raise Exception('Unable to open file', file_path)
+
+def __GenerateTargets(target_list, target_dicts, toplevel_dir, files):
   """Generates a dictionary with the key the name of a target and the value a
-  Target. |toplevel_dir| is the root of the source tree."""
+  Target. |toplevel_dir| is the root of the source tree. If the sources of
+  a target match that of |files|, then |target.matched| is set to True.
+  This returns a tuple of the dictionary and whether at least one target's
+  sources listed one of the paths in |files|."""
   targets = {}
 
   # Queue of targets to visit.
   targets_to_visit = target_list[:]
+
+  matched = False
 
   while len(targets_to_visit) > 0:
     target_name = targets_to_visit.pop()
@@ -148,35 +232,66 @@ def __GenerateTargets(target_list, target_dicts, toplevel_dir):
 
     target = Target()
     targets[target_name] = target
-    target.sources.extend(__ExtractSources(target_name,
-                                           target_dicts[target_name],
-                                           toplevel_dir))
+    sources = __ExtractSources(target_name, target_dicts[target_name],
+                               toplevel_dir)
+    for source in sources:
+      if source in files:
+        target.match_status = MATCH_STATUS_MATCHES
+        matched = True
+        break
 
     for dep in target_dicts[target_name].get('dependencies', []):
-      targets[target_name].deps.append(dep)
+      targets[target_name].deps.add(dep)
       targets_to_visit.append(dep)
 
-  return targets
+  return targets, matched
 
-def __GetFiles(params):
-  """Returns the list of files to analyze, or None if none specified."""
-  generator_flags = params.get('generator_flags', {})
-  file_path = generator_flags.get('file_path', None)
-  if not file_path:
-    return None
-  try:
-    f = open(file_path, 'r')
-    result = []
-    for file_name in f:
-      if file_name.endswith('\n'):
-        file_name = file_name[0:len(file_name) - 1]
-      if len(file_name):
-        result.append(file_name)
-    f.close()
+def _GetUnqualifiedToQualifiedMapping(all_targets, to_find):
+  """Returns a mapping (dictionary) from unqualified name to qualified name for
+  all the targets in |to_find|."""
+  result = {}
+  if not to_find:
     return result
-  except IOError:
-    print 'Unable to open file', file_path
-  return None
+  to_find = set(to_find)
+  for target_name in all_targets.keys():
+    extracted = gyp.common.ParseQualifiedTarget(target_name)
+    if len(extracted) > 1 and extracted[1] in to_find:
+      to_find.remove(extracted[1])
+      result[extracted[1]] = target_name
+      if not to_find:
+        return result
+  return result
+
+def _DoesTargetDependOn(target, all_targets):
+  """Returns true if |target| or any of its dependencies matches the supplied
+  set of paths. This updates |matches| of the Targets as it recurses.
+  target: the Target to look for.
+  all_targets: mapping from target name to Target.
+  matching_targets: set of targets looking for."""
+  if target.match_status == MATCH_STATUS_DOESNT_MATCH:
+    return False
+  if target.match_status == MATCH_STATUS_MATCHES or \
+      target.match_status == MATCH_STATUS_MATCHES_BY_DEPENDENCY:
+    return True
+  for dep_name in target.deps:
+    dep_target = all_targets[dep_name]
+    if _DoesTargetDependOn(dep_target, all_targets):
+      dep_target.match_status = MATCH_STATUS_MATCHES_BY_DEPENDENCY
+      return True
+    dep_target.match_status = MATCH_STATUS_DOESNT_MATCH
+  return False
+
+def _GetTargetsDependingOn(all_targets, possible_targets):
+  """Returns the list of targets in |possible_targets| that depend (either
+  directly on indirectly) on the matched files.
+  all_targets: mapping from target name to Target.
+  possible_targets: targets to search from."""
+  found = []
+  for target in possible_targets:
+    if _DoesTargetDependOn(all_targets[target], all_targets):
+      # possible_targets was initially unqualified, keep it unqualified.
+      found.append(gyp.common.ParseQualifiedTarget(target)[1])
+  return found
 
 def CalculateVariables(default_variables, params):
   """Calculate additional variables for use in the build (called by gyp)."""
@@ -202,26 +317,48 @@ def CalculateVariables(default_variables, params):
 
 def GenerateOutput(target_list, target_dicts, data, params):
   """Called by gyp as the final stage. Outputs results."""
-  files = __GetFiles(params)
-  if not files:
-    print 'Must specify files to analyze via file_path generator flag'
-    return
+  config = Config()
+  try:
+    config.Init(params)
+    if not config.files:
+      if config.look_for_dependency_only:
+        print 'Must specify files to analyze via file_path generator flag'
+        return
+      raise Exception('Must specify files to analyze via config_path generator '
+                      'flag')
 
-  toplevel_dir = os.path.abspath(params['options'].toplevel_dir)
-  if os.sep == '\\' and os.altsep == '/':
-    toplevel_dir = toplevel_dir.replace('\\', '/')
-  if debug:
-    print 'toplevel_dir', toplevel_dir
-  targets = __GenerateTargets(target_list, target_dicts, toplevel_dir)
+    toplevel_dir = os.path.abspath(params['options'].toplevel_dir)
+    if os.sep == '\\' and os.altsep == '/':
+      toplevel_dir = toplevel_dir.replace('\\', '/')
+    if debug:
+      print 'toplevel_dir', toplevel_dir
 
-  files_set = frozenset(files)
-  found_in_all_sources = 0
-  for target_name, target in targets.iteritems():
-    sources = files_set.intersection(target.sources)
-    if len(sources):
-      print 'Found dependency'
-      if debug:
-        print 'Found dependency in', target_name, target.sources
+    all_targets, matched = __GenerateTargets(target_list, target_dicts,
+                                             toplevel_dir,
+                                             frozenset(config.files))
+
+    # Set of targets that refer to one of the files.
+    if config.look_for_dependency_only:
+      print found_dependency_string if matched else no_dependency_string
       return
 
-  print 'No dependencies'
+    if matched:
+      unqualified_mapping = _GetUnqualifiedToQualifiedMapping(
+          all_targets, config.targets)
+      if len(unqualified_mapping) != len(config.targets):
+        not_found = []
+        for target in config.targets:
+          if not target in unqualified_mapping:
+            not_found.append(target)
+        raise Exception('Unable to find all targets: ' + str(not_found))
+      qualified_targets = [unqualified_mapping[x] for x in config.targets]
+      output_targets = _GetTargetsDependingOn(all_targets, qualified_targets)
+    else:
+      output_targets = []
+
+    print json.dumps(
+      {'targets': output_targets,
+       'status': found_dependency_string if matched else no_dependency_string })
+
+  except Exception as e:
+    print json.dumps({'error': str(e)})

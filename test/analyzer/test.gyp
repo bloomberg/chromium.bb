@@ -53,5 +53,31 @@
         },
       ],
     },
+    {
+      'target_name': 'exe2',
+      'type': 'executable',
+      'sources': [
+        'exe2.c',
+      ],
+    },
+    {
+      'target_name': 'exe3',
+      'type': 'executable',
+      'dependencies': [
+        'subdir/subdir.gyp:foo',
+        'subdir/subdir.gyp:subdir2a',
+      ],
+      'sources': [
+        'exe3.c',
+      ],
+    },
+    {
+      'target_name': 'all',
+      'type': 'executable',
+      'dependencies': [
+        'exe',
+        'exe3',
+      ],
+    },
   ],
 }
