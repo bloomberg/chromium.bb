@@ -18,6 +18,10 @@
 #include "ui/gfx/size.h"
 #include "ui/gfx/size_conversions.h"
 
+#if DCHECK_IS_ON
+#include "ui/compositor/layer_animator.h"
+#endif
+
 namespace ui {
 
 float GetDeviceScaleFactor(const Layer* layer) {
@@ -72,7 +76,7 @@ gfx::Rect ConvertRectToPixel(const Layer* layer,
                  gfx::ScaleSize(rect_in_dip.size(), scale)));
 }
 
-#if !defined(NDEBUG)
+#if DCHECK_IS_ON
 namespace {
 
 void CheckSnapped(float snapped_position) {
@@ -103,13 +107,20 @@ void SnapLayerToPhysicalPixelBoundary(ui::Layer* snapped_layer,
   gfx::Vector2dF fudge = view_offset_snapped - view_offset;
   fudge.Scale(1.0 / scale_factor);
   layer_to_snap->SetSubpixelPositionOffset(fudge);
-#if !defined(NDEBUG)
-  gfx::Point p;
-  Layer::ConvertPointToLayer(layer_to_snap->parent(), snapped_layer, &p);
-  cc::Layer* cc_layer = layer_to_snap->cc_layer();
-  gfx::PointF origin = cc_layer->position();
-  CheckSnapped((p.x() + origin.x()) * scale_factor);
-  CheckSnapped((p.y() + origin.y()) * scale_factor);
+#if DCHECK_IS_ON
+  gfx::Point layer_offset;
+  gfx::PointF origin;
+  Layer::ConvertPointToLayer(
+      layer_to_snap->parent(), snapped_layer, &layer_offset);
+  if (layer_to_snap->GetAnimator()->is_animating()) {
+    origin = layer_to_snap->GetTargetBounds().origin() +
+             layer_to_snap->subpixel_position_offset();
+  } else {
+    cc::Layer* cc_layer = layer_to_snap->cc_layer();
+    origin = cc_layer->position();
+  }
+  CheckSnapped((layer_offset.x() + origin.x()) * scale_factor);
+  CheckSnapped((layer_offset.y() + origin.y()) * scale_factor);
 #endif
 }
 
