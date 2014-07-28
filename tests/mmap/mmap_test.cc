@@ -226,11 +226,23 @@ bool test3() {
   void  *res;
 
   printf("test3\n");
+  if (NONSFI_MODE) {
+    /*
+     * This test checks a security property of the NaCl TCB.  However, when
+     * calling Linux's mmap() syscall directly, we can't necessarily expect
+     * a specific error value for this case.
+     */
+    printf("test3 skipped\n");
+    return true;
+  }
+
   res = mmap(static_cast<void*>(0), (size_t) (1 << 16),
              PROT_READ, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, 0, 0);
   printf("res = %p\n", res);
-  const int kExpectedErrno = NONSFI_MODE ? EPERM : EINVAL;
-  if (MAP_FAILED == res && kExpectedErrno == errno) {
+  if (MAP_FAILED == res) {
+    printf("errno = %d\n", errno);
+  }
+  if (MAP_FAILED == res && EINVAL == errno) {
     printf("mmap okay\n");
     return true;
   }
