@@ -63,7 +63,7 @@ GYPBUILD_DIR = 'gypbuild'
 
 options = None
 
-  # Map of: ToolchainName: (PackageName, SDKDir).
+# Map of: ToolchainName: (PackageName, SDKDir).
 TOOLCHAIN_PACKAGE_MAP = {
     'newlib': ('nacl_x86_newlib', '%(platform)s_x86_newlib'),
     'bionic': ('nacl_arm_bionic', '%(platform)s_arm_bionic'),
@@ -406,7 +406,7 @@ def GypNinjaInstall(pepperdir, toolchains):
   InstallFiles(ninja_out_dir, os.path.join(pepperdir, 'tools'), tools_files)
 
   # Add ARM binaries
-  if platform == 'linux':
+  if platform == 'linux' and not options.no_arm_trusted:
     tools_files = [
       ['irt_core_newlib_arm.nexe', 'irt_core_arm.nexe'],
       ['irt_core_newlib_arm.nexe', 'irt_core_arm.nexe'],
@@ -525,6 +525,8 @@ def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets,
           'arm_float_abi=hard']
       if force_arm_gcc:
         gyp_defines.append('nacl_enable_arm_gcc=1')
+      if options.no_arm_trusted:
+        gyp_defines.append('disable_arm_trusted=1')
   if getos.GetPlatform() == 'mac':
     gyp_defines.append('clang=1')
 
@@ -888,6 +890,8 @@ def main(args):
       action='store_true')
   parser.add_option('--mac-sdk',
       help='Set the mac-sdk (e.g. 10.6) to use when building with ninja.')
+  parser.add_option('--no-arm-trusted', action='store_true',
+      help='Disable building of ARM trusted components (sel_ldr, etc).')
 
   # To setup bash completion for this command first install optcomplete
   # and then add this line to your .bashrc:
@@ -981,6 +985,7 @@ def main(args):
       oshelpers.Copy(['-r', srcdir, bionicdir])
     else:
       BuildStepUntarToolchains(pepperdir, toolchains)
+
     BuildStepBuildToolchains(pepperdir, toolchains)
 
   BuildStepUpdateHelpers(pepperdir, True)
