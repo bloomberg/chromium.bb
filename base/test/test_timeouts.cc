@@ -17,7 +17,9 @@ namespace {
 // ASan/TSan/MSan instrument each memory access. This may slow the execution
 // down significantly.
 #if defined(MEMORY_SANITIZER)
-static const int kTimeoutMultiplier = 4;
+// For MSan the slowdown depends heavily on the value of msan_track_origins GYP
+// flag. The multiplier below corresponds to msan_track_origins=1.
+static const int kTimeoutMultiplier = 6;
 #elif defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || \
     defined(SYZYASAN)
 static const int kTimeoutMultiplier = 2;
