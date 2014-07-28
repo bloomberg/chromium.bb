@@ -223,7 +223,7 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
     bool shouldClearTypingStyle = options & ClearTypingStyle;
     EUserTriggered userTriggered = selectionOptionsToUserTriggered(options);
 
-    VisibleSelection s = newSelection;
+    VisibleSelection s = validateSelection(newSelection);
     if (shouldAlwaysUseDirectionalSelection(m_frame))
         s.setIsDirectional(true);
 
@@ -1846,6 +1846,28 @@ void FrameSelection::didChangeVisibleSelection()
     m_logicalRange = nullptr;
     m_selection.clearChangeObserver();
     m_observingVisibleSelection = false;
+}
+
+VisibleSelection FrameSelection::validateSelection(const VisibleSelection& selection)
+{
+    if (!m_frame || selection.isNone())
+        return selection;
+
+    Position base = selection.base();
+    Position extent = selection.extent();
+    bool isBaseValid = base.document() == m_frame->document();
+    bool isExtentValid = extent.document() == m_frame->document();
+
+    if (isBaseValid && isExtentValid)
+        return selection;
+
+    VisibleSelection newSelection;
+    if (isBaseValid) {
+        newSelection.setWithoutValidation(base, base);
+    } else if (isExtentValid) {
+        newSelection.setWithoutValidation(extent, extent);
+    }
+    return newSelection;
 }
 
 void FrameSelection::startObservingVisibleSelectionChange()

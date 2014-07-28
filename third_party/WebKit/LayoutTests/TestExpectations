@@ -96,6 +96,7 @@ crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-
 
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/elements-001.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/non-element-nodes-001.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-004.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/events/event-dispatch/test-001.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/events/event-dispatch/test-003.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/events/event-retargeting/test-004.html [ Failure ]
@@ -116,6 +117,7 @@ crbug.com/330083 w3c/web-platform-tests/shadow-dom/styles/test-003.html [ Failur
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/styles/test-010.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-003.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-004.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-002.html [ Failure ]
 
 # Requires subpixel precision for offset/client/scroll properties
 crbug.com/360889 fast/sub-pixel/cssom-subpixel-precision.html [ ImageOnlyFailure ]
