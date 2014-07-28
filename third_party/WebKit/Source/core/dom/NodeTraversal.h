@@ -76,7 +76,7 @@ private:
 template <class NodeType>
 inline Node* NodeTraversal::traverseNextTemplate(NodeType& current)
 {
-    if (current.firstChild())
+    if (current.hasChildren())
         return current.firstChild();
     if (current.nextSibling())
         return current.nextSibling();
@@ -86,7 +86,7 @@ inline Node* NodeTraversal::traverseNextTemplate(NodeType& current)
 template <class NodeType>
 inline Node* NodeTraversal::traverseNextTemplate(NodeType& current, const Node* stayWithin)
 {
-    if (current.firstChild())
+    if (current.hasChildren())
         return current.firstChild();
     if (current == stayWithin)
         return 0;

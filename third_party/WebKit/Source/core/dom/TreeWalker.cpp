@@ -82,7 +82,7 @@ Node* TreeWalker::firstChild(ExceptionState& exceptionState)
                 m_current = node.release();
                 return m_current.get();
             case NodeFilter::FILTER_SKIP:
-                if (node->firstChild()) {
+                if (node->hasChildren()) {
                     node = node->firstChild();
                     continue;
                 }
@@ -189,7 +189,7 @@ Node* TreeWalker::nextSibling(ExceptionState& exceptionState)
                     m_current = sibling.release();
                     return m_current.get();
                 case NodeFilter::FILTER_SKIP:
-                    if (sibling->firstChild()) {
+                    if (sibling->hasChildren()) {
                         sibling = sibling->firstChild();
                         node = sibling;
                         continue;

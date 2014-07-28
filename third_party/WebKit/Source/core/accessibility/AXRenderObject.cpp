@@ -749,7 +749,7 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
 
     // Don't ignore generic focusable elements like <div tabindex=0>
     // unless they're completely empty, with no children.
-    if (isGenericFocusableElement() && node->firstChild())
+    if (isGenericFocusableElement() && node->hasChildren())
         return false;
 
     if (!ariaAccessibilityDescription().isEmpty())

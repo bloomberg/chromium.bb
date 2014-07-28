@@ -432,7 +432,7 @@ Node* Node::pseudoAwareNextSibling() const
 {
     if (parentElement() && !nextSibling()) {
         Element* parent = parentElement();
-        if (isBeforePseudoElement() && parent->firstChild())
+        if (isBeforePseudoElement() && parent->hasChildren())
             return parent->firstChild();
         if (!isAfterPseudoElement())
             return parent->pseudoElement(AFTER);
@@ -1057,7 +1057,7 @@ Node *Node::previousNodeConsideringAtomicNodes() const
 
 Node *Node::nextNodeConsideringAtomicNodes() const
 {
-    if (!isAtomicNode(this) && firstChild())
+    if (!isAtomicNode(this) && hasChildren())
         return firstChild();
     if (nextSibling())
         return nextSibling();

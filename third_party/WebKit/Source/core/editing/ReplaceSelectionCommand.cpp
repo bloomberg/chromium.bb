@@ -148,9 +148,7 @@ ReplacementFragment::ReplacementFragment(Document* document, DocumentFragment* f
 {
     if (!m_document)
         return;
-    if (!m_fragment)
-        return;
-    if (!m_fragment->firstChild())
+    if (!m_fragment || !m_fragment->hasChildren())
         return;
 
     RefPtrWillBeRawPtr<Element> editableRoot = selection.rootEditableElement();
@@ -192,7 +190,7 @@ ReplacementFragment::ReplacementFragment(Document* document, DocumentFragment* f
         restoreAndRemoveTestRenderingNodesToFragment(holder.get());
 
         m_fragment = createFragmentFromText(selection.toNormalizedRange().get(), evt->text());
-        if (!m_fragment->firstChild())
+        if (!m_fragment->hasChildren())
             return;
 
         holder = insertFragmentForTestRendering(editableRoot.get());
@@ -204,7 +202,7 @@ ReplacementFragment::ReplacementFragment(Document* document, DocumentFragment* f
 
 bool ReplacementFragment::isEmpty() const
 {
-    return (!m_fragment || !m_fragment->firstChild()) && !m_hasInterchangeNewlineAtStart && !m_hasInterchangeNewlineAtEnd;
+    return (!m_fragment || !m_fragment->hasChildren()) && !m_hasInterchangeNewlineAtStart && !m_hasInterchangeNewlineAtEnd;
 }
 
 Node *ReplacementFragment::firstChild() const
@@ -548,7 +546,7 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
         // WebKit used to not add display: inline and float: none on copy.
         // Keep this code around for backward compatibility
         if (isLegacyAppleStyleSpan(element)) {
-            if (!element->firstChild()) {
+            if (!element->hasChildren()) {
                 insertedNodes.willRemoveNodePreservingChildren(*element);
                 removeNodePreservingChildren(element);
                 continue;
@@ -669,7 +667,7 @@ void ReplaceSelectionCommand::moveNodeOutOfAncestor(PassRefPtrWillBeRawPtr<Node>
         removeNode(node);
         insertNodeBefore(node, nodeToSplitTo);
     }
-    if (!ancestor->firstChild())
+    if (!ancestor->hasChildren())
         removeNode(ancestor.release());
 }
 
@@ -802,7 +800,7 @@ void ReplaceSelectionCommand::handleStyleSpans(InsertedNodes& insertedNodes)
     // with block styles by the editing engine used to style them.  WebKit doesn't do this, but others might.
     style->removeBlockProperties();
 
-    if (style->isEmpty() || !wrappingStyleSpan->firstChild()) {
+    if (style->isEmpty() || !wrappingStyleSpan->hasChildren()) {
         insertedNodes.willRemoveNodePreservingChildren(*wrappingStyleSpan);
         removeNodePreservingChildren(wrappingStyleSpan);
     } else {

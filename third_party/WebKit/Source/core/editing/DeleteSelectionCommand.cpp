@@ -342,7 +342,7 @@ void DeleteSelectionCommand::removeNode(PassRefPtrWillBeRawPtr<Node> node, Shoul
         // If a node is not in both the start and end editable roots, remove it only if its inside an editable region.
         if (!node->parentNode()->hasEditableStyle()) {
             // Don't remove non-editable atomic nodes.
-            if (!node->firstChild())
+            if (!node->hasChildren())
                 return;
             // Search this non-editable region for editable regions to empty.
             RefPtrWillBeRawPtr<Node> child = node->firstChild();
@@ -624,7 +624,7 @@ void DeleteSelectionCommand::mergeParagraphs()
     }
 
     // We need to merge into m_upstreamStart's block, but it's been emptied out and collapsed by deletion.
-    if (!mergeDestination.deepEquivalent().deprecatedNode() || (!mergeDestination.deepEquivalent().deprecatedNode()->isDescendantOf(enclosingBlock(m_upstreamStart.containerNode())) && (!mergeDestination.deepEquivalent().anchorNode()->firstChild() || !m_upstreamStart.containerNode()->firstChild())) || (m_startsAtEmptyLine && mergeDestination != startOfParagraphToMove)) {
+    if (!mergeDestination.deepEquivalent().deprecatedNode() || (!mergeDestination.deepEquivalent().deprecatedNode()->isDescendantOf(enclosingBlock(m_upstreamStart.containerNode())) && (!mergeDestination.deepEquivalent().anchorNode()->hasChildren() || !m_upstreamStart.containerNode()->hasChildren())) || (m_startsAtEmptyLine && mergeDestination != startOfParagraphToMove)) {
         insertNodeAt(createBreakElement(document()).get(), m_upstreamStart);
         mergeDestination = VisiblePosition(m_upstreamStart);
     }

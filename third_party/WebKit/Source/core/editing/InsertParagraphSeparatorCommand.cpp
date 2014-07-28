@@ -278,7 +278,7 @@ void InsertParagraphSeparatorCommand::doApply()
             }
         } else if (isFirstInBlock && nestNewBlock) {
             // startBlock should always have children, otherwise isLastInBlock would be true and it's handled above.
-            ASSERT(startBlock->firstChild());
+            ASSERT(startBlock->hasChildren());
             refNode = startBlock->firstChild();
         }
         else if (insertionPosition.deprecatedNode() == startBlock && nestNewBlock) {

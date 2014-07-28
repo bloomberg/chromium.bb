@@ -386,7 +386,7 @@ void TypingCommand::insertParagraphSeparatorInQuotedContent()
 bool TypingCommand::makeEditableRootEmpty()
 {
     Element* root = endingSelection().rootEditableElement();
-    if (!root || !root->firstChild())
+    if (!root || !root->hasChildren())
         return false;
 
     if (root->firstChild() == root->lastChild()) {

@@ -458,14 +458,14 @@ PassRefPtrWillBeRawPtr<Range> HTMLTextFormControlElement::selection() const
     if (!innerText)
         return nullptr;
 
-    if (!innerText->firstChild())
+    if (!innerText->hasChildren())
         return Range::create(document(), innerText, 0, innerText, 0);
 
     int offset = 0;
     Node* startNode = 0;
     Node* endNode = 0;
     for (Node* node = innerText->firstChild(); node; node = NodeTraversal::next(*node, innerText)) {
-        ASSERT(!node->firstChild());
+        ASSERT(!node->hasChildren());
         ASSERT(node->isTextNode() || isHTMLBRElement(*node));
         int length = node->isTextNode() ? lastOffsetInNode(node) : 1;
 

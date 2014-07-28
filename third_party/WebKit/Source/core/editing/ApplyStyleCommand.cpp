@@ -1448,7 +1448,7 @@ void ApplyStyleCommand::applyInlineStyleChange(PassRefPtrWillBeRawPtr<Node> pass
             if (isHTMLSpanElement(*containerElement) || (styleContainerIsNotSpan && containerElement->hasChildren()))
                 styleContainer = toHTMLElement(container);
         }
-        if (!container->firstChild())
+        if (!container->hasChildren())
             break;
         startNode = container->firstChild();
         endNode = container->lastChild();

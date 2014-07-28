@@ -816,7 +816,7 @@ bool isPlainTextMarkup(Node* node)
     if (!isHTMLDivElement(*element) || !element->hasAttributes())
         return false;
 
-    if (element->hasOneChild() && (element->firstChild()->isTextNode() || (element->firstChild()->firstChild())))
+    if (element->hasOneChild() && (element->firstChild()->isTextNode() || element->firstChild()->hasChildren()))
         return true;
 
     return element->hasChildCount(2) && isTabSpanTextNode(element->firstChild()->firstChild()) && element->lastChild()->isTextNode();

@@ -146,9 +146,9 @@ Node* DOMPatchSupport::patchNode(Node* node, const String& markup, ExceptionStat
     for (Node* child = parentNode->firstChild(); child != node; child = child->nextSibling())
         newList.append(createDigest(child, 0));
     for (Node* child = fragment->firstChild(); child; child = child->nextSibling()) {
-        if (isHTMLHeadElement(*child) && !child->firstChild() && markupCopy.find("</head>") == kNotFound)
+        if (isHTMLHeadElement(*child) && !child->hasChildren() && markupCopy.find("</head>") == kNotFound)
             continue; // HTML5 parser inserts empty <head> tag whenever it parses <body>
-        if (isHTMLBodyElement(*child) && !child->firstChild() && markupCopy.find("</body>") == kNotFound)
+        if (isHTMLBodyElement(*child) && !child->hasChildren() && markupCopy.find("</body>") == kNotFound)
             continue; // HTML5 parser inserts empty <body> tag whenever it parses </head>
         newList.append(createDigest(child, &m_unusedNodesMap));
     }
