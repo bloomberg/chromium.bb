@@ -11,10 +11,10 @@
 #include "ash/wm/window_state.h"
 #include "base/i18n/rtl.h"
 #include "grit/ash_resources.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/gestures/gesture_configuration.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
@@ -159,7 +159,7 @@ class FrameSizeButtonTest : public AshTestBase {
 // Tests that pressing the left mouse button or tapping down on the size button
 // puts the button into the pressed state.
 TEST_F(FrameSizeButtonTest, PressedState) {
-  aura::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseTo(CenterPointInScreen(size_button()));
   generator.PressLeftButton();
   EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
@@ -180,7 +180,7 @@ TEST_F(FrameSizeButtonTest, PressedState) {
 TEST_F(FrameSizeButtonTest, ClickSizeButtonTogglesMaximize) {
   EXPECT_FALSE(window_state()->IsMaximized());
 
-  aura::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseTo(CenterPointInScreen(size_button()));
   generator.ClickLeftButton();
   RunAllPendingInMessageLoop();
@@ -207,7 +207,7 @@ TEST_F(FrameSizeButtonTest, ButtonDrag) {
 
   // 1) Test by dragging the mouse.
   // Snap right.
-  aura::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseTo(CenterPointInScreen(size_button()));
   generator.PressLeftButton();
   generator.MoveMouseTo(CenterPointInScreen(close_button()));
@@ -264,7 +264,7 @@ TEST_F(FrameSizeButtonTest, ButtonDrag) {
 TEST_F(FrameSizeButtonTest, SnapLeftOvershootMinimize) {
   EXPECT_TRUE(window_state()->IsNormalStateType());
 
-  aura::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseTo(CenterPointInScreen(size_button()));
 
   generator.PressLeftButton();
@@ -281,7 +281,7 @@ TEST_F(FrameSizeButtonTest, SnapLeftOvershootMinimize) {
 TEST_F(FrameSizeButtonTest, RightMouseButton) {
   EXPECT_TRUE(window_state()->IsNormalStateType());
 
-  aura::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseTo(CenterPointInScreen(size_button()));
   generator.PressRightButton();
   generator.ReleaseRightButton();
@@ -300,7 +300,7 @@ TEST_F(FrameSizeButtonTest, ResetButtonsAfterClick) {
 
   // Pressing the size button should result in the size button being pressed and
   // the minimize and close button icons changing.
-  aura::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseTo(CenterPointInScreen(size_button()));
   generator.PressLeftButton();
   EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->state());
@@ -371,7 +371,7 @@ TEST_F(FrameSizeButtonTest, SizeButtonPressedWhenSnapButtonHovered) {
 
   // Pressing the size button should result in the size button being pressed and
   // the minimize and close button icons changing.
-  aura::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseTo(CenterPointInScreen(size_button()));
   generator.PressLeftButton();
   EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->state());
@@ -441,7 +441,7 @@ TEST_F(FrameSizeButtonTestRTL, ButtonDrag) {
 
   // Pressing the size button should swap the icons of the minimize and close
   // buttons to icons for snapping right and for snapping left respectively.
-  aura::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseTo(CenterPointInScreen(size_button()));
   generator.PressLeftButton();
   EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->state());

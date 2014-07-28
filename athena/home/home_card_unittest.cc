@@ -8,7 +8,7 @@
 #include "athena/activity/public/activity_manager.h"
 #include "athena/test/athena_test_base.h"
 #include "athena/wm/public/window_manager.h"
-#include "ui/aura/test/event_generator.h"
+#include "ui/events/test/event_generator.h"
 
 namespace athena {
 
@@ -62,7 +62,7 @@ TEST_F(HomeCardTest, AppSelection) {
 TEST_F(HomeCardTest, Accelerators) {
   EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
 
-  aura::test::EventGenerator generator(root_window());
+  ui::test::EventGenerator generator(root_window());
   generator.PressKey(ui::VKEY_L, ui::EF_CONTROL_DOWN);
   EXPECT_EQ(HomeCard::VISIBLE_CENTERED, HomeCard::Get()->GetState());
 

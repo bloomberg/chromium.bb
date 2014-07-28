@@ -15,10 +15,10 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/widget/widget.h"
@@ -389,7 +389,7 @@ TEST_F(FocusCyclerTest, CycleFocusThroughWindowWithPanes) {
   // Pressing "Escape" while on the status area should
   // deactivate it, and activate the browser window.
   aura::Window* root = Shell::GetPrimaryRootWindow();
-  aura::test::EventGenerator event_generator(root, root);
+  ui::test::EventGenerator event_generator(root, root);
   event_generator.PressKey(ui::VKEY_ESCAPE, 0);
   EXPECT_TRUE(wm::IsActiveWindow(browser_window));
   EXPECT_EQ(focus_manager->GetFocusedView(), view1);

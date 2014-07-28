@@ -11,9 +11,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/app_list_view.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/events/test/event_generator.h"
 
 namespace ash {
 
@@ -86,8 +86,7 @@ TEST_P(AppListControllerTest, ClickOutsideBubbleClosesBubble) {
 
   aura::Window* app_window = shell->GetAppListWindow();
   ASSERT_TRUE(app_window);
-  aura::test::EventGenerator generator(shell->GetPrimaryRootWindow(),
-                                       app_window);
+  ui::test::EventGenerator generator(shell->GetPrimaryRootWindow(), app_window);
   // Click on the bubble itself. The bubble should remain visible.
   generator.ClickLeftButton();
   EXPECT_TRUE(shell->GetAppListTargetVisibility());
@@ -112,7 +111,7 @@ TEST_P(AppListControllerTest, TapOutsideBubbleClosesBubble) {
   ASSERT_TRUE(app_window);
   gfx::Rect app_window_bounds = app_window->GetBoundsInRootWindow();
 
-  aura::test::EventGenerator generator(shell->GetPrimaryRootWindow());
+  ui::test::EventGenerator generator(shell->GetPrimaryRootWindow());
   // Click on the bubble itself. The bubble should remain visible.
   generator.GestureTapAt(app_window_bounds.CenterPoint());
   EXPECT_TRUE(shell->GetAppListTargetVisibility());

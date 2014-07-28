@@ -6,7 +6,7 @@
 
 #include "athena/input/public/input_manager.h"
 #include "athena/test/athena_test_base.h"
-#include "ui/aura/test/event_generator.h"
+#include "ui/events/test/event_generator.h"
 
 namespace athena {
 namespace {
@@ -71,7 +71,7 @@ TEST_F(InputManagerTest, Basic) {
   accelerator_manager->RegisterAccelerators(
       data, arraysize(data), &test_handler);
 
-  aura::test::EventGenerator generator(root_window());
+  ui::test::EventGenerator generator(root_window());
   generator.PressKey(ui::VKEY_A, ui::EF_NONE);
   EXPECT_EQ(kInvalidCommandId, test_handler.GetFiredCommandIdAndReset());
 

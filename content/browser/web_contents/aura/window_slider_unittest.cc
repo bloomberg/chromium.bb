@@ -8,7 +8,6 @@
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/test/aura_test_base.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -17,6 +16,7 @@
 #include "ui/compositor/test/layer_animator_test_controller.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/frame_time.h"
 
 namespace content {
@@ -214,7 +214,7 @@ TEST_F(WindowSliderTest, WindowSlideUsingGesture) {
   window->SetBounds(gfx::Rect(0, 0, 400, 400));
   WindowSliderDelegateTest slider_delegate;
 
-  aura::test::EventGenerator generator(root_window());
+  ui::test::EventGenerator generator(root_window());
 
   // Generate a horizontal overscroll.
   WindowSlider* slider =
@@ -307,7 +307,7 @@ TEST_F(WindowSliderTest, WindowSlideIsCancelledOnEvent) {
   new WindowSlider(&slider_delegate, root_window(), window.get());
   for (int i = 0; events[i]; ++i) {
     // Generate a horizontal overscroll.
-    aura::test::EventGenerator generator(root_window());
+    ui::test::EventGenerator generator(root_window());
     generator.GestureScrollSequenceWithCallback(
         gfx::Point(10, 10),
         gfx::Point(80, 10),
@@ -349,7 +349,7 @@ TEST_F(WindowSliderTest, WindowSlideInterruptedThenContinues) {
                                  gfx::Point(55, 10),
                                  0, 0);
 
-  aura::test::EventGenerator generator(root_window());
+  ui::test::EventGenerator generator(root_window());
 
   // Start the scroll sequence. Scroll forward so that |window|'s layer is the
   // one animating.
@@ -449,7 +449,7 @@ TEST_F(WindowSliderTest, OwnerWindowChangesDuringWindowSlide) {
 
   // Generate a horizontal scroll, and change the owner in the middle of the
   // scroll.
-  aura::test::EventGenerator generator(root_window());
+  ui::test::EventGenerator generator(root_window());
   aura::Window* old_window = window.get();
   generator.GestureScrollSequenceWithCallback(
       gfx::Point(10, 10),
@@ -481,7 +481,7 @@ TEST_F(WindowSliderTest, NoSlideWhenLayerCantBeCreated) {
   WindowSlider* slider =
       new WindowSlider(&slider_delegate, root_window(), window.get());
 
-  aura::test::EventGenerator generator(root_window());
+  ui::test::EventGenerator generator(root_window());
 
   // No slide in progress should be reported during scroll since the layer
   // wasn't created.
@@ -527,7 +527,7 @@ TEST_F(WindowSliderTest, OwnerIsDestroyedOnSliderDestroy) {
   EXPECT_EQ(child_windows + 1, root_window()->children().size());
 
   WindowSliderDeleteOwnerOnDestroy slider_delegate(window);
-  aura::test::EventGenerator generator(root_window());
+  ui::test::EventGenerator generator(root_window());
 
   // Generate a horizontal overscroll.
   scoped_ptr<WindowSlider> slider(
@@ -558,7 +558,7 @@ TEST_F(WindowSliderTest, OwnerIsDestroyedOnSlideComplete) {
   EXPECT_EQ(child_windows + 1, root_window()->children().size());
 
   WindowSliderDeleteOwnerOnComplete slider_delegate(window);
-  aura::test::EventGenerator generator(root_window());
+  ui::test::EventGenerator generator(root_window());
 
   // Generate a horizontal overscroll.
   new WindowSlider(&slider_delegate, root_window(), window);
@@ -595,7 +595,7 @@ TEST_F(WindowSliderTest, SwipeDuringSwipeAnimation) {
   animator->set_disable_timer_for_test(true);
   ui::LayerAnimatorTestController test_controller(animator);
 
-  aura::test::EventGenerator generator(root_window());
+  ui::test::EventGenerator generator(root_window());
 
   // Swipe forward so that |window|'s layer is the one animating.
   generator.GestureScrollSequence(

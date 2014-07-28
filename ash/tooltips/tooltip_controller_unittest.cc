@@ -6,10 +6,10 @@
 #include "ash/test/ash_test_base.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/env.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/point.h"
 #include "ui/views/corewm/tooltip_controller.h"
@@ -105,7 +105,7 @@ TEST_F(TooltipControllerTest, HideTooltipWhenCursorHidden) {
   EXPECT_EQ(base::string16(), helper_->GetTooltipText());
   EXPECT_EQ(NULL, helper_->GetTooltipWindow());
 
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.MoveMouseRelativeTo(widget->GetNativeView(),
                                 view->bounds().CenterPoint());
   base::string16 expected_tooltip = base::ASCIIToUTF16("Tooltip Text");
@@ -148,7 +148,7 @@ TEST_F(TooltipControllerTest, TooltipsOnMultiDisplayShouldNotCrash) {
   EXPECT_EQ(widget2->GetNativeView()->GetRootWindow(), root_windows[1]);
 
   // Show tooltip on second display.
-  aura::test::EventGenerator generator(root_windows[1]);
+  ui::test::EventGenerator generator(root_windows[1]);
   generator.MoveMouseRelativeTo(widget2->GetNativeView(),
                                 view2->bounds().CenterPoint());
   helper_->FireTooltipTimer();
@@ -167,7 +167,7 @@ TEST_F(TooltipControllerTest, TooltipsOnMultiDisplayShouldNotCrash) {
 
   // The tooltip should create a new aura window for itself, so we should still
   // be able to show tooltips on the primary display.
-  aura::test::EventGenerator generator1(root_windows[0]);
+  ui::test::EventGenerator generator1(root_windows[0]);
   generator1.MoveMouseRelativeTo(widget1->GetNativeView(),
                                  view1->bounds().CenterPoint());
   helper_->FireTooltipTimer();

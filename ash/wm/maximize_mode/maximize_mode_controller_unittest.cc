@@ -14,8 +14,8 @@
 #include "ash/test/test_screenshot_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/test/test_volume_control_delegate.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/events/event_handler.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/vector3d_f.h"
 #include "ui/message_center/message_center.h"
 
@@ -270,7 +270,7 @@ TEST_F(MaximizeModeControllerTest, Screenshot) {
   Shell::GetInstance()->lock_state_controller()->SetDelegate(
       new test::TestLockStateControllerDelegate);
   aura::Window* root = Shell::GetPrimaryRootWindow();
-  aura::test::EventGenerator event_generator(root, root);
+  ui::test::EventGenerator event_generator(root, root);
   test::TestScreenshotDelegate* delegate = GetScreenshotDelegate();
   delegate->set_can_take_screenshot(true);
 

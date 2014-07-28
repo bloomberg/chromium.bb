@@ -25,12 +25,12 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/events/event_processor.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 
@@ -519,7 +519,7 @@ TEST_F(AcceleratorControllerTest, AutoRepeat) {
   TestTarget target_b;
   GetController()->Register(accelerator_b, &target_b);
 
-  aura::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator& generator = GetEventGenerator();
   generator.PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
   generator.ReleaseKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
 
@@ -554,7 +554,7 @@ TEST_F(AcceleratorControllerTest, AutoRepeat) {
 }
 
 TEST_F(AcceleratorControllerTest, Previous) {
-  aura::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator& generator = GetEventGenerator();
   generator.PressKey(ui::VKEY_VOLUME_MUTE, ui::EF_NONE);
   generator.ReleaseKey(ui::VKEY_VOLUME_MUTE, ui::EF_NONE);
 
@@ -588,7 +588,7 @@ TEST_F(AcceleratorControllerTest, DontRepeatToggleFullscreen) {
   widget->Activate();
   widget->GetNativeView()->SetProperty(aura::client::kCanMaximizeKey, true);
 
-  aura::test::EventGenerator& generator = GetEventGenerator();
+  ui::test::EventGenerator& generator = GetEventGenerator();
   wm::WindowState* window_state = wm::GetWindowState(widget->GetNativeView());
 
   // Toggling not suppressed.

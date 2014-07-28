@@ -27,12 +27,12 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/test/event_generator.h"
 
 namespace content {
 
@@ -184,7 +184,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
 
     aura::Window* content = web_contents->GetContentNativeView();
     gfx::Rect bounds = content->GetBoundsInRootWindow();
-    aura::test::EventGenerator generator(content->GetRootWindow(), content);
+    ui::test::EventGenerator generator(content->GetRootWindow(), content);
     const int kScrollDurationMs = 20;
     const int kScrollSteps = 10;
 
@@ -445,7 +445,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_OverscrollScreenshot) {
     content::TitleWatcher title_watcher(web_contents, expected_title);
     aura::Window* content = web_contents->GetContentNativeView();
     gfx::Rect bounds = content->GetBoundsInRootWindow();
-    aura::test::EventGenerator generator(content->GetRootWindow(), content);
+    ui::test::EventGenerator generator(content->GetRootWindow(), content);
     generator.GestureScrollSequence(
         gfx::Point(bounds.x() + 2, bounds.y() + 10),
         gfx::Point(bounds.right() - 10, bounds.y() + 10),
@@ -618,7 +618,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 
   aura::Window* content = web_contents->GetContentNativeView();
   gfx::Rect bounds = content->GetBoundsInRootWindow();
-  aura::test::EventGenerator generator(content->GetRootWindow(), content);
+  ui::test::EventGenerator generator(content->GetRootWindow(), content);
   generator.GestureScrollSequence(
       gfx::Point(bounds.x() + 2, bounds.y() + 10),
       gfx::Point(bounds.right() - 10, bounds.y() + 10),
@@ -639,7 +639,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, ContentWindowClose) {
 
   aura::Window* content = web_contents->GetContentNativeView();
   gfx::Rect bounds = content->GetBoundsInRootWindow();
-  aura::test::EventGenerator generator(content->GetRootWindow(), content);
+  ui::test::EventGenerator generator(content->GetRootWindow(), content);
   generator.GestureScrollSequence(
       gfx::Point(bounds.x() + 2, bounds.y() + 10),
       gfx::Point(bounds.right() - 10, bounds.y() + 10),
@@ -687,7 +687,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 
   aura::Window* content = web_contents->GetContentNativeView();
   gfx::Rect bounds = content->GetBoundsInRootWindow();
-  aura::test::EventGenerator generator(content->GetRootWindow(), content);
+  ui::test::EventGenerator generator(content->GetRootWindow(), content);
 
   // Do a swipe left to start a forward navigation. Then quickly do a swipe
   // right.

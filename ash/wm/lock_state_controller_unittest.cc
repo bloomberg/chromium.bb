@@ -17,12 +17,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "ui/aura/env.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -113,8 +113,7 @@ class LockStateControllerTest : public AshTestBase {
 
  protected:
   void GenerateMouseMoveEvent() {
-    aura::test::EventGenerator generator(
-        Shell::GetPrimaryRootWindow());
+    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
     generator.MoveMouseTo(10, 10);
   }
 

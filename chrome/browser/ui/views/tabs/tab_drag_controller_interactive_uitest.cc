@@ -51,8 +51,9 @@
 #include "ash/wm/window_util.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/test/event_generator.h"
+#include "ui/aura/test/event_generator_delegate_aura.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/events/test/event_generator.h"
 #endif
 
 using content::WebContents;
@@ -360,8 +361,8 @@ class DetachToBrowserTabDragControllerTest
 
   virtual void SetUpOnMainThread() OVERRIDE {
 #if defined(OS_CHROMEOS)
-    event_generator_.reset(new aura::test::EventGenerator(
-                               ash::Shell::GetPrimaryRootWindow()));
+    event_generator_.reset(
+        new ui::test::EventGenerator(ash::Shell::GetPrimaryRootWindow()));
 #endif
   }
 
@@ -375,7 +376,7 @@ class DetachToBrowserTabDragControllerTest
     if (input_source() == INPUT_SOURCE_MOUSE)
       return;
 #if defined(OS_CHROMEOS)
-    event_generator_.reset(new aura::test::EventGenerator(
+    event_generator_.reset(new ui::test::EventGenerator(
         new ScreenEventGeneratorDelegate(ash::wm::GetRootWindowAt(point))));
 #endif
   }
@@ -529,7 +530,7 @@ class DetachToBrowserTabDragControllerTest
 
  private:
 #if defined(OS_CHROMEOS)
-  scoped_ptr<aura::test::EventGenerator> event_generator_;
+  scoped_ptr<ui::test::EventGenerator> event_generator_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DetachToBrowserTabDragControllerTest);

@@ -10,7 +10,6 @@
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/test/aura_test_base.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -21,6 +20,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/wm_state.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -772,7 +772,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
 
     aura::Window* w2 = root_window()->GetChildById(2);
     aura::client::GetCaptureClient(root_window())->SetCapture(w2);
-    aura::test::EventGenerator generator(root_window(), w2);
+    ui::test::EventGenerator generator(root_window(), w2);
     generator.ClickLeftButton();
 
     EXPECT_EQ(1, GetActiveWindowId());
@@ -909,7 +909,7 @@ class FocusControllerMouseEventTest : public FocusControllerDirectTestBase {
     aura::Window* w1 = root_window()->GetChildById(1);
     SimpleEventHandler handler;
     root_window()->PrependPreTargetHandler(&handler);
-    aura::test::EventGenerator generator(root_window(), w1);
+    ui::test::EventGenerator generator(root_window(), w1);
     generator.ClickLeftButton();
     EXPECT_EQ(NULL, GetActiveWindow());
     generator.GestureTapAt(w1->bounds().CenterPoint());
@@ -922,17 +922,17 @@ class FocusControllerMouseEventTest : public FocusControllerDirectTestBase {
  private:
   // Overridden from FocusControllerTestBase:
   virtual void FocusWindowDirect(aura::Window* window) OVERRIDE {
-    aura::test::EventGenerator generator(root_window(), window);
+    ui::test::EventGenerator generator(root_window(), window);
     generator.ClickLeftButton();
   }
   virtual void ActivateWindowDirect(aura::Window* window) OVERRIDE {
-    aura::test::EventGenerator generator(root_window(), window);
+    ui::test::EventGenerator generator(root_window(), window);
     generator.ClickLeftButton();
   }
   virtual void DeactivateWindowDirect(aura::Window* window) OVERRIDE {
     aura::Window* next_activatable =
         test_focus_rules()->GetNextActivatableWindow(window);
-    aura::test::EventGenerator generator(root_window(), next_activatable);
+    ui::test::EventGenerator generator(root_window(), next_activatable);
     generator.ClickLeftButton();
   }
   virtual bool IsInputEvent() OVERRIDE { return true; }
@@ -947,17 +947,17 @@ class FocusControllerGestureEventTest : public FocusControllerDirectTestBase {
  private:
   // Overridden from FocusControllerTestBase:
   virtual void FocusWindowDirect(aura::Window* window) OVERRIDE {
-    aura::test::EventGenerator generator(root_window(), window);
+    ui::test::EventGenerator generator(root_window(), window);
     generator.GestureTapAt(window->bounds().CenterPoint());
   }
   virtual void ActivateWindowDirect(aura::Window* window) OVERRIDE {
-    aura::test::EventGenerator generator(root_window(), window);
+    ui::test::EventGenerator generator(root_window(), window);
     generator.GestureTapAt(window->bounds().CenterPoint());
   }
   virtual void DeactivateWindowDirect(aura::Window* window) OVERRIDE {
     aura::Window* next_activatable =
         test_focus_rules()->GetNextActivatableWindow(window);
-    aura::test::EventGenerator generator(root_window(), next_activatable);
+    ui::test::EventGenerator generator(root_window(), next_activatable);
     generator.GestureTapAt(window->bounds().CenterPoint());
   }
   virtual bool IsInputEvent() OVERRIDE { return true; }

@@ -20,7 +20,6 @@
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/aura_test_utils.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/test/window_test_api.h"
@@ -39,6 +38,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_configuration.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
@@ -781,7 +781,7 @@ TEST_F(WindowTest, CaptureTests) {
   EXPECT_TRUE(window->HasCapture());
   EXPECT_EQ(0, delegate.capture_lost_count());
   EXPECT_EQ(0, delegate.capture_changed_event_count());
-  EventGenerator generator(root_window(), gfx::Point(50, 50));
+  ui::test::EventGenerator generator(root_window(), gfx::Point(50, 50));
   generator.PressLeftButton();
   EXPECT_EQ(1, delegate.mouse_event_count());
   generator.ReleaseLeftButton();
@@ -1038,7 +1038,7 @@ TEST_F(WindowTest, ChangeCaptureWhileMouseDown) {
   EXPECT_TRUE(window->HasCapture());
   EXPECT_EQ(0, delegate.capture_lost_count());
   EXPECT_EQ(0, delegate.capture_changed_event_count());
-  EventGenerator generator(root_window(), gfx::Point(50, 50));
+  ui::test::EventGenerator generator(root_window(), gfx::Point(50, 50));
   generator.PressLeftButton();
   EXPECT_EQ(0, delegate.capture_lost_count());
   EXPECT_EQ(0, delegate.capture_changed_event_count());
@@ -1141,7 +1141,7 @@ TEST_F(WindowTest, MouseEnterExit) {
       CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(70, 70, 50, 50),
                                    root_window()));
 
-  test::EventGenerator generator(root_window());
+  ui::test::EventGenerator generator(root_window());
   generator.MoveMouseToCenterOf(w1.get());
   EXPECT_TRUE(d1.entered());
   EXPECT_FALSE(d1.exited());
@@ -1162,7 +1162,7 @@ TEST_F(WindowTest, WindowTreeHostExit) {
       CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50),
                                    root_window()));
 
-  test::EventGenerator generator(root_window());
+  ui::test::EventGenerator generator(root_window());
   generator.MoveMouseToCenterOf(w1.get());
   EXPECT_TRUE(d1.entered());
   EXPECT_FALSE(d1.exited());
@@ -1188,7 +1188,7 @@ TEST_F(WindowTest, MouseEnterExitWithClick) {
       CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(70, 70, 50, 50),
                                    root_window()));
 
-  test::EventGenerator generator(root_window());
+  ui::test::EventGenerator generator(root_window());
   generator.MoveMouseToCenterOf(w1.get());
   EXPECT_TRUE(d1.entered());
   EXPECT_FALSE(d1.exited());
@@ -1214,7 +1214,7 @@ TEST_F(WindowTest, MouseEnterExitWhenDeleteWithCapture) {
       CreateTestWindowWithDelegate(&delegate, 1, gfx::Rect(10, 10, 50, 50),
                                    root_window()));
 
-  test::EventGenerator generator(root_window());
+  ui::test::EventGenerator generator(root_window());
   generator.MoveMouseToCenterOf(window.get());
   EXPECT_TRUE(delegate.entered());
   EXPECT_FALSE(delegate.exited());
@@ -1242,7 +1242,7 @@ TEST_F(WindowTest, MouseEnterExitWithDelete) {
       CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50),
                                    root_window()));
 
-  test::EventGenerator generator(root_window());
+  ui::test::EventGenerator generator(root_window());
   generator.MoveMouseToCenterOf(w1.get());
   EXPECT_TRUE(d1.entered());
   EXPECT_FALSE(d1.exited());
@@ -1276,7 +1276,7 @@ TEST_F(WindowTest, MouseEnterExitWithHide) {
       CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50),
                                    root_window()));
 
-  test::EventGenerator generator(root_window());
+  ui::test::EventGenerator generator(root_window());
   generator.MoveMouseToCenterOf(w1.get());
   EXPECT_TRUE(d1.entered());
   EXPECT_FALSE(d1.exited());
@@ -1308,7 +1308,7 @@ TEST_F(WindowTest, MouseEnterExitWithParentHide) {
   MouseEnterExitWindowDelegate d2;
   Window* w2 = CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(10, 10, 50, 50),
                                             w1.get());
-  test::EventGenerator generator(root_window());
+  ui::test::EventGenerator generator(root_window());
   generator.MoveMouseToCenterOf(w2);
   // Enters / exits can be send asynchronously.
   RunAllPendingInMessageLoop();
@@ -1332,7 +1332,7 @@ TEST_F(WindowTest, MouseEnterExitWithParentDelete) {
   MouseEnterExitWindowDelegate d2;
   Window* w2 = CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(10, 10, 50, 50),
                                             w1.get());
-  test::EventGenerator generator(root_window());
+  ui::test::EventGenerator generator(root_window());
   generator.MoveMouseToCenterOf(w2);
 
   // Enters / exits can be send asynchronously.
@@ -2023,7 +2023,7 @@ TEST_F(WindowTest, VisibilityClientIsVisible) {
 TEST_F(WindowTest, MouseEventsOnWindowChange) {
   gfx::Size size = host()->GetBounds().size();
 
-  EventGenerator generator(root_window());
+  ui::test::EventGenerator generator(root_window());
   generator.MoveMouseTo(50, 50);
 
   EventCountDelegate d1;

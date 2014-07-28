@@ -8,13 +8,13 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/workspace_event_handler_test_helper.h"
 #include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace_controller_test_helper.h"
-#include "ash/wm/workspace/workspace_event_handler_test_helper.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 
@@ -105,7 +105,7 @@ TEST_F(MultiWindowResizeControllerTest, BasicTests) {
   scoped_ptr<aura::Window> w2(
       CreateTestWindow(&delegate2, gfx::Rect(100, 0, 100, 100)));
   delegate2.set_window_component(HTRIGHT);
-  aura::test::EventGenerator generator(w1->GetRootWindow());
+  ui::test::EventGenerator generator(w1->GetRootWindow());
   generator.MoveMouseTo(w1->bounds().CenterPoint());
   EXPECT_TRUE(HasPendingShow());
   EXPECT_TRUE(IsShowing());
@@ -136,7 +136,7 @@ TEST_F(MultiWindowResizeControllerTest, DeleteWindow) {
   scoped_ptr<aura::Window> w2(
       CreateTestWindow(&delegate2, gfx::Rect(100, 0, 100, 100)));
   delegate2.set_window_component(HTRIGHT);
-  aura::test::EventGenerator generator(w1->GetRootWindow());
+  ui::test::EventGenerator generator(w1->GetRootWindow());
   generator.MoveMouseTo(w1->bounds().CenterPoint());
   EXPECT_TRUE(HasPendingShow());
   EXPECT_TRUE(IsShowing());
@@ -179,7 +179,7 @@ TEST_F(MultiWindowResizeControllerTest, Drag) {
   scoped_ptr<aura::Window> w2(
       CreateTestWindow(&delegate2, gfx::Rect(100, 0, 100, 100)));
   delegate2.set_window_component(HTRIGHT);
-  aura::test::EventGenerator generator(w1->GetRootWindow());
+  ui::test::EventGenerator generator(w1->GetRootWindow());
   generator.MoveMouseTo(w1->bounds().CenterPoint());
   EXPECT_TRUE(HasPendingShow());
   EXPECT_TRUE(IsShowing());
@@ -227,7 +227,7 @@ TEST_F(MultiWindowResizeControllerTest, Three) {
       CreateTestWindow(&delegate3, gfx::Rect(200, 0, 100, 100)));
   delegate3.set_window_component(HTRIGHT);
 
-  aura::test::EventGenerator generator(w1->GetRootWindow());
+  ui::test::EventGenerator generator(w1->GetRootWindow());
   generator.MoveMouseTo(w1->bounds().CenterPoint());
   EXPECT_TRUE(HasPendingShow());
   EXPECT_TRUE(IsShowing());

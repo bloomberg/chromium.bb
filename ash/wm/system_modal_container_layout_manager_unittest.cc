@@ -13,12 +13,12 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/layer_animator_test_controller.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_proxy.h"
@@ -230,7 +230,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ModalTransient) {
   EXPECT_TRUE(wm::IsActiveWindow(t1));
 
   // Attempting to click the parent should result in no activation change.
-  aura::test::EventGenerator e1(Shell::GetPrimaryRootWindow(), parent.get());
+  ui::test::EventGenerator e1(Shell::GetPrimaryRootWindow(), parent.get());
   e1.ClickLeftButton();
   EXPECT_TRUE(wm::IsActiveWindow(t1));
 
@@ -245,7 +245,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ModalTransient) {
   EXPECT_EQ(GetModalContainer(), t2->parent());
 
   // t2 should still be active, even after clicking on t1.
-  aura::test::EventGenerator e2(Shell::GetPrimaryRootWindow(), t1);
+  ui::test::EventGenerator e2(Shell::GetPrimaryRootWindow(), t1);
   e2.ClickLeftButton();
   EXPECT_TRUE(wm::IsActiveWindow(t2));
 
@@ -269,8 +269,8 @@ TEST_F(SystemModalContainerLayoutManagerTest, ModalNonTransient) {
   EXPECT_TRUE(wm::IsActiveWindow(t1.get()));
 
   // Attempting to click the parent should result in no activation change.
-  aura::test::EventGenerator e1(Shell::GetPrimaryRootWindow(),
-                                Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator e1(Shell::GetPrimaryRootWindow(),
+                              Shell::GetPrimaryRootWindow());
   e1.ClickLeftButton();
   EXPECT_TRUE(wm::IsActiveWindow(t1.get()));
 
@@ -285,7 +285,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ModalNonTransient) {
   EXPECT_EQ(GetModalContainer(), t2->parent());
 
   // t2 should still be active, even after clicking on t1.
-  aura::test::EventGenerator e2(Shell::GetPrimaryRootWindow(), t1.get());
+  ui::test::EventGenerator e2(Shell::GetPrimaryRootWindow(), t1.get());
   e2.ClickLeftButton();
   EXPECT_TRUE(wm::IsActiveWindow(t2));
 
@@ -310,7 +310,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, CanActivateAfterEndModalSession) {
   EXPECT_TRUE(wm::IsActiveWindow(transient.get()));
 
   // Attempting to click the parent should result in no activation change.
-  aura::test::EventGenerator e1(Shell::GetPrimaryRootWindow(), parent.get());
+  ui::test::EventGenerator e1(Shell::GetPrimaryRootWindow(), parent.get());
   e1.ClickLeftButton();
   EXPECT_TRUE(wm::IsActiveWindow(transient.get()));
 
@@ -324,7 +324,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, CanActivateAfterEndModalSession) {
   EXPECT_TRUE(wm::IsActiveWindow(parent.get()));
 
   // Attempting to click unrelated should activate it.
-  aura::test::EventGenerator e2(Shell::GetPrimaryRootWindow(), unrelated.get());
+  ui::test::EventGenerator e2(Shell::GetPrimaryRootWindow(), unrelated.get());
   e2.ClickLeftButton();
   EXPECT_TRUE(wm::IsActiveWindow(unrelated.get()));
 }
@@ -335,7 +335,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
   scoped_ptr<aura::Window> main(
       main_delegate->OpenTestWindowWithContext(CurrentContext()));
   EXPECT_TRUE(wm::IsActiveWindow(main.get()));
-  aura::test::EventGenerator e1(Shell::GetPrimaryRootWindow(), main.get());
+  ui::test::EventGenerator e1(Shell::GetPrimaryRootWindow(), main.get());
   e1.ClickLeftButton();
   EXPECT_EQ(1, main_delegate->mouse_presses());
 
@@ -407,7 +407,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ChangeCapture) {
 
   gfx::Point center(view->width() / 2, view->height() / 2);
   views::View::ConvertPointToScreen(view, &center);
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), center);
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), center);
   generator.PressLeftButton();
   EXPECT_TRUE(view->got_press());
   scoped_ptr<aura::Window> modal_window(

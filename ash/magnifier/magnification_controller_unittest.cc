@@ -11,8 +11,8 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_utils.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
 
@@ -173,7 +173,7 @@ TEST_F(MagnificationControllerTest, MoveWindow) {
 }
 
 TEST_F(MagnificationControllerTest, PointOfInterest) {
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
 
   generator.MoveMouseToInHost(gfx::Point(0, 0));
   EXPECT_EQ("0,0", CurrentPointOfInterest());
@@ -193,7 +193,7 @@ TEST_F(MagnificationControllerTest, PointOfInterest) {
 
 TEST_F(MagnificationControllerTest, PanWindow2xLeftToRight) {
   const aura::Env* env = aura::Env::GetInstance();
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
 
   generator.MoveMouseToInHost(gfx::Point(0, 0));
   EXPECT_EQ(1.f, GetMagnificationController()->GetScale());
@@ -297,7 +297,7 @@ TEST_F(MagnificationControllerTest, PanWindow2xLeftToRight) {
 
 TEST_F(MagnificationControllerTest, PanWindow2xRightToLeft) {
   const aura::Env* env = aura::Env::GetInstance();
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
 
   generator.MoveMouseToInHost(gfx::Point(799, 300));
   EXPECT_EQ(1.f, GetMagnificationController()->GetScale());
@@ -350,7 +350,7 @@ TEST_F(MagnificationControllerTest, PanWindow2xRightToLeft) {
 
 TEST_F(MagnificationControllerTest, PanWindowToRight) {
   const aura::Env* env = aura::Env::GetInstance();
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
 
   generator.MoveMouseToInHost(gfx::Point(400, 300));
   EXPECT_EQ(1.f, GetMagnificationController()->GetScale());
@@ -396,7 +396,7 @@ TEST_F(MagnificationControllerTest, PanWindowToRight) {
 
 TEST_F(MagnificationControllerTest, PanWindowToLeft) {
   const aura::Env* env = aura::Env::GetInstance();
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
 
   generator.MoveMouseToInHost(gfx::Point(400, 300));
   EXPECT_EQ(1.f, GetMagnificationController()->GetScale());

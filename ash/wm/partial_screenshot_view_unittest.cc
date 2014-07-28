@@ -9,8 +9,8 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_screenshot_delegate.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/events/test/event_generator.h"
 
 namespace ash {
 
@@ -35,7 +35,7 @@ class PartialScreenshotViewTest : public test::AshTestBase {
 };
 
 TEST_F(PartialScreenshotViewTest, BasicMouse) {
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
 
   generator.MoveMouseTo(100, 100);
   generator.PressLeftButton();
@@ -53,7 +53,7 @@ TEST_F(PartialScreenshotViewTest, BasicMouse) {
 }
 
 TEST_F(PartialScreenshotViewTest, BasicTouch) {
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
 
   generator.set_current_location(gfx::Point(100,100));
   generator.GestureTapDownAndUp(gfx::Point(100,100));

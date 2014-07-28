@@ -2,6 +2,7 @@ include_rules = [
   "+athena/input/public",
   "+ui/aura",
   "+ui/compositor",
+  "+ui/events",
   "+ui/gfx",
   "+ui/views",
   "+ui/wm",

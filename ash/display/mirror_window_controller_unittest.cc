@@ -12,12 +12,12 @@
 #include "ash/test/mirror_window_test_api.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
+#include "ui/events/test/event_generator.h"
 
 namespace ash {
 
@@ -87,7 +87,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorBasic) {
   EXPECT_TRUE(test_api.GetCursorWindow());
   EXPECT_EQ("50,50 100x100", window->bounds().ToString());
 
-  aura::test::EventGenerator generator(root);
+  ui::test::EventGenerator generator(root);
   generator.MoveMouseTo(10, 10);
 
   // Test if cursor movement is propertly reflected in mirror window.
@@ -144,7 +144,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorRotate) {
   EXPECT_TRUE(test_api.GetCursorWindow());
   EXPECT_EQ("50,50 100x100", window->bounds().ToString());
 
-  aura::test::EventGenerator generator(root);
+  ui::test::EventGenerator generator(root);
   generator.MoveMouseToInHost(100, 100);
 
   // Test if cursor movement is propertly reflected in mirror window.
@@ -200,7 +200,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorLocations) {
   UpdateDisplay("400x600*2,400x600");
 
   aura::Window* root = Shell::GetInstance()->GetPrimaryRootWindow();
-  aura::test::EventGenerator generator(root);
+  ui::test::EventGenerator generator(root);
   generator.MoveMouseToInHost(10, 20);
 
   gfx::Point hot_point = test_api.GetCursorHotPoint();

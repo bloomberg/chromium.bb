@@ -7,13 +7,13 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "ui/aura/env.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/events/event.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
@@ -87,7 +87,7 @@ views::Widget* CreateWidget() {
 TEST_F(DesktopCaptureControllerTest, ResetMouseHandlers) {
   scoped_ptr<Widget> w1(CreateWidget());
   scoped_ptr<Widget> w2(CreateWidget());
-  aura::test::EventGenerator generator1(w1->GetNativeView()->GetRootWindow());
+  ui::test::EventGenerator generator1(w1->GetNativeView()->GetRootWindow());
   generator1.MoveMouseToCenterOf(w1->GetNativeView());
   generator1.PressLeftButton();
   EXPECT_FALSE(w1->HasCapture());

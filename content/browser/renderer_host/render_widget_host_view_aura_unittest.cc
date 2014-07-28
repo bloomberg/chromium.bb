@@ -39,7 +39,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/test/aura_test_helper.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_cursor_client.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -52,6 +51,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_configuration.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/wm/core/default_activation_client.h"
 
 using testing::_;
@@ -715,7 +715,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DestroyPopupClickOutsidePopup) {
   EXPECT_FALSE(parent_window->GetBoundsInRootWindow().Contains(click_point));
 
   TestWindowObserver observer(window);
-  aura::test::EventGenerator generator(window->GetRootWindow(), click_point);
+  ui::test::EventGenerator generator(window->GetRootWindow(), click_point);
   generator.ClickLeftButton();
   ASSERT_TRUE(parent_view_->HasFocus());
   ASSERT_TRUE(observer.destroyed());
@@ -742,7 +742,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DestroyPopupTapOutsidePopup) {
   EXPECT_FALSE(parent_window->GetBoundsInRootWindow().Contains(tap_point));
 
   TestWindowObserver observer(window);
-  aura::test::EventGenerator generator(window->GetRootWindow(), tap_point);
+  ui::test::EventGenerator generator(window->GetRootWindow(), tap_point);
   generator.GestureTapAt(tap_point);
   ASSERT_TRUE(parent_view_->HasFocus());
   ASSERT_TRUE(observer.destroyed());

@@ -9,9 +9,9 @@
 
 #include "athena/common/container_priorities.h"
 #include "athena/test/athena_test_base.h"
-#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/wm/core/window_util.h"
 
 typedef athena::test::AthenaTestBase ScreenManagerTest;
@@ -124,7 +124,7 @@ TEST_F(ScreenManagerTest, GrabInputContainer) {
 
   EXPECT_TRUE(wm::CanActivateWindow(normal_window.get()));
   wm::ActivateWindow(normal_window.get());
-  aura::test::EventGenerator event_generator(root_window());
+  ui::test::EventGenerator event_generator(root_window());
   event_generator.MoveMouseTo(0, 0);
   event_generator.ClickLeftButton();
   EXPECT_EQ("1 1", normal_delegate.GetMouseButtonCountsAndReset());
@@ -189,7 +189,7 @@ TEST_F(ScreenManagerTest, GrabShouldNotBlockVirtualKeyboard) {
       vk_container, &vk_delegate, gfx::Rect(0, 20, 100, 80)));
   EXPECT_TRUE(wm::CanActivateWindow(vk_window.get()));
 
-  aura::test::EventGenerator event_generator(root_window());
+  ui::test::EventGenerator event_generator(root_window());
   event_generator.MoveMouseTo(10, 25);
   event_generator.ClickLeftButton();
   EXPECT_EQ("0 0", grab_delegate.GetMouseButtonCountsAndReset());
@@ -207,7 +207,7 @@ TEST_F(ScreenManagerTest, GrabAndMouseCapture) {
   scoped_ptr<aura::Window> normal_window(CreateTestWindow(
       normal_container, &normal_delegate, gfx::Rect(0, 0, 100, 100)));
 
-  aura::test::EventGenerator event_generator(root_window());
+  ui::test::EventGenerator event_generator(root_window());
   event_generator.MoveMouseTo(0, 0);
   event_generator.PressLeftButton();
 
