@@ -37,9 +37,9 @@ std::vector<base::FilePath> GetModuleSearchPaths() {
   return module_base;
 }
 
-class ShellRunnerDelegate : public ModuleRunnerDelegate {
+class GinShellRunnerDelegate : public ModuleRunnerDelegate {
  public:
-  ShellRunnerDelegate() : ModuleRunnerDelegate(GetModuleSearchPaths()) {
+  GinShellRunnerDelegate() : ModuleRunnerDelegate(GetModuleSearchPaths()) {
     AddBuiltinModule(Console::kModuleName, Console::GetModule);
   }
 
@@ -50,7 +50,7 @@ class ShellRunnerDelegate : public ModuleRunnerDelegate {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ShellRunnerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(GinShellRunnerDelegate);
 };
 
 }  // namespace
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
 
   base::MessageLoop message_loop;
 
-  gin::ShellRunnerDelegate delegate;
+  gin::GinShellRunnerDelegate delegate;
   gin::ShellRunner runner(&delegate, instance.isolate());
 
   {
