@@ -403,6 +403,11 @@
       'conditions': [
         ['gyp_managed_install == 1', {
           'variables': {
+            # This "library" just needs to be put in the .apk. It is not loaded
+            # at runtime.
+            'placeholder_native_library_path':
+              '<(apk_package_native_libs_dir)/<(android_app_abi)/libfix.crbug.384638.so',
+            'package_input_paths': [ '<(placeholder_native_library_path)' ],
             'libraries_top_dir': '<(intermediate_dir)/lib.stripped',
             'libraries_source_dir': '<(libraries_top_dir)/lib/<(android_app_abi)',
             'device_library_dir': '<(device_intermediate_dir)/lib.stripped',
@@ -414,6 +419,19 @@
           'actions': [
             {
               'includes': ['../build/android/push_libraries.gypi'],
+            },
+            {
+              'action_name': 'create placeholder lib',
+              'inputs': [
+                '<(DEPTH)/build/android/gyp/touch.py',
+              ],
+              'outputs': [
+                '<(placeholder_native_library_path)',
+              ],
+              'action' : [
+                'python', '<(DEPTH)/build/android/gyp/touch.py',
+                '<@(_outputs)',
+              ],
             },
             {
               'action_name': 'create device library symlinks',
