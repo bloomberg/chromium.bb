@@ -568,6 +568,11 @@ config("default_warnings") {
 
       # Warnings permanently disabled:
 
+      # TODO(GYP) The GYP build doesn't have this globally enabled but disabled
+      # for a bunch of individual targets. Re-enable this globally when those
+      # targets are fixed.
+      "/wd4018",  # Comparing signed and unsigned values.
+
       # C4127: conditional expression is constant
       # This warning can in theory catch dead code and other problems, but
       # triggers in far too many desirable cases where the conditional
