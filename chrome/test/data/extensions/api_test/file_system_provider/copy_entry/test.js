@@ -103,6 +103,7 @@ function runTests() {
             chrome.test.fail(error.name);
           });
     },
+
     // Copy an existing file to a location which already holds a file.
     // Should fail.
     function copyEntryExistsError() {

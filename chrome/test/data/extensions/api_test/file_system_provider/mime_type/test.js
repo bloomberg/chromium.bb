@@ -69,7 +69,7 @@ function runTests() {
               function(tasks) {
                 chrome.test.assertEq(1, tasks.length);
                 chrome.test.assertEq(
-                    "ddammdhioacbehjngdmkjcjbnfginlla|app|magic_handler",
+                    'ddammdhioacbehjngdmkjcjbnfginlla|app|magic_handler',
                     tasks[0].taskId);
                 onSuccess();
               });
@@ -77,6 +77,7 @@ function runTests() {
             chrome.test.fail(error.name);
           });
     },
+
     // Confirm, that executing that task, will actually run an OnLaunched event.
     // This is another code path, than collecting tasks (tested above).
     function withMimeExecute() {
@@ -88,11 +89,11 @@ function runTests() {
               function(tasks) {
                 chrome.test.assertEq(1, tasks.length);
                 chrome.test.assertEq(
-                    "ddammdhioacbehjngdmkjcjbnfginlla|app|magic_handler",
+                    'ddammdhioacbehjngdmkjcjbnfginlla|app|magic_handler',
                     tasks[0].taskId);
                 var onLaunched = function(event) {
                   chrome.test.assertTrue(!!event);
-                  chrome.test.assertEq("magic_handler", event.id);
+                  chrome.test.assertEq('magic_handler', event.id);
                   chrome.test.assertTrue(!!event.items);
                   chrome.test.assertEq(1, event.items.length);
                   chrome.test.assertEq(
@@ -111,6 +112,7 @@ function runTests() {
             chrome.test.fail(error.name);
           });
     },
+
     // The file without a mime set must not appear on the task list for this
     // testing extension.
     function withoutMime() {

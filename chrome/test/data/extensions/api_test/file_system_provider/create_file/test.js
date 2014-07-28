@@ -89,6 +89,7 @@ function runTests() {
             chrome.test.fail(error.name);
           });
     },
+
     // Create a file which exists, non-exclusively. Should succeed.
     function createFileOrOpenSuccess() {
       var onSuccess = chrome.test.callbackPass();
@@ -102,6 +103,7 @@ function runTests() {
             chrome.test.fail(error.name);
           });
     },
+
     // Create a file which exists, exclusively. Should fail.
     function createFileExistsError() {
       var onSuccess = chrome.test.callbackPass();
@@ -113,7 +115,7 @@ function runTests() {
             chrome.test.assertEq('InvalidModificationError', error.name);
             onSuccess();
           });
-    },
+    }
   ]);
 }
 

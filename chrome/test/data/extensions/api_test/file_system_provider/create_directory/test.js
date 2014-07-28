@@ -9,7 +9,7 @@
  * @const
  */
 var TESTING_DIRECTORY = Object.freeze({
-  isDirectory: false,
+  isDirectory: true,
   name: 'kitty',
   size: 0,
   modificationTime: new Date(2014, 4, 28, 10, 39, 15)
@@ -80,6 +80,7 @@ function runTests() {
             chrome.test.fail(error.name);
           });
     },
+
     // Create a directory (exclusive). Should fail, since the directory already
     // exists.
     function createDirectoryErrorExists() {
@@ -92,7 +93,7 @@ function runTests() {
             chrome.test.assertEq('InvalidModificationError', error.name);
             onSuccess();
           });
-    },
+    }
   ]);
 }
 

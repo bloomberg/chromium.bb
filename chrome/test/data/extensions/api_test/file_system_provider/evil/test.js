@@ -297,7 +297,8 @@ function runTests() {
           function(error) {
             onTestSuccess();
           });
-    },  ]);
+    }
+  ]);
 }
 
 // Setup and run all of the test cases.
