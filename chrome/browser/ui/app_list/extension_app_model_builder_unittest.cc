@@ -171,20 +171,29 @@ TEST_F(ExtensionAppModelBuilderTest, HideWebStore) {
   app_list::AppListModel model1;
   ExtensionAppModelBuilder builder1(controller_.get());
   builder1.InitializeWithProfile(profile_.get(), &model1);
-  std::string content = GetModelContent(&model1);
-  EXPECT_NE(std::string::npos, content.find("webstore"));
-  EXPECT_NE(std::string::npos, content.find("enterprise_webstore"));
+  EXPECT_TRUE(model1.FindItem(store->id()));
+  EXPECT_TRUE(model1.FindItem(enterprise_store->id()));
 
   // Activate the HideWebStoreIcon policy.
   profile_->GetPrefs()->SetBoolean(prefs::kHideWebStoreIcon, true);
 
-  // Web stores should NOT be in the AppListModel.
+  // Now the web stores should not be present anymore.
+  EXPECT_FALSE(model1.FindItem(store->id()));
+  EXPECT_FALSE(model1.FindItem(enterprise_store->id()));
+
+  // Build a new AppListModel; web stores should NOT be present.
   app_list::AppListModel model2;
   ExtensionAppModelBuilder builder2(controller_.get());
   builder2.InitializeWithProfile(profile_.get(), &model2);
-  content = GetModelContent(&model2);
-  EXPECT_EQ(std::string::npos, content.find("webstore"));
-  EXPECT_EQ(std::string::npos, content.find("enterprise_webstore"));
+  EXPECT_FALSE(model2.FindItem(store->id()));
+  EXPECT_FALSE(model2.FindItem(enterprise_store->id()));
+
+  // Deactivate the HideWebStoreIcon policy again.
+  profile_->GetPrefs()->SetBoolean(prefs::kHideWebStoreIcon, false);
+
+  // Now the web stores should have appeared.
+  EXPECT_TRUE(model2.FindItem(store->id()));
+  EXPECT_TRUE(model2.FindItem(enterprise_store->id()));
 }
 
 TEST_F(ExtensionAppModelBuilderTest, DisableAndEnable) {

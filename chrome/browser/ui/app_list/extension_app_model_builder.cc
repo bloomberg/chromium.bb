@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -56,7 +57,7 @@ void ExtensionAppModelBuilder::InitializeWithService(
   model_ = service->model();
   service_ = service;
   profile_ = service->profile();
-  InitializePrefChangeRegistrar();
+  InitializePrefChangeRegistrars();
 
   BuildModel();
 }
@@ -68,12 +69,18 @@ void ExtensionAppModelBuilder::InitializeWithProfile(
   model_ = model;
   model_->top_level_item_list()->AddObserver(this);
   profile_ = profile;
-  InitializePrefChangeRegistrar();
+  InitializePrefChangeRegistrars();
 
   BuildModel();
 }
 
-void ExtensionAppModelBuilder::InitializePrefChangeRegistrar() {
+void ExtensionAppModelBuilder::InitializePrefChangeRegistrars() {
+  profile_pref_change_registrar_.Init(profile_->GetPrefs());
+  profile_pref_change_registrar_.Add(
+      prefs::kHideWebStoreIcon,
+      base::Bind(&ExtensionAppModelBuilder::OnProfilePreferenceChanged,
+                 base::Unretained(this)));
+
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableStreamlinedHostedApps))
     return;
@@ -88,6 +95,33 @@ void ExtensionAppModelBuilder::InitializePrefChangeRegistrar() {
     extensions::pref_names::kExtensions,
     base::Bind(&ExtensionAppModelBuilder::OnExtensionPreferenceChanged,
                base::Unretained(this)));
+}
+
+void ExtensionAppModelBuilder::OnProfilePreferenceChanged() {
+  extensions::ExtensionSet extensions;
+  controller_->GetApps(profile_, &extensions);
+
+  for (extensions::ExtensionSet::const_iterator app = extensions.begin();
+       app != extensions.end(); ++app) {
+    bool should_display =
+        extensions::ui_util::ShouldDisplayInAppLauncher(*app, profile_);
+    bool does_display = GetExtensionAppItem((*app)->id()) != NULL;
+
+    if (should_display == does_display)
+      continue;
+
+    if (should_display) {
+      InsertApp(CreateAppItem((*app)->id(),
+                              "",
+                              gfx::ImageSkia(),
+                              (*app)->is_platform_app()));
+    } else {
+      if (service_)
+        service_->RemoveItem((*app)->id());
+      else
+        model_->DeleteItem((*app)->id());
+    }
+  }
 }
 
 void ExtensionAppModelBuilder::OnExtensionPreferenceChanged() {
