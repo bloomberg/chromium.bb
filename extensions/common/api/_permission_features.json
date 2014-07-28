@@ -60,6 +60,10 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
   },
+  "serial": {
+    "channel": "stable",
+    "extension_types": ["platform_app"]
+  },
   "socket": [
     {
       "channel": "stable",

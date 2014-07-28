@@ -98,6 +98,10 @@
   "runtime.setUninstallURL": {
     "channel": "dev"
   },
+  "serial": {
+    "dependencies": ["permission:serial"],
+    "contexts": ["blessed_extension"]
+  },
   "socket": {
     "dependencies": ["permission:socket"],
     "contexts": ["blessed_extension"]

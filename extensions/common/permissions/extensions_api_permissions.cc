@@ -28,6 +28,8 @@ std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
       {APIPermission::kHid, "hid", APIPermissionInfo::kFlagNone,
        IDS_EXTENSION_PROMPT_WARNING_HID, PermissionMessage::kHid},
       {APIPermission::kPower, "power"},
+      {APIPermission::kSerial, "serial", APIPermissionInfo::kFlagNone,
+       IDS_EXTENSION_PROMPT_WARNING_SERIAL, PermissionMessage::kSerial},
       // Because warning messages for the "socket" permission vary based
       // on the permissions parameters, no message ID or message text is
       // specified here.  The message ID and text used will be

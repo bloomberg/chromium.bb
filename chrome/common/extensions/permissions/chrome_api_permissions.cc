@@ -287,8 +287,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
            APIPermissionInfo::kFlagCannotBeOptional},
 
       // Platform-app permissions.
-      {APIPermission::kSerial, "serial", APIPermissionInfo::kFlagNone,
-       IDS_EXTENSION_PROMPT_WARNING_SERIAL, PermissionMessage::kSerial},
       {APIPermission::kAlwaysOnTopWindows, "app.window.alwaysOnTop"},
       {APIPermission::kAudioCapture, "audioCapture",
        APIPermissionInfo::kFlagNone, IDS_EXTENSION_PROMPT_WARNING_AUDIO_CAPTURE,

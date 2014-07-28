@@ -614,10 +614,6 @@
     "dependencies": ["manifest:script_badge"],
     "contexts": ["blessed_extension"]
   },
-  "serial": {
-    "dependencies": ["permission:serial"],
-    "contexts": ["blessed_extension"]
-  },
   "sessions": {
     "dependencies": ["permission:sessions"],
     "contexts": ["blessed_extension"]
