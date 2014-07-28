@@ -479,6 +479,18 @@ Node* InspectorDOMAgent::assertEditableNode(ErrorString* errorString, int nodeId
     return node;
 }
 
+Node* InspectorDOMAgent::assertEditableChildNode(ErrorString* errorString, Element* parentElement, int nodeId)
+{
+    Node* node = assertEditableNode(errorString, nodeId);
+    if (!node)
+        return 0;
+    if (node->parentNode() != parentElement) {
+        *errorString = "Anchor node must be child of the target element";
+        return 0;
+    }
+    return node;
+}
+
 Element* InspectorDOMAgent::assertEditableElement(ErrorString* errorString, int nodeId)
 {
     Element* element = assertElement(errorString, nodeId);
@@ -1302,7 +1314,7 @@ void InspectorDOMAgent::hideHighlight(ErrorString*)
     m_overlay->hideHighlight();
 }
 
-void InspectorDOMAgent::moveTo(ErrorString* errorString, int nodeId, int targetElementId, const int* const anchorNodeId, int* newNodeId)
+void InspectorDOMAgent::copyTo(ErrorString* errorString, int nodeId, int targetElementId, const int* const anchorNodeId, int* newNodeId)
 {
     Node* node = assertEditableNode(errorString, nodeId);
     if (!node)
@@ -1314,13 +1326,47 @@ void InspectorDOMAgent::moveTo(ErrorString* errorString, int nodeId, int targetE
 
     Node* anchorNode = 0;
     if (anchorNodeId && *anchorNodeId) {
-        anchorNode = assertEditableNode(errorString, *anchorNodeId);
+        anchorNode = assertEditableChildNode(errorString, targetElement, *anchorNodeId);
         if (!anchorNode)
             return;
-        if (anchorNode->parentNode() != targetElement) {
-            *errorString = "Anchor node must be child of the target element";
+    }
+
+    // The clone is deep by default.
+    RefPtrWillBeRawPtr<Node> clonedNode = node->cloneNode(true);
+    if (!clonedNode) {
+        *errorString = "Failed to clone node";
+        return;
+    }
+    if (!m_domEditor->insertBefore(targetElement, clonedNode, anchorNode, errorString))
+        return;
+
+    *newNodeId = pushNodePathToFrontend(clonedNode.get());
+}
+
+void InspectorDOMAgent::moveTo(ErrorString* errorString, int nodeId, int targetElementId, const int* const anchorNodeId, int* newNodeId)
+{
+    Node* node = assertEditableNode(errorString, nodeId);
+    if (!node)
+        return;
+
+    Element* targetElement = assertEditableElement(errorString, targetElementId);
+    if (!targetElement)
+        return;
+
+    Node* current = targetElement;
+    while (current) {
+        if (current == node) {
+            *errorString = "Unable to move node into self or descendant";
             return;
         }
+        current = current->parentNode();
+    }
+
+    Node* anchorNode = 0;
+    if (anchorNodeId && *anchorNodeId) {
+        anchorNode = assertEditableChildNode(errorString, targetElement, *anchorNodeId);
+        if (!anchorNode)
+            return;
     }
 
     if (!m_domEditor->insertBefore(targetElement, node, anchorNode, errorString))

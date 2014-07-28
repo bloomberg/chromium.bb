@@ -143,6 +143,7 @@ public:
     virtual void highlightNode(ErrorString*, const RefPtr<JSONObject>& highlightConfig, const int* nodeId, const String* objectId) OVERRIDE;
     virtual void highlightFrame(ErrorString*, const String& frameId, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor) OVERRIDE;
 
+    virtual void copyTo(ErrorString*, int nodeId, int targetElementId, const int* anchorNodeId, int* newNodeId) OVERRIDE;
     virtual void moveTo(ErrorString*, int nodeId, int targetNodeId, const int* anchorNodeId, int* newNodeId) OVERRIDE;
     virtual void undo(ErrorString*) OVERRIDE;
     virtual void redo(ErrorString*) OVERRIDE;
@@ -230,6 +231,7 @@ private:
     void unbind(Node*, NodeToIdMap*);
 
     Node* assertEditableNode(ErrorString*, int nodeId);
+    Node* assertEditableChildNode(ErrorString*, Element* parentElement, int nodeId);
     Element* assertEditableElement(ErrorString*, int nodeId);
 
     void inspect(Node*);
