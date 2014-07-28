@@ -48,8 +48,6 @@
       'common/content_restriction.h',
       'common/content_settings.cc',
       'common/content_settings.h',
-      'common/content_settings_helper.cc',
-      'common/content_settings_helper.h',
       'common/content_settings_pattern.cc',
       'common/content_settings_pattern.h',
       'common/content_settings_pattern_parser.cc',
