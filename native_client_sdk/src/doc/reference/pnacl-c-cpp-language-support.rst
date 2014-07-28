@@ -215,9 +215,10 @@ of SIMD vector datatypes and operations which map well to modern
 architectures and offer performance which matches or approaches
 hardware-specific uses.
 
-SIMD vector support was added to Portable Native Client for version 37
-of Chrome and more features, including performance enhancements, are
-expected to be added in subsequent releases.
+SIMD vector support was added to Portable Native Client for version 37 of Chrome
+and more features, including performance enhancements, have been added in
+subsequent releases, see the :ref:`Release Notes <sdk-release-notes>` for more
+details.
 
 Hand-Coding Vector Extensions
 -----------------------------
@@ -254,23 +255,35 @@ elements of all ``0`` or all ``1``:
     return ret;
   }
 
-Vector datatypes are currently expected to be 128-bit wide with one of
-the following element types:
+Vector datatypes are currently expected to be 128-bit wide with one of the
+following element types, and they're expected to be aligned to the underlying
+element's bit width (loads and store will otherwise be broken up into scalar
+accesses to prevent faults):
 
-============  ============  ================
-Type          Num Elements  Vector Bit Width
-============  ============  ================
-``uint8_t``   16            128
-``int8_t``    16            128
-``uint16_t``  8             128
-``int16_t``   8             128
-``uint32_t``  4             128
-``int32_t``   4             128
-``float``     4             128
-============  ============  ================
+============  ============  ================ ======================
+Type          Num Elements  Vector Bit Width Expected Bit Alignment
+============  ============  ================ ======================
+``uint8_t``   16            128              8
+``int8_t``    16            128              8
+``uint16_t``  8             128              16
+``int16_t``   8             128              16
+``uint32_t``  4             128              32
+``int32_t``   4             128              32
+``float``     4             128              32
+============  ============  ================ ======================
 
 64-bit integers and double-precision floating point will be supported in
 a future release, as will 256-bit and 512-bit vectors.
+
+Vector element bit width alignment can be stated explicitly (this is assumed by
+PNaCl, but not necessarily by other compilers), and smaller alignments can also
+be specified:
+
+.. naclcode::
+
+  typedef int v4s_element   __attribute__((vector_size(16), aligned(4)));
+  typedef int v4s_unaligned __attribute__((vector_size(16), aligned(1)));
+
 
 The following operators are supported on vectors:
 

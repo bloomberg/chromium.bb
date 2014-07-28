@@ -195,9 +195,10 @@ very hardware-specific. Portable Native Client offers a portable version
 of SIMD vector datatypes and operations which map well to modern
 architectures and offer performance which matches or approaches
 hardware-specific uses.</p>
-<p>SIMD vector support was added to Portable Native Client for version 37
-of Chrome and more features, including performance enhancements, are
-expected to be added in subsequent releases.</p>
+<p>SIMD vector support was added to Portable Native Client for version 37 of Chrome
+and more features, including performance enhancements, have been added in
+subsequent releases, see the <a class="reference internal" href="/native-client/sdk/release-notes.html#sdk-release-notes"><em>Release Notes</em></a> for more
+details.</p>
 <section id="hand-coding-vector-extensions">
 <h3 id="hand-coding-vector-extensions">Hand-Coding Vector Extensions</h3>
 <p>The initial vector support in Portable Native Client adds <a class="reference external" href="http://clang.llvm.org/docs/LanguageExtensions.html#vectors-and-extended-vectors">LLVM vectors</a>
@@ -225,8 +226,10 @@ v4s snip(v4s in) {
   return ret;
 }
 </pre>
-<p>Vector datatypes are currently expected to be 128-bit wide with one of
-the following element types:</p>
+<p>Vector datatypes are currently expected to be 128-bit wide with one of the
+following element types, and they&#8217;re expected to be aligned to the underlying
+element&#8217;s bit width (loads and store will otherwise be broken up into scalar
+accesses to prevent faults):</p>
 <table border="1" class="docutils">
 <colgroup>
 </colgroup>
@@ -234,41 +237,56 @@ the following element types:</p>
 <tr class="row-odd"><th class="head">Type</th>
 <th class="head">Num Elements</th>
 <th class="head">Vector Bit Width</th>
+<th class="head">Expected Bit Alignment</th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><code>uint8_t</code></td>
 <td>16</td>
 <td>128</td>
+<td>8</td>
 </tr>
 <tr class="row-odd"><td><code>int8_t</code></td>
 <td>16</td>
 <td>128</td>
+<td>8</td>
 </tr>
 <tr class="row-even"><td><code>uint16_t</code></td>
 <td>8</td>
 <td>128</td>
+<td>16</td>
 </tr>
 <tr class="row-odd"><td><code>int16_t</code></td>
 <td>8</td>
 <td>128</td>
+<td>16</td>
 </tr>
 <tr class="row-even"><td><code>uint32_t</code></td>
 <td>4</td>
 <td>128</td>
+<td>32</td>
 </tr>
 <tr class="row-odd"><td><code>int32_t</code></td>
 <td>4</td>
 <td>128</td>
+<td>32</td>
 </tr>
 <tr class="row-even"><td><code>float</code></td>
 <td>4</td>
 <td>128</td>
+<td>32</td>
 </tr>
 </tbody>
 </table>
 <p>64-bit integers and double-precision floating point will be supported in
 a future release, as will 256-bit and 512-bit vectors.</p>
+<p>Vector element bit width alignment can be stated explicitly (this is assumed by
+PNaCl, but not necessarily by other compilers), and smaller alignments can also
+be specified:</p>
+<pre class="prettyprint">
+typedef int v4s_element   __attribute__((vector_size(16), aligned(4)));
+typedef int v4s_unaligned __attribute__((vector_size(16), aligned(1)));
+</pre>
 <p>The following operators are supported on vectors:</p>
 <table border="1" class="docutils">
 <colgroup>
