@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "device/hid/hid_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -12,7 +13,8 @@ namespace device {
 
 TEST(HidServiceTest, Create) {
   base::MessageLoopForIO message_loop;
-  HidService* service = HidService::Create(message_loop.message_loop_proxy());
+  scoped_ptr<HidService> service(
+      HidService::Create(message_loop.message_loop_proxy()));
   ASSERT_TRUE(service);
 
   std::vector<HidDeviceInfo> devices;
