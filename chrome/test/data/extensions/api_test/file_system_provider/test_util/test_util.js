@@ -69,7 +69,8 @@ test_util.mountFileSystem = function(callback) {
   chrome.fileSystemProvider.mount(
       {
         fileSystemId: test_util.FILE_SYSTEM_ID,
-        displayName: test_util.FILE_SYSTEM_NAME
+        displayName: test_util.FILE_SYSTEM_NAME,
+        writable: true
       },
       function() {
         var volumeId =

@@ -108,6 +108,29 @@ TEST_F(FileSystemProviderOperationsCopyEntryTest, Execute_NoListener) {
   EXPECT_FALSE(copy_entry.Execute(kRequestId));
 }
 
+TEST_F(FileSystemProviderOperationsCopyEntryTest, Execute_ReadOnly) {
+  util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
+  util::StatusCallbackLog callback_log;
+
+  const ProvidedFileSystemInfo read_only_file_system_info(
+      kExtensionId,
+      kFileSystemId,
+      "" /* file_system_name */,
+      false /* writable */,
+      base::FilePath() /* mount_path */);
+
+  CopyEntry copy_entry(NULL,
+                       read_only_file_system_info,
+                       base::FilePath::FromUTF8Unsafe(kSourcePath),
+                       base::FilePath::FromUTF8Unsafe(kTargetPath),
+                       base::Bind(&util::LogStatusCallback, &callback_log));
+  copy_entry.SetDispatchEventImplForTesting(
+      base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
+                 base::Unretained(&dispatcher)));
+
+  EXPECT_FALSE(copy_entry.Execute(kRequestId));
+}
+
 TEST_F(FileSystemProviderOperationsCopyEntryTest, OnSuccess) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;

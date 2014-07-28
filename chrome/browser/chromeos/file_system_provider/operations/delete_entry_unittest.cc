@@ -41,7 +41,7 @@ class FileSystemProviderOperationsDeleteEntryTest : public testing::Test {
         ProvidedFileSystemInfo(kExtensionId,
                                kFileSystemId,
                                "" /* file_system_name */,
-                               false /* writable */,
+                               true /* writable */,
                                base::FilePath() /* mount_path */);
   }
 
@@ -97,6 +97,29 @@ TEST_F(FileSystemProviderOperationsDeleteEntryTest, Execute_NoListener) {
 
   DeleteEntry delete_entry(NULL,
                            file_system_info_,
+                           base::FilePath::FromUTF8Unsafe(kEntryPath),
+                           true /* recursive */,
+                           base::Bind(&util::LogStatusCallback, &callback_log));
+  delete_entry.SetDispatchEventImplForTesting(
+      base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
+                 base::Unretained(&dispatcher)));
+
+  EXPECT_FALSE(delete_entry.Execute(kRequestId));
+}
+
+TEST_F(FileSystemProviderOperationsDeleteEntryTest, Execute_ReadOnly) {
+  util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
+  util::StatusCallbackLog callback_log;
+
+  const ProvidedFileSystemInfo read_only_file_system_info(
+      kExtensionId,
+      kFileSystemId,
+      "" /* file_system_name */,
+      false /* writable */,
+      base::FilePath() /* mount_path */);
+
+  DeleteEntry delete_entry(NULL,
+                           read_only_file_system_info,
                            base::FilePath::FromUTF8Unsafe(kEntryPath),
                            true /* recursive */,
                            base::Bind(&util::LogStatusCallback, &callback_log));

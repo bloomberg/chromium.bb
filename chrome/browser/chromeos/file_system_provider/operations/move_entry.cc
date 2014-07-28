@@ -28,6 +28,9 @@ MoveEntry::~MoveEntry() {
 }
 
 bool MoveEntry::Execute(int request_id) {
+  if (!file_system_info_.writable())
+    return false;
+
   scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue);
   values->SetString("sourcePath", source_path_.AsUTF8Unsafe());
   values->SetString("targetPath", target_path_.AsUTF8Unsafe());

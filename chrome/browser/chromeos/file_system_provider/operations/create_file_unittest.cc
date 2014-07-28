@@ -101,6 +101,28 @@ TEST_F(FileSystemProviderOperationsCreateFileTest, Execute_NoListener) {
   EXPECT_FALSE(create_file.Execute(kRequestId));
 }
 
+TEST_F(FileSystemProviderOperationsCreateFileTest, Execute_ReadOnly) {
+  util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
+  util::StatusCallbackLog callback_log;
+
+  const ProvidedFileSystemInfo read_only_file_system_info(
+      kExtensionId,
+      kFileSystemId,
+      "" /* file_system_name */,
+      false /* writable */,
+      base::FilePath() /* mount_path */);
+
+  CreateFile create_file(NULL,
+                         read_only_file_system_info,
+                         base::FilePath::FromUTF8Unsafe(kFilePath),
+                         base::Bind(&util::LogStatusCallback, &callback_log));
+  create_file.SetDispatchEventImplForTesting(
+      base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
+                 base::Unretained(&dispatcher)));
+
+  EXPECT_FALSE(create_file.Execute(kRequestId));
+}
+
 TEST_F(FileSystemProviderOperationsCreateFileTest, OnSuccess) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;

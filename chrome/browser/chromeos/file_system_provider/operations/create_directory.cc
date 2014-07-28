@@ -31,6 +31,9 @@ CreateDirectory::~CreateDirectory() {
 }
 
 bool CreateDirectory::Execute(int request_id) {
+  if (!file_system_info_.writable())
+    return false;
+
   scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue);
   values->SetString("directoryPath", directory_path_.AsUTF8Unsafe());
   values->SetBoolean("exclusive", exclusive_);

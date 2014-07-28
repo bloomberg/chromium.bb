@@ -29,6 +29,11 @@ OpenFile::~OpenFile() {
 }
 
 bool OpenFile::Execute(int request_id) {
+  if (!file_system_info_.writable() &&
+      mode_ == ProvidedFileSystemInterface::OPEN_FILE_MODE_WRITE) {
+    return false;
+  }
+
   scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue);
   values->SetString("filePath", file_path_.AsUTF8Unsafe());
 

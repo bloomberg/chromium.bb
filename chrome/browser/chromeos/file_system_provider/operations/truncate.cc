@@ -28,6 +28,9 @@ Truncate::~Truncate() {
 }
 
 bool Truncate::Execute(int request_id) {
+  if (!file_system_info_.writable())
+    return false;
+
   scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue);
   values->SetString("filePath", file_path_.AsUTF8Unsafe());
   values->SetDouble("length", length_);

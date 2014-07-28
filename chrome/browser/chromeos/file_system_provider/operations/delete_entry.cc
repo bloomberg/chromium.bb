@@ -28,6 +28,9 @@ DeleteEntry::~DeleteEntry() {
 }
 
 bool DeleteEntry::Execute(int request_id) {
+  if (!file_system_info_.writable())
+    return false;
+
   scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue);
   values->SetString("entryPath", entry_path_.AsUTF8Unsafe());
   values->SetBoolean("recursive", recursive_);

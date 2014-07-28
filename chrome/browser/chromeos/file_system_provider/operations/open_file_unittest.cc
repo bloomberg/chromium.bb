@@ -147,6 +147,48 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, Execute_NoListener) {
   EXPECT_FALSE(open_file.Execute(kRequestId));
 }
 
+TEST_F(FileSystemProviderOperationsOpenFileTest, Execute_ReadOnly) {
+  util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
+  CallbackLogger callback_logger;
+
+  const ProvidedFileSystemInfo read_only_file_system_info(
+      kExtensionId,
+      kFileSystemId,
+      "" /* file_system_name */,
+      false /* writable */,
+      base::FilePath() /* mount_path */);
+
+  // Opening for read on a read-only file system is allowed.
+  {
+    OpenFile open_file(NULL,
+                       read_only_file_system_info,
+                       base::FilePath::FromUTF8Unsafe(kFilePath),
+                       ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
+                       base::Bind(&CallbackLogger::OnOpenFile,
+                                  base::Unretained(&callback_logger)));
+    open_file.SetDispatchEventImplForTesting(
+        base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
+                   base::Unretained(&dispatcher)));
+
+    EXPECT_TRUE(open_file.Execute(kRequestId));
+  }
+
+  // Opening for write on a read-only file system is forbidden and must fail.
+  {
+    OpenFile open_file(NULL,
+                       read_only_file_system_info,
+                       base::FilePath::FromUTF8Unsafe(kFilePath),
+                       ProvidedFileSystemInterface::OPEN_FILE_MODE_WRITE,
+                       base::Bind(&CallbackLogger::OnOpenFile,
+                                  base::Unretained(&callback_logger)));
+    open_file.SetDispatchEventImplForTesting(
+        base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
+                   base::Unretained(&dispatcher)));
+
+    EXPECT_FALSE(open_file.Execute(kRequestId));
+  }
+}
+
 TEST_F(FileSystemProviderOperationsOpenFileTest, OnSuccess) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
