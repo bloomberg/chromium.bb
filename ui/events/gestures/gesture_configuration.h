@@ -244,6 +244,7 @@ class EVENTS_BASE_EXPORT GestureConfiguration {
   static double max_distance_between_taps_for_double_tap_;
   static double min_distance_for_pinch_scroll_in_pixels_;
   static double min_flick_speed_squared_;
+  // Only used with --compensate-for-unstable-pinch-zoom.
   static double min_pinch_update_distance_in_pixels_;
   static double min_rail_break_velocity_;
   static double min_scroll_delta_squared_;

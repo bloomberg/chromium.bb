@@ -9,6 +9,8 @@
 
 #include <cmath>
 
+#include "base/command_line.h"
+#include "ui/events/event_switches.h"
 #include "ui/events/gestures/gesture_configuration.h"
 #include "ui/gfx/screen.h"
 
@@ -48,12 +50,16 @@ GestureDetector::Config DefaultGestureDetectorConfig() {
 
 ScaleGestureDetector::Config DefaultScaleGestureDetectorConfig() {
   ScaleGestureDetector::Config config;
+  double min_pinch_update_distance =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kCompensateForUnstablePinchZoom)
+          ? GestureConfiguration::min_pinch_update_distance_in_pixels()
+          : 0;
 
   config.gesture_detector_config = DefaultGestureDetectorConfig();
   config.min_scaling_touch_major = GestureConfiguration::default_radius() * 2;
   config.min_scaling_span = GestureConfiguration::min_scaling_span_in_pixels();
-  config.min_pinch_update_span_delta =
-      GestureConfiguration::min_pinch_update_distance_in_pixels();
+  config.min_pinch_update_span_delta = min_pinch_update_distance;
   return config;
 }
 

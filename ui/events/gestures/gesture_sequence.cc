@@ -1308,6 +1308,11 @@ bool GestureSequence::PinchStart(const TouchEvent& event,
 bool GestureSequence::PinchUpdate(const TouchEvent& event,
                                   GesturePoint& point,
                                   Gestures* gestures) {
+  static double min_pinch_update_distance =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kCompensateForUnstablePinchZoom)
+          ? GestureConfiguration::min_pinch_update_distance_in_pixels()
+          : 0;
   DCHECK(state_ == GS_PINCH);
 
   // It is possible that the none of the touch-points changed their position,
@@ -1329,7 +1334,7 @@ bool GestureSequence::PinchUpdate(const TouchEvent& event,
   float distance = BoundingBoxDiagonal(bounding_box_);
 
   if (std::abs(distance - pinch_distance_current_) >=
-      GestureConfiguration::min_pinch_update_distance_in_pixels()) {
+      min_pinch_update_distance) {
     AppendPinchGestureUpdate(point,
         distance / pinch_distance_current_, gestures);
     pinch_distance_current_ = distance;
