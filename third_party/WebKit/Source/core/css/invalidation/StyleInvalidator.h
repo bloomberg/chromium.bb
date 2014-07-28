@@ -29,11 +29,6 @@ public:
     void trace(Visitor*);
 
 private:
-    bool invalidate(Element&);
-    bool invalidateChildren(Element&);
-
-    bool checkInvalidationSetsAgainstElement(Element&);
-
     struct RecursionData {
         RecursionData()
             : m_invalidateCustomPseudo(false)
@@ -56,6 +51,10 @@ private:
         bool m_wholeSubtreeInvalid;
         bool m_treeBoundaryCrossing;
     };
+
+    bool invalidate(Element&, RecursionData&);
+    bool invalidateChildren(Element&, RecursionData&);
+    bool checkInvalidationSetsAgainstElement(Element&, RecursionData&);
 
     class RecursionCheckpoint {
     public:
@@ -88,7 +87,6 @@ private:
     InvalidationList& ensurePendingInvalidationList(Element&);
 
     PendingInvalidationMap m_pendingInvalidationMap;
-    RecursionData m_recursionData;
 };
 
 } // namespace blink

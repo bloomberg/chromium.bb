@@ -19,8 +19,9 @@ namespace blink {
 
 void StyleInvalidator::invalidate(Document& document)
 {
+    RecursionData recursionData;
     if (Element* documentElement = document.documentElement())
-        invalidate(*documentElement);
+        invalidate(*documentElement, recursionData);
     document.clearChildNeedsStyleInvalidation();
     document.clearNeedsStyleInvalidation();
     clearPendingInvalidations();
@@ -96,56 +97,56 @@ bool StyleInvalidator::RecursionData::matchesCurrentInvalidationSets(Element& el
     return false;
 }
 
-bool StyleInvalidator::checkInvalidationSetsAgainstElement(Element& element)
+bool StyleInvalidator::checkInvalidationSetsAgainstElement(Element& element, StyleInvalidator::RecursionData& recursionData)
 {
-    if (element.styleChangeType() >= SubtreeStyleChange || m_recursionData.wholeSubtreeInvalid()) {
-        m_recursionData.setWholeSubtreeInvalid();
+    if (element.styleChangeType() >= SubtreeStyleChange || recursionData.wholeSubtreeInvalid()) {
+        recursionData.setWholeSubtreeInvalid();
         return false;
     }
     if (element.needsStyleInvalidation()) {
         if (InvalidationList* invalidationList = m_pendingInvalidationMap.get(&element)) {
             for (InvalidationList::const_iterator it = invalidationList->begin(); it != invalidationList->end(); ++it)
-                m_recursionData.pushInvalidationSet(**it);
+                recursionData.pushInvalidationSet(**it);
             // FIXME: It's really only necessary to clone the render style for this element, not full style recalc.
             return true;
         }
     }
-    return m_recursionData.matchesCurrentInvalidationSets(element);
+    return recursionData.matchesCurrentInvalidationSets(element);
 }
 
-bool StyleInvalidator::invalidateChildren(Element& element)
+bool StyleInvalidator::invalidateChildren(Element& element, StyleInvalidator::RecursionData& recursionData)
 {
     bool someChildrenNeedStyleRecalc = false;
     for (ShadowRoot* root = element.youngestShadowRoot(); root; root = root->olderShadowRoot()) {
-        if (!m_recursionData.treeBoundaryCrossing() && !root->childNeedsStyleInvalidation() && !root->needsStyleInvalidation())
+        if (!recursionData.treeBoundaryCrossing() && !root->childNeedsStyleInvalidation() && !root->needsStyleInvalidation())
             continue;
         for (Element* child = ElementTraversal::firstChild(*root); child; child = ElementTraversal::nextSibling(*child)) {
-            bool childRecalced = invalidate(*child);
+            bool childRecalced = invalidate(*child, recursionData);
             someChildrenNeedStyleRecalc = someChildrenNeedStyleRecalc || childRecalced;
         }
         root->clearChildNeedsStyleInvalidation();
         root->clearNeedsStyleInvalidation();
     }
     for (Element* child = ElementTraversal::firstChild(element); child; child = ElementTraversal::nextSibling(*child)) {
-        bool childRecalced = invalidate(*child);
+        bool childRecalced = invalidate(*child, recursionData);
         someChildrenNeedStyleRecalc = someChildrenNeedStyleRecalc || childRecalced;
     }
     return someChildrenNeedStyleRecalc;
 }
 
-bool StyleInvalidator::invalidate(Element& element)
+bool StyleInvalidator::invalidate(Element& element, StyleInvalidator::RecursionData& recursionData)
 {
-    RecursionCheckpoint checkpoint(&m_recursionData);
+    RecursionCheckpoint checkpoint(&recursionData);
 
-    bool thisElementNeedsStyleRecalc = checkInvalidationSetsAgainstElement(element);
+    bool thisElementNeedsStyleRecalc = checkInvalidationSetsAgainstElement(element, recursionData);
 
     bool someChildrenNeedStyleRecalc = false;
-    if (m_recursionData.hasInvalidationSets() || element.childNeedsStyleInvalidation())
-        someChildrenNeedStyleRecalc = invalidateChildren(element);
+    if (recursionData.hasInvalidationSets() || element.childNeedsStyleInvalidation())
+        someChildrenNeedStyleRecalc = invalidateChildren(element, recursionData);
 
     if (thisElementNeedsStyleRecalc) {
-        element.setNeedsStyleRecalc(m_recursionData.wholeSubtreeInvalid() ? SubtreeStyleChange : LocalStyleChange);
-    } else if (m_recursionData.hasInvalidationSets() && someChildrenNeedStyleRecalc) {
+        element.setNeedsStyleRecalc(recursionData.wholeSubtreeInvalid() ? SubtreeStyleChange : LocalStyleChange);
+    } else if (recursionData.hasInvalidationSets() && someChildrenNeedStyleRecalc) {
         // Clone the RenderStyle in order to preserve correct style sharing, if possible. Otherwise recalc style.
         if (RenderObject* renderer = element.renderer())
             renderer->setStyleInternal(RenderStyle::clone(renderer->style()));
