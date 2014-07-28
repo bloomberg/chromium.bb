@@ -106,6 +106,10 @@ inline bool operator!=(const String& a, const String& b) { return !(a == b); }
 inline bool operator!=(const char* a, const String& b) { return !(a == b); }
 inline bool operator!=(const String& a, const char* b) { return !(a == b); }
 
+inline std::ostream& operator<<(std::ostream& out, const String& s) {
+  return out << s.get();
+}
+
 // TODO(darin): Add similar variants of operator<,<=,>,>=
 
 template <>
