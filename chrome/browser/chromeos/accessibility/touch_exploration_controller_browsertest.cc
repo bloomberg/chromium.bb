@@ -5,10 +5,8 @@
 #include "ui/chromeos/touch_exploration_controller.h"
 
 #include "ash/accessibility_delegate.h"
-#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "base/command_line.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/browser.h"
@@ -36,11 +34,6 @@ class TouchExplorationTest : public InProcessBrowserTest {
   virtual ~TouchExplorationTest() {}
 
  protected:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ash::switches::kAshEnableTouchExplorationMode);
-  }
-
   virtual void SetUpOnMainThread() OVERRIDE {
     // The RenderView for WebContents is created as a result of the
     // navigation to the New Tab page which is done as part of the test

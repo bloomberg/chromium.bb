@@ -42,15 +42,16 @@ const char kAshDefaultWallpaperSmall[] = "ash-default-wallpaper-small";
 // WorkspaceLayoutManager.
 const char kAshDisableLockLayoutManager[] = "ash-disable-lock-layout-manager";
 
+// Disable the Touch Exploration Mode. Touch Exploration Mode will no longer be
+// turned on automatically when spoken feedback is enabled when this flag is
+// set.
+const char kAshDisableTouchExplorationMode[] =
+    "ash-disable-touch-exploration-mode";
+
 #if defined(OS_CHROMEOS)
 // Enables key bindings to scroll magnified screen.
 const char kAshEnableMagnifierKeyScroller[] =
     "ash-enable-magnifier-key-scroller";
-
-// Enable the Touch Exploration Mode, which will be turned on automatically
-// when spoken feedback is enabled.
-const char kAshEnableTouchExplorationMode[] =
-    "ash-enable-touch-exploration-mode";
 #endif
 
 // Enables text filtering with the keyboard in Overview Mode.
