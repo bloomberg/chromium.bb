@@ -38,6 +38,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
+#include "chrome/common/terminate_on_heap_corruption_experiment_win.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
@@ -256,6 +257,10 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
           base::TimeDelta::FromSeconds(45));
 
   InitializeChromeElf();
+
+  // TODO(erikwright): Remove this and the implementation of the experiment by
+  // September 2014.
+  InitializeDisableTerminateOnHeapCorruptionExperiment();
 }
 
 // static

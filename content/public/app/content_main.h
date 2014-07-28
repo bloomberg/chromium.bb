@@ -25,6 +25,7 @@ class ContentMainDelegate;
 struct ContentMainParams {
   explicit ContentMainParams(ContentMainDelegate* delegate)
       : delegate(delegate),
+        enable_termination_on_heap_corruption(true),
 #if defined(OS_WIN)
         instance(NULL),
         sandbox_info(NULL),
@@ -36,6 +37,8 @@ struct ContentMainParams {
   }
 
   ContentMainDelegate* delegate;
+
+  bool enable_termination_on_heap_corruption;
 
 #if defined(OS_WIN)
   HINSTANCE instance;
