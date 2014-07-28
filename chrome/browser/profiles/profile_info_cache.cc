@@ -49,7 +49,6 @@ const char kAuthCredentialsKey[] = "local_auth_credentials";
 const char kUseGAIAPictureKey[] = "use_gaia_picture";
 const char kBackgroundAppsKey[] = "background_apps";
 const char kGAIAPictureFileNameKey[] = "gaia_picture_file_name";
-const char kIsSupervisedKey[] = "is_managed";
 const char kIsOmittedFromProfileListKey[] = "is_omitted_from_profile_list";
 const char kSigninRequiredKey[] = "signin_required";
 const char kSupervisedUserId[] = "managed_user_id";
@@ -176,14 +175,6 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
     base::string16 name;
     info->GetString(kNameKey, &name);
     sorted_keys_.insert(FindPositionForProfile(it.key(), name), it.key());
-    // TODO(ibraaaa): delete this when 97% of our users are using M31.
-    // http://crbug.com/276163
-    bool is_supervised = false;
-    if (info->GetBoolean(kIsSupervisedKey, &is_supervised)) {
-      info->Remove(kIsSupervisedKey, NULL);
-      info->SetString(kSupervisedUserId,
-                      is_supervised ? "DUMMY_ID" : std::string());
-    }
     info->SetBoolean(kIsUsingDefaultName, IsDefaultName(name));
   }
 
