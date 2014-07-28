@@ -822,6 +822,13 @@
     { "name": "jackyyf.com", "mode": "force-https" },
     { "name": "flynn.io", "include_subdomains": true, "mode": "force-https" },
     { "name": "hackerone.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "hackerone-user-content.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "gamesdepartment.co.uk", "mode": "force-https" },
+    { "name": "www.gamesdepartment.co.uk", "include_subdomains": true, "mode": "force-https" },
+    { "name": "schokokeks.org", "mode": "force-https" },
+    { "name": "www.schokokeks.org", "include_subdomains": true, "mode": "force-https" },
+    { "name": "config.schokokeks.org", "include_subdomains": true, "mode": "force-https" },
+    { "name": "webmail.schokokeks.org", "include_subdomains": true, "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
