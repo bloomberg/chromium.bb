@@ -59,16 +59,16 @@ void AffectedByFocusTest::setHtmlInnerHTML(const char* htmlContent)
 void AffectedByFocusTest::checkElements(ElementResult expected[], unsigned expectedCount) const
 {
     unsigned i = 0;
-    Element* elm = document().body();
+    HTMLElement* element = document().body();
 
-    for (; elm && i < expectedCount; elm = ElementTraversal::next(*elm), ++i) {
-        ASSERT_TRUE(elm->hasTagName(expected[i].tag));
-        ASSERT(elm->renderStyle());
-        ASSERT_EQ(expected[i].affectedBy, elm->renderStyle()->affectedByFocus());
-        ASSERT_EQ(expected[i].childrenOrSiblingsAffectedBy, elm->childrenOrSiblingsAffectedByFocus());
+    for (; element && i < expectedCount; element = Traversal<HTMLElement>::next(*element), ++i) {
+        ASSERT_TRUE(element->hasTagName(expected[i].tag));
+        ASSERT(element->renderStyle());
+        ASSERT_EQ(expected[i].affectedBy, element->renderStyle()->affectedByFocus());
+        ASSERT_EQ(expected[i].childrenOrSiblingsAffectedBy, element->childrenOrSiblingsAffectedByFocus());
     }
 
-    ASSERT(!elm && i == expectedCount);
+    ASSERT(!element && i == expectedCount);
 }
 
 // A global :focus rule in html.css currently causes every single element to be

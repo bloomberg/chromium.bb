@@ -37,15 +37,6 @@ namespace blink {
 
 using namespace HTMLNames;
 
-static bool supportsLabels(const Element& element)
-{
-    if (!element.isHTMLElement())
-        return false;
-    if (!toHTMLElement(element).isLabelable())
-        return false;
-    return toLabelableElement(element).supportLabels();
-}
-
 inline HTMLLabelElement::HTMLLabelElement(Document& document)
     : HTMLElement(labelTag, document)
 {
@@ -67,16 +58,15 @@ LabelableElement* HTMLLabelElement::control() const
         // Search the children and descendants of the label element for a form element.
         // per http://dev.w3.org/html5/spec/Overview.html#the-label-element
         // the form element must be "labelable form-associated element".
-        for (Element* element = ElementTraversal::next(*this, this); element; element = ElementTraversal::next(*element, this)) {
-            if (!supportsLabels(*element))
-                continue;
-            return toLabelableElement(element);
+        for (LabelableElement* element = Traversal<LabelableElement>::next(*this, this); element; element = Traversal<LabelableElement>::next(*element, this)) {
+            if (element->supportLabels())
+                return element;
         }
         return 0;
     }
 
     if (Element* element = treeScope().getElementById(controlId)) {
-        if (supportsLabels(*element))
+        if (isLabelableElement(*element) && toLabelableElement(*element).supportLabels())
             return toLabelableElement(element);
     }
 

@@ -91,14 +91,14 @@ bool RenderSVGResourceClipper::tryPathOnlyClipping(GraphicsContext* context,
     WindRule clipRule = RULE_NONZERO;
     Path clipPath = Path();
 
-    for (Element* childElement = ElementTraversal::firstChild(*element()); childElement; childElement = ElementTraversal::nextSibling(*childElement)) {
+    for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
         RenderObject* renderer = childElement->renderer();
         if (!renderer)
             continue;
         // Only shapes or paths are supported for direct clipping. We need to fallback to masking for texts.
         if (renderer->isSVGText())
             return false;
-        if (!childElement->isSVGElement() || !toSVGElement(childElement)->isSVGGraphicsElement())
+        if (!childElement->isSVGGraphicsElement())
             continue;
         SVGGraphicsElement* styled = toSVGGraphicsElement(childElement);
         RenderStyle* style = renderer->style();

@@ -60,10 +60,8 @@ void HTMLFieldSetElement::trace(Visitor* visitor)
 
 void HTMLFieldSetElement::invalidateDisabledStateUnder(Element& base)
 {
-    for (Element* element = ElementTraversal::firstWithin(base); element; element = ElementTraversal::next(*element, &base)) {
-        if (element->isFormControlElement())
-            toHTMLFormControlElement(element)->ancestorDisabledStateWasChanged();
-    }
+    for (HTMLFormControlElement* element = Traversal<HTMLFormControlElement>::firstWithin(base); element; element = Traversal<HTMLFormControlElement>::next(*element, &base))
+        element->ancestorDisabledStateWasChanged();
 }
 
 void HTMLFieldSetElement::disabledAttributeChanged()
