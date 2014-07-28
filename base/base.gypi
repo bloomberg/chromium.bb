@@ -504,6 +504,7 @@
           'scoped_generic.h',
           'scoped_native_library.cc',
           'scoped_native_library.h',
+          'scoped_observer.h',
           'sequence_checker.h',
           'sequence_checker_impl.cc',
           'sequence_checker_impl.h',

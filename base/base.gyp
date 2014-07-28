@@ -559,7 +559,6 @@
         'scoped_clear_errno_unittest.cc',
         'scoped_generic_unittest.cc',
         'scoped_native_library_unittest.cc',
-        'scoped_observer.h',
         'security_unittest.cc',
         'sequence_checker_unittest.cc',
         'sha1_unittest.cc',
