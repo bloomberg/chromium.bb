@@ -5,8 +5,8 @@
 #include "sync/engine/entity_tracker.h"
 
 #include "base/logging.h"
-#include "sync/engine/non_blocking_sync_common.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/syncable/syncable_util.h"
 #include "sync/util/time.h"
 

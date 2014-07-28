@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "sync/engine/model_type_sync_proxy.h"
-#include "sync/engine/non_blocking_sync_common.h"
+#include "sync/internal_api/public/non_blocking_sync_common.h"
 
 namespace syncer {
 

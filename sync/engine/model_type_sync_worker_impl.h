@@ -11,10 +11,10 @@
 #include "sync/base/sync_export.h"
 #include "sync/engine/commit_contributor.h"
 #include "sync/engine/model_type_sync_worker.h"
-#include "sync/engine/non_blocking_sync_common.h"
 #include "sync/engine/nudge_handler.h"
 #include "sync/engine/update_handler.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace base {

@@ -5,8 +5,8 @@
 #include "sync/engine/model_type_sync_proxy_impl.h"
 
 #include "sync/engine/model_type_sync_worker.h"
-#include "sync/engine/non_blocking_sync_common.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/syncable_util.h"

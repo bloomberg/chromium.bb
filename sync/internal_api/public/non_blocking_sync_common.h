@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_ENGINE_NON_BLOCKING_SYNC_COMMON_H_
-#define SYNC_ENGINE_NON_BLOCKING_SYNC_COMMON_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_NON_BLOCKING_SYNC_COMMON_H_
+#define SYNC_INTERNAL_API_PUBLIC_NON_BLOCKING_SYNC_COMMON_H_
 
 #include <string>
 #include <vector>
@@ -102,4 +102,4 @@ typedef std::vector<UpdateResponseData> UpdateResponseDataList;
 
 }  // namespace syncer
 
-#endif  // SYNC_ENGINE_NON_BLOCKING_SYNC_COMMON_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_NON_BLOCKING_SYNC_COMMON_H_

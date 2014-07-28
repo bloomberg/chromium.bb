@@ -8,7 +8,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "sync/engine/non_blocking_sync_common.h"
+#include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/internal_api/public/sync_context.h"
 
 namespace syncer {

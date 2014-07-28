@@ -5,9 +5,8 @@
 #ifndef SYNC_TEST_ENGINE_SINGLE_TYPE_MOCK_SERVER_H_
 #define SYNC_TEST_ENGINE_SINGLE_TYPE_MOCK_SERVER_H_
 
-#include "sync/engine/non_blocking_sync_common.h"
-
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/internal_api/public/non_blocking_sync_common.h"
 
 namespace syncer {
 

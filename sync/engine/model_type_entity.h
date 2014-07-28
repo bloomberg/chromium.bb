@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "sync/base/sync_export.h"
-#include "sync/engine/non_blocking_sync_common.h"
+#include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace syncer {

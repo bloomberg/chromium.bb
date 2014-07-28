@@ -80,8 +80,6 @@
     'engine/net/server_connection_manager.h',
     'engine/net/url_translator.cc',
     'engine/net/url_translator.h',
-    'engine/non_blocking_sync_common.cc',
-    'engine/non_blocking_sync_common.h',
     'engine/non_blocking_type_commit_contribution.cc',
     'engine/non_blocking_type_commit_contribution.h',
     'engine/nudge_source.cc',

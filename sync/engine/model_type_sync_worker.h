@@ -5,7 +5,7 @@
 #ifndef SYNC_ENGINE_MODEL_TYPE_SYNC_WORKER_H_
 #define SYNC_ENGINE_MODEL_TYPE_SYNC_WORKER_H_
 
-#include "sync/engine/non_blocking_sync_common.h"
+#include "sync/internal_api/public/non_blocking_sync_common.h"
 
 namespace syncer {
 

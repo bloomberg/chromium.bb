@@ -13,7 +13,7 @@
 #include "sync/engine/model_type_sync_proxy_impl.h"
 #include "sync/engine/model_type_sync_worker.h"
 #include "sync/engine/model_type_sync_worker_impl.h"
-#include "sync/engine/non_blocking_sync_common.h"
+#include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/sessions/directory_type_debug_info_emitter.h"
 
 namespace syncer {
