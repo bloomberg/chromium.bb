@@ -154,12 +154,6 @@ class BASE_EXPORT ProcessMetrics {
   // usage in bytes, as per definition of WorkingSetBytes.
   bool GetWorkingSetKBytes(WorkingSetKBytes* ws_usage) const;
 
-  // Computes the current process available memory for allocation.
-  // It does a linear scan of the address space querying each memory region
-  // for its free (unallocated) status. It is useful for estimating the memory
-  // load and fragmentation.
-  bool CalculateFreeMemory(FreeMBytes* free) const;
-
   // Returns the CPU usage in percent since the last time this method or
   // GetPlatformIndependentCPUUsage() was called. The first time this method
   // is called it returns 0 and will return the actual CPU info on subsequent
