@@ -2,9 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Set of operations/utilities related to checking out the depot, and
-outputting annotations on the buildbot waterfall. These are intended to be
-used by the bisection scripts."""
+"""Utility functions used by the bisect tool.
+
+This includes functions related to checking out the depot and outputting
+annotations for the Buildbot waterfall.
+"""
 
 import errno
 import imp
@@ -15,66 +17,68 @@ import subprocess
 import sys
 
 DEFAULT_GCLIENT_CUSTOM_DEPS = {
-    "src/data/page_cycler": "https://chrome-internal.googlesource.com/"
-                            "chrome/data/page_cycler/.git",
-    "src/data/dom_perf": "https://chrome-internal.googlesource.com/"
-                         "chrome/data/dom_perf/.git",
-    "src/data/mach_ports": "https://chrome-internal.googlesource.com/"
-                           "chrome/data/mach_ports/.git",
-    "src/tools/perf/data": "https://chrome-internal.googlesource.com/"
-                           "chrome/tools/perf/data/.git",
-    "src/third_party/adobe/flash/binaries/ppapi/linux":
-        "https://chrome-internal.googlesource.com/"
-        "chrome/deps/adobe/flash/binaries/ppapi/linux/.git",
-    "src/third_party/adobe/flash/binaries/ppapi/linux_x64":
-        "https://chrome-internal.googlesource.com/"
-        "chrome/deps/adobe/flash/binaries/ppapi/linux_x64/.git",
-    "src/third_party/adobe/flash/binaries/ppapi/mac":
-        "https://chrome-internal.googlesource.com/"
-        "chrome/deps/adobe/flash/binaries/ppapi/mac/.git",
-    "src/third_party/adobe/flash/binaries/ppapi/mac_64":
-        "https://chrome-internal.googlesource.com/"
-        "chrome/deps/adobe/flash/binaries/ppapi/mac_64/.git",
-    "src/third_party/adobe/flash/binaries/ppapi/win":
-        "https://chrome-internal.googlesource.com/"
-        "chrome/deps/adobe/flash/binaries/ppapi/win/.git",
-    "src/third_party/adobe/flash/binaries/ppapi/win_x64":
-        "https://chrome-internal.googlesource.com/"
-        "chrome/deps/adobe/flash/binaries/ppapi/win_x64/.git",
-    "src/chrome/tools/test/reference_build/chrome_win": None,
-    "src/chrome/tools/test/reference_build/chrome_mac": None,
-    "src/chrome/tools/test/reference_build/chrome_linux": None,
-    "src/third_party/WebKit/LayoutTests": None,
-    "src/tools/valgrind": None,}
+    'src/data/page_cycler': 'https://chrome-internal.googlesource.com/'
+                            'chrome/data/page_cycler/.git',
+    'src/data/dom_perf': 'https://chrome-internal.googlesource.com/'
+                         'chrome/data/dom_perf/.git',
+    'src/data/mach_ports': 'https://chrome-internal.googlesource.com/'
+                           'chrome/data/mach_ports/.git',
+    'src/tools/perf/data': 'https://chrome-internal.googlesource.com/'
+                           'chrome/tools/perf/data/.git',
+    'src/third_party/adobe/flash/binaries/ppapi/linux':
+        'https://chrome-internal.googlesource.com/'
+        'chrome/deps/adobe/flash/binaries/ppapi/linux/.git',
+    'src/third_party/adobe/flash/binaries/ppapi/linux_x64':
+        'https://chrome-internal.googlesource.com/'
+        'chrome/deps/adobe/flash/binaries/ppapi/linux_x64/.git',
+    'src/third_party/adobe/flash/binaries/ppapi/mac':
+        'https://chrome-internal.googlesource.com/'
+        'chrome/deps/adobe/flash/binaries/ppapi/mac/.git',
+    'src/third_party/adobe/flash/binaries/ppapi/mac_64':
+        'https://chrome-internal.googlesource.com/'
+        'chrome/deps/adobe/flash/binaries/ppapi/mac_64/.git',
+    'src/third_party/adobe/flash/binaries/ppapi/win':
+        'https://chrome-internal.googlesource.com/'
+        'chrome/deps/adobe/flash/binaries/ppapi/win/.git',
+    'src/third_party/adobe/flash/binaries/ppapi/win_x64':
+        'https://chrome-internal.googlesource.com/'
+        'chrome/deps/adobe/flash/binaries/ppapi/win_x64/.git',
+    'src/chrome/tools/test/reference_build/chrome_win': None,
+    'src/chrome/tools/test/reference_build/chrome_mac': None,
+    'src/chrome/tools/test/reference_build/chrome_linux': None,
+    'src/third_party/WebKit/LayoutTests': None,
+    'src/tools/valgrind': None,
+}
 
 GCLIENT_SPEC_DATA = [
-  { "name"        : "src",
-    "url"         : "https://chromium.googlesource.com/chromium/src.git",
-    "deps_file"   : ".DEPS.git",
-    "managed"     : True,
-    "custom_deps" : {},
-    "safesync_url": "",
-  },
+    {
+        'name': 'src',
+        'url': 'https://chromium.googlesource.com/chromium/src.git',
+        'deps_file': '.DEPS.git',
+        'managed': True,
+        'custom_deps': {},
+        'safesync_url': '',
+    },
 ]
 GCLIENT_SPEC_ANDROID = "\ntarget_os = ['android']"
-GCLIENT_CUSTOM_DEPS_V8 = {"src/v8_bleeding_edge": "git://github.com/v8/v8.git"}
+GCLIENT_CUSTOM_DEPS_V8 = {'src/v8_bleeding_edge': 'git://github.com/v8/v8.git'}
 FILE_DEPS_GIT = '.DEPS.git'
 FILE_DEPS = 'DEPS'
 
 REPO_PARAMS = [
-  'https://chrome-internal.googlesource.com/chromeos/manifest-internal/',
-  '--repo-url',
-  'https://git.chromium.org/external/repo.git'
+    'https://chrome-internal.googlesource.com/chromeos/manifest-internal/',
+    '--repo-url',
+    'https://git.chromium.org/external/repo.git'
 ]
 
-REPO_SYNC_COMMAND = 'git checkout -f $(git rev-list --max-count=1 '\
-                    '--before=%d remotes/m/master)'
+REPO_SYNC_COMMAND = ('git checkout -f $(git rev-list --max-count=1 '
+                     '--before=%d remotes/m/master)')
 
 ORIGINAL_ENV = {}
 
+
 def OutputAnnotationStepStart(name):
-  """Outputs appropriate annotation to signal the start of a step to
-  a trybot.
+  """Outputs annotation to signal the start of a step to a trybot.
 
   Args:
     name: The name of the step.
@@ -88,8 +92,7 @@ def OutputAnnotationStepStart(name):
 
 
 def OutputAnnotationStepClosed():
-  """Outputs appropriate annotation to signal the closing of a step to
-  a trybot."""
+  """Outputs annotation to signal the closing of a step to a trybot."""
   print
   print '@@@STEP_CLOSED@@@'
   print
@@ -110,11 +113,17 @@ def OutputAnnotationStepLink(label, url):
 
 
 def LoadExtraSrc(path_to_file):
-  """Attempts to load an extra source file. If this is successful, uses the
-  new module to override some global values, such as gclient spec data.
+  """Attempts to load an extra source file, and overrides global values.
+
+  If the extra source file is loaded successfully, then it will use the new
+  module to override some global values, such as gclient spec data.
+
+  Args:
+    path_to_file: File path.
 
   Returns:
-    The loaded src module, or None."""
+    The loaded module object, or None if none was imported.
+  """
   try:
     global GCLIENT_SPEC_DATA
     global GCLIENT_SPEC_ANDROID
@@ -122,7 +131,7 @@ def LoadExtraSrc(path_to_file):
     GCLIENT_SPEC_DATA = extra_src.GetGClientSpec()
     GCLIENT_SPEC_ANDROID = extra_src.GetGClientSpecExtraParams()
     return extra_src
-  except ImportError, e:
+  except ImportError:
     return None
 
 
@@ -131,10 +140,14 @@ def IsTelemetryCommand(command):
   return ('tools/perf/run_' in command or 'tools\\perf\\run_' in command)
 
 
-def CreateAndChangeToSourceDirectory(working_directory):
-  """Creates a directory 'bisect' as a subdirectory of 'working_directory'.  If
-  the function is successful, the current working directory will change to that
-  of the new 'bisect' directory.
+def _CreateAndChangeToSourceDirectory(working_directory):
+  """Creates a directory 'bisect' as a subdirectory of |working_directory|.
+
+  If successful, the current working directory will be changed to the new
+  'bisect' directory.
+
+  Args:
+    working_directory: The directory to create the new 'bisect' directory in.
 
   Returns:
     True if the directory was successfully created (or already existed).
@@ -144,13 +157,14 @@ def CreateAndChangeToSourceDirectory(working_directory):
   try:
     os.mkdir('bisect')
   except OSError, e:
-    if e.errno != errno.EEXIST:
+    if e.errno != errno.EEXIST:  # EEXIST indicates that it already exists.
+      os.chdir(cwd)
       return False
   os.chdir('bisect')
   return True
 
 
-def SubprocessCall(cmd, cwd=None):
+def _SubprocessCall(cmd, cwd=None):
   """Runs a subprocess with specified parameters.
 
   Args:
@@ -180,22 +194,20 @@ def RunGClient(params, cwd=None):
     The return code of the call.
   """
   cmd = ['gclient'] + params
+  return _SubprocessCall(cmd, cwd=cwd)
 
-  return SubprocessCall(cmd, cwd=cwd)
 
-
-def RunRepo(params):
-  """Runs cros repo command with specified parameters.
+def _RunRepo(params):
+  """Runs CrOS repo command with specified parameters.
 
   Args:
     params: A list of parameters to pass to gclient.
 
   Returns:
-    The return code of the call.
+    The return code of the call (zero indicates success).
   """
   cmd = ['repo'] + params
-
-  return SubprocessCall(cmd)
+  return _SubprocessCall(cmd)
 
 
 def RunRepoSyncAtTimestamp(timestamp):
@@ -207,9 +219,8 @@ def RunRepoSyncAtTimestamp(timestamp):
   Returns:
     The return code of the call.
   """
-  repo_sync = REPO_SYNC_COMMAND % timestamp
   cmd = ['forall', '-c', REPO_SYNC_COMMAND % timestamp]
-  return RunRepo(cmd)
+  return _RunRepo(cmd)
 
 
 def RunGClientAndCreateConfig(opts, custom_deps=None, cwd=None):
@@ -247,30 +258,30 @@ def IsDepsFileBlink():
   Returns:
     True if blink, false if webkit.
   """
-  locals = {'Var': lambda _: locals["vars"][_],
-            'From': lambda *args: None}
+  locals = {
+      'Var': lambda _: locals["vars"][_],
+      'From': lambda *args: None
+  }
   execfile(FILE_DEPS_GIT, {}, locals)
   return 'blink.git' in locals['vars']['webkit_url']
 
 
-def OnAccessError(func, path, exc_info):
-  """
-  Source: http://stackoverflow.com/questions/2656322/python-shutil-rmtree-fails-on-windows-with-access-is-denied
+def OnAccessError(func, path, _):
+  """Error handler for shutil.rmtree.
 
-  Error handler for ``shutil.rmtree``.
+  Source: http://goo.gl/DEYNCT
 
-  If the error is due to an access error (read only file)
-  it attempts to add write permission and then retries.
+  If the error is due to an access error (read only file), it attempts to add
+  write permissions, then retries.
 
   If the error is for another reason it re-raises the error.
 
   Args:
     func: The function that raised the error.
     path: The path name passed to func.
-    exc_info: Exception information returned by sys.exc_info().
+    _: Exception information from sys.exc_info(). Not used.
   """
   if not os.access(path, os.W_OK):
-    # Is the error an access error ?
     os.chmod(path, stat.S_IWUSR)
     func(path)
   else:
@@ -300,10 +311,10 @@ def RemoveThirdPartyDirectory(dir_name):
 
 
 def _CleanupPreviousGitRuns():
-  """Performs necessary cleanup between runs."""
-  # If a previous run of git crashed, bot was reset, etc... we
-  # might end up with leftover index.lock files.
-  for (path, dir, files) in os.walk(os.getcwd()):
+  """Cleans up any leftover index.lock files after running git."""
+  # If a previous run of git crashed, or bot was reset, etc., then we might
+  # end up with leftover index.lock files.
+  for path, _, files in os.walk(os.getcwd()):
     for cur_file in files:
       if cur_file.endswith('index.lock'):
         path_to_file = os.path.join(path, cur_file)
@@ -324,8 +335,9 @@ def RunGClientAndSync(cwd=None):
 
 
 def SetupGitDepot(opts, custom_deps):
-  """Sets up the depot for the bisection. The depot will be located in a
-  subdirectory called 'bisect'.
+  """Sets up the depot for the bisection.
+
+  The depot will be located in a subdirectory called 'bisect'.
 
   Args:
     opts: The options parsed from the command line through parse_args().
@@ -372,16 +384,16 @@ def SetupGitDepot(opts, custom_deps):
 
 
 def SetupCrosRepo():
-  """Sets up cros repo for bisecting chromeos.
+  """Sets up CrOS repo for bisecting ChromeOS.
 
   Returns:
-    Returns 0 on success.
+    True if successful, False otherwise.
   """
   cwd = os.getcwd()
   try:
     os.mkdir('cros')
-  except OSError, e:
-    if e.errno != errno.EEXIST:
+  except OSError as e:
+    if e.errno != errno.EEXIST:  # EEXIST means the directory already exists.
       return False
   os.chdir('cros')
 
@@ -389,8 +401,8 @@ def SetupCrosRepo():
 
   passed = False
 
-  if not RunRepo(cmd):
-    if not RunRepo(['sync']):
+  if not _RunRepo(cmd):
+    if not _RunRepo(['sync']):
       passed = True
   os.chdir(cwd)
 
@@ -398,22 +410,27 @@ def SetupCrosRepo():
 
 
 def CopyAndSaveOriginalEnvironmentVars():
-  """Makes a copy of the current environment variables."""
+  """Makes a copy of the current environment variables.
+
+  Before making a copy of the environment variables and setting a global
+  variable, this function unsets a certain set of environment variables.
+  """
   # TODO: Waiting on crbug.com/255689, will remove this after.
-  vars_to_remove = []
-  for k, v in os.environ.iteritems():
-    if 'ANDROID' in k:
-      vars_to_remove.append(k)
-  vars_to_remove.append('CHROME_SRC')
-  vars_to_remove.append('CHROMIUM_GYP_FILE')
-  vars_to_remove.append('GYP_CROSSCOMPILE')
-  vars_to_remove.append('GYP_DEFINES')
-  vars_to_remove.append('GYP_GENERATORS')
-  vars_to_remove.append('GYP_GENERATOR_FLAGS')
-  vars_to_remove.append('OBJCOPY')
-  for k in vars_to_remove:
-    if os.environ.has_key(k):
-      del os.environ[k]
+  vars_to_remove = [
+      'CHROME_SRC',
+      'CHROMIUM_GYP_FILE',
+      'GYP_CROSSCOMPILE',
+      'GYP_DEFINES',
+      'GYP_GENERATORS',
+      'GYP_GENERATOR_FLAGS',
+      'OBJCOPY',
+  ]
+  for key in os.environ:
+    if 'ANDROID' in key:
+      vars_to_remove.append(key)
+  for key in vars_to_remove:
+    if os.environ.has_key(key):
+      del os.environ[key]
 
   global ORIGINAL_ENV
   ORIGINAL_ENV = os.environ.copy()
@@ -429,7 +446,6 @@ def SetupAndroidBuildEnvironment(opts, path_to_src=None):
   Returns:
     True if successful.
   """
-
   # Revert the environment variables back to default before setting them up
   # with envsetup.sh.
   env_vars = os.environ.copy()
@@ -438,34 +454,32 @@ def SetupAndroidBuildEnvironment(opts, path_to_src=None):
   for k, v in ORIGINAL_ENV.iteritems():
     os.environ[k] = v
 
-  path_to_file = os.path.join('build', 'android', 'envsetup.sh')
-  proc = subprocess.Popen(['bash', '-c', 'source %s && env' % path_to_file],
-                           stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE,
-                           cwd=path_to_src)
-  (out, _) = proc.communicate()
+  envsetup_path = os.path.join('build', 'android', 'envsetup.sh')
+  proc = subprocess.Popen(['bash', '-c', 'source %s && env' % envsetup_path],
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE,
+                          cwd=path_to_src)
+  out, _ = proc.communicate()
 
   for line in out.splitlines():
-    (k, _, v) = line.partition('=')
+    k, _, v = line.partition('=')
     os.environ[k] = v
-  # envsetup.sh no longer sets OS=android to GYP_DEFINES env variable
-  # (CL/170273005). Set this variable explicitly inorder to build chrome on
-  # android.
-  try:
-    if 'OS=android' not in os.environ['GYP_DEFINES']:
-      os.environ['GYP_DEFINES'] = '%s %s' % (os.environ['GYP_DEFINES'],
-                                              'OS=android')
-  except KeyError:
+
+  # envsetup.sh no longer sets OS=android in GYP_DEFINES environment variable.
+  # (See http://crrev.com/170273005). So, we set this variable explicitly here
+  # in order to build Chrome on Android.
+  if 'GYP_DEFINES' not in os.environ:
     os.environ['GYP_DEFINES'] = 'OS=android'
+  else:
+    os.environ['GYP_DEFINES'] += ' OS=android'
 
   if opts.use_goma:
-    os.environ['GYP_DEFINES'] = '%s %s' % (os.environ['GYP_DEFINES'],
-                                           'use_goma=1')
+    os.environ['GYP_DEFINES'] += ' use_goma=1'
   return not proc.returncode
 
 
 def SetupPlatformBuildEnvironment(opts):
-  """Performs any platform specific setup.
+  """Performs any platform-specific setup.
 
   Args:
     opts: The options parsed from the command line through parse_args().
@@ -535,7 +549,7 @@ def CreateBisectDirectoryAndSetupDepot(opts, custom_deps):
     opts: The options parsed from the command line through parse_args().
     custom_deps: A dictionary of additional dependencies to add to .gclient.
   """
-  if not CreateAndChangeToSourceDirectory(opts.working_directory):
+  if not _CreateAndChangeToSourceDirectory(opts.working_directory):
     raise RuntimeError('Could not create bisect directory.')
 
   if not SetupGitDepot(opts, custom_deps):
