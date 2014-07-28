@@ -34,6 +34,7 @@ using namespace HTMLNames;
 StyleSheetList::StyleSheetList(TreeScope* treeScope)
     : m_treeScope(treeScope)
 {
+    ScriptWrappable::init(this);
 }
 
 StyleSheetList::~StyleSheetList()

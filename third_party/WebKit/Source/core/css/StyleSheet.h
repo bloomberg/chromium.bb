@@ -21,6 +21,7 @@
 #ifndef StyleSheet_h
 #define StyleSheet_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/css/CSSParserMode.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -34,8 +35,12 @@ class MediaList;
 class Node;
 class StyleSheet;
 
-class StyleSheet : public RefCountedWillBeGarbageCollectedFinalized<StyleSheet> {
+class StyleSheet : public RefCountedWillBeGarbageCollectedFinalized<StyleSheet>, public ScriptWrappable {
 public:
+    StyleSheet()
+    {
+        ScriptWrappable::init(this);
+    }
     virtual ~StyleSheet();
 
     virtual bool disabled() const = 0;

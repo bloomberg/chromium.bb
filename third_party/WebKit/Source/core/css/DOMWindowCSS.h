@@ -30,6 +30,7 @@
 #ifndef DOMWindowCSS_h
 #define DOMWindowCSS_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -37,7 +38,7 @@
 
 namespace blink {
 
-class DOMWindowCSS : public RefCountedWillBeGarbageCollected<DOMWindowCSS> {
+class DOMWindowCSS : public RefCountedWillBeGarbageCollected<DOMWindowCSS>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<DOMWindowCSS> create();
 
@@ -49,6 +50,7 @@ public:
 private:
     DOMWindowCSS()
     {
+        ScriptWrappable::init(this);
     }
 };
 

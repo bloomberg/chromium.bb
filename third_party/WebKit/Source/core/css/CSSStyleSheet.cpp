@@ -123,6 +123,7 @@ CSSStyleSheet::CSSStyleSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> contents
     , m_startPosition(TextPosition::minimumPosition())
     , m_loadCompleted(false)
 {
+    ScriptWrappable::init(this);
     m_contents->registerClient(this);
 }
 
@@ -135,6 +136,7 @@ CSSStyleSheet::CSSStyleSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> contents
     , m_startPosition(startPosition)
     , m_loadCompleted(false)
 {
+    ScriptWrappable::init(this);
     ASSERT(isAcceptableCSSStyleSheetParent(ownerNode));
     m_contents->registerClient(this);
 }

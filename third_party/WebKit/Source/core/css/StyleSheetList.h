@@ -21,6 +21,7 @@
 #ifndef StyleSheetList_h
 #define StyleSheetList_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/dom/TreeScope.h"
 #include "wtf/Forward.h"
@@ -33,7 +34,7 @@ namespace blink {
 class HTMLStyleElement;
 class StyleSheet;
 
-class StyleSheetList : public RefCountedWillBeGarbageCollectedFinalized<StyleSheetList> {
+class StyleSheetList : public RefCountedWillBeGarbageCollectedFinalized<StyleSheetList>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<StyleSheetList> create(TreeScope* treeScope) { return adoptRefWillBeNoop(new StyleSheetList(treeScope)); }
     ~StyleSheetList();

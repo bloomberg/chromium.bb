@@ -32,6 +32,7 @@
 #define FontFace_h
 
 #include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSValue.h"
 #include "core/dom/DOMError.h"
@@ -51,7 +52,7 @@ class FontFaceReadyPromiseResolver;
 class StylePropertySet;
 class StyleRuleFontFace;
 
-class FontFace : public RefCountedWillBeGarbageCollectedFinalized<FontFace> {
+class FontFace : public RefCountedWillBeGarbageCollectedFinalized<FontFace>, public ScriptWrappable {
 public:
     enum LoadStatus { Unloaded, Loading, Loaded, Error };
 

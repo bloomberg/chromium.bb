@@ -33,29 +33,29 @@
 
 namespace blink {
 
-    class CSSPrimitiveValue;
+class CSSPrimitiveValue;
 
-    class RGBColor : public RefCountedWillBeGarbageCollected<RGBColor> {
-    public:
-        static PassRefPtrWillBeRawPtr<RGBColor> create(unsigned rgbColor);
+class RGBColor : public RefCountedWillBeGarbageCollected<RGBColor> {
+public:
+    static PassRefPtrWillBeRawPtr<RGBColor> create(unsigned rgbColor);
 
-        PassRefPtrWillBeRawPtr<CSSPrimitiveValue> red();
-        PassRefPtrWillBeRawPtr<CSSPrimitiveValue> green();
-        PassRefPtrWillBeRawPtr<CSSPrimitiveValue> blue();
-        PassRefPtrWillBeRawPtr<CSSPrimitiveValue> alpha();
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> red();
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> green();
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> blue();
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> alpha();
 
-        Color color() const { return Color(m_rgbColor); }
+    Color color() const { return Color(m_rgbColor); }
 
-        void trace(Visitor*) { }
+    void trace(Visitor*) { }
 
-    private:
-        RGBColor(unsigned rgbColor)
-            : m_rgbColor(rgbColor)
-        {
-        }
+private:
+    RGBColor(unsigned rgbColor)
+        : m_rgbColor(rgbColor)
+    {
+    }
 
-        RGBA32 m_rgbColor;
-    };
+    RGBA32 m_rgbColor;
+};
 
 } // namespace blink
 

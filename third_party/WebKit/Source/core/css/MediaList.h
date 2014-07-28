@@ -21,6 +21,7 @@
 #ifndef MediaList_h
 #define MediaList_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -69,7 +70,7 @@ private:
     WillBeHeapVector<OwnPtrWillBeMember<MediaQuery> > m_queries;
 };
 
-class MediaList : public RefCountedWillBeGarbageCollectedFinalized<MediaList> {
+class MediaList : public RefCountedWillBeGarbageCollectedFinalized<MediaList>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<MediaList> create(MediaQuerySet* mediaQueries, CSSStyleSheet* parentSheet)
     {
@@ -106,7 +107,6 @@ public:
     void trace(Visitor*);
 
 private:
-    MediaList();
     MediaList(MediaQuerySet*, CSSStyleSheet* parentSheet);
     MediaList(MediaQuerySet*, CSSRule* parentRule);
 

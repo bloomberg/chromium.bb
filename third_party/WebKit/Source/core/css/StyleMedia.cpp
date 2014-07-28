@@ -37,6 +37,7 @@ namespace blink {
 StyleMedia::StyleMedia(LocalFrame* frame)
     : DOMWindowProperty(frame)
 {
+    ScriptWrappable::init(this);
 }
 
 AtomicString StyleMedia::type() const

@@ -22,6 +22,7 @@
 #ifndef CSSRuleList_h
 #define CSSRuleList_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -32,7 +33,7 @@ namespace blink {
 class CSSRule;
 class CSSStyleSheet;
 
-class CSSRuleList : public NoBaseWillBeGarbageCollectedFinalized<CSSRuleList> {
+class CSSRuleList : public NoBaseWillBeGarbageCollectedFinalized<CSSRuleList>, public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(CSSRuleList);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:

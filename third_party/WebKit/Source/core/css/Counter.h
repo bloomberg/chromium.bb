@@ -21,12 +21,13 @@
 #ifndef Counter_h
 #define Counter_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class Counter : public RefCountedWillBeGarbageCollected<Counter> {
+class Counter : public RefCountedWillBeGarbageCollected<Counter>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<Counter> create(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> identifier, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> separator)
     {
@@ -65,6 +66,7 @@ private:
         , m_listStyle(listStyle)
         , m_separator(separator)
     {
+        ScriptWrappable::init(this);
     }
 
     RefPtrWillBeMember<CSSPrimitiveValue> m_identifier; // string
