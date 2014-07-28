@@ -46,17 +46,6 @@ template <size_t alignment>
 void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointerWithSize(const void* pointer,
                                                       size_t size);
 
-// TODO(vtl): Delete all the |Verify...()| things (and replace them with
-// |Check...()|.
-template <size_t size, size_t alignment>
-bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerHelper(const void* pointer);
-
-// Note: This is also used by options_validation.h.
-template <size_t size, size_t alignment>
-bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerWithCountHelper(
-    const void* pointer,
-    size_t count);
-
 }  // namespace internal
 
 // Forward declarations so that they can be friended.
@@ -64,30 +53,6 @@ template <typename Type> class UserPointerReader;
 template <typename Type> class UserPointerWriter;
 template <typename Type> class UserPointerReaderWriter;
 template <class Options> class UserOptionsReader;
-
-// Verify (insofar as possible/necessary) that a |T| can be read from the user
-// |pointer|.
-template <typename T>
-bool VerifyUserPointer(const T* pointer) {
-  return internal::VerifyUserPointerHelper<sizeof(T), MOJO_ALIGNOF(T)>(pointer);
-}
-
-// Verify (insofar as possible/necessary) that |count| |T|s can be read from the
-// user |pointer|; |count| may be zero. (This is done carefully since |count *
-// sizeof(T)| may overflow a |size_t|.)
-template <typename T>
-bool VerifyUserPointerWithCount(const T* pointer, size_t count) {
-  return internal::VerifyUserPointerWithCountHelper<sizeof(T),
-                                                    MOJO_ALIGNOF(T)>(pointer,
-                                                                     count);
-}
-
-// Verify that |size| bytes (which may be zero) can be read from the user
-// |pointer|, and that |pointer| has the specified |alignment| (if |size| is
-// nonzero).
-template <size_t alignment>
-bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerWithSize(const void* pointer,
-                                                       size_t size);
 
 // Provides a convenient way to implicitly get null |UserPointer<Type>|s.
 struct NullUserPointer {};
@@ -212,6 +177,13 @@ class UserPointer {
   UserPointer At(size_t i) const {
     return UserPointer(static_cast<Type*>(
         static_cast<NonVoidType*>(pointer_) + i));
+  }
+
+  // Gets the value of the |UserPointer| as a |uintptr_t|. This should not be
+  // casted back to a pointer (and dereferenced), but may be used as a key for
+  // lookup or passed back to the user.
+  uintptr_t GetPointerValue() const {
+    return reinterpret_cast<uintptr_t>(pointer_);
   }
 
   // These provides safe (read-only/write-only/read-and-write) access to a
@@ -374,33 +346,6 @@ class UserPointerReaderWriter {
 
   DISALLOW_COPY_AND_ASSIGN(UserPointerReaderWriter);
 };
-
-// Represents a user pointer that will never be dereferenced by the system. The
-// pointer value (i.e., the address) may be as a key for lookup, or may be a
-// value that is only passed to the user at some point.
-template <typename Type>
-class UserPointerValue {
- public:
-  UserPointerValue() : pointer_() {}
-  explicit UserPointerValue(Type* pointer) : pointer_(pointer) {}
-  ~UserPointerValue() {}
-
-  // Returns the *value* of the pointer, which shouldn't be cast back to a
-  // pointer and dereferenced.
-  uintptr_t GetValue() const {
-    return reinterpret_cast<uintptr_t>(pointer_);
-  }
-
- private:
-  Type* pointer_;
-  // Allow copy and assignment.
-};
-
-// Provides a convenient way to make a |UserPointerValue<Type>|.
-template <typename Type>
-inline UserPointerValue<Type> MakeUserPointerValue(Type* pointer) {
-  return UserPointerValue<Type>(pointer);
-}
 
 }  // namespace system
 }  // namespace mojo

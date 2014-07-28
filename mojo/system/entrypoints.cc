@@ -13,7 +13,6 @@
 static mojo::system::Core* g_core = NULL;
 
 using mojo::system::MakeUserPointer;
-using mojo::system::MakeUserPointerValue;
 
 namespace mojo {
 namespace system {
@@ -183,7 +182,7 @@ MojoResult MojoMapBuffer(MojoHandle buffer_handle,
 }
 
 MojoResult MojoUnmapBuffer(void* buffer) {
-  return g_core->UnmapBuffer(MakeUserPointerValue(buffer));
+  return g_core->UnmapBuffer(MakeUserPointer(buffer));
 }
 
 }  // extern "C"

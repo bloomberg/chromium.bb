@@ -500,9 +500,9 @@ MojoResult Core::MapBuffer(MojoHandle buffer_handle,
   return MOJO_RESULT_OK;
 }
 
-MojoResult Core::UnmapBuffer(UserPointerValue<void> buffer) {
+MojoResult Core::UnmapBuffer(UserPointer<void> buffer) {
   base::AutoLock locker(mapping_table_lock_);
-  return mapping_table_.RemoveMapping(buffer.GetValue());
+  return mapping_table_.RemoveMapping(buffer.GetPointerValue());
 }
 
 // Note: We allow |handles| to repeat the same handle multiple times, since

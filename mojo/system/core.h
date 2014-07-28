@@ -102,7 +102,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                        uint64_t num_bytes,
                        UserPointer<void*> buffer,
                        MojoMapBufferFlags flags);
-  MojoResult UnmapBuffer(UserPointerValue<void> buffer);
+  MojoResult UnmapBuffer(UserPointer<void> buffer);
 
  private:
   friend bool internal::ShutdownCheckNoLeaks(Core*);

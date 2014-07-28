@@ -11,7 +11,6 @@
 
 namespace mojo {
 namespace system {
-
 namespace internal {
 
 template <size_t alignment>
@@ -33,26 +32,12 @@ void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointer(const void* pointer) {
   CHECK(pointer && IsAligned<alignment>(pointer));
 }
 
-template <size_t size, size_t alignment>
-bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerHelper(const void* pointer) {
-  // TODO(vtl): If running in kernel mode, do a full verification. For now, just
-  // check that it's non-null and aligned. (A faster user mode implementation is
-  // also possible if this check is skipped.)
-  return !!pointer && IsAligned<alignment>(pointer);
-}
-
 // Explicitly instantiate the sizes we need. Add instantiations as needed.
 template void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointer<1, 1>(
     const void*);
 template void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointer<4, 4>(
     const void*);
 template void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointer<8, 8>(
-    const void*);
-template bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerHelper<1, 1>(
-    const void*);
-template bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerHelper<4, 4>(
-    const void*);
-template bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerHelper<8, 8>(
     const void*);
 // Notwithstanding the comments above about MSVS, whenever we expect an
 // alignment of 8 for something of size 4, it's due to an explicit (e.g.,
@@ -64,15 +49,8 @@ void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointer<4, 8>(
     const void* pointer) {
   CHECK(pointer && reinterpret_cast<uintptr_t>(pointer) % 8 == 0);
 }
-template <>
-bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerHelper<4, 8>(
-    const void* pointer) {
-  return !!pointer && reinterpret_cast<uintptr_t>(pointer) % 8 == 0;
-}
 #else
 template MOJO_SYSTEM_IMPL_EXPORT void CheckUserPointer<4, 8>(
-    const void*);
-template MOJO_SYSTEM_IMPL_EXPORT bool VerifyUserPointerHelper<4, 8>(
     const void*);
 #endif
 
@@ -107,42 +85,6 @@ template void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointerWithSize<4>(const void*,
 template void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointerWithSize<8>(const void*,
                                                                   size_t);
 
-template <size_t size, size_t alignment>
-bool VerifyUserPointerWithCountHelper(const void* pointer, size_t count) {
-  if (count > std::numeric_limits<size_t>::max() / size)
-    return false;
-
-  // TODO(vtl): If running in kernel mode, do a full verification. For now, just
-  // check that it's non-null and aligned if |count| is nonzero. (A faster user
-  // mode implementation is also possible if this check is skipped.)
-  return count == 0 || (!!pointer && IsAligned<alignment>(pointer));
-}
-
-// Explicitly instantiate the sizes we need. Add instantiations as needed.
-template bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerWithCountHelper<1, 1>(
-    const void*, size_t);
-template bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerWithCountHelper<4, 4>(
-    const void*, size_t);
-template bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerWithCountHelper<8, 8>(
-    const void*, size_t);
-
 }  // namespace internal
-
-template <size_t alignment>
-bool VerifyUserPointerWithSize(const void* pointer, size_t size) {
-  // TODO(vtl): If running in kernel mode, do a full verification. For now, just
-  // check that it's non-null and aligned. (A faster user mode implementation is
-  // also possible if this check is skipped.)
-  return size == 0 || (!!pointer && internal::IsAligned<alignment>(pointer));
-}
-
-// Explicitly instantiate the alignments we need. Add instantiations as needed.
-template bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerWithSize<1>(const void*,
-                                                                   size_t);
-template bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerWithSize<4>(const void*,
-                                                                   size_t);
-template bool MOJO_SYSTEM_IMPL_EXPORT VerifyUserPointerWithSize<8>(const void*,
-                                                                   size_t);
-
 }  // namespace system
 }  // namespace mojo
