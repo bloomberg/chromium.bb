@@ -494,7 +494,13 @@ TEST_F(PicasaFileUtilTest, FolderContentsTrivial) {
   VerifyFolderDirectoryList(test_folders);
 }
 
-TEST_F(PicasaFileUtilTest, FolderWithManyFiles) {
+#if defined(OS_WIN)
+// http://crbug.com/398031
+#define MAYBE_FolderWithManyFiles DISABLED_FolderWithManyFiles
+#else
+#define MAYBE_FolderWithManyFiles FolderWithManyFiles
+#endif
+TEST_F(PicasaFileUtilTest, MAYBE_FolderWithManyFiles) {
   ScopedVector<TestFolder> test_folders;
   base::Time test_date = base::Time::FromLocalExploded(test_date_exploded);
 
