@@ -39,20 +39,6 @@ template void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointer<4, 4>(
     const void*);
 template void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointer<8, 8>(
     const void*);
-// Notwithstanding the comments above about MSVS, whenever we expect an
-// alignment of 8 for something of size 4, it's due to an explicit (e.g.,
-// #pragma align) alignment specification, which MSVS *does* respect. We want
-// this in particular to check that various Options structs are aligned.
-#if defined(COMPILER_MSVC) && defined(ARCH_CPU_32_BITS)
-template <>
-void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointer<4, 8>(
-    const void* pointer) {
-  CHECK(pointer && reinterpret_cast<uintptr_t>(pointer) % 8 == 0);
-}
-#else
-template MOJO_SYSTEM_IMPL_EXPORT void CheckUserPointer<4, 8>(
-    const void*);
-#endif
 
 template <size_t size, size_t alignment>
 void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointerWithCount(const void* pointer,
@@ -82,8 +68,21 @@ template void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointerWithSize<1>(const void*,
                                                                   size_t);
 template void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointerWithSize<4>(const void*,
                                                                   size_t);
+// Whereas the other |Check...()| functions are usually used with integral typs
+// or arrays of integral types, this one is used with Options structs for which
+// alignment has been explicitly been specified (using |MOJO_ALIGNAS()|), which
+// MSVS *does* respect.
+#if defined(COMPILER_MSVC) && defined(ARCH_CPU_32_BITS)
+template <>
+void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointerWithSize<8>(const void* pointer,
+                                                         size_t size) {
+  CHECK(size == 0 ||
+        (!!pointer && reinterpret_cast<uintptr_t>(pointer) % 8 == 0));
+}
+#else
 template void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointerWithSize<8>(const void*,
                                                                   size_t);
+#endif
 
 }  // namespace internal
 }  // namespace system

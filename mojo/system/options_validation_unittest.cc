@@ -112,8 +112,6 @@ TEST(OptionsValidationTest, InvalidDeath) {
       { UserOptionsReader<TestOptions> reader(
             MakeUserPointer(reinterpret_cast<const TestOptions*>(1))); },
       kMemoryCheckFailedRegex);
-// TODO(vtl): Broken on Windows. Fix this!
-#if 0
   // Note: The current implementation checks the size only after checking the
   // alignment versus that required for the |uint32_t| size, so it won't die in
   // the expected way if you pass, e.g., 4. So we have to manufacture a valid
@@ -121,14 +119,13 @@ TEST(OptionsValidationTest, InvalidDeath) {
   EXPECT_DEATH_IF_SUPPORTED(
       {
         uint32_t buffer[100] = {};
-        TestOptions* options = (reinterpret_cast<uintptr_t>(buffer) % 4 == 0) ?
+        TestOptions* options = (reinterpret_cast<uintptr_t>(buffer) % 8 == 0) ?
                                    reinterpret_cast<TestOptions*>(&buffer[1]) :
                                    reinterpret_cast<TestOptions*>(&buffer[0]);
         options->struct_size = static_cast<uint32_t>(sizeof(TestOptions));
         UserOptionsReader<TestOptions> reader(MakeUserPointer(options));
       },
       kMemoryCheckFailedRegex);
-#endif
 }
 
 }  // namespace
