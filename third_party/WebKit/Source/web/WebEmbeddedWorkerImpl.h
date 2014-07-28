@@ -57,6 +57,11 @@ public:
         PassOwnPtr<WebWorkerPermissionClientProxy>);
     virtual ~WebEmbeddedWorkerImpl();
 
+    // Terminate all WebEmbeddedWorkerImpl for testing purposes.
+    // Note that this only schedules termination and
+    // does not synchronously wait for it to complete.
+    static void terminateAll();
+
     // WebEmbeddedWorker overrides.
     virtual void startWorkerContext(const WebEmbeddedWorkerStartData&) OVERRIDE;
     virtual void resumeAfterDownload() OVERRIDE;
@@ -66,7 +71,6 @@ public:
     virtual void reattachDevTools(const WebString& savedState) OVERRIDE;
     virtual void detachDevTools() OVERRIDE;
     virtual void dispatchDevToolsMessage(const WebString&) OVERRIDE;
-
 
 private:
     class Loader;

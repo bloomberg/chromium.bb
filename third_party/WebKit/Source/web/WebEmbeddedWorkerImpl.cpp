@@ -146,6 +146,12 @@ WebEmbeddedWorker* WebEmbeddedWorker::create(
     return new WebEmbeddedWorkerImpl(adoptPtr(client), adoptPtr(permissionClient));
 }
 
+static HashSet<WebEmbeddedWorkerImpl*>& runningWorkerInstances()
+{
+    DEFINE_STATIC_LOCAL(HashSet<WebEmbeddedWorkerImpl*>, set, ());
+    return set;
+}
+
 WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
     PassOwnPtr<WebServiceWorkerContextClient> client,
     PassOwnPtr<WebWorkerPermissionClientProxy> permissionClient)
@@ -156,10 +162,13 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
     , m_askedToTerminate(false)
     , m_pauseAfterDownloadState(DontPauseAfterDownload)
 {
+    runningWorkerInstances().add(this);
 }
 
 WebEmbeddedWorkerImpl::~WebEmbeddedWorkerImpl()
 {
+    ASSERT(runningWorkerInstances().contains(this));
+    runningWorkerInstances().remove(this);
     ASSERT(m_webView);
 
     // Detach the client before closing the view to avoid getting called back.
@@ -167,6 +176,14 @@ WebEmbeddedWorkerImpl::~WebEmbeddedWorkerImpl()
 
     m_webView->close();
     m_mainFrame->close();
+}
+
+void WebEmbeddedWorkerImpl::terminateAll()
+{
+    HashSet<WebEmbeddedWorkerImpl*> instances = runningWorkerInstances();
+    for (HashSet<WebEmbeddedWorkerImpl*>::iterator it = instances.begin(), itEnd = instances.end(); it != itEnd; ++it) {
+        (*it)->terminateWorkerContext();
+    }
 }
 
 void WebEmbeddedWorkerImpl::startWorkerContext(

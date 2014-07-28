@@ -41,6 +41,7 @@
 #include "platform/Timer.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebLocalFrame.h"
+#include "web/WebEmbeddedWorkerImpl.h"
 
 #include <v8.h>
 
@@ -82,6 +83,7 @@ private:
 
 void WebLeakDetectorImpl::collectGarbageAndGetDOMCounts(WebLocalFrame* frame)
 {
+    WebEmbeddedWorkerImpl::terminateAll();
     memoryCache()->evictResources();
 
     {
