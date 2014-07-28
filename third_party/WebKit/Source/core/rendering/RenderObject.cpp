@@ -1637,7 +1637,6 @@ bool RenderObject::invalidatePaintIfNeeded(const RenderLayerModelObject& paintIn
     // crbug.com/393762
     ASSERT(newBounds == boundsRectForPaintInvalidation(&paintInvalidationContainer, &paintInvalidationState));
 
-    // FIXME: This should use a ConvertableToTraceFormat when they are available in Blink.
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::invalidatePaintIfNeeded()",
         "object", this->debugName().ascii(),
         "info", jsonObjectForOldAndNewRects(oldBounds, newBounds));
