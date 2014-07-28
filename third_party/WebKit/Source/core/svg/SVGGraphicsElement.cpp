@@ -179,21 +179,7 @@ bool SVGGraphicsElement::isSupportedAttribute(const QualifiedName& attrName)
 
 void SVGGraphicsElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (!isSupportedAttribute(name)) {
-        SVGElement::parseAttribute(name, value);
-        return;
-    }
-
-    SVGParsingError parseError = NoError;
-
-    if (name == SVGNames::transformAttr)
-        m_transform->setBaseValueAsString(value, parseError);
-    else if (SVGTests::parseAttribute(name, value))
-        return;
-    else
-        ASSERT_NOT_REACHED();
-
-    reportAttributeParsingError(parseError, name, value);
+    parseAttributeNew(name, value);
 }
 
 void SVGGraphicsElement::svgAttributeChanged(const QualifiedName& attrName)

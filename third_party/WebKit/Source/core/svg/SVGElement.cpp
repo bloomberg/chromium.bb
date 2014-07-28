@@ -602,6 +602,20 @@ void SVGElement::parseAttribute(const QualifiedName& name, const AtomicString& v
     }
 }
 
+void SVGElement::parseAttributeNew(const QualifiedName& name, const AtomicString& value)
+{
+    RefPtr<SVGAnimatedPropertyBase> property = propertyFromAttribute(name);
+    if (property) {
+        SVGParsingError parseError = NoError;
+        property->setBaseValueAsString(value, parseError);
+        reportAttributeParsingError(parseError, name, value);
+
+        return;
+    }
+
+    SVGElement::parseAttribute(name, value);
+}
+
 typedef HashMap<QualifiedName, AnimatedPropertyType> AttributeToPropertyTypeMap;
 AnimatedPropertyType SVGElement::animatedPropertyTypeForCSSAttribute(const QualifiedName& attributeName)
 {

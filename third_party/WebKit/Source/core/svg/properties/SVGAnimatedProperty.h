@@ -55,6 +55,7 @@ public:
     virtual void setAnimatedValue(PassRefPtr<SVGPropertyBase>) = 0;
     virtual void animationEnded();
 
+    virtual void setBaseValueAsString(const String& value, SVGParsingError& parseError) = 0;
     virtual bool needsSynchronizeAttribute() = 0;
     virtual void synchronizeAttribute();
 
@@ -128,7 +129,7 @@ public:
         return m_currentValue;
     }
 
-    void setBaseValueAsString(const String& value, SVGParsingError& parseError)
+    void setBaseValueAsString(const String& value, SVGParsingError& parseError) OVERRIDE
     {
         TrackExceptionState es;
 
