@@ -290,8 +290,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageFormsTextAreas) {
 
 // Verify search for text within special URLs such as chrome:history,
 // chrome://downloads, data directory
-#if defined(OS_WIN) || defined(OS_MACOSX)
-// Disabled due to crbug.com/175711 (win) and crbug.com/396752 (mac).
+#if defined(OS_WIN)
+// Disabled due to crbug.com/175711
 #define MAYBE_SearchWithinSpecialURL \
         DISABLED_SearchWithinSpecialURL
 #else

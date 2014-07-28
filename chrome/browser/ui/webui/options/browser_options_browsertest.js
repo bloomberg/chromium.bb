@@ -21,10 +21,6 @@ BrowserOptionsWebUITest.prototype = {
 GEN('#if defined(OS_MACOSX) && !defined(NDEBUG)');
 GEN('#define MAYBE_testOpenBrowserOptions ' +
     'DISABLED_testOpenBrowserOptions');
-// Flaky on Winxp: http://crbug.com/396752.
-GEN('#elif defined(OS_WIN)');
-GEN('#define MAYBE_testOpenBrowserOptions ' +
-    'DISABLED_testOpenBrowserOptions');
 GEN('#else');
 GEN('#define MAYBE_testOpenBrowserOptions testOpenBrowserOptions');
 GEN('#endif  // defined(OS_MACOSX)');
