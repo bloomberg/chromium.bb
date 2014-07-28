@@ -1662,7 +1662,6 @@ public:
     static Length initialPerspectiveOriginX() { return Length(50.0, Percent); }
     static Length initialPerspectiveOriginY() { return Length(50.0, Percent); }
     static Color initialBackgroundColor() { return Color::transparent; }
-    static Color initialTextEmphasisColor() { return TextEmphasisFillFilled; }
     static TextEmphasisFill initialTextEmphasisFill() { return TextEmphasisFillFilled; }
     static TextEmphasisMark initialTextEmphasisMark() { return TextEmphasisMarkNone; }
     static const AtomicString& initialTextEmphasisCustomMark() { return nullAtom; }
