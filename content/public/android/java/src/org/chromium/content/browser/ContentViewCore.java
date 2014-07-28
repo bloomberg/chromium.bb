@@ -1691,6 +1691,7 @@ public class ContentViewCore
             hideImeIfNeeded();
             cancelRequestToScrollFocusedEditableNodeIntoView();
             hidePastePopup();
+            hideTextHandles();
         }
         if (mNativeContentViewCore != 0) nativeSetFocus(mNativeContentViewCore, gainFocus);
     }
