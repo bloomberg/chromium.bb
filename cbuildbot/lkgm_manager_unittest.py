@@ -194,6 +194,8 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     new_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3-rc13')
     new_manifest = 'some_manifest'
 
+    build_id = 59271
+
     lkgm_manager.LKGMManager.CheckoutSourceCode()
     lkgm_manager.LKGMManager.CreateManifest().AndReturn(new_manifest)
     lkgm_manager.LKGMManager.HasCheckoutBeenBuilt().AndReturn(False)
@@ -206,10 +208,11 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
 
     # Publish new candidate.
     lkgm_manager.LKGMManager.PublishManifest(new_manifest,
-                                             new_candidate.VersionString())
+                                             new_candidate.VersionString(),
+                                             build_id=build_id)
 
     self.mox.ReplayAll()
-    candidate_path = self.manager.CreateNewCandidate()
+    candidate_path = self.manager.CreateNewCandidate(build_id=build_id)
     self.assertEqual(candidate_path, self._GetPathToManifest(new_candidate))
     self.mox.VerifyAll()
 
@@ -233,6 +236,8 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
                 '20/%s.xml' % version)
     new_manifest = '/path/to/tmp/file.xml'
 
+    build_id = 20162
+
     lkgm_manager.LKGMManager._FilterCrosInternalProjectsFromManifest(
         manifest).AndReturn(new_manifest)
 
@@ -243,10 +248,12 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     git.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(), sync=False)
 
     # Publish new candidate.
-    lkgm_manager.LKGMManager.PublishManifest(new_manifest, version)
+    lkgm_manager.LKGMManager.PublishManifest(new_manifest, version,
+                                             build_id=build_id)
 
     self.mox.ReplayAll()
-    candidate_path = self.manager.CreateFromManifest(manifest)
+    candidate_path = self.manager.CreateFromManifest(manifest,
+                                                     build_id=build_id)
     self.assertEqual(candidate_path, self._GetPathToManifest(new_candidate))
     self.assertEqual(self.manager.current_version, version)
     self.mox.VerifyAll()

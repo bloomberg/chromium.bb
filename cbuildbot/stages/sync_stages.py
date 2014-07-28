@@ -490,8 +490,11 @@ class ManifestVersionedSyncStage(SyncStage):
     assert self.manifest_manager, \
         'Must run GetStageManager before checkout out build.'
 
+    build_id = self._run.attrs.metadata.GetDict().get('build_id')
+
     to_return = self.manifest_manager.GetNextBuildSpec(
-        dashboard_url=self.ConstructDashboardURL())
+        dashboard_url=self.ConstructDashboardURL(),
+        build_id=build_id)
     previous_version = self.manifest_manager.GetLatestPassingSpec()
     target_version = self.manifest_manager.current_version
 
@@ -622,11 +625,14 @@ class MasterSlaveSyncStage(ManifestVersionedSyncStage):
         'Manifest manager instantiated with wrong class.'
 
     if self._run.config.master:
+      build_id = self._run.attrs.metadata.GetDict().get('build_id')
       manifest = self.manifest_manager.CreateNewCandidate(
-          chrome_version=self._chrome_version)
+          chrome_version=self._chrome_version,
+          build_id=build_id)
       if MasterSlaveSyncStage.sub_manager:
         MasterSlaveSyncStage.sub_manager.CreateFromManifest(
-            manifest, dashboard_url=self.ConstructDashboardURL())
+            manifest, dashboard_url=self.ConstructDashboardURL(),
+            build_id=build_id)
       return manifest
     else:
       return self.manifest_manager.GetLatestCandidate(
@@ -714,6 +720,8 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
     assert isinstance(self.manifest_manager, lkgm_manager.LKGMManager), \
         'Manifest manager instantiated with wrong class.'
 
+    build_id = self._run.attrs.metadata.GetDict().get('build_id')
+
     if self._run.config.master:
       try:
         # In order to acquire a pool, we need an initialized buildroot.
@@ -733,10 +741,12 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
         cros_build_lib.Warning(str(e))
         return None
 
-      manifest = self.manifest_manager.CreateNewCandidate(validation_pool=pool)
+      manifest = self.manifest_manager.CreateNewCandidate(validation_pool=pool,
+                                                          build_id=build_id)
       if MasterSlaveSyncStage.sub_manager:
         MasterSlaveSyncStage.sub_manager.CreateFromManifest(
-            manifest, dashboard_url=self.ConstructDashboardURL())
+            manifest, dashboard_url=self.ConstructDashboardURL(),
+            build_id=build_id)
 
       return manifest
     else:

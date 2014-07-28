@@ -36,6 +36,7 @@ from chromite.lib import timeout_util
 # Until then, this has to be after the chromite imports.
 import mock
 
+MOCK_BUILD_ID = 69178
 
 # pylint: disable=R0901,W0212
 class ManifestVersionedSyncStageTest(generic_stages_unittest.AbstractStageTest):
@@ -66,6 +67,7 @@ class ManifestVersionedSyncStageTest(generic_stages_unittest.AbstractStageTest):
     self.sync_stage = sync_stages.ManifestVersionedSyncStage(self._run)
     self.sync_stage.manifest_manager = self.manager
     self._run.attrs.manifest_manager = self.manager
+    self._run.attrs.metadata.UpdateWithDict({'build_id': MOCK_BUILD_ID})
 
   def testManifestVersionedSyncOnePartBranch(self):
     """Tests basic ManifestVersionedSyncStage with branch ooga_booga"""
@@ -82,6 +84,7 @@ class ManifestVersionedSyncStageTest(generic_stages_unittest.AbstractStageTest):
 
     sync_stages.ManifestVersionedSyncStage.Initialize()
     self.manager.GetNextBuildSpec(
+        build_id=MOCK_BUILD_ID,
         dashboard_url=self.sync_stage.ConstructDashboardURL()
         ).AndReturn(self.next_version)
     self.manager.GetLatestPassingSpec().AndReturn(None)

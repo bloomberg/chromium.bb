@@ -300,7 +300,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
   def CreateNewCandidate(self, validation_pool=None,
                          chrome_version=None,
-                         retries=manifest_version.NUM_RETRIES):
+                         retries=manifest_version.NUM_RETRIES,
+                         build_id=None):
     """Creates, syncs to, and returns the next candidate manifest.
 
     Args:
@@ -310,6 +311,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         to None, in which case no version is written.
       retries: Number of retries for updating the status. Defaults to
         manifest_version.NUM_RETRIES.
+      build_id: Optional integer cidb id of the build that is creating
+                this candidate.
 
     Raises:
       GenerateBuildSpecException in case of failure to generate a buildspec
@@ -369,7 +372,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         git.CreatePushBranch(manifest_version.PUSH_BRANCH, self.manifest_dir,
                              sync=False)
         version = self.GetNextVersion(version_info)
-        self.PublishManifest(new_manifest, version)
+        self.PublishManifest(new_manifest, version, build_id=build_id)
         self.current_version = version
         return self.GetLocalManifest(version)
       except cros_build_lib.RunCommandError as e:
@@ -380,7 +383,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       raise manifest_version.GenerateBuildSpecException(last_error)
 
   def CreateFromManifest(self, manifest, retries=manifest_version.NUM_RETRIES,
-                         dashboard_url=None):
+                         dashboard_url=None, build_id=None):
     """Sets up an lkgm_manager from the given manifest.
 
     This method sets up an LKGM manager and publishes a new manifest to the
@@ -393,6 +396,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         i.e R20-1920.0.1-rc7.xml where R20-1920.0.1-rc7 is the version.
       retries: Number of retries for updating the status.
       dashboard_url: Optional url linking to builder dashboard for this build.
+      build_id: Optional integer cidb build id of the build publishing the
+                manifest.
 
     Raises:
       GenerateBuildSpecException in case of failure to check-in the new
@@ -410,7 +415,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
                              sync=False)
         version = os.path.splitext(os.path.basename(manifest))[0]
         logging.info('Publishing filtered build spec')
-        self.PublishManifest(new_manifest, version)
+        self.PublishManifest(new_manifest, version, build_id=build_id)
         self.SetInFlight(version, dashboard_url=dashboard_url)
         self.current_version = version
         return self.GetLocalManifest(version)

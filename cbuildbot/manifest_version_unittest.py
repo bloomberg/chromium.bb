@@ -38,6 +38,7 @@ CHROME_BRANCH = '13'
 # Use the chromite repo to actually test git changes.
 GIT_TEST_PATH = 'chromite'
 
+MOCK_BUILD_ID = 162345
 
 class HelperMethodsTest(cros_test_lib.TempDirTestCase):
   """Test methods associated with methods not in a class."""
@@ -173,6 +174,64 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
     self.tmpmandir = os.path.join(self.tempdir, 'man')
     osutils.SafeMakedirs(self.tmpmandir)
     self.manager.manifest_dir = self.tmpmandir
+
+  def testPublishManifestCommitMessageWithBuildId(self):
+    """Tests that PublishManifest writes a build id."""
+    expected_message = ('Automatic: Start x86-generic-paladin master 1\n'
+                        'build_id: %s' % MOCK_BUILD_ID)
+    self.mox.StubOutWithMock(self.manager, 'PushSpecChanges')
+
+    info = manifest_version.VersionInfo(
+        FAKE_VERSION_STRING, CHROME_BRANCH, incr_type='branch')
+
+    # Create a fake manifest file.
+    m = os.path.join(self.tmpmandir, '1.xml')
+    osutils.Touch(m)
+    self.manager.InitializeManifestVariables(info)
+
+    self.manager.PushSpecChanges(expected_message)
+
+    self.mox.ReplayAll()
+    self.manager.PublishManifest(m, '1', build_id=MOCK_BUILD_ID)
+    self.mox.VerifyAll()
+
+  def testPublishManifestCommitMessageWithNegativeBuildId(self):
+    """Tests that PublishManifest doesn't write a negative build_id"""
+    expected_message = 'Automatic: Start x86-generic-paladin master 1'
+    self.mox.StubOutWithMock(self.manager, 'PushSpecChanges')
+
+    info = manifest_version.VersionInfo(
+        FAKE_VERSION_STRING, CHROME_BRANCH, incr_type='branch')
+
+    # Create a fake manifest file.
+    m = os.path.join(self.tmpmandir, '1.xml')
+    osutils.Touch(m)
+    self.manager.InitializeManifestVariables(info)
+
+    self.manager.PushSpecChanges(expected_message)
+
+    self.mox.ReplayAll()
+    self.manager.PublishManifest(m, '1', build_id=-1)
+    self.mox.VerifyAll()
+
+  def testPublishManifestCommitMessageWithNoneBuildId(self):
+    """Tests that PublishManifest doesn't write a non-existant build_id"""
+    expected_message = 'Automatic: Start x86-generic-paladin master 1'
+    self.mox.StubOutWithMock(self.manager, 'PushSpecChanges')
+
+    info = manifest_version.VersionInfo(
+        FAKE_VERSION_STRING, CHROME_BRANCH, incr_type='branch')
+
+    # Create a fake manifest file.
+    m = os.path.join(self.tmpmandir, '1.xml')
+    osutils.Touch(m)
+    self.manager.InitializeManifestVariables(info)
+
+    self.manager.PushSpecChanges(expected_message)
+
+    self.mox.ReplayAll()
+    self.manager.PublishManifest(m, '1')
+    self.mox.VerifyAll()
 
   def testLoadSpecs(self):
     """Tests whether we can load specs correctly."""

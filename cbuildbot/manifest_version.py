@@ -559,15 +559,26 @@ class BuildSpecsManager(object):
 
     return version
 
-  def PublishManifest(self, manifest, version):
-    """Publishes the manifest as the manifest for the version to others."""
-    logging.info('Publishing build spec for: %s\n%s', version,
-                 osutils.ReadFile(manifest))
+  def PublishManifest(self, manifest, version, build_id=None):
+    """Publishes the manifest as the manifest for the version to others.
 
+    Args:
+      manifest: Path to manifest file to publish.
+      version: Manifest version string, e.g. 6102.0.0-rc4
+      build_id: Optional integer giving build_id of the build that is
+                publishing this manifest. If specified and non-negative,
+                build_id will be included in the commit message.
+    """
     # Note: This commit message is used by master.cfg for figuring out when to
     #       trigger slave builders.
     commit_message = 'Automatic: Start %s %s %s' % (self.build_names[0],
                                                     self.branch, version)
+    if build_id is not None and build_id >= 0:
+      commit_message += '\nbuild_id: %s' % build_id
+
+    logging.info('Publishing build spec for: %s', version)
+    logging.info('Publishing with commit message: %s', commit_message)
+    logging.debug('Manifest contents below.\n%s', osutils.ReadFile(manifest))
 
     # Copy the manifest into the manifest repository.
     spec_file = '%s.xml' % os.path.join(self.all_specs_dir, version)
@@ -719,12 +730,15 @@ class BuildSpecsManager(object):
     """Syncs the cros source to the latest git hashes for the branch."""
     self.cros_source.Sync(self.manifest)
 
-  def GetNextBuildSpec(self, retries=NUM_RETRIES, dashboard_url=None):
+  def GetNextBuildSpec(self, retries=NUM_RETRIES, dashboard_url=None,
+                       build_id=None):
     """Returns a path to the next manifest to build.
 
     Args:
       retries: Number of retries for updating the status.
       dashboard_url: Optional url linking to builder dashboard for this build.
+      build_id: Optional integer cidb id of this build, which will be used to
+                annotate the manifest-version commit if one is created.
 
     Raises:
       GenerateBuildSpecException in case of failure to generate a buildspec
@@ -748,7 +762,7 @@ class BuildSpecsManager(object):
           git.CreatePushBranch(PUSH_BRANCH, self.manifest_dir, sync=False)
           version = self.GetNextVersion(version_info)
           new_manifest = self.CreateManifest()
-          self.PublishManifest(new_manifest, version)
+          self.PublishManifest(new_manifest, version, build_id=build_id)
         else:
           version = self.latest_unprocessed
 
