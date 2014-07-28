@@ -88,7 +88,7 @@
     min-width: .75em;
 }
 .interpolatedResult {
-    opacity: 0.2;
+    color: rgba(0, 0, 0, 0.2);
 }
 #legend {
     position: fixed;
@@ -110,6 +110,49 @@
     float: left;
     border: 1px solid grey;
 }
+
+/*
+These interpolatedResult values are 20% opacity versions of the test results
+below and should be kept in sync. See: crbug.com/397886.
+*/
+.PASS.interpolatedResult {
+    background-color: rgba(51, 255, 51, 0.2);
+}
+.NODATA.interpolatedResult, .NOTRUN.interpolatedResult {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: rgba(187, 187, 187, 0.2);
+}
+.SKIP.interpolatedResult {
+    background-color: rgba(211, 211, 211, 0.2);
+}
+.CRASH.interpolatedResult {
+    background-color: rgba(204, 153, 0, 0.2);
+}
+.TIMEOUT.interpolatedResult {
+    background-color: rgba(255, 252, 108, 0.2);
+}
+.IMAGE.interpolatedResult {
+    background-color: rgba(102, 153, 255, 0.2);
+}
+.FAIL.interpolatedResult, .TEXT.interpolatedResult {
+    background-color: rgba(233, 128, 128, 0.2);
+}
+.MISSING.interpolatedResult {
+    background-color: rgba(138, 119, 0, 0.2);
+}
+.IMAGETEXT.interpolatedResult {
+    background-color: rgba(153, 102, 255, 0.2);
+}
+.AUDIO.interpolatedResult {
+    background-color: rgba(173, 216, 230, 0.2);
+}
+.FLAKY.interpolatedResult {
+    background-color: rgba(64, 224, 208, 0.2);
+}
+.LEAK.interpolatedResult {
+    background-color: rgba(255, 192, 203, 0.2);
+}
+
 .PASS {
     background-color: #3f3;
 }
