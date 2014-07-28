@@ -100,6 +100,7 @@
 #include "chromeos/chromeos_constants.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
+#include "components/dom_distiller/core/url_constants.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/metrics/client_info.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -1021,7 +1022,7 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
 void ChromeContentBrowserClient::GetAdditionalWebUISchemes(
     std::vector<std::string>* additional_schemes) {
   additional_schemes->push_back(chrome::kChromeSearchScheme);
-  additional_schemes->push_back(chrome::kDomDistillerScheme);
+  additional_schemes->push_back(dom_distiller::kDomDistillerScheme);
 }
 
 void ChromeContentBrowserClient::GetAdditionalWebUIHostsToIgnoreParititionCheck(

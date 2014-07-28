@@ -471,6 +471,9 @@
             '<(DEPTH)/breakpad/src',
             '<(DEPTH)/third_party/wtl/include',
           ],
+          'dependencies': [
+            '<(DEPTH)/components/components.gyp:dom_distiller_core',  # Needed by chrome_content_client.cc.
+          ],
         }],
         ['enable_mdns == 1', {
             'sources': [

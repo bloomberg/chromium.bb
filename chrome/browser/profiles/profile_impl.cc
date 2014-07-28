@@ -77,6 +77,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/dom_distiller/content/dom_distiller_viewer_source.h"
+#include "components/dom_distiller/core/url_constants.h"
 #include "components/domain_reliability/monitor.h"
 #include "components/domain_reliability/service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -254,9 +255,10 @@ void RegisterDomDistillerViewerSource(Profile* profile) {
     dom_distiller::LazyDomDistillerService* lazy_service =
         new dom_distiller::LazyDomDistillerService(
             profile, dom_distiller_service_factory);
-    content::URLDataSource::Add(profile,
-                                new dom_distiller::DomDistillerViewerSource(
-                                    lazy_service, chrome::kDomDistillerScheme));
+    content::URLDataSource::Add(
+        profile,
+        new dom_distiller::DomDistillerViewerSource(
+            lazy_service, dom_distiller::kDomDistillerScheme));
   }
 }
 

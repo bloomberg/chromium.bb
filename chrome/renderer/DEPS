@@ -6,6 +6,7 @@ include_rules = [
   "+components/cdm/renderer",
   "+components/content_settings/core/common",
   "+components/data_reduction_proxy/common",
+  "+components/dom_distiller/core",
   "+components/nacl/renderer",
   "+components/plugins/renderer",
   "+components/signin/core/common",

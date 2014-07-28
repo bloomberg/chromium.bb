@@ -7,7 +7,6 @@
 #include "base/android/jni_android.h"
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/url_constants.h"
 #include "components/dom_distiller/core/feedback_reporter.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "content/public/browser/navigation_details.h"
@@ -56,8 +55,7 @@ void FeedbackReporterAndroid::DidNavigateMainFrame(
     return;
   Java_DomDistillerFeedbackReporter_dismissOverlay(env, jobj.obj());
   GURL url = details.entry->GetURL();
-  if (dom_distiller::url_utils::IsUrlReportable(
-      chrome::kDomDistillerScheme, url)) {
+  if (dom_distiller::url_utils::IsDistilledPage(url)) {
     Java_DomDistillerFeedbackReporter_showOverlay(env, jobj.obj());
   }
 }

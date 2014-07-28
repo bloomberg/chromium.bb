@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/dom_distiller/content/dom_distiller_viewer_source.h"
@@ -152,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
   expect_distillation_ = true;
   expect_distiller_page_ = true;
   const GURL url = url_utils::GetDistillerViewUrlFromEntryId(
-      chrome::kDomDistillerScheme, entry.entry_id());
+      kDomDistillerScheme, entry.entry_id());
   ViewSingleDistilledPage(url, "text/html");
 }
 
@@ -164,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
   expect_distillation_ = false;
   expect_distiller_page_ = false;
   const GURL url = url_utils::GetDistillerViewUrlFromEntryId(
-      chrome::kDomDistillerScheme, "DOES_NOT_EXIST");
+      kDomDistillerScheme, "DOES_NOT_EXIST");
   ViewSingleDistilledPage(url, "text/html");
 }
 
@@ -176,8 +175,8 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
   expect_distillation_ = true;
   expect_distiller_page_ = true;
   GURL view_url("http://www.example.com/1");
-  const GURL url = url_utils::GetDistillerViewUrlFromUrl(
-      chrome::kDomDistillerScheme, view_url);
+  const GURL url =
+      url_utils::GetDistillerViewUrlFromUrl(kDomDistillerScheme, view_url);
   ViewSingleDistilledPage(url, "text/html");
 }
 
@@ -211,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
   expect_distiller_page_ = false;
   // Navigate to a URL which the source should respond to with CSS.
   std::string url_without_scheme = std::string("://foobar/") + kViewerCssPath;
-  GURL url(chrome::kDomDistillerScheme + url_without_scheme);
+  GURL url(kDomDistillerScheme + url_without_scheme);
   ViewSingleDistilledPage(url, "text/css");
 }
 
@@ -220,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
   // This is a bogus URL, so no distillation will happen.
   expect_distillation_ = false;
   expect_distiller_page_ = false;
-  const GURL url(std::string(chrome::kDomDistillerScheme) + "://bogus/");
+  const GURL url(std::string(kDomDistillerScheme) + "://bogus/");
   ViewSingleDistilledPage(url, "text/html");
 }
 
@@ -229,7 +228,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
   // This is a bogus URL, so no distillation will happen.
   expect_distillation_ = false;
   expect_distiller_page_ = false;
-  const GURL url(std::string(chrome::kDomDistillerScheme) + "://bogus/foobar");
+  const GURL url(std::string(kDomDistillerScheme) + "://bogus/foobar");
   ViewSingleDistilledPage(url, "text/html");
 }
 
@@ -255,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
 
   // Navigate to a URL and wait for the distiller to flush contents to the page.
   GURL url(dom_distiller::url_utils::GetDistillerViewUrlFromUrl(
-      chrome::kDomDistillerScheme, GURL("http://urlthatlooksvalid.com")));
+      kDomDistillerScheme, GURL("http://urlthatlooksvalid.com")));
   chrome::NavigateParams params(browser(), url, content::PAGE_TRANSITION_TYPED);
   chrome::Navigate(&params);
   distillation_done_runner->Run();
@@ -336,8 +335,8 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, PrefChange) {
   GURL view_url("http://www.example.com/1");
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  const GURL url = url_utils::GetDistillerViewUrlFromUrl(
-      chrome::kDomDistillerScheme, view_url);
+  const GURL url =
+      url_utils::GetDistillerViewUrlFromUrl(kDomDistillerScheme, view_url);
   ViewSingleDistilledPage(url, "text/html");
   content::WaitForLoadStop(contents);
   std::string result;

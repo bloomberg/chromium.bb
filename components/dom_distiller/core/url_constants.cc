@@ -6,6 +6,7 @@
 
 namespace dom_distiller {
 
+const char kDomDistillerScheme[] = "chrome-distiller";
 const char kEntryIdKey[] = "entry_id";
 const char kUrlKey[] = "url";
 const char kViewerCssPath[] = "dom_distiller_viewer.css";

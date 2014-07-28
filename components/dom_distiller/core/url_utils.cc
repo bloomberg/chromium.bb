@@ -47,8 +47,8 @@ bool IsUrlDistillable(const GURL& url) {
   return url.is_valid() && url.SchemeIsHTTPOrHTTPS();
 }
 
-bool IsUrlReportable(const std::string& scheme, const GURL& url) {
-  return url.is_valid() && url.scheme() == scheme;
+bool IsDistilledPage(const GURL& url) {
+  return url.is_valid() && url.scheme() == kDomDistillerScheme;
 }
 
 }  // namespace url_utils

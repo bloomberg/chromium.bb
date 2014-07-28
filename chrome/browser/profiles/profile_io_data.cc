@@ -48,6 +48,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/dom_distiller/core/url_constants.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/url_fixer/url_fixer.h"
@@ -679,7 +680,7 @@ bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
   static const char* const kProtocolList[] = {
     url::kFileScheme,
     content::kChromeDevToolsScheme,
-    chrome::kDomDistillerScheme,
+    dom_distiller::kDomDistillerScheme,
 #if defined(ENABLE_EXTENSIONS)
     extensions::kExtensionScheme,
     extensions::kExtensionResourceScheme,

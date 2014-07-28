@@ -49,6 +49,7 @@
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/dom_distiller/core/url_constants.h"
 #include "components/history/core/browser/history_client.h"
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/keyword_search_term.h"
@@ -1024,7 +1025,7 @@ bool HistoryService::CanAddURL(const GURL& url) {
       url.SchemeIs(content::kViewSourceScheme) ||
       url.SchemeIs(chrome::kChromeNativeScheme) ||
       url.SchemeIs(chrome::kChromeSearchScheme) ||
-      url.SchemeIs(chrome::kDomDistillerScheme))
+      url.SchemeIs(dom_distiller::kDomDistillerScheme))
     return false;
 
   // Allow all about: and chrome: URLs except about:blank, since the user may

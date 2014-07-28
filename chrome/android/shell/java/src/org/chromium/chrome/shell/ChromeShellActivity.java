@@ -48,7 +48,6 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class ChromeShellActivity extends Activity implements AppMenuPropertiesDelegate {
     private static final String TAG = "ChromeShellActivity";
-    private static final String CHROME_DISTILLER_SCHEME = "chrome-distiller";
 
     /**
      * Factory used to set up a mock ActivityWindowAndroid for testing.
@@ -375,8 +374,7 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
         MenuItem distillPageItem = menu.findItem(R.id.distill_page);
         if (CommandLine.getInstance().hasSwitch(ChromeShellSwitches.ENABLE_DOM_DISTILLER)) {
             String url = activeTab != null ? activeTab.getUrl() : null;
-            distillPageItem.setEnabled(!DomDistillerUrlUtils.isUrlReportable(
-                    CHROME_DISTILLER_SCHEME, url));
+            distillPageItem.setEnabled(!DomDistillerUrlUtils.isDistilledPage(url));
             distillPageItem.setVisible(true);
         } else {
             distillPageItem.setVisible(false);

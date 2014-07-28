@@ -11,12 +11,12 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/dom_distiller/content/web_contents_main_frame_observer.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/core/task_tracker.h"
+#include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -48,7 +48,7 @@ class WebContentsMainFrameHelper : public content::WebContentsObserver {
   virtual void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                              const GURL& validated_url) OVERRIDE {
     if (!render_frame_host->GetParent() &&
-        validated_url.scheme() == chrome::kDomDistillerScheme)
+        validated_url.scheme() == kDomDistillerScheme)
       callback_.Run();
   }
 
@@ -80,8 +80,8 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest, TestSwapWebContents) {
 
   // Verify the new URL is showing distilled content in a new WebContents.
   EXPECT_NE(initial_web_contents, after_web_contents);
-  EXPECT_TRUE(after_web_contents->GetLastCommittedURL().SchemeIs(
-      chrome::kDomDistillerScheme));
+  EXPECT_TRUE(
+      after_web_contents->GetLastCommittedURL().SchemeIs(kDomDistillerScheme));
   EXPECT_EQ("Test Page Title",
             base::UTF16ToUTF8(after_web_contents->GetTitle()));
 }

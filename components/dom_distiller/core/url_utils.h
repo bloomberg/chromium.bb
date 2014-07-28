@@ -28,8 +28,8 @@ std::string GetValueForKeyInUrlPathQuery(const std::string& path,
 // Returns whether it should be possible to distill the given |url|.
 bool IsUrlDistillable(const GURL& url);
 
-// Returns whether it should be possible to report the given |url|.
-bool IsUrlReportable(const std::string& scheme, const GURL& url);
+// Returns whether the given |url| is for a distilled page.
+bool IsDistilledPage(const GURL& url);
 
 }  // namespace url_utils
 

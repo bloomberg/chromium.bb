@@ -36,11 +36,18 @@ public final class DomDistillerUrlUtils {
         return nativeGetOriginalUrlFromDistillerUrl(url);
     }
 
-    public static boolean isUrlReportable(String scheme, String url) {
-        return nativeIsUrlReportable(scheme, url);
+    /**
+     * Returns whether the url is for a distilled page.
+     *
+     * @param url The url of the page.
+     * @return whether the url is for a distilled page.
+     */
+    public static boolean isDistilledPage(String url) {
+        return nativeIsDistilledPage(url);
     }
 
     private static native String nativeGetDistillerViewUrlFromUrl(String scheme, String url);
     private static native String nativeGetOriginalUrlFromDistillerUrl(String viewerUrl);
-    private static native boolean nativeIsUrlReportable(String scheme, String url);
+    private static native boolean nativeIsDistilledPage(String url);
+
 }

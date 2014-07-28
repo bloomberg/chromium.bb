@@ -53,13 +53,9 @@ jstring GetOriginalUrlFromDistillerUrl(JNIEnv* env,
       .Release();
 }
 
-jboolean IsUrlReportable(JNIEnv* env,
-                         jclass clazz,
-                         jstring j_scheme,
-                         jstring j_url) {
-  std::string scheme(base::android::ConvertJavaStringToUTF8(env, j_scheme));
+jboolean IsDistilledPage(JNIEnv* env, jclass clazz, jstring j_url) {
   GURL url(base::android::ConvertJavaStringToUTF8(env, j_url));
-  return dom_distiller::url_utils::IsUrlReportable(scheme, url);
+  return dom_distiller::url_utils::IsDistilledPage(url);
 }
 
 bool RegisterUrlUtils(JNIEnv* env) { return RegisterNativesImpl(env); }

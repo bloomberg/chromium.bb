@@ -401,6 +401,7 @@
         ['OS=="win"', {
           'dependencies': [
             '../chrome_elf/chrome_elf.gyp:chrome_elf',
+            '../components/components.gyp:dom_distiller_core',  # Needed by chrome_content_renderer_client.cc.
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',

@@ -519,9 +519,6 @@ extern const char kCrosScheme[];
 extern const char kDriveScheme[];
 #endif
 
-// Scheme for the DOM Distiller component.
-extern const char kDomDistillerScheme[];
-
 // "Learn more" URL for the Cloud Print section under Options.
 extern const char kCloudPrintLearnMoreURL[];
 

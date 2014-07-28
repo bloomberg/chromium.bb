@@ -24,6 +24,7 @@
 #include "chrome/common/pepper_flash.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "components/dom_distiller/core/url_constants.h"
 #include "components/nacl/common/nacl_process_type.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -475,8 +476,8 @@ void ChromeContentClient::AddAdditionalSchemes(
   savable_schemes->push_back(extensions::kExtensionResourceScheme);
   standard_schemes->push_back(chrome::kChromeSearchScheme);
   savable_schemes->push_back(chrome::kChromeSearchScheme);
-  standard_schemes->push_back(chrome::kDomDistillerScheme);
-  savable_schemes->push_back(chrome::kDomDistillerScheme);
+  standard_schemes->push_back(dom_distiller::kDomDistillerScheme);
+  savable_schemes->push_back(dom_distiller::kDomDistillerScheme);
 #if defined(OS_CHROMEOS)
   standard_schemes->push_back(chrome::kCrosScheme);
 #endif
