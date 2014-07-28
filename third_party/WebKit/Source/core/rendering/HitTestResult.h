@@ -47,6 +47,7 @@ class PositionWithAffinity;
 class Scrollbar;
 
 class HitTestResult {
+    DISALLOW_ALLOCATION();
 public:
     typedef WillBeHeapListHashSet<RefPtrWillBeMember<Node> > NodeSet;
 
@@ -58,6 +59,7 @@ public:
     HitTestResult(const HitTestResult&);
     ~HitTestResult();
     HitTestResult& operator=(const HitTestResult&);
+    void trace(Visitor*);
 
     Node* innerNode() const { return m_innerNode.get(); }
     Node* innerPossiblyPseudoNode() const { return m_innerPossiblyPseudoNode.get(); }
@@ -135,19 +137,19 @@ private:
 
     HitTestLocation m_hitTestLocation;
 
-    RefPtrWillBePersistent<Node> m_innerNode;
-    RefPtrWillBePersistent<Node> m_innerPossiblyPseudoNode;
-    RefPtrWillBePersistent<Node> m_innerNonSharedNode;
+    RefPtrWillBeMember<Node> m_innerNode;
+    RefPtrWillBeMember<Node> m_innerPossiblyPseudoNode;
+    RefPtrWillBeMember<Node> m_innerNonSharedNode;
     // FIXME: Nothing changes this to a value different from m_hitTestLocation!
     LayoutPoint m_pointInInnerNodeFrame; // The hit-tested point in innerNode frame coordinates.
     LayoutPoint m_localPoint; // A point in the local coordinate space of m_innerNonSharedNode's renderer. Allows us to efficiently
                               // determine where inside the renderer we hit on subsequent operations.
-    RefPtrWillBePersistent<Element> m_innerURLElement;
+    RefPtrWillBeMember<Element> m_innerURLElement;
     RefPtr<Scrollbar> m_scrollbar;
     bool m_isOverWidget; // Returns true if we are over a widget (and not in the border/padding area of a RenderWidget for example).
     bool m_isFirstLetter;
 
-    mutable OwnPtrWillBePersistent<NodeSet> m_rectBasedTestResult;
+    mutable OwnPtrWillBeMember<NodeSet> m_rectBasedTestResult;
 };
 
 } // namespace blink

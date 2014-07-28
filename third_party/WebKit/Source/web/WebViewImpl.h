@@ -264,6 +264,7 @@ public:
 
     // WebViewImpl
 
+    blink::HitTestResult coreHitTestResultAt(const WebPoint&);
     void suppressInvalidations(bool enable);
     void invalidateRect(const blink::IntRect&);
 

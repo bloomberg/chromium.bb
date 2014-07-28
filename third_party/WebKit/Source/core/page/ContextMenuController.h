@@ -43,11 +43,12 @@ namespace blink {
     class LocalFrame;
     class Page;
 
-    class ContextMenuController {
-        WTF_MAKE_NONCOPYABLE(ContextMenuController); WTF_MAKE_FAST_ALLOCATED;
+    class ContextMenuController : public NoBaseWillBeGarbageCollectedFinalized<ContextMenuController> {
+        WTF_MAKE_NONCOPYABLE(ContextMenuController); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
     public:
-        static PassOwnPtr<ContextMenuController> create(Page*, ContextMenuClient*);
+        static PassOwnPtrWillBeRawPtr<ContextMenuController> create(Page*, ContextMenuClient*);
         ~ContextMenuController();
+        void trace(Visitor*);
 
         ContextMenu* contextMenu() const { return m_contextMenu.get(); }
         void clearContextMenu();
