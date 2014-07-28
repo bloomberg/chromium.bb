@@ -258,14 +258,13 @@ void NativeImageSkia::drawPattern(
     localMatrix.setTranslate(SkFloatToScalar(adjustedX), SkFloatToScalar(adjustedY));
 
     RefPtr<SkShader> shader;
+    SkPaint::FilterLevel filterLevel = static_cast<SkPaint::FilterLevel>(resampling);
 
     // Bicubic filter is only applied to defer-decoded images, see
     // NativeImageSkia::draw for details.
-    bool useBicubicFilter = resampling == InterpolationHigh && isLazyDecoded;
-    bool isResampled = false;
-    if (resampling == InterpolationHigh && !useBicubicFilter) {
+    if (resampling == InterpolationHigh && !isLazyDecoded) {
         // Do nice resampling.
-        isResampled = true;
+        filterLevel = SkPaint::kNone_FilterLevel;
         float scaleX = destBitmapWidth / normSrcRect.width();
         float scaleY = destBitmapHeight / normSrcRect.height();
         SkRect scaledSrcRect;
@@ -311,7 +310,7 @@ void NativeImageSkia::drawPattern(
     paint.setShader(shader.get());
     paint.setXfermode(WebCoreCompositeToSkiaComposite(compositeOp, blendMode).get());
     paint.setColorFilter(context->colorFilter());
-    paint.setFilterLevel(isResampled ? SkPaint::kNone_FilterLevel : static_cast<SkPaint::FilterLevel>(resampling));
+    paint.setFilterLevel(filterLevel);
 
     if (isLazyDecoded)
         PlatformInstrumentation::didDrawLazyPixelRef(bitmap().getGenerationID());
