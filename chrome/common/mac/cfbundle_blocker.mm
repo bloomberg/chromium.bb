@@ -290,6 +290,12 @@ bool IsBundleAllowed(NSString* bundle_id, NSString* version) {
     // Smart Scroll, http://marcmoini.com/sx_en.html
     // Marc Moini <marc@a9ff.com>
     { @"com.marcmoini.SmartScroll", @"3.9" },
+
+    // Bartender for Mac, http://www.macbartender.com
+    // Ben Surtees <ben@surteesstudios.com>
+    { @"com.surteesstudios.BartenderHelper", @"1.2.20" },
+    { @"com.surteesstudios.BartenderHelperSeventy", @"1.2.20" },
+    { @"com.surteesstudios.BartenderHelperBundle", @"1.2.20" },
   };
 
   for (size_t index = 0; index < arraysize(kAllowedBundles); ++index) {
