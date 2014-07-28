@@ -124,10 +124,10 @@ private:
 
 inline bool FullscreenElementStack::isActiveFullScreenElement(const Element& element)
 {
-    FullscreenElementStack* controller = fromIfExists(element.document());
-    if (!controller)
+    FullscreenElementStack* fullscreen = fromIfExists(element.document());
+    if (!fullscreen)
         return false;
-    return controller->webkitIsFullScreen() && controller->webkitCurrentFullScreenElement() == element;
+    return fullscreen->webkitCurrentFullScreenElement() == &element;
 }
 
 inline FullscreenElementStack* FullscreenElementStack::fromIfExists(Document& document)

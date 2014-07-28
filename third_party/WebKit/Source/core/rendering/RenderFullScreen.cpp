@@ -74,10 +74,10 @@ void RenderFullScreen::willBeDestroyed()
     }
 
     // RenderObjects are unretained, so notify the document (which holds a pointer to a RenderFullScreen)
-    // if it's RenderFullScreen is destroyed.
-    FullscreenElementStack& controller = FullscreenElementStack::from(document());
-    if (controller.fullScreenRenderer() == this)
-        controller.fullScreenRendererDestroyed();
+    // if its RenderFullScreen is destroyed.
+    FullscreenElementStack& fullscreen = FullscreenElementStack::from(document());
+    if (fullscreen.fullScreenRenderer() == this)
+        fullscreen.fullScreenRendererDestroyed();
 
     RenderFlexibleBox::willBeDestroyed();
 }
