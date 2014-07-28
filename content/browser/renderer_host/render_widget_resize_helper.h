@@ -5,9 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_RESIZE_HELPER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_RESIZE_HELPER_H_
 
-#include <deque>
-
 #include "base/lazy_instance.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "ipc/ipc_message.h"
@@ -39,17 +38,18 @@ namespace content {
 // thread (as usual), and will also enqueue them into a queue which will be
 // read and run in RenderWidgetResizeHelper::WaitForSingleTaskToRun, potentially
 // before the task posted to the UI thread is run. Some care is taken (see
-// EnqueuedTask) to make sure that the messages are only executed once.
+// WrappedTask) to make sure that the messages are only executed once.
 //
-// TODO(ccameron): This does not support smooth resize when using the
-// ui::Compositor yet. To support this, it will be necessary that the
-// RenderWidgetResizeHelper have a base::TaskRunner to send to the
-// cc::ThreadProxy. The tasks that cc then posts can be pumped in
-// WaitForSingleTaskToRun in a way similar to the one in which IPCs are handled.
+// This is further complicated because, in order for a frame to appear, it is
+// necessary to run tasks posted by the ui::Compositor. To accomplish this, the
+// RenderWidgetResizeHelper provides a base::SingleThreadTaskRunner which,
+// when a task is posted to it, enqueues the task in the aforementioned queue,
+// which may be pumped by RenderWidgetResizeHelper::WaitForSingleTaskToRun.
 //
 class RenderWidgetResizeHelper {
  public:
   static RenderWidgetResizeHelper* Get();
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner() const;
 
   // UI THREAD ONLY -----------------------------------------------------------
 
@@ -74,28 +74,17 @@ class RenderWidgetResizeHelper {
   RenderWidgetResizeHelper();
   ~RenderWidgetResizeHelper();
 
-  // A classed used to wrap an IPC or a task.
-  class EnqueuedTask;
-  friend class EnqueuedTask;
+  // This helper is needed to create a ScopedAllowWait inside the scope of a
+  // class where it is allowed.
+  static void EventTimedWait(
+      base::WaitableEvent* event,
+      base::TimeDelta delay);
 
-  // Called on the IO thread to add a task to the queue.
-  void PostEnqueuedTask(EnqueuedTask* proxy);
+  // The task runner to which the helper will post tasks. This also maintains
+  // the task queue and does the actual work for WaitForSingleTaskToRun.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  // Called on the UI to remove the task from the queue when it is run.
-  void RemoveEnqueuedTaskFromQueue(EnqueuedTask* proxy);
-
-  // A queue of live messages.  Must hold |task_queue_lock_| to access. Tasks
-  // are added only on the IO thread and removed only on the UI thread.  The
-  // EnqueuedTask objects are removed from the front of the queue when they are
-  // run (by TaskRunner they were posted to, by a call to WaitForSingleTaskToRun
-  // pulling them off of the queue, or by TaskRunner when it is destroyed).
-  typedef std::deque<EnqueuedTask*> EnqueuedTaskQueue;
-  EnqueuedTaskQueue task_queue_;
-  base::Lock task_queue_lock_;
-
-  // Event used to wake up the UI thread if it is sleeping in
-  // WaitForSingleTaskToRun.
-  base::WaitableEvent event_;
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetResizeHelper);
 };
 
 }  // namespace content
