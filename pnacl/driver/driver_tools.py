@@ -471,14 +471,13 @@ def CheckPathLength(filename, exit_on_failure=True):
   if not IsWindowsPython() and not env.has('PNACL_RUNNING_UNITTESTS'):
     return True
 
-  # We can't use os.path.abspath here, because that calls into a Windows
-  # function that still has the path length limit. Instead, we'll cheat and
-  # normalize the path lexically.
+  # Don't assume that the underlying tools or windows APIs will normalize
+  # the path before using it. Conservatively count the length of CWD + filename.
   if len(filename) > 255:
     if exit_on_failure:
       Log.Fatal('Path name %s is too long' % filename)
     return False
-  expanded_name = os.path.normpath(os.path.join(os.getcwd(), filename))
+  expanded_name = os.path.join(os.getcwd(), filename)
   if len(expanded_name) > 255:
     if exit_on_failure:
       Log.Fatal('Path name %s (expanded from %s) is too long' %
