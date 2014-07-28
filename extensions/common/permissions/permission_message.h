@@ -86,6 +86,7 @@ class PermissionMessage {
     kAccessibilityFeaturesRead,
     kBluetoothPrivate,
     kIdentityEmail,
+    kExperienceSamplingPrivate,
     kEnumBoundary,
   };
   COMPILE_ASSERT(PermissionMessage::kNone > PermissionMessage::kUnknown,

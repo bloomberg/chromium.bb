@@ -402,6 +402,10 @@
     "extension_types": ["platform_app"],
     "location": "component"
   },
+  "embeddedExtensionOptions": {
+    "channel": "trunk",
+    "extension_types": ["extension"]
+  },
   "enterprise.platformKeys": {
     "channel": "stable",
     "platforms": ["chromeos"],
@@ -417,9 +421,10 @@
       "5894126C625EF31852F215ED301A5FF1F9B7D026"   // Test
     ]
   },
-  "embeddedExtensionOptions": {
-    "channel": "trunk",
-    "extension_types": ["extension"]
+  "experienceSamplingPrivate": {
+    "channel": "dev",
+    "extension_types": ["extension"],
+    "whitelist": []
   },
   "experimental": {
     "channel": "stable",

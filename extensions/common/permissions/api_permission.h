@@ -82,6 +82,7 @@ class APIPermission {
     kEmbeddedExtensionOptions,
     kEnterprisePlatformKeys,
     kEnterprisePlatformKeysPrivate,
+    kExperienceSamplingPrivate,
     kExperimental,
     kFeedbackPrivate,
     kFileBrowserHandler,

@@ -4501,6 +4501,9 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_ACCESSIBILITY_FEATURES_READ_MODIFY" desc="Permission string for reading and modifying acccessibility settings via extension API shown when an extension utilizing the API is installed.">
         Read and change your accessibility settings
       </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_EXPERIENCE_SAMPLING_PRIVATE" desc="Permission string for Experience Sampling Private API.">
+        Monitor when you take actions in Chrome
+      </message>
 
       <!-- Extension/App error messages -->
       <message name="IDS_EXTENSION_CANT_GET_ABSOLUTE_PATH" desc="Warning displayed in pack dialog when the absolute path to the extension directory can not be found.">

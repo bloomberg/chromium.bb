@@ -309,6 +309,10 @@
     "contexts": "all",
     "matches": ["<all_urls>"]
   },
+  "experienceSamplingPrivate": {
+    "dependencies": ["permission:experienceSamplingPrivate"],
+    "contexts": ["blessed_extension"]
+  },
   "experimental.devtools.audits": {
     "dependencies": ["permission:experimental", "manifest:devtools_page"],
     "contexts": ["blessed_extension"]
