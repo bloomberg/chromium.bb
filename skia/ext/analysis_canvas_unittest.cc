@@ -6,6 +6,8 @@
 #include "skia/ext/analysis_canvas.h"
 #include "skia/ext/refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkOffsetImageFilter.h"
 
@@ -280,114 +282,44 @@ TEST(AnalysisCanvasTest, SaveLayerRestore) {
   EXPECT_NE(static_cast<SkColor>(SK_ColorTRANSPARENT), outputColor);
 }
 
-TEST(AnalysisCanvasTest, HasText) {
-  int width = 200;
-  int height = 100;
+TEST(AnalysisCanvasTest, EarlyOutNotSolid) {
+  SkTileGridFactory::TileGridInfo tile_grid_info;
+  tile_grid_info.fTileInterval.set(256, 256);
+  tile_grid_info.fOffset.setZero();
+  tile_grid_info.fMargin.setEmpty();
+  SkTileGridFactory factory(tile_grid_info);
+  SkPictureRecorder recorder;
 
-  const char* text = "A";
-  size_t byteLength = 1;
+  // Create a picture with 3 commands, last of which is non-solid.
+  skia::RefPtr<SkCanvas> record_canvas =
+      skia::SharePtr(recorder.beginRecording(256, 256, &factory));
 
+  std::string text = "text";
   SkPoint point = SkPoint::Make(SkIntToScalar(25), SkIntToScalar(25));
-  SkPath path;
-  path.moveTo(point);
-  path.lineTo(SkIntToScalar(75), SkIntToScalar(75));
 
   SkPaint paint;
-  paint.setColor(SK_ColorGRAY);
-  paint.setTextSize(SkIntToScalar(10));
+  paint.setColor(SkColorSetARGB(255, 255, 255, 255));
+  paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
 
-  {
-    skia::AnalysisCanvas canvas(width, height);
-    // Test after initialization.
-    EXPECT_FALSE(canvas.HasText());
-    // Test drawing anything other than text.
-    canvas.drawRect(SkRect::MakeWH(width/2, height), paint);
-    EXPECT_FALSE(canvas.HasText());
-  }
-  {
-    // Test SkCanvas::drawText.
-    skia::AnalysisCanvas canvas(width, height);
-    canvas.drawText(text, byteLength, point.fX, point.fY, paint);
-    EXPECT_TRUE(canvas.HasText());
-  }
-  {
-    // Test SkCanvas::drawPosText.
-    skia::AnalysisCanvas canvas(width, height);
-    canvas.drawPosText(text, byteLength, &point, paint);
-    EXPECT_TRUE(canvas.HasText());
-  }
-  {
-    // Test SkCanvas::drawPosTextH.
-    skia::AnalysisCanvas canvas(width, height);
-    canvas.drawPosTextH(text, byteLength, &point.fX, point.fY, paint);
-    EXPECT_TRUE(canvas.HasText());
-  }
-  {
-    // Test SkCanvas::drawTextOnPathHV.
-    skia::AnalysisCanvas canvas(width, height);
-    canvas.drawTextOnPathHV(text, byteLength, path, point.fX, point.fY, paint);
-    EXPECT_TRUE(canvas.HasText());
-  }
-  {
-    // Test SkCanvas::drawTextOnPath.
-    skia::AnalysisCanvas canvas(width, height);
-    canvas.drawTextOnPath(text, byteLength, path, NULL, paint);
-    EXPECT_TRUE(canvas.HasText());
-  }
-  {
-    // Text under opaque rect.
-    skia::AnalysisCanvas canvas(width, height);
-    canvas.drawText(text, byteLength, point.fX, point.fY, paint);
-    EXPECT_TRUE(canvas.HasText());
-    canvas.drawRect(SkRect::MakeWH(width, height), paint);
-    EXPECT_FALSE(canvas.HasText());
-  }
-  {
-    // Text under translucent rect.
-    skia::AnalysisCanvas canvas(width, height);
-    canvas.drawText(text, byteLength, point.fX, point.fY, paint);
-    EXPECT_TRUE(canvas.HasText());
-    SkPaint translucentPaint;
-    translucentPaint.setColor(0x88FFFFFF);
-    canvas.drawRect(SkRect::MakeWH(width, height), translucentPaint);
-    EXPECT_TRUE(canvas.HasText());
-  }
-  {
-    // Text under rect in clear mode.
-    skia::AnalysisCanvas canvas(width, height);
-    canvas.drawText(text, byteLength, point.fX, point.fY, paint);
-    EXPECT_TRUE(canvas.HasText());
-    SkPaint clearModePaint;
-    clearModePaint.setXfermodeMode(SkXfermode::kClear_Mode);
-    canvas.drawRect(SkRect::MakeWH(width, height), clearModePaint);
-    EXPECT_FALSE(canvas.HasText());
-  }
-  {
-    // Clear.
-    skia::AnalysisCanvas canvas(width, height);
-    canvas.drawText(text, byteLength, point.fX, point.fY, paint);
-    EXPECT_TRUE(canvas.HasText());
-    canvas.clear(SK_ColorGRAY);
-    EXPECT_FALSE(canvas.HasText());
-  }
-  {
-    // Text inside clip region.
-    skia::AnalysisCanvas canvas(width, height);
-    canvas.clipRect(SkRect::MakeWH(100, 100));
-    canvas.drawText(text, byteLength, point.fX, point.fY, paint);
-    EXPECT_TRUE(canvas.HasText());
-  }
-  {
-    // Text outside clip region.
-    skia::AnalysisCanvas canvas(width, height);
-    canvas.clipRect(SkRect::MakeXYWH(100, 0, 100, 100));
-    canvas.drawText(text, byteLength, point.fX, point.fY, paint);
-    // Analysis device does not do any clipping.
-    // So even when text is outside the clip region,
-    // it is marked as having the text.
-    // TODO(alokp): We may be able to do some trivial rejection.
-    EXPECT_TRUE(canvas.HasText());
-  }
+  record_canvas->drawRect(SkRect::MakeWH(256, 256), paint);
+  record_canvas->drawRect(SkRect::MakeWH(256, 256), paint);
+  record_canvas->drawText(
+      text.c_str(), text.length(), point.fX, point.fY, paint);
+
+  skia::RefPtr<SkPicture> picture = skia::AdoptRef(recorder.endRecording());
+
+  // Draw the picture into the analysis canvas, using the canvas as a callback
+  // as well.
+  skia::AnalysisCanvas canvas(256, 256);
+  picture->draw(&canvas, &canvas);
+
+  // Ensure that canvas is not solid.
+  SkColor output_color;
+  EXPECT_FALSE(canvas.GetColorIfSolid(&output_color));
+
+  // Verify that we aborted drawing.
+  EXPECT_TRUE(canvas.abortDrawing());
+
 }
 
 }  // namespace skia
