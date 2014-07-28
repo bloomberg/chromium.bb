@@ -280,9 +280,8 @@ scoped_ptr<base::ListValue> GetUILanguageList(
   ComponentExtensionIMEManager* manager =
       input_method::InputMethodManager::Get()->
           GetComponentExtensionIMEManager();
-  input_method::InputMethodDescriptors descriptors;
-  if (manager->IsInitialized())
-    descriptors = manager->GetXkbIMEAsInputMethodDescriptor();
+  input_method::InputMethodDescriptors descriptors =
+      manager->GetXkbIMEAsInputMethodDescriptor();
   scoped_ptr<base::ListValue> languages_list(GetLanguageList(
       descriptors,
       l10n_util::GetAvailableLocales(),
@@ -342,13 +341,6 @@ scoped_ptr<base::ListValue> GetLoginKeyboardLayouts(
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
   input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
-  if (!manager->GetComponentExtensionIMEManager()->IsInitialized()) {
-    input_method::InputMethodDescriptor fallback =
-        util->GetFallbackInputMethodDescriptor();
-    input_methods_list->Append(
-        CreateInputMethodsEntry(fallback, fallback.id()));
-    return input_methods_list.Pass();
-  }
 
   const std::vector<std::string>& hardware_login_input_methods =
       util->GetHardwareLoginInputMethodIds();

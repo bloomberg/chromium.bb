@@ -148,8 +148,7 @@ void InputMethodEngine::Initialize(
   ComponentExtensionIMEManager* comp_ext_ime_manager =
       manager->GetComponentExtensionIMEManager();
 
-  if (comp_ext_ime_manager && comp_ext_ime_manager->IsInitialized() &&
-      comp_ext_ime_manager->IsWhitelistedExtension(extension_id)) {
+  if (comp_ext_ime_manager->IsWhitelistedExtension(extension_id)) {
     imm_id_ = comp_ext_ime_manager->GetId(extension_id, engine_id);
   } else {
     imm_id_ = extension_ime_util::GetInputMethodID(extension_id, engine_id);

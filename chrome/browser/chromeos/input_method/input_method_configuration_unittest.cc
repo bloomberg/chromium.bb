@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
-#include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -14,11 +13,7 @@ TEST(InputMethodConfigurationTest, TestInitialize) {
   InputMethodManager* manager = InputMethodManager::Get();
   EXPECT_FALSE(manager);
 
-  Initialize(
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::UI),
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::FILE));
+  Initialize();
   manager = InputMethodManager::Get();
   EXPECT_TRUE(manager);
   Shutdown();

@@ -194,6 +194,8 @@ ImeKeyboardX11::ImeKeyboardX11()
   }
 
   current_caps_lock_status_ = CapsLockIsEnabled();
+  // Disable Num Lock on X start up for http://crosbug.com/29169.
+  DisableNumLock();
 }
 
 void ImeKeyboardX11::AddObserver(Observer* observer) {

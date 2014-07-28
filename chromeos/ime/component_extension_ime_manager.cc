@@ -75,8 +75,7 @@ ComponentExtensionIMEManagerDelegate::ComponentExtensionIMEManagerDelegate() {
 ComponentExtensionIMEManagerDelegate::~ComponentExtensionIMEManagerDelegate() {
 }
 
-ComponentExtensionIMEManager::ComponentExtensionIMEManager()
-    : is_initialized_(false), was_initialization_notified_(false) {
+ComponentExtensionIMEManager::ComponentExtensionIMEManager() {
   for (size_t i = 0; i < arraysize(kLoginLayoutWhitelist); ++i) {
     login_layout_set_.insert(kLoginLayoutWhitelist[i]);
   }
@@ -89,19 +88,6 @@ void ComponentExtensionIMEManager::Initialize(
     scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate) {
   delegate_ = delegate.Pass();
   component_extension_imes_ = delegate_->ListIME();
-  is_initialized_ = true;
-}
-
-void ComponentExtensionIMEManager::NotifyInitialized() {
-  if (is_initialized_ && !was_initialization_notified_) {
-    FOR_EACH_OBSERVER(
-        Observer, observers_, OnImeComponentExtensionInitialized());
-    was_initialization_notified_ = true;
-  }
-}
-
-bool ComponentExtensionIMEManager::IsInitialized() {
-  return is_initialized_;
 }
 
 bool ComponentExtensionIMEManager::LoadComponentExtensionIME(
@@ -220,14 +206,6 @@ ComponentExtensionIMEManager::GetXkbIMEAsInputMethodDescriptor() {
       result.push_back(descriptors[i]);
   }
   return result;
-}
-
-void ComponentExtensionIMEManager::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void ComponentExtensionIMEManager::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 bool ComponentExtensionIMEManager::FindEngineEntry(

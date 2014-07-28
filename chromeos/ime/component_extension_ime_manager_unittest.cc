@@ -13,14 +13,9 @@ namespace input_method {
 
 namespace {
 
-class ComponentExtensionIMEManagerTest :
-    public testing::Test,
-    public ComponentExtensionIMEManager::Observer {
+class ComponentExtensionIMEManagerTest : public testing::Test {
  public:
-  ComponentExtensionIMEManagerTest()
-      : mock_delegate_(NULL),
-        on_initialized_callcount_(0) {
-  }
+  ComponentExtensionIMEManagerTest() : mock_delegate_(NULL) {}
 
   virtual void SetUp() {
     ime_list_.clear();
@@ -116,18 +111,12 @@ class ComponentExtensionIMEManagerTest :
     mock_delegate_ = new MockComponentExtIMEManagerDelegate();
     mock_delegate_->set_ime_list(ime_list_);
     component_ext_mgr_.reset(new ComponentExtensionIMEManager());
-    component_ext_mgr_->AddObserver(this);
-    EXPECT_FALSE(component_ext_mgr_->IsInitialized());
     component_ext_mgr_->Initialize(
         scoped_ptr<ComponentExtensionIMEManagerDelegate>(
             mock_delegate_).Pass());
-    EXPECT_TRUE(component_ext_mgr_->IsInitialized());
-    component_ext_mgr_->NotifyInitialized();
   }
 
   virtual void TearDown() {
-    EXPECT_EQ(1, on_initialized_callcount_);
-    component_ext_mgr_->RemoveObserver(this);
   }
 
  protected:
@@ -136,11 +125,6 @@ class ComponentExtensionIMEManagerTest :
   std::vector<ComponentExtensionIME> ime_list_;
 
  private:
-  virtual void OnImeComponentExtensionInitialized() OVERRIDE {
-    ++on_initialized_callcount_;
-  }
-
-  int on_initialized_callcount_;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentExtensionIMEManagerTest);
 };

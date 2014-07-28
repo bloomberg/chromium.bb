@@ -30,13 +30,11 @@ class InputMethodConfiguration {
   InputMethodConfiguration() {}
   virtual ~InputMethodConfiguration() {}
 
-  void Initialize(
-      const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner) {
+  void Initialize() {
     IMEBridge::Initialize();
 
     InputMethodManagerImpl* impl = new InputMethodManagerImpl(
         scoped_ptr<InputMethodDelegate>(new InputMethodDelegateImpl));
-    impl->Init(ui_task_runner.get());
     InputMethodManager::Initialize(impl);
 
     DCHECK(InputMethodManager::Get());
@@ -78,12 +76,10 @@ InputMethodConfiguration* g_input_method_configuration = NULL;
 
 }  // namespace
 
-void Initialize(
-    const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& file_task_runner) {
+void Initialize() {
   if (!g_input_method_configuration)
     g_input_method_configuration = new InputMethodConfiguration();
-  g_input_method_configuration->Initialize(ui_task_runner);
+  g_input_method_configuration->Initialize();
 }
 
 void InitializeForTesting(InputMethodManager* mock_manager) {

@@ -22,6 +22,7 @@ class MockInputMethodManager : public InputMethodManager {
   virtual ~MockInputMethodManager();
 
   // InputMethodManager override:
+  virtual void InitializeComponentExtension() OVERRIDE;
   virtual void AddObserver(InputMethodManager::Observer* observer) OVERRIDE;
   virtual void AddCandidateWindowObserver(
       InputMethodManager::CandidateWindowObserver* observer) OVERRIDE;
@@ -93,7 +94,6 @@ class MockInputMethodManager : public InputMethodManager {
   // The value GetCurrentInputMethod().id() will return.
   std::string current_input_method_id_;
 
-  InputMethodWhitelist whitelist_;
   FakeInputMethodDelegate delegate_;  // used by util_
   InputMethodUtil util_;
   FakeImeKeyboard keyboard_;

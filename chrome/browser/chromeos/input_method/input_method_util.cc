@@ -254,16 +254,11 @@ namespace chromeos {
 
 namespace input_method {
 
-InputMethodUtil::InputMethodUtil(
-    InputMethodDelegate* delegate,
-    scoped_ptr<InputMethodDescriptors> supported_input_methods)
+InputMethodUtil::InputMethodUtil(InputMethodDelegate* delegate)
     : delegate_(delegate) {
-  // Makes sure the supported input methods at least have the fallback ime.
-  // So that it won't cause massive test failures.
-  if (supported_input_methods->empty())
-    supported_input_methods->push_back(GetFallbackInputMethodDescriptor());
-
-  ResetInputMethods(*supported_input_methods);
+  InputMethodDescriptors default_input_methods;
+  default_input_methods.push_back(GetFallbackInputMethodDescriptor());
+  ResetInputMethods(default_input_methods);
 
   // Initialize a map from English string to Chrome string resource ID as well.
   for (size_t i = 0; i < kEnglishToResourceIdArraySize; ++i) {

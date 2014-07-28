@@ -63,12 +63,6 @@ class CHROMEOS_EXPORT ComponentExtensionIMEManagerDelegate {
 // This class manages component extension input method.
 class CHROMEOS_EXPORT ComponentExtensionIMEManager {
  public:
-  class Observer {
-   public:
-    // Called when the initialization is done.
-    virtual void OnImeComponentExtensionInitialized() = 0;
-  };
-
   ComponentExtensionIMEManager();
   virtual ~ComponentExtensionIMEManager();
 
@@ -76,12 +70,6 @@ class CHROMEOS_EXPORT ComponentExtensionIMEManager {
   // mapping between input method id and engine components. This function must
   // be called before using any other function.
   void Initialize(scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate);
-
-  // Notifies the observers for the component extension IMEs are initialized.
-  void NotifyInitialized();
-
-  // Returns true if the initialization is done, otherwise returns false.
-  bool IsInitialized();
 
   // Loads |input_method_id| component extension IME. This function returns true
   // on success. This function is safe to call multiple times. Returns false if
@@ -120,9 +108,6 @@ class CHROMEOS_EXPORT ComponentExtensionIMEManager {
   // Returns all XKB keyboard IME as InputMethodDescriptors.
   input_method::InputMethodDescriptors GetXkbIMEAsInputMethodDescriptor();
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
-
  private:
   // Finds ComponentExtensionIME and EngineDescription associated with
   // |input_method_id|. This function retruns true if it is found, otherwise
@@ -136,12 +121,6 @@ class CHROMEOS_EXPORT ComponentExtensionIMEManager {
   scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate_;
 
   std::vector<ComponentExtensionIME> component_extension_imes_;
-
-  ObserverList<Observer> observers_;
-
-  bool is_initialized_;
-
-  bool was_initialization_notified_;
 
   std::set<std::string> login_layout_set_;
 

@@ -27,7 +27,6 @@ struct NetworkScreenHandlerOnLanguageChangedCallbackData;
 // the welcome screen (part of the page) of the OOBE.
 class NetworkScreenHandler : public NetworkScreenActor,
                              public BaseScreenHandler,
-                             public ComponentExtensionIMEManager::Observer,
                              public input_method::InputMethodManager::Observer {
  public:
   explicit NetworkScreenHandler(CoreOobeActor* core_oobe_actor);
@@ -51,9 +50,6 @@ class NetworkScreenHandler : public NetworkScreenActor,
 
   // WebUIMessageHandler implementation:
   virtual void RegisterMessages() OVERRIDE;
-
-  // ComponentExtensionIMEManager::Observer implementation:
-  virtual void OnImeComponentExtensionInitialized() OVERRIDE;
 
   // InputMethodManager::Observer implementation:
   virtual void InputMethodChanged(input_method::InputMethodManager* manager,
@@ -100,10 +96,6 @@ class NetworkScreenHandler : public NetworkScreenActor,
   gfx::Point network_control_pos_;
 
   scoped_ptr<CrosSettings::ObserverSubscription> timezone_subscription_;
-
-  // True if should reinitialize language and keyboard list once the page
-  // is ready.
-  bool should_reinitialize_language_keyboard_list_;
 
   // The exact language code selected by user in the menu.
   std::string selected_language_code_;

@@ -65,17 +65,6 @@ class InputMethodEngineBrowserTest
     ASSERT_TRUE(extension_);
     ASSERT_TRUE(ime_ready_listener.WaitUntilSatisfied());
 
-    // Make sure ComponentExtensionIMEManager is initialized.
-    // ComponentExtensionIMEManagerImpl::InitializeAsync posts
-    // ReadComponentExtensionsInfo to the FILE thread for the
-    // initialization.  If it is never initialized for some reasons,
-    // the test is timed out and failed.
-    ComponentExtensionIMEManager* ceimm =
-        InputMethodManager::Get()->GetComponentExtensionIMEManager();
-    while (!ceimm->IsInitialized()) {
-      content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
-    }
-
     // Extension IMEs are not enabled by default.
     std::vector<std::string> extension_ime_ids;
     extension_ime_ids.push_back(kIdentityIMEID);

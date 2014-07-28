@@ -163,12 +163,6 @@ class DBusServices {
     TPMTokenLoader::Initialize();
     CertLoader::Initialize();
 
-    // This function and SystemKeyEventListener use InputMethodManager.
-    chromeos::input_method::Initialize(
-        content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::UI),
-        content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::FILE));
     disks::DiskMountManager::Initialize();
     cryptohome::AsyncMethodCaller::Initialize();
     cryptohome::HomedirMethods::Initialize();
@@ -185,13 +179,6 @@ class DBusServices {
     // detector starts to monitor changes from the update engine.
     UpgradeDetectorChromeos::GetInstance()->Init();
 
-    if (base::SysInfo::IsRunningOnChromeOS()) {
-      // Disable Num Lock on X start up for http://crosbug.com/29169.
-      input_method::InputMethodManager::Get()
-          ->GetImeKeyboard()
-          ->DisableNumLock();
-    }
-
     // Initialize the device settings service so that we'll take actions per
     // signals sent from the session manager. This needs to happen before
     // g_browser_process initializes BrowserPolicyConnector.
@@ -207,7 +194,6 @@ class DBusServices {
 
     cryptohome::AsyncMethodCaller::Shutdown();
     disks::DiskMountManager::Shutdown();
-    input_method::Shutdown();
 
     SystemSaltGetter::Shutdown();
     LoginState::Shutdown();
@@ -366,6 +352,9 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // This forces the ProfileManager to be created and register for the
   // notification it needs to track the logged in user.
   g_browser_process->profile_manager();
+
+  // AccessibilityManager and SystemKeyEventListener use InputMethodManager.
+  input_method::Initialize();
 
   // ProfileHelper has to be initialized after UserManager instance is created.
   ProfileHelper::Get()->Initialize();
@@ -716,6 +705,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // We first call PostMainMessageLoopRun and then destroy UserManager, because
   // Ash needs to be closed before UserManager is destroyed.
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
+
+  input_method::Shutdown();
 
   // Stops all in-flight OAuth2 token fetchers before the IO thread stops.
   DeviceOAuth2TokenServiceFactory::Shutdown();

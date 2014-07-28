@@ -19,8 +19,7 @@ namespace options {
 // Language options page UI handler for Chrome OS.  For non-Chrome OS,
 // see LanguageOptionsHnadler.
 class CrosLanguageOptionsHandler
-    : public ::options::LanguageOptionsHandlerCommon,
-      public ComponentExtensionIMEManager::Observer {
+    : public ::options::LanguageOptionsHandlerCommon {
  public:
   CrosLanguageOptionsHandler();
   virtual ~CrosLanguageOptionsHandler();
@@ -70,21 +69,9 @@ class CrosLanguageOptionsHandler
   // |args| will contain the input method ID as string (ex. "mozc").
   void InputMethodOptionsOpenCallback(const base::ListValue* args);
 
-  // ComponentExtensionIMEManager::Observer override.
-  virtual void OnImeComponentExtensionInitialized() OVERRIDE;
-
-  // OptionsPageUIHandler implementation.
-  virtual void InitializePage() OVERRIDE;
-
   // Adds the name of the extension that provides the IME to each entry in the
   // |list| of extension IMEs.
   void AddImeProvider(base::ListValue* list);
-
-  // True if the component extension list was appended into input method list.
-  bool composition_extension_appended_;
-
-  // True if this page was initialized.
-  bool is_page_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(CrosLanguageOptionsHandler);
 };

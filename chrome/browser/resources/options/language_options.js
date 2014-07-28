@@ -196,7 +196,7 @@ cr.define('options', function() {
           loadTimeData.getValue('translateSupportedLanguages');
 
       // Set up add button.
-      $('language-options-add-button').onclick = function(e) {
+      var onclick = function(e) {
         // Add the language without showing the overlay if it's specified in
         // the URL hash (ex. lang_add=ja).  Used for automated testing.
         var match = document.location.hash.match(/\blang_add=([\w-]+)/);
@@ -207,7 +207,8 @@ cr.define('options', function() {
         } else {
           OptionsPage.navigateToPage('addLanguage');
         }
-      }.bind(this);
+      };
+      $('language-options-add-button').onclick = onclick.bind(this);
 
       if (!cr.isMac) {
         // Set up the button for editing custom spelling dictionary.
@@ -334,7 +335,8 @@ cr.define('options', function() {
           button.inputMethodId = inputMethod.id;
           button.onclick = function(inputMethodId, e) {
             chrome.send('inputMethodOptionsOpen', [inputMethodId]);
-          }.bind(this, inputMethod.id);
+          };
+          button.onclick = button.onclick.bind(this, inputMethod.id);
           element.appendChild(button);
         }
 
@@ -1356,10 +1358,6 @@ cr.define('options', function() {
 
   LanguageOptions.onDictionaryDownloadFailure = function(languageCode) {
     LanguageOptions.getInstance().onDictionaryDownloadFailure_(languageCode);
-  };
-
-  LanguageOptions.onComponentManagerInitialized = function(componentImes) {
-    LanguageOptions.getInstance().appendComponentExtensionIme_(componentImes);
   };
 
   // Export

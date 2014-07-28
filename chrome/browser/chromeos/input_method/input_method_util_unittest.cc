@@ -34,7 +34,8 @@ class TestableInputMethodUtil : public InputMethodUtil {
  public:
   explicit TestableInputMethodUtil(InputMethodDelegate* delegate,
                                    scoped_ptr<InputMethodDescriptors> methods)
-      : InputMethodUtil(delegate, methods.Pass()) {
+      : InputMethodUtil(delegate) {
+    ResetInputMethods(*methods);
   }
   // Change access rights.
   using InputMethodUtil::GetInputMethodIdsFromLanguageCodeInternal;

@@ -35,16 +35,11 @@ class InputMethodManagerImpl : public InputMethodManager,
   explicit InputMethodManagerImpl(scoped_ptr<InputMethodDelegate> delegate);
   virtual ~InputMethodManagerImpl();
 
-  // Attach CandidateWindowController, and ImeKeyboard objects to the
-  // InputMethodManagerImpl object. You don't have to call this
-  // function if you attach them yourself (e.g. in unit tests) using
-  // the protected setters.
-  void Init(base::SequencedTaskRunner* ui_task_runner);
-
   // Receives notification of an InputMethodManager::State transition.
   void SetState(State new_state);
 
   // InputMethodManager override:
+  virtual void InitializeComponentExtension() OVERRIDE;
   virtual void AddObserver(InputMethodManager::Observer* observer) OVERRIDE;
   virtual void AddCandidateWindowObserver(
       InputMethodManager::CandidateWindowObserver* observer) OVERRIDE;
@@ -144,15 +139,6 @@ class InputMethodManagerImpl : public InputMethodManager,
   bool ChangeInputMethodInternal(const std::string& input_method_id,
                                  bool show_message);
 
-  // Gets whether the XKB extension is loaded successfully by checking the XKB
-  // input methods in input methods in |component_extension_ime_manager_|.
-  bool IsXkbComponentExtensionAvailable() const;
-
-  // Called when the ComponentExtensionIMEManagerDelegate is initialized.
-  void OnComponentExtensionInitialized(
-      scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate);
-  void InitializeComponentExtension();
-
   // Loads necessary component extensions.
   // TODO(nona): Support dynamical unloading.
   void LoadNecessaryComponentExtensions();
@@ -202,9 +188,6 @@ class InputMethodManagerImpl : public InputMethodManager,
   // message is sent.
   scoped_ptr<CandidateWindowController> candidate_window_controller_;
 
-  // The object which can create an InputMethodDescriptor object.
-  InputMethodWhitelist whitelist_;
-
   // An object which provides miscellaneous input method utility functions. Note
   // that |util_| is required to initialize |keyboard_|.
   InputMethodUtil util_;
@@ -215,8 +198,6 @@ class InputMethodManagerImpl : public InputMethodManager,
   // An object for switching XKB layouts and keyboard status like caps lock and
   // auto-repeat interval.
   scoped_ptr<ImeKeyboard> keyboard_;
-
-  std::string pending_input_method_;
 
   base::ThreadChecker thread_checker_;
 

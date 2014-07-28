@@ -74,14 +74,12 @@ NetworkScreenHandler::NetworkScreenHandler(CoreOobeActor* core_oobe_actor)
       core_oobe_actor_(core_oobe_actor),
       is_continue_enabled_(false),
       show_on_init_(false),
-      should_reinitialize_language_keyboard_list_(false),
       weak_ptr_factory_(this) {
   DCHECK(core_oobe_actor_);
 
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
   manager->AddObserver(this);
-  manager->GetComponentExtensionIMEManager()->AddObserver(this);
 }
 
 NetworkScreenHandler::~NetworkScreenHandler() {
@@ -91,7 +89,6 @@ NetworkScreenHandler::~NetworkScreenHandler() {
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
   manager->RemoveObserver(this);
-  manager->GetComponentExtensionIMEManager()->RemoveObserver(this);
 }
 
 // NetworkScreenHandler, NetworkScreenActor implementation: --------------------
@@ -213,11 +210,6 @@ void NetworkScreenHandler::Initialize() {
     Show();
   }
 
-  if (should_reinitialize_language_keyboard_list_) {
-    should_reinitialize_language_keyboard_list_ = false;
-    ReloadLocalizedContent();
-  }
-
   timezone_subscription_ = CrosSettings::Get()->AddSettingsObserver(
       kSystemTimezone,
       base::Bind(&NetworkScreenHandler::OnSystemTimezoneChanged,
@@ -328,15 +320,6 @@ void NetworkScreenHandler::OnSystemTimezoneChanged() {
   std::string current_timezone_id;
   CrosSettings::Get()->GetString(kSystemTimezone, &current_timezone_id);
   CallJS("setTimezone", current_timezone_id);
-}
-
-void NetworkScreenHandler::OnImeComponentExtensionInitialized() {
-  // Refreshes the language and keyboard list once the component extension
-  // IMEs are initialized.
-  if (page_is_ready())
-    ReloadLocalizedContent();
-  else
-    should_reinitialize_language_keyboard_list_ = true;
 }
 
 void NetworkScreenHandler::InputMethodChanged(

@@ -74,6 +74,9 @@ class CHROMEOS_EXPORT InputMethodManager {
   // Destroy the global instance.
   static CHROMEOS_EXPORT void Shutdown();
 
+  // Initialize component extensions.
+  virtual void InitializeComponentExtension() = 0;
+
   // Adds an observer to receive notifications of input method related
   // changes as desribed in the Observer class above.
   virtual void AddObserver(Observer* observer) = 0;

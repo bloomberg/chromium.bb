@@ -426,6 +426,22 @@
         <include name="IDR_SET_TIME_CSS" file="resources\chromeos\set_time.css" type="BINDATA" />
         <include name="IDR_SET_TIME_JS" file="resources\chromeos\set_time.js" type="BINDATA" />
       </if>
+      <if expr="chromeos">
+        <if expr="_google_chrome">
+          <include name="IDR_GOOGLE_XKB_MANIFEST" file="resources\chromeos\input_method\google_xkb_manifest.json" type="BINDATA" />
+          <include name="IDR_GOOGLE_INPUT_TOOLS_MANIFEST" file="resources\chromeos\input_method\google_input_tools_manifest.json" type="BINDATA" />
+        </if>
+        <if expr="not _google_chrome">
+          <include name="IDR_XKB_MANIFEST" file="resources\chromeos\input_method\xkb_manifest.json" type="BINDATA" />
+          <include name="IDR_M17N_MANIFEST" file="resources\chromeos\input_method\m17n_manifest.json" type="BINDATA" />
+          <include name="IDR_PINYIN_MANIFEST" file="resources\chromeos\input_method\pinyin_manifest.json" type="BINDATA" />
+          <include name="IDR_ZHUYIN_MANIFEST" file="resources\chromeos\input_method\zhuyin_manifest.json" type="BINDATA" />
+          <include name="IDR_CANGJIE_MANIFEST" file="resources\chromeos\input_method\cangjie_manifest.json" type="BINDATA" />
+          <include name="IDR_MOZC_MANIFEST" file="resources\chromeos\input_method\mozc_manifest.json" type="BINDATA" />
+        </if>
+        <include name="IDR_HANGUL_MANIFEST" file="resources\chromeos\input_method\hangul_manifest.json" type="BINDATA" />
+        <include name="IDR_BRAILLE_MANIFEST" file="resources\chromeos\braille_ime\manifest.json" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>

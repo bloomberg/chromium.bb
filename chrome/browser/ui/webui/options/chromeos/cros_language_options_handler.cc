@@ -40,16 +40,10 @@ using base::UserMetricsAction;
 namespace chromeos {
 namespace options {
 
-CrosLanguageOptionsHandler::CrosLanguageOptionsHandler()
-    : composition_extension_appended_(false),
-      is_page_initialized_(false) {
-  input_method::InputMethodManager::Get()->GetComponentExtensionIMEManager()->
-      AddObserver(this);
+CrosLanguageOptionsHandler::CrosLanguageOptionsHandler() {
 }
 
 CrosLanguageOptionsHandler::~CrosLanguageOptionsHandler() {
-  input_method::InputMethodManager::Get()->GetComponentExtensionIMEManager()->
-      RemoveObserver(this);
 }
 
 void CrosLanguageOptionsHandler::GetLocalizedValues(
@@ -106,18 +100,10 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
   ComponentExtensionIMEManager* component_extension_manager =
       input_method::InputMethodManager::Get()
           ->GetComponentExtensionIMEManager();
-  if (component_extension_manager->IsInitialized()) {
-    localized_strings->Set(
-        "componentExtensionImeList",
-        ConvertInputMethodDescriptorsToIMEList(
-            component_extension_manager->GetAllIMEAsInputMethodDescriptor()));
-    composition_extension_appended_ = true;
-  } else {
-    // If component extension IME manager is not ready for use, it will be
-    // added in |InitializePage()|.
-    localized_strings->Set("componentExtensionImeList",
-                           new base::ListValue());
-  }
+  localized_strings->Set(
+      "componentExtensionImeList",
+      ConvertInputMethodDescriptorsToIMEList(
+          component_extension_manager->GetAllIMEAsInputMethodDescriptor()));
 }
 
 void CrosLanguageOptionsHandler::RegisterMessages() {
@@ -260,50 +246,6 @@ void CrosLanguageOptionsHandler::InputMethodOptionsOpenCallback(
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   web_contents->GetDelegate()->ActivateContents(web_contents);
-}
-
-void CrosLanguageOptionsHandler::OnImeComponentExtensionInitialized() {
-  if (composition_extension_appended_ || !is_page_initialized_) {
-    // If an option page is not ready to call JavaScript, appending component
-    // extension IMEs will be done in InitializePage function later.
-    return;
-  }
-
-  ComponentExtensionIMEManager* manager =
-      input_method::InputMethodManager::Get()
-          ->GetComponentExtensionIMEManager();
-
-  DCHECK(manager->IsInitialized());
-  scoped_ptr<base::ListValue> ime_list(
-      ConvertInputMethodDescriptorsToIMEList(
-          manager->GetAllIMEAsInputMethodDescriptor()));
-  web_ui()->CallJavascriptFunction(
-      "options.LanguageOptions.onComponentManagerInitialized",
-      *ime_list);
-  composition_extension_appended_ = true;
-}
-
-void CrosLanguageOptionsHandler::InitializePage() {
-  is_page_initialized_ = true;
-  if (composition_extension_appended_)
-    return;
-
-  ComponentExtensionIMEManager* component_extension_manager =
-      input_method::InputMethodManager::Get()
-          ->GetComponentExtensionIMEManager();
-  if (!component_extension_manager->IsInitialized()) {
-    // If the component extension IME manager is not available yet, append the
-    // component extension list in |OnInitialized()|.
-    return;
-  }
-
-  scoped_ptr<base::ListValue> ime_list(
-      ConvertInputMethodDescriptorsToIMEList(
-          component_extension_manager->GetAllIMEAsInputMethodDescriptor()));
-  web_ui()->CallJavascriptFunction(
-      "options.LanguageOptions.onComponentManagerInitialized",
-      *ime_list);
-  composition_extension_appended_ = true;
 }
 
 void CrosLanguageOptionsHandler::AddImeProvider(base::ListValue* list) {

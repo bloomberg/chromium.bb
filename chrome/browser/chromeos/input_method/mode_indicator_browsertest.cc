@@ -102,16 +102,6 @@ class ModeIndicatorBrowserTest : public InProcessBrowserTest {
     InputMethodManager::Get()
         ->GetInputMethodUtil()
         ->InitXkbInputMethodsForTesting();
-    // Make sure ComponentExtensionIMEManager is initialized.
-    // ComponentExtensionIMEManagerImpl::InitializeAsync posts
-    // ReadComponentExtensionsInfo to the FILE thread for the
-    // initialization.  If it is never initialized for some reasons,
-    // the test is timed out and failed.
-    ComponentExtensionIMEManager* ceimm =
-        InputMethodManager::Get()->GetComponentExtensionIMEManager();
-    while (!ceimm->IsInitialized()) {
-      content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
-    }
   }
 
  private:

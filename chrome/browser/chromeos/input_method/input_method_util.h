@@ -29,11 +29,7 @@ enum InputMethodType {
 // A class which provides miscellaneous input method utility functions.
 class InputMethodUtil {
  public:
-  // |supported_input_methods| is a list of all input methods supported,
-  // including ones not active. The list is used to initialize member variables
-  // in this class.
-  InputMethodUtil(InputMethodDelegate* delegate,
-                  scoped_ptr<InputMethodDescriptors> supported_input_methods);
+  explicit InputMethodUtil(InputMethodDelegate* delegate);
   ~InputMethodUtil();
 
   // Converts a string sent from IBus IME engines, which is written in English,

@@ -12,6 +12,7 @@
   "permissions": [
     "input"
   ],
+  "ime_path": "chromeos/braille_ime",
   "input_components": [
     {
       "name": "Braille Keyboard",

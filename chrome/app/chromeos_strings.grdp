@@ -4539,8 +4539,365 @@ Battery full
     Irish
   </message>
 
-  <message name="IDS_STATUSBAR_LAYOUT_USA_MYSTERY" desc="In the language menu button, this shows the input mode [US Mystery keyboard].">
-    US Mystery
+  <message name="IDS_IME_NAME_KEYBOARD_ARMENIAN_PHONETIC" desc="The input method name shows in system tray menu, this shows [Armenian Phonetic keyboard].">
+    Armenian Phonetic keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_BELARUSIAN" desc="The input method name shows in system tray menu, this shows [Belarusian keyboard].">
+    Belarusian keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_BELGIAN" desc="The input method name shows in system tray menu, this shows [Belgian keyboard].">
+    Belgian keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_BRAZILIAN" desc="The input method name shows in system tray menu, this shows [Brazilian keyboard].">
+    Brazilian keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_BULGARIAN" desc="The input method name shows in system tray menu, this shows [Bulgarian keyboard].">
+    Bulgarian keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_BULGARIAN_PHONETIC" desc="The input method name shows in system tray menu, this shows [Bulgarian Phonetic keyboard].">
+    Bulgarian Phonetic keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_CANADIAN_ENGLISH" desc="The input method name shows in system tray menu, this shows [Canadian English keyboard].">
+    Canadian English keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_CANADIAN_FRENCH" desc="The input method name shows in system tray menu, this shows [Canadian French keyboard].">
+    Canadian French keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_CANADIAN_MULTILINGUAL" desc="The input method name shows in system tray menu, this shows [Canadian Multilingual keyboard].">
+    Canadian Multilingual keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_CATALAN" desc="The input method name shows in system tray menu, this shows [Catalan keyboard].">
+    Catalan keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_CROATIAN" desc="The input method name shows in system tray menu, this shows [Croatian keyboard].">
+    Croatian keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_CZECH" desc="The input method name shows in system tray menu, this shows [Czech keyboard].">
+    Czech keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_CZECH_QWERTY" desc="The input method name shows in system tray menu, this shows [Czech QWERTY keyboard].">
+    Czech QWERTY keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_DANISH" desc="The input method name shows in system tray menu, this shows [Danish keyboard].">
+    Danish keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_ESTONIAN" desc="The input method name shows in system tray menu, this shows [Estonian keyboard].">
+    Estonian keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_FINNISH" desc="The input method name shows in system tray menu, this shows [Finnish keyboard].">
+    Finnish keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_FRENCH" desc="The input method name shows in system tray menu, this shows [French keyboard].">
+    French keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_GEORGIAN" desc="The input method name shows in system tray menu, this shows [Georgian keyboard].">
+    Georgian keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_GERMAN" desc="The input method name shows in system tray menu, this shows [German keyboard].">
+    German keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_GERMAN_NEO_2" desc="The input method name shows in system tray menu, this shows [German NEO 2 keyboard].">
+    German NEO 2 keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_GREEK" desc="The input method name shows in system tray menu, this shows [Greek keyboard].">
+    Greek keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_HEBREW" desc="The input method name shows in system tray menu, this shows [Hebrew keyboard].">
+    Hebrew keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_HUNGARIAN" desc="The input method name shows in system tray menu, this shows [Hungarian keyboard].">
+    Hungarian keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_ICELANDIC" desc="The input method name shows in system tray menu, this shows [Icelandic keyboard].">
+    Icelandic keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_IRISH" desc="The input method name shows in system tray menu, this shows [Irish keyboard].">
+    Irish keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_ITALIAN" desc="The input method name shows in system tray menu, this shows [Italian keyboard].">
+    Italian keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_JAPANESE" desc="The input method name shows in system tray menu, this shows [Japanese keyboard].">
+    Japanese keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_LATIN_AMERICAN" desc="The input method name shows in system tray menu, this shows [Latin American keyboard].">
+    Latin American keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_LATVIAN" desc="The input method name shows in system tray menu, this shows [Latvian keyboard].">
+    Latvian keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_LITHUANIAN" desc="The input method name shows in system tray menu, this shows [Lithuanian keyboard].">
+    Lithuanian keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_MONGOLIAN" desc="The input method name shows in system tray menu, this shows [Mongolian keyboard].">
+    Mongolian keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_NORWEGIAN" desc="The input method name shows in system tray menu, this shows [Norwegian keyboard].">
+    Norwegian keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_POLISH" desc="The input method name shows in system tray menu, this shows [Polish keyboard].">
+    Polish keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_PORTUGUESE" desc="The input method name shows in system tray menu, this shows [Portuguese keyboard].">
+    Portuguese keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_ROMANIAN" desc="The input method name shows in system tray menu, this shows [Romanian keyboard].">
+    Romanian keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_RUSSIAN" desc="The input method name shows in system tray menu, this shows [Russian keyboard].">
+    Russian keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_RUSSIAN_PHONETIC" desc="The input method name shows in system tray menu, this shows [Russian Phonetic keyboard].">
+    Russian Phonetic keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_SERBIAN" desc="The input method name shows in system tray menu, this shows [Serbian keyboard].">
+    Serbian keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_SLOVAKIAN" desc="The input method name shows in system tray menu, this shows [Slovakian keyboard].">
+    Slovakian keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_SLOVENIAN" desc="The input method name shows in system tray menu, this shows [Slovenian keyboard].">
+    Slovenian keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_SPANISH" desc="The input method name shows in system tray menu, this shows [Spanish keyboard].">
+    Spanish keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_SWEDISH" desc="The input method name shows in system tray menu, this shows [Swedish keyboard].">
+    Swedish keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_SWISS_FRENCH" desc="The input method name shows in system tray menu, this shows [Swiss French keyboard].">
+    Swiss French keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_SWISS" desc="The input method name shows in system tray menu, this shows [Swiss keyboard].">
+    Swiss keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_TURKISH" desc="The input method name shows in system tray menu, this shows [Turkish keyboard].">
+    Turkish keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_UK_DVORAK" desc="The input method name shows in system tray menu, this shows [UK Dvorak keyboard].">
+    UK Dvorak keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_UK" desc="The input method name shows in system tray menu, this shows [UK keyboard].">
+    UK keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_UKRAINIAN" desc="The input method name shows in system tray menu, this shows [Ukrainian keyboard].">
+    Ukrainian keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_US_COLEMAK" desc="The input method name shows in system tray menu, this shows [US Colemak keyboard].">
+    US Colemak keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_US_DVORAK" desc="The input method name shows in system tray menu, this shows [US Dvorak keyboard].">
+    US Dvorak keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_US_EXTENDED" desc="The input method name shows in system tray menu, this shows [US Extended keyboard].">
+    US Extended keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_US_INTERNATIONAL" desc="The input method name shows in system tray menu, this shows [US International keyboard].">
+    US International keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_US" desc="The input method name shows in system tray menu, this shows [US keyboard].">
+    US keyboard
+  </message>
+
+  <message name="IDS_IME_NAME_INPUTMETHOD_ARRAY" desc="The input method name shows in system tray menu, this is Array (\u884c\u5217) input method for Traditional Chinese.">
+    Array input method
+  </message>
+  <message name="IDS_IME_NAME_INPUTMETHOD_CANGJIE" desc="The input method name shows in system tray menu, this is Cangjie input method for Tradition Chinese.">
+    Cangjie input method
+  </message>
+  <message name="IDS_IME_NAME_INPUTMETHOD_DAYI" desc="The input method name shows in system tray menu, this is Dayi (\u5927\u6613) input method for Traditional Chinese.">
+    Dayi input method
+  </message>
+  <message name="IDS_IME_NAME_INPUTMETHOD_MOZC_JP" desc="The input method name shows in system tray menu, this is Japanese input method for Japanese keyboard.">
+    Google Japanese Input (for Japanese keyboard)
+  </message>
+  <message name="IDS_IME_NAME_INPUTMETHOD_MOZC_US" desc="The input method name shows in system tray menu, this is Japanese input method for US keyboard.">
+    Google Japanese Input (for US keyboard)
+  </message>
+  <message name="IDS_IME_NAME_INPUTMETHOD_PINYIN" desc="The input method name shows in system tray menu, this is Pinyin input method for Simplified Chinese.">
+    Pinyin input method
+  </message>
+  <message name="IDS_IME_NAME_INPUTMETHOD_QUICK" desc="The input method name shows in system tray menu, this is Quick input method for Traditional Chinese.">
+    Quick input method
+  </message>
+  <message name="IDS_IME_NAME_INPUTMETHOD_TRADITIONAL_PINYIN" desc="The input method name shows in system tray menu, this is Pinyin input method for Traditional Chinese.">
+    Traditional Pinyin input method
+  </message>
+  <message name="IDS_IME_NAME_INPUTMETHOD_WUBI" desc="The input method name shows in system tray menu, this is Wubi input method for Simplified Chinese.">
+    Wubi input method
+  </message>
+  <message name="IDS_IME_NAME_INPUTMETHOD_ZHUYIN" desc="The input method name shows in system tray menu, this is Zhuyin input method for Traditional Chinese.">
+    Zhuyin input method
+  </message>
+  <message name="IDS_IME_NAME_INPUTMETHOD_HANGUL_2_SET" desc="The input method name shows in system tray menu, this is Korean Hangul input method, 2 Set mode.">
+    Hangul 2 Set
+  </message>
+  <message name="IDS_IME_NAME_INPUTMETHOD_HANGUL_3_SET_390" desc="The input method name shows in system tray menu, this is Korean Hangul input method, 3 Set (390) mode.">
+    Hangul 3 Set (390)
+  </message>
+  <message name="IDS_IME_NAME_INPUTMETHOD_HANGUL_3_SET_FINAL" desc="The input method name shows in system tray menu, this is Korean Hangul input method, 3 Set (Final) mode.">
+    Hangul 3 Set (Final)
+  </message>
+  <message name="IDS_IME_NAME_INPUTMETHOD_HANGUL_3_SET_NO_SHIFT" desc="The input method name shows in system tray menu, this is Korean Hangul input method, 3 Set (No Shift) mode.">
+    Hangul 3 Set (No Shift)
+  </message>
+  <message name="IDS_IME_NAME_INPUTMETHOD_HANGUL_ROMAJA" desc="The input method name shows in system tray menu, this is Korean Hangul input method, Romaja mode.">
+    Hangul Romaja
+  </message>
+  <message name="IDS_IME_NAME_INPUTMETHOD_HANGUL_AHNMATAE" desc="The input method name shows in system tray menu, this is Korean Hangul input method, Ahnmatae mode.">
+    Hangul Ahnmatae
+  </message>
+
+  <message name="IDS_IME_NAME_KEYBOARD_ARABIC" desc="The input method name shows in system tray menu.">
+    Arabic keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_BENGALI_PHONETIC" desc="The input method name shows in system tray menu.">
+    Bengali keyboard (Phonetic)
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_DEVANAGARI_PHONETIC" desc="The input method name shows in system tray menu.">
+    Devanagari keyboard (Phonetic)
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_ETHIOPIC" desc="The input method name shows in system tray menu.">
+    Ethiopic keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_GUJARATI_PHONETIC" desc="The input method name shows in system tray menu.">
+    Gujarati keyboard (Phonetic)
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_KANNADA_PHONETIC" desc="The input method name shows in system tray menu.">
+    Kannada keyboard (Phonetic)
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_KHMER" desc="The input method name shows in system tray menu.">
+    Khmer keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_LAO" desc="The input method name shows in system tray menu.">
+    Lao keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_MALAYALAM_PHONETIC" desc="The input method name shows in system tray menu.">
+    Malayalam keyboard (Phonetic)
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_MYANMAR" desc="The input method name shows in system tray menu.">
+    Myanmar keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_MYANMAR_MYANSAN" desc="The input method name shows in system tray menu.">
+    Myanmar Myansan keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_NEPALI_INSCRIPT" desc="The input method name shows in system tray menu.">
+    Nepali keyboard (InScript)
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_NEPALI_PHONETIC" desc="The input method name shows in system tray menu.">
+    Nepali keyboard (Phonetic)
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_PERSIAN" desc="The input method name shows in system tray menu.">
+    Persian keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_SINHALA" desc="The input method name shows in system tray menu.">
+    Sinhala keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_SORANIKURDISH_AR" desc="The input method name shows in system tray menu.">
+    Sorani Kurdish Arabic-based keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_SORANIKURDISH_EN" desc="The input method name shows in system tray menu.">
+    Sorani Kurdish English-based keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_TAMIL_INSCRIPT" desc="The input method name shows in system tray menu.">
+    Tamil keyboard (InScript)
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_TAMIL_ITRANS" desc="The input method name shows in system tray menu.">
+    Tamil keyboard (itrans)
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_TAMIL_PHONETIC" desc="The input method name shows in system tray menu.">
+    Tamil keyboard (Phonetic)
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_TAMIL_TAMIL99" desc="The input method name shows in system tray menu.">
+    Tamil keyboard (Tamil99)
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_TAMIL_TYPEWRITER" desc="The input method name shows in system tray menu.">
+    Tamil keyboard (Typewriter)
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_TELUGU_PHONETIC" desc="The input method name shows in system tray menu.">
+    Telugu keyboard (Phonetic)
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_THAI_KEDMANEE" desc="The input method name shows in system tray menu.">
+    Thai keyboard (Kedmanee)
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_THAI_PATTACHOTE" desc="The input method name shows in system tray menu.">
+    Thai keyboard (Pattachote)
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_THAI_TIS" desc="The input method name shows in system tray menu.">
+    Thai keyboard (TIS 820-2531)
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_VIETNAMESE_TCVN" desc="The input method name shows in system tray menu.">
+    Vietnamese keyboard (TCVN)
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_VIETNAMESE_TELEX" desc="The input method name shows in system tray menu.">
+    Vietnamese keyboard (Telex)
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_VIETNAMESE_VIQR" desc="The input method name shows in system tray menu.">
+    Vietnamese keyboard (VIQR)
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_VIETNAMESE_VNI" desc="The input method name shows in system tray menu.">
+    Vietnamese keyboard (VNI)
+  </message>
+
+  <message name="IDS_IME_NAME_TRANSLITERATION_AM" desc="The input method name shows in system tray menu. Please translate only for 'transliteration'.">
+    Transliteration (salam &#x2192; &#x1230;&#x120b;&#x121d;)
+  </message>
+  <message name="IDS_IME_NAME_TRANSLITERATION_AR" desc="The input method name shows in system tray menu. Please translate only for 'transliteration'.">
+    Transliteration (marhaban &#x2190; &#x0645;&#x0631;&#x062d;&#x0628;&#x0627;)
+  </message>
+  <message name="IDS_IME_NAME_TRANSLITERATION_BN" desc="The input method name shows in system tray menu. Please translate only for 'transliteration'.">
+    Transliteration (namaskar &#x2192; &#x09a8;&#x09ae;&#x09b8;&#x09cd;&#x0995;&#x09be;&#x09b0;)
+  </message>
+  <message name="IDS_IME_NAME_TRANSLITERATION_EL" desc="The input method name shows in system tray menu. Please translate only for 'transliteration'.">
+    Transliteration (geia &#x2192; &#x03b3;&#x03b5;&#x03b9;&#x03b1;)
+  </message>
+  <message name="IDS_IME_NAME_TRANSLITERATION_FA" desc="The input method name shows in system tray menu. Please translate only for 'transliteration'.">
+    Transliteration (salam &#x2190; &#x0633;&#x0644;&#x0627;&#x0645;)
+  </message>
+  <message name="IDS_IME_NAME_TRANSLITERATION_GU" desc="The input method name shows in system tray menu. Please translate only for 'transliteration'.">
+    Transliteration (namaste &#x2192; &#x0aa8;&#x0aae;&#x0ab8;&#x0acd;&#x0aa4;&#x0ac7;)
+  </message>
+  <message name="IDS_IME_NAME_TRANSLITERATION_HE" desc="The input method name shows in system tray menu. Please translate only for 'transliteration'.">
+    Transliteration (shalom &#x2190; &#x05e9;&#x05dc;&#x05d5;&#x05dd;)
+  </message>
+  <message name="IDS_IME_NAME_TRANSLITERATION_HI" desc="The input method name shows in system tray menu. Please translate only for 'transliteration'.">
+    Transliteration (namaste &#x2192; &#x0928;&#x092e;&#x0938;&#x094d;&#x0924;&#x0947;)
+  </message>
+  <message name="IDS_IME_NAME_TRANSLITERATION_KN" desc="The input method name shows in system tray menu. Please translate only for 'transliteration'.">
+    Transliteration (namaskaram &#x2192; &#x0ca8;&#x0cae;&#x0cb8;&#x0ccd;&#x0c95;&#x0cbe;&#x0cb0;)
+  </message>
+  <message name="IDS_IME_NAME_TRANSLITERATION_ML" desc="The input method name shows in system tray menu. Please translate only for 'transliteration'.">
+    Transliteration (namaskar &#x2192; &#x0d28;&#x0d2e;&#x0d38;&#x0d4d;&#x0d15;&#x0d3e;&#x0d30;&#x0d02;)
+  </message>
+  <message name="IDS_IME_NAME_TRANSLITERATION_MR" desc="The input method name shows in system tray menu. Please translate only for 'transliteration'.">
+    Transliteration (namaste &#x2192; &#x0928;&#x092e;&#x0938;&#x094d;&#x0915;&#x093e;&#x0930;)
+  </message>
+  <message name="IDS_IME_NAME_TRANSLITERATION_NE" desc="The input method name shows in system tray menu. Please translate only for 'transliteration'.">
+    Transliteration (namaste &#x2192; &#x0928;&#x092e;&#x0938;&#x094d;&#x0924;&#x0947;)
+  </message>
+  <message name="IDS_IME_NAME_TRANSLITERATION_OR" desc="The input method name shows in system tray menu. Please translate only for 'transliteration'.">
+    Transliteration (mausam &#x2192; &#x0b28;&#x0b2e;&#x0b38;&#x0b4d;&#x0b24;&#x0b47;)
+  </message>
+  <message name="IDS_IME_NAME_TRANSLITERATION_PA" desc="The input method name shows in system tray menu. Please translate only for 'transliteration'.">
+    Transliteration (mausam &#x2192; &#x0a2e;&#x0a4c;&#x0a38;&#x0a2e;)
+  </message>
+  <message name="IDS_IME_NAME_TRANSLITERATION_SA" desc="The input method name shows in system tray menu. Please translate only for 'transliteration'.">
+    Transliteration (namaste &#x2192; &#x0928;&#x092e;&#x0938;&#x094d;&#x0924;&#x0947;)
+  </message>
+  <message name="IDS_IME_NAME_TRANSLITERATION_SR" desc="The input method name shows in system tray menu. Please translate only for 'transliteration'.">
+    Transliteration (zdravo &#x2192; &#x0437;&#x0434;&#x0440;&#x0430;&#x0432;&#x043e;)
+  </message>
+  <message name="IDS_IME_NAME_TRANSLITERATION_TA" desc="The input method name shows in system tray menu. Please translate only for 'transliteration'.">
+    Transliteration (vanakkam &#x2192; &#x0bb5;&#x0ba3;&#x0b95;&#x0bcd;&#x0b95;&#x0bae;&#x0bcd;)
+  </message>
+  <message name="IDS_IME_NAME_TRANSLITERATION_TE" desc="The input method name shows in system tray menu. Please translate only for 'transliteration'.">
+    Transliteration (emandi &#x2192; &#x0c0f;&#x0c2e;&#x0c02;&#x0c21;&#x0c40;)
+  </message>
+  <message name="IDS_IME_NAME_TRANSLITERATION_TI" desc="The input method name shows in system tray menu. Please translate only for 'transliteration'.">
+    Transliteration (selam &#x2192; &#x1230;&#x120b;&#x121d;)
+  </message>
+  <message name="IDS_IME_NAME_TRANSLITERATION_UR" desc="The input method name shows in system tray menu. Please translate only for 'transliteration'.">
+    Transliteration (salam &#x2190; &#x0633;&#x0644;&#x0627;&#x0645;)
   </message>
 
   <message name="IDS_LOGIN_ERROR_WHITELIST" desc="Couldn't sign in because user is not whitelisted.">
