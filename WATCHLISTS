@@ -854,7 +854,7 @@
     'libwebp': ['urvang@google.com', 'jzern@chromium.org',
                 'skal@google.com', 'vikasa@google.com'],
     'linux_fonts': ['derat+watch@chromium.org'],
-    'linux_sandboxing': ['agl@chromium.org', 'jln+watch@chromium.org'],
+    'linux_sandboxing': ['jln+watch@chromium.org'],
     'linux_seccomp_bpf': ['jln+watch@chromium.org'],
     'supervised_users': ['pam+watch@chromium.org'],
     'media': ['feature-media-reviews@chromium.org'],
