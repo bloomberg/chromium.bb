@@ -182,6 +182,8 @@ private:
 
     void secureText(UChar mask);
 
+    bool isText() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
+
     // We put the bitfield first to minimize padding on 64-bit.
     bool m_hasBreakableChar : 1; // Whether or not we can be broken into multiple lines.
     bool m_hasBreak : 1; // Whether or not we have a hard break (e.g., <pre> with '\n').
