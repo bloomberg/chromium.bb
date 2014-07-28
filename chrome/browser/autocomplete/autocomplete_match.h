@@ -100,10 +100,6 @@ struct AutocompleteMatch {
   // type to show in the completion popup.
   static int TypeToIcon(Type type);
 
-  // Converts |type| to a resource identifier for the appropriate icon for this
-  // type to show in the location bar.
-  static int TypeToLocationBarIcon(Type type);
-
   // Comparison function for determining when one match is better than another.
   static bool MoreRelevant(const AutocompleteMatch& elem1,
                            const AutocompleteMatch& elem2);

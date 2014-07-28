@@ -2969,6 +2969,7 @@
             '../components/components.gyp:visitedlink_browser',
             '../components/components.gyp:visitedlink_common',
             '../components/components.gyp:web_modal',
+            '../components/components_resources.gyp:components_resources',
             '../media/cast/cast.gyp:cast_net',
             '../media/media.gyp:media',
             '../mojo/mojo.gyp:mojo_common_lib',

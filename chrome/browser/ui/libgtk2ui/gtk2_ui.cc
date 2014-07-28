@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/libgtk2ui/skia_utils_gtk2.h"
 #include "chrome/browser/ui/libgtk2ui/unity_service.h"
 #include "chrome/browser/ui/libgtk2ui/x11_input_method_context_impl_gtk2.h"
+#include "grit/component_scaled_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "printing/printing_context_linux.h"

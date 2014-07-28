@@ -17,6 +17,7 @@
         '../../../../build/linux/system.gyp:gconf',
         '../../../../build/linux/system.gyp:gtk',
         '../../../../build/linux/system.gyp:gtkprint',
+        '../../../../components/components_resources.gyp:components_resources',
         '../../../../printing/printing.gyp:cups',
         '../../../../skia/skia.gyp:skia',
         '../../../../ui/base/ui_base.gyp:ui_base',

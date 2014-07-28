@@ -17,7 +17,9 @@
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "grit/component_scaled_resources.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -120,8 +122,9 @@ bool OmniboxView::IsEditingOrEmpty() const {
 int OmniboxView::GetIcon() const {
   if (!IsEditingOrEmpty())
     return controller_->GetToolbarModel()->GetIcon();
-  return AutocompleteMatch::TypeToLocationBarIcon(model_.get() ?
+  int id = AutocompleteMatch::TypeToIcon(model_.get() ?
       model_->CurrentTextType() : AutocompleteMatchType::URL_WHAT_YOU_TYPED);
+  return (id == IDR_OMNIBOX_HTTP) ? IDR_LOCATION_BAR_HTTP : id;
 }
 
 base::string16 OmniboxView::GetHintText() const {

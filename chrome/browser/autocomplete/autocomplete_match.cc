@@ -163,14 +163,6 @@ int AutocompleteMatch::TypeToIcon(Type type) {
 }
 
 // static
-int AutocompleteMatch::TypeToLocationBarIcon(Type type) {
-  int id = TypeToIcon(type);
-  if (id == IDR_OMNIBOX_HTTP)
-    return IDR_LOCATION_BAR_HTTP;
-  return id;
-}
-
-// static
 bool AutocompleteMatch::MoreRelevant(const AutocompleteMatch& elem1,
                                      const AutocompleteMatch& elem2) {
   // For equal-relevance matches, we sort alphabetically, so that providers

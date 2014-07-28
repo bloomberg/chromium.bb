@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/user_metrics.h"
+#include "grit/component_scaled_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/app_list/search_box_model.h"
