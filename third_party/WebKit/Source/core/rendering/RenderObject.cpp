@@ -1530,8 +1530,15 @@ void RenderObject::paintInvalidationForWholeRenderer() const
     // Until those states are fully fledged, I'll just disable the ASSERTS.
     DisableCompositingQueryAsserts disabler;
     const RenderLayerModelObject* paintInvalidationContainer = containerForPaintInvalidation();
+
+    // FIXME: We should invalidate only previousPaintInvalidationRect, but for now we invalidate both the previous
+    // and current paint rects to meet the expectations of some callers in some cases (crbug.com/397555):
+    // - transform style change without a layout - crbug.com/394004;
+    // - some objects don't save previousPaintInvalidationRect - crbug.com/394133.
     LayoutRect paintInvalidationRect = boundsRectForPaintInvalidation(paintInvalidationContainer);
     invalidatePaintUsingContainer(paintInvalidationContainer, paintInvalidationRect, InvalidationPaint);
+    if (paintInvalidationRect != previousPaintInvalidationRect())
+        invalidatePaintUsingContainer(paintInvalidationContainer, previousPaintInvalidationRect(), InvalidationPaint);
 }
 
 LayoutRect RenderObject::boundsRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
