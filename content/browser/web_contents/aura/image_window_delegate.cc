@@ -66,7 +66,7 @@ void ImageWindowDelegate::OnCaptureLost() {
 
 void ImageWindowDelegate::OnPaint(gfx::Canvas* canvas) {
   if (image_.IsEmpty()) {
-    canvas->DrawColor(SK_ColorGRAY);
+    canvas->DrawColor(SK_ColorWHITE);
   } else {
     if (size_mismatch_)
       canvas->DrawColor(SK_ColorWHITE);

@@ -39,7 +39,7 @@ class ImageLayerDelegate : public ui::LayerDelegate {
   // Overridden from ui::LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
     if (image_.IsEmpty()) {
-      canvas->DrawColor(SK_ColorGRAY);
+      canvas->DrawColor(SK_ColorWHITE);
     } else {
       SkISize size = canvas->sk_canvas()->getDeviceSize();
       if (size.width() != image_size_.width() ||
