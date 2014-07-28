@@ -55,6 +55,7 @@ include $(BUILD_SHARED_LIBRARY)
 
 SUBDIRS := \
 	intel \
+	nouveau \
 	radeon
 
 mkfiles := $(patsubst %,$(LIBDRM_TOP)/%/Android.mk,$(SUBDIRS))
