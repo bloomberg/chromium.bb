@@ -55,6 +55,18 @@
 #define DRM_CAP_TIMESTAMP_MONOTONIC 0x6
 #endif
 
+#ifndef DRM_CAP_CURSOR_WIDTH
+#define DRM_CAP_CURSOR_WIDTH 0x8
+#endif
+
+#ifndef DRM_CAP_CURSOR_HEIGHT
+#define DRM_CAP_CURSOR_HEIGHT 0x9
+#endif
+
+#ifndef GBM_BO_USE_CURSOR
+#define GBM_BO_USE_CURSOR GBM_BO_USE_CURSOR_64X64
+#endif
+
 static int option_current_mode = 0;
 
 enum output_config {
@@ -108,6 +120,9 @@ struct drm_compositor {
 
 	clockid_t clock;
 	struct udev_input input;
+
+	uint32_t cursor_width;
+	uint32_t cursor_height;
 };
 
 struct drm_mode {
@@ -987,7 +1002,7 @@ drm_output_set_cursor(struct drm_output *output)
 		(struct drm_compositor *) output->base.compositor;
 	EGLint handle, stride;
 	struct gbm_bo *bo;
-	uint32_t buf[64 * 64];
+	uint32_t buf[c->cursor_width * c->cursor_height];
 	unsigned char *s;
 	int i, x, y;
 
@@ -1010,7 +1025,7 @@ drm_output_set_cursor(struct drm_output *output)
 		s = wl_shm_buffer_get_data(buffer->shm_buffer);
 		wl_shm_buffer_begin_access(buffer->shm_buffer);
 		for (i = 0; i < ev->surface->height; i++)
-			memcpy(buf + i * 64, s + i * stride,
+			memcpy(buf + i * c->cursor_width, s + i * stride,
 			       ev->surface->width * 4);
 		wl_shm_buffer_end_access(buffer->shm_buffer);
 
@@ -1018,8 +1033,8 @@ drm_output_set_cursor(struct drm_output *output)
 			weston_log("failed update cursor: %m\n");
 
 		handle = gbm_bo_get_handle(bo).s32;
-		if (drmModeSetCursor(c->drm.fd,
-				     output->crtc_id, handle, 64, 64)) {
+		if (drmModeSetCursor(c->drm.fd, output->crtc_id, handle,
+				c->cursor_width, c->cursor_height)) {
 			weston_log("failed to set cursor: %m\n");
 			c->cursors_are_broken = 1;
 		}
@@ -1296,6 +1311,18 @@ init_drm(struct drm_compositor *ec, struct udev_device *device)
 	else
 		ec->clock = CLOCK_REALTIME;
 
+	ret = drmGetCap(fd, DRM_CAP_CURSOR_WIDTH, &cap);
+	if (ret == 0)
+		ec->cursor_width = cap;
+	else
+		ec->cursor_width = 64;
+
+	ret = drmGetCap(fd, DRM_CAP_CURSOR_HEIGHT, &cap);
+	if (ret == 0)
+		ec->cursor_height = cap;
+	else
+		ec->cursor_height = 64;
+
 	return 0;
 }
 
@@ -1554,15 +1581,15 @@ drm_output_init_egl(struct drm_output *output, struct drm_compositor *ec)
 		return -1;
 	}
 
-	flags = GBM_BO_USE_CURSOR_64X64 | GBM_BO_USE_WRITE;
+	flags = GBM_BO_USE_CURSOR | GBM_BO_USE_WRITE;
 
 	for (i = 0; i < 2; i++) {
 		if (output->cursor_bo[i])
 			continue;
 
 		output->cursor_bo[i] =
-			gbm_bo_create(ec->gbm, 64, 64, GBM_FORMAT_ARGB8888,
-				      flags);
+			gbm_bo_create(ec->gbm, ec->cursor_width, ec->cursor_height,
+				GBM_FORMAT_ARGB8888, flags);
 	}
 
 	if (output->cursor_bo[0] == NULL || output->cursor_bo[1] == NULL) {
