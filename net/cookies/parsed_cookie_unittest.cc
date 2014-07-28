@@ -18,6 +18,21 @@ TEST(ParsedCookieTest, TestBasic) {
   EXPECT_EQ("b", pc.Value());
 }
 
+TEST(ParsedCookieTest, TestEmpty) {
+  ParsedCookie pc1("=; path=/; secure;");
+  EXPECT_FALSE(pc1.IsValid());
+  ParsedCookie pc2("= ; path=/; secure;");
+  EXPECT_FALSE(pc2.IsValid());
+  ParsedCookie pc3(" =; path=/; secure;");
+  EXPECT_FALSE(pc3.IsValid());
+  ParsedCookie pc4(" = ; path=/; secure;");
+  EXPECT_FALSE(pc4.IsValid());
+  ParsedCookie pc5(" ; path=/; secure;");
+  EXPECT_FALSE(pc5.IsValid());
+  ParsedCookie pc6("; path=/; secure;");
+  EXPECT_FALSE(pc6.IsValid());
+}
+
 TEST(ParsedCookieTest, TestQuoted) {
   // These are some quoting cases which the major browsers all
   // handle differently.  I've tested Internet Explorer 6, Opera 9.6,
@@ -184,13 +199,13 @@ TEST(ParsedCookieTest, TrailingWhitespace) {
 
 TEST(ParsedCookieTest, TooManyPairs) {
   std::string blankpairs;
-  blankpairs.resize(ParsedCookie::kMaxPairs - 1, ';');
+  blankpairs.resize(ParsedCookie::kMaxPairs - 2, ';');
 
-  ParsedCookie pc1(blankpairs + "secure");
+  ParsedCookie pc1("a=b;" + blankpairs + "secure");
   EXPECT_TRUE(pc1.IsValid());
   EXPECT_TRUE(pc1.IsSecure());
 
-  ParsedCookie pc2(blankpairs + ";secure");
+  ParsedCookie pc2("a=b;" + blankpairs + ";secure");
   EXPECT_TRUE(pc2.IsValid());
   EXPECT_FALSE(pc2.IsSecure());
 }

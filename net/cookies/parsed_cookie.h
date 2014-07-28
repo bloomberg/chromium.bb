@@ -25,6 +25,8 @@ class NET_EXPORT ParsedCookie {
   static const int kMaxPairs = 16;
 
   // Construct from a cookie string like "BLAH=1; path=/; domain=.google.com"
+  // Format is according to RFC 6265. Cookies with both name and value empty
+  // will be considered invalid.
   ParsedCookie(const std::string& cookie_line);
   ~ParsedCookie();
 

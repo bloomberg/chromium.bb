@@ -410,6 +410,12 @@ void ParsedCookie::ParseTokenValuePairs(const std::string& cookie_line) {
 }
 
 void ParsedCookie::SetupAttributes() {
+  // Ignore Set-Cookie directive where name and value are both empty.
+  if (pairs_[0].first.empty() && pairs_[0].second.empty()) {
+    pairs_.clear();
+    return;
+  }
+
   // We skip over the first token/value, the user supplied one.
   for (size_t i = 1; i < pairs_.size(); ++i) {
     if (pairs_[i].first == kPathTokenName) {
