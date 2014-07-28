@@ -44,7 +44,7 @@ void FrameSelectionTest::SetUp()
     m_document = toHTMLDocument(&m_dummyPageHolder->document());
     ASSERT(m_document);
     m_textNode = m_document->createTextNode("Hello, World!");
-    m_document->body()->appendChild(m_textNode);
+    m_document->body()->appendChild(m_textNode.get());
 }
 
 HTMLDocument& FrameSelectionTest::document() const
