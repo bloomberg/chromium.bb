@@ -96,11 +96,11 @@ class Tab : public gfx::AnimationDelegate,
   }
 
   // Returns true if this tab became the active tab selected in
-  // response to the last ui::ET_GESTURE_BEGIN gesture dispatched to
+  // response to the last ui::ET_TAP_DOWN gesture dispatched to
   // this tab. Only used for collecting UMA metrics.
   // See ash/touch/touch_uma.cc.
-  bool tab_activated_with_last_gesture_begin() const {
-    return tab_activated_with_last_gesture_begin_;
+  bool tab_activated_with_last_tap_down() const {
+    return tab_activated_with_last_tap_down_;
   }
 
   views::GlowHoverController* hover_controller() {
@@ -345,7 +345,7 @@ class Tab : public gfx::AnimationDelegate,
   views::ImageButton* close_button_;
   views::Label* title_;
 
-  bool tab_activated_with_last_gesture_begin_;
+  bool tab_activated_with_last_tap_down_;
 
   views::GlowHoverController hover_controller_;
 

@@ -423,7 +423,7 @@ Tab::Tab(TabController* controller)
       animating_media_state_(TAB_MEDIA_STATE_NONE),
       close_button_(NULL),
       title_(new views::Label()),
-      tab_activated_with_last_gesture_begin_(false),
+      tab_activated_with_last_tap_down_(false),
       hover_controller_(this),
       showing_icon_(false),
       showing_media_indicator_(false),
@@ -975,16 +975,16 @@ void Tab::OnMouseExited(const ui::MouseEvent& event) {
 
 void Tab::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
-    case ui::ET_GESTURE_BEGIN: {
-      if (event->details().touch_points() != 1)
-        return;
+    case ui::ET_GESTURE_TAP_DOWN: {
+      // TAP_DOWN is only dispatched for the first touch point.
+      DCHECK_EQ(1, event->details().touch_points());
 
       // See comment in OnMousePressed() as to why we copy the event.
       ui::GestureEvent event_in_parent(*event, static_cast<View*>(this),
                                        parent());
       ui::ListSelectionModel original_selection;
       original_selection.Copy(controller_->GetSelectionModel());
-      tab_activated_with_last_gesture_begin_ = !IsActive();
+      tab_activated_with_last_tap_down_ = !IsActive();
       if (!IsSelected())
         controller_->SelectTab(this);
       gfx::Point loc(event->location());
