@@ -344,6 +344,7 @@ template("android_resources") {
 template("java_strings_grd") {
   base_path = "$target_gen_dir/$target_name"
   resources_zip = base_path + ".resources.zip"
+  build_config = base_path + ".build_config"
 
   write_build_config("${target_name}__build_config") {
     type = "android_resources"
@@ -421,9 +422,9 @@ template("java_strings_grd") {
 #   }
 template("android_library") {
   assert(defined(invoker.java_files))
-
   base_path = "$target_gen_dir/$target_name"
   build_config = base_path + ".build_config"
+  jar_path = base_path + ".jar"
 
   write_build_config("${target_name}__build_config") {
     type = "android_library"
@@ -436,7 +437,6 @@ template("android_library") {
     # base_path
   }
 
-  jar_path = base_path + ".jar"
   android_java_library(target_name) {
     java_files = invoker.java_files
     build_config = build_config
@@ -447,6 +447,140 @@ template("android_library") {
 
     if (defined(invoker.srcjar_deps)) {
       srcjar_deps = invoker.srcjar_deps
+    }
+  }
+}
+
+
+# Declare an Android apk target
+#
+# This target creates an Android APK containing java code, resources, assets,
+# and (possibly) native libraries.
+#
+# Variables
+#   android_manifest: Path to AndroidManifest.xml.
+#   deps: List of dependencies. All Android java resources and libraries in the
+#     "transitive closure" of these dependencies will be included in the apk.
+#     Note: this "transitive closure" actually only includes such targets if
+#     they are depended on through android_library or android_resources targets
+#     (and so not through builtin targets like 'action', 'group', etc).
+#   java_files: List of .java files to include in the apk.
+#   srcjar_deps: List of srcjar dependencies. The .java files in the srcjars
+#      will be added to java_files and be included in this apk.
+#   apk_name: Name for final apk.
+#   final_apk_path: Path to final built apk. Default is
+#     $root_out_dir/apks/$apk_name.apk. Setting this will override apk_name.
+#   native_libs: List paths of native libraries to include in this apk. If these
+#     libraries depend on other shared_library targets, those dependencies will
+#     also be included in the apk.
+#
+# Example
+#   android_apk("foo_apk") {
+#     android_manifest = "AndroidManifest.xml"
+#     java_files = [
+#       "android/org/chromium/foo/FooApplication.java",
+#       "android/org/chromium/foo/FooActivity.java",
+#     ]
+#     deps = [
+#       ":foo_support_java"
+#       ":foo_resources"
+#     ]
+#     srcjar_deps = [
+#       ":foo_generated_enum"
+#     ]
+#     native_libs = [
+#       native_lib_path
+#     ]
+#   }
+template("android_apk") {
+  gen_dir = "$target_gen_dir/$target_name"
+  base_path = "$gen_dir/$target_name"
+  build_config = base_path + ".build_config"
+  resource_zip_path = base_path + ".resources.zip"
+  all_resources_zip_path = base_path + ".resources.all.zip"
+  resource_srcjar_path = base_path + ".resources.srcjar"
+  jar_path = base_path + ".jar"
+
+  # Just mark these as used for now.
+  assert(!defined(invoker.native_libs)
+      || invoker.native_libs == [] || true)
+  assert(!defined(invoker.final_apk_path)
+      || invoker.final_apk_path == "" || true)
+
+  final_deps = []
+
+  # TODO(cjhopman): Remove this once we correctly generate the real
+  # NativeLibraries.java
+  srcjar_deps = [ "//base:base_native_libraries_gen" ]
+  if (defined(invoker.srcjar_deps)) {
+    srcjar_deps += invoker.srcjar_deps
+  }
+
+  write_build_config("${target_name}__build_config") {
+    type = "android_apk"
+    srcjar = resource_srcjar_path
+    resources_zip = resource_zip_path
+
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
+  }
+
+  final_deps += [":${target_name}__process_resources"]
+  process_resources("${target_name}__process_resources") {
+    android_manifest = invoker.android_manifest
+
+    resource_dirs = ["//build/android/ant/empty/res"]
+    zip_path = resource_zip_path
+    srcjar_path = resource_srcjar_path
+
+    generate_constant_ids = true
+  }
+
+  final_deps += [":${target_name}__java"]
+  android_java_library("${target_name}__java") {
+    java_files = invoker.java_files
+  }
+
+  # TODO(cjhopman): dex
+  # TODO(cjhopman): native
+  # TODO(cjhopman): create+finalize apk
+
+  group(target_name) {
+    deps = final_deps
+  }
+}
+
+
+# Declare an Android gtest apk
+#
+# This target creates an Android apk for running gtest-based unittests.
+#
+# Variables
+#   deps: Specifies the dependencies of this target. These will be passed to
+#     the underlying android_apk invocation and should include the java and
+#     resource dependencies of the apk.
+#   unittests_dep: This should be the label of the gtest native target. This
+#     target must be defined previously in the same file.
+#
+# Example
+#   unittest_apk("foo_unittests_apk") {
+#     deps = [ ":foo_java", ":foo_resources" ]
+#     unittests_dep = ":foo_unittests"
+#   }
+template("unittest_apk") {
+  test_suite_name = get_label_info(invoker.unittests_dep, "name")
+  android_apk(target_name) {
+    apk_name = test_suite_name
+    final_apk_path = "$root_build_dir/${apk_name}_apk/${apk_name}-debug.apk"
+    java_files = [
+      "//testing/android/java/src/org/chromium/native_test/ChromeNativeTestActivity.java"
+    ]
+    android_manifest = "//testing/android/java/AndroidManifest.xml"
+    unittests_outputs = get_target_outputs(invoker.unittests_dep)
+    native_libs = [unittests_outputs[0]]
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
     }
   }
 }

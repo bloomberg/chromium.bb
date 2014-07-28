@@ -66,11 +66,11 @@ def main(argv):
       'dependencies may not write build_config files. Missing build_config '
       'files are handled differently based on the type of this target.')
 
-  # android_resources options
+  # android_resources/apk options
   parser.add_option('--srcjar', help='Path to target\'s resources srcjar.')
   parser.add_option('--resources-zip', help='Path to target\'s resources zip.')
 
-  # android_library options
+  # android_library/apk options
   parser.add_option('--jar-path', help='Path to target\'s jar output.')
 
   options, args = parser.parse_args(argv)
@@ -78,25 +78,34 @@ def main(argv):
   if args:
     parser.error('No positional arguments should be given.')
 
-  required_options = ('build_config', 'type')
-  build_utils.CheckOptions(options, parser, required_options)
 
   if not options.type in [
-      'android_library', 'android_resources']:
+      'android_library', 'android_resources', 'android_apk']:
     raise Exception('Unknown type: <%s>' % options.type)
 
-  if options.type == 'android_library':
-    required_options = ('jar_path',)
-    build_utils.CheckOptions(options, parser, required_options)
 
-  possible_deps_configs = build_utils.ParseGypList(
+  required_options = ['build_config'] + {
+      'android_library': ['jar_path'],
+      'android_resources': ['resources_zip'],
+      'android_apk': ['jar_path', 'resources_zip']
+    }[options.type]
+
+  build_utils.CheckOptions(options, parser, required_options)
+
+  possible_deps_config_paths = build_utils.ParseGypList(
       options.possible_deps_configs)
-  for c in possible_deps_configs:
-    if not os.path.exists(c):
-      # Currently we only allow deps to things that write build_config files.
-      raise Exception('Unknown dep type: ' + c)
 
-  direct_deps_config_paths = possible_deps_configs
+
+
+
+  allow_unknown_deps = options.type == 'android_apk'
+  unknown_deps = [
+      c for c in possible_deps_config_paths if not os.path.exists(c)]
+  if unknown_deps and not allow_unknown_deps:
+    raise Exception('Unknown deps: ' + unknown_deps)
+
+  direct_deps_config_paths = [
+      c for c in possible_deps_config_paths if not c in unknown_deps]
   all_deps_config_paths = GetAllDepsConfigsInOrder(direct_deps_config_paths)
 
   direct_deps_configs = [GetDepConfig(p) for p in direct_deps_config_paths]
@@ -115,8 +124,9 @@ def main(argv):
   }
   deps_info = config['deps_info']
 
-  if options.type == 'android_library':
+  if options.type in ['android_library', 'android_apk']:
     javac_classpath = [c['jar_path'] for c in direct_library_deps]
+    deps_info['resources_deps'] = [c['path'] for c in all_resources_deps]
     deps_info['jar_path'] = options.jar_path
     config['javac'] = {
       'classpath': javac_classpath,
@@ -128,10 +138,11 @@ def main(argv):
     config['javac']['srcjars'] = [
         c['srcjar'] for c in all_resources_deps if 'srcjar' in c]
 
-  if options.type == 'android_resources':
+  if options.type == 'android_resources' or options.type == 'android_apk':
     deps_info['resources_zip'] = options.resources_zip
     if options.srcjar:
       deps_info['srcjar'] = options.srcjar
+
     config['resources'] = {}
     config['resources']['dependency_zips'] = [
         c['resources_zip'] for c in all_resources_deps]

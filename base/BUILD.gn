@@ -1436,4 +1436,20 @@ if (is_android) {
     package_name = "org/chromium/base/library_loader"
     include_path = "android/java/templates"
   }
+
+  android_library("base_java_unittest_support") {
+    deps = [":base_java"]
+    java_files = [
+      "test/android/java/src/org/chromium/base/ContentUriTestUtils.java"
+    ]
+  }
+
+  unittest_apk("base_unittests_apk") {
+    deps = [
+      ":base_java",
+      ":base_java_unittest_support",
+      ":base_unittests",
+    ]
+    unittests_dep = ":base_unittests"
+  }
 }

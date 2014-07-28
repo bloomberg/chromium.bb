@@ -23,13 +23,12 @@ rebased_android_sdk_build_tools = rebase_path(android_sdk_build_tools, root_buil
 # build/android/gyp/util/build_utils.py:ExpandFileArgs
 template("write_build_config") {
   assert(defined(invoker.type))
-  assert(defined(invoker.base_path))
+  assert(defined(invoker.build_config))
 
-  base_path = invoker.base_path
   type = invoker.type
-  build_config = base_path + ".build_config"
+  build_config = invoker.build_config
 
-  assert(type == "android_binary" || type == "android_library" || type == "android_resources")
+  assert(type == "android_apk" || type == "android_library" || type == "android_resources")
 
   action(target_name) {
     script = "//build/android/gyp/write_build_config.py"
@@ -52,6 +51,7 @@ template("write_build_config") {
       possible_deps_configs += [ "$dep_gen_dir/$dep_name.build_config" ]
     }
     rebase_possible_deps_configs = rebase_path(possible_deps_configs)
+
     args = [
       "--type", type,
       "--depfile", rebase_path(depfile, root_build_dir),
@@ -59,23 +59,23 @@ template("write_build_config") {
       "--build-config", rebase_path(build_config, root_build_dir),
     ]
 
-    if (type == "android_library") {
-      jar_path = base_path + ".jar"
+    if (type == "android_library" || type == "android_apk") {
       args += [
-        "--jar-path", rebase_path(jar_path, root_build_dir),
+        "--jar-path", rebase_path(invoker.jar_path, root_build_dir),
       ]
     }
 
-    if (type == "android_resources") {
+    if (type == "android_resources" || type == "android_apk") {
       assert(defined(invoker.resources_zip))
       args += [
         "--resources-zip", rebase_path(invoker.resources_zip, root_build_dir),
       ]
-      if (defined(invoker.srcjar)) {
-        args += [
-          "--srcjar", rebase_path(invoker.srcjar, root_build_dir)
-        ]
-      }
+    }
+
+    if (defined(invoker.srcjar)) {
+      args += [
+        "--srcjar", rebase_path(invoker.srcjar, root_build_dir)
+      ]
     }
   }
 }
@@ -109,7 +109,6 @@ template("zip") {
     }
   }
 }
-
 
 # Compiles and jars a set of java files.
 #
@@ -229,17 +228,18 @@ template("java_library") {
 # Dexes the output jar for inclusion in an APK.
 template("android_java_library") {
   assert(defined(invoker.java_files))
-
   assert(defined(invoker.build_config))
   assert(defined(invoker.jar_path))
 
+  _jar_path = invoker.jar_path
+
   java_library("${target_name}__java_library") {
+    jar_path = _jar_path
     if (defined(invoker.jar_excluded_patterns)) {
       jar_excluded_patterns = invoker.jar_excluded_patterns
     }
     build_config = invoker.build_config
     java_files = invoker.java_files
-    jar_path = invoker.jar_path
 
     if (defined(invoker.srcjar_deps)) {
       srcjar_deps = invoker.srcjar_deps
@@ -264,6 +264,11 @@ template("process_resources") {
   build_config = invoker.build_config
   resource_dirs = invoker.resource_dirs
   android_manifest = invoker.android_manifest
+
+  non_constant_id = true
+  if (defined(invoker.generate_constant_ids) && invoker.generate_constant_ids) {
+    non_constant_id = false
+  }
 
   action(target_name) {
     script = "//build/android/gyp/process_resources.py"
@@ -293,7 +298,6 @@ template("process_resources") {
       "--depfile", rebase_path(depfile, root_build_dir),
       "--android-sdk", rebase_path(android_sdk, root_build_dir),
       "--android-sdk-tools", rebase_path(android_sdk_build_tools, root_build_dir),
-      "--non-constant-id",
       "--android-manifest", rebase_path(android_manifest, root_build_dir),
 
       "--resource-dirs=$rebase_resource_dirs",
@@ -303,6 +307,10 @@ template("process_resources") {
       "--dependencies-res-zips=@FileArg($rebase_build_config:resources:dependency_zips)",
     ]
 
+    if (non_constant_id) {
+      args += [ "--non-constant-id" ]
+    }
+
     if (defined(invoker.custom_package)) {
       args += [
         "--custom-package", invoker.custom_package,
@@ -311,6 +319,18 @@ template("process_resources") {
 
     if (defined(invoker.v14_verify_only) && invoker.v14_verify_only) {
       args += ["--v14-verify-only"]
+    }
+
+    if (defined(invoker.all_resources_zip_path)) {
+      all_resources_zip = invoker.all_resources_zip_path
+      outputs += [ all_resources_zip ]
+      args += [
+        "--all-resources-zip-out", rebase_path(all_resources_zip, root_build_dir)
+      ]
+    }
+
+    if (defined(invoker.args)) {
+      args += invoker.args
     }
   }
 }

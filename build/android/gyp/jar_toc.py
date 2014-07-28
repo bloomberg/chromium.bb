@@ -102,6 +102,11 @@ def main():
 
   options, _ = parser.parse_args()
 
+  if options.depfile:
+    build_utils.WriteDepfile(
+        options.depfile,
+        build_utils.GetPythonDependencies())
+
   DoJarToc(options)
 
   if options.depfile:
