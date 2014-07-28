@@ -40,7 +40,7 @@ class InProcessDynamicServiceRunner
   base::Callback<bool(void)> app_completed_callback_runner_;
 
   base::ScopedNativeLibrary app_library_;
-  base::DelegateSimpleThread thread_;
+  scoped_ptr<base::DelegateSimpleThread> thread_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessDynamicServiceRunner);
 };
