@@ -369,6 +369,10 @@ public class ContentViewCore
     private float mCurrentTouchOffsetX;
     private float mCurrentTouchOffsetY;
 
+    // Offsets for smart clip
+    private int mSmartClipOffsetX;
+    private int mSmartClipOffsetY;
+
     // Whether the ContentViewCore requires the WebContents to be fullscreen in order to lock the
     // screen orientation.
     private boolean mFullscreenRequiredForOrientationLock = true;
@@ -2989,8 +2993,24 @@ public class ContentViewCore
 
     public void extractSmartClipData(int x, int y, int width, int height) {
         if (mNativeContentViewCore != 0) {
+            x += mSmartClipOffsetX;
+            y += mSmartClipOffsetY;
             nativeExtractSmartClipData(mNativeContentViewCore, x, y, width, height);
         }
+    }
+
+    /**
+     * Set offsets for smart clip.
+     *
+     * <p>This should be called if there is a viewport change introduced by,
+     * e.g., show and hide of a location bar.
+     *
+     * @param offsetX Offset for X position.
+     * @param offsetY Offset for Y position.
+     */
+    public void setSmartClipOffsets(int offsetX, int offsetY) {
+        mSmartClipOffsetX = offsetX;
+        mSmartClipOffsetY = offsetY;
     }
 
     @CalledByNative
