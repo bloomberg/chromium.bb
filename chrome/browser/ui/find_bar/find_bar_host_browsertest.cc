@@ -391,7 +391,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, SpanAndListsSearchable) {
 }
 
 // Find in a very large page.
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, LargePage) {
+// Disabled due to http://crbug.com/398017
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, DISABLED_LargePage) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(browser(), GetURL("largepage.html"));
