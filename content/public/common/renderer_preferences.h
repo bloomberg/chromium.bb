@@ -17,25 +17,9 @@
 
 #include "content/common/content_export.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/font_render_params.h"
 
 namespace content {
-
-enum RendererPreferencesHintingEnum {
-  RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT = 0,
-  RENDERER_PREFERENCES_HINTING_NONE,
-  RENDERER_PREFERENCES_HINTING_SLIGHT,
-  RENDERER_PREFERENCES_HINTING_MEDIUM,
-  RENDERER_PREFERENCES_HINTING_FULL,
-};
-
-enum RendererPreferencesSubpixelRenderingEnum {
-  RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT = 0,
-  RENDERER_PREFERENCES_SUBPIXEL_RENDERING_NONE,
-  RENDERER_PREFERENCES_SUBPIXEL_RENDERING_RGB,
-  RENDERER_PREFERENCES_SUBPIXEL_RENDERING_BGR,
-  RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VRGB,
-  RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VBGR,
-};
 
 enum TapMultipleTargetsStrategy {
   TAP_MULTIPLE_TARGETS_STRATEGY_ZOOM = 0,
@@ -59,7 +43,7 @@ struct CONTENT_EXPORT RendererPreferences {
 
   // The level of hinting to use when rendering text.
   // Currently only used by Linux.
-  RendererPreferencesHintingEnum hinting;
+  gfx::FontRenderParams::Hinting hinting;
 
   // Whether auto hinter should be used. Currently only used by Linux.
   bool use_autohinter;
@@ -70,7 +54,7 @@ struct CONTENT_EXPORT RendererPreferences {
 
   // The type of subpixel rendering to use for text.
   // Currently only used by Linux.
-  RendererPreferencesSubpixelRenderingEnum subpixel_rendering;
+  gfx::FontRenderParams::SubpixelRendering subpixel_rendering;
 
   // Whether subpixel positioning should be used, permitting fractional X
   // positions for glyphs.  Currently only used by Linux.

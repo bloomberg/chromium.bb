@@ -11,19 +11,20 @@ using blink::WebFontRendering;
 
 namespace content {
 
-static SkPaint::Hinting RendererPreferencesToSkiaHinting(
+namespace {
+
+SkPaint::Hinting RendererPreferencesToSkiaHinting(
     const RendererPreferences& prefs) {
   if (!prefs.should_antialias_text) {
     // When anti-aliasing is off, GTK maps all non-zero hinting settings to
     // 'Normal' hinting so we do the same. Otherwise, folks who have 'Slight'
     // hinting selected will see readable text in everything expect Chromium.
     switch (prefs.hinting) {
-      case RENDERER_PREFERENCES_HINTING_NONE:
+      case gfx::FontRenderParams::HINTING_NONE:
         return SkPaint::kNo_Hinting;
-      case RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT:
-      case RENDERER_PREFERENCES_HINTING_SLIGHT:
-      case RENDERER_PREFERENCES_HINTING_MEDIUM:
-      case RENDERER_PREFERENCES_HINTING_FULL:
+      case gfx::FontRenderParams::HINTING_SLIGHT:
+      case gfx::FontRenderParams::HINTING_MEDIUM:
+      case gfx::FontRenderParams::HINTING_FULL:
         return SkPaint::kNormal_Hinting;
       default:
         NOTREACHED();
@@ -32,85 +33,62 @@ static SkPaint::Hinting RendererPreferencesToSkiaHinting(
   }
 
   switch (prefs.hinting) {
-  case RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT:
-    return SkPaint::kNormal_Hinting;
-  case RENDERER_PREFERENCES_HINTING_NONE:
-    return SkPaint::kNo_Hinting;
-  case RENDERER_PREFERENCES_HINTING_SLIGHT:
-    return SkPaint::kSlight_Hinting;
-  case RENDERER_PREFERENCES_HINTING_MEDIUM:
-    return SkPaint::kNormal_Hinting;
-  case RENDERER_PREFERENCES_HINTING_FULL:
-    return SkPaint::kFull_Hinting;
-  default:
-    NOTREACHED();
-    return SkPaint::kNormal_Hinting;
-  }
+    case gfx::FontRenderParams::HINTING_NONE:   return SkPaint::kNo_Hinting;
+    case gfx::FontRenderParams::HINTING_SLIGHT: return SkPaint::kSlight_Hinting;
+    case gfx::FontRenderParams::HINTING_MEDIUM: return SkPaint::kNormal_Hinting;
+    case gfx::FontRenderParams::HINTING_FULL:   return SkPaint::kFull_Hinting;
+    default:
+      NOTREACHED();
+      return SkPaint::kNormal_Hinting;
+    }
 }
 
-static SkFontHost::LCDOrder RendererPreferencesToSkiaLCDOrder(
-    RendererPreferencesSubpixelRenderingEnum subpixel) {
-  switch (subpixel) {
-  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT:
-  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_NONE:
-  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_RGB:
-  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VRGB:
-    return SkFontHost::kRGB_LCDOrder;
-  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_BGR:
-  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VBGR:
-    return SkFontHost::kBGR_LCDOrder;
-  default:
-    NOTREACHED();
-    return SkFontHost::kRGB_LCDOrder;
-  }
-}
-
-static SkFontHost::LCDOrientation
-    RendererPreferencesToSkiaLCDOrientation(
-        RendererPreferencesSubpixelRenderingEnum subpixel) {
-  switch (subpixel) {
-  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT:
-  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_NONE:
-  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_RGB:
-  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_BGR:
-    return SkFontHost::kHorizontal_LCDOrientation;
-  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VRGB:
-  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VBGR:
-    return SkFontHost::kVertical_LCDOrientation;
-  default:
-    NOTREACHED();
-    return SkFontHost::kHorizontal_LCDOrientation;
-  }
-}
-
-static bool RendererPreferencesToAntiAliasFlag(
+SkFontHost::LCDOrder RendererPreferencesToSkiaLCDOrder(
     const RendererPreferences& prefs) {
-  return prefs.should_antialias_text;
+  switch (prefs.subpixel_rendering) {
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE:
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_RGB:
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VRGB:
+      return SkFontHost::kRGB_LCDOrder;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_BGR:
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VBGR:
+      return SkFontHost::kBGR_LCDOrder;
+    default:
+      NOTREACHED();
+      return SkFontHost::kRGB_LCDOrder;
+  }
 }
 
-static bool RendererPreferencesToSubpixelRenderingFlag(
+SkFontHost::LCDOrientation RendererPreferencesToSkiaLCDOrientation(
     const RendererPreferences& prefs) {
-  if (prefs.subpixel_rendering !=
-        RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT &&
-      prefs.subpixel_rendering !=
-        RENDERER_PREFERENCES_SUBPIXEL_RENDERING_NONE) {
-    return true;
+  switch (prefs.subpixel_rendering) {
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE:
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_RGB:
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_BGR:
+      return SkFontHost::kHorizontal_LCDOrientation;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VRGB:
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VBGR:
+      return SkFontHost::kVertical_LCDOrientation;
+    default:
+      NOTREACHED();
+      return SkFontHost::kHorizontal_LCDOrientation;
   }
-  return false;
 }
+
+}  // namespace
 
 void RenderViewImpl::UpdateFontRenderingFromRendererPrefs() {
   const RendererPreferences& prefs = renderer_preferences_;
   WebFontRendering::setHinting(RendererPreferencesToSkiaHinting(prefs));
   WebFontRendering::setAutoHint(prefs.use_autohinter);
   WebFontRendering::setUseBitmaps(prefs.use_bitmaps);
-  WebFontRendering::setLCDOrder(
-      RendererPreferencesToSkiaLCDOrder(prefs.subpixel_rendering));
+  WebFontRendering::setLCDOrder(RendererPreferencesToSkiaLCDOrder(prefs));
   WebFontRendering::setLCDOrientation(
-      RendererPreferencesToSkiaLCDOrientation(prefs.subpixel_rendering));
-  WebFontRendering::setAntiAlias(RendererPreferencesToAntiAliasFlag(prefs));
+      RendererPreferencesToSkiaLCDOrientation(prefs));
+  WebFontRendering::setAntiAlias(prefs.should_antialias_text);
   WebFontRendering::setSubpixelRendering(
-      RendererPreferencesToSubpixelRenderingFlag(prefs));
+      prefs.subpixel_rendering !=
+      gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE);
   WebFontRendering::setSubpixelPositioning(prefs.use_subpixel_positioning);
 }
 

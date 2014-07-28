@@ -9,10 +9,10 @@ namespace gfx {
 FontRenderParams::FontRenderParams()
     : antialiasing(true),
       subpixel_positioning(true),
-      autohinter(true),
-      use_bitmaps(true),
-      hinting(HINTING_SLIGHT),
-      subpixel_rendering(SUBPIXEL_RENDERING_RGB) {
+      autohinter(false),
+      use_bitmaps(false),
+      hinting(HINTING_MEDIUM),
+      subpixel_rendering(SUBPIXEL_RENDERING_NONE) {
 }
 
 FontRenderParams::~FontRenderParams() {}
