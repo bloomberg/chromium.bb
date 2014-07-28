@@ -33,6 +33,7 @@
 
 
 #include "platform/JSONValues.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
 
@@ -40,14 +41,14 @@ namespace blink {
 
 class InspectorStateClient;
 
-class InspectorStateUpdateListener {
+class InspectorStateUpdateListener : public WillBeGarbageCollectedMixin {
 public:
     virtual ~InspectorStateUpdateListener() { }
     virtual void inspectorStateUpdated() = 0;
 };
 
-class InspectorState FINAL {
-    WTF_MAKE_FAST_ALLOCATED;
+class InspectorState FINAL : public NoBaseWillBeGarbageCollectedFinalized<InspectorState> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     InspectorState(InspectorStateUpdateListener*, PassRefPtr<JSONObject>);
 
@@ -71,6 +72,9 @@ public:
     void setObject(const String& propertyName, PassRefPtr<JSONObject> value) { setValue(propertyName, value); }
 
     void remove(const String&);
+
+    void trace(Visitor*);
+
 private:
     void updateCookie();
     void setValue(const String& propertyName, PassRefPtr<JSONValue>);
@@ -80,11 +84,12 @@ private:
 
     friend class InspectorCompositeState;
 
-    InspectorStateUpdateListener* m_listener;
+    RawPtrWillBeMember<InspectorStateUpdateListener> m_listener;
     RefPtr<JSONObject> m_properties;
 };
 
-class InspectorCompositeState FINAL : public InspectorStateUpdateListener {
+class InspectorCompositeState FINAL : public NoBaseWillBeGarbageCollectedFinalized<InspectorCompositeState>, public InspectorStateUpdateListener {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorCompositeState);
 public:
     InspectorCompositeState(InspectorStateClient* inspectorClient)
         : m_client(inspectorClient)
@@ -93,6 +98,7 @@ public:
     {
     }
     virtual ~InspectorCompositeState() { }
+    void trace(Visitor*);
 
     void mute();
     void unmute();
@@ -101,7 +107,7 @@ public:
     void loadFromCookie(const String&);
 
 private:
-    typedef HashMap<String, OwnPtr<InspectorState> > InspectorStateMap;
+    typedef WillBeHeapHashMap<String, OwnPtrWillBeMember<InspectorState> > InspectorStateMap;
 
     // From InspectorStateUpdateListener.
     virtual void inspectorStateUpdated() OVERRIDE;

@@ -189,6 +189,7 @@ struct TimelineRecordEntry {
 };
 
 class TimelineRecordStack {
+    DISALLOW_ALLOCATION();
 private:
     struct Entry {
         Entry(PassRefPtr<TimelineEvent> record, const String& type)
@@ -208,8 +209,8 @@ private:
     };
 
 public:
-    TimelineRecordStack() : m_timelineAgent(0) { }
-    TimelineRecordStack(InspectorTimelineAgent*);
+    TimelineRecordStack() : m_timelineAgent(nullptr) { }
+    explicit TimelineRecordStack(InspectorTimelineAgent*);
 
     void addScopedRecord(PassRefPtr<TimelineEvent> record, const String& type);
     void closeScopedRecord(double endTime);
@@ -219,14 +220,18 @@ public:
     bool isOpenRecordOfType(const String& type);
 #endif
 
+    void trace(Visitor*);
+
 private:
     void send(PassRefPtr<JSONObject>);
 
-    InspectorTimelineAgent* m_timelineAgent;
+    RawPtrWillBeMember<InspectorTimelineAgent> m_timelineAgent;
     Vector<Entry> m_stack;
 };
 
 struct TimelineThreadState {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
     TimelineThreadState() { }
 
     TimelineThreadState(InspectorTimelineAgent* timelineAgent)
@@ -235,6 +240,8 @@ struct TimelineThreadState {
         , decodedPixelRefId(0)
     {
     }
+
+    void trace(Visitor*);
 
     TimelineRecordStack recordStack;
     bool inKnownLayerTask;
@@ -296,6 +303,9 @@ void InspectorTimelineAgent::trace(Visitor* visitor)
 {
     visitor->trace(m_pageAgent);
     visitor->trace(m_layerTreeAgent);
+#if ENABLE(OILPAN)
+    visitor->trace(m_threadStates);
+#endif
     InspectorBaseAgent::trace(visitor);
 }
 
@@ -1345,6 +1355,16 @@ bool TimelineRecordStack::isOpenRecordOfType(const String& type)
     return !m_stack.isEmpty() && m_stack.last().type == type;
 }
 #endif
+
+void TimelineRecordStack::trace(Visitor* visitor)
+{
+    visitor->trace(m_timelineAgent);
+}
+
+void TimelineThreadState::trace(Visitor* visitor)
+{
+    visitor->trace(recordStack);
+}
 
 } // namespace blink
 

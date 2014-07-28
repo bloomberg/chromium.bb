@@ -98,8 +98,7 @@ private:
     ScriptValue notifyRenderingContextWasWrapped(const ScriptValue&);
 
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
-    // FIXME: Oilpan: Move InjectedScriptManager to heap in follow-up CL.
-    InjectedScriptManager* m_injectedScriptManager;
+    RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     InspectorFrontend::Canvas* m_frontend;
     bool m_enabled;
     // Contains all frames with canvases, value is true only for frames that have an uninstrumented canvas.

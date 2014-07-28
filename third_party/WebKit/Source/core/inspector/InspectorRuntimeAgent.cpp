@@ -64,6 +64,12 @@ InspectorRuntimeAgent::~InspectorRuntimeAgent()
 {
 }
 
+void InspectorRuntimeAgent::trace(Visitor* visitor)
+{
+    visitor->trace(m_injectedScriptManager);
+    InspectorBaseAgent::trace(visitor);
+}
+
 static ScriptDebugServer::PauseOnExceptionsState setPauseOnExceptionsState(ScriptDebugServer* scriptDebugServer, ScriptDebugServer::PauseOnExceptionsState newState)
 {
     ASSERT(scriptDebugServer);

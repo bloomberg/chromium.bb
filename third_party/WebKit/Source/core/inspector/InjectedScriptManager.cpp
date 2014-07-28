@@ -42,14 +42,14 @@
 
 namespace blink {
 
-PassOwnPtr<InjectedScriptManager> InjectedScriptManager::createForPage()
+PassOwnPtrWillBeRawPtr<InjectedScriptManager> InjectedScriptManager::createForPage()
 {
-    return adoptPtr(new InjectedScriptManager(&InjectedScriptManager::canAccessInspectedWindow));
+    return adoptPtrWillBeNoop(new InjectedScriptManager(&InjectedScriptManager::canAccessInspectedWindow));
 }
 
-PassOwnPtr<InjectedScriptManager> InjectedScriptManager::createForWorker()
+PassOwnPtrWillBeRawPtr<InjectedScriptManager> InjectedScriptManager::createForWorker()
 {
-    return adoptPtr(new InjectedScriptManager(&InjectedScriptManager::canAccessInspectedWorkerGlobalScope));
+    return adoptPtrWillBeNoop(new InjectedScriptManager(&InjectedScriptManager::canAccessInspectedWorkerGlobalScope));
 }
 
 InjectedScriptManager::InjectedScriptManager(InspectedStateAccessCheck accessCheck)
@@ -61,6 +61,11 @@ InjectedScriptManager::InjectedScriptManager(InspectedStateAccessCheck accessChe
 
 InjectedScriptManager::~InjectedScriptManager()
 {
+}
+
+void InjectedScriptManager::trace(Visitor* visitor)
+{
+    visitor->trace(m_injectedScriptHost);
 }
 
 void InjectedScriptManager::disconnect()

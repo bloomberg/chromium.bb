@@ -86,8 +86,7 @@ private:
 
     RawPtrWillBeMember<Page> m_inspectedPage;
     InspectorFrontend* m_frontend;
-    // FIXME: Oilpan: Move InjectedScriptManager to heap in follow-up CL.
-    InjectedScriptManager* m_injectedScriptManager;
+    RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
 
     Vector<pair<long, String> > m_pendingEvaluateTestCommands;
     pair<RefPtr<TypeBuilder::Runtime::RemoteObject>, RefPtr<JSONObject> > m_pendingInspectData;

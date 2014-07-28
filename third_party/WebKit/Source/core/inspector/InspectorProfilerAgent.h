@@ -57,6 +57,7 @@ class InspectorProfilerAgent FINAL : public InspectorBaseAgent<InspectorProfiler
 public:
     static PassOwnPtrWillBeRawPtr<InspectorProfilerAgent> create(InjectedScriptManager*, InspectorOverlay*);
     virtual ~InspectorProfilerAgent();
+    virtual void trace(Visitor*) OVERRIDE;
 
     void consoleProfile(const String& title, ScriptState*);
     void consoleProfileEnd(const String& title, ScriptState*);
@@ -83,8 +84,7 @@ private:
     void stop(ErrorString*, RefPtr<TypeBuilder::Profiler::CPUProfile>*);
     String nextProfileId();
 
-    // FIXME: Oilpan: Move InjectedScriptManager to heap in follow-up CL.
-    InjectedScriptManager* m_injectedScriptManager;
+    RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     InspectorFrontend::Profiler* m_frontend;
     bool m_recordingCPUProfile;
     class ProfileDescriptor;

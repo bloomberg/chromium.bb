@@ -72,9 +72,9 @@ private:
 
     RawPtrWillBeMember<WorkerGlobalScope> m_workerGlobalScope;
     OwnPtr<InspectorStateClient> m_stateClient;
-    OwnPtr<InspectorCompositeState> m_state;
+    OwnPtrWillBeMember<InspectorCompositeState> m_state;
     RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
-    OwnPtr<InjectedScriptManager> m_injectedScriptManager;
+    OwnPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     OwnPtr<WorkerScriptDebugServer> m_debugServer;
     InspectorAgentRegistry m_agents;
     OwnPtr<InspectorFrontendChannel> m_frontendChannel;

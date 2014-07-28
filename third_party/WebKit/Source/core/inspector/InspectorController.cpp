@@ -74,7 +74,7 @@ namespace blink {
 InspectorController::InspectorController(Page* page, InspectorClient* inspectorClient)
     : m_instrumentingAgents(InstrumentingAgents::create())
     , m_injectedScriptManager(InjectedScriptManager::createForPage())
-    , m_state(adoptPtr(new InspectorCompositeState(inspectorClient)))
+    , m_state(adoptPtrWillBeNoop(new InspectorCompositeState(inspectorClient)))
     , m_overlay(InspectorOverlay::create(page, inspectorClient))
     , m_cssAgent(nullptr)
     , m_resourceAgent(nullptr)
@@ -131,6 +131,8 @@ InspectorController::~InspectorController()
 void InspectorController::trace(Visitor* visitor)
 {
     visitor->trace(m_instrumentingAgents);
+    visitor->trace(m_injectedScriptManager);
+    visitor->trace(m_state);
     visitor->trace(m_domAgent);
     visitor->trace(m_pageAgent);
     visitor->trace(m_timelineAgent);

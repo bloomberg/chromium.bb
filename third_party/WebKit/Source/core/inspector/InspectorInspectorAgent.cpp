@@ -71,6 +71,7 @@ InspectorInspectorAgent::~InspectorInspectorAgent()
 void InspectorInspectorAgent::trace(Visitor* visitor)
 {
     visitor->trace(m_inspectedPage);
+    visitor->trace(m_injectedScriptManager);
     InspectorBaseAgent::trace(visitor);
 }
 

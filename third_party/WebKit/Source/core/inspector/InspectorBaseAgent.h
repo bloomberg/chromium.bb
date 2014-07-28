@@ -65,8 +65,7 @@ public:
 
 protected:
     RawPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
-    // FIXME: Oilpan: Move InspectorState to heap in follow-up CL.
-    InspectorState* m_state;
+    RawPtrWillBeMember<InspectorState> m_state;
 
 private:
     String m_name;
@@ -90,8 +89,7 @@ public:
 
 private:
     RawPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
-    // FIXME: Oilpan: Move InspectorCompositeState to heap in follow-up CL.
-    InspectorCompositeState* m_inspectorState;
+    RawPtrWillBeMember<InspectorCompositeState> m_inspectorState;
     WillBeHeapVector<OwnPtrWillBeMember<InspectorAgent> > m_agents;
 };
 

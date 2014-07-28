@@ -295,5 +295,11 @@ void InspectorProfilerAgent::didLeaveNestedRunLoop()
     idleFinished();
 }
 
+void InspectorProfilerAgent::trace(Visitor* visitor)
+{
+    visitor->trace(m_injectedScriptManager);
+    InspectorBaseAgent::trace(visitor);
+}
+
 } // namespace blink
 

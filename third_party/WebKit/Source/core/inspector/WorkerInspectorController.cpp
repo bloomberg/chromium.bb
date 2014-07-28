@@ -91,7 +91,7 @@ private:
 WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGlobalScope)
     : m_workerGlobalScope(workerGlobalScope)
     , m_stateClient(adoptPtr(new WorkerStateClient(workerGlobalScope)))
-    , m_state(adoptPtr(new InspectorCompositeState(m_stateClient.get())))
+    , m_state(adoptPtrWillBeNoop(new InspectorCompositeState(m_stateClient.get())))
     , m_instrumentingAgents(InstrumentingAgents::create())
     , m_injectedScriptManager(InjectedScriptManager::createForWorker())
     , m_debugServer(adoptPtr(new WorkerScriptDebugServer(workerGlobalScope)))
@@ -180,7 +180,9 @@ void WorkerInspectorController::interruptAndDispatchInspectorCommands()
 void WorkerInspectorController::trace(Visitor* visitor)
 {
     visitor->trace(m_workerGlobalScope);
+    visitor->trace(m_state);
     visitor->trace(m_instrumentingAgents);
+    visitor->trace(m_injectedScriptManager);
     m_agents.trace(visitor);
     visitor->trace(m_workerDebuggerAgent);
 }

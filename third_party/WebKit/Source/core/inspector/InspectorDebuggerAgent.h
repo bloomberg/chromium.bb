@@ -242,8 +242,7 @@ private:
     typedef HashMap<String, Vector<String> > BreakpointIdToDebugServerBreakpointIdsMap;
     typedef HashMap<String, std::pair<String, BreakpointSource> > DebugServerBreakpointToBreakpointIdAndSourceMap;
 
-    // FIXME: Oilpan: Move InjectedScriptManager to heap in follow-up CL.
-    InjectedScriptManager* m_injectedScriptManager;
+    RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     InspectorFrontend::Debugger* m_frontend;
     RefPtr<ScriptState> m_pausedScriptState;
     ScriptValue m_currentCallStack;

@@ -194,8 +194,14 @@ public:
         m_text = other->m_text;
     }
 
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_styleSheet);
+        InspectorCSSAgent::StyleSheetAction::trace(visitor);
+    }
+
 private:
-    RefPtr<InspectorStyleSheetBase> m_styleSheet;
+    RefPtrWillBeMember<InspectorStyleSheetBase> m_styleSheet;
     String m_text;
     String m_oldText;
 };
@@ -250,8 +256,14 @@ public:
         m_text = other->m_text;
     }
 
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_styleSheet);
+        InspectorCSSAgent::StyleSheetAction::trace(visitor);
+    }
+
 private:
-    RefPtr<InspectorStyleSheetBase> m_styleSheet;
+    RefPtrWillBeMember<InspectorStyleSheetBase> m_styleSheet;
     InspectorCSSId m_cssId;
     unsigned m_propertyIndex;
     String m_text;
@@ -288,8 +300,14 @@ public:
         return m_styleSheet->setRuleSelector(m_cssId, m_selector, exceptionState);
     }
 
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_styleSheet);
+        InspectorCSSAgent::StyleSheetAction::trace(visitor);
+    }
+
 private:
-    RefPtr<InspectorStyleSheet> m_styleSheet;
+    RefPtrWillBeMember<InspectorStyleSheet> m_styleSheet;
     InspectorCSSId m_cssId;
     String m_selector;
     String m_oldSelector;
@@ -326,8 +344,14 @@ public:
 
     InspectorCSSId newRuleId() { return m_newId; }
 
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_styleSheet);
+        InspectorCSSAgent::StyleSheetAction::trace(visitor);
+    }
+
 private:
-    RefPtr<InspectorStyleSheet> m_styleSheet;
+    RefPtrWillBeMember<InspectorStyleSheet> m_styleSheet;
     InspectorCSSId m_newId;
     String m_selector;
     String m_oldSelector;
@@ -601,7 +625,7 @@ void InspectorCSSAgent::getMediaQueries(ErrorString* errorString, RefPtr<TypeBui
 {
     medias = TypeBuilder::Array<TypeBuilder::CSS::CSSMedia>::create();
     for (IdToInspectorStyleSheet::iterator it = m_idToInspectorStyleSheet.begin(); it != m_idToInspectorStyleSheet.end(); ++it) {
-        RefPtr<InspectorStyleSheet> styleSheet = it->value;
+        RefPtrWillBeRawPtr<InspectorStyleSheet> styleSheet = it->value;
         collectMediaQueriesFromStyleSheet(styleSheet->pageStyleSheet(), medias.get());
         const CSSRuleVector& flatRules = styleSheet->flatRules();
         for (unsigned i = 0; i < flatRules.size(); ++i) {
@@ -1114,7 +1138,7 @@ InspectorStyleSheetForInlineStyle* InspectorCSSAgent::asInspectorStyleSheet(Elem
         return 0;
 
     String newStyleSheetId = String::number(m_lastStyleSheetId++);
-    RefPtr<InspectorStyleSheetForInlineStyle> inspectorStyleSheet = InspectorStyleSheetForInlineStyle::create(newStyleSheetId, element, this);
+    RefPtrWillBeRawPtr<InspectorStyleSheetForInlineStyle> inspectorStyleSheet = InspectorStyleSheetForInlineStyle::create(newStyleSheetId, element, this);
     m_idToInspectorStyleSheetForInlineStyle.set(newStyleSheetId, inspectorStyleSheet);
     m_nodeToInspectorStyleSheet.set(element, inspectorStyleSheet);
     return inspectorStyleSheet.get();
@@ -1160,7 +1184,7 @@ void InspectorCSSAgent::collectStyleSheets(CSSStyleSheet* styleSheet, WillBeHeap
 
 InspectorStyleSheet* InspectorCSSAgent::bindStyleSheet(CSSStyleSheet* styleSheet)
 {
-    RefPtr<InspectorStyleSheet> inspectorStyleSheet = m_cssStyleSheetToInspectorStyleSheet.get(styleSheet);
+    RefPtrWillBeRawPtr<InspectorStyleSheet> inspectorStyleSheet = m_cssStyleSheetToInspectorStyleSheet.get(styleSheet);
     if (!inspectorStyleSheet) {
         String id = String::number(m_lastStyleSheetId++);
         Document* document = styleSheet->ownerDocument();
@@ -1192,7 +1216,7 @@ InspectorStyleSheet* InspectorCSSAgent::viaInspectorStyleSheet(Document* documen
     if (!document->isHTMLDocument() && !document->isSVGDocument())
         return 0;
 
-    RefPtr<InspectorStyleSheet> inspectorStyleSheet = m_documentToViaInspectorStyleSheet.get(document);
+    RefPtrWillBeRawPtr<InspectorStyleSheet> inspectorStyleSheet = m_documentToViaInspectorStyleSheet.get(document);
     if (inspectorStyleSheet || !createIfAbsent)
         return inspectorStyleSheet.get();
 
@@ -1415,9 +1439,12 @@ void InspectorCSSAgent::trace(Visitor* visitor)
     visitor->trace(m_pageAgent);
     visitor->trace(m_resourceAgent);
 #if ENABLE(OILPAN)
+    visitor->trace(m_idToInspectorStyleSheet);
+    visitor->trace(m_idToInspectorStyleSheetForInlineStyle);
     visitor->trace(m_cssStyleSheetToInspectorStyleSheet);
     visitor->trace(m_documentToCSSStyleSheets);
     visitor->trace(m_invalidatedDocuments);
+    visitor->trace(m_nodeToInspectorStyleSheet);
     visitor->trace(m_documentToViaInspectorStyleSheet);
 #endif
     visitor->trace(m_inspectorUserAgentStyleSheet);

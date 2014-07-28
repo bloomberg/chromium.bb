@@ -1440,6 +1440,7 @@ bool InspectorPageAgent::getEditedResourceContent(const String& url, String* con
 void InspectorPageAgent::trace(Visitor* visitor)
 {
     visitor->trace(m_page);
+    visitor->trace(m_injectedScriptManager);
     InspectorBaseAgent::trace(visitor);
 }
 

@@ -43,12 +43,14 @@ class InjectedScript;
 class InjectedScriptHost;
 class ScriptValue;
 
-class InjectedScriptManager {
-    WTF_MAKE_NONCOPYABLE(InjectedScriptManager); WTF_MAKE_FAST_ALLOCATED;
+class InjectedScriptManager : public NoBaseWillBeGarbageCollectedFinalized<InjectedScriptManager> {
+    WTF_MAKE_NONCOPYABLE(InjectedScriptManager);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<InjectedScriptManager> createForPage();
-    static PassOwnPtr<InjectedScriptManager> createForWorker();
+    static PassOwnPtrWillBeRawPtr<InjectedScriptManager> createForPage();
+    static PassOwnPtrWillBeRawPtr<InjectedScriptManager> createForWorker();
     ~InjectedScriptManager();
+    void trace(Visitor*);
 
     void disconnect();
 
@@ -79,7 +81,7 @@ private:
     int m_nextInjectedScriptId;
     typedef HashMap<int, InjectedScript> IdToInjectedScriptMap;
     IdToInjectedScriptMap m_idToInjectedScript;
-    RefPtrWillBePersistent<InjectedScriptHost> m_injectedScriptHost;
+    RefPtrWillBeMember<InjectedScriptHost> m_injectedScriptHost;
     InspectedStateAccessCheck m_inspectedStateAccessCheck;
     typedef HashMap<RefPtr<ScriptState>, int> ScriptStateToId;
     ScriptStateToId m_scriptStateToId;

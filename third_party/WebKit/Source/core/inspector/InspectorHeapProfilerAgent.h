@@ -54,6 +54,7 @@ class InspectorHeapProfilerAgent FINAL : public InspectorBaseAgent<InspectorHeap
 public:
     static PassOwnPtrWillBeRawPtr<InspectorHeapProfilerAgent> create(InjectedScriptManager*);
     virtual ~InspectorHeapProfilerAgent();
+    virtual void trace(Visitor*) OVERRIDE;
 
     virtual void collectGarbage(ErrorString*) OVERRIDE;
 
@@ -83,11 +84,10 @@ private:
     void startTrackingHeapObjectsInternal(bool trackAllocations);
     void stopTrackingHeapObjectsInternal();
 
-    // FIXME: Oilpan: Move InjectedScriptManager to heap in follow-up CL.
-    InjectedScriptManager* m_injectedScriptManager;
+    RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     InspectorFrontend::HeapProfiler* m_frontend;
     unsigned m_nextUserInitiatedHeapSnapshotNumber;
-    OwnPtr<HeapStatsUpdateTask> m_heapStatsUpdateTask;
+    OwnPtrWillBeMember<HeapStatsUpdateTask> m_heapStatsUpdateTask;
 };
 
 } // namespace blink

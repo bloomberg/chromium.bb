@@ -180,18 +180,19 @@ static Node* hoveredNodeForEvent(LocalFrame* frame, const PlatformTouchEvent& ev
     return hoveredNodeForPoint(frame, roundedIntPoint(points[0].pos()), ignorePointerEventsNone);
 }
 
-class RevalidateStyleAttributeTask {
-    WTF_MAKE_FAST_ALLOCATED;
+class RevalidateStyleAttributeTask FINAL : public NoBaseWillBeGarbageCollectedFinalized<RevalidateStyleAttributeTask> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    RevalidateStyleAttributeTask(InspectorDOMAgent*);
+    explicit RevalidateStyleAttributeTask(InspectorDOMAgent*);
     void scheduleFor(Element*);
     void reset() { m_timer.stop(); }
     void onTimer(Timer<RevalidateStyleAttributeTask>*);
+    void trace(Visitor*);
 
 private:
-    InspectorDOMAgent* m_domAgent;
+    RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     Timer<RevalidateStyleAttributeTask> m_timer;
-    WillBePersistentHeapHashSet<RefPtrWillBeMember<Element> > m_elements;
+    WillBeHeapHashSet<RefPtrWillBeMember<Element> > m_elements;
 };
 
 RevalidateStyleAttributeTask::RevalidateStyleAttributeTask(InspectorDOMAgent* domAgent)
@@ -216,6 +217,14 @@ void RevalidateStyleAttributeTask::onTimer(Timer<RevalidateStyleAttributeTask>*)
     m_domAgent->styleAttributeInvalidated(elements);
 
     m_elements.clear();
+}
+
+void RevalidateStyleAttributeTask::trace(Visitor* visitor)
+{
+    visitor->trace(m_domAgent);
+#if ENABLE(OILPAN)
+    visitor->trace(m_elements);
+#endif
 }
 
 String InspectorDOMAgent::toErrorString(ExceptionState& exceptionState)
@@ -655,8 +664,7 @@ int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush)
 
     if (!m_document)
         return 0;
-    // FIXME: Oilpan: .get will be unnecessary if m_document is a Member<>.
-    if (!m_documentNodeToIdMap->contains(m_document.get()))
+    if (!m_documentNodeToIdMap->contains(m_document))
         return 0;
 
     // Return id in case the node is known.
@@ -1936,7 +1944,7 @@ void InspectorDOMAgent::didInvalidateStyleAttr(Node* node)
         return;
 
     if (!m_revalidateStyleAttrTask)
-        m_revalidateStyleAttrTask = adoptPtr(new RevalidateStyleAttributeTask(this));
+        m_revalidateStyleAttrTask = adoptPtrWillBeNoop(new RevalidateStyleAttributeTask(this));
     m_revalidateStyleAttrTask->scheduleFor(toElement(node));
 }
 
@@ -2116,8 +2124,7 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(No
 
 bool InspectorDOMAgent::pushDocumentUponHandlelessOperation(ErrorString* errorString)
 {
-    // FIXME: Oilpan: .get will be unnecessary if m_document is a Member<>.
-    if (!m_documentNodeToIdMap->contains(m_document.get())) {
+    if (!m_documentNodeToIdMap->contains(m_document)) {
         RefPtr<TypeBuilder::DOM::Node> root;
         getDocument(errorString, root);
         return errorString->isEmpty();
@@ -2129,12 +2136,14 @@ void InspectorDOMAgent::trace(Visitor* visitor)
 {
     visitor->trace(m_domListener);
     visitor->trace(m_pageAgent);
+    visitor->trace(m_injectedScriptManager);
 #if ENABLE(OILPAN)
     visitor->trace(m_documentNodeToIdMap);
     visitor->trace(m_danglingNodeToIdMaps);
     visitor->trace(m_idToNode);
     visitor->trace(m_idToNodesMap);
     visitor->trace(m_document);
+    visitor->trace(m_revalidateStyleAttrTask);
     visitor->trace(m_searchResults);
 #endif
     visitor->trace(m_history);

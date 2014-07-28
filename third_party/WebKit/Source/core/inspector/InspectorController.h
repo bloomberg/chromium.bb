@@ -144,8 +144,8 @@ private:
     friend InstrumentingAgents* instrumentationForPage(Page*);
 
     RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
-    OwnPtr<InjectedScriptManager> m_injectedScriptManager;
-    OwnPtr<InspectorCompositeState> m_state;
+    OwnPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
+    OwnPtrWillBeMember<InspectorCompositeState> m_state;
     OwnPtr<InspectorOverlay> m_overlay;
 
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;

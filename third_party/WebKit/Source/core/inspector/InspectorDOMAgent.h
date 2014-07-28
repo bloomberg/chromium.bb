@@ -258,8 +258,7 @@ private:
     bool pushDocumentUponHandlelessOperation(ErrorString*);
 
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
-    // FIXME: Oilpan: Move InjectedScriptManager to heap in follow-up CL.
-    InjectedScriptManager* m_injectedScriptManager;
+    RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     InspectorOverlay* m_overlay;
     InspectorFrontend::DOM* m_frontend;
     RawPtrWillBeMember<DOMListener> m_domListener;
@@ -274,7 +273,7 @@ private:
     RefPtrWillBeMember<Document> m_document;
     typedef WillBeHeapHashMap<String, WillBeHeapVector<RefPtrWillBeMember<Node> > > SearchResults;
     SearchResults m_searchResults;
-    OwnPtr<RevalidateStyleAttributeTask> m_revalidateStyleAttrTask;
+    OwnPtrWillBeMember<RevalidateStyleAttributeTask> m_revalidateStyleAttrTask;
     SearchMode m_searchingForNode;
     OwnPtr<HighlightConfig> m_inspectModeHighlightConfig;
     OwnPtrWillBeMember<InspectorHistory> m_history;

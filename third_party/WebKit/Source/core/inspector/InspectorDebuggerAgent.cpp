@@ -1436,6 +1436,7 @@ void InspectorDebuggerAgent::reset()
 
 void InspectorDebuggerAgent::trace(Visitor* visitor)
 {
+    visitor->trace(m_injectedScriptManager);
     visitor->trace(m_listener);
     InspectorBaseAgent::trace(visitor);
 }

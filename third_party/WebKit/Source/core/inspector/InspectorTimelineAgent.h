@@ -51,8 +51,8 @@
 namespace blink {
 struct FetchInitiatorInfo;
 struct TimelineImageInfo;
-struct TimelineThreadState;
 struct TimelineRecordEntry;
+struct TimelineThreadState;
 
 class LocalDOMWindow;
 class Document;
@@ -313,7 +313,7 @@ private:
     double m_paintSetupEnd;
     RefPtr<JSONObject> m_gpuTask;
     RefPtr<JSONValue> m_pendingLayerTreeData;
-    typedef HashMap<ThreadIdentifier, TimelineThreadState> ThreadStateMap;
+    typedef WillBeHeapHashMap<ThreadIdentifier, TimelineThreadState> ThreadStateMap;
     ThreadStateMap m_threadStates;
     bool m_mayEmitFirstPaint;
     HashSet<String> m_liveEvents;

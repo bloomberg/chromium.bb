@@ -110,8 +110,7 @@ protected:
     void addConsoleMessage(PassOwnPtr<InspectorConsoleMessage>);
 
     RawPtrWillBeMember<InspectorTimelineAgent> m_timelineAgent;
-    // FIXME: Oilpan: Move InjectedScriptManager to heap in follow-up CL.
-    InjectedScriptManager* m_injectedScriptManager;
+    RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     InspectorFrontend::Console* m_frontend;
     Vector<OwnPtr<InspectorConsoleMessage> > m_consoleMessages;
     int m_expiredConsoleMessageCount;

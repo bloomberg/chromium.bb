@@ -51,6 +51,7 @@ class InspectorRuntimeAgent : public InspectorBaseAgent<InspectorRuntimeAgent>, 
     WTF_MAKE_NONCOPYABLE(InspectorRuntimeAgent);
 public:
     virtual ~InspectorRuntimeAgent();
+    virtual void trace(Visitor*) OVERRIDE;
 
     // Part of the protocol.
     virtual void enable(ErrorString*) OVERRIDE;
@@ -102,8 +103,7 @@ protected:
     ScriptStateToId m_scriptStateToId;
 
 private:
-    // FIXME: Oilpan: Move InjectedScriptManager to heap in follow-up CL.
-    InjectedScriptManager* m_injectedScriptManager;
+    RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     ScriptDebugServer* m_scriptDebugServer;
 };
 

@@ -48,15 +48,16 @@ static const char heapObjectsTrackingEnabled[] = "heapObjectsTrackingEnabled";
 static const char allocationTrackingEnabled[] = "allocationTrackingEnabled";
 }
 
-class InspectorHeapProfilerAgent::HeapStatsUpdateTask {
+class InspectorHeapProfilerAgent::HeapStatsUpdateTask FINAL : public NoBaseWillBeGarbageCollectedFinalized<InspectorHeapProfilerAgent::HeapStatsUpdateTask> {
 public:
-    HeapStatsUpdateTask(InspectorHeapProfilerAgent*);
+    explicit HeapStatsUpdateTask(InspectorHeapProfilerAgent*);
     void startTimer();
     void resetTimer() { m_timer.stop(); }
     void onTimer(Timer<HeapStatsUpdateTask>*);
+    void trace(Visitor*);
 
 private:
-    InspectorHeapProfilerAgent* m_heapProfilerAgent;
+    RawPtrWillBeMember<InspectorHeapProfilerAgent> m_heapProfilerAgent;
     Timer<HeapStatsUpdateTask> m_timer;
 };
 
@@ -126,6 +127,11 @@ void InspectorHeapProfilerAgent::HeapStatsUpdateTask::startTimer()
     m_timer.startRepeating(0.05, FROM_HERE);
 }
 
+void InspectorHeapProfilerAgent::HeapStatsUpdateTask::trace(Visitor* visitor)
+{
+    visitor->trace(m_heapProfilerAgent);
+}
+
 class InspectorHeapProfilerAgent::HeapStatsStream FINAL : public ScriptProfiler::OutputStream {
 public:
     HeapStatsStream(InspectorHeapProfilerAgent* heapProfilerAgent)
@@ -186,7 +192,7 @@ void InspectorHeapProfilerAgent::startTrackingHeapObjectsInternal(bool trackAllo
     if (m_heapStatsUpdateTask)
         return;
     ScriptProfiler::startTrackingHeapObjects(trackAllocations);
-    m_heapStatsUpdateTask = adoptPtr(new HeapStatsUpdateTask(this));
+    m_heapStatsUpdateTask = adoptPtrWillBeNoop(new HeapStatsUpdateTask(this));
     m_heapStatsUpdateTask->startTimer();
 }
 
@@ -310,6 +316,13 @@ void InspectorHeapProfilerAgent::getHeapObjectId(ErrorString* errorString, const
     }
     unsigned id = ScriptProfiler::getHeapObjectId(value);
     *heapSnapshotObjectId = String::number(id);
+}
+
+void InspectorHeapProfilerAgent::trace(Visitor* visitor)
+{
+    visitor->trace(m_injectedScriptManager);
+    visitor->trace(m_heapStatsUpdateTask);
+    InspectorBaseAgent::trace(visitor);
 }
 
 } // namespace blink
