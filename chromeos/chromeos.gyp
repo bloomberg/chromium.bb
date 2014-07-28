@@ -511,6 +511,7 @@
         '../build/linux/system.gyp:ssl',
         '../components/components.gyp:onc_component',
         '../crypto/crypto.gyp:crypto',
+        '../crypto/crypto.gyp:crypto_test_support',
         '../dbus/dbus.gyp:dbus_test_support',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',

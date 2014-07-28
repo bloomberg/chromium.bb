@@ -490,6 +490,7 @@
         '../components/components_resources.gyp:components_resources',
         '../content/content_shell_and_tests.gyp:test_support_content',
         '../content/content.gyp:content_app_both',
+        '../crypto/crypto.gyp:crypto_test_support',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
         '../sync/sync.gyp:test_support_sync_api',

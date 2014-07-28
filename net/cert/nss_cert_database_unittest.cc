@@ -19,9 +19,8 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "crypto/nss_util.h"
-#include "crypto/nss_util_internal.h"
 #include "crypto/scoped_nss_types.h"
+#include "crypto/scoped_test_nss_db.h"
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
@@ -59,8 +58,10 @@ class CertDatabaseNSSTest : public testing::Test {
   virtual void SetUp() {
     ASSERT_TRUE(test_nssdb_.is_open());
     cert_db_.reset(new NSSCertDatabase(
-        crypto::ScopedPK11Slot(crypto::GetPersistentNSSKeySlot()),
-        crypto::ScopedPK11Slot(crypto::GetPersistentNSSKeySlot())));
+        crypto::ScopedPK11Slot(
+            PK11_ReferenceSlot(test_nssdb_.slot())) /* public slot */,
+        crypto::ScopedPK11Slot(
+            PK11_ReferenceSlot(test_nssdb_.slot())) /* private slot */));
     public_module_ = cert_db_->GetPublicModule();
 
     // Test db should be empty at start of test.
@@ -99,9 +100,7 @@ class CertDatabaseNSSTest : public testing::Test {
 
   CertificateList ListCerts() {
     CertificateList result;
-
-    CERTCertList* cert_list =
-        PK11_ListCertsInSlot(cert_db_->GetPublicSlot().get());
+    CERTCertList* cert_list = PK11_ListCertsInSlot(test_nssdb_.slot());
     for (CERTCertListNode* node = CERT_LIST_HEAD(cert_list);
          !CERT_LIST_END(node, cert_list);
          node = CERT_LIST_NEXT(node)) {

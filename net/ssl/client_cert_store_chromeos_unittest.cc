@@ -13,6 +13,7 @@
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/rsa_private_key.h"
+#include "crypto/scoped_test_nss_chromeos_user.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/cert_type.h"
 #include "net/cert/x509_certificate.h"

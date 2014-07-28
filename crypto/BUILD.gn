@@ -131,6 +131,7 @@ component("crypto") {
       "hmac_nss.cc",
       "nss_util.cc",
       "nss_util.h",
+      "nss_util_internal.h",
       "rsa_private_key_nss.cc",
       "secure_hash_default.cc",
       "signature_creator_nss.cc",
@@ -229,12 +230,45 @@ test("crypto_unittests") {
   deps = [
     ":crypto",
     ":platform",
+    ":test_support",
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
+}
+
+source_set("test_support") {
+  sources = [
+    "scoped_test_nss_db.cc",
+    "scoped_test_nss_db.h",
+    "scoped_test_nss_chromeos_user.cc",
+    "scoped_test_nss_chromeos_user.h",
+    "scoped_test_system_nss_key_slot.cc",
+    "scoped_test_system_nss_key_slot.h",
+  ]
+  deps = [
+    ":crypto",
+    ":platform",
+    "//base",
+  ]
+
+  if (!use_nss_certs) {
+    sources -= [
+      "scoped_test_nss_db.cc",
+      "scoped_test_nss_db.h",
+    ]
+  }
+
+  if (!is_chromeos) {
+    sources -= [
+      "scoped_test_nss_chromeos_user.cc",
+      "scoped_test_nss_chromeos_user.h",
+      "scoped_test_system_nss_key_slot.cc",
+      "scoped_test_system_nss_key_slot.h",
+    ]
+  }
 }
 
 # This is a meta-target that forwards to NSS's SSL library or OpenSSL,

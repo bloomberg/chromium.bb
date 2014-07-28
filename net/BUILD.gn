@@ -1085,6 +1085,7 @@ test("net_unittests") {
     "//base/third_party/dynamic_annotations",
     "//crypto",
     "//crypto:platform",
+    "//crypto:test_support",
     "//net/base/registry_controlled_domains",
     "//testing/gmock",
     "//testing/gtest",

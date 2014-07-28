@@ -21,11 +21,18 @@ class FilePath;
 
 namespace crypto {
 
+// Opens an NSS software database in folder |path|, with the (potentially)
+// user-visible description |description|. Returns the slot for the opened
+// database, or NULL if the database could not be opened.
+CRYPTO_EXPORT_PRIVATE ScopedPK11Slot
+    OpenSoftwareNSSDB(const base::FilePath& path,
+                      const std::string& description);
+
+#if !defined(OS_CHROMEOS)
 // Returns a reference to the default NSS key slot for storing persistent data.
 // Caller must release returned reference with PK11_FreeSlot.
-// TODO(mattm): this should be if !defined(OS_CHROMEOS), but some tests need to
-// be fixed first.
 CRYPTO_EXPORT PK11SlotInfo* GetPersistentNSSKeySlot() WARN_UNUSED_RESULT;
+#endif
 
 // A helper class that acquires the SECMOD list read lock while the
 // AutoSECMODListReadLock is in scope.
@@ -40,9 +47,18 @@ class CRYPTO_EXPORT AutoSECMODListReadLock {
 };
 
 #if defined(OS_CHROMEOS)
-// Returns a reference to the system-wide TPM slot.  Caller must release
-// returned reference with PK11_FreeSlot.
+// Returns a reference to the system-wide TPM slot. Caller must release returned
+// reference with PK11_FreeSlot.
 CRYPTO_EXPORT PK11SlotInfo* GetSystemNSSKeySlot() WARN_UNUSED_RESULT;
+
+// Sets the test system slot. If this was called before
+// InitializeTPMTokenAndSystemSlot and no system token is provided by the Chaps
+// module, then this test slot will be used and the initialization continues as
+// if Chaps had provided this test slot. In particular, |slot| will be exposed
+// by |GetSystemNSSKeySlot| and |IsTPMTokenReady| will return true.
+// This must must not be called consecutively with a |slot| != NULL. If |slot|
+// is NULL, the test system slot is unset.
+CRYPTO_EXPORT_PRIVATE void SetSystemKeySlotForTesting(ScopedPK11Slot slot);
 
 // Prepare per-user NSS slot mapping. It is safe to call this function multiple
 // times. Returns true if the user was added, or false if it already existed.
@@ -85,6 +101,11 @@ CRYPTO_EXPORT ScopedPK11Slot GetPublicSlotForChromeOSUser(
 CRYPTO_EXPORT ScopedPK11Slot GetPrivateSlotForChromeOSUser(
     const std::string& username_hash,
     const base::Callback<void(ScopedPK11Slot)>& callback) WARN_UNUSED_RESULT;
+
+// Closes the NSS DB for |username_hash| that was previously opened by the
+// *Initialize*ForChromeOSUser functions.
+CRYPTO_EXPORT_PRIVATE void CloseChromeOSUserForTesting(
+    const std::string& username_hash);
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace crypto

@@ -11,7 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(USE_NSS)
-#include "crypto/nss_util_internal.h"
+#include "crypto/scoped_test_nss_db.h"
 #include "net/cert/nss_cert_database.h"
 #endif
 
@@ -224,12 +224,11 @@ TEST(X509CertificateModelTest, GetTypeCA) {
   EXPECT_EQ(net::CA_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));
 
-  // Additional parantheses required to disambiguate from function declaration.
-  net::NSSCertDatabase db(
-      (crypto::ScopedPK11Slot(
-          crypto::GetPersistentNSSKeySlot())) /* public slot */,
-      crypto::ScopedPK11Slot(
-          crypto::GetPersistentNSSKeySlot()) /* private lot */);
+  crypto::ScopedTestNSSDB test_nssdb;
+  net::NSSCertDatabase db(crypto::ScopedPK11Slot(PK11_ReferenceSlot(
+                              test_nssdb.slot())) /* public slot */,
+                          crypto::ScopedPK11Slot(PK11_ReferenceSlot(
+                              test_nssdb.slot())) /* private slot */);
 
   // Test that explicitly distrusted CA certs are still returned as CA_CERT
   // type. See http://crbug.com/96654.
@@ -259,12 +258,11 @@ TEST(X509CertificateModelTest, GetTypeServer) {
   EXPECT_EQ(net::OTHER_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));
 
-  // Additional parantheses required to disambiguate from function declaration.
-  net::NSSCertDatabase db(
-      (crypto::ScopedPK11Slot(
-          crypto::GetPersistentNSSKeySlot())) /* public slot */,
-      crypto::ScopedPK11Slot(
-          crypto::GetPersistentNSSKeySlot()) /* private lot */);
+  crypto::ScopedTestNSSDB test_nssdb;
+  net::NSSCertDatabase db(crypto::ScopedPK11Slot(PK11_ReferenceSlot(
+                              test_nssdb.slot())) /* public slot */,
+                          crypto::ScopedPK11Slot(PK11_ReferenceSlot(
+                              test_nssdb.slot())) /* private slot */);
 
   // Test GetCertType with server certs and explicit trust.
   EXPECT_TRUE(db.SetCertTrust(

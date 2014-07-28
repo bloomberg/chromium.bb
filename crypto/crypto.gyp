@@ -111,6 +111,7 @@
               'hmac_nss.cc',
               'nss_util.cc',
               'nss_util.h',
+              'nss_util_internal.h',
               'rsa_private_key_nss.cc',
               'secure_hash_default.cc',
               'signature_creator_nss.cc',
@@ -174,6 +175,7 @@
       ],
       'dependencies': [
         'crypto',
+        'crypto_test_support',
         '../base/base.gyp:base',
         '../base/base.gyp:run_all_unittests',
         '../base/base.gyp:test_support_base',
@@ -254,5 +256,47 @@
         },
       ],
     }],
+    ['use_nss==1', {
+      'targets': [
+        {
+          'target_name': 'crypto_test_support',
+          'type': 'static_library',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'crypto',
+          ],
+          'sources': [
+            'scoped_test_nss_db.cc',
+            'scoped_test_nss_db.h',
+            'scoped_test_nss_chromeos_user.cc',
+            'scoped_test_nss_chromeos_user.h',
+            'scoped_test_system_nss_key_slot.cc',
+            'scoped_test_system_nss_key_slot.h',
+          ],
+          'conditions': [
+            ['use_nss==0', {
+              'sources!': [
+                'scoped_test_nss_db.cc',
+                'scoped_test_nss_db.h',
+              ],
+            }],
+            [ 'chromeos==0', {
+              'sources!': [
+                'scoped_test_nss_chromeos_user.cc',
+                'scoped_test_nss_chromeos_user.h',
+                'scoped_test_system_nss_key_slot.cc',
+                'scoped_test_system_nss_key_slot.h',
+              ],
+            }],
+          ],
+        }
+      ]}, {  # use_nss==0
+      'targets': [
+        {
+          'target_name': 'crypto_test_support',
+          'type': 'none',
+          'sources': [],
+        }
+    ]}],
   ],
 }

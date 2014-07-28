@@ -19,8 +19,7 @@
 #if defined(USE_NSS)
 #include <private/pprthred.h>  // PR_DetachThread
 #include "crypto/nss_crypto_module_delegate.h"
-#include "crypto/nss_util.h"
-#include "crypto/nss_util_internal.h"
+#include "crypto/scoped_test_nss_db.h"
 #endif
 
 namespace net {
@@ -59,8 +58,8 @@ class KeygenHandlerTest : public ::testing::Test {
 #if defined(USE_NSS)
     handler->set_crypto_module_delegate(
         scoped_ptr<crypto::NSSCryptoModuleDelegate>(
-            new StubCryptoModuleDelegate(
-                crypto::ScopedPK11Slot(crypto::GetPersistentNSSKeySlot()))));
+            new StubCryptoModuleDelegate(crypto::ScopedPK11Slot(
+                PK11_ReferenceSlot(test_nss_db_.slot())))));
 #endif
     return handler.Pass();
   }

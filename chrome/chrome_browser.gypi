@@ -1835,8 +1835,8 @@
       'browser/certificate_manager_model.cc',
       'browser/certificate_manager_model.h',
       'browser/net/nss_context.cc',
-      'browser/net/nss_context_chromeos.cc',
       'browser/net/nss_context.h',
+      'browser/net/nss_context_chromeos.cc',
       'browser/net/nss_context_linux.cc',
       'third_party/mozilla_security_manager/nsNSSCertHelper.cpp',
       'third_party/mozilla_security_manager/nsNSSCertHelper.h',
@@ -3234,6 +3234,13 @@
         }],
         ['use_nss==1', {
           'sources': [ '<@(chrome_browser_nss_sources)' ],
+          'conditions': [
+            ['chromeos==1', {
+               'sources!': [ 'browser/net/nss_context_linux.cc' ],
+              }, { # chromeos==0
+               'sources!': [ 'browser/net/nss_context_chromeos.cc' ],
+              }],
+          ],
         }],
         ['notifications==1', {
           'sources': [ '<@(chrome_browser_notifications_sources)' ],

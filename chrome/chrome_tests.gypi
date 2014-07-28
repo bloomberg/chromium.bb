@@ -796,6 +796,7 @@
         '../components/components.gyp:translate_core_common',
         '../components/components_resources.gyp:components_resources',
         '../components/components_strings.gyp:components_strings',
+        '../crypto/crypto.gyp:crypto_test_support',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
         '../device/serial/serial.gyp:device_serial_test_util',
         '../extensions/common/api/api.gyp:extensions_api',

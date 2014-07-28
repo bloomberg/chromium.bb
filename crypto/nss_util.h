@@ -9,7 +9,6 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/files/scoped_temp_dir.h"
 #include "crypto/crypto_export.h"
 
 namespace base {
@@ -22,9 +21,6 @@ class Time;
 // is included by various (non-crypto) parts of chrome to call the
 // initialization functions.
 namespace crypto {
-
-// The TPMToken name used for the NSS slot opened by ScopedTestNSSDB.
-CRYPTO_EXPORT extern const char kTestTPMTokenName[];
 
 #if defined(USE_NSS)
 // EarlySetupForNSSInit performs lightweight setup which must occur before the
@@ -121,26 +117,6 @@ CRYPTO_EXPORT bool IsTPMTokenReady(const base::Closure& callback)
 CRYPTO_EXPORT void InitializeTPMTokenAndSystemSlot(
     int system_slot_id,
     const base::Callback<void(bool)>& callback);
-
-// Exposed for unittests only.
-class CRYPTO_EXPORT_PRIVATE ScopedTestNSSChromeOSUser {
- public:
-  explicit ScopedTestNSSChromeOSUser(const std::string& username_hash);
-  ~ScopedTestNSSChromeOSUser();
-
-  std::string username_hash() const { return username_hash_; }
-  bool constructed_successfully() const { return constructed_successfully_; }
-
-  // Completes initialization of user. Causes any waiting private slot callbacks
-  // to run.
-  void FinishInit();
-
- private:
-  const std::string username_hash_;
-  base::ScopedTempDir temp_dir_;
-  bool constructed_successfully_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedTestNSSChromeOSUser);
-};
 #endif
 
 // Convert a NSS PRTime value into a base::Time object.
@@ -152,23 +128,6 @@ CRYPTO_EXPORT base::Time PRTimeToBaseTime(int64 prtime);
 CRYPTO_EXPORT int64 BaseTimeToPRTime(base::Time time);
 
 #if defined(USE_NSS)
-// Exposed for unittests only.
-// TODO(mattm): When NSS 3.14 is the minimum version required,
-// switch back to using a separate user DB for each test.
-// Because of https://bugzilla.mozilla.org/show_bug.cgi?id=588269 , the
-// opened user DB is not automatically closed.
-class CRYPTO_EXPORT_PRIVATE ScopedTestNSSDB {
- public:
-  ScopedTestNSSDB();
-  ~ScopedTestNSSDB();
-
-  bool is_open() { return is_open_; }
-
- private:
-  bool is_open_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedTestNSSDB);
-};
-
 // NSS has a bug which can cause a deadlock or stall in some cases when writing
 // to the certDB and keyDB. It also has a bug which causes concurrent key pair
 // generations to scribble over each other. To work around this, we synchronize
@@ -189,7 +148,6 @@ class CRYPTO_EXPORT AutoNSSWriteLock {
   base::Lock *lock_;
   DISALLOW_COPY_AND_ASSIGN(AutoNSSWriteLock);
 };
-
 #endif  // defined(USE_NSS)
 
 }  // namespace crypto
