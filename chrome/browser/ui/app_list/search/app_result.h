@@ -18,6 +18,10 @@ class AppListControllerDelegate;
 class ExtensionEnableFlow;
 class Profile;
 
+namespace base {
+class Time;
+}
+
 namespace extensions {
 class ExtensionRegistry;
 }
@@ -41,6 +45,9 @@ class AppResult : public ChromeSearchResult,
 
   void UpdateFromMatch(const TokenizedString& title,
                        const TokenizedStringMatch& match);
+
+  void UpdateFromLastLaunched(const base::Time& current_time,
+                              const base::Time& last_launched);
 
   // ChromeSearchResult overides:
   virtual void Open(int event_flags) OVERRIDE;

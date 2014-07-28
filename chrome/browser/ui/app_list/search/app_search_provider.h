@@ -21,6 +21,10 @@ class ExtensionSet;
 
 namespace app_list {
 
+namespace test {
+class AppSearchProviderTest;
+}
+
 class AppSearchProvider : public SearchProvider,
                           public extensions::ExtensionRegistryObserver {
  public:
@@ -35,6 +39,10 @@ class AppSearchProvider : public SearchProvider,
  private:
   class App;
   typedef ScopedVector<App> Apps;
+
+  friend test::AppSearchProviderTest;
+
+  void StartImpl(const base::Time& current_time, const base::string16& query);
 
   // Adds extensions to apps container if they should be displayed.
   void AddApps(const extensions::ExtensionSet& extensions);

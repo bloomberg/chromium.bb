@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/app_list/search/app_result.h"
 #include "chrome/browser/ui/app_list/search/tokenized_string.h"
 #include "chrome/browser/ui/app_list/search/tokenized_string_match.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
@@ -25,18 +26,21 @@ namespace app_list {
 
 class AppSearchProvider::App {
  public:
-  explicit App(const extensions::Extension* extension)
+  explicit App(const extensions::Extension* extension,
+               const base::Time& last_launch_time)
       : app_id_(extension->id()),
-        indexed_name_(base::UTF8ToUTF16(extension->name())) {
-  }
+        indexed_name_(base::UTF8ToUTF16(extension->name())),
+        last_launch_time_(last_launch_time) {}
   ~App() {}
 
   const std::string& app_id() const { return app_id_; }
   const TokenizedString& indexed_name() const { return indexed_name_; }
+  const base::Time& last_launch_time() const { return last_launch_time_; }
 
  private:
   const std::string app_id_;
   TokenizedString indexed_name_;
+  base::Time last_launch_time_;
 
   DISALLOW_COPY_AND_ASSIGN(App);
 };
@@ -53,27 +57,45 @@ AppSearchProvider::AppSearchProvider(Profile* profile,
 AppSearchProvider::~AppSearchProvider() {}
 
 void AppSearchProvider::Start(const base::string16& query) {
+  StartImpl(base::Time::Now(), query);
+}
+
+void AppSearchProvider::Stop() {
+}
+
+void AppSearchProvider::StartImpl(const base::Time& current_time,
+                                  const base::string16& query) {
   const TokenizedString query_terms(query);
 
   ClearResults();
 
-  TokenizedStringMatch match;
+  bool show_recommendations = query.empty();
+  // Refresh list of apps to ensure we have the latest launch time information.
+  if (show_recommendations)
+    RefreshApps();
+
   for (Apps::const_iterator app_it = apps_.begin();
        app_it != apps_.end();
        ++app_it) {
-    if (!match.Calculate(query_terms, (*app_it)->indexed_name()))
-      continue;
-
     scoped_ptr<AppResult> result(
         new AppResult(profile_, (*app_it)->app_id(), list_controller_));
-    result->UpdateFromMatch((*app_it)->indexed_name(), match);
+    if (show_recommendations) {
+      result->set_title((*app_it)->indexed_name().text());
+      result->UpdateFromLastLaunched(current_time,
+                                     (*app_it)->last_launch_time());
+    } else {
+      TokenizedStringMatch match;
+      if (!match.Calculate(query_terms, (*app_it)->indexed_name()))
+        continue;
+
+      result->UpdateFromMatch((*app_it)->indexed_name(), match);
+    }
     Add(result.PassAs<SearchResult>());
   }
 }
 
-void AppSearchProvider::Stop() {}
-
 void AppSearchProvider::AddApps(const extensions::ExtensionSet& extensions) {
+  extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile_);
   for (extensions::ExtensionSet::const_iterator iter = extensions.begin();
        iter != extensions.end(); ++iter) {
     const extensions::Extension* app = iter->get();
@@ -84,7 +106,8 @@ void AppSearchProvider::AddApps(const extensions::ExtensionSet& extensions) {
     if (profile_->IsOffTheRecord() &&
         !extensions::util::CanLoadInIncognito(app, profile_))
       continue;
-    apps_.push_back(new App(app));
+
+    apps_.push_back(new App(app, prefs->GetLastLaunchTime(app->id())));
   }
 }
 

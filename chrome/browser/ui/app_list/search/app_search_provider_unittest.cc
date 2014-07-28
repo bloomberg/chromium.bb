@@ -14,12 +14,19 @@
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_profile.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace app_list {
 namespace test {
+
+const base::Time kTestCurrentTime = base::Time::FromInternalValue(1000);
+
+bool MoreRelevant(const SearchResult* result1, const SearchResult* result2) {
+  return result1->relevance() > result2->relevance();
+}
 
 class AppSearchProviderTest : public AppListTestBase {
  public:
@@ -34,16 +41,21 @@ class AppSearchProviderTest : public AppListTestBase {
   }
 
   std::string RunQuery(const std::string& query) {
-    app_search_->Start(base::UTF8ToUTF16(query));
-    app_search_->Stop();
+    app_search_->StartImpl(kTestCurrentTime, base::UTF8ToUTF16(query));
+
+    // Sort results by relevance.
+    std::vector<SearchResult*> sorted_results;
+    std::copy(app_search_->results().begin(),
+              app_search_->results().end(),
+              std::back_inserter(sorted_results));
+    std::sort(sorted_results.begin(), sorted_results.end(), &MoreRelevant);
 
     std::string result_str;
-    const SearchProvider::Results& results = app_search_->results();
-    for (size_t i = 0; i < results.size(); ++i) {
+    for (size_t i = 0; i < sorted_results.size(); ++i) {
       if (!result_str.empty())
         result_str += ',';
 
-      result_str += base::UTF16ToUTF8(results[i]->title());
+      result_str += base::UTF16ToUTF8(sorted_results[i]->title());
     }
     return result_str;
   }
@@ -55,7 +67,6 @@ class AppSearchProviderTest : public AppListTestBase {
 };
 
 TEST_F(AppSearchProviderTest, Basic) {
-  EXPECT_EQ("", RunQuery(""));
   EXPECT_EQ("", RunQuery("!@#$-,-_"));
   EXPECT_EQ("", RunQuery("unmatched query"));
 
@@ -91,6 +102,21 @@ TEST_F(AppSearchProviderTest, Uninstall) {
 
   // Let uninstall code to clean up.
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(AppSearchProviderTest, FetchRecommendations) {
+  extensions::ExtensionPrefs* prefs =
+      extensions::ExtensionPrefs::Get(profile_.get());
+
+  prefs->SetLastLaunchTime(kHostedAppId, base::Time::FromInternalValue(20));
+  prefs->SetLastLaunchTime(kPackagedApp1Id, base::Time::FromInternalValue(10));
+  prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(0));
+  EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2", RunQuery(""));
+
+  prefs->SetLastLaunchTime(kHostedAppId, base::Time::FromInternalValue(0));
+  prefs->SetLastLaunchTime(kPackagedApp1Id, base::Time::FromInternalValue(10));
+  prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(20));
+  EXPECT_EQ("Packaged App 2,Packaged App 1,Hosted App", RunQuery(""));
 }
 
 }  // namespace test

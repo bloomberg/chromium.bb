@@ -89,7 +89,7 @@ class APP_LIST_EXPORT SearchResult {
   void set_details_tags(const Tags& tags) { details_tags_ = tags; }
 
   const std::string& id() const { return id_; }
-  double relevance() { return relevance_; }
+  double relevance() const { return relevance_; }
 
   const Actions& actions() const {
     return actions_;

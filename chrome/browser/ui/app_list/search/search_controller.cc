@@ -36,6 +36,9 @@
 namespace {
   const char kAppListSearchResultOpenTypeHistogram[] =
       "Apps.AppListSearchResultOpenType";
+
+  // Maximum time (in milliseconds) to wait to the search providers to finish.
+  const int kStopTimeMS = 1500;
 }
 
 namespace app_list {
@@ -110,8 +113,6 @@ void SearchController::Start() {
 
   OnResultsChanged();
 
-  // Maximum time (in milliseconds) to wait to the search providers to finish.
-  const int kStopTimeMS = 1500;
   stop_timer_.Start(FROM_HERE,
                     base::TimeDelta::FromMilliseconds(kStopTimeMS),
                     base::Bind(&SearchController::Stop,
