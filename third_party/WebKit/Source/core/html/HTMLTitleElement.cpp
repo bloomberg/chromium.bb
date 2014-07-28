@@ -40,7 +40,6 @@ inline HTMLTitleElement::HTMLTitleElement(Document& document)
     : HTMLElement(titleTag, document)
     , m_ignoreTitleUpdatesWhenChildrenChange(false)
 {
-    setHasCustomStyleCallbacks();
     ScriptWrappable::init(this);
 }
 
