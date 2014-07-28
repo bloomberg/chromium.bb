@@ -9,11 +9,10 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
+#include "base/timer/timer.h"
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
@@ -49,35 +48,24 @@ webrtc::DesktopRect ComputeLetterboxRect(
 
 }  // namespace
 
-class DesktopCaptureDevice::Core
-    : public base::RefCountedThreadSafe<Core>,
-      public webrtc::DesktopCapturer::Callback {
+class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
  public:
-  Core(scoped_refptr<base::SequencedTaskRunner> task_runner,
-       scoped_ptr<base::Thread> thread,
+  Core(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
        scoped_ptr<webrtc::DesktopCapturer> capturer,
        DesktopMediaID::Type type);
+  virtual ~Core();
 
   // Implementation of VideoCaptureDevice methods.
   void AllocateAndStart(const media::VideoCaptureParams& params,
                         scoped_ptr<Client> client);
-  void StopAndDeAllocate();
 
   void SetNotificationWindowId(gfx::NativeViewId window_id);
 
  private:
-  friend class base::RefCountedThreadSafe<Core>;
-  virtual ~Core();
 
   // webrtc::DesktopCapturer::Callback interface
   virtual webrtc::SharedMemory* CreateSharedMemory(size_t size) OVERRIDE;
   virtual void OnCaptureCompleted(webrtc::DesktopFrame* frame) OVERRIDE;
-
-  // Helper methods that run on the |task_runner_|. Posted from the
-  // corresponding public methods.
-  void DoAllocateAndStart(const media::VideoCaptureParams& params,
-                          scoped_ptr<Client> client);
-  void DoStopAndDeAllocate();
 
   // Chooses new output properties based on the supplied source size and the
   // properties requested to Allocate(), and dispatches OnFrameInfo[Changed]
@@ -94,13 +82,8 @@ class DesktopCaptureDevice::Core
   // Captures a single frame.
   void DoCapture();
 
-  void DoSetNotificationWindowId(gfx::NativeViewId window_id);
-
   // Task runner used for capturing operations.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
-  // The thread on which the capturer is running.
-  scoped_ptr<base::Thread> thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // The underlying DesktopCapturer instance used to capture frames.
   scoped_ptr<webrtc::DesktopCapturer> desktop_capturer_;
@@ -127,9 +110,8 @@ class DesktopCaptureDevice::Core
   // and/or letterboxed.
   webrtc::DesktopRect output_rect_;
 
-  // True when we have delayed OnCaptureTimer() task posted on
-  // |task_runner_|.
-  bool capture_task_posted_;
+  // Timer used to capture the frame.
+  base::OneShotTimer<Core> capture_timer_;
 
   // True when waiting for |desktop_capturer_| to capture current frame.
   bool capture_in_progress_;
@@ -147,46 +129,52 @@ class DesktopCaptureDevice::Core
 };
 
 DesktopCaptureDevice::Core::Core(
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    scoped_ptr<base::Thread> thread,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     scoped_ptr<webrtc::DesktopCapturer> capturer,
     DesktopMediaID::Type type)
     : task_runner_(task_runner),
-      thread_(thread.Pass()),
       desktop_capturer_(capturer.Pass()),
-      capture_task_posted_(false),
       capture_in_progress_(false),
       first_capture_returned_(false),
       capturer_type_(type) {
-  DCHECK(!task_runner_.get() || !thread_.get());
-  if (thread_.get())
-    task_runner_ = thread_->message_loop_proxy();
 }
 
 DesktopCaptureDevice::Core::~Core() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_.reset();
+  output_frame_.reset();
+  previous_frame_size_.set(0, 0);
+  desktop_capturer_.reset();
 }
 
 void DesktopCaptureDevice::Core::AllocateAndStart(
     const media::VideoCaptureParams& params,
     scoped_ptr<Client> client) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_GT(params.requested_format.frame_size.GetArea(), 0);
   DCHECK_GT(params.requested_format.frame_rate, 0);
+  DCHECK(desktop_capturer_);
+  DCHECK(client.get());
+  DCHECK(!client_.get());
 
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &Core::DoAllocateAndStart, this, params, base::Passed(&client)));
-}
+  client_ = client.Pass();
+  requested_params_ = params;
 
-void DesktopCaptureDevice::Core::StopAndDeAllocate() {
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&Core::DoStopAndDeAllocate, this));
+  capture_format_ = requested_params_.requested_format;
+
+  // This capturer always outputs ARGB, non-interlaced.
+  capture_format_.pixel_format = media::PIXEL_FORMAT_ARGB;
+
+  desktop_capturer_->Start(this);
+
+  CaptureFrameAndScheduleNext();
 }
 
 void DesktopCaptureDevice::Core::SetNotificationWindowId(
     gfx::NativeViewId window_id) {
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Core::DoSetNotificationWindowId, this, window_id));
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(window_id);
+  desktop_capturer_->SetExcludedWindow(window_id);
 }
 
 webrtc::SharedMemory*
@@ -196,7 +184,7 @@ DesktopCaptureDevice::Core::CreateSharedMemory(size_t size) {
 
 void DesktopCaptureDevice::Core::OnCaptureCompleted(
     webrtc::DesktopFrame* frame) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(capture_in_progress_);
 
   if (!first_capture_returned_) {
@@ -309,35 +297,6 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
       output_data, output_bytes, capture_format_, 0, base::TimeTicks::Now());
 }
 
-void DesktopCaptureDevice::Core::DoAllocateAndStart(
-    const media::VideoCaptureParams& params,
-    scoped_ptr<Client> client) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(desktop_capturer_);
-  DCHECK(client.get());
-  DCHECK(!client_.get());
-
-  client_ = client.Pass();
-  requested_params_ = params;
-
-  capture_format_ = requested_params_.requested_format;
-
-  // This capturer always outputs ARGB, non-interlaced.
-  capture_format_.pixel_format = media::PIXEL_FORMAT_ARGB;
-
-  desktop_capturer_->Start(this);
-
-  CaptureFrameAndScheduleNext();
-}
-
-void DesktopCaptureDevice::Core::DoStopAndDeAllocate() {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  client_.reset();
-  output_frame_.reset();
-  previous_frame_size_.set(0, 0);
-  desktop_capturer_.reset();
-}
-
 void DesktopCaptureDevice::Core::RefreshCaptureFormat(
     const webrtc::DesktopSize& frame_size) {
   if (previous_frame_size_.equals(frame_size))
@@ -380,8 +339,7 @@ void DesktopCaptureDevice::Core::RefreshCaptureFormat(
 }
 
 void DesktopCaptureDevice::Core::OnCaptureTimer() {
-  DCHECK(capture_task_posted_);
-  capture_task_posted_ = false;
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (!client_)
     return;
@@ -390,8 +348,7 @@ void DesktopCaptureDevice::Core::OnCaptureTimer() {
 }
 
 void DesktopCaptureDevice::Core::CaptureFrameAndScheduleNext() {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(!capture_task_posted_);
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::TimeTicks started_time = base::TimeTicks::Now();
   DoCapture();
@@ -403,14 +360,12 @@ void DesktopCaptureDevice::Core::CaptureFrameAndScheduleNext() {
     base::TimeDelta::FromSeconds(1) / capture_format_.frame_rate);
 
   // Schedule a task for the next frame.
-  capture_task_posted_ = true;
-  task_runner_->PostDelayedTask(
-      FROM_HERE, base::Bind(&Core::OnCaptureTimer, this),
-      capture_period - last_capture_duration);
+  capture_timer_.Start(FROM_HERE, capture_period - last_capture_duration,
+                       this, &Core::OnCaptureTimer);
 }
 
 void DesktopCaptureDevice::Core::DoCapture() {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!capture_in_progress_);
 
   capture_in_progress_ = true;
@@ -421,18 +376,9 @@ void DesktopCaptureDevice::Core::DoCapture() {
   DCHECK(!capture_in_progress_);
 }
 
-void DesktopCaptureDevice::Core::DoSetNotificationWindowId(
-    gfx::NativeViewId window_id) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(window_id);
-  desktop_capturer_->SetExcludedWindow(window_id);
-}
-
 // static
 scoped_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
     const DesktopMediaID& source) {
-  scoped_ptr<base::Thread> ui_thread;
-
   webrtc::DesktopCaptureOptions options =
       webrtc::DesktopCaptureOptions::CreateDefault();
   // Leave desktop effects enabled during WebRTC captures.
@@ -442,24 +388,15 @@ scoped_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
 
   switch (source.type) {
     case DesktopMediaID::TYPE_SCREEN: {
-      scoped_ptr<webrtc::ScreenCapturer> screen_capturer;
-
 #if defined(OS_WIN)
-      bool magnification_allowed =
-          base::FieldTrialList::FindFullName("ScreenCaptureUseMagnification") ==
-          "Enabled";
-
-      if (magnification_allowed) {
-        // The magnification capturer requires running on a dedicated UI thread.
-        ui_thread.reset(new base::Thread("screenCaptureUIThread"));
-        base::Thread::Options thread_options(base::MessageLoop::TYPE_UI, 0);
-        ui_thread->StartWithOptions(thread_options);
-
+      if (base::FieldTrialList::FindFullName("ScreenCaptureUseMagnification") ==
+          "Enabled") {
         options.set_allow_use_magnification_api(true);
       }
 #endif
 
-      screen_capturer.reset(webrtc::ScreenCapturer::Create(options));
+      scoped_ptr<webrtc::ScreenCapturer> screen_capturer(
+          webrtc::ScreenCapturer::Create(options));
       if (screen_capturer && screen_capturer->SelectScreen(source.id)) {
         capturer.reset(new webrtc::DesktopAndCursorComposer(
             screen_capturer.release(),
@@ -488,46 +425,54 @@ scoped_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
   }
 
   scoped_ptr<media::VideoCaptureDevice> result;
-  if (capturer) {
-    scoped_refptr<base::SequencedTaskRunner> task_runner;
-    if (!ui_thread.get()) {
-      scoped_refptr<base::SequencedWorkerPool> blocking_pool =
-          BrowserThread::GetBlockingPool();
-      task_runner = blocking_pool->GetSequencedTaskRunner(
-          blocking_pool->GetSequenceToken());
-    }
-    result.reset(new DesktopCaptureDevice(
-        task_runner, ui_thread.Pass(), capturer.Pass(), source.type));
-  }
+  if (capturer)
+    result.reset(new DesktopCaptureDevice(capturer.Pass(), source.type));
 
   return result.Pass();
 }
 
 DesktopCaptureDevice::~DesktopCaptureDevice() {
-  StopAndDeAllocate();
+  DCHECK(!core_);
 }
 
 void DesktopCaptureDevice::AllocateAndStart(
     const media::VideoCaptureParams& params,
     scoped_ptr<Client> client) {
-  core_->AllocateAndStart(params, client.Pass());
+  thread_.message_loop_proxy()->PostTask(
+      FROM_HERE,
+      base::Bind(&Core::AllocateAndStart, base::Unretained(core_.get()), params,
+                 base::Passed(&client)));
 }
 
 void DesktopCaptureDevice::StopAndDeAllocate() {
-  core_->StopAndDeAllocate();
+  if (core_) {
+    thread_.message_loop_proxy()->DeleteSoon(FROM_HERE, core_.release());
+    thread_.Stop();
+  }
 }
 
 void DesktopCaptureDevice::SetNotificationWindowId(
     gfx::NativeViewId window_id) {
-  core_->SetNotificationWindowId(window_id);
+  thread_.message_loop_proxy()->PostTask(
+      FROM_HERE,
+      base::Bind(&Core::SetNotificationWindowId, base::Unretained(core_.get()),
+                 window_id));
 }
 
 DesktopCaptureDevice::DesktopCaptureDevice(
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    scoped_ptr<base::Thread> thread,
     scoped_ptr<webrtc::DesktopCapturer> capturer,
     DesktopMediaID::Type type)
-    : core_(new Core(task_runner, thread.Pass(), capturer.Pass(), type)) {
+    : thread_("desktopCaptureThread") {
+#if defined(OS_WIN)
+  // On Windows the thread must be a UI thread.
+  base::MessageLoop::Type thread_type = base::MessageLoop::TYPE_UI;
+#else
+  base::MessageLoop::Type thread_type = base::MessageLoop::TYPE_DEFAULT;
+#endif
+
+  thread_.StartWithOptions(base::Thread::Options(thread_type, 0));
+
+  core_.reset(new Core(thread_.message_loop_proxy(), capturer.Pass(), type));
 }
 
 }  // namespace content

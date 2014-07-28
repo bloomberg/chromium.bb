@@ -7,13 +7,14 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "media/video/capture/video_capture_device.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {
-class SequencedTaskRunner;
+class SingleThreadTaskRunner;
 class Thread;
 }  // namespace base
 
@@ -48,13 +49,11 @@ class CONTENT_EXPORT DesktopCaptureDevice : public media::VideoCaptureDevice {
   friend class DesktopCaptureDeviceTest;
   class Core;
 
-  // Either |task_runner| or |thread| should be non-NULL, but not both.
-  DesktopCaptureDevice(scoped_refptr<base::SequencedTaskRunner> task_runner,
-                       scoped_ptr<base::Thread> thread,
-                       scoped_ptr<webrtc::DesktopCapturer> desktop_capturer,
+  DesktopCaptureDevice(scoped_ptr<webrtc::DesktopCapturer> desktop_capturer,
                        DesktopMediaID::Type type);
 
-  scoped_refptr<Core> core_;
+  base::Thread thread_;
+  scoped_ptr<Core> core_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopCaptureDevice);
 };
