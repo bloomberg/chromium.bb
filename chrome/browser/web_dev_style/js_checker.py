@@ -64,13 +64,13 @@ class JSChecker(object):
         r"var (?!g_\w+)([a-z]*[_$][\w_$]*)(?<! \$)",
         "Please use var namesLikeThis <http://goo.gl/uKir6>")
 
-  def error_highlight(self, start, length):
+  def _GetErrorHighlight(self, start, length):
     """Takes a start position and a length, and produces a row of '^'s to
        highlight the corresponding part of a string.
     """
     return start * ' ' + length * '^'
 
-  def _makeErrorOrWarning(self, error_text, filename):
+  def _MakeErrorOrWarning(self, error_text, filename):
     """Takes a few lines of text indicating a style violation and turns it into
        a PresubmitError (if |filename| is in a directory where we've already
        taken out all the style guide violations) or a PresubmitPromptWarning
@@ -104,10 +104,8 @@ class JSChecker(object):
     else:
       return self.output_api.PresubmitPromptWarning(error_text)
 
-  def RunChecks(self):
-    """Check for violations of the Chromium JavaScript style guide. See
-       http://chromium.org/developers/web-development-style-guide#TOC-JavaScript
-    """
+  def ClosureLint(self, file_to_lint, source=None):
+    """Lints |file_to_lint| and returns the errors."""
 
     import sys
     import warnings
@@ -171,6 +169,11 @@ class JSChecker(object):
            'catch(' in error.token.line):
           return False
 
+        # Ignore "}.bind(" errors. http://crbug.com/397697
+        if (error.code == errors.MISSING_SEMICOLON_AFTER_FUNCTION and
+            '}.bind(' in error.token.line):
+          return False
+
         return not is_grit_statement and error.code not in [
             errors.COMMA_AT_END_OF_LITERAL,
             errors.JSDOC_ILLEGAL_QUESTION_WITH_PIPE,
@@ -178,6 +181,14 @@ class JSChecker(object):
             errors.MISSING_JSDOC_TAG_THIS,
         ]
 
+    error_handler = ErrorHandlerImpl(self.input_api.re)
+    runner.Run(file_to_lint, error_handler, source=source)
+    return error_handler.GetErrors()
+
+  def RunChecks(self):
+    """Check for violations of the Chromium JavaScript style guide. See
+       http://chromium.org/developers/web-development-style-guide#TOC-JavaScript
+    """
     results = []
 
     affected_files = self.input_api.change.AffectedFiles(
@@ -202,14 +213,12 @@ class JSChecker(object):
             self.VarNameCheck(i, line),
         ])
 
-      # Use closure_linter to check for several different errors
-      error_handler = ErrorHandlerImpl(self.input_api.re)
-      file_to_check = self.input_api.os_path.join(
-          self.input_api.change.RepositoryRoot(), f.LocalPath())
-      runner.Run(file_to_check, error_handler)
+      # Use closure linter to check for several different errors.
+      lint_errors = self.ClosureLint(self.input_api.os_path.join(
+          self.input_api.change.RepositoryRoot(), f.LocalPath()))
 
-      for error in error_handler.GetErrors():
-        highlight = self.error_highlight(
+      for error in lint_errors:
+        highlight = self._GetErrorHighlight(
             error.token.start_index, error.token.length)
         error_msg = '  line %d: E%04d: %s\n%s\n%s' % (
             error.token.line_number,
@@ -223,7 +232,7 @@ class JSChecker(object):
         error_lines = [
             'Found JavaScript style violations in %s:' %
             f.LocalPath()] + error_lines
-        results.append(self._makeErrorOrWarning(
+        results.append(self._MakeErrorOrWarning(
             '\n'.join(error_lines), f.AbsoluteLocalPath()))
 
     if results:

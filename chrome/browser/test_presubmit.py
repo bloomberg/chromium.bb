@@ -362,6 +362,76 @@ class JsStyleGuideTest(SuperMoxTestBase):
       self.ShouldPassVarNameCheck(line)
 
 
+class ClosureLintTest(SuperMoxTestBase):
+  def setUp(self):
+    SuperMoxTestBase.setUp(self)
+
+    input_api = self.mox.CreateMockAnything()
+    input_api.os_path = os.path
+    input_api.re = re
+
+    input_api.change = self.mox.CreateMockAnything()
+    self.mox.StubOutWithMock(input_api.change, 'RepositoryRoot')
+    src_root = os.path.join(os.path.dirname(__file__), '..', '..')
+    input_api.change.RepositoryRoot().MultipleTimes().AndReturn(src_root)
+
+    output_api = self.mox.CreateMockAnything()
+
+    self.mox.ReplayAll()
+
+    self.checker = js_checker.JSChecker(input_api, output_api)
+
+  def ShouldPassClosureLint(self, source):
+    errors = self.checker.ClosureLint('', source=source)
+
+    for error in errors:
+      print 'Error: ' + error.message
+
+    self.assertListEqual([], errors)
+
+  def testBindFalsePositives(self):
+    sources = [
+      [
+        'var addOne = function(prop) {\n',
+        '  this[prop] += 1;\n',
+        '}.bind(counter, timer);\n',
+        '\n',
+        'setInterval(addOne, 1000);\n',
+        '\n',
+      ],
+      [
+        '/** Da clickz. */\n',
+        'button.onclick = function() { this.add_(this.total_); }.bind(this);\n',
+      ],
+    ]
+    for source in sources:
+      self.ShouldPassClosureLint(source)
+
+  def testPromiseFalsePositives(self):
+    sources = [
+      [
+        'Promise.reject(1).catch(function(error) {\n',
+        '  alert(error);\n',
+        '});\n',
+      ],
+      [
+        'var loaded = new Promise();\n',
+        'loaded.then(runAwesomeApp);\n',
+        'loaded.catch(showSadFace);\n',
+        '\n',
+        '/** Da loadz. */\n',
+        'document.onload = function() { loaded.resolve(); };\n',
+        '\n',
+        '/** Da errorz. */\n',
+        'document.onerror = function() { loaded.reject(); };\n',
+        '\n',
+        "if (document.readystate == 'complete') loaded.resolve();\n",
+      ],
+    ]
+    for source in sources:
+      self.ShouldPassClosureLint(source)
+
+
 class CssStyleGuideTest(SuperMoxTestBase):
   def setUp(self):
     SuperMoxTestBase.setUp(self)
