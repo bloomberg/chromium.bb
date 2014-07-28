@@ -3,7 +3,7 @@ if (this.importScripts) {
     importScripts('shared.js');
 }
 
-description("Test IndexedDB's webkitIDBIndex.openCursor + the cursor it produces in depth.");
+description("Test IndexedDB's IDBIndex.openCursor + the cursor it produces in depth.");
 
 // In order of how it should be sorted by IndexedDB.
 self.testData = [

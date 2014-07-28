@@ -3,7 +3,7 @@ if (this.importScripts) {
     importScripts('shared.js');
 }
 
-description("Test IndexedDB's webkitIndexedDB.deleteDatabase().");
+description("Test IndexedDB's indexedDB.deleteDatabase().");
 
 indexedDBTest(prepareDatabase, getValue);
 function prepareDatabase()

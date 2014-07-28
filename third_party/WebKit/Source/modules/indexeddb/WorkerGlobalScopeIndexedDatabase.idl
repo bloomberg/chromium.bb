@@ -25,16 +25,16 @@
  */
 
 partial interface WorkerGlobalScope {
-    [ImplementedAs=indexedDB] readonly attribute IDBFactory webkitIndexedDB;
+    [ImplementedAs=indexedDB, DeprecateAs=PrefixedIndexedDB] readonly attribute IDBFactory webkitIndexedDB;
 
-    attribute IDBCursorConstructor webkitIDBCursor;
-    attribute IDBDatabaseConstructor webkitIDBDatabase;
-    attribute IDBFactoryConstructor webkitIDBFactory;
-    attribute IDBIndexConstructor webkitIDBIndex;
-    attribute IDBKeyRangeConstructor webkitIDBKeyRange;
-    attribute IDBObjectStoreConstructor webkitIDBObjectStore;
-    attribute IDBRequestConstructor webkitIDBRequest;
-    attribute IDBTransactionConstructor webkitIDBTransaction;
+    [DeprecateAs=PrefixedIDBCursorConstructor] attribute IDBCursorConstructor webkitIDBCursor;
+    [DeprecateAs=PrefixedIDBDatabaseConstructor] attribute IDBDatabaseConstructor webkitIDBDatabase;
+    [DeprecateAs=PrefixedIDBFactoryConstructor] attribute IDBFactoryConstructor webkitIDBFactory;
+    [DeprecateAs=PrefixedIDBIndexConstructor] attribute IDBIndexConstructor webkitIDBIndex;
+    [DeprecateAs=PrefixedIDBKeyRangeConstructor] attribute IDBKeyRangeConstructor webkitIDBKeyRange;
+    [DeprecateAs=PrefixedIDBObjectStoreConstructor] attribute IDBObjectStoreConstructor webkitIDBObjectStore;
+    [DeprecateAs=PrefixedIDBRequestConstructor] attribute IDBRequestConstructor webkitIDBRequest;
+    [DeprecateAs=PrefixedIDBTransactionConstructor] attribute IDBTransactionConstructor webkitIDBTransaction;
 
     readonly attribute IDBFactory indexedDB;
 

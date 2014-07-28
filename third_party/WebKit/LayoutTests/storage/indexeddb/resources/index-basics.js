@@ -3,7 +3,7 @@ if (this.importScripts) {
     importScripts('shared.js');
 }
 
-description("Test the basics of IndexedDB's webkitIDBIndex.");
+description("Test the basics of IndexedDB's IDBIndex.");
 
 indexedDBTest(prepareDatabase);
 function prepareDatabase(evt)

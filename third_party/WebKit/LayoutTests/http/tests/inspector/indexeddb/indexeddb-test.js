@@ -100,9 +100,6 @@ InspectorTest.addIDBValue = function(frameId, databaseName, objectStoreName, val
 
 };
 
-var indexedDB = window.indexeddb || window.webkitIndexedDB;
-window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
-
 function dispatchCallback(callbackId)
 {
     console.log(callbackId);
@@ -256,4 +253,3 @@ function addIDBValue(callback, databaseName, objectStoreName, value, key)
         request.onsuccess = commitCallback;
     }
 }
-

@@ -3,7 +3,7 @@ if (this.importScripts) {
     importScripts('shared.js');
 }
 
-description("Test IndexedDB's webkitIDBObjectStore.clear().");
+description("Test IndexedDB's IDBObjectStore.clear().");
 
 indexedDBTest(prepareDatabase, setVersionComplete);
 function prepareDatabase()

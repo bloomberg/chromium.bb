@@ -14,7 +14,7 @@
 
 <script>
 
-if (!('webkitIndexedDB' in window))
+if (!('indexedDB' in window))
     document.getElementById("enabled").innerHTML = "<font color=red>Your build does NOT seem to have it enabled.  So all code on this page is disabled.</font>";
 else
     document.getElementById("enabled").innerHTML = "<font color=green>Your build seems to have it enabled.</font>";
@@ -30,7 +30,7 @@ function setData()
 {
     status("Something must have gone wrong (or we're still working)...", "red");
 
-    webkitIndexedDB.open("someDB", "some description").onsuccess = function() {
+    indexedDB.open("someDB", "some description").onsuccess = function() {
         event.result.setVersion("some version").onsuccess = function() {
             var db = event.source;
             while (db.objectStoreNames.length)
@@ -46,7 +46,7 @@ function verifyData()
 {
     status("Something must have gone wrong (or we're still working)...", "red");
 
-    webkitIndexedDB.open("someDB", "some description").onsuccess = function() {
+    indexedDB.open("someDB", "some description").onsuccess = function() {
         try {
             var result = event.result.transaction([]).objectStore("test").get("key");
             result.onsuccess = function() {

@@ -1,4 +1,4 @@
-[Worker] Test the basics of IndexedDB's webkitIDBIndex.
+[Worker] Test the basics of IndexedDB's IDBIndex.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

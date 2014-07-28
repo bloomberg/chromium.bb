@@ -638,6 +638,12 @@ void UseCounter::countDeprecation(const Document& document, Feature feature)
     }
 }
 
+// FIXME: Update other UseCounter::deprecationMessage() cases to use this.
+static String replacedBy(const char* oldString, const char* newString)
+{
+    return String::format("'%s' is deprecated. Please use '%s' instead.", oldString, newString);
+}
+
 String UseCounter::deprecationMessage(Feature feature)
 {
     switch (feature) {
@@ -647,7 +653,7 @@ String UseCounter::deprecationMessage(Feature feature)
 
     // Keyboard Event (DOM Level 3)
     case KeyboardEventKeyLocation:
-        return "'KeyboardEvent.keyLocation' is deprecated. Please use 'KeyboardEvent.location' instead.";
+        return replacedBy("KeyboardEvent.keyLocation", "KeyboardEvent.location");
 
     case ConsoleMarkTimeline:
         return "console.markTimeline is deprecated. Please use the console.timeStamp instead.";
@@ -683,7 +689,34 @@ String UseCounter::deprecationMessage(Feature feature)
         return "'MediaError.MEDIA_ERR_ENCRYPTED' is deprecated. This error code is never used.";
 
     case PrefixedGamepad:
-        return "'navigator.webkitGetGamepads' is deprecated. Please use 'navigator.getGamepads' instead.";
+        return replacedBy("navigator.webkitGetGamepads", "navigator.getGamepads");
+
+    case PrefixedIndexedDB:
+        return replacedBy("webkitIndexedDB", "indexedDB");
+
+    case PrefixedIDBCursorConstructor:
+        return replacedBy("webkitIDBCursor", "IDBCursor");
+
+    case PrefixedIDBDatabaseConstructor:
+        return replacedBy("webkitIDBDatabase", "IDBDatabase");
+
+    case PrefixedIDBFactoryConstructor:
+        return replacedBy("webkitIDBFactory", "IDBFactory");
+
+    case PrefixedIDBIndexConstructor:
+        return replacedBy("webkitIDBIndex", "IDBIndex");
+
+    case PrefixedIDBKeyRangeConstructor:
+        return replacedBy("webkitIDBKeyRange", "IDBKeyRange");
+
+    case PrefixedIDBObjectStoreConstructor:
+        return replacedBy("webkitIDBObjectStore", "IDBObjectStore");
+
+    case PrefixedIDBRequestConstructor:
+        return replacedBy("webkitIDBRequest", "IDBRequest");
+
+    case PrefixedIDBTransactionConstructor:
+        return replacedBy("webkitIDBTransaction", "IDBTransaction");
 
     case PrefixedRequestAnimationFrame:
         return "'webkitRequestAnimationFrame' is vendor-specific. Please use the standard 'requestAnimationFrame' instead.";
@@ -707,10 +740,10 @@ String UseCounter::deprecationMessage(Feature feature)
         return "'NodeIterator.detach' is now a no-op, as per DOM (http://dom.spec.whatwg.org/#dom-nodeiterator-detach).";
 
     case AttrNodeValue:
-        return "'Attr.nodeValue' is deprecated. Please use 'value' instead.";
+        return replacedBy("Attr.nodeValue", "value");
 
     case AttrTextContent:
-        return "'Attr.textContent' is deprecated. Please use 'value' instead.";
+        return replacedBy("Attr.textContent", "value");
 
     case NodeIteratorExpandEntityReferences:
         return "'NodeIterator.expandEntityReferences' is deprecated and has been removed from DOM. It always returns false.";

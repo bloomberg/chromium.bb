@@ -27,16 +27,16 @@
 [
     ImplementedAs=DOMWindowIndexedDatabase,
 ] partial interface Window {
-    [ImplementedAs=indexedDB, MeasureAs=PrefixedIndexedDB] readonly attribute IDBFactory webkitIndexedDB;
+    [ImplementedAs=indexedDB, DeprecateAs=PrefixedIndexedDB] readonly attribute IDBFactory webkitIndexedDB;
 
     [MeasureAs=UnprefixedIndexedDB] readonly attribute IDBFactory indexedDB;
 
-    [MeasureAs=PrefixedIDBCursorConstructor] attribute IDBCursorConstructor webkitIDBCursor;
-    [MeasureAs=PrefixedIDBDatabaseConstructor] attribute IDBDatabaseConstructor webkitIDBDatabase;
-    [MeasureAs=PrefixedIDBFactoryConstructor] attribute IDBFactoryConstructor webkitIDBFactory;
-    [MeasureAs=PrefixedIDBIndexConstructor] attribute IDBIndexConstructor webkitIDBIndex;
-    [MeasureAs=PrefixedIDBKeyRangeConstructor] attribute IDBKeyRangeConstructor webkitIDBKeyRange;
-    [MeasureAs=PrefixedIDBObjectStoreConstructor] attribute IDBObjectStoreConstructor webkitIDBObjectStore;
-    [MeasureAs=PrefixedIDBRequestConstructor] attribute IDBRequestConstructor webkitIDBRequest;
-    [MeasureAs=PrefixedIDBTransactionConstructor] attribute IDBTransactionConstructor webkitIDBTransaction;
+    [DeprecateAs=PrefixedIDBCursorConstructor] attribute IDBCursorConstructor webkitIDBCursor;
+    [DeprecateAs=PrefixedIDBDatabaseConstructor] attribute IDBDatabaseConstructor webkitIDBDatabase;
+    [DeprecateAs=PrefixedIDBFactoryConstructor] attribute IDBFactoryConstructor webkitIDBFactory;
+    [DeprecateAs=PrefixedIDBIndexConstructor] attribute IDBIndexConstructor webkitIDBIndex;
+    [DeprecateAs=PrefixedIDBKeyRangeConstructor] attribute IDBKeyRangeConstructor webkitIDBKeyRange;
+    [DeprecateAs=PrefixedIDBObjectStoreConstructor] attribute IDBObjectStoreConstructor webkitIDBObjectStore;
+    [DeprecateAs=PrefixedIDBRequestConstructor] attribute IDBRequestConstructor webkitIDBRequest;
+    [DeprecateAs=PrefixedIDBTransactionConstructor] attribute IDBTransactionConstructor webkitIDBTransaction;
 };

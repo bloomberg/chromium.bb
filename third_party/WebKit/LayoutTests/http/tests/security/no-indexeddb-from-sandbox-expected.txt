@@ -1,2 +1,2 @@
-ALERT: PASS: db.open() threw a SECURITY_ERR!
+ALERT: PASS: indexedDB.open() threw a SECURITY_ERR!
 
