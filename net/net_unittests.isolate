@@ -5,12 +5,6 @@
   'conditions': [
     ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
-        'isolate_dependency_tracked': [
-          '../chrome/test/data/animate1.gif',
-          '../chrome/test/data/server-unavailable.html',
-          '../chrome/test/data/server-unavailable.html.mock-http-headers',
-          '../chrome/test/data/simple.html',
-        ],
         'isolate_dependency_untracked': [
           'data/',
         ],
