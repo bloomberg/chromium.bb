@@ -361,10 +361,6 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   // A timer to fire an indicating sound when sliding to change volume.
   base::RepeatingTimer<TouchExplorationController> sound_timer_;
 
-  // For testing only, an event handler to use for generated events
-  // outside of the normal event rewriting flow.
-  ui::EventHandler* event_handler_for_testing_;
-
   // A default gesture detector config, so we can share the same
   // timeout and pixel slop constants.
   ui::GestureDetector::Config gesture_detector_config_;

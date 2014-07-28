@@ -112,12 +112,6 @@ class TouchExplorationControllerTestApi {
     }
   }
 
-  void SetEventHandlerForTesting(
-      ui::EventHandler* event_handler_for_testing) {
-    touch_exploration_controller_->event_handler_for_testing_ =
-        event_handler_for_testing;
-  }
-
   bool IsInNoFingersDownStateForTesting() const {
     return touch_exploration_controller_->state_ ==
            touch_exploration_controller_->NO_FINGERS_DOWN;
@@ -250,8 +244,6 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
       touch_exploration_controller_.reset(
           new ui::TouchExplorationControllerTestApi(
               new TouchExplorationController(root_window(), &delegate_)));
-      touch_exploration_controller_->SetEventHandlerForTesting(
-          &event_capturer_);
       cursor_client()->ShowCursor();
       cursor_client()->DisableMouseEvents();
     }
@@ -1107,11 +1099,19 @@ TEST_F(TouchExplorationTest, TwoToOneFingerRelaseFirst) {
 // Placing three fingers should start passthrough, and all fingers should
 // continue to be passed through until the last one is released.
 TEST_F(TouchExplorationTest, Passthrough) {
-  std::vector<ui::LocatedEvent*> captured_events = GetCapturedLocatedEvents();
+  SwitchTouchExplorationMode(true);
+  std::vector<ui::LocatedEvent*> captured_events;
 
   gfx::Point first_touch_location = gfx::Point(11,12);
+  ui::TouchEvent first_touch_press(
+      ui::ET_TOUCH_PRESSED, first_touch_location, 0, Now());
+  generator_->Dispatch(&first_touch_press);
+
   gfx::Point second_touch_location = gfx::Point(21, 22);
-  EnterTwoToOne(first_touch_location, second_touch_location);
+  ui::TouchEvent second_touch_press(
+      ui::ET_TOUCH_PRESSED, second_touch_location, 1, Now());
+  generator_->Dispatch(&second_touch_press);
+
   captured_events = GetCapturedLocatedEvents();
   ASSERT_EQ(captured_events.size(), 1u);
 
@@ -1121,7 +1121,7 @@ TEST_F(TouchExplorationTest, Passthrough) {
   generator_->Dispatch(&third_touch_press);
   captured_events = GetCapturedLocatedEvents();
   // Now all fingers are registered as pressed.
-  ASSERT_EQ(captured_events.size(), 3u);
+  ASSERT_EQ(3u, captured_events.size());
   ClearCapturedEvents();
 
   // All fingers should be passed through.
@@ -1138,7 +1138,7 @@ TEST_F(TouchExplorationTest, Passthrough) {
   generator_->Dispatch(&second_touch_first_move);
   generator_->Dispatch(&third_touch_first_move);
   captured_events = GetCapturedLocatedEvents();
-  ASSERT_EQ(captured_events.size(), 3u);
+  ASSERT_EQ(3u, captured_events.size());
   EXPECT_EQ(ui::ET_TOUCH_MOVED, captured_events[0]->type());
   EXPECT_EQ(first_touch_location, captured_events[0]->location());
   EXPECT_EQ(ui::ET_TOUCH_MOVED, captured_events[1]->type());
