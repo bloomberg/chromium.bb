@@ -303,7 +303,7 @@ class TestCastSocket : public CastSocket {
   }
 
   virtual bool VerifyChallengeReply() OVERRIDE {
-    EXPECT_EQ(false, verify_challenge_disallow_);
+    EXPECT_FALSE(verify_challenge_disallow_);
     return verify_challenge_result_;
   }
 
