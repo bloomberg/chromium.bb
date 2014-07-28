@@ -65,20 +65,9 @@ readonly PACKAGE_LIST2="${ARMEL_REPO}/dists/precise-security/main/binary-armhf/P
 # Packages for the host system
 # NOTE: at one point we should get rid of the 4.5 packages
 readonly CROSS_ARM_TC_PACKAGES="\
-  libc6-armhf-cross \
-  libc6-dev-armhf-cross \
-  libgcc1-armhf-cross \
-  libgomp1-armhf-cross \
-  linux-libc-dev-armhf-cross \
-  libgcc1-dbg-armhf-cross \
-  libgomp1-dbg-armhf-cross \
-  binutils-arm-linux-gnueabihf \
-  cpp-arm-linux-gnueabihf \
-  gcc-arm-linux-gnueabihf \
   g++-arm-linux-gnueabihf \
-  cpp-4.5-arm-linux-gnueabihf \
-  gcc-4.5-arm-linux-gnueabihf \
-  g++-4.5-arm-linux-gnueabihf \
+  libgomp1-dbg-armhf-cross \
+  libgcc1-dbg-armhf-cross \
   libmudflap0-dbg-armhf-cross
 "
 
@@ -369,9 +358,6 @@ HacksAndPatches() {
             ${rel_path}/usr/lib/arm-linux-gnueabihf/libc.so"
 
   SubBanner "Rewriting Linker Scripts"
-  echo $PWD
-  echo $PWD
-  echo $PWD
   sed -i -e 's|/usr/lib/arm-linux-gnueabihf/||g' ${lscripts}
   sed -i -e 's|/lib/arm-linux-gnueabihf/||g' ${lscripts}
 
