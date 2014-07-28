@@ -24,7 +24,10 @@ class BlockingUrlProtocolTest : public testing::Test {
   }
 
   virtual ~BlockingUrlProtocolTest() {
-    data_source_.Stop();
+    base::WaitableEvent stop_event(false, false);
+    data_source_.Stop(base::Bind(
+        &base::WaitableEvent::Signal, base::Unretained(&stop_event)));
+    stop_event.Wait();
   }
 
   MOCK_METHOD0(OnDataSourceError, void());

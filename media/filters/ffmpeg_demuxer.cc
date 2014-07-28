@@ -530,22 +530,11 @@ FFmpegDemuxer::~FFmpegDemuxer() {}
 void FFmpegDemuxer::Stop(const base::Closure& callback) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   url_protocol_->Abort();
-  data_source_->Stop();
-
-  // This will block until all tasks complete. Note that after this returns it's
-  // possible for reply tasks (e.g., OnReadFrameDone()) to be queued on this
-  // thread. Each of the reply task methods must check whether we've stopped the
-  // thread and drop their results on the floor.
-  blocking_thread_.Stop();
-
-  StreamVector::iterator iter;
-  for (iter = streams_.begin(); iter != streams_.end(); ++iter) {
-    if (*iter)
-      (*iter)->Stop();
-  }
-
+  data_source_->Stop(
+      BindToCurrentLoop(base::Bind(&FFmpegDemuxer::OnDataSourceStopped,
+                                   weak_factory_.GetWeakPtr(),
+                                   BindToCurrentLoop(callback))));
   data_source_ = NULL;
-  task_runner_->PostTask(FROM_HERE, callback);
 }
 
 void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
@@ -1129,6 +1118,23 @@ void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {
 
   // Keep reading until we've reached capacity.
   ReadFrameIfNeeded();
+}
+
+void FFmpegDemuxer::OnDataSourceStopped(const base::Closure& callback) {
+  // This will block until all tasks complete. Note that after this returns it's
+  // possible for reply tasks (e.g., OnReadFrameDone()) to be queued on this
+  // thread. Each of the reply task methods must check whether we've stopped the
+  // thread and drop their results on the floor.
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  blocking_thread_.Stop();
+
+  StreamVector::iterator iter;
+  for (iter = streams_.begin(); iter != streams_.end(); ++iter) {
+    if (*iter)
+      (*iter)->Stop();
+  }
+
+  callback.Run();
 }
 
 bool FFmpegDemuxer::StreamsHaveAvailableCapacity() {

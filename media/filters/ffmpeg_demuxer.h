@@ -197,6 +197,9 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   void ReadFrameIfNeeded();
   void OnReadFrameDone(ScopedAVPacket packet, int result);
 
+  // DataSource callbacks during stopping.
+  void OnDataSourceStopped(const base::Closure& callback);
+
   // Returns true iff any stream has additional capacity. Note that streams can
   // go over capacity depending on how the file is muxed.
   bool StreamsHaveAvailableCapacity();

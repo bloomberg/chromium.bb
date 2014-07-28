@@ -26,7 +26,8 @@ bool FileDataSource::Initialize(const base::FilePath& file_path) {
   return file_.Initialize(file_path);
 }
 
-void FileDataSource::Stop() {
+void FileDataSource::Stop(const base::Closure& callback) {
+  callback.Run();
 }
 
 void FileDataSource::Read(int64 position, int size, uint8* data,
