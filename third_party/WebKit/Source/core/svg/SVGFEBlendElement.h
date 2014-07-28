@@ -23,18 +23,24 @@
 
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
-#include "platform/graphics/filters/FEBlend.h"
 
 namespace blink {
 
-template<> const SVGEnumerationStringEntries& getStaticStringEntries<BlendModeType>();
-
 class SVGFEBlendElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
+    enum Mode {
+        ModeUnknown = 0,
+        ModeNormal = 1,
+        ModeMultiply = 2,
+        ModeScreen = 3,
+        ModeDarken = 4,
+        ModeLighten = 5
+    };
+
     DECLARE_NODE_FACTORY(SVGFEBlendElement);
     SVGAnimatedString* in1() { return m_in1.get(); }
     SVGAnimatedString* in2() { return m_in2.get(); }
-    SVGAnimatedEnumeration<BlendModeType>* mode() { return m_mode.get(); }
+    SVGAnimatedEnumeration<Mode>* mode() { return m_mode.get(); }
 
 private:
     explicit SVGFEBlendElement(Document&);
@@ -47,8 +53,10 @@ private:
 
     RefPtr<SVGAnimatedString> m_in1;
     RefPtr<SVGAnimatedString> m_in2;
-    RefPtr<SVGAnimatedEnumeration<BlendModeType> > m_mode;
+    RefPtr<SVGAnimatedEnumeration<Mode> > m_mode;
 };
+
+template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGFEBlendElement::Mode>();
 
 } // namespace blink
 

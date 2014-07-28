@@ -130,22 +130,21 @@ void FEBlend::platformApplyNEON(unsigned char* srcPixelArrayA, unsigned char* sr
 
         uint16x8_t result;
         switch (m_mode) {
-        case FEBLEND_MODE_NORMAL:
+        case WebBlendModeNormal:
             result = FEBlendUtilitiesNEON::normal(doubblePixelA, doubblePixelB, alphaA, alphaB, sixteenConst255, sixteenConstOne);
             break;
-        case FEBLEND_MODE_MULTIPLY:
+        case WebBlendModeMultiply:
             result = FEBlendUtilitiesNEON::multiply(doubblePixelA, doubblePixelB, alphaA, alphaB, sixteenConst255, sixteenConstOne);
             break;
-        case FEBLEND_MODE_SCREEN:
+        case WebBlendModeScreen:
             result = FEBlendUtilitiesNEON::screen(doubblePixelA, doubblePixelB, alphaA, alphaB, sixteenConst255, sixteenConstOne);
             break;
-        case FEBLEND_MODE_DARKEN:
+        case WebBlendModeDarken:
             result = FEBlendUtilitiesNEON::darken(doubblePixelA, doubblePixelB, alphaA, alphaB, sixteenConst255, sixteenConstOne);
             break;
-        case FEBLEND_MODE_LIGHTEN:
+        case WebBlendModeLighten:
             result = FEBlendUtilitiesNEON::lighten(doubblePixelA, doubblePixelB, alphaA, alphaB, sixteenConst255, sixteenConstOne);
             break;
-        case FEBLEND_MODE_UNKNOWN:
         default:
             result = vdupq_n_u16(0);
             break;

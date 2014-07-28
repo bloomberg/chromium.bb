@@ -39,23 +39,23 @@ typedef unsigned char (*BlendType)(unsigned char colorA, unsigned char colorB, u
 
 namespace blink {
 
-FEBlend::FEBlend(Filter* filter, BlendModeType mode)
+FEBlend::FEBlend(Filter* filter, WebBlendMode mode)
     : FilterEffect(filter)
     , m_mode(mode)
 {
 }
 
-PassRefPtr<FEBlend> FEBlend::create(Filter* filter, BlendModeType mode)
+PassRefPtr<FEBlend> FEBlend::create(Filter* filter, WebBlendMode mode)
 {
     return adoptRef(new FEBlend(filter, mode));
 }
 
-BlendModeType FEBlend::blendMode() const
+WebBlendMode FEBlend::blendMode() const
 {
     return m_mode;
 }
 
-bool FEBlend::setBlendMode(BlendModeType mode)
+bool FEBlend::setBlendMode(WebBlendMode mode)
 {
     if (m_mode == mode)
         return false;
@@ -63,36 +63,22 @@ bool FEBlend::setBlendMode(BlendModeType mode)
     return true;
 }
 
-static WebBlendMode toWebBlendMode(BlendModeType mode)
-{
-    switch (mode) {
-    case FEBLEND_MODE_NORMAL:
-        return WebBlendModeNormal;
-    case FEBLEND_MODE_MULTIPLY:
-        return WebBlendModeMultiply;
-    case FEBLEND_MODE_SCREEN:
-        return WebBlendModeScreen;
-    case FEBLEND_MODE_DARKEN:
-        return WebBlendModeDarken;
-    case FEBLEND_MODE_LIGHTEN:
-        return WebBlendModeLighten;
-    default:
-        ASSERT_NOT_REACHED();
-        return WebBlendModeNormal;
-    }
-}
-
-void FEBlend::applySoftware()
-{
-    FilterEffect* in = inputEffect(0);
-    FilterEffect* in2 = inputEffect(1);
-
-    ASSERT(m_mode > FEBLEND_MODE_UNKNOWN && m_mode <= FEBLEND_MODE_LIGHTEN);
-
 #if HAVE(ARM_NEON_INTRINSICS)
+bool FEBlend::applySoftwareNEON()
+{
+    if (m_mode != WebBlendModeNormal
+        && m_mode != WebBlendModeMultiply
+        && m_mode != WebBlendModeScreen
+        && m_mode != WebBlendModeDarken
+        && m_mode != WebBlendModeLighten)
+        return false;
+
     Uint8ClampedArray* dstPixelArray = createPremultipliedImageResult();
     if (!dstPixelArray)
-        return;
+        return true;
+
+    FilterEffect* in = inputEffect(0);
+    FilterEffect* in2 = inputEffect(1);
 
     IntRect effectADrawingRect = requestedRegionOfInputImageData(in->absolutePaintRect());
     RefPtr<Uint8ClampedArray> srcPixelArrayA = in->asPremultipliedImage(effectADrawingRect);
@@ -116,7 +102,20 @@ void FEBlend::applySoftware()
         platformApplyNEON(reinterpret_cast<uint8_t*>(sourceA), reinterpret_cast<uint8_t*>(sourceBAndDest), reinterpret_cast<uint8_t*>(sourceBAndDest), 8);
         reinterpret_cast<uint32_t*>(dstPixelArray->data())[0] = sourceBAndDest[0];
     }
-#else
+    return true;
+}
+#endif
+
+void FEBlend::applySoftware()
+{
+#if HAVE(ARM_NEON_INTRINSICS)
+    if (applySoftwareNEON())
+        return;
+#endif
+
+    FilterEffect* in = inputEffect(0);
+    FilterEffect* in2 = inputEffect(1);
+
     ImageBuffer* resultImage = createImageBufferResult();
     if (!resultImage)
         return;
@@ -127,44 +126,17 @@ void FEBlend::applySoftware()
     ASSERT(imageBuffer);
     ASSERT(imageBuffer2);
 
-    WebBlendMode blendMode = toWebBlendMode(m_mode);
     filterContext->drawImageBuffer(imageBuffer2, drawingRegionOfInputImage(in2->absolutePaintRect()));
-    filterContext->drawImageBuffer(imageBuffer, drawingRegionOfInputImage(in->absolutePaintRect()), 0, CompositeSourceOver, blendMode);
-#endif
+    filterContext->drawImageBuffer(imageBuffer, drawingRegionOfInputImage(in->absolutePaintRect()), 0, CompositeSourceOver, m_mode);
 }
 
 PassRefPtr<SkImageFilter> FEBlend::createImageFilter(SkiaImageFilterBuilder* builder)
 {
     RefPtr<SkImageFilter> foreground(builder->build(inputEffect(0), operatingColorSpace()));
     RefPtr<SkImageFilter> background(builder->build(inputEffect(1), operatingColorSpace()));
-    RefPtr<SkXfermode> mode(WebCoreCompositeToSkiaComposite(CompositeSourceOver, toWebBlendMode(m_mode)));
+    RefPtr<SkXfermode> mode(WebCoreCompositeToSkiaComposite(CompositeSourceOver, m_mode));
     SkImageFilter::CropRect cropRect = getCropRect(builder->cropOffset());
     return adoptRef(SkXfermodeImageFilter::Create(mode.get(), background.get(), foreground.get(), &cropRect));
-}
-
-static TextStream& operator<<(TextStream& ts, const BlendModeType& type)
-{
-    switch (type) {
-    case FEBLEND_MODE_UNKNOWN:
-        ts << "unknown";
-        break;
-    case FEBLEND_MODE_NORMAL:
-        ts << "normal";
-        break;
-    case FEBLEND_MODE_MULTIPLY:
-        ts << "multiply";
-        break;
-    case FEBLEND_MODE_SCREEN:
-        ts << "screen";
-        break;
-    case FEBLEND_MODE_DARKEN:
-        ts << "darken";
-        break;
-    case FEBLEND_MODE_LIGHTEN:
-        ts << "lighten";
-        break;
-    }
-    return ts;
 }
 
 TextStream& FEBlend::externalRepresentation(TextStream& ts, int indent) const
@@ -172,7 +144,7 @@ TextStream& FEBlend::externalRepresentation(TextStream& ts, int indent) const
     writeIndent(ts, indent);
     ts << "[feBlend";
     FilterEffect::externalRepresentation(ts);
-    ts << " mode=\"" << m_mode << "\"]\n";
+    ts << " mode=\"" << (m_mode == WebBlendModeNormal ? "normal" : compositeOperatorName(CompositeSourceOver, m_mode)) << "\"]\n";
     inputEffect(0)->externalRepresentation(ts, indent + 1);
     inputEffect(1)->externalRepresentation(ts, indent + 1);
     return ts;

@@ -28,21 +28,12 @@
 
 namespace blink {
 
-enum BlendModeType {
-    FEBLEND_MODE_UNKNOWN = 0,
-    FEBLEND_MODE_NORMAL = 1,
-    FEBLEND_MODE_MULTIPLY = 2,
-    FEBLEND_MODE_SCREEN = 3,
-    FEBLEND_MODE_DARKEN = 4,
-    FEBLEND_MODE_LIGHTEN = 5
-};
-
 class PLATFORM_EXPORT FEBlend : public FilterEffect {
 public:
-    static PassRefPtr<FEBlend> create(Filter*, BlendModeType);
+    static PassRefPtr<FEBlend> create(Filter*, WebBlendMode);
 
-    BlendModeType blendMode() const;
-    bool setBlendMode(BlendModeType);
+    WebBlendMode blendMode() const;
+    bool setBlendMode(WebBlendMode);
 
     void platformApplyGeneric(unsigned char* srcPixelArrayA, unsigned char* srcPixelArrayB, unsigned char* dstPixelArray,
                            unsigned colorArrayLength);
@@ -53,11 +44,12 @@ public:
     virtual TextStream& externalRepresentation(TextStream&, int indention) const OVERRIDE;
 
 private:
-    FEBlend(Filter*, BlendModeType);
+    FEBlend(Filter*, WebBlendMode);
 
     virtual void applySoftware() OVERRIDE;
+    bool applySoftwareNEON();
 
-    BlendModeType m_mode;
+    WebBlendMode m_mode;
 };
 
 } // namespace blink
