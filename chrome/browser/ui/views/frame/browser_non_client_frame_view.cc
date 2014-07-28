@@ -47,7 +47,7 @@ void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
   // DrawTaskBarDecoration() has no effect. Therefore we need to call it again
   // once the window is visible.
   if (!browser_view_->IsRegularOrGuestSession() ||
-      !switches::IsNewProfileManagement())
+      !switches::IsNewAvatarMenu())
     UpdateAvatarInfo();
 }
 

@@ -679,14 +679,14 @@ void ProfileManager::ScheduleProfileForDeletion(
       local_state->SetString(prefs::kProfileLastUsed,
                              new_path.BaseName().MaybeAsASCII());
 
-      // If we are using --new-profile-management, then assign the default
+      // If we are using --new-avatar-menu, then assign the default
       // placeholder avatar and name. Otherwise, use random ones.
-      bool is_new_profile_management = switches::IsNewProfileManagement();
+      bool is_new_avatar_menu = switches::IsNewAvatarMenu();
       int avatar_index = profiles::GetPlaceholderAvatarIndex();
-      base::string16 new_avatar_url = is_new_profile_management ?
+      base::string16 new_avatar_url = is_new_avatar_menu ?
           base::UTF8ToUTF16(profiles::GetDefaultAvatarIconUrl(avatar_index)) :
           base::string16();
-      base::string16 new_profile_name = is_new_profile_management ?
+      base::string16 new_profile_name = is_new_avatar_menu ?
           cache.ChooseNameForNewProfile(avatar_index) : base::string16();
 
       CreateProfileAsync(new_path,
@@ -777,12 +777,12 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
           cache.GetSupervisedUserIdOfProfileAtIndex(profile_cache_index);
     } else if (profile->GetPath() ==
                profiles::GetDefaultProfileDir(cache.GetUserDataDir())) {
-      // The --new-profile-management flag no longer uses the "First User"
-      // name, and should assign the default avatar icon to all new profiles.
-      bool is_new_profile_management = switches::IsNewProfileManagement();
-      avatar_index = is_new_profile_management ?
+      // The --new-avatar-menu flag no longer uses the "First User" name,
+      // and should assign the default avatar icon to all new profiles.
+      bool is_new_avatar_menu = switches::IsNewAvatarMenu();
+      avatar_index = is_new_avatar_menu ?
           profiles::GetPlaceholderAvatarIndex() : 0;
-      profile_name = is_new_profile_management ?
+      profile_name = is_new_avatar_menu ?
           base::UTF16ToUTF8(cache.ChooseNameForNewProfile(avatar_index)) :
           l10n_util::GetStringUTF8(IDS_DEFAULT_PROFILE_NAME);
     } else {

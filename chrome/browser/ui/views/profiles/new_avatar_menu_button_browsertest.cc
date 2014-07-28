@@ -48,11 +48,11 @@ NewAvatarMenuButtonTest::~NewAvatarMenuButtonTest() {
 
 void NewAvatarMenuButtonTest::SetUp() {
   InProcessBrowserTest::SetUp();
-  DCHECK(switches::IsNewProfileManagement());
+  DCHECK(switches::IsNewAvatarMenu());
 }
 
 void NewAvatarMenuButtonTest::SetUpCommandLine(CommandLine* command_line) {
-  switches::EnableNewProfileManagementForTesting(command_line);
+  switches::EnableNewAvatarMenuForTesting(command_line);
 }
 
 void NewAvatarMenuButtonTest::CreateTestingProfile() {

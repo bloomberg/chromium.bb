@@ -514,8 +514,7 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest,
 }
 
 TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowWithNewAvatar) {
-  switches::EnableNewProfileManagementForTesting(
-      CommandLine::ForCurrentProcess());
+  switches::EnableNewAvatarMenuForTesting(CommandLine::ForCurrentProcess());
 
   // Tests a normal tabstrip window with the new style avatar icon.
   AddNewAvatarButton();

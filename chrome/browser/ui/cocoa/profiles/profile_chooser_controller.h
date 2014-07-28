@@ -96,9 +96,6 @@ class WebContents;
 // Shows the inline signin page.
 - (IBAction)showInlineSigninPage:(id)sender;
 
-// Shows the signin tab in the browser.
-- (IBAction)showTabbedSigninPage:(id)sender;
-
 // Adds an account to the active profile.
 - (IBAction)addAccount:(id)sender;
 

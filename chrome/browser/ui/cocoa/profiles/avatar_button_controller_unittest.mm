@@ -23,8 +23,7 @@ const char kDefaultProfileName[] = "default";
 class AvatarButtonControllerTest : public CocoaProfileTest {
  public:
   virtual void SetUp() OVERRIDE {
-    switches::EnableNewProfileManagementForTesting(
-        CommandLine::ForCurrentProcess());
+    switches::EnableNewAvatarMenuForTesting(CommandLine::ForCurrentProcess());
     DCHECK(profiles::IsMultipleProfilesEnabled());
 
     CocoaProfileTest::SetUp();

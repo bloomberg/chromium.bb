@@ -527,7 +527,7 @@ void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
         ProfileOAuth2TokenServiceFactory::GetForProfile(browser->profile())->
             signin_error_controller();
     DCHECK(error_controller->HasError());
-    if (switches::IsNewProfileManagement()) {
+    if (switches::IsNewAvatarMenu()) {
       browser->window()->ShowAvatarBubbleFromAvatarButton(
           BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH,
           signin::ManageAccountsParams());
@@ -536,7 +536,7 @@ void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
                                  error_controller->error_account_id());
     }
   } else {
-    if (switches::IsNewProfileManagement()) {
+    if (switches::IsNewAvatarMenu()) {
       browser->window()->ShowAvatarBubbleFromAvatarButton(
           BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
           signin::ManageAccountsParams());

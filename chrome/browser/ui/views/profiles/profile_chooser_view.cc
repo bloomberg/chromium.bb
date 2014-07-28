@@ -692,12 +692,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     avatar_menu_->EditProfile(avatar_menu_->GetActiveProfileIndex());
     PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_IMAGE);
   } else if (sender == signin_current_profile_link_) {
-    // Only show the inline signin if the new UI flag is flipped. Otherwise,
-    // use the tab signin page.
-    if (switches::IsNewProfileManagement())
-      ShowView(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, avatar_menu_.get());
-    else
-      chrome::ShowBrowserSignin(browser_, signin::SOURCE_MENU);
+    ShowView(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, avatar_menu_.get());
   } else {
     // Either one of the "other profiles", or one of the profile accounts
     // buttons was pressed.
@@ -828,7 +823,8 @@ views::View* ProfileChooserView::CreateProfileChooserView(
   for (size_t i = 0; i < avatar_menu->GetNumberOfItems(); ++i) {
     const AvatarMenu::Item& item = avatar_menu->GetItemAt(i);
     if (item.active) {
-      option_buttons_view = CreateOptionsView(item.signed_in);
+      option_buttons_view = CreateOptionsView(
+          switches::IsNewProfileManagement() && item.signed_in);
       current_profile_view = CreateCurrentProfileView(item, false);
       if (view_mode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
         if (is_enable_account_consistency) {
@@ -1500,4 +1496,3 @@ views::View* ProfileChooserView::CreateEndPreviewView() {
   return TitleCard::AddPaddedTitleCard(
       view, title_card, kFixedAccountRemovalViewWidth);
 }
-

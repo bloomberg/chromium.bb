@@ -817,9 +817,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN];
 }
 
-- (IBAction)showTabbedSigninPage:(id)sender {
-  chrome::ShowBrowserSignin(browser_, signin::SOURCE_MENU);
-}
 
 - (IBAction)addAccount:(id)sender {
   [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT];
@@ -1020,7 +1017,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       if (viewMode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER)
         tutorialView = [self buildPreviewTutorialIfNeeded:item];
       currentProfileView = [self createCurrentProfileView:item];
-      enableLock = item.signed_in;
+      enableLock = switches::IsNewProfileManagement() && item.signed_in;
     } else {
       [otherProfiles addObject:[self createOtherProfileView:i]];
     }
@@ -1033,18 +1030,16 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // overlap the bubble's rounded corners.
   CGFloat yOffset = 1;
 
-  // Option buttons. Only available with the new profile management flag.
-  if (switches::IsNewProfileManagement()) {
-    NSRect rect = NSMakeRect(0, yOffset, kFixedMenuWidth, 0);
-    NSView* optionsView = [self createOptionsViewWithRect:rect
-                                               enableLock:enableLock];
-    [container addSubview:optionsView];
-    rect.origin.y = NSMaxY([optionsView frame]);
+  // Option buttons.
+  NSRect rect = NSMakeRect(0, yOffset, kFixedMenuWidth, 0);
+  NSView* optionsView = [self createOptionsViewWithRect:rect
+                                             enableLock:enableLock];
+  [container addSubview:optionsView];
+  rect.origin.y = NSMaxY([optionsView frame]);
 
-    NSBox* separator = [self horizontalSeparatorWithFrame:rect];
-    [container addSubview:separator];
-    yOffset = NSMaxY([separator frame]);
-  }
+  NSBox* separator = [self horizontalSeparatorWithFrame:rect];
+  [container addSubview:separator];
+  yOffset = NSMaxY([separator frame]);
 
   if (viewMode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER &&
       switches::IsFastUserSwitching()) {
@@ -1407,8 +1402,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
     [link setTitle:elidedButtonText];
     [link setTarget:self];
-    [link setAction:switches::IsNewProfileManagement() ?
-        @selector(showInlineSigninPage:) : @selector(showTabbedSigninPage:)];
+    [link setAction:@selector(showInlineSigninPage:)];
   }
 
   [container addSubview:link];

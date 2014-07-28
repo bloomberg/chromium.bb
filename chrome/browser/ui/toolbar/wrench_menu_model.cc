@@ -319,7 +319,7 @@ bool WrenchMenuModel::IsItemForCommandIdDynamic(int command_id) const {
          command_id == IDC_PIN_TO_START_SCREEN ||
 #endif
          command_id == IDC_UPGRADE_DIALOG ||
-         (!switches::IsNewProfileManagement() && command_id == IDC_SHOW_SIGNIN);
+         (!switches::IsNewAvatarMenu() && command_id == IDC_SHOW_SIGNIN);
 }
 
 base::string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
@@ -350,7 +350,7 @@ base::string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
     case IDC_UPGRADE_DIALOG:
       return GetUpgradeDialogMenuItemName();
     case IDC_SHOW_SIGNIN:
-      DCHECK(!switches::IsNewProfileManagement());
+      DCHECK(!switches::IsNewAvatarMenu());
       return signin_ui_util::GetSigninMenuLabel(
           browser_->profile()->GetOriginalProfile());
     default:
@@ -372,7 +372,7 @@ bool WrenchMenuModel::GetIconForCommandId(int command_id,
       return false;
     }
     case IDC_SHOW_SIGNIN: {
-      DCHECK(!switches::IsNewProfileManagement());
+      DCHECK(!switches::IsNewAvatarMenu());
       GlobalError* error = signin_ui_util::GetSignedInServiceError(
           browser_->profile()->GetOriginalProfile());
       if (error) {
@@ -398,7 +398,7 @@ void WrenchMenuModel::ExecuteCommand(int command_id, int event_flags) {
     return;
   }
 
-  if (!switches::IsNewProfileManagement() && command_id == IDC_SHOW_SIGNIN) {
+  if (!switches::IsNewAvatarMenu() && command_id == IDC_SHOW_SIGNIN) {
     // If a custom error message is being shown, handle it.
     GlobalError* error = signin_ui_util::GetSignedInServiceError(
         browser_->profile()->GetOriginalProfile());
@@ -629,7 +629,7 @@ void WrenchMenuModel::Build(bool is_new_menu) {
   AddSeparator(ui::NORMAL_SEPARATOR);
 
 #if !defined(OS_CHROMEOS)
-  if (!switches::IsNewProfileManagement()) {
+  if (!switches::IsNewAvatarMenu()) {
     // No "Sign in to Chromium..." menu item on ChromeOS.
     SigninManager* signin = SigninManagerFactory::GetForProfile(
         browser_->profile()->GetOriginalProfile());
@@ -703,7 +703,7 @@ void WrenchMenuModel::AddGlobalErrorMenuItems() {
   // GetSignedInServiceErrors() can modify the global error list, so call it
   // before iterating through that list below.
   std::vector<GlobalError*> signin_errors;
-  if (!switches::IsNewProfileManagement()) {
+  if (!switches::IsNewAvatarMenu()) {
       signin_errors = signin_ui_util::GetSignedInServiceErrors(
           browser_->profile()->GetOriginalProfile());
   }

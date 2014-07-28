@@ -726,7 +726,7 @@ base::string16 ProfileInfoCache::ChooseNameForNewProfile(
     size_t icon_index) const {
   base::string16 name;
   for (int name_index = 1; ; ++name_index) {
-    if (switches::IsNewProfileManagement()) {
+    if (switches::IsNewAvatarMenu()) {
       name = l10n_util::GetStringFUTF16Int(IDS_NEW_NUMBERED_PROFILE_NAME,
                                            name_index);
     } else if (icon_index < profiles::GetGenericAvatarIconCount()) {
@@ -906,8 +906,8 @@ bool ProfileInfoCache::ChooseAvatarIconIndexForNewProfile(
     bool must_be_unique,
     size_t* out_icon_index) const {
   // Always allow all icons for new profiles if using the
-  // --new-profile-management flag.
-  if (switches::IsNewProfileManagement())
+  // --new-avatar-menu flag.
+  if (switches::IsNewAvatarMenu())
     allow_generic_icon = true;
   size_t start = allow_generic_icon ? 0 : profiles::GetGenericAvatarIconCount();
   size_t end = profiles::GetDefaultAvatarIconCount();

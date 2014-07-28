@@ -243,7 +243,7 @@ void BrowserProcessImpl::StartTearDown() {
                  "BrowserProcessImpl::StartTearDown:ProfileManager");
     // The desktop User Manager needs to be closed before the guest profile
     // can be destroyed.
-    if (switches::IsNewProfileManagement())
+    if (switches::IsNewAvatarMenu())
       chrome::HideUserManager();
     profile_manager_.reset();
   }

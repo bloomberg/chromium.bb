@@ -619,7 +619,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   // create a browser window for the corresponding original profile.
   if (last_opened_profiles.empty()) {
     // If the last used profile is locked or was a guest, show the user manager.
-    if (switches::IsNewProfileManagement()) {
+    if (switches::IsNewAvatarMenu()) {
       ProfileInfoCache& profile_info =
           g_browser_process->profile_manager()->GetProfileInfoCache();
       size_t profile_index = profile_info.GetIndexOfProfileWithPath(
@@ -660,7 +660,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
         continue;
 
       // Don't re-open a browser window for the guest profile.
-      if (switches::IsNewProfileManagement() &&
+      if (switches::IsNewAvatarMenu() &&
           (*it)->IsGuestSession())
         continue;
 
@@ -676,7 +676,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
 
     // If the last used profile was the guest one, we didn't open it so
     // we don't need to activate it either.
-    if (!switches::IsNewProfileManagement() &&
+    if (!switches::IsNewAvatarMenu() &&
         !last_used_profile->IsGuestSession())
       profile_launch_observer.Get().set_profile_to_activate(last_used_profile);
   }

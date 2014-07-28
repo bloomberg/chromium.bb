@@ -119,7 +119,7 @@ void AvatarMenu::SwitchToProfile(size_t index,
          index == GetActiveProfileIndex());
   const Item& item = GetItemAt(index);
 
-  if (switches::IsNewProfileManagement()) {
+  if (switches::IsNewAvatarMenu()) {
     // Don't open a browser window for signed-out profiles.
     if (item.signin_required) {
       chrome::ShowUserManager(item.profile_path);

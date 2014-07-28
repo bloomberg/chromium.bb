@@ -494,7 +494,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
   if (url.host() == chrome::kChromeUIUserManagerHost &&
-      switches::IsNewProfileManagement()) {
+      switches::IsNewAvatarMenu()) {
     return &NewWebUI<UserManagerUI>;
   }
 #endif

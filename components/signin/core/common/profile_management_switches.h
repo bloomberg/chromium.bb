@@ -42,6 +42,7 @@ bool IsNewProfileManagement();
 bool IsNewProfileManagementPreviewEnabled();
 
 // Called in tests to force enabling different modes.
+void EnableNewAvatarMenuForTesting(base::CommandLine* command_line);
 void EnableNewProfileManagementForTesting(base::CommandLine* command_line);
 void EnableAccountConsistencyForTesting(base::CommandLine* command_line);
 
