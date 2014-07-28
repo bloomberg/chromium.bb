@@ -8,7 +8,7 @@
 
 void ExtensionInstallUIAndroid::OnInstallSuccess(
     const extensions::Extension* extension,
-    SkBitmap* icon) {
+    const SkBitmap* icon) {
   NOTIMPLEMENTED();
 }
 

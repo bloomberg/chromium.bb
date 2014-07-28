@@ -219,7 +219,7 @@ ExtensionInstallUIDefault::ExtensionInstallUIDefault(Profile* profile)
 ExtensionInstallUIDefault::~ExtensionInstallUIDefault() {}
 
 void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
-                                                 SkBitmap* icon) {
+                                                 const SkBitmap* icon) {
   if (skip_post_install_ui())
     return;
 

@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_install_ui_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/webstore_data_fetcher.h"
@@ -360,6 +361,8 @@ void WebstoreStandaloneInstaller::InstallUIProceed() {
         // to update the extension.
         done = false;
       } else {
+        install_ui::ShowPostInstallUIForApproval(
+            profile_, *approval, installed_extension);
         extension_service->PromoteEphemeralApp(installed_extension, false);
       }
     } else if (!extension_service->IsExtensionEnabled(id_)) {

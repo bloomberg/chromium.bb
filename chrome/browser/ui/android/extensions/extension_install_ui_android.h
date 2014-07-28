@@ -16,7 +16,7 @@ class ExtensionInstallUIAndroid : public ExtensionInstallUI {
 
   // ExtensionInstallUI:
   virtual void OnInstallSuccess(const extensions::Extension* extension,
-                                SkBitmap* icon) OVERRIDE;
+                                const SkBitmap* icon) OVERRIDE;
   virtual void OnInstallFailure(
       const extensions::CrxInstallerError& error) OVERRIDE;
 

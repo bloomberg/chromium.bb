@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/extension_install_ui_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/webstore_installer.h"
@@ -553,6 +554,9 @@ bool WebstorePrivateCompleteInstallFunction::RunAsync() {
       util::IsEphemeralApp(extension->id(), GetProfile()) &&
       extension->version()->CompareTo(
           *approval_->dummy_extension->version()) >= 0) {
+    install_ui::ShowPostInstallUIForApproval(
+        GetProfile(), *approval_, extension);
+
     ExtensionService* extension_service =
         ExtensionSystem::Get(GetProfile())->extension_service();
     extension_service->PromoteEphemeralApp(extension, false);

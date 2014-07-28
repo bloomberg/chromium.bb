@@ -14,6 +14,7 @@ WebstoreStartupInstaller::WebstoreStartupInstaller(
     : WebstoreInstallWithPrompt(webstore_item_id, profile, callback),
       show_prompt_(show_prompt) {
   set_install_source(WebstoreInstaller::INSTALL_SOURCE_INLINE);
+  set_show_post_install_ui(false);
 }
 
 WebstoreStartupInstaller::~WebstoreStartupInstaller() {}

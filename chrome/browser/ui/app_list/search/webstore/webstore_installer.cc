@@ -16,6 +16,7 @@ WebstoreInstaller::WebstoreInstaller(const std::string& webstore_item_id,
                                 callback) {
   set_install_source(
       extensions::WebstoreInstaller::INSTALL_SOURCE_APP_LAUNCHER);
+  set_show_post_install_ui(false);
 }
 
 WebstoreInstaller::~WebstoreInstaller() {}

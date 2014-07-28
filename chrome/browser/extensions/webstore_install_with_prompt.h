@@ -48,6 +48,8 @@ class WebstoreInstallWithPrompt : public WebstoreStandaloneInstaller,
   friend class base::RefCountedThreadSafe<WebstoreInstallWithPrompt>;
   virtual ~WebstoreInstallWithPrompt();
 
+  void set_show_post_install_ui(bool show) { show_post_install_ui_ = show; }
+
   // extensions::WebstoreStandaloneInstaller overrides:
   virtual bool CheckRequestorAlive() const OVERRIDE;
   virtual const GURL& GetRequestorURL() const OVERRIDE;
@@ -69,6 +71,8 @@ class WebstoreInstallWithPrompt : public WebstoreStandaloneInstaller,
       const content::OpenURLParams& params) OVERRIDE;
 
  private:
+  bool show_post_install_ui_;
+
   GURL dummy_requestor_url_;
 
   // A non-visible WebContents used to download data from the webstore.

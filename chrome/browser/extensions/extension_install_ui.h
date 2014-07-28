@@ -30,7 +30,7 @@ class ExtensionInstallUI {
 
   // Called when an extension was installed.
   virtual void OnInstallSuccess(const extensions::Extension* extension,
-                                SkBitmap* icon) = 0;
+                                const SkBitmap* icon) = 0;
 
   // Called when an extension failed to install.
   virtual void OnInstallFailure(const extensions::CrxInstallerError& error) = 0;

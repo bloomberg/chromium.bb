@@ -19,6 +19,7 @@ WebstoreInstallWithPrompt::WebstoreInstallWithPrompt(
     Profile* profile,
     const Callback& callback)
     : WebstoreStandaloneInstaller(webstore_item_id, profile, callback),
+      show_post_install_ui_(true),
       dummy_web_contents_(
           WebContents::Create(WebContents::CreateParams(profile))),
       parent_window_(NULL) {
@@ -31,6 +32,7 @@ WebstoreInstallWithPrompt::WebstoreInstallWithPrompt(
     gfx::NativeWindow parent_window,
     const Callback& callback)
     : WebstoreStandaloneInstaller(webstore_item_id, profile, callback),
+      show_post_install_ui_(true),
       dummy_web_contents_(
           WebContents::Create(WebContents::CreateParams(profile))),
       parent_window_(parent_window) {
@@ -65,7 +67,7 @@ WebstoreInstallWithPrompt::CreateInstallUI() {
 }
 
 bool WebstoreInstallWithPrompt::ShouldShowPostInstallUI() const {
-  return false;
+  return show_post_install_ui_;
 }
 
 bool WebstoreInstallWithPrompt::ShouldShowAppInstalledBubble() const {

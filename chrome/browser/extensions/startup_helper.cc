@@ -24,12 +24,52 @@
 #include "extensions/common/extension.h"
 #include "ipc/ipc_message.h"
 
+#if defined(OS_WIN)
+#include "apps/app_window.h"
+#include "apps/app_window_registry.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_util.h"
+#endif
+
 using content::BrowserThread;
 
 namespace {
 
 void PrintPackExtensionMessage(const std::string& message) {
   VLOG(1) << message;
+}
+
+// On Windows, the jumplist action for installing an ephemeral app has to use
+// the --install-from-webstore command line arg to initiate an install.
+scoped_refptr<extensions::WebstoreStandaloneInstaller>
+CreateEphemeralAppInstaller(
+    Profile* profile,
+    const std::string& app_id,
+    extensions::WebstoreStandaloneInstaller::Callback callback) {
+  scoped_refptr<extensions::WebstoreStandaloneInstaller> installer;
+
+#if defined(OS_WIN)
+  using extensions::ExtensionRegistry;
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
+  DCHECK(registry);
+  if (!registry->GetExtensionById(app_id, ExtensionRegistry::EVERYTHING) ||
+      !extensions::util::IsEphemeralApp(app_id, profile)) {
+    return installer;
+  }
+
+  apps::AppWindowRegistry* app_window_registry =
+      apps::AppWindowRegistry::Get(profile);
+  DCHECK(app_window_registry);
+  apps::AppWindow* app_window =
+      app_window_registry->GetCurrentAppWindowForApp(app_id);
+  if (!app_window)
+    return installer;
+
+  installer = new extensions::WebstoreInstallWithPrompt(
+      app_id, profile, app_window->GetNativeWindow(), callback);
+#endif
+
+  return installer;
 }
 
 }  // namespace
@@ -245,11 +285,12 @@ void AppInstallHelper::BeginInstall(
   WebstoreStandaloneInstaller::Callback callback =
       base::Bind(&AppInstallHelper::OnAppInstallComplete,
                  base::Unretained(this));
-  installer_ = new WebstoreStartupInstaller(
-      id,
-      profile,
-      show_prompt,
-      callback);
+
+  installer_ = CreateEphemeralAppInstaller(profile, id, callback);
+  if (!installer_.get()) {
+    installer_ =
+        new WebstoreStartupInstaller(id, profile, show_prompt, callback);
+  }
   installer_->BeginInstall();
 }
 

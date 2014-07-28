@@ -869,6 +869,8 @@
       'browser/extensions/extension_infobar_delegate.h',
       'browser/extensions/extension_install_ui.cc',
       'browser/extensions/extension_install_ui.h',
+      'browser/extensions/extension_install_ui_util.cc',
+      'browser/extensions/extension_install_ui_util.h',
       'browser/extensions/extension_tab_util.cc',
       'browser/extensions/extension_tab_util.h',
       'browser/extensions/menu_manager.cc',
