@@ -40,6 +40,7 @@ group("root") {
     "//extensions/browser",
     "//extensions/common",
     "//extensions/common/api",
+    "//extensions/renderer",
     "//gin",
     "//gpu",
     "//google_apis",
@@ -178,6 +179,7 @@ group("root") {
       "//extensions/browser",
       "//extensions/common",
       "//extensions/common/api",
+      "//extensions/renderer",
       "//pdf",  # Not compiled on Android in GYP yet, either.
       "//ppapi:ppapi_c",
       "//sandbox",
