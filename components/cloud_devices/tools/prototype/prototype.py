@@ -48,19 +48,20 @@ _DEVICE_PORT = 8080
 DEVICE_DRAFT = {
     'systemName': 'LEDFlasher',
     'deviceKind': 'vendor',
-    'displayName': 'LED Flasher',
+    'displayName': _DEVICE_NAME,
     'channel': {
         'supportedType': 'xmpp'
     },
-    'commands': {
+    'commandDefs': {
         'base': {
-            'vendorCommands': [{
-                'name': 'flashLED',
-                'parameter': [{
-                    'name': 'times',
-                    'type': 'string'
-                }]
-            }]
+# TODO(vitalybuka): find new format for custom commands.
+#            'vendorCommands': [{
+#                'name': 'flashLED',
+#                'parameter': [{
+#                    'name': 'times',
+#                    'type': 'string'
+#                }]
+#            }]
         }
     }
 }
@@ -1016,8 +1017,8 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
       else:
         response_func(400, {'error': 'invalidParams'})
         return
-    except HttpError:
-      pass  # TODO(noamsml): store error message in this case
+    except HttpError as e:
+      print e  # TODO(noamsml): store error message in this case
 
     self.do_secure_status(unused_request, response_func, params)
 
