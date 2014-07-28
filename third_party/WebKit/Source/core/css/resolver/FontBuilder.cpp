@@ -39,6 +39,7 @@ namespace blink {
 // FIXME: This scoping class is a short-term fix to minimize the changes in
 // Font-constructing logic.
 class FontDescriptionChangeScope {
+    STACK_ALLOCATED();
 public:
     FontDescriptionChangeScope(FontBuilder* fontBuilder)
         : m_fontBuilder(fontBuilder)
@@ -56,12 +57,12 @@ public:
     }
 
 private:
-    FontBuilder* m_fontBuilder;
+    RawPtrWillBeMember<FontBuilder> m_fontBuilder;
     FontDescription m_fontDescription;
 };
 
 FontBuilder::FontBuilder()
-    : m_document(0)
+    : m_document(nullptr)
     , m_fontSizehasViewportUnits(false)
     , m_style(0)
     , m_fontDirty(false)

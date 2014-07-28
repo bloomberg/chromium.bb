@@ -1357,8 +1357,8 @@ private:
 
     RefPtrWillBeMember<ScriptedAnimationController> m_scriptedAnimationController;
     OwnPtr<MainThreadTaskRunner> m_taskRunner;
-    OwnPtr<TextAutosizer> m_textAutosizer;
-    OwnPtr<FastTextAutosizer> m_fastTextAutosizer;
+    OwnPtrWillBeMember<TextAutosizer> m_textAutosizer;
+    OwnPtrWillBeMember<FastTextAutosizer> m_fastTextAutosizer;
 
     RefPtrWillBeMember<CustomElementRegistrationContext> m_registrationContext;
     RefPtrWillBeMember<CustomElementMicrotaskRunQueue> m_customElementMicrotaskRunQueue;

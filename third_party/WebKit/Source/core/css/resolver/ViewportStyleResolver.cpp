@@ -200,6 +200,7 @@ Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) const
 void ViewportStyleResolver::trace(Visitor* visitor)
 {
     visitor->trace(m_propertySet);
+    visitor->trace(m_document);
 }
 
 } // namespace blink

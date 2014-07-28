@@ -825,4 +825,9 @@ void TextAutosizer::getNarrowDescendantsGroupedByWidth(const TextAutosizingClust
     }
 }
 
+void TextAutosizer::trace(Visitor* visitor)
+{
+    visitor->trace(m_document);
+}
+
 } // namespace blink

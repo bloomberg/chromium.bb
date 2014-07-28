@@ -38,7 +38,8 @@ class RenderStyle;
 class FontDescriptionChangeScope;
 
 class FontBuilder {
-    WTF_MAKE_NONCOPYABLE(FontBuilder); WTF_MAKE_FAST_ALLOCATED;
+    STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(FontBuilder);
 public:
     FontBuilder();
 
@@ -112,7 +113,7 @@ private:
 
     float getComputedSizeFromSpecifiedSize(FontDescription&, float effectiveZoom, float specifiedSize);
 
-    const Document* m_document;
+    RawPtrWillBeMember<const Document> m_document;
     bool m_fontSizehasViewportUnits;
     // FIXME: This member is here on a short-term lease. The plan is to remove
     // any notion of RenderStyle from here, allowing FontBuilder to build Font objects

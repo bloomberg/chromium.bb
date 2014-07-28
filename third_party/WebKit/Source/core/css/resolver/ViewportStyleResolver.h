@@ -66,7 +66,7 @@ private:
     float viewportArgumentValue(CSSPropertyID) const;
     Length viewportLengthValue(CSSPropertyID) const;
 
-    Document* m_document;
+    RawPtrWillBeMember<Document> m_document;
     RefPtrWillBeMember<MutableStylePropertySet> m_propertySet;
     bool m_hasAuthorStyle;
 };

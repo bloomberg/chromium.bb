@@ -33,6 +33,7 @@
 
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderTable.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
@@ -49,13 +50,12 @@ class RenderListMarker;
 // Single-pass text autosizer. Documentation at:
 // http://tinyurl.com/fasttextautosizer
 
-class FastTextAutosizer FINAL {
+class FastTextAutosizer FINAL : public NoBaseWillBeGarbageCollectedFinalized<FastTextAutosizer> {
     WTF_MAKE_NONCOPYABLE(FastTextAutosizer);
-
 public:
-    static PassOwnPtr<FastTextAutosizer> create(const Document* document)
+    static PassOwnPtrWillBeRawPtr<FastTextAutosizer> create(const Document* document)
     {
-        return adoptPtr(new FastTextAutosizer(document));
+        return adoptPtrWillBeNoop(new FastTextAutosizer(document));
     }
     static float computeAutosizedFontSize(float specifiedSize, float multiplier);
 
@@ -64,6 +64,8 @@ public:
     void record(const RenderBlock*);
     void destroy(const RenderBlock*);
     void inflateListItem(RenderListItem*, RenderListMarker*);
+
+    void trace(Visitor*);
 
     class LayoutScope {
     public:
@@ -287,7 +289,7 @@ private:
     void writeClusterDebugInfo(Cluster*);
 #endif
 
-    const Document* m_document;
+    RawPtrWillBeMember<const Document> m_document;
     const RenderBlock* m_firstBlockToBeginLayout;
 #if ENABLE(ASSERT)
     BlockSet m_blocksThatHaveBegunLayout; // Used to ensure we don't compute properties of a block before beginLayout() is called on it.

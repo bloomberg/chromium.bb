@@ -27,6 +27,7 @@
 #define TextAutosizer_h
 
 #include "core/HTMLNames.h"
+#include "platform/heap/Handle.h"
 #include "platform/text/WritingMode.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
@@ -61,14 +62,18 @@ struct TextAutosizingClusterInfo {
     Vector<TextAutosizingClusterInfo> narrowDescendants;
 };
 
-class TextAutosizer FINAL {
+class TextAutosizer FINAL : public NoBaseWillBeGarbageCollectedFinalized<TextAutosizer> {
     WTF_MAKE_NONCOPYABLE(TextAutosizer);
-
 public:
-    static PassOwnPtr<TextAutosizer> create(Document* document) { return adoptPtr(new TextAutosizer(document)); }
+    static PassOwnPtrWillBeRawPtr<TextAutosizer> create(Document* document)
+    {
+        return adoptPtrWillBeNoop(new TextAutosizer(document));
+    }
 
     bool processSubtree(RenderObject* layoutRoot);
     void recalculateMultipliers();
+
+    void trace(Visitor*);
 
 private:
     friend class FastTextAutosizer;
@@ -126,7 +131,7 @@ private:
     void secondPassProcessStaleNonAutosizedClusters();
     void processStaleContainer(float multiplier, RenderBlock* cluster, TextAutosizingClusterInfo&);
 
-    Document* m_document;
+    RawPtrWillBeMember<Document> m_document;
 
     HashMap<const RenderObject*, unsigned> m_hashCache;
 

@@ -1154,4 +1154,9 @@ float FastTextAutosizer::computeAutosizedFontSize(float specifiedSize, float mul
     return computedSize;
 }
 
+void FastTextAutosizer::trace(Visitor* visitor)
+{
+    visitor->trace(m_document);
+}
+
 } // namespace blink
