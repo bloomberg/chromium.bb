@@ -25,9 +25,9 @@ ASH_EXPORT extern const char kAshDefaultWallpaperIsOem[];
 ASH_EXPORT extern const char kAshDefaultWallpaperLarge[];
 ASH_EXPORT extern const char kAshDefaultWallpaperSmall[];
 ASH_EXPORT extern const char kAshDisableLockLayoutManager[];
+ASH_EXPORT extern const char kAshDisableTouchExplorationMode[];
 #if defined(OS_CHROMEOS)
 ASH_EXPORT extern const char kAshEnableMagnifierKeyScroller[];
-ASH_EXPORT extern const char kAshEnableTouchExplorationMode[];
 #endif
 ASH_EXPORT extern const char kAshDisableTextFilteringInOverviewMode[];
 ASH_EXPORT extern const char kAshEnableSoftwareMirroring[];

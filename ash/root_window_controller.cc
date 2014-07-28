@@ -757,8 +757,8 @@ void RootWindowController::Init(RootWindowType root_window_type,
   }
 
 #if defined(OS_CHROMEOS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnableTouchExplorationMode)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshDisableTouchExplorationMode)) {
     touch_exploration_manager_.reset(new AshTouchExplorationManager(this));
   }
 #endif
