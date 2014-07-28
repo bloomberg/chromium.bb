@@ -1319,6 +1319,16 @@ bool WebLocalFrameImpl::isPrintScalingDisabledForPlugin(const WebNode& node)
     return pluginContainer->isPrintScalingDisabled();
 }
 
+int WebLocalFrameImpl::getPrintCopiesForPlugin(const WebNode& node)
+{
+    WebPluginContainerImpl* pluginContainer = node.isNull() ? pluginContainerFromFrame(frame()) : toWebPluginContainerImpl(node.pluginContainer());
+
+    if (!pluginContainer || !pluginContainer->supportsPaginatedPrint())
+        return 1;
+
+    return pluginContainer->getCopiesToPrint();
+}
+
 bool WebLocalFrameImpl::hasCustomPageSizeStyle(int pageIndex)
 {
     return frame()->document()->styleForPage(pageIndex)->pageSizeType() != PAGE_SIZE_AUTO;

@@ -328,6 +328,11 @@ bool WebPluginContainerImpl::isPrintScalingDisabled() const
     return m_webPlugin->isPrintScalingDisabled();
 }
 
+int WebPluginContainerImpl::getCopiesToPrint() const
+{
+    return m_webPlugin->getCopiesToPrint();
+}
+
 int WebPluginContainerImpl::printBegin(const WebPrintParams& printParams) const
 {
     return m_webPlugin->printBegin(printParams);

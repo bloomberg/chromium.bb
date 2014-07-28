@@ -114,6 +114,8 @@ public:
     // Returns true if the printed content should not be scaled to
     // the printer's printable area.
     virtual bool isPrintScalingDisabled() { return false; }
+    // Returns number of copies to be printed.
+    virtual int getCopiesToPrint() { return 1; }
 
     // Sets up printing with the specified printParams. Returns the number of
     // pages to be printed at these settings.

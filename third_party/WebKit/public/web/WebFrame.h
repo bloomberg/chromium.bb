@@ -500,6 +500,9 @@ public:
     // return true, otherwise return false.
     virtual bool isPrintScalingDisabledForPlugin(const WebNode& = WebNode()) = 0;
 
+    // Returns the number of copies to be printed.
+    virtual int getPrintCopiesForPlugin(const WebNode& = WebNode()) = 0;
+
     // CSS3 Paged Media ----------------------------------------------------
 
     // Returns true if page box (margin boxes and page borders) is visible.
