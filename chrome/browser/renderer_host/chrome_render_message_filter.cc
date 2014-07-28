@@ -229,11 +229,12 @@ void ChromeRenderMessageFilter::FileSystemAccessedSyncOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   WebViewPermissionHelper* web_view_permission_helper =
       WebViewPermissionHelper::FromFrameID(render_process_id, render_frame_id);
-  web_view_permission_helper->FileSystemAccessedSync(render_process_id,
-                                                     render_frame_id,
-                                                     url,
-                                                     blocked_by_policy,
-                                                     reply_msg);
+  // Between the time the permission request is made and the time it is handled
+  // by the UI thread, the WebViewPermissionHelper might be gone.
+  if (!web_view_permission_helper)
+    return;
+  web_view_permission_helper->FileSystemAccessedSync(
+      render_process_id, render_frame_id, url, blocked_by_policy, reply_msg);
 }
 #endif
 
@@ -312,6 +313,10 @@ void ChromeRenderMessageFilter::FileSystemAccessedOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   WebViewPermissionHelper* web_view_permission_helper =
       WebViewPermissionHelper::FromFrameID(render_process_id, render_frame_id);
+  // Between the time the permission request is made and the time it is handled
+  // by the UI thread, the WebViewPermissionHelper might be gone.
+  if (!web_view_permission_helper)
+    return;
   web_view_permission_helper->RequestFileSystemPermission(
       url,
       allowed,
