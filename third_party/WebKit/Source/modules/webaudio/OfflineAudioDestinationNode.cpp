@@ -28,15 +28,22 @@
 
 #include "modules/webaudio/OfflineAudioDestinationNode.h"
 
-#include <algorithm>
-#include "platform/audio/AudioBus.h"
-#include "platform/audio/HRTFDatabaseLoader.h"
+#include "core/dom/CrossThreadTask.h"
 #include "modules/webaudio/AudioContext.h"
 #include "platform/Task.h"
+#include "platform/audio/AudioBus.h"
+#include "platform/audio/HRTFDatabaseLoader.h"
 #include "public/platform/Platform.h"
-#include "wtf/MainThread.h"
+#include <algorithm>
 
 namespace blink {
+
+#if !ENABLE(OILPAN)
+// We need a dedicated specialization for OfflineAudioDestinationNode because it
+// doesn't inherit from RefCounted.
+template<> struct CrossThreadCopierBase<false, false, false, PassRefPtr<OfflineAudioDestinationNode> > : public CrossThreadCopierPassThrough<PassRefPtr<OfflineAudioDestinationNode> > {
+};
+#endif
 
 const size_t renderQuantumSize = 128;
 
@@ -87,9 +94,8 @@ void OfflineAudioDestinationNode::startRendering()
 
     if (!m_startedRendering) {
         m_startedRendering = true;
-        m_keepAliveWhileRendering = this;
         m_renderThread = adoptPtr(blink::Platform::current()->createThread("Offline Audio Renderer"));
-        m_renderThread->postTask(new Task(WTF::bind(&OfflineAudioDestinationNode::offlineRender, this)));
+        m_renderThread->postTask(new Task(bind(&OfflineAudioDestinationNode::offlineRender, PassRefPtrWillBeRawPtr<OfflineAudioDestinationNode>(this))));
     }
 }
 
@@ -138,18 +144,8 @@ void OfflineAudioDestinationNode::offlineRender()
     }
 
     // Our work is done. Let the AudioContext know.
-    callOnMainThread(notifyCompleteDispatch, this);
-}
-
-void OfflineAudioDestinationNode::notifyCompleteDispatch(void* userData)
-{
-    OfflineAudioDestinationNode* destinationNode = static_cast<OfflineAudioDestinationNode*>(userData);
-    ASSERT(destinationNode);
-    if (!destinationNode)
-        return;
-
-    destinationNode->notifyComplete();
-    destinationNode->m_keepAliveWhileRendering.clear();
+    if (context()->executionContext())
+        context()->executionContext()->postTask(createCrossThreadTask(&OfflineAudioDestinationNode::notifyComplete, PassRefPtrWillBeRawPtr<OfflineAudioDestinationNode>(this)));
 }
 
 void OfflineAudioDestinationNode::notifyComplete()

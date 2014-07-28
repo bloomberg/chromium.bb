@@ -58,16 +58,10 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    class OfflineRenderingTask;
-    friend class OfflineRenderingTask;
-
     OfflineAudioDestinationNode(AudioContext*, AudioBuffer* renderTarget);
 
     // This AudioNode renders into this AudioBuffer.
     RefPtrWillBeMember<AudioBuffer> m_renderTarget;
-    // Oilpan: This object must be alive during audio rendering.
-    GC_PLUGIN_IGNORE("http://crbug.com/395941")
-    RefPtrWillBePersistent<OfflineAudioDestinationNode> m_keepAliveWhileRendering;
     // Temporary AudioBus for each render quantum.
     RefPtr<AudioBus> m_renderBus;
 
@@ -77,7 +71,6 @@ private:
     void offlineRender();
 
     // For completion callback on main thread.
-    static void notifyCompleteDispatch(void* userData);
     void notifyComplete();
 };
 
