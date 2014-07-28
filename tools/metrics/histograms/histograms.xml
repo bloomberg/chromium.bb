@@ -5392,6 +5392,34 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.DomainWhitelistRegexFailure"
+    enum="EnterpriseDomainRegex">
+  <owner>atwilson@chromium.org</owner>
+  <summary>
+    Temporary metric tracking which regex caused an icu::RegexMatcher
+    initialization failure, to help figure out the cause of
+    http://crbug.com/365351 which we can't repro locally.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.DomainWhitelistRegexFailureStatus"
+    units="icu error">
+  <owner>atwilson@chromium.org</owner>
+  <summary>
+    Temporary metric tracking the type of an icu::RegexMatcher initialization
+    failure, to help figure out the cause of http://crbug.com/365351 which we
+    can't repro locally.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.DomainWhitelistRegexSuccess" enum="BooleanSuccess">
+  <owner>atwilson@chromium.org</owner>
+  <summary>
+    Temporary metric tracking the success of icu::RegexMatcher IcuMatcher
+    initialization, to help figure out the cause of http://crbug.com/365351.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.EnrolledPolicyHasDMToken" enum="Boolean">
   <owner>tnagel@chromium.org</owner>
   <summary>
@@ -5443,6 +5471,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.PolicyHasVerifiedCachedKey"
+    enum="BooleanValidKeyExists">
+  <owner>atwilson@chromium.org</owner>
+  <summary>
+    Boolean tracking whether there is a valid policy signing key on disk.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.PolicyInvalidations"
     enum="EnterprisePolicyInvalidations">
   <owner>joaodasilva@chromium.org</owner>
@@ -5477,6 +5513,31 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Events measuring effectiveness of refreshing policy when invalidations are
     received from a service. For each refresh, indicates whether the policy
     changed, and whether the policy was invalidated at the time of the refresh.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.UserCloudPolicyStore.LoadStatus"
+    enum="PolicyLoadStatus">
+  <owner>atwilson@chromium.org</owner>
+  <summary>
+    Result of the attempted policy load during profile initialization.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.UserCloudPolicyStore.LoadValidationStatus"
+    enum="PolicyValidationStatus">
+  <owner>atwilson@chromium.org</owner>
+  <summary>
+    Result of validating the policy that has just been loaded from disk.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.UserCloudPolicyStore.StoreValidationStatus"
+    enum="PolicyValidationStatus">
+  <owner>atwilson@chromium.org</owner>
+  <summary>
+    Result of validating the policy sent down from the server, before writing to
+    disk.
   </summary>
 </histogram>
 
@@ -5527,6 +5588,35 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     enum="NetErrorCodes">
   <owner>joaodasilva@chromium.org</owner>
   <summary>Network error during OAuth2 access token fetch.</summary>
+</histogram>
+
+<histogram name="Enterprise.UserPolicyValidationFailure"
+    enum="ValidationFailures">
+  <owner>mnissler@chromium.org</owner>
+  <summary>Source of policy validation errors on ChromeOS.</summary>
+</histogram>
+
+<histogram name="Enterprise.UserPolicyValidationLoadStatus"
+    enum="PolicyValidationStatus">
+  <owner>mnissler@chromium.org</owner>
+  <summary>
+    Validation result when loading user policy from the policy store.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.UserPolicyValidationStoreStatus"
+    enum="PolicyValidationStatus">
+  <owner>mnissler@chromium.org</owner>
+  <summary>
+    Validation result when writing user policy to the policy store.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.UserSigninChoice" enum="SigninChoice">
+  <owner>atwilson@chromium.org</owner>
+  <summary>
+    Choice the user made when presented with enterprise signin dialog.
+  </summary>
 </histogram>
 
 <histogram name="Enterprise.WildcardLoginCheck.DelayPolicyTokenFetch"
@@ -36362,6 +36452,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Valid"/>
 </enum>
 
+<enum name="BooleanValidKeyExists" type="int">
+  <int value="0" label="Valid Cached Key Found"/>
+  <int value="1" label="No Valid Cached Key Found"/>
+</enum>
+
 <enum name="BooleanWiped" type="int">
   <int value="0" label="Re-enabled"/>
   <int value="1" label="Wiped out"/>
@@ -37600,6 +37695,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="14" label="Missing Licenses">
     No more licenses available for that domain.
   </int>
+</enum>
+
+<enum name="EnterpriseDomainRegex" type="int">
+  <summary>Which domain regex generated an ICU error.</summary>
+  <int value="0" label="aol"/>
+  <int value="1" label="googlemail"/>
+  <int value="2" label="gmail"/>
+  <int value="3" label="hotmail"/>
+  <int value="4" label="live"/>
+  <int value="5" label="mail.ru"/>
+  <int value="6" label="msn"/>
+  <int value="7" label="qq"/>
+  <int value="8" label="yahoo"/>
+  <int value="9" label="yandex"/>
 </enum>
 
 <enum name="EnterpriseEnrollmentType" type="int">
@@ -44984,6 +45093,27 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="5" label="5"/>
 </enum>
 
+<enum name="PolicyLoadStatus" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="No Policy File"/>
+  <int value="2" label="Load Error"/>
+</enum>
+
+<enum name="PolicyValidationStatus" type="int">
+  <int value="0" label="OK"/>
+  <int value="1" label="Bad Initial Signature"/>
+  <int value="2" label="Bad Signature"/>
+  <int value="3" label="Policy Error Code"/>
+  <int value="4" label="Payload Parse Error"/>
+  <int value="5" label="Wrong Policy Type"/>
+  <int value="6" label="Wrong Settings Entity ID"/>
+  <int value="7" label="Bad Timestamp"/>
+  <int value="8" label="Wrong Token"/>
+  <int value="9" label="Wrong Username"/>
+  <int value="10" label="Policy Parse Error"/>
+  <int value="11" label="Bad Key Validation Signature"/>
+</enum>
+
 <enum name="PostMergeVerificationOutcome" type="int">
   <int value="0" label="Undefined"/>
   <int value="1" label="Succeeded"/>
@@ -46734,6 +46864,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="Dismiss"/>
 </enum>
 
+<enum name="SigninChoice" type="int">
+  <int value="0" label="Cancel"/>
+  <int value="1" label="Continue"/>
+  <int value="2" label="New Profile"/>
+</enum>
+
 <enum name="SigninFlowConfirmations" type="int">
   <int value="0" label="Shown"/>
   <int value="1" label="OK"/>
@@ -48467,6 +48603,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="3" label="Public Account"/>
   <int value="4" label="Locally Managed"/>
   <int value="5" label="Kiosk App"/>
+</enum>
+
+<enum name="ValidationFailures" type="int">
+  <int value="0" label="DBus"/>
+  <int value="1" label="Load Key"/>
 </enum>
 
 <enum name="VariationSeedSignature" type="int">

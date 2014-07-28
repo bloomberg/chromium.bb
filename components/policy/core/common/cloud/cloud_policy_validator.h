@@ -48,7 +48,8 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
  public:
   // Validation result codes. These values are also used for UMA histograms by
   // UserCloudPolicyStoreChromeOS and must stay stable - new elements should
-  // be added at the end before VALIDATION_STATUS_SIZE.
+  // be added at the end before VALIDATION_STATUS_SIZE. Also update the
+  // associated enum definition in histograms.xml.
   enum Status {
     // Indicates successful validation.
     VALIDATION_OK,
