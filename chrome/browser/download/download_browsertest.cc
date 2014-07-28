@@ -24,7 +24,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_browsertest.h"
 #include "chrome/browser/download/download_crx_util.h"
@@ -269,7 +268,6 @@ class DownloadsHistoryDataCollector {
   Profile* profile_;
   scoped_ptr<std::vector<history::DownloadRow> > results_;
   bool result_valid_;
-  CancelableRequestConsumer callback_consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsHistoryDataCollector);
 };
