@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/websocket_dispatcher_host.h"
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/logging.h"
@@ -178,6 +179,21 @@ WebSocketHostState WebSocketDispatcherHost::DoDropChannel(
 }
 
 WebSocketDispatcherHost::~WebSocketDispatcherHost() {
+  std::vector<WebSocketHost*> hosts;
+  for (base::hash_map<int, WebSocketHost*>::const_iterator i = hosts_.begin();
+       i != hosts_.end(); ++i) {
+    // In order to avoid changing the container while iterating, we copy
+    // the hosts.
+    hosts.push_back(i->second);
+  }
+
+  for (size_t i = 0; i < hosts.size(); ++i) {
+    // Note that some calls to GoAway could fail. In that case hosts[i] will be
+    // deleted and removed from |hosts_| in |DoDropChannel|.
+    hosts[i]->GoAway();
+    hosts[i] = NULL;
+  }
+
   STLDeleteContainerPairSecondPointers(hosts_.begin(), hosts_.end());
 }
 

@@ -40,9 +40,15 @@ class CONTENT_EXPORT WebSocketHost {
                 net::URLRequestContext* url_request_context);
   virtual ~WebSocketHost();
 
+  // The renderer process is going away.
+  // This function is virtual for testing.
+  virtual void GoAway();
+
   // General message dispatch. WebSocketDispatcherHost::OnMessageReceived
   // delegates to this method after looking up the |routing_id|.
   virtual bool OnMessageReceived(const IPC::Message& message);
+
+  int routing_id() const { return routing_id_; }
 
  private:
   // Handlers for each message type, dispatched by OnMessageReceived(), as

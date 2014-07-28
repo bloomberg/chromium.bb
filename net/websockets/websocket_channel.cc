@@ -465,6 +465,8 @@ void WebSocketChannel::SendFlowControl(int64 quota) {
 void WebSocketChannel::StartClosingHandshake(uint16 code,
                                              const std::string& reason) {
   if (InClosingState()) {
+    // When the associated renderer process is killed while the channel is in
+    // CLOSING state we reach here.
     DVLOG(1) << "StartClosingHandshake called in state " << state_
              << ". This may be a bug, or a harmless race.";
     return;
