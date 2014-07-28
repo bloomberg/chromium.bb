@@ -15,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
@@ -265,6 +266,9 @@ class CrxUpdateService : public ComponentUpdateService, public OnDemandUpdater {
 
   base::ThreadChecker thread_checker_;
 
+  // Used to post responses back to the main thread.
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   bool running_;
@@ -279,6 +283,7 @@ class CrxUpdateService : public ComponentUpdateService, public OnDemandUpdater {
 CrxUpdateService::CrxUpdateService(Configurator* config)
     : config_(config),
       ping_manager_(new PingManager(*config)),
+      main_task_runner_(base::MessageLoopProxy::current()),
       blocking_task_runner_(config->GetSequencedTaskRunner()),
       running_(false) {
 }
@@ -883,8 +888,7 @@ void CrxUpdateService::EndUnpacking(const std::string& component_id,
                                     int extended_error) {
   if (!DeleteFileAndEmptyParentDirectory(crx_path))
     NOTREACHED() << crx_path.value();
-  BrowserThread::PostDelayedTask(
-      BrowserThread::UI,
+  main_task_runner_->PostDelayedTask(
       FROM_HERE,
       base::Bind(&CrxUpdateService::DoneInstalling,
                  base::Unretained(this),
@@ -961,12 +965,10 @@ content::ResourceThrottle* CrxUpdateService::GetOnDemandResourceThrottle(
   // and we keep for ourselves a weak pointer to it so we can post tasks
   // from the UI thread without having to track lifetime directly.
   CUResourceThrottle* rt = new CUResourceThrottle(request);
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&CrxUpdateService::OnNewResourceThrottle,
-                                     base::Unretained(this),
-                                     rt->AsWeakPtr(),
-                                     crx_id));
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&CrxUpdateService::OnNewResourceThrottle,
+                 base::Unretained(this), rt->AsWeakPtr(), crx_id));
   return rt;
 }
 
