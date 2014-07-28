@@ -147,14 +147,18 @@ void MediaElementAudioSourceNode::process(size_t numberOfFrames)
 
 void MediaElementAudioSourceNode::lock()
 {
-    m_keepAliveWhileLocking = this;
+#if !ENABLE(OILPAN)
+    ref();
+#endif
     m_processLock.lock();
 }
 
 void MediaElementAudioSourceNode::unlock()
 {
     m_processLock.unlock();
-    m_keepAliveWhileLocking.clear();
+#if !ENABLE(OILPAN)
+    deref();
+#endif
 }
 
 void MediaElementAudioSourceNode::trace(Visitor* visitor)

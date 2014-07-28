@@ -73,9 +73,6 @@ private:
     double m_sourceSampleRate;
 
     OwnPtr<MultiChannelResampler> m_multiChannelResampler;
-    // Oilpan: This object must be alive between lock() and unlock().
-    GC_PLUGIN_IGNORE("http://crbug.com/395940")
-    RefPtrWillBePersistent<MediaElementAudioSourceNode> m_keepAliveWhileLocking;
 };
 
 } // namespace blink
