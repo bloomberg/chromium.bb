@@ -178,6 +178,8 @@ public:
 protected:
     ContainerNode(TreeScope*, ConstructionType = CreateContainer);
 
+    void invalidateNodeListCachesInAncestors(const QualifiedName* attrName = 0, Element* attributeOwnerElement = 0);
+
 #if !ENABLE(OILPAN)
     void removeDetachedChildren();
 #endif

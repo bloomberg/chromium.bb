@@ -1324,6 +1324,30 @@ void ContainerNode::checkForSiblingStyleChanges(SiblingCheckType changeType, Nod
     }
 }
 
+void ContainerNode::invalidateNodeListCachesInAncestors(const QualifiedName* attrName, Element* attributeOwnerElement)
+{
+    if (hasRareData() && (!attrName || isAttributeNode())) {
+        if (NodeListsNodeData* lists = rareData()->nodeLists()) {
+            if (ChildNodeList* childNodeList = lists->childNodeList(*this))
+                childNodeList->invalidateCache();
+        }
+    }
+
+    // Modifications to attributes that are not associated with an Element can't invalidate NodeList caches.
+    if (attrName && !attributeOwnerElement)
+        return;
+
+    if (!document().shouldInvalidateNodeListCaches(attrName))
+        return;
+
+    document().invalidateNodeListCaches(attrName);
+
+    for (ContainerNode* node = this; node; node = node->parentNode()) {
+        if (NodeListsNodeData* lists = node->nodeLists())
+            lists->invalidateCaches(attrName);
+    }
+}
+
 PassRefPtrWillBeRawPtr<TagCollection> ContainerNode::getElementsByTagName(const AtomicString& localName)
 {
     if (localName.isNull())

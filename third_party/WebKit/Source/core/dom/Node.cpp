@@ -838,28 +838,6 @@ unsigned Node::nodeIndex() const
     return count;
 }
 
-void Node::invalidateNodeListCachesInAncestors(const QualifiedName* attrName, Element* attributeOwnerElement)
-{
-    if (hasRareData() && (!attrName || isAttributeNode())) {
-        if (NodeListsNodeData* lists = rareData()->nodeLists())
-            lists->clearChildNodeListCache();
-    }
-
-    // Modifications to attributes that are not associated with an Element can't invalidate NodeList caches.
-    if (attrName && !attributeOwnerElement)
-        return;
-
-    if (!document().shouldInvalidateNodeListCaches(attrName))
-        return;
-
-    document().invalidateNodeListCaches(attrName);
-
-    for (Node* node = this; node; node = node->parentNode()) {
-        if (NodeListsNodeData* lists = node->nodeLists())
-            lists->invalidateCaches(attrName);
-    }
-}
-
 NodeListsNodeData* Node::nodeLists()
 {
     return hasRareData() ? rareData()->nodeLists() : 0;

@@ -37,10 +37,10 @@ class NodeListsNodeData FINAL : public NoBaseWillBeGarbageCollectedFinalized<Nod
     WTF_MAKE_NONCOPYABLE(NodeListsNodeData);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    void clearChildNodeListCache()
+    ChildNodeList* childNodeList(ContainerNode& node)
     {
-        if (m_childNodeList && m_childNodeList->isChildNodeList())
-            toChildNodeList(m_childNodeList)->invalidateCache();
+        ASSERT_UNUSED(node, !m_childNodeList || node == m_childNodeList->virtualOwnerNode());
+        return toChildNodeList(m_childNodeList);
     }
 
     PassRefPtrWillBeRawPtr<ChildNodeList> ensureChildNodeList(ContainerNode& node)

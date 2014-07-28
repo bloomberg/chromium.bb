@@ -591,7 +591,6 @@ public:
     void showTreeForThisAcrossFrame() const;
 #endif
 
-    void invalidateNodeListCachesInAncestors(const QualifiedName* attrName = 0, Element* attributeOwnerElement = 0);
     NodeListsNodeData* nodeLists();
     void clearNodeLists();
 
