@@ -280,11 +280,12 @@ void JsonPrefStore::ReadPrefsAsync(ReadErrorDelegate* error_delegate) {
     return;
   }
 
+  // Weakly binds the read task so that it doesn't kick in during shutdown.
   base::PostTaskAndReplyWithResult(
       sequenced_task_runner_,
       FROM_HERE,
       base::Bind(&ReadPrefsFromDisk, path_, alternate_path_),
-      base::Bind(&JsonPrefStore::OnFileRead, this));
+      base::Bind(&JsonPrefStore::OnFileRead, AsWeakPtr()));
 }
 
 void JsonPrefStore::CommitPendingWrite() {
@@ -366,7 +367,8 @@ void JsonPrefStore::OnFileRead(scoped_ptr<ReadResult> read_result) {
     filtering_in_progress_ = true;
     const PrefFilter::PostFilterOnLoadCallback post_filter_on_load_callback(
         base::Bind(
-            &JsonPrefStore::FinalizeFileRead, this, initialization_successful));
+            &JsonPrefStore::FinalizeFileRead, AsWeakPtr(),
+            initialization_successful));
     pref_filter_->FilterOnLoad(post_filter_on_load_callback,
                                unfiltered_prefs.Pass());
   } else {
