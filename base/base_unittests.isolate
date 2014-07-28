@@ -6,7 +6,6 @@
     ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'isolate_dependency_untracked': [
-          'data/',
           'test/data/',
         ],
       },
