@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description("Test that resolving a promise after the window gets closed does not assert or crash.");
+
+var jsTestIsAsync = true;
+
+function openWindow() {
+    window.open('resources/push-messaging-resolve-after-detached.html');
+}
+
+function done() {
+    finishJSTest();
+}
+
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.setCanOpenWindows();
+    openWindow();
+}
+</script>
+</body>
+</html>
+

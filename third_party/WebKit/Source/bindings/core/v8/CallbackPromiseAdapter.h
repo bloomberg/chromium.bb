@@ -60,6 +60,13 @@ namespace blink {
 //        resolver->promise().then(...);
 //    }
 //
+//    // Called when aborting to resolve/reject a promise due to an empty
+//    // execution context.
+//    static void dispose(blink::WebMyClass* webInstance) {
+//        // delete as appropriate, but often it's just:
+//        delete webInstance;
+//    }
+//
 // Now when calling into a WebKit API that requires a WebCallbacks<blink::WebMyClass, blink::WebMyClass>*:
 //
 //    // call signature: callSomeMethod(WebCallbacks<MyClass, MyClass>* callbacks)
@@ -74,17 +81,28 @@ public:
     CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver)
     {
+        ASSERT(m_resolver);
     }
     virtual ~CallbackPromiseAdapter() { }
 
     virtual void onSuccess(typename S::WebType* result) OVERRIDE
     {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+            S::dispose(result);
+            return;
+        }
         m_resolver->resolve(S::from(m_resolver.get(), result));
     }
+
     virtual void onError(typename T::WebType* error) OVERRIDE
     {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+            T::dispose(error);
+            return;
+        }
         m_resolver->reject(T::from(m_resolver.get(), error));
     }
+
 private:
     RefPtr<ScriptPromiseResolver> m_resolver;
     WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);

@@ -57,6 +57,7 @@ public:
     static PassRefPtrWillBeRawPtr<ServiceWorker> from(ScriptPromiseResolver*, WebType* worker);
 
     static PassRefPtrWillBeRawPtr<ServiceWorker> from(ExecutionContext*, WebType*);
+    static void dispose(WebType*);
 
     void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
 

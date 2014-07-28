@@ -163,6 +163,12 @@ PassRefPtrWillBeRawPtr<ServiceWorker> ServiceWorker::from(ScriptPromiseResolver*
     return serviceWorker;
 }
 
+void ServiceWorker::dispose(WebType* worker)
+{
+    if (worker && !worker->proxy())
+        delete worker;
+}
+
 void ServiceWorker::setProxyState(ProxyState state)
 {
     if (m_proxyState == state)

@@ -63,4 +63,10 @@ PassRefPtrWillBeRawPtr<DOMException> ServiceWorkerError::from(ScriptPromiseResol
     return DOMException::create(UnknownError);
 }
 
+// static
+void ServiceWorkerError::dispose(WebType* webErrorRaw)
+{
+    delete webErrorRaw;
+}
+
 } // namespace blink

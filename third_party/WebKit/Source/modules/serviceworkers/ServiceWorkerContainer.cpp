@@ -130,7 +130,6 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
 
 class UndefinedValue {
 public:
-
 #ifdef DISABLE_SERVICE_WORKER_REGISTRATION
     typedef WebServiceWorker WebType;
 #else
@@ -140,6 +139,10 @@ public:
     {
         ASSERT(!registration); // Anything passed here will be leaked.
         return V8UndefinedType();
+    }
+    static void dispose(WebServiceWorker* worker)
+    {
+        ASSERT(!worker); // Anything passed here will be leaked.
     }
 
 private:

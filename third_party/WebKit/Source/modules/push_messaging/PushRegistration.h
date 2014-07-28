@@ -8,7 +8,6 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebPushRegistration.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -19,11 +18,8 @@ class PushRegistration FINAL : public GarbageCollectedFinalized<PushRegistration
 public:
     // For CallbackPromiseAdapter.
     typedef blink::WebPushRegistration WebType;
-    static PushRegistration* from(ScriptPromiseResolver*, WebType* registrationRaw)
-    {
-        OwnPtr<WebType> registration = adoptPtr(registrationRaw);
-        return new PushRegistration(registration->endpoint, registration->registrationId);
-    }
+    static PushRegistration* from(ScriptPromiseResolver*, WebType* registrationRaw);
+    static void dispose(WebType* registrationRaw);
 
     virtual ~PushRegistration();
 

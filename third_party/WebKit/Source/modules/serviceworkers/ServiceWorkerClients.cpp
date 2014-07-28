@@ -30,6 +30,10 @@ namespace {
             }
             return clients;
         }
+        static void dispose(WebType* webClientsRaw)
+        {
+            delete webClientsRaw;
+        }
 
     private:
         WTF_MAKE_NONCOPYABLE(ClientArray);

@@ -23,4 +23,9 @@ PassRefPtrWillBeRawPtr<DOMException> PushError::from(ScriptPromiseResolver*, Web
     return DOMException::create(UnknownError);
 }
 
+void PushError::dispose(WebType* webErrorRaw)
+{
+    delete webErrorRaw;
+}
+
 } // namespace blink

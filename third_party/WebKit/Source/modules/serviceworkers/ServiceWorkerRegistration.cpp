@@ -31,6 +31,10 @@ public:
         ASSERT(!registration); // Anything passed here will be leaked.
         return V8UndefinedType();
     }
+    static void dispose(WebType* registration)
+    {
+        ASSERT(!registration); // Anything passed here will be leaked.
+    }
 
 private:
     UndefinedValue();
