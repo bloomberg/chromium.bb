@@ -62,11 +62,6 @@ IPC_MESSAGE_CONTROL3(FileSystemMsg_DidWrite,
                      int /* request_id */,
                      int64 /* byte count */,
                      bool /* complete */)
-IPC_MESSAGE_CONTROL4(FileSystemMsg_DidOpenFile,
-                     int /* request_id */,
-                     IPC::PlatformFileForTransit,
-                     int /* file_open_id */,
-                     quota::QuotaLimitType /* quota_policy */)
 IPC_MESSAGE_CONTROL2(FileSystemMsg_DidFail,
                      int /* request_id */,
                      base::File::Error /* error_code */)

@@ -147,11 +147,6 @@ class FileSystemDispatcher : public IPC::Listener {
                           bool has_more);
   void OnDidFail(int request_id, base::File::Error error_code);
   void OnDidWrite(int request_id, int64 bytes, bool complete);
-  void OnDidOpenFile(
-      int request_id,
-      IPC::PlatformFileForTransit file,
-      int file_open_id,
-      quota::QuotaLimitType quota_policy);
 
   IDMap<CallbackDispatcher, IDMapOwnPointer> dispatchers_;
 

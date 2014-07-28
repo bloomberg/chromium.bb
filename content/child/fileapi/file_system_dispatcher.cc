@@ -117,12 +117,6 @@ class FileSystemDispatcher::CallbackDispatcher {
     write_callback_.Run(bytes, complete);
   }
 
-  void DidOpenFile(base::PlatformFile file,
-                   int file_open_id,
-                   quota::QuotaLimitType quota_policy) {
-    open_callback_.Run(file, file_open_id, quota_policy);
-  }
-
  private:
   CallbackDispatcher() {}
 
@@ -133,7 +127,6 @@ class FileSystemDispatcher::CallbackDispatcher {
   OpenFileSystemCallback filesystem_callback_;
   ResolveURLCallback resolve_callback_;
   WriteCallback write_callback_;
-  OpenFileCallback open_callback_;
 
   StatusCallback error_callback_;
 
@@ -167,7 +160,6 @@ bool FileSystemDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnDidCreateSnapshotFile)
     IPC_MESSAGE_HANDLER(FileSystemMsg_DidFail, OnDidFail)
     IPC_MESSAGE_HANDLER(FileSystemMsg_DidWrite, OnDidWrite)
-    IPC_MESSAGE_HANDLER(FileSystemMsg_DidOpenFile, OnDidOpenFile)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -409,19 +401,6 @@ void FileSystemDispatcher::OnDidWrite(
   dispatcher->DidWrite(bytes, complete);
   if (complete)
     dispatchers_.Remove(request_id);
-}
-
-void FileSystemDispatcher::OnDidOpenFile(
-    int request_id,
-    IPC::PlatformFileForTransit file,
-    int file_open_id,
-    quota::QuotaLimitType quota_policy) {
-  CallbackDispatcher* dispatcher = dispatchers_.Lookup(request_id);
-  DCHECK(dispatcher);
-  dispatcher->DidOpenFile(IPC::PlatformFileForTransitToPlatformFile(file),
-                          file_open_id,
-                          quota_policy);
-  dispatchers_.Remove(request_id);
 }
 
 }  // namespace content
