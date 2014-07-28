@@ -453,7 +453,7 @@ class DepGraphGenerator(object):
     # pylint: disable=W0212
     digraph = depgraph._dynamic_config.digraph
     root = emerge.settings["ROOT"]
-    final_db = depgraph._dynamic_config.mydbapi[root]
+    final_db = get_db(depgraph._dynamic_config, root)
     for node, node_deps in digraph.nodes.items():
       # Calculate dependency packages that need to be installed first. Each
       # child on the digraph is a dependency. The "operation" field specifies
@@ -1800,6 +1800,19 @@ def main(argv):
         x.join(1)
 
 
+def get_db(config, root):
+  """ Return the dbapi.
+  Handles both portage 2.1.11 and 2.2.10 (where mydbapi has been removed).
+
+  TODO(bsimonnet): Remove this once portage has been uprevd.
+  """
+  try:
+    return config.mydbapi[root]
+  except AttributeError:
+    # pylint: disable=W0212
+    return config._filtered_trees[root]['graph_db']
+
+
 def real_main(argv):
   parallel_emerge_args = argv[:]
   deps = DepGraphGenerator()
@@ -1849,7 +1862,7 @@ def real_main(argv):
   portage_upgrade = False
   root = emerge.settings["ROOT"]
   # pylint: disable=W0212
-  final_db = emerge.depgraph._dynamic_config.mydbapi[root]
+  final_db = get_db(emerge.depgraph._dynamic_config, root)
   if root == "/":
     for db_pkg in final_db.match_pkgs("sys-apps/portage"):
       portage_pkg = deps_graph.get(db_pkg.cpv)
