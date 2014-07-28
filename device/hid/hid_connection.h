@@ -26,7 +26,6 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
 
   const HidDeviceInfo& device_info() const { return device_info_; }
   bool has_protected_collection() const { return has_protected_collection_; }
-  bool has_report_id() const { return has_report_id_; }
   const base::ThreadChecker& thread_checker() const { return thread_checker_; }
 
   void Read(scoped_refptr<net::IOBufferWithSize> buffer,
@@ -73,7 +72,6 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
   bool IsReportIdProtected(const uint8_t report_id);
 
   const HidDeviceInfo device_info_;
-  bool has_report_id_;
   bool has_protected_collection_;
   base::ThreadChecker thread_checker_;
 

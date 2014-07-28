@@ -17,10 +17,14 @@ HidConnectionMac::HidConnectionMac(HidDeviceInfo device_info)
   message_loop_ = base::MessageLoopProxy::current();
 
   DCHECK(device_.get());
-  inbound_buffer_.reset((uint8_t*)malloc(device_info.max_input_report_size));
+  size_t expected_report_size = device_info.max_input_report_size;
+  if (device_info.has_report_id) {
+    expected_report_size++;
+  }
+  inbound_buffer_.reset((uint8_t*)malloc(expected_report_size));
   IOHIDDeviceRegisterInputReportCallback(device_.get(),
                                          inbound_buffer_.get(),
-                                         device_info.max_input_report_size,
+                                         expected_report_size,
                                          &HidConnectionMac::InputReportCallback,
                                          this);
   IOHIDDeviceOpen(device_, kIOHIDOptionsTypeNone);
@@ -62,14 +66,14 @@ void HidConnectionMac::PlatformGetFeatureReport(
   }
 
   uint8_t* feature_report_buffer = reinterpret_cast<uint8_t*>(buffer->data());
-  CFIndex max_feature_report_size = device_info().max_feature_report_size;
+  CFIndex report_size = buffer->size();
   IOReturn result = IOHIDDeviceGetReport(device_,
                                          kIOHIDReportTypeFeature,
                                          report_id,
                                          feature_report_buffer,
-                                         &max_feature_report_size);
+                                         &report_size);
   if (result == kIOReturnSuccess)
-    callback.Run(true, max_feature_report_size);
+    callback.Run(true, report_size);
   else
     callback.Run(false, 0);
 }

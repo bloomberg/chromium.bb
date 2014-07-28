@@ -182,9 +182,11 @@ void HidReceiveFunction::AsyncWorkStart() {
     return;
   }
 
-  buffer_ = new net::IOBufferWithSize(parameters_->size);
-  resource->connection()->Read(
-      buffer_, base::Bind(&HidReceiveFunction::OnFinished, this));
+  scoped_refptr<device::HidConnection> connection = resource->connection();
+  has_report_id_ = connection->device_info().has_report_id;
+  const int size = connection->device_info().max_input_report_size;
+  buffer_ = new net::IOBufferWithSize(size + 1);  // 1 byte for the report ID
+  connection->Read(buffer_, base::Bind(&HidReceiveFunction::OnFinished, this));
 }
 
 void HidReceiveFunction::OnFinished(bool success, size_t bytes) {
@@ -193,7 +195,22 @@ void HidReceiveFunction::OnFinished(bool success, size_t bytes) {
     return;
   }
 
-  SetResult(base::BinaryValue::CreateWithCopiedBuffer(buffer_->data(), bytes));
+  int report_id = 0;
+  const char* data = buffer_->data();
+  if (has_report_id_) {
+    if (bytes < 1) {
+      CompleteWithError(kErrorTransfer);
+      return;
+    }
+    report_id = data[0];
+    data++;
+    bytes--;
+  }
+
+  scoped_ptr<base::ListValue> result(new base::ListValue());
+  result->Append(new base::FundamentalValue(report_id));
+  result->Append(base::BinaryValue::CreateWithCopiedBuffer(data, bytes));
+  SetResultList(result.Pass());
   AsyncWorkCompleted();
 }
 
@@ -250,8 +267,11 @@ void HidReceiveFeatureReportFunction::AsyncWorkStart() {
     CompleteWithError(kErrorConnectionNotFound);
     return;
   }
-  buffer_ = new net::IOBufferWithSize(parameters_->size);
-  resource->connection()->GetFeatureReport(
+
+  scoped_refptr<device::HidConnection> connection = resource->connection();
+  const int size = connection->device_info().max_feature_report_size;
+  buffer_ = new net::IOBufferWithSize(size);
+  connection->GetFeatureReport(
       static_cast<uint8_t>(parameters_->report_id),
       buffer_,
       base::Bind(&HidReceiveFeatureReportFunction::OnFinished, this));

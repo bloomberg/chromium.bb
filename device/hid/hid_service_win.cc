@@ -243,11 +243,21 @@ void HidServiceWin::PlatformAddDevice(const std::string& device_path) {
             int report_id = value_caps[i].ReportID;
             if (report_id != 0) {
               collection_info.report_ids.insert(report_id);
+              device_info.has_report_id = true;
             }
           }
         }
       }
       device_info.collections.push_back(collection_info);
+    }
+    if (device_info.has_report_id && device_info.max_input_report_size > 0) {
+      device_info.max_input_report_size--;
+    }
+    if (device_info.has_report_id && device_info.max_output_report_size > 0) {
+      device_info.max_output_report_size--;
+    }
+    if (device_info.has_report_id && device_info.max_feature_report_size > 0) {
+      device_info.max_feature_report_size--;
     }
     HidD_FreePreparsedData(preparsed_data);
   }

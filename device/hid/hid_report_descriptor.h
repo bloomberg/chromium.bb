@@ -28,6 +28,7 @@ class HidReportDescriptor {
   // Returns top-level collections present in the descriptor,
   // together with max report sizes
   void GetDetails(std::vector<HidCollectionInfo>* top_level_collections,
+                  bool* has_report_id,
                   int* max_input_report_size,
                   int* max_output_report_size,
                   int* max_feature_report_size);

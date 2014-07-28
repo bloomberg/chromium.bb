@@ -57,7 +57,6 @@ class HidGetDevicesFunction : public HidAsyncApiFunction {
 
   virtual ~HidGetDevicesFunction();
 
-  scoped_ptr<base::ListValue> result_;
   scoped_ptr<core_api::hid::GetDevices::Params> parameters_;
 
  private:
@@ -77,7 +76,6 @@ class HidConnectFunction : public HidAsyncApiFunction {
  private:
   virtual ~HidConnectFunction();
 
-  scoped_ptr<base::ListValue> result_;
   scoped_ptr<core_api::hid::Connect::Params> parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(HidConnectFunction);
@@ -96,7 +94,6 @@ class HidDisconnectFunction : public HidAsyncApiFunction {
  private:
   virtual ~HidDisconnectFunction();
 
-  scoped_ptr<base::ListValue> result_;
   scoped_ptr<core_api::hid::Disconnect::Params> parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(HidDisconnectFunction);
@@ -117,8 +114,8 @@ class HidReceiveFunction : public HidAsyncApiFunction {
 
   void OnFinished(bool success, size_t bytes);
 
+  bool has_report_id_;
   scoped_refptr<net::IOBufferWithSize> buffer_;
-  scoped_ptr<base::ListValue> result_;
   scoped_ptr<core_api::hid::Receive::Params> parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(HidReceiveFunction);
@@ -139,7 +136,6 @@ class HidSendFunction : public HidAsyncApiFunction {
 
   void OnFinished(bool success, size_t bytes);
 
-  scoped_ptr<base::ListValue> result_;
   scoped_ptr<core_api::hid::Send::Params> parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(HidSendFunction);
@@ -162,7 +158,6 @@ class HidReceiveFeatureReportFunction : public HidAsyncApiFunction {
   void OnFinished(bool success, size_t bytes);
 
   scoped_refptr<net::IOBufferWithSize> buffer_;
-  scoped_ptr<base::ListValue> result_;
   scoped_ptr<core_api::hid::ReceiveFeatureReport::Params> parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(HidReceiveFeatureReportFunction);
@@ -183,7 +178,6 @@ class HidSendFeatureReportFunction : public HidAsyncApiFunction {
 
   void OnFinished(bool success, size_t bytes);
 
-  scoped_ptr<base::ListValue> result_;
   scoped_ptr<core_api::hid::SendFeatureReport::Params> parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(HidSendFeatureReportFunction);

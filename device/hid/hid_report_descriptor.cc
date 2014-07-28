@@ -28,6 +28,7 @@ HidReportDescriptor::~HidReportDescriptor() {}
 
 void HidReportDescriptor::GetDetails(
     std::vector<HidCollectionInfo>* top_level_collections,
+    bool* has_report_id,
     int* max_input_report_size,
     int* max_output_report_size,
     int* max_feature_report_size) {
@@ -37,6 +38,7 @@ void HidReportDescriptor::GetDetails(
   DCHECK(max_feature_report_size);
   STLClearObject(top_level_collections);
 
+  *has_report_id = false;
   *max_input_report_size = 0;
   *max_output_report_size = 0;
   *max_feature_report_size = 0;
@@ -92,14 +94,7 @@ void HidReportDescriptor::GetDetails(
           // Store report ID.
           top_level_collections->back().report_ids.insert(
               current_item->GetShortData());
-
-          // We need to increase report sizes by report ID field length.
-          if (current_input_report_size > 0)
-            current_input_report_size += kBitsPerByte;
-          if (current_output_report_size > 0)
-            current_output_report_size += kBitsPerByte;
-          if (current_feature_report_size > 0)
-            current_feature_report_size += kBitsPerByte;
+          *has_report_id = true;
 
           // Update max report sizes.
           *max_input_report_size =
@@ -109,7 +104,7 @@ void HidReportDescriptor::GetDetails(
           *max_feature_report_size =
               std::max(*max_feature_report_size, current_feature_report_size);
 
-          // Set report sizes to be 1-byte long (report ID field).
+          // Reset the report sizes for the next report ID.
           current_input_report_size = 0;
           current_output_report_size = 0;
           current_feature_report_size = 0;
@@ -143,17 +138,6 @@ void HidReportDescriptor::GetDetails(
       default:
         break;
     }
-  }
-
-  if (top_level_collections->size() > 0 &&
-      top_level_collections->back().report_ids.size() > 0) {
-    // We need to increase report sizes by report ID field length.
-    if (current_input_report_size > 0)
-      current_input_report_size += kBitsPerByte;
-    if (current_output_report_size > 0)
-      current_output_report_size += kBitsPerByte;
-    if (current_feature_report_size > 0)
-      current_feature_report_size += kBitsPerByte;
   }
 
   // Update max report sizes

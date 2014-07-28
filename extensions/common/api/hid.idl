@@ -52,10 +52,18 @@ namespace hid {
   callback ConnectCallback = void (HidConnectInfo connection);
   callback DisconnectCallback = void ();
 
-  // The callback to be invoked when a <code>receive</code> or
-  // <code>receiveFeatureReport</code> call is finished.
+  // The callback to be invoked when a <code>receive</code> call is finished.
+  // |reportId|: The ID of the report.
   // |data|: The content of the report.
-  callback ReceiveCallback = void (ArrayBuffer data);
+  callback ReceiveCallback = void (long reportId, ArrayBuffer data);
+
+  // The callback to be invoked when a <code>receiveFeatureReport</code> call
+  // is finished.
+  // |data|: The content of the report.
+  callback ReceiveFeatureReportCallback = void (ArrayBuffer data);
+
+  // The callback to be invoked when a <code>send</code> or
+  // <code>sendFeatureReport</code> call is finished.
   callback SendCallback = void();
 
   interface Functions {
@@ -83,10 +91,8 @@ namespace hid {
     //
     // Input reports are returned to the host through the INTERRUPT IN endpoint.
     // |connectionId|: The connection from which to receive a report.
-    // |size|: The size of the Input report to receive.
     // |callback|: The callback to invoke with received report.
     static void receive(long connectionId,
-                        long size,
                         ReceiveCallback callback);
 
     // Send an Output report to an HID device.
@@ -107,12 +113,10 @@ namespace hid {
     //
     // |connectionId|: The connection to read Input report from.
     // |reportId|: The report ID, or zero if none.
-    // |size|: The size of the Feature report to receive.
     // |callback|: The callback to invoke once the write is finished.
     static void receiveFeatureReport(long connectionId,
                                      long reportId,
-                                     long size,
-                                     ReceiveCallback callback);
+                                     ReceiveFeatureReportCallback callback);
 
     // Send a Feature report to the device.
     //

@@ -44,6 +44,7 @@ struct HidDeviceInfo {
 
   // Top-Level Collections information.
   std::vector<HidCollectionInfo> collections;
+  bool has_report_id;
   int max_input_report_size;
   int max_output_report_size;
   int max_feature_report_size;

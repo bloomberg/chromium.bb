@@ -124,8 +124,12 @@ HidConnectionWin::~HidConnectionWin() {
 
 void HidConnectionWin::PlatformRead(scoped_refptr<net::IOBufferWithSize> buffer,
                                     const HidConnection::IOCallback& callback) {
+  int expected_report_size = device_info().max_input_report_size;
+  if (device_info().has_report_id) {
+    expected_report_size++;
+  }
   scoped_refptr<net::IOBufferWithSize> receive_buffer =
-      new net::IOBufferWithSize(device_info().max_input_report_size);
+      new net::IOBufferWithSize(expected_report_size);
 
   scoped_refptr<PendingHidTransfer> transfer(
       new PendingHidTransfer(this, buffer, receive_buffer, callback));
@@ -164,8 +168,12 @@ void HidConnectionWin::PlatformGetFeatureReport(
     uint8_t report_id,
     scoped_refptr<net::IOBufferWithSize> buffer,
     const IOCallback& callback) {
+  int expected_report_size = device_info().max_feature_report_size;
+  if (device_info().has_report_id) {
+    expected_report_size++;
+  }
   scoped_refptr<net::IOBufferWithSize> receive_buffer =
-      new net::IOBufferWithSize(device_info().max_feature_report_size);
+      new net::IOBufferWithSize(expected_report_size);
   // The first byte of the destination buffer is the report ID being requested.
   receive_buffer->data()[0] = report_id;
 
@@ -224,7 +232,7 @@ void HidConnectionWin::OnTransferFinished(
       // copy the receive buffer into the target buffer, discarding the first
       // byte. This is because the target buffer's owner is not expecting a
       // report ID but Windows will always provide one.
-      if (!has_report_id()) {
+      if (!device_info().has_report_id) {
         uint8_t report_id = transfer->receive_buffer_->data()[0];
         // Assert first byte is 0x00
         if (report_id != HidConnection::kNullReportId) {

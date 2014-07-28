@@ -56,11 +56,6 @@ bool FindCollectionByReportId(const HidDeviceInfo& device_info,
   return false;
 }
 
-bool HasReportId(const HidDeviceInfo& device_info) {
-  return FindCollectionByReportId(
-      device_info, HidConnection::kAnyReportId, NULL);
-}
-
 bool HasProtectedCollection(const HidDeviceInfo& device_info) {
   return std::find_if(device_info.collections.begin(),
                       device_info.collections.end(),
@@ -72,7 +67,6 @@ bool HasProtectedCollection(const HidDeviceInfo& device_info) {
 HidConnection::HidConnection(const HidDeviceInfo& device_info)
     : device_info_(device_info) {
   has_protected_collection_ = HasProtectedCollection(device_info);
-  has_report_id_ = HasReportId(device_info);
 }
 
 HidConnection::~HidConnection() {
@@ -88,8 +82,8 @@ void HidConnection::Read(scoped_refptr<net::IOBufferWithSize> buffer,
     return;
   }
   int expected_buffer_size = device_info_.max_input_report_size;
-  if (!has_report_id()) {
-    expected_buffer_size--;
+  if (device_info().has_report_id) {
+    expected_buffer_size++;
   }
   if (buffer->size() < expected_buffer_size) {
     // Receive buffer is too small.
@@ -132,8 +126,8 @@ void HidConnection::GetFeatureReport(
     return;
   }
   int expected_buffer_size = device_info_.max_feature_report_size;
-  if (!has_report_id()) {
-    expected_buffer_size--;
+  if (device_info().has_report_id) {
+    expected_buffer_size++;
   }
   if (buffer->size() < expected_buffer_size) {
     // Receive buffer is too small.

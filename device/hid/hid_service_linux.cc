@@ -190,6 +190,7 @@ void HidServiceLinux::OnRequestAccessComplete(
 
   HidReportDescriptor report_descriptor(rpt_desc.value, rpt_desc.size);
   report_descriptor.GetDetails(&device_info->collections,
+                               &device_info->has_report_id,
                                &device_info->max_input_report_size,
                                &device_info->max_output_report_size,
                                &device_info->max_feature_report_size);
