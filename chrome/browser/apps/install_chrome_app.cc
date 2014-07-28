@@ -8,79 +8,26 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/webstore_install_with_prompt.h"
+#include "chrome/browser/extensions/webstore_standalone_installer.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
-#include "google_apis/gaia/gaia_urls.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
+
+using extensions::ExtensionRegistry;
 
 namespace {
 
-// The URL to the webstore page for a specific app. "_asi=1" instructs webstore
-// to immediately try to install the app if the referrer is the sign in page.
-// This is actually the short form of the URL which just redirects to the full
-// URL. Since "_asi=1" only works on the full url, we need to resolve it first
-// before navigating the user to it.
+// The URL to the webstore page for a specific app.
 const char kWebstoreUrlFormat[] =
-    "https://chrome.google.com/webstore/detail/%s?_asi=1";
-
-// The URL for the sign in page, set as the referrer to webstore.
-const char kAccountsUrl[] = "https://accounts.google.com/ServiceLogin";
+    "https://chrome.google.com/webstore/detail/%s";
 
 // Returns the webstore URL for an app.
 GURL GetAppInstallUrl(const std::string& app_id) {
   return GURL(base::StringPrintf(kWebstoreUrlFormat, app_id.c_str()));
-}
-
-void NavigateToUrlWithAccountsReferrer(const GURL& url) {
-  Browser* browser =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE)->get(0);
-  if (!browser)
-    return;
-
-  chrome::NavigateParams params(
-      browser, url, content::PAGE_TRANSITION_AUTO_TOPLEVEL);
-  params.disposition = NEW_FOREGROUND_TAB;
-  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-  params.referrer = content::Referrer();
-  params.referrer.url = GURL(kAccountsUrl);
-  chrome::Navigate(&params);
-}
-
-class AppURLFetcher : net::URLFetcherDelegate {
- public:
-  explicit AppURLFetcher(const std::string& app_id);
-
-  // net::URLFetcherDelegate OVERRIDES:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
-
- private:
-  virtual ~AppURLFetcher();
-
-  scoped_ptr<net::URLFetcher> url_fetcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppURLFetcher);
-};
-
-AppURLFetcher::AppURLFetcher(const std::string& app_id) {
-  url_fetcher_.reset(net::URLFetcher::Create(
-      GetAppInstallUrl(app_id), net::URLFetcher::GET, this));
-  url_fetcher_->SetRequestContext(g_browser_process->system_request_context());
-  url_fetcher_->SetStopOnRedirect(true);
-  url_fetcher_->Start();
-}
-
-AppURLFetcher::~AppURLFetcher() {
-}
-
-void AppURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
-  if (source->GetResponseCode() == 301) {
-    // Moved permanently.
-    NavigateToUrlWithAccountsReferrer(source->GetURL());
-  }
-
-  delete this;
 }
 
 }  // namespace
@@ -91,7 +38,38 @@ void InstallChromeApp(const std::string& app_id) {
   if (!extensions::Extension::IdIsValid(app_id))
     return;
 
-  new AppURLFetcher(app_id);
+  // At the moment InstallChromeApp() is called immediately after handling
+  // startup URLs, so a browser is guaranteed to be created. If that changes we
+  // may need to start a browser or browser session here.
+  Browser* browser =
+      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE)->get(0);
+  DCHECK(browser);
+
+  content::OpenURLParams params(GetAppInstallUrl(app_id),
+                                content::Referrer(),
+                                NEW_FOREGROUND_TAB,
+                                content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                false);
+  browser->OpenURL(params);
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser->profile());
+  // Skip if this app is already installed or blacklisted. For disabled or
+  // or terminated apps, going through the installation flow should re-enable
+  // them.
+  const extensions::Extension* installed_extension = registry->GetExtensionById(
+      app_id, ExtensionRegistry::ENABLED | ExtensionRegistry::BLACKLISTED);
+  // TODO(jackhou): For installed apps, maybe we should do something better,
+  // e.g. show the app list (and re-add it to the taskbar).
+  if (installed_extension)
+    return;
+
+  extensions::WebstoreInstallWithPrompt* installer =
+      new extensions::WebstoreInstallWithPrompt(
+          app_id,
+          browser->profile(),
+          browser->window()->GetNativeWindow(),
+          extensions::WebstoreStandaloneInstaller::Callback());
+  installer->BeginInstall();
 }
 
 }  // namespace install_chrome_app
