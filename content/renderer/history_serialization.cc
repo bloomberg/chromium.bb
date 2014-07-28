@@ -94,6 +94,8 @@ void GenerateFrameStateFromItem(const WebHistoryItem& item,
   state->item_sequence_number = item.itemSequenceNumber();
   state->document_sequence_number =
       item.documentSequenceNumber();
+  state->frame_sequence_number =
+      item.frameSequenceNumber();
   state->page_scale_factor = item.pageScaleFactor();
   ToNullableString16Vector(item.documentState(), &state->document_state);
 
@@ -145,6 +147,8 @@ void RecursivelyGenerateHistoryItem(const ExplodedFrameState& state,
     item.setItemSequenceNumber(state.item_sequence_number);
   if (state.document_sequence_number)
     item.setDocumentSequenceNumber(state.document_sequence_number);
+  if (state.frame_sequence_number)
+    item.setFrameSequenceNumber(state.frame_sequence_number);
 
   item.setHTTPContentType(state.http_body.http_content_type);
   if (!state.http_body.is_null) {

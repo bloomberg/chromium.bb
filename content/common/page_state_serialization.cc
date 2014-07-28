@@ -193,12 +193,13 @@ struct SerializeObject {
 //         which is no longer used.
 // 20: Add pinch viewport scroll offset, the offset of the pinched zoomed
 //     viewport within the unzoomed main frame.
+// 21: Add frame sequence number
 //
 // NOTE: If the version is -1, then the pickle contains only a URL string.
 // See ReadPageState.
 //
 const int kMinVersion = 11;
-const int kCurrentVersion = 20;
+const int kCurrentVersion = 21;
 
 // A bunch of convenience functions to read/write to SerializeObjects.  The
 // de-serializers assume the input data will be in the correct format and fall
@@ -511,6 +512,7 @@ void WriteFrameState(
   WriteReal(state.page_scale_factor, obj);
   WriteInteger64(state.item_sequence_number, obj);
   WriteInteger64(state.document_sequence_number, obj);
+  WriteInteger64(state.frame_sequence_number, obj);
   WriteInteger(state.referrer_policy, obj);
   WriteReal(state.pinch_viewport_scroll_offset.x(), obj);
   WriteReal(state.pinch_viewport_scroll_offset.y(), obj);
@@ -567,6 +569,8 @@ void ReadFrameState(SerializeObject* obj, bool is_top,
   state->page_scale_factor = ReadReal(obj);
   state->item_sequence_number = ReadInteger64(obj);
   state->document_sequence_number = ReadInteger64(obj);
+  if (obj->version >= 21)
+    state->frame_sequence_number = ReadInteger64(obj);
 
   if (obj->version >= 17 && obj->version < 19)
     ConsumeInteger64(obj); // Skip obsolete target frame id number.
@@ -692,6 +696,7 @@ ExplodedHttpBody::~ExplodedHttpBody() {
 ExplodedFrameState::ExplodedFrameState()
     : item_sequence_number(0),
       document_sequence_number(0),
+      frame_sequence_number(0),
       page_scale_factor(0.0),
       referrer_policy(blink::WebReferrerPolicyDefault) {
 }
@@ -718,6 +723,7 @@ void ExplodedFrameState::assign(const ExplodedFrameState& other) {
   scroll_offset = other.scroll_offset;
   item_sequence_number = other.item_sequence_number;
   document_sequence_number = other.document_sequence_number;
+  frame_sequence_number = other.frame_sequence_number;
   page_scale_factor = other.page_scale_factor;
   referrer_policy = other.referrer_policy;
   http_body = other.http_body;

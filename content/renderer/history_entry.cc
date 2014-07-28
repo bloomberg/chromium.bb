@@ -44,6 +44,16 @@ using blink::WebHistoryItem;
 
 namespace content {
 
+// Frame routing ids are not safe to serialize, so instead create a mapping
+// from routing ids to frame sequence numbers. The sequence numbers can be
+// benignly serialized with limited risk of collision in a different process.
+// FrameMap is a singleton per-process.
+typedef base::hash_map<uint64_t, uint64_t> FrameMap;
+static FrameMap& GetFrameMap() {
+  CR_DEFINE_STATIC_LOCAL(FrameMap, routing_ids_to_internal_frame_ids, ());
+  return routing_ids_to_internal_frame_ids;
+}
+
 HistoryEntry::HistoryNode* HistoryEntry::HistoryNode::AddChild(
     const WebHistoryItem& item,
     int64_t frame_id) {
@@ -96,6 +106,7 @@ void HistoryEntry::HistoryNode::set_item(const WebHistoryItem& item) {
   // The previous HistoryItem might not have had a target set, or it might be
   // different than the current one.
   entry_->unique_names_to_items_[item.target().utf8()] = this;
+  entry_->frames_to_items_[item.frameSequenceNumber()] = this;
   item_ = item;
 }
 
@@ -103,10 +114,20 @@ HistoryEntry::HistoryNode::HistoryNode(HistoryEntry* entry,
                                        const WebHistoryItem& item,
                                        int64_t frame_id)
     : entry_(entry), item_(item) {
-  if (frame_id != kInvalidFrameRoutingID)
-    entry_->frames_to_items_[frame_id] = this;
-  if (!item.isNull())
-    entry_->unique_names_to_items_[item.target().utf8()] = this;
+  if (frame_id != kInvalidFrameRoutingID) {
+    // Each history item is given a frame sequence number on creation.
+    // If we've already mapped this frame id to a sequence number, standardize
+    // this item to that sequence number. Otherwise, map the frame id to this
+    // item's existing sequence number.
+    if (GetFrameMap()[frame_id] == 0)
+        GetFrameMap()[frame_id] = item_.frameSequenceNumber();
+    else if (!item_.isNull())
+        item_.setFrameSequenceNumber(GetFrameMap()[frame_id]);
+    entry_->frames_to_items_[GetFrameMap()[frame_id]] = this;
+  }
+
+  if (!item_.isNull())
+    entry_->unique_names_to_items_[item_.target().utf8()] = this;
   children_.reset(new ScopedVector<HistoryNode>);
 }
 
@@ -130,7 +151,7 @@ void HistoryEntry::HistoryNode::RemoveChildren() {
          it != frames_end;
          ++it) {
       if (it->second == children().at(i))
-        frames_to_remove.push_back(it->first);
+        frames_to_remove.push_back(GetFrameMap()[it->first]);
     }
     for (HistoryEntry::UniqueNamesToItems::iterator it =
              entry_->unique_names_to_items_.begin();
@@ -174,7 +195,8 @@ HistoryEntry* HistoryEntry::CloneAndReplace(const WebHistoryItem& new_item,
 
 HistoryEntry::HistoryNode* HistoryEntry::GetHistoryNodeForFrame(
     RenderFrameImpl* frame) {
-  if (HistoryNode* history_node = frames_to_items_[frame->GetRoutingID()])
+  if (HistoryNode* history_node =
+          frames_to_items_[GetFrameMap()[frame->GetRoutingID()]])
     return history_node;
   return unique_names_to_items_[frame->GetWebFrame()->uniqueName().utf8()];
 }
