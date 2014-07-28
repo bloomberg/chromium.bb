@@ -800,7 +800,7 @@ const char kUninitializedTechnologiesProperty[] = "UninitializedTechnologies";
 // Service property names.
 const char kActivateOverNonCellularNetworkProperty[] =
     "Cellular.ActivateOverNonCellularNetwork";
-const char kActivationTypeProperty[] = "ActivationType";
+const char kActivationTypeProperty[] = "Cellular.ActivationType";
 const char kDiagnosticsDisconnectsProperty[] = "Diagnostics.Disconnects";
 const char kDiagnosticsMisconnectsProperty[] = "Diagnostics.Misconnects";
 const char kEapRemoteCertificationProperty[] = "EAP.RemoteCertification";
