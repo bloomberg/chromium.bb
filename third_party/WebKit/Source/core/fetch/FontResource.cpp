@@ -87,6 +87,14 @@ FontResource::~FontResource()
 {
 }
 
+void FontResource::trace(Visitor* visitor)
+{
+#if ENABLE(SVG_FONTS)
+    visitor->trace(m_externalSVGDocument);
+#endif
+    Resource::trace(visitor);
+}
+
 void FontResource::load(ResourceFetcher*, const ResourceLoaderOptions& options)
 {
     // Don't load the file yet. Wait for an access before triggering the load.

@@ -41,6 +41,7 @@ class CSSStyleSheetResource FINAL : public StyleSheetResource {
 public:
     CSSStyleSheetResource(const ResourceRequest&, const String& charset);
     virtual ~CSSStyleSheetResource();
+    virtual void trace(Visitor*) OVERRIDE;
 
     const String sheetText(bool enforceMIMEType = true, bool* hasValidMIMEType = 0) const;
 
@@ -60,7 +61,7 @@ private:
 
     String m_decodedSheetText;
 
-    RefPtrWillBePersistent<StyleSheetContents> m_parsedStyleSheetCache;
+    RefPtrWillBeMember<StyleSheetContents> m_parsedStyleSheetCache;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(CSSStyleSheet);

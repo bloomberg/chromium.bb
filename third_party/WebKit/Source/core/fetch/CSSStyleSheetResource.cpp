@@ -60,6 +60,12 @@ void CSSStyleSheetResource::dispose()
     m_parsedStyleSheetCache.clear();
 }
 
+void CSSStyleSheetResource::trace(Visitor* visitor)
+{
+    visitor->trace(m_parsedStyleSheetCache);
+    StyleSheetResource::trace(visitor);
+}
+
 void CSSStyleSheetResource::didAddClient(ResourceClient* c)
 {
     ASSERT(c->resourceClientType() == StyleSheetResourceClient::expectedType());

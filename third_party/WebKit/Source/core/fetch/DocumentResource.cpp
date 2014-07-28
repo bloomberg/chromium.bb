@@ -42,6 +42,12 @@ DocumentResource::~DocumentResource()
 {
 }
 
+void DocumentResource::trace(Visitor* visitor)
+{
+    visitor->trace(m_document);
+    Resource::trace(visitor);
+}
+
 void DocumentResource::setEncoding(const String& chs)
 {
     m_decoder->setEncoding(chs, TextResourceDecoder::EncodingFromHTTPHeader);

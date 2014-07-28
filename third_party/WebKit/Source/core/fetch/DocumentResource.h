@@ -38,6 +38,7 @@ public:
 
     DocumentResource(const ResourceRequest&, Type);
     virtual ~DocumentResource();
+    virtual void trace(Visitor*) OVERRIDE;
 
     Document* document() const { return m_document.get(); }
 
@@ -48,7 +49,7 @@ public:
 private:
     PassRefPtrWillBeRawPtr<Document> createDocument(const KURL&);
 
-    RefPtrWillBePersistent<Document> m_document;
+    RefPtrWillBeMember<Document> m_document;
     OwnPtr<TextResourceDecoder> m_decoder;
 };
 
