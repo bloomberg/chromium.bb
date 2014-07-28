@@ -5,10 +5,10 @@
 #include "mojo/system/data_pipe.h"
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include <limits>
 
-#include "base/basictypes.h"
 #include "mojo/system/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

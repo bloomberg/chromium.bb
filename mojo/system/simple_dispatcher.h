@@ -7,7 +7,7 @@
 
 #include <list>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "mojo/system/dispatcher.h"
 #include "mojo/system/handle_signals_state.h"
 #include "mojo/system/system_impl_export.h"

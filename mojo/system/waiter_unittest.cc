@@ -9,8 +9,9 @@
 
 #include "mojo/system/waiter.h"
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"  // For |Sleep()|.
 #include "base/threading/simple_thread.h"

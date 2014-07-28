@@ -6,10 +6,10 @@
 
 #include <algorithm>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "mojo/embedder/platform_handle_vector.h"
 #include "mojo/system/message_pipe_endpoint.h"

@@ -4,9 +4,10 @@
 
 #include "mojo/system/core.h"
 
+#include <stdint.h>
+
 #include <limits>
 
-#include "base/basictypes.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "mojo/system/core_test_base.h"

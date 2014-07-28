@@ -4,8 +4,8 @@
 
 #include "mojo/system/handle_table.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "mojo/system/constants.h"
 #include "mojo/system/dispatcher.h"
 

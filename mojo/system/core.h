@@ -5,8 +5,9 @@
 #ifndef MOJO_SYSTEM_CORE_H_
 #define MOJO_SYSTEM_CORE_H_
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "mojo/public/c/system/buffer.h"

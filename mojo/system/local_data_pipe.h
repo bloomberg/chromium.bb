@@ -5,7 +5,7 @@
 #ifndef MOJO_SYSTEM_LOCAL_DATA_PIPE_H_
 #define MOJO_SYSTEM_LOCAL_DATA_PIPE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
