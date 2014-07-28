@@ -389,11 +389,35 @@ class NET_EXPORT X509Certificate
 
   // Calculates the SHA-1 fingerprint of the certificate.  Returns an empty
   // (all zero) fingerprint on failure.
+  //
+  // For calculating fingerprints, prefer SHA-1 for performance when indexing,
+  // but callers should use IsSameOSCert() before assuming two certificates are
+  // the same.
   static SHA1HashValue CalculateFingerprint(OSCertHandle cert_handle);
 
   // Calculates the SHA-1 fingerprint of the intermediate CA certificates.
   // Returns an empty (all zero) fingerprint on failure.
+  //
+  // See SHA-1 caveat on CalculateFingerprint().
   static SHA1HashValue CalculateCAFingerprint(
+      const OSCertHandles& intermediates);
+
+  // Calculates the SHA-256 fingerprint of the intermediate CA certificates.
+  // Returns an empty (all zero) fingerprint on failure.
+  //
+  // The implementation currently relies on the crypto::SecureHash utilities,
+  // which are not as fast as implementing this directly for each platform since
+  // the consumers are not expected to be performance critical. If performance
+  // is a concern going forward, it may be warranted to implement this on a
+  // per-platform basis.
+  static SHA256HashValue CalculateCAFingerprint256(
+      const OSCertHandles& intermediates);
+
+  // Calculates the SHA-256 fingerprint for the complete chain, including the
+  // leaf certificate and all intermediate CA certificates. Returns an empty
+  // (all zero) fingerprint on failure.
+  static SHA256HashValue CalculateChainFingerprint256(
+      const OSCertHandle& leaf,
       const OSCertHandles& intermediates);
 
  private:

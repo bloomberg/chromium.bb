@@ -14,6 +14,7 @@
 #include "base/base64.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/pickle.h"
@@ -22,6 +23,7 @@
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
+#include "crypto/secure_hash.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cert/pem_tokenizer.h"
@@ -703,6 +705,37 @@ bool X509Certificate::GetPEMEncodedChain(
   }
   pem_encoded->swap(encoded_chain);
   return true;
+}
+
+// static
+SHA256HashValue X509Certificate::CalculateCAFingerprint256(
+    const OSCertHandles& intermediates) {
+  SHA256HashValue sha256;
+  memset(sha256.data, 0, sizeof(sha256.data));
+
+  scoped_ptr<crypto::SecureHash> hash(
+      crypto::SecureHash::Create(crypto::SecureHash::SHA256));
+
+  for (size_t i = 0; i < intermediates.size(); ++i) {
+    std::string der_encoded;
+    if (!GetDEREncoded(intermediates[i], &der_encoded))
+      return sha256;
+    hash->Update(der_encoded.c_str(), der_encoded.length());
+  }
+  hash->Finish(sha256.data, sizeof(sha256.data));
+
+  return sha256;
+}
+
+// static
+SHA256HashValue X509Certificate::CalculateChainFingerprint256(
+    const OSCertHandle& leaf,
+    const OSCertHandles& intermediates) {
+  OSCertHandles chain;
+  chain.push_back(leaf);
+  chain.insert(chain.end(), intermediates.begin(), intermediates.end());
+
+  return CalculateCAFingerprint256(chain);
 }
 
 X509Certificate::X509Certificate(OSCertHandle cert_handle,
