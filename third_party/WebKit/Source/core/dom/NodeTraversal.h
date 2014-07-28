@@ -42,10 +42,8 @@ public:
     static Node* next(const ContainerNode& current, const Node* stayWithin) { return traverseNextTemplate(current, stayWithin); }
 
     // Like next, but skips children and starts with the next sibling.
-    static Node* nextSkippingChildren(const Node& current) { return traverseNextSkippingChildrenTemplate(current); }
-    static Node* nextSkippingChildren(const ContainerNode& current) { return traverseNextSkippingChildrenTemplate(current); }
-    static Node* nextSkippingChildren(const Node& current, const Node* stayWithin) { return traverseNextSkippingChildrenTemplate(current, stayWithin); }
-    static Node* nextSkippingChildren(const ContainerNode& current, const Node* stayWithin) { return traverseNextSkippingChildrenTemplate(current, stayWithin); }
+    static Node* nextSkippingChildren(const Node&);
+    static Node* nextSkippingChildren(const Node&, const Node* stayWithin);
 
     // Does a reverse pre-order traversal to find the node that comes before the current one in document order
     static Node* lastWithin(const ContainerNode&);
@@ -73,10 +71,6 @@ private:
     static Node* traverseNextTemplate(NodeType&);
     template <class NodeType>
     static Node* traverseNextTemplate(NodeType&, const Node* stayWithin);
-    template <class NodeType>
-    static Node* traverseNextSkippingChildrenTemplate(NodeType&);
-    template <class NodeType>
-    static Node* traverseNextSkippingChildrenTemplate(NodeType&, const Node* stayWithin);
 };
 
 template <class NodeType>
@@ -101,16 +95,14 @@ inline Node* NodeTraversal::traverseNextTemplate(NodeType& current, const Node* 
     return nextAncestorSibling(current, stayWithin);
 }
 
-template <class NodeType>
-inline Node* NodeTraversal::traverseNextSkippingChildrenTemplate(NodeType& current)
+inline Node* NodeTraversal::nextSkippingChildren(const Node& current)
 {
     if (current.nextSibling())
         return current.nextSibling();
     return nextAncestorSibling(current);
 }
 
-template <class NodeType>
-inline Node* NodeTraversal::traverseNextSkippingChildrenTemplate(NodeType& current, const Node* stayWithin)
+inline Node* NodeTraversal::nextSkippingChildren(const Node& current, const Node* stayWithin)
 {
     if (current == stayWithin)
         return 0;
