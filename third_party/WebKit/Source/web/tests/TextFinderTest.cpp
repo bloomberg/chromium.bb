@@ -289,26 +289,4 @@ TEST_F(TextFinderTest, ScopeTextMatchesWithShadowDOM)
     EXPECT_EQ(findInPageRect(textInIElement, 0, textInIElement, 3), matchRects[2]);
 }
 
-TEST_F(TextFinderTest, ScopeRepeatPatternTextMatches)
-{
-    document().body()->setInnerHTML("ab ab ab ab ab", ASSERT_NO_EXCEPTION);
-    Node* textNode = document().body()->firstChild();
-
-    int identifier = 0;
-    WebString searchText(String("ab ab"));
-    WebFindOptions findOptions; // Default.
-
-    textFinder().resetMatchCount();
-    textFinder().scopeStringMatches(identifier, searchText, findOptions, true);
-    while (textFinder().scopingInProgress())
-        FrameTestHelpers::runPendingTasks();
-
-    EXPECT_EQ(2, textFinder().totalMatchCount());
-    WebVector<WebFloatRect> matchRects;
-    textFinder().findMatchRects(matchRects);
-    ASSERT_EQ(2u, matchRects.size());
-    EXPECT_EQ(findInPageRect(textNode, 0, textNode, 5), matchRects[0]);
-    EXPECT_EQ(findInPageRect(textNode, 6, textNode, 11), matchRects[1]);
-}
-
 } // namespace
