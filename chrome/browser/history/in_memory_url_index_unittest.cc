@@ -1094,7 +1094,13 @@ TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
   ExpectPrivateDataEqual(*old_data.get(), new_data);
 }
 
-TEST_F(InMemoryURLIndexTest, RebuildFromHistoryIfCacheOld) {
+#if defined(OS_WIN)
+// http://crbug.com/351500
+#define MAYBE_RebuildFromHistoryIfCacheOld DISABLED_RebuildFromHistoryIfCacheOld
+#else
+#define MAYBE_RebuildFromHistoryIfCacheOld RebuildFromHistoryIfCacheOld
+#endif
+TEST_F(InMemoryURLIndexTest, MAYBE_RebuildFromHistoryIfCacheOld) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   set_history_dir(temp_directory.path());
