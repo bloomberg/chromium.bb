@@ -51,11 +51,11 @@ class WebLayerTreeView;
 class WebLayer;
 class WebViewImpl;
 
-class WebPagePopupImpl FINAL :
-    public WebPagePopup,
-    public PageWidgetEventHandler,
-    public blink::PagePopup,
-    public RefCounted<WebPagePopupImpl> {
+class WebPagePopupImpl FINAL
+    : public WebPagePopup
+    , public PageWidgetEventHandler
+    , public blink::PagePopup
+    , public RefCounted<WebPagePopupImpl> {
     WTF_MAKE_NONCOPYABLE(WebPagePopupImpl);
     WTF_MAKE_FAST_ALLOCATED;
 

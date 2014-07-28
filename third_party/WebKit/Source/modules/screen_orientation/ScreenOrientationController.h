@@ -21,10 +21,10 @@ namespace blink {
 class FrameView;
 class ScreenOrientation;
 
-class ScreenOrientationController FINAL :
-    public NoBaseWillBeGarbageCollectedFinalized<ScreenOrientationController>,
-    public WillBeHeapSupplement<LocalFrame>,
-    public PageLifecycleObserver {
+class ScreenOrientationController FINAL
+    : public NoBaseWillBeGarbageCollectedFinalized<ScreenOrientationController>
+    , public WillBeHeapSupplement<LocalFrame>
+    , public PageLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientationController);
     WTF_MAKE_NONCOPYABLE(ScreenOrientationController);
 public:

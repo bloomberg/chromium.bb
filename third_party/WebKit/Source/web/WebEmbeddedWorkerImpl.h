@@ -47,9 +47,9 @@ class ServiceWorkerGlobalScopeProxy;
 class WebServiceWorkerNetworkProvider;
 class WebView;
 
-class WebEmbeddedWorkerImpl FINAL :
-    public WebEmbeddedWorker,
-    public WebFrameClient {
+class WebEmbeddedWorkerImpl FINAL
+    : public WebEmbeddedWorker
+    , public WebFrameClient {
     WTF_MAKE_NONCOPYABLE(WebEmbeddedWorkerImpl);
 public:
     WebEmbeddedWorkerImpl(

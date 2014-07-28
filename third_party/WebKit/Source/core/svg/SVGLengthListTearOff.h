@@ -36,9 +36,9 @@
 
 namespace blink {
 
-class SVGLengthListTearOff FINAL :
-    public SVGListPropertyTearOffHelper<SVGLengthListTearOff, SVGLengthList>,
-    public ScriptWrappable {
+class SVGLengthListTearOff FINAL
+    : public SVGListPropertyTearOffHelper<SVGLengthListTearOff, SVGLengthList>
+    , public ScriptWrappable {
 public:
     static PassRefPtr<SVGLengthListTearOff> create(PassRefPtr<SVGLengthList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {

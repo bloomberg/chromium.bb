@@ -67,12 +67,12 @@ struct WebMemoryUsageInfo;
 struct WebURLError;
 struct WebDevToolsMessageData;
 
-class WebDevToolsAgentImpl FINAL :
-    public WebDevToolsAgentPrivate,
-    public blink::InspectorClient,
-    public blink::InspectorFrontendChannel,
-    public WebPageOverlay,
-    private WebThread::TaskObserver {
+class WebDevToolsAgentImpl FINAL
+    : public WebDevToolsAgentPrivate
+    , public blink::InspectorClient
+    , public blink::InspectorFrontendChannel
+    , public WebPageOverlay
+    , private WebThread::TaskObserver {
 public:
     WebDevToolsAgentImpl(WebViewImpl* webViewImpl, WebDevToolsAgentClient* client);
     virtual ~WebDevToolsAgentImpl();

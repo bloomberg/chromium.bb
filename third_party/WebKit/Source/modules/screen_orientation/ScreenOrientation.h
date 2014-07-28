@@ -21,10 +21,10 @@ class ScriptPromise;
 class ScriptState;
 class ScreenOrientationController;
 
-class ScreenOrientation FINAL :
-    public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<ScreenOrientation>,
-    public EventTargetWithInlineData,
-    DOMWindowProperty {
+class ScreenOrientation FINAL
+    : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<ScreenOrientation>
+    , public EventTargetWithInlineData
+    , DOMWindowProperty {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<ScreenOrientation>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientation);
 public:

@@ -60,9 +60,9 @@ public:
     }
 };
 
-class SVGPathSegListTearOff FINAL :
-    public SVGListPropertyTearOffHelper<SVGPathSegListTearOff, SVGPathSegList>,
-    public ScriptWrappable {
+class SVGPathSegListTearOff FINAL
+    : public SVGListPropertyTearOffHelper<SVGPathSegListTearOff, SVGPathSegList>
+    , public ScriptWrappable {
 public:
     static PassRefPtr<SVGPathSegListTearOff> create(PassRefPtr<SVGPathSegList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {

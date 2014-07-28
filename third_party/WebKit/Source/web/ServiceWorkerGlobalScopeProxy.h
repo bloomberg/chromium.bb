@@ -59,9 +59,9 @@ class WebServiceWorkerRequest;
 // An instance of this class is supposed to outlive until
 // workerGlobalScopeDestroyed() is called by its corresponding
 // WorkerGlobalScope.
-class ServiceWorkerGlobalScopeProxy FINAL :
-    public WebServiceWorkerContextProxy,
-    public blink::WorkerReportingProxy {
+class ServiceWorkerGlobalScopeProxy FINAL
+    : public WebServiceWorkerContextProxy
+    , public blink::WorkerReportingProxy {
     WTF_MAKE_NONCOPYABLE(ServiceWorkerGlobalScopeProxy);
 public:
     static PassOwnPtr<ServiceWorkerGlobalScopeProxy> create(WebEmbeddedWorkerImpl&, blink::ExecutionContext&, WebServiceWorkerContextClient&);

@@ -55,11 +55,11 @@ class Node;
 
 typedef String ErrorString;
 
-class InspectorDOMDebuggerAgent FINAL :
-    public InspectorBaseAgent<InspectorDOMDebuggerAgent>,
-    public InspectorDebuggerAgent::Listener,
-    public InspectorDOMAgent::Listener,
-    public InspectorBackendDispatcher::DOMDebuggerCommandHandler {
+class InspectorDOMDebuggerAgent FINAL
+    : public InspectorBaseAgent<InspectorDOMDebuggerAgent>
+    , public InspectorDebuggerAgent::Listener
+    , public InspectorDOMAgent::Listener
+    , public InspectorBackendDispatcher::DOMDebuggerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorDOMDebuggerAgent);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorDOMDebuggerAgent);
 public:
