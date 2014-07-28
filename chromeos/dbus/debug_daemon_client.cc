@@ -19,7 +19,6 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
-#include "base/threading/worker_pool.h"
 #include "chromeos/dbus/pipe_reader.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -48,12 +47,13 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   // DebugDaemonClient override.
   virtual void DumpDebugLogs(bool is_compressed,
                              base::File file,
+                             scoped_refptr<base::TaskRunner> task_runner,
                              const GetDebugLogsCallback& callback) OVERRIDE {
     dbus::FileDescriptor* file_descriptor = new dbus::FileDescriptor;
     file_descriptor->PutValue(file.TakePlatformFile());
     // Punt descriptor validity check to a worker thread; on return we'll
     // issue the D-Bus request to stop tracing and collect results.
-    base::WorkerPool::PostTaskAndReply(
+    task_runner->PostTaskAndReply(
         FROM_HERE,
         base::Bind(&dbus::FileDescriptor::CheckValidity,
                    base::Unretained(file_descriptor)),
@@ -61,8 +61,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                    weak_ptr_factory_.GetWeakPtr(),
                    is_compressed,
                    base::Owned(file_descriptor),
-                   callback),
-        false);
+                   callback));
   }
 
   virtual void SetDebugMode(const std::string& subsystem,
@@ -217,15 +216,13 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  virtual bool RequestStopSystemTracing(const StopSystemTracingCallback&
-      callback) OVERRIDE {
+  virtual bool RequestStopSystemTracing(
+      scoped_refptr<base::TaskRunner> task_runner,
+      const StopSystemTracingCallback& callback) OVERRIDE {
     if (pipe_reader_ != NULL) {
       LOG(ERROR) << "Busy doing StopSystemTracing";
       return false;
     }
-
-    scoped_refptr<base::TaskRunner> task_runner =
-        base::WorkerPool::GetTaskRunner(true /* task_is_slow */);
 
     pipe_reader_.reset(new PipeReaderForString(
         task_runner,

@@ -24,8 +24,9 @@ void FakeDebugDaemonClient::Init(dbus::Bus* bus) {}
 void FakeDebugDaemonClient::DumpDebugLogs(
     bool is_compressed,
     base::File file,
+    scoped_refptr<base::TaskRunner> task_runner,
     const GetDebugLogsCallback& callback) {
-  callback.Run(false);
+  callback.Run(true);
 }
 
 void FakeDebugDaemonClient::SetDebugMode(const std::string& subsystem,
@@ -35,6 +36,7 @@ void FakeDebugDaemonClient::SetDebugMode(const std::string& subsystem,
 void FakeDebugDaemonClient::StartSystemTracing() {}
 
 bool FakeDebugDaemonClient::RequestStopSystemTracing(
+    scoped_refptr<base::TaskRunner> task_runner,
     const StopSystemTracingCallback& callback) {
   std::string no_data;
   callback.Run(base::RefCountedString::TakeString(&no_data));

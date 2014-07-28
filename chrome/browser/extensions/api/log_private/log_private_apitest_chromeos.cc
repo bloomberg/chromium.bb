@@ -32,9 +32,10 @@ class TestDebugDaemonClient : public chromeos::FakeDebugDaemonClient {
 
   virtual void DumpDebugLogs(bool is_compressed,
                              base::File file,
+                             scoped_refptr<base::TaskRunner> task_runner,
                              const GetDebugLogsCallback& callback) OVERRIDE {
     base::File* file_param = new base::File(file.Pass());
-    content::BrowserThread::PostBlockingPoolTaskAndReply(
+    task_runner->PostTaskAndReply(
         FROM_HERE,
         base::Bind(
             &GenerateTestLogDumpFile, test_file_, base::Owned(file_param)),

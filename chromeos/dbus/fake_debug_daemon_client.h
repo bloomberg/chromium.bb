@@ -21,11 +21,13 @@ class CHROMEOS_EXPORT FakeDebugDaemonClient : public DebugDaemonClient {
   virtual void Init(dbus::Bus* bus) OVERRIDE;
   virtual void DumpDebugLogs(bool is_compressed,
                              base::File file,
+                             scoped_refptr<base::TaskRunner> task_runner,
                              const GetDebugLogsCallback& callback) OVERRIDE;
   virtual void SetDebugMode(const std::string& subsystem,
                             const SetDebugModeCallback& callback) OVERRIDE;
   virtual void StartSystemTracing() OVERRIDE;
   virtual bool RequestStopSystemTracing(
+      scoped_refptr<base::TaskRunner> task_runner,
       const StopSystemTracingCallback& callback) OVERRIDE;
   virtual void GetRoutes(bool numeric,
                          bool ipv6,

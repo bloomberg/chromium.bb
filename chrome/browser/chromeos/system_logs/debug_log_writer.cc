@@ -71,9 +71,12 @@ void WriteDebugLogToFile(base::File* file,
                << "error: " << file->error_details();
     return;
   }
+  scoped_refptr<base::TaskRunner> task_runner =
+      GetSequencedTaskRunner(sequence_token_name);
   chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->DumpDebugLogs(
       should_compress,
       file->Pass(),
+      task_runner,
       base::Bind(&WriteDebugLogToFileCompleted,
                  file_path,
                  sequence_token_name,

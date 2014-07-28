@@ -340,10 +340,14 @@ void TracingControllerImpl::OnDisableRecordingDone(
     ++pending_disable_recording_ack_count_;
 
 #if defined(OS_CHROMEOS)
-    chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->
-      RequestStopSystemTracing(
-          base::Bind(&TracingControllerImpl::OnEndSystemTracingAcked,
-                     base::Unretained(this)));
+    scoped_refptr<base::TaskRunner> task_runner =
+        BrowserThread::GetBlockingPool();
+    chromeos::DBusThreadManager::Get()
+        ->GetDebugDaemonClient()
+        ->RequestStopSystemTracing(
+            task_runner,
+            base::Bind(&TracingControllerImpl::OnEndSystemTracingAcked,
+                       base::Unretained(this)));
 #elif defined(OS_WIN)
     EtwSystemEventConsumer::GetInstance()->StopSystemTracing(
         base::Bind(&TracingControllerImpl::OnEndSystemTracingAcked,
