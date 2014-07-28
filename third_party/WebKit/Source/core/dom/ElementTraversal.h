@@ -214,9 +214,9 @@ template <class ElementType>
 template <class NodeType>
 inline ElementType* Traversal<ElementType>::lastWithinTemplate(NodeType& current)
 {
-    Node* node = current.lastChild();
+    Node* node = NodeTraversal::lastWithin(current);
     while (node && !isElementOfType<const ElementType>(*node))
-        node = NodeTraversal::previous(node, &current);
+        node = NodeTraversal::previous(*node, &current);
     return toElement<ElementType>(node);
 }
 
