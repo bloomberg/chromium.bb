@@ -516,7 +516,7 @@ void LoginDisplayHostImpl::StartWizard(
   if (login::LoginScrollIntoViewEnabled())
     DisableKeyboardOverscroll();
 
-  startup_sound_honors_spoken_feedback_ = true;
+  startup_sound_honors_spoken_feedback_ = false;
   TryToPlayStartupSound();
 
   // Keep parameters to restore if renderer crashes.
