@@ -223,15 +223,6 @@ public class AutocompleteController {
     }
 
     /**
-     * Use updateMatchDestinationUrlWithQueryFormulationTime instead.
-     */
-    @Deprecated
-    public String updateMatchDestinationUrl(int selectedIndex, long elapsedTimeSinceInputChange) {
-        return updateMatchDestinationUrlWithQueryFormulationTime(selectedIndex,
-                elapsedTimeSinceInputChange);
-    }
-
-    /**
      * Updates aqs parameters on the selected match that we will navigate to and returns the
      * updated URL. |selected_index| is the position of the selected match and
      * |elapsed_time_since_input_change| is the time in ms between the first typed input and match
