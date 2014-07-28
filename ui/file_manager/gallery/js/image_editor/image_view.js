@@ -26,16 +26,6 @@ function ImageView(container, viewport) {
   // when the selection changes.
   this.prefetchLoader_ = new ImageUtil.ImageLoader(this.document_);
 
-  // The content cache is used for prefetching the next image when going
-  // through the images sequentially. The real life photos can be large
-  // (18Mpix = 72Mb pixel array) so we want only the minimum amount of caching.
-  this.contentCache_ = new ImageView.Cache(2);
-
-  // We reuse previously generated screen-scale images so that going back to
-  // a recently loaded image looks instant even if the image is not in
-  // the content cache any more. Screen-scale images are small (~1Mpix)
-  // so we can afford to cache more of them.
-  this.screenCache_ = new ImageView.Cache(5);
   this.contentCallbacks_ = [];
 
   /**
@@ -284,19 +274,15 @@ ImageView.prototype.load =
 
   var self = this;
 
-  this.contentEntry_ = entry;
+  this.contentItem_ = item;
   this.contentRevision_ = -1;
 
-  // Cache has to be evicted in advance, so the returned cached image is not
-  // evicted later by the prefetched image.
-  this.contentCache_.evictLRU();
-
-  var cached = this.contentCache_.getItem(this.contentEntry_);
+  var cached = item.contentImage;
   if (cached) {
     displayMainImage(ImageView.LOAD_TYPE_CACHED_FULL,
         false /* no preview */, cached);
   } else {
-    var cachedScreen = this.screenCache_.getItem(this.contentEntry_);
+    var cachedScreen = item.screenImage;
     var imageWidth = metadata.media && metadata.media.width ||
                      metadata.drive && metadata.drive.imageWidth;
     var imageHeight = metadata.media && metadata.media.height ||
@@ -409,33 +395,12 @@ ImageView.prototype.load =
  * @param {number} delay Image load delay in ms.
  */
 ImageView.prototype.prefetch = function(item, delay) {
-  var self = this;
-  var entry = item.getEntry();
-  function prefetchDone(canvas) {
-    if (canvas.width)
-      self.contentCache_.putItem(entry, canvas);
-  }
-
-  var cached = this.contentCache_.getItem(entry);
-  if (cached) {
-    prefetchDone(cached);
-  } else if (FileType.getMediaType(entry) === 'image') {
-    // Evict the LRU item before we allocate the new canvas to avoid unneeded
-    // strain on memory.
-    this.contentCache_.evictLRU();
-
-    this.prefetchLoader_.load(item, prefetchDone, delay);
-  }
-};
-
-/**
- * Renames the current image.
- * @param {FileEntry} newEntry The new image Entry.
- */
-ImageView.prototype.changeEntry = function(newEntry) {
-  this.contentCache_.renameItem(this.contentEntry_, newEntry);
-  this.screenCache_.renameItem(this.contentEntry_, newEntry);
-  this.contentEntry_ = newEntry;
+  if (item.contentImage)
+    return;
+  this.prefetchLoader_.load(item, function(canvas) {
+    if (canvas.width && canvas.height && !item.contentImage)
+      item.contentImage = canvas;
+  }, delay);
 };
 
 /**
@@ -495,8 +460,8 @@ ImageView.prototype.replaceContent_ = function(
     this.container_.appendChild(this.contentCanvas_);
     this.contentCanvas_.classList.add('fullres');
 
-    this.contentCache_.putItem(this.contentEntry_, this.contentCanvas_, true);
-    this.screenCache_.putItem(this.contentEntry_, this.screenImage_);
+    this.contentItem_.contentImage = this.contentCanvas_;
+    this.contentItem_.screenImage = this.screenImage_;
 
     // TODO(kaznacheev): It is better to pass screenImage_ as it is usually
     // much smaller than contentCanvas_ and still contains the entire image.
@@ -686,103 +651,6 @@ ImageView.prototype.animateAndReplace = function(canvas, imageCropRect) {
   }, effect.getSafeInterval());
 
   return effect.getSafeInterval();
-};
-
-/**
- * Generic cache with a limited capacity and LRU eviction.
- * @param {number} capacity Maximum number of cached item.
- * @constructor
- */
-ImageView.Cache = function(capacity) {
-  this.capacity_ = capacity;
-  this.map_ = {};
-  this.order_ = [];
-};
-
-/**
- * Fetches the item from the cache.
- * @param {FileEntry} entry The entry.
- * @return {Object} The cached item.
- */
-ImageView.Cache.prototype.getItem = function(entry) {
-  return this.map_[entry.toURL()];
-};
-
-/**
- * Puts the item into the cache.
- *
- * @param {FileEntry} entry The entry.
- * @param {Object} item The item object.
- * @param {boolean=} opt_keepLRU True if the LRU order should not be modified.
- */
-ImageView.Cache.prototype.putItem = function(entry, item, opt_keepLRU) {
-  var pos = this.order_.indexOf(entry.toURL());
-
-  if ((pos >= 0) !== (entry.toURL() in this.map_))
-    throw new Error('Inconsistent cache state');
-
-  if (entry.toURL() in this.map_) {
-    if (!opt_keepLRU) {
-      // Move to the end (most recently used).
-      this.order_.splice(pos, 1);
-      this.order_.push(entry.toURL());
-    }
-  } else {
-    this.evictLRU();
-    this.order_.push(entry.toURL());
-  }
-
-  if ((pos >= 0) && (item !== this.map_[entry.toURL()]))
-    this.deleteItem_(this.map_[entry.toURL()]);
-  this.map_[entry.toURL()] = item;
-
-  if (this.order_.length > this.capacity_)
-    throw new Error('Exceeded cache capacity');
-};
-
-/**
- * Evicts the least recently used items.
- */
-ImageView.Cache.prototype.evictLRU = function() {
-  if (this.order_.length === this.capacity_) {
-    var url = this.order_.shift();
-    this.deleteItem_(this.map_[url]);
-    delete this.map_[url];
-  }
-};
-
-/**
- * Changes the Entry.
- * @param {FileEntry} oldEntry The old Entry.
- * @param {FileEntry} newEntry The new Entry.
- */
-ImageView.Cache.prototype.renameItem = function(oldEntry, newEntry) {
-  if (util.isSameEntry(oldEntry, newEntry))
-    return;  // No need to rename.
-
-  var pos = this.order_.indexOf(oldEntry.toURL());
-  if (pos < 0)
-    return;  // Not cached.
-
-  this.order_[pos] = newEntry.toURL();
-  this.map_[newEntry.toURL()] = this.map_[oldEntry.toURL()];
-  delete this.map_[oldEntry.toURL()];
-};
-
-/**
- * Disposes an object.
- *
- * @param {Object} item The item object.
- * @private
- */
-ImageView.Cache.prototype.deleteItem_ = function(item) {
-  // Trick to reduce memory usage without waiting for gc.
-  if (item instanceof HTMLCanvasElement) {
-    // If the canvas is being used somewhere else (eg. displayed on the screen),
-    // it will be cleared.
-    item.width = 0;
-    item.height = 0;
-  }
 };
 
 /* Transition effects */

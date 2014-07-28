@@ -27,8 +27,32 @@ Gallery.Item = function(entry, metadata, metadataCache, original) {
 
   /**
    * @type {MetadataCache}
+   * @private
    */
   this.metadataCache_ = metadataCache;
+
+  /**
+   * The content cache is used for prefetching the next image when going through
+   * the images sequentially. The real life photos can be large (18Mpix = 72Mb
+   * pixel array) so we want only the minimum amount of caching.
+   * @type {Canvas}
+   */
+  this.screenImage = null;
+
+  /**
+   * We reuse previously generated screen-scale images so that going back to a
+   * recently loaded image looks instant even if the image is not in the content
+   * cache any more. Screen-scale images are small (~1Mpix) so we can afford to
+   * cache more of them.
+   * @type {Canvas}
+   */
+  this.contentImage = null;
+
+  /**
+   * Last accessed date to be used for selecting items whose cache are evicted.
+   * @type {number}
+   */
+  this.lastAccessed_ = Date.now();
 
   /**
    * @type {boolean}
@@ -89,6 +113,22 @@ Gallery.Item.prototype.getFileName = function() {
  * @return {boolean} True if this image has not been created in this session.
  */
 Gallery.Item.prototype.isOriginal = function() { return this.original_; };
+
+/**
+ * Obtains the last accessed date.
+ * @return {number} Last accessed date.
+ */
+Gallery.Item.prototype.getLastAccessedDate = function() {
+  return this.lastAccessed_;
+};
+
+/**
+ * Updates the last accessed date.
+ */
+Gallery.Item.prototype.touch = function() {
+  this.lastAccessed_ = Date.now();
+};
+
 
 // TODO: Localize?
 /**

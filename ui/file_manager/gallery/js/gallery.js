@@ -28,6 +28,22 @@ function GalleryDataModel() {
   this.metadataCache_ = null;
 }
 
+/**
+ * Maximum number of full size image cache.
+ * @type {number}
+ * @const
+ * @private
+ */
+GalleryDataModel.MAX_FULL_IMAGE_CACHE_ = 3;
+
+/**
+ * Maximum number of screen size image cache.
+ * @type {number}
+ * @const
+ * @private
+ */
+GalleryDataModel.MAX_SCREEN_IMAGE_CACHE_ = 5;
+
 GalleryDataModel.prototype = {
   __proto__: cr.ui.ArrayDataModel.prototype
 };
@@ -131,6 +147,47 @@ GalleryDataModel.prototype.saveItem = function(item, canvas, overwrite) {
           fulfill();
         }.bind(this));
   }.bind(this));
+};
+
+/**
+ * Evicts image caches in the items.
+ * @param {Gallery.Item} currentSelectedItem Current selected item.
+ */
+GalleryDataModel.prototype.evictCache = function(currentSelectedItem) {
+  // Sort the item by the last accessed date.
+  var sorted = this.slice().sort(function(a, b) {
+    return b.getLastAccessedDate() - a.getLastAccessedDate();
+  });
+
+  // Evict caches.
+  var contentCacheCount = 0;
+  var screenCacheCount = 0;
+  for (var i = 0; i < sorted.length; i++) {
+    if (sorted[i].contentImage) {
+      if (++contentCacheCount > GalleryDataModel.MAX_FULL_IMAGE_CACHE_) {
+        if (sorted[i].contentImage.parentNode) {
+          console.error('The content image has a parent node.');
+        } else {
+          // Force to free the buffer of the canvas by assinng zero size.
+          sorted[i].contentImage.width = 0;
+          sorted[i].contentImage.height = 0;
+          sorted[i].contentImage = null;
+        }
+      }
+    }
+    if (sorted[i].screenImage) {
+      if (++screenCacheCount > GalleryDataModel.MAX_SCREEN_IMAGE_CACHE_) {
+        if (sorted[i].screenImage.parentNode) {
+          console.error('The screen image has a parent node.');
+        } else {
+          // Force to free the buffer of the canvas by assinng zero size.
+          sorted[i].screenImage.width = 0;
+          sorted[i].screenImage.height = 0;
+          sorted[i].screenImage = null;
+        }
+      }
+    }
+  }
 };
 
 /**
@@ -646,6 +703,10 @@ Gallery.prototype.getSingleSelectedItem = function() {
 Gallery.prototype.onSelection_ = function() {
   this.updateSelectionAndState_();
   this.updateShareMenu_();
+  var currentItem = this.getSelectedItems()[0];
+  if (currentItem)
+    currentItem.touch();
+  this.dataModel_.evictCache();
 };
 
 /**

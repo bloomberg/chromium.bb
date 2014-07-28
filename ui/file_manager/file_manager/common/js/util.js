@@ -834,7 +834,7 @@ util.AppCache.cleanup_ = function(map) {
     if (map.hasOwnProperty(key))
       keys.push(key);
   }
-  keys.sort(function(a, b) { return map[a].expire > map[b].expire });
+  keys.sort(function(a, b) { return map[a].expire > map[b].expire; });
 
   var cutoff = Date.now();
 

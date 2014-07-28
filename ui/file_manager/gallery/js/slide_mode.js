@@ -37,7 +37,6 @@ function SlideMode(container, content, toolbar, prompt,
 
   this.onSelectionBound_ = this.onSelection_.bind(this);
   this.onSpliceBound_ = this.onSplice_.bind(this);
-  this.onContentBound_ = this.onContentChange_.bind(this);
 
   // Unique numeric key, incremented per each load attempt used to discard
   // old attempts. This can happen especially when changing selection fast or
@@ -256,7 +255,6 @@ SlideMode.prototype.enter = function(
 
     this.selectionModel_.addEventListener('change', this.onSelectionBound_);
     this.dataModel_.addEventListener('splice', this.onSpliceBound_);
-    this.dataModel_.addEventListener('content', this.onContentBound_);
 
     ImageUtil.setAttribute(this.arrowBox_, 'active', this.getItemCount_() > 1);
     this.ribbon_.enable();
@@ -314,7 +312,6 @@ SlideMode.prototype.enter = function(
     // Register handlers.
     this.selectionModel_.addEventListener('change', this.onSelectionBound_);
     this.dataModel_.addEventListener('splice', this.onSpliceBound_);
-    this.dataModel_.addEventListener('content', this.onContentBound_);
     this.touchHandlers_.enabled = true;
 
     // Wait 1000ms after the animation is done, then prefetch the next image.
@@ -342,7 +339,6 @@ SlideMode.prototype.leave = function(zoomToRect, callback) {
       this.selectionModel_.removeEventListener(
           'change', this.onSelectionBound_);
       this.dataModel_.removeEventListener('splice', this.onSpliceBound_);
-      this.dataModel_.removeEventListener('content', this.onContentBound_);
       this.ribbon_.disable();
       this.active_ = false;
       if (this.savedSelection_)
@@ -993,17 +989,6 @@ SlideMode.prototype.saveCurrentImage_ = function(callback) {
   }.bind(this)).catch(function(error) {
     console.error(error.stack || error);
   });
-};
-
-/**
- * Update caches when the selected item has been renamed.
- * @param {Event} event Event.
- * @private
- */
-SlideMode.prototype.onContentChange_ = function(event) {
-  var newEntry = event.item.getEntry();
-  if (!util.isSameEntry(newEntry, event.oldEntry))
-    this.imageView_.changeEntry(newEntry);
 };
 
 /**
