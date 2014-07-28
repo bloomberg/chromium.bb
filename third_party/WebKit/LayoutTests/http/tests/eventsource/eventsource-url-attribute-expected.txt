@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'EventSource.URL' is deprecated. Please use 'EventSource.url' instead.
 Both .URL and .url should work (for compatibility reasons).
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

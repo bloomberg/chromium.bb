@@ -38,7 +38,7 @@
     RaisesException=Constructor,
 ] interface EventSource : EventTarget {
 
-    [MeasureAs=EventSourceURL] readonly attribute DOMString URL; // Lowercased .url is the one in the spec, but leaving .URL for compatibility reasons.
+    [DeprecateAs=EventSourceURL] readonly attribute DOMString URL; // Lowercased .url is the one in the spec, but leaving .URL for compatibility reasons.
     readonly attribute DOMString url;
     readonly attribute boolean withCredentials;
 

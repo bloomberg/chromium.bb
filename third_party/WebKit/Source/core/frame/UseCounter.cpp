@@ -739,6 +739,12 @@ String UseCounter::deprecationMessage(Feature feature)
     case OpenWebDatabaseSyncInWorker:
         return "'openDatabaseSync' is deprecated. Please switch to Indexed Database API.";
 
+    case EventSourceURL:
+        return "'EventSource.URL' is deprecated. Please use 'EventSource.url' instead.";
+
+    case WebSocketURL:
+        return "'WebSocket.URL' is deprecated. Please use 'WebSocket.url' instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
