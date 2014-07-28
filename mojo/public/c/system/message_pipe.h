@@ -86,8 +86,8 @@ extern "C" {
 //
 // Returns:
 //   |MOJO_RESULT_OK| on success.
-//   |MOJO_RESULT_INVALID_ARGUMENT| if |message_pipe_handle0| and/or
-//       |message_pipe_handle1| do not appear to be valid pointers.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g.,
+//       |*options| is invalid).
 //   |MOJO_RESULT_RESOURCE_EXHAUSTED| if a process/system/quota/etc. limit has
 //       been reached.
 //
@@ -120,6 +120,7 @@ MOJO_SYSTEM_EXPORT MojoResult MojoCreateMessagePipe(
 //       Note that closing an endpoint is not necessarily synchronous (e.g.,
 //       across processes), so this function may be succeed even if the other
 //       endpoint has been closed (in which case the message would be dropped).
+//   |MOJO_RESULT_UNIMPLEMENTED| if an unsupported flag was set in |*options|.
 //   |MOJO_RESULT_BUSY| if some handle to be sent is currently in use.
 //
 // TODO(vtl): Add a notion of capacity for message pipes, and return

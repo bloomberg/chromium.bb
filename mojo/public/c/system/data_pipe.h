@@ -121,8 +121,8 @@ extern "C" {
 //
 // Returns:
 //   |MOJO_RESULT_OK| on success.
-//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g., if
-//       |*options| is invalid or one of the handle pointers looks invalid).
+//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g.,
+//       |*options| is invalid).
 //   |MOJO_RESULT_RESOURCE_EXHAUSTED| if a process/system/quota/etc. limit has
 //       been reached (e.g., if the requested capacity was too large, or if the
 //       maximum number of handles was exceeded).
@@ -151,10 +151,10 @@ MOJO_SYSTEM_EXPORT MojoResult MojoCreateDataPipe(
 //
 // Returns:
 //   |MOJO_RESULT_OK| on success.
-//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g., if
+//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g.,
 //       |data_pipe_producer_dispatcher| is not a handle to a data pipe
-//       producer, |elements| does not look like a valid pointer, or
-//       |*num_bytes| is not a multiple of the data pipe's element size).
+//       producer or |*num_bytes| is not a multiple of the data pipe's element
+//       size).
 //   |MOJO_RESULT_FAILED_PRECONDITION| if the data pipe consumer handle has been
 //       closed.
 //   |MOJO_RESULT_OUT_OF_RANGE| if |flags| has
@@ -197,9 +197,8 @@ MOJO_SYSTEM_EXPORT MojoResult MojoWriteData(
 //
 // Returns:
 //   |MOJO_RESULT_OK| on success.
-//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g., if
-//       |data_pipe_producer_handle| is not a handle to a data pipe producer,
-//       |buffer| or |buffer_num_bytes| does not look like a valid pointer, or
+//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g.,
+//       |data_pipe_producer_handle| is not a handle to a data pipe producer or
 //       flags has |MOJO_WRITE_DATA_FLAG_ALL_OR_NONE| set and
 //       |*buffer_num_bytes| is not a multiple of the element size).
 //   |MOJO_RESULT_FAILED_PRECONDITION| if the data pipe consumer handle has been
@@ -235,10 +234,10 @@ MOJO_SYSTEM_EXPORT MojoResult MojoBeginWriteData(
 //
 // Returns:
 //   |MOJO_RESULT_OK| on success.
-//   |MOJO_RESULT_INVALID_ARGUMENT| if |data_pipe_producer_handle| is not a
-//       handle to a data pipe producer or |num_bytes_written| is invalid
-//       (greater than the maximum value provided by |MojoBeginWriteData()| or
-//       not a multiple of the element size).
+//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g.,
+//       |data_pipe_producer_handle| is not a handle to a data pipe producer or
+//       |num_bytes_written| is invalid (greater than the maximum value provided
+//       by |MojoBeginWriteData()| or not a multiple of the element size).
 //   |MOJO_RESULT_FAILED_PRECONDITION| if the data pipe producer is not in a
 //       two-phase write (e.g., |MojoBeginWriteData()| was not called or
 //       |MojoEndWriteData()| has already been called).
@@ -314,9 +313,8 @@ MOJO_SYSTEM_EXPORT MojoResult MojoReadData(
 //
 // Returns:
 //   |MOJO_RESULT_OK| on success.
-//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g., if
+//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g.,
 //       |data_pipe_consumer_handle| is not a handle to a data pipe consumer,
-//       |buffer| or |buffer_num_bytes| does not look like a valid pointer,
 //       |flags| has |MOJO_READ_DATA_FLAG_ALL_OR_NONE| set and
 //       |*buffer_num_bytes| is not a multiple of the element size, or |flags|
 //       has invalid flags set).
@@ -349,10 +347,10 @@ MOJO_SYSTEM_EXPORT MojoResult MojoBeginReadData(
 //
 // Returns:
 //   |MOJO_RESULT_OK| on success.
-//   |MOJO_RESULT_INVALID_ARGUMENT| if |data_pipe_consumer_handle| is not a
-//       handle to a data pipe consumer or |num_bytes_written| is invalid
-//       (greater than the maximum value provided by |MojoBeginReadData()| or
-//       not a multiple of the element size).
+//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g.,
+//       |data_pipe_consumer_handle| is not a handle to a data pipe consumer or
+//       |num_bytes_written| is greater than the maximum value provided by
+//       |MojoBeginReadData()| or not a multiple of the element size).
 //   |MOJO_RESULT_FAILED_PRECONDITION| if the data pipe consumer is not in a
 //       two-phase read (e.g., |MojoBeginReadData()| was not called or
 //       |MojoEndReadData()| has already been called).

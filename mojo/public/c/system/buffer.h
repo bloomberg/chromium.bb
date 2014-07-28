@@ -108,8 +108,8 @@ extern "C" {
 //
 // Returns:
 //   |MOJO_RESULT_OK| on success.
-//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g., if
-//       |*options| is invalid or |shared_buffer_handle| looks invalid).
+//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g.,
+//       |*options| is invalid).
 //   |MOJO_RESULT_RESOURCE_EXHAUSTED| if a process/system/quota/etc. limit has
 //       been reached (e.g., if the requested size was too large, or if the
 //       maximum number of handles was exceeded).
@@ -132,9 +132,8 @@ MOJO_SYSTEM_EXPORT MojoResult MojoCreateSharedBuffer(
 //
 // Returns:
 //   |MOJO_RESULT_OK| on success.
-//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g., if
-//       |buffer_handle| is not a valid buffer handle, |*options| is invalid, or
-//       |new_buffer_handle| looks invalid).
+//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g.,
+//       |buffer_handle| is not a valid buffer handle or |*options| is invalid).
 //   |MOJO_RESULT_UNIMPLEMENTED| if an unsupported flag was set in |*options|.
 MOJO_SYSTEM_EXPORT MojoResult MojoDuplicateBufferHandle(
     MojoHandle buffer_handle,
@@ -158,9 +157,9 @@ MOJO_SYSTEM_EXPORT MojoResult MojoDuplicateBufferHandle(
 //
 // Returns:
 //   |MOJO_RESULT_OK| on success.
-//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g., if
-//       |buffer_handle| is not a valid buffer handle, the range specified by
-//       |offset| and |num_bytes| is not valid, or |buffer| looks invalid).
+//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g.,
+//       |buffer_handle| is not a valid buffer handle or the range specified by
+//       |offset| and |num_bytes| is not valid).
 //   |MOJO_RESULT_RESOURCE_EXHAUSTED| if the mapping operation itself failed
 //       (e.g., due to not having appropriate address space available).
 MOJO_SYSTEM_EXPORT MojoResult MojoMapBuffer(MojoHandle buffer_handle,
@@ -176,8 +175,8 @@ MOJO_SYSTEM_EXPORT MojoResult MojoMapBuffer(MojoHandle buffer_handle,
 //
 // Returns:
 //   |MOJO_RESULT_OK| on success.
-//   |MOJO_RESULT_INVALID_ARGUMENT| if |buffer| is invalid (e.g., if it is not
-//       the result of |MojoMapBuffer()| or it has already been unmapped).
+//   |MOJO_RESULT_INVALID_ARGUMENT| if |buffer| is invalid (e.g., is not the
+//       result of |MojoMapBuffer()| or has already been unmapped).
 MOJO_SYSTEM_EXPORT MojoResult MojoUnmapBuffer(void* buffer);  // In.
 
 #ifdef __cplusplus
