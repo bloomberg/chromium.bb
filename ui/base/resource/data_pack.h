@@ -13,6 +13,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "ui/base/layout.h"
@@ -21,7 +22,6 @@
 
 namespace base {
 class FilePath;
-class MemoryMappedFile;
 class RefCountedStaticMemory;
 }
 
@@ -37,6 +37,10 @@ class UI_BASE_EXPORT DataPack : public ResourceHandle {
 
   // Loads a pack file from |file|, returning false on error.
   bool LoadFromFile(base::File file);
+
+  // Loads a pack file from |region| of |file|, returning false on error.
+  bool LoadFromFileRegion(base::File file,
+                          const base::MemoryMappedFile::Region& region);
 
   // Writes a pack file containing |resources| to |path|. If there are any
   // text resources to be written, their encoding must already agree to the

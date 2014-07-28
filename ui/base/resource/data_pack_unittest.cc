@@ -92,6 +92,46 @@ TEST(DataPackTest, LoadFromFile) {
   ASSERT_FALSE(pack.GetStringPiece(140, &data));
 }
 
+TEST(DataPackTest, LoadFromFileRegion) {
+  base::ScopedTempDir dir;
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  base::FilePath data_path = dir.path().Append(FILE_PATH_LITERAL("sample.pak"));
+
+  // Construct a file which has a non page-aligned zero-filled header followed
+  // by the actual pak file content.
+  const char kPadding[5678] = {0};
+  ASSERT_EQ(static_cast<int>(sizeof(kPadding)),
+            base::WriteFile(data_path, kPadding, sizeof(kPadding)));
+  ASSERT_EQ(static_cast<int>(kSamplePakSize),
+            base::AppendToFile(data_path, kSamplePakContents, kSamplePakSize));
+
+  base::File file(data_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  ASSERT_TRUE(file.IsValid());
+
+  // Load the file through the data pack API.
+  DataPack pack(SCALE_FACTOR_100P);
+  base::MemoryMappedFile::Region region(sizeof(kPadding), kSamplePakSize);
+  ASSERT_TRUE(pack.LoadFromFileRegion(file.Pass(), region));
+
+  base::StringPiece data;
+  ASSERT_TRUE(pack.HasResource(4));
+  ASSERT_TRUE(pack.GetStringPiece(4, &data));
+  EXPECT_EQ("this is id 4", data);
+  ASSERT_TRUE(pack.HasResource(6));
+  ASSERT_TRUE(pack.GetStringPiece(6, &data));
+  EXPECT_EQ("this is id 6", data);
+
+  // Try reading zero-length data blobs, just in case.
+  ASSERT_TRUE(pack.GetStringPiece(1, &data));
+  EXPECT_EQ(0U, data.length());
+  ASSERT_TRUE(pack.GetStringPiece(10, &data));
+  EXPECT_EQ(0U, data.length());
+
+  // Try looking up an invalid key.
+  ASSERT_FALSE(pack.HasResource(140));
+  ASSERT_FALSE(pack.GetStringPiece(140, &data));
+}
+
 INSTANTIATE_TEST_CASE_P(WriteBINARY, DataPackTest, ::testing::Values(
     DataPack::BINARY));
 INSTANTIATE_TEST_CASE_P(WriteUTF8, DataPackTest, ::testing::Values(

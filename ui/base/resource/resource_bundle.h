@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -165,6 +166,11 @@ class UI_BASE_EXPORT ResourceBundle {
 
   // Same as above but using an already open file.
   void AddDataPackFromFile(base::File file, ScaleFactor scale_factor);
+
+  // Same as above but using only a region (offset + size) of the file.
+  void AddDataPackFromFileRegion(base::File file,
+                                 const base::MemoryMappedFile::Region& region,
+                                 ScaleFactor scale_factor);
 
   // Same as AddDataPackFromPath but does not log an error if the pack fails to
   // load.

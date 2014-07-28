@@ -24,6 +24,26 @@ class BASE_EXPORT MemoryMappedFile {
   MemoryMappedFile();
   ~MemoryMappedFile();
 
+  // Used to hold information about a region [offset + size] of a file.
+  struct BASE_EXPORT Region {
+    static const Region kWholeFile;
+
+    Region(int64 offset, int64 size);
+
+    bool operator==(const Region& other) const;
+
+    // Start of the region (measured in bytes from the beginning of the file).
+    int64 offset;
+
+    // Length of the region in bytes.
+    int64 size;
+
+   private:
+    // This ctor is used only by kWholeFile, to construct a zero-sized Region
+    // (which is forbidden by the public ctor) and uniquely identify kWholeFile.
+    Region();
+  };
+
   // Opens an existing file and maps it into memory. Access is restricted to
   // read only. If this object already points to a valid memory mapped file
   // then this method will fail and return false. If it cannot open the file,
@@ -34,6 +54,9 @@ class BASE_EXPORT MemoryMappedFile {
   // As above, but works with an already-opened file. MemoryMappedFile takes
   // ownership of |file| and closes it when done.
   bool Initialize(File file);
+
+  // As above, but works with a region of an already-opened file.
+  bool Initialize(File file, const Region& region);
 
 #if defined(OS_WIN)
   // Opens an existing file and maps it as an image section. Please refer to
@@ -48,9 +71,21 @@ class BASE_EXPORT MemoryMappedFile {
   bool IsValid() const;
 
  private:
+  // Given the arbitrarily aligned memory region [start, size], returns the
+  // boundaries of the region aligned to the granularity specified by the OS,
+  // (a page on Linux, ~32k on Windows) as follows:
+  // - |aligned_start| is page aligned and <= |start|.
+  // - |aligned_size| is a multiple of the VM granularity and >= |size|.
+  // - |offset| is the displacement of |start| w.r.t |aligned_start|.
+  static void CalculateVMAlignedBoundaries(int64 start,
+                                           int64 size,
+                                           int64* aligned_start,
+                                           int64* aligned_size,
+                                           int32* offset);
+
   // Map the file to memory, set data_ to that memory address. Return true on
   // success, false on any kind of failure. This is a helper for Initialize().
-  bool MapFileToMemory();
+  bool MapFileRegionToMemory(const Region& region);
 
   // Closes all open handles.
   void CloseHandles();

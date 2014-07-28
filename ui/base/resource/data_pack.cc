@@ -85,8 +85,15 @@ bool DataPack::LoadFromPath(const base::FilePath& path) {
 }
 
 bool DataPack::LoadFromFile(base::File file) {
+  return LoadFromFileRegion(file.Pass(),
+                            base::MemoryMappedFile::Region::kWholeFile);
+}
+
+bool DataPack::LoadFromFileRegion(
+    base::File file,
+    const base::MemoryMappedFile::Region& region) {
   mmap_.reset(new base::MemoryMappedFile);
-  if (!mmap_->Initialize(file.Pass())) {
+  if (!mmap_->Initialize(file.Pass(), region)) {
     DLOG(ERROR) << "Failed to mmap datapack";
     UMA_HISTOGRAM_ENUMERATION("DataPack.Load", INIT_FAILED_FROM_FILE,
                               LOAD_ERRORS_COUNT);
