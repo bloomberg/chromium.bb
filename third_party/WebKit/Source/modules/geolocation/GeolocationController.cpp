@@ -41,7 +41,7 @@ GeolocationController::GeolocationController(LocalFrame& frame, GeolocationClien
     , m_client(client)
     , m_hasClientForTest(false)
     , m_isClientUpdating(false)
-    , m_inspectorAgent()
+    , m_inspectorAgent(nullptr)
 {
     // FIXME: Once GeolocationInspectorAgent is per frame, there will be a 1:1 relationship between
     // it and this class. Until then, there's one GeolocationInspectorAgent per page that the main
@@ -54,7 +54,10 @@ GeolocationController::GeolocationController(LocalFrame& frame, GeolocationClien
         m_inspectorAgent = GeolocationController::from(frame.page()->deprecatedLocalMainFrame())->m_inspectorAgent;
     }
 
-    m_inspectorAgent->addController(this);
+    // m_inspectorAgent is 0 for out of process iframe instantiations, since inspector is currently unable
+    // to handle that scenario.
+    if (m_inspectorAgent)
+        m_inspectorAgent->addController(this);
 
     if (!frame.isMainFrame() && frame.page()->mainFrame()->isLocalFrame()) {
         // internals.setGeolocationClientMock is per page.
