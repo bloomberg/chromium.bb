@@ -45,8 +45,9 @@ env.AddLibraryToSdk(libpthread)
 
 if env.Bit('nonsfi_nacl'):
   nc_private_objs = nc_objs + [
-      '${MAIN_DIR}/src/nonsfi/linux/linux_futex.c',
-      '${MAIN_DIR}/src/nonsfi/linux/linux_pthread_private.c',
+      env.ComponentObject(
+          interface, '${MAIN_DIR}/src/nonsfi/linux/%s.c' % interface)
+      for interface in ['linux_futex', 'linux_pthread_private']
       ]
 else:
   # The private library rolls in those IRT components.
