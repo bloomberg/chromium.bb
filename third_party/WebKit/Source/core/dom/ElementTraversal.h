@@ -113,16 +113,6 @@ inline Element* Traversal<Element>::firstWithinTemplate(NodeType& current)
 
 template <>
 template <class NodeType>
-inline Element* Traversal<Element>::lastWithinTemplate(NodeType& current)
-{
-    Node* node = NodeTraversal::lastWithin(current);
-    while (node && !node->isElementNode())
-        node = NodeTraversal::previous(*node, &current);
-    return toElement(node);
-}
-
-template <>
-template <class NodeType>
 inline Element* Traversal<Element>::nextTemplate(NodeType& current)
 {
     Node* node = NodeTraversal::next(current);
@@ -138,26 +128,6 @@ inline Element* Traversal<Element>::nextTemplate(NodeType& current, const Node* 
     Node* node = NodeTraversal::next(current, stayWithin);
     while (node && !node->isElementNode())
         node = NodeTraversal::nextSkippingChildren(*node, stayWithin);
-    return toElement(node);
-}
-
-template <>
-template <class NodeType>
-inline Element* Traversal<Element>::previousTemplate(NodeType& current)
-{
-    Node* node = NodeTraversal::previous(current);
-    while (node && !node->isElementNode())
-        node = NodeTraversal::previous(*node);
-    return toElement(node);
-}
-
-template <>
-template <class NodeType>
-inline Element* Traversal<Element>::previousTemplate(NodeType& current, const Node* stayWithin)
-{
-    Node* node = NodeTraversal::previous(current, stayWithin);
-    while (node && !node->isElementNode())
-        node = NodeTraversal::previous(*node, stayWithin);
     return toElement(node);
 }
 
