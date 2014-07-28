@@ -68,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsIconViewTest, CloseOnClick) {
   ui::MouseEvent mouse_down(ui::ET_MOUSE_PRESSED,
                             gfx::Point(10, 10), gfx::Point(900, 60),
                             ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  static_cast<views::View*>(view())->OnMousePressed(mouse_down);
+  view()->OnMousePressed(mouse_down);
   // Wait for the command execution to close the bubble.
   content::RunAllPendingInMessageLoop();
   EXPECT_FALSE(view()->active());
