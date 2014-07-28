@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -18,12 +19,25 @@ using base::StringPiece;
 using base::TimeDelta;
 using net::ProxyService;
 
+namespace {
+
+const int kShortBypassMaxSeconds = 59;
+const int kMediumBypassMaxSeconds = 300;
+
+// Returns a random bypass duration between 1 and 5 minutes.
+base::TimeDelta GetDefaultBypassDuration() {
+  const int64 delta_ms =
+      base::RandInt(base::TimeDelta::FromMinutes(1).InMilliseconds(),
+                    base::TimeDelta::FromMinutes(5).InMilliseconds());
+  return TimeDelta::FromMilliseconds(delta_ms);
+}
+}  // namespace
+
 namespace data_reduction_proxy {
 
-bool GetDataReductionProxyBypassDuration(
-    const net::HttpResponseHeaders* headers,
-    const std::string& action_prefix,
-    base::TimeDelta* duration) {
+bool ParseHeadersAndSetBypassDuration(const net::HttpResponseHeaders* headers,
+                                      const std::string& action_prefix,
+                                      base::TimeDelta* bypass_duration) {
   void* iter = NULL;
   std::string value;
   std::string name = "chrome-proxy";
@@ -39,7 +53,13 @@ bool GetDataReductionProxyBypassDuration(
                 &seconds) || seconds < 0) {
           continue;  // In case there is a well formed instruction.
         }
-        *duration = TimeDelta::FromSeconds(seconds);
+        if (seconds != 0) {
+          *bypass_duration = TimeDelta::FromSeconds(seconds);
+        } else {
+          // Server deferred to us to choose a duration. Default to a random
+          // duration between one and five minutes.
+          *bypass_duration = GetDefaultBypassDuration();
+        }
         return true;
       }
     }
@@ -47,11 +67,10 @@ bool GetDataReductionProxyBypassDuration(
   return false;
 }
 
-bool GetDataReductionProxyInfo(const net::HttpResponseHeaders* headers,
-                               DataReductionProxyInfo* proxy_info) {
+bool ParseHeadersAndSetProxyInfo(const net::HttpResponseHeaders* headers,
+                                 DataReductionProxyInfo* proxy_info) {
   DCHECK(proxy_info);
   proxy_info->bypass_all = false;
-  proxy_info->bypass_duration = TimeDelta();
   // Support header of the form Chrome-Proxy: bypass|block=<duration>, where
   // <duration> is the number of seconds to wait before retrying
   // the proxy. If the duration is 0, then the default proxy retry delay
@@ -62,15 +81,15 @@ bool GetDataReductionProxyInfo(const net::HttpResponseHeaders* headers,
 
   // 'block' takes precedence over 'bypass', so look for it first.
   // TODO(bengr): Reduce checks for 'block' and 'bypass' to a single loop.
-  if (GetDataReductionProxyBypassDuration(
-      headers, "block=", &proxy_info->bypass_duration)) {
+  if (ParseHeadersAndSetBypassDuration(
+          headers, "block=", &proxy_info->bypass_duration)) {
     proxy_info->bypass_all = true;
     return true;
   }
 
   // Next, look for 'bypass'.
-  if (GetDataReductionProxyBypassDuration(
-      headers, "bypass=", &proxy_info->bypass_duration)) {
+  if (ParseHeadersAndSetBypassDuration(
+          headers, "bypass=", &proxy_info->bypass_duration)) {
     return true;
   }
   return false;
@@ -103,26 +122,22 @@ bool HasDataReductionProxyViaHeader(const net::HttpResponseHeaders* headers) {
   return false;
 }
 
-const int kShortBypassMaxSeconds = 59;
-const int kMediumBypassMaxSeconds = 300;
 net::ProxyService::DataReductionProxyBypassType
 GetDataReductionProxyBypassType(
     const net::HttpResponseHeaders* headers,
     DataReductionProxyInfo* data_reduction_proxy_info) {
   DCHECK(data_reduction_proxy_info);
-  if (GetDataReductionProxyInfo(headers, data_reduction_proxy_info)) {
+  if (ParseHeadersAndSetProxyInfo(headers, data_reduction_proxy_info)) {
     // A chrome-proxy response header is only present in a 502. For proper
     // reporting, this check must come before the 5xx checks below.
     const TimeDelta& duration = data_reduction_proxy_info->bypass_duration;
-    // bypass=0 means bypass for a random duration between 1 to 5 minutes
-    if (duration == TimeDelta())
-      return ProxyService::MEDIUM_BYPASS;
     if (duration <= TimeDelta::FromSeconds(kShortBypassMaxSeconds))
       return ProxyService::SHORT_BYPASS;
     if (duration <= TimeDelta::FromSeconds(kMediumBypassMaxSeconds))
       return ProxyService::MEDIUM_BYPASS;
     return ProxyService::LONG_BYPASS;
   }
+  data_reduction_proxy_info->bypass_duration = GetDefaultBypassDuration();
   // Fall back if a 500, 502 or 503 is returned.
   if (headers->response_code() == net::HTTP_INTERNAL_SERVER_ERROR)
     return ProxyService::STATUS_500_HTTP_INTERNAL_SERVER_ERROR;

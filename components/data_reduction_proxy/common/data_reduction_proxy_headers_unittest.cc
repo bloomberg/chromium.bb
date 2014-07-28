@@ -54,14 +54,6 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
     },
     { "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
-      "Chrome-Proxy: bypass=0\n"
-      "Content-Length: 999\n",
-      true,
-      0,
-      false,
-    },
-    { "HTTP/1.1 200 OK\n"
-      "connection: keep-alive\n"
       "Chrome-Proxy: bypass=-1\n"
       "Content-Length: 999\n",
       false,
@@ -183,12 +175,29 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
 
     DataReductionProxyInfo data_reduction_proxy_info;
     EXPECT_EQ(tests[i].expected_result,
-              GetDataReductionProxyInfo(parsed, &data_reduction_proxy_info));
+              ParseHeadersAndSetProxyInfo(parsed, &data_reduction_proxy_info));
     EXPECT_EQ(tests[i].expected_retry_delay,
               data_reduction_proxy_info.bypass_duration.InSeconds());
     EXPECT_EQ(tests[i].expected_bypass_all,
               data_reduction_proxy_info.bypass_all);
   }
+}
+
+TEST_F(DataReductionProxyHeadersTest, ParseHeadersAndSetProxyInfo) {
+  std::string headers =
+      "HTTP/1.1 200 OK\n"
+      "connection: keep-alive\n"
+      "Chrome-Proxy: bypass=0\n"
+      "Content-Length: 999\n";
+  HeadersToRaw(&headers);
+  scoped_refptr<net::HttpResponseHeaders> parsed(
+      new net::HttpResponseHeaders(headers));
+
+  DataReductionProxyInfo data_reduction_proxy_info;
+  EXPECT_TRUE(ParseHeadersAndSetProxyInfo(parsed, &data_reduction_proxy_info));
+  EXPECT_LE(60, data_reduction_proxy_info.bypass_duration.InSeconds());
+  EXPECT_GE(5 * 60, data_reduction_proxy_info.bypass_duration.InSeconds());
+  EXPECT_FALSE(data_reduction_proxy_info.bypass_all);
 }
 
 TEST_F(DataReductionProxyHeadersTest, HasDataReductionProxyViaHeader) {

@@ -9,10 +9,13 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_service.h"
 
-using net::ProxyService;
+namespace net {
+
+class HttpResponseHeaders;
+
+}  // namespace net
 
 namespace data_reduction_proxy {
 
@@ -34,27 +37,25 @@ struct DataReductionProxyInfo {
 // (as specified in |ProxyList::UpdateRetryInfoOnFallback|) should be used.
 // If all available data reduction proxies should by bypassed, |bypass_all| is
 // set to true. |proxy_info| must be non-NULL.
-bool GetDataReductionProxyInfo(
-    const net::HttpResponseHeaders* headers,
-    DataReductionProxyInfo* proxy_info);
+bool ParseHeadersAndSetProxyInfo(const net::HttpResponseHeaders* headers,
+                                 DataReductionProxyInfo* proxy_info);
 
-// Returns true if the response contain the data reduction proxy Via header
+// Returns true if the response contains the data reduction proxy Via header
 // value. Used to check the integrity of data reduction proxy responses.
 bool HasDataReductionProxyViaHeader(const net::HttpResponseHeaders* headers);
 
 // Returns the reason why the Chrome proxy should be bypassed or not, and
 // populates |proxy_info| with information on how long to bypass if
 // applicable.
-ProxyService::DataReductionProxyBypassType GetDataReductionProxyBypassType(
+net::ProxyService::DataReductionProxyBypassType GetDataReductionProxyBypassType(
     const net::HttpResponseHeaders* headers,
     DataReductionProxyInfo* proxy_info);
 
 // Searches for the specified Chrome-Proxy action, and if present interprets
 // its value as a duration in seconds.
-bool GetDataReductionProxyBypassDuration(
-    const net::HttpResponseHeaders* headers,
-    const std::string& action_prefix,
-    base::TimeDelta* duration);
+bool ParseHeadersAndSetBypassDuration(const net::HttpResponseHeaders* headers,
+                                      const std::string& action_prefix,
+                                      base::TimeDelta* bypass_duration);
 
 }  // namespace data_reduction_proxy
 #endif  // COMPONENTS_DATA_REDUCTION_PROXY_COMMON_DATA_REDUCTION_PROXY_HEADERS_H_

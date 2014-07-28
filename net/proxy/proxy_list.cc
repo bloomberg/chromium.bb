@@ -6,7 +6,6 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/rand_util.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -167,8 +166,12 @@ bool ProxyList::Fallback(ProxyRetryInfoMap* proxy_retry_info,
     NOTREACHED();
     return false;
   }
-  UpdateRetryInfoOnFallback(proxy_retry_info, base::TimeDelta(), true,
-                            ProxyServer(), net_log);
+  // By default, proxies are not retried for 5 minutes.
+  UpdateRetryInfoOnFallback(proxy_retry_info,
+                            TimeDelta::FromMinutes(5),
+                            true,
+                            ProxyServer(),
+                            net_log);
 
   // Remove this proxy from our list.
   proxies_.erase(proxies_.begin());
@@ -204,17 +207,7 @@ void ProxyList::UpdateRetryInfoOnFallback(
     bool reconsider,
     const ProxyServer& another_proxy_to_bypass,
     const BoundNetLog& net_log) const {
-  // Time to wait before retrying a bad proxy server.
-  if (retry_delay == base::TimeDelta()) {
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-    // Randomize the timeout over a range from one to five minutes.
-    retry_delay =
-        TimeDelta::FromMilliseconds(
-            base::RandInt(1 * 60 * 1000, 5 * 60 * 1000));
-#else
-    retry_delay = TimeDelta::FromMinutes(5);
-#endif
-  }
+  DCHECK(retry_delay != base::TimeDelta());
 
   if (proxies_.empty()) {
     NOTREACHED();
