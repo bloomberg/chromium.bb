@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//tools/grit/grit_rule.gni")
+
 if (!is_android) {
 
 # GYP version: WebKit/public/blink.gyp:blink
@@ -71,5 +73,14 @@ group("blink_devtools_frontend_resources") {
 group("blink_generate_devtools_grd") {
   deps = [
     "//third_party/WebKit/Source/devtools:generate_devtools_grd",
+  ]
+}
+
+grit("resources") {
+  source = "blink_resources.grd"
+  outputs = [
+    "grit/blink_resources.h",
+    "blink_resources.rc",
+    "blink_resources.pak",
   ]
 }
