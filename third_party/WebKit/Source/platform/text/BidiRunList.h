@@ -153,7 +153,7 @@ void BidiRunList<Run>::replaceRunWithRuns(Run* toReplace, BidiRunList<Run>& newR
     } else {
         // Find the run just before "toReplace" in the list of runs.
         Run* previousRun = m_firstRun;
-        while (previousRun->next() != toReplace)
+        while (previousRun->next() && previousRun->next() != toReplace)
             previousRun = previousRun->next();
         ASSERT(previousRun);
         previousRun->setNext(newRuns.firstRun());
