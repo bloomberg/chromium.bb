@@ -12,9 +12,9 @@ function test()
     var finalMappedLocation;
     InspectorTest.createWorkspace();
     var target = WebInspector.targetManager.mainTarget();
-    var cssModel = new WebInspector.CSSStyleModel(target, InspectorTest.testWorkspace);
+    var cssModel = new WebInspector.CSSStyleModel(target);
     target.cssModel = cssModel;
-    var mapping = new WebInspector.CSSStyleSheetMapping(cssModel, InspectorTest.testWorkspace, InspectorTest.testNetworkWorkspaceBinding);
+    new WebInspector.CSSWorkspaceBinding.TargetInfo(target, InspectorTest.testWorkspace, InspectorTest.testNetworkWorkspaceBinding);
 
     InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(cssUISourceCodeAdded);
     const styleSheetURL = "http://localhost:8000/inspector/resources/example.css";
@@ -22,7 +22,7 @@ function test()
     const styleSheetId = 1;
     InspectorTest.addMockUISourceCodeToWorkspace(styleSheetURL, WebInspector.resourceTypes.Stylesheet, "");
 
-    InspectorTest.addSniffer(WebInspector.CSSStyleSheetHeader.prototype, "updateLocations", locationsUpdated, true);
+    InspectorTest.addSniffer(WebInspector.CSSWorkspaceBinding.prototype, "updateLocations", locationsUpdated, true);
     cssModel._styleSheetAdded(createMockStyleSheetHeader(styleSheetURL, sourceMapURL));
 
     function locationsUpdated()

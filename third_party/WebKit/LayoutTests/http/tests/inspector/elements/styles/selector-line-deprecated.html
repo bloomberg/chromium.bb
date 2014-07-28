@@ -25,9 +25,9 @@ function test()
 
     function step1()
     {
-        InspectorTest.addSniffer(WebInspector.CSSStyleSheetHeader.prototype, "pushSourceMapping", sourceMappingSniffer, true);
+        InspectorTest.addSniffer(WebInspector.CSSWorkspaceBinding.prototype, "pushSourceMapping", sourceMappingSniffer, true);
 
-        function sourceMappingSniffer(sourceMapping)
+        function sourceMappingSniffer(header, sourceMapping)
         {
             if (sourceMapping instanceof WebInspector.SASSSourceMapping) {
                 WebInspector.inspectorView.showPanel("elements");
