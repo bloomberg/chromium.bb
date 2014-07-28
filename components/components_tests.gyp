@@ -223,6 +223,7 @@
             'variations/variations_seed_simulator_unittest.cc',
             'visitedlink/test/visitedlink_unittest.cc',
             'web_modal/web_contents_modal_dialog_manager_unittest.cc',
+            'webdata/common/web_database_migration_unittest.cc',
           ],
           'include_dirs': [
             '..',

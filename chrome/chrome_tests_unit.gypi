@@ -1985,7 +1985,6 @@
         '../components/nacl/loader/nacl_ipc_adapter_unittest.cc',
         '../components/nacl/loader/nacl_validation_query_unittest.cc',
 
-        '../components/webdata/common/web_database_migration_unittest.cc',
         '../components/webdata/common/web_data_service_test_util.cc',
         '../components/webdata/common/web_data_service_test_util.h',
 
