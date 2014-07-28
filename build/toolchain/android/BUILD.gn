@@ -29,6 +29,9 @@ template("android_gcc_toolchain") {
     libs_section_prefix = "$android_ndk_lib/crtbegin_dynamic.o"
     libs_section_postfix = "$android_ndk_lib/crtend_android.o"
 
+    solink_libs_section_prefix = "$android_ndk_lib/crtbegin_so.o"
+    solink_libs_section_postfix = "$android_ndk_lib/crtend_so.o"
+
     # The tools should be run relative to the build dir.
     tool_prefix = rebase_path(invoker.tool_prefix, root_build_dir)
 
