@@ -4443,7 +4443,6 @@ TEST(HeapTest, Ephemeron)
 {
     typedef HeapHashMap<WeakMember<IntWrapper>, PairWithWeakHandling>  WeakPairMap;
     typedef HeapHashMap<PairWithWeakHandling, WeakMember<IntWrapper> >  PairWeakMap;
-    typedef HeapHashMap<PairWithWeakHandling, PairWithWeakHandling>  PairPairMap;
     typedef HeapHashSet<WeakMember<IntWrapper> > Set;
 
     Persistent<WeakPairMap> weakPairMap = new WeakPairMap();
