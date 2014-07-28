@@ -696,7 +696,7 @@ or verify this branch is set up to track another (via the --track argument to
         issue = self.GetIssue()
         try:
           self.description = self.RpcServer().get_description(issue).strip()
-        except urllib2.HTTPError, e:
+        except urllib2.HTTPError as e:
           if e.code == 404:
             DieWithError(
                 ('\nWhile fetching the description for issue %d, received a '
@@ -710,6 +710,12 @@ or verify this branch is set up to track another (via the --track argument to
           else:
             DieWithError(
                 '\nFailed to fetch issue description. HTTP error %d' % e.code)
+        except urllib2.URLError as e:
+          print >> sys.stderr, (
+              'Warning: Failed to retrieve CL description due to network '
+              'failure.')
+          self.description = ''
+
       self.has_description = True
     if pretty:
       wrapper = textwrap.TextWrapper()
@@ -1314,8 +1320,9 @@ def CMDstatus(parser, args):
     return 0
   print cl.GetBranch()
   print 'Issue number: %s (%s)' % (cl.GetIssue(), cl.GetIssueURL())
-  print 'Issue description:'
-  print cl.GetDescription(pretty=True)
+  if not options.fast:
+    print 'Issue description:'
+    print cl.GetDescription(pretty=True)
   return 0
 
 
