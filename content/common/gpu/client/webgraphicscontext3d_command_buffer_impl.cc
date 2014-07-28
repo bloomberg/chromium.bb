@@ -156,9 +156,7 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
     return false;
   }
 
-  // TODO(twiz):  This code is too fragile in that it assumes that only WebGL
-  // contexts will request noExtensions.
-  if (gl_ && attributes_.noExtensions)
+  if (gl_ && attributes_.webGL)
     gl_->EnableFeatureCHROMIUM("webgl_enable_glsl_webgl_validation");
 
   command_buffer_->SetChannelErrorCallback(

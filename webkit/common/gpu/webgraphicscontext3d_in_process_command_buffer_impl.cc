@@ -105,7 +105,7 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
         bool is_offscreen,
         gfx::AcceleratedWidget window)
     : share_resources_(attributes.shareResources),
-      webgl_context_(attributes.noExtensions),
+      webgl_context_(attributes.webGL),
       is_offscreen_(is_offscreen),
       window_(window),
       context_(context.Pass()) {
