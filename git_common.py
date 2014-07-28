@@ -42,6 +42,55 @@ FREEZE_SECTIONS = {
 FREEZE_MATCHER = re.compile(r'%s.(%s)' % (FREEZE, '|'.join(FREEZE_SECTIONS)))
 
 
+# Retry a git operation if git returns a error response with any of these
+# messages. It's all observed 'bad' GoB responses so far.
+#
+# This list is inspired/derived from the one in ChromiumOS's Chromite:
+# <CHROMITE>/lib/git.py::GIT_TRANSIENT_ERRORS
+#
+# It was last imported from '7add3ac29564d98ac35ce426bc295e743e7c0c02'.
+GIT_TRANSIENT_ERRORS = (
+    # crbug.com/285832
+    r'! \[remote rejected\].*\(error in hook\)',
+
+    # crbug.com/289932
+    r'! \[remote rejected\].*\(failed to lock\)',
+
+    # crbug.com/307156
+    r'! \[remote rejected\].*\(error in Gerrit backend\)',
+
+    # crbug.com/285832
+    r'remote error: Internal Server Error',
+
+    # crbug.com/294449
+    r'fatal: Couldn\'t find remote ref ',
+
+    # crbug.com/220543
+    r'git fetch_pack: expected ACK/NAK, got',
+
+    # crbug.com/189455
+    r'protocol error: bad pack header',
+
+    # crbug.com/202807
+    r'The remote end hung up unexpectedly',
+
+    # crbug.com/298189
+    r'TLS packet with unexpected length was received',
+
+    # crbug.com/187444
+    r'RPC failed; result=\d+, HTTP code = \d+',
+
+    # crbug.com/315421
+    r'The requested URL returned error: 500 while accessing',
+
+    # crbug.com/388876
+    r'Connection timed out',
+)
+
+GIT_TRANSIENT_ERRORS_RE = re.compile('|'.join(GIT_TRANSIENT_ERRORS),
+                                     re.IGNORECASE)
+
+
 class BadCommitRefException(Exception):
   def __init__(self, refs):
     msg = ('one of %s does not seem to be a valid commitref.' %
