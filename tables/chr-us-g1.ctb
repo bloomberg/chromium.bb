@@ -14,8 +14,8 @@ include chardefs.cti
 
 #include text_nabcc.dis All display opcodes
 
-include ukchardefs.cti All character definition opcodes
-include UEBC-g1.utb
+include en-ueb-chardefs.uti All character definition opcodes
+include en-ueb-g2.ctb
 
 # letsign 456 ink letter sign
 
@@ -75,7 +75,7 @@ letter		\x13C1		1345-15		CHEROKEE LETTER NE
 letter		\x13C2		1345-24		CHEROKEE LETTER NI
 letter		\x13C3		1345-135	CHEROKEE LETTER NO
 letter		\x13C4		1345-136	CHEROKEE LETTER NU
-letter		\x13C5		1236-136	CHEROKEE LETTER NV
+letter		\x13C5		1345-1236	CHEROKEE LETTER NV
 
 # Q
 
@@ -98,9 +98,9 @@ letter		\x13D2		234-1236	CHEROKEE LETTER SV
 
 # D T
 
-letter		\x13D3		145	1		CHEROKEE LETTER DA
+letter		\x13D3		145-1		CHEROKEE LETTER DA
 letter		\x13D4		2345-1		CHEROKEE LETTER SA
-letter		\x13D5		145	15		CHEROKEE LETTER DE
+letter		\x13D5		145-15		CHEROKEE LETTER DE
 letter		\x13D6		2345-15		CHEROKEE LETTER SE
 letter		\x13D7		145-24		CHEROKEE LETTER DI
 letter		\x13D8		2345-24		CHEROKEE LETTER SI
@@ -111,7 +111,7 @@ letter		\x13DB		145-1236	CHEROKEE LETTER DV
 
 # R F
 
-letter		\x13DC		234-1		CHEROKEE LETTER DLA
+letter		\x13DC		124-1		CHEROKEE LETTER DLA
 letter		\x13DD		1235-1		CHEROKEE LETTER TLA
 letter		\x13DE		1235-15		CHEROKEE LETTER TLE
 letter		\x13DF		1235-24		CHEROKEE LETTER TLI
