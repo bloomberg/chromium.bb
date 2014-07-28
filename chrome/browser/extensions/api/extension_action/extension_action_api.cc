@@ -516,13 +516,12 @@ ExtensionActionFunction::~ExtensionActionFunction() {
 
 bool ExtensionActionFunction::RunSync() {
   ExtensionActionManager* manager = ExtensionActionManager::Get(GetProfile());
-  const Extension* extension = GetExtension();
   if (StartsWithASCII(name(), "systemIndicator.", false)) {
-    extension_action_ = manager->GetSystemIndicator(*extension);
+    extension_action_ = manager->GetSystemIndicator(*extension());
   } else {
-    extension_action_ = manager->GetBrowserAction(*extension);
+    extension_action_ = manager->GetBrowserAction(*extension());
     if (!extension_action_) {
-      extension_action_ = manager->GetPageAction(*extension);
+      extension_action_ = manager->GetPageAction(*extension());
     }
   }
   if (!extension_action_) {
@@ -715,7 +714,7 @@ bool ExtensionActionSetPopupFunction::RunExtensionAction() {
 
   GURL popup_url;
   if (!popup_string.empty())
-    popup_url = GetExtension()->GetResourceURL(popup_string);
+    popup_url = extension()->GetResourceURL(popup_string);
 
   extension_action_->SetPopupUrl(tab_id_, popup_url);
   NotifyChange();
@@ -883,7 +882,7 @@ bool PageActionsFunction::SetPageActionEnabled(bool enable) {
   }
 
   ExtensionAction* page_action = extensions::ExtensionActionManager::Get(
-      GetProfile())->GetPageAction(*GetExtension());
+                                     GetProfile())->GetPageAction(*extension());
   if (!page_action) {
     error_ = extensions::kNoPageActionError;
     return false;

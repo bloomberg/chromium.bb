@@ -116,7 +116,7 @@ class AsyncExtensionBrowserTest : public ExtensionBrowserTest {
         "Could not parse extension function arguments: " << args;
     function->SetArgs(parsed_args.get());
 
-    if (!function->GetExtension()) {
+    if (!function->extension()) {
       scoped_refptr<Extension> empty_extension(
           utils::CreateEmptyExtension());
       function->set_extension(empty_extension.get());

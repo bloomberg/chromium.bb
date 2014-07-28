@@ -229,9 +229,8 @@ bool ExtensionTtsEngineSendTtsEventFunction::RunSync() {
 
   // Make sure the extension has included this event type in its manifest.
   bool event_type_allowed = false;
-  const Extension* extension = GetExtension();
   const std::vector<extensions::TtsVoice>* tts_voices =
-      extensions::TtsVoice::GetTtsVoices(extension);
+      extensions::TtsVoice::GetTtsVoices(extension());
   if (!tts_voices) {
     error_ = constants::kErrorUndeclaredEventType;
     return false;

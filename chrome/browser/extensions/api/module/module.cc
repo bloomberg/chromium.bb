@@ -40,9 +40,7 @@ bool ExtensionSetUpdateUrlDataFunction::RunSync() {
   std::string data;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &data));
 
-  const Extension* extension = GetExtension();
-
-  if (ManifestURL::UpdatesFromGallery(extension)) {
+  if (ManifestURL::UpdatesFromGallery(extension())) {
     return false;
   }
 

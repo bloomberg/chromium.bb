@@ -150,7 +150,7 @@ scoped_ptr<tabs::Tab> SessionsGetRecentlyClosedFunction::CreateTabModel(
                               tab.tabstrip_index,
                               tab.pinned,
                               selected_index,
-                              GetExtension());
+                              extension());
 }
 
 scoped_ptr<windows::Window>
@@ -240,14 +240,14 @@ scoped_ptr<tabs::Tab> SessionsGetDevicesFunction::CreateTabModel(
     int tab_index,
     int selected_index) {
   std::string session_id = SessionId(session_tag, tab.tab_id.id()).ToString();
-  return CreateTabModelHelper(GetProfile(),
-                              tab.navigations[
-                                tab.normalized_navigation_index()],
-                              session_id,
-                              tab_index,
-                              tab.pinned,
-                              selected_index,
-                              GetExtension());
+  return CreateTabModelHelper(
+      GetProfile(),
+      tab.navigations[tab.normalized_navigation_index()],
+      session_id,
+      tab_index,
+      tab.pinned,
+      selected_index,
+      extension());
 }
 
 scoped_ptr<windows::Window> SessionsGetDevicesFunction::CreateWindowModel(
@@ -408,7 +408,7 @@ void SessionsRestoreFunction::SetInvalidIdError(const std::string& invalid_id) {
 void SessionsRestoreFunction::SetResultRestoredTab(
     content::WebContents* contents) {
   scoped_ptr<base::DictionaryValue> tab_value(
-      ExtensionTabUtil::CreateTabValue(contents, GetExtension()));
+      ExtensionTabUtil::CreateTabValue(contents, extension()));
   scoped_ptr<tabs::Tab> tab(tabs::Tab::FromValue(*tab_value));
   scoped_ptr<api::sessions::Session> restored_session(CreateSessionModelHelper(
       base::Time::Now().ToTimeT(),
@@ -424,7 +424,7 @@ bool SessionsRestoreFunction::SetResultRestoredWindow(int window_id) {
     return false;
   }
   scoped_ptr<base::DictionaryValue> window_value(
-      controller->CreateWindowValueWithTabs(GetExtension()));
+      controller->CreateWindowValueWithTabs(extension()));
   scoped_ptr<windows::Window> window(windows::Window::FromValue(
       *window_value));
   results_ = Restore::Results::Create(*CreateSessionModelHelper(

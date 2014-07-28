@@ -129,7 +129,7 @@ bool BluetoothSocketAsyncApiFunction::RunAsync() {
 }
 
 bool BluetoothSocketAsyncApiFunction::PrePrepare() {
-  if (!BluetoothManifestData::CheckSocketPermitted(GetExtension())) {
+  if (!BluetoothManifestData::CheckSocketPermitted(extension())) {
     error_ = kPermissionDeniedError;
     return false;
   }
@@ -295,7 +295,7 @@ void BluetoothSocketListenFunction::OnGetAdapter(
   }
 
   BluetoothPermissionRequest param(uuid());
-  if (!BluetoothManifestData::CheckRequest(GetExtension(), param)) {
+  if (!BluetoothManifestData::CheckRequest(extension(), param)) {
     error_ = kPermissionDeniedError;
     AsyncWorkCompleted();
     return;
@@ -480,7 +480,7 @@ void BluetoothSocketConnectFunction::OnGetAdapter(
   }
 
   BluetoothPermissionRequest param(params_->uuid);
-  if (!BluetoothManifestData::CheckRequest(GetExtension(), param)) {
+  if (!BluetoothManifestData::CheckRequest(extension(), param)) {
     error_ = kPermissionDeniedError;
     AsyncWorkCompleted();
     return;

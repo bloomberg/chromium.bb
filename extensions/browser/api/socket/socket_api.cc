@@ -221,7 +221,7 @@ void SocketConnectFunction::AsyncWorkStart() {
   }
 
   SocketPermission::CheckParam param(operation_type, hostname_, port_);
-  if (!GetExtension()->permissions_data()->CheckAPIPermissionWithParam(
+  if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
           APIPermission::kSocket, &param)) {
     error_ = kPermissionError;
     SetResult(new base::FundamentalValue(-1));
@@ -286,7 +286,7 @@ void SocketBindFunction::Work() {
   if (socket->GetSocketType() == Socket::TYPE_UDP) {
     SocketPermission::CheckParam param(
         SocketPermissionRequest::UDP_BIND, address_, port_);
-    if (!GetExtension()->permissions_data()->CheckAPIPermissionWithParam(
+    if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
             APIPermission::kSocket, &param)) {
       error_ = kPermissionError;
       SetResult(new base::FundamentalValue(result));
@@ -319,7 +319,7 @@ void SocketListenFunction::Work() {
   if (socket) {
     SocketPermission::CheckParam param(
         SocketPermissionRequest::TCP_LISTEN, params_->address, params_->port);
-    if (!GetExtension()->permissions_data()->CheckAPIPermissionWithParam(
+    if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
             APIPermission::kSocket, &param)) {
       error_ = kPermissionError;
       SetResult(new base::FundamentalValue(result));
@@ -521,7 +521,7 @@ void SocketSendToFunction::AsyncWorkStart() {
   if (socket_->GetSocketType() == Socket::TYPE_UDP) {
     SocketPermission::CheckParam param(
         SocketPermissionRequest::UDP_SEND_TO, hostname_, port_);
-    if (!GetExtension()->permissions_data()->CheckAPIPermissionWithParam(
+    if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
             APIPermission::kSocket, &param)) {
       error_ = kPermissionError;
       SetResult(new base::FundamentalValue(-1));
@@ -735,7 +735,7 @@ void SocketJoinGroupFunction::Work() {
       kWildcardAddress,
       kWildcardPort);
 
-  if (!GetExtension()->permissions_data()->CheckAPIPermissionWithParam(
+  if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
           APIPermission::kSocket, &param)) {
     error_ = kPermissionError;
     SetResult(new base::FundamentalValue(result));
@@ -779,7 +779,7 @@ void SocketLeaveGroupFunction::Work() {
       SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP,
       kWildcardAddress,
       kWildcardPort);
-  if (!GetExtension()->permissions_data()->CheckAPIPermissionWithParam(
+  if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
           APIPermission::kSocket, &param)) {
     error_ = kPermissionError;
     SetResult(new base::FundamentalValue(result));
@@ -886,7 +886,7 @@ void SocketGetJoinedGroupsFunction::Work() {
       SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP,
       kWildcardAddress,
       kWildcardPort);
-  if (!GetExtension()->permissions_data()->CheckAPIPermissionWithParam(
+  if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
           APIPermission::kSocket, &param)) {
     error_ = kPermissionError;
     SetResult(new base::FundamentalValue(result));

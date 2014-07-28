@@ -273,7 +273,7 @@ void SocketsTcpConnectFunction::AsyncWorkStart() {
   content::SocketPermissionRequest param(SocketPermissionRequest::TCP_CONNECT,
                                          params_->peer_address,
                                          params_->peer_port);
-  if (!SocketsManifestData::CheckRequest(GetExtension(), param)) {
+  if (!SocketsManifestData::CheckRequest(extension(), param)) {
     error_ = kPermissionError;
     AsyncWorkCompleted();
     return;

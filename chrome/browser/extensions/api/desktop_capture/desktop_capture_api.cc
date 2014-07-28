@@ -126,8 +126,8 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
       return false;
     }
   } else {
-    origin_ = GetExtension()->url();
-    target_name = base::UTF8ToUTF16(GetExtension()->name());
+    origin_ = extension()->url();
+    target_name = base::UTF8ToUTF16(extension()->name());
     web_contents = content::WebContents::FromRenderViewHost(render_view_host());
     DCHECK(web_contents);
   }
@@ -205,10 +205,12 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
       &DesktopCaptureChooseDesktopMediaFunction::OnPickerDialogResults, this);
 
   picker_->Show(web_contents,
-                parent_window, parent_window,
-                base::UTF8ToUTF16(GetExtension()->name()),
+                parent_window,
+                parent_window,
+                base::UTF8ToUTF16(extension()->name()),
                 target_name,
-                media_list.Pass(), callback);
+                media_list.Pass(),
+                callback);
   return true;
 }
 
@@ -230,12 +232,11 @@ void DesktopCaptureChooseDesktopMediaFunction::OnPickerDialogResults(
     // MediaCaptureDevicesDispatcher::ProcessDesktopCaptureAccessRequest().
     // http://crbug.com/304341
     content::RenderFrameHost* const main_frame = web_contents()->GetMainFrame();
-    result = registry->RegisterStream(
-        main_frame->GetProcess()->GetID(),
-        main_frame->GetRoutingID(),
-        origin_,
-        source,
-        GetExtension()->name());
+    result = registry->RegisterStream(main_frame->GetProcess()->GetID(),
+                                      main_frame->GetRoutingID(),
+                                      origin_,
+                                      source,
+                                      extension()->name());
   }
 
   SetResult(new base::StringValue(result));

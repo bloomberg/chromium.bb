@@ -164,12 +164,12 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
     // wallpaper picker app. If current extension is the component wallpaper
     // picker, set an empty string.
     Profile* profile = Profile::FromBrowserContext(browser_context());
-    if (GetExtension()->id() == extension_misc::kWallpaperManagerId) {
+    if (extension()->id() == extension_misc::kWallpaperManagerId) {
       profile->GetPrefs()->SetString(prefs::kCurrentWallpaperAppName,
                                      std::string());
     } else {
       profile->GetPrefs()->SetString(prefs::kCurrentWallpaperAppName,
-                                     GetExtension()->name());
+                                     extension()->name());
     }
     SendResponse(true);
   }

@@ -516,7 +516,7 @@ bool PreferenceFunction::ValidateBrowserPref(
   APIPermission::ID permission = permission_type == PERMISSION_TYPE_READ
                                      ? read_permission
                                      : write_permission;
-  if (!GetExtension()->permissions_data()->HasAPIPermission(permission)) {
+  if (!extension()->permissions_data()->HasAPIPermission(permission)) {
     error_ = ErrorUtils::FormatErrorMessage(
         keys::kPermissionErrorMessage, extension_pref_key);
     return false;

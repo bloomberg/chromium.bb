@@ -215,7 +215,7 @@ class ExtensionFunction
   void set_extension(const extensions::Extension* extension) {
     extension_ = extension;
   }
-  const extensions::Extension* GetExtension() const { return extension_.get(); }
+  const extensions::Extension* extension() const { return extension_.get(); }
   const std::string& extension_id() const { return extension_->id(); }
 
   void set_request_id(int request_id) { request_id_ = request_id; }

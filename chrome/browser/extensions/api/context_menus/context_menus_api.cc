@@ -41,7 +41,7 @@ bool ContextMenusCreateFunction::RunSync() {
   if (params->create_properties.id.get()) {
     id.string_uid = *params->create_properties.id;
   } else {
-    if (BackgroundInfo::HasLazyBackgroundPage(GetExtension())) {
+    if (BackgroundInfo::HasLazyBackgroundPage(extension())) {
       error_ = kIdRequiredError;
       return false;
     }
@@ -53,8 +53,8 @@ bool ContextMenusCreateFunction::RunSync() {
         properties->GetInteger(helpers::kGeneratedIdKey, &id.uid));
   }
 
-  return helpers::CreateMenuItem(params->create_properties, GetProfile(),
-                                 GetExtension(), id, &error_);
+  return helpers::CreateMenuItem(
+      params->create_properties, GetProfile(), extension(), id, &error_);
 }
 
 bool ContextMenusUpdateFunction::RunSync() {
@@ -70,8 +70,8 @@ bool ContextMenusUpdateFunction::RunSync() {
   else
     NOTREACHED();
 
-  return helpers::UpdateMenuItem(params->update_properties, GetProfile(),
-                                 GetExtension(), item_id, &error_);
+  return helpers::UpdateMenuItem(
+      params->update_properties, GetProfile(), extension(), item_id, &error_);
 }
 
 bool ContextMenusRemoveFunction::RunSync() {
@@ -99,15 +99,15 @@ bool ContextMenusRemoveFunction::RunSync() {
 
   if (!manager->RemoveContextMenuItem(id))
     return false;
-  manager->WriteToStorage(GetExtension(), id.extension_key);
+  manager->WriteToStorage(extension(), id.extension_key);
   return true;
 }
 
 bool ContextMenusRemoveAllFunction::RunSync() {
   MenuManager* manager = MenuManager::Get(GetProfile());
-  manager->RemoveAllContextItems(MenuItem::ExtensionKey(GetExtension()->id()));
-  manager->WriteToStorage(GetExtension(),
-                          MenuItem::ExtensionKey(GetExtension()->id()));
+  manager->RemoveAllContextItems(MenuItem::ExtensionKey(extension()->id()));
+  manager->WriteToStorage(extension(),
+                          MenuItem::ExtensionKey(extension()->id()));
   return true;
 }
 

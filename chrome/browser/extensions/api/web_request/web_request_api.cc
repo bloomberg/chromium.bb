@@ -2261,9 +2261,11 @@ bool WebRequestInternalAddEventListenerFunction::RunSync() {
 
   helpers::ClearCacheOnNavigation();
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-      &helpers::NotifyWebRequestAPIUsed,
-      profile_id(), make_scoped_refptr(GetExtension())));
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&helpers::NotifyWebRequestAPIUsed,
+                                     profile_id(),
+                                     make_scoped_refptr(extension)));
 
   return true;
 }

@@ -24,7 +24,7 @@ PrefService* DirectSettingFunctionBase::GetPrefService() {
 }
 
 bool DirectSettingFunctionBase::IsCalledFromComponentExtension() {
-  return GetExtension()->location() == Manifest::COMPONENT;
+  return extension()->location() == Manifest::COMPONENT;
 }
 
 GetDirectSettingFunction::GetDirectSettingFunction() {}

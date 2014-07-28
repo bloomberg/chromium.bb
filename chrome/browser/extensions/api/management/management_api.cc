@@ -618,7 +618,7 @@ bool ManagementUninstallFunctionBase::Uninstall(
           this));
       if (extension_id() != target_extension_id) {
         extension_uninstall_dialog_->ConfirmProgrammaticUninstall(
-            target_extension, GetExtension());
+            target_extension, extension());
       } else {
         // If this is a self uninstall, show the generic uninstall dialog.
         extension_uninstall_dialog_->ConfirmUninstall(target_extension);

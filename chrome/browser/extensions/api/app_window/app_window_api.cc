@@ -151,12 +151,12 @@ bool AppWindowCreateFunction::RunAsync() {
   scoped_ptr<Create::Params> params(Create::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  GURL url = GetExtension()->GetResourceURL(params->url);
+  GURL url = extension()->GetResourceURL(params->url);
   // Allow absolute URLs for component apps, otherwise prepend the extension
   // path.
   GURL absolute = GURL(params->url);
   if (absolute.has_scheme()) {
-    if (GetExtension()->location() == extensions::Manifest::COMPONENT) {
+    if (extension()->location() == extensions::Manifest::COMPONENT) {
       url = absolute;
     } else {
       // Show error when url passed isn't local.
@@ -225,7 +225,7 @@ bool AppWindowCreateFunction::RunAsync() {
       return false;
 
     if (GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV ||
-        GetExtension()->location() == extensions::Manifest::COMPONENT) {
+        extension()->location() == extensions::Manifest::COMPONENT) {
       if (options->type == extensions::api::app_window::WINDOW_TYPE_PANEL) {
         create_params.window_type = AppWindow::WINDOW_TYPE_PANEL;
       }
@@ -235,7 +235,7 @@ bool AppWindowCreateFunction::RunAsync() {
       return false;
 
     if (options->transparent_background.get() &&
-        (GetExtension()->permissions_data()->HasAPIPermission(
+        (extension()->permissions_data()->HasAPIPermission(
              APIPermission::kExperimental) ||
          CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kEnableExperimentalExtensionApis))) {
@@ -252,7 +252,7 @@ bool AppWindowCreateFunction::RunAsync() {
       create_params.always_on_top = *options->always_on_top.get();
 
       if (create_params.always_on_top &&
-          !GetExtension()->permissions_data()->HasAPIPermission(
+          !extension()->permissions_data()->HasAPIPermission(
               APIPermission::kAlwaysOnTopWindows)) {
         error_ = app_window_constants::kAlwaysOnTopPermission;
         return false;
@@ -283,8 +283,8 @@ bool AppWindowCreateFunction::RunAsync() {
   create_params.creator_process_id =
       render_view_host_->GetProcess()->GetID();
 
-  AppWindow* app_window = apps::AppsClient::Get()->CreateAppWindow(
-      browser_context(), GetExtension());
+  AppWindow* app_window =
+      apps::AppsClient::Get()->CreateAppWindow(browser_context(), extension());
   app_window->Init(
       url, new apps::AppWindowContentsImpl(app_window), create_params);
 
@@ -432,7 +432,7 @@ bool AppWindowCreateFunction::GetBoundsSpec(
 AppWindow::Frame AppWindowCreateFunction::GetFrameFromString(
     const std::string& frame_string) {
   if (frame_string == kHtmlFrameOption &&
-      (GetExtension()->permissions_data()->HasAPIPermission(
+      (extension()->permissions_data()->HasAPIPermission(
            APIPermission::kExperimental) ||
        CommandLine::ForCurrentProcess()->HasSwitch(
            switches::kEnableExperimentalExtensionApis))) {

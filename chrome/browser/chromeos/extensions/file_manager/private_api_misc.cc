@@ -463,7 +463,7 @@ bool FileBrowserPrivateOpenInspectorFunction::RunSync() {
       break;
     case extensions::api::file_browser_private::INSPECTION_TYPE_BACKGROUND:
       // Open inspector for background page.
-      extensions::devtools_util::InspectBackgroundPage(GetExtension(),
+      extensions::devtools_util::InspectBackgroundPage(extension(),
                                                        GetProfile());
       break;
     default:

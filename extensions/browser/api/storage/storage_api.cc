@@ -56,7 +56,7 @@ ExtensionFunction::ResponseAction SettingsFunction::Run() {
 
   observers_ = frontend->GetObservers();
   frontend->RunWithStorage(
-      GetExtension(),
+      extension(),
       settings_namespace_,
       base::Bind(&SettingsFunction::AsyncRunWithStorage, this));
   return RespondLater();

@@ -28,7 +28,7 @@ bool DownloadsInternalDetermineFilenameFunction::RunAsync() {
   return ExtensionDownloadsEventRouter::DetermineFilename(
       GetProfile(),
       include_incognito(),
-      GetExtension()->id(),
+      extension()->id(),
       params->download_id,
       base::FilePath(filename),
       extensions::api::downloads::ParseFilenameConflictAction(

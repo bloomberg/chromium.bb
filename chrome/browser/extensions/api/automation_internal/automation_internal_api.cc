@@ -132,7 +132,7 @@ class RenderFrameHostActionAdapter : public AutomationActionAdapter {
 
 ExtensionFunction::ResponseAction
 AutomationInternalEnableTabFunction::Run() {
-  const AutomationInfo* automation_info = AutomationInfo::Get(GetExtension());
+  const AutomationInfo* automation_info = AutomationInfo::Get(extension());
   EXTENSION_FUNCTION_VALIDATE(automation_info);
 
   using api::automation_internal::EnableTab::Params;
@@ -160,7 +160,7 @@ AutomationInternalEnableTabFunction::Run() {
   if (!rfh)
     return RespondNow(Error("Could not enable accessibility for active tab"));
 
-  if (!CanRequestAutomation(GetExtension(), automation_info, contents)) {
+  if (!CanRequestAutomation(extension(), automation_info, contents)) {
     return RespondNow(
         Error(kCannotRequestAutomationOnPage, contents->GetURL().spec()));
   }
@@ -173,7 +173,7 @@ AutomationInternalEnableTabFunction::Run() {
 
 ExtensionFunction::ResponseAction
 AutomationInternalPerformActionFunction::Run() {
-  const AutomationInfo* automation_info = AutomationInfo::Get(GetExtension());
+  const AutomationInfo* automation_info = AutomationInfo::Get(extension());
   EXTENSION_FUNCTION_VALIDATE(automation_info && automation_info->interact);
 
   using api::automation_internal::PerformAction::Params;
@@ -199,7 +199,7 @@ AutomationInternalPerformActionFunction::Run() {
 
   const content::WebContents* contents =
       content::WebContents::FromRenderFrameHost(rfh);
-  if (!CanRequestAutomation(GetExtension(), automation_info, contents)) {
+  if (!CanRequestAutomation(extension(), automation_info, contents)) {
     return RespondNow(
         Error(kCannotRequestAutomationOnPage, contents->GetURL().spec()));
   }
@@ -242,7 +242,7 @@ AutomationInternalPerformActionFunction::RouteActionToAdapter(
 ExtensionFunction::ResponseAction
 AutomationInternalEnableDesktopFunction::Run() {
 #if defined(OS_CHROMEOS)
-  const AutomationInfo* automation_info = AutomationInfo::Get(GetExtension());
+  const AutomationInfo* automation_info = AutomationInfo::Get(extension());
   if (!automation_info || !automation_info->desktop)
     return RespondNow(Error("desktop permission must be requested"));
 

@@ -422,7 +422,7 @@ scoped_refptr<UsbDevice> UsbAsyncApiFunction::GetDeviceOrOrCompleteWithError(
   const uint16_t product_id = input_device.product_id;
   UsbDevicePermission::CheckParam param(
       vendor_id, product_id, UsbDevicePermissionData::UNSPECIFIED_INTERFACE);
-  if (!GetExtension()->permissions_data()->CheckAPIPermissionWithParam(
+  if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
           APIPermission::kUsbDevice, &param)) {
     LOG(WARNING) << "Insufficient permissions to access device.";
     CompleteWithError(kErrorPermissionDenied);
@@ -553,7 +553,7 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
                          ? *parameters_->options.interface_id.get()
                          : UsbDevicePermissionData::ANY_INTERFACE;
   UsbDevicePermission::CheckParam param(vendor_id, product_id, interface_id);
-  if (!GetExtension()->permissions_data()->CheckAPIPermissionWithParam(
+  if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
           APIPermission::kUsbDevice, &param)) {
     LOG(WARNING) << "Insufficient permissions to access device.";
     CompleteWithError(kErrorPermissionDenied);
@@ -629,7 +629,7 @@ void UsbGetDevicesFunction::AsyncWorkStart() {
   const uint16_t product_id = parameters_->options.product_id;
   UsbDevicePermission::CheckParam param(
       vendor_id, product_id, UsbDevicePermissionData::UNSPECIFIED_INTERFACE);
-  if (!GetExtension()->permissions_data()->CheckAPIPermissionWithParam(
+  if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
           APIPermission::kUsbDevice, &param)) {
     LOG(WARNING) << "Insufficient permissions to access device.";
     CompleteWithError(kErrorPermissionDenied);

@@ -184,7 +184,7 @@ void MediaGalleriesPrivateAddGalleryWatchFunction::OnPreferencesInit(
   MediaGalleryPrefId gallery_pref_id = 0;
   if (!GetGalleryFilePathAndId(pref_id,
                                GetProfile(),
-                               GetExtension(),
+                               extension(),
                                &gallery_file_path,
                                &gallery_pref_id)) {
     error_ = kInvalidGalleryIDError;
@@ -266,7 +266,7 @@ void MediaGalleriesPrivateRemoveGalleryWatchFunction::OnPreferencesInit(
   MediaGalleryPrefId gallery_pref_id = 0;
   if (!GetGalleryFilePathAndId(pref_id,
                                GetProfile(),
-                               GetExtension(),
+                               extension(),
                                &gallery_file_path,
                                &gallery_pref_id)) {
     error_ = kInvalidGalleryIDError;

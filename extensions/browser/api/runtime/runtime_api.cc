@@ -408,7 +408,7 @@ ExtensionFunction::ResponseAction RuntimeGetBackgroundPageFunction::Run() {
   ExtensionHost* host =
       system->process_manager()->GetBackgroundHostForExtension(extension_id());
   if (system->lazy_background_task_queue()->ShouldEnqueueTask(browser_context(),
-                                                              GetExtension())) {
+                                                              extension())) {
     system->lazy_background_task_queue()->AddPendingTask(
         browser_context(),
         extension_id(),

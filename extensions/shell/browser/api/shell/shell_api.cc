@@ -43,7 +43,7 @@ ExtensionFunction::ResponseAction ShellCreateWindowFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // Convert "main.html" to "chrome-extension:/<id>/main.html".
-  GURL url = GetExtension()->GetResourceURL(params->url);
+  GURL url = extension()->GetResourceURL(params->url);
   if (!url.is_valid())
     return RespondNow(Error(kInvalidArguments));
 

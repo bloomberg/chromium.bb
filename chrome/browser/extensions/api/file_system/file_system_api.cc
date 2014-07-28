@@ -265,7 +265,7 @@ void FileSystemEntryFunction::AddEntryToResponse(
   DCHECK(response_);
   GrantedFileEntry file_entry = app_file_handler_util::CreateFileEntry(
       GetProfile(),
-      GetExtension(),
+      extension(),
       render_view_host_->GetProcess()->GetID(),
       path,
       is_directory_);
@@ -604,7 +604,7 @@ void FileSystemChooseEntryFunction::FilesSelected(
   }
   file_system_api::SetLastChooseEntryDirectory(
       ExtensionPrefs::Get(GetProfile()),
-      GetExtension()->id(),
+      extension()->id(),
       last_choose_directory);
   if (is_directory_) {
     // Get the WebContents for the app window to be the parent window of the
@@ -832,7 +832,7 @@ bool FileSystemChooseEntryFunction::RunAsync() {
   file_type_info.support_drive = true;
 
   base::FilePath previous_path = file_system_api::GetLastChooseEntryDirectory(
-      ExtensionPrefs::Get(GetProfile()), GetExtension()->id());
+      ExtensionPrefs::Get(GetProfile()), extension()->id());
 
   content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::FILE,

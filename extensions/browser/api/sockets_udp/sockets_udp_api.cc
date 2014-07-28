@@ -194,7 +194,7 @@ void SocketsUdpBindFunction::Work() {
 
   content::SocketPermissionRequest param(
       SocketPermissionRequest::UDP_BIND, params_->address, params_->port);
-  if (!SocketsManifestData::CheckRequest(GetExtension(), param)) {
+  if (!SocketsManifestData::CheckRequest(extension(), param)) {
     error_ = kPermissionError;
     return;
   }
@@ -233,7 +233,7 @@ void SocketsUdpSendFunction::AsyncWorkStart() {
 
   content::SocketPermissionRequest param(
       SocketPermissionRequest::UDP_SEND_TO, params_->address, params_->port);
-  if (!SocketsManifestData::CheckRequest(GetExtension(), param)) {
+  if (!SocketsManifestData::CheckRequest(extension(), param)) {
     error_ = kPermissionError;
     AsyncWorkCompleted();
     return;
@@ -376,7 +376,7 @@ void SocketsUdpJoinGroupFunction::Work() {
       SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP,
       kWildcardAddress,
       kWildcardPort);
-  if (!SocketsManifestData::CheckRequest(GetExtension(), param)) {
+  if (!SocketsManifestData::CheckRequest(extension(), param)) {
     error_ = kPermissionError;
     return;
   }
@@ -408,7 +408,7 @@ void SocketsUdpLeaveGroupFunction::Work() {
       SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP,
       kWildcardAddress,
       kWildcardPort);
-  if (!SocketsManifestData::CheckRequest(GetExtension(), param)) {
+  if (!SocketsManifestData::CheckRequest(extension(), param)) {
     error_ = kPermissionError;
     return;
   }
@@ -492,7 +492,7 @@ void SocketsUdpGetJoinedGroupsFunction::Work() {
       SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP,
       kWildcardAddress,
       kWildcardPort);
-  if (!SocketsManifestData::CheckRequest(GetExtension(), param)) {
+  if (!SocketsManifestData::CheckRequest(extension(), param)) {
     error_ = kPermissionError;
     return;
   }

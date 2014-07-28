@@ -82,7 +82,7 @@ bool WebViewInternalContextMenusCreateFunction::RunAsync() {
   bool success = extensions::context_menus_api_helpers::CreateMenuItem(
       params->create_properties,
       Profile::FromBrowserContext(browser_context()),
-      GetExtension(),
+      extension(),
       id,
       &error_);
 
@@ -117,7 +117,7 @@ bool WebViewInternalContextMenusUpdateFunction::RunAsync() {
     NOTREACHED();
 
   bool success = extensions::context_menus_api_helpers::UpdateMenuItem(
-      params->update_properties, profile, GetExtension(), item_id, &error_);
+      params->update_properties, profile, extension(), item_id, &error_);
   SendResponse(success);
   return success;
 }
@@ -168,7 +168,7 @@ bool WebViewInternalContextMenusRemoveAllFunction::RunAsync() {
 
   int webview_instance_id = params->instance_id;
   menu_manager->RemoveAllContextItems(
-      MenuItem::ExtensionKey(GetExtension()->id(), webview_instance_id));
+      MenuItem::ExtensionKey(extension()->id(), webview_instance_id));
   SendResponse(true);
   return true;
 }

@@ -36,7 +36,7 @@ bool SystemDisplaySetDisplayPropertiesFunction::RunSync() {
   SetError("Function available only on ChromeOS.");
   return false;
 #else
-  if (!KioskModeInfo::IsKioskEnabled(GetExtension())) {
+  if (!KioskModeInfo::IsKioskEnabled(extension())) {
     SetError("The extension needs to be kiosk enabled to use the function.");
     return false;
   }

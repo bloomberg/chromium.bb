@@ -62,7 +62,7 @@ bool ParseUrl(ChromeAsyncExtensionFunction* function,
   }
   // Check against host permissions if needed.
   if (check_host_permissions &&
-      !function->GetExtension()->permissions_data()->HasHostPermission(*url)) {
+      !function->extension()->permissions_data()->HasHostPermission(*url)) {
     function->SetError(ErrorUtils::FormatErrorMessage(
         keys::kNoHostPermissionsError, url->spec()));
     return false;
@@ -317,12 +317,10 @@ void CookiesGetAllFunction::GetAllCookiesOnIOThread() {
 
 void CookiesGetAllFunction::GetAllCookiesCallback(
     const net::CookieList& cookie_list) {
-  const extensions::Extension* extension = GetExtension();
-  if (extension) {
+  if (extension()) {
     std::vector<linked_ptr<Cookie> > match_vector;
     cookies_helpers::AppendMatchingCookiesToVector(
-        cookie_list, url_, &parsed_args_->details,
-        GetExtension(), &match_vector);
+        cookie_list, url_, &parsed_args_->details, extension(), &match_vector);
 
     results_ = GetAll::Results::Create(match_vector);
   }

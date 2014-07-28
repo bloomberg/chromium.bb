@@ -82,12 +82,11 @@ bool TabCaptureCaptureFunction::RunSync() {
     return false;
   }
 
-  const Extension* extension = GetExtension();
-  const std::string& extension_id = extension->id();
+  const std::string& extension_id = extension()->id();
 
   // Make sure either we have been granted permission to capture through an
   // extension icon click or our extension is whitelisted.
-  if (!extension->permissions_data()->HasAPIPermissionForTab(
+  if (!extension()->permissions_data()->HasAPIPermissionForTab(
           SessionID::IdForTab(target_contents),
           APIPermission::kTabCaptureForTab) &&
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -164,7 +163,7 @@ bool TabCaptureGetCapturedTabsFunction::RunSync() {
       extensions::TabCaptureRegistry::Get(GetProfile());
   base::ListValue* const list = new base::ListValue();
   if (registry)
-    registry->GetCapturedTabs(GetExtension()->id(), list);
+    registry->GetCapturedTabs(extension()->id(), list);
   SetResult(list);
   return true;
 }

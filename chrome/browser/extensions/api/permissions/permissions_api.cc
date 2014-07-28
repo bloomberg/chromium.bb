@@ -61,14 +61,14 @@ bool PermissionsContainsFunction::RunSync() {
     return false;
 
   results_ = Contains::Results::Create(
-      GetExtension()->permissions_data()->active_permissions()->Contains(
+      extension()->permissions_data()->active_permissions()->Contains(
           *permissions.get()));
   return true;
 }
 
 bool PermissionsGetAllFunction::RunSync() {
   scoped_ptr<Permissions> permissions = helpers::PackPermissionSet(
-      GetExtension()->permissions_data()->active_permissions().get());
+      extension()->permissions_data()->active_permissions().get());
   results_ = GetAll::Results::Create(*permissions);
   return true;
 }
@@ -84,8 +84,6 @@ bool PermissionsRemoveFunction::RunSync() {
   if (!permissions.get())
     return false;
 
-  const Extension* extension = GetExtension();
-
   // Make sure they're only trying to remove permissions supported by this API.
   APIPermissionSet apis = permissions->apis();
   for (APIPermissionSet::const_iterator i = apis.begin();
@@ -99,7 +97,7 @@ bool PermissionsRemoveFunction::RunSync() {
 
   // Make sure we don't remove any required pemissions.
   scoped_refptr<const PermissionSet> required =
-      PermissionsParser::GetRequiredPermissions(extension);
+      PermissionsParser::GetRequiredPermissions(extension());
   scoped_refptr<PermissionSet> intersection(
       PermissionSet::CreateIntersection(permissions.get(), required));
   if (!intersection->IsEmpty()) {
@@ -108,7 +106,7 @@ bool PermissionsRemoveFunction::RunSync() {
   }
 
   PermissionsUpdater(GetProfile())
-      .RemovePermissions(extension, permissions.get());
+      .RemovePermissions(extension(), permissions.get());
   results_ = Remove::Results::Create(true);
   return true;
 }
@@ -128,7 +126,7 @@ PermissionsRequestFunction::PermissionsRequestFunction() {}
 
 void PermissionsRequestFunction::InstallUIProceed() {
   PermissionsUpdater perms_updater(GetProfile());
-  perms_updater.AddPermissions(GetExtension(), requested_permissions_.get());
+  perms_updater.AddPermissions(extension(), requested_permissions_.get());
 
   results_ = Request::Results::Create(true);
   SendResponse(true);
@@ -176,7 +174,7 @@ bool PermissionsRequestFunction::RunAsync() {
   }
 
   // The requested permissions must be defined as optional in the manifest.
-  if (!PermissionsParser::GetOptionalPermissions(GetExtension())
+  if (!PermissionsParser::GetOptionalPermissions(extension())
            ->Contains(*requested_permissions_)) {
     error_ = kNotInOptionalPermissionsError;
     return false;
@@ -184,11 +182,12 @@ bool PermissionsRequestFunction::RunAsync() {
 
   // We don't need to prompt the user if the requested permissions are a subset
   // of the granted permissions set.
-  scoped_refptr<const PermissionSet> granted = ExtensionPrefs::Get(
-      GetProfile())->GetGrantedPermissions(GetExtension()->id());
+  scoped_refptr<const PermissionSet> granted =
+      ExtensionPrefs::Get(GetProfile())
+          ->GetGrantedPermissions(extension()->id());
   if (granted.get() && granted->Contains(*requested_permissions_.get())) {
     PermissionsUpdater perms_updater(GetProfile());
-    perms_updater.AddPermissions(GetExtension(), requested_permissions_.get());
+    perms_updater.AddPermissions(extension(), requested_permissions_.get());
     results_ = Request::Results::Create(true);
     SendResponse(true);
     return true;
@@ -204,8 +203,9 @@ bool PermissionsRequestFunction::RunAsync() {
   // we're skipping the confirmation UI. All extension types but INTERNAL
   // are allowed to silently increase their permission level.
   bool has_no_warnings =
-      PermissionMessageProvider::Get()->GetWarningMessages(
-          requested_permissions_, GetExtension()->GetType()).empty();
+      PermissionMessageProvider::Get()
+          ->GetWarningMessages(requested_permissions_, extension()->GetType())
+          .empty();
   if (auto_confirm_for_tests == PROCEED || has_no_warnings ||
       extension_->location() == Manifest::COMPONENT) {
     InstallUIProceed();
@@ -216,7 +216,7 @@ bool PermissionsRequestFunction::RunAsync() {
     CHECK_EQ(DO_NOT_SKIP, auto_confirm_for_tests);
     install_ui_.reset(new ExtensionInstallPrompt(GetAssociatedWebContents()));
     install_ui_->ConfirmPermissions(
-        this, GetExtension(), requested_permissions_.get());
+        this, extension(), requested_permissions_.get());
   }
 
   return true;

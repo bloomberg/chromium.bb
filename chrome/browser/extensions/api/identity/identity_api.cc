@@ -306,7 +306,7 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
   should_prompt_for_scopes_ = interactive;
   should_prompt_for_signin_ = interactive;
 
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
+  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension());
 
   // Check that the necessary information is present in the manifest.
   oauth2_client_id_ = GetOAuth2ClientId();
@@ -350,7 +350,7 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
   }
 
   token_key_.reset(
-      new ExtensionTokenKey(GetExtension()->id(), account_key, scopes));
+      new ExtensionTokenKey(extension()->id(), account_key, scopes));
 
   // From here on out, results must be returned asynchronously.
   StartAsyncRun();
@@ -458,7 +458,7 @@ void IdentityGetAuthTokenFunction::CompleteMintTokenFlow() {
 
 void IdentityGetAuthTokenFunction::StartMintToken(
     IdentityMintRequestQueue::MintType type) {
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
+  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension());
   IdentityAPI* id_api = IdentityAPI::GetFactoryInstance()->Get(GetProfile());
   IdentityTokenCacheValue cache_entry = id_api->GetCachedToken(*token_key_);
   IdentityTokenCacheValue::CacheValueStatus cache_status =
@@ -727,7 +727,7 @@ OAuth2MintTokenFlow* IdentityGetAuthTokenFunction::CreateMintTokenFlow(
       this,
       OAuth2MintTokenFlow::Parameters(
           login_access_token,
-          GetExtension()->id(),
+          extension()->id(),
           oauth2_client_id_,
           std::vector<std::string>(token_key_->scopes.begin(),
                                    token_key_->scopes.end()),
@@ -755,12 +755,12 @@ std::string IdentityGetAuthTokenFunction::MapOAuth2ErrorToDescription(
 }
 
 std::string IdentityGetAuthTokenFunction::GetOAuth2ClientId() const {
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
+  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension());
   std::string client_id = oauth2_info.client_id;
 
   // Component apps using auto_approve may use Chrome's client ID by
   // omitting the field.
-  if (client_id.empty() && GetExtension()->location() == Manifest::COMPONENT &&
+  if (client_id.empty() && extension()->location() == Manifest::COMPONENT &&
       oauth2_info.auto_approve) {
     client_id = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
   }
@@ -779,7 +779,7 @@ ExtensionFunction::ResponseAction IdentityGetProfileUserInfoFunction::Run() {
   }
 
   api::identity::ProfileUserInfo profile_user_info;
-  if (GetExtension()->permissions_data()->HasAPIPermission(
+  if (extension()->permissions_data()->HasAPIPermission(
           APIPermission::kIdentityEmail)) {
     profile_user_info.email =
         GetProfile()->GetPrefs()->GetString(prefs::kGoogleServicesUsername);
@@ -807,7 +807,7 @@ bool IdentityRemoveCachedAuthTokenFunction::RunSync() {
       identity::RemoveCachedAuthToken::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   IdentityAPI::GetFactoryInstance()->Get(GetProfile())->EraseCachedToken(
-      GetExtension()->id(), params->details.token);
+      extension()->id(), params->details.token);
   return true;
 }
 
@@ -835,7 +835,7 @@ bool IdentityLaunchWebAuthFlowFunction::RunAsync() {
 
   // Set up acceptable target URLs. (Does not include chrome-extension
   // scheme for this version of the API.)
-  InitFinalRedirectURLPrefix(GetExtension()->id());
+  InitFinalRedirectURLPrefix(extension()->id());
 
   AddRef();  // Balanced in OnAuthFlowSuccess/Failure.
 

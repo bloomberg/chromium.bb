@@ -528,7 +528,7 @@ void LogPrivateDumpLogsFunction::OnStoreLogsCompleted(
   extensions::GrantedFileEntry file_entry =
       extensions::app_file_handler_util::CreateFileEntry(
           Profile::FromBrowserContext(browser_context()),
-          GetExtension(),
+          extension(),
           render_view_host_->GetProcess()->GetID(),
           log_path,
           false);

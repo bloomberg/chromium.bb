@@ -296,7 +296,7 @@ bool AppCurrentWindowInternalSetSizeConstraintsFunction::RunWithWindow(
 
 bool AppCurrentWindowInternalSetIconFunction::RunWithWindow(AppWindow* window) {
   if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV &&
-      GetExtension()->location() != extensions::Manifest::COMPONENT) {
+      extension()->location() != extensions::Manifest::COMPONENT) {
     error_ = kDevChannelOnly;
     return false;
   }
@@ -307,7 +307,7 @@ bool AppCurrentWindowInternalSetIconFunction::RunWithWindow(AppWindow* window) {
   // XMLHttpRequest) or a resource url.
   GURL url(params->icon_url);
   if (!url.is_valid())
-    url = GetExtension()->GetResourceURL(params->icon_url);
+    url = extension()->GetResourceURL(params->icon_url);
 
   window->SetAppIconUrl(url);
   return true;
@@ -326,7 +326,7 @@ bool AppCurrentWindowInternalSetBadgeIconFunction::RunWithWindow(
   // XMLHttpRequest) or a resource url.
   GURL url(params->icon_url);
   if (!url.is_valid() && !params->icon_url.empty())
-    url = GetExtension()->GetResourceURL(params->icon_url);
+    url = extension()->GetResourceURL(params->icon_url);
 
   window->SetBadgeIconUrl(url);
   return true;
@@ -386,7 +386,7 @@ bool AppCurrentWindowInternalSetShapeFunction::RunWithWindow(
 
 bool AppCurrentWindowInternalSetAlwaysOnTopFunction::RunWithWindow(
     AppWindow* window) {
-  if (!GetExtension()->permissions_data()->HasAPIPermission(
+  if (!extension()->permissions_data()->HasAPIPermission(
           extensions::APIPermission::kAlwaysOnTopWindows)) {
     error_ = kAlwaysOnTopPermission;
     return false;

@@ -21,7 +21,7 @@ bool AppViewInternalAttachFrameFunction::RunAsync() {
       appview::AttachFrame::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  GURL url = GetExtension()->GetResourceURL(params->url);
+  GURL url = extension()->GetResourceURL(params->url);
   EXTENSION_FUNCTION_VALIDATE(url.is_valid());
 
   ExtensionsAPIClient* extensions_client = ExtensionsAPIClient::Get();

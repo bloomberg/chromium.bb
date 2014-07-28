@@ -26,10 +26,11 @@ Profile* ChromeUIThreadExtensionFunction::GetProfile() const {
 
 bool ChromeUIThreadExtensionFunction::CanOperateOnWindow(
     const extensions::WindowController* window_controller) const {
-  const extensions::Extension* extension = GetExtension();
-  // |extension| is NULL for unit tests only.
-  if (extension != NULL && !window_controller->IsVisibleToExtension(extension))
+  // |extension()| is NULL for unit tests only.
+  if (extension() != NULL &&
+      !window_controller->IsVisibleToExtension(extension())) {
     return false;
+  }
 
   if (GetProfile() == window_controller->profile())
     return true;

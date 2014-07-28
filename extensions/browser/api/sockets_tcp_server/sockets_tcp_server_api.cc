@@ -185,7 +185,7 @@ void SocketsTcpServerListenFunction::Work() {
 
   SocketPermissionRequest param(
       SocketPermissionRequest::TCP_LISTEN, params_->address, params_->port);
-  if (!SocketsManifestData::CheckRequest(GetExtension(), param)) {
+  if (!SocketsManifestData::CheckRequest(extension(), param)) {
     error_ = kPermissionError;
     return;
   }

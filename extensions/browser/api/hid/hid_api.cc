@@ -88,7 +88,7 @@ void HidGetDevicesFunction::AsyncWorkStart() {
   const uint16_t product_id = parameters_->options.product_id;
   UsbDevicePermission::CheckParam param(
       vendor_id, product_id, UsbDevicePermissionData::UNSPECIFIED_INTERFACE);
-  if (!GetExtension()->permissions_data()->CheckAPIPermissionWithParam(
+  if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
           APIPermission::kUsbDevice, &param)) {
     LOG(WARNING) << "Insufficient permissions to access device.";
     CompleteWithError(kErrorPermissionDenied);
@@ -120,7 +120,7 @@ void HidConnectFunction::AsyncWorkStart() {
       device_info.vendor_id,
       device_info.product_id,
       UsbDevicePermissionData::UNSPECIFIED_INTERFACE);
-  if (!GetExtension()->permissions_data()->CheckAPIPermissionWithParam(
+  if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
           APIPermission::kUsbDevice, &param)) {
     LOG(WARNING) << "Insufficient permissions to access device.";
     CompleteWithError(kErrorPermissionDenied);

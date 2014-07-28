@@ -241,7 +241,7 @@ bool NotificationsApiFunction::IsNotificationsApiAvailable() {
   // We need to check this explicitly rather than letting
   // _permission_features.json enforce it, because we're sharing the
   // chrome.notifications permissions namespace with WebKit notifications.
-  return GetExtension()->is_platform_app() || GetExtension()->is_extension();
+  return extension()->is_platform_app() || extension()->is_extension();
 }
 
 NotificationsApiFunction::NotificationsApiFunction() {

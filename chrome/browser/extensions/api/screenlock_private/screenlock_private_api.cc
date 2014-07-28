@@ -135,8 +135,7 @@ bool ScreenlockPrivateShowCustomIconFunction::RunAsync() {
       continue;
     }
 
-    ExtensionResource resource =
-        GetExtension()->GetResource(params->icon[i]->url);
+    ExtensionResource resource = extension()->GetResource(params->icon[i]->url);
     if (resource.empty())
       continue;
 
@@ -158,7 +157,7 @@ bool ScreenlockPrivateShowCustomIconFunction::RunAsync() {
 
   extensions::ImageLoader* loader = extensions::ImageLoader::Get(GetProfile());
   loader->LoadImagesAsync(
-      GetExtension(),
+      extension(),
       icon_info,
       base::Bind(&ScreenlockPrivateShowCustomIconFunction::OnImageLoaded,
                  this));

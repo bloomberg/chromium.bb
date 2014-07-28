@@ -157,7 +157,7 @@ bool BookmarksFunction::RunAsync() {
   if (success) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
-        content::Source<const Extension>(GetExtension()),
+        content::Source<const Extension>(extension()),
         content::Details<const BookmarksFunction>(this));
   }
   SendResponse(success);

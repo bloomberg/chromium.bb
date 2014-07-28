@@ -106,7 +106,7 @@ bool AlarmsCreateFunction::RunAsync() {
       params->name.get() ? *params->name : kDefaultAlarmName;
   std::vector<std::string> warnings;
   if (!ValidateAlarmCreateInfo(
-          alarm_name, params->alarm_info, GetExtension(), &error_, &warnings)) {
+          alarm_name, params->alarm_info, extension(), &error_, &warnings)) {
     return false;
   }
   for (std::vector<std::string>::const_iterator it = warnings.begin();
@@ -116,8 +116,9 @@ bool AlarmsCreateFunction::RunAsync() {
   Alarm alarm(alarm_name,
               params->alarm_info,
               base::TimeDelta::FromMinutes(
-                  Manifest::IsUnpackedLocation(GetExtension()->location()) ?
-                  kDevDelayMinimum : kReleaseDelayMinimum),
+                  Manifest::IsUnpackedLocation(extension()->location())
+                      ? kDevDelayMinimum
+                      : kReleaseDelayMinimum),
               clock_->Now());
   AlarmManager::Get(browser_context())->AddAlarm(
       extension_id(), alarm, base::Bind(&AlarmsCreateFunction::Callback, this));

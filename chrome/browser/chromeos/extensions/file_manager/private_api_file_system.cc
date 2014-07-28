@@ -288,10 +288,8 @@ bool FileBrowserPrivateRequestFileSystemFunction::RunAsync() {
 
   // Set up file permission access.
   const int child_id = render_view_host()->GetProcess()->GetID();
-  if (!SetupFileSystemAccessPermissions(file_system_context,
-                                        child_id,
-                                        GetProfile(),
-                                        GetExtension())) {
+  if (!SetupFileSystemAccessPermissions(
+          file_system_context, child_id, GetProfile(), extension())) {
     DidFail(base::File::FILE_ERROR_SECURITY);
     return false;
   }
