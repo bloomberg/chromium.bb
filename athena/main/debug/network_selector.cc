@@ -122,6 +122,7 @@ class PasswordView : public views::View, public views::ButtonListener {
       AddChildView(error_msg_);
       InvalidateLayout();
       parent_container_->Layout();
+      ScrollRectToVisible(error_msg_->bounds());
     }
     connect_->SetEnabled(true);
   }
@@ -149,6 +150,13 @@ class PasswordView : public views::View, public views::ButtonListener {
 
   void OnConnectionSucceed() { Close(true); }
 
+  // views::View:
+  virtual void ViewHierarchyChanged(
+      const views::View::ViewHierarchyChangedDetails& details) OVERRIDE {
+    if (details.is_add && details.child == this)
+      textfield_->RequestFocus();
+  }
+
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE {
@@ -167,9 +175,7 @@ class PasswordView : public views::View, public views::ButtonListener {
                      textfield_->text()),
           base::Bind(&PasswordView::OnKnownError, weak_ptr_.GetWeakPtr()));
     } else if (sender == cancel_) {
-      views::View* parent_view = parent();
       Close(false);
-      parent_view->Layout();
     } else {
       NOTREACHED();
     }
@@ -217,11 +223,14 @@ class NetworkRow : public views::View {
       AddChildView(password_view_.get());
   }
 
+  bool has_password_view() const { return password_view_; }
+
  private:
   void OnPasswordComplete(bool successful) {
     password_view_.reset();
     InvalidateLayout();
     container_->Layout();
+    ScrollRectToVisible(GetContentsBounds());
   }
 
   void ShowPasswordView(const std::string& service_path) {
@@ -245,6 +254,7 @@ class NetworkRow : public views::View {
     AddChildView(password_view_.get());
     PreferredSizeChanged();
     container_->Layout();
+    ScrollRectToVisible(password_view_->bounds());
   }
 
   void OnNetworkConnectionError(const std::string& service_path,
@@ -383,7 +393,9 @@ class NetworkSelector : public ui::NetworkListDelegate,
     return new NetworkRow(info, background_view_);
   }
 
-  virtual bool IsViewHovered(views::View* view) OVERRIDE { return false; }
+  virtual bool IsViewHovered(views::View* view) OVERRIDE {
+    return static_cast<NetworkRow*>(view)->has_password_view();
+  }
 
   virtual chromeos::NetworkTypePattern GetNetworkTypePattern() const OVERRIDE {
     return chromeos::NetworkTypePattern::NonVirtual();
