@@ -437,7 +437,7 @@ executable("content_shell") {
   ]
 
   if (is_win) {
-    deps = [ "//sandbox" ]
+    deps += [ "//sandbox" ]
     if (!is_asan) {
       configs -= [ "//build/config/win:console" ]
       configs += [ "//build/config/win:windowed" ]
