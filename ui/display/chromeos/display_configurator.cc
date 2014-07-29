@@ -775,8 +775,11 @@ bool DisplayConfigurator::EnterState(MultipleDisplayState display_state,
 
         if (display_power[i] || cached_displays_.size() == 1) {
           const DisplayMode* mode_info = state->selected_mode;
-          if (!mode_info)
+          if (!mode_info) {
+            LOG(WARNING) << "No selected mode when configuring display: "
+                         << state->display->ToString();
             return false;
+          }
           if (mode_info->size() == gfx::Size(1024, 768)) {
             VLOG(1) << "Potentially misdetecting display(1024x768):"
                     << " displays size=" << cached_displays_.size()
@@ -800,8 +803,11 @@ bool DisplayConfigurator::EnterState(MultipleDisplayState display_state,
       }
 
       const DisplayMode* mode_info = cached_displays_[0].mirror_mode;
-      if (!mode_info)
+      if (!mode_info) {
+        LOG(WARNING) << "No mirror mode when configuring display: "
+                     << cached_displays_[0].display->ToString();
         return false;
+      }
       size = mode_info->size();
 
       for (size_t i = 0; i < cached_displays_.size(); ++i) {
@@ -828,8 +834,11 @@ bool DisplayConfigurator::EnterState(MultipleDisplayState display_state,
         // same desktop configuration can be restored when the displays are
         // turned back on.
         const DisplayMode* mode_info = cached_displays_[i].selected_mode;
-        if (!mode_info)
+        if (!mode_info) {
+          LOG(WARNING) << "No selected mode when configuring display: "
+                       << state->display->ToString();
           return false;
+        }
 
         size.set_width(std::max<int>(size.width(), mode_info->size().width()));
         size.set_height(size.height() + (size.height() ? kVerticalGap : 0) +
