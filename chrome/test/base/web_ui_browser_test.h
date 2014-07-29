@@ -95,11 +95,6 @@ class WebUIBrowserTest : public JavaScriptBrowserTest {
   // handler mocking.
   void BrowsePreload(const GURL& browse_to);
 
-  // Called by javascript-generated test bodies. In addition to doing
-  // everything in BrowsePreload(), it also waits until the
-  // DidRunWebUIMojoMain() event fires.
-  void BrowsePreloadAndWaitForMain(const GURL& browse_to);
-
   // Called by javascript-generated test bodies to browse to a page and preload
   // the javascript for the given |preload_test_fixture| and
   // |preload_test_name|. chrome.send will be overridden to allow javascript

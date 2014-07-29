@@ -3,10 +3,9 @@
 # found in the LICENSE file.
 {
   'variables': {
+    'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
     'about_credits_file': '<(SHARED_INTERMEDIATE_DIR)/about_credits.html',
     'additional_modules_list_file': '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/internal/additional_modules_list.txt',
-    'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
-    'identity_internals_mojom_file': '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/ui/webui/identity_internals/identity_internals.mojom.js',
     'omnibox_mojom_file': '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/ui/webui/omnibox/omnibox.mojom.js',
   },
   'targets': [
@@ -199,7 +198,6 @@
             'grit_additional_defines': [
               '-E', 'about_credits_file=<(about_credits_file)',
               '-E', 'additional_modules_list_file=<(additional_modules_list_file)',
-              '-E', 'identity_internals_mojom_file=<(identity_internals_mojom_file)',
               '-E', 'omnibox_mojom_file=<(omnibox_mojom_file)',
             ],
           },

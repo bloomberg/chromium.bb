@@ -620,15 +620,12 @@ grit("resources") {
   ]
 
   omnibox_mojom_file = "$root_gen_dir/chrome/browser/ui/webui/omnibox/omnibox.mojom.js"
-  identity_internals_mojom_file = "$root_gen_dir/chrome/browser/ui/webui/identity_internals/identity_internals.mojom.js"
 
   grit_flags = [
     "-E", "about_credits_file=" +
           rebase_path(about_credits_file, root_build_dir),
     "-E", "additional_modules_list_file=" +
           rebase_path(additional_modules_list_file, root_build_dir),
-    "-E", "identity_internals_mojom_file=" +
-          rebase_path(identity_internals_mojom_file, root_build_dir),
     "-E", "omnibox_mojom_file=" +
           rebase_path(omnibox_mojom_file, root_build_dir),
   ]
@@ -636,7 +633,6 @@ grit("resources") {
   deps = [
     ":about_credits",
     ":chrome_internal_resources_gen",
-    "//chrome/browser/ui/webui/identity_internals:mojo_bindings",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings",
   ]
 }

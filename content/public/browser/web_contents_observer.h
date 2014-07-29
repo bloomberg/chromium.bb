@@ -325,10 +325,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // Invoked when theme color is changed to |theme_color|.
   virtual void DidChangeThemeColor(SkColor theme_color) {}
 
-  // Invoked when the gin bindings have run the main module on mojoized WebUI
-  // pages. Only invoked on the main frame.
-  virtual void DidRunWebUIMojoMain() {}
-
   // Invoked if an IPC message is coming from a specific RenderFrameHost.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  RenderFrameHost* render_frame_host);

@@ -688,7 +688,3 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_BeginNavigation,
 // Sent once a paint happens after the first non empty layout. In other words
 // after the frame has painted something.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DidFirstVisuallyNonEmptyPaint)
-
-// Sent when a WebUI page that uses Mojo has executed its 'main' module. Our
-// javascript based testing framework must wait until this has happened.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_WebUIMojoMainRan)

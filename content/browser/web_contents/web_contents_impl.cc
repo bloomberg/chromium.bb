@@ -570,7 +570,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                         OnMediaPausedNotification)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFirstVisuallyNonEmptyPaint,
                         OnFirstVisuallyNonEmptyPaint)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_WebUIMojoMainRan, OnWebUIMojoMainRan)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidLoadResourceFromMemoryCache,
                         OnDidLoadResourceFromMemoryCache)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidDisplayInsecureContent,
@@ -3058,12 +3057,6 @@ void WebContentsImpl::OnMediaPausedNotification(int64 player_cookie) {
 void WebContentsImpl::OnFirstVisuallyNonEmptyPaint() {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidFirstVisuallyNonEmptyPaint());
-}
-
-void WebContentsImpl::OnWebUIMojoMainRan() {
-  FOR_EACH_OBSERVER(WebContentsObserver,
-                    observers_,
-                    DidRunWebUIMojoMain());
 }
 
 void WebContentsImpl::DidChangeVisibleSSLState() {

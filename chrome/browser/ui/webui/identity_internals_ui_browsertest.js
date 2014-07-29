@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-GEN('#include "chrome/browser/ui/webui/identity_internals/identity_internals_ui_browsertest.h"');
+GEN('#include "chrome/browser/ui/webui/identity_internals_ui_browsertest.h"');
 
 /**
  * Test C++ fixture for downloads WebUI testing.
@@ -24,7 +24,7 @@ BaseIdentityInternalsWebUITest.prototype = {
   /**
    * Browse to the downloads page & call our preLoad().
    */
-  browsePreloadAndWaitForMain: 'chrome://identity-internals',
+  browsePreload: 'chrome://identity-internals',
 
   /** @override */
   typedefCppFixture: 'IdentityInternalsUIBrowserTest',
@@ -245,8 +245,11 @@ IdentityInternalsWebUITestAsync.prototype = {
 TEST_F('IdentityInternalsWebUITestAsync', 'revokeToken', function() {
   var tokenListBefore = this.getTokens();
   expectEquals(2, tokenListBefore.length);
-  window.revokeTokenTest = this.continueTest(
+  var tokenRevokeDone = identity_internals.tokenRevokeDone;
+  identity_internals.tokenRevokeDone = this.continueTest(
       WhenTestDone.ALWAYS, function(accessTokens) {
+        tokenRevokeDone.call(identity_internals, accessTokens);
+        identity_internals.tokenRevokeDone = tokenRevokeDone;
         var tokenListAfter = this.getTokens();
         expectEquals(1, tokenListAfter.length);
         expectEquals(this.getAccessToken(tokenListBefore[0]),
@@ -254,3 +257,4 @@ TEST_F('IdentityInternalsWebUITestAsync', 'revokeToken', function() {
       }.bind(this));
   this.getRevokeButton(tokenListBefore[1]).click();
 });
+

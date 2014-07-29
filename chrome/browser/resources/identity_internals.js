@@ -2,14 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-define('main', [
-    'mojo/public/js/bindings/connection',
-    'chrome/browser/ui/webui/identity_internals/identity_internals.mojom',
-], function(connector, browser) {
+cr.define('identity_internals', function() {
   'use strict';
-
-  var connection;
-  var page;
 
   /**
    * Creates an identity token item.
@@ -30,20 +24,20 @@ define('main', [
     /** @override */
     decorate: function() {
       this.textContent = '';
-      this.id = this.data_.access_token;
+      this.id = this.data_.accessToken;
 
       var table = this.ownerDocument.createElement('table');
       var tbody = this.ownerDocument.createElement('tbody');
       tbody.appendChild(this.createEntry_(
-          'accessToken', this.data_.access_token, 'access-token'));
+          'accessToken', this.data_.accessToken, 'access-token'));
       tbody.appendChild(this.createEntry_(
-          'extensionName', this.data_.extension_name, 'extension-name'));
+          'extensionName', this.data_.extensionName, 'extension-name'));
       tbody.appendChild(this.createEntry_(
-          'extensionId', this.data_.extension_id, 'extension-id'));
+          'extensionId', this.data_.extensionId, 'extension-id'));
       tbody.appendChild(this.createEntry_(
-          'tokenStatus', this.data_.token_status, 'token-status'));
+          'tokenStatus', this.data_.status, 'token-status'));
       tbody.appendChild(this.createEntry_(
-          'expirationTime', this.data_.expiration_time, 'expiration-time'));
+          'expirationTime', this.data_.expirationTime, 'expiration-time'));
       tbody.appendChild(this.createEntryForScopes_());
       table.appendChild(tbody);
       var tfoot = this.ownerDocument.createElement('tfoot');
@@ -119,13 +113,8 @@ define('main', [
       var revokeButton = this.ownerDocument.createElement('button');
       revokeButton.classList.add('revoke-button');
       revokeButton.addEventListener('click', function() {
-        var accessToken = this.data_.access_token;
-        page.browser_.revokeToken(this.data_.extension_id,
-                                  accessToken).then(function() {
-                                      tokenList_.removeTokenNode_(accessToken);
-                                      if (window.revokeTokenTest)
-                                          window.revokeTokenTest();
-                                  });
+        chrome.send('identityInternalsRevokeToken',
+                    [this.data_.extensionId, this.data_.accessToken]);
       }.bind(this));
       revokeButton.textContent = loadTimeData.getString('revoke');
       return revokeButton;
@@ -167,7 +156,7 @@ define('main', [
     removeTokenNode_: function(accessToken) {
       var tokenIndex;
       for (var index = 0; index < this.data_.length; index++) {
-        if (this.data_[index].access_token == accessToken) {
+        if (this.data_[index].accessToken == accessToken) {
           tokenIndex = index;
           break;
         }
@@ -186,28 +175,42 @@ define('main', [
 
   var tokenList_;
 
-  function InternalsPageImpl(browser) {
-    this.browser_ = browser;
-    page = this;
-
+  /**
+   * Initializes the UI by asking the contoller for list of identity tokens.
+   */
+  function initialize() {
+    chrome.send('identityInternalsGetTokens');
     tokenList_ = $('token-list');
     tokenList_.data_ = [];
     tokenList_.__proto__ = TokenList.prototype;
     tokenList_.decorate();
-
-    page.browser_.getTokens().then(function(results) {
-        tokenList_.data_ = results.tokens;
-        tokenList_.showTokenNodes_();
-    });
   }
 
-  InternalsPageImpl.prototype =
-      Object.create(browser.InternalsPageStub.prototype);
+  /**
+   * Callback function accepting a list of tokens to be displayed.
+   * @param {!Token[]} tokens A list of tokens to be displayed
+   */
+  function returnTokens(tokens) {
+    tokenList_.data_ = tokens;
+    tokenList_.showTokenNodes_();
+  }
 
-  return function(handle) {
-    connection = new connector.Connection(
-        handle,
-        InternalsPageImpl,
-        browser.IdentityInternalsHandlerMojoProxy);
+  /**
+   * Callback function that removes a token from UI once it has been revoked.
+   * @param {!Array.<string>} accessTokens Array with a single element, which is
+   * an access token to be removed.
+   */
+  function tokenRevokeDone(accessTokens) {
+    assert(accessTokens.length > 0);
+    tokenList_.removeTokenNode_(accessTokens[0]);
+  }
+
+  // Return an object with all of the exports.
+  return {
+    initialize: initialize,
+    returnTokens: returnTokens,
+    tokenRevokeDone: tokenRevokeDone,
   };
 });
+
+document.addEventListener('DOMContentLoaded', identity_internals.initialize);
