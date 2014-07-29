@@ -9,8 +9,10 @@ This script is used by a trybot to run the src/tools/bisect-perf-regression.py
 script with the parameters specified in run-bisect-perf-regression.cfg. It will
 check out a copy of the depot in a subdirectory 'bisect' of the working
 directory provided, and run the bisect-perf-regression.py script there.
+
 """
 
+import imp
 import optparse
 import os
 import platform
@@ -20,8 +22,10 @@ import traceback
 
 from auto_bisect import bisect_utils
 
-# Special import required because of dashes in file name.
-bisect = __import__('bisect-perf-regression')
+bisect = imp.load_source('bisect-perf-regression',
+    os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])),
+        'bisect-perf-regression.py'))
+
 
 CROS_BOARD_ENV = 'BISECT_CROS_BOARD'
 CROS_IP_ENV = 'BISECT_CROS_IP'
@@ -33,7 +37,6 @@ WEBKIT_RUN_TEST_CONFIG = os.path.join(
     '..', 'third_party', 'WebKit', 'Tools', 'run-perf-test.cfg')
 
 class Goma(object):
-  """Convenience class to start and stop goma."""
 
   def __init__(self, path_to_goma):
     self._abs_path_to_goma = None
@@ -89,7 +92,7 @@ class Goma(object):
 
 
 def _LoadConfigFile(config_file_path):
-  """Loads to given file as a python module and returns the config dictionary.
+  """Loads the given file as a python module and returns the config dictionary.
 
   The config file is loaded as a Python module.
 

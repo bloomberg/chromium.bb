@@ -5,10 +5,12 @@
 import math
 import unittest
 
+from auto_bisect import source_control as source_control_module
+
 # Special import necessary because filename contains dash characters.
 bisect_perf_module = __import__('bisect-perf-regression')
 
-
+# Sample output for a performance test used in the results parsing tests below.
 RESULTS_OUTPUT = """RESULT write_operations: write_operations= 23089 count
 RESULT read_bytes_gpu: read_bytes_gpu= 35201 kb
 RESULT write_bytes_gpu: write_bytes_gpu= 542 kb
@@ -28,6 +30,37 @@ class BisectPerfRegressionTest(unittest.TestCase):
   def tearDown(self):
     """Cleans up the test environment after each test method."""
     pass
+
+  def testConfidenceScore(self):
+    """Tests the confidence calculation."""
+    bad_values = [[0, 1], [1, 2]]
+    good_values = [[6, 7], [7, 8]]
+    # Closest means are mean(1, 2) and mean(6, 7).
+    distance = 6.5 - 1.5
+    # Standard deviation of [n-1, n, n, n+1] is 0.8165.
+    stddev_sum = 0.8165 + 0.8165
+    # Expected confidence is an int in the range [0, 100].
+    expected_confidence = min(100, int(100 * distance / float(stddev_sum)))
+    self.assertEqual(
+        expected_confidence,
+        bisect_perf_module.ConfidenceScore(bad_values, good_values))
+
+  def testConfidenceScoreZeroConfidence(self):
+    """Tests the confidence calculation when it's expected to be 0."""
+    bad_values = [[0, 1], [1, 2], [4, 5], [0, 2]]
+    good_values = [[4, 5], [6, 7], [7, 8]]
+    # Both groups have value lists with means of 4.5, which means distance
+    # between groups is zero, and thus confidence is zero.
+    self.assertEqual(
+        0, bisect_perf_module.ConfidenceScore(bad_values, good_values))
+
+  def testConfidenceScoreMaxConfidence(self):
+    """Tests the confidence calculation when it's expected to be 100."""
+    bad_values = [[1, 1], [1, 1]]
+    good_values = [[1.2, 1.2], [1.2, 1.2]]
+    # Standard deviation in both groups is zero, so confidence is 100.
+    self.assertEqual(
+        100, bisect_perf_module.ConfidenceScore(bad_values, good_values))
 
   def testParseDEPSStringManually(self):
     """Tests DEPS parsing."""
@@ -59,83 +92,6 @@ vars = {
     vars_dict = bisect_instance._ParseRevisionsFromDEPSFileManually(
         deps_file_contents)
     self.assertEqual(vars_dict, expected_vars_dict)
-
-  def testCalculateTruncatedMeanRaisesError(self):
-    """CalculateTrunctedMean raises an error when passed an empty list."""
-    with self.assertRaises(TypeError):
-      bisect_perf_module.CalculateTruncatedMean([], 0)
-
-  def testCalculateMeanSingleNum(self):
-    """Tests the CalculateMean function with a single number."""
-    self.assertEqual(3.0, bisect_perf_module.CalculateMean([3]))
-
-  def testCalculateMeanShortList(self):
-    """Tests the CalculateMean function with a short list."""
-    self.assertEqual(0.5, bisect_perf_module.CalculateMean([-3, 0, 1, 4]))
-
-  def testCalculateMeanCompareAlternateImplementation(self):
-    """Tests CalculateMean by comparing against an alternate implementation."""
-    def AlternateMeanFunction(values):
-      """Simple arithmetic mean function."""
-      return sum(values) / float(len(values))
-    test_values_lists = [[1], [5, 6.5, 1.2, 3], [-3, 0, 1, 4],
-                         [-3, -1, 0.12, 0.752, 3.33, 8, 16, 32, 439]]
-    for values in test_values_lists:
-      self.assertEqual(
-          AlternateMeanFunction(values),
-          bisect_perf_module.CalculateMean(values))
-
-  def testCalculateConfidence(self):
-    """Tests the confidence calculation."""
-    bad_values = [[0, 1], [1, 2]]
-    good_values = [[6, 7], [7, 8]]
-    # Closest means are mean(1, 2) and mean(6, 7).
-    distance = 6.5 - 1.5
-    # Standard deviation of [n-1, n, n, n+1] is 0.8165.
-    stddev_sum = 0.8165 + 0.8165
-    # Expected confidence is an int in the range [0, 100].
-    expected_confidence = min(100, int(100 * distance / float(stddev_sum)))
-    self.assertEqual(
-        expected_confidence,
-        bisect_perf_module.CalculateConfidence(bad_values, good_values))
-
-  def testCalculateConfidence0(self):
-    """Tests the confidence calculation when it's expected to be 0."""
-    bad_values = [[0, 1], [1, 2], [4, 5], [0, 2]]
-    good_values = [[4, 5], [6, 7], [7, 8]]
-    # Both groups have value lists with means of 4.5, which means distance
-    # between groups is zero, and thus confidence is zero.
-    self.assertEqual(
-        0, bisect_perf_module.CalculateConfidence(bad_values, good_values))
-
-  def testCalculateConfidence100(self):
-    """Tests the confidence calculation when it's expected to be 100."""
-    bad_values = [[1, 1], [1, 1]]
-    good_values = [[1.2, 1.2], [1.2, 1.2]]
-    # Standard deviation in both groups is zero, so confidence is 100.
-    self.assertEqual(
-        100, bisect_perf_module.CalculateConfidence(bad_values, good_values))
-
-  def testCalculateRelativeChange(self):
-    """Tests the common cases for calculating relative change."""
-    # The change is relative to the first value, regardless of which is bigger.
-    self.assertEqual(0.5, bisect_perf_module.CalculateRelativeChange(1.0, 1.5))
-    self.assertEqual(0.5, bisect_perf_module.CalculateRelativeChange(2.0, 1.0))
-
-  def testCalculateRelativeChangeFromZero(self):
-    """Tests what happens when relative change from zero is calculated."""
-    # If the first number is zero, then the result is not a number.
-    self.assertEqual(0, bisect_perf_module.CalculateRelativeChange(0, 0))
-    self.assertTrue(
-        math.isnan(bisect_perf_module.CalculateRelativeChange(0, 1)))
-    self.assertTrue(
-        math.isnan(bisect_perf_module.CalculateRelativeChange(0, -1)))
-
-  def testCalculateRelativeChangeWithNegatives(self):
-    """Tests that relative change given is always positive."""
-    self.assertEqual(3.0, bisect_perf_module.CalculateRelativeChange(-1, 2))
-    self.assertEqual(3.0, bisect_perf_module.CalculateRelativeChange(1, -2))
-    self.assertEqual(1.0, bisect_perf_module.CalculateRelativeChange(-1, -2))
 
   def testTryParseResultValuesFromOutputWithSingleValue(self):
     """Tests result pattern <*>RESULT <graph>: <trace>= <value>"""
@@ -242,7 +198,7 @@ vars = {
   def testGetCompatibleCommand(self):
     bisect_options = bisect_perf_module.BisectOptions()
     bisect_options.output_buildbot_annotations = None
-    source_control = bisect_perf_module.DetermineAndCreateSourceControl(
+    source_control = source_control_module.DetermineAndCreateSourceControl(
         bisect_options)
     bisect_instance = bisect_perf_module.BisectPerformanceMetrics(
         source_control, bisect_options)
@@ -251,7 +207,7 @@ vars = {
     # android-chrome-shell -> android-chromium-testshell
     revision = 274857
     git_revision = bisect_instance.source_control.ResolveToRevision(
-        revision, 'chromium', 100)
+        revision, 'chromium', bisect_perf_module.DEPOT_DEPS_NAME, 100)
     command = ('tools/perf/run_benchmark -v '
                '--browser=android-chrome-shell page_cycler.intl_ja_zh')
     expected_command = ('tools/perf/run_benchmark -v --browser='
@@ -263,7 +219,7 @@ vars = {
     # android-chromium-testshell -> android-chromium-testshell
     revision = 274858
     git_revision = bisect_instance.source_control.ResolveToRevision(
-        revision, 'chromium', 100)
+        revision, 'chromium', bisect_perf_module.DEPOT_DEPS_NAME, 100)
     command = ('tools/perf/run_benchmark -v '
                '--browser=android-chromium-testshell page_cycler.intl_ja_zh')
     expected_command = ('tools/perf/run_benchmark -v --browser='
@@ -275,7 +231,7 @@ vars = {
     # android-chromium-testshell -> android-chrome-shell
     revision = 276628
     git_revision = bisect_instance.source_control.ResolveToRevision(
-        revision, 'chromium', 100)
+        revision, 'chromium', bisect_perf_module.DEPOT_DEPS_NAME, 100)
     command = ('tools/perf/run_benchmark -v '
                '--browser=android-chromium-testshell page_cycler.intl_ja_zh')
     expected_command = ('tools/perf/run_benchmark -v --browser='
@@ -300,6 +256,7 @@ vars = {
     self.assertEqual(
         bisect_instance.GetCompatibleCommand(command, git_revision, depot),
         expected_command)
+
 
 if __name__ == '__main__':
   unittest.main()

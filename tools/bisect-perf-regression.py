@@ -32,7 +32,6 @@ An example usage (using git hashes):
 -g 1f6e67861535121c5c819c16a666f2436c207e7b\
 -b b732f23b4f81c382db0b23b9035f3dadc7d925bb\
 -m shutdown/simple-user-quit
-
 """
 
 import copy
@@ -53,6 +52,7 @@ import zipfile
 sys.path.append(os.path.join(os.path.dirname(__file__), 'telemetry'))
 
 from auto_bisect import bisect_utils
+from auto_bisect import math_utils
 from auto_bisect import post_perf_builder_job as bisect_builder
 from auto_bisect import source_control as source_control_module
 from telemetry.util import cloud_storage
@@ -259,57 +259,7 @@ def _AddAdditionalDepotInfo(depot_info):
   DEPOT_NAMES = DEPOT_DEPS_NAME.keys()
 
 
-def CalculateTruncatedMean(data_set, truncate_percent):
-  """Calculates the truncated mean of a set of values.
-
-  Note that this isn't just the mean of the set of values with the highest
-  and lowest values discarded; the non-discarded values are also weighted
-  differently depending how many values are discarded.
-
-  Args:
-    data_set: Non-empty list of values.
-    truncate_percent: The % from the upper and lower portions of the data set
-        to discard, expressed as a value in [0, 1].
-
-  Returns:
-    The truncated mean as a float.
-
-  Raises:
-    TypeError: The data set was empty after discarding values.
-  """
-  if len(data_set) > 2:
-    data_set = sorted(data_set)
-
-    discard_num_float = len(data_set) * truncate_percent
-    discard_num_int = int(math.floor(discard_num_float))
-    kept_weight = len(data_set) - discard_num_float * 2
-
-    data_set = data_set[discard_num_int:len(data_set)-discard_num_int]
-
-    weight_left = 1.0 - (discard_num_float - discard_num_int)
-
-    if weight_left < 1:
-      # If the % to discard leaves a fractional portion, need to weight those
-      # values.
-      unweighted_vals = data_set[1:len(data_set)-1]
-      weighted_vals = [data_set[0], data_set[len(data_set)-1]]
-      weighted_vals = [w * weight_left for w in weighted_vals]
-      data_set = weighted_vals + unweighted_vals
-  else:
-    kept_weight = len(data_set)
-
-  truncated_mean = reduce(lambda x, y: float(x) + float(y),
-                          data_set) / kept_weight
-
-  return truncated_mean
-
-
-def CalculateMean(values):
-  """Calculates the arithmetic mean of a list of values."""
-  return CalculateTruncatedMean(values, 0.0)
-
-
-def CalculateConfidence(good_results_lists, bad_results_lists):
+def ConfidenceScore(good_results_lists, bad_results_lists):
   """Calculates a confidence percentage.
 
   This is calculated based on how distinct the "good" and "bad" values are,
@@ -330,8 +280,8 @@ def CalculateConfidence(good_results_lists, bad_results_lists):
     A number between in the range [0, 100].
   """
   # Get the distance between the two groups.
-  means_good = map(CalculateMean, good_results_lists)
-  means_bad = map(CalculateMean, bad_results_lists)
+  means_good = map(math_utils.Mean, good_results_lists)
+  means_bad = map(math_utils.Mean, bad_results_lists)
   bounds_good = (min(means_good), max(means_good))
   bounds_bad = (min(means_bad), max(means_bad))
   dist_between_groups = min(
@@ -341,78 +291,13 @@ def CalculateConfidence(good_results_lists, bad_results_lists):
   # Get the sum of the standard deviations of the two groups.
   good_results_flattened = sum(good_results_lists, [])
   bad_results_flattened = sum(bad_results_lists, [])
-  stddev_good = CalculateStandardDeviation(good_results_flattened)
-  stddev_bad = CalculateStandardDeviation(bad_results_flattened)
+  stddev_good = math_utils.StandardDeviation(good_results_flattened)
+  stddev_bad = math_utils.StandardDeviation(bad_results_flattened)
   stddev_sum = stddev_good + stddev_bad
 
   confidence = dist_between_groups / (max(0.0001, stddev_sum))
   confidence = int(min(1.0, max(confidence, 0.0)) * 100.0)
   return confidence
-
-
-def CalculateStandardDeviation(values):
-  """Calculates the sample standard deviation of the given list of values."""
-  if len(values) == 1:
-    return 0.0
-
-  mean = CalculateMean(values)
-  differences_from_mean = [float(x) - mean for x in values]
-  squared_differences = [float(x * x) for x in differences_from_mean]
-  variance = sum(squared_differences) / (len(values) - 1)
-  std_dev = math.sqrt(variance)
-
-  return std_dev
-
-
-def CalculateRelativeChange(before, after):
-  """Returns the relative change of before and after, relative to before.
-
-  There are several different ways to define relative difference between
-  two numbers; sometimes it is defined as relative to the smaller number,
-  or to the mean of the two numbers. This version returns the difference
-  relative to the first of the two numbers.
-
-  Args:
-    before: A number representing an earlier value.
-    after: Another number, representing a later value.
-
-  Returns:
-    A non-negative floating point number; 0.1 represents a 10% change.
-  """
-  if before == after:
-    return 0.0
-  if before == 0:
-    return float('nan')
-  difference = after - before
-  return math.fabs(difference / before)
-
-
-def CalculatePooledStandardError(work_sets):
-  numerator = 0.0
-  denominator1 = 0.0
-  denominator2 = 0.0
-
-  for current_set in work_sets:
-    std_dev = CalculateStandardDeviation(current_set)
-    numerator += (len(current_set) - 1) * std_dev ** 2
-    denominator1 += len(current_set) - 1
-    denominator2 += 1.0 / len(current_set)
-
-  if denominator1:
-    return math.sqrt(numerator / denominator1) * math.sqrt(denominator2)
-  return 0.0
-
-
-def CalculateStandardError(values):
-  """Calculates the standard error of a list of values."""
-  if len(values) <= 1:
-    return 0.0
-
-  std_dev = CalculateStandardDeviation(values)
-
-  return std_dev / math.sqrt(len(values))
-
-
 
 
 def GetSHA1HexDigest(contents):
@@ -1981,10 +1866,10 @@ class BisectPerformanceMetrics(object):
       print
     else:
       # Need to get the average value if there were multiple values.
-      truncated_mean = CalculateTruncatedMean(metric_values,
-          self.opts.truncate_percent)
-      standard_err = CalculateStandardError(metric_values)
-      standard_dev = CalculateStandardDeviation(metric_values)
+      truncated_mean = math_utils.TruncatedMean(
+          metric_values, self.opts.truncate_percent)
+      standard_err = math_utils.StandardError(metric_values)
+      standard_dev = math_utils.StandardDeviation(metric_values)
 
       if self._IsBisectModeStandardDeviation():
         metric_values = [standard_dev]
@@ -3174,9 +3059,9 @@ class BisectPerformanceMetrics(object):
       if current_values:
         current_values = current_values['values']
         if previous_values:
-          confidence = CalculateConfidence(previous_values, [current_values])
-          mean_of_prev_runs = CalculateMean(sum(previous_values, []))
-          mean_of_current_runs = CalculateMean(current_values)
+          confidence = ConfidenceScore(previous_values, [current_values])
+          mean_of_prev_runs = math_utils.Mean(sum(previous_values, []))
+          mean_of_current_runs = math_utils.Mean(current_values)
 
           # Check that the potential regression is in the same direction as
           # the overall regression. If the mean of the previous runs < the
@@ -3228,22 +3113,22 @@ class BisectPerformanceMetrics(object):
       broken_mean = sum(broken_means, [])
 
       # Calculate the approximate size of the regression
-      mean_of_bad_runs = CalculateMean(broken_mean)
-      mean_of_good_runs = CalculateMean(working_mean)
+      mean_of_bad_runs = math_utils.Mean(broken_mean)
+      mean_of_good_runs = math_utils.Mean(working_mean)
 
-      regression_size = 100 * CalculateRelativeChange(mean_of_good_runs,
+      regression_size = 100 * math_utils.RelativeChange(mean_of_good_runs,
                                                       mean_of_bad_runs)
       if math.isnan(regression_size):
         regression_size = 'zero-to-nonzero'
 
-      regression_std_err = math.fabs(CalculatePooledStandardError(
+      regression_std_err = math.fabs(math_utils.PooledStandardError(
           [working_mean, broken_mean]) /
           max(0.0001, min(mean_of_good_runs, mean_of_bad_runs))) * 100.0
 
       # Give a "confidence" in the bisect. At the moment we use how distinct the
       # values are before and after the last broken revision, and how noisy the
       # overall graph is.
-      confidence = CalculateConfidence(working_means, broken_means)
+      confidence = ConfidenceScore(working_means, broken_means)
 
       culprit_revisions = []
 
@@ -3770,6 +3655,7 @@ def main():
     if opts.output_buildbot_annotations:
       bisect_utils.OutputAnnotationStepClosed()
   return 1
+
 
 if __name__ == '__main__':
   sys.exit(main())
