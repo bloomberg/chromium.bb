@@ -41,6 +41,13 @@ private:
     virtual const QualifiedName& subResourceAttributeName() const OVERRIDE;
 };
 
+inline bool isHTMLQuoteElement(const HTMLElement& element)
+{
+    return element.hasTagName(HTMLNames::qTag) || element.hasTagName(HTMLNames::blockquoteTag);
+}
+
+DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLQuoteElement);
+
 } //namespace
 
 #endif

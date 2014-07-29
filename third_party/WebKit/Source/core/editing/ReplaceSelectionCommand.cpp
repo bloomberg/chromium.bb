@@ -384,7 +384,7 @@ static bool hasMatchingQuoteLevel(VisiblePosition endOfExistingContent, VisibleP
 {
     Position existing = endOfExistingContent.deepEquivalent();
     Position inserted = endOfInsertedContent.deepEquivalent();
-    bool isInsideMailBlockquote = enclosingNodeOfType(inserted, isMailBlockquote, CanCrossEditingBoundary);
+    bool isInsideMailBlockquote = enclosingNodeOfType(inserted, isMailHTMLBlockquoteElement, CanCrossEditingBoundary);
     return isInsideMailBlockquote && (numEnclosingMailBlockquotes(existing) == numEnclosingMailBlockquotes(inserted));
 }
 
@@ -462,14 +462,14 @@ bool ReplaceSelectionCommand::shouldMerge(const VisiblePosition& source, const V
     Node* destinationNode = destination.deepEquivalent().deprecatedNode();
     Element* sourceBlock = enclosingBlock(sourceNode);
     Element* destinationBlock = enclosingBlock(destinationNode);
-    return !enclosingNodeOfType(source.deepEquivalent(), &isMailPasteAsQuotationNode) &&
-           sourceBlock && (!sourceBlock->hasTagName(blockquoteTag) || isMailBlockquote(sourceBlock))  &&
-           enclosingListChild(sourceBlock) == enclosingListChild(destinationNode) &&
-           enclosingTableCell(source.deepEquivalent()) == enclosingTableCell(destination.deepEquivalent()) &&
-           (!isHeaderElement(sourceBlock) || haveSameTagName(sourceBlock, destinationBlock)) &&
-           // Don't merge to or from a position before or after a block because it would
-           // be a no-op and cause infinite recursion.
-           !isBlock(sourceNode) && !isBlock(destinationNode);
+    return !enclosingNodeOfType(source.deepEquivalent(), &isMailPasteAsQuotationNode)
+        && sourceBlock && (!sourceBlock->hasTagName(blockquoteTag) || isMailHTMLBlockquoteElement(sourceBlock))
+        && enclosingListChild(sourceBlock) == enclosingListChild(destinationNode)
+        && enclosingTableCell(source.deepEquivalent()) == enclosingTableCell(destination.deepEquivalent())
+        && (!isHeaderElement(sourceBlock) || haveSameTagName(sourceBlock, destinationBlock))
+        // Don't merge to or from a position before or after a block because it would
+        // be a no-op and cause infinite recursion.
+        && !isBlock(sourceNode) && !isBlock(destinationNode);
 }
 
 // Style rules that match just inserted elements could change their appearance, like
@@ -513,7 +513,7 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
 
             // If Mail wraps the fragment with a Paste as Quotation blockquote, or if you're pasting into a quoted region,
             // styles from blockquoteNode are allowed to override those from the source document, see <rdar://problem/4930986> and <rdar://problem/5089327>.
-            Node* blockquoteNode = !context || isMailPasteAsQuotationNode(context) ? context : enclosingNodeOfType(firstPositionInNode(context), isMailBlockquote, CanCrossEditingBoundary);
+            Node* blockquoteNode = !context || isMailPasteAsQuotationNode(context) ? context : enclosingNodeOfType(firstPositionInNode(context), isMailHTMLBlockquoteElement, CanCrossEditingBoundary);
             if (blockquoteNode)
                 newInlineStyle->removeStyleFromRulesAndContext(element, document().documentElement());
 
@@ -734,7 +734,7 @@ static bool handleStyleSpansBeforeInsertion(ReplacementFragment& fragment, const
 
     // Handling the case where we are doing Paste as Quotation or pasting into quoted content is more complicated (see handleStyleSpans)
     // and doesn't receive the optimization.
-    if (isMailPasteAsQuotationNode(topNode) || enclosingNodeOfType(firstPositionInOrBeforeNode(topNode), isMailBlockquote, CanCrossEditingBoundary))
+    if (isMailPasteAsQuotationNode(topNode) || enclosingNodeOfType(firstPositionInOrBeforeNode(topNode), isMailHTMLBlockquoteElement, CanCrossEditingBoundary))
         return false;
 
     // Either there are no style spans in the fragment or a WebKit client has added content to the fragment
@@ -786,7 +786,7 @@ void ReplaceSelectionCommand::handleStyleSpans(InsertedNodes& insertedNodes)
 
     // If Mail wraps the fragment with a Paste as Quotation blockquote, or if you're pasting into a quoted region,
     // styles from blockquoteNode are allowed to override those from the source document, see <rdar://problem/4930986> and <rdar://problem/5089327>.
-    Node* blockquoteNode = isMailPasteAsQuotationNode(context) ? context : enclosingNodeOfType(firstPositionInNode(context), isMailBlockquote, CanCrossEditingBoundary);
+    Node* blockquoteNode = isMailPasteAsQuotationNode(context) ? context : enclosingNodeOfType(firstPositionInNode(context), isMailHTMLBlockquoteElement, CanCrossEditingBoundary);
     if (blockquoteNode)
         context = document().documentElement();
 
@@ -936,7 +936,7 @@ void ReplaceSelectionCommand::doApply()
     Node* enclosingBlockOfVisibleStart = enclosingBlock(visibleStart.deepEquivalent().deprecatedNode());
 
     Position insertionPos = selection.start();
-    bool startIsInsideMailBlockquote = enclosingNodeOfType(insertionPos, isMailBlockquote, CanCrossEditingBoundary);
+    bool startIsInsideMailBlockquote = enclosingNodeOfType(insertionPos, isMailHTMLBlockquoteElement, CanCrossEditingBoundary);
     bool selectionIsPlainText = !selection.isContentRichlyEditable();
     Element* currentRoot = selection.rootEditableElement();
 
@@ -1222,7 +1222,7 @@ void ReplaceSelectionCommand::doApply()
                     // Use a default paragraph element (a plain div) for the empty paragraph, using the last paragraph
                     // block's style seems to annoy users.
                     insertParagraphSeparator(true, !startIsInsideMailBlockquote && highestEnclosingNodeOfType(endOfInsertedContent.deepEquivalent(),
-                        isMailBlockquote, CannotCrossEditingBoundary, insertedNodes.firstNodeInserted()->parentNode()));
+                        isMailHTMLBlockquoteElement, CannotCrossEditingBoundary, insertedNodes.firstNodeInserted()->parentNode()));
                 }
 
                 // Select up to the paragraph separator that was added.

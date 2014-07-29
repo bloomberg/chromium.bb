@@ -66,6 +66,7 @@
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/HTMLQuoteElement.h"
 #include "core/html/HTMLSpanElement.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderBlock.h"
@@ -1360,7 +1361,7 @@ bool CompositeEditCommand::breakOutOfEmptyMailBlockquotedParagraph()
         return false;
 
     VisiblePosition caret(endingSelection().visibleStart());
-    Node* highestBlockquote = highestEnclosingNodeOfType(caret.deepEquivalent(), &isMailBlockquote);
+    HTMLQuoteElement* highestBlockquote = toHTMLQuoteElement(highestEnclosingNodeOfType(caret.deepEquivalent(), &isMailHTMLBlockquoteElement));
     if (!highestBlockquote)
         return false;
 
@@ -1369,7 +1370,7 @@ bool CompositeEditCommand::breakOutOfEmptyMailBlockquotedParagraph()
 
     VisiblePosition previous(caret.previous(CannotCrossEditingBoundary));
     // Only move forward if there's nothing before the caret, or if there's unquoted content before it.
-    if (enclosingNodeOfType(previous.deepEquivalent(), &isMailBlockquote))
+    if (enclosingNodeOfType(previous.deepEquivalent(), &isMailHTMLBlockquoteElement))
         return false;
 
     RefPtrWillBeRawPtr<HTMLBRElement> br = createBreakElement(document());

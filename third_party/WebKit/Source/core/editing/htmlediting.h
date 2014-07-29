@@ -105,7 +105,7 @@ bool isInline(const Node*);
 bool isSpecialHTMLElement(const Node*);
 bool isTabSpanElement(const Node*);
 bool isTabSpanTextNode(const Node*);
-bool isMailBlockquote(const Node*);
+bool isMailHTMLBlockquoteElement(const Node*);
 bool isRenderedTable(const Node*);
 bool isRenderedTableElement(const Node*);
 bool isTableCell(const Node*);

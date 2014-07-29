@@ -54,6 +54,7 @@
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/HTMLQuoteElement.h"
 #include "core/html/HTMLSpanElement.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTextFormControlElement.h"
@@ -447,7 +448,7 @@ static bool isHTMLBlockElement(const Node* node)
         || isNonTableCellHTMLBlockElement(node);
 }
 
-static Node* ancestorToRetainStructureAndAppearanceForBlock(Node* commonAncestorBlock)
+static ContainerNode* ancestorToRetainStructureAndAppearanceForBlock(Node* commonAncestorBlock)
 {
     if (!commonAncestorBlock)
         return 0;
@@ -461,17 +462,17 @@ static Node* ancestorToRetainStructureAndAppearanceForBlock(Node* commonAncestor
     }
 
     if (isNonTableCellHTMLBlockElement(commonAncestorBlock))
-        return commonAncestorBlock;
+        return toHTMLElement(commonAncestorBlock);
 
     return 0;
 }
 
-static inline Node* ancestorToRetainStructureAndAppearance(Node* commonAncestor)
+static inline ContainerNode* ancestorToRetainStructureAndAppearance(Node* commonAncestor)
 {
     return ancestorToRetainStructureAndAppearanceForBlock(enclosingBlock(commonAncestor));
 }
 
-static inline Node* ancestorToRetainStructureAndAppearanceWithNoRenderer(Node* commonAncestor)
+static inline ContainerNode* ancestorToRetainStructureAndAppearanceWithNoRenderer(Node* commonAncestor)
 {
     Node* commonAncestorBlock = enclosingNodeOfType(firstPositionInOrBeforeNode(commonAncestor), isHTMLBlockElement);
     return ancestorToRetainStructureAndAppearanceForBlock(commonAncestorBlock);
@@ -511,17 +512,21 @@ static PassRefPtrWillBeRawPtr<EditingStyle> styleFromMatchedRulesAndInlineDecl(c
     return style.release();
 }
 
-static bool isElementPresentational(const Node* node)
+static bool isPresentationalHTMLElement(const Node* node)
 {
-    return node->hasTagName(uTag) || node->hasTagName(sTag) || node->hasTagName(strikeTag)
-        || node->hasTagName(iTag) || node->hasTagName(emTag) || node->hasTagName(bTag) || node->hasTagName(strongTag);
+    if (!node->isHTMLElement())
+        return false;
+
+    const HTMLElement& element = toHTMLElement(*node);
+    return element.hasTagName(uTag) || element.hasTagName(sTag) || element.hasTagName(strikeTag)
+        || element.hasTagName(iTag) || element.hasTagName(emTag) || element.hasTagName(bTag) || element.hasTagName(strongTag);
 }
 
-static Node* highestAncestorToWrapMarkup(const Range* range, EAnnotateForInterchange shouldAnnotate, Node* constrainingAncestor)
+static ContainerNode* highestAncestorToWrapMarkup(const Range* range, EAnnotateForInterchange shouldAnnotate, Node* constrainingAncestor)
 {
     Node* commonAncestor = range->commonAncestorContainer();
     ASSERT(commonAncestor);
-    Node* specialCommonAncestor = 0;
+    ContainerNode* specialCommonAncestor = 0;
     if (shouldAnnotate == AnnotateForInterchange) {
         // Include ancestors that aren't completely inside the range but are required to retain
         // the structure and appearance of the copied markup.
@@ -536,13 +541,13 @@ static Node* highestAncestorToWrapMarkup(const Range* range, EAnnotateForInterch
         }
 
         // Retain the Mail quote level by including all ancestor mail block quotes.
-        if (Node* highestMailBlockquote = highestEnclosingNodeOfType(firstPositionInOrBeforeNode(range->firstNode()), isMailBlockquote, CanCrossEditingBoundary))
+        if (HTMLQuoteElement* highestMailBlockquote = toHTMLQuoteElement(highestEnclosingNodeOfType(firstPositionInOrBeforeNode(range->firstNode()), isMailHTMLBlockquoteElement, CanCrossEditingBoundary)))
             specialCommonAncestor = highestMailBlockquote;
     }
 
     Node* checkAncestor = specialCommonAncestor ? specialCommonAncestor : commonAncestor;
     if (checkAncestor->renderer()) {
-        Node* newSpecialCommonAncestor = highestEnclosingNodeOfType(firstPositionInNode(checkAncestor), &isElementPresentational, CanCrossEditingBoundary, constrainingAncestor);
+        HTMLElement* newSpecialCommonAncestor = toHTMLElement(highestEnclosingNodeOfType(firstPositionInNode(checkAncestor), &isPresentationalHTMLElement, CanCrossEditingBoundary, constrainingAncestor));
         if (newSpecialCommonAncestor)
             specialCommonAncestor = newSpecialCommonAncestor;
     }
@@ -554,7 +559,7 @@ static Node* highestAncestorToWrapMarkup(const Range* range, EAnnotateForInterch
     if (!specialCommonAncestor && isTabSpanTextNode(commonAncestor))
         specialCommonAncestor = commonAncestor->parentNode();
     if (!specialCommonAncestor && isTabSpanElement(commonAncestor))
-        specialCommonAncestor = commonAncestor;
+        specialCommonAncestor = toElement(commonAncestor);
 
     if (Element* enclosingAnchor = enclosingElementWithTag(firstPositionInNode(specialCommonAncestor ? specialCommonAncestor : commonAncestor), aTag))
         specialCommonAncestor = enclosingAnchor;
@@ -585,7 +590,7 @@ static String createMarkupInternal(Document& document, const Range* range, const
     // FIXME: Do this for all fully selected blocks, not just the body.
     if (body && areRangesEqual(VisibleSelection::selectionFromContentsOfNode(body).toNormalizedRange().get(), range))
         fullySelectedRoot = body;
-    Node* specialCommonAncestor = highestAncestorToWrapMarkup(updatedRange, shouldAnnotate, constrainingAncestor);
+    ContainerNode* specialCommonAncestor = highestAncestorToWrapMarkup(updatedRange, shouldAnnotate, constrainingAncestor);
     StyledMarkupAccumulator accumulator(nodes, shouldResolveURLs, shouldAnnotate, updatedRange, specialCommonAncestor);
     Node* pastEnd = updatedRange->pastLastNode();
 

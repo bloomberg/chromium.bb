@@ -981,7 +981,7 @@ unsigned numEnclosingMailBlockquotes(const Position& p)
 {
     unsigned num = 0;
     for (Node* n = p.deprecatedNode(); n; n = n->parentNode())
-        if (isMailBlockquote(n))
+        if (isMailHTMLBlockquoteElement(n))
             num++;
 
     return num;
@@ -1017,12 +1017,13 @@ void updatePositionForNodeRemoval(Position& position, Node& node)
     }
 }
 
-bool isMailBlockquote(const Node *node)
+bool isMailHTMLBlockquoteElement(const Node* node)
 {
-    if (!node || !node->hasTagName(blockquoteTag))
+    if (!node || !node->isHTMLElement())
         return false;
 
-    return toElement(node)->getAttribute("type") == "cite";
+    const HTMLElement& element = toHTMLElement(*node);
+    return element.hasTagName(blockquoteTag) && element.getAttribute("type") == "cite";
 }
 
 int caretMinOffset(const Node* n)
@@ -1181,17 +1182,21 @@ bool areIdenticalElements(const Node* first, const Node* second)
 
 bool isNonTableCellHTMLBlockElement(const Node* node)
 {
-    return node->hasTagName(listingTag)
-        || node->hasTagName(olTag)
-        || node->hasTagName(preTag)
-        || node->hasTagName(tableTag)
-        || node->hasTagName(ulTag)
-        || node->hasTagName(xmpTag)
-        || node->hasTagName(h1Tag)
-        || node->hasTagName(h2Tag)
-        || node->hasTagName(h3Tag)
-        || node->hasTagName(h4Tag)
-        || node->hasTagName(h5Tag);
+    if (!node->isHTMLElement())
+        return false;
+
+    const HTMLElement& element = toHTMLElement(*node);
+    return element.hasTagName(listingTag)
+        || element.hasTagName(olTag)
+        || element.hasTagName(preTag)
+        || element.hasTagName(tableTag)
+        || element.hasTagName(ulTag)
+        || element.hasTagName(xmpTag)
+        || element.hasTagName(h1Tag)
+        || element.hasTagName(h2Tag)
+        || element.hasTagName(h3Tag)
+        || element.hasTagName(h4Tag)
+        || element.hasTagName(h5Tag);
 }
 
 Position adjustedSelectionStartForStyleComputation(const VisibleSelection& selection)

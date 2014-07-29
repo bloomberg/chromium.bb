@@ -33,6 +33,7 @@
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/HTMLQuoteElement.h"
 #include "core/rendering/RenderListItem.h"
 
 namespace blink {
@@ -68,8 +69,8 @@ void BreakBlockquoteCommand::doApply()
     Position pos = endingSelection().start().downstream();
 
     // Find the top-most blockquote from the start.
-    Node* topBlockquote = highestEnclosingNodeOfType(pos, isMailBlockquote);
-    if (!topBlockquote || !topBlockquote->parentNode() || !topBlockquote->isElementNode())
+    HTMLQuoteElement* topBlockquote = toHTMLQuoteElement(highestEnclosingNodeOfType(pos, isMailHTMLBlockquoteElement));
+    if (!topBlockquote || !topBlockquote->parentNode())
         return;
 
     RefPtrWillBeRawPtr<HTMLBRElement> breakElement = createBreakElement(document());
@@ -101,7 +102,7 @@ void BreakBlockquoteCommand::doApply()
         pos = pos.next();
 
     // Adjust the position so we don't split at the beginning of a quote.
-    while (isFirstVisiblePositionInNode(VisiblePosition(pos), enclosingNodeOfType(pos, isMailBlockquote)))
+    while (isFirstVisiblePositionInNode(VisiblePosition(pos), enclosingNodeOfType(pos, isMailHTMLBlockquoteElement)))
         pos = pos.previous();
 
     // startNode is the first node that we need to move to the new blockquote.
@@ -134,7 +135,7 @@ void BreakBlockquoteCommand::doApply()
         ancestors.append(node);
 
     // Insert a clone of the top blockquote after the break.
-    RefPtrWillBeRawPtr<Element> clonedBlockquote = toElement(topBlockquote)->cloneElementWithoutChildren();
+    RefPtrWillBeRawPtr<Element> clonedBlockquote = topBlockquote->cloneElementWithoutChildren();
     insertNodeAfter(clonedBlockquote.get(), breakElement.get());
 
     // Clone startNode's ancestors into the cloned blockquote.

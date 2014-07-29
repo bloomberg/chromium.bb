@@ -36,6 +36,7 @@
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/HTMLQuoteElement.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderText.h"
 
@@ -230,8 +231,8 @@ void InsertParagraphSeparatorCommand::doApply()
             // We can get here if we pasted a copied portion of a blockquote with a newline at the end and are trying to paste it
             // into an unquoted area. We then don't want the newline within the blockquote or else it will also be quoted.
             if (m_pasteBlockqutoeIntoUnquotedArea) {
-                if (Node* highestBlockquote = highestEnclosingNodeOfType(canonicalPos, &isMailBlockquote))
-                    startBlock = toElement(highestBlockquote);
+                if (HTMLQuoteElement* highestBlockquote = toHTMLQuoteElement(highestEnclosingNodeOfType(canonicalPos, &isMailHTMLBlockquoteElement)))
+                    startBlock = highestBlockquote;
             }
 
             if (listChild && listChild != startBlock) {
