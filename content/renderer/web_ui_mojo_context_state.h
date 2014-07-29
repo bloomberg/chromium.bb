@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "gin/modules/module_registry_observer.h"
 #include "mojo/public/cpp/system/core.h"
 #include "v8/include/v8.h"
@@ -21,6 +22,7 @@ class WebURLResponse;
 
 namespace gin {
 class ContextHolder;
+class Runner;
 struct PendingModule;
 }
 
@@ -32,7 +34,9 @@ class WebUIRunner;
 // WebUIMojoContextState manages the modules needed for mojo bindings. It does
 // this by way of gin. Non-builtin modules are downloaded by way of
 // ResourceFetchers.
-class WebUIMojoContextState : public gin::ModuleRegistryObserver {
+class WebUIMojoContextState
+    : public gin::ModuleRegistryObserver,
+      public base::SupportsWeakPtr<WebUIMojoContextState> {
  public:
   WebUIMojoContextState(blink::WebFrame* frame,
                         v8::Handle<v8::Context> context);
@@ -46,6 +50,11 @@ class WebUIMojoContextState : public gin::ModuleRegistryObserver {
 
  private:
   class Loader;
+
+  // The implementation of the 'main' module. Calls the closure passed in and
+  // then notifies our RenderView that we've run the main closure.
+  void RunMain(mojo::ScopedMessagePipeHandle* handle,
+               v8::Handle<v8::Value> module);
 
   // Invokes FetchModule() for any modules that have not already been
   // downloaded.

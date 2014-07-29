@@ -11,6 +11,7 @@
       # generated cpp files be listed explicitly in browser_ui.
       'type': 'none',
       'sources': [
+        'browser/ui/webui/identity_internals/identity_internals.mojom',
         'browser/ui/webui/omnibox/omnibox.mojom',
       ],
       'includes': [ '../mojo/public/tools/bindings/mojom_bindings_generator.gypi' ],

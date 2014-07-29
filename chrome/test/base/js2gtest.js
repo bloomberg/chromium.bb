@@ -324,6 +324,8 @@ function GEN_INCLUDE(includes) {
 function TEST_F(testFixture, testFunction, testBody) {
   maybeGenHeader(testFixture);
   var browsePreload = this[testFixture].prototype.browsePreload;
+  var browsePreloadAndWaitForMain =
+      this[testFixture].prototype.browsePreloadAndWaitForMain;
   var browsePrintPreload = this[testFixture].prototype.browsePrintPreload;
   var testGenPreamble = this[testFixture].prototype.testGenPreamble;
   var testGenPostamble = this[testFixture].prototype.testGenPostamble;
@@ -359,6 +361,10 @@ function TEST_F(testFixture, testFunction, testBody) {
     testGenPreamble(testFixture, testFunction);
   if (browsePreload)
     print('  BrowsePreload(GURL("' + browsePreload + '"));');
+  if (browsePreloadAndWaitForMain) {
+    print('  BrowsePreloadAndWaitForMain(GURL("' + browsePreloadAndWaitForMain +
+          '"));');
+  }
   if (browsePrintPreload) {
     print('  BrowsePrintPreload(GURL(WebUITestDataPathToURL(\n' +
           '      FILE_PATH_LITERAL("' + browsePrintPreload + '"))));');

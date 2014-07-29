@@ -1613,8 +1613,12 @@
       'browser/ui/webui/help/version_updater_mac.h',
       'browser/ui/webui/help/version_updater_mac.mm',
       'browser/ui/webui/help/version_updater_win.cc',
-      'browser/ui/webui/identity_internals_ui.cc',
-      'browser/ui/webui/identity_internals_ui.h',
+      'browser/ui/webui/identity_internals/identity_internals_ui.cc',
+      'browser/ui/webui/identity_internals/identity_internals_ui.h',
+      'browser/ui/webui/identity_internals/identity_internals_ui_handler.cc',
+      'browser/ui/webui/identity_internals/identity_internals_ui_handler.h',
+      'browser/ui/webui/identity_internals/identity_internals_token_revoker.cc',
+      'browser/ui/webui/identity_internals/identity_internals_token_revoker.h',
       'browser/ui/webui/inspect_ui.cc',
       'browser/ui/webui/inspect_ui.h',
       'browser/ui/webui/ntp/app_launcher_handler.cc',
@@ -2595,6 +2599,7 @@
         ['OS != "ios"', {
           'sources': [
             '<@(chrome_browser_ui_non_ios_sources)',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/ui/webui/identity_internals/identity_internals.mojom.cc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/ui/webui/omnibox/omnibox.mojom.cc',
           ],
           'dependencies': [

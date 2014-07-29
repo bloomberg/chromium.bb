@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "content/common/frame_messages.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/resource_fetcher.h"
 #include "content/renderer/web_ui_runner.h"
 #include "gin/converter.h"
@@ -34,17 +36,6 @@ namespace {
 // All modules have this prefixed to them when downloading.
 // TODO(sky): move this into some common place.
 const char kModulePrefix[] = "chrome://mojo/";
-
-void RunMain(base::WeakPtr<gin::Runner> runner,
-             mojo::ScopedMessagePipeHandle* handle,
-             v8::Handle<v8::Value> module) {
-  v8::Isolate* isolate = runner->GetContextHolder()->isolate();
-  v8::Handle<v8::Function> start;
-  CHECK(gin::ConvertFromV8(isolate, module, &start));
-  v8::Handle<v8::Value> args[] = {
-      gin::ConvertToV8(isolate, mojo::Handle(handle->release().value())) };
-  runner->Call(start, runner->global(), 1, args);
-}
 
 }  // namespace
 
@@ -78,7 +69,23 @@ void WebUIMojoContextState::SetHandle(mojo::ScopedMessagePipeHandle handle) {
   gin::ModuleRegistry::From(context_holder->context())->LoadModule(
       context_holder->isolate(),
       "main",
-      base::Bind(RunMain, runner_->GetWeakPtr(), base::Owned(passed_handle)));
+      base::Bind(&WebUIMojoContextState::RunMain,
+                 AsWeakPtr(),
+                 base::Owned(passed_handle)));
+}
+
+void WebUIMojoContextState::RunMain(mojo::ScopedMessagePipeHandle* handle,
+                                    v8::Handle<v8::Value> module) {
+  v8::Isolate* isolate = runner_->GetContextHolder()->isolate();
+  v8::Handle<v8::Function> start;
+  CHECK(gin::ConvertFromV8(isolate, module, &start));
+  v8::Handle<v8::Value> args[] = {
+      gin::ConvertToV8(isolate, mojo::Handle(handle->release().value())) };
+  runner_->Call(start, runner_->global(), 1, args);
+
+  RenderFrame* render_frame = RenderFrame::FromWebFrame(frame_);
+  render_frame->Send(new FrameHostMsg_WebUIMojoMainRan(
+      render_frame->GetRoutingID()));
 }
 
 void WebUIMojoContextState::FetchModules(const std::vector<std::string>& ids) {

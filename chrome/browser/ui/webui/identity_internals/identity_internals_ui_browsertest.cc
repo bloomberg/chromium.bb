@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/identity_internals_ui_browsertest.h"
+#include "chrome/browser/ui/webui/identity_internals/identity_internals_ui_browsertest.h"
 
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
@@ -15,6 +15,7 @@ namespace {
 
 const char kChromeWebStoreId[] = "ahfgeienlihckogmohjhadlkjgocpleb";
 const int kOneHour = 3600;
+
 } // namespace
 
 IdentityInternalsUIBrowserTest::IdentityInternalsUIBrowserTest() {}

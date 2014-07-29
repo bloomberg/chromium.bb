@@ -9,6 +9,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -80,6 +81,35 @@ class WebUIJsInjectionReadyObserver : public content::WebContentsObserver {
   WebUIBrowserTest* browser_test_;
   std::string preload_test_fixture_;
   std::string preload_test_name_;
+};
+
+class WebUIMainObserver : public content::WebContentsObserver {
+ public:
+  explicit WebUIMainObserver(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents),
+        message_loop_runner_(new content::MessageLoopRunner),
+        has_fired_(false) {
+  }
+
+  void Wait() {
+    if (has_fired_)
+      return;
+
+    message_loop_runner_->Run();
+  }
+
+  virtual void DidRunWebUIMojoMain() OVERRIDE {
+    has_fired_ = true;
+    message_loop_runner_->Quit();
+  }
+
+ private:
+  // The MessageLoopRunner used to spin the message loop.
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+
+  bool has_fired_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebUIMainObserver);
 };
 
 }  // namespace
@@ -218,6 +248,14 @@ void WebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
   params.disposition = CURRENT_TAB;
   chrome::Navigate(&params);
   navigation_observer.Wait();
+}
+
+void WebUIBrowserTest::BrowsePreloadAndWaitForMain(const GURL& browse_to) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  WebUIMainObserver webui_main_observer(web_contents);
+  BrowsePreload(browse_to);
+  webui_main_observer.Wait();
 }
 
 #if defined(ENABLE_FULL_PRINTING)
