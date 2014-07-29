@@ -31,14 +31,23 @@ source_set("client") {
   ]
 }
 
-source_set("gles2_cmd_helper") {
+group("gles2_cmd_helper") {
+  if (is_component_build) {
+    deps = [ "//gpu" ]
+  } else {
+    deps = [ ":gles2_cmd_helper_sources" ]
+  }
+}
+
+source_set("gles2_cmd_helper_sources") {
+  visibility = [ ":gles2_cmd_helper", "//gpu" ]
   sources = [
     "gles2_cmd_helper.cc",
     "gles2_cmd_helper.h",
     "gles2_cmd_helper_autogen.h",
   ]
 
-  defines = [ "GLES2_IMPL_IMPLEMENTATION" ]
+  defines = [ "GPU_IMPLEMENTATION" ]
 
   if (is_win) {
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

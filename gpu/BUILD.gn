@@ -39,9 +39,9 @@
 component("gpu") {
   deps = [
     "//gpu/command_buffer/client",
+    "//gpu/command_buffer/client:gles2_cmd_helper_sources",
     "//gpu/command_buffer/common",
     "//gpu/command_buffer/service",
-    "//gpu/command_buffer/client:gles2_cmd_helper",
     "//gpu/config",
     "//gpu/ipc",
   ]
@@ -109,10 +109,7 @@ test("gl_tests") {
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/gl",
-    #"//gpu/command_buffer/client",  # These are all part of //gpu, needed?
-    #"//gpu/command_buffer/common",
-    #"//gpu/command_buffer/service",
-    #"//gpu/command_buffer/client:gles2_cmd_helper",
+    "//gpu/command_buffer/common:gles2_utils",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation_client_side_arrays",
   ]
@@ -236,6 +233,7 @@ test("gpu_unittests") {
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/gl",
+    "//gpu/command_buffer/common:gles2_utils",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation_client_side_arrays",
   ]
