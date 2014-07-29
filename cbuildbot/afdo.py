@@ -256,6 +256,16 @@ def UpdateChromeEbuildAFDOFile(board, arch_profiles):
   # Patch the ebuild file with the names of the available afdo_files.
   PatchChromeEbuildAFDOFile(ebuild_file, arch_profiles)
 
+  # Also patch the 9999 ebuild. This is necessary because the uprev
+  # process starts from the 9999 ebuild file and then compares to the
+  # current version to see if the uprev is really necessary. We dont
+  # want the names of the available afdo_files to show as differences.
+  # It also allows developers to do USE=afdo_use when using the 9999
+  # ebuild.
+  ebuild_9999 = os.path.join(os.path.dirname(ebuild_file),
+                             'chromeos-chrome-9999.ebuild')
+  PatchChromeEbuildAFDOFile(ebuild_9999, arch_profiles)
+
   # Regenerate the Manifest file.
   ebuild_gs_dir = None
   # If using the GS test location, pass this location to the
@@ -272,7 +282,7 @@ def UpdateChromeEbuildAFDOFile(board, arch_profiles):
                 % arch_profiles)
   git.RunGit(ebuild_dir,
              ['commit', '--allow-empty', '-m', commit_msg, '--', 'Manifest',
-              os.path.basename(ebuild_file)],
+              os.path.basename(ebuild_file), os.path.basename(ebuild_9999)],
              print_cmd=True)
 
 
