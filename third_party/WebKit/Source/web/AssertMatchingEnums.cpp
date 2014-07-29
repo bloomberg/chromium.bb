@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Use this file to assert that various WebKit API enum values continue
-// matching WebCore defined enum values.
+// Use this file to assert that various public API enum values continue
+// matching blink defined enum values.
 
 #include "config.h"
 
@@ -132,11 +132,13 @@
 #include "wtf/Assertions.h"
 #include "wtf/text/StringImpl.h"
 
-#define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, webcore_name) \
-    COMPILE_ASSERT(int(blink::webkit_name) == int(blink::webcore_name), mismatching_enums)
+namespace blink {
 
-#define COMPILE_ASSERT_MATCHING_UINT64(webkit_name, webcore_name) \
-    COMPILE_ASSERT(blink::webkit_name == blink::webcore_name, mismatching_enums)
+#define COMPILE_ASSERT_MATCHING_ENUM(public_name, core_name) \
+    COMPILE_ASSERT(int(public_name) == int(core_name), mismatching_enums)
+
+#define COMPILE_ASSERT_MATCHING_UINT64(public_name, core_name) \
+    COMPILE_ASSERT(public_name == core_name, mismatching_enums)
 
 COMPILE_ASSERT_MATCHING_ENUM(WebAXEventActiveDescendantChanged, AXObjectCache::AXActiveDescendantChanged);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXEventAlert, AXObjectCache::AXAlert);
@@ -612,3 +614,5 @@ COMPILE_ASSERT_MATCHING_ENUM(WebTouchActionPanY, TouchActionPanY);
 COMPILE_ASSERT_MATCHING_ENUM(WebTouchActionPinchZoom, TouchActionPinchZoom);
 
 COMPILE_ASSERT_MATCHING_UINT64(kSerializedScriptValueVersion, SerializedScriptValue::wireFormatVersion);
+
+} // namespace blink
