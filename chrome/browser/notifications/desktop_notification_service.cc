@@ -225,7 +225,9 @@ base::string16 DesktopNotificationService::DisplayNameForOriginInProcessId(
     if (extension_info_map) {
       extensions::ExtensionSet extensions;
       extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
-          origin, process_id, extensions::APIPermission::kNotification,
+          origin,
+          process_id,
+          extensions::APIPermission::kNotifications,
           &extensions);
       for (extensions::ExtensionSet::const_iterator iter = extensions.begin();
            iter != extensions.end(); ++iter) {

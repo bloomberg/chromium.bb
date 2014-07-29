@@ -123,7 +123,7 @@ class APIPermission {
     kMusicManagerPrivate,
     kNativeMessaging,
     kNetworkingPrivate,
-    kNotification,
+    kNotifications,
     kOverrideEscFullscreen,
     kPageCapture,
     kPointerLock,

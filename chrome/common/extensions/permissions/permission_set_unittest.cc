@@ -655,7 +655,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kIdltest);
   skip.insert(APIPermission::kLedger);
   skip.insert(APIPermission::kLogPrivate);
-  skip.insert(APIPermission::kNotification);
+  skip.insert(APIPermission::kNotifications);
   skip.insert(APIPermission::kOverrideEscFullscreen);
   skip.insert(APIPermission::kPointerLock);
   skip.insert(APIPermission::kPower);
@@ -1689,7 +1689,7 @@ TEST(PermissionsTest, GetAPIsAsStrings) {
 
   apis.insert(APIPermission::kProxy);
   apis.insert(APIPermission::kBackground);
-  apis.insert(APIPermission::kNotification);
+  apis.insert(APIPermission::kNotifications);
   apis.insert(APIPermission::kTab);
 
   scoped_refptr<PermissionSet> perm_set = new PermissionSet(

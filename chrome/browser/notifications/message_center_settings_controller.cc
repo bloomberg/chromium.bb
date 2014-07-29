@@ -230,7 +230,7 @@ void MessageCenterSettingsController::GetNotifierList(
        ++iter) {
     const extensions::Extension* extension = iter->get();
     if (!extension->permissions_data()->HasAPIPermission(
-            extensions::APIPermission::kNotification)) {
+            extensions::APIPermission::kNotifications)) {
       continue;
     }
 

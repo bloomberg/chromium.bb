@@ -2115,8 +2115,10 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
   if (extension_info_map) {
     extensions::ExtensionSet extensions;
     extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
-        source_origin, render_frame_host->GetProcess()->GetID(),
-        extensions::APIPermission::kNotification, &extensions);
+        source_origin,
+        render_frame_host->GetProcess()->GetID(),
+        extensions::APIPermission::kNotifications,
+        &extensions);
     for (extensions::ExtensionSet::const_iterator iter = extensions.begin();
          iter != extensions.end(); ++iter) {
       if (notification_service->IsNotifierEnabled(NotifierId(
@@ -2127,7 +2129,8 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
     }
   }
   if (IsExtensionWithPermissionOrSuggestInConsole(
-          APIPermission::kNotification, extension,
+          APIPermission::kNotifications,
+          extension,
           render_frame_host->GetRenderViewHost())) {
     callback.Run();
     return;
@@ -2172,8 +2175,10 @@ blink::WebNotificationPresenter::Permission
   // First, get the list of extensions with permission for the origin.
   extensions::ExtensionSet extensions;
   extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
-      source_origin, render_process_id,
-      extensions::APIPermission::kNotification, &extensions);
+      source_origin,
+      render_process_id,
+      extensions::APIPermission::kNotifications,
+      &extensions);
   for (extensions::ExtensionSet::const_iterator iter = extensions.begin();
        iter != extensions.end(); ++iter) {
     // Then, check to see if it's been disabled by the user.

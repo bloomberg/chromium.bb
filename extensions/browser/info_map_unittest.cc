@@ -147,11 +147,11 @@ TEST_F(InfoMapTest, CheckPermissions) {
       app->GetResourceURL("a.html"));
   EXPECT_TRUE(match &&
               match->permissions_data()->HasAPIPermission(
-                  APIPermission::kNotification));
+                  APIPermission::kNotifications));
   match = info_map->extensions().GetExtensionOrAppByURL(app_url);
   EXPECT_TRUE(match &&
               match->permissions_data()->HasAPIPermission(
-                  APIPermission::kNotification));
+                  APIPermission::kNotifications));
   EXPECT_FALSE(
       match &&
       match->permissions_data()->HasAPIPermission(APIPermission::kTab));
@@ -163,7 +163,7 @@ TEST_F(InfoMapTest, CheckPermissions) {
               match->permissions_data()->HasAPIPermission(APIPermission::kTab));
   EXPECT_FALSE(match &&
                match->permissions_data()->HasAPIPermission(
-                   APIPermission::kNotification));
+                   APIPermission::kNotifications));
 
   // Random URL should not have any permissions.
   GURL evil_url("http://evil.com/a.html");

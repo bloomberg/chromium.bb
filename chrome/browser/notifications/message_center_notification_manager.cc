@@ -460,8 +460,10 @@ std::string
       extensions::ExtensionSystem::Get(profile())->info_map();
   extensions::ExtensionSet extensions;
   extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
-      notification().origin_url(), notification().process_id(),
-      extensions::APIPermission::kNotification, &extensions);
+      notification().origin_url(),
+      notification().process_id(),
+      extensions::APIPermission::kNotifications,
+      &extensions);
 
   DesktopNotificationService* desktop_service =
       DesktopNotificationServiceFactory::GetForProfile(profile());

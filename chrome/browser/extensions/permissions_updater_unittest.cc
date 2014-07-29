@@ -202,7 +202,7 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
   // Add a few permissions.
   APIPermissionSet apis;
   apis.insert(APIPermission::kTab);
-  apis.insert(APIPermission::kNotification);
+  apis.insert(APIPermission::kNotifications);
   URLPatternSet hosts;
   AddPattern(&hosts, "http://*.c.com/*");
 
@@ -243,8 +243,8 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
   ASSERT_EQ(*active_permissions.get(), *from_prefs.get());
 
   // In the second part of the test, we'll remove the permissions that we
-  // just added except for 'notification'.
-  apis.erase(APIPermission::kNotification);
+  // just added except for 'notifications'.
+  apis.erase(APIPermission::kNotifications);
   delta = new PermissionSet(apis, empty_manifest_permissions,
                             hosts, URLPatternSet());
 

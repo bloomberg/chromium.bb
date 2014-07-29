@@ -847,8 +847,9 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
   DesktopNotificationProfileUtil::GetNotificationsSettings(profile, &settings);
 
   base::ListValue exceptions;
-  AddExceptionsGrantedByHostedApps(profile,
-      HostedAppHasPermission<APIPermission::kNotification>,
+  AddExceptionsGrantedByHostedApps(
+      profile,
+      HostedAppHasPermission<APIPermission::kNotifications>,
       &exceptions);
 
   for (ContentSettingsForOneType::const_iterator i =
