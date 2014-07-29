@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * be found in the LICENSE file.
+ * found in the LICENSE file.
  */
 
 #include <stdlib.h>
