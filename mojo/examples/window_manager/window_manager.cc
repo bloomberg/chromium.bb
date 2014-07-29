@@ -10,7 +10,7 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
-#include "mojo/public/cpp/application/interface_factory_with_context.h"
+#include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
@@ -251,15 +251,11 @@ class WindowManager
     : public ApplicationDelegate,
       public DebugPanel::Delegate,
       public ViewManagerDelegate,
-      public WindowManagerDelegate,
-      public InterfaceFactoryWithContext<WindowManagerConnection,
-                                         WindowManager>,
-      public InterfaceFactoryWithContext<NavigatorHostImpl, WindowManager> {
+      public WindowManagerDelegate {
  public:
   WindowManager()
-      : InterfaceFactoryWithContext<WindowManagerConnection, WindowManager>(
-            this),
-        InterfaceFactoryWithContext<NavigatorHostImpl, WindowManager>(this),
+      : window_manager_factory_(this),
+        navigator_host_factory_(this),
         launcher_ui_(NULL),
         view_manager_(NULL),
         view_manager_client_factory_(this),
@@ -334,8 +330,8 @@ class WindowManager
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       MOJO_OVERRIDE {
-    connection->AddService<IWindowManager>(this);
-    connection->AddService<mojo::NavigatorHost>(this);
+    connection->AddService(&window_manager_factory_);
+    connection->AddService(&navigator_host_factory_);
     connection->AddService(&view_manager_client_factory_);
     return true;
   }
@@ -502,6 +498,11 @@ class WindowManager
     debug_panel_ = new DebugPanel(this, node);
     return node->id();
   }
+
+  InterfaceFactoryImplWithContext<WindowManagerConnection, WindowManager>
+      window_manager_factory_;
+  InterfaceFactoryImplWithContext<NavigatorHostImpl, WindowManager>
+      navigator_host_factory_;
 
   scoped_ptr<ViewsInit> views_init_;
   DebugPanel* debug_panel_;

@@ -5,6 +5,66 @@
 {
   'targets': [
     {
+      'target_name': 'mojo_echo_client',
+      'type': 'loadable_module',
+      'dependencies': [
+        'mojo_application',
+        'mojo_cpp_bindings',
+        'mojo_echo_service_bindings',
+        'mojo_environment_standalone',
+        'mojo_utility',
+        '<(mojo_system_for_loadable_module)',
+      ],
+      'sources': [
+        'examples/echo/echo_client.cc',
+        'public/cpp/application/lib/mojo_main_standalone.cc',
+      ],
+    },
+    {
+      'target_name': 'package_mojo_echo_client',
+      'variables': {
+        'app_name': 'mojo_echo_client',
+      },
+      'includes': [ 'build/package_app.gypi' ],
+    },
+    {
+      'target_name': 'mojo_echo_service_bindings',
+      'type': 'static_library',
+      'sources': [
+        'examples/echo/echo_service.mojom',
+      ],
+      'dependencies': [
+        'mojo_cpp_bindings',
+      ],
+      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
+      'export_dependent_settings': [
+        'mojo_cpp_bindings',
+      ],
+    },
+    {
+      'target_name': 'mojo_echo_service',
+      'type': 'loadable_module',
+      'dependencies': [
+        'mojo_application',
+        'mojo_cpp_bindings',
+        'mojo_echo_service_bindings',
+        'mojo_environment_standalone',
+        'mojo_utility',
+        '<(mojo_system_for_loadable_module)',
+      ],
+      'sources': [
+        'examples/echo/echo_service.cc',
+        'public/cpp/application/lib/mojo_main_standalone.cc',
+      ],
+    },
+    {
+      'target_name': 'package_mojo_echo_service',
+      'variables': {
+        'app_name': 'mojo_echo_service',
+      },
+      'includes': [ 'build/package_app.gypi' ],
+    },
+    {
       'target_name': 'mojo_sample_app',
       'type': 'loadable_module',
       'dependencies': [

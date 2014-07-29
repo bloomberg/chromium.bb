@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
-#include "mojo/public/cpp/application/interface_factory_with_context.h"
+#include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/public/cpp/bindings/interface_impl.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
@@ -206,14 +206,13 @@ class MediaViewer
     : public ApplicationDelegate,
       public ViewManagerDelegate,
       public ControlPanel::Delegate,
-      public NodeObserver,
-      public InterfaceFactoryWithContext<NavigatorImpl, MediaViewer> {
+      public NodeObserver {
  public:
   MediaViewer()
-      : InterfaceFactoryWithContext(this),
+      : navigator_factory_(this),
+        view_manager_client_factory_(this),
         app_(NULL),
         view_manager_(NULL),
-        view_manager_client_factory_(this),
         root_node_(NULL),
         control_node_(NULL),
         content_node_(NULL),
@@ -277,7 +276,7 @@ class MediaViewer
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       OVERRIDE {
-    connection->AddService(this);
+    connection->AddService(&navigator_factory_);
     connection->AddService(&view_manager_client_factory_);
     return true;
   }
@@ -357,10 +356,13 @@ class MediaViewer
     return it != handler_map_.end() ? it->second : std::string();
   }
 
+  InterfaceFactoryImplWithContext<NavigatorImpl, MediaViewer>
+      navigator_factory_;
+  ViewManagerClientFactory view_manager_client_factory_;
+
   ApplicationImpl* app_;
   scoped_ptr<ViewsInit> views_init_;
   ViewManager* view_manager_;
-  ViewManagerClientFactory view_manager_client_factory_;
   Node* root_node_;
   Node* control_node_;
   Node* content_node_;

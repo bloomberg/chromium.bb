@@ -10,7 +10,7 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
-#include "mojo/public/cpp/application/interface_factory_with_context.h"
+#include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
@@ -45,11 +45,10 @@ class EmbeddedApp
     : public ApplicationDelegate,
       public ViewManagerDelegate,
       public ViewObserver,
-      public NodeObserver,
-      public InterfaceFactoryWithContext<NavigatorImpl, EmbeddedApp> {
+      public NodeObserver {
  public:
   EmbeddedApp()
-      : InterfaceFactoryWithContext(this),
+      : navigator_factory_(this),
         view_manager_(NULL),
         view_manager_client_factory_(this) {
     url::AddStandardScheme("mojo");
@@ -74,7 +73,7 @@ class EmbeddedApp
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       MOJO_OVERRIDE {
     connection->AddService(&view_manager_client_factory_);
-    connection->AddService(this);
+    connection->AddService(&navigator_factory_);
     return true;
   }
 
@@ -132,6 +131,9 @@ class EmbeddedApp
     root->second->active_view()->SetColor(color->second);
     pending_node_colors_.erase(color);
   }
+
+  InterfaceFactoryImplWithContext<NavigatorImpl, EmbeddedApp>
+      navigator_factory_;
 
   ViewManager* view_manager_;
   NavigatorHostPtr navigator_host_;

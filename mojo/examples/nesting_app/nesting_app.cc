@@ -9,7 +9,7 @@
 #include "mojo/examples/window_manager/window_manager.mojom.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
-#include "mojo/public/cpp/application/interface_factory_with_context.h"
+#include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
@@ -50,13 +50,12 @@ class NestingApp
     : public ApplicationDelegate,
       public ViewManagerDelegate,
       public ViewObserver,
-      public NodeObserver,
-      public InterfaceFactoryWithContext<NavigatorImpl, NestingApp> {
+      public NodeObserver {
  public:
   NestingApp()
-      : InterfaceFactoryWithContext(this),
-        nested_(NULL),
-        view_manager_client_factory_(this) {}
+      : navigator_factory_(this),
+        view_manager_client_factory_(this),
+        nested_(NULL) {}
   virtual ~NestingApp() {}
 
   void set_color(const std::string& color) { color_ = color; }
@@ -78,7 +77,7 @@ class NestingApp
       MOJO_OVERRIDE {
     connection->ConnectToService(&window_manager_);
     connection->AddService(&view_manager_client_factory_);
-    connection->AddService(this);
+    connection->AddService(&navigator_factory_);
     // TODO(davemoore): Is this ok?
     if (!navigator_) {
       connection->ConnectToApplication(
@@ -119,11 +118,13 @@ class NestingApp
     nested_ = NULL;
   }
 
+  InterfaceFactoryImplWithContext<NavigatorImpl, NestingApp> navigator_factory_;
+  ViewManagerClientFactory view_manager_client_factory_;
+
   std::string color_;
   Node* nested_;
   NavigatorPtr navigator_;
   IWindowManagerPtr window_manager_;
-  ViewManagerClientFactory view_manager_client_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NestingApp);
 };

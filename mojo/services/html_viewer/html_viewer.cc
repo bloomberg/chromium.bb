@@ -6,7 +6,7 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
-#include "mojo/public/cpp/application/interface_factory_with_context.h"
+#include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/services/html_viewer/blink_platform_impl.h"
 #include "mojo/services/html_viewer/html_document_view.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
@@ -39,15 +39,12 @@ class NavigatorImpl : public InterfaceImpl<Navigator> {
   DISALLOW_COPY_AND_ASSIGN(NavigatorImpl);
 };
 
-class HTMLViewer
-    : public ApplicationDelegate,
-      public ViewManagerDelegate,
-      public InterfaceFactoryWithContext<NavigatorImpl, HTMLViewer> {
+class HTMLViewer : public ApplicationDelegate, public ViewManagerDelegate {
  public:
   HTMLViewer()
-      : InterfaceFactoryWithContext(this),
-        application_impl_(NULL),
+      : application_impl_(NULL),
         document_view_(NULL),
+        navigator_factory_(this),
         view_manager_client_factory_(this) {}
   virtual ~HTMLViewer() {
     blink::shutdown();
@@ -69,7 +66,7 @@ class HTMLViewer
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       OVERRIDE {
-    connection->AddService(this);
+    connection->AddService(&navigator_factory_);
     connection->AddService(&view_manager_client_factory_);
     return true;
   }
@@ -98,6 +95,7 @@ class HTMLViewer
   // TODO(darin): Figure out proper ownership of this instance.
   HTMLDocumentView* document_view_;
   URLResponsePtr response_;
+  InterfaceFactoryImplWithContext<NavigatorImpl, HTMLViewer> navigator_factory_;
   ViewManagerClientFactory view_manager_client_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLViewer);

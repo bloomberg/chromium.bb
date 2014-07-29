@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "mojo/aura/window_tree_host_mojo_delegate.h"
 #include "mojo/public/cpp/application/application_delegate.h"
-#include "mojo/public/cpp/application/interface_factory_with_context.h"
+#include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
@@ -44,9 +44,7 @@ class WindowManagerApp
       public NodeObserver,
       public WindowTreeHostMojoDelegate,
       public aura::client::FocusChangeObserver,
-      public aura::client::ActivationChangeObserver,
-      public InterfaceFactoryWithContext<WindowManagerServiceImpl,
-                                         WindowManagerApp> {
+      public aura::client::ActivationChangeObserver {
  public:
   explicit WindowManagerApp(ViewManagerDelegate* delegate);
   virtual ~WindowManagerApp();
@@ -101,6 +99,9 @@ class WindowManagerApp
   // Deletes the aura::Windows associated with the hierarchy beneath |id|,
   // and removes from the registry.
   void UnregisterSubtree(Id id);
+
+  InterfaceFactoryImplWithContext<WindowManagerServiceImpl, WindowManagerApp>
+      window_manager_service_factory_;
 
   ViewManagerDelegate* wrapped_delegate_;
 

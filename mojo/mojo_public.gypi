@@ -183,8 +183,12 @@
       'target_name': 'mojo_application',
       'type': 'static_library',
       'sources': [
+        'public/cpp/application/application_connection.h',
+        'public/cpp/application/application_delegate.h',
         'public/cpp/application/application_impl.h',
         'public/cpp/application/connect.h',
+        'public/cpp/application/interface_factory.h',
+        'public/cpp/application/interface_factory_impl.h',
         'public/cpp/application/lib/application_connection.cc',
         'public/cpp/application/lib/application_delegate.cc',
         'public/cpp/application/lib/application_impl.cc',

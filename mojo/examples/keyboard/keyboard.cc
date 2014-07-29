@@ -10,7 +10,7 @@
 #include "mojo/examples/keyboard/keyboard_view.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
-#include "mojo/public/cpp/application/interface_factory_with_context.h"
+#include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
@@ -45,14 +45,12 @@ class KeyboardServiceImpl : public InterfaceImpl<KeyboardService> {
   DISALLOW_COPY_AND_ASSIGN(KeyboardServiceImpl);
 };
 
-class Keyboard
-    : public ApplicationDelegate,
-      public ViewManagerDelegate,
-      public KeyboardDelegate,
-      public InterfaceFactoryWithContext<KeyboardServiceImpl, Keyboard> {
+class Keyboard : public ApplicationDelegate,
+                 public ViewManagerDelegate,
+                 public KeyboardDelegate {
  public:
   Keyboard()
-      : InterfaceFactoryWithContext(this),
+      : keyboard_service_factory_(this),
         view_manager_(NULL),
         view_manager_client_factory_(this),
         keyboard_service_(NULL),
@@ -73,7 +71,7 @@ class Keyboard
       MOJO_OVERRIDE {
     views_init_.reset(new ViewsInit);
     connection->AddService(&view_manager_client_factory_);
-    connection->AddService(this);
+    connection->AddService(&keyboard_service_factory_);
     return true;
   }
 
@@ -113,6 +111,9 @@ class Keyboard
     keyboard_service_->client()->OnKeyboardEvent(target_, key_code,
                                                  event_flags);
   }
+
+  InterfaceFactoryImplWithContext<KeyboardServiceImpl, Keyboard>
+      keyboard_service_factory_;
 
   scoped_ptr<ViewsInit> views_init_;
 

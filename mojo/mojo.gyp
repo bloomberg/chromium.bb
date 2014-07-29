@@ -64,6 +64,8 @@
         'mojo_common_lib',
         'mojo_common_unittests',
         'mojo_cpp_bindings',
+        'mojo_echo_client',
+        'mojo_echo_service',
         'mojo_geometry_lib',
         'mojo_html_viewer',
         'mojo_js',

@@ -71,7 +71,7 @@ class WMFocusRules : public wm::FocusRules {
 // WindowManagerApp, public:
 
 WindowManagerApp::WindowManagerApp(ViewManagerDelegate* delegate)
-    : InterfaceFactoryWithContext(this),
+    : window_manager_service_factory_(this),
       wrapped_delegate_(delegate),
       view_manager_(NULL),
       view_manager_client_factory_(this),
@@ -142,7 +142,7 @@ void WindowManagerApp::Initialize(ApplicationImpl* impl) {
 
 bool WindowManagerApp::ConfigureIncomingConnection(
     ApplicationConnection* connection) {
-  connection->AddService(this);
+  connection->AddService(&window_manager_service_factory_);
   connection->AddService(&view_manager_client_factory_);
   return true;
 }

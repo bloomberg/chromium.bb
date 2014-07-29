@@ -79,8 +79,8 @@ class ApplicationImpl : public InterfaceImpl<Application> {
   // Establishes a new connection to an application. Caller does not own.
   ApplicationConnection* ConnectToApplication(const String& application_url);
 
-  // Connect to application identified by |application_url| and connect to
-  // an the service implementation of the interface identified by |Interface|.
+  // Connect to application identified by |application_url| and connect to the
+  // service implementation of the interface identified by |Interface|.
   template <typename Interface>
   void ConnectToService(const std::string& application_url,
                         InterfacePtr<Interface>* ptr) {

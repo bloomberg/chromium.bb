@@ -9,7 +9,7 @@
 #include "mojo/examples/media_viewer/media_viewer.mojom.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
-#include "mojo/public/cpp/application/interface_factory_with_context.h"
+#include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
@@ -114,17 +114,15 @@ class NavigatorImpl : public InterfaceImpl<Navigator> {
 class PNGViewer
     : public ApplicationDelegate,
       public ViewManagerDelegate,
-      public NodeObserver,
-      public InterfaceFactoryWithContext<NavigatorImpl, PNGViewer>,
-      public InterfaceFactoryWithContext<ZoomableMediaImpl, PNGViewer> {
+      public NodeObserver {
  public:
   PNGViewer()
-      : InterfaceFactoryWithContext<NavigatorImpl, PNGViewer>(this),
-        InterfaceFactoryWithContext<ZoomableMediaImpl, PNGViewer>(this),
+      : navigator_factory_(this),
+        zoomable_media_factory_(this),
+        view_manager_client_factory_(this),
         content_view_(NULL),
         root_(NULL),
-        zoom_percentage_(kDefaultZoomPercentage),
-        view_manager_client_factory_(this) {}
+        zoom_percentage_(kDefaultZoomPercentage) {}
   virtual ~PNGViewer() {
     if (root_)
       root_->RemoveObserver(this);
@@ -166,8 +164,8 @@ class PNGViewer
   // Overridden from ApplicationDelegate:
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       MOJO_OVERRIDE {
-    connection->AddService<Navigator>(this);
-    connection->AddService<ZoomableMedia>(this);
+    connection->AddService(&navigator_factory_);
+    connection->AddService(&zoomable_media_factory_);
     connection->AddService(&view_manager_client_factory_);
     return true;
   }
@@ -217,11 +215,15 @@ class PNGViewer
     root_ = NULL;
   }
 
+  InterfaceFactoryImplWithContext<NavigatorImpl, PNGViewer> navigator_factory_;
+  InterfaceFactoryImplWithContext<ZoomableMediaImpl, PNGViewer>
+      zoomable_media_factory_;
+  ViewManagerClientFactory view_manager_client_factory_;
+
   View* content_view_;
   Node* root_;
   SkBitmap bitmap_;
   uint16_t zoom_percentage_;
-  ViewManagerClientFactory view_manager_client_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PNGViewer);
 };

@@ -6,8 +6,7 @@
 #define MOJO_SERVICES_TEST_SERVICE_TEST_REQUEST_TRACKER_APPLICATION_H_
 
 #include "mojo/public/cpp/application/application_delegate.h"
-#include "mojo/public/cpp/application/interface_factory.h"
-#include "mojo/public/cpp/application/interface_factory_with_context.h"
+#include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/services/test_service/test_request_tracker_impl.h"
 
@@ -32,11 +31,12 @@ class TestRequestTrackerApplication : public ApplicationDelegate,
 
  private:
   TrackingContext context_;
-  typedef InterfaceFactoryWithContext<TestTrackedRequestServiceImpl,
-                                      TrackingContext>
+  typedef InterfaceFactoryImplWithContext<TestTrackedRequestServiceImpl,
+                                          TrackingContext>
       TestTrackedRequestFactory;
   TestTrackedRequestFactory test_tracked_request_factory_;
-  typedef InterfaceFactoryWithContext<TestRequestTrackerImpl, TrackingContext>
+  typedef InterfaceFactoryImplWithContext<TestRequestTrackerImpl,
+                                          TrackingContext>
       TestRequestTrackerFactory;
   TestRequestTrackerFactory test_request_tracker_factory_;
   MOJO_DISALLOW_COPY_AND_ASSIGN(TestRequestTrackerApplication);
