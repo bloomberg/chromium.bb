@@ -379,7 +379,6 @@ public:
         PrefixedMouseEventMovementX = 382,
         PrefixedMouseEventMovementY = 383,
         PrefixedWheelEventDirectionInvertedFromDevice = 384,
-        PrefixedWheelEventInit = 385,
         PrefixedFileRelativePath = 386,
         DocumentCaretRangeFromPoint = 387,
         DocumentGetCSSCanvasContext = 388,

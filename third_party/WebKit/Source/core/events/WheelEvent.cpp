@@ -76,37 +76,6 @@ WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta,
     ScriptWrappable::init(this);
 }
 
-void WheelEvent::initWheelEvent(int rawDeltaX, int rawDeltaY, PassRefPtrWillBeRawPtr<AbstractView> view,
-                                int screenX, int screenY, int pageX, int pageY,
-                                bool ctrlKey, bool altKey, bool shiftKey, bool metaKey)
-{
-    if (dispatched())
-        return;
-
-    initUIEvent(EventTypeNames::wheel, true, true, view, 0);
-
-    m_screenLocation = IntPoint(screenX, screenY);
-    m_ctrlKey = ctrlKey;
-    m_altKey = altKey;
-    m_shiftKey = shiftKey;
-    m_metaKey = metaKey;
-
-    m_wheelDelta = IntPoint(rawDeltaX * TickMultiplier, rawDeltaY * TickMultiplier);
-    m_deltaX = -rawDeltaX;
-    m_deltaY = -rawDeltaY;
-    m_deltaMode = DOM_DELTA_PIXEL;
-
-    initCoordinates(IntPoint(pageX, pageY));
-}
-
-void WheelEvent::initWebKitWheelEvent(int rawDeltaX, int rawDeltaY, PassRefPtrWillBeRawPtr<AbstractView> view,
-                                      int screenX, int screenY, int pageX, int pageY,
-                                      bool ctrlKey, bool altKey, bool shiftKey, bool metaKey)
-{
-    initWheelEvent(rawDeltaX, rawDeltaY, view, screenX, screenY, pageX, pageY,
-                   ctrlKey, altKey, shiftKey, metaKey);
-}
-
 const AtomicString& WheelEvent::interfaceName() const
 {
     return EventNames::WheelEvent;
