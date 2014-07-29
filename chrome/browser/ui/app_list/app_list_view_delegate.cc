@@ -93,10 +93,6 @@ void PopulateUsers(const ProfileInfoCache& profile_info,
   users->clear();
   const size_t count = profile_info.GetNumberOfProfiles();
   for (size_t i = 0; i < count; ++i) {
-    // Don't display supervised users.
-    if (profile_info.ProfileIsSupervisedAtIndex(i))
-      continue;
-
     app_list::AppListViewDelegate::User user;
     user.name = profile_info.GetNameOfProfileAtIndex(i);
     user.email = profile_info.GetUserNameOfProfileAtIndex(i);
