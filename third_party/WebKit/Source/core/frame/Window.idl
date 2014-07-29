@@ -148,11 +148,6 @@
 
     [Replaceable] readonly attribute double devicePixelRatio;
 
-    [MeasureAs=PrefixedConvertPointFromPageToNode] WebKitPoint webkitConvertPointFromPageToNode([Default=Undefined] optional Node node,
-                                                                                                [Default=Undefined] optional WebKitPoint p);
-    [MeasureAs=PrefixedConvertPointFromNodeToPage] WebKitPoint webkitConvertPointFromNodeToPage([Default=Undefined] optional Node node,
-                                                                                                [Default=Undefined] optional WebKitPoint p);
-
     [RuntimeEnabled=ApplicationCache, LogActivity=GetterOnly] readonly attribute ApplicationCache applicationCache;
 
     [RuntimeEnabled=SessionStorage, LogActivity=GetterOnly, RaisesException=Getter] readonly attribute Storage sessionStorage;
