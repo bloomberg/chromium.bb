@@ -38,8 +38,7 @@
 
 namespace {
 
-class InlineSigninHelper : public SigninOAuthHelper,
-                           public SigninOAuthHelper::Consumer {
+class InlineSigninHelper : public SigninOAuthHelper::Consumer {
  public:
   InlineSigninHelper(
       base::WeakPtr<InlineLoginHandlerImpl> handler,
@@ -61,6 +60,7 @@ class InlineSigninHelper : public SigninOAuthHelper,
   virtual void OnSigninOAuthInformationFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
 
+  SigninOAuthHelper signin_oauth_helper_;
   base::WeakPtr<InlineLoginHandlerImpl> handler_;
   Profile* profile_;
   GURL current_url_;
@@ -82,7 +82,8 @@ InlineSigninHelper::InlineSigninHelper(
     const std::string& session_index,
     const std::string& signin_scoped_device_id,
     bool choose_what_to_sync)
-    : SigninOAuthHelper(getter, session_index, signin_scoped_device_id, this),
+    : signin_oauth_helper_(getter, session_index, signin_scoped_device_id,
+                           this),
       handler_(handler),
       profile_(profile),
       current_url_(current_url),

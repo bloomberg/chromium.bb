@@ -62,22 +62,26 @@ static const size_t kMaxFaviconsPerPage = 8;
 // the thumbnail database.
 static const size_t kMaxFaviconBitmapsPerIconURL = 8;
 
+// Keeps track of a queued HistoryDBTask. This class lives solely on the
+// DB thread.
 class QueuedHistoryDBTask {
  public:
   QueuedHistoryDBTask(
-      scoped_refptr<HistoryDBTask> task,
+      scoped_ptr<HistoryDBTask> task,
       scoped_refptr<base::SingleThreadTaskRunner> origin_loop,
       const base::CancelableTaskTracker::IsCanceledCallback& is_canceled);
   ~QueuedHistoryDBTask();
 
   bool is_canceled();
-  bool RunOnDBThread(HistoryBackend* backend, HistoryDatabase* db);
-  void DoneRunOnMainThread();
+  bool Run(HistoryBackend* backend, HistoryDatabase* db);
+  void DoneRun();
 
  private:
-  scoped_refptr<HistoryDBTask> task_;
+  scoped_ptr<HistoryDBTask> task_;
   scoped_refptr<base::SingleThreadTaskRunner> origin_loop_;
   base::CancelableTaskTracker::IsCanceledCallback is_canceled_;
+
+  DISALLOW_COPY_AND_ASSIGN(QueuedHistoryDBTask);
 };
 
 // *See the .cc file for more information on the design.*
@@ -384,7 +388,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Generic operations --------------------------------------------------------
 
   void ProcessDBTask(
-      scoped_refptr<HistoryDBTask> task,
+      scoped_ptr<HistoryDBTask> task,
       scoped_refptr<base::SingleThreadTaskRunner> origin_loop,
       const base::CancelableTaskTracker::IsCanceledCallback& is_canceled);
 
@@ -872,7 +876,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   bool segment_queried_;
 
   // List of QueuedHistoryDBTasks to run;
-  std::list<QueuedHistoryDBTask> queued_history_db_tasks_;
+  std::list<QueuedHistoryDBTask*> queued_history_db_tasks_;
 
   // Used to determine if a URL is bookmarked; may be NULL.
   //

@@ -268,7 +268,10 @@ void WaitForHistoryToProcessPendingTasks() {
         HistoryServiceFactory::GetForProfileWithoutCreating(profile);
     base::WaitableEvent done(false, false);
     base::CancelableTaskTracker task_tracker;
-    history_service->ScheduleDBTask(new HistoryEmptyTask(&done), &task_tracker);
+    history_service->ScheduleDBTask(
+        scoped_ptr<history::HistoryDBTask>(
+            new HistoryEmptyTask(&done)),
+        &task_tracker);
     done.Wait();
   }
   // Wait such that any notifications broadcast from one of the history threads

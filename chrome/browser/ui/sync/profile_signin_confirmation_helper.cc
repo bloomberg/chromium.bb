@@ -155,9 +155,9 @@ void ProfileSigninConfirmationHelper::CheckHasTypedURLs() {
     return;
   }
   service->ScheduleDBTask(
-      new HasTypedURLsTask(
+      scoped_ptr<history::HistoryDBTask>(new HasTypedURLsTask(
           base::Bind(&ProfileSigninConfirmationHelper::ReturnResult,
-                     base::Unretained(this))),
+                     base::Unretained(this)))),
       &task_tracker_);
 }
 

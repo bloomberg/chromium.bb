@@ -385,7 +385,7 @@ void HistoryService::URLsNoLongerBookmarked(const std::set<GURL>& urls) {
                     urls);
 }
 
-void HistoryService::ScheduleDBTask(scoped_refptr<history::HistoryDBTask> task,
+void HistoryService::ScheduleDBTask(scoped_ptr<history::HistoryDBTask> task,
                                     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -398,7 +398,7 @@ void HistoryService::ScheduleDBTask(scoped_refptr<history::HistoryDBTask> task,
       FROM_HERE,
       base::Bind(&HistoryBackend::ProcessDBTask,
                  history_backend_.get(),
-                 task,
+                 base::Passed(&task),
                  base::ThreadTaskRunnerHandle::Get(),
                  is_canceled));
 }

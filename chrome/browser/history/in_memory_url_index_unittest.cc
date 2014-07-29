@@ -9,8 +9,8 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,12 +31,11 @@
 #include "components/history/core/browser/history_client.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "sql/transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
-using content::BrowserThread;
 
 namespace {
 const size_t kMaxMatches = 3;
@@ -60,23 +59,28 @@ namespace history {
 // Observer class so the unit tests can wait while the cache is being saved.
 class CacheFileSaverObserver : public InMemoryURLIndex::SaveCacheObserver {
  public:
-  explicit CacheFileSaverObserver(base::MessageLoop* loop);
+  explicit CacheFileSaverObserver(const base::Closure& task);
+
+  bool succeeded() { return succeeded_; }
+
+ private:
+  // SaveCacheObserver implementation.
   virtual void OnCacheSaveFinished(bool succeeded) OVERRIDE;
 
-  base::MessageLoop* loop_;
+  base::Closure task_;
   bool succeeded_;
+
   DISALLOW_COPY_AND_ASSIGN(CacheFileSaverObserver);
 };
 
-CacheFileSaverObserver::CacheFileSaverObserver(base::MessageLoop* loop)
-    : loop_(loop),
+CacheFileSaverObserver::CacheFileSaverObserver(const base::Closure& task)
+    : task_(task),
       succeeded_(false) {
-  DCHECK(loop);
 }
 
 void CacheFileSaverObserver::OnCacheSaveFinished(bool succeeded) {
   succeeded_ = succeeded;
-  loop_->Quit();
+  task_.Run();
 }
 
 // -----------------------------------------------------------------------------
@@ -125,9 +129,7 @@ class InMemoryURLIndexTest : public testing::Test {
   void ExpectPrivateDataEqual(const URLIndexPrivateData& expected,
                               const URLIndexPrivateData& actual);
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   HistoryService* history_service_;
 
@@ -135,9 +137,7 @@ class InMemoryURLIndexTest : public testing::Test {
   HistoryDatabase* history_database_;
 };
 
-InMemoryURLIndexTest::InMemoryURLIndexTest()
-    : ui_thread_(content::BrowserThread::UI, &message_loop_),
-      file_thread_(content::BrowserThread::FILE, &message_loop_) {
+InMemoryURLIndexTest::InMemoryURLIndexTest() {
 }
 
 sql::Connection& InMemoryURLIndexTest::GetDB() {
@@ -1057,12 +1057,15 @@ TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
   scoped_refptr<URLIndexPrivateData> old_data(private_data.Duplicate());
   const base::Time rebuild_time = private_data.last_time_rebuilt_from_history_;
 
-  // Save then restore our private data.
-  CacheFileSaverObserver save_observer(&message_loop_);
-  url_index_->set_save_cache_observer(&save_observer);
-  PostSaveToCacheFileTask();
-  message_loop_.Run();
-  EXPECT_TRUE(save_observer.succeeded_);
+  {
+    // Save then restore our private data.
+    base::RunLoop run_loop;
+    CacheFileSaverObserver save_observer(run_loop.QuitClosure());
+    url_index_->set_save_cache_observer(&save_observer);
+    PostSaveToCacheFileTask();
+    run_loop.Run();
+    EXPECT_TRUE(save_observer.succeeded());
+  }
 
   // Clear and then prove it's clear before restoring.
   ClearPrivateData();
@@ -1075,12 +1078,14 @@ TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
   EXPECT_TRUE(private_data.history_info_map_.empty());
   EXPECT_TRUE(private_data.word_starts_map_.empty());
 
-  HistoryIndexRestoreObserver restore_observer(
-      base::Bind(&base::MessageLoop::Quit, base::Unretained(&message_loop_)));
-  url_index_->set_restore_cache_observer(&restore_observer);
-  PostRestoreFromCacheFileTask();
-  message_loop_.Run();
-  EXPECT_TRUE(restore_observer.succeeded());
+  {
+    base::RunLoop run_loop;
+    HistoryIndexRestoreObserver restore_observer(run_loop.QuitClosure());
+    url_index_->set_restore_cache_observer(&restore_observer);
+    PostRestoreFromCacheFileTask();
+    run_loop.Run();
+    EXPECT_TRUE(restore_observer.succeeded());
+  }
 
   URLIndexPrivateData& new_data(*GetPrivateData());
 
@@ -1133,12 +1138,15 @@ TEST_F(InMemoryURLIndexTest, MAYBE_RebuildFromHistoryIfCacheOld) {
   // Capture the current private data for later comparison to restored data.
   scoped_refptr<URLIndexPrivateData> old_data(private_data.Duplicate());
 
-  // Save then restore our private data.
-  CacheFileSaverObserver save_observer(&message_loop_);
-  url_index_->set_save_cache_observer(&save_observer);
-  PostSaveToCacheFileTask();
-  message_loop_.Run();
-  EXPECT_TRUE(save_observer.succeeded_);
+  {
+    // Save then restore our private data.
+    base::RunLoop run_loop;
+    CacheFileSaverObserver save_observer(run_loop.QuitClosure());
+    url_index_->set_save_cache_observer(&save_observer);
+    PostSaveToCacheFileTask();
+    run_loop.Run();
+    EXPECT_TRUE(save_observer.succeeded());
+  }
 
   // Clear and then prove it's clear before restoring.
   ClearPrivateData();
@@ -1151,12 +1159,14 @@ TEST_F(InMemoryURLIndexTest, MAYBE_RebuildFromHistoryIfCacheOld) {
   EXPECT_TRUE(private_data.history_info_map_.empty());
   EXPECT_TRUE(private_data.word_starts_map_.empty());
 
-  HistoryIndexRestoreObserver restore_observer(
-      base::Bind(&base::MessageLoop::Quit, base::Unretained(&message_loop_)));
-  url_index_->set_restore_cache_observer(&restore_observer);
-  PostRestoreFromCacheFileTask();
-  message_loop_.Run();
-  EXPECT_TRUE(restore_observer.succeeded());
+  {
+    base::RunLoop run_loop;
+    HistoryIndexRestoreObserver restore_observer(run_loop.QuitClosure());
+    url_index_->set_restore_cache_observer(&restore_observer);
+    PostRestoreFromCacheFileTask();
+    run_loop.Run();
+    EXPECT_TRUE(restore_observer.succeeded());
+  }
 
   URLIndexPrivateData& new_data(*GetPrivateData());
 
