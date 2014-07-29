@@ -185,14 +185,6 @@ willPositionSheet:(NSWindow*)sheet
   NSWindow* window = [self window];
   NSView* contentView = [window contentView];
   NSRect contentBounds = [contentView bounds];
-
-  // Lay out the chromeContentView.
-  NSView* chromeContentView = [self chromeContentView];
-  BOOL autoresizesSubviews = [chromeContentView autoresizesSubviews];
-  [chromeContentView setAutoresizesSubviews:NO];
-  [chromeContentView setFrame:contentBounds];
-  [chromeContentView setAutoresizesSubviews:autoresizesSubviews];
-
   CGFloat minX = NSMinX(contentBounds);
   CGFloat minY = NSMinY(contentBounds);
   CGFloat width = NSWidth(contentBounds);
