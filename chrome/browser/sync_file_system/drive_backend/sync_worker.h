@@ -161,7 +161,6 @@ class SyncWorker : public SyncWorkerInterface,
   base::TimeTicks time_to_check_changes_;
 
   bool sync_enabled_;
-  ConflictResolutionPolicy default_conflict_resolution_policy_;
 
   scoped_ptr<SyncTaskManager> task_manager_;
 

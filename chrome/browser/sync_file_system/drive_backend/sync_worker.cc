@@ -49,8 +49,6 @@ SyncWorker::SyncWorker(
       should_check_remote_change_(true),
       listing_remote_changes_(false),
       sync_enabled_(false),
-      default_conflict_resolution_policy_(
-          CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN),
       extension_service_(extension_service),
       weak_ptr_factory_(this) {
   sequence_checker_.DetachFromSequence();
