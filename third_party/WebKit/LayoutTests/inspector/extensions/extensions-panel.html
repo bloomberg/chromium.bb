@@ -62,7 +62,6 @@ function initialize_extensionsPanelTest()
         }
         InspectorTest.recordNetwork();
 
-        WebInspector.settings.createSetting("drawerEditorShown", true).set(false);
         InspectorTest.addSniffer(WebInspector.inspectorView.panel("sources"), "showUILocation", showUILocationHook, true);
         InspectorTest.addSniffer(WebInspector.inspectorView.panel("resources"), "showResource", showResourceHook, true);
         InspectorTest.addSniffer(WebInspector.inspectorView.panel("network"), "revealAndHighlightRequest", showRequestHook, true);
