@@ -135,10 +135,13 @@ def CheckIfChromeRightForOS(url):
   """
   deps_contents = cros_build_lib.RunCommand(['svn', 'cat', url],
                                             redirect_stdout=True).output
-  platforms = re.search(r'buildspec_platforms.*\s.*\s', deps_contents).group()
 
-  if 'chromeos' in platforms or 'all' in platforms:
-    return True
+  platforms_search = re.search(r'buildspec_platforms.*\s.*\s', deps_contents)
+
+  if platforms_search:
+    platforms = platforms_search.group()
+    if 'chromeos' in platforms or 'all' in platforms:
+      return True
 
   return False
 
