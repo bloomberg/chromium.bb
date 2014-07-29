@@ -61,10 +61,10 @@ static Element* highestVisuallyEquivalentDivBelowRoot(Element* startBlock)
     return curBlock;
 }
 
-InsertParagraphSeparatorCommand::InsertParagraphSeparatorCommand(Document& document, bool mustUseDefaultParagraphElement, bool pasteBlockqutoeIntoUnquotedArea)
+InsertParagraphSeparatorCommand::InsertParagraphSeparatorCommand(Document& document, bool mustUseDefaultParagraphElement, bool pasteBlockquoteIntoUnquotedArea)
     : CompositeEditCommand(document)
     , m_mustUseDefaultParagraphElement(mustUseDefaultParagraphElement)
-    , m_pasteBlockqutoeIntoUnquotedArea(pasteBlockqutoeIntoUnquotedArea)
+    , m_pasteBlockquoteIntoUnquotedArea(pasteBlockquoteIntoUnquotedArea)
 {
 }
 
@@ -87,7 +87,7 @@ void InsertParagraphSeparatorCommand::calculateStyleBeforeInsertion(const Positi
     m_style->mergeTypingStyle(pos.document());
 }
 
-void InsertParagraphSeparatorCommand::applyStyleAfterInsertion(Node* originalEnclosingBlock)
+void InsertParagraphSeparatorCommand::applyStyleAfterInsertion(Element* originalEnclosingBlock)
 {
     // Not only do we break out of header tags, but we also do not preserve the typing style,
     // in order to match other browsers.
@@ -106,7 +106,7 @@ void InsertParagraphSeparatorCommand::applyStyleAfterInsertion(Node* originalEnc
         applyStyle(m_style.get());
 }
 
-bool InsertParagraphSeparatorCommand::shouldUseDefaultParagraphElement(Node* enclosingBlock) const
+bool InsertParagraphSeparatorCommand::shouldUseDefaultParagraphElement(Element* enclosingBlock) const
 {
     if (m_mustUseDefaultParagraphElement)
         return true;
@@ -168,7 +168,7 @@ void InsertParagraphSeparatorCommand::doApply()
     // FIXME: The parentAnchoredEquivalent conversion needs to be moved into enclosingBlock.
     RefPtrWillBeRawPtr<Element> startBlock = enclosingBlock(insertionPosition.parentAnchoredEquivalent().containerNode());
     Node* listChildNode = enclosingListChild(insertionPosition.parentAnchoredEquivalent().containerNode());
-    RefPtrWillBeRawPtr<Element> listChild = listChildNode && listChildNode->isHTMLElement() ? toHTMLElement(listChildNode) : 0;
+    RefPtrWillBeRawPtr<HTMLElement> listChild = listChildNode && listChildNode->isHTMLElement() ? toHTMLElement(listChildNode) : 0;
     Position canonicalPos = VisiblePosition(insertionPosition).deepEquivalent();
     if (!startBlock
         || !startBlock->nonShadowBoundaryParentNode()
@@ -222,7 +222,7 @@ void InsertParagraphSeparatorCommand::doApply()
             if (isFirstInBlock && !lineBreakExistsAtVisiblePosition(visiblePos)) {
                 // The block is empty.  Create an empty block to
                 // represent the paragraph that we're leaving.
-                RefPtrWillBeRawPtr<Element> extraBlock = createDefaultParagraphElement(document());
+                RefPtrWillBeRawPtr<HTMLElement> extraBlock = createDefaultParagraphElement(document());
                 appendNode(extraBlock, startBlock);
                 appendBlockPlaceholder(extraBlock);
             }
@@ -230,7 +230,7 @@ void InsertParagraphSeparatorCommand::doApply()
         } else {
             // We can get here if we pasted a copied portion of a blockquote with a newline at the end and are trying to paste it
             // into an unquoted area. We then don't want the newline within the blockquote or else it will also be quoted.
-            if (m_pasteBlockqutoeIntoUnquotedArea) {
+            if (m_pasteBlockquoteIntoUnquotedArea) {
                 if (HTMLQuoteElement* highestBlockquote = toHTMLQuoteElement(highestEnclosingNodeOfType(canonicalPos, &isMailHTMLBlockquoteElement)))
                     startBlock = highestBlockquote;
             }
@@ -242,10 +242,10 @@ void InsertParagraphSeparatorCommand::doApply()
             } else {
                 // Most of the time we want to stay at the nesting level of the startBlock (e.g., when nesting within lists). However,
                 // for div nodes, this can result in nested div tags that are hard to break out of.
-                Element* siblingNode = startBlock.get();
+                Element* siblingElement = startBlock.get();
                 if (isHTMLDivElement(*blockToInsert))
-                    siblingNode = highestVisuallyEquivalentDivBelowRoot(startBlock.get());
-                insertNodeAfter(blockToInsert, siblingNode);
+                    siblingElement = highestVisuallyEquivalentDivBelowRoot(startBlock.get());
+                insertNodeAfter(blockToInsert, siblingElement);
             }
         }
 
