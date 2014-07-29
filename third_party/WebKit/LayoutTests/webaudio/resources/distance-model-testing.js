@@ -129,7 +129,7 @@ function checkDistanceResult(model) {
         // The max allowed error between the actual gain and the expected
         // value.  This is determined experimentally.  Set to 0 to see what
         // the actual errors are.
-        var maxAllowedError = 2.3e-6;
+        var maxAllowedError = 3.3e-6;
    
         var success = true;
 

@@ -1282,9 +1282,6 @@ crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ 
 # V8 3.28.19
 crbug.com/392762 fast/js/nested-object-gc.html [ Pass Crash ]
 
-# Linux32 only. There seems to be no way to selectively specify Linux32, so marking as flaky (it actually isn't).
-crbug.com/392764 [ Linux ] webaudio/distance-linear.html [ Pass Failure ]
-
 # Flaky
 crbug.com/395127 http/tests/w3c/webperf/approved/UserTiming/test_user_timing_measure_navigation_timing.htm [ Failure Pass ]
 
