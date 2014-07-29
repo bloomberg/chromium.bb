@@ -1525,11 +1525,13 @@ void RenderThreadImpl::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   base::allocator::ReleaseFreeMemory();
 
+  // Trigger full v8 garbage collection on critical memory notification. This
+  // will potentially hang the renderer for a long time, however, when we
+  // receive a memory pressure notification, we might be about to be killed.
+  v8::V8::LowMemoryNotification();
+
   if (memory_pressure_level ==
       base::MemoryPressureListener::MEMORY_PRESSURE_CRITICAL) {
-    // Trigger full v8 garbage collection on critical memory notification.
-    v8::V8::LowMemoryNotification();
-
     if (webkit_platform_support_) {
       // Clear the image cache. Do not call into blink if it is not initialized.
       blink::WebImageCache::clear();
@@ -1539,10 +1541,6 @@ void RenderThreadImpl::OnMemoryPressure(
     // limit.
     size_t font_cache_limit = SkGraphics::SetFontCacheLimit(0);
     SkGraphics::SetFontCacheLimit(font_cache_limit);
-  } else {
-    // Otherwise trigger a couple of v8 GCs using IdleNotification.
-    if (!v8::V8::IdleNotification())
-      v8::V8::IdleNotification();
   }
 }
 
