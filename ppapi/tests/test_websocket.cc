@@ -566,10 +566,10 @@ std::string TestWebSocket::TestInvalidClose() {
   PASS();
 }
 
+// TODO(tyoshino): Consider splitting this test into smaller ones.
+// http://crbug.com/397035
 std::string TestWebSocket::TestValidClose() {
   PP_Var reason = CreateVarString("close for test");
-  PP_Var url = CreateVarString(GetFullURL(kEchoServerURL).c_str());
-  PP_Var protocols[] = { PP_MakeUndefined() };
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
   TestCompletionCallback another_callback(
       instance_->pp_instance(), callback_type());
@@ -593,6 +593,7 @@ std::string TestWebSocket::TestValidClose() {
   callback.WaitForResult(websocket_interface_->Close(
       ws, PP_WEBSOCKETSTATUSCODE_NOT_SPECIFIED, reason,
       callback.GetCallback().pp_completion_callback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
   core_interface_->ReleaseResource(ws);
 
@@ -607,10 +608,12 @@ std::string TestWebSocket::TestValidClose() {
   ASSERT_EQ(PP_OK, callback.result());
   core_interface_->ReleaseResource(ws);
 
-  // Close in connecting.
-  // The ongoing connect failed with PP_ERROR_ABORTED, then the close is done
-  // successfully.
+  // Close in CONNECTING state.
+  // The ongoing Connect() fails with PP_ERROR_ABORTED, then the Close()
+  // completes successfully.
   ws = websocket_interface_->Create(instance_->pp_instance());
+  PP_Var url = CreateVarString(GetFullURL(kEchoServerURL).c_str());
+  PP_Var protocols[] = { PP_MakeUndefined() };
   result = websocket_interface_->Connect(
       ws, url, protocols, 0U, callback.GetCallback().pp_completion_callback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
@@ -623,10 +626,11 @@ std::string TestWebSocket::TestValidClose() {
   another_callback.WaitForResult(PP_OK_COMPLETIONPENDING);
   ASSERT_EQ(PP_OK, another_callback.result());
   core_interface_->ReleaseResource(ws);
+  ReleaseVar(url);
 
-  // Close in closing.
-  // The first close will be done successfully, then the second one failed with
-  // with PP_ERROR_INPROGRESS immediately.
+  // Close while already closing.
+  // The first Close will succeed, and the second one will synchronously fail
+  // with PP_ERROR_INPROGRESS.
   ws = Connect(GetFullURL(kEchoServerURL), &result, std::string());
   ASSERT_TRUE(ws);
   ASSERT_EQ(PP_OK, result);
@@ -642,7 +646,7 @@ std::string TestWebSocket::TestValidClose() {
   ASSERT_EQ(PP_OK, callback.result());
   core_interface_->ReleaseResource(ws);
 
-  // Close with ongoing receive message.
+  // Close with ongoing ReceiveMessage.
   ws = Connect(GetFullURL(kEchoServerURL), &result, std::string());
   ASSERT_TRUE(ws);
   ASSERT_EQ(PP_OK, result);
@@ -661,7 +665,7 @@ std::string TestWebSocket::TestValidClose() {
   ASSERT_EQ(PP_OK, another_callback.result());
   core_interface_->ReleaseResource(ws);
 
-  // Close with PP_VARTYPE_UNDEFINED and ongoing receive message.
+  // Close with PP_VARTYPE_UNDEFINED for reason and ongoing ReceiveMessage.
   ws = Connect(GetFullURL(kEchoServerURL), &result, std::string());
   ASSERT_TRUE(ws);
   ASSERT_EQ(PP_OK, result);
@@ -696,7 +700,6 @@ std::string TestWebSocket::TestValidClose() {
   core_interface_->ReleaseResource(ws);
 
   ReleaseVar(reason);
-  ReleaseVar(url);
 
   PASS();
 }
