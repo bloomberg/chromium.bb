@@ -21,9 +21,7 @@ cr.define('options', function() {
   CertificateBackupOverlay.prototype = {
     __proto__: OptionsPage.prototype,
 
-    /**
-     * Initializes the page.
-     */
+    /** @override */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 

@@ -607,6 +607,7 @@ cr.define('options.contentSettings', function() {
   ContentSettingsExceptionsArea.prototype = {
     __proto__: OptionsPage.prototype,
 
+    /** @override */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 

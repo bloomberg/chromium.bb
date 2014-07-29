@@ -30,9 +30,7 @@ cr.define('options', function() {
      */
     autocompleteList_: null,
 
-    /**
-     * Initialize the page.
-     */
+    /** @override */
     initializePage: function() {
       // Call base class implementation to start preference initialization.
       SettingsDialog.prototype.initializePage.call(this);

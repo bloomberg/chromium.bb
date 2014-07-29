@@ -22,11 +22,6 @@ cr.define('options', function() {
 
   BluetoothOptions.prototype = {
     __proto__: OptionsPage.prototype,
-
-    /** @override */
-    initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
-    },
   };
 
   BluetoothOptions.updateDiscovery = function() {

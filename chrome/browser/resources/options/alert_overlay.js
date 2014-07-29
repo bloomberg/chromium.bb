@@ -27,9 +27,7 @@ cr.define('options', function() {
      */
     canShow_: false,
 
-    /**
-     * Initialize the page.
-     */
+    /** @override */
     initializePage: function() {
       // Call base class implementation to start preference initialization.
       OptionsPage.prototype.initializePage.call(this);
@@ -78,6 +76,7 @@ cr.define('options', function() {
 
     /**
      * The page is getting hidden. Don't let it be shown again.
+     * @override
      */
     willHidePage: function() {
       canShow_ = false;

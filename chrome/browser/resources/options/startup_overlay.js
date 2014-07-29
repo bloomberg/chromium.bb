@@ -38,9 +38,7 @@ cr.define('options', function() {
       'disabled': false
     },
 
-    /**
-     * Initialize the page.
-     */
+    /** @override */
     initializePage: function() {
       SettingsDialog.prototype.initializePage.call(this);
 

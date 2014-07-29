@@ -58,9 +58,7 @@ cr.define('options', function() {
   SyncSetupOverlay.prototype = {
     __proto__: OptionsPage.prototype,
 
-    /**
-     * Initializes the page.
-     */
+    /** @override */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 
@@ -68,7 +66,7 @@ cr.define('options', function() {
       $('basic-encryption-option').onchange =
           $('full-encryption-option').onchange = function() {
         self.onEncryptionRadioChanged_();
-      }
+      };
       $('choose-datatypes-cancel').onclick =
           $('confirm-everything-cancel').onclick =
           $('stop-syncing-cancel').onclick =
@@ -291,11 +289,11 @@ cr.define('options', function() {
 
       $('customize-link').hidden = disabled;
       $('customize-link').disabled = disabled;
-      $('customize-link').onclick = (disabled ? null : function() {
+      $('customize-link').onclick = disabled ? null : function() {
         SyncSetupOverlay.showCustomizePage(null,
                                            DataTypeSelection.SYNC_EVERYTHING);
         return false;
-      });
+      };
     },
 
     /**

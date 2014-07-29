@@ -47,9 +47,7 @@ cr.define('options', function() {
      */
     isInitializationComplete_: false,
 
-    /**
-     * Initialize the page.
-     */
+    /** @override */
     initializePage: function() {
       // Call base class implementation to starts preference initialization.
       OptionsPage.prototype.initializePage.call(this);
@@ -137,11 +135,11 @@ cr.define('options', function() {
       $('open-content-settings-from-clear-browsing-data').onclick =
           function(event) {
         OptionsPage.navigateToPage('content');
-      }
+      };
       $('open-search-engines-from-clear-browsing-data').onclick =
           function(event) {
         OptionsPage.navigateToPage('searchEngines');
-      }
+      };
     },
 
     /**

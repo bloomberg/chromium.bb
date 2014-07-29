@@ -22,9 +22,7 @@ cr.define('options', function() {
     // Inherit CertificateImportErrorOverlay from OptionsPage.
     __proto__: OptionsPage.prototype,
 
-    /**
-     * Initialize the page.
-     */
+    /** @override */
     initializePage: function() {
       // Call base class implementation to start preference initialization.
       OptionsPage.prototype.initializePage.call(this);
@@ -58,7 +56,7 @@ cr.define('options', function() {
     }
 
     OptionsPage.navigateToPage('certificateImportErrorOverlay');
-  }
+  };
 
   // Export
   return {

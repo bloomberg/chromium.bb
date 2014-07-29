@@ -29,9 +29,7 @@ cr.define('options', function() {
       return !BrowserOptions.getCurrentProfile().isManaged;
     },
 
-    /**
-     * Initialize the page.
-     */
+    /** @override */
     initializePage: function() {
       // Call base class implementation to start preference initialization.
       OptionsPage.prototype.initializePage.call(this);

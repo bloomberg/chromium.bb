@@ -24,10 +24,7 @@ cr.define('options', function() {
     // Inherit AddLanguageOverlay from OptionsPage.
     __proto__: OptionsPage.prototype,
 
-    /**
-     * Initializes AddLanguageOverlay page.
-     * Calls base class implementation to starts preference initialization.
-     */
+    /** @override */
     initializePage: function() {
       // Call base class implementation to starts preference initialization.
       OptionsPage.prototype.initializePage.call(this);

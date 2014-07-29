@@ -41,9 +41,7 @@ cr.define('options', function() {
     // The currently selected icon in the icon grid.
     iconGridSelectedURL_: null,
 
-    /**
-     * Initialize the page.
-     */
+    /** @override */
     initializePage: function() {
       // Call base class implementation to start preference initialization.
       OptionsPage.prototype.initializePage.call(this);
@@ -89,7 +87,7 @@ cr.define('options', function() {
         OptionsPage.closeOverlay();
         chrome.send('deleteProfile',
                     [BrowserOptions.getCurrentProfile().filePath]);
-      }
+      };
 
       $('create-profile-managed-signed-in-learn-more-link').onclick =
           function(event) {

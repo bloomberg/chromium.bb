@@ -40,9 +40,7 @@ cr.define('options', function() {
   KeyboardOverlay.prototype = {
     __proto__: options.SettingsDialog.prototype,
 
-    /**
-     * Initializes the page. This method is called in initialize.
-     */
+    /** @override */
     initializePage: function() {
       options.SettingsDialog.prototype.initializePage.call(this);
 

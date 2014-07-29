@@ -44,10 +44,7 @@ cr.define('options', function() {
      */
     noMatchesLabel_: null,
 
-    /**
-     * Initializes the edit dictionary overlay.
-     * @override
-     */
+    /** @override */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 

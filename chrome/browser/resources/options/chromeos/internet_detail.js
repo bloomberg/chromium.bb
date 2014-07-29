@@ -128,10 +128,7 @@ cr.define('options.internet', function() {
   DetailsInternetPage.prototype = {
     __proto__: OptionsPage.prototype,
 
-    /**
-     * Initializes DetailsInternetPage page.
-     * Calls base class implementation to starts preference initialization.
-     */
+    /** @override */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
       var params = parseQueryParams(window.location);

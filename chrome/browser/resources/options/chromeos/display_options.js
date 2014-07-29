@@ -144,9 +144,7 @@ cr.define('options', function() {
      */
     lastTouchLocation_: null,
 
-    /**
-     * Initialize the page.
-     */
+    /** @override */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 

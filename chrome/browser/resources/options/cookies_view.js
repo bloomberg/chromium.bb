@@ -38,6 +38,7 @@ cr.define('options', function() {
      */
     lastQuery_: '',
 
+    /** @override */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 

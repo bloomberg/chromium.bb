@@ -24,6 +24,7 @@ cr.define('options', function() {
   ContentSettings.prototype = {
     __proto__: OptionsPage.prototype,
 
+    /** @override */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 

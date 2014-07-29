@@ -44,9 +44,7 @@ cr.define('options', function() {
      */
     savedFieldValues_: {},
 
-    /**
-     * Initializes the page.
-     */
+    /** @override */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 

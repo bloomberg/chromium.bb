@@ -156,10 +156,7 @@ cr.define('options', function() {
      */
     enableTranslate_: false,
 
-    /**
-     * Initializes LanguageOptions page.
-     * Calls base class implementation to start preference initialization.
-     */
+    /** @override */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 

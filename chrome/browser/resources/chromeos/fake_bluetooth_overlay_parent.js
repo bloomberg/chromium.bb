@@ -20,14 +20,6 @@ cr.define('options', function() {
   FakeBluetoothOverlayParent.prototype = {
     // Inherit FakeBluetoothOverlayParent from OptionsPage.
     __proto__: OptionsPage.prototype,
-
-    /**
-     * Initializes FakeBluetoothOverlayParent page.
-     */
-    initializePage: function() {
-      // Call base class implementation to starts preference initialization.
-      OptionsPage.prototype.initializePage.call(this);
-    },
   };
 
   // Export

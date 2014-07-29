@@ -132,9 +132,7 @@ cr.define('options', function() {
      */
     insideSetSearchText_: false,
 
-    /**
-     * Initialize the page.
-     */
+    /** @override */
     initializePage: function() {
       // Call base class implementation to start preference initialization.
       OptionsPage.prototype.initializePage.call(this);

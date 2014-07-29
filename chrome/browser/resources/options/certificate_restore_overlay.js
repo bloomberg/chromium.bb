@@ -20,9 +20,7 @@ cr.define('options', function() {
   CertificateRestoreOverlay.prototype = {
     __proto__: OptionsPage.prototype,
 
-    /**
-     * Initializes the page.
-     */
+    /** @override */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 

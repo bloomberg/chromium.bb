@@ -39,6 +39,7 @@ cr.define('options', function() {
      */
     creditCardList_: null,
 
+    /** @override */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 

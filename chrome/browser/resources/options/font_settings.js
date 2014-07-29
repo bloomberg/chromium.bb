@@ -23,9 +23,7 @@ cr.define('options', function() {
   FontSettings.prototype = {
     __proto__: OptionsPage.prototype,
 
-    /**
-     * Initialize the page.
-     */
+    /** @override */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 

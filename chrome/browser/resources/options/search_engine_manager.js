@@ -40,7 +40,7 @@ cr.define('options', function() {
      */
     extensionList_: null,
 
-    /** inheritDoc */
+    /** @override */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 

@@ -23,9 +23,7 @@ cr.define('options', function() {
     // Inherit from OptionsPage.
     __proto__: OptionsPage.prototype,
 
-    /**
-     * Initialize the page.
-     */
+    /** @override */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 

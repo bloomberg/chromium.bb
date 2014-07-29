@@ -32,9 +32,7 @@ cr.define('options', function() {
      */
     keyHandler_: null,
 
-    /**
-     * Initialize the page.
-     */
+    /** @override */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 

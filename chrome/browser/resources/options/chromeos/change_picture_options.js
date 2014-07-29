@@ -39,9 +39,7 @@ cr.define('options', function() {
     // Inherit ChangePictureOptions from OptionsPage.
     __proto__: options.OptionsPage.prototype,
 
-    /**
-     * Initializes ChangePictureOptions page.
-     */
+    /** @override */
     initializePage: function() {
       // Call base class implementation to start preferences initialization.
       OptionsPage.prototype.initializePage.call(this);

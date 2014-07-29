@@ -26,9 +26,7 @@ cr.define('options', function() {
     // Inherit AccountsOptions from OptionsPage.
     __proto__: OptionsPage.prototype,
 
-    /**
-     * Initializes AccountsOptions page.
-     */
+    /** @override */
     initializePage: function() {
       // Call base class implementation to starts preference initialization.
       OptionsPage.prototype.initializePage.call(this);

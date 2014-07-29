@@ -22,9 +22,7 @@ cr.define('options', function() {
     // Inherit FactoryResetOverlay from OptionsPage.
     __proto__: OptionsPage.prototype,
 
-    /**
-     * Initialize the page.
-     */
+    /** @override */
     initializePage: function() {
       // Call base class implementation to starts preference initialization.
       OptionsPage.prototype.initializePage.call(this);

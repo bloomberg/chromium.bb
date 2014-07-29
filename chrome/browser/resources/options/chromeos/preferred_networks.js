@@ -28,9 +28,7 @@ cr.define('options', function() {
   PreferredNetworks.prototype = {
     __proto__: OptionsPage.prototype,
 
-   /**
-     * Initializes the preferred networks page.
-     */
+    /** @override */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
       PreferredNetworkList.decorate($('remembered-network-list'));
@@ -51,10 +49,8 @@ cr.define('options', function() {
 
   /**
    * Creates a list entry for a remembered network.
-   * @param{{Name: string,
-             Type: string,
-             servicePath: string}} data
-   *    Description of the network.
+   * @param {{Name: string, Type: string, servicePath: string}} data
+   *     Description of the network.
    * @constructor
    */
   function PreferredNetworkListItem(data) {
@@ -72,9 +68,7 @@ cr.define('options', function() {
 
     /**
      * Description of the network.
-     * @type {{Name: string,
-     *         Type: string,
-     *         servicePath: string}}
+     * @type {{Name: string, Type: string, servicePath: string}}
      */
     data: null,
 
@@ -146,9 +140,7 @@ cr.define('options', function() {
 
     /**
      * Adds a remembered network to the list.
-     * @param {{Name: string,
-                Type: string,
-                servicePath: string} data
+     * @param {{Name: string, Type: string, servicePath: string}} data
      *     Description of the network.
      */
     append: function(data) {

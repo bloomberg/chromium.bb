@@ -31,7 +31,9 @@ cr.define('options', function() {
   }
 
   HotwordConfirmDialog.prototype = {
-    // Set up the prototype chain
+    // TODO(dbeam): this class should probably derive SettingsDialog again as it
+    // evily duplicates much of ConfirmDialog's functionality, calls methods
+    // on SettingsDialog.prototype, and shadows private method names.
     __proto__: ConfirmDialog.prototype,
 
     /**
@@ -61,7 +63,8 @@ cr.define('options', function() {
     /**
      * Override the initializePage function so that an updated version of
      * onPrefChanged_ can be used.
-     * @override */
+     * @override
+     */
     initializePage: function() {
       SettingsDialog.prototype.initializePage.call(this);
 

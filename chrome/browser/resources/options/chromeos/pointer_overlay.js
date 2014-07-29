@@ -23,14 +23,6 @@ cr.define('options', function() {
 
   PointerOverlay.prototype = {
     __proto__: SettingsDialog.prototype,
-
-    /**
-     * Initialize the page.
-     */
-    initializePage: function() {
-      // Call base class implementation to start preference initialization.
-      SettingsDialog.prototype.initializePage.call(this);
-    },
   };
 
   /**
