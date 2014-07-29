@@ -359,6 +359,8 @@ InjectedScript.prototype = {
      */
     releaseObjectGroup: function(objectGroupName)
     {
+        if (objectGroupName === "console")
+            delete this._lastResult;
         var group = this._objectGroups[objectGroupName];
         if (!group)
             return;

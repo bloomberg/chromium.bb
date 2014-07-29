@@ -6,17 +6,44 @@
 
 function test()
 {
-    InspectorTest.evaluateInConsole("1+1", step1);
+    InspectorTest.runTestSuite([
+        function testLastResult(next)
+        {
+            InspectorTest.evaluateInConsole("1+1", step1);
 
-    function step1()
-    {
-        InspectorTest.evaluateInConsole("$_", callback);
-    }
+            function step1()
+            {
+                evaluateLastResultAndDump(next);
+            }
+        },
 
-    function callback()
+        function testLastResultAfterConsoleClear(next)
+        {
+            InspectorTest.evaluateInConsole("1+1", step1);
+
+            function step1()
+            {
+                WebInspector.consoleModel.requestClearMessages();
+                InspectorTest.runAfterPendingDispatches(step2);
+            }
+
+            function step2()
+            {
+                evaluateLastResultAndDump(next);
+            }
+        }
+    ]);
+
+    function evaluateLastResultAndDump(callback)
     {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+        InspectorTest.evaluateInConsole("$_", didEvaluate);
+
+        function didEvaluate()
+        {
+            InspectorTest.dumpConsoleMessages();
+            if (callback)
+                callback();
+        }
     }
 }
 
