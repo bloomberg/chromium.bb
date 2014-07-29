@@ -304,7 +304,7 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
           return new Promise(function(fulfill, reject) {
             chrome.cast.requestSession(
                 fulfill, reject, undefined, this.currentCast_.label);
-          }).then(function(session) {
+          }.bind(this)).then(function(session) {
             var mediaInfo = new chrome.cast.media.MediaInfo(downloadUrl);
             mediaInfo.contentType = mime;
             this.videoElement_ = new CastVideoElement(mediaInfo, session);
@@ -338,7 +338,7 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
           this.videoElement_.addEventListener('loadedmetadata', handler);
         }
       }.bind(this),
-      function videoElementInitializePromiseRejected() {
+      function videoElementInitializePromiseRejected(error) {
         console.error('Failed to initialize the video element.',
                       error.stack || error);
         this.controls_.showErrorMessage('GALLERY_VIDEO_ERROR');
