@@ -471,17 +471,22 @@ def CheckPathLength(filename, exit_on_failure=True):
   if not IsWindowsPython() and not env.has('PNACL_RUNNING_UNITTESTS'):
     return True
 
-  # Don't assume that the underlying tools or windows APIs will normalize
-  # the path before using it. Conservatively count the length of CWD + filename.
+  # First check the name as-is (it's usually a relative path)
   if len(filename) > 255:
     if exit_on_failure:
-      Log.Fatal('Path name %s is too long' % filename)
+      Log.Fatal('Path name %s is too long (%d characters)' %
+                (filename, len(filename)))
     return False
-  expanded_name = os.path.join(os.getcwd(), filename)
-  if len(expanded_name) > 255:
+  if os.path.isabs(filename):
+    return True
+
+  # Don't assume that the underlying tools or windows APIs will normalize
+  # the path before using it. Conservatively count the length of CWD + filename
+  appended_name = os.path.join(os.getcwd(), filename)
+  if len(appended_name) > 255:
     if exit_on_failure:
-      Log.Fatal('Path name %s (expanded from %s) is too long' %
-                (expanded_name, filename))
+      Log.Fatal('Path name %s (expanded from %s) is too long (%d characters)' %
+                (appended_name, filename, len(appended_name)))
     return False
   return True
 
@@ -856,6 +861,7 @@ class DriverChain(object):
       self.use_names_for_input = False
       for path in input:
         CheckPathLength(path)
+    CheckPathLength(output)
 
   def add(self, callback, output_type, **extra):
     step = (callback, output_type, extra)

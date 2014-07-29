@@ -29,11 +29,13 @@ class TestPathNames(driver_test_utils.DriverTesterCommon):
     cwd_len = len(os.getcwd())
     # Create a directory whose path will be exactly 240 chars long
     dir_len = 240 - cwd_len - 1
-    self.LongTempDir = os.path.join(os.getcwd(), 'a' * dir_len)
+    self.cwd_backup = os.getcwd()
+    self.LongTempDir = os.path.join(self.cwd_backup, 'a' * dir_len)
     os.mkdir(self.LongTempDir)
 
   def tearDown(self):
     super(TestPathNames, self).tearDown()
+    os.chdir(self.cwd_backup)
     sys.exit = self.backup_exit
     shutil.rmtree(self.LongTempDir)
 
@@ -92,6 +94,54 @@ class TestPathNames(driver_test_utils.DriverTesterCommon):
         [longname + '.o'])
 
     self.assertIn('too long', output)
+
+  def test_ExpandedPathTooLong(self):
+    '''Test that the expanded path is checked with a short relative path'''
+    if not driver_test_utils.CanRunHost() or driver_tools.IsWindowsPython():
+      return
+
+    os.chdir(self.LongTempDir)
+
+    shortname = 'a' * 10
+    longname = 'a' * 32
+
+    # Now we are in a state where the file can be referred to by a relative
+    # path or a normalized absolute path. For 'shortname', both are short
+    # enough
+    assert len(os.path.join(self.LongTempDir, shortname)) + 2 < 255
+    assert len(os.path.join(self.LongTempDir, longname)) + 2 > 255
+    self.WriteCFile(shortname + '.c')
+
+    # Test that using a relative almost-too-long path works
+    driver_tools.RunDriver('pnacl-clang',
+                           [shortname + '.c', '-c', '-o', shortname + '.o'])
+
+    driver_tools.RunDriver('pnacl-ld',
+                           [shortname + '.o'])
+
+    # This name has a short-enough relative path and a short-enough normalized
+    # final path, but the intermediate concatenation of pwd + rel path is too
+    # long
+    name_with_traversals = os.path.join('..',
+                                        os.path.basename(self.LongTempDir),
+                                        shortname)
+
+    output = self.AssertRaisesAndReturnOutput(
+        driver_test_utils.DriverExitException,
+        driver_tools.RunDriver,
+        'pnacl-clang',
+        [name_with_traversals + '.c', '-c', '-o', shortname + '.o'])
+    self.assertIn('expanded', output)
+
+    # The previous test only gives a long input name. Also test that the output
+    # name is checked.
+    output = self.AssertRaisesAndReturnOutput(
+        driver_test_utils.DriverExitException,
+        driver_tools.RunDriver,
+        'pnacl-clang',
+        [shortname + '.c', '-c', '-o', name_with_traversals + '.o'])
+    self.assertIn('expanded', output)
+
 
   def test_TempFileNotTooLong(self):
     '''Test that temp files with too-long names are not generated'''
