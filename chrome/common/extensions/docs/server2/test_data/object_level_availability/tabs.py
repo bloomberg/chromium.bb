@@ -4,7 +4,7 @@
 
 import json
 
-from extensions_paths import CHROME_EXTENSIONS, SERVER2
+from extensions_paths import CHROME_EXTENSIONS
 from test_file_system import MoveAllTo
 from test_util import ReadFile
 
@@ -147,6 +147,9 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
             ]
           },
           {
+            'name': 'restrictedFunc'
+          },
+          {
             'name': 'scheduledFunc',
             'parameters': []
           }
@@ -200,7 +203,7 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
       }])
     }
   },
-  '1500': {
+  '1612': {
     'api': {
       '_api_features.json': json.dumps({
         'tabs.scheduledFunc': {
@@ -271,6 +274,9 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
             ]
           },
           {
+            'name': 'restrictedFunc'
+          },
+          {
             'name': 'scheduledFunc',
             'parameters': []
           }
@@ -310,9 +316,13 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
       }])
     }
   },
-  '1453': {
+  '1599': {
     'api': {
-      '_api_features.json': "{}",
+      '_api_features.json': json.dumps({
+        'tabs.scheduledFunc': {
+          'channel': 'stable'
+        }
+      }),
       '_manifest_features.json': "{}",
       '_permission_features.json': "{}",
       'fake_tabs.idl': FAKE_TABS_IDL,
@@ -375,6 +385,13 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
                 'name': 'tabId'
               }
             ]
+          },
+          {
+            'name': 'restrictedFunc'
+          },
+          {
+            'name': 'scheduledFunc',
+            'parameters': []
           }
         ],
         'events': [
@@ -384,11 +401,281 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
               {
                 'name': 'activeInfo',
                 'properties': {
-                  'tabId': {}
+                  'tabId': {},
                 }
               }
             ]
           },
+          {
+            'name': 'onUpdated',
+            'parameters': [
+              {
+                'name': 'tabId'
+              },
+              {
+                'name': 'changeInfo',
+                'properties': {
+                  'pinned': {},
+                  'status': {}
+                }
+              }
+            ]
+          }
+        ]
+      }])
+    }
+  },
+  '1547': {
+    'api': {
+      '_api_features.json': json.dumps({
+        'tabs.scheduledFunc': {
+          'channel': 'stable'
+        },
+        'tabs.restrictedFunc': {
+          'channel': 'dev'
+        }
+      }),
+      '_manifest_features.json': "{}",
+      '_permission_features.json': "{}",
+      'fake_tabs.idl': FAKE_TABS_IDL,
+      'tabs.json': json.dumps([{
+        'namespace': 'tabs',
+        'types': [
+          {
+            'id': 'Tab',
+            'properties': {
+              'url': {},
+              'index': {},
+              'selected': {},
+              'id': {},
+              'windowId': {}
+            }
+          },
+          {
+            'id': 'InjectDetails',
+            'properties': {
+              'allFrames': {},
+              'code': {},
+              'file': {}
+            }
+          },
+          {
+            'id': 'DeprecatedType',
+            'deprecated': 'This is deprecated'
+          }
+        ],
+        'properties': {
+          'fakeTabsProperty1': {},
+          'fakeTabsProperty2': {}
+        },
+        'functions': [
+          {
+            'name': 'getCurrent',
+            'parameters': [
+              {
+                'name': 'callback',
+                'parameters': [
+                  {
+                    'name': 'tab'
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            'name': 'get',
+            'parameters': [
+              {
+                'name': 'callback',
+                'parameters': [
+                  {
+                    'name': 'tab'
+                  }
+                ]
+              },
+            ]
+          },
+          {
+            'name': 'restrictedFunc'
+          },
+          {
+            'name': 'scheduledFunc',
+            'parameters': []
+          }
+        ],
+        'events': [
+          {
+            'name': 'onUpdated',
+            'parameters': [
+              {
+                'name': 'tabId'
+              },
+              {
+                'name': 'changeInfo',
+                'properties': {
+                  'pinned': {},
+                  'status': {}
+                }
+              }
+            ]
+          }
+        ]
+      }])
+    }
+  },
+  '1500': {
+    'api': {
+      '_api_features.json': json.dumps({
+        'tabs.scheduledFunc': {
+          'channel': 'stable'
+        }
+      }),
+      '_manifest_features.json': "{}",
+      '_permission_features.json': "{}",
+      'fake_tabs.idl': FAKE_TABS_IDL,
+      'tabs.json': json.dumps([{
+        'namespace': 'tabs',
+        'types': [
+          {
+            'id': 'Tab',
+            'properties': {
+              'url': {},
+              'index': {},
+              'selected': {},
+              'id': {},
+              'windowId': {}
+            }
+          },
+          {
+            'id': 'InjectDetails',
+            'properties': {
+              'allFrames': {},
+            }
+          },
+          {
+            'id': 'DeprecatedType',
+            'deprecated': 'This is deprecated'
+          }
+        ],
+        'properties': {
+          'fakeTabsProperty1': {},
+          'fakeTabsProperty2': {}
+        },
+        'functions': [
+          {
+            'name': 'getCurrent',
+            'parameters': [
+              {
+                'name': 'callback',
+                'parameters': [
+                  {
+                    'name': 'tab'
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            'name': 'get',
+            'parameters': [
+              {
+                'name': 'callback',
+                'parameters': [
+                  {
+                    'name': 'tab'
+                  }
+                ]
+              },
+            ]
+          },
+          {
+            'name': 'scheduledFunc',
+            'parameters': []
+          }
+        ],
+        'events': [
+          {
+            'name': 'onUpdated',
+            'parameters': [
+              {
+                'name': 'tabId'
+              },
+              {
+                'name': 'changeInfo',
+                'properties': {
+                  'pinned': {},
+                  'status': {}
+                }
+              }
+            ]
+          }
+        ]
+      }])
+    }
+  },
+  '1453': {
+    'api': {
+      '_api_features.json': "{}",
+      '_manifest_features.json': "{}",
+      '_permission_features.json': "{}",
+      'fake_tabs.idl': FAKE_TABS_IDL,
+      'tabs.json': json.dumps([{
+        'namespace': 'tabs',
+        'types': [
+          {
+            'id': 'Tab',
+            'properties': {
+              'url': {},
+              'index': {},
+              'selected': {},
+              'id': {},
+              'windowId': {}
+            }
+          },
+          {
+            'id': 'InjectDetails',
+            'properties': {
+              'allFrames': {},
+            }
+          },
+          {
+            'id': 'DeprecatedType',
+            'deprecated': 'This is deprecated'
+          }
+        ],
+        'properties': {
+          'fakeTabsProperty1': {},
+          'fakeTabsProperty2': {}
+        },
+        'functions': [
+          {
+            'name': 'getCurrent',
+            'parameters': [
+              {
+                'name': 'callback',
+                'parameters': [
+                  {
+                    'name': 'tab'
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            'name': 'get',
+            'parameters': [
+              {
+                'name': 'callback',
+                'parameters': [
+                  {
+                    'name': 'tab'
+                  }
+                ]
+              },
+            ]
+          }
+        ],
+        'events': [
           {
             'name': 'onUpdated',
             'parameters': [
@@ -430,8 +717,6 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
             'id': 'InjectDetails',
             'properties': {
               'allFrames': {},
-              'code': {},
-              'file': {}
             }
           },
           {

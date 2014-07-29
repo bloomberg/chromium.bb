@@ -335,13 +335,16 @@ class FeaturesBundle(object):
         '''Determines if there are any unresolved features left over in any
         of the categories in |dependencies|.
         '''
-        return any(cache['unresolved'] for cache in features_map.itervalues())
+        return any(cache.get('unresolved')
+                   for cache in features_map.itervalues())
 
       # Iterate until everything is resolved. If dependencies are multiple
       # levels deep, it might take multiple passes to inherit data to the
       # topmost feature.
       while has_unresolved():
         for cache_type, cache in features_map.iteritems():
+          if 'unresolved' not in cache:
+            continue
           to_remove = []
           for feature_name, feature_values in cache['unresolved'].iteritems():
             resolve_successful, feature = _ResolveFeature(

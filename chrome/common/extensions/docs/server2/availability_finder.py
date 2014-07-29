@@ -4,6 +4,7 @@
 
 import posixpath
 
+from api_models import GetNodeCategories
 from api_schema_graph import APISchemaGraph
 from branch_utility import BranchUtility, ChannelInfo
 from compiled_file_system import CompiledFileSystem, SingleFile, Unicode
@@ -241,6 +242,33 @@ class AvailabilityFinder(object):
                                           channel_info.channel))
     return available_channel is not None and newest == channel_info.channel
 
+  def _CheckChannelAvailabilityForNode(self,
+                                       node_name,
+                                       file_system,
+                                       channel_info,
+                                       earliest_channel_info):
+    '''Searches through the _features files in a given |file_system| to
+    determine whether or not an API node is available on the given channel,
+    |channel_info|. |earliest_channel_info| is the earliest channel the node
+    was introduced.
+    '''
+    features_bundle = self._CreateFeaturesBundle(file_system)
+    available_channel = None
+    # Only API nodes can have their availability overriden on a per-node basis,
+    # so we only need to check _api_features.json.
+    if channel_info.version >= _API_FEATURES_MIN_VERSION:
+      available_channel = _GetChannelFromAPIFeatures(node_name, features_bundle)
+    if (available_channel is None and
+        channel_info.version >= earliest_channel_info.version):
+      # Most API nodes inherit their availabiltity from their parent, so don't
+      # explicitly appear in _api_features.json. For example, "tabs.create"
+      # isn't listed; it inherits from "tabs". Assume these are available at
+      # |channel_info|.
+      available_channel = channel_info.channel
+    newest = BranchUtility.NewestChannel((available_channel,
+                                          channel_info.channel))
+    return available_channel is not None and newest == channel_info.channel
+
   @memoize
   def _CreateFeaturesBundle(self, file_system):
     return FeaturesBundle(file_system,
@@ -275,6 +303,20 @@ class AvailabilityFinder(object):
         self._branch_utility.GetChannelInfo('dev'), check_scheduled)
 
     return stable_channel.version if stable_channel else None
+
+  def _CheckAPINodeAvailability(self, node_name, earliest_channel_info):
+    '''Gets availability data for a node by checking _features files.
+    '''
+    def check_node_availability(file_system, channel_info):
+      return self._CheckChannelAvailabilityForNode(node_name,
+                                                   file_system,
+                                                   channel_info,
+                                                   earliest_channel_info)
+    channel_info = self._file_system_iterator.Descending(
+        self._branch_utility.GetChannelInfo('dev'),
+        check_node_availability)
+
+    return AvailabilityInfo(channel_info or earliest_channel_info)
 
   def GetAPIAvailability(self, api_name):
     '''Performs a search for an API's top-level availability by using a
@@ -361,11 +403,16 @@ class AvailabilityFinder(object):
         #
         # Calling |availability_graph|.Lookup() on the nodes being updated
         # will return the |annotation| object -- the current |channel_info|.
-        version_graph = APISchemaGraph(self._GetAPISchema(api_name,
-                                                          file_system,
-                                                          channel_info.version))
+        version_graph = APISchemaGraph(
+            api_schema=self._GetAPISchema(api_name,
+                                          file_system,
+                                          channel_info.version))
+        def annotator(node_name):
+          return self._CheckAPINodeAvailability('%s.%s' % (api_name, node_name),
+                                                channel_info)
+
         availability_graph.Update(version_graph.Subtract(availability_graph),
-                                  annotation=AvailabilityInfo(channel_info))
+                                  annotator)
 
       previous.stat = version_stat
       previous.graph = version_graph

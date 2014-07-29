@@ -7,6 +7,7 @@ import logging
 import os
 import posixpath
 
+from api_models import GetNodeCategories
 from data_source import DataSource
 from docs_server_utils import StringIdentity, MarkFirstAndLast
 from environment import IsPreviewServer, IsReleaseServer
@@ -18,10 +19,6 @@ from platform_util import GetPlatforms
 import third_party.json_schema_compiler.json_parse as json_parse
 import third_party.json_schema_compiler.model as model
 from third_party.json_schema_compiler.memoize import memoize
-
-
-# The set of possible categories a node may belong to.
-_NODE_CATEGORIES = ('types', 'functions', 'events', 'properties')
 
 
 def _CreateId(node, prefix):
@@ -47,7 +44,7 @@ def _GetByNameDict(namespace):
   namespace['events'], and namespace['properties'].
   '''
   by_name = {}
-  for item_type in _NODE_CATEGORIES:
+  for item_type in GetNodeCategories():
     if item_type in namespace:
       old_size = len(by_name)
       by_name.update(
@@ -101,7 +98,7 @@ class _APINodeCursor(object):
     self._ignored_categories = []
 
   def _AssertIsValidCategory(self, category):
-    assert category in _NODE_CATEGORIES, \
+    assert category in GetNodeCategories(), \
         '%s is not a valid category. Full path: %s' % (category, str(self))
 
   def _GetParentPath(self):
@@ -113,7 +110,7 @@ class _APINodeCursor(object):
     # lookup_path[-1] is the name of the current node. If this lookup_path
     # describes a regular node, then lookup_path[-2] will be a node category.
     # Otherwise, it's an event callback or a function parameter.
-    if self._lookup_path[-2] not in _NODE_CATEGORIES:
+    if self._lookup_path[-2] not in GetNodeCategories():
       if self._lookup_path[-1] == 'callback':
         # This is an event callback, so lookup_path[-2] is the event
         # node name, thus lookup_path[-3] must be 'events'.
@@ -186,11 +183,10 @@ class _APINodeCursor(object):
   def _GetCategory(self):
     '''Returns the category this node belongs to.
     '''
-    if self._lookup_path[-2] in _NODE_CATEGORIES:
+    if self._lookup_path[-2] in GetNodeCategories():
       return self._lookup_path[-2]
-    # If lookup_path[-2] is not in _NODE_CATEGORIES and
-    # lookup_path[-1] is 'callback', then we know we have
-    # an event callback.
+    # If lookup_path[-2] is not a valid category and lookup_path[-1] is
+    # 'callback', then we know we have an event callback.
     if self._lookup_path[-1] == 'callback':
       return 'events'
     if self._lookup_path[-2] == 'parameters':

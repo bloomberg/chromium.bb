@@ -50,6 +50,12 @@ class _GraphNode(dict):
   def __ne__(self, other):
     return not (self == other)
 
+  def GetAnnotation(self):
+    return self._annotation
+
+  def SetAnnotation(self, annotation):
+    self._annotation = annotation
+
 
 def _NameForNode(node):
   '''Creates a unique id for an object in an API schema, depending on
@@ -113,24 +119,6 @@ def _Subtract(minuend, subtrahend):
   return difference
 
 
-def _Update(base, addend, annotation=None):
-  '''A Set Union adaptation for graphs. Returns a graph which contains
-  the key-value pairs from |base| combined with any key-value pairs
-  from |addend| that are not present in |base|.
-  '''
-  for key in addend:
-    if key not in base:
-      # Add this key and the rest of its children.
-      base[key] = _Update(_GraphNode(annotation=annotation),
-                          addend[key],
-                          annotation=annotation)
-    else:
-      # The key is already in |base|, but check its children.
-       _Update(base[key], addend[key], annotation=annotation)
-  return base
-
-
-
 class APISchemaGraph(object):
   '''Provides an interface for interacting with an API schema graph, a
   nested dict structure that allows for simpler lookups of schema data.
@@ -151,11 +139,25 @@ class APISchemaGraph(object):
     '''
     return APISchemaGraph(_graph=_Subtract(self._graph, other._graph))
 
-  def Update(self, other, annotation=None):
+  def Update(self, other, annotator):
     '''Modifies this graph by adding keys from |other| that are not
     already present in this graph.
     '''
-    _Update(self._graph, other._graph, annotation=annotation)
+    def update(base, addend):
+      '''A Set Union adaptation for graphs. Returns a graph which contains
+      the key-value pairs from |base| combined with any key-value pairs
+      from |addend| that are not present in |base|.
+      '''
+      for key in addend:
+        if key not in base:
+          # Add this key and the rest of its children.
+          base[key] = update(_GraphNode(annotation=annotator(key)), addend[key])
+        else:
+          # The key is already in |base|, but check its children.
+           update(base[key], addend[key])
+      return base
+
+    update(self._graph, other._graph)
 
   def Lookup(self, *path):
     '''Given a list of path components, |path|, checks if the

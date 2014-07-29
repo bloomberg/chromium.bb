@@ -11,14 +11,17 @@ from test_file_system import MoveAllTo, MoveTo
 
 CANNED_CHANNELS = OrderedDict([
   ('trunk', 'trunk'),
-  ('dev', 28),
-  ('beta', 27),
-  ('stable', 26)
+  ('dev', 31),
+  ('beta', 30),
+  ('stable', 29)
 ])
 
 
 CANNED_BRANCHES = OrderedDict([
   ('trunk', 'trunk'),
+  (31, '1612'),
+  (30, '1599'),
+  (29, '1547'),
   (28, '1500'),
   (27, '1453'),
   (26, '1410'),
@@ -312,7 +315,7 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
       }
     }
   },
-  '1500': {
+  '1612': {
     'api': {
       '_api_features.json': json.dumps({
         'alarm': {
@@ -451,6 +454,417 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
       }
     }
   },
+  '1599': {
+    'api': {
+      '_api_features.json': json.dumps({
+        'alarm': {
+          'channel': 'stable'
+        },
+        'app.window': {
+          'channel': 'stable'
+        },
+        'browserAction': {
+          'channel': 'stable'
+        },
+        'events': {
+          'channel': 'trunk'
+        },
+        'extension': {
+          'channel': 'stable'
+        },
+        'systemInfo.cpu': {
+          'channel': 'beta'
+        },
+        'systemInfo.stuff': {
+          'channel': 'dev'
+        }
+      }),
+      '_manifest_features.json': json.dumps({
+        'contextMenus': {
+          'channel': 'trunk'
+        },
+        'notifications': {
+          'channel': 'dev'
+        },
+        'page_action': {
+          'channel': 'stable'
+        },
+        'runtime': {
+          'channel': 'stable'
+        },
+        'storage': {
+          'channel': 'dev'
+        },
+        'sync': {
+          'channel': 'trunk'
+        },
+        'system_info_display': {
+          'channel': 'stable'
+        },
+        'web_request': {
+          'channel': 'stable'
+        }
+      }),
+      '_permission_features.json': json.dumps({
+        'alarms': {
+          'channel': 'stable'
+        },
+        'appsFirst': {
+          'channel': 'stable',
+          'extension_types': ['extension', 'platform_app']
+        },
+        'bluetooth': {
+          'channel': 'dev'
+        },
+        'bookmarks': {
+          'channel': 'stable'
+        },
+        'cookies': {
+          'channel': 'dev'
+        },
+        'declarativeContent': {
+          'channel': 'trunk'
+        },
+        'declarativeWebRequest': [
+          { 'channel': 'beta' },
+          { 'channel': 'stable', 'whitelist': ['aaa'] }
+        ],
+        'downloads': {
+          'channel': 'beta'
+        }
+      }),
+      'alarm.json': json.dumps([{
+        'namespace': 'alarm',
+        'description': '<code>alarm</code>'
+      }]),
+      'app_window.json': json.dumps([{
+        'namespace': 'app.window',
+        'description': '<code>app.window</code>'
+      }]),
+      'browser_action.json': json.dumps([{
+        'namespace': 'browserAction',
+        'description': '<code>browserAction</code>'
+      }]),
+      'idle.json': json.dumps([{'namespace': 'idle'}]),
+      'input_ime.json': json.dumps([{'namespace': 'input.ime'}]),
+      'menus.json': json.dumps([{'namespace': 'menus'}]),
+      'tabs.json': json.dumps([{'namespace': 'tabs'}]),
+      'windows.json': json.dumps([{'namespace': 'windows'}])
+    },
+    'docs': {
+      'templates': {
+        'json': {
+          'api_availabilities.json': json.dumps({
+            'jsonTrunkAPI': {
+              'channel': 'trunk'
+            },
+            'jsonDevAPI': {
+              'channel': 'dev'
+            },
+            'jsonBetaAPI': {
+              'channel': 'beta'
+            },
+            'jsonStableAPI': {
+              'channel': 'stable',
+              'version': 20
+            }
+          }),
+          'intro_tables.json': json.dumps({
+            'test': [
+              {
+                'Permissions': 'probably none'
+              }
+            ]
+          }),
+          'manifest.json': '{}',
+          'permissions.json': '{}',
+          'whats_new.json': json.dumps(_TEST_WHATS_NEW_JSON)
+        },
+        'public': {
+          'apps': {
+            'alarm.html': 'alarm.html',
+            'app_window.html': 'app_window.html',
+          },
+          'extensions': {
+            'alarm.html': 'alarm.html',
+            'browserAction.html': 'browserAction.html',
+          }
+        }
+      }
+    }
+  },
+  '1547': {
+    'api': {
+      '_api_features.json': json.dumps({
+        'alarm': {
+          'channel': 'stable'
+        },
+        'app.window': {
+          'channel': 'stable'
+        },
+        'browserAction': {
+          'channel': 'stable'
+        },
+        'events': {
+          'channel': 'trunk'
+        },
+        'extension': {
+          'channel': 'stable'
+        },
+        'systemInfo.stuff': {
+          'channel': 'dev'
+        }
+      }),
+      '_manifest_features.json': json.dumps({
+        'contextMenus': {
+          'channel': 'trunk'
+        },
+        'notifications': {
+          'channel': 'dev'
+        },
+        'page_action': {
+          'channel': 'stable'
+        },
+        'runtime': {
+          'channel': 'stable'
+        },
+        'storage': {
+          'channel': 'dev'
+        },
+        'sync': {
+          'channel': 'trunk'
+        },
+        'system_info_display': {
+          'channel': 'stable'
+        },
+        'web_request': {
+          'channel': 'stable'
+        }
+      }),
+      '_permission_features.json': json.dumps({
+        'alarms': {
+          'channel': 'stable'
+        },
+        'appsFirst': {
+          'channel': 'stable',
+          'extension_types': ['extension', 'platform_app']
+        },
+        'bluetooth': {
+          'channel': 'dev'
+        },
+        'bookmarks': {
+          'channel': 'stable'
+        },
+        'cookies': {
+          'channel': 'dev'
+        },
+        'declarativeContent': {
+          'channel': 'trunk'
+        },
+        'declarativeWebRequest': [
+          { 'channel': 'beta' },
+          { 'channel': 'stable', 'whitelist': ['aaa'] }
+        ],
+        'downloads': {
+          'channel': 'beta'
+        }
+      }),
+      'alarm.json': json.dumps([{
+        'namespace': 'alarm',
+        'description': '<code>alarm</code>'
+      }]),
+      'app_window.json': json.dumps([{
+        'namespace': 'app.window',
+        'description': '<code>app.window</code>'
+      }]),
+      'browser_action.json': json.dumps([{
+        'namespace': 'browserAction',
+        'description': '<code>browserAction</code>'
+      }]),
+      'idle.json': json.dumps([{'namespace': 'idle'}]),
+      'input_ime.json': json.dumps([{'namespace': 'input.ime'}]),
+      'menus.json': json.dumps([{'namespace': 'menus'}]),
+      'tabs.json': json.dumps([{'namespace': 'tabs'}]),
+      'windows.json': json.dumps([{'namespace': 'windows'}])
+    },
+    'docs': {
+      'templates': {
+        'json': {
+          'api_availabilities.json': json.dumps({
+            'jsonTrunkAPI': {
+              'channel': 'trunk'
+            },
+            'jsonDevAPI': {
+              'channel': 'dev'
+            },
+            'jsonBetaAPI': {
+              'channel': 'beta'
+            },
+            'jsonStableAPI': {
+              'channel': 'stable',
+              'version': 20
+            }
+          }),
+          'intro_tables.json': json.dumps({
+            'test': [
+              {
+                'Permissions': 'probably none'
+              }
+            ]
+          }),
+          'manifest.json': '{}',
+          'permissions.json': '{}',
+          'whats_new.json': json.dumps(_TEST_WHATS_NEW_JSON)
+        },
+        'public': {
+          'apps': {
+            'alarm.html': 'alarm.html',
+            'app_window.html': 'app_window.html',
+          },
+          'extensions': {
+            'alarm.html': 'alarm.html',
+            'browserAction.html': 'browserAction.html',
+          }
+        }
+      }
+    }
+  },
+  '1500': {
+    'api': {
+      '_api_features.json': json.dumps({
+        'alarm': {
+          'channel': 'stable'
+        },
+        'app.window': {
+          'channel': 'stable'
+        },
+        'browserAction': {
+          'channel': 'stable'
+        },
+        'events': {
+          'channel': 'trunk'
+        },
+        'extension': {
+          'channel': 'stable'
+        },
+        'systemInfo.stuff': {
+          'channel': 'dev'
+        }
+      }),
+      '_manifest_features.json': json.dumps({
+        'contextMenus': {
+          'channel': 'trunk'
+        },
+        'notifications': {
+          'channel': 'dev'
+        },
+        'page_action': {
+          'channel': 'stable'
+        },
+        'runtime': {
+          'channel': 'stable'
+        },
+        'storage': {
+          'channel': 'dev'
+        },
+        'sync': {
+          'channel': 'trunk'
+        },
+        'system_info_display': {
+          'channel': 'stable'
+        },
+        'web_request': {
+          'channel': 'stable'
+        }
+      }),
+      '_permission_features.json': json.dumps({
+        'alarms': {
+          'channel': 'stable'
+        },
+        'appsFirst': {
+          'channel': 'stable',
+          'extension_types': ['extension', 'platform_app']
+        },
+        'bluetooth': {
+          'channel': 'dev'
+        },
+        'bookmarks': {
+          'channel': 'stable'
+        },
+        'cookies': {
+          'channel': 'dev'
+        },
+        'declarativeContent': {
+          'channel': 'trunk'
+        },
+        'declarativeWebRequest': [
+          { 'channel': 'beta' },
+          { 'channel': 'stable', 'whitelist': ['aaa'] }
+        ],
+        'downloads': {
+          'channel': 'beta'
+        }
+      }),
+      'alarm.json': json.dumps([{
+        'namespace': 'alarm',
+        'description': '<code>alarm</code>'
+      }]),
+      'app_window.json': json.dumps([{
+        'namespace': 'app.window',
+        'description': '<code>app.window</code>'
+      }]),
+      'browser_action.json': json.dumps([{
+        'namespace': 'browserAction',
+        'description': '<code>browserAction</code>'
+      }]),
+      'idle.json': json.dumps([{'namespace': 'idle'}]),
+      'input_ime.json': json.dumps([{'namespace': 'input.ime'}]),
+      'menus.json': json.dumps([{'namespace': 'menus'}]),
+      'tabs.json': json.dumps([{'namespace': 'tabs'}]),
+      'windows.json': json.dumps([{'namespace': 'windows'}])
+    },
+    'docs': {
+      'templates': {
+        'json': {
+          'api_availabilities.json': json.dumps({
+            'jsonTrunkAPI': {
+              'channel': 'trunk'
+            },
+            'jsonDevAPI': {
+              'channel': 'dev'
+            },
+            'jsonBetaAPI': {
+              'channel': 'beta'
+            },
+            'jsonStableAPI': {
+              'channel': 'stable',
+              'version': 20
+            }
+          }),
+          'intro_tables.json': json.dumps({
+            'test': [
+              {
+                'Permissions': 'probably none'
+              }
+            ]
+          }),
+          'manifest.json': '{}',
+          'permissions.json': '{}',
+          'whats_new.json': json.dumps(_TEST_WHATS_NEW_JSON)
+        },
+        'public': {
+          'apps': {
+            'alarm.html': 'alarm.html',
+            'app_window.html': 'app_window.html',
+          },
+          'extensions': {
+            'alarm.html': 'alarm.html',
+            'browserAction.html': 'browserAction.html',
+          }
+        }
+      }
+    }
+  },
   '1453': {
     'api': {
       '_api_features.json': json.dumps({
@@ -467,9 +881,6 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
           'channel': 'dev'
         },
         'extension': {
-          'channel': 'stable'
-        },
-        'systemInfo.cpu': {
           'channel': 'stable'
         },
         'systemInfo.stuff': {

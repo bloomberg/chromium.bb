@@ -16,6 +16,12 @@ from third_party.json_schema_compiler.json_schema import DeleteNodes
 from third_party.json_schema_compiler.model import Namespace, UnixName
 
 
+def GetNodeCategories():
+  '''Returns a tuple of the possible categories a node may belong to.
+  '''
+  return ('types', 'functions', 'events', 'properties')
+
+
 class ContentScriptAPI(object):
   '''Represents an API available to content scripts.
 

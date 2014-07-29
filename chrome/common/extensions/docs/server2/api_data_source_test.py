@@ -62,7 +62,8 @@ class _FakeAvailabilityFinder(object):
     api_graph = APISchemaGraph(json.loads(
         CANNED_TRUNK_FS_DATA['api'][api_name + '.json']))
     # Give the graph fake ChannelInfo; it's not used in tests.
-    schema_graph.Update(api_graph, annotation=ChannelInfo('stable', '28', 28))
+    channel_info = ChannelInfo('stable', '28', 28)
+    schema_graph.Update(api_graph, lambda _: channel_info)
     return schema_graph
 
 
@@ -270,7 +271,7 @@ class APIDataSourceWithoutNodeAvailabilityTest(unittest.TestCase):
 
   def testGetAPIAvailability(self):
     api_availabilities = {
-      'bluetooth': 28,
+      'bluetooth': 31,
       'contextMenus': 'trunk',
       'jsonStableAPI': 20,
       'idle': 5,
@@ -348,7 +349,7 @@ class APIDataSourceWithNodeAvailabilityTest(unittest.TestCase):
           'tabs.InjectDetails': 25,
           'tabs.fakeTabsProperty2': 15,
           'tabs.getCurrent': 19,
-          'tabs.onActivated': 27
+          'tabs.onActivated': 30
       }
       self.assertEquals(node_availabilities[node], actual)
 

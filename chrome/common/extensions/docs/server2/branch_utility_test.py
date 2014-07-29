@@ -70,10 +70,10 @@ class BranchUtilityTest(unittest.TestCase):
     oldest_stable_info = ChannelInfo('stable', '963', 17)
     older_stable_info = ChannelInfo('stable', '1025', 18)
     old_stable_info = ChannelInfo('stable', '1084', 19)
-    sort_of_old_stable_info = ChannelInfo('stable', '1364', 25)
-    stable_info = ChannelInfo('stable', '1410', 26)
-    beta_info = ChannelInfo('beta', '1453', 27)
-    dev_info = ChannelInfo('dev', '1500', 28)
+    sort_of_old_stable_info = ChannelInfo('stable', '1500', 28)
+    stable_info = ChannelInfo('stable', '1547', 29)
+    beta_info = ChannelInfo('beta', '1599', 30)
+    dev_info = ChannelInfo('dev', '1612', 31)
     trunk_info = ChannelInfo('trunk', 'trunk', 'trunk')
 
     self.assertEquals(older_stable_info,
@@ -91,11 +91,11 @@ class BranchUtilityTest(unittest.TestCase):
 
   def testOlder(self):
     trunk_info = ChannelInfo('trunk', 'trunk', 'trunk')
-    dev_info = ChannelInfo('dev', '1500', 28)
-    beta_info = ChannelInfo('beta', '1453', 27)
-    stable_info = ChannelInfo('stable', '1410', 26)
-    old_stable_info = ChannelInfo('stable', '1364', 25)
-    older_stable_info = ChannelInfo('stable', '1312', 24)
+    dev_info = ChannelInfo('dev', '1612', 31)
+    beta_info = ChannelInfo('beta', '1599', 30)
+    stable_info = ChannelInfo('stable', '1547', 29)
+    old_stable_info = ChannelInfo('stable', '1500', 28)
+    older_stable_info = ChannelInfo('stable', '1453', 27)
     oldest_stable_info = ChannelInfo('stable', '396', 5)
 
     self.assertEquals(dev_info, self._branch_util.Older(trunk_info))
@@ -111,13 +111,13 @@ class BranchUtilityTest(unittest.TestCase):
     trunk_info = ChannelInfo('trunk', 'trunk', 'trunk')
     self.assertEquals(trunk_info, self._branch_util.GetChannelInfo('trunk'))
 
-    dev_info = ChannelInfo('dev', '1500', 28)
+    dev_info = ChannelInfo('dev', '1612', 31)
     self.assertEquals(dev_info, self._branch_util.GetChannelInfo('dev'))
 
-    beta_info = ChannelInfo('beta', '1453', 27)
+    beta_info = ChannelInfo('beta', '1599', 30)
     self.assertEquals(beta_info, self._branch_util.GetChannelInfo('beta'))
 
-    stable_info = ChannelInfo('stable', '1410', 26)
+    stable_info = ChannelInfo('stable', '1547', 29)
     self.assertEquals(stable_info, self._branch_util.GetChannelInfo('stable'))
 
   def testGetLatestVersionNumber(self):
@@ -157,9 +157,9 @@ class BranchUtilityTest(unittest.TestCase):
     self.assertEquals('trunk',
         self._branch_util.GetChannelForVersion('trunk'))
     self.assertEquals('dev',
-        self._branch_util.GetChannelForVersion(28))
+        self._branch_util.GetChannelForVersion(31))
     self.assertEquals('beta',
-        self._branch_util.GetChannelForVersion(27))
+        self._branch_util.GetChannelForVersion(30))
     self.assertEquals('stable',
         self._branch_util.GetChannelForVersion(26))
     self.assertEquals('stable',
@@ -169,7 +169,7 @@ class BranchUtilityTest(unittest.TestCase):
     self.assertEquals('stable',
         self._branch_util.GetChannelForVersion(14))
     self.assertEquals(None,
-        self._branch_util.GetChannelForVersion(30))
+        self._branch_util.GetChannelForVersion(32))
     self.assertEquals(None,
         self._branch_util.GetChannelForVersion(42))
 

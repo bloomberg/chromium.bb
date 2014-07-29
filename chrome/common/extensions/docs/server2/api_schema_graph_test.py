@@ -376,7 +376,7 @@ class APISchemaGraphTest(unittest.TestCase):
         }
       }
     })
-    result.Update(to_add, annotation='first')
+    result.Update(to_add, lambda _: 'first')
     # Looking up elements that were originally available in |result|. Because
     # of this, no |annotation| object should be attached to the LookupResult
     # object.
@@ -423,7 +423,7 @@ class APISchemaGraphTest(unittest.TestCase):
         }
       }
     })
-    result.Update(to_add, annotation='second')
+    result.Update(to_add, lambda _: 'second')
     # Looking up the second group of elements added to |result|.
     self.assertEqual(LookupResult(True, 'first'),
                      result.Lookup('tabs', 'properties',
