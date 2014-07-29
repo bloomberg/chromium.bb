@@ -269,6 +269,9 @@ ETextAlign RenderBlockFlow::textAlignmentForLine(bool endsWithSoftBreak) const
     if (!RuntimeEnabledFeatures::css3TextEnabled())
         return (alignment == JUSTIFY) ? TASTART : alignment;
 
+    if (alignment != JUSTIFY)
+        return alignment;
+
     TextAlignLast alignmentLast = style()->textAlignLast();
     switch (alignmentLast) {
     case TextAlignLastStart:
@@ -284,8 +287,6 @@ ETextAlign RenderBlockFlow::textAlignmentForLine(bool endsWithSoftBreak) const
     case TextAlignLastJustify:
         return JUSTIFY;
     case TextAlignLastAuto:
-        if (alignment != JUSTIFY)
-            return alignment;
         if (style()->textJustify() == TextJustifyDistribute)
             return JUSTIFY;
         return TASTART;

@@ -1,0 +1,42 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<style>
+.testDiv {
+    width: 208px;
+    border: 1px solid #000000;
+    font-family: Ahem, monospace;
+    font-size: 1em;
+}
+</style>
+</head>
+<body>
+<div>
+When text-align is justify, the last line would be affected by the value of text-align-last.<br/>
+This test checks that text-align-last property works properly.<br/>
+</div>
+
+<div class='testDiv' style='text-align:start'>start last</div>
+
+<div class='testDiv' style='text-align:end'>end last</div>
+
+<div class='testDiv' style='text-align:left'>left last</div>
+
+<div class='testDiv' style='text-align:right'>right last</div>
+
+<div class='testDiv' style='text-align:center'>center last</div>
+
+<div class='testDiv' style='text-align:justify'>justify&nbsp; last</div>
+
+<div class='testDiv' style='text-align:start'>start end</div>
+
+<div class='testDiv' style='text-align:end'>end start</div>
+
+<div class='testDiv' style='text-align:left'>left right</div>
+
+<div class='testDiv' style='text-align:right'>right left</div>
+
+<div class='testDiv' style='text-align:center'>center left</div>
+</body>
+</html>
+
