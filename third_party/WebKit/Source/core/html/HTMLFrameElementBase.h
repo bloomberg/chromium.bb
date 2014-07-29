@@ -36,9 +36,6 @@ public:
     int marginWidth() const { return m_marginWidth; }
     int marginHeight() const { return m_marginHeight; }
 
-    int width();
-    int height();
-
     virtual bool canContainRangeEndPoint() const OVERRIDE FINAL { return false; }
 
 protected:

@@ -388,8 +388,6 @@ public:
         ElementScrollByPages = 391,
         RangeCompareNode = 392,
         RangeExpand = 393,
-        HTMLFrameElementWidth = 394,
-        HTMLFrameElementHeight = 395,
         HTMLImageElementX = 396,
         HTMLImageElementY = 397,
         HTMLOptionsCollectionRemoveElement = 398,

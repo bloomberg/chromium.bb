@@ -36,7 +36,4 @@ interface HTMLFrameElement : HTMLElement {
     readonly attribute Window contentWindow;
 
     [CheckSecurity=Node, RaisesException] Document getSVGDocument();
-
-    [MeasureAs=HTMLFrameElementWidth] readonly attribute long width;
-    [MeasureAs=HTMLFrameElementHeight] readonly attribute long height;
 };
