@@ -586,6 +586,7 @@
         'browser/service_worker/embedded_worker_test_helper.cc',
         'browser/service_worker/embedded_worker_test_helper.h',
         'browser/service_worker/service_worker_context_unittest.cc',
+        'browser/service_worker/service_worker_controllee_request_handler_unittest.cc',
         'browser/service_worker/service_worker_database_unittest.cc',
         'browser/service_worker/service_worker_dispatcher_host_unittest.cc',
         'browser/service_worker/service_worker_dispatcher_host_unittest.cc',

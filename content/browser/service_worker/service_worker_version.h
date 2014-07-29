@@ -227,12 +227,15 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // the version is controlling a page, these changes will happen when the
   // version no longer controls any pages.
   void Doom();
+  bool is_doomed() const { return is_doomed_; }
 
  private:
+  friend class base::RefCounted<ServiceWorkerVersion>;
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
+                           ActivateWaitingVersion);
   typedef ServiceWorkerVersion self;
   typedef std::map<ServiceWorkerProviderHost*, int> ControlleeMap;
   typedef IDMap<ServiceWorkerProviderHost> ControlleeByIDMap;
-  friend class base::RefCounted<ServiceWorkerVersion>;
 
   virtual ~ServiceWorkerVersion();
 

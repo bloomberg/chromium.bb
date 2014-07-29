@@ -96,7 +96,6 @@ class ServiceWorkerRegisterJob
      UPDATE,
      INSTALL,
      STORE,
-     ACTIVATE,
      COMPLETE,
      ABORT,
   };

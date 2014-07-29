@@ -26,7 +26,8 @@ class ServiceWorkerVersion;
 // being associated with the same registration. The class roughly
 // corresponds to navigator.serviceWorker.registgration.
 class CONTENT_EXPORT ServiceWorkerRegistration
-    : NON_EXPORTED_BASE(public base::RefCounted<ServiceWorkerRegistration>) {
+    : NON_EXPORTED_BASE(public base::RefCounted<ServiceWorkerRegistration>),
+      public ServiceWorkerVersion::Listener {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode status)> StatusCallback;
 
@@ -76,14 +77,18 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   // listeners via OnVersionAttributesChanged.
   void UnsetVersion(ServiceWorkerVersion* version);
 
-  // This method corresponds to the [[Activate]] algorithm described in
-  // the service worker specification. It's only valid to call this method
-  // when the registration's active version has no controllees.
-  void ActivateWaitingVersion(const StatusCallback& completion_callback);
+  // Triggers the [[Activate]] algorithm when the currently active version
+  // has no controllees. If there are no controllees at the time the method
+  // is called, activation is initiated immediately.
+  void ActivateWaitingVersionWhenReady();
+
+  bool is_deleted() const { return is_deleted_; }
+  void set_is_deleted() { is_deleted_ = true; }
 
  private:
-  ~ServiceWorkerRegistration();
   friend class base::RefCounted<ServiceWorkerRegistration>;
+
+  virtual ~ServiceWorkerRegistration();
 
   void SetVersionInternal(
       ServiceWorkerVersion* version,
@@ -92,14 +97,23 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   void UnsetVersionInternal(
       ServiceWorkerVersion* version,
       ChangedVersionAttributesMask* mask);
+
+  // ServiceWorkerVersion::Listener override.
+  virtual void OnNoControllees(ServiceWorkerVersion* version) OVERRIDE;
+
+  // This method corresponds to the [[Activate]] algorithm.
+  void ActivateWaitingVersion();
   void OnActivateEventFinished(
       ServiceWorkerVersion* activating_version,
-      const StatusCallback& completion_callback,
       ServiceWorkerStatusCode status);
+  void ResetShouldActivateWhenReady();
+  void OnDeleteFinished(ServiceWorkerStatusCode status);
 
   const GURL pattern_;
   const GURL script_url_;
   const int64 registration_id_;
+  bool is_deleted_;
+  bool should_activate_when_ready_;
   scoped_refptr<ServiceWorkerVersion> active_version_;
   scoped_refptr<ServiceWorkerVersion> waiting_version_;
   scoped_refptr<ServiceWorkerVersion> installing_version_;

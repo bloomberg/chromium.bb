@@ -21,37 +21,6 @@ void RunSoon(const base::Closure& closure) {
   base::MessageLoop::current()->PostTask(FROM_HERE, closure);
 }
 
-// Helper class for the [[Update]] algo.
-class DeferredActivationHelper : public ServiceWorkerVersion::Listener {
- public:
-  explicit DeferredActivationHelper(ServiceWorkerRegistration* registration)
-      : registration_(registration),
-        active_version_(registration->active_version()),
-        waiting_version_(registration->waiting_version()) {
-    active_version_->AddListener(this);
-  }
-
-  virtual ~DeferredActivationHelper() {}
-
- private:
-  virtual void OnNoControllees(ServiceWorkerVersion* version) OVERRIDE {
-    DCHECK_EQ(active_version_, version);
-    scoped_ptr<DeferredActivationHelper> self_deletor(this);
-    active_version_->RemoveListener(this);
-    if (registration_->active_version() != active_version_ ||
-        registration_->waiting_version() != waiting_version_) {
-      return;  // Something has changed making activation n/a.
-    }
-    registration_->ActivateWaitingVersion(
-        base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
-  }
-
-  scoped_refptr<ServiceWorkerRegistration> registration_;
-  scoped_refptr<ServiceWorkerVersion> active_version_;
-  scoped_refptr<ServiceWorkerVersion> waiting_version_;
-  DISALLOW_COPY_AND_ASSIGN(DeferredActivationHelper);
-};
-
 }  // namespace
 
 typedef ServiceWorkerRegisterJobBase::RegistrationJobType RegistrationJobType;
@@ -184,9 +153,6 @@ void ServiceWorkerRegisterJob::SetPhase(Phase phase) {
       break;
     case STORE:
       DCHECK(phase_ == INSTALL) << phase_;
-      break;
-    case ACTIVATE:
-      DCHECK(phase_ == STORE) << phase_;
       break;
     case COMPLETE:
       DCHECK(phase_ != INITIAL && phase_ != COMPLETE) << phase_;
@@ -392,20 +358,9 @@ void ServiceWorkerRegisterJob::OnStoreRegistrationComplete(
 
   // "14. Wait until no document is using registration as their
   // Service Worker registration."
-  if (registration()->active_version() &&
-      registration()->active_version()->HasControllee()) {
-    scoped_ptr<DeferredActivationHelper> deferred_activation(
-        new DeferredActivationHelper(registration()));
-    // It will delete itself when done.
-    ignore_result(deferred_activation.release());
-    Complete(SERVICE_WORKER_OK);
-    return;
-  }
+  registration()->ActivateWaitingVersionWhenReady();
 
-  SetPhase(ACTIVATE);
-  registration()->ActivateWaitingVersion(
-      base::Bind(&ServiceWorkerRegisterJob::Complete,
-                 weak_factory_.GetWeakPtr()));
+  Complete(SERVICE_WORKER_OK);
 }
 
 void ServiceWorkerRegisterJob::Complete(ServiceWorkerStatusCode status) {

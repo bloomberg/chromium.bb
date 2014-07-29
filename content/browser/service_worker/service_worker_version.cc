@@ -572,19 +572,22 @@ void ServiceWorkerVersion::OnGetClientDocuments(int request_id) {
 void ServiceWorkerVersion::OnActivateEventFinished(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
-  DCHECK_EQ(ACTIVATING, status()) << status();
+  DCHECK(ACTIVATING == status() ||
+         REDUNDANT == status()) << status();
 
   StatusCallback* callback = activate_callbacks_.Lookup(request_id);
   if (!callback) {
     NOTREACHED() << "Got unexpected message: " << request_id;
     return;
   }
-  ServiceWorkerStatusCode status = SERVICE_WORKER_OK;
-  if (result == blink::WebServiceWorkerEventResultRejected)
-    status = SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED;
+  ServiceWorkerStatusCode rv = SERVICE_WORKER_OK;
+  if (result == blink::WebServiceWorkerEventResultRejected ||
+      status() != ACTIVATING) {
+    rv = SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED;
+  }
 
   scoped_refptr<ServiceWorkerVersion> protect(this);
-  callback->Run(status);
+  callback->Run(rv);
   activate_callbacks_.Remove(request_id);
 }
 

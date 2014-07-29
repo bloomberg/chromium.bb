@@ -112,9 +112,12 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
     const GURL& url) {
   DCHECK(job_.get());
   DCHECK(context_);
-  // The corresponding provider_host may already have associate version in
-  // redirect case, unassociate it now.
-  provider_host_->UnsetVersion(NULL);
+  // The corresponding provider_host may already have associated a registration
+  // in redirect case, unassociate it now.
+  provider_host_->SetControllerVersion(NULL);
+  provider_host_->SetActiveVersion(NULL);
+  provider_host_->SetWaitingVersion(NULL);
+  provider_host_->SetInstallingVersion(NULL);
 
   GURL stripped_url = net::SimplifyUrlForRequest(url);
   provider_host_->SetDocumentUrl(stripped_url);
@@ -129,19 +132,57 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
     ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
   DCHECK(job_.get());
-  if (status != SERVICE_WORKER_OK || !registration->active_version()) {
-    // No registration, or no active version for the registration is available.
+  if (status != SERVICE_WORKER_OK) {
     job_->FallbackToNetwork();
-    // TODO(michaeln): If there's a waiting version, activate it instead of
-    // using the network.
     return;
   }
+  DCHECK(registration);
 
   ServiceWorkerMetrics::CountControlledPageLoad();
 
-  // TODO(michaeln): if 'activating' wait until it's activated before
-  // forwarding the request to the serviceworker.
-  DCHECK(registration);
+  // Initiate activation of a waiting version.
+  // Usually a register job initiates activation but that
+  // doesn't happen if the browser exits prior to activation
+  // having occurred. This check handles that case.
+  if (registration->waiting_version())
+    registration->ActivateWaitingVersionWhenReady();
+
+  scoped_refptr<ServiceWorkerVersion> active_version =
+      registration->active_version();
+
+  // Wait until it's activated before firing fetch events.
+  if (active_version &&
+      active_version->status() ==  ServiceWorkerVersion::ACTIVATING) {
+    registration->active_version()->RegisterStatusChangeCallback(
+        base::Bind(&self::OnVersionStatusChanged,
+                   weak_factory_.GetWeakPtr(),
+                   registration,
+                   active_version));
+    return;
+  }
+
+  if (!active_version ||
+      active_version->status() != ServiceWorkerVersion::ACTIVATED) {
+    job_->FallbackToNetwork();
+    return;
+  }
+
+  provider_host_->SetControllerVersion(registration->active_version());
+  provider_host_->SetActiveVersion(registration->active_version());
+  provider_host_->SetWaitingVersion(registration->waiting_version());
+  provider_host_->SetInstallingVersion(registration->installing_version());
+
+  job_->ForwardToServiceWorker();
+}
+
+void ServiceWorkerControlleeRequestHandler::OnVersionStatusChanged(
+    ServiceWorkerRegistration* registration,
+    ServiceWorkerVersion* version) {
+  if (version != registration->active_version() ||
+      version->status() != ServiceWorkerVersion::ACTIVATED) {
+    job_->FallbackToNetwork();
+    return;
+  }
   provider_host_->SetControllerVersion(registration->active_version());
   provider_host_->SetActiveVersion(registration->active_version());
   provider_host_->SetWaitingVersion(registration->waiting_version());
