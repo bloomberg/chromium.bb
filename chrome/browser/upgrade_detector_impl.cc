@@ -434,23 +434,20 @@ void UpgradeDetectorImpl::UpgradeDetected(UpgradeAvailable upgrade_available) {
 }
 
 void UpgradeDetectorImpl::NotifyOnUpgrade() {
-  base::TimeDelta delta = base::Time::Now() - upgrade_detected_time();
-
-  // We'll make testing more convenient by switching to seconds of waiting
-  // instead of days between flipping severity.
-  bool is_testing = IsTesting();
-  int64 time_passed = is_testing ? delta.InSeconds() : delta.InHours();
+  const base::TimeDelta time_passed =
+      base::Time::Now() - upgrade_detected_time();
 
   bool is_critical_or_outdated = upgrade_available_ > UPGRADE_AVAILABLE_REGULAR;
   if (is_unstable_channel_) {
     // There's only one threat level for unstable channels like dev and
     // canary, and it hits after one hour. During testing, it hits after one
     // second.
-    const int kUnstableThreshold = 1;
+    const base::TimeDelta unstable_threshold = IsTesting() ?
+        base::TimeDelta::FromSeconds(1) : base::TimeDelta::FromHours(1);
 
     if (is_critical_or_outdated) {
       set_upgrade_notification_stage(UPGRADE_ANNOYANCE_CRITICAL);
-    } else if (time_passed >= kUnstableThreshold) {
+    } else if (time_passed >= unstable_threshold) {
       set_upgrade_notification_stage(UPGRADE_ANNOYANCE_LOW);
 
       // That's as high as it goes.
@@ -459,26 +456,28 @@ void UpgradeDetectorImpl::NotifyOnUpgrade() {
       return;  // Not ready to recommend upgrade.
     }
   } else {
-    const int kMultiplier = is_testing ? 10 : 24;
-    // 14 days when not testing, otherwise 14 seconds.
-    const int kSevereThreshold = 14 * kMultiplier;
-    const int kHighThreshold = 7 * kMultiplier;
-    const int kElevatedThreshold = 4 * kMultiplier;
-    const int kLowThreshold = 2 * kMultiplier;
+    const base::TimeDelta multiplier = IsTesting() ?
+        base::TimeDelta::FromSeconds(10) : base::TimeDelta::FromDays(1);
+
+    // 14 days when not testing, otherwise 140 seconds.
+    const base::TimeDelta severe_threshold = 14 * multiplier;
+    const base::TimeDelta high_threshold = 7 * multiplier;
+    const base::TimeDelta elevated_threshold = 4 * multiplier;
+    const base::TimeDelta low_threshold = 2 * multiplier;
 
     // These if statements must be sorted (highest interval first).
-    if (time_passed >= kSevereThreshold || is_critical_or_outdated) {
+    if (time_passed >= severe_threshold || is_critical_or_outdated) {
       set_upgrade_notification_stage(
           is_critical_or_outdated ? UPGRADE_ANNOYANCE_CRITICAL :
                                     UPGRADE_ANNOYANCE_SEVERE);
 
       // We can't get any higher, baby.
       upgrade_notification_timer_.Stop();
-    } else if (time_passed >= kHighThreshold) {
+    } else if (time_passed >= high_threshold) {
       set_upgrade_notification_stage(UPGRADE_ANNOYANCE_HIGH);
-    } else if (time_passed >= kElevatedThreshold) {
+    } else if (time_passed >= elevated_threshold) {
       set_upgrade_notification_stage(UPGRADE_ANNOYANCE_ELEVATED);
-    } else if (time_passed >= kLowThreshold) {
+    } else if (time_passed >= low_threshold) {
       set_upgrade_notification_stage(UPGRADE_ANNOYANCE_LOW);
     } else {
       return;  // Not ready to recommend upgrade.
