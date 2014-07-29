@@ -66,6 +66,17 @@
       "pnacl_translator"
     ],
 
+    # These two targets are placeholders.
+    # TODO(dyen): integrate these into linux_x86 according to which distro
+    # is being used.
+    "linux_trusty_x86": [
+      "arm_trusted"
+    ],
+
+    "linux_precise_x86": [
+      "arm_trusted"
+    ],
+
     "linux_x86": [
       "arm_trusted",
       "nacl_arm_newlib",

@@ -128,7 +128,8 @@ class RevisionInfo(object):
     if not skip_hash_verify:
       hash_value = revision_json[FIELD_REVISION_HASH]
       if self._GetRevisionHash() != hash_value:
-        raise error.Error('Invalid revision file - revision hash check failed')
+        raise error.Error('Invalid revision file [%s] - revision hash check '
+            'failed' % revision_file)
 
   def SaveRevisionFile(self, revision_file):
     """Saves this object to a revision JSON file to be loaded later.

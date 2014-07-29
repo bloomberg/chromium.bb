@@ -1,20 +1,46 @@
 {
   "package_name": "arm_trusted",
   "package_targets": {
+    "linux_precise_x86": {
+      "archives": [
+        {
+          "extract_dir": "",
+          "hash": "ab4051372568ed54353dd99a87134a131a35c99e",
+          "log_url": null,
+          "name": "sysroot_arm_trusted_precise.tgz",
+          "tar_src_dir": "",
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13541/sysroot_arm_trusted_precise.tgz"
+        }
+      ],
+      "version": 1
+    },
+    "linux_trusty_x86": {
+      "archives": [
+        {
+          "extract_dir": "",
+          "hash": "be354a03c0bad2786775511f33f7d613c978fb6a",
+          "log_url": null,
+          "name": "sysroot_arm_trusted_trusty.tgz",
+          "tar_src_dir": "",
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13541/sysroot_arm_trusted_trusty.tgz"
+        }
+      ],
+      "version": 1
+    },
     "linux_x86": {
       "archives": [
         {
           "extract_dir": "",
-          "hash": "dbea575fc43c5c20d61f706d165888f2509fdbe8",
-          "log_url": "",
-          "name": "sysroot-arm-trusted.tgz",
+          "hash": "ab4051372568ed54353dd99a87134a131a35c99e",
+          "log_url": null,
+          "name": "sysroot_arm_trusted_precise.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/12292/sysroot-arm-trusted.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13541/sysroot_arm_trusted_precise.tgz"
         }
       ],
       "version": 1
     }
   },
-  "revision": 12292,
-  "revision_hash": "76700b529227ddeca9e99d31715e3641eb341ac0"
+  "revision": 13541,
+  "revision_hash": "8c60efae60ab638947f6bc3b2405019a40afb0db"
 }
