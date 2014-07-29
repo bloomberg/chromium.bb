@@ -71,6 +71,7 @@ from idl_parser.idl_parser import IDLParser, ListFromConcat
 from idl_parser.idl_parser import ParseFile as parse_file
 
 from blink_idl_lexer import BlinkIDLLexer
+import blink_idl_lexer
 
 
 # Explicitly set starting symbol to rule defined only in base parser.
@@ -440,12 +441,13 @@ class BlinkIDLParser(IDLParser):
 ################################################################################
 
 def main(argv):
-    # If file itself executed, cache parse table
+    # If file itself executed, cache lex/parse tables
     try:
         outputdir = argv[1]
     except IndexError as err:
         print 'Usage: %s OUTPUT_DIR' % argv[0]
         return 1
+    blink_idl_lexer.main(argv)
     # Important: rewrite_tables=True causes the cache file to be deleted if it
     # exists, thus making sure that PLY doesn't load it instead of regenerating
     # the parse table.

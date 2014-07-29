@@ -88,7 +88,8 @@ class BlinkIDLLexer(IDLLexer):
         for token in tokens:
             self._RemoveToken(token)
 
-    def __init__(self, debug=False, optimize=True, outputdir=None):
+    def __init__(self, debug=False, optimize=True, outputdir=None,
+                 rewrite_tables=False):
         if debug:
             # Turn off optimization and caching to help debugging
             optimize = False
@@ -97,6 +98,21 @@ class BlinkIDLLexer(IDLLexer):
             # Need outputdir in path because lex imports the cached lex table
             # as a Python module
             sys.path.append(outputdir)
+
+            if rewrite_tables:
+                tablefile = os.path.join(outputdir, 'lextab.py')
+
+                def unlink(filename):
+                    try:
+                        os.unlink(filename)
+                    except OSError:
+                        pass
+
+                unlink(tablefile)
+                # Also remove the .pyc/.pyo files, or they'll be used even if
+                # the .py file doesn't exist.
+                unlink(tablefile + 'c')
+                unlink(tablefile + 'o')
 
         IDLLexer.__init__(self)
         # Overrides to parent class
@@ -108,6 +124,7 @@ class BlinkIDLLexer(IDLLexer):
         self._lexobj = lex.lex(object=self,
                                debug=debug,
                                optimize=optimize,
+                               lextab='lextab',
                                outputdir=outputdir)
 
 
@@ -120,7 +137,10 @@ def main(argv):
     except IndexError as err:
         print 'Usage: %s OUTPUT_DIR' % argv[0]
         return 1
-    lexer = BlinkIDLLexer(outputdir=outputdir)
+    # Important: rewrite_tables=True causes the cache file to be deleted if it
+    # exists, thus making sure that PLY doesn't load it instead of regenerating
+    # the parse table.
+    lexer = BlinkIDLLexer(outputdir=outputdir, rewrite_tables=True)
 
 
 if __name__ == '__main__':
