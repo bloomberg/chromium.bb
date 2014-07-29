@@ -40,11 +40,12 @@
 #include "core/editing/markup.h"
 #include "core/events/Event.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameConsole.h"
+#include "core/frame/FrameDestructionObserver.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -116,6 +117,11 @@ LocalFrame::~LocalFrame()
     setView(nullptr);
     loader().clear();
     setDOMWindow(nullptr);
+
+    // FIXME: What to do here... some of this is redundant with ~Frame.
+    HashSet<FrameDestructionObserver*>::iterator stop = m_destructionObservers.end();
+    for (HashSet<FrameDestructionObserver*>::iterator it = m_destructionObservers.begin(); it != stop; ++it)
+        (*it)->frameDestroyed();
 }
 
 bool LocalFrame::inScope(TreeScope* scope) const
@@ -233,6 +239,16 @@ void LocalFrame::didChangeVisibilityState()
         childFrames[i]->didChangeVisibilityState();
 }
 
+void LocalFrame::addDestructionObserver(FrameDestructionObserver* observer)
+{
+    m_destructionObservers.add(observer);
+}
+
+void LocalFrame::removeDestructionObserver(FrameDestructionObserver* observer)
+{
+    m_destructionObservers.remove(observer);
+}
+
 void LocalFrame::willDetachFrameHost()
 {
     // We should never be detatching the page during a Layout.
@@ -242,7 +258,15 @@ void LocalFrame::willDetachFrameHost()
     if (parent && parent->isLocalFrame())
         toLocalFrame(parent)->loader().checkLoadComplete();
 
-    Frame::willDetachFrameHost();
+    HashSet<FrameDestructionObserver*>::iterator stop = m_destructionObservers.end();
+    for (HashSet<FrameDestructionObserver*>::iterator it = m_destructionObservers.begin(); it != stop; ++it)
+        (*it)->willDetachFrameHost();
+
+    // FIXME: Page should take care of updating focus/scrolling instead of Frame.
+    // FIXME: It's unclear as to why this is called more than once, but it is,
+    // so page() could be null.
+    if (page() && page()->focusController().focusedFrame() == this)
+        page()->focusController().setFocusedFrame(nullptr);
     script().clearScriptObjects();
 
     if (page() && page()->scrollingCoordinator() && m_view)
@@ -253,7 +277,7 @@ void LocalFrame::detachFromFrameHost()
 {
     // We should never be detatching the page during a Layout.
     RELEASE_ASSERT(!m_view || !m_view->isInPerformLayout());
-    Frame::detachFromFrameHost();
+    m_host = 0;
 }
 
 String LocalFrame::documentTypeString() const

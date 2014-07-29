@@ -35,6 +35,7 @@
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "wtf/HashSet.h"
 
 namespace blink {
 
@@ -47,6 +48,7 @@ namespace blink {
     class FloatSize;
     class FloatRect;
     class FrameConsole;
+    class FrameDestructionObserver;
     class FrameSelection;
     class FrameView;
     class InputMethodController;
@@ -75,8 +77,11 @@ namespace blink {
 
         virtual ~LocalFrame();
 
-        virtual void willDetachFrameHost() OVERRIDE;
-        virtual void detachFromFrameHost() OVERRIDE;
+        void addDestructionObserver(FrameDestructionObserver*);
+        void removeDestructionObserver(FrameDestructionObserver*);
+
+        void willDetachFrameHost();
+        void detachFromFrameHost();
 
         virtual void disconnectOwnerElement() OVERRIDE;
 
@@ -150,6 +155,7 @@ namespace blink {
 
         String localLayerTreeAsText(unsigned flags) const;
 
+        HashSet<FrameDestructionObserver*> m_destructionObservers;
         mutable FrameLoader m_loader;
         mutable NavigationScheduler m_navigationScheduler;
 
