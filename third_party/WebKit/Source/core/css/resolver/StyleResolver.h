@@ -85,7 +85,7 @@ enum RuleMatchingBehavior {
 
 const unsigned styleSharingListSize = 15;
 const unsigned styleSharingMaxDepth = 32;
-typedef WTF::Deque<Element*, styleSharingListSize> StyleSharingList;
+typedef WillBeHeapDeque<RawPtrWillBeMember<Element>, styleSharingListSize> StyleSharingList;
 
 struct CSSPropertyValue {
     STACK_ALLOCATED();
@@ -316,7 +316,7 @@ private:
     StyleResourceLoader m_styleResourceLoader;
 
     unsigned m_styleSharingDepth;
-    Vector<OwnPtr<StyleSharingList>, styleSharingMaxDepth> m_styleSharingLists;
+    WillBeHeapVector<OwnPtrWillBeMember<StyleSharingList>, styleSharingMaxDepth> m_styleSharingLists;
 
     OwnPtr<StyleResolverStats> m_styleResolverStats;
     OwnPtr<StyleResolverStats> m_styleResolverStatsTotals;

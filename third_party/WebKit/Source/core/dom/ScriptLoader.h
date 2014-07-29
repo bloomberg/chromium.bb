@@ -85,6 +85,7 @@ private:
     // ResourceClient
     virtual void notifyFinished(Resource*) OVERRIDE;
 
+    // FIXME: Oilpan: This should become a Member once ResourceClient is moved to the heap.
     Element* m_element;
     ResourcePtr<ScriptResource> m_resource;
     WTF::OrdinalNumber m_startLineNumber;

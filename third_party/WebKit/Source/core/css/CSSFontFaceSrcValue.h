@@ -97,6 +97,8 @@ private:
     ResourcePtr<FontResource> m_fetched;
 
 #if ENABLE(SVG_FONTS)
+    // FIXME: Oilpan: Changing this to a member leaks Document.
+    // Figure out the retaining path. See https://codereview.chromium.org/337703004
     SVGFontFaceElement* m_svgFontFaceElement;
 #endif
 };

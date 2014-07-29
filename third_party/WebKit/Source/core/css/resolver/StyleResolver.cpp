@@ -341,7 +341,7 @@ StyleSharingList& StyleResolver::styleSharingList()
     unsigned depth = std::max(std::min(m_styleSharingDepth, styleSharingMaxDepth), 1u) - 1u;
 
     if (!m_styleSharingLists[depth])
-        m_styleSharingLists[depth] = adoptPtr(new StyleSharingList);
+        m_styleSharingLists[depth] = adoptPtrWillBeNoop(new StyleSharingList);
     return *m_styleSharingLists[depth];
 }
 
@@ -1563,6 +1563,7 @@ void StyleResolver::trace(Visitor* visitor)
     visitor->trace(m_uncommonAttributeRuleSet);
     visitor->trace(m_watchedSelectorsRules);
     visitor->trace(m_treeBoundaryCrossingRules);
+    visitor->trace(m_styleSharingLists);
     visitor->trace(m_pendingStyleSheets);
     visitor->trace(m_styleTree);
     visitor->trace(m_scopedStyleResolvers);
