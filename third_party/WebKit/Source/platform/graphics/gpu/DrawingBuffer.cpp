@@ -277,12 +277,7 @@ bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox,
 
 void DrawingBuffer::mailboxReleased(const blink::WebExternalTextureMailbox& mailbox, bool lostResource)
 {
-    if (lostResource) {
-        // TODO(hmin): handle the case if the resource is lost.
-        return;
-    }
-
-    if (m_destructionInProgress) {
+    if (m_destructionInProgress || m_context->isContextLost() || lostResource) {
         mailboxReleasedWhileDestructionInProgress(mailbox);
         return;
     }
