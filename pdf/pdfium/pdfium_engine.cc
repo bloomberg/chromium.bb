@@ -3071,8 +3071,10 @@ int PDFiumEngine::Form_Response(IPDF_JSPLATFORM* param,
   std::string rv = engine->client_->Prompt(question_str, default_str);
   base::string16 rv_16 = base::UTF8ToUTF16(rv);
   int rv_bytes = rv_16.size() * sizeof(base::char16);
-  if (response && rv_bytes <= length)
-    memcpy(response, rv_16.c_str(), rv_bytes);
+  if (response) {
+    int bytes_to_copy = rv_bytes < length ? rv_bytes : length;
+    memcpy(response, rv_16.c_str(), bytes_to_copy);
+  }
   return rv_bytes;
 }
 
