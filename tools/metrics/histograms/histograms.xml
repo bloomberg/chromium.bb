@@ -764,6 +764,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Ash.WindowSelector.ItemsWhenTextFilteringUsed" units="items">
+  <owner>tdanderson@chromium.org</owner>
+  <owner>flackr@chromium.org</owner>
+  <summary>
+    The number of items showing in overview mode at the moment when an item is
+    selected or when selection is canceled. Only recorded if the text filtering
+    textfield contains a non-empty string.
+  </summary>
+</histogram>
+
 <histogram name="Ash.WindowSelector.KeyPressesOverItemsRatio" units="%">
   <owner>flackr@chromium.org</owner>
   <owner>tdanderson@chromium.org</owner>
@@ -778,6 +788,27 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>tdanderson@chromium.org</owner>
   <summary>
     The number of items closed from the window overview for a single session.
+  </summary>
+</histogram>
+
+<histogram name="Ash.WindowSelector.TextFilteringStringLength"
+    units="characters">
+  <owner>tdanderson@chromium.org</owner>
+  <owner>flackr@chromium.org</owner>
+  <summary>
+    The length of the string entered into the text filtering textfield at the
+    moment when an item is selected or when selection is canceled.
+  </summary>
+</histogram>
+
+<histogram name="Ash.WindowSelector.TextFilteringTextfieldCleared">
+  <owner>tdanderson@chromium.org</owner>
+  <owner>flackr@chromium.org</owner>
+  <summary>
+    The number of times the text filtering textfield has had all of its text
+    removed within a single overview mode session. Measured from the time
+    overview mode is invoked to when an item is selected or when selection is
+    canceled.
   </summary>
 </histogram>
 
@@ -797,6 +828,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     pressing the overview button. The time is measured from the moment the
     windows begin animating to a thumbnail size preview to when a window is
     selected or selection is canceled.
+  </summary>
+</histogram>
+
+<histogram name="Ash.WindowSelector.TimeInOverviewWithTextFiltering"
+    units="milliseconds">
+  <owner>tdanderson@chromium.org</owner>
+  <owner>flackr@chromium.org</owner>
+  <summary>
+    The amount of time spent in overview mode when text filtering is used. The
+    time is measured from the moment the windows begin animating to a thumbnail
+    size preview to when a window is selected or selection is canceled. Only
+    recorded if the text filtering textfield contains a non-empty string.
   </summary>
 </histogram>
 

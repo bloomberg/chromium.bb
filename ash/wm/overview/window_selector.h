@@ -159,6 +159,13 @@ class ASH_EXPORT WindowSelector
   // such as enter key to select.
   scoped_ptr<views::Widget> text_filter_widget_;
 
+  // The current length of the string entered into the text filtering textfield.
+  size_t text_filter_string_length_;
+
+  // The number of times the text filtering textfield has been cleared of text
+  // during this overview mode session.
+  size_t num_times_textfield_cleared_;
+
   DISALLOW_COPY_AND_ASSIGN(WindowSelector);
 };
 

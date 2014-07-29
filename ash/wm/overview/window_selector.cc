@@ -153,7 +153,9 @@ WindowSelector::WindowSelector(const WindowList& windows,
       overview_start_time_(base::Time::Now()),
       num_key_presses_(0),
       num_items_(0),
-      showing_selection_widget_(false) {
+      showing_selection_widget_(false),
+      text_filter_string_length_(0),
+      num_times_textfield_cleared_(0) {
   DCHECK(delegate_);
   Shell* shell = Shell::GetInstance();
   shell->OnOverviewModeStarting();
@@ -243,6 +245,20 @@ WindowSelector::~WindowSelector() {
                            num_items_ - remaining_items);
   UMA_HISTOGRAM_MEDIUM_TIMES("Ash.WindowSelector.TimeInOverview",
                              base::Time::Now() - overview_start_time_);
+
+  // Record metrics related to text filtering.
+  UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.TextFilteringStringLength",
+                           text_filter_string_length_);
+  UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.TextFilteringTextfieldCleared",
+                           num_times_textfield_cleared_);
+  if (text_filter_string_length_) {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "Ash.WindowSelector.TimeInOverviewWithTextFiltering",
+        base::Time::Now() - overview_start_time_);
+    UMA_HISTOGRAM_COUNTS_100(
+        "Ash.WindowSelector.ItemsWhenTextFilteringUsed",
+        remaining_items);
+  }
 
   // TODO(flackr): Change this to OnOverviewModeEnded and move it to when
   // everything is done.
@@ -388,6 +404,10 @@ void WindowSelector::ContentsChanged(views::Textfield* sender,
       switches::kAshDisableTextFilteringInOverviewMode)) {
     return;
   }
+
+  text_filter_string_length_ = new_contents.length();
+  if (!text_filter_string_length_)
+    num_times_textfield_cleared_++;
 
   bool should_show_selection_widget = !new_contents.empty();
   if (showing_selection_widget_ != should_show_selection_widget) {
