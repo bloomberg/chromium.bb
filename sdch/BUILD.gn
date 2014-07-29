@@ -62,12 +62,12 @@ static_library("sdch") {
   # Inject a header that forwards to base/logging.h instead (which doesn't
   # introduce static initializers, and which prevents open-vcdiff's
   # logging.h from being used).
-  logging_file = rebase_path("logging_forward.h", root_build_dir)
   if (is_win) {
     cflags = [
-      "/FI", logging_file,
+      "/FI", "sdch/logging_forward.h",
     ]
   } else {
+    logging_file = rebase_path("logging_forward.h", root_build_dir)
     cflags = [ "-include", logging_file ]
     if (is_linux) {
       # TODO(mostynb): remove this if open-vcdiff is ever updated for c++11:
