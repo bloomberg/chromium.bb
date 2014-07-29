@@ -23,8 +23,6 @@ class PrefHashCalculator {
     VALID,
     // Valid under a deprecated but as secure algorithm.
     VALID_SECURE_LEGACY,
-    // Valid under a deprecated and less secure algorithm.
-    VALID_WEAK_LEGACY,
   };
 
   typedef base::Callback<std::string(const std::string& modern_device_id)>

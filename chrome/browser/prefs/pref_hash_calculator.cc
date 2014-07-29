@@ -131,8 +131,6 @@ PrefHashCalculator::ValidationResult PrefHashCalculator::Validate(
                          digest_string)) {
     return VALID_SECURE_LEGACY;
   }
-  if (VerifyDigestString(seed_, value_as_string, digest_string))
-    return VALID_WEAK_LEGACY;
   return INVALID;
 }
 

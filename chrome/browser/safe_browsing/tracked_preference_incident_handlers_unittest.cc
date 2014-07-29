@@ -56,7 +56,7 @@ TEST(GetTrackedPreferenceIncidentDigest, DifferentIncidentDifferentDigest) {
       MakeIncident());
   incident2->mutable_tracked_preference()->set_value_state(
       safe_browsing::
-          ClientIncidentReport_IncidentData_TrackedPreferenceIncident_ValueState_WEAK_LEGACY);
+          ClientIncidentReport_IncidentData_TrackedPreferenceIncident_ValueState_CHANGED);
 
   ASSERT_NE(digest,
             safe_browsing::GetTrackedPreferenceIncidentDigest(*incident2));

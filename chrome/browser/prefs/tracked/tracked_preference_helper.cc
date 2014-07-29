@@ -32,7 +32,6 @@ TrackedPreferenceHelper::ResetAction TrackedPreferenceHelper::GetAction(
     case PrefHashStoreTransaction::SECURE_LEGACY:
       // Accept secure legacy device ID based hashes.
       return DONT_RESET;
-    case PrefHashStoreTransaction::WEAK_LEGACY:  // Falls through.
     case PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE:  // Falls through.
     case PrefHashStoreTransaction::CHANGED:
       return enforce_ ? DO_RESET : WANTED_RESET;
@@ -51,10 +50,6 @@ void TrackedPreferenceHelper::ReportValidationResult(
       return;
     case PrefHashStoreTransaction::CLEARED:
       UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceCleared",
-                                reporting_id_, reporting_ids_count_);
-      return;
-    case PrefHashStoreTransaction::WEAK_LEGACY:
-      UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceMigrated",
                                 reporting_id_, reporting_ids_count_);
       return;
     case PrefHashStoreTransaction::SECURE_LEGACY:

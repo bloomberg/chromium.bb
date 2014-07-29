@@ -27476,6 +27476,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Settings.TrackedPreferenceMigrated" enum="TrackedPreference">
+  <obsolete>
+    Deprecated 2014-07.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Logs the tracked preference id when it is migrated to the new MAC algorithm.

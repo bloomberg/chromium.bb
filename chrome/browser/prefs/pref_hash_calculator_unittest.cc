@@ -207,23 +207,6 @@ TEST(PrefHashCalculatorTest, TestCompatibilityWithPrefMetricsService) {
             Validate("session.startup_urls", &startup_urls, kExpectedValue));
 }
 
-TEST(PrefHashCalculatorTest, TestLegacyNoDeviceIdNoPathAlgorithm) {
-  static const char kTestedLegacyHash[] =
-      "C503FB7C65EEFD5C07185F616A0AA67923C069909933F362022B1F187E73E9A2";
-  static const char kDeviceId[] = "not_used";
-
-  base::DictionaryValue dict;
-  dict.Set("a", new base::StringValue("foo"));
-  dict.Set("d", new base::StringValue("bad"));
-  dict.Set("b", new base::StringValue("bar"));
-  dict.Set("c", new base::StringValue("baz"));
-
-  // 32 NULL bytes is the seed that was used to generate the legacy hash.
-  EXPECT_EQ(PrefHashCalculator::VALID_WEAK_LEGACY,
-            PrefHashCalculator(std::string(32u, 0), kDeviceId).Validate(
-                "unused_path", &dict, kTestedLegacyHash));
-}
-
 std::string MockGetLegacyDeviceId(const std::string& modern_device_id) {
   if (modern_device_id.empty())
     return std::string();

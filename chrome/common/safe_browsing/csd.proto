@@ -341,7 +341,7 @@ message ClientIncidentReport {
       enum ValueState {
         UNKNOWN = 0;
         CLEARED = 1;
-        WEAK_LEGACY = 2;
+        WEAK_LEGACY_OBSOLETE = 2;
         CHANGED = 3;
         UNTRUSTED_UNKNOWN_VALUE = 4;
       }

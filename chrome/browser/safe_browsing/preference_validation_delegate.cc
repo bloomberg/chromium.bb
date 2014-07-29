@@ -28,8 +28,6 @@ TPIncident_ValueState MapValueState(
   switch (value_state) {
     case PrefHashStoreTransaction::CLEARED:
       return TPIncident::CLEARED;
-    case PrefHashStoreTransaction::WEAK_LEGACY:
-      return TPIncident::WEAK_LEGACY;
     case PrefHashStoreTransaction::CHANGED:
       return TPIncident::CHANGED;
     case PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE:

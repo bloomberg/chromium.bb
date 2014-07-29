@@ -916,58 +916,6 @@ TEST_P(PrefHashFilterTest, EmptyCleared) {
             stored_split_value.second);
 }
 
-TEST_P(PrefHashFilterTest, InitialValueMigrated) {
-  // Only test atomic prefs, split prefs were introduce after the migration.
-
-  // Ownership of this value is transfered to |pref_store_contents_|.
-  base::ListValue* list_value = new base::ListValue;
-  list_value->Append(new base::StringValue("test"));
-  pref_store_contents_->Set(kAtomicPref, list_value);
-
-  ASSERT_TRUE(pref_store_contents_->Get(kAtomicPref, NULL));
-
-  mock_pref_hash_store_->SetCheckResult(kAtomicPref,
-                                        PrefHashStoreTransaction::WEAK_LEGACY);
-
-  DoFilterOnLoad(GetParam() >= PrefHashFilter::ENFORCE_ON_LOAD);
-  ASSERT_EQ(arraysize(kTestTrackedPrefs),
-            mock_pref_hash_store_->checked_paths_count());
-  ASSERT_EQ(1u, mock_pref_hash_store_->stored_paths_count());
-  ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
-
-  // Delegate saw all prefs, one of which had the expected value_state.
-  ASSERT_EQ(arraysize(kTestTrackedPrefs),
-            mock_validation_delegate_.recorded_validations_count());
-  ASSERT_EQ(1u,
-            mock_validation_delegate_.CountValidationsOfState(
-                PrefHashStoreTransaction::WEAK_LEGACY));
-  ASSERT_EQ(arraysize(kTestTrackedPrefs) - 1u,
-            mock_validation_delegate_.CountValidationsOfState(
-                PrefHashStoreTransaction::UNCHANGED));
-
-  MockPrefHashStore::ValuePtrStrategyPair stored_atomic_value =
-       mock_pref_hash_store_->stored_value(kAtomicPref);
-  ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
-            stored_atomic_value.second);
-  if (GetParam() == PrefHashFilter::ENFORCE_ON_LOAD) {
-    // Ensure the pref was cleared and the hash for NULL was restored if the
-    // current enforcement level prevents migration.
-    ASSERT_FALSE(pref_store_contents_->Get(kAtomicPref, NULL));
-    ASSERT_EQ(NULL, stored_atomic_value.first);
-
-    VerifyRecordedReset(true);
-  } else {
-    // Otherwise the value should have remained intact and the hash should have
-    // been updated to match it.
-    const base::Value* atomic_value_in_store;
-    ASSERT_TRUE(pref_store_contents_->Get(kAtomicPref, &atomic_value_in_store));
-    ASSERT_EQ(list_value, atomic_value_in_store);
-    ASSERT_EQ(list_value, stored_atomic_value.first);
-
-    VerifyRecordedReset(false);
-  }
-}
-
 TEST_P(PrefHashFilterTest, InitialValueUnchangedLegacyId) {
   // Ownership of these values is transfered to |pref_store_contents_|.
   base::StringValue* string_value = new base::StringValue("string value");

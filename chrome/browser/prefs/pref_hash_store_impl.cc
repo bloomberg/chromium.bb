@@ -142,8 +142,6 @@ PrefHashStoreImpl::PrefHashStoreTransactionImpl::CheckValue(
   switch (validation_result) {
     case PrefHashCalculator::VALID:
       return UNCHANGED;
-    case PrefHashCalculator::VALID_WEAK_LEGACY:
-      return WEAK_LEGACY;
     case PrefHashCalculator::VALID_SECURE_LEGACY:
       return SECURE_LEGACY;
     case PrefHashCalculator::INVALID:
@@ -200,13 +198,6 @@ PrefHashStoreImpl::PrefHashStoreTransactionImpl::CheckSplitValue(
       switch (outer_->pref_hash_calculator_.Validate(
           keyed_path, &it.value(), entry->second)) {
         case PrefHashCalculator::VALID:
-          break;
-        case WEAK_LEGACY:
-          // Split tracked preferences were introduced after the migration from
-          // the weaker legacy algorithm started so no migration is expected,
-          // but declare it invalid in Release builds anyways.
-          NOTREACHED();
-          invalid_keys->push_back(it.key());
           break;
         case SECURE_LEGACY:
           // Secure legacy device IDs based hashes are still accepted, but we

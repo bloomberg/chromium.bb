@@ -58,13 +58,6 @@ TEST_F(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
     dict.Set("b", new base::StringValue("bar"));
     dict.Set("c", new base::StringValue("baz"));
 
-    // Manually shove in a legacy hash.
-    (*CreateHashStoreContents()->GetMutableContents())->SetString(
-        "path1",
-        "C503FB7C65EEFD5C07185F616A0AA67923C069909933F362022B1F187E73E9A2");
-
-    EXPECT_EQ(PrefHashStoreTransaction::WEAK_LEGACY,
-              transaction->CheckValue("path1", &dict));
     transaction->StoreHash("path1", &dict);
     EXPECT_EQ(PrefHashStoreTransaction::UNCHANGED,
               transaction->CheckValue("path1", &dict));

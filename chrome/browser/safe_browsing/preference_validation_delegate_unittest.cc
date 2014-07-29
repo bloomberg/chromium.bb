@@ -51,9 +51,6 @@ class PreferenceValidationDelegateTest : public testing::Test {
       case PrefHashStoreTransaction::CLEARED:
         EXPECT_EQ(TPIncident::CLEARED, incident_state);
         break;
-      case PrefHashStoreTransaction::WEAK_LEGACY:
-        EXPECT_EQ(TPIncident::WEAK_LEGACY, incident_state);
-        break;
       case PrefHashStoreTransaction::CHANGED:
         EXPECT_EQ(TPIncident::CHANGED, incident_state);
         break;
@@ -276,7 +273,6 @@ INSTANTIATE_TEST_CASE_P(
     PreferenceValidationDelegateWithIncident,
     testing::Combine(
         testing::Values(PrefHashStoreTransaction::CLEARED,
-                        PrefHashStoreTransaction::WEAK_LEGACY,
                         PrefHashStoreTransaction::CHANGED,
                         PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE),
         testing::Values(TrackedPreferenceHelper::WANTED_RESET,
