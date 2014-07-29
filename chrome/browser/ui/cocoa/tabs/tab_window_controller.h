@@ -23,18 +23,8 @@
 
 @interface TabWindowController : NSWindowController<NSWindowDelegate> {
  @private
-  // Wrapper view around web content, and the developer tools view.
   base::scoped_nsobject<FastResizeView> tabContentArea_;
-
-  // The tab strip overlaps the titlebar of the window.
   base::scoped_nsobject<TabStripView> tabStripView_;
-
-  // In OSX 10.10+, all views must be added to the NSWindow's contentView. Some
-  // views (like the tab strip and the profile icon) are placed on top of the
-  // title bar and require special treatment. All other views should be added
-  // as subviews of chromeContentView_. This allows tab dragging and fullscreen
-  // logic to easily move the views that don't need special treatment.
-  base::scoped_nsobject<NSView> chromeContentView_;
 
   // The child window used during dragging to achieve the opacity tricks.
   NSWindow* overlayWindow_;
@@ -48,7 +38,6 @@
 }
 @property(readonly, nonatomic) TabStripView* tabStripView;
 @property(readonly, nonatomic) FastResizeView* tabContentArea;
-@property(readonly, nonatomic) NSView* chromeContentView;
 
 // This is the designated initializer for this class.
 - (id)initTabWindowControllerWithTabStrip:(BOOL)hasTabStrip;
