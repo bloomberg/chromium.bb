@@ -80,29 +80,7 @@ bool SVGComponentTransferFunctionElement::isSupportedAttribute(const QualifiedNa
 
 void SVGComponentTransferFunctionElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (!isSupportedAttribute(name)) {
-        SVGElement::parseAttribute(name, value);
-        return;
-    }
-
-    SVGParsingError parseError = NoError;
-
-    if (name == SVGNames::tableValuesAttr)
-        m_tableValues->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::typeAttr)
-        m_type->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::slopeAttr)
-        m_slope->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::interceptAttr)
-        m_intercept->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::amplitudeAttr)
-        m_amplitude->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::exponentAttr)
-        m_exponent->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::offsetAttr)
-        m_offset->setBaseValueAsString(value, parseError);
-
-    reportAttributeParsingError(parseError, name, value);
+    parseAttributeNew(name, value);
 }
 
 void SVGComponentTransferFunctionElement::svgAttributeChanged(const QualifiedName& attrName)

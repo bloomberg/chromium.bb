@@ -56,20 +56,7 @@ bool SVGCircleElement::isSupportedAttribute(const QualifiedName& attrName)
 
 void SVGCircleElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    SVGParsingError parseError = NoError;
-
-    if (!isSupportedAttribute(name))
-        SVGGeometryElement::parseAttribute(name, value);
-    else if (name == SVGNames::cxAttr)
-        m_cx->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::cyAttr)
-        m_cy->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::rAttr)
-        m_r->setBaseValueAsString(value, parseError);
-    else
-        ASSERT_NOT_REACHED();
-
-    reportAttributeParsingError(parseError, name, value);
+    parseAttributeNew(name, value);
 }
 
 void SVGCircleElement::svgAttributeChanged(const QualifiedName& attrName)

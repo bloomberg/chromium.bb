@@ -37,35 +37,6 @@ inline SVGGElement::SVGGElement(Document& document, ConstructionType constructio
 
 DEFINE_NODE_FACTORY(SVGGElement)
 
-bool SVGGElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
-void SVGGElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    if (!isSupportedAttribute(name)) {
-        SVGGraphicsElement::parseAttribute(name, value);
-        return;
-    }
-
-    ASSERT_NOT_REACHED();
-}
-
-void SVGGElement::svgAttributeChanged(const QualifiedName& attrName)
-{
-    if (!isSupportedAttribute(attrName)) {
-        SVGGraphicsElement::svgAttributeChanged(attrName);
-        return;
-    }
-
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
-    if (RenderObject* renderer = this->renderer())
-        RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
-}
-
 RenderObject* SVGGElement::createRenderer(RenderStyle* style)
 {
     // SVG 1.1 testsuite explicitely uses constructs like <g display="none"><linearGradient>
