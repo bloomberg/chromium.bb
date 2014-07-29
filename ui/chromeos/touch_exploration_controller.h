@@ -5,6 +5,7 @@
 #ifndef UI_CHROMEOS_TOUCH_EXPLORATION_CONTROLLER_H_
 #define UI_CHROMEOS_TOUCH_EXPLORATION_CONTROLLER_H_
 
+#include "base/time/tick_clock.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "ui/chromeos/ui_chromeos_export.h"
@@ -60,6 +61,8 @@ class TouchExplorationControllerDelegate {
 // gestures performed on the edge of the screen can change settings
 // continuously. For example, sliding a finger along the right side of the
 // screen will change the volume.
+// When a user double taps and holds with one finger, the finger is passed
+// through as if accessibility was turned off.
 //
 // ** Long version **
 //
@@ -89,7 +92,8 @@ class TouchExplorationControllerDelegate {
 // which will be interpreted and used to control the UI. The gesture will only
 // be registered if the finger moves outside the slop and completed within the
 // grace period. If additional fingers are added during the grace period, the
-// state changes to passthrough. If the gesture fails to be completed within the
+// state changes to wait for those fingers to be released, and then goes to
+// touch exploration mode. If the gesture fails to be completed within the
 // grace period, the state changes to touch exploration mode. Once the state has
 // changed, any gestures made during the grace period are discarded.
 //
@@ -99,16 +103,18 @@ class TouchExplorationControllerDelegate {
 // anywhere on the screen, hear its description, then double-tap anywhere
 // to activate it.
 //
+// If the user double taps and holds, any event from that finger is passed
+// through. These events are passed through with an offset such that the first
+// touch is offset to be at the location of the last touch exploration
+// location, and every following event is offset by the same amount.
+//
+// If any other fingers are added or removed, they are ignored. Once the
+// passthrough finger is released, passthrough stops and the user is reset
+// to no fingers down state.
+//
 // If the user enters touch exploration mode, they can click without lifting
 // their touch exploration finger by tapping anywhere else on the screen with
 // a second finger, while the touch exploration finger is still pressed.
-//
-// If the user adds a second finger during the grace period, they enter
-// two to one finger passthrough mode. In this mode, the first finger is
-// ignored and the user can scroll or drag with the second finger. If either
-// finger is released, nothing happens until all fingers are up. If the user
-// adds a third finger while in two to one finger mode, all fingers and touch
-// events are passed through from then on.
 //
 // If the user places a finger on the edge of the screen and moves their finger
 // past slop, a slide gesture is performed. The user can then slide one finger
@@ -159,27 +165,33 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InSingleTapOrTouchExploreReleased(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
-  ui::EventRewriteStatus InDoubleTapPressed(
+  ui::EventRewriteStatus InDoubleTapPending(
+      const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
+  ui::EventRewriteStatus InTouchReleasePending(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InTouchExploration(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InTwoToOneFinger(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
-  ui::EventRewriteStatus InPassthrough(
+  ui::EventRewriteStatus InOneFingerPassthrough(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InGestureInProgress(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InTouchExploreSecondPress(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
-  ui::EventRewriteStatus InWaitForRelease(
+  ui::EventRewriteStatus InWaitForOneFinger(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InSlideGesture(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
+
+  // Returns the current time of the tick clock.
+  base::TimeDelta Now();
 
   // This timer is started every time we get the first press event, and
   // it fires after the double-click timeout elapses (300 ms by default).
   // If the user taps and releases within 300 ms and doesn't press again,
   // we treat that as a single mouse move (touch exploration) event.
+  void StartTapTimer();
   void OnTapTimerFired();
 
   // Dispatch a new event outside of the event rewriting flow.
@@ -252,7 +264,13 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
 
     // The user tapped once, and before the grace period expired, pressed
     // one finger down to begin a double-tap, but has not released it yet.
-    DOUBLE_TAP_PRESSED,
+    // This could become passthrough, so no touch press is dispatched yet.
+    DOUBLE_TAP_PENDING,
+
+    // The user was doing touch exploration, started split tap, but lifted the
+    // touch exploration finger. Once they remove all fingers, a touch release
+    // will go through.
+    TOUCH_RELEASE_PENDING,
 
     // We're in touch exploration mode. Anything other than the first finger
     // is ignored, and movements of the first finger are rewritten as mouse
@@ -278,23 +296,19 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
     // touch explore. Any fingers pressed past the first two are ignored.
     TOUCH_EXPLORE_SECOND_PRESS,
 
-    // The user placed two fingers down within the grace period.
-    // We're now in two to one finger mode until one of the fingers is
-    // lifted. The first finger is ignored and the events for the second
-    // finger are passed throuugh. If either finger is released, nothing
-    // happens until all fingers are up.
-    TWO_TO_ONE_FINGER,
+    // After the user double taps and holds with a single finger, all events
+    // for that finger are passed through, displaced by an offset. Adding
+    // extra fingers has no effect. This state is left when the user removes
+    // all fingers.
+    ONE_FINGER_PASSTHROUGH,
 
-    // If the user is in TWO_TO_ONE_FINGER with two fingers down and presses
-    // a third finger, every finger and touch event is passed through until
-    // all fingers are released.
-    PASSTHROUGH,
-
-    // If the user lifted a finger in TWO_TO_ONE_FINGER, they must release
-    // all fingers before completing any more actions. This state is
+    // If the user added another finger in SINGLE_TAP_PRESSED, or if the user
+    // has multiple fingers fingers down in any other state between
+    // passthrough, touch exploration, and gestures, they must release
+    // all fingers except before completing any more actions. This state is
     // generally useful for developing new features, because it creates a
     // simple way to handle a dead end in user flow.
-    WAIT_FOR_RELEASE,
+    WAIT_FOR_ONE_FINGER,
 
     // If the user is within the given bounds from an edge of the screen, not
     // including corners, then the resulting movements will be interpreted as
@@ -341,19 +355,18 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   // A copy of the event from the initial touch press.
   scoped_ptr<ui::TouchEvent> initial_press_;
 
+  // In one finger passthrough, the touch is displaced relative to the
+  // last touch exploration location.
+  gfx::Vector2d passthrough_offset_;
+
   // Stores the most recent event from a finger that is currently not
-  // sending events through, but might in the future (e.g. TwoToOneFinger
-  // to Passthrough state).
+  // sending events through, but might in the future (e.g. before a finger
+  // enters double-tap-hold passthrough, we need to update its location.)
   scoped_ptr<ui::TouchEvent> last_unused_finger_event_;
 
   // The last synthesized mouse move event. When the user double-taps,
   // we send the passed-through tap to the location of this event.
   scoped_ptr<ui::TouchEvent> last_touch_exploration_;
-
-  // The last event from the finger that is being passed through in
-  // TWO_TO_ONE_FINGER. When the user lifts a finger during two to one,
-  // the location and id of the touch release is from here.
-  scoped_ptr<ui::TouchEvent> last_two_to_one_;
 
   // A timer to fire the mouse move event after the double-tap delay.
   base::OneShotTimer<TouchExplorationController> tap_timer_;
@@ -376,6 +389,10 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
 
   // This toggles whether VLOGS are turned on or not.
   bool VLOG_on_;
+
+  // When touch_exploration_controller gets time relative to real time during
+  // testing, this clock is set to the simulated clock and used.
+  base::TickClock* tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationController);
 };

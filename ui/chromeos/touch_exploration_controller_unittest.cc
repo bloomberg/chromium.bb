@@ -145,6 +145,10 @@ class TouchExplorationControllerTestApi {
     return touch_exploration_controller_->kSlopDistanceFromEdge;
   }
 
+  void SetTickClockForTesting(base::TickClock* simulated_clock) {
+    touch_exploration_controller_->tick_clock_ = simulated_clock;
+  }
+
  private:
   scoped_ptr<TouchExplorationController> touch_exploration_controller_;
 
@@ -166,7 +170,7 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     cursor_client_.reset(new aura::test::TestCursorClient(root_window()));
     root_window()->AddPreTargetHandler(&event_capturer_);
     generator_.reset(new test::EventGenerator(root_window()));
-    // The generator takes ownership of the clock.
+    // The generator takes ownership of the tick clock.
     generator_->SetTickClock(scoped_ptr<base::TickClock>(simulated_clock_));
     cursor_client()->ShowCursor();
     cursor_client()->DisableMouseEvents();
@@ -224,7 +228,8 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
   }
 
   void AdvanceSimulatedTimePastTapDelay() {
-    simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(1000));
+    simulated_clock_->Advance(gesture_detector_config_.double_tap_timeout);
+    simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(1));
     touch_exploration_controller_->CallTapTimerNowForTesting();
   }
 
@@ -235,6 +240,11 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
 
   void SuppressVLOGs(bool suppress) {
     touch_exploration_controller_->SuppressVLOGsForTesting(suppress);
+  }
+
+  void SetTickClock() {
+    touch_exploration_controller_->SetTickClockForTesting(
+        static_cast<base::TickClock*>(simulated_clock_));
   }
 
   void SwitchTouchExplorationMode(bool on) {
@@ -254,17 +264,6 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     generator_->Dispatch(&touch_press);
     AdvanceSimulatedTimePastTapDelay();
     EXPECT_TRUE(IsInTouchToMouseMode());
-  }
-
-  void EnterTwoToOne(gfx::Point first_touch_location,
-                     gfx::Point second_touch_location) {
-    SwitchTouchExplorationMode(true);
-    ui::TouchEvent first_touch_press(
-        ui::ET_TOUCH_PRESSED, first_touch_location, 0, Now());
-    generator_->Dispatch(&first_touch_press);
-    ui::TouchEvent second_touch_press(
-        ui::ET_TOUCH_PRESSED, second_touch_location, 1, Now());
-    generator_->Dispatch(&second_touch_press);
   }
 
   bool IsInTouchToMouseMode() {
@@ -612,10 +611,10 @@ TEST_F(TouchExplorationTest, DoubleTap) {
   SwitchTouchExplorationMode(true);
 
   // Tap at one location, and get a mouse move event.
-  gfx::Point tap_location(11, 12);
+  gfx::Point tap_location(51, 52);
   generator_->set_current_location(tap_location);
-  generator_->PressTouch();
-  generator_->ReleaseTouch();
+  generator_->PressTouchId(1);
+  generator_->ReleaseTouchId(1);
   AdvanceSimulatedTimePastTapDelay();
 
   std::vector<ui::LocatedEvent*> events =
@@ -647,9 +646,9 @@ TEST_F(TouchExplorationTest, DoubleTap) {
 }
 
 // Double-tapping where the user holds their finger down for the second time
-// for a longer press should send a touch press and released (right click)
-// to the location of the last successful touch exploration.
-TEST_F(TouchExplorationTest, DoubleTapLongPress) {
+// for a longer press should send a touch press and passthrough all further
+// events from that finger. Other finger presses should be ignored.
+TEST_F(TouchExplorationTest, DoubleTapPassthrough) {
   SwitchTouchExplorationMode(true);
 
   // Tap at one location, and get a mouse move event.
@@ -669,6 +668,93 @@ TEST_F(TouchExplorationTest, DoubleTapLongPress) {
   ClearCapturedEvents();
 
   // Now double-tap and hold at a different location.
+  // This should result in a single touch press at the location of the tap,
+  // not at the location of the double-tap.
+  gfx::Point first_tap_location(13, 14);
+  generator_->set_current_location(first_tap_location);
+  generator_->PressTouchId(1);
+  generator_->ReleaseTouchId(1);
+  gfx::Point second_tap_location(15, 16);
+  generator_->set_current_location(second_tap_location);
+  generator_->PressTouchId(1);
+  // Advance to the finger passing through.
+  AdvanceSimulatedTimePastTapDelay();
+
+  gfx::Vector2d passthrough_offset = second_tap_location - tap_location;
+
+  std::vector<ui::LocatedEvent*> captured_events = GetCapturedLocatedEvents();
+  ASSERT_EQ(1U, captured_events.size());
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, captured_events[0]->type());
+  EXPECT_EQ(second_tap_location - passthrough_offset,
+            captured_events[0]->location());
+
+  ClearCapturedEvents();
+
+  // All events for the first finger should pass through now, displaced
+  // relative to the last touch exploration location.
+  gfx::Point first_move_location(17, 18);
+  generator_->MoveTouchId(first_move_location, 1);
+  gfx::Point second_move_location(12, 13);
+  generator_->MoveTouchId(second_move_location, 1);
+
+  captured_events = GetCapturedLocatedEvents();
+  ASSERT_EQ(2U, captured_events.size());
+  EXPECT_EQ(ui::ET_TOUCH_MOVED, captured_events[0]->type());
+  EXPECT_EQ(first_move_location - passthrough_offset,
+            captured_events[0]->location());
+  EXPECT_EQ(ui::ET_TOUCH_MOVED, captured_events[1]->type());
+  EXPECT_EQ(second_move_location - passthrough_offset,
+            captured_events[1]->location());
+
+  ClearCapturedEvents();
+
+  // Events for other fingers should do nothing.
+  generator_->PressTouchId(2);
+  generator_->PressTouchId(3);
+  generator_->MoveTouchId(gfx::Point(34, 36), 2);
+  generator_->ReleaseTouchId(2);
+  captured_events = GetCapturedLocatedEvents();
+  ASSERT_EQ(0U, captured_events.size());
+
+  // Even with finger 3 still down, events for the first finger should still
+  // pass through.
+  gfx::Point third_move_location(14, 15);
+  generator_->MoveTouchId(third_move_location, 1);
+  captured_events = GetCapturedLocatedEvents();
+  ASSERT_EQ(1U, captured_events.size());
+  EXPECT_EQ(ui::ET_TOUCH_MOVED, captured_events[0]->type());
+  EXPECT_EQ(third_move_location - passthrough_offset,
+            captured_events[0]->location());
+
+  // No fingers down state is only reached when every finger is lifted.
+  generator_->ReleaseTouchId(1);
+  EXPECT_FALSE(IsInNoFingersDownState());
+  generator_->ReleaseTouchId(3);
+  EXPECT_TRUE(IsInNoFingersDownState());
+}
+
+// Double-tapping, going into passthrough, and holding for the longpress
+// time should send a touch press and released (right click)
+// to the location of the last successful touch exploration.
+TEST_F(TouchExplorationTest, DoubleTapLongPress) {
+  SwitchTouchExplorationMode(true);
+  SetTickClock();
+  // Tap at one location, and get a mouse move event.
+  gfx::Point tap_location(11, 12);
+  generator_->set_current_location(tap_location);
+  generator_->PressTouch();
+  generator_->ReleaseTouch();
+  AdvanceSimulatedTimePastTapDelay();
+
+  std::vector<ui::LocatedEvent*> events =
+      GetCapturedLocatedEventsOfType(ui::ET_MOUSE_MOVED);
+  ASSERT_EQ(1U, events.size());
+  EXPECT_EQ(tap_location, events[0]->location());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_IS_SYNTHESIZED);
+  EXPECT_TRUE(events[0]->flags() & ui::EF_TOUCH_ACCESSIBILITY);
+  ClearCapturedEvents();
+
+  // Now double-tap and hold at a different location.
   // This should result in a single touch long press and release
   // at the location of the tap, not at the location of the double-tap.
   // There should be a time delay between the touch press and release.
@@ -679,6 +765,8 @@ TEST_F(TouchExplorationTest, DoubleTapLongPress) {
   gfx::Point second_tap_location(23, 24);
   generator_->set_current_location(second_tap_location);
   generator_->PressTouch();
+  // Advance to the finger passing through, and then to the longpress timeout.
+  AdvanceSimulatedTimePastTapDelay();
   simulated_clock_->Advance(gesture_detector_config_.longpress_timeout);
   generator_->ReleaseTouch();
 
@@ -690,8 +778,8 @@ TEST_F(TouchExplorationTest, DoubleTapLongPress) {
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, captured_events[1]->type());
   EXPECT_EQ(tap_location, captured_events[1]->location());
   base::TimeDelta released_time = captured_events[1]->time_stamp();
-  EXPECT_EQ(gesture_detector_config_.longpress_timeout,
-            released_time - pressed_time);
+  EXPECT_EQ(released_time - pressed_time,
+            gesture_detector_config_.longpress_timeout);
 }
 
 // Single-tapping should send a touch press and release through to the location
@@ -1007,196 +1095,6 @@ TEST_F(TouchExplorationTest, SplitTapLongPressMultiFinger) {
   EXPECT_TRUE(IsInNoFingersDownState());
 }
 
-// If the second finger is pressed soon after the first, the second
-// finger passes through and the first does not. However, The press is
-// released after the second finger is lifted to go into the wait state.
-TEST_F(TouchExplorationTest, TwoToOneFingerReleaseSecond) {
-  gfx::Point first_touch_location = gfx::Point(7, 7);
-  gfx::Point second_touch_location = gfx::Point(10, 11);
-  EnterTwoToOne(first_touch_location, second_touch_location);
-  std::vector<ui::LocatedEvent*> captured_events = GetCapturedLocatedEvents();
-  ASSERT_EQ(captured_events.size(), 1u);
-  ClearCapturedEvents();
-
-  // Confirm events from the second finger go through as is.
-  gfx::Point second_touch_move_location = gfx::Point(20, 21);
-  ui::TouchEvent second_touch_move(
-      ui::ET_TOUCH_MOVED,
-      second_touch_move_location,
-      1,
-      Now());
-  generator_->Dispatch(&second_touch_move);
-  captured_events = GetCapturedLocatedEvents();
-  ASSERT_EQ(1u, captured_events.size());
-  ClearCapturedEvents();
-
-  // Events from the first finger should still not go through while the second
-  // finger is touching.
-  gfx::Point first_touch_move_location = gfx::Point(15, 16);
-  generator_->MoveTouchId(first_touch_move_location, 0);
-  captured_events = GetCapturedLocatedEvents();
-  EXPECT_EQ(0u, captured_events.size());
-  EXPECT_TRUE(cursor_client()->IsCursorVisible());
-  EXPECT_FALSE(cursor_client()->IsMouseEventsEnabled());
-
-  // A release of the second finger should send an event, as the state
-  // changes to the wait state.
-  ui::TouchEvent second_touch_release(
-      ui::ET_TOUCH_RELEASED, second_touch_move_location, 1, Now());
-  generator_->Dispatch(&second_touch_release);
-  EXPECT_FALSE(IsInTouchToMouseMode());
-  captured_events = GetCapturedLocatedEvents();
-  ASSERT_EQ(captured_events.size(), 1u);
-  ClearCapturedEvents();
-
-  // No events should be sent after the second finger is lifted.
-
-  ui::TouchEvent unsent_move(ui::ET_TOUCH_MOVED, gfx::Point(21, 22), 0, Now());
-  generator_->Dispatch(&unsent_move);
-
-  ui::TouchEvent first_touch_release(
-      ui::ET_TOUCH_RELEASED, first_touch_move_location, 0, Now());
-  generator_->Dispatch(&first_touch_release);
-  captured_events = GetCapturedLocatedEvents();
-  ASSERT_EQ(captured_events.size(), 0u);
-  EXPECT_TRUE(IsInNoFingersDownState());
-}
-
-// The press should also be released if the first finger is lifted
-// in TwoToOneFinger.
-TEST_F(TouchExplorationTest, TwoToOneFingerRelaseFirst) {
-  gfx::Point first_touch_location = gfx::Point(11,12);
-  gfx::Point second_touch_location = gfx::Point(21, 22);
-  EnterTwoToOne(first_touch_location, second_touch_location);
-  std::vector<ui::LocatedEvent*> captured_events = GetCapturedLocatedEvents();
-  ASSERT_EQ(captured_events.size(), 1u);
-  ClearCapturedEvents();
-
-  // Actions before release have already been tested in the previous test.
-
-  // A release of the first finger should send an event, as the state
-  // changes to the wait state.
-  ui::TouchEvent first_touch_release(
-      ui::ET_TOUCH_RELEASED, first_touch_location, 0, Now());
-  generator_->Dispatch(&first_touch_release);
-  captured_events = GetCapturedLocatedEvents();
-  ASSERT_EQ(captured_events.size(), 1u);
-  ClearCapturedEvents();
-
-  // No events should be sent after the second finger is lifted.
-
-  ui::TouchEvent unsent_move(ui::ET_TOUCH_MOVED, gfx::Point(21, 22), 1, Now());
-  generator_->Dispatch(&unsent_move);
-
-  ui::TouchEvent second_touch_release(
-      ui::ET_TOUCH_RELEASED, second_touch_location, 1, Now());
-  generator_->Dispatch(&second_touch_release);
-  captured_events = GetCapturedLocatedEvents();
-  ASSERT_EQ(captured_events.size(), 0u);
-  EXPECT_TRUE(IsInNoFingersDownState());
-}
-
-// Placing three fingers should start passthrough, and all fingers should
-// continue to be passed through until the last one is released.
-TEST_F(TouchExplorationTest, Passthrough) {
-  SwitchTouchExplorationMode(true);
-  std::vector<ui::LocatedEvent*> captured_events;
-
-  gfx::Point first_touch_location = gfx::Point(11,12);
-  ui::TouchEvent first_touch_press(
-      ui::ET_TOUCH_PRESSED, first_touch_location, 0, Now());
-  generator_->Dispatch(&first_touch_press);
-
-  gfx::Point second_touch_location = gfx::Point(21, 22);
-  ui::TouchEvent second_touch_press(
-      ui::ET_TOUCH_PRESSED, second_touch_location, 1, Now());
-  generator_->Dispatch(&second_touch_press);
-
-  captured_events = GetCapturedLocatedEvents();
-  ASSERT_EQ(captured_events.size(), 1u);
-
-  gfx::Point third_touch_location = gfx::Point(31, 32);
-  ui::TouchEvent third_touch_press(
-      ui::ET_TOUCH_PRESSED, third_touch_location, 2, Now());
-  generator_->Dispatch(&third_touch_press);
-  captured_events = GetCapturedLocatedEvents();
-  // Now all fingers are registered as pressed.
-  ASSERT_EQ(3u, captured_events.size());
-  ClearCapturedEvents();
-
-  // All fingers should be passed through.
-  first_touch_location = gfx::Point(13, 14);
-  second_touch_location = gfx::Point(23, 24);
-  third_touch_location = gfx::Point(33, 34);
-  ui::TouchEvent first_touch_first_move(
-      ui::ET_TOUCH_MOVED, first_touch_location, 0, Now());
-  ui::TouchEvent second_touch_first_move(
-      ui::ET_TOUCH_MOVED, second_touch_location, 1, Now());
-  ui::TouchEvent third_touch_first_move(
-      ui::ET_TOUCH_MOVED, third_touch_location, 2, Now());
-  generator_->Dispatch(&first_touch_first_move);
-  generator_->Dispatch(&second_touch_first_move);
-  generator_->Dispatch(&third_touch_first_move);
-  captured_events = GetCapturedLocatedEvents();
-  ASSERT_EQ(3u, captured_events.size());
-  EXPECT_EQ(ui::ET_TOUCH_MOVED, captured_events[0]->type());
-  EXPECT_EQ(first_touch_location, captured_events[0]->location());
-  EXPECT_EQ(ui::ET_TOUCH_MOVED, captured_events[1]->type());
-  EXPECT_EQ(second_touch_location, captured_events[1]->location());
-  EXPECT_EQ(ui::ET_TOUCH_MOVED, captured_events[2]->type());
-  EXPECT_EQ(third_touch_location, captured_events[2]->location());
-  ClearCapturedEvents();
-
-  // When we release the third finger, the other fingers should still be
-  // passed through.
-  ui::TouchEvent third_touch_release(
-      ui::ET_TOUCH_RELEASED, third_touch_location, 2, Now());
-  generator_->Dispatch(&third_touch_release);
-  captured_events = GetCapturedLocatedEvents();
-  ASSERT_EQ(captured_events.size(), 1u);
-  ClearCapturedEvents();
-  first_touch_location = gfx::Point(15, 16);
-  second_touch_location = gfx::Point(25, 26);
-  ui::TouchEvent first_touch_second_move(
-      ui::ET_TOUCH_MOVED, first_touch_location, 0, Now());
-  ui::TouchEvent second_touch_second_move(
-      ui::ET_TOUCH_MOVED, second_touch_location, 1, Now());
-  generator_->Dispatch(&first_touch_second_move);
-  generator_->Dispatch(&second_touch_second_move);
-  captured_events = GetCapturedLocatedEvents();
-  ASSERT_EQ(captured_events.size(), 2u);
-  EXPECT_EQ(ui::ET_TOUCH_MOVED, captured_events[0]->type());
-  EXPECT_EQ(first_touch_location, captured_events[0]->location());
-  EXPECT_EQ(ui::ET_TOUCH_MOVED, captured_events[1]->type());
-  EXPECT_EQ(second_touch_location, captured_events[1]->location());
-  ClearCapturedEvents();
-
-  // When we release the second finger, the first finger should still be
-  // passed through.
-  ui::TouchEvent second_touch_release(
-      ui::ET_TOUCH_RELEASED, second_touch_location, 1, Now());
-  generator_->Dispatch(&second_touch_release);
-  captured_events = GetCapturedLocatedEvents();
-  ASSERT_EQ(captured_events.size(), 1u);
-  ClearCapturedEvents();
-  first_touch_location = gfx::Point(17, 18);
-  ui::TouchEvent first_touch_third_move(
-      ui::ET_TOUCH_MOVED, first_touch_location, 0, Now());
-  generator_->Dispatch(&first_touch_third_move);
-  captured_events = GetCapturedLocatedEvents();
-  ASSERT_EQ(captured_events.size(), 1u);
-  EXPECT_EQ(ui::ET_TOUCH_MOVED, captured_events[0]->type());
-  EXPECT_EQ(first_touch_location, captured_events[0]->location());
-  ClearCapturedEvents();
-
-  ui::TouchEvent first_touch_release(
-      ui::ET_TOUCH_RELEASED, first_touch_location, 0, Now());
-  generator_->Dispatch(&first_touch_release);
-  captured_events = GetCapturedLocatedEvents();
-  ASSERT_EQ(captured_events.size(), 1u);
-  EXPECT_TRUE(IsInNoFingersDownState());
-}
-
 // Finger must have moved more than slop, faster than the minimum swipe
 // velocity, and before the tap timer fires in order to enter
 // GestureInProgress state. Otherwise, if the tap timer fires before the a
@@ -1412,8 +1310,8 @@ TEST_F(TouchExplorationTest, MAYBE_AllFingerPermutations) {
 }
 
 // With the simple swipe gestures, if additional fingers are added, then the
-// state should change to passthrough.
-TEST_F(TouchExplorationTest, FromGestureToPassthrough) {
+// state should change to the wait for one finger state.
+TEST_F(TouchExplorationTest, GestureAddedFinger) {
   SwitchTouchExplorationMode(true);
   EXPECT_FALSE(IsInTouchToMouseMode());
   EXPECT_FALSE(IsInGestureInProgressState());
@@ -1430,24 +1328,13 @@ TEST_F(TouchExplorationTest, FromGestureToPassthrough) {
   const ScopedVector<ui::Event>& captured_events = GetCapturedEvents();
   ASSERT_EQ(0U, captured_events.size());
 
-  // Generate a second press that should go through as is.
+  // Generate a second press that should prevent gestures from continuing to
+  // go through.
   ui::TouchEvent second_press(
       ui::ET_TOUCH_PRESSED, gfx::Point(20, 21), 1, Now());
   generator_->Dispatch(&second_press);
   EXPECT_FALSE(IsInGestureInProgressState());
   EXPECT_FALSE(IsInTouchToMouseMode());
-  std::vector<ui::LocatedEvent*> captured_located_events =
-      GetCapturedLocatedEvents();
-  ASSERT_EQ(1U, captured_events.size());
-  CONFIRM_EVENTS_ARE_TOUCH_AND_EQUAL(captured_located_events[0], &second_press);
-  ClearCapturedEvents();
-
-  // The rest of the events should occur in passthrough.
-  generator_->ReleaseTouchId(0);
-  ASSERT_EQ(1U, captured_events.size());
-  EXPECT_EQ(ui::ET_TOUCH_RELEASED, captured_events[0]->type());
-  ClearCapturedEvents();
-  generator_->ReleaseTouchId(1);
   ASSERT_EQ(0U, captured_events.size());
 }
 
