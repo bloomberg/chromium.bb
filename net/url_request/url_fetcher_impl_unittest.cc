@@ -41,7 +41,7 @@ namespace {
 
 // TODO(akalin): Move all the test data to somewhere under net/.
 const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("net/data/url_fetcher_impl_unittest");
+    FILE_PATH_LITERAL("chrome/test/data");
 const char kTestServerFilePrefix[] = "files/";
 
 class ThrottlingTestURLRequestContext : public TestURLRequestContext {
