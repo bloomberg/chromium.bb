@@ -164,8 +164,7 @@ class PerfProfilerController(controllers.BaseController):
                                                     symfs_dir,
                                                     required_libs,
                                                     use_symlinks=False)
-    perfhost_path = os.path.abspath(support_binaries.FindPath(
-        'perfhost', 'linux'))
+    perfhost_path = support_binaries.FindPath('perfhost', 'linux')
 
     ui.PrintMessage('\nNote: to view the profile in perf, run:')
     ui.PrintMessage('  ' + self._GetInteractivePerfCommand(perfhost_path,
