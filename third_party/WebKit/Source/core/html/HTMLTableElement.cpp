@@ -321,11 +321,11 @@ void HTMLTableElement::collectStyleForPresentationAttribute(const QualifiedName&
         if (!value.isEmpty())
             addHTMLLengthToStyle(style, CSSPropertyBorderSpacing, value);
     } else if (name == vspaceAttr) {
-        UseCounter::count(document(), UseCounter::HTMLTableElementVspace);
+        UseCounter::countDeprecation(document(), UseCounter::HTMLTableElementVspace);
         addHTMLLengthToStyle(style, CSSPropertyMarginTop, value);
         addHTMLLengthToStyle(style, CSSPropertyMarginBottom, value);
     } else if (name == hspaceAttr) {
-        UseCounter::count(document(), UseCounter::HTMLTableElementHspace);
+        UseCounter::countDeprecation(document(), UseCounter::HTMLTableElementHspace);
         addHTMLLengthToStyle(style, CSSPropertyMarginLeft, value);
         addHTMLLengthToStyle(style, CSSPropertyMarginRight, value);
     } else if (name == alignAttr) {

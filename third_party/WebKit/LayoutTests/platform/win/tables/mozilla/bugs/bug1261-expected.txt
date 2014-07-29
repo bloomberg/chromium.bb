@@ -1,3 +1,5 @@
+CONSOLE WARNING: The 'hspace' attribute on table is deprecated. Please use CSS instead.
+CONSOLE WARNING: The 'vspace' attribute on table is deprecated. Please use CSS instead.
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600

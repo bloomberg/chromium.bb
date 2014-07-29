@@ -778,6 +778,12 @@ String UseCounter::deprecationMessage(Feature feature)
     case WebSocketURL:
         return "'WebSocket.URL' is deprecated. Please use 'WebSocket.url' instead.";
 
+    case HTMLTableElementVspace:
+        return "The 'vspace' attribute on table is deprecated. Please use CSS instead.";
+
+    case HTMLTableElementHspace:
+        return "The 'hspace' attribute on table is deprecated. Please use CSS instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
