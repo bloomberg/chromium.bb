@@ -435,6 +435,7 @@ crbug.com/268111 [ Win ] http/tests/appcache/online-whitelist.html [ Failure Pas
 
 crbug.com/268588 [ Release ] http/tests/w3c/webperf/submission/Google/HighResolutionTime/worker-shared-basic.html [ Failure Pass ]
 crbug.com/316148 [ Win ] http/tests/w3c/webperf/approved/UserTiming/idlharness.html [ Pass Crash ]
+crbug.com/398295 [ Win Debug ] http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_mark.html [ Failure Pass ]
 
 crbug.com/268832 [ SnowLeopard Debug ] virtual/regionbasedmulticol/fast/multicol/newmulticol/direct-child-column-span-all.html [ Crash Pass ]
 
