@@ -2277,7 +2277,7 @@ def CMDtry(parser, args):
 
   if options.bot and not options.master:
     parser.error('For manually specified bots please also specify the '
-                 'tryserver master, e.g. "-m tryserver.chromium".')
+                 'tryserver master, e.g. "-m tryserver.chromium.linux".')
 
   def GetMasterMap():
     # Process --bot and --testfilter.
