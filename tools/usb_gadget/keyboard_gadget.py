@@ -159,3 +159,44 @@ class KeyboardGadget(hid_gadget.HidGadget):
 
   def KeyUp(self, keycode):
     self._feature.KeyUp(keycode)
+
+
+def RegisterHandlers():
+  """Registers web request handlers with the application server."""
+
+  from tornado import web
+
+  class WebConfigureHandler(web.RequestHandler):
+
+    def post(self):
+      server.SwitchGadget(KeyboardGadget())
+
+  class WebTypeHandler(web.RequestHandler):
+
+    def post(self):
+      string = self.get_argument('string')
+      for char in string:
+        if char in hid_constants.KEY_CODES:
+          code = hid_constants.KEY_CODES[char]
+          server.gadget.KeyDown(code)
+          server.gadget.KeyUp(code)
+        elif char in hid_constants.SHIFT_KEY_CODES:
+          code = hid_constants.SHIFT_KEY_CODES[char]
+          server.gadget.ModifierDown(hid_constants.ModifierKey.L_SHIFT)
+          server.gadget.KeyDown(code)
+          server.gadget.KeyUp(code)
+          server.gadget.ModifierUp(hid_constants.ModifierKey.L_SHIFT)
+
+  class WebPressHandler(web.RequestHandler):
+
+    def post(self):
+      code = hid_constants.KEY_CODES[self.get_argument('key')]
+      server.gadget.KeyDown(code)
+      server.gadget.KeyUp(code)
+
+  import server
+  server.app.add_handlers('.*$', [
+      (r'/keyboard/configure', WebConfigureHandler),
+      (r'/keyboard/type', WebTypeHandler),
+      (r'/keyboard/press', WebPressHandler),
+  ])

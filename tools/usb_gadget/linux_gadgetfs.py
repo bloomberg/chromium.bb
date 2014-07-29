@@ -145,7 +145,7 @@ class LinuxGadgetfs(object):
 
   def Disconnected(self):
     print 'DISCONNECT'
-    for endpoint_addr in self._ep_fds:
+    for endpoint_addr in self._ep_fds.keys():
       self.StopEndpoint(endpoint_addr)
     self._ep_fds.clear()
     self._gadget.Disconnected()

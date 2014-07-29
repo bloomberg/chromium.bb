@@ -9,7 +9,9 @@ import argparse
 import netifaces
 from tornado import ioloop
 
+import keyboard_gadget
 import linux_gadgetfs
+import mouse_gadget
 import server
 
 
@@ -45,6 +47,9 @@ def main():
 
   server.chip = linux_gadgetfs.LinuxGadgetfs(server.hardware)
   server.SwitchGadget(server.default)
+
+  keyboard_gadget.RegisterHandlers()
+  mouse_gadget.RegisterHandlers()
 
   server.http_server.listen(server.port)
 

@@ -117,3 +117,42 @@ class MouseGadget(hid_gadget.HidGadget):
 
   def Move(self, x_displacement, y_displacement):
     self._feature.Move(x_displacement, y_displacement)
+
+
+def RegisterHandlers():
+  """Registers web request handlers with the application server."""
+
+  from tornado import web
+
+  class WebConfigureHandler(web.RequestHandler):
+
+    def post(self):
+      gadget = MouseGadget()
+      server.SwitchGadget(gadget)
+
+  class WebClickHandler(web.RequestHandler):
+
+    def post(self):
+      BUTTONS = {
+          '1': hid_constants.Mouse.BUTTON_1,
+          '2': hid_constants.Mouse.BUTTON_2,
+          '3': hid_constants.Mouse.BUTTON_3,
+      }
+
+      button = BUTTONS[self.get_argument('button')]
+      server.gadget.ButtonDown(button)
+      server.gadget.ButtonUp(button)
+
+  class WebMoveHandler(web.RequestHandler):
+
+    def post(self):
+      x = int(self.get_argument('x'))
+      y = int(self.get_argument('y'))
+      server.gadget.Move(x, y)
+
+  import server
+  server.app.add_handlers('.*$', [
+      (r'/mouse/configure', WebConfigureHandler),
+      (r'/mouse/move', WebMoveHandler),
+      (r'/mouse/click', WebClickHandler),
+  ])
