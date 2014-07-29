@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_image_shared_memory.h"
-#include "ui/ozone/public/gpu_memory_buffer_factory_ozone_native_buffer.h"
 
 namespace content {
 namespace {
@@ -20,29 +19,12 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory {
       const gfx::Size& size,
       unsigned internalformat,
       unsigned usage) OVERRIDE {
-    switch (handle.type) {
-      case gfx::OZONE_NATIVE_BUFFER:
-        return ui::GpuMemoryBufferFactoryOzoneNativeBuffer::GetInstance()
-                       ->CreateGpuMemoryBuffer(
-                           handle.global_id, size, internalformat, usage)
-                   ? handle
-                   : gfx::GpuMemoryBufferHandle();
-      default:
-        NOTREACHED();
-        return gfx::GpuMemoryBufferHandle();
-    }
+    NOTREACHED();
+    return gfx::GpuMemoryBufferHandle();
   }
   virtual void DestroyGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle) OVERRIDE {
-    switch (handle.type) {
-      case gfx::OZONE_NATIVE_BUFFER:
-        ui::GpuMemoryBufferFactoryOzoneNativeBuffer::GetInstance()
-            ->DestroyGpuMemoryBuffer(handle.global_id);
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
+    NOTREACHED();
   }
   virtual scoped_refptr<gfx::GLImage> CreateImageForGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle,
@@ -58,14 +40,6 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory {
 
         return image;
       }
-      case gfx::OZONE_NATIVE_BUFFER:
-        // Verify that client is the owner of the buffer we're about to use.
-        if (handle.global_id.secondary_id != client_id)
-          return scoped_refptr<gfx::GLImage>();
-
-        return ui::GpuMemoryBufferFactoryOzoneNativeBuffer::GetInstance()
-            ->CreateImageForGpuMemoryBuffer(
-                handle.global_id, size, internalformat);
       default:
         NOTREACHED();
         return scoped_refptr<gfx::GLImage>();
