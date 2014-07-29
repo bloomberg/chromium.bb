@@ -1,0 +1,63 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+
+<script>
+
+function doClose()
+{
+    window.close();
+}
+
+function onload()
+{
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+        testRunner.showWebInspector();
+    }
+    runTest();
+}
+
+var test = function()
+{
+    // This is needed because Inspector.addResult() uses output() which places elements
+    //   into the <body> which gets disposed along with the window
+    function log(message) {
+        InspectorTest.evaluateInPage("console.log(unescape('"+ escape(message) +"'));");
+    }
+
+    log("Starting test");
+    WebInspector.inspectorView.showPanel("sources");
+    var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
+    InspectorTest.startDebuggerTest(testCloseBreakpoint);
+
+    function testCloseBreakpoint(next)
+    {
+        log("Setting breakpoint");
+        pane._setBreakpoint('instrumentation:close');
+
+        log("Calling window.close()");
+        InspectorTest.waitUntilPaused(paused);
+        InspectorTest.evaluateInPage("doClose()");
+
+        function paused(callFrames)
+        {
+            log("Paused in breakpoint");
+            // get the first stack frame
+            log(InspectorTest.captureStackTraceIntoString(callFrames).split('\n')[1].trim());
+
+            pane._removeBreakpoint('instrumentation:close');
+            InspectorTest.completeDebuggerTest();
+            // After this point execution will resume and the window will close
+        }
+    }
+}
+</script>
+</head>
+<body onload="onload()">
+<p>Tests the window close breakpoint.
+</p>
+</body>
+</html>

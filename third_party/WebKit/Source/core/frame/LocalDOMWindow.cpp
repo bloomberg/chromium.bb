@@ -992,6 +992,8 @@ void LocalDOMWindow::close(ExecutionContext* context)
     if (!m_frame->loader().shouldClose())
         return;
 
+    InspectorInstrumentation::willCloseWindow(context);
+
     page->chrome().closeWindowSoon();
 }
 

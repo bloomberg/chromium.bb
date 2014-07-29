@@ -71,6 +71,9 @@ interface InspectorInstrumentation {
     void didClearDocumentOfWindowObject([Keep] LocalFrame*);
 
     [DOMDebugger, Inline=FastReturn]
+    void willCloseWindow(ExecutionContext*);
+
+    [DOMDebugger, Inline=FastReturn]
     void willInsertDOMNode([Keep] Node* parent);
 
     [DOM, DOMDebugger, Inline=FastReturn]

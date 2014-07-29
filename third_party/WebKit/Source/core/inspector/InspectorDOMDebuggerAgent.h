@@ -97,6 +97,7 @@ public:
     void didFireWebGLWarning();
     void didFireWebGLErrorOrWarning(const String& message);
     void willExecuteCustomElementCallback(Element*);
+    void willCloseWindow();
 
     void didProcessTask();
 

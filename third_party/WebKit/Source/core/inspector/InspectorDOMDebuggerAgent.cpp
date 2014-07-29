@@ -63,6 +63,7 @@ static const char animationFrameFiredEventName[] = "animationFrameFired";
 static const char setTimerEventName[] = "setTimer";
 static const char clearTimerEventName[] = "clearTimer";
 static const char timerFiredEventName[] = "timerFired";
+static const char windowCloseEventName[] = "close";
 static const char customElementCallbackName[] = "customElementCallback";
 static const char webglErrorFiredEventName[] = "webglErrorFired";
 static const char webglWarningFiredEventName[] = "webglWarningFired";
@@ -491,6 +492,11 @@ void InspectorDOMDebuggerAgent::willHandleEvent(EventTarget* target, Event* even
     Node* node = target->toNode();
     String targetName = node ? node->nodeName() : target->interfaceName();
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(event->type(), &targetName), false);
+}
+
+void InspectorDOMDebuggerAgent::willCloseWindow()
+{
+    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(windowCloseEventName, 0), true);
 }
 
 void InspectorDOMDebuggerAgent::willExecuteCustomElementCallback(Element*)
