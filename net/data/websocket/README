@@ -19,6 +19,11 @@ Multiple tests may share one resource, or URI handler.
      content::TitleWatcher.
      Used by WorkerTest.WebSocketSharedWorker.
 
+- connect_to.html : A page which makes a connection to the WebSocket server
+     specified in the "url" parameter,
+     eg. connect_to.html?url=ws://localhost/echo Sets the title to "PASS" if
+     connection succeeds and "FAIL" otherwise.
+
 - counted_connection.html : A page that creates a WebSocket connection
      to count-connection_wsh.
      This file does NOT close the established connection.

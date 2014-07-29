@@ -103,6 +103,7 @@ class WebSocketOptions:
     self.tls_client_ca = None
     self.tls_module = 'ssl'
     self.use_basic_auth = False
+    self.basic_auth_credential = 'Basic ' + base64.b64encode('test:test')
 
 
 class RecordingSSLSessionCache(object):
@@ -2025,6 +2026,7 @@ class ServerRunner(testserver_base.TestServerRunner):
       print 'WebSocket server started on %s://%s:%d...' % \
           (scheme, host, server.server_port)
       server_data['port'] = server.server_port
+      websocket_options.use_basic_auth = self.options.ws_basic_auth
     elif self.options.server_type == SERVER_TCP_ECHO:
       # Used for generating the key (randomly) that encodes the "echo request"
       # message.
@@ -2206,6 +2208,10 @@ class ServerRunner(testserver_base.TestServerRunner):
                                   'support for exactly one protocol, http/1.1')
     self.option_parser.add_option('--file-root-url', default='/files/',
                                   help='Specify a root URL for files served.')
+    # TODO(ricea): Generalize this to support basic auth for HTTP too.
+    self.option_parser.add_option('--ws-basic-auth', action='store_true',
+                                  dest='ws_basic_auth',
+                                  help='Enable basic-auth for WebSocket')
 
 
 if __name__ == '__main__':
