@@ -589,7 +589,7 @@ void WizardController::SkipToLoginForTesting(
   VLOG(1) << "SkipToLoginForTesting.";
   StartupUtils::MarkEulaAccepted();
   PerformPostEulaActions();
-  OnOOBECompleted();
+  OnAutoEnrollmentCheckCompleted();
 }
 
 void WizardController::AddObserver(Observer* observer) {
@@ -780,7 +780,7 @@ void WizardController::OnAutoEnrollmentDone() {
   ResumeLoginScreen();
 }
 
-void WizardController::OnOOBECompleted() {
+void WizardController::OnAutoEnrollmentCheckCompleted() {
   if (ShouldAutoStartEnrollment() || enrollment_recovery_) {
     ShowEnrollmentScreen();
   } else {
@@ -1001,7 +1001,7 @@ void WizardController::OnExit(ExitCodes exit_code) {
       if (skip_update_enroll_after_eula_)
         ShowEnrollmentScreen();
       else
-        OnOOBECompleted();
+        OnAutoEnrollmentCheckCompleted();
       break;
     case ENTERPRISE_ENROLLMENT_COMPLETED:
       OnEnrollmentDone();

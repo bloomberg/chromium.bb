@@ -219,7 +219,7 @@ class WizardController : public ScreenObserver {
   void OnKioskAutolaunchConfirmed();
   void OnKioskEnableCompleted();
   void OnWrongHWIDWarningSkipped();
-  void OnOOBECompleted();
+  void OnAutoEnrollmentCheckCompleted();
   void OnTermsOfServiceDeclined();
   void OnTermsOfServiceAccepted();
   void OnControllerPairingFinished();
