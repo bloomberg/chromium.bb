@@ -1,6 +1,0 @@
-PASS mouseEvent.webkitMovementX is defined.
-PASS mouseEvent.webkitMovementY is defined.
-PASS successfullyParsed is true
-
-TEST COMPLETE
-

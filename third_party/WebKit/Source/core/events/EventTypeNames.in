@@ -220,8 +220,6 @@ webkitkeyadded
 webkitkeyerror
 webkitkeymessage
 webkitneedkey
-webkitpointerlockchange
-webkitpointerlockerror
 webkitprerenderdomcontentloaded
 webkitprerenderload
 webkitprerenderstart
