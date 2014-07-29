@@ -215,7 +215,7 @@ private:
         // Returns true if any BlockSet was modified or freed by the removal.
         bool remove(const RenderObject*);
         Fingerprint get(const RenderObject*);
-        BlockSet& getTentativeClusterRoots(Fingerprint);
+        BlockSet* getTentativeClusterRoots(Fingerprint);
     private:
         typedef HashMap<const RenderObject*, Fingerprint> FingerprintMap;
         typedef HashMap<Fingerprint, OwnPtr<BlockSet> > ReverseFingerprintMap;

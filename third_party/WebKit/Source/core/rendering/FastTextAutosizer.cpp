@@ -721,7 +721,7 @@ FastTextAutosizer::Supercluster* FastTextAutosizer::getSupercluster(const Render
     if (!fingerprint)
         return 0;
 
-    BlockSet* roots = &m_fingerprintMapper.getTentativeClusterRoots(fingerprint);
+    BlockSet* roots = m_fingerprintMapper.getTentativeClusterRoots(fingerprint);
     if (!roots || roots->size() < 2 || !roots->contains(block))
         return 0;
 
@@ -1074,9 +1074,9 @@ FastTextAutosizer::Fingerprint FastTextAutosizer::FingerprintMapper::get(const R
     return m_fingerprints.get(renderer);
 }
 
-FastTextAutosizer::BlockSet& FastTextAutosizer::FingerprintMapper::getTentativeClusterRoots(Fingerprint fingerprint)
+FastTextAutosizer::BlockSet* FastTextAutosizer::FingerprintMapper::getTentativeClusterRoots(Fingerprint fingerprint)
 {
-    return *m_blocksForFingerprint.get(fingerprint);
+    return m_blocksForFingerprint.get(fingerprint);
 }
 
 FastTextAutosizer::LayoutScope::LayoutScope(RenderBlock* block)
