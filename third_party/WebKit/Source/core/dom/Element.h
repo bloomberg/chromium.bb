@@ -685,11 +685,6 @@ inline bool isDisabledFormControl(const Node* node)
     return node->isElementNode() && toElement(node)->isDisabledFormControl();
 }
 
-inline bool Node::hasTagName(const QualifiedName& name) const
-{
-    return isElementNode() && toElement(this)->hasTagName(name);
-}
-
 inline Element* Node::parentElement() const
 {
     ContainerNode* parent = parentNode();

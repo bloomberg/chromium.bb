@@ -168,7 +168,7 @@ inline bool ShadowDOMSiblingTraversalStrategy::isFirstOfType(Element& element, c
     ASSERT(element == toElement(m_siblings[m_nth]));
 
     for (int i = m_nth - 1; i >= 0; --i) {
-        if (m_siblings[i]->hasTagName(type))
+        if (m_siblings[i]->isElementNode() && toElement(m_siblings[i])->hasTagName(type))
             return false;
     }
 
@@ -180,7 +180,7 @@ inline bool ShadowDOMSiblingTraversalStrategy::isLastOfType(Element& element, co
     ASSERT(element == toElement(m_siblings[m_nth]));
 
     for (size_t i = m_nth + 1; i < m_siblings.size(); ++i) {
-        if (m_siblings[i]->hasTagName(type))
+        if (m_siblings[i]->isElementNode() && toElement(m_siblings[i])->hasTagName(type))
             return false;
     }
 
@@ -219,7 +219,7 @@ inline int ShadowDOMSiblingTraversalStrategy::countElementsOfTypeBefore(Element&
 
     int count = 0;
     for (int i = m_nth - 1; i >= 0; --i) {
-        if (m_siblings[i]->hasTagName(type))
+        if (m_siblings[i]->isElementNode() && toElement(m_siblings[i])->hasTagName(type))
             ++count;
     }
 
@@ -232,7 +232,7 @@ inline int ShadowDOMSiblingTraversalStrategy::countElementsOfTypeAfter(Element& 
 
     int count = 0;
     for (size_t i = m_nth + 1; i < m_siblings.size(); ++i) {
-        if (m_siblings[i]->hasTagName(type))
+        if (m_siblings[i]->isElementNode() && toElement(m_siblings[i])->hasTagName(type))
             return ++count;
     }
 

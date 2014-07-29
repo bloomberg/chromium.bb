@@ -171,7 +171,6 @@ public:
 
     // DOM methods & attributes for Node
 
-    bool hasTagName(const QualifiedName&) const;
     bool hasTagName(const HTMLQualifiedName&) const;
     bool hasTagName(const SVGQualifiedName&) const;
     virtual String nodeName() const = 0;
