@@ -355,16 +355,16 @@ void NativeDisplayDelegateX11::InitModes() {
 }
 
 DisplaySnapshotX11* NativeDisplayDelegateX11::InitDisplaySnapshot(
-    RROutput id,
+    RROutput output,
     XRROutputInfo* info,
     RRCrtc* last_used_crtc,
     int index) {
   int64_t display_id = 0;
   bool has_display_id = GetDisplayId(
-      id, static_cast<uint8_t>(index), &display_id);
+      output, static_cast<uint8_t>(index), &display_id);
 
   bool has_overscan = false;
-  GetOutputOverscanFlag(id, &has_overscan);
+  GetOutputOverscanFlag(output, &has_overscan);
 
   DisplayConnectionType type = GetDisplayConnectionTypeFromName(info->name);
   if (type == DISPLAY_CONNECTION_TYPE_UNKNOWN)
@@ -419,19 +419,19 @@ DisplaySnapshotX11* NativeDisplayDelegateX11::InitDisplaySnapshot(
     }
   }
 
-  DisplaySnapshotX11* output =
+  DisplaySnapshotX11* display_snapshot =
       new DisplaySnapshotX11(display_id,
                              has_display_id,
                              origin,
                              gfx::Size(info->mm_width, info->mm_height),
                              type,
-                             IsOutputAspectPreservingScaling(id),
+                             IsOutputAspectPreservingScaling(output),
                              has_overscan,
-                             GetDisplayName(id),
+                             GetDisplayName(output),
                              display_modes,
                              current_mode,
                              native_mode,
-                             id,
+                             output,
                              crtc,
                              index);
 
@@ -439,7 +439,7 @@ DisplaySnapshotX11* NativeDisplayDelegateX11::InitDisplaySnapshot(
           << " output=" << output << " crtc=" << crtc
           << " current_mode=" << current_mode_id;
 
-  return output;
+  return display_snapshot;
 }
 
 bool NativeDisplayDelegateX11::GetHDCPState(const DisplaySnapshot& output,
