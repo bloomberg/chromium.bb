@@ -14,7 +14,7 @@
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
-#include "grit/component_scaled_resources.h"
+#include "grit/theme_resources.h"
 
 namespace {
 

@@ -1,6 +1,3 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <grit-part>
-  <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EXTENSION_APP" file="common/omnibox/omnibox_extension_app.png" />
-  <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTP" file="common/omnibox/omnibox_http.png" />
-  <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH" file="common/omnibox/omnibox_search.png" />
 </grit-part>
