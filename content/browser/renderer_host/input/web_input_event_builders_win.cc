@@ -160,7 +160,9 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(HWND hwnd,
   // NOTE: There doesn't seem to be a way to query the mouse button state in
   // this case.
 
-  if (LOWORD(lparam) > 1)
+  // Bit 30 of lParam represents the "previous key state". If set, the key was
+  // already down, therefore this is an auto-repeat.
+  if (lparam & 0x40000000)
     result.modifiers |= WebInputEvent::IsAutoRepeat;
 
   result.modifiers |= GetLocationModifier(wparam, lparam);
