@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/debug/alias.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -88,6 +89,30 @@ class RawChannelWin : public RawChannel {
   //   - there is no pending write.
   class RawChannelIOHandler : public base::MessageLoopForIO::IOHandler {
    public:
+    // TODO(yzshen): This is for debugging http://crbug.com/385795.
+    // This code should be removed once the issue is fixed or nothing is
+    // revealed by it. (No later than Aug 1, 2014.)
+    struct WriteStats {
+      WriteStats()
+          : write_no_lock_call(0),
+            schedule_write_no_lock_call(0),
+            os_write_call(0),
+            os_write_pending(0),
+            os_write_failure(0),
+            task_posted_by_schedule_write(0),
+            write_completion(0),
+            write_completion_failure(0) {}
+
+      uint32_t write_no_lock_call;
+      uint32_t schedule_write_no_lock_call;
+      uint32_t os_write_call;
+      uint32_t os_write_pending;
+      uint32_t os_write_failure;
+      uint32_t task_posted_by_schedule_write;
+      uint32_t write_completion;
+      uint32_t write_completion_failure;
+    };
+
     RawChannelIOHandler(RawChannelWin* owner,
                         embedder::ScopedPlatformHandle handle);
 
@@ -105,6 +130,7 @@ class RawChannelWin : public RawChannel {
     base::MessageLoopForIO::IOContext* write_context_no_lock();
     // Instructs the object to wait for an |OnIOCompleted()| notification.
     void OnPendingWriteStartedNoLock();
+    WriteStats* write_stats_no_lock();
 
     // |base::MessageLoopForIO::IOHandler| implementation:
     // Must be called on the I/O thread. It could be called before or after
@@ -156,6 +182,8 @@ class RawChannelWin : public RawChannel {
     bool pending_write_;
     base::MessageLoopForIO::IOContext write_context_;
 
+    WriteStats write_stats_;
+
     DISALLOW_COPY_AND_ASSIGN(RawChannelIOHandler);
   };
 
@@ -199,55 +227,74 @@ RawChannelWin::RawChannelIOHandler::RawChannelIOHandler(
 }
 
 RawChannelWin::RawChannelIOHandler::~RawChannelIOHandler() {
-  DCHECK(ShouldSelfDestruct());
+  CHECK(ShouldSelfDestruct());
+
+  VLOG(4) << "write_no_lock_call: " << write_stats_.write_no_lock_call << "\n"
+          << "schedule_write_no_lock_call: "
+          << write_stats_.schedule_write_no_lock_call << "\n"
+          << "os_write_call: " << write_stats_.os_write_call << "\n"
+          << "os_write_pending: " << write_stats_.os_write_pending << "\n"
+          << "os_write_failure: " << write_stats_.os_write_failure << "\n"
+          << "task_posted_by_schedule_write: "
+          << write_stats_.task_posted_by_schedule_write << "\n"
+          << "write_completion: " << write_stats_.write_completion << "\n"
+          << "write_completion_failure: "
+          << write_stats_.write_completion_failure << "\n";
 }
 
 bool RawChannelWin::RawChannelIOHandler::pending_read() const {
-  DCHECK(owner_);
-  DCHECK_EQ(base::MessageLoop::current(), owner_->message_loop_for_io());
+  CHECK(owner_);
+  CHECK_EQ(base::MessageLoop::current(), owner_->message_loop_for_io());
   return pending_read_;
 }
 
 base::MessageLoopForIO::IOContext*
 RawChannelWin::RawChannelIOHandler::read_context() {
-  DCHECK(owner_);
-  DCHECK_EQ(base::MessageLoop::current(), owner_->message_loop_for_io());
+  CHECK(owner_);
+  CHECK_EQ(base::MessageLoop::current(), owner_->message_loop_for_io());
   return &read_context_;
 }
 
 void RawChannelWin::RawChannelIOHandler::OnPendingReadStarted() {
-  DCHECK(owner_);
-  DCHECK_EQ(base::MessageLoop::current(), owner_->message_loop_for_io());
-  DCHECK(!pending_read_);
+  CHECK(owner_);
+  CHECK_EQ(base::MessageLoop::current(), owner_->message_loop_for_io());
+  CHECK(!pending_read_);
   pending_read_ = true;
 }
 
 bool RawChannelWin::RawChannelIOHandler::pending_write_no_lock() const {
-  DCHECK(owner_);
+  CHECK(owner_);
   owner_->write_lock().AssertAcquired();
   return pending_write_;
 }
 
 base::MessageLoopForIO::IOContext*
 RawChannelWin::RawChannelIOHandler::write_context_no_lock() {
-  DCHECK(owner_);
+  CHECK(owner_);
   owner_->write_lock().AssertAcquired();
   return &write_context_;
 }
 
 void RawChannelWin::RawChannelIOHandler::OnPendingWriteStartedNoLock() {
-  DCHECK(owner_);
+  CHECK(owner_);
   owner_->write_lock().AssertAcquired();
-  DCHECK(!pending_write_);
+  CHECK(!pending_write_);
   pending_write_ = true;
+}
+
+RawChannelWin::RawChannelIOHandler::WriteStats*
+RawChannelWin::RawChannelIOHandler::write_stats_no_lock() {
+  CHECK(owner_);
+  owner_->write_lock().AssertAcquired();
+  return &write_stats_;
 }
 
 void RawChannelWin::RawChannelIOHandler::OnIOCompleted(
     base::MessageLoopForIO::IOContext* context,
     DWORD bytes_transferred,
     DWORD error) {
-  DCHECK(!owner_ ||
-         base::MessageLoop::current() == owner_->message_loop_for_io());
+  CHECK(!owner_ ||
+        base::MessageLoop::current() == owner_->message_loop_for_io());
 
   {
     // Suppress self-destruction inside |OnReadCompleted()|, etc. (in case they
@@ -269,8 +316,8 @@ void RawChannelWin::RawChannelIOHandler::OnIOCompleted(
 void RawChannelWin::RawChannelIOHandler::DetachFromOwnerNoLock(
     scoped_ptr<ReadBuffer> read_buffer,
     scoped_ptr<WriteBuffer> write_buffer) {
-  DCHECK(owner_);
-  DCHECK_EQ(base::MessageLoop::current(), owner_->message_loop_for_io());
+  CHECK(owner_);
+  CHECK_EQ(base::MessageLoop::current(), owner_->message_loop_for_io());
   owner_->write_lock().AssertAcquired();
 
   // If read/write is pending, we have to retain the corresponding buffer.
@@ -294,9 +341,9 @@ bool RawChannelWin::RawChannelIOHandler::ShouldSelfDestruct() const {
 
 void RawChannelWin::RawChannelIOHandler::OnReadCompleted(DWORD bytes_read,
                                                          DWORD error) {
-  DCHECK(!owner_ ||
-         base::MessageLoop::current() == owner_->message_loop_for_io());
-  DCHECK(suppress_self_destruct_);
+  CHECK(!owner_ ||
+        base::MessageLoop::current() == owner_->message_loop_for_io());
+  CHECK(suppress_self_destruct_);
 
   CHECK(pending_read_);
   pending_read_ = false;
@@ -304,24 +351,33 @@ void RawChannelWin::RawChannelIOHandler::OnReadCompleted(DWORD bytes_read,
     return;
 
   if (error != ERROR_SUCCESS) {
-    DCHECK_EQ(bytes_read, 0u);
+    CHECK_EQ(bytes_read, 0u);
     LOG_IF(ERROR, error != ERROR_BROKEN_PIPE)
         << "ReadFile: " << logging::SystemErrorCodeToString(error);
     owner_->OnReadCompleted(false, 0);
   } else {
-    DCHECK_GT(bytes_read, 0u);
+    CHECK_GT(bytes_read, 0u);
     owner_->OnReadCompleted(true, bytes_read);
   }
 }
 
 void RawChannelWin::RawChannelIOHandler::OnWriteCompleted(DWORD bytes_written,
                                                           DWORD error) {
-  DCHECK(!owner_ ||
-         base::MessageLoop::current() == owner_->message_loop_for_io());
-  DCHECK(suppress_self_destruct_);
+  CHECK(!owner_ ||
+        base::MessageLoop::current() == owner_->message_loop_for_io());
+  CHECK(suppress_self_destruct_);
+
+  WriteStats stack_copy;
+  base::debug::Alias(&stack_copy);
 
   if (!owner_) {
     // No lock needed.
+
+    write_stats_.write_completion++;
+    if (error != ERROR_SUCCESS)
+      write_stats_.write_completion_failure++;
+    stack_copy = write_stats_;
+
     CHECK(pending_write_);
     pending_write_ = false;
     return;
@@ -329,6 +385,12 @@ void RawChannelWin::RawChannelIOHandler::OnWriteCompleted(DWORD bytes_written,
 
   {
     base::AutoLock locker(owner_->write_lock());
+
+    write_stats_.write_completion++;
+    if (error != ERROR_SUCCESS)
+      write_stats_.write_completion_failure++;
+    stack_copy = write_stats_;
+
     CHECK(pending_write_);
     pending_write_ = false;
   }
@@ -346,11 +408,11 @@ RawChannelWin::RawChannelWin(embedder::ScopedPlatformHandle handle)
       io_handler_(NULL),
       skip_completion_port_on_success_(
           g_vista_or_higher_functions.Get().is_vista_or_higher()) {
-  DCHECK(handle_.is_valid());
+  CHECK(handle_.is_valid());
 }
 
 RawChannelWin::~RawChannelWin() {
-  DCHECK(!io_handler_);
+  CHECK(!io_handler_);
 }
 
 size_t RawChannelWin::GetSerializedPlatformHandleSize() const {
@@ -359,9 +421,9 @@ size_t RawChannelWin::GetSerializedPlatformHandleSize() const {
 }
 
 RawChannel::IOResult RawChannelWin::Read(size_t* bytes_read) {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
-  DCHECK(io_handler_);
-  DCHECK(!io_handler_->pending_read());
+  CHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
+  CHECK(io_handler_);
+  CHECK(!io_handler_->pending_read());
 
   char* buffer = NULL;
   size_t bytes_to_read = 0;
@@ -374,7 +436,7 @@ RawChannel::IOResult RawChannelWin::Read(size_t* bytes_read) {
                          &bytes_read_dword,
                          &io_handler_->read_context()->overlapped);
   if (!result) {
-    DCHECK_EQ(bytes_read_dword, 0u);
+    CHECK_EQ(bytes_read_dword, 0u);
     DWORD error = GetLastError();
     if (error != ERROR_IO_PENDING) {
       LOG_IF(ERROR, error != ERROR_BROKEN_PIPE)
@@ -402,14 +464,14 @@ RawChannel::IOResult RawChannelWin::Read(size_t* bytes_read) {
 }
 
 RawChannel::IOResult RawChannelWin::ScheduleRead() {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
-  DCHECK(io_handler_);
-  DCHECK(!io_handler_->pending_read());
+  CHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
+  CHECK(io_handler_);
+  CHECK(!io_handler_->pending_read());
 
   size_t bytes_read = 0;
   IOResult io_result = Read(&bytes_read);
   if (io_result == IO_SUCCEEDED) {
-    DCHECK(skip_completion_port_on_success_);
+    CHECK(skip_completion_port_on_success_);
 
     // We have finished reading successfully. Queue a notification manually.
     io_handler_->OnPendingReadStarted();
@@ -441,8 +503,15 @@ RawChannel::IOResult RawChannelWin::WriteNoLock(
     size_t* bytes_written) {
   write_lock().AssertAcquired();
 
-  DCHECK(io_handler_);
-  DCHECK(!io_handler_->pending_write_no_lock());
+  RawChannelIOHandler::WriteStats stack_copy(
+      *io_handler_->write_stats_no_lock());
+  base::debug::Alias(&stack_copy);
+
+  io_handler_->write_stats_no_lock()->write_no_lock_call++;
+  stack_copy.write_no_lock_call++;
+
+  CHECK(io_handler_);
+  CHECK(!io_handler_->pending_write_no_lock());
 
   if (write_buffer_no_lock()->HavePlatformHandlesToSend()) {
     // TODO(vtl): Implement.
@@ -451,7 +520,10 @@ RawChannel::IOResult RawChannelWin::WriteNoLock(
 
   std::vector<WriteBuffer::Buffer> buffers;
   write_buffer_no_lock()->GetBuffers(&buffers);
-  DCHECK(!buffers.empty());
+  CHECK(!buffers.empty());
+
+  io_handler_->write_stats_no_lock()->os_write_call++;
+  stack_copy.os_write_call++;
 
   // TODO(yzshen): Handle multi-segment writes more efficiently.
   DWORD bytes_written_dword = 0;
@@ -460,9 +532,18 @@ RawChannel::IOResult RawChannelWin::WriteNoLock(
                           static_cast<DWORD>(buffers[0].size),
                           &bytes_written_dword,
                           &io_handler_->write_context_no_lock()->overlapped);
-  if (!result && GetLastError() != ERROR_IO_PENDING) {
-    PLOG(ERROR) << "WriteFile";
-    return IO_FAILED;
+
+  if (!result) {
+    if (GetLastError() == ERROR_IO_PENDING) {
+      io_handler_->write_stats_no_lock()->os_write_pending++;
+      stack_copy.os_write_pending++;
+    } else {
+      io_handler_->write_stats_no_lock()->os_write_failure++;
+      stack_copy.os_write_failure++;
+
+      PLOG(ERROR) << "WriteFile";
+      return IO_FAILED;
+    }
   }
 
   if (result && skip_completion_port_on_success_) {
@@ -487,18 +568,29 @@ RawChannel::IOResult RawChannelWin::WriteNoLock(
 RawChannel::IOResult RawChannelWin::ScheduleWriteNoLock() {
   write_lock().AssertAcquired();
 
-  DCHECK(io_handler_);
-  DCHECK(!io_handler_->pending_write_no_lock());
+  RawChannelIOHandler::WriteStats stack_copy(
+      *io_handler_->write_stats_no_lock());
+  base::debug::Alias(&stack_copy);
+
+  io_handler_->write_stats_no_lock()->schedule_write_no_lock_call++;
+  stack_copy.schedule_write_no_lock_call++;
+
+  CHECK(io_handler_);
+  CHECK(!io_handler_->pending_write_no_lock());
 
   // TODO(vtl): Do something with |platform_handles_written|.
   size_t platform_handles_written = 0;
   size_t bytes_written = 0;
   IOResult io_result = WriteNoLock(&platform_handles_written, &bytes_written);
   if (io_result == IO_SUCCEEDED) {
-    DCHECK(skip_completion_port_on_success_);
+    CHECK(skip_completion_port_on_success_);
 
     // We have finished writing successfully. Queue a notification manually.
     io_handler_->OnPendingWriteStartedNoLock();
+
+    io_handler_->write_stats_no_lock()->task_posted_by_schedule_write++;
+    stack_copy.task_posted_by_schedule_write++;
+
     // |io_handler_| won't go away before that task is run, so it is safe to use
     // |base::Unretained()|.
     message_loop_for_io()->PostTask(
@@ -515,16 +607,16 @@ RawChannel::IOResult RawChannelWin::ScheduleWriteNoLock() {
 }
 
 bool RawChannelWin::OnInit() {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
+  CHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
 
-  DCHECK(handle_.is_valid());
+  CHECK(handle_.is_valid());
   if (skip_completion_port_on_success_ &&
       !g_vista_or_higher_functions.Get().SetFileCompletionNotificationModes(
           handle_.get().handle, FILE_SKIP_COMPLETION_PORT_ON_SUCCESS)) {
     return false;
   }
 
-  DCHECK(!io_handler_);
+  CHECK(!io_handler_);
   io_handler_ = new RawChannelIOHandler(this, handle_.Pass());
 
   return true;
@@ -532,8 +624,8 @@ bool RawChannelWin::OnInit() {
 
 void RawChannelWin::OnShutdownNoLock(scoped_ptr<ReadBuffer> read_buffer,
                                      scoped_ptr<WriteBuffer> write_buffer) {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
-  DCHECK(io_handler_);
+  CHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
+  CHECK(io_handler_);
 
   write_lock().AssertAcquired();
 
