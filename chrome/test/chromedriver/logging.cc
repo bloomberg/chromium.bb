@@ -259,6 +259,8 @@ Status CreateLogs(const Capabilities& capabilities,
         logs.push_back(log);
         PerformanceLogger* perf_log = new PerformanceLogger(log);
         // We use a proxy for |perf_log|'s |CommandListener| interface.
+        // Otherwise, |perf_log| would be owned by both session->chrome and
+        // |session|, which would lead to memory errors on destruction.
         // session->chrome will own |perf_log|, and |session| will own |proxy|.
         // session->command_listeners (the proxy) will be destroyed first.
         CommandListenerProxy* proxy = new CommandListenerProxy(perf_log);

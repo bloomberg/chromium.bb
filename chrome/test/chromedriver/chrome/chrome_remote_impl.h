@@ -11,12 +11,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/chrome/chrome_impl.h"
 
+class DevToolsClient;
 class DevToolsHttpClient;
 
 class ChromeRemoteImpl : public ChromeImpl {
  public:
   ChromeRemoteImpl(
-      scoped_ptr<DevToolsHttpClient> client,
+      scoped_ptr<DevToolsHttpClient> http_client,
+      scoped_ptr<DevToolsClient> websocket_client,
       ScopedVector<DevToolsEventListener>& devtools_event_listeners);
   virtual ~ChromeRemoteImpl();
 

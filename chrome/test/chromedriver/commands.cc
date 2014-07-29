@@ -153,57 +153,64 @@ void ExecuteSessionCommandOnSessionThread(
   }
 
   // Notify |session|'s |CommandListener|s of the command.
-  NotifySessionListenersBeforeCommand(session, command_name);
+  // Will mark |session| for deletion if an error is encountered.
+  Status status = NotifyCommandListenersBeforeCommand(session, command_name);
 
+  // Only run the command if we were able to notify all listeners successfully.
+  // Otherwise, pass error to callback, delete |session|, and do not continue.
   scoped_ptr<base::Value> value;
-  Status status = command.Run(session, *params, &value);
+  if (status.IsError()) {
+    LOG(ERROR) << status.message();
+  } else {
+    status = command.Run(session, *params, &value);
 
-  if (status.IsError() && session->chrome) {
-    if (!session->quit && session->chrome->HasCrashedWebView()) {
-      session->quit = true;
-      std::string message("session deleted because of page crash");
-      if (!session->detach) {
-        Status quit_status = session->chrome->Quit();
-        if (quit_status.IsError())
-          message += ", but failed to kill browser:" + quit_status.message();
+    if (status.IsError() && session->chrome) {
+      if (!session->quit && session->chrome->HasCrashedWebView()) {
+        session->quit = true;
+        std::string message("session deleted because of page crash");
+        if (!session->detach) {
+          Status quit_status = session->chrome->Quit();
+          if (quit_status.IsError())
+            message += ", but failed to kill browser:" + quit_status.message();
+        }
+        status = Status(kUnknownError, message, status);
+      } else if (status.code() == kDisconnected) {
+        // Some commands, like clicking a button or link which closes the
+        // window, may result in a kDisconnected error code.
+        std::list<std::string> web_view_ids;
+        Status status_tmp = session->chrome->GetWebViewIds(&web_view_ids);
+        if (status_tmp.IsError() && status_tmp.code() != kChromeNotReachable) {
+          status.AddDetails(
+              "failed to check if window was closed: " + status_tmp.message());
+        } else if (std::find(web_view_ids.begin(),
+                             web_view_ids.end(),
+                             session->window) == web_view_ids.end()) {
+          status = Status(kOk);
+        }
       }
-      status = Status(kUnknownError, message, status);
-    } else if (status.code() == kDisconnected) {
-      // Some commands, like clicking a button or link which closes the window,
-      // may result in a kDisconnected error code.
-      std::list<std::string> web_view_ids;
-      Status status_tmp = session->chrome->GetWebViewIds(&web_view_ids);
-      if (status_tmp.IsError() && status_tmp.code() != kChromeNotReachable) {
-        status.AddDetails(
-            "failed to check if window was closed: " + status_tmp.message());
-      } else if (std::find(web_view_ids.begin(),
-                           web_view_ids.end(),
-                           session->window) == web_view_ids.end()) {
-        status = Status(kOk);
+      if (status.IsError()) {
+        const BrowserInfo* browser_info = session->chrome->GetBrowserInfo();
+        status.AddDetails("Session info: " + browser_info->browser_name + "=" +
+                          browser_info->browser_version);
       }
     }
-    if (status.IsError()) {
-      const BrowserInfo* browser_info = session->chrome->GetBrowserInfo();
-      status.AddDetails("Session info: " + browser_info->browser_name + "=" +
-                        browser_info->browser_version);
-    }
-  }
 
-  if (IsVLogOn(0)) {
-    std::string result;
-    if (status.IsError()) {
-      result = status.message();
-    } else if (value) {
-      result = FormatValueForDisplay(*value);
+    if (IsVLogOn(0)) {
+      std::string result;
+      if (status.IsError()) {
+        result = status.message();
+      } else if (value) {
+        result = FormatValueForDisplay(*value);
+      }
+      VLOG(0) << "RESPONSE " << command_name
+              << (result.length() ? " " + result : "");
     }
-    VLOG(0) << "RESPONSE " << command_name
-            << (result.length() ? " " + result : "");
-  }
 
-  if (status.IsOk() && session->auto_reporting_enabled) {
-    std::string message = session->GetFirstBrowserError();
-    if (!message.empty())
-      status = Status(kUnknownError, message);
+    if (status.IsOk() && session->auto_reporting_enabled) {
+      std::string message = session->GetFirstBrowserError();
+      if (!message.empty())
+        status = Status(kUnknownError, message);
+    }
   }
 
   cmd_task_runner->PostTask(

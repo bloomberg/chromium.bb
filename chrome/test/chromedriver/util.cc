@@ -16,8 +16,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/third_party/icu/icu_utf.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/chrome/chrome.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
+#include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/command_listener.h"
 #include "chrome/test/chromedriver/key_converter.h"
@@ -405,14 +407,35 @@ Status UnzipSoleFile(const base::FilePath& unzip_dir,
   return Status(kOk);
 }
 
-void NotifySessionListenersBeforeCommand(Session* session,
-                                         const std::string& command_name) {
+Status NotifyCommandListenersBeforeCommand(Session* session,
+                                           const std::string& command_name) {
   for (ScopedVector<CommandListener>::const_iterator it =
        session->command_listeners.begin();
        it != session->command_listeners.end();
        ++it) {
     Status status = (*it)->BeforeCommand(command_name);
-    if (status.IsError())
-      LOG(ERROR) << "Error when notifying listener of command";
+    if (status.IsError()) {
+      // Do not continue if an error is encountered. Mark session for deletion,
+      // quit Chrome if necessary, and return a detailed error.
+      if (!session->quit) {
+        session->quit = true;
+        std::string message = base::StringPrintf("session deleted because "
+            "error encountered when notifying listeners of '%s' command",
+            command_name.c_str());
+        if (session->chrome && !session->detach) {
+          Status quit_status = session->chrome->Quit();
+          if (quit_status.IsError())
+            message += ", but failed to kill browser:" + quit_status.message();
+        }
+        status = Status(kUnknownError, message, status);
+      }
+      if (session->chrome) {
+        const BrowserInfo* browser_info = session->chrome->GetBrowserInfo();
+        status.AddDetails("Session info: " + browser_info->browser_name + "=" +
+                          browser_info->browser_version);
+      }
+      return status;
+    }
   }
+  return Status(kOk);
 }

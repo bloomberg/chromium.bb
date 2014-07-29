@@ -601,7 +601,7 @@ void OnSessionCommand(
 
 }  // namespace
 
-TEST(CommandsTest, SessionNotifiedOfCommand) {
+TEST(CommandsTest, SuccessNotifyingCommandListeners) {
   SessionThreadMap map;
   linked_ptr<base::Thread> thread(new base::Thread("1"));
   ASSERT_TRUE(thread->Start());
@@ -609,6 +609,7 @@ TEST(CommandsTest, SessionNotifiedOfCommand) {
   thread->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&internal::CreateSessionOnSessionThreadForTesting, id));
+
   map[id] = thread;
 
   base::DictionaryValue params;
@@ -617,8 +618,7 @@ TEST(CommandsTest, SessionNotifiedOfCommand) {
   // We add |proxy| to the session instead of adding |listener| directly so that
   // after the session is destroyed by ExecuteQuitSessionCommand, we can still
   // verify the listener was called. The session owns and will destroy |proxy|.
-  SessionCommand cmd = base::Bind(
-      &ExecuteAddListenerToSessionCommand, proxy);
+  SessionCommand cmd = base::Bind(&ExecuteAddListenerToSessionCommand, proxy);
   base::MessageLoop loop;
   base::RunLoop run_loop_addlistener;
 
@@ -632,15 +632,13 @@ TEST(CommandsTest, SessionNotifiedOfCommand) {
       false,
       params,
       id,
-      base::Bind(&OnSessionCommand,
-                 &run_loop_addlistener));
+      base::Bind(&OnSessionCommand, &run_loop_addlistener));
   run_loop_addlistener.Run();
 
   listener->VerifyNotCalled();
 
   base::RunLoop run_loop_testlistener;
-  cmd = base::Bind(
-        &ExecuteQuitSessionCommand);
+  cmd = base::Bind(&ExecuteQuitSessionCommand);
 
   // |listener| was added to |session| by ExecuteAddListenerToSessionCommand
   // and should be notified before the next command, ExecuteQuitSessionCommand.
@@ -651,9 +649,82 @@ TEST(CommandsTest, SessionNotifiedOfCommand) {
       false,
       params,
       id,
-      base::Bind(&OnSessionCommand,
-                 &run_loop_testlistener));
+      base::Bind(&OnSessionCommand, &run_loop_testlistener));
   run_loop_testlistener.Run();
 
   listener->VerifyCalled();
+}
+
+namespace {
+
+class FailingCommandListener : public CommandListener {
+ public:
+  FailingCommandListener() {}
+  virtual ~FailingCommandListener() {}
+
+  virtual Status BeforeCommand(const std::string& command_name) OVERRIDE {
+    return Status(kUnknownError);
+  }
+};
+
+void AddListenerToSessionIfSessionExists(CommandListener* listener) {
+  Session* session = GetThreadLocalSession();
+  if (session) {
+    session->command_listeners.push_back(listener);
+  }
+}
+
+void OnFailBecauseErrorNotifyingListeners(
+    base::RunLoop* run_loop,
+    const Status& status,
+    scoped_ptr<base::Value> value,
+    const std::string& session_id) {
+  EXPECT_EQ(kUnknownError, status.code());
+  EXPECT_FALSE(value.get());
+  run_loop->Quit();
+}
+
+void VerifySessionWasDeleted() {
+  ASSERT_FALSE(GetThreadLocalSession());
+}
+
+}  // namespace
+
+TEST(CommandsTest, ErrorNotifyingCommandListeners) {
+  SessionThreadMap map;
+  linked_ptr<base::Thread> thread(new base::Thread("1"));
+  ASSERT_TRUE(thread->Start());
+  std::string id("id");
+  thread->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&internal::CreateSessionOnSessionThreadForTesting, id));
+  map[id] = thread;
+
+  // In SuccessNotifyingCommandListenersBeforeCommand, we verified BeforeCommand
+  // was called before (as opposed to after) command execution. We don't need to
+  // verify this again, so we can just add |listener| with PostTask.
+  CommandListener* listener = new FailingCommandListener();
+  thread->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&AddListenerToSessionIfSessionExists, listener));
+
+  base::DictionaryValue params;
+  // The command should never be executed if BeforeCommand fails for a listener.
+  SessionCommand cmd = base::Bind(&ShouldNotBeCalled);
+  base::MessageLoop loop;
+  base::RunLoop run_loop;
+
+  ExecuteSessionCommand(
+      &map,
+      "cmd",
+      cmd,
+      false,
+      params,
+      id,
+      base::Bind(&OnFailBecauseErrorNotifyingListeners, &run_loop));
+  run_loop.Run();
+
+  thread->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&VerifySessionWasDeleted));
 }

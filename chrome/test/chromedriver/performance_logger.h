@@ -34,6 +34,9 @@ class PerformanceLogger : public DevToolsEventListener, public CommandListener {
 
   virtual Status BeforeCommand(const std::string& command_name) OVERRIDE;
 
+  // PerformanceLogger subscribes to browser-wide |DevToolsClient| for tracing.
+  virtual bool subscribes_to_browser() OVERRIDE;
+
  private:
   Log* log_;  // The log where to create entries.
 

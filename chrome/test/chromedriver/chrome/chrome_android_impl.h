@@ -12,12 +12,14 @@
 #include "chrome/test/chromedriver/chrome/chrome_impl.h"
 
 class Device;
+class DevToolsClient;
 class DevToolsHttpClient;
 
 class ChromeAndroidImpl : public ChromeImpl {
  public:
   ChromeAndroidImpl(
-      scoped_ptr<DevToolsHttpClient> client,
+      scoped_ptr<DevToolsHttpClient> http_client,
+      scoped_ptr<DevToolsClient> websocket_client,
       ScopedVector<DevToolsEventListener>& devtools_event_listeners,
       scoped_ptr<PortReservation> port_reservation,
       scoped_ptr<Device> device);

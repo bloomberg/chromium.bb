@@ -53,6 +53,10 @@ Status ConditionIsMet(bool* is_condition_met) {
   return Status(kOk);
 }
 
+Status FakeCloseFrontends() {
+  return Status(kOk);
+}
+
 }  // namespace
 
 namespace internal {
@@ -66,6 +70,22 @@ InspectorCommandResponse::InspectorCommandResponse() {}
 InspectorCommandResponse::~InspectorCommandResponse() {}
 
 }  // namespace internal
+
+const char DevToolsClientImpl::kBrowserwideDevToolsClientId[] = "browser";
+
+DevToolsClientImpl::DevToolsClientImpl(
+    const SyncWebSocketFactory& factory,
+    const std::string& url,
+    const std::string& id)
+    : socket_(factory.Run().Pass()),
+      url_(url),
+      crashed_(false),
+      id_(id),
+      frontend_closer_func_(base::Bind(&FakeCloseFrontends)),
+      parser_func_(base::Bind(&internal::ParseInspectorMessage)),
+      unnotified_event_(NULL),
+      next_id_(1),
+      stack_count_(0) {}
 
 DevToolsClientImpl::DevToolsClientImpl(
     const SyncWebSocketFactory& factory,

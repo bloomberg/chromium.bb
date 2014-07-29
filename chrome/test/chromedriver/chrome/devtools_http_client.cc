@@ -22,14 +22,6 @@
 #include "chrome/test/chromedriver/net/net_util.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 
-namespace {
-
-Status FakeCloseFrontends() {
-  return Status(kOk);
-}
-
-}  // namespace
-
 WebViewInfo::WebViewInfo(const std::string& id,
                          const std::string& debugger_url,
                          const std::string& url,
@@ -252,8 +244,7 @@ Status DevToolsHttpClient::CloseFrontends(const std::string& for_client_id) {
     scoped_ptr<DevToolsClient> client(new DevToolsClientImpl(
         socket_factory_,
         web_socket_url_prefix_ + *it,
-        *it,
-        base::Bind(&FakeCloseFrontends)));
+        *it));
     scoped_ptr<WebViewImpl> web_view(
         new WebViewImpl(*it, &browser_info_, client.Pass(), NULL));
 

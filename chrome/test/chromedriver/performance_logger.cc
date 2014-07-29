@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
+#include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
 #include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 
@@ -34,7 +35,15 @@ bool ShouldLogEvent(const std::string& method) {
 PerformanceLogger::PerformanceLogger(Log* log)
     : log_(log) {}
 
+bool PerformanceLogger::subscribes_to_browser() {
+  return true;
+}
+
 Status PerformanceLogger::OnConnected(DevToolsClient* client) {
+  if (client->GetId() == DevToolsClientImpl::kBrowserwideDevToolsClientId) {
+    // TODO(johnmoore): Implement tracing log.
+    return Status(kOk);
+  }
   base::DictionaryValue params;  // All our enable commands have empty params.
   for (size_t i_cmd = 0; i_cmd < arraysize(kDomainEnableCommands); ++i_cmd) {
     Status status = client->SendCommand(kDomainEnableCommands[i_cmd], params);

@@ -41,7 +41,8 @@ Status UnzipSoleFile(const base::FilePath& unzip_dir,
                      base::FilePath* file);
 
 // Calls BeforeCommand for each of |session|'s |CommandListener|s.
-void NotifySessionListenersBeforeCommand(Session* session,
-                                         const std::string& command_name);
+// If an error is encountered, will mark |session| for deletion and return.
+Status NotifyCommandListenersBeforeCommand(Session* session,
+                                           const std::string& command_name);
 
 #endif  // CHROME_TEST_CHROMEDRIVER_UTIL_H_

@@ -19,6 +19,7 @@ class TimeDelta;
 }
 
 class AutomationExtension;
+class DevToolsClient;
 class DevToolsHttpClient;
 class Status;
 class WebView;
@@ -26,7 +27,8 @@ class WebView;
 class ChromeDesktopImpl : public ChromeImpl {
  public:
   ChromeDesktopImpl(
-      scoped_ptr<DevToolsHttpClient> client,
+      scoped_ptr<DevToolsHttpClient> http_client,
+      scoped_ptr<DevToolsClient> websocket_client,
       ScopedVector<DevToolsEventListener>& devtools_event_listeners,
       scoped_ptr<PortReservation> port_reservation,
       base::ProcessHandle process,

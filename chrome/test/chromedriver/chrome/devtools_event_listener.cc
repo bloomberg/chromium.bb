@@ -23,3 +23,7 @@ Status DevToolsEventListener::OnCommandSuccess(
     const std::string& method) {
   return Status(kOk);
 }
+
+bool DevToolsEventListener::subscribes_to_browser() {
+  return false;
+}

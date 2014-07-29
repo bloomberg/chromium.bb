@@ -52,6 +52,12 @@ class SyncWebSocket;
 
 class DevToolsClientImpl : public DevToolsClient {
  public:
+  static const char kBrowserwideDevToolsClientId[];
+
+  DevToolsClientImpl(const SyncWebSocketFactory& factory,
+                     const std::string& url,
+                     const std::string& id);
+
   typedef base::Callback<Status()> FrontendCloserFunc;
   DevToolsClientImpl(const SyncWebSocketFactory& factory,
                      const std::string& url,

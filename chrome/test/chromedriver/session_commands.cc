@@ -130,7 +130,8 @@ Status InitSessionHelper(
   ScopedVector<CommandListener> command_listeners;
   status = CreateLogs(capabilities,
                       &session->devtools_logs,
-                      &devtools_event_listeners, &command_listeners);
+                      &devtools_event_listeners,
+                      &command_listeners);
   if (status.IsError())
     return status;
 

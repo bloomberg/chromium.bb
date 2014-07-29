@@ -16,6 +16,7 @@
 
 class AutomationExtension;
 struct BrowserInfo;
+class DevToolsClient;
 class DevToolsEventListener;
 class DevToolsHttpClient;
 class JavaScriptDialogManager;
@@ -42,7 +43,8 @@ class ChromeImpl : public Chrome {
 
  protected:
   ChromeImpl(
-      scoped_ptr<DevToolsHttpClient> client,
+      scoped_ptr<DevToolsHttpClient> http_client,
+      scoped_ptr<DevToolsClient> websocket_client,
       ScopedVector<DevToolsEventListener>& devtools_event_listeners,
       scoped_ptr<PortReservation> port_reservation);
 
@@ -50,6 +52,7 @@ class ChromeImpl : public Chrome {
 
   bool quit_;
   scoped_ptr<DevToolsHttpClient> devtools_http_client_;
+  scoped_ptr<DevToolsClient> devtools_websocket_client_;
 
  private:
   typedef std::list<linked_ptr<WebViewImpl> > WebViewList;

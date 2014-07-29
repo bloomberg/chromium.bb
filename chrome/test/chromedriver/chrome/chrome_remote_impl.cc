@@ -3,14 +3,17 @@
 // found in the LICENSE file.
 
 #include "chrome/test/chromedriver/chrome/chrome_remote_impl.h"
+#include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/net/port_server.h"
 
 ChromeRemoteImpl::ChromeRemoteImpl(
-    scoped_ptr<DevToolsHttpClient> client,
+    scoped_ptr<DevToolsHttpClient> http_client,
+    scoped_ptr<DevToolsClient> websocket_client,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners)
-    : ChromeImpl(client.Pass(),
+    : ChromeImpl(http_client.Pass(),
+                 websocket_client.Pass(),
                  devtools_event_listeners,
                  scoped_ptr<PortReservation>()) {}
 

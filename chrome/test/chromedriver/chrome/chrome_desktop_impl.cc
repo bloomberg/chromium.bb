@@ -62,14 +62,16 @@ bool KillProcess(base::ProcessHandle process_id) {
 }  // namespace
 
 ChromeDesktopImpl::ChromeDesktopImpl(
-    scoped_ptr<DevToolsHttpClient> client,
+    scoped_ptr<DevToolsHttpClient> http_client,
+    scoped_ptr<DevToolsClient> websocket_client,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
     scoped_ptr<PortReservation> port_reservation,
     base::ProcessHandle process,
     const CommandLine& command,
     base::ScopedTempDir* user_data_dir,
     base::ScopedTempDir* extension_dir)
-    : ChromeImpl(client.Pass(),
+    : ChromeImpl(http_client.Pass(),
+                 websocket_client.Pass(),
                  devtools_event_listeners,
                  port_reservation.Pass()),
       process_(process),
