@@ -62,6 +62,7 @@ template("write_build_config") {
     if (type == "android_library" || type == "android_apk") {
       args += [
         "--jar-path", rebase_path(invoker.jar_path, root_build_dir),
+        "--dex-path", rebase_path(invoker.dex_path, root_build_dir),
       ]
     }
 
@@ -107,6 +108,40 @@ template("zip") {
         "--base-dir", rebase_path(invoker.base_dir, root_build_dir)
       ]
     }
+  }
+}
+
+template("dex") {
+  assert(defined(invoker.sources))
+  assert(defined(invoker.output))
+  action(target_name) {
+    script = "//build/android/gyp/dex.py"
+    depfile = "$target_gen_dir/$target_name.d"
+    sources = invoker.sources
+    outputs = [depfile, invoker.output]
+    if (defined(invoker.inputs)) {
+      inputs = invoker.inputs
+    }
+
+    rebased_output = rebase_path(invoker.output, root_build_dir)
+
+    args = [
+      "--depfile", rebase_path(depfile, root_build_dir),
+      "--android-sdk-tools", rebased_android_sdk_build_tools,
+      "--dex-path", rebased_output,
+    ]
+
+    if (defined(invoker.no_locals) && invoker.no_locals) {
+      args += [
+        "--no-locals=1"
+      ]
+    }
+
+    if (defined(invoker.args)) {
+      args += invoker.args
+    }
+
+    args += rebase_path(invoker.sources, root_build_dir)
   }
 }
 
@@ -230,8 +265,10 @@ template("android_java_library") {
   assert(defined(invoker.java_files))
   assert(defined(invoker.build_config))
   assert(defined(invoker.jar_path))
+  assert(defined(invoker.dex_path))
 
   _jar_path = invoker.jar_path
+  _dex_path = invoker.dex_path
 
   java_library("${target_name}__java_library") {
     jar_path = _jar_path
@@ -247,11 +284,17 @@ template("android_java_library") {
   }
 
   # TODO(cjhopman): lint
-  # TODO(cjhopman): dex
+
+
+  dex("${target_name}__dex") {
+    sources = [_jar_path]
+    output = _dex_path
+  }
 
   group(target_name) {
     deps = [
-      ":${target_name}__java_library"
+      ":${target_name}__java_library",
+      ":${target_name}__dex",
     ]
   }
 }

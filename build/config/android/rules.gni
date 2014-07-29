@@ -425,6 +425,7 @@ template("android_library") {
   base_path = "$target_gen_dir/$target_name"
   build_config = base_path + ".build_config"
   jar_path = base_path + ".jar"
+  dex_path = base_path + ".dex.jar"
 
   write_build_config("${target_name}__build_config") {
     type = "android_library"
@@ -495,11 +496,12 @@ template("android_library") {
 template("android_apk") {
   gen_dir = "$target_gen_dir/$target_name"
   base_path = "$gen_dir/$target_name"
-  build_config = base_path + ".build_config"
-  resource_zip_path = base_path + ".resources.zip"
-  all_resources_zip_path = base_path + ".resources.all.zip"
-  resource_srcjar_path = base_path + ".resources.srcjar"
-  jar_path = base_path + ".jar"
+  build_config = "$base_path.build_config"
+  resources_zip_path = "$base_path.resources.zip"
+  all_resources_zip_path = "$base_path.resources.all.zip"
+  resource_srcjar_path = "$base_path.resources.srcjar"
+  jar_path = "$base_path.jar"
+  final_dex_path = "$gen_dir/classes.dex"
 
   # Just mark these as used for now.
   assert(!defined(invoker.native_libs)
@@ -507,7 +509,6 @@ template("android_apk") {
   assert(!defined(invoker.final_apk_path)
       || invoker.final_apk_path == "" || true)
 
-  final_deps = []
 
   # TODO(cjhopman): Remove this once we correctly generate the real
   # NativeLibraries.java
@@ -519,32 +520,43 @@ template("android_apk") {
   write_build_config("${target_name}__build_config") {
     type = "android_apk"
     srcjar = resource_srcjar_path
-    resources_zip = resource_zip_path
+    dex_path = final_dex_path
+    resources_zip = resources_zip_path
 
     if (defined(invoker.deps)) {
       deps = invoker.deps
     }
   }
 
+  final_deps = []
+
   final_deps += [":${target_name}__process_resources"]
   process_resources("${target_name}__process_resources") {
     android_manifest = invoker.android_manifest
 
     resource_dirs = ["//build/android/ant/empty/res"]
-    zip_path = resource_zip_path
+    zip_path = resources_zip_path
     srcjar_path = resource_srcjar_path
 
     generate_constant_ids = true
   }
 
+  rebased_build_config = rebase_path(build_config, root_build_dir)
+
   final_deps += [":${target_name}__java"]
   android_java_library("${target_name}__java") {
     java_files = invoker.java_files
+    dex_path = base_path + ".dex.jar"
   }
 
-  # TODO(cjhopman): dex
-  # TODO(cjhopman): native
-  # TODO(cjhopman): create+finalize apk
+  final_deps += [":${target_name}__final_dex"]
+  dex("${target_name}__final_dex") {
+    sources = [jar_path]
+    inputs = [build_config]
+    output = final_dex_path
+    dex_arg_key = "${rebased_build_config}:apk_dex:dependency_dex_files"
+    args = ["--inputs=@FileArg($dex_arg_key)"]
+  }
 
   group(target_name) {
     deps = final_deps

@@ -72,6 +72,7 @@ def main(argv):
 
   # android_library/apk options
   parser.add_option('--jar-path', help='Path to target\'s jar output.')
+  parser.add_option('--dex-path', help='Path to target\'s dex output.')
 
   options, args = parser.parse_args(argv)
 
@@ -85,9 +86,9 @@ def main(argv):
 
 
   required_options = ['build_config'] + {
-      'android_library': ['jar_path'],
+      'android_library': ['jar_path', 'dex_path'],
       'android_resources': ['resources_zip'],
-      'android_apk': ['jar_path', 'resources_zip']
+      'android_apk': ['jar_path', 'dex_path', 'resources_zip']
     }[options.type]
 
   build_utils.CheckOptions(options, parser, required_options)
@@ -113,6 +114,7 @@ def main(argv):
 
   direct_library_deps = DepsOfType('android_library', direct_deps_configs)
   all_resources_deps = DepsOfType('android_resources', all_deps_configs)
+  all_library_deps = DepsOfType('android_library', all_deps_configs)
 
   # Initialize some common config.
   config = {
@@ -128,6 +130,7 @@ def main(argv):
     javac_classpath = [c['jar_path'] for c in direct_library_deps]
     deps_info['resources_deps'] = [c['path'] for c in all_resources_deps]
     deps_info['jar_path'] = options.jar_path
+    deps_info['dex_path'] = options.dex_path
     config['javac'] = {
       'classpath': javac_classpath,
     }
@@ -146,6 +149,13 @@ def main(argv):
     config['resources'] = {}
     config['resources']['dependency_zips'] = [
         c['resources_zip'] for c in all_resources_deps]
+
+  if options.type == 'android_apk':
+    config['apk_dex'] = {}
+    dex_config = config['apk_dex']
+    # TODO(cjhopman): proguard version
+    dex_deps_files = [c['dex_path'] for c in all_library_deps]
+    dex_config['dependency_dex_files'] = dex_deps_files
 
   build_utils.WriteJson(config, options.build_config, only_if_changed=True)
 
