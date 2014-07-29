@@ -373,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_DisallowNavigation) {
 }
 
 // Failing on some Win and Linux buildbots.  See crbug.com/354425.
-#if (defined(OS_WIN) || defined(OS_LINUX)) && defined(ARCH_CPU_X86)
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_Iframes DISABLED_Iframes
 #else
 #define MAYBE_Iframes Iframes
