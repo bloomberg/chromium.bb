@@ -259,10 +259,13 @@ void NetErrorHelper::FetchNavigationCorrections(
   correction_fetcher_->SetMethod("POST");
   correction_fetcher_->SetBody(navigation_correction_request_body);
   correction_fetcher_->SetHeader("Content-Type", "application/json");
+
   correction_fetcher_->Start(
-      frame, blink::WebURLRequest::TargetIsMainFrame,
+      frame,
+      blink::WebURLRequest::RequestContextInternal,
+      blink::WebURLRequest::FrameTypeTopLevel,
       base::Bind(&NetErrorHelper::OnNavigationCorrectionsFetched,
-                     base::Unretained(this)));
+                 base::Unretained(this)));
 
   correction_fetcher_->SetTimeout(
       base::TimeDelta::FromSeconds(kNavigationCorrectionFetchTimeoutSec));
@@ -285,8 +288,11 @@ void NetErrorHelper::SendTrackingRequest(
   tracking_fetcher_->SetMethod("POST");
   tracking_fetcher_->SetBody(tracking_request_body);
   tracking_fetcher_->SetHeader("Content-Type", "application/json");
+
   tracking_fetcher_->Start(
-      frame, blink::WebURLRequest::TargetIsMainFrame,
+      frame,
+      blink::WebURLRequest::RequestContextInternal,
+      blink::WebURLRequest::FrameTypeTopLevel,
       base::Bind(&NetErrorHelper::OnTrackingRequestComplete,
                  base::Unretained(this)));
 }
