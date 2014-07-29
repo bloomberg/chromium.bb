@@ -792,11 +792,11 @@ TEST_F(MaximizeModeWindowManagerTest, KeepFullScreenModeOn) {
   EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
 
   // With leaving the fullscreen mode, the maximized mode should return and the
-  // shelf should become visible.
+  // shelf should maintain its state from before maximize mode.
   window_state->OnWMEvent(&event);
   EXPECT_FALSE(window_state->IsFullscreen());
   EXPECT_TRUE(window_state->IsMaximized());
-  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
 
   // Ending the maximize mode should return to full screen and the shelf should
   // be hidden again.
@@ -825,10 +825,11 @@ TEST_F(MaximizeModeWindowManagerTest, AllowFullScreenMode) {
 
   CreateMaximizeModeWindowManager();
 
-  // Fullscreen mode should still be off and the shelf should be visible.
+  // Fullscreen mode should still be off and the shelf should maintain its
+  // state.
   EXPECT_FALSE(window_state->IsFullscreen());
   EXPECT_TRUE(window_state->IsMaximized());
-  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
 
   // After going into fullscreen mode, the shelf should be hidden.
   wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);

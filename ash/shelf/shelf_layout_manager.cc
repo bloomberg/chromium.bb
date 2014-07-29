@@ -537,10 +537,6 @@ void ShelfLayoutManager::OnLockStateChanged(bool locked) {
   LayoutShelf();
 }
 
-void ShelfLayoutManager::OnMaximizeModeStarted() {
-  SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
-}
-
 void ShelfLayoutManager::OnWindowActivated(aura::Window* gained_active,
                                            aura::Window* lost_active) {
   UpdateAutoHideStateNow();

@@ -171,7 +171,6 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Overridden from ash::ShellObserver:
   virtual void OnLockStateChanged(bool locked) OVERRIDE;
-  virtual void OnMaximizeModeStarted() OVERRIDE;
 
   // Overriden from aura::client::ActivationChangeObserver:
   virtual void OnWindowActivated(aura::Window* gained_active,

@@ -1569,39 +1569,6 @@ TEST_F(ShelfLayoutManagerTest, GestureEdgeSwipe) {
   EXPECT_TRUE(widget->IsFullscreen());
 }
 
-// Test that starting the maximize mode does still allow the shelf to be made
-// visible when an (immersive mode) full screen app is running.
-TEST_F(ShelfLayoutManagerTest, GestureEdgeSwipeInMaximizeMode) {
-  ShelfLayoutManager* shelf = GetShelfLayoutManager();
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.bounds = gfx::Rect(0, 0, 200, 200);
-  params.context = CurrentContext();
-  widget->Init(params);
-  widget->Show();
-  aura::Window* window = widget->GetNativeWindow();
-  wm::GetWindowState(window)->set_hide_shelf_when_fullscreen(false);
-  widget->SetFullscreen(true);
-
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-
-  // The maximize mode gets started.
-  shelf->OnMaximizeModeStarted();
-  shelf->LayoutShelf();
-  shelf->UpdateVisibilityState();
-
-  // Edge swipe in fullscreen + AUTO_HIDE_HIDDEN should show the shelf and
-  // remain fullscreen.
-  EXPECT_TRUE(widget->IsFullscreen());
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
-  generator.GestureEdgeSwipe();
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
-  EXPECT_TRUE(widget->IsFullscreen());
-}
-
 #if defined(OS_WIN)
 // RootWindow and Display can't resize on Windows Ash. http://crbug.com/165962
 #define MAYBE_GestureDrag DISABLED_GestureDrag
@@ -2032,29 +1999,6 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_StatusAreaHitBoxCoversEdge) {
   EXPECT_TRUE(status_area_widget->IsMessageBubbleShown());
   generator.ClickLeftButton();
   EXPECT_FALSE(status_area_widget->IsMessageBubbleShown());
-}
-
-// Tests that entering maximize mode resets auto-hide behaviour to be off by
-// default.
-TEST_F(ShelfLayoutManagerTest, MaximizeModeResetsAutohide) {
-  ShelfLayoutManager* shelf = GetShelfLayoutManager();
-  shelf->SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.bounds = gfx::Rect(0, 0, 200, 200);
-  params.context = CurrentContext();
-  // Widget is now owned by the parent window.
-  widget->Init(params);
-  widget->Maximize();
-  widget->Show();
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
-
-  shelf->OnMaximizeModeStarted();
-  // LayoutShelf() forces the animation to completion
-  shelf->LayoutShelf();
-  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
 }
 
 // Tests that when the auto-hide behaviour is changed during an animation the
