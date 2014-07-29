@@ -97,14 +97,13 @@ GraphicsContext* ImageBuffer::context() const
 {
     if (!isSurfaceValid())
         return 0;
-    m_surface->willUse();
     ASSERT(m_context.get());
     return m_context.get();
 }
 
 const SkBitmap& ImageBuffer::bitmap() const
 {
-    m_surface->willUse();
+    m_surface->didDraw(); // conservative
     return m_surface->bitmap();
 }
 

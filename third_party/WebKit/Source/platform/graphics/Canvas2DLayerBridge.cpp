@@ -546,7 +546,7 @@ blink::WebLayer* Canvas2DLayerBridge::layer() const
     return m_layer->layer();
 }
 
-void Canvas2DLayerBridge::willUse()
+void Canvas2DLayerBridge::didDraw()
 {
     ASSERT(!m_destructionInProgress);
     Canvas2DLayerManager::get().layerDidDraw(this);
@@ -558,7 +558,6 @@ Platform3DObject Canvas2DLayerBridge::getBackingTexture()
     ASSERT(!m_destructionInProgress);
     if (!checkSurfaceValid())
         return 0;
-    willUse();
     m_canvas->flush();
     context()->flush();
     GrRenderTarget* renderTarget = m_canvas->getTopDevice()->accessRenderTarget();

@@ -60,7 +60,7 @@ public:
 
     virtual SkCanvas* canvas() const = 0;
     virtual const SkBitmap& bitmap();
-    virtual void willUse() { } // Called by ImageBuffer before reading or writing to the surface.
+    virtual void didDraw() { }
     virtual void willReadback() { }
     virtual bool isValid() const = 0;
     virtual bool restore() { return false; };

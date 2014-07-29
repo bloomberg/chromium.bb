@@ -195,6 +195,9 @@ void HTMLCanvasElement::didDraw(const FloatRect& rect)
 {
     clearCopiedImage();
 
+    if (hasImageBuffer())
+        m_imageBuffer->didDraw();
+
     if (RenderBox* ro = renderBox()) {
         FloatRect srcRect(0, 0, size().width(), size().height());
         FloatRect r = rect;

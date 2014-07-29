@@ -93,6 +93,8 @@ public:
 
     GraphicsContext* context() const;
 
+    void didDraw() { m_surface->didDraw(); }
+
     const SkBitmap& bitmap() const;
 
     PassRefPtr<Image> copyImage(BackingStoreCopy = CopyBackingStore, ScaleBehavior = Scaled) const;
