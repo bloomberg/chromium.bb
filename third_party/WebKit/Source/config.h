@@ -139,8 +139,6 @@
 
 #endif
 
-#define WebCore blink
-
 #if OS(LINUX) || OS(ANDROID) || OS(WIN)
 #define WTF_USE_HARFBUZZ 1
 #endif
