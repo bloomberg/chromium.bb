@@ -18,8 +18,10 @@ _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 
 if util.IsLinux():
   sys.path.insert(0, os.path.join(chrome_paths.GetSrc(), 'build', 'android'))
+  from pylib import android_commands
   from pylib import forwarder
   from pylib import valgrind_tools
+  from pylib.device import device_errors
   from pylib.device import device_utils
 
 ANDROID_TEST_HTTP_PORT = 2311
@@ -94,7 +96,12 @@ class AndroidTestEnvironment(DesktopTestEnvironment):
   def GlobalSetUp(self):
     os.putenv('TEST_HTTP_PORT', str(ANDROID_TEST_HTTP_PORT))
     os.putenv('TEST_HTTPS_PORT', str(ANDROID_TEST_HTTPS_PORT))
-    self._device = device_utils.DeviceUtils(None)
+    devices = android_commands.GetAttachedDevices()
+    if not devices:
+      raise device_errors.NoDevicesError()
+    elif len(devices) > 1:
+      logging.warning('Multiple devices attached. Using %s.' % devices[0])
+    self._device = device_utils.DeviceUtils(devices[0])
     forwarder.Forwarder.Map(
         [(ANDROID_TEST_HTTP_PORT, ANDROID_TEST_HTTP_PORT),
          (ANDROID_TEST_HTTPS_PORT, ANDROID_TEST_HTTPS_PORT)],
@@ -102,7 +109,8 @@ class AndroidTestEnvironment(DesktopTestEnvironment):
 
   # override
   def GlobalTearDown(self):
-    forwarder.Forwarder.UnmapAllDevicePorts(self._device)
+    if self._device:
+      forwarder.Forwarder.UnmapAllDevicePorts(self._device)
 
   # override
   def GetOS(self):

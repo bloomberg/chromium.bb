@@ -37,3 +37,10 @@ class DeviceUnreachableError(BaseError):
   """Exception for device unreachable failures."""
   pass
 
+
+class NoDevicesError(BaseError):
+  """Exception for having no devices attached."""
+
+  def __init__(self):
+    super(NoDevicesError, self).__init__('No devices attached.')
+

@@ -790,7 +790,12 @@ class DeviceUtils(object):
 
   def __str__(self):
     """Returns the device serial."""
-    return self.old_interface.GetDevice()
+    s = self.old_interface.GetDevice()
+    if not s:
+      s = self.old_interface.Adb().GetSerialNumber()
+      if s == 'unknown':
+        raise device_errors.NoDevicesError()
+    return s
 
   @staticmethod
   def parallel(devices=None, async=False):

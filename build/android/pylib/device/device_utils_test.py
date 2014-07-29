@@ -1484,6 +1484,17 @@ class DeviceUtilsStrTest(DeviceUtilsOldImplTest):
     with self.assertNoAdbCalls():
       self.assertEqual('0123456789abcdef', str(self.device))
 
+  def testStr_noSerial(self):
+    self.device = device_utils.DeviceUtils(None)
+    with self.assertCalls('adb  get-serialno', '0123456789abcdef'):
+      self.assertEqual('0123456789abcdef', str(self.device))
+
+  def testStr_noSerial_noDevices(self):
+    self.device = device_utils.DeviceUtils(None)
+    with self.assertCalls('adb  get-serialno', 'unknown'), (
+         self.assertRaises(device_errors.NoDevicesError)):
+      str(self.device)
+
 
 if __name__ == '__main__':
   logging.getLogger().setLevel(logging.DEBUG)
