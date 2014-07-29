@@ -1180,16 +1180,22 @@ class BisectPerformanceMetrics(object):
     # Unzip build archive directory.
     try:
       RmTreeAndMkDir(output_dir, skip_makedir=True)
+      self.BackupOrRestoreOutputdirectory(restore=False)
+      # Build output directory based on target(e.g. out/Release, out/Debug).
+      target_build_output_dir = os.path.join(abs_build_dir, build_type)
       ExtractZip(downloaded_file, abs_build_dir)
-      if os.path.exists(output_dir):
-        self.BackupOrRestoreOutputdirectory(restore=False)
-        # Build output directory based on target(e.g. out/Release, out/Debug).
-        target_build_output_dir = os.path.join(abs_build_dir, build_type)
-        print 'Moving build from %s to %s' % (
-            output_dir, target_build_output_dir)
-        shutil.move(output_dir, target_build_output_dir)
-        return True
-      raise IOError('Missing extracted folder %s ' % output_dir)
+      if not os.path.exists(output_dir):
+        # Due to recipe changes, the builds extract folder contains
+        # out/Release instead of full-build-<platform>/Release.
+        if os.path.exists(os.path.join(abs_build_dir, 'out', build_type)):
+          output_dir = os.path.join(abs_build_dir, 'out', build_type)
+        else:
+          raise IOError('Missing extracted folder %s ' % output_dir)
+
+      print 'Moving build from %s to %s' % (
+          output_dir, target_build_output_dir)
+      shutil.move(output_dir, target_build_output_dir)
+      return True
     except Exception as e:
       print 'Somewthing went wrong while extracting archive file: %s' % e
       self.BackupOrRestoreOutputdirectory(restore=True)
