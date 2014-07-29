@@ -21,13 +21,14 @@
 #ifndef Rect_h
 #define Rect_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
 
-class RectBase : public RefCountedWillBeGarbageCollected<RectBase> {
+class RectBase : public RefCountedWillBeGarbageCollected<RectBase>, public ScriptWrappableBase {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(RectBase);
 public:
     CSSPrimitiveValue* top() const { return m_top.get(); }

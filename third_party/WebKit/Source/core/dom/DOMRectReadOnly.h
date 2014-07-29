@@ -5,11 +5,12 @@
 #ifndef DOMRectReadOnly_h
 #define DOMRectReadOnly_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
 namespace WebCore {
 
-class DOMRectReadOnly : public GarbageCollected<DOMRectReadOnly> {
+class DOMRectReadOnly : public GarbageCollected<DOMRectReadOnly>, public ScriptWrappableBase {
 public:
     static DOMRectReadOnly* create(double x, double y, double width, double height);
 

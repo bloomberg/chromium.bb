@@ -5,11 +5,12 @@
 #ifndef DOMPointReadOnly_h
 #define DOMPointReadOnly_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
 namespace WebCore {
 
-class DOMPointReadOnly : public GarbageCollected<DOMPointReadOnly> {
+class DOMPointReadOnly : public GarbageCollected<DOMPointReadOnly>, public ScriptWrappableBase {
 public:
     static DOMPointReadOnly* create(double x, double y, double z, double w);
 

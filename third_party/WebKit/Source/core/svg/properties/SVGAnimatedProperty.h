@@ -32,6 +32,7 @@ G*     * Redistributions in binary form must reproduce the above
 #define SVGAnimatedProperty_h
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGParsingError.h"
 #include "core/svg/properties/SVGPropertyInfo.h"
@@ -44,7 +45,7 @@ namespace blink {
 
 class SVGElement;
 
-class SVGAnimatedPropertyBase : public RefCounted<SVGAnimatedPropertyBase> {
+class SVGAnimatedPropertyBase : public RefCounted<SVGAnimatedPropertyBase>, public ScriptWrappableBase {
 public:
     virtual ~SVGAnimatedPropertyBase();
 

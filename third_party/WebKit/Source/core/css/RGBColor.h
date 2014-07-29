@@ -27,6 +27,7 @@
 #ifndef RGBColor_h
 #define RGBColor_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/graphics/Color.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
@@ -35,7 +36,7 @@ namespace blink {
 
 class CSSPrimitiveValue;
 
-class RGBColor : public RefCountedWillBeGarbageCollected<RGBColor> {
+class RGBColor : public RefCountedWillBeGarbageCollected<RGBColor>, public ScriptWrappableBase {
 public:
     static PassRefPtrWillBeRawPtr<RGBColor> create(unsigned rgbColor);
 

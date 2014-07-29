@@ -23,6 +23,7 @@
 #ifndef CSSRule_h
 #define CSSRule_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -33,7 +34,7 @@ class CSSParserContext;
 class CSSStyleSheet;
 class StyleRuleBase;
 
-class CSSRule : public RefCountedWillBeGarbageCollectedFinalized<CSSRule> {
+class CSSRule : public RefCountedWillBeGarbageCollectedFinalized<CSSRule>, public ScriptWrappableBase {
 public:
     virtual ~CSSRule() { }
 
