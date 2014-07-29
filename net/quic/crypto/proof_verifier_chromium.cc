@@ -31,6 +31,12 @@ using std::vector;
 
 namespace net {
 
+ProofVerifyDetails* ProofVerifyDetailsChromium::Clone() const {
+  ProofVerifyDetailsChromium* other = new ProofVerifyDetailsChromium;
+  other->cert_verify_result = cert_verify_result;
+  return other;
+}
+
 // A Job handles the verification of a single proof.  It is owned by the
 // ProofVerifier. If the verification can not complete synchronously, it
 // will notify the ProofVerifier upon completion.

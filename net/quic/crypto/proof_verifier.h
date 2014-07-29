@@ -20,6 +20,10 @@ namespace net {
 class NET_EXPORT_PRIVATE ProofVerifyDetails {
  public:
   virtual ~ProofVerifyDetails() {}
+
+  // Returns an new ProofVerifyDetails object with the same contents
+  // as this one.
+  virtual ProofVerifyDetails* Clone() const = 0;
 };
 
 // ProofVerifyContext is an abstract class that acts as a container for any

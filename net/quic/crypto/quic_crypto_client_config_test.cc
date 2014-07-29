@@ -15,6 +15,18 @@ using std::vector;
 
 namespace net {
 namespace test {
+namespace {
+
+class TestProofVerifyDetails : public ProofVerifyDetails {
+  virtual ~TestProofVerifyDetails() {}
+
+  // ProofVerifyDetails implementation
+  virtual ProofVerifyDetails* Clone() const OVERRIDE {
+    return new TestProofVerifyDetails;
+  }
+};
+
+}  // namespace
 
 TEST(QuicCryptoClientConfigTest, CachedState_IsEmpty) {
   QuicCryptoClientConfig::CachedState state;
@@ -36,7 +48,7 @@ TEST(QuicCryptoClientConfigTest, CachedState_GenerationCounter) {
 TEST(QuicCryptoClientConfigTest, CachedState_SetProofVerifyDetails) {
   QuicCryptoClientConfig::CachedState state;
   EXPECT_TRUE(state.proof_verify_details() == NULL);
-  ProofVerifyDetails* details = new ProofVerifyDetails;
+  ProofVerifyDetails* details = new TestProofVerifyDetails;
   state.SetProofVerifyDetails(details);
   EXPECT_EQ(details, state.proof_verify_details());
 }

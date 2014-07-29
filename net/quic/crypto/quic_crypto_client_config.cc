@@ -284,6 +284,9 @@ void QuicCryptoClientConfig::CachedState::InitializeFrom(
   certs_ = other.certs_;
   server_config_sig_ = other.server_config_sig_;
   server_config_valid_ = other.server_config_valid_;
+  if (other.proof_verify_details_.get() != NULL) {
+    proof_verify_details_.reset(other.proof_verify_details_->Clone());
+  }
   ++generation_counter_;
 }
 

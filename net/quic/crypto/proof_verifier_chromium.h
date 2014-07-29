@@ -24,8 +24,13 @@ class CertVerifier;
 
 // ProofVerifyDetailsChromium is the implementation-specific information that a
 // ProofVerifierChromium returns about a certificate verification.
-struct ProofVerifyDetailsChromium : public ProofVerifyDetails {
+class NET_EXPORT_PRIVATE ProofVerifyDetailsChromium
+    : public ProofVerifyDetails {
  public:
+
+  // ProofVerifyDetails implementation
+  virtual ProofVerifyDetails* Clone() const OVERRIDE;
+
   CertVerifyResult cert_verify_result;
 };
 
