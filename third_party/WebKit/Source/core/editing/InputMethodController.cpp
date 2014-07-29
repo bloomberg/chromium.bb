@@ -367,7 +367,7 @@ PlainTextRange InputMethodController::getSelectionOffsets() const
     RefPtrWillBeRawPtr<Range> range = m_frame.selection().selection().firstRange();
     if (!range)
         return PlainTextRange();
-    Node* editable = m_frame.selection().rootEditableElementOrTreeScopeRootNode();
+    ContainerNode* editable = m_frame.selection().rootEditableElementOrTreeScopeRootNode();
     ASSERT(editable);
     return PlainTextRange::create(*editable, *range.get());
 }

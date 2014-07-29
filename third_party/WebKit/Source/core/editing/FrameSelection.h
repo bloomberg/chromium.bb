@@ -92,7 +92,7 @@ public:
 
     Element* rootEditableElement() const { return m_selection.rootEditableElement(); }
     Element* rootEditableElementOrDocumentElement() const;
-    Node* rootEditableElementOrTreeScopeRootNode() const;
+    ContainerNode* rootEditableElementOrTreeScopeRootNode() const;
 
     bool hasEditableStyle() const { return m_selection.hasEditableStyle(); }
     bool isContentEditable() const { return m_selection.isContentEditable(); }

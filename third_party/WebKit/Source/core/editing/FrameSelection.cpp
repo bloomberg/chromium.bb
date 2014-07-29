@@ -121,7 +121,7 @@ Element* FrameSelection::rootEditableElementOrDocumentElement() const
     return selectionRoot ? selectionRoot : m_frame->document()->documentElement();
 }
 
-Node* FrameSelection::rootEditableElementOrTreeScopeRootNode() const
+ContainerNode* FrameSelection::rootEditableElementOrTreeScopeRootNode() const
 {
     Element* selectionRoot = m_selection.rootEditableElement();
     if (selectionRoot)
@@ -1353,7 +1353,7 @@ void FrameSelection::selectFrameElementInParentIfFullySelected()
 
     // Get to the <iframe> or <frame> (or even <object>) element in the parent frame.
     // FIXME: Doesn't work for OOPI.
-    Element* ownerElement = m_frame->deprecatedLocalOwner();
+    HTMLFrameOwnerElement* ownerElement = m_frame->deprecatedLocalOwner();
     if (!ownerElement)
         return;
     ContainerNode* ownerElementParent = ownerElement->parentNode();
@@ -1631,7 +1631,7 @@ bool FrameSelection::shouldBlinkCaret() const
     if (m_frame->settings() && m_frame->settings()->caretBrowsingEnabled())
         return false;
 
-    Node* root = rootEditableElement();
+    Element* root = rootEditableElement();
     if (!root)
         return false;
 
@@ -1820,10 +1820,10 @@ void FrameSelection::setSelectionFromNone()
     if (!isNone() || !(document->hasEditableStyle() || caretBrowsing))
         return;
 
-    Node* node = document->documentElement();
-    if (!node)
+    Element* documentElement = document->documentElement();
+    if (!documentElement)
         return;
-    Node* body = isHTMLBodyElement(*node) ? node : Traversal<HTMLBodyElement>::next(*node);
+    HTMLBodyElement* body = isHTMLBodyElement(*documentElement) ? toHTMLBodyElement(documentElement) : Traversal<HTMLBodyElement>::next(*documentElement);
     if (body)
         setSelection(VisibleSelection(firstPositionInOrBeforeNode(body), DOWNSTREAM));
 }
