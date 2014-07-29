@@ -2865,20 +2865,6 @@
           ],
         },
         {
-          'target_name': 'gles2_conform_test_run',
-          'type': 'none',
-          'dependencies': [
-            '../gpu/gles2_conform_support/gles2_conform_test.gyp:gles2_conform_test',
-          ],
-          'includes': [
-            '../build/isolate.gypi',
-            'gles2_conform_test.isolate',
-          ],
-          'sources': [
-            'gles2_conform_test.isolate',
-          ],
-        },
-        {
           'target_name': 'gl_tests_run',
           'type': 'none',
           'dependencies': [
@@ -2976,6 +2962,24 @@
           ],
           'sources': [
             'telemetry_gpu_test.isolate',
+          ],
+        },
+      ],
+    }],
+    ['test_isolation_mode != "noop" and internal_gles2_conform_tests==1', {
+      'targets': [
+        {
+          'target_name': 'gles2_conform_test_run',
+          'type': 'none',
+          'dependencies': [
+            '../gpu/gles2_conform_support/gles2_conform_test.gyp:gles2_conform_test',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+            'gles2_conform_test.isolate',
+          ],
+          'sources': [
+            'gles2_conform_test.isolate',
           ],
         },
       ],
