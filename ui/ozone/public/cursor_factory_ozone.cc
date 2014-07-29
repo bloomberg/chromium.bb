@@ -12,17 +12,17 @@ namespace ui {
 CursorFactoryOzone* CursorFactoryOzone::impl_ = NULL;
 
 CursorFactoryOzone::CursorFactoryOzone() {
-  CHECK(!impl_) << "There should only be a single CursorFactoryOzone.";
+  DCHECK(!impl_) << "There should only be a single CursorFactoryOzone.";
   impl_ = this;
 }
 
 CursorFactoryOzone::~CursorFactoryOzone() {
-  CHECK_EQ(impl_, this);
+  DCHECK_EQ(impl_, this);
   impl_ = NULL;
 }
 
 CursorFactoryOzone* CursorFactoryOzone::GetInstance() {
-  CHECK(impl_) << "No CursorFactoryOzone implementation set.";
+  DCHECK(impl_) << "No CursorFactoryOzone implementation set.";
   return impl_;
 }
 

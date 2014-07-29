@@ -87,13 +87,13 @@ DriSurfaceFactory::HardwareState DriSurfaceFactory::InitializeHardware() {
 }
 
 void DriSurfaceFactory::ShutdownHardware() {
-  CHECK(state_ == INITIALIZED);
+  DCHECK(state_ == INITIALIZED);
   state_ = UNINITIALIZED;
 }
 
 scoped_ptr<ui::SurfaceOzoneCanvas> DriSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget w) {
-  CHECK(state_ == INITIALIZED);
+  DCHECK(state_ == INITIALIZED);
   // Initial cursor set.
   ResetCursor(w);
 
@@ -108,7 +108,7 @@ bool DriSurfaceFactory::LoadEGLGLES2Bindings(
 }
 
 gfx::AcceleratedWidget DriSurfaceFactory::GetAcceleratedWidget() {
-  CHECK(state_ != FAILED);
+  DCHECK(state_ != FAILED);
 
   // We're not using 0 since other code assumes that a 0 AcceleratedWidget is an
   // invalid widget.

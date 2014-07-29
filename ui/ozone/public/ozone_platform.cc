@@ -21,14 +21,14 @@ bool g_platform_initialized_gpu = false;
 }
 
 OzonePlatform::OzonePlatform() {
-  CHECK(!instance_) << "There should only be a single OzonePlatform.";
+  DCHECK(!instance_) << "There should only be a single OzonePlatform.";
   instance_ = this;
   g_platform_initialized_ui = false;
   g_platform_initialized_gpu = false;
 }
 
 OzonePlatform::~OzonePlatform() {
-  CHECK_EQ(instance_, this);
+  DCHECK_EQ(instance_, this);
   instance_ = NULL;
 }
 
@@ -55,7 +55,7 @@ void OzonePlatform::InitializeForGPU() {
 
 // static
 OzonePlatform* OzonePlatform::GetInstance() {
-  CHECK(instance_) << "OzonePlatform is not initialized";
+  DCHECK(instance_) << "OzonePlatform is not initialized";
   return instance_;
 }
 
@@ -70,7 +70,8 @@ void OzonePlatform::CreateInstance() {
         PlatformObject<OzonePlatform>::Create();
 
     // TODO(spang): Currently need to leak this object.
-    CHECK_EQ(instance_, platform.release());
+    OzonePlatform* pl = platform.release();
+    DCHECK_EQ(instance_, pl);
   }
 }
 

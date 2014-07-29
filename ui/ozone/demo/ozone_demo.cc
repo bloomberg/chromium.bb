@@ -38,7 +38,7 @@ class DemoWindow : public ui::PlatformWindowDelegate {
 
   gfx::AcceleratedWidget GetAcceleratedWidget() {
     // TODO(spang): We should start rendering asynchronously.
-    CHECK_NE(widget_, gfx::kNullAcceleratedWidget)
+    DCHECK_NE(widget_, gfx::kNullAcceleratedWidget)
         << "Widget not available synchronously";
     return widget_;
   }
@@ -76,7 +76,7 @@ class DemoWindow : public ui::PlatformWindowDelegate {
   virtual void OnLostCapture() OVERRIDE {}
   virtual void OnAcceleratedWidgetAvailable(
       gfx::AcceleratedWidget widget) OVERRIDE {
-    CHECK_NE(widget, gfx::kNullAcceleratedWidget);
+    DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
     widget_ = widget;
   }
   virtual void OnActivationChanged(bool active) OVERRIDE {}

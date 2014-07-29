@@ -157,7 +157,8 @@ class SurfaceOzoneEgltest : public SurfaceOzoneEGL {
     native_window_ = eglplatform_shim_->ShimGetNativeWindow(window_id);
   }
   virtual ~SurfaceOzoneEgltest() {
-    CHECK(eglplatform_shim_->ShimReleaseNativeWindow(native_window_));
+    bool ret = eglplatform_shim_->ShimReleaseNativeWindow(native_window_);
+    DCHECK(ret);
   }
 
   virtual intptr_t GetNativeWindow() OVERRIDE { return native_window_; }

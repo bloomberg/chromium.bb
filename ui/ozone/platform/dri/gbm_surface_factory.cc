@@ -33,7 +33,7 @@ void GbmSurfaceFactory::InitializeGpu(
 }
 
 intptr_t GbmSurfaceFactory::GetNativeDisplay() {
-  CHECK(state_ == INITIALIZED);
+  DCHECK(state_ == INITIALIZED);
   return reinterpret_cast<intptr_t>(device_);
 }
 
@@ -94,7 +94,7 @@ bool GbmSurfaceFactory::LoadEGLGLES2Bindings(
 
 scoped_ptr<SurfaceOzoneEGL> GbmSurfaceFactory::CreateEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
-  CHECK(state_ == INITIALIZED);
+  DCHECK(state_ == INITIALIZED);
   ResetCursor(widget);
 
   if (allow_surfaceless_) {

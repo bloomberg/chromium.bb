@@ -54,7 +54,7 @@ void DriWindow::Minimize() {}
 void DriWindow::Restore() {}
 
 bool DriWindow::CanDispatchEvent(const PlatformEvent& ne) {
-  CHECK(ne);
+  DCHECK(ne);
   Event* event = static_cast<Event*>(ne);
   if (event->IsMouseEvent() || event->IsScrollEvent())
     return ui::CursorFactoryOzone::GetInstance()->GetCursorWindow() == widget_;

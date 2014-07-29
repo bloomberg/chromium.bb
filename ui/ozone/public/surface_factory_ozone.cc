@@ -17,17 +17,17 @@ namespace ui {
 SurfaceFactoryOzone* SurfaceFactoryOzone::impl_ = NULL;
 
 SurfaceFactoryOzone::SurfaceFactoryOzone() {
-  CHECK(!impl_) << "There should only be a single SurfaceFactoryOzone.";
+  DCHECK(!impl_) << "There should only be a single SurfaceFactoryOzone.";
   impl_ = this;
 }
 
 SurfaceFactoryOzone::~SurfaceFactoryOzone() {
-  CHECK_EQ(impl_, this);
+  DCHECK_EQ(impl_, this);
   impl_ = NULL;
 }
 
 SurfaceFactoryOzone* SurfaceFactoryOzone::GetInstance() {
-  CHECK(impl_) << "No SurfaceFactoryOzone implementation set.";
+  DCHECK(impl_) << "No SurfaceFactoryOzone implementation set.";
   return impl_;
 }
 

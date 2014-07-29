@@ -12,17 +12,17 @@ namespace ui {
 EventFactoryOzone* EventFactoryOzone::impl_ = NULL;
 
 EventFactoryOzone::EventFactoryOzone() {
-  CHECK(!impl_) << "There should only be a single EventFactoryOzone";
+  DCHECK(!impl_) << "There should only be a single EventFactoryOzone";
   impl_ = this;
 }
 
 EventFactoryOzone::~EventFactoryOzone() {
-  CHECK_EQ(impl_, this);
+  DCHECK_EQ(impl_, this);
   impl_ = NULL;
 }
 
 EventFactoryOzone* EventFactoryOzone::GetInstance() {
-  CHECK(impl_) << "No EventFactoryOzone implementation set.";
+  DCHECK(impl_) << "No EventFactoryOzone implementation set.";
   return impl_;
 }
 

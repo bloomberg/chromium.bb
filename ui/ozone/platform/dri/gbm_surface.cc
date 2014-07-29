@@ -109,7 +109,7 @@ bool GbmSurface::Initialize() {
 }
 
 intptr_t GbmSurface::GetNativeWindow() {
-  CHECK(native_surface_);
+  DCHECK(native_surface_);
   return reinterpret_cast<intptr_t>(native_surface_);
 }
 
@@ -121,7 +121,7 @@ bool GbmSurface::ResizeNativeWindow(const gfx::Size& viewport_size) {
 }
 
 bool GbmSurface::OnSwapBuffers() {
-  CHECK(native_surface_);
+  DCHECK(native_surface_);
 
   if (!controller_)
     return false;

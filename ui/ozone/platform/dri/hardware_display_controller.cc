@@ -99,7 +99,7 @@ HardwareDisplayController::~HardwareDisplayController() {
 
 bool HardwareDisplayController::Modeset(const OverlayPlane& primary,
                                         drmModeModeInfo mode) {
-  CHECK(primary.buffer);
+  DCHECK(primary.buffer);
   if (!drm_->SetCrtc(crtc_id_,
                      primary.buffer->GetFramebufferId(),
                      &connector_id_,
@@ -121,7 +121,7 @@ bool HardwareDisplayController::Modeset(const OverlayPlane& primary,
 
 bool HardwareDisplayController::Enable() {
   OverlayPlane primary = GetPrimaryPlane(current_planes_);
-  CHECK(primary.buffer);
+  DCHECK(primary.buffer);
   if (is_disabled_)
     return Modeset(primary, mode_);
 
@@ -135,9 +135,9 @@ void HardwareDisplayController::Disable() {
 
 bool HardwareDisplayController::SchedulePageFlip(
     const OverlayPlaneList& overlays) {
-  CHECK_LE(1u, overlays.size());
+  DCHECK_LE(1u, overlays.size());
   const OverlayPlane& primary = GetPrimaryPlane(overlays);
-  CHECK(primary.buffer);
+  DCHECK(primary.buffer);
 
   if (!is_disabled_ &&
       !drm_->PageFlip(crtc_id_, primary.buffer->GetFramebufferId(), this)) {
