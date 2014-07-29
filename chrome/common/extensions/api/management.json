@@ -122,12 +122,12 @@
             "enum": ["admin", "development", "normal", "sideload", "other"]
           },
           "launchType": {
-            "description": "The app launch type (only present for apps). This property is new in Chrome 37.",
+            "description": "The app launch type (only present for apps).",
             "$ref": "LaunchType",
             "optional": true
           },
           "availableLaunchTypes": {
-            "description": "The currently available launch types (only present for apps). This property is new in Chrome 37.",
+            "description": "The currently available launch types (only present for apps).",
             "type": "array",
             "optional": true,
             "items": {
@@ -319,7 +319,7 @@
       },
       {
         "name": "createAppShortcut",
-        "description": "Display options to create shortcuts for an app. On Mac, only packaged app shortcuts can be created. This function is new in Chrome 37.",
+        "description": "Display options to create shortcuts for an app. On Mac, only packaged app shortcuts can be created.",
         "parameters": [
           {
             "name": "id",
@@ -336,7 +336,7 @@
       },
       {
         "name": "setLaunchType",
-        "description": "Set the launch type of an app. This function is new in Chrome 37.",
+        "description": "Set the launch type of an app.",
         "parameters": [
           {
             "name": "id",
@@ -358,7 +358,7 @@
       },
       {
         "name": "generateAppForLink",
-        "description": "Generate an app for a URL. Returns the generated bookmark app. This function is new in Chrome 37.",
+        "description": "Generate an app for a URL. Returns the generated bookmark app.",
         "parameters": [
           {
             "name": "url",
