@@ -112,6 +112,8 @@ public class ContentViewCore
     private static final int IS_LONG_TAP = 2;
 
     // These values are obtained from Samsung.
+    // TODO(changwan): refactor SPen related code into a separate class. See
+    // http://crbug.com/398169.
     private static final int SPEN_ACTION_DOWN = 211;
     private static final int SPEN_ACTION_UP = 212;
     private static final int SPEN_ACTION_MOVE = 213;
@@ -1122,7 +1124,12 @@ public class ContentViewCore
 
     // End FrameLayout overrides.
 
-    private static boolean isSPenSupported(Context context) {
+    /**
+     * TODO(changwan): refactor SPen related code into a separate class. See
+     * http://crbug.com/398169.
+     * @return Whether SPen is supported on the device.
+     */
+    public static boolean isSPenSupported(Context context) {
         if (sIsSPenSupported == null)
             sIsSPenSupported = detectSPenSupport(context);
         return sIsSPenSupported.booleanValue();
@@ -1141,7 +1148,16 @@ public class ContentViewCore
         return false;
     }
 
-    private static int convertSPenEventAction(int eventActionMasked) {
+    /**
+     * Convert SPen event action into normal event action.
+     * TODO(changwan): refactor SPen related code into a separate class. See
+     * http://crbug.com/398169.
+     *
+     * @param eventActionMasked Input event action. It is assumed that it is masked as the values
+                                cannot be ORed.
+     * @return Event action after the conversion
+     */
+    public static int convertSPenEventAction(int eventActionMasked) {
         // S-Pen support: convert to normal stylus event handling
         switch (eventActionMasked) {
             case SPEN_ACTION_DOWN:
