@@ -24,7 +24,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory.h"
-#include "third_party/WebKit/public/web/WebNotificationPresenter.h"
+#include "third_party/WebKit/public/platform/WebNotificationPermission.h"
 #include "ui/base/window_open_disposition.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 
@@ -423,11 +423,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void RequestDesktopNotificationPermission(
       const GURL& source_origin,
       RenderFrameHost* render_frame_host,
-      const base::Closure& callback) {}
+      const base::Callback<void(blink::WebNotificationPermission)>& callback) {}
 
   // Checks if the given page has permission to show desktop notifications.
   // This is called on the IO thread.
-  virtual blink::WebNotificationPresenter::Permission
+  virtual blink::WebNotificationPermission
       CheckDesktopNotificationPermission(
           const GURL& source_url,
           ResourceContext* context,

@@ -204,12 +204,12 @@ MediaObserver* ContentBrowserClient::GetMediaObserver() {
   return NULL;
 }
 
-blink::WebNotificationPresenter::Permission
-    ContentBrowserClient::CheckDesktopNotificationPermission(
-        const GURL& source_origin,
-        ResourceContext* context,
-        int render_process_id) {
-  return blink::WebNotificationPresenter::PermissionAllowed;
+blink::WebNotificationPermission
+ContentBrowserClient::CheckDesktopNotificationPermission(
+    const GURL& source_origin,
+    ResourceContext* context,
+    int render_process_id) {
+  return blink::WebNotificationPermissionAllowed;
 }
 
 void ContentBrowserClient::RequestGeolocationPermission(

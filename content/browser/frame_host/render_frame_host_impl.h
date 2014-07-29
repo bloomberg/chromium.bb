@@ -21,6 +21,7 @@
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/page_transition_types.h"
 #include "net/http/http_response_headers.h"
+#include "third_party/WebKit/public/platform/WebNotificationPermission.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "ui/accessibility/ax_node_data.h"
 
@@ -321,7 +322,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // it will be used to kill processes that commit unauthorized URLs.
   bool CanCommitURL(const GURL& url);
 
-  void DesktopNotificationPermissionRequestDone(int callback_context);
+  void DesktopNotificationPermissionRequestDone(
+      int callback_context, blink::WebNotificationPermission permission);
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each

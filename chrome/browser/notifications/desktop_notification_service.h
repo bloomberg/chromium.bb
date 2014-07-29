@@ -22,7 +22,7 @@
 #include "chrome/common/content_settings.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/extension_registry_observer.h"
-#include "third_party/WebKit/public/web/WebNotificationPresenter.h"
+#include "third_party/WebKit/public/platform/WebNotificationPermission.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "ui/message_center/notifier_settings.h"
 #include "url/gurl.h"

@@ -133,6 +133,7 @@ include_rules = [
   # header-only types, and some selected common code.
   "-third_party/WebKit",
   "+third_party/WebKit/public/platform/WebCursorInfo.h",
+  "+third_party/WebKit/public/platform/WebNotificationPermission.h",
   "+third_party/WebKit/public/platform/WebRect.h",
   "+third_party/WebKit/public/platform/WebReferrerPolicy.h",
   "+third_party/WebKit/public/platform/WebScreenInfo.h",
@@ -142,7 +143,6 @@ include_rules = [
   "+third_party/WebKit/public/web/WebFindOptions.h",
   "+third_party/WebKit/public/web/WebInputEvent.h",
   "+third_party/WebKit/public/web/WebMediaPlayerAction.h",
-  "+third_party/WebKit/public/web/WebNotificationPresenter.h",
   "+third_party/WebKit/public/web/WebPageVisibilityState.h",
   "+third_party/WebKit/public/web/WebPluginAction.h",
   "+third_party/WebKit/public/web/WebTextDirection.h",

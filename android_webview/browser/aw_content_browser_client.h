@@ -108,7 +108,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       const net::HttpNetworkSession* network_session,
       net::SSLCertRequestInfo* cert_request_info,
       const base::Callback<void(net::X509Certificate*)>& callback) OVERRIDE;
-  virtual blink::WebNotificationPresenter::Permission
+  virtual blink::WebNotificationPermission
       CheckDesktopNotificationPermission(
           const GURL& source_url,
           content::ResourceContext* context,

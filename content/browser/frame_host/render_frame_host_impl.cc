@@ -802,9 +802,11 @@ void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
 
 void RenderFrameHostImpl::OnRequestDesktopNotificationPermission(
     const GURL& source_origin, int callback_context) {
-  base::Closure done_callback = base::Bind(
-      &RenderFrameHostImpl::DesktopNotificationPermissionRequestDone,
-      weak_ptr_factory_.GetWeakPtr(), callback_context);
+  base::Callback<void(blink::WebNotificationPermission)> done_callback =
+      base::Bind(&RenderFrameHostImpl::DesktopNotificationPermissionRequestDone,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback_context);
+
   GetContentClient()->browser()->RequestDesktopNotificationPermission(
       source_origin, this, done_callback);
 }
@@ -1111,7 +1113,7 @@ void RenderFrameHostImpl::NotificationClosed(int notification_id) {
 }
 
 void RenderFrameHostImpl::DesktopNotificationPermissionRequestDone(
-    int callback_context) {
+    int callback_context, blink::WebNotificationPermission permission) {
   Send(new DesktopNotificationMsg_PermissionRequestDone(
       routing_id_, callback_context));
 }

@@ -2100,7 +2100,7 @@ content::MediaObserver* ChromeContentBrowserClient::GetMediaObserver() {
 void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
     const GURL& source_origin,
     content::RenderFrameHost* render_frame_host,
-    const base::Closure& callback) {
+    const base::Callback<void(blink::WebNotificationPermission)>& callback) {
 #if defined(ENABLE_NOTIFICATIONS)
   // Skip showing the infobar if the request comes from an extension, and that
   // extension has the 'notify' permission. (If the extension does not have the
@@ -2132,7 +2132,7 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
           APIPermission::kNotifications,
           extension,
           render_frame_host->GetRenderViewHost())) {
-    callback.Run();
+    callback.Run(blink::WebNotificationPermissionAllowed);
     return;
   }
 
@@ -2159,11 +2159,11 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
 #endif
 }
 
-blink::WebNotificationPresenter::Permission
-    ChromeContentBrowserClient::CheckDesktopNotificationPermission(
-        const GURL& source_origin,
-        content::ResourceContext* context,
-        int render_process_id) {
+blink::WebNotificationPermission
+ChromeContentBrowserClient::CheckDesktopNotificationPermission(
+    const GURL& source_origin,
+    content::ResourceContext* context,
+    int render_process_id) {
 #if defined(ENABLE_NOTIFICATIONS)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -2183,7 +2183,7 @@ blink::WebNotificationPresenter::Permission
        iter != extensions.end(); ++iter) {
     // Then, check to see if it's been disabled by the user.
     if (!extension_info_map->AreNotificationsDisabled((*iter)->id()))
-      return blink::WebNotificationPresenter::PermissionAllowed;
+      return blink::WebNotificationPermissionAllowed;
   }
 
   // No enabled extensions exist, so check the normal host content settings.
@@ -2196,12 +2196,12 @@ blink::WebNotificationPresenter::Permission
       NO_RESOURCE_IDENTIFIER);
 
   if (setting == CONTENT_SETTING_ALLOW)
-    return blink::WebNotificationPresenter::PermissionAllowed;
+    return blink::WebNotificationPermissionAllowed;
   if (setting == CONTENT_SETTING_BLOCK)
-    return blink::WebNotificationPresenter::PermissionDenied;
-  return blink::WebNotificationPresenter::PermissionNotAllowed;
+    return blink::WebNotificationPermissionDenied;
+  return blink::WebNotificationPermissionDefault;
 #else
-  return blink::WebNotificationPresenter::PermissionAllowed;
+  return blink::WebNotificationPermissionAllowed;
 #endif
 }
 
@@ -2962,8 +2962,13 @@ void ChromeContentBrowserClient::MaybeCopyDisableWebRtcEncryptionSwitch(
 
 
 void ChromeContentBrowserClient::NotificationPermissionRequested(
-    const base::Closure& callback, bool result) {
-  callback.Run();
+    const base::Callback<void(blink::WebNotificationPermission)>& callback,
+    bool allowed) {
+  blink::WebNotificationPermission permission = allowed ?
+      blink::WebNotificationPermissionAllowed :
+      blink::WebNotificationPermissionDenied;
+
+  callback.Run(permission);
 }
 
 }  // namespace chrome

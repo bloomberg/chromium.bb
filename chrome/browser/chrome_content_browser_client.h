@@ -186,8 +186,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual void RequestDesktopNotificationPermission(
       const GURL& source_origin,
       content::RenderFrameHost* render_frame_host,
-      const base::Closure& callback) OVERRIDE;
-  virtual blink::WebNotificationPresenter::Permission
+      const base::Callback<void(blink::WebNotificationPermission)>& callback)
+          OVERRIDE;
+  virtual blink::WebNotificationPermission
       CheckDesktopNotificationPermission(
           const GURL& source_origin,
           content::ResourceContext* context,
@@ -298,11 +299,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
  private:
   friend class DisableWebRtcEncryptionFlagTest;
 
-  // Used as a callback once a permission has been decided.
-  // TODO(peter) remove once the notification callback returns
-  // a boolean.
+  // Used as a callback once a permission has been decided to convert |allowed|
+  // to one of the blink::WebNotificationPermission values.
   void NotificationPermissionRequested(
-      const base::Closure& callback, bool result);
+      const base::Callback<void(blink::WebNotificationPermission)>& callback,
+      bool allowed);
 
 #if defined(ENABLE_WEBRTC)
   // Copies disable WebRTC encryption switch depending on the channel.
@@ -353,7 +354,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   // created. It is used only the IO thread.
   prerender::PrerenderTracker* prerender_tracker_;
 
-  // TODO(peter) remove once NotificationPermissionRequested is removed.
   base::WeakPtrFactory<ChromeContentBrowserClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentBrowserClient);
