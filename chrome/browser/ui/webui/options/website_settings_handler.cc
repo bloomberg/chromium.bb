@@ -119,6 +119,10 @@ void WebsiteSettingsHandler::UpdateOrigins() {
   ContentSettingsForOneType all_settings;
   ContentSettingsType last_setting;
   content_settings::GetTypeFromName(last_setting_, &last_setting);
+
+  if (last_setting == CONTENT_SETTINGS_TYPE_MEDIASTREAM)
+    last_setting = CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC;
+
   settings->GetSettingsForOneType(last_setting, std::string(), &all_settings);
 
   base::DictionaryValue origins;
@@ -134,11 +138,28 @@ void WebsiteSettingsHandler::UpdateOrigins() {
 
     std::string origin = it->primary_pattern.ToString();
 
+    // Mediastream isn't set unless both mic and camera are set to the same.
+    if (last_setting == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) {
+      GURL origin_url(origin);
+      ContentSetting cam_setting =
+          settings->GetContentSetting(origin_url,
+                                      origin_url,
+                                      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+                                      std::string());
+      if (it->setting != cam_setting)
+        continue;
+    }
+
     if (origin.find(last_filter_) == base::string16::npos)
       continue;
 
-    // TODO(dhnishi): Change 0 to a timestamp representing last API usage.
-    origins.SetDoubleWithoutPathExpansion(origin, 0);
+    base::Time last_usage = settings->GetLastUsageByPattern(
+        it->primary_pattern, it->secondary_pattern, last_setting);
+
+    base::DictionaryValue* origin_entry = new base::DictionaryValue();
+    origin_entry->SetDoubleWithoutPathExpansion("usage",
+                                                last_usage.ToDoubleT());
+    origins.SetWithoutPathExpansion(origin, origin_entry);
   }
 
   web_ui()->CallJavascriptFunction("WebsiteSettingsManager.populateOrigins",
@@ -162,8 +183,8 @@ void WebsiteSettingsHandler::UpdateLocalStorage() {
         "usageString", new base::StringValue(ui::FormatBytes(it->size)));
     local_storage_map.SetWithoutPathExpansion(origin, origin_entry);
   }
-  web_ui()->CallJavascriptFunction(
-      "WebsiteSettingsManager.populateLocalStorage", local_storage_map);
+  web_ui()->CallJavascriptFunction("WebsiteSettingsManager.populateOrigins",
+                                   local_storage_map);
 }
 
 }  // namespace options

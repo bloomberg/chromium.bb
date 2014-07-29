@@ -73,31 +73,15 @@ cr.define('options', function() {
     /**
      * Populate the origin list with all of the origins with a given permission
      * or that are using a given resource.
+     * @param {!Object} originDict A dictionary of origins to their usage, which
+           will be used to sort the origins.
      * @private
      */
     populateOrigins_: function(originDict) {
-      // TODO(dhnishi): Include the last usage time instead of just pushing the
-      // keys.
-      this.originList_.dataModel = new ArrayDataModel(Object.keys(originDict));
-    },
-
-    /**
-     * Update the table with the origins filtered by the value in the search
-     * box.
-     * @private
-     */
-    searchOrigins: function() {
-      var filter =
-         $('website-settings-search-box').value;
-      chrome.send('updateOriginsSearchResults', [filter]);
-    },
-
-    /**
-     * Populates the origin list with all origins that are using local storage.
-     * @private
-     */
-    populateLocalStorage_: function(originDict) {
       var origins = Object.keys(originDict).map(function(origin) {
+        // |usage| means the time of last usage in seconds since epoch
+        // (Jan 1, 1970) for permissions and means the amount of local storage
+        // in bytes used for local storage.
         return {
           origin: origin,
           usage: originDict[origin].usage,
@@ -108,6 +92,16 @@ cr.define('options', function() {
         return second.usage - first.usage;
       });
       this.originList_.dataModel = new ArrayDataModel(origins);
+    },
+
+    /**
+     * Update the table with the origins filtered by the value in the search
+     * box.
+     * @private
+     */
+    searchOrigins: function() {
+      var filter = $('website-settings-search-box').value;
+      chrome.send('updateOriginsSearchResults', [filter]);
     },
 
     /**
@@ -126,10 +120,6 @@ cr.define('options', function() {
 
   WebsiteSettingsManager.populateOrigins = function(originDict) {
     WebsiteSettingsManager.getInstance().populateOrigins_(originDict);
-  };
-
-  WebsiteSettingsManager.populateLocalStorage = function(originDict) {
-    WebsiteSettingsManager.getInstance().populateLocalStorage_(originDict);
   };
 
   // Export

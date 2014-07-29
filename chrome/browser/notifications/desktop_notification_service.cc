@@ -213,6 +213,8 @@ void DesktopNotificationService::ShowDesktopNotification(
   GetUIManager()->Add(notification, profile_);
   if (cancel_callback)
     *cancel_callback = base::Bind(&CancelNotification, proxy->id());
+
+  DesktopNotificationProfileUtil::UsePermission(profile_, origin);
 }
 
 base::string16 DesktopNotificationService::DisplayNameForOriginInProcessId(

@@ -26,6 +26,7 @@ class DesktopNotificationProfileUtil {
   static void GetNotificationsSettings(
       Profile* profile, ContentSettingsForOneType* settings);
   static ContentSetting GetContentSetting(Profile* profile, const GURL& origin);
+  static void UsePermission(Profile* profile, const GURL& origin);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(DesktopNotificationProfileUtil);

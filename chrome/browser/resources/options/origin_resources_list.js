@@ -6,17 +6,15 @@ cr.define('options', function() {
   /** @const */ List = cr.ui.List;
   /** @const */ ListItem = cr.ui.ListItem;
 
+  /**
+   * Creates a new list item for the origin's data.
+   * @param {!Object} origin Data used to create the origin list item.
+   */
   function OriginListItem(origin) {
     var el = cr.doc.createElement('div');
-
-    if (origin.origin) {
-      el.origin_ = origin.origin;
-      el.usage_ = origin.usage;
-      el.usageString_ = origin.usageString;
-    } else {
-      el.origin_ = origin;
-    }
-
+    el.origin_ = origin.origin;
+    el.usage_ = origin.usage;
+    el.usageString_ = origin.usageString;
     el.__proto__ = OriginListItem.prototype;
     el.decorate();
     return el;

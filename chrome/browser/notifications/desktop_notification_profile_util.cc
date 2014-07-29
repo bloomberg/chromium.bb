@@ -68,3 +68,11 @@ ContentSetting DesktopNotificationProfileUtil::GetContentSetting(
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
       NO_RESOURCE_IDENTIFIER);
 }
+
+void DesktopNotificationProfileUtil::UsePermission(Profile* profile,
+                                                   const GURL& origin) {
+  profile->GetHostContentSettingsMap()->UpdateLastUsageByPattern(
+      ContentSettingsPattern::FromURLNoWildcard(origin),
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+}
