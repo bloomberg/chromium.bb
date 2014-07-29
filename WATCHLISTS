@@ -118,6 +118,9 @@
     'base_memory': {
       'filepath': '^base/memory',
     },
+    'base_win': {
+      'filepath': '^base/win',
+    },
     'battery_status': {
       'filepath': 'content/browser/battery_status/|'\
                   'content/common/battery_status_messages.h|'\
@@ -134,6 +137,9 @@
                   '|chrome/browser/ui/cocoa/bookmarks/' \
                   '|chrome/browser/ui/views/bookmarks/' \
                   '|components/bookmarks'
+    },
+    'breakpad_app': {
+      'filepath': 'components/breakpad/app/',
     },
     'browser': {
       'filepath': 'chrome/browser/',
@@ -707,6 +713,9 @@
                   '|chrome/browser/ui/website_settings/'\
                   '|chrome/common/content_settings',
     },
+    'windows_sandboxing': {
+      'filepath': 'sandbox/win/',
+    },
     'worker': {
       'filepath': 'chrome/browser/worker_host/|chrome/worker/|'\
         'chrome/common/worker_messages|webkit/glue/webworker',
@@ -761,8 +770,10 @@
                  'rouslan+autofillwatch@chromium.org'],
     'automation': ['robertshield@chromium.org'],
     'base': ['erikwright+watch@chromium.org'],
-    'base_allocator': ['dmikurube+memory@chromium.org'],
+    'base_allocator': ['dmikurube+memory@chromium.org',
+                       'wfh+watch@chromium.org'],
     'base_memory': ['gavinp+memory@chromium.org'],
+    'base_win': ['wfh+watch@chromium.org'],
     'battery_status': ['timvolodine@chromium.org'],
     'bookmarks': ['tfarina@chromium.org'],
     'browser_chromeos': ['davemoore+watch@chromium.org',
@@ -843,7 +854,7 @@
     'importer': ['tfarina@chromium.org'],
     'indexed_db': ['alecflett@chromium.org', 'cmumford@chromium.org',
                    'dgrogan@chromium.org', 'jsbell+idb@chromium.org'],
-    'installer': ['grt+watch@chromium.org'],
+    'installer': ['grt+watch@chromium.org', 'wfh+watch@chromium.org'],
     'instant': ['dcblack@chromium.org', 'jered@chromium.org',
                 'dominich@chromium.org', 'samarth+watch@chromium.org',
                 'melevin+watch@chromium.org', 'dougw+watch@chromium.org',
@@ -948,7 +959,7 @@
                            'nona+watch@chromium.org',
                            'yukishiino+watch@chromium.org'],
     'tools_emacs': ['dhollowa+watch@chromium.org'],
-    'tracing': ['dsinclair+watch@chromium.org'],
+    'tracing': ['dsinclair+watch@chromium.org', 'wfh+watch@chromium.org'],
     'ui_compositor': ['cc-bugs@chromium.org'],
     'ui_resources': ['oshima+watch@chromium.org'],
     'valgrind': ['bruening+watch@chromium.org',
@@ -967,6 +978,7 @@
                      'mcasas+watch@chromium.org',
                      'posciak+watch@chromium.org'],
     'website_settings': ['markusheintz@chromium.org'],
+    'windows_sandboxing': ['wfh+watch@chromium.org'],
     'worker': ['jam@chromium.org'],
     'x11': ['derat+watch@chromium.org',
             'sadrul@chromium.org',
