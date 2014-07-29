@@ -25,6 +25,8 @@ remoting.MediaSourceRenderer = function(videoTag) {
    * processed. A null element indicates that the SourceBuffer can be reset
    * because the following buffer contains a keyframe. */
   this.buffers_ = [];
+
+  this.lastKeyFramePos_ = 0;
 }
 
 /**
@@ -74,14 +76,20 @@ remoting.MediaSourceRenderer.prototype.processPendingData_ = function() {
     while (this.buffers_.length > 0 && !this.sourceBuffer_.updating) {
       var buffer = /** @type {ArrayBuffer} */ this.buffers_.shift();
       if (buffer == null) {
-        // Remove all data from the SourceBuffer. By default Chrome buffers up
-        // 150MB of data in SourceBuffer. We never need to seek the stream, so
-        // it doesn't make sense to keep any of that data.
+        // Remove data from the SourceBuffer from the beginning to the previous
+        // key frame. By default Chrome buffers up to 150MB of data. We never
+        // need to seek the stream, so it doesn't make sense to keep any of that
+        // data.
         if (this.sourceBuffer_.buffered.length > 0) {
-          this.sourceBuffer_.remove(
-              this.sourceBuffer_.buffered.start(0),
-              this.sourceBuffer_.buffered.end(
-                  this.sourceBuffer_.buffered.length - 1));
+          // TODO(sergeyu): Check currentTime to make sure that the current
+          // playback position is not being removed. crbug.com/398290 .
+          if (this.lastKeyFramePos_ > this.sourceBuffer_.buffered.start(0)) {
+            this.sourceBuffer_.remove(this.sourceBuffer_.buffered.start(0),
+                                      this.lastKeyFramePos_);
+          }
+
+          this.lastKeyFramePos_ = this.sourceBuffer_.buffered.end(
+              this.sourceBuffer_.buffered.length - 1);
         }
       } else {
         // TODO(sergeyu): Figure out the way to determine when a frame is
