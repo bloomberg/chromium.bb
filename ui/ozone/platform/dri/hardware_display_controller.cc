@@ -141,7 +141,9 @@ bool HardwareDisplayController::SchedulePageFlip(
 
   if (!is_disabled_ &&
       !drm_->PageFlip(crtc_id_, primary.buffer->GetFramebufferId(), this)) {
-    LOG(ERROR) << "Cannot page flip: " << strerror(errno);
+    LOG(ERROR) << "Cannot page flip: error='" << strerror(errno) << "'"
+               << " crtc=" << crtc_id_
+               << " framebuffer=" << primary.buffer->GetFramebufferId();
     return false;
   }
 

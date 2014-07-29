@@ -7,10 +7,12 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_surface_osmesa.h"
 #include "ui/gl/gl_surface_stub.h"
+#include "ui/gl/scoped_make_current.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #include "ui/ozone/public/surface_ozone_egl.h"
 
@@ -21,13 +23,18 @@ namespace {
 // A thin wrapper around GLSurfaceEGL that owns the EGLNativeWindow
 class GL_EXPORT GLSurfaceOzoneEGL : public NativeViewGLSurfaceEGL {
  public:
-  GLSurfaceOzoneEGL(scoped_ptr<ui::SurfaceOzoneEGL> ozone_surface)
+  GLSurfaceOzoneEGL(scoped_ptr<ui::SurfaceOzoneEGL> ozone_surface,
+                    AcceleratedWidget widget)
       : NativeViewGLSurfaceEGL(ozone_surface->GetNativeWindow()),
-        ozone_surface_(ozone_surface.Pass()) {}
+        ozone_surface_(ozone_surface.Pass()),
+        widget_(widget) {}
 
   virtual bool Resize(const gfx::Size& size) OVERRIDE {
-    if (!ozone_surface_->ResizeNativeWindow(size))
-      return false;
+    if (!ozone_surface_->ResizeNativeWindow(size)) {
+      if (!ReinitializeNativeSurface() ||
+          !ozone_surface_->ResizeNativeWindow(size))
+        return false;
+    }
 
     return NativeViewGLSurfaceEGL::Resize(size);
   }
@@ -43,8 +50,40 @@ class GL_EXPORT GLSurfaceOzoneEGL : public NativeViewGLSurfaceEGL {
     Destroy();  // EGL surface must be destroyed before SurfaceOzone
   }
 
+  bool ReinitializeNativeSurface() {
+    scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current;
+    GLContext* current_context = GLContext::GetCurrent();
+    bool was_current =
+        current_context && current_context->IsCurrent(this);
+    if (was_current) {
+      scoped_make_current.reset(
+          new ui::ScopedMakeCurrent(current_context, this));
+    }
+
+    Destroy();
+    ozone_surface_ =
+        ui::SurfaceFactoryOzone::GetInstance()->CreateEGLSurfaceForWidget(
+            widget_).Pass();
+    if (!ozone_surface_) {
+      LOG(ERROR) << "Failed to create native surface.";
+      return false;
+    }
+
+    window_ = ozone_surface_->GetNativeWindow();
+    scoped_ptr<VSyncProvider> vsync_provider =
+        ozone_surface_->CreateVSyncProvider();
+    if (!Initialize(vsync_provider.Pass())) {
+      LOG(ERROR) << "Failed to initialize.";
+      return false;
+    }
+
+    return true;
+  }
+
+
   // The native surface. Deleting this is allowed to free the EGLNativeWindow.
   scoped_ptr<ui::SurfaceOzoneEGL> ozone_surface_;
+  AcceleratedWidget widget_;
 
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceOzoneEGL);
 };
@@ -89,7 +128,7 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
     scoped_ptr<VSyncProvider> vsync_provider =
         surface_ozone->CreateVSyncProvider();
     scoped_refptr<GLSurfaceOzoneEGL> surface =
-        new GLSurfaceOzoneEGL(surface_ozone.Pass());
+        new GLSurfaceOzoneEGL(surface_ozone.Pass(), window);
     if (!surface->Initialize(vsync_provider.Pass()))
       return NULL;
     return surface;

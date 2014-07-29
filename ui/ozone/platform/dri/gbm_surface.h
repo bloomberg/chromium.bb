@@ -35,6 +35,7 @@ class GbmSurface : public GbmSurfaceless {
 
   // GbmSurfaceless:
   virtual intptr_t GetNativeWindow() OVERRIDE;
+  virtual bool ResizeNativeWindow(const gfx::Size& viewport_size) OVERRIDE;
   virtual bool OnSwapBuffers() OVERRIDE;
 
  private:
@@ -47,6 +48,8 @@ class GbmSurface : public GbmSurfaceless {
 
   // Buffer currently used for scanout.
   gbm_bo* current_buffer_;
+
+  gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmSurface);
 };

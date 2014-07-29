@@ -103,12 +103,21 @@ bool GbmSurface::Initialize() {
   if (!native_surface_)
     return false;
 
+  size_.SetSize(controller_->get_mode().hdisplay,
+                controller_->get_mode().vdisplay);
   return true;
 }
 
 intptr_t GbmSurface::GetNativeWindow() {
   CHECK(native_surface_);
   return reinterpret_cast<intptr_t>(native_surface_);
+}
+
+bool GbmSurface::ResizeNativeWindow(const gfx::Size& viewport_size) {
+  if (size_ == viewport_size)
+    return true;
+
+  return false;
 }
 
 bool GbmSurface::OnSwapBuffers() {
