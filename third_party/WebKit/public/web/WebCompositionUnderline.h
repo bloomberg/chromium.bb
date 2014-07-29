@@ -45,14 +45,6 @@ struct WebCompositionUnderline {
         , thick(false)
         , backgroundColor(0) { }
 
-    // FIXME(huangs): remove this constructor.
-    WebCompositionUnderline(unsigned s, unsigned e, WebColor c, bool t)
-        : startOffset(s)
-        , endOffset(e)
-        , color(c)
-        , thick(t)
-        , backgroundColor(0) { }
-
     WebCompositionUnderline(unsigned s, unsigned e, WebColor c, bool t, WebColor bc)
         : startOffset(s)
         , endOffset(e)
