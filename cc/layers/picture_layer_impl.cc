@@ -40,8 +40,6 @@ const float kCpuSkewportTargetTimeInFrames = 60.0f;
 // TileManager::BinFromTilePriority).
 const float kGpuSkewportTargetTimeInFrames = 0.0f;
 
-// Minimum width/height of a layer that would require analysis for tiles.
-const int kMinDimensionsForAnalysis = 256;
 }  // namespace
 
 namespace cc {
@@ -543,25 +541,12 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
   if (!pile_->CanRaster(tiling->contents_scale(), content_rect))
     return scoped_refptr<Tile>();
 
-  int flags = 0;
-  // We analyze picture before rasterization to detect solid-color tiles.
-  // If the tile is detected as such there is no need to raster or upload.
-  // It is drawn directly as a solid-color quad saving memory, raster and upload
-  // cost. The analysis step is however expensive and may not be justified when
-  // doing gpu rasterization which runs on the compositor thread and where there
-  // is no upload.
-  // TODO(alokp): Revisit the decision to avoid analysis for gpu rasterization
-  // becuase it too can potentially benefit from memory savings.
-  if (!layer_tree_impl()->use_gpu_rasterization()) {
-    // Additionally, we do not want to do the analysis if the layer is too
-    // narrow, since more likely than not the tile would not be solid. Note that
-    // this last optimization is a heuristic that ensures that we don't spend
-    // too much time analyzing tiles on a multitude of small layers, as it is
-    // likely that these layers have some non-solid content.
-    int min_dimension = std::min(bounds().width(), bounds().height());
-    if (min_dimension >= kMinDimensionsForAnalysis)
-      flags |= Tile::USE_PICTURE_ANALYSIS;
-  }
+  // TODO(vmpstr): Revisit this. For now, enabling analysis means that we get as
+  // much savings on memory as we can. However, for some cases like ganesh or
+  // small layers, the amount of time we spend analyzing might not justify
+  // memory savings that we can get.
+  // Bugs: crbug.com/397198, crbug.com/396908
+  int flags = Tile::USE_PICTURE_ANALYSIS;
 
   return layer_tree_impl()->tile_manager()->CreateTile(
       pile_.get(),
