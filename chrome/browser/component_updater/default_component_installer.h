@@ -12,11 +12,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 
 namespace base {
-class DictionaryValue;
 class FilePath;
 class SequencedTaskRunner;
 class SingleThreadTaskRunner;
