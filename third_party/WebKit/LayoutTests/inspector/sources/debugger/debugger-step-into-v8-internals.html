@@ -1,0 +1,54 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function testFunction()
+{
+    Promise.resolve(42).then(function() {
+        debugger;
+    }).then(function() {
+        var dummy1 = 1;
+        var dummy2 = 2;
+        debugger;
+    });
+}
+
+function test()
+{
+    InspectorTest.setQuiet(true);
+    InspectorTest.startDebuggerTest(step1);
+
+    function step1()
+    {
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+    }
+
+    function step2()
+    {
+        var actions = [
+            "Print", // debugger;
+            "StepInto", "Print",
+            "StepInto", "Print",
+            "StepInto", "Print",
+        ];
+        InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, step3);
+    }
+
+    function step3()
+    {
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<input type='button' onclick='testFunction()' value='Test'/>
+<p>
+Tests that debugger will not step into V8 internal scripts.
+</p>
+</body>
+</html>

@@ -50,55 +50,30 @@ function test()
 
     function step1()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
     }
 
-    var actions = [
-        "Print", // debugger;
-        "StepInto", "StepInto", "Print", // callback1
-        "StepInto", "Print", // callback2
-        "StepInto", "Print", // callback2, skipped
-        "StepInto", "Print", // callback3
-        "StepInto", "StepInto", "StepInto", "StepInto", "Print", // callback4
-        "StepInto", "Print", // callback4, skipped
-        "StepInto", "Print", // callback4, inside catch
-        "StepOut", "Print", // return to callback3
-        "StepOver", "Print", // return to callback2
-        "StepInto", "Print", // return to callback1
-    ];
-
-    function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
+    function step2()
     {
-        var action = actions.shift();
-        if (action === "Print") {
-            InspectorTest.captureStackTrace(callFrames);
-            InspectorTest.addResult("");
-            while (action === "Print")
-                action = actions.shift();
-        }
+        var actions = [
+            "Print", // debugger;
+            "StepInto", "StepInto", "Print", // callback1
+            "StepInto", "Print", // callback2
+            "StepInto", "Print", // callback2, skipped
+            "StepInto", "Print", // callback3
+            "StepInto", "StepInto", "StepInto", "StepInto", "Print", // callback4
+            "StepInto", "Print", // callback4, skipped
+            "StepInto", "Print", // callback4, inside catch
+            "StepOut", "Print", // return to callback3
+            "StepOver", "Print", // return to callback2
+            "StepInto", "Print", // return to callback1
+        ];
+        InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, step3);
+    }
 
-        if (!action) {
-            InspectorTest.completeDebuggerTest();
-            return;
-        }
-
-        InspectorTest.addResult("Executing " + action + "...");
-        switch (action) {
-        case "StepInto":
-            WebInspector.panels.sources._stepIntoButton.element.click();
-            break;
-        case "StepOver":
-            WebInspector.panels.sources._stepOverButton.element.click();
-            break;
-        case "StepOut":
-            WebInspector.panels.sources._stepOutButton.element.click();
-            break;
-        default:
-            InspectorTest.addResult("FAIL: Unknown action: " + action);
-            InspectorTest.completeDebuggerTest();
-            return;
-        }
-        InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
+    function step3()
+    {
+        InspectorTest.completeDebuggerTest();
     }
 }
 

@@ -159,6 +159,51 @@ InspectorTest.waitUntilPausedAndDumpStackAndResume = function(callback, options)
     }
 };
 
+InspectorTest.waitUntilPausedAndPerformSteppingActions = function(actions, callback)
+{
+    callback = InspectorTest.safeWrap(callback);
+    InspectorTest.waitUntilPaused(didPause);
+
+    function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
+    {
+        var action = actions.shift();
+        if (action === "Print") {
+            InspectorTest.captureStackTrace(callFrames, asyncStackTrace);
+            InspectorTest.addResult("");
+            while (action === "Print")
+                action = actions.shift();
+        }
+
+        if (!action) {
+            callback()
+            return;
+        }
+
+        InspectorTest.addResult("Executing " + action + "...");
+
+        switch (action) {
+        case "StepInto":
+            WebInspector.panels.sources._stepIntoButton.element.click();
+            break;
+        case "StepOver":
+            WebInspector.panels.sources._stepOverButton.element.click();
+            break;
+        case "StepOut":
+            WebInspector.panels.sources._stepOutButton.element.click();
+            break;
+        case "Resume":
+            WebInspector.panels.sources.togglePause();
+            break;
+        default:
+            InspectorTest.addResult("FAIL: Unknown action: " + action);
+            callback()
+            return;
+        }
+
+        InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
+    }
+};
+
 InspectorTest.captureStackTrace = function(callFrames, asyncStackTrace, options)
 {
     InspectorTest.addResult(InspectorTest.captureStackTraceIntoString(callFrames, asyncStackTrace, options));

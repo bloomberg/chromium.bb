@@ -1,0 +1,20 @@
+
+Tests that debugger will not step into V8 internal scripts.
+
+Set timer for test function.
+Call stack:
+    0)  (debugger-step-into-v8-internals.html:10)
+
+Executing StepInto...
+Call stack:
+    0)  (debugger-step-into-v8-internals.html:11)
+
+Executing StepInto...
+Call stack:
+    0)  (debugger-step-into-v8-internals.html:14)
+
+Executing StepInto...
+Call stack:
+    0)  (debugger-step-into-v8-internals.html:15)
+
+

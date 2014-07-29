@@ -1297,7 +1297,9 @@ void InspectorDebuggerAgent::didParseSource(const String& scriptId, const Script
 ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::didPause(ScriptState* scriptState, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints)
 {
     ScriptDebugListener::SkipPauseRequest result;
-    if (m_javaScriptPauseScheduled)
+    if (callFrames.isEmpty())
+        result = ScriptDebugListener::Continue; // Skip pauses inside V8 internal scripts and on syntax errors.
+    else if (m_javaScriptPauseScheduled)
         result = ScriptDebugListener::NoSkip; // Don't skip explicit pause requests from front-end.
     else if (m_skipAllPauses)
         result = ScriptDebugListener::Continue;

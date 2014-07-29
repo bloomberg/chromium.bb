@@ -28,57 +28,24 @@ function test()
     {
         xhrPane = WebInspector.panels.sources.sidebarPanes.xhrBreakpoints;
         xhrPane._setBreakpoint("foo", true);
-        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
     }
 
-    var actions = [
-        "Print", // debugger;
-        "StepInto", "Print",
-        "StepOver", "Print",
-        "StepOut", "Print",
-        "StepInto", "Print", // should not step inside
-        "Resume", "Print",   // should stop on XHR.send()
-        "StepInto", "Print", // should step inside framework
-    ];
-
-    function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
+    function step2()
     {
-        var action = actions.shift();
-        if (action === "Print") {
-            InspectorTest.captureStackTrace(callFrames);
-            InspectorTest.addResult("");
-            while (action === "Print")
-                action = actions.shift();
-        }
-
-        if (!action) {
-            completeTest()
-            return;
-        }
-
-        InspectorTest.addResult("Executing " + action + "...");
-        switch (action) {
-        case "StepInto":
-            WebInspector.panels.sources._stepIntoButton.element.click();
-            break;
-        case "StepOver":
-            WebInspector.panels.sources._stepOverButton.element.click();
-            break;
-        case "StepOut":
-            WebInspector.panels.sources._stepOutButton.element.click();
-            break;
-        case "Resume":
-            InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
-            break;
-        default:
-            InspectorTest.addResult("FAIL: Unknown action: " + action);
-            completeTest()
-            return;
-        }
-        InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
+        var actions = [
+            "Print", // debugger;
+            "StepInto", "Print",
+            "StepOver", "Print",
+            "StepOut", "Print",
+            "StepInto", "Print", // should not step inside
+            "Resume", "Print",   // should stop on XHR.send()
+            "StepInto", "Print", // should step inside framework
+        ];
+        InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, step3);
     }
 
-    function completeTest()
+    function step3()
     {
         xhrPane._removeBreakpoint("foo");
         InspectorTest.completeDebuggerTest();

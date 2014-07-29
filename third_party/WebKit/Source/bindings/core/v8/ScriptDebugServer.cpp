@@ -492,10 +492,6 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
             v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
             dispatchDidParseSource(listener, object, event != v8::AfterCompile ? CompileError : CompileSuccess);
         } else if (event == v8::Exception) {
-            v8::Local<v8::StackTrace> stackTrace = v8::StackTrace::CurrentStackTrace(m_isolate, 1);
-            // Stack trace is empty in case of syntax error. Silently continue execution in such cases.
-            if (!stackTrace->GetFrameCount())
-                return;
             v8::Handle<v8::Object> eventData = eventDetails.GetEventData();
             v8::Handle<v8::Value> exception = callInternalGetterFunction(eventData, "exception", m_isolate);
             handleProgramBreak(ScriptState::from(eventContext), eventDetails.GetExecutionState(), exception, v8::Handle<v8::Array>());
