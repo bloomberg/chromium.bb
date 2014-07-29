@@ -175,12 +175,28 @@
             # Note: sources list duplicated in GN build.
             'translate/content/common/translate_messages.cc',
             'translate/content/common/translate_messages.h',
+            'translate/content/common/cld_data_source.h',
            ],
            'conditions': [
              ['cld2_data_source=="standalone" or cld2_data_source=="component"', {
                'sources': [
                  'translate/content/common/data_file_cld_data_provider_messages.cc',
                  'translate/content/common/data_file_cld_data_provider_messages.h',
+               ]},
+             ],
+             ['cld2_data_source=="standalone"', {
+               'sources': [
+                 'translate/content/common/standalone_cld_data_source.cc',
+               ]},
+             ],
+             ['cld2_data_source=="component"', {
+               'sources': [
+                 'translate/content/common/component_cld_data_source.cc',
+               ]},
+             ],
+             ['cld2_data_source=="static"', {
+               'sources': [
+                 'translate/content/common/static_cld_data_source.cc',
                ]},
              ],
            ],

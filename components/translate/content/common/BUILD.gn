@@ -8,6 +8,7 @@ static_library("common") {
   sources = [
     "translate_messages.cc",
     "translate_messages.h",
+    "cld_data_source.h",
   ]
 
   deps = [
@@ -23,5 +24,14 @@ static_library("common") {
       "data_file_cld_data_provider_messages.cc",
       "data_file_cld_data_provider_messages.h",
     ]
+  }
+  if (cld2_data_source == "standalone") {
+    sources += [ "standalone_cld_data_source.cc" ]
+  }
+  if (cld2_data_source == "component") {
+    sources += [ "component_cld_data_source.cc" ]
+  }
+  if (cld2_data_source == "static") {
+    sources += [ "static_cld_data_source.cc" ]
   }
 }
