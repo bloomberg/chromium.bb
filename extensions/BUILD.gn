@@ -30,8 +30,4 @@ grit("extensions_renderer_resources") {
     "grit/extensions_renderer_resources.h",
     "extensions_renderer_resources.pak",
   ]
-  grit_flags = [ "-E", "mojom_root=" + rebase_path(root_gen_dir) ]
-  deps = [
-    "//device/serial:serial_mojo",
-  ]
 }

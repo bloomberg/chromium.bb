@@ -793,7 +793,6 @@
         'common/one_shot_event_unittest.cc',
         'common/permissions/manifest_permission_set_unittest.cc',
         'common/user_script_unittest.cc',
-        'renderer/api/serial/serial_api_unittest.cc',
         'renderer/api_test_base.cc',
         'renderer/api_test_base.h',
         'renderer/api_test_base_unittest.cc',

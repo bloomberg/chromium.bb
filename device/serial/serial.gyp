@@ -8,26 +8,11 @@
   },
   'targets': [
     {
-      # GN version: //device/serial:serial_mojo
-      'target_name': 'device_serial_mojo',
-      # The type of this target must be none. This is so that resources can
-      # depend upon this target for generating the js bindings files. Any
-      # generated cpp files must be listed explicitly in device_serial
-      'type': 'none',
-      'includes': [
-        '../../mojo/public/tools/bindings/mojom_bindings_generator.gypi',
-      ],
-      'sources': [
-        'serial.mojom',
-      ],
-    },
-    {
       # GN version: //device/serial
       'target_name': 'device_serial',
       'type': 'static_library',
       'include_dirs': [
         '../..',
-        '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'conditions': [
         ['OS=="linux"', {
@@ -35,6 +20,12 @@
             '../../build/linux/system.gyp:udev',
           ],
         }],
+      ],
+      'variables': {
+        'mojom_base_output_dir': 'device/serial',
+      },
+      'includes': [
+        '../../mojo/public/tools/bindings/mojom_bindings_generator.gypi',
       ],
       'dependencies': [
         '../../mojo/mojo.gyp:mojo_cpp_bindings',
@@ -44,8 +35,7 @@
         '../../mojo/mojo.gyp:mojo_cpp_bindings',
       ],
       'sources': [
-        '<(SHARED_INTERMEDIATE_DIR)/device/serial/serial.mojom.cc',
-        '<(SHARED_INTERMEDIATE_DIR)/device/serial/serial.mojom.h',
+        'serial.mojom',
         'serial_connection.cc',
         'serial_connection.h',
         'serial_connection_factory.cc',
@@ -74,9 +64,6 @@
       'type': 'static_library',
       'dependencies': [
         'device_serial',
-      ],
-      'include_dirs': [
-        '../..',
       ],
       'sources': [
         'test_serial_io_handler.cc',
