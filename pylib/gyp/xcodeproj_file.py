@@ -2316,11 +2316,11 @@ class PBXNativeTarget(XCTarget):
 
         if force_extension is not None:
           # If it's a wrapper (bundle), set WRAPPER_EXTENSION.
+          # Extension override.
+          suffix = '.' + force_extension
           if filetype.startswith('wrapper.'):
             self.SetBuildSetting('WRAPPER_EXTENSION', force_extension)
           else:
-            # Extension override.
-            suffix = '.' + force_extension
             self.SetBuildSetting('EXECUTABLE_EXTENSION', force_extension)
 
           if filetype.startswith('compiled.mach-o.executable'):
