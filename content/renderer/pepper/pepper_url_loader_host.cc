@@ -257,7 +257,6 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
     return PP_ERROR_FAILED;
   }
 
-  web_request.setTargetType(WebURLRequest::TargetIsObject);
   web_request.setRequestContext(WebURLRequest::RequestContextPlugin);
   web_request.setRequestorProcessID(renderer_ppapi_host_->GetPluginPID());
 
