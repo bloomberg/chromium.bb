@@ -133,15 +133,16 @@ class USER_MANAGER_EXPORT User : public UserInfo {
 
   // True if the user's session can be locked (i.e. the user has a password with
   // which to unlock the session).
-  virtual bool can_lock() const;
+  bool can_lock() const;
 
-  virtual std::string username_hash() const;
+  // Returns empty string when home dir hasn't been mounted yet.
+  std::string username_hash() const;
 
   // True if current user is logged in.
-  virtual bool is_logged_in() const;
+  bool is_logged_in() const;
 
   // True if current user is active within the current session.
-  virtual bool is_active() const;
+  bool is_active() const;
 
   // True if the user Profile is created.
   bool is_profile_created() const { return profile_is_created_; }
