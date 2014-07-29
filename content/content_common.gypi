@@ -885,6 +885,7 @@
     ['use_ozone==1', {
       'dependencies': [
         '../ui/ozone/ozone.gyp:ozone',
+        '../ui/ozone/gpu/ozone_gpu.gyp:ozone_gpu',
       ],
     }],
   ],
