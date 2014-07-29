@@ -9,8 +9,7 @@ and <a href="content_scripts">content script</a>
 matching {{^is_apps}}are{{:}}is{{/is_apps}} based on a set of URLs defined by
 <dfn>match patterns</dfn>.  A match pattern is essentially a
 URL that begins with a permitted scheme (<code>http</code>,
-<code>https</code>, <code>file</code>, <code>ftp</code>, or
-<code>chrome-extension</code>),
+<code>https</code>, <code>file</code>, or <code>ftp</code>,
 and that can contain '<code>*</code>' characters.
 The special pattern
 <code>&lt;all_urls&gt;</code> matches any URL
@@ -48,7 +47,7 @@ Each match pattern has 3 parts:</p>
 
 <pre>
 <em>&lt;url-pattern&gt;</em> := <em>&lt;scheme&gt;</em>://<em>&lt;host&gt;</em><em>&lt;path&gt;</em>
-<em>&lt;scheme&gt;</em> := '*' | 'http' | 'https' | 'file' | 'ftp' | 'chrome-extension'
+<em>&lt;scheme&gt;</em> := '*' | 'http' | 'https' | 'file' | 'ftp'
 <em>&lt;host&gt;</em> := '*' | '*.' <em>&lt;any char except '/' and '*'&gt;</em>+
 <em>&lt;path&gt;</em> := '/' <em>&lt;any chars&gt;</em>
 </pre>
@@ -58,8 +57,7 @@ The meaning of '<code>*</code>' depends on whether
 it's in the <em>scheme</em>, <em>host</em>, or <em>path</em> part.
 If the <em>scheme</em> is <code>*</code>,
 then it matches either <code>http</code> or <code>https</code>,
-and <strong>not</strong> <code>file</code>, <code>ftp</code>,
-or <code>chrome-extension</code>.
+and <strong>not</strong> <code>file</code>, or <code>ftp</code>.
 If the <em>host</em> is just <code>*</code>,
 then it matches any host.
 If the <em>host</em> is <code>*.<em>hostname</em></code>,
@@ -180,21 +178,6 @@ The following table shows some valid patterns.
   <td>
     http://mail.google.com/foo/baz/bar<br>
     https://mail.google.com/foobar
-  </td>
-</tr>
-
-<tr>
-  <td>
-    <code>chrome-extension://*/* </code>
-  </td>
-
-  <td>
-    Matches any URL pointing to an extension (the first <code>*</code>
-    represents a filter for extension IDs, the second for paths).
-  </td>
-
-  <td>
-    chrome-extension://askla...asdf/options.html
   </td>
 </tr>
 
