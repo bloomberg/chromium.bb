@@ -8,8 +8,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class Value;
@@ -25,21 +23,10 @@ class PrefHashCalculator {
     VALID_SECURE_LEGACY,
   };
 
-  typedef base::Callback<std::string(const std::string& modern_device_id)>
-      GetLegacyDeviceIdCallback;
-
   // Constructs a PrefHashCalculator using |seed| and |device_id|. The same
   // parameters must be used in order to successfully validate generated hashes.
   // |device_id| may be empty.
   PrefHashCalculator(const std::string& seed, const std::string& device_id);
-
-  // Same as the constructor above, but also specifies that
-  // |get_legacy_device_id_callback| should be used rather than the default to
-  // obtain the legacy device id if required.
-  PrefHashCalculator(
-      const std::string& seed,
-      const std::string& device_id,
-      const GetLegacyDeviceIdCallback& get_legacy_device_id_callback);
 
   ~PrefHashCalculator();
 
@@ -55,24 +42,8 @@ class PrefHashCalculator {
                             const std::string& hash) const;
 
  private:
-  // Returns the legacy device id based off of |raw_device_id_|. This method
-  // lazily gets the legacy device id via |get_legacy_device_id_callback_| and
-  // caches the result in |legacy_device_id_instance_| for future retrievals.
-  std::string RetrieveLegacyDeviceId() const;
-
   const std::string seed_;
   const std::string device_id_;
-
-  // The raw device id from which the legacy device id will be derived if
-  // required.
-  const std::string raw_device_id_;
-
-  const GetLegacyDeviceIdCallback get_legacy_device_id_callback_;
-
-  // A cache for the legacy device id which is hard to compute and thus lazily
-  // computed when/if required (computing the original value for this instance
-  // is allowed in const methods).
-  mutable scoped_ptr<const std::string> legacy_device_id_instance_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefHashCalculator);
 };

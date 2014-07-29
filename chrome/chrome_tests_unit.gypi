@@ -1187,7 +1187,6 @@
         'browser/prefs/proxy_policy_unittest.cc',
         'browser/prefs/proxy_prefs_unittest.cc',
         'browser/prefs/session_startup_pref_unittest.cc',
-        'browser/prefs/tracked/pref_hash_calculator_helper_win_unittest.cc',
         'browser/prefs/tracked/pref_service_hash_store_contents_unittest.cc',
         'browser/prefs/tracked/segregated_pref_store_unittest.cc',
         'browser/prefs/tracked/tracked_preferences_migration_unittest.cc',

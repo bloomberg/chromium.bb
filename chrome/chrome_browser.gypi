@@ -968,8 +968,6 @@
       'browser/prefs/tracked/dictionary_hash_store_contents.cc',
       'browser/prefs/tracked/dictionary_hash_store_contents.h',
       'browser/prefs/tracked/hash_store_contents.h',
-      'browser/prefs/tracked/pref_hash_calculator_helper.h',
-      'browser/prefs/tracked/pref_hash_calculator_helper_win.cc',
       'browser/prefs/tracked/pref_service_hash_store_contents.cc',
       'browser/prefs/tracked/pref_service_hash_store_contents.h',
       'browser/prefs/tracked/segregated_pref_store.cc',
@@ -2291,7 +2289,6 @@
     'chrome_browser_non_win_sources': [
       'browser/jankometer_stub.cc',
       'browser/profiles/profile_shortcut_manager_stub.cc',
-      'browser/prefs/tracked/pref_hash_calculator_helper_stub.cc',
     ],
     # Desktop Linux and ChromeOS.
     'chrome_browser_linux_sources': [
