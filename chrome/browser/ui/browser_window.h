@@ -225,10 +225,14 @@ class BrowserWindow : public ui::BaseWindow {
                                      const std::string& extension_id) = 0;
 
   // Shows the translate bubble.
+  //
+  // |is_user_gesture| is true when the bubble is shown on the user's deliberate
+  // action.
   virtual void ShowTranslateBubble(
       content::WebContents* contents,
       translate::TranslateStep step,
-      translate::TranslateErrors::Type error_type) = 0;
+      translate::TranslateErrors::Type error_type,
+      bool is_user_gesture) = 0;
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   enum OneClickSigninBubbleType {

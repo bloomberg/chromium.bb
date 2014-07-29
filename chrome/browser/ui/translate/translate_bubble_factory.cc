@@ -16,7 +16,7 @@ void ShowDefault(BrowserWindow* window,
   // |window| might be null when testing.
   if (!window)
     return;
-  window->ShowTranslateBubble(web_contents, step, error_type);
+  window->ShowTranslateBubble(web_contents, step, error_type, false);
 }
 
 }  // namespace

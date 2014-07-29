@@ -495,7 +495,8 @@ void BrowserWindowCocoa::ShowBookmarkAppBubble(
 void BrowserWindowCocoa::ShowTranslateBubble(
     content::WebContents* contents,
     translate::TranslateStep step,
-    translate::TranslateErrors::Type error_type) {
+    translate::TranslateErrors::Type error_type,
+    bool is_user_gesture) {
   ChromeTranslateClient* chrome_translate_client =
       ChromeTranslateClient::FromWebContents(contents);
   translate::LanguageState& language_state =

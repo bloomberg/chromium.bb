@@ -84,7 +84,8 @@ void TranslateBubbleView::ShowBubble(
     views::View* anchor_view,
     content::WebContents* web_contents,
     translate::TranslateStep step,
-    translate::TranslateErrors::Type error_type) {
+    translate::TranslateErrors::Type error_type,
+    bool is_user_gesture) {
   if (IsShowing()) {
     // When the user reads the advanced setting panel, the bubble should not be
     // changed because he/she is focusing on the bubble.
@@ -101,6 +102,11 @@ void TranslateBubbleView::ShowBubble(
       translate_bubble_view_->SwitchToErrorView(error_type);
     }
     return;
+  } else {
+    if (step == translate::TRANSLATE_STEP_AFTER_TRANSLATE &&
+        !is_user_gesture) {
+      return;
+    }
   }
 
   std::string source_language;

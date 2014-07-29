@@ -109,7 +109,8 @@ class BrowserWindowCocoa :
   virtual void ShowTranslateBubble(
       content::WebContents* contents,
       translate::TranslateStep step,
-      translate::TranslateErrors::Type error_type) OVERRIDE;
+      translate::TranslateErrors::Type error_type,
+      bool is_user_gesture) OVERRIDE;
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   virtual void ShowOneClickSigninBubble(
       OneClickSigninBubbleType type,

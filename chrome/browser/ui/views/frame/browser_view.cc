@@ -1159,7 +1159,8 @@ void BrowserView::ShowBookmarkAppBubble(
 void BrowserView::ShowTranslateBubble(
     content::WebContents* web_contents,
     translate::TranslateStep step,
-    translate::TranslateErrors::Type error_type) {
+    translate::TranslateErrors::Type error_type,
+    bool is_user_gesture) {
   if (contents_web_view_->HasFocus() &&
       !GetLocationBarView()->IsMouseHovered()) {
     content::RenderViewHost* rvh = web_contents->GetRenderViewHost();
@@ -1178,7 +1179,7 @@ void BrowserView::ShowTranslateBubble(
 
   TranslateBubbleView::ShowBubble(
       GetToolbarView()->GetTranslateBubbleAnchor(), web_contents, step,
-      error_type);
+      error_type, is_user_gesture);
 }
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)

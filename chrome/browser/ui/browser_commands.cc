@@ -784,7 +784,7 @@ void Translate(Browser* browser) {
       step = translate::TRANSLATE_STEP_AFTER_TRANSLATE;
   }
   browser->window()->ShowTranslateBubble(
-      web_contents, step, translate::TranslateErrors::NONE);
+      web_contents, step, translate::TranslateErrors::NONE, true);
 }
 
 void ManagePasswordsForPage(Browser* browser) {
