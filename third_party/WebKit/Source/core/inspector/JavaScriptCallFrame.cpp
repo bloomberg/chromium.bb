@@ -56,7 +56,7 @@ JavaScriptCallFrame* JavaScriptCallFrame::caller()
         v8::Handle<v8::Context> debuggerContext = m_debuggerContext.newLocal(m_isolate);
         v8::Context::Scope contextScope(debuggerContext);
         v8::Handle<v8::Value> callerFrame = m_callFrame.newLocal(m_isolate)->Get(v8AtomicString(m_isolate, "caller"));
-        if (!callerFrame->IsObject())
+        if (callerFrame.IsEmpty() || !callerFrame->IsObject())
             return 0;
         m_caller = JavaScriptCallFrame::create(debuggerContext, v8::Handle<v8::Object>::Cast(callerFrame));
     }
@@ -66,17 +66,19 @@ JavaScriptCallFrame* JavaScriptCallFrame::caller()
 int JavaScriptCallFrame::callV8FunctionReturnInt(const char* name) const
 {
     v8::HandleScope handleScope(m_isolate);
+    v8::Context::Scope contextScope(m_debuggerContext.newLocal(m_isolate));
     v8::Handle<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
     v8::Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(callFrame->Get(v8AtomicString(m_isolate, name)));
     v8::Handle<v8::Value> result = func->Call(callFrame, 0, 0);
-    if (result->IsInt32())
-        return result->Int32Value();
-    return 0;
+    if (result.IsEmpty() || !result->IsInt32())
+        return 0;
+    return result->Int32Value();
 }
 
 String JavaScriptCallFrame::callV8FunctionReturnString(const char* name) const
 {
     v8::HandleScope handleScope(m_isolate);
+    v8::Context::Scope contextScope(m_debuggerContext.newLocal(m_isolate));
     v8::Handle<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
     v8::Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(callFrame->Get(v8AtomicString(m_isolate, name)));
     v8::Handle<v8::Value> result = func->Call(callFrame, 0, 0);
@@ -140,9 +142,9 @@ bool JavaScriptCallFrame::isAtReturn() const
     v8::HandleScope handleScope(m_isolate);
     v8::Context::Scope contextScope(m_debuggerContext.newLocal(m_isolate));
     v8::Handle<v8::Value> result = m_callFrame.newLocal(m_isolate)->Get(v8AtomicString(m_isolate, "isAtReturn"));
-    if (result->IsBoolean())
-        return result->BooleanValue();
-    return false;
+    if (result.IsEmpty() || !result->IsBoolean())
+        return false;
+    return result->BooleanValue();
 }
 
 v8::Handle<v8::Value> JavaScriptCallFrame::returnValue() const
