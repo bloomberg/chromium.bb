@@ -1318,7 +1318,6 @@ void RenderObject::addChildFocusRingRects(Vector<IntRect>& rects, const LayoutPo
     }
 }
 
-// FIXME: In repaint-after-layout, we should be able to change the logic to remove the need for this function. See crbug.com/368416.
 LayoutPoint RenderObject::positionFromPaintInvalidationContainer(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     // FIXME: This assert should be re-enabled when we move paint invalidation to after compositing update. crbug.com/360286
