@@ -172,6 +172,13 @@ def CmakeHostArchFlags(host, options):
   return cmake_flags
 
 
+def LLVMConfigureAssertionsFlags(options):
+  if options.enable_llvm_assertions:
+    return []
+  else:
+    return ['--disable-debug', '--disable-assertions']
+
+
 def MakeCommand(host):
   make_command = ['make']
   if not pynacl.platform.IsWindows() or pynacl.platform.IsCygWin():
@@ -399,6 +406,7 @@ def HostTools(host, options):
                   'sh',
                   '%(llvm_src)s/configure'] +
                   ConfigureHostArchFlags(host) +
+                  LLVMConfigureAssertionsFlags(options) +
                   ['--prefix=/',
                    '--enable-shared',
                    '--disable-zlib',
@@ -580,6 +588,8 @@ if __name__ == '__main__':
   parser.add_argument('--build-64bit-host', action='store_true',
                       dest='build_64bit_host', default=False,
                       help='Build 64-bit Linux host binaries in addition to 32')
+  parser.add_argument('--disable-llvm-assertions', action='store_false',
+                      dest='enable_llvm_assertions', default=True)
   parser.add_argument('--cmake', action='store_true', default=False,
                       help="Use LLVM's cmake ninja build instead of autoconf")
   parser.add_argument('--clang', action='store_true', default=False,

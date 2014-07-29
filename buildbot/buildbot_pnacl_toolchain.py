@@ -73,6 +73,13 @@ def ToolchainBuildCmd(python_executable=None, sync=False, extra_flags=[]):
   elif args.trybot:
     executable_args.append('--trybot')
 
+  # Enabling LLVM assertions have a higher cost on Windows, particularly in the
+  # presence of threads. So disable them on windows but leave them on elsewhere
+  # to get the extra error checking.
+  # See https://code.google.com/p/nativeclient/issues/detail?id=3830
+  if host_os == 'win':
+    executable_args.append('--disable-llvm-assertions')
+
   return executable + executable_args + sync_flag + extra_flags
 
 
