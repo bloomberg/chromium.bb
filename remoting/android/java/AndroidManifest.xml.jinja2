@@ -9,7 +9,8 @@
     <uses-permission android:name="android.permission.USE_CREDENTIALS"/>
     <application android:label="@string/product_name_android"
             android:icon="@drawable/chromoting128"
-            android:theme="@android:style/Theme.Holo">
+            android:theme="@android:style/Theme.Holo"
+	    android:allowBackup="false">
         <activity android:name="org.chromium.chromoting.Chromoting"
                 android:configChanges="orientation|screenSize"
                 android:theme="@style/MainTheme"
