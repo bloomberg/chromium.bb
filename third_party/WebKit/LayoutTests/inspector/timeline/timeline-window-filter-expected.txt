@@ -33,23 +33,23 @@ divider offsets: [0, 200, 400, 600, 800, 1000]. We are expecting round numbers.
 
 mode = Frames
 range = 0.25 - 0.75
-time range = 1390988669438.409 - 1390988670098.158
-records count: 47
-divider offsets: [400, 500, 600, 700, 800, 900, 1000]. We are expecting round numbers.
-
-mode = Frames
-range = 0.33 - 0.66
 time range = 1390988669535.377 - 1390988670098.158
 records count: 38
 divider offsets: [500, 600, 700, 800, 900, 1000]. We are expecting round numbers.
 
+mode = Frames
+range = 0.33 - 0.66
+time range = 1390988669683.1602 - 1390988670098.158
+records count: 25
+divider offsets: [600, 700, 800, 900, 1000]. We are expecting round numbers.
+
 --------------------------------------------------------
 mode = Frames
-time range = 1390988669264.497 - 1390988670098.158
+time range = 1390988669310.462 - 1390988670098.158
 
 mode = Events
-time range = 1390988669264.497 - 1390988670098.158
+time range = 1390988669310.462 - 1390988670098.158
 
 mode = Frames
-time range = 1390988669264.497 - 1390988670098.158
+time range = 1390988669310.462 - 1390988670098.158
 
