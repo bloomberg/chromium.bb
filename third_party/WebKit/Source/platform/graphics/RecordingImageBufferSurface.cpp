@@ -13,7 +13,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 RecordingImageBufferSurface::RecordingImageBufferSurface(const IntSize& size, OpacityMode opacityMode)
     : ImageBufferSurface(size, opacityMode)
@@ -144,4 +144,4 @@ bool RecordingImageBufferSurface::handleOpaqueFrame()
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

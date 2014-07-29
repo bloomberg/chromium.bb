@@ -106,7 +106,7 @@ private:
 
 namespace WTF {
 template<>
-struct VectorTraits<WebCore::WebGLVertexArrayObjectOES::VertexAttribState> : SimpleClassVectorTraits<WebCore::WebGLVertexArrayObjectOES::VertexAttribState> {
+struct VectorTraits<blink::WebGLVertexArrayObjectOES::VertexAttribState> : SimpleClassVectorTraits<blink::WebGLVertexArrayObjectOES::VertexAttribState> {
     // Specialization needed as the VertexAttribState's struct fields
     // aren't handled as desired by the IsPod() trait.
 #if ENABLE(OILPAN)

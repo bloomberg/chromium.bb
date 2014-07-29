@@ -13,7 +13,7 @@ class SkPicture;
 class SkPictureRecorder;
 class RecordingImageBufferSurfaceTest;
 
-namespace WebCore {
+namespace blink {
 
 class GraphicsContext;
 
@@ -47,6 +47,6 @@ private:
     bool m_surfaceUsedSincePreviousFrameWasPresented;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

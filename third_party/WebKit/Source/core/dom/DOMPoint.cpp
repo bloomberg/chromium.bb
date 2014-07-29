@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/dom/DOMPoint.h"
 
-namespace WebCore {
+namespace blink {
 
 DOMPoint* DOMPoint::create(const Dictionary& point)
 {
@@ -36,4 +36,4 @@ DOMPoint::DOMPoint(double x, double y, double z, double w)
 {
 }
 
-} // namespace WebCore
+} // namespace blink

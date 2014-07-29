@@ -7,7 +7,7 @@
 
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class GeoNotifier;
 
@@ -36,6 +36,6 @@ private:
     NotifierToIdMap m_notifierToIdMap;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GeolocationWatchers_h

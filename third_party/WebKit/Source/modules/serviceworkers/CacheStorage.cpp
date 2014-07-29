@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<CacheStorage> CacheStorage::create()
 {
@@ -71,4 +71,4 @@ CacheStorage::CacheStorage()
     ScriptWrappable::init(this);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/dom/DOMRect.h"
 
-namespace WebCore {
+namespace blink {
 
 DOMRect* DOMRect::create(double x, double y, double width, double height)
 {
@@ -17,4 +17,4 @@ DOMRect::DOMRect(double x, double y, double width, double height)
 {
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -946,6 +946,6 @@ DEFINE_TYPE_CASTS(WebGLRenderingContextBase, CanvasRenderingContext, context, co
 
 } // namespace blink
 
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(WebCore::WebGLRenderingContextBase::TextureUnitState);
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::WebGLRenderingContextBase::TextureUnitState);
 
 #endif // WebGLRenderingContextBase_h

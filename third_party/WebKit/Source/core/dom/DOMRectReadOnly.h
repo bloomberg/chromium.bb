@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class DOMRectReadOnly : public GarbageCollected<DOMRectReadOnly>, public ScriptWrappableBase {
 public:
@@ -35,6 +35,6 @@ protected:
     double m_height;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

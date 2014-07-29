@@ -7,7 +7,7 @@
 
 #include "modules/geolocation/GeoNotifier.h"
 
-namespace WebCore {
+namespace blink {
 
 void GeolocationWatchers::trace(Visitor* visitor)
 {
@@ -73,4 +73,4 @@ void GeolocationWatchers::getNotifiersVector(HeapVector<Member<GeoNotifier> >& c
     copyValuesToVector(m_idToNotifierMap, copy);
 }
 
-} // namespace WebCore
+} // namespace blink

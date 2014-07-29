@@ -12,7 +12,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 // See https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#cache-storage
 
@@ -33,6 +33,6 @@ private:
     CacheStorage();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CacheStorage_h

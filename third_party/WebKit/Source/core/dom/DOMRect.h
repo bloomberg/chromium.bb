@@ -8,7 +8,7 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "core/dom/DOMRectReadOnly.h"
 
-namespace WebCore {
+namespace blink {
 
 class DOMRect FINAL : public DOMRectReadOnly {
 public:
@@ -23,6 +23,6 @@ protected:
     DOMRect(double x, double y, double z, double w);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

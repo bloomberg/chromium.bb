@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/dom/DOMPointReadOnly.h"
 
-namespace WebCore {
+namespace blink {
 
 DOMPointReadOnly* DOMPointReadOnly::create(double x, double y, double z, double w)
 {
@@ -20,4 +20,4 @@ DOMPointReadOnly::DOMPointReadOnly(double x, double y, double z, double w)
 {
 }
 
-} // namespace WebCore
+} // namespace blink

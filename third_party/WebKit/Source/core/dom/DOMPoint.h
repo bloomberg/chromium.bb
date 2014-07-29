@@ -8,7 +8,7 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "core/dom/DOMPointReadOnly.h"
 
-namespace WebCore {
+namespace blink {
 
 class DOMPoint FINAL : public DOMPointReadOnly {
 public:
@@ -24,6 +24,6 @@ protected:
     DOMPoint(double x, double y, double z, double w);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

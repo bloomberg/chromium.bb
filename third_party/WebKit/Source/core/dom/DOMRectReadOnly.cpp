@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/dom/DOMRectReadOnly.h"
 
-namespace WebCore {
+namespace blink {
 
 DOMRectReadOnly* DOMRectReadOnly::create(double x, double y, double width, double height)
 {
@@ -20,4 +20,4 @@ DOMRectReadOnly::DOMRectReadOnly(double x, double y, double width, double height
 {
 }
 
-} // namespace WebCore
+} // namespace blink

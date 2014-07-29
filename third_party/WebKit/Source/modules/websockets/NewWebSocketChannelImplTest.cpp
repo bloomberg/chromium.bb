@@ -32,7 +32,7 @@ using testing::PrintToString;
 using testing::AnyNumber;
 
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -741,4 +741,4 @@ TEST_F(NewWebSocketChannelImplTest, failFromWebSocket)
 
 } // namespace
 
-} // namespace WebCore
+} // namespace blink

@@ -697,7 +697,7 @@ template <typename T> struct RemoveHeapPointerWrapperTypes {
 };
 
 template<typename T>
-struct TraceIfNeeded : public TraceIfEnabled<T, WebCore::IsGarbageCollectedType<typename RemoveHeapPointerWrapperTypes<typename WTF::RemovePointer<T>::Type>::Type>::value> { };
+struct TraceIfNeeded : public TraceIfEnabled<T, blink::IsGarbageCollectedType<typename RemoveHeapPointerWrapperTypes<typename WTF::RemovePointer<T>::Type>::Type>::value> { };
 
 // This trace trait for std::pair will null weak members if their referent is
 // collected. If you have a collection that contain weakness it does not remove
