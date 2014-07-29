@@ -9,14 +9,16 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 class MenuManager;
 
 class MenuManagerFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static MenuManager* GetForProfile(Profile* profile);
+  static MenuManager* GetForBrowserContext(content::BrowserContext* context);
 
   static MenuManagerFactory* GetInstance();
 
@@ -27,7 +29,7 @@ class MenuManagerFactory : public BrowserContextKeyedServiceFactory {
   virtual ~MenuManagerFactory();
 
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+      content::BrowserContext* context) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
   virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;

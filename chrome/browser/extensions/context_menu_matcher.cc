@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/context_menu_matcher.h"
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/common/context_menu_params.h"
 #include "extensions/browser/extension_system.h"
 #include "ui/gfx/favicon_size.h"
@@ -19,11 +20,13 @@ namespace extensions {
 const size_t ContextMenuMatcher::kMaxExtensionItemTitleLength = 75;
 
 ContextMenuMatcher::ContextMenuMatcher(
-    Profile* profile,
+    content::BrowserContext* browser_context,
     ui::SimpleMenuModel::Delegate* delegate,
     ui::SimpleMenuModel* menu_model,
     const base::Callback<bool(const MenuItem*)>& filter)
-    : profile_(profile), menu_model_(menu_model), delegate_(delegate),
+    : browser_context_(browser_context),
+      menu_model_(menu_model),
+      delegate_(delegate),
       filter_(filter) {
 }
 
@@ -139,8 +142,8 @@ void ContextMenuMatcher::ExecuteCommand(int command_id,
   if (!item)
     return;
 
-  MenuManager* manager = MenuManager::Get(profile_);
-  manager->ExecuteCommand(profile_, web_contents, params, item->id());
+  MenuManager* manager = MenuManager::Get(browser_context_);
+  manager->ExecuteCommand(browser_context_, web_contents, params, item->id());
 }
 
 bool ContextMenuMatcher::GetRelevantExtensionTopLevelItems(
@@ -149,19 +152,19 @@ bool ContextMenuMatcher::GetRelevantExtensionTopLevelItems(
     bool* can_cross_incognito,
     MenuItem::List& items) {
   ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
+      extensions::ExtensionSystem::Get(browser_context_)->extension_service();
   *extension = service->GetExtensionById(extension_key.extension_id, false);
 
   if (!*extension)
     return false;
 
   // Find matching items.
-  MenuManager* manager = MenuManager::Get(profile_);
+  MenuManager* manager = MenuManager::Get(browser_context_);
   const MenuItem::List* all_items = manager->MenuItems(extension_key);
   if (!all_items || all_items->empty())
     return false;
 
-  *can_cross_incognito = util::CanCrossIncognito(*extension, profile_);
+  *can_cross_incognito = util::CanCrossIncognito(*extension, browser_context_);
   items = GetRelevantExtensionItems(*all_items,
                                     *can_cross_incognito);
 
@@ -179,7 +182,7 @@ MenuItem::List ContextMenuMatcher::GetRelevantExtensionItems(
     if (!filter_.Run(item))
       continue;
 
-    if (item->id().incognito == profile_->IsOffTheRecord() ||
+    if (item->id().incognito == browser_context_->IsOffTheRecord() ||
         can_cross_incognito)
       result.push_back(*i);
   }
@@ -246,7 +249,7 @@ void ContextMenuMatcher::RecursivelyAppendExtensionItems(
 }
 
 MenuItem* ContextMenuMatcher::GetExtensionMenuItem(int id) const {
-  MenuManager* manager = MenuManager::Get(profile_);
+  MenuManager* manager = MenuManager::Get(browser_context_);
   std::map<int, MenuItem::Id>::const_iterator i =
       extension_item_map_.find(id);
   if (i != extension_item_map_.end()) {
@@ -258,7 +261,7 @@ MenuItem* ContextMenuMatcher::GetExtensionMenuItem(int id) const {
 }
 
 void ContextMenuMatcher::SetExtensionIcon(const std::string& extension_id) {
-  MenuManager* menu_manager = MenuManager::Get(profile_);
+  MenuManager* menu_manager = MenuManager::Get(browser_context_);
 
   int index = menu_model_->GetItemCount() - 1;
   DCHECK_GE(index, 0);

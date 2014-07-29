@@ -303,9 +303,11 @@ const char MenuManager::kOnContextMenus[] = "contextMenus";
 const char MenuManager::kOnWebviewContextMenus[] =
     "webViewInternal.contextMenus";
 
-MenuManager::MenuManager(Profile* profile, StateStore* store)
-    : extension_registry_observer_(this), profile_(profile), store_(store) {
-  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
+MenuManager::MenuManager(content::BrowserContext* context, StateStore* store)
+    : extension_registry_observer_(this),
+      browser_context_(context),
+      store_(store) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::NotificationService::AllSources());
   if (store_)
@@ -320,8 +322,8 @@ MenuManager::~MenuManager() {
 }
 
 // static
-MenuManager* MenuManager::Get(Profile* profile) {
-  return MenuManagerFactory::GetForProfile(profile);
+MenuManager* MenuManager::Get(content::BrowserContext* context) {
+  return MenuManagerFactory::GetForBrowserContext(context);
 }
 
 std::set<MenuItem::ExtensionKey> MenuManager::ExtensionIds() {
@@ -364,7 +366,7 @@ bool MenuManager::AddContextItem(const Extension* extension, MenuItem* item) {
 
   // If this is the first item for this extension, start loading its icon.
   if (first_item)
-    icon_manager_.LoadIcon(profile_, extension);
+    icon_manager_.LoadIcon(browser_context_, extension);
 
   return true;
 }
@@ -602,11 +604,11 @@ static void AddURLProperty(base::DictionaryValue* dictionary,
     dictionary->SetString(key, url.possibly_invalid_spec());
 }
 
-void MenuManager::ExecuteCommand(Profile* profile,
+void MenuManager::ExecuteCommand(content::BrowserContext* context,
                                  WebContents* web_contents,
                                  const content::ContextMenuParams& params,
                                  const MenuItem::Id& menu_item_id) {
-  EventRouter* event_router = EventRouter::Get(profile);
+  EventRouter* event_router = EventRouter::Get(context);
   if (!event_router)
     return;
 
@@ -616,7 +618,7 @@ void MenuManager::ExecuteCommand(Profile* profile,
 
   // ExtensionService/Extension can be NULL in unit tests :(
   ExtensionService* service =
-      ExtensionSystem::Get(profile_)->extension_service();
+      ExtensionSystem::Get(browser_context_)->extension_service();
   const Extension* extension =
       service ? service->extensions()->GetByID(item->extension_id()) : NULL;
 
@@ -703,7 +705,7 @@ void MenuManager::ExecuteCommand(Profile* profile,
         new Event(webview_guest ? kOnWebviewContextMenus
                                 : kOnContextMenus,
                   scoped_ptr<base::ListValue>(args->DeepCopy())));
-    event->restrict_to_browser_context = profile;
+    event->restrict_to_browser_context = context;
     event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
     event_router->DispatchEventToExtension(item->extension_id(), event.Pass());
   }
@@ -713,7 +715,7 @@ void MenuManager::ExecuteCommand(Profile* profile,
         new Event(webview_guest ? web_view::OnClicked::kEventName
                                 : context_menus::OnClicked::kEventName,
                   args.Pass()));
-    event->restrict_to_browser_context = profile;
+    event->restrict_to_browser_context = context;
     event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
     if (webview_guest)
       event->filter_info.SetInstanceID(webview_guest->view_instance_id());
@@ -802,9 +804,10 @@ void MenuManager::WriteToStorage(const Extension* extension,
 
 void MenuManager::ReadFromStorage(const std::string& extension_id,
                                   scoped_ptr<base::Value> value) {
-  const Extension* extension =
-      ExtensionSystem::Get(profile_)->extension_service()->extensions()->
-          GetByID(extension_id);
+  const Extension* extension = ExtensionSystem::Get(browser_context_)
+                                   ->extension_service()
+                                   ->extensions()
+                                   ->GetByID(extension_id);
   if (!extension)
     return;
 
@@ -857,7 +860,7 @@ void MenuManager::Observe(int type,
   // We cannot use profile_->HasOffTheRecordProfile as it may already be
   // false at this point, if for example the incognito profile was destroyed
   // using DestroyOffTheRecordProfile.
-  if (profile->GetOriginalProfile() == profile_ &&
+  if (profile->GetOriginalProfile() == browser_context_ &&
       profile->GetOriginalProfile() != profile) {
     RemoveAllIncognitoContextItems();
   }

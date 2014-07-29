@@ -14,10 +14,10 @@
 namespace extensions {
 
 // static
-MenuManager* MenuManagerFactory::GetForProfile(
-    Profile* profile) {
+MenuManager* MenuManagerFactory::GetForBrowserContext(
+    content::BrowserContext* context) {
   return static_cast<MenuManager*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 // static
