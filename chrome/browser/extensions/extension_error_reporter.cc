@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "content/public/browser/notification_service.h"
 
@@ -42,11 +43,11 @@ ExtensionErrorReporter::~ExtensionErrorReporter() {}
 void ExtensionErrorReporter::ReportLoadError(
     const base::FilePath& extension_path,
     const std::string& error,
-    Profile* profile,
+    content::BrowserContext* browser_context,
     bool be_noisy) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_LOAD_ERROR,
-      content::Source<Profile>(profile),
+      content::Source<Profile>(Profile::FromBrowserContext(browser_context)),
       content::Details<const std::string>(&error));
 
   std::string path_str = base::UTF16ToUTF8(extension_path.LossyDisplayName());
@@ -57,7 +58,7 @@ void ExtensionErrorReporter::ReportLoadError(
   ReportError(message, be_noisy);
   FOR_EACH_OBSERVER(Observer,
                     observers_,
-                    OnLoadFailure(extension_path, error));
+                    OnLoadFailure(browser_context, extension_path, error));
 }
 
 void ExtensionErrorReporter::ReportError(const base::string16& message,

@@ -16,7 +16,9 @@ class MessageLoop;
 class FilePath;
 }
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 // Exposes an easy way for the various components of the extension system to
 // report errors. This is a singleton that lives on the UI thread, with the
@@ -33,7 +35,8 @@ class ExtensionErrorReporter {
     virtual ~Observer() {}
 
     // Called when an unpacked extension fails to load.
-    virtual void OnLoadFailure(const base::FilePath& extension_path,
+    virtual void OnLoadFailure(content::BrowserContext* browser_context,
+                               const base::FilePath& extension_path,
                                const std::string& error) = 0;
   };
 
@@ -51,7 +54,7 @@ class ExtensionErrorReporter {
   // the notification and this method.
   void ReportLoadError(const base::FilePath& extension_path,
                        const std::string& error,
-                       Profile* profile,
+                       content::BrowserContext* browser_context,
                        bool be_noisy);
 
   // Report an error. Errors always go to VLOG(1). Optionally, they can also

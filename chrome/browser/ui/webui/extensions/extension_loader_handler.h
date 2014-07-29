@@ -63,7 +63,8 @@ class ExtensionLoaderHandler : public content::WebUIMessageHandler,
   void LoadUnpackedExtensionImpl(const base::FilePath& file_path);
 
   // ExtensionErrorReporter::Observer:
-  virtual void OnLoadFailure(const base::FilePath& file_path,
+  virtual void OnLoadFailure(content::BrowserContext* browser_context,
+                             const base::FilePath& file_path,
                              const std::string& error) OVERRIDE;
 
   // content::WebContentsObserver:
