@@ -84,7 +84,7 @@ public:
     // Send a notification about current thread is going to be idle.
     // Returns true if the embedder should stop calling idleNotification
     // until real work has been done.
-    bool idleNotification() { return v8::V8::IdleNotification(); }
+    bool idleNotification() { return m_isolate->IdleNotification(1000); }
 
 private:
     class WorkerGlobalScopeExecutionState;

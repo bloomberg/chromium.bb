@@ -31,6 +31,7 @@
 #include "config.h"
 #include "bindings/core/v8/V8GCForContextDispose.h"
 
+#include "bindings/core/v8/V8PerIsolateData.h"
 #include "wtf/StdLibExtras.h"
 #include <v8.h>
 
@@ -45,7 +46,7 @@ V8GCForContextDispose::V8GCForContextDispose()
 void V8GCForContextDispose::notifyContextDisposed(bool isMainFrame)
 {
     m_didDisposeContextForMainFrame = m_didDisposeContextForMainFrame || isMainFrame;
-    v8::V8::ContextDisposedNotification();
+    V8PerIsolateData::mainThreadIsolate()->ContextDisposedNotification();
     if (!m_pseudoIdleTimer.isActive())
         m_pseudoIdleTimer.startOneShot(0.8, FROM_HERE);
 }
@@ -72,7 +73,7 @@ void V8GCForContextDispose::pseudoIdleTimerFired(Timer<V8GCForContextDispose>*)
     const int longIdlePauseInMs = 1000;
     const int shortIdlePauseInMs = 10;
     int hint = m_didDisposeContextForMainFrame ? longIdlePauseInMs : shortIdlePauseInMs;
-    v8::V8::IdleNotification(hint);
+    V8PerIsolateData::mainThreadIsolate()->IdleNotification(hint);
     m_didDisposeContextForMainFrame = false;
 }
 

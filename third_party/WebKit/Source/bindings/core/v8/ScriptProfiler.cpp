@@ -96,7 +96,7 @@ PassRefPtrWillBeRawPtr<ScriptProfile> ScriptProfiler::stop(const String& title)
 
 void ScriptProfiler::collectGarbage()
 {
-    v8::V8::LowMemoryNotification();
+    v8::Isolate::GetCurrent()->LowMemoryNotification();
 }
 
 ScriptValue ScriptProfiler::objectByHeapObjectId(unsigned id)
