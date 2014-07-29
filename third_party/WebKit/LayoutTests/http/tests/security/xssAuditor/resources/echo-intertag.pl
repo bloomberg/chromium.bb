@@ -92,7 +92,11 @@ if ($cgi->param('inHead')) {
 if ($cgi->param('replaceState')) {
     print "<script>history.replaceState({}, '', '#must-not-appear');</script>\n";
 }
-print $cgi->param('q'); # XSS reflected here.
+my $reflection = $cgi->param('q');
+my $pattern = "\xfe";
+my $replacement = "?";
+$reflection =~ s/$pattern/$replacement/g;  # pretend server translates high character 0xfe into literal "?".
+print $reflection; # XSS reflected here.
 if ($cgi->param('script-expression-follows')) {
     print "\n <script>42;</script>\n";
 }

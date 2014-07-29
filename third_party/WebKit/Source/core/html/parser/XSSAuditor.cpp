@@ -64,11 +64,15 @@ static bool isNonCanonicalCharacter(UChar c)
     // Note, we don't remove backslashes like PHP stripslashes(), which among other things converts "\\0" to the \0 character.
     // Instead, we remove backslashes and zeros (since the string "\\0" =(remove backslashes)=> "0"). However, this has the
     // adverse effect that we remove any legitimate zeros from a string.
+    //
     // We also remove forward-slash, because it is common for some servers to collapse successive path components, eg,
     // a//b becomes a/b.
     //
-    // For instance: new String("http://localhost:8000") => new String("http:localhost:8").
-    return (c == '\\' || c == '0' || c == '\0' || c == '/' || c >= 127);
+    // We also remove the questionmark character, since some severs replace invalid high-bytes with a questionmark. We
+    // are already stripping the high-bytes so we also strip the questionmark to match.
+    //
+    // For instance: new String("http://localhost:8000?x") => new String("http:localhost:8x").
+    return (c == '\\' || c == '0' || c == '\0' || c == '/' || c == '?' || c >= 127);
 }
 
 static bool isRequiredForInjection(UChar c)
