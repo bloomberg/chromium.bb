@@ -96,6 +96,7 @@ crbug.com/254988 inspector/sources/debugger/callstack-placards-discarded.html [ 
 crbug.com/327078 http/tests/inspector/network/long-script-content.html [ Slow ]
 crbug.com/247466 [ Debug ] inspector-enabled/sources/debugger/script-formatter-breakpoints-1.html [ Slow ]
 crbug.com/247466 [ Debug ] inspector-enabled/sources/debugger/script-formatter-breakpoints-4.html [ Slow ]
+crbug.com/394210 [ Release ] inspector/profiler/webgl/webgl-profiler-api-changes.html [ Slow ]
 # inspector tests below are slow on LinuxASAN
 crbug.com/247466 [ Linux Release ] inspector/sources/debugger/debugger-activation-crash2.html [ Slow ]
 
