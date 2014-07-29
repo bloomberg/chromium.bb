@@ -48,8 +48,13 @@ public:
         OnlyExposedToPrivateScript,
     };
 
+    enum InstanceOrPrototypeConfiguration {
+        OnInstance,
+        OnPrototype,
+    };
+
     // AttributeConfiguration translates into calls to SetAccessor() on either
-    // the instance or the prototype ObjectTemplate, based on |onPrototype|.
+    // the instance or the prototype ObjectTemplate, based on |instanceOrPrototypeConfiguration|.
     struct AttributeConfiguration {
         const char* const name;
         v8::AccessorGetterCallback getter;
@@ -60,7 +65,7 @@ public:
         v8::AccessControl settings;
         v8::PropertyAttribute attribute;
         ExposeConfiguration exposeConfiguration;
-        bool onPrototype;
+        InstanceOrPrototypeConfiguration instanceOrPrototypeConfiguration;
     };
 
     // AccessorConfiguration translates into calls to SetAccessorProperty()
@@ -94,7 +99,7 @@ public:
             if (attribute.setterForMainWorld)
                 setter = attribute.setterForMainWorld;
         }
-        (attribute.onPrototype ? prototype : instanceTemplate)->SetAccessor(v8AtomicString(isolate, attribute.name),
+        (attribute.instanceOrPrototypeConfiguration == OnPrototype ? prototype : instanceTemplate)->SetAccessor(v8AtomicString(isolate, attribute.name),
             getter,
             setter,
             v8::External::New(isolate, const_cast<WrapperTypeInfo*>(attribute.data)),
