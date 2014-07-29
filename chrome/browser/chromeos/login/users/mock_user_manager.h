@@ -29,7 +29,7 @@ class MockUserManager : public UserManager {
   MOCK_CONST_METHOD0(GetUsersAdmittedForMultiProfile,
                      user_manager::UserList(void));
   MOCK_CONST_METHOD0(GetLoggedInUsers, const user_manager::UserList&(void));
-  MOCK_METHOD0(GetLRULoggedInUsers, const user_manager::UserList&(void));
+  MOCK_CONST_METHOD0(GetLRULoggedInUsers, const user_manager::UserList&(void));
   MOCK_METHOD3(UserLoggedIn, void(
       const std::string&, const std::string&, bool));
   MOCK_METHOD1(SwitchActiveUser, void(const std::string& email));
@@ -78,11 +78,11 @@ class MockUserManager : public UserManager {
   MOCK_CONST_METHOD0(AreSupervisedUsersAllowed, bool(void));
 
   // You can't mock these functions easily because nobody can create
-  // User objects but the UserManagerImpl and us.
+  // User objects but the ChromeUserManager and us.
   virtual const user_manager::UserList& GetUsers() const OVERRIDE;
   virtual const user_manager::User* GetLoggedInUser() const OVERRIDE;
   virtual user_manager::UserList GetUnlockUsers() const OVERRIDE;
-  virtual const std::string& GetOwnerEmail() OVERRIDE;
+  virtual const std::string& GetOwnerEmail() const OVERRIDE;
   virtual user_manager::User* GetLoggedInUser() OVERRIDE;
   virtual const user_manager::User* GetActiveUser() const OVERRIDE;
   virtual user_manager::User* GetActiveUser() OVERRIDE;

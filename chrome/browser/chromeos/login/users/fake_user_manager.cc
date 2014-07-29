@@ -177,7 +177,7 @@ UserImageManager* FakeUserManager::GetUserImageManager(
   return NULL;
 }
 
-const user_manager::UserList& FakeUserManager::GetLRULoggedInUsers() {
+const user_manager::UserList& FakeUserManager::GetLRULoggedInUsers() const {
   return user_list_;
 }
 
@@ -185,7 +185,7 @@ user_manager::UserList FakeUserManager::GetUnlockUsers() const {
   return user_list_;
 }
 
-const std::string& FakeUserManager::GetOwnerEmail() {
+const std::string& FakeUserManager::GetOwnerEmail() const {
   return owner_email_;
 }
 

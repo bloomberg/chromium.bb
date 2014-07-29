@@ -14,8 +14,8 @@
 
 namespace chromeos {
 
+class ChromeUserManager;
 class CrosSettings;
-class UserManagerImpl;
 
 // Implementation of the UserManager.
 class SupervisedUserManagerImpl
@@ -60,10 +60,10 @@ class SupervisedUserManagerImpl
       const std::string& token) OVERRIDE;
 
  private:
+  friend class ChromeUserManager;
   friend class UserManager;
-  friend class UserManagerImpl;
 
-  explicit SupervisedUserManagerImpl(UserManagerImpl* owner);
+  explicit SupervisedUserManagerImpl(ChromeUserManager* owner);
 
   // Returns true if there is non-committed user creation transaction.
   bool HasFailedUserCreationTransaction();
@@ -106,7 +106,7 @@ class SupervisedUserManagerImpl
   void CleanPref(const std::string& user_id,
                  const char* key);
 
-  UserManagerImpl* owner_;
+  ChromeUserManager* owner_;
 
   // Interface to the signed settings store.
   CrosSettings* cros_settings_;

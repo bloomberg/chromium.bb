@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/login/users/user_manager_impl.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/chrome_switches.h"
 
@@ -50,7 +50,7 @@ UserManager::UserAccountData::~UserAccountData() {}
 // static
 void UserManager::Initialize() {
   CHECK(!g_user_manager);
-  g_user_manager = new UserManagerImpl();
+  g_user_manager = new ChromeUserManager();
 }
 
 // static

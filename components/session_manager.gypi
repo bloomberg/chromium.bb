@@ -21,6 +21,13 @@
         'session_manager/core/session_manager.cc',
         'session_manager/session_manager_export.h',
       ],
+      'conditions': [
+        ['chromeos == 1', {
+          'dependencies': [
+            '<(DEPTH)/chromeos/chromeos.gyp:chromeos',
+          ],
+        }],
+      ],
     },
   ],
 }

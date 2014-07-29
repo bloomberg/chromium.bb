@@ -6,12 +6,30 @@
 
 #include "base/logging.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/command_line.h"
+#include "base/sys_info.h"
+#include "chromeos/chromeos_switches.h"
+#endif
+
 namespace session_manager {
 
+// static
+SessionManager* SessionManager::instance = NULL;
+
 SessionManager::SessionManager() : session_state_(SESSION_STATE_UNKNOWN) {
+  DCHECK(!SessionManager::Get());
+  SessionManager::SetInstance(this);
 }
 
 SessionManager::~SessionManager() {
+  DCHECK(instance == this);
+  SessionManager::SetInstance(NULL);
+}
+
+// static
+SessionManager* SessionManager::Get() {
+  return SessionManager::instance;
 }
 
 void SessionManager::SetSessionState(SessionState state) {
@@ -31,8 +49,24 @@ void SessionManager::Initialize(SessionManagerDelegate* delegate) {
   delegate_->SetSessionManager(this);
 }
 
+// static
+void SessionManager::SetInstance(SessionManager* session_manager) {
+  SessionManager::instance = session_manager;
+}
+
 void SessionManager::Start() {
   delegate_->Start();
+}
+
+// static
+bool SessionManager::HasBrowserRestarted() {
+#if defined(OS_CHROMEOS)
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  return base::SysInfo::IsRunningOnChromeOS() &&
+         command_line->HasSwitch(chromeos::switches::kLoginUser);
+#else
+  return false;
+#endif
 }
 
 SessionManagerDelegate::SessionManagerDelegate() : session_manager_(NULL) {

@@ -36,7 +36,7 @@ user_manager::UserList MockUserManager::GetUnlockUsers() const {
   return user_list_;
 }
 
-const std::string& MockUserManager::GetOwnerEmail() {
+const std::string& MockUserManager::GetOwnerEmail() const {
   return GetLoggedInUser()->email();
 }
 

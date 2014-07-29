@@ -45,6 +45,10 @@ class SESSION_EXPORT SessionManager {
   SessionManager();
   virtual ~SessionManager();
 
+  // Returns current SessionManager instance and NULL if it hasn't been
+  // initialized yet.
+  static SessionManager* Get();
+
   SessionState session_state() const { return session_state_; }
   virtual void SetSessionState(SessionState state);
 
@@ -52,11 +56,25 @@ class SESSION_EXPORT SessionManager {
   // current session type / state.
   void Start();
 
+  // Returns true when the browser has crashed and restarted during the current
+  // user's session.
+  static bool HasBrowserRestarted();
+
  protected:
   // Initializes SessionManager with delegate.
   void Initialize(SessionManagerDelegate* delegate);
 
+  // Sets SessionManager instance.
+  static void SetInstance(SessionManager* session_manager);
+
  private:
+  // Pointer to the existing SessionManager instance (if any).
+  // Set in ctor, reset in dtor. Not owned since specific implementation of
+  // SessionManager should decide on its own appropriate owner of SessionManager
+  // instance. For src/chrome implementation such place is
+  // g_browser_process->platform_part().
+  static SessionManager* instance;
+
   SessionState session_state_;
   scoped_ptr<SessionManagerDelegate> delegate_;
 
