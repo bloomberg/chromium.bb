@@ -152,12 +152,6 @@ per-file search_engines.gypi=stevet@chromium.org
 per-file search_provider_logos*=newt@chromium.org
 per-file search_provider_logos*=justincohen@chromium.org
 
-per-file session_manager.gypi=antrim@chromium.org
-per-file session_manager.gypi=dpolukhin@chromium.org
-per-file session_manager.gypi=dzhioev@chromium.org
-per-file session_manager.gypi=nkostylev@chromium.org
-per-file session_manager.gypi=ygorshenin@chromium.org
-
 per-file sessions.gypi=marja@chromium.org
 per-file sessions.gypi=sky@chromium.org
 

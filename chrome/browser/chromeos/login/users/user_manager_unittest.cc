@@ -12,8 +12,8 @@
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/login/users/user_manager_impl.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
@@ -103,33 +103,32 @@ class UserManagerTest : public testing::Test {
     chromeos::DBusThreadManager::Shutdown();
   }
 
-  ChromeUserManager* GetChromeUserManager() const {
-    return static_cast<ChromeUserManager*>(UserManager::Get());
+  UserManagerImpl* GetUserManagerImpl() const {
+    return static_cast<UserManagerImpl*>(UserManager::Get());
   }
 
   bool GetUserManagerEphemeralUsersEnabled() const {
-    return GetChromeUserManager()->GetEphemeralUsersEnabled();
+    return GetUserManagerImpl()->ephemeral_users_enabled_;
   }
 
   void SetUserManagerEphemeralUsersEnabled(bool ephemeral_users_enabled) {
-    GetChromeUserManager()->SetEphemeralUsersEnabled(ephemeral_users_enabled);
+    GetUserManagerImpl()->ephemeral_users_enabled_ = ephemeral_users_enabled;
   }
 
   const std::string& GetUserManagerOwnerEmail() const {
-    return GetChromeUserManager()->GetOwnerEmail();
+    return GetUserManagerImpl()-> owner_email_;
   }
 
   void SetUserManagerOwnerEmail(const std::string& owner_email) {
-    GetChromeUserManager()->SetOwnerEmail(owner_email);
+    GetUserManagerImpl()->owner_email_ = owner_email;
   }
 
   void ResetUserManager() {
     // Reset the UserManager singleton.
     user_manager_enabler_.reset();
-    // Initialize the UserManager singleton to a fresh ChromeUserManager
-    // instance.
+    // Initialize the UserManager singleton to a fresh UserManagerImpl instance.
     user_manager_enabler_.reset(
-        new ScopedUserManagerEnabler(new ChromeUserManager));
+        new ScopedUserManagerEnabler(new UserManagerImpl));
   }
 
   void SetDeviceSettings(bool ephemeral_users_enabled,
@@ -146,7 +145,7 @@ class UserManagerTest : public testing::Test {
   }
 
   void RetrieveTrustedDevicePolicies() {
-    GetChromeUserManager()->RetrieveTrustedDevicePolicies();
+    GetUserManagerImpl()->RetrieveTrustedDevicePolicies();
   }
 
  protected:

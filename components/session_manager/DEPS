@@ -1,3 +1,2 @@
 include_rules = [
- '+chromeos/chromeos_switches.h',
 ]
