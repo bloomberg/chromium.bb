@@ -994,23 +994,29 @@ def ExpandVariables(input, phase, variables, build_file):
     # Prepare for the next match iteration.
     input_str = output
 
-  # Look for more matches now that we've replaced some, to deal with
-  # expanding local variables (variables defined in the same
-  # variables block as this one).
-  gyp.DebugOutput(gyp.DEBUG_VARIABLES, "Found output %r, recursing.", output)
-  if type(output) is list:
-    if output and type(output[0]) is list:
-      # Leave output alone if it's a list of lists.
-      # We don't want such lists to be stringified.
-      pass
-    else:
-      new_output = []
-      for item in output:
-        new_output.append(
-            ExpandVariables(item, phase, variables, build_file))
-      output = new_output
+  if output == input:
+    gyp.DebugOutput(gyp.DEBUG_VARIABLES,
+                    "Found only identity matches on %r, avoiding infinite "
+                    "recursion.",
+                    output)
   else:
-    output = ExpandVariables(output, phase, variables, build_file)
+    # Look for more matches now that we've replaced some, to deal with
+    # expanding local variables (variables defined in the same
+    # variables block as this one).
+    gyp.DebugOutput(gyp.DEBUG_VARIABLES, "Found output %r, recursing.", output)
+    if type(output) is list:
+      if output and type(output[0]) is list:
+        # Leave output alone if it's a list of lists.
+        # We don't want such lists to be stringified.
+        pass
+      else:
+        new_output = []
+        for item in output:
+          new_output.append(
+              ExpandVariables(item, phase, variables, build_file))
+        output = new_output
+    else:
+      output = ExpandVariables(output, phase, variables, build_file)
 
   # Convert all strings that are canonically-represented integers into integers.
   if type(output) is list:
