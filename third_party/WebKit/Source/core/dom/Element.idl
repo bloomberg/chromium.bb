@@ -87,8 +87,6 @@
     // WebKit extensions
 
     [MeasureAs=ElementScrollIntoViewIfNeeded] void scrollIntoViewIfNeeded(optional boolean centerIfNeeded);
-    [MeasureAs=ElementScrollByLines] void scrollByLines([Default=Undefined] optional long lines);
-    [MeasureAs=ElementScrollByPages] void scrollByPages([Default=Undefined] optional long pages);
 
     // HTML 5
     HTMLCollection getElementsByClassName(DOMString classNames);

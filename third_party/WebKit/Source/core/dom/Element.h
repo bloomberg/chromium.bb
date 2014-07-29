@@ -35,7 +35,6 @@
 #include "core/html/CollectionType.h"
 #include "core/page/FocusType.h"
 #include "platform/heap/Handle.h"
-#include "platform/scroll/ScrollTypes.h"
 
 namespace blink {
 
@@ -175,9 +174,6 @@ public:
 
     void scrollIntoView(bool alignToTop = true);
     void scrollIntoViewIfNeeded(bool centerIfNeeded = true);
-
-    void scrollByLines(int lines);
-    void scrollByPages(int pages);
 
     int offsetLeft();
     int offsetTop();
@@ -602,8 +598,6 @@ private:
     void updateId(const AtomicString& oldId, const AtomicString& newId);
     void updateId(TreeScope&, const AtomicString& oldId, const AtomicString& newId);
     void updateName(const AtomicString& oldName, const AtomicString& newName);
-
-    void scrollByUnits(int units, ScrollGranularity);
 
     virtual NodeType nodeType() const OVERRIDE FINAL;
     virtual bool childTypeAllowed(NodeType) const OVERRIDE FINAL;

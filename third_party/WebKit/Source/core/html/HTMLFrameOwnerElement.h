@@ -24,6 +24,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/FrameOwner.h"
 #include "core/html/HTMLElement.h"
+#include "platform/scroll/ScrollTypes.h"
 #include "wtf/HashCountedSet.h"
 
 namespace blink {

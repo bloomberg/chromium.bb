@@ -470,34 +470,6 @@ void Element::scrollIntoViewIfNeeded(bool centerIfNeeded)
         renderer()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
 }
 
-void Element::scrollByUnits(int units, ScrollGranularity granularity)
-{
-    document().updateLayoutIgnorePendingStylesheets();
-
-    if (!renderer())
-        return;
-
-    if (!renderer()->hasOverflowClip())
-        return;
-
-    ScrollDirection direction = ScrollDown;
-    if (units < 0) {
-        direction = ScrollUp;
-        units = -units;
-    }
-    toRenderBox(renderer())->scroll(direction, granularity, units);
-}
-
-void Element::scrollByLines(int lines)
-{
-    scrollByUnits(lines, ScrollByLine);
-}
-
-void Element::scrollByPages(int pages)
-{
-    scrollByUnits(pages, ScrollByPage);
-}
-
 static float localZoomForRenderer(RenderObject& renderer)
 {
     // FIXME: This does the wrong thing if two opposing zooms are in effect and canceled each

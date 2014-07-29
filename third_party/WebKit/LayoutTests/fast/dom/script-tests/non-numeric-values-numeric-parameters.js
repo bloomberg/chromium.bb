@@ -219,8 +219,6 @@ shouldBe("nonNumericPolicy('document.elementFromPoint(0, x)')", "'any type allow
 
 // Element
 
-shouldBe("nonNumericPolicy('document.body.scrollByLines(x)')", "'any type allowed'");
-shouldBe("nonNumericPolicy('document.body.scrollByPages(x)')", "'any type allowed'");
 shouldBe("nonNumericPolicy('document.body.scrollLeft = x')", "'mixed'");
 shouldBe("nonNumericPolicy('document.body.scrollTop = x')", "'mixed'");
 
