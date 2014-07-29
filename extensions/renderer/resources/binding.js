@@ -5,7 +5,6 @@
 var Event = require('event_bindings').Event;
 var forEach = require('utils').forEach;
 var GetAvailability = requireNative('v8_context').GetAvailability;
-var lastError = require('lastError');
 var logActivity = requireNative('activityLogger');
 var logging = requireNative('logging');
 var process = requireNative('process');
@@ -60,24 +59,6 @@ APIFunctions.prototype.setHandleRequest =
         logActivity.LogAPICall(extensionId, prefix + "." + apiName,
             $Array.slice(arguments));
       return ret;
-    });
-};
-
-APIFunctions.prototype.setHandleRequestWithPromise =
-    function(apiName, customizedFunction) {
-  var prefix = this.namespace;
-  return this.setHook_(apiName, 'handleRequest', function() {
-      var name = prefix + '.' + apiName;
-      logActivity.LogAPICall(extensionId, name, $Array.slice(arguments));
-      var stack = sendRequestHandler.getExtensionStackTrace();
-      var callback = arguments[arguments.length - 1];
-      var args = $Array.slice(arguments, 0, arguments.length - 1);
-      $Function.apply(customizedFunction, this, args).then(function(result) {
-        sendRequestHandler.safeCallbackApply(
-            name, {'stack': stack}, callback, [result]);
-      }).catch(function(error) {
-        lastError.run(name, error.message, stack, callback);
-      });
     });
 };
 

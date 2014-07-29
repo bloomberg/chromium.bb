@@ -18,9 +18,6 @@
       <include name="IDR_MESSAGING_UTILS_JS" file="messaging_utils.js" type="BINDATA" />
       <include name="IDR_SCHEMA_UTILS_JS" file="schema_utils.js" type="BINDATA" />
       <include name="IDR_SEND_REQUEST_JS" file="send_request.js" type="BINDATA" />
-      <include name="IDR_SERIAL_CUSTOM_BINDINGS_JS" file="serial_custom_bindings.js" type="BINDATA" />
-      <include name="IDR_SERIAL_MOJOM_JS" file="${mojom_root}\device\serial\serial.mojom.js" use_base_dir="false" type="BINDATA" />
-      <include name="IDR_SERIAL_SERVICE_JS" file="serial_service.js" type="BINDATA" />
       <include name="IDR_SET_ICON_JS" file="set_icon.js" type="BINDATA" />
       <include name="IDR_BROWSER_TEST_ENVIRONMENT_SPECIFIC_BINDINGS_JS" file="browser_test_environment_specific_bindings.js" type="BINDATA" />
       <include name="IDR_TEST_CUSTOM_BINDINGS_JS" file="test_custom_bindings.js" type="BINDATA" />
