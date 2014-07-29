@@ -21,7 +21,6 @@ var attributes = [
     [ "object", "declare" ],
     [ "ol", "compact" ],
     [ "option", "defaultSelected", "selected" ],
-    [ "pre", "wrap" ],
     [ "script", "defer" ],
     [ "select", "multiple" ],
     [ "td", "noWrap" ],
