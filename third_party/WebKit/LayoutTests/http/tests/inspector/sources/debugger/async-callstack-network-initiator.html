@@ -1,0 +1,78 @@
+<html>
+<head>
+<script src="/inspector/inspector-test.js"></script>
+<script src="/inspector/debugger-test.js"></script>
+<script src="/inspector/console-test.js"></script>
+<script>
+
+function testFunction()
+{
+    debugger;
+    console.clear();
+    setTimeout(timeout1, 0);
+}
+
+function timeout1()
+{
+    setTimeout(timeout2, 0);
+}
+
+function timeout2()
+{
+    sendXHR();
+}
+
+function sendXHR()
+{
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/failure/foo", true /* async */);
+    xhr.send();
+}
+
+var test = function()
+{
+    var maxAsyncCallStackDepth = 4;
+    var numberOfConsoleMessages = 2;
+
+    InspectorTest.setQuiet(true);
+    InspectorTest.startDebuggerTest(step1);
+
+    function step1()
+    {
+        DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+        DebuggerAgent.setAsyncCallStackDepth(0);
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+    }
+
+    function step2()
+    {
+        DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, didPause);
+    }
+
+    function didPause()
+    {
+        InspectorTest.waitUntilNthMessageReceived(numberOfConsoleMessages, expandAndDumpConsoleMessages);
+        InspectorTest.resumeExecution();
+    }
+
+    function expandAndDumpConsoleMessages()
+    {
+        InspectorTest.expandConsoleMessages(dumpConsoleMessages);
+    }
+
+    function dumpConsoleMessages()
+    {
+        InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests asynchronous call stacks printed in console for a Network.Initiator.
+</p>
+</body>
+</html>

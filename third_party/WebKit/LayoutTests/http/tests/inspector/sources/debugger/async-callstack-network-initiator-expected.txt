@@ -1,0 +1,13 @@
+Tests asynchronous call stacks printed in console for a Network.Initiator.
+
+Set timer for test function.
+Console was cleared async-callstack-network-initiator.html:11
+
+    POST http://127.0.0.1:8000/failure/foo 404 (Not Found) async-callstack-network-initiator.html:29
+    sendXHR async-callstack-network-initiator.html:29
+    timeout2 async-callstack-network-initiator.html:22
+    setTimeout (async)
+    timeout1 async-callstack-network-initiator.html:17
+    setTimeout (async)
+    testFunction async-callstack-network-initiator.html:12
+

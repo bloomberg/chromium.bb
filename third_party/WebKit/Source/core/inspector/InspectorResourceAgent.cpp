@@ -48,6 +48,7 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/NetworkResourcesData.h"
+#include "core/inspector/ScriptAsyncCallStack.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/DocumentThreadableLoader.h"
@@ -561,6 +562,9 @@ PassRefPtr<TypeBuilder::Network::Initiator> InspectorResourceAgent::buildInitiat
         RefPtr<TypeBuilder::Network::Initiator> initiatorObject = TypeBuilder::Network::Initiator::create()
             .setType(TypeBuilder::Network::Initiator::Type::Script);
         initiatorObject->setStackTrace(stackTrace->buildInspectorArray());
+        RefPtrWillBeRawPtr<ScriptAsyncCallStack> asyncStackTrace = stackTrace->asyncCallStack();
+        if (asyncStackTrace)
+            initiatorObject->setAsyncStackTrace(asyncStackTrace->buildInspectorObject());
         return initiatorObject;
     }
 
