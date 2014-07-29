@@ -197,6 +197,7 @@
   "gtest_tests_filter_exclusions": [
     ".*gyp[i]?",
     "build/compiler_version.py",
+    "build/gyp_chromium",
     "build/linux/sysroot_ld_path.sh",
     "chrome/test/data/.*",
     "content/test/data/.*",
