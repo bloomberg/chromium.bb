@@ -262,15 +262,8 @@ public:
 
     void assertSubtreeClearedPaintInvalidationState() const
     {
-        for (const RenderObject* renderer = this; renderer; renderer = renderer->nextInPreOrder()) {
+        for (const RenderObject* renderer = this; renderer; renderer = renderer->nextInPreOrder())
             renderer->assertRendererClearedPaintInvalidationState();
-
-            // Currently we skip some SVG containers for performance (see RenderSVGModelObject::invalidateTreeAfterLayout)
-            // so we just skip the underlying subtree. This is not strictly the condition in the previous function but
-            // it makes little sense to cover SVG subtrees if we know they are skipped anyway.
-            if (renderer->isSVGContainer())
-                return;
-        }
     }
 
 #endif

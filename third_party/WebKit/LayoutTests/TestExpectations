@@ -883,7 +883,8 @@ crbug.com/392640 [ Linux Release ] svg/as-object/sizing/svg-in-object-placeholde
 crbug.com/392640 [ Linux Debug ] svg/as-object/sizing/svg-in-object-placeholder-height-fixed.html [ Pass Failure Timeout ]
 crbug.com/392640 svg/as-object/sizing/svg-in-object-placeholder-height-percentage.html [ Pass Timeout ]
 
-crbug.com/393087 [ Win ] svg/custom/resource-client-removal.svg [ Pass Failure ]
+# Temporary disabled for rebaeline of crbug.com/394619
+# crbug.com/393087 [ Win ] svg/custom/resource-client-removal.svg [ Pass Failure ]
 
 crbug.com/368531 virtual/gpu/fast/canvas/canvas-path-addpath.html [ Failure Pass ]
 
@@ -1139,6 +1140,24 @@ crbug.com/381373 [ Linux ] virtual/implsidepainting/inspector/timeline/tracing/d
 crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ ImageOnlyFailure ]
 
 crbug.com/373430 [ Win7 ] fast/dom/Geolocation/error-clear-watch.html [ Pass Timeout ]
+
+crbug.com/394619 svg/carto.net/window.svg [ NeedsRebaseline ]
+crbug.com/394619 svg/custom/use-setAttribute-crash.svg [ NeedsRebaseline ]
+crbug.com/394619 svg/repaint/image-with-clip-path.svg [ NeedsRebaseline ]
+crbug.com/394619 svg/custom/use-detach.svg [ NeedsRebaseline ] 
+crbug.com/394619 svg/repaint/inner-svg-change-viewBox-contract.svg [ NeedsRebaseline ]
+crbug.com/394619 svg/repaint/container-repaint.svg [ NeedsRebaseline ]
+crbug.com/394619 svg/carto.net/tabgroup.svg [ NeedsRebaseline ]
+crbug.com/394619 svg/custom/relative-sized-shadow-tree-content.xhtml [ NeedsRebaseline ]
+crbug.com/394619 svg/repaint/inner-svg-change-viewBox.svg [ NeedsRebaseline ]
+crbug.com/394619 svg/custom/relative-sized-deep-shadow-tree-content.xhtml [ NeedsRebaseline ]
+crbug.com/394619 svg/text/text-rescale.html [ NeedsRebaseline ]
+crbug.com/394619 svg/repaint/inner-svg-change-viewPort-relative.svg [ NeedsRebaseline ]
+crbug.com/394619 svg/filters/feImage-target-attribute-change-with-use-indirection-2.svg [ NeedsRebaseline ]
+crbug.com/394619 svg/custom/relative-sized-inner-svg.xhtml [ NeedsRebaseline ]
+crbug.com/394619 svg/custom/relative-sized-shadow-tree-content-with-symbol.xhtml [ NeedsRebaseline ]
+crbug.com/394619 svg/custom/js-update-container.svg [ NeedsRebaseline ]
+crbug.com/394619 svg/custom/resource-client-removal.svg [ NeedsRebaseline ]
 
 crbug.com/374936 [ Win Debug ] svg/dynamic-updates/SVGImageElement-dom-preserveAspectRatio-attr.html [ ImageOnlyFailure ]
 crbug.com/374936 [ Win Debug ] svg/dynamic-updates/SVGImageElement-dom-height-attr.html [ ImageOnlyFailure ]
