@@ -613,7 +613,7 @@ Position VisiblePosition::canonicalPosition(const Position& passedPosition)
         return Position();
 
     // The new position should be in the same block flow element. Favor that.
-    Node* originalBlock = node ? node->enclosingBlockFlowElement() : 0;
+    Node* originalBlock = node ? enclosingBlockFlowElement(*node) : 0;
     bool nextIsOutsideOriginalBlock = !nextNode->isDescendantOf(originalBlock) && nextNode != originalBlock;
     bool prevIsOutsideOriginalBlock = !prevNode->isDescendantOf(originalBlock) && prevNode != originalBlock;
     if (nextIsOutsideOriginalBlock && !prevIsOutsideOriginalBlock)
@@ -758,12 +758,12 @@ bool setEnd(Range *r, const VisiblePosition &visiblePosition)
     return !exceptionState.hadException();
 }
 
-Element* enclosingBlockFlowElement(const VisiblePosition &visiblePosition)
+Element* enclosingBlockFlowElement(const VisiblePosition& visiblePosition)
 {
     if (visiblePosition.isNull())
-        return NULL;
+        return 0;
 
-    return visiblePosition.deepEquivalent().deprecatedNode()->enclosingBlockFlowElement();
+    return enclosingBlockFlowElement(*visiblePosition.deepEquivalent().deprecatedNode());
 }
 
 bool isFirstVisiblePositionInNode(const VisiblePosition &visiblePosition, const Node *node)

@@ -948,7 +948,7 @@ bool Position::rendersInDifferentPosition(const Position &pos) const
     if (isHTMLBRElement(*pos.deprecatedNode()) && isCandidate())
         return true;
 
-    if (deprecatedNode()->enclosingBlockFlowElement() != pos.deprecatedNode()->enclosingBlockFlowElement())
+    if (!inSameContainingBlockFlowElement(deprecatedNode(), pos.deprecatedNode()))
         return true;
 
     if (deprecatedNode()->isTextNode() && !inRenderedText())

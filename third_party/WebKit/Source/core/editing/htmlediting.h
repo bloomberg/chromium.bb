@@ -64,6 +64,8 @@ Node* highestNodeToRemoveInPruning(Node*, Node* excludeNode = 0);
 Element* lowestEditableAncestor(Node*);
 
 Element* enclosingBlock(Node*, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+Element* enclosingBlockFlowElement(Node&); // Deprecated, use enclosingBlock instead.
+bool inSameContainingBlockFlowElement(Node*, Node*);
 Element* enclosingTableCell(const Position&);
 Node* enclosingEmptyListItem(const VisiblePosition&);
 Element* enclosingAnchorElement(const Position&);

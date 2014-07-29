@@ -334,6 +334,23 @@ Element* enclosingBlock(Node* node, EditingBoundaryCrossingRule rule)
     return enclosingNode && enclosingNode->isElementNode() ? toElement(enclosingNode) : 0;
 }
 
+Element* enclosingBlockFlowElement(Node& node)
+{
+    if (node.isBlockFlowElement())
+        return &toElement(node);
+
+    for (Node* n = node.parentNode(); n; n = n->parentNode()) {
+        if (n->isBlockFlowElement() || isHTMLBodyElement(*n))
+            return toElement(n);
+    }
+    return 0;
+}
+
+bool inSameContainingBlockFlowElement(Node* a, Node* b)
+{
+    return a && b && enclosingBlockFlowElement(*a) == enclosingBlockFlowElement(*b);
+}
+
 TextDirection directionOfEnclosingBlock(const Position& position)
 {
     Element* enclosingBlockElement = enclosingBlock(position.containerNode());
@@ -933,7 +950,7 @@ Position leadingWhitespacePosition(const Position& position, EAffinity affinity,
         return Position();
 
     Position prev = previousCharacterPosition(position, affinity);
-    if (prev != position && prev.anchorNode()->inSameContainingBlockFlowElement(position.anchorNode()) && prev.anchorNode()->isTextNode()) {
+    if (prev != position && inSameContainingBlockFlowElement(prev.anchorNode(), position.anchorNode()) && prev.anchorNode()->isTextNode()) {
         String string = toText(prev.anchorNode())->data();
         UChar previousCharacter = string[prev.deprecatedEditingOffset()];
         bool isSpace = option == ConsiderNonCollapsibleWhitespace ? (isSpaceOrNewline(previousCharacter) || previousCharacter == noBreakSpace) : isCollapsibleWhitespace(previousCharacter);

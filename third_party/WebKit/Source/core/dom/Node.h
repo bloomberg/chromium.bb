@@ -324,14 +324,9 @@ public:
     // out of the Node class into an editing-specific source file.
     Node* previousLeafNode() const;
 
-    // enclosingBlockFlowElement() is deprecated. Use enclosingBlock instead.
-    Element* enclosingBlockFlowElement() const;
-
     bool isRootEditableElement() const;
     Element* rootEditableElement() const;
     Element* rootEditableElement(EditableType) const;
-
-    bool inSameContainingBlockFlowElement(Node*);
 
     // For <link> and <style> elements.
     virtual bool sheetLoaded() { return true; }

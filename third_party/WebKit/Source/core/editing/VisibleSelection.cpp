@@ -273,7 +273,7 @@ static PassRefPtrWillBeRawPtr<Range> makeSearchRange(const Position& pos)
     Node* de = d.documentElement();
     if (!de)
         return nullptr;
-    Node* boundary = n->enclosingBlockFlowElement();
+    Node* boundary = enclosingBlockFlowElement(*n);
     if (!boundary)
         return nullptr;
 
