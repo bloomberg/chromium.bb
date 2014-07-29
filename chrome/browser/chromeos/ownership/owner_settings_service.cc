@@ -228,8 +228,10 @@ OwnerSettingsService::OwnerSettingsService(Profile* profile)
     TPMTokenLoader::Get()->AddObserver(this);
   }
 
-  if (DBusThreadManager::IsInitialized())
+  if (DBusThreadManager::IsInitialized() &&
+      DBusThreadManager::Get()->GetSessionManagerClient()) {
     DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
+  }
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_PROFILE_CREATED,
@@ -241,8 +243,10 @@ OwnerSettingsService::~OwnerSettingsService() {
   if (TPMTokenLoader::IsInitialized())
     TPMTokenLoader::Get()->RemoveObserver(this);
 
-  if (DBusThreadManager::IsInitialized())
+  if (DBusThreadManager::IsInitialized() &&
+      DBusThreadManager::Get()->GetSessionManagerClient()) {
     DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
+  }
 }
 
 bool OwnerSettingsService::IsOwner() {
