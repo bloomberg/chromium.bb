@@ -134,6 +134,8 @@ cr.define('options', function() {
       }
 
       // The 'allow in incognito' checkbox.
+      node.querySelector('.incognito-control').hidden =
+          !this.data_.incognitoAvailable;
       var incognito = node.querySelector('.incognito-control input');
       incognito.disabled = !extension.incognitoCanBeEnabled;
       incognito.checked = extension.enabledIncognito;
