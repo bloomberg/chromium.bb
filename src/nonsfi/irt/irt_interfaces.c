@@ -348,6 +348,14 @@ static int irt_munmap(void *addr, size_t len) {
   return check_error(munmap(addr, len));
 }
 
+static int irt_mprotect(void *addr, size_t len, int prot) {
+  int host_prot;
+  if (!convert_from_nacl_mmap_prot(&host_prot, prot)) {
+    return EINVAL;
+  }
+  return check_error(mprotect(addr, len, host_prot));
+}
+
 static int tls_init(void *ptr) {
   g_tls_value = ptr;
   return 0;
@@ -580,11 +588,10 @@ const struct nacl_irt_fdio nacl_irt_fdio = {
   USE_STUB(nacl_irt_fdio, getdents),
 };
 
-DEFINE_STUB(mprotect)
 const struct nacl_irt_memory nacl_irt_memory = {
   irt_mmap,
   irt_munmap,
-  USE_STUB(nacl_irt_memory, mprotect),
+  irt_mprotect,
 };
 
 const struct nacl_irt_tls nacl_irt_tls = {

@@ -38,6 +38,7 @@ readonly SCONS_NONSFI_NEWLIB_TESTS="\
     run_float_test_irt \
     run_hello_world_test_irt \
     run_malloc_realloc_calloc_free_test_irt \
+    run_mmap_test_irt \
     run_stack_alignment_test_irt \
     run_syscall_test_irt"
 # This uses the host-libc-based nonsfi_loader, for which only a subset of
@@ -65,6 +66,7 @@ readonly SCONS_NONSFI_TESTS="\
     run_float_test_irt \
     run_malloc_realloc_calloc_free_test_irt \
     run_dup_test_irt \
+    run_mmap_test_irt \
     run_syscall_test_irt \
     run_getpid_test_irt \
     toolchain_tests_irt \

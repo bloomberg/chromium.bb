@@ -90,6 +90,7 @@ def BuildScriptX86(status, context):
                 'hello_world',
                 'irt_futex',
                 'malloc_realloc_calloc_free',
+                'mmap',
                 'stack_alignment',
                 'syscall',
                 'thread']]
