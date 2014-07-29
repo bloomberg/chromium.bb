@@ -534,13 +534,17 @@ void DumpDeprecatedHistograms(const WebPerformance& performance,
                                      websearch_chrome_joint_experiment_id,
                                      is_preview);
     }
-    DCHECK(commit <= first_paint);
-    commit_to_first_paint.reset(new TimeDelta(first_paint - commit));
-    PLT_HISTOGRAM_WITH_GWS_VARIANT("PLT.CommitToFirstPaint",
-                                   *commit_to_first_paint,
-                                   came_from_websearch,
-                                   websearch_chrome_joint_experiment_id,
-                                   is_preview);
+
+    // Conditional was previously a DCHECK. Changed due to multiple bot
+    // failures, listed in crbug.com/383963
+    if (commit <= first_paint) {
+      commit_to_first_paint.reset(new TimeDelta(first_paint - commit));
+      PLT_HISTOGRAM_WITH_GWS_VARIANT("PLT.CommitToFirstPaint",
+                                     *commit_to_first_paint,
+                                     came_from_websearch,
+                                     websearch_chrome_joint_experiment_id,
+                                     is_preview);
+    }
   }
   if (!first_paint_after_load.is_null()) {
     // 'first_paint_after_load' can be before 'begin' for an unknown reason.
