@@ -1668,7 +1668,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfAnimatesWhenGestureComplete) {
   {
     // Enable animations so that we can make sure that they occur.
     ui::ScopedAnimationDurationScaleMode regular_animations(
-        ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+        ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
 
     ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
     gfx::Rect shelf_bounds_in_screen =
@@ -1697,7 +1697,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfAnimatesWhenGestureComplete) {
   {
     // Enable the animations so that we can make sure they do occur.
     ui::ScopedAnimationDurationScaleMode regular_animations(
-        ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+        ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
 
     gfx::Point start =
         GetShelfWidget()->GetWindowBoundsInScreen().CenterPoint();

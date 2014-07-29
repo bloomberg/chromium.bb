@@ -589,8 +589,7 @@ TEST_F(WindowSliderTest, SwipeDuringSwipeAnimation) {
   WindowSliderDelegateTest slider_delegate;
   new WindowSlider(&slider_delegate, root_window(), window.get());
 
-  // This test uses explicit durations so needs a normal duration.
-  ui::ScopedAnimationDurationScaleMode normal_duration(
+  ui::ScopedAnimationDurationScaleMode normal_duration_(
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
   ui::LayerAnimator* animator = window->layer()->GetAnimator();
   animator->set_disable_timer_for_test(true);

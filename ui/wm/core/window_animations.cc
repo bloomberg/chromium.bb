@@ -26,7 +26,6 @@
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/layer_tree_owner.h"
-#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/interpolated_transform.h"
@@ -650,23 +649,10 @@ bool AnimateWindow(aura::Window* window, WindowAnimationType type) {
 }
 
 bool WindowAnimationsDisabled(aura::Window* window) {
-  // Individual windows can choose to skip animations.
-  if (window && window->GetProperty(aura::client::kAnimationsDisabledKey))
-    return true;
-
-  // Animations can be disabled globally for testing.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWindowAnimationsDisabled))
-    return true;
-
-  // Tests of animations themselves should still run even if the machine is
-  // being accessed via Remote Desktop.
-  if (ui::ScopedAnimationDurationScaleMode::duration_scale_mode() ==
-      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION)
-    return false;
-
-  // Let the user decide whether or not to play the animation.
-  return !gfx::Animation::ShouldRenderRichAnimation();
+  return (!gfx::Animation::ShouldRenderRichAnimation() || (window &&
+          window->GetProperty(aura::client::kAnimationsDisabledKey)) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kWindowAnimationsDisabled));
 }
 
 }  // namespace wm

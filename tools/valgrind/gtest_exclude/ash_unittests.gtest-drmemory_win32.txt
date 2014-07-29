@@ -1,0 +1,6 @@
+# http://crbug.com/396969
+DesktopBackgroundControllerTest.*
+# http://crbug.com/397478
+WindowAnimationsTest.HideShowBrightnessGrayscaleAnimation
+WindowAnimationsTest.LockAnimationDuration
+WorkspaceControllerTest.AnimatedNormToMaxToNormRepositionsRemaining
