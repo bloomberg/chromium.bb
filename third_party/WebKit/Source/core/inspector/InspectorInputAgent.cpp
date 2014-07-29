@@ -122,9 +122,9 @@ void InspectorInputAgent::dispatchKeyEvent(ErrorString* error, const String& typ
         keyIdentifier ? *keyIdentifier : "",
         windowsVirtualKeyCode ? *windowsVirtualKeyCode : 0,
         nativeVirtualKeyCode ? *nativeVirtualKeyCode : 0,
-        autoRepeat ? *autoRepeat : false,
-        isKeypad ? *isKeypad : false,
-        isSystemKey ? *isSystemKey : false,
+        asBool(autoRepeat),
+        asBool(isKeypad),
+        asBool(isSystemKey),
         static_cast<PlatformEvent::Modifiers>(modifiers ? *modifiers : 0),
         timestamp ? *timestamp : currentTime());
     m_client->dispatchKeyEvent(event);
@@ -132,7 +132,7 @@ void InspectorInputAgent::dispatchKeyEvent(ErrorString* error, const String& typ
 
 void InspectorInputAgent::dispatchMouseEvent(ErrorString* error, const String& type, int x, int y, const int* modifiers, const double* timestamp, const String* button, const int* clickCount, const bool* deviceSpace)
 {
-    if (deviceSpace && *deviceSpace) {
+    if (asBool(deviceSpace)) {
         *error = "Internal error: events with device coordinates should be processed on the embedder level.";
         return;
     }

@@ -109,6 +109,11 @@ protected:
     }
 };
 
+inline bool asBool(const bool* const b)
+{
+    return b ? *b : false;
+}
+
 } // namespace blink
 
 #endif // !defined(InspectorBaseAgent_h)

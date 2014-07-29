@@ -365,7 +365,7 @@ void InspectorTimelineAgent::start(ErrorString* errorString, const int* maxCallS
     else
         m_maxCallStackDepth = 5;
 
-    if (bufferEvents && *bufferEvents) {
+    if (asBool(bufferEvents)) {
         m_bufferedEvents = TypeBuilder::Array<TimelineEvent>::create();
         m_lastProgressTimestamp = timestamp();
     }
@@ -374,9 +374,9 @@ void InspectorTimelineAgent::start(ErrorString* errorString, const int* maxCallS
         setLiveEvents(*liveEvents);
 
     m_state->setLong(TimelineAgentState::timelineMaxCallStackDepth, m_maxCallStackDepth);
-    m_state->setBoolean(TimelineAgentState::includeCounters, includeCounters && *includeCounters);
-    m_state->setBoolean(TimelineAgentState::includeGPUEvents, includeGPUEvents && *includeGPUEvents);
-    m_state->setBoolean(TimelineAgentState::bufferEvents, bufferEvents && *bufferEvents);
+    m_state->setBoolean(TimelineAgentState::includeCounters, asBool(includeCounters));
+    m_state->setBoolean(TimelineAgentState::includeGPUEvents, asBool(includeGPUEvents));
+    m_state->setBoolean(TimelineAgentState::bufferEvents, asBool(bufferEvents));
     m_state->setString(TimelineAgentState::liveEvents, liveEvents ? *liveEvents : "");
 
     innerStart();

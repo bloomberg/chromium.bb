@@ -152,7 +152,7 @@ private:
 void InspectorHeapProfilerAgent::startTrackingHeapObjects(ErrorString*, const bool* trackAllocations)
 {
     m_state->setBoolean(HeapProfilerAgentState::heapObjectsTrackingEnabled, true);
-    bool allocationTrackingEnabled = trackAllocations && *trackAllocations;
+    bool allocationTrackingEnabled = asBool(trackAllocations);
     m_state->setBoolean(HeapProfilerAgentState::allocationTrackingEnabled, allocationTrackingEnabled);
     startTrackingHeapObjectsInternal(allocationTrackingEnabled);
 }
@@ -251,7 +251,7 @@ void InspectorHeapProfilerAgent::takeHeapSnapshot(ErrorString* errorString, cons
     };
 
     String title = "Snapshot " + String::number(m_nextUserInitiatedHeapSnapshotNumber++);
-    HeapSnapshotProgress progress(reportProgress && *reportProgress ? m_frontend : 0);
+    HeapSnapshotProgress progress(asBool(reportProgress) ? m_frontend : 0);
     RefPtr<ScriptHeapSnapshot> snapshot = ScriptProfiler::takeHeapSnapshot(title, &progress);
     if (!snapshot) {
         *errorString = "Failed to take heap snapshot";

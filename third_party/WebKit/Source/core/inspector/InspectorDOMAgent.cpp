@@ -1244,7 +1244,7 @@ void InspectorDOMAgent::setInspectModeEnabled(ErrorString* errorString, bool ena
 {
     if (enabled && !pushDocumentUponHandlelessOperation(errorString))
         return;
-    SearchMode searchMode = enabled ? (inspectUAShadowDOM && *inspectUAShadowDOM ? SearchingForUAShadow : SearchingForNormal) : NotSearching;
+    SearchMode searchMode = enabled ? (asBool(inspectUAShadowDOM) ? SearchingForUAShadow : SearchingForNormal) : NotSearching;
     setSearchingForNode(errorString, searchMode, highlightConfig ? highlightConfig->get() : 0);
 }
 
