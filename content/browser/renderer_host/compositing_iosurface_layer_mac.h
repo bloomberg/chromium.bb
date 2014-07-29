@@ -58,8 +58,14 @@ class CompositingIOSurfaceLayerHelper {
   // Immediately draw the layer, only if one is pending, and ensure that the
   // frame be acked.
   void DisplayIfNeededAndAck();
- private:
 
+  // Mark a bracket in which new frames are being pumped in a restricted nested
+  // run loop. During this time frames are acked immediately and draws are
+  // deferred until the bracket ends.
+  void BeginPumpingFrames();
+  void EndPumpingFrames();
+
+ private:
   // Called whenever the frame provided in GotNewFrame should be acknowledged
   // (this may be because it was drawn, or it may be to unblock the
   // compositor).
@@ -84,6 +90,9 @@ class CompositingIOSurfaceLayerHelper {
   // Incremented every time that this layer is asked to draw but does not have
   // new content to draw.
   uint64 did_not_draw_counter_;
+
+  // Set when inside a BeginPumpingFrames/EndPumpingFrames block.
+  bool is_pumping_frames_;
 
   // The browser places back-pressure on the GPU by not acknowledging swap
   // calls until they appear on the screen. This can lead to hangs if the
@@ -125,6 +134,10 @@ class CompositingIOSurfaceLayerHelper {
 // Force a draw immediately, but only if one was requested.
 - (void)displayIfNeededAndAck;
 
+// Mark a bracket in which new frames are being pumped in a restricted nested
+// run loop.
+- (void)beginPumpingFrames;
+- (void)endPumpingFrames;
 @end
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_COMPOSITING_IOSURFACE_LAYER_MAC_H_

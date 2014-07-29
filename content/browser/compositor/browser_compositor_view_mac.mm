@@ -78,6 +78,23 @@ ui::Compositor* BrowserCompositorViewMac::GetCompositor() const {
   return internal_view_->compositor();
 }
 
+bool BrowserCompositorViewMac::HasFrameOfSize(
+    const gfx::Size& dip_size) const {
+  if (internal_view_)
+    return internal_view_->HasFrameOfSize(dip_size);
+  return false;
+}
+
+void BrowserCompositorViewMac::BeginPumpingFrames() {
+  if (internal_view_)
+    internal_view_->BeginPumpingFrames();
+}
+
+void BrowserCompositorViewMac::EndPumpingFrames() {
+  if (internal_view_)
+    internal_view_->EndPumpingFrames();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserCompositorViewPlaceholderMac
 

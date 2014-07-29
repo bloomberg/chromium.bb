@@ -76,6 +76,15 @@ class BrowserCompositorViewMac {
   // The client (used by the BrowserCompositorViewCocoa to access the client).
   BrowserCompositorViewMacClient* GetClient() const { return client_; }
 
+  // Return true if the last frame swapped has a size in DIP of |dip_size|.
+  bool HasFrameOfSize(const gfx::Size& dip_size) const;
+
+  // Mark a bracket in which new frames are pumped in a restricted nested run
+  // loop because the the target window is resizing or because the view is being
+  // shown after previously being hidden.
+  void BeginPumpingFrames();
+  void EndPumpingFrames();
+
  private:
   BrowserCompositorViewMacClient* client_;
   scoped_ptr<BrowserCompositorViewMacInternal> internal_view_;

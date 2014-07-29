@@ -9,6 +9,8 @@
 #include "content/browser/compositor/gpu_process_transport_factory.h"
 #include "content/browser/renderer_host/compositing_iosurface_context_mac.h"
 #include "content/browser/renderer_host/compositing_iosurface_mac.h"
+#include "content/browser/renderer_host/dip_util.h"
+#include "content/browser/renderer_host/render_widget_resize_helper.h"
 #include "content/browser/renderer_host/software_layer_mac.h"
 #include "content/public/browser/context_factory.h"
 #include "ui/base/cocoa/animation_utils.h"
@@ -42,7 +44,7 @@ BrowserCompositorViewMacInternal::BrowserCompositorViewMacInternal()
   compositor_.reset(new ui::Compositor(
       cocoa_view_,
       content::GetContextFactory(),
-      base::MessageLoopProxy::current()));
+      RenderWidgetResizeHelper::Get()->task_runner()));
 }
 
 BrowserCompositorViewMacInternal::~BrowserCompositorViewMacInternal() {
@@ -82,9 +84,24 @@ void BrowserCompositorViewMacInternal::ResetClient() {
   [software_layer_ removeFromSuperlayer];
   software_layer_.reset();
 
+  last_swap_size_dip_ = gfx::Size();
+
   compositor_->SetScaleAndSize(1.0, gfx::Size(0, 0));
   compositor_->SetRootLayer(NULL);
   client_ = NULL;
+}
+
+bool BrowserCompositorViewMacInternal::HasFrameOfSize(
+    const gfx::Size& dip_size) const {
+  return last_swap_size_dip_ == dip_size;
+}
+
+void BrowserCompositorViewMacInternal::BeginPumpingFrames() {
+  [accelerated_layer_ beginPumpingFrames];
+}
+
+void BrowserCompositorViewMacInternal::EndPumpingFrames() {
+  [accelerated_layer_ endPumpingFrames];
 }
 
 void BrowserCompositorViewMacInternal::GotAcceleratedIOSurfaceFrame(
@@ -142,11 +159,9 @@ void BrowserCompositorViewMacInternal::GotAcceleratedIOSurfaceFrame(
 
   // Set the bounds of the accelerated layer to match the size of the frame.
   // If the bounds changed, force the content to be displayed immediately.
+  last_swap_size_dip_ = [accelerated_layer_ iosurface]->dip_io_surface_size();
   CGRect new_layer_bounds = CGRectMake(
-    0,
-    0,
-    [accelerated_layer_ iosurface]->dip_io_surface_size().width(),
-    [accelerated_layer_ iosurface]->dip_io_surface_size().height());
+      0, 0, last_swap_size_dip_.width(), last_swap_size_dip_.height());
   bool bounds_changed = !CGRectEqualToRect(
       new_layer_bounds, [accelerated_layer_ bounds]);
   [accelerated_layer_ setBounds:new_layer_bounds];
@@ -184,10 +199,12 @@ void BrowserCompositorViewMacInternal::GotSoftwareFrame(
   SkImageInfo info;
   size_t row_bytes;
   const void* pixels = canvas->peekPixels(&info, &row_bytes);
+  gfx::Size pixel_size(info.fWidth, info.fHeight);
   [software_layer_ setContentsToData:pixels
                         withRowBytes:row_bytes
-                       withPixelSize:gfx::Size(info.fWidth, info.fHeight)
+                       withPixelSize:pixel_size
                      withScaleFactor:scale_factor];
+  last_swap_size_dip_ = ConvertSizeToDIP(scale_factor, pixel_size);
 
   // If there was an accelerated layer, remove it.
   {

@@ -43,6 +43,14 @@ class BrowserCompositorViewMacInternal
 
   ui::Compositor* compositor() const { return compositor_.get(); }
 
+  // Return true if the last frame swapped has a size in DIP of |dip_size|.
+  bool HasFrameOfSize(const gfx::Size& dip_size) const;
+
+  // Mark a bracket in which new frames are being pumped in a restricted nested
+  // run loop.
+  void BeginPumpingFrames();
+  void EndPumpingFrames();
+
  private:
   // BrowserCompositorViewCocoaClient implementation:
   virtual void GotAcceleratedIOSurfaceFrame(
@@ -72,7 +80,6 @@ class BrowserCompositorViewMacInternal
   // will reach into |cocoa_view_|).
   scoped_ptr<ui::Compositor> compositor_;
 
-
   // A flipped layer, which acts as the parent of the compositing and software
   // layers. This layer is flipped so that the we don't need to recompute the
   // origin for sub-layers when their position changes (this is impossible when
@@ -87,6 +94,9 @@ class BrowserCompositorViewMacInternal
   std::vector<ui::LatencyInfo> accelerated_latency_info_;
 
   base::scoped_nsobject<SoftwareLayer> software_layer_;
+
+  // The size in DIP of the last swap received from |compositor_|.
+  gfx::Size last_swap_size_dip_;
 };
 
 }  // namespace content

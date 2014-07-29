@@ -30,6 +30,7 @@ CompositingIOSurfaceLayerHelper::CompositingIOSurfaceLayerHelper(
           needs_display_(false),
           has_pending_frame_(false),
           did_not_draw_counter_(0),
+          is_pumping_frames_(false),
           timer_(
               FROM_HERE,
               base::TimeDelta::FromSeconds(1) / 6,
@@ -52,8 +53,10 @@ void CompositingIOSurfaceLayerHelper::GotNewFrame() {
   timer_.Reset();
 
   // If reqested, draw immediately and don't bother trying to use the
-  // isAsynchronous property to ensure smooth animation.
-  if (client_->AcceleratedLayerShouldAckImmediately()) {
+  // isAsynchronous property to ensure smooth animation. If this is while
+  // frames are being pumped then ack and display immediately to get a
+  // correct-sized frame displayed as soon as possible.
+  if (is_pumping_frames_ || client_->AcceleratedLayerShouldAckImmediately()) {
     SetNeedsDisplayAndDisplayAndAck();
   } else {
     if (![layer_ isAsynchronous])
@@ -127,7 +130,10 @@ void CompositingIOSurfaceLayerHelper::DisplayIfNeededAndAck() {
   if ([layer_ isAsynchronous])
     [layer_ setAsynchronous:NO];
 
-  [layer_ displayIfNeeded];
+  // Do not bother drawing while pumping new frames -- wait until the waiting
+  // block ends to draw any of the new frames.
+  if (!is_pumping_frames_)
+    [layer_ displayIfNeeded];
 
   // Calls to setNeedsDisplay can sometimes be ignored, especially if issued
   // rapidly (e.g, with vsync off). This is unacceptable because the failure
@@ -138,6 +144,15 @@ void CompositingIOSurfaceLayerHelper::DisplayIfNeededAndAck() {
 
 void CompositingIOSurfaceLayerHelper::TimerFired() {
   SetNeedsDisplayAndDisplayAndAck();
+}
+
+void CompositingIOSurfaceLayerHelper::BeginPumpingFrames() {
+  is_pumping_frames_ = true;
+}
+
+void CompositingIOSurfaceLayerHelper::EndPumpingFrames() {
+  is_pumping_frames_ = false;
+  DisplayIfNeededAndAck();
 }
 
 }  // namespace content
@@ -198,6 +213,14 @@ void CompositingIOSurfaceLayerHelper::TimerFired() {
 
 - (void)displayIfNeededAndAck {
   helper_->DisplayIfNeededAndAck();
+}
+
+- (void)beginPumpingFrames {
+  helper_->BeginPumpingFrames();
+}
+
+- (void)endPumpingFrames {
+  helper_->EndPumpingFrames();
 }
 
 // The remaining methods implement the CAOpenGLLayer interface.

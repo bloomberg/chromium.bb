@@ -882,6 +882,11 @@ void RenderWidgetHostViewMac::WasShown() {
   render_widget_host_->WasShown();
   software_frame_manager_->SetVisibility(true);
 
+  // If there is not a frame being currently drawn, kick one, so that the below
+  // pause will have a frame to wait on.
+  if (IsDelegatedRendererEnabled())
+    render_widget_host_->ScheduleComposite();
+
   // Call setNeedsDisplay before pausing for new frames to come in -- if any
   // do, and are drawn, then the needsDisplay bit will be cleared.
   [compositing_iosurface_layer_ setNeedsDisplay];
@@ -1789,6 +1794,8 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceRelease() {
 
 bool RenderWidgetHostViewMac::HasAcceleratedSurface(
       const gfx::Size& desired_size) {
+  if (browser_compositor_view_)
+    return browser_compositor_view_->HasFrameOfSize(desired_size);
   if (compositing_iosurface_) {
     return compositing_iosurface_->HasIOSurface() &&
            (desired_size.IsEmpty() ||
@@ -2157,11 +2164,6 @@ void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
   if (!render_widget_host_ || render_widget_host_->is_hidden())
     return;
 
-  // Synchronized resizing does not yet work with browser compositor.
-  // http://crbug.com/388005
-  if (IsDelegatedRendererEnabled())
-    return;
-
   // Pausing for one view prevents others from receiving frames.
   // This may lead to large delays, causing overlaps. See crbug.com/352020.
   if (!allow_pause_for_resize_or_repaint_)
@@ -2173,7 +2175,11 @@ void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
   SendPendingSwapAck();
 
   // Wait for a frame of the right size to come in.
+  if (browser_compositor_view_)
+    browser_compositor_view_->BeginPumpingFrames();
   render_widget_host_->PauseForPendingResizeOrRepaints();
+  if (browser_compositor_view_)
+    browser_compositor_view_->EndPumpingFrames();
 
   // Immediately draw any frames that haven't been drawn yet. This is necessary
   // to keep the window and the window's contents in sync.
