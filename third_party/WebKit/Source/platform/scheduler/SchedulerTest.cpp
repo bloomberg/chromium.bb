@@ -44,6 +44,21 @@ public:
         ASSERT_NOT_REACHED();
     }
 
+    virtual void setSharedTimerFiredFunction(SharedTimerFunction timerFunction) OVERRIDE
+    {
+        ASSERT_NOT_REACHED();
+    }
+
+    virtual void setSharedTimerFireInterval(double interval) OVERRIDE
+    {
+        ASSERT_NOT_REACHED();
+    }
+
+    virtual void stopSharedTimer() OVERRIDE
+    {
+        ASSERT_NOT_REACHED();
+    }
+
     void runPendingTasks()
     {
         while (!m_pendingTasks.isEmpty())

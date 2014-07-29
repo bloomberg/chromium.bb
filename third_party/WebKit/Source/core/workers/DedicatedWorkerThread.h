@@ -46,7 +46,7 @@ public:
 
 protected:
     virtual PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>) OVERRIDE;
-    virtual void runEventLoop() OVERRIDE;
+    virtual void postInitialize() OVERRIDE;
 
 private:
     DedicatedWorkerThread(WorkerLoaderProxy&, WorkerObjectProxy&, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);

@@ -53,7 +53,6 @@
 #include "core/workers/WorkerThread.h"
 #include "platform/heap/ThreadState.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebWorkerRunLoop.h"
 #include <v8.h>
 
 namespace blink {
@@ -149,10 +148,10 @@ WorkerScriptController::~WorkerScriptController()
 
     m_world->dispose();
 
-    // The corresponding call to didStartWorkerRunLoop is in
-    // WorkerThread::workerThread().
+    // The corresponding call to didStartWorkerThread is in
+    // WorkerThread::initialize().
     // See http://webkit.org/b/83104#c14 for why this is here.
-    blink::Platform::current()->didStopWorkerRunLoop(blink::WebWorkerRunLoop(&m_workerGlobalScope.thread()->runLoop()));
+    blink::Platform::current()->didStopWorkerThread(m_workerGlobalScope.thread()->webThread());
 
     if (isContextInitialized())
         m_scriptState->disposePerContextData();
