@@ -23,7 +23,7 @@ bool RawSharedBuffer::Init() {
 
   // TODO(vtl): Currently, we only support mapping up to 2^32-1 bytes.
   if (static_cast<uint64_t>(num_bytes_) >
-          static_cast<uint64_t>(std::numeric_limits<DWORD>::max())) {
+      static_cast<uint64_t>(std::numeric_limits<DWORD>::max())) {
     return false;
   }
 
@@ -33,9 +33,13 @@ bool RawSharedBuffer::Init() {
   // TODO(vtl): Unlike |base::SharedMemory|, we don't round up the size (to a
   // multiple of 64 KB). This may cause problems with NaCl. Cross this bridge
   // when we get there. crbug.com/210609
-  handle_.reset(embedder::PlatformHandle(CreateFileMapping(
-      INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0,
-      static_cast<DWORD>(num_bytes_), NULL)));
+  handle_.reset(
+      embedder::PlatformHandle(CreateFileMapping(INVALID_HANDLE_VALUE,
+                                                 NULL,
+                                                 PAGE_READWRITE,
+                                                 0,
+                                                 static_cast<DWORD>(num_bytes_),
+                                                 NULL)));
   if (!handle_.is_valid()) {
     PLOG(ERROR) << "CreateFileMapping";
     return false;
@@ -64,9 +68,11 @@ scoped_ptr<RawSharedBufferMapping> RawSharedBuffer::MapImpl(size_t offset,
   DCHECK_LE(static_cast<uint64_t>(real_offset),
             static_cast<uint64_t>(std::numeric_limits<DWORD>::max()));
 
-  void* real_base = MapViewOfFile(
-      handle_.get().handle, FILE_MAP_READ | FILE_MAP_WRITE, 0,
-      static_cast<DWORD>(real_offset), real_length);
+  void* real_base = MapViewOfFile(handle_.get().handle,
+                                  FILE_MAP_READ | FILE_MAP_WRITE,
+                                  0,
+                                  static_cast<DWORD>(real_offset),
+                                  real_length);
   if (!real_base) {
     PLOG(ERROR) << "MapViewOfFile";
     return scoped_ptr<RawSharedBufferMapping>();

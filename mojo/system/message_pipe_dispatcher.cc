@@ -32,9 +32,8 @@ struct SerializedMessagePipeDispatcher {
 // static
 const MojoCreateMessagePipeOptions
     MessagePipeDispatcher::kDefaultCreateOptions = {
-  static_cast<uint32_t>(sizeof(MojoCreateMessagePipeOptions)),
-  MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE
-};
+        static_cast<uint32_t>(sizeof(MojoCreateMessagePipeOptions)),
+        MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE};
 
 MessagePipeDispatcher::MessagePipeDispatcher(
     const MojoCreateMessagePipeOptions& /*validated_options*/)
@@ -85,12 +84,11 @@ Dispatcher::Type MessagePipeDispatcher::GetType() const {
 // static
 std::pair<scoped_refptr<MessagePipeDispatcher>, scoped_refptr<MessagePipe> >
 MessagePipeDispatcher::CreateRemoteMessagePipe() {
-  scoped_refptr<MessagePipe> message_pipe(
-      new MessagePipe(
-          scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
-          scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
-  scoped_refptr<MessagePipeDispatcher> dispatcher(new MessagePipeDispatcher(
-      MessagePipeDispatcher::kDefaultCreateOptions));
+  scoped_refptr<MessagePipe> message_pipe(new MessagePipe(
+      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
+      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
+  scoped_refptr<MessagePipeDispatcher> dispatcher(
+      new MessagePipeDispatcher(MessagePipeDispatcher::kDefaultCreateOptions));
   dispatcher->Init(message_pipe, 0);
 
   return std::make_pair(dispatcher, message_pipe);
@@ -126,8 +124,8 @@ scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
                   "attach; remote ID = " << remote_id << ")";
     return scoped_refptr<MessagePipeDispatcher>();
   }
-  DVLOG(2) << "Deserializing message pipe dispatcher (remote ID = "
-           << remote_id << ", new local ID = " << local_id << ")";
+  DVLOG(2) << "Deserializing message pipe dispatcher (remote ID = " << remote_id
+           << ", new local ID = " << local_id << ")";
 
   if (!channel->RunMessagePipeEndpoint(local_id, remote_id)) {
     // In general, this shouldn't fail, since we generated |local_id| locally.
@@ -195,8 +193,8 @@ MojoResult MessagePipeDispatcher::WriteMessageImplNoLock(
   if (num_bytes > kMaxMessageNumBytes)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
-  return message_pipe_->WriteMessage(port_, bytes, num_bytes, transports,
-                                     flags);
+  return message_pipe_->WriteMessage(
+      port_, bytes, num_bytes, transports, flags);
 }
 
 MojoResult MessagePipeDispatcher::ReadMessageImplNoLock(
@@ -206,8 +204,8 @@ MojoResult MessagePipeDispatcher::ReadMessageImplNoLock(
     uint32_t* num_dispatchers,
     MojoReadMessageFlags flags) {
   lock().AssertAcquired();
-  return message_pipe_->ReadMessage(port_, bytes, num_bytes, dispatchers,
-                                    num_dispatchers, flags);
+  return message_pipe_->ReadMessage(
+      port_, bytes, num_bytes, dispatchers, num_dispatchers, flags);
 }
 
 MojoResult MessagePipeDispatcher::AddWaiterImplNoLock(Waiter* waiter,
@@ -267,7 +265,8 @@ bool MessagePipeDispatcher::EndSerializeAndCloseImplNoLock(
 // MessagePipeDispatcherTransport ----------------------------------------------
 
 MessagePipeDispatcherTransport::MessagePipeDispatcherTransport(
-    DispatcherTransport transport) : DispatcherTransport(transport) {
+    DispatcherTransport transport)
+    : DispatcherTransport(transport) {
   DCHECK_EQ(message_pipe_dispatcher()->GetType(), Dispatcher::kTypeMessagePipe);
 }
 

@@ -146,7 +146,7 @@ TEST(RawSharedBufferTest, MappingsDistinct) {
 }
 
 TEST(RawSharedBufferTest, BufferZeroInitialized) {
-  static const size_t kSizes[] = { 10, 100, 1000, 10000, 100000 };
+  static const size_t kSizes[] = {10, 100, 1000, 10000, 100000};
   for (size_t i = 0; i < arraysize(kSizes); i++) {
     scoped_refptr<RawSharedBuffer> buffer(RawSharedBuffer::Create(kSizes[i]));
     scoped_ptr<RawSharedBufferMapping> mapping(buffer->Map(0, kSizes[i]));

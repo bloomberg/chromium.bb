@@ -75,6 +75,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // Forward-declare |Header| so that |View| can use it:
  private:
   struct Header;
+
  public:
   // This represents a view of serialized message data in a raw buffer.
   class MOJO_SYSTEM_IMPL_EXPORT View {
@@ -103,8 +104,9 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
       return RoundUpMessageAlignment(sizeof(Header) + header()->num_bytes);
     }
     const void* transport_data_buffer() const {
-      return (total_size() > main_buffer_size()) ?
-          static_cast<const char*>(buffer_) + main_buffer_size() : NULL;
+      return (total_size() > main_buffer_size())
+                 ? static_cast<const char*>(buffer_) + main_buffer_size()
+                 : NULL;
     }
     size_t transport_data_buffer_size() const {
       return total_size() - main_buffer_size();
@@ -228,9 +230,9 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     // correct value if dispatchers are attached but
     // |SerializeAndCloseDispatchers()| has not been called.
     uint32_t total_size;
-    Type type;  // 2 bytes.
-    Subtype subtype;  // 2 bytes.
-    EndpointId source_id;  // 4 bytes.
+    Type type;                  // 2 bytes.
+    Subtype subtype;            // 2 bytes.
+    EndpointId source_id;       // 4 bytes.
     EndpointId destination_id;  // 4 bytes.
     // Size of actual message data.
     uint32_t num_bytes;
@@ -242,9 +244,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   }
   Header* header() { return reinterpret_cast<Header*>(main_buffer_.get()); }
 
-  void ConstructorHelper(Type type,
-                         Subtype subtype,
-                         uint32_t num_bytes);
+  void ConstructorHelper(Type type, Subtype subtype, uint32_t num_bytes);
   void UpdateTotalSize();
 
   const size_t main_buffer_size_;

@@ -31,9 +31,7 @@ const uint32_t kSizeOfTestOptions = static_cast<uint32_t>(sizeof(TestOptions));
 
 TEST(OptionsValidationTest, Valid) {
   {
-    const TestOptions kOptions = {
-      kSizeOfTestOptions
-    };
+    const TestOptions kOptions = {kSizeOfTestOptions};
     UserOptionsReader<TestOptions> reader(MakeUserPointer(&kOptions));
     EXPECT_TRUE(reader.is_valid());
     EXPECT_TRUE(OPTIONS_STRUCT_HAS_MEMBER(TestOptions, flags, reader));
@@ -41,10 +39,8 @@ TEST(OptionsValidationTest, Valid) {
     EXPECT_TRUE(OPTIONS_STRUCT_HAS_MEMBER(TestOptions, member2, reader));
   }
   {
-    const TestOptions kOptions = {
-      static_cast<uint32_t>(offsetof(TestOptions, struct_size) +
-                                sizeof(uint32_t))
-    };
+    const TestOptions kOptions = {static_cast<uint32_t>(
+        offsetof(TestOptions, struct_size) + sizeof(uint32_t))};
     UserOptionsReader<TestOptions> reader(MakeUserPointer(&kOptions));
     EXPECT_TRUE(reader.is_valid());
     EXPECT_FALSE(OPTIONS_STRUCT_HAS_MEMBER(TestOptions, flags, reader));
@@ -54,8 +50,7 @@ TEST(OptionsValidationTest, Valid) {
 
   {
     const TestOptions kOptions = {
-      static_cast<uint32_t>(offsetof(TestOptions, flags) + sizeof(uint32_t))
-    };
+        static_cast<uint32_t>(offsetof(TestOptions, flags) + sizeof(uint32_t))};
     UserOptionsReader<TestOptions> reader(MakeUserPointer(&kOptions));
     EXPECT_TRUE(reader.is_valid());
     EXPECT_TRUE(OPTIONS_STRUCT_HAS_MEMBER(TestOptions, flags, reader));
@@ -109,8 +104,10 @@ TEST(OptionsValidationTest, InvalidDeath) {
 
   // Unaligned:
   EXPECT_DEATH_IF_SUPPORTED(
-      { UserOptionsReader<TestOptions> reader(
-            MakeUserPointer(reinterpret_cast<const TestOptions*>(1))); },
+      {
+        UserOptionsReader<TestOptions> reader(
+            MakeUserPointer(reinterpret_cast<const TestOptions*>(1)));
+      },
       kMemoryCheckFailedRegex);
   // Note: The current implementation checks the size only after checking the
   // alignment versus that required for the |uint32_t| size, so it won't die in
@@ -119,9 +116,9 @@ TEST(OptionsValidationTest, InvalidDeath) {
   EXPECT_DEATH_IF_SUPPORTED(
       {
         uint32_t buffer[100] = {};
-        TestOptions* options = (reinterpret_cast<uintptr_t>(buffer) % 8 == 0) ?
-                                   reinterpret_cast<TestOptions*>(&buffer[1]) :
-                                   reinterpret_cast<TestOptions*>(&buffer[0]);
+        TestOptions* options = (reinterpret_cast<uintptr_t>(buffer) % 8 == 0)
+                                   ? reinterpret_cast<TestOptions*>(&buffer[1])
+                                   : reinterpret_cast<TestOptions*>(&buffer[0]);
         options->struct_size = static_cast<uint32_t>(sizeof(TestOptions));
         UserOptionsReader<TestOptions> reader(MakeUserPointer(options));
       },

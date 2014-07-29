@@ -21,13 +21,28 @@ namespace internal {
 
 // Removes |const| from |T| (available as |remove_const<T>::type|):
 // TODO(vtl): Remove these once we have the C++11 |remove_const|.
-template <typename T> struct remove_const { typedef T type; };
-template <typename T> struct remove_const<const T> { typedef T type; };
+template <typename T>
+struct remove_const {
+  typedef T type;
+};
+template <typename T>
+struct remove_const<const T> {
+  typedef T type;
+};
 
 // Yields |(const) char| if |T| is |(const) void|, else |T|:
-template <typename T> struct VoidToChar { typedef T type; };
-template <> struct VoidToChar<void> { typedef char type; };
-template <> struct VoidToChar<const void> { typedef const char type; };
+template <typename T>
+struct VoidToChar {
+  typedef T type;
+};
+template <>
+struct VoidToChar<void> {
+  typedef char type;
+};
+template <>
+struct VoidToChar<const void> {
+  typedef const char type;
+};
 
 // Checks (insofar as appropriate/possible) that |pointer| is a valid pointer to
 // a buffer of the given size and alignment (both in bytes).
@@ -37,22 +52,26 @@ void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointer(const void* pointer);
 // Checks (insofar as appropriate/possible) that |pointer| is a valid pointer to
 // a buffer of |count| elements of the given size and alignment (both in bytes).
 template <size_t size, size_t alignment>
-void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointerWithCount(const void* pointer,
-                                                       size_t count);
+void MOJO_SYSTEM_IMPL_EXPORT
+    CheckUserPointerWithCount(const void* pointer, size_t count);
 
 // Checks (insofar as appropriate/possible) that |pointer| is a valid pointer to
 // a buffer of the given size and alignment (both in bytes).
 template <size_t alignment>
-void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointerWithSize(const void* pointer,
-                                                      size_t size);
+void MOJO_SYSTEM_IMPL_EXPORT
+    CheckUserPointerWithSize(const void* pointer, size_t size);
 
 }  // namespace internal
 
 // Forward declarations so that they can be friended.
-template <typename Type> class UserPointerReader;
-template <typename Type> class UserPointerWriter;
-template <typename Type> class UserPointerReaderWriter;
-template <class Options> class UserOptionsReader;
+template <typename Type>
+class UserPointerReader;
+template <typename Type>
+class UserPointerWriter;
+template <typename Type>
+class UserPointerReaderWriter;
+template <class Options>
+class UserOptionsReader;
 
 // Provides a convenient way to implicitly get null |UserPointer<Type>|s.
 struct NullUserPointer {};
@@ -89,9 +108,7 @@ class UserPointer {
     return UserPointer<const Type>(pointer_);
   }
 
-  bool IsNull() const {
-    return !pointer_;
-  }
+  bool IsNull() const { return !pointer_; }
 
   // "Reinterpret casts" to a |UserPointer<ToType>|.
   template <typename ToType>
@@ -104,8 +121,8 @@ class UserPointer {
   // TODO(vtl): Logically, there should be separate read checks and write
   // checks.
   void Check() const {
-    internal::CheckUserPointer<sizeof(NonVoidType),
-                               MOJO_ALIGNOF(NonVoidType)>(pointer_);
+    internal::CheckUserPointer<sizeof(NonVoidType), MOJO_ALIGNOF(NonVoidType)>(
+        pointer_);
   }
 
   // Checks that this pointer points to a valid array (of type |Type|, or just a
@@ -116,8 +133,9 @@ class UserPointer {
   // checks.
   // TODO(vtl): Switch more things to use this.
   void CheckArray(size_t count) const {
-    internal::CheckUserPointerWithCount<
-        sizeof(NonVoidType), MOJO_ALIGNOF(NonVoidType)>(pointer_, count);
+    internal::CheckUserPointerWithCount<sizeof(NonVoidType),
+                                        MOJO_ALIGNOF(NonVoidType)>(pointer_,
+                                                                   count);
   }
 
   // Gets the value (of type |Type|, or a |char| if |Type| is |void|) pointed to
@@ -128,8 +146,8 @@ class UserPointer {
   // (We want to force a copy here, so return |Type| not |const Type&|.)
   NonVoidType Get() const {
     Check();
-    internal::CheckUserPointer<sizeof(NonVoidType),
-                               MOJO_ALIGNOF(NonVoidType)>(pointer_);
+    internal::CheckUserPointer<sizeof(NonVoidType), MOJO_ALIGNOF(NonVoidType)>(
+        pointer_);
     return *pointer_;
   }
 
@@ -181,8 +199,8 @@ class UserPointer {
 
   // Gets a |UserPointer| at offset |i| (in |Type|s) relative to this.
   UserPointer At(size_t i) const {
-    return UserPointer(static_cast<Type*>(
-        static_cast<NonVoidType*>(pointer_) + i));
+    return UserPointer(
+        static_cast<Type*>(static_cast<NonVoidType*>(pointer_) + i));
   }
 
   // Gets the value of the |UserPointer| as a |uintptr_t|. This should not be
@@ -234,7 +252,8 @@ class UserPointer {
   friend class UserPointerReader<const Type>;
   friend class UserPointerWriter<Type>;
   friend class UserPointerReaderWriter<Type>;
-  template <class Options> friend class UserOptionsReader;
+  template <class Options>
+  friend class UserOptionsReader;
 
   Type* pointer_;
   // Allow copy and assignment.
@@ -264,7 +283,8 @@ class UserPointerReader {
   const Type* GetPointer() const { return buffer_.get(); }
 
  private:
-  template <class Options> friend class UserOptionsReader;
+  template <class Options>
+  friend class UserOptionsReader;
 
   struct NoCheck {};
   UserPointerReader(NoCheck,
@@ -296,8 +316,7 @@ class UserPointerWriter {
  public:
   // Note: If |count| is zero, |GetPointer()| will always return null.
   UserPointerWriter(UserPointer<Type> user_pointer, size_t count)
-      : user_pointer_(user_pointer),
-        count_(count) {
+      : user_pointer_(user_pointer), count_(count) {
     if (count_ > 0) {
       buffer_.reset(new Type[count_]);
       memset(buffer_.get(), 0, count_ * sizeof(Type));
@@ -326,8 +345,7 @@ class UserPointerReaderWriter {
  public:
   // Note: If |count| is zero, |GetPointer()| will always return null.
   UserPointerReaderWriter(UserPointer<Type> user_pointer, size_t count)
-      : user_pointer_(user_pointer),
-        count_(count) {
+      : user_pointer_(user_pointer), count_(count) {
     if (count_ > 0) {
       internal::CheckUserPointerWithCount<sizeof(Type), MOJO_ALIGNOF(Type)>(
           user_pointer_.pointer_, count_);

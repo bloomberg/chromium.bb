@@ -16,8 +16,7 @@ namespace system {
 namespace test {
 
 // TODO(vtl): Maybe this should be defined in a test-only file instead.
-DispatcherTransport DispatcherTryStartTransport(
-    Dispatcher* dispatcher) {
+DispatcherTransport DispatcherTryStartTransport(Dispatcher* dispatcher) {
   return Dispatcher::HandleTableAccess::TryStartTransport(dispatcher);
 }
 
@@ -59,8 +58,8 @@ bool Dispatcher::TransportDataAccess::EndSerializeAndClose(
     size_t* actual_size,
     embedder::PlatformHandleVector* platform_handles) {
   DCHECK(dispatcher);
-  return dispatcher->EndSerializeAndClose(channel, destination, actual_size,
-                                          platform_handles);
+  return dispatcher->EndSerializeAndClose(
+      channel, destination, actual_size, platform_handles);
 }
 
 // static
@@ -84,13 +83,11 @@ scoped_refptr<Dispatcher> Dispatcher::TransportDataAccess::Deserialize(
                    << " not supported";
       return scoped_refptr<Dispatcher>();
     case kTypeSharedBuffer:
-      return scoped_refptr<Dispatcher>(
-          SharedBufferDispatcher::Deserialize(channel, source, size,
-                                              platform_handles));
+      return scoped_refptr<Dispatcher>(SharedBufferDispatcher::Deserialize(
+          channel, source, size, platform_handles));
     case kTypePlatformHandle:
-      return scoped_refptr<Dispatcher>(
-          PlatformHandleDispatcher::Deserialize(channel, source, size,
-                                                platform_handles));
+      return scoped_refptr<Dispatcher>(PlatformHandleDispatcher::Deserialize(
+          channel, source, size, platform_handles));
   }
   LOG(WARNING) << "Unknown dispatcher type " << type;
   return scoped_refptr<Dispatcher>();
@@ -124,7 +121,7 @@ MojoResult Dispatcher::ReadMessage(UserPointer<void> bytes,
                                    UserPointer<uint32_t> num_bytes,
                                    DispatcherVector* dispatchers,
                                    uint32_t* num_dispatchers,
-    MojoReadMessageFlags flags) {
+                                   MojoReadMessageFlags flags) {
   DCHECK(!num_dispatchers || *num_dispatchers == 0 ||
          (dispatchers && dispatchers->empty()));
 
@@ -132,8 +129,8 @@ MojoResult Dispatcher::ReadMessage(UserPointer<void> bytes,
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return ReadMessageImplNoLock(bytes, num_bytes, dispatchers, num_dispatchers,
-                               flags);
+  return ReadMessageImplNoLock(
+      bytes, num_bytes, dispatchers, num_dispatchers, flags);
 }
 
 MojoResult Dispatcher::WriteData(UserPointer<const void> elements,
@@ -202,11 +199,10 @@ MojoResult Dispatcher::DuplicateBufferHandle(
   return DuplicateBufferHandleImplNoLock(options, new_dispatcher);
 }
 
-MojoResult Dispatcher::MapBuffer(
-    uint64_t offset,
-    uint64_t num_bytes,
-    MojoMapBufferFlags flags,
-    scoped_ptr<RawSharedBufferMapping>* mapping) {
+MojoResult Dispatcher::MapBuffer(uint64_t offset,
+                                 uint64_t num_bytes,
+                                 MojoMapBufferFlags flags,
+                                 scoped_ptr<RawSharedBufferMapping>* mapping) {
   base::AutoLock locker(lock_);
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
@@ -231,8 +227,7 @@ void Dispatcher::RemoveWaiter(Waiter* waiter) {
   RemoveWaiterImplNoLock(waiter);
 }
 
-Dispatcher::Dispatcher()
-    : is_closed_(false) {
+Dispatcher::Dispatcher() : is_closed_(false) {
 }
 
 Dispatcher::~Dispatcher() {
@@ -330,8 +325,8 @@ MojoResult Dispatcher::EndReadDataImplNoLock(uint32_t /*num_bytes_read*/) {
 }
 
 MojoResult Dispatcher::DuplicateBufferHandleImplNoLock(
-      UserPointer<const MojoDuplicateBufferHandleOptions> /*options*/,
-      scoped_refptr<Dispatcher>* /*new_dispatcher*/) {
+    UserPointer<const MojoDuplicateBufferHandleOptions> /*options*/,
+    scoped_refptr<Dispatcher>* /*new_dispatcher*/) {
   lock_.AssertAcquired();
   DCHECK(!is_closed_);
   // By default, not supported. Only needed for buffer dispatchers.
@@ -436,10 +431,9 @@ bool Dispatcher::EndSerializeAndClose(
   DCHECK(!is_closed_);
 
   // Like other |...Close()| methods, we mark ourselves as closed before calling
-  // the impl.
+  // the impl. But there's no need to cancel waiters: we shouldn't have any (and
+  // shouldn't be in |Core|'s handle table.
   is_closed_ = true;
-  // No need to cancel waiters: we shouldn't have any (and shouldn't be in
-  // |Core|'s handle table.
 
 #if !defined(NDEBUG)
   // See the comment above |EndSerializeAndCloseImplNoLock()|. In brief: Locking
@@ -448,8 +442,8 @@ bool Dispatcher::EndSerializeAndClose(
   base::AutoLock locker(lock_);
 #endif
 
-  return EndSerializeAndCloseImplNoLock(channel, destination, actual_size,
-                                        platform_handles);
+  return EndSerializeAndCloseImplNoLock(
+      channel, destination, actual_size, platform_handles);
 }
 
 // DispatcherTransport ---------------------------------------------------------

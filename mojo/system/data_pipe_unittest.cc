@@ -59,9 +59,9 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
   // Default options.
   {
     MojoCreateDataPipeOptions validated_options = {};
-    EXPECT_EQ(MOJO_RESULT_OK,
-              DataPipe::ValidateCreateOptions(NullUserPointer(),
-                                              &validated_options));
+    EXPECT_EQ(
+        MOJO_RESULT_OK,
+        DataPipe::ValidateCreateOptions(NullUserPointer(), &validated_options));
     RevalidateCreateOptions(validated_options);
     CheckDefaultCapacity(validated_options);
   }
@@ -69,7 +69,7 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
   // Size member, but nothing beyond.
   {
     MojoCreateDataPipeOptions options = {
-      offsetof(MojoCreateDataPipeOptions, flags)  // |struct_size|.
+        offsetof(MojoCreateDataPipeOptions, flags)  // |struct_size|.
     };
     MojoCreateDataPipeOptions validated_options = {};
     EXPECT_EQ(MOJO_RESULT_OK,
@@ -81,18 +81,17 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
 
   // Different flags.
   MojoCreateDataPipeOptionsFlags flags_values[] = {
-    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,
-    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD
-  };
+      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,
+      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD};
   for (size_t i = 0; i < arraysize(flags_values); i++) {
     const MojoCreateDataPipeOptionsFlags flags = flags_values[i];
 
     // Flags member, but nothing beyond.
     {
       MojoCreateDataPipeOptions options = {
-        // |struct_size|.
-        offsetof(MojoCreateDataPipeOptions, element_num_bytes),
-        flags  // |flags|.
+          // |struct_size|.
+          offsetof(MojoCreateDataPipeOptions, element_num_bytes),
+          flags  // |flags|.
       };
       MojoCreateDataPipeOptions validated_options = {};
       EXPECT_EQ(MOJO_RESULT_OK,
@@ -106,10 +105,10 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
     // Different capacities (size 1).
     for (uint32_t capacity = 1; capacity <= 100 * 1000 * 1000; capacity *= 10) {
       MojoCreateDataPipeOptions options = {
-        kSizeOfCreateOptions,  // |struct_size|.
-        flags,  // |flags|.
-        1,  // |element_num_bytes|.
-        capacity  // |capacity_num_bytes|.
+          kSizeOfCreateOptions,  // |struct_size|.
+          flags,                 // |flags|.
+          1,                     // |element_num_bytes|.
+          capacity               // |capacity_num_bytes|.
       };
       MojoCreateDataPipeOptions validated_options = {};
       EXPECT_EQ(MOJO_RESULT_OK,
@@ -118,8 +117,7 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
           << capacity;
       RevalidateCreateOptions(validated_options);
       EXPECT_EQ(options.flags, validated_options.flags);
-      EXPECT_EQ(options.element_num_bytes,
-                validated_options.element_num_bytes);
+      EXPECT_EQ(options.element_num_bytes, validated_options.element_num_bytes);
       EXPECT_EQ(options.capacity_num_bytes,
                 validated_options.capacity_num_bytes);
     }
@@ -129,10 +127,10 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
       // Different capacities.
       for (uint32_t elements = 1; elements <= 1000 * 1000; elements *= 10) {
         MojoCreateDataPipeOptions options = {
-          kSizeOfCreateOptions,  // |struct_size|.
-          flags,  // |flags|.
-          size,  // |element_num_bytes|.
-          size * elements  // |capacity_num_bytes|.
+            kSizeOfCreateOptions,  // |struct_size|.
+            flags,                 // |flags|.
+            size,                  // |element_num_bytes|.
+            size * elements        // |capacity_num_bytes|.
         };
         MojoCreateDataPipeOptions validated_options = {};
         EXPECT_EQ(MOJO_RESULT_OK,
@@ -150,10 +148,10 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
       // Default capacity.
       {
         MojoCreateDataPipeOptions options = {
-          kSizeOfCreateOptions,  // |struct_size|.
-          flags,  // |flags|.
-          size,  // |element_num_bytes|.
-          0  // |capacity_num_bytes|.
+            kSizeOfCreateOptions,  // |struct_size|.
+            flags,                 // |flags|.
+            size,                  // |element_num_bytes|.
+            0                      // |capacity_num_bytes|.
         };
         MojoCreateDataPipeOptions validated_options = {};
         EXPECT_EQ(MOJO_RESULT_OK,
@@ -170,10 +168,10 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
       // No capacity field.
       {
         MojoCreateDataPipeOptions options = {
-          // |struct_size|.
-          offsetof(MojoCreateDataPipeOptions, capacity_num_bytes),
-          flags,  // |flags|.
-          size  // |element_num_bytes|.
+            // |struct_size|.
+            offsetof(MojoCreateDataPipeOptions, capacity_num_bytes),
+            flags,  // |flags|.
+            size    // |element_num_bytes|.
         };
         MojoCreateDataPipeOptions validated_options = {};
         EXPECT_EQ(MOJO_RESULT_OK,
@@ -193,10 +191,10 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
       // Capacity of 1000 elements.
       {
         MojoCreateDataPipeOptions options = {
-          kSizeOfCreateOptions,  // |struct_size|.
-          flags,  // |flags|.
-          size,  // |element_num_bytes|.
-          1000 * size  // |capacity_num_bytes|.
+            kSizeOfCreateOptions,  // |struct_size|.
+            flags,                 // |flags|.
+            size,                  // |element_num_bytes|.
+            1000 * size            // |capacity_num_bytes|.
         };
         MojoCreateDataPipeOptions validated_options = {};
         EXPECT_EQ(MOJO_RESULT_OK,
@@ -214,10 +212,10 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
       // Default capacity.
       {
         MojoCreateDataPipeOptions options = {
-          kSizeOfCreateOptions,  // |struct_size|.
-          flags,  // |flags|.
-          size,  // |element_num_bytes|.
-          0  // |capacity_num_bytes|.
+            kSizeOfCreateOptions,  // |struct_size|.
+            flags,                 // |flags|.
+            size,                  // |element_num_bytes|.
+            0                      // |capacity_num_bytes|.
         };
         MojoCreateDataPipeOptions validated_options = {};
         EXPECT_EQ(MOJO_RESULT_OK,
@@ -234,10 +232,10 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
       // No capacity field.
       {
         MojoCreateDataPipeOptions options = {
-          // |struct_size|.
-          offsetof(MojoCreateDataPipeOptions, capacity_num_bytes),
-          flags,  // |flags|.
-          size  // |element_num_bytes|.
+            // |struct_size|.
+            offsetof(MojoCreateDataPipeOptions, capacity_num_bytes),
+            flags,  // |flags|.
+            size    // |element_num_bytes|.
         };
         MojoCreateDataPipeOptions validated_options = {};
         EXPECT_EQ(MOJO_RESULT_OK,
@@ -258,119 +256,119 @@ TEST(DataPipeTest, ValidateCreateOptionsInvalid) {
   // Invalid |struct_size|.
   {
     MojoCreateDataPipeOptions options = {
-      1,  // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      1,  // |element_num_bytes|.
-      0  // |capacity_num_bytes|.
+        1,                                        // |struct_size|.
+        MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
+        1,                                        // |element_num_bytes|.
+        0                                         // |capacity_num_bytes|.
     };
     MojoCreateDataPipeOptions unused;
-    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
-                                              &unused));
+    EXPECT_EQ(
+        MOJO_RESULT_INVALID_ARGUMENT,
+        DataPipe::ValidateCreateOptions(MakeUserPointer(&options), &unused));
   }
 
   // Unknown |flags|.
   {
     MojoCreateDataPipeOptions options = {
-      kSizeOfCreateOptions,  // |struct_size|.
-      ~0u,  // |flags|.
-      1,  // |element_num_bytes|.
-      0  // |capacity_num_bytes|.
+        kSizeOfCreateOptions,  // |struct_size|.
+        ~0u,                   // |flags|.
+        1,                     // |element_num_bytes|.
+        0                      // |capacity_num_bytes|.
     };
     MojoCreateDataPipeOptions unused;
-    EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED,
-              DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
-                                              &unused));
+    EXPECT_EQ(
+        MOJO_RESULT_UNIMPLEMENTED,
+        DataPipe::ValidateCreateOptions(MakeUserPointer(&options), &unused));
   }
 
   // Invalid |element_num_bytes|.
   {
     MojoCreateDataPipeOptions options = {
-      kSizeOfCreateOptions,  // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      0,  // |element_num_bytes|.
-      1000  // |capacity_num_bytes|.
+        kSizeOfCreateOptions,                     // |struct_size|.
+        MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
+        0,                                        // |element_num_bytes|.
+        1000                                      // |capacity_num_bytes|.
     };
     MojoCreateDataPipeOptions unused;
-    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
-                                              &unused));
+    EXPECT_EQ(
+        MOJO_RESULT_INVALID_ARGUMENT,
+        DataPipe::ValidateCreateOptions(MakeUserPointer(&options), &unused));
   }
   // |element_num_bytes| too big.
   {
     MojoCreateDataPipeOptions options = {
-      kSizeOfCreateOptions,  // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      std::numeric_limits<uint32_t>::max(),  // |element_num_bytes|.
-      std::numeric_limits<uint32_t>::max()  // |capacity_num_bytes|.
+        kSizeOfCreateOptions,                     // |struct_size|.
+        MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
+        std::numeric_limits<uint32_t>::max(),     // |element_num_bytes|.
+        std::numeric_limits<uint32_t>::max()      // |capacity_num_bytes|.
     };
     MojoCreateDataPipeOptions unused;
-    EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
-              DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
-                                              &unused));
+    EXPECT_EQ(
+        MOJO_RESULT_RESOURCE_EXHAUSTED,
+        DataPipe::ValidateCreateOptions(MakeUserPointer(&options), &unused));
   }
   {
     MojoCreateDataPipeOptions options = {
-      kSizeOfCreateOptions,  // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      std::numeric_limits<uint32_t>::max() - 1000,  // |element_num_bytes|.
-      std::numeric_limits<uint32_t>::max() - 1000  // |capacity_num_bytes|.
+        kSizeOfCreateOptions,                         // |struct_size|.
+        MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,      // |flags|.
+        std::numeric_limits<uint32_t>::max() - 1000,  // |element_num_bytes|.
+        std::numeric_limits<uint32_t>::max() - 1000   // |capacity_num_bytes|.
     };
     MojoCreateDataPipeOptions unused;
-    EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
-              DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
-                                              &unused));
+    EXPECT_EQ(
+        MOJO_RESULT_RESOURCE_EXHAUSTED,
+        DataPipe::ValidateCreateOptions(MakeUserPointer(&options), &unused));
   }
 
   // Invalid |capacity_num_bytes|.
   {
     MojoCreateDataPipeOptions options = {
-      kSizeOfCreateOptions,  // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      2,  // |element_num_bytes|.
-      1  // |capacity_num_bytes|.
+        kSizeOfCreateOptions,                     // |struct_size|.
+        MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
+        2,                                        // |element_num_bytes|.
+        1                                         // |capacity_num_bytes|.
     };
     MojoCreateDataPipeOptions unused;
-    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
-                                              &unused));
+    EXPECT_EQ(
+        MOJO_RESULT_INVALID_ARGUMENT,
+        DataPipe::ValidateCreateOptions(MakeUserPointer(&options), &unused));
   }
   {
     MojoCreateDataPipeOptions options = {
-      kSizeOfCreateOptions,  // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      2,  // |element_num_bytes|.
-      111  // |capacity_num_bytes|.
+        kSizeOfCreateOptions,                     // |struct_size|.
+        MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
+        2,                                        // |element_num_bytes|.
+        111                                       // |capacity_num_bytes|.
     };
     MojoCreateDataPipeOptions unused;
-    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
-                                              &unused));
+    EXPECT_EQ(
+        MOJO_RESULT_INVALID_ARGUMENT,
+        DataPipe::ValidateCreateOptions(MakeUserPointer(&options), &unused));
   }
   {
     MojoCreateDataPipeOptions options = {
-      kSizeOfCreateOptions,  // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      5,  // |element_num_bytes|.
-      104  // |capacity_num_bytes|.
+        kSizeOfCreateOptions,                     // |struct_size|.
+        MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
+        5,                                        // |element_num_bytes|.
+        104                                       // |capacity_num_bytes|.
     };
     MojoCreateDataPipeOptions unused;
-    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
-                                              &unused));
+    EXPECT_EQ(
+        MOJO_RESULT_INVALID_ARGUMENT,
+        DataPipe::ValidateCreateOptions(MakeUserPointer(&options), &unused));
   }
   // |capacity_num_bytes| too big.
   {
     MojoCreateDataPipeOptions options = {
-      kSizeOfCreateOptions,  // |struct_size|.
-      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
-      8,  // |element_num_bytes|.
-      0xffff0000  // |capacity_num_bytes|.
+        kSizeOfCreateOptions,                     // |struct_size|.
+        MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
+        8,                                        // |element_num_bytes|.
+        0xffff0000                                // |capacity_num_bytes|.
     };
     MojoCreateDataPipeOptions unused;
-    EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
-              DataPipe::ValidateCreateOptions(MakeUserPointer(&options),
-                                              &unused));
+    EXPECT_EQ(
+        MOJO_RESULT_RESOURCE_EXHAUSTED,
+        DataPipe::ValidateCreateOptions(MakeUserPointer(&options), &unused));
   }
 }
 

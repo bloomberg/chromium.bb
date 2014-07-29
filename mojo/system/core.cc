@@ -79,8 +79,7 @@ Core::Core() {
 Core::~Core() {
 }
 
-MojoHandle Core::AddDispatcher(
-    const scoped_refptr<Dispatcher>& dispatcher) {
+MojoHandle Core::AddDispatcher(const scoped_refptr<Dispatcher>& dispatcher) {
   base::AutoLock locker(handle_table_lock_);
   return handle_table_.AddDispatcher(dispatcher);
 }
@@ -104,8 +103,8 @@ MojoResult Core::Close(MojoHandle handle) {
   scoped_refptr<Dispatcher> dispatcher;
   {
     base::AutoLock locker(handle_table_lock_);
-    MojoResult result = handle_table_.GetAndRemoveDispatcher(handle,
-                                                             &dispatcher);
+    MojoResult result =
+        handle_table_.GetAndRemoveDispatcher(handle, &dispatcher);
     if (result != MOJO_RESULT_OK)
       return result;
   }
@@ -138,10 +137,12 @@ MojoResult Core::WaitMany(UserPointer<const MojoHandle> handles,
                                                               num_handles);
   uint32_t result_index = static_cast<uint32_t>(-1);
   MojoResult result = WaitManyInternal(handles_reader.GetPointer(),
-                                       signals_reader.GetPointer(), num_handles,
-                                       deadline, &result_index);
-  return (result == MOJO_RESULT_OK) ? static_cast<MojoResult>(result_index) :
-                                      result;
+                                       signals_reader.GetPointer(),
+                                       num_handles,
+                                       deadline,
+                                       &result_index);
+  return (result == MOJO_RESULT_OK) ? static_cast<MojoResult>(result_index)
+                                    : result;
 }
 
 MojoResult Core::CreateMessagePipe(
@@ -149,8 +150,8 @@ MojoResult Core::CreateMessagePipe(
     UserPointer<MojoHandle> message_pipe_handle0,
     UserPointer<MojoHandle> message_pipe_handle1) {
   MojoCreateMessagePipeOptions validated_options = {};
-  MojoResult result = MessagePipeDispatcher::ValidateCreateOptions(
-      options, &validated_options);
+  MojoResult result =
+      MessagePipeDispatcher::ValidateCreateOptions(options, &validated_options);
   if (result != MOJO_RESULT_OK)
     return result;
 
@@ -227,15 +228,17 @@ MojoResult Core::WriteMessage(MojoHandle message_pipe_handle,
   // handles from the handle table.
   {
     base::AutoLock locker(handle_table_lock_);
-    MojoResult result = handle_table_.MarkBusyAndStartTransport(
-        message_pipe_handle, handles_reader.GetPointer(), num_handles,
-        &transports);
+    MojoResult result =
+        handle_table_.MarkBusyAndStartTransport(message_pipe_handle,
+                                                handles_reader.GetPointer(),
+                                                num_handles,
+                                                &transports);
     if (result != MOJO_RESULT_OK)
       return result;
   }
 
-  MojoResult rv = dispatcher->WriteMessage(bytes, num_bytes, &transports,
-                                           flags);
+  MojoResult rv =
+      dispatcher->WriteMessage(bytes, num_bytes, &transports, flags);
 
   // We need to release the dispatcher locks before we take the handle table
   // lock.
@@ -270,12 +273,12 @@ MojoResult Core::ReadMessage(MojoHandle message_pipe_handle,
   MojoResult rv;
   if (num_handles_value == 0) {
     // Easy case: won't receive any handles.
-    rv = dispatcher->ReadMessage(bytes, num_bytes, NULL, &num_handles_value,
-                                 flags);
+    rv = dispatcher->ReadMessage(
+        bytes, num_bytes, NULL, &num_handles_value, flags);
   } else {
     DispatcherVector dispatchers;
-    rv = dispatcher->ReadMessage(bytes, num_bytes, &dispatchers,
-                                 &num_handles_value, flags);
+    rv = dispatcher->ReadMessage(
+        bytes, num_bytes, &dispatchers, &num_handles_value, flags);
     if (!dispatchers.empty()) {
       DCHECK_EQ(rv, MOJO_RESULT_OK);
       DCHECK(!num_handles.IsNull());
@@ -315,8 +318,8 @@ MojoResult Core::CreateDataPipe(
     UserPointer<MojoHandle> data_pipe_producer_handle,
     UserPointer<MojoHandle> data_pipe_consumer_handle) {
   MojoCreateDataPipeOptions validated_options = {};
-  MojoResult result = DataPipe::ValidateCreateOptions(options,
-                                                      &validated_options);
+  MojoResult result =
+      DataPipe::ValidateCreateOptions(options, &validated_options);
   if (result != MOJO_RESULT_OK)
     return result;
 
@@ -422,15 +425,14 @@ MojoResult Core::CreateSharedBuffer(
     uint64_t num_bytes,
     UserPointer<MojoHandle> shared_buffer_handle) {
   MojoCreateSharedBufferOptions validated_options = {};
-  MojoResult result =
-      SharedBufferDispatcher::ValidateCreateOptions(options,
-                                                    &validated_options);
+  MojoResult result = SharedBufferDispatcher::ValidateCreateOptions(
+      options, &validated_options);
   if (result != MOJO_RESULT_OK)
     return result;
 
   scoped_refptr<SharedBufferDispatcher> dispatcher;
-  result = SharedBufferDispatcher::Create(validated_options, num_bytes,
-                                          &dispatcher);
+  result =
+      SharedBufferDispatcher::Create(validated_options, num_bytes, &dispatcher);
   if (result != MOJO_RESULT_OK) {
     DCHECK(!dispatcher);
     return result;
@@ -457,8 +459,8 @@ MojoResult Core::DuplicateBufferHandle(
 
   // Don't verify |options| here; that's the dispatcher's job.
   scoped_refptr<Dispatcher> new_dispatcher;
-  MojoResult result = dispatcher->DuplicateBufferHandle(options,
-                                                        &new_dispatcher);
+  MojoResult result =
+      dispatcher->DuplicateBufferHandle(options, &new_dispatcher);
   if (result != MOJO_RESULT_OK)
     return result;
 

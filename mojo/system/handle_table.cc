@@ -12,21 +12,18 @@
 namespace mojo {
 namespace system {
 
-HandleTable::Entry::Entry()
-    : busy(false) {
+HandleTable::Entry::Entry() : busy(false) {
 }
 
 HandleTable::Entry::Entry(const scoped_refptr<Dispatcher>& dispatcher)
-    : dispatcher(dispatcher),
-      busy(false) {
+    : dispatcher(dispatcher), busy(false) {
 }
 
 HandleTable::Entry::~Entry() {
   DCHECK(!busy);
 }
 
-HandleTable::HandleTable()
-    : next_handle_(MOJO_HANDLE_INVALID + 1) {
+HandleTable::HandleTable() : next_handle_(MOJO_HANDLE_INVALID + 1) {
 }
 
 HandleTable::~HandleTable() {
@@ -84,8 +81,8 @@ bool HandleTable::AddDispatcherVector(const DispatcherVector& dispatchers,
   // expression in C++03.
   COMPILE_ASSERT(
       static_cast<uint64_t>(kMaxHandleTableSize) + kMaxMessageNumHandles <
-          (sizeof(size_t) == 8 ? kuint64max :
-                                 static_cast<uint64_t>(kuint32max)),
+          (sizeof(size_t) == 8 ? kuint64max
+                               : static_cast<uint64_t>(kuint32max)),
       addition_may_overflow);
 
   if (handle_to_entry_map_.size() + dispatchers.size() > kMaxHandleTableSize)
@@ -149,8 +146,7 @@ MojoResult HandleTable::MarkBusyAndStartTransport(
       // Only log for Debug builds, since this is not a problem with the system
       // code, but with user code.
       DLOG(WARNING) << "Likely race condition in user code detected: attempt "
-                       "to transfer handle "
-                    << handles[i]
+                       "to transfer handle " << handles[i]
                     << " while it is in use on a different thread";
 
       // Unset the busy flag (since it won't be unset below).
@@ -197,7 +193,7 @@ MojoHandle HandleTable::AddDispatcherNoSizeCheck(
   // TODO(vtl): Maybe we want to do something different/smarter. (Or maybe try
   // assigning randomly?)
   while (handle_to_entry_map_.find(next_handle_) !=
-             handle_to_entry_map_.end()) {
+         handle_to_entry_map_.end()) {
     next_handle_++;
     if (next_handle_ == MOJO_HANDLE_INVALID)
       next_handle_++;

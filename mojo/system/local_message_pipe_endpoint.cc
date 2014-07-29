@@ -14,8 +14,7 @@ namespace mojo {
 namespace system {
 
 LocalMessagePipeEndpoint::LocalMessagePipeEndpoint()
-    : is_open_(true),
-      is_peer_open_(true) {
+    : is_open_(true), is_peer_open_(true) {
 }
 
 LocalMessagePipeEndpoint::~LocalMessagePipeEndpoint() {
@@ -76,8 +75,8 @@ MojoResult LocalMessagePipeEndpoint::ReadMessage(
   const uint32_t max_num_dispatchers = num_dispatchers ? *num_dispatchers : 0;
 
   if (message_queue_.IsEmpty()) {
-    return is_peer_open_ ? MOJO_RESULT_SHOULD_WAIT :
-                           MOJO_RESULT_FAILED_PRECONDITION;
+    return is_peer_open_ ? MOJO_RESULT_SHOULD_WAIT
+                         : MOJO_RESULT_FAILED_PRECONDITION;
   }
 
   // TODO(vtl): If |flags & MOJO_READ_MESSAGE_FLAG_MAY_DISCARD|, we could pop

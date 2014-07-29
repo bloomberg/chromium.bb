@@ -29,9 +29,8 @@ struct SerializedSharedBufferDispatcher {
 // static
 const MojoCreateSharedBufferOptions
     SharedBufferDispatcher::kDefaultCreateOptions = {
-  static_cast<uint32_t>(sizeof(MojoCreateSharedBufferOptions)),
-  MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE
-};
+        static_cast<uint32_t>(sizeof(MojoCreateSharedBufferOptions)),
+        MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE};
 
 // static
 MojoResult SharedBufferDispatcher::ValidateCreateOptions(
@@ -121,16 +120,16 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
   // Wrapping |platform_handle| in a |ScopedPlatformHandle| means that it'll be
   // closed even if creation fails.
   scoped_refptr<RawSharedBuffer> shared_buffer(
-      RawSharedBuffer::CreateFromPlatformHandle(num_bytes,
-      embedder::ScopedPlatformHandle(platform_handle)));
+      RawSharedBuffer::CreateFromPlatformHandle(
+          num_bytes, embedder::ScopedPlatformHandle(platform_handle)));
   if (!shared_buffer) {
     LOG(ERROR)
         << "Invalid serialized shared buffer dispatcher (invalid num_bytes?)";
     return scoped_refptr<SharedBufferDispatcher>();
   }
 
-  return scoped_refptr<SharedBufferDispatcher>(new SharedBufferDispatcher(
-      shared_buffer));
+  return scoped_refptr<SharedBufferDispatcher>(
+      new SharedBufferDispatcher(shared_buffer));
 }
 
 SharedBufferDispatcher::SharedBufferDispatcher(
@@ -149,9 +148,8 @@ MojoResult SharedBufferDispatcher::ValidateDuplicateOptions(
   const MojoDuplicateBufferHandleOptionsFlags kKnownFlags =
       MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE;
   static const MojoDuplicateBufferHandleOptions kDefaultOptions = {
-    static_cast<uint32_t>(sizeof(MojoDuplicateBufferHandleOptions)),
-    MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE
-  };
+      static_cast<uint32_t>(sizeof(MojoDuplicateBufferHandleOptions)),
+      MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE};
 
   *out_options = kDefaultOptions;
   if (in_options.IsNull())
@@ -161,8 +159,8 @@ MojoResult SharedBufferDispatcher::ValidateDuplicateOptions(
   if (!reader.is_valid())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  if (!OPTIONS_STRUCT_HAS_MEMBER(MojoDuplicateBufferHandleOptions, flags,
-                                 reader))
+  if (!OPTIONS_STRUCT_HAS_MEMBER(
+          MojoDuplicateBufferHandleOptions, flags, reader))
     return MOJO_RESULT_OK;
   if ((reader.options().flags & ~kKnownFlags))
     return MOJO_RESULT_UNIMPLEMENTED;
@@ -182,7 +180,7 @@ void SharedBufferDispatcher::CloseImplNoLock() {
 }
 
 scoped_refptr<Dispatcher>
-    SharedBufferDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
+SharedBufferDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
   lock().AssertAcquired();
   DCHECK(shared_buffer_);
   scoped_refptr<RawSharedBuffer> shared_buffer;
@@ -253,9 +251,8 @@ bool SharedBufferDispatcher::EndSerializeAndCloseImplNoLock(
   // one else can make any more references to it), so we can just take its
   // handle.
   embedder::ScopedPlatformHandle platform_handle(
-      shared_buffer_->HasOneRef() ?
-          shared_buffer_->PassPlatformHandle() :
-          shared_buffer_->DuplicatePlatformHandle());
+      shared_buffer_->HasOneRef() ? shared_buffer_->PassPlatformHandle()
+                                  : shared_buffer_->DuplicatePlatformHandle());
   if (!platform_handle.is_valid()) {
     shared_buffer_ = NULL;
     return false;

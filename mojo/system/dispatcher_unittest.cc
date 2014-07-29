@@ -23,16 +23,14 @@ class TrivialDispatcher : public Dispatcher {
  public:
   TrivialDispatcher() {}
 
-  virtual Type GetType() const OVERRIDE {
-    return kTypeUnknown;
-  }
+  virtual Type GetType() const OVERRIDE { return kTypeUnknown; }
 
  private:
   friend class base::RefCountedThreadSafe<TrivialDispatcher>;
   virtual ~TrivialDispatcher() {}
 
   virtual scoped_refptr<Dispatcher>
-      CreateEquivalentDispatcherAndCloseImplNoLock() OVERRIDE {
+  CreateEquivalentDispatcherAndCloseImplNoLock() OVERRIDE {
     lock().AssertAcquired();
     return scoped_refptr<Dispatcher>(new TrivialDispatcher());
   }
@@ -46,27 +44,32 @@ TEST(DispatcherTest, Basic) {
   EXPECT_EQ(Dispatcher::kTypeUnknown, d->GetType());
 
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->WriteMessage(NullUserPointer(), 0, NULL,
-                            MOJO_WRITE_MESSAGE_FLAG_NONE));
+            d->WriteMessage(
+                NullUserPointer(), 0, NULL, MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->ReadMessage(NullUserPointer(), NullUserPointer(), NULL, NULL,
+            d->ReadMessage(NullUserPointer(),
+                           NullUserPointer(),
+                           NULL,
+                           NULL,
                            MOJO_WRITE_MESSAGE_FLAG_NONE));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->WriteData(NullUserPointer(), NullUserPointer(),
-                         MOJO_WRITE_DATA_FLAG_NONE));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->BeginWriteData(NullUserPointer(), NullUserPointer(),
-                              MOJO_WRITE_DATA_FLAG_NONE));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->EndWriteData(0));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->ReadData(NullUserPointer(), NullUserPointer(),
-                        MOJO_READ_DATA_FLAG_NONE));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->BeginReadData(NullUserPointer(), NullUserPointer(),
-                             MOJO_READ_DATA_FLAG_NONE));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->EndReadData(0));
+  EXPECT_EQ(
+      MOJO_RESULT_INVALID_ARGUMENT,
+      d->WriteData(
+          NullUserPointer(), NullUserPointer(), MOJO_WRITE_DATA_FLAG_NONE));
+  EXPECT_EQ(
+      MOJO_RESULT_INVALID_ARGUMENT,
+      d->BeginWriteData(
+          NullUserPointer(), NullUserPointer(), MOJO_WRITE_DATA_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, d->EndWriteData(0));
+  EXPECT_EQ(
+      MOJO_RESULT_INVALID_ARGUMENT,
+      d->ReadData(
+          NullUserPointer(), NullUserPointer(), MOJO_READ_DATA_FLAG_NONE));
+  EXPECT_EQ(
+      MOJO_RESULT_INVALID_ARGUMENT,
+      d->BeginReadData(
+          NullUserPointer(), NullUserPointer(), MOJO_READ_DATA_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, d->EndReadData(0));
   Waiter w;
   w.Init();
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
@@ -78,27 +81,32 @@ TEST(DispatcherTest, Basic) {
   EXPECT_EQ(MOJO_RESULT_OK, d->Close());
 
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->WriteMessage(NullUserPointer(), 0, NULL,
-                            MOJO_WRITE_MESSAGE_FLAG_NONE));
+            d->WriteMessage(
+                NullUserPointer(), 0, NULL, MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->ReadMessage(NullUserPointer(), NullUserPointer(), NULL, NULL,
+            d->ReadMessage(NullUserPointer(),
+                           NullUserPointer(),
+                           NULL,
+                           NULL,
                            MOJO_WRITE_MESSAGE_FLAG_NONE));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->WriteData(NullUserPointer(), NullUserPointer(),
-                         MOJO_WRITE_DATA_FLAG_NONE));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->BeginWriteData(NullUserPointer(), NullUserPointer(),
-                              MOJO_WRITE_DATA_FLAG_NONE));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->EndWriteData(0));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->ReadData(NullUserPointer(), NullUserPointer(),
-                        MOJO_READ_DATA_FLAG_NONE));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->BeginReadData(NullUserPointer(), NullUserPointer(),
-                             MOJO_READ_DATA_FLAG_NONE));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->EndReadData(0));
+  EXPECT_EQ(
+      MOJO_RESULT_INVALID_ARGUMENT,
+      d->WriteData(
+          NullUserPointer(), NullUserPointer(), MOJO_WRITE_DATA_FLAG_NONE));
+  EXPECT_EQ(
+      MOJO_RESULT_INVALID_ARGUMENT,
+      d->BeginWriteData(
+          NullUserPointer(), NullUserPointer(), MOJO_WRITE_DATA_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, d->EndWriteData(0));
+  EXPECT_EQ(
+      MOJO_RESULT_INVALID_ARGUMENT,
+      d->ReadData(
+          NullUserPointer(), NullUserPointer(), MOJO_READ_DATA_FLAG_NONE));
+  EXPECT_EQ(
+      MOJO_RESULT_INVALID_ARGUMENT,
+      d->BeginReadData(
+          NullUserPointer(), NullUserPointer(), MOJO_READ_DATA_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, d->EndReadData(0));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             d->AddWaiter(&w, ~MOJO_HANDLE_SIGNAL_NONE, 0));
   d->RemoveWaiter(&w);
@@ -120,7 +128,6 @@ class ThreadSafetyStressThread : public base::SimpleThread {
     MAP_BUFFER,
     ADD_WAITER,
     REMOVE_WAITER,
-
     DISPATCHER_OP_COUNT
   };
 
@@ -135,16 +142,14 @@ class ThreadSafetyStressThread : public base::SimpleThread {
     CHECK_LT(op_, DISPATCHER_OP_COUNT);
   }
 
-  virtual ~ThreadSafetyStressThread() {
-    Join();
-  }
+  virtual ~ThreadSafetyStressThread() { Join(); }
 
  private:
   virtual void Run() OVERRIDE {
     event_->Wait();
 
     waiter_.Init();
-    switch(op_) {
+    switch (op_) {
       case CLOSE: {
         MojoResult r = dispatcher_->Close();
         EXPECT_TRUE(r == MOJO_RESULT_OK || r == MOJO_RESULT_INVALID_ARGUMENT)
@@ -152,19 +157,23 @@ class ThreadSafetyStressThread : public base::SimpleThread {
         break;
       }
       case WRITE_MESSAGE:
-        EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-                  dispatcher_->WriteMessage(NullUserPointer(), 0, NULL,
-                                            MOJO_WRITE_MESSAGE_FLAG_NONE));
+        EXPECT_EQ(
+            MOJO_RESULT_INVALID_ARGUMENT,
+            dispatcher_->WriteMessage(
+                NullUserPointer(), 0, NULL, MOJO_WRITE_MESSAGE_FLAG_NONE));
         break;
       case READ_MESSAGE:
         EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-                  dispatcher_->ReadMessage(NullUserPointer(), NullUserPointer(),
-                                           NULL, NULL,
+                  dispatcher_->ReadMessage(NullUserPointer(),
+                                           NullUserPointer(),
+                                           NULL,
+                                           NULL,
                                            MOJO_WRITE_MESSAGE_FLAG_NONE));
         break;
       case WRITE_DATA:
         EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-                  dispatcher_->WriteData(NullUserPointer(), NullUserPointer(),
+                  dispatcher_->WriteData(NullUserPointer(),
+                                         NullUserPointer(),
                                          MOJO_WRITE_DATA_FLAG_NONE));
         break;
       case BEGIN_WRITE_DATA:
@@ -174,12 +183,12 @@ class ThreadSafetyStressThread : public base::SimpleThread {
                                               MOJO_WRITE_DATA_FLAG_NONE));
         break;
       case END_WRITE_DATA:
-        EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-                  dispatcher_->EndWriteData(0));
+        EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, dispatcher_->EndWriteData(0));
         break;
       case READ_DATA:
         EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-                  dispatcher_->ReadData(NullUserPointer(), NullUserPointer(),
+                  dispatcher_->ReadData(NullUserPointer(),
+                                        NullUserPointer(),
                                         MOJO_READ_DATA_FLAG_NONE));
         break;
       case BEGIN_READ_DATA:
@@ -189,26 +198,25 @@ class ThreadSafetyStressThread : public base::SimpleThread {
                                              MOJO_READ_DATA_FLAG_NONE));
         break;
       case END_READ_DATA:
-        EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-                  dispatcher_->EndReadData(0));
+        EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, dispatcher_->EndReadData(0));
         break;
       case DUPLICATE_BUFFER_HANDLE: {
         scoped_refptr<Dispatcher> unused;
-        EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-                  dispatcher_->DuplicateBufferHandle(NullUserPointer(),
-                                                     &unused));
+        EXPECT_EQ(
+            MOJO_RESULT_INVALID_ARGUMENT,
+            dispatcher_->DuplicateBufferHandle(NullUserPointer(), &unused));
         break;
       }
       case MAP_BUFFER: {
         scoped_ptr<RawSharedBufferMapping> unused;
-        EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-                  dispatcher_->MapBuffer(0u, 0u, MOJO_MAP_BUFFER_FLAG_NONE,
-                                         &unused));
+        EXPECT_EQ(
+            MOJO_RESULT_INVALID_ARGUMENT,
+            dispatcher_->MapBuffer(0u, 0u, MOJO_MAP_BUFFER_FLAG_NONE, &unused));
         break;
       }
       case ADD_WAITER: {
-        MojoResult r = dispatcher_->AddWaiter(&waiter_,
-                                              ~MOJO_HANDLE_SIGNAL_NONE, 0);
+        MojoResult r =
+            dispatcher_->AddWaiter(&waiter_, ~MOJO_HANDLE_SIGNAL_NONE, 0);
         EXPECT_TRUE(r == MOJO_RESULT_FAILED_PRECONDITION ||
                     r == MOJO_RESULT_INVALID_ARGUMENT);
         break;
@@ -248,11 +256,12 @@ TEST(DispatcherTest, ThreadSafetyStress) {
       for (size_t j = 0; j < kNumThreads; j++) {
         ThreadSafetyStressThread::DispatcherOp op =
             static_cast<ThreadSafetyStressThread::DispatcherOp>(
-                (i+j) % ThreadSafetyStressThread::DISPATCHER_OP_COUNT);
+                (i + j) % ThreadSafetyStressThread::DISPATCHER_OP_COUNT);
         threads.push_back(new ThreadSafetyStressThread(&event, d, op));
         threads.back()->Start();
       }
-      event.Signal();  // Kicks off real work on the threads.
+      // Kicks off real work on the threads:
+      event.Signal();
     }  // Joins all the threads.
 
     // One of the threads should already have closed the dispatcher.
@@ -274,11 +283,13 @@ TEST(DispatcherTest, ThreadSafetyStressNoClose) {
       for (size_t j = 0; j < kNumThreads; j++) {
         ThreadSafetyStressThread::DispatcherOp op =
             static_cast<ThreadSafetyStressThread::DispatcherOp>(
-                (i+j) % (ThreadSafetyStressThread::DISPATCHER_OP_COUNT-1) + 1);
+                (i + j) % (ThreadSafetyStressThread::DISPATCHER_OP_COUNT - 1) +
+                1);
         threads.push_back(new ThreadSafetyStressThread(&event, d, op));
         threads.back()->Start();
       }
-      event.Signal();  // Kicks off real work on the threads.
+      // Kicks off real work on the threads:
+      event.Signal();
     }  // Joins all the threads.
 
     EXPECT_EQ(MOJO_RESULT_OK, d->Close());

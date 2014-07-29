@@ -25,14 +25,14 @@ TEST(PlatformHandleDispatcherTest, Basic) {
   static const char kHelloWorld[] = "hello world";
 
   base::FilePath unused;
-  base::ScopedFILE fp(CreateAndOpenTemporaryFileInDir(temp_dir.path(),
-                                                      &unused));
+  base::ScopedFILE fp(
+      CreateAndOpenTemporaryFileInDir(temp_dir.path(), &unused));
   ASSERT_TRUE(fp);
   EXPECT_EQ(sizeof(kHelloWorld),
             fwrite(kHelloWorld, 1, sizeof(kHelloWorld), fp.get()));
 
-  embedder::ScopedPlatformHandle
-      h(mojo::test::PlatformHandleFromFILE(fp.Pass()));
+  embedder::ScopedPlatformHandle h(
+      mojo::test::PlatformHandleFromFILE(fp.Pass()));
   EXPECT_FALSE(fp);
   ASSERT_TRUE(h.is_valid());
 
@@ -68,8 +68,8 @@ TEST(PlatformHandleDispatcherTest, CreateEquivalentDispatcherAndClose) {
   static const char kFooBar[] = "foo bar";
 
   base::FilePath unused;
-  base::ScopedFILE fp(CreateAndOpenTemporaryFileInDir(temp_dir.path(),
-                                                      &unused));
+  base::ScopedFILE fp(
+      CreateAndOpenTemporaryFileInDir(temp_dir.path(), &unused));
   EXPECT_EQ(sizeof(kFooBar), fwrite(kFooBar, 1, sizeof(kFooBar), fp.get()));
 
   scoped_refptr<PlatformHandleDispatcher> dispatcher(

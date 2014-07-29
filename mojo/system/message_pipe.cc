@@ -76,7 +76,9 @@ MojoResult MessagePipe::WriteMessage(
       GetPeerPort(port),
       make_scoped_ptr(new MessageInTransit(
           MessageInTransit::kTypeMessagePipeEndpoint,
-          MessageInTransit::kSubtypeMessagePipeEndpointData, num_bytes, bytes)),
+          MessageInTransit::kSubtypeMessagePipeEndpointData,
+          num_bytes,
+          bytes)),
       transports);
 }
 
@@ -91,8 +93,8 @@ MojoResult MessagePipe::ReadMessage(unsigned port,
   base::AutoLock locker(lock_);
   DCHECK(endpoints_[port]);
 
-  return endpoints_[port]->ReadMessage(bytes, num_bytes, dispatchers,
-                                       num_dispatchers, flags);
+  return endpoints_[port]->ReadMessage(
+      bytes, num_bytes, dispatchers, num_dispatchers, flags);
 }
 
 MojoResult MessagePipe::AddWaiter(unsigned port,
@@ -139,9 +141,8 @@ void MessagePipe::ConvertLocalToProxy(unsigned port) {
   endpoints_[port].swap(replacement_endpoint);
 }
 
-MojoResult MessagePipe::EnqueueMessage(
-    unsigned port,
-    scoped_ptr<MessageInTransit> message) {
+MojoResult MessagePipe::EnqueueMessage(unsigned port,
+                                       scoped_ptr<MessageInTransit> message) {
   return EnqueueMessageInternal(port, message.Pass(), NULL);
 }
 

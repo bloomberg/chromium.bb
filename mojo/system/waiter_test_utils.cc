@@ -9,11 +9,9 @@ namespace system {
 namespace test {
 
 SimpleWaiterThread::SimpleWaiterThread(MojoResult* result, uint32_t* context)
-    : base::SimpleThread("waiter_thread"),
-      result_(result),
-      context_(context) {
+    : base::SimpleThread("waiter_thread"), result_(result), context_(context) {
   waiter_.Init();
-  *result_ = -5420734;  // Totally invalid result.
+  *result_ = -5420734;   // Totally invalid result.
   *context_ = 23489023;  // "Random".
 }
 
@@ -41,7 +39,7 @@ WaiterThread::WaiterThread(scoped_refptr<Dispatcher> dispatcher,
       result_out_(result_out),
       context_out_(context_out) {
   *did_wait_out_ = false;
-  *result_out_ = -8542346;  // Totally invalid result.
+  *result_out_ = -8542346;   // Totally invalid result.
   *context_out_ = 89023444;  // "Random".
 }
 

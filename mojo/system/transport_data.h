@@ -164,9 +164,9 @@ class MOJO_SYSTEM_IMPL_EXPORT TransportData {
   };
 
   struct HandleTableEntry {
-    int32_t type;  // From |Dispatcher::Type| (|kTypeUnknown| for "invalid").
+    int32_t type;     // From |Dispatcher::Type| (|kTypeUnknown| for "invalid").
     uint32_t offset;  // Relative to the start of the "secondary buffer".
-    uint32_t size;  // (Not including any padding.)
+    uint32_t size;    // (Not including any padding.)
     uint32_t unused;
   };
 

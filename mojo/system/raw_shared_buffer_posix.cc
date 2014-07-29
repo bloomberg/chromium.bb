@@ -5,7 +5,7 @@
 #include "mojo/system/raw_shared_buffer.h"
 
 #include <stdint.h>
-#include <stdio.h>  // For |fileno()|.
+#include <stdio.h>     // For |fileno()|.
 #include <sys/mman.h>  // For |mmap()|/|munmap()|.
 #include <sys/stat.h>
 #include <sys/types.h>  // For |off_t|.
@@ -39,7 +39,7 @@ bool RawSharedBuffer::Init() {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
   if (static_cast<uint64_t>(num_bytes_) >
-          static_cast<uint64_t>(std::numeric_limits<off_t>::max())) {
+      static_cast<uint64_t>(std::numeric_limits<off_t>::max())) {
     return false;
   }
 
@@ -88,7 +88,7 @@ bool RawSharedBuffer::InitFromPlatformHandle(
   DCHECK(!handle_.is_valid());
 
   if (static_cast<uint64_t>(num_bytes_) >
-          static_cast<uint64_t>(std::numeric_limits<off_t>::max())) {
+      static_cast<uint64_t>(std::numeric_limits<off_t>::max())) {
     return false;
   }
 
@@ -126,8 +126,12 @@ scoped_ptr<RawSharedBufferMapping> RawSharedBuffer::MapImpl(size_t offset,
   DCHECK_LE(static_cast<uint64_t>(real_offset),
             static_cast<uint64_t>(std::numeric_limits<off_t>::max()));
 
-  void* real_base = mmap(NULL, real_length, PROT_READ | PROT_WRITE, MAP_SHARED,
-                         handle_.get().fd, static_cast<off_t>(real_offset));
+  void* real_base = mmap(NULL,
+                         real_length,
+                         PROT_READ | PROT_WRITE,
+                         MAP_SHARED,
+                         handle_.get().fd,
+                         static_cast<off_t>(real_offset));
   // |mmap()| should return |MAP_FAILED| (a.k.a. -1) on error. But it shouldn't
   // return null either.
   if (real_base == MAP_FAILED || !real_base) {

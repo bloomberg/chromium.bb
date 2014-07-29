@@ -39,62 +39,73 @@ TEST_F(CoreTest, Basic) {
 
   EXPECT_EQ(0u, info.GetWriteMessageCallCount());
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h, NullUserPointer(), 0, NullUserPointer(), 0,
+            core()->WriteMessage(h,
+                                 NullUserPointer(),
+                                 0,
+                                 NullUserPointer(),
+                                 0,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(1u, info.GetWriteMessageCallCount());
 
   EXPECT_EQ(0u, info.GetReadMessageCallCount());
   uint32_t num_bytes = 0;
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(h, NullUserPointer(),
-                                MakeUserPointer(&num_bytes), NullUserPointer(),
+            core()->ReadMessage(h,
+                                NullUserPointer(),
+                                MakeUserPointer(&num_bytes),
+                                NullUserPointer(),
                                 NullUserPointer(),
                                 MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(1u, info.GetReadMessageCallCount());
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(h, NullUserPointer(), NullUserPointer(),
-                                NullUserPointer(), NullUserPointer(),
+            core()->ReadMessage(h,
+                                NullUserPointer(),
+                                NullUserPointer(),
+                                NullUserPointer(),
+                                NullUserPointer(),
                                 MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(2u, info.GetReadMessageCallCount());
 
   EXPECT_EQ(0u, info.GetWriteDataCallCount());
-  EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED,
-            core()->WriteData(h, NullUserPointer(), NullUserPointer(),
-                              MOJO_WRITE_DATA_FLAG_NONE));
+  EXPECT_EQ(
+      MOJO_RESULT_UNIMPLEMENTED,
+      core()->WriteData(
+          h, NullUserPointer(), NullUserPointer(), MOJO_WRITE_DATA_FLAG_NONE));
   EXPECT_EQ(1u, info.GetWriteDataCallCount());
 
   EXPECT_EQ(0u, info.GetBeginWriteDataCallCount());
-  EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED,
-            core()->BeginWriteData(h, NullUserPointer(), NullUserPointer(),
-                                   MOJO_WRITE_DATA_FLAG_NONE));
+  EXPECT_EQ(
+      MOJO_RESULT_UNIMPLEMENTED,
+      core()->BeginWriteData(
+          h, NullUserPointer(), NullUserPointer(), MOJO_WRITE_DATA_FLAG_NONE));
   EXPECT_EQ(1u, info.GetBeginWriteDataCallCount());
 
   EXPECT_EQ(0u, info.GetEndWriteDataCallCount());
-  EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED,
-            core()->EndWriteData(h, 0));
+  EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED, core()->EndWriteData(h, 0));
   EXPECT_EQ(1u, info.GetEndWriteDataCallCount());
 
   EXPECT_EQ(0u, info.GetReadDataCallCount());
-  EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED,
-            core()->ReadData(h, NullUserPointer(), NullUserPointer(),
-                             MOJO_READ_DATA_FLAG_NONE));
+  EXPECT_EQ(
+      MOJO_RESULT_UNIMPLEMENTED,
+      core()->ReadData(
+          h, NullUserPointer(), NullUserPointer(), MOJO_READ_DATA_FLAG_NONE));
   EXPECT_EQ(1u, info.GetReadDataCallCount());
 
   EXPECT_EQ(0u, info.GetBeginReadDataCallCount());
-  EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED,
-            core()->BeginReadData(h, NullUserPointer(), NullUserPointer(),
-                                  MOJO_READ_DATA_FLAG_NONE));
+  EXPECT_EQ(
+      MOJO_RESULT_UNIMPLEMENTED,
+      core()->BeginReadData(
+          h, NullUserPointer(), NullUserPointer(), MOJO_READ_DATA_FLAG_NONE));
   EXPECT_EQ(1u, info.GetBeginReadDataCallCount());
 
   EXPECT_EQ(0u, info.GetEndReadDataCallCount());
-  EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED,
-            core()->EndReadData(h, 0));
+  EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED, core()->EndReadData(h, 0));
   EXPECT_EQ(1u, info.GetEndReadDataCallCount());
 
   EXPECT_EQ(0u, info.GetAddWaiterCallCount());
-  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            core()->Wait(h, ~MOJO_HANDLE_SIGNAL_NONE,
-                         MOJO_DEADLINE_INDEFINITE));
+  EXPECT_EQ(
+      MOJO_RESULT_FAILED_PRECONDITION,
+      core()->Wait(h, ~MOJO_HANDLE_SIGNAL_NONE, MOJO_DEADLINE_INDEFINITE));
   EXPECT_EQ(1u, info.GetAddWaiterCallCount());
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             core()->Wait(h, ~MOJO_HANDLE_SIGNAL_NONE, 0));
@@ -105,7 +116,8 @@ TEST_F(CoreTest, Basic) {
   MojoHandleSignals handle_signals = ~MOJO_HANDLE_SIGNAL_NONE;
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             core()->WaitMany(MakeUserPointer(&h),
-                             MakeUserPointer(&handle_signals), 1,
+                             MakeUserPointer(&handle_signals),
+                             1,
                              MOJO_DEADLINE_INDEFINITE));
   EXPECT_EQ(4u, info.GetAddWaiterCallCount());
 
@@ -140,11 +152,12 @@ TEST_F(CoreTest, InvalidArguments) {
   // |Wait()|:
   {
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->Wait(MOJO_HANDLE_INVALID, ~MOJO_HANDLE_SIGNAL_NONE,
+              core()->Wait(MOJO_HANDLE_INVALID,
+                           ~MOJO_HANDLE_SIGNAL_NONE,
                            MOJO_DEADLINE_INDEFINITE));
-    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->Wait(10, ~MOJO_HANDLE_SIGNAL_NONE,
-                           MOJO_DEADLINE_INDEFINITE));
+    EXPECT_EQ(
+        MOJO_RESULT_INVALID_ARGUMENT,
+        core()->Wait(10, ~MOJO_HANDLE_SIGNAL_NONE, MOJO_DEADLINE_INDEFINITE));
   }
 
   // |WaitMany()|:
@@ -154,17 +167,23 @@ TEST_F(CoreTest, InvalidArguments) {
                                     ~MOJO_HANDLE_SIGNAL_NONE};
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
               core()->WaitMany(MakeUserPointer(handles),
-                               MakeUserPointer(signals), 0,
+                               MakeUserPointer(signals),
+                               0,
                                MOJO_DEADLINE_INDEFINITE));
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->WaitMany(NullUserPointer(), MakeUserPointer(signals), 0,
+              core()->WaitMany(NullUserPointer(),
+                               MakeUserPointer(signals),
+                               0,
                                MOJO_DEADLINE_INDEFINITE));
-    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->WaitMany(MakeUserPointer(handles), NullUserPointer(), 0,
-              MOJO_DEADLINE_INDEFINITE));
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
               core()->WaitMany(MakeUserPointer(handles),
-                               MakeUserPointer(signals), 1,
+                               NullUserPointer(),
+                               0,
+                               MOJO_DEADLINE_INDEFINITE));
+    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+              core()->WaitMany(MakeUserPointer(handles),
+                               MakeUserPointer(signals),
+                               1,
                                MOJO_DEADLINE_INDEFINITE));
 
     MockHandleInfo info[2];
@@ -172,21 +191,25 @@ TEST_F(CoreTest, InvalidArguments) {
 
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
               core()->WaitMany(MakeUserPointer(handles),
-                               MakeUserPointer(signals), 1,
+                               MakeUserPointer(signals),
+                               1,
                                MOJO_DEADLINE_INDEFINITE));
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
               core()->WaitMany(MakeUserPointer(handles),
-                               MakeUserPointer(signals), 2,
+                               MakeUserPointer(signals),
+                               2,
                                MOJO_DEADLINE_INDEFINITE));
     handles[1] = handles[0] + 1;  // Invalid handle.
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
               core()->WaitMany(MakeUserPointer(handles),
-                               MakeUserPointer(signals), 2,
+                               MakeUserPointer(signals),
+                               2,
                                MOJO_DEADLINE_INDEFINITE));
     handles[1] = CreateMockHandle(&info[1]);
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
               core()->WaitMany(MakeUserPointer(handles),
-                               MakeUserPointer(signals), 2,
+                               MakeUserPointer(signals),
+                               2,
                                MOJO_DEADLINE_INDEFINITE));
 
     EXPECT_EQ(MOJO_RESULT_OK, core()->Close(handles[0]));
@@ -201,8 +224,11 @@ TEST_F(CoreTest, InvalidArguments) {
   // |num_handles|.
   {
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->WriteMessage(MOJO_HANDLE_INVALID, NullUserPointer(), 0,
-                                   NullUserPointer(), 0,
+              core()->WriteMessage(MOJO_HANDLE_INVALID,
+                                   NullUserPointer(),
+                                   0,
+                                   NullUserPointer(),
+                                   0,
                                    MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     MockHandleInfo info;
@@ -215,7 +241,9 @@ TEST_F(CoreTest, InvalidArguments) {
     // |MOJO_RESULT_RESOURCE_EXHAUSTED|, depending on whether it's plausible or
     // not.
     EXPECT_NE(MOJO_RESULT_OK,
-              core()->WriteMessage(h, NullUserPointer(), 0,
+              core()->WriteMessage(h,
+                                   NullUserPointer(),
+                                   0,
                                    MakeUserPointer(handles),
                                    std::numeric_limits<uint32_t>::max(),
                                    MOJO_WRITE_MESSAGE_FLAG_NONE));
@@ -223,32 +251,43 @@ TEST_F(CoreTest, InvalidArguments) {
 
     // Huge handle count (plausibly big).
     EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
-              core()->WriteMessage(h, NullUserPointer(), 0,
-                                   MakeUserPointer(handles),
-                                   std::numeric_limits<uint32_t>::max() /
-                                       sizeof(handles[0]),
-                                   MOJO_WRITE_MESSAGE_FLAG_NONE));
+              core()->WriteMessage(
+                  h,
+                  NullUserPointer(),
+                  0,
+                  MakeUserPointer(handles),
+                  std::numeric_limits<uint32_t>::max() / sizeof(handles[0]),
+                  MOJO_WRITE_MESSAGE_FLAG_NONE));
     EXPECT_EQ(0u, info.GetWriteMessageCallCount());
 
     // Invalid handle in |handles|.
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->WriteMessage(h, NullUserPointer(), 0,
-                                   MakeUserPointer(handles), 1,
+              core()->WriteMessage(h,
+                                   NullUserPointer(),
+                                   0,
+                                   MakeUserPointer(handles),
+                                   1,
                                    MOJO_WRITE_MESSAGE_FLAG_NONE));
     EXPECT_EQ(0u, info.GetWriteMessageCallCount());
 
     // Two invalid handles in |handles|.
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->WriteMessage(h, NullUserPointer(), 0,
-                                   MakeUserPointer(handles), 2,
+              core()->WriteMessage(h,
+                                   NullUserPointer(),
+                                   0,
+                                   MakeUserPointer(handles),
+                                   2,
                                    MOJO_WRITE_MESSAGE_FLAG_NONE));
     EXPECT_EQ(0u, info.GetWriteMessageCallCount());
 
     // Can't send a handle over itself.
     handles[0] = h;
     EXPECT_EQ(MOJO_RESULT_BUSY,
-              core()->WriteMessage(h, NullUserPointer(), 0,
-                                   MakeUserPointer(handles), 1,
+              core()->WriteMessage(h,
+                                   NullUserPointer(),
+                                   0,
+                                   MakeUserPointer(handles),
+                                   1,
                                    MOJO_WRITE_MESSAGE_FLAG_NONE));
     EXPECT_EQ(0u, info.GetWriteMessageCallCount());
 
@@ -258,31 +297,43 @@ TEST_F(CoreTest, InvalidArguments) {
     // This is "okay", but |MockDispatcher| doesn't implement it.
     handles[0] = h2;
     EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED,
-              core()->WriteMessage(h, NullUserPointer(), 0,
-                                   MakeUserPointer(handles), 1,
+              core()->WriteMessage(h,
+                                   NullUserPointer(),
+                                   0,
+                                   MakeUserPointer(handles),
+                                   1,
                                    MOJO_WRITE_MESSAGE_FLAG_NONE));
     EXPECT_EQ(1u, info.GetWriteMessageCallCount());
 
     // One of the |handles| is still invalid.
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->WriteMessage(h, NullUserPointer(), 0,
-                                   MakeUserPointer(handles), 2,
+              core()->WriteMessage(h,
+                                   NullUserPointer(),
+                                   0,
+                                   MakeUserPointer(handles),
+                                   2,
                                    MOJO_WRITE_MESSAGE_FLAG_NONE));
     EXPECT_EQ(1u, info.GetWriteMessageCallCount());
 
     // One of the |handles| is the same as |handle|.
     handles[1] = h;
     EXPECT_EQ(MOJO_RESULT_BUSY,
-              core()->WriteMessage(h, NullUserPointer(), 0,
-                                   MakeUserPointer(handles), 2,
+              core()->WriteMessage(h,
+                                   NullUserPointer(),
+                                   0,
+                                   MakeUserPointer(handles),
+                                   2,
                                    MOJO_WRITE_MESSAGE_FLAG_NONE));
     EXPECT_EQ(1u, info.GetWriteMessageCallCount());
 
     // Can't send a handle twice in the same message.
     handles[1] = h2;
     EXPECT_EQ(MOJO_RESULT_BUSY,
-              core()->WriteMessage(h, NullUserPointer(), 0,
-                                   MakeUserPointer(handles), 2,
+              core()->WriteMessage(h,
+                                   NullUserPointer(),
+                                   0,
+                                   MakeUserPointer(handles),
+                                   2,
                                    MOJO_WRITE_MESSAGE_FLAG_NONE));
     EXPECT_EQ(1u, info.GetWriteMessageCallCount());
 
@@ -298,8 +349,10 @@ TEST_F(CoreTest, InvalidArguments) {
   // |num_handles|.
   {
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->ReadMessage(MOJO_HANDLE_INVALID, NullUserPointer(),
-                                  NullUserPointer(), NullUserPointer(),
+              core()->ReadMessage(MOJO_HANDLE_INVALID,
+                                  NullUserPointer(),
+                                  NullUserPointer(),
+                                  NullUserPointer(),
                                   NullUserPointer(),
                                   MOJO_READ_MESSAGE_FLAG_NONE));
 
@@ -309,7 +362,9 @@ TEST_F(CoreTest, InvalidArguments) {
     // Okay.
     uint32_t handle_count = 0;
     EXPECT_EQ(MOJO_RESULT_OK,
-              core()->ReadMessage(h, NullUserPointer(), NullUserPointer(),
+              core()->ReadMessage(h,
+                                  NullUserPointer(),
+                                  NullUserPointer(),
                                   NullUserPointer(),
                                   MakeUserPointer(&handle_count),
                                   MOJO_READ_MESSAGE_FLAG_NONE));
@@ -334,30 +389,32 @@ TEST_F(CoreTest, InvalidArgumentsDeath) {
     MojoHandle handles[2] = {MOJO_HANDLE_INVALID, MOJO_HANDLE_INVALID};
     MojoHandleSignals signals[2] = {~MOJO_HANDLE_SIGNAL_NONE,
                                     ~MOJO_HANDLE_SIGNAL_NONE};
-    EXPECT_DEATH_IF_SUPPORTED(
-        core()->WaitMany(NullUserPointer(), MakeUserPointer(signals), 1,
-                         MOJO_DEADLINE_INDEFINITE),
-        kMemoryCheckFailedRegex);
-    EXPECT_DEATH_IF_SUPPORTED(
-        core()->WaitMany(MakeUserPointer(handles), NullUserPointer(), 1,
-                         MOJO_DEADLINE_INDEFINITE),
-        kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(core()->WaitMany(NullUserPointer(),
+                                               MakeUserPointer(signals),
+                                               1,
+                                               MOJO_DEADLINE_INDEFINITE),
+                              kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(core()->WaitMany(MakeUserPointer(handles),
+                                               NullUserPointer(),
+                                               1,
+                                               MOJO_DEADLINE_INDEFINITE),
+                              kMemoryCheckFailedRegex);
   }
 
   // |CreateMessagePipe()|:
   {
     MojoHandle h;
     EXPECT_DEATH_IF_SUPPORTED(
-        core()->CreateMessagePipe(NullUserPointer(), NullUserPointer(),
-                                  NullUserPointer()),
+        core()->CreateMessagePipe(
+            NullUserPointer(), NullUserPointer(), NullUserPointer()),
         kMemoryCheckFailedRegex);
     EXPECT_DEATH_IF_SUPPORTED(
-        core()->CreateMessagePipe(NullUserPointer(), MakeUserPointer(&h),
-                                  NullUserPointer()),
+        core()->CreateMessagePipe(
+            NullUserPointer(), MakeUserPointer(&h), NullUserPointer()),
         kMemoryCheckFailedRegex);
     EXPECT_DEATH_IF_SUPPORTED(
-        core()->CreateMessagePipe(NullUserPointer(), NullUserPointer(),
-                                  MakeUserPointer(&h)),
+        core()->CreateMessagePipe(
+            NullUserPointer(), NullUserPointer(), MakeUserPointer(&h)),
         kMemoryCheckFailedRegex);
   }
 
@@ -370,8 +427,12 @@ TEST_F(CoreTest, InvalidArgumentsDeath) {
 
     // Null |handles| with nonzero |num_handles|.
     EXPECT_DEATH_IF_SUPPORTED(
-        core()->WriteMessage(h, NullUserPointer(), 0, NullUserPointer(),
-                             1, MOJO_WRITE_MESSAGE_FLAG_NONE),
+        core()->WriteMessage(h,
+                             NullUserPointer(),
+                             0,
+                             NullUserPointer(),
+                             1,
+                             MOJO_WRITE_MESSAGE_FLAG_NONE),
         kMemoryCheckFailedRegex);
 
     EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h));
@@ -386,7 +447,9 @@ TEST_F(CoreTest, InvalidArgumentsDeath) {
 
     uint32_t handle_count = 1;
     EXPECT_DEATH_IF_SUPPORTED(
-        core()->ReadMessage(h, NullUserPointer(), NullUserPointer(),
+        core()->ReadMessage(h,
+                            NullUserPointer(),
+                            NullUserPointer(),
                             NullUserPointer(),
                             MakeUserPointer(&handle_count),
                             MOJO_READ_MESSAGE_FLAG_NONE),
@@ -403,9 +466,10 @@ TEST_F(CoreTest, InvalidArgumentsDeath) {
 TEST_F(CoreTest, MessagePipe) {
   MojoHandle h[2];
 
-  EXPECT_EQ(MOJO_RESULT_OK,
-            core()->CreateMessagePipe(NullUserPointer(), MakeUserPointer(&h[0]),
-                                      MakeUserPointer(&h[1])));
+  EXPECT_EQ(
+      MOJO_RESULT_OK,
+      core()->CreateMessagePipe(
+          NullUserPointer(), MakeUserPointer(&h[0]), MakeUserPointer(&h[1])));
   // Should get two distinct, valid handles.
   EXPECT_NE(h[0], MOJO_HANDLE_INVALID);
   EXPECT_NE(h[1], MOJO_HANDLE_INVALID);
@@ -414,17 +478,19 @@ TEST_F(CoreTest, MessagePipe) {
   // Neither should be readable.
   MojoHandleSignals signals[2] = {MOJO_HANDLE_SIGNAL_READABLE,
                                   MOJO_HANDLE_SIGNAL_READABLE};
-  EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-            core()->WaitMany(MakeUserPointer(h), MakeUserPointer(signals), 2,
-                             0));
+  EXPECT_EQ(
+      MOJO_RESULT_DEADLINE_EXCEEDED,
+      core()->WaitMany(MakeUserPointer(h), MakeUserPointer(signals), 2, 0));
 
   // Try to read anyway.
   char buffer[1] = {'a'};
   uint32_t buffer_size = 1;
   EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
-            core()->ReadMessage(h[0], UserPointer<void>(buffer),
+            core()->ReadMessage(h[0],
+                                UserPointer<void>(buffer),
                                 MakeUserPointer(&buffer_size),
-                                NullUserPointer(), NullUserPointer(),
+                                NullUserPointer(),
+                                NullUserPointer(),
                                 MOJO_READ_MESSAGE_FLAG_NONE));
   // Check that it left its inputs alone.
   EXPECT_EQ('a', buffer[0]);
@@ -439,38 +505,51 @@ TEST_F(CoreTest, MessagePipe) {
   // Also check that |h[1]| is writable using |WaitMany()|.
   signals[0] = MOJO_HANDLE_SIGNAL_READABLE;
   signals[1] = MOJO_HANDLE_SIGNAL_WRITABLE;
-  EXPECT_EQ(1, core()->WaitMany(MakeUserPointer(h), MakeUserPointer(signals), 2,
-                                MOJO_DEADLINE_INDEFINITE));
+  EXPECT_EQ(1,
+            core()->WaitMany(MakeUserPointer(h),
+                             MakeUserPointer(signals),
+                             2,
+                             MOJO_DEADLINE_INDEFINITE));
 
   // Write to |h[1]|.
   buffer[0] = 'b';
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h[1], UserPointer<const void>(buffer), 1,
-                                 NullUserPointer(), 0,
+            core()->WriteMessage(h[1],
+                                 UserPointer<const void>(buffer),
+                                 1,
+                                 NullUserPointer(),
+                                 0,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // Check that |h[0]| is now readable.
   signals[0] = MOJO_HANDLE_SIGNAL_READABLE;
   signals[1] = MOJO_HANDLE_SIGNAL_READABLE;
-  EXPECT_EQ(0, core()->WaitMany(MakeUserPointer(h), MakeUserPointer(signals), 2,
-                                MOJO_DEADLINE_INDEFINITE));
+  EXPECT_EQ(0,
+            core()->WaitMany(MakeUserPointer(h),
+                             MakeUserPointer(signals),
+                             2,
+                             MOJO_DEADLINE_INDEFINITE));
 
   // Read from |h[0]|.
   // First, get only the size.
   buffer_size = 0;
   EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
-            core()->ReadMessage(h[0], NullUserPointer(),
+            core()->ReadMessage(h[0],
+                                NullUserPointer(),
                                 MakeUserPointer(&buffer_size),
-                                NullUserPointer(), NullUserPointer(),
+                                NullUserPointer(),
+                                NullUserPointer(),
                                 MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(1u, buffer_size);
   // Then actually read it.
   buffer[0] = 'c';
   buffer_size = 1;
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(h[0], UserPointer<void>(buffer),
+            core()->ReadMessage(h[0],
+                                UserPointer<void>(buffer),
                                 MakeUserPointer(&buffer_size),
-                                NullUserPointer(), NullUserPointer(),
+                                NullUserPointer(),
+                                NullUserPointer(),
                                 MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ('b', buffer[0]);
   EXPECT_EQ(1u, buffer_size);
@@ -482,8 +561,11 @@ TEST_F(CoreTest, MessagePipe) {
   // Write to |h[0]|.
   buffer[0] = 'd';
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h[0], UserPointer<const void>(buffer), 1,
-                                 NullUserPointer(), 0,
+            core()->WriteMessage(h[0],
+                                 UserPointer<const void>(buffer),
+                                 1,
+                                 NullUserPointer(),
+                                 0,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // Close |h[0]|.
@@ -499,8 +581,11 @@ TEST_F(CoreTest, MessagePipe) {
 
   // Discard a message from |h[1]|.
   EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
-            core()->ReadMessage(h[1], NullUserPointer(), NullUserPointer(),
-                                NullUserPointer(), NullUserPointer(),
+            core()->ReadMessage(h[1],
+                                NullUserPointer(),
+                                NullUserPointer(),
+                                NullUserPointer(),
+                                NullUserPointer(),
                                 MOJO_READ_MESSAGE_FLAG_MAY_DISCARD));
 
   // |h[1]| is no longer readable (and will never be).
@@ -510,8 +595,11 @@ TEST_F(CoreTest, MessagePipe) {
   // Try writing to |h[1]|.
   buffer[0] = 'e';
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            core()->WriteMessage(h[1], UserPointer<const void>(buffer), 1,
-                                 NullUserPointer(), 0,
+            core()->WriteMessage(h[1],
+                                 UserPointer<const void>(buffer),
+                                 1,
+                                 NullUserPointer(),
+                                 0,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h[1]));
@@ -538,16 +626,20 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
 
   // Make sure that |h_passing[]| work properly.
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h_passing[0], UserPointer<const void>(kHello),
-                                 kHelloSize, NullUserPointer(), 0,
+            core()->WriteMessage(h_passing[0],
+                                 UserPointer<const void>(kHello),
+                                 kHelloSize,
+                                 NullUserPointer(),
+                                 0,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE,
-                         1000000000));
+  EXPECT_EQ(
+      MOJO_RESULT_OK,
+      core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE, 1000000000));
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(h_passing[1], UserPointer<void>(buffer),
+            core()->ReadMessage(h_passing[1],
+                                UserPointer<void>(buffer),
                                 MakeUserPointer(&num_bytes),
                                 MakeUserPointer(handles),
                                 MakeUserPointer(&num_handles),
@@ -559,12 +651,18 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
   // Make sure that you can't pass either of the message pipe's handles over
   // itself.
   EXPECT_EQ(MOJO_RESULT_BUSY,
-            core()->WriteMessage(h_passing[0], UserPointer<const void>(kHello),
-                                 kHelloSize, MakeUserPointer(&h_passing[0]), 1,
+            core()->WriteMessage(h_passing[0],
+                                 UserPointer<const void>(kHello),
+                                 kHelloSize,
+                                 MakeUserPointer(&h_passing[0]),
+                                 1,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            core()->WriteMessage(h_passing[0], UserPointer<const void>(kHello),
-                                 kHelloSize, MakeUserPointer(&h_passing[1]), 1,
+            core()->WriteMessage(h_passing[0],
+                                 UserPointer<const void>(kHello),
+                                 kHelloSize,
+                                 MakeUserPointer(&h_passing[1]),
+                                 1,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   MojoHandle h_passed[2];
@@ -575,15 +673,19 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
 
   // Make sure that |h_passed[]| work properly.
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h_passed[0], UserPointer<const void>(kHello),
-                                 kHelloSize, NullUserPointer(), 0,
+            core()->WriteMessage(h_passed[0],
+                                 UserPointer<const void>(kHello),
+                                 kHelloSize,
+                                 NullUserPointer(),
+                                 0,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_OK,
             core()->Wait(h_passed[1], MOJO_HANDLE_SIGNAL_READABLE, 1000000000));
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(h_passed[1], UserPointer<void>(buffer),
+            core()->ReadMessage(h_passed[1],
+                                UserPointer<void>(buffer),
                                 MakeUserPointer(&num_bytes),
                                 MakeUserPointer(handles),
                                 MakeUserPointer(&num_handles),
@@ -594,17 +696,20 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
 
   // Send |h_passed[1]| from |h_passing[0]| to |h_passing[1]|.
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h_passing[0], UserPointer<const void>(kWorld),
+            core()->WriteMessage(h_passing[0],
+                                 UserPointer<const void>(kWorld),
                                  kWorldSize,
-                                 MakeUserPointer(&h_passed[1]), 1,
+                                 MakeUserPointer(&h_passed[1]),
+                                 1,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE,
-                         1000000000));
+  EXPECT_EQ(
+      MOJO_RESULT_OK,
+      core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE, 1000000000));
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(h_passing[1], UserPointer<void>(buffer),
+            core()->ReadMessage(h_passing[1],
+                                UserPointer<void>(buffer),
                                 MakeUserPointer(&num_bytes),
                                 MakeUserPointer(handles),
                                 MakeUserPointer(&num_handles),
@@ -627,15 +732,19 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
 
   // Write to |h_passed[0]|. Should receive on |h_received|.
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h_passed[0], UserPointer<const void>(kHello),
-                                 kHelloSize, NullUserPointer(), 0,
+            core()->WriteMessage(h_passed[0],
+                                 UserPointer<const void>(kHello),
+                                 kHelloSize,
+                                 NullUserPointer(),
+                                 0,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_OK,
             core()->Wait(h_received, MOJO_HANDLE_SIGNAL_READABLE, 1000000000));
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(h_received, UserPointer<void>(buffer),
+            core()->ReadMessage(h_received,
+                                UserPointer<void>(buffer),
                                 MakeUserPointer(&num_bytes),
                                 MakeUserPointer(handles),
                                 MakeUserPointer(&num_handles),
@@ -654,8 +763,8 @@ TEST_F(CoreTest, DataPipe) {
   MojoHandle ph, ch;  // p is for producer and c is for consumer.
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->CreateDataPipe(NullUserPointer(), MakeUserPointer(&ph),
-                                   MakeUserPointer(&ch)));
+            core()->CreateDataPipe(
+                NullUserPointer(), MakeUserPointer(&ph), MakeUserPointer(&ch)));
   // Should get two distinct, valid handles.
   EXPECT_NE(ph, MOJO_HANDLE_INVALID);
   EXPECT_NE(ch, MOJO_HANDLE_INVALID);
@@ -664,8 +773,7 @@ TEST_F(CoreTest, DataPipe) {
   // Producer should be never-readable, but already writable.
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             core()->Wait(ph, MOJO_HANDLE_SIGNAL_READABLE, 0));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(ph, MOJO_HANDLE_SIGNAL_WRITABLE, 0));
+  EXPECT_EQ(MOJO_RESULT_OK, core()->Wait(ph, MOJO_HANDLE_SIGNAL_WRITABLE, 0));
 
   // Consumer should be never-writable, and not yet readable.
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
@@ -677,21 +785,22 @@ TEST_F(CoreTest, DataPipe) {
   char elements[2] = {'A', 'B'};
   uint32_t num_bytes = 2u;
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->WriteData(ph, UserPointer<const void>(elements),
+            core()->WriteData(ph,
+                              UserPointer<const void>(elements),
                               MakeUserPointer(&num_bytes),
                               MOJO_WRITE_DATA_FLAG_NONE));
   EXPECT_EQ(2u, num_bytes);
 
   // Consumer should now be readable.
-  EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(ch, MOJO_HANDLE_SIGNAL_READABLE, 0));
+  EXPECT_EQ(MOJO_RESULT_OK, core()->Wait(ch, MOJO_HANDLE_SIGNAL_READABLE, 0));
 
   // Read one character.
   elements[0] = -1;
   elements[1] = -1;
   num_bytes = 1u;
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->ReadData(ch, UserPointer<void>(elements),
+            core()->ReadData(ch,
+                             UserPointer<void>(elements),
                              MakeUserPointer(&num_bytes),
                              MOJO_READ_DATA_FLAG_NONE));
   EXPECT_EQ('A', elements[0]);
@@ -701,7 +810,8 @@ TEST_F(CoreTest, DataPipe) {
   void* write_ptr = NULL;
   num_bytes = 0u;
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->BeginWriteData(ph, MakeUserPointer(&write_ptr),
+            core()->BeginWriteData(ph,
+                                   MakeUserPointer(&write_ptr),
                                    MakeUserPointer(&num_bytes),
                                    MOJO_WRITE_DATA_FLAG_NONE));
   // We count on the default options providing a decent buffer size.
@@ -711,7 +821,8 @@ TEST_F(CoreTest, DataPipe) {
   elements[0] = 'X';
   num_bytes = 1u;
   EXPECT_EQ(MOJO_RESULT_BUSY,
-            core()->WriteData(ph, UserPointer<const void>(elements),
+            core()->WriteData(ph,
+                              UserPointer<const void>(elements),
                               MakeUserPointer(&num_bytes),
                               MOJO_WRITE_DATA_FLAG_NONE));
 
@@ -724,29 +835,36 @@ TEST_F(CoreTest, DataPipe) {
   // Query how much data we have.
   num_bytes = 0;
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->ReadData(ch, NullUserPointer(), MakeUserPointer(&num_bytes),
+            core()->ReadData(ch,
+                             NullUserPointer(),
+                             MakeUserPointer(&num_bytes),
                              MOJO_READ_DATA_FLAG_QUERY));
   EXPECT_EQ(4u, num_bytes);
 
   // Try to discard ten characters, in all-or-none mode. Should fail.
   num_bytes = 10;
   EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
-            core()->ReadData(ch, NullUserPointer(), MakeUserPointer(&num_bytes),
-                             MOJO_READ_DATA_FLAG_DISCARD |
-                                 MOJO_READ_DATA_FLAG_ALL_OR_NONE));
+            core()->ReadData(
+                ch,
+                NullUserPointer(),
+                MakeUserPointer(&num_bytes),
+                MOJO_READ_DATA_FLAG_DISCARD | MOJO_READ_DATA_FLAG_ALL_OR_NONE));
 
   // Discard two characters.
   num_bytes = 2;
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->ReadData(ch, NullUserPointer(), MakeUserPointer(&num_bytes),
-                             MOJO_READ_DATA_FLAG_DISCARD |
-                                 MOJO_READ_DATA_FLAG_ALL_OR_NONE));
+            core()->ReadData(
+                ch,
+                NullUserPointer(),
+                MakeUserPointer(&num_bytes),
+                MOJO_READ_DATA_FLAG_DISCARD | MOJO_READ_DATA_FLAG_ALL_OR_NONE));
 
   // Read the remaining two characters, in two-phase mode (all-or-none).
   const void* read_ptr = NULL;
   num_bytes = 2;
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->BeginReadData(ch, MakeUserPointer(&read_ptr),
+            core()->BeginReadData(ch,
+                                  MakeUserPointer(&read_ptr),
                                   MakeUserPointer(&num_bytes),
                                   MOJO_READ_DATA_FLAG_ALL_OR_NONE));
   // Note: Count on still being able to do the contiguous read here.
@@ -755,7 +873,9 @@ TEST_F(CoreTest, DataPipe) {
   // Discarding right now should fail.
   num_bytes = 1;
   EXPECT_EQ(MOJO_RESULT_BUSY,
-            core()->ReadData(ch, NullUserPointer(), MakeUserPointer(&num_bytes),
+            core()->ReadData(ch,
+                             NullUserPointer(),
+                             MakeUserPointer(&num_bytes),
                              MOJO_READ_DATA_FLAG_DISCARD));
 
   // Actually check our data and end the two-phase read.
@@ -799,21 +919,25 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
 
   MojoHandle ph, ch;
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->CreateDataPipe(NullUserPointer(), MakeUserPointer(&ph),
-                                   MakeUserPointer(&ch)));
+            core()->CreateDataPipe(
+                NullUserPointer(), MakeUserPointer(&ph), MakeUserPointer(&ch)));
 
   // Send |ch| from |h_passing[0]| to |h_passing[1]|.
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h_passing[0], UserPointer<const void>(kHello),
-                                 kHelloSize, MakeUserPointer(&ch), 1,
+            core()->WriteMessage(h_passing[0],
+                                 UserPointer<const void>(kHello),
+                                 kHelloSize,
+                                 MakeUserPointer(&ch),
+                                 1,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE,
-                         1000000000));
+  EXPECT_EQ(
+      MOJO_RESULT_OK,
+      core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE, 1000000000));
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(h_passing[1], UserPointer<void>(buffer),
+            core()->ReadMessage(h_passing[1],
+                                UserPointer<void>(buffer),
                                 MakeUserPointer(&num_bytes),
                                 MakeUserPointer(handles),
                                 MakeUserPointer(&num_handles),
@@ -837,14 +961,16 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
   // Write to |ph|. Should receive on |ch_received|.
   num_bytes = kWorldSize;
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->WriteData(ph, UserPointer<const void>(kWorld),
+            core()->WriteData(ph,
+                              UserPointer<const void>(kWorld),
                               MakeUserPointer(&num_bytes),
                               MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
   EXPECT_EQ(MOJO_RESULT_OK,
             core()->Wait(ch_received, MOJO_HANDLE_SIGNAL_READABLE, 1000000000));
   num_bytes = kBufferSize;
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->ReadData(ch_received, UserPointer<void>(buffer),
+            core()->ReadData(ch_received,
+                             UserPointer<void>(buffer),
                              MakeUserPointer(&num_bytes),
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(kWorldSize, num_bytes);
@@ -852,16 +978,20 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
 
   // Now pass |ph| in the same direction.
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h_passing[0], UserPointer<const void>(kWorld),
-                                 kWorldSize, MakeUserPointer(&ph), 1,
+            core()->WriteMessage(h_passing[0],
+                                 UserPointer<const void>(kWorld),
+                                 kWorldSize,
+                                 MakeUserPointer(&ph),
+                                 1,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE,
-                         1000000000));
+  EXPECT_EQ(
+      MOJO_RESULT_OK,
+      core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE, 1000000000));
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(h_passing[1], UserPointer<void>(buffer),
+            core()->ReadMessage(h_passing[1],
+                                UserPointer<void>(buffer),
                                 MakeUserPointer(&num_bytes),
                                 MakeUserPointer(handles),
                                 MakeUserPointer(&num_handles),
@@ -885,14 +1015,16 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
   // Write to |ph_received|. Should receive on |ch_received|.
   num_bytes = kHelloSize;
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->WriteData(ph_received, UserPointer<const void>(kHello),
+            core()->WriteData(ph_received,
+                              UserPointer<const void>(kHello),
                               MakeUserPointer(&num_bytes),
                               MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
   EXPECT_EQ(MOJO_RESULT_OK,
             core()->Wait(ch_received, MOJO_HANDLE_SIGNAL_READABLE, 1000000000));
   num_bytes = kBufferSize;
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->ReadData(ch_received, UserPointer<void>(buffer),
+            core()->ReadData(ch_received,
+                             UserPointer<void>(buffer),
                              MakeUserPointer(&num_bytes),
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(kHelloSize, num_bytes);
@@ -907,28 +1039,36 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
   void* write_ptr = NULL;
   num_bytes = 0;
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->BeginWriteData(ph, MakeUserPointer(&write_ptr),
+            core()->BeginWriteData(ph,
+                                   MakeUserPointer(&write_ptr),
                                    MakeUserPointer(&num_bytes),
                                    MOJO_WRITE_DATA_FLAG_NONE));
   ASSERT_GE(num_bytes, 1u);
   EXPECT_EQ(MOJO_RESULT_BUSY,
-            core()->WriteMessage(h_passing[0], UserPointer<const void>(kHello),
-                                 kHelloSize, MakeUserPointer(&ph), 1,
+            core()->WriteMessage(h_passing[0],
+                                 UserPointer<const void>(kHello),
+                                 kHelloSize,
+                                 MakeUserPointer(&ph),
+                                 1,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // But |ch| can, even if |ph| is in a two-phase write.
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h_passing[0], UserPointer<const void>(kHello),
-                                 kHelloSize, MakeUserPointer(&ch), 1,
+            core()->WriteMessage(h_passing[0],
+                                 UserPointer<const void>(kHello),
+                                 kHelloSize,
+                                 MakeUserPointer(&ch),
+                                 1,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   ch = MOJO_HANDLE_INVALID;
-  EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE,
-                         1000000000));
+  EXPECT_EQ(
+      MOJO_RESULT_OK,
+      core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE, 1000000000));
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(h_passing[1], UserPointer<void>(buffer),
+            core()->ReadMessage(h_passing[1],
+                                UserPointer<void>(buffer),
                                 MakeUserPointer(&num_bytes),
                                 MakeUserPointer(handles),
                                 MakeUserPointer(&num_handles),
@@ -951,27 +1091,35 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
   const void* read_ptr = NULL;
   num_bytes = 1;
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->BeginReadData(ch, MakeUserPointer(&read_ptr),
+            core()->BeginReadData(ch,
+                                  MakeUserPointer(&read_ptr),
                                   MakeUserPointer(&num_bytes),
                                   MOJO_READ_DATA_FLAG_ALL_OR_NONE));
   EXPECT_EQ(MOJO_RESULT_BUSY,
-            core()->WriteMessage(h_passing[0], UserPointer<const void>(kHello),
-                                 kHelloSize, MakeUserPointer(&ch), 1,
+            core()->WriteMessage(h_passing[0],
+                                 UserPointer<const void>(kHello),
+                                 kHelloSize,
+                                 MakeUserPointer(&ch),
+                                 1,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // But |ph| can, even if |ch| is in a two-phase read.
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h_passing[0], UserPointer<const void>(kWorld),
-                                 kWorldSize, MakeUserPointer(&ph), 1,
+            core()->WriteMessage(h_passing[0],
+                                 UserPointer<const void>(kWorld),
+                                 kWorldSize,
+                                 MakeUserPointer(&ph),
+                                 1,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   ph = MOJO_HANDLE_INVALID;
-  EXPECT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE,
-                         1000000000));
+  EXPECT_EQ(
+      MOJO_RESULT_OK,
+      core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE, 1000000000));
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(h_passing[1], UserPointer<void>(buffer),
+            core()->ReadMessage(h_passing[1],
+                                UserPointer<void>(buffer),
                                 MakeUserPointer(&num_bytes),
                                 MakeUserPointer(handles),
                                 MakeUserPointer(&num_handles),

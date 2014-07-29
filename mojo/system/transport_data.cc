@@ -23,7 +23,8 @@ namespace system {
 // space needed need not be a multiple of the alignment.
 const size_t kMaxSizePerPlatformHandle = 8;
 COMPILE_ASSERT(kMaxSizePerPlatformHandle %
-                   MessageInTransit::kMessageAlignment == 0,
+                       MessageInTransit::kMessageAlignment ==
+                   0,
                kMaxSizePerPlatformHandle_not_a_multiple_of_alignment);
 
 STATIC_CONST_MEMBER_DEFINITION const size_t
@@ -42,8 +43,8 @@ const size_t TransportData::kMaxPlatformHandles =
 // static
 const size_t TransportData::kMaxBufferSize =
     sizeof(Header) +
-    kMaxMessageNumHandles * (sizeof(HandleTableEntry) +
-                                 kMaxSerializedDispatcherSize) +
+    kMaxMessageNumHandles *
+        (sizeof(HandleTableEntry) + kMaxSerializedDispatcherSize) +
     kMaxPlatformHandles * kMaxSizePerPlatformHandle;
 
 struct TransportData::PrivateStructForCompileAsserts {
@@ -53,12 +54,14 @@ struct TransportData::PrivateStructForCompileAsserts {
 
   // The maximum serialized dispatcher size must be a multiple of the alignment.
   COMPILE_ASSERT(kMaxSerializedDispatcherSize %
-                     MessageInTransit::kMessageAlignment == 0,
+                         MessageInTransit::kMessageAlignment ==
+                     0,
                  kMaxSerializedDispatcherSize_not_a_multiple_of_alignment);
 
   // The size of |HandleTableEntry| must be a multiple of the alignment.
   COMPILE_ASSERT(sizeof(HandleTableEntry) %
-                     MessageInTransit::kMessageAlignment == 0,
+                         MessageInTransit::kMessageAlignment ==
+                     0,
                  sizeof_MessageInTransit_HandleTableEntry_invalid);
 };
 
@@ -88,14 +91,13 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
       size_t max_size = 0;
       size_t max_platform_handles = 0;
       Dispatcher::TransportDataAccess::StartSerialize(
-              dispatcher, channel, &max_size, &max_platform_handles);
+          dispatcher, channel, &max_size, &max_platform_handles);
 
       DCHECK_LE(max_size, kMaxSerializedDispatcherSize);
       estimated_size += MessageInTransit::RoundUpMessageAlignment(max_size);
       DCHECK_LE(estimated_size, kMaxBufferSize);
 
-      DCHECK_LE(max_platform_handles,
-                kMaxSerializedDispatcherPlatformHandles);
+      DCHECK_LE(max_platform_handles, kMaxSerializedDispatcherPlatformHandles);
       estimated_num_platform_handles += max_platform_handles;
       DCHECK_LE(estimated_num_platform_handles, kMaxPlatformHandles);
 
@@ -151,17 +153,21 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
     void* destination = buffer_.get() + current_offset;
     size_t actual_size = 0;
     if (Dispatcher::TransportDataAccess::EndSerializeAndClose(
-            dispatcher, channel, destination, &actual_size,
+            dispatcher,
+            channel,
+            destination,
+            &actual_size,
             platform_handles_.get())) {
       handle_table[i].type = static_cast<int32_t>(dispatcher->GetType());
       handle_table[i].offset = static_cast<uint32_t>(current_offset);
       handle_table[i].size = static_cast<uint32_t>(actual_size);
-      // (Okay to not set |unused| since we cleared the entire buffer.)
+// (Okay to not set |unused| since we cleared the entire buffer.)
 
 #if DCHECK_IS_ON
       DCHECK_LE(actual_size, all_max_sizes[i]);
-      DCHECK_LE(platform_handles_ ? (platform_handles_->size() -
-                                         old_platform_handles_size) : 0,
+      DCHECK_LE(platform_handles_
+                    ? (platform_handles_->size() - old_platform_handles_size)
+                    : 0,
                 all_max_platform_handles[i]);
 #endif
     } else {
@@ -195,8 +201,7 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
 #if defined(OS_POSIX)
 TransportData::TransportData(
     embedder::ScopedPlatformHandleVectorPtr platform_handles)
-    : buffer_size_(sizeof(Header)),
-      platform_handles_(platform_handles.Pass()) {
+    : buffer_size_(sizeof(Header)), platform_handles_(platform_handles.Pass()) {
   buffer_.reset(static_cast<char*>(
       base::AlignedAlloc(buffer_size_, MessageInTransit::kMessageAlignment)));
   memset(buffer_.get(), 0, buffer_size_);
@@ -242,13 +247,13 @@ const char* TransportData::ValidateBuffer(
   if (header->num_platform_handles == 0) {
     // Then |platform_handle_table_offset| should also be zero.
     if (header->platform_handle_table_offset != 0) {
-      return
-          "Message has no handles attached, but platform handle table present";
+      return "Message has no handles attached, but platform handle table "
+             "present";
     }
   } else {
     // |num_handles| has already been validated, so the multiplication is okay.
     if (header->num_platform_handles >
-            num_handles * kMaxSerializedDispatcherPlatformHandles)
+        num_handles * kMaxSerializedDispatcherPlatformHandles)
       return "Message has too many platform handles attached";
 
     static const char kInvalidPlatformHandleTableOffset[] =
@@ -256,7 +261,8 @@ const char* TransportData::ValidateBuffer(
     // This doesn't check that the platform handle table doesn't alias other
     // stuff, but it doesn't matter, since it's all read-only.
     if (header->platform_handle_table_offset %
-            MessageInTransit::kMessageAlignment != 0)
+            MessageInTransit::kMessageAlignment !=
+        0)
       return kInvalidPlatformHandleTableOffset;
 
     // ">" instead of ">=" since the size per handle may be zero.
@@ -267,7 +273,7 @@ const char* TransportData::ValidateBuffer(
     // |num_platform_handles|, so the addition and multiplication are okay.
     if (header->platform_handle_table_offset +
             header->num_platform_handles * serialized_platform_handle_size >
-            buffer_size)
+        buffer_size)
       return kInvalidPlatformHandleTableOffset;
   }
 
@@ -305,7 +311,7 @@ void TransportData::GetPlatformHandleTable(const void* transport_data_buffer,
   const Header* header = static_cast<const Header*>(transport_data_buffer);
   *num_platform_handles = header->num_platform_handles;
   *platform_handle_table = static_cast<const char*>(transport_data_buffer) +
-      header->platform_handle_table_offset;
+                           header->platform_handle_table_offset;
 }
 
 // static

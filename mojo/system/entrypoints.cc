@@ -32,7 +32,6 @@ Core* GetCore() {
 
 // Definitions of the system functions.
 extern "C" {
-
 MojoTimeTicks MojoGetTimeTicksNow() {
   return g_core->GetTimeTicksNow();
 }
@@ -174,11 +173,8 @@ MojoResult MojoMapBuffer(MojoHandle buffer_handle,
                          uint64_t num_bytes,
                          void** buffer,
                          MojoMapBufferFlags flags) {
-  return g_core->MapBuffer(buffer_handle,
-                           offset,
-                           num_bytes,
-                           MakeUserPointer(buffer),
-                           flags);
+  return g_core->MapBuffer(
+      buffer_handle, offset, num_bytes, MakeUserPointer(buffer), flags);
 }
 
 MojoResult MojoUnmapBuffer(void* buffer) {

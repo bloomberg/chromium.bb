@@ -24,21 +24,16 @@ namespace {
 
 class MockDispatcher : public Dispatcher {
  public:
-  explicit MockDispatcher(CoreTestBase::MockHandleInfo* info)
-      : info_(info) {
+  explicit MockDispatcher(CoreTestBase::MockHandleInfo* info) : info_(info) {
     CHECK(info_);
     info_->IncrementCtorCallCount();
   }
 
   // |Dispatcher| private methods:
-  virtual Type GetType() const OVERRIDE {
-    return kTypeUnknown;
-  }
+  virtual Type GetType() const OVERRIDE { return kTypeUnknown; }
 
  private:
-  virtual ~MockDispatcher() {
-    info_->IncrementDtorCallCount();
-  }
+  virtual ~MockDispatcher() { info_->IncrementDtorCallCount(); }
 
   // |Dispatcher| protected methods:
   virtual void CloseImplNoLock() OVERRIDE {
@@ -151,7 +146,7 @@ class MockDispatcher : public Dispatcher {
   }
 
   virtual scoped_refptr<Dispatcher>
-      CreateEquivalentDispatcherAndCloseImplNoLock() OVERRIDE {
+  CreateEquivalentDispatcherAndCloseImplNoLock() OVERRIDE {
     return scoped_refptr<Dispatcher>(new MockDispatcher(info_));
   }
 

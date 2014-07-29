@@ -52,7 +52,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
   // TODO(vtl): This currently uses |kDefaultCreateOptions|, which is okay since
   // there aren't any options, but eventually options should be plumbed through.
   static std::pair<scoped_refptr<MessagePipeDispatcher>,
-                   scoped_refptr<MessagePipe> > CreateRemoteMessagePipe();
+                   scoped_refptr<MessagePipe> >
+      CreateRemoteMessagePipe();
 
   // The "opposite" of |SerializeAndClose()|. (Typically this is called by
   // |Dispatcher::Deserialize()|.)

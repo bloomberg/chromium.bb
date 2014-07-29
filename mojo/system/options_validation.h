@@ -43,9 +43,7 @@ class UserOptionsReader {
     // == sizeof(uint32_t)| somewhere.
   }
 
-  bool is_valid() const {
-    return !!options_reader_.GetPointer();
-  }
+  bool is_valid() const { return !!options_reader_.GetPointer(); }
 
   const Options& options() const {
     DCHECK(is_valid());
@@ -95,7 +93,7 @@ class UserOptionsReader {
 // contortion below). We might also be able to pull out the type |Options| from
 // |reader| (using |decltype|) instead of requiring a parameter.
 #define OPTIONS_STRUCT_HAS_MEMBER(Options, member, reader) \
-    reader.HasMember(offsetof(Options, member), sizeof(reader.options().member))
+  reader.HasMember(offsetof(Options, member), sizeof(reader.options().member))
 
 }  // namespace system
 }  // namespace mojo

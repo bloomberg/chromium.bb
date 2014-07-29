@@ -48,10 +48,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // (passed in on creation).
   class MOJO_SYSTEM_IMPL_EXPORT Delegate {
    public:
-    enum FatalError {
-      FATAL_ERROR_READ = 0,
-      FATAL_ERROR_WRITE
-    };
+    enum FatalError { FATAL_ERROR_READ = 0, FATAL_ERROR_WRITE };
 
     // Called when a message is read. This may call |Shutdown()| (on the
     // |RawChannel|), but must not destroy it.
@@ -107,11 +104,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
 
  protected:
   // Return values of |[Schedule]Read()| and |[Schedule]WriteNoLock()|.
-  enum IOResult {
-    IO_SUCCEEDED,
-    IO_FAILED,
-    IO_PENDING
-  };
+  enum IOResult { IO_SUCCEEDED, IO_FAILED, IO_PENDING };
 
   class MOJO_SYSTEM_IMPL_EXPORT ReadBuffer {
    public:
@@ -270,9 +263,8 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // On shutdown, passes the ownership of the buffers to subclasses, which may
   // want to preserve them if there are pending read/write. Must be called on
   // the I/O thread under |write_lock_|.
-  virtual void OnShutdownNoLock(
-      scoped_ptr<ReadBuffer> read_buffer,
-      scoped_ptr<WriteBuffer> write_buffer) = 0;
+  virtual void OnShutdownNoLock(scoped_ptr<ReadBuffer> read_buffer,
+                                scoped_ptr<WriteBuffer> write_buffer) = 0;
 
  private:
   // Calls |delegate_->OnFatalError(fatal_error)|. Must be called on the I/O

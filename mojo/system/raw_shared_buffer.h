@@ -118,8 +118,10 @@ class MOJO_SYSTEM_IMPL_EXPORT RawSharedBufferMapping {
                          size_t length,
                          void* real_base,
                          size_t real_length)
-      : base_(base), length_(length),
-        real_base_(real_base), real_length_(real_length) {}
+      : base_(base),
+        length_(length),
+        real_base_(real_base),
+        real_length_(real_length) {}
   void Unmap();
 
   void* const base_;

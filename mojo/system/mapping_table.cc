@@ -28,7 +28,7 @@ MojoResult MappingTable::AddMapping(
 
   uintptr_t address = reinterpret_cast<uintptr_t>(mapping->base());
   DCHECK(address_to_mapping_map_.find(address) ==
-             address_to_mapping_map_.end());
+         address_to_mapping_map_.end());
   address_to_mapping_map_[address] = mapping.release();
   return MOJO_RESULT_OK;
 }

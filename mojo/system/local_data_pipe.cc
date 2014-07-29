@@ -21,9 +21,7 @@ namespace mojo {
 namespace system {
 
 LocalDataPipe::LocalDataPipe(const MojoCreateDataPipeOptions& options)
-    : DataPipe(true, true, options),
-      start_index_(0),
-      current_num_bytes_(0) {
+    : DataPipe(true, true, options), start_index_(0), current_num_bytes_(0) {
   // Note: |buffer_| is lazily allocated, since a common case will be that one
   // of the handles is immediately passed off to another process.
 }
@@ -63,8 +61,8 @@ MojoResult LocalDataPipe::ProducerWriteDataImplNoLock(
                                   capacity_num_bytes());
     if (num_bytes_to_write > capacity_num_bytes() - current_num_bytes_) {
       // Discard as much as needed (discard oldest first).
-      MarkDataAsConsumedNoLock(
-          num_bytes_to_write - (capacity_num_bytes() - current_num_bytes_));
+      MarkDataAsConsumedNoLock(num_bytes_to_write -
+                               (capacity_num_bytes() - current_num_bytes_));
       // No need to wake up write waiters, since we're definitely going to leave
       // the buffer full.
     }
@@ -93,8 +91,8 @@ MojoResult LocalDataPipe::ProducerWriteDataImplNoLock(
 
   if (num_bytes_to_write_first < num_bytes_to_write) {
     // The "second write index" is zero.
-    elements.At(num_bytes_to_write_first).GetArray(
-        buffer_.get(), num_bytes_to_write - num_bytes_to_write_first);
+    elements.At(num_bytes_to_write_first)
+        .GetArray(buffer_.get(), num_bytes_to_write - num_bytes_to_write_first);
   }
 
   current_num_bytes_ += num_bytes_to_write;
@@ -186,15 +184,15 @@ MojoResult LocalDataPipe::ConsumerReadDataImplNoLock(
   if (min_num_bytes_to_read > current_num_bytes_) {
     // Don't return "should wait" since you can't wait for a specified amount of
     // data.
-    return producer_open_no_lock() ? MOJO_RESULT_OUT_OF_RANGE :
-                                     MOJO_RESULT_FAILED_PRECONDITION;
+    return producer_open_no_lock() ? MOJO_RESULT_OUT_OF_RANGE
+                                   : MOJO_RESULT_FAILED_PRECONDITION;
   }
 
   size_t num_bytes_to_read =
       std::min(static_cast<size_t>(max_num_bytes_to_read), current_num_bytes_);
   if (num_bytes_to_read == 0) {
-    return producer_open_no_lock() ? MOJO_RESULT_SHOULD_WAIT :
-                                     MOJO_RESULT_FAILED_PRECONDITION;
+    return producer_open_no_lock() ? MOJO_RESULT_SHOULD_WAIT
+                                   : MOJO_RESULT_FAILED_PRECONDITION;
   }
 
   // The amount we can read in our first |memcpy()|.
@@ -204,8 +202,8 @@ MojoResult LocalDataPipe::ConsumerReadDataImplNoLock(
 
   if (num_bytes_to_read_first < num_bytes_to_read) {
     // The "second read index" is zero.
-    elements.At(num_bytes_to_read_first).PutArray(
-        buffer_.get(), num_bytes_to_read - num_bytes_to_read_first);
+    elements.At(num_bytes_to_read_first)
+        .PutArray(buffer_.get(), num_bytes_to_read - num_bytes_to_read_first);
   }
 
   MarkDataAsConsumedNoLock(num_bytes_to_read);
@@ -224,19 +222,18 @@ MojoResult LocalDataPipe::ConsumerDiscardDataImplNoLock(
   if (min_num_bytes_to_discard > current_num_bytes_) {
     // Don't return "should wait" since you can't wait for a specified amount of
     // data.
-    return producer_open_no_lock() ? MOJO_RESULT_OUT_OF_RANGE :
-                                     MOJO_RESULT_FAILED_PRECONDITION;
+    return producer_open_no_lock() ? MOJO_RESULT_OUT_OF_RANGE
+                                   : MOJO_RESULT_FAILED_PRECONDITION;
   }
 
   // Be consistent with other operations; error if no data available.
   if (current_num_bytes_ == 0) {
-    return producer_open_no_lock() ? MOJO_RESULT_SHOULD_WAIT :
-                                     MOJO_RESULT_FAILED_PRECONDITION;
+    return producer_open_no_lock() ? MOJO_RESULT_SHOULD_WAIT
+                                   : MOJO_RESULT_FAILED_PRECONDITION;
   }
 
-  size_t num_bytes_to_discard =
-      std::min(static_cast<size_t>(max_num_bytes_to_discard),
-                                   current_num_bytes_);
+  size_t num_bytes_to_discard = std::min(
+      static_cast<size_t>(max_num_bytes_to_discard), current_num_bytes_);
   MarkDataAsConsumedNoLock(num_bytes_to_discard);
   num_bytes.Put(static_cast<uint32_t>(num_bytes_to_discard));
   return MOJO_RESULT_OK;
@@ -257,14 +254,14 @@ MojoResult LocalDataPipe::ConsumerBeginReadDataImplNoLock(
   if (min_num_bytes_to_read > max_num_bytes_to_read) {
     // Don't return "should wait" since you can't wait for a specified amount of
     // data.
-    return producer_open_no_lock() ? MOJO_RESULT_OUT_OF_RANGE :
-                                     MOJO_RESULT_FAILED_PRECONDITION;
+    return producer_open_no_lock() ? MOJO_RESULT_OUT_OF_RANGE
+                                   : MOJO_RESULT_FAILED_PRECONDITION;
   }
 
   // Don't go into a two-phase read if there's no data.
   if (max_num_bytes_to_read == 0) {
-    return producer_open_no_lock() ? MOJO_RESULT_SHOULD_WAIT :
-                                     MOJO_RESULT_FAILED_PRECONDITION;
+    return producer_open_no_lock() ? MOJO_RESULT_SHOULD_WAIT
+                                   : MOJO_RESULT_FAILED_PRECONDITION;
   }
 
   buffer.Put(buffer_.get() + start_index_);

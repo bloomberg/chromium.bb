@@ -44,13 +44,9 @@ class Stopwatch {
   Stopwatch() {}
   ~Stopwatch() {}
 
-  void Start() {
-    start_time_ = base::TimeTicks::Now();
-  }
+  void Start() { start_time_ = base::TimeTicks::Now(); }
 
-  base::TimeDelta Elapsed() {
-    return base::TimeTicks::Now() - start_time_;
-  }
+  base::TimeDelta Elapsed() { return base::TimeTicks::Now() - start_time_; }
 
  private:
   base::TimeTicks start_time_;

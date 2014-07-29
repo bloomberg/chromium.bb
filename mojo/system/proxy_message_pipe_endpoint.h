@@ -68,9 +68,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
   void AssertConsistentState() const;
 #endif
 
-  bool is_attached() const {
-    return !!channel_;
-  }
+  bool is_attached() const { return !!channel_; }
 
   bool is_running() const {
     return remote_id_ != MessageInTransit::kInvalidEndpointId;

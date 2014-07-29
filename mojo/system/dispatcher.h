@@ -42,8 +42,8 @@ typedef std::vector<scoped_refptr<Dispatcher> > DispatcherVector;
 namespace test {
 
 // Test helper. We need to declare it here so we can friend it.
-MOJO_SYSTEM_IMPL_EXPORT DispatcherTransport DispatcherTryStartTransport(
-    Dispatcher* dispatcher);
+MOJO_SYSTEM_IMPL_EXPORT DispatcherTransport
+    DispatcherTryStartTransport(Dispatcher* dispatcher);
 
 }  // namespace test
 
@@ -52,8 +52,8 @@ MOJO_SYSTEM_IMPL_EXPORT DispatcherTransport DispatcherTryStartTransport(
 // object is thread-safe, with its state being protected by a single lock
 // |lock_|, which is also made available to implementation subclasses (via the
 // |lock()| method).
-class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
-    public base::RefCountedThreadSafe<Dispatcher> {
+class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
+    : public base::RefCountedThreadSafe<Dispatcher> {
  public:
   enum Type {
     kTypeUnknown = 0,

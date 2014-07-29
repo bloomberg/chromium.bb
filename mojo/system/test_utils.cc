@@ -34,14 +34,14 @@ void PostTaskAndWait(scoped_refptr<base::TaskRunner> task_runner,
 }
 
 base::TimeDelta EpsilonTimeout() {
-  // Originally, our epsilon timeout was 10 ms, which was mostly fine but flaky
-  // on some Windows bots. I don't recall ever seeing flakes on other bots. At
-  // 30 ms tests seem reliable on Windows bots, but not at 25 ms. We'd like this
-  // timeout to be as small as possible (see the description in the .h file).
-  //
-  // Currently, |tiny_timeout()| is usually 100 ms (possibly scaled under ASAN,
-  // etc.). Based on this, set it to (usually be) 30 ms on Windows and 20 ms
-  // elsewhere.
+// Originally, our epsilon timeout was 10 ms, which was mostly fine but flaky on
+// some Windows bots. I don't recall ever seeing flakes on other bots. At 30 ms
+// tests seem reliable on Windows bots, but not at 25 ms. We'd like this timeout
+// to be as small as possible (see the description in the .h file).
+//
+// Currently, |tiny_timeout()| is usually 100 ms (possibly scaled under ASAN,
+// etc.). Based on this, set it to (usually be) 30 ms on Windows and 20 ms
+// elsewhere.
 #if defined(OS_WIN)
   return (TestTimeouts::tiny_timeout() * 3) / 10;
 #else
@@ -52,8 +52,7 @@ base::TimeDelta EpsilonTimeout() {
 // TestIOThread ----------------------------------------------------------------
 
 TestIOThread::TestIOThread(Mode mode)
-    : io_thread_("test_io_thread"),
-      io_thread_started_(false) {
+    : io_thread_("test_io_thread"), io_thread_started_(false) {
   switch (mode) {
     case kAutoStart:
       Start();

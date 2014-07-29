@@ -29,9 +29,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransitQueue {
 
   ~MessageInTransitQueue();
 
-  bool IsEmpty() const {
-    return queue_.empty();
-  }
+  bool IsEmpty() const { return queue_.empty(); }
 
   void AddMessage(scoped_ptr<MessageInTransit> message) {
     queue_.push_back(message.release());
@@ -43,9 +41,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransitQueue {
     return make_scoped_ptr(rv);
   }
 
-  MessageInTransit* PeekMessage() {
-    return queue_.front();
-  }
+  MessageInTransit* PeekMessage() { return queue_.front(); }
 
   void DiscardMessage() {
     delete queue_.front();
@@ -61,7 +57,6 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransitQueue {
 
   DISALLOW_COPY_AND_ASSIGN(MessageInTransitQueue);
 };
-
 
 }  // namespace system
 }  // namespace mojo
