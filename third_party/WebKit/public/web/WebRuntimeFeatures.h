@@ -84,6 +84,8 @@ public:
 
     BLINK_EXPORT static void enableNavigationTransitions(bool);
 
+    BLINK_EXPORT static void enableNetworkInformation(bool);
+
     BLINK_EXPORT static void enableOrientationEvent(bool);
 
     BLINK_EXPORT static void enablePagePopup(bool);

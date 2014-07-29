@@ -170,6 +170,11 @@ void WebRuntimeFeatures::enableNavigationTransitions(bool enable)
     RuntimeEnabledFeatures::setNavigationTransitionsEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableNetworkInformation(bool enable)
+{
+    RuntimeEnabledFeatures::setNetworkInformationEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableOrientationEvent(bool enable)
 {
     RuntimeEnabledFeatures::setOrientationEventEnabled(enable);
