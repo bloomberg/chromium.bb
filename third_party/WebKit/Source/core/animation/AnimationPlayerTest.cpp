@@ -718,7 +718,7 @@ TEST_F(AnimationAnimationPlayerTest, AttachedAnimationPlayers)
     RefPtrWillBeRawPtr<AnimationPlayer> player = timeline->createAnimationPlayer(animation.get());
     player->setStartTime(0);
     timeline->serviceAnimations(TimingUpdateForAnimationFrame);
-    EXPECT_EQ(1, element->activeAnimations()->players().find(player.get())->value);
+    EXPECT_EQ(1U, element->activeAnimations()->players().find(player.get())->value);
 
     player.release();
     Heap::collectAllGarbage();

@@ -44,21 +44,6 @@ ActiveAnimations::~ActiveAnimations()
 #endif
 }
 
-void ActiveAnimations::addPlayer(AnimationPlayer* player)
-{
-    ++m_players.add(player, 0).storedValue->value;
-}
-
-void ActiveAnimations::removePlayer(AnimationPlayer* player)
-{
-    AnimationPlayerCountedSet::iterator it = m_players.find(player);
-    ASSERT(it != m_players.end());
-    ASSERT(it->value > 0);
-    --it->value;
-    if (!it->value)
-        m_players.remove(it);
-}
-
 void ActiveAnimations::updateAnimationFlags(RenderStyle& style)
 {
     for (AnimationPlayerCountedSet::const_iterator it = m_players.begin(); it != m_players.end(); ++it) {
