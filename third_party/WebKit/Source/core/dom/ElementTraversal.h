@@ -59,10 +59,8 @@ public:
     static ElementType* next(const Node& current) { return nextTemplate(current); }
     static ElementType* next(const ContainerNode& current, const Node* stayWithin) { return nextTemplate(current, stayWithin); }
     static ElementType* next(const Node& current, const Node* stayWithin) { return nextTemplate(current, stayWithin); }
-    static ElementType* previous(const ContainerNode& current) { return previousTemplate(current); }
-    static ElementType* previous(const Node& current) { return previousTemplate(current); }
-    static ElementType* previous(const ContainerNode& current, const Node* stayWithin) { return previousTemplate(current, stayWithin); }
-    static ElementType* previous(const Node& current, const Node* stayWithin) { return previousTemplate(current, stayWithin); }
+    static ElementType* previous(const Node&);
+    static ElementType* previous(const Node&, const Node* stayWithin);
 
     // Like next, but skips children.
     static ElementType* nextSkippingChildren(const Node&);
@@ -95,10 +93,6 @@ private:
     static ElementType* nextTemplate(NodeType&);
     template <class NodeType>
     static ElementType* nextTemplate(NodeType&, const Node* stayWithin);
-    template <class NodeType>
-    static ElementType* previousTemplate(NodeType&);
-    template <class NodeType>
-    static ElementType* previousTemplate(NodeType&, const Node* stayWithin);
 };
 
 typedef Traversal<Element> ElementTraversal;
@@ -211,8 +205,7 @@ inline ElementType* Traversal<ElementType>::nextTemplate(NodeType& current, cons
 }
 
 template <class ElementType>
-template <class NodeType>
-inline ElementType* Traversal<ElementType>::previousTemplate(NodeType& current)
+inline ElementType* Traversal<ElementType>::previous(const Node& current)
 {
     Node* node = NodeTraversal::previous(current);
     while (node && !isElementOfType<const ElementType>(*node))
@@ -221,8 +214,7 @@ inline ElementType* Traversal<ElementType>::previousTemplate(NodeType& current)
 }
 
 template <class ElementType>
-template <class NodeType>
-inline ElementType* Traversal<ElementType>::previousTemplate(NodeType& current, const Node* stayWithin)
+inline ElementType* Traversal<ElementType>::previous(const Node& current, const Node* stayWithin)
 {
     Node* node = NodeTraversal::previous(current, stayWithin);
     while (node && !isElementOfType<const ElementType>(*node))
