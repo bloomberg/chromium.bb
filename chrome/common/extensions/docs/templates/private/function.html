@@ -6,7 +6,6 @@
       {{?function.id}}id="{{function.id}}"{{/}}
       {{?hideParamTOC}}title=""{{/}}>{{function.name}}
   {{?parentName}}</h4>{{:}}</h3>{{/}}
-  {{+partials.warning_deprecated item:function/}}
   {{+partials.function_details
       function:function
       parentName:parentName

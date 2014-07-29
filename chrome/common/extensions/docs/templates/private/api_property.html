@@ -3,7 +3,11 @@
   <td>{{+partials.type_name link:link type:property/}}</td>
   <td><code id="{{id}}">{{api.namespace}}.{{name}}</code></td>
   <td>
-    {{?deprecated +partials.warning_deprecated item:property /}}
+    {{?availability}}
+    <p class="availability">
+      {{+availability.partial content:availability item:property/}}
+    </p>
+    {{/availability}}
     {{?description}}
       {{{description}}}
     {{/description}}

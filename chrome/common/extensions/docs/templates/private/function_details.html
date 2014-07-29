@@ -6,7 +6,9 @@
 </div>
 <div class="description">
   {{?availability}}
-  <span class="availability">{{+availability.partial content:availability/}}</span>
+  <p class="availability">
+    {{+availability.partial content:availability item:function/}}
+  </p>
   {{/availability}}
   {{?description}}
   <p>
