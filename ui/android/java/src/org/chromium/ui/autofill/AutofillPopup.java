@@ -75,7 +75,7 @@ public class AutofillPopup extends DropdownPopupWindow implements AdapterView.On
      * Filters the Autofill suggestions to the ones that we support and shows the popup.
      * @param suggestions Autofill suggestion data.
      */
-    public void filterAndShow(AutofillSuggestion[] suggestions) {
+    public void filterAndShow(AutofillSuggestion[] suggestions, boolean isRtl) {
         mSuggestions = new ArrayList<AutofillSuggestion>(Arrays.asList(suggestions));
         // Remove the AutofillSuggestions with IDs that are not supported by Android
         ArrayList<DropdownItem> cleanedData = new ArrayList<DropdownItem>();
@@ -91,6 +91,8 @@ public class AutofillPopup extends DropdownPopupWindow implements AdapterView.On
         }
         setAdapter(new DropdownAdapter(mContext, cleanedData, separators));
         show();
+        getListView().setLayoutDirection(isRtl ? View.LAYOUT_DIRECTION_RTL :
+                View.LAYOUT_DIRECTION_LTR);
     }
 
     /**

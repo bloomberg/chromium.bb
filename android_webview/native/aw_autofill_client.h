@@ -94,6 +94,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   friend class content::WebContentsUserData<AwAutofillClient>;
 
   void ShowAutofillPopupImpl(const gfx::RectF& element_bounds,
+                             bool is_rtl,
                              const std::vector<base::string16>& values,
                              const std::vector<base::string16>& labels,
                              const std::vector<int>& identifiers);

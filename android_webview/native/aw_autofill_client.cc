@@ -94,12 +94,16 @@ void AwAutofillClient::ShowAutofillPopup(
   gfx::RectF element_bounds_in_screen_space =
       element_bounds + client_area.OffsetFromOrigin();
 
-  ShowAutofillPopupImpl(
-      element_bounds_in_screen_space, values, labels, identifiers);
+  ShowAutofillPopupImpl(element_bounds_in_screen_space,
+                        text_direction == base::i18n::RIGHT_TO_LEFT,
+                        values,
+                        labels,
+                        identifiers);
 }
 
 void AwAutofillClient::ShowAutofillPopupImpl(
     const gfx::RectF& element_bounds,
+    bool is_rtl,
     const std::vector<base::string16>& values,
     const std::vector<base::string16>& labels,
     const std::vector<int>& identifiers) {
@@ -128,6 +132,7 @@ void AwAutofillClient::ShowAutofillPopupImpl(
                                           element_bounds.y(),
                                           element_bounds.width(),
                                           element_bounds.height(),
+                                          is_rtl,
                                           data_array.obj());
 }
 

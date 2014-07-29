@@ -108,7 +108,7 @@ public class AutofillTest extends ChromeShellTestBase {
         UiUtils.runOnUiThread(getActivity(), new Runnable() {
             @Override
             public void run() {
-                mAutofillPopup.filterAndShow(suggestions);
+                mAutofillPopup.filterAndShow(suggestions, false);
             }
         });
         return CriteriaHelper.pollForCriteria(new Criteria() {
