@@ -11,8 +11,8 @@ enum ContainerPriorities {
   CP_BACKGROUND = 0,
   CP_DEFAULT,
   CP_HOME_CARD,
-  CP_VIRTUAL_KEYBOARD,
   CP_DEBUG,
+  CP_VIRTUAL_KEYBOARD,
 };
 
 }  // namespace athena

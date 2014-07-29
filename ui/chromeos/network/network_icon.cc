@@ -641,7 +641,7 @@ bool NetworkIconImpl::UpdateCellularState(const NetworkState* network) {
 
 bool NetworkIconImpl::UpdatePortalState(const NetworkState* network) {
   bool behind_captive_portal = false;
-  if (network) {
+  if (network && NetworkPortalDetector::IsInitialized()) {
     NetworkPortalDetector::CaptivePortalState state =
         NetworkPortalDetector::Get()->GetCaptivePortalState(network->guid());
     behind_captive_portal =

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace gfx {
@@ -18,7 +19,7 @@ namespace ui {
 
 // Includes information necessary about a network for displaying the appropriate
 // UI to the user.
-struct NetworkInfo {
+struct UI_CHROMEOS_EXPORT NetworkInfo {
   NetworkInfo();
   NetworkInfo(const std::string& path);
   ~NetworkInfo();
