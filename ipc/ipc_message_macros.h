@@ -892,7 +892,7 @@
 
 #define IPC_BEGIN_MESSAGE_MAP(class_name, msg) \
   { \
-    typedef class_name _IpcMessageHandlerClass; \
+    typedef class_name _IpcMessageHandlerClass ALLOW_UNUSED; \
     void* param__ = NULL; \
     const IPC::Message& ipc_message__ = msg; \
     switch (ipc_message__.type()) {
@@ -905,11 +905,11 @@
 #define IPC_DECLTYPE typeof
 #endif
 
-#define IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(class_name, msg, param)               \
-  {                                                                            \
-    typedef class_name _IpcMessageHandlerClass;                                \
-    IPC_DECLTYPE(param) param__ = param;                                       \
-    const IPC::Message& ipc_message__ = msg;                                   \
+#define IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(class_name, msg, param) \
+  {                                                              \
+    typedef class_name _IpcMessageHandlerClass ALLOW_UNUSED;     \
+    IPC_DECLTYPE(param) param__ = param;                         \
+    const IPC::Message& ipc_message__ = msg;                     \
     switch (ipc_message__.type()) {
 
 #define IPC_MESSAGE_FORWARD(msg_class, obj, member_func)                       \
