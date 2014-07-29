@@ -58,14 +58,17 @@ class CONTENT_EXPORT TouchSelectionController : public TouchHandleClient {
   // cease further handling of the event.
   bool WillHandleTouchEvent(const ui::MotionEvent& event);
 
-  // Allow the insertion or selection handles to be shown from the data
-  // in |OnSelectionBoundsChanged()|.
-  void ShowInsertionHandleAutomatically();
-  void ShowSelectionHandlesAutomatically();
+  // To be called before forwarding a tap event. This allows automatically
+  // showing the insertion handle from subsequent bounds changes.
+  void OnTapEvent();
+
+  // To be called before forwarding a longpress event. This allows automatically
+  // showing the selection or insertion handles from subsequent bounds changes.
+  void OnLongPressEvent();
 
   // Hide the handles and suppress bounds updates until the next explicit
   // showing allowance.
-  void HideAndDisallowAutomaticShowing();
+  void HideAndDisallowShowingAutomatically();
 
   // Override the handle visibility according to |hidden|.
   void SetTemporarilyHidden(bool hidden);
@@ -73,11 +76,16 @@ class CONTENT_EXPORT TouchSelectionController : public TouchHandleClient {
   // To be called when the editability of the focused region changes.
   void OnSelectionEditable(bool editable);
 
+  // To be called when the contents of the focused region changes.
+  void OnSelectionEmpty(bool empty);
+
   // Ticks an active animation, as requested to the client by |SetNeedsAnimate|.
   // Returns true if an animation is active and requires further ticking.
   bool Animate(base::TimeTicks animate_time);
 
  private:
+  enum InputEventType { TAP, LONG_PRESS, INPUT_EVENT_TYPE_NONE };
+
   // TouchHandleClient implementation.
   virtual void OnHandleDragBegin(const TouchHandle& handle) OVERRIDE;
   virtual void OnHandleDragUpdate(const TouchHandle& handle,
@@ -86,6 +94,9 @@ class CONTENT_EXPORT TouchSelectionController : public TouchHandleClient {
   virtual void OnHandleTapped(const TouchHandle& handle) OVERRIDE;
   virtual void SetNeedsAnimate() OVERRIDE;
   virtual scoped_ptr<TouchHandleDrawable> CreateDrawable() OVERRIDE;
+
+  void ShowInsertionHandleAutomatically();
+  void ShowSelectionHandlesAutomatically();
 
   void OnInsertionChanged();
   void OnSelectionChanged();
@@ -106,6 +117,8 @@ class CONTENT_EXPORT TouchSelectionController : public TouchHandleClient {
 
   TouchSelectionControllerClient* const client_;
 
+  InputEventType last_input_event_type_;
+
   gfx::RectF start_rect_;
   TouchHandleOrientation start_orientation_;
   bool start_visible_;
@@ -123,6 +136,7 @@ class CONTENT_EXPORT TouchSelectionController : public TouchHandleClient {
   bool is_selection_active_;
   bool activate_selection_automatically_;
 
+  bool selection_empty_;
   bool selection_editable_;
   bool selection_editable_for_last_update_;
 

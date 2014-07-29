@@ -511,6 +511,15 @@ long RenderWidgetHostViewAndroid::GetNativeImeAdapter() {
 
 void RenderWidgetHostViewAndroid::TextInputStateChanged(
     const ViewHostMsg_TextInputState_Params& params) {
+  if (selection_controller_) {
+    // This call is semi-redundant with that in |OnFocusedNodeChanged|. The
+    // latter is guaranteed to be called before |OnSelectionBoundsChanged|,
+    // while this call is present to ensure consistency with IME after
+    // navigation and tab focus changes
+    const bool is_editable_node = params.type != ui::TEXT_INPUT_TYPE_NONE;
+    selection_controller_->OnSelectionEditable(is_editable_node);
+  }
+
   // If the change is not originated from IME (e.g. Javascript, autofill),
   // send back the renderer an acknowledgement, regardless of how we exit from
   // this method.
@@ -657,6 +666,9 @@ void RenderWidgetHostViewAndroid::SelectionChanged(const base::string16& text,
                                                    size_t offset,
                                                    const gfx::Range& range) {
   RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
+
+  if (selection_controller_)
+    selection_controller_->OnSelectionEmpty(text.empty());
 
   if (text.empty() || range.is_empty() || !content_view_core_)
     return;
@@ -1245,12 +1257,10 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
   if (selection_controller_) {
     switch (input_event.type) {
       case blink::WebInputEvent::GestureLongPress:
-      case blink::WebInputEvent::GestureLongTap:
-        selection_controller_->ShowInsertionHandleAutomatically();
-        selection_controller_->ShowSelectionHandlesAutomatically();
+        selection_controller_->OnLongPressEvent();
         break;
       case blink::WebInputEvent::GestureTap:
-        selection_controller_->ShowInsertionHandleAutomatically();
+        selection_controller_->OnTapEvent();
         break;
       default:
         break;
@@ -1362,7 +1372,7 @@ void RenderWidgetHostViewAndroid::MoveCaret(const gfx::Point& point) {
 
 void RenderWidgetHostViewAndroid::HideTextHandles() {
   if (selection_controller_)
-    selection_controller_->HideAndDisallowAutomaticShowing();
+    selection_controller_->HideAndDisallowShowingAutomatically();
 }
 
 SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {
@@ -1603,8 +1613,9 @@ SkColorType RenderWidgetHostViewAndroid::PreferredReadbackFormat() {
 }
 
 void RenderWidgetHostViewAndroid::ShowSelectionHandlesAutomatically() {
+  // Fake a long press to allow automatic selection handle showing.
   if (selection_controller_)
-    selection_controller_->ShowSelectionHandlesAutomatically();
+    selection_controller_->OnLongPressEvent();
 }
 
 void RenderWidgetHostViewAndroid::SelectRange(

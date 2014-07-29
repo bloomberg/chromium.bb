@@ -187,13 +187,14 @@ TEST_F(TouchSelectionControllerTest, InsertionBasic) {
   // Insertion events are ignored until automatic showing is enabled.
   ChangeInsertion(insertion_rect, visible);
   EXPECT_EQ(gfx::PointF(), GetLastEventAnchor());
-  controller().ShowInsertionHandleAutomatically();
+  controller().OnTapEvent();
 
   // Insertion events are ignored until the selection region is marked editable.
   ChangeInsertion(insertion_rect, visible);
   EXPECT_EQ(gfx::PointF(), GetLastEventAnchor());
-  controller().OnSelectionEditable(true);
 
+  controller().OnTapEvent();
+  controller().OnSelectionEditable(true);
   ChangeInsertion(insertion_rect, visible);
   EXPECT_EQ(INSERTION_SHOWN, GetLastEventType());
   EXPECT_EQ(insertion_rect.bottom_left(), GetLastEventAnchor());
@@ -215,7 +216,7 @@ TEST_F(TouchSelectionControllerTest, InsertionBasic) {
 TEST_F(TouchSelectionControllerTest, InsertionClearedWhenNoLongerEditable) {
   gfx::RectF insertion_rect(5, 5, 0, 10);
   bool visible = true;
-  controller().ShowInsertionHandleAutomatically();
+  controller().OnTapEvent();
   controller().OnSelectionEditable(true);
 
   ChangeInsertion(insertion_rect, visible);
@@ -226,9 +227,64 @@ TEST_F(TouchSelectionControllerTest, InsertionClearedWhenNoLongerEditable) {
   EXPECT_EQ(INSERTION_CLEARED, GetLastEventType());
 }
 
+TEST_F(TouchSelectionControllerTest, InsertionStaysHiddenIfEmptyRegionTapped) {
+  gfx::RectF insertion_rect(5, 5, 0, 10);
+  bool visible = true;
+  controller().OnSelectionEditable(true);
+
+  // Taps should be ignored if they're in an empty editable region.
+  controller().OnTapEvent();
+  controller().OnSelectionEmpty(true);
+  ChangeInsertion(insertion_rect, visible);
+  EXPECT_EQ(gfx::PointF(), GetLastEventAnchor());
+
+  // Once the region becomes editable, taps should show the insertion handle.
+  controller().OnTapEvent();
+  controller().OnSelectionEmpty(false);
+  ChangeInsertion(insertion_rect, visible);
+  EXPECT_EQ(INSERTION_SHOWN, GetLastEventType());
+  EXPECT_EQ(insertion_rect.bottom_left(), GetLastEventAnchor());
+
+  // Reset the selection.
+  controller().HideAndDisallowShowingAutomatically();
+  EXPECT_EQ(INSERTION_CLEARED, GetLastEventType());
+
+  // Long-pressing should show the handle even if the editable region is empty.
+  insertion_rect.Offset(2, -2);
+  controller().OnLongPressEvent();
+  controller().OnSelectionEmpty(true);
+  ChangeInsertion(insertion_rect, visible);
+  EXPECT_EQ(INSERTION_SHOWN, GetLastEventType());
+  EXPECT_EQ(insertion_rect.bottom_left(), GetLastEventAnchor());
+}
+
+TEST_F(TouchSelectionControllerTest, InsertionAppearsAfterTapFollowingTyping) {
+  gfx::RectF insertion_rect(5, 5, 0, 10);
+  bool visible = true;
+
+  // Simulate the user tapping an empty text field.
+  controller().OnTapEvent();
+  controller().OnSelectionEditable(true);
+  controller().OnSelectionEmpty(true);
+  ChangeInsertion(insertion_rect, visible);
+  EXPECT_EQ(gfx::PointF(), GetLastEventAnchor());
+
+  // Simulate the cursor moving while a user is typing.
+  insertion_rect.Offset(10, 0);
+  controller().OnSelectionEmpty(false);
+  ChangeInsertion(insertion_rect, visible);
+  EXPECT_EQ(gfx::PointF(), GetLastEventAnchor());
+
+  // If the user taps the *same* position as the cursor at the end of the text
+  // entry, the handle should appear.
+  controller().OnTapEvent();
+  ChangeInsertion(insertion_rect, visible);
+  EXPECT_EQ(INSERTION_SHOWN, GetLastEventType());
+  EXPECT_EQ(insertion_rect.bottom_left(), GetLastEventAnchor());
+}
+
 TEST_F(TouchSelectionControllerTest, InsertionToSelectionTransition) {
-  controller().ShowSelectionHandlesAutomatically();
-  controller().ShowInsertionHandleAutomatically();
+  controller().OnLongPressEvent();
   controller().OnSelectionEditable(true);
 
   gfx::RectF anchor_rect(5, 5, 0, 10);
@@ -247,10 +303,10 @@ TEST_F(TouchSelectionControllerTest, InsertionToSelectionTransition) {
   EXPECT_EQ(INSERTION_SHOWN, GetLastEventType());
   EXPECT_EQ(focus_rect.bottom_left(), GetLastEventAnchor());
 
-  controller().HideAndDisallowAutomaticShowing();
+  controller().HideAndDisallowShowingAutomatically();
   EXPECT_EQ(INSERTION_CLEARED, GetLastEventType());
 
-  controller().ShowInsertionHandleAutomatically();
+  controller().OnTapEvent();
   ChangeInsertion(focus_rect, visible);
   EXPECT_EQ(INSERTION_SHOWN, GetLastEventType());
   EXPECT_EQ(focus_rect.bottom_left(), GetLastEventAnchor());
@@ -258,7 +314,7 @@ TEST_F(TouchSelectionControllerTest, InsertionToSelectionTransition) {
 
 TEST_F(TouchSelectionControllerTest, InsertionDragged) {
   base::TimeTicks event_time = base::TimeTicks::Now();
-  controller().ShowInsertionHandleAutomatically();
+  controller().OnTapEvent();
   controller().OnSelectionEditable(true);
 
   // The touch sequence should not be handled if insertion is not active.
@@ -307,7 +363,7 @@ TEST_F(TouchSelectionControllerTest, InsertionDragged) {
 
 TEST_F(TouchSelectionControllerTest, InsertionTapped) {
   base::TimeTicks event_time = base::TimeTicks::Now();
-  controller().ShowInsertionHandleAutomatically();
+  controller().OnTapEvent();
   controller().OnSelectionEditable(true);
   SetDraggingEnabled(true);
 
@@ -326,7 +382,7 @@ TEST_F(TouchSelectionControllerTest, InsertionTapped) {
 
   // Reset the insertion.
   ClearInsertion();
-  controller().ShowInsertionHandleAutomatically();
+  controller().OnTapEvent();
   ChangeInsertion(anchor_rect, visible);
   ASSERT_EQ(INSERTION_SHOWN, GetLastEventType());
 
@@ -342,7 +398,7 @@ TEST_F(TouchSelectionControllerTest, InsertionTapped) {
 
   // Reset the insertion.
   ClearInsertion();
-  controller().ShowInsertionHandleAutomatically();
+  controller().OnTapEvent();
   ChangeInsertion(anchor_rect, visible);
   ASSERT_EQ(INSERTION_SHOWN, GetLastEventType());
 
@@ -363,7 +419,7 @@ TEST_F(TouchSelectionControllerTest, SelectionBasic) {
   ChangeSelection(anchor_rect, visible, focus_rect, visible);
   EXPECT_EQ(gfx::PointF(), GetLastEventAnchor());
 
-  controller().ShowSelectionHandlesAutomatically();
+  controller().OnLongPressEvent();
   ChangeSelection(anchor_rect, visible, focus_rect, visible);
   EXPECT_EQ(SELECTION_SHOWN, GetLastEventType());
   EXPECT_EQ(anchor_rect.bottom_left(), GetLastEventAnchor());
@@ -380,7 +436,7 @@ TEST_F(TouchSelectionControllerTest, SelectionBasic) {
 
 TEST_F(TouchSelectionControllerTest, SelectionDragged) {
   base::TimeTicks event_time = base::TimeTicks::Now();
-  controller().ShowSelectionHandlesAutomatically();
+  controller().OnLongPressEvent();
 
   // The touch sequence should not be handled if selection is not active.
   MockMotionEvent event(MockMotionEvent::ACTION_DOWN, event_time, 0, 0);
@@ -435,7 +491,7 @@ TEST_F(TouchSelectionControllerTest, SelectionDragged) {
 }
 
 TEST_F(TouchSelectionControllerTest, Animation) {
-  controller().ShowInsertionHandleAutomatically();
+  controller().OnTapEvent();
   controller().OnSelectionEditable(true);
 
   gfx::RectF insertion_rect(5, 5, 0, 10);
@@ -453,19 +509,19 @@ TEST_F(TouchSelectionControllerTest, Animation) {
   EXPECT_TRUE(GetAndResetNeedsAnimate());
 
   // If the handles are explicity hidden, no animation should be triggered.
-  controller().HideAndDisallowAutomaticShowing();
+  controller().HideAndDisallowShowingAutomatically();
   EXPECT_FALSE(GetAndResetNeedsAnimate());
 
   // If the client doesn't support animation, no animation should be triggered.
   SetAnimationEnabled(false);
-  controller().ShowInsertionHandleAutomatically();
+  controller().OnTapEvent();
   visible = true;
   ChangeInsertion(insertion_rect, visible);
   EXPECT_FALSE(GetAndResetNeedsAnimate());
 }
 
 TEST_F(TouchSelectionControllerTest, TemporarilyHidden) {
-  controller().ShowInsertionHandleAutomatically();
+  controller().OnTapEvent();
   controller().OnSelectionEditable(true);
 
   gfx::RectF insertion_rect(5, 5, 0, 10);
