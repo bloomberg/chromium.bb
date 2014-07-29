@@ -15,11 +15,6 @@ namespace content {
 // handles it and returns true.
 bool HandleDebugURL(const GURL& url, PageTransition transition);
 
-// Returns whether this given url is a debugging url. It is a superset
-// of IsRendererDebugURL, below, and debugging urls that are handled
-// in the browser process.
-bool IsDebugURL(const GURL& url);
-
 // Returns whether the given url is either a debugging url handled in the
 // renderer process, such as one that crashes or hangs the renderer, or a
 // javascript: URL that operates on the current page in the renderer.  Such URLs

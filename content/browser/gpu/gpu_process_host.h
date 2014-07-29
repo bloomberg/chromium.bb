@@ -68,6 +68,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
       CreateGpuMemoryBufferCallback;
 
   static bool gpu_enabled() { return gpu_enabled_; }
+  static int gpu_crash_count() { return gpu_crash_count_; }
 
   // Creates a new GpuProcessHost or gets an existing one, resulting in the
   // launching of a GPU process if required.  Returns null on failure. It
@@ -187,6 +188,9 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   void BlockLiveOffscreenContexts();
 
+  // Update GPU crash counters.  Disable GPU if crash limit is reached.
+  void RecordProcessCrash();
+
   std::string GetShaderPrefixKey();
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
@@ -226,12 +230,20 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // Time Init started.  Used to log total GPU process startup time to UMA.
   base::TimeTicks init_start_time_;
 
+  // Whether this host recorded a GPU crash or not.
+  bool gpu_crash_recorded_;
+
   // Master switch for enabling/disabling GPU acceleration for the current
   // browser session. It does not change the acceleration settings for
   // existing tabs, just the future ones.
   static bool gpu_enabled_;
 
   static bool hardware_gpu_enabled_;
+
+  static int gpu_crash_count_;
+  static int gpu_recent_crash_count_;
+  static bool crashed_before_;
+  static int swiftshader_crash_count_;
 
   scoped_ptr<BrowserChildProcessHostImpl> process_;
 

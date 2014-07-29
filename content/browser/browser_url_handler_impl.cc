@@ -4,9 +4,7 @@
 
 #include "content/browser/browser_url_handler_impl.h"
 
-#include "base/command_line.h"
 #include "base/strings/string_util.h"
-#include "cc/base/switches.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/public/browser/content_browser_client.h"
@@ -74,17 +72,6 @@ static bool ReverseViewSource(GURL* url, BrowserContext* browser_context) {
 }
 
 static bool DebugURLHandler(GURL* url, BrowserContext* browser_context) {
-  // If running inside the Telemetry test harness, allow automated
-  // navigations to access browser-side debug URLs. They must use the
-  // chrome:// scheme, since the about: scheme won't be rewritten in
-  // this code path.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          cc::switches::kEnableGpuBenchmarking)) {
-    if (HandleDebugURL(*url, PAGE_TRANSITION_FROM_ADDRESS_BAR)) {
-      return true;
-    }
-  }
-
   // Circumvent processing URLs that the renderer process will handle.
   return IsRendererDebugURL(*url);
 }

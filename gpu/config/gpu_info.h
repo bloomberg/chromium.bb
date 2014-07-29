@@ -153,6 +153,9 @@ struct GPU_EXPORT GPUInfo {
   // Whether the gpu process is running in a sandbox.
   bool sandboxed;
 
+  // Number of GPU process crashes recorded.
+  int process_crash_count;
+
 #if defined(OS_WIN)
   // The information returned by the DirectX Diagnostics Tool.
   DxDiagNode dx_diagnostics;

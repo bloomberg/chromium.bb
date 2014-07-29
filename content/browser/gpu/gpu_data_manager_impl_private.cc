@@ -757,6 +757,7 @@ void GpuDataManagerImplPrivate::ProcessCrashed(
     return;
   }
   {
+    gpu_info_.process_crash_count = GpuProcessHost::gpu_crash_count();
     GpuDataManagerImpl::UnlockedSession session(owner_);
     observer_list_->Notify(
         &GpuDataManagerObserver::OnGpuProcessCrashed, exit_code);

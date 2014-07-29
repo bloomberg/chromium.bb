@@ -39,7 +39,8 @@ GPUInfo::GPUInfo()
       can_lose_context(false),
       software_rendering(false),
       direct_rendering(true),
-      sandboxed(false) {
+      sandboxed(false),
+      process_crash_count(0) {
 }
 
 GPUInfo::~GPUInfo() { }
@@ -75,6 +76,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     bool software_rendering;
     bool direct_rendering;
     bool sandboxed;
+    int process_crash_count;
 #if defined(OS_WIN)
     DxDiagNode dx_diagnostics;
 #endif
@@ -127,6 +129,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddBool("softwareRendering", software_rendering);
   enumerator->AddBool("directRendering", direct_rendering);
   enumerator->AddBool("sandboxed", sandboxed);
+  enumerator->AddInt("processCrashCount", process_crash_count);
   // TODO(kbr): add dx_diagnostics on Windows.
   enumerator->EndAuxAttributes();
 }
