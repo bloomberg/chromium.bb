@@ -330,6 +330,7 @@ WL_EXPORT void
 weston_fade_update(struct weston_view_animation *fade, float target)
 {
 	fade->spring.target = target;
+	fade->stop = target;
 }
 
 static void
