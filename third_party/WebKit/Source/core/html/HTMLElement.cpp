@@ -447,10 +447,10 @@ void HTMLElement::setOuterText(const String& text, ExceptionState& exceptionStat
 
     RefPtrWillBeRawPtr<Node> node = next ? next->previousSibling() : nullptr;
     if (!exceptionState.hadException() && node && node->isTextNode())
-        mergeWithNextTextNode(node.release(), exceptionState);
+        mergeWithNextTextNode(toText(node.get()), exceptionState);
 
     if (!exceptionState.hadException() && prev && prev->isTextNode())
-        mergeWithNextTextNode(prev.release(), exceptionState);
+        mergeWithNextTextNode(toText(prev.get()), exceptionState);
 }
 
 void HTMLElement::applyAlignmentAttributeToStyle(const AtomicString& alignment, MutableStylePropertySet* style)

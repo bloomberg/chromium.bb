@@ -2239,10 +2239,10 @@ void Element::setOuterHTML(const String& html, ExceptionState& exceptionState)
     parent->replaceChild(fragment.release(), this, exceptionState);
     RefPtrWillBeRawPtr<Node> node = next ? next->previousSibling() : 0;
     if (!exceptionState.hadException() && node && node->isTextNode())
-        mergeWithNextTextNode(node.release(), exceptionState);
+        mergeWithNextTextNode(toText(node.get()), exceptionState);
 
     if (!exceptionState.hadException() && prev && prev->isTextNode())
-        mergeWithNextTextNode(prev.release(), exceptionState);
+        mergeWithNextTextNode(toText(prev.get()), exceptionState);
 }
 
 Node* Element::insertAdjacent(const String& where, Node* newChild, ExceptionState& exceptionState)

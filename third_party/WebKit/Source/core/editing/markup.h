@@ -68,7 +68,7 @@ String createFullMarkup(const Node*);
 String createStyledMarkupForNavigationTransition(Node*);
 
 String urlToMarkup(const KURL&, const String& title);
-void mergeWithNextTextNode(PassRefPtrWillBeRawPtr<Node>, ExceptionState&);
+void mergeWithNextTextNode(Text*, ExceptionState&);
 
 }
 

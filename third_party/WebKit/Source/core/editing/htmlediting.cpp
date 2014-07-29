@@ -559,7 +559,7 @@ PassRefPtrWillBeRawPtr<Range> createRange(Document& document, const VisiblePosit
     return selectedRange.release();
 }
 
-bool isListElement(Node* n)
+bool isHTMLListElement(Node* n)
 {
     return (n && (isHTMLUListElement(*n) || isHTMLOListElement(*n) || isHTMLDListElement(*n)));
 }
@@ -697,7 +697,7 @@ Node* enclosingListChild(Node *node)
 
     // FIXME: This function is inappropriately named if it starts with node instead of node->parentNode()
     for (Node* n = node; n && n->parentNode(); n = n->parentNode()) {
-        if (isHTMLLIElement(*n) || (isListElement(n->parentNode()) && n != root))
+        if (isHTMLLIElement(*n) || (isHTMLListElement(n->parentNode()) && n != root))
             return n;
         if (n == root || isTableCell(n))
             return 0;
@@ -847,7 +847,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> createHTMLElement(Document& document, const 
     return HTMLElementFactory::createHTMLElement(tagName, document, 0, false);
 }
 
-bool isTabSpanElement(const Node* node)
+bool isTabHTMLSpanElement(const Node* node)
 {
     if (!isHTMLSpanElement(node) || toHTMLSpanElement(node)->getAttribute(classAttr) != AppleTabSpanClass)
         return false;
@@ -855,14 +855,14 @@ bool isTabSpanElement(const Node* node)
     return true;
 }
 
-bool isTabSpanTextNode(const Node* node)
+bool isTabHTMLSpanElementTextNode(const Node* node)
 {
-    return node && node->isTextNode() && node->parentNode() && isTabSpanElement(node->parentNode());
+    return node && node->isTextNode() && node->parentNode() && isTabHTMLSpanElement(node->parentNode());
 }
 
 HTMLSpanElement* tabSpanElement(const Node* node)
 {
-    return isTabSpanTextNode(node) ? toHTMLSpanElement(node->parentNode()) : 0;
+    return isTabHTMLSpanElementTextNode(node) ? toHTMLSpanElement(node->parentNode()) : 0;
 }
 
 PassRefPtrWillBeRawPtr<HTMLSpanElement> createTabSpanElement(Document& document, PassRefPtrWillBeRawPtr<Text> prpTabTextNode)

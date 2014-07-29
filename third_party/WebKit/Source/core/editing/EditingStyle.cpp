@@ -455,9 +455,9 @@ static int textAlignResolvingStartAndEnd(T* style)
 
 void EditingStyle::init(Node* node, PropertiesToInclude propertiesToInclude)
 {
-    if (isTabSpanTextNode(node))
+    if (isTabHTMLSpanElementTextNode(node))
         node = tabSpanElement(node)->parentNode();
-    else if (isTabSpanElement(node))
+    else if (isTabHTMLSpanElement(node))
         node = node->parentNode();
 
     RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> computedStyleAtPosition = CSSComputedStyleDeclaration::create(node);
@@ -746,7 +746,7 @@ bool EditingStyle::conflictsWithInlineStyleOfElement(Element* element, EditingSt
         CSSPropertyID propertyID = m_mutableStyle->propertyAt(i).id();
 
         // We don't override whitespace property of a tab span because that would collapse the tab into a space.
-        if (propertyID == CSSPropertyWhiteSpace && isTabSpanElement(element))
+        if (propertyID == CSSPropertyWhiteSpace && isTabHTMLSpanElement(element))
             continue;
 
         if (propertyID == CSSPropertyWebkitTextDecorationsInEffect && inlineStyle->getPropertyCSSValue(textDecorationPropertyForEditing())) {
@@ -1434,7 +1434,7 @@ StyleChange::StyleChange(EditingStyle* style, const Position& position)
         extractTextStyles(document, mutableStyle.get(), computedStyle->fixedPitchFontType());
 
     // Changing the whitespace style in a tab span would collapse the tab into a space.
-    if (isTabSpanTextNode(position.deprecatedNode()) || isTabSpanElement((position.deprecatedNode())))
+    if (isTabHTMLSpanElementTextNode(position.deprecatedNode()) || isTabHTMLSpanElement((position.deprecatedNode())))
         mutableStyle->removeProperty(CSSPropertyWhiteSpace);
 
     // If unicode-bidi is present in mutableStyle and direction is not, then add direction to mutableStyle.

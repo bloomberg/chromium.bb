@@ -1096,7 +1096,7 @@ void ReplaceSelectionCommand::doApply()
     fragment.removeNode(refNode);
 
     Node* blockStart = enclosingBlock(insertionPos.deprecatedNode());
-    if ((isListElement(refNode.get()) || (isLegacyAppleStyleSpan(refNode.get()) && isListElement(refNode->firstChild())))
+    if ((isHTMLListElement(refNode.get()) || (isLegacyAppleStyleSpan(refNode.get()) && isHTMLListElement(refNode->firstChild())))
         && blockStart && blockStart->renderer()->isListItem())
         refNode = insertAsListItems(toHTMLElement(refNode), blockStart, insertionPos, insertedNodes);
     else {
@@ -1441,7 +1441,7 @@ Node* ReplaceSelectionCommand::insertAsListItems(PassRefPtrWillBeRawPtr<HTMLElem
 {
     RefPtrWillBeRawPtr<HTMLElement> listElement = prpListElement;
 
-    while (listElement->hasChildren() && isListElement(listElement->firstChild()) && listElement->hasOneChild())
+    while (listElement->hasOneChild() && isHTMLListElement(listElement->firstChild()))
         listElement = toHTMLElement(listElement->firstChild());
 
     bool isStart = isStartOfParagraph(VisiblePosition(insertPos));

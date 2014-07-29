@@ -48,7 +48,7 @@ InsertTextCommand::InsertTextCommand(Document& document, const String& text, boo
 Position InsertTextCommand::positionInsideTextNode(const Position& p)
 {
     Position pos = p;
-    if (isTabSpanTextNode(pos.anchorNode())) {
+    if (isTabHTMLSpanElementTextNode(pos.anchorNode())) {
         RefPtrWillBeRawPtr<Node> textNode = document().createEditingTextNode("");
         insertNodeAtTabSpanPosition(textNode.get(), pos);
         return firstPositionInNode(textNode.get());
@@ -237,7 +237,7 @@ Position InsertTextCommand::insertTab(const Position& pos)
     unsigned offset = node->isTextNode() ? insertPos.offsetInContainerNode() : 0;
 
     // keep tabs coalesced in tab span
-    if (isTabSpanTextNode(node)) {
+    if (isTabHTMLSpanElementTextNode(node)) {
         RefPtrWillBeRawPtr<Text> textNode = toText(node);
         insertTextIntoNode(textNode, offset, "\t");
         return Position(textNode.release(), offset + 1);

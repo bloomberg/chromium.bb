@@ -493,7 +493,7 @@ Position CompositeEditCommand::replaceSelectedTextInNode(const String& text)
 {
     Position start = endingSelection().start();
     Position end = endingSelection().end();
-    if (start.containerNode() != end.containerNode() || !start.containerNode()->isTextNode() || isTabSpanTextNode(start.containerNode()))
+    if (start.containerNode() != end.containerNode() || !start.containerNode()->isTextNode() || isTabHTMLSpanElementTextNode(start.containerNode()))
         return Position();
 
     RefPtrWillBeRawPtr<Text> textNode = start.containerText();
@@ -529,7 +529,7 @@ void CompositeEditCommand::replaceTextInNodePreservingMarkers(PassRefPtrWillBeRa
 
 Position CompositeEditCommand::positionOutsideTabSpan(const Position& pos)
 {
-    if (!isTabSpanTextNode(pos.anchorNode()))
+    if (!isTabHTMLSpanElementTextNode(pos.anchorNode()))
         return pos;
 
     switch (pos.anchorType()) {
@@ -1326,9 +1326,9 @@ bool CompositeEditCommand::breakOutOfEmptyListItem()
 
     RefPtrWillBeRawPtr<Node> previousListNode = emptyListItem->isElementNode() ? ElementTraversal::previousSibling(*emptyListItem): emptyListItem->previousSibling();
     RefPtrWillBeRawPtr<Node> nextListNode = emptyListItem->isElementNode() ? ElementTraversal::nextSibling(*emptyListItem): emptyListItem->nextSibling();
-    if (isListItem(nextListNode.get()) || isListElement(nextListNode.get())) {
+    if (isListItem(nextListNode.get()) || isHTMLListElement(nextListNode.get())) {
         // If emptyListItem follows another list item or nested list, split the list node.
-        if (isListItem(previousListNode.get()) || isListElement(previousListNode.get()))
+        if (isListItem(previousListNode.get()) || isHTMLListElement(previousListNode.get()))
             splitElement(toElement(listNode), emptyListItem);
 
         // If emptyListItem is followed by other list item or nested list, then insert newBlock before the list node.
@@ -1340,7 +1340,7 @@ bool CompositeEditCommand::breakOutOfEmptyListItem()
         // When emptyListItem does not follow any list item or nested list, insert newBlock after the enclosing list node.
         // Remove the enclosing node if emptyListItem is the only child; otherwise just remove emptyListItem.
         insertNodeAfter(newBlock, listNode);
-        removeNode(isListItem(previousListNode.get()) || isListElement(previousListNode.get()) ? emptyListItem.get() : listNode.get());
+        removeNode(isListItem(previousListNode.get()) || isHTMLListElement(previousListNode.get()) ? emptyListItem.get() : listNode.get());
     }
 
     appendBlockPlaceholder(newBlock);
