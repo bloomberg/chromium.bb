@@ -161,7 +161,7 @@ private:
     String m_hostId;
     OwnPtr<NetworkResourcesData> m_resourcesData;
 
-    typedef HashMap<ThreadableLoaderClient*, RefPtr<XHRReplayData> > PendingXHRReplayDataMap;
+    typedef WillBeHeapHashMap<ThreadableLoaderClient*, RefPtrWillBeMember<XHRReplayData> > PendingXHRReplayDataMap;
     PendingXHRReplayDataMap m_pendingXHRReplayData;
 
     typedef HashMap<String, RefPtr<TypeBuilder::Network::Initiator> > FrameNavigationInitiatorMap;

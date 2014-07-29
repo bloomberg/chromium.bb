@@ -50,10 +50,10 @@ class SharedBuffer;
 class TextResourceDecoder;
 
 class XHRReplayData
-    : public RefCounted<XHRReplayData>
+    : public RefCountedWillBeGarbageCollectedFinalized<XHRReplayData>
     , public ContextLifecycleObserver {
 public:
-    static PassRefPtr<XHRReplayData> create(ExecutionContext*, const AtomicString& method, const KURL&, bool async, PassRefPtr<FormData>, bool includeCredentials);
+    static PassRefPtrWillBeRawPtr<XHRReplayData> create(ExecutionContext*, const AtomicString& method, const KURL&, bool async, PassRefPtr<FormData>, bool includeCredentials);
 
     void addHeader(const AtomicString& key, const AtomicString& value);
     const AtomicString& method() const { return m_method; }
@@ -62,6 +62,8 @@ public:
     PassRefPtr<FormData> formData() const { return m_formData; }
     const HTTPHeaderMap& headers() const { return m_headers; }
     bool includeCredentials() const { return m_includeCredentials; }
+
+    void trace(Visitor*) { }
 
 private:
     XHRReplayData(ExecutionContext*, const AtomicString& method, const KURL&, bool async, PassRefPtr<FormData>, bool includeCredentials);
@@ -134,7 +136,7 @@ public:
         String m_frameId;
         KURL m_url;
         String m_content;
-        RefPtr<XHRReplayData> m_xhrReplayData;
+        RefPtrWillBePersistent<XHRReplayData> m_xhrReplayData;
         bool m_base64Encoded;
         RefPtr<SharedBuffer> m_dataBuffer;
         bool m_isContentEvicted;

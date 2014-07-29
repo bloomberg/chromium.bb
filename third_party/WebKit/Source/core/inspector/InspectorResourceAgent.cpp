@@ -301,6 +301,7 @@ void InspectorResourceAgent::trace(Visitor* visitor)
 {
     visitor->trace(m_pageAgent);
 #if ENABLE(OILPAN)
+    visitor->trace(m_pendingXHRReplayData);
     visitor->trace(m_replayXHRs);
     visitor->trace(m_replayXHRsToBeDeleted);
 #endif
@@ -480,7 +481,7 @@ void InspectorResourceAgent::documentThreadableLoaderStartedLoadingForClient(uns
 void InspectorResourceAgent::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const KURL& url, bool async, FormData* formData, const HTTPHeaderMap& headers, bool includeCredentials)
 {
     ASSERT(xhr);
-    RefPtr<XHRReplayData> xhrReplayData = XHRReplayData::create(xhr->executionContext(), method, urlWithoutFragment(url), async, formData, includeCredentials);
+    RefPtrWillBeRawPtr<XHRReplayData> xhrReplayData = XHRReplayData::create(xhr->executionContext(), method, urlWithoutFragment(url), async, formData, includeCredentials);
     HTTPHeaderMap::const_iterator end = headers.end();
     for (HTTPHeaderMap::const_iterator it = headers.begin(); it!= end; ++it)
         xhrReplayData->addHeader(it->key, it->value);
