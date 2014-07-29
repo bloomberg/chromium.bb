@@ -486,6 +486,11 @@ public:
         WheelEventWheelDelta = 493,
         SendBeacon = 494,
         SendBeaconQuotaExceeded = 495,
+        HTMLHtmlElementVersion = 496,
+        HTMLMetaElementScheme = 497,
+        HTMLObjectElementStandby = 498,
+        HTMLTableCellElementChar = 499,
+        HTMLTableCellElementCharOff = 500,
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         // Also, run update_use_counter_feature_enum.py in chromium/src/tools/metrics/histograms/

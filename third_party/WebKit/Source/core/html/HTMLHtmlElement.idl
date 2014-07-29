@@ -18,5 +18,5 @@
  */
 
 interface HTMLHtmlElement : HTMLElement {
-    [Reflect] attribute DOMString version;
+    [Reflect, MeasureAs=HTMLHtmlElementVersion] attribute DOMString version;
 };

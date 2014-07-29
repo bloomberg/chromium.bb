@@ -33,7 +33,7 @@
     [Reflect] attribute DOMString height;
     [Reflect] attribute long hspace;
     [Reflect] attribute DOMString name;
-    [Reflect] attribute DOMString standby;
+    [Reflect, MeasureAs=HTMLObjectElementStandby] attribute DOMString standby;
     [Reflect] attribute DOMString type;
     [Reflect] attribute DOMString useMap;
     [Reflect] attribute long vspace;

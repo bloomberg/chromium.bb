@@ -24,8 +24,8 @@ interface HTMLTableCellElement : HTMLElement {
     [Reflect] attribute DOMString align;
     [Reflect] attribute DOMString axis;
     [Reflect, TreatNullAs=EmptyString] attribute DOMString bgColor;
-    [Reflect=char] attribute DOMString ch;
-    [Reflect=charoff] attribute DOMString chOff;
+    [Reflect=char, MeasureAs=HTMLTableCellElementChar] attribute DOMString ch;
+    [Reflect=charoff, MeasureAs=HTMLTableCellElementCharOff] attribute DOMString chOff;
     attribute long colSpan;
     [Reflect, TreatNullAs=NullString] attribute DOMString headers;
     [Reflect] attribute DOMString height;
