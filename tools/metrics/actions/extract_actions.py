@@ -601,6 +601,7 @@ def AddAutomaticResetBannerActions(actions):
   actions.add('AutomaticSettingsReset_WebUIBanner_BannerShown')
   actions.add('AutomaticSettingsReset_WebUIBanner_ManuallyClosed')
   actions.add('AutomaticSettingsReset_WebUIBanner_LearnMoreClicked')
+  actions.add('AutomaticSettingsReset_WebUIBanner_ResetClicked')
 
 
 class Error(Exception):

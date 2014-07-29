@@ -793,18 +793,30 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="AutomaticSettingsReset_WebUIBanner_BannerShown">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>gab@chromium.org</owner>
+  <description>
+    User opened chrome://settings less than 5 days after a settings hardening
+    event and was automatically shown this banner.
+  </description>
 </action>
 
 <action name="AutomaticSettingsReset_WebUIBanner_LearnMoreClicked">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>gab@chromium.org</owner>
+  <description>
+    User clicked the Learn More link on the AutomaticSettingsReset banner.
+  </description>
 </action>
 
 <action name="AutomaticSettingsReset_WebUIBanner_ManuallyClosed">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>gab@chromium.org</owner>
+  <description>User dismissed the AutomaticSettingsReset banner.</description>
+</action>
+
+<action name="AutomaticSettingsReset_WebUIBanner_ResetClicked">
+  <owner>gab@chromium.org</owner>
+  <description>
+    User clicked the reset button on the AutomaticSettingsReset banner.
+  </description>
 </action>
 
 <action name="Back">

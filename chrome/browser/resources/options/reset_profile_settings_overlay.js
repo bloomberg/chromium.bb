@@ -4,6 +4,8 @@
 
 cr.define('options', function() {
   var OptionsPage = options.OptionsPage;
+
+  var AutomaticSettingsResetBanner = options.AutomaticSettingsResetBanner;
   var ResetProfileSettingsBanner = options.ResetProfileSettingsBanner;
 
   /**
@@ -70,6 +72,7 @@ cr.define('options', function() {
    * operation has terminated.
    */
   ResetProfileSettingsOverlay.doneResetting = function() {
+    AutomaticSettingsResetBanner.dismiss();
     ResetProfileSettingsOverlay.dismiss();
   };
 

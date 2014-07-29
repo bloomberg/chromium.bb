@@ -39,6 +39,12 @@ cr.define('options', function() {
         chrome.send('metricsHandler:recordAction',
             ['AutomaticSettingsReset_WebUIBanner_LearnMoreClicked']);
       };
+      $('automatic-settings-reset-banner-activate-reset').onclick =
+          function(event) {
+        chrome.send('metricsHandler:recordAction',
+            ['AutomaticSettingsReset_WebUIBanner_ResetClicked']);
+        OptionsPage.navigateToPage('resetProfileSettings');
+      };
     },
   };
 

@@ -44,6 +44,8 @@ void AutomaticSettingsResetHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   static const OptionsStringResource resources[] = {
+      { "automaticSettingsResetBannerResetButtonText",
+        IDS_AUTOMATIC_SETTINGS_RESET_BANNER_RESET_BUTTON_TEXT },
       { "automaticSettingsResetBannerText",
         IDS_AUTOMATIC_SETTINGS_RESET_BANNER_TEXT },
       { "automaticSettingsResetLearnMoreUrl",
