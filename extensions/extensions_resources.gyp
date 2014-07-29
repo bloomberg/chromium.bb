@@ -7,6 +7,9 @@
     {
       'target_name': 'extensions_resources',
       'type': 'none',
+      'dependencies': [
+        '../device/serial/serial.gyp:device_serial_mojo',
+      ],
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/extensions',
       },
@@ -22,6 +25,9 @@
           'action_name': 'generate_extensions_renderer_resources',
           'variables': {
             'grit_grd_file': 'renderer/resources/extensions_renderer_resources.grd',
+            'grit_additional_defines': [
+              '-E', 'mojom_root=<(SHARED_INTERMEDIATE_DIR)',
+            ],
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
