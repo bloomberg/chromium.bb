@@ -494,18 +494,12 @@ TEST_F(PicasaFileUtilTest, FolderContentsTrivial) {
   VerifyFolderDirectoryList(test_folders);
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/398031
-#define MAYBE_FolderWithManyFiles DISABLED_FolderWithManyFiles
-#else
-#define MAYBE_FolderWithManyFiles FolderWithManyFiles
-#endif
-TEST_F(PicasaFileUtilTest, MAYBE_FolderWithManyFiles) {
+TEST_F(PicasaFileUtilTest, FolderWithManyFiles) {
   ScopedVector<TestFolder> test_folders;
   base::Time test_date = base::Time::FromLocalExploded(test_date_exploded);
 
   test_folders.push_back(
-      new TestFolder("folder-many-files", test_date, "uid-both", 500, 500));
+      new TestFolder("folder-many-files", test_date, "uid-both", 50, 50));
 
   SetupFolders(&test_folders, std::vector<AlbumInfo>(), AlbumImagesMap());
   VerifyFolderDirectoryList(test_folders);
