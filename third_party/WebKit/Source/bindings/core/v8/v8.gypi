@@ -92,6 +92,7 @@
             'ScriptString.h',
             'ScriptValue.cpp',
             'ScriptValue.h',
+            'ScriptWrappable.cpp',
             'ScriptWrappable.h',
             'SerializedScriptValue.cpp',
             'SerializedScriptValue.h',
