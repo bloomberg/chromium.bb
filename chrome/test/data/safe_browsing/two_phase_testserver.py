@@ -14,7 +14,7 @@ import urlparse
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-sys.path.append(os.path.join(BASE_DIR, '..', '..', '..', 'net',
+sys.path.append(os.path.join(BASE_DIR, '..', '..', '..', '..', 'net',
                              'tools', 'testserver'))
 import testserver_base
 

@@ -48,7 +48,6 @@
           '<(PRODUCT_DIR)/test_page.css',
           'browser/policy/test/asn1der.py',
           'browser/policy/test/policy_testserver.py',
-          'browser/safe_browsing/safe_browsing_testserver.py',
         ],
         'isolate_dependency_untracked': [
           '../content/test/data/',

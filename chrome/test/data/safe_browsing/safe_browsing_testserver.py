@@ -10,7 +10,7 @@ import sys
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-sys.path.append(os.path.join(BASE_DIR, '..', '..', '..', 'net',
+sys.path.append(os.path.join(BASE_DIR, '..', '..', '..', '..', 'net',
                              'tools', 'testserver'))
 import testserver_base
 
@@ -19,8 +19,8 @@ class ServerRunner(testserver_base.TestServerRunner):
   """TestServerRunner for safebrowsing_test_server.py."""
 
   def create_server(self, server_data):
-    sys.path.append(os.path.join(BASE_DIR, '..', '..', '..', 'third_party',
-                                 'safe_browsing', 'testing'))
+    sys.path.append(os.path.join(BASE_DIR, '..', '..', '..', '..',
+                                 'third_party', 'safe_browsing', 'testing'))
     import safebrowsing_test_server
     server = safebrowsing_test_server.SetupServer(
         self.options.data_file, self.options.host, self.options.port,

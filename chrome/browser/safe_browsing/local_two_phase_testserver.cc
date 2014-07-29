@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "chrome/common/chrome_paths.h"
 #include "net/test/python_utils.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
@@ -22,14 +23,12 @@ LocalTwoPhaseTestServer::~LocalTwoPhaseTestServer() {}
 bool LocalTwoPhaseTestServer::GetTestServerPath(
     base::FilePath* testserver_path) const {
   base::FilePath testserver_dir;
-  if (!PathService::Get(base::DIR_SOURCE_ROOT, &testserver_dir)) {
-    LOG(ERROR) << "Failed to get DIR_SOURCE_ROOT";
+  if (!PathService::Get(chrome::DIR_TEST_DATA, &testserver_dir)) {
+    LOG(ERROR) << "Failed to get DIR_TEST_DATA";
     return false;
   }
 
   testserver_dir = testserver_dir
-      .Append(FILE_PATH_LITERAL("chrome"))
-      .Append(FILE_PATH_LITERAL("browser"))
       .Append(FILE_PATH_LITERAL("safe_browsing"));
 
   *testserver_path = testserver_dir.Append(FILE_PATH_LITERAL(
