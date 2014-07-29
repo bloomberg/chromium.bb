@@ -95,6 +95,9 @@ crbug.com/239811 crbug.com/229113 http/tests/history/redirect-js-location-assign
 
 crbug.com/231721 [ Win ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass Timeout ]
 
+# Crashing after V8 roll to 3.28.43.1.
+crbug.com/398306 fast/events/before-unload-return-bad-value.html [ Crash ]
+
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Failure Pass ]
 
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/elements-001.html [ Failure ]
