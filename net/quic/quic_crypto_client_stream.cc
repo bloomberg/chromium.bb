@@ -288,7 +288,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         }
         error = crypto_config_->ProcessRejection(
             *in, session()->connection()->clock()->WallNow(), cached,
-            &crypto_negotiated_params_, &error_details);
+            server_id_.is_https(), &crypto_negotiated_params_, &error_details);
         if (error != QUIC_NO_ERROR) {
           CloseConnectionWithDetails(error, error_details);
           return;

@@ -618,6 +618,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
     const CryptoHandshakeMessage& rej,
     QuicWallTime now,
     CachedState* cached,
+    bool is_https,
     QuicCryptoNegotiatedParameters* out_params,
     string* error_details) {
   DCHECK(error_details != NULL);
@@ -654,8 +655,13 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
       packed_error |= 1 << (reason - 1);
     }
     DVLOG(1) << "Reasons for rejection: " << packed_error;
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicClientHelloRejectReasons",
-                                packed_error);
+    if (is_https) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicClientHelloRejectReasons.Secure",
+                                  packed_error);
+    } else {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicClientHelloRejectReasons.Insecure",
+                                  packed_error);
+    }
   }
 
   return QUIC_NO_ERROR;

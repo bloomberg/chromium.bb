@@ -15050,7 +15050,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Net.QuicClientHelloRejectReasons" enum="QuicRejectReasons">
   <owner>rtenneti@chromium.org</owner>
   <summary>
-    The reject reasons for QUIC's CHLO (client hello) message from server.
+    The reject reasons for QUIC's CHLO (client hello) message from server
   </summary>
 </histogram>
 
@@ -50058,6 +50058,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <suffix name="OnStartTime" label="Measures the time taken for OnStart()."/>
   <suffix name="OnStopTime" label="Measures the time taken for OnStop()."/>
   <affected-histogram name="Media.VideoCaptureManager"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="Net.QuicClientHelloRejectReasons.QuicIsSecureOrNot"
+    separator=".">
+  <owner>rtenneti@chromium.org</owner>
+  <suffix name="Insecure" label="for insecure QUIC."/>
+  <suffix name="Secure" label="for secure QUIC."/>
+  <affected-histogram name="Net.QuicClientHelloRejectReasons"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Net.QuicSession.21CumulativePackets" separator="_">
