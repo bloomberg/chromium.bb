@@ -149,11 +149,4 @@ struct nacl_abi_timespec {
 };
 #endif
 
-#define NACL_PRIdNACL_TIME NACL_PRI_(d, 64)
-#define NACL_PRIiNACL_TIME NACL_PRI_(i, 64)
-#define NACL_PRIoNACL_TIME NACL_PRI_(o, 64)
-#define NACL_PRIuNACL_TIME NACL_PRI_(u, 64)
-#define NACL_PRIxNACL_TIME NACL_PRI_(x, 64)
-#define NACL_PRIXNACL_TIME NACL_PRI_(X, 64)
-
 #endif

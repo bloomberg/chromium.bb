@@ -61,9 +61,8 @@ int main(int ac,
     t_now.tv_sec = mock_time;
     t_now.tv_usec = 0;
   }
-  printf("At the tone, the system time is"
-         " %"NACL_PRIdNACL_TIME".%06ld seconds.  BEEP!\n",
-         t_now.tv_sec, t_now.tv_usec);
+  printf("At the tone, the system time is %"PRId64".%06ld seconds.  BEEP!\n",
+         (int64_t) t_now.tv_sec, t_now.tv_usec);
   localtime_r(&t_now.tv_sec, &t_broken_out);
   timestr = asctime_r(&t_broken_out, ctime_buf);
   if (NULL == timestr) {

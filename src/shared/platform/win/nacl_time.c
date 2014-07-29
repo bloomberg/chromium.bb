@@ -454,11 +454,6 @@ int NaClGetTimeOfDayIntern(struct nacl_abi_timeval *tv,
 
   tv->nacl_abi_tv_sec = (nacl_abi_time_t) (unix_time_ms / 1000);
   tv->nacl_abi_tv_usec = (nacl_abi_suseconds_t) ((unix_time_ms % 1000) * 1000);
-
-  NaClLog(5, "nacl_abi_tv_sec =    %"NACL_PRIdNACL_TIME"\n",
-          tv->nacl_abi_tv_sec);
-  NaClLog(5, "nacl_abi_tv_usec =   %"NACL_PRId32"\n", tv->nacl_abi_tv_usec);
-
   return 0;
 }
 

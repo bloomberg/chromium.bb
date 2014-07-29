@@ -38,12 +38,12 @@
  * tv_usec is within range, i.e., the timeval has been normalized.
  */
 void PrintTimeval(FILE *iob, struct timeval const *tv) {
-  fprintf(iob, "%"NACL_PRIdNACL_TIME".%06ld", tv->tv_sec, tv->tv_usec);
+  fprintf(iob, "%"PRId64".%06ld", (int64_t) tv->tv_sec, tv->tv_usec);
 }
 
 /* timespec fields should have been ts_nsec etc */
 void PrintTimespec(FILE *iob, struct timespec const *ts) {
-  fprintf(iob, "%"NACL_PRIdNACL_TIME".%09ld", ts->tv_sec, ts->tv_nsec);
+  fprintf(iob, "%"PRId64".%09ld", (uint64_t) ts->tv_sec, ts->tv_nsec);
 }
 
 void NormalizeTimeval(struct timeval *tv) {

@@ -139,9 +139,9 @@ int TestNanoSleep(struct timespec *t_suspend) {
   struct timeval  t_end;
   struct timeval  t_elapsed;
 
-  printf("%40s: %"NACL_PRIdNACL_TIME".%09ld seconds\n",
+  printf("%40s: %"PRId64".%09ld seconds\n",
          "Requesting nanosleep duration",
-         t_suspend->tv_sec,
+         (int64_t) t_suspend->tv_sec,
          t_suspend->tv_nsec);
   t_remain = *t_suspend;
   /*
@@ -168,9 +168,9 @@ int TestNanoSleep(struct timespec *t_suspend) {
     printf("Microsecond field too large: %ld\n", t_elapsed.tv_usec);
   }
 
-  printf("%40s: %"NACL_PRIdNACL_TIME".%06ld seconds\n",
+  printf("%40s: %"PRId64".%06ld seconds\n",
          "Actual nanosleep duration",
-         t_elapsed.tv_sec,
+         (int64_t) t_elapsed.tv_sec,
          t_elapsed.tv_usec);
 
   /*
@@ -181,11 +181,11 @@ int TestNanoSleep(struct timespec *t_suspend) {
       (t_elapsed.tv_sec == t_suspend->tv_sec &&
        (NANOS_PER_MICRO * t_elapsed.tv_usec < t_suspend->tv_nsec))) {
     printf("Error: Elapsed time too short!"
-           " t_elapsed.tv_sec=%"NACL_PRIdNACL_TIME" "
-           " t_suspend->tv_sec=%"NACL_PRIdNACL_TIME" "
+           " t_elapsed.tv_sec=%"PRId64" "
+           " t_suspend->tv_sec=%"PRId64" "
            " t_elapsed.tv_usec=%"PRId64" "
            " t_suspend->tv_nsec=%"PRId64" \n",
-           t_elapsed.tv_sec, t_suspend->tv_sec,
+           (int64_t) t_elapsed.tv_sec, (int64_t) t_suspend->tv_sec,
            (int64_t) t_elapsed.tv_usec, (int64_t) t_suspend->tv_nsec);
   }
 
