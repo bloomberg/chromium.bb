@@ -106,8 +106,11 @@ base::DictionaryValue* DevToolsProtocol::Response::Serialize() {
     error_object->SetInteger(kErrorCodeParam, error_code_);
     if (!error_message_.empty())
       error_object->SetString(kErrorMessageParam, error_message_);
-  } else if (result_) {
-    response->Set(kResultParam, result_->DeepCopy());
+  } else {
+    if (result_)
+      response->Set(kResultParam, result_->DeepCopy());
+    else
+      response->Set(kResultParam, new base::DictionaryValue());
   }
 
   return response;
