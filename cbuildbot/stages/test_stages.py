@@ -333,14 +333,6 @@ class ASyncHWTestStage(HWTestStage, generic_stages.ForgivingBuilderStage):
     self.wait_for_results = False
 
 
-class QATestStage(HWTestStage, generic_stages.ForgivingBuilderStage):
-  """Stage that runs qav suite in lab, blocking build but forgiving failures.
-  """
-
-  def __init__(self, *args, **kwargs):
-    super(QATestStage, self).__init__(*args, **kwargs)
-
-
 class ImageTestStage(generic_stages.BoardSpecificBuilderStage,
                      generic_stages.ForgivingBuilderStage,
                      generic_stages.ArchivingStageMixin):

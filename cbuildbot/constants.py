@@ -287,12 +287,23 @@ HWTEST_SUITES_POOL = 'suites'
 HWTEST_CHROME_PERF_POOL = 'chromeperf'
 HWTEST_TRYBOT_POOL = 'try-bot'
 
-# Defines for special purpose Hardware tests suites.
+
+# Defines for the various hardware test suites:
+#   AU: Blocking suite run against all canaries; tests basic AU
+#       functionality.
+#   BVT:  Basic blocking suite to be run against any build that
+#       requires a HWTest phase.
+#   COMMIT:  Suite of basic tests required for commits to the source
+#       tree.  Runs as a blocking suite on the CQ and PFQ; runs as
+#       a non-blocking suite on canaries.
+#   CANARY:  Non-blocking suite run only against the canaries.
+#   AFDO:  Non-blocking suite run only AFDO builders.
 HWTEST_AU_SUITE = 'au'
 HWTEST_BVT_SUITE = 'bvt-inline'
-HWTEST_CQ_SUITE = 'bvt-cq'
-HWTEST_QAV_SUITE = 'qav'
+HWTEST_COMMIT_SUITE = 'bvt-cq'
+HWTEST_CANARY_SUITE = 'bvt-perbuild'
 HWTEST_AFDO_SUITE = 'AFDO_record'
+
 
 # Additional timeout to wait for autotest to abort a suite if the test takes
 # too long to run. This is meant to be overly conservative as a timeout may

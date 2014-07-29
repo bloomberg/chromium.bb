@@ -674,16 +674,15 @@ class HWTestConfig(object):
     * A suite config may not specify both warn_only and critical.
   """
 
-  DEFAULT_HW_TEST = 'bvt'
-
   # This timeout is larger than it needs to be because of autotest overhead.
   # TODO(davidjames): Reduce this timeout once http://crbug.com/366141 is fixed.
   DEFAULT_HW_TEST_TIMEOUT = 60 * 220
   BRANCHED_HW_TEST_TIMEOUT = 10 * 60 * 60
   # Number of tests running in parallel in the AU suite.
   AU_TESTS_NUM = 2
-  # Number of tests running in parallel in the QAV suite
-  QAV_TEST_NUM = 2
+  # Number of tests running in parallel in the asynchronous canary
+  # test suite
+  ASYNC_TEST_NUM = 2
 
   @classmethod
   def DefaultList(cls, **kwargs):
@@ -695,23 +694,25 @@ class HWTestConfig(object):
     if (kwargs.get('num', constants.HWTEST_DEFAULT_NUM) >=
         constants.HWTEST_DEFAULT_NUM):
       au_dict = dict(num=cls.AU_TESTS_NUM)
-      qav_dict = dict(num=cls.QAV_TEST_NUM)
+      async_dict = dict(num=cls.ASYNC_TEST_NUM)
     else:
       au_dict = dict(num=1)
-      qav_dict = dict(num=1)
+      async_dict = dict(num=1)
 
     au_kwargs = kwargs.copy()
     au_kwargs.update(au_dict)
 
-    qav_kwargs = kwargs.copy()
-    qav_kwargs.update(qav_dict)
-    qav_kwargs['priority'] = constants.HWTEST_DEFAULT_PRIORITY
-    qav_kwargs['retry'] = False
+    async_kwargs = kwargs.copy()
+    async_kwargs.update(async_dict)
+    async_kwargs['priority'] = constants.HWTEST_DEFAULT_PRIORITY
+    async_kwargs['retry'] = False
+    async_kwargs['async'] = True
 
     # BVT + AU suite.
-    return [cls(cls.DEFAULT_HW_TEST, **kwargs),
-            cls(constants.HWTEST_AU_SUITE, **au_kwargs),
-            cls(constants.HWTEST_QAV_SUITE, **qav_kwargs)]
+    return [cls(constants.HWTEST_BVT_SUITE, blocking=True, **kwargs),
+            cls(constants.HWTEST_AU_SUITE, blocking=True, **au_kwargs),
+            cls(constants.HWTEST_COMMIT_SUITE, **async_kwargs),
+            cls(constants.HWTEST_CANARY_SUITE, **async_kwargs)]
 
   @classmethod
   def DefaultListCanary(cls, **kwargs):
@@ -744,7 +745,7 @@ class HWTestConfig(object):
     the `blocking` setting cannot be provided.
     """
     return [cls(constants.HWTEST_BVT_SUITE, blocking=True, **kwargs),
-            cls(constants.HWTEST_CQ_SUITE, **kwargs)]
+            cls(constants.HWTEST_COMMIT_SUITE, **kwargs)]
 
   @classmethod
   def DefaultListCQ(cls, **kwargs):

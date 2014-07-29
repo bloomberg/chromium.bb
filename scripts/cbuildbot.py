@@ -469,16 +469,15 @@ class SimpleBuilder(Builder):
           stage_class = test_stages.ASyncHWTestStage
         elif suite_config.suite == constants.HWTEST_AU_SUITE:
           stage_class = test_stages.AUTestStage
-        elif suite_config.suite == constants.HWTEST_QAV_SUITE:
-          stage_class = test_stages.QATestStage
         else:
           stage_class = test_stages.HWTestStage
-        new_stage = self._GetStageInstance(stage_class, board,
-                                           suite_config,
-                                           builder_run=builder_run)
         if suite_config.blocking:
-          new_stage.Run()
+          self._RunStage(stage_class, board, suite_config,
+                         builder_run=builder_run)
         else:
+          new_stage = self._GetStageInstance(stage_class, board,
+                                             suite_config,
+                                             builder_run=builder_run)
           parallel_stages.append(new_stage)
 
     self._RunParallelStages(parallel_stages)
