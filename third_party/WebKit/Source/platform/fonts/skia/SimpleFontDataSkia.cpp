@@ -259,7 +259,6 @@ float SimpleFontData::platformWidthForGlyph(Glyph glyph) const
     return SkScalarToFloat(width);
 }
 
-#if USE(HARFBUZZ)
 bool SimpleFontData::canRenderCombiningCharacterSequence(const UChar* characters, size_t length) const
 {
     if (!m_combiningCharacterSequenceSupport)
@@ -285,7 +284,6 @@ bool SimpleFontData::canRenderCombiningCharacterSequence(const UChar* characters
     }
     return false;
 }
-#endif
 
 bool SimpleFontData::fillGlyphPage(GlyphPage* pageToFill, unsigned offset, unsigned length, UChar* buffer, unsigned bufferLength) const
 {

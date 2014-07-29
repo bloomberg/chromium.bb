@@ -138,7 +138,3 @@
 #include <cstddef>
 
 #endif
-
-#if OS(LINUX) || OS(ANDROID) || OS(WIN)
-#define WTF_USE_HARFBUZZ 1
-#endif
