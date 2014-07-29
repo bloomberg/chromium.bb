@@ -31,6 +31,9 @@
 
 namespace blink {
 
+class LayoutRect;
+class PositionWithAffinity;
+class RenderObject;
 class Node;
 class VisiblePosition;
 
@@ -92,6 +95,9 @@ bool isEndOfDocument(const VisiblePosition &);
 VisiblePosition startOfEditableContent(const VisiblePosition&);
 VisiblePosition endOfEditableContent(const VisiblePosition&);
 bool isEndOfEditableOrNonEditableContent(const VisiblePosition&);
+
+// Rect is local to the returned renderer
+LayoutRect localCaretRectOfPosition(const PositionWithAffinity&, RenderObject*&);
 
 } // namespace blink
 

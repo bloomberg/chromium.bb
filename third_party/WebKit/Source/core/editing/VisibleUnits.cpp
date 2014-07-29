@@ -1386,4 +1386,26 @@ VisiblePosition rightBoundaryOfLine(const VisiblePosition& c, TextDirection dire
     return direction == LTR ? logicalEndOfLine(c) : logicalStartOfLine(c);
 }
 
+LayoutRect localCaretRectOfPosition(const PositionWithAffinity& position, RenderObject*& renderer)
+{
+    if (position.position().isNull()) {
+        renderer = nullptr;
+        return IntRect();
+    }
+    Node* node = position.position().anchorNode();
+
+    renderer = node->renderer();
+    if (!renderer)
+        return LayoutRect();
+
+    InlineBox* inlineBox;
+    int caretOffset;
+    position.position().getInlineBoxAndOffset(position.affinity(), inlineBox, caretOffset);
+
+    if (inlineBox)
+        renderer = &inlineBox->renderer();
+
+    return renderer->localCaretRect(inlineBox, caretOffset);
+}
+
 }

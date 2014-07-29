@@ -35,6 +35,7 @@ namespace blink {
 
 class LocalFrame;
 class GraphicsContext;
+class PositionWithAffinity;
 class RenderBlock;
 class RenderView;
 
@@ -47,6 +48,8 @@ protected:
 
     void invalidateCaretRect(Node*, bool caretRectChanged = false);
     void clearCaretRect();
+    bool updateCaretRect(Document*, const PositionWithAffinity& caretPosition);
+    // Simply calls above updateCaretRect using deepEquivalent() and affinity().
     bool updateCaretRect(Document*, const VisiblePosition& caretPosition);
     IntRect absoluteBoundsForLocalRect(Node*, const LayoutRect&) const;
     bool shouldRepaintCaret(const RenderView*, bool isContentEditable) const;

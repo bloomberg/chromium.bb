@@ -1222,13 +1222,20 @@ static bool isNonOrphanedCaret(const VisibleSelection& selection)
     return selection.isCaret() && !selection.start().isOrphan() && !selection.end().isOrphan();
 }
 
+static bool isTextFormControl(const VisibleSelection& selection)
+{
+    return enclosingTextFormControl(selection.start());
+}
+
 LayoutRect FrameSelection::localCaretRect()
 {
     if (shouldUpdateCaretRect()) {
         if (!isNonOrphanedCaret(m_selection))
             clearCaretRect();
-        else if (updateCaretRect(m_frame->document(), VisiblePosition(m_selection.start(), m_selection.affinity())))
-            m_absCaretBoundsDirty = true;
+        else if (isTextFormControl(m_selection))
+            m_absCaretBoundsDirty |= updateCaretRect(m_frame->document(), PositionWithAffinity(m_selection.start().isCandidate() ? m_selection.start() : Position(), m_selection.affinity()));
+        else
+            m_absCaretBoundsDirty |= updateCaretRect(m_frame->document(), VisiblePosition(m_selection.start(), m_selection.affinity()));
     }
 
     return localCaretRectWithoutUpdate();

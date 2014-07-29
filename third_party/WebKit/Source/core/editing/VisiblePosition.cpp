@@ -649,24 +649,8 @@ UChar32 VisiblePosition::characterAfter() const
 
 LayoutRect VisiblePosition::localCaretRect(RenderObject*& renderer) const
 {
-    if (m_deepPosition.isNull()) {
-        renderer = 0;
-        return IntRect();
-    }
-    Node* node = m_deepPosition.anchorNode();
-
-    renderer = node->renderer();
-    if (!renderer)
-        return LayoutRect();
-
-    InlineBox* inlineBox;
-    int caretOffset;
-    getInlineBoxAndOffset(inlineBox, caretOffset);
-
-    if (inlineBox)
-        renderer = &inlineBox->renderer();
-
-    return renderer->localCaretRect(inlineBox, caretOffset);
+    PositionWithAffinity positionWithAffinity(m_deepPosition, m_affinity);
+    return localCaretRectOfPosition(positionWithAffinity, renderer);
 }
 
 IntRect VisiblePosition::absoluteCaretBounds() const

@@ -34,6 +34,10 @@ protected:
     DummyPageHolder& page() const { return *m_dummyPageHolder; }
     HTMLDocument& document() const { return *m_document; }
     HTMLTextFormControlElement& textControl() const { return *m_textControl; }
+    HTMLInputElement& input() const { return *m_input; }
+
+    int layoutCount() const { return page().frameView().layoutCount(); }
+    void forceLayoutFlag();
 
 private:
     OwnPtr<SpellCheckerClient> m_spellCheckerClient;
@@ -41,6 +45,7 @@ private:
 
     RefPtrWillBePersistent<HTMLDocument> m_document;
     RefPtrWillBePersistent<HTMLTextFormControlElement> m_textControl;
+    RefPtrWillBePersistent<HTMLInputElement> m_input;
 };
 
 class DummyTextCheckerClient : public EmptyTextCheckerClient {
@@ -76,6 +81,16 @@ void HTMLTextFormControlElementTest::SetUp()
     m_document->view()->updateLayoutAndStyleIfNeededRecursive();
     m_textControl = toHTMLTextFormControlElement(m_document->getElementById("textarea"));
     m_textControl->focus();
+    m_input = toHTMLInputElement(m_document->getElementById("input"));
+}
+
+void HTMLTextFormControlElementTest::forceLayoutFlag()
+{
+    FrameView& frameView = page().frameView();
+    IntRect frameRect = frameView.frameRect();
+    frameRect.setWidth(frameRect.width() + 1);
+    frameRect.setHeight(frameRect.height() + 1);
+    page().frameView().setFrameRect(frameRect);
 }
 
 TEST_F(HTMLTextFormControlElementTest, SetSelectionRange)
@@ -90,6 +105,19 @@ TEST_F(HTMLTextFormControlElementTest, SetSelectionRange)
     textControl().setSelectionRange(1, 3);
     EXPECT_EQ(1, textControl().selectionStart());
     EXPECT_EQ(3, textControl().selectionEnd());
+}
+
+TEST_F(HTMLTextFormControlElementTest, FrameSelectionLocalCaretRectDoesNotCauseLayout)
+{
+    input().focus();
+    input().setValue("Hello, input form.");
+    FrameSelection& frameSelection = document().frame()->selection();
+    frameSelection.setCaretRectNeedsUpdate();
+
+    forceLayoutFlag();
+    int startLayoutCount = layoutCount();
+    frameSelection.localCaretRect();
+    EXPECT_EQ(startLayoutCount, layoutCount());
 }
 
 typedef Position (*PositionFunction)(const Position&);
@@ -178,10 +206,10 @@ TEST_F(HTMLTextFormControlElementTest, SpellCheckDoesNotCauseUpdateLayout)
     ASSERT_EQ(3, input->selectionStart());
 
     OwnPtr<SpellChecker> spellChecker(SpellChecker::create(page().frame()));
-    page().frameView().setFrameRect(IntRect(0, 0, 801, 601));
-    int startCount = page().frameView().layoutCount();
+    forceLayoutFlag();
+    int startCount = layoutCount();
     spellChecker->respondToChangedSelection(oldSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
-    EXPECT_EQ(startCount, page().frameView().layoutCount());
+    EXPECT_EQ(startCount, layoutCount());
 }
 
 }

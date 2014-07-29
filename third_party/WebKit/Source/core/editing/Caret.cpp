@@ -27,9 +27,11 @@
 #include "core/editing/Caret.h"
 
 #include "core/dom/Document.h"
+#include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/html/HTMLTextFormControlElement.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderView.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -130,25 +132,25 @@ RenderBlock* CaretBase::caretRenderer(Node* node)
     return paintedByBlock ? toRenderBlock(renderer) : renderer->containingBlock();
 }
 
-bool CaretBase::updateCaretRect(Document* document, const VisiblePosition& caretPosition)
+bool CaretBase::updateCaretRect(Document* document, const PositionWithAffinity& caretPosition)
 {
     document->updateRenderTreeIfNeeded();
     m_caretLocalRect = LayoutRect();
 
     m_caretRectNeedsUpdate = false;
 
-    if (caretPosition.isNull())
+    if (caretPosition.position().isNull())
         return false;
 
-    ASSERT(caretPosition.deepEquivalent().deprecatedNode()->renderer());
+    ASSERT(caretPosition.position().deprecatedNode()->renderer());
 
     // First compute a rect local to the renderer at the selection start.
     RenderObject* renderer;
-    LayoutRect localRect = caretPosition.localCaretRect(renderer);
+    LayoutRect localRect = localCaretRectOfPosition(caretPosition, renderer);
 
     // Get the renderer that will be responsible for painting the caret
     // (which is either the renderer we just found, or one of its containers).
-    RenderBlock* caretPainter = caretRenderer(caretPosition.deepEquivalent().deprecatedNode());
+    RenderBlock* caretPainter = caretRenderer(caretPosition.position().deprecatedNode());
 
     // Compute an offset between the renderer and the caretPainter.
     bool unrooted = false;
@@ -166,6 +168,11 @@ bool CaretBase::updateCaretRect(Document* document, const VisiblePosition& caret
         m_caretLocalRect = localRect;
 
     return true;
+}
+
+bool CaretBase::updateCaretRect(Document* document, const VisiblePosition& caretPosition)
+{
+    return updateCaretRect(document, PositionWithAffinity(caretPosition.deepEquivalent(), caretPosition.affinity()));
 }
 
 RenderBlock* DragCaretController::caretRenderer() const
