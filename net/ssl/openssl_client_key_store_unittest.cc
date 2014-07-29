@@ -59,8 +59,7 @@ TEST_F(OpenSSLClientKeyStoreTest, Flush) {
 
   // Retrieve the private key. This should fail because the store
   // was flushed.
-  crypto::ScopedEVP_PKEY pkey;
-  ASSERT_FALSE(store_->FetchClientCertPrivateKey(cert_1.get(), &pkey));
+  crypto::ScopedEVP_PKEY pkey = store_->FetchClientCertPrivateKey(cert_1.get());
   ASSERT_FALSE(pkey.get());
 }
 
@@ -75,8 +74,7 @@ TEST_F(OpenSSLClientKeyStoreTest, FetchEmptyPrivateKey) {
 
   // Retrieve the private key now. This should fail because it was
   // never recorded in the store.
-  crypto::ScopedEVP_PKEY pkey;
-  ASSERT_FALSE(store_->FetchClientCertPrivateKey(cert_1.get(), &pkey));
+  crypto::ScopedEVP_PKEY pkey = store_->FetchClientCertPrivateKey(cert_1.get());
   ASSERT_FALSE(pkey.get());
 }
 
@@ -110,8 +108,8 @@ TEST_F(OpenSSLClientKeyStoreTest, RecordAndFetchPrivateKey) {
 
   // Retrieve the private key. This should increment the private key's
   // reference count.
-  crypto::ScopedEVP_PKEY pkey2;
-  ASSERT_TRUE(store_->FetchClientCertPrivateKey(cert_1.get(), &pkey2));
+  crypto::ScopedEVP_PKEY pkey2 =
+      store_->FetchClientCertPrivateKey(cert_1.get());
   ASSERT_EQ(pkey2.get(), priv_key.get());
   ASSERT_EQ(3, EVP_PKEY_get_refcount(priv_key.get()));
 
@@ -152,12 +150,11 @@ TEST_F(OpenSSLClientKeyStoreTest, RecordAndFetchTwoPrivateKeys) {
 
   // Retrieve the private key now. This shall succeed and increment
   // the private key's reference count.
-  crypto::ScopedEVP_PKEY fetch_key1;
-  ASSERT_TRUE(store_->FetchClientCertPrivateKey(cert_1.get(),
-                                                &fetch_key1));
-  crypto::ScopedEVP_PKEY fetch_key2;
-  ASSERT_TRUE(store_->FetchClientCertPrivateKey(cert_2.get(),
-                                                &fetch_key2));
+  crypto::ScopedEVP_PKEY fetch_key1 =
+      store_->FetchClientCertPrivateKey(cert_1.get());
+  crypto::ScopedEVP_PKEY fetch_key2 =
+      store_->FetchClientCertPrivateKey(cert_2.get());
+
   EXPECT_TRUE(fetch_key1.get());
   EXPECT_TRUE(fetch_key2.get());
 

@@ -49,11 +49,8 @@ class NET_EXPORT OpenSSLClientKeyStore {
   // Given a certificate's |public_key|, return the corresponding private
   // key that has been recorded previously by RecordClientCertPrivateKey().
   // |cert| is a client certificate.
-  // |*private_key| will be reset to its matching private key on success.
-  // Returns true on success, false otherwise. This increments the reference
-  // count of the private key on success.
-  bool FetchClientCertPrivateKey(const X509Certificate* cert,
-                                 crypto::ScopedEVP_PKEY* private_key);
+  // Returns its matching private key on success, NULL otherwise.
+  crypto::ScopedEVP_PKEY FetchClientCertPrivateKey(const X509Certificate* cert);
 
   // Flush all recorded keys.
   void Flush();

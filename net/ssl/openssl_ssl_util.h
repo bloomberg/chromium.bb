@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SOCKET_OPENSSL_SSL_UTIL_H_
-#define NET_SOCKET_OPENSSL_SSL_UTIL_H_
+#ifndef NET_SSL_OPENSSL_SSL_UTIL_H_
+#define NET_SSL_OPENSSL_SSL_UTIL_H_
 
 namespace crypto {
 class OpenSSLErrStackTracer;
@@ -37,4 +37,4 @@ int MapOpenSSLError(int err, const crypto::OpenSSLErrStackTracer& tracer);
 
 }  // namespace net
 
-#endif  // NET_SOCKET_OPENSSL_SSL_UTIL_H_
+#endif  // NET_SSL_OPENSSL_SSL_UTIL_H_

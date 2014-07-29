@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/socket/openssl_ssl_util.h"
+#include "net/ssl/openssl_ssl_util.h"
 
 #include <errno.h>
 

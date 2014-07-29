@@ -23,13 +23,18 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/single_request_cert_verifier.h"
 #include "net/cert/x509_certificate_net_log_param.h"
-#include "net/socket/openssl_ssl_util.h"
 #include "net/socket/ssl_error_params.h"
 #include "net/socket/ssl_session_cache_openssl.h"
-#include "net/ssl/openssl_client_key_store.h"
+#include "net/ssl/openssl_ssl_util.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
+
+#if defined(USE_OPENSSL_CERTS)
+#include "net/ssl/openssl_client_key_store.h"
+#else
+#include "net/ssl/openssl_platform_key.h"
+#endif
 
 namespace net {
 
@@ -1326,6 +1331,11 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl,
   DCHECK(ssl == ssl_);
   DCHECK(*x509 == NULL);
   DCHECK(*pkey == NULL);
+
+#if defined(OS_IOS)
+  // TODO(droger): Support client auth on iOS. See http://crbug.com/145954).
+  LOG(WARNING) << "Client auth is not supported";
+#else  // !defined(OS_IOS)
   if (!ssl_config_.send_client_cert) {
     // First pass: we know that a client certificate is needed, but we do not
     // have one at hand.
@@ -1363,25 +1373,25 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl,
       return -1;
     }
 
-    crypto::ScopedEVP_PKEY privkey;
+    // TODO(davidben): With Linux client auth support, this should be
+    // conditioned on OS_ANDROID and then, with https://crbug.com/394131,
+    // removed altogether. OpenSSLClientKeyStore is mostly an artifact of the
+    // net/ client auth API lacking a private key handle.
 #if defined(USE_OPENSSL_CERTS)
-    // A note about ownership: FetchClientCertPrivateKey() increments
-    // the reference count of the EVP_PKEY. Ownership of this reference
-    // is passed directly to OpenSSL, which will release the reference
-    // using EVP_PKEY_free() when the SSL object is destroyed.
-    if (!OpenSSLClientKeyStore::GetInstance()->FetchClientCertPrivateKey(
-            ssl_config_.client_cert.get(), &privkey)) {
+    crypto::ScopedEVP_PKEY privkey =
+        OpenSSLClientKeyStore::GetInstance()->FetchClientCertPrivateKey(
+            ssl_config_.client_cert.get());
+#else  // !defined(USE_OPENSSL_CERTS)
+    crypto::ScopedEVP_PKEY privkey =
+        FetchClientCertPrivateKey(ssl_config_.client_cert.get());
+#endif  // defined(USE_OPENSSL_CERTS)
+    if (!privkey) {
       // Could not find the private key. Fail the handshake and surface an
       // appropriate error to the caller.
       LOG(WARNING) << "Client cert found without private key";
       OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_CERT_NO_PRIVATE_KEY);
       return -1;
     }
-#else  // !defined(USE_OPENSSL_CERTS)
-    // OS handling of private keys is not yet implemented.
-    NOTIMPLEMENTED();
-    return 0;
-#endif  // defined(USE_OPENSSL_CERTS)
 
     // TODO(joth): (copied from NSS) We should wait for server certificate
     // verification before sending our credentials. See http://crbug.com/13934
@@ -1389,6 +1399,7 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl,
     *pkey = privkey.release();
     return 1;
   }
+#endif  // defined(OS_IOS)
 
   // Send no client certificate.
   return 0;

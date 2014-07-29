@@ -107,22 +107,20 @@ bool OpenSSLClientKeyStore::RecordClientCertPrivateKey(
   return true;
 }
 
-bool OpenSSLClientKeyStore::FetchClientCertPrivateKey(
-    const X509Certificate* client_cert,
-    crypto::ScopedEVP_PKEY* private_key) {
+crypto::ScopedEVP_PKEY OpenSSLClientKeyStore::FetchClientCertPrivateKey(
+    const X509Certificate* client_cert) {
   if (!client_cert)
-    return false;
+    return crypto::ScopedEVP_PKEY();
 
   crypto::ScopedEVP_PKEY pub_key(GetOpenSSLPublicKey(client_cert));
   if (!pub_key.get())
-    return false;
+    return crypto::ScopedEVP_PKEY();
 
   int index = FindKeyPairIndex(pub_key.get());
   if (index < 0)
-    return false;
+    return crypto::ScopedEVP_PKEY();
 
-  private_key->reset(CopyEVP_PKEY(pairs_[index].private_key));
-  return true;
+  return crypto::ScopedEVP_PKEY(CopyEVP_PKEY(pairs_[index].private_key));
 }
 
 void OpenSSLClientKeyStore::Flush() {
