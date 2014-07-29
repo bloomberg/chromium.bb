@@ -64,6 +64,7 @@
 #include "core/events/ScopedEventQueue.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLBRElement.h"
+#include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLSpanElement.h"
 #include "core/rendering/InlineTextBox.h"
@@ -293,11 +294,12 @@ bool CompositeEditCommand::isRemovableBlock(const Node* node)
     if (!isHTMLDivElement(*node))
         return false;
 
-    ContainerNode* parentNode = node->parentNode();
+    const HTMLDivElement& element = toHTMLDivElement(*node);
+    ContainerNode* parentNode = element.parentNode();
     if (parentNode && parentNode->firstChild() != parentNode->lastChild())
         return false;
 
-    if (!toElement(node)->hasAttributes())
+    if (!element.hasAttributes())
         return true;
 
     return false;

@@ -38,6 +38,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLStyleElement.h"
+#include "core/html/HTMLTableRowElement.h"
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderText.h"
 
@@ -178,8 +180,8 @@ void DeleteSelectionCommand::initializePositionData()
     m_startRoot = editableRootForPosition(start);
     m_endRoot = editableRootForPosition(end);
 
-    m_startTableRow = enclosingNodeOfType(start, &isHTMLTableRowElement);
-    m_endTableRow = enclosingNodeOfType(end, &isHTMLTableRowElement);
+    m_startTableRow = toHTMLTableRowElement(enclosingNodeOfType(start, &isHTMLTableRowElement));
+    m_endTableRow = toHTMLTableRowElement(enclosingNodeOfType(end, &isHTMLTableRowElement));
 
     // Don't move content out of a table cell.
     // If the cell is non-editable, enclosingNodeOfType won't return it by default, so
@@ -400,7 +402,7 @@ void DeleteSelectionCommand::removeNode(PassRefPtrWillBeRawPtr<Node> node, Shoul
     CompositeEditCommand::removeNode(node, shouldAssumeContentIsAlwaysEditable);
 }
 
-static void updatePositionForTextRemoval(Node* node, int offset, int count, Position& position)
+static void updatePositionForTextRemoval(Text* node, int offset, int count, Position& position)
 {
     if (position.anchorType() != Position::PositionIsOffsetInAnchor || position.containerNode() != node)
         return;
@@ -428,9 +430,10 @@ void DeleteSelectionCommand::makeStylingElementsDirectChildrenOfEditableRootToPr
     RefPtrWillBeRawPtr<Node> node = range->firstNode();
     while (node && node != range->pastLastNode()) {
         RefPtrWillBeRawPtr<Node> nextNode = NodeTraversal::next(*node);
-        if ((isHTMLStyleElement(*node) && !(toElement(node)->hasAttribute(scopedAttr))) || isHTMLLinkElement(*node)) {
+        if ((isHTMLStyleElement(*node) && !toHTMLStyleElement(node)->hasAttribute(scopedAttr))
+            || isHTMLLinkElement(*node)) {
             nextNode = NodeTraversal::nextSkippingChildren(*node);
-            RefPtrWillBeRawPtr<ContainerNode> rootEditableElement = node->rootEditableElement();
+            RefPtrWillBeRawPtr<Element> rootEditableElement = node->rootEditableElement();
             if (rootEditableElement.get()) {
                 removeNode(node);
                 appendNode(node, rootEditableElement);
@@ -758,9 +761,9 @@ void DeleteSelectionCommand::clearTransientState()
 void DeleteSelectionCommand::removeRedundantBlocks()
 {
     Node* node = m_endingPosition.containerNode();
-    Node* rootNode = node->rootEditableElement();
+    Element* rootElement = node->rootEditableElement();
 
-    while (node != rootNode) {
+    while (node != rootElement) {
         if (isRemovableBlock(node)) {
             if (node == m_endingPosition.anchorNode())
                 updatePositionForNodeRemovalPreservingChildren(m_endingPosition, *node);
