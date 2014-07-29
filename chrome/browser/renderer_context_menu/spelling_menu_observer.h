@@ -12,8 +12,8 @@
 #include "base/prefs/pref_member.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/renderer_context_menu/render_view_context_menu_observer.h"
 #include "chrome/browser/spellchecker/spelling_service_client.h"
+#include "components/renderer_context_menu/render_view_context_menu_observer.h"
 
 class RenderViewContextMenuProxy;
 struct SpellCheckResult;

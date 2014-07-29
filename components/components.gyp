@@ -45,6 +45,7 @@
     'pref_registry.gypi',
     'query_parser.gypi',
     'rappor.gypi',
+    'renderer_context_menu.gypi',
     'search.gypi',
     'search_provider_logos.gypi',
     'signin.gypi',

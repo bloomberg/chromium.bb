@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_messages.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "grit/generated_resources.h"
@@ -20,6 +21,14 @@
 #include "ui/base/models/simple_menu_model.h"
 
 using content::BrowserThread;
+
+namespace {
+
+PrefService* GetPrefs(content::BrowserContext* context) {
+  return user_prefs::UserPrefs::Get(context);
+}
+
+}
 
 SpellCheckerSubMenuObserver::SpellCheckerSubMenuObserver(
     RenderViewContextMenuProxy* proxy,
@@ -80,9 +89,9 @@ bool SpellCheckerSubMenuObserver::IsCommandIdChecked(int command_id) {
 
   // Check box for 'Check Spelling while typing'.
   if (command_id == IDC_CHECK_SPELLING_WHILE_TYPING) {
-    Profile* profile = proxy_->GetProfile();
-    DCHECK(profile);
-    return profile->GetPrefs()->GetBoolean(prefs::kEnableContinuousSpellcheck);
+    content::BrowserContext* context = proxy_->GetBrowserContext();
+    DCHECK(context);
+    return GetPrefs(context)->GetBoolean(prefs::kEnableContinuousSpellcheck);
   }
 
   return false;
@@ -106,13 +115,13 @@ void SpellCheckerSubMenuObserver::ExecuteCommand(int command_id) {
   DCHECK(IsCommandIdSupported(command_id));
 
   content::RenderViewHost* rvh = proxy_->GetRenderViewHost();
-  Profile* profile = proxy_->GetProfile();
-  DCHECK(profile);
+  content::BrowserContext* context = proxy_->GetBrowserContext();
+  DCHECK(context);
   switch (command_id) {
     case IDC_CHECK_SPELLING_WHILE_TYPING:
-      profile->GetPrefs()->SetBoolean(
+      GetPrefs(context)->SetBoolean(
           prefs::kEnableContinuousSpellcheck,
-          !profile->GetPrefs()->GetBoolean(prefs::kEnableContinuousSpellcheck));
+          !GetPrefs(context)->GetBoolean(prefs::kEnableContinuousSpellcheck));
       break;
 
     case IDC_SPELLPANEL_TOGGLE:

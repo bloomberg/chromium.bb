@@ -47,6 +47,7 @@ include_rules = [
   "+components/pref_registry",
   "+components/query_parser",
   "+components/rappor",
+  "+components/renderer_context_menu",
   "+components/search",
   "+components/search_engines",
   "+components/search_provider_logos",

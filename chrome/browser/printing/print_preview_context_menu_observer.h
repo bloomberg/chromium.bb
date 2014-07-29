@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/renderer_context_menu/render_view_context_menu_observer.h"
+#include "components/renderer_context_menu/render_view_context_menu_observer.h"
 
 namespace content {
 class WebContents;

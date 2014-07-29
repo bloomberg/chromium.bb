@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_context_menu/context_menu_delegate.h"
+#include "components/renderer_context_menu/context_menu_delegate.h"
 
 #include "content/public/browser/web_contents.h"
 
@@ -13,8 +13,7 @@ const char kMenuDelegateUserDataKey[] = "RendererContextMenuMenuDelegate";
 class ContextMenuDelegateUserData : public base::SupportsUserData::Data {
  public:
   explicit ContextMenuDelegateUserData(ContextMenuDelegate* menu_delegate)
-      : menu_delegate_(menu_delegate) {
-  }
+      : menu_delegate_(menu_delegate) {}
   virtual ~ContextMenuDelegateUserData() {}
   ContextMenuDelegate* menu_delegate() { return menu_delegate_; }
 

@@ -8,10 +8,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
-#include "chrome/browser/renderer_context_menu/render_view_context_menu_observer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/renderer_context_menu/render_view_context_menu_observer.h"
 
 using content::RenderViewHost;
 using content::WebContents;
@@ -75,7 +75,7 @@ class MockRenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   virtual RenderViewHost* GetRenderViewHost() const OVERRIDE {
     return NULL;
   }
-  virtual Profile* GetProfile() const OVERRIDE {
+  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE {
     return profile_.get();
   }
   virtual content::WebContents* GetWebContents() const OVERRIDE {

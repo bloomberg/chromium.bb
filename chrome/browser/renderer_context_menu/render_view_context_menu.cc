@@ -69,6 +69,7 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_save_info.h"
@@ -383,6 +384,11 @@ void EscapeAmpersands(base::string16* text) {
                      text);
 }
 
+// Returns the preference of the profile represented by the |context|.
+PrefService* GetPrefs(content::BrowserContext* context) {
+  return user_prefs::UserPrefs::Get(context);
+}
+
 }  // namespace
 
 // static
@@ -409,16 +415,15 @@ RenderViewContextMenu::RenderViewContextMenu(
       source_web_contents_(WebContents::FromRenderFrameHost(render_frame_host)),
       render_process_id_(render_frame_host->GetProcess()->GetID()),
       render_frame_id_(render_frame_host->GetRoutingID()),
-      profile_(Profile::FromBrowserContext(
-          source_web_contents_->GetBrowserContext())),
+      browser_context_(source_web_contents_->GetBrowserContext()),
       menu_model_(this),
-      extension_items_(profile_,
+      extension_items_(browser_context_,
                        this,
                        &menu_model_,
                        base::Bind(MenuItemMatchesParams, params_)),
       protocol_handler_submenu_model_(this),
       protocol_handler_registry_(
-          ProtocolHandlerRegistryFactory::GetForProfile(profile_)),
+          ProtocolHandlerRegistryFactory::GetForProfile(GetProfile())),
       command_executed_(false) {
   content_type_.reset(ContextMenuContentTypeFactory::Create(
                           source_web_contents_, params));
@@ -519,11 +524,11 @@ bool RenderViewContextMenu::MenuItemMatchesParams(
 void RenderViewContextMenu::AppendAllExtensionItems() {
   extension_items_.Clear();
   ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
+      extensions::ExtensionSystem::Get(browser_context_)->extension_service();
   if (!service)
     return;  // In unit-tests, we may not have an ExtensionService.
 
-  MenuManager* menu_manager = MenuManager::Get(profile_);
+  MenuManager* menu_manager = MenuManager::Get(browser_context_);
   if (!menu_manager)
     return;
 
@@ -691,6 +696,10 @@ void RenderViewContextMenu::InitMenu() {
   }
 }
 
+Profile* RenderViewContextMenu::GetProfile() {
+  return Profile::FromBrowserContext(browser_context_);
+}
+
 void RenderViewContextMenu::AppendPrintPreviewItems() {
 #if defined(ENABLE_FULL_PRINTING)
   if (!print_preview_menu_observer_.get()) {
@@ -704,7 +713,7 @@ void RenderViewContextMenu::AppendPrintPreviewItems() {
 
 const Extension* RenderViewContextMenu::GetExtension() const {
   extensions::ExtensionSystem* system =
-      extensions::ExtensionSystem::Get(profile_);
+      extensions::ExtensionSystem::Get(browser_context_);
   // There is no process manager in some tests.
   if (!system->process_manager())
     return NULL;
@@ -749,8 +758,8 @@ WebContents* RenderViewContextMenu::GetWebContents() const {
   return source_web_contents_;
 }
 
-Profile* RenderViewContextMenu::GetProfile() const {
-  return profile_;
+BrowserContext* RenderViewContextMenu::GetBrowserContext() const {
+  return browser_context_;
 }
 
 bool RenderViewContextMenu::AppendCustomItems() {
@@ -828,7 +837,7 @@ void RenderViewContextMenu::AppendImageItems() {
 
 void RenderViewContextMenu::AppendSearchWebForImageItems() {
   TemplateURLService* service =
-      TemplateURLServiceFactory::GetForProfile(profile_);
+      TemplateURLServiceFactory::GetForProfile(GetProfile());
   const TemplateURL* const default_provider =
       service->GetDefaultSearchProvider();
   if (params_.has_image_contents && default_provider &&
@@ -955,7 +964,7 @@ void RenderViewContextMenu::AppendCopyItem() {
 }
 
 void RenderViewContextMenu::AppendPrintItem() {
-  if (profile_->GetPrefs()->GetBoolean(prefs::kPrintingEnabled) &&
+  if (GetPrefs(browser_context_)->GetBoolean(prefs::kPrintingEnabled) &&
       (params_.media_type == WebContextMenuData::MediaTypeNone ||
        params_.media_flags & WebContextMenuData::MediaCanPrint)) {
     menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
@@ -963,7 +972,7 @@ void RenderViewContextMenu::AppendPrintItem() {
 }
 
 void RenderViewContextMenu::AppendSearchProvider() {
-  DCHECK(profile_);
+  DCHECK(browser_context_);
 
   base::TrimWhitespace(params_.selection_text, base::TRIM_ALL,
                        &params_.selection_text);
@@ -974,9 +983,13 @@ void RenderViewContextMenu::AppendSearchProvider() {
                      base::ASCIIToUTF16(" "), &params_.selection_text);
 
   AutocompleteMatch match;
-  AutocompleteClassifierFactory::GetForProfile(profile_)->Classify(
-      params_.selection_text, false, false,
-      metrics::OmniboxEventProto::INVALID_SPEC, &match, NULL);
+  AutocompleteClassifierFactory::GetForProfile(GetProfile())
+      ->Classify(params_.selection_text,
+                 false,
+                 false,
+                 metrics::OmniboxEventProto::INVALID_SPEC,
+                 &match,
+                 NULL);
   selection_navigation_url_ = match.destination_url;
   if (!selection_navigation_url_.is_valid())
     return;
@@ -986,8 +999,8 @@ void RenderViewContextMenu::AppendSearchProvider() {
 
   if (AutocompleteMatch::IsSearchType(match.type)) {
     const TemplateURL* const default_provider =
-        TemplateURLServiceFactory::GetForProfile(profile_)->
-        GetDefaultSearchProvider();
+        TemplateURLServiceFactory::GetForProfile(GetProfile())
+            ->GetDefaultSearchProvider();
     if (!default_provider)
       return;
     menu_model_.AddItem(
@@ -1112,10 +1125,12 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     return false;
   }
 
+  PrefService* prefs = GetPrefs(browser_context_);
+
   // Allow Spell Check language items on sub menu for text area context menu.
   if ((id >= IDC_SPELLCHECK_LANGUAGES_FIRST) &&
       (id < IDC_SPELLCHECK_LANGUAGES_LAST)) {
-    return profile_->GetPrefs()->GetBoolean(prefs::kEnableContinuousSpellcheck);
+    return prefs->GetBoolean(prefs::kEnableContinuousSpellcheck);
   }
 
   // Custom items.
@@ -1136,7 +1151,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
   }
 
   IncognitoModePrefs::Availability incognito_avail =
-      IncognitoModePrefs::GetAvailability(profile_->GetPrefs());
+      IncognitoModePrefs::GetAvailability(prefs);
   switch (id) {
     case IDC_BACK:
       return source_web_contents_->GetController().CanGoBack();
@@ -1340,13 +1355,14 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return !!(params_.edit_flags & WebContextMenuData::CanSelectAll);
 
     case IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
-      return !profile_->IsOffTheRecord() && params_.link_url.is_valid() &&
+      return !browser_context_->IsOffTheRecord() &&
+             params_.link_url.is_valid() &&
              incognito_avail != IncognitoModePrefs::DISABLED;
 
     case IDC_PRINT:
-      return profile_->GetPrefs()->GetBoolean(prefs::kPrintingEnabled) &&
-          (params_.media_type == WebContextMenuData::MediaTypeNone ||
-           params_.media_flags & WebContextMenuData::MediaCanPrint);
+      return prefs->GetBoolean(prefs::kPrintingEnabled) &&
+             (params_.media_type == WebContextMenuData::MediaTypeNone ||
+              params_.media_flags & WebContextMenuData::MediaCanPrint);
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
     case IDC_CONTENT_CONTEXT_GOTOURL:
@@ -1360,8 +1376,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return true;
 
     case IDC_CHECK_SPELLING_WHILE_TYPING:
-      return profile_->GetPrefs()->GetBoolean(
-          prefs::kEnableContinuousSpellcheck);
+      return prefs->GetBoolean(prefs::kEnableContinuousSpellcheck);
 
 #if !defined(OS_MACOSX) && defined(OS_POSIX)
     // TODO(suzhe): this should not be enabled for password fields.
@@ -1509,7 +1524,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       const GURL& referrer =
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url;
       const GURL& url = params_.link_url;
-      DownloadManager* dlm = BrowserContext::GetDownloadManager(profile_);
+      DownloadManager* dlm =
+          BrowserContext::GetDownloadManager(browser_context_);
       scoped_ptr<DownloadUrlParameters> dl_params(
           DownloadUrlParameters::FromWebContents(source_web_contents_, url));
       dl_params->set_referrer(
@@ -1647,8 +1663,9 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       DCHECK(platform_app);
       DCHECK(platform_app->is_platform_app());
 
-      extensions::ExtensionSystem::Get(profile_)->extension_service()->
-          ReloadExtension(platform_app->id());
+      extensions::ExtensionSystem::Get(browser_context_)
+          ->extension_service()
+          ->ReloadExtension(platform_app->id());
       break;
     }
 
@@ -1657,8 +1674,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       DCHECK(platform_app);
       DCHECK(platform_app->is_platform_app());
 
-      apps::AppLoadService::Get(profile_)->RestartApplication(
-          platform_app->id());
+      apps::AppLoadService::Get(GetProfile())
+          ->RestartApplication(platform_app->id());
       break;
     }
 
@@ -1671,7 +1688,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
         if (!print_view_manager)
           break;
-        if (profile_->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled)) {
+        if (GetPrefs(browser_context_)
+                ->GetBoolean(prefs::kPrintPreviewDisabled)) {
           print_view_manager->PrintNow();
         } else {
           print_view_manager->PrintPreviewNow(!params_.selection_text.empty());
@@ -1706,7 +1724,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       DCHECK(platform_app);
       DCHECK(platform_app->is_platform_app());
 
-      extensions::devtools_util::InspectBackgroundPage(platform_app, profile_);
+      extensions::devtools_util::InspectBackgroundPage(platform_app,
+                                                       GetProfile());
       break;
     }
 
@@ -1742,7 +1761,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       // Since the user decided to translate for that language and site, clears
       // any preferences for not translating them.
       scoped_ptr<translate::TranslatePrefs> prefs(
-          ChromeTranslateClient::CreateTranslatePrefs(profile_->GetPrefs()));
+          ChromeTranslateClient::CreateTranslatePrefs(
+              GetPrefs(browser_context_)));
       prefs->UnblockLanguage(original_lang);
       prefs->RemoveSiteFromBlacklist(params_.page_url.HostNoBrackets());
       translate::TranslateManager* manager =
@@ -1833,7 +1853,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_ADDSEARCHENGINE: {
       // Make sure the model is loaded.
       TemplateURLService* model =
-          TemplateURLServiceFactory::GetForProfile(profile_);
+          TemplateURLServiceFactory::GetForProfile(GetProfile());
       if (!model)
         return;
       model->Load();
@@ -1850,8 +1870,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         data.favicon_url =
             TemplateURL::GenerateFaviconURL(params_.page_url.GetOrigin());
         // Takes ownership of the TemplateURL.
-        search_engine_tab_helper->delegate()->
-            ConfirmAddSearchProvider(new TemplateURL(data), profile_);
+        search_engine_tab_helper->delegate()->ConfirmAddSearchProvider(
+            new TemplateURL(data), GetProfile());
       }
       break;
     }
@@ -1915,13 +1935,14 @@ bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
   if (id == IDC_CONTENT_CONTEXT_INSPECTELEMENT ||
       id == IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE) {
     const CommandLine* command_line = CommandLine::ForCurrentProcess();
-    if (!profile_->GetPrefs()->GetBoolean(prefs::kWebKitJavascriptEnabled) ||
+    if (!GetPrefs(browser_context_)
+             ->GetBoolean(prefs::kWebKitJavascriptEnabled) ||
         command_line->HasSwitch(switches::kDisableJavaScript))
       return false;
 
     // Don't enable the web inspector if the developer tools are disabled via
     // the preference dev-tools-disabled.
-    if (profile_->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled))
+    if (GetPrefs(browser_context_)->GetBoolean(prefs::kDevToolsDisabled))
       return false;
   }
 
@@ -1959,8 +1980,7 @@ void RenderViewContextMenu::OpenURL(
   details.not_yet_in_tabstrip = false;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_RETARGETING,
-      content::Source<Profile>(Profile::FromBrowserContext(
-          source_web_contents_->GetBrowserContext())),
+      content::Source<Profile>(GetProfile()),
       content::Details<RetargetingDetails>(&details));
 }
 
@@ -1992,7 +2012,7 @@ void RenderViewContextMenu::Inspect(int x, int y) {
 void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
   chrome_common_net::WriteURLToClipboard(
       url,
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
+      GetPrefs(browser_context_)->GetString(prefs::kAcceptLanguages),
       ui::Clipboard::GetForCurrentThread());
 }
 

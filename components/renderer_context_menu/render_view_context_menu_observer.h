@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_OBSERVER_H_
-#define CHROME_BROWSER_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_OBSERVER_H_
+#ifndef COMPONENTS_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_OBSERVER_H_
+#define COMPONENTS_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_OBSERVER_H_
 
 namespace content {
 struct ContextMenuParams;
@@ -84,7 +84,7 @@ class RenderViewContextMenuObserver {
   // Called when the RenderViewContextMenu class initializes a context menu. We
   // usually call RenderViewContextMenuDelegate::AddMenuItem() to add menu items
   // in this function.
-  virtual void InitMenu(const content::ContextMenuParams& params);
+  virtual void InitMenu(const content::ContextMenuParams& params) {}
 
   // Called when the RenderViewContextMenu class asks whether an observer
   // listens for the specified command ID. If this function returns true, the
@@ -98,10 +98,10 @@ class RenderViewContextMenuObserver {
   virtual bool IsCommandIdEnabled(int command_id);
 
   // Called when a user selects the specified context-menu item.
-  virtual void ExecuteCommand(int command_id);
+  virtual void ExecuteCommand(int command_id) {}
 
   // Called when a user closes the context menu without selecting any items.
-  virtual void OnMenuCancel();
+  virtual void OnMenuCancel() {}
 };
 
-#endif  // CHROME_BROWSER_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_OBSERVER_H_
+#endif  // COMPONENTS_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_OBSERVER_H_

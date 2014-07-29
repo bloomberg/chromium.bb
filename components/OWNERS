@@ -137,6 +137,10 @@ per-file query_parser.gypi=sky@chromium.org
 per-file rappor*=asvitkine@chromium.org
 # OWNER-to-be: per-file rappor*=holte@chromium.org
 
+per-file renderer_context_menu*=avi@chromium.org
+per-file renderer_context_menu*=brettw@chromium.org
+per-file renderer_context_menu*=lazyboy@chromium.org
+
 per-file search.gypi=kmadhusu@chromium.org
 per-file search.gypi=brettw@chromium.org
 per-file search.gypi=jered@chromium.org
