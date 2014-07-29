@@ -142,6 +142,8 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
     case kWebMIdCRC32:
     case kWebMIdCues:
     case kWebMIdChapters:
+    case kWebMIdTags:
+    case kWebMIdAttachments:
       // TODO(matthewjheaney): Implement support for chapters.
       if (cur_size < (result + element_size)) {
         // We don't have the whole element yet. Signal we need more data.
