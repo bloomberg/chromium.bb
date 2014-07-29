@@ -76,58 +76,10 @@ private:
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationTest);
 };
 
-// This test turns the touch exploration mode off and confirms that events
-// aren't modified.
-IN_PROC_BROWSER_TEST_F(TouchExplorationTest, NoRewritingEventsWhenOff) {
-  SwitchTouchExplorationMode(false);
-  ui::test::EventGenerator generator(root_window_);
-
-  base::TimeDelta initial_time = Now();
-  ui::TouchEvent initial_press(
-      ui::ET_TOUCH_PRESSED, gfx::Point(100, 200), 1, initial_time);
-  generator.Dispatch(&initial_press);
-
-  // Since the touch exploration controller doesn't know if the user is
-  // double-tapping or not, touch exploration is only initiated if the
-  // 300 ms has elapsed and the finger does not move fast enough to begin
-  // gestures. Here, the touch move event is not important as a move, but
-  // a way to create time advancement.
-  ui::TouchEvent touch_time_advance(ui::ET_TOUCH_MOVED,
-                            gfx::Point(100, 200),
-                            1,
-                            initial_time +
-                                gesture_detector_config_.double_tap_timeout +
-                                base::TimeDelta::FromMilliseconds(1));
-  generator.Dispatch(&touch_time_advance);
-
-  // Number of mouse events may be greater than 1 because of ET_MOUSE_ENTERED.
-  EXPECT_EQ(0, event_handler_->num_mouse_events());
-  EXPECT_EQ(2, event_handler_->num_touch_events());
-  event_handler_->Reset();
-
-  generator.MoveTouchId(gfx::Point(11, 12), 1);
-  EXPECT_EQ(0, event_handler_->num_mouse_events());
-  EXPECT_EQ(1, event_handler_->num_touch_events());
-  event_handler_->Reset();
-
-  initial_time = Now();
-  ui::TouchEvent second_initial_press(
-      ui::ET_TOUCH_PRESSED, gfx::Point(500, 600), 2, initial_time);
-  generator.Dispatch(&second_initial_press);
-  ui::TouchEvent second_touch_time_advance(
-      ui::ET_TOUCH_MOVED,
-      gfx::Point(500, 600),
-      2,
-      initial_time + gesture_detector_config_.double_tap_timeout +
-          base::TimeDelta::FromMilliseconds(1));
-  generator.Dispatch(&second_touch_time_advance);
-  EXPECT_EQ(0, event_handler_->num_mouse_events());
-  EXPECT_EQ(2, event_handler_->num_touch_events());
-}
-
-// This test turns the touch exploration mode on and confirms that events get
-// rewritten.
-IN_PROC_BROWSER_TEST_F(TouchExplorationTest, RewritesEventsWhenOn) {
+// This test turns the touch exploration mode on/off and confirms that events
+// get rewritten when the touch exploration mode is on, and aren't affected
+// after the touch exploration mode is turned off.
+IN_PROC_BROWSER_TEST_F(TouchExplorationTest, ToggleOnOff) {
   SwitchTouchExplorationMode(true);
   ui::test::EventGenerator generator(root_window_);
 
@@ -154,6 +106,13 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, RewritesEventsWhenOn) {
   EXPECT_EQ(0, event_handler_->num_touch_events());
   event_handler_->Reset();
 
+  SwitchTouchExplorationMode(false);
+  generator.MoveTouchId(gfx::Point(11, 12), 1);
+  EXPECT_EQ(0, event_handler_->num_mouse_events());
+  EXPECT_EQ(1, event_handler_->num_touch_events());
+  event_handler_->Reset();
+
+  SwitchTouchExplorationMode(true);
   initial_time = Now();
   ui::TouchEvent second_initial_press(
       ui::ET_TOUCH_PRESSED, gfx::Point(500, 600), 2, initial_time);
@@ -166,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, RewritesEventsWhenOn) {
           base::TimeDelta::FromMilliseconds(1));
   generator.Dispatch(&second_touch_time_advance);
   EXPECT_GT(event_handler_->num_mouse_events(), 0);
-  EXPECT_EQ(1, event_handler_->num_touch_events());
+  EXPECT_EQ(0, event_handler_->num_touch_events());
 }
 
 // This test makes sure that after the user clicks with split tap,

@@ -35,6 +35,7 @@ TouchExplorationController::TouchExplorationController(
     : root_window_(root_window),
       delegate_(delegate),
       state_(NO_FINGERS_DOWN),
+      event_handler_for_testing_(NULL),
       gesture_provider_(this),
       prev_state_(NO_FINGERS_DOWN),
       VLOG_on_(true),
@@ -592,13 +593,13 @@ void TouchExplorationController::OnTapTimerFired() {
     case GESTURE_IN_PROGRESS:
       // Discard any pending gestures.
       delete gesture_provider_.GetAndResetPendingGestures();
+      EnterTouchToMouseMode();
       state_ = TOUCH_EXPLORATION;
       VLOG_STATE();
       break;
     default:
       return;
   }
-  EnterTouchToMouseMode();
   scoped_ptr<ui::Event> mouse_move =
       CreateMouseMoveEvent(initial_press_->location(), initial_press_->flags());
   DispatchEvent(mouse_move.get());
@@ -606,6 +607,10 @@ void TouchExplorationController::OnTapTimerFired() {
 }
 
 void TouchExplorationController::DispatchEvent(ui::Event* event) {
+  if (event_handler_for_testing_) {
+    event_handler_for_testing_->OnEvent(event);
+    return;
+  }
   ui::EventDispatchDetails result ALLOW_UNUSED =
       root_window_->GetHost()->dispatcher()->OnEventFromSource(event);
 }
