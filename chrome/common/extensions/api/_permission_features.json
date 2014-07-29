@@ -740,13 +740,17 @@
   },
   "mdns": {
     "channel": "stable",
-    "extension_types": ["extension"],
+    "extension_types": ["extension", "platform_app"],
     "whitelist": [
       "63ED55E43214C211F82122ED56407FF1A807F2A3",  // Dev
       "FA01E0B81978950F2BC5A50512FD769725F57510",  // Beta
       "B11A93E7E5B541F8010245EBDE2C74647D6C14B9",  // Canary
       "F155646B5D1CA545F7E1E4E20D573DFDD44C2540",  // Google Cast Beta
-      "16CA7A47AAE4BE49B1E75A6B960C3875E945B264"   // Google Cast Stable
+      "16CA7A47AAE4BE49B1E75A6B960C3875E945B264",  // Google Cast Stable
+      "11B478CEC461C766A2DC1E5BEEB7970AE06DC9C2",  // http://crbug.com/397691
+      "0EFB879311E9EFBB7C45251F89EC655711B1F6ED",  // http://crbug.com/397691
+      "9193D3A51E2FE33B496CDA53EA330423166E7F02",  // http://crbug.com/397691
+      "F9119B8B18C7C82B51E7BC6FF816B694F2EC3E89"   // http://crbug.com/397691
     ]
   },
   "musicManagerPrivate": {
