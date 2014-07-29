@@ -675,6 +675,7 @@
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
         '<(DEPTH)/ppapi/ppapi_nacl.gyp:ppapi_cpp_lib',
         '<(DEPTH)/ppapi/native_client/native_client.gyp:ppapi_lib',
+        '<(DEPTH)/ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:aot',
         '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:srpc_lib',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform_lib',
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio_lib',
@@ -696,6 +697,7 @@
             # We cannot disable building, as enable_XXX variables are also used
             # to build newlib linked nexes.
             'build_pnacl_newlib': 1,
+            'translate_pexe_with_build': 1,
             'enable_x86_32_nonsfi': 1,
           },
         }],
@@ -741,6 +743,7 @@
           # Enable nonsfi testing only on ia32-linux environment.
           'variables': {
             'enable_x86_32_nonsfi': 1,
+            'translate_pexe_with_build': 1,
           },
         }],
       ],

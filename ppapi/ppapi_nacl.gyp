@@ -183,6 +183,7 @@
         ['disable_pnacl==0 and (target_arch=="ia32" or target_arch=="x64")', {
           'variables': {
             'build_pnacl_newlib': 1,
+            'translate_pexe_with_build': 1,
             'nmf_pnacl%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl.nmf',
           },
           # Shim is a dependency for the nexe because we pre-translate.
@@ -213,8 +214,13 @@
           # by translating from .pexe binary, for non-SFI mode PPAPI testing.
           'variables': {
             'enable_x86_32_nonsfi': 1,
+            'translate_pexe_with_build': 1,
             'nmf_nonsfi%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_nonsfi.nmf',
           },
+          # Shim is a dependency for the nexe because we pre-translate.
+         'dependencies': [
+            '<(DEPTH)/ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:aot',
+          ],
           'actions': [
             {
               'action_name': 'Generate PNACL NEWLIB NONSFI NMF',
@@ -232,6 +238,7 @@
         ['disable_pnacl==0 and target_arch=="arm"', {
           'variables': {
             'build_pnacl_newlib': 1,
+            'translate_pexe_with_build': 1,
             'nmf_pnacl%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl.nmf',
           },
           # Shim is a dependency for the nexe because we pre-translate.
@@ -256,6 +263,7 @@
         ['disable_pnacl==0 and target_arch=="mipsel"', {
           'variables': {
             'build_pnacl_newlib': 1,
+            'translate_pexe_with_build': 1,
             'nmf_pnacl%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl.nmf',
           },
           # Shim is a dependency for the nexe because we pre-translate.
