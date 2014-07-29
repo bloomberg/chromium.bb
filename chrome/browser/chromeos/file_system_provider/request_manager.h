@@ -36,6 +36,7 @@ enum RequestType {
   COPY_ENTRY,
   MOVE_ENTRY,
   TRUNCATE,
+  WRITE_FILE,
   TESTING
 };
 

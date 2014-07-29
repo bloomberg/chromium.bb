@@ -81,6 +81,12 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
       const base::FilePath& file_path,
       int64 length,
       const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
+  virtual void WriteFile(
+      int file_handle,
+      net::IOBuffer* buffer,
+      int64 offset,
+      int length,
+      const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const OVERRIDE;
   virtual RequestManager* GetRequestManager() OVERRIDE;
   virtual base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() OVERRIDE;

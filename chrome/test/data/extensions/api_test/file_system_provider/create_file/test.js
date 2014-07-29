@@ -27,33 +27,6 @@ var TESTING_NEW_FILE = Object.freeze({
 });
 
 /**
- * Creates a file.
- *
- * @param {CreateFileRequestedOptions} options Options.
- * @param {function(Object)} onSuccess Success callback
- * @param {function(string)} onError Error callback with an error code.
- */
-function onCreateFileRequested(options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
-    onError('SECURITY');  // enum ProviderError.
-    return;
-  }
-
-  if (options.filePath == '/') {
-    onError('INVALID_OPERATION');
-    return;
-  }
-
-  if (options.filePath in test_util.defaultMetadata) {
-    onError('EXISTS');
-    return;
-  }
-
-  test_util.defaultMetadata[options.filePath] = TESTING_FILE;
-  onSuccess();  // enum ProviderError.
-}
-
-/**
  * Sets up the tests. Called once per all test cases. In case of a failure,
  * the callback is not called.
  *
@@ -62,11 +35,10 @@ function onCreateFileRequested(options, onSuccess, onError) {
 function setUp(callback) {
   chrome.fileSystemProvider.onGetMetadataRequested.addListener(
       test_util.onGetMetadataRequestedDefault);
+  chrome.fileSystemProvider.onCreateFileRequested.addListener(
+      test_util.onCreateFileRequested);
 
   test_util.defaultMetadata['/' + TESTING_FILE.name] = TESTING_FILE;
-
-  chrome.fileSystemProvider.onCreateFileRequested.addListener(
-      onCreateFileRequested);
 
   test_util.mountFileSystem(callback);
 }

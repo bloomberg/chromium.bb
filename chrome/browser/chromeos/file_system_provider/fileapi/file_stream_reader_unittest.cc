@@ -104,7 +104,7 @@ class FileSystemProviderFileStreamReader : public testing::Test {
     FakeProvidedFileSystem* provided_file_system =
         static_cast<FakeProvidedFileSystem*>(
             service->GetProvidedFileSystem(kExtensionId, kFileSystemId));
-    DCHECK(provided_file_system);
+    ASSERT_TRUE(provided_file_system);
     ASSERT_TRUE(provided_file_system->GetEntry(
         base::FilePath::FromUTF8Unsafe(kFakeFilePath), &fake_file_));
     const ProvidedFileSystemInfo& file_system_info =

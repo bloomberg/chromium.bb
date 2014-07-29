@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/file_system_provider/fileapi/buffering_file_stream_reader.h"
 #include "chrome/browser/chromeos/file_system_provider/fileapi/file_stream_reader.h"
+#include "chrome/browser/chromeos/file_system_provider/fileapi/file_stream_writer.h"
 #include "chrome/browser/chromeos/file_system_provider/fileapi/provider_async_file_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/blob/file_stream_reader.h"
@@ -59,8 +60,9 @@ scoped_ptr<fileapi::FileStreamWriter> BackendDelegate::CreateFileStreamWriter(
     fileapi::FileSystemContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(fileapi::kFileSystemTypeProvided, url.type());
-  NOTIMPLEMENTED();
-  return scoped_ptr<fileapi::FileStreamWriter>();
+
+  return scoped_ptr<fileapi::FileStreamWriter>(
+      new FileStreamWriter(url, offset));
 }
 
 }  // namespace file_system_provider

@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
 
-#include <string>
-
 #include "base/files/file.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "net/base/io_buffer.h"
@@ -270,6 +268,51 @@ void FakeProvidedFileSystem::Truncate(
     const base::FilePath& file_path,
     int64 length,
     const fileapi::AsyncFileUtil::StatusCallback& callback) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(callback, base::File::FILE_OK));
+}
+
+void FakeProvidedFileSystem::WriteFile(
+    int file_handle,
+    net::IOBuffer* buffer,
+    int64 offset,
+    int length,
+    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+  const OpenedFilesMap::iterator opened_file_it =
+      opened_files_.find(file_handle);
+
+  if (opened_file_it == opened_files_.end() ||
+      opened_file_it->second.AsUTF8Unsafe() != kFakeFilePath) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, base::File::FILE_ERROR_INVALID_OPERATION));
+    return;
+  }
+
+  const Entries::iterator entry_it = entries_.find(opened_file_it->second);
+  if (entry_it == entries_.end()) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, base::File::FILE_ERROR_INVALID_OPERATION));
+    return;
+  }
+
+  FakeEntry* const entry = &entry_it->second;
+  if (offset > entry->metadata.size) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, base::File::FILE_ERROR_INVALID_OPERATION));
+    return;
+  }
+
+  // Allocate the string size in advance.
+  if (offset + length > entry->metadata.size) {
+    entry->metadata.size = offset + length;
+    entry->contents.resize(entry->metadata.size);
+  }
+
+  entry->contents.replace(offset, length, buffer->data(), length);
+
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, base::Bind(callback, base::File::FILE_OK));
 }

@@ -110,4 +110,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Truncate) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, WriteFile) {
+  ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/write_file",
+                                          kFlagLoadAsComponent))
+      << message_;
+}
+
 }  // namespace extensions

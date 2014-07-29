@@ -142,6 +142,14 @@ class ProvidedFileSystemInterface {
       int64 length,
       const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
 
+  // Requests writing to a file previously opened with |file_handle|.
+  virtual void WriteFile(
+      int file_handle,
+      net::IOBuffer* buffer,
+      int64 offset,
+      int length,
+      const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
+
   // Returns a provided file system info for this file system.
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const = 0;
 

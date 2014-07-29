@@ -224,4 +224,8 @@ eventBindings.registerArgumentMassager(
     'fileSystemProvider.onTruncateRequested',
     massageArgumentsDefault);
 
+eventBindings.registerArgumentMassager(
+    'fileSystemProvider.onWriteFileRequested',
+    massageArgumentsDefault);
+
 exports.binding = binding.generate();

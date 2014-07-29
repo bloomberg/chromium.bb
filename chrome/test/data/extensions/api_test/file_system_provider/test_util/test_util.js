@@ -28,7 +28,7 @@ test_util.fileSystem = null;
  * Default metadata. Used by onMetadataRequestedDefault(). The key is a full
  * path, and the value, a MetadataEntry object.
  *
- * @param {Object.<string, Object>}
+ * @type {Object.<string, Object>}
  */
 test_util.defaultMetadata = {
   '/': {
@@ -38,6 +38,14 @@ test_util.defaultMetadata = {
     modificationTime: new Date(2014, 4, 28, 10, 39, 15)
   }
 };
+
+/**
+ * Map of opened files, from a <code>openRequestId</code> to <code>filePath
+ * </code>.
+ *
+ * @type {Object.<number, string>}
+ */
+test_util.openedFiles = {};
 
 /**
  * Gets volume information for the provided file system.
@@ -93,8 +101,7 @@ test_util.mountFileSystem = function(callback) {
 };
 
 /**
- * Default implementation for the metadata request event. It should be used
- * only if metadata handling is not being tested.
+ * Default implementation for the metadata request event.
  *
  * @param {GetMetadataRequestedOptions} options Options.
  * @param {function(Object)} onSuccess Success callback with metadata passed
@@ -115,3 +122,79 @@ test_util.onGetMetadataRequestedDefault = function(
 
   onSuccess(test_util.defaultMetadata[options.entryPath]);
 };
+
+/**
+ * Default implementation for the file open request event. Further file
+ * operations will be associated with the <code>requestId</code>.
+ *
+ * @param {OpenFileRequestedOptions} options Options.
+ * @param {function()} onSuccess Success callback.
+ * @param {function(string)} onError Error callback.
+ */
+test_util.onOpenFileRequested = function(options, onSuccess, onError) {
+  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
+    onError('SECURITY');  // enum ProviderError.
+    return;
+  }
+
+  var metadata = test_util.defaultMetadata[options.filePath];
+  if (metadata && !metadata.is_directory) {
+    test_util.openedFiles[options.requestId] = options.filePath;
+    onSuccess();
+  } else {
+    onError('NOT_FOUND');  // enum ProviderError.
+  }
+};
+
+/**
+ * Default implementation for the file close request event. The file, previously
+ * opened with <code>openRequestId</code> will be closed.
+ *
+ * @param {CloseFileRequestedOptions} options Options.
+ * @param {function()} onSuccess Success callback.
+ * @param {function(string)} onError Error callback.
+ */
+test_util.onCloseFileRequested = function(options, onSuccess, onError) {
+  if (options.fileSystemId != test_util.FILE_SYSTEM_ID ||
+      !test_util.openedFiles[options.openRequestId]) {
+    onError('SECURITY');  // enum ProviderError.
+    return;
+  }
+
+  delete test_util.openedFiles[options.openRequestId];
+  onSuccess();
+};
+
+/**
+ * Default implementation for the file create request event..
+ *
+ * @param {CreateFileRequestedOptions} options Options.
+ * @param {function(Object)} onSuccess Success callback
+ * @param {function(string)} onError Error callback with an error code.
+ */
+test_util.onCreateFileRequested = function(options, onSuccess, onError) {
+  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
+    onError('SECURITY');  // enum ProviderError.
+    return;
+  }
+
+  if (options.filePath == '/') {
+    onError('INVALID_OPERATION');
+    return;
+  }
+
+  if (options.filePath in test_util.defaultMetadata) {
+    onError('EXISTS');
+    return;
+  }
+
+  test_util.defaultMetadata[options.filePath] = {
+    isDirectory: false,
+    name: options.filePath.split('/').pop(),
+    size: 0,
+    modificationTime: new Date()
+  };
+
+  onSuccess();  // enum ProviderError.
+};
+

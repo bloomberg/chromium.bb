@@ -44,6 +44,8 @@ std::string RequestTypeToString(RequestType type) {
       return "MOVE_ENTRY";
     case TRUNCATE:
       return "TRUNCATE";
+    case WRITE_FILE:
+      return "WRITE_FILE";
     case TESTING:
       return "TESTING";
   }

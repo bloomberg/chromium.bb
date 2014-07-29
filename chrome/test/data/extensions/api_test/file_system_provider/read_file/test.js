@@ -43,48 +43,6 @@ var TESTING_BROKEN_TIRAMISU_FILE = Object.freeze({
 });
 
 /**
- * Requests opening a file at <code>filePath</code>. Further file operations
- * will be associated with the <code>requestId</code>
- *
- * @param {OpenFileRequestedOptions} options Options.
- * @param {function()} onSuccess Success callback.
- * @param {function(string)} onError Error callback.
- */
-function onOpenFileRequested(options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID ||
-      options.mode != 'READ') {
-    onError('SECURITY');  // enum ProviderError.
-    return;
-  }
-
-  if (options.filePath == '/' + TESTING_TIRAMISU_FILE.name ||
-      options.filePath == '/' + TESTING_BROKEN_TIRAMISU_FILE.name) {
-    openedFiles[options.requestId] = options.filePath;
-    onSuccess();
-  } else {
-    onError('NOT_FOUND');  // enum ProviderError.
-  }
-}
-
-/**
- * Requests closing a file previously opened with <code>openRequestId</code>.
- *
- * @param {CloseFileRequestedOptions} options Options.
- * @param {function()} onSuccess Success callback.
- * @param {function(string)} onError Error callback.
- */
-function onCloseFileRequested(options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID ||
-      !openedFiles[options.openRequestId]) {
-    onError('SECURITY');  // enum ProviderError.
-    return;
-  }
-
-  delete openedFiles[options.openRequestId];
-  onSuccess();
-}
-
-/**
  * Requests reading contents of a file, previously opened with <code>
  * openRequestId</code>.
  *
@@ -94,7 +52,7 @@ function onCloseFileRequested(options, onSuccess, onError) {
  * @param {function(string)} onError Error callback.
  */
 function onReadFileRequested(options, onSuccess, onError) {
-  var filePath = openedFiles[options.openRequestId];
+  var filePath = test_util.openedFiles[options.openRequestId];
   if (options.fileSystemId != test_util.FILE_SYSTEM_ID || !filePath) {
     onError('SECURITY');  // enum ProviderError.
     return;
@@ -136,18 +94,18 @@ function onReadFileRequested(options, onSuccess, onError) {
 function setUp(callback) {
   chrome.fileSystemProvider.onGetMetadataRequested.addListener(
       test_util.onGetMetadataRequestedDefault);
+  chrome.fileSystemProvider.onOpenFileRequested.addListener(
+      test_util.onOpenFileRequested);
+  chrome.fileSystemProvider.onCloseFileRequested.addListener(
+      test_util.onCloseFileRequested);
 
   test_util.defaultMetadata['/' + TESTING_TIRAMISU_FILE.name] =
       TESTING_TIRAMISU_FILE;
   test_util.defaultMetadata['/' + TESTING_BROKEN_TIRAMISU_FILE.name] =
-      TESTING_TIRAMISU_FILE;
+      TESTING_BROKEN_TIRAMISU_FILE;
 
-  chrome.fileSystemProvider.onOpenFileRequested.addListener(
-      onOpenFileRequested);
   chrome.fileSystemProvider.onReadFileRequested.addListener(
       onReadFileRequested);
-  chrome.fileSystemProvider.onCloseFileRequested.addListener(
-      onCloseFileRequested);
 
   test_util.mountFileSystem(callback);
 }
