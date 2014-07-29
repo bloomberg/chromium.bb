@@ -157,20 +157,17 @@ public:
         : ScheduledURLNavigation(0.0, originDocument, url, referrer, lockBackForwardList, true) { }
 };
 
-class ScheduledRefresh FINAL : public ScheduledURLNavigation {
+class ScheduledRefresh FINAL : public ScheduledNavigation {
 public:
-    ScheduledRefresh(Document* originDocument, const String& url, const Referrer& referrer)
-        : ScheduledURLNavigation(0.0, originDocument, url, referrer, true, true)
+    ScheduledRefresh()
+        : ScheduledNavigation(0.0, true, true)
     {
     }
 
     virtual void fire(LocalFrame* frame) OVERRIDE
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
-        FrameLoadRequest request(originDocument(), ResourceRequest(KURL(ParsedURLString, url()), referrer(), ReloadIgnoringCacheData), "_self");
-        request.setLockBackForwardList(lockBackForwardList());
-        request.setClientRedirect(ClientRedirect);
-        frame->loader().load(request);
+        frame->loader().reload(NormalReload, KURL(), nullAtom, ClientRedirect);
     }
 };
 
@@ -343,11 +340,9 @@ void NavigationScheduler::scheduleRefresh()
 {
     if (!shouldScheduleNavigation())
         return;
-    const KURL& url = m_frame->document()->url();
-    if (url.isEmpty())
+    if (m_frame->document()->url().isEmpty())
         return;
-
-    schedule(adoptPtr(new ScheduledRefresh(m_frame->document(), url.string(), Referrer(m_frame->document()->outgoingReferrer(), m_frame->document()->referrerPolicy()))));
+    schedule(adoptPtr(new ScheduledRefresh));
 }
 
 void NavigationScheduler::scheduleHistoryNavigation(int steps)

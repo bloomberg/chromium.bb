@@ -817,7 +817,7 @@ ResourceRequest FrameLoader::requestFromHistoryItem(HistoryItem* item, ResourceR
     return request;
 }
 
-void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, const AtomicString& overrideEncoding)
+void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, const AtomicString& overrideEncoding, ClientRedirectPolicy clientRedirectPolicy)
 {
     if (!m_currentItem)
         return;
@@ -826,13 +826,23 @@ void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, con
     ResourceRequest request = requestFromHistoryItem(m_currentItem.get(), cachePolicy);
     request.setFrameType(m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel : WebURLRequest::FrameTypeNested);
     request.setRequestContext(WebURLRequest::RequestContextInternal);
+
+    // ClientRedirectPolicy is an indication that this load was triggered by
+    // some direct interaction with the page. If this reload is not a client
+    // redirect, we should reuse the referrer from the original load of the
+    // current document. If this reload is a client redirect (e.g., location.reload()),
+    // it was initiated by something in the current document and should
+    // therefore show the current document's url as the referrer.
+    if (clientRedirectPolicy == ClientRedirect)
+        request.setHTTPReferrer(Referrer(m_frame->document()->outgoingReferrer(), m_frame->document()->referrerPolicy()));
+
     if (!overrideURL.isEmpty()) {
         request.setURL(overrideURL);
         request.clearHTTPReferrer();
     }
 
     FrameLoadType type = reloadPolicy == EndToEndReload ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload;
-    loadWithNavigationAction(NavigationAction(request, type), type, nullptr, SubstituteData(), CheckContentSecurityPolicy, NotClientRedirect, overrideEncoding);
+    loadWithNavigationAction(NavigationAction(request, type), type, nullptr, SubstituteData(), CheckContentSecurityPolicy, clientRedirectPolicy, overrideEncoding);
 }
 
 void FrameLoader::stopAllLoaders()
