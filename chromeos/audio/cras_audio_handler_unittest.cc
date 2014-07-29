@@ -25,6 +25,7 @@ const uint64 kHDMIOutputId = 10006;
 const uint64 kUSBHeadphoneId1 = 10007;
 const uint64 kUSBHeadphoneId2 = 10008;
 const uint64 kMicJackId = 10009;
+const uint64 kKeyboardMicId = 10010;
 const uint64 kOtherTypeOutputId = 90001;
 const uint64 kOtherTypeInputId = 90002;
 
@@ -74,6 +75,16 @@ const AudioNode kUSBMic(
     "Fake USB Mic",
     "USB",
     "USB Microphone",
+    false,
+    0
+);
+
+const AudioNode kKeyboardMic(
+    true,
+    kKeyboardMicId,
+    "Fake Keyboard Mic",
+    "KEYBOARD_MIC",
+    "Keyboard Mic",
     false,
     0
 );
@@ -317,6 +328,32 @@ TEST_F(CrasAudioHandlerTest, InitializeWithAlternativeAudioDevices) {
   AudioDevice active_input;
   EXPECT_EQ(kUSBMicId, cras_audio_handler_->GetActiveInputNode());
   EXPECT_TRUE(cras_audio_handler_->has_alternative_input());
+}
+
+TEST_F(CrasAudioHandlerTest, InitializeWithKeyboardMic) {
+  AudioNodeList audio_nodes;
+  audio_nodes.push_back(kInternalSpeaker);
+  audio_nodes.push_back(kInternalMic);
+  audio_nodes.push_back(kKeyboardMic);
+  SetUpCrasAudioHandler(audio_nodes);
+
+  // Verify the audio devices size.
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(audio_nodes.size(), audio_devices.size());
+
+  // Verify the internal speaker has been selected as the active output.
+  AudioDevice active_output;
+  EXPECT_TRUE(cras_audio_handler_->GetActiveOutputDevice(&active_output));
+  EXPECT_EQ(kInternalSpeaker.id, active_output.id);
+  EXPECT_EQ(kInternalSpeaker.id, cras_audio_handler_->GetActiveOutputNode());
+  EXPECT_FALSE(cras_audio_handler_->has_alternative_output());
+
+  // Ensure the internal microphone has been selected as the active input,
+  // not affected by keyboard mic.
+  AudioDevice active_input;
+  EXPECT_EQ(kInternalMic.id, cras_audio_handler_->GetActiveInputNode());
+  EXPECT_FALSE(cras_audio_handler_->has_alternative_input());
 }
 
 TEST_F(CrasAudioHandlerTest, SwitchActiveOutputDevice) {

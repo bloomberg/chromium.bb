@@ -119,6 +119,9 @@ void AudioDetailedView::UpdateAudioDevices() {
   chromeos::AudioDeviceList devices;
   CrasAudioHandler::Get()->GetAudioDevices(&devices);
   for (size_t i = 0; i < devices.size(); ++i) {
+    // Don't display keyboard mic.
+    if (devices[i].type == chromeos::AUDIO_TYPE_KEYBOARD_MIC)
+      continue;
     if (devices[i].is_input)
       input_devices_.push_back(devices[i]);
     else

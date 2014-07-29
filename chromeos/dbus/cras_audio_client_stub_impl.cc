@@ -136,6 +136,12 @@ void CrasAudioClientStubImpl::SetActiveInputNode(uint64 node_id) {
                     ActiveInputNodeChanged(node_id));
 }
 
+void CrasAudioClientStubImpl::AddActiveInputNode(uint64 node_id) {
+}
+
+void CrasAudioClientStubImpl::RemoveActiveInputNode(uint64 node_id) {
+}
+
 void CrasAudioClientStubImpl::SetAudioDevices(
     const AudioNodeList& audio_nodes) {
   node_list_.clear();

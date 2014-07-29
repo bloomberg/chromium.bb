@@ -84,6 +84,9 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Removes an audio observer.
   virtual void RemoveAudioObserver(AudioObserver* observer);
 
+  // Returns true if keyboard mic exists.
+  virtual bool HasKeyboardMic();
+
   // Returns true if audio output is muted.
   virtual bool IsOutputMuted();
 
@@ -158,6 +161,9 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Sets the mute for device.
   virtual void SetMuteForDevice(uint64 device_id, bool mute_on);
 
+  // Activates or deactivates keyboard mic if there's one.
+  virtual void SetKeyboardMicActive(bool active);
+
   // Enables error logging.
   virtual void LogErrors();
 
@@ -189,6 +195,7 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   void SetupAudioOutputState();
 
   const AudioDevice* GetDeviceFromId(uint64 device_id) const;
+  const AudioDevice* GetKeyboardMic() const;
 
   // Initializes audio state, which should only be called when CrasAudioHandler
   // is created or cras audio client is restarted.

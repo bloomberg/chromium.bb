@@ -132,6 +132,28 @@ class CrasAudioClientImpl : public CrasAudioClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
+  virtual void AddActiveInputNode(uint64 node_id) OVERRIDE {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kAddActiveInputNode);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendUint64(node_id);
+    cras_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        dbus::ObjectProxy::EmptyResponseCallback());
+  }
+
+  virtual void RemoveActiveInputNode(uint64 node_id) OVERRIDE {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kRemoveActiveInputNode);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendUint64(node_id);
+    cras_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        dbus::ObjectProxy::EmptyResponseCallback());
+  }
+
  protected:
   virtual void Init(dbus::Bus* bus) OVERRIDE {
     cras_proxy_ = bus->GetObjectProxy(cras::kCrasServiceName,

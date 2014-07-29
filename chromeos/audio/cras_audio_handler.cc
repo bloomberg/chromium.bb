@@ -104,6 +104,10 @@ void CrasAudioHandler::RemoveAudioObserver(AudioObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+bool CrasAudioHandler::HasKeyboardMic() {
+  return GetKeyboardMic() != NULL;
+}
+
 bool CrasAudioHandler::IsOutputMuted() {
   return output_mute_on_;
 }
@@ -187,6 +191,19 @@ bool CrasAudioHandler::GetActiveOutputDevice(AudioDevice* device) const {
     return false;
   *device = *active_device;
   return true;
+}
+
+void CrasAudioHandler::SetKeyboardMicActive(bool active) {
+  const AudioDevice* keyboard_mic = GetKeyboardMic();
+  if (!keyboard_mic)
+    return;
+  if (active) {
+    chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->
+        AddActiveInputNode(keyboard_mic->id);
+  } else {
+    chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->
+        RemoveActiveInputNode(keyboard_mic->id);
+  }
 }
 
 bool CrasAudioHandler::has_alternative_input() const {
@@ -409,6 +426,15 @@ const AudioDevice* CrasAudioHandler::GetDeviceFromId(uint64 device_id) const {
     return NULL;
 
   return &(it->second);
+}
+
+const AudioDevice* CrasAudioHandler::GetKeyboardMic() const {
+  for (AudioDeviceMap::const_iterator it = audio_devices_.begin();
+       it != audio_devices_.end(); it++) {
+    if (it->second.is_input && it->second.type == AUDIO_TYPE_KEYBOARD_MIC)
+      return &(it->second);
+  }
+  return NULL;
 }
 
 void CrasAudioHandler::SetupAudioInputState() {
@@ -662,7 +688,8 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
 
     if (!has_alternative_input_ &&
         device.is_input &&
-        device.type != AUDIO_TYPE_INTERNAL_MIC) {
+        device.type != AUDIO_TYPE_INTERNAL_MIC &&
+        device.type != AUDIO_TYPE_KEYBOARD_MIC) {
       has_alternative_input_ = true;
     } else if (!has_alternative_output_ &&
                !device.is_input &&

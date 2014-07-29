@@ -28,6 +28,7 @@ uint8 GetDevicePriority(chromeos::AudioDeviceType type) {
     case chromeos::AUDIO_TYPE_INTERNAL_MIC:
       return 1;
       // Fall through.
+    case chromeos::AUDIO_TYPE_KEYBOARD_MIC:
     case chromeos::AUDIO_TYPE_OTHER:
     default:
       return 0;
@@ -50,6 +51,8 @@ std::string GetTypeString(chromeos::AudioDeviceType type) {
       return "INTERNAL_SPEAKER";
     case chromeos::AUDIO_TYPE_INTERNAL_MIC:
       return "INTERNAL_MIC";
+    case chromeos::AUDIO_TYPE_KEYBOARD_MIC:
+      return "KEYBOARD_MIC";
     case chromeos::AUDIO_TYPE_OTHER:
     default:
       return "OTHER";
@@ -61,6 +64,8 @@ chromeos::AudioDeviceType GetAudioType(const std::string& node_type) {
     return chromeos::AUDIO_TYPE_HEADPHONE;
   else if (node_type.find("INTERNAL_MIC") != std::string::npos)
     return chromeos::AUDIO_TYPE_INTERNAL_MIC;
+  else if (node_type.find("KEYBOARD_MIC") != std::string::npos)
+    return chromeos::AUDIO_TYPE_KEYBOARD_MIC;
   else if (node_type.find("MIC") != std::string::npos)
     return chromeos::AUDIO_TYPE_MIC;
   else if (node_type.find("USB") != std::string::npos)
