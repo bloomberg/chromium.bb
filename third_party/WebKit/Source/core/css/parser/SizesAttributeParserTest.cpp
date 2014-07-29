@@ -46,6 +46,8 @@ TEST(SizesAttributeParserTest, Basic)
         {"(max-width: 3000px) 200w, 400w", 500},
         {",, , /**/ ,200px", 200},
         {"50vw", 250},
+        {"5em", 80},
+        {"5rem", 80},
         {"calc(40vw*2)", 400},
         {"(min-width:5000px) calc(5000px/10), (min-width:500px) calc(1200px/3)", 400},
         {"(min-width:500px) calc(1200/3)", 500},

@@ -67,9 +67,27 @@ static inline bool featureWithValidIdent(const String& mediaFeature, CSSValueID 
     return false;
 }
 
+static bool positiveLengthUnit(const int unit)
+{
+    switch (unit) {
+    case CSSPrimitiveValue::CSS_EMS:
+    case CSSPrimitiveValue::CSS_EXS:
+    case CSSPrimitiveValue::CSS_PX:
+    case CSSPrimitiveValue::CSS_CM:
+    case CSSPrimitiveValue::CSS_MM:
+    case CSSPrimitiveValue::CSS_IN:
+    case CSSPrimitiveValue::CSS_PT:
+    case CSSPrimitiveValue::CSS_PC:
+    case CSSPrimitiveValue::CSS_REMS:
+    case CSSPrimitiveValue::CSS_CHS:
+        return true;
+    }
+    return false;
+}
+
 static inline bool featureWithValidPositiveLength(const String& mediaFeature, const CSSParserValue* value)
 {
-    if (!(((value->unit >= CSSPrimitiveValue::CSS_EMS && value->unit <= CSSPrimitiveValue::CSS_PC) || value->unit == CSSPrimitiveValue::CSS_REMS) || (value->unit == CSSPrimitiveValue::CSS_NUMBER && !(value->fValue))) || value->fValue < 0)
+    if (!(positiveLengthUnit(value->unit) || (value->unit == CSSPrimitiveValue::CSS_NUMBER && value->fValue == 0)) || value->fValue < 0)
         return false;
 
 
