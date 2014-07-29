@@ -355,6 +355,49 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
         mContentsClient.getOnPageFinishedHelper().waitForCallback(onPageFinishedCallCount);
     }
 
+    private static class ThrowingInputStream extends EmptyInputStream {
+        @Override
+        public int available() {
+            return 100;
+        }
+
+        @Override
+        public int read() throws IOException {
+            throw new IOException("test exception");
+        }
+
+        @Override
+        public int read(byte b[]) throws IOException {
+            throw new IOException("test exception");
+        }
+
+        @Override
+        public int read(byte b[], int off, int len) throws IOException {
+            throw new IOException("test exception");
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            return n;
+        }
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testDoesNotCrashOnThrowingStream() throws Throwable {
+        final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
+
+        mShouldInterceptRequestHelper.setReturnValue(
+                new AwWebResourceResponse("text/html", "UTF-8", new ThrowingInputStream()));
+        int shouldInterceptRequestCallCount = mShouldInterceptRequestHelper.getCallCount();
+        int onPageFinishedCallCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
+
+        loadUrlAsync(mAwContents, aboutPageUrl);
+
+        mShouldInterceptRequestHelper.waitForCallback(shouldInterceptRequestCallCount);
+        mContentsClient.getOnPageFinishedHelper().waitForCallback(onPageFinishedCallCount);
+    }
+
     private static class SlowAwWebResourceResponse extends AwWebResourceResponse {
         private CallbackHelper mReadStartedCallbackHelper = new CallbackHelper();
         private CountDownLatch mLatch = new CountDownLatch(1);

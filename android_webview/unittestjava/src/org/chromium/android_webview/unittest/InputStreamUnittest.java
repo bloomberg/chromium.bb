@@ -6,6 +6,7 @@ package org.chromium.android_webview.unittest;
 
 import org.chromium.base.CalledByNative;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 class InputStreamUnittest {
@@ -18,6 +19,31 @@ class InputStreamUnittest {
             @Override
             public int read() {
                 return -1;
+            }
+        };
+    }
+
+    @CalledByNative
+    static InputStream getThrowingStream() {
+        return new InputStream() {
+            @Override
+            public int available() throws IOException {
+                throw new IOException();
+            }
+
+            @Override
+            public void close() throws IOException {
+                throw new IOException();
+            }
+
+            @Override
+            public long skip(long n) throws IOException {
+                throw new IOException();
+            }
+
+            @Override
+            public int read() throws IOException {
+                throw new IOException();
             }
         };
     }

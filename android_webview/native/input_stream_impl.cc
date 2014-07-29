@@ -10,22 +10,25 @@
 // even if they're unused.
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
-#include "jni/InputStream_jni.h"
+#include "jni/InputStreamUtil_jni.h"
 #pragma GCC diagnostic pop
 #include "net/base/io_buffer.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ClearException;
 using base::android::JavaRef;
-using JNI_InputStream::Java_InputStream_available;
-using JNI_InputStream::Java_InputStream_close;
-using JNI_InputStream::Java_InputStream_skip;
-using JNI_InputStream::Java_InputStream_readI_AB_I_I;
 
 namespace android_webview {
 
+namespace {
+
+// This should be the same as InputStramUtil.EXCEPTION_THROWN_STATUS.
+const int kExceptionThrownStatusCode = -2;
+
+}
+
 bool RegisterInputStream(JNIEnv* env) {
-  return JNI_InputStream::RegisterNativesImpl(env);
+  return RegisterNativesImpl(env);
 }
 
 // Maximum number of bytes to be read in a single read.
@@ -50,13 +53,13 @@ InputStreamImpl::InputStreamImpl(const JavaRef<jobject>& stream)
 
 InputStreamImpl::~InputStreamImpl() {
   JNIEnv* env = AttachCurrentThread();
-  Java_InputStream_close(env, jobject_.obj());
+  Java_InputStreamUtil_close(env, jobject_.obj());
 }
 
 bool InputStreamImpl::BytesAvailable(int* bytes_available) const {
   JNIEnv* env = AttachCurrentThread();
-  int bytes = Java_InputStream_available(env, jobject_.obj());
-  if (ClearException(env))
+  int bytes = Java_InputStreamUtil_available(env, jobject_.obj());
+  if (bytes == kExceptionThrownStatusCode)
     return false;
   *bytes_available = bytes;
   return true;
@@ -64,8 +67,8 @@ bool InputStreamImpl::BytesAvailable(int* bytes_available) const {
 
 bool InputStreamImpl::Skip(int64_t n, int64_t* bytes_skipped) {
   JNIEnv* env = AttachCurrentThread();
-  int bytes = Java_InputStream_skip(env, jobject_.obj(), n);
-  if (ClearException(env))
+  int bytes = Java_InputStreamUtil_skip(env, jobject_.obj(), n);
+  if (bytes < 0)
     return false;
   if (bytes > n)
     return false;
@@ -91,9 +94,9 @@ bool InputStreamImpl::Read(net::IOBuffer* dest, int length, int* bytes_read) {
 
   while (remaining_length > 0) {
     const int max_transfer_length = std::min(remaining_length, kBufferSize);
-    const int transfer_length = Java_InputStream_readI_AB_I_I(
+    const int transfer_length = Java_InputStreamUtil_read(
         env, jobject_.obj(), buffer, 0, max_transfer_length);
-    if (ClearException(env))
+    if (transfer_length == kExceptionThrownStatusCode)
       return false;
 
     if (transfer_length < 0)  // EOF

@@ -119,3 +119,27 @@ TEST_F(InputStreamTest, ReadLargeStreamCompletely) {
   DoReadCountedStreamTest(bytes_requested, bytes_requested, &bytes_read);
   EXPECT_EQ(bytes_requested, bytes_read);
 }
+
+TEST_F(InputStreamTest, DoesNotCrashWhenExceptionThrown) {
+  ScopedJavaLocalRef<jobject> throw_jstream =
+      Java_InputStreamUnittest_getThrowingStream(env_);
+  EXPECT_FALSE(throw_jstream.is_null());
+
+  scoped_ptr<InputStream> input_stream(new InputStreamImpl(throw_jstream));
+
+  int64_t bytes_skipped;
+  EXPECT_FALSE(input_stream->Skip(10, &bytes_skipped));
+
+  int bytes_available;
+  EXPECT_FALSE(input_stream->BytesAvailable(&bytes_available));
+
+
+  const int bytes_requested = 10;
+  int bytes_read = 0;
+  scoped_refptr<IOBuffer> buffer = new IOBuffer(bytes_requested);
+  EXPECT_FALSE(input_stream->Read(buffer.get(), bytes_requested, &bytes_read));
+  EXPECT_EQ(0, bytes_read);
+
+  // This closes the stream.
+  input_stream.reset(NULL);
+}
