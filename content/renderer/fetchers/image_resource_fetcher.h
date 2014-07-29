@@ -29,13 +29,12 @@ class ImageResourceFetcher {
  public:
   typedef base::Callback<void(ImageResourceFetcher*, const SkBitmap&)> Callback;
 
-  ImageResourceFetcher(
-      const GURL& image_url,
-      blink::WebFrame* frame,
-      int id,
-      int image_size,
-      blink::WebURLRequest::TargetType target_type,
-      const Callback& callback);
+  ImageResourceFetcher(const GURL& image_url,
+                       blink::WebFrame* frame,
+                       int id,
+                       int image_size,
+                       blink::WebURLRequest::RequestContext request_context,
+                       const Callback& callback);
 
   virtual ~ImageResourceFetcher();
 
