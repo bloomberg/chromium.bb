@@ -124,6 +124,9 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   InitLogging();
   CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kCheckLayoutTestSysDeps)) {
+    // If CheckLayoutSystemDeps succeeds, we don't exit early. Instead we
+    // continue and try to load the fonts in WebKitTestPlatformInitialize
+    // below, and then try to bring up the rest of the content module.
     if (!CheckLayoutSystemDeps()) {
       if (exit_code)
         *exit_code = 1;
