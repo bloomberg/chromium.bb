@@ -1255,6 +1255,10 @@
     'variables': {
       'disable_pnacl%': 0,
       'build_pnacl_newlib': 0,
+      # Flag to translate pexes into nexes at build time (vs in the browser).
+      'translate_pexe_with_build': 0,
+      # Flag to indicate that PNaCl should compile with the native ABI
+      # instead of the le32 ABI.
       'pnacl_native_biased': 0,
       'nexe_target': '',
       'nlib_target': '',
@@ -1355,7 +1359,7 @@
              ],
            }],
          'target_conditions': [
-           [ 'enable_x86_32!=0', {
+           [ 'enable_x86_32!=0 and translate_pexe_with_build!=0', {
              'actions': [{
                'action_name': 'translate newlib pexe to x86-32 nexe',
                'msvs_cygwin_shell': 0,
@@ -1381,7 +1385,7 @@
                ],
              }],
            }],
-           [ 'enable_x86_32_nonsfi!=0', {
+           [ 'enable_x86_32_nonsfi!=0 and translate_pexe_with_build!=0', {
              'actions': [{
                'action_name': 'translate newlib pexe to x86-32-nonsfi nexe',
                'msvs_cygwin_shell': 0,
@@ -1407,7 +1411,7 @@
                ],
              }],
            }],
-           [ 'enable_x86_64!=0', {
+           [ 'enable_x86_64!=0 and translate_pexe_with_build!=0', {
              'actions': [{
                'action_name': 'translate newlib pexe to x86-64 nexe',
                'msvs_cygwin_shell': 0,
@@ -1433,7 +1437,7 @@
                ],
              }],
            }],
-           [ 'enable_arm!=0', {
+           [ 'enable_arm!=0 and translate_pexe_with_build!=0', {
              'actions': [{
                'action_name': 'translate newlib pexe to ARM nexe',
                'msvs_cygwin_shell': 0,
@@ -1459,7 +1463,7 @@
                ],
              }],
            }],
-           [ 'enable_mips!=0', {
+           [ 'enable_mips!=0 and translate_pexe_with_build!=0', {
              'actions': [{
                'action_name': 'translate newlib pexe to MIPS nexe',
                'msvs_cygwin_shell': 0,

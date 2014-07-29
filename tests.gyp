@@ -22,6 +22,7 @@
         'build_glibc': 0,
         'build_newlib': 1,
         'build_pnacl_newlib': 1,
+        'translate_pexe_with_build': 1,
         'extra_args': [
           '--strip-all',
         ],
