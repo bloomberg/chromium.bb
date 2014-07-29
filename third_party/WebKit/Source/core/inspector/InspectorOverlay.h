@@ -176,7 +176,7 @@ private:
     OwnPtr<FloatQuad> m_highlightQuad;
     OwnPtrWillBePersistent<Page> m_overlayPage;
     OwnPtr<EmptyChromeClient> m_overlayChromeClient;
-    RefPtr<InspectorOverlayHost> m_overlayHost;
+    RefPtrWillBePersistent<InspectorOverlayHost> m_overlayHost;
     HighlightConfig m_quadHighlightConfig;
     bool m_drawViewSize;
     bool m_drawViewSizeWithGrid;

@@ -35,18 +35,19 @@
 
 namespace blink {
 
-class InspectorOverlayHost : public RefCounted<InspectorOverlayHost>, public ScriptWrappable {
+class InspectorOverlayHost FINAL : public RefCountedWillBeGarbageCollectedFinalized<InspectorOverlayHost>, public ScriptWrappable {
 public:
-    static PassRefPtr<InspectorOverlayHost> create()
+    static PassRefPtrWillBeRawPtr<InspectorOverlayHost> create()
     {
-        return adoptRef(new InspectorOverlayHost());
+        return adoptRefWillBeNoop(new InspectorOverlayHost());
     }
     ~InspectorOverlayHost();
+    void trace(Visitor*);
 
     void resume();
     void stepOver();
 
-    class Listener {
+    class Listener : public WillBeGarbageCollectedMixin {
     public:
         virtual ~Listener() { }
         virtual void overlayResumed() = 0;
@@ -57,7 +58,7 @@ public:
 private:
     InspectorOverlayHost();
 
-    Listener* m_listener;
+    RawPtrWillBeMember<Listener> m_listener;
 };
 
 } // namespace blink

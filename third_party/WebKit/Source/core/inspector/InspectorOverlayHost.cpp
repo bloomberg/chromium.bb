@@ -33,7 +33,7 @@
 namespace blink {
 
 InspectorOverlayHost::InspectorOverlayHost()
-    : m_listener(0)
+    : m_listener(nullptr)
 {
     ScriptWrappable::init(this);
 }
@@ -52,6 +52,11 @@ void InspectorOverlayHost::stepOver()
 {
     if (m_listener)
         m_listener->overlaySteppedOver();
+}
+
+void InspectorOverlayHost::trace(Visitor* visitor)
+{
+    visitor->trace(m_listener);
 }
 
 } // namespace blink
