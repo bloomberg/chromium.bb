@@ -210,7 +210,7 @@ class ServerBase(object):
                 _log.error('%s no stderr handle' % self._name)
         else:
             _log.error('%s no process' % self._name)
-        if self._error_log_path:
+        if self._error_log_path and self._filesystem.exists(self._error_log_path):
             error_log_text = self._filesystem.read_text_file(self._error_log_path)
             if error_log_text:
                 _log.error('%s error log (%s) contents:' % (self._name, self._error_log_path))
