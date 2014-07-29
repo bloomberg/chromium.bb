@@ -132,6 +132,11 @@ bool TouchEmulator::HandleMouseEvent(const WebMouseEvent& mouse_event) {
   if (!enabled_)
     return false;
 
+  if (mouse_event.button == WebMouseEvent::ButtonRight &&
+      mouse_event.type == WebInputEvent::MouseDown) {
+    client_->ShowContextMenuAtPoint(gfx::Point(mouse_event.x, mouse_event.y));
+  }
+
   if (mouse_event.button != WebMouseEvent::ButtonLeft)
     return true;
 

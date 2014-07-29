@@ -280,7 +280,8 @@ void TouchEditableImplAura::OpenContextMenu(const gfx::Point& anchor) {
   gfx::Point point = anchor;
   ConvertPointFromScreen(&point);
   RenderWidgetHost* host = rwhva_->GetRenderWidgetHost();
-  host->Send(new ViewMsg_ShowContextMenu(host->GetRoutingID(), point));
+  host->Send(new ViewMsg_ShowContextMenu(
+      host->GetRoutingID(), ui::MENU_SOURCE_TOUCH_EDIT_MENU, point));
   EndTouchEditing(false);
 }
 

@@ -2337,9 +2337,9 @@ bool RenderFrameImpl::runModalBeforeUnloadDialog(
 void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
   ContextMenuParams params = ContextMenuParamsBuilder::Build(data);
   params.source_type = GetRenderWidget()->context_menu_source_type();
-  if (params.source_type == ui::MENU_SOURCE_TOUCH_EDIT_MENU) {
-    params.x = GetRenderWidget()->touch_editing_context_menu_location().x();
-    params.y = GetRenderWidget()->touch_editing_context_menu_location().y();
+  if (GetRenderWidget()->has_host_context_menu_location()) {
+    params.x = GetRenderWidget()->host_context_menu_location().x();
+    params.y = GetRenderWidget()->host_context_menu_location().y();
   }
   GetRenderWidget()->OnShowHostContextMenu(&params);
 

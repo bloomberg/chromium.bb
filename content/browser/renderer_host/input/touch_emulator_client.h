@@ -19,6 +19,7 @@ class CONTENT_EXPORT TouchEmulatorClient {
   virtual void ForwardGestureEvent(const blink::WebGestureEvent& event) = 0;
   virtual void ForwardEmulatedTouchEvent(const blink::WebTouchEvent& event) = 0;
   virtual void SetCursor(const WebCursor& cursor) = 0;
+  virtual void ShowContextMenuAtPoint(const gfx::Point& point) = 0;
 };
 
 }  // namespace content

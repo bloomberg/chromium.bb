@@ -1063,6 +1063,11 @@ void RenderWidgetHostImpl::SetCursor(const WebCursor& cursor) {
   view_->UpdateCursor(cursor);
 }
 
+void RenderWidgetHostImpl::ShowContextMenuAtPoint(const gfx::Point& point) {
+  Send(new ViewMsg_ShowContextMenu(
+      GetRoutingID(), ui::MENU_SOURCE_MOUSE, point));
+}
+
 void RenderWidgetHostImpl::SendCursorVisibilityState(bool is_visible) {
   Send(new InputMsg_CursorVisibilityChange(GetRoutingID(), is_visible));
 }

@@ -112,9 +112,13 @@ class CONTENT_EXPORT RenderWidget
   bool closing() const { return closing_; }
   bool is_swapped_out() { return is_swapped_out_; }
   ui::MenuSourceType context_menu_source_type() {
-    return context_menu_source_type_; }
-  gfx::Point touch_editing_context_menu_location() {
-    return touch_editing_context_menu_location_;
+    return context_menu_source_type_;
+  }
+  bool has_host_context_menu_location() {
+    return has_host_context_menu_location_;
+  }
+  gfx::Point host_context_menu_location() {
+    return host_context_menu_location_;
   }
 
   // Functions to track out-of-process frames for special notifications.
@@ -733,7 +737,8 @@ class CONTENT_EXPORT RenderWidget
   ObserverList<RenderFrameImpl> render_frames_;
 
   ui::MenuSourceType context_menu_source_type_;
-  gfx::Point touch_editing_context_menu_location_;
+  bool has_host_context_menu_location_;
+  gfx::Point host_context_menu_location_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

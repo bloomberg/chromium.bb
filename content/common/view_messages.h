@@ -624,7 +624,8 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetInitialFocus,
 
 // Sent to inform the renderer to invoke a context menu.
 // The parameter specifies the location in the render view's coordinates.
-IPC_MESSAGE_ROUTED1(ViewMsg_ShowContextMenu,
+IPC_MESSAGE_ROUTED2(ViewMsg_ShowContextMenu,
+                    ui::MenuSourceType,
                     gfx::Point /* location where menu should be shown */)
 
 IPC_MESSAGE_ROUTED0(ViewMsg_Stop)

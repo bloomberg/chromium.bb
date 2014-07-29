@@ -284,6 +284,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   virtual void ForwardEmulatedTouchEvent(
       const blink::WebTouchEvent& touch_event) OVERRIDE;
   virtual void SetCursor(const WebCursor& cursor) OVERRIDE;
+  virtual void ShowContextMenuAtPoint(const gfx::Point& point) OVERRIDE;
 
   // Queues a synthetic gesture for testing purposes.  Invokes the on_complete
   // callback when the gesture is finished running.

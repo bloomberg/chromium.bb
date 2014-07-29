@@ -663,7 +663,8 @@ class CONTENT_EXPORT RenderViewImpl
   void OnCancelDownload(int32 download_id);
   void OnClearFocusedElement();
   void OnClosePage();
-  void OnShowContextMenu(const gfx::Point& location);
+  void OnShowContextMenu(ui::MenuSourceType source_type,
+                         const gfx::Point& location);
   void OnCopyImageAt(int x, int y);
   void OnSaveImageAt(int x, int y);
   void OnDeterminePageLanguage();

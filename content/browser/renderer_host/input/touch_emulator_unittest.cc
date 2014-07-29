@@ -85,6 +85,8 @@ class TouchEmulatorTest : public testing::Test,
 
   virtual void SetCursor(const WebCursor& cursor) OVERRIDE {}
 
+  virtual void ShowContextMenuAtPoint(const gfx::Point& point) OVERRIDE {}
+
  protected:
   TouchEmulator* emulator() const {
     return emulator_.get();
