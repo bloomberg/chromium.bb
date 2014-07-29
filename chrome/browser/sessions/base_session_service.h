@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "url/gurl.h"
 
@@ -31,7 +30,7 @@ class SerializedNavigationEntry;
 // session service. It contains commonality needed by both, in particular
 // it manages a set of SessionCommands that are periodically sent to a
 // SessionBackend.
-class BaseSessionService : public CancelableRequestProvider {
+class BaseSessionService {
  public:
   // Identifies the type of session service this is. This is used by the
   // backend to determine the name of the files.

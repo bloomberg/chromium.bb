@@ -269,8 +269,6 @@
       'browser/command_updater.cc',
       'browser/command_updater.h',
       'browser/command_updater_delegate.h',
-      'browser/common/cancelable_request.cc',
-      'browser/common/cancelable_request.h',
       'browser/component_updater/background_downloader_win.cc',
       'browser/component_updater/background_downloader_win.h',
       'browser/component_updater/component_patcher.cc',

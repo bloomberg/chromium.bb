@@ -22,7 +22,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/net/prediction_options.h"

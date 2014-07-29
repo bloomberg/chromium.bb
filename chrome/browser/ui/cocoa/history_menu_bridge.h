@@ -12,7 +12,6 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "chrome/browser/common/cancelable_request.h"
 #import "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/sessions/session_id.h"
@@ -211,15 +210,11 @@ class HistoryMenuBridge : public content::NotificationObserver,
   TabRestoreService* tab_restore_service_;  // weak
 
   content::NotificationRegistrar registrar_;
-  CancelableRequestConsumer cancelable_request_consumer_;
   base::CancelableTaskTracker cancelable_task_tracker_;
 
   // Mapping of NSMenuItems to HistoryItems. This owns the HistoryItems until
   // they are removed and deleted via ClearMenuSection().
   std::map<NSMenuItem*, HistoryItem*> menu_item_map_;
-
-  // Maps HistoryItems to favicon request Handles.
-  CancelableRequestConsumerTSimple<HistoryItem*> favicon_consumer_;
 
   // Requests to re-create the menu are coalesced. |create_in_progress_| is true
   // when either waiting for the history service to return query results, or

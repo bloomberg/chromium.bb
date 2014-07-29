@@ -10,7 +10,6 @@
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_db_task.h"

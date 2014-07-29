@@ -12,7 +12,6 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/web_history_service.h"
 #include "content/public/browser/notification_registrar.h"

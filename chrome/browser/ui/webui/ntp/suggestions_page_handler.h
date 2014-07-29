@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_combiner.h"
 #include "content/public/browser/notification_observer.h"

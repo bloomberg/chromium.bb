@@ -9,7 +9,6 @@
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/common/content_settings.h"

@@ -17,7 +17,6 @@
 #include "base/stl_util.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/base_session_service.h"
 #include "chrome/browser/sessions/session_command.h"
