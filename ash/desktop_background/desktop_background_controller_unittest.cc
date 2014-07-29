@@ -68,7 +68,8 @@ void RunAnimationForWidget(views::Widget* widget) {
 class DesktopBackgroundControllerTest : public test::AshTestBase {
  public:
   DesktopBackgroundControllerTest()
-      : controller_(NULL) {
+      : controller_(NULL),
+        wallpaper_delegate_(NULL) {
   }
   virtual ~DesktopBackgroundControllerTest() {}
 
@@ -149,8 +150,8 @@ TEST_F(DesktopBackgroundControllerTest, BasicReparenting) {
 
 TEST_F(DesktopBackgroundControllerTest, ControllerOwnership) {
   // We cannot short-circuit animations for this test.
-  ui::ScopedAnimationDurationScaleMode normal_duration_mode(
-      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
   // Create wallpaper and background view.
   DesktopBackgroundController* controller =
@@ -181,8 +182,8 @@ TEST_F(DesktopBackgroundControllerTest, ControllerOwnership) {
 // move all desktop views if there are more than one.
 TEST_F(DesktopBackgroundControllerTest, BackgroundMovementDuringUnlock) {
   // We cannot short-circuit animations for this test.
-  ui::ScopedAnimationDurationScaleMode normal_duration_mode(
-      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
   // Reset wallpaper state, see ControllerOwnership above.
   DesktopBackgroundController* controller =
@@ -229,8 +230,8 @@ TEST_F(DesktopBackgroundControllerTest, BackgroundMovementDuringUnlock) {
 // animation and replace current wallpaper before next animation starts.
 TEST_F(DesktopBackgroundControllerTest, ChangeWallpaperQuick) {
   // We cannot short-circuit animations for this test.
-  ui::ScopedAnimationDurationScaleMode normal_duration_mode(
-      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
   // Reset wallpaper state, see ControllerOwnership above.
   DesktopBackgroundController* controller =

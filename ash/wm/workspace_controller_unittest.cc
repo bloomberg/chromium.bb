@@ -1203,8 +1203,8 @@ TEST_F(WorkspaceControllerTest, NormToMaxToNormRepositionsRemaining) {
 
 // Test that animations are triggered.
 TEST_F(WorkspaceControllerTest, AnimatedNormToMaxToNormRepositionsRemaining) {
-  ui::ScopedAnimationDurationScaleMode normal_duration_mode(
-      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(0));
   window1->Hide();
   window1->SetBounds(gfx::Rect(16, 32, 640, 320));

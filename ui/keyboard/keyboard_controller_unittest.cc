@@ -471,8 +471,8 @@ class KeyboardControllerAnimationTest : public KeyboardControllerTest,
 
   virtual void SetUp() OVERRIDE {
     // We cannot short-circuit animations for this test.
-    ui::ScopedAnimationDurationScaleMode normal_duration_mode(
-        ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+    ui::ScopedAnimationDurationScaleMode test_duration_mode(
+        ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
     KeyboardControllerTest::SetUp();
 
