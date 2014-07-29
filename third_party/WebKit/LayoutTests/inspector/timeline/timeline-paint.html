@@ -24,31 +24,25 @@ function updateSubframeAndDisplay(callback)
 
 function test()
 {
-    step1();
+    InspectorTest.invokeAsyncWithTimeline("display", step1);
 
-    function step1()
+    function step1(records)
     {
-        InspectorTest.invokeAsyncWithTimeline("display", step2);
-    }
-
-    function step2(records)
-    {
-        for (var i = 0; i < records.length; ++i) {
-            var record = records[i];
-            if (record.type === WebInspector.TimelineModel.RecordType.Paint) {
-                InspectorTest.printTimelineRecordProperties(record);
-                break;
-            }
-        }
+        var filteredRecords = InspectorTest.filterTimelineRecords(WebInspector.TimelineModel.RecordType.Paint, true);
+        if (filteredRecords.length)
+            InspectorTest.printTimelineRecordProperties(filteredRecords[0]);
+        else
+            InspectorTest.addResult("FAIL: no paint record found");
         InspectorTest.invokeAsyncWithTimeline("updateSubframeAndDisplay", step3);
     }
 
     function step3(records)
     {
+        var filteredRecords = InspectorTest.filterTimelineRecords(WebInspector.TimelineModel.RecordType.Paint, true);
         var paintRecord;
-        for (var i = 0; i < records.length; ++i) {
-            var record = records[i];
-            if (record.type === WebInspector.TimelineModel.RecordType.Paint && record.children && record.children.length) {
+        for (var i = 0; i < filteredRecords.length; ++i) {
+            var record = filteredRecords[i];
+            if (record.children && record.children.length) {
                 paintRecord = record;
                 break;
             }

@@ -6,7 +6,7 @@
 
 function test()
 {
-    function performActions()
+    function performActions(callback)
     {
         var timerOne = setTimeout("1 + 1", 10);
         var timerTwo = setInterval(intervalTimerWork, 20);
@@ -17,18 +17,15 @@ function test()
             if (++iteration < 2)
                 return;
             clearInterval(timerTwo);
+            callback();
         }
     }
 
-    InspectorTest.startTimeline(function() {
-        var source = performActions.toString();
-        source += "\n" +
-        "performActions();\n" +
-        "//@ sourceURL=performActions.js";
-        InspectorTest.evaluateInPage(source);
-    });
+    var source = performActions.toString();
+    source += "\n//@ sourceURL=performActions.js";
+    InspectorTest.evaluateInPage(source);
 
-    InspectorTest.waitForRecordType("TimerRemove", finish);
+    InspectorTest.invokeAsyncWithTimeline("performActions", finish);
 
     var linkifier = new WebInspector.Linkifier();
 

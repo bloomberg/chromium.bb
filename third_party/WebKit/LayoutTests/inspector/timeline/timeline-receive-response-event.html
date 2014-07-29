@@ -4,7 +4,7 @@
 <script src="../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
-function performActions()
+function performActions(callback)
 {
     var image = new Image();
     image.onload = bar;
@@ -12,7 +12,7 @@ function performActions()
 
     function bar() {
         var image = new Image();
-        image.onload = function() { testRunner.evaluateInWebInspector(0, "window.step2()"); }
+        image.onload = function(event) { callback(); }  // do not pass event argument to the callback.
         image.src = "resources/anotherImage.png";
     }
 }
@@ -20,22 +20,10 @@ function performActions()
 function test()
 {
     WebInspector.inspectorView.showPanel("timeline");
-    WebInspector.panels.timeline._model._collectionEnabled = true;
     WebInspector.inspectorView.panel("timeline")._model._currentTarget = WebInspector.targetManager.mainTarget();
+    InspectorTest.invokeAsyncWithTimeline("performActions", finish);
 
-    TimelineAgent.start(step1);
-
-    function step1()
-    {
-        InspectorTest.evaluateInPage("performActions()");
-    }
-
-    window.step2 = function()
-    {
-        TimelineAgent.stop(step3);
-    }
-
-    function step3()
+    function finish()
     {
         function dumpFormattedRecord(presentationRecord, prefix)
         {
@@ -54,8 +42,6 @@ function test()
                     dumpFormattedRecord(presentationRecord.presentationChildren()[i], childPrefix);
             }
         }
-        WebInspector.panels.timeline._model._collectionEnabled = false;
-
         var records = WebInspector.panels.timeline._currentViews[0]._rootRecord().presentationChildren();
         for (var i = 0; i < records.length; ++i)
             dumpFormattedRecord(records[i]);

@@ -16,9 +16,7 @@ function performActions()
 
 function test()
 {
-    InspectorTest.startTimeline();
-    InspectorTest.waitForRecordType("FunctionCall", finish);
-    InspectorTest.evaluateInPage("performActions()");
+    InspectorTest.evaluateWithTimeline("performActions()", finish);
 
     function finish()
     {
@@ -27,7 +25,8 @@ function test()
             if (record.type === "FunctionCall") {
                 var scriptName = record.data.scriptName;
                 var scriptNameShort = scriptName.substring(scriptName.lastIndexOf("/") + 1);
-                InspectorTest.addResult(record.type + " " + scriptNameShort + ":" + record.data.scriptLine);
+                if (scriptNameShort !== "InjectedScript")
+                    InspectorTest.addResult(record.type + " " + scriptNameShort + ":" + record.data.scriptLine);
             }
         }
         InspectorTest.printTimelineRecords(null, formatter);

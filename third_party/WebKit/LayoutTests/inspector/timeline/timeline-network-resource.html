@@ -6,8 +6,9 @@
 
 var scriptUrl = "timeline-network-resource.js";
 
-function performActions() 
+function performActions(callback) 
 {
+    window.timelineNetworkResourceEvaluated = callback;
     var script = document.createElement("script");
     script.src = scriptUrl;
     document.body.appendChild(script);
@@ -21,20 +22,9 @@ function test()
     var model = WebInspector.panels.timeline._model;
     var presentationModel = InspectorTest.timelinePresentationModel();
 
-    InspectorTest.startTimeline(step1);
+    InspectorTest.invokeAsyncWithTimeline("performActions", finish);
 
-    function step1()
-    {
-        InspectorTest.evaluateInPage("performActions()");
-    }
-
-    // It will be called from timeline-network-resource.js script by evaluateInWebInspector call.
-    InspectorTest.scriptEvaluated = function()
-    {
-        InspectorTest.stopTimeline(step3);
-    }
-
-    function step3()
+    function finish()
     {
         var lastRecordStartTime;
         function format(record)

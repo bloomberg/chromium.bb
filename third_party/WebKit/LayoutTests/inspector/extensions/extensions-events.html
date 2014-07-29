@@ -152,24 +152,6 @@ function extension_testViewShowHide(nextTest)
     webInspector.panels.elements.createSidebarPane("Test Sidebar", onSidebarCreated);
 }
 
-function extension_testTimelineEvents(nextTest)
-{
-    function onTimelineEvent(record)
-    {
-        if (record.type === "Layout") {
-            output("Got Layout event from timeline");
-            webInspector.timeline.onEventRecorded.removeListener(onTimelineEvent);
-            nextTest();
-            return;
-        }
-        (record.children || []).forEach(onTimelineEvent);
-    }
-    webInspector.timeline.onEventRecorded.addListener(onTimelineEvent);
-
-    // Trigger a relayout.
-    webInspector.inspectedWindow.eval("document.body.style.float = 'left'; document.body.offsetTop;");
-}
-
 </script>
 </head>
 <body onload="runTest()">

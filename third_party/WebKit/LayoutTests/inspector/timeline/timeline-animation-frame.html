@@ -4,23 +4,20 @@
 <script src="../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
-function performActions()
+function performActions(callback)
 {
     var element = document.getElementById("animation");
     var requestId = window.requestAnimationFrame(animationFrameCallback, element);
     function animationFrameCallback()
     {
         window.cancelAnimationFrame(requestId);
+        callback();
     }
 }
 
 function test()
 {
-    InspectorTest.startTimeline(function() {
-        InspectorTest.evaluateInPage("performActions()");
-    });
-
-    InspectorTest.waitForRecordType("CancelAnimationFrame", finish);
+    InspectorTest.invokeAsyncWithTimeline("performActions", finish);
 
     function finish()
     {

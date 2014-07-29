@@ -1,21 +1,18 @@
 <html>
 <head>
-<script src="/inspector/inspector-test.js"></script>
-<script src="/inspector/timeline-test.js"></script>
+<script src="../inspector-test.js"></script>
+<script src="../timeline-test.js"></script>
 <script>
 
-function performActions()
+function performActions(callback)
 {
     var ws = new WebSocket("ws://127.0.0.1:8880/simple");
+    ws.onclose = callback;
 }
 
 function test()
 {
-    InspectorTest.startTimeline(function() {
-        InspectorTest.evaluateInPage("performActions()");
-    });
-
-    InspectorTest.waitForRecordType("WebSocketDestroy", finish);
+    InspectorTest.invokeAsyncWithTimeline("performActions", finish);
 
     function finish()
     {

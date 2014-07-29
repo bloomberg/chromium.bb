@@ -20,8 +20,6 @@ sources onSelectionChanged fired, selectionInfo:
     startLine : 0
     url : .../edit-me.js
 }
-RUNNING TEST: extension_testTimelineEvents
-Got Layout event from timeline
 RUNNING TEST: extension_testViewShowHide
 Got onShown event for sidebar
 Sidebar shown, location: .../extension-sidebar.html

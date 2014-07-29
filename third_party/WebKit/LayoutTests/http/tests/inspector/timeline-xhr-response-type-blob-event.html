@@ -5,13 +5,19 @@
 <script src="network-test.js"></script>
 <script>
 
-function performActions()
+function performActions(callback)
 {
     var xhr = new XMLHttpRequest();
     xhr.responseType = "blob";
     xhr.open("GET", "network/resources/resource.php", true);
-    xhr.onload = function () { };  // This is necessary for XHRLoad event.
-    xhr.onreadystatechange = function () { };  // This is necessary for XHRReadyStateChange event.
+    xhr.onload = function() { };  // This is necessary for XHRLoad event.
+    // assigning callback to onload doesn't work here due to exception in responseXML handling for blob response type.
+    xhr.onreadystatechange = done;
+    function done()
+    {
+        if (xhr.readyState === 4)
+            callback();
+    }
     xhr.send(null);
 }
 
@@ -20,11 +26,7 @@ function test()
     InspectorTest.resetInspectorResourcesData(step1);
     function step1()
     {
-        InspectorTest.startTimeline(function() {
-            InspectorTest.evaluateInPage("performActions()");
-        });
-
-        InspectorTest.waitForRecordType("XHRLoad", finish);
+        InspectorTest.invokeAsyncWithTimeline("performActions", finish);
 
         function finish()
         {

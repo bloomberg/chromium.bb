@@ -1,7 +1,0 @@
-Recording started
-Timeline.stopped event has arrived.
-Events:
-    FunctionCall
-        TimeStamp
-Recording stopped
-

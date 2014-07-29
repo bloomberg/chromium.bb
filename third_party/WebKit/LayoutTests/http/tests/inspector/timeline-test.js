@@ -41,11 +41,12 @@ InspectorTest.timelineModel = function()
 InspectorTest.startTimeline = function(callback)
 {
     InspectorTest._timelineRecords = [];
-    WebInspector.inspectorView.panel("timeline").toggleTimelineButton.toggled = true;
-    WebInspector.inspectorView.panel("timeline")._model._collectionEnabled = true;
-    WebInspector.inspectorView.panel("timeline")._model._currentTarget = WebInspector.targetManager.mainTarget();
-
-    TimelineAgent.start(5, false, undefined, true, false, callback);
+    var panel = WebInspector.inspectorView.panel("timeline");
+    panel.toggleTimelineButton.toggled = true;
+    panel._model._collectionEnabled = true;
+    panel._userInitiatedRecording = true;
+    panel._model._currentTarget = WebInspector.targetManager.mainTarget();
+    TimelineAgent.start(5, true, undefined, true, false, callback);
     function addRecord(record)
     {
         InspectorTest._timelineRecords.push(record);
@@ -59,34 +60,16 @@ InspectorTest.startTimeline = function(callback)
     WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, InspectorTest._addTimelineEvent);
 };
 
-
-InspectorTest.waitForRecordType = function(recordType, callback)
-{
-    WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, addEvent);
-
-    function addEvent(event)
-    {
-        addRecord(event.data);
-    }
-    function addRecord(record)
-    {
-        if (record.type !== WebInspector.TimelineModel.RecordType[recordType]) {
-            for (var i = 0; record.children && i < record.children.length; ++i)
-                addRecord(record.children[i]);
-            return;
-        }
-        WebInspector.timelineManager.removeEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, addEvent);
-        callback(record);
-    }
-}
-
 InspectorTest.stopTimeline = function(callback)
 {
-    function didStop()
+    function didStop(error)
     {
+        if (error)
+            testRunner.logToStderr("error: " + error);
         WebInspector.timelineManager.removeEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, InspectorTest._addTimelineEvent);
-        WebInspector.inspectorView.panel("timeline").toggleTimelineButton.toggled = false;
-        WebInspector.inspectorView.panel("timeline")._model._collectionEnabled = false;
+        var panel = WebInspector.inspectorView.panel("timeline");
+        panel.toggleTimelineButton.toggled = false;
+        panel._userInitiatedRecording = false;
         callback(InspectorTest._timelineRecords);
     }
     TimelineAgent.stop(didStop);
@@ -140,6 +123,30 @@ InspectorTest.performActionsAndPrint = function(actions, typeName, includeTimeSt
     }
     InspectorTest.evaluateWithTimeline(actions, callback);
 };
+
+InspectorTest.filterTimelineRecords = function(typeName, firstOnly)
+{
+    var filteredRecords = [];
+    filterRecords(typeName, InspectorTest._timelineRecords);
+    return filteredRecords;
+
+    function filterRecords(typeName, records)
+    {
+        if (!records)
+            return false;
+        for (var i = 0; i < records.length; ++i) {
+            var recordTypeName = (typeof records[i].type === "string") ? records[i].type : records[i].type();
+            if (typeName && recordTypeName === WebInspector.TimelineModel.RecordType[typeName]) {
+                filteredRecords.push(records[i]);
+                if (firstOnly)
+                    return true;
+            }
+            if (filterRecords(typeName, records[i].children))
+                return true;
+        }
+        return false;
+    }
+}
 
 InspectorTest.printTimelineRecords = function(typeName, formatter)
 {

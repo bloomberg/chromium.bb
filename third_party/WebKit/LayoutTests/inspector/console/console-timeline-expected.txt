@@ -33,14 +33,11 @@ Tests console.timeline and timelineEnd commands.
 
 
 Running: testStartStopTimeline
-Timeline started from console.
 Timeline 'one' started.
 timestamp 1
 Timeline 'one' finished.
-Timeline stopped from console.
 
 Running: testStartStopMultiple
-Timeline started from console.
 Timeline 'one' started.
 timestamp 1
 Timeline 'one' started.
@@ -53,10 +50,8 @@ timestamp 3
 Timeline 'two' finished.
 timestamp 4
 Timeline 'one' finished.
-Timeline stopped from console.
 
 Running: testStartMultipleStopInsideEvals
-Timeline started from console.
 Timeline 'one' started.
 timestamp 1
 Timeline 'two' started.
@@ -66,47 +61,35 @@ Timeline 'two' finished.
 timestamp 4
 timestamp 5
 Timeline 'one' finished.
-Timeline stopped from console.
 
 Running: testStopUnknown
-Timeline started from console.
 Timeline 'one' started.
 timestamp 1
 timestamp 2
 Timeline 'one' finished.
-Timeline stopped from console.
 
 Running: testStartFromPanel
-Timeline started from panel
 timestamp 0
 Timeline 'one' started.
 timestamp 1
 Timeline 'one' finished.
 timestamp 2
-Timeline stopped from panel
 
 Running: testStopFromPanel
-Timeline started from console.
 Timeline 'one' started.
 timestamp 1
 Timeline 'two' started.
 timestamp 2
-Timeline stopped from panel
 
 Running: testRacyStart
-Timeline started from console.
 Timeline 'one' started.
 timestamp 1
 Timeline 'two' started.
 timestamp 2
-Timeline stopped from panel
 
 Running: testRacyStart2
-Timeline started from panel
-timestamp 0
 Timeline 'one' started.
 timestamp 1
 Timeline 'two' started.
 timestamp 2
-Timeline stopped from panel
 

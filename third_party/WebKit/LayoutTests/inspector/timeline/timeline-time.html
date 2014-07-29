@@ -51,6 +51,7 @@ function consoleTimeWithoutConsoleTimeEnd()
 
 function test()
 {
+    InspectorTest.startDumpingProtocolMessages();
     InspectorTest.runTestSuite([
         function testSimpleConsoleTime(next)
         {

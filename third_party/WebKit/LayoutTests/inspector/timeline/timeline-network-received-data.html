@@ -4,53 +4,46 @@
 <script src="../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
-function performActions() 
+function performActions(callback)
 {
+    function onImageLoad()
+    {
+        window._imageLoaded = true;
+        if (window._scriptEvaluated)
+            callback();
+    }
+
+    function scriptEvaluated()
+    {
+        window._scriptEvaluated = true;
+        if (window._imageLoaded)
+            callback();
+    }
+
     var image = new Image();
+    image.onload = onImageLoad;
     image.src = "resources/anImage.png";
     var script = document.createElement("script");
     script.src = "timeline-network-resource.js";
     document.body.appendChild(script);
+
+    window.timelineNetworkResourceEvaluated = scriptEvaluated;
 }
 
 function test()
 {
-    var callbackBarrier = new CallbackBarrier();
-    var resourceReceivedCallback = callbackBarrier.createCallback();
-    // It will be called from timeline-network-resource.js script by evaluateInWebInspector call.
-    InspectorTest.scriptEvaluated = callbackBarrier.createCallback();
-    callbackBarrier.callWhenDone(done);
+    InspectorTest.invokeAsyncWithTimeline("performActions", done);
 
     function done()
     {
         InspectorTest.addResult("Script evaluated.");
-        InspectorTest.addResult("Resource received data has length, test passed.");
-        InspectorTest.completeTest();
-    }
-
-    var calledOnce;
-
-    InspectorTest.startTimeline(function() {
-        InspectorTest.evaluateInPage("performActions()");
-    });
-
-    InspectorTest.waitForRecordType("ResourceReceivedData", finish);
-
-    function finish(object)
-    {
-        for (var prop in object) {
-            if (!InspectorTest.timelinePropertyFormatters[prop]) {
-                for (var property in object[prop]) {
-                    if (property === "encodedDataLength") {
-                        if (!calledOnce) {
-                            calledOnce = true;
-                            resourceReceivedCallback();
-                        }
-                        return;
-                    }
-                }
-            }
+        var filteredRecords = InspectorTest.filterTimelineRecords("ResourceReceivedData");
+        if (filteredRecords.length) {
+            var record = filteredRecords[0];
+            if (record.data && record.data && typeof record.data.encodedDataLength === "number")
+                InspectorTest.addResult("Resource received data has length, test passed.");
         }
+        InspectorTest.completeTest();
     }
 }
 

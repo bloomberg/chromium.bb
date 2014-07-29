@@ -827,6 +827,9 @@ void InspectorTimelineAgent::consoleTimeline(ExecutionContext* context, const St
     mainFrame()->console().addMessage(JSMessageSource, DebugMessageLevel, message, String(), 0, 0, nullptr, scriptState);
     m_consoleTimelines.append(title);
     if (!isStarted()) {
+        m_state->setBoolean(TimelineAgentState::bufferEvents, true);
+        m_bufferedEvents = TypeBuilder::Array<TimelineEvent>::create();
+
         innerStart();
         bool fromConsole = true;
         m_frontend->started(&fromConsole);

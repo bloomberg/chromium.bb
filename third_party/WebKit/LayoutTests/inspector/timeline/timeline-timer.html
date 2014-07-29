@@ -4,7 +4,7 @@
 <script src="../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
-function performActions()
+function performActions(callback)
 {
     var timerOne = setTimeout("1 + 1", 10);
     var timerTwo = setInterval(intervalTimerWork, 20);
@@ -15,16 +15,13 @@ function performActions()
         if (++iteration < 2)
             return;
         clearInterval(timerTwo);
+        callback();
     }
 }
 
 function test()
 {
-    InspectorTest.startTimeline(function() {
-        InspectorTest.evaluateInPage("performActions()");
-    });
-
-    InspectorTest.waitForRecordType("TimerRemove", finish);
+    InspectorTest.invokeAsyncWithTimeline("performActions", finish);
 
     function finish()
     {
