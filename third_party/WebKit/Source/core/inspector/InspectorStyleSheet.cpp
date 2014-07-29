@@ -503,9 +503,9 @@ static PassRefPtrWillBeRawPtr<CSSRuleList> asCSSRuleList(CSSRule* rule)
     return nullptr;
 }
 
-PassRefPtr<InspectorStyle> InspectorStyle::create(const InspectorCSSId& styleId, PassRefPtrWillBeRawPtr<CSSStyleDeclaration> style, InspectorStyleSheetBase* parentStyleSheet)
+PassRefPtrWillBeRawPtr<InspectorStyle> InspectorStyle::create(const InspectorCSSId& styleId, PassRefPtrWillBeRawPtr<CSSStyleDeclaration> style, InspectorStyleSheetBase* parentStyleSheet)
 {
-    return adoptRef(new InspectorStyle(styleId, style, parentStyleSheet));
+    return adoptRefWillBeNoop(new InspectorStyle(styleId, style, parentStyleSheet));
 }
 
 InspectorStyle::InspectorStyle(const InspectorCSSId& styleId, PassRefPtrWillBeRawPtr<CSSStyleDeclaration> style, InspectorStyleSheetBase* parentStyleSheet)
@@ -827,6 +827,12 @@ Document* InspectorStyle::ownerDocument() const
     return m_parentStyleSheet->ownerDocument();
 }
 
+void InspectorStyle::trace(Visitor* visitor)
+{
+    visitor->trace(m_style);
+    visitor->trace(m_parentStyleSheet);
+}
+
 InspectorStyleSheetBase::InspectorStyleSheetBase(const String& id, Listener* listener)
     : m_id(id)
     , m_listener(listener)
@@ -835,7 +841,7 @@ InspectorStyleSheetBase::InspectorStyleSheetBase(const String& id, Listener* lis
 
 bool InspectorStyleSheetBase::setPropertyText(const InspectorCSSId& id, unsigned propertyIndex, const String& text, bool overwrite, ExceptionState& exceptionState)
 {
-    RefPtr<InspectorStyle> inspectorStyle = inspectorStyleForId(id);
+    RefPtrWillBeRawPtr<InspectorStyle> inspectorStyle = inspectorStyleForId(id);
     if (!inspectorStyle) {
         exceptionState.throwDOMException(NotFoundError, "No property could be found for the given ID.");
         return false;
@@ -845,7 +851,7 @@ bool InspectorStyleSheetBase::setPropertyText(const InspectorCSSId& id, unsigned
 
 bool InspectorStyleSheetBase::getStyleText(const InspectorCSSId& id, String* text)
 {
-    RefPtr<InspectorStyle> inspectorStyle = inspectorStyleForId(id);
+    RefPtrWillBeRawPtr<InspectorStyle> inspectorStyle = inspectorStyleForId(id);
     if (!inspectorStyle)
         return false;
     return inspectorStyle->styleText(text);
@@ -867,10 +873,10 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyleSheetBase::buildObjectForSt
     if (id.isEmpty()) {
         // Any rule coming from User Agent and not from DefaultStyleSheet will not have id.
         // See InspectorCSSAgent::buildObjectForRule for details.
-        RefPtr<InspectorStyle> inspectorStyle = InspectorStyle::create(id, style, this);
+        RefPtrWillBeRawPtr<InspectorStyle> inspectorStyle = InspectorStyle::create(id, style, this);
         return inspectorStyle->buildObjectForStyle();
     }
-    RefPtr<InspectorStyle> inspectorStyle = inspectorStyleForId(id);
+    RefPtrWillBeRawPtr<InspectorStyle> inspectorStyle = inspectorStyleForId(id);
     RefPtr<TypeBuilder::CSS::CSSStyle> result = inspectorStyle->buildObjectForStyle();
 
     // Style text cannot be retrieved without stylesheet, so set cssText here.
@@ -1290,7 +1296,7 @@ PassRefPtr<TypeBuilder::CSS::SourceRange> InspectorStyleSheet::ruleHeaderSourceR
     return buildSourceRangeObject(sourceData->ruleHeaderRange, lineEndings().get());
 }
 
-PassRefPtr<InspectorStyle> InspectorStyleSheet::inspectorStyleForId(const InspectorCSSId& id)
+PassRefPtrWillBeRawPtr<InspectorStyle> InspectorStyleSheet::inspectorStyleForId(const InspectorCSSId& id)
 {
     CSSStyleDeclaration* style = styleForId(id);
     if (!style)
@@ -1667,7 +1673,7 @@ bool InspectorStyleSheetForInlineStyle::ensureParsedDataReady()
     return true;
 }
 
-PassRefPtr<InspectorStyle> InspectorStyleSheetForInlineStyle::inspectorStyleForId(const InspectorCSSId& id)
+PassRefPtrWillBeRawPtr<InspectorStyle> InspectorStyleSheetForInlineStyle::inspectorStyleForId(const InspectorCSSId& id)
 {
     ASSERT_UNUSED(id, !id.ordinal());
     return m_inspectorStyle;
@@ -1706,6 +1712,7 @@ void InspectorStyleSheetForInlineStyle::trace(Visitor* visitor)
 {
     visitor->trace(m_element);
     visitor->trace(m_ruleSourceData);
+    visitor->trace(m_inspectorStyle);
     InspectorStyleSheetBase::trace(visitor);
 }
 

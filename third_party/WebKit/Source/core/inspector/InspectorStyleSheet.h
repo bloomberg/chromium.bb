@@ -111,15 +111,17 @@ public:
     String rawText;
 };
 
-class InspectorStyle FINAL : public RefCounted<InspectorStyle> {
+class InspectorStyle FINAL : public RefCountedWillBeGarbageCollectedFinalized<InspectorStyle> {
 public:
-    static PassRefPtr<InspectorStyle> create(const InspectorCSSId&, PassRefPtrWillBeRawPtr<CSSStyleDeclaration>, InspectorStyleSheetBase* parentStyleSheet);
+    static PassRefPtrWillBeRawPtr<InspectorStyle> create(const InspectorCSSId&, PassRefPtrWillBeRawPtr<CSSStyleDeclaration>, InspectorStyleSheetBase* parentStyleSheet);
 
     CSSStyleDeclaration* cssStyle() const { return m_style.get(); }
     PassRefPtr<TypeBuilder::CSS::CSSStyle> buildObjectForStyle() const;
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> > buildArrayForComputedStyle() const;
     bool setPropertyText(unsigned index, const String& text, bool overwrite, ExceptionState&);
     bool styleText(String* result) const;
+
+    void trace(Visitor*);
 
 private:
     InspectorStyle(const InspectorCSSId&, PassRefPtrWillBeRawPtr<CSSStyleDeclaration>, InspectorStyleSheetBase* parentStyleSheet);
@@ -134,8 +136,8 @@ private:
     inline Document* ownerDocument() const;
 
     InspectorCSSId m_styleId;
-    RefPtrWillBePersistent<CSSStyleDeclaration> m_style;
-    InspectorStyleSheetBase* m_parentStyleSheet;
+    RefPtrWillBeMember<CSSStyleDeclaration> m_style;
+    RawPtrWillBeMember<InspectorStyleSheetBase> m_parentStyleSheet;
     mutable std::pair<String, String> m_format;
     mutable bool m_formatAcquired;
 };
@@ -177,7 +179,7 @@ protected:
     void fireStyleSheetChanged();
     PassOwnPtr<Vector<unsigned> > lineEndings();
 
-    virtual PassRefPtr<InspectorStyle> inspectorStyleForId(const InspectorCSSId&) = 0;
+    virtual PassRefPtrWillBeRawPtr<InspectorStyle> inspectorStyleForId(const InspectorCSSId&) = 0;
     virtual unsigned ruleCount() = 0;
 
     // Also accessed by friend class InspectorStyle.
@@ -226,7 +228,7 @@ public:
     const CSSRuleVector& flatRules();
 
 protected:
-    virtual PassRefPtr<InspectorStyle> inspectorStyleForId(const InspectorCSSId&) OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<InspectorStyle> inspectorStyleForId(const InspectorCSSId&) OVERRIDE;
     virtual unsigned ruleCount() OVERRIDE;
 
     // Also accessed by friend class InspectorStyle.
@@ -280,7 +282,7 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 protected:
-    virtual PassRefPtr<InspectorStyle> inspectorStyleForId(const InspectorCSSId&) OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<InspectorStyle> inspectorStyleForId(const InspectorCSSId&) OVERRIDE;
     virtual unsigned ruleCount() OVERRIDE { return 1; }
 
     // Also accessed by friend class InspectorStyle.
@@ -295,7 +297,7 @@ private:
 
     RefPtrWillBeMember<Element> m_element;
     RefPtrWillBeMember<CSSRuleSourceData> m_ruleSourceData;
-    RefPtr<InspectorStyle> m_inspectorStyle;
+    RefPtrWillBeMember<InspectorStyle> m_inspectorStyle;
 
     // Contains "style" attribute value.
     mutable String m_styleText;
