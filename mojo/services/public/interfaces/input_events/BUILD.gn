@@ -5,12 +5,12 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 # GYP version: mojo/mojo_services.gypi:mojo_input_events_bindings
-mojom("bindings") {
+mojom("input_events") {
   sources = [
     "input_events.mojom",
   ]
 
   deps = [
-    "//mojo/services/public/interfaces/geometry:bindings",
+    "//mojo/services/public/interfaces/geometry",
   ]
 }

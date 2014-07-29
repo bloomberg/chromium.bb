@@ -1,0 +1,32 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/tools/bindings/mojom.gni")
+
+source_set("spy") {
+  deps = [
+    ":spy_bindings",
+    "//base",
+    "//base:base_static",
+    "//net:http_server",
+    "//url",
+    "//mojo/service_manager",
+  ]
+
+  sources = [
+    "common.h",
+    "spy.cc",
+    "spy.h",
+    "spy_server_impl.h",
+    "spy_server_impl.cc",
+    "websocket_server.cc",
+    "websocket_server.h",
+  ]
+}
+
+mojom("spy_bindings") {
+  sources = [
+    "public/spy.mojom",
+  ]
+}

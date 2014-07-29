@@ -1,0 +1,126 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/tools/bindings/mojom.gni")
+import("//build/config/ui.gni")
+
+executable("mojo_shell") {
+  deps = [
+    ":lib",
+    "//base",
+    "//mojo/common",
+    "//mojo/environment:chromium",
+    "//mojo/service_manager",
+    "//mojo/system",
+    "//third_party/icu",
+    "//ui/gl",
+    "//url",
+  ]
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
+
+  sources = [
+    "desktop/mojo_main.cc"
+  ]
+}
+source_set("lib") {
+  deps = [
+    ":app_child_process_bindings",
+    ":external_service_bindings",
+    "//base",
+    "//base/third_party/dynamic_annotations",
+    "//base:base_static",
+    "//mojo/common",
+    "//mojo/gles2",
+    "//mojo/public/cpp/application",
+    "//mojo/public/interfaces/service_provider",
+    "//mojo/service_manager",
+    "//mojo/services/native_viewport",
+    "//mojo/services/public/interfaces/native_viewport",
+    "//mojo/services/public/interfaces/network",
+    "//mojo/spy",
+    "//mojo/system",
+    "//net",
+    "//url",
+  ]
+
+  sources = [
+    "app_child_process.cc",
+    "app_child_process.h",
+    "app_child_process_host.cc",
+    "app_child_process_host.h",
+    "child_process.cc",
+    "child_process.h",
+    "child_process_host.cc",
+    "child_process_host.h",
+    "context.cc",
+    "context.h",
+    "dbus_service_loader_linux.cc",
+    "dbus_service_loader_linux.h",
+    "dynamic_service_loader.cc",
+    "dynamic_service_loader.h",
+    "dynamic_service_runner.h",
+    "init.cc",
+    "init.h",
+    "in_process_dynamic_service_runner.cc",
+    "in_process_dynamic_service_runner.h",
+    "keep_alive.cc",
+    "keep_alive.h",
+    "mojo_url_resolver.cc",
+    "mojo_url_resolver.h",
+    "out_of_process_dynamic_service_runner.cc",
+    "out_of_process_dynamic_service_runner.h",
+    "run.cc",
+    "run.h",
+    "switches.cc",
+    "switches.h",
+    "task_runners.cc",
+    "task_runners.h",
+    "test_child_process.cc",
+    "test_child_process.h",
+    "ui_service_loader_android.cc",
+    "ui_service_loader_android.h",
+  ]
+
+  if (is_linux) {
+    deps += [
+      "//dbus"
+    ]
+  } else if (is_android) {
+    deps += [
+      "//mojo/services/network",
+    ]
+    sources += [
+      "network_service_loader.cc",
+      "network_service_loader.h",
+    ]
+  }
+  if (use_aura) {
+    deps += [
+      # These are only necessary as long as we hard code use of ViewManager.
+      "//skia",
+      "//mojo/public/gles2",
+      "//mojo/services/view_manager",
+      "//mojo/services/public/interfaces/view_manager",
+    ]
+    sources += [
+      "view_manager_loader.cc",
+      "view_manager_loader.h",
+    ]
+  }
+}
+
+mojom("app_child_process_bindings") {
+  sources = [
+    "app_child_process.mojom"
+  ]
+}
+
+mojom("external_service_bindings") {
+  sources = [
+    "external_service.mojom"
+  ]
+}

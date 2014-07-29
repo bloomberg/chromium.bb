@@ -5,7 +5,7 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 # GYP version: mojo/mojo_services.gypi:mojo_core_window_manager_bindings
-mojom("core_bindings") {
+mojom("window_manager") {
   sources = [
     "window_manager.mojom",
   ]

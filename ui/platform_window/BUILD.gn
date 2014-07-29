@@ -2,11 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/tools/bindings/mojom.gni")
+component("platform_window") {
+  defines = [ "PLATFORM_WINDOW_IMPLEMENTATION" ]
 
-# GYP version: mojo/mojo_services.gypi:mojo_geometry_bindings
-mojom("geometry") {
   sources = [
-    "geometry.mojom",
-  ]
+    "platform_window.h",
+    "platform_window_delegate.h",
+    "platform_window_export.h",
+  ] 
 }

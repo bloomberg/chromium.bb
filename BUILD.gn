@@ -48,10 +48,6 @@ group("root") {
     "//ipc",
     "//media",
     "//mojo",
-    "//mojo/common",
-    "//mojo/environment:chromium",
-    "//mojo/service_manager",
-    "//mojo/system",
     "//net",
     "//pdf",
     "//ppapi:ppapi_c",
@@ -180,6 +176,7 @@ group("root") {
       "//extensions/common",
       "//extensions/common/api",
       "//extensions/renderer",
+      "//mojo", # Blocked on GN toolchain support: https://codereview.chromium.org/428633006/
       "//pdf",  # Not compiled on Android in GYP yet, either.
       "//ppapi:ppapi_c",
       "//sandbox",

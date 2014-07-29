@@ -1,0 +1,29 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+component("input_events") {
+  deps = [
+    "//base",
+    "//ui/events",
+    "//ui/gfx/geometry",
+    "//mojo/environment:chromium",
+    "//mojo/services/public/interfaces/input_events",
+    "//mojo/services/public/interfaces/geometry",
+    "//mojo/services/public/cpp/geometry",
+  ]
+
+  defines = [
+    "MOJO_INPUT_EVENTS_IMPLEMENTATION",
+  ]
+
+  sources = [
+    "lib/input_events_type_converters.cc",
+    "input_events_type_converters.h",
+    "mojo_input_events_export.h",
+  ]
+
+  if (is_component_build) {
+    deps += [ "//mojo/system" ]
+  }
+}

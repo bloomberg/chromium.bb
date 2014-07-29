@@ -1,0 +1,37 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/tools/bindings/mojom.gni")
+
+component("gles2") {
+  output_name = "mojo_gles2_impl"
+
+  deps = [
+    "//base",
+    "//base/third_party/dynamic_annotations",
+    "//gpu/command_buffer/client",
+    "//gpu/command_buffer/common",
+    "//gpu/command_buffer/client:gles2_implementation",
+    "//mojo/public/gles2",
+    "//mojo/services/gles2:bindings",
+    "//mojo/services/gles2:interfaces",
+    "//mojo/environment:chromium",
+  ]
+
+  if (is_component_build) {
+    deps += [ "//mojo/system" ]
+  }
+
+  defines = [ "MOJO_GLES2_IMPL_IMPLEMENTATION" ]
+
+  sources = [
+    "command_buffer_client_impl.cc",
+    "command_buffer_client_impl.h",
+    "gles2_impl_export.h",
+    "gles2_support_impl.cc",
+    "gles2_support_impl.h",
+    "gles2_context.cc",
+    "gles2_context.h",
+  ]
+}

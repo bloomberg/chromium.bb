@@ -5,12 +5,12 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 # GYP version: mojo/mojo_services.gypi:mojo_launcher_bindings
-mojom("bindings") {
+mojom("launcher") {
   sources = [
     "launcher.mojom",
   ]
 
   deps = [
-    "//mojo/services/public/interfaces/navigation:bindings",
+    "//mojo/services/public/interfaces/navigation",
   ]
 }

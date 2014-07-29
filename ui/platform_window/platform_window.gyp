@@ -7,6 +7,7 @@
     'chromium_code': 1,
   },
   'targets': [{
+    # GN version: //ui/platform_window
     'target_name': 'platform_window',
     'type': '<(component)',
     'defines': [ 'PLATFORM_WINDOW_IMPLEMENTATION' ],

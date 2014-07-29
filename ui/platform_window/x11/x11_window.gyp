@@ -8,6 +8,7 @@
     'use_x11': 1,
   },
   'targets': [{
+    # GN version: //ui/platform_window/x11
     'target_name': 'x11_window',
     'type': '<(component)',
     'dependencies': [

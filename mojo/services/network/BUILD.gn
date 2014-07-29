@@ -1,0 +1,26 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("network") {
+  deps = [
+    "//base",
+    "//mojo/common",
+    "//mojo/environment:chromium",
+    "//mojo/public/cpp/application",
+    "//mojo/services/public/interfaces/network",
+    "//net",
+    "//url",
+  ]
+
+  sources = [
+    "cookie_store_impl.cc",
+    "cookie_store_impl.h",
+    "network_context.cc",
+    "network_context.h",
+    "network_service_impl.cc",
+    "network_service_impl.h",
+    "url_loader_impl.cc",
+    "url_loader_impl.h",
+  ]
+}

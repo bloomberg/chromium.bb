@@ -5,8 +5,9 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 # GYP version: mojo/mojo_services.gypi:mojo_network_bindings
-mojom("bindings") {
+mojom("network") {
   sources = [
+    "cookie_store.mojom",
     "network_error.mojom",
     "network_service.mojom",
     "url_loader.mojom",

@@ -5,7 +5,7 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 # GYP version: mojo/mojo_services.gypi:mojo_surfaces_bindings
-mojom("bindings") {
+mojom("surfaces") {
   sources = [
     "surfaces.mojom",
     "surface_id.mojom",
@@ -13,7 +13,7 @@ mojom("bindings") {
   ]
 
   deps = [
-    "//mojo/services/public/interfaces/geometry:bindings",
-    "//mojo/services/public/interfaces/native_viewport:bindings",
+    "//mojo/services/public/interfaces/geometry",
+    "//mojo/services/public/interfaces/native_viewport",
   ]
 }

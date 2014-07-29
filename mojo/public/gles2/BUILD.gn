@@ -1,0 +1,34 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+config("gles2_config") {
+  defines = [ "GLES2_USE_MOJO" ]
+}
+
+shared_library("gles2") {
+  output_name = "mojo_gles2"
+
+  defines = [
+    "MOJO_GLES2_IMPLEMENTATION",
+  ]
+
+  configs += [
+    ":gles2_config",
+    "//third_party/khronos:khronos_headers",
+  ]
+  direct_dependent_configs = [ ":gles2_config" ]
+
+  sources = [
+    "../c/gles2/gles2.h",
+    "../c/gles2/gles2_export.h",
+    "gles2_private.cc",
+    "gles2_private.h",
+  ]
+
+  if (is_mac) {
+    # TODO(GYP): Make it a run-path dependent library.
+    # 'DYLIB_INSTALL_NAME_BASE': '@loader_path',
+  }
+}
+

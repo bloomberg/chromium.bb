@@ -149,6 +149,7 @@
       'type': 'none',
     },
     {
+      # GN version: //mojo/shell:external_service_bindings
       'target_name': 'mojo_external_service_bindings',
       'type': 'static_library',
       'sources': [
@@ -331,6 +332,7 @@
       ],
     },
     {
+      # GN version: //mojo/gles2
       'target_name': 'mojo_gles2_impl',
       'type': '<(component)',
       'dependencies': [
@@ -537,6 +539,7 @@
       ],
     },
     {
+      # GN version: //mojo/shell:lib
       'target_name': 'mojo_shell_lib',
       'type': 'static_library',
       'dependencies': [
@@ -646,6 +649,7 @@
       ],
     },
     {
+      # GN version: //mojo/shell
       'target_name': 'mojo_shell',
       'type': 'executable',
       'dependencies': [
@@ -770,6 +774,7 @@
       ],
     },
     {
+      # GN version: //mojo/cc
       'target_name': 'mojo_cc_support',
       'type': 'static_library',
       'dependencies': [

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 # GYP version: mojo.gyp:mojo_environment_chromium
-static_library("chromium") {
+source_set("chromium") {
   output_name = "mojo_environment_chromium"
 
   sources = [

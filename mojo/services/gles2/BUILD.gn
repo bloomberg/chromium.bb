@@ -4,6 +4,23 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
+# GYP version: mojo/mojo_services.gypi:mojo_gles2_service
+source_set("gles2") {
+  deps = [
+    ":bindings",
+    "//base",
+    "//gpu/command_buffer/service",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+  ]
+
+  sources = [
+    "command_buffer_impl.cc",
+    "command_buffer_impl.h",
+  ]
+}
+
 # GYP version: mojo/mojo_services.gypi:mojo_gles2_bindings
 mojom("interfaces") {
   sources = [

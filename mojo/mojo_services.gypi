@@ -66,6 +66,7 @@
       ],
     },
     {
+      # GN version: //mojo/services/public/cpp/input_events
       'target_name': 'mojo_input_events_lib',
       'type': '<(component)',
       'defines': [
@@ -88,7 +89,7 @@
       ],
     },
     {
-      # GN version: //mojo/services/public/interfaces/input_events:bindings
+      # GN version: //mojo/services/public/interfaces/input_events
       'target_name': 'mojo_input_events_bindings',
       'type': 'static_library',
       'sources': [
@@ -104,7 +105,7 @@
       ],
     },
     {
-      # GN version: //mojo/services/public/interfaces/geometry:bindings
+      # GN version: //mojo/services/public/interfaces/geometry
       'target_name': 'mojo_geometry_bindings',
       'type': 'static_library',
       'sources': [
@@ -119,6 +120,7 @@
       ],
     },
     {
+      # GN version: //mojo/services/public/cpp/geometry
       'target_name': 'mojo_geometry_lib',
       'type': '<(component)',
       'defines': [
@@ -193,6 +195,7 @@
       ],
     },
     {
+      # GN version: //mojo/public/gles2
       'target_name': 'mojo_gles2',
       'type': 'shared_library',
       'defines': [
@@ -251,6 +254,7 @@
       ],
     },
     {
+      # GN version: //mojo/services/gles2
       'target_name': 'mojo_gles2_service',
       'type': 'static_library',
       'dependencies': [
@@ -270,7 +274,7 @@
       ],
     },
     {
-      # GN version: //mojo/services/public/interfaces/native_viewport:bindings
+      # GN version: //mojo/services/public/interfaces/native_viewport
       'target_name': 'mojo_native_viewport_bindings',
       'type': 'static_library',
       'sources': [
@@ -288,6 +292,7 @@
       ],
     },
     {
+      # GN version: //mojo/services/native_viewport
       'target_name': 'mojo_native_viewport_service',
       # This is linked directly into the embedder, so we make it a component.
       'type': '<(component)',
@@ -344,7 +349,7 @@
       ],
     },
     {
-      # GN version: //mojo/services/public/interfaces/navigation:bindings
+      # GN version: //mojo/services/public/interfaces/navigation
       'target_name': 'mojo_navigation_bindings',
       'type': 'static_library',
       'sources': [
@@ -360,7 +365,7 @@
       ],
     },
     {
-      # GN version: //mojo/services/public/interfaces/network:bindings
+      # GN version: //mojo/services/public/interfaces/network
       'target_name': 'mojo_network_bindings',
       'type': 'static_library',
       'sources': [
@@ -378,6 +383,7 @@
       ],
     },
     {
+      # GN version: //mojo/services/network
       'target_name': 'mojo_network_service_lib',
       'type': 'static_library',
       'dependencies': [
@@ -445,6 +451,7 @@
       ],
     },
     {
+      # GN version: //mojo/services/public/cpp/view_manager:common
       'target_name': 'mojo_view_manager_common',
       'type': 'static_library',
       'sources': [
@@ -452,7 +459,7 @@
       ],
     },
     {
-      # GN version: //mojo/services/public/interfaces/launcher:bindings
+      # GN version: //mojo/services/public/interfaces/launcher
       'target_name': 'mojo_launcher_bindings',
       'type': 'static_library',
       'sources': [
@@ -486,7 +493,7 @@
       ],
     },
     {
-      # GN version: //mojo/services/public/interfaces/view_manager:bindings
+      # GN version: //mojo/services/public/interfaces/view_manager
       'target_name': 'mojo_view_manager_bindings',
       'type': 'static_library',
       'sources': [
@@ -504,6 +511,7 @@
       ],
     },
     {
+      # GN version: //mojo/services/public/cpp/view_manager
       'target_name': 'mojo_view_manager_lib',
       'type': 'static_library',
       'dependencies': [
@@ -577,7 +585,7 @@
       ],
     },
     {
-      # GN version: //mojo/services/public/interfaces/surfaces:bindings
+      # GN version: //mojo/services/public/interfaces/surfaces
       'target_name': 'mojo_surfaces_bindings',
       'type': 'static_library',
       'sources': [
@@ -613,6 +621,7 @@
       ],
     },
     {
+      # GN version: //mojo/services/test_service
       'target_name': 'mojo_test_app',
       'type': 'loadable_module',
       'dependencies': [
@@ -636,6 +645,7 @@
       ],
     },
     {
+      # GN version: //mojo/services/test_service:request_tracker
       'target_name': 'mojo_test_request_tracker_app',
       'type': 'loadable_module',
       'dependencies': [
@@ -659,7 +669,7 @@
       ],
     },
     {
-      # GN version: //mojo/services/public/interfaces/window_manager:core_bindings
+      # GN version: //mojo/services/public/interfaces/window_manager
       'target_name': 'mojo_core_window_manager_bindings',
       'type': 'static_library',
       'sources': [
@@ -678,6 +688,7 @@
     ['use_aura==1', {
       'targets': [
         {
+          # GN version: //mojo/services/view_manager
           'target_name': 'mojo_view_manager',
           'type': '<(component)',
           'dependencies': [

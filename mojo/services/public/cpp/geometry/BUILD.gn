@@ -1,0 +1,31 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+component("geometry") {
+  output_name = "mojo_geometry_lib"
+
+  deps = [
+    "//skia",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//mojo/environment:chromium",
+    "//mojo/services/public/interfaces/geometry",
+  ]
+
+  forward_dependent_configs_from = [ "//ui/gfx" ]
+
+  defines = [
+    "MOJO_GEOMETRY_IMPLEMENTATION",
+  ]
+
+  sources = [
+    "lib/geometry_type_converters.cc",
+    "geometry_type_converters.h",
+    "mojo_geometry_export.h",
+  ]
+
+  if (is_component_build) {
+    deps += [ "//mojo/system" ]
+  }
+}

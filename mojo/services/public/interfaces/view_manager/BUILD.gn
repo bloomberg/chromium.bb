@@ -5,14 +5,14 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 # GYP version: mojo/mojo_services.gypi:mojo_view_manager_bindings
-mojom("bindings") {
+mojom("view_manager") {
   sources = [
     "view_manager.mojom",
     "view_manager_constants.mojom",
   ]
 
   deps = [
-    "//mojo/services/public/interfaces/geometry:bindings",
-    "//mojo/services/public/interfaces/input_events:bindings",
+    "//mojo/services/public/interfaces/geometry",
+    "//mojo/services/public/interfaces/input_events",
   ]
 }

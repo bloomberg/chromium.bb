@@ -164,7 +164,7 @@
       ],
     },
     {
-      # GN version: //mojo/public/interfaces/service_provider:service_provider
+      # GN version: //mojo/public/interfaces/service_provider
       'target_name': 'mojo_service_provider_bindings',
       'type': 'static_library',
       'sources': [

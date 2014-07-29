@@ -1,0 +1,75 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+component("view_manager") {
+  deps = [
+    "//base",
+    "//cc",
+    "//mojo/cc",
+    "//mojo/common",
+    "//mojo/environment:chromium",
+    "//mojo/public/cpp/application",
+    "//mojo/public/cpp/application:main_chromium",
+    "//mojo/public/gles2",
+    "//mojo/services/public/cpp/geometry",
+    "//mojo/services/public/cpp/input_events",
+    "//mojo/services/public/cpp/view_manager:common",
+    "//mojo/services/public/interfaces/geometry",
+    "//mojo/services/public/interfaces/input_events",
+    "//mojo/services/public/interfaces/native_viewport",
+    "//mojo/services/public/interfaces/view_manager",
+    "//skia",
+    "//ui/aura",
+    "//ui/base",
+    "//ui/compositor",
+    "//ui/events",
+    "//ui/events:events_base",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+    "//webkit/common/gpu",
+  ]
+
+  defines = [
+    "MOJO_VIEW_MANAGER_IMPLEMENTATION",
+  ]
+
+  sources = [
+    "access_policy.h",
+    "access_policy_delegate.h",
+    "context_factory_impl.cc",
+    "context_factory_impl.h",
+    "default_access_policy.cc",
+    "default_access_policy.h",
+    "ids.h",
+    "main.cc",
+    "node.cc",
+    "node.h",
+    "node_delegate.h",
+    "root_node_manager.cc",
+    "root_node_manager.h",
+    "root_view_manager.cc",
+    "root_view_manager.h",
+    "root_view_manager_delegate.h",
+    "screen_impl.cc",
+    "screen_impl.h",
+    "view.cc",
+    "view.h",
+    "view_manager_export.h",
+    "view_manager_init_service_context.cc",
+    "view_manager_init_service_context.h",
+    "view_manager_init_service_impl.cc",
+    "view_manager_init_service_impl.h",
+    "view_manager_service_impl.cc",
+    "view_manager_service_impl.h",
+    "window_manager_access_policy.cc",
+    "window_manager_access_policy.h",
+    "window_tree_host_impl.cc",
+    "window_tree_host_impl.h",
+  ]
+
+  if (is_component_build) {
+    deps += [ "//mojo/system" ]
+  }
+}
