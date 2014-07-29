@@ -381,7 +381,7 @@ void NonUIDataTypeController::
   }
 
   std::string datatype_context;
-  if (shared_change_processor_->GetDataTypeContext(&datatype_context)) {
+  if (shared_change_processor->GetDataTypeContext(&datatype_context)) {
     local_service_->UpdateDataTypeContext(
         type(), syncer::SyncChangeProcessor::NO_REFRESH, datatype_context);
   }
