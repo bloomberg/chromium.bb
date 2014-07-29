@@ -65,6 +65,7 @@ PepperMediaStreamAudioTrackHost::AudioSink::AudioSink(
     PepperMediaStreamAudioTrackHost* host)
     : host_(host),
       buffer_data_size_(0),
+      buffers_generation_(0),
       main_message_loop_proxy_(base::MessageLoopProxy::current()),
       weak_factory_(this),
       number_of_buffers_(kDefaultNumberOfBuffers),
@@ -103,19 +104,30 @@ void PepperMediaStreamAudioTrackHost::AudioSink::SetFormatOnMainThread(
 
 void PepperMediaStreamAudioTrackHost::AudioSink::InitBuffers() {
   DCHECK_EQ(main_message_loop_proxy_, base::MessageLoopProxy::current());
+  {
+    base::AutoLock lock(lock_);
+    // Clear |buffers_|, so the audio thread will drop all incoming audio data.
+    buffers_.clear();
+    buffers_generation_++;
+  }
   // The size is slightly bigger than necessary, because 8 extra bytes are
   // added into the struct. Also see |MediaStreamBuffer|.
   base::CheckedNumeric<int32_t> buffer_size = bytes_per_second_;
   buffer_size *= kMaxDuration;
   buffer_size /= base::Time::kMillisecondsPerSecond;
   buffer_size += sizeof(ppapi::MediaStreamBuffer::Audio);
+
+  // We don't need to hold |lock_| during |host->InitBuffers()| call, because
+  // we just cleared |buffers_| , so the audio thread will drop all incoming
+  // audio data, and not use buffers in |host_|.
   bool result = host_->InitBuffers(number_of_buffers_,
                                    buffer_size.ValueOrDie(),
                                    kRead);
   // TODO(penghuang): Send PP_ERROR_NOMEMORY to plugin.
   CHECK(result);
+
+  // Fill the |buffers_|, so the audio thread can continue receiving audio data.
   base::AutoLock lock(lock_);
-  buffers_.clear();
   for (int32_t i = 0; i < number_of_buffers_; ++i) {
     int32_t index = host_->buffer_manager()->DequeueBuffer();
     DCHECK_GE(index, 0);
@@ -124,9 +136,15 @@ void PepperMediaStreamAudioTrackHost::AudioSink::InitBuffers() {
 }
 
 void PepperMediaStreamAudioTrackHost::AudioSink::
-    SendEnqueueBufferMessageOnMainThread(int32_t index) {
+    SendEnqueueBufferMessageOnMainThread(int32_t index,
+                                         int32_t buffers_generation) {
   DCHECK_EQ(main_message_loop_proxy_, base::MessageLoopProxy::current());
-  host_->SendEnqueueBufferMessageToPlugin(index);
+  // If |InitBuffers()| is called after this task being posted from the audio
+  // thread, the buffer should become invalid already. We should ignore it.
+  // And because only the main thread modifies the |buffers_generation_|,
+  // so we don't need to lock |lock_| here (main thread).
+  if (buffers_generation == buffers_generation_)
+    host_->SendEnqueueBufferMessageToPlugin(index);
 }
 
 void PepperMediaStreamAudioTrackHost::AudioSink::OnData(const int16* audio_data,
@@ -138,16 +156,11 @@ void PepperMediaStreamAudioTrackHost::AudioSink::OnData(const int16* audio_data,
   DCHECK_EQ(sample_rate, audio_params_.sample_rate());
   DCHECK_EQ(number_of_channels, audio_params_.channels());
   DCHECK_EQ(number_of_frames, audio_params_.frames_per_buffer());
-  int32_t index = -1;
-  {
-    base::AutoLock lock(lock_);
-    if (!buffers_.empty()) {
-      index = buffers_.front();
-      buffers_.pop_front();
-    }
-  }
 
-  if (index != -1) {
+  base::AutoLock lock(lock_);
+  if (!buffers_.empty()) {
+    int index = buffers_.front();
+    buffers_.pop_front();
     // TODO(penghuang): support re-sampling, etc.
     ppapi::MediaStreamBuffer::Audio* buffer =
         &(host_->buffer_manager()->GetBufferPointer(index)->audio);
@@ -164,7 +177,8 @@ void PepperMediaStreamAudioTrackHost::AudioSink::OnData(const int16* audio_data,
         FROM_HERE,
         base::Bind(&AudioSink::SendEnqueueBufferMessageOnMainThread,
                    weak_factory_.GetWeakPtr(),
-                   index));
+                   index,
+                   buffers_generation_));
   }
   timestamp_ += buffer_duration_;
 }

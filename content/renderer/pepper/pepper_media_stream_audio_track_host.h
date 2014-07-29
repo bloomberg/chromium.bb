@@ -54,7 +54,8 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
     void InitBuffers();
 
     // Send enqueue buffer message on the main thread.
-    void SendEnqueueBufferMessageOnMainThread(int32_t index);
+    void SendEnqueueBufferMessageOnMainThread(int32_t index,
+                                              int32_t buffers_generation);
 
     // MediaStreamAudioSink overrides:
     // These two functions should be called on the audio thread.
@@ -92,11 +93,15 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
     // Access only on the audio thread.
     uint32_t buffer_data_size_;
 
-    // A lock to protect the index queue |buffers_|.
+    // A lock to protect the index queue |buffers_|, |buffers_generation_| and
+    // buffers in |host_->buffer_manager()|.
     base::Lock lock_;
 
     // A queue for free buffer indices.
     std::deque<int32_t> buffers_;
+
+    // Generation of buffers. It is increased by every |InitBuffers()| call.
+    int32_t buffers_generation_;
 
     scoped_refptr<base::MessageLoopProxy> main_message_loop_proxy_;
 
