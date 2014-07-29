@@ -18,7 +18,6 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
@@ -43,18 +42,9 @@ AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
                              Profile* profile,
                              const extensions::Extension* app)
     : dialog_header_(NULL), dialog_body_(NULL), dialog_footer_(NULL) {
-  views::GridLayout* layout = new views::GridLayout(this);
+  views::BoxLayout* layout =
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
   SetLayoutManager(layout);
-
-  // Create one column that fills the whole dialog.
-  int kColumnSetId = 1;
-  views::ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::FILL,
-                        1,  // Stretch the column to the width of the dialog.
-                        views::GridLayout::USE_PREF,
-                        0,
-                        0);
 
   const int kHorizontalSeparatorHeight = 1;
   dialog_header_ = new AppInfoHeaderPanel(profile, app);
@@ -91,16 +81,13 @@ AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
   dialog_body_->ClipHeightTo(kMaxDialogHeight, kMaxDialogHeight);
   dialog_body_->SetContents(dialog_body_contents);
 
-  layout->StartRow(0, kColumnSetId);
-  layout->AddView(dialog_header_);
+  AddChildView(dialog_header_);
 
-  layout->StartRow(1, kColumnSetId);
-  layout->AddView(dialog_body_);
+  AddChildView(dialog_body_);
+  layout->SetFlexForView(dialog_body_, 1);
 
-  if (dialog_footer_) {
-    layout->StartRow(0, kColumnSetId);
-    layout->AddView(dialog_footer_);
-  }
+  if (dialog_footer_)
+    AddChildView(dialog_footer_);
 }
 
 AppInfoDialog::~AppInfoDialog() {
