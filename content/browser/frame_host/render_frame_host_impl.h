@@ -295,6 +295,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                 const base::string16& message,
                                 bool is_reload,
                                 IPC::Message* reply_msg);
+  void OnRequestPlatformNotificationPermission(const GURL& origin,
+                                               int request_id);
   void OnRequestDesktopNotificationPermission(const GURL& origin,
                                               int callback_id);
   void OnShowDesktopNotification(
@@ -322,6 +324,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // it will be used to kill processes that commit unauthorized URLs.
   bool CanCommitURL(const GURL& url);
 
+  void PlatformNotificationPermissionRequestDone(
+      int request_id, blink::WebNotificationPermission permission);
   void DesktopNotificationPermissionRequestDone(
       int callback_context, blink::WebNotificationPermission permission);
 

@@ -73,6 +73,7 @@
 #include "content/renderer/media/webmediaplayer_impl.h"
 #include "content/renderer/media/webmediaplayer_ms.h"
 #include "content/renderer/media/webmediaplayer_params.h"
+#include "content/renderer/notification_permission_dispatcher.h"
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/npapi/plugin_channel_host.h"
 #include "content/renderer/push_messaging_dispatcher.h"
@@ -404,6 +405,7 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       selection_text_offset_(0),
       selection_range_(gfx::Range::InvalidRange()),
       handling_select_range_(false),
+      notification_permission_dispatcher_(NULL),
       notification_provider_(NULL),
       web_user_media_client_(NULL),
       midi_dispatcher_(NULL),
@@ -2241,6 +2243,17 @@ void RenderFrameImpl::didChangeThemeColor() {
 
   Send(new FrameHostMsg_DidChangeThemeColor(
       routing_id_, frame_->document().themeColor()));
+}
+
+void RenderFrameImpl::requestNotificationPermission(
+    const blink::WebSecurityOrigin& origin,
+    blink::WebNotificationPermissionCallback* callback) {
+  if (!notification_permission_dispatcher_) {
+    notification_permission_dispatcher_ =
+        new NotificationPermissionDispatcher(this);
+  }
+
+  notification_permission_dispatcher_->RequestPermission(origin, callback);
 }
 
 blink::WebNotificationPresenter* RenderFrameImpl::notificationPresenter() {

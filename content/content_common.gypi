@@ -412,6 +412,7 @@
       'common/pepper_plugin_list.h',
       'common/pepper_renderer_instance_data.cc',
       'common/pepper_renderer_instance_data.h',
+      'common/platform_notification_messages.h',
       'common/plugin_constants_win.cc',
       'common/plugin_constants_win.h',
       'common/plugin_list.cc',

@@ -64,6 +64,7 @@ class MediaStreamDispatcher;
 class MediaStreamImpl;
 class MediaStreamRendererFactory;
 class MidiDispatcher;
+class NotificationPermissionDispatcher;
 class NotificationProvider;
 class PepperPluginInstanceImpl;
 class PushMessagingDispatcher;
@@ -338,6 +339,9 @@ class CONTENT_EXPORT RenderFrameImpl
                                      blink::WebHistoryCommitType commit_type);
   virtual void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
   virtual void didChangeThemeColor();
+  virtual void requestNotificationPermission(
+      const blink::WebSecurityOrigin& origin,
+      blink::WebNotificationPermissionCallback* callback);
   virtual blink::WebNotificationPresenter* notificationPresenter();
   virtual void didChangeSelection(bool is_empty_selection);
   virtual blink::WebColorChooser* createColorChooser(
@@ -647,7 +651,11 @@ class CONTENT_EXPORT RenderFrameImpl
   // along with the RenderFrame automatically.  This is why we just store weak
   // references.
 
+  // Dispatches permission requests for Web Notifications.
+  NotificationPermissionDispatcher* notification_permission_dispatcher_;
+
   // Holds a reference to the service which provides desktop notifications.
+  // TODO(peter) Remove this once Web Notifications are routed through Platform.
   NotificationProvider* notification_provider_;
 
   // Destroyed via the RenderFrameObserver::OnDestruct() mechanism.

@@ -32,6 +32,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
+#include "content/common/platform_notification_messages.h"
 #include "content/common/render_frame_setup.mojom.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
@@ -346,6 +347,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateEncoding, OnUpdateEncoding)
     IPC_MESSAGE_HANDLER(FrameHostMsg_BeginNavigation,
                         OnBeginNavigation)
+    IPC_MESSAGE_HANDLER(PlatformNotificationHostMsg_RequestPermission,
+                        OnRequestPlatformNotificationPermission)
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_RequestPermission,
                         OnRequestDesktopNotificationPermission)
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_Show,
@@ -800,6 +803,20 @@ void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
   delegate_->RunBeforeUnloadConfirm(this, message, is_reload, reply_msg);
 }
 
+void RenderFrameHostImpl::OnRequestPlatformNotificationPermission(
+    const GURL& origin, int request_id) {
+  base::Callback<void(blink::WebNotificationPermission)> done_callback =
+      base::Bind(
+          &RenderFrameHostImpl::PlatformNotificationPermissionRequestDone,
+          weak_ptr_factory_.GetWeakPtr(),
+          request_id);
+
+  GetContentClient()->browser()->RequestDesktopNotificationPermission(
+      origin, this, done_callback);
+}
+
+// TODO(peter): Remove this call and the associated IPC messages when Blink
+// has switched to the new Web Notification permission code-path.
 void RenderFrameHostImpl::OnRequestDesktopNotificationPermission(
     const GURL& source_origin, int callback_context) {
   base::Callback<void(blink::WebNotificationPermission)> done_callback =
@@ -1112,6 +1129,13 @@ void RenderFrameHostImpl::NotificationClosed(int notification_id) {
   cancel_notification_callbacks_.erase(notification_id);
 }
 
+void RenderFrameHostImpl::PlatformNotificationPermissionRequestDone(
+    int request_id, blink::WebNotificationPermission permission) {
+  Send(new PlatformNotificationMsg_PermissionRequestComplete(
+      routing_id_, request_id, permission));
+}
+
+// TODO(peter): Remove this method when Blink uses the new code-path.
 void RenderFrameHostImpl::DesktopNotificationPermissionRequestDone(
     int callback_context, blink::WebNotificationPermission permission) {
   Send(new DesktopNotificationMsg_PermissionRequestDone(
