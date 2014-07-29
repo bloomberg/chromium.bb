@@ -992,7 +992,8 @@ void RenderThreadImpl::IdleHandler() {
   // something is left to do.
   bool continue_timer = !webkit_shared_timer_suspended_;
 
-  if (!v8::V8::IdleNotification()) {
+  if (blink::mainThreadIsolate() &&
+      !blink::mainThreadIsolate()->IdleNotification(1000)) {
     continue_timer = true;
   }
   if (!base::DiscardableMemory::ReduceMemoryUsage()) {
@@ -1041,8 +1042,10 @@ void RenderThreadImpl::IdleHandlerInForegroundTab() {
       base::allocator::ReleaseFreeMemory();
 
       bool finished_idle_work = true;
-      if (!v8::V8::IdleNotification(idle_hint))
+      if (blink::mainThreadIsolate() &&
+          !blink::mainThreadIsolate()->IdleNotification(idle_hint)) {
         finished_idle_work = false;
+      }
       if (!base::DiscardableMemory::ReduceMemoryUsage())
         finished_idle_work = false;
 
@@ -1528,7 +1531,9 @@ void RenderThreadImpl::OnMemoryPressure(
   // Trigger full v8 garbage collection on critical memory notification. This
   // will potentially hang the renderer for a long time, however, when we
   // receive a memory pressure notification, we might be about to be killed.
-  v8::V8::LowMemoryNotification();
+  if (blink::mainThreadIsolate()) {
+    blink::mainThreadIsolate()->LowMemoryNotification();
+  }
 
   if (memory_pressure_level ==
       base::MemoryPressureListener::MEMORY_PRESSURE_CRITICAL) {

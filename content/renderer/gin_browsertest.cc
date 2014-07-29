@@ -75,7 +75,7 @@ TEST_F(GinBrowserTest, GinAndGarbageCollection) {
   CHECK(alive);
 
   // Should not crash.
-  v8::V8::LowMemoryNotification();
+  blink::mainThreadIsolate()->LowMemoryNotification();
 
   CHECK(!alive);
 }

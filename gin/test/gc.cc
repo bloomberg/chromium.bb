@@ -29,7 +29,9 @@ v8::Local<v8::Value> GC::GetModule(v8::Isolate* isolate) {
       data->GetObjectTemplate(&g_wrapper_info);
   if (templ.IsEmpty()) {
     templ = ObjectTemplateBuilder(isolate)
-        .SetMethod("collectGarbage", v8::V8::LowMemoryNotification)
+        .SetMethod("collectGarbage",
+                   base::Bind(&v8::Isolate::LowMemoryNotification,
+                              base::Unretained(isolate)))
         .Build();
     data->SetObjectTemplate(&g_wrapper_info, templ);
   }
