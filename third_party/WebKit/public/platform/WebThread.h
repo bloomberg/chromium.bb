@@ -68,12 +68,6 @@ public:
     // Must be called when the WebThread is running.
     virtual void exitRunLoop() = 0;
 
-    // Delayed work is driven by a shared timer.
-    typedef void (*SharedTimerFunction)();
-    virtual void setSharedTimerFiredFunction(SharedTimerFunction) = 0;
-    virtual void setSharedTimerFireInterval(double) = 0;
-    virtual void stopSharedTimer() = 0;
-
     virtual ~WebThread() { }
 };
 

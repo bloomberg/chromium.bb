@@ -1834,6 +1834,7 @@
             'workers/WorkerObjectProxy.cpp',
             'workers/WorkerObjectProxy.h',
             'workers/WorkerReportingProxy.h',
+            'workers/WorkerRunLoop.cpp',
             'workers/WorkerScriptLoader.cpp',
             'workers/WorkerScriptLoader.h',
             'workers/WorkerScriptLoaderClient.h',
