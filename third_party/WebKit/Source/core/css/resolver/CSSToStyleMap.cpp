@@ -291,7 +291,7 @@ double CSSToStyleMap::mapAnimationDelay(CSSValue* value)
 {
     if (value->isInitialValue())
         return CSSTimingData::initialDelay();
-    return toCSSPrimitiveValue(value)->computeTime<double, CSSPrimitiveValue::Seconds>();
+    return toCSSPrimitiveValue(value)->computeSeconds();
 }
 
 Timing::PlaybackDirection CSSToStyleMap::mapAnimationDirection(CSSValue* value)
@@ -318,7 +318,7 @@ double CSSToStyleMap::mapAnimationDuration(CSSValue* value)
 {
     if (value->isInitialValue())
         return CSSTimingData::initialDuration();
-    return toCSSPrimitiveValue(value)->computeTime<double, CSSPrimitiveValue::Seconds>();
+    return toCSSPrimitiveValue(value)->computeSeconds();
 }
 
 Timing::FillMode CSSToStyleMap::mapAnimationFillMode(CSSValue* value)

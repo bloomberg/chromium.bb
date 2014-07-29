@@ -70,8 +70,17 @@ static CalculationCategory unitCategory(CSSPrimitiveValue::UnitType type)
     case CSSPrimitiveValue::CSS_VMIN:
     case CSSPrimitiveValue::CSS_VMAX:
         return CalcLength;
-    // FIXME: Support angle, time and frequency units.
-    // http://www.w3.org/TR/css3-values/#calc-notation
+    case CSSPrimitiveValue::CSS_DEG:
+    case CSSPrimitiveValue::CSS_GRAD:
+    case CSSPrimitiveValue::CSS_RAD:
+    case CSSPrimitiveValue::CSS_TURN:
+        return CalcAngle;
+    case CSSPrimitiveValue::CSS_MS:
+    case CSSPrimitiveValue::CSS_S:
+        return CalcTime;
+    case CSSPrimitiveValue::CSS_HZ:
+    case CSSPrimitiveValue::CSS_KHZ:
+        return CalcFrequency;
     default:
         return CalcOther;
     }
@@ -96,6 +105,7 @@ static bool hasDoubleValue(CSSPrimitiveValue::UnitType type)
     case CSSPrimitiveValue::CSS_DEG:
     case CSSPrimitiveValue::CSS_RAD:
     case CSSPrimitiveValue::CSS_GRAD:
+    case CSSPrimitiveValue::CSS_TURN:
     case CSSPrimitiveValue::CSS_MS:
     case CSSPrimitiveValue::CSS_S:
     case CSSPrimitiveValue::CSS_HZ:
@@ -123,7 +133,6 @@ static bool hasDoubleValue(CSSPrimitiveValue::UnitType type)
     case CSSPrimitiveValue::CSS_PARSER_OPERATOR:
     case CSSPrimitiveValue::CSS_PARSER_HEXCOLOR:
     case CSSPrimitiveValue::CSS_PARSER_IDENTIFIER:
-    case CSSPrimitiveValue::CSS_TURN:
     case CSSPrimitiveValue::CSS_COUNTER_NAME:
     case CSSPrimitiveValue::CSS_SHAPE:
     case CSSPrimitiveValue::CSS_QUAD:
@@ -232,11 +241,14 @@ public:
         switch (m_category) {
         case CalcLength:
             return m_value->computeLength<double>(conversionData);
-        case CalcPercent:
         case CalcNumber:
+        case CalcPercent:
             return m_value->getDoubleValue();
+        case CalcAngle:
+        case CalcFrequency:
         case CalcPercentLength:
         case CalcPercentNumber:
+        case CalcTime:
         case CalcOther:
             ASSERT_NOT_REACHED();
             break;
@@ -283,12 +295,15 @@ private:
 };
 
 static const CalculationCategory addSubtractResult[CalcOther][CalcOther] = {
-//                        CalcNumber         CalcLength         CalcPercent        CalcPercentNumber  CalcPercentLength
-/* CalcNumber */        { CalcNumber,        CalcOther,         CalcPercentNumber, CalcPercentNumber, CalcOther },
-/* CalcLength */        { CalcOther,         CalcLength,        CalcPercentLength, CalcOther,         CalcPercentLength },
-/* CalcPercent */       { CalcPercentNumber, CalcPercentLength, CalcPercent,       CalcPercentNumber, CalcPercentLength },
-/* CalcPercentNumber */ { CalcPercentNumber, CalcOther,         CalcPercentNumber, CalcPercentNumber, CalcOther },
-/* CalcPercentLength */ { CalcOther,         CalcPercentLength, CalcPercentLength, CalcOther,         CalcPercentLength },
+//                        CalcNumber         CalcLength         CalcPercent        CalcPercentNumber  CalcPercentLength  CalcAngle  CalcTime   CalcFrequency
+/* CalcNumber */        { CalcNumber,        CalcOther,         CalcPercentNumber, CalcPercentNumber, CalcOther,         CalcOther, CalcOther, CalcOther     },
+/* CalcLength */        { CalcOther,         CalcLength,        CalcPercentLength, CalcOther,         CalcPercentLength, CalcOther, CalcOther, CalcOther     },
+/* CalcPercent */       { CalcPercentNumber, CalcPercentLength, CalcPercent,       CalcPercentNumber, CalcPercentLength, CalcOther, CalcOther, CalcOther     },
+/* CalcPercentNumber */ { CalcPercentNumber, CalcOther,         CalcPercentNumber, CalcPercentNumber, CalcOther,         CalcOther, CalcOther, CalcOther     },
+/* CalcPercentLength */ { CalcOther,         CalcPercentLength, CalcPercentLength, CalcOther,         CalcPercentLength, CalcOther, CalcOther, CalcOther     },
+/* CalcAngle  */        { CalcOther,         CalcOther,         CalcOther,         CalcOther,         CalcOther,         CalcAngle, CalcOther, CalcOther     },
+/* CalcTime */          { CalcOther,         CalcOther,         CalcOther,         CalcOther,         CalcOther,         CalcOther, CalcTime,  CalcOther     },
+/* CalcFrequency */     { CalcOther,         CalcOther,         CalcOther,         CalcOther,         CalcOther,         CalcOther, CalcOther, CalcFrequency }
 };
 
 static CalculationCategory determineCategory(const CSSCalcExpressionNode& leftSide, const CSSCalcExpressionNode& rightSide, CalcOperator op)
@@ -517,6 +532,12 @@ public:
                 return leftType;
             return CSSPrimitiveValue::CSS_UNKNOWN;
         }
+        case CalcAngle:
+            return CSSPrimitiveValue::CSS_DEG;
+        case CalcTime:
+            return CSSPrimitiveValue::CSS_MS;
+        case CalcFrequency:
+            return CSSPrimitiveValue::CSS_HZ;
         case CalcPercentLength:
         case CalcPercentNumber:
         case CalcOther:

@@ -225,6 +225,15 @@ bool CSSPropertyParser::validCalculationUnit(CSSParserValue* value, Units unitfl
     case CalcPercentNumber:
         b = (unitflags & FPercent) && (unitflags & FNumber);
         break;
+    case CalcAngle:
+        b = (unitflags & FAngle);
+        break;
+    case CalcTime:
+        b = (unitflags & FTime);
+        break;
+    case CalcFrequency:
+        b = (unitflags & FFrequency);
+        break;
     case CalcOther:
         break;
     }

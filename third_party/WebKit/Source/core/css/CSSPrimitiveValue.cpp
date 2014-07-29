@@ -143,7 +143,6 @@ StringToUnitTable createStringToUnitTable()
     return table;
 }
 
-
 CSSPrimitiveValue::UnitType CSSPrimitiveValue::fromName(const String& unit)
 {
     DEFINE_STATIC_LOCAL(StringToUnitTable, unitTable, (createStringToUnitTable()));
@@ -216,6 +215,10 @@ CSSPrimitiveValue::UnitType CSSPrimitiveValue::primitiveType() const
         return static_cast<UnitType>(m_primitiveUnitType);
 
     switch (m_value.calc->category()) {
+    case CalcAngle:
+        return CSS_DEG;
+    case CalcFrequency:
+        return CSS_HZ;
     case CalcNumber:
         return CSS_NUMBER;
     case CalcPercent:
@@ -226,6 +229,8 @@ CSSPrimitiveValue::UnitType CSSPrimitiveValue::primitiveType() const
         return CSS_CALC_PERCENTAGE_WITH_NUMBER;
     case CalcPercentLength:
         return CSS_CALC_PERCENTAGE_WITH_LENGTH;
+    case CalcTime:
+        return CSS_MS;
     case CalcOther:
         return CSS_UNKNOWN;
     }
@@ -535,9 +540,23 @@ void CSSPrimitiveValue::cleanup()
     }
 }
 
+double CSSPrimitiveValue::computeSeconds()
+{
+    ASSERT(isTime() || (isCalculated() && cssCalcValue()->category() == CalcTime));
+    UnitType currentType = isCalculated() ? cssCalcValue()->expressionNode()->primitiveType() : static_cast<UnitType>(m_primitiveUnitType);
+    if (currentType == CSS_S)
+        return getDoubleValue();
+    if (currentType == CSS_MS)
+        return getDoubleValue() / 1000;
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
 double CSSPrimitiveValue::computeDegrees()
 {
-    switch (m_primitiveUnitType) {
+    ASSERT(isAngle() || (isCalculated() && cssCalcValue()->category() == CalcAngle));
+    UnitType currentType = isCalculated() ? cssCalcValue()->expressionNode()->primitiveType() : static_cast<UnitType>(m_primitiveUnitType);
+    switch (currentType) {
     case CSS_DEG:
         return getDoubleValue();
     case CSS_RAD:

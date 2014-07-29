@@ -1034,7 +1034,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyInternalMarqueeSpeed(StyleResol
             break;
         }
     } else if (primitiveValue->isTime()) {
-        state.style()->setMarqueeSpeed(primitiveValue->computeTime<int, CSSPrimitiveValue::Milliseconds>());
+        state.style()->setMarqueeSpeed(static_cast<int>(primitiveValue->computeSeconds()) * 1000);
     } else if (primitiveValue->isNumber()) { // For scrollamount support.
         state.style()->setMarqueeSpeed(primitiveValue->getIntValue());
     }
