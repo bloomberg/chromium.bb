@@ -984,8 +984,6 @@ void GraphicsContext::drawBidiText(const Font& font, const TextRunPaintInfo& run
         if (bidiRun)
             currPoint.move(font.width(subrun), 0);
     }
-
-    bidiRuns.deleteRuns();
 }
 
 void GraphicsContext::drawHighlightForText(const Font& font, const TextRun& run, const FloatPoint& point, int h, const Color& backgroundColor, int from, int to)

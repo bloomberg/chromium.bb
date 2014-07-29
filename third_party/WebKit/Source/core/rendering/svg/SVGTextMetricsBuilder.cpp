@@ -40,7 +40,6 @@ namespace blink {
 class SVGTextMetricsCalculator {
 public:
     SVGTextMetricsCalculator(RenderSVGInlineText*);
-    ~SVGTextMetricsCalculator();
 
     SVGTextMetrics computeMetricsForCharacter(unsigned textPosition);
     unsigned textLength() const { return static_cast<unsigned>(m_run.charactersLength()); }
@@ -88,11 +87,6 @@ SVGTextMetricsCalculator::SVGTextMetricsCalculator(RenderSVGInlineText* text)
         m_simpleWidthIterator = adoptPtr(new WidthIterator(&scaledFont, m_run));
     else
         setupBidiRuns();
-}
-
-SVGTextMetricsCalculator::~SVGTextMetricsCalculator()
-{
-    m_bidiRuns.deleteRuns();
 }
 
 void SVGTextMetricsCalculator::setupBidiRuns()

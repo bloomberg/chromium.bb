@@ -821,7 +821,10 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
         renderTextInfo.m_lineBreakIterator.resetPriorContext();
         if (resolver.position().atEnd()) {
             // FIXME: We shouldn't be creating any runs in nextLineBreak to begin with!
-            // Once BidiRunList is separated from BidiResolver this will not be needed.
+            // Figure out why we create new runs in nextLineBreak and why we
+            // seem to rely on that behavior.
+            // Removing the addRun calls in LineBreaker::skipLeadingWhitespace
+            // breaks a bunch of bidi layout tests.
             bidiRuns.deleteRuns();
             resolver.markCurrentRunEmpty(); // FIXME: This can probably be replaced by an ASSERT (or just removed).
             layoutState.setCheckForFloatsFromLastLine(true);

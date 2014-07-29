@@ -1112,8 +1112,6 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
             lastWordBoundary++;
         }
     }
-    if (run)
-        bidiRuns.deleteRuns();
 
     if (firstGlyphLeftOverflow > 0)
         glyphOverflow.left = firstGlyphLeftOverflow;

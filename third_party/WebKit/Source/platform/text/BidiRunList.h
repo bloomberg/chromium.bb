@@ -40,8 +40,7 @@ public:
     {
     }
 
-    // FIXME: Once BidiResolver no longer owns the BidiRunList,
-    // then ~BidiRunList should call deleteRuns() automatically.
+    ~BidiRunList() { deleteRuns(); }
 
     Run* firstRun() const { return m_firstRun; }
     Run* lastRun() const { return m_lastRun; }

@@ -240,7 +240,6 @@ void BidiTestRunner::runTest(const std::basic_string<UChar>& input, const std::v
             break;
         }
     }
-    runs.deleteRuns();
 }
 
 
