@@ -1,0 +1,47 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-builder.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+describe('ct-builder', function() {
+  var builder;
+
+  beforeEach(function(done) {
+    builder = document.createElement('ct-builder');
+    builder.builder = 'WebKit Linux (dbg)';
+    requestAnimationFrame(function() { done(); });
+  });
+
+  describe('default builder UI', function() {
+    it('should link to the builder', function() {
+      var a = builder.shadowRoot.querySelector('a');
+      assert.ok(a.href);
+      assert.include(a.href, 'WebKit+Linux+(dbg)');
+    });
+  });
+
+  describe('builder UI with steps', function() {
+    beforeEach(function(done) {
+      builder.steps = ['gclient_revert', 'compile', 'unittests'];
+      requestAnimationFrame(function() { done(); });
+    });
+
+    it('should link to builder and show steps', function() {
+      var a = builder.shadowRoot.querySelector('a');
+      assert.ok(a);
+      assert.include(a.href, 'WebKit+Linux+(dbg)');
+      assert.include(a.innerText, 'gclient_revert, compile, unittests');
+    });
+  });
+});
+
+})()
+</script>

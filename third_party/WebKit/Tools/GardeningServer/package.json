@@ -1,0 +1,13 @@
+{
+  "name": "sheriff-o-matic",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://chromium.googlesource.com/chromium/blink"
+  },
+  "devDependencies": {
+    "karma": "~0.12.17",
+    "karma-chrome-launcher": "~0.1.4",
+    "karma-mocha": "~0.1.6"
+  }
+}

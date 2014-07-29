@@ -1,0 +1,88 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-builder-grid.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+var kExampleFailures = [{
+    "testName": "plugins/gesture-events-scrolled.html",
+    "resultNodesByBuilder": {
+        "WebKit Win7 (dbg)": {
+            "actual": "CRASH",
+        },
+        "WebKit Mac10.6 (dbg)": {
+            "actual": "CRASH",
+        },
+        "WebKit Mac10.7": {
+            "actual": "TEXT",
+        }
+    },
+    "oldestFailingRevision": 177164,
+    "newestPassingRevision": 177165
+}, {
+    "testName": "plugins/transformed-events.html",
+    "resultNodesByBuilder": {
+        "WebKit Win7 (dbg)": {
+            "actual": "TEXT",
+        },
+        "WebKit Mac10.7": {
+            "actual": "CRASH",
+        },
+    },
+    "oldestFailingRevision": 177164,
+    "newestPassingRevision": 177165
+}];
+
+var kExampleBuilderLatestRevisions = {
+  'WebKit Mac10.7': {
+    blink: 177164,
+  },
+  'WebKit Mac10.6 (dbg)': {
+    blink: 177166,
+  },
+  'WebKit Win7 (dbg)': {
+    blink: 177166,
+  },
+};
+
+describe('ct-builder-grid', function() {
+  var grid;
+
+  beforeEach(function(done) {
+    grid = document.createElement('ct-builder-grid');
+    grid.failures = kExampleFailures;
+    requestAnimationFrame(function() { done(); });
+  });
+
+  describe('basic grid', function() {
+    it('should show builders by result type and debug/not debug', function() {
+      var rows = grid.shadowRoot.querySelectorAll('tbody tr');
+      assert.lengthOf(rows, 2);
+
+      var row1 = grid.shadowRoot.querySelector('tbody td.CRASH').parentNode;
+      assert.lengthOf(row1.children, 2);
+      var builders = row1.children[1].querySelectorAll('ct-builder');
+      assert.lengthOf(builders, 3);
+      assert.equal(builders[0].builder, 'WebKit Mac10.6 (dbg)');
+      assert.equal(builders[1].builder, 'WebKit Mac10.7');
+      assert.equal(builders[2].builder, 'WebKit Win7 (dbg)');
+
+      var row2 = grid.shadowRoot.querySelector('tbody td.TEXT').parentNode;
+      assert.lengthOf(row2.children, 2);
+      builders = row2.children[1].querySelectorAll('ct-builder');
+      assert.lengthOf(builders, 2);
+      assert.equal(builders[0].builder, 'WebKit Mac10.7');
+      assert.equal(builders[1].builder, 'WebKit Win7 (dbg)');
+    });
+  });
+});
+
+})()
+</script>

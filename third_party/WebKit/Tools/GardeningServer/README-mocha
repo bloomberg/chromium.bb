@@ -1,0 +1,39 @@
+sheriff-o-matic must be run from a server in order to handle Polymer imports correctly.
+
+1. cd Tools
+2. python -m SimpleHTTPServer
+3. Load http://localhost:8000/GardeningServer/sheriff-o-matic.html
+
+Dependencies, including Polymer and mocha, must be synced via bower in order for anything to work.
+
+INSTALLING NPM/BOWER
+The version of npm in apt-get is too old for bower. Instead
+install it from http://nodejs.org/download/.
+
+Install bower with:
+    sudo npm install -g bower
+
+SYNCING DEPENDENCIES
+1. cd Tools/GardeningServer
+2. bower update
+3. npm install
+
+TESTING
+The tests can be run in the browser or from the command line.
+
+In the browser: http://localhost:8000/GardeningServer/test/run-unit-tests.html.
+
+From the command line:
+1. cd Tools/GardeningServer
+2. ./node_modules/karma/bin/karma start
+
+With 'npm install -g karma-cli', you can just use 'karma start'.
+
+LIBRARIES
+sugar: Provides generic syntactic sugar for JavaScript, mostly by extending native object prototypes.
+
+karma: test runner. Runs the unit tests in an instance of Chrome and pipes the results to the command line. By default, it watches for changes to files and will automatically re-run the tests. To run once and exit, use 'karma start --single-run'.
+
+mocha: testing framework. Provides good asynchronous and synchronous test support. Tests run serially, so exceptions are reported for the right test case.
+
+chai: assertion library. Provides TDD and BDD-style assertions.

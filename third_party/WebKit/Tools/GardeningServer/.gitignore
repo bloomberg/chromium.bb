@@ -1,2 +1,4 @@
 # Pulled in via bower.
 bower_components
+# Pulled in via npm.
+node_modules
