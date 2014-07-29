@@ -50,6 +50,7 @@
 #if defined(OS_MACOSX)
 #include <mach/vm_param.h>
 #include <malloc/malloc.h>
+#include "base/mac/mac_util.h"
 #endif
 
 using base::FilePath;
@@ -469,6 +470,72 @@ int GetMaxFilesOpenInProcess() {
 
 const int kChildPipe = 20;  // FD # for write end of pipe in child process.
 
+#if defined(OS_MACOSX)
+
+// <http://opensource.apple.com/source/xnu/xnu-2422.1.72/bsd/sys/guarded.h>
+#if !defined(_GUARDID_T)
+#define _GUARDID_T
+typedef __uint64_t guardid_t;
+#endif  // _GUARDID_T
+
+// From .../MacOSX10.9.sdk/usr/include/sys/syscall.h
+#if !defined(SYS_change_fdguard_np)
+#define SYS_change_fdguard_np 444
+#endif
+
+// <http://opensource.apple.com/source/xnu/xnu-2422.1.72/bsd/sys/guarded.h>
+#if !defined(GUARD_DUP)
+#define GUARD_DUP (1u << 1)
+#endif
+
+// <http://opensource.apple.com/source/xnu/xnu-2422.1.72/bsd/kern/kern_guarded.c?txt>
+//
+// Atomically replaces |guard|/|guardflags| with |nguard|/|nguardflags| on |fd|.
+int change_fdguard_np(int fd,
+                      const guardid_t *guard, u_int guardflags,
+                      const guardid_t *nguard, u_int nguardflags,
+                      int *fdflagsp) {
+  return syscall(SYS_change_fdguard_np, fd, guard, guardflags,
+                 nguard, nguardflags, fdflagsp);
+}
+
+// Attempt to set a file-descriptor guard on |fd|.  In case of success, remove
+// it and return |true| to indicate that it can be guarded.  Returning |false|
+// means either that |fd| is guarded by some other code, or more likely EBADF.
+//
+// Starting with 10.9, libdispatch began setting GUARD_DUP on a file descriptor.
+// Unfortunately, it is spun up as part of +[NSApplication initialize], which is
+// not really something that Chromium can avoid using on OSX.  See
+// <http://crbug.com/338157>.  This function allows querying whether the file
+// descriptor is guarded before attempting to close it.
+bool CanGuardFd(int fd) {
+  // The syscall is first provided in 10.9/Mavericks.
+  if (!base::mac::IsOSMavericksOrLater())
+    return true;
+
+  // Saves the original flags to reset later.
+  int original_fdflags = 0;
+
+  // This can be any value at all, it just has to match up between the two
+  // calls.
+  const guardid_t kGuard = 15;
+
+  // Attempt to change the guard.  This can fail with EBADF if the file
+  // descriptor is bad, or EINVAL if the fd already has a guard set.
+  int ret =
+      change_fdguard_np(fd, NULL, 0, &kGuard, GUARD_DUP, &original_fdflags);
+  if (ret == -1)
+    return false;
+
+  // Remove the guard.  It should not be possible to fail in removing the guard
+  // just added.
+  ret = change_fdguard_np(fd, &kGuard, GUARD_DUP, NULL, 0, &original_fdflags);
+  DPCHECK(ret == 0);
+
+  return true;
+}
+#endif  // OS_MACOSX
+
 }  // namespace
 
 MULTIPROCESS_TEST_MAIN(ProcessUtilsLeakFDChildProcess) {
@@ -478,6 +545,12 @@ MULTIPROCESS_TEST_MAIN(ProcessUtilsLeakFDChildProcess) {
   int write_pipe = kChildPipe;
   int max_files = GetMaxFilesOpenInProcess();
   for (int i = STDERR_FILENO + 1; i < max_files; i++) {
+#if defined(OS_MACOSX)
+    // Ignore guarded or invalid file descriptors.
+    if (!CanGuardFd(i))
+      continue;
+#endif
+
     if (i != kChildPipe) {
       int fd;
       if ((fd = HANDLE_EINTR(dup(i))) != -1) {
