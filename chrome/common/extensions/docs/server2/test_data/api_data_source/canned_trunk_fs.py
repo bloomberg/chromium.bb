@@ -46,6 +46,24 @@ CANNED_TRUNK_FS_DATA = {
         }
       ]
     }]),
+    'events.json': json.dumps([{
+      'namespace': 'events',
+      'description': 'These are events.',
+      'types': [
+        {
+          'id': 'Event',
+          'type': 'object',
+          'description': 'An Event object.',
+          'functions': [
+            {
+              'name': 'addListener',
+              'type': 'function',
+              'description': 'Adds a listener.'
+            }
+          ],
+        }
+      ]
+    }]),
     'tester.json': json.dumps([{
       'namespace': 'tester',
       'description': 'a test api',
@@ -197,7 +215,9 @@ CANNED_TRUNK_FS_DATA = {
       },
       'private': {
         'intro_tables': {
-          'trunk_message.html': 'available on trunk'
+          'trunk_message.html': 'available on trunk',
+          'stable_message.html': 'Since {{content.version}}.',
+          'content_scripts.html': 'Content Scripts'
         }
       }
     }

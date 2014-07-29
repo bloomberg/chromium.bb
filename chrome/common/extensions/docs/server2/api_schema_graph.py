@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import json
+from api_models import GetNodeCategories
 from collections import Iterable, Mapping
 
 class LookupResult(object):
@@ -27,6 +28,209 @@ class LookupResult(object):
 
   def __str__(self):
     return repr(self)
+
+
+class APINodeCursor(object):
+  '''An abstract representation of a node in an APISchemaGraph.
+  The current position in the graph is represented by a path into the
+  underlying dictionary. So if the APISchemaGraph is:
+
+    {
+      'tabs': {
+        'types': {
+          'Tab': {
+            'properties': {
+              'url': {
+                ...
+              }
+            }
+          }
+        }
+      }
+    }
+
+  then the 'url' property would be represented by:
+
+    ['tabs', 'types', 'Tab', 'properties', 'url']
+  '''
+
+  def __init__(self, availability_finder, namespace_name):
+    self._lookup_path = []
+    self._node_availabilities = availability_finder.GetAPINodeAvailability(
+        namespace_name)
+    self._namespace_name = namespace_name
+    self._ignored_categories = []
+
+  def _AssertIsValidCategory(self, category):
+    assert category in GetNodeCategories(), \
+        '%s is not a valid category. Full path: %s' % (category, str(self))
+
+  def _GetParentPath(self):
+    '''Returns the path pointing to this node's parent.
+    '''
+    assert len(self._lookup_path) > 1, \
+        'Tried to look up parent for the top-level node.'
+
+    # lookup_path[-1] is the name of the current node. If this lookup_path
+    # describes a regular node, then lookup_path[-2] will be a node category.
+    # Otherwise, it's an event callback or a function parameter.
+    if self._lookup_path[-2] not in GetNodeCategories():
+      if self._lookup_path[-1] == 'callback':
+        # This is an event callback, so lookup_path[-2] is the event
+        # node name, thus lookup_path[-3] must be 'events'.
+        assert self._lookup_path[-3] == 'events'
+        return self._lookup_path[:-1]
+      # This is a function parameter.
+      assert self._lookup_path[-2] == 'parameters'
+      return self._lookup_path[:-2]
+    # This is a regular node, so lookup_path[-2] should
+    # be a node category.
+    self._AssertIsValidCategory(self._lookup_path[-2])
+    return self._lookup_path[:-2]
+
+  def _LookupNodeAvailability(self, lookup_path):
+    '''Returns the ChannelInfo object for this node.
+    '''
+    return self._node_availabilities.Lookup(self._namespace_name,
+                                            *lookup_path).annotation
+
+  def _CheckNamespacePrefix(self, lookup_path):
+    '''API schemas may prepend the namespace name to top-level types
+    (e.g. declarativeWebRequest > types > declarativeWebRequest.IgnoreRules),
+    but just the base name (here, 'IgnoreRules') will be in the |lookup_path|.
+    Try creating an alternate |lookup_path| by adding the namespace name.
+    '''
+    # lookup_path[0] is always the node category (e.g. types, functions, etc.).
+    # Thus, lookup_path[1] is always the top-level node name.
+    self._AssertIsValidCategory(lookup_path[0])
+    base_name = lookup_path[1]
+    lookup_path[1] = '%s.%s' % (self._namespace_name, base_name)
+    try:
+      node_availability = self._LookupNodeAvailability(lookup_path)
+      if node_availability is not None:
+        return node_availability
+    finally:
+      # Restore lookup_path.
+      lookup_path[1] = base_name
+    return None
+
+  def _CheckEventCallback(self, lookup_path):
+    '''Within API schemas, an event has a list of 'properties' that the event's
+    callback expects. The callback itself is not explicitly represented in the
+    schema. However, when creating an event node in JSCView, a callback node
+    is generated and acts as the parent for the event's properties.
+    Modify |lookup_path| to check the original schema format.
+    '''
+    if 'events' in lookup_path:
+      assert 'callback' in lookup_path, self
+      callback_index = lookup_path.index('callback')
+      try:
+        lookup_path.pop(callback_index)
+        node_availability = self._LookupNodeAvailability(lookup_path)
+      finally:
+        lookup_path.insert(callback_index, 'callback')
+      return node_availability
+    return None
+
+  def _LookupAvailability(self, lookup_path):
+    '''Runs all the lookup checks on |lookup_path| and
+    returns the node availability if found, None otherwise.
+    '''
+    for lookup in (self._LookupNodeAvailability,
+                   self._CheckEventCallback,
+                   self._CheckNamespacePrefix):
+      node_availability = lookup(lookup_path)
+      if node_availability is not None:
+        return node_availability
+    return None
+
+  def _GetCategory(self):
+    '''Returns the category this node belongs to.
+    '''
+    if self._lookup_path[-2] in GetNodeCategories():
+      return self._lookup_path[-2]
+    # If lookup_path[-2] is not a valid category and lookup_path[-1] is
+    # 'callback', then we know we have an event callback.
+    if self._lookup_path[-1] == 'callback':
+      return 'events'
+    if self._lookup_path[-2] == 'parameters':
+      # Function parameters are modelled as properties.
+      return 'properties'
+    if (self._lookup_path[-1].endswith('Type') and
+        (self._lookup_path[-1][:-len('Type')] == self._lookup_path[-2] or
+         self._lookup_path[-1][:-len('ReturnType')] == self._lookup_path[-2])):
+      # Array elements and function return objects have 'Type' and 'ReturnType'
+      # appended to their names, respectively, in model.py. This results in
+      # lookup paths like
+      # 'events > types > Rule > properties > tags > tagsType'.
+      # These nodes are treated as properties.
+      return 'properties'
+    if self._lookup_path[0] == 'events':
+      # HACK(ahernandez.miralles): This catches a few edge cases,
+      # such as 'webviewTag > events > consolemessage > level'.
+      return 'properties'
+    raise AssertionError('Could not classify node %s' % self)
+
+  def GetDeprecated(self):
+    '''Returns when this node became deprecated, or None if it
+    is not deprecated.
+    '''
+    deprecated_path = self._lookup_path + ['deprecated']
+    for lookup in (self._LookupNodeAvailability,
+                   self._CheckNamespacePrefix):
+      node_availability = lookup(deprecated_path)
+      if node_availability is not None:
+        return node_availability
+    if 'callback' in self._lookup_path:
+      return self._CheckEventCallback(deprecated_path)
+    return None
+
+  def GetAvailability(self):
+    '''Returns availability information for this node.
+    '''
+    if self._GetCategory() in self._ignored_categories:
+      return None
+    node_availability = self._LookupAvailability(self._lookup_path)
+    if node_availability is None:
+      logging.warning('No availability found for: %s' % self)
+      return None
+
+    parent_node_availability = self._LookupAvailability(self._GetParentPath())
+    # If the parent node availability couldn't be found, something
+    # is very wrong.
+    assert parent_node_availability is not None
+
+    # Only render this node's availability if it differs from the parent
+    # node's availability.
+    if node_availability == parent_node_availability:
+      return None
+    return node_availability
+
+  def Descend(self, *path, **kwargs):
+    '''Moves down the APISchemaGraph, following |path|.
+    |ignore| should be a tuple of category strings (e.g. ('types',))
+    for which nodes should not have availability data generated.
+    '''
+    ignore = kwargs.get('ignore')
+    class scope(object):
+      def __enter__(self2):
+        if ignore:
+          self._ignored_categories.extend(ignore)
+        if path:
+          self._lookup_path.extend(path)
+
+      def __exit__(self2, _, __, ___):
+        if ignore:
+          self._ignored_categories[:] = self._ignored_categories[:-len(ignore)]
+        if path:
+          self._lookup_path[:] = self._lookup_path[:-len(path)]
+    return scope()
+
+  def __str__(self):
+    return repr(self)
+
+  def __repr__(self):
+    return '%s > %s' % (self._namespace_name, ' > '.join(self._lookup_path))
 
 
 class _GraphNode(dict):
