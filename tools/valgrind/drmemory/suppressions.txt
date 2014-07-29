@@ -635,14 +635,6 @@ KERNEL32.dll!CreateWaitableTimerW
 *!content::RenderProcessHostImpl::Init
 *!content::RenderViewHostImpl::CreateRenderView
 
-GDI USAGE ERROR
-name=http://crbug.com/396639
-system call NtUserCallOneParam.RELEASEDC
-USER32.dll!ReleaseDC
-*!webrtc::ScreenCapturerWinGdi::~ScreenCapturerWinGdi
-*!webrtc::ScreenCapturerWinGdi::`scalar deleting destructor'
-content.dll!content::DesktopCaptureDevice::Core::DoStopAndDeAllocate
-
 UNADDRESSABLE ACCESS
 name=http://code.google.com/p/dynamorio/issues/detail?id=1443
 dynamorio.dll!*
