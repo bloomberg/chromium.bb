@@ -2835,6 +2835,18 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestDeferredInitialize);
 
+class LayerTreeHostTestDeferredInitializeWithGpuRasterization
+    : public LayerTreeHostTestDeferredInitialize {
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    // PictureLayer can only be used with impl side painting enabled.
+    settings->impl_side_painting = true;
+    settings->gpu_rasterization_enabled = true;
+    settings->gpu_rasterization_forced = true;
+  }
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestDeferredInitializeWithGpuRasterization);
+
 // Test for UI Resource management.
 class LayerTreeHostTestUIResource : public LayerTreeHostTest {
  public:

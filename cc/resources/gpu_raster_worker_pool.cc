@@ -36,6 +36,7 @@ GpuRasterWorkerPool::GpuRasterWorkerPool(base::SequencedTaskRunner* task_runner,
       raster_tasks_required_for_activation_pending_(false),
       raster_finished_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
+  DCHECK(context_provider_);
 }
 
 GpuRasterWorkerPool::~GpuRasterWorkerPool() {

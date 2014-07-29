@@ -45,6 +45,7 @@ ImageCopyRasterWorkerPool::ImageCopyRasterWorkerPool(
       raster_tasks_pending_(false),
       raster_tasks_required_for_activation_pending_(false),
       raster_finished_weak_ptr_factory_(this) {
+  DCHECK(context_provider_);
 }
 
 ImageCopyRasterWorkerPool::~ImageCopyRasterWorkerPool() {
@@ -235,8 +236,7 @@ void ImageCopyRasterWorkerPool::FlushCopies() {
   if (!has_performed_copy_since_last_flush_)
     return;
 
-  if (context_provider_)
-    context_provider_->ContextGL()->ShallowFlushCHROMIUM();
+  context_provider_->ContextGL()->ShallowFlushCHROMIUM();
   has_performed_copy_since_last_flush_ = false;
 }
 

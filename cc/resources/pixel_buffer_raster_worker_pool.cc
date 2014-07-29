@@ -68,6 +68,7 @@ PixelBufferRasterWorkerPool::PixelBufferRasterWorkerPool(
           base::TimeDelta::FromMilliseconds(
               kCheckForCompletedRasterTasksDelayMs)),
       raster_finished_weak_ptr_factory_(this) {
+  DCHECK(context_provider_);
 }
 
 PixelBufferRasterWorkerPool::~PixelBufferRasterWorkerPool() {
@@ -320,8 +321,7 @@ void PixelBufferRasterWorkerPool::FlushUploads() {
   if (!has_performed_uploads_since_last_flush_)
     return;
 
-  if (context_provider_)
-    context_provider_->ContextGL()->ShallowFlushCHROMIUM();
+  context_provider_->ContextGL()->ShallowFlushCHROMIUM();
   has_performed_uploads_since_last_flush_ = false;
 }
 

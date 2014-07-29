@@ -1955,7 +1955,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
   transfer_buffer_memory_limit_ =
       GetMaxTransferBufferUsageBytes(context_provider);
 
-  if (use_gpu_rasterization_) {
+  if (use_gpu_rasterization_ && context_provider) {
     resource_pool_ =
         ResourcePool::Create(resource_provider_.get(),
                              GL_TEXTURE_2D,
@@ -1966,18 +1966,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
                                     context_provider,
                                     resource_provider_.get());
     on_demand_task_graph_runner_ = &synchronous_task_graph_runner_;
-  } else if (UseZeroCopyTextureUpload()) {
-    resource_pool_ =
-        ResourcePool::Create(resource_provider_.get(),
-                             GetMapImageTextureTarget(context_provider),
-                             resource_provider_->best_texture_format());
-
-    raster_worker_pool_ =
-        ImageRasterWorkerPool::Create(proxy_->ImplThreadTaskRunner(),
-                                      RasterWorkerPool::GetTaskGraphRunner(),
-                                      resource_provider_.get());
-    on_demand_task_graph_runner_ = RasterWorkerPool::GetTaskGraphRunner();
-  } else if (UseOneCopyTextureUpload()) {
+  } else if (UseOneCopyTextureUpload() && context_provider) {
     // We need to create a staging resource pool when using copy rasterizer.
     staging_resource_pool_ =
         ResourcePool::Create(resource_provider_.get(),
@@ -1995,7 +1984,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
         resource_provider_.get(),
         staging_resource_pool_.get());
     on_demand_task_graph_runner_ = RasterWorkerPool::GetTaskGraphRunner();
-  } else {
+  } else if (!UseZeroCopyTextureUpload() && context_provider) {
     resource_pool_ = ResourcePool::Create(
         resource_provider_.get(),
         GL_TEXTURE_2D,
@@ -2007,6 +1996,17 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
         context_provider,
         resource_provider_.get(),
         transfer_buffer_memory_limit_);
+    on_demand_task_graph_runner_ = RasterWorkerPool::GetTaskGraphRunner();
+  } else {
+    resource_pool_ =
+        ResourcePool::Create(resource_provider_.get(),
+                             GetMapImageTextureTarget(context_provider),
+                             resource_provider_->best_texture_format());
+
+    raster_worker_pool_ =
+        ImageRasterWorkerPool::Create(proxy_->ImplThreadTaskRunner(),
+                                      RasterWorkerPool::GetTaskGraphRunner(),
+                                      resource_provider_.get());
     on_demand_task_graph_runner_ = RasterWorkerPool::GetTaskGraphRunner();
   }
 
