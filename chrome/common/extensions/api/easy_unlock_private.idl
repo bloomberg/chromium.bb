@@ -67,6 +67,9 @@
   callback KeyPairCallback = void(optional ArrayBuffer public_key,
                                   optional ArrayBuffer private_key);
 
+  // An empty callback used purely for signalling success vs. failure.
+  callback EmptyCallback = void();
+
   interface Functions {
     // Generates a ECDSA key pair for P256 curve.
     // Public key will be in format recognized by secure wire transport protocol
@@ -121,5 +124,16 @@
         ArrayBuffer key,
         UnwrapSecureMessageOptions options,
         DataCallback callback);
+
+    // Connects to the SDP service on a device, given just the device's
+    // Bluetooth address. This function is useful as a faster alternative to
+    // Bluetooth discovery, when you already know the remote device's Bluetooth
+    // address. A successful call to this function has the side-effect of
+    // registering the device with the Bluetooth daemon, making it available for
+    // future outgoing connections.
+    // |deviceAddress|: The Bluetooth address of the device to connect to.
+    // |callback|: Called to indicate success or failure.
+    static void seekBluetoothDeviceByAddress(DOMString deviceAddress,
+                                             optional EmptyCallback callback);
   };
 };

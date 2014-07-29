@@ -15,6 +15,10 @@
 namespace extensions {
 namespace api {
 
+namespace easy_unlock {
+struct SeekDeviceResult;
+}  // easy_unlock
+
 class EasyUnlockPrivatePerformECDHKeyAgreementFunction
     : public AsyncExtensionFunction {
  public:
@@ -82,6 +86,26 @@ class EasyUnlockPrivateUnwrapSecureMessageFunction
 
   DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.unwrapSecureMessage",
                              EASYUNLOCKPRIVATE_UNWRAPSECUREMESSAGE)
+};
+
+class EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction
+    : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.seekBluetoothDeviceByAddress",
+                             EASYUNLOCKPRIVATE_SEEKBLUETOOTHDEVICEBYADDRESS)
+  EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction();
+
+ private:
+  virtual ~EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction();
+
+  // AsyncExtensionFunction:
+  virtual bool RunAsync() OVERRIDE;
+
+  // Callback that is called when the seek operation succeeds.
+  void OnSeekCompleted(const easy_unlock::SeekDeviceResult& seek_result);
+
+  DISALLOW_COPY_AND_ASSIGN(
+      EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction);
 };
 
 }  // namespace api

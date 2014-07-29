@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_api.h"
 
+#include "base/bind.h"
+#include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_bluetooth_util.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 
 namespace extensions {
@@ -82,6 +84,37 @@ void EasyUnlockPrivateUnwrapSecureMessageFunction::OnData(
   if (!data.empty())
     results_ = easy_unlock_private::UnwrapSecureMessage::Results::Create(data);
   SendResponse(true);
+}
+
+EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction::
+    EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction() {}
+
+EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction::
+    ~EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction() {}
+
+bool EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction::RunAsync() {
+  scoped_ptr<easy_unlock_private::SeekBluetoothDeviceByAddress::Params> params(
+      easy_unlock_private::SeekBluetoothDeviceByAddress::Params::Create(
+          *args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  easy_unlock::SeekBluetoothDeviceByAddress(
+      params->device_address,
+      base::Bind(
+          &EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction::
+              OnSeekCompleted,
+          this));
+  return true;
+}
+
+void EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction::OnSeekCompleted(
+    const easy_unlock::SeekDeviceResult& seek_result) {
+  if (seek_result.success) {
+    SendResponse(true);
+  } else {
+    SetError(seek_result.error_message);
+    SendResponse(false);
+  }
 }
 
 }  // namespace api
