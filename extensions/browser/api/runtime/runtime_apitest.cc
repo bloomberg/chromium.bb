@@ -71,13 +71,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
 }
 
 // Tests chrome.runtime.reload
-// This test is flaky on Linux: crbug.com/366181
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-#define MAYBE_ChromeRuntimeReload DISABLED_ChromeRuntimeReload
-#else
-#define MAYBE_ChromeRuntimeReload ChromeRuntimeReload
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_ChromeRuntimeReload) {
+// This test is flaky: crbug.com/366181
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLE_ChromeRuntimeReload) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   const char kManifest[] =
       "{"
