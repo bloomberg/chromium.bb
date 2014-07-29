@@ -36,6 +36,8 @@
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/HTMLLIElement.h"
+#include "core/html/HTMLUListElement.h"
 
 namespace blink {
 
@@ -51,7 +53,7 @@ static Node* enclosingListChild(Node* node, Node* listNode)
 
 HTMLElement* InsertListCommand::fixOrphanedListChild(Node* node)
 {
-    RefPtrWillBeRawPtr<HTMLElement> listElement = createUnorderedListElement(document());
+    RefPtrWillBeRawPtr<HTMLUListElement> listElement = createUnorderedListElement(document());
     insertNodeBefore(listElement, node);
     removeNode(node);
     appendNode(node, listElement);
@@ -285,12 +287,12 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
     // When removing a list, we must always create a placeholder to act as a point of insertion
     // for the list content being removed.
     RefPtrWillBeRawPtr<HTMLBRElement> placeholder = createBreakElement(document());
-    RefPtrWillBeRawPtr<Element> nodeToInsert = placeholder;
+    RefPtrWillBeRawPtr<HTMLElement> elementToInsert = placeholder;
     // If the content of the list item will be moved into another list, put it in a list item
     // so that we don't create an orphaned list child.
     if (enclosingList(listNode)) {
-        nodeToInsert = createListItemElement(document());
-        appendNode(placeholder, nodeToInsert);
+        elementToInsert = createListItemElement(document());
+        appendNode(placeholder, elementToInsert);
     }
 
     if (nextListChild && previousListChild) {
@@ -302,7 +304,7 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
         // listChildNode below in moveParagraphs, previousListChild will be removed along with it if it is
         // unrendered. But we ought to remove nextListChild too, if it is unrendered.
         splitElement(listNode, splitTreeToNode(nextListChild, listNode));
-        insertNodeBefore(nodeToInsert, listNode);
+        insertNodeBefore(elementToInsert, listNode);
     } else if (nextListChild || listChildNode->parentNode() != listNode) {
         // Just because listChildNode has no previousListChild doesn't mean there isn't any content
         // in listNode that comes before listChildNode, as listChildNode could have ancestors
@@ -310,9 +312,10 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
         // where we're about to move listChildNode to.
         if (listChildNode->parentNode() != listNode)
             splitElement(listNode, splitTreeToNode(listChildNode, listNode).get());
-        insertNodeBefore(nodeToInsert, listNode);
-    } else
-        insertNodeAfter(nodeToInsert, listNode);
+        insertNodeBefore(elementToInsert, listNode);
+    } else {
+        insertNodeAfter(elementToInsert, listNode);
+    }
 
     VisiblePosition insertionPoint = VisiblePosition(positionBeforeNode(placeholder.get()));
     moveParagraphs(start, end, insertionPoint, /* preserveSelection */ true, /* preserveStyle */ true, listChildNode);

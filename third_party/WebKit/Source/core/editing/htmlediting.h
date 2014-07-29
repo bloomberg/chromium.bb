@@ -39,7 +39,10 @@ class Element;
 class ExceptionState;
 class HTMLBRElement;
 class HTMLElement;
+class HTMLLIElement;
+class HTMLOListElement;
 class HTMLSpanElement;
+class HTMLUListElement;
 class Node;
 class Position;
 class PositionWithAffinity;
@@ -211,9 +214,9 @@ PassRefPtrWillBeRawPtr<Range> createRange(Document&, const VisiblePosition& star
 
 PassRefPtrWillBeRawPtr<HTMLElement> createDefaultParagraphElement(Document&);
 PassRefPtrWillBeRawPtr<HTMLBRElement> createBreakElement(Document&);
-PassRefPtrWillBeRawPtr<HTMLElement> createOrderedListElement(Document&);
-PassRefPtrWillBeRawPtr<HTMLElement> createUnorderedListElement(Document&);
-PassRefPtrWillBeRawPtr<HTMLElement> createListItemElement(Document&);
+PassRefPtrWillBeRawPtr<HTMLOListElement> createOrderedListElement(Document&);
+PassRefPtrWillBeRawPtr<HTMLUListElement> createUnorderedListElement(Document&);
+PassRefPtrWillBeRawPtr<HTMLLIElement> createListItemElement(Document&);
 PassRefPtrWillBeRawPtr<HTMLElement> createHTMLElement(Document&, const QualifiedName&);
 PassRefPtrWillBeRawPtr<HTMLElement> createHTMLElement(Document&, const AtomicString&);
 

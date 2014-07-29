@@ -66,6 +66,7 @@
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/HTMLLIElement.h"
 #include "core/html/HTMLQuoteElement.h"
 #include "core/html/HTMLSpanElement.h"
 #include "core/rendering/InlineTextBox.h"
@@ -1304,7 +1305,7 @@ bool CompositeEditCommand::breakOutOfEmptyListItem()
         || listNode == emptyListItem->rootEditableElement())
         return false;
 
-    RefPtrWillBeRawPtr<Element> newBlock = nullptr;
+    RefPtrWillBeRawPtr<HTMLElement> newBlock = nullptr;
     if (ContainerNode* blockEnclosingList = listNode->parentNode()) {
         if (isHTMLLIElement(*blockEnclosingList)) { // listNode is inside another list item
             if (visiblePositionAfterNode(*blockEnclosingList) == visiblePositionAfterNode(*listNode)) {

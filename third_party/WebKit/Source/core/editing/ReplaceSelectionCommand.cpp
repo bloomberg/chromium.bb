@@ -52,6 +52,7 @@
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLLIElement.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderText.h"
 #include "wtf/StdLibExtras.h"
@@ -1215,7 +1216,7 @@ void ReplaceSelectionCommand::doApply()
                 setEndingSelection(endOfInsertedContent);
                 Node* enclosingNode = enclosingBlock(endOfInsertedContent.deepEquivalent().deprecatedNode());
                 if (isListItem(enclosingNode)) {
-                    RefPtrWillBeRawPtr<Node> newListItem = createListItemElement(document());
+                    RefPtrWillBeRawPtr<HTMLLIElement> newListItem = createListItemElement(document());
                     insertNodeAfter(newListItem, enclosingNode);
                     setEndingSelection(VisiblePosition(firstPositionInNode(newListItem.get())));
                 } else {

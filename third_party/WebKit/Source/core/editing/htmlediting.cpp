@@ -822,17 +822,17 @@ PassRefPtrWillBeRawPtr<HTMLBRElement> createBreakElement(Document& document)
     return HTMLBRElement::create(document);
 }
 
-PassRefPtrWillBeRawPtr<HTMLElement> createOrderedListElement(Document& document)
+PassRefPtrWillBeRawPtr<HTMLOListElement> createOrderedListElement(Document& document)
 {
     return HTMLOListElement::create(document);
 }
 
-PassRefPtrWillBeRawPtr<HTMLElement> createUnorderedListElement(Document& document)
+PassRefPtrWillBeRawPtr<HTMLUListElement> createUnorderedListElement(Document& document)
 {
     return HTMLUListElement::create(document);
 }
 
-PassRefPtrWillBeRawPtr<HTMLElement> createListItemElement(Document& document)
+PassRefPtrWillBeRawPtr<HTMLLIElement> createListItemElement(Document& document)
 {
     return HTMLLIElement::create(document);
 }
