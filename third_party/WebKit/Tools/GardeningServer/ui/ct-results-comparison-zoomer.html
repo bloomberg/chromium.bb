@@ -16,6 +16,7 @@ found in the LICENSE file.
         position: fixed;
         top: 0;
         width: 100%;
+        z-index: 1;
       }
 
       :host > * {
@@ -99,14 +100,16 @@ found in the LICENSE file.
         var canvas = imageContainer.querySelector('canvas');
         canvas.width = imageContainer.clientWidth;
         canvas.height = imageContainer.clientHeight;
+        this._drawCanvas(canvas.getContext('2d'), imageContainer);
+      },
 
-        var ctx = canvas.getContext('2d');
-        ctx.imageSmoothingEnabled = false;
-        ctx.translate(imageContainer.clientWidth / 2, imageContainer.clientHeight / 2);
-        ctx.translate(-this.position.y * kZoomedResultWidth, -this.position.x * kZoomedResultHeight);
-        ctx.strokeRect(-1.5, -1.5, kZoomedResultWidth + 2, kZoomedResultHeight + 2);
-        ctx.scale(kZoomFactor, kZoomFactor);
-        ctx.drawImage(imageContainer.querySelector('img'), 0, 0);
+      _drawCanvas: function(context, imageContainer) {
+        context.imageSmoothingEnabled = false;
+        context.translate(imageContainer.clientWidth / 2, imageContainer.clientHeight / 2);
+        context.translate(-this.position.x * kZoomedResultWidth, -this.position.y * kZoomedResultHeight);
+        context.strokeRect(-1.5, -1.5, kZoomedResultWidth + 2, kZoomedResultHeight + 2);
+        context.scale(kZoomFactor, kZoomFactor);
+        context.drawImage(imageContainer.querySelector('img'), 0, 0);
       },
     });
   })();

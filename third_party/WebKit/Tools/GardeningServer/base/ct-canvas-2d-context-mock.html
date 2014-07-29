@@ -1,0 +1,37 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<script>
+function CTCanvas2dContextMock() {
+  this.imageSmoothingEnabled = true;
+  this._translate = {x: 0, y: 0};
+  this._strokeRect = {x: 0, y: 0, width: 0, height: 0};
+  this._scale = {x: 1, y: 1};
+  this._drawImagePosition = {x: 0, y: 0};
+}
+
+CTCanvas2dContextMock.prototype.translate = function(x, y) {
+  this._translate = {
+    x: this._translate.x + x,
+    y: this._translate.y + y,
+  };
+}
+
+CTCanvas2dContextMock.prototype.strokeRect = function(x, y, width, height) {
+  this._strokeRect = {x: x, y: y, width: width, height: height};
+}
+
+CTCanvas2dContextMock.prototype.scale = function(x, y) {
+  this._scale = {
+    x: this._scale.x * x,
+    y: this._scale.y * y,
+  };
+}
+
+CTCanvas2dContextMock.prototype.drawImage = function(image, x, y) {
+  this._drawImagePosition = {x: x, y: y};
+}
+</script>

@@ -6,6 +6,8 @@ found in the LICENSE file.
 
 <link rel="import" href="ct-results-comparison-zoomer.html">
 
+<link rel="import" href="../base/ct-canvas-2d-context-mock.html">
+
 <script>
 (function () {
 
@@ -53,6 +55,25 @@ test("draw", 3, function() {
   } catch(e) {
     ok(false);
   }
+});
+
+asyncTest("drawCanvas", 1, function() {
+  var zoomer = document.createElement('ct-results-comparison-zoomer');
+  zoomer.position = {x: 0.2, y: 0.5};
+
+  requestAnimationFrame(function() {
+    var canvasContext = new CTCanvas2dContextMock();
+    zoomer._drawCanvas(canvasContext, zoomer.$.diffZoomer);
+
+    var expectedContext = new CTCanvas2dContextMock();
+    expectedContext.imageSmoothingEnabled = false;
+    expectedContext.translate(-960, -1800);
+    expectedContext.strokeRect(-1.5, -1.5, 4802, 3602);
+    expectedContext.scale(6, 6);
+    expectedContext.drawImage(zoomer.shadowRoot.querySelector('img'), 0, 0);
+    deepEqual(canvasContext, expectedContext);
+    start();
+  });
 });
 
 })()
