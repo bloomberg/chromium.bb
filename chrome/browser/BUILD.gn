@@ -5,7 +5,7 @@
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
-import("//native_client/build/config/nacl_defines.gni")
+import("//components/nacl/nacl_defines.gni")
 import("//tools/grit/grit_rule.gni")
 
 about_credits_file = "$target_gen_dir/about_credits.html"
