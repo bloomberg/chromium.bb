@@ -222,8 +222,8 @@ private:
 
     HashMap<RefPtr<ResourceTimingInfo>, bool> m_scheduledResourceTimingReports;
 
-    OwnPtr<ResourceLoaderSet> m_loaders;
-    OwnPtr<ResourceLoaderSet> m_multipartLoaders;
+    OwnPtrWillBeMember<ResourceLoaderSet> m_loaders;
+    OwnPtrWillBeMember<ResourceLoaderSet> m_multipartLoaders;
 
     // Used in hit rate histograms.
     class DeadResourceStatsRecorder {

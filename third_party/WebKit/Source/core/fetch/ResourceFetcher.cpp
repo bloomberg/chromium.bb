@@ -1344,7 +1344,7 @@ void ResourceFetcher::didDownloadData(const Resource* resource, int dataLength, 
 void ResourceFetcher::subresourceLoaderFinishedLoadingOnePart(ResourceLoader* loader)
 {
     if (!m_multipartLoaders)
-        m_multipartLoaders = adoptPtr(new ResourceLoaderSet());
+        m_multipartLoaders = ResourceLoaderSet::create();
     m_multipartLoaders->add(loader);
     m_loaders->remove(loader);
     if (LocalFrame* frame = this->frame())
@@ -1356,7 +1356,7 @@ void ResourceFetcher::didInitializeResourceLoader(ResourceLoader* loader)
     if (!m_document)
         return;
     if (!m_loaders)
-        m_loaders = adoptPtr(new ResourceLoaderSet());
+        m_loaders = ResourceLoaderSet::create();
     ASSERT(!m_loaders->contains(loader));
     m_loaders->add(loader);
 }
@@ -1540,6 +1540,8 @@ void ResourceFetcher::DeadResourceStatsRecorder::update(RevalidationPolicy polic
 void ResourceFetcher::trace(Visitor* visitor)
 {
     visitor->trace(m_document);
+    visitor->trace(m_loaders);
+    visitor->trace(m_multipartLoaders);
     ResourceLoaderHost::trace(visitor);
 }
 

@@ -326,7 +326,7 @@ protected:
 
     ResourceRequest m_resourceRequest;
     AtomicString m_accept;
-    RefPtr<ResourceLoader> m_loader;
+    RefPtrWillBeMember<ResourceLoader> m_loader;
     ResourceLoaderOptions m_options;
 
     ResourceResponse m_response;
