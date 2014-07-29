@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/android/context_menu_helper.h"
 #include "chrome/browser/ui/android/window_android_helper.h"
 #else
+#include "chrome/browser/external_protocol/external_protocol_observer.h"
 #include "chrome/browser/net/predictor_tab_helper.h"
 #include "chrome/browser/plugins/plugin_observer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
@@ -160,6 +161,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
   extensions::WebNavigationTabObserver::CreateForWebContents(web_contents);
+  ExternalProtocolObserver::CreateForWebContents(web_contents);
   HungPluginTabHelper::CreateForWebContents(web_contents);
   ManagePasswordsUIController::CreateForWebContents(web_contents);
   PDFTabHelper::CreateForWebContents(web_contents);

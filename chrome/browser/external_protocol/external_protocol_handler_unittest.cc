@@ -51,8 +51,9 @@ class FakeExternalProtocolHandlerDelegate
   }
 
   virtual ExternalProtocolHandler::BlockState GetBlockState(
-      const std::string& scheme,
-      bool initiated_by_user_gesture) OVERRIDE { return block_state_; }
+      const std::string& scheme) OVERRIDE {
+    return block_state_;
+  }
 
   virtual void BlockRequest() OVERRIDE {
     ASSERT_TRUE(block_state_ == ExternalProtocolHandler::BLOCK ||
@@ -108,6 +109,11 @@ class ExternalProtocolHandlerTest : public testing::Test {
     file_thread_.Start();
   }
 
+  virtual void TearDown() {
+    // Ensure that g_accept_requests gets set back to true after test execution.
+    ExternalProtocolHandler::PermitLaunchUrl();
+  }
+
   void DoTest(ExternalProtocolHandler::BlockState block_state,
               ShellIntegration::DefaultWebClientState os_state,
               bool should_prompt, bool should_launch, bool should_block) {
@@ -118,7 +124,7 @@ class ExternalProtocolHandlerTest : public testing::Test {
 
     delegate_.set_block_state(block_state);
     delegate_.set_os_state(os_state);
-    ExternalProtocolHandler::LaunchUrlWithDelegate(url, 0, 0, &delegate_, true);
+    ExternalProtocolHandler::LaunchUrlWithDelegate(url, 0, 0, &delegate_);
     if (block_state != ExternalProtocolHandler::BLOCK)
       base::MessageLoop::current()->Run();
 

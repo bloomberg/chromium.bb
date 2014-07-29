@@ -984,8 +984,7 @@ class NeverRunsExternalProtocolHandlerDelegate
     return NULL;
   }
   virtual ExternalProtocolHandler::BlockState GetBlockState(
-      const std::string& scheme,
-      bool initiated_by_user_gesture) OVERRIDE {
+      const std::string& scheme) OVERRIDE {
     // Block everything and fail the test.
     ADD_FAILURE();
     return ExternalProtocolHandler::BLOCK;

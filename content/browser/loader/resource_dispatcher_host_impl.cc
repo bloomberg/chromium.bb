@@ -685,15 +685,8 @@ bool ResourceDispatcherHostImpl::HandleExternalProtocol(ResourceLoader* loader,
   if (job_factory->IsHandledURL(url))
     return false;
 
-  bool initiated_by_user_gesture =
-      (loader->request()->load_flags() & net::LOAD_MAYBE_USER_GESTURE) != 0;
-  bool handled = delegate_->HandleExternalProtocol(url, info->GetChildID(),
-                                                   info->GetRouteID(),
-                                                   initiated_by_user_gesture);
-  // Consume the user gesture if the external protocol dialog is shown.
-  if (handled)
-    last_user_gesture_time_ = base::TimeTicks();
-  return handled;
+  return delegate_->HandleExternalProtocol(
+      url, info->GetChildID(), info->GetRouteID());
 }
 
 void ResourceDispatcherHostImpl::DidStartRequest(ResourceLoader* loader) {

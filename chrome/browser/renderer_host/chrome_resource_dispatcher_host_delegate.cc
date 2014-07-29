@@ -198,8 +198,7 @@ void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamHandle> stream,
 #endif  // !defined(ENABLE_EXTENSIONS)
 
 #if !defined(OS_ANDROID)
-void LaunchURL(const GURL& url, int render_process_id, int render_view_id,
-               bool user_gesture) {
+void LaunchURL(const GURL& url, int render_process_id, int render_view_id) {
   // If there is no longer a WebContents, the request may have raced with tab
   // closing. Don't fire the external request. (It may have been a prerender.)
   content::WebContents* web_contents =
@@ -217,9 +216,10 @@ void LaunchURL(const GURL& url, int render_process_id, int render_view_id,
   }
 
   ExternalProtocolHandler::LaunchUrlWithDelegate(
-      url, render_process_id, render_view_id,
-      g_external_protocol_handler_delegate,
-      user_gesture);
+      url,
+      render_process_id,
+      render_view_id,
+      g_external_protocol_handler_delegate);
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -457,8 +457,7 @@ ResourceDispatcherHostLoginDelegate*
 bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
     const GURL& url,
     int child_id,
-    int route_id,
-    bool initiated_by_user_gesture) {
+    int route_id) {
 #if defined(OS_ANDROID)
   // Android use a resource throttle to handle external as well as internal
   // protocols.
@@ -471,10 +470,9 @@ bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
 
 #endif  // defined(ENABLE_EXTENSIONS)
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&LaunchURL, url, child_id, route_id,
-                 initiated_by_user_gesture));
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&LaunchURL, url, child_id, route_id));
   return true;
 #endif
 }

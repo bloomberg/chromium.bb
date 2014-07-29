@@ -66,8 +66,7 @@ class ChromeResourceDispatcherHostDelegate
       net::AuthChallengeInfo* auth_info, net::URLRequest* request) OVERRIDE;
   virtual bool HandleExternalProtocol(const GURL& url,
                                       int child_id,
-                                      int route_id,
-                                      bool initiated_by_user_gesture) OVERRIDE;
+                                      int route_id) OVERRIDE;
   virtual bool ShouldForceDownloadResource(
       const GURL& url, const std::string& mime_type) OVERRIDE;
   virtual bool ShouldInterceptResourceAsStream(

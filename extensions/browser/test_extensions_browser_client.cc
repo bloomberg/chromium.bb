@@ -132,6 +132,9 @@ bool TestExtensionsBrowserClient::DidVersionUpdate(BrowserContext* context) {
   return false;
 }
 
+void TestExtensionsBrowserClient::PermitExternalProtocolHandler() {
+}
+
 scoped_ptr<AppSorting> TestExtensionsBrowserClient::CreateAppSorting() {
   return scoped_ptr<AppSorting>();
 }

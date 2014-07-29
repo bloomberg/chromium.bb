@@ -34,9 +34,6 @@ ActiveTabPermissionGranter::ActiveTabPermissionGranter(
 ActiveTabPermissionGranter::~ActiveTabPermissionGranter() {}
 
 void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
-  // Active tab grant request implies there was a user gesture.
-  web_contents()->UserGestureDone();
-
   if (granted_extensions_.Contains(extension->id()))
     return;
 
