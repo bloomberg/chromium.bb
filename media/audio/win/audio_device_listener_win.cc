@@ -146,12 +146,12 @@ STDMETHODIMP AudioDeviceListenerWin::OnDefaultDeviceChanged(
   // Grab a pointer to the appropriate ID member.
   // Note that there are three "?:"'s here to select the right ID.
   std::string* current_device_id =
-      role == eConsole ? (
-          flow == eRender ?
+      flow == eRender ? (
+          role == eConsole ?
               &default_render_device_id_ :
               &default_communications_render_device_id_
       ) : (
-          flow == eRender ?
+          role == eConsole ?
               &default_capture_device_id_ :
               &default_communications_capture_device_id_
       );
