@@ -263,6 +263,7 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
 void ChromeBrowserMainPartsMac::PostMainMessageLoopStart() {
   MacStartupProfiler::GetInstance()->Profile(
       MacStartupProfiler::POST_MAIN_MESSAGE_LOOP_START);
+  ChromeBrowserMainPartsPosix::PostMainMessageLoopStart();
 }
 
 void ChromeBrowserMainPartsMac::PreProfileInit() {
