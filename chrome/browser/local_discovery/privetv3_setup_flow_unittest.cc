@@ -5,6 +5,7 @@
 #include "chrome/browser/local_discovery/privetv3_setup_flow.h"
 
 #include "base/json/json_reader.h"
+#include "base/run_loop.h"
 #include "chrome/browser/local_discovery/gcd_api_flow.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -29,7 +30,8 @@ const char kServiceName[] = "test_service";
 const char kRegistrationTicketResponse[] =
     "{"
     "\"kind\": \"clouddevices#registrationTicket\","
-    "\"id\": \"test_ticket\""
+    "\"id\": \"test_ticket\","
+    "\"deviceId\": \"test_id\""
     "}";
 
 class MockPrivetHTTPClient : public PrivetHTTPClient {
@@ -110,13 +112,10 @@ class MockDelegate : public PrivetV3SetupFlow::Delegate {
     gcd_request_->OnGCDAPIFlowComplete(*dictionary);
   }
 
-  void ConfirmCode(const ResultCallback& confirm_callback) {
-    confirm_callback.Run(true);
-  }
-
   std::string gcd_server_response_;
   scoped_ptr<GCDApiFlow::Request> gcd_request_;
   MockPrivetHTTPClient* privet_client_ptr_;
+  base::Closure quit_closure_;
 };
 
 class PrivetV3SetupFlowTest : public testing::Test {
@@ -125,8 +124,14 @@ class PrivetV3SetupFlowTest : public testing::Test {
 
   virtual ~PrivetV3SetupFlowTest() {}
 
+  void ConfirmCode(const MockDelegate::ResultCallback& confirm_callback) {
+    base::MessageLoop::current()->PostTask(FROM_HERE, quit_closure_);
+    confirm_callback.Run(true);
+  }
+
  protected:
   virtual void SetUp() OVERRIDE {
+    quit_closure_ = run_loop_.QuitClosure();
     EXPECT_CALL(delegate_, GetWiFiCredentials(_)).Times(0);
     EXPECT_CALL(delegate_, SwitchToSetupWiFi(_)).Times(0);
     EXPECT_CALL(delegate_, ConfirmSecurityCode(_, _)).Times(0);
@@ -149,11 +154,12 @@ class PrivetV3SetupFlowTest : public testing::Test {
     fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
 
-  base::MessageLoop loop_;
   net::TestURLFetcherFactory url_fetcher_factory_;
-
   StrictMock<MockDelegate> delegate_;
   PrivetV3SetupFlow setup_;
+  base::MessageLoop loop_;
+  base::RunLoop run_loop_;
+  base::Closure quit_closure_;
 };
 
 TEST_F(PrivetV3SetupFlowTest, InvalidTicket) {
@@ -165,18 +171,20 @@ TEST_F(PrivetV3SetupFlowTest, InvalidTicket) {
 TEST_F(PrivetV3SetupFlowTest, InvalidDeviceResponce) {
   EXPECT_CALL(delegate_, OnSetupError()).Times(1);
   EXPECT_CALL(delegate_, ConfirmSecurityCode(_, _)).Times(1).WillOnce(
-      WithArgs<1>(Invoke(&delegate_, &MockDelegate::ConfirmCode)));
+      WithArgs<1>(Invoke(this, &PrivetV3SetupFlowTest::ConfirmCode)));
   delegate_.gcd_server_response_ = kRegistrationTicketResponse;
   setup_.Register(kServiceName);
+  run_loop_.Run();
   SimulateFetch(0, "{}");
 }
 
 TEST_F(PrivetV3SetupFlowTest, Success) {
   EXPECT_CALL(delegate_, OnSetupDone()).Times(1);
   EXPECT_CALL(delegate_, ConfirmSecurityCode(_, _)).Times(1).WillOnce(
-      WithArgs<1>(Invoke(&delegate_, &MockDelegate::ConfirmCode)));
+      WithArgs<1>(Invoke(this, &PrivetV3SetupFlowTest::ConfirmCode)));
   delegate_.gcd_server_response_ = kRegistrationTicketResponse;
   setup_.Register(kServiceName);
+  run_loop_.Run();
   SimulateFetch(200, "{}");
 }
 

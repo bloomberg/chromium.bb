@@ -17,7 +17,8 @@ namespace {
 const char kSampleResponse[] =
     "{"
     "\"kind\": \"clouddevices#registrationTicket\","
-    "\"id\": \"SampleTicketID\""
+    "\"id\": \"SampleTicketID\","
+    "\"deviceId\": \"SampleDeviceID\""
     "}";
 
 const char kErrorResponse[] =
@@ -40,7 +41,9 @@ TEST(GCDRegistrationTicketRequestTest, Params) {
 
 class MockDelegate {
  public:
-  MOCK_METHOD1(Callback, void(const std::string& ticket_id));
+  MOCK_METHOD2(Callback,
+               void(const std::string& ticket_id,
+                    const std::string& device_id));
 };
 
 TEST(GCDRegistrationTicketRequestTest, Parsing) {
@@ -48,14 +51,14 @@ TEST(GCDRegistrationTicketRequestTest, Parsing) {
   GCDRegistrationTicketRequest request(
       base::Bind(&MockDelegate::Callback, base::Unretained(&delegate)));
 
-  EXPECT_CALL(delegate, Callback("SampleTicketID"));
+  EXPECT_CALL(delegate, Callback("SampleTicketID", "SampleDeviceID"));
 
   scoped_ptr<base::Value> value(base::JSONReader::Read(kSampleResponse));
   const base::DictionaryValue* dictionary = NULL;
   ASSERT_TRUE(value->GetAsDictionary(&dictionary));
   request.OnGCDAPIFlowComplete(*dictionary);
 
-  EXPECT_CALL(delegate, Callback(""));
+  EXPECT_CALL(delegate, Callback("", ""));
 
   value.reset(base::JSONReader::Read(kErrorResponse));
   ASSERT_TRUE(value->GetAsDictionary(&dictionary));

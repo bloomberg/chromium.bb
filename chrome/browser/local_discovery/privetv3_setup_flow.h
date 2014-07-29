@@ -80,13 +80,17 @@ class PrivetV3SetupFlow : public PrivetV3Session::Delegate {
   void OnSetupError();
   void OnDeviceRegistered();
 
+  const std::string& service_name() const { return service_name_; }
+
  private:
-  void OnTicketCreated(const std::string& ticket_id);
+  void OnTicketCreated(const std::string& ticket_id,
+                       const std::string& device_id);
   void OnPrivetClientCreated(scoped_ptr<PrivetHTTPClient> privet_http_client);
   void OnCodeConfirmed(bool success);
 
   Delegate* delegate_;
   std::string service_name_;
+  std::string device_id_;
   scoped_ptr<GCDApiFlow> ticket_request_;
   scoped_ptr<PrivetV3Session> session_;
   scoped_ptr<PrivetV3Session::Request> setup_request_;

@@ -34,14 +34,17 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
                              IDS_LOCAL_DISCOVERY_SERVICE_REGISTER);
   source->AddLocalizedString("manageDevice", IDS_LOCAL_DISCOVERY_MANAGE_DEVICE);
 
-  source->AddLocalizedString("registerConfirmMessage",
-                             IDS_LOCAL_DISCOVERY_REGISTER_CONFIRMATION);
+  source->AddLocalizedString("registerPrinterConfirmMessage",
+                             IDS_LOCAL_DISCOVERY_REGISTER_PRINTER_CONFIRMATION);
+  source->AddLocalizedString("registerDeviceConfirmMessage",
+                             IDS_LOCAL_DISCOVERY_REGISTER_DEVICE_CONFIRMATION);
   source->AddLocalizedString("registerUser",
                              IDS_LOCAL_DISCOVERY_REGISTER_USER);
   source->AddLocalizedString("confirmRegistration",
                              IDS_LOCAL_DISCOVERY_CONFIRM_REGISTRATION);
   source->AddLocalizedString("addingPrinter",
                              IDS_LOCAL_DISCOVERY_ADDING_PRINTER);
+  source->AddLocalizedString("addingDevice", IDS_LOCAL_DISCOVERY_ADDING_DEVICE);
   source->AddLocalizedString("addingError",
                              IDS_LOCAL_DISCOVERY_ERROR_OCURRED);
   source->AddLocalizedString("addingErrorMessage",
@@ -50,10 +53,15 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
                              IDS_LOCAL_DISCOVERY_REGISTER_CANCELED_ON_PRINTER);
   source->AddLocalizedString("addingTimeoutMessage",
                              IDS_LOCAL_DISCOVERY_REGISTER_TIMEOUT_ON_PRINTER);
-  source->AddLocalizedString("addingMessage1",
+  source->AddLocalizedString("addingPrinterMessage1",
                              IDS_LOCAL_DISCOVERY_ADDING_PRINTER_MESSAGE1);
-  source->AddLocalizedString("addingMessage2",
+  source->AddLocalizedString("addingPrinterMessage2",
                              IDS_LOCAL_DISCOVERY_ADDING_PRINTER_MESSAGE2);
+  source->AddLocalizedString("addingDeviceMessage1",
+                             IDS_LOCAL_DISCOVERY_ADDING_DEVICE_MESSAGE1);
+  source->AddLocalizedString("addingDeviceConfirmCodeMessage",
+                             IDS_LOCAL_DISCOVERY_CONFIRM_CODE_MESSAGE);
+  source->AddLocalizedString("confirmCode", IDS_LOCAL_DISCOVERY_CONFIRM_CODE);
   source->AddLocalizedString("devicesTitle",
                              IDS_LOCAL_DISCOVERY_DEVICES_PAGE_TITLE);
   source->AddLocalizedString("noDescriptionDevice",

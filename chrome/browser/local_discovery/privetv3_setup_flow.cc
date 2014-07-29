@@ -132,11 +132,14 @@ void PrivetV3SetupFlow::OnDeviceRegistered() {
   delegate_->OnSetupDone();
 }
 
-void PrivetV3SetupFlow::OnTicketCreated(const std::string& ticket_id) {
-  if (ticket_id.empty()) {
+void PrivetV3SetupFlow::OnTicketCreated(const std::string& ticket_id,
+                                        const std::string& device_id) {
+  if (ticket_id.empty() || device_id.empty()) {
     OnSetupError();
     return;
   }
+  // TODO(vitalybuka): Implement success check by polling status of device_id_.
+  device_id_ = device_id;
   SetupRequest* setup_request = new SetupRequest(this);
   setup_request_.reset(setup_request);
   setup_request->SetRegistrationTicket(ticket_id, "me");

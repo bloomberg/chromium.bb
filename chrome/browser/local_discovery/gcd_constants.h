@@ -8,6 +8,7 @@
 namespace local_discovery {
 
 extern const char kGCDKeyKind[];
+extern const char kGCDKeyDeviceId[];
 extern const char kGCDTypePrinter[];
 
 }  // namespace local_discovery

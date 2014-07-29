@@ -66,6 +66,8 @@ const char kKeyPrefixWifi[] = "WiFi:";
 
 int g_num_visible = 0;
 
+const int kCloudDevicesPrivetVersion = 3;
+
 scoped_ptr<base::DictionaryValue> CreateDeviceInfo(
     const CloudDeviceListDelegate::Device& description) {
   scoped_ptr<base::DictionaryValue> return_value(new base::DictionaryValue);
@@ -142,6 +144,10 @@ void LocalDiscoveryUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("registerDevice", base::Bind(
       &LocalDiscoveryUIHandler::HandleRegisterDevice,
       base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "confirmCode",
+      base::Bind(&LocalDiscoveryUIHandler::HandleConfirmCode,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("cancelRegistration", base::Bind(
       &LocalDiscoveryUIHandler::HandleCancelRegistration,
       base::Unretained(this)));
@@ -220,12 +226,29 @@ void LocalDiscoveryUIHandler::HandleRegisterDevice(
   bool rv = args->GetString(0, &device);
   DCHECK(rv);
 
-  privet_resolution_ = privet_http_factory_->CreatePrivetHTTP(
-      device,
-      device_descriptions_[device].address,
-      base::Bind(&LocalDiscoveryUIHandler::StartRegisterHTTP,
-                 base::Unretained(this)));
-  privet_resolution_->Start();
+  DeviceDescriptionMap::iterator found = device_descriptions_.find(device);
+  if (found == device_descriptions_.end()) {
+    OnSetupError();
+    return;
+  }
+
+  if (found->second.version == kCloudDevicesPrivetVersion) {
+    current_setup_operation_.reset(new PrivetV3SetupFlow(this));
+    current_setup_operation_->Register(device);
+  } else if (found->second.version <= 2) {
+    privet_resolution_ = privet_http_factory_->CreatePrivetHTTP(
+        device,
+        found->second.address,
+        base::Bind(&LocalDiscoveryUIHandler::StartRegisterHTTP,
+                   base::Unretained(this)));
+    privet_resolution_->Start();
+  } else {
+    OnSetupError();
+  }
+}
+
+void LocalDiscoveryUIHandler::HandleConfirmCode(const base::ListValue* args) {
+  device_code_callback_.Run(true);
 }
 
 void LocalDiscoveryUIHandler::HandleCancelRegistration(
@@ -352,24 +375,46 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterDone(
     PrivetRegisterOperation* operation,
     const std::string& device_id) {
   std::string name = operation->GetHTTPClient()->GetName();
-
+  current_setup_operation_.reset();
   current_register_operation_.reset();
   current_http_client_.reset();
+  SendRegisterDone(name);
+}
 
-  // HACK(noamsml): Generate network traffic so the Windows firewall doesn't
-  // block the printer's announcement.
-  privet_lister_->DiscoverNewDevices(false);
+void LocalDiscoveryUIHandler::GetWiFiCredentials(
+    const CredentialsCallback& callback) {
+  callback.Run("", "");
+}
 
-  DeviceDescriptionMap::iterator found = device_descriptions_.find(name);
+void LocalDiscoveryUIHandler::SwitchToSetupWiFi(
+    const ResultCallback& callback) {
+  callback.Run(true);
+}
 
-  if (found == device_descriptions_.end()) {
-    // TODO(noamsml): Handle the case where a printer's record is not present at
-    // the end of registration.
-    SendRegisterError();
-    return;
-  }
+void LocalDiscoveryUIHandler::ConfirmSecurityCode(
+    const std::string& confirmation_code,
+    const ResultCallback& callback) {
+  device_code_callback_ = callback;
+  web_ui()->CallJavascriptFunction(
+      "local_discovery.onRegistrationConfirmDeviceCode",
+      base::StringValue(confirmation_code));
+}
 
-  SendRegisterDone(found->first, found->second);
+void LocalDiscoveryUIHandler::RestoreWifi(const ResultCallback& callback) {
+  callback.Run(true);
+}
+
+void LocalDiscoveryUIHandler::OnSetupDone() {
+  std::string service_name = current_setup_operation_->service_name();
+  current_setup_operation_.reset();
+  current_register_operation_.reset();
+  current_http_client_.reset();
+  SendRegisterDone(service_name);
+}
+
+void LocalDiscoveryUIHandler::OnSetupError() {
+  ResetCurrentRegistration();
+  SendRegisterError();
 }
 
 void LocalDiscoveryUIHandler::OnConfirmDone(GCDApiFlow::Status status) {
@@ -449,16 +494,32 @@ void LocalDiscoveryUIHandler::SendRegisterError() {
 }
 
 void LocalDiscoveryUIHandler::SendRegisterDone(
-    const std::string& service_name, const DeviceDescription& device) {
-  base::DictionaryValue printer_value;
+    const std::string& service_name) {
+  // HACK(noamsml): Generate network traffic so the Windows firewall doesn't
+  // block the printer's announcement.
+  privet_lister_->DiscoverNewDevices(false);
 
-  printer_value.SetString(kDictionaryKeyID, device.id);
-  printer_value.SetString(kDictionaryKeyDisplayName, device.name);
-  printer_value.SetString(kDictionaryKeyDescription, device.description);
-  printer_value.SetString(kDictionaryKeyServiceName, service_name);
+  DeviceDescriptionMap::iterator found =
+      device_descriptions_.find(service_name);
+
+  if (found == device_descriptions_.end()) {
+    // TODO(noamsml): Handle the case where a printer's record is not present at
+    // the end of registration.
+    SendRegisterError();
+    return;
+  }
+
+  const DeviceDescription& device = found->second;
+  base::DictionaryValue device_value;
+
+  device_value.SetString(kDictionaryKeyType, device.type);
+  device_value.SetString(kDictionaryKeyID, device.id);
+  device_value.SetString(kDictionaryKeyDisplayName, device.name);
+  device_value.SetString(kDictionaryKeyDescription, device.description);
+  device_value.SetString(kDictionaryKeyServiceName, service_name);
 
   web_ui()->CallJavascriptFunction("local_discovery.onRegistrationSuccess",
-                                   printer_value);
+                                   device_value);
 }
 
 void LocalDiscoveryUIHandler::SetIsVisible(bool visible) {
@@ -487,9 +548,16 @@ void LocalDiscoveryUIHandler::ResetCurrentRegistration() {
     current_register_operation_.reset();
   }
 
+  current_setup_operation_.reset();
   confirm_api_call_flow_.reset();
   privet_resolution_.reset();
   current_http_client_.reset();
+}
+
+void LocalDiscoveryUIHandler::PrivetClientToV3(
+    const PrivetClientCallback& callback,
+    scoped_ptr<PrivetHTTPClient> client) {
+  callback.Run(client.Pass());
 }
 
 void LocalDiscoveryUIHandler::CheckUserLoggedIn() {
@@ -545,6 +613,25 @@ scoped_ptr<GCDApiFlow> LocalDiscoveryUIHandler::CreateApiFlow() {
   return GCDApiFlow::Create(profile->GetRequestContext(),
                             token_service,
                             signin_manager->GetAuthenticatedAccountId());
+}
+
+void LocalDiscoveryUIHandler::CreatePrivetV3Client(
+    const std::string& device,
+    const PrivetClientCallback& callback) {
+  DeviceDescriptionMap::iterator found = device_descriptions_.find(device);
+  if (found == device_descriptions_.end())
+    return callback.Run(scoped_ptr<PrivetHTTPClient>());
+  PrivetHTTPAsynchronousFactory::ResultCallback new_callback =
+      base::Bind(&LocalDiscoveryUIHandler::PrivetClientToV3,
+                 base::Unretained(this),
+                 callback);
+  privet_resolution_ =
+      privet_http_factory_->CreatePrivetHTTP(device,
+                                             found->second.address,
+                                             new_callback).Pass();
+  if (!privet_resolution_)
+    return callback.Run(scoped_ptr<PrivetHTTPClient>());
+  privet_resolution_->Start();
 }
 
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)

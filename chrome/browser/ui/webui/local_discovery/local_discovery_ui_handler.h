@@ -15,6 +15,7 @@
 #include "chrome/browser/local_discovery/cloud_print_printer_list.h"
 #include "chrome/browser/local_discovery/privet_device_lister.h"
 #include "chrome/browser/local_discovery/privet_http.h"
+#include "chrome/browser/local_discovery/privetv3_setup_flow.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -41,6 +42,7 @@ class ServiceDiscoverySharedClient;
 // into the Javascript to update the page.
 class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
                                 public PrivetRegisterOperation::Delegate,
+                                public PrivetV3SetupFlow::Delegate,
                                 public PrivetDeviceLister::Delegate,
                                 public CloudDeviceListDelegate,
                                 public SigninManagerBase::Observer {
@@ -66,6 +68,19 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   virtual void OnPrivetRegisterDone(
       PrivetRegisterOperation* operation,
       const std::string& device_id) OVERRIDE;
+
+  // PrivetV3SetupFlow::Delegate implementation.
+  virtual scoped_ptr<GCDApiFlow> CreateApiFlow() OVERRIDE;
+  virtual void GetWiFiCredentials(const CredentialsCallback& callback) OVERRIDE;
+  virtual void SwitchToSetupWiFi(const ResultCallback& callback) OVERRIDE;
+  virtual void CreatePrivetV3Client(
+      const std::string& service_name,
+      const PrivetClientCallback& callback) OVERRIDE;
+  virtual void ConfirmSecurityCode(const std::string& confirmation_code,
+                                   const ResultCallback& callback) OVERRIDE;
+  virtual void RestoreWifi(const ResultCallback& callback) OVERRIDE;
+  virtual void OnSetupDone() OVERRIDE;
+  virtual void OnSetupError() OVERRIDE;
 
   // PrivetDeviceLister::Delegate implementation.
   virtual void DeviceChanged(bool added,
@@ -96,6 +111,9 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   // For when a user choice is made.
   void HandleRegisterDevice(const base::ListValue* args);
 
+  // For when a code is confirmed.
+  void HandleConfirmCode(const base::ListValue* args);
+
   // For when a cancellation is made.
   void HandleCancelRegistration(const base::ListValue* args);
 
@@ -120,8 +138,7 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   void SendRegisterError();
 
   // Singal to the web interface that registration has finished.
-  void SendRegisterDone(const std::string& service_name,
-                        const DeviceDescription& device);
+  void SendRegisterDone(const std::string& service_name);
 
   // Set the visibility of the page.
   void SetIsVisible(bool visible);
@@ -132,6 +149,11 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   // Reset and cancel the current registration.
   void ResetCurrentRegistration();
 
+  // Creates |PrivetV3HTTPClient| privet from |PrivetHTTPClient| and calls
+  // callback.
+  void PrivetClientToV3(const PrivetClientCallback& callback,
+                        scoped_ptr<PrivetHTTPClient> client);
+
   // Announcement hasn't been sent for a certain time after registration
   // finished. Consider it failed.
   // TODO(noamsml): Re-resolve service first.
@@ -140,8 +162,6 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   void CheckUserLoggedIn();
 
   void CheckListingDone();
-
-  scoped_ptr<GCDApiFlow> CreateApiFlow();
 
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
   void StartCloudPrintConnector();
@@ -178,6 +198,9 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   // The current register operation. Only one allowed at any time.
   scoped_ptr<PrivetRegisterOperation> current_register_operation_;
 
+  // The current Privet v3 setup operation. Only one allowed at any time.
+  scoped_ptr<PrivetV3SetupFlow> current_setup_operation_;
+
   // The current confirm call used during the registration flow.
   scoped_ptr<GCDApiFlow> confirm_api_call_flow_;
 
@@ -193,6 +216,7 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   std::vector<Device> cloud_devices_;
   int failed_list_count_;
   int succeded_list_count_;
+  ResultCallback device_code_callback_;
 
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
   StringPrefMember cloud_print_connector_email_;

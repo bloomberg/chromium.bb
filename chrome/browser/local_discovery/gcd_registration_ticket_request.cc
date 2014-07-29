@@ -39,17 +39,20 @@ net::URLFetcher::RequestType GCDRegistrationTicketRequest::GetRequestType() {
 
 void GCDRegistrationTicketRequest::OnGCDAPIFlowError(
     GCDApiFlow::Status status) {
-  callback_.Run(std::string());
+  callback_.Run(std::string(), std::string());
 }
 
 void GCDRegistrationTicketRequest::OnGCDAPIFlowComplete(
     const base::DictionaryValue& value) {
   std::string kind;
   std::string id;
+  std::string device_id;
   value.GetString(kGCDKeyKind, &kind);
-  if (kind == kKindRegistrationTicket)
+  if (kind == kKindRegistrationTicket) {
     value.GetString(kGCDKeyId, &id);
-  callback_.Run(id);
+    value.GetString(kGCDKeyDeviceId, &device_id);
+  }
+  callback_.Run(id, device_id);
 }
 
 GURL GCDRegistrationTicketRequest::GetURL() {

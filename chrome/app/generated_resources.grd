@@ -14304,8 +14304,11 @@ Do you accept?
       <message name="IDS_LOCAL_DISCOVERY_DEVICES_PAGE_TITLE" desc="Title for devices page">
         Devices
       </message>
-      <message name="IDS_LOCAL_DISCOVERY_REGISTER_CONFIRMATION" desc="Confirmation for registering a printer to Google Cloud Print">
+      <message name="IDS_LOCAL_DISCOVERY_REGISTER_PRINTER_CONFIRMATION" desc="Confirmation for registering a printer to Google Cloud Print">
         Do you wish to register the printer <ph name="PRINTER_NAME">$1</ph> to Google Cloud Print?
+      </message>
+      <message name="IDS_LOCAL_DISCOVERY_REGISTER_DEVICE_CONFIRMATION" desc="Confirmation for registering a device to Google Cloud Devices">
+        Do you wish to register <ph name="DEVICE_NAME">$1</ph> to Google Cloud Devices?
       </message>
       <message name="IDS_LOCAL_DISCOVERY_REGISTER_USER" desc="Label for user picker in registration dialog">
         User:
@@ -14316,6 +14319,9 @@ Do you accept?
       <message name="IDS_LOCAL_DISCOVERY_ADDING_PRINTER" desc="Title for 'adding printer' page">
         Adding printer...
       </message>
+      <message name="IDS_LOCAL_DISCOVERY_ADDING_DEVICE" desc="Title for 'adding device' page">
+        Adding device...
+      </message>
       <message name="IDS_LOCAL_DISCOVERY_ERROR_OCURRED" desc="Title for error page">
         Could not complete registration
       </message>
@@ -14324,6 +14330,15 @@ Do you accept?
       </message>
       <message name="IDS_LOCAL_DISCOVERY_ADDING_PRINTER_MESSAGE2" desc="Message for adding printer number 2">
         Adding the printer to your account - this may take a moment...
+      </message>
+      <message name="IDS_LOCAL_DISCOVERY_ADDING_DEVICE_MESSAGE1" desc="Message for adding device number 1">
+        Adding the device to your account - this may take a moment...
+      </message>
+      <message name="IDS_LOCAL_DISCOVERY_CONFIRM_CODE_MESSAGE" desc="Message for confirming device security code">
+        Make sure the device is showing the same code.
+      </message>
+      <message name="IDS_LOCAL_DISCOVERY_CONFIRM_CODE" desc="button name to confirming security code">
+        Confirm
       </message>
       <message name="IDS_LOCAL_DISCOVERY_ERROR_OCURRED_MESSAGE" desc="Message for error page">
         An error has occured. Please check your printer and try again.

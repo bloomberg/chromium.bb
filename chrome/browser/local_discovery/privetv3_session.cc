@@ -6,6 +6,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/local_discovery/privet_http.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 
@@ -97,7 +98,11 @@ PrivetV3Session::~PrivetV3Session() {
 }
 
 void PrivetV3Session::Start() {
-  delegate_->OnSetupConfirmationNeeded("01234");
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&PrivetV3Session::ConfirmFakeCode,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::TimeDelta::FromSeconds(1));
 }
 
 void PrivetV3Session::ConfirmCode() {
@@ -122,6 +127,10 @@ void PrivetV3Session::StartRequest(Request* request) {
 
   request->fetcher_delegate_->url_fetcher_ = url_fetcher.Pass();
   request->fetcher_delegate_->url_fetcher_->Start();
+}
+
+void PrivetV3Session::ConfirmFakeCode() {
+  delegate_->OnSetupConfirmationNeeded("01234");
 }
 
 }  // namespace local_discovery

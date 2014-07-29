@@ -17,7 +17,8 @@ class GCDRegistrationTicketRequest : public GCDApiFlowRequest {
  public:
   // |ticket_id| contains the registration ticket ID, or an empty string in case
   // of an error.
-  typedef base::Callback<void(const std::string& ticket_id)> ResponseCallback;
+  typedef base::Callback<void(const std::string& ticket_id,
+                              const std::string& device_id)> ResponseCallback;
 
   explicit GCDRegistrationTicketRequest(const ResponseCallback& callback);
   virtual ~GCDRegistrationTicketRequest();

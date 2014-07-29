@@ -102,7 +102,7 @@ cr.define('local_discovery', function() {
         this.info.description,
         this.info.type,
         loadTimeData.getString('serviceRegister'),
-        this.showRegister.bind(this));
+        this.showRegister.bind(this, this.info.type));
 
       this.setRegisterEnabled(this.registerEnabled);
     },
@@ -121,7 +121,8 @@ cr.define('local_discovery', function() {
     register: function() {
       recordUmaEvent(DEVICES_PAGE_EVENTS.REGISTER_CONFIRMED);
       chrome.send('registerDevice', [this.info.service_name]);
-      setRegisterPage('register-page-adding1');
+      setRegisterPage(isPrinter(this.info.type) ?
+          'register-printer-page-adding1' : 'register-device-page-adding1');
     },
     /**
      * Show registrtation UI for device.
@@ -129,7 +130,8 @@ cr.define('local_discovery', function() {
     showRegister: function() {
       recordUmaEvent(DEVICES_PAGE_EVENTS.REGISTER_CLICKED);
       $('register-message').textContent = loadTimeData.getStringF(
-        'registerConfirmMessage',
+        isPrinter(this.info.type) ? 'registerPrinterConfirmMessage' :
+                                    'registerDeviceConfirmMessage',
         this.info.display_name);
       $('register-continue-button').onclick = this.register.bind(this);
       showRegisterOverlay();
@@ -186,7 +188,7 @@ cr.define('local_discovery', function() {
    * @param {string} description Description of device.
    * @param {string} type Type of device.
    * @param {string} button_text Text to appear on button.
-   * @param {function()} button_action Action for button.
+   * @param {function()?} button_action Action for button.
    * @return {HTMLElement} The button (for enabling/disabling/rebinding)
    */
   function fillDeviceDescription(device_dom_element,
@@ -196,7 +198,7 @@ cr.define('local_discovery', function() {
                                  button_text,
                                  button_action) {
     device_dom_element.classList.add('device');
-    if (type == 'printer')
+    if (isPrinter(type))
       device_dom_element.classList.add('printer');
 
     var deviceInfo = document.createElement('div');
@@ -213,10 +215,12 @@ cr.define('local_discovery', function() {
     deviceDescription.textContent = description;
     deviceInfo.appendChild(deviceDescription);
 
-    var button = document.createElement('button');
-    button.textContent = button_text;
-    button.addEventListener('click', button_action);
-    device_dom_element.appendChild(button);
+    if (button_action) {
+      var button = document.createElement('button');
+      button.textContent = button_text;
+      button.addEventListener('click', button_action);
+      device_dom_element.appendChild(button);
+    }
 
     return button;
   }
@@ -287,7 +291,16 @@ cr.define('local_discovery', function() {
    * Update UI to reflect that registration has been confirmed on the printer.
    */
   function onRegistrationConfirmedOnPrinter() {
-    setRegisterPage('register-page-adding2');
+    setRegisterPage('register-printer-page-adding2');
+  }
+
+  /**
+   * Shows UI to confirm security code.
+   * @param {string} code The security code to confirm.
+   */
+  function onRegistrationConfirmDeviceCode(code) {
+    setRegisterPage('register-device-page-adding2');
+    $('register-device-page-code').textContent = code;
   }
 
   /**
@@ -329,7 +342,7 @@ cr.define('local_discovery', function() {
 
     var description;
     if (device.description == '') {
-      if (device.type == 'printer')
+      if (isPrinter(device.type))
         description = loadTimeData.getString('noDescriptionPrinter');
       else
         description = loadTimeData.getString('noDescriptionDevice');
@@ -340,7 +353,8 @@ cr.define('local_discovery', function() {
     fillDeviceDescription(devicesDomElement, device.display_name,
                           description, device.type,
                           loadTimeData.getString('manageDevice'),
-                          manageCloudDevice.bind(null, device.id));
+                          isPrinter(device.type) ?
+                              manageCloudDevice.bind(null, device.id) : null);
     return devicesDomElement;
   }
 
@@ -475,6 +489,14 @@ cr.define('local_discovery', function() {
   }
 
   /**
+   * Confirms device code.
+   */
+  function confirmCode() {
+    chrome.send('confirmCode');
+    setRegisterPage('register-device-page-adding1');
+  }
+
+  /**
    * Retry loading the devices from Google Cloud Print.
    */
   function retryLoadCloudDevices() {
@@ -576,16 +598,28 @@ cr.define('local_discovery', function() {
     }
   }
 
+  /**
+   * Returns true of device is printer.
+   * @param {string} type Type of printer.
+   */
+  function isPrinter(type) {
+    return type == 'printer';
+  }
+
   document.addEventListener('DOMContentLoaded', function() {
     cr.ui.overlay.setupOverlay($('overlay'));
     cr.ui.overlay.globalInitialization();
     $('overlay').addEventListener('cancelOverlay', cancelRegistration);
 
-    var cancelButtons = document.querySelectorAll('.register-cancel');
-    var cancelButtonsLength = cancelButtons.length;
-    for (var i = 0; i < cancelButtonsLength; i++) {
-      cancelButtons[i].addEventListener('click', cancelRegistration);
-    }
+    [].forEach.call(
+        document.querySelectorAll('.register-cancel'), function(button) {
+      button.addEventListener('click', cancelRegistration);
+    });
+
+    [].forEach.call(
+        document.querySelectorAll('.confirm-code'), function(button) {
+      button.addEventListener('click', confirmCode);
+    });
 
     $('register-error-exit').addEventListener('click', cancelRegistration);
 
@@ -627,6 +661,7 @@ cr.define('local_discovery', function() {
     onRegistrationFailed: onRegistrationFailed,
     onUnregisteredDeviceUpdate: onUnregisteredDeviceUpdate,
     onRegistrationConfirmedOnPrinter: onRegistrationConfirmedOnPrinter,
+    onRegistrationConfirmDeviceCode: onRegistrationConfirmDeviceCode,
     onCloudDeviceListAvailable: onCloudDeviceListAvailable,
     onCloudDeviceListUnavailable: onCloudDeviceListUnavailable,
     onDeviceCacheFlushed: onDeviceCacheFlushed,

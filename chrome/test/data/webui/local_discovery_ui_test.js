@@ -36,11 +36,11 @@ function registerBegin() {
   assertFalse($('register-page-confirm').hidden);
   button.click();
   assertTrue($('register-page-confirm').hidden);
-  assertFalse($('register-page-adding1').hidden);
+  assertFalse($('register-printer-page-adding1').hidden);
 }
 
 function expectPageAdding1() {
-  assertFalse($('register-page-adding1').hidden);
+  assertFalse($('register-printer-page-adding1').hidden);
 }
 
 function expectPageAdding2() {
@@ -49,11 +49,8 @@ function expectPageAdding2() {
 
 function expectRegisterDone() {
   assertTrue($('overlay').hidden);
-
   var cloudDevices = $('cloud-devices');
-
   var firstDevice = cloudDevices.firstChild;
-
   assertDomElementIsSamplePrinter(firstDevice);
 }
 

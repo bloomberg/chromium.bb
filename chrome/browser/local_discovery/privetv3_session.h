@@ -72,6 +72,8 @@ class PrivetV3Session {
   void StartRequest(Request* request);
 
  private:
+  void ConfirmFakeCode();
+
   Delegate* delegate_;
   scoped_ptr<PrivetHTTPClient> client_;
   bool code_confirmed_;

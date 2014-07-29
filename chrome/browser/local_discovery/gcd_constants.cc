@@ -7,6 +7,7 @@
 namespace local_discovery {
 
 const char kGCDKeyKind[] = "kind";
+const char kGCDKeyDeviceId[] = "deviceId";
 const char kGCDTypePrinter[] = "printer";
 
 }  // namespace local_discovery
