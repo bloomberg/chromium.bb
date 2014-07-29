@@ -174,15 +174,17 @@ std::string ResourceBundle::InitSharedInstanceLocaleOnly(
 }
 
 // static
-void ResourceBundle::InitSharedInstanceWithPakFile(
-    base::File pak_file, bool should_load_common_resources) {
+void ResourceBundle::InitSharedInstanceWithPakFileRegion(
+    base::File pak_file,
+    const base::MemoryMappedFile::Region& region,
+    bool should_load_common_resources) {
   InitSharedInstance(NULL);
   if (should_load_common_resources)
     g_shared_instance_->LoadCommonResources();
 
   scoped_ptr<DataPack> data_pack(
       new DataPack(SCALE_FACTOR_100P));
-  if (!data_pack->LoadFromFile(pak_file.Pass())) {
+  if (!data_pack->LoadFromFileRegion(pak_file.Pass(), region)) {
     NOTREACHED() << "failed to load pak file";
     return;
   }

@@ -83,6 +83,14 @@
             'pak_output': '<(PRODUCT_DIR)/android_webview_apk/assets/webviewchromium.pak',
           },
          'includes': [ '../build/repack_action.gypi' ],
+        },
+        {
+          'action_name': 'add_en_US_pak_locale',
+          'variables': {
+            'pak_inputs': ['<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.pak'],
+            'pak_output': '<(PRODUCT_DIR)/android_webview_apk/assets/en-US.pak',
+          },
+         'includes': [ '../build/repack_action.gypi' ],
         }
       ],
     },

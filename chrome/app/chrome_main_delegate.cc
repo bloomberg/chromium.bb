@@ -723,8 +723,10 @@ void ChromeMainDelegate::PreSandboxStartup() {
     int locale_pak_fd = base::GlobalDescriptors::GetInstance()->MaybeGet(
         kAndroidLocalePakDescriptor);
     CHECK(locale_pak_fd != -1);
-    ResourceBundle::InitSharedInstanceWithPakFile(base::File(locale_pak_fd),
-                                                  false);
+    ResourceBundle::InitSharedInstanceWithPakFileRegion(
+        base::File(locale_pak_fd),
+        base::MemoryMappedFile::Region::kWholeFile,
+        false);
 
     int extra_pak_keys[] = {
       kAndroidChrome100PercentPakDescriptor,

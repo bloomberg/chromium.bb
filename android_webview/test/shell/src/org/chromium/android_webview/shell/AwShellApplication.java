@@ -21,9 +21,7 @@ public class AwShellApplication extends Application {
 
     private static final String TAG = "AwShellApplication";
     /** The minimum set of .pak files the test runner needs. */
-    private static final String[] MANDATORY_PAKS = {
-        "webviewchromium.pak", "en-US.pak", "icudtl.dat"
-    };
+    private static final String[] MANDATORY_PAKS = { "icudtl.dat" };
 
     @Override
     public void onCreate() {

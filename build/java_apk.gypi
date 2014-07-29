@@ -79,6 +79,7 @@
     'additional_res_packages': [],
     'additional_bundled_libs%': [],
     'is_test_apk%': 0,
+    'extensions_to_not_compress%': '',
     'resource_input_paths': [],
     'intermediate_dir': '<(PRODUCT_DIR)/<(_target_name)',
     'asset_location%': '<(intermediate_dir)/assets',
@@ -857,6 +858,8 @@
 
         '--asset-dir', '<(asset_location)',
         '--resource-zips', '>(package_resource_zip_input_paths)',
+
+        '--no-compress', '<(extensions_to_not_compress)',
 
         '--apk-path', '<(resource_packaged_apk_path)',
       ],
