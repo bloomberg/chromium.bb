@@ -44,6 +44,7 @@ class PrefHashCalculator {
  private:
   const std::string seed_;
   const std::string device_id_;
+  const std::string legacy_device_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefHashCalculator);
 };

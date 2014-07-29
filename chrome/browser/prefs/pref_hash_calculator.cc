@@ -80,6 +80,8 @@ std::string GetMessage(const std::string& device_id,
 // Generates a device ID based on the input device ID. The derived device ID has
 // no useful properties beyond those of the input device ID except that it is
 // consistent with previous implementations.
+// TODO(gab): Remove this once UMA reports for
+// Settings.TrackedPreferenceMigratedLegacyDeviceId become insignificant.
 std::string GenerateDeviceIdLikePrefMetricsServiceDid(
     const std::string& original_device_id) {
   if (original_device_id.empty())
@@ -93,7 +95,8 @@ std::string GenerateDeviceIdLikePrefMetricsServiceDid(
 PrefHashCalculator::PrefHashCalculator(const std::string& seed,
                                        const std::string& device_id)
     : seed_(seed),
-      device_id_(GenerateDeviceIdLikePrefMetricsServiceDid(device_id)) {}
+      device_id_(device_id),
+      legacy_device_id_(GenerateDeviceIdLikePrefMetricsServiceDid(device_id)) {}
 
 PrefHashCalculator::~PrefHashCalculator() {}
 
@@ -111,6 +114,11 @@ PrefHashCalculator::ValidationResult PrefHashCalculator::Validate(
   if (VerifyDigestString(seed_, GetMessage(device_id_, path, value_as_string),
                          digest_string)) {
     return VALID;
+  }
+  if (VerifyDigestString(seed_,
+                         GetMessage(legacy_device_id_, path, value_as_string),
+                         digest_string)) {
+    return VALID_SECURE_LEGACY;
   }
   return INVALID;
 }
