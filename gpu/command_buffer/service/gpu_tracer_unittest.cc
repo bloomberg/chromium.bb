@@ -128,7 +128,7 @@ class GpuTracerTest : public GpuServiceTest {
   }
 
   void SetupTimerQueryMocks() {
-    // Delegate query APIs used by GLARBTimerTrace to a GlFakeQueries
+    // Delegate query APIs used by GPUTrace to a GlFakeQueries
     EXPECT_CALL(*gl_, GenQueries(_, NotNull())).Times(AtLeast(1)).WillOnce(
         Invoke(&gl_fake_queries_, &GlFakeQueries::GenQueries));
 
@@ -156,7 +156,7 @@ class GpuTracerTest : public GpuServiceTest {
   GlFakeQueries gl_fake_queries_;
 };
 
-TEST_F(GpuTracerTest, GLARBTimerTrace) {
+TEST_F(GpuTracerTest, GPUTrace) {
   // Test basic timer query functionality
   {
     MockOutputter* outputter = new MockOutputter();
@@ -179,8 +179,8 @@ TEST_F(GpuTracerTest, GLARBTimerTrace) {
     EXPECT_CALL(*outputter,
                 Trace(trace_name, expect_start_time, expect_end_time));
 
-    scoped_refptr<GLARBTimerTrace> trace =
-        new GLARBTimerTrace(outputter_ref, trace_name, offset_time);
+    scoped_refptr<GPUTrace> trace =
+        new GPUTrace(outputter_ref, trace_name, offset_time);
 
     gl_fake_queries_.SetCurrentGLTime(start_timestamp);
     trace->Start();

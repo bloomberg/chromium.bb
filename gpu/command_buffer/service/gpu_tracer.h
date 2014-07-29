@@ -85,59 +85,41 @@ class TraceOutputter : public Outputter {
   DISALLOW_COPY_AND_ASSIGN(TraceOutputter);
 };
 
-class GPU_EXPORT Trace : public base::RefCounted<Trace> {
+class GPU_EXPORT GPUTrace
+    : public base::RefCounted<GPUTrace> {
  public:
-  explicit Trace(const std::string& name) : name_(name) {}
+  explicit GPUTrace(const std::string& name);
+  GPUTrace(scoped_refptr<Outputter> outputter,
+           const std::string& name,
+           int64 offset);
 
-  virtual void Start() = 0;
-  virtual void End() = 0;
+  bool IsEnabled() { return enabled_; }
+  const std::string& name() { return name_; }
 
-  // True if the the results of this query are available.
-  virtual bool IsAvailable() = 0;
-
-  virtual bool IsProcessable();
-  virtual void Process() = 0;
-
-  virtual const std::string& name();
-
- protected:
-  virtual ~Trace() {}
+  void Start();
+  void End();
+  bool IsAvailable();
+  void Process();
 
  private:
-  friend class base::RefCounted<Trace>;
-
-  std::string name_;
-
-  DISALLOW_COPY_AND_ASSIGN(Trace);
-};
-
-class GPU_EXPORT GLARBTimerTrace : public Trace {
- public:
-  GLARBTimerTrace(scoped_refptr<Outputter> outputter,
-                  const std::string& name,
-                  int64 offset);
-
-  // Implementation of Tracer
-  virtual void Start() OVERRIDE;
-  virtual void End() OVERRIDE;
-  virtual bool IsAvailable() OVERRIDE;
-  virtual void Process() OVERRIDE;
-
- private:
-  virtual ~GLARBTimerTrace();
+  ~GPUTrace();
 
   void Output();
 
+  friend class base::RefCounted<GPUTrace>;
+
+  std::string name_;
   scoped_refptr<Outputter> outputter_;
 
   int64 offset_;
   int64 start_time_;
   int64 end_time_;
   bool end_requested_;
+  bool enabled_;
 
   GLuint queries_[2];
 
-  DISALLOW_COPY_AND_ASSIGN(GLARBTimerTrace);
+  DISALLOW_COPY_AND_ASSIGN(GPUTrace);
 };
 
 }  // namespace gles2
