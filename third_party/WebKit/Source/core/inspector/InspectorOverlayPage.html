@@ -156,9 +156,6 @@ const lightGridColor = "rgba(0,0,0,0.2)";
 const darkGridColor = "rgba(0,0,0,0.7)";
 const transparentColor = "rgba(0, 0, 0, 0)";
 const gridBackgroundColor = "rgba(255, 255, 255, 0.8)";
-// CSS shapes
-const shapeHighlightColor = "rgba(96, 82, 127, 0.8)";
-const shapeMarginHighlightColor = "rgba(96, 82, 127, 0.6)";
 
 function drawPausedInDebuggerMessage(message)
 {
@@ -302,61 +299,6 @@ function _drawGrid(rulerAtRight, rulerAtBottom)
     context.restore();
 }
 
-function quadToPath(quad)
-{
-    context.beginPath();
-    context.moveTo(quad[0].x, quad[0].y);
-    context.lineTo(quad[1].x, quad[1].y);
-    context.lineTo(quad[2].x, quad[2].y);
-    context.lineTo(quad[3].x, quad[3].y);
-    context.closePath();
-    return context;
-}
-
-function drawOutlinedQuad(quad, fillColor, outlineColor)
-{
-    context.save();
-    context.lineWidth = 2;
-    quadToPath(quad).clip();
-    context.fillStyle = fillColor;
-    context.fill();
-    if (outlineColor) {
-        context.strokeStyle = outlineColor;
-        context.stroke();
-    }
-    context.restore();
-}
-
-function drawOutlinedQuadWithClip(quad, clipQuad, fillColor)
-{
-    context.fillStyle = fillColor;
-    context.save();
-    context.lineWidth = 0;
-    quadToPath(quad).fill();
-    context.globalCompositeOperation = "destination-out";
-    context.fillStyle = "red";
-    quadToPath(clipQuad).fill();
-    context.restore();
-}
-
-function drawUnderlyingQuad(quad, fillColor)
-{
-    context.save();
-    context.lineWidth = 2;
-    context.globalCompositeOperation = "destination-over";
-    context.fillStyle = fillColor;
-    quadToPath(quad).fill();
-    context.restore();
-}
-
-function quadEquals(quad1, quad2)
-{
-    return quad1[0].x === quad2[0].x && quad1[0].y === quad2[0].y &&
-        quad1[1].x === quad2[1].x && quad1[1].y === quad2[1].y &&
-        quad1[2].x === quad2[2].x && quad1[2].y === quad2[2].y &&
-        quad1[3].x === quad2[3].x && quad1[3].y === quad2[3].y;
-}
-
 function drawViewSize(drawViewSizeWithGrid)
 {
     var drawGridBoolean = drawViewSizeWithGrid === "true";
@@ -407,12 +349,8 @@ function reset(resetData)
     window._gridPainted = false;
 }
 
-function _drawElementTitle(highlight)
+function _drawElementTitle(elementInfo, bounds)
 {
-    var elementInfo = highlight.elementInfo;
-    if (!highlight.elementInfo)
-        return;
-
     document.getElementById("tag-name").textContent = elementInfo.tagName;
     document.getElementById("node-id").textContent = elementInfo.idValue ? "#" + elementInfo.idValue : "";
     var className = elementInfo.className;
@@ -423,14 +361,12 @@ function _drawElementTitle(highlight)
     document.getElementById("node-height").textContent = elementInfo.nodeHeight;
     var elementTitle = document.getElementById("element-title");
 
-    var marginQuad = highlight.quads[0];
-
     var titleWidth = elementTitle.offsetWidth + 6;
     var titleHeight = elementTitle.offsetHeight + 4;
 
-    var anchorTop = Math.min(marginQuad[0].y, marginQuad[1].y, marginQuad[2].y, marginQuad[3].y);
-    var anchorBottom = Math.max(marginQuad[0].y, marginQuad[1].y, marginQuad[2].y, marginQuad[3].y);
-    var anchorLeft = Math.min(marginQuad[0].x, marginQuad[1].x, marginQuad[2].x, marginQuad[3].x);
+    var anchorTop = bounds.minY;
+    var anchorBottom = bounds.maxY;
+    var anchorLeft = bounds.minX;
 
     const arrowHeight = 7;
     var renderArrowUp = false;
@@ -486,7 +422,7 @@ function _drawElementTitle(highlight)
     elementTitle.style.left = (boxX + 3) + "px";
 }
 
-function _drawRulers(highlight, rulerAtRight, rulerAtBottom)
+function _drawRulers(bounds, rulerAtRight, rulerAtBottom)
 {
     context.save();
     var width = canvasWidth;
@@ -494,80 +430,86 @@ function _drawRulers(highlight, rulerAtRight, rulerAtBottom)
     context.strokeStyle = "rgba(128, 128, 128, 0.3)";
     context.lineWidth = 1;
     context.translate(0.5, 0.5);
-    var leftmostXForY = {};
-    var rightmostXForY = {};
-    var topmostYForX = {};
-    var bottommostYForX = {};
-
-    for (var i = 0; i < highlight.quads.length; ++i) {
-        var quad = highlight.quads[i];
-        for (var j = 0; j < quad.length; ++j) {
-            var x = quad[j].x;
-            var y = quad[j].y;
-            leftmostXForY[Math.round(y)] = Math.min(leftmostXForY[y] || Number.MAX_VALUE, Math.round(quad[j].x));
-            rightmostXForY[Math.round(y)] = Math.max(rightmostXForY[y] || Number.MIN_VALUE, Math.round(quad[j].x));
-            topmostYForX[Math.round(x)] = Math.min(topmostYForX[x] || Number.MAX_VALUE, Math.round(quad[j].y));
-            bottommostYForX[Math.round(x)] = Math.max(bottommostYForX[x] || Number.MIN_VALUE, Math.round(quad[j].y));
-        }
-    }
 
     if (rulerAtRight) {
-        for (var y in rightmostXForY) {
+        for (var y in bounds.rightmostXForY) {
             context.beginPath();
             context.moveTo(width, y);
-            context.lineTo(rightmostXForY[y], y);
+            context.lineTo(bounds.rightmostXForY[y], y);
             context.stroke();
         }
     } else {
-        for (var y in leftmostXForY) {
+        for (var y in bounds.leftmostXForY) {
             context.beginPath();
             context.moveTo(0, y);
-            context.lineTo(leftmostXForY[y], y);
+            context.lineTo(bounds.leftmostXForY[y], y);
             context.stroke();
         }
     }
 
     if (rulerAtBottom) {
-        for (var x in bottommostYForX) {
+        for (var x in bounds.bottommostYForX) {
             context.beginPath();
             context.moveTo(x, height);
-            context.lineTo(x, topmostYForX[x]);
+            context.lineTo(x, bounds.topmostYForX[x]);
             context.stroke();
         }
     } else {
-        for (var x in topmostYForX) {
+        for (var x in bounds.topmostYForX) {
             context.beginPath();
             context.moveTo(x, 0);
-            context.lineTo(x, topmostYForX[x]);
+            context.lineTo(x, bounds.topmostYForX[x]);
             context.stroke();
         }
     }
 
     context.restore();
 }
-// CSS shapes 
-function drawPath(commands, fillColor)
+
+function drawPath(commands, fillColor, outlineColor, bounds)
 {
+    var commandsIndex = 0;
+
+    function extractPoints(count)
+    {
+        var points = [];
+
+        for (var i = 0; i < count; ++i) {
+            var x = Math.round(commands[commandsIndex++] * pageScaleFactor);
+            bounds.maxX = Math.max(bounds.maxX, x);
+            bounds.minX = Math.min(bounds.minX, x);
+
+            var y = Math.round(commands[commandsIndex++] * pageScaleFactor);
+            bounds.maxY = Math.max(bounds.maxY, y);
+            bounds.minY = Math.min(bounds.minY, y);
+
+            bounds.leftmostXForY[y] = Math.min(bounds.leftmostXForY[y] || Number.MAX_VALUE, x);
+            bounds.rightmostXForY[y] = Math.max(bounds.rightmostXForY[y] || Number.MIN_VALUE, x);
+            bounds.topmostYForX[x] = Math.min(bounds.topmostYForX[x] || Number.MAX_VALUE, y);
+            bounds.bottommostYForX[x] = Math.max(bounds.bottommostYForX[x] || Number.MIN_VALUE, y);
+
+            points.push(x, y);
+        }
+        return points;
+    }
+
     context.save();
     context.beginPath();
 
-    var commandsIndex = 0;
     var commandsLength = commands.length;
     while (commandsIndex < commandsLength) {
         switch (commands[commandsIndex++]) {
         case "M":
-            context.moveTo(commands[commandsIndex++], commands[commandsIndex++]);
+            context.moveTo.apply(context, extractPoints(1));
             break;
         case "L":
-            context.lineTo(commands[commandsIndex++], commands[commandsIndex++]);
+            context.lineTo.apply(context, extractPoints(1));
             break;
         case "C":
-            context.bezierCurveTo(commands[commandsIndex++], commands[commandsIndex++], commands[commandsIndex++],
-                                  commands[commandsIndex++], commands[commandsIndex++], commands[commandsIndex++]);
+            context.bezierCurveTo.apply(context, extractPoints(3));
             break;
         case "Q":
-            context.quadraticCurveTo(commands[commandsIndex++], commands[commandsIndex++], commands[commandsIndex++],
-                                     commands[commandsIndex++]);
+            context.quadraticCurveTo.apply(context, extractPoints(2));
             break;
         case "Z":
             context.closePath();
@@ -575,107 +517,58 @@ function drawPath(commands, fillColor)
         }
     }
     context.closePath();
+    context.lineWidth = 0;
     context.fillStyle = fillColor;
     context.fill();
 
+    if (outlineColor) {
+        context.lineWidth = 2;
+        context.strokeStyle = outlineColor;
+        context.stroke();
+    }
+
     context.restore();
 }
 
-function drawShapeHighlight(shapeInfo)
+function drawHighlight(highlight)
 {
-    if (shapeInfo.marginShape)
-        drawPath(shapeInfo.marginShape, shapeMarginHighlightColor);
-    else
-        drawOutlinedQuad(shapeInfo.bounds, shapeHighlightColor, shapeHighlightColor);
-
-    if (shapeInfo.shape)
-        drawPath(shapeInfo.shape, shapeHighlightColor);
-   else
-        drawOutlinedQuad(shapeInfo.bounds, shapeHighlightColor, shapeHighlightColor);
-}
-
-function drawNodeHighlight(highlight)
-{
-    {
-        for (var i = 0; i < highlight.quads.length; ++i) {
-            var quad = highlight.quads[i];
-            for (var j = 0; j < quad.length; ++j) {
-                quad[j].x = Math.round(quad[j].x * pageScaleFactor);
-                quad[j].y = Math.round(quad[j].y * pageScaleFactor);
-            }
-        }
-    }
-
-    if (!highlight.quads.length) {
-        if (highlight.showRulers)
-            _drawGrid(false, false);
-        return;
-    }
-
     context.save();
 
-    var quads = highlight.quads.slice();
-    var eventTargetQuad = quads.length >= 5 ? quads.pop() : null;
-    var contentQuad = quads.pop();
-    var paddingQuad = quads.pop();
-    var borderQuad = quads.pop();
-    var marginQuad = quads.pop();
+    var bounds = {
+        minX: Number.MAX_VALUE,
+        minY: Number.MAX_VALUE,
+        maxX: Number.MIN_VALUE,
+        maxY: Number.MIN_VALUE,
+        leftmostXForY: {},
+        rightmostXForY: {},
+        topmostYForX: {},
+        bottommostYForX: {}
+    };
 
-    var hasContent = contentQuad && highlight.contentColor !== transparentColor || highlight.contentOutlineColor !== transparentColor;
-    var hasPadding = paddingQuad && highlight.paddingColor !== transparentColor;
-    var hasBorder = borderQuad && highlight.borderColor !== transparentColor;
-    var hasMargin = marginQuad && highlight.marginColor !== transparentColor;
-    var hasEventTarget = eventTargetQuad && highlight.eventTargetColor !== transparentColor;
-
-    var clipQuad;
-    if (hasMargin && (!hasBorder || !quadEquals(marginQuad, borderQuad))) {
-        drawOutlinedQuadWithClip(marginQuad, borderQuad, highlight.marginColor);
-        clipQuad = borderQuad;
-    }
-    if (hasBorder && (!hasPadding || !quadEquals(borderQuad, paddingQuad))) {
-        drawOutlinedQuadWithClip(borderQuad, paddingQuad, highlight.borderColor);
-        clipQuad = paddingQuad;
-    }
-    if (hasPadding && (!hasContent || !quadEquals(paddingQuad, contentQuad))) {
-        drawOutlinedQuadWithClip(paddingQuad, contentQuad, highlight.paddingColor);
-        clipQuad = contentQuad;
-    }
-    if (hasContent)
-        drawOutlinedQuad(contentQuad, highlight.contentColor, highlight.contentOutlineColor);
-    if (hasEventTarget)
-        drawUnderlyingQuad(eventTargetQuad, highlight.eventTargetColor);
-
-    var width = canvasWidth;
-    var height = canvasHeight;
-    var minX = Number.MAX_VALUE, minY = Number.MAX_VALUE, maxX = Number.MIN_VALUE; maxY = Number.MIN_VALUE;
-    for (var i = 0; i < highlight.quads.length; ++i) {
-        var quad = highlight.quads[i];
-        for (var j = 0; j < quad.length; ++j) {
-            minX = Math.min(minX, quad[j].x);
-            maxX = Math.max(maxX, quad[j].x);
-            minY = Math.min(minY, quad[j].y);
-            maxY = Math.max(maxY, quad[j].y);
+    for (var paths = highlight.paths.slice(); paths.length;) {
+        var path = paths.pop();
+        drawPath(path.path, path.fillColor, path.outlineColor, bounds);
+        if (paths.length) {
+            context.save();
+            context.globalCompositeOperation = "destination-out";
+            drawPath(paths[paths.length - 1].path, "red", null, bounds);
+            context.restore();
         }
     }
 
-    var rulerAtRight = highlight.showRulers && minX < 20 && maxX + 20 < width;
-    var rulerAtBottom = highlight.showRulers && minY < 20 && maxY + 20 < height;
+    var rulerAtRight = highlight.paths.length && highlight.showRulers && bounds.minX < 20 && bounds.maxX + 20 < canvasWidth;
+    var rulerAtBottom = highlight.paths.length && highlight.showRulers && bounds.minY < 20 && bounds.maxY + 20 < canvasHeight;
 
     if (highlight.showRulers)
         _drawGrid(rulerAtRight, rulerAtBottom);
-    if (highlight.showExtensionLines)
-        _drawRulers(highlight, rulerAtRight, rulerAtBottom);
-    if (highlight.elementInfo && highlight.elementInfo.shapeOutsideInfo)
-        drawShapeHighlight(highlight.elementInfo.shapeOutsideInfo);
-    _drawElementTitle(highlight);
 
-    context.restore();
-}
+    if (highlight.paths.length) {
+        if (highlight.showExtensionLines)
+            _drawRulers(bounds, rulerAtRight, rulerAtBottom);
 
-function drawQuadHighlight(highlight)
-{
-    context.save();
-    drawOutlinedQuad(highlight.quads[0], highlight.contentColor, highlight.contentOutlineColor);
+        if (highlight.elementInfo)
+           _drawElementTitle(highlight.elementInfo, bounds);
+    }
     context.restore();
 }
 

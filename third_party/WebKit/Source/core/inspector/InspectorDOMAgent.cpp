@@ -1234,6 +1234,9 @@ PassOwnPtr<HighlightConfig> InspectorDOMAgent::highlightConfigFromInspectorObjec
     highlightConfig->border = parseConfigColor("borderColor", highlightInspectorObject);
     highlightConfig->margin = parseConfigColor("marginColor", highlightInspectorObject);
     highlightConfig->eventTarget = parseConfigColor("eventTargetColor", highlightInspectorObject);
+    highlightConfig->shape = parseConfigColor("shapeColor", highlightInspectorObject);
+    highlightConfig->shapeMargin = parseConfigColor("shapeMarginColor", highlightInspectorObject);
+
     return highlightConfig.release();
 }
 
@@ -1430,50 +1433,16 @@ void InspectorDOMAgent::setFileInputFiles(ErrorString* errorString, int nodeId, 
     toHTMLInputElement(node)->setFiles(fileList);
 }
 
-static RefPtr<TypeBuilder::Array<double> > buildArrayForQuad(const FloatQuad& quad)
-{
-    RefPtr<TypeBuilder::Array<double> > array = TypeBuilder::Array<double>::create();
-    array->addItem(quad.p1().x());
-    array->addItem(quad.p1().y());
-    array->addItem(quad.p2().x());
-    array->addItem(quad.p2().y());
-    array->addItem(quad.p3().x());
-    array->addItem(quad.p3().y());
-    array->addItem(quad.p4().x());
-    array->addItem(quad.p4().y());
-    return array.release();
-}
-
 void InspectorDOMAgent::getBoxModel(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::DOM::BoxModel>& model)
 {
     Node* node = assertNode(errorString, nodeId);
     if (!node)
         return;
 
-    Vector<FloatQuad> quads;
-    bool isInlineOrBox = m_overlay->getBoxModel(node, &quads);
-    if (!isInlineOrBox) {
+    bool result = m_overlay->getBoxModel(node, model);
+    if (!result)
         *errorString = "Could not compute box model.";
-        return;
-    }
 
-    RenderObject* renderer = node->renderer();
-    LocalFrame* frame = node->document().frame();
-    FrameView* view = frame->view();
-
-    IntRect boundingBox = pixelSnappedIntRect(view->contentsToRootView(renderer->absoluteBoundingBoxRect()));
-    RenderBoxModelObject* modelObject = renderer->isBoxModelObject() ? toRenderBoxModelObject(renderer) : 0;
-    RefPtr<TypeBuilder::DOM::ShapeOutsideInfo> shapeOutsideInfo = m_overlay->buildObjectForShapeOutside(node);
-
-    model = TypeBuilder::DOM::BoxModel::create()
-        .setContent(buildArrayForQuad(quads.at(3)))
-        .setPadding(buildArrayForQuad(quads.at(2)))
-        .setBorder(buildArrayForQuad(quads.at(1)))
-        .setMargin(buildArrayForQuad(quads.at(0)))
-        .setWidth(modelObject ? adjustForAbsoluteZoom(modelObject->pixelSnappedOffsetWidth(), modelObject) : boundingBox.width())
-        .setHeight(modelObject ? adjustForAbsoluteZoom(modelObject->pixelSnappedOffsetHeight(), modelObject) : boundingBox.height());
-    if (shapeOutsideInfo)
-        model->setShapeOutside(shapeOutsideInfo);
 }
 
 void InspectorDOMAgent::getNodeForLocation(ErrorString* errorString, int x, int y, int* nodeId)

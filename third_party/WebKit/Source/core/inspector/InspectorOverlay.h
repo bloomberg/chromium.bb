@@ -48,7 +48,6 @@ class EmptyChromeClient;
 class GraphicsContext;
 class InspectorClient;
 class InspectorOverlayHost;
-class JSONObject;
 class JSONValue;
 class Node;
 class Page;
@@ -66,46 +65,10 @@ public:
     Color border;
     Color margin;
     Color eventTarget;
+    Color shape;
+    Color shapeMargin;
+
     bool showInfo;
-    bool showRulers;
-    bool showExtensionLines;
-};
-
-enum HighlightType {
-    HighlightTypeNode,
-    HighlightTypeRects,
-};
-
-struct Highlight {
-    Highlight()
-        : type(HighlightTypeNode)
-        , showRulers(false)
-    {
-    }
-
-    void setDataFromConfig(const HighlightConfig& highlightConfig)
-    {
-        contentColor = highlightConfig.content;
-        contentOutlineColor = highlightConfig.contentOutline;
-        paddingColor = highlightConfig.padding;
-        borderColor = highlightConfig.border;
-        marginColor = highlightConfig.margin;
-        eventTargetColor = highlightConfig.eventTarget;
-        showRulers = highlightConfig.showRulers;
-        showExtensionLines = highlightConfig.showExtensionLines;
-    }
-
-    Color contentColor;
-    Color contentOutlineColor;
-    Color paddingColor;
-    Color borderColor;
-    Color marginColor;
-    Color eventTargetColor;
-
-    // When the type is Node, there are 4 or 5 quads (margin, border, padding, content, optional eventTarget).
-    // When the type is Rects, this is just a list of quads.
-    HighlightType type;
-    Vector<FloatQuad> quads;
     bool showRulers;
     bool showExtensionLines;
 };
@@ -138,8 +101,7 @@ public:
     void showAndHideViewSize(bool showGrid);
 
     Node* highlightedNode() const;
-    bool getBoxModel(Node*, Vector<FloatQuad>*);
-    PassRefPtr<TypeBuilder::DOM::ShapeOutsideInfo> buildObjectForShapeOutside(Node*);
+    bool getBoxModel(Node*, RefPtr<TypeBuilder::DOM::BoxModel>&);
 
     void freePage();
 
