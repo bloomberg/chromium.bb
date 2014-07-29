@@ -18,6 +18,7 @@
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/win/windows_version.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/nacl/nacl_browsertest_util.h"
 #include "components/nacl/browser/nacl_browser.h"
@@ -263,9 +264,8 @@ class NaClBrowserTestPnaclDebug : public NaClBrowserTestPnacl {
     // lets the app continue, so that the load progress event completes.
     CommandLine cmd(base::FilePath(FILE_PATH_LITERAL("python")));
     base::FilePath script;
-    PathService::Get(base::DIR_SOURCE_ROOT, &script);
-    script = script.AppendASCII(
-        "chrome/browser/nacl_host/test/debug_stub_browser_tests.py");
+    PathService::Get(chrome::DIR_TEST_DATA, &script);
+    script = script.AppendASCII("nacl/debug_stub_browser_tests.py");
     cmd.AppendArgPath(script);
     cmd.AppendArg(base::IntToString(debug_stub_port));
     cmd.AppendArg("continue");

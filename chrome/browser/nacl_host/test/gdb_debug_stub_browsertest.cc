@@ -8,6 +8,7 @@
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/ppapi/ppapi_test.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/common/nacl_switches.h"
@@ -37,9 +38,8 @@ void NaClGdbDebugStubTest::StartTestScript(base::ProcessHandle* test_process,
   // We call python script to reuse GDB RSP protocol implementation.
   CommandLine cmd(base::FilePath(FILE_PATH_LITERAL("python")));
   base::FilePath script;
-  PathService::Get(base::DIR_SOURCE_ROOT, &script);
-  script = script.AppendASCII(
-      "chrome/browser/nacl_host/test/debug_stub_browser_tests.py");
+  PathService::Get(chrome::DIR_TEST_DATA, &script);
+  script = script.AppendASCII("nacl/debug_stub_browser_tests.py");
   cmd.AppendArgPath(script);
   cmd.AppendArg(base::IntToString(debug_stub_port));
   cmd.AppendArg(test_name);
