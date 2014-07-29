@@ -63,6 +63,6 @@ inline bool skipString(const CharType*& ptr, const CharType* end, const char* st
     return true;
 }
 
-} // namspace WebCore
+} // namespace blink
 
 #endif // ParserUtilities_h

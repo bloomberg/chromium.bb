@@ -146,6 +146,6 @@ LayoutRect virtualRectForDirection(FocusType, const LayoutRect& startingRect, La
 LayoutRect virtualRectForAreaElementAndDirection(HTMLAreaElement&, FocusType);
 HTMLFrameOwnerElement* frameOwnerElement(FocusCandidate&);
 
-} // namspace WebCore
+} // namespace blink
 
 #endif // SpatialNavigation_h

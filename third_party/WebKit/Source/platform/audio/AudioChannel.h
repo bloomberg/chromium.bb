@@ -135,6 +135,6 @@ private:
     bool m_silent;
 };
 
-} // WebCore
+} // namespace blink
 
 #endif // AudioChannel_h

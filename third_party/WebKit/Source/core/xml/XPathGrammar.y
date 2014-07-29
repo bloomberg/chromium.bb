@@ -46,26 +46,26 @@
 #define YYDEBUG 0
 #define YYMAXDEPTH 10000
 
-using namespace WebCore;
+using namespace blink;
 using namespace XPath;
 
 %}
 
 %pure-parser
-%parse-param { WebCore::XPath::Parser* parser }
+%parse-param { blink::XPath::Parser* parser }
 
 %union
 {
-    WebCore::XPath::Step::Axis axis;
-    WebCore::XPath::Step::NodeTest* nodeTest;
-    WebCore::XPath::NumericOp::Opcode numop;
-    WebCore::XPath::EqTestOp::Opcode eqop;
+    blink::XPath::Step::Axis axis;
+    blink::XPath::Step::NodeTest* nodeTest;
+    blink::XPath::NumericOp::Opcode numop;
+    blink::XPath::EqTestOp::Opcode eqop;
     String* str;
-    WebCore::XPath::Expression* expr;
-    WillBeHeapVector<OwnPtrWillBeMember<WebCore::XPath::Predicate> >* predList;
-    WillBeHeapVector<OwnPtrWillBeMember<WebCore::XPath::Expression> >* argList;
-    WebCore::XPath::Step* step;
-    WebCore::XPath::LocationPath* locationPath;
+    blink::XPath::Expression* expr;
+    WillBeHeapVector<OwnPtrWillBeMember<blink::XPath::Predicate> >* predList;
+    WillBeHeapVector<OwnPtrWillBeMember<blink::XPath::Expression> >* argList;
+    blink::XPath::Step* step;
+    blink::XPath::LocationPath* locationPath;
 }
 
 %{

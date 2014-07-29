@@ -490,4 +490,4 @@ void V8WindowShell::updateSecurityOrigin(SecurityOrigin* origin)
     setSecurityToken(origin);
 }
 
-} // WebCore
+} // namespace blink

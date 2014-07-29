@@ -128,6 +128,6 @@ float AudioChannel::maxAbsValue() const
     return max;
 }
 
-} // WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

@@ -7,7 +7,7 @@
 #include "core/dom/QualifiedName.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class {{namespace}}QualifiedName : public QualifiedName { };
 
@@ -18,12 +18,12 @@ extern const WTF::AtomicString& {{namespace_prefix}}NamespaceURI;
 
 // Tags
 {% for tag in tags|sort %}
-extern const WebCore::{{namespace}}QualifiedName& {{tag|symbol}}Tag;
+extern const blink::{{namespace}}QualifiedName& {{tag|symbol}}Tag;
 {% endfor %}
 
 // Attributes
 {% for attr in attrs|sort %}
-extern const WebCore::QualifiedName& {{attr|symbol}}Attr;
+extern const blink::QualifiedName& {{attr|symbol}}Attr;
 {% endfor %}
 
 {% if tags %}
@@ -36,6 +36,6 @@ PassOwnPtr<const QualifiedName*[]> get{{namespace}}Attrs();
 void init();
 
 } // {{namespace}}Names
-} // WebCore
+} // namespace blink
 
 #endif

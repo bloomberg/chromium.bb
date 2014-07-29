@@ -601,7 +601,7 @@
             'python',
             '<@(scripts)',
             '--namespace',
-            'WebCore',
+            'blink',
             '--out-h=<(blink_core_output_dir)/UserAgentStyleSheets.h',
             '--out-cpp=<(blink_core_output_dir)/UserAgentStyleSheetsData.cpp',
             '<@(stylesheets)',

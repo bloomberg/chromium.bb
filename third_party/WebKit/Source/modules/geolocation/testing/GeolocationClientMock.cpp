@@ -184,4 +184,4 @@ void GeolocationClientMock::clearError()
     m_errorMessage = String();
 }
 
-} // WebCore
+} // namespace blink

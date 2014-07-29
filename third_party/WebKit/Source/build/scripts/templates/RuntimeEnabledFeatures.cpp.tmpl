@@ -4,7 +4,7 @@
 #include "config.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
-namespace WebCore {
+namespace blink {
 
 {% for feature_set in feature_sets %}
 void RuntimeEnabledFeatures::set{{feature_set|capitalize}}FeaturesEnabled(bool enable)
@@ -21,4 +21,4 @@ bool RuntimeEnabledFeatures::is{{feature.name}}Enabled = {{'true' if feature.sta
 {% endfilter %}
 {% endfor %}
 
-} // namespace WebCore
+} // namespace blink

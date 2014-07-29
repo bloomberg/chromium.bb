@@ -39,4 +39,4 @@ void NavigatorContentUtilsClientMock::unregisterProtocolHandler(const String& sc
     m_protocolMap.remove(scheme);
 }
 
-} // WebCore
+} // namespace blink

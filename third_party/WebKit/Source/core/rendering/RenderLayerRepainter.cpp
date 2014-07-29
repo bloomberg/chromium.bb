@@ -184,4 +184,4 @@ RenderLayer* RenderLayerRepainter::enclosingFilterRepaintLayer() const
     return 0;
 }
 
-} // Namespace WebCore
+} // namespace blink

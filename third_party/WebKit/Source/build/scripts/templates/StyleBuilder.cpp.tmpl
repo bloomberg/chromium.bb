@@ -11,7 +11,7 @@
 // FIXME: currently we're just generating a switch statement, but we should
 //   test other variations for performance once we have more properties here.
 
-namespace WebCore {
+namespace blink {
 
 void StyleBuilder::applyProperty(CSSPropertyID property, StyleResolverState& state, CSSValue* value, bool isInitial, bool isInherit) {
     switch(property) {
@@ -48,4 +48,4 @@ void StyleBuilder::applyProperty(CSSPropertyID property, StyleResolverState& sta
     }
 }
 
-} // namespace WebCore
+} // namespace blink

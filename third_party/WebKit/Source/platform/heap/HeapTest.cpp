@@ -1343,7 +1343,7 @@ private:
     bool m_isLast;
 };
 
-} // WebCore namespace
+} // namespace blink
 
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::VectorObject);
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::VectorObjectInheritedTrace);
@@ -4979,4 +4979,4 @@ TEST(HeapTest, RecursiveMutex)
     RecursiveLockingTester::test();
 }
 
-} // WebCore namespace
+} // namespace blink

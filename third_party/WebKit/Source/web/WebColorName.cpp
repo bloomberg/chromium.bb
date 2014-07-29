@@ -36,8 +36,6 @@
 #include "platform/graphics/Color.h"
 #include "public/platform/WebColor.h"
 
-using namespace::WebCore;
-
 namespace blink {
 
 static int toCSSValueKeyword(WebColorName name)

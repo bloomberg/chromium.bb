@@ -58,7 +58,7 @@ make_file_arrays("modules_cache_polyfill") {
   resources = [
     "serviceworkers/polyfills/cachePolyfill.js",
   ]
-  namespace = "WebCore"
+  namespace = "blink"
 }
 
 # GYP version: WebKit/Source/modules/modules.gyp:modules (CacheStoragePolyfill action)
@@ -67,7 +67,7 @@ make_file_arrays("modules_cache_storage_polyfill") {
   resources = [
     "serviceworkers/polyfills/cacheStoragePolyfill.js",
   ]
-  namespace = "WebCore"
+  namespace = "blink"
 }
 
 # GYP version: WebKit/Source/modules/modules.gyp:modules_testing

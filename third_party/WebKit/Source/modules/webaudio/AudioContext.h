@@ -363,6 +363,6 @@ private:
     enum { MaxNumberOfChannels = 32 };
 };
 
-} // WebCore
+} // namespace blink
 
 #endif // AudioContext_h

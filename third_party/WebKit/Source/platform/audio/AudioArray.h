@@ -157,6 +157,6 @@ private:
 typedef AudioArray<float> AudioFloatArray;
 typedef AudioArray<double> AudioDoubleArray;
 
-} // WebCore
+} // namespace blink
 
 #endif // AudioArray_h

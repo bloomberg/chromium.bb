@@ -9,7 +9,7 @@
 #include "{{namespace}}Names.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
-namespace WebCore {
+namespace blink {
 // Type checking.
 {% for tag in tags|sort if not tag.multipleTagNames and not tag.noTypeHelpers %}
 {% filter enable_conditional(tag.Conditional) %}
@@ -43,9 +43,9 @@ template <> inline bool isElementOfType<const {{tag.interface}}>(const {{namespa
 
 {% for tag in tags|sort if not tag.multipleTagNames and not tag.noTypeHelpers %}
 {% filter enable_conditional(tag.Conditional) %}
-#define to{{tag.interface}}(x) WebCore::toElement<WebCore::{{tag.interface}}>(x)
+#define to{{tag.interface}}(x) blink::toElement<blink::{{tag.interface}}>(x)
 {% endfilter %}
 {% endfor %}
-} // WebCore
+} // namespace blink
 
 #endif

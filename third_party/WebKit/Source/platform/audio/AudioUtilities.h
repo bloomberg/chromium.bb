@@ -43,6 +43,6 @@ PLATFORM_EXPORT double discreteTimeConstantForSampleRate(double timeConstant, do
 PLATFORM_EXPORT size_t timeToSampleFrame(double time, double sampleRate);
 
 } // AudioUtilites
-} // WebCore
+} // namespace blink
 
 #endif // AudioUtilities_h

@@ -1465,4 +1465,4 @@ void RenderLayerScrollableArea::setTopmostScrollChild(RenderLayer* scrollChild)
     m_nextTopmostScrollChild = scrollChild;
 }
 
-} // Namespace WebCore
+} // namespace blink

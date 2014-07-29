@@ -71,4 +71,4 @@ void Editor::handleKeyboardEvent(KeyboardEvent* evt)
         evt->setDefaultHandled();
 }
 
-} // namesace WebCore
+} // namespace blink

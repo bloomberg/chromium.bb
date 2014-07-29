@@ -56,4 +56,4 @@ private:
     friend class AnimationCompositorAnimationsTest;
 };
 
-} // WebCore
+} // namespace blink

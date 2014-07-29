@@ -63,4 +63,4 @@ void MIDIClientMock::cancelSysexPermissionRequest(MIDIAccessInitializer*)
 {
 }
 
-} // WebCore
+} // namespace blink

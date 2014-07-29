@@ -165,7 +165,7 @@ public:
 
 #endif
 
-} // WebCore
+} // namespace blink
 
 #undef HAVE_DENORMAL
 #endif // DenormalDisabler_h

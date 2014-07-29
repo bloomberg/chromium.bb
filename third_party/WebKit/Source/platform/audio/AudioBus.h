@@ -166,6 +166,6 @@ protected:
     float m_sampleRate; // 0.0 if unknown or N/A
 };
 
-} // WebCore
+} // namespace blink
 
 #endif // AudioBus_h

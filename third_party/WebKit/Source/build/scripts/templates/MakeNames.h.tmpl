@@ -13,7 +13,7 @@
 #include "wtf/text/AtomicString.h"
 {% endif %}
 
-namespace WebCore {
+namespace blink {
 namespace {{namespace}}Names {
 
 {% for entry in entries|sort %}
@@ -29,6 +29,6 @@ extern const WTF::AtomicString& {{entry|symbol}};
 {{export}} void init{{suffix}}();
 
 } // {{namespace}}Names
-} // WebCore
+} // namespace blink
 
 #endif

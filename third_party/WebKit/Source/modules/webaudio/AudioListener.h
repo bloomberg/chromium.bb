@@ -114,6 +114,6 @@ private:
     RefPtr<HRTFDatabaseLoader> m_hrtfDatabaseLoader;
 };
 
-} // WebCore
+} // namespace blink
 
 #endif // AudioListener_h

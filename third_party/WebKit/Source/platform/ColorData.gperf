@@ -3,7 +3,7 @@
 #include "platform/graphics/Color.h"
 #include <string.h>
 
-namespace WebCore {
+namespace blink {
 %}
 %struct-type
 struct NamedColor;
@@ -173,4 +173,4 @@ const struct NamedColor* findColor(register const char* str, register unsigned l
     return ColorDataHash::findColorImpl(str, len);
 }
 
-} // namespace WebCore
+} // namespace blink

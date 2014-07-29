@@ -126,4 +126,4 @@ void UndoStack::trace(Visitor* visitor)
     visitor->trace(m_redoStack);
 }
 
-} // namesace WebCore
+} // namespace blink

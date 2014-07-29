@@ -48,4 +48,4 @@ void ModuleProxy::registerDidLeaveScriptContextForRecursionScope(void (*didLeave
     m_didLeaveScriptContextForRecursionScope = didLeaveScriptContext;
 }
 
-} // WebCore
+} // namespace blink

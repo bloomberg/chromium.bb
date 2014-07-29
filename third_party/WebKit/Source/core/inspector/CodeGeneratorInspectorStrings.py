@@ -102,7 +102,7 @@ frontend_h = (
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 typedef String ErrorString;
 
@@ -116,7 +116,7 @@ private:
     InspectorFrontendChannel* m_inspectorFrontendChannel;
 ${fieldDeclarations}};
 
-} // namespace WebCore
+} // namespace blink
 #endif // !defined(InspectorFrontend_h)
 """)
 
@@ -130,7 +130,7 @@ backend_h = (
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class JSONObject;
 class JSONArray;
@@ -198,7 +198,7 @@ private:
     static const size_t commandNamesIndex[];
 };
 
-} // namespace WebCore
+} // namespace blink
 #endif // !defined(InspectorBackendDispatcher_h)
 
 
@@ -216,7 +216,7 @@ backend_cpp = (
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 const char InspectorBackendDispatcher::commandNames[] = {
 $methodNameDeclarations
@@ -508,7 +508,7 @@ void InspectorBackendDispatcher::CallbackBase::sendIfActive(PassRefPtr<JSONObjec
     m_alreadySent = true;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 """)
 
@@ -523,7 +523,7 @@ frontend_cpp = (
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 InspectorFrontend::InspectorFrontend(InspectorFrontendChannel* inspectorFrontendChannel)
     : m_inspectorFrontendChannel(inspectorFrontendChannel)
@@ -533,7 +533,7 @@ InspectorFrontend::InspectorFrontend(InspectorFrontendChannel* inspectorFrontend
 
 $methods
 
-} // namespace WebCore
+} // namespace blink
 
 """)
 
@@ -546,7 +546,7 @@ typebuilder_h = (
 #include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace TypeBuilder {
 
@@ -841,7 +841,7 @@ ${typeBuilders}
 } // namespace TypeBuilder
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(InspectorTypeBuilder_h)
 
@@ -855,7 +855,7 @@ typebuilder_cpp = (
 #include "InspectorTypeBuilder.h"
 #include "wtf/text/CString.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace TypeBuilder {
 
@@ -890,7 +890,7 @@ $validatorCode
 
 #endif // $validatorIfdefName
 
-} // namespace WebCore
+} // namespace blink
 
 """)
 

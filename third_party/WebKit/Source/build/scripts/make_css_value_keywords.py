@@ -19,7 +19,7 @@ HEADER_TEMPLATE = """
 #include "core/css/CSSParserMode.h"
 #include <string.h>
 
-namespace WebCore {
+namespace blink {
 
 enum CSSValueID {
 %(value_keyword_enums)s
@@ -31,7 +31,7 @@ const size_t maxCSSValueKeywordLength = %(max_value_keyword_length)d;
 const char* getValueName(unsigned short id);
 bool isValueAllowedInMode(unsigned short id, CSSParserMode mode);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // %(class_name)s_h
 """
@@ -45,7 +45,7 @@ GPERF_TEMPLATE = """
 #include "core/css/HashTools.h"
 #include <string.h>
 
-namespace WebCore {
+namespace blink {
 static const char valueListStringPool[] = {
 "\\0"
 %(value_keyword_strings)s
@@ -96,7 +96,7 @@ bool isValueAllowedInMode(unsigned short id, CSSParserMode mode)
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 """
 
 

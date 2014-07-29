@@ -61,6 +61,6 @@ size_t timeToSampleFrame(double time, double sampleRate)
 }
 } // AudioUtilites
 
-} // WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

@@ -48,6 +48,6 @@ public:
     virtual ~AudioSourceProvider() { }
 };
 
-} // WebCore
+} // namespace blink
 
 #endif // AudioSourceProvider_h

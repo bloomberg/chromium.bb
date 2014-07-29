@@ -46,6 +46,6 @@ public:
     virtual void consumeAudio(AudioBus*, size_t numberOfFrames) = 0;
 };
 
-} // WebCore
+} // namespace blink
 
 #endif // AudioDestinationConsumer_h

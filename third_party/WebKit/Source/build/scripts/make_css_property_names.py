@@ -26,7 +26,7 @@ class AtomicString;
 class String;
 }
 
-namespace WebCore {
+namespace blink {
 
 enum CSSPropertyID {
     CSSPropertyInvalid = 0,
@@ -50,15 +50,15 @@ inline CSSPropertyID convertToCSSPropertyID(int value)
     return static_cast<CSSPropertyID>(value);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 namespace WTF {
-template<> struct DefaultHash<WebCore::CSSPropertyID> { typedef IntHash<unsigned> Hash; };
-template<> struct HashTraits<WebCore::CSSPropertyID> : GenericHashTraits<WebCore::CSSPropertyID> {
+template<> struct DefaultHash<blink::CSSPropertyID> { typedef IntHash<unsigned> Hash; };
+template<> struct HashTraits<blink::CSSPropertyID> : GenericHashTraits<blink::CSSPropertyID> {
     static const bool emptyValueIsZero = true;
     static const bool needsDestruction = false;
-    static void constructDeletedValue(WebCore::CSSPropertyID& slot) { slot = static_cast<WebCore::CSSPropertyID>(WebCore::lastCSSProperty + 1); }
-    static bool isDeletedValue(WebCore::CSSPropertyID value) { return value == (WebCore::lastCSSProperty + 1); }
+    static void constructDeletedValue(blink::CSSPropertyID& slot) { slot = static_cast<blink::CSSPropertyID>(blink::lastCSSProperty + 1); }
+    static bool isDeletedValue(blink::CSSPropertyID value) { return value == (blink::lastCSSProperty + 1); }
 };
 }
 
@@ -78,7 +78,7 @@ GPERF_TEMPLATE = """
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 static const char propertyNameStringsPool[] = {
 %(property_name_strings)s
 };
@@ -174,7 +174,7 @@ bool isInternalProperty(CSSPropertyID id)
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 """
 
 

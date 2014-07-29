@@ -19,7 +19,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/HashMap.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace {{namespace}}Names;
 
@@ -105,4 +105,4 @@ PassRefPtrWillBeRawPtr<{{namespace}}Element> {{namespace}}ElementFactory::create
     return {{fallback_interface}}::create(QualifiedName(nullAtom, localName, {{namespace_prefix}}NamespaceURI), document);
 }
 
-} // namespace WebCore
+} // namespace blink

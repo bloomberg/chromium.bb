@@ -100,7 +100,7 @@ output_file.write("""/*
 #include "config.h"
 #include "core/html/parser/HTMLEntityTable.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 """)

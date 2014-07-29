@@ -7,10 +7,10 @@
 
 #include "wtf/StaticConstructors.h"
 
-namespace WebCore {
+namespace blink {
 namespace {{namespace}}Names {
 
-using namespace WebCore;
+using namespace blink;
 
 DEFINE_GLOBAL(AtomicString, {{namespace_prefix}}NamespaceURI)
 
@@ -40,7 +40,7 @@ PassOwnPtr<const QualifiedName*[]> get{{namespace}}Attrs()
 {
     OwnPtr<const QualifiedName*[]> attrs = adoptArrayPtr(new const QualifiedName*[{{namespace}}AttrsCount]);
     {% for attr in attrs|sort %}
-    attrs[{{loop.index0}}] = reinterpret_cast<const WebCore::QualifiedName*>(&{{attr|symbol}}Attr);
+    attrs[{{loop.index0}}] = reinterpret_cast<const blink::QualifiedName*>(&{{attr|symbol}}Attr);
     {% endfor %}
     return attrs.release();
 }
@@ -72,4 +72,4 @@ void init()
 }
 
 } // {{namespace}}
-} // WebCore
+} // namespace blink

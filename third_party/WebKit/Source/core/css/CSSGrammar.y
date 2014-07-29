@@ -43,7 +43,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-using namespace WebCore;
+using namespace blink;
 using namespace HTMLNames;
 
 #define YYMALLOC fastMalloc

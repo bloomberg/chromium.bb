@@ -40,6 +40,6 @@ protected:
     virtual ~AudioSourceProviderClient() { }
 };
 
-} // WebCore
+} // namespace blink
 
 #endif // AudioSourceProviderClient_h

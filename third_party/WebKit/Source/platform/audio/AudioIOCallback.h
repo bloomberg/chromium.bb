@@ -43,6 +43,6 @@ public:
     virtual ~AudioIOCallback() { }
 };
 
-} // WebCore
+} // namespace blink
 
 #endif // AudioIOCallback_h

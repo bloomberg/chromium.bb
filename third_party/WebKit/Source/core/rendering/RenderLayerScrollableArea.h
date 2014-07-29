@@ -255,6 +255,6 @@ private:
     RenderScrollbarPart* m_resizer;
 };
 
-} // Namespace WebCore
+} // namespace blink
 
 #endif // RenderLayerScrollableArea_h

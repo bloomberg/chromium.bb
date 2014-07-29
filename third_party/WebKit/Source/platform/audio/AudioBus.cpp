@@ -674,6 +674,6 @@ PassRefPtr<AudioBus> createBusFromInMemoryAudioFile(const void* data, size_t dat
     return AudioBus::createBySampleRateConverting(audioBus.get(), mixToMono, sampleRate);
 }
 
-} // WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

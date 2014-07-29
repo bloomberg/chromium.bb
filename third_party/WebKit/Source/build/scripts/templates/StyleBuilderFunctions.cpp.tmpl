@@ -34,7 +34,7 @@ state.style()->{{property.setter}}
 {%- endif %}
 {% endmacro %}
 
-namespace WebCore {
+namespace blink {
 
 {% for property_id, property in properties.items() if property.should_declare_functions %}
 {% set apply_type = property.apply_type %}
@@ -642,4 +642,4 @@ static bool lengthTypeAndValueMatch(const BorderImageLengthBox& borderImageLengt
 {% endmacro %}
 {{apply_svg_paint('CSSPropertyFill', 'FillPaint')}}
 {{apply_svg_paint('CSSPropertyStroke', 'StrokePaint')}}
-} // namespace WebCore
+} // namespace blink

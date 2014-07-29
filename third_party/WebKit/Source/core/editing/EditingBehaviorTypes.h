@@ -43,6 +43,6 @@ enum EditingBehaviorType {
     EditingAndroidBehavior
 };
 
-} // WebCore namespace
+} // namespace blink
 
 #endif // EditingBehaviorTypes_h

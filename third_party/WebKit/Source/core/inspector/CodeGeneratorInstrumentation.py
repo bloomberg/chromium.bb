@@ -39,14 +39,14 @@ template_h = string.Template("""// Code generated from InspectorInstrumentation.
 
 ${includes}
 
-namespace WebCore {
+namespace blink {
 
 namespace InspectorInstrumentation {
 
 $methods
 } // namespace InspectorInstrumentation
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(${file_name}_h)
 """)
@@ -82,7 +82,7 @@ template_cpp = string.Template("""// Code generated from InspectorInstrumentatio
 
 ${includes}
 
-namespace WebCore {
+namespace blink {
 ${extra_definitions}
 
 namespace InspectorInstrumentation {
@@ -90,7 +90,7 @@ $methods
 
 } // namespace InspectorInstrumentation
 
-} // namespace WebCore
+} // namespace blink
 """)
 
 template_outofline = string.Template("""
@@ -121,7 +121,7 @@ template_instrumenting_agents_h = string.Template("""// Code generated from Insp
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 ${forward_list}
 

@@ -1030,7 +1030,7 @@ action("make_core_generated_user_agent_style_sheets") {
   ]
 
   args =
-    [ "--namespace", "WebCore" ] +
+    [ "--namespace", "blink" ] +
     [ "--out-h=" + rebase_path(outputs[0], root_build_dir) ] +
     [ "--out-cpp=" + rebase_path(outputs[1], root_build_dir) ] +
     rebase_path(inputs, root_build_dir)
