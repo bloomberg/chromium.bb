@@ -9,7 +9,7 @@
 #include <time.h>
 #include <sys/time.h>
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   struct timespec t = {1, 0};
   while (1) {
     nanosleep(&t, 0);

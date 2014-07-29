@@ -31,3 +31,12 @@ node = env.SelUniversalTest(
 env.AddNodeToTestSuite(node,
                        ['small_tests'],
                        'run_force_shutdown_test')
+
+
+argv0_nexe = env.ComponentProgram('argv0_test', 'argv0_test.c',
+                                  EXTRA_LIBS=['${NONIRT_LIBS}'])
+node = env.CommandSelLdrTestNacl(
+    'argv0_test.out',
+    argv0_nexe,
+    sel_ldr_flags=['-a'])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_argv0_test')

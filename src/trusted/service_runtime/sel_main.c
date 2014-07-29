@@ -372,8 +372,7 @@ static void NaClSelLdrParseArgs(int argc, char **argv,
         if (nap->validator->stubout_mode_implemented) {
           nap->validator_stub_out_mode = 1;
         } else {
-           NaClLog(LOG_WARNING,
-                   "stub_out_mode is not supported, disabled\n");
+           NaClLog(LOG_WARNING, "stub_out_mode is not supported, disabled\n");
         }
         break;
       case 'S':
@@ -403,8 +402,7 @@ static void NaClSelLdrParseArgs(int argc, char **argv,
             exit(1);
           }
         } else {
-           NaClLog(LOG_ERROR,
-                   "fixed_feature_cpu_mode is not supported\n");
+           NaClLog(LOG_ERROR, "fixed_feature_cpu_mode is not supported\n");
            exit(1);
         }
         break;
@@ -472,7 +470,11 @@ static void NaClSelLdrParseArgs(int argc, char **argv,
   CHECK((NULL == options->nacl_file) == options->rpc_supplies_nexe);
 
   /* to be passed to NaClMain, eventually... */
-  argv[--optind] = (char *) "NaClMain";
+  if (NULL != options->nacl_file && options->debug_mode_bypass_acl_checks) {
+    argv[--optind] = options->nacl_file;
+  } else {
+    argv[--optind] = (char *) "NaClMain";
+  }
 
   options->app_argc = argc - optind;
   options->app_argv = argv + optind;
