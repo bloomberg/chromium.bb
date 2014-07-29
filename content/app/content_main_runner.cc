@@ -600,7 +600,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #endif
 #endif // !OS_ANDROID
 
-    int exit_code;
+    int exit_code = 0;
     if (delegate_ && delegate_->BasicStartupComplete(&exit_code))
       return exit_code;
 
