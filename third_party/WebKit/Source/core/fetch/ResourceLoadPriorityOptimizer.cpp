@@ -101,7 +101,7 @@ void ResourceLoadPriorityOptimizer::updateImageResourcesWithLoadPriority()
             ResourceLoadPriorityLow : ResourceLoadPriorityVeryLow;
 
         if (priority != it->value->imageResource->resourceRequest().priority()) {
-            it->value->imageResource->resourceRequest().setPriority(priority, it->value->screenArea);
+            it->value->imageResource->mutableResourceRequest().setPriority(priority, it->value->screenArea);
             it->value->imageResource->didChangePriority(priority, it->value->screenArea);
         }
     }

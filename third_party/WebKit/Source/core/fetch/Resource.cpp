@@ -350,7 +350,7 @@ static bool canUseResponse(ResourceResponse& response, double responseTimestamp)
     return currentAge(response, responseTimestamp) <= freshnessLifetime(response, responseTimestamp);
 }
 
-const ResourceRequest& Resource::lastResourceRequest()
+const ResourceRequest& Resource::lastResourceRequest() const
 {
     if (!m_redirectChain.size())
         return m_resourceRequest;

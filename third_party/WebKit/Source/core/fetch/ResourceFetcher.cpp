@@ -751,7 +751,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
     if (!request.forPreload() || policy != Use) {
         ResourceLoadPriority priority = loadPriority(type, request);
         if (priority != resource->resourceRequest().priority()) {
-            resource->resourceRequest().setPriority(priority);
+            resource->mutableResourceRequest().setPriority(priority);
             resource->didChangePriority(priority, 0);
         }
     }
