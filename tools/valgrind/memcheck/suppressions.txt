@@ -6295,3 +6295,17 @@
    fun:_ZN2v88internalL6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPS5_
    fun:_ZN2v88internal9Execution4CallEPNS0_7IsolateENS0_6HandleINS0_6ObjectEEES6_iPS6_b
 }
+{
+   bug_398349_a
+   Memcheck:Uninitialized
+   fun:_ZN2v88internal19JSObjectWalkVisitorINS0_29AllocationSiteCreationContextEE13StructureWalkENS0_6HandleINS0_8JSObjectEEE
+   fun:_ZN2v88internal8JSObject8DeepWalkENS0_6HandleIS1_EEPNS0_29AllocationSiteCreationContextE
+   fun:_ZN2v88internal27Runtime_CreateObjectLiteralEiPPNS0_6ObjectEPNS0_7IsolateE
+}
+{
+   bug_398349_b
+   Memcheck:Uninitialized
+   fun:_ZN2v88internal19JSObjectWalkVisitorINS0_26AllocationSiteUsageContextEE13StructureWalkENS0_6HandleINS0_8JSObjectEEE
+   fun:_ZN2v88internal8JSObject8DeepCopyENS0_6HandleIS1_EEPNS0_26AllocationSiteUsageContextENS1_13DeepCopyHintsE
+   fun:_ZN2v88internal27Runtime_CreateObjectLiteralEiPPNS0_6ObjectEPNS0_7IsolateE
+}
