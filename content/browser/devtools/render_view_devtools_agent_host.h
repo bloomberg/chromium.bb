@@ -87,6 +87,7 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
 
   void RenderViewCrashed();
   void OnSwapCompositorFrame(const IPC::Message& message);
+  bool OnSetTouchEventEmulationEnabled(const IPC::Message& message);
 
   void OnDispatchOnInspectorFrontend(const std::string& message);
   void OnSaveAgentRuntimeState(const std::string& state);

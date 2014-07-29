@@ -68,8 +68,9 @@ static int kCaptureRetryLimit = 2;
 void ParseGenericInputParams(base::DictionaryValue* params,
                              WebInputEvent* event) {
   int modifiers = 0;
-  if (params->GetInteger(devtools::Input::dispatchMouseEvent::kParamModifiers,
-                         &modifiers)) {
+  if (params->GetInteger(
+          devtools::Input::emulateTouchFromMouseEvent::kParamModifiers,
+          &modifiers)) {
     if (modifiers & 1)
       event->modifiers |= WebInputEvent::AltKey;
     if (modifiers & 2)
@@ -80,8 +81,9 @@ void ParseGenericInputParams(base::DictionaryValue* params,
       event->modifiers |= WebInputEvent::ShiftKey;
   }
 
-  params->GetDouble(devtools::Input::dispatchMouseEvent::kParamTimestamp,
-                    &event->timeStampSeconds);
+  params->GetDouble(
+      devtools::Input::emulateTouchFromMouseEvent::kParamTimestamp,
+      &event->timeStampSeconds);
 }
 
 }  // namespace
@@ -169,11 +171,20 @@ RendererOverridesHandler::RendererOverridesHandler(DevToolsAgentHost* agent)
       base::Bind(
           &RendererOverridesHandler::InputDispatchGestureEvent,
           base::Unretained(this)));
+  RegisterCommandHandler(
+      devtools::Input::emulateTouchFromMouseEvent::kName,
+      base::Bind(
+          &RendererOverridesHandler::InputEmulateTouchFromMouseEvent,
+          base::Unretained(this)));
 }
 
 RendererOverridesHandler::~RendererOverridesHandler() {}
 
 void RendererOverridesHandler::OnClientDetached() {
+  RenderViewHostImpl* host = static_cast<RenderViewHostImpl*>(
+      agent_->GetRenderViewHost());
+  if (screencast_command_ && host)
+    host->SetTouchEventEmulationEnabled(false, false);
   screencast_command_ = NULL;
 }
 
@@ -189,6 +200,17 @@ void RendererOverridesHandler::OnVisibilityChanged(bool visible) {
   if (!screencast_command_)
     return;
   NotifyScreencastVisibility(visible);
+}
+
+void RendererOverridesHandler::OnRenderViewHostChanged() {
+  RenderViewHostImpl* host = static_cast<RenderViewHostImpl*>(
+      agent_->GetRenderViewHost());
+  if (screencast_command_ && host)
+    host->SetTouchEventEmulationEnabled(true, true);
+}
+
+bool RendererOverridesHandler::OnSetTouchEventEmulationEnabled() {
+  return screencast_command_.get() != NULL;
 }
 
 void RendererOverridesHandler::InnerSwapCompositorFrame() {
@@ -316,6 +338,10 @@ RendererOverridesHandler::ClearBrowserCookies(
 scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageDisable(
     scoped_refptr<DevToolsProtocol::Command> command) {
+  RenderViewHostImpl* host = static_cast<RenderViewHostImpl*>(
+      agent_->GetRenderViewHost());
+  if (screencast_command_ && host)
+    host->SetTouchEventEmulationEnabled(false, false);
   screencast_command_ = NULL;
   return NULL;
 }
@@ -512,6 +538,7 @@ RendererOverridesHandler::PageStartScreencast(
   screencast_command_ = command;
   RenderViewHostImpl* host = static_cast<RenderViewHostImpl*>(
       agent_->GetRenderViewHost());
+  host->SetTouchEventEmulationEnabled(true, true);
   bool visible = !host->is_hidden();
   NotifyScreencastVisibility(visible);
   if (visible)
@@ -524,6 +551,10 @@ RendererOverridesHandler::PageStopScreencast(
     scoped_refptr<DevToolsProtocol::Command> command) {
   last_frame_time_ = base::TimeTicks();
   screencast_command_ = NULL;
+  RenderViewHostImpl* host = static_cast<RenderViewHostImpl*>(
+      agent_->GetRenderViewHost());
+  if (host)
+    host->SetTouchEventEmulationEnabled(false, false);
   return command->SuccessResponse(NULL);
 }
 
@@ -862,66 +893,114 @@ RendererOverridesHandler::InputDispatchMouseEvent(
     return NULL;
   }
 
+  if (!DispatchMouseEventFromCommand(command))
+    return NULL;
+  return command->SuccessResponse(NULL);
+}
+
+scoped_refptr<DevToolsProtocol::Response>
+RendererOverridesHandler::InputEmulateTouchFromMouseEvent(
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  if (!screencast_command_)
+    return NULL;
+  if (!DispatchMouseEventFromCommand(command))
+    return NULL;
+  return command->SuccessResponse(NULL);
+}
+
+bool RendererOverridesHandler::DispatchMouseEventFromCommand(
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  base::DictionaryValue* params = command->params();
+  if (!params)
+    return false;
+
   RenderViewHost* host = agent_->GetRenderViewHost();
-  blink::WebMouseEvent mouse_event;
-  ParseGenericInputParams(params, &mouse_event);
 
   std::string type;
-  if (params->GetString(devtools::Input::dispatchMouseEvent::kParamType,
-                        &type)) {
-    if (type ==
-        devtools::Input::dispatchMouseEvent::Type::kEnumMousePressed)
-      mouse_event.type = WebInputEvent::MouseDown;
-    else if (type ==
-        devtools::Input::dispatchMouseEvent::Type::kEnumMouseReleased)
-      mouse_event.type = WebInputEvent::MouseUp;
-    else if (type ==
-        devtools::Input::dispatchMouseEvent::Type::kEnumMouseMoved)
-      mouse_event.type = WebInputEvent::MouseMove;
-    else
-      return NULL;
+  if (!params->GetString(
+          devtools::Input::emulateTouchFromMouseEvent::kParamType,
+          &type)) {
+    return false;
+  }
+
+  blink::WebMouseWheelEvent wheel_event;
+  blink::WebMouseEvent mouse_event;
+  blink::WebMouseEvent* event = &mouse_event;
+
+  if (type ==
+      devtools::Input::emulateTouchFromMouseEvent::Type::kEnumMousePressed) {
+    event->type = WebInputEvent::MouseDown;
+  } else if (type ==
+      devtools::Input::emulateTouchFromMouseEvent::Type::kEnumMouseReleased) {
+    event->type = WebInputEvent::MouseUp;
+  } else if (type ==
+      devtools::Input::emulateTouchFromMouseEvent::Type::kEnumMouseMoved) {
+    event->type = WebInputEvent::MouseMove;
+  } else if (type ==
+      devtools::Input::emulateTouchFromMouseEvent::Type::kEnumMouseWheel) {
+    double deltaX = 0;
+    double deltaY = 0;
+    if (!params->GetDouble(
+            devtools::Input::emulateTouchFromMouseEvent::kParamDeltaX,
+            &deltaX) ||
+        !params->GetDouble(
+            devtools::Input::emulateTouchFromMouseEvent::kParamDeltaY,
+            &deltaY)) {
+      return false;
+    }
+    wheel_event.deltaX = static_cast<float>(deltaX);
+    wheel_event.deltaY = static_cast<float>(deltaY);
+    event = &wheel_event;
+    event->type = WebInputEvent::MouseWheel;
   } else {
-    return NULL;
+    return false;
   }
 
-  if (!params->GetInteger(devtools::Input::dispatchMouseEvent::kParamX,
-                          &mouse_event.x) ||
-      !params->GetInteger(devtools::Input::dispatchMouseEvent::kParamY,
-                          &mouse_event.y)) {
-    return NULL;
+  ParseGenericInputParams(params, event);
+
+  if (!params->GetInteger(devtools::Input::emulateTouchFromMouseEvent::kParamX,
+                          &event->x) ||
+      !params->GetInteger(devtools::Input::emulateTouchFromMouseEvent::kParamY,
+                          &event->y)) {
+    return false;
   }
 
-  mouse_event.windowX = mouse_event.x;
-  mouse_event.windowY = mouse_event.y;
-  mouse_event.globalX = mouse_event.x;
-  mouse_event.globalY = mouse_event.y;
+  event->windowX = event->x;
+  event->windowY = event->y;
+  event->globalX = event->x;
+  event->globalY = event->y;
 
-  params->GetInteger(devtools::Input::dispatchMouseEvent::kParamClickCount,
-                     &mouse_event.clickCount);
+  params->GetInteger(
+      devtools::Input::emulateTouchFromMouseEvent::kParamClickCount,
+      &event->clickCount);
 
   std::string button;
-  if (!params->GetString(devtools::Input::dispatchMouseEvent::kParamButton,
-                         &button)) {
-    return NULL;
+  if (!params->GetString(
+          devtools::Input::emulateTouchFromMouseEvent::kParamButton,
+          &button)) {
+    return false;
   }
 
   if (button == "none") {
-    mouse_event.button = WebMouseEvent::ButtonNone;
+    event->button = WebMouseEvent::ButtonNone;
   } else if (button == "left") {
-    mouse_event.button = WebMouseEvent::ButtonLeft;
-    mouse_event.modifiers |= WebInputEvent::LeftButtonDown;
+    event->button = WebMouseEvent::ButtonLeft;
+    event->modifiers |= WebInputEvent::LeftButtonDown;
   } else if (button == "middle") {
-    mouse_event.button = WebMouseEvent::ButtonMiddle;
-    mouse_event.modifiers |= WebInputEvent::MiddleButtonDown;
+    event->button = WebMouseEvent::ButtonMiddle;
+    event->modifiers |= WebInputEvent::MiddleButtonDown;
   } else if (button == "right") {
-    mouse_event.button = WebMouseEvent::ButtonRight;
-    mouse_event.modifiers |= WebInputEvent::RightButtonDown;
+    event->button = WebMouseEvent::ButtonRight;
+    event->modifiers |= WebInputEvent::RightButtonDown;
   } else {
-    return NULL;
+    return false;
   }
 
-  host->ForwardMouseEvent(mouse_event);
-  return command->SuccessResponse(NULL);
+  if (event->type == WebInputEvent::MouseWheel)
+    host->ForwardWheelEvent(wheel_event);
+  else
+    host->ForwardMouseEvent(mouse_event);
+  return true;
 }
 
 scoped_refptr<DevToolsProtocol::Response>

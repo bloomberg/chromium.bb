@@ -275,6 +275,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const blink::WebMouseWheelEvent& wheel_event,
       const ui::LatencyInfo& ui_latency);
 
+  // Enables/disables touch emulation using mouse event. See TouchEmulator.
+  void SetTouchEventEmulationEnabled(bool enabled, bool allow_pinch);
+
   // TouchEmulatorClient implementation.
   virtual void ForwardGestureEvent(
       const blink::WebGestureEvent& gesture_event) OVERRIDE;

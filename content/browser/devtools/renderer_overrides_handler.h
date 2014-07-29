@@ -38,6 +38,8 @@ class CONTENT_EXPORT RendererOverridesHandler
   void OnClientDetached();
   void OnSwapCompositorFrame(const cc::CompositorFrameMetadata& frame_metadata);
   void OnVisibilityChanged(bool visible);
+  void OnRenderViewHostChanged();
+  bool OnSetTouchEventEmulationEnabled();
 
  private:
   void InnerSwapCompositorFrame();
@@ -99,6 +101,10 @@ class CONTENT_EXPORT RendererOverridesHandler
   scoped_refptr<DevToolsProtocol::Response> InputDispatchMouseEvent(
       scoped_refptr<DevToolsProtocol::Command> command);
   scoped_refptr<DevToolsProtocol::Response> InputDispatchGestureEvent(
+      scoped_refptr<DevToolsProtocol::Command> command);
+  scoped_refptr<DevToolsProtocol::Response> InputEmulateTouchFromMouseEvent(
+      scoped_refptr<DevToolsProtocol::Command> command);
+  bool DispatchMouseEventFromCommand(
       scoped_refptr<DevToolsProtocol::Command> command);
 
   DevToolsAgentHost* agent_;

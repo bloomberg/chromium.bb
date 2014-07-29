@@ -390,6 +390,7 @@ void RenderViewDevToolsAgentHost::SetRenderViewHost(RenderViewHost* rvh) {
   render_view_host_ = rvh;
 
   WebContentsObserver::Observe(WebContents::FromRenderViewHost(rvh));
+  overrides_handler_->OnRenderViewHostChanged();
 
   registrar_.Add(
       this,
@@ -438,6 +439,8 @@ bool RenderViewDevToolsAgentHost::DispatchIPCMessage(
                         OnSaveAgentRuntimeState)
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_SwapCompositorFrame,
                                 handled = false; OnSwapCompositorFrame(msg))
+    IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_SetTouchEventEmulationEnabled,
+                                handled = OnSetTouchEventEmulationEnabled(msg))
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -449,6 +452,11 @@ void RenderViewDevToolsAgentHost::OnSwapCompositorFrame(
   if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
     return;
   overrides_handler_->OnSwapCompositorFrame(param.b.metadata);
+}
+
+bool RenderViewDevToolsAgentHost::OnSetTouchEventEmulationEnabled(
+    const IPC::Message& message) {
+  return overrides_handler_->OnSetTouchEventEmulationEnabled();
 }
 
 void RenderViewDevToolsAgentHost::SynchronousSwapCompositorFrame(
