@@ -546,6 +546,9 @@ void SVGAnimationElement::startedActiveInterval()
 {
     m_animationValid = false;
 
+    if (!isValid())
+        return;
+
     if (!hasValidAttributeType())
         return;
 

@@ -166,6 +166,8 @@ protected:
     void setCalcMode(CalcMode calcMode) { m_calcMode = calcMode; }
 
 private:
+    virtual bool isValid() const OVERRIDE FINAL { return SVGTests::isValid(); }
+
     virtual void animationAttributeChanged() OVERRIDE;
     void setAttributeType(const AtomicString&);
 
