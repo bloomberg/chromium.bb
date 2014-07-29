@@ -1556,6 +1556,7 @@ void StyleResolver::trace(Visitor* visitor)
     visitor->trace(m_keyframesRuleMap);
     visitor->trace(m_matchedPropertiesCache);
     visitor->trace(m_viewportDependentMediaQueryResults);
+    visitor->trace(m_selectorFilter);
     visitor->trace(m_viewportStyleResolver);
     visitor->trace(m_features);
     visitor->trace(m_siblingRuleSet);

@@ -38,7 +38,20 @@ namespace blink {
 class CSSSelector;
 
 class SelectorFilter {
+    DISALLOW_ALLOCATION();
 public:
+    class ParentStackFrame {
+        ALLOW_ONLY_INLINE_ALLOCATION();
+    public:
+        ParentStackFrame() : element(nullptr) { }
+        explicit ParentStackFrame(Element& element) : element(&element) { }
+
+        void trace(Visitor*);
+
+        RawPtrWillBeMember<Element> element;
+        Vector<unsigned, 4> identifierHashes;
+    };
+
     void pushParentStackFrame(Element& parent);
     void popParentStackFrame();
 
@@ -52,14 +65,10 @@ public:
     inline bool fastRejectSelector(const unsigned* identifierHashes) const;
     static void collectIdentifierHashes(const CSSSelector&, unsigned* identifierHashes, unsigned maximumIdentifierCount);
 
+    void trace(Visitor*);
+
 private:
-    struct ParentStackFrame {
-        ParentStackFrame() : element(0) { }
-        ParentStackFrame(Element& element) : element(&element) { }
-        Element* element;
-        Vector<unsigned, 4> identifierHashes;
-    };
-    Vector<ParentStackFrame> m_parentStack;
+    WillBeHeapVector<ParentStackFrame> m_parentStack;
 
     // With 100 unique strings in the filter, 2^12 slot table has false positive rate of ~0.2%.
     static const unsigned bloomFilterKeyBits = 12;
@@ -78,5 +87,7 @@ inline bool SelectorFilter::fastRejectSelector(const unsigned* identifierHashes)
 }
 
 }
+
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::SelectorFilter::ParentStackFrame);
 
 #endif
