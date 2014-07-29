@@ -5,42 +5,31 @@
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_HISTORY_MENU
-#import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #import "chrome/browser/ui/cocoa/history_menu_cocoa_controller.h"
-#include "chrome/common/url_constants.h"
-#include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
-#include "skia/ext/skia_utils_mac.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/text_elider.h"
 
 namespace {
 
-// Menus more than this many chars long will get trimmed.
-const NSUInteger kMaximumMenuWidthInChars = 50;
-
-// When trimming, use this many chars from each side.
-const NSUInteger kMenuTrimSizeInChars = 25;
+// Maximum number of pixels to use for a menu item title.
+const float kTitlePixelWidth = 400;
 
 // Number of days to consider when getting the number of visited items.
 const int kVisitedScope = 90;
@@ -338,23 +327,17 @@ NSMenuItem* HistoryMenuBridge::AddItemToMenu(HistoryItem* item,
                                              NSMenu* menu,
                                              NSInteger tag,
                                              NSInteger index) {
-  NSString* title = base::SysUTF16ToNSString(item->title);
-  std::string url_string = item->url.possibly_invalid_spec();
+  // Elide the title of the history item, or use the URL if there is none.
+  std::string url = item->url.possibly_invalid_spec();
+  base::string16 full_title = item->title;
+  base::string16 title =
+      gfx::ElideText(full_title.empty() ? base::UTF8ToUTF16(url) : full_title,
+                     gfx::FontList(gfx::Font([NSFont menuFontOfSize:0])),
+                     kTitlePixelWidth,
+                     gfx::ELIDE_MIDDLE);
 
-  // If we don't have a title, use the URL.
-  if ([title isEqualToString:@""])
-    title = base::SysUTF8ToNSString(url_string);
-  NSString* full_title = title;
-  if ([title length] > kMaximumMenuWidthInChars) {
-    // TODO(rsesek): use app/text_elider.h once it uses base::string16 and can
-    // take out the middle of strings.
-    title = [NSString stringWithFormat:@"%@…%@",
-               [title substringToIndex:kMenuTrimSizeInChars],
-               [title substringFromIndex:([title length] -
-                                          kMenuTrimSizeInChars)]];
-  }
   item->menu_item.reset(
-      [[NSMenuItem alloc] initWithTitle:title
+      [[NSMenuItem alloc] initWithTitle:base::SysUTF16ToNSString(title)
                                  action:nil
                           keyEquivalent:@""]);
   [item->menu_item setTarget:controller_];
@@ -366,8 +349,8 @@ NSMenuItem* HistoryMenuBridge::AddItemToMenu(HistoryItem* item,
     [item->menu_item setImage:default_favicon_.get()];
 
   // Add a tooltip.
-  NSString* tooltip = [NSString stringWithFormat:@"%@\n%s", full_title,
-                                url_string.c_str()];
+  NSString* tooltip = [NSString stringWithFormat:@"%@\n%@",
+      base::SysUTF16ToNSString(full_title), base::SysUTF8ToNSString(url)];
   [item->menu_item setToolTip:tooltip];
 
   [menu insertItem:item->menu_item.get() atIndex:index];
