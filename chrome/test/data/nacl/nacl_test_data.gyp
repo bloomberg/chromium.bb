@@ -960,7 +960,7 @@
       ],
     },
     {
-      'target_name': 'pnacl_exception_handling_disabled_test',
+      'target_name': 'pnacl_hw_eh_disabled_test',
       'type': 'none',
       'variables': {
         # This tests that nexes produced by translation in the browser are not
@@ -969,7 +969,7 @@
         'enable_x86_32': 0,
         'enable_x86_64': 0,
         'enable_arm': 0,
-        'nexe_target': 'pnacl_exception_handling_disabled',
+        'nexe_target': 'pnacl_hw_eh_disabled',
         'build_pnacl_newlib': 1,
         'nexe_destination_dir': 'nacl_test_data',
         'link_flags': [
@@ -984,10 +984,10 @@
           '-lnacl_exception_private',
         ],
         'sources': [
-          'pnacl_exception_handling_disabled/pnacl_exception_handling_disabled.cc',
+          'pnacl_hw_eh_disabled/pnacl_hw_eh_disabled.cc',
         ],
         'test_files': [
-          'pnacl_exception_handling_disabled/pnacl_exception_handling_disabled.html',
+          'pnacl_hw_eh_disabled/pnacl_hw_eh_disabled.html',
         ],
       },
       'dependencies': [

@@ -370,7 +370,7 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
                        MAYBE_PNACL(PnaclExceptionHandlingDisabled)) {
   RunNaClIntegrationTest(FILE_PATH_LITERAL(
-      "pnacl_exception_handling_disabled.html"));
+      "pnacl_hw_eh_disabled.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl, PnaclMimeType) {
