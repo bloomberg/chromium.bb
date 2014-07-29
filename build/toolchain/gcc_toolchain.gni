@@ -25,8 +25,11 @@
 #  - solink_libs_section_prefix
 #  - solink_libs_section_postfix
 #      Same as libs_section_{pre,post}fix except used for solink instead of link.
+#  - post_solink
+#      The content of this string, if specified, will be appended to the solink
+#      command.
 #  - deps
-#      Just fowarded to the toolchain definition.
+#      Just forwarded to the toolchain definition.
 #  - is_clang
 template("gcc_toolchain") {
   toolchain(target_name) {
@@ -97,10 +100,22 @@ template("gcc_toolchain") {
       rspfile_content = "\$in"
     }
     tool("solink") {
-      command = "if [ ! -e \$lib -o ! -e \${lib}.TOC ]; then $ld -shared \$ldflags -o \$lib -Wl,-soname=\$soname @\$rspfile && { readelf -d \${lib} | grep SONAME ; nm -gD -f p \${lib} | cut -f1-2 -d' '; } > \${lib}.TOC; else $ld -shared \$ldflags -o \$lib -Wl,-soname=\$soname -Wl,--whole-archive \$in \$solibs -Wl,--no-whole-archive $solink_libs_section_prefix \$libs $solink_libs_section_postfix && { readelf -d \${lib} | grep SONAME ; nm -gD -f p \${lib} | cut -f1-2 -d' '; } > \${lib}.tmp && if ! cmp -s \${lib}.tmp \${lib}.TOC; then mv \${lib}.tmp \${lib}.TOC ; fi; fi"
-      description = "SOLINK \$lib"
       rspfile = "\$out.rsp"
-      rspfile_content = "-Wl,--whole-archive \$in \$solibs -Wl,--no-whole-archive \$libs"
+      rspfile_content = "-Wl,--whole-archive \$in \$solibs -Wl,--no-whole-archive $solink_libs_section_prefix \$libs $solink_libs_section_postfix"
+
+      # TODO(cjhopman): There needs to be a way for gn to correctly figure out
+      # the outputs of a solink command.
+
+      link_command = "$ld -shared \$ldflags -o \$lib -Wl,-soname=\$soname $rspfile_content"
+      toc_command = "{ readelf -d \${lib} | grep SONAME ; nm -gD -f p \${lib} | cut -f1-2 -d' '; } > \${lib}.tmp"
+      replace_command = "if ! cmp -s \${lib}.tmp \${lib}.TOC; then mv \${lib}.tmp \${lib}.TOC; fi"
+      command = "$link_command && $toc_command && $replace_command"
+
+      if (defined(invoker.postsolink)) {
+        command += " && " + invoker.postsolink
+      }
+
+      description = "SOLINK \$lib"
       #pool = "link_pool"
       restat = "1"
     }
