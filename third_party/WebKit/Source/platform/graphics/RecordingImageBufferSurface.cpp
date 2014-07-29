@@ -36,7 +36,7 @@ void RecordingImageBufferSurface::initializeCurrentFrame()
     m_initialSaveCount = m_currentFrame->getRecordingCanvas()->getSaveCount();
     if (m_graphicsContext) {
         m_graphicsContext->resetCanvas(m_currentFrame->getRecordingCanvas());
-        m_graphicsContext->setTrackOpaqueRegion(true);
+        m_graphicsContext->setRegionTrackingMode(GraphicsContext::RegionTrackingOverwrite);
     }
 }
 
@@ -44,7 +44,7 @@ void RecordingImageBufferSurface::setImageBuffer(ImageBuffer* imageBuffer)
 {
     m_graphicsContext = imageBuffer ? imageBuffer->context() : 0;
     if (m_currentFrame && m_graphicsContext) {
-        m_graphicsContext->setTrackOpaqueRegion(true);
+        m_graphicsContext->setRegionTrackingMode(GraphicsContext::RegionTrackingOverwrite);
         m_graphicsContext->resetCanvas(m_currentFrame->getRecordingCanvas());
     }
 }
@@ -74,7 +74,7 @@ void RecordingImageBufferSurface::fallBackToRasterCanvas()
     }
 
     if (m_graphicsContext) {
-        m_graphicsContext->setTrackOpaqueRegion(false);
+        m_graphicsContext->setRegionTrackingMode(GraphicsContext::RegionTrackingDisabled);
         m_graphicsContext->resetCanvas(m_rasterCanvas.get());
     }
 }

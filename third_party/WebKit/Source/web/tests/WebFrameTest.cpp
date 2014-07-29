@@ -2113,7 +2113,7 @@ TEST_F(WebFrameTest, pageScaleFactorScalesPaintClip)
     SkCanvas canvas(bitmap);
 
     blink::GraphicsContext context(&canvas);
-    context.setTrackOpaqueRegion(true);
+    context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     EXPECT_EQ_RECT(blink::IntRect(0, 0, 0, 0), context.opaqueRegion().asRect());
 

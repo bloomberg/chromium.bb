@@ -125,7 +125,7 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas, DisabledMode disableContextOr
 #endif
     , m_disabledState(disableContextOrPainting)
     , m_deviceScaleFactor(1.0f)
-    , m_trackOpaqueRegion(false)
+    , m_regionTrackingMode(RegionTrackingDisabled)
     , m_trackTextRegion(false)
     , m_updatingControlTints(false)
     , m_accelerated(false)
@@ -160,7 +160,16 @@ void GraphicsContext::resetCanvas(SkCanvas* canvas)
 {
     ASSERT(canvas);
     m_canvas = canvas;
-    m_opaqueRegion.reset();
+    m_trackedRegion.reset();
+}
+
+void GraphicsContext::setRegionTrackingMode(RegionTrackingMode mode)
+{
+    m_regionTrackingMode = mode;
+    if (mode == RegionTrackingOpaque)
+        m_trackedRegion.setTrackedRegionType(RegionTracker::Opaque);
+    else if (mode == RegionTrackingOverwrite)
+        m_trackedRegion.setTrackedRegionType(RegionTracker::Overwrite);
 }
 
 void GraphicsContext::save()
@@ -205,8 +214,8 @@ void GraphicsContext::saveLayer(const SkRect* bounds, const SkPaint* paint)
     realizeCanvasSave();
 
     m_canvas->saveLayer(bounds, paint);
-    if (m_trackOpaqueRegion)
-        m_opaqueRegion.pushCanvasLayer(paint);
+    if (regionTrackingEnabled())
+        m_trackedRegion.pushCanvasLayer(paint);
 }
 
 void GraphicsContext::restoreLayer()
@@ -215,8 +224,8 @@ void GraphicsContext::restoreLayer()
         return;
 
     m_canvas->restore();
-    if (m_trackOpaqueRegion)
-        m_opaqueRegion.popCanvasLayer(this);
+    if (regionTrackingEnabled())
+        m_trackedRegion.popCanvasLayer(this);
 }
 
 void GraphicsContext::beginAnnotation(const AnnotationList& annotations)
@@ -724,8 +733,8 @@ void GraphicsContext::drawLine(const IntPoint& point1, const IntPoint& point2)
 
     m_canvas->drawPoints(SkCanvas::kLines_PointMode, 2, pts, paint);
 
-    if (m_trackOpaqueRegion)
-        m_opaqueRegion.didDrawPoints(this, SkCanvas::kLines_PointMode, 2, pts, paint);
+    if (regionTrackingEnabled())
+        m_trackedRegion.didDrawPoints(this, SkCanvas::kLines_PointMode, 2, pts, paint);
 }
 
 void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt, float width, DocumentMarkerLineStyle style)
@@ -1074,15 +1083,15 @@ void GraphicsContext::writePixels(const SkImageInfo& info, const void* pixels, s
 
     m_canvas->writePixels(info, pixels, rowBytes, x, y);
 
-    if (m_trackOpaqueRegion) {
+    if (regionTrackingEnabled()) {
         SkRect rect = SkRect::MakeXYWH(x, y, info.width(), info.height());
         SkPaint paint;
 
         paint.setXfermodeMode(SkXfermode::kSrc_Mode);
         if (kOpaque_SkAlphaType != info.alphaType())
-            paint.setAlpha(0x80); // signal to m_opaqueRegion that we are not fully opaque
+            paint.setAlpha(0x80); // signal to m_trackedRegion that we are not fully opaque
 
-        m_opaqueRegion.didDrawRect(this, rect, paint, 0);
+        m_trackedRegion.didDrawRect(this, rect, paint, 0);
         // more efficient would be to call markRectAsOpaque or MarkRectAsNonOpaque directly,
         // rather than cons-ing up a paint with an xfermode and alpha
     }
@@ -1107,9 +1116,9 @@ void GraphicsContext::drawBitmap(const SkBitmap& bitmap, SkScalar left, SkScalar
 
     m_canvas->drawBitmap(bitmap, left, top, paint);
 
-    if (m_trackOpaqueRegion) {
+    if (regionTrackingEnabled()) {
         SkRect rect = SkRect::MakeXYWH(left, top, bitmap.width(), bitmap.height());
-        m_opaqueRegion.didDrawRect(this, rect, *paint, &bitmap);
+        m_trackedRegion.didDrawRect(this, rect, *paint, &bitmap);
     }
 }
 
@@ -1124,8 +1133,8 @@ void GraphicsContext::drawBitmapRect(const SkBitmap& bitmap, const SkRect* src,
 
     m_canvas->drawBitmapRectToRect(bitmap, src, dst, paint, flags);
 
-    if (m_trackOpaqueRegion)
-        m_opaqueRegion.didDrawRect(this, dst, *paint, &bitmap);
+    if (regionTrackingEnabled())
+        m_trackedRegion.didDrawRect(this, dst, *paint, &bitmap);
 }
 
 void GraphicsContext::drawOval(const SkRect& oval, const SkPaint& paint)
@@ -1135,8 +1144,8 @@ void GraphicsContext::drawOval(const SkRect& oval, const SkPaint& paint)
 
     m_canvas->drawOval(oval, paint);
 
-    if (m_trackOpaqueRegion)
-        m_opaqueRegion.didDrawBounded(this, oval, paint);
+    if (regionTrackingEnabled())
+        m_trackedRegion.didDrawBounded(this, oval, paint);
 }
 
 void GraphicsContext::drawPath(const SkPath& path, const SkPaint& paint)
@@ -1146,8 +1155,8 @@ void GraphicsContext::drawPath(const SkPath& path, const SkPaint& paint)
 
     m_canvas->drawPath(path, paint);
 
-    if (m_trackOpaqueRegion)
-        m_opaqueRegion.didDrawPath(this, path, paint);
+    if (regionTrackingEnabled())
+        m_trackedRegion.didDrawPath(this, path, paint);
 }
 
 void GraphicsContext::drawRect(const SkRect& rect, const SkPaint& paint)
@@ -1157,8 +1166,8 @@ void GraphicsContext::drawRect(const SkRect& rect, const SkPaint& paint)
 
     m_canvas->drawRect(rect, paint);
 
-    if (m_trackOpaqueRegion)
-        m_opaqueRegion.didDrawRect(this, rect, paint, 0);
+    if (regionTrackingEnabled())
+        m_trackedRegion.didDrawRect(this, rect, paint, 0);
 }
 
 void GraphicsContext::didDrawRect(const SkRect& rect, const SkPaint& paint, const SkBitmap* bitmap)
@@ -1166,8 +1175,8 @@ void GraphicsContext::didDrawRect(const SkRect& rect, const SkPaint& paint, cons
     if (contextDisabled())
         return;
 
-    if (m_trackOpaqueRegion)
-        m_opaqueRegion.didDrawRect(this, rect, paint, bitmap);
+    if (regionTrackingEnabled())
+        m_trackedRegion.didDrawRect(this, rect, paint, bitmap);
 }
 
 void GraphicsContext::drawPosText(const void* text, size_t byteLength,
@@ -1180,8 +1189,8 @@ void GraphicsContext::drawPosText(const void* text, size_t byteLength,
     didDrawTextInRect(textRect);
 
     // FIXME: compute bounds for positioned text.
-    if (m_trackOpaqueRegion)
-        m_opaqueRegion.didDrawUnbounded(this, paint, OpaqueRegionSkia::FillOrStroke);
+    if (regionTrackingEnabled())
+        m_trackedRegion.didDrawUnbounded(this, paint, RegionTracker::FillOrStroke);
 }
 
 void GraphicsContext::drawPosTextH(const void* text, size_t byteLength,
@@ -1194,8 +1203,8 @@ void GraphicsContext::drawPosTextH(const void* text, size_t byteLength,
     didDrawTextInRect(textRect);
 
     // FIXME: compute bounds for positioned text.
-    if (m_trackOpaqueRegion)
-        m_opaqueRegion.didDrawUnbounded(this, paint, OpaqueRegionSkia::FillOrStroke);
+    if (regionTrackingEnabled())
+        m_trackedRegion.didDrawUnbounded(this, paint, RegionTracker::FillOrStroke);
 }
 
 void GraphicsContext::fillPath(const Path& pathToFill)
@@ -1257,8 +1266,8 @@ void GraphicsContext::fillBetweenRoundedRects(const IntRect& outer, const IntSiz
 
     m_canvas->drawDRRect(rrOuter, rrInner, paint);
 
-    if (m_trackOpaqueRegion)
-        m_opaqueRegion.didDrawBounded(this, rrOuter.getBounds(), paint);
+    if (regionTrackingEnabled())
+        m_trackedRegion.didDrawBounded(this, rrOuter.getBounds(), paint);
 }
 
 void GraphicsContext::fillBetweenRoundedRects(const RoundedRect& outer, const RoundedRect& inner, const Color& color)
@@ -1295,8 +1304,8 @@ void GraphicsContext::fillRoundedRect(const IntRect& rect, const IntSize& topLef
 
     m_canvas->drawRRect(rr, paint);
 
-    if (m_trackOpaqueRegion)
-        m_opaqueRegion.didDrawBounded(this, rr.getBounds(), paint);
+    if (regionTrackingEnabled())
+        m_trackedRegion.didDrawBounded(this, rr.getBounds(), paint);
 }
 
 void GraphicsContext::fillEllipse(const FloatRect& ellipse)

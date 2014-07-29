@@ -28,26 +28,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OpaqueRegionSkia_h
-#define OpaqueRegionSkia_h
+#ifndef RegionTracker_h
+#define RegionTracker_h
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"
-
-#include "SkBitmap.h"
-#include "SkCanvas.h"
-#include "SkPaint.h"
-#include "SkPoint.h"
-#include "SkRect.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkPoint.h"
+#include "third_party/skia/include/core/SkRect.h"
 
 namespace blink {
 class GraphicsContext;
 
+enum RegionTrackingMode {
+    TrackOpaqueRegion,
+    TRackOverwriteRegion
+};
+
 // This class is an encapsulation of functionality for GraphicsContext, and its methods are mirrored
 // there for the outside world. It tracks paints and computes what area will be opaque.
-class PLATFORM_EXPORT OpaqueRegionSkia FINAL {
+class PLATFORM_EXPORT RegionTracker FINAL {
 public:
-    OpaqueRegionSkia();
+    RegionTracker();
 
     // The resulting opaque region as a single rect.
     IntRect asRect() const;
@@ -56,6 +60,14 @@ public:
     void popCanvasLayer(const GraphicsContext*);
 
     void setImageMask(const SkRect& imageOpaqueRect);
+
+    enum RegionType {
+        Opaque,
+        Overwrite
+    };
+
+    // Set this to true to track regions that occlude the destination instead of only regions that produce opaque pixels.
+    void setTrackedRegionType(RegionType type) { m_trackedRegionType = type; }
 
     enum DrawType {
         FillOnly,
@@ -96,9 +108,10 @@ private:
     SkRect& currentTrackingOpaqueRect();
 
     SkRect m_opaqueRect;
+    RegionType m_trackedRegionType;
 
     Vector<CanvasLayerState, 3> m_canvasLayerStack;
 };
 
 }
-#endif // OpaqueRegionSkia_h
+#endif // RegionTracker_h

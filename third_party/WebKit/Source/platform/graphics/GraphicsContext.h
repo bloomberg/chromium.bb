@@ -37,7 +37,7 @@
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/GraphicsContextAnnotation.h"
 #include "platform/graphics/GraphicsContextState.h"
-#include "platform/graphics/skia/OpaqueRegionSkia.h"
+#include "platform/graphics/RegionTracker.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -223,8 +223,14 @@ public:
 
     // The opaque region is empty until tracking is turned on.
     // It is never clerared by the context.
-    void setTrackOpaqueRegion(bool track) { m_trackOpaqueRegion = track; }
-    const OpaqueRegionSkia& opaqueRegion() const { return m_opaqueRegion; }
+    enum RegionTrackingMode {
+        RegionTrackingDisabled = 0,
+        RegionTrackingOpaque,
+        RegionTrackingOverwrite
+    };
+    void setRegionTrackingMode(RegionTrackingMode);
+    bool regionTrackingEnabled() { return m_regionTrackingMode != RegionTrackingDisabled; }
+    const RegionTracker& opaqueRegion() const { return m_trackedRegion; }
 
     // The text region is empty until tracking is turned on.
     // It is never clerared by the context.
@@ -520,7 +526,7 @@ private:
     bool m_disableDestructionChecks;
 #endif
     // Tracks the region painted opaque via the GraphicsContext.
-    OpaqueRegionSkia m_opaqueRegion;
+    RegionTracker m_trackedRegion;
 
     // Tracks the region where text is painted via the GraphicsContext.
     SkRect m_textRegion;
@@ -530,7 +536,7 @@ private:
     float m_deviceScaleFactor;
 
     // Activation for the above region tracking features
-    bool m_trackOpaqueRegion : 1;
+    unsigned m_regionTrackingMode : 2;
     bool m_trackTextRegion : 1;
 
     // FIXME: Make this go away: crbug.com/236892

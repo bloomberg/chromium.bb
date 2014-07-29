@@ -6,6 +6,7 @@
 
 #include "platform/graphics/RecordingImageBufferSurface.h"
 
+#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
@@ -80,6 +81,16 @@ protected:
         m_testSurface->getPicture();
         expectDisplayListEnabled(true);
     }
+
+    void testClearRect()
+    {
+        m_testSurface->initializeCurrentFrame();
+        m_testSurface->getPicture();
+        m_imageBuffer->context()->clearRect(FloatRect(FloatPoint(0, 0), FloatSize(m_testSurface->size())));
+        m_testSurface->willUse();
+        m_testSurface->getPicture();
+        expectDisplayListEnabled(true);
+    }
 private:
     void expectDisplayListEnabled(bool displayListEnabled)
     {
@@ -116,6 +127,11 @@ TEST_F(RecordingImageBufferSurfaceTest, testAnimatedWithoutClear)
 TEST_F(RecordingImageBufferSurfaceTest, testAnimatedWithClear)
 {
     testAnimatedWithClear();
+}
+
+TEST_F(RecordingImageBufferSurfaceTest, testClearRect)
+{
+    testClearRect();
 }
 
 } // namespace

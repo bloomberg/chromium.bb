@@ -58,7 +58,7 @@ void OpaqueRectTrackingContentLayerDelegate::paintContents(
 
     GraphicsContext context(canvas,
         contextStatus == blink::WebContentLayerClient::GraphicsContextEnabled ? GraphicsContext::NothingDisabled : GraphicsContext::FullyDisabled);
-    context.setTrackOpaqueRegion(!m_opaque);
+    context.setRegionTrackingMode(m_opaque ? GraphicsContext::RegionTrackingDisabled : GraphicsContext::RegionTrackingOpaque);
     context.setCertainlyOpaque(m_opaque);
     context.setShouldSmoothFonts(canPaintLCDText);
 
