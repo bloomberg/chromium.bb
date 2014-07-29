@@ -161,12 +161,12 @@ TEST(MemoryTest, Valid) {
   }
 }
 
-// TODO(vtl): Convert this test.
-#if 0
-TEST(MemoryTest, Invalid) {
-  // Note: |VerifyUserPointer...()| are defined to be "best effort" checks (and
-  // may always return true). Thus these tests of invalid cases only reflect the
-  // current implementation.
+TEST(MemoryTest, InvalidDeath) {
+  const char kMemoryCheckFailedRegex[] = "Check failed";
+
+  // Note: |Check...()| are defined to be "best effort" checks (and may always
+  // return true). Thus these tests of invalid cases only reflect the current
+  // implementation.
 
   // These tests depend on |int32_t| and |int64_t| having nontrivial alignment.
   MOJO_COMPILE_ASSERT(MOJO_ALIGNOF(int32_t) != 1,
@@ -174,59 +174,120 @@ TEST(MemoryTest, Invalid) {
   MOJO_COMPILE_ASSERT(MOJO_ALIGNOF(int64_t) != 1,
                       int64_t_does_not_have_to_be_aligned);
 
-  int32_t my_int32;
-  int64_t my_int64;
-
-  // |VerifyUserPointer|:
-
-  EXPECT_FALSE(VerifyUserPointer<char>(NULL));
-  EXPECT_FALSE(VerifyUserPointer<int32_t>(NULL));
-  EXPECT_FALSE(VerifyUserPointer<int64_t>(NULL));
+  // Null:
+  {
+    UserPointer<char> ptr(NULL);
+    char array[5] = {};
+    EXPECT_DEATH_IF_SUPPORTED(ptr.Check(), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.Get(), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.Put('x'), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.CheckArray(5), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.GetArray(array, 5), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.PutArray(array, 5), kMemoryCheckFailedRegex);
+  }
+  {
+    UserPointer<int32_t> ptr(NULL);
+    int32_t array[5] = {};
+    EXPECT_DEATH_IF_SUPPORTED(ptr.Check(), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.Get(), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.Put(123), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.CheckArray(5), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.GetArray(array, 5), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.PutArray(array, 5), kMemoryCheckFailedRegex);
+  }
+  {
+    UserPointer<int64_t> ptr(NULL);
+    int64_t array[5] = {};
+    EXPECT_DEATH_IF_SUPPORTED(ptr.Check(), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.Get(), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.Put(123), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.CheckArray(5), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.GetArray(array, 5), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.PutArray(array, 5), kMemoryCheckFailedRegex);
+  }
+  // Also check a const pointer:
+  {
+    UserPointer<const int32_t> ptr(NULL);
+    int32_t array[5] = {};
+    EXPECT_DEATH_IF_SUPPORTED(ptr.Check(), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.Get(), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.CheckArray(5), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.GetArray(array, 5), kMemoryCheckFailedRegex);
+  }
 
   // Unaligned:
-  EXPECT_FALSE(VerifyUserPointer<int32_t>(reinterpret_cast<const int32_t*>(1)));
-  EXPECT_FALSE(VerifyUserPointer<int64_t>(reinterpret_cast<const int64_t*>(1)));
-
-  // |VerifyUserPointerWithCount|:
-
-  EXPECT_FALSE(VerifyUserPointerWithCount<char>(NULL, 1));
-  EXPECT_FALSE(VerifyUserPointerWithCount<int32_t>(NULL, 1));
-  EXPECT_FALSE(VerifyUserPointerWithCount<int64_t>(NULL, 1));
-
-  // Unaligned:
-  EXPECT_FALSE(VerifyUserPointerWithCount<int32_t>(
-                   reinterpret_cast<const int32_t*>(1), 1));
-  EXPECT_FALSE(VerifyUserPointerWithCount<int64_t>(
-                   reinterpret_cast<const int64_t*>(1), 1));
+  {
+    int32_t x[10];
+    UserPointer<int32_t> ptr(
+        reinterpret_cast<int32_t*>(reinterpret_cast<uintptr_t>(x) + 1));
+    int32_t array[5] = {};
+    EXPECT_DEATH_IF_SUPPORTED(ptr.Check(), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.Get(), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.Put(123), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.CheckArray(5), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.GetArray(array, 5), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.PutArray(array, 5), kMemoryCheckFailedRegex);
+  }
+  {
+    int64_t x[10];
+    UserPointer<int64_t> ptr(
+        reinterpret_cast<int64_t*>(reinterpret_cast<uintptr_t>(x) + 1));
+    int64_t array[5] = {};
+    EXPECT_DEATH_IF_SUPPORTED(ptr.Check(), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.Get(), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.Put(123), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.CheckArray(5), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.GetArray(array, 5), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.PutArray(array, 5), kMemoryCheckFailedRegex);
+  }
+  // Also check a const pointer:
+  {
+    int32_t x[10];
+    UserPointer<const int32_t> ptr(
+        reinterpret_cast<const int32_t*>(reinterpret_cast<uintptr_t>(x) + 1));
+    int32_t array[5] = {};
+    EXPECT_DEATH_IF_SUPPORTED(ptr.Check(), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.Get(), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.CheckArray(5), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.GetArray(array, 5), kMemoryCheckFailedRegex);
+  }
 
   // Count too big:
-  EXPECT_FALSE(VerifyUserPointerWithCount<int32_t>(
-                   &my_int32, std::numeric_limits<size_t>::max()));
-  EXPECT_FALSE(VerifyUserPointerWithCount<int64_t>(
-                   &my_int64, std::numeric_limits<size_t>::max()));
+  {
+    const size_t kTooBig =
+        std::numeric_limits<size_t>::max() / sizeof(int32_t) + 1;
+    int32_t x = 0;
+    UserPointer<int32_t> ptr(&x);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.CheckArray(kTooBig), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.GetArray(&x, kTooBig),
+                              kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.PutArray(&x, kTooBig),
+                              kMemoryCheckFailedRegex);
+  }
+  {
+    const size_t kTooBig =
+        std::numeric_limits<size_t>::max() / sizeof(int64_t) + 1;
+    int64_t x = 0;
+    UserPointer<int64_t> ptr(&x);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.CheckArray(kTooBig), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.GetArray(&x, kTooBig),
+                              kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.PutArray(&x, kTooBig),
+                              kMemoryCheckFailedRegex);
+  }
+  // Also check a const pointer:
+  {
+    const size_t kTooBig =
+        std::numeric_limits<size_t>::max() / sizeof(int32_t) + 1;
+    int32_t x = 0;
+    UserPointer<const int32_t> ptr(&x);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.CheckArray(kTooBig), kMemoryCheckFailedRegex);
+    EXPECT_DEATH_IF_SUPPORTED(ptr.GetArray(&x, kTooBig),
+                              kMemoryCheckFailedRegex);
+  }
 
-  // |VerifyUserPointerWithSize|:
-
-  EXPECT_FALSE(VerifyUserPointerWithSize<1>(NULL, 1));
-  EXPECT_FALSE(VerifyUserPointerWithSize<4>(NULL, 1));
-  EXPECT_FALSE(VerifyUserPointerWithSize<4>(NULL, 4));
-  EXPECT_FALSE(VerifyUserPointerWithSize<8>(NULL, 1));
-  EXPECT_FALSE(VerifyUserPointerWithSize<8>(NULL, 4));
-  EXPECT_FALSE(VerifyUserPointerWithSize<8>(NULL, 8));
-
-  // Unaligned:
-  EXPECT_FALSE(VerifyUserPointerWithSize<4>(reinterpret_cast<const int32_t*>(1),
-                                            1));
-  EXPECT_FALSE(VerifyUserPointerWithSize<4>(reinterpret_cast<const int32_t*>(1),
-                                            4));
-  EXPECT_FALSE(VerifyUserPointerWithSize<8>(reinterpret_cast<const int32_t*>(1),
-                                            1));
-  EXPECT_FALSE(VerifyUserPointerWithSize<8>(reinterpret_cast<const int32_t*>(1),
-                                            4));
-  EXPECT_FALSE(VerifyUserPointerWithSize<8>(reinterpret_cast<const int32_t*>(1),
-                                            8));
+  // TODO(vtl): Tests for |UserPointer{Reader,Writer,ReaderWriter}|.
 }
-#endif
 
 }  // namespace
 }  // namespace system

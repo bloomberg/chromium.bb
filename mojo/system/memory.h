@@ -99,6 +99,15 @@ class UserPointer {
     return UserPointer<ToType>(reinterpret_cast<ToType*>(pointer_));
   }
 
+  // Checks that this pointer points to a valid |Type| in the same way as
+  // |Get()| and |Put()|.
+  // TODO(vtl): Logically, there should be separate read checks and write
+  // checks.
+  void Check() const {
+    internal::CheckUserPointer<sizeof(NonVoidType),
+                               MOJO_ALIGNOF(NonVoidType)>(pointer_);
+  }
+
   // Checks that this pointer points to a valid array (of type |Type|, or just a
   // buffer if |Type| is |void| or |const void|) of |count| elements (or bytes
   // if |Type| is |void| or |const void|) in the same way as |GetArray()| and
@@ -111,13 +120,16 @@ class UserPointer {
         sizeof(NonVoidType), MOJO_ALIGNOF(NonVoidType)>(pointer_, count);
   }
 
-  // Gets the value (of type |Type|) pointed to by this user pointer. Use this
-  // when you'd use the rvalue |*user_pointer|, but be aware that this may be
-  // costly -- so if the value will be used multiple times, you should save it.
+  // Gets the value (of type |Type|, or a |char| if |Type| is |void|) pointed to
+  // by this user pointer. Use this when you'd use the rvalue |*user_pointer|,
+  // but be aware that this may be costly -- so if the value will be used
+  // multiple times, you should save it.
   //
   // (We want to force a copy here, so return |Type| not |const Type&|.)
-  Type Get() const {
-    internal::CheckUserPointer<sizeof(Type), MOJO_ALIGNOF(Type)>(pointer_);
+  NonVoidType Get() const {
+    Check();
+    internal::CheckUserPointer<sizeof(NonVoidType),
+                               MOJO_ALIGNOF(NonVoidType)>(pointer_);
     return *pointer_;
   }
 
@@ -128,8 +140,7 @@ class UserPointer {
   // sizeof(Type)|.
   void GetArray(typename internal::remove_const<Type>::type* destination,
                 size_t count) const {
-    internal::CheckUserPointerWithCount<
-        sizeof(NonVoidType), MOJO_ALIGNOF(NonVoidType)>(pointer_, count);
+    CheckArray(count);
     memcpy(destination, pointer_, count * sizeof(NonVoidType));
   }
 
@@ -144,9 +155,6 @@ class UserPointer {
   // explicitly instantiated. (On implicit instantiation, only the declarations
   // need be valid, not the definitions.)
   //
-  // If |Type| is |void|, we "convert" it to |char|, so that it makes sense.
-  // (Otherwise, we'd need a suitable specialization to exclude |Put()|.)
-  //
   // In C++11, we could do something like:
   //   template <typename _Type = Type>
   //   typename enable_if<!is_const<_Type>::value &&
@@ -155,8 +163,7 @@ class UserPointer {
   // (which obviously be correct), but C++03 doesn't allow default function
   // template arguments.
   void Put(const NonVoidType& value) {
-    internal::CheckUserPointer<sizeof(NonVoidType), MOJO_ALIGNOF(NonVoidType)>(
-        pointer_);
+    Check();
     *pointer_ = value;
   }
 
@@ -168,8 +175,7 @@ class UserPointer {
   // Note: The same comments about the validity of |Put()| (except for the part
   // about |void|) apply here.
   void PutArray(const Type* source, size_t count) {
-    internal::CheckUserPointerWithCount<
-        sizeof(NonVoidType), MOJO_ALIGNOF(NonVoidType)>(pointer_, count);
+    CheckArray(count);
     memcpy(pointer_, source, count * sizeof(NonVoidType));
   }
 
