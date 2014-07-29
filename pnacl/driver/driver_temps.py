@@ -37,7 +37,7 @@ class TempFileHandler(object):
         if os.path.exists(sys_path):
           os.remove(sys_path)
       except OSError as err:
-        Log.Fatal("TempFileHandler: Unable to wipe file %s w/ error %s",
+        Log.Error("TempFileHandler: Unable to wipe file %s w/ error %s",
                   pathtools.touser(path),
                   err.strerror)
     self.files = []
