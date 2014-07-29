@@ -899,13 +899,6 @@ void WebMediaPlayerImpl::setContentDecryptionModule(
     base::ResetAndReturn(&decryptor_ready_cb_).Run(web_cdm_->GetDecryptor());
 }
 
-void WebMediaPlayerImpl::InvalidateOnMainThread() {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-  TRACE_EVENT0("media", "WebMediaPlayerImpl::InvalidateOnMainThread");
-
-  client_->repaint();
-}
-
 void WebMediaPlayerImpl::OnPipelineSeeked(bool time_changed,
                                           PipelineStatus status) {
   DVLOG(1) << __FUNCTION__ << "(" << time_changed << ", " << status << ")";
@@ -943,10 +936,6 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
     // Any error that occurs before reaching ReadyStateHaveMetadata should
     // be considered a format error.
     SetNetworkState(WebMediaPlayer::NetworkStateFormatError);
-
-    // TODO(scherkus): This should be handled by HTMLMediaElement and controls
-    // should know when to invalidate themselves http://crbug.com/337015
-    InvalidateOnMainThread();
     return;
   }
 
@@ -954,10 +943,6 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
 
   if (error == media::PIPELINE_ERROR_DECRYPT)
     EmeUMAHistogramCounts(current_key_system_, "DecryptError", 1);
-
-  // TODO(scherkus): This should be handled by HTMLMediaElement and controls
-  // should know when to invalidate themselves http://crbug.com/337015
-  InvalidateOnMainThread();
 }
 
 void WebMediaPlayerImpl::OnPipelineMetadata(
@@ -978,10 +963,6 @@ void WebMediaPlayerImpl::OnPipelineMetadata(
     video_weblayer_->setOpaque(opaque_);
     client_->setWebLayer(video_weblayer_.get());
   }
-
-  // TODO(scherkus): This should be handled by HTMLMediaElement and controls
-  // should know when to invalidate themselves http://crbug.com/337015
-  InvalidateOnMainThread();
 }
 
 void WebMediaPlayerImpl::OnPipelineBufferingStateChanged(
@@ -1000,10 +981,6 @@ void WebMediaPlayerImpl::OnPipelineBufferingStateChanged(
   // Blink expects a timeChanged() in response to a seek().
   if (should_notify_time_changed_)
     client_->timeChanged();
-
-  // TODO(scherkus): This should be handled by HTMLMediaElement and controls
-  // should know when to invalidate themselves http://crbug.com/337015
-  InvalidateOnMainThread();
 }
 
 void WebMediaPlayerImpl::OnDemuxerOpened() {
@@ -1108,10 +1085,6 @@ void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
 
   if (!success) {
     SetNetworkState(WebMediaPlayer::NetworkStateFormatError);
-
-    // TODO(scherkus): This should be handled by HTMLMediaElement and controls
-    // should know when to invalidate themselves http://crbug.com/337015
-    InvalidateOnMainThread();
     return;
   }
 

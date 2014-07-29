@@ -155,14 +155,6 @@ class WebMediaPlayerImpl
   virtual void setContentDecryptionModule(
       blink::WebContentDecryptionModule* cdm);
 
-  // Notifies blink that the entire media element region has been invalidated.
-  // This path is slower than notifying the compositor directly as it performs
-  // more work and can trigger layouts. It should only be used in two cases:
-  //   1) Major state changes (e.g., first frame available, run time error
-  //      occured)
-  //   2) Compositing not available
-  void InvalidateOnMainThread();
-
   void OnPipelineSeeked(bool time_changed, media::PipelineStatus status);
   void OnPipelineEnded();
   void OnPipelineError(media::PipelineStatus error);
