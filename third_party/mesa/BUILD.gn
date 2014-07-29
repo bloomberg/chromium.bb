@@ -18,6 +18,9 @@ source_set("mesa_headers") {
   direct_dependent_configs = [ ":mesa_headers_config" ]
 }
 
+# This config must generally be prepended to the configs list so that the Mesa
+# dirs appear before the system ones on Windows. This is necessary so that
+# #include "GL/gl.h" means to include Mesa's, not the system's.
 config("mesa_internal_config") {
   cflags = []
   defines = [
@@ -118,6 +121,8 @@ config("mesa_internal_config") {
       "/wd4267",  # size_t to type.
       "/wd4273",  # Inconsistent DLL linkage.
       "/wd4291",  # No matching operator delete found for placement new.
+      "/wd4305",  # Truncation from int to float.
+      "/wd4334",  # Result of 32-bit shift implicitly converted to 64 bits.
       "/wd4345",  # POD-type default initializers.
     ]
   }
@@ -230,9 +235,11 @@ static_library("mesa_libglslcommon") {
     "//build/config/compiler:chromium_code",
   ]
   configs += [
-    ":mesa_internal_config",
     "//build/config/compiler:no_chromium_code",
   ]
+  previous_configs = configs
+  configs = []
+  configs = [ ":mesa_internal_config" ] + previous_configs
 
   if (is_clang) {
     # Mesa triggers some of these Clang warnings.
@@ -620,9 +627,11 @@ static_library("mesa") {
     "//build/config/compiler:chromium_code",
   ]
   configs += [
-    ":mesa_internal_config",
     "//build/config/compiler:no_chromium_code",
   ]
+  previous_configs = configs
+  configs = []
+  configs = [ ":mesa_internal_config" ] + previous_configs
 
   cflags = []
 
@@ -668,9 +677,11 @@ shared_library("osmesa") {
   ]
   configs += [
     ":mesa_headers_config",
-    ":mesa_internal_config",
     "//build/config/compiler:no_chromium_code",
   ]
+  previous_configs = configs
+  configs = []
+  configs = [ ":mesa_internal_config" ] + previous_configs
 
   include_dirs = [ "src/src/mesa/drivers" ]
 
