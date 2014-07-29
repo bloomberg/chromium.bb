@@ -541,7 +541,8 @@ struct FirstVisuallyNonEmptyPaintObserver : public WebContentsObserver {
 #if defined(OS_ANDROID)
 #define MAYBE_FirstVisuallyNonEmptyPaint DISABLED_FirstVisuallyNonEmptyPaint
 #else
-#define MAYBE_FirstVisuallyNonEmptyPaint FirstVisuallyNonEmptyPaint
+// http://crbug.com/398471
+#define MAYBE_FirstVisuallyNonEmptyPaint DISABLED_FirstVisuallyNonEmptyPaint
 #endif
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        MAYBE_FirstVisuallyNonEmptyPaint) {
