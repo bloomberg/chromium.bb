@@ -293,11 +293,11 @@ void ViewManagerServiceImpl::AddRoot(const NodeId& node_id) {
   const Id transport_node_id(NodeIdToTransportId(node_id));
   CHECK(roots_.count(transport_node_id) == 0);
 
-  std::vector<const Node*> to_send;
   CHECK_EQ(creator_id_, node_id.connection_id);
   roots_.insert(transport_node_id);
-  Node* node = GetNode(node_id);
+  const Node* node = GetNode(node_id);
   CHECK(node);
+  std::vector<const Node*> to_send;
   if (!IsNodeKnown(node)) {
     GetUnknownNodesFrom(node, &to_send);
   } else {
@@ -306,7 +306,7 @@ void ViewManagerServiceImpl::AddRoot(const NodeId& node_id) {
     to_send.push_back(node);
   }
 
-  client()->OnRootAdded(NodesToNodeDatas(to_send));
+  client()->OnEmbed(id_, creator_url_, NodeToNodeData(to_send.front()));
   root_node_manager_->OnConnectionMessagedClient(id_);
 }
 
@@ -344,24 +344,26 @@ void ViewManagerServiceImpl::RemoveChildrenAsPartOfEmbed(
 Array<NodeDataPtr> ViewManagerServiceImpl::NodesToNodeDatas(
     const std::vector<const Node*>& nodes) {
   Array<NodeDataPtr> array(nodes.size());
-  for (size_t i = 0; i < nodes.size(); ++i) {
-    const Node* node = nodes[i];
-    DCHECK(IsNodeKnown(node));
-    const Node* parent = node->GetParent();
-    // If the parent isn't known, it means the parent is not visible to us (not
-    // in roots), and should not be sent over.
-    if (parent && !IsNodeKnown(parent))
-      parent = NULL;
-    NodeDataPtr inode(NodeData::New());
-    inode->parent_id = NodeIdToTransportId(parent ? parent->id() : NodeId());
-    inode->node_id = NodeIdToTransportId(node->id());
-    // TODO(sky): should the id only be sent if known?
-    inode->view_id =
-        ViewIdToTransportId(node->view() ? node->view()->id() : ViewId());
-    inode->bounds = Rect::From(node->bounds());
-    array[i] = inode.Pass();
-  }
+  for (size_t i = 0; i < nodes.size(); ++i)
+    array[i] = NodeToNodeData(nodes[i]).Pass();
   return array.Pass();
+}
+
+NodeDataPtr ViewManagerServiceImpl::NodeToNodeData(const Node* node) {
+  DCHECK(IsNodeKnown(node));
+  const Node* parent = node->GetParent();
+  // If the parent isn't known, it means the parent is not visible to us (not
+  // in roots), and should not be sent over.
+  if (parent && !IsNodeKnown(parent))
+    parent = NULL;
+  NodeDataPtr node_data(NodeData::New());
+  node_data->parent_id = NodeIdToTransportId(parent ? parent->id() : NodeId());
+  node_data->node_id = NodeIdToTransportId(node->id());
+  // TODO(sky): should the id only be sent if known?
+  node_data->view_id =
+    ViewIdToTransportId(node->view() ? node->view()->id() : ViewId());
+  node_data->bounds = Rect::From(node->bounds());
+  return node_data.Pass();
 }
 
 void ViewManagerServiceImpl::GetNodeTreeImpl(
@@ -631,10 +633,7 @@ void ViewManagerServiceImpl::OnConnectionEstablished() {
   for (NodeIdSet::const_iterator i = roots_.begin(); i != roots_.end(); ++i)
     GetUnknownNodesFrom(GetNode(NodeIdFromTransportId(*i)), &to_send);
 
-  client()->OnViewManagerConnectionEstablished(
-      id_,
-      creator_url_,
-      NodesToNodeDatas(to_send));
+  client()->OnEmbed(id_, creator_url_, NodeToNodeData(to_send.front()));
 }
 
 const base::hash_set<Id>&

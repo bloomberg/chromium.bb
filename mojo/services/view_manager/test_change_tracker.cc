@@ -31,12 +31,9 @@ std::string DirectionToString(OrderDirection direction) {
 
 std::string ChangeToDescription1(const Change& change) {
   switch (change.type) {
-    case CHANGE_TYPE_CONNECTION_ESTABLISHED:
-      return base::StringPrintf("OnConnectionEstablished creator=%s",
+    case CHANGE_TYPE_EMBED:
+      return base::StringPrintf("OnEmbed creator=%s",
                                 change.creator_url.data());
-
-    case CHANGE_TYPE_ROOTS_ADDED:
-      return "OnRootAdded";
 
     case CHANGE_TYPE_NODE_BOUNDS_CHANGED:
       return base::StringPrintf(
@@ -79,8 +76,9 @@ std::string ChangeToDescription1(const Change& change) {
           "InputEvent view=%s event_action=%d",
           NodeIdToString(change.view_id).c_str(),
           change.event_action);
-    case CHANGE_TYPE_EMBED:
-      return base::StringPrintf("Embed url=%s", change.embed_url.data());
+    case CHANGE_TYPE_DELEGATE_EMBED:
+      return base::StringPrintf("DelegateEmbed url=%s",
+                                change.embed_url.data());
   }
   return std::string();
 }
@@ -104,19 +102,22 @@ std::string ChangeNodeDescription(const std::vector<Change>& changes) {
   return JoinString(node_strings, ',');
 }
 
+TestNode NodeDataToTestNode(const NodeDataPtr& data) {
+  TestNode node;
+  node.parent_id = data->parent_id;
+  node.node_id = data->node_id;
+  node.view_id = data->view_id;
+  return node;
+}
+
 void NodeDatasToTestNodes(const Array<NodeDataPtr>& data,
                           std::vector<TestNode>* test_nodes) {
-  for (size_t i = 0; i < data.size(); ++i) {
-    TestNode node;
-    node.parent_id = data[i]->parent_id;
-    node.node_id = data[i]->node_id;
-    node.view_id = data[i]->view_id;
-    test_nodes->push_back(node);
-  }
+  for (size_t i = 0; i < data.size(); ++i)
+    test_nodes->push_back(NodeDataToTestNode(data[i]));
 }
 
 Change::Change()
-    : type(CHANGE_TYPE_CONNECTION_ESTABLISHED),
+    : type(CHANGE_TYPE_EMBED),
       connection_id(0),
       node_id(0),
       node_id2(0),
@@ -137,22 +138,14 @@ TestChangeTracker::TestChangeTracker()
 TestChangeTracker::~TestChangeTracker() {
 }
 
-void TestChangeTracker::OnViewManagerConnectionEstablished(
-    ConnectionSpecificId connection_id,
-    const String& creator_url,
-    Array<NodeDataPtr> nodes) {
+void TestChangeTracker::OnEmbed(ConnectionSpecificId connection_id,
+                                const String& creator_url,
+                                NodeDataPtr root) {
   Change change;
-  change.type = CHANGE_TYPE_CONNECTION_ESTABLISHED;
+  change.type = CHANGE_TYPE_EMBED;
   change.connection_id = connection_id;
   change.creator_url = creator_url;
-  NodeDatasToTestNodes(nodes, &change.nodes);
-  AddChange(change);
-}
-
-void TestChangeTracker::OnRootAdded(Array<NodeDataPtr> nodes) {
-  Change change;
-  change.type = CHANGE_TYPE_ROOTS_ADDED;
-  NodeDatasToTestNodes(nodes, &change.nodes);
+  change.nodes.push_back(NodeDataToTestNode(root));
   AddChange(change);
 }
 
@@ -224,9 +217,9 @@ void TestChangeTracker::OnViewInputEvent(Id view_id, EventPtr event) {
   AddChange(change);
 }
 
-void TestChangeTracker::OnEmbed(const String& url) {
+void TestChangeTracker::DelegateEmbed(const String& url) {
   Change change;
-  change.type = CHANGE_TYPE_EMBED;
+  change.type = CHANGE_TYPE_DELEGATE_EMBED;
   change.embed_url = url;
   AddChange(change);
 }

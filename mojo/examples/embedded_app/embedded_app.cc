@@ -79,7 +79,7 @@ class EmbeddedApp
   }
 
   // Overridden from ViewManagerDelegate:
-  virtual void OnRootAdded(ViewManager* view_manager, Node* root) OVERRIDE {
+  virtual void OnEmbed(ViewManager* view_manager, Node* root) OVERRIDE {
     View* view = View::Create(view_manager);
     view->AddObserver(this);
     root->SetActiveView(view);

@@ -17,8 +17,7 @@ namespace mojo {
 namespace service {
 
 enum ChangeType {
-  CHANGE_TYPE_CONNECTION_ESTABLISHED,
-  CHANGE_TYPE_ROOTS_ADDED,
+  CHANGE_TYPE_EMBED,
   CHANGE_TYPE_NODE_BOUNDS_CHANGED,
   CHANGE_TYPE_NODE_HIERARCHY_CHANGED,
   CHANGE_TYPE_NODE_REORDERED,
@@ -26,7 +25,7 @@ enum ChangeType {
   CHANGE_TYPE_VIEW_DELETED,
   CHANGE_TYPE_VIEW_REPLACED,
   CHANGE_TYPE_INPUT_EVENT,
-  CHANGE_TYPE_EMBED,
+  CHANGE_TYPE_DELEGATE_EMBED,
 };
 
 // TODO(sky): consider nuking and converting directly to NodeData.
@@ -96,10 +95,9 @@ class TestChangeTracker {
 
   // Each of these functions generate a Change. There is one per
   // ViewManagerClient function.
-  void OnViewManagerConnectionEstablished(ConnectionSpecificId connection_id,
-                                          const String& creator_url,
-                                          Array<NodeDataPtr> nodes);
-  void OnRootAdded(Array<NodeDataPtr> nodes);
+  void OnEmbed(ConnectionSpecificId connection_id,
+               const String& creator_url,
+               NodeDataPtr root);
   void OnNodeBoundsChanged(Id node_id, RectPtr old_bounds, RectPtr new_bounds);
   void OnNodeHierarchyChanged(Id node_id,
                               Id new_parent_id,
@@ -112,7 +110,7 @@ class TestChangeTracker {
   void OnViewDeleted(Id view_id);
   void OnNodeViewReplaced(Id node_id, Id new_view_id, Id old_view_id);
   void OnViewInputEvent(Id view_id, EventPtr event);
-  void OnEmbed(const String& url);
+  void DelegateEmbed(const String& url);
 
  private:
   void AddChange(const Change& change);

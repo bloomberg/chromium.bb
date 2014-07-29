@@ -341,7 +341,7 @@ class WindowManager
   }
 
   // Overridden from ViewManagerDelegate:
-  virtual void OnRootAdded(ViewManager* view_manager, Node* root) OVERRIDE {
+  virtual void OnEmbed(ViewManager* view_manager, Node* root) OVERRIDE {
     DCHECK(!view_manager_);
     view_manager_ = view_manager;
     view_manager_->SetWindowManagerDelegate(this);

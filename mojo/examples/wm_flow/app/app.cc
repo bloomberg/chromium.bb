@@ -49,8 +49,8 @@ class WMFlowApp : public mojo::ApplicationDelegate,
   void OnConnect(bool success) {}
 
   // Overridden from mojo::ViewManagerDelegate:
-  virtual void OnRootAdded(mojo::ViewManager* view_manager,
-                           mojo::Node* root) MOJO_OVERRIDE {
+  virtual void OnEmbed(mojo::ViewManager* view_manager,
+                       mojo::Node* root) MOJO_OVERRIDE {
     mojo::View* view =
         mojo::View::Create(view_manager);
     root->SetActiveView(view);

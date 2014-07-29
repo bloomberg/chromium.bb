@@ -173,7 +173,7 @@ class PNGViewer
   }
 
   // Overridden from ViewManagerDelegate:
-  virtual void OnRootAdded(ViewManager* view_manager, Node* root) OVERRIDE {
+  virtual void OnEmbed(ViewManager* view_manager, Node* root) OVERRIDE {
     root_ = root;
     root_->AddObserver(this);
     content_view_ = View::Create(view_manager);

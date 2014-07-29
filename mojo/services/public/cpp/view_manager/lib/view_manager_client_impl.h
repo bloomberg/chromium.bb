@@ -95,11 +95,9 @@ class ViewManagerClientImpl : public ViewManager,
   virtual void OnConnectionEstablished() OVERRIDE;
 
   // Overridden from ViewManagerClient:
-  virtual void OnViewManagerConnectionEstablished(
-      ConnectionSpecificId connection_id,
-      const String& creator_url,
-      Array<NodeDataPtr> nodes) OVERRIDE;
-  virtual void OnRootAdded(Array<NodeDataPtr> nodes) OVERRIDE;
+  virtual void OnEmbed(ConnectionSpecificId connection_id,
+                       const String& creator_url,
+                       NodeDataPtr root) OVERRIDE;
   virtual void OnNodeBoundsChanged(Id node_id,
                                    RectPtr old_bounds,
                                    RectPtr new_bounds) OVERRIDE;

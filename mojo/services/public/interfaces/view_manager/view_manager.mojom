@@ -127,7 +127,7 @@ interface ViewManagerService {
   //
   // If a particular client invokes Embed() multiple times with the same url,
   // the connection is reused. When this happens the ViewManagerClient is
-  // notified of the additional roots by way of OnRootAdded().
+  // notified of the additional roots by way of OnEmbed().
   //
   // A node may only be a root of one connection at a time. Subsequent calls to
   // Embed() for the same node result in the node being removed from the
@@ -155,16 +155,8 @@ interface ViewManagerService {
 // connection 1 does not receive OnNodeViewReplaced().
 [Client=ViewManagerService]
 interface ViewManagerClient {
-  // Invoked once the connection has been established. |connection_id| is the id
-  // that uniquely identifies this connection. |nodes| are the nodes parented to
-  // the root.
-  OnViewManagerConnectionEstablished(uint16 connection_id,
-                                     string creator_url,
-                                     NodeData[] nodes);
-
-  // See description of ViewManagerService::Embed() for details as to when
-  // this is invoked.
-  OnRootAdded(NodeData[] nodes);
+  // Invoked when the client application has been embedded at |root|.
+  OnEmbed(uint16 connection_id, string embedder_url, NodeData root);
 
   // Invoked when a node's bounds have changed.
   OnNodeBoundsChanged(uint32 node, mojo.Rect old_bounds, mojo.Rect new_bounds);

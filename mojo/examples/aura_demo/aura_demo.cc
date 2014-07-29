@@ -119,7 +119,7 @@ class AuraDemo : public ApplicationDelegate,
 
  private:
   // Overridden from ViewManagerDelegate:
-  virtual void OnRootAdded(ViewManager* view_manager, Node* root) OVERRIDE {
+  virtual void OnEmbed(ViewManager* view_manager, Node* root) OVERRIDE {
     // TODO(beng): this function could be called multiple times!
     view_ = View::Create(view_manager);
     root->SetActiveView(view_);

@@ -34,9 +34,8 @@ class SimpleWM : public mojo::ApplicationDelegate,
   }
 
   // Overridden from mojo::ViewManagerDelegate:
-  virtual void OnRootAdded(
-      mojo::ViewManager* view_manager,
-      mojo::Node* root) MOJO_OVERRIDE {
+  virtual void OnEmbed(mojo::ViewManager* view_manager,
+                       mojo::Node* root) MOJO_OVERRIDE {
     view_manager_ = view_manager;
     root_ = root;
     view_manager_->SetWindowManagerDelegate(this);

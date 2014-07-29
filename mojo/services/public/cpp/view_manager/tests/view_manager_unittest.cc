@@ -72,8 +72,7 @@ class ConnectServiceLoader : public ServiceLoader,
   }
 
   // Overridden from ViewManagerDelegate:
-  virtual void OnRootAdded(ViewManager* view_manager,
-                           Node* root) OVERRIDE {
+  virtual void OnEmbed(ViewManager* view_manager, Node* root) OVERRIDE {
     callback_.Run(view_manager, root);
   }
   virtual void OnViewManagerDisconnected(ViewManager* view_manager) OVERRIDE {}

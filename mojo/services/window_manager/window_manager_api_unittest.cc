@@ -147,8 +147,7 @@ class TestServiceLoader : public ServiceLoader,
   }
 
   // Overridden from ViewManagerDelegate:
-  virtual void OnRootAdded(ViewManager* view_manager,
-                           Node* root) MOJO_OVERRIDE {
+  virtual void OnEmbed(ViewManager* view_manager, Node* root) MOJO_OVERRIDE {
     root_added_callback_.Run(root);
   }
   virtual void OnViewManagerDisconnected(

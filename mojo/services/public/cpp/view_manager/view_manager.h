@@ -18,6 +18,10 @@ class View;
 class ViewManagerDelegate;
 class WindowManagerDelegate;
 
+// Encapsulates a connection to the view manager service.
+// A unique connection is made for every unique embed path for an app. e.g. for
+// app B embed by the following paths: A->B, A->C->B - there are two connections
+// and thus two instances of this class.
 class ViewManager {
  public:
   // Sets the window manager delegate. Can only be called by the app embedded at

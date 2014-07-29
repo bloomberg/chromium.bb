@@ -149,10 +149,11 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
 
   void RemoveChildrenAsPartOfEmbed(const NodeId& node_id);
 
-  // Converts an array of Nodes to NodeDatas. This assumes all the nodes are
-  // valid for the client. The parent of nodes the client is not allowed to see
-  // are set to NULL (in the returned NodeDatas).
+  // Converts Node(s) to NodeData(s) for transport. This assumes all the nodes
+  // are valid for the client. The parent of nodes the client is not allowed to
+  // see are set to NULL (in the returned NodeData(s)).
   Array<NodeDataPtr> NodesToNodeDatas(const std::vector<const Node*>& nodes);
+  NodeDataPtr NodeToNodeData(const Node* node);
 
   // Implementation of GetNodeTree(). Adds |node| to |nodes| and recurses if
   // CanDescendIntoNodeForNodeTree() returns true.

@@ -292,7 +292,7 @@ class MediaViewer
   }
 
   // Overridden from ViewManagerDelegate:
-  virtual void OnRootAdded(ViewManager* view_manager, Node* root) OVERRIDE {
+  virtual void OnEmbed(ViewManager* view_manager, Node* root) OVERRIDE {
     root_node_ = root;
     view_manager_ = view_manager;
 

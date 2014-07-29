@@ -310,22 +310,17 @@ class TestViewManagerClientConnection
     tracker_.set_delegate(&connection_);
   }
 
-  // InterfaceImp:
+  // InterfaceImpl:
   virtual void OnConnectionEstablished() OVERRIDE {
     connection_.set_router(internal_state()->router());
     connection_.set_view_manager(client());
   }
 
   // ViewManagerClient:
-  virtual void OnViewManagerConnectionEstablished(
-      ConnectionSpecificId connection_id,
-      const String& creator_url,
-      Array<NodeDataPtr> nodes) OVERRIDE {
-    tracker_.OnViewManagerConnectionEstablished(
-        connection_id, creator_url, nodes.Pass());
-  }
-  virtual void OnRootAdded(Array<NodeDataPtr> nodes) OVERRIDE {
-    tracker_.OnRootAdded(nodes.Pass());
+  virtual void OnEmbed(ConnectionSpecificId connection_id,
+                       const String& creator_url,
+                       NodeDataPtr root) OVERRIDE {
+    tracker_.OnEmbed(connection_id, creator_url, root.Pass());
   }
   virtual void OnNodeBoundsChanged(Id node_id,
                                    RectPtr old_bounds,
@@ -362,7 +357,7 @@ class TestViewManagerClientConnection
   virtual void OnFocusChanged(Id gained_focus_id,
                               Id lost_focus_id) OVERRIDE {}
   virtual void Embed(const String& url) OVERRIDE {
-    tracker_.OnEmbed(url);
+    tracker_.DelegateEmbed(url);
   }
   virtual void DispatchOnViewInputEvent(Id view_id,
                                         mojo::EventPtr event) OVERRIDE {
@@ -507,7 +502,7 @@ class ViewManagerTest : public testing::Test {
         EstablishSecondConnectionWithRoot(BuildNodeId(1, 1)));
     const std::vector<Change>& changes(connection2_->changes());
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("OnConnectionEstablished creator=mojo:test_url",
+    EXPECT_EQ("OnEmbed creator=mojo:test_url",
               ChangesToDescription1(changes)[0]);
     if (create_initial_node) {
       EXPECT_EQ("[node=1,1 parent=null view=null]",
@@ -522,7 +517,7 @@ class ViewManagerTest : public testing::Test {
     ASSERT_TRUE(connection3_ != NULL);
     connection3_->DoRunLoopUntilChangesCount(1);
     ASSERT_EQ(1u, connection3_->changes().size());
-    EXPECT_EQ("OnConnectionEstablished creator=mojo:test_url",
+    EXPECT_EQ("OnEmbed creator=mojo:test_url",
               ChangesToDescription1(connection3_->changes())[0]);
   }
 
@@ -568,7 +563,7 @@ TEST_F(ViewManagerTest, MultipleEmbedRootsBeforeWTHReady) {
 TEST_F(ViewManagerTest, ValidId) {
   // TODO(beng): this should really have the URL of the application that
   //             connected to ViewManagerInit.
-  EXPECT_EQ("OnConnectionEstablished creator=",
+  EXPECT_EQ("OnEmbed creator=",
             ChangesToDescription1(connection_->changes())[0]);
 
   // All these tests assume 1 for the client id. The only real assertion here is
@@ -579,7 +574,7 @@ TEST_F(ViewManagerTest, ValidId) {
 // Verifies two clients/connections get different ids.
 TEST_F(ViewManagerTest, TwoClientsGetDifferentConnectionIds) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
-  EXPECT_EQ("OnConnectionEstablished creator=mojo:test_url",
+  EXPECT_EQ("OnEmbed creator=mojo:test_url",
             ChangesToDescription1(connection2_->changes())[0]);
 
   // It isn't strictly necessary that the second connection gets 2, but these
@@ -1340,7 +1335,7 @@ TEST_F(ViewManagerTest, ConnectTwice) {
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("OnRootAdded", changes[0]);
+    EXPECT_EQ("OnEmbed creator=mojo:test_url", changes[0]);
     EXPECT_EQ("[node=1,2 parent=null view=null]",
               ChangeNodeDescription(connection2_->changes()));
   }
@@ -1419,7 +1414,8 @@ TEST_F(ViewManagerTest, EmbedWithSameNodeId2) {
     connection2_->DoRunLoopUntilChangesCount(1);
     const std::vector<Change>& changes(connection2_->changes());
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("OnRootAdded", ChangesToDescription1(changes)[0]);
+    EXPECT_EQ("OnEmbed creator=mojo:test_url",
+              ChangesToDescription1(changes)[0]);
     EXPECT_EQ("[node=1,1 parent=null view=null]",
               ChangeNodeDescription(changes));
 

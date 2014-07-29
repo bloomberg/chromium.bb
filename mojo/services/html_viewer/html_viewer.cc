@@ -54,7 +54,7 @@ class HTMLViewer
   }
 
   void Load(URLResponsePtr response) {
-    // Need to wait for OnRootAdded.
+    // Need to wait for OnEmbed.
     response_ = response.Pass();
     MaybeLoad();
   }
@@ -75,7 +75,7 @@ class HTMLViewer
   }
 
   // Overridden from ViewManagerDelegate:
-  virtual void OnRootAdded(ViewManager* view_manager, Node* root) OVERRIDE {
+  virtual void OnEmbed(ViewManager* view_manager, Node* root) OVERRIDE {
     document_view_ = new HTMLDocumentView(
         application_impl_->ConnectToApplication("mojo://mojo_window_manager/")->
             GetServiceProvider(),

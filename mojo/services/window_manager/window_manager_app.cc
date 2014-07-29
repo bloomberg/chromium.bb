@@ -150,8 +150,7 @@ bool WindowManagerApp::ConfigureIncomingConnection(
 ////////////////////////////////////////////////////////////////////////////////
 // WindowManagerApp, ViewManagerDelegate implementation:
 
-void WindowManagerApp::OnRootAdded(ViewManager* view_manager,
-                                   Node* root) {
+void WindowManagerApp::OnEmbed(ViewManager* view_manager, Node* root) {
   DCHECK(!view_manager_ && !root_);
   view_manager_ = view_manager;
   root_ = root;
@@ -172,7 +171,7 @@ void WindowManagerApp::OnRootAdded(ViewManager* view_manager,
   activation_client_->AddObserver(this);
 
   if (wrapped_delegate_)
-    wrapped_delegate_->OnRootAdded(view_manager, root);
+    wrapped_delegate_->OnEmbed(view_manager, root);
 
   for (Connections::const_iterator it = connections_.begin();
        it != connections_.end(); ++it) {

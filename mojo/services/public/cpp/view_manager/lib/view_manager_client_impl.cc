@@ -330,18 +330,19 @@ void ViewManagerClientImpl::OnConnectionEstablished() {
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerClientImpl, ViewManagerClient implementation:
 
-void ViewManagerClientImpl::OnViewManagerConnectionEstablished(
-    ConnectionSpecificId connection_id,
-    const String& creator_url,
-    Array<NodeDataPtr> nodes) {
-  connected_ = true;
-  connection_id_ = connection_id;
-  creator_url_ = TypeConverter<String, std::string>::ConvertFrom(creator_url);
-  AddRoot(BuildNodeTree(this, nodes, NULL));
-}
-
-void ViewManagerClientImpl::OnRootAdded(Array<NodeDataPtr> nodes) {
-  AddRoot(BuildNodeTree(this, nodes, NULL));
+void ViewManagerClientImpl::OnEmbed(ConnectionSpecificId connection_id,
+                                    const String& creator_url,
+                                    NodeDataPtr root) {
+  if (!connected_) {
+    connected_ = true;
+    connection_id_ = connection_id;
+    creator_url_ = TypeConverter<String, std::string>::ConvertFrom(creator_url);
+  } else {
+    DCHECK_EQ(connection_id_, connection_id);
+    DCHECK_EQ(creator_url_, creator_url);
+  }
+  AddRoot(AddNodeToViewManager(this, NULL, root->node_id, root->view_id,
+                               root->bounds.To<gfx::Rect>()));
 }
 
 void ViewManagerClientImpl::OnNodeBoundsChanged(Id node_id,
@@ -462,7 +463,7 @@ void ViewManagerClientImpl::AddRoot(Node* root) {
   }
   roots_.push_back(root);
   root->AddObserver(new RootObserver(root));
-  delegate_->OnRootAdded(this, root);
+  delegate_->OnEmbed(this, root);
 }
 
 void ViewManagerClientImpl::RemoveRoot(Node* root) {

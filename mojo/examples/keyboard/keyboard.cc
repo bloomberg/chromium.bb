@@ -93,8 +93,8 @@ class Keyboard
   }
 
   // ViewManagerDelegate:
-  virtual void OnRootAdded(ViewManager* view_manager, Node* root) OVERRIDE {
-    // TODO: deal with OnRootAdded() being invoked multiple times.
+  virtual void OnEmbed(ViewManager* view_manager, Node* root) OVERRIDE {
+    // TODO: deal with OnEmbed() being invoked multiple times.
     view_manager_ = view_manager;
     root->SetActiveView(View::Create(view_manager));
     CreateWidget(root);
