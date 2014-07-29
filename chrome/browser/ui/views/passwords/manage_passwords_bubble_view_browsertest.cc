@@ -27,6 +27,11 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, BasicOpenAndClose) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       ManagePasswordsBubble::USER_ACTION);
   EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  const ManagePasswordsBubbleView* bubble =
+      ManagePasswordsBubbleView::manage_password_bubble();
+  EXPECT_TRUE(bubble->initially_focused_view());
+  EXPECT_EQ(bubble->initially_focused_view(),
+            bubble->GetFocusManager()->GetFocusedView());
   ManagePasswordsBubbleView::CloseBubble();
   EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
 
@@ -34,6 +39,8 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, BasicOpenAndClose) {
   ManagePasswordsBubbleView::ShowBubble(
       browser()->tab_strip_model()->GetActiveWebContents(),
       ManagePasswordsBubble::USER_ACTION);
+  EXPECT_TRUE(ManagePasswordsBubbleView::manage_password_bubble()->
+      GetFocusManager()->GetFocusedView());
   EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
   ManagePasswordsBubbleView::CloseBubble();
   EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
@@ -47,6 +54,11 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, CommandControlsBubble) {
   EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
   ExecuteManagePasswordsCommand();
   EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  const ManagePasswordsBubbleView* bubble =
+      ManagePasswordsBubbleView::manage_password_bubble();
+  EXPECT_TRUE(bubble->initially_focused_view());
+  EXPECT_EQ(bubble->initially_focused_view(),
+            bubble->GetFocusManager()->GetFocusedView());
   ManagePasswordsBubbleView::CloseBubble();
   EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
 

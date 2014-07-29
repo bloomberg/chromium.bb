@@ -60,7 +60,9 @@ void ManagePasswordsIconView::UpdateVisibleUI() {
 }
 
 bool ManagePasswordsIconView::IsBubbleShowing() const {
-  return ManagePasswordsBubbleView::IsShowing();
+  // If the bubble is being destroyed, it's considered showing though it may be
+  // already invisible currently.
+  return ManagePasswordsBubbleView::manage_password_bubble() != NULL;
 }
 
 void ManagePasswordsIconView::OnExecuting(

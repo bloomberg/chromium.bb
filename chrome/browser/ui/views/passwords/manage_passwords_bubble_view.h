@@ -167,6 +167,10 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
     return manage_passwords_bubble_;
   }
 
+  const View* initially_focused_view() const {
+    return initially_focused_view_;
+  }
+
  private:
   ManagePasswordsBubbleView(content::WebContents* web_contents,
                             ManagePasswordsIconView* anchor_view,
@@ -202,6 +206,14 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   virtual void Init() OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
 
+  // views::WidgetDelegate
+  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
+
+  void set_initially_focused_view(views::View* view) {
+    DCHECK(!initially_focused_view_);
+    initially_focused_view_ = view;
+  }
+
   // Singleton instance of the Password bubble. The Password bubble can only be
   // shown on the active browser window, so there is no case in which it will be
   // shown twice at the same time.
@@ -212,6 +224,8 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   // If true upon destruction, the user has confirmed that she never wants to
   // save passwords for a particular site.
   bool never_save_passwords_;
+
+  views::View* initially_focused_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleView);
 };
