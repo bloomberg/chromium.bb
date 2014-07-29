@@ -720,14 +720,6 @@ const Experiment kExperiments[] = {
   },
 #if defined(OS_ANDROID)
   {
-    "enable-new-ntp",
-    IDS_FLAGS_ENABLE_NEW_NTP,
-    IDS_FLAGS_ENABLE_NEW_NTP_DESCRIPTION,
-    kOsAndroid,
-    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableNewNTP,
-                              switches::kDisableNewNTP)
-  },
-  {
     "contextual-search",
     IDS_FLAGS_ENABLE_CONTEXTUAL_SEARCH,
     IDS_FLAGS_ENABLE_CONTEXTUAL_SEARCH_DESCRIPTION,

@@ -1235,9 +1235,6 @@ const char kDisableCast[]                    = "disable-cast";
 // Disables Contextual Search.
 const char kDisableContextualSearch[]        = "disable-contextual-search";
 
-// Disables the new NTP.
-const char kDisableNewNTP[]                  = "disable-new-ntp";
-
 // Disables zero suggest experiment on Dev channel.
 const char kDisableZeroSuggest[] = "disable-zero-suggest";
 
@@ -1250,9 +1247,6 @@ const char kEnableAppInstallAlerts[]        = "enable-app-install-alerts";
 
 // Enables Contextual Search.
 const char kEnableContextualSearch[]        = "enable-contextual-search";
-
-// Enables the new NTP.
-const char kEnableNewNTP[]                  = "enable-new-ntp";
 
 // Enables zero suggest functionality on Dev channel, showing contextual
 // suggestions (EtherSuggest) for http pages and google.com search queries.
