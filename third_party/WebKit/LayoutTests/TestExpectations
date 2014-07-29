@@ -75,6 +75,9 @@ crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-window.html [ Image
 crbug.com/310679 [ Mac ] fast/frames/frame-set-rotation-hit.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/frames/frame-set-scaling-hit.html [ Failure ImageOnlyFailure Pass ]
 
+# Test image output sometimes has imperceptible differences around the edges of the box causing flakes.
+crbug.com/383205 virtual/softwarecompositing/culling/tile-occlusion-boundaries.html [ Failure ImageOnlyFailure Pass ]
+
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
 
