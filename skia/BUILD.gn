@@ -180,6 +180,15 @@ config("skia_library_config") {
     "SK_USE_DISCARDABLE_SCALEDIMAGECACHE",
   ]
 
+  if (cpu_arch == "arm") {
+    if (arm_use_neon) {
+      defines += [ "__ARM_HAVE_NEON" ]
+    }
+    if (arm_optionally_use_neon) {
+      defines += [ "__ARM_HAVE_OPTIONAL_NEON_SUPPORT" ]
+    }
+  }
+
   # Settings for text blitting, chosen to approximate the system browser.
   if (is_linux) {
     defines += [
@@ -626,19 +635,17 @@ source_set("skia_opts") {
 
         # Root build config sets -mfpu=$arm_fpu, which we expect to be neon
         # when running this.
-        assert(arm_fpu == "neon")
+        if (!arm_use_neon) {
+          configs -= [ "//build/config/compiler:compiler_arm_fpu" ]
+          cflags += [
+            "-mfpu=neon"
+          ]
+        }
 
         #ldflags = [
         #  "-march=armv7-a",
         #  "-Wl,--fix-cortex-a8",
         #]
-      }
-
-      if (arm_use_neon) {
-        defines += [ "__ARM_HAVE_NEON" ]
-      }
-      if (arm_optionally_use_neon) {
-        defines += [ "__ARM_HAVE_OPTIONAL_NEON_SUPPORT" ]
       }
     }
 

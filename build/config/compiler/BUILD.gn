@@ -134,7 +134,6 @@ config("compiler") {
       if (!is_android_webview_build) {
         cflags += [
           "-march=$arm_arch",
-          "-mfpu=$arm_fpu",
           "-mfloat-abi=$arm_float_abi",
         ]
         if (arm_tune != "") {
@@ -311,6 +310,14 @@ config("compiler") {
         ldflags += [ "-target x86-linux-androideabi" ]
       }
     }
+  }
+}
+
+config("compiler_arm_fpu") {
+  if (cpu_arch == "arm" && !is_android_webview_build) {
+    cflags = [
+      "-mfpu=$arm_fpu",
+    ]
   }
 }
 

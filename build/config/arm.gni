@@ -21,7 +21,7 @@ if (cpu_arch == "arm") {
 
   if (is_android) {
     arm_use_neon = false
-    arm_optionally_use_neon = false
+    arm_optionally_use_neon = true
   } else {
     arm_use_neon = true
     arm_optionally_use_neon = true
