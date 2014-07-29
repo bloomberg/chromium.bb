@@ -173,7 +173,6 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
-#include "core/rendering/TextAutosizer.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGFontFaceElement.h"
@@ -4624,14 +4623,6 @@ void Document::finishedParsing()
     if (!m_documentTiming.domContentLoadedEventEnd)
         m_documentTiming.domContentLoadedEventEnd = monotonicallyIncreasingTime();
 
-    if (frame() && frame()->isMainFrame()) {
-        // Reset the text autosizing multipliers on main frame when DOM is loaded.
-        // This is to allow for a fresh text autosizing pass when the page layout
-        // changes significantly in the end.
-        if (TextAutosizer* textAutosizer = this->textAutosizer())
-            textAutosizer->recalculateMultipliers();
-    }
-
     // The loader's finishedParsing() method may invoke script that causes this object to
     // be dereferenced (when this document is in an iframe and the onload causes the iframe's src to change).
     // Keep it alive until we are done.
@@ -5666,13 +5657,6 @@ void Document::modifiedStyleSheet(StyleSheet* sheet, StyleResolverUpdateMode upd
     if (isActive())
         styleEngine()->modifiedStyleSheet(sheet);
     styleResolverChanged(updateMode);
-}
-
-TextAutosizer* Document::textAutosizer()
-{
-    if (!m_textAutosizer && !RuntimeEnabledFeatures::fastTextAutosizingEnabled())
-        m_textAutosizer = TextAutosizer::create(this);
-    return m_textAutosizer.get();
 }
 
 FastTextAutosizer* Document::fastTextAutosizer()

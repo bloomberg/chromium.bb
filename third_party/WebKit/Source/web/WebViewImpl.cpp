@@ -83,7 +83,6 @@
 #include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
-#include "core/rendering/TextAutosizer.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "modules/device_orientation/DeviceOrientationInspectorAgent.h"
 #include "modules/encryptedmedia/MediaKeysController.h"
@@ -3073,15 +3072,8 @@ void WebViewImpl::updateMainFrameLayoutSize()
 
     WebSize layoutSize = m_size;
 
-    if (settings()->viewportEnabled()) {
+    if (settings()->viewportEnabled())
         layoutSize = flooredIntSize(m_pageScaleConstraintsSet.pageDefinedConstraints().layoutSize);
-
-        bool textAutosizingEnabled = page()->settings().textAutosizingEnabled();
-        if (textAutosizingEnabled && layoutSize.width != view->layoutSize().width()) {
-            if (TextAutosizer* textAutosizer = page()->deprecatedLocalMainFrame()->document()->textAutosizer())
-                textAutosizer->recalculateMultipliers();
-        }
-    }
 
     view->setLayoutSize(layoutSize);
 }

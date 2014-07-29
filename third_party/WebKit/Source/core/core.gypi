@@ -1685,8 +1685,6 @@
             'rendering/SubtreeLayoutScope.cpp',
             'rendering/SubtreeLayoutScope.h',
             'rendering/TableLayout.h',
-            'rendering/TextAutosizer.cpp',
-            'rendering/TextAutosizer.h',
             'rendering/TextRunConstructor.cpp',
             'rendering/TextRunConstructor.h',
             'rendering/TrailingFloatsRootInlineBox.h',

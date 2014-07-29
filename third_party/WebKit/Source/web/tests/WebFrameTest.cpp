@@ -60,7 +60,6 @@
 #include "core/page/Page.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/TextAutosizer.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/DragImage.h"
 #include "platform/RuntimeEnabledFeatures.h"

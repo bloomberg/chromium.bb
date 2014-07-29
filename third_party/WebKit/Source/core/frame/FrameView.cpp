@@ -64,7 +64,6 @@
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
-#include "core/rendering/TextAutosizer.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/rendering/style/RenderStyle.h"
@@ -347,17 +346,8 @@ void FrameView::setFrameRect(const IntRect& newRect)
 
     // Autosized font sizes depend on the width of the viewing area.
     bool autosizerNeedsUpdating = false;
-    if (newRect.width() != oldRect.width()) {
-        if (m_frame->isMainFrame() && m_frame->settings()->textAutosizingEnabled()) {
-            autosizerNeedsUpdating = true;
-            for (Frame* frame = m_frame.get(); frame; frame = frame->tree().traverseNext()) {
-                if (!frame->isLocalFrame())
-                    continue;
-                if (TextAutosizer* textAutosizer = toLocalFrame(frame)->document()->textAutosizer())
-                    textAutosizer->recalculateMultipliers();
-            }
-        }
-    }
+    if (newRect.width() != oldRect.width() && m_frame->isMainFrame() && m_frame->settings()->textAutosizingEnabled())
+        autosizerNeedsUpdating = true;
 
     ScrollView::setFrameRect(newRect);
 
@@ -791,20 +781,6 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
     gatherDebugLayoutRects(rootForThisLayout);
 
     ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->updateAllImageResourcePriorities();
-
-    TextAutosizer* textAutosizer = frame().document()->textAutosizer();
-    bool autosized;
-    {
-        AllowPaintInvalidationScope paintInvalidationAllowed(this);
-        autosized = textAutosizer && textAutosizer->processSubtree(rootForThisLayout);
-    }
-
-    if (autosized && rootForThisLayout->needsLayout()) {
-        TRACE_EVENT0("blink", "2nd layout due to Text Autosizing");
-        UseCounter::count(*frame().document(), UseCounter::TextAutosizingLayout);
-        rootForThisLayout->layout();
-        gatherDebugLayoutRects(rootForThisLayout);
-    }
 
     lifecycle().advanceTo(DocumentLifecycle::AfterPerformLayout);
 }

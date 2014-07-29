@@ -143,7 +143,6 @@ class StyleResolver;
 class StyleSheet;
 class StyleSheetList;
 class Text;
-class TextAutosizer;
 class Touch;
 class TouchList;
 class TransformSource;
@@ -960,9 +959,6 @@ public:
 
     IntSize initialViewportSize() const;
 
-    // There are currently two parallel autosizing implementations: TextAutosizer and FastTextAutosizer.
-    // See http://tinyurl.com/chromium-fast-autosizer for more details.
-    TextAutosizer* textAutosizer();
     FastTextAutosizer* fastTextAutosizer();
 
     PassRefPtrWillBeRawPtr<Element> createElement(const AtomicString& localName, const AtomicString& typeExtension, ExceptionState&);
@@ -1355,7 +1351,6 @@ private:
 
     RefPtrWillBeMember<ScriptedAnimationController> m_scriptedAnimationController;
     OwnPtr<MainThreadTaskRunner> m_taskRunner;
-    OwnPtrWillBeMember<TextAutosizer> m_textAutosizer;
     OwnPtrWillBeMember<FastTextAutosizer> m_fastTextAutosizer;
 
     RefPtrWillBeMember<CustomElementRegistrationContext> m_registrationContext;
