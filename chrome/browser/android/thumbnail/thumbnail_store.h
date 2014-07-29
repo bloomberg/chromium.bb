@@ -14,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/thumbnail/scoped_ptr_expiring_cache.h"
 #include "chrome/browser/android/thumbnail/thumbnail.h"
@@ -149,7 +148,6 @@ class ThumbnailStore : ThumbnailDelegate {
   TabIdList visible_ids_;
 
   content::UIResourceProvider* ui_resource_provider_;
-  base::Thread compression_thread_;
 
   base::WeakPtrFactory<ThumbnailStore> weak_factory_;
 

@@ -12,6 +12,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/worker_pool.h"
 #include "base/time/time.h"
 #include "content/public/browser/android/ui_resource_provider.h"
 #include "content/public/browser/browser_thread.h"
@@ -62,14 +63,11 @@ ThumbnailStore::ThumbnailStore(const std::string& disk_cache_path_str,
       cache_(default_cache_size),
       approximation_cache_(approximation_cache_size),
       ui_resource_provider_(NULL),
-      compression_thread_("thumbnail_compression"),
       weak_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  compression_thread_.Start();
 }
 
 ThumbnailStore::~ThumbnailStore() {
-  compression_thread_.Stop();
   SetUIResourceProvider(NULL);
 }
 
@@ -301,7 +299,6 @@ void ThumbnailStore::CompressThumbnailIfNecessary(
   }
 
   compression_tasks_count_++;
-  DCHECK(compression_thread_.message_loop_proxy());
 
   base::Callback<void(skia::RefPtr<SkPixelRef>, const gfx::Size&)>
       post_compression_task = base::Bind(&ThumbnailStore::PostCompressionTask,
@@ -310,10 +307,11 @@ void ThumbnailStore::CompressThumbnailIfNecessary(
                                          time_stamp,
                                          scale);
 
-  compression_thread_.message_loop_proxy()->PostTask(
+  base::WorkerPool::PostTask(
       FROM_HERE,
       base::Bind(
-          &ThumbnailStore::CompressionTask, bitmap, post_compression_task));
+          &ThumbnailStore::CompressionTask, bitmap, post_compression_task),
+      true);
 }
 
 void ThumbnailStore::ReadNextThumbnail() {
