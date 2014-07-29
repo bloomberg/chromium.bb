@@ -44,8 +44,7 @@ void MediaInfoLoader::Start(blink::WebFrame* frame) {
 
   // Prepare the request.
   WebURLRequest request(url_);
-  // TODO(mkwst): Split this into video/audio.
-  request.setRequestContext(WebURLRequest::RequestContextVideo);
+  request.setTargetType(WebURLRequest::TargetIsMedia);
   frame->setReferrerForRequest(request, blink::WebURL());
 
   scoped_ptr<WebURLLoader> loader;

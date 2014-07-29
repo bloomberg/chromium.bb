@@ -160,8 +160,7 @@ void BufferedResourceLoader::Start(
 
   // Prepare the request.
   WebURLRequest request(url_);
-  // TODO(mkwst): Split this into video/audio.
-  request.setRequestContext(WebURLRequest::RequestContextVideo);
+  request.setTargetType(WebURLRequest::TargetIsMedia);
 
   if (IsRangeRequest()) {
     request.setHTTPHeaderField(
