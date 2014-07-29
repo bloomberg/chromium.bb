@@ -172,7 +172,9 @@ bool DeviceSettingsService::HasPrivateOwnerKey() {
 void DeviceSettingsService::InitOwner(
     const std::string& username,
     const base::WeakPtr<PrivateKeyDelegate>& delegate) {
-  if (!username_.empty())
+  // When InitOwner() is called twice with the same |username| it's
+  // worth to reload settings since owner key may become available.
+  if (!username_.empty() && username_ != username)
     return;
   username_ = username;
   delegate_ = delegate;

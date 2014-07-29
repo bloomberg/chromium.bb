@@ -15,6 +15,7 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/owner_key_util.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/tpm_token_loader.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -33,7 +34,8 @@ class SessionManagerOperation;
 class OwnerSettingsService : public DeviceSettingsService::PrivateKeyDelegate,
                              public KeyedService,
                              public content::NotificationObserver,
-                             public TPMTokenLoader::Observer {
+                             public TPMTokenLoader::Observer,
+                             public SessionManagerClient::Observer {
  public:
   virtual ~OwnerSettingsService();
 
@@ -63,6 +65,9 @@ class OwnerSettingsService : public DeviceSettingsService::PrivateKeyDelegate,
 
   // TPMTokenLoader::Observer:
   virtual void OnTPMTokenReady() OVERRIDE;
+
+  // SessionManagerClient::Observer:
+  virtual void OwnerKeySet(bool success) OVERRIDE;
 
   // Checks if the user is the device owner, without the user profile having to
   // been initialized. Should be used only if login state is in safe mode.
