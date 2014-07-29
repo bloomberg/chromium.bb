@@ -240,7 +240,7 @@ void InspectorConsoleAgent::consoleTimelineEnd(ExecutionContext* context, const 
 
 void InspectorConsoleAgent::consoleCount(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
-    RefPtrWillBeRawPtr<ScriptCallStack> callStack(createScriptCallStackForConsole(scriptState));
+    RefPtrWillBeRawPtr<ScriptCallStack> callStack(createScriptCallStackForConsole(scriptState, 1));
     const ScriptCallFrame& lastCaller = callStack->at(0);
     // Follow Firebug's behavior of counting with null and undefined title in
     // the same bucket as no argument
