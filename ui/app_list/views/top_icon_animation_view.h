@@ -30,7 +30,7 @@ class TopIconAnimationObserver {
 };
 
 // Transitional view used for top item icons animation when opening or closing
-// a folder.
+// a folder. Owns itself.
 class TopIconAnimationView : public views::View,
                              public ui::ImplicitAnimationObserver {
  public:
