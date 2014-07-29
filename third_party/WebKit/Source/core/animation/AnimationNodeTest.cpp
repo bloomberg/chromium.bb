@@ -74,7 +74,7 @@ public:
 
     virtual void updateChildrenAndEffects() const OVERRIDE { }
     void willDetach() { }
-    TestAnimationNodeEventDelegate* eventDelegate() { return m_eventDelegate; }
+    TestAnimationNodeEventDelegate* eventDelegate() { return m_eventDelegate.get(); }
     virtual double calculateTimeToEffectChange(bool forwards, double localTime, double timeToNextIteration) const OVERRIDE
     {
         m_localTime = localTime;
@@ -95,14 +95,20 @@ public:
         return result;
     }
 
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_eventDelegate);
+        AnimationNode::trace(visitor);
+    }
+
 private:
     TestAnimationNode(const Timing& specified, TestAnimationNodeEventDelegate* eventDelegate)
-        : AnimationNode(specified, adoptPtr(eventDelegate))
+        : AnimationNode(specified, adoptPtrWillBeNoop(eventDelegate))
         , m_eventDelegate(eventDelegate)
     {
     }
 
-    TestAnimationNodeEventDelegate* m_eventDelegate;
+    RawPtrWillBeMember<TestAnimationNodeEventDelegate> m_eventDelegate;
     mutable double m_localTime;
     mutable double m_timeToNextIteration;
 };

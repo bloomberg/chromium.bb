@@ -227,9 +227,11 @@ private:
         {
         }
         virtual void onEventCondition(const AnimationNode*) OVERRIDE;
+        virtual void trace(Visitor*) OVERRIDE;
+
     private:
         void maybeDispatch(Document::ListenerType, const AtomicString& eventName, double elapsedTime);
-        Element* m_target;
+        RawPtrWillBeMember<Element> m_target;
         const AtomicString m_name;
         AnimationNode::Phase m_previousPhase;
         double m_previousIteration;
@@ -244,8 +246,10 @@ private:
         {
         }
         virtual void onEventCondition(const AnimationNode*) OVERRIDE;
+        virtual void trace(Visitor*) OVERRIDE;
+
     private:
-        Element* m_target;
+        RawPtrWillBeMember<Element> m_target;
         const CSSPropertyID m_property;
         AnimationNode::Phase m_previousPhase;
     };

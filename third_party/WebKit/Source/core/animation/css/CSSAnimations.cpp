@@ -325,7 +325,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
 
     for (WillBeHeapVector<CSSAnimationUpdate::NewAnimation>::const_iterator iter = update->newAnimations().begin(); iter != update->newAnimations().end(); ++iter) {
         const InertAnimation* inertAnimation = iter->animation.get();
-        OwnPtr<AnimationEventDelegate> eventDelegate = adoptPtr(new AnimationEventDelegate(element, iter->name));
+        OwnPtrWillBeRawPtr<AnimationEventDelegate> eventDelegate = adoptPtrWillBeNoop(new AnimationEventDelegate(element, iter->name));
         RefPtrWillBeRawPtr<Animation> animation = Animation::create(element, inertAnimation->effect(), inertAnimation->specifiedTiming(), Animation::DefaultPriority, eventDelegate.release());
         RefPtrWillBeRawPtr<AnimationPlayer> player = element->document().timeline().createAnimationPlayer(animation.get());
         element->document().compositorPendingAnimations().add(player.get());
@@ -362,7 +362,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
 
         CSSPropertyID id = newTransition.id;
         InertAnimation* inertAnimation = newTransition.animation.get();
-        OwnPtr<TransitionEventDelegate> eventDelegate = adoptPtr(new TransitionEventDelegate(element, newTransition.eventId));
+        OwnPtrWillBeRawPtr<TransitionEventDelegate> eventDelegate = adoptPtrWillBeNoop(new TransitionEventDelegate(element, newTransition.eventId));
 
         RefPtrWillBeRawPtr<AnimationEffect> effect = inertAnimation->effect();
 
@@ -629,6 +629,12 @@ void CSSAnimations::AnimationEventDelegate::onEventCondition(const AnimationNode
     m_previousIteration = currentIteration;
 }
 
+void CSSAnimations::AnimationEventDelegate::trace(Visitor* visitor)
+{
+    visitor->trace(m_target);
+    AnimationNode::EventDelegate::trace(visitor);
+}
+
 void CSSAnimations::TransitionEventDelegate::onEventCondition(const AnimationNode* animationNode)
 {
     const AnimationNode::Phase currentPhase = animationNode->phase();
@@ -644,6 +650,12 @@ void CSSAnimations::TransitionEventDelegate::onEventCondition(const AnimationNod
     }
 
     m_previousPhase = currentPhase;
+}
+
+void CSSAnimations::TransitionEventDelegate::trace(Visitor* visitor)
+{
+    visitor->trace(m_target);
+    AnimationNode::EventDelegate::trace(visitor);
 }
 
 bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)

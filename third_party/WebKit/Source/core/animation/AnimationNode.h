@@ -70,10 +70,11 @@ public:
         PhaseNone,
     };
 
-    class EventDelegate {
+    class EventDelegate : public NoBaseWillBeGarbageCollectedFinalized<EventDelegate> {
     public:
-        virtual ~EventDelegate() { };
+        virtual ~EventDelegate() { }
         virtual void onEventCondition(const AnimationNode*) = 0;
+        virtual void trace(Visitor*) { }
     };
 
     virtual ~AnimationNode() { }
@@ -114,7 +115,7 @@ public:
     virtual void trace(Visitor*);
 
 protected:
-    explicit AnimationNode(const Timing&, PassOwnPtr<EventDelegate> = nullptr);
+    explicit AnimationNode(const Timing&, PassOwnPtrWillBeRawPtr<EventDelegate> = nullptr);
 
     // When AnimationNode receives a new inherited time via updateInheritedTime
     // it will (if necessary) recalculate timings and (if necessary) call
@@ -147,7 +148,7 @@ protected:
     const double m_startTime;
     RawPtrWillBeMember<AnimationPlayer> m_player;
     Timing m_timing;
-    OwnPtr<EventDelegate> m_eventDelegate;
+    OwnPtrWillBeMember<EventDelegate> m_eventDelegate;
 
     mutable struct CalculatedTiming {
         Phase phase;

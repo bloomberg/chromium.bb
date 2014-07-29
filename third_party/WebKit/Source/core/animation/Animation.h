@@ -49,7 +49,7 @@ class Animation FINAL : public AnimationNode {
 public:
     enum Priority { DefaultPriority, TransitionPriority };
 
-    static PassRefPtrWillBeRawPtr<Animation> create(Element*, PassRefPtrWillBeRawPtr<AnimationEffect>, const Timing&, Priority = DefaultPriority, PassOwnPtr<EventDelegate> = nullptr);
+    static PassRefPtrWillBeRawPtr<Animation> create(Element*, PassRefPtrWillBeRawPtr<AnimationEffect>, const Timing&, Priority = DefaultPriority, PassOwnPtrWillBeRawPtr<EventDelegate> = nullptr);
     // Web Animations API Bindings constructors.
     static PassRefPtrWillBeRawPtr<Animation> create(Element*, PassRefPtrWillBeRawPtr<AnimationEffect>, const Dictionary& timingInputDictionary);
     static PassRefPtrWillBeRawPtr<Animation> create(Element*, PassRefPtrWillBeRawPtr<AnimationEffect>, double duration);
@@ -93,7 +93,7 @@ protected:
     virtual double calculateTimeToEffectChange(bool forwards, double inheritedTime, double timeToNextIteration) const OVERRIDE;
 
 private:
-    Animation(Element*, PassRefPtrWillBeRawPtr<AnimationEffect>, const Timing&, Priority, PassOwnPtr<EventDelegate>);
+    Animation(Element*, PassRefPtrWillBeRawPtr<AnimationEffect>, const Timing&, Priority, PassOwnPtrWillBeRawPtr<EventDelegate>);
 
     RawPtrWillBeMember<Element> m_target;
     RefPtrWillBeMember<AnimationEffect> m_effect;
