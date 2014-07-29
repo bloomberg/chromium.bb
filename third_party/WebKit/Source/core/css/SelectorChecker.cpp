@@ -934,7 +934,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                             break;
                         }
                         hostContext.contextFlags = DefaultBehavior;
-                        hostContext.scope = 0;
+                        hostContext.scope = nullptr;
 
                         if (selector.pseudoType() == CSSSelector::PseudoHost)
                             break;

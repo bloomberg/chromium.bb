@@ -54,7 +54,7 @@ private:
     void collectFeaturesFromRuleSubSet(CSSStyleSheetRuleSubSet*, RuleFeatureSet&);
 
     DocumentOrderedList m_scopingNodes;
-    typedef WillBeHeapHashMap<const ContainerNode*, OwnPtrWillBeMember<CSSStyleSheetRuleSubSet> > TreeBoundaryCrossingRuleSetMap;
+    typedef WillBeHeapHashMap<RawPtrWillBeMember<const ContainerNode>, OwnPtrWillBeMember<CSSStyleSheetRuleSubSet> > TreeBoundaryCrossingRuleSetMap;
     TreeBoundaryCrossingRuleSetMap m_treeBoundaryCrossingRuleSetMap;
 };
 
