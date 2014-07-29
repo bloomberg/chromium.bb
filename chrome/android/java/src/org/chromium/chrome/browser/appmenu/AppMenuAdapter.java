@@ -66,7 +66,7 @@ class AppMenuAdapter extends BaseAdapter {
 
     /** Menu Button Layout Constants */
     private static final float MENU_BUTTON_WIDTH_DP = 59.f;
-    private static final float MENU_BUTTON_START_PADDING_DP = 19.f;
+    private static final float MENU_BUTTON_START_PADDING_DP = 21.f;
 
     private final AppMenu mAppMenu;
     private final LayoutInflater mInflater;
