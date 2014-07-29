@@ -6,6 +6,7 @@
 
 #include "apps/app_window.h"
 #include "base/base64.h"
+#include "base/debug/trace_event.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
@@ -221,6 +222,12 @@ void WebAuthFlow::DidFailProvisionalLoad(
     const GURL& validated_url,
     int error_code,
     const base::string16& error_description) {
+  TRACE_EVENT_ASYNC_STEP_PAST1("identity",
+                               "WebAuthFlow",
+                               this,
+                               "DidFailProvisionalLoad",
+                               "error_code",
+                               error_code);
   if (delegate_)
     delegate_->OnAuthFlowFailure(LOAD_FAILED);
 }

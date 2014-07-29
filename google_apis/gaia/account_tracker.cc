@@ -4,6 +4,7 @@
 
 #include "google_apis/gaia/account_tracker.h"
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -83,6 +84,11 @@ AccountIds AccountTracker::FindAccountIdsByGaiaId(const std::string& gaia_id) {
 }
 
 void AccountTracker::OnRefreshTokenAvailable(const std::string& account_id) {
+  TRACE_EVENT1("identity",
+               "AccountTracker::OnRefreshTokenAvailable",
+               "account_key",
+               account_id);
+
   // Ignore refresh tokens if there is no active account ID at all.
   if (identity_provider_->GetActiveAccountId().empty())
     return;
@@ -92,11 +98,18 @@ void AccountTracker::OnRefreshTokenAvailable(const std::string& account_id) {
 }
 
 void AccountTracker::OnRefreshTokenRevoked(const std::string& account_id) {
+  TRACE_EVENT1("identity",
+               "AccountTracker::OnRefreshTokenRevoked",
+               "account_key",
+               account_id);
+
   DVLOG(1) << "REVOKED " << account_id;
   UpdateSignInState(account_id, false);
 }
 
 void AccountTracker::OnActiveAccountLogin() {
+  TRACE_EVENT0("identity", "AccountTracker::OnActiveAccountLogin");
+
   std::vector<std::string> accounts =
       identity_provider_->GetTokenService()->GetAccounts();
 
@@ -110,6 +123,7 @@ void AccountTracker::OnActiveAccountLogin() {
 }
 
 void AccountTracker::OnActiveAccountLogout() {
+  TRACE_EVENT0("identity", "AccountTracker::OnActiveAccountLogout");
   DVLOG(1) << "LOGOUT";
   StopTrackingAllAccounts();
 }
@@ -251,9 +265,13 @@ AccountIdFetcher::AccountIdFetcher(
       request_context_getter_(request_context_getter),
       tracker_(tracker),
       account_key_(account_key) {
+  TRACE_EVENT_ASYNC_BEGIN1(
+      "identity", "AccountIdFetcher", this, "account_key", account_key);
 }
 
-AccountIdFetcher::~AccountIdFetcher() {}
+AccountIdFetcher::~AccountIdFetcher() {
+  TRACE_EVENT_ASYNC_END0("identity", "AccountIdFetcher", this);
+}
 
 void AccountIdFetcher::Start() {
   login_token_request_ = token_service_->StartRequest(
@@ -264,6 +282,8 @@ void AccountIdFetcher::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,
     const base::Time& expiration_time) {
+  TRACE_EVENT_ASYNC_STEP_PAST0(
+      "identity", "AccountIdFetcher", this, "OnGetTokenSuccess");
   DCHECK_EQ(request, login_token_request_.get());
 
   gaia_oauth_client_.reset(new gaia::GaiaOAuthClient(request_context_getter_));
@@ -275,21 +295,41 @@ void AccountIdFetcher::OnGetTokenSuccess(
 void AccountIdFetcher::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
+  TRACE_EVENT_ASYNC_STEP_PAST1("identity",
+                               "AccountIdFetcher",
+                               this,
+                               "OnGetTokenFailure",
+                               "google_service_auth_error",
+                               error.ToString());
   LOG(ERROR) << "OnGetTokenFailure: " << error.ToString();
   DCHECK_EQ(request, login_token_request_.get());
   tracker_->OnUserInfoFetchFailure(this);
 }
 
 void AccountIdFetcher::OnGetUserIdResponse(const std::string& gaia_id) {
+  TRACE_EVENT_ASYNC_STEP_PAST1("identity",
+                               "AccountIdFetcher",
+                               this,
+                               "OnGetUserIdResponse",
+                               "gaia_id",
+                               gaia_id);
   tracker_->OnUserInfoFetchSuccess(this, gaia_id);
 }
 
 void AccountIdFetcher::OnOAuthError() {
+  TRACE_EVENT_ASYNC_STEP_PAST0(
+      "identity", "AccountIdFetcher", this, "OnOAuthError");
   LOG(ERROR) << "OnOAuthError";
   tracker_->OnUserInfoFetchFailure(this);
 }
 
 void AccountIdFetcher::OnNetworkError(int response_code) {
+  TRACE_EVENT_ASYNC_STEP_PAST1("identity",
+                               "AccountIdFetcher",
+                               this,
+                               "OnNetworkError",
+                               "response_code",
+                               response_code);
   LOG(ERROR) << "OnNetworkError " << response_code;
   tracker_->OnUserInfoFetchFailure(this);
 }

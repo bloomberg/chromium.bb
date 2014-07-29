@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/identity/gaia_web_auth_flow.h"
 
+#include "base/debug/trace_event.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -26,6 +27,14 @@ GaiaWebAuthFlow::GaiaWebAuthFlow(Delegate* delegate,
     : delegate_(delegate),
       profile_(profile),
       account_id_(token_key->account_id) {
+  TRACE_EVENT_ASYNC_BEGIN2("identity",
+                           "GaiaWebAuthFlow",
+                           this,
+                           "extension_id",
+                           token_key->extension_id,
+                           "account_id",
+                           token_key->account_id);
+
   const char kOAuth2RedirectPathFormat[] = "/%s#";
   const char kOAuth2AuthorizeFormat[] =
       "?response_type=token&approval_prompt=force&authuser=0&"
@@ -57,6 +66,8 @@ GaiaWebAuthFlow::GaiaWebAuthFlow(Delegate* delegate,
 }
 
 GaiaWebAuthFlow::~GaiaWebAuthFlow() {
+  TRACE_EVENT_ASYNC_END0("identity", "GaiaWebAuthFlow", this);
+
   if (web_flow_)
     web_flow_.release()->DetachDelegateAndDelete();
 }
@@ -71,6 +82,9 @@ void GaiaWebAuthFlow::Start() {
 }
 
 void GaiaWebAuthFlow::OnUbertokenSuccess(const std::string& token) {
+  TRACE_EVENT_ASYNC_STEP_PAST0(
+      "identity", "GaiaWebAuthFlow", this, "OnUbertokenSuccess");
+
   const char kMergeSessionQueryFormat[] = "?uberauth=%s&"
                                           "continue=%s&"
                                           "source=appsv2";
@@ -87,6 +101,13 @@ void GaiaWebAuthFlow::OnUbertokenSuccess(const std::string& token) {
 }
 
 void GaiaWebAuthFlow::OnUbertokenFailure(const GoogleServiceAuthError& error) {
+  TRACE_EVENT_ASYNC_STEP_PAST1("identity",
+                               "GaiaWebAuthFlow",
+                               this,
+                               "OnUbertokenSuccess",
+                               "error",
+                               error.ToString());
+
   DVLOG(1) << "OnUbertokenFailure: " << error.error_message();
   delegate_->OnGaiaFlowFailure(
       GaiaWebAuthFlow::SERVICE_AUTH_ERROR, error, std::string());
@@ -109,6 +130,13 @@ void GaiaWebAuthFlow::OnAuthFlowFailure(WebAuthFlow::Failure failure) {
       break;
   }
 
+  TRACE_EVENT_ASYNC_STEP_PAST1("identity",
+                               "GaiaWebAuthFlow",
+                               this,
+                               "OnAuthFlowFailure",
+                               "error",
+                               gaia_failure);
+
   delegate_->OnGaiaFlowFailure(
       gaia_failure,
       GoogleServiceAuthError(GoogleServiceAuthError::NONE),
@@ -116,6 +144,11 @@ void GaiaWebAuthFlow::OnAuthFlowFailure(WebAuthFlow::Failure failure) {
 }
 
 void GaiaWebAuthFlow::OnAuthFlowURLChange(const GURL& url) {
+  TRACE_EVENT_ASYNC_STEP_PAST0("identity",
+                               "GaiaWebAuthFlow",
+                               this,
+                               "OnAuthFlowURLChange");
+
   const char kOAuth2RedirectAccessTokenKey[] = "access_token";
   const char kOAuth2RedirectErrorKey[] = "error";
   const char kOAuth2ExpiresInKey[] = "expires_in";

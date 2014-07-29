@@ -61,6 +61,8 @@ class IdentityMintRequestQueue {
   typedef std::map<const ExtensionTokenKey, RequestQueue> RequestQueueMap;
 
   RequestQueueMap& GetRequestQueueMap(IdentityMintRequestQueue::MintType type);
+  void RunRequest(IdentityMintRequestQueue::MintType type,
+                  RequestQueue& request_queue);
 
   RequestQueueMap interactive_request_queue_map_;
   RequestQueueMap noninteractive_request_queue_map_;
