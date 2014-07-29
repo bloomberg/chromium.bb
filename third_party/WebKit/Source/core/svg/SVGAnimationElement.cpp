@@ -41,7 +41,6 @@ namespace blink {
 
 SVGAnimationElement::SVGAnimationElement(const QualifiedName& tagName, Document& document)
     : SVGSMILElement(tagName, document)
-    , SVGTests(this)
     , m_fromPropertyValueType(RegularPropertyValue)
     , m_toPropertyValueType(RegularPropertyValue)
     , m_animationValid(false)
@@ -142,7 +141,6 @@ bool SVGAnimationElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
-        SVGTests::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::valuesAttr);
         supportedAttributes.add(SVGNames::keyTimesAttr);
         supportedAttributes.add(SVGNames::keyPointsAttr);
@@ -208,9 +206,6 @@ void SVGAnimationElement::parseAttribute(const QualifiedName& name, const Atomic
         updateAnimationMode();
         return;
     }
-
-    if (SVGTests::parseAttribute(name, value))
-        return;
 
     ASSERT_NOT_REACHED();
 }

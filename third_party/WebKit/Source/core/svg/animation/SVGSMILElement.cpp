@@ -170,6 +170,7 @@ SVGSMILElement::Condition::Condition(Type type, BeginOrEnd beginOrEnd, const Str
 
 SVGSMILElement::SVGSMILElement(const QualifiedName& tagName, Document& doc)
     : SVGElement(tagName, doc)
+    , SVGTests(this)
     , m_attributeName(anyQName())
     , m_targetElement(nullptr)
     , m_syncBaseConditionsConnected(false)
@@ -505,6 +506,7 @@ bool SVGSMILElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
+        SVGTests::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::beginAttr);
         supportedAttributes.add(SVGNames::endAttr);
         supportedAttributes.add(SVGNames::durAttr);
@@ -542,8 +544,9 @@ void SVGSMILElement::parseAttribute(const QualifiedName& name, const AtomicStrin
         setAttributeEventListener(EventTypeNames::endEvent, createAttributeEventListener(this, name, value, eventParameterName()));
     } else if (name == SVGNames::onrepeatAttr) {
         setAttributeEventListener(EventTypeNames::repeatEvent, createAttributeEventListener(this, name, value, eventParameterName()));
-    } else
-        SVGElement::parseAttribute(name, value);
+    } else {
+        SVGElement::parseAttributeNew(name, value);
+    }
 }
 
 void SVGSMILElement::svgAttributeChanged(const QualifiedName& attrName)
