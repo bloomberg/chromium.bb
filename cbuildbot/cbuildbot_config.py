@@ -1372,6 +1372,7 @@ _arm_release_boards = frozenset([
   'nyan_freon',
   'peach_pi',
   'peach_pit',
+  'rush',
 ])
 _arm_full_boards = _arm_release_boards | frozenset([
   'arm-generic',
@@ -1902,14 +1903,6 @@ internal_paladin.add_config('stumpy_moblab-paladin',
   paladin_builder_name='stumpy_moblab paladin',
 )
 
-internal_paladin.add_config('rush-paladin',
-  boards=['rush'],
-  usepkg_setup_board=False,
-  paladin_builder_name='rush paladin',
-  important=False,
-)
-
-
 ### Paladins (CQ builders) which do not run VM or Unit tests on the builder
 ### itself.
 internal_notest_paladin = internal_paladin.derive(non_testable_builder)
@@ -1936,6 +1929,13 @@ internal_notest_paladin.add_config('peach_pit-paladin',
 internal_notest_paladin.add_config('nyan-paladin',
   boards=['nyan'],
   paladin_builder_name='nyan paladin',
+)
+
+internal_notest_paladin.add_config('rush-paladin',
+  boards=['rush'],
+  usepkg_setup_board=False,
+  paladin_builder_name='rush paladin',
+  important=False,
 )
 
 internal_notest_paladin.add_config('storm-paladin',
@@ -2338,6 +2338,7 @@ _release.add_config('stumpy_moblab-release',
 )
 
 _release.add_config('rush-release',
+  non_testable_builder,
   boards=['rush'],
   hw_tests=[],
   usepkg_setup_board=False,
