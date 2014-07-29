@@ -254,6 +254,8 @@ MenuItemView* MenuItemView::AddMenuItemAt(
     item->SetIcon(icon);
   if (type == SUBMENU)
     item->CreateSubmenu();
+  if (GetDelegate() && !GetDelegate()->IsCommandVisible(item_id))
+    item->SetVisible(false);
   submenu_->AddChildViewAt(item, index);
   return item;
 }

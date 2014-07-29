@@ -71,6 +71,7 @@ class VIEWS_EXPORT MenuModelAdapter : public MenuDelegate {
   virtual base::string16 GetLabel(int id) const OVERRIDE;
   virtual const gfx::FontList* GetLabelFontList(int id) const OVERRIDE;
   virtual bool IsCommandEnabled(int id) const OVERRIDE;
+  virtual bool IsCommandVisible(int id) const OVERRIDE;
   virtual bool IsItemChecked(int id) const OVERRIDE;
   virtual void SelectionChanged(MenuItemView* menu) OVERRIDE;
   virtual void WillShowMenu(MenuItemView* menu) OVERRIDE;

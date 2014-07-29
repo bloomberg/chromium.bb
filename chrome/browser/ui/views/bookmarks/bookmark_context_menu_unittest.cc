@@ -9,12 +9,17 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
@@ -24,6 +29,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/views/controls/menu/menu_item_view.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
@@ -332,4 +338,52 @@ TEST_F(BookmarkContextMenuTest, CutCopyPasteNode) {
   ASSERT_TRUE(bb_node->GetChild(0)->is_url());
   ASSERT_TRUE(bb_node->GetChild(1)->is_folder());
   ASSERT_EQ(old_count, bb_node->child_count());
+}
+
+// Tests that the "Show managed bookmarks" option in the context menu is only
+// visible if the policy is set.
+TEST_F(BookmarkContextMenuTest, ShowManagedBookmarks) {
+  // Create a BookmarkContextMenu for the bookmarks bar.
+  const BookmarkNode* bb_node = model_->bookmark_bar_node();
+  std::vector<const BookmarkNode*> nodes;
+  nodes.push_back(bb_node->GetChild(0));
+  scoped_ptr<BookmarkContextMenu> controller(new BookmarkContextMenu(
+      NULL, NULL, profile_.get(), NULL, nodes[0]->parent(), nodes, false));
+
+  // Verify that there are no managed nodes yet.
+  ChromeBookmarkClient* client = ChromeBookmarkClientFactory::GetForProfile(
+      profile_.get());
+  EXPECT_TRUE(client->managed_node()->empty());
+
+  // The context menu should not show the option to "Show managed bookmarks".
+  EXPECT_FALSE(
+      controller->IsCommandVisible(IDC_BOOKMARK_BAR_SHOW_MANAGED_BOOKMARKS));
+  views::MenuItemView* menu = controller->menu();
+  EXPECT_FALSE(menu->GetMenuItemByID(IDC_BOOKMARK_BAR_SHOW_MANAGED_BOOKMARKS)
+                   ->visible());
+
+  // Other options are not affected.
+  EXPECT_TRUE(controller->IsCommandVisible(IDC_BOOKMARK_BAR_NEW_FOLDER));
+  EXPECT_TRUE(menu->GetMenuItemByID(IDC_BOOKMARK_BAR_NEW_FOLDER)->visible());
+
+  // Now set the managed bookmarks policy.
+  base::DictionaryValue* dict = new base::DictionaryValue;
+  dict->SetString("name", "Google");
+  dict->SetString("url", "http://google.com");
+  base::ListValue list;
+  list.Append(dict);
+  EXPECT_TRUE(client->managed_node()->empty());
+  profile_->GetPrefs()->Set(prefs::kManagedBookmarks, list);
+  EXPECT_FALSE(client->managed_node()->empty());
+
+  // New context menus now show the "Show managed bookmarks" option.
+  controller.reset(new BookmarkContextMenu(
+      NULL, NULL, profile_.get(), NULL, nodes[0]->parent(), nodes, false));
+  EXPECT_TRUE(controller->IsCommandVisible(IDC_BOOKMARK_BAR_NEW_FOLDER));
+  EXPECT_TRUE(
+      controller->IsCommandVisible(IDC_BOOKMARK_BAR_SHOW_MANAGED_BOOKMARKS));
+  menu = controller->menu();
+  EXPECT_TRUE(menu->GetMenuItemByID(IDC_BOOKMARK_BAR_NEW_FOLDER)->visible());
+  EXPECT_TRUE(menu->GetMenuItemByID(IDC_BOOKMARK_BAR_SHOW_MANAGED_BOOKMARKS)
+                  ->visible());
 }

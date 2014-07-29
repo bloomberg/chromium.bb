@@ -64,6 +64,10 @@ bool MenuDelegate::IsCommandEnabled(int id) const {
   return true;
 }
 
+bool MenuDelegate::IsCommandVisible(int id) const {
+  return true;
+}
+
 bool MenuDelegate::GetContextualLabel(int id, base::string16* out) const {
   return false;
 }

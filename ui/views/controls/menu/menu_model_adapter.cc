@@ -205,6 +205,16 @@ bool MenuModelAdapter::IsCommandEnabled(int id) const {
   return false;
 }
 
+bool MenuModelAdapter::IsCommandVisible(int id) const {
+  ui::MenuModel* model = menu_model_;
+  int index = 0;
+  if (ui::MenuModel::GetModelAndIndexForCommandId(id, &model, &index))
+    return model->IsVisibleAt(index);
+
+  NOTREACHED();
+  return false;
+}
+
 bool MenuModelAdapter::IsItemChecked(int id) const {
   ui::MenuModel* model = menu_model_;
   int index = 0;
@@ -264,9 +274,6 @@ void MenuModelAdapter::BuildMenuImpl(MenuItemView* menu, ui::MenuModel* model) {
   const int item_count = model->GetItemCount();
   for (int i = 0; i < item_count; ++i) {
     MenuItemView* item = AppendMenuItem(menu, model, i);
-
-    if (item)
-      item->SetVisible(model->IsVisibleAt(i));
 
     if (model->GetTypeAt(i) == ui::MenuModel::TYPE_SUBMENU) {
       DCHECK(item);

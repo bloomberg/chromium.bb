@@ -96,6 +96,10 @@ bool BookmarkContextMenu::IsCommandEnabled(int command_id) const {
   return controller_->IsCommandIdEnabled(command_id);
 }
 
+bool BookmarkContextMenu::IsCommandVisible(int command_id) const {
+  return controller_->IsCommandIdVisible(command_id);
+}
+
 bool BookmarkContextMenu::ShouldCloseAllMenusOnExecute(int id) {
   return (id != IDC_BOOKMARK_BAR_REMOVE) || close_on_remove_;
 }
