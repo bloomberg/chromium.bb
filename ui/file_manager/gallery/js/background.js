@@ -97,15 +97,17 @@ function getChildren(entry) {
 
 /**
  * Promise to be fulfilled with single application window.
+ * This can be null when the window is not opened.
  * @type {Promise}
  */
-var appWindowPromise = Promise.resolve(null);
+var appWindowPromise = null;
 
 /**
- * Promise to be fulfilled with the current window is closed.
+ * Promise to be fulfilled with entries that are used for reopening the
+ * application window.
  * @type {Promise}
  */
-var closingPromise = Promise.resolve(null);
+var reopenEntriesPromsie = null;
 
 /**
  * Launches the application with entries.
@@ -113,48 +115,41 @@ var closingPromise = Promise.resolve(null);
  * @param {Promise} selectedEntriesPromise Promise to be fulfilled with the
  *     entries that are stored in the exteranl file system (not in the isolated
  *     file system).
+ * @return {Promise} Promise to be fulfilled after the applicaiton is launched.
  */
 function launch(selectedEntriesPromise) {
   // If there is the previous window, close the window.
-  appWindowPromise = appWindowPromise.then(function(appWindow) {
-    if (appWindow) {
+  if (appWindowPromise) {
+    reopenEntriesPromsie = selectedEntriesPromise;
+    appWindowPromise.then(function(appWindow) {
       appWindow.close();
-      return closingPromise;
-    }
-  });
+    });
+    return Promise.reject('The window has already opened.');
+  }
+  reopenEntriesPromsie = null;
 
   // Create a new window.
-  appWindowPromise = appWindowPromise.then(function() {
-    return new Promise(function(fulfill) {
-      chrome.app.window.create(
-          'gallery.html',
-          {
-            id: 'gallery',
-            innerBounds: {
-              minWidth: 820,
-              minHeight: 300
-            },
-            frame: 'none'
+  appWindowPromise = new Promise(function(fulfill) {
+    chrome.app.window.create(
+        'gallery.html',
+        {
+          id: 'gallery',
+          innerBounds: {
+            minWidth: 820,
+            minHeight: 300
           },
-          function(appWindow) {
-            appWindow.contentWindow.addEventListener(
-                'load', fulfill.bind(null, appWindow));
-            closingPromise = new Promise(function(fulfill) {
-              appWindow.onClosed.addListener(fulfill);
-            });
+          frame: 'none'
+        },
+        function(appWindow) {
+          appWindow.contentWindow.addEventListener(
+              'load', fulfill.bind(null, appWindow));
+          appWindow.onClosed.addListener(function() {
+            appWindowPromise = null;
+            if (reopenEntriesPromsie)
+              launch(reopenEntriesPromsie);
           });
-    });
+        });
   });
-
-  // Initialize the window document.
-  appWindowPromise = Promise.all([
-    appWindowPromise,
-    backgroundComponentsPromise,
-  ]).then(function(args) {
-    args[0].contentWindow.initialize(args[1]);
-    return args[0];
-  });
-
 
   // If only 1 entry is selected, retrieve entries in the same directory.
   // Otherwise, just use the selectedEntries as an entry set.
@@ -169,13 +164,18 @@ function launch(selectedEntriesPromise) {
     }
   });
 
-  // Open entries.
+  // Initialize the window document.
   return Promise.all([
     appWindowPromise,
-    allEntriesPromise,
-    selectedEntriesPromise
+    backgroundComponentsPromise,
   ]).then(function(args) {
-    args[0].contentWindow.loadEntries(args[1], args[2]);
+    args[0].contentWindow.initialize(args[1]);
+    return Promise.all([
+      allEntriesPromise,
+      selectedEntriesPromise
+    ]).then(function(entries) {
+      args[0].contentWindow.loadEntries(entries[0], entries[1]);
+    });
   });
 }
 
