@@ -23,7 +23,7 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
     const GURL& image_url,
     WebFrame* frame,
     int id,
-    WebURLRequest::RequestContext request_context,
+    WebURLRequest::TargetType target_type,
     const Callback& callback)
     : callback_(callback),
       id_(id),
@@ -31,9 +31,7 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
       image_url_(image_url) {
   fetcher_.reset(ResourceFetcher::Create(image_url));
   fetcher_->Start(
-      frame,
-      request_context,
-      WebURLRequest::FrameTypeNone,
+      frame, target_type,
       base::Bind(&MultiResolutionImageResourceFetcher::OnURLFetchComplete,
                  base::Unretained(this)));
 }

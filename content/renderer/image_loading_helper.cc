@@ -141,8 +141,8 @@ bool ImageLoadingHelper::DownloadImage(int id,
       image_url,
       render_frame()->GetWebFrame(),
       id,
-      is_favicon ? WebURLRequest::RequestContextFavicon
-                 : WebURLRequest::RequestContextImage,
+      is_favicon ? WebURLRequest::TargetIsFavicon :
+                   WebURLRequest::TargetIsImage,
       base::Bind(&ImageLoadingHelper::DidDownloadImage,
                  base::Unretained(this),
                  max_image_size)));

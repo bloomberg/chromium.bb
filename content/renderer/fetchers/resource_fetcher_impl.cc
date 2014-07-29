@@ -79,8 +79,7 @@ void ResourceFetcherImpl::SetHeader(const std::string& header,
 }
 
 void ResourceFetcherImpl::Start(WebFrame* frame,
-                                WebURLRequest::RequestContext request_context,
-                                WebURLRequest::FrameType frame_type,
+                                WebURLRequest::TargetType target_type,
                                 const Callback& callback) {
   DCHECK(!loader_);
   DCHECK(!request_.isNull());
@@ -91,8 +90,7 @@ void ResourceFetcherImpl::Start(WebFrame* frame,
 
   callback_ = callback;
 
-  request_.setRequestContext(request_context);
-  request_.setFrameType(frame_type);
+  request_.setTargetType(target_type);
   request_.setFirstPartyForCookies(frame->document().firstPartyForCookies());
   frame->dispatchWillSendRequest(request_);
   loader_.reset(blink::Platform::current()->createURLLoader());

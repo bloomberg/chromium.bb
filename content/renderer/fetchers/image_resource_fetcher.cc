@@ -25,18 +25,16 @@ ImageResourceFetcher::ImageResourceFetcher(
     WebFrame* frame,
     int id,
     int image_size,
-    WebURLRequest::RequestContext request_context,
+    WebURLRequest::TargetType target_type,
     const Callback& callback)
     : callback_(callback),
       id_(id),
       image_url_(image_url),
       image_size_(image_size) {
   fetcher_.reset(ResourceFetcher::Create(image_url));
-  fetcher_->Start(frame,
-                  request_context,
-                  WebURLRequest::FrameTypeNone,
+  fetcher_->Start(frame, target_type,
                   base::Bind(&ImageResourceFetcher::OnURLFetchComplete,
-                             base::Unretained(this)));
+                      base::Unretained(this)));
 
   // Set subresource URL for crash reporting.
   base::debug::SetCrashKeyValue("subresource_url", image_url.spec());
