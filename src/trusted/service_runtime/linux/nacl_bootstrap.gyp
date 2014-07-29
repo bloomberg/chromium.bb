@@ -72,6 +72,7 @@
         # coming after the -fno-stack-protector we added above.
         '-fstack-protector',
         '-fstack-protector-all',
+        '-fstack-protector-strong',
         '-fprofile-generate',
         '-finstrument-functions',
         '-funwind-tables',
