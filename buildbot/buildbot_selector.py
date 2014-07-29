@@ -324,14 +324,6 @@ def EscapeJson(data):
 
 
 def Main():
-  scheduler = os.environ.get('BUILDBOT_SCHEDULER')
-  if scheduler == 'try_job_rietveld':
-    sys.stderr.write(
-        'ERROR - "git cl try" unsupported for NaCl, see: '
-        'https://crbug.com/396761\n'
-        '        (use "git try" instead!)\n')
-    sys.exit(1)
-
   builder = os.environ.get('BUILDBOT_BUILDERNAME')
   build_number = os.environ.get('BUILDBOT_BUILDNUMBER')
   build_revision = os.environ.get('BUILDBOT_GOT_REVISION',
