@@ -66,8 +66,13 @@ ScopedAllowGL::~ScopedAllowGL() {
   allow_gl.Get().Set(false);
   g_request_pending.Get().Set(false);
 
-  if (g_service.Get())
-    g_service.Get()->RunTasks();
+  DeferredGpuCommandService* service = g_service.Get();
+  if (service) {
+    service->RunTasks();
+    if (service->HasIdleWork()) {
+      service->RequestProcessGL();
+    }
+  }
 }
 
 // static
@@ -123,9 +128,41 @@ void DeferredGpuCommandService::ScheduleTask(const base::Closure& task) {
   }
 }
 
+bool DeferredGpuCommandService::HasIdleWork() {
+  base::AutoLock lock(tasks_lock_);
+  return idle_tasks_.size() > 0;
+}
+
 void DeferredGpuCommandService::ScheduleIdleWork(
     const base::Closure& callback) {
-  // TODO(sievers): Should this do anything?
+  {
+    base::AutoLock lock(tasks_lock_);
+    idle_tasks_.push(std::make_pair(base::Time::Now(), callback));
+  }
+  RequestProcessGL();
+}
+
+void DeferredGpuCommandService::PerformIdleWork(bool is_idle) {
+  DCHECK(ScopedAllowGL::IsAllowed());
+  static const base::TimeDelta kMaxIdleAge =
+      base::TimeDelta::FromMilliseconds(16);
+
+  const base::Time now = base::Time::Now();
+  while (HasIdleWork()) {
+    base::Closure task;
+    {
+      base::AutoLock lock(tasks_lock_);
+      if (!is_idle) {
+        // Only run old tasks if we are not really idle right now.
+        base::TimeDelta age(now - idle_tasks_.front().first);
+        if (age < kMaxIdleAge)
+          break;
+      }
+      task = idle_tasks_.front().second;
+      idle_tasks_.pop();
+    }
+    task.Run();
+  }
 }
 
 bool DeferredGpuCommandService::UseVirtualizedGLContexts() { return true; }
