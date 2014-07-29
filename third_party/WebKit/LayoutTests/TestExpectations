@@ -905,20 +905,6 @@ crbug.com/361729 fast/multicol/pagination-h-horizontal-tb.html [ Pass Failure ]
 crbug.com/359877 virtual/regionbasedmulticol/fast/multicol/mixed-opacity-fixed-test.html [ ImageOnlyFailure ]
 crbug.com/359877 virtual/regionbasedmulticol/fast/multicol/mixed-opacity-test.html [ ImageOnlyFailure ]
 
-crbug.com/392794 fast/repaint/change-transform.html [ NeedsRebaseline ]
-crbug.com/392794 fast/repaint/fixed-scale.html [ NeedsRebaseline ]
-crbug.com/392794 fast/repaint/remove-inline-after-layout.html [ NeedsRebaseline ]
-crbug.com/392794 fast/repaint/remove-inline-layer-after-layout.html [ NeedsRebaseline ]
-crbug.com/392794 fast/repaint/scroll-in-transformed-layer.html [ NeedsRebaseline ]
-crbug.com/392794 fast/repaint/table-outer-border.html [ NeedsRebaseline ]
-crbug.com/392794 fast/repaint/transform-absolute-child.html [ NeedsRebaseline ]
-crbug.com/392794 fast/repaint/transform-absolute-in-positioned-container.html [ NeedsRebaseline ]
-crbug.com/392794 fast/repaint/transform-relative-position.html [ NeedsRebaseline ]
-crbug.com/392794 fast/repaint/transform-repaint-descendants.html [ NeedsRebaseline ]
-crbug.com/392794 fast/repaint/transform-replaced-shadows.html [ NeedsRebaseline ]
-crbug.com/392794 fast/repaint/transform-translate.html [ NeedsRebaseline ]
-crbug.com/392794 svg/repaint/remove-background-property-on-root.html [ NeedsRebaseline ]
-
 # Old multicol tests that currently have no baseline in the virtual test suite
 # for the new multicol implementation.
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/border-padding-pagination.html [ Skip ]
