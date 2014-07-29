@@ -423,7 +423,7 @@ RenderViewContextMenu::RenderViewContextMenu(
                        base::Bind(MenuItemMatchesParams, params_)),
       protocol_handler_submenu_model_(this),
       protocol_handler_registry_(
-          ProtocolHandlerRegistryFactory::GetForProfile(GetProfile())),
+          ProtocolHandlerRegistryFactory::GetForBrowserContext(GetProfile())),
       command_executed_(false) {
   content_type_.reset(ContextMenuContentTypeFactory::Create(
                           source_web_contents_, params));

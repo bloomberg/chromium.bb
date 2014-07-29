@@ -23,8 +23,9 @@ class ProtocolHandlerRegistryFactory
   static ProtocolHandlerRegistryFactory* GetInstance();
 
   // Returns the ProtocolHandlerRegistry that provides intent registration for
-  // |profile|. Ownership stays with this factory object.
-  static ProtocolHandlerRegistry* GetForProfile(Profile* profile);
+  // |context|. Ownership stays with this factory object.
+  static ProtocolHandlerRegistry* GetForBrowserContext(
+      content::BrowserContext* context);
 
  protected:
   // BrowserContextKeyedServiceFactory implementation.

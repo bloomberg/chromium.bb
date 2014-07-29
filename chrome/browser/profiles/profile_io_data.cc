@@ -345,7 +345,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 #endif
 
   ProtocolHandlerRegistry* protocol_handler_registry =
-      ProtocolHandlerRegistryFactory::GetForProfile(profile);
+      ProtocolHandlerRegistryFactory::GetForBrowserContext(profile);
   DCHECK(protocol_handler_registry);
 
   // The profile instance is only available here in the InitializeOnUIThread

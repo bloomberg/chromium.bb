@@ -50,7 +50,8 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
     ProtocolHandler handler = ProtocolHandler::CreateProtocolHandler(protocol,
                                                                      url);
     ProtocolHandlerRegistry* registry =
-        ProtocolHandlerRegistryFactory::GetForProfile(browser()->profile());
+        ProtocolHandlerRegistryFactory::GetForBrowserContext(
+            browser()->profile());
     // Fake that this registration is happening on profile startup. Otherwise
     // it'll try to register with the OS, which causes DCHECKs on Windows when
     // running as admin on Windows 7.
@@ -64,7 +65,8 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
     ProtocolHandler handler = ProtocolHandler::CreateProtocolHandler(protocol,
                                                                      url);
     ProtocolHandlerRegistry* registry =
-        ProtocolHandlerRegistryFactory::GetForProfile(browser()->profile());
+        ProtocolHandlerRegistryFactory::GetForBrowserContext(
+            browser()->profile());
     registry->RemoveHandler(handler);
     ASSERT_FALSE(registry->IsHandledProtocol(protocol));
   }
@@ -80,7 +82,8 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
                      GURL("http://www.google.com/%s"));
   GURL url("web+search:testing");
   ProtocolHandlerRegistry* registry =
-      ProtocolHandlerRegistryFactory::GetForProfile(browser()->profile());
+      ProtocolHandlerRegistryFactory::GetForBrowserContext(
+          browser()->profile());
   ASSERT_EQ(1u, registry->GetHandlersFor(url.scheme()).size());
   menu.reset(CreateContextMenu(url));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
@@ -96,7 +99,8 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
                      GURL("http://www.google.com/%s"));
   GURL url("web+search:testing");
   ProtocolHandlerRegistry* registry =
-      ProtocolHandlerRegistryFactory::GetForProfile(browser()->profile());
+      ProtocolHandlerRegistryFactory::GetForBrowserContext(
+          browser()->profile());
   ASSERT_EQ(1u, registry->GetHandlersFor(url.scheme()).size());
   menu.reset(CreateContextMenu(url));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));

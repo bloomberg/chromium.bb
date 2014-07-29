@@ -244,12 +244,12 @@ ShellIntegration::DefaultProtocolClientWorker* FakeDelegate::CreateShellWorker(
 
 class NotificationCounter : public content::NotificationObserver {
  public:
-  explicit NotificationCounter(Profile* profile)
+  explicit NotificationCounter(content::BrowserContext* context)
       : events_(0),
         notification_registrar_() {
     notification_registrar_.Add(this,
         chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
-        content::Source<Profile>(profile));
+            content::Source<content::BrowserContext>(context));
   }
 
   int events() { return events_; }
@@ -268,14 +268,14 @@ class NotificationCounter : public content::NotificationObserver {
 class QueryProtocolHandlerOnChange
     : public content::NotificationObserver {
  public:
-  QueryProtocolHandlerOnChange(Profile* profile,
+  QueryProtocolHandlerOnChange(content::BrowserContext* context,
                                ProtocolHandlerRegistry* registry)
     : local_registry_(registry),
       called_(false),
       notification_registrar_() {
     notification_registrar_.Add(this,
         chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
-        content::Source<Profile>(profile));
+            content::Source<content::BrowserContext>(context));
   }
 
   virtual void Observe(int type,

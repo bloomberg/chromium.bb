@@ -12,12 +12,11 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
-#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "grit/generated_resources.h"
 #include "net/base/network_delegate.h"
@@ -309,9 +308,9 @@ void ProtocolHandlerRegistry::Delegate::RegisterWithOSAsDefaultClient(
 
 // ProtocolHandlerRegistry -----------------------------------------------------
 
-ProtocolHandlerRegistry::ProtocolHandlerRegistry(Profile* profile,
-    Delegate* delegate)
-    : profile_(profile),
+ProtocolHandlerRegistry::ProtocolHandlerRegistry(
+    content::BrowserContext* context, Delegate* delegate)
+    : context_(context),
       delegate_(delegate),
       enabled_(true),
       is_loading_(false),
@@ -435,7 +434,7 @@ void ProtocolHandlerRegistry::InitProtocolSettings() {
   is_loaded_ = true;
   is_loading_ = true;
 
-  PrefService* prefs = profile_->GetPrefs();
+  PrefService* prefs = user_prefs::UserPrefs::Get(context_);
   if (prefs->HasPrefPath(prefs::kCustomHandlersEnabled)) {
     if (prefs->GetBoolean(prefs::kCustomHandlersEnabled)) {
       Enable();
@@ -739,11 +738,13 @@ void ProtocolHandlerRegistry::Save() {
   scoped_ptr<base::Value> registered_protocol_handlers(
       EncodeRegisteredHandlers());
   scoped_ptr<base::Value> ignored_protocol_handlers(EncodeIgnoredHandlers());
-  profile_->GetPrefs()->Set(prefs::kRegisteredProtocolHandlers,
+  PrefService* prefs = user_prefs::UserPrefs::Get(context_);
+
+  prefs->Set(prefs::kRegisteredProtocolHandlers,
       *registered_protocol_handlers);
-  profile_->GetPrefs()->Set(prefs::kIgnoredProtocolHandlers,
+  prefs->Set(prefs::kIgnoredProtocolHandlers,
       *ignored_protocol_handlers);
-  profile_->GetPrefs()->SetBoolean(prefs::kCustomHandlersEnabled, enabled_);
+  prefs->SetBoolean(prefs::kCustomHandlersEnabled, enabled_);
 }
 
 const ProtocolHandlerRegistry::ProtocolHandlerList*
@@ -823,7 +824,7 @@ void ProtocolHandlerRegistry::NotifyChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
-      content::Source<Profile>(profile_),
+      content::Source<content::BrowserContext>(context_),
       content::NotificationService::NoDetails());
 }
 
@@ -850,7 +851,7 @@ std::vector<const base::DictionaryValue*>
 ProtocolHandlerRegistry::GetHandlersFromPref(const char* pref_name) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::vector<const base::DictionaryValue*> result;
-  PrefService* prefs = profile_->GetPrefs();
+  PrefService* prefs = user_prefs::UserPrefs::Get(context_);
   if (!prefs->HasPrefPath(pref_name)) {
     return result;
   }

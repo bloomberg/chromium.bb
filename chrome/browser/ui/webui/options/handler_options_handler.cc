@@ -86,7 +86,7 @@ void HandlerOptionsHandler::RegisterMessages() {
 }
 
 ProtocolHandlerRegistry* HandlerOptionsHandler::GetProtocolHandlerRegistry() {
-  return ProtocolHandlerRegistryFactory::GetForProfile(
+  return ProtocolHandlerRegistryFactory::GetForBrowserContext(
       Profile::FromWebUI(web_ui()));
 }
 

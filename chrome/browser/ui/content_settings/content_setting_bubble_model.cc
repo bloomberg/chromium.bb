@@ -1268,7 +1268,7 @@ ContentSettingBubbleModel*
   }
   if (content_type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
     ProtocolHandlerRegistry* registry =
-        ProtocolHandlerRegistryFactory::GetForProfile(profile);
+        ProtocolHandlerRegistryFactory::GetForBrowserContext(profile);
     return new ContentSettingRPHBubbleModel(delegate, web_contents, profile,
                                             registry, content_type);
   }

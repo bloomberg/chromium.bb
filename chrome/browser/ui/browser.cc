@@ -1639,16 +1639,15 @@ void Browser::RegisterProtocolHandler(WebContents* web_contents,
                                       const std::string& protocol,
                                       const GURL& url,
                                       bool user_gesture) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (profile->IsOffTheRecord())
+  content::BrowserContext* context = web_contents->GetBrowserContext();
+  if (context->IsOffTheRecord())
     return;
 
   ProtocolHandler handler =
       ProtocolHandler::CreateProtocolHandler(protocol, url);
 
   ProtocolHandlerRegistry* registry =
-      ProtocolHandlerRegistryFactory::GetForProfile(profile);
+      ProtocolHandlerRegistryFactory::GetForBrowserContext(context);
   if (registry->SilentlyHandleRegisterHandlerRequest(handler))
     return;
 
@@ -1687,16 +1686,15 @@ void Browser::UnregisterProtocolHandler(WebContents* web_contents,
                                         bool user_gesture) {
   // user_gesture will be used in case we decide to have confirmation bubble
   // for user while un-registering the handler.
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (profile->IsOffTheRecord())
+  content::BrowserContext* context = web_contents->GetBrowserContext();
+  if (context->IsOffTheRecord())
     return;
 
   ProtocolHandler handler =
       ProtocolHandler::CreateProtocolHandler(protocol, url);
 
   ProtocolHandlerRegistry* registry =
-      ProtocolHandlerRegistryFactory::GetForProfile(profile);
+      ProtocolHandlerRegistryFactory::GetForBrowserContext(context);
   registry->RemoveHandler(handler);
 }
 

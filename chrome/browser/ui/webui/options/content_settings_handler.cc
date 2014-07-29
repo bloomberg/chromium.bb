@@ -34,10 +34,12 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
@@ -74,7 +76,8 @@ typedef std::map<std::pair<ContentSettingsPattern, std::string>,
 
 // The AppFilter is used in AddExceptionsGrantedByHostedApps() to choose
 // extensions which should have their extent displayed.
-typedef bool (*AppFilter)(const extensions::Extension& app, Profile* profile);
+typedef bool (*AppFilter)(const extensions::Extension& app,
+                          content::BrowserContext* profile);
 
 const char kExceptionsLearnMoreUrl[] =
     "https://support.google.com/chrome/?p=settings_manage_exceptions";
@@ -116,6 +119,10 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
 // A pseudo content type. We use it to display data like a content setting even
 // though it is not a real content setting.
 const char* kZoomContentType = "zoomlevels";
+
+content::BrowserContext* GetBrowserContext(content::WebUI* web_ui) {
+  return web_ui->GetWebContents()->GetBrowserContext();
+}
 
 ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name) {
   for (size_t i = 0; i < arraysize(kContentSettingsTypeGroupNames); ++i) {
@@ -210,8 +217,8 @@ base::DictionaryValue* GetNotificationExceptionForPage(
 // Returns true whenever the |extension| is hosted and has |permission|.
 // Must have the AppFilter signature.
 template <APIPermission::ID permission>
-bool HostedAppHasPermission(
-    const extensions::Extension& extension, Profile* /*profile*/) {
+bool HostedAppHasPermission(const extensions::Extension& extension,
+                            content::BrowserContext* /* context */) {
   return extension.is_hosted_app() &&
          extension.permissions_data()->HasAPIPermission(permission);
 }
@@ -232,13 +239,14 @@ void AddExceptionForHostedApp(const std::string& url_pattern,
 
 // Asks the |profile| for hosted apps which have the |permission| set, and
 // adds their web extent and launch URL to the |exceptions| list.
-void AddExceptionsGrantedByHostedApps(
-    Profile* profile, AppFilter app_filter, base::ListValue* exceptions) {
+void AddExceptionsGrantedByHostedApps(content::BrowserContext* context,
+                                      AppFilter app_filter,
+                                      base::ListValue* exceptions) {
   const extensions::ExtensionSet& extensions =
-      extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
+      extensions::ExtensionRegistry::Get(context)->enabled_extensions();
   for (extensions::ExtensionSet::const_iterator extension = extensions.begin();
        extension != extensions.end(); ++extension) {
-    if (!app_filter(*extension->get(), profile))
+    if (!app_filter(*extension->get(), context))
       continue;
 
     extensions::URLPatternSet web_extent = (*extension)->web_extent();
@@ -481,12 +489,12 @@ void ContentSettingsHandler::InitializeHandler() {
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
       content::NotificationService::AllSources());
-  Profile* profile = Profile::FromWebUI(web_ui());
+  content::BrowserContext* context = GetBrowserContext(web_ui());
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
-      content::Source<Profile>(profile));
+      content::Source<content::BrowserContext>(context));
 
-  PrefService* prefs = profile->GetPrefs();
+  PrefService* prefs = user_prefs::UserPrefs::Get(context);
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(
       prefs::kPepperFlashSettingsEnabled,
@@ -507,13 +515,13 @@ void ContentSettingsHandler::InitializeHandler() {
           base::Unretained(this)));
 
   content::HostZoomMap* host_zoom_map =
-      content::HostZoomMap::GetForBrowserContext(profile);
+      content::HostZoomMap::GetForBrowserContext(context);
   host_zoom_map_subscription_ =
       host_zoom_map->AddZoomLevelChangedCallback(
           base::Bind(&ContentSettingsHandler::OnZoomLevelChanged,
                      base::Unretained(this)));
 
-  flash_settings_manager_.reset(new PepperFlashSettingsManager(this, profile));
+  flash_settings_manager_.reset(new PepperFlashSettingsManager(this, context));
 }
 
 void ContentSettingsHandler::InitializePage() {
@@ -608,7 +616,7 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
 }
 
 void ContentSettingsHandler::UpdateMediaSettingsView() {
-  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  PrefService* prefs = user_prefs::UserPrefs::Get(GetBrowserContext(web_ui()));
   bool audio_disabled = !prefs->GetBoolean(prefs::kAudioCaptureAllowed) &&
       prefs->IsManagedPreference(prefs::kAudioCaptureAllowed);
   bool video_disabled = !prefs->GetBoolean(prefs::kVideoCaptureAllowed) &&
@@ -984,7 +992,7 @@ void ContentSettingsHandler::UpdateZoomLevelsExceptionsView() {
   base::ListValue zoom_levels_exceptions;
 
   content::HostZoomMap* host_zoom_map =
-      content::HostZoomMap::GetForBrowserContext(Profile::FromWebUI(web_ui()));
+      content::HostZoomMap::GetForBrowserContext(GetBrowserContext(web_ui()));
   content::HostZoomMap::ZoomLevelVector zoom_levels(
       host_zoom_map->GetAllZoomLevels());
   std::sort(zoom_levels.begin(), zoom_levels.end(), HostZoomSort);
@@ -1152,6 +1160,7 @@ void ContentSettingsHandler::GetExceptionsFromHostContentSettingsMap(
 void ContentSettingsHandler::RemoveNotificationException(
     const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
+
   std::string origin;
   std::string setting;
   bool rv = args->GetString(1, &origin);
@@ -1236,7 +1245,7 @@ void ContentSettingsHandler::RemoveZoomLevelException(
   DCHECK(rv);
 
   content::HostZoomMap* host_zoom_map =
-      content::HostZoomMap::GetForBrowserContext(Profile::FromWebUI(web_ui()));
+      content::HostZoomMap::GetForBrowserContext(GetBrowserContext(web_ui()));
   double default_level = host_zoom_map->GetDefaultZoomLevel();
   host_zoom_map->SetZoomLevelForHost(pattern, default_level);
 }
@@ -1258,12 +1267,11 @@ void ContentSettingsHandler::RegisterMessages() {
 
 void ContentSettingsHandler::ApplyWhitelist(ContentSettingsType content_type,
                                             ContentSetting default_setting) {
-  Profile* profile = Profile::FromWebUI(web_ui());
   HostContentSettingsMap* map = GetContentSettingsMap();
   if (content_type != CONTENT_SETTINGS_TYPE_PLUGINS)
     return;
   const int kDefaultWhitelistVersion = 1;
-  PrefService* prefs = profile->GetPrefs();
+  PrefService* prefs = user_prefs::UserPrefs::Get(GetBrowserContext(web_ui()));
   int version = prefs->GetInteger(
       prefs::kContentSettingsDefaultWhitelistVersion);
   if (version >= kDefaultWhitelistVersion)
@@ -1461,8 +1469,8 @@ HostContentSettingsMap* ContentSettingsHandler::GetContentSettingsMap() {
 }
 
 ProtocolHandlerRegistry* ContentSettingsHandler::GetProtocolHandlerRegistry() {
-  return ProtocolHandlerRegistryFactory::GetForProfile(
-      Profile::FromWebUI(web_ui()));
+  return ProtocolHandlerRegistryFactory::GetForBrowserContext(
+      GetBrowserContext(web_ui()));
 }
 
 HostContentSettingsMap*
@@ -1485,7 +1493,7 @@ void ContentSettingsHandler::OnPepperFlashPrefChanged() {
   ShowFlashMediaLink(DEFAULT_SETTING, false);
   ShowFlashMediaLink(EXCEPTIONS, false);
 
-  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  PrefService* prefs = user_prefs::UserPrefs::Get(GetBrowserContext(web_ui()));
   if (prefs->GetBoolean(prefs::kPepperFlashSettingsEnabled))
     RefreshFlashMediaSettings();
   else
@@ -1557,7 +1565,7 @@ void ContentSettingsHandler::UpdateFlashMediaLinksVisibility() {
 }
 
 void ContentSettingsHandler::UpdateProtectedContentExceptionsButton() {
-  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  PrefService* prefs = user_prefs::UserPrefs::Get(GetBrowserContext(web_ui()));
   // Exceptions apply only when the feature is enabled.
   bool enable_exceptions = prefs->GetBoolean(prefs::kEnableDRM);
   web_ui()->CallJavascriptFunction(

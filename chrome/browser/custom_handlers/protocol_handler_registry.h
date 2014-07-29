@@ -137,7 +137,7 @@ class ProtocolHandlerRegistry : public KeyedService {
   typedef std::vector<DefaultClientObserver*> DefaultClientObserverList;
 
   // Creates a new instance. Assumes ownership of |delegate|.
-  ProtocolHandlerRegistry(Profile* profile, Delegate* delegate);
+  ProtocolHandlerRegistry(content::BrowserContext* context, Delegate* delegate);
   virtual ~ProtocolHandlerRegistry();
 
   // Returns a net::URLRequestJobFactory suitable for use on the IO thread, but
@@ -349,8 +349,8 @@ class ProtocolHandlerRegistry : public KeyedService {
   // Protocol handlers that are the defaults for a given protocol.
   ProtocolHandlerMap default_handlers_;
 
-  // The Profile that owns this ProtocolHandlerRegistry.
-  Profile* profile_;
+  // The browser context that owns this ProtocolHandlerRegistry.
+  content::BrowserContext* context_;
 
   // The Delegate that registers / deregisters external handlers on our behalf.
   scoped_ptr<Delegate> delegate_;
