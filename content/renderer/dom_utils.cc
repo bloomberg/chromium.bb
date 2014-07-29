@@ -10,13 +10,13 @@ namespace content {
 
 blink::WebNode DomUtils::ExtractParentAnchorNode(
     const blink::WebNode& node) {
-    blink::WebNode selected_node = node;
+  blink::WebNode selected_node = node;
 
-    // If there are other embedded tags (like <a ..>Some <b>text</b></a>)
-    // we need to extract the parent <a/> node.
-    while (!selected_node.isLink() && !selected_node.parentNode().isNull())
-      selected_node = selected_node.parentNode();
-    return selected_node.isLink() ? selected_node : blink::WebNode();
+  // If there are other embedded tags (like <a ..>Some <b>text</b></a>)
+  // we need to extract the parent <a/> node.
+  while (!selected_node.isNull() && !selected_node.isLink())
+    selected_node = selected_node.parentNode();
+  return selected_node;
 }
 
 }  // namespace content
