@@ -567,7 +567,9 @@ void ChildThread::OnProcessBackgrounded(bool background) {
 #ifdef OS_WIN
   // Windows Vista+ has a fancy process backgrounding mode that can only be set
   // from within the process.
-  base::Process::Current().SetProcessBackgrounded(background);
+  // TODO(wfh) Do not set background from within process until the issue with
+  // white tabs is resolved.  See http://crbug.com/398103.
+  // base::Process::Current().SetProcessBackgrounded(background);
 #endif  // OS_WIN
 }
 
