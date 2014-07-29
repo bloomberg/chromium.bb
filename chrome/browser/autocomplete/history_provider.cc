@@ -9,12 +9,14 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/in_memory_url_index_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "components/autocomplete/autocomplete_input.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "url/url_util.h"
 
 void HistoryProvider::DeleteMatch(const AutocompleteMatch& match) {
@@ -53,10 +55,13 @@ HistoryProvider::~HistoryProvider() {}
 
 void HistoryProvider::DeleteMatchFromMatches(const AutocompleteMatch& match) {
   bool found = false;
+  BookmarkModel* bookmark_model = BookmarkModelFactory::GetForProfile(profile_);
   for (ACMatches::iterator i(matches_.begin()); i != matches_.end(); ++i) {
     if (i->destination_url == match.destination_url && i->type == match.type) {
       found = true;
-      if (i->is_history_what_you_typed_match || i->starred) {
+      if (i->is_history_what_you_typed_match ||
+          (bookmark_model &&
+           bookmark_model->IsBookmarked(i->destination_url))) {
         // We can't get rid of What-You-Typed or Bookmarked matches,
         // but we can make them look like they have no backing data.
         i->deletable = false;

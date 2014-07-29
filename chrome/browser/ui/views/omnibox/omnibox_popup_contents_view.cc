@@ -270,6 +270,11 @@ gfx::Image OmniboxPopupContentsView::GetIconIfExtensionMatch(
   return model_->GetIconIfExtensionMatch(GetMatchAtIndex(index));
 }
 
+bool OmniboxPopupContentsView::IsStarredMatch(
+    const AutocompleteMatch& match) const {
+  return model_->IsStarredMatch(match);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxPopupContentsView, AnimationDelegate implementation:
 

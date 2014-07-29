@@ -19,7 +19,6 @@
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_service.h"
@@ -577,7 +576,6 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
     DoAutocomplete(NULL, url_db, params.get());
     matches_.clear();
     PromoteMatchesIfNecessary(*params);
-    UpdateStarredStateOfMatches(BookmarkModelFactory::GetForProfile(profile_));
     // NOTE: We don't reset |params| here since at least the |promote_type|
     // field on it will be read by the second pass -- see comments in
     // DoAutocomplete().
@@ -893,7 +891,6 @@ void HistoryURLProvider::QueryComplete(
       }
       matches_.push_back(HistoryMatchToACMatch(*params, i, NORMAL, relevance));
     }
-    UpdateStarredStateOfMatches(BookmarkModelFactory::GetForProfile(profile_));
   }
 
   done_ = true;

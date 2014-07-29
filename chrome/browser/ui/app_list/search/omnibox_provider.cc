@@ -8,10 +8,12 @@
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "components/autocomplete/autocomplete_input.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -110,7 +112,11 @@ class OmniboxResult : public ChromeSearchResult {
 
  private:
   void UpdateIcon() {
-    int resource_id = match_.starred ?
+    BookmarkModel* bookmark_model =
+        BookmarkModelFactory::GetForProfile(profile_);
+    bool is_bookmarked =
+        bookmark_model && bookmark_model->IsBookmarked(match_.destination_url);
+    int resource_id = is_bookmarked ?
         IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match_.type);
     SetIcon(*ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         resource_id));

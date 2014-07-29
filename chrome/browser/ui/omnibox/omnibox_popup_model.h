@@ -99,6 +99,9 @@ class OmniboxPopupModel {
   // returns an empty Image.
   gfx::Image GetIconIfExtensionMatch(const AutocompleteMatch& match) const;
 
+  // Returns true if the destination URL of the match is bookmarked.
+  bool IsStarredMatch(const AutocompleteMatch& match) const;
+
   // The match the user has manually chosen, if any.
   const AutocompleteResult::Selection& manually_selected_match() const {
     return manually_selected_match_;

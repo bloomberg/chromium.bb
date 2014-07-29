@@ -45,7 +45,6 @@ AutocompleteMatch::AutocompleteMatch()
       transition(content::PAGE_TRANSITION_GENERATED),
       is_history_what_you_typed_match(false),
       type(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED),
-      starred(false),
       from_previous(false) {
 }
 
@@ -61,7 +60,6 @@ AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
       transition(content::PAGE_TRANSITION_TYPED),
       is_history_what_you_typed_match(false),
       type(type),
-      starred(false),
       from_previous(false) {
 }
 
@@ -87,7 +85,6 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       associated_keyword(match.associated_keyword.get() ?
           new AutocompleteMatch(*match.associated_keyword) : NULL),
       keyword(match.keyword),
-      starred(match.starred),
       from_previous(match.from_previous),
       search_terms_args(match.search_terms_args.get() ?
           new TemplateURLRef::SearchTermsArgs(*match.search_terms_args) :
@@ -125,7 +122,6 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   associated_keyword.reset(match.associated_keyword.get() ?
       new AutocompleteMatch(*match.associated_keyword) : NULL);
   keyword = match.keyword;
-  starred = match.starred;
   from_previous = match.from_previous;
   search_terms_args.reset(match.search_terms_args.get() ?
       new TemplateURLRef::SearchTermsArgs(*match.search_terms_args) : NULL);

@@ -324,7 +324,7 @@ NSImage* OmniboxPopupViewMac::ImageForMatch(const AutocompleteMatch& match) {
   if (!image.IsEmpty())
     return image.AsNSImage();
 
-  const int resource_id = match.starred ?
+  const int resource_id = model_->IsStarredMatch(match) ?
       IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match.type);
   return OmniboxViewMac::ImageForResource(resource_id);
 }

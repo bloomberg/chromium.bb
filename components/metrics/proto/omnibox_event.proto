@@ -228,7 +228,7 @@ message OmniboxEventProto {
     optional int32 typed_count = 5;
 
     // Whether this item is starred (bookmarked) or not.
-    optional bool is_starred = 4;
+    optional bool is_starred = 4 [deprecated=true];
 
     // Whether this item is disabled in the UI (not clickable).
     optional bool is_disabled = 6;

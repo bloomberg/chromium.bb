@@ -18,10 +18,12 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/url_database.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/search_engines/template_url.h"
@@ -82,7 +84,6 @@ class TypeConverter<AutocompleteMatchMojoPtr, AutocompleteMatch> {
           mojo::String::From(input.associated_keyword->keyword);
     }
     result->keyword = mojo::String::From(input.keyword);
-    result->starred = input.starred;
     result->duplicates = static_cast<int32>(input.duplicate_matches.size());
     result->from_previous = input.from_previous;
 
@@ -141,6 +142,24 @@ void OmniboxUIHandler::OnResultChanged(bool default_match_changed) {
   result->results_by_provider =
       mojo::Array<AutocompleteResultsForProviderMojoPtr>::From(
           controller_->providers());
+
+  // Fill AutocompleteMatchMojo::starred.
+  BookmarkModel* bookmark_model = BookmarkModelFactory::GetForProfile(profile_);
+  if (bookmark_model) {
+    for (size_t i =  0; i < result->combined_results.size(); ++i) {
+      result->combined_results[i]->starred = bookmark_model->IsBookmarked(
+          GURL(result->combined_results[i]->destination_url));
+    }
+    for (size_t i = 0; i < result->results_by_provider.size(); ++i) {
+      const AutocompleteResultsForProviderMojo& result_by_provider =
+          *result->results_by_provider[i];
+      for (size_t j = 0; j < result_by_provider.results.size(); ++j) {
+        result_by_provider.results[j]->starred = bookmark_model->IsBookmarked(
+            GURL(result_by_provider.results[j]->destination_url));
+      }
+    }
+  }
+
   client()->HandleNewAutocompleteResult(result.Pass());
 }
 

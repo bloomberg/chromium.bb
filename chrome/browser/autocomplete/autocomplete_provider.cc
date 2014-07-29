@@ -8,7 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "components/autocomplete/autocomplete_input.h"
-#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/url_fixer/url_fixer.h"
 #include "net/base/net_util.h"
 #include "url/gurl.h"
@@ -92,15 +91,6 @@ void AutocompleteProvider::ResetSession() {
 
 AutocompleteProvider::~AutocompleteProvider() {
   Stop(false);
-}
-
-void AutocompleteProvider::UpdateStarredStateOfMatches(
-    BookmarkModel* bookmark_model) {
-  if (matches_.empty() || !bookmark_model || !bookmark_model->loaded())
-    return;
-
-  for (ACMatches::iterator i(matches_.begin()); i != matches_.end(); ++i)
-    i->starred = bookmark_model->IsBookmarked(i->destination_url);
 }
 
 // static

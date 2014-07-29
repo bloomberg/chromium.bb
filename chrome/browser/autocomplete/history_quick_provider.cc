@@ -20,7 +20,6 @@
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -83,7 +82,6 @@ void HistoryQuickProvider::Start(const AutocompleteInput& input,
           name, 1, 1000, 50, base::Histogram::kUmaTargetedHistogramFlag);
       counter->Add(static_cast<int>((end_time - start_time).InMilliseconds()));
     }
-    UpdateStarredStateOfMatches(BookmarkModelFactory::GetForProfile(profile_));
   }
 }
 

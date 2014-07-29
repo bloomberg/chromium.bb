@@ -351,9 +351,6 @@ struct AutocompleteMatch {
   // it!
   base::string16 keyword;
 
-  // True if the user has starred the destination URL.
-  bool starred;
-
   // True if this match is from a previous result.
   bool from_previous;
 

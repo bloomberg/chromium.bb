@@ -195,7 +195,6 @@ AutocompleteMatch BookmarkProvider::BookmarkMatchToACMatch(
       ClassificationsFromMatch(bookmark_match.title_match_positions,
                                match.description.size(),
                                false);
-  match.starred = true;
 
   // Summary on how a relevance score is determined for the match:
   //

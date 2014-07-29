@@ -12,7 +12,6 @@
 #include "components/metrics/proto/omnibox_event.pb.h"
 
 class AutocompleteInput;
-class BookmarkModel;
 
 typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 
@@ -214,10 +213,6 @@ class AutocompleteProvider
   typedef std::pair<bool, base::string16> FixupReturn;
 
   virtual ~AutocompleteProvider();
-
-  // Updates the starred state of each of the matches in matches_ from the
-  // bookmark bar model. Does nothing when |bookmark_model| is NULL.
-  void UpdateStarredStateOfMatches(BookmarkModel* bookmark_model);
 
   // Fixes up user URL input to make it more possible to match against.  Among
   // many other things, this takes care of the following:

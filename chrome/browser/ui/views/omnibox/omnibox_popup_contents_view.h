@@ -69,6 +69,7 @@ class OmniboxPopupContentsView : public views::View,
   bool IsSelectedIndex(size_t index) const;
   bool IsHoveredIndex(size_t index) const;
   gfx::Image GetIconIfExtensionMatch(size_t index) const;
+  bool IsStarredMatch(const AutocompleteMatch& match) const;
 
   int max_match_contents_width() const {
     return max_match_contents_width_;

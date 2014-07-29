@@ -160,7 +160,6 @@ void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {
     suggestion->set_relevance(i->relevance);
     if (i->typed_count != -1)
       suggestion->set_typed_count(i->typed_count);
-    suggestion->set_is_starred(i->starred);
   }
   for (ProvidersInfo::const_iterator i(log.providers_info.begin());
        i != log.providers_info.end(); ++i) {

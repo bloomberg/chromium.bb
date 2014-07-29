@@ -429,7 +429,7 @@ gfx::ImageSkia OmniboxResultView::GetIcon() const {
   if (!image.IsEmpty())
     return image.AsImageSkia();
 
-  int icon = match_.starred ?
+  int icon = model_->IsStarredMatch(match_) ?
       IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match_.type);
   if (GetState() == SELECTED) {
     switch (icon) {
