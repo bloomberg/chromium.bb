@@ -4,9 +4,9 @@
 
 #include "content/shell/renderer/test_runner/WebTestInterfaces.h"
 
-#include "content/shell/renderer/test_runner/MockWebMediaStreamCenter.h"
 #include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/mock_web_audio_device.h"
+#include "content/shell/renderer/test_runner/mock_web_media_stream_center.h"
 #include "content/shell/renderer/test_runner/mock_web_midi_accessor.h"
 #include "content/shell/renderer/test_runner/mock_webrtc_peer_connection_handler.h"
 #include "content/shell/renderer/test_runner/test_runner.h"
