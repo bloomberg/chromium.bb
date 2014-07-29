@@ -891,7 +891,18 @@ int32_t NaClSysTestInfoLeak(struct NaClAppThread *natp) {
 
   __asm__ volatile("vldm %0, {d0-d7}" :: "r" (manybytes) :
                    "d0", "d1", "d2", "d3", "d4", "d5", "d6", "d7");
+
+  /*
+   * __builtin_arm_set_fpscr is not available yet in gcc (not even in 4.8)
+   * and clang doesn't know about the "vfpcc" register.
+   * TODO(sbc): Always use __builtin_arm_set_fpscr once we are using a
+   * version of gcc that supports it.
+   */
+#ifdef __clang__
+  __builtin_arm_set_fpscr(0xdeadbeef);
+#else
   __asm__ volatile("fmxr fpscr, %0" :: "r" (0xdeadbeef) : "vfpcc");
+#endif
 
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
 
