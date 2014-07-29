@@ -18,6 +18,12 @@
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
+#include "chrome/browser/chromeos/login/users/user_manager.h"
+#endif  // OS_CHROMEOS
+
 #if defined(USE_ASH)
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -168,6 +174,16 @@ bool VirtualKeyboardPrivateGetKeyboardConfigFunction::RunSync() {
 bool VirtualKeyboardPrivateOpenSettingsFunction::RunSync() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
+  // Do not try to open language options page if user is not logged in or
+  // locked.
+  if (!chromeos::UserManager::Get()->IsUserLoggedIn() ||
+      chromeos::UserAddingScreen::Get()->IsRunning() ||
+      (chromeos::ScreenLocker::default_screen_locker() &&
+          chromeos::ScreenLocker::default_screen_locker()->locked()))
+    return true;
+#endif  // OS_CHROMEOS
+
   content::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
   chrome::ShowSettingsSubPageForProfile(
       ProfileManager::GetActiveUserProfile(), chrome::kLanguageOptionsSubPage);
