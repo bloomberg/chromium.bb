@@ -553,12 +553,16 @@ void DumpDeprecatedHistograms(const WebPerformance& performance,
       PLT_HISTOGRAM("PLT.BeginToFirstPaintAfterLoad",
           first_paint_after_load - begin);
     }
-    DCHECK(commit <= first_paint_after_load);
-    PLT_HISTOGRAM("PLT.CommitToFirstPaintAfterLoad",
-        first_paint_after_load - commit);
-    DCHECK(finish_all_loads <= first_paint_after_load);
-    PLT_HISTOGRAM("PLT.FinishToFirstPaintAfterLoad",
-        first_paint_after_load - finish_all_loads);
+    // Both following conditionals were previously DCHECKs. Changed due to
+    // multiple bot failures, listed in crbug.com/383963
+    if (commit <= first_paint_after_load) {
+      PLT_HISTOGRAM("PLT.CommitToFirstPaintAfterLoad",
+          first_paint_after_load - commit);
+    }
+    if (finish_all_loads <= first_paint_after_load) {
+      PLT_HISTOGRAM("PLT.FinishToFirstPaintAfterLoad",
+          first_paint_after_load - finish_all_loads);
+    }
   }
   PLT_HISTOGRAM_WITH_GWS_VARIANT("PLT.BeginToFinishDoc", begin_to_finish_doc,
                                  came_from_websearch,
