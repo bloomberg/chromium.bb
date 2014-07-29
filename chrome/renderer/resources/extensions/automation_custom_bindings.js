@@ -103,19 +103,29 @@ automationInternal.onAccessibilityEvent.addListener(function(data) {
   }
   if (!privates(targetTree).impl.onAccessibilityEvent(data))
     return;
-  var eventType = data.eventType;
-  if (eventType == 'loadComplete' || eventType == 'layoutComplete') {
-    // If the tree wasn't available when getTree() was called, the callback will
-    // have been cached in idToCallback, so call and delete it now that we
-    // have the complete tree.
-    if (id in idToCallback) {
-      for (var i = 0; i < idToCallback[id].length; i++) {
-        var callback = idToCallback[id][i];
-        callback(targetTree);
-      }
-      delete idToCallback[id];
-    }
+
+  // If we're not waiting on a callback to getTree(), we can early out here.
+  if (!(id in idToCallback))
+    return;
+
+  // We usually get a 'placeholder' tree first, which doesn't have any url
+  // attribute or child nodes. If we've got that, wait for the full tree before
+  // calling the callback.
+  // TODO(dmazzoni): Don't send down placeholder (crbug.com/397553)
+  if (id != DESKTOP_TREE_ID && !targetTree.attributes.url &&
+      targetTree.children.length == 0) {
+    return;
   }
+
+  // If the tree wasn't available when getTree() was called, the callback will
+  // have been cached in idToCallback, so call and delete it now that we
+  // have the complete tree.
+  for (var i = 0; i < idToCallback[id].length; i++) {
+    console.log('calling getTree() callback');
+    var callback = idToCallback[id][i];
+    callback(targetTree);
+  }
+  delete idToCallback[id];
 });
 
 automationInternal.onAccessibilityTreeDestroyed.addListener(function(pid, rid) {

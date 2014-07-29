@@ -14,6 +14,12 @@ function createBackgroundTab(url, callback) {
   });
 }
 
+function assertCorrectTab(rootNode) {
+  var title = rootNode.attributes.docTitle;
+  chrome.test.assertEq('Automation Tests', title);
+  chrome.test.succeed();
+}
+
 var allTests = [
   function testGetTabById() {
     getUrlFromConfig(function(url) {
@@ -21,10 +27,13 @@ var allTests = [
       // tab by ID rather than just getting the active tab still.
       createBackgroundTab(url, function(tab) {
         chrome.automation.getTree(tab.id, function(rootNode) {
+          if (rootNode.attributes.docLoaded) {
+            assertCorrectTab(rootNode);
+            return;
+          }
+
           rootNode.addEventListener('loadComplete', function() {
-            var title = rootNode.attributes['docTitle'];
-            chrome.test.assertEq('Automation Tests', title);
-            chrome.test.succeed();
+            assertCorrectTab(rootNode);
           });
         })
       });

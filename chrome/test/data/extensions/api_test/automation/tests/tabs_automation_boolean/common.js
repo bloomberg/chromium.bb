@@ -16,6 +16,10 @@ function setUpAndRunTests(allTests) {
 
     function gotTree(returnedRootNode) {
       rootNode = returnedRootNode;
+      if (rootNode.attributes.docLoaded) {
+        chrome.test.runTests(allTests);
+        return;
+      }
       rootNode.addEventListener('loadComplete', function() {
         chrome.test.runTests(allTests);
       });

@@ -268,6 +268,7 @@ AutomationRootNodeImpl.prototype = {
   },
 
   unserialize: function(update) {
+    console.log('got update:\n' + JSON.stringify(update));
     var updateState = { pendingNodes: {}, newNodes: {} };
     var oldRootId = this.id;
 
@@ -314,6 +315,7 @@ AutomationRootNodeImpl.prototype = {
                     chrome);
       return false;
     }
+    console.log('after update:\n' + this.toString());
     return true;
   },
 
