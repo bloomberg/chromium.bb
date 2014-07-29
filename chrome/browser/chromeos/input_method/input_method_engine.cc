@@ -316,8 +316,13 @@ bool InputMethodEngine::SendKeyEvents(
                           key_code,
                           event.code,
                           flags);
-    if (!event.key.empty())
-      ui_event.set_character(base::UTF8ToUTF16(event.key)[0]);
+    // 4-bytes UTF-8 string is at least 2-characters UTF-16 string.
+    // And Key char can only be single UTF-16 character.
+    if (!event.key.empty() && event.key.size() < 4) {
+      base::string16 key_char = base::UTF8ToUTF16(event.key);
+      if (key_char.size() == 1)
+        ui_event.set_character(key_char[0]);
+    }
     base::AutoReset<const ui::KeyEvent*> reset_sent_key(&sent_key_event_,
                                                         &ui_event);
     ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&ui_event);
