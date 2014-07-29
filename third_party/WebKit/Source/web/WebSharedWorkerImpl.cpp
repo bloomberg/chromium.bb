@@ -178,23 +178,12 @@ void WebSharedWorkerImpl::stopWorkerThread()
     if (m_askedToTerminate)
         return;
     m_askedToTerminate = true;
-
-    bool hasPendingActivity = false;
     if (m_mainScriptLoader) {
         m_mainScriptLoader->cancel();
         m_mainScriptLoader.clear();
-        hasPendingActivity = true;
     }
-    if (m_workerThread) {
+    if (m_workerThread)
         m_workerThread->stop();
-        hasPendingActivity = true;
-    }
-
-    if (!hasPendingActivity) {
-        // If there are no active WorkerThread, |workerGlobalScopeClosed()|
-        // callback to delete this is never called, so we should clean up here.
-        delete this;
-    }
 }
 
 void WebSharedWorkerImpl::initializeLoader(const WebURL& url)
