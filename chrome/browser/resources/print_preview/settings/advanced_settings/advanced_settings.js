@@ -7,15 +7,11 @@ cr.define('print_preview', function() {
 
   /**
    * Modal dialog for print destination's advanced settings.
-   * @param {!print_preview.Metrics} metrics Used to record usage statistics.
    * @constructor
    * @extends {print_preview.Component}
    */
-  function AdvancedSettings(metrics) {
+  function AdvancedSettings() {
     print_preview.Component.call(this);
-
-    /** @private {!print_preview.Metrics} */
-    this.metrics_ = metrics;
 
     /** @private {!print_preview.SearchBox} */
     this.searchBox_ = new print_preview.SearchBox(

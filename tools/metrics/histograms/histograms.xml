@@ -23677,6 +23677,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PrintPreview.PrintSettingsUi"
+    enum="PrintPreviewPrintSettingsUiBuckets">
+  <owner>alekseys@chromium.org</owner>
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    Actions performed by the user interacting with print settings UI elements.
+  </summary>
+</histogram>
+
 <histogram name="PrintPreview.RegeneratePreviewRequest.BeforeCancel">
   <owner>vitalybuka@chromium.org</owner>
   <summary>
@@ -45532,8 +45541,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <enum name="PrintPreviewGcpPromoBuckets" type="int">
   <int value="0" label="PROMO_SHOWN"/>
-  <int value="1" label="PROMO_CLOSED"/>
-  <int value="2" label="GCP_PROMO_BUCKET_BOUNDARY"/>
+  <int value="1" label="PROMO_CLICKED"/>
+  <int value="2" label="PROMO_CLOSED"/>
 </enum>
 
 <enum name="PrintPreviewHelperEvents" type="int">
@@ -45555,6 +45564,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="8" label="REGISTER_PROMO_SELECTED"/>
   <int value="9" label="ACCOUNT_CHANGED"/>
   <int value="10" label="ADD_ACCOUNT_SELECTED"/>
+</enum>
+
+<enum name="PrintPreviewPrintSettingsUiBuckets" type="int">
+  <int value="0" label="ADVANCED_SETTINGS_DIALOG_SHOWN"/>
+  <int value="1" label="ADVANCED_SETTINGS_DIALOG_CANCELED"/>
 </enum>
 
 <enum name="PrintPreviewUserActionType" type="int">

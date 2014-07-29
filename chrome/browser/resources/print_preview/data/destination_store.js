@@ -12,11 +12,10 @@ cr.define('print_preview', function() {
    *     destinations.
    * @param {!print_preview.UserInfo} userInfo User information repository.
    * @param {!print_preview.AppState} appState Application state.
-   * @param {!print_preview.Metrics} metrics Metrics.
    * @constructor
    * @extends {cr.EventTarget}
    */
-  function DestinationStore(nativeLayer, userInfo, appState, metrics) {
+  function DestinationStore(nativeLayer, userInfo, appState) {
     cr.EventTarget.call(this);
 
     /**
@@ -42,10 +41,10 @@ cr.define('print_preview', function() {
 
     /**
      * Used to track metrics.
-     * @type {!print_preview.AppState}
+     * @type {!print_preview.DestinationSearchMetricsContext}
      * @private
      */
-    this.metrics_ = metrics;
+    this.metrics_ = new print_preview.DestinationSearchMetricsContext();
 
     /**
      * Internal backing store for the data store.
@@ -414,15 +413,11 @@ cr.define('print_preview', function() {
             return otherDestination.cloudID == destination.cloudID &&
                 otherDestination != destination;
           })) {
-        if (destination.isPrivet) {
-          this.metrics_.incrementDestinationSearchBucket(
-              print_preview.Metrics.DestinationSearchBucket.
-                  PRIVET_DUPLICATE_SELECTED);
-        } else {
-          this.metrics_.incrementDestinationSearchBucket(
-              print_preview.Metrics.DestinationSearchBucket.
-                  CLOUD_DUPLICATE_SELECTED);
-        }
+        this.metrics_.record(destination.isPrivet ?
+            print_preview.Metrics.DestinationSearchBucket.
+                PRIVET_DUPLICATE_SELECTED :
+            print_preview.Metrics.DestinationSearchBucket.
+                CLOUD_DUPLICATE_SELECTED);
       }
       // Notify about selected destination change.
       cr.dispatchSimpleEvent(

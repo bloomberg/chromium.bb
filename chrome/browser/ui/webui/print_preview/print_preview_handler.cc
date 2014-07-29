@@ -123,34 +123,6 @@ enum PrintSettingsBuckets {
   PRINT_SETTINGS_BUCKET_BOUNDARY
 };
 
-enum UiBucketGroups {
-  DESTINATION_SEARCH,
-  GCP_PROMO,
-  UI_BUCKET_GROUP_BOUNDARY
-};
-
-enum PrintDestinationBuckets {
-  DESTINATION_SHOWN,
-  DESTINATION_CLOSED_CHANGED,
-  DESTINATION_CLOSED_UNCHANGED,
-  SIGNIN_PROMPT,
-  SIGNIN_TRIGGERED,
-  PRIVET_DUPLICATE_SELECTED,
-  CLOUD_DUPLICATE_SELECTED,
-  REGISTER_PROMO_SHOWN,
-  REGISTER_PROMO_SELECTED,
-  ACCOUNT_CHANGED,
-  ADD_ACCOUNT_SELECTED,
-  PRINT_DESTINATION_BUCKET_BOUNDARY
-};
-
-enum GcpPromoBuckets {
-  PROMO_SHOWN,
-  PROMO_CLOSED,
-  PROMO_CLICKED,
-  GCP_PROMO_BUCKET_BOUNDARY
-};
-
 void ReportUserActionHistogram(enum UserActionBuckets event) {
   UMA_HISTOGRAM_ENUMERATION("PrintPreview.UserAction", event,
                             USERACTION_BUCKET_BOUNDARY);
@@ -159,16 +131,6 @@ void ReportUserActionHistogram(enum UserActionBuckets event) {
 void ReportPrintSettingHistogram(enum PrintSettingsBuckets setting) {
   UMA_HISTOGRAM_ENUMERATION("PrintPreview.PrintSettings", setting,
                             PRINT_SETTINGS_BUCKET_BOUNDARY);
-}
-
-void ReportPrintDestinationHistogram(enum PrintDestinationBuckets event) {
-  UMA_HISTOGRAM_ENUMERATION("PrintPreview.DestinationAction", event,
-                            PRINT_DESTINATION_BUCKET_BOUNDARY);
-}
-
-void ReportGcpPromoHistogram(enum GcpPromoBuckets event) {
-  UMA_HISTOGRAM_ENUMERATION("PrintPreview.GcpPromo", event,
-                            GCP_PROMO_BUCKET_BOUNDARY);
 }
 
 // Name of a dictionary field holding cloud print related data;
@@ -623,9 +585,6 @@ void PrintPreviewHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("getInitialSettings",
       base::Bind(&PrintPreviewHandler::HandleGetInitialSettings,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("reportUiEvent",
-      base::Bind(&PrintPreviewHandler::HandleReportUiEvent,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("printWithCloudPrintDialog",
       base::Bind(&PrintPreviewHandler::HandlePrintWithCloudPrintDialog,
@@ -1132,38 +1091,6 @@ void PrintPreviewHandler::HandleGetInitialSettings(
       base::Bind(&GetDefaultPrinterOnFileThread),
       base::Bind(&PrintPreviewHandler::SendInitialSettings,
                  weak_factory_.GetWeakPtr()));
-}
-
-void PrintPreviewHandler::HandleReportUiEvent(const base::ListValue* args) {
-  int event_group, event_number;
-  if (!args->GetInteger(0, &event_group) || !args->GetInteger(1, &event_number))
-    return;
-
-  enum UiBucketGroups ui_bucket_group =
-      static_cast<enum UiBucketGroups>(event_group);
-  if (ui_bucket_group >= UI_BUCKET_GROUP_BOUNDARY)
-    return;
-
-  switch (ui_bucket_group) {
-    case DESTINATION_SEARCH: {
-      enum PrintDestinationBuckets event =
-          static_cast<enum PrintDestinationBuckets>(event_number);
-      if (event >= PRINT_DESTINATION_BUCKET_BOUNDARY)
-        return;
-      ReportPrintDestinationHistogram(event);
-      break;
-    }
-    case GCP_PROMO: {
-      enum GcpPromoBuckets event =
-          static_cast<enum GcpPromoBuckets>(event_number);
-      if (event >= GCP_PROMO_BUCKET_BOUNDARY)
-        return;
-      ReportGcpPromoHistogram(event);
-      break;
-    }
-    default:
-      break;
-  }
 }
 
 void PrintPreviewHandler::HandleForceOpenNewTab(const base::ListValue* args) {
