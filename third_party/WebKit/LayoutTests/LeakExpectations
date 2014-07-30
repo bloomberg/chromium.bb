@@ -33,10 +33,6 @@ crbug.com/371264 virtual/deferred/inspector/timeline/timeline-window-filter.html
 crbug.com/371264 virtual/implsidepainting/inspector/timeline/timeline-window-filter.html [ Timeout ]
 # crbug.com/371264 also includes inspector/sources/debugger/callstack-placards-discarded.html as a test which times out, but now this is listed as crbug.com/376188.
 
-crbug.com/393800 fast/dom/element-attribute-js-null.html [ Leak ]
-crbug.com/393800 fast/html/marquee-element.html [ Leak ]
-crbug.com/393800 fast/html/marquee-scrollamount.html [ Leak ]
-
 # -----------------------------------------------------------------
 # Untriaged but known real leaks.
 # -----------------------------------------------------------------
