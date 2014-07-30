@@ -612,10 +612,13 @@ bool SourceState::OnNewConfigs(
       MEDIA_LOG(log_cb_) << "The number of text track configs changed.";
     } else if (text_count == 1) {
       TextConfigItr config_itr = text_configs.begin();
-      const TextTrackConfig& new_config = config_itr->second;
       TextStreamMap::iterator stream_itr = text_stream_map_.begin();
       ChunkDemuxerStream* text_stream = stream_itr->second;
       TextTrackConfig old_config = text_stream->text_track_config();
+      TextTrackConfig new_config(config_itr->second.kind(),
+                                 config_itr->second.label(),
+                                 config_itr->second.language(),
+                                 old_config.id());
       if (!new_config.Matches(old_config)) {
         success &= false;
         MEDIA_LOG(log_cb_) << "New text track config does not match old one.";

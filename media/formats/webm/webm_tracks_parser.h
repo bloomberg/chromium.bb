@@ -84,7 +84,6 @@ class MEDIA_EXPORT WebMTracksParser : public WebMParserClient {
 
   int64 track_type_;
   int64 track_num_;
-  int64 track_uid_;
   std::string track_name_;
   std::string track_language_;
   std::string codec_id_;

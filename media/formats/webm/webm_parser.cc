@@ -146,7 +146,7 @@ static const ElementIdInfo kTracksIds[] = {
 
 static const ElementIdInfo kTrackEntryIds[] = {
   {UINT, kWebMIdTrackNumber},
-  {UINT, kWebMIdTrackUID},
+  {BINARY, kWebMIdTrackUID},
   {UINT, kWebMIdTrackType},
   {UINT, kWebMIdFlagEnabled},
   {UINT, kWebMIdFlagDefault},

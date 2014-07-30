@@ -182,4 +182,15 @@ TEST_F(WebMTracksParserTest, InvalidZeroDefaultDurationSet) {
   EXPECT_EQ(-1, parser->Parse(&buf[0], buf.size()));
 }
 
+TEST_F(WebMTracksParserTest, HighTrackUID) {
+  // Confirm no parse error if TrackEntry TrackUID has MSb set
+  // (http://crbug.com/397067).
+  TracksBuilder tb(true);
+  tb.AddAudioTrack(1, 1ULL << 31, "A_VORBIS", "audio", "", 40, 2, 8000);
+  const std::vector<uint8> buf = tb.Finish();
+
+  scoped_ptr<WebMTracksParser> parser(new WebMTracksParser(LogCB(), true));
+  EXPECT_GT(parser->Parse(&buf[0], buf.size()),0);
+}
+
 }  // namespace media

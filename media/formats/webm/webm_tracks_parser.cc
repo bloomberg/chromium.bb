@@ -46,7 +46,6 @@ static base::TimeDelta PrecisionCappedDefaultDuration(
 WebMTracksParser::WebMTracksParser(const LogCB& log_cb, bool ignore_text_tracks)
     : track_type_(-1),
       track_num_(-1),
-      track_uid_(-1),
       seek_preroll_(-1),
       codec_delay_(-1),
       default_duration_(-1),
@@ -65,7 +64,6 @@ WebMTracksParser::~WebMTracksParser() {}
 int WebMTracksParser::Parse(const uint8* buf, int size) {
   track_type_ =-1;
   track_num_ = -1;
-  track_uid_ = -1;
   default_duration_ = -1;
   track_name_.clear();
   track_language_.clear();
@@ -137,11 +135,10 @@ bool WebMTracksParser::OnListEnd(int id) {
   }
 
   if (id == kWebMIdTrackEntry) {
-    if (track_type_ == -1 || track_num_ == -1 || track_uid_ == -1) {
+    if (track_type_ == -1 || track_num_ == -1) {
       MEDIA_LOG(log_cb_) << "Missing TrackEntry data for "
                          << " TrackType " << track_type_
-                         << " TrackNum " << track_num_
-                         << " TrackUID " << track_uid_;
+                         << " TrackNum " << track_num_;
       return false;
     }
 
@@ -241,11 +238,9 @@ bool WebMTracksParser::OnListEnd(int id) {
         MEDIA_LOG(log_cb_) << "Ignoring text track " << track_num_;
         ignored_tracks_.insert(track_num_);
       } else {
-        std::string track_uid = base::Int64ToString(track_uid_);
-        text_tracks_[track_num_] = TextTrackConfig(text_track_kind,
-                                                   track_name_,
-                                                   track_language_,
-                                                   track_uid);
+        std::string track_num = base::Int64ToString(track_num_);
+        text_tracks_[track_num_] = TextTrackConfig(
+            text_track_kind, track_name_, track_language_, track_num);
       }
     } else {
       MEDIA_LOG(log_cb_) << "Unexpected TrackType " << track_type_;
@@ -254,7 +249,6 @@ bool WebMTracksParser::OnListEnd(int id) {
 
     track_type_ = -1;
     track_num_ = -1;
-    track_uid_ = -1;
     default_duration_ = -1;
     track_name_.clear();
     track_language_.clear();
@@ -279,9 +273,6 @@ bool WebMTracksParser::OnUInt(int id, int64 val) {
       break;
     case kWebMIdTrackType:
       dst = &track_type_;
-      break;
-    case kWebMIdTrackUID:
-      dst = &track_uid_;
       break;
     case kWebMIdSeekPreRoll:
       dst = &seek_preroll_;
@@ -316,7 +307,6 @@ bool WebMTracksParser::OnBinary(int id, const uint8* data, int size) {
       MEDIA_LOG(log_cb_) << "Multiple CodecPrivate fields in a track.";
       return false;
     }
-
     codec_private_.assign(data, data + size);
     return true;
   }

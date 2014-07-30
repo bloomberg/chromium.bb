@@ -51,7 +51,7 @@ static int MasterElementSize(int element_id, int payload_size) {
   return GetUIntSize(element_id) + GetUIntMkvSize(payload_size) + payload_size;
 }
 
-static int IntElementSize(int element_id, int value) {
+static int UIntElementSize(int element_id, uint64 value) {
   return GetUIntSize(element_id) + 1 + GetUIntSize(value);
 }
 
@@ -105,8 +105,10 @@ static void WriteMasterElement(uint8** buf, int* buf_size,
   WriteUInt(buf, buf_size, payload_size);
 }
 
-static void WriteIntElement(uint8** buf, int* buf_size,
-                            int element_id, int value) {
+static void WriteUIntElement(uint8** buf,
+                             int* buf_size,
+                             int element_id,
+                             uint64 value) {
   WriteElementId(buf, buf_size, element_id);
 
   const int size = GetUIntSize(value);
@@ -143,40 +145,37 @@ TracksBuilder::TracksBuilder()
     : allow_invalid_values_(false) {}
 TracksBuilder::~TracksBuilder() {}
 
-void TracksBuilder::AddVideoTrack(
-    int track_num,
-    int track_uid,
-    const std::string& codec_id,
-    const std::string& name,
-    const std::string& language,
-    int default_duration,
-    int video_pixel_width,
-    int video_pixel_height) {
+void TracksBuilder::AddVideoTrack(int track_num,
+                                  uint64 track_uid,
+                                  const std::string& codec_id,
+                                  const std::string& name,
+                                  const std::string& language,
+                                  int default_duration,
+                                  int video_pixel_width,
+                                  int video_pixel_height) {
   AddTrackInternal(track_num, kWebMTrackTypeVideo, track_uid, codec_id, name,
                    language, default_duration, video_pixel_width,
                    video_pixel_height, -1, -1);
 }
 
-void TracksBuilder::AddAudioTrack(
-    int track_num,
-    int track_uid,
-    const std::string& codec_id,
-    const std::string& name,
-    const std::string& language,
-    int default_duration,
-    int audio_channels,
-    double audio_sampling_frequency) {
+void TracksBuilder::AddAudioTrack(int track_num,
+                                  uint64 track_uid,
+                                  const std::string& codec_id,
+                                  const std::string& name,
+                                  const std::string& language,
+                                  int default_duration,
+                                  int audio_channels,
+                                  double audio_sampling_frequency) {
   AddTrackInternal(track_num, kWebMTrackTypeAudio, track_uid, codec_id, name,
                    language, default_duration, -1, -1, audio_channels,
                    audio_sampling_frequency);
 }
 
-void TracksBuilder::AddTextTrack(
-    int track_num,
-    int track_uid,
-    const std::string& codec_id,
-    const std::string& name,
-    const std::string& language) {
+void TracksBuilder::AddTextTrack(int track_num,
+                                 uint64 track_uid,
+                                 const std::string& codec_id,
+                                 const std::string& name,
+                                 const std::string& language) {
   AddTrackInternal(track_num, kWebMTrackTypeSubtitlesOrCaptions, track_uid,
                    codec_id, name, language, -1, -1, -1, -1, -1);
 }
@@ -192,18 +191,17 @@ std::vector<uint8> TracksBuilder::Finish() {
   return buffer;
 }
 
-void TracksBuilder::AddTrackInternal(
-    int track_num,
-    int track_type,
-    int track_uid,
-    const std::string& codec_id,
-    const std::string& name,
-    const std::string& language,
-    int default_duration,
-    int video_pixel_width,
-    int video_pixel_height,
-    int audio_channels,
-    double audio_sampling_frequency) {
+void TracksBuilder::AddTrackInternal(int track_num,
+                                     int track_type,
+                                     uint64 track_uid,
+                                     const std::string& codec_id,
+                                     const std::string& name,
+                                     const std::string& language,
+                                     int default_duration,
+                                     int video_pixel_width,
+                                     int video_pixel_height,
+                                     int audio_channels,
+                                     double audio_sampling_frequency) {
   tracks_.push_back(Track(track_num, track_type, track_uid, codec_id, name,
                           language, default_duration, video_pixel_width,
                           video_pixel_height, audio_channels,
@@ -234,13 +232,17 @@ void TracksBuilder::WriteTracks(uint8* buf, int buf_size) const {
   }
 }
 
-TracksBuilder::Track::Track(int track_num, int track_type, int track_uid,
+TracksBuilder::Track::Track(int track_num,
+                            int track_type,
+                            uint64 track_uid,
                             const std::string& codec_id,
                             const std::string& name,
                             const std::string& language,
                             int default_duration,
-                            int video_pixel_width, int video_pixel_height,
-                            int audio_channels, double audio_sampling_frequency,
+                            int video_pixel_width,
+                            int video_pixel_height,
+                            int audio_channels,
+                            double audio_sampling_frequency,
                             bool allow_invalid_values)
     : track_num_(track_num),
       track_type_(track_type),
@@ -291,9 +293,9 @@ int TracksBuilder::Track::GetVideoPayloadSize() const {
   int payload_size = 0;
 
   if (video_pixel_width_ >= 0)
-    payload_size += IntElementSize(kWebMIdPixelWidth, video_pixel_width_);
+    payload_size += UIntElementSize(kWebMIdPixelWidth, video_pixel_width_);
   if (video_pixel_height_ >= 0)
-    payload_size += IntElementSize(kWebMIdPixelHeight, video_pixel_height_);
+    payload_size += UIntElementSize(kWebMIdPixelHeight, video_pixel_height_);
 
   return payload_size;
 }
@@ -302,7 +304,7 @@ int TracksBuilder::Track::GetAudioPayloadSize() const {
   int payload_size = 0;
 
   if (audio_channels_ >= 0)
-    payload_size += IntElementSize(kWebMIdChannels, audio_channels_);
+    payload_size += UIntElementSize(kWebMIdChannels, audio_channels_);
   if (audio_sampling_frequency_ >= 0)
     payload_size += DoubleElementSize(kWebMIdSamplingFrequency);
 
@@ -312,12 +314,12 @@ int TracksBuilder::Track::GetAudioPayloadSize() const {
 int TracksBuilder::Track::GetPayloadSize() const {
   int size = 0;
 
-  size += IntElementSize(kWebMIdTrackNumber, track_num_);
-  size += IntElementSize(kWebMIdTrackType, track_type_);
-  size += IntElementSize(kWebMIdTrackUID, track_uid_);
+  size += UIntElementSize(kWebMIdTrackNumber, track_num_);
+  size += UIntElementSize(kWebMIdTrackType, track_type_);
+  size += UIntElementSize(kWebMIdTrackUID, track_uid_);
 
   if (default_duration_ >= 0)
-    size += IntElementSize(kWebMIdDefaultDuration, default_duration_);
+    size += UIntElementSize(kWebMIdDefaultDuration, default_duration_);
 
   if (!codec_id_.empty())
     size += StringElementSize(kWebMIdCodecID, codec_id_);
@@ -342,12 +344,12 @@ int TracksBuilder::Track::GetPayloadSize() const {
 void TracksBuilder::Track::Write(uint8** buf, int* buf_size) const {
   WriteMasterElement(buf, buf_size, kWebMIdTrackEntry, GetPayloadSize());
 
-  WriteIntElement(buf, buf_size, kWebMIdTrackNumber, track_num_);
-  WriteIntElement(buf, buf_size, kWebMIdTrackType, track_type_);
-  WriteIntElement(buf, buf_size, kWebMIdTrackUID, track_uid_);
+  WriteUIntElement(buf, buf_size, kWebMIdTrackNumber, track_num_);
+  WriteUIntElement(buf, buf_size, kWebMIdTrackType, track_type_);
+  WriteUIntElement(buf, buf_size, kWebMIdTrackUID, track_uid_);
 
   if (default_duration_ >= 0)
-    WriteIntElement(buf, buf_size, kWebMIdDefaultDuration, default_duration_);
+    WriteUIntElement(buf, buf_size, kWebMIdDefaultDuration, default_duration_);
 
   if (!codec_id_.empty())
     WriteStringElement(buf, buf_size, kWebMIdCodecID, codec_id_);
@@ -362,17 +364,17 @@ void TracksBuilder::Track::Write(uint8** buf, int* buf_size) const {
     WriteMasterElement(buf, buf_size, kWebMIdVideo, GetVideoPayloadSize());
 
     if (video_pixel_width_ >= 0)
-      WriteIntElement(buf, buf_size, kWebMIdPixelWidth, video_pixel_width_);
+      WriteUIntElement(buf, buf_size, kWebMIdPixelWidth, video_pixel_width_);
 
     if (video_pixel_height_ >= 0)
-      WriteIntElement(buf, buf_size, kWebMIdPixelHeight, video_pixel_height_);
+      WriteUIntElement(buf, buf_size, kWebMIdPixelHeight, video_pixel_height_);
   }
 
   if (GetAudioPayloadSize() > 0) {
     WriteMasterElement(buf, buf_size, kWebMIdAudio, GetAudioPayloadSize());
 
     if (audio_channels_ >= 0)
-      WriteIntElement(buf, buf_size, kWebMIdChannels, audio_channels_);
+      WriteUIntElement(buf, buf_size, kWebMIdChannels, audio_channels_);
 
     if (audio_sampling_frequency_ >= 0) {
       WriteDoubleElement(buf, buf_size, kWebMIdSamplingFrequency,
