@@ -410,6 +410,26 @@ void WebKitTestRunner::setDatabaseQuota(int quota) {
   Send(new ShellViewHostMsg_SetDatabaseQuota(routing_id(), quota));
 }
 
+blink::WebNotificationPresenter::Permission
+WebKitTestRunner::checkWebNotificationPermission(const GURL& origin) {
+  int permission = blink::WebNotificationPresenter::PermissionNotAllowed;
+  Send(new ShellViewHostMsg_CheckWebNotificationPermission(
+          routing_id(),
+          origin,
+          &permission));
+  return static_cast<blink::WebNotificationPresenter::Permission>(permission);
+}
+
+void WebKitTestRunner::grantWebNotificationPermission(const GURL& origin,
+                                                      bool permission_granted) {
+  Send(new ShellViewHostMsg_GrantWebNotificationPermission(
+      routing_id(), origin, permission_granted));
+}
+
+void WebKitTestRunner::clearWebNotificationPermissions() {
+  Send(new ShellViewHostMsg_ClearWebNotificationPermissions(routing_id()));
+}
+
 void WebKitTestRunner::setDeviceScaleFactor(float factor) {
   SetDeviceScaleFactor(render_view(), factor);
 }

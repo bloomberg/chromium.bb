@@ -126,6 +126,8 @@
         'shell/browser/shell_net_log.h',
         'shell/browser/shell_network_delegate.cc',
         'shell/browser/shell_network_delegate.h',
+        'shell/browser/shell_notification_manager.cc',
+        'shell/browser/shell_notification_manager.h',
         'shell/browser/shell_platform_data_aura.cc',
         'shell/browser/shell_platform_data_aura.h',
         'shell/browser/shell_plugin_service_filter.cc',

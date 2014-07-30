@@ -77,6 +77,8 @@ static_library("content_shell_lib") {
     "browser/shell_net_log.h",
     "browser/shell_network_delegate.cc",
     "browser/shell_network_delegate.h",
+    "browser/shell_notification_manager.cc",
+    "browser/shell_notification_manager.h",
     "browser/shell_platform_data_aura.cc",
     "browser/shell_platform_data_aura.h",
     "browser/shell_plugin_service_filter.cc",

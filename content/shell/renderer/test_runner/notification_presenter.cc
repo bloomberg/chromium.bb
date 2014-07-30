@@ -4,6 +4,8 @@
 
 #include "content/shell/renderer/test_runner/notification_presenter.h"
 
+#include "base/logging.h"
+#include "content/common/desktop_notification_messages.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -37,11 +39,6 @@ NotificationPresenter::NotificationPresenter() : delegate_(0) {}
 
 NotificationPresenter::~NotificationPresenter() {}
 
-void NotificationPresenter::GrantPermission(const std::string& origin,
-                                            bool permission_granted) {
-  known_origins_[origin] = permission_granted;
-}
-
 bool NotificationPresenter::SimulateClick(const std::string& title) {
   ActiveNotificationMap::iterator iter = active_notifications_.find(title);
   if (iter == active_notifications_.end())
@@ -61,7 +58,6 @@ void NotificationPresenter::Reset() {
     cancel(notification);
   }
 
-  known_origins_.clear();
   replacements_.clear();
 }
 
@@ -130,25 +126,14 @@ void NotificationPresenter::objectDestroyed(
 
 WebNotificationPresenter::Permission NotificationPresenter::checkPermission(
     const WebSecurityOrigin& security_origin) {
-  const std::string origin = security_origin.toString().utf8();
-  const KnownOriginMap::iterator it = known_origins_.find(origin);
-  if (it == known_origins_.end())
-    return WebNotificationPresenter::PermissionNotAllowed;
-
-  // Values in |known_origins_| indicate whether permission has been granted.
-  if (it->second)
-    return WebNotificationPresenter::PermissionAllowed;
-
-  return WebNotificationPresenter::PermissionDenied;
+  return delegate_->checkWebNotificationPermission(
+      GURL(security_origin.toString()));
 }
 
 void NotificationPresenter::requestPermission(
     const WebSecurityOrigin& security_origin,
     WebNotificationPermissionCallback* callback) {
-  std::string origin = security_origin.toString().utf8();
-  delegate_->printMessage("DESKTOP NOTIFICATION PERMISSION REQUESTED: " +
-                          origin + "\n");
-  callback->permissionRequestComplete();
+  NOTREACHED();
 }
 
 }  // namespace content

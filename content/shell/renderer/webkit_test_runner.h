@@ -93,6 +93,11 @@ class WebKitTestRunner : public RenderViewObserver,
                                       const std::string& script) OVERRIDE;
   virtual void clearAllDatabases() OVERRIDE;
   virtual void setDatabaseQuota(int quota) OVERRIDE;
+  virtual blink::WebNotificationPresenter::Permission
+        checkWebNotificationPermission(const GURL& origin) OVERRIDE;
+  virtual void grantWebNotificationPermission(const GURL& origin,
+                                              bool permission_granted) OVERRIDE;
+  virtual void clearWebNotificationPermissions() OVERRIDE;
   virtual void setDeviceScaleFactor(float factor) OVERRIDE;
   virtual void setDeviceColorProfile(const std::string& name) OVERRIDE;
   virtual void setFocus(WebTestProxyBase* proxy, bool focus) OVERRIDE;

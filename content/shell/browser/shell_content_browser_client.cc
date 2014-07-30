@@ -22,6 +22,7 @@
 #include "content/shell/browser/shell_devtools_delegate.h"
 #include "content/shell/browser/shell_message_filter.h"
 #include "content/shell/browser/shell_net_log.h"
+#include "content/shell/browser/shell_notification_manager.h"
 #include "content/shell/browser/shell_quota_permission_context.h"
 #include "content/shell/browser/shell_resource_dispatcher_host_delegate.h"
 #include "content/shell/browser/shell_web_contents_view_delegate_creator.h"
@@ -114,6 +115,18 @@ int GetCrashSignalFD(const CommandLine& command_line) {
 }
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 
+void RequestDesktopNotificationPermissionOnIO(
+    const GURL& source_origin,
+    RenderFrameHost* render_frame_host,
+    const base::Callback<void(blink::WebNotificationPermission)>& callback) {
+  ShellNotificationManager* manager =
+      ShellContentBrowserClient::Get()->GetShellNotificationManager();
+  if (manager)
+    manager->RequestPermission(source_origin, callback);
+  else
+    callback.Run(blink::WebNotificationPermissionAllowed);
+}
+
 }  // namespace
 
 ShellContentBrowserClient* ShellContentBrowserClient::Get() {
@@ -135,6 +148,18 @@ ShellContentBrowserClient::ShellContentBrowserClient()
 
 ShellContentBrowserClient::~ShellContentBrowserClient() {
   g_browser_client = NULL;
+}
+
+ShellNotificationManager*
+ShellContentBrowserClient::GetShellNotificationManager() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    return NULL;
+
+  if (!shell_notification_manager_)
+    shell_notification_manager_.reset(new ShellNotificationManager());
+
+  return shell_notification_manager_.get();
 }
 
 BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
@@ -275,6 +300,31 @@ WebContentsViewDelegate* ShellContentBrowserClient::GetWebContentsViewDelegate(
 QuotaPermissionContext*
 ShellContentBrowserClient::CreateQuotaPermissionContext() {
   return new ShellQuotaPermissionContext();
+}
+
+void ShellContentBrowserClient::RequestDesktopNotificationPermission(
+    const GURL& source_origin,
+    RenderFrameHost* render_frame_host,
+    const base::Callback<void(blink::WebNotificationPermission)>& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          base::Bind(&RequestDesktopNotificationPermissionOnIO,
+                              source_origin,
+                              render_frame_host,
+                              callback));
+}
+
+blink::WebNotificationPermission
+ShellContentBrowserClient::CheckDesktopNotificationPermission(
+    const GURL& source_url,
+    ResourceContext* context,
+    int render_process_id) {
+  ShellNotificationManager* manager = GetShellNotificationManager();
+  if (manager)
+    return manager->CheckPermission(source_url);
+
+  return blink::WebNotificationPermissionAllowed;
 }
 
 SpeechRecognitionManagerDelegate*

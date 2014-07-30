@@ -10,6 +10,7 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_network_delegate.h"
+#include "content/shell/browser/shell_notification_manager.h"
 #include "content/shell/common/shell_messages.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_monster.h"
@@ -50,6 +51,12 @@ bool ShellMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnRegisterIsolatedFileSystem)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ClearAllDatabases, OnClearAllDatabases)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_SetDatabaseQuota, OnSetDatabaseQuota)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_CheckWebNotificationPermission,
+                        OnCheckWebNotificationPermission)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_GrantWebNotificationPermission,
+                        OnGrantWebNotificationPermission)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_ClearWebNotificationPermissions,
+                        OnClearWebNotificationPermissions)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_AcceptAllCookies, OnAcceptAllCookies)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_DeleteAllCookies, OnDeleteAllCookies)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -90,6 +97,34 @@ void ShellMessageFilter::OnSetDatabaseQuota(int quota) {
   quota_manager_->SetTemporaryGlobalOverrideQuota(
       quota * quota::QuotaManager::kPerHostTemporaryPortion,
       quota::QuotaCallback());
+}
+
+void ShellMessageFilter::OnCheckWebNotificationPermission(const GURL& origin,
+                                                          int* result) {
+  ShellNotificationManager* manager =
+      ShellContentBrowserClient::Get()->GetShellNotificationManager();
+  if (manager)
+    *result = manager->CheckPermission(origin);
+  else
+    *result = blink::WebNotificationPermissionAllowed;
+}
+
+void ShellMessageFilter::OnGrantWebNotificationPermission(
+    const GURL& origin, bool permission_granted) {
+  ShellNotificationManager* manager =
+      ShellContentBrowserClient::Get()->GetShellNotificationManager();
+  if (manager) {
+    manager->SetPermission(origin, permission_granted ?
+        blink::WebNotificationPermissionAllowed :
+        blink::WebNotificationPermissionDenied);
+  }
+}
+
+void ShellMessageFilter::OnClearWebNotificationPermissions() {
+  ShellNotificationManager* manager =
+      ShellContentBrowserClient::Get()->GetShellNotificationManager();
+  if (manager)
+    manager->ClearPermissions();
 }
 
 void ShellMessageFilter::OnAcceptAllCookies(bool accept) {

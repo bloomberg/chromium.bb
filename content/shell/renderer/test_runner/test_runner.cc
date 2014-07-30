@@ -270,6 +270,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetMIDIAccessorResult(bool result);
   void SetMIDISysexPermission(bool value);
   void GrantWebNotificationPermission(gin::Arguments* args);
+  void ClearWebNotificationPermissions();
   bool SimulateWebNotificationClick(const std::string& value);
   void AddMockSpeechRecognitionResult(const std::string& transcript,
                                       double confidence);
@@ -516,6 +517,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetMIDISysexPermission)
       .SetMethod("grantWebNotificationPermission",
                  &TestRunnerBindings::GrantWebNotificationPermission)
+      .SetMethod("clearWebNotificationPermissions",
+                 &TestRunnerBindings::ClearWebNotificationPermissions)
       .SetMethod("simulateWebNotificationClick",
                  &TestRunnerBindings::SimulateWebNotificationClick)
       .SetMethod("addMockSpeechRecognitionResult",
@@ -1300,8 +1303,14 @@ void TestRunnerBindings::GrantWebNotificationPermission(gin::Arguments* args) {
     bool permission_granted = true;
     args->GetNext(&origin);
     args->GetNext(&permission_granted);
-    return runner_->GrantWebNotificationPermission(origin, permission_granted);
+    return runner_->GrantWebNotificationPermission(GURL(origin),
+                                                   permission_granted);
   }
+}
+
+void TestRunnerBindings::ClearWebNotificationPermissions() {
+  if (runner_)
+    runner_->ClearWebNotificationPermissions();
 }
 
 bool TestRunnerBindings::SimulateWebNotificationClick(
@@ -2740,9 +2749,13 @@ void TestRunner::SetMIDISysexPermission(bool value) {
     windowList.at(i)->GetMIDIClientMock()->setSysexPermission(value);
 }
 
-void TestRunner::GrantWebNotificationPermission(const std::string& origin,
+void TestRunner::GrantWebNotificationPermission(const GURL& origin,
                                                 bool permission_granted) {
-  notification_presenter_->GrantPermission(origin, permission_granted);
+  delegate_->grantWebNotificationPermission(origin, permission_granted);
+}
+
+void TestRunner::ClearWebNotificationPermissions() {
+  delegate_->clearWebNotificationPermissions();
 }
 
 bool TestRunner::SimulateWebNotificationClick(const std::string& value) {

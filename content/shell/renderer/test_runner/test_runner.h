@@ -15,6 +15,7 @@
 #include "content/shell/renderer/test_runner/web_test_runner.h"
 #include "v8/include/v8.h"
 
+class GURL;
 class SkBitmap;
 
 namespace blink {
@@ -518,8 +519,12 @@ class TestRunner : public WebTestRunner,
   void SetMIDISysexPermission(bool value);
 
   // Grants permission for desktop notifications to an origin
-  void GrantWebNotificationPermission(const std::string& origin,
+  void GrantWebNotificationPermission(const GURL& origin,
                                       bool permission_granted);
+
+  // Clears all previously granted Web Notification permissions.
+  void ClearWebNotificationPermissions();
+
   // Simulates a click on a desktop notification.
   bool SimulateWebNotificationClick(const std::string& value);
 
