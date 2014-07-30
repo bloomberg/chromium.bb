@@ -87,6 +87,8 @@ struct MediaLogEvent {
 
     // A property has changed without any special event occurring.
     PROPERTY_CHANGE,
+
+    TYPE_LAST = PROPERTY_CHANGE
   };
 
   int32 id;
