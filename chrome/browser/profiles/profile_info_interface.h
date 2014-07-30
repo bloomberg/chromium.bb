@@ -79,6 +79,9 @@ class ProfileInfoInterface {
   // style name).
   virtual bool ProfileIsUsingDefaultNameAtIndex(size_t index) const = 0;
 
+  // Returns true if the user has never manually selected a profile avatar.
+  virtual bool ProfileIsUsingDefaultAvatarAtIndex(size_t index) const = 0;
+
  protected:
   virtual ~ProfileInfoInterface() {}
 };

@@ -91,6 +91,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
       OVERRIDE;
   virtual bool ProfileIsEphemeralAtIndex(size_t index) const OVERRIDE;
   virtual bool ProfileIsUsingDefaultNameAtIndex(size_t index) const OVERRIDE;
+  virtual bool ProfileIsUsingDefaultAvatarAtIndex(size_t index) const OVERRIDE;
 
   size_t GetAvatarIconIndexOfProfileAtIndex(size_t index) const;
 
@@ -118,6 +119,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void SetProfileSigninRequiredAtIndex(size_t index, bool value);
   void SetProfileIsEphemeralAtIndex(size_t index, bool value);
   void SetProfileIsUsingDefaultNameAtIndex(size_t index, bool value);
+  void SetProfileIsUsingDefaultAvatarAtIndex(size_t index, bool value);
 
   // Returns unique name that can be assigned to a newly created profile.
   base::string16 ChooseNameForNewProfile(size_t icon_index) const;

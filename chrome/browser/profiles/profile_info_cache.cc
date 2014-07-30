@@ -43,7 +43,8 @@ const char kShortcutNameKey[] = "shortcut_name";
 const char kGAIANameKey[] = "gaia_name";
 const char kGAIAGivenNameKey[] = "gaia_given_name";
 const char kUserNameKey[] = "user_name";
-const char kIsUsingDefaultName[] = "is_using_default_name";
+const char kIsUsingDefaultNameKey[] = "is_using_default_name";
+const char kIsUsingDefaultAvatarKey[] = "is_using_default_avatar";
 const char kAvatarIconKey[] = "avatar_icon";
 const char kAuthCredentialsKey[] = "local_auth_credentials";
 const char kUseGAIAPictureKey[] = "use_gaia_picture";
@@ -175,7 +176,13 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
     base::string16 name;
     info->GetString(kNameKey, &name);
     sorted_keys_.insert(FindPositionForProfile(it.key(), name), it.key());
-    info->SetBoolean(kIsUsingDefaultName, IsDefaultName(name));
+    bool using_default_name = IsDefaultName(name);
+    info->SetBoolean(kIsUsingDefaultNameKey, using_default_name);
+    // For profiles that don't have the "using default avatar" state set yet,
+    // assume it's the same as the "using default name" state.
+    if (!info->HasKey(kIsUsingDefaultAvatarKey)) {
+      info->SetBoolean(kIsUsingDefaultAvatarKey, using_default_name);
+    }
   }
 
   // If needed, start downloading the high-res avatars.
@@ -215,7 +222,9 @@ void ProfileInfoCache::AddProfileToCache(
   info->SetString(kSupervisedUserId, supervised_user_id);
   info->SetBoolean(kIsOmittedFromProfileListKey, !supervised_user_id.empty());
   info->SetBoolean(kProfileIsEphemeral, false);
-  info->SetBoolean(kIsUsingDefaultName, IsDefaultName(name));
+  info->SetBoolean(kIsUsingDefaultNameKey, IsDefaultName(name));
+  // Assume newly created profiles use a default avatar.
+  info->SetBoolean(kIsUsingDefaultAvatarKey, true);
   cache->SetWithoutPathExpansion(key, info.release());
 
   sorted_keys_.insert(FindPositionForProfile(key, name), key);
@@ -398,6 +407,11 @@ const gfx::Image* ProfileInfoCache::GetGAIAPictureOfProfileAtIndex(
 bool ProfileInfoCache::IsUsingGAIAPictureOfProfileAtIndex(size_t index) const {
   bool value = false;
   GetInfoForProfileAtIndex(index)->GetBoolean(kUseGAIAPictureKey, &value);
+  if (!value) {
+    // Prefer the GAIA avatar over a non-customized avatar.
+    value = ProfileIsUsingDefaultAvatarAtIndex(index) &&
+        GetGAIAPictureOfProfileAtIndex(index);
+  }
   return value;
 }
 
@@ -434,7 +448,13 @@ bool ProfileInfoCache::ProfileIsEphemeralAtIndex(size_t index) const {
 
 bool ProfileInfoCache::ProfileIsUsingDefaultNameAtIndex(size_t index) const {
   bool value = false;
-  GetInfoForProfileAtIndex(index)->GetBoolean(kIsUsingDefaultName, &value);
+  GetInfoForProfileAtIndex(index)->GetBoolean(kIsUsingDefaultNameKey, &value);
+  return value;
+}
+
+bool ProfileInfoCache::ProfileIsUsingDefaultAvatarAtIndex(size_t index) const {
+  bool value = false;
+  GetInfoForProfileAtIndex(index)->GetBoolean(kIsUsingDefaultAvatarKey, &value);
   return value;
 }
 
@@ -468,7 +488,7 @@ void ProfileInfoCache::SetNameOfProfileAtIndex(size_t index,
 
   base::string16 old_display_name = GetNameOfProfileAtIndex(index);
   info->SetString(kNameKey, name);
-  info->SetBoolean(kIsUsingDefaultName, false);
+  info->SetBoolean(kIsUsingDefaultNameKey, false);
 
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
@@ -517,11 +537,14 @@ void ProfileInfoCache::SetAvatarIconOfProfileAtIndex(size_t index,
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
 
-  // If needed, start downloading the high-res avatar.
-  if (switches::IsNewAvatarMenu())
-    DownloadHighResAvatar(icon_index, GetPathOfProfileAtIndex(index));
+  SetProfileIsUsingDefaultAvatarAtIndex(index, false);
 
   base::FilePath profile_path = GetPathOfProfileAtIndex(index);
+
+  // If needed, start downloading the high-res avatar.
+  if (switches::IsNewAvatarMenu())
+    DownloadHighResAvatar(icon_index, profile_path);
+
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                     observer_list_,
                     OnProfileAvatarChanged(profile_path));
@@ -717,7 +740,19 @@ void ProfileInfoCache::SetProfileIsUsingDefaultNameAtIndex(
 
   scoped_ptr<base::DictionaryValue> info(
       GetInfoForProfileAtIndex(index)->DeepCopy());
-  info->SetBoolean(kIsUsingDefaultName, value);
+  info->SetBoolean(kIsUsingDefaultNameKey, value);
+  // This takes ownership of |info|.
+  SetInfoForProfileAtIndex(index, info.release());
+}
+
+void ProfileInfoCache::SetProfileIsUsingDefaultAvatarAtIndex(
+    size_t index, bool value) {
+  if (value == ProfileIsUsingDefaultAvatarAtIndex(index))
+    return;
+
+  scoped_ptr<base::DictionaryValue> info(
+      GetInfoForProfileAtIndex(index)->DeepCopy());
+  info->SetBoolean(kIsUsingDefaultAvatarKey, value);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
 }

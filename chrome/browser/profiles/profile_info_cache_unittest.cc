@@ -342,12 +342,14 @@ TEST_F(ProfileInfoCacheTest, GAIAName) {
 }
 
 TEST_F(ProfileInfoCacheTest, GAIAPicture) {
+  const int kDefaultAvatarIndex = 0;
+  const int kOtherAvatarIndex = 1;
   GetCache()->AddProfileToCache(
       GetProfilePath("path_1"), ASCIIToUTF16("name_1"),
-      base::string16(), 0, std::string());
+      base::string16(), kDefaultAvatarIndex, std::string());
   GetCache()->AddProfileToCache(
       GetProfilePath("path_2"), ASCIIToUTF16("name_2"),
-      base::string16(), 0, std::string());
+      base::string16(), kDefaultAvatarIndex, std::string());
 
   // Sanity check.
   EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(0));
@@ -356,11 +358,14 @@ TEST_F(ProfileInfoCacheTest, GAIAPicture) {
   EXPECT_FALSE(GetCache()->IsUsingGAIAPictureOfProfileAtIndex(1));
 
   // The profile icon should be the default one.
-  int id = profiles::GetDefaultAvatarIconResourceIDAtIndex(0);
-  const gfx::Image& profile_image(
-      ResourceBundle::GetSharedInstance().GetImageNamed(id));
+  EXPECT_TRUE(GetCache()->ProfileIsUsingDefaultAvatarAtIndex(0));
+  EXPECT_TRUE(GetCache()->ProfileIsUsingDefaultAvatarAtIndex(1));
+  int default_avatar_id =
+      profiles::GetDefaultAvatarIconResourceIDAtIndex(kDefaultAvatarIndex);
+  const gfx::Image& default_avatar_image(
+      ResourceBundle::GetSharedInstance().GetImageNamed(default_avatar_id));
   EXPECT_TRUE(gfx::test::IsEqual(
-      profile_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
+      default_avatar_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
 
   // Set GAIA picture.
   gfx::Image gaia_image(gfx::test::CreateImage());
@@ -368,22 +373,40 @@ TEST_F(ProfileInfoCacheTest, GAIAPicture) {
   EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(0));
   EXPECT_TRUE(gfx::test::IsEqual(
       gaia_image, *GetCache()->GetGAIAPictureOfProfileAtIndex(1)));
+  // Since we're still using the default avatar, the GAIA image should be
+  // preferred over the generic avatar image.
+  EXPECT_TRUE(GetCache()->ProfileIsUsingDefaultAvatarAtIndex(1));
+  EXPECT_TRUE(GetCache()->IsUsingGAIAPictureOfProfileAtIndex(1));
   EXPECT_TRUE(gfx::test::IsEqual(
-      profile_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
+      gaia_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
 
-  // Use GAIA picture as profile picture.
+  // Set another avatar. This should make it preferred over the GAIA image.
+  GetCache()->SetAvatarIconOfProfileAtIndex(1, kOtherAvatarIndex);
+  EXPECT_FALSE(GetCache()->ProfileIsUsingDefaultAvatarAtIndex(1));
+  EXPECT_FALSE(GetCache()->IsUsingGAIAPictureOfProfileAtIndex(1));
+  int other_avatar_id =
+      profiles::GetDefaultAvatarIconResourceIDAtIndex(kOtherAvatarIndex);
+  const gfx::Image& other_avatar_image(
+      ResourceBundle::GetSharedInstance().GetImageNamed(other_avatar_id));
+  EXPECT_TRUE(gfx::test::IsEqual(
+      other_avatar_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
+
+  // Explicitly setting the GAIA picture should make it preferred again.
   GetCache()->SetIsUsingGAIAPictureOfProfileAtIndex(1, true);
+  EXPECT_TRUE(GetCache()->IsUsingGAIAPictureOfProfileAtIndex(1));
   EXPECT_TRUE(gfx::test::IsEqual(
       gaia_image, *GetCache()->GetGAIAPictureOfProfileAtIndex(1)));
   EXPECT_TRUE(gfx::test::IsEqual(
       gaia_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
 
-  // Don't use GAIA picture as profile picture.
+  // Clearing the IsUsingGAIAPicture flag should result in the generic image
+  // being used again.
   GetCache()->SetIsUsingGAIAPictureOfProfileAtIndex(1, false);
+  EXPECT_FALSE(GetCache()->IsUsingGAIAPictureOfProfileAtIndex(1));
   EXPECT_TRUE(gfx::test::IsEqual(
       gaia_image, *GetCache()->GetGAIAPictureOfProfileAtIndex(1)));
   EXPECT_TRUE(gfx::test::IsEqual(
-      profile_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
+      other_avatar_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
 }
 
 TEST_F(ProfileInfoCacheTest, PersistGAIAPicture) {
