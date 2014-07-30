@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -52,6 +53,8 @@ void AthenaTestHelper::SetUp(ui::ContextFactory* context_factory) {
   // Force showing in the experimental app-list view.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       app_list::switches::kEnableExperimentalAppList);
+
+  chromeos::DBusThreadManager::InitializeWithStub();
 
   aura::Env::CreateInstance(true);
   aura::Env::GetInstance()->set_context_factory(context_factory);
@@ -108,6 +111,8 @@ void AthenaTestHelper::TearDown() {
 #endif
 
   ui::ShutdownInputMethodForTesting();
+
+  chromeos::DBusThreadManager::Shutdown();
 
   aura::Env::DeleteInstance();
 }

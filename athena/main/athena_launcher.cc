@@ -10,6 +10,7 @@
 #include "athena/input/public/input_manager.h"
 #include "athena/main/placeholder.h"
 #include "athena/screen/public/screen_manager.h"
+#include "athena/system/public/system_ui.h"
 #include "athena/wm/public/window_manager.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_property.h"
@@ -49,6 +50,7 @@ void StartAthena(aura::Window* root_window,
   aura::client::SetVisibilityClient(root_window,
                                     root_window_state->visibility_client.get());
 
+  athena::SystemUI::Create();
   athena::InputManager::Create()->OnRootWindowCreated(root_window);
   athena::ScreenManager::Create(root_window);
   athena::WindowManager::Create();
@@ -65,6 +67,7 @@ void ShutdownAthena() {
   athena::WindowManager::Shutdown();
   athena::ScreenManager::Shutdown();
   athena::InputManager::Shutdown();
+  athena::SystemUI::Shutdown();
 }
 
 }  // namespace athena
