@@ -216,9 +216,7 @@ fi
 # call cleanup() on exit
 trap cleanup 0
 process_opts "$@"
-if [ ! "$BUILDDIR" ]; then
-  BUILDDIR=$(readlink -f "${SCRIPTDIR}/../../../../../out/Release")
-fi
+BUILDDIR=${BUILDDIR:=$(readlink -f "${SCRIPTDIR}/../../../../out/Release")}
 
 source ${BUILDDIR}/installer/common/installer.include
 
