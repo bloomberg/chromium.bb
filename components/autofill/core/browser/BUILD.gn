@@ -138,12 +138,14 @@ static_library("browser") {
     "//components/autofill/core/common",
     "//components/keyed_service/core",
     "//components/os_crypt",
+    "//components/pref_registry",
     "//components/resources",
     "//components/strings",
     "//components/webdata/common",
     "//google_apis",
     "//skia",
     "//sql",
+    "//third_party/fips181",
     "//third_party/icu",
     "//third_party/libaddressinput:util",
     "//third_party/libphonenumber",
@@ -151,10 +153,8 @@ static_library("browser") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//url",
-    #'../third_party/fips181/fips181.gyp:fips181',  TODO(GYP)
     # TODO(GYP) also remove libjingle_stub_config below when this is added:
     #'../third_party/libjingle/libjingle.gyp:libjingle',  TODO(GYP)
-    #'pref_registry',  TODO(GYP)
   ]
 
   configs += [ "//content:libjingle_stub_config" ]
