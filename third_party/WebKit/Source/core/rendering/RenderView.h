@@ -80,9 +80,9 @@ public:
     FrameView* frameView() const { return m_frameView; }
 
     virtual void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, bool fixed = false, const PaintInvalidationState* = 0) const OVERRIDE;
-    void repaintViewRectangle(const LayoutRect&) const;
+    void invalidatePaintForRectangle(const LayoutRect&) const;
 
-    void repaintViewAndCompositedLayers();
+    void invalidatePaintForViewAndCompositedLayers();
 
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
     virtual void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint&) OVERRIDE;
@@ -95,15 +95,15 @@ public:
     RenderObject* selectionEnd() const { return m_selectionEnd; }
     IntRect selectionBounds(bool clipToVisibleContent = true) const;
     void selectionStartEnd(int& startPos, int& endPos) const;
-    void repaintSelection() const;
+    void invalidatePaintForSelection() const;
 
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const OVERRIDE;
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const OVERRIDE;
 
     virtual LayoutRect viewRect() const OVERRIDE;
 
-    bool shouldDoFullRepaintForNextLayout() const;
-    bool doingFullRepaint() const { return m_frameView->needsFullPaintInvalidation(); }
+    bool shouldDoFullPaintInvalidationForNextLayout() const;
+    bool doingFullPaintInvalidation() const { return m_frameView->needsFullPaintInvalidation(); }
 
     LayoutState* layoutState() const { return m_layoutState; }
 
@@ -157,14 +157,14 @@ public:
     void popLayoutState();
 
 private:
-    virtual void mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const OVERRIDE;
+    virtual void mapLocalToContainer(const RenderLayerModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const OVERRIDE;
     virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const OVERRIDE;
     virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const OVERRIDE;
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const OVERRIDE;
 
     virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) OVERRIDE FINAL;
 
-    bool shouldRepaint(const LayoutRect&) const;
+    bool shouldInvalidatePaint(const LayoutRect&) const;
 
     bool rootFillsViewportBackground(RenderBox* rootBox) const;
 

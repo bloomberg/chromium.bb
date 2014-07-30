@@ -3427,7 +3427,7 @@ void Document::styleResolverChanged(StyleResolverUpdateMode updateMode)
 
         ASSERT(renderView() || importsController());
         if (renderView())
-            renderView()->repaintViewAndCompositedLayers();
+            renderView()->invalidatePaintForViewAndCompositedLayers();
     }
 }
 

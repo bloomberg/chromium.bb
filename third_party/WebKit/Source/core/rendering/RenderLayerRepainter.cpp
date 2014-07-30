@@ -123,7 +123,7 @@ void RenderLayerRepainter::setBackingNeedsRepaintInRect(const LayoutRect& r)
 
         RenderView* view = m_renderer.view();
         if (view)
-            view->repaintViewRectangle(absRect);
+            view->invalidatePaintForRectangle(absRect);
         return;
     }
     // FIXME: generalize accessors to backing GraphicsLayers so that this code is squasphing-agnostic.
@@ -168,7 +168,7 @@ void RenderLayerRepainter::setFilterBackendNeedsRepaintingInRect(const LayoutRec
 
     if (parentLayer->isRootLayer()) {
         RenderView* view = toRenderView(parentLayer->renderer());
-        view->repaintViewRectangle(parentLayerRect);
+        view->invalidatePaintForRectangle(parentLayerRect);
         return;
     }
 

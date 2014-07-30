@@ -1507,7 +1507,7 @@ void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* p
     RenderView* v = view();
     if (paintInvalidationContainer->isRenderView()) {
         ASSERT(paintInvalidationContainer == v);
-        v->repaintViewRectangle(r);
+        v->invalidatePaintForRectangle(r);
         return;
     }
 

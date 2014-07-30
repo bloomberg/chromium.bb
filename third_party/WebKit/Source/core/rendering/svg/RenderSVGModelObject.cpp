@@ -152,7 +152,7 @@ void RenderSVGModelObject::invalidatePaintIfNeeded(const PaintInvalidationState&
     // If we are set to do a full paint invalidation that means the RenderView will be
     // issue paint invalidations. We can then skip issuing of paint invalidations for the child
     // renderers as they'll be covered by the RenderView.
-    if (view()->doingFullRepaint())
+    if (view()->doingFullPaintInvalidation())
         return;
 
     RenderObject::invalidatePaintIfNeeded(paintInvalidationState.paintInvalidationContainer(), oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer, paintInvalidationState);

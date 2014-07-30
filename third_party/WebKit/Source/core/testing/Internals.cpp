@@ -1982,7 +1982,7 @@ void Internals::forceFullRepaint(Document* document, ExceptionState& exceptionSt
     }
 
     if (RenderView *renderView = document->renderView())
-        renderView->repaintViewAndCompositedLayers();
+        renderView->invalidatePaintForViewAndCompositedLayers();
 }
 
 PassRefPtrWillBeRawPtr<ClientRectList> Internals::draggableRegions(Document* document, ExceptionState& exceptionState)

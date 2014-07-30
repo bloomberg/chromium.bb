@@ -930,7 +930,7 @@ void FrameView::layout(bool allowSubtree)
 
             // We need to set m_doFullPaintInvalidation before triggering layout as RenderObject::checkForPaintInvalidation
             // checks the boolean to disable local paint invalidations.
-            m_doFullPaintInvalidation |= renderView()->shouldDoFullRepaintForNextLayout();
+            m_doFullPaintInvalidation |= renderView()->shouldDoFullPaintInvalidationForNextLayout();
         }
 
         layer = rootForThisLayout->enclosingLayer();
