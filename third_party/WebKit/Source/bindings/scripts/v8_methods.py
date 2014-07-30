@@ -251,7 +251,7 @@ def argument_declarations_for_private_script(interface, method):
     argument_declarations = ['LocalFrame* frame']
     argument_declarations.append('%s* holderImpl' % interface.name)
     argument_declarations.extend(['%s %s' % (argument.idl_type.cpp_type_args(
-        used_as_argument=True), argument.name) for argument in method.arguments])
+        used_as_rvalue_type=True), argument.name) for argument in method.arguments])
     if method.idl_type.name != 'void':
         argument_declarations.append('%s* %s' % (method.idl_type.cpp_type, 'result'))
     return argument_declarations

@@ -120,7 +120,7 @@ CPP_SPECIAL_CONVERSION_RULES = {
 }
 
 
-def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_argument=False, used_as_variadic_argument=False, used_in_cpp_sequence=False):
+def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_type=False, used_as_variadic_argument=False, used_in_cpp_sequence=False):
     """Returns C++ type corresponding to IDL type.
 
     |idl_type| argument is of type IdlType, while return value is a string
@@ -130,12 +130,14 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_argumen
             IdlType
         raw_type:
             bool, True if idl_type's raw/primitive C++ type should be returned.
-        used_as_argument:
-            bool, True if the C++ type is used as an argument of a method.
+        used_as_rvalue_type:
+            bool, True if the C++ type is used as an argument or the return
+            type of a method.
         used_as_variadic_argument:
             bool, True if the C++ type is used as a variadic argument of a method.
         used_in_cpp_sequence:
-            bool, True if the C++ type is used as an element of an array or sequence.
+            bool, True if the C++ type is used as an element of a container.
+            Containers can be an array, a sequence or a dictionary.
     """
     def string_mode():
         if extended_attributes.get('TreatNullAs') == 'EmptyString':
@@ -156,7 +158,10 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_argumen
         native_array_element_type = idl_type.native_array_element_type
     if native_array_element_type:
         vector_type = cpp_ptr_type('Vector', 'HeapVector', native_array_element_type.gc_type)
-        return cpp_template_type(vector_type, native_array_element_type.cpp_type_args(used_in_cpp_sequence=True))
+        vector_template_type = cpp_template_type(vector_type, native_array_element_type.cpp_type_args(used_in_cpp_sequence=True))
+        if used_as_rvalue_type:
+            return 'const %s&' % vector_template_type
+        return vector_template_type
 
     # Simple types
     base_idl_type = idl_type.base_type
@@ -171,7 +176,7 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_argumen
         return CPP_SPECIAL_CONVERSION_RULES[base_idl_type]
 
     if base_idl_type in NON_WRAPPER_TYPES:
-        return ('PassRefPtr<%s>' if used_as_argument else 'RefPtr<%s>') % base_idl_type
+        return ('PassRefPtr<%s>' if used_as_rvalue_type else 'RefPtr<%s>') % base_idl_type
     if idl_type.is_string_type:
         if not raw_type:
             return 'String'
@@ -184,7 +189,7 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_argumen
         if raw_type:
             return implemented_as_class + '*'
         new_type = 'Member' if used_in_cpp_sequence else 'RawPtr'
-        ptr_type = cpp_ptr_type(('PassRefPtr' if used_as_argument else 'RefPtr'), new_type, idl_type.gc_type)
+        ptr_type = cpp_ptr_type(('PassRefPtr' if used_as_rvalue_type else 'RefPtr'), new_type, idl_type.gc_type)
         return cpp_template_type(ptr_type, implemented_as_class)
     # Default, assume native type is a pointer with same type name as idl type
     return base_idl_type + '*'
@@ -387,11 +392,41 @@ def includes_for_interface(interface_name):
 def add_includes_for_interface(interface_name):
     includes.update(includes_for_interface(interface_name))
 
+
+def impl_should_use_nullable_container(idl_type):
+    return idl_type.native_array_element_type or idl_type.is_primitive_type
+
+IdlType.impl_should_use_nullable_container = property(
+    impl_should_use_nullable_container)
+
+
+def impl_includes_for_type(idl_type, interfaces_info):
+    includes_for_type = set()
+    if idl_type.impl_should_use_nullable_container:
+        includes_for_type.add('bindings/core/v8/Nullable.h')
+
+    idl_type = idl_type.preprocessed_type
+    native_array_element_type = idl_type.native_array_element_type
+    if native_array_element_type:
+        includes_for_type.update(impl_includes_for_type(
+                native_array_element_type, interfaces_info))
+        includes_for_type.add('wtf/Vector.h')
+
+    if idl_type.is_string_type:
+        includes_for_type.add('wtf/text/WTFString.h')
+    if idl_type.name in interfaces_info:
+        interface_info = interfaces_info[idl_type.name]
+        includes_for_type.add(interface_info['include_path'])
+    return includes_for_type
+
+IdlType.impl_includes_for_type = impl_includes_for_type
+
+
 component_dir = {}
 
 
 def set_component_dirs(new_component_dirs):
-        component_dir.update(new_component_dirs)
+    component_dir.update(new_component_dirs)
 
 
 ################################################################################

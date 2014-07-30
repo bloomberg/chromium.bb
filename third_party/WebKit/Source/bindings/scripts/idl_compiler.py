@@ -100,14 +100,13 @@ class IdlCompiler(object):
         self.output_directory = output_directory
         self.reader = IdlReader(interfaces_info, cache_directory)
 
-    def compile_and_write(self, idl_filename, output_filenames):
+    def compile_and_write(self, idl_filename):
         interface_name = idl_filename_to_interface_name(idl_filename)
         definitions = self.reader.read_idl_definitions(idl_filename)
         output_code_list = self.code_generator.generate_code(
             definitions, interface_name)
-        for output_code, output_filename in zip(output_code_list,
-                                                output_filenames):
-            write_file(output_code, output_filename, self.only_if_changed)
+        for output_path, output_code in output_code_list:
+            write_file(output_code, output_path, self.only_if_changed)
 
     @abc.abstractmethod
     def compile_file(self, idl_filename):
@@ -118,15 +117,11 @@ class IdlCompilerV8(IdlCompiler):
     def __init__(self, *args, **kwargs):
         IdlCompiler.__init__(self, *args, **kwargs)
         self.code_generator = CodeGeneratorV8(self.interfaces_info,
-                                              self.cache_directory)
+                                              self.cache_directory,
+                                              self.output_directory)
 
     def compile_file(self, idl_filename):
-        interface_name = idl_filename_to_interface_name(idl_filename)
-        header_filename = os.path.join(self.output_directory,
-                                       'V8%s.h' % interface_name)
-        cpp_filename = os.path.join(self.output_directory,
-                                    'V8%s.cpp' % interface_name)
-        self.compile_and_write(idl_filename, (header_filename, cpp_filename))
+        self.compile_and_write(idl_filename)
 
 
 def main():

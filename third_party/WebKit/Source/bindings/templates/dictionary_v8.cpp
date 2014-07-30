@@ -35,7 +35,7 @@ v8::Handle<v8::Value> toV8({{cpp_class}}* impl, v8::Handle<v8::Object> creationC
 {
     v8::Handle<v8::Object> v8Object = v8::Object::New(isolate);
     {% for member in members %}
-    if (impl->{{member.has_name}}())
+    if (impl->{{member.has_method_name}}())
         v8Object->Set(v8String(isolate, "{{member.name}}"), {{member.cpp_value_to_v8_value}});
     {% if member.v8_default_value %}
     else

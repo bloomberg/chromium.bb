@@ -96,10 +96,11 @@ def render_template(interface_info, header_template, cpp_template,
 
 
 class CodeGeneratorV8(object):
-    def __init__(self, interfaces_info, cache_dir):
+    def __init__(self, interfaces_info, cache_dir, output_dir):
         interfaces_info = interfaces_info or {}
         self.interfaces_info = interfaces_info
         self.jinja_env = initialize_jinja_env(cache_dir)
+        self.output_dir = output_dir
 
         # Set global type info
         idl_types.set_ancestors(dict(
@@ -129,6 +130,17 @@ class CodeGeneratorV8(object):
         v8_types.set_component_dirs(dict(
             (interface_name, interface_info['component_dir'])
             for interface_name, interface_info in interfaces_info.iteritems()))
+
+    def output_paths_for_bindings(self, definition_name):
+        header_path = posixpath.join(self.output_dir,
+                                     'V8%s.h' % definition_name)
+        cpp_path = posixpath.join(self.output_dir, 'V8%s.cpp' % definition_name)
+        return header_path, cpp_path
+
+    def output_paths_for_impl(self, definition_name):
+        header_path = posixpath.join(self.output_dir, '%s.h' % definition_name)
+        cpp_path = posixpath.join(self.output_dir, '%s.cpp' % definition_name)
+        return header_path, cpp_path
 
     def generate_code(self, definitions, definition_name):
         """Returns .h/.cpp code as (header_text, cpp_text)."""
@@ -170,14 +182,20 @@ class CodeGeneratorV8(object):
         template_context['header_includes'].add(interface_info['include_path'])
         header_text, cpp_text = render_template(
             interface_info, header_template, cpp_template, template_context)
-        return header_text, cpp_text
+        header_path, cpp_path = self.output_paths_for_bindings(interface_name)
+        return (
+            (header_path, header_text),
+            (cpp_path, cpp_text),
+        )
 
     def generate_dictionary_code(self, definitions, dictionary_name,
                                  dictionary):
         interface_info = self.interfaces_info[dictionary_name]
-        # FIXME: Generate impl class
-        return self.generate_dictionary_bindings(
+        bindings_results = self.generate_dictionary_bindings(
             dictionary_name, interface_info, dictionary)
+        impl_results = self.generate_dictionary_impl(
+            dictionary_name, interface_info, dictionary)
+        return bindings_results + impl_results
 
     def generate_dictionary_bindings(self, dictionary_name,
                                      interface_info, dictionary):
@@ -188,7 +206,25 @@ class CodeGeneratorV8(object):
         template_context['header_includes'].add(interface_info['include_path'])
         header_text, cpp_text = render_template(
             interface_info, header_template, cpp_template, template_context)
-        return header_text, cpp_text
+        header_path, cpp_path = self.output_paths_for_bindings(dictionary_name)
+        return (
+            (header_path, header_text),
+            (cpp_path, cpp_text),
+        )
+
+    def generate_dictionary_impl(self, dictionary_name,
+                                 interface_info, dictionary):
+        header_template = self.jinja_env.get_template('dictionary_impl.h')
+        cpp_template = self.jinja_env.get_template('dictionary_impl.cpp')
+        template_context = v8_dictionary.dictionary_impl_context(
+            dictionary, self.interfaces_info)
+        header_text, cpp_text = render_template(
+            interface_info, header_template, cpp_template, template_context)
+        header_path, cpp_path = self.output_paths_for_impl(dictionary_name)
+        return (
+            (header_path, header_text),
+            (cpp_path, cpp_text),
+        )
 
 
 def initialize_jinja_env(cache_dir):

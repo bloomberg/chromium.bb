@@ -11,4 +11,10 @@
     double? doubleOrNullMember = null;
     DOMString? stringOrNullMember = "default string value";
     TestInterface? testInterfaceOrNullMember;
+    TestInterfaceGarbageCollected testInterfaceGarbageCollectedMember;
+    TestInterfaceGarbageCollected? testInterfaceGarbageCollectedOrNullMember;
+    TestInterfaceWillBeGarbageCollected testInterfaceWillBeGarbageCollectedMember;
+    TestInterfaceWillBeGarbageCollected? testInterfaceWillBeGarbageCollectedOrNullMember;
+    DOMString[] stringArrayMember;
+    sequence<DOMString> stringSequenceMember;
 };
