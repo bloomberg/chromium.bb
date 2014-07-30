@@ -288,7 +288,8 @@ IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, AddAfter) {
       RunExtensionSubtest("gcd_private/api", "receive_new_device.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, AddRemove) {
+// http://crbug.com/312328
+IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, DISABLED_AddRemove) {
   test_service_discovery_client_->SimulateReceive(kAnnouncePacket,
                                                   sizeof(kAnnouncePacket));
 
