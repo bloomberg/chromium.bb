@@ -17,11 +17,12 @@ function test() {
     {
         var request = event.data;
         if (request._type._name === "websocket") {
-            for (var i = 0; i < request.frames().length; i++) {
-                var frame = request.frame(i);
-                var result = String.sprintf("%d: %s", (i + 1), frame.errorMessage);
+            var websocketFrames = request.frames();
+            for (var i = 0; i < websocketFrames.length; i++) {
+                var frame = websocketFrames[i];
+                var result = String.sprintf("%d-%s: %s", (i + 1), frame.type, frame.text);
                 InspectorTest.addResult(result);
-                if (frame.errorMessage)
+                if (frame.type == WebInspector.NetworkRequest.WebSocketFrameType.Error)
                     InspectorTest.completeTest();
             }
         }

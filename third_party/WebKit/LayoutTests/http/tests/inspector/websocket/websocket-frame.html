@@ -24,10 +24,11 @@ function test() {
             return;
         var previous_frames = frames;
         frames = [];
-        for (var i = 0; i < request.frames().length; i++) {
-            var frame = request.frame(i);
-            frames[i] = String.sprintf("%d-%s: %s", (i + 1), frame.sent ? " sent" : " received", frame.payloadData);
-            if (!frame.sent && frame.payloadData === "exit")
+        var websocketFrames = request.frames();
+        for (var i = 0; i < websocketFrames.length; i++) {
+            var frame = websocketFrames[i];
+            frames[i] = String.sprintf("%d-%s: %s", (i + 1), frame.type, frame.text);
+            if (frame.type !== WebInspector.NetworkRequest.WebSocketFrameType.Send && frame.text === "exit")
                 done = true;
         }
         if (JSON.stringify(frames) === JSON.stringify(previous_frames)) {
