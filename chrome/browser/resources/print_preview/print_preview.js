@@ -770,9 +770,6 @@ cr.define('print_preview', function() {
      * @private
      */
      onCloudPrintRegisterPromoClick_: function(e) {
-       new print_preview.DestinationSearchMetricsContext().record(
-           print_preview.Metrics.DestinationSearchBucket.
-               REGISTER_PROMO_SELECTED);
        var devicesUrl = 'chrome://devices/register?id=' + e.destination.id;
        this.nativeLayer_.startForceOpenNewTab(devicesUrl);
        this.destinationStore_.waitForRegister(e.destination.id);
@@ -788,21 +785,14 @@ cr.define('print_preview', function() {
       // Escape key closes the dialog.
       if (e.keyCode == 27 && !e.shiftKey && !e.ctrlKey && !e.altKey &&
           !e.metaKey) {
-        if (this.destinationSearch_.getIsVisible()) {
-          this.destinationSearch_.setIsVisible(false);
-          new print_preview.DestinationSearchMetricsContext().record(
-              print_preview.Metrics.DestinationSearchBucket.
-                  DESTINATION_CLOSED_UNCHANGED);
-        } else {
-          <if expr="toolkit_views">
-          // On the toolkit_views environment, ESC key is handled by C++-side
-          // instead of JS-side.
-          return;
-          </if>
-          <if expr="not toolkit_views">
-          this.close_();
-          </if>
-        }
+        <if expr="toolkit_views">
+        // On the toolkit_views environment, ESC key is handled by C++-side
+        // instead of JS-side.
+        return;
+        </if>
+        <if expr="not toolkit_views">
+        this.close_();
+        </if>
         e.preventDefault();
         return;
       }
@@ -818,7 +808,7 @@ cr.define('print_preview', function() {
       }
 
       if (e.keyCode == 13 /*enter*/ &&
-          !this.destinationSearch_.getIsVisible() &&
+          !document.querySelector('.overlay:not([hidden])') &&
           this.destinationStore_.selectedDestination &&
           this.printTicketStore_.isTicketValid()) {
         assert(this.uiState_ == PrintPreview.UiState_.READY,
@@ -857,9 +847,6 @@ cr.define('print_preview', function() {
       this.destinationStore_.startLoadCloudDestinations();
       this.destinationStore_.startLoadLocalDestinations();
       this.destinationStore_.startLoadPrivetDestinations();
-      new print_preview.DestinationSearchMetricsContext().record(
-          print_preview.Metrics.DestinationSearchBucket.
-              DESTINATION_SHOWN);
     },
 
     /**
@@ -1134,6 +1121,7 @@ cr.define('print_preview', function() {
 });
 
 // Pull in all other scripts in a single shot.
+<include src="common/overlay.js"/>
 <include src="common/search_box.js"/>
 
 <include src="data/page_number_set.js"/>

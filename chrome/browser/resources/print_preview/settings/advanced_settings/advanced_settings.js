@@ -8,10 +8,16 @@ cr.define('print_preview', function() {
   /**
    * Modal dialog for print destination's advanced settings.
    * @constructor
-   * @extends {print_preview.Component}
+   * @extends {print_preview.Overlay}
    */
   function AdvancedSettings() {
-    print_preview.Component.call(this);
+    print_preview.Overlay.call(this);
+
+    /**
+     * Used to record usage statistics.
+     * @private {!print_preview.PrintSettingsUiMetricsContext}
+     */
+    this.metrics_ = new print_preview.PrintSettingsUiMetricsContext();
 
     /** @private {!print_preview.SearchBox} */
     this.searchBox_ = new print_preview.SearchBox(
@@ -23,7 +29,7 @@ cr.define('print_preview', function() {
   };
 
   AdvancedSettings.prototype = {
-    __proto__: print_preview.Component.prototype,
+    __proto__: print_preview.Overlay.prototype,
 
     /**
      * @param {!print_preview.Destination} destination Destination to show
@@ -35,40 +41,22 @@ cr.define('print_preview', function() {
       this.getChildElement('.advanced-settings-title').textContent =
           localStrings.getStringF('advancedSettingsDialogTitle',
                                   this.destination_.displayName);
-      this.setIsVisible_(true);
+      this.setIsVisible(true);
     },
 
     /** @override */
     enterDocument: function() {
-      print_preview.Component.prototype.enterDocument.call(this);
+      print_preview.Overlay.prototype.enterDocument.call(this);
 
-      this.getElement().addEventListener('webkitTransitionEnd', function f(e) {
-        if (e.target != e.currentTarget || e.propertyName != 'opacity')
-          return;
-        if (e.target.classList.contains('transparent'))
-          setIsVisible(e.target, false);
-      });
-
-      this.tracker.add(
-          this.getChildElement('.page > .close-button'),
-          'click',
-          this.onCloseClick_.bind(this));
       this.tracker.add(
           this.getChildElement('#cancel-button'),
           'click',
-          this.onCloseClick_.bind(this));
+          this.cancel.bind(this));
 
       this.tracker.add(
           this.searchBox_,
           print_preview.SearchBox.EventType.SEARCH,
           this.onSearch_.bind(this));
-
-      this.tracker.add(
-          this.getElement(), 'click', this.onOverlayClick_.bind(this));
-      this.tracker.add(
-          this.getChildElement('.page'),
-          'webkitAnimationEnd',
-          this.onAnimationEnd_.bind(this));
 
       this.renderSettings_();
     },
@@ -78,33 +66,23 @@ cr.define('print_preview', function() {
       this.searchBox_.render(this.getChildElement('.search-box-container'));
     },
 
-    /**
-     * @return {boolean} Whether the component is visible.
-     * @private
-     */
-    getIsVisible_: function() {
-      return !this.getElement().classList.contains('transparent');
-    },
-
-    /**
-     * @param {boolean} isVisible Whether the component is visible.
-     * @private
-     */
-    setIsVisible_: function(isVisible) {
-      if (this.getIsVisible_() == isVisible)
-        return;
+    /** @override */
+    onSetVisibleInternal: function(isVisible) {
       if (isVisible) {
-        setIsVisible(this.getElement(), true);
-        setTimeout(function(element) {
-          element.classList.remove('transparent');
-        }.bind(this, this.getElement()), 0);
         this.searchBox_.focus();
+        this.metrics_.record(print_preview.Metrics.PrintSettingsUiBucket.
+            ADVANCED_SETTINGS_DIALOG_SHOWN);
       } else {
-        this.getElement().classList.add('transparent');
-        this.searchBox_.setQuery('');
+        this.searchBox_.setQuery(null);
         this.filterLists_(null);
         this.destination_ = null;
       }
+    },
+
+    /** @override */
+    onCancelInternal: function() {
+      this.metrics_.record(print_preview.Metrics.PrintSettingsUiBucket.
+          ADVANCED_SETTINGS_DIALOG_CANCELED);
     },
 
     /**
@@ -151,33 +129,6 @@ cr.define('print_preview', function() {
      */
     onSearch_: function(evt) {
       this.filterLists_(evt.query);
-    },
-
-    /**
-     * Called when the close button is clicked. Hides the search widget.
-     * @private
-     */
-    onCloseClick_: function() {
-      this.setIsVisible_(false);
-      this.resetSearch_();
-    },
-
-    /**
-     * Called when the overlay is clicked. Pulses the page.
-     * @param {Event} event Contains the element that was clicked.
-     * @private
-     */
-    onOverlayClick_: function(event) {
-      if (event.target == this.getElement())
-        this.getChildElement('.page').classList.add('pulse');
-    },
-
-    /**
-     * Called when an animation ends on the page.
-     * @private
-     */
-    onAnimationEnd_: function() {
-      this.getChildElement('.page').classList.remove('pulse');
     }
   };
 
