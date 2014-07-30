@@ -85,8 +85,8 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context)
 
     // Do not enable subpixel text on low-dpi if full hinting is requested.
     bool useSubpixelText = RuntimeEnabledFeatures::subpixelFontScalingEnabled()
-        && context && (paint->getHinting() != SkPaint::kFull_Hinting
-            || context->deviceScaleFactor() > 1.0f);
+        && (paint->getHinting() != SkPaint::kFull_Hinting
+            || (context && context->deviceScaleFactor() > 1.0f));
 
     // TestRunner specifically toggles the subpixel positioning flag.
     if (useSubpixelText && !LayoutTestSupport::isRunningLayoutTest())
