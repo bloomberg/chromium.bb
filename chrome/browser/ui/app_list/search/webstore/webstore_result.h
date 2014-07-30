@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/common/manifest.h"
 #include "url/gurl.h"
 
 class AppListControllerDelegate;
@@ -33,8 +34,13 @@ class WebstoreResult : public ChromeSearchResult,
                  const std::string& app_id,
                  const std::string& localized_name,
                  const GURL& icon_url,
+                 extensions::Manifest::Type item_type,
                  AppListControllerDelegate* controller);
   virtual ~WebstoreResult();
+
+  const std::string& app_id() const { return app_id_; }
+  const GURL& icon_url() const { return icon_url_; }
+  extensions::Manifest::Type item_type() const { return item_type_; }
 
   // ChromeSearchResult overides:
   virtual void Open(int event_flags) OVERRIDE;
@@ -77,13 +83,15 @@ class WebstoreResult : public ChromeSearchResult,
   const std::string app_id_;
   const std::string localized_name_;
   const GURL icon_url_;
+  extensions::Manifest::Type item_type_;
 
   gfx::ImageSkia icon_;
-  base::WeakPtrFactory<WebstoreResult> weak_factory_;
 
   AppListControllerDelegate* controller_;
   extensions::InstallTracker* install_tracker_;  // Not owned.
   extensions::ExtensionRegistry* extension_registry_;  // Not owned.
+
+  base::WeakPtrFactory<WebstoreResult> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebstoreResult);
 };

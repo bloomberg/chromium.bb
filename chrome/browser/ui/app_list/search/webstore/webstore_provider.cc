@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -27,6 +28,26 @@ const char kKeyResults[] = "results";
 const char kKeyId[] = "id";
 const char kKeyLocalizedName[] = "localized_name";
 const char kKeyIconUrl[] = "icon_url";
+const char kKeyItemType[] = "item_type";
+
+const char kPlatformAppType[] = "platform_app";
+const char kHostedAppType[] = "hosted_app";
+const char kLegacyPackagedAppType[] = "legacy_packaged_app";
+
+// Converts the item type string from the web store to an
+// extensions::Manifest::Type.
+extensions::Manifest::Type ParseItemType(const std::string& item_type_str) {
+  if (LowerCaseEqualsASCII(item_type_str, kPlatformAppType))
+    return extensions::Manifest::TYPE_PLATFORM_APP;
+
+  if (LowerCaseEqualsASCII(item_type_str, kLegacyPackagedAppType))
+    return extensions::Manifest::TYPE_LEGACY_PACKAGED_APP;
+
+  if (LowerCaseEqualsASCII(item_type_str, kHostedAppType))
+    return extensions::Manifest::TYPE_HOSTED_APP;
+
+  return extensions::Manifest::TYPE_UNKNOWN;
+}
 
 }  // namespace
 
@@ -141,8 +162,12 @@ scoped_ptr<ChromeSearchResult> WebstoreProvider::CreateResult(
   if (!icon_url.is_valid())
     return result.Pass();
 
+  std::string item_type_string;
+  dict.GetString(kKeyItemType, &item_type_string);
+  extensions::Manifest::Type item_type = ParseItemType(item_type_string);
+
   result.reset(new WebstoreResult(
-      profile_, app_id, localized_name, icon_url, controller_));
+      profile_, app_id, localized_name, icon_url, item_type, controller_));
   return result.Pass();
 }
 
