@@ -297,9 +297,10 @@ DeviceMode EnterpriseInstallAttributes::GetMode() {
   return registration_mode_;
 }
 
-// Note that some of these constants have been copied to
-// login_manager/device_policy_service.cc.  Please make sure that all changes to
-// the constants are reflected there as well.
+// Warning: The values for these keys (but not the keys themselves) are stored
+// in the protobuf with a trailing zero.  Also note that some of these constants
+// have been copied to login_manager/device_policy_service.cc.  Please make sure
+// that all changes to the constants are reflected there as well.
 const char EnterpriseInstallAttributes::kConsumerDeviceMode[] = "consumer";
 const char EnterpriseInstallAttributes::kEnterpriseDeviceMode[] = "enterprise";
 const char EnterpriseInstallAttributes::kRetailKioskDeviceMode[] = "kiosk";
