@@ -486,7 +486,7 @@ void WebPluginDelegateProxy::OnChannelError() {
     }
     plugin_->Invalidate();
   }
-  if (!channel_host_->expecting_shutdown()) {
+  if (channel_host_.get() && !channel_host_->expecting_shutdown()) {
     render_view_->main_render_frame()->PluginCrashed(
         info_.path, channel_host_->peer_pid());
   }
@@ -525,6 +525,9 @@ static void CopyTransportDIBHandleForMessage(
 
 void WebPluginDelegateProxy::SendUpdateGeometry(
     bool bitmaps_changed) {
+  if (!channel_host_.get())
+    return;
+
   PluginMsg_UpdateGeometry_Param param;
   param.window_rect = plugin_rect_;
   param.clip_rect = clip_rect_;
@@ -729,6 +732,9 @@ void WebPluginDelegateProxy::Paint(SkCanvas* canvas,
 NPObject* WebPluginDelegateProxy::GetPluginScriptableObject() {
   if (npobject_)
     return WebBindings::retainObject(npobject_);
+
+  if (!channel_host_.get())
+    return NULL;
 
   int route_id = MSG_ROUTING_NONE;
   Send(new PluginMsg_GetPluginScriptableObject(instance_id_, &route_id));
