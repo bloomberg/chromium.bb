@@ -39,7 +39,6 @@ public:
     void add(PassRefPtrWillBeRawPtr<HTMLOptionElement>, ExceptionState&);
     void add(PassRefPtrWillBeRawPtr<HTMLOptionElement>, int index, ExceptionState&);
     void remove(int index);
-    void remove(HTMLOptionElement*);
 
     int selectedIndex() const;
     void setSelectedIndex(int);

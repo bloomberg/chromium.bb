@@ -388,7 +388,6 @@ public:
         RangeExpand = 393,
         HTMLImageElementX = 396,
         HTMLImageElementY = 397,
-        HTMLOptionsCollectionRemoveElement = 398,
         SelectionBaseNode = 400,
         SelectionBaseOffset = 401,
         SelectionExtentNode = 402,
