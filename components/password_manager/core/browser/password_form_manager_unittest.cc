@@ -105,6 +105,10 @@ class PasswordFormManagerTest : public testing::Test {
  public:
   PasswordFormManagerTest() : client_(NULL /*password_store*/) {}
 
+  // Types of possible outcomes of simulated matching, see
+  // SimulateMatchingPhase.
+  enum ResultOfSimulatedMatching { RESULT_MATCH_FOUND, RESULT_NO_MATCH };
+
   virtual void SetUp() {
     observed_form_.origin = GURL("http://accounts.google.com/a/LoginAuth");
     observed_form_.action = GURL("http://accounts.google.com/a/Login");
@@ -141,10 +145,11 @@ class PasswordFormManagerTest : public testing::Test {
     return &p->pending_credentials_;
   }
 
-  void SimulateMatchingPhase(PasswordFormManager* p, bool find_match) {
+  void SimulateMatchingPhase(PasswordFormManager* p,
+                             ResultOfSimulatedMatching result) {
     // Roll up the state to mock out the matching phase.
     p->state_ = PasswordFormManager::POST_MATCHING_PHASE;
-    if (!find_match)
+    if (result == RESULT_NO_MATCH)
       return;
 
     PasswordForm* match = new PasswordForm(saved_match_);
@@ -195,7 +200,7 @@ class PasswordFormManagerTest : public testing::Test {
 
 TEST_F(PasswordFormManagerTest, TestNewLogin) {
   PasswordFormManager manager(NULL, client(), NULL, *observed_form(), false);
-  SimulateMatchingPhase(&manager, false);
+  SimulateMatchingPhase(&manager, RESULT_NO_MATCH);
 
   // User submits credentials for the observed form.
   PasswordForm credentials = *observed_form();
@@ -226,7 +231,7 @@ TEST_F(PasswordFormManagerTest, TestNewLogin) {
   // Now, suppose the user re-visits the site and wants to save an additional
   // login for the site with a new username. In this case, the matching phase
   // will yield the previously saved login.
-  SimulateMatchingPhase(&manager, true);
+  SimulateMatchingPhase(&manager, RESULT_MATCH_FOUND);
   // Set up the new login.
   base::string16 new_user = ASCIIToUTF16("newuser");
   base::string16 new_pass = ASCIIToUTF16("newpass");
@@ -249,13 +254,37 @@ TEST_F(PasswordFormManagerTest, TestNewLogin) {
   EXPECT_TRUE(GetPendingCredentials(&manager)->new_password_value.empty());
 }
 
+// If PSL-matched credentials had been suggested, but the user has overwritten
+// the password, the provisionally saved credentials should no longer be
+// considered as PSL-matched, so that the exception for not prompting before
+// saving PSL-matched credentials should no longer apply.
+TEST_F(PasswordFormManagerTest,
+       OverriddenPSLMatchedCredentialsNotMarkedAsPSLMatched) {
+  PasswordFormManager manager(NULL, client(), NULL, *observed_form(), false);
+
+  // The suggestion needs to be PSL-matched.
+  saved_match()->original_signon_realm = "www.example.org";
+  SimulateMatchingPhase(&manager, RESULT_MATCH_FOUND);
+
+  // User modifies the suggested password and submits the form.
+  PasswordForm credentials(*observed_form());
+  credentials.username_value = saved_match()->username_value;
+  credentials.password_value =
+      saved_match()->password_value + ASCIIToUTF16("modify");
+  manager.ProvisionallySave(
+      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  EXPECT_TRUE(manager.IsNewLogin());
+  EXPECT_FALSE(manager.IsPendingCredentialsPublicSuffixMatch());
+}
+
 TEST_F(PasswordFormManagerTest, TestNewLoginFromNewPasswordElement) {
   // Add a new password field to the test form. The PasswordFormManager should
   // save the password from this field, instead of the current password field.
   observed_form()->new_password_element = ASCIIToUTF16("NewPasswd");
 
   PasswordFormManager manager(NULL, client(), NULL, *observed_form(), false);
-  SimulateMatchingPhase(&manager, false);
+  SimulateMatchingPhase(&manager, RESULT_NO_MATCH);
 
   // User enters current and new credentials to the observed form.
   PasswordForm credentials(*observed_form());
@@ -293,7 +322,7 @@ TEST_F(PasswordFormManagerTest, TestUpdatePassword) {
   // saw this form and need to find matching logins.
   PasswordFormManager manager(NULL, client(), NULL, *observed_form(), false);
 
-  SimulateMatchingPhase(&manager, true);
+  SimulateMatchingPhase(&manager, RESULT_MATCH_FOUND);
 
   // User submits credentials for the observed form using a username previously
   // stored, but a new password. Note that the observed form may have different
@@ -347,7 +376,7 @@ TEST_F(PasswordFormManagerTest, TestUpdatePasswordFromNewPasswordElement) {
                               false);
   EXPECT_CALL(*client_with_store.GetMockDriver(), IsOffTheRecord())
       .WillRepeatedly(Return(false));
-  SimulateMatchingPhase(&manager, true);
+  SimulateMatchingPhase(&manager, RESULT_MATCH_FOUND);
 
   // User submits current and new credentials to the observed form.
   PasswordForm credentials(*observed_form());
@@ -404,7 +433,7 @@ TEST_F(PasswordFormManagerTest, TestEmptyAction) {
   PasswordFormManager manager(NULL, client(), NULL, *observed_form(), false);
 
   saved_match()->action = GURL();
-  SimulateMatchingPhase(&manager, true);
+  SimulateMatchingPhase(&manager, RESULT_MATCH_FOUND);
   // User logs in with the autofilled username / password from saved_match.
   PasswordForm login = *observed_form();
   login.username_value = saved_match()->username_value;
@@ -420,7 +449,7 @@ TEST_F(PasswordFormManagerTest, TestEmptyAction) {
 TEST_F(PasswordFormManagerTest, TestUpdateAction) {
   PasswordFormManager manager(NULL, client(), NULL, *observed_form(), false);
 
-  SimulateMatchingPhase(&manager, true);
+  SimulateMatchingPhase(&manager, RESULT_MATCH_FOUND);
   // User logs in with the autofilled username / password from saved_match.
   PasswordForm login = *observed_form();
   login.username_value = saved_match()->username_value;
@@ -438,7 +467,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateAction) {
 TEST_F(PasswordFormManagerTest, TestDynamicAction) {
   PasswordFormManager manager(NULL, client(), NULL, *observed_form(), false);
 
-  SimulateMatchingPhase(&manager, false);
+  SimulateMatchingPhase(&manager, RESULT_NO_MATCH);
   PasswordForm login(*observed_form());
   // The submitted action URL is different from the one observed on page load.
   GURL new_action = GURL("http://www.google.com/new_action");
@@ -546,44 +575,44 @@ TEST_F(PasswordFormManagerTest, TestValidForms) {
 
   // Form with both username_element and password_element.
   PasswordFormManager manager1(NULL, NULL, NULL, credentials, false);
-  SimulateMatchingPhase(&manager1, false);
+  SimulateMatchingPhase(&manager1, RESULT_NO_MATCH);
   EXPECT_TRUE(manager1.HasValidPasswordForm());
 
   // Form with username_element, password_element, and new_password_element.
   PasswordFormManager manager2(NULL, NULL, NULL, new_credentials, false);
-  SimulateMatchingPhase(&manager2, false);
+  SimulateMatchingPhase(&manager2, RESULT_NO_MATCH);
   EXPECT_TRUE(manager2.HasValidPasswordForm());
 
   // Form with username_element and only new_password_element.
   new_credentials.password_element.clear();
   PasswordFormManager manager3(NULL, NULL, NULL, new_credentials, false);
-  SimulateMatchingPhase(&manager3, false);
+  SimulateMatchingPhase(&manager3, RESULT_NO_MATCH);
   EXPECT_TRUE(manager3.HasValidPasswordForm());
 
   // Form without a username_element but with a password_element.
   credentials.username_element.clear();
   PasswordFormManager manager4(NULL, NULL, NULL, credentials, false);
-  SimulateMatchingPhase(&manager4, false);
+  SimulateMatchingPhase(&manager4, RESULT_NO_MATCH);
   EXPECT_FALSE(manager4.HasValidPasswordForm());
 
   // Form without a username_element but with a new_password_element.
   new_credentials.username_element.clear();
   PasswordFormManager manager5(NULL, NULL, NULL, new_credentials, false);
-  SimulateMatchingPhase(&manager5, false);
+  SimulateMatchingPhase(&manager5, RESULT_NO_MATCH);
   EXPECT_FALSE(manager5.HasValidPasswordForm());
 
   // Form without a password_element but with a username_element.
   credentials.username_element = saved_match()->username_element;
   credentials.password_element.clear();
   PasswordFormManager manager6(NULL, NULL, NULL, credentials, false);
-  SimulateMatchingPhase(&manager6, false);
+  SimulateMatchingPhase(&manager6, RESULT_NO_MATCH);
   EXPECT_FALSE(manager6.HasValidPasswordForm());
 
   // Form with neither a password_element nor a username_element.
   credentials.username_element.clear();
   credentials.password_element.clear();
   PasswordFormManager manager7(NULL, NULL, NULL, credentials, false);
-  SimulateMatchingPhase(&manager7, false);
+  SimulateMatchingPhase(&manager7, RESULT_NO_MATCH);
   EXPECT_FALSE(manager7.HasValidPasswordForm());
 }
 
@@ -596,27 +625,27 @@ TEST_F(PasswordFormManagerTest, TestValidFormsBasic) {
 
   // Form with both username_element and password_element.
   PasswordFormManager manager1(NULL, NULL, NULL, credentials, false);
-  SimulateMatchingPhase(&manager1, false);
+  SimulateMatchingPhase(&manager1, RESULT_NO_MATCH);
   EXPECT_TRUE(manager1.HasValidPasswordForm());
 
   // Form without a username_element but with a password_element.
   credentials.username_element.clear();
   PasswordFormManager manager2(NULL, NULL, NULL, credentials, false);
-  SimulateMatchingPhase(&manager2, false);
+  SimulateMatchingPhase(&manager2, RESULT_NO_MATCH);
   EXPECT_TRUE(manager2.HasValidPasswordForm());
 
   // Form without a password_element but with a username_element.
   credentials.username_element = saved_match()->username_element;
   credentials.password_element.clear();
   PasswordFormManager manager3(NULL, NULL, NULL, credentials, false);
-  SimulateMatchingPhase(&manager3, false);
+  SimulateMatchingPhase(&manager3, RESULT_NO_MATCH);
   EXPECT_TRUE(manager3.HasValidPasswordForm());
 
   // Form with neither a password_element nor a username_element.
   credentials.username_element.clear();
   credentials.password_element.clear();
   PasswordFormManager manager4(NULL, NULL, NULL, credentials, false);
-  SimulateMatchingPhase(&manager4, false);
+  SimulateMatchingPhase(&manager4, RESULT_NO_MATCH);
   EXPECT_TRUE(manager4.HasValidPasswordForm());
 }
 

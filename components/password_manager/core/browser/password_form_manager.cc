@@ -254,16 +254,44 @@ void PasswordFormManager::ProvisionallySave(
   if (it != best_matches_.end()) {
     // The user signed in with a login we autofilled.
     pending_credentials_ = *it->second;
-
-    // Public suffix matches should always be new logins, since we want to store
-    // them so they can automatically be filled in later.
-    is_new_login_ = IsPendingCredentialsPublicSuffixMatch();
-    if (is_new_login_)
-      user_action_ = kUserActionChoosePslMatch;
-
-    // Check to see if we're using a known username but a new password.
-    if (pending_credentials_.password_value != password_to_save)
-      user_action_ = kUserActionOverridePassword;
+    bool password_changed =
+        pending_credentials_.password_value != password_to_save;
+    if (IsPendingCredentialsPublicSuffixMatch()) {
+      // If the autofilled credentials were only a PSL match, store a copy with
+      // the current origin and signon realm. This ensures that on the next
+      // visit, a precise match is found.
+      is_new_login_ = true;
+      user_action_ = password_changed ? kUserActionChoosePslMatch
+                                      : kUserActionOverridePassword;
+      // Normally, the copy of the PSL matched credentials, adapted for the
+      // current domain, is saved automatically without asking the user, because
+      // the copy likely represents the same account, i.e., the one for which
+      // the user already agreed to store a password.
+      //
+      // However, if the user changes the suggested password, it might indicate
+      // that the autofilled credentials and |credentials| actually correspond
+      // to two different accounts (see http://crbug.com/385619). In that case
+      // the user should be asked again before saving the password. This is
+      // ensured by clearing |original_signon_realm| on |pending_credentials_|,
+      // which unmarks it as a PSL match.
+      //
+      // There is still the edge case when the autofilled credentials represent
+      // the same account as |credentials| but the stored password was out of
+      // date. In that case, the user just had to manually enter the new
+      // password, which is now in |credentials|. The best thing would be to
+      // save automatically, and also update the original credentials. However,
+      // we have no way to tell if this is the case. This will likely happen
+      // infrequently, and the inconvenience put on the user by asking them is
+      // not significant, so we are fine with asking here again.
+      if (password_changed) {
+        pending_credentials_.original_signon_realm.clear();
+        DCHECK(!IsPendingCredentialsPublicSuffixMatch());
+      }
+    } else {  // Not a PSL match.
+      is_new_login_ = false;
+      if (password_changed)
+        user_action_ = kUserActionOverridePassword;
+    }
   } else if (action == ALLOW_OTHER_POSSIBLE_USERNAMES &&
              UpdatePendingCredentialsIfOtherPossibleUsername(
                  credentials.username_value)) {
