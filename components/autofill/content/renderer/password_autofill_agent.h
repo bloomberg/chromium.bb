@@ -84,6 +84,12 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
     OTHER_POSSIBLE_USERNAMES_MAX
   };
 
+  // Ways to restrict which passwords are saved in ProvisionallySavePassword.
+  enum ProvisionallySaveRestriction {
+    RESTRICTION_NONE,
+    RESTRICTION_NON_EMPTY_PASSWORD
+  };
+
   struct PasswordInfo {
     blink::WebInputElement password_field;
     PasswordFormFillData fill_data;
@@ -195,6 +201,12 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   // children, return such frame.
   blink::WebFrame* CurrentOrChildFrameWithSavedForms(
       const blink::WebFrame* current_frame);
+
+  // Extracts a PasswordForm from |form| and saves it as
+  // |provisionally_saved_forms_[frame]|, as long as it satisfies |restriction|.
+  void ProvisionallySavePassword(blink::WebLocalFrame* frame,
+                                 const blink::WebFormElement& form,
+                                 ProvisionallySaveRestriction restriction);
 
   // The logins we have filled so far with their associated info.
   LoginToPasswordInfoMap login_to_password_info_;

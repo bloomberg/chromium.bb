@@ -274,7 +274,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     if (move_caret_to_end)
       username_input.setSelectionRange(username.length(), username.length());
     if (is_user_input)
-      autofill_agent_->password_autofill_agent_->gatekeeper_.OnUserGesture();
+      password_autofill_agent()->FirstUserGestureObserved();
     autofill_agent_->textFieldDidChange(username_input);
     // Processing is delayed because of a Blink bug:
     // https://bugs.webkit.org/show_bug.cgi?id=16976
@@ -340,8 +340,8 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     // TODO(jww): Remove this function and callers once autocomplete='off' is
     // permanently ignored.
     if (!ShouldIgnoreAutocompleteOffForPasswordFields()) {
-      EXPECT_TRUE(autofill_agent_->password_autofill_agent_->ShowSuggestions(
-          username_element_, false));
+      EXPECT_TRUE(
+          password_autofill_agent()->ShowSuggestions(username_element_, false));
 
       EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
           AutofillHostMsg_ShowPasswordSuggestions::ID));
@@ -450,6 +450,22 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     EXPECT_TRUE(usernames.empty());
 
     render_thread_->sink().ClearMessages();
+  }
+
+  PasswordAutofillAgent* password_autofill_agent() {
+    return autofill_agent_->password_autofill_agent_;
+  }
+
+  void ExpectFormSubmittedWithPasswords(const std::string& password_value,
+                                        const std::string& new_password_value) {
+    const IPC::Message* message =
+        render_thread_->sink().GetFirstMessageMatching(
+            AutofillHostMsg_PasswordFormSubmitted::ID);
+    ASSERT_TRUE(message);
+    Tuple1<autofill::PasswordForm> args;
+    AutofillHostMsg_PasswordFormSubmitted::Read(message, &args);
+    EXPECT_EQ(ASCIIToUTF16(password_value), args.a.password_value);
+    EXPECT_EQ(ASCIIToUTF16(new_password_value), args.a.new_password_value);
   }
 
   base::string16 username1_;
@@ -1472,6 +1488,77 @@ TEST_F(PasswordAutofillAgentTest, CredentialsOnClick) {
   render_thread_->sink().ClearMessages();
   autofill_agent_->FormControlElementClicked(username_element_, true);
   ExpectAllCredentials();
+}
+
+// The user types in a password, but then just before sending the form off, a
+// script clears that password. This test checks that PasswordAutofillAgent can
+// still remember the password typed by the user.
+TEST_F(PasswordAutofillAgentTest,
+       RememberLastNonEmptyPasswordOnSubmit_ScriptCleared) {
+  SimulateUsernameChangeForElement(
+      "temp", true, GetMainFrame(), username_element_, true);
+  SimulateUsernameChangeForElement(
+      "random", true, GetMainFrame(), password_element_, true);
+
+  // Simulate that the password value was cleared by the site's JavaScript
+  // before submit.
+  password_element_.setValue(WebString());
+  static_cast<content::RenderViewObserver*>(password_autofill_agent())
+      ->WillSubmitForm(GetMainFrame(), username_element_.form());
+
+  // Observe that the PasswordAutofillAgent still remembered the last non-empty
+  // password and sent that to the browser.
+  ExpectFormSubmittedWithPasswords("random", "");
+}
+
+// Similar to RememberLastNonEmptyPasswordOnSubmit_ScriptCleared, but this time
+// it's the user who clears the password. This test checks that in that case,
+// the last non-empty password is not remembered.
+TEST_F(PasswordAutofillAgentTest,
+       RememberLastNonEmptyPasswordOnSubmit_UserCleared) {
+  SimulateUsernameChangeForElement(
+      "temp", true, GetMainFrame(), username_element_, true);
+  SimulateUsernameChangeForElement(
+      "random", true, GetMainFrame(), password_element_, true);
+
+  // Simulate that the user actually cleared the password again.
+  SimulateUsernameChangeForElement(
+      "", true, GetMainFrame(), password_element_, true);
+  static_cast<content::RenderViewObserver*>(password_autofill_agent())
+      ->WillSubmitForm(GetMainFrame(), username_element_.form());
+
+  // Observe that the PasswordAutofillAgent respects the user having cleared the
+  // password.
+  ExpectFormSubmittedWithPasswords("", "");
+}
+
+// Similar to RememberLastNonEmptyPasswordOnSubmit_ScriptCleared, but uses the
+// new password instead of the current password.
+TEST_F(PasswordAutofillAgentTest,
+       RememberLastNonEmptyPasswordOnSubmit_NewPassword) {
+  const char kNewPasswordFormHTML[] =
+      "<FORM name='LoginTestForm'>"
+      "  <INPUT type='text' id='username' autocomplete='username'/>"
+      "  <INPUT type='password' id='password' autocomplete='new-password'/>"
+      "  <INPUT type='submit' value='Login'/>"
+      "</FORM>";
+  LoadHTML(kNewPasswordFormHTML);
+  UpdateUsernameAndPasswordElements();
+
+  SimulateUsernameChangeForElement(
+      "temp", true, GetMainFrame(), username_element_, true);
+  SimulateUsernameChangeForElement(
+      "random", true, GetMainFrame(), password_element_, true);
+
+  // Simulate that the password value was cleared by the site's JavaScript
+  // before submit.
+  password_element_.setValue(WebString());
+  static_cast<content::RenderViewObserver*>(password_autofill_agent())
+      ->WillSubmitForm(GetMainFrame(), username_element_.form());
+
+  // Observe that the PasswordAutofillAgent still remembered the last non-empty
+  // password and sent that to the browser.
+  ExpectFormSubmittedWithPasswords("", "random");
 }
 
 }  // namespace autofill

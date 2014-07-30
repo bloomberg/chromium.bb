@@ -308,6 +308,18 @@ bool PasswordAutofillAgent::TextFieldDidEndEditing(
 
 bool PasswordAutofillAgent::TextDidChangeInTextField(
     const blink::WebInputElement& element) {
+  if (element.isPasswordField()) {
+    // Some login forms have event handlers that put a hash of the password into
+    // a hidden field and then clear the password (http://crbug.com/28910,
+    // http://crbug.com/391693). This method gets called before any of those
+    // handlers run, so save away a copy of the password in case it gets lost.
+    // To honor the user having explicitly cleared the password, even an empty
+    // password will be saved here.
+    ProvisionallySavePassword(
+        element.document().frame(), element.form(), RESTRICTION_NONE);
+    return false;
+  }
+
   LoginToPasswordInfoMap::const_iterator iter =
       login_to_password_info_.find(element);
   if (iter == login_to_password_info_.end())
@@ -593,13 +605,20 @@ void PasswordAutofillAgent::FrameWillClose(blink::WebFrame* frame) {
 void PasswordAutofillAgent::WillSendSubmitEvent(
     blink::WebLocalFrame* frame,
     const blink::WebFormElement& form) {
-  // Some login forms have onSubmit handlers that put a hash of the password
-  // into a hidden field and then clear the password (http://crbug.com/28910).
-  // This method gets called before any of those handlers run, so save away
-  // a copy of the password in case it gets lost.
-  scoped_ptr<PasswordForm> password_form(CreatePasswordForm(form));
-  if (password_form)
-    provisionally_saved_forms_[frame].reset(password_form.release());
+  // Forms submitted via XHR are not seen by WillSubmitForm if the default
+  // onsubmit handler is overridden. Such submission first gets detected in
+  // DidStartProvisionalLoad, which no longer knows about the particular form,
+  // and uses the candidate stored in |provisionally_saved_forms_|.
+  //
+  // User-typed password will get stored to |provisionally_saved_forms_| in
+  // TextDidChangeInTextField. Autofilled or JavaScript-copied passwords need to
+  // be saved here.
+  //
+  // Only non-empty passwords are saved here. Empty passwords were likely
+  // cleared by some scripts (http://crbug.com/28910, http://crbug.com/391693).
+  // Had the user cleared the password, |provisionally_saved_forms_| would
+  // already have been updated in TextDidChangeInTextField.
+  ProvisionallySavePassword(frame, form, RESTRICTION_NON_EMPTY_PASSWORD);
 }
 
 void PasswordAutofillAgent::WillSubmitForm(blink::WebLocalFrame* frame,
@@ -629,6 +648,8 @@ void PasswordAutofillAgent::WillSubmitForm(blink::WebLocalFrame* frame,
         logger->LogMessage(Logger::STRING_SUBMITTED_PASSWORD_REPLACED);
       submitted_form->password_value =
           provisionally_saved_forms_[frame]->password_value;
+      submitted_form->new_password_value =
+          provisionally_saved_forms_[frame]->new_password_value;
     }
 
     // Some observers depend on sending this information now instead of when
@@ -1082,6 +1103,19 @@ void PasswordAutofillAgent::ClearPreview(
       password->setSuggestedValue(blink::WebString());
       password->setAutofilled(was_password_autofilled_);
   }
+}
+
+void PasswordAutofillAgent::ProvisionallySavePassword(
+    blink::WebLocalFrame* frame,
+    const blink::WebFormElement& form,
+    ProvisionallySaveRestriction restriction) {
+  scoped_ptr<PasswordForm> password_form(CreatePasswordForm(form));
+  if (!password_form || (restriction == RESTRICTION_NON_EMPTY_PASSWORD &&
+                         password_form->password_value.empty() &&
+                         password_form->new_password_value.empty())) {
+    return;
+  }
+  provisionally_saved_forms_[frame].reset(password_form.release());
 }
 
 }  // namespace autofill
