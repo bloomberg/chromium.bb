@@ -114,6 +114,9 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer, LayerType type)
     , m_hasVisibleDescendant(false)
     , m_hasVisibleNonLayerContent(false)
     , m_isPaginated(false)
+#if ENABLE(ASSERT)
+    , m_needsPositionUpdate(true)
+#endif
     , m_3DTransformedDescendantStatusDirty(true)
     , m_has3DTransformedDescendant(false)
     , m_containsDirtyOverlayScrollbars(false)
@@ -806,12 +809,12 @@ bool RenderLayer::updateLayerPosition()
     if (renderer()->isInline() && renderer()->isRenderInline()) {
         RenderInline* inlineFlow = toRenderInline(renderer());
         IntRect lineBox = inlineFlow->linesBoundingBox();
-        setSize(lineBox.size());
+        m_size = lineBox.size();
         inlineBoundingBoxOffset = toSize(lineBox.location());
         localPoint += inlineBoundingBoxOffset;
     } else if (RenderBox* box = renderBox()) {
         // FIXME: Is snapping the size really needed here for the RenderBox case?
-        setSize(pixelSnappedIntSize(box->size(), box->location()));
+        m_size = pixelSnappedIntSize(box->size(), box->location());
         localPoint += box->topLeftLocationOffset();
     }
 
@@ -881,8 +884,13 @@ bool RenderLayer::updateLayerPosition()
     // FIXME: We'd really like to just get rid of the concept of a layer rectangle and rely on the renderers.
     localPoint -= inlineBoundingBoxOffset;
 
-    positionOrOffsetChanged |= location() != localPoint;
-    setLocation(localPoint);
+    if (m_location != localPoint)
+        positionOrOffsetChanged = true;
+    m_location = localPoint;
+
+#if ENABLE(ASSERT)
+    m_needsPositionUpdate = false;
+#endif
     return positionOrOffsetChanged;
 }
 

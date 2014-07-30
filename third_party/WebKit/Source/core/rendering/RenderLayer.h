@@ -137,11 +137,11 @@ public:
         return curr;
     }
 
-    const LayoutPoint& location() const { return m_topLeft; }
-    void setLocation(const LayoutPoint& p) { m_topLeft = p; }
-
-    const IntSize& size() const { return m_layerSize; }
-    void setSize(const IntSize& size) { m_layerSize = size; }
+    const LayoutPoint& location() const { ASSERT(!m_needsPositionUpdate); return m_location; }
+    // FIXME: size() should ASSERT(!m_needsPositionUpdate) as well, but that fails in some tests,
+    // for example, fast/repaint/clipped-relative.html.
+    const IntSize& size() const { return m_size; }
+    void setSizeHackForRenderTreeAsText(const IntSize& size) { m_size = size; }
 
     LayoutRect rect() const { return LayoutRect(location(), size()); }
 
@@ -693,6 +693,10 @@ private:
 
     unsigned m_isPaginated : 1; // If we think this layer is split by a multi-column ancestor, then this bit will be set.
 
+#if ENABLE(ASSERT)
+    unsigned m_needsPositionUpdate : 1;
+#endif
+
     unsigned m_3DTransformedDescendantStatusDirty : 1;
     // Set on a stacking context layer that has 3D descendants anywhere
     // in a preserves3D hierarchy. Hint to do 3D-aware hit testing.
@@ -734,10 +738,10 @@ private:
     LayoutSize m_offsetForInFlowPosition;
 
     // Our (x,y) coordinates are in our parent layer's coordinate space.
-    LayoutPoint m_topLeft;
+    LayoutPoint m_location;
 
     // The layer's width/height
-    IntSize m_layerSize;
+    IntSize m_size;
 
     // Cached normal flow values for absolute positioned elements with static left/top values.
     LayoutUnit m_staticInlinePosition;

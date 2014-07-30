@@ -582,7 +582,7 @@ void RenderTreeAsText::writeLayers(TextStream& ts, const RenderLayer* rootLayer,
     if (rootLayer == layer) {
         paintDirtyRect.setWidth(max<LayoutUnit>(paintDirtyRect.width(), rootLayer->renderBox()->layoutOverflowRect().maxX()));
         paintDirtyRect.setHeight(max<LayoutUnit>(paintDirtyRect.height(), rootLayer->renderBox()->layoutOverflowRect().maxY()));
-        layer->setSize(layer->size().expandedTo(pixelSnappedIntSize(layer->renderBox()->maxLayoutOverflow(), LayoutPoint(0, 0))));
+        layer->setSizeHackForRenderTreeAsText(layer->size().expandedTo(pixelSnappedIntSize(layer->renderBox()->maxLayoutOverflow(), LayoutPoint(0, 0))));
     }
 
     // Calculate the clip rects we should use.
