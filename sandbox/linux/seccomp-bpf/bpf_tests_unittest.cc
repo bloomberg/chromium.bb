@@ -134,6 +134,16 @@ BPF_TEST_C(BPFTest, BPFTestWithInlineTest, EnosysPtracePolicy) {
   BPF_ASSERT(ENOSYS == errno);
 }
 
+const char kHelloMessage[] = "Hello";
+
+BPF_DEATH_TEST_C(BPFTest,
+                 BPFDeathTestWithInlineTest,
+                 DEATH_MESSAGE(kHelloMessage),
+                 EnosysPtracePolicy) {
+  LOG(ERROR) << kHelloMessage;
+  _exit(1);
+}
+
 }  // namespace
 
 }  // namespace sandbox

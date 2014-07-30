@@ -34,6 +34,13 @@ SANDBOX_DEATH_TEST(UnitTests,
   raise(kExpectedSignalNumber);
 }
 
+SANDBOX_DEATH_TEST(UnitTests,
+                   DeathWithMessage,
+                   DEATH_MESSAGE("Hello")) {
+  LOG(ERROR) << "Hello";
+  _exit(1);
+}
+
 SANDBOX_TEST_ALLOW_NOISE(UnitTests, NoisyTest) {
   LOG(ERROR) << "The cow says moo!";
 }
