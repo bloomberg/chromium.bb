@@ -87,6 +87,7 @@ class EventsXTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     DeviceDataManagerX11::CreateInstance();
+    ui::TouchFactory::GetInstance()->ResetForTest();
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(EventsXTest);

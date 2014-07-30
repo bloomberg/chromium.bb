@@ -39,6 +39,8 @@ class GFX_EXPORT SequentialIDGenerator {
   // |GetGeneratedID()|.
   void ReleaseNumber(uint32 number);
 
+  void ResetForTest();
+
  private:
   typedef base::hash_map<uint32, uint32> IDMap;
 
@@ -49,7 +51,7 @@ class GFX_EXPORT SequentialIDGenerator {
   IDMap number_to_id_;
   IDMap id_to_number_;
 
-  uint32 min_id_;
+  const uint32 min_id_;
   uint32 min_available_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SequentialIDGenerator);

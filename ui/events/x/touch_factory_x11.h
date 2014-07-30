@@ -86,6 +86,9 @@ class EVENTS_BASE_EXPORT TouchFactory {
   // Return maximum simultaneous touch points supported by device.
   int GetMaxTouchPoints() const;
 
+  // Resets the TouchFactory singleton.
+  void ResetForTest();
+
   // Sets up the device id in the list |devices| as multi-touch capable
   // devices and enables touch events processing. This function is only
   // for test purpose, and it does not query from X server.

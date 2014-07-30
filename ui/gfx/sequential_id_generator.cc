@@ -61,6 +61,12 @@ void SequentialIDGenerator::ReleaseNumber(uint32 number) {
   Remove(number, &number_to_id_, &id_to_number_);
 }
 
+void SequentialIDGenerator::ResetForTest() {
+  number_to_id_.clear();
+  id_to_number_.clear();
+  min_available_id_ = min_id_;
+}
+
 uint32 SequentialIDGenerator::GetNextAvailableID() {
   const uint32 kMaxID = 128;
   while (id_to_number_.count(min_available_id_) > 0 &&

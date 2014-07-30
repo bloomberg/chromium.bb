@@ -272,6 +272,18 @@ int TouchFactory::GetMaxTouchPoints() const {
   return max_touch_points_;
 }
 
+void TouchFactory::ResetForTest() {
+  pointer_device_lookup_.reset();
+  touch_device_lookup_.reset();
+  touch_device_available_ = false;
+  touch_events_disabled_ = false;
+  touch_device_list_.clear();
+  touchscreen_ids_.clear();
+  tracking_id_refcounts_.clear();
+  max_touch_points_ = -1;
+  id_generator_.ResetForTest();
+}
+
 void TouchFactory::SetTouchDeviceForTest(
     const std::vector<unsigned int>& devices) {
   touch_device_lookup_.reset();
