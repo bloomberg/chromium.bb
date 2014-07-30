@@ -594,18 +594,29 @@ class NSSInitSingleton {
 #endif
 
 #if defined(OS_CHROMEOS)
-  PK11SlotInfo* GetSystemNSSKeySlot() {
-    DCHECK(thread_checker_.CalledOnValidThread());
+  void GetSystemNSSKeySlotCallback(
+      const base::Callback<void(ScopedPK11Slot)>& callback) {
+    callback.Run(ScopedPK11Slot(PK11_ReferenceSlot(tpm_slot_)));
+  }
 
+  ScopedPK11Slot GetSystemNSSKeySlot(
+      const base::Callback<void(ScopedPK11Slot)>& callback) {
+    DCHECK(thread_checker_.CalledOnValidThread());
     // TODO(mattm): chromeos::TPMTokenloader always calls
     // InitializeTPMTokenAndSystemSlot with slot 0.  If the system slot is
     // disabled, tpm_slot_ will be the first user's slot instead. Can that be
     // detected and return NULL instead?
-    if (tpm_token_enabled_for_nss_ && IsTPMTokenReady(base::Closure()))
-      return PK11_ReferenceSlot(tpm_slot_);
-    // If we were supposed to get the hardware token, but were
-    // unable to, return NULL rather than fall back to sofware.
-    return NULL;
+
+    base::Closure wrapped_callback;
+    if (!callback.is_null()) {
+      wrapped_callback =
+          base::Bind(&NSSInitSingleton::GetSystemNSSKeySlotCallback,
+                     base::Unretained(this) /* singleton is leaky */,
+                     callback);
+    }
+    if (IsTPMTokenReady(wrapped_callback))
+      return ScopedPK11Slot(PK11_ReferenceSlot(tpm_slot_));
+    return ScopedPK11Slot();
   }
 #endif
 
@@ -1000,8 +1011,9 @@ AutoSECMODListReadLock::~AutoSECMODListReadLock() {
 #endif  // defined(USE_NSS)
 
 #if defined(OS_CHROMEOS)
-PK11SlotInfo* GetSystemNSSKeySlot() {
-  return g_nss_singleton.Get().GetSystemNSSKeySlot();
+ScopedPK11Slot GetSystemNSSKeySlot(
+    const base::Callback<void(ScopedPK11Slot)>& callback) {
+  return g_nss_singleton.Get().GetSystemNSSKeySlot(callback);
 }
 
 void SetSystemKeySlotForTesting(ScopedPK11Slot slot) {

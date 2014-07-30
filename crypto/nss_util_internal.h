@@ -47,9 +47,11 @@ class CRYPTO_EXPORT AutoSECMODListReadLock {
 };
 
 #if defined(OS_CHROMEOS)
-// Returns a reference to the system-wide TPM slot. Caller must release returned
-// reference with PK11_FreeSlot.
-CRYPTO_EXPORT PK11SlotInfo* GetSystemNSSKeySlot() WARN_UNUSED_RESULT;
+// Returns a reference to the system-wide TPM slot if it is loaded. If it is not
+// loaded and |callback| is non-null, the |callback| will be run once the slot
+// is loaded.
+CRYPTO_EXPORT ScopedPK11Slot GetSystemNSSKeySlot(
+    const base::Callback<void(ScopedPK11Slot)>& callback) WARN_UNUSED_RESULT;
 
 // Sets the test system slot. If this was called before
 // InitializeTPMTokenAndSystemSlot and no system token is provided by the Chaps
