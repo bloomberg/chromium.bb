@@ -910,6 +910,13 @@ void WizardController::SetStatusAreaVisible(bool visible) {
   host_->SetStatusAreaVisible(visible);
 }
 
+void WizardController::OnHIDScreenNecessityCheck(bool screen_needed) {
+  if (screen_needed)
+    ShowHIDDetectionScreen();
+  else
+    ShowNetworkScreen();
+}
+
 void WizardController::AdvanceToScreen(const std::string& screen_name) {
   if (screen_name == kNetworkScreenName) {
     ShowNetworkScreen();
@@ -948,10 +955,15 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
   } else if (screen_name != kTestNoScreenName) {
     if (is_out_of_box_) {
       time_oobe_started_ = base::Time::Now();
-      if (CanShowHIDDetectionScreen())
-        ShowHIDDetectionScreen();
-      else
+      if (CanShowHIDDetectionScreen()) {
+        base::Callback<void(bool)> on_check = base::Bind(
+            &WizardController::OnHIDScreenNecessityCheck,
+            weak_factory_.GetWeakPtr());
+        oobe_display_->GetHIDDetectionScreenActor()->CheckIsScreenRequired(
+            on_check);
+      } else {
         ShowNetworkScreen();
+      }
     } else {
       ShowLoginScreen(LoginScreenContext());
     }

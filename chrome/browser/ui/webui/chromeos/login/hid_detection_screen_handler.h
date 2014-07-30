@@ -46,6 +46,8 @@ class HIDDetectionScreenHandler
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual void SetDelegate(Delegate* delegate) OVERRIDE;
+  virtual void CheckIsScreenRequired(
+      const base::Callback<void(bool)>& on_check_done) OVERRIDE;
 
   // BaseScreenHandler implementation:
   virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) OVERRIDE;
@@ -110,17 +112,17 @@ class HIDDetectionScreenHandler
   // keyboard device.
   void SendKeyboardDeviceNotification(base::DictionaryValue* params);
 
-  // Updates internal state and UI using list of connected devices.
+  // Updates internal state and UI (if ready) using list of connected devices.
   void ProcessConnectedDevicesList(const std::vector<InputDeviceInfo>& devices);
 
   // Checks for lack of mouse or keyboard. If found starts BT devices update.
   // Initiates BTAdapter if it's not active and BT devices update required.
   void TryInitiateBTDevicesUpdate();
 
-  // Processes list of input devices returned by InputServiceProxy on the first
-  // time the screen is initiated. Skips the screen if all required devices are
-  // present.
-  void OnGetInputDevicesListFirstTime(
+  // Processes list of input devices returned by InputServiceProxy on the check
+  // request. Calls the callback that expects true if screen is required.
+  void OnGetInputDevicesListForCheck(
+      const base::Callback<void(bool)>& on_check_done,
       const std::vector<InputDeviceInfo>& devices);
 
   // Processes list of input devices returned by InputServiceProxy on regular
@@ -166,10 +168,6 @@ class HIDDetectionScreenHandler
   // power BT adapter.
   void SetPoweredError();
 
-  // Special case uf UpdateDevice. Called on first show, skips the dialog if
-  // all necessary devices (mouse and keyboard) already connected.
-  void GetDevicesFirstTime();
-
   // Called for revision of active devices. If current-placement is available
   // for mouse or keyboard device, sets one of active devices as current or
   // tries to connect some BT device if no appropriate devices are connected.
@@ -211,8 +209,6 @@ class HIDDetectionScreenHandler
   InputDeviceInfo::Type keyboard_device_connect_type_;
 
   bool switch_on_adapter_when_ready_;
-
-  bool first_time_screen_show_;
 
   base::WeakPtrFactory<HIDDetectionScreenHandler> weak_ptr_factory_;
 

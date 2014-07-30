@@ -43,6 +43,7 @@
 #hid-mouse-label,
 #hid-keyboard-label {
   display: inline;
+  padding-left: 10px;
 }
 
 #hid-detection .label,
@@ -63,7 +64,7 @@
 }
 
 #hid-detection #hid-keyboard-pincode {
-  padding: 10px 0 20px 40px;
+  padding: 10px 0 20px 22px;
 }
 
 .searching #hid-keyboard-label-searching,

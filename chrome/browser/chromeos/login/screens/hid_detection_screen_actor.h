@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
+
 namespace chromeos {
 
 // Interface between HID detection screen and its representation.
@@ -31,6 +33,11 @@ class HIDDetectionScreenActor {
   virtual void Show() = 0;
   virtual void Hide() = 0;
   virtual void SetDelegate(Delegate* delegate) = 0;
+
+  // Checks if we should show the screen or enough devices already present.
+  // Calls corresponding set of actions based on the bool result.
+  virtual void CheckIsScreenRequired(
+      const base::Callback<void(bool)>& on_check_done) = 0;
 };
 
 }  // namespace chromeos

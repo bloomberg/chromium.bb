@@ -75,7 +75,6 @@ HIDDetectionScreenHandler::HIDDetectionScreenHandler(
       mouse_is_pairing_(false),
       keyboard_is_pairing_(false),
       switch_on_adapter_when_ready_(false),
-      first_time_screen_show_(true),
       weak_ptr_factory_(this) {
 }
 
@@ -110,9 +109,19 @@ void HIDDetectionScreenHandler::Show() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableDemoMode))
     core_oobe_actor_->InitDemoModeDetection();
   input_service_proxy_.AddObserver(this);
-  first_time_screen_show_ = true;
-  GetDevicesFirstTime();
+  UpdateDevices();
+
+  PrefService* local_state = g_browser_process->local_state();
+  int num_of_times_dialog_was_shown = local_state->GetInteger(
+      prefs::kTimesHIDDialogShown);
+  local_state->SetInteger(prefs::kTimesHIDDialogShown,
+                          num_of_times_dialog_was_shown + 1);
+
   ShowScreen(OobeUI::kScreenHIDDetection, NULL);
+  if (!pointing_device_id_.empty())
+    SendPointingDeviceNotification();
+  if (!keyboard_device_id_.empty())
+    SendKeyboardDeviceNotification(NULL);
 }
 
 void HIDDetectionScreenHandler::Hide() {
@@ -125,6 +134,14 @@ void HIDDetectionScreenHandler::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
   if (page_is_ready())
     Initialize();
+}
+
+void HIDDetectionScreenHandler::CheckIsScreenRequired(
+    const base::Callback<void(bool)>& on_check_done) {
+  input_service_proxy_.GetDevices(
+      base::Bind(&HIDDetectionScreenHandler::OnGetInputDevicesListForCheck,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 on_check_done));
 }
 
 void HIDDetectionScreenHandler::DeclareLocalizedValues(
@@ -165,21 +182,20 @@ void HIDDetectionScreenHandler::RegisterMessages() {
 }
 
 void HIDDetectionScreenHandler::HandleOnContinue() {
-  if (!first_time_screen_show_) {
-    // Continue button pressed.
-    ContinueScenarioType scenario_type;
-    if (!pointing_device_id_.empty() && !keyboard_device_id_.empty())
-      scenario_type = All_DEVICES_DETECTED;
-    else if (pointing_device_id_.empty())
-      scenario_type = KEYBOARD_DEVICE_ONLY_DETECTED;
-    else
-      scenario_type = POINTING_DEVICE_ONLY_DETECTED;
+  // Continue button pressed.
+  ContinueScenarioType scenario_type;
+  if (!pointing_device_id_.empty() && !keyboard_device_id_.empty())
+    scenario_type = All_DEVICES_DETECTED;
+  else if (pointing_device_id_.empty())
+    scenario_type = KEYBOARD_DEVICE_ONLY_DETECTED;
+  else
+    scenario_type = POINTING_DEVICE_ONLY_DETECTED;
 
-    UMA_HISTOGRAM_ENUMERATION(
-        "HIDDetection.OOBEDevicesDetectedOnContinuePressed",
-        scenario_type,
-        CONTINUE_SCENARIO_TYPE_SIZE);
-  }
+  UMA_HISTOGRAM_ENUMERATION(
+      "HIDDetection.OOBEDevicesDetectedOnContinuePressed",
+      scenario_type,
+      CONTINUE_SCENARIO_TYPE_SIZE);
+
   core_oobe_actor_->StopDemoModeDetection();
   if (delegate_)
     delegate_->OnExit();
@@ -361,12 +377,6 @@ void HIDDetectionScreenHandler::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kTimesHIDDialogShown, 0);
 }
 
-void HIDDetectionScreenHandler::GetDevicesFirstTime() {
-  input_service_proxy_.GetDevices(
-      base::Bind(&HIDDetectionScreenHandler::OnGetInputDevicesListFirstTime,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
 void HIDDetectionScreenHandler::UpdateDevices() {
   input_service_proxy_.GetDevices(
       base::Bind(&HIDDetectionScreenHandler::OnGetInputDevicesList,
@@ -400,13 +410,15 @@ void HIDDetectionScreenHandler::ProcessConnectedDevicesList(
       pointing_device_id_ = it->id;
       pointing_device_name_ = it->name;
       pointing_device_connect_type_ = it->type;
-      SendPointingDeviceNotification();
+      if (page_is_ready())
+        SendPointingDeviceNotification();
     }
     if (keyboard_device_id_.empty() && it->is_keyboard) {
       keyboard_device_id_ = it->id;
       keyboard_device_name_ = it->name;
       keyboard_device_connect_type_ = it->type;
-      SendKeyboardDeviceNotification(NULL);
+      if (page_is_ready())
+        SendKeyboardDeviceNotification(NULL);
     }
   }
 }
@@ -430,27 +442,18 @@ void HIDDetectionScreenHandler::TryInitiateBTDevicesUpdate() {
   }
 }
 
-void HIDDetectionScreenHandler::OnGetInputDevicesListFirstTime(
+void HIDDetectionScreenHandler::OnGetInputDevicesListForCheck(
+    const base::Callback<void(bool)>& on_check_done,
     const std::vector<InputDeviceInfo>& devices) {
   ProcessConnectedDevicesList(devices);
 
-  // Skip screen if both devices are present.
+  // Screen is not required if both devices are present.
   bool all_devices_autodetected = !pointing_device_id_.empty() &&
                                   !keyboard_device_id_.empty();
   UMA_HISTOGRAM_BOOLEAN("HIDDetection.OOBEDialogShown",
                         !all_devices_autodetected);
-  if (all_devices_autodetected) {
-    HandleOnContinue();
-    return;
-  }
-  PrefService* local_state = g_browser_process->local_state();
-  int num_of_times_dialog_was_shown = local_state->GetInteger(
-      prefs::kTimesHIDDialogShown);
-  local_state->SetInteger(prefs::kTimesHIDDialogShown,
-                          num_of_times_dialog_was_shown + 1);
-  first_time_screen_show_ = false;
 
-  TryInitiateBTDevicesUpdate();
+  on_check_done.Run(!all_devices_autodetected);
 }
 
 void HIDDetectionScreenHandler::OnGetInputDevicesList(

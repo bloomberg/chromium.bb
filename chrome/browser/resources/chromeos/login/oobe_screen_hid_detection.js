@@ -152,21 +152,5 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
       this.setDeviceBlockState_('hid-mouse-block', 'searching');
       this.setDeviceBlockState_('hid-keyboard-block', 'searching');
     },
-
-    addBluetoothDevice: function(device) {
-      // One device can be in the process of pairing.  If found, display
-      // the Bluetooth pairing overlay.
-      if (device.pairing)
-        this.showPairingLayout(device);
-    },
-
-    /**
-     * Displays the pairing overlay.
-     * @param {Object} device Description of the Bluetooth device.
-     */
-    showPairingLayout: function(device) {
-      BluetoothPairing.getInstance().update(device);
-      OptionsPage.showPageByName('bluetoothPairing', false);
-    },
   };
 });

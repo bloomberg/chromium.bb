@@ -201,6 +201,9 @@ class WizardController : public ScreenObserver {
   // Resumes a pending login screen.
   void ResumeLoginScreen();
 
+  // Invokes corresponding first OOBE screen.
+  void OnHIDScreenNecessityCheck(bool screen_needed);
+
   // Exit handlers:
   void OnHIDDetectionCompleted();
   void OnNetworkConnected();
