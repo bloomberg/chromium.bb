@@ -14,6 +14,7 @@
 // See http://crbug.com/343612
 #if !defined(OS_ANDROID)
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/apps/chrome_app_window_delegate.h"
 #endif
 
@@ -41,7 +42,8 @@ apps::AppWindow* ChromeAppsClient::CreateAppWindow(
 #if defined(OS_ANDROID)
   return NULL;
 #else
-  return new apps::AppWindow(context, new ChromeAppWindowDelegate, extension);
+  return new apps::AppWindow(
+      context, new ChromeAppDelegate, new ChromeAppWindowDelegate, extension);
 #endif
 }
 

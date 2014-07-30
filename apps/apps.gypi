@@ -23,6 +23,7 @@
         '<(grit_out_dir)',
       ],
       'sources': [
+        'app_delegate.h',
         'app_lifetime_monitor.cc',
         'app_lifetime_monitor.h',
         'app_lifetime_monitor_factory.cc',

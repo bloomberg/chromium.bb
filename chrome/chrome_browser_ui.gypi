@@ -1347,6 +1347,8 @@
       'browser/ui/auto_login_infobar_delegate.h',
     ],
     'chrome_browser_ui_non_android_sources': [
+      'browser/ui/apps/chrome_app_delegate.cc',
+      'browser/ui/apps/chrome_app_delegate.h',
       'browser/ui/apps/chrome_app_window_delegate.cc',
       'browser/ui/apps/chrome_app_window_delegate.h',
       'browser/ui/autofill/account_chooser_model.cc',

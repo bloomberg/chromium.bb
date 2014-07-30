@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "apps/app_delegate.h"
 #include "apps/app_window_geometry_cache.h"
 #include "apps/app_window_registry.h"
 #include "apps/apps_client.h"
@@ -230,11 +231,13 @@ AppWindow::Delegate::~Delegate() {}
 // AppWindow
 
 AppWindow::AppWindow(BrowserContext* context,
+                     AppDelegate* app_delegate,
                      Delegate* delegate,
                      const extensions::Extension* extension)
     : browser_context_(context),
       extension_id_(extension->id()),
       window_type_(WINDOW_TYPE_DEFAULT),
+      app_delegate_(app_delegate),
       delegate_(delegate),
       image_loader_ptr_factory_(this),
       fullscreen_types_(FULLSCREEN_TYPE_NONE),
@@ -262,7 +265,7 @@ void AppWindow::Init(const GURL& url,
           switches::kEnableAppsShowOnFirstPaint)) {
     content::WebContentsObserver::Observe(web_contents);
   }
-  delegate_->InitWebContents(web_contents);
+  app_delegate_->InitWebContents(web_contents);
 
   WebContentsModalDialogManager::CreateForWebContents(web_contents);
   // TODO(jamescook): Delegate out this creation.
@@ -367,7 +370,7 @@ void AppWindow::RequestMediaAccessPermission(
   if (!extension)
     return;
 
-  delegate_->RequestMediaAccessPermission(
+  app_delegate_->RequestMediaAccessPermission(
       web_contents, request, callback, extension);
 }
 
@@ -395,7 +398,7 @@ WebContents* AppWindow::OpenURLFromTab(WebContents* source,
   }
 
   WebContents* contents =
-      delegate_->OpenURLFromTab(browser_context_, source, params);
+      app_delegate_->OpenURLFromTab(browser_context_, source, params);
   if (!contents) {
     AddMessageToDevToolsConsole(
         content::CONSOLE_MESSAGE_LEVEL_ERROR,
@@ -414,12 +417,12 @@ void AppWindow::AddNewContents(WebContents* source,
                                bool user_gesture,
                                bool* was_blocked) {
   DCHECK(new_contents->GetBrowserContext() == browser_context_);
-  delegate_->AddNewContents(browser_context_,
-                            new_contents,
-                            disposition,
-                            initial_pos,
-                            user_gesture,
-                            was_blocked);
+  app_delegate_->AddNewContents(browser_context_,
+                                new_contents,
+                                disposition,
+                                initial_pos,
+                                user_gesture,
+                                was_blocked);
 }
 
 bool AppWindow::PreHandleKeyboardEvent(
@@ -831,7 +834,7 @@ void AppWindow::DidDownloadFavicon(
   // whose height >= the preferred size.
   int largest_index = 0;
   for (size_t i = 1; i < bitmaps.size(); ++i) {
-    if (bitmaps[i].height() < delegate_->PreferredIconSize())
+    if (bitmaps[i].height() < app_delegate_->PreferredIconSize())
       break;
     largest_index = i;
   }
@@ -866,7 +869,7 @@ void AppWindow::UpdateExtensionAppIcon() {
       new extensions::IconImage(browser_context(),
                                 extension,
                                 extensions::IconsInfo::GetIcons(extension),
-                                delegate_->PreferredIconSize(),
+                                app_delegate_->PreferredIconSize(),
                                 default_icon,
                                 this));
 
@@ -939,8 +942,8 @@ bool AppWindow::ShouldSuppressDialogs() { return true; }
 content::ColorChooser* AppWindow::OpenColorChooser(
     WebContents* web_contents,
     SkColor initial_color,
-    const std::vector<content::ColorSuggestion>& suggestionss) {
-  return delegate_->ShowColorChooser(web_contents, initial_color);
+    const std::vector<content::ColorSuggestion>& suggestions) {
+  return app_delegate_->ShowColorChooser(web_contents, initial_color);
 }
 
 void AppWindow::RunFileChooser(WebContents* tab,
@@ -953,7 +956,7 @@ void AppWindow::RunFileChooser(WebContents* tab,
     return;
   }
 
-  delegate_->RunFileChooser(tab, params);
+  app_delegate_->RunFileChooser(tab, params);
 }
 
 bool AppWindow::IsPopupOrPanel(const WebContents* source) const { return true; }
@@ -1020,11 +1023,11 @@ void AppWindow::Observe(int type,
 
 void AppWindow::SetWebContentsBlocked(content::WebContents* web_contents,
                                       bool blocked) {
-  delegate_->SetWebContentsBlocked(web_contents, blocked);
+  app_delegate_->SetWebContentsBlocked(web_contents, blocked);
 }
 
 bool AppWindow::IsWebContentsVisible(content::WebContents* web_contents) {
-  return delegate_->IsWebContentsVisible(web_contents);
+  return app_delegate_->IsWebContentsVisible(web_contents);
 }
 
 WebContentsModalDialogHost* AppWindow::GetWebContentsModalDialogHost() {

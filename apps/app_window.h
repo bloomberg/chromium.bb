@@ -49,6 +49,7 @@ class BaseWindow;
 
 namespace apps {
 
+class AppDelegate;
 class NativeAppWindow;
 
 // Manages the web contents for app windows. The implementation for this
@@ -199,41 +200,9 @@ class AppWindow : public content::NotificationObserver,
    public:
     virtual ~Delegate();
 
-    // General initialization.
-    virtual void InitWebContents(content::WebContents* web_contents) = 0;
     virtual NativeAppWindow* CreateNativeAppWindow(
         AppWindow* window,
         const CreateParams& params) = 0;
-
-    // Link handling.
-    virtual content::WebContents* OpenURLFromTab(
-        content::BrowserContext* context,
-        content::WebContents* source,
-        const content::OpenURLParams& params) = 0;
-    virtual void AddNewContents(content::BrowserContext* context,
-                                content::WebContents* new_contents,
-                                WindowOpenDisposition disposition,
-                                const gfx::Rect& initial_pos,
-                                bool user_gesture,
-                                bool* was_blocked) = 0;
-
-    // Feature support.
-    virtual content::ColorChooser* ShowColorChooser(
-        content::WebContents* web_contents,
-        SkColor initial_color) = 0;
-    virtual void RunFileChooser(content::WebContents* tab,
-                                const content::FileChooserParams& params) = 0;
-    virtual void RequestMediaAccessPermission(
-        content::WebContents* web_contents,
-        const content::MediaStreamRequest& request,
-        const content::MediaResponseCallback& callback,
-        const extensions::Extension* extension) = 0;
-    virtual int PreferredIconSize() = 0;
-
-    // Web contents modal dialog support.
-    virtual void SetWebContentsBlocked(content::WebContents* web_contents,
-                                       bool blocked) = 0;
-    virtual bool IsWebContentsVisible(content::WebContents* web_contents) = 0;
   };
 
   // Convert draggable regions in raw format to SkRegion format. Caller is
@@ -244,8 +213,9 @@ class AppWindow : public content::NotificationObserver,
   // The constructor and Init methods are public for constructing a AppWindow
   // with a non-standard render interface (e.g. v1 apps using Ash Panels).
   // Normally AppWindow::Create should be used.
-  // The constructed app window takes ownership of |delegate|.
+  // Takes ownership of |app_delegate| and |delegate|.
   AppWindow(content::BrowserContext* context,
+            AppDelegate* app_delegate,
             Delegate* delegate,
             const extensions::Extension* extension);
 
@@ -547,6 +517,7 @@ class AppWindow : public content::NotificationObserver,
 
   scoped_ptr<NativeAppWindow> native_app_window_;
   scoped_ptr<AppWindowContents> app_window_contents_;
+  scoped_ptr<AppDelegate> app_delegate_;
   scoped_ptr<Delegate> delegate_;
 
   // Manages popup windows (bubbles, tab-modals) visible overlapping the
