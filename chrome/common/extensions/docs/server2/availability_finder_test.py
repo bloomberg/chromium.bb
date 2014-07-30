@@ -238,6 +238,11 @@ class AvailabilityFinderTest(unittest.TestCase):
       assertEquals(True, self._branch_utility.GetChannelInfo('beta'),
           tabs_graph.Lookup('tabs', 'functions', 'restrictedFunc'))
 
+      # Test a scheduled node.
+      assertEquals(True, self._branch_utility.GetChannelInfo('dev'),
+          tabs_graph.Lookup('tabs', 'functions', 'scheduledFunc'),
+          scheduled=31)
+
       # Nothing new in version 24 or 23.
 
       assertEquals(True, self._branch_utility.GetStableChannelInfo(22),

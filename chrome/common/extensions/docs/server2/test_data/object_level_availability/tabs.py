@@ -318,11 +318,7 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
   },
   '1599': {
     'api': {
-      '_api_features.json': json.dumps({
-        'tabs.scheduledFunc': {
-          'channel': 'stable'
-        }
-      }),
+      '_api_features.json': "{}",
       '_manifest_features.json': "{}",
       '_permission_features.json': "{}",
       'fake_tabs.idl': FAKE_TABS_IDL,
@@ -388,10 +384,6 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
           },
           {
             'name': 'restrictedFunc'
-          },
-          {
-            'name': 'scheduledFunc',
-            'parameters': []
           }
         ],
         'events': [
@@ -428,9 +420,6 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
   '1547': {
     'api': {
       '_api_features.json': json.dumps({
-        'tabs.scheduledFunc': {
-          'channel': 'stable'
-        },
         'tabs.restrictedFunc': {
           'channel': 'dev'
         }
@@ -497,10 +486,6 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
           },
           {
             'name': 'restrictedFunc'
-          },
-          {
-            'name': 'scheduledFunc',
-            'parameters': []
           }
         ],
         'events': [
@@ -525,11 +510,7 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
   },
   '1500': {
     'api': {
-      '_api_features.json': json.dumps({
-        'tabs.scheduledFunc': {
-          'channel': 'stable'
-        }
-      }),
+      '_api_features.json': "{}",
       '_manifest_features.json': "{}",
       '_permission_features.json': "{}",
       'fake_tabs.idl': FAKE_TABS_IDL,
@@ -587,10 +568,6 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
                 ]
               },
             ]
-          },
-          {
-            'name': 'scheduledFunc',
-            'parameters': []
           }
         ],
         'events': [

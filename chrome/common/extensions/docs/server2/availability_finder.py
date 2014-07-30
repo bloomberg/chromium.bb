@@ -312,11 +312,16 @@ class AvailabilityFinder(object):
                                                    file_system,
                                                    channel_info,
                                                    earliest_channel_info)
-    channel_info = self._file_system_iterator.Descending(
-        self._branch_utility.GetChannelInfo('dev'),
-        check_node_availability)
+    channel_info = (self._file_system_iterator.Descending(
+        self._branch_utility.GetChannelInfo('dev'), check_node_availability) or
+        earliest_channel_info)
 
-    return AvailabilityInfo(channel_info or earliest_channel_info)
+    if channel_info.channel == 'stable':
+      scheduled = None
+    else:
+      scheduled = self._FindScheduled(node_name)
+
+    return AvailabilityInfo(channel_info, scheduled=scheduled)
 
   def GetAPIAvailability(self, api_name):
     '''Performs a search for an API's top-level availability by using a
@@ -425,9 +430,5 @@ class AvailabilityFinder(object):
         self.GetAPIAvailability(api_name).channel_info,
         update_availability_graph)
 
-    # TODO(ahernandez): There are currently no API nodes that have a
-    # scheduled availability. https://codereview.chromium.org/400833002/
-    # should be implemented when there is a need to determine scheduled
-    # availability at the object level.
     self._node_level_object_store.Set(api_name, availability_graph)
     return availability_graph
