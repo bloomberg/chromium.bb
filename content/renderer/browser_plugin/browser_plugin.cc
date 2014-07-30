@@ -61,7 +61,6 @@ BrowserPlugin::BrowserPlugin(RenderViewImpl* render_view,
       auto_navigate_(auto_navigate),
       mouse_locked_(false),
       browser_plugin_manager_(render_view->GetBrowserPluginManager()),
-      embedder_frame_url_(frame->document().url()),
       weak_ptr_factory_(this) {
 }
 
@@ -293,7 +292,6 @@ void BrowserPlugin::Attach(int guest_instance_id,
   attach_params.focused = ShouldGuestBeFocused();
   attach_params.visible = visible_;
   attach_params.opaque = !GetAllowTransparencyAttribute();
-  attach_params.embedder_frame_url = embedder_frame_url_;
   attach_params.origin = plugin_rect().origin();
   GetSizeParams(&attach_params.auto_size_params,
                 &attach_params.resize_guest_params,

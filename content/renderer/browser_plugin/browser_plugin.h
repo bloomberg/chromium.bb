@@ -299,9 +299,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // Used to identify the plugin to WebBindings.
   scoped_ptr<struct _NPP> npp_;
 
-  // URL for the embedder frame.
-  const GURL embedder_frame_url_;
-
   std::vector<EditCommand> edit_commands_;
 
   // Weak factory used in v8 |MakeWeak| callback, since the v8 callback might
