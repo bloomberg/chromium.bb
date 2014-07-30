@@ -326,7 +326,6 @@ struct SSLSocketDataProvider {
   MockConnect connect;
   SSLClientSocket::NextProtoStatus next_proto_status;
   std::string next_proto;
-  std::string server_protos;
   bool was_npn_negotiated;
   NextProto protocol_negotiated;
   bool client_cert_sent;
@@ -699,8 +698,7 @@ class MockClientSocket : public SSLClientSocket {
                                    unsigned char* out,
                                    unsigned int outlen) OVERRIDE;
   virtual int GetTLSUniqueChannelBinding(std::string* out) OVERRIDE;
-  virtual NextProtoStatus GetNextProto(std::string* proto,
-                                       std::string* server_protos) OVERRIDE;
+  virtual NextProtoStatus GetNextProto(std::string* proto) OVERRIDE;
   virtual ChannelIDService* GetChannelIDService() const OVERRIDE;
 
  protected:
@@ -952,8 +950,7 @@ class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
   // SSLClientSocket implementation.
   virtual void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info)
       OVERRIDE;
-  virtual NextProtoStatus GetNextProto(std::string* proto,
-                                       std::string* server_protos) OVERRIDE;
+  virtual NextProtoStatus GetNextProto(std::string* proto) OVERRIDE;
   virtual bool set_was_npn_negotiated(bool negotiated) OVERRIDE;
   virtual void set_protocol_negotiated(NextProto protocol_negotiated) OVERRIDE;
   virtual NextProto GetNegotiatedProtocol() const OVERRIDE;

@@ -408,7 +408,6 @@ struct HandshakeState {
   void Reset() {
     next_proto_status = SSLClientSocket::kNextProtoUnsupported;
     next_proto.clear();
-    server_protos.clear();
     channel_id_sent = false;
     server_cert_chain.Reset(NULL);
     server_cert = NULL;
@@ -422,8 +421,6 @@ struct HandshakeState {
   // negotiated protocol stored in |next_proto|.
   SSLClientSocket::NextProtoStatus next_proto_status;
   std::string next_proto;
-  // If the server supports NPN, the protocols supported by the server.
-  std::string server_protos;
 
   // True if a channel ID was sent.
   bool channel_id_sent;
@@ -972,30 +969,11 @@ bool SSLClientSocketNSS::Core::Init(PRFileDesc* socket,
   SECStatus rv = SECSuccess;
 
   if (!ssl_config_.next_protos.empty()) {
-    size_t wire_length = 0;
-    for (std::vector<std::string>::const_iterator
-         i = ssl_config_.next_protos.begin();
-         i != ssl_config_.next_protos.end(); ++i) {
-      if (i->size() > 255) {
-        LOG(WARNING) << "Ignoring overlong NPN/ALPN protocol: " << *i;
-        continue;
-      }
-      wire_length += i->size();
-      wire_length++;
-    }
-    scoped_ptr<uint8[]> wire_protos(new uint8[wire_length]);
-    uint8* dst = wire_protos.get();
-    for (std::vector<std::string>::const_iterator
-         i = ssl_config_.next_protos.begin();
-         i != ssl_config_.next_protos.end(); i++) {
-      if (i->size() > 255)
-        continue;
-      *dst++ = i->size();
-      memcpy(dst, i->data(), i->size());
-      dst += i->size();
-    }
-    DCHECK_EQ(dst, wire_protos.get() + wire_length);
-    rv = SSL_SetNextProtoNego(nss_fd_, wire_protos.get(), wire_length);
+    std::vector<uint8_t> wire_protos =
+        SerializeNextProtos(ssl_config_.next_protos);
+    rv = SSL_SetNextProtoNego(
+        nss_fd_, wire_protos.empty() ? NULL : &wire_protos[0],
+        wire_protos.size());
     if (rv != SECSuccess)
       LogFailedNSSFunction(*weak_net_log_, "SSL_SetNextProtoNego", "");
     rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_ALPN, PR_TRUE);
@@ -2902,10 +2880,8 @@ int SSLClientSocketNSS::GetTLSUniqueChannelBinding(std::string* out) {
 }
 
 SSLClientSocket::NextProtoStatus
-SSLClientSocketNSS::GetNextProto(std::string* proto,
-                                 std::string* server_protos) {
+SSLClientSocketNSS::GetNextProto(std::string* proto) {
   *proto = core_->state().next_proto;
-  *server_protos = core_->state().server_protos;
   return core_->state().next_proto_status;
 }
 

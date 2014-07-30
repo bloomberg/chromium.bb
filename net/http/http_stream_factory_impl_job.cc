@@ -57,15 +57,12 @@ base::Value* NetLogHttpStreamJobCallback(const GURL* original_url,
 base::Value* NetLogHttpStreamProtoCallback(
     const SSLClientSocket::NextProtoStatus status,
     const std::string* proto,
-    const std::string* server_protos,
     NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
 
   dict->SetString("next_proto_status",
                   SSLClientSocket::NextProtoStatusToString(status));
   dict->SetString("proto", *proto);
-  dict->SetString("server_protos",
-                  SSLClientSocket::ServerProtosToString(*server_protos));
   return dict;
 }
 
@@ -923,16 +920,15 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
       if (ssl_socket->WasNpnNegotiated()) {
         was_npn_negotiated_ = true;
         std::string proto;
-        std::string server_protos;
         SSLClientSocket::NextProtoStatus status =
-            ssl_socket->GetNextProto(&proto, &server_protos);
+            ssl_socket->GetNextProto(&proto);
         NextProto protocol_negotiated =
             SSLClientSocket::NextProtoFromString(proto);
         protocol_negotiated_ = protocol_negotiated;
         net_log_.AddEvent(
             NetLog::TYPE_HTTP_STREAM_REQUEST_PROTO,
             base::Bind(&NetLogHttpStreamProtoCallback,
-                       status, &proto, &server_protos));
+                       status, &proto));
         if (ssl_socket->was_spdy_negotiated())
           SwitchToSpdyMode();
       }

@@ -70,8 +70,7 @@ class SSLClientSocketNSS : public SSLClientSocket {
   // SSLClientSocket implementation.
   virtual void GetSSLCertRequestInfo(
       SSLCertRequestInfo* cert_request_info) OVERRIDE;
-  virtual NextProtoStatus GetNextProto(std::string* proto,
-                                       std::string* server_protos) OVERRIDE;
+  virtual NextProtoStatus GetNextProto(std::string* proto) OVERRIDE;
 
   // SSLSocket implementation.
   virtual int ExportKeyingMaterial(const base::StringPiece& label,

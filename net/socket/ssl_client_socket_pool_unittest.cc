@@ -466,8 +466,7 @@ TEST_P(SSLClientSocketPoolTest, DirectGotSPDY) {
   SSLClientSocket* ssl_socket = static_cast<SSLClientSocket*>(handle.socket());
   EXPECT_TRUE(ssl_socket->WasNpnNegotiated());
   std::string proto;
-  std::string server_protos;
-  ssl_socket->GetNextProto(&proto, &server_protos);
+  ssl_socket->GetNextProto(&proto);
   EXPECT_EQ(GetParam(), SSLClientSocket::NextProtoFromString(proto));
 }
 
@@ -498,8 +497,7 @@ TEST_P(SSLClientSocketPoolTest, DirectGotBonusSPDY) {
   SSLClientSocket* ssl_socket = static_cast<SSLClientSocket*>(handle.socket());
   EXPECT_TRUE(ssl_socket->WasNpnNegotiated());
   std::string proto;
-  std::string server_protos;
-  ssl_socket->GetNextProto(&proto, &server_protos);
+  ssl_socket->GetNextProto(&proto);
   EXPECT_EQ(GetParam(), SSLClientSocket::NextProtoFromString(proto));
 }
 

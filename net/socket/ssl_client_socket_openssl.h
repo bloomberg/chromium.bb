@@ -59,8 +59,7 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   // SSLClientSocket implementation.
   virtual void GetSSLCertRequestInfo(
       SSLCertRequestInfo* cert_request_info) OVERRIDE;
-  virtual NextProtoStatus GetNextProto(std::string* proto,
-                                       std::string* server_protos) OVERRIDE;
+  virtual NextProtoStatus GetNextProto(std::string* proto) OVERRIDE;
   virtual ChannelIDService* GetChannelIDService() const OVERRIDE;
 
   // SSLSocket implementation.
@@ -251,7 +250,6 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   State next_handshake_state_;
   NextProtoStatus npn_status_;
   std::string npn_proto_;
-  std::string server_protos_;
   // Written by the |channel_id_service_|.
   std::string channel_id_private_key_;
   std::string channel_id_cert_;

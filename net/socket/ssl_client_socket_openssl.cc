@@ -386,9 +386,8 @@ void SSLClientSocketOpenSSL::GetSSLCertRequestInfo(
 }
 
 SSLClientSocket::NextProtoStatus SSLClientSocketOpenSSL::GetNextProto(
-    std::string* proto, std::string* server_protos) {
+    std::string* proto) {
   *proto = npn_proto_;
-  *server_protos = server_protos_;
   return npn_status_;
 }
 
@@ -488,6 +487,9 @@ void SSLClientSocketOpenSSL::Disconnect() {
   cert_authorities_.clear();
   cert_key_types_.clear();
   client_auth_cert_needed_ = false;
+
+  npn_status_ = kNextProtoUnsupported;
+  npn_proto_.clear();
 
   channel_id_xtn_negotiated_ = false;
   channel_id_request_handle_.Cancel();
@@ -772,6 +774,13 @@ int SSLClientSocketOpenSSL::Init() {
     SSL_enable_tls_channel_id(ssl_);
   }
 
+  if (!ssl_config_.next_protos.empty()) {
+    std::vector<uint8_t> wire_protos =
+        SerializeNextProtos(ssl_config_.next_protos);
+    SSL_set_alpn_protos(ssl_, wire_protos.empty() ? NULL : &wire_protos[0],
+                        wire_protos.size());
+  }
+
   return OK;
 }
 
@@ -835,7 +844,19 @@ int SSLClientSocketOpenSSL::DoHandshake() {
       DVLOG(2) << "Result of session reuse for " << host_and_port_.ToString()
                << " is: " << (SSL_session_reused(ssl_) ? "Success" : "Fail");
     }
-    // SSL handshake is completed.  Let's verify the certificate.
+
+    // SSL handshake is completed. If NPN wasn't negotiated, see if ALPN was.
+    if (npn_status_ == kNextProtoUnsupported) {
+      const uint8_t* alpn_proto = NULL;
+      unsigned alpn_len = 0;
+      SSL_get0_alpn_selected(ssl_, &alpn_proto, &alpn_len);
+      if (alpn_len > 0) {
+        npn_proto_.assign(reinterpret_cast<const char*>(alpn_proto), alpn_len);
+        npn_status_ = kNextProtoNegotiated;
+      }
+    }
+
+    // Verify the certificate.
     const bool got_cert = !!UpdateServerCert();
     DCHECK(got_cert);
     net_log_.AddEvent(
@@ -1470,7 +1491,6 @@ int SSLClientSocketOpenSSL::SelectNextProtoCallback(unsigned char** out,
   }
 
   npn_proto_.assign(reinterpret_cast<const char*>(*out), *outlen);
-  server_protos_.assign(reinterpret_cast<const char*>(in), inlen);
   DVLOG(2) << "next protocol: '" << npn_proto_ << "' status: " << npn_status_;
   return SSL_TLSEXT_ERR_OK;
 }

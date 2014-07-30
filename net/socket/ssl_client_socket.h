@@ -93,19 +93,13 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   //   kNextProtoNegotiated:  *proto is set to the negotiated protocol.
   //   kNextProtoNoOverlap:   *proto is set to the first protocol in the
   //                          supported list.
-  // *server_protos is set to the server advertised protocols.
-  virtual NextProtoStatus GetNextProto(std::string* proto,
-                                       std::string* server_protos) = 0;
+  virtual NextProtoStatus GetNextProto(std::string* proto) = 0;
 
   static NextProto NextProtoFromString(const std::string& proto_string);
 
   static const char* NextProtoToString(NextProto next_proto);
 
   static const char* NextProtoStatusToString(const NextProtoStatus status);
-
-  // Can be used with the second argument(|server_protos|) of |GetNextProto| to
-  // construct a comma separated string of server advertised protocols.
-  static std::string ServerProtosToString(const std::string& server_protos);
 
   static bool IgnoreCertError(int error, int load_flags);
 
@@ -154,6 +148,11 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   static bool IsChannelIDEnabled(
       const SSLConfig& ssl_config,
       ChannelIDService* channel_id_service);
+
+  // Serializes |next_protos| in the wire format for ALPN: protocols are listed
+  // in order, each prefixed by a one-byte length.
+  static std::vector<uint8_t> SerializeNextProtos(
+      const std::vector<std::string>& next_protos);
 
   // For unit testing only.
   // Returns the unverified certificate chain as presented by server.

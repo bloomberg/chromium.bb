@@ -80,21 +80,6 @@ const char* SSLClientSocket::NextProtoStatusToString(
   return NULL;
 }
 
-// static
-std::string SSLClientSocket::ServerProtosToString(
-    const std::string& server_protos) {
-  const char* protos = server_protos.c_str();
-  size_t protos_len = server_protos.length();
-  std::vector<std::string> server_protos_with_commas;
-  for (size_t i = 0; i < protos_len; ) {
-    const size_t len = protos[i];
-    std::string proto_str(&protos[i + 1], len);
-    server_protos_with_commas.push_back(proto_str);
-    i += len + 1;
-  }
-  return JoinString(server_protos_with_commas, ',');
-}
-
 bool SSLClientSocket::WasNpnNegotiated() const {
   return was_npn_negotiated_;
 }
@@ -208,6 +193,42 @@ bool SSLClientSocket::IsChannelIDEnabled(
     return false;
   }
   return true;
+}
+
+// static
+std::vector<uint8_t> SSLClientSocket::SerializeNextProtos(
+    const std::vector<std::string>& next_protos) {
+  // Do a first pass to determine the total length.
+  size_t wire_length = 0;
+  for (std::vector<std::string>::const_iterator i = next_protos.begin();
+       i != next_protos.end(); ++i) {
+    if (i->size() > 255) {
+      LOG(WARNING) << "Ignoring overlong NPN/ALPN protocol: " << *i;
+      continue;
+    }
+    if (i->size() == 0) {
+      LOG(WARNING) << "Ignoring empty NPN/ALPN protocol";
+      continue;
+    }
+    wire_length += i->size();
+    wire_length++;
+  }
+
+  // Allocate memory for the result and fill it in.
+  std::vector<uint8_t> wire_protos;
+  wire_protos.reserve(wire_length);
+  for (std::vector<std::string>::const_iterator i = next_protos.begin();
+       i != next_protos.end(); i++) {
+    if (i->size() == 0 || i->size() > 255)
+      continue;
+    wire_protos.push_back(i->size());
+    wire_protos.resize(wire_protos.size() + i->size());
+    memcpy(&wire_protos[wire_protos.size() - i->size()],
+           i->data(), i->size());
+  }
+  DCHECK_EQ(wire_protos.size(), wire_length);
+
+  return wire_protos;
 }
 
 }  // namespace net
