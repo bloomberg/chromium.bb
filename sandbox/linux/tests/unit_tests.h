@@ -58,6 +58,9 @@ bool IsRunningOnValgrind();
 #define DEATH_MESSAGE(msg)          \
   sandbox::UnitTests::DeathMessage, \
       static_cast<const void*>(static_cast<const char*>(msg))
+#define DEATH_SEGV_MESSAGE(msg)         \
+  sandbox::UnitTests::DeathSEGVMessage, \
+      static_cast<const void*>(static_cast<const char*>(msg))
 #define DEATH_EXIT_CODE(rc)          \
   sandbox::UnitTests::DeathExitCode, \
       reinterpret_cast<void*>(static_cast<intptr_t>(rc))
@@ -147,6 +150,16 @@ class UnitTests {
   // message. This method is useful for checking assertion failures such as
   // in SANDBOX_ASSERT() and/or SANDBOX_DIE().
   static void DeathMessage(int status, const std::string& msg, const void* aux);
+
+  // Like DeathMessage() but the process must be terminated with a segmentation
+  // fault.
+  // Implementation detail: On Linux (but not on Android), this does check for
+  // the return value of our default signal handler rather than for the actual
+  // reception of a SIGSEGV.
+  // TODO(jln): make this more robust.
+  static void DeathSEGVMessage(int status,
+                               const std::string& msg,
+                               const void* aux);
 
   // A DeathCheck method that verifies that the test completed with a
   // particular exit code. If the test output any messages to stderr, they are

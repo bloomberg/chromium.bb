@@ -41,6 +41,18 @@ SANDBOX_DEATH_TEST(UnitTests,
   _exit(1);
 }
 
+SANDBOX_DEATH_TEST(UnitTests,
+                   SEGVDeathWithMessage,
+                   DEATH_SEGV_MESSAGE("Hello")) {
+  LOG(ERROR) << "Hello";
+  while (1) {
+    volatile char* addr = reinterpret_cast<volatile char*>(NULL);
+    *addr = '\0';
+  }
+
+  _exit(2);
+}
+
 SANDBOX_TEST_ALLOW_NOISE(UnitTests, NoisyTest) {
   LOG(ERROR) << "The cow says moo!";
 }

@@ -144,7 +144,7 @@ BPF_TEST_C(BaselinePolicy, CreateThread, BaselinePolicy) {
 
 BPF_DEATH_TEST_C(BaselinePolicy,
                  DisallowedCloneFlagCrashes,
-                 DEATH_MESSAGE(GetCloneErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(GetCloneErrorMessageContentForTests()),
                  BaselinePolicy) {
   pid_t pid = syscall(__NR_clone, CLONE_THREAD | SIGCHLD);
   HandlePostForkReturn(pid);
@@ -152,11 +152,11 @@ BPF_DEATH_TEST_C(BaselinePolicy,
 
 BPF_DEATH_TEST_C(BaselinePolicy,
                  DisallowedKillCrashes,
-                 DEATH_MESSAGE(GetKillErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(GetKillErrorMessageContentForTests()),
                  BaselinePolicy) {
   BPF_ASSERT_NE(1, getpid());
   kill(1, 0);
-  _exit(1);
+  _exit(0);
 }
 
 BPF_TEST_C(BaselinePolicy, CanKillSelf, BaselinePolicy) {
@@ -179,7 +179,7 @@ BPF_TEST_C(BaselinePolicy, Socketpair, BaselinePolicy) {
 #if defined(__x86_64__) || defined(__arm__)
 BPF_DEATH_TEST_C(BaselinePolicy,
                  SocketpairWrongDomain,
-                 DEATH_MESSAGE(GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(GetErrorMessageContentForTests()),
                  BaselinePolicy) {
   int sv[2];
   ignore_result(socketpair(AF_INET, SOCK_STREAM, 0, sv));
@@ -215,13 +215,13 @@ BPF_TEST_C(BaselinePolicy, EPERM_getcwd, BaselinePolicy) {
 // the machine. Some thoughts have been given when hand-picking the system
 // calls below to limit any potential side effects outside of the current
 // process.
-#define TEST_BASELINE_SIGSYS(sysno)                                 \
-  BPF_DEATH_TEST_C(BaselinePolicy,                                  \
-                   SIGSYS_##sysno,                                  \
-                   DEATH_MESSAGE(GetErrorMessageContentForTests()), \
-                   BaselinePolicy) {                                \
-    syscall(sysno, 0, 0, 0, 0, 0, 0);                               \
-    _exit(1);                                                       \
+#define TEST_BASELINE_SIGSYS(sysno)                                      \
+  BPF_DEATH_TEST_C(BaselinePolicy,                                       \
+                   SIGSYS_##sysno,                                       \
+                   DEATH_SEGV_MESSAGE(GetErrorMessageContentForTests()), \
+                   BaselinePolicy) {                                     \
+    syscall(sysno, 0, 0, 0, 0, 0, 0);                                    \
+    _exit(1);                                                            \
   }
 
 TEST_BASELINE_SIGSYS(__NR_syslog);
@@ -277,7 +277,7 @@ BPF_TEST_C(BaselinePolicy, PrctlDumpable, BaselinePolicy) {
 
 BPF_DEATH_TEST_C(BaselinePolicy,
                  PrctlSigsys,
-                 DEATH_MESSAGE(GetPrctlErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(GetPrctlErrorMessageContentForTests()),
                  BaselinePolicy) {
   prctl(PR_CAPBSET_READ, 0, 0, 0, 0);
   _exit(1);
