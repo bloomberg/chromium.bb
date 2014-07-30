@@ -31,6 +31,7 @@
 namespace blink {
 
 class HTMLElement;
+class HTMLUListElement;
 
 class InsertListCommand FINAL : public CompositeEditCommand {
 public:
@@ -51,7 +52,7 @@ private:
     virtual void doApply() OVERRIDE;
     virtual EditAction editingAction() const OVERRIDE { return EditActionInsertList; }
 
-    HTMLElement* fixOrphanedListChild(Node*);
+    HTMLUListElement* fixOrphanedListChild(Node*);
     bool selectionHasListOfType(const VisibleSelection&, const HTMLQualifiedName&);
     PassRefPtrWillBeRawPtr<HTMLElement> mergeWithNeighboringLists(PassRefPtrWillBeRawPtr<HTMLElement>);
     void doApplyForSingleParagraph(bool forceCreateList, const HTMLQualifiedName&, Range& currentSelection);

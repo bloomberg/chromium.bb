@@ -51,7 +51,7 @@ static Node* enclosingListChild(Node* node, Node* listNode)
     return listChild;
 }
 
-HTMLElement* InsertListCommand::fixOrphanedListChild(Node* node)
+HTMLUListElement* InsertListCommand::fixOrphanedListChild(Node* node)
 {
     RefPtrWillBeRawPtr<HTMLUListElement> listElement = createUnorderedListElement(document());
     insertNodeBefore(listElement, node);
@@ -92,8 +92,8 @@ bool InsertListCommand::selectionHasListOfType(const VisibleSelection& selection
 
     VisiblePosition end = startOfParagraph(selection.visibleEnd());
     while (start.isNotNull() && start != end) {
-        Element* listNode = enclosingList(start.deepEquivalent().deprecatedNode());
-        if (!listNode || !listNode->hasTagName(listTag))
+        HTMLElement* listElement = enclosingList(start.deepEquivalent().deprecatedNode());
+        if (!listElement || !listElement->hasTagName(listTag))
             return false;
         start = startOfNextParagraph(start);
     }
@@ -210,12 +210,12 @@ void InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
     bool switchListType = false;
     if (listChildNode) {
         // Remove the list chlild.
-        RefPtrWillBeRawPtr<HTMLElement> listNode = enclosingList(listChildNode);
-        if (!listNode) {
-            listNode = fixOrphanedListChild(listChildNode);
-            listNode = mergeWithNeighboringLists(listNode);
+        RefPtrWillBeRawPtr<HTMLElement> listElement = enclosingList(listChildNode);
+        if (!listElement) {
+            listElement = fixOrphanedListChild(listChildNode);
+            listElement = mergeWithNeighboringLists(listElement);
         }
-        if (!listNode->hasTagName(listTag))
+        if (!listElement->hasTagName(listTag))
             // listChildNode will be removed from the list and a list of type m_type will be created.
             switchListType = true;
 
@@ -224,23 +224,23 @@ void InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
             return;
 
         // If the entire list is selected, then convert the whole list.
-        if (switchListType && isNodeVisiblyContainedWithin(*listNode, currentSelection)) {
-            bool rangeStartIsInList = visiblePositionBeforeNode(*listNode) == VisiblePosition(currentSelection.startPosition());
-            bool rangeEndIsInList = visiblePositionAfterNode(*listNode) == VisiblePosition(currentSelection.endPosition());
+        if (switchListType && isNodeVisiblyContainedWithin(*listElement, currentSelection)) {
+            bool rangeStartIsInList = visiblePositionBeforeNode(*listElement) == VisiblePosition(currentSelection.startPosition());
+            bool rangeEndIsInList = visiblePositionAfterNode(*listElement) == VisiblePosition(currentSelection.endPosition());
 
             RefPtrWillBeRawPtr<HTMLElement> newList = createHTMLElement(document(), listTag);
-            insertNodeBefore(newList, listNode);
+            insertNodeBefore(newList, listElement);
 
-            Node* firstChildInList = enclosingListChild(VisiblePosition(firstPositionInNode(listNode.get())).deepEquivalent().deprecatedNode(), listNode.get());
-            Node* outerBlock = firstChildInList && firstChildInList->isBlockFlowElement() ? firstChildInList : listNode.get();
+            Node* firstChildInList = enclosingListChild(VisiblePosition(firstPositionInNode(listElement.get())).deepEquivalent().deprecatedNode(), listElement.get());
+            Element* outerBlock = firstChildInList && firstChildInList->isBlockFlowElement() ? toElement(firstChildInList) : listElement.get();
 
-            moveParagraphWithClones(VisiblePosition(firstPositionInNode(listNode.get())), VisiblePosition(lastPositionInNode(listNode.get())), newList.get(), outerBlock);
+            moveParagraphWithClones(VisiblePosition(firstPositionInNode(listElement.get())), VisiblePosition(lastPositionInNode(listElement.get())), newList.get(), outerBlock);
 
             // Manually remove listNode because moveParagraphWithClones sometimes leaves it behind in the document.
             // See the bug 33668 and editing/execCommand/insert-list-orphaned-item-with-nested-lists.html.
             // FIXME: This might be a bug in moveParagraphWithClones or deleteSelection.
-            if (listNode && listNode->inDocument())
-                removeNode(listNode);
+            if (listElement && listElement->inDocument())
+                removeNode(listElement);
 
             newList = mergeWithNeighboringLists(newList);
 
@@ -256,14 +256,14 @@ void InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
             return;
         }
 
-        unlistifyParagraph(endingSelection().visibleStart(), listNode.get(), listChildNode);
+        unlistifyParagraph(endingSelection().visibleStart(), listElement.get(), listChildNode);
     }
 
     if (!listChildNode || switchListType || forceCreateList)
         m_listElement = listifyParagraph(endingSelection().visibleStart(), listTag);
 }
 
-void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart, HTMLElement* listNode, Node* listChildNode)
+void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart, HTMLElement* listElement, Node* listChildNode)
 {
     Node* nextListChild;
     Node* previousListChild;
@@ -279,9 +279,9 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
         // A paragraph is visually a list item minus a list marker.  The paragraph will be moved.
         start = startOfParagraph(originalStart, CanSkipOverEditingBoundary);
         end = endOfParagraph(start, CanSkipOverEditingBoundary);
-        nextListChild = enclosingListChild(end.next().deepEquivalent().deprecatedNode(), listNode);
+        nextListChild = enclosingListChild(end.next().deepEquivalent().deprecatedNode(), listElement);
         ASSERT(nextListChild != listChildNode);
-        previousListChild = enclosingListChild(start.previous().deepEquivalent().deprecatedNode(), listNode);
+        previousListChild = enclosingListChild(start.previous().deepEquivalent().deprecatedNode(), listElement);
         ASSERT(previousListChild != listChildNode);
     }
     // When removing a list, we must always create a placeholder to act as a point of insertion
@@ -290,7 +290,7 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
     RefPtrWillBeRawPtr<HTMLElement> elementToInsert = placeholder;
     // If the content of the list item will be moved into another list, put it in a list item
     // so that we don't create an orphaned list child.
-    if (enclosingList(listNode)) {
+    if (enclosingList(listElement)) {
         elementToInsert = createListItemElement(document());
         appendNode(placeholder, elementToInsert);
     }
@@ -303,41 +303,41 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
         // FIXME: We appear to split at nextListChild as opposed to listChildNode so that when we remove
         // listChildNode below in moveParagraphs, previousListChild will be removed along with it if it is
         // unrendered. But we ought to remove nextListChild too, if it is unrendered.
-        splitElement(listNode, splitTreeToNode(nextListChild, listNode));
-        insertNodeBefore(elementToInsert, listNode);
-    } else if (nextListChild || listChildNode->parentNode() != listNode) {
+        splitElement(listElement, splitTreeToNode(nextListChild, listElement));
+        insertNodeBefore(elementToInsert, listElement);
+    } else if (nextListChild || listChildNode->parentNode() != listElement) {
         // Just because listChildNode has no previousListChild doesn't mean there isn't any content
         // in listNode that comes before listChildNode, as listChildNode could have ancestors
         // between it and listNode. So, we split up to listNode before inserting the placeholder
         // where we're about to move listChildNode to.
-        if (listChildNode->parentNode() != listNode)
-            splitElement(listNode, splitTreeToNode(listChildNode, listNode).get());
-        insertNodeBefore(elementToInsert, listNode);
+        if (listChildNode->parentNode() != listElement)
+            splitElement(listElement, splitTreeToNode(listChildNode, listElement).get());
+        insertNodeBefore(elementToInsert, listElement);
     } else {
-        insertNodeAfter(elementToInsert, listNode);
+        insertNodeAfter(elementToInsert, listElement);
     }
 
     VisiblePosition insertionPoint = VisiblePosition(positionBeforeNode(placeholder.get()));
     moveParagraphs(start, end, insertionPoint, /* preserveSelection */ true, /* preserveStyle */ true, listChildNode);
 }
 
-static Element* adjacentEnclosingList(const VisiblePosition& pos, const VisiblePosition& adjacentPos, const HTMLQualifiedName& listTag)
+static HTMLElement* adjacentEnclosingList(const VisiblePosition& pos, const VisiblePosition& adjacentPos, const HTMLQualifiedName& listTag)
 {
-    Element* listNode = outermostEnclosingList(adjacentPos.deepEquivalent().deprecatedNode());
+    HTMLElement* listElement = outermostEnclosingList(adjacentPos.deepEquivalent().deprecatedNode());
 
-    if (!listNode)
+    if (!listElement)
         return 0;
 
     Element* previousCell = enclosingTableCell(pos.deepEquivalent());
     Element* currentCell = enclosingTableCell(adjacentPos.deepEquivalent());
 
-    if (!listNode->hasTagName(listTag)
-        || listNode->contains(pos.deepEquivalent().deprecatedNode())
+    if (!listElement->hasTagName(listTag)
+        || listElement->contains(pos.deepEquivalent().deprecatedNode())
         || previousCell != currentCell
-        || enclosingList(listNode) != enclosingList(pos.deepEquivalent().deprecatedNode()))
+        || enclosingList(listElement) != enclosingList(pos.deepEquivalent().deprecatedNode()))
         return 0;
 
-    return listNode;
+    return listElement;
 }
 
 PassRefPtrWillBeRawPtr<HTMLElement> InsertListCommand::listifyParagraph(const VisiblePosition& originalStart, const HTMLQualifiedName& listTag)
@@ -354,8 +354,8 @@ PassRefPtrWillBeRawPtr<HTMLElement> InsertListCommand::listifyParagraph(const Vi
     appendNode(placeholder, listItemElement);
 
     // Place list item into adjoining lists.
-    Element* previousList = adjacentEnclosingList(start, start.previous(CannotCrossEditingBoundary), listTag);
-    Element* nextList = adjacentEnclosingList(start, end.next(CannotCrossEditingBoundary), listTag);
+    HTMLElement* previousList = adjacentEnclosingList(start, start.previous(CannotCrossEditingBoundary), listTag);
+    HTMLElement* nextList = adjacentEnclosingList(start, end.next(CannotCrossEditingBoundary), listTag);
     RefPtrWillBeRawPtr<HTMLElement> listElement = nullptr;
     if (previousList)
         appendNode(listItemElement, previousList);

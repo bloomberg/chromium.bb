@@ -1116,7 +1116,7 @@ void CompositeEditCommand::cleanupAfterDeletion(VisiblePosition destination)
 // The blockElement parameter is the element to move the paragraph to,
 // outerNode is the top element of the paragraph hierarchy.
 
-void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startOfParagraphToMove, const VisiblePosition& endOfParagraphToMove, Element* blockElement, Node* outerNode)
+void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startOfParagraphToMove, const VisiblePosition& endOfParagraphToMove, HTMLElement* blockElement, Node* outerNode)
 {
     ASSERT(outerNode);
     ASSERT(blockElement);
