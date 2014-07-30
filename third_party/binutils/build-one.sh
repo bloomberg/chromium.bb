@@ -14,6 +14,7 @@ if [ -z "$1" ]; then
 fi
 
 cd "$1"
-./configure --enable-gold=default --enable-threads --prefix=/build/output
+./configure --enable-gold=default --enable-threads --enable-plugins \
+  --prefix=/build/output
 make -j8 all
 make install
