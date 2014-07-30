@@ -1252,7 +1252,7 @@ void ResourceFetcher::requestPreload(Resource::Type type, FetchRequest& request,
     resource->increasePreloadCount();
 
     if (!m_preloads)
-        m_preloads = adoptPtrWillBeNoop(new WillBeHeapListHashSet<RawPtrWillBeMember<Resource> >);
+        m_preloads = adoptPtr(new ListHashSet<Resource*>);
     m_preloads->add(resource.get());
 
 #if PRELOAD_DEBUG
@@ -1265,8 +1265,8 @@ bool ResourceFetcher::isPreloaded(const String& urlString) const
     const KURL& url = m_document->completeURL(urlString);
 
     if (m_preloads) {
-        WillBeHeapListHashSet<RawPtrWillBeMember<Resource> >::iterator end = m_preloads->end();
-        for (WillBeHeapListHashSet<RawPtrWillBeMember<Resource> >::iterator it = m_preloads->begin(); it != end; ++it) {
+        ListHashSet<Resource*>::iterator end = m_preloads->end();
+        for (ListHashSet<Resource*>::iterator it = m_preloads->begin(); it != end; ++it) {
             Resource* resource = *it;
             if (resource->url() == url)
                 return true;
@@ -1284,8 +1284,8 @@ void ResourceFetcher::clearPreloads()
     if (!m_preloads)
         return;
 
-    WillBeHeapListHashSet<RawPtrWillBeMember<Resource> >::iterator end = m_preloads->end();
-    for (WillBeHeapListHashSet<RawPtrWillBeMember<Resource> >::iterator it = m_preloads->begin(); it != end; ++it) {
+    ListHashSet<Resource*>::iterator end = m_preloads->end();
+    for (ListHashSet<Resource*>::iterator it = m_preloads->begin(); it != end; ++it) {
         Resource* res = *it;
         res->decreasePreloadCount();
         bool deleted = res->deleteIfPossible();
@@ -1458,8 +1458,8 @@ void ResourceFetcher::printPreloadStats()
     unsigned stylesheetMisses = 0;
     unsigned images = 0;
     unsigned imageMisses = 0;
-    WillBeHeapListHashSet<RawPtrWillBeMember<Resource> >::iterator end = m_preloads->end();
-    for (WillBeHeapListHashSet<RawPtrWillBeMember<Resource> >::iterator it = m_preloads->begin(); it != end; ++it) {
+    ListHashSet<Resource*>::iterator end = m_preloads->end();
+    for (ListHashSet<Resource*>::iterator it = m_preloads->begin(); it != end; ++it) {
         Resource* res = *it;
         if (res->preloadResult() == Resource::PreloadNotReferenced)
             printf("!! UNREFERENCED PRELOAD %s\n", res->url().string().latin1().data());
@@ -1540,10 +1540,6 @@ void ResourceFetcher::DeadResourceStatsRecorder::update(RevalidationPolicy polic
 void ResourceFetcher::trace(Visitor* visitor)
 {
     visitor->trace(m_document);
-    visitor->trace(m_preloads);
-#if ENABLE(OILPAN)
-    visitor->trace(m_resourceTimingInfoMap);
-#endif
     visitor->trace(m_loaders);
     visitor->trace(m_multipartLoaders);
     ResourceLoaderHost::trace(visitor);

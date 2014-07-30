@@ -301,13 +301,11 @@ protected:
         void schedule(Resource*);
         void cancel(Resource*);
         bool isScheduled(Resource*) const;
-
     private:
         ResourceCallback();
         void timerFired(Timer<ResourceCallback>*);
-
         Timer<ResourceCallback> m_callbackTimer;
-        WillBePersistentHeapHashSet<RawPtrWillBeMember<Resource> > m_resourcesWithPendingClients;
+        HashSet<Resource*> m_resourcesWithPendingClients;
     };
 
     bool hasClient(ResourceClient* client) { return m_clients.contains(client) || m_clientsAwaitingCallback.contains(client); }

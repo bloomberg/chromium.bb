@@ -822,7 +822,6 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #define RefPtrWillBeWeakMember blink::WeakMember
 #define RefPtrWillBeCrossThreadPersistent blink::CrossThreadPersistent
 #define RawPtrWillBeMember blink::Member
-#define RawPtrWillBePersistent blink::Persistent
 #define RawPtrWillBeWeakMember blink::WeakMember
 #define OwnPtrWillBeMember blink::Member
 #define OwnPtrWillBePersistent blink::Persistent
@@ -944,7 +943,6 @@ template class PLATFORM_EXPORT DummyBase<void>;
 #define RefPtrWillBeWeakMember WTF::RefPtr
 #define RefPtrWillBeCrossThreadPersistent WTF::RefPtr
 #define RawPtrWillBeMember WTF::RawPtr
-#define RawPtrWillBePersistent WTF::RawPtr
 #define RawPtrWillBeWeakMember WTF::RawPtr
 #define OwnPtrWillBeMember WTF::OwnPtr
 #define OwnPtrWillBePersistent WTF::OwnPtr
