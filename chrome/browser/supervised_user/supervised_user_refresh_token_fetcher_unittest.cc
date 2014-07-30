@@ -25,6 +25,7 @@
 namespace {
 
 const char kAccountId[] = "account_id";
+const char kDeviceId[] = "device_id";
 const char kDeviceName[] = "Compy";
 const char kSupervisedUserId[] = "abcdef";
 
@@ -92,6 +93,7 @@ class SupervisedUserRefreshTokenFetcherTest : public testing::Test {
 
  protected:
   void StartFetching();
+  void StartFetchingWithDeviceId(const std::string& device_id);
 
   net::TestURLFetcher* GetIssueTokenRequest();
   net::TestURLFetcher* GetRefreshTokenRequest();
@@ -115,6 +117,7 @@ class SupervisedUserRefreshTokenFetcherTest : public testing::Test {
   FakeProfileOAuth2TokenService oauth2_token_service_;
   net::TestURLFetcherFactory url_fetcher_factory_;
   scoped_ptr<SupervisedUserRefreshTokenFetcher> token_fetcher_;
+  std::string device_id_;
 
   GoogleServiceAuthError error_;
   std::string token_;
@@ -122,15 +125,22 @@ class SupervisedUserRefreshTokenFetcherTest : public testing::Test {
 };
 
 SupervisedUserRefreshTokenFetcherTest::SupervisedUserRefreshTokenFetcherTest()
-    : token_fetcher_(SupervisedUserRefreshTokenFetcher::Create(
-                         &oauth2_token_service_,
-                         kAccountId,
-                         profile_.GetRequestContext())),
-      error_(GoogleServiceAuthError::NONE),
+    : error_(GoogleServiceAuthError::NONE),
       weak_ptr_factory_(this) {}
 
 void SupervisedUserRefreshTokenFetcherTest::StartFetching() {
+  StartFetchingWithDeviceId(std::string());
+}
+
+void SupervisedUserRefreshTokenFetcherTest::StartFetchingWithDeviceId(
+    const std::string& device_id) {
+  device_id_ = device_id;
   oauth2_token_service_.IssueRefreshToken(kOAuth2RefreshToken);
+  token_fetcher_ = SupervisedUserRefreshTokenFetcher::Create(
+      &oauth2_token_service_,
+      kAccountId,
+      device_id_,
+      profile_.GetRequestContext()).Pass();
   token_fetcher_->Start(
       kSupervisedUserId,
       kDeviceName,
@@ -159,6 +169,10 @@ SupervisedUserRefreshTokenFetcherTest::GetIssueTokenRequest() {
   std::string device_name;
   EXPECT_TRUE(GetValueForKey(upload_data, "device_name", &device_name));
   EXPECT_EQ(kDeviceName, device_name);
+  std::string device_id;
+  EXPECT_EQ(!device_id_.empty(),
+            GetValueForKey(upload_data, "device_id", &device_id));
+  EXPECT_EQ(device_id_, device_id);
   return url_fetcher;
 }
 
@@ -226,6 +240,16 @@ void SupervisedUserRefreshTokenFetcherTest::OnTokenFetched(
 
 TEST_F(SupervisedUserRefreshTokenFetcherTest, Success) {
   StartFetching();
+  MakeOAuth2TokenServiceRequestSucceed();
+  MakeIssueTokenRequestSucceed();
+  MakeRefreshTokenFetchSucceed();
+
+  EXPECT_EQ(GoogleServiceAuthError::NONE, error().state());
+  EXPECT_EQ(kSupervisedUserToken, token());
+}
+
+TEST_F(SupervisedUserRefreshTokenFetcherTest, Success_WithDeviceId) {
+  StartFetchingWithDeviceId(kDeviceId);
   MakeOAuth2TokenServiceRequestSucceed();
   MakeIssueTokenRequestSucceed();
   MakeRefreshTokenFetchSucceed();

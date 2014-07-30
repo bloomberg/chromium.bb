@@ -40,6 +40,10 @@ static const char kIssueTokenBodyFormat[] =
     "&profile_id=%s"
     "&device_name=%s";
 
+// kIssueTokenBodyFormatDeviceIdAddendum is appended to kIssueTokenBodyFormat
+// if device_id is provided.
+static const char kIssueTokenBodyFormatDeviceIdAddendum[] = "&device_id=%s";
+
 static const char kAuthorizationHeaderFormat[] =
     "Authorization: Bearer %s";
 
@@ -54,6 +58,7 @@ class SupervisedUserRefreshTokenFetcherImpl
   SupervisedUserRefreshTokenFetcherImpl(
       OAuth2TokenService* oauth2_token_service,
       const std::string& account_id,
+      const std::string& device_id,
       URLRequestContextGetter* context);
   virtual ~SupervisedUserRefreshTokenFetcherImpl();
 
@@ -92,6 +97,7 @@ class SupervisedUserRefreshTokenFetcherImpl
                                       const std::string& token);
   OAuth2TokenService* oauth2_token_service_;
   std::string account_id_;
+  std::string device_id_;
   URLRequestContextGetter* context_;
 
   std::string device_name_;
@@ -108,10 +114,12 @@ class SupervisedUserRefreshTokenFetcherImpl
 SupervisedUserRefreshTokenFetcherImpl::SupervisedUserRefreshTokenFetcherImpl(
     OAuth2TokenService* oauth2_token_service,
     const std::string& account_id,
+    const std::string& device_id,
     URLRequestContextGetter* context)
     : OAuth2TokenService::Consumer("supervised_user"),
       oauth2_token_service_(oauth2_token_service),
       account_id_(account_id),
+      device_id_(device_id),
       context_(context),
       access_token_expired_(false) {}
 
@@ -164,6 +172,11 @@ void SupervisedUserRefreshTokenFetcherImpl::OnGetTokenSuccess(
       net::EscapeUrlEncodedData(kChromeSyncSupervisedOAuth2Scope, true).c_str(),
       net::EscapeUrlEncodedData(supervised_user_id_, true).c_str(),
       net::EscapeUrlEncodedData(device_name_, true).c_str());
+  if (!device_id_.empty()) {
+    body.append(base::StringPrintf(
+        kIssueTokenBodyFormatDeviceIdAddendum,
+        net::EscapeUrlEncodedData(device_id_, true).c_str()));
+  }
   url_fetcher_->SetUploadData("application/x-www-form-urlencoded", body);
 
   url_fetcher_->Start();
@@ -277,10 +290,12 @@ scoped_ptr<SupervisedUserRefreshTokenFetcher>
 SupervisedUserRefreshTokenFetcher::Create(
     OAuth2TokenService* oauth2_token_service,
     const std::string& account_id,
+    const std::string& device_id,
     URLRequestContextGetter* context) {
   scoped_ptr<SupervisedUserRefreshTokenFetcher> fetcher(
       new SupervisedUserRefreshTokenFetcherImpl(oauth2_token_service,
                                                 account_id,
+                                                device_id,
                                                 context));
   return fetcher.Pass();
 }

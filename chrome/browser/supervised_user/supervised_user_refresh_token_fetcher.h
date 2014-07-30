@@ -38,6 +38,7 @@ class SupervisedUserRefreshTokenFetcher {
   static scoped_ptr<SupervisedUserRefreshTokenFetcher> Create(
       OAuth2TokenService* oauth2_token_service,
       const std::string& account_id,
+      const std::string& device_id,
       net::URLRequestContextGetter* context);
 
   virtual ~SupervisedUserRefreshTokenFetcher();
