@@ -48,6 +48,7 @@
 #include "core/loader/FrameLoaderStateMachine.h"
 #include "core/page/BackForwardClient.h"
 #include "core/page/Page.h"
+#include "platform/SharedBuffer.h"
 #include "platform/UserGestureIndicator.h"
 #include "wtf/CurrentTime.h"
 
@@ -168,6 +169,24 @@ public:
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         frame->loader().reload(NormalReload, KURL(), nullAtom, ClientRedirect);
+    }
+};
+
+class ScheduledPageBlock FINAL : public ScheduledURLNavigation {
+public:
+    ScheduledPageBlock(Document* originDocument, const String& url, const Referrer& referrer)
+        : ScheduledURLNavigation(0.0, originDocument, url, referrer, true, true)
+    {
+    }
+
+    virtual void fire(LocalFrame* frame) OVERRIDE
+    {
+        OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
+        SubstituteData substituteData(SharedBuffer::create(), "text/plain", "UTF-8", KURL(), ForceSynchronousLoad);
+        FrameLoadRequest request(originDocument(), ResourceRequest(KURL(ParsedURLString, url()), referrer(), ReloadIgnoringCacheData), substituteData);
+        request.setLockBackForwardList(true);
+        request.setClientRedirect(ClientRedirect);
+        frame->loader().load(request);
     }
 };
 
@@ -327,7 +346,8 @@ void NavigationScheduler::scheduleLocationChange(Document* originDocument, const
 void NavigationScheduler::schedulePageBlock(Document* originDocument, const Referrer& referrer)
 {
     ASSERT(m_frame->page());
-    schedule(adoptPtr(new ScheduledLocationChange(originDocument, SecurityOrigin::urlWithUniqueSecurityOrigin(), referrer, false)));
+    const KURL& url = m_frame->document()->url();
+    schedule(adoptPtr(new ScheduledPageBlock(originDocument, url, referrer)));
 }
 
 void NavigationScheduler::scheduleFormSubmission(PassRefPtrWillBeRawPtr<FormSubmission> submission)

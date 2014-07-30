@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="http://localhost:8000/security/xssAuditor/resources/utilities.js"></script>
+<script src="/security/xssAuditor/resources/utilities.js"></script>
 <script>
 if (window.testRunner) {
     testRunner.dumpAsText();
@@ -14,9 +14,9 @@ function checkframe()
 {
     try {
         var ref = document.getElementById("frame").contentDocument.referrer;
-        console.log('FAIL: Referrer is "' + ref + '"'); 
+        console.log('PASS: Referrer is "' + ref + '"'); 
     } catch (e) {
-        console.log('PASS: Cross-origin access threw: \'' + e.toString() + '\'.');
+        console.log('FAIL: same-origin access threw: \'' + e.toString() + '\'.');
     }
     checkIfFrameLocationMatchesSrcAndCallDone('frame');
 }
