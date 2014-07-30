@@ -217,11 +217,6 @@ void FrameSelection::setNonDirectionalSelectionIfNeeded(const VisibleSelection& 
     setSelection(newSelection, granularity);
 }
 
-static bool isTextFormControl(const VisibleSelection& selection)
-{
-    return enclosingTextFormControl(selection.start());
-}
-
 void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelectionOptions options, CursorAlignOnScroll align, TextGranularity granularity)
 {
     bool closeTyping = options & CloseTyping;
@@ -277,8 +272,7 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
         setFocusedNodeIfNeeded();
 
     if (!(options & DoNotUpdateAppearance)) {
-        if (!isTextFormControl(m_selection))
-            m_frame->document()->updateLayoutIgnorePendingStylesheets();
+        m_frame->document()->updateLayoutIgnorePendingStylesheets();
 
         // Hits in compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html
         DisableCompositingQueryAsserts disabler;
@@ -1228,17 +1222,20 @@ static bool isNonOrphanedCaret(const VisibleSelection& selection)
     return selection.isCaret() && !selection.start().isOrphan() && !selection.end().isOrphan();
 }
 
+static bool isTextFormControl(const VisibleSelection& selection)
+{
+    return enclosingTextFormControl(selection.start());
+}
+
 LayoutRect FrameSelection::localCaretRect()
 {
     if (shouldUpdateCaretRect()) {
-        if (!isNonOrphanedCaret(m_selection)) {
+        if (!isNonOrphanedCaret(m_selection))
             clearCaretRect();
-        } else if (isTextFormControl(m_selection)) {
-            m_frame->document()->updateRenderTreeIfNeeded();
+        else if (isTextFormControl(m_selection))
             m_absCaretBoundsDirty |= updateCaretRect(m_frame->document(), PositionWithAffinity(m_selection.start().isCandidate() ? m_selection.start() : Position(), m_selection.affinity()));
-        } else {
+        else
             m_absCaretBoundsDirty |= updateCaretRect(m_frame->document(), VisiblePosition(m_selection.start(), m_selection.affinity()));
-        }
     }
 
     return localCaretRectWithoutUpdate();
@@ -1275,7 +1272,7 @@ bool FrameSelection::recomputeCaretRect()
             repaintCaretForLocalRect(m_previousCaretNode.get(), oldRect);
         Node* node = m_selection.start().deprecatedNode();
         m_previousCaretNode = node;
-        if (shouldRepaintCaret(view, isTextFormControl(m_selection) || isContentEditable()))
+        if (shouldRepaintCaret(view, isContentEditable()))
             repaintCaretForLocalRect(node, newRect);
     }
 
@@ -1581,11 +1578,7 @@ void FrameSelection::updateAppearance()
 
     // Construct a new VisibleSolution, since m_selection is not necessarily valid, and the following steps
     // assume a valid selection. See <https://bugs.webkit.org/show_bug.cgi?id=69563> and <rdar://problem/10232866>.
-    VisibleSelection selection;
-    if (isTextFormControl(m_selection))
-        selection.setWithoutValidation(m_selection.start(), forwardPosition.isNotNull() ? forwardPosition.deepEquivalent() : m_selection.end());
-    else
-        selection = VisibleSelection(m_selection.visibleStart(), forwardPosition.isNotNull() ? forwardPosition : m_selection.visibleEnd());
+    VisibleSelection selection(m_selection.visibleStart(), forwardPosition.isNotNull() ? forwardPosition : m_selection.visibleEnd());
 
     if (!selection.isRange()) {
         view->clearSelection();
