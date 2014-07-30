@@ -371,6 +371,7 @@ void SyncSetupHandler::DisplayConfigureSync(bool show_advanced,
   args.SetBoolean("syncAllDataTypes", sync_prefs.HasKeepEverythingSynced());
   args.SetBoolean("syncNothing", false);  // Always false during initial setup.
   args.SetBoolean("encryptAllData", service->EncryptEverythingEnabled());
+  args.SetBoolean("isSupervised", GetProfile()->IsSupervised());
 
   // We call IsPassphraseRequired() here, instead of calling
   // IsPassphraseRequiredForDecryption(), because we want to show the passphrase
@@ -676,6 +677,11 @@ void SyncSetupHandler::HandleConfigure(const base::ListValue* args) {
     service->SetSetupInProgress(false);
     return;
   }
+
+  // Don't allow supervised users to enable "encrypt all". The UI is hidden,
+  // but the user may have enabled it e.g. by fiddling with the web inspector.
+  if (GetProfile()->IsSupervised())
+    configuration.encrypt_all = false;
 
   // Note: Data encryption will not occur until configuration is complete
   // (when the PSS receives its CONFIGURE_DONE notification from the sync

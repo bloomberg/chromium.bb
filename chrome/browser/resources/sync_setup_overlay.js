@@ -586,7 +586,7 @@ cr.define('options', function() {
 
       $('sync-custom-passphrase-container').hidden = false;
       $('sync-new-encryption-section-container').hidden = false;
-      $('customize-sync-encryption-new').hidden = false;
+      $('customize-sync-encryption-new').hidden = args.isSupervised;
 
       $('sync-existing-passphrase-container').hidden = true;
 
