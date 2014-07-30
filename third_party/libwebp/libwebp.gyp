@@ -7,6 +7,7 @@
     'neon_sources': [
       'dsp/dec_neon.c',
       'dsp/enc_neon.c',
+      'dsp/lossless_neon.c',
       'dsp/upsampling_neon.c',
     ]
   },
@@ -26,7 +27,6 @@
         'dec/frame.c',
         'dec/idec.c',
         'dec/io.c',
-        'dec/layer.c',
         'dec/quant.c',
         'dec/tree.c',
         'dec/vp8.c',
@@ -47,15 +47,24 @@
       'type': 'static_library',
       'include_dirs': ['.'],
       'sources': [
+        'dsp/alpha_processing.c',
         'dsp/cpu.c',
         'dsp/dec.c',
+        'dsp/dec_clip_tables.c',
+        'dsp/dec_mips32.c',
         'dsp/dec_sse2.c',
         'dsp/enc.c',
+        'dsp/enc_avx2.c',
+        'dsp/enc_mips32.c',
         'dsp/enc_sse2.c',
         'dsp/lossless.c',
+        'dsp/lossless_mips32.c',
+        'dsp/lossless_sse2.c',
         'dsp/upsampling.c',
         'dsp/upsampling_sse2.c',
         'dsp/yuv.c',
+        'dsp/yuv_mips32.c',
+        'dsp/yuv_sse2.c',
       ],
       'conditions': [
         ['OS == "android"', {
@@ -90,6 +99,8 @@
               'sources': [
                 '<@(neon_sources)'
               ],
+              # avoid an ICE with gcc-4.9: b/15574841
+              'cflags': [ '-frename-registers' ],
             },{  # "target_arch != "arm|arm64" or arm_version < 7"
               'type': 'none',
             }],
@@ -118,8 +129,11 @@
         'enc/frame.c',
         'enc/histogram.c',
         'enc/iterator.c',
-        'enc/layer.c',
         'enc/picture.c',
+        'enc/picture_csp.c',
+        'enc/picture_psnr.c',
+        'enc/picture_rescale.c',
+        'enc/picture_tools.c',
         'enc/quant.c',
         'enc/syntax.c',
         'enc/token.c',
@@ -133,7 +147,6 @@
       'type': 'static_library',
       'include_dirs': ['.'],
       'sources': [
-        'utils/alpha_processing.c',
         'utils/bit_reader.c',
         'utils/bit_writer.c',
         'utils/color_cache.c',
