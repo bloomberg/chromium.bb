@@ -13,39 +13,25 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_member.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
-#include "components/keyed_service/core/keyed_service.h"
 
 using base::android::ScopedJavaLocalRef;
 
 class Profile;
 
 namespace data_reduction_proxy {
-class DataReductionProxyParams;
+class DataReductionProxySettings;
 }
 
 // Central point for configuring the data reduction proxy on Android.
 // This object lives on the UI thread and all of its methods are expected to
 // be called from there.
-class DataReductionProxySettingsAndroid
-    : public data_reduction_proxy::DataReductionProxySettings,
-      public KeyedService {
+class DataReductionProxySettingsAndroid {
  public:
-  // Factory constructor.
-  DataReductionProxySettingsAndroid(
-      data_reduction_proxy::DataReductionProxyParams* params);
-
+  DataReductionProxySettingsAndroid();
 
   virtual ~DataReductionProxySettingsAndroid();
 
   void InitDataReductionProxySettings(Profile* profile);
-
-  void BypassHostPattern(JNIEnv* env, jobject obj, jstring pattern);
-  // Add a URL pattern to bypass the proxy. Wildcards
-  // should be compatible with the JavaScript function shExpMatch, which can be
-  // used in proxy PAC resolution. These functions must only be called before
-  // the proxy is used.
-  void BypassURLPattern(JNIEnv* env, jobject obj, jstring pattern);
 
   // JNI wrapper interfaces to the indentically-named superclass methods.
   jboolean IsDataReductionProxyAllowed(JNIEnv* env, jobject obj);
@@ -81,17 +67,6 @@ class DataReductionProxySettingsAndroid
   // Registers the native methods to be call from Java.
   static bool Register(JNIEnv* env);
 
- protected:
-  // DataReductionProxySettings overrides.
-  virtual void AddDefaultProxyBypassRules() OVERRIDE;
-
-  // Configures the proxy settings by generating a data URL containing a PAC
-  // file.
-  virtual void SetProxyConfigs(bool enabled,
-                               bool alt_enabled,
-                               bool restricted,
-                               bool at_startup) OVERRIDE;
-
  private:
   friend class DataReductionProxySettingsAndroidTest;
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsAndroidTest,
@@ -100,6 +75,8 @@ class DataReductionProxySettingsAndroid
 
   ScopedJavaLocalRef<jlongArray> GetDailyContentLengths(JNIEnv* env,
                                                         const char* pref_name);
+
+  virtual data_reduction_proxy::DataReductionProxySettings* Settings();
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxySettingsAndroid);
 };

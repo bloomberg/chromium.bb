@@ -303,6 +303,7 @@ PrefService* DataReductionProxySettings::GetLocalStatePrefs() {
 
 void DataReductionProxySettings::AddDefaultProxyBypassRules() {
   // localhost
+  DCHECK(configurator_);
   configurator_->AddHostPatternToBypass("<local>");
   // RFC1918 private addresses.
   configurator_->AddHostPatternToBypass("10.0.0.0/8");
@@ -404,6 +405,8 @@ void DataReductionProxySettings::SetProxyConfigs(bool enabled,
                                                  bool restricted,
                                                  bool at_startup) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(configurator_);
+
   LogProxyState(enabled, restricted, at_startup);
   // The alternative is only configured if the standard configuration is
   // is enabled.

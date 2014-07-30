@@ -99,8 +99,8 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_android.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_factory_android.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_switches.h"
 #endif  // defined(OS_ANDROID)
 
@@ -525,10 +525,12 @@ void ProfileIOData::SetDataReductionProxyUsageStatsOnUIThread(
     DataReductionProxyUsageStats* usage_stats) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (g_browser_process->profile_manager()->IsValidProfile(profile)) {
-    DataReductionProxySettingsAndroid* proxySettingsAndroid =
-        DataReductionProxySettingsFactoryAndroid::GetForBrowserContext(profile);
-    if (proxySettingsAndroid)
-      proxySettingsAndroid->SetDataReductionProxyUsageStats(usage_stats);
+    DataReductionProxyChromeSettings* data_reduction_proxy_chrome_settings =
+        DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile);
+    if (data_reduction_proxy_chrome_settings) {
+      data_reduction_proxy_chrome_settings->SetDataReductionProxyUsageStats(
+          usage_stats);
+    }
   }
 }
 #endif

@@ -10,6 +10,7 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -23,6 +24,28 @@ using testing::AnyNumber;
 using testing::Return;
 
 const char kDataReductionProxyDev[] = "http://foo-dev.com:80";
+
+using data_reduction_proxy::DataReductionProxySettings;
+
+// Used for testing the DataReductionProxySettingsAndroid class.
+class TestDataReductionProxySettingsAndroid
+    : public DataReductionProxySettingsAndroid {
+ public:
+  // Constructs an Android settings object for test that wraps the provided
+  // settings object.
+  explicit TestDataReductionProxySettingsAndroid(
+      DataReductionProxySettings* settings)
+      : DataReductionProxySettingsAndroid(),
+        settings_(settings) {}
+
+  // Returns the provided setting object. Used by wrapping methods.
+  virtual DataReductionProxySettings* Settings() OVERRIDE {
+    return settings_;
+  }
+
+  // The wrapped settings object.
+  DataReductionProxySettings* settings_;
+};
 
 template <class C>
 void data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings(
@@ -84,7 +107,7 @@ void data_reduction_proxy::DataReductionProxySettingsTestBase::SetProbeResult(
 
 template void
 data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings<
-    DataReductionProxySettingsAndroid>(bool allowed,
+    DataReductionProxyChromeSettings>(bool allowed,
                                        bool fallback_allowed,
                                        bool alt_allowed,
                                        bool promo_allowed,
@@ -92,7 +115,7 @@ data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings<
 
 template void
 data_reduction_proxy::DataReductionProxySettingsTestBase::SetProbeResult<
-    DataReductionProxySettingsAndroid>(const std::string& test_url,
+    DataReductionProxyChromeSettings>(const std::string& test_url,
                                        const std::string& warmup_test_url,
                                        const std::string& response,
                                        ProbeURLFetchResult result,
@@ -101,26 +124,37 @@ data_reduction_proxy::DataReductionProxySettingsTestBase::SetProbeResult<
 
 class DataReductionProxySettingsAndroidTest
     : public data_reduction_proxy::ConcreteDataReductionProxySettingsTest<
-        DataReductionProxySettingsAndroid> {
+          DataReductionProxyChromeSettings> {
  public:
   // DataReductionProxySettingsTest implementation:
   virtual void SetUp() OVERRIDE {
     env_ = base::android::AttachCurrentThread();
     DataReductionProxySettingsAndroid::Register(env_);
     DataReductionProxySettingsTestBase::SetUp();
+    ResetSettingsAndroid();
   }
 
-  DataReductionProxySettingsAndroid* Settings() {
-    return static_cast<DataReductionProxySettingsAndroid*>(settings_.get());
+  void ResetSettingsAndroid() {
+    settings_android_.reset(new TestDataReductionProxySettingsAndroid(
+        settings_.get()));
   }
 
+  DataReductionProxySettings* Settings() {
+    return settings_.get();
+  }
+
+  DataReductionProxySettingsAndroid* SettingsAndroid() {
+    return settings_android_.get();
+  }
+
+  scoped_ptr<DataReductionProxySettingsAndroid> settings_android_;
   JNIEnv* env_;
 };
 
 TEST_F(DataReductionProxySettingsAndroidTest, TestGetDataReductionProxyOrigin) {
   // SetUp() adds the origin to the command line, which should be returned here.
   ScopedJavaLocalRef<jstring> result =
-      Settings()->GetDataReductionProxyOrigin(env_, NULL);
+      SettingsAndroid()->GetDataReductionProxyOrigin(env_, NULL);
   ASSERT_TRUE(result.obj());
   const base::android::JavaRef<jstring>& str_ref = result;
   EXPECT_EQ(GURL(expected_params_->DefaultOrigin()),
@@ -133,8 +167,9 @@ TEST_F(DataReductionProxySettingsAndroidTest,
       data_reduction_proxy::switches::kDataReductionProxyDev,
       kDataReductionProxyDev);
   ResetSettings(true, true, false, true, false);
+  ResetSettingsAndroid();
   ScopedJavaLocalRef<jstring> result =
-      Settings()->GetDataReductionProxyOrigin(env_, NULL);
+      SettingsAndroid()->GetDataReductionProxyOrigin(env_, NULL);
   ASSERT_TRUE(result.obj());
   const base::android::JavaRef<jstring>& str_ref = result;
   EXPECT_EQ(GURL(kDataReductionProxyDev),
@@ -142,8 +177,9 @@ TEST_F(DataReductionProxySettingsAndroidTest,
 }
 
 TEST_F(DataReductionProxySettingsAndroidTest, TestGetDailyContentLengths) {
-  ScopedJavaLocalRef<jlongArray> result = Settings()->GetDailyContentLengths(
-        env_, data_reduction_proxy::prefs::kDailyHttpOriginalContentLength);
+  ScopedJavaLocalRef<jlongArray> result =
+      SettingsAndroid()->GetDailyContentLengths(
+          env_, data_reduction_proxy::prefs::kDailyHttpOriginalContentLength);
   ASSERT_TRUE(result.obj());
 
   jsize java_array_len = env_->GetArrayLength(result.obj());
@@ -155,8 +191,7 @@ TEST_F(DataReductionProxySettingsAndroidTest, TestGetDailyContentLengths) {
     env_->GetLongArrayRegion(result.obj(), i, 1, &value);
     ASSERT_EQ(
         static_cast<long>(
-            (data_reduction_proxy::kNumDaysInHistory - 1 - i) * 2),
-        value);
+            (data_reduction_proxy::kNumDaysInHistory - 1 - i) * 2), value);
   }
 }
 

@@ -2,48 +2,56 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_factory_android.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
+
+#include "base/bind.h"
 #include "base/memory/singleton.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_android.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_usage_stats.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "content/public/browser/browser_thread.h"
+
+using content::BrowserThread;
+using data_reduction_proxy::DataReductionProxyParams;
+using data_reduction_proxy::DataReductionProxyUsageStats;
 
 // static
-DataReductionProxySettingsAndroid*
-DataReductionProxySettingsFactoryAndroid::GetForBrowserContext(
+DataReductionProxyChromeSettings*
+DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  return static_cast<DataReductionProxySettingsAndroid*>(
+  return static_cast<DataReductionProxyChromeSettings*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 // static
-bool DataReductionProxySettingsFactoryAndroid::
-HasDataReductionProxySettingsAndroid(
+bool
+DataReductionProxyChromeSettingsFactory::HasDataReductionProxyChromeSettings(
     content::BrowserContext* context) {
   return GetInstance()->GetServiceForBrowserContext(context, false) != NULL;
 }
 
 // static
-DataReductionProxySettingsFactoryAndroid*
-DataReductionProxySettingsFactoryAndroid::GetInstance() {
-  return Singleton<DataReductionProxySettingsFactoryAndroid>::get();
+DataReductionProxyChromeSettingsFactory*
+DataReductionProxyChromeSettingsFactory::GetInstance() {
+  return Singleton<DataReductionProxyChromeSettingsFactory>::get();
 }
 
 
-DataReductionProxySettingsFactoryAndroid::
-DataReductionProxySettingsFactoryAndroid()
+DataReductionProxyChromeSettingsFactory::
+    DataReductionProxyChromeSettingsFactory()
     : BrowserContextKeyedServiceFactory(
-        "DataReductionProxySettingsAndroid",
+        "DataReductionProxyChromeSettings",
         BrowserContextDependencyManager::GetInstance()) {
 }
 
-DataReductionProxySettingsFactoryAndroid::
-~DataReductionProxySettingsFactoryAndroid() {
+DataReductionProxyChromeSettingsFactory::
+    ~DataReductionProxyChromeSettingsFactory() {
 }
 
-KeyedService* DataReductionProxySettingsFactoryAndroid::BuildServiceInstanceFor(
+KeyedService* DataReductionProxyChromeSettingsFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
   int flags = DataReductionProxyParams::kFallbackAllowed;
@@ -56,10 +64,11 @@ KeyedService* DataReductionProxySettingsFactoryAndroid::BuildServiceInstanceFor(
   if (DataReductionProxyParams::IsIncludedInHoldbackFieldTrial())
     flags |= DataReductionProxyParams::kHoldback;
 
-  DataReductionProxySettingsAndroid* settings =
-      new DataReductionProxySettingsAndroid(
-          new DataReductionProxyParams(flags));
+  DataReductionProxyParams* params = new DataReductionProxyParams(flags);
+
+  // Takes ownership of params.
+  DataReductionProxyChromeSettings* settings =
+      new DataReductionProxyChromeSettings(params);
   settings->InitDataReductionProxySettings(profile);
   return settings;
 }
-

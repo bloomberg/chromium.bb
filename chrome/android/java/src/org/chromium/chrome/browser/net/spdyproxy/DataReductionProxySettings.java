@@ -64,27 +64,6 @@ public class DataReductionProxySettings {
         mNativeDataReductionProxySettings = nativeInit();
     }
 
-    /**
-     * Add a pattern for hosts to bypass. Wildcards should be compatible with the JavaScript
-     * function shExpMatch, which can be used in proxy PAC resolution. This should be called
-     * before the proxy is used.
-     * @param pattern A pattern to match.
-     */
-    public void bypassHostPattern(String pattern) {
-        nativeBypassHostPattern(mNativeDataReductionProxySettings, pattern);
-    }
-
-    /**
-     * Add a pattern for URLs to bypass. Wildcards should be compatible with the JavaScript
-     * function shExpMatch, which can be used in proxy PAC resolution. This should be called
-     * before the proxy is used.
-     * @param pattern A pattern to match.
-     */
-    public void bypassURLPattern(String pattern) {
-        nativeBypassURLPattern(mNativeDataReductionProxySettings, pattern);
-    }
-
-
     /** Returns true if the SPDY proxy is allowed to be used. */
     public boolean isDataReductionProxyAllowed() {
         return nativeIsDataReductionProxyAllowed(mNativeDataReductionProxySettings);
@@ -182,10 +161,6 @@ public class DataReductionProxySettings {
     }
 
     private native long nativeInit();
-    private native void nativeBypassHostPattern(
-            long nativeDataReductionProxySettingsAndroid, String pattern);
-    private native void nativeBypassURLPattern(
-            long nativeDataReductionProxySettingsAndroid, String pattern);
     private native boolean nativeIsDataReductionProxyAllowed(
             long nativeDataReductionProxySettingsAndroid);
     private native boolean nativeIsDataReductionProxyPromoAllowed(
