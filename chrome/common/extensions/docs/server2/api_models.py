@@ -8,7 +8,7 @@ from compiled_file_system import SingleFile, Unicode
 from extensions_paths import API_PATHS
 from features_bundle import HasParent, GetParentName
 from file_system import FileNotFoundError
-from future import Collect, Future
+from future import All, Future
 from operator import itemgetter
 from platform_util import PlatformToExtensionType
 from schema_util import ProcessSchema
@@ -171,7 +171,7 @@ class APIModels(object):
 
   def Cron(self):
     futures = [self.GetModel(name) for name in self.GetNames()]
-    return Collect(futures, except_pass=(FileNotFoundError, ValueError))
+    return All(futures, except_pass=(FileNotFoundError, ValueError))
 
   def IterModels(self):
     future_models = [(name, self.GetModel(name)) for name in self.GetNames()]

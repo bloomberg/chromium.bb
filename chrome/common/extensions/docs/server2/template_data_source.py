@@ -11,7 +11,7 @@ from docs_server_utils import FormatKey
 from extensions_paths import (
     ARTICLES_TEMPLATES, INTROS_TEMPLATES, PRIVATE_TEMPLATES)
 from file_system import FileNotFoundError
-from future import Collect
+from future import All
 from path_util import AssertIsDirectory
 
 
@@ -41,7 +41,7 @@ class TemplateDataSource(DataSource):
                       posixpath.join(self._dir, root, FormatKey(f)))
                   for f in files
                   if posixpath.splitext(f)[1] == '.html']
-    return Collect(futures)
+    return All(futures)
 
 
 class ArticleDataSource(TemplateDataSource):

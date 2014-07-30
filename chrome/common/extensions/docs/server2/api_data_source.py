@@ -6,7 +6,7 @@ from data_source import DataSource
 from docs_server_utils import StringIdentity
 from environment import IsPreviewServer
 from file_system import FileNotFoundError
-from future import Future, Collect
+from future import Future, All
 from jsc_view import JSCView, GetEventByNameFromEvents
 from platform_util import GetPlatforms
 
@@ -102,4 +102,4 @@ class APIDataSource(DataSource):
     for platform in GetPlatforms():
       futures += [self._GetImpl(platform, name)
           for name in self._platform_bundle.GetAPIModels(platform).GetNames()]
-    return Collect(futures, except_pass=FileNotFoundError)
+    return All(futures, except_pass=FileNotFoundError)

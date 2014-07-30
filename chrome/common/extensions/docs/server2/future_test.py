@@ -7,7 +7,8 @@ import traceback
 import unittest
 
 
-from future import Future
+from future import All, Future, Race
+from mock_function import MockFunction
 
 
 class FutureTest(unittest.TestCase):
@@ -64,6 +65,99 @@ class FutureTest(unittest.TestCase):
     future = Future(callback=callback)
     assert_raises_full_stack(future, FunkyException)
     assert_raises_full_stack(future, FunkyException)
+
+  def testAll(self):
+    def callback_with_value(value):
+      return MockFunction(lambda: value)
+
+    # Test a single value.
+    callback = callback_with_value(42)
+    future = All((Future(callback=callback),))
+    self.assertTrue(*callback.CheckAndReset(0))
+    self.assertEqual([42], future.Get())
+    self.assertTrue(*callback.CheckAndReset(1))
+
+    # Test multiple callbacks.
+    callbacks = (callback_with_value(1),
+                 callback_with_value(2),
+                 callback_with_value(3))
+    future = All(Future(callback=callback) for callback in callbacks)
+    for callback in callbacks:
+      self.assertTrue(*callback.CheckAndReset(0))
+    self.assertEqual([1, 2, 3], future.Get())
+    for callback in callbacks:
+      self.assertTrue(*callback.CheckAndReset(1))
+
+    # Test throwing an error.
+    def throws_error():
+      raise ValueError()
+    callbacks = (callback_with_value(1),
+                 callback_with_value(2),
+                 MockFunction(throws_error))
+    future = All(Future(callback=callback) for callback in callbacks)
+    for callback in callbacks:
+      self.assertTrue(*callback.CheckAndReset(0))
+    # Can't check that the callbacks were actually run because in theory the
+    # Futures can be resolved in any order.
+    self.assertRaises(ValueError, future.Get)
+
+  def testRaceSuccess(self):
+    callback = MockFunction(lambda: 42)
+
+    # Test a single value.
+    race = Race((Future(callback=callback),))
+    self.assertTrue(*callback.CheckAndReset(0))
+    self.assertEqual(42, race.Get())
+    self.assertTrue(*callback.CheckAndReset(1))
+
+    # Test multiple success values. Note that we could test different values
+    # and check that the first returned, but this is just an implementation
+    # detail of Race. When we have parallel Futures this might not always hold.
+    race = Race((Future(callback=callback),
+                 Future(callback=callback),
+                 Future(callback=callback)))
+    self.assertTrue(*callback.CheckAndReset(0))
+    self.assertEqual(42, race.Get())
+    # Can't assert the actual count here for the same reason as above.
+    callback.CheckAndReset(99)
+
+    # Test values with except_pass.
+    def throws_error():
+      raise ValueError()
+    race = Race((Future(callback=callback),
+                 Future(callback=throws_error)),
+                 except_pass=(ValueError,))
+    self.assertTrue(*callback.CheckAndReset(0))
+    self.assertEqual(42, race.Get())
+    self.assertTrue(*callback.CheckAndReset(1))
+
+  def testRaceErrors(self):
+    def throws_error():
+      raise ValueError()
+
+    # Test a single error.
+    race = Race((Future(callback=throws_error),))
+    self.assertRaises(ValueError, race.Get)
+
+    # Test multiple errors. Can't use different error types for the same reason
+    # as described in testRaceSuccess.
+    race = Race((Future(callback=throws_error),
+                 Future(callback=throws_error),
+                 Future(callback=throws_error)))
+    self.assertRaises(ValueError, race.Get)
+
+    # Test values with except_pass.
+    def throws_except_error():
+      raise NotImplementedError()
+    race = Race((Future(callback=throws_error),
+                 Future(callback=throws_except_error)),
+                 except_pass=(NotImplementedError,))
+    self.assertRaises(ValueError, race.Get)
+
+    race = Race((Future(callback=throws_error),
+                 Future(callback=throws_error)),
+                 except_pass=(ValueError,))
+    self.assertRaises(ValueError, race.Get)
 
 
 if __name__ == '__main__':

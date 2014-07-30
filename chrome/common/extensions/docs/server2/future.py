@@ -7,10 +7,12 @@ import sys
 _no_value = object()
 
 
-def Collect(futures, except_pass=None):
+def All(futures, except_pass=None):
   '''Creates a Future which returns a list of results from each Future in
-  |futures|. |except_pass| should be one or more exceptions to ignore when
-  calling Get on the futures.
+  |futures|.
+
+  If any Future raises an error other than those in |except_pass| the returned
+  Future will raise as well.
   '''
   def resolve():
     resolved = []
@@ -21,6 +23,29 @@ def Collect(futures, except_pass=None):
       except except_pass:
         pass
     return resolved
+  return Future(callback=resolve)
+
+
+def Race(futures, except_pass=None):
+  '''Returns a Future which resolves to the first Future in |futures| that
+  either succeeds or throws an error apart from those in |except_pass|.
+
+  If all Futures throw errors in |except_pass| then the returned Future
+  will re-throw one of those errors, for a nice stack trace.
+  '''
+  def resolve():
+    first_future = None
+    for future in futures:
+      if first_future is None:
+        first_future = future
+      try:
+        return future.Get()
+      # "except None" will simply not catch any errors.
+      except except_pass:
+        pass
+    # Everything failed, propagate the first error even though it was
+    # caught by |except_pass|.
+    return first_future.Get()
   return Future(callback=resolve)
 
 
