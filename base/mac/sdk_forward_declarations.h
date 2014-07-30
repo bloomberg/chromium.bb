@@ -197,10 +197,6 @@ enum {
   NSEventPhaseMayBegin    = 0x1 << 5
 };
 
-@interface NSColor (MountainLionSDK)
-- (CGColorRef)CGColor;
-@end
-
 #endif  // MAC_OS_X_VERSION_10_8
 
 
