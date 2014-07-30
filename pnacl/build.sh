@@ -1637,6 +1637,7 @@ binutils-install() {
   # x86_64-unknown-linux-gnu
   if ${BUILD_PLATFORM_LINUX} ; then
     echo "move shared libs to ${BINUTILS_INSTALL_DIR}/${SO_DIR}"
+    mkdir -p ${BINUTILS_INSTALL_DIR}/${SO_DIR}
     for lib in ${BINUTILS_INSTALL_DIR}/*/${BINUTILS_TARGET}/lib/lib*${SO_EXT}
     do
       echo "moving ${lib}"

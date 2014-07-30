@@ -140,7 +140,7 @@ def ConfigureHostArchFlags(host):
     # that we don't want to have to distribute alongside our binaries.
     # So just disable it, and compiler messages will always be in US English.
     configure_args.append('--disable-nls')
-    configure_args.extend(['LDFLAGS=-L%(abs_libdl)s',
+    configure_args.extend(['LDFLAGS=-L%(abs_libdl)s -ldl',
                            'CFLAGS=-isystem %(abs_libdl)s',
                            'CXXFLAGS=-isystem %(abs_libdl)s'])
   return configure_args

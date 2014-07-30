@@ -187,7 +187,7 @@ if host_os != 'win':
                  '--verbose']
     buildbot_lib.Command(context, llvm_test)
 
-
+sys.stdout.flush()
 # On Linux we build all toolchain components (driven from this script), and then
 # call buildbot_pnacl.sh which builds the sandboxed translator and runs tests
 # for all the components.
