@@ -201,17 +201,13 @@ TEST_F(RootViewTest, ContextMenuFromLongPress) {
 
   // |parent_view| should not show a context menu as a result of a long press on
   // |gesture_handling_child_view|.
-  ui::GestureEvent begin1(5, 5, 0, base::TimeDelta(),
-      ui::GestureEventDetails(ui::ET_GESTURE_BEGIN, 0, 0));
-  ui::EventDispatchDetails details = root_view->OnEventFromSource(&begin1);
-
   ui::GestureEvent long_press1(
       5,
       5,
       0,
       base::TimeDelta(),
       ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS, 0, 0));
-  details = root_view->OnEventFromSource(&long_press1);
+  ui::EventDispatchDetails details = root_view->OnEventFromSource(&long_press1);
 
   ui::GestureEvent end1(5,
                         5,
@@ -226,10 +222,6 @@ TEST_F(RootViewTest, ContextMenuFromLongPress) {
 
   // |parent_view| should show a context menu as a result of a long press on
   // |other_child_view|.
-  ui::GestureEvent begin2(25, 5, 0, base::TimeDelta(),
-      ui::GestureEventDetails(ui::ET_GESTURE_BEGIN, 0, 0));
-  details = root_view->OnEventFromSource(&begin2);
-
   ui::GestureEvent long_press2(
       25,
       5,

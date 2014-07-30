@@ -58,7 +58,7 @@ class ExitLoopOnRelease : public View {
   DISALLOW_COPY_AND_ASSIGN(ExitLoopOnRelease);
 };
 
-// A view that does a capture on gesture-begin events.
+// A view that does a capture on ui::ET_GESTURE_TAP_DOWN events.
 class GestureCaptureView : public View {
  public:
   GestureCaptureView() {}
@@ -67,7 +67,7 @@ class GestureCaptureView : public View {
  private:
   // Overridden from View:
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
-    if (event->type() == ui::ET_GESTURE_BEGIN) {
+    if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
       GetWidget()->SetCapture(this);
       event->StopPropagation();
     }
@@ -297,17 +297,19 @@ TEST_F(WidgetTestInteractive, ResetCaptureOnGestureEnd) {
   toplevel->Show();
 
   // Start a gesture on |gesture|.
-  ui::GestureEvent begin(15,
-                         15,
-                         0,
-                         base::TimeDelta(),
-                         ui::GestureEventDetails(ui::ET_GESTURE_BEGIN, 0, 0));
+  ui::GestureEvent tap_down(15,
+                            15,
+                            0,
+                            base::TimeDelta(),
+                            ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN,
+                                                    0,
+                                                    0));
   ui::GestureEvent end(15,
                        15,
                        0,
                        base::TimeDelta(),
                        ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0));
-  toplevel->OnGestureEvent(&begin);
+  toplevel->OnGestureEvent(&tap_down);
 
   // Now try to click on |mouse|. Since |gesture| will have capture, |mouse|
   // will not receive the event.

@@ -263,16 +263,29 @@ ui::EventDispatchDetails RootView::OnEventFromSource(ui::Event* event) {
     return EventProcessor::OnEventFromSource(event);
 
   if (event->IsGestureEvent()) {
-    // Ignore subsequent gesture scroll events if no handler was set for a
-    // ui::ET_GESTURE_SCROLL_BEGIN event.
-    if (!gesture_handler_ &&
-        (event->type() == ui::ET_GESTURE_SCROLL_UPDATE ||
-         event->type() == ui::ET_GESTURE_SCROLL_END ||
-         event->type() == ui::ET_SCROLL_FLING_START)) {
+    ui::GestureEvent* gesture_event = event->AsGestureEvent();
+
+    // Do not dispatch ui::ET_GESTURE_BEGIN events.
+    if (gesture_event->type() == ui::ET_GESTURE_BEGIN)
+      return DispatchDetails();
+
+    // Ignore ui::ET_GESTURE_END events which do not correspond to the
+    // removal of the final touch point.
+    if (gesture_event->type() == ui::ET_GESTURE_END &&
+        gesture_event->details().touch_points() > 1) {
       return DispatchDetails();
     }
 
-    DispatchGestureEvent(event->AsGestureEvent());
+    // Ignore subsequent gesture scroll events if no handler was set for a
+    // ui::ET_GESTURE_SCROLL_BEGIN event.
+    if (!gesture_handler_ &&
+        (gesture_event->type() == ui::ET_GESTURE_SCROLL_UPDATE ||
+         gesture_event->type() == ui::ET_GESTURE_SCROLL_END ||
+         gesture_event->type() == ui::ET_SCROLL_FLING_START)) {
+      return DispatchDetails();
+    }
+
+    DispatchGestureEvent(gesture_event);
     return DispatchDetails();
   }
 
@@ -642,8 +655,8 @@ void RootView::DispatchGestureEvent(ui::GestureEvent* event) {
     if (dispatch_details.dispatcher_destroyed)
       return;
 
-    if (event->type() == ui::ET_GESTURE_END &&
-        event->details().touch_points() <= 1) {
+    if (event->type() == ui::ET_GESTURE_END) {
+      DCHECK_EQ(1, event->details().touch_points());
       // In case a drag was in progress, reset all the handlers. Otherwise, just
       // reset the gesture handler.
       if (gesture_handler_ == mouse_pressed_handler_)
@@ -740,8 +753,8 @@ void RootView::DispatchGestureEvent(ui::GestureEvent* event) {
       else
         event->SetHandled();
       // Last ui::ET_GESTURE_END should not set the gesture_handler_.
-      if (gesture_event.type() == ui::ET_GESTURE_END &&
-          event->details().touch_points() <= 1) {
+      if (gesture_event.type() == ui::ET_GESTURE_END) {
+        DCHECK_EQ(1, event->details().touch_points());
         gesture_handler_ = NULL;
       }
       return;

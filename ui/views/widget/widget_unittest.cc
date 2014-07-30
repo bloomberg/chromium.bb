@@ -1399,26 +1399,8 @@ TEST_F(WidgetTest, EventHandlersOnRootView) {
   widget->SetBounds(gfx::Rect(0, 0, 100, 100));
   widget->Show();
 
-  ui::GestureEvent begin(5,
-                         5,
-                         0,
-                         ui::EventTimeForNow(),
-                         ui::GestureEventDetails(ui::ET_GESTURE_BEGIN, 0, 0));
-  ui::GestureEvent end(5,
-                       5,
-                       0,
-                       ui::EventTimeForNow(),
-                       ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0));
-  widget->OnGestureEvent(&begin);
-  EXPECT_EQ(1, h1.GetEventCount(ui::ET_GESTURE_BEGIN));
-  EXPECT_EQ(1, view->GetEventCount(ui::ET_GESTURE_BEGIN));
-  EXPECT_EQ(1, h2.GetEventCount(ui::ET_GESTURE_BEGIN));
-
-  widget->OnGestureEvent(&end);
-  EXPECT_EQ(1, h1.GetEventCount(ui::ET_GESTURE_END));
-  EXPECT_EQ(1, view->GetEventCount(ui::ET_GESTURE_END));
-  EXPECT_EQ(1, h2.GetEventCount(ui::ET_GESTURE_END));
-
+  // Dispatch a ui::ET_SCROLL event. The event remains unhandled and should
+  // bubble up the views hierarchy to be re-dispatched on the root view.
   ui::ScrollEvent scroll(ui::ET_SCROLL,
                          gfx::Point(5, 5),
                          ui::EventTimeForNow(),
@@ -1440,6 +1422,8 @@ TEST_F(WidgetTest, EventHandlersOnRootView) {
   view->ResetCounts();
   h2.ResetCounts();
 
+  // Dispatch a ui::ET_SCROLL_FLING_START event. The event remains unhandled and
+  // should bubble up the views hierarchy to be re-dispatched on the root view.
   ui::ScrollEvent fling(ui::ET_SCROLL_FLING_START,
                         gfx::Point(5, 5),
                         ui::EventTimeForNow(),
@@ -1462,13 +1446,43 @@ TEST_F(WidgetTest, EventHandlersOnRootView) {
   view->ResetCounts();
   h2.ResetCounts();
 
-  // Replace the child of |root_view| with a ScrollableEventCountView so that
-  // ui::ET_SCROLL events are marked as handled at the target phase.
-  root_view->RemoveChildView(view.get());
-  ScrollableEventCountView* scroll_view = new ScrollableEventCountView;
-  scroll_view->SetBounds(0, 0, 20, 20);
-  root_view->AddChildView(scroll_view);
+  // Change the handle mode of |view| so that events are marked as handled at
+  // the target phase.
+  view->set_handle_mode(EventCountView::CONSUME_EVENTS);
 
+  // Dispatch a ui::ET_GESTURE_TAP_DOWN and a ui::ET_GESTURE_TAP_CANCEL event.
+  // The events are handled at the target phase and should not reach the
+  // post-target handler.
+  ui::GestureEvent tap_down(5,
+                            5,
+                            0,
+                            ui::EventTimeForNow(),
+                            ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN,
+                                                    0,
+                                                    0));
+  widget->OnGestureEvent(&tap_down);
+  EXPECT_EQ(1, h1.GetEventCount(ui::ET_GESTURE_TAP_DOWN));
+  EXPECT_EQ(1, view->GetEventCount(ui::ET_GESTURE_TAP_DOWN));
+  EXPECT_EQ(0, h2.GetEventCount(ui::ET_GESTURE_TAP_DOWN));
+
+  ui::GestureEvent tap_cancel(5,
+                              5,
+                              0,
+                              ui::EventTimeForNow(),
+                              ui::GestureEventDetails(ui::ET_GESTURE_TAP_CANCEL,
+                                                      0,
+                                                      0));
+  widget->OnGestureEvent(&tap_cancel);
+  EXPECT_EQ(1, h1.GetEventCount(ui::ET_GESTURE_TAP_CANCEL));
+  EXPECT_EQ(1, view->GetEventCount(ui::ET_GESTURE_TAP_CANCEL));
+  EXPECT_EQ(0, h2.GetEventCount(ui::ET_GESTURE_TAP_CANCEL));
+
+  h1.ResetCounts();
+  view->ResetCounts();
+  h2.ResetCounts();
+
+  // Dispatch a ui::ET_SCROLL event. The event is handled at the target phase
+  // and should not reach the post-target handler.
   ui::ScrollEvent consumed_scroll(ui::ET_SCROLL,
                                   gfx::Point(5, 5),
                                   ui::EventTimeForNow(),
@@ -1477,16 +1491,13 @@ TEST_F(WidgetTest, EventHandlersOnRootView) {
                                   0, 20,
                                   2);
   widget->OnScrollEvent(&consumed_scroll);
-
-  // The event is handled at the target phase and should not reach the
-  // post-target handler.
   EXPECT_EQ(1, h1.GetEventCount(ui::ET_SCROLL));
-  EXPECT_EQ(1, scroll_view->GetEventCount(ui::ET_SCROLL));
+  EXPECT_EQ(1, view->GetEventCount(ui::ET_SCROLL));
   EXPECT_EQ(0, h2.GetEventCount(ui::ET_SCROLL));
 
   // Handled scroll events are not turned into wheel events and re-dispatched.
   EXPECT_EQ(0, h1.GetEventCount(ui::ET_MOUSEWHEEL));
-  EXPECT_EQ(0, scroll_view->GetEventCount(ui::ET_MOUSEWHEEL));
+  EXPECT_EQ(0, view->GetEventCount(ui::ET_MOUSEWHEEL));
   EXPECT_EQ(0, h2.GetEventCount(ui::ET_MOUSEWHEEL));
 
   widget->CloseNow();
@@ -1953,12 +1964,19 @@ class GestureEventForTest : public ui::GestureEvent {
                      0,
                      base::TimeDelta(),
                      ui::GestureEventDetails(type, 0.0f, 0.0f)) {}
+
+  GestureEventForTest(ui::GestureEventDetails details, int x, int y)
+      : GestureEvent(x, y, 0, base::TimeDelta(), details) {}
 };
 
 // Tests that the |gesture_handler_| member in RootView is always NULL
 // after the dispatch of a ui::ET_GESTURE_END event corresponding to
-// the release of the final touch point on the screen.
-TEST_F(WidgetTest, GestureHandlerNotSetOnGestureEnd) {
+// the release of the final touch point on the screen and that
+// ui::ET_GESTURE_END events corresponding to the removal of any other touch
+// point  are never dispatched to a view. Also verifies that
+// ui::ET_GESTURE_BEGIN is never dispatched to a view and does not change the
+// value of |gesture_handler_|.
+TEST_F(WidgetTest, GestureBeginAndEndEvents) {
   Widget* widget = CreateTopLevelNativeWidget();
   widget->SetBounds(gfx::Rect(0, 0, 300, 300));
   EventCountView* view = new EventCountView();
@@ -1968,42 +1986,102 @@ TEST_F(WidgetTest, GestureHandlerNotSetOnGestureEnd) {
   root_view->AddChildView(view);
   widget->Show();
 
-  // If no gesture handler is set, dispatching only a ui::ET_GESTURE_END
-  // event should not set the gesture handler if the event remains unhandled.
+  // If no gesture handler is set, dispatching a ui::ET_GESTURE_END or
+  // ui::ET_GESTURE_BEGIN event should not set the gesture handler and
+  // the events should remain unhandled because the handle mode of |view|
+  // indicates that events should not be consumed.
   EXPECT_EQ(NULL, GetGestureHandler(root_view));
   GestureEventForTest end(ui::ET_GESTURE_END, 15, 15);
   widget->OnGestureEvent(&end);
   EXPECT_FALSE(end.handled());
   EXPECT_EQ(NULL, GetGestureHandler(root_view));
 
-  // If no gesture handler is set, dispatching only a ui::ET_GESTURE_END
-  // event should not set the gesture handler event if the event is handled.
+  GestureEventForTest begin(ui::ET_GESTURE_BEGIN, 15, 15);
+  widget->OnGestureEvent(&begin);
+  EXPECT_FALSE(begin.handled());
+  EXPECT_EQ(NULL, GetGestureHandler(root_view));
+
+  // Change the handle mode of |view| to indicate that it would like
+  // to handle all events.
   view->set_handle_mode(EventCountView::CONSUME_EVENTS);
+
+  // If no gesture handler is set, dispatching only a ui::ET_GESTURE_BEGIN
+  // should not set the gesture handler and should not be marked as handled
+  // because it is never dispatched.
+  begin = GestureEventForTest(ui::ET_GESTURE_BEGIN, 15, 15);
+  widget->OnGestureEvent(&begin);
+  EXPECT_FALSE(begin.handled());
+  EXPECT_EQ(NULL, GetGestureHandler(root_view));
+
+  // If no gesture handler is set, dispatching only a ui::ET_GESTURE_BEGIN
+  // corresponding to a second touch point should not set the gesture handler
+  // and should not be marked as handled because it is never dispatched.
+  ui::GestureEventDetails details(ui::ET_GESTURE_END, 15, 15);
+  details.set_touch_points(2);
+  GestureEventForTest end_second_touch_point(details, 15, 15);
+  widget->OnGestureEvent(&end_second_touch_point);
+  EXPECT_FALSE(end_second_touch_point.handled());
+  EXPECT_EQ(NULL, GetGestureHandler(root_view));
+
+  // If no gesture handler is set, dispatching only a ui::ET_GESTURE_END
+  // event corresponding to the final touch point should not set the gesture
+  // handler, but it should be marked as handled because it was dispatched to
+  // the view targeted by the event's location.
   end = GestureEventForTest(ui::ET_GESTURE_END, 15, 15);
   widget->OnGestureEvent(&end);
   EXPECT_TRUE(end.handled());
   EXPECT_EQ(NULL, GetGestureHandler(root_view));
 
-  // If the gesture handler has been set by a previous gesture, then
-  // it should be reset to NULL by a ui::ET_GESTURE_END.
+  // If the gesture handler has been set by a previous gesture, then it should
+  // remain unchanged on a ui::ET_GESTURE_BEGIN or a ui::ET_GESTURE_END
+  // corresponding to a second touch point. It should be reset to NULL by a
+  // ui::ET_GESTURE_END corresponding to the final touch point.
   GestureEventForTest tap(ui::ET_GESTURE_TAP, 15, 15);
   widget->OnGestureEvent(&tap);
   EXPECT_TRUE(tap.handled());
   EXPECT_EQ(view, GetGestureHandler(root_view));
+
+  begin = GestureEventForTest(ui::ET_GESTURE_BEGIN, 15, 15);
+  widget->OnGestureEvent(&begin);
+  EXPECT_FALSE(begin.handled());
+  EXPECT_EQ(view, GetGestureHandler(root_view));
+
+  end_second_touch_point = GestureEventForTest(details, 15, 15);
+  widget->OnGestureEvent(&end_second_touch_point);
+  EXPECT_FALSE(end_second_touch_point.handled());
+  EXPECT_EQ(view, GetGestureHandler(root_view));
+
   end = GestureEventForTest(ui::ET_GESTURE_END, 15, 15);
   widget->OnGestureEvent(&end);
   EXPECT_TRUE(end.handled());
   EXPECT_EQ(NULL, GetGestureHandler(root_view));
 
   // If the gesture handler has been set by a previous gesture, then
-  // it should be reset to NULL by a ui::ET_GESTURE_END, even when
-  // the gesture handler does not actually handle the end event.
+  // it should remain unchanged on a ui::ET_GESTURE_BEGIN or a
+  // ui::ET_GESTURE_END corresponding to a second touch point and be reset
+  // to NULL by a ui::ET_GESTURE_END corresponding to the final touch point,
+  // even when the gesture handler has indicated that it would not like to
+  // handle any further events.
   tap = GestureEventForTest(ui::ET_GESTURE_TAP, 15, 15);
   widget->OnGestureEvent(&tap);
   EXPECT_TRUE(tap.handled());
   EXPECT_EQ(view, GetGestureHandler(root_view));
-  end = GestureEventForTest(ui::ET_GESTURE_END, 15, 15);
+
+  // Change the handle mode of |view| to indicate that it does not want
+  // to handle any further events.
   view->set_handle_mode(EventCountView::PROPAGATE_EVENTS);
+
+  begin = GestureEventForTest(ui::ET_GESTURE_BEGIN, 15, 15);
+  widget->OnGestureEvent(&begin);
+  EXPECT_FALSE(begin.handled());
+  EXPECT_EQ(view, GetGestureHandler(root_view));
+
+  end_second_touch_point = GestureEventForTest(details, 15, 15);
+  widget->OnGestureEvent(&end_second_touch_point);
+  EXPECT_FALSE(end_second_touch_point.handled());
+  EXPECT_EQ(view, GetGestureHandler(root_view));
+
+  end = GestureEventForTest(ui::ET_GESTURE_END, 15, 15);
   widget->OnGestureEvent(&end);
   EXPECT_FALSE(end.handled());
   EXPECT_EQ(NULL, GetGestureHandler(root_view));
