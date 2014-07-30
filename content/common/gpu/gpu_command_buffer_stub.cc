@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/hash.h"
+#include "base/json/json_writer.h"
 #include "base/memory/shared_memory.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -111,6 +112,36 @@ const int64 kHandleMoreWorkPeriodBusyMs = 1;
 // Prevents idle work from being starved.
 const int64 kMaxTimeSinceIdleMs = 10;
 
+class DevToolsChannelData : public base::debug::ConvertableToTraceFormat {
+ public:
+  static scoped_refptr<base::debug::ConvertableToTraceFormat> CreateForChannel(
+      GpuChannel* channel);
+
+  virtual void AppendAsTraceFormat(std::string* out) const OVERRIDE {
+    std::string tmp;
+    base::JSONWriter::Write(value_.get(), &tmp);
+    *out += tmp;
+  }
+
+ private:
+  explicit DevToolsChannelData(base::Value* value) : value_(value) {}
+  virtual ~DevToolsChannelData() {}
+  scoped_ptr<base::Value> value_;
+  DISALLOW_COPY_AND_ASSIGN(DevToolsChannelData);
+};
+
+scoped_refptr<base::debug::ConvertableToTraceFormat>
+DevToolsChannelData::CreateForChannel(GpuChannel* channel) {
+  scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue);
+  res->SetInteger("renderer_pid", channel->renderer_pid());
+  res->SetDouble("used_bytes", channel->GetMemoryUsage());
+  res->SetDouble("limit_bytes",
+                 channel->gpu_channel_manager()
+                     ->gpu_memory_manager()
+                     ->GetMaximumClientAllocation());
+  return new DevToolsChannelData(res.release());
+}
+
 }  // namespace
 
 GpuCommandBufferStub::GpuCommandBufferStub(
@@ -181,6 +212,12 @@ GpuMemoryManager* GpuCommandBufferStub::GetMemoryManager() const {
 }
 
 bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+               "GPUTask",
+               "data",
+               DevToolsChannelData::CreateForChannel(channel()));
+  // TODO(yurys): remove devtools_gpu_instrumentation call once DevTools
+  // Timeline migrates to tracing crbug.com/361045.
   devtools_gpu_instrumentation::ScopedGpuTask task(channel());
   FastSetActiveURL(active_url_, active_url_hash_);
 
