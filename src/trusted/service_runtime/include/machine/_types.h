@@ -26,8 +26,6 @@
 #define NULL 0
 #endif
 
-#define NACL_ABI_WORDSIZE 32
-
 #define NACL_CONCAT3_(a, b, c) a ## b ## c
 #ifdef __native_client__
 #define NACL_PRI_(fmt, size) NACL_CONCAT3_(PRI, fmt, size)

@@ -8,15 +8,6 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_SIZE_T_H
 
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/service_runtime/include/machine/_types.h"
-
-/*
- * WORDSIZE is defined by service_runtime/include/machine/_types.h.  It is
- * defined as NACL_ABI_WORDSIZE before it is munged by export_header.py.
- */
-#if defined(__native_client__) && !defined(NACL_ABI_WORDSIZE)
-#define NACL_ABI_WORDSIZE WORDSIZE
-#endif  /* defined(__native_client__) && !defined(NACL_ABI_WORDSIZE) */
 
 #ifndef nacl_abi_size_t_defined
 #define nacl_abi_size_t_defined
@@ -36,12 +27,12 @@ typedef int32_t nacl_abi_ssize_t;
 #define NACL_ABI_SSIZE_T_MIN \
   (~NACL_ABI_SSIZE_T_MAX)
 
-#define NACL_PRIdNACL_SIZE NACL_PRI_(d, NACL_ABI_WORDSIZE)
-#define NACL_PRIiNACL_SIZE NACL_PRI_(i, NACL_ABI_WORDSIZE)
-#define NACL_PRIoNACL_SIZE NACL_PRI_(o, NACL_ABI_WORDSIZE)
-#define NACL_PRIuNACL_SIZE NACL_PRI_(u, NACL_ABI_WORDSIZE)
-#define NACL_PRIxNACL_SIZE NACL_PRI_(x, NACL_ABI_WORDSIZE)
-#define NACL_PRIXNACL_SIZE NACL_PRI_(X, NACL_ABI_WORDSIZE)
+#define NACL_PRIdNACL_SIZE NACL_PRId32
+#define NACL_PRIiNACL_SIZE NACL_PRIi32
+#define NACL_PRIoNACL_SIZE NACL_PRIo32
+#define NACL_PRIuNACL_SIZE NACL_PRIu32
+#define NACL_PRIxNACL_SIZE NACL_PRIx32
+#define NACL_PRIXNACL_SIZE NACL_PRIX32
 
 /**
  * Inline functions to aid in conversion between system (s)size_t and
