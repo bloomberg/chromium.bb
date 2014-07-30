@@ -19,6 +19,23 @@ namespace easy_unlock {
 struct SeekDeviceResult;
 }  // easy_unlock
 
+class EasyUnlockPrivateGetStringsFunction : public SyncExtensionFunction {
+ public:
+  EasyUnlockPrivateGetStringsFunction();
+
+ protected:
+  virtual ~EasyUnlockPrivateGetStringsFunction();
+
+  // SyncExtensionFunction:
+  virtual bool RunSync() OVERRIDE;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.getStrings",
+                             EASYUNLOCKPRIVATE_GETSTRINGS)
+
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateGetStringsFunction);
+};
+
 class EasyUnlockPrivatePerformECDHKeyAgreementFunction
     : public AsyncExtensionFunction {
  public:

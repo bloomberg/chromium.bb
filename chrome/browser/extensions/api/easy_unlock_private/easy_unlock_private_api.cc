@@ -5,11 +5,42 @@
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_api.h"
 
 #include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_bluetooth_util.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/chromeos_utils.h"
+#endif
 
 namespace extensions {
 namespace api {
+
+EasyUnlockPrivateGetStringsFunction::EasyUnlockPrivateGetStringsFunction() {
+}
+EasyUnlockPrivateGetStringsFunction::~EasyUnlockPrivateGetStringsFunction() {
+}
+
+bool EasyUnlockPrivateGetStringsFunction::RunSync() {
+  scoped_ptr<base::DictionaryValue> strings(new base::DictionaryValue);
+
+#if defined(OS_CHROMEOS)
+  const base::string16 device_type = chromeos::GetChromeDeviceType();
+#else
+  // TODO(isherman): Set an appropriate device name for non-ChromeOS devices.
+  const base::string16 device_type = base::ASCIIToUTF16("Chromeschnozzle");
+#endif  // defined(OS_CHROMEOS)
+  strings->SetString(
+      "notificationTitle",
+      l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_NOTIFICATION_TITLE,
+                                 device_type));
+
+  SetResult(strings.release());
+  return true;
+}
 
 EasyUnlockPrivatePerformECDHKeyAgreementFunction::
 EasyUnlockPrivatePerformECDHKeyAgreementFunction() {}

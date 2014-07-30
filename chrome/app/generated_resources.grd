@@ -14618,6 +14618,11 @@ Do you accept?
     <message name="IDS_PUSH_MESSAGES_BUBBLE_FRAGMENT" desc="Question asked on the info bar whenever a domain wants to send push messages">
         push notifications
     </message>
+
+    <!-- Easy Unlock strings -->
+    <message name="IDS_EASY_UNLOCK_NOTIFICATION_TITLE" desc="Title for the notification inviting the user to use the Easy Unlock feature.">
+      Easily unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+    </message>
   </messages>
   </release>
 </grit>

@@ -63,14 +63,24 @@
   // Callback for crypto methods that return a single array buffer.
   callback DataCallback = void(optional ArrayBuffer data);
 
+  // An empty callback used purely for signalling success vs. failure.
+  callback EmptyCallback = void();
+
+  // Callback for the getStrings() method.
+  callback GetStringsCallback = void(object strings);
+
   // Callback for method that generates an encryption key pair.
   callback KeyPairCallback = void(optional ArrayBuffer public_key,
                                   optional ArrayBuffer private_key);
 
-  // An empty callback used purely for signalling success vs. failure.
-  callback EmptyCallback = void();
-
   interface Functions {
+    // Gets localized strings required to render the API.
+    //
+    // |callback| : Called with a dictionary mapping names to resource strings.
+    // TODO(isherman): This is essentially copied from identity_private.idl.
+    //                 Perhaps this should be extracted to a common API instead?
+    static void getStrings(GetStringsCallback callback);
+
     // Generates a ECDSA key pair for P256 curve.
     // Public key will be in format recognized by secure wire transport protocol
     // used by Easy Unlock app. Otherwise, the exact format for both key should
