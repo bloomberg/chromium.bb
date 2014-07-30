@@ -15,9 +15,9 @@
 class NetInfoBrowserTest : public content::ContentBrowserTest {
  protected:
   virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
-    // TODO(jkarlin): Once NetInfo is enabled by default remove this switch.
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
+    // TODO(jkarlin): Once NetInfo is enabled on all platforms remove this
+    // switch.
+    command_line->AppendSwitch(switches::kEnableNetworkInformation);
   }
 
 #if defined(OS_CHROMEOS)

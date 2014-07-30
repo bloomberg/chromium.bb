@@ -1122,6 +1122,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableLayerSquashing,
     switches::kEnableLogging,
     switches::kEnableMemoryBenchmarking,
+    switches::kEnableNetworkInformation,
     switches::kEnableOneCopy,
     switches::kEnableOverlayFullscreenVideo,
     switches::kEnableOverlayScrollbar,

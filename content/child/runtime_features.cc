@@ -62,6 +62,11 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
 #else
   WebRuntimeFeatures::enableNavigatorContentUtils(true);
 #endif  // defined(OS_ANDROID)
+
+#if !(defined OS_ANDROID || defined OS_CHROMEOS || defined OS_IOS)
+    // Only Android, ChromeOS, and IOS support NetInfo right now.
+    WebRuntimeFeatures::enableNetworkInformation(false);
+#endif
 }
 
 void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
@@ -164,6 +169,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (command_line.HasSwitch(switches::kEnableLayerSquashing))
     WebRuntimeFeatures::enableLayerSquashing(true);
+
+  if (command_line.HasSwitch(switches::kEnableNetworkInformation))
+    WebRuntimeFeatures::enableNetworkInformation(true);
 }
 
 }  // namespace content
