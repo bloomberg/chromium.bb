@@ -120,6 +120,23 @@ TEST_F(HTMLTextFormControlElementTest, FrameSelectionLocalCaretRectDoesNotCauseL
     EXPECT_EQ(startLayoutCount, layoutCount());
 }
 
+TEST_F(HTMLTextFormControlElementTest, SetSelectionRangeDoesNotCauseLayout)
+{
+    input().focus();
+    input().setValue("Hello, input form.");
+    FrameSelection& frameSelection = document().frame()->selection();
+    LayoutRect oldCaretRect = frameSelection.localCaretRectWithoutUpdateForTesting();
+
+    forceLayoutFlag();
+    int startLayoutCount = layoutCount();
+    input().setSelectionRange(1, 1);
+    EXPECT_EQ(startLayoutCount, layoutCount());
+
+    LayoutRect newCaretRect = frameSelection.localCaretRectWithoutUpdateForTesting();
+    EXPECT_TRUE(!newCaretRect.isEmpty());
+    EXPECT_NE(oldCaretRect, newCaretRect);
+}
+
 typedef Position (*PositionFunction)(const Position&);
 typedef VisiblePosition(*VisblePositionFunction)(const VisiblePosition&);
 
