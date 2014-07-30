@@ -1321,3 +1321,8 @@ crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/f
 # After libwebp-0.4.1 lands in Chrome these need to be rebaselined.
 crbug.com/374343 fast/canvas/canvas-toDataURL-webp.html [ Skip ]
 crbug.com/374343 virtual/gpu/fast/canvas/canvas-toDataURL-webp.html [ Skip ]
+
+# Web Notifications is switching over to a new permission path.
+crbug.com/392187 fast/notifications/notifications-constructor-request-permission.html [ Skip ]
+crbug.com/392187 fast/notifications/notifications-constructor-without-permission.html [ Skip ]
+crbug.com/392187 fast/notifications/notifications-permission-values.html [ Pass Failure ]
