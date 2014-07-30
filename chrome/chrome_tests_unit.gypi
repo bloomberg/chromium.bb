@@ -210,6 +210,8 @@
         'browser/ui/login/login_prompt_test_utils.h',
         'browser/ui/passwords/manage_passwords_ui_controller_mock.cc',
         'browser/ui/passwords/manage_passwords_ui_controller_mock.h',
+        'browser/ui/pdf/pdf_browsertest_base.cc',
+        'browser/ui/pdf/pdf_browsertest_base.h',
         'browser/ui/test/test_confirm_bubble_model.cc',
         'browser/ui/test/test_confirm_bubble_model.h',
         'browser/ui/views/find_bar_host_unittest_util_views.cc',
