@@ -162,7 +162,8 @@ DesktopNotificationService::DesktopNotificationService(
     : PermissionContextBase(profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS),
       profile_(profile),
       ui_manager_(ui_manager),
-      extension_registry_observer_(this) {
+      extension_registry_observer_(this),
+      weak_factory_(this) {
   OnStringListPrefChanged(
       prefs::kMessageCenterDisabledExtensionIds, &disabled_extension_ids_);
   OnStringListPrefChanged(
@@ -189,6 +190,23 @@ DesktopNotificationService::DesktopNotificationService(
 }
 
 DesktopNotificationService::~DesktopNotificationService() {
+}
+
+void DesktopNotificationService::RequestNotificationPermission(
+    content::WebContents* web_contents,
+    const PermissionRequestID& request_id,
+    const GURL& requesting_frame,
+    bool user_gesture,
+    const NotificationPermissionCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  RequestPermission(
+      web_contents,
+      request_id,
+      requesting_frame,
+      user_gesture,
+      base::Bind(&DesktopNotificationService::OnNotificationPermissionRequested,
+                 weak_factory_.GetWeakPtr(),
+                 callback));
 }
 
 void DesktopNotificationService::ShowDesktopNotification(
@@ -359,6 +377,15 @@ void DesktopNotificationService::OnExtensionUninstalled(
 
   SetNotifierEnabled(notifier_id, true);
 #endif
+}
+
+void DesktopNotificationService::OnNotificationPermissionRequested(
+    const NotificationPermissionCallback& callback, bool allowed) {
+  blink::WebNotificationPermission permission = allowed ?
+      blink::WebNotificationPermissionAllowed :
+      blink::WebNotificationPermissionDenied;
+
+  callback.Run(permission);
 }
 
 void DesktopNotificationService::FirePermissionLevelChangedEvent(

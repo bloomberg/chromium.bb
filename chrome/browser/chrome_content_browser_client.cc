@@ -2144,15 +2144,13 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
       -1 /* bridge id */,
       GURL());
 
-  notification_service->RequestPermission(
+  notification_service->RequestNotificationPermission(
       web_contents,
       request_id,
       source_origin,
       // TODO(peter): plumb user_gesture over IPC
       true,
-      base::Bind(&ChromeContentBrowserClient::NotificationPermissionRequested,
-                 weak_factory_.GetWeakPtr(),
-                 callback));
+      callback);
 
 #else
   NOTIMPLEMENTED();
@@ -2959,16 +2957,5 @@ void ChromeContentBrowserClient::MaybeCopyDisableWebRtcEncryptionSwitch(
   }
 }
 #endif  // defined(ENABLE_WEBRTC)
-
-
-void ChromeContentBrowserClient::NotificationPermissionRequested(
-    const base::Callback<void(blink::WebNotificationPermission)>& callback,
-    bool allowed) {
-  blink::WebNotificationPermission permission = allowed ?
-      blink::WebNotificationPermissionAllowed :
-      blink::WebNotificationPermissionDenied;
-
-  callback.Run(permission);
-}
 
 }  // namespace chrome

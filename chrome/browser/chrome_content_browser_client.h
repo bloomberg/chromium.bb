@@ -299,12 +299,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
  private:
   friend class DisableWebRtcEncryptionFlagTest;
 
-  // Used as a callback once a permission has been decided to convert |allowed|
-  // to one of the blink::WebNotificationPermission values.
-  void NotificationPermissionRequested(
-      const base::Callback<void(blink::WebNotificationPermission)>& callback,
-      bool allowed);
-
 #if defined(ENABLE_WEBRTC)
   // Copies disable WebRTC encryption switch depending on the channel.
   static void MaybeCopyDisableWebRtcEncryptionSwitch(

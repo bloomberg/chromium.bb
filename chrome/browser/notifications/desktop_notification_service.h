@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
@@ -51,6 +52,10 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+// Callback to be invoked when the result of a permission request is known.
+typedef base::Callback<void(blink::WebNotificationPermission)>
+    NotificationPermissionCallback;
+
 // The DesktopNotificationService is an object, owned by the Profile,
 // which provides the creation of desktop "toasts" to web pages and workers.
 class DesktopNotificationService
@@ -64,6 +69,14 @@ class DesktopNotificationService
                              NotificationUIManager* ui_manager);
   virtual ~DesktopNotificationService();
 
+  // Requests Web Notification permission for |requesting_frame|. The |callback|
+  // will be invoked after the user has made a decision.
+  void RequestNotificationPermission(
+      content::WebContents* web_contents,
+      const PermissionRequestID& request_id,
+      const GURL& requesting_frame,
+      bool user_gesture,
+      const NotificationPermissionCallback& callback);
 
   // Show a desktop notification. If |cancel_callback| is non-null, it's set to
   // a callback which can be used to cancel the notification.
@@ -123,8 +136,11 @@ class DesktopNotificationService
   // Called when the disabled_extension_id pref has been changed.
   void OnDisabledExtensionIdsChanged();
 
-  // Called when the disabled_system_component_id pref has been changed.
-  void OnDisabledSystemComponentIdsChanged();
+  // Used as a callback once a permission has been decided to convert |allowed|
+  // to one of the blink::WebNotificationPermission values.
+  void OnNotificationPermissionRequested(
+      const base::Callback<void(blink::WebNotificationPermission)>& callback,
+      bool allowed);
 
   void FirePermissionLevelChangedEvent(
       const message_center::NotifierId& notifier_id,
@@ -162,6 +178,8 @@ class DesktopNotificationService
 
   // Welcome Notification
   scoped_ptr<ExtensionWelcomeNotification> chrome_now_welcome_notification_;
+
+  base::WeakPtrFactory<DesktopNotificationService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNotificationService);
 };
