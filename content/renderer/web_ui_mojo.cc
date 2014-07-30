@@ -5,7 +5,6 @@
 #include "content/renderer/web_ui_mojo.h"
 
 #include "content/common/view_messages.h"
-#include "content/public/common/service_registry.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/renderer/web_ui_mojo_context_state.h"
@@ -49,16 +48,8 @@ void WebUIMojo::MainFrameObserver::DidFinishDocumentLoad() {
 WebUIMojo::WebUIMojo(RenderView* render_view)
     : RenderViewObserver(render_view),
       RenderViewObserverTracker<WebUIMojo>(render_view),
-      main_frame_observer_(this),
-      did_finish_document_load_(false) {
+      main_frame_observer_(this) {
   CreateContextState();
-}
-
-void WebUIMojo::SetBrowserHandle(mojo::ScopedMessagePipeHandle handle) {
-  if (did_finish_document_load_)
-    SetHandleOnContextState(handle.Pass());
-  else
-    pending_handle_ = handle.Pass();
 }
 
 WebUIMojo::~WebUIMojo() {
@@ -84,20 +75,10 @@ void WebUIMojo::DestroyContextState(v8::Handle<v8::Context> context) {
 }
 
 void WebUIMojo::OnDidFinishDocumentLoad() {
-  did_finish_document_load_ = true;
-  mojo::MessagePipe pipe;
-  SetHandleOnContextState(pipe.handle0.Pass());
-  RenderFrame::FromWebFrame(render_view()->GetWebView()->mainFrame())->
-      GetServiceRegistry()->
-          ConnectToRemoteService("webui_controller", pipe.handle1.Pass());
-}
-
-void WebUIMojo::SetHandleOnContextState(mojo::ScopedMessagePipeHandle handle) {
-  DCHECK(did_finish_document_load_);
   v8::HandleScope handle_scope(blink::mainThreadIsolate());
   WebUIMojoContextState* state = GetContextState();
   if (state)
-    state->SetHandle(handle.Pass());
+    state->Run();
 }
 
 WebUIMojoContextState* WebUIMojo::GetContextState() {

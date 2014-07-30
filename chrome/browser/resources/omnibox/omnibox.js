@@ -19,7 +19,8 @@
 define('main', [
     'mojo/public/js/bindings/connection',
     'chrome/browser/ui/webui/omnibox/omnibox.mojom',
-], function(connector, browser) {
+    'content/public/renderer/service_provider',
+], function(connector, browser, serviceProvider) {
   'use strict';
 
   var connection;
@@ -432,8 +433,12 @@ define('main', [
     refresh();
   };
 
-  return function(handle) {
-    connection = new connector.Connection(handle, OmniboxPageImpl,
-                                          browser.OmniboxUIHandlerMojoProxy);
+  return function() {
+    connection = new connector.Connection(
+        // TODO(sammc): Avoid using NAME_ directly.
+        serviceProvider.connectToService(
+            browser.OmniboxUIHandlerMojoProxy.NAME_),
+        OmniboxPageImpl,
+        browser.OmniboxUIHandlerMojoProxy);
   };
 });

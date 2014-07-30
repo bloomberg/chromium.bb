@@ -30,9 +30,6 @@ class WebUIMojo
  public:
   explicit WebUIMojo(RenderView* render_view);
 
-  // Sets the handle to the current WebUI.
-  void SetBrowserHandle(mojo::ScopedMessagePipeHandle handle);
-
  private:
   class MainFrameObserver : public RenderFrameObserver {
    public:
@@ -55,12 +52,9 @@ class WebUIMojo
   void CreateContextState();
   void DestroyContextState(v8::Handle<v8::Context> context);
 
-  // Invoked when the frame finishes loading. Invokes SetHandleOnContextState()
-  // if necessary.
+  // Invoked when the frame finishes loading. Invokes Run() on the
+  // WebUIMojoContextState.
   void OnDidFinishDocumentLoad();
-
-  // Invokes SetHandle() on the WebUIMojoContextState (if there is one).
-  void SetHandleOnContextState(mojo::ScopedMessagePipeHandle handle);
 
   WebUIMojoContextState* GetContextState();
 
@@ -68,16 +62,6 @@ class WebUIMojo
   virtual void DidClearWindowObject(blink::WebLocalFrame* frame) OVERRIDE;
 
   MainFrameObserver main_frame_observer_;
-
-  // Set to true in DidFinishDocumentLoad(). 'main' is only executed once this
-  // happens.
-  bool did_finish_document_load_;
-
-  // If SetBrowserHandle() is invoked before the document finishes loading the
-  // MessagePipeHandle is stored here. When the document finishes loading
-  // SetHandleOnContextState() is invoked to send the handle to the
-  // WebUIMojoContextState and ultimately the page.
-  mojo::ScopedMessagePipeHandle pending_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIMojo);
 };

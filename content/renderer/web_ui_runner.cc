@@ -4,6 +4,9 @@
 
 #include "content/renderer/web_ui_runner.h"
 
+#include "content/public/common/service_registry.h"
+#include "content/public/renderer/render_frame.h"
+#include "content/renderer/mojo/service_registry_js_wrapper.h"
 #include "gin/modules/module_registry.h"
 #include "gin/per_context_data.h"
 #include "gin/public/context_holder.h"
@@ -47,6 +50,12 @@ void WebUIRunner::RegisterBuiltinModules() {
                              mojo::js::Support::kModuleName,
                              mojo::js::Support::GetModule(
                                  context_holder_->isolate()));
+  registry->AddBuiltinModule(
+      context_holder_->isolate(),
+      ServiceRegistryJsWrapper::kModuleName,
+      ServiceRegistryJsWrapper::Create(
+          context_holder_->isolate(),
+          RenderFrame::FromWebFrame(frame_)->GetServiceRegistry()).ToV8());
 }
 
 void WebUIRunner::Run(const std::string& source,

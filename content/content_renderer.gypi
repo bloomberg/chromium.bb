@@ -367,6 +367,8 @@
       'renderer/menu_item_builder.h',
       'renderer/mhtml_generator.cc',
       'renderer/mhtml_generator.h',
+      'renderer/mojo/service_registry_js_wrapper.cc',
+      'renderer/mojo/service_registry_js_wrapper.h',
       'renderer/mouse_lock_dispatcher.cc',
       'renderer/mouse_lock_dispatcher.h',
       'renderer/net_info_helper.cc',

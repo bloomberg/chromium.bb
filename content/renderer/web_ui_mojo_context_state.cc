@@ -36,14 +36,11 @@ namespace {
 const char kModulePrefix[] = "chrome://mojo/";
 
 void RunMain(base::WeakPtr<gin::Runner> runner,
-             mojo::ScopedMessagePipeHandle* handle,
              v8::Handle<v8::Value> module) {
   v8::Isolate* isolate = runner->GetContextHolder()->isolate();
   v8::Handle<v8::Function> start;
   CHECK(gin::ConvertFromV8(isolate, module, &start));
-  v8::Handle<v8::Value> args[] = {
-      gin::ConvertToV8(isolate, mojo::Handle(handle->release().value())) };
-  runner->Call(start, runner->global(), 1, args);
+  runner->Call(start, runner->global(), 0, NULL);
 }
 
 }  // namespace
@@ -71,14 +68,12 @@ WebUIMojoContextState::~WebUIMojoContextState() {
       runner_->GetContextHolder()->context())->RemoveObserver(this);
 }
 
-void WebUIMojoContextState::SetHandle(mojo::ScopedMessagePipeHandle handle) {
+void WebUIMojoContextState::Run() {
   gin::ContextHolder* context_holder = runner_->GetContextHolder();
-  mojo::ScopedMessagePipeHandle* passed_handle =
-      new mojo::ScopedMessagePipeHandle(handle.Pass());
   gin::ModuleRegistry::From(context_holder->context())->LoadModule(
       context_holder->isolate(),
       "main",
-      base::Bind(RunMain, runner_->GetWeakPtr(), base::Owned(passed_handle)));
+      base::Bind(RunMain, runner_->GetWeakPtr()));
 }
 
 void WebUIMojoContextState::FetchModules(const std::vector<std::string>& ids) {

@@ -5,7 +5,8 @@
 define('main', [
     'mojo/public/js/bindings/connection',
     'content/test/data/web_ui_test_mojo_bindings.mojom',
-], function (connection, bindings) {
+    'content/public/renderer/service_provider',
+], function (connection, bindings, serviceProvider) {
   var retainedConnection;
 
   function RendererTargetTest(bindings) {
@@ -23,8 +24,11 @@ define('main', [
     this.bindings_.pingResponse();
   };
 
-  return function(handle) {
+  return function() {
     retainedConnection = new connection.Connection(
-        handle, RendererTargetTest, bindings.BrowserTargetProxy);
+        // TODO(sammc): Avoid using NAME_ directly.
+        serviceProvider.connectToService(bindings.BrowserTargetProxy.NAME_),
+        RendererTargetTest,
+        bindings.BrowserTargetProxy);
   };
 });

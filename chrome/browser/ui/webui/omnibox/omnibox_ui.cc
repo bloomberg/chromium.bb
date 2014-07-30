@@ -29,8 +29,7 @@ OmniboxUI::OmniboxUI(content::WebUI* web_ui) : MojoWebUIController(web_ui) {
 OmniboxUI::~OmniboxUI() {}
 
 scoped_ptr<MojoWebUIHandler> OmniboxUI::CreateUIHandler(
-    mojo::ScopedMessagePipeHandle handle_to_page) {
-  return scoped_ptr<MojoWebUIHandler>(
-      mojo::WeakBindToPipe(new OmniboxUIHandler(Profile::FromWebUI(web_ui())),
-                           handle_to_page.Pass()));
+    mojo::InterfaceRequest<OmniboxUIHandlerMojo> request) {
+  return scoped_ptr<MojoWebUIHandler>(mojo::WeakBindToRequest(
+      new OmniboxUIHandler(Profile::FromWebUI(web_ui())), &request));
 }

@@ -7,9 +7,10 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/ui/webui/mojo_web_ui_controller.h"
+#include "chrome/browser/ui/webui/omnibox/omnibox.mojom.h"
 
 // The UI for chrome://omnibox/
-class OmniboxUI : public MojoWebUIController {
+class OmniboxUI : public MojoWebUIController<OmniboxUIHandlerMojo> {
  public:
   explicit OmniboxUI(content::WebUI* contents);
   virtual ~OmniboxUI();
@@ -17,7 +18,7 @@ class OmniboxUI : public MojoWebUIController {
  private:
   // MojoWebUIController overrides:
   virtual scoped_ptr<MojoWebUIHandler> CreateUIHandler(
-      mojo::ScopedMessagePipeHandle handle_to_page) OVERRIDE;
+      mojo::InterfaceRequest<OmniboxUIHandlerMojo> request) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxUI);
 };

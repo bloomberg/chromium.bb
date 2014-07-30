@@ -28,6 +28,8 @@
 #include "content/test/data/web_ui_test_mojo_bindings.mojom.h"
 #include "grit/content_resources.h"
 #include "mojo/common/test/test_utils.h"
+#include "mojo/public/cpp/bindings/interface_impl.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/js/bindings/constants.h"
 
 namespace content {
@@ -58,24 +60,18 @@ bool GetResource(const std::string& id,
   return true;
 }
 
-class BrowserTargetImpl : public BrowserTarget {
+class BrowserTargetImpl : public mojo::InterfaceImpl<BrowserTarget> {
  public:
-  BrowserTargetImpl(mojo::ScopedMessagePipeHandle handle,
-                    base::RunLoop* run_loop)
-      : run_loop_(run_loop) {
-    renderer_.Bind(handle.Pass());
-    renderer_.set_client(this);
-  }
+  explicit BrowserTargetImpl(base::RunLoop* run_loop) : run_loop_(run_loop) {}
 
   virtual ~BrowserTargetImpl() {}
 
-  // BrowserTarget overrides:
+  // mojo::InterfaceImpl<BrowserTarget> overrides:
   virtual void PingResponse() OVERRIDE {
     NOTREACHED();
   }
 
  protected:
-  RendererTargetPtr renderer_;
   base::RunLoop* run_loop_;
 
  private:
@@ -84,15 +80,16 @@ class BrowserTargetImpl : public BrowserTarget {
 
 class PingBrowserTargetImpl : public BrowserTargetImpl {
  public:
-  PingBrowserTargetImpl(mojo::ScopedMessagePipeHandle handle,
-                        base::RunLoop* run_loop)
-      : BrowserTargetImpl(handle.Pass(), run_loop) {
-    renderer_->Ping();
-  }
+  explicit PingBrowserTargetImpl(base::RunLoop* run_loop)
+      : BrowserTargetImpl(run_loop) {}
 
   virtual ~PingBrowserTargetImpl() {}
 
-  // BrowserTarget overrides:
+  // mojo::InterfaceImpl<BrowserTarget> overrides:
+  virtual void OnConnectionEstablished() OVERRIDE {
+    client()->Ping();
+  }
+
   // Quit the RunLoop when called.
   virtual void PingResponse() OVERRIDE {
     got_message = true;
@@ -134,14 +131,14 @@ class PingTestWebUIController : public TestWebUIController {
 
   // WebUIController overrides:
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE {
-    render_view_host->GetMainFrame()->GetServiceRegistry()->AddService(
-        "webui_controller",
-        base::Bind(&PingTestWebUIController::CreateHandler,
-                   base::Unretained(this)));
+    render_view_host->GetMainFrame()->GetServiceRegistry()->
+        AddService<BrowserTarget>(base::Bind(
+            &PingTestWebUIController::CreateHandler, base::Unretained(this)));
   }
 
-  void CreateHandler(mojo::ScopedMessagePipeHandle handle) {
-    browser_target_.reset(new PingBrowserTargetImpl(handle.Pass(), run_loop_));
+  void CreateHandler(mojo::InterfaceRequest<BrowserTarget> request) {
+    browser_target_.reset(mojo::WeakBindToRequest(
+        new PingBrowserTargetImpl(run_loop_), &request));
   }
 
  private:

@@ -6,40 +6,28 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/mojo_web_ui_handler.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/bindings_policy.h"
-#include "content/public/common/service_registry.h"
 #include "mojo/public/cpp/system/core.h"
 
-MojoWebUIController::MojoWebUIController(content::WebUI* contents)
-    : WebUIController(contents), mojo_data_source_(NULL), weak_factory_(this) {
+MojoWebUIControllerBase::MojoWebUIControllerBase(content::WebUI* contents)
+    : WebUIController(contents), mojo_data_source_(NULL) {
 }
 
-MojoWebUIController::~MojoWebUIController() {
+MojoWebUIControllerBase::~MojoWebUIControllerBase() {
 }
 
-void MojoWebUIController::RenderViewCreated(
+void MojoWebUIControllerBase::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
   render_view_host->AllowBindings(content::BINDINGS_POLICY_WEB_UI);
-  render_view_host->GetMainFrame()->GetServiceRegistry()->AddService(
-      "webui_controller",
-      base::Bind(&MojoWebUIController::CreateAndStoreUIHandler,
-                 weak_factory_.GetWeakPtr()));
 }
 
-void MojoWebUIController::AddMojoResourcePath(const std::string& path,
-                                              int resource_id) {
+void MojoWebUIControllerBase::AddMojoResourcePath(const std::string& path,
+                                                  int resource_id) {
   if (!mojo_data_source_) {
     mojo_data_source_ = content::WebUIDataSource::AddMojoDataSource(
         Profile::FromWebUI(web_ui()));
   }
   mojo_data_source_->AddResourcePath(path, resource_id);
-}
-
-void MojoWebUIController::CreateAndStoreUIHandler(
-    mojo::ScopedMessagePipeHandle handle) {
-  ui_handler_ = CreateUIHandler(handle.Pass());
 }

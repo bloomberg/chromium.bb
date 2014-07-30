@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "gin/modules/module_registry_observer.h"
-#include "mojo/public/cpp/system/core.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -38,8 +37,7 @@ class WebUIMojoContextState : public gin::ModuleRegistryObserver {
                         v8::Handle<v8::Context> context);
   virtual ~WebUIMojoContextState();
 
-  // Called once the mojo::Handle is available.
-  void SetHandle(mojo::ScopedMessagePipeHandle handle);
+  void Run();
 
   // Returns true if at least one module was added.
   bool module_added() const { return module_added_; }

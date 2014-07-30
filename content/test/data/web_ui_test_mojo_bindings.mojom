@@ -4,11 +4,11 @@
 
 module content {
 
+[Client=RendererTarget]
 interface BrowserTarget {
   PingResponse();
 };
 
-[Client=BrowserTarget]
 interface RendererTarget {
   Ping();
 };
