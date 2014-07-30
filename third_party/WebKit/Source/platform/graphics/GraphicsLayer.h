@@ -150,10 +150,6 @@ public:
     const FloatSize& size() const { return m_size; }
     void setSize(const FloatSize&);
 
-    // The boundOrigin affects the offset at which content is rendered, and sublayers are positioned.
-    const FloatPoint& boundsOrigin() const { return m_boundsOrigin; }
-    void setBoundsOrigin(const FloatPoint& origin) { m_boundsOrigin = origin; }
-
     const TransformationMatrix& transform() const { return m_transform; }
     void setTransform(const TransformationMatrix&);
     void setShouldFlattenTransform(bool);
@@ -214,9 +210,6 @@ public:
     void setContentsToPlatformLayer(blink::WebLayer* layer) { setContentsTo(layer); }
     bool hasContentsLayer() const { return m_contentsLayer; }
 
-    // Callback from the underlying graphics system to draw layer contents.
-    void paintGraphicsLayerContents(GraphicsContext&, const IntRect& clip);
-
     // For hosting this GraphicsLayer in a native layer hierarchy.
     blink::WebLayer* platformLayer() const;
 
@@ -228,12 +221,9 @@ public:
     // Return a string with a human readable form of the layer tree, If debug is true
     // pointers for the layers and timing data will be included in the returned string.
     String layerTreeAsText(LayerTreeFlags = LayerTreeNormal) const;
-    String debugName(blink::WebLayer*) const;
 
     void resetTrackedRepaints();
     void addRepaintRect(const FloatRect&);
-
-    void collectTrackedRepaintRects(Vector<FloatRect>&) const;
 
     void addLinkHighlight(LinkHighlightClient*);
     void removeLinkHighlight(LinkHighlightClient*);
@@ -260,6 +250,8 @@ public:
     virtual void didScroll() OVERRIDE;
 
 protected:
+    String debugName(blink::WebLayer*) const;
+
     explicit GraphicsLayer(GraphicsLayerClient*);
     // GraphicsLayerFactoryChromium that wants to create a GraphicsLayer need to be friends.
     friend class blink::GraphicsLayerFactoryChromium;
@@ -268,6 +260,9 @@ protected:
     virtual blink::WebLayer* contentsLayer() const { return m_contentsLayer; }
 
 private:
+    // Callback from the underlying graphics system to draw layer contents.
+    void paintGraphicsLayerContents(GraphicsContext&, const IntRect& clip);
+
     // Adds a child without calling updateChildList(), so that adding children
     // can be batched before updating.
     void addChildInternal(GraphicsLayer*);
@@ -276,14 +271,9 @@ private:
     bool hasAncestor(GraphicsLayer*) const;
 #endif
 
-    // This method is used by platform GraphicsLayer classes to clear the filters
-    // when compositing is not done in hardware. It is not virtual, so the caller
-    // needs to notifiy the change to the platform layer as needed.
-    void clearFilters() { m_filters.clear(); }
-
     void setReplicatedLayer(GraphicsLayer* layer) { m_replicatedLayer = layer; }
 
-    int incrementPaintCount() { return ++m_paintCount; }
+    void incrementPaintCount() { ++m_paintCount; }
 
     // Helper functions used by settors to keep layer's the state consistent.
     void updateChildList();
@@ -303,7 +293,6 @@ private:
     // Position is relative to the parent GraphicsLayer
     FloatPoint m_position;
     FloatSize m_size;
-    FloatPoint m_boundsOrigin;
 
     TransformationMatrix m_transform;
     FloatPoint3D m_transformOrigin;
@@ -312,8 +301,6 @@ private:
     float m_opacity;
 
     blink::WebBlendMode m_blendMode;
-
-    FilterOperations m_filters;
 
     bool m_hasTransformOrigin : 1;
     bool m_contentsOpaque : 1;
