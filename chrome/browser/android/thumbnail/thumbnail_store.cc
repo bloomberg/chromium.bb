@@ -35,14 +35,22 @@ const int kCompressedKey = 0xABABABAB;
 // Indicates whether we prefer to have more free CPU memory over GPU memory.
 const bool kPreferCPUMemory = true;
 
-// ETC1 texture sizes are multiples of four.
-size_t NextETC1Size(size_t s) {
-  return (s / 4 + (s % 4 ? 1 : 0)) * 4;
+// TODO(): ETC1 texture sizes should be multiples of four, but some drivers only
+// allow power-of-two ETC1 textures.  Find better work around.
+size_t NextPowerOfTwo(size_t x) {
+  --x;
+  x |= x >> 1;
+  x |= x >> 2;
+  x |= x >> 4;
+  x |= x >> 8;
+  x |= x >> 16;
+  return x + 1;
 }
 
 gfx::Size GetEncodedSize(const gfx::Size& bitmap_size) {
-  return gfx::Size(NextETC1Size(bitmap_size.width()),
-                   NextETC1Size(bitmap_size.height()));
+  DCHECK(!bitmap_size.IsEmpty());
+  return gfx::Size(NextPowerOfTwo(bitmap_size.width()),
+                   NextPowerOfTwo(bitmap_size.height()));
 }
 
 }  // anonymous namespace
