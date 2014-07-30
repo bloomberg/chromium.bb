@@ -562,8 +562,12 @@ class ManifestVersionedSyncStage(SyncStage):
       self.ManifestCheckout(new_manifest)
 
 
-class MasterSlaveSyncStage(ManifestVersionedSyncStage):
-  """Stage that generates a unique manifest file candidate, and sync's to it."""
+class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
+  """Stage that generates a unique manifest file candidate, and sync's to it.
+
+  This stage uses an LKGM manifest manager that handles LKGM
+  candidates and their states.
+  """
 
   # Timeout for waiting on the latest candidate manifest.
   LATEST_CANDIDATE_TIMEOUT_SECONDS = 20 * 60
@@ -573,7 +577,7 @@ class MasterSlaveSyncStage(ManifestVersionedSyncStage):
   sub_manager = None
 
   def __init__(self, builder_run, **kwargs):
-    super(MasterSlaveSyncStage, self).__init__(builder_run, **kwargs)
+    super(MasterSlaveLKGMSyncStage, self).__init__(builder_run, **kwargs)
     # lkgm_manager deals with making sure we're synced to whatever manifest
     # we get back in GetNextManifest so syncing again is redundant.
     self.skip_sync = True
@@ -608,12 +612,12 @@ class MasterSlaveSyncStage(ManifestVersionedSyncStage):
     self.RegisterManifestManager(self._GetInitializedManager(self.internal))
     if (self._run.config.master and self._GetSlaveConfigs()):
       assert self.internal, 'Unified masters must use an internal checkout.'
-      MasterSlaveSyncStage.sub_manager = self._GetInitializedManager(False)
+      MasterSlaveLKGMSyncStage.sub_manager = self._GetInitializedManager(False)
 
   def ForceVersion(self, version):
-    manifest = super(MasterSlaveSyncStage, self).ForceVersion(version)
-    if MasterSlaveSyncStage.sub_manager:
-      MasterSlaveSyncStage.sub_manager.BootstrapFromVersion(version)
+    manifest = super(MasterSlaveLKGMSyncStage, self).ForceVersion(version)
+    if MasterSlaveLKGMSyncStage.sub_manager:
+      MasterSlaveLKGMSyncStage.sub_manager.BootstrapFromVersion(version)
 
     return manifest
 
@@ -629,10 +633,9 @@ class MasterSlaveSyncStage(ManifestVersionedSyncStage):
       manifest = self.manifest_manager.CreateNewCandidate(
           chrome_version=self._chrome_version,
           build_id=build_id)
-      if MasterSlaveSyncStage.sub_manager:
-        MasterSlaveSyncStage.sub_manager.CreateFromManifest(
-            manifest, dashboard_url=self.ConstructDashboardURL(),
-            build_id=build_id)
+      if MasterSlaveLKGMSyncStage.sub_manager:
+        MasterSlaveLKGMSyncStage.sub_manager.CreateFromManifest(
+            manifest, dashboard_url=self.ConstructDashboardURL())
       return manifest
     else:
       return self.manifest_manager.GetLatestCandidate(
@@ -655,12 +658,16 @@ class MasterSlaveSyncStage(ManifestVersionedSyncStage):
     ManifestVersionedSyncStage.PerformStage(self)
 
 
-class CommitQueueSyncStage(MasterSlaveSyncStage):
+class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
   """Commit Queue Sync stage that handles syncing and applying patches.
 
-  This stage handles syncing to a manifest, passing around that manifest to
-  other builders and finding the Gerrit Reviews ready to be committed and
-  applying them into its own checkout.
+  Similar to the MasterSlaveLKGMsync Stage, this stage handles syncing
+  to a manifest, passing around that manifest to other builders.
+
+  What makes this stage different is that the CQ master finds the
+  patches on Gerrit which are ready to be committed, apply them, and
+  includes the pathces in the new manifest. The slaves sync to the
+  manifest, and apply the paches written in the manifest.
   """
 
   def __init__(self, builder_run, **kwargs):
@@ -743,8 +750,8 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
 
       manifest = self.manifest_manager.CreateNewCandidate(validation_pool=pool,
                                                           build_id=build_id)
-      if MasterSlaveSyncStage.sub_manager:
-        MasterSlaveSyncStage.sub_manager.CreateFromManifest(
+      if MasterSlaveLKGMSyncStage.sub_manager:
+        MasterSlaveLKGMSyncStage.sub_manager.CreateFromManifest(
             manifest, dashboard_url=self.ConstructDashboardURL(),
             build_id=build_id)
 

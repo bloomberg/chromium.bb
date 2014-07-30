@@ -176,18 +176,10 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       builder_names = [b['name'] for b in builders]
 
       manager = self._run.attrs.manifest_manager
-      if sync_stages.MasterSlaveSyncStage.sub_manager:
-        manager = sync_stages.MasterSlaveSyncStage.sub_manager
+      if sync_stages.MasterSlaveLKGMSyncStage.sub_manager:
+        manager = sync_stages.MasterSlaveLKGMSyncStage.sub_manager
 
       return manager.GetBuildersStatus(builder_names, timeout=timeout)
-
-  def _AbortCQHWTests(self):
-    """Abort any HWTests started by the CQ."""
-    if (cbuildbot_config.IsCQType(self._run.config.build_type) and
-        self._run.manifest_branch == 'master'):
-      version = self._run.GetVersion()
-      if not commands.HaveCQHWTestsBeenAborted(version):
-        commands.AbortCQHWTests(version, self._run.options.debug)
 
   def _HandleStageException(self, exc_info):
     """Decide whether an exception should be treated as fatal."""
@@ -222,8 +214,8 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         self._run.manifest_branch == 'master' and
         self._run.config.build_type != constants.CHROME_PFQ_TYPE):
       self._run.attrs.manifest_manager.PromoteCandidate()
-      if sync_stages.MasterSlaveSyncStage.sub_manager:
-        sync_stages.MasterSlaveSyncStage.sub_manager.PromoteCandidate()
+      if sync_stages.MasterSlaveLKGMSyncStage.sub_manager:
+        sync_stages.MasterSlaveLKGMSyncStage.sub_manager.PromoteCandidate()
 
   def HandleFailure(self, failing, inflight, no_stat):
     """Handle a build failure.
@@ -355,6 +347,14 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     else:
       return super(CommitQueueCompletionStage, self)._HandleStageException(
           exc_info)
+
+  def _AbortCQHWTests(self):
+    """Abort any HWTests started by the CQ."""
+    if (cbuildbot_config.IsCQType(self._run.config.build_type) and
+        self._run.manifest_branch == 'master'):
+      version = self._run.GetVersion()
+      if not commands.HaveCQHWTestsBeenAborted(version):
+        commands.AbortCQHWTests(version, self._run.options.debug)
 
   def HandleSuccess(self):
     if self._run.config.master:

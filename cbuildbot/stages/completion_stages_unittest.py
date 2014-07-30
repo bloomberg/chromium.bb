@@ -91,7 +91,7 @@ class ManifestVersionedSyncCompletionStageTest(
 
 class MasterSlaveSyncCompletionStageTest(
     generic_stages_unittest.AbstractStageTest):
-  """Tests the MasterSlaveSyncCompletionStage."""
+  """Tests MasterSlaveSyncCompletionStage with ManifestVersionedSyncStage."""
   BOT_ID = 'x86-generic-paladin'
 
   def setUp(self):
@@ -110,7 +110,7 @@ class MasterSlaveSyncCompletionStageTest(
     self._run.config['master'] = True
 
   def ConstructStage(self):
-    sync_stage = sync_stages.MasterSlaveSyncStage(self._run)
+    sync_stage = sync_stages.ManifestVersionedSyncStage(self._run)
     return completion_stages.MasterSlaveSyncCompletionStage(
         self._run, sync_stage, success=True)
 
@@ -235,6 +235,17 @@ class MasterSlaveSyncCompletionStageTest(
       self.assertTrue(isinstance(ret, tuple))
       self.assertEqual(len(ret), 3)
       self.assertEqual(ret[0], e)
+
+
+class MasterSlaveSyncCompletionStageTestWithLKGMSync(
+    MasterSlaveSyncCompletionStageTest):
+  """Tests the MasterSlaveSyncCompletionStage with MasterSlaveLKGMSyncStage."""
+  BOT_ID = 'x86-generic-paladin'
+
+  def ConstructStage(self):
+    sync_stage = sync_stages.MasterSlaveLKGMSyncStage(self._run)
+    return completion_stages.MasterSlaveSyncCompletionStage(
+        self._run, sync_stage, success=True)
 
 
 class CommitQueueCompletionStageTest(

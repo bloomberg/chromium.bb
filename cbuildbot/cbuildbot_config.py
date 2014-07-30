@@ -155,6 +155,11 @@ def IsCQType(b_type):
   return b_type == constants.PALADIN_TYPE
 
 
+def IsCanaryType(b_type):
+  """Returns True if this build type is a Canary."""
+  return b_type == constants.CANARY_TYPE
+
+
 # List of usable cbuildbot configs; see add_config method.
 # TODO(mtennant): This is seriously buried in this file.  Move to top
 # and rename something that stands out in a file where the word "config"
@@ -2190,6 +2195,7 @@ _release.add_config('fox_wtm2-release',
 _release.add_config('link-release',
   boards=['link'],
   useflags=_release['useflags'] + ['highdpi'],
+  important=True,
 )
 
 _release.add_config('link_freon-release',
@@ -2201,12 +2207,18 @@ _release.add_config('link_freon-release',
   # This build doesn't generate signed images, so don't try to release them.
   paygen=False,
   signer_tests=False,
+  important=True,
 )
 
 _release.add_config('lumpy-release',
   boards=['lumpy'],
   critical_for_chrome=True,
   afdo_use=True,
+)
+
+_release.add_config('samus-release',
+  boards=['samus'],
+  important=True,
 )
 
 # Add specific release configs for these sandybrige/ivybridge boards to
@@ -2278,27 +2290,28 @@ _brillo_release = _release.derive(brillo,
 )
 
 _brillo_release.add_config('duck-release',
-   boards=['duck'],
+  boards=['duck'],
 
-   # Hw Lab can't test, yet.
-   paygen_skip_testing=True,
+  # Hw Lab can't test, yet.
+  paygen_skip_testing=True,
+  important=True,
 )
 
 _brillo_release.add_config('gizmo-release',
-   boards=['gizmo'],
+  boards=['gizmo'],
 
-   # This build doesn't generate signed images, so don't try to release them.
-   paygen=False,
+  # This build doesn't generate signed images, so don't try to release them.
+  paygen=False,
 )
 
 _brillo_release.add_config('lemmings-release',
-   boards=['lemmings'],
+  boards=['lemmings'],
 
-   # Hw Lab can't test, yet.
-   paygen_skip_testing=True,
+  # Hw Lab can't test, yet.
+  paygen_skip_testing=True,
 
-   # This build doesn't generate signed images, so don't try to release them.
-   paygen=False,
+  # This build doesn't generate signed images, so don't try to release them.
+  paygen=False,
 )
 
 _brillo_release.add_config('panther_embedded-minimal-release',
@@ -2310,10 +2323,11 @@ _brillo_release.add_config('panther_embedded-minimal-release',
 _arm_brillo_release = _brillo_release.derive(non_testable_builder)
 
 _arm_brillo_release.add_config('storm-release',
-   boards=['storm'],
+  boards=['storm'],
 
-   # Hw Lab can't test duck, yet.
-   paygen_skip_testing=True,
+  # Hw Lab can't test duck, yet.
+  paygen_skip_testing=True,
+  important=True,
 )
 
 _beaglebone_release = _arm_brillo_release.derive(beaglebone)
@@ -2331,6 +2345,7 @@ _config.add_group('beaglebone-release-group',
     # This build doesn't generate signed images, so don't try to release them.
     paygen=False,
   ).derive(_grouped_variant_config),
+  important=True,
 )
 
 _release.add_config('mipsel-o32-generic-release',
@@ -2346,6 +2361,7 @@ _release.add_config('stumpy_moblab-release',
   paygen_skip_delta_payloads=True,
   # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
   paygen_skip_testing=True,
+  important=True,
 )
 
 _release.add_config('rush-release',
@@ -2381,8 +2397,10 @@ def _AddGroupConfig(name, base_board, group_boards=(),
       board_config = '%s-%s' % (board, group)
       configs.append(config[board_config].derive(subconfig, **kwargs))
 
-    config_name = '%s-%s-group' % (name, group)
-    _config.add_group(config_name, *configs, description=desc)
+      config_name = '%s-%s-group' % (name, group)
+      important = group == 'release' and kwargs.get('important', True)
+    _config.add_group(config_name, *configs, description=desc,
+                      important=important)
 
 # pineview chipset boards
 _AddGroupConfig('pineview', 'x86-mario', (
@@ -2405,18 +2423,6 @@ _AddGroupConfig('ivybridge', 'stout', (), (
     'parrot_ivb',
 ), afdo_use=True)
 
-# sandybridge / ivybridge chipset boards
-# TODO(davidjames): Remove this once we've transitioned to separate builders for
-# sandybridge / ivybridge.
-_AddGroupConfig('sandybridge-ivybridge', 'lumpy', (
-    'butterfly',
-    'parrot',
-    'stout',
-    'stumpy',
-), (
-    'parrot_ivb',
-), afdo_use=True)
-
 # slippy-based haswell boards
 # TODO(davidjames): Combine slippy and beltino into haswell canary, once we've
 # optimized our builders more.
@@ -2433,14 +2439,6 @@ _AddGroupConfig('slippy', 'peppy', (
 # beltino-based haswell boards
 # beltino itself is deprecated in favor of the below boards, so we don't bother
 # building it.
-
-# TODO(dnj): Remove this once the associated Master change using -a,-b variants
-# lands (#202040)
-_AddGroupConfig('beltino', 'panther', (
-    'monroe',
-    'tricky',
-    'zako',
-))
 
 _AddGroupConfig('beltino-a', 'panther', (
     'mccloud',
