@@ -1397,6 +1397,7 @@
         'browser/sync_file_system/drive_backend/fake_drive_uploader.h',
         'browser/sync_file_system/drive_backend/fake_sync_worker.cc',
         'browser/sync_file_system/drive_backend/fake_sync_worker.h',
+        'browser/sync_file_system/drive_backend/leveldb_wrapper_unittest.cc',
         'browser/sync_file_system/drive_backend/list_changes_task_unittest.cc',
         'browser/sync_file_system/drive_backend/local_to_remote_syncer_unittest.cc',
         'browser/sync_file_system/drive_backend/metadata_database_index_on_disk_unittest.cc',

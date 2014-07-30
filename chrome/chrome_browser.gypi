@@ -1569,6 +1569,8 @@
       'browser/sync_file_system/drive_backend/drive_uploader_wrapper.h',
       'browser/sync_file_system/drive_backend/folder_creator.cc',
       'browser/sync_file_system/drive_backend/folder_creator.h',
+      'browser/sync_file_system/drive_backend/leveldb_wrapper.cc',
+      'browser/sync_file_system/drive_backend/leveldb_wrapper.h',
       'browser/sync_file_system/drive_backend/list_changes_task.cc',
       'browser/sync_file_system/drive_backend/list_changes_task.h',
       'browser/sync_file_system/drive_backend/local_to_remote_syncer.cc',
