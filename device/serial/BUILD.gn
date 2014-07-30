@@ -54,8 +54,12 @@ static_library("test_util") {
   ]
 }
 
+# GYP version: device/serial/serial.gyp:device_serial_mojo
 mojom("serial_mojo") {
-  visibility = ":serial"
+  visibility = [
+    ":serial",
+    "//extensions:extensions_renderer_resources_grit",
+  ]
 
   sources = [
     "serial.mojom",
