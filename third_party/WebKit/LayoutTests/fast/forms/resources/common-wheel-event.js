@@ -1,7 +1,8 @@
 function dispatchWheelEvent(element, deltaX, deltaY)
 {
-    var eventInit = { deltaX: -deltaX, deltaY: -deltaY };
-    var event = new WheelEvent('mousewheel', eventInit);
+    var event = document.createEvent('WheelEvent');
+    var dontCare = 0;
+    event.initWebKitWheelEvent(deltaX, deltaY, document.defaultView, dontCare, dontCare, dontCare, dontCare, false, false, false, false);
     element.dispatchEvent(event);
 }
 

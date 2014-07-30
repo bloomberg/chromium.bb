@@ -16,16 +16,9 @@
                 if (overflowElement) {
                     overflowElement.addEventListener("mousewheel", mousewheelHandler, false);
 
-                    var deltaX = window.expectedScrollLeft;
-                    var deltaY = window.expectedScrollTop;
-                    var eventInit = {
-                        deltaX: deltaX,
-                        deltaY: deltaY,
-                        wheelDeltaX: -120 * deltaX,
-                        wheelDeltaY: -120 * deltaY,
-                    };
-                    var event = new WheelEvent("mousewheel", eventInit);
-                    overflowElement.dispatchEvent(event);
+                    var wheelEvent = document.createEvent("WheelEvent");
+                    wheelEvent.initWebKitWheelEvent(-window.expectedScrollLeft, -window.expectedScrollTop, window, 0, 0, 0, 0, false, false, false, false);
+                    overflowElement.dispatchEvent(wheelEvent);
                 }
 
                 setTimeout('checkOffsets();', 100);
@@ -44,8 +37,6 @@
             function mousewheelHandler(e)
             {
                 event = e;
-                shouldBe("event.deltaY", "window.expectedScrollTop");
-                shouldBe("event.deltaX", "window.expectedScrollLeft");
                 shouldBe("event.wheelDeltaY", "window.expectedScrollTop*-120");
                 shouldBe("event.wheelDeltaX", "window.expectedScrollLeft*-120");
 

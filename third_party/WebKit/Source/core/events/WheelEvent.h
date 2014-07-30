@@ -73,6 +73,14 @@ public:
         screenLocation, pageLocation, ctrlKey, altKey, shiftKey, metaKey));
     }
 
+    void initWheelEvent(int rawDeltaX, int rawDeltaY, PassRefPtrWillBeRawPtr<AbstractView>,
+        int screenX, int screenY, int pageX, int pageY,
+        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey);
+
+    void initWebKitWheelEvent(int rawDeltaX, int rawDeltaY, PassRefPtrWillBeRawPtr<AbstractView>,
+        int screenX, int screenY, int pageX, int pageY,
+        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey);
+
     double deltaX() const { return m_deltaX; } // Positive when scrolling right.
     double deltaY() const { return m_deltaY; } // Positive when scrolling down.
     double deltaZ() const { return m_deltaZ; }
