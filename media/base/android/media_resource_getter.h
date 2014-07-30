@@ -50,12 +50,20 @@ class MEDIA_EXPORT MediaResourceGetter {
       const GURL& url,
       const GetPlatformPathCB& callback) = 0;
 
-  // Extract the metadata from a media URL. Once completed, the provided
+  // Extracts the metadata from a media URL. Once completed, the provided
   // callback function will be run.
   virtual void ExtractMediaMetadata(
       const std::string& url,
       const std::string& cookies,
       const std::string& user_agent,
+      const ExtractMediaMetadataCB& callback) = 0;
+
+  // Extracts the metadata from a file descriptor. Once completed, the
+  // provided callback function will be run.
+  virtual void ExtractMediaMetadata(
+      const int fd,
+      const int64 offset,
+      const int64 size,
       const ExtractMediaMetadataCB& callback) = 0;
 };
 

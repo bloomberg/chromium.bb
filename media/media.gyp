@@ -1668,6 +1668,7 @@
             'base/android/media_player_listener.h',
             'base/android/media_source_player.cc',
             'base/android/media_source_player.h',
+            'base/android/media_url_interceptor.h',
             'base/android/video_decoder_job.cc',
             'base/android/video_decoder_job.h',
             'base/android/webaudio_media_codec_bridge.cc',

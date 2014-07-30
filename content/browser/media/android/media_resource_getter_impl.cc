@@ -18,6 +18,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "jni/MediaResourceGetter_jni.h"
+#include "media/base/android/media_url_interceptor.h"
 #include "net/base/auth.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
@@ -78,7 +79,21 @@ static void RequestPlaformPathFromFileSystemURL(
     ReturnResultOnUIThread(callback, std::string());
 }
 
-// Get the metadata from a media URL. When finished, a task is posted to the UI
+// Posts a task to the UI thread to run the callback function.
+static void PostMediaMetadataCallbackTask(
+    const media::MediaResourceGetter::ExtractMediaMetadataCB& callback,
+    JNIEnv* env, ScopedJavaLocalRef<jobject>& j_metadata) {
+  BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(callback, base::TimeDelta::FromMilliseconds(
+                       Java_MediaMetadata_getDurationInMilliseconds(
+                           env, j_metadata.obj())),
+                   Java_MediaMetadata_getWidth(env, j_metadata.obj()),
+                   Java_MediaMetadata_getHeight(env, j_metadata.obj()),
+                   Java_MediaMetadata_isSuccess(env, j_metadata.obj())));
+}
+
+// Gets the metadata from a media URL. When finished, a task is posted to the UI
 // thread to run the callback function.
 static void GetMediaMetadata(
     const std::string& url, const std::string& cookies,
@@ -97,14 +112,22 @@ static void GetMediaMetadata(
                                                     j_url_string.obj(),
                                                     j_cookies.obj(),
                                                     j_user_agent.obj());
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(callback, base::TimeDelta::FromMilliseconds(
-                     Java_MediaMetadata_getDurationInMilliseconds(
-                         env, j_metadata.obj())),
-                 Java_MediaMetadata_getWidth(env, j_metadata.obj()),
-                 Java_MediaMetadata_getHeight(env, j_metadata.obj()),
-                 Java_MediaMetadata_isSuccess(env, j_metadata.obj())));
+
+  PostMediaMetadataCallbackTask(callback, env, j_metadata);
+}
+
+// Gets the metadata from a file descriptor. When finished, a task is posted to
+// the UI thread to run the callback function.
+static void GetMediaMetadataFromFd(
+    const int fd, const int64 offset, const int64 size,
+    const media::MediaResourceGetter::ExtractMediaMetadataCB& callback) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> j_metadata =
+      Java_MediaResourceGetter_extractMediaMetadataFromFd(
+          env, fd, offset, size);
+
+  PostMediaMetadataCallbackTask(callback, env, j_metadata);
 }
 
 // The task object that retrieves media resources on the IO thread.
@@ -326,6 +349,16 @@ void MediaResourceGetterImpl::ExtractMediaMetadata(
   pool->PostWorkerTask(
       FROM_HERE,
       base::Bind(&GetMediaMetadata, url, cookies, user_agent, callback));
+}
+
+void MediaResourceGetterImpl::ExtractMediaMetadata(
+    const int fd, const int64 offset, const int64 size,
+    const ExtractMediaMetadataCB& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
+  pool->PostWorkerTask(
+      FROM_HERE,
+      base::Bind(&GetMediaMetadataFromFd, fd, offset, size, callback));
 }
 
 // static

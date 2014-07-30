@@ -26,6 +26,7 @@
 #include "content/public/common/content_switches.h"
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/android/media_source_player.h"
+#include "media/base/android/media_url_interceptor.h"
 #include "media/base/media_switches.h"
 
 using media::MediaPlayerAndroid;
@@ -40,10 +41,17 @@ namespace content {
 const int kMediaPlayerThreshold = 1;
 
 static BrowserMediaPlayerManager::Factory g_factory = NULL;
+static media::MediaUrlInterceptor* media_url_interceptor_ = NULL;
 
 // static
 void BrowserMediaPlayerManager::RegisterFactory(Factory factory) {
   g_factory = factory;
+}
+
+// static
+void BrowserMediaPlayerManager::RegisterMediaUrlInterceptor(
+    media::MediaUrlInterceptor* media_url_interceptor) {
+  media_url_interceptor_ = media_url_interceptor;
 }
 
 // static
@@ -293,6 +301,11 @@ BrowserMediaPlayerManager::GetMediaResourceGetter() {
         web_contents()->GetMainFrame()->GetRoutingID()));
   }
   return media_resource_getter_.get();
+}
+
+media::MediaUrlInterceptor*
+BrowserMediaPlayerManager::GetMediaUrlInterceptor() {
+  return media_url_interceptor_;
 }
 
 MediaPlayerAndroid* BrowserMediaPlayerManager::GetFullscreenPlayer() {

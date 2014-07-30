@@ -13,6 +13,7 @@
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_manager.h"
 #include "media/base/android/media_source_player.h"
+#include "media/base/android/media_url_interceptor.h"
 #include "media/base/android/video_decoder_job.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
@@ -50,6 +51,9 @@ class MockMediaPlayerManager : public MediaPlayerManager {
 
   // MediaPlayerManager implementation.
   virtual MediaResourceGetter* GetMediaResourceGetter() OVERRIDE {
+    return NULL;
+  }
+  virtual MediaUrlInterceptor* GetMediaUrlInterceptor() OVERRIDE {
     return NULL;
   }
   virtual void OnTimeUpdate(int player_id,

@@ -138,6 +138,11 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   void OnMediaMetadataExtracted(base::TimeDelta duration, int width, int height,
                                 bool success);
 
+  // Returns true if a MediaUrlInterceptor registered by the embedder has
+  // intercepted the url.
+  bool InterceptMediaUrl(
+      const std::string& url, int* fd, int64* offset, int64* size);
+
   // Whether the player is prepared for playback.
   bool prepared_;
 

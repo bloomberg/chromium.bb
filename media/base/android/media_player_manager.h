@@ -14,14 +14,18 @@ namespace media {
 
 class MediaPlayerAndroid;
 class MediaResourceGetter;
+class MediaUrlInterceptor;
 
 // This class is responsible for managing active MediaPlayerAndroid objects.
 class MEDIA_EXPORT MediaPlayerManager {
  public:
   virtual ~MediaPlayerManager() {}
 
-  // Return a pointer to the MediaResourceGetter object.
+  // Returns a pointer to the MediaResourceGetter object.
   virtual MediaResourceGetter* GetMediaResourceGetter() = 0;
+
+  // Returns a pointer to the MediaUrlInterceptor object or null.
+  virtual MediaUrlInterceptor* GetMediaUrlInterceptor() = 0;
 
   // Called when time update messages need to be sent. Args: player ID,
   // current time.
