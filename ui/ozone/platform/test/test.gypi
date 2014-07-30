@@ -21,7 +21,6 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../events/events.gyp:events',
-        '../events/ozone/events_ozone.gyp:events_ozone_evdev',
         '../gfx/gfx.gyp:gfx',
       ],
       'sources': [
@@ -29,6 +28,8 @@
         'ozone_platform_test.h',
         'test_cursor_factory.cc',
         'test_cursor_factory.h',
+        'test_event_factory.cc',
+        'test_event_factory.h',
         'test_window.cc',
         'test_window.h',
         'test_window_manager.cc',
