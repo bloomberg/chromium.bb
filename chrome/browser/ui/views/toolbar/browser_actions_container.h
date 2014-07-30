@@ -291,6 +291,9 @@ class BrowserActionsContainer
   friend class BrowserActionView;  // So it can access IconWidth().
   friend class ShowFolderMenuTask;
 
+  // A struct representing the position at which an action will be dropped.
+  struct DropPosition;
+
   typedef std::vector<BrowserActionView*> BrowserActionViews;
 
   // Returns the width of an icon, optionally with its padding.
@@ -328,10 +331,6 @@ class BrowserActionsContainer
   // Show the overflow menu.
   void ShowDropFolder();
 
-  // Sets the drop indicator position (and schedules paint if the position has
-  // changed).
-  void SetDropIndicator(int x_pos);
-
   // Given a number of |icons| and whether to |display_chevron|, returns the
   // amount of pixels needed to draw the entire container.  For convenience,
   // callers can set |icons| to -1 to mean "all icons".
@@ -366,6 +365,9 @@ class BrowserActionsContainer
   bool ShowPopup(BrowserActionButton* button,
                  ExtensionPopup::ShowAction show_action,
                  bool grant_tab_permissions);
+
+  // Return the index of the first visible icon.
+  size_t GetFirstVisibleIconIndex() const;
 
   // Whether this container is in overflow mode (as opposed to in 'main'
   // mode). See class comments for details on the difference.
@@ -431,8 +433,9 @@ class BrowserActionsContainer
   // are done animating.
   int animation_target_size_;
 
-  // The x position for where to draw the drop indicator. -1 if no indicator.
-  int drop_indicator_position_;
+  // The DropPosition for the current drag-and-drop operation, or NULL if there
+  // is none.
+  scoped_ptr<DropPosition> drop_position_;
 
   // The class that registers for keyboard shortcuts for extension commands.
   scoped_ptr<ExtensionKeybindingRegistryViews> extension_keybinding_registry_;

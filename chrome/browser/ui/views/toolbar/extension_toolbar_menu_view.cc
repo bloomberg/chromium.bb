@@ -10,15 +10,6 @@
 #include "chrome/browser/ui/views/toolbar/wrench_menu.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 
-namespace {
-
-// Bottom padding to make sure we have enough room for the icons.
-// TODO(devlin): Figure out why the bottom few pixels of the last row in the
-// overflow menu are cut off (so we can remove this).
-const int kVerticalPadding = 8;
-
-}  // namespace
-
 ExtensionToolbarMenuView::ExtensionToolbarMenuView(Browser* browser,
                                                    WrenchMenu* wrench_menu)
     : browser_(browser),
@@ -47,20 +38,14 @@ ExtensionToolbarMenuView::~ExtensionToolbarMenuView() {
 }
 
 gfx::Size ExtensionToolbarMenuView::GetPreferredSize() const {
-  gfx::Size sz = container_->GetPreferredSize();
-  if (sz.height() == 0)
-    return sz;
-
-  sz.Enlarge(0, kVerticalPadding);
-  return sz;
+  return container_->GetPreferredSize();
 }
 
 void ExtensionToolbarMenuView::Layout() {
   // All buttons are given the same width.
-  gfx::Size sz = container_->GetPreferredSize();
-  int height = sz.height() + kVerticalPadding / 2;
-  SetBounds(views::MenuItemView::label_start(), 0, sz.width(), height);
-  container_->SetBounds(0, 0, sz.width(), height);
+  gfx::Size sz = GetPreferredSize();
+  SetBounds(views::MenuItemView::label_start(), 0, sz.width(), sz.height());
+  container_->SetBounds(0, 0, sz.width(), sz.height());
 }
 
 void ExtensionToolbarMenuView::OnBrowserActionDragDone() {

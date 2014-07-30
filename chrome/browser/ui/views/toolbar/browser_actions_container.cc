@@ -99,11 +99,29 @@ class ChevronMenuButton : public views::MenuButton {
 
 }  // namespace
 
-// static
-bool BrowserActionsContainer::disable_animations_during_testing_ = false;
+////////////////////////////////////////////////////////////////////////////////
+// BrowserActionsContainer::DropPosition
+
+struct BrowserActionsContainer::DropPosition {
+  DropPosition(size_t row, size_t icon_in_row);
+
+  // The (0-indexed) row into which the action will be dropped.
+  size_t row;
+
+  // The (0-indexed) icon in the row before the action will be dropped.
+  size_t icon_in_row;
+};
+
+BrowserActionsContainer::DropPosition::DropPosition(
+    size_t row, size_t icon_in_row)
+    : row(row), icon_in_row(icon_in_row) {
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionsContainer
+
+// static
+bool BrowserActionsContainer::disable_animations_during_testing_ = false;
 
 BrowserActionsContainer::BrowserActionsContainer(
     Browser* browser,
@@ -123,7 +141,6 @@ BrowserActionsContainer::BrowserActionsContainer(
       suppress_chevron_(false),
       resize_amount_(0),
       animation_target_size_(0),
-      drop_indicator_position_(-1),
       task_factory_(this),
       show_menu_task_factory_(this) {
   set_id(VIEW_ID_BROWSER_ACTION_TOOLBAR);
@@ -359,7 +376,7 @@ void BrowserActionsContainer::Layout() {
       BrowserActionView* view = browser_action_views_[i];
       size_t index = i - main_container_->VisibleBrowserActionsAfterAnimation();
       int row_index = static_cast<int>(index) / kIconsPerMenuRow;
-      int x = (index * IconWidth(true)) -
+      int x = kItemSpacing + (index * IconWidth(true)) -
           (row_index * IconWidth(true) * kIconsPerMenuRow);
       gfx::Rect rect_bounds(
           x, IconHeight() * row_index, icon_width, IconHeight());
@@ -407,19 +424,25 @@ int BrowserActionsContainer::OnDragUpdated(
   }
   StopShowFolderDropMenuTimer();
 
-  // TODO(devlin): This calculation needs to take 'overflow' mode into account
-  // once the wrench menu becomes a drag target for browser action icons.
-
   // Figure out where to display the indicator.  This is a complex calculation:
 
   // First, we figure out how much space is to the left of the icon area, so we
-  // can calculate the true offset into the icon area.
-  int width_before_icons = ToolbarView::kStandardSpacing;
-  if (chevron_ && base::i18n::IsRTL()) {
-    width_before_icons +=
-        chevron_->GetPreferredSize().width() + kChevronSpacing;
-  }
-  int offset_into_icon_area = event.x() - width_before_icons;
+  // can calculate the true offset into the icon area. The easiest way to do
+  // this is to just find where the first icon starts.
+  int width_before_icons =
+      browser_action_views_[GetFirstVisibleIconIndex()]->x();
+
+  // If we're right-to-left, we flip the mirror the event.x() so that our
+  // calculations are consistent with left-to-right.
+  int offset_into_icon_area =
+      GetMirroredXInView(event.x()) - width_before_icons;
+
+  // Next, figure out what row we're on. This only matters for overflow mode,
+  // but the calculation is the same for both.
+  size_t row_index = event.y() / IconHeight();
+
+  // Sanity check - we should never be on a different row in the main container.
+  DCHECK(in_overflow_mode() || row_index == 0);
 
   // Next, we determine which icon to place the indicator in front of.  We want
   // to place the indicator in front of icon n when the cursor is between the
@@ -445,25 +468,39 @@ int BrowserActionsContainer::OnDragUpdated(
   int before_icon_unclamped = (offset_into_icon_area + (IconWidth(false) / 2) +
       kItemSpacing) / IconWidth(true);
 
+  // We need to figure out how many icons are visible on the relevant row.
+  // In the main container, this will just be the visible actions.
+  int visible_icons_on_row = VisibleBrowserActionsAfterAnimation();
+  if (in_overflow_mode()) {
+    // If this is the final row of the overflow, then this is the remainder of
+    // visible icons. Otherwise, it's a full row (kIconsPerRow).
+    visible_icons_on_row =
+        row_index ==
+            static_cast<size_t>(visible_icons_on_row / kIconsPerMenuRow) ?
+                visible_icons_on_row % kIconsPerMenuRow :
+                kIconsPerMenuRow;
+  }
+
   // Because the user can drag outside the container bounds, we need to clamp to
   // the valid range.  Note that the maximum allowable value is (num icons), not
   // (num icons - 1), because we represent the indicator being past the last
   // icon as being "before the (last + 1) icon".
-  int before_icon = std::min(std::max(before_icon_unclamped, 0),
-                             static_cast<int>(VisibleBrowserActions()));
+  size_t before_icon_in_row =
+      std::min(std::max(before_icon_unclamped, 0), visible_icons_on_row);
 
-  // Now we convert back to a pixel offset into the container.  We want to place
-  // the center of the drop indicator at the midpoint of the space before our
-  // chosen icon.
-  SetDropIndicator(width_before_icons + (before_icon * IconWidth(true)) -
-      (kItemSpacing / 2));
+  if (!drop_position_.get() ||
+      !(drop_position_->row == row_index &&
+        drop_position_->icon_in_row == before_icon_in_row)) {
+    drop_position_.reset(new DropPosition(row_index, before_icon_in_row));
+    SchedulePaint();
+  }
 
   return ui::DragDropTypes::DRAG_MOVE;
 }
 
 void BrowserActionsContainer::OnDragExited() {
   StopShowFolderDropMenuTimer();
-  drop_indicator_position_ = -1;
+  drop_position_.reset();
   SchedulePaint();
 }
 
@@ -478,18 +515,10 @@ int BrowserActionsContainer::OnPerformDrop(
             data.id());
   DCHECK(model_);
 
-  size_t i = 0;
-  for (; i < browser_action_views_.size(); ++i) {
-    int view_x = browser_action_views_[i]->GetMirroredBounds().x();
-    if (!browser_action_views_[i]->visible() ||
-        (base::i18n::IsRTL() ? (view_x < drop_indicator_position_) :
-            (view_x >= drop_indicator_position_))) {
-      // We have reached the end of the visible icons or found one that has a
-      // higher x position than the drop point.
-      break;
-    }
-  }
-
+  size_t i =
+      drop_position_->row * kIconsPerMenuRow + drop_position_->icon_in_row;
+  if (in_overflow_mode())
+    i += GetFirstVisibleIconIndex();
   // |i| now points to the item to the right of the drop indicator*, which is
   // correct when dragging an icon to the left. When dragging to the right,
   // however, we want the icon being dragged to get the index of the item to
@@ -690,6 +719,10 @@ bool BrowserActionsContainer::ShowPopup(const extensions::Extension* extension,
   return false;
 }
 
+size_t BrowserActionsContainer::GetFirstVisibleIconIndex() const {
+  return in_overflow_mode() ? model_->GetVisibleIconCount() : 0;
+}
+
 void BrowserActionsContainer::HidePopup() {
   // Remove this as an observer and clear |popup_| and |popup_button_| here,
   // since we might change them before OnWidgetDestroying() gets called.
@@ -727,14 +760,36 @@ void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
 
   // TODO(sky/glen): Instead of using a drop indicator, animate the icons while
   // dragging (like we do for tab dragging).
-  if (drop_indicator_position_ > -1) {
+  if (drop_position_.get()) {
     // The two-pixel width drop indicator.
     static const int kDropIndicatorWidth = 2;
-    gfx::Rect indicator_bounds(
-        drop_indicator_position_ - (kDropIndicatorWidth / 2),
-        0,
-        kDropIndicatorWidth,
-        height());
+
+    // Convert back to a pixel offset into the container.  First find the X
+    // coordinate of the drop icon.
+    int drop_icon_x = browser_action_views_[GetFirstVisibleIconIndex()]->x() +
+        (drop_position_->icon_in_row * IconWidth(true));
+    // Next, find the space before the drop icon. This will either be
+    // kItemSpacing or ToolbarView::kStandardSpacing, depending on whether this
+    // is the first icon.
+    // NOTE: Right now, these are the same. But let's do this right for if they
+    // ever aren't.
+    int space_before_drop_icon = drop_position_->icon_in_row == 0 ?
+        ToolbarView::kStandardSpacing : kItemSpacing;
+    // Now place the drop indicator halfway between this and the end of the
+    // previous icon.  If there is an odd amount of available space between the
+    // two icons (or the icon and the address bar) after subtracting the drop
+    // indicator width, this calculation puts the extra pixel on the left side
+    // of the indicator, since when the indicator is between the address bar and
+    // the first icon, it looks better closer to the icon.
+    int drop_indicator_x = drop_icon_x -
+        ((space_before_drop_icon + kDropIndicatorWidth) / 2);
+    int row_height = IconHeight();
+    int drop_indicator_y = row_height * drop_position_->row;
+    gfx::Rect indicator_bounds(drop_indicator_x,
+                               drop_indicator_y,
+                               kDropIndicatorWidth,
+                               row_height);
+    indicator_bounds.set_x(GetMirroredXForRect(indicator_bounds));
 
     // Color of the drop indicator.
     static const SkColor kDropIndicatorColor = SK_ColorBLACK;
@@ -945,7 +1000,7 @@ void BrowserActionsContainer::StartShowFolderDropMenuTimer() {
 
 void BrowserActionsContainer::ShowDropFolder() {
   DCHECK(!overflow_menu_);
-  SetDropIndicator(-1);
+  drop_position_.reset();
   overflow_menu_ =
       new BrowserActionOverflowMenuController(this,
                                               browser_,
@@ -955,13 +1010,6 @@ void BrowserActionsContainer::ShowDropFolder() {
                                               true);
   overflow_menu_->set_observer(this);
   overflow_menu_->RunMenu(GetWidget());
-}
-
-void BrowserActionsContainer::SetDropIndicator(int x_pos) {
-  if (drop_indicator_position_ != x_pos) {
-    drop_indicator_position_ = x_pos;
-    SchedulePaint();
-  }
 }
 
 int BrowserActionsContainer::IconCountToWidth(int icons,
