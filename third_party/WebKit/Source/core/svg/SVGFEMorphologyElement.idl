@@ -37,9 +37,6 @@
     [ImplementedAs=svgOperator] readonly attribute SVGAnimatedEnumeration operator;
     readonly attribute SVGAnimatedNumber radiusX;
     readonly attribute SVGAnimatedNumber radiusY;
-
-    [MeasureAs=SVGFEMorphologyElementSetRadius] void setRadius([Default=Undefined] optional float radiusX,
-                                                               [Default=Undefined] optional float radiusY); // non-standard
 };
 
 SVGFEMorphologyElement implements SVGFilterPrimitiveStandardAttributes;

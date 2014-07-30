@@ -53,13 +53,6 @@ inline SVGFEMorphologyElement::SVGFEMorphologyElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGFEMorphologyElement)
 
-void SVGFEMorphologyElement::setRadius(float x, float y)
-{
-    radiusX()->baseValue()->setValue(x);
-    radiusY()->baseValue()->setValue(y);
-    invalidate();
-}
-
 bool SVGFEMorphologyElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());

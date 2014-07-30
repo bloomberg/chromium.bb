@@ -33,8 +33,6 @@ class SVGFEMorphologyElement FINAL : public SVGFilterPrimitiveStandardAttributes
 public:
     DECLARE_NODE_FACTORY(SVGFEMorphologyElement);
 
-    void setRadius(float radiusX, float radiusY);
-
     SVGAnimatedNumber* radiusX() { return m_radius->firstNumber(); }
     SVGAnimatedNumber* radiusY() { return m_radius->secondNumber(); }
     SVGAnimatedString* in1() { return m_in1.get(); }

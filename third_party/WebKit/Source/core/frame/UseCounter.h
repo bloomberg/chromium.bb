@@ -397,7 +397,6 @@ public:
         SelectionModify = 405,
         SelectionSetBaseAndExtent = 406,
         SelectionEmpty = 407,
-        SVGFEMorphologyElementSetRadius = 408,
         VTTCue = 409,
         VTTCueRender = 410,
         VTTCueRenderVertical = 411,
