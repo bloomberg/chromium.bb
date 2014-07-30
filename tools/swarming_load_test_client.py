@@ -74,8 +74,7 @@ def trigger_task(
     extra_args=[],
     env={},
     dimensions=dimensions,
-    working_dir=None,
-    deadline=3600,
+    deadline=timeout-10,
     verbose=False,
     profile=False,
     priority=100)
@@ -101,6 +100,7 @@ def trigger_task(
     test_keys.append(key.pop('test_key'))
     assert re.match('[0-9a-f]+', test_keys[-1]), test_keys
   expected = {
+    u'priority': 100,
     u'test_case_name': unicode(name),
     u'test_keys': [
       {
@@ -166,8 +166,9 @@ def main():
       '-m', '--concurrent', type='int', default=200, metavar='N',
       help='Maximum concurrent on-going requests, default: %default')
   group.add_option(
-      '-t', '--timeout', type='float', default=3600., metavar='N',
-      help='Timeout to get results, default: %default')
+      '-t', '--timeout', type='float', default=15*60., metavar='N',
+      help='Task expiration and timeout to get results, the task itself will '
+           'have 10s less than the value provided. Default: %default')
   group.add_option(
       '-o', '--output-size', type='int', default=100, metavar='N',
       help='Bytes sent to stdout, default: %default')

@@ -202,12 +202,9 @@ class FakeSwarmBot(object):
             break
           time.sleep(remaining)
 
+        # In the old API, r=<task_id>&id=<bot_id> is passed as the url.
         data = {
-          'c': test_run['configuration']['config_name'],
-          'n': test_run['test_run_name'],
-          'o': False,
-          'result_output': TASK_OUTPUT,
-          's': True,
+          'o': TASK_OUTPUT,
           'x': '0',
         }
         result = net.url_read(manifest['result_url'], data=data)
