@@ -28032,7 +28032,7 @@
         "upload_symbols": false,
         "uprev": true,
         "use_chrome_lkgm": false,
-        "use_lkgm": true,
+        "use_lkgm": false,
         "use_sdk": false,
         "useflags": [
             "chrome_internal"
@@ -28136,7 +28136,7 @@
         "upload_symbols": false,
         "uprev": true,
         "use_chrome_lkgm": false,
-        "use_lkgm": true,
+        "use_lkgm": false,
         "use_sdk": false,
         "useflags": [
             "chrome_internal"
