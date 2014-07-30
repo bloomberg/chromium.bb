@@ -79,7 +79,7 @@ public class ShellManager extends FrameLayout {
     public void setWindow(WindowAndroid window) {
         assert window != null;
         mWindow = window;
-        mContentViewRenderView = new ContentViewRenderView(getContext(), window) {
+        mContentViewRenderView = new ContentViewRenderView(getContext()) {
             @Override
             protected void onReadyToRender() {
                 if (sStartup) {
@@ -88,6 +88,7 @@ public class ShellManager extends FrameLayout {
                 }
             }
         };
+        mContentViewRenderView.onNativeLibraryLoaded(window);
     }
 
     /**

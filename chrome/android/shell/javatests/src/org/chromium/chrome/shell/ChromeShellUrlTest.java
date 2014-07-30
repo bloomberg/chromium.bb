@@ -99,8 +99,8 @@ public class ChromeShellUrlTest extends ChromeShellTestBase {
                     WindowAndroid windowAndroid = new WindowAndroid(
                             getInstrumentation().getTargetContext().getApplicationContext());
                     ContentViewRenderView contentViewRenderView =
-                            new ContentViewRenderView(getInstrumentation().getTargetContext(),
-                                    windowAndroid);
+                            new ContentViewRenderView(getInstrumentation().getTargetContext());
+                    contentViewRenderView.onNativeLibraryLoaded(windowAndroid);
                     contentViewRenderView.setCurrentContentViewCore(
                             activity.getActiveContentViewCore());
                 }

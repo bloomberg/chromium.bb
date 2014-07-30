@@ -62,12 +62,13 @@ public class TabManager extends LinearLayout {
         mContentVideoViewClient = videoViewClient;
         mContentViewHolder = (ViewGroup) findViewById(R.id.content_container);
         mToolbar = (ChromeShellToolbar) findViewById(R.id.toolbar);
-        mContentViewRenderView = new ContentViewRenderView(getContext(), mWindow) {
+        mContentViewRenderView = new ContentViewRenderView(getContext()) {
             @Override
             protected void onReadyToRender() {
                 if (mCurrentTab == null) createTab(mStartupUrl);
             }
         };
+        mContentViewRenderView.onNativeLibraryLoaded(mWindow);
         mContentViewHolder.addView(mContentViewRenderView,
                 new FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
