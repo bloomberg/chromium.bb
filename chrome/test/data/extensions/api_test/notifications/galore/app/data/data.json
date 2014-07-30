@@ -268,5 +268,45 @@
         ]
       }
     ]
+  },
+  {
+    "sectionName": "Progress Notifications",
+    "notificationType": "progress",
+    "notificationOptions": [
+      {
+        "iconUrl": "/images/woman3-80x80.jpg",
+        "title": "Maricia Rilari",
+        "message": "Pictures from Tahoe"
+      },
+      {
+        "iconUrl": "/images/flower1-80x80.jpg",
+        "title": "Notification #$#: Daffodils!",
+        "message": "Narcissus",
+        "buttons": [
+          {"title": "Lorem Ipsum Dolor Sit Amet Consectetur Adipisicing"},
+          {"title": "Elit Sed Do"}
+        ]
+      },
+      {
+        "iconUrl": "/images/flower2-80x80.jpg",
+        "title": "Notification #$#: Sunflowers!",
+        "message": "Helianthus annuus"
+      },
+      {
+        "iconUrl": "/images/flower3-80x80.jpg",
+        "title": "Notification #$#: Poinsettias!",
+        "message": "Euphorbia pulcherrima"
+      },
+      {
+        "iconUrl": "/images/flower4-80x80.jpg",
+        "title": "Notification #$#: Heather - Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum!",
+        "message": "Calluna vulgaris - Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+      },
+      {
+        "iconUrl": "/images/plant1-80x80.jpg",
+        "title": "Notification #$#: Yucca!",
+        "message": "Asparagaceae agavoideae"
+      }
+    ]
   }
 ]

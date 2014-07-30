@@ -6,7 +6,11 @@ var mainWindow;
 var sections = [];
 
 var settings = {}
+// Initial values.
 settings.priority = "0";
+settings.progress = 10;
+settings.progress_sec = 2;
+settings.progress_step = 20;
 
 function onMainWindowClosed() {
   mainWindow = null;
@@ -59,6 +63,27 @@ function addNotificationButton(sectionTitle,
   getSection(sectionTitle).appendChild(button);
 }
 
+function addProgressControl(sectionTitle) {
+  var control = getElement('#templates .progress-control').cloneNode(true);
+  getSection(sectionTitle).appendChild(control)
+
+  var progress = control.querySelector('.progress');
+  progress.id = "progress"
+  progress.value = settings.progress;
+
+  var progress_oneshot = control.querySelector('.progress-oneshot');
+  progress_oneshot.id = 'progress-oneshot';
+  progress_oneshot.checked = true;
+
+  var progress_sec = control.querySelector('.progress-sec');
+  progress_sec.id = "progress-sec"
+  progress_sec.value = settings.progress_sec;
+
+  var progress_step = control.querySelector('.progress-step');
+  progress_step.id = "progress-step"
+  progress_step.value = settings.progress_step;
+}
+
 function showWindow() {
   if (mainWindow)
     mainWindow.show();
@@ -78,7 +103,6 @@ function logError(message) {
 }
 
 function setButtonHandlers() {
-  setButtonAction('.priority', changePriority);
   setButtonAction('#clear-events', clearEvents);
   setButtonAction('#record', onRecord);
   setButtonAction('#pause', onPause);
@@ -94,12 +118,7 @@ function updateRecordingStatsDisplay(text) {
   getElement("#recording-stats").innerText = text;
 }
 
-function changePriority(event) {
-  settings.priority = event.currentTarget.dataset.priority || '0';
-  getElement("body").dataset.priority = settings.priority;
-}
-
-function  clearEvents() {
+function clearEvents() {
   var events = getElement('#events');
   while (events.lastChild)
     events.removeChild(events.lastChild);

@@ -16,6 +16,18 @@
       <button class="notification borderless">
         <img src="images/white-40x40.png">
       </button>
+      <div class="progress-control">
+        <input class="progress-oneshot borderless" type="radio" name="progress-type">
+        One shot, progress (0-100):
+        <input class="progress borderless" type="range" min="0" max="100">
+        <br>
+        <input class="progress-recurring borderless" type="radio" name="progress-type">
+        Recurring, every (1-60)
+        <input class="progress-sec borderless" type="number" min="1" max="60">
+        seconds, step (1-100):
+        <input class="progress-step borderless" type="range" min="1" max="100">
+        <br><br>
+      </div>
     </div>
     <div id="priority" class="section">
       <h1><span>Priority</span></h1>

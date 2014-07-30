@@ -101,11 +101,31 @@ function setPreviousSegmentDuration() {
   recordingList[recordingList.length - 1].delay = delay;
 }
 
+function cloneOptions(obj){
+  if(obj == null || typeof(obj) != 'object')
+    return obj;
+
+  var temp = {};
+  for(var key in obj)
+    temp[key] = cloneOptions(obj[key]);
+  return temp;
+}
+
 function recordCreate(kind, id, options) {
   if (recordingState != RECORDING)
     return;
   setPreviousSegmentDuration();
-  recordingList.push({ type: "create", kind: kind, id: id, options: options });
+  recordingList.push(
+    { type: "create", kind: kind, id: id, options: cloneOptions(options) });
+  updateRecordingStats("Recording");
+}
+
+function recordUpdate(kind, id, options) {
+  if (recordingState != RECORDING)
+    return;
+  setPreviousSegmentDuration();
+  recordingList.push(
+    { type: "update", kind: kind, id: id, options: cloneOptions(options) });
   updateRecordingStats("Recording");
 }
 
@@ -143,6 +163,8 @@ function playNextSegment() {
 
   if (segment.type == "create") {
     createNotificationForPlay(segment.kind, segment.id, segment.options);
+  } else if (segment.type == "update") {
+    updateNotificationForPlay(segment.kind, segment.id, segment.options);
   } else { // type == "delete"
     deleteNotificationForPlay(segment.kind, segment.id);
   }
@@ -171,6 +193,17 @@ function createNotificationForPlay(kind, id, options) {
     createRichNotification(id, type, priority, options);
   }
 }
+
+function updateNotificationForPlay(kind, id, options) {
+  if (kind == 'web') {
+    // TODO: implement update.
+  } else {
+    var type = options.type;
+    var priority = options.priority;
+    updateRichNotification(id, type, priority, options);
+  }
+}
+
 function stopPlaying() {
   currentSegmentIndex = 0;
   clearTimeout(playingTimer);
@@ -226,7 +259,7 @@ function onPause() {
   }
 }
 
-function  onStop() {
+function onStop() {
   switch (recordingState) {
     case PAUSED_RECORDING:
       segmentStart = new Date().getTime() - pausedDuration;
@@ -272,6 +305,9 @@ function onDataFetched() {
     // Create notification buttons.
     data.forEach(function(section) {
       var type = section.notificationType;
+      if (type == "progress") {
+        addProgressControl(section.sectionName);
+      }
       (section.notificationOptions || []).forEach(function(options) {
         addNotificationButton(section.sectionName,
                               options.title,
@@ -289,13 +325,44 @@ function onSettingsChange(settings) {
   chrome.storage.local.set({settings: settings});
 }
 
+function scheduleNextProgress(id, priority, options, progress, step, timeout) {
+  var new_progress = progress + step;
+  if (new_progress > 100)
+    new_progress = 100;
+  setTimeout(nextProgress(id, priority, options, new_progress, step, timeout),
+    timeout);
+}
+
+function nextProgress(id, priority, options, progress, step, timeout) {
+  return (function() {
+    options["progress"] = progress;
+    updateRichNotification(id, "progress", priority, options);
+    if (progress >= 100)
+      return;
+    scheduleNextProgress(id, priority, options, progress, step, timeout)
+  })
+}
+
 function createNotification(type, options) {
-var id = getNextId();
-var priority = Number(settings.priority || 0);
-if (type == 'web')
+  var id = getNextId();
+  var priority = Number(settings.priority || 0);
+  if (type == 'web')
     createWebNotification(id, options);
-  else
+  else {
+    if (type == "progress") {
+      if (getElement('#progress-oneshot').checked) {
+        options["progress"] = Number(getElement('#progress').value);
+      } else {
+        var step = Number(getElement('#progress-step').value);
+        options["progress"] = step;
+        if (options["progress"] < 100) {
+          scheduleNextProgress(id, priority, options, options["progress"], step,
+            Number(getElement('#progress-sec').value) * 1000);
+        }
+      }
+    }
     createRichNotification(id, type, priority, options);
+  }
 }
 
 function createWebNotification(id, options) {
@@ -313,7 +380,7 @@ function createWebNotification(id, options) {
     logEvent('WebNotification #' + id + ': onclose');
     recordDelete('web', id);
   }
-  logCreate('Web', id, 'title: "' + title + '"');
+  logMethodCall('created', 'Web', id, 'title: "' + title + '"');
   recordCreate('web', id, options);
   return n;
 }
@@ -325,9 +392,21 @@ function createRichNotification(id, type, priority, options) {
     var argument1 = 'type: "' + type + '"';
     var argument2 = 'priority: ' + priority;
     var argument3 = 'title: "' + options.title + '"';
-    logCreate('Rich', id, argument1, argument2, argument3);
+    logMethodCall('created', 'Rich', id, argument1, argument2, argument3);
   });
   recordCreate('rich', id, options);
+}
+
+function updateRichNotification(id, type, priority, options) {
+  options["type"] = type;
+  options["priority"] = priority;
+  chrome.notifications.update(id, options, function() {
+    var argument1 = 'type: "' + type + '"';
+    var argument2 = 'priority: ' + priority;
+    var argument3 = 'title: "' + options.title + '"';
+    logMethodCall('updated', 'Rich', id, argument1, argument2, argument3);
+  });
+  recordUpdate('rich', id, options);
 }
 
 var counter = 0;
@@ -341,8 +420,8 @@ function addListeners() {
   chrome.notifications.onButtonClicked.addListener(onButtonClicked);
 }
 
-function logCreate(kind, id, var_args) {
-  logEvent(kind + ' Notification #' + id + ': created ' + '(' +
+function logMethodCall(method, kind, id, var_args) {
+  logEvent(kind + ' Notification #' + id + ': ' + method + ' (' +
   Array.prototype.slice.call(arguments, 2).join(', ') + ')');
 }
 
