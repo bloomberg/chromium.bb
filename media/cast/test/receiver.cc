@@ -42,9 +42,9 @@
 #include "media/cast/test/utility/standalone_cast_environment.h"
 #include "net/base/net_util.h"
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
 #include "media/cast/test/linux_output_window.h"
-#endif  // OS_LINUX
+#endif  // defined(USE_X11)
 
 namespace media {
 namespace cast {
@@ -60,10 +60,10 @@ namespace cast {
 #define DEFAULT_VIDEO_INCOMING_SSRC "11"
 #define DEFAULT_VIDEO_PAYLOAD_TYPE "96"
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
 const char* kVideoWindowWidth = "1280";
 const char* kVideoWindowHeight = "720";
-#endif  // OS_LINUX
+#endif  // defined(USE_X11)
 
 void GetPorts(int* tx_port, int* rx_port) {
   test::InputBuilder tx_input(
@@ -106,7 +106,7 @@ void GetVideoSsrcs(FrameReceiverConfig* video_config) {
   video_config->incoming_ssrc = input_rx.GetIntInput();
 }
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
 void GetWindowSize(int* width, int* height) {
   // Resolution values based on sender settings
   test::InputBuilder input_w(
@@ -117,7 +117,7 @@ void GetWindowSize(int* width, int* height) {
       "Choose window height.", kVideoWindowHeight, 176, 1080);
   *height = input_h.GetIntInput();
 }
-#endif  // OS_LINUX
+#endif  // defined(USE_X11)
 
 void GetAudioPayloadtype(FrameReceiverConfig* audio_config) {
   test::InputBuilder input("Choose audio receiver payload type.",
@@ -195,9 +195,9 @@ class NaivePlayer : public InProcessReceiver,
         // arbitrarily, but seems to work well.
         max_frame_age_(base::TimeDelta::FromSeconds(1) * 3 /
                            video_config.max_frame_rate),
-#if defined(OS_LINUX)
+#if defined(USE_X11)
         render_(0, 0, window_width, window_height, "Cast_receiver"),
-#endif  // OS_LINUX
+#endif  // defined(USE_X11)
         num_video_frames_processed_(0),
         num_audio_frames_processed_(0),
         currently_playing_audio_frame_start_(-1) {}
@@ -412,9 +412,9 @@ class NaivePlayer : public InProcessReceiver,
     DCHECK(cast_env()->CurrentlyOn(CastEnvironment::MAIN));
     if (!video_playout_queue_.empty()) {
       const scoped_refptr<VideoFrame> video_frame = PopOneVideoFrame(false);
-#ifdef OS_LINUX
+#if defined(USE_X11)
       render_.RenderFrame(video_frame);
-#endif  // OS_LINUX
+#endif  // defined(USE_X11)
     }
     ScheduleVideoPlayout();
     CheckAVSync();
@@ -506,9 +506,9 @@ class NaivePlayer : public InProcessReceiver,
   const base::TimeDelta max_frame_age_;
 
   // Outputs created, started, and destroyed by this NaivePlayer.
-#ifdef OS_LINUX
+#if defined(USE_X11)
   test::LinuxOutputWindow render_;
-#endif  // OS_LINUX
+#endif  // defined(USE_X11)
   scoped_ptr<AudioOutputStream> audio_output_stream_;
 
   // Video playout queue.
@@ -583,9 +583,9 @@ int main(int argc, char** argv) {
   // Create and start the player.
   int window_width = 0;
   int window_height = 0;
-#if defined(OS_LINUX)
+#if defined(USE_X11)
   media::cast::GetWindowSize(&window_width, &window_height);
-#endif  // OS_LINUX
+#endif  // defined(USE_X11)
   media::cast::NaivePlayer player(cast_environment,
                                   local_end_point,
                                   remote_end_point,
