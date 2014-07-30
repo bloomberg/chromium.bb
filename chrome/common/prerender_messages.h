@@ -8,7 +8,6 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
-#include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "ui/gfx/size.h"
 #include "url/gurl.h"
 

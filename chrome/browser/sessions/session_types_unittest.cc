@@ -2,42 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/sessions/session_types.h"
+
 #include <cstddef>
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/pickle.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/sessions/session_types.h"
 #include "components/sessions/serialized_navigation_entry_test_helper.h"
-#include "content/public/browser/favicon_status.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/common/page_transition_types.h"
-#include "content/public/common/referrer.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/util/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "url/gurl.h"
 
 namespace {
-
-const content::Referrer kReferrer =
-    content::Referrer(GURL("http://www.referrer.com"),
-                      blink::WebReferrerPolicyAlways);
-const GURL kVirtualURL("http://www.virtual-url.com");
-const base::string16 kTitle = base::ASCIIToUTF16("title");
-const content::PageState kPageState =
-    content::PageState::CreateFromEncodedData("page state");
-const GURL kOriginalRequestURL("http://www.original-request.com");
-const base::Time kTimestamp = syncer::ProtoTimeToTime(100);
-const base::string16 kSearchTerms = base::ASCIIToUTF16("my search terms");
-const GURL kFaviconURL("http://virtual-url.com/favicon.ico");
 
 // Create a typical SessionTab protocol buffer and set an existing
 // SessionTab from it.  The data from the protocol buffer should
