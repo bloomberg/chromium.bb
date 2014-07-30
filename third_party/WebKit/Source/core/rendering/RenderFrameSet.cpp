@@ -51,6 +51,12 @@ RenderFrameSet::~RenderFrameSet()
 {
 }
 
+void RenderFrameSet::trace(Visitor* visitor)
+{
+    visitor->trace(m_children);
+    RenderBox::trace(visitor);
+}
+
 RenderFrameSet::GridAxis::GridAxis()
     : m_splitBeingResized(noSplit)
 {

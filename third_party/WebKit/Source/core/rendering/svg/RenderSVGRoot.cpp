@@ -56,6 +56,12 @@ RenderSVGRoot::~RenderSVGRoot()
 {
 }
 
+void RenderSVGRoot::trace(Visitor* visitor)
+{
+    visitor->trace(m_children);
+    RenderReplaced::trace(visitor);
+}
+
 void RenderSVGRoot::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio) const
 {
     // Spec: http://www.w3.org/TR/SVG/coords.html#IntrinsicSizing

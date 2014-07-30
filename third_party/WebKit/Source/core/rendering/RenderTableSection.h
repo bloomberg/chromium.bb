@@ -64,6 +64,7 @@ class RenderTableSection FINAL : public RenderBox {
 public:
     RenderTableSection(Element*);
     virtual ~RenderTableSection();
+    virtual void trace(Visitor*) OVERRIDE;
 
     RenderTableRow* firstRow() const;
     RenderTableRow* lastRow() const;
