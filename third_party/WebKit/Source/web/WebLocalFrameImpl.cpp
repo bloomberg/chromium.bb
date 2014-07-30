@@ -1463,7 +1463,7 @@ WebString WebLocalFrameImpl::contentAsMarkup() const
 {
     if (!frame())
         return WebString();
-    return createFullMarkup(frame()->document());
+    return createMarkup(frame()->document());
 }
 
 WebString WebLocalFrameImpl::renderTreeAsText(RenderAsTextControls toShow) const

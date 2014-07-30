@@ -64,7 +64,6 @@ void replaceChildrenWithText(ContainerNode*, const String&, ExceptionState&);
 String createMarkup(const Range*, WillBeHeapVector<RawPtrWillBeMember<Node> >* = 0, EAnnotateForInterchange = DoNotAnnotateForInterchange, bool convertBlocksToInlines = false, EAbsoluteURLs = DoNotResolveURLs, Node* constrainingAncestor = 0);
 String createMarkup(const Node*, EChildrenOnly = IncludeNode, WillBeHeapVector<RawPtrWillBeMember<Node> >* = 0, EAbsoluteURLs = DoNotResolveURLs, Vector<QualifiedName>* tagNamesToSkip = 0);
 
-String createFullMarkup(const Node*);
 String createStyledMarkupForNavigationTransition(Node*);
 
 String urlToMarkup(const KURL&, const String& title);

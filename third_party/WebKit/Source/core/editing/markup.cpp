@@ -903,23 +903,6 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromText(Range* context, 
     return fragment.release();
 }
 
-String createFullMarkup(const Node* node)
-{
-    if (!node)
-        return String();
-
-    LocalFrame* frame = node->document().frame();
-    if (!frame)
-        return String();
-
-    // FIXME: This is never "for interchange". Is that right?
-    String markupString = createMarkup(node, IncludeNode, 0);
-    if (!node->isDocumentNode() && !node->isDocumentTypeNode())
-        markupString = frame->documentTypeString() + markupString;
-
-    return markupString;
-}
-
 String urlToMarkup(const KURL& url, const String& title)
 {
     StringBuilder markup;
