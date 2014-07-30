@@ -137,9 +137,7 @@ function mouseZoom(ticks) {
   var scrollbarStartedAtEnd =
       (scrollbar().getRange() == scrollbar().getPosition());
 
-  var event = document.createEvent('WheelEvent');
-  event.initWebKitWheelEvent(0, ticks, window, 0, 0, 0, 0,
-                             false, false, false, false);
+  var event = new WheelEvent('mousewheel', {deltaX: 0, deltaY: -ticks});
   canvas().dispatchEvent(event);
 
   // If the scrollbar started at the end of the range, make sure it ends there
