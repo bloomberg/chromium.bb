@@ -132,9 +132,6 @@ public:
     String& operator=(String&& other) { m_impl = other.m_impl.release(); return *this; }
 #endif
 
-    // Inline the destructor.
-    ALWAYS_INLINE ~String() { }
-
     void swap(String& o) { m_impl.swap(o.m_impl); }
 
     template<typename CharType>
