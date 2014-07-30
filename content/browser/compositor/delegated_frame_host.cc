@@ -121,7 +121,7 @@ void DelegatedFrameHost::RequestCopyOfOutput(
 
 void DelegatedFrameHost::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
-    const gfx::Size& dst_size,
+    const gfx::Size& output_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     const SkColorType color_type) {
   // Only ARGB888 and RGB565 supported as of now.
@@ -133,17 +133,13 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
     return;
   }
 
-  const gfx::Size& dst_size_in_pixel =
-      client_->ConvertViewSizeToPixel(dst_size);
   scoped_ptr<cc::CopyOutputRequest> request =
       cc::CopyOutputRequest::CreateRequest(base::Bind(
           &DelegatedFrameHost::CopyFromCompositingSurfaceHasResult,
-          dst_size_in_pixel,
+          output_size,
           color_type,
           callback));
-  gfx::Rect src_subrect_in_pixel =
-      ConvertRectToPixel(client_->CurrentDeviceScaleFactor(), src_subrect);
-  request->set_area(src_subrect_in_pixel);
+  request->set_area(src_subrect);
   client_->RequestCopyOfOutput(request.Pass());
 }
 

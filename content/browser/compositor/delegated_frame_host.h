@@ -99,7 +99,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   void RemovingFromWindow();
   void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
-      const gfx::Size& dst_size,
+      const gfx::Size& output_size,
       const base::Callback<void(bool, const SkBitmap&)>& callback,
       const SkColorType color_type);
   void CopyFromCompositingSurfaceToVideoFrame(
