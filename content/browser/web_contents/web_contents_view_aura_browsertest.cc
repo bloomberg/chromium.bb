@@ -15,6 +15,7 @@
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_entry_screenshot_manager.h"
+#include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/view_messages.h"
@@ -720,6 +721,24 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, HideContentOnParenHide) {
   EXPECT_FALSE(web_contents->should_normally_be_visible());
   content->Show();
   EXPECT_TRUE(web_contents->should_normally_be_visible());
+}
+
+// Ensure that SnapToPhysicalPixelBoundary() is called on WebContentsView parent
+// change. This is a regression test for http://crbug.com/388908.
+IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, WebContentsViewReparent) {
+  ASSERT_NO_FATAL_FAILURE(
+      StartTestWithPage("files/overscroll_navigation.html"));
+
+  scoped_ptr<aura::Window> window(new aura::Window(NULL));
+  window->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+
+  RenderWidgetHostViewAura* rwhva =
+      static_cast<RenderWidgetHostViewAura*>(
+          shell()->web_contents()->GetRenderWidgetHostView());
+  rwhva->ResetHasSnappedToBoundary();
+  EXPECT_FALSE(rwhva->has_snapped_to_boundary());
+  window->AddChild(shell()->web_contents()->GetNativeView());
+  EXPECT_TRUE(rwhva->has_snapped_to_boundary());
 }
 
 }  // namespace content

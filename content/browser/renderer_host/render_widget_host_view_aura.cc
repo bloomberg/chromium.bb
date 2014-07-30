@@ -450,6 +450,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       legacy_render_widget_host_HWND_(NULL),
       legacy_window_destroyed_(false),
 #endif
+      has_snapped_to_boundary_(false),
       touch_editing_client_(NULL),
       weak_ptr_factory_(this) {
   host_->SetView(this);
@@ -2276,6 +2277,8 @@ void RenderWidgetHostViewAura::SnapToPhysicalPixelBoundary() {
   }
   if (snapped && snapped != window_)
     ui::SnapLayerToPhysicalPixelBoundary(snapped->layer(), window_->layer());
+
+  has_snapped_to_boundary_ = true;
 }
 
 void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
