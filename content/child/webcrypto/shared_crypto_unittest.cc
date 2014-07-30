@@ -2170,6 +2170,57 @@ TEST_F(SharedCryptoTest, ImportExportPkcs8) {
                       &key));
 }
 
+// Tests importing of PKCS8 data that does not define a valid RSA key.
+TEST_F(SharedCryptoTest, ImportInvalidPkcs8) {
+  if (!SupportsRsaKeyImport())
+    return;
+
+  // kPrivateKeyPkcs8DerHex defines an RSA private key in PKCS8 format, whose
+  // parameters appear at the following offsets:
+  //
+  //   n: (offset=36, len=129)
+  //   e: (offset=167, len=3)
+  //   d: (offset=173, len=128)
+  //   p: (offset=303, len=65)
+  //   q: (offset=370, len=65)
+  //   dp: (offset=437, len=64)
+  //   dq; (offset=503, len=64)
+  //   qi: (offset=569, len=64)
+
+  // Do several tests, each of which invert a single byte within the input.
+  const unsigned int kOffsetsToCorrupt[] = {
+      50,   // inside n
+      168,  // inside e
+      175,  // inside d
+      333,  // inside p
+      373,  // inside q
+      450,  // inside dp
+      550,  // inside dq
+      600,  // inside qi
+  };
+
+  for (size_t test_index = 0; test_index < arraysize(kOffsetsToCorrupt);
+       ++test_index) {
+    SCOPED_TRACE(test_index);
+
+    unsigned int i = kOffsetsToCorrupt[test_index];
+    std::vector<uint8_t> corrupted_data =
+        HexStringToBytes(kPrivateKeyPkcs8DerHex);
+    corrupted_data[i] = ~corrupted_data[i];
+
+    blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+    EXPECT_EQ(Status::DataError(),
+              ImportKey(blink::WebCryptoKeyFormatPkcs8,
+                        CryptoData(corrupted_data),
+                        CreateRsaHashedImportAlgorithm(
+                            blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                            blink::WebCryptoAlgorithmIdSha1),
+                        true,
+                        blink::WebCryptoKeyUsageSign,
+                        &key));
+  }
+}
+
 // Tests JWK import and export by doing a roundtrip key conversion and ensuring
 // it was lossless:
 //

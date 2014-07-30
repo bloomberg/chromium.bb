@@ -354,6 +354,14 @@ Status RsaHashedAlgorithm::ImportKeyPkcs8(
   if (EVP_PKEY_id(private_key.get()) != EVP_PKEY_RSA)
     return Status::DataError();  // Data did not define an RSA key.
 
+  // Verify the parameters of the key (because EVP_PKCS82PKEY() happily imports
+  // invalid keys).
+  crypto::ScopedRSA rsa(EVP_PKEY_get1_RSA(private_key.get()));
+  if (!rsa.get())
+    return Status::ErrorUnexpected();
+  if (1 != RSA_check_key(rsa.get()))
+    return Status::DataError();
+
   // TODO(eroman): Validate the algorithm OID against the webcrypto provided
   // hash. http://crbug.com/389400
 
