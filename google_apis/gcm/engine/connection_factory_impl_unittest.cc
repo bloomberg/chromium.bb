@@ -527,7 +527,8 @@ TEST_F(ConnectionFactoryImplTest, SignalResetRestoresBackoff) {
 
 // When the network is disconnected, close the socket and suppress further
 // connection attempts until the network returns.
-TEST_F(ConnectionFactoryImplTest, SuppressConnectWhenNoNetwork) {
+// Disabled while crbug.com/396687 is being investigated.
+TEST_F(ConnectionFactoryImplTest, DISABLED_SuppressConnectWhenNoNetwork) {
   factory()->SetConnectResult(net::OK);
   factory()->Connect();
   EXPECT_TRUE(factory()->NextRetryAttempt().is_null());

@@ -190,8 +190,8 @@ void ConnectionFactoryImpl::SignalConnectionReset(
   CloseSocket();
   DCHECK(!IsEndpointReachable());
 
-  if (waiting_for_network_online_)
-    return;
+  // TODO(zea): if the network is offline, don't attempt to connect.
+  // See crbug.com/396687
 
   // Network changes get special treatment as they can trigger a one-off canary
   // request that bypasses backoff (but does nothing if a connection is in
@@ -245,6 +245,7 @@ void ConnectionFactoryImpl::OnNetworkChanged(
     waiting_for_network_online_ = true;
 
     // Will do nothing due to |waiting_for_network_online_ == true|.
+    // TODO(zea): make the above statement actually true. See crbug.com/396687
     SignalConnectionReset(NETWORK_CHANGE);
     return;
   }
@@ -278,8 +279,8 @@ void ConnectionFactoryImpl::ConnectImpl() {
   DCHECK(!IsEndpointReachable());
   DCHECK(!socket_handle_.socket());
 
-  if (waiting_for_network_online_)
-    return;
+  // TODO(zea): if the network is offline, don't attempt to connect.
+  // See crbug.com/396687
 
   connecting_ = true;
   GURL current_endpoint = GetCurrentEndpoint();
