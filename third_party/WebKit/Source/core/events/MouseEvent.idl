@@ -51,14 +51,14 @@
                                        [Default=Undefined] optional unsigned short button,
                                        [Default=Undefined] optional EventTarget relatedTarget);
 
-    // extensions
-    readonly attribute long             offsetX;
-    readonly attribute long             offsetY;
-    readonly attribute long             x;
-    readonly attribute long             y;
-    readonly attribute Node             fromElement;
-    readonly attribute Node             toElement;
+    // Non-standard
+    [MeasureAs=MouseEventOffsetX] readonly attribute long offsetX;
+    [MeasureAs=MouseEventOffsetY] readonly attribute long offsetY;
+    [MeasureAs=MouseEventX] readonly attribute long x;
+    [MeasureAs=MouseEventY] readonly attribute long y;
+    [MeasureAs=MouseEventFromElement] readonly attribute Node fromElement;
+    [MeasureAs=MouseEventToElement] readonly attribute Node toElement;
 
-    readonly attribute DataTransfer     dataTransfer;
+    // FIXME: this belongs on the DragEvent interface
+    readonly attribute DataTransfer dataTransfer;
 };
-
