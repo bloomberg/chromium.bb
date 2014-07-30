@@ -34,6 +34,10 @@ class RsaHashedAlgorithm : public AlgorithmImplementation {
       : all_public_key_usages_(all_public_key_usages),
         all_private_key_usages_(all_private_key_usages) {}
 
+  // For instance "RSA-OAEP-256".
+  virtual const char* GetJwkAlgorithm(
+      const blink::WebCryptoAlgorithmId hash) const = 0;
+
   virtual Status VerifyKeyUsagesBeforeGenerateKeyPair(
       blink::WebCryptoKeyUsageMask combined_usage_mask,
       blink::WebCryptoKeyUsageMask* public_usage_mask,
@@ -63,11 +67,20 @@ class RsaHashedAlgorithm : public AlgorithmImplementation {
                                blink::WebCryptoKeyUsageMask usage_mask,
                                blink::WebCryptoKey* key) const OVERRIDE;
 
+  virtual Status ImportKeyJwk(const CryptoData& key_data,
+                              const blink::WebCryptoAlgorithm& algorithm,
+                              bool extractable,
+                              blink::WebCryptoKeyUsageMask usage_mask,
+                              blink::WebCryptoKey* key) const OVERRIDE;
+
   virtual Status ExportKeyPkcs8(const blink::WebCryptoKey& key,
                                 std::vector<uint8_t>* buffer) const OVERRIDE;
 
   virtual Status ExportKeySpki(const blink::WebCryptoKey& key,
                                std::vector<uint8_t>* buffer) const OVERRIDE;
+
+  virtual Status ExportKeyJwk(const blink::WebCryptoKey& key,
+                              std::vector<uint8_t>* buffer) const OVERRIDE;
 
  private:
   blink::WebCryptoKeyUsageMask all_public_key_usages_;

@@ -8,7 +8,9 @@
 #include <openssl/pkcs12.h>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "content/child/webcrypto/crypto_data.h"
+#include "content/child/webcrypto/jwk.h"
 #include "content/child/webcrypto/openssl/key_openssl.h"
 #include "content/child/webcrypto/status.h"
 #include "content/child/webcrypto/webcrypto_util.h"
@@ -146,6 +148,84 @@ Status CreateWebCryptoPublicKey(
   return Status::Success();
 }
 
+// Converts a BIGNUM to a big endian byte array.
+std::vector<uint8_t> BIGNUMToVector(BIGNUM* n) {
+  std::vector<uint8_t> v(BN_num_bytes(n));
+  BN_bn2bin(n, vector_as_array(&v));
+  return v;
+}
+
+// Allocates a new BIGNUM given a std::string big-endian representation.
+BIGNUM* CreateBIGNUM(const std::string& n) {
+  return BN_bin2bn(reinterpret_cast<const uint8_t*>(n.data()), n.size(), NULL);
+}
+
+Status ImportRsaPrivateKey(const blink::WebCryptoAlgorithm& algorithm,
+                           bool extractable,
+                           blink::WebCryptoKeyUsageMask usage_mask,
+                           const JwkRsaInfo& params,
+                           blink::WebCryptoKey* key) {
+  crypto::ScopedRSA rsa(RSA_new());
+
+  rsa->n = CreateBIGNUM(params.n);
+  rsa->e = CreateBIGNUM(params.e);
+  rsa->d = CreateBIGNUM(params.d);
+  rsa->p = CreateBIGNUM(params.p);
+  rsa->q = CreateBIGNUM(params.q);
+  rsa->dmp1 = CreateBIGNUM(params.dp);
+  rsa->dmq1 = CreateBIGNUM(params.dq);
+  rsa->iqmp = CreateBIGNUM(params.qi);
+
+  if (!rsa->n || !rsa->e || !rsa->d || !rsa->p || !rsa->q || !rsa->dmp1 ||
+      !rsa->dmq1 || !rsa->iqmp) {
+    return Status::OperationError();
+  }
+
+  // TODO(eroman): This should really be a DataError, however for compatibility
+  //               with NSS it is an OperationError.
+  if (1 != RSA_check_key(rsa.get()))
+    return Status::OperationError();
+
+  // Create a corresponding EVP_PKEY.
+  crypto::ScopedEVP_PKEY pkey(EVP_PKEY_new());
+  if (!pkey || !EVP_PKEY_set1_RSA(pkey.get(), rsa.get()))
+    return Status::OperationError();
+
+  return CreateWebCryptoPrivateKey(pkey.Pass(),
+                                   algorithm.id(),
+                                   algorithm.rsaHashedImportParams()->hash(),
+                                   extractable,
+                                   usage_mask,
+                                   key);
+}
+
+Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
+                          bool extractable,
+                          blink::WebCryptoKeyUsageMask usage_mask,
+                          const CryptoData& n,
+                          const CryptoData& e,
+                          blink::WebCryptoKey* key) {
+  crypto::ScopedRSA rsa(RSA_new());
+
+  rsa->n = BN_bin2bn(n.bytes(), n.byte_length(), NULL);
+  rsa->e = BN_bin2bn(e.bytes(), e.byte_length(), NULL);
+
+  if (!rsa->n || !rsa->e)
+    return Status::OperationError();
+
+  // Create a corresponding EVP_PKEY.
+  crypto::ScopedEVP_PKEY pkey(EVP_PKEY_new());
+  if (!pkey || !EVP_PKEY_set1_RSA(pkey.get(), rsa.get()))
+    return Status::OperationError();
+
+  return CreateWebCryptoPublicKey(pkey.Pass(),
+                                  algorithm.id(),
+                                  algorithm.rsaHashedImportParams()->hash(),
+                                  extractable,
+                                  usage_mask,
+                                  key);
+}
+
 }  // namespace
 
 Status RsaHashedAlgorithm::VerifyKeyUsagesBeforeGenerateKeyPair(
@@ -237,6 +317,10 @@ Status RsaHashedAlgorithm::VerifyKeyUsagesBeforeImportKey(
       return CheckKeyCreationUsages(all_public_key_usages_, usage_mask);
     case blink::WebCryptoKeyFormatPkcs8:
       return CheckKeyCreationUsages(all_private_key_usages_, usage_mask);
+    case blink::WebCryptoKeyFormatJwk:
+      // TODO(eroman): http://crbug.com/395904
+      return CheckKeyCreationUsages(
+          all_public_key_usages_ | all_private_key_usages_, usage_mask);
     default:
       return Status::ErrorUnsupportedImportKeyFormat();
   }
@@ -315,6 +399,41 @@ Status RsaHashedAlgorithm::ImportKeySpki(
                                   key);
 }
 
+Status RsaHashedAlgorithm::ImportKeyJwk(
+    const CryptoData& key_data,
+    const blink::WebCryptoAlgorithm& algorithm,
+    bool extractable,
+    blink::WebCryptoKeyUsageMask usage_mask,
+    blink::WebCryptoKey* key) const {
+  const char* jwk_algorithm =
+      GetJwkAlgorithm(algorithm.rsaHashedImportParams()->hash().id());
+
+  if (!jwk_algorithm)
+    return Status::ErrorUnexpected();
+
+  JwkRsaInfo jwk;
+  Status status =
+      ReadRsaKeyJwk(key_data, jwk_algorithm, extractable, usage_mask, &jwk);
+  if (status.IsError())
+    return status;
+
+  // Once the key type is known, verify the usages.
+  status = CheckKeyCreationUsages(
+      jwk.is_private_key ? all_private_key_usages_ : all_public_key_usages_,
+      usage_mask);
+  if (status.IsError())
+    return status;
+
+  return jwk.is_private_key
+             ? ImportRsaPrivateKey(algorithm, extractable, usage_mask, jwk, key)
+             : ImportRsaPublicKey(algorithm,
+                                  extractable,
+                                  usage_mask,
+                                  CryptoData(jwk.n),
+                                  CryptoData(jwk.e),
+                                  key);
+}
+
 Status RsaHashedAlgorithm::ExportKeyPkcs8(const blink::WebCryptoKey& key,
                                           std::vector<uint8_t>* buffer) const {
   if (key.type() != blink::WebCryptoKeyTypePrivate)
@@ -329,6 +448,47 @@ Status RsaHashedAlgorithm::ExportKeySpki(const blink::WebCryptoKey& key,
     return Status::ErrorUnexpectedKeyType();
   *buffer = AsymKeyOpenSsl::Cast(key)->serialized_key_data();
   return Status::Success();
+}
+
+Status RsaHashedAlgorithm::ExportKeyJwk(const blink::WebCryptoKey& key,
+                                        std::vector<uint8_t>* buffer) const {
+  EVP_PKEY* public_key = AsymKeyOpenSsl::Cast(key)->key();
+  crypto::ScopedRSA rsa(EVP_PKEY_get1_RSA(public_key));
+  if (!rsa.get())
+    return Status::ErrorUnexpected();
+
+  const char* jwk_algorithm =
+      GetJwkAlgorithm(key.algorithm().rsaHashedParams()->hash().id());
+  if (!jwk_algorithm)
+    return Status::ErrorUnexpected();
+
+  switch (key.type()) {
+    case blink::WebCryptoKeyTypePublic:
+      WriteRsaPublicKeyJwk(CryptoData(BIGNUMToVector(rsa->n)),
+                           CryptoData(BIGNUMToVector(rsa->e)),
+                           jwk_algorithm,
+                           key.extractable(),
+                           key.usages(),
+                           buffer);
+      return Status::Success();
+    case blink::WebCryptoKeyTypePrivate:
+      WriteRsaPrivateKeyJwk(CryptoData(BIGNUMToVector(rsa->n)),
+                            CryptoData(BIGNUMToVector(rsa->e)),
+                            CryptoData(BIGNUMToVector(rsa->d)),
+                            CryptoData(BIGNUMToVector(rsa->p)),
+                            CryptoData(BIGNUMToVector(rsa->q)),
+                            CryptoData(BIGNUMToVector(rsa->dmp1)),
+                            CryptoData(BIGNUMToVector(rsa->dmq1)),
+                            CryptoData(BIGNUMToVector(rsa->iqmp)),
+                            jwk_algorithm,
+                            key.extractable(),
+                            key.usages(),
+                            buffer);
+      return Status::Success();
+
+    default:
+      return Status::ErrorUnexpected();
+  }
 }
 
 }  // namespace webcrypto

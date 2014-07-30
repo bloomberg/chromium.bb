@@ -1527,7 +1527,7 @@ TEST_F(SharedCryptoTest, ImportJwkOctFailures) {
   RestoreJwkOctDictionary(&dict);
 }
 
-TEST_F(SharedCryptoTest, MAYBE(ImportExportJwkRsaPublicKey)) {
+TEST_F(SharedCryptoTest, ImportExportJwkRsaPublicKey) {
   if (!SupportsRsaKeyImport())
     return;
 
@@ -1632,7 +1632,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportExportJwkRsaPublicKey)) {
   }
 }
 
-TEST_F(SharedCryptoTest, MAYBE(ImportJwkRsaFailures)) {
+TEST_F(SharedCryptoTest, ImportJwkRsaFailures) {
   base::DictionaryValue dict;
   RestoreJwkRsaDictionary(&dict);
   blink::WebCryptoAlgorithm algorithm =
@@ -1680,7 +1680,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportJwkRsaFailures)) {
   }
 }
 
-TEST_F(SharedCryptoTest, MAYBE(ImportJwkInputConsistency)) {
+TEST_F(SharedCryptoTest, ImportJwkInputConsistency) {
   // The Web Crypto spec says that if a JWK value is present, but is
   // inconsistent with the input value, the operation must fail.
 
@@ -1813,7 +1813,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportJwkInputConsistency)) {
   // TODO(padolph): key_ops consistency tests
 }
 
-TEST_F(SharedCryptoTest, MAYBE(ImportJwkHappy)) {
+TEST_F(SharedCryptoTest, ImportJwkHappy) {
   // This test verifies the happy path of JWK import, including the application
   // of the imported key material.
 
@@ -2174,7 +2174,7 @@ TEST_F(SharedCryptoTest, ImportExportPkcs8) {
 // it was lossless:
 //
 //   PKCS8 --> JWK --> PKCS8
-TEST_F(SharedCryptoTest, MAYBE(ImportRsaPrivateKeyJwkToPkcs8RoundTrip)) {
+TEST_F(SharedCryptoTest, ImportRsaPrivateKeyJwkToPkcs8RoundTrip) {
   if (!SupportsRsaKeyImport())
     return;
 
@@ -2242,7 +2242,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportRsaPrivateKeyJwkToPkcs8RoundTrip)) {
 // a sequence of keys from JWK could yield the wrong key. The first key would
 // be imported correctly, however every key after that would actually import
 // the first key.
-TEST_F(SharedCryptoTest, MAYBE(ImportMultipleRSAPrivateKeysJwk)) {
+TEST_F(SharedCryptoTest, ImportMultipleRSAPrivateKeysJwk) {
   if (!SupportsRsaKeyImport())
     return;
 
@@ -2307,7 +2307,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportMultipleRSAPrivateKeysJwk)) {
 // modulus, but mismatched parameters for the rest. It should NOT be possible
 // that the second import retrieves the first key. See http://crbug.com/378315
 // for how that could happen.
-TEST_F(SharedCryptoTest, MAYBE(ImportJwkExistingModulusAndInvalid)) {
+TEST_F(SharedCryptoTest, ImportJwkExistingModulusAndInvalid) {
 #if defined(USE_NSS)
   if (!NSS_VersionCheck("3.16.2")) {
     LOG(WARNING) << "Skipping test because lacks NSS support";
@@ -2366,7 +2366,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportJwkExistingModulusAndInvalid)) {
 //
 // This fails because JWA says that producers must include either ALL optional
 // parameters or NONE.
-TEST_F(SharedCryptoTest, MAYBE(ImportRsaPrivateKeyJwkMissingOptionalParams)) {
+TEST_F(SharedCryptoTest, ImportRsaPrivateKeyJwkMissingOptionalParams) {
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
 
   base::DictionaryValue dict;
@@ -2439,7 +2439,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportRsaPrivateKeyJwkIncorrectOptionalEmpty)) {
 }
 
 // Tries importing a public RSA key whose exponent contains leading zeros.
-TEST_F(SharedCryptoTest, MAYBE(ImportJwkRsaNonMinimalExponent)) {
+TEST_F(SharedCryptoTest, ImportJwkRsaNonMinimalExponent) {
   base::DictionaryValue dict;
 
   dict.SetString("kty", "RSA");
@@ -4006,7 +4006,7 @@ TEST_F(SharedCryptoRsaOaepTest, WrapUnwrapJwkSymKey) {
 
 // Try importing an RSA-SSA public key with unsupported key usages using SPKI
 // format. RSA-SSA public keys only support the 'verify' usage.
-TEST_F(SharedCryptoTest, MAYBE(ImportRsaSsaPublicKeyBadUsage_SPKI)) {
+TEST_F(SharedCryptoTest, ImportRsaSsaPublicKeyBadUsage_SPKI) {
   const blink::WebCryptoAlgorithm algorithm =
       CreateRsaHashedImportAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
                                      blink::WebCryptoAlgorithmIdSha256);
@@ -4034,7 +4034,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportRsaSsaPublicKeyBadUsage_SPKI)) {
 
 // Try importing an RSA-SSA public key with unsupported key usages using JWK
 // format. RSA-SSA public keys only support the 'verify' usage.
-TEST_F(SharedCryptoTest, MAYBE(ImportRsaSsaPublicKeyBadUsage_JWK)) {
+TEST_F(SharedCryptoTest, ImportRsaSsaPublicKeyBadUsage_JWK) {
   const blink::WebCryptoAlgorithm algorithm =
       CreateRsaHashedImportAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
                                      blink::WebCryptoAlgorithmIdSha256);

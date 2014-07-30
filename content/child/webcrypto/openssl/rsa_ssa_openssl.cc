@@ -37,6 +37,22 @@ class RsaSsaImplementation : public RsaHashedAlgorithm {
       : RsaHashedAlgorithm(blink::WebCryptoKeyUsageVerify,
                            blink::WebCryptoKeyUsageSign) {}
 
+  virtual const char* GetJwkAlgorithm(
+      const blink::WebCryptoAlgorithmId hash) const OVERRIDE {
+    switch (hash) {
+      case blink::WebCryptoAlgorithmIdSha1:
+        return "RS1";
+      case blink::WebCryptoAlgorithmIdSha256:
+        return "RS256";
+      case blink::WebCryptoAlgorithmIdSha384:
+        return "RS384";
+      case blink::WebCryptoAlgorithmIdSha512:
+        return "RS512";
+      default:
+        return NULL;
+    }
+  }
+
   virtual Status Sign(const blink::WebCryptoAlgorithm& algorithm,
                       const blink::WebCryptoKey& key,
                       const CryptoData& data,
