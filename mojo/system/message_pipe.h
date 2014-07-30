@@ -16,6 +16,7 @@
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/system/dispatcher.h"
+#include "mojo/system/handle_signals_state.h"
 #include "mojo/system/memory.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/message_pipe_endpoint.h"
@@ -63,6 +64,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe
                          DispatcherVector* dispatchers,
                          uint32_t* num_dispatchers,
                          MojoReadMessageFlags flags);
+  HandleSignalsState GetHandleSignalsState(unsigned port) const;
   MojoResult AddWaiter(unsigned port,
                        Waiter* waiter,
                        MojoHandleSignals signals,

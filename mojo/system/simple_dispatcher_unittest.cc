@@ -73,8 +73,8 @@ class MockSimpleDispatcher : public SimpleDispatcher {
     return scoped_refptr<Dispatcher>(rv.get());
   }
 
-  // |SimpleDispatcher| implementation:
-  virtual HandleSignalsState GetHandleSignalsStateNoLock() const OVERRIDE {
+  // |Dispatcher| override:
+  virtual HandleSignalsState GetHandleSignalsStateImplNoLock() const OVERRIDE {
     lock().AssertAcquired();
     return state_;
   }

@@ -57,6 +57,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe
                                     UserPointer<uint32_t> buffer_num_bytes,
                                     bool all_or_none);
   MojoResult ProducerEndWriteData(uint32_t num_bytes_written);
+  HandleSignalsState ProducerGetHandleSignalsState();
   MojoResult ProducerAddWaiter(Waiter* waiter,
                                MojoHandleSignals signals,
                                uint32_t context);
@@ -79,6 +80,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe
                                    UserPointer<uint32_t> buffer_num_bytes,
                                    bool all_or_none);
   MojoResult ConsumerEndReadData(uint32_t num_bytes_read);
+  HandleSignalsState ConsumerGetHandleSignalsState();
   MojoResult ConsumerAddWaiter(Waiter* waiter,
                                MojoHandleSignals signals,
                                uint32_t context);
@@ -107,7 +109,8 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe
   virtual MojoResult ProducerEndWriteDataImplNoLock(
       uint32_t num_bytes_written) = 0;
   // Note: A producer should not be writable during a two-phase write.
-  virtual HandleSignalsState ProducerGetHandleSignalsStateNoLock() const = 0;
+  virtual HandleSignalsState ProducerGetHandleSignalsStateImplNoLock()
+      const = 0;
 
   virtual void ConsumerCloseImplNoLock() = 0;
   // |*num_bytes| will be a nonzero multiple of |element_num_bytes_|.
@@ -129,7 +132,8 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe
       uint32_t min_num_bytes_to_read) = 0;
   virtual MojoResult ConsumerEndReadDataImplNoLock(uint32_t num_bytes_read) = 0;
   // Note: A consumer should not be writable during a two-phase read.
-  virtual HandleSignalsState ConsumerGetHandleSignalsStateNoLock() const = 0;
+  virtual HandleSignalsState ConsumerGetHandleSignalsStateImplNoLock()
+      const = 0;
 
   // Thread-safe and fast (they don't take the lock):
   bool may_discard() const { return may_discard_; }

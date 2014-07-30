@@ -127,6 +127,20 @@ MojoResult LocalMessagePipeEndpoint::ReadMessage(
   return MOJO_RESULT_OK;
 }
 
+HandleSignalsState LocalMessagePipeEndpoint::GetHandleSignalsState() const {
+  HandleSignalsState rv;
+  if (!message_queue_.IsEmpty()) {
+    rv.satisfied_signals |= MOJO_HANDLE_SIGNAL_READABLE;
+    rv.satisfiable_signals |= MOJO_HANDLE_SIGNAL_READABLE;
+  }
+  if (is_peer_open_) {
+    rv.satisfied_signals |= MOJO_HANDLE_SIGNAL_WRITABLE;
+    rv.satisfiable_signals |=
+        MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE;
+  }
+  return rv;
+}
+
 MojoResult LocalMessagePipeEndpoint::AddWaiter(Waiter* waiter,
                                                MojoHandleSignals signals,
                                                uint32_t context) {
@@ -145,20 +159,6 @@ MojoResult LocalMessagePipeEndpoint::AddWaiter(Waiter* waiter,
 void LocalMessagePipeEndpoint::RemoveWaiter(Waiter* waiter) {
   DCHECK(is_open_);
   waiter_list_.RemoveWaiter(waiter);
-}
-
-HandleSignalsState LocalMessagePipeEndpoint::GetHandleSignalsState() {
-  HandleSignalsState rv;
-  if (!message_queue_.IsEmpty()) {
-    rv.satisfied_signals |= MOJO_HANDLE_SIGNAL_READABLE;
-    rv.satisfiable_signals |= MOJO_HANDLE_SIGNAL_READABLE;
-  }
-  if (is_peer_open_) {
-    rv.satisfied_signals |= MOJO_HANDLE_SIGNAL_WRITABLE;
-    rv.satisfiable_signals |=
-        MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE;
-  }
-  return rv;
 }
 
 }  // namespace system

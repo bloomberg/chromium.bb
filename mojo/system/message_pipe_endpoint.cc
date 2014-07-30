@@ -27,6 +27,11 @@ MojoResult MessagePipeEndpoint::ReadMessage(UserPointer<void> /*bytes*/,
   return MOJO_RESULT_INTERNAL;
 }
 
+HandleSignalsState MessagePipeEndpoint::GetHandleSignalsState() const {
+  NOTREACHED();
+  return HandleSignalsState();
+}
+
 MojoResult MessagePipeEndpoint::AddWaiter(Waiter* /*waiter*/,
                                           MojoHandleSignals /*signals*/,
                                           uint32_t /*context*/) {

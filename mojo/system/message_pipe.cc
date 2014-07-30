@@ -97,6 +97,15 @@ MojoResult MessagePipe::ReadMessage(unsigned port,
       bytes, num_bytes, dispatchers, num_dispatchers, flags);
 }
 
+HandleSignalsState MessagePipe::GetHandleSignalsState(unsigned port) const {
+  DCHECK(port == 0 || port == 1);
+
+  base::AutoLock locker(const_cast<base::Lock&>(lock_));
+  DCHECK(endpoints_[port]);
+
+  return endpoints_[port]->GetHandleSignalsState();
+}
+
 MojoResult MessagePipe::AddWaiter(unsigned port,
                                   Waiter* waiter,
                                   MojoHandleSignals signals,

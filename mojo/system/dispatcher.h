@@ -20,6 +20,7 @@
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/c/system/types.h"
+#include "mojo/system/handle_signals_state.h"
 #include "mojo/system/memory.h"
 #include "mojo/system/system_impl_export.h"
 
@@ -116,6 +117,12 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
                        uint64_t num_bytes,
                        MojoMapBufferFlags flags,
                        scoped_ptr<RawSharedBufferMapping>* mapping);
+
+  // Gets the current handle signals state. (The default implementation simply
+  // returns a default-constructed |HandleSignalsState|, i.e., no signals
+  // satisfied or satisfiable.) Note: The state is subject to change from other
+  // threads.
+  HandleSignalsState GetHandleSignalsState() const;
 
   // Adds a waiter to this dispatcher. The waiter will be woken up when this
   // object changes state to satisfy |signals| with context |context|. It will
@@ -246,6 +253,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
       uint64_t num_bytes,
       MojoMapBufferFlags flags,
       scoped_ptr<RawSharedBufferMapping>* mapping);
+  virtual HandleSignalsState GetHandleSignalsStateImplNoLock() const;
   virtual MojoResult AddWaiterImplNoLock(Waiter* waiter,
                                          MojoHandleSignals signals,
                                          uint32_t context);

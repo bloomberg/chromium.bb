@@ -50,9 +50,6 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformHandleDispatcher
       size_t* actual_size,
       embedder::PlatformHandleVector* platform_handles) OVERRIDE;
 
-  // |SimpleDispatcher| method:
-  virtual HandleSignalsState GetHandleSignalsStateNoLock() const OVERRIDE;
-
   embedder::ScopedPlatformHandle platform_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformHandleDispatcher);

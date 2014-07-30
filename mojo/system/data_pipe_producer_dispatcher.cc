@@ -76,6 +76,12 @@ MojoResult DataPipeProducerDispatcher::EndWriteDataImplNoLock(
   return data_pipe_->ProducerEndWriteData(num_bytes_written);
 }
 
+HandleSignalsState DataPipeProducerDispatcher::GetHandleSignalsStateImplNoLock()
+    const {
+  lock().AssertAcquired();
+  return data_pipe_->ProducerGetHandleSignalsState();
+}
+
 MojoResult DataPipeProducerDispatcher::AddWaiterImplNoLock(
     Waiter* waiter,
     MojoHandleSignals signals,

@@ -114,10 +114,5 @@ bool PlatformHandleDispatcher::EndSerializeAndCloseImplNoLock(
   return true;
 }
 
-HandleSignalsState PlatformHandleDispatcher::GetHandleSignalsStateNoLock()
-    const {
-  return HandleSignalsState();
-}
-
 }  // namespace system
 }  // namespace mojo

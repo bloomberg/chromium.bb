@@ -36,6 +36,7 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
                                  DispatcherVector* dispatchers,
                                  uint32_t* num_dispatchers,
                                  MojoReadMessageFlags flags) OVERRIDE;
+  virtual HandleSignalsState GetHandleSignalsState() const OVERRIDE;
   virtual MojoResult AddWaiter(Waiter* waiter,
                                MojoHandleSignals signals,
                                uint32_t context) OVERRIDE;
@@ -45,8 +46,6 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
   MessageInTransitQueue* message_queue() { return &message_queue_; }
 
  private:
-  HandleSignalsState GetHandleSignalsState();
-
   bool is_open_;
   bool is_peer_open_;
 

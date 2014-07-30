@@ -268,10 +268,5 @@ bool SharedBufferDispatcher::EndSerializeAndCloseImplNoLock(
   return true;
 }
 
-HandleSignalsState SharedBufferDispatcher::GetHandleSignalsStateNoLock() const {
-  // TODO(vtl): Add transferrable flag.
-  return HandleSignalsState();
-}
-
 }  // namespace system
 }  // namespace mojo

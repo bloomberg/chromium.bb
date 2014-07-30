@@ -94,7 +94,7 @@ void DataPipe::ProducerClose() {
   producer_two_phase_max_num_bytes_written_ = 0;
   ProducerCloseImplNoLock();
   AwakeConsumerWaitersForStateChangeNoLock(
-      ConsumerGetHandleSignalsStateNoLock());
+      ConsumerGetHandleSignalsStateImplNoLock());
 }
 
 MojoResult DataPipe::ProducerWriteData(UserPointer<const void> elements,
@@ -118,10 +118,12 @@ MojoResult DataPipe::ProducerWriteData(UserPointer<const void> elements,
 
   uint32_t min_num_bytes_to_write = all_or_none ? max_num_bytes_to_write : 0;
 
-  HandleSignalsState old_consumer_state = ConsumerGetHandleSignalsStateNoLock();
+  HandleSignalsState old_consumer_state =
+      ConsumerGetHandleSignalsStateImplNoLock();
   MojoResult rv = ProducerWriteDataImplNoLock(
       elements, num_bytes, max_num_bytes_to_write, min_num_bytes_to_write);
-  HandleSignalsState new_consumer_state = ConsumerGetHandleSignalsStateNoLock();
+  HandleSignalsState new_consumer_state =
+      ConsumerGetHandleSignalsStateImplNoLock();
   if (!new_consumer_state.equals(old_consumer_state))
     AwakeConsumerWaitersForStateChangeNoLock(new_consumer_state);
   return rv;
@@ -167,7 +169,8 @@ MojoResult DataPipe::ProducerEndWriteData(uint32_t num_bytes_written) {
   // Note: Allow successful completion of the two-phase write even if the
   // consumer has been closed.
 
-  HandleSignalsState old_consumer_state = ConsumerGetHandleSignalsStateNoLock();
+  HandleSignalsState old_consumer_state =
+      ConsumerGetHandleSignalsStateImplNoLock();
   MojoResult rv;
   if (num_bytes_written > producer_two_phase_max_num_bytes_written_ ||
       num_bytes_written % element_num_bytes_ != 0) {
@@ -180,13 +183,21 @@ MojoResult DataPipe::ProducerEndWriteData(uint32_t num_bytes_written) {
   DCHECK(!producer_in_two_phase_write_no_lock());
   // If we're now writable, we *became* writable (since we weren't writable
   // during the two-phase write), so awake producer waiters.
-  HandleSignalsState new_producer_state = ProducerGetHandleSignalsStateNoLock();
+  HandleSignalsState new_producer_state =
+      ProducerGetHandleSignalsStateImplNoLock();
   if (new_producer_state.satisfies(MOJO_HANDLE_SIGNAL_WRITABLE))
     AwakeProducerWaitersForStateChangeNoLock(new_producer_state);
-  HandleSignalsState new_consumer_state = ConsumerGetHandleSignalsStateNoLock();
+  HandleSignalsState new_consumer_state =
+      ConsumerGetHandleSignalsStateImplNoLock();
   if (!new_consumer_state.equals(old_consumer_state))
     AwakeConsumerWaitersForStateChangeNoLock(new_consumer_state);
   return rv;
+}
+
+HandleSignalsState DataPipe::ProducerGetHandleSignalsState() {
+  base::AutoLock locker(lock_);
+  DCHECK(has_local_producer_no_lock());
+  return ProducerGetHandleSignalsStateImplNoLock();
 }
 
 MojoResult DataPipe::ProducerAddWaiter(Waiter* waiter,
@@ -195,7 +206,7 @@ MojoResult DataPipe::ProducerAddWaiter(Waiter* waiter,
   base::AutoLock locker(lock_);
   DCHECK(has_local_producer_no_lock());
 
-  HandleSignalsState producer_state = ProducerGetHandleSignalsStateNoLock();
+  HandleSignalsState producer_state = ProducerGetHandleSignalsStateImplNoLock();
   if (producer_state.satisfies(signals))
     return MOJO_RESULT_ALREADY_EXISTS;
   if (!producer_state.can_satisfy(signals))
@@ -234,7 +245,7 @@ void DataPipe::ConsumerClose() {
   consumer_two_phase_max_num_bytes_read_ = 0;
   ConsumerCloseImplNoLock();
   AwakeProducerWaitersForStateChangeNoLock(
-      ProducerGetHandleSignalsStateNoLock());
+      ProducerGetHandleSignalsStateImplNoLock());
 }
 
 MojoResult DataPipe::ConsumerReadData(UserPointer<void> elements,
@@ -255,10 +266,12 @@ MojoResult DataPipe::ConsumerReadData(UserPointer<void> elements,
 
   uint32_t min_num_bytes_to_read = all_or_none ? max_num_bytes_to_read : 0;
 
-  HandleSignalsState old_producer_state = ProducerGetHandleSignalsStateNoLock();
+  HandleSignalsState old_producer_state =
+      ProducerGetHandleSignalsStateImplNoLock();
   MojoResult rv = ConsumerReadDataImplNoLock(
       elements, num_bytes, max_num_bytes_to_read, min_num_bytes_to_read);
-  HandleSignalsState new_producer_state = ProducerGetHandleSignalsStateNoLock();
+  HandleSignalsState new_producer_state =
+      ProducerGetHandleSignalsStateImplNoLock();
   if (!new_producer_state.equals(old_producer_state))
     AwakeProducerWaitersForStateChangeNoLock(new_producer_state);
   return rv;
@@ -282,10 +295,12 @@ MojoResult DataPipe::ConsumerDiscardData(UserPointer<uint32_t> num_bytes,
   uint32_t min_num_bytes_to_discard =
       all_or_none ? max_num_bytes_to_discard : 0;
 
-  HandleSignalsState old_producer_state = ProducerGetHandleSignalsStateNoLock();
+  HandleSignalsState old_producer_state =
+      ProducerGetHandleSignalsStateImplNoLock();
   MojoResult rv = ConsumerDiscardDataImplNoLock(
       num_bytes, max_num_bytes_to_discard, min_num_bytes_to_discard);
-  HandleSignalsState new_producer_state = ProducerGetHandleSignalsStateNoLock();
+  HandleSignalsState new_producer_state =
+      ProducerGetHandleSignalsStateImplNoLock();
   if (!new_producer_state.equals(old_producer_state))
     AwakeProducerWaitersForStateChangeNoLock(new_producer_state);
   return rv;
@@ -334,7 +349,8 @@ MojoResult DataPipe::ConsumerEndReadData(uint32_t num_bytes_read) {
   if (!consumer_in_two_phase_read_no_lock())
     return MOJO_RESULT_FAILED_PRECONDITION;
 
-  HandleSignalsState old_producer_state = ProducerGetHandleSignalsStateNoLock();
+  HandleSignalsState old_producer_state =
+      ProducerGetHandleSignalsStateImplNoLock();
   MojoResult rv;
   if (num_bytes_read > consumer_two_phase_max_num_bytes_read_ ||
       num_bytes_read % element_num_bytes_ != 0) {
@@ -347,13 +363,21 @@ MojoResult DataPipe::ConsumerEndReadData(uint32_t num_bytes_read) {
   DCHECK(!consumer_in_two_phase_read_no_lock());
   // If we're now readable, we *became* readable (since we weren't readable
   // during the two-phase read), so awake consumer waiters.
-  HandleSignalsState new_consumer_state = ConsumerGetHandleSignalsStateNoLock();
+  HandleSignalsState new_consumer_state =
+      ConsumerGetHandleSignalsStateImplNoLock();
   if (new_consumer_state.satisfies(MOJO_HANDLE_SIGNAL_READABLE))
     AwakeConsumerWaitersForStateChangeNoLock(new_consumer_state);
-  HandleSignalsState new_producer_state = ProducerGetHandleSignalsStateNoLock();
+  HandleSignalsState new_producer_state =
+      ProducerGetHandleSignalsStateImplNoLock();
   if (!new_producer_state.equals(old_producer_state))
     AwakeProducerWaitersForStateChangeNoLock(new_producer_state);
   return rv;
+}
+
+HandleSignalsState DataPipe::ConsumerGetHandleSignalsState() {
+  base::AutoLock locker(lock_);
+  DCHECK(has_local_consumer_no_lock());
+  return ConsumerGetHandleSignalsStateImplNoLock();
 }
 
 MojoResult DataPipe::ConsumerAddWaiter(Waiter* waiter,
@@ -362,7 +386,7 @@ MojoResult DataPipe::ConsumerAddWaiter(Waiter* waiter,
   base::AutoLock locker(lock_);
   DCHECK(has_local_consumer_no_lock());
 
-  HandleSignalsState consumer_state = ConsumerGetHandleSignalsStateNoLock();
+  HandleSignalsState consumer_state = ConsumerGetHandleSignalsStateImplNoLock();
   if (consumer_state.satisfies(signals))
     return MOJO_RESULT_ALREADY_EXISTS;
   if (!consumer_state.can_satisfy(signals))

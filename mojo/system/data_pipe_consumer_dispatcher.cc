@@ -99,6 +99,12 @@ MojoResult DataPipeConsumerDispatcher::EndReadDataImplNoLock(
   return data_pipe_->ConsumerEndReadData(num_bytes_read);
 }
 
+HandleSignalsState DataPipeConsumerDispatcher::GetHandleSignalsStateImplNoLock()
+    const {
+  lock().AssertAcquired();
+  return data_pipe_->ConsumerGetHandleSignalsState();
+}
+
 MojoResult DataPipeConsumerDispatcher::AddWaiterImplNoLock(
     Waiter* waiter,
     MojoHandleSignals signals,

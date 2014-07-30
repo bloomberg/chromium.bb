@@ -152,7 +152,8 @@ MojoResult LocalDataPipe::ProducerEndWriteDataImplNoLock(
   return MOJO_RESULT_OK;
 }
 
-HandleSignalsState LocalDataPipe::ProducerGetHandleSignalsStateNoLock() const {
+HandleSignalsState LocalDataPipe::ProducerGetHandleSignalsStateImplNoLock()
+    const {
   HandleSignalsState rv;
   if (consumer_open_no_lock()) {
     if ((may_discard() || current_num_bytes_ < capacity_num_bytes()) &&
@@ -280,7 +281,8 @@ MojoResult LocalDataPipe::ConsumerEndReadDataImplNoLock(
   return MOJO_RESULT_OK;
 }
 
-HandleSignalsState LocalDataPipe::ConsumerGetHandleSignalsStateNoLock() const {
+HandleSignalsState LocalDataPipe::ConsumerGetHandleSignalsStateImplNoLock()
+    const {
   HandleSignalsState rv;
   if (current_num_bytes_ > 0) {
     if (!consumer_in_two_phase_read_no_lock())

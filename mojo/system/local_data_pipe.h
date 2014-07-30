@@ -42,7 +42,7 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalDataPipe : public DataPipe {
       uint32_t min_num_bytes_to_write) OVERRIDE;
   virtual MojoResult ProducerEndWriteDataImplNoLock(
       uint32_t num_bytes_written) OVERRIDE;
-  virtual HandleSignalsState ProducerGetHandleSignalsStateNoLock()
+  virtual HandleSignalsState ProducerGetHandleSignalsStateImplNoLock()
       const OVERRIDE;
   virtual void ConsumerCloseImplNoLock() OVERRIDE;
   virtual MojoResult ConsumerReadDataImplNoLock(
@@ -62,7 +62,7 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalDataPipe : public DataPipe {
       uint32_t min_num_bytes_to_read) OVERRIDE;
   virtual MojoResult ConsumerEndReadDataImplNoLock(
       uint32_t num_bytes_read) OVERRIDE;
-  virtual HandleSignalsState ConsumerGetHandleSignalsStateNoLock()
+  virtual HandleSignalsState ConsumerGetHandleSignalsStateImplNoLock()
       const OVERRIDE;
 
   void EnsureBufferNoLock();

@@ -208,6 +208,12 @@ MojoResult MessagePipeDispatcher::ReadMessageImplNoLock(
       port_, bytes, num_bytes, dispatchers, num_dispatchers, flags);
 }
 
+HandleSignalsState MessagePipeDispatcher::GetHandleSignalsStateImplNoLock()
+    const {
+  lock().AssertAcquired();
+  return message_pipe_->GetHandleSignalsState(port_);
+}
+
 MojoResult MessagePipeDispatcher::AddWaiterImplNoLock(Waiter* waiter,
                                                       MojoHandleSignals signals,
                                                       uint32_t context) {

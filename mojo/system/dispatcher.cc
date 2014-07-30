@@ -210,6 +210,14 @@ MojoResult Dispatcher::MapBuffer(uint64_t offset,
   return MapBufferImplNoLock(offset, num_bytes, flags, mapping);
 }
 
+HandleSignalsState Dispatcher::GetHandleSignalsState() const {
+  base::AutoLock locker(lock_);
+  if (is_closed_)
+    return HandleSignalsState();
+
+  return GetHandleSignalsStateImplNoLock();
+}
+
 MojoResult Dispatcher::AddWaiter(Waiter* waiter,
                                  MojoHandleSignals signals,
                                  uint32_t context) {
@@ -342,6 +350,14 @@ MojoResult Dispatcher::MapBufferImplNoLock(
   DCHECK(!is_closed_);
   // By default, not supported. Only needed for buffer dispatchers.
   return MOJO_RESULT_INVALID_ARGUMENT;
+}
+
+HandleSignalsState Dispatcher::GetHandleSignalsStateImplNoLock() const {
+  lock_.AssertAcquired();
+  DCHECK(!is_closed_);
+  // By default, waiting isn't supported. Only dispatchers that can be waited on
+  // will do something nontrivial.
+  return HandleSignalsState();
 }
 
 MojoResult Dispatcher::AddWaiterImplNoLock(Waiter* /*waiter*/,

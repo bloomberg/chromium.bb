@@ -89,6 +89,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
                                            DispatcherVector* dispatchers,
                                            uint32_t* num_dispatchers,
                                            MojoReadMessageFlags flags) OVERRIDE;
+  virtual HandleSignalsState GetHandleSignalsStateImplNoLock() const OVERRIDE;
   virtual MojoResult AddWaiterImplNoLock(Waiter* waiter,
                                          MojoHandleSignals signals,
                                          uint32_t context) OVERRIDE;

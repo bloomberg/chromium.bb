@@ -64,6 +64,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeEndpoint {
                                  DispatcherVector* dispatchers,
                                  uint32_t* num_dispatchers,
                                  MojoReadMessageFlags flags);
+  virtual HandleSignalsState GetHandleSignalsState() const;
   virtual MojoResult AddWaiter(Waiter* waiter,
                                MojoHandleSignals signals,
                                uint32_t context);
