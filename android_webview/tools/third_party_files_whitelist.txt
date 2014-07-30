@@ -167,8 +167,6 @@ ui/file_manager/file_manager/foreground/js/photo/gallery_scripts.js
 # String 'copyright' used in code.
 ui/file_manager/file_manager/foreground/js/main_scripts.js
 # String 'copyright' used in code.
-ui/file_manager/file_manager/foreground/js/media/mediaplayer_scripts.js
-# String 'copyright' used in code.
 ui/file_manager/gallery/js/gallery_scripts.js
 # String 'copyright' used in code.
 ui/file_manager/video_player/js/video_player_scripts.js
