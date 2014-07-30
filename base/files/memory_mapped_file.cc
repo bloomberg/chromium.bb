@@ -10,9 +10,10 @@
 
 namespace base {
 
-const MemoryMappedFile::Region MemoryMappedFile::Region::kWholeFile;
+const MemoryMappedFile::Region MemoryMappedFile::Region::kWholeFile(
+    base::LINKER_INITIALIZED);
 
-MemoryMappedFile::Region::Region() : offset(0), size(0) {
+MemoryMappedFile::Region::Region(base::LinkerInitialized) : offset(0), size(0) {
 }
 
 MemoryMappedFile::Region::Region(int64 offset, int64 size)

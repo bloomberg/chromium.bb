@@ -41,7 +41,7 @@ class BASE_EXPORT MemoryMappedFile {
    private:
     // This ctor is used only by kWholeFile, to construct a zero-sized Region
     // (which is forbidden by the public ctor) and uniquely identify kWholeFile.
-    Region();
+    Region(base::LinkerInitialized);
   };
 
   // Opens an existing file and maps it into memory. Access is restricted to
