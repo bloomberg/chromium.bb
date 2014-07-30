@@ -45,7 +45,7 @@ namespace blink {
 
 class WebFileChooserCompletionImpl FINAL : public WebFileChooserCompletion {
 public:
-    WebFileChooserCompletionImpl(PassRefPtr<blink::FileChooser> chooser);
+    explicit WebFileChooserCompletionImpl(PassRefPtr<blink::FileChooser>);
     virtual ~WebFileChooserCompletionImpl();
     virtual void didChooseFile(const WebVector<WebString>& fileNames) OVERRIDE;
     virtual void didChooseFile(const WebVector<SelectedFileInfo>& files) OVERRIDE;

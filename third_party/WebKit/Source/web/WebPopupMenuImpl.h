@@ -113,7 +113,7 @@ public:
     friend class WebPopupMenu; // For WebPopupMenu::create.
     friend class WTF::RefCounted<WebPopupMenuImpl>;
 
-    WebPopupMenuImpl(WebWidgetClient*);
+    explicit WebPopupMenuImpl(WebWidgetClient*);
     ~WebPopupMenuImpl();
 
     // blink::HostWindow methods:

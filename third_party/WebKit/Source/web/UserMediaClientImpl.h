@@ -46,7 +46,7 @@ class WebLocalFrameImpl;
 
 class UserMediaClientImpl FINAL : public blink::UserMediaClient {
 public:
-    UserMediaClientImpl(WebLocalFrameImpl*);
+    explicit UserMediaClientImpl(WebLocalFrameImpl*);
 
     // blink::UserMediaClient ----------------------------------------------
     virtual void requestUserMedia(blink::UserMediaRequest*) OVERRIDE;

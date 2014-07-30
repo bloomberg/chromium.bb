@@ -45,7 +45,7 @@ class WebPluginLoadObserver;
 
 class FrameLoaderClientImpl FINAL : public blink::FrameLoaderClient {
 public:
-    FrameLoaderClientImpl(WebLocalFrameImpl* webFrame);
+    explicit FrameLoaderClientImpl(WebLocalFrameImpl* webFrame);
     virtual ~FrameLoaderClientImpl();
 
     WebLocalFrameImpl* webFrame() const { return m_webFrame; }

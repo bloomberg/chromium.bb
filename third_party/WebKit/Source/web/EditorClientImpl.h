@@ -44,7 +44,7 @@ class WebViewImpl;
 
 class EditorClientImpl FINAL : public blink::EditorClient {
 public:
-    EditorClientImpl(WebViewImpl*);
+    explicit EditorClientImpl(WebViewImpl*);
 
     virtual ~EditorClientImpl();
 

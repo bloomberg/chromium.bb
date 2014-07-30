@@ -39,7 +39,7 @@ class WebViewImpl;
 
 class DragClientImpl FINAL : public blink::DragClient {
 public:
-    DragClientImpl(WebViewImpl* webView) : m_webView(webView) { }
+    explicit DragClientImpl(WebViewImpl* webView) : m_webView(webView) { }
 
     virtual blink::DragDestinationAction actionMaskForDrag(blink::DragData*) OVERRIDE;
     virtual void startDrag(

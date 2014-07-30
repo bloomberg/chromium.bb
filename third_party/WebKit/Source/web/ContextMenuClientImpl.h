@@ -40,7 +40,7 @@ struct WebContextMenuData;
 
 class ContextMenuClientImpl FINAL : public blink::ContextMenuClient {
 public:
-    ContextMenuClientImpl(WebViewImpl* webView) : m_webView(webView) {}
+    explicit ContextMenuClientImpl(WebViewImpl* webView) : m_webView(webView) { }
     virtual ~ContextMenuClientImpl() {}
     virtual void showContextMenu(const blink::ContextMenu*) OVERRIDE;
     virtual void clearContextMenu() OVERRIDE;

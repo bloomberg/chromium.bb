@@ -40,7 +40,7 @@ namespace blink {
 
 class WebFontImpl FINAL : public WebFont {
 public:
-    WebFontImpl(const blink::FontDescription&);
+    explicit WebFontImpl(const blink::FontDescription&);
 
     virtual WebFontDescription fontDescription() const OVERRIDE;
 

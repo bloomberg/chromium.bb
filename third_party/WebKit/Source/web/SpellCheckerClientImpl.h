@@ -44,7 +44,7 @@ class WebViewImpl;
 
 class SpellCheckerClientImpl FINAL : public blink::SpellCheckerClient, public blink::TextCheckerClient {
 public:
-    SpellCheckerClientImpl(WebViewImpl*);
+    explicit SpellCheckerClientImpl(WebViewImpl*);
 
     virtual ~SpellCheckerClientImpl();
 
