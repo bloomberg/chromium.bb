@@ -802,6 +802,7 @@ class BuildSpecsManager(object):
     # error message if the file already exists.
     gs_version = 0 if fail_if_exists else None
 
+    logging.info('Recording status %s for %s', status, self.build_names)
     for build_name in self.build_names:
       url = BuildSpecsManager._GetStatusUrl(build_name, version)
 
