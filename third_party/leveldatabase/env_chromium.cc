@@ -441,12 +441,10 @@ void ChromiumEnv::RestoreIfNecessary(const std::string& dir,
     if (current.MatchesExtension(backup_table_extension))
       backups_found.insert(current.RemoveExtension());
   }
-  std::set<base::FilePath> backups_only;
-  std::set_difference(backups_found.begin(),
-                      backups_found.end(),
-                      tables_found.begin(),
-                      tables_found.end(),
-                      std::inserter(backups_only, backups_only.begin()));
+  std::set<base::FilePath> backups_only =
+      base::STLSetDifference<std::set<base::FilePath> >(backups_found,
+                                                        tables_found);
+
   if (backups_only.size()) {
     std::string uma_name(name_);
     uma_name.append(".MissingFiles");
@@ -860,4 +858,3 @@ Env* Env::Default() {
 }
 
 }  // namespace leveldb
-
