@@ -276,9 +276,9 @@ class NSSInitSingleton {
   // Used with PostTaskAndReply to pass handles to worker thread and back.
   struct TPMModuleAndSlot {
     explicit TPMModuleAndSlot(SECMODModule* init_chaps_module)
-        : chaps_module(init_chaps_module), tpm_slot(NULL) {}
+        : chaps_module(init_chaps_module) {}
     SECMODModule* chaps_module;
-    PK11SlotInfo* tpm_slot;
+    crypto::ScopedPK11Slot tpm_slot;
   };
 
   ScopedPK11Slot OpenPersistentNSSDBForPath(const std::string& db_name,
@@ -386,11 +386,11 @@ class NSSInitSingleton {
              << ", got tpm slot: " << !!tpm_args->tpm_slot;
 
     chaps_module_ = tpm_args->chaps_module;
-    tpm_slot_ = tpm_args->tpm_slot;
+    tpm_slot_ = tpm_args->tpm_slot.Pass();
     if (!chaps_module_ && test_system_slot_) {
       // chromeos_unittests try to test the TPM initialization process. If we
       // have a test DB open, pretend that it is the TPM slot.
-      tpm_slot_ = PK11_ReferenceSlot(test_system_slot_.get());
+      tpm_slot_.reset(PK11_ReferenceSlot(test_system_slot_.get()));
     }
     initializing_tpm_token_ = false;
 
@@ -419,7 +419,7 @@ class NSSInitSingleton {
                << base::debug::StackTrace().ToString();
     }
 
-    if (tpm_slot_ != NULL)
+    if (tpm_slot_)
       return true;
 
     if (!callback.is_null())
@@ -431,8 +431,9 @@ class NSSInitSingleton {
   // Note that CK_SLOT_ID is an unsigned long, but cryptohome gives us the slot
   // id as an int. This should be safe since this is only used with chaps, which
   // we also control.
-  static PK11SlotInfo* GetTPMSlotForIdOnWorkerThread(SECMODModule* chaps_module,
-                                                     CK_SLOT_ID slot_id) {
+  static crypto::ScopedPK11Slot GetTPMSlotForIdOnWorkerThread(
+      SECMODModule* chaps_module,
+      CK_SLOT_ID slot_id) {
     DCHECK(chaps_module);
 
     DVLOG(3) << "Poking chaps module.";
@@ -443,7 +444,7 @@ class NSSInitSingleton {
     PK11SlotInfo* slot = SECMOD_LookupSlot(chaps_module->moduleID, slot_id);
     if (!slot)
       LOG(ERROR) << "TPM slot " << slot_id << " not found.";
-    return slot;
+    return crypto::ScopedPK11Slot(slot);
   }
 
   bool InitializeNSSForChromeOSUser(
@@ -515,7 +516,7 @@ class NSSInitSingleton {
     DVLOG(2) << "Got tpm slot for " << username_hash << " "
              << !!tpm_args->tpm_slot;
     chromeos_user_map_[username_hash]->SetPrivateSlot(
-        ScopedPK11Slot(tpm_args->tpm_slot));
+        tpm_args->tpm_slot.Pass());
   }
 
   void InitializePrivateSoftwareSlotForChromeOSUser(
@@ -596,7 +597,7 @@ class NSSInitSingleton {
 #if defined(OS_CHROMEOS)
   void GetSystemNSSKeySlotCallback(
       const base::Callback<void(ScopedPK11Slot)>& callback) {
-    callback.Run(ScopedPK11Slot(PK11_ReferenceSlot(tpm_slot_)));
+    callback.Run(ScopedPK11Slot(PK11_ReferenceSlot(tpm_slot_.get())));
   }
 
   ScopedPK11Slot GetSystemNSSKeySlot(
@@ -615,7 +616,7 @@ class NSSInitSingleton {
                      callback);
     }
     if (IsTPMTokenReady(wrapped_callback))
-      return ScopedPK11Slot(PK11_ReferenceSlot(tpm_slot_));
+      return ScopedPK11Slot(PK11_ReferenceSlot(tpm_slot_.get()));
     return ScopedPK11Slot();
   }
 #endif
@@ -639,7 +640,6 @@ class NSSInitSingleton {
       : tpm_token_enabled_for_nss_(false),
         initializing_tpm_token_(false),
         chaps_module_(NULL),
-        tpm_slot_(NULL),
         root_(NULL) {
     base::TimeTicks start_time = base::TimeTicks::Now();
 
@@ -756,10 +756,7 @@ class NSSInitSingleton {
 #if defined(OS_CHROMEOS)
     STLDeleteValues(&chromeos_user_map_);
 #endif
-    if (tpm_slot_) {
-      PK11_FreeSlot(tpm_slot_);
-      tpm_slot_ = NULL;
-    }
+    tpm_slot_.reset();
     if (root_) {
       SECMOD_UnloadUserModule(root_);
       SECMOD_DestroyModule(root_);
@@ -844,7 +841,7 @@ class NSSInitSingleton {
   typedef std::vector<base::Closure> TPMReadyCallbackList;
   TPMReadyCallbackList tpm_ready_callback_list_;
   SECMODModule* chaps_module_;
-  PK11SlotInfo* tpm_slot_;
+  crypto::ScopedPK11Slot tpm_slot_;
   SECMODModule* root_;
 #if defined(OS_CHROMEOS)
   typedef std::map<std::string, ChromeOSUserData*> ChromeOSUserMap;
