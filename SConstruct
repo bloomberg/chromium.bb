@@ -3454,6 +3454,10 @@ if nacl_irt_env.Bit('bitcode'):
     nacl_irt_env.Append(LINKFLAGS=['--target=x86_64-unknown-nacl',
                                    '--pnacl-allow-translate',
                                    '-arch', 'x86-64'])
+  elif nacl_irt_env.Bit('target_mips32'):
+    # Disable the PNaCl IRT verifier since it will complain about
+    # __executable_start symbol not being a valid external symbol.
+    nacl_irt_env.Append(LINKFLAGS=['--pnacl-disable-abi-check'])
 
 # The IRT is C only, don't link with the C++ linker so that it doesn't
 # start depending on the C++ standard library and (in the case of
