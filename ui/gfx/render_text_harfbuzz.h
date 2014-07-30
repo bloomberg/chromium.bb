@@ -12,6 +12,12 @@
 #include "third_party/icu/source/common/unicode/uscript.h"
 #include "ui/gfx/render_text.h"
 
+namespace base {
+namespace i18n {
+class BreakIterator;
+}
+}
+
 namespace gfx {
 
 namespace internal {
@@ -32,9 +38,15 @@ struct GFX_EXPORT TextRunHarfBuzz {
   // Returns the number of missing glyphs in the shaped text run.
   size_t CountMissingGlyphs() const;
 
-  // Returns the X coordinate of the leading or |trailing| edge of the glyph
-  // starting at |text_index|, relative to the left of the text (not the view).
-  int GetGlyphXBoundary(size_t text_index, bool trailing) const;
+  // Writes the character and glyph ranges of the cluster containing |pos|.
+  void GetClusterAt(size_t pos, Range* chars, Range* glyphs) const;
+
+  // Returns the grapheme bounds at |text_index|. Handles multi-grapheme glyphs.
+  Range GetGraphemeBounds(base::i18n::BreakIterator* grapheme_iterator,
+                          size_t text_index);
+
+  // Returns whether the given shaped run contains any missing glyphs.
+  bool HasMissingGlyphs() const;
 
   int width;
   int preceding_run_widths;
@@ -45,7 +57,7 @@ struct GFX_EXPORT TextRunHarfBuzz {
 
   scoped_ptr<uint16[]> glyphs;
   scoped_ptr<SkPoint[]> positions;
-  scoped_ptr<uint32[]> glyph_to_char;
+  std::vector<uint32> glyph_to_char;
   size_t glyph_count;
 
   skia::RefPtr<SkTypeface> skia_face;
@@ -93,6 +105,8 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   friend class RenderTextTest;
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_RunDirection);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_BreakRunsByUnicodeBlocks);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_SubglyphGraphemeCases);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_SubglyphGraphemePartition);
 
   // Return the run index that contains the argument; or the length of the
   // |runs_| vector if argument exceeds the text length or width.
@@ -123,6 +137,10 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   std::vector<int32_t> logical_to_visual_;
 
   bool needs_layout_;
+
+  // ICU grapheme iterator for the layout text. Valid when |!needs_layout_|. Can
+  // be NULL in case of an error.
+  scoped_ptr<base::i18n::BreakIterator> grapheme_iterator_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderTextHarfBuzz);
 };

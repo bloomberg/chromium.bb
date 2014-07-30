@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/format_macros.h"
+#include "base/i18n/break_iterator.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -2054,34 +2055,35 @@ TEST_F(RenderTextTest, BreakRunsByUnicodeBlocks) {
 }
 #endif  // defined(OS_WIN)
 
-TEST_F(RenderTextTest, HarfBuzz_CharToGlyph) {
+// Test TextRunHarfBuzz's cluster finding logic.
+TEST_F(RenderTextTest, HarfBuzz_Clusters) {
   struct {
     uint32 glyph_to_char[4];
-    size_t char_to_glyph_expected[4];
-    Range char_range_to_glyph_range_expected[4];
+    Range chars[4];
+    Range glyphs[4];
     bool is_rtl;
   } cases[] = {
     { // From string "A B C D" to glyphs "a b c d".
       { 0, 1, 2, 3 },
-      { 0, 1, 2, 3 },
+      { Range(0, 1), Range(1, 2), Range(2, 3), Range(3, 4) },
       { Range(0, 1), Range(1, 2), Range(2, 3), Range(3, 4) },
       false
     },
-    { // From string "A B C D" to glyphs "d b c a".
+    { // From string "A B C D" to glyphs "d c b a".
       { 3, 2, 1, 0 },
-      { 3, 2, 1, 0 },
+      { Range(0, 1), Range(1, 2), Range(2, 3), Range(3, 4) },
       { Range(3, 4), Range(2, 3), Range(1, 2), Range(0, 1) },
       true
     },
     { // From string "A B C D" to glyphs "ab c c d".
       { 0, 2, 2, 3 },
-      { 0, 0, 1, 3 },
+      { Range(0, 2), Range(0, 2), Range(2, 3), Range(3, 4) },
       { Range(0, 1), Range(0, 1), Range(1, 3), Range(3, 4) },
       false
     },
     { // From string "A B C D" to glyphs "d c c ba".
       { 3, 2, 2, 0 },
-      { 3, 3, 1, 0 },
+      { Range(0, 2), Range(0, 2), Range(2, 3), Range(3, 4) },
       { Range(3, 4), Range(3, 4), Range(1, 3), Range(0, 1) },
       true
     },
@@ -2090,17 +2092,107 @@ TEST_F(RenderTextTest, HarfBuzz_CharToGlyph) {
   internal::TextRunHarfBuzz run;
   run.range = Range(0, 4);
   run.glyph_count = 4;
-  run.glyph_to_char.reset(new uint32[4]);
+  run.glyph_to_char.resize(4);
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     std::copy(cases[i].glyph_to_char, cases[i].glyph_to_char + 4,
-              run.glyph_to_char.get());
+              run.glyph_to_char.begin());
     run.is_rtl = cases[i].is_rtl;
+
     for (size_t j = 0; j < 4; ++j) {
       SCOPED_TRACE(base::StringPrintf("Case %" PRIuS ", char %" PRIuS, i, j));
-      EXPECT_EQ(cases[i].char_to_glyph_expected[j], run.CharToGlyph(j));
-      EXPECT_EQ(cases[i].char_range_to_glyph_range_expected[j],
-                run.CharRangeToGlyphRange(Range(j, j + 1)));
+      Range chars;
+      Range glyphs;
+      run.GetClusterAt(j, &chars, &glyphs);
+      EXPECT_EQ(cases[i].chars[j], chars);
+      EXPECT_EQ(cases[i].glyphs[j], glyphs);
+      EXPECT_EQ(cases[i].glyphs[j], run.CharRangeToGlyphRange(chars));
+    }
+  }
+}
+
+// Ensure that graphemes with multiple code points do not get split.
+TEST_F(RenderTextTest, HarfBuzz_SubglyphGraphemeCases) {
+  const wchar_t* cases[] = {
+    // "A" with a combining umlaut, followed by a "B".
+    L"A\x0308" L"B",
+    // Devanagari biconsonantal conjunct "ki", followed by an "a".
+    L"\x0915\x093f\x0905",
+    // Thai consonant and vowel pair "cho chan" + "sara am", followed by Thai
+    // digit 0.
+    L"\x0e08\x0e33\x0E50",
+  };
+
+  RenderTextHarfBuzz render_text;
+
+  for (size_t i = 0; i < arraysize(cases); ++i) {
+    SCOPED_TRACE(base::StringPrintf("Case %" PRIuS, i));
+
+    base::string16 text = WideToUTF16(cases[i]);
+    render_text.SetText(text);
+    render_text.EnsureLayout();
+    ASSERT_EQ(1U, render_text.runs_.size());
+    internal::TextRunHarfBuzz* run = render_text.runs_[0];
+
+    base::i18n::BreakIterator* iter = render_text.grapheme_iterator_.get();
+    Range first_grapheme_bounds = run->GetGraphemeBounds(iter, 0);
+    EXPECT_EQ(first_grapheme_bounds, run->GetGraphemeBounds(iter, 1));
+    Range second_grapheme_bounds = run->GetGraphemeBounds(iter, 2);
+    EXPECT_EQ(first_grapheme_bounds.end(), second_grapheme_bounds.start());
+  }
+}
+
+// Test the partition of a multi-grapheme cluster into grapheme ranges.
+TEST_F(RenderTextTest, HarfBuzz_SubglyphGraphemePartition) {
+  struct {
+    uint32 glyph_to_char[2];
+    Range bounds[4];
+    bool is_rtl;
+  } cases[] = {
+    { // From string "A B C D" to glyphs "a bcd".
+      { 0, 1 },
+      { Range(0, 10), Range(10, 13), Range(13, 17), Range(17, 20) },
+      false
+    },
+    { // From string "A B C D" to glyphs "ab cd".
+      { 0, 2 },
+      { Range(0, 5), Range(5, 10), Range(10, 15), Range(15, 20) },
+      false
+    },
+    { // From string "A B C D" to glyphs "dcb a".
+      { 1, 0 },
+      { Range(10, 20), Range(7, 10), Range(3, 7), Range(0, 3) },
+      true
+    },
+    { // From string "A B C D" to glyphs "dc ba".
+      { 2, 0 },
+      { Range(15, 20), Range(10, 15), Range(5, 10), Range(0, 5) },
+      true
+    },
+  };
+
+  internal::TextRunHarfBuzz run;
+  run.range = Range(0, 4);
+  run.glyph_count = 2;
+  run.glyph_to_char.resize(2);
+  run.positions.reset(new SkPoint[4]);
+  run.width = 20;
+
+  const base::string16 kString = ASCIIToUTF16("abcd");
+  scoped_ptr<base::i18n::BreakIterator> iter(new base::i18n::BreakIterator(
+      kString, base::i18n::BreakIterator::BREAK_CHARACTER));
+  ASSERT_TRUE(iter->Init());
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    std::copy(cases[i].glyph_to_char, cases[i].glyph_to_char + 2,
+              run.glyph_to_char.begin());
+    run.is_rtl = cases[i].is_rtl;
+    for (int j = 0; j < 2; ++j)
+      run.positions[j].set(j * 10, 0);
+
+    for (size_t j = 0; j < 4; ++j) {
+      SCOPED_TRACE(base::StringPrintf("Case %" PRIuS ", char %" PRIuS, i, j));
+      EXPECT_EQ(cases[i].bounds[j], run.GetGraphemeBounds(iter.get(), j));
     }
   }
 }

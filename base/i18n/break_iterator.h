@@ -106,6 +106,10 @@ class BASE_I18N_EXPORT BreakIterator {
   bool IsEndOfWord(size_t position) const;
   bool IsStartOfWord(size_t position) const;
 
+  // Under BREAK_CHARACTER mode, returns whether |position| is a Unicode
+  // grapheme boundary.
+  bool IsGraphemeBoundary(size_t position) const;
+
   // Returns the string between prev() and pos().
   // Advance() must have been called successfully at least once for pos() to
   // have advanced to somewhere useful.

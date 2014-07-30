@@ -138,13 +138,13 @@ bool BreakIterator::SetText(const base::char16* text, const size_t length) {
 bool BreakIterator::IsWord() const {
   int32_t status = ubrk_getRuleStatus(static_cast<UBreakIterator*>(iter_));
   if (break_type_ != BREAK_WORD && break_type_ != RULE_BASED)
-      return false;
+    return false;
   return status != UBRK_WORD_NONE;
 }
 
 bool BreakIterator::IsEndOfWord(size_t position) const {
   if (break_type_ != BREAK_WORD && break_type_ != RULE_BASED)
-      return false;
+    return false;
 
   UBreakIterator* iter = static_cast<UBreakIterator*>(iter_);
   UBool boundary = ubrk_isBoundary(iter, static_cast<int32_t>(position));
@@ -154,13 +154,21 @@ bool BreakIterator::IsEndOfWord(size_t position) const {
 
 bool BreakIterator::IsStartOfWord(size_t position) const {
   if (break_type_ != BREAK_WORD && break_type_ != RULE_BASED)
-      return false;
+    return false;
 
   UBreakIterator* iter = static_cast<UBreakIterator*>(iter_);
   UBool boundary = ubrk_isBoundary(iter, static_cast<int32_t>(position));
   ubrk_next(iter);
   int32_t next_status = ubrk_getRuleStatus(iter);
   return (!!boundary && next_status != UBRK_WORD_NONE);
+}
+
+bool BreakIterator::IsGraphemeBoundary(size_t position) const {
+  if (break_type_ != BREAK_CHARACTER)
+    return false;
+
+  UBreakIterator* iter = static_cast<UBreakIterator*>(iter_);
+  return !!ubrk_isBoundary(iter, static_cast<int32_t>(position));
 }
 
 string16 BreakIterator::GetString() const {
