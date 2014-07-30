@@ -111,26 +111,13 @@ NativeImageSkia::NativeImageSkia()
 }
 
 NativeImageSkia::NativeImageSkia(const SkBitmap& other)
-    : m_image(other)
+    : m_bitmap(other)
     , m_resizeRequests(0)
-{
-}
-
-NativeImageSkia::NativeImageSkia(const SkBitmap& image, const SkBitmap& resizedImage, const ImageResourceInfo& cachedImageInfo, int resizeRequests)
-    : m_image(image)
-    , m_resizedImage(resizedImage)
-    , m_cachedImageInfo(cachedImageInfo)
-    , m_resizeRequests(resizeRequests)
 {
 }
 
 NativeImageSkia::~NativeImageSkia()
 {
-}
-
-int NativeImageSkia::decodedSize() const
-{
-    return m_image.getSize() + m_resizedImage.getSize();
 }
 
 bool NativeImageSkia::hasResizedBitmap(const SkISize& scaledImageSize, const SkIRect& scaledImageSubset) const
@@ -142,7 +129,7 @@ bool NativeImageSkia::hasResizedBitmap(const SkISize& scaledImageSize, const SkI
 
 SkBitmap NativeImageSkia::resizedBitmap(const SkISize& scaledImageSize, const SkIRect& scaledImageSubset) const
 {
-    ASSERT(!DeferredImageDecoder::isLazyDecoded(m_image));
+    ASSERT(!DeferredImageDecoder::isLazyDecoded(bitmap()));
 
     if (!hasResizedBitmap(scaledImageSize, scaledImageSubset)) {
         bool shouldCache = isDataComplete()
@@ -151,7 +138,7 @@ SkBitmap NativeImageSkia::resizedBitmap(const SkISize& scaledImageSize, const Sk
         TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResizeImage", "cached", shouldCache);
         // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
         PlatformInstrumentation::willResizeImage(shouldCache);
-        SkBitmap resizedImage = skia::ImageOperations::Resize(m_image, skia::ImageOperations::RESIZE_LANCZOS3, scaledImageSize.width(), scaledImageSize.height(), scaledImageSubset);
+        SkBitmap resizedImage = skia::ImageOperations::Resize(bitmap(), skia::ImageOperations::RESIZE_LANCZOS3, scaledImageSize.width(), scaledImageSize.height(), scaledImageSubset);
         resizedImage.setImmutable();
         PlatformInstrumentation::didResizeImage();
 

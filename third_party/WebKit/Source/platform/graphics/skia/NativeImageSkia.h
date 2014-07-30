@@ -70,25 +70,13 @@ public:
         return adoptRef(new NativeImageSkia(bitmap));
     }
 
-    // This method does a shallow copy of the internal SkBitmap (ie., it
-    // references the same pixel data and bumps the refcount). Use only when
-    // you want sharing semantics.
-    PassRefPtr<NativeImageSkia> clone() const
-    {
-        return adoptRef(new NativeImageSkia(m_image, m_resizedImage, m_cachedImageInfo, m_resizeRequests));
-    }
-
     ~NativeImageSkia();
 
-    // Returns the number of bytes of image data. This includes the cached
-    // resized version if there is one.
-    int decodedSize() const;
-
     // Returns true if the entire image has been decoded.
-    bool isDataComplete() const { return m_image.isImmutable(); }
+    bool isDataComplete() const { return bitmap().isImmutable(); }
 
     // Get reference to the internal SkBitmap representing this image.
-    const SkBitmap& bitmap() const { return m_image; }
+    const SkBitmap& bitmap() const { return m_bitmap; }
 
     // We can keep a resized version of the bitmap cached on this object.
     // This function will return true if there is a cached version of the given
@@ -141,8 +129,6 @@ private:
         SkIRect rectInSubset(const SkIRect& otherScaledImageRect);
     };
 
-    NativeImageSkia(const SkBitmap& image, const SkBitmap& resizedImage, const ImageResourceInfo&, int resizeRequests);
-
     // Returns true if the given resize operation should either resize the whole
     // image and cache it, or resize just the part it needs and throw the result
     // away.
@@ -161,10 +147,10 @@ private:
     SkBitmap extractScaledImageFragment(const SkRect& srcRect, float scaleX, float scaleY, SkRect* scaledSrcRect) const;
 
     // The original image.
-    SkBitmap m_image;
+    SkBitmap m_bitmap;
 
     // The cached bitmap fragment. This is a subset of the scaled version of
-    // |m_image|. empty() returns true if there is no cached image.
+    // |m_bitmap|. empty() returns true if there is no cached image.
     mutable SkBitmap m_resizedImage;
 
     // References how many times that the image size has been requested for
