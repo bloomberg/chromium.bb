@@ -49,7 +49,7 @@ def main():
     if pylib_dir not in sys.path:
       sys.path.append(pylib_dir)
     suite = unittest.TestSuite()
-    for test_name in args.tests:
+    for test_name in args:
       suite.addTests(loader.loadTestsFromName(test_name))
   else:
     suite = loader.discover(pylib_dir, pattern='*_unittest.py')
@@ -88,8 +88,8 @@ def _FullResults(suite, result, metadata):
   failed_test_names = _FailedTestNames(result)
 
   full_results['num_failures_by_type'] = {
-      'FAIL': len(failed_test_names),
-      'PASS': len(all_test_names) - len(failed_test_names),
+      'Failure': len(failed_test_names),
+      'Pass': len(all_test_names) - len(failed_test_names),
   }
 
   full_results['tests'] = {}
