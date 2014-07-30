@@ -84,12 +84,10 @@ def ToolchainBuildCmd(python_executable=None, sync=False, extra_flags=[]):
 
 
 # Clean out any installed toolchain parts that were built by previous bot runs.
-with buildbot_lib.Step('Sync TC install dir', status):
+with buildbot_lib.Step('Clobber TC install dir', status):
+  print 'Removing', toolchain_install_dir
   pynacl.file_tools.RemoveDirectoryIfPresent(toolchain_install_dir)
-  buildbot_lib.Command(
-      context,
-      [sys.executable, PACKAGE_VERSION_SCRIPT,
-       '--packages', 'pnacl_newlib', 'sync', '--extract'])
+
 
 # Run checkdeps so that the PNaCl toolchain trybots catch mistakes that would
 # cause the normal NaCl bots to fail.
