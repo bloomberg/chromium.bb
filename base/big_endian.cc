@@ -55,6 +55,10 @@ bool BigEndianReader::ReadU32(uint32* value) {
   return Read(value);
 }
 
+bool BigEndianReader::ReadU64(uint64* value) {
+  return Read(value);
+}
+
 BigEndianWriter::BigEndianWriter(char* buf, size_t len)
     : ptr_(buf), end_(ptr_ + len) {}
 
@@ -91,6 +95,10 @@ bool BigEndianWriter::WriteU16(uint16 value) {
 }
 
 bool BigEndianWriter::WriteU32(uint32 value) {
+  return Write(value);
+}
+
+bool BigEndianWriter::WriteU64(uint64 value) {
   return Write(value);
 }
 

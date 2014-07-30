@@ -63,6 +63,7 @@ class BASE_EXPORT BigEndianReader {
   bool ReadU8(uint8* value);
   bool ReadU16(uint16* value);
   bool ReadU32(uint32* value);
+  bool ReadU64(uint64* value);
 
  private:
   // Hidden to promote type safety.
@@ -87,6 +88,7 @@ class BASE_EXPORT BigEndianWriter {
   bool WriteU8(uint8 value);
   bool WriteU16(uint16 value);
   bool WriteU32(uint32 value);
+  bool WriteU64(uint64 value);
 
  private:
   // Hidden to promote type safety.
