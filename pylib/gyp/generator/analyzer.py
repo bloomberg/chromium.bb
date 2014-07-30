@@ -9,11 +9,15 @@ and targets to search for. The following keys are supported:
 files: list of paths (relative) of the files to search for.
 targets: list of targets to search for. The target names are unqualified.
 
-The following (as JSON) is output:
+The following is output:
 error: only supplied if there is an error.
+warning: only supplied if there is a warning.
 targets: the set of targets passed in via targets that either directly or
   indirectly depend upon the set of paths supplied in files.
 status: indicates if any of the supplied files matched at least one target.
+
+If the generator flag analyzer_output_path is specified, output is written
+there. Otherwise output is written to stdout.
 """
 
 import gyp.common
@@ -293,6 +297,20 @@ def _GetTargetsDependingOn(all_targets, possible_targets):
       found.append(gyp.common.ParseQualifiedTarget(target)[1])
   return found
 
+def _WriteOutput(params, **values):
+  """Writes the output, either to stdout or a file is specified."""
+  output_path = params.get('generator_flags', {}).get(
+      'analyzer_output_path', None)
+  if not output_path:
+    print json.dumps(values)
+    return
+  try:
+    f = open(output_path, 'w')
+    f.write(json.dumps(values) + '\n')
+    f.close()
+  except IOError as e:
+    print 'Error writing to output file', output_path, str(e)
+
 def CalculateVariables(default_variables, params):
   """Calculate additional variables for use in the build (called by gyp)."""
   flavor = gyp.common.GetFlavor(params)
@@ -342,6 +360,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
       print found_dependency_string if matched else no_dependency_string
       return
 
+    warning = None
     if matched:
       unqualified_mapping = _GetUnqualifiedToQualifiedMapping(
           all_targets, config.targets)
@@ -350,15 +369,21 @@ def GenerateOutput(target_list, target_dicts, data, params):
         for target in config.targets:
           if not target in unqualified_mapping:
             not_found.append(target)
-        raise Exception('Unable to find all targets: ' + str(not_found))
-      qualified_targets = [unqualified_mapping[x] for x in config.targets]
+        warning = 'Unable to find all targets: ' + str(not_found)
+      qualified_targets = []
+      for target in config.targets:
+        if target in unqualified_mapping:
+          qualified_targets.append(unqualified_mapping[target])
       output_targets = _GetTargetsDependingOn(all_targets, qualified_targets)
     else:
       output_targets = []
 
-    print json.dumps(
-      {'targets': output_targets,
-       'status': found_dependency_string if matched else no_dependency_string })
+    result_dict = { 'targets': output_targets,
+                    'status': found_dependency_string if matched else
+                              no_dependency_string }
+    if warning:
+      result_dict['warning'] = warning
+    _WriteOutput(params, **result_dict)
 
   except Exception as e:
-    print json.dumps({'error': str(e)})
+    _WriteOutput(params, error=str(e))
