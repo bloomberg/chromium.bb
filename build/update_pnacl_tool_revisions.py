@@ -14,7 +14,6 @@ import smtplib
 import subprocess
 import sys
 import tempfile
-import urllib2
 
 BUILD_DIR = os.path.dirname(__file__)
 NACL_DIR = os.path.dirname(BUILD_DIR)
@@ -208,7 +207,7 @@ def UploadChanges():
 
 
 def GitTry():
-  return ExecCommand(['git', 'try'])
+  return ExecCommand(['git', 'cl', 'try'])
 
 
 def FindCommitWithGitSvnId(git_svn_id):
@@ -319,11 +318,10 @@ class CLInfo:
     return desc
 
 
-def FmtOut(tr_points_at, pnacl_changes, err=[], msg=[]):
+def FmtOut(tr_points_at, pnacl_changes, new_svn_id, err=[], msg=[]):
   assert isinstance(err, list)
   assert isinstance(msg, list)
   old_svn_id = tr_points_at['git svn id']
-  new_svn_id = pnacl_changes[-1]['git svn id'] if pnacl_changes else '?'
   changes = '\n'.join([str(cl) for cl in pnacl_changes])
   bugs = '\n'.join(list(set(
       ['BUG= ' + cl['bug'].strip() if cl['bug'] else '' for
@@ -379,7 +377,7 @@ def Main():
     assert len(recent_commits) > 1
 
     if args.svn_id and args.svn_id <= int(tr_points_at['git svn id']):
-      Done(FmtOut(tr_points_at, pnacl_changes,
+      Done(FmtOut(tr_points_at, pnacl_changes, args.svn_id,
                   err=["Can't update to SVN ID r%s, the current "
                        "PNaCl revision's SVN ID (r%s) is more recent." %
                        (args.svn_id, tr_points_at['git svn id'])]))
@@ -411,11 +409,11 @@ def Main():
                        int(cl['git svn id']) <= args.svn_id]
 
     if len(pnacl_changes) == 0:
-      Done(FmtOut(tr_points_at, pnacl_changes,
+      Done(FmtOut(tr_points_at, pnacl_changes, pnacl_revision,
                   msg=['No PNaCl change since r%s.' %
                        tr_points_at['git svn id']]))
 
-    new_pnacl_revision = pnacl_changes[-1]['git svn id']
+    new_pnacl_revision = args.svn_id or pnacl_changes[-1]['git svn id']
 
     new_branch_name = ('pnacl-revision-update-to-%s' %
                        new_pnacl_revision)
@@ -436,7 +434,7 @@ def Main():
       SetCurrentRevision(new_pnacl_revision)
       for f in REV_FILES:
         GitAdd(f)
-      GitCommit(FmtOut(tr_points_at, pnacl_changes))
+      GitCommit(FmtOut(tr_points_at, pnacl_changes, new_pnacl_revision))
 
       upload_res = UploadChanges()
       msg += ['Upload result:\n%s' % upload_res]
@@ -445,7 +443,7 @@ def Main():
 
       GitCheckout('master', force=False)
 
-    Done(FmtOut(tr_points_at, pnacl_changes, msg=msg))
+    Done(FmtOut(tr_points_at, pnacl_changes, new_pnacl_revision, msg=msg))
 
   except SystemExit as e:
     # Normal exit.
@@ -454,7 +452,7 @@ def Main():
   except (BaseException, Exception) as e:
     # Leave the branch around, if any was created: it'll prevent next
     # runs of the cronjob from succeeding until the failure is fixed.
-    out = FmtOut(tr_points_at, pnacl_changes, msg=msg,
+    out = FmtOut(tr_points_at, pnacl_changes, new_pnacl_revision, msg=msg,
                  err=['Failed at %s: %s' % (datetime.datetime.now(), e)])
     sys.stderr.write(out)
     if not args.dry_run:
