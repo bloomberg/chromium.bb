@@ -1,7 +1,8 @@
-ericu@chromium.org
 kinuko@chromium.org
 michaeln@chromium.org
 jianli@chromium.org
+tzik@chromium.org
+nhiroki@chromium.org
 
 # For security review of IPC message files.
 per-file *_messages*.h=set noparent
