@@ -21,6 +21,12 @@ void RunTest(const base::FilePath& path) {
   RunTestFromFile(path, &delegate);
 }
 
+TEST(JSTest, File) {
+  RunTest(BasePath()
+          .AppendASCII("test")
+          .AppendASCII("file_unittests.js"));
+}
+
 TEST(JSTest, GTest) {
   RunTest(BasePath()
           .AppendASCII("test")

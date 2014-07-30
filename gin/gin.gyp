@@ -105,6 +105,8 @@
         'gin',
       ],
       'sources': [
+        'test/file.cc',
+        'test/file.h',
         'test/file_runner.cc',
         'test/file_runner.h',
         'test/gc.cc',
