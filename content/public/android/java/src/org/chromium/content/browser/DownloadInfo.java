@@ -19,6 +19,7 @@ public final class DownloadInfo {
     private final long mContentLength;
     private final boolean mHasDownloadId;
     private final int mDownloadId;
+    private final boolean mHasUserGesture;
     private final String mContentDisposition;
     private final boolean mIsGETRequest;
     private final boolean mIsSuccessful;
@@ -37,6 +38,7 @@ public final class DownloadInfo {
         mContentLength = builder.mContentLength;
         mHasDownloadId = builder.mHasDownloadId;
         mDownloadId = builder.mDownloadId;
+        mHasUserGesture = builder.mHasUserGesture;
         mIsSuccessful = builder.mIsSuccessful;
         mIsGETRequest = builder.mIsGETRequest;
         mContentDisposition = builder.mContentDisposition;
@@ -92,6 +94,10 @@ public final class DownloadInfo {
         return mDownloadId;
     }
 
+    public boolean hasUserGesture() {
+        return mHasUserGesture;
+    }
+
     public boolean isSuccessful() {
         return mIsSuccessful;
     }
@@ -124,6 +130,7 @@ public final class DownloadInfo {
         private boolean mIsGETRequest;
         private boolean mHasDownloadId;
         private int mDownloadId;
+        private boolean mHasUserGesture;
         private boolean mIsSuccessful;
         private String mContentDisposition;
         private int mPercentCompleted = -1;
@@ -189,6 +196,11 @@ public final class DownloadInfo {
             return this;
         }
 
+        public Builder setHasUserGesture(boolean hasUserGesture) {
+            mHasUserGesture = hasUserGesture;
+            return this;
+        }
+
         public Builder setIsSuccessful(boolean isSuccessful) {
             mIsSuccessful = isSuccessful;
             return this;
@@ -233,6 +245,7 @@ public final class DownloadInfo {
                     .setContentLength(downloadInfo.getContentLength())
                     .setHasDownloadId(downloadInfo.hasDownloadId())
                     .setDownloadId(downloadInfo.getDownloadId())
+                    .setHasUserGesture(downloadInfo.hasUserGesture())
                     .setContentDisposition(downloadInfo.getContentDisposition())
                     .setIsGETRequest(downloadInfo.isGETRequest())
                     .setIsSuccessful(downloadInfo.isSuccessful())

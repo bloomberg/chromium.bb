@@ -22,6 +22,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/referrer.h"
 #include "jni/DownloadController_jni.h"
 #include "net/cookies/cookie_options.h"
@@ -230,7 +231,8 @@ void DownloadControllerAndroidImpl::StartAndroidDownload(
   Java_DownloadController_newHttpGetDownload(
       env, GetJavaObject()->Controller(env).obj(), view.obj(), jurl.obj(),
       juser_agent.obj(), jcontent_disposition.obj(), jmime_type.obj(),
-      jcookie.obj(), jreferer.obj(), jfilename.obj(), info.total_bytes);
+      jcookie.obj(), jreferer.obj(), info.has_user_gesture, jfilename.obj(),
+      info.total_bytes);
 }
 
 void DownloadControllerAndroidImpl::OnDownloadStarted(
@@ -401,7 +403,8 @@ void DownloadControllerAndroidImpl::DangerousDownloadValidated(
 }
 
 DownloadControllerAndroidImpl::DownloadInfoAndroid::DownloadInfoAndroid(
-    net::URLRequest* request) {
+    net::URLRequest* request)
+    : has_user_gesture(false) {
   request->GetResponseHeaderByName("content-disposition", &content_disposition);
 
   if (request->response_headers())
@@ -416,6 +419,11 @@ DownloadControllerAndroidImpl::DownloadInfoAndroid::DownloadInfoAndroid(
     original_url = request->url_chain().front();
     url = request->url_chain().back();
   }
+
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request);
+  if (info)
+    has_user_gesture = info->HasUserGesture();
 }
 
 DownloadControllerAndroidImpl::DownloadInfoAndroid::~DownloadInfoAndroid() {}

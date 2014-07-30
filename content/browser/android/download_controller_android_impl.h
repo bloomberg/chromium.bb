@@ -65,6 +65,7 @@ class DownloadControllerAndroidImpl : public DownloadControllerAndroid,
     std::string user_agent;
     std::string cookie;
     std::string referer;
+    bool has_user_gesture;
 
     WebContents* web_contents;
     // Default copy constructor is used for passing this struct by value.
