@@ -14,13 +14,13 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-import android.widget.AbsoluteLayout;
+import android.widget.FrameLayout;
 
 /**
  * A view that is used to render the web contents in fullscreen mode, ie.
  * html controls and subtitles, over the {@link ContentVideoView}.
  */
-public class FullScreenView extends AbsoluteLayout {
+public class FullScreenView extends FrameLayout {
 
     private AwViewMethods mAwViewMethods;
     private InternalAccessAdapter mInternalAccessAdapter;

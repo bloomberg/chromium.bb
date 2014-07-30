@@ -828,10 +828,13 @@ public class AwContents {
 
         // Restore injected JavaScript interfaces.
         for (Map.Entry<String, Pair<Object, Class>> entry : javascriptInterfaces.entrySet()) {
+            @SuppressWarnings("unchecked")
+            Class<? extends Annotation> requiredAnnotation = (Class<? extends Annotation>)
+                    entry.getValue().second;
             mContentViewCore.addPossiblyUnsafeJavascriptInterface(
                     entry.getValue().first,
                     entry.getKey(),
-                    entry.getValue().second);
+                    requiredAnnotation);
         }
     }
 
