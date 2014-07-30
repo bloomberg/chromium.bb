@@ -25,14 +25,6 @@ const int32 kFileVersion = 8;
 // ReadAndVerifyHeader() returns this in case of error.
 const int32 kInvalidVersion = -1;
 
-// Header at the front of the main database file.
-struct FileHeaderV7 {
-  int32 magic, version;
-  uint32 add_chunk_count, sub_chunk_count;
-  uint32 add_prefix_count, sub_prefix_count;
-  uint32 add_hash_count, sub_hash_count;
-};
-
 // Starting with version 8, the storage is sorted and can be sharded to allow
 // updates to be done with lower memory requirements.  Newly written files will
 // be sharded to need less than this amount of memory during update.  Larger
@@ -52,17 +44,12 @@ const uint64 kMaxShardStride = 1ULL << 32;
 const SBPrefix kMaxSBPrefix = 0xFFFFFFFF;
 
 // Header at the front of the main database file.
-struct FileHeaderV8 {
+struct FileHeader {
   int32 magic, version;
   uint32 add_chunk_count, sub_chunk_count;
   uint32 shard_stride;
   // TODO(shess): Is this where 64-bit will bite me?  Perhaps write a
   // specialized read/write?
-};
-
-union FileHeader {
-  struct FileHeaderV7 v7;
-  struct FileHeaderV8 v8;
 };
 
 // Header for each chunk in the chunk-accumulation file.
@@ -225,31 +212,6 @@ bool ReadAndVerifyChecksum(FILE* fp, base::MD5Context* context) {
   return memcmp(&file_digest, &calculated_digest, sizeof(file_digest)) == 0;
 }
 
-// Sanity-check the header against the file's size to make sure our
-// vectors aren't gigantic.  This doubles as a cheap way to detect
-// corruption without having to checksum the entire file.
-bool FileHeaderV7SanityCheck(const base::FilePath& filename,
-                             const FileHeaderV7& header) {
-  DCHECK_EQ(header.version, 7);
-
-  int64 size = 0;
-  if (!base::GetFileSize(filename, &size))
-    return false;
-
-  int64 expected_size = sizeof(FileHeaderV7);
-  expected_size += header.add_chunk_count * sizeof(int32);
-  expected_size += header.sub_chunk_count * sizeof(int32);
-  expected_size += header.add_prefix_count * sizeof(SBAddPrefix);
-  expected_size += header.sub_prefix_count * sizeof(SBSubPrefix);
-  expected_size += header.add_hash_count * sizeof(SBAddFullHash);
-  expected_size += header.sub_hash_count * sizeof(SBSubFullHash);
-  expected_size += sizeof(base::MD5Digest);
-  if (size != expected_size)
-    return false;
-
-  return true;
-}
-
 // Helper function to read the file header and chunk TOC.  Rewinds |fp| and
 // initializes |context|.  The header is left in |header|, with the version
 // returned.  kInvalidVersion is returned for sanity check or checksum failure.
@@ -265,58 +227,32 @@ int ReadAndVerifyHeader(const base::FilePath& filename,
   DCHECK(fp);
   DCHECK(context);
 
-  int version = kInvalidVersion;
-
   base::MD5Init(context);
   if (!FileRewind(fp))
     return kInvalidVersion;
-  if (!ReadItem(&header->v8, fp, context))
+  if (!ReadItem(header, fp, context))
     return kInvalidVersion;
-  if (header->v8.magic != kFileMagic)
+  if (header->magic != kFileMagic)
     return kInvalidVersion;
-
-  size_t add_chunks_count = 0;
-  size_t sub_chunks_count = 0;
 
   // Track version read to inform removal of support for older versions.
-  UMA_HISTOGRAM_SPARSE_SLOWLY("SB2.StoreVersionRead", header->v8.version);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("SB2.StoreVersionRead", header->version);
 
-  if (header->v8.version == 7) {
-    version = 7;
+  if (header->version != kFileVersion)
+    return kInvalidVersion;
 
-    // Reset the context and re-read the v7 header.
-    base::MD5Init(context);
-    if (!FileRewind(fp))
-      return kInvalidVersion;
-    if (!ReadItem(&header->v7, fp, context))
-      return kInvalidVersion;
-    if (header->v7.magic != kFileMagic || header->v7.version != 7)
-      return kInvalidVersion;
-    if (!FileHeaderV7SanityCheck(filename, header->v7))
-      return kInvalidVersion;
-
-    add_chunks_count = header->v7.add_chunk_count;
-    sub_chunks_count = header->v7.sub_chunk_count;
-  } else if (header->v8.version == kFileVersion) {
-    version = 8;
-    add_chunks_count = header->v8.add_chunk_count;
-    sub_chunks_count = header->v8.sub_chunk_count;
-  } else {
+  if (!ReadToContainer(add_chunks, header->add_chunk_count, fp, context) ||
+      !ReadToContainer(sub_chunks, header->sub_chunk_count, fp, context)) {
     return kInvalidVersion;
   }
 
-  if (!ReadToContainer(add_chunks, add_chunks_count, fp, context) ||
-      !ReadToContainer(sub_chunks, sub_chunks_count, fp, context)) {
-    return kInvalidVersion;
-  }
-
-  // v8 includes a checksum to validate the header.
-  if (version > 7 && !ReadAndVerifyChecksum(fp, context)) {
+  // Verify that the data read thus far is valid.
+  if (!ReadAndVerifyChecksum(fp, context)) {
     RecordFormatEvent(FORMAT_EVENT_HEADER_CHECKSUM_FAILURE);
     return kInvalidVersion;
   }
 
-  return version;
+  return kFileVersion;
 }
 
 // Helper function to write out the initial header and chunks-contained data.
@@ -331,7 +267,7 @@ bool WriteHeader(uint32 out_stride,
     return false;
 
   base::MD5Init(context);
-  FileHeaderV8 header;
+  FileHeader header;
   header.magic = kFileMagic;
   header.version = kFileVersion;
   header.add_chunk_count = add_chunks.size();
@@ -583,42 +519,28 @@ bool ReadDbStateHelper(const base::FilePath& filename,
   if (version == kInvalidVersion)
     return false;
 
-  if (version == 7) {
-    if (!db_state->AppendData(header.v7.add_prefix_count,
-                              header.v7.sub_prefix_count,
-                              header.v7.add_hash_count,
-                              header.v7.sub_hash_count,
+  uint64 in_min = 0;
+  uint64 in_stride = header.shard_stride;
+  if (!in_stride)
+    in_stride = kMaxShardStride;
+  if (!IsPowerOfTwo(in_stride))
+    return false;
+
+  do {
+    ShardHeader shard_header;
+    if (!ReadItem(&shard_header, file.get(), &context))
+      return false;
+
+    if (!db_state->AppendData(shard_header.add_prefix_count,
+                              shard_header.sub_prefix_count,
+                              shard_header.add_hash_count,
+                              shard_header.sub_hash_count,
                               file.get(), &context)) {
       return false;
     }
 
-    // v7 data was not stored sorted.
-    db_state->SortData();
-  } else {
-    // Read until the shard start overflows, always at least one pass.
-    uint64 in_min = 0;
-    uint64 in_stride = header.v8.shard_stride;
-    if (!in_stride)
-      in_stride = kMaxShardStride;
-    if (!IsPowerOfTwo(in_stride))
-      return false;
-
-    do {
-      ShardHeader shard_header;
-      if (!ReadItem(&shard_header, file.get(), &context))
-        return false;
-
-      if (!db_state->AppendData(shard_header.add_prefix_count,
-                                shard_header.sub_prefix_count,
-                                shard_header.add_hash_count,
-                                shard_header.sub_hash_count,
-                                file.get(), &context)) {
-        return false;
-      }
-
-      in_min += in_stride;
-    } while (in_min <= kMaxSBPrefix);
-  }
+    in_min += in_stride;
+  } while (in_min <= kMaxSBPrefix);
 
   if (!ReadAndVerifyChecksum(file.get(), &context))
     return false;
@@ -819,9 +741,10 @@ bool SafeBrowsingStoreFile::BeginUpdate() {
                           &add_chunks_cache_, &sub_chunks_cache_,
                           file.get(), &context);
   if (version == kInvalidVersion) {
-    FileHeaderV8 retry_header;
+    FileHeader retry_header;
     if (FileRewind(file.get()) && ReadItem(&retry_header, file.get(), NULL)) {
-      if (retry_header.magic == kFileMagic && retry_header.version < 7) {
+      if (retry_header.magic == kFileMagic &&
+          retry_header.version < kFileVersion) {
         RecordFormatEvent(FORMAT_EVENT_FOUND_DEPRECATED);
       } else {
         RecordFormatEvent(FORMAT_EVENT_FOUND_UNKNOWN);
@@ -929,23 +852,21 @@ bool SafeBrowsingStoreFile::DoUpdate(
   uint64 out_stride = kMaxShardStride;
   uint64 process_stride = 0;
 
-  // The header info is only used later if |!empty_|.  The v8 read loop only
-  // needs |in_stride|, while v7 needs to refer to header information.
+  // Used to verify the input's checksum if |!empty_|.
   base::MD5Context in_context;
-  int version = kInvalidVersion;
-  FileHeader header = {{0}};
 
   if (!empty_) {
     DCHECK(file_.get());
 
-    version = ReadAndVerifyHeader(filename_, &header,
-                                  &add_chunks_cache_, &sub_chunks_cache_,
-                                  file_.get(), &in_context);
+    FileHeader header = {0};
+    int version = ReadAndVerifyHeader(filename_, &header,
+                                      &add_chunks_cache_, &sub_chunks_cache_,
+                                      file_.get(), &in_context);
     if (version == kInvalidVersion)
       return OnCorruptDatabase();
 
-    if (version == 8 && header.v8.shard_stride)
-      in_stride = header.v8.shard_stride;
+    if (header.shard_stride)
+      in_stride = header.shard_stride;
 
     // The header checksum should have prevented this case, but the code will be
     // broken if this is not correct.
@@ -1019,36 +940,20 @@ bool SafeBrowsingStoreFile::DoUpdate(
 
     // Fill the processing shard with one or more input shards.
     if (!empty_) {
-      if (version == 7) {
-        // Treat v7 as a single-shard file.
-        DCHECK_EQ(in_min, 0u);
-        DCHECK_EQ(in_stride, kMaxShardStride);
-        DCHECK_EQ(process_stride, kMaxShardStride);
-        if (!db_state.AppendData(header.v7.add_prefix_count,
-                                 header.v7.sub_prefix_count,
-                                 header.v7.add_hash_count,
-                                 header.v7.sub_hash_count,
+      do {
+        ShardHeader shard_header;
+        if (!ReadItem(&shard_header, file_.get(), &in_context))
+          return OnCorruptDatabase();
+
+        if (!db_state.AppendData(shard_header.add_prefix_count,
+                                 shard_header.sub_prefix_count,
+                                 shard_header.add_hash_count,
+                                 shard_header.sub_hash_count,
                                  file_.get(), &in_context))
           return OnCorruptDatabase();
 
-        // v7 data is not sorted correctly.
-        db_state.SortData();
-      } else {
-        do {
-          ShardHeader shard_header;
-          if (!ReadItem(&shard_header, file_.get(), &in_context))
-            return OnCorruptDatabase();
-
-          if (!db_state.AppendData(shard_header.add_prefix_count,
-                                   shard_header.sub_prefix_count,
-                                   shard_header.add_hash_count,
-                                   shard_header.sub_hash_count,
-                                   file_.get(), &in_context))
-            return OnCorruptDatabase();
-
-          in_min += in_stride;
-        } while (in_min <= kMaxSBPrefix && in_min < process_max);
-      }
+        in_min += in_stride;
+      } while (in_min <= kMaxSBPrefix && in_min < process_max);
     }
 
     // Shard the update data to match the database data, then merge the update
