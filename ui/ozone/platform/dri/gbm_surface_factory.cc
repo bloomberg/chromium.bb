@@ -4,10 +4,10 @@
 
 #include "ui/ozone/platform/dri/gbm_surface_factory.h"
 
-#include <EGL/egl.h>
 #include <gbm.h>
 
 #include "base/files/file_path.h"
+#include "third_party/khronos/EGL/egl.h"
 #include "ui/ozone/platform/dri/gbm_buffer.h"
 #include "ui/ozone/platform/dri/gbm_surface.h"
 #include "ui/ozone/platform/dri/gbm_surfaceless.h"

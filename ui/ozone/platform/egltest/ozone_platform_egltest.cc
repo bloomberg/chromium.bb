@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "library_loaders/libeglplatform_shim.h"
+#include "third_party/khronos/EGL/egl.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
@@ -27,8 +28,6 @@
 #include "ui/ozone/common/chromeos/native_display_delegate_ozone.h"
 #include "ui/ozone/common/chromeos/touchscreen_device_manager_ozone.h"
 #endif
-
-#include <EGL/egl.h>
 
 namespace ui {
 

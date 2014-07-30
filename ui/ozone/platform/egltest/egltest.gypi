@@ -20,6 +20,7 @@
       ],
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../third_party/khronos/khronos.gyp:khronos_headers',
         '../events/events.gyp:events',
         '../events/ozone/events_ozone.gyp:events_ozone_evdev',
         '../gfx/gfx.gyp:gfx',
