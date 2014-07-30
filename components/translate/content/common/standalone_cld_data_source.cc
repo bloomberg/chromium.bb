@@ -6,8 +6,16 @@
 
 namespace translate {
 
-  std::string CldDataSource::GetName() {
-    return "standalone";
-  }
+std::string CldDataSource::GetName() {
+  return "standalone";
+}
+
+bool CldDataSource::ShouldRegisterForComponentUpdates() {
+  return false;
+}
+
+bool CldDataSource::ShouldUseStandaloneDataFile() {
+  return true;
+}
 
 }  // namespace translate

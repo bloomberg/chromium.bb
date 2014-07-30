@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/webui/translate_internals/translate_internals_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "components/translate/content/common/cld_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -22,11 +23,6 @@
 #include "grit/translate_internals_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-
-// Macro stringification.
-// https://gcc.gnu.org/onlinedocs/cpp/Stringification.html
-#define XSTR(S) STR(S)
-#define STR(S) #S
 
 namespace {
 
@@ -76,7 +72,7 @@ content::WebUIDataSource* CreateTranslateInternalsHTMLSource() {
   cld_data_source = "static"; // CLD1.x does not support dynamic data loading
 #elif CLD_VERSION==2
   cld_version = "2";
-  cld_data_source = std::string(XSTR(CLD2_DATA_SOURCE));
+  cld_data_source = translate::CldDataSource::GetName();
 #else
   NOTREACHED();
 #endif

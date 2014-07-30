@@ -24,9 +24,24 @@ class CldDataSource {
   //              implementations.
   //
   // Other implementations based upon Chromium may provide CLD differently and
-  // may have other names.
+  // may have other names. This method is primarily provided for those
+  // non-Chromium implementations; Chromium implementations should use the
+  // boolean methods in this class instead:
+  // ShouldRegisterForComponentUpdates()
+  // ShouldUseStandaloneDataFile()
   static std::string GetName();
 
+  // Returns true if the data source needs to receive updates from the
+  // Component Updater.
+  // This is only true if the data source name is "component", but makes caller
+  // logic more generic.
+  static bool ShouldRegisterForComponentUpdates();
+
+  // Returns true if the data source needs to have the path to the CLD
+  // data file configured immediately because it is bundled with Chromium.
+  // This is only true if the data source name is "standalone", but makes
+  // caller logic more generic.
+  static bool ShouldUseStandaloneDataFile();
 };
 
 }  // namespace translate

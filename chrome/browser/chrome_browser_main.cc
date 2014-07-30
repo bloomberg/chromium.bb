@@ -110,6 +110,7 @@
 #include "components/rappor/rappor_service.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
+#include "components/translate/content/common/cld_data_source.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/variations/variations_http_header_provider.h"
 #include "content/public/browser/browser_thread.h"
@@ -395,9 +396,9 @@ void RegisterComponentsForUpdate() {
   g_browser_process->pnacl_component_installer()->RegisterPnaclComponent(cus);
 #endif
 
-#if defined(CLD_DATA_FROM_COMPONENT)
-  RegisterCldComponent(cus);
-#endif
+  if (translate::CldDataSource::ShouldRegisterForComponentUpdates()) {
+    RegisterCldComponent(cus);
+  }
 
   base::FilePath path;
   if (PathService::Get(chrome::DIR_USER_DATA, &path)) {

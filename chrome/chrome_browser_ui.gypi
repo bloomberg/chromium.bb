@@ -2607,6 +2607,7 @@
             'debugger',
             'installer_util',
             '../components/components.gyp:autofill_content_risk_proto',
+            '../components/components.gyp:translate_content_common',
             '../media/media.gyp:media',
             '../mojo/mojo.gyp:mojo_system_impl',
             '../net/net.gyp:net_with_v8',

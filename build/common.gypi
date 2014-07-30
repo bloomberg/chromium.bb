@@ -2764,15 +2764,6 @@
         # chrome://translate-internals
         'defines': ['CLD2_DATA_SOURCE=<(cld2_data_source)'],
       }],
-      ['cld_version==2 and cld2_data_source=="static"', {
-        'defines': ['CLD_DATA_FROM_STATIC'],
-      }],
-      ['cld_version==2 and cld2_data_source=="standalone"', {
-        'defines': ['CLD_DATA_FROM_STANDALONE'],
-      }],
-      ['cld_version==2 and cld2_data_source=="component"', {
-        'defines': ['CLD_DATA_FROM_COMPONENT'],
-      }],
       ['enable_printing==1', {
         'defines': ['ENABLE_FULL_PRINTING=1', 'ENABLE_PRINTING=1'],
       }],

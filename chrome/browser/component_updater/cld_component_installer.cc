@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/translate/content/browser/browser_cld_data_provider.h"
+#include "components/translate/content/common/cld_data_source.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/ssl/ssl_config_service.h"
 
@@ -105,6 +106,15 @@ std::string CldComponentInstallerTraits::GetName() const {
 }
 
 void RegisterCldComponent(ComponentUpdateService* cus) {
+  // Make sure we don't start up if the CLD data source isn't compatible.
+  if (!translate::CldDataSource::ShouldRegisterForComponentUpdates()) {
+    // This is a serious build-time configuration error.
+    LOG(ERROR) << "Wrong CLD data source: " <<
+        translate::CldDataSource::GetName();
+    NOTREACHED();
+    return;
+  }
+
   // This log line is to help with determining which kind of provider has been
   // configured. See also: chrome://translate-internals
   VLOG(1) << "Registering CLD component with the component update service";

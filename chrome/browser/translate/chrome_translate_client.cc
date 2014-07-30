@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -20,8 +21,10 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_factory.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "components/infobars/core/infobar.h"
+#include "components/translate/content/common/cld_data_source.h"
 #include "components/translate/content/common/translate_messages.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/page_translated_details.h"
@@ -40,20 +43,12 @@
 #include "net/http/http_status_code.h"
 #include "url/gurl.h"
 
-#if defined(CLD_DATA_FROM_STANDALONE)
-#include "base/path_service.h"
-#include "chrome/common/chrome_paths.h"
-#include "components/translate/content/browser/data_file_browser_cld_data_provider.h"
-#endif
-
 namespace {
 
 // The maximum number of attempts we'll do to see if the page has finshed
 // loading before giving up the translation
 const int kMaxTranslateLoadCheckAttempts = 20;
 
-#if defined(CLD_DATA_FROM_STANDALONE)
-// This build uses a standalone CLD2 data file.
 // TODO(andrewhayden): Make the data file path into a gyp/gn define
 // If you change this, also update standalone_cld_data_harness.cc
 // accordingly!
@@ -61,20 +56,6 @@ const base::FilePath::CharType kCldDataFileName[] =
     FILE_PATH_LITERAL("cld2_data.bin");
 
 bool g_cld_file_path_initialized_ = false;
-
-void InitCldFilePath() {
-  VLOG(1) << "Initializing CLD file path for the first time.";
-  base::FilePath path;
-  if (!PathService::Get(chrome::DIR_USER_DATA, &path)) {
-    LOG(WARNING) << "Unable to locate user data directory";
-    return;  // Chrome isn't properly installed
-  }
-  g_cld_file_path_initialized_ = true;
-  path = path.Append(kCldDataFileName);
-  VLOG(1) << "Setting CLD data file path: " << path.value();
-  translate::SetCldDataFilePath(path);
-}
-#endif
 
 }  // namespace
 
@@ -89,10 +70,22 @@ ChromeTranslateClient::ChromeTranslateClient(content::WebContents* web_contents)
       cld_data_provider_(
           translate::CreateBrowserCldDataProviderFor(web_contents)),
       weak_pointer_factory_(this) {
-#if defined(CLD_DATA_FROM_STANDALONE)
-  if (!g_cld_file_path_initialized_)
-    InitCldFilePath();
-#endif
+  // Customization: for the standalone data source, we configure the path to
+  // CLD data immediately on startup.
+  if (translate::CldDataSource::ShouldUseStandaloneDataFile() &&
+      !g_cld_file_path_initialized_) {
+    VLOG(1) << "Initializing CLD file path for the first time.";
+    base::FilePath path;
+    if (!PathService::Get(chrome::DIR_USER_DATA, &path)) {
+      // Chrome isn't properly installed
+      LOG(WARNING) << "Unable to locate user data directory";
+    } else {
+      g_cld_file_path_initialized_ = true;
+      path = path.Append(kCldDataFileName);
+      VLOG(1) << "Setting CLD data file path: " << path.value();
+      translate::SetCldDataFilePath(path);
+    }
+  }
 }
 
 ChromeTranslateClient::~ChromeTranslateClient() {
