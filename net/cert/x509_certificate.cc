@@ -720,7 +720,7 @@ SHA256HashValue X509Certificate::CalculateCAFingerprint256(
     std::string der_encoded;
     if (!GetDEREncoded(intermediates[i], &der_encoded))
       return sha256;
-    hash->Update(der_encoded.c_str(), der_encoded.length());
+    hash->Update(der_encoded.data(), der_encoded.length());
   }
   hash->Finish(sha256.data, sizeof(sha256.data));
 
@@ -729,7 +729,7 @@ SHA256HashValue X509Certificate::CalculateCAFingerprint256(
 
 // static
 SHA256HashValue X509Certificate::CalculateChainFingerprint256(
-    const OSCertHandle& leaf,
+    OSCertHandle leaf,
     const OSCertHandles& intermediates) {
   OSCertHandles chain;
   chain.push_back(leaf);

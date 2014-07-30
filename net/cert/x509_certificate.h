@@ -405,11 +405,12 @@ class NET_EXPORT X509Certificate
   // Calculates the SHA-256 fingerprint of the intermediate CA certificates.
   // Returns an empty (all zero) fingerprint on failure.
   //
-  // The implementation currently relies on the crypto::SecureHash utilities,
-  // which are not as fast as implementing this directly for each platform since
-  // the consumers are not expected to be performance critical. If performance
-  // is a concern going forward, it may be warranted to implement this on a
-  // per-platform basis.
+  // As part of the cross-platform implementation of this function, it currently
+  // copies the certificate bytes into local variables which makes it
+  // potentially slower than implementing it directly for each platform. For
+  // now, the expected consumers are not performance critical, but if
+  // performance is a concern going forward, it may warrant implementing this on
+  // a per-platform basis.
   static SHA256HashValue CalculateCAFingerprint256(
       const OSCertHandles& intermediates);
 
@@ -417,7 +418,7 @@ class NET_EXPORT X509Certificate
   // leaf certificate and all intermediate CA certificates. Returns an empty
   // (all zero) fingerprint on failure.
   static SHA256HashValue CalculateChainFingerprint256(
-      const OSCertHandle& leaf,
+      OSCertHandle leaf,
       const OSCertHandles& intermediates);
 
  private:
