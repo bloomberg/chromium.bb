@@ -1958,8 +1958,6 @@ UNINITIALIZED READ
 name=bug_340752
 ...
 *!*::ThreadState::visitStack
-*!*::ThreadState::trace
-*!*::ThreadState::visitRoots
 
 UNINITIALIZED READ
 name=bug_343663
