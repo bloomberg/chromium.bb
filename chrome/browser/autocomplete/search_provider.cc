@@ -257,6 +257,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
   input_ = input;
 
   DoHistoryQuery(minimal_changes);
+  DoAnswersQuery(input);
   StartOrStopSuggestQuery(minimal_changes);
   UpdateMatches();
 }
@@ -644,8 +645,15 @@ net::URLFetcher* SearchProvider::CreateSuggestFetcher(
   search_term_args.input_type = input.type();
   search_term_args.cursor_position = input.cursor_position();
   search_term_args.page_classification = input.current_page_classification();
-  if (OmniboxFieldTrial::EnableAnswersInSuggest())
+  if (OmniboxFieldTrial::EnableAnswersInSuggest()) {
     search_term_args.session_token = GetSessionToken();
+    if (!prefetch_data_.full_query_text.empty()) {
+      search_term_args.prefetch_query =
+          base::UTF16ToUTF8(last_answer_seen_.full_query_text);
+      search_term_args.prefetch_query_type =
+          base::UTF16ToUTF8(last_answer_seen_.query_type);
+    }
+  }
   GURL suggest_url(template_url->suggestions_url_ref().ReplaceSearchTerms(
       search_term_args,
       providers_.template_url_service()->search_terms_data()));
@@ -1202,4 +1210,32 @@ std::string SearchProvider::GetSessionToken() {
   token_expiration_time_ = current_time + base::TimeDelta::FromSeconds(60);
 
   return current_token_;
+}
+
+void SearchProvider::RegisterDisplayedAnswers(
+    const AutocompleteResult& result) {
+  if (result.empty())
+    return;
+
+  // The answer must be in the first or second slot to be considered. It should
+  // only be in the second slot if AutocompleteController ranked a local search
+  // history or a verbatim item higher than the answer.
+  AutocompleteResult::const_iterator match = result.begin();
+  if (match->answer_contents.empty() && result.size() > 1)
+    ++match;
+  if (match->answer_contents.empty() || match->answer_type.empty() ||
+      match->fill_into_edit.empty())
+    return;
+
+  // Valid answer encountered, cache it for further queries.
+  last_answer_seen_.full_query_text = match->fill_into_edit;
+  last_answer_seen_.query_type = match->answer_type;
+}
+
+void SearchProvider::DoAnswersQuery(const AutocompleteInput& input) {
+  // If the query text starts with trimmed input, this is valid prefetch data.
+  prefetch_data_ = StartsWith(last_answer_seen_.full_query_text,
+                              base::CollapseWhitespace(input.text(), false),
+                              false) ?
+      last_answer_seen_ : AnswersQueryData();
 }

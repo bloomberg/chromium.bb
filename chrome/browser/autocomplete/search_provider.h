@@ -20,6 +20,7 @@
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/search_engines/template_url.h"
 
+class AutocompleteResult;
 class Profile;
 class SearchProviderTest;
 class TemplateURLService;
@@ -50,6 +51,10 @@ class SearchProvider : public BaseSearchProvider {
   // stored for |match|.
   static std::string GetSuggestMetadata(const AutocompleteMatch& match);
 
+  // Answers prefetch handling - register displayed answers. Takes the top
+  // match for Autocomplete and registers the contained answer data, if any.
+  void RegisterDisplayedAnswers(const AutocompleteResult& result);
+
   // AutocompleteProvider:
   virtual void ResetSession() OVERRIDE;
 
@@ -72,6 +77,7 @@ class SearchProvider : public BaseSearchProvider {
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, TestDeleteMatch);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, SuggestQueryUsesToken);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, SessionToken);
+  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, AnswersCache);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest, GetDestinationURL);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedPrefetchTest, ClearPrefetchedResults);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedPrefetchTest, SetPrefetchQuery);
@@ -124,6 +130,11 @@ class SearchProvider : public BaseSearchProvider {
   };
 
   class CompareScoredResults;
+
+  struct AnswersQueryData {
+    base::string16 full_query_text;
+    base::string16 query_type;
+  };
 
   typedef std::vector<history::KeywordSearchTermVisit> HistoryResults;
 
@@ -280,6 +291,10 @@ class SearchProvider : public BaseSearchProvider {
   // Obtains a session token, regenerating if necessary.
   std::string GetSessionToken();
 
+  // Answers prefetch handling - finds previously displayed answer matching the
+  // current |input| and sets |prefetch_data_|.
+  void DoAnswersQuery(const AutocompleteInput& input);
+
   // The amount of time to wait before sending a new suggest request after the
   // previous one.  Non-const because some unittests modify this value.
   static int kMinimumTimeBetweenSuggestQueriesMs;
@@ -317,6 +332,10 @@ class SearchProvider : public BaseSearchProvider {
   // Session token management.
   std::string current_token_;
   base::TimeTicks token_expiration_time_;
+
+  // Answers prefetch management.
+  AnswersQueryData prefetch_data_;     // Data to use for query prefetching.
+  AnswersQueryData last_answer_seen_;  // Last answer seen.
 
   DISALLOW_COPY_AND_ASSIGN(SearchProvider);
 };

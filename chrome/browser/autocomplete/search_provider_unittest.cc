@@ -3223,3 +3223,49 @@ TEST_F(SearchProviderTest, SessionToken) {
   EXPECT_GT(expiration_time_2, expiration_time_1);
   EXPECT_GE(expiration_time_2, expiration_time_1 + kSmallDelta);
 }
+
+TEST_F(SearchProviderTest, AnswersCache) {
+  // Initial condition: empty cache.
+  ASSERT_TRUE(provider_->last_answer_seen_.full_query_text.empty());
+
+  AutocompleteResult result;
+  ACMatches matches;
+  AutocompleteMatch match1;
+  match1.answer_contents = base::ASCIIToUTF16("m1");
+  match1.answer_type = base::ASCIIToUTF16("2334");
+  match1.fill_into_edit = base::ASCIIToUTF16("weather los angeles");
+
+  AutocompleteMatch non_answer_match1;
+  non_answer_match1.fill_into_edit = base::ASCIIToUTF16("weather laguna beach");
+
+  // Test that an answer in the first slot populates the cache.
+  matches.push_back(match1);
+  matches.push_back(non_answer_match1);
+  result.AppendMatches(matches);
+  provider_->RegisterDisplayedAnswers(result);
+  EXPECT_EQ(base::ASCIIToUTF16("weather los angeles"),
+            provider_->last_answer_seen_.full_query_text);
+  EXPECT_EQ(base::ASCIIToUTF16("2334"),
+            provider_->last_answer_seen_.query_type);
+
+  // Test that DoAnswersQuery retrieves data from cache.
+  AutocompleteInput input(base::ASCIIToUTF16("weather l"),
+                          base::string16::npos, base::string16(), GURL(),
+                          metrics::OmniboxEventProto::INVALID_SPEC, false,
+                          false, true, true,
+                          ChromeAutocompleteSchemeClassifier(&profile_));
+  provider_->DoAnswersQuery(input);
+  EXPECT_EQ(base::ASCIIToUTF16("weather los angeles"),
+            provider_->prefetch_data_.full_query_text);
+  EXPECT_EQ(base::ASCIIToUTF16("2334"), provider_->prefetch_data_.query_type);
+
+  // Mismatching input will return empty prefetch data.
+  AutocompleteInput input2(base::ASCIIToUTF16("weather n"),
+                           base::string16::npos, base::string16(), GURL(),
+                           metrics::OmniboxEventProto::INVALID_SPEC, false,
+                           false, true, true,
+                           ChromeAutocompleteSchemeClassifier(&profile_));
+  provider_->DoAnswersQuery(input2);
+  EXPECT_TRUE(provider_->prefetch_data_.full_query_text.empty());
+  EXPECT_TRUE(provider_->prefetch_data_.query_type.empty());
+}

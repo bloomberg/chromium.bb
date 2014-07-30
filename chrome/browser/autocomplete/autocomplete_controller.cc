@@ -467,6 +467,8 @@ void AutocompleteController::UpdateResult(
   UpdateKeywordDescriptions(&result_);
   UpdateAssociatedKeywords(&result_);
   UpdateAssistedQueryStats(&result_);
+  if (search_provider_)
+    search_provider_->RegisterDisplayedAnswers(result_);
 
   const bool default_is_valid = result_.default_match() != result_.end();
   base::string16 default_associated_keyword;
