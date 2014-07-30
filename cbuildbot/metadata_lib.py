@@ -51,10 +51,12 @@ class CBuildbotMetadata(object):
     if multiprocess_manager:
       self._metadata_dict = multiprocess_manager.dict()
       self._cl_action_list = multiprocess_manager.list()
+      self._per_board_dict = multiprocess_manager.dict()
       self._subdict_update_lock = multiprocess_manager.RLock()
     else:
       self._metadata_dict = {}
       self._cl_action_list = []
+      self._per_board_dict = {}
       self._subdict_update_lock = multiprocessing.RLock()
 
     if metadata_dict:
@@ -78,8 +80,11 @@ class CBuildbotMetadata(object):
 
     This method is effectively the inverse of GetDict. Existing key-values
     in metadata will be overwritten by those supplied in |metadata_dict|,
-    with the exception of the cl_actions list which will be extended with
-    the contents (if any) of the supplied dict's cl_actions list.
+    with the exceptions of:
+     - the cl_actions list which will be extended with the contents (if any)
+     of the supplied dict's cl_actions list.
+     - the per-board metadata dict, which will be recursively extended with the
+       contents of the supplied dict's board-metadata
 
     Args:
       metadata_dict: A dictionary of key-value pairs to be added this
@@ -94,9 +99,33 @@ class CBuildbotMetadata(object):
     # object.
     metadata_dict = metadata_dict.copy()
     cl_action_list = metadata_dict.pop('cl_actions', None)
+    per_board_dict = metadata_dict.pop('board-metadata', None)
     self._metadata_dict.update(metadata_dict)
     if cl_action_list:
       self._cl_action_list.extend(cl_action_list)
+    if per_board_dict:
+      for k, v in per_board_dict.items():
+        self.UpdateBoardDictWithDict(k, v)
+
+    return self
+
+  def UpdateBoardDictWithDict(self, board, board_dict):
+    """Update the per-board dict for |board| with |board_dict|.
+
+    Note: both |board| and and all the keys of |board_dict| musts be strings
+          that do not contain the character ':'
+
+    Returns:
+      self
+    """
+    # Wrap the per-board key-value pairs as key-value pairs in _per_board_dict.
+    # Note -- due to http://bugs.python.org/issue6766 it is not possible to
+    # store a multiprocess dict proxy inside another multiprocess dict proxy.
+    # That is why we are using this flattened representation of board dicts.
+    assert not ':' in board
+    for k, v in board_dict.items():
+      assert not ':' in k
+      self._per_board_dict['%s:%s' % (board, k)] = v
 
     return self
 
@@ -134,6 +163,16 @@ class CBuildbotMetadata(object):
     # be copied into a normal list.
     temp = self._metadata_dict.copy()
     temp['cl_actions'] = list(self._cl_action_list)
+
+    # Similarly, the per-board dicts are stored in a flattened form in
+    # _per_board_dict. Un-flatten into nested dict.
+    per_board_dict = {}
+    for k, v in self._per_board_dict.items():
+      board, key = k.split(':')
+      board_dict = per_board_dict.setdefault(board, {})
+      board_dict[key] = v
+
+    temp['board-metadata'] = per_board_dict
     return temp
 
   def GetJSON(self):

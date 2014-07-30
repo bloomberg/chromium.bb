@@ -35,7 +35,11 @@ class MetadataTest(cros_test_lib.TestCase):
   def testGetDict(self):
     starting_dict = {'key1': 1,
                      'key2': '2',
-                     'cl_actions': [('a', 1), ('b', 2)]}
+                     'cl_actions': [('a', 1), ('b', 2)],
+                     'board-metadata': {
+                         'board-1': {'info': 432}
+                         }
+                     }
     metadata = metadata_lib.CBuildbotMetadata(starting_dict)
     ending_dict = metadata.GetDict()
     self.assertEqual(starting_dict, ending_dict)
@@ -61,6 +65,27 @@ class MetadataTest(cros_test_lib.TestCase):
 
     self.assertEqual(expected_dict, metadata.GetDict()['my_dict'])
 
+  def testUpdateBoardMetadataWithMultiprocessDict(self):
+    starting_dict = {'key1': 1,
+                     'key2': '2',
+                     'cl_actions': [('a', 1), ('b', 2)],
+                     'board-metadata': {
+                         'board-1': {'info': 432}
+                         }
+                     }
+
+    m = multiprocessing.Manager()
+    metadata = metadata_lib.CBuildbotMetadata(metadata_dict=starting_dict,
+                                              multiprocess_manager=m)
+
+    # pylint: disable-msg=E1101
+    update_dict = m.dict()
+    update_dict['my_key'] = 'some value'
+    metadata.UpdateBoardDictWithDict('board-1', update_dict)
+
+    self.assertEqual(metadata.GetDict()['board-metadata']['board-1']['my_key'],
+                     'some value')
+
   def testMultiprocessSafety(self):
     m = multiprocessing.Manager()
     metadata = metadata_lib.CBuildbotMetadata(multiprocess_manager=m)
@@ -68,7 +93,11 @@ class MetadataTest(cros_test_lib.TestCase):
     starting_dict = {'key1': 1,
                      'key2': '2',
                      'key3': key_dict,
-                     'cl_actions': [('a', 1), ('b', 2)]}
+                     'cl_actions': [('a', 1), ('b', 2)],
+                     'board-metadata': {
+                         'board-1': {'info': 432}
+                         }
+                    }
 
     # Test that UpdateWithDict is process-safe
     parallel.RunParallelSteps([lambda: metadata.UpdateWithDict(starting_dict)])
@@ -90,6 +119,39 @@ class MetadataTest(cros_test_lib.TestCase):
     # Assert that an action was recorded.
     self.assertEqual(len(starting_dict['cl_actions']) + 1,
                      len(ending_dict['cl_actions']))
+
+  def testPerBoardDict(self):
+    starting_per_board_dict = {
+        'board-1': {'kubrick': 2001,
+                    'bergman': 'persona',
+                    'hitchcock': 'vertigo'},
+        'board-2': {'kubrick': ['barry lyndon', 'dr. strangelove'],
+                    'bergman': 'the seventh seal'}
+    }
+
+    starting_dict = {'board-metadata': starting_per_board_dict}
+
+    m = multiprocessing.Manager()
+    metadata = metadata_lib.CBuildbotMetadata(metadata_dict=starting_dict,
+                                              multiprocess_manager=m)
+
+    extra_per_board_dict = {
+        'board-1': {'kurosawa': 'rashomon',
+                    'coen brothers': 'fargo'},
+        'board-3': {'hitchcock': 'north by northwest',
+                    'coen brothers': 'the big lebowski'}
+    }
+
+    expected_dict = starting_per_board_dict
+
+    # Write each per board key-value pair to metadata in a separate process.
+    with parallel.BackgroundTaskRunner(metadata.UpdateBoardDictWithDict) as q:
+      for board, board_dict in extra_per_board_dict.iteritems():
+        expected_dict.setdefault(board, {}).update(board_dict)
+        for k, v in board_dict.iteritems():
+          q.put([board, {k: v}])
+
+    self.assertEqual(expected_dict, metadata.GetDict()['board-metadata'])
 
 
 if __name__ == '__main__':
