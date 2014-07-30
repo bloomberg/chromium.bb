@@ -138,7 +138,7 @@ static_library("ui") {
   if (enable_task_manager) {
     sources += rebase_path(gypi_values.chrome_browser_ui_task_manager_sources,
                            ".", "//chrome")
-    if (!toolkit_views) {
+    if (!toolkit_views || is_mac) {
       sources -= [ "views/task_manager_view.cc" ]
     }
   }
@@ -203,6 +203,11 @@ static_library("ui") {
     if (!is_chromeos) {
       sources += rebase_path(
           gypi_values.chrome_browser_ui_views_non_chromeos_sources,
+          ".", "//chrome")
+    }
+    if (!is_mac) {
+      sources += rebase_path(
+          gypi_values.chrome_browser_ui_views_non_mac_sources,
           ".", "//chrome")
     }
     if (use_ash) {
@@ -348,7 +353,7 @@ static_library("ui") {
       "//ui/views/controls/webview",
     ]
   } else {  # 'OS!="win"
-    if (use_aura) {
+    if (toolkit_views) {
       deps += [
         "//ui/views",
         "//ui/views/controls/webview",

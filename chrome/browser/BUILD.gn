@@ -526,7 +526,7 @@ static_library("browser") {
     # Non-Windows.
     sources += rebase_path(gypi_values.chrome_browser_non_win_sources,
                            ".", "//chrome")
-    if (use_aura) {
+    if (toolkit_views) {
       deps += [
         #"../ui/views/controls/webview/webview.gyp:webview",  TODO(GYP)
         #"../ui/views/views.gyp:views",  TODO(GYP)

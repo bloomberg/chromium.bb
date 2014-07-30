@@ -703,8 +703,6 @@
       'browser/ui/cocoa/tabs/tab_view.mm',
       'browser/ui/cocoa/tabs/tab_window_controller.h',
       'browser/ui/cocoa/tabs/tab_window_controller.mm',
-      'browser/ui/cocoa/task_manager_mac.h',
-      'browser/ui/cocoa/task_manager_mac.mm',
       'browser/ui/cocoa/themed_window.h',
       'browser/ui/cocoa/themed_window.mm',
       'browser/ui/cocoa/toolbar/back_forward_menu_controller.h',
@@ -1829,9 +1827,9 @@
       'browser/ui/views/sync/one_click_signin_bubble_view.h',
     ],
     'chrome_browser_ui_task_manager_sources': [
-      'browser/ui/views/task_manager_view.cc',
       'browser/ui/cocoa/task_manager_mac.h',
       'browser/ui/cocoa/task_manager_mac.mm',
+      'browser/ui/views/task_manager_view.cc',
     ],
     'chrome_browser_ui_nacl_sources': [
       'browser/ui/webui/nacl_ui.cc',
@@ -1845,17 +1843,9 @@
       'browser/ui/webui/policy_ui.cc',
       'browser/ui/webui/policy_ui.h',
     ],
-    # Cross-platform views sources. We assume app list is enabled.
-    'chrome_browser_ui_views_sources': [
-      'browser/ui/app_list/app_list_controller_delegate_views.cc',
-      'browser/ui/app_list/app_list_controller_delegate_views.h',
-      'browser/ui/app_list/app_list_service_views.cc',
-      'browser/ui/app_list/app_list_service_views.h',
-      'browser/ui/app_list/app_list_shower_views.cc',
-      'browser/ui/app_list/app_list_shower_views.h',
+    # Cross-platform (except Mac) views sources. We assume app list is enabled.
+    'chrome_browser_ui_views_non_mac_sources': [
       'browser/ui/views/accelerator_utils_aura.cc',
-      'browser/ui/views/accessibility/accessibility_event_router_views.cc',
-      'browser/ui/views/accessibility/accessibility_event_router_views.h',
       'browser/ui/views/accessibility/invert_bubble_view.cc',
       'browser/ui/views/accessibility/invert_bubble_view.h',
       'browser/ui/views/apps/app_info_dialog/app_info_dialog_views.cc',
@@ -1930,11 +1920,8 @@
       'browser/ui/views/bookmarks/bookmark_sync_promo_view.cc',
       'browser/ui/views/bookmarks/bookmark_sync_promo_view.h',
       'browser/ui/views/certificate_viewer_win.cc',
-      'browser/ui/views/chrome_browser_main_extra_parts_views.cc',
-      'browser/ui/views/chrome_browser_main_extra_parts_views.h',
       'browser/ui/views/chrome_views_delegate.cc',
       'browser/ui/views/chrome_views_delegate_chromeos.cc',
-      'browser/ui/views/chrome_views_delegate.h',
       'browser/ui/views/chrome_web_dialog_view.cc',
       'browser/ui/views/collected_cookies_views.cc',
       'browser/ui/views/collected_cookies_views.h',
@@ -2280,6 +2267,21 @@
       'browser/ui/views/website_settings/permission_selector_view_observer.h',
       'browser/ui/views/website_settings/website_settings_popup_view.cc',
       'browser/ui/views/website_settings/website_settings_popup_view.h',
+    ],
+    # Cross-platform views sources also ready for toolkit-views on Mac.
+    'chrome_browser_ui_views_sources': [
+      'browser/ui/app_list/app_list_controller_delegate_views.cc',
+      'browser/ui/app_list/app_list_controller_delegate_views.h',
+      'browser/ui/app_list/app_list_service_views.cc',
+      'browser/ui/app_list/app_list_service_views.h',
+      'browser/ui/app_list/app_list_shower_views.cc',
+      'browser/ui/app_list/app_list_shower_views.h',
+      'browser/ui/views/accessibility/accessibility_event_router_views.cc',
+      'browser/ui/views/accessibility/accessibility_event_router_views.h',
+      'browser/ui/views/chrome_browser_main_extra_parts_views.cc',
+      'browser/ui/views/chrome_browser_main_extra_parts_views.h',
+      'browser/ui/views/chrome_views_delegate.cc',
+      'browser/ui/views/chrome_views_delegate.h',
     ],
     # Views files for everwhere but ChromeOS.
     'chrome_browser_ui_views_non_chromeos_sources': [
@@ -2716,11 +2718,14 @@
         ['toolkit_views==1', {
           'sources': [ '<@(chrome_browser_ui_views_sources)' ],
           'conditions': [
-            ['chromeos == 0', {
+            ['chromeos == 0 and OS!="mac"', {
               'sources': [ '<@(chrome_browser_ui_views_non_chromeos_sources)' ],
             }],
             ['use_ash == 1', {
               'sources': [ '<@(chrome_browser_ui_ash_views_sources)' ],
+            }],
+            ['OS!="mac"', {
+              'sources': [ '<@(chrome_browser_ui_views_non_mac_sources)' ],
             }],
           ],
         }],
@@ -2799,6 +2804,8 @@
             'browser/ui/tabs/tab_resources.h',
             'browser/ui/views/extensions/extension_view_views.cc',
             'browser/ui/views/extensions/extension_view_views.h',
+            # Task manager has its own sources list. Leave out the views one.
+            'browser/ui/views/task_manager_view.cc',
           ],
           'dependencies': [
             '../third_party/apple_sample_code/apple_sample_code.gyp:apple_sample_code',
@@ -2837,6 +2844,9 @@
           ],
         }, {  # non-Mac.
           'sources': [ '<@(chrome_browser_ui_non_mac_sources)' ],
+          'sources/': [
+            ['exclude', '^browser/ui/cocoa/'],
+          ],
         }],
         ['OS=="win"', {
           'include_dirs': [
@@ -2866,7 +2876,7 @@
           ],
         }, {  # 'OS!="win"
           'conditions': [
-            ['use_aura==1', {
+            ['toolkit_views==1', {
               'dependencies': [
                 '../ui/views/controls/webview/webview.gyp:webview',
                 '../ui/views/views.gyp:views',
@@ -2875,10 +2885,7 @@
                 '<(INTERMEDIATE_DIR)',
                 '<(INTERMEDIATE_DIR)/chrome',
               ],
-              'sources/': [
-                ['exclude', '^browser/ui/cocoa/*'],
-              ],
-            }, { # else: use_aura==0
+            }, { # else: toolkit_views==0
               'sources/': [
                 # Exclude all of views.
                 ['exclude', '^browser/ui/views/'],
