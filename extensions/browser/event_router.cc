@@ -188,16 +188,31 @@ EventRouter::~EventRouter() {}
 void EventRouter::AddEventListener(const std::string& event_name,
                                    content::RenderProcessHost* process,
                                    const std::string& extension_id) {
-  listeners_.AddListener(scoped_ptr<EventListener>(new EventListener(
-      event_name, extension_id, process, scoped_ptr<DictionaryValue>())));
+  listeners_.AddListener(EventListener::ForExtension(
+      event_name, extension_id, process, scoped_ptr<DictionaryValue>()));
 }
 
 void EventRouter::RemoveEventListener(const std::string& event_name,
                                       content::RenderProcessHost* process,
                                       const std::string& extension_id) {
-  EventListener listener(event_name, extension_id, process,
-                         scoped_ptr<DictionaryValue>());
-  listeners_.RemoveListener(&listener);
+  scoped_ptr<EventListener> listener = EventListener::ForExtension(
+      event_name, extension_id, process, scoped_ptr<DictionaryValue>());
+  listeners_.RemoveListener(listener.get());
+}
+
+void EventRouter::AddEventListenerForURL(const std::string& event_name,
+                                         content::RenderProcessHost* process,
+                                         const GURL& listener_url) {
+  listeners_.AddListener(EventListener::ForURL(
+      event_name, listener_url, process, scoped_ptr<DictionaryValue>()));
+}
+
+void EventRouter::RemoveEventListenerForURL(const std::string& event_name,
+                                            content::RenderProcessHost* process,
+                                            const GURL& listener_url) {
+  scoped_ptr<EventListener> listener = EventListener::ForURL(
+      event_name, listener_url, process, scoped_ptr<DictionaryValue>());
+  listeners_.RemoveListener(listener.get());
 }
 
 void EventRouter::RegisterObserver(Observer* observer,
@@ -221,6 +236,7 @@ void EventRouter::UnregisterObserver(Observer* observer) {
 void EventRouter::OnListenerAdded(const EventListener* listener) {
   const EventListenerInfo details(listener->event_name(),
                                   listener->extension_id(),
+                                  listener->listener_url(),
                                   listener->GetBrowserContext());
   std::string base_event_name = GetBaseEventName(listener->event_name());
   ObserverMap::iterator observer = observers_.find(base_event_name);
@@ -231,6 +247,7 @@ void EventRouter::OnListenerAdded(const EventListener* listener) {
 void EventRouter::OnListenerRemoved(const EventListener* listener) {
   const EventListenerInfo details(listener->event_name(),
                                   listener->extension_id(),
+                                  listener->listener_url(),
                                   listener->GetBrowserContext());
   std::string base_event_name = GetBaseEventName(listener->event_name());
   ObserverMap::iterator observer = observers_.find(base_event_name);
@@ -240,9 +257,8 @@ void EventRouter::OnListenerRemoved(const EventListener* listener) {
 
 void EventRouter::AddLazyEventListener(const std::string& event_name,
                                        const std::string& extension_id) {
-  scoped_ptr<EventListener> listener(new EventListener(
+  bool is_new = listeners_.AddListener(EventListener::ForExtension(
       event_name, extension_id, NULL, scoped_ptr<DictionaryValue>()));
-  bool is_new = listeners_.AddListener(listener.Pass());
 
   if (is_new) {
     std::set<std::string> events = GetRegisteredEvents(extension_id);
@@ -254,9 +270,9 @@ void EventRouter::AddLazyEventListener(const std::string& event_name,
 
 void EventRouter::RemoveLazyEventListener(const std::string& event_name,
                                           const std::string& extension_id) {
-  EventListener listener(event_name, extension_id, NULL,
-                         scoped_ptr<DictionaryValue>());
-  bool did_exist = listeners_.RemoveListener(&listener);
+  scoped_ptr<EventListener> listener = EventListener::ForExtension(
+      event_name, extension_id, NULL, scoped_ptr<DictionaryValue>());
+  bool did_exist = listeners_.RemoveListener(listener.get());
 
   if (did_exist) {
     std::set<std::string> events = GetRegisteredEvents(extension_id);
@@ -271,14 +287,18 @@ void EventRouter::AddFilteredEventListener(const std::string& event_name,
                                            const std::string& extension_id,
                                            const base::DictionaryValue& filter,
                                            bool add_lazy_listener) {
-  listeners_.AddListener(scoped_ptr<EventListener>(new EventListener(
-      event_name, extension_id, process,
-      scoped_ptr<DictionaryValue>(filter.DeepCopy()))));
+  listeners_.AddListener(EventListener::ForExtension(
+      event_name,
+      extension_id,
+      process,
+      scoped_ptr<DictionaryValue>(filter.DeepCopy())));
 
   if (add_lazy_listener) {
-    bool added = listeners_.AddListener(scoped_ptr<EventListener>(
-        new EventListener(event_name, extension_id, NULL,
-        scoped_ptr<DictionaryValue>(filter.DeepCopy()))));
+    bool added = listeners_.AddListener(EventListener::ForExtension(
+        event_name,
+        extension_id,
+        NULL,
+        scoped_ptr<DictionaryValue>(filter.DeepCopy())));
 
     if (added)
       AddFilterToEvent(event_name, extension_id, &filter);
@@ -291,14 +311,17 @@ void EventRouter::RemoveFilteredEventListener(
     const std::string& extension_id,
     const base::DictionaryValue& filter,
     bool remove_lazy_listener) {
-  EventListener listener(event_name, extension_id, process,
-                         scoped_ptr<DictionaryValue>(filter.DeepCopy()));
+  scoped_ptr<EventListener> listener = EventListener::ForExtension(
+      event_name,
+      extension_id,
+      process,
+      scoped_ptr<DictionaryValue>(filter.DeepCopy()));
 
-  listeners_.RemoveListener(&listener);
+  listeners_.RemoveListener(listener.get());
 
   if (remove_lazy_listener) {
-    listener.MakeLazy();
-    bool removed = listeners_.RemoveListener(&listener);
+    listener->MakeLazy();
+    bool removed = listeners_.RemoveListener(listener.get());
 
     if (removed)
       RemoveFilterFromEvent(event_name, extension_id, &filter);
@@ -471,8 +494,10 @@ void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
         EventDispatchIdentifier dispatch_id(listener->GetBrowserContext(),
                                             listener->extension_id());
         if (!ContainsKey(already_dispatched, dispatch_id)) {
-          DispatchEventToProcess(
-              listener->extension_id(), listener->process(), event);
+          DispatchEventToProcess(listener->extension_id(),
+                                 listener->listener_url(),
+                                 listener->process(),
+                                 event);
         }
       }
     }
@@ -511,6 +536,7 @@ void EventRouter::DispatchLazyEvent(
 }
 
 void EventRouter::DispatchEventToProcess(const std::string& extension_id,
+                                         const GURL& listener_url,
                                          content::RenderProcessHost* process,
                                          const linked_ptr<Event>& event) {
   BrowserContext* listener_context = process->GetBrowserContext();
@@ -556,7 +582,7 @@ void EventRouter::DispatchEventToProcess(const std::string& extension_id,
                  ->HasWebUIBindings(process->GetID())) {
     // Dispatching event to WebUI.
     if (!ExtensionAPI::GetSharedInstance()->IsAvailableToWebUI(
-            event->event_name)) {
+            event->event_name, listener_url)) {
       return;
     }
   } else {
@@ -691,8 +717,9 @@ void EventRouter::DispatchPendingEvent(const linked_ptr<Event>& event,
 
   if (listeners_.HasProcessListener(host->render_process_host(),
                                     host->extension()->id())) {
-    DispatchEventToProcess(host->extension()->id(),
-                           host->render_process_host(), event);
+    // URL events cannot be lazy therefore can't be pending, hence the GURL().
+    DispatchEventToProcess(
+        host->extension()->id(), GURL(), host->render_process_host(), event);
   }
 }
 
@@ -800,9 +827,12 @@ Event* Event::DeepCopy() {
 
 EventListenerInfo::EventListenerInfo(const std::string& event_name,
                                      const std::string& extension_id,
+                                     const GURL& listener_url,
                                      content::BrowserContext* browser_context)
     : event_name(event_name),
       extension_id(extension_id),
-      browser_context(browser_context) {}
+      listener_url(listener_url),
+      browser_context(browser_context) {
+}
 
 }  // namespace extensions

@@ -13,6 +13,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -95,6 +96,7 @@ bool ExtensionMessageFilter::OnMessageReceived(const IPC::Message& message) {
 
 void ExtensionMessageFilter::OnExtensionAddListener(
     const std::string& extension_id,
+    const GURL& listener_url,
     const std::string& event_name) {
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id_);
   if (!process)
@@ -102,11 +104,20 @@ void ExtensionMessageFilter::OnExtensionAddListener(
   EventRouter* router = EventRouter::Get(browser_context_);
   if (!router)
     return;
-  router->AddEventListener(event_name, process, extension_id);
+
+  if (Extension::IdIsValid(extension_id)) {
+    router->AddEventListener(event_name, process, extension_id);
+  } else if (listener_url.is_valid()) {
+    router->AddEventListenerForURL(event_name, process, listener_url);
+  } else {
+    NOTREACHED() << "Tried to add an event listener without a valid "
+                 << "extension ID nor listener URL";
+  }
 }
 
 void ExtensionMessageFilter::OnExtensionRemoveListener(
     const std::string& extension_id,
+    const GURL& listener_url,
     const std::string& event_name) {
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id_);
   if (!process)
@@ -114,7 +125,15 @@ void ExtensionMessageFilter::OnExtensionRemoveListener(
   EventRouter* router = EventRouter::Get(browser_context_);
   if (!router)
     return;
-  router->RemoveEventListener(event_name, process, extension_id);
+
+  if (Extension::IdIsValid(extension_id)) {
+    router->RemoveEventListener(event_name, process, extension_id);
+  } else if (listener_url.is_valid()) {
+    router->RemoveEventListenerForURL(event_name, process, listener_url);
+  } else {
+    NOTREACHED() << "Tried to remove an event listener without a valid "
+                 << "extension ID nor listener URL";
+  }
 }
 
 void ExtensionMessageFilter::OnExtensionAddLazyListener(

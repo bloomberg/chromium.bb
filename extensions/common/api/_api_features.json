@@ -122,18 +122,21 @@
     "dependencies": ["permission:storage"],
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
   },
-  "test": {
+  "test": [{
     "internal": true,
     "channel": "stable",
     "extension_types": "all",
-    // Everything except web pages.
-    "contexts": [
-      "blessed_extension",
-      "content_script",
-      "unblessed_extension",
-      "webui"
+    // Everything except web pages and WebUI. WebUI is declared in a separate
+    // rule to keep the "matches" property isolated.
+    "contexts": ["blessed_extension", "content_script", "unblessed_extension"]
+  }, {
+    "internal": true,
+    "channel": "stable",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://extensions-frame/*"
     ]
-  },
+  }],
   "types": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],

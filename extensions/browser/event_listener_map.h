@@ -12,6 +12,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "extensions/common/event_filter.h"
+#include "url/gurl.h"
 
 namespace base {
 class DictionaryValue;
@@ -37,9 +38,10 @@ struct Event;
 // is listening to the event. It is associated with no process, so to dispatch
 // an event to a lazy listener one must start a process running the associated
 // extension and dispatch the event to that.
-//
 class EventListener {
  public:
+  // Constructs EventListeners for either an Extension or a URL.
+  //
   // |filter| represents a generic filter structure that EventFilter knows how
   // to filter events with. A typical filter instance will look like
   //
@@ -47,10 +49,17 @@ class EventListener {
   //   url: [{hostSuffix: 'google.com'}],
   //   tabId: 5
   // }
-  EventListener(const std::string& event_name,
-                const std::string& extension_id,
-                content::RenderProcessHost* process,
-                scoped_ptr<base::DictionaryValue> filter);
+  static scoped_ptr<EventListener> ForExtension(
+      const std::string& event_name,
+      const std::string& extension_id,
+      content::RenderProcessHost* process,
+      scoped_ptr<base::DictionaryValue> filter);
+  static scoped_ptr<EventListener> ForURL(
+      const std::string& event_name,
+      const GURL& listener_url,
+      content::RenderProcessHost* process,
+      scoped_ptr<base::DictionaryValue> filter);
+
   ~EventListener();
 
   bool Equals(const EventListener* other) const;
@@ -67,16 +76,24 @@ class EventListener {
   // IsLazy.
   content::BrowserContext* GetBrowserContext() const;
 
-  const std::string event_name() const { return event_name_; }
-  const std::string extension_id() const { return extension_id_; }
+  const std::string& event_name() const { return event_name_; }
+  const std::string& extension_id() const { return extension_id_; }
+  const GURL& listener_url() const { return listener_url_; }
   content::RenderProcessHost* process() const { return process_; }
   base::DictionaryValue* filter() const { return filter_.get(); }
   EventFilter::MatcherID matcher_id() const { return matcher_id_; }
   void set_matcher_id(EventFilter::MatcherID id) { matcher_id_ = id; }
 
  private:
+  EventListener(const std::string& event_name,
+                const std::string& extension_id,
+                const GURL& listener_url,
+                content::RenderProcessHost* process,
+                scoped_ptr<base::DictionaryValue> filter);
+
   const std::string event_name_;
   const std::string extension_id_;
+  const GURL listener_url_;
   content::RenderProcessHost* process_;
   scoped_ptr<base::DictionaryValue> filter_;
   EventFilter::MatcherID matcher_id_;  // -1 if unset.

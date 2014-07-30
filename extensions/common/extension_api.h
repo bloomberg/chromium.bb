@@ -109,8 +109,8 @@ class ExtensionAPI {
   bool IsAvailableInUntrustedContext(const std::string& name,
                                      const Extension* extension);
 
-  // Returns true if |name| is available to webui contexts.
-  bool IsAvailableToWebUI(const std::string& name);
+  // Returns true if |name| is available to WebUI contexts on |url|.
+  bool IsAvailableToWebUI(const std::string& name, const GURL& url);
 
   // Gets the schema for the extension API with namespace |full_name|.
   // Ownership remains with this object.

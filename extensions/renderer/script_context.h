@@ -104,6 +104,7 @@ class ScriptContext : public RequestSender::Source, public gin::Runner {
 
   // Utility to get the URL we will match against for a frame. If the frame has
   // committed, this is the commited URL. Otherwise it is the provisional URL.
+  // The returned URL may be invalid.
   static GURL GetDataSourceURLForFrame(const blink::WebFrame* frame);
 
   // Returns the first non-about:-URL in the document hierarchy above and

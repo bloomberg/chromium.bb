@@ -486,7 +486,7 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
   } else if (content::ChildProcessSecurityPolicy::GetInstance()
                  ->HasWebUIBindings(requesting_process_id)) {
     // WebUI is calling this API.
-    if (!api->IsAvailableToWebUI(params.name)) {
+    if (!api->IsAvailableToWebUI(params.name, params.source_url)) {
       disallowed_reason = "WebUI can only call webui-enabled APIs";
     }
   } else {

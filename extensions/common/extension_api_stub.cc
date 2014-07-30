@@ -8,6 +8,7 @@
 #include "extensions/common/extension_api.h"
 
 #include "extensions/common/features/feature.h"
+#include "url/gurl.h"
 
 namespace extensions {
 
@@ -41,7 +42,8 @@ bool ExtensionAPI::IsAvailableInUntrustedContext(const std::string& full_name,
   return false;
 }
 
-bool ExtensionAPI::IsAvailableToWebUI(const std::string& name) {
+bool ExtensionAPI::IsAvailableToWebUI(const std::string& name,
+                                      const GURL& url) {
   return false;
 }
 

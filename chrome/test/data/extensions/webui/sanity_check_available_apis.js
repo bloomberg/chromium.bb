@@ -22,10 +22,14 @@ var expected = [
 ];
 var actual = Object.keys(chrome).sort();
 
-if (!chrome.test.checkDeepEq(expected, actual)) {
+var isEqual = expected.length == actual.length;
+for (var i = 0; i < expected.length && isEqual; i++) {
+  if (expected[i] != actual[i])
+    isEqual = false;
+}
+
+if (!isEqual) {
   console.error('Expected: ' + JSON.stringify(expected) + ', ' +
                 'Actual: ' + JSON.stringify(actual));
-  domAutomationController.send(false);
-} else {
-  domAutomationController.send(true);
 }
+domAutomationController.send(isEqual);

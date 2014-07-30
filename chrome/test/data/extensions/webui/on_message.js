@@ -4,6 +4,13 @@
 
 // out/Debug/browser_tests --gtest_filter=ExtensionWebUITest.OnMessage
 
+if (!chrome || !chrome.test || !chrome.test.onMessage) {
+  console.error('chrome.test.onMessage is unavailable on ' +
+                document.location.href);
+  domAutomationController.send(false);
+  return;
+}
+
 chrome.test.listenOnce(chrome.test.onMessage, function(args) {
   if (args.data != 'hi') {
     console.error('Expected "hi", Actual ' + JSON.stringify(args.data));

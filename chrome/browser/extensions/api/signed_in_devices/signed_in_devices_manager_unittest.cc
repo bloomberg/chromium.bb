@@ -32,6 +32,7 @@ TEST(SignedInDevicesManager, UpdateListener) {
 
   EventListenerInfo info(api::signed_in_devices::OnDeviceInfoChange::kEventName,
                          "extension1",
+                         GURL(),
                          profile.get());
 
   // Add a listener.

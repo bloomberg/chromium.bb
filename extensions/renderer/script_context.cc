@@ -169,8 +169,7 @@ GURL ScriptContext::GetDataSourceURLForFrame(const blink::WebFrame* frame) {
   blink::WebDataSource* data_source = frame->provisionalDataSource()
                                           ? frame->provisionalDataSource()
                                           : frame->dataSource();
-  CHECK(data_source);
-  return GURL(data_source->request().url());
+  return data_source ? GURL(data_source->request().url()) : GURL();
 }
 
 // static

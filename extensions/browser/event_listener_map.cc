@@ -8,6 +8,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/event_router.h"
 #include "ipc/ipc_message.h"
+#include "url/gurl.h"
 
 using base::DictionaryValue;
 
@@ -15,15 +16,24 @@ namespace extensions {
 
 typedef EventFilter::MatcherID MatcherID;
 
-EventListener::EventListener(const std::string& event_name,
-                             const std::string& extension_id,
-                             content::RenderProcessHost* process,
-                             scoped_ptr<DictionaryValue> filter)
-    : event_name_(event_name),
-      extension_id_(extension_id),
-      process_(process),
-      filter_(filter.Pass()),
-      matcher_id_(-1) {
+// static
+scoped_ptr<EventListener> EventListener::ForExtension(
+    const std::string& event_name,
+    const std::string& extension_id,
+    content::RenderProcessHost* process,
+    scoped_ptr<base::DictionaryValue> filter) {
+  return make_scoped_ptr(new EventListener(
+      event_name, extension_id, GURL(), process, filter.Pass()));
+}
+
+// static
+scoped_ptr<EventListener> EventListener::ForURL(
+    const std::string& event_name,
+    const GURL& listener_url,
+    content::RenderProcessHost* process,
+    scoped_ptr<base::DictionaryValue> filter) {
+  return make_scoped_ptr(
+      new EventListener(event_name, "", listener_url, process, filter.Pass()));
 }
 
 EventListener::~EventListener() {}
@@ -33,7 +43,8 @@ bool EventListener::Equals(const EventListener* other) const {
   // filter that hasn't been added to EventFilter to match one that is
   // equivalent but has.
   return event_name_ == other->event_name_ &&
-         extension_id_ == other->extension_id_ && process_ == other->process_ &&
+         extension_id_ == other->extension_id_ &&
+         listener_url_ == other->listener_url_ && process_ == other->process_ &&
          ((!!filter_.get()) == (!!other->filter_.get())) &&
          (!filter_.get() || filter_->Equals(other->filter_.get()));
 }
@@ -43,7 +54,7 @@ scoped_ptr<EventListener> EventListener::Copy() const {
   if (filter_)
     filter_copy.reset(filter_->DeepCopy());
   return scoped_ptr<EventListener>(new EventListener(
-      event_name_, extension_id_, process_, filter_copy.Pass()));
+      event_name_, extension_id_, listener_url_, process_, filter_copy.Pass()));
 }
 
 bool EventListener::IsLazy() const {
@@ -56,6 +67,19 @@ void EventListener::MakeLazy() {
 
 content::BrowserContext* EventListener::GetBrowserContext() const {
   return process_ ? process_->GetBrowserContext() : NULL;
+}
+
+EventListener::EventListener(const std::string& event_name,
+                             const std::string& extension_id,
+                             const GURL& listener_url,
+                             content::RenderProcessHost* process,
+                             scoped_ptr<DictionaryValue> filter)
+    : event_name_(event_name),
+      extension_id_(extension_id),
+      listener_url_(listener_url),
+      process_(process),
+      filter_(filter.Pass()),
+      matcher_id_(-1) {
 }
 
 EventListenerMap::EventListenerMap(Delegate* delegate)
@@ -86,7 +110,7 @@ bool EventListenerMap::AddListener(scoped_ptr<EventListener> listener) {
 scoped_ptr<EventMatcher> EventListenerMap::ParseEventMatcher(
     DictionaryValue* filter_dict) {
   return scoped_ptr<EventMatcher>(new EventMatcher(
-      scoped_ptr<DictionaryValue>(filter_dict->DeepCopy()), MSG_ROUTING_NONE));
+      make_scoped_ptr(filter_dict->DeepCopy()), MSG_ROUTING_NONE));
 }
 
 bool EventListenerMap::RemoveListener(const EventListener* listener) {
@@ -173,8 +197,8 @@ void EventListenerMap::LoadUnfilteredLazyListeners(
     const std::set<std::string>& event_names) {
   for (std::set<std::string>::const_iterator it = event_names.begin();
        it != event_names.end(); ++it) {
-    AddListener(scoped_ptr<EventListener>(new EventListener(
-        *it, extension_id, NULL, scoped_ptr<DictionaryValue>())));
+    AddListener(EventListener::ForExtension(
+        *it, extension_id, NULL, scoped_ptr<DictionaryValue>()));
   }
 }
 
@@ -190,9 +214,8 @@ void EventListenerMap::LoadFilteredLazyListeners(
       const DictionaryValue* filter = NULL;
       if (!filter_list->GetDictionary(i, &filter))
         continue;
-      AddListener(scoped_ptr<EventListener>(new EventListener(
-          it.key(), extension_id, NULL,
-          scoped_ptr<DictionaryValue>(filter->DeepCopy()))));
+      AddListener(EventListener::ForExtension(
+          it.key(), extension_id, NULL, make_scoped_ptr(filter->DeepCopy())));
     }
   }
 }

@@ -507,14 +507,16 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_RequestForIOThread,
                      ExtensionHostMsg_Request_Params)
 
 // Notify the browser that the given extension added a listener to an event.
-IPC_MESSAGE_CONTROL2(ExtensionHostMsg_AddListener,
+IPC_MESSAGE_CONTROL3(ExtensionHostMsg_AddListener,
                      std::string /* extension_id */,
+                     GURL /* listener_url */,
                      std::string /* name */)
 
 // Notify the browser that the given extension removed a listener from an
 // event.
-IPC_MESSAGE_CONTROL2(ExtensionHostMsg_RemoveListener,
+IPC_MESSAGE_CONTROL3(ExtensionHostMsg_RemoveListener,
                      std::string /* extension_id */,
+                     GURL /* listener_url */,
                      std::string /* name */)
 
 // Notify the browser that the given extension added a listener to an event from

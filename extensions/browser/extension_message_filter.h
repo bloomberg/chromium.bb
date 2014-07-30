@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "url/gurl.h"
 
 struct ExtensionHostMsg_Request_Params;
 
@@ -52,8 +53,10 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
 
   // Message handlers on the UI thread.
   void OnExtensionAddListener(const std::string& extension_id,
+                              const GURL& listener_url,
                               const std::string& event_name);
   void OnExtensionRemoveListener(const std::string& extension_id,
+                                 const GURL& listener_url,
                                  const std::string& event_name);
   void OnExtensionAddLazyListener(const std::string& extension_id,
                                   const std::string& event_name);

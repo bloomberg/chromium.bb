@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
@@ -93,7 +92,8 @@ class EventRouter : public content::NotificationObserver,
               ExtensionPrefs* extension_prefs);
   virtual ~EventRouter();
 
-  // Add or remove the process/extension pair as a listener for |event_name|.
+  // Add or remove an extension as an event listener for |event_name|.
+  //
   // Note that multiple extensions can share a process due to process
   // collapsing. Also, a single extension can have 2 processes if it is a split
   // mode extension.
@@ -103,6 +103,14 @@ class EventRouter : public content::NotificationObserver,
   void RemoveEventListener(const std::string& event_name,
                            content::RenderProcessHost* process,
                            const std::string& extension_id);
+
+  // Add or remove a URL as an event listener for |event_name|.
+  void AddEventListenerForURL(const std::string& event_name,
+                              content::RenderProcessHost* process,
+                              const GURL& listener_url);
+  void RemoveEventListenerForURL(const std::string& event_name,
+                                 content::RenderProcessHost* process,
+                                 const GURL& listener_url);
 
   EventListenerMap& listeners() { return listeners_; }
 
@@ -171,7 +179,7 @@ class EventRouter : public content::NotificationObserver,
                   const std::string& extension_id);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(EventRouterTest, EventRouterObserver);
+  friend class EventRouterTest;
 
   // The extension and process that contains the event listener for a given
   // event.
@@ -221,8 +229,10 @@ class EventRouter : public content::NotificationObserver,
                          const linked_ptr<Event>& event,
                          std::set<EventDispatchIdentifier>* already_dispatched);
 
-  // Dispatches the event to the specified extension running in |process|.
+  // Dispatches the event to the specified extension or URL running in
+  // |process|.
   void DispatchEventToProcess(const std::string& extension_id,
+                              const GURL& listener_url,
                               content::RenderProcessHost* process,
                               const linked_ptr<Event>& event);
 
@@ -357,12 +367,14 @@ struct Event {
 struct EventListenerInfo {
   EventListenerInfo(const std::string& event_name,
                     const std::string& extension_id,
+                    const GURL& listener_url,
                     content::BrowserContext* browser_context);
   // The event name including any sub-event, e.g. "runtime.onStartup" or
   // "webRequest.onCompleted/123".
   const std::string event_name;
 
   const std::string extension_id;
+  const GURL listener_url;
   content::BrowserContext* browser_context;
 };
 
