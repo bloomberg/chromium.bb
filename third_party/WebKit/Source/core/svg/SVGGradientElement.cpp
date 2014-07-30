@@ -71,24 +71,7 @@ bool SVGGradientElement::isSupportedAttribute(const QualifiedName& attrName)
 
 void SVGGradientElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (!isSupportedAttribute(name)) {
-        SVGElement::parseAttribute(name, value);
-        return;
-    }
-
-    SVGParsingError parseError = NoError;
-
-    if (name == SVGNames::gradientTransformAttr)
-        m_gradientTransform->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::gradientUnitsAttr)
-        m_gradientUnits->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::spreadMethodAttr)
-        m_spreadMethod->setBaseValueAsString(value, parseError);
-    else if (SVGURIReference::parseAttribute(name, value, parseError)) {
-    } else
-        ASSERT_NOT_REACHED();
-
-    reportAttributeParsingError(parseError, name, value);
+    parseAttributeNew(name, value);
 }
 
 void SVGGradientElement::svgAttributeChanged(const QualifiedName& attrName)

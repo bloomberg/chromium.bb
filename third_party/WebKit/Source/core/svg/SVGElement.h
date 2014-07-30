@@ -197,7 +197,7 @@ protected:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
 
     // FIXME: |parseAttributeNew| is a new implementation of parseAttribute
-    // which maps attribute using |m_newAttributeToPropertyMap|.
+    // which maps attribute using |m_attributeToPropertyMap|.
     // This is to replace |parseAttribute()| after all derived class switch to call this.
     void parseAttributeNew(const QualifiedName&, const AtomicString&);
 
@@ -246,7 +246,7 @@ private:
     WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > m_elementsWithRelativeLengths;
 
     typedef HashMap<QualifiedName, RefPtr<SVGAnimatedPropertyBase> > AttributeToPropertyMap;
-    AttributeToPropertyMap m_newAttributeToPropertyMap;
+    AttributeToPropertyMap m_attributeToPropertyMap;
 
 #if ENABLE(ASSERT)
     bool m_inRelativeLengthClientsInvalidation;
