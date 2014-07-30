@@ -16,8 +16,28 @@
 
 namespace extensions {
 
+namespace {
+
+// The range of command IDs reserved for extension's custom menus.
+// TODO(oshima): These values will be injected by embedders.
+int extensions_context_custom_first = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST;
+int extensions_context_custom_last = IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST;
+
+}  // namespace
+
 // static
 const size_t ContextMenuMatcher::kMaxExtensionItemTitleLength = 75;
+
+// static
+int ContextMenuMatcher::ConvertToExtensionsCustomCommandId(int id) {
+  return extensions_context_custom_first + id;
+}
+
+// static
+bool ContextMenuMatcher::IsExtensionsCustomCommandId(int id) {
+  return id >= extensions_context_custom_first &&
+         id <= extensions_context_custom_last;
+}
 
 ContextMenuMatcher::ContextMenuMatcher(
     content::BrowserContext* browser_context,
@@ -36,7 +56,7 @@ void ContextMenuMatcher::AppendExtensionItems(
     int* index) {
   DCHECK_GE(*index, 0);
   int max_index =
-      IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST - IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST;
+      extensions_context_custom_last - extensions_context_custom_first;
   if (*index >= max_index)
     return;
 
@@ -63,7 +83,8 @@ void ContextMenuMatcher::AppendExtensionItems(
     RecursivelyAppendExtensionItems(items, can_cross_incognito, selection_text,
                                     menu_model_, index);
   } else {
-    int menu_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + (*index)++;
+    int menu_id = ConvertToExtensionsCustomCommandId(*index);
+    (*index)++;
     base::string16 title;
     MenuItem::List submenu_items;
 
@@ -211,8 +232,9 @@ void ContextMenuMatcher::RecursivelyAppendExtensionItems(
       last_type = MenuItem::SEPARATOR;
     }
 
-    int menu_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + (*index)++;
-    if (menu_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST)
+    int menu_id = ConvertToExtensionsCustomCommandId(*index);
+    (*index)++;
+    if (menu_id >= extensions_context_custom_last)
       return;
     extension_item_map_[menu_id] = item->id();
     base::string16 title = item->TitleWithReplacement(selection_text,

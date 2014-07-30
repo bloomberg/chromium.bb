@@ -255,11 +255,11 @@
 #define IDC_PROFILE_MAIN_MENU           46100     // OSX only
 #define IDC_INPUT_METHODS_MENU          46300     // Linux only
 
-// Custom context menu entries
+// The range of command ids reserved for context menus added by web content.
 #define IDC_CONTENT_CONTEXT_CUSTOM_FIRST 47000
 #define IDC_CONTENT_CONTEXT_CUSTOM_LAST  48000
 
-// Context menu items added by extensions.
+// The range of command ids reserved for context menus added by extensions.
 #define IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST 49000
 #define IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST 50000
 

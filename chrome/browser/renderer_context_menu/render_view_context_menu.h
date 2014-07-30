@@ -51,6 +51,13 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
  public:
   static const size_t kMaxSelectionTextLength;
 
+  // Convert a command ID so that it fits within the range for
+  // content context menu.
+  static int ConvertToContentCustomCommandId(int id);
+
+  // True if the given id is the one generated for content context menu.
+  static bool IsContentCustomCommandId(int id);
+
   RenderViewContextMenu(content::RenderFrameHost* render_frame_host,
                         const content::ContextMenuParams& params);
 

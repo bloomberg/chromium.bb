@@ -246,8 +246,10 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
   scoped_ptr<PlatformAppContextMenu> menu;
   menu.reset(new PlatformAppContextMenu(web_contents->GetMainFrame(), params));
   menu->Init();
-  ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST));
-  ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + 1));
+  int first_extensions_command_id =
+      ContextMenuMatcher::ConvertToExtensionsCustomCommandId(0);
+  ASSERT_TRUE(menu->HasCommandWithId(first_extensions_command_id));
+  ASSERT_TRUE(menu->HasCommandWithId(first_extensions_command_id + 1));
   ASSERT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
   ASSERT_TRUE(
       menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE));
@@ -273,8 +275,10 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, InstalledAppWithContextMenu) {
   scoped_ptr<PlatformAppContextMenu> menu;
   menu.reset(new PlatformAppContextMenu(web_contents->GetMainFrame(), params));
   menu->Init();
-  ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST));
-  ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + 1));
+  int extensions_custom_id =
+      ContextMenuMatcher::ConvertToExtensionsCustomCommandId(0);
+  ASSERT_TRUE(menu->HasCommandWithId(extensions_custom_id));
+  ASSERT_TRUE(menu->HasCommandWithId(extensions_custom_id + 1));
   ASSERT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
   ASSERT_FALSE(
       menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE));
@@ -296,7 +300,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuTextField) {
   scoped_ptr<PlatformAppContextMenu> menu;
   menu.reset(new PlatformAppContextMenu(web_contents->GetMainFrame(), params));
   menu->Init();
-  ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST));
+  int extensions_custom_id =
+      ContextMenuMatcher::ConvertToExtensionsCustomCommandId(0);
+  ASSERT_TRUE(menu->HasCommandWithId(extensions_custom_id));
   ASSERT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
   ASSERT_TRUE(
       menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE));
@@ -319,7 +325,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuSelection) {
   scoped_ptr<PlatformAppContextMenu> menu;
   menu.reset(new PlatformAppContextMenu(web_contents->GetMainFrame(), params));
   menu->Init();
-  ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST));
+  int extensions_custom_id =
+      ContextMenuMatcher::ConvertToExtensionsCustomCommandId(0);
+  ASSERT_TRUE(menu->HasCommandWithId(extensions_custom_id));
   ASSERT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
   ASSERT_TRUE(
       menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE));
@@ -341,12 +349,14 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuClicked) {
   scoped_ptr<PlatformAppContextMenu> menu;
   menu.reset(new PlatformAppContextMenu(web_contents->GetMainFrame(), params));
   menu->Init();
-  ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST));
+  int extensions_custom_id =
+      ContextMenuMatcher::ConvertToExtensionsCustomCommandId(0);
+  ASSERT_TRUE(menu->HasCommandWithId(extensions_custom_id));
 
   // Execute the menu item
   ExtensionTestMessageListener onclicked_listener("onClicked fired for id1",
                                                   false);
-  menu->ExecuteCommand(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST, 0);
+  menu->ExecuteCommand(extensions_custom_id, 0);
 
   ASSERT_TRUE(onclicked_listener.WaitUntilSatisfied());
 }

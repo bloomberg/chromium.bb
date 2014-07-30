@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/lazy_background_page_test_util.h"
@@ -22,6 +21,7 @@
 #include "ui/base/models/menu_model.h"
 
 using content::WebContents;
+using extensions::ContextMenuMatcher;
 using extensions::MenuItem;
 using ui::MenuModel;
 
@@ -132,7 +132,7 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
             GetWebContents(), page_url, GURL(), GURL()));
 
     // Look for the extension item in the menu, and make sure it's |enabled|.
-    int command_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST;
+    int command_id = ContextMenuMatcher::ConvertToExtensionsCustomCommandId(0);
     ASSERT_EQ(enabled, menu->IsCommandIdEnabled(command_id));
 
     // Update the item and make sure it is now |!enabled|.
@@ -207,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Simple) {
       GetWebContents(), page_url, GURL(), GURL()));
 
   // Look for the extension item in the menu, and execute it.
-  int command_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST;
+  int command_id = ContextMenuMatcher::ConvertToExtensionsCustomCommandId(0);
   ASSERT_TRUE(menu->IsCommandIdEnabled(command_id));
   menu->ExecuteCommand(command_id, 0);
 
@@ -326,7 +326,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, MAYBE_TopLevel) {
   MenuModel* model = NULL;
 
   ASSERT_TRUE(menu->GetMenuModelAndItemIndex(
-      IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST, &model, &index));
+      ContextMenuMatcher::ConvertToExtensionsCustomCommandId(0),
+      &model,
+      &index));
   EXPECT_EQ(base::UTF8ToUTF16("An Extension with multiple Context Menus"),
                               model->GetLabelAt(index++));
   EXPECT_EQ(base::UTF8ToUTF16("Context Menu #1 - Extension #2"),
@@ -411,7 +413,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Separators) {
   int index = 0;
   base::string16 label;
   ASSERT_TRUE(menu->GetMenuModelAndItemIndex(
-      IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST, &model, &index));
+      ContextMenuMatcher::ConvertToExtensionsCustomCommandId(0),
+      &model,
+      &index));
   EXPECT_EQ(base::UTF8ToUTF16(extension->name()), model->GetLabelAt(index));
   ASSERT_EQ(MenuModel::TYPE_SUBMENU, model->GetTypeAt(index));
 
@@ -429,7 +433,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Separators) {
   menu.reset(
       TestRenderViewContextMenu::Create(GetWebContents(), url, GURL(), GURL()));
   ASSERT_TRUE(menu->GetMenuModelAndItemIndex(
-      IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST, &model, &index));
+      ContextMenuMatcher::ConvertToExtensionsCustomCommandId(0),
+      &model,
+      &index));
   EXPECT_EQ(base::UTF8ToUTF16("parent"), model->GetLabelAt(index));
   submenu = model->GetSubmenuModelAt(index);
   ASSERT_TRUE(submenu != NULL);
@@ -501,7 +507,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, MAYBE_IncognitoSplit) {
           incognito_web_contents, page_url, GURL(), GURL()));
 
   // Look for the extension item in the menu, and execute it.
-  int command_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST;
+  int command_id = ContextMenuMatcher::ConvertToExtensionsCustomCommandId(0);
   ASSERT_TRUE(menu->IsCommandIdEnabled(command_id));
   menu->ExecuteCommand(command_id, 0);
 

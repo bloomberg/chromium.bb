@@ -131,6 +131,7 @@ using content::RenderFrameHost;
 using content::RenderViewHost;
 using content::SSLStatus;
 using content::WebContents;
+using extensions::ContextMenuMatcher;
 using extensions::Extension;
 using extensions::MenuItem;
 using extensions::MenuManager;
@@ -141,6 +142,11 @@ const int kImageSearchThumbnailMinSize = 300 * 300;
 const int kImageSearchThumbnailMaxWidth = 600;
 const int kImageSearchThumbnailMaxHeight = 600;
 
+// The range of command IDs reserved for content's custom menus.
+// TODO(oshima): These values will be injected by embedders.
+const int content_context_custom_first = IDC_CONTENT_CONTEXT_CUSTOM_FIRST;
+const int content_context_custom_last = IDC_CONTENT_CONTEXT_CUSTOM_LAST;
+
 // Maps UMA enumeration to IDC. IDC could be changed so we can't use
 // just them and |UMA_HISTOGRAM_CUSTOM_ENUMERATION|.
 // Never change mapping or reuse |enum_id|. Always push back new items.
@@ -150,79 +156,75 @@ const struct UmaEnumCommandIdPair {
   int enum_id;
   int control_id;
 } kUmaEnumToControlId[] = {
-  {  0, IDC_CONTENT_CONTEXT_CUSTOM_FIRST },
-  {  1, IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST },
-  {  2, IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST },
-  {  3, IDC_CONTENT_CONTEXT_OPENLINKNEWTAB },
-  {  4, IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW },
-  {  5, IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD },
-  {  6, IDC_CONTENT_CONTEXT_SAVELINKAS },
-  {  7, IDC_CONTENT_CONTEXT_SAVEAVAS },
-  {  8, IDC_CONTENT_CONTEXT_SAVEIMAGEAS },
-  {  9, IDC_CONTENT_CONTEXT_COPYLINKLOCATION },
-  { 10, IDC_CONTENT_CONTEXT_COPYIMAGELOCATION },
-  { 11, IDC_CONTENT_CONTEXT_COPYAVLOCATION },
-  { 12, IDC_CONTENT_CONTEXT_COPYIMAGE },
-  { 13, IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB },
-  { 14, IDC_CONTENT_CONTEXT_OPENAVNEWTAB },
-  { 15, IDC_CONTENT_CONTEXT_PLAYPAUSE },
-  { 16, IDC_CONTENT_CONTEXT_MUTE },
-  { 17, IDC_CONTENT_CONTEXT_LOOP },
-  { 18, IDC_CONTENT_CONTEXT_CONTROLS },
-  { 19, IDC_CONTENT_CONTEXT_ROTATECW },
-  { 20, IDC_CONTENT_CONTEXT_ROTATECCW },
-  { 21, IDC_BACK },
-  { 22, IDC_FORWARD },
-  { 23, IDC_SAVE_PAGE },
-  { 24, IDC_RELOAD },
-  { 25, IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP },
-  { 26, IDC_CONTENT_CONTEXT_RESTART_PACKAGED_APP },
-  { 27, IDC_PRINT },
-  { 28, IDC_VIEW_SOURCE },
-  { 29, IDC_CONTENT_CONTEXT_INSPECTELEMENT },
-  { 30, IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE },
-  { 31, IDC_CONTENT_CONTEXT_VIEWPAGEINFO },
-  { 32, IDC_CONTENT_CONTEXT_TRANSLATE },
-  { 33, IDC_CONTENT_CONTEXT_RELOADFRAME },
-  { 34, IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE },
-  { 35, IDC_CONTENT_CONTEXT_VIEWFRAMEINFO },
-  { 36, IDC_CONTENT_CONTEXT_UNDO },
-  { 37, IDC_CONTENT_CONTEXT_REDO },
-  { 38, IDC_CONTENT_CONTEXT_CUT },
-  { 39, IDC_CONTENT_CONTEXT_COPY },
-  { 40, IDC_CONTENT_CONTEXT_PASTE },
-  { 41, IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE },
-  { 42, IDC_CONTENT_CONTEXT_DELETE },
-  { 43, IDC_CONTENT_CONTEXT_SELECTALL },
-  { 44, IDC_CONTENT_CONTEXT_SEARCHWEBFOR },
-  { 45, IDC_CONTENT_CONTEXT_GOTOURL },
-  { 46, IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS },
-  { 47, IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS },
-  { 48, IDC_CONTENT_CONTEXT_ADDSEARCHENGINE },
-  { 52, IDC_CONTENT_CONTEXT_OPENLINKWITH },
-  { 53, IDC_CHECK_SPELLING_WHILE_TYPING },
-  { 54, IDC_SPELLCHECK_MENU },
-  { 55, IDC_CONTENT_CONTEXT_SPELLING_TOGGLE },
-  { 56, IDC_SPELLCHECK_LANGUAGES_FIRST },
-  { 57, IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE },
-  { 58, IDC_SPELLCHECK_SUGGESTION_0 },
-  { 59, IDC_SPELLCHECK_ADD_TO_DICTIONARY },
-  { 60, IDC_SPELLPANEL_TOGGLE },
-  // Add new items here and use |enum_id| from the next line.
-  { 61, 0 },  // Must be the last. Increment |enum_id| when new IDC was added.
+      /*
+        enum id for 0, 1 are detected using
+        RenderViewContextMenu::IsContentCustomCommandId and
+        ContextMenuMatcher::IsExtensionsCustomCommandId
+      */
+      {2, IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST},
+      {3, IDC_CONTENT_CONTEXT_OPENLINKNEWTAB},
+      {4, IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW},
+      {5, IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD},
+      {6, IDC_CONTENT_CONTEXT_SAVELINKAS},
+      {7, IDC_CONTENT_CONTEXT_SAVEAVAS},
+      {8, IDC_CONTENT_CONTEXT_SAVEIMAGEAS},
+      {9, IDC_CONTENT_CONTEXT_COPYLINKLOCATION},
+      {10, IDC_CONTENT_CONTEXT_COPYIMAGELOCATION},
+      {11, IDC_CONTENT_CONTEXT_COPYAVLOCATION},
+      {12, IDC_CONTENT_CONTEXT_COPYIMAGE},
+      {13, IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB},
+      {14, IDC_CONTENT_CONTEXT_OPENAVNEWTAB},
+      {15, IDC_CONTENT_CONTEXT_PLAYPAUSE},
+      {16, IDC_CONTENT_CONTEXT_MUTE},
+      {17, IDC_CONTENT_CONTEXT_LOOP},
+      {18, IDC_CONTENT_CONTEXT_CONTROLS},
+      {19, IDC_CONTENT_CONTEXT_ROTATECW},
+      {20, IDC_CONTENT_CONTEXT_ROTATECCW},
+      {21, IDC_BACK},
+      {22, IDC_FORWARD},
+      {23, IDC_SAVE_PAGE},
+      {24, IDC_RELOAD},
+      {25, IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP},
+      {26, IDC_CONTENT_CONTEXT_RESTART_PACKAGED_APP},
+      {27, IDC_PRINT},
+      {28, IDC_VIEW_SOURCE},
+      {29, IDC_CONTENT_CONTEXT_INSPECTELEMENT},
+      {30, IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE},
+      {31, IDC_CONTENT_CONTEXT_VIEWPAGEINFO},
+      {32, IDC_CONTENT_CONTEXT_TRANSLATE},
+      {33, IDC_CONTENT_CONTEXT_RELOADFRAME},
+      {34, IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE},
+      {35, IDC_CONTENT_CONTEXT_VIEWFRAMEINFO},
+      {36, IDC_CONTENT_CONTEXT_UNDO},
+      {37, IDC_CONTENT_CONTEXT_REDO},
+      {38, IDC_CONTENT_CONTEXT_CUT},
+      {39, IDC_CONTENT_CONTEXT_COPY},
+      {40, IDC_CONTENT_CONTEXT_PASTE},
+      {41, IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE},
+      {42, IDC_CONTENT_CONTEXT_DELETE},
+      {43, IDC_CONTENT_CONTEXT_SELECTALL},
+      {44, IDC_CONTENT_CONTEXT_SEARCHWEBFOR},
+      {45, IDC_CONTENT_CONTEXT_GOTOURL},
+      {46, IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS},
+      {47, IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS},
+      {48, IDC_CONTENT_CONTEXT_ADDSEARCHENGINE},
+      {52, IDC_CONTENT_CONTEXT_OPENLINKWITH},
+      {53, IDC_CHECK_SPELLING_WHILE_TYPING},
+      {54, IDC_SPELLCHECK_MENU},
+      {55, IDC_CONTENT_CONTEXT_SPELLING_TOGGLE},
+      {56, IDC_SPELLCHECK_LANGUAGES_FIRST},
+      {57, IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE},
+      {58, IDC_SPELLCHECK_SUGGESTION_0},
+      {59, IDC_SPELLCHECK_ADD_TO_DICTIONARY},
+      {60, IDC_SPELLPANEL_TOGGLE},
+      // Add new items here and use |enum_id| from the next line.
+      {61, 0},  // Must be the last. Increment |enum_id| when new IDC was added.
 };
 
 // Collapses large ranges of ids before looking for UMA enum.
 int CollapseCommandsForUMA(int id) {
-  if (id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
-      id <= IDC_CONTENT_CONTEXT_CUSTOM_LAST) {
-    return IDC_CONTENT_CONTEXT_CUSTOM_FIRST;
-  }
-
-  if (id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
-      id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
-    return IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST;
-  }
+  DCHECK(!RenderViewContextMenu::IsContentCustomCommandId(id));
+  DCHECK(!ContextMenuMatcher::IsExtensionsCustomCommandId(id));
 
   if (id >= IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST &&
       id <= IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_LAST) {
@@ -244,6 +246,12 @@ int CollapseCommandsForUMA(int id) {
 
 // Returns UMA enum value for command specified by |id| or -1 if not found.
 int FindUMAEnumValueForCommand(int id) {
+  if (RenderViewContextMenu::IsContentCustomCommandId(id))
+    return 0;
+
+  if (ContextMenuMatcher::IsExtensionsCustomCommandId(id))
+    return 1;
+
   id = CollapseCommandsForUMA(id);
   const size_t kMappingSize = arraysize(kUmaEnumToControlId);
   for (size_t i = 0; i < kMappingSize; ++i) {
@@ -291,10 +299,10 @@ WindowOpenDisposition ForceNewTabDispositionFromEventFlags(
 }
 
 bool IsCustomItemEnabled(const std::vector<content::MenuItem>& items, int id) {
-  DCHECK(id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
-         id <= IDC_CONTENT_CONTEXT_CUSTOM_LAST);
+  DCHECK(RenderViewContextMenu::IsContentCustomCommandId(id));
   for (size_t i = 0; i < items.size(); ++i) {
-    int action_id = IDC_CONTENT_CONTEXT_CUSTOM_FIRST + items[i].action;
+    int action_id =
+        RenderViewContextMenu::ConvertToContentCustomCommandId(items[i].action);
     if (action_id == id)
       return items[i].enabled;
     if (items[i].type == content::MenuItem::SUBMENU) {
@@ -306,10 +314,10 @@ bool IsCustomItemEnabled(const std::vector<content::MenuItem>& items, int id) {
 }
 
 bool IsCustomItemChecked(const std::vector<content::MenuItem>& items, int id) {
-  DCHECK(id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
-         id <= IDC_CONTENT_CONTEXT_CUSTOM_LAST);
+  DCHECK(RenderViewContextMenu::IsContentCustomCommandId(id));
   for (size_t i = 0; i < items.size(); ++i) {
-    int action_id = IDC_CONTENT_CONTEXT_CUSTOM_FIRST + items[i].action;
+    int action_id =
+        RenderViewContextMenu::ConvertToContentCustomCommandId(items[i].action);
     if (action_id == id)
       return items[i].checked;
     if (items[i].type == content::MenuItem::SUBMENU) {
@@ -333,9 +341,10 @@ void AddCustomItemsToMenu(const std::vector<content::MenuItem>& items,
     return;
   }
   for (size_t i = 0; i < items.size(); ++i) {
-    if (IDC_CONTENT_CONTEXT_CUSTOM_FIRST + items[i].action >=
-        IDC_CONTENT_CONTEXT_CUSTOM_LAST) {
-      LOG(ERROR) << "Custom menu action value too big.";
+    int command_id =
+        RenderViewContextMenu::ConvertToContentCustomCommandId(items[i].action);
+    if (!RenderViewContextMenu::IsContentCustomCommandId(command_id)) {
+      LOG(ERROR) << "Custom menu action value out of range.";
       return;
     }
     if (*total_items >= kMaxCustomMenuTotalItems) {
@@ -346,12 +355,14 @@ void AddCustomItemsToMenu(const std::vector<content::MenuItem>& items,
     switch (items[i].type) {
       case content::MenuItem::OPTION:
         menu_model->AddItem(
-            items[i].action + IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
+            RenderViewContextMenu::ConvertToContentCustomCommandId(
+                items[i].action),
             items[i].label);
         break;
       case content::MenuItem::CHECKABLE_OPTION:
         menu_model->AddCheckItem(
-            items[i].action + IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
+            RenderViewContextMenu::ConvertToContentCustomCommandId(
+                items[i].action),
             items[i].label);
         break;
       case content::MenuItem::GROUP:
@@ -366,7 +377,8 @@ void AddCustomItemsToMenu(const std::vector<content::MenuItem>& items,
         AddCustomItemsToMenu(items[i].submenu, depth + 1, total_items, delegate,
                              submenu);
         menu_model->AddSubMenu(
-            items[i].action + IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
+            RenderViewContextMenu::ConvertToContentCustomCommandId(
+                items[i].action),
             items[i].label,
             submenu);
         break;
@@ -393,6 +405,17 @@ PrefService* GetPrefs(content::BrowserContext* context) {
 
 // static
 const size_t RenderViewContextMenu::kMaxSelectionTextLength = 50;
+
+// static
+int RenderViewContextMenu::ConvertToContentCustomCommandId(int id) {
+  return content_context_custom_first + id;
+}
+
+// static
+bool RenderViewContextMenu::IsContentCustomCommandId(int id) {
+  return id >= content_context_custom_first &&
+         id <= content_context_custom_last;
+}
 
 // static
 bool RenderViewContextMenu::IsDevToolsURL(const GURL& url) {
@@ -1134,16 +1157,12 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
   }
 
   // Custom items.
-  if (id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
-      id <= IDC_CONTENT_CONTEXT_CUSTOM_LAST) {
+  if (IsContentCustomCommandId(id))
     return IsCustomItemEnabled(params_.custom_items, id);
-  }
 
   // Extension items.
-  if (id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
-      id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
+  if (ContextMenuMatcher::IsExtensionsCustomCommandId(id))
     return extension_items_.IsCommandIdEnabled(id);
-  }
 
   if (id >= IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST &&
       id <= IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_LAST) {
@@ -1424,16 +1443,12 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
   }
 
   // Custom items.
-  if (id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
-      id <= IDC_CONTENT_CONTEXT_CUSTOM_LAST) {
+  if (IsContentCustomCommandId(id))
     return IsCustomItemChecked(params_.custom_items, id);
-  }
 
   // Extension items.
-  if (id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
-      id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
+  if (ContextMenuMatcher::IsExtensionsCustomCommandId(id))
     return extension_items_.IsCommandIdChecked(id);
-  }
 
   return false;
 }
@@ -1455,9 +1470,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       RenderFrameHost::FromID(render_process_id_, render_frame_id_);
 
   // Process custom actions range.
-  if (id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
-      id <= IDC_CONTENT_CONTEXT_CUSTOM_LAST) {
-    unsigned action = id - IDC_CONTENT_CONTEXT_CUSTOM_FIRST;
+  if (IsContentCustomCommandId(id)) {
+    unsigned action = id - content_context_custom_first;
     const content::CustomContextMenuContext& context = params_.custom_context;
 #if defined(ENABLE_PLUGINS)
     if (context.request_id && !context.is_pepper_menu) {
@@ -1470,8 +1484,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
   }
 
   // Process extension menu items.
-  if (id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
-      id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
+  if (ContextMenuMatcher::IsExtensionsCustomCommandId(id)) {
     extension_items_.ExecuteCommand(id, source_web_contents_, params_);
     return;
   }

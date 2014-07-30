@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -207,8 +206,8 @@ bool AppContextMenu::IsCommandIdChecked(int command_id) const {
       command_id < USE_LAUNCH_TYPE_COMMAND_END) {
     return static_cast<int>(controller_->GetExtensionLaunchType(
         profile_, app_id_)) + USE_LAUNCH_TYPE_COMMAND_START == command_id;
-  } else if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
-             command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
+  } else if (extensions::ContextMenuMatcher::IsExtensionsCustomCommandId(
+                 command_id)) {
     return extension_menu_items_->IsCommandIdChecked(command_id);
   }
   return false;
@@ -222,8 +221,8 @@ bool AppContextMenu::IsCommandIdEnabled(int command_id) const {
     return controller_->HasOptionsPage(profile_, app_id_);
   } else if (command_id == UNINSTALL) {
     return controller_->UserMayModifySettings(profile_, app_id_);
-  } else if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
-             command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
+  } else if (extensions::ContextMenuMatcher::IsExtensionsCustomCommandId(
+                 command_id)) {
     return extension_menu_items_->IsCommandIdEnabled(command_id);
   } else if (command_id == MENU_NEW_WINDOW) {
     // "Normal" windows are not allowed when incognito is enforced.
@@ -274,8 +273,8 @@ void AppContextMenu::ExecuteCommand(int command_id, int event_flags) {
     controller_->ShowOptionsPage(profile_, app_id_);
   } else if (command_id == UNINSTALL) {
     controller_->UninstallApp(profile_, app_id_);
-  } else if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
-             command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
+  } else if (extensions::ContextMenuMatcher::IsExtensionsCustomCommandId(
+                 command_id)) {
     extension_menu_items_->ExecuteCommand(command_id, NULL,
                                           content::ContextMenuParams());
   } else if (command_id == MENU_NEW_WINDOW) {

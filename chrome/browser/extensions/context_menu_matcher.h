@@ -27,6 +27,13 @@ class ContextMenuMatcher {
  public:
   static const size_t kMaxExtensionItemTitleLength;
 
+  // Convert a command ID so that it fits within the range for
+  // extension context menu.
+  static int ConvertToExtensionsCustomCommandId(int id);
+
+  // Returns true if the given id is one generated for extension context menu.
+  static bool IsExtensionsCustomCommandId(int id);
+
   // The |filter| will be called on possibly matching menu items, and its
   // result is used to determine which items to actually append to the menu.
   ContextMenuMatcher(content::BrowserContext* context,
