@@ -192,9 +192,9 @@ TEST_F(NewWebSocketChannelImplTest, sendText)
     handleClient()->didReceiveFlowControl(handle(), 16);
     EXPECT_CALL(*channelClient(), didConsumeBufferedAmount(_)).Times(AnyNumber());
 
-    EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send("foo"));
-    EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send("bar"));
-    EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send("baz"));
+    channel()->send("foo");
+    channel()->send("bar");
+    channel()->send("baz");
 
     EXPECT_EQ(9ul, m_sumOfConsumedBufferedAmount);
 }
@@ -219,9 +219,9 @@ TEST_F(NewWebSocketChannelImplTest, sendTextContinuation)
     handleClient()->didReceiveFlowControl(handle(), 16);
     EXPECT_CALL(*channelClient(), didConsumeBufferedAmount(_)).Times(AnyNumber());
 
-    EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send("0123456789abcdefg"));
-    EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send("hijk"));
-    EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send("lmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"));
+    channel()->send("0123456789abcdefg");
+    channel()->send("hijk");
+    channel()->send("lmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
     checkpoint.Call(1);
     handleClient()->didReceiveFlowControl(handle(), 16);
     checkpoint.Call(2);
@@ -248,7 +248,7 @@ TEST_F(NewWebSocketChannelImplTest, sendTextNonLatin1)
         0x0914,
         0x0000
     };
-    EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send(nonLatin1String));
+    channel()->send(nonLatin1String);
 
     EXPECT_EQ(6ul, m_sumOfConsumedBufferedAmount);
 }
@@ -276,7 +276,7 @@ TEST_F(NewWebSocketChannelImplTest, sendTextNonLatin1Continuation)
         0x0914,
         0x0000
     };
-    EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send(nonLatin1String));
+    channel()->send(nonLatin1String);
     checkpoint.Call(1);
     handleClient()->didReceiveFlowControl(handle(), 16);
 
@@ -296,7 +296,7 @@ TEST_F(NewWebSocketChannelImplTest, sendBinaryInVector)
 
     Vector<char> fooVector;
     fooVector.append("foo", 3);
-    EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send(adoptPtr(new Vector<char>(fooVector))));
+    channel()->send(adoptPtr(new Vector<char>(fooVector)));
 
     EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
 }
@@ -318,22 +318,22 @@ TEST_F(NewWebSocketChannelImplTest, sendBinaryInVectorWithNullBytes)
     {
         Vector<char> v;
         v.append("\0ar", 3);
-        EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send(adoptPtr(new Vector<char>(v))));
+        channel()->send(adoptPtr(new Vector<char>(v)));
     }
     {
         Vector<char> v;
         v.append("b\0z", 3);
-        EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send(adoptPtr(new Vector<char>(v))));
+        channel()->send(adoptPtr(new Vector<char>(v)));
     }
     {
         Vector<char> v;
         v.append("qu\0", 3);
-        EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send(adoptPtr(new Vector<char>(v))));
+        channel()->send(adoptPtr(new Vector<char>(v)));
     }
     {
         Vector<char> v;
         v.append("\0\0\0", 3);
-        EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send(adoptPtr(new Vector<char>(v))));
+        channel()->send(adoptPtr(new Vector<char>(v)));
     }
 
     EXPECT_EQ(12ul, m_sumOfConsumedBufferedAmount);
@@ -349,7 +349,7 @@ TEST_F(NewWebSocketChannelImplTest, sendBinaryInVectorNonLatin1UTF8)
 
     Vector<char> v;
     v.append("\xe7\x8b\x90", 3);
-    EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send(adoptPtr(new Vector<char>(v))));
+    channel()->send(adoptPtr(new Vector<char>(v)));
 
     EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
 }
@@ -364,7 +364,7 @@ TEST_F(NewWebSocketChannelImplTest, sendBinaryInVectorNonUTF8)
 
     Vector<char> v;
     v.append("\x80\xff\xe7", 3);
-    EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send(adoptPtr(new Vector<char>(v))));
+    channel()->send(adoptPtr(new Vector<char>(v)));
 
     EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
 }
@@ -385,7 +385,7 @@ TEST_F(NewWebSocketChannelImplTest, sendBinaryInVectorNonLatin1UTF8Continuation)
 
     Vector<char> v;
     v.append("\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90", 18);
-    EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send(adoptPtr(new Vector<char>(v))));
+    channel()->send(adoptPtr(new Vector<char>(v)));
     checkpoint.Call(1);
 
     handleClient()->didReceiveFlowControl(handle(), 16);
@@ -405,7 +405,7 @@ TEST_F(NewWebSocketChannelImplTest, sendBinaryInArrayBuffer)
     EXPECT_CALL(*channelClient(), didConsumeBufferedAmount(_)).Times(AnyNumber());
 
     RefPtr<ArrayBuffer> fooBuffer = ArrayBuffer::create("foo", 3);
-    EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send(*fooBuffer, 0, 3));
+    channel()->send(*fooBuffer, 0, 3);
 
     EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
 }
@@ -426,10 +426,10 @@ TEST_F(NewWebSocketChannelImplTest, sendBinaryInArrayBufferPartial)
 
     RefPtr<ArrayBuffer> foobarBuffer = ArrayBuffer::create("foobar", 6);
     RefPtr<ArrayBuffer> qbazuxBuffer = ArrayBuffer::create("qbazux", 6);
-    EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send(*foobarBuffer, 0, 3));
-    EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send(*foobarBuffer, 3, 3));
-    EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send(*qbazuxBuffer, 1, 3));
-    EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send(*qbazuxBuffer, 2, 1));
+    channel()->send(*foobarBuffer, 0, 3);
+    channel()->send(*foobarBuffer, 3, 3);
+    channel()->send(*qbazuxBuffer, 1, 3);
+    channel()->send(*qbazuxBuffer, 2, 1);
 
     EXPECT_EQ(10ul, m_sumOfConsumedBufferedAmount);
 }
@@ -450,19 +450,19 @@ TEST_F(NewWebSocketChannelImplTest, sendBinaryInArrayBufferWithNullBytes)
 
     {
         RefPtr<ArrayBuffer> b = ArrayBuffer::create("\0ar", 3);
-        EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send(*b, 0, 3));
+        channel()->send(*b, 0, 3);
     }
     {
         RefPtr<ArrayBuffer> b = ArrayBuffer::create("b\0z", 3);
-        EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send(*b, 0, 3));
+        channel()->send(*b, 0, 3);
     }
     {
         RefPtr<ArrayBuffer> b = ArrayBuffer::create("qu\0", 3);
-        EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send(*b, 0, 3));
+        channel()->send(*b, 0, 3);
     }
     {
         RefPtr<ArrayBuffer> b = ArrayBuffer::create("\0\0\0", 3);
-        EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send(*b, 0, 3));
+        channel()->send(*b, 0, 3);
     }
 
     EXPECT_EQ(12ul, m_sumOfConsumedBufferedAmount);
@@ -477,7 +477,7 @@ TEST_F(NewWebSocketChannelImplTest, sendBinaryInArrayBufferNonLatin1UTF8)
     EXPECT_CALL(*channelClient(), didConsumeBufferedAmount(_)).Times(AnyNumber());
 
     RefPtr<ArrayBuffer> b = ArrayBuffer::create("\xe7\x8b\x90", 3);
-    EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send(*b, 0, 3));
+    channel()->send(*b, 0, 3);
 
     EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
 }
@@ -491,7 +491,7 @@ TEST_F(NewWebSocketChannelImplTest, sendBinaryInArrayBufferNonUTF8)
     EXPECT_CALL(*channelClient(), didConsumeBufferedAmount(_)).Times(AnyNumber());
 
     RefPtr<ArrayBuffer> b = ArrayBuffer::create("\x80\xff\xe7", 3);
-    EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send(*b, 0, 3));
+    channel()->send(*b, 0, 3);
 
     EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
 }
@@ -511,7 +511,7 @@ TEST_F(NewWebSocketChannelImplTest, sendBinaryInArrayBufferNonLatin1UTF8Continua
     EXPECT_CALL(*channelClient(), didConsumeBufferedAmount(_)).Times(AnyNumber());
 
     RefPtr<ArrayBuffer> b = ArrayBuffer::create("\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90", 18);
-    EXPECT_EQ(WebSocketChannel::SendSuccess, channel()->send(*b, 0, 18));
+    channel()->send(*b, 0, 18);
     checkpoint.Call(1);
 
     handleClient()->didReceiveFlowControl(handle(), 16);

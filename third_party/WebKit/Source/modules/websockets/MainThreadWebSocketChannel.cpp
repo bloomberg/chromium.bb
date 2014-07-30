@@ -122,40 +122,33 @@ bool MainThreadWebSocketChannel::connect(const KURL& url, const String& protocol
     return true;
 }
 
-WebSocketChannel::SendResult MainThreadWebSocketChannel::send(const String& message)
+void MainThreadWebSocketChannel::send(const String& message)
 {
     WTF_LOG(Network, "MainThreadWebSocketChannel %p send() Sending String '%s'", this, message.utf8().data());
     CString utf8 = message.utf8(StrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD);
     enqueueTextFrame(utf8);
     processOutgoingFrameQueue();
-    // m_channel->send() may happen later, thus it's not always possible to know whether
-    // the message has been sent to the socket successfully. In this case, we have no choice
-    // but to return SendSuccess.
-    return WebSocketChannel::SendSuccess;
 }
 
-WebSocketChannel::SendResult MainThreadWebSocketChannel::send(const ArrayBuffer& binaryData, unsigned byteOffset, unsigned byteLength)
+void MainThreadWebSocketChannel::send(const ArrayBuffer& binaryData, unsigned byteOffset, unsigned byteLength)
 {
     WTF_LOG(Network, "MainThreadWebSocketChannel %p send() Sending ArrayBuffer %p byteOffset=%u byteLength=%u", this, &binaryData, byteOffset, byteLength);
     enqueueRawFrame(WebSocketFrame::OpCodeBinary, static_cast<const char*>(binaryData.data()) + byteOffset, byteLength);
     processOutgoingFrameQueue();
-    return WebSocketChannel::SendSuccess;
 }
 
-WebSocketChannel::SendResult MainThreadWebSocketChannel::send(PassRefPtr<BlobDataHandle> binaryData)
+void MainThreadWebSocketChannel::send(PassRefPtr<BlobDataHandle> binaryData)
 {
     WTF_LOG(Network, "MainThreadWebSocketChannel %p send() Sending Blob '%s'", this, binaryData->uuid().utf8().data());
     enqueueBlobFrame(WebSocketFrame::OpCodeBinary, binaryData);
     processOutgoingFrameQueue();
-    return WebSocketChannel::SendSuccess;
 }
 
-WebSocketChannel::SendResult MainThreadWebSocketChannel::send(PassOwnPtr<Vector<char> > data)
+void MainThreadWebSocketChannel::send(PassOwnPtr<Vector<char> > data)
 {
     WTF_LOG(Network, "MainThreadWebSocketChannel %p send() Sending Vector %p", this, data.get());
     enqueueVector(WebSocketFrame::OpCodeBinary, data);
     processOutgoingFrameQueue();
-    return WebSocketChannel::SendSuccess;
 }
 
 void MainThreadWebSocketChannel::close(int code, const String& reason)

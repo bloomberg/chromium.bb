@@ -351,22 +351,6 @@ void DOMWebSocket::connect(const String& url, const Vector<String>& protocols, E
     }
 }
 
-void DOMWebSocket::handleSendResult(WebSocketChannel::SendResult result, ExceptionState& exceptionState, WebSocketSendType dataType)
-{
-    switch (result) {
-    case WebSocketChannel::InvalidMessage:
-        exceptionState.throwDOMException(SyntaxError, "The message contains invalid characters.");
-        return;
-    case WebSocketChannel::SendFail:
-        logError("WebSocket send() failed.");
-        return;
-    case WebSocketChannel::SendSuccess:
-        blink::Platform::current()->histogramEnumeration("WebCore.WebSocket.SendType", dataType, WebSocketSendTypeMax);
-        return;
-    }
-    ASSERT_NOT_REACHED();
-}
-
 void DOMWebSocket::updateBufferedAmountAfterClose(unsigned long payloadSize)
 {
     m_bufferedAmountAfterClose = saturateAdd(m_bufferedAmountAfterClose, payloadSize);
@@ -403,9 +387,10 @@ void DOMWebSocket::send(const String& message, ExceptionState& exceptionState)
         updateBufferedAmountAfterClose(message.utf8().length());
         return;
     }
+    Platform::current()->histogramEnumeration("WebCore.WebSocket.SendType", WebSocketSendTypeString, WebSocketSendTypeMax);
     ASSERT(m_channel);
     m_bufferedAmount += message.utf8().length();
-    handleSendResult(m_channel->send(message), exceptionState, WebSocketSendTypeString);
+    m_channel->send(message);
 }
 
 void DOMWebSocket::send(ArrayBuffer* binaryData, ExceptionState& exceptionState)
@@ -420,9 +405,10 @@ void DOMWebSocket::send(ArrayBuffer* binaryData, ExceptionState& exceptionState)
         updateBufferedAmountAfterClose(binaryData->byteLength());
         return;
     }
+    Platform::current()->histogramEnumeration("WebCore.WebSocket.SendType", WebSocketSendTypeArrayBuffer, WebSocketSendTypeMax);
     ASSERT(m_channel);
     m_bufferedAmount += binaryData->byteLength();
-    handleSendResult(m_channel->send(*binaryData, 0, binaryData->byteLength()), exceptionState, WebSocketSendTypeArrayBuffer);
+    m_channel->send(*binaryData, 0, binaryData->byteLength());
 }
 
 void DOMWebSocket::send(ArrayBufferView* arrayBufferView, ExceptionState& exceptionState)
@@ -437,10 +423,11 @@ void DOMWebSocket::send(ArrayBufferView* arrayBufferView, ExceptionState& except
         updateBufferedAmountAfterClose(arrayBufferView->byteLength());
         return;
     }
+    Platform::current()->histogramEnumeration("WebCore.WebSocket.SendType", WebSocketSendTypeArrayBufferView, WebSocketSendTypeMax);
     ASSERT(m_channel);
     m_bufferedAmount += arrayBufferView->byteLength();
     RefPtr<ArrayBuffer> arrayBuffer(arrayBufferView->buffer());
-    handleSendResult(m_channel->send(*arrayBuffer, arrayBufferView->byteOffset(), arrayBufferView->byteLength()), exceptionState, WebSocketSendTypeArrayBufferView);
+    m_channel->send(*arrayBuffer, arrayBufferView->byteOffset(), arrayBufferView->byteLength());
 }
 
 void DOMWebSocket::send(Blob* binaryData, ExceptionState& exceptionState)
@@ -455,9 +442,10 @@ void DOMWebSocket::send(Blob* binaryData, ExceptionState& exceptionState)
         updateBufferedAmountAfterClose(static_cast<unsigned long>(binaryData->size()));
         return;
     }
+    Platform::current()->histogramEnumeration("WebCore.WebSocket.SendType", WebSocketSendTypeBlob, WebSocketSendTypeMax);
     m_bufferedAmount += binaryData->size();
     ASSERT(m_channel);
-    handleSendResult(m_channel->send(binaryData->blobDataHandle()), exceptionState, WebSocketSendTypeBlob);
+    m_channel->send(binaryData->blobDataHandle());
 }
 
 void DOMWebSocket::close(unsigned short code, const String& reason, ExceptionState& exceptionState)

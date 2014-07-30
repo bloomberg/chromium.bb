@@ -46,10 +46,10 @@ public:
     }
 
     MOCK_METHOD2(connect, bool(const KURL&, const String&));
-    MOCK_METHOD1(send, SendResult(const String&));
-    MOCK_METHOD3(send, SendResult(const ArrayBuffer&, unsigned, unsigned));
-    MOCK_METHOD1(send, SendResult(PassRefPtr<BlobDataHandle>));
-    MOCK_METHOD1(send, SendResult(PassOwnPtr<Vector<char> >));
+    MOCK_METHOD1(send, void(const String&));
+    MOCK_METHOD3(send, void(const ArrayBuffer&, unsigned, unsigned));
+    MOCK_METHOD1(send, void(PassRefPtr<BlobDataHandle>));
+    MOCK_METHOD1(send, void(PassOwnPtr<Vector<char> >));
     MOCK_CONST_METHOD0(bufferedAmount, unsigned long());
     MOCK_METHOD2(close, void(int, const String&));
     MOCK_METHOD4(fail, void(const String&, MessageLevel, const String&, unsigned));
@@ -537,7 +537,7 @@ TEST_F(DOMWebSocketTest, sendStringSuccess)
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), send(String("hello"))).WillOnce(Return(WebSocketChannel::SendSuccess));
+        EXPECT_CALL(channel(), send(String("hello")));
     }
     m_websocket->connect("ws://example.com/", Vector<String>(), m_exceptionState);
 
@@ -547,44 +547,6 @@ TEST_F(DOMWebSocketTest, sendStringSuccess)
     m_websocket->send("hello", m_exceptionState);
 
     EXPECT_FALSE(m_exceptionState.hadException());
-    EXPECT_EQ(DOMWebSocket::OPEN, m_websocket->readyState());
-}
-
-TEST_F(DOMWebSocketTest, sendStringFail)
-{
-    {
-        InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), send(String("hello"))).WillOnce(Return(WebSocketChannel::SendFail));
-    }
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_exceptionState);
-
-    EXPECT_FALSE(m_exceptionState.hadException());
-
-    m_websocket->didConnect("", "");
-    m_websocket->send("hello", m_exceptionState);
-
-    EXPECT_FALSE(m_exceptionState.hadException());
-    EXPECT_EQ(DOMWebSocket::OPEN, m_websocket->readyState());
-}
-
-TEST_F(DOMWebSocketTest, sendStringInvalidMessage)
-{
-    {
-        InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), send(String("hello"))).WillOnce(Return(WebSocketChannel::InvalidMessage));
-    }
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_exceptionState);
-
-    EXPECT_FALSE(m_exceptionState.hadException());
-
-    m_websocket->didConnect("", "");
-    m_websocket->send("hello", m_exceptionState);
-
-    EXPECT_TRUE(m_exceptionState.hadException());
-    EXPECT_EQ(SyntaxError, m_exceptionState.code());
-    EXPECT_EQ("The message contains invalid characters.", m_exceptionState.message());
     EXPECT_EQ(DOMWebSocket::OPEN, m_websocket->readyState());
 }
 
@@ -657,7 +619,7 @@ TEST_F(DOMWebSocketTest, sendArrayBufferSuccess)
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), send(Ref(*view->buffer()), 0, 8)).WillOnce(Return(WebSocketChannel::SendSuccess));
+        EXPECT_CALL(channel(), send(Ref(*view->buffer()), 0, 8));
     }
     m_websocket->connect("ws://example.com/", Vector<String>(), m_exceptionState);
 
@@ -667,46 +629,6 @@ TEST_F(DOMWebSocketTest, sendArrayBufferSuccess)
     m_websocket->send(view->buffer().get(), m_exceptionState);
 
     EXPECT_FALSE(m_exceptionState.hadException());
-    EXPECT_EQ(DOMWebSocket::OPEN, m_websocket->readyState());
-}
-
-TEST_F(DOMWebSocketTest, sendArrayBufferFail)
-{
-    RefPtr<ArrayBufferView> view = Uint8Array::create(8);
-    {
-        InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), send(Ref(*view->buffer()), 0, 8)).WillOnce(Return(WebSocketChannel::SendFail));
-    }
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_exceptionState);
-
-    EXPECT_FALSE(m_exceptionState.hadException());
-
-    m_websocket->didConnect("", "");
-    m_websocket->send(view->buffer().get(), m_exceptionState);
-
-    EXPECT_FALSE(m_exceptionState.hadException());
-    EXPECT_EQ(DOMWebSocket::OPEN, m_websocket->readyState());
-}
-
-TEST_F(DOMWebSocketTest, sendArrayBufferInvalidMessage)
-{
-    RefPtr<ArrayBufferView> view = Uint8Array::create(8);
-    {
-        InSequence s;
-        EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), send(Ref(*view->buffer()), 0, 8)).WillOnce(Return(WebSocketChannel::InvalidMessage));
-    }
-    m_websocket->connect("ws://example.com/", Vector<String>(), m_exceptionState);
-
-    EXPECT_FALSE(m_exceptionState.hadException());
-
-    m_websocket->didConnect("", "");
-    m_websocket->send(view->buffer().get(), m_exceptionState);
-
-    EXPECT_TRUE(m_exceptionState.hadException());
-    EXPECT_EQ(SyntaxError, m_exceptionState.code());
-    EXPECT_EQ("The message contains invalid characters.", m_exceptionState.message());
     EXPECT_EQ(DOMWebSocket::OPEN, m_websocket->readyState());
 }
 

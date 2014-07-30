@@ -76,19 +76,11 @@ public:
     {
         m_connectRequestResult = connectRequestResult;
     }
-    void setSendRequestResult(WebSocketChannel::SendResult sendRequestResult)
-    {
-        m_sendRequestResult = sendRequestResult;
-    }
 
     // All getter are called on the worker thread.
     bool connectRequestResult() const
     {
         return m_connectRequestResult;
-    }
-    WebSocketChannel::SendResult sendRequestResult() const
-    {
-        return m_sendRequestResult;
     }
 
     // This should be called after all setters are called and before any
@@ -108,13 +100,11 @@ private:
     explicit ThreadableWebSocketChannelSyncHelper(PassOwnPtr<blink::WebWaitableEvent> event)
         : m_event(event)
         , m_connectRequestResult(false)
-        , m_sendRequestResult(WebSocketChannel::SendFail)
     {
     }
 
     OwnPtr<blink::WebWaitableEvent> m_event;
     bool m_connectRequestResult;
-    WebSocketChannel::SendResult m_sendRequestResult;
 };
 
 WorkerThreadableWebSocketChannel::WorkerThreadableWebSocketChannel(WorkerGlobalScope& workerGlobalScope, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber)
@@ -134,36 +124,32 @@ WorkerThreadableWebSocketChannel::~WorkerThreadableWebSocketChannel()
 
 bool WorkerThreadableWebSocketChannel::connect(const KURL& url, const String& protocol)
 {
-    if (m_bridge)
-        return m_bridge->connect(url, protocol);
-    return false;
+    ASSERT(m_bridge);
+    return m_bridge->connect(url, protocol);
 }
 
-WebSocketChannel::SendResult WorkerThreadableWebSocketChannel::send(const String& message)
+void WorkerThreadableWebSocketChannel::send(const String& message)
 {
-    if (!m_bridge)
-        return WebSocketChannel::SendFail;
-    return m_bridge->send(message);
+    ASSERT(m_bridge);
+    m_bridge->send(message);
 }
 
-WebSocketChannel::SendResult WorkerThreadableWebSocketChannel::send(const ArrayBuffer& binaryData, unsigned byteOffset, unsigned byteLength)
+void WorkerThreadableWebSocketChannel::send(const ArrayBuffer& binaryData, unsigned byteOffset, unsigned byteLength)
 {
-    if (!m_bridge)
-        return WebSocketChannel::SendFail;
-    return m_bridge->send(binaryData, byteOffset, byteLength);
+    ASSERT(m_bridge);
+    m_bridge->send(binaryData, byteOffset, byteLength);
 }
 
-WebSocketChannel::SendResult WorkerThreadableWebSocketChannel::send(PassRefPtr<BlobDataHandle> blobData)
+void WorkerThreadableWebSocketChannel::send(PassRefPtr<BlobDataHandle> blobData)
 {
-    if (!m_bridge)
-        return WebSocketChannel::SendFail;
-    return m_bridge->send(blobData);
+    ASSERT(m_bridge);
+    m_bridge->send(blobData);
 }
 
 void WorkerThreadableWebSocketChannel::close(int code, const String& reason)
 {
-    if (m_bridge)
-        m_bridge->close(code, reason);
+    ASSERT(m_bridge);
+    m_bridge->close(code, reason);
 }
 
 void WorkerThreadableWebSocketChannel::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
@@ -247,40 +233,22 @@ void Peer::connect(const KURL& url, const String& protocol)
 void Peer::send(const String& message)
 {
     ASSERT(isMainThread());
-    ASSERT(m_syncHelper);
-    if (!m_mainWebSocketChannel) {
-        m_syncHelper->setSendRequestResult(WebSocketChannel::SendFail);
-    } else {
-        WebSocketChannel::SendResult sendRequestResult = m_mainWebSocketChannel->send(message);
-        m_syncHelper->setSendRequestResult(sendRequestResult);
-    }
-    m_syncHelper->signalWorkerThread();
+    if (m_mainWebSocketChannel)
+        m_mainWebSocketChannel->send(message);
 }
 
 void Peer::sendArrayBuffer(PassOwnPtr<Vector<char> > data)
 {
     ASSERT(isMainThread());
-    ASSERT(m_syncHelper);
-    if (!m_mainWebSocketChannel) {
-        m_syncHelper->setSendRequestResult(WebSocketChannel::SendFail);
-    } else {
-        WebSocketChannel::SendResult sendRequestResult = m_mainWebSocketChannel->send(data);
-        m_syncHelper->setSendRequestResult(sendRequestResult);
-    }
-    m_syncHelper->signalWorkerThread();
+    if (m_mainWebSocketChannel)
+        m_mainWebSocketChannel->send(data);
 }
 
 void Peer::sendBlob(PassRefPtr<BlobDataHandle> blobData)
 {
     ASSERT(isMainThread());
-    ASSERT(m_syncHelper);
-    if (!m_mainWebSocketChannel) {
-        m_syncHelper->setSendRequestResult(WebSocketChannel::SendFail);
-    } else {
-        WebSocketChannel::SendResult sendRequestResult = m_mainWebSocketChannel->send(blobData);
-        m_syncHelper->setSendRequestResult(sendRequestResult);
-    }
-    m_syncHelper->signalWorkerThread();
+    if (m_mainWebSocketChannel)
+        m_mainWebSocketChannel->send(blobData);
 }
 
 void Peer::close(int code, const String& reason)
@@ -470,60 +438,38 @@ bool Bridge::connect(const KURL& url, const String& protocol)
     return m_syncHelper->connectRequestResult();
 }
 
-WebSocketChannel::SendResult Bridge::send(const String& message)
+void Bridge::send(const String& message)
 {
-    if (!m_peer)
-        return WebSocketChannel::SendFail;
-
-    RefPtrWillBeRawPtr<Bridge> protect(this);
-    if (!waitForMethodCompletion(createCrossThreadTask(&Peer::send, m_peer.get(), message)))
-        return WebSocketChannel::SendFail;
-
-    return m_syncHelper->sendRequestResult();
+    ASSERT(m_peer);
+    m_loaderProxy.postTaskToLoader(createCrossThreadTask(&Peer::send, m_peer.get(), message));
 }
 
-WebSocketChannel::SendResult Bridge::send(const ArrayBuffer& binaryData, unsigned byteOffset, unsigned byteLength)
+void Bridge::send(const ArrayBuffer& binaryData, unsigned byteOffset, unsigned byteLength)
 {
-    if (!m_peer)
-        return WebSocketChannel::SendFail;
-
+    ASSERT(m_peer);
     // ArrayBuffer isn't thread-safe, hence the content of ArrayBuffer is copied into Vector<char>.
     OwnPtr<Vector<char> > data = adoptPtr(new Vector<char>(byteLength));
     if (binaryData.byteLength())
         memcpy(data->data(), static_cast<const char*>(binaryData.data()) + byteOffset, byteLength);
 
-    RefPtrWillBeRawPtr<Bridge> protect(this);
-    if (!waitForMethodCompletion(createCrossThreadTask(&Peer::sendArrayBuffer, m_peer.get(), data.release())))
-        return WebSocketChannel::SendFail;
-
-    return m_syncHelper->sendRequestResult();
+    m_loaderProxy.postTaskToLoader(createCrossThreadTask(&Peer::sendArrayBuffer, m_peer.get(), data.release()));
 }
 
-WebSocketChannel::SendResult Bridge::send(PassRefPtr<BlobDataHandle> data)
+void Bridge::send(PassRefPtr<BlobDataHandle> data)
 {
-    if (!m_peer)
-        return WebSocketChannel::SendFail;
-
-    RefPtrWillBeRawPtr<Bridge> protect(this);
-    if (!waitForMethodCompletion(createCrossThreadTask(&Peer::sendBlob, m_peer.get(), data)))
-        return WebSocketChannel::SendFail;
-
-    return m_syncHelper->sendRequestResult();
+    ASSERT(m_peer);
+    m_loaderProxy.postTaskToLoader(createCrossThreadTask(&Peer::sendBlob, m_peer.get(), data));
 }
 
 void Bridge::close(int code, const String& reason)
 {
-    if (!m_peer)
-        return;
-
+    ASSERT(m_peer);
     m_loaderProxy.postTaskToLoader(createCrossThreadTask(&Peer::close, m_peer.get(), code, reason));
 }
 
 void Bridge::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
 {
-    if (!m_peer)
-        return;
-
+    ASSERT(m_peer);
     m_loaderProxy.postTaskToLoader(createCrossThreadTask(&Peer::fail, m_peer.get(), reason, level, sourceURL, lineNumber));
 }
 

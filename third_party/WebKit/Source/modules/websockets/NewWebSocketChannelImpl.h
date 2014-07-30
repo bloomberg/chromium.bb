@@ -79,10 +79,10 @@ public:
 
     // WebSocketChannel functions.
     virtual bool connect(const KURL&, const String& protocol) OVERRIDE;
-    virtual WebSocketChannel::SendResult send(const String& message) OVERRIDE;
-    virtual WebSocketChannel::SendResult send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) OVERRIDE;
-    virtual WebSocketChannel::SendResult send(PassRefPtr<BlobDataHandle>) OVERRIDE;
-    virtual WebSocketChannel::SendResult send(PassOwnPtr<Vector<char> > data) OVERRIDE;
+    virtual void send(const String& message) OVERRIDE;
+    virtual void send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) OVERRIDE;
+    virtual void send(PassRefPtr<BlobDataHandle>) OVERRIDE;
+    virtual void send(PassOwnPtr<Vector<char> > data) OVERRIDE;
     // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
     // argument to omit payload.
     virtual void close(int code, const String& reason) OVERRIDE;

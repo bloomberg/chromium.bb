@@ -197,12 +197,6 @@ private:
 
     size_t getFramingOverhead(size_t payloadSize);
 
-    // Checks the result of WebSocketChannel::send() method, and:
-    // - shows console message
-    // - sets ExceptionState appropriately
-    // - reports data for UMA.
-    void handleSendResult(WebSocketChannel::SendResult, ExceptionState&, WebSocketSendType);
-
     // Updates m_bufferedAmountAfterClose given the amount of data passed to
     // send() method after the state changed to CLOSING or CLOSED.
     void updateBufferedAmountAfterClose(unsigned long);

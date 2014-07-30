@@ -112,7 +112,8 @@ bool WebSocketImpl::sendText(const WebString& message)
     if (m_isClosingOrClosed)
         return true;
 
-    return m_private->send(message) == WebSocketChannel::SendSuccess;
+    m_private->send(message);
+    return true;
 }
 
 bool WebSocketImpl::sendArrayBuffer(const WebArrayBuffer& webArrayBuffer)
@@ -128,7 +129,8 @@ bool WebSocketImpl::sendArrayBuffer(const WebArrayBuffer& webArrayBuffer)
     if (m_isClosingOrClosed)
         return true;
 
-    return m_private->send(*PassRefPtr<ArrayBuffer>(webArrayBuffer), 0, webArrayBuffer.byteLength()) == WebSocketChannel::SendSuccess;
+    m_private->send(*PassRefPtr<ArrayBuffer>(webArrayBuffer), 0, webArrayBuffer.byteLength());
+    return true;
 }
 
 unsigned long WebSocketImpl::bufferedAmount() const

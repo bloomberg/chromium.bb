@@ -54,12 +54,6 @@ public:
     WebSocketChannel() { }
     static PassRefPtrWillBeRawPtr<WebSocketChannel> create(ExecutionContext*, WebSocketChannelClient*);
 
-    enum SendResult {
-        SendSuccess,
-        SendFail,
-        InvalidMessage
-    };
-
     enum CloseEventCode {
         CloseEventCodeNotSpecified = -1,
         CloseEventCodeNormalClosure = 1000,
@@ -80,12 +74,12 @@ public:
     };
 
     virtual bool connect(const KURL&, const String& protocol) = 0;
-    virtual SendResult send(const String& message) = 0;
-    virtual SendResult send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) = 0;
-    virtual SendResult send(PassRefPtr<BlobDataHandle>) = 0;
+    virtual void send(const String& message) = 0;
+    virtual void send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) = 0;
+    virtual void send(PassRefPtr<BlobDataHandle>) = 0;
 
     // For WorkerThreadableWebSocketChannel.
-    virtual SendResult send(PassOwnPtr<Vector<char> >) = 0;
+    virtual void send(PassOwnPtr<Vector<char> >) = 0;
 
     // Do not call |send| after calling this method.
     virtual void close(int code, const String& reason) = 0;

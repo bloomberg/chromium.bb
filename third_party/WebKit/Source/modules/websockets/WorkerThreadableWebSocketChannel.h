@@ -70,13 +70,12 @@ public:
 
     // WebSocketChannel functions.
     virtual bool connect(const KURL&, const String& protocol) OVERRIDE;
-    virtual WebSocketChannel::SendResult send(const String& message) OVERRIDE;
-    virtual WebSocketChannel::SendResult send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) OVERRIDE;
-    virtual WebSocketChannel::SendResult send(PassRefPtr<BlobDataHandle>) OVERRIDE;
-    virtual WebSocketChannel::SendResult send(PassOwnPtr<Vector<char> >) OVERRIDE
+    virtual void send(const String& message) OVERRIDE;
+    virtual void send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) OVERRIDE;
+    virtual void send(PassRefPtr<BlobDataHandle>) OVERRIDE;
+    virtual void send(PassOwnPtr<Vector<char> >) OVERRIDE
     {
         ASSERT_NOT_REACHED();
-        return WebSocketChannel::SendFail;
     }
     virtual void close(int code, const String& reason) OVERRIDE;
     virtual void fail(const String& reason, MessageLevel, const String&, unsigned) OVERRIDE;
@@ -147,9 +146,9 @@ public:
         // be shown when the connection fails.
         void initialize(const String& sourceURLAtConnection, unsigned lineNumberAtConnection);
         bool connect(const KURL&, const String& protocol);
-        WebSocketChannel::SendResult send(const String& message);
-        WebSocketChannel::SendResult send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength);
-        WebSocketChannel::SendResult send(PassRefPtr<BlobDataHandle>);
+        void send(const String& message);
+        void send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength);
+        void send(PassRefPtr<BlobDataHandle>);
         unsigned long bufferedAmount();
         void close(int code, const String& reason);
         void fail(const String& reason, MessageLevel, const String& sourceURL, unsigned lineNumber);

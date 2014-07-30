@@ -171,7 +171,7 @@ bool NewWebSocketChannelImpl::connect(const KURL& url, const String& protocol)
     return true;
 }
 
-WebSocketChannel::SendResult NewWebSocketChannelImpl::send(const String& message)
+void NewWebSocketChannelImpl::send(const String& message)
 {
     WTF_LOG(Network, "NewWebSocketChannelImpl %p sendText(%s)", this, message.utf8().data());
     if (m_identifier) {
@@ -182,10 +182,9 @@ WebSocketChannel::SendResult NewWebSocketChannelImpl::send(const String& message
     }
     m_messages.append(adoptPtr(new Message(message)));
     sendInternal();
-    return SendSuccess;
 }
 
-WebSocketChannel::SendResult NewWebSocketChannelImpl::send(PassRefPtr<BlobDataHandle> blobDataHandle)
+void NewWebSocketChannelImpl::send(PassRefPtr<BlobDataHandle> blobDataHandle)
 {
     WTF_LOG(Network, "NewWebSocketChannelImpl %p sendBlob(%s, %s, %llu)", this, blobDataHandle->uuid().utf8().data(), blobDataHandle->type().utf8().data(), blobDataHandle->size());
     if (m_identifier) {
@@ -198,10 +197,9 @@ WebSocketChannel::SendResult NewWebSocketChannelImpl::send(PassRefPtr<BlobDataHa
     }
     m_messages.append(adoptPtr(new Message(blobDataHandle)));
     sendInternal();
-    return SendSuccess;
 }
 
-WebSocketChannel::SendResult NewWebSocketChannelImpl::send(const ArrayBuffer& buffer, unsigned byteOffset, unsigned byteLength)
+void NewWebSocketChannelImpl::send(const ArrayBuffer& buffer, unsigned byteOffset, unsigned byteLength)
 {
     WTF_LOG(Network, "NewWebSocketChannelImpl %p sendArrayBuffer(%p, %u, %u)", this, buffer.data(), byteOffset, byteLength);
     if (m_identifier) {
@@ -214,10 +212,9 @@ WebSocketChannel::SendResult NewWebSocketChannelImpl::send(const ArrayBuffer& bu
     // queue the data.
     m_messages.append(adoptPtr(new Message(buffer.slice(byteOffset, byteOffset + byteLength))));
     sendInternal();
-    return SendSuccess;
 }
 
-WebSocketChannel::SendResult NewWebSocketChannelImpl::send(PassOwnPtr<Vector<char> > data)
+void NewWebSocketChannelImpl::send(PassOwnPtr<Vector<char> > data)
 {
     WTF_LOG(Network, "NewWebSocketChannelImpl %p sendVector(%p, %llu)", this, data.get(), static_cast<unsigned long long>(data->size()));
     if (m_identifier) {
@@ -227,7 +224,6 @@ WebSocketChannel::SendResult NewWebSocketChannelImpl::send(PassOwnPtr<Vector<cha
     }
     m_messages.append(adoptPtr(new Message(data)));
     sendInternal();
-    return SendSuccess;
 }
 
 void NewWebSocketChannelImpl::close(int code, const String& reason)
