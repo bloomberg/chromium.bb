@@ -54,7 +54,6 @@ BubbleDelegateView::BubbleDelegateView()
       shadow_(BubbleBorder::SMALL_SHADOW),
       color_explicitly_set_(false),
       margins_(kDefaultMargin, kDefaultMargin, kDefaultMargin, kDefaultMargin),
-      can_activate_(true),
       accept_events_(true),
       border_accepts_events_(true),
       adjust_if_offscreen_(true),
@@ -74,7 +73,6 @@ BubbleDelegateView::BubbleDelegateView(
       shadow_(BubbleBorder::SMALL_SHADOW),
       color_explicitly_set_(false),
       margins_(kDefaultMargin, kDefaultMargin, kDefaultMargin, kDefaultMargin),
-      can_activate_(true),
       accept_events_(true),
       border_accepts_events_(true),
       adjust_if_offscreen_(true),
@@ -115,10 +113,6 @@ Widget* BubbleDelegateView::CreateBubble(BubbleDelegateView* bubble_delegate) {
 
 BubbleDelegateView* BubbleDelegateView::AsBubbleDelegate() {
   return this;
-}
-
-bool BubbleDelegateView::CanActivate() const {
-  return can_activate();
 }
 
 bool BubbleDelegateView::ShouldShowCloseButton() const {

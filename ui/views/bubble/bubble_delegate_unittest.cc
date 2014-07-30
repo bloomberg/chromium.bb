@@ -250,4 +250,16 @@ TEST_F(BubbleDelegateTest, VisibleWhenAnchorWidgetBoundsChanged) {
   EXPECT_TRUE(bubble_widget->IsVisible());
 }
 
+// Test that setting WidgetDelegate::set_can_activate() to false makes the
+// widget created via BubbleDelegateView::CreateBubble() not activatable.
+TEST_F(BubbleDelegateTest, NotActivatable) {
+  scoped_ptr<Widget> anchor_widget(CreateTestWidget());
+  BubbleDelegateView* bubble_delegate = new BubbleDelegateView(
+      anchor_widget->GetContentsView(), BubbleBorder::NONE);
+  bubble_delegate->set_can_activate(false);
+  Widget* bubble_widget = BubbleDelegateView::CreateBubble(bubble_delegate);
+  bubble_widget->Show();
+  EXPECT_FALSE(bubble_widget->CanActivate());
+}
+
 }  // namespace views
