@@ -20,6 +20,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/point_conversions.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/native_theme/native_theme.h"
@@ -710,9 +711,8 @@ void DesktopNativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
     scale = gfx::Screen::GetScreenFor(root)->
         GetDisplayNearestWindow(root).device_scale_factor();
   }
-  gfx::Rect bounds_in_pixels(
-      gfx::ToCeiledPoint(gfx::ScalePoint(bounds.origin(), scale)),
-      gfx::ToFlooredSize(gfx::ScaleSize(bounds.size(), scale)));
+  gfx::Rect bounds_in_pixels =
+    gfx::ScaleToEnclosingRect(bounds, scale, scale);
   desktop_window_tree_host_->AsWindowTreeHost()->SetBounds(bounds_in_pixels);
 }
 
