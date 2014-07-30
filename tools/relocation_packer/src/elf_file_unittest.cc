@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include "debug.h"
+#include "elf_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Macro stringification.
@@ -70,8 +71,20 @@ void OpenRelocsTestFile(const char* name, FILE** stream) {
 }
 
 void OpenRelocsTestFiles(FILE** relocs_so, FILE** packed_relocs_so) {
-  OpenRelocsTestFile("elf_file_unittest_relocs.so", relocs_so);
-  OpenRelocsTestFile("elf_file_unittest_relocs_packed.so", packed_relocs_so);
+  const char* arch = NULL;
+  if (ELF::kMachine == EM_ARM) {
+    arch = "arm32";
+  } else if (ELF::kMachine == EM_AARCH64) {
+    arch = "arm64";
+  }
+  ASSERT_FALSE(arch == NULL);
+
+  const std::string base = std::string("elf_file_unittest_relocs_") + arch;
+  const std::string relocs = base + ".so";
+  const std::string packed_relocs = base + "_packed.so";
+
+  OpenRelocsTestFile(relocs.c_str(), relocs_so);
+  OpenRelocsTestFile(packed_relocs.c_str(), packed_relocs_so);
 }
 
 void CloseRelocsTestFile(FILE* temporary) {

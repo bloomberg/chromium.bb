@@ -19,6 +19,17 @@
 # error "Define one of TARGET_ARM or TARGET_ARM64, but not both"
 #endif
 
+// TODO(simonb): Eliminate these once AARCH64 appears reliably in elf.h.
+#ifndef EM_AARCH64
+#define EM_AARCH64 183
+#endif
+#ifndef R_AARCH64_RELATIVE
+#define R_AARCH64_RELATIVE 1027
+#endif
+#ifndef R_AARCH64_NONE
+#define R_AARCH64_NONE 0
+#endif
+
 // ELF is a traits structure used to provide convenient aliases for
 // 32/64 bit Elf types and functions, depending on the target specified.
 
@@ -30,6 +41,7 @@ struct ELF {
   typedef Elf32_Off Off;
   typedef Elf32_Phdr Phdr;
   typedef Elf32_Rel Rel;
+  typedef Elf32_Rela Rela;
   typedef Elf32_Shdr Shdr;
   typedef Elf32_Sword Sword;
   typedef Elf32_Sxword Sxword;
@@ -62,6 +74,7 @@ struct ELF {
   typedef Elf64_Off Off;
   typedef Elf64_Phdr Phdr;
   typedef Elf64_Rel Rel;
+  typedef Elf64_Rela Rela;
   typedef Elf64_Shdr Shdr;
   typedef Elf64_Sword Sword;
   typedef Elf64_Sxword Sxword;
@@ -72,17 +85,6 @@ struct ELF {
   static inline Ehdr* getehdr(Elf* elf) { return elf64_getehdr(elf); }
   static inline Phdr* getphdr(Elf* elf) { return elf64_getphdr(elf); }
   static inline Shdr* getshdr(Elf_Scn* scn) { return elf64_getshdr(scn); }
-
-// TODO(simonb): Eliminate these once AARCH64 appears reliably in elf.h.
-# ifndef EM_AARCH64
-# define EM_AARCH64 183
-# endif
-# ifndef R_AARCH64_RELATIVE
-# define R_AARCH64_RELATIVE 1027
-# endif
-# ifndef R_AARCH64_NONE
-# define R_AARCH64_NONE 0
-# endif
 
   enum { kMachine = EM_AARCH64 };
   enum { kFileClass = ELFCLASS64 };

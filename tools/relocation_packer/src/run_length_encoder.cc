@@ -14,18 +14,22 @@ namespace relocation_packer {
 namespace {
 
 // Generate a vector of deltas between the r_offset fields of adjacent
-// ARM relative relocations.
+// relative relocations.
 void GetDeltas(const std::vector<ELF::Rel>& relocations,
                std::vector<ELF::Addr>* deltas) {
   CHECK(relocations.size() >= 2);
 
   for (size_t i = 0; i < relocations.size() - 1; ++i) {
-    const ELF::Addr first = relocations[i].r_offset;
-    const ELF::Addr second = relocations[i + 1].r_offset;
+    const ELF::Rel* first = &relocations[i];
+    CHECK(ELF_R_TYPE(first->r_info) == ELF::kRelativeRelocationCode);
+
+    const ELF::Rel* second = &relocations[i + 1];
+    CHECK(ELF_R_TYPE(second->r_info) == ELF::kRelativeRelocationCode);
+
     // Requires that offsets are 'strictly increasing'.  The packing
     // algorithm fails if this does not hold.
-    CHECK(second > first);
-    deltas->push_back(second - first);
+    CHECK(second->r_offset > first->r_offset);
+    deltas->push_back(second->r_offset - first->r_offset);
   }
 }
 
@@ -92,7 +96,7 @@ void Uncondense(ELF::Addr addr,
 
 }  // namespace
 
-// Encode ARM relative relocations into a run-length encoded (packed)
+// Encode relative relocations into a run-length encoded (packed)
 // representation.
 void RelocationRunLengthCodec::Encode(const std::vector<ELF::Rel>& relocations,
                                       std::vector<ELF::Xword>* packed) {
@@ -116,7 +120,7 @@ void RelocationRunLengthCodec::Encode(const std::vector<ELF::Rel>& relocations,
   packed->at(0) = (packed->size() - 2) >> 1;
 }
 
-// Decode ARM relative relocations from a run-length encoded (packed)
+// Decode relative relocations from a run-length encoded (packed)
 // representation.
 void RelocationRunLengthCodec::Decode(const std::vector<ELF::Xword>& packed,
                                       std::vector<ELF::Rel>* relocations) {

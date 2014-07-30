@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Tool to pack and unpack ARM relative relocations in a shared library.
+// Tool to pack and unpack relative relocations in a shared library.
 //
-// Packing removes ARM relative relocations from .rel.dyn and writes them
+// Packing removes relative relocations from .rel.dyn and writes them
 // in a more compact form to .android.rel.dyn.  Unpacking does the reverse.
 //
 // Invoke with -v to trace actions taken when packing or unpacking.
@@ -38,30 +38,62 @@ void PrintUsage(const char* argv0) {
   const char* basename = temporary.c_str();
 
   printf(
-      "Usage: %s [-u] [-v] [-p] file\n"
-      "Pack or unpack ARM relative relocations in a shared library.\n\n"
-      "  -u, --unpack   unpack previously packed ARM relative relocations\n"
+      "Usage: %s [-u] [-v] [-p] file\n\n"
+      "Pack or unpack relative relocations in a shared library.\n\n"
+      "  -u, --unpack   unpack previously packed relative relocations\n"
       "  -v, --verbose  trace object file modifications (for debugging)\n"
-      "  -p, --pad      do not shrink .rel.dyn, but pad (for debugging)\n\n"
-      "Extracts ARM relative relocations from the .rel.dyn section, packs\n"
-      "them into a more compact format, and stores the packed relocations in\n"
-      ".android.rel.dyn.  Expands .android.rel.dyn to hold the packed data,\n"
-      "and shrinks .rel.dyn by the amount of unpacked data removed from it.\n\n"
-      "Before being packed, a shared library needs to be prepared by adding\n"
-      "a null .android.rel.dyn section.  A complete packing process is:\n\n"
-      "    echo -n 'NULL' >/tmp/small\n"
-      "    arm-linux-gnueabi-objcopy \\\n"
-      "        --add-section .android.rel.dyn=/tmp/small \\\n"
-      "        libchrome.<version>.so\n"
-      "    rm /tmp/small\n"
-      "    %s libchrome.<version>.so\n\n"
-      "To unpack and restore the shared library to its original state:\n\n"
-      "    %s -u libchrome.<version>.so\n"
-      "    arm-linux-gnueabi-objcopy \\\n"
-      "        --remove-section=.android.rel.dyn libchrome.<version>.so\n\n"
+      "  -p, --pad      do not shrink relocations, but pad (for debugging)\n\n",
+      basename);
+
+  if (ELF::kMachine == EM_ARM) {
+    printf(
+        "Extracts relative relocations from the .rel.dyn section, packs them\n"
+        "into a more compact format, and stores the packed relocations in\n"
+        ".android.rel.dyn.  Expands .android.rel.dyn to hold the packed\n"
+        "data, and shrinks .rel.dyn by the amount of unpacked data removed\n"
+        "from it.\n\n"
+        "Before being packed, a shared library needs to be prepared by adding\n"
+        "a null .android.rel.dyn section.\n\n"
+        "To pack relocations in a shared library:\n\n"
+        "    echo -n 'NULL' >/tmp/small\n"
+        "    arm-linux-androideabi-objcopy \\\n"
+        "        --add-section .android.rel.dyn=/tmp/small \\\n"
+        "        libchrome.<version>.so\n"
+        "    rm /tmp/small\n"
+        "    %s libchrome.<version>.so\n\n"
+        "To unpack and restore the shared library to its original state:\n\n"
+        "    %s -u libchrome.<version>.so\n"
+        "    arm-linux-androideabi-objcopy \\\n"
+        "        --remove-section=.android.rel.dyn libchrome.<version>.so\n\n",
+        basename, basename);
+  } else if (ELF::kMachine == EM_AARCH64) {
+    printf(
+        "Extracts relative relocations from the .rela.dyn section, packs them\n"
+        "into a more compact format, and stores the packed relocations in\n"
+        ".android.rela.dyn.  Expands .android.rela.dyn to hold the packed\n"
+        "data, and shrinks .rela.dyn by the amount of unpacked data removed\n"
+        "from it.\n\n"
+        "Before being packed, a shared library needs to be prepared by adding\n"
+        "a null .android.rela.dyn section.\n\n"
+        "To pack relocations in a shared library:\n\n"
+        "    echo -n 'NULL' >/tmp/small\n"
+        "    aarch64-linux-android-objcopy \\\n"
+        "        --add-section .android.rela.dyn=/tmp/small \\\n"
+        "        libchrome.<version>.so\n"
+        "    rm /tmp/small\n"
+        "    %s libchrome.<version>.so\n\n"
+        "To unpack and restore the shared library to its original state:\n\n"
+        "    %s -u libchrome.<version>.so\n"
+        "    aarch64-linux-android-objcopy \\\n"
+        "        --remove-section=.android.rela.dyn libchrome.<version>.so\n\n",
+        basename, basename);
+  } else {
+    NOTREACHED();
+  }
+
+  printf(
       "Debug sections are not handled, so packing should not be used on\n"
-      "shared libraries compiled for debugging or otherwise unstripped.\n",
-      basename, basename, basename);
+      "shared libraries compiled for debugging or otherwise unstripped.\n");
 }
 
 }  // namespace
@@ -99,6 +131,7 @@ int main(int argc, char* argv[]) {
         break;
       default:
         NOTREACHED();
+        return 1;
     }
   }
   if (optind != argc - 1) {
