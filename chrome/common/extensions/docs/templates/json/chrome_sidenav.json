@@ -881,6 +881,10 @@
                       "href": "/native-client/reference/sandbox_internals/x86-64-sandbox"
                     }
                 ]
+              },
+              {
+                "title": "Design Documents",
+                "href": "/native-client/reference/design-docs"
               }
             ]
           },
