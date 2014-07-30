@@ -126,7 +126,8 @@ public:
     {
         if (m_embeddedWorker.m_askedToTerminate || !m_embeddedWorker.m_workerThread)
             return false;
-        return m_embeddedWorker.m_workerThread->runLoop().postTask(task);
+        m_embeddedWorker.m_workerThread->postTask(task);
+        return !m_embeddedWorker.m_workerThread->terminated();
     }
 
 private:
@@ -257,30 +258,30 @@ void WebEmbeddedWorkerImpl::resumeAfterDownload()
 void WebEmbeddedWorkerImpl::resumeWorkerContext()
 {
     if (m_workerThread)
-        m_workerThread->runLoop().postDebuggerTask(createCrossThreadTask(resumeWorkerContextTask, true));
+        m_workerThread->postDebuggerTask(createCrossThreadTask(resumeWorkerContextTask, true));
 }
 
 void WebEmbeddedWorkerImpl::attachDevTools()
 {
     if (m_workerThread)
-        m_workerThread->runLoop().postDebuggerTask(createCrossThreadTask(connectToWorkerContextInspectorTask, true));
+        m_workerThread->postDebuggerTask(createCrossThreadTask(connectToWorkerContextInspectorTask, true));
 }
 
 void WebEmbeddedWorkerImpl::reattachDevTools(const WebString& savedState)
 {
-    m_workerThread->runLoop().postDebuggerTask(createCrossThreadTask(reconnectToWorkerContextInspectorTask, String(savedState)));
+    m_workerThread->postDebuggerTask(createCrossThreadTask(reconnectToWorkerContextInspectorTask, String(savedState)));
 }
 
 void WebEmbeddedWorkerImpl::detachDevTools()
 {
-    m_workerThread->runLoop().postDebuggerTask(createCrossThreadTask(disconnectFromWorkerContextInspectorTask, true));
+    m_workerThread->postDebuggerTask(createCrossThreadTask(disconnectFromWorkerContextInspectorTask, true));
 }
 
 void WebEmbeddedWorkerImpl::dispatchDevToolsMessage(const WebString& message)
 {
     if (m_askedToTerminate)
         return;
-    m_workerThread->runLoop().postDebuggerTask(createCrossThreadTask(dispatchOnInspectorBackendTask, String(message)));
+    m_workerThread->postDebuggerTask(createCrossThreadTask(dispatchOnInspectorBackendTask, String(message)));
     m_workerThread->interruptAndDispatchInspectorCommands();
 }
 

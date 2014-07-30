@@ -59,11 +59,11 @@ PassRefPtrWillBeRawPtr<WorkerGlobalScope> DedicatedWorkerThread::createWorkerGlo
     return DedicatedWorkerGlobalScope::create(this, startupData, m_timeOrigin);
 }
 
-void DedicatedWorkerThread::runEventLoop()
+void DedicatedWorkerThread::postInitialize()
 {
-    // Notify the parent object of our current active state before calling the superclass to run the event loop.
+    // Notify the parent object of our current active state before the event
+    // loop starts processing tasks.
     m_workerObjectProxy.reportPendingActivity(workerGlobalScope()->hasPendingActivity());
-    WorkerThread::runEventLoop();
 }
 
 } // namespace blink
