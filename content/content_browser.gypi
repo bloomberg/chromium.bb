@@ -365,11 +365,11 @@
       'browser/appcache/manifest_parser.h',
       'browser/appcache/view_appcache_internals_job.cc',
       'browser/appcache/view_appcache_internals_job.h',
-
       'browser/battery_status/battery_status_manager_android.cc',
       'browser/battery_status/battery_status_manager_android.h',
       'browser/battery_status/battery_status_manager_chromeos.cc',
       'browser/battery_status/battery_status_manager_default.cc',
+      'browser/battery_status/battery_status_manager_mac.cc',
       'browser/battery_status/battery_status_manager.h',
       'browser/battery_status/battery_status_message_filter.cc',
       'browser/battery_status/battery_status_message_filter.h',
@@ -1752,6 +1752,7 @@
       ],
       'sources!': [
         'browser/geolocation/empty_wifi_data_provider.cc',
+        'browser/battery_status/battery_status_manager_default.cc',
       ],
       'dependencies': [
         '../third_party/mozilla/mozilla.gyp:mozilla',
