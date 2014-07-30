@@ -1,6 +1,6 @@
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 # Everything builds using scons and gyp, but this particular test can
 # be compiled using make (and this Makefile) to generate a native
