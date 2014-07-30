@@ -101,7 +101,7 @@ class ManifestVersionedSyncCompletionStage(
       if run.config.boards and not run.config.child_configs:
         success_map[run.config.name] = True
         for board in run.config.boards:
-          board_runattrs = self._run.GetBoardRunAttrs(board)
+          board_runattrs = run.GetBoardRunAttrs(board)
           if not board_runattrs.HasParallel('success'):
             success_map[run.config.name] = False
       else:

@@ -423,25 +423,21 @@ class RunAttributesTest(_BuilderRunTestCase):
 
   # Any valid board-specific attribute will work here.
   BATTR = 'breakpad_symbols_generated'
-  UNIQUIFIED_BATTR = cbuildbot_run.RunAttributes._GetBoardAttrName(
-      BATTR, BOARD, TARGET)
 
   def testRegisterBoardTarget(self):
     """Test behavior of attributes before and after registering board target."""
     ra = self._NewRunAttributes()
 
-    self.assertFalse(ra.HasBoardParallel(self.BATTR, self.BOARD, self.TARGET))
-    self.assertFalse(ra.HasParallel(self.UNIQUIFIED_BATTR))
+    with self.assertRaises(AssertionError):
+      ra.HasBoardParallel(self.BATTR, self.BOARD, self.TARGET)
 
     ra.RegisterBoardAttrs(self.BOARD, self.TARGET)
 
     self.assertFalse(ra.HasBoardParallel(self.BATTR, self.BOARD, self.TARGET))
-    self.assertFalse(ra.HasParallel(self.UNIQUIFIED_BATTR))
 
     ra.SetBoardParallel(self.BATTR, 'TheValue', self.BOARD, self.TARGET)
 
     self.assertTrue(ra.HasBoardParallel(self.BATTR, self.BOARD, self.TARGET))
-    self.assertTrue(ra.HasParallel(self.UNIQUIFIED_BATTR))
 
   def testSetGet(self):
     """Test simple set/get of regular and parallel run attributes."""
@@ -466,8 +462,6 @@ class RunAttributesTest(_BuilderRunTestCase):
     ra.SetBoardParallel(self.BATTR, value, self.BOARD, self.TARGET)
     self.assertEqual(value,
                      ra.GetBoardParallel(self.BATTR, self.BOARD, self.TARGET))
-    self.assertEqual(value,
-                     ra.GetParallel(self.UNIQUIFIED_BATTR))
 
   def testSetDefault(self):
     """Test setting default value of parallel run attributes."""
@@ -488,9 +482,8 @@ class RunAttributesTest(_BuilderRunTestCase):
     self.assertEqual(value, ra.GetParallel('unittest_value'))
 
     # Run through same sequence for a board-specific attribute.
-
-    # Attribute starts off not set.
-    self.assertFalse(ra.HasBoardParallel(self.BATTR, self.BOARD, self.TARGET))
+    with self.assertRaises(AssertionError):
+      ra.HasBoardParallel(self.BATTR, self.BOARD, self.TARGET)
     ra.RegisterBoardAttrs(self.BOARD, self.TARGET)
     self.assertFalse(ra.HasBoardParallel(self.BATTR, self.BOARD, self.TARGET))
 
@@ -515,12 +508,12 @@ class RunAttributesTest(_BuilderRunTestCase):
     self.assertRaises(AttributeError, setattr, ra, 'foo', value)
     self.assertRaises(AttributeError, getattr, ra, 'foo')
 
-    # self.UNIQUIFIED_BATTR is valid, but only if board/target registered first.
+    # A board/target value is valid, but only if it is registered first.
+    self.assertRaises(AssertionError, ra.GetBoardParallel,
+                      self.BATTR, self.BOARD, self.TARGET)
+    ra.RegisterBoardAttrs(self.BOARD, self.TARGET)
     self.assertRaises(AttributeError, ra.GetBoardParallel,
                       self.BATTR, self.BOARD, self.TARGET)
-    self.assertRaises(AttributeError, ra.SetParallel,
-                      self.UNIQUIFIED_BATTR, value)
-    self.assertRaises(AttributeError, ra.GetParallel, self.UNIQUIFIED_BATTR)
 
 
 class BoardRunAttributesTest(_BuilderRunTestCase):

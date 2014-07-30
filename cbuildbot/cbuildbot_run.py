@@ -232,8 +232,7 @@ class RunAttributes(object):
   #    assert not self._IsChildProcess()
   #  super(RunAttributes, self).__setattr__(attr, value)
 
-  @staticmethod
-  def _GetBoardAttrName(attr, board, target):
+  def _GetBoardAttrName(self, attr, board, target):
     """Translate plain |attr| to uniquified board attribute name.
 
     Args:
@@ -243,7 +242,14 @@ class RunAttributes(object):
 
     Returns:
       The uniquified board-specific attribute name.
+
+    Raises:
+      AssertionError if the board/target combination does not exist.
     """
+    board_target = RunAttributes.BOARD_ATTR_SEP.join((board, target))
+    assert board_target in self._board_targets, \
+        'Unknown board/target combination: %s/%s' % (board, target)
+
     # Translate to the unique attribute name for attr/board/target.
     return RunAttributes.BOARD_ATTR_SEP.join((attr, board, target))
 
