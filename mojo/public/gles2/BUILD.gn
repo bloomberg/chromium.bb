@@ -22,8 +22,9 @@ shared_library("gles2") {
   sources = [
     "../c/gles2/gles2.h",
     "../c/gles2/gles2_export.h",
-    "gles2_private.cc",
-    "gles2_private.h",
+    "../platform/native/gles2_thunks.cc",
+    "../platform/native/gles2_thunks.h",
+    "gles2_interface.h",
   ]
 
   if (is_mac) {

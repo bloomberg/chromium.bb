@@ -9,7 +9,6 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_vector.h"
 #include "mojo/embedder/embedder.h"
-#include "mojo/gles2/gles2_support_impl.h"
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/service_manager/background_service_loader.h"
 #include "mojo/service_manager/service_loader.h"
@@ -49,7 +48,6 @@ class Setup {
  public:
   Setup() {
     embedder::Init();
-    gles2::GLES2SupportImpl::Init();
   }
 
   ~Setup() {

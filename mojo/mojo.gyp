@@ -41,9 +41,13 @@
       ['component=="shared_library"', {
         'mojo_system_for_component': "mojo_system_impl",
         'mojo_system_for_loadable_module': "mojo_system_impl",
+        'mojo_gles2_for_component': "mojo_gles2_impl",
+        'mojo_gles2_for_loadable_module': "mojo_gles2_impl",
       }, {
         'mojo_system_for_component': "mojo_none",
         'mojo_system_for_loadable_module': "mojo_system",
+        'mojo_gles2_for_component': "mojo_none",
+        'mojo_gles2_for_loadable_module': "mojo_gles2",
       }],
     ],
   },
@@ -342,23 +346,33 @@
         '../gpu/gpu.gyp:command_buffer_common',
         '../gpu/gpu.gyp:gles2_cmd_helper',
         '../gpu/gpu.gyp:gles2_implementation',
-        'mojo_gles2',
         'mojo_gles2_bindings',
         'mojo_environment_chromium',
         '<(mojo_system_for_component)',
       ],
       'defines': [
         'MOJO_GLES2_IMPL_IMPLEMENTATION',
+        'MOJO_GLES2_IMPLEMENTATION',
+        'GLES2_USE_MOJO',
+        'MOJO_USE_GLES2_IMPL'
       ],
+      'direct_dependent_settings': {
+        'defines': [
+          'GLES2_USE_MOJO',
+        ],
+      },
       'sources': [
         'gles2/command_buffer_client_impl.cc',
         'gles2/command_buffer_client_impl.h',
         'gles2/gles2_impl_export.h',
-        'gles2/gles2_support_impl.cc',
-        'gles2/gles2_support_impl.h',
+        'gles2/gles2_impl.cc',
         'gles2/gles2_context.cc',
         'gles2/gles2_context.h',
       ],
+      'all_dependent_settings': {
+        # Ensures that dependent projects import the core functions on Windows.
+        'defines': ['MOJO_USE_GLES2_IMPL'],
+      }
     },
     {
       'target_name': 'mojo_test_support_impl',
@@ -620,7 +634,6 @@
           'dependencies': [
             # These are only necessary as long as we hard code use of ViewManager.
             '../skia/skia.gyp:skia',
-            'mojo_gles2',
             'mojo_view_manager',
             'mojo_view_manager_bindings',
           ],

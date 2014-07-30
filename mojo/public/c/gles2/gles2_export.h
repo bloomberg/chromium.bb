@@ -5,6 +5,7 @@
 #ifndef MOJO_PUBLIC_C_GLES2_GLES2_EXPORT_H_
 #define MOJO_PUBLIC_C_GLES2_GLES2_EXPORT_H_
 
+#if defined(COMPONENT_BUILD) && defined(MOJO_USE_GLES2_IMPL)
 #if defined(WIN32)
 
 #if defined(MOJO_GLES2_IMPLEMENTATION)
@@ -22,5 +23,11 @@
 #endif
 
 #endif  // defined(WIN32)
+
+#else  // !defined(COMPONENT_BUILD) || !defined(MOJO_USE_GLES2_IMPL)
+
+#define MOJO_GLES2_EXPORT
+
+#endif  // defined(COMPONENT_BUILD) && defined(MOJO_USE_GLES2_IMPL)
 
 #endif  // MOJO_PUBLIC_C_GLES2_GLES2_EXPORT_H_
