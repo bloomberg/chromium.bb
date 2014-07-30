@@ -2918,32 +2918,9 @@ void Element::updateExtraNamedItemRegistration(const AtomicString& oldId, const 
         toHTMLDocument(document()).addExtraNamedItem(newId);
 }
 
-PassRefPtrWillBeRawPtr<HTMLCollection> Element::ensureCachedHTMLCollection(CollectionType type)
-{
-    if (HTMLCollection* collection = cachedHTMLCollection(type))
-        return collection;
-
-    if (type == TableRows) {
-        ASSERT(isHTMLTableElement(this));
-        return ensureRareData().ensureNodeLists().addCache<HTMLTableRowsCollection>(*this, type);
-    } else if (type == SelectOptions) {
-        ASSERT(isHTMLSelectElement(this));
-        return ensureRareData().ensureNodeLists().addCache<HTMLOptionsCollection>(*this, type);
-    } else if (type == FormControls) {
-        ASSERT(isHTMLFormElement(this) || isHTMLFieldSetElement(this));
-        return ensureRareData().ensureNodeLists().addCache<HTMLFormControlsCollection>(*this, type);
-    }
-    return ensureRareData().ensureNodeLists().addCache<HTMLCollection>(*this, type);
-}
-
 void Element::scheduleSVGFilterLayerUpdateHack()
 {
     document().scheduleSVGFilterLayerUpdateHack(*this);
-}
-
-HTMLCollection* Element::cachedHTMLCollection(CollectionType type)
-{
-    return hasRareData() && rareData()->nodeLists() ? rareData()->nodeLists()->cached<HTMLCollection>(type) : 0;
 }
 
 IntSize Element::savedLayerScrollOffset() const

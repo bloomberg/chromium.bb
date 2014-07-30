@@ -1134,8 +1134,6 @@ private:
 
     PageVisibilityState pageVisibilityState() const;
 
-    PassRefPtrWillBeRawPtr<HTMLCollection> ensureCachedCollection(CollectionType);
-
     // Note that dispatching a window load event may cause the LocalDOMWindow to be detached from
     // the LocalFrame, so callers should take a reference to the LocalDOMWindow (which owns us) to
     // prevent the Document from getting blown away from underneath them.

@@ -539,8 +539,6 @@ protected:
     // moved to RenderObject because some focusable nodes don't have renderers,
     // e.g., HTMLOptionElement.
     virtual bool rendererIsFocusable() const;
-    PassRefPtrWillBeRawPtr<HTMLCollection> ensureCachedHTMLCollection(CollectionType);
-    HTMLCollection* cachedHTMLCollection(CollectionType);
 
     // classAttributeChanged() exists to share code between
     // parseAttribute (called via setAttribute()) and

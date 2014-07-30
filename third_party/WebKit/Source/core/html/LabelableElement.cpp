@@ -44,7 +44,7 @@ PassRefPtrWillBeRawPtr<LabelsNodeList> LabelableElement::labels()
     if (!supportLabels())
         return nullptr;
 
-    return ensureRareData().ensureNodeLists().addCache<LabelsNodeList>(*this, LabelsNodeListType);
+    return ensureCachedCollection<LabelsNodeList>(LabelsNodeListType);
 }
 
 void LabelableElement::trace(Visitor* visitor)

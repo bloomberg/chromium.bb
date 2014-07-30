@@ -4551,44 +4551,39 @@ bool Document::hasSVGRootNode() const
     return isSVGSVGElement(documentElement());
 }
 
-PassRefPtrWillBeRawPtr<HTMLCollection> Document::ensureCachedCollection(CollectionType type)
-{
-    return ensureRareData().ensureNodeLists().addCache<HTMLCollection>(*this, type);
-}
-
 PassRefPtrWillBeRawPtr<HTMLCollection> Document::images()
 {
-    return ensureCachedCollection(DocImages);
+    return ensureCachedCollection<HTMLCollection>(DocImages);
 }
 
 PassRefPtrWillBeRawPtr<HTMLCollection> Document::applets()
 {
-    return ensureCachedCollection(DocApplets);
+    return ensureCachedCollection<HTMLCollection>(DocApplets);
 }
 
 PassRefPtrWillBeRawPtr<HTMLCollection> Document::embeds()
 {
-    return ensureCachedCollection(DocEmbeds);
+    return ensureCachedCollection<HTMLCollection>(DocEmbeds);
 }
 
 PassRefPtrWillBeRawPtr<HTMLCollection> Document::scripts()
 {
-    return ensureCachedCollection(DocScripts);
+    return ensureCachedCollection<HTMLCollection>(DocScripts);
 }
 
 PassRefPtrWillBeRawPtr<HTMLCollection> Document::links()
 {
-    return ensureCachedCollection(DocLinks);
+    return ensureCachedCollection<HTMLCollection>(DocLinks);
 }
 
 PassRefPtrWillBeRawPtr<HTMLCollection> Document::forms()
 {
-    return ensureCachedCollection(DocForms);
+    return ensureCachedCollection<HTMLCollection>(DocForms);
 }
 
 PassRefPtrWillBeRawPtr<HTMLCollection> Document::anchors()
 {
-    return ensureCachedCollection(DocAnchors);
+    return ensureCachedCollection<HTMLCollection>(DocAnchors);
 }
 
 PassRefPtrWillBeRawPtr<HTMLAllCollection> Document::allForBinding()
@@ -4599,17 +4594,17 @@ PassRefPtrWillBeRawPtr<HTMLAllCollection> Document::allForBinding()
 
 PassRefPtrWillBeRawPtr<HTMLAllCollection> Document::all()
 {
-    return ensureRareData().ensureNodeLists().addCache<HTMLAllCollection>(*this, DocAll);
+    return ensureCachedCollection<HTMLAllCollection>(DocAll);
 }
 
 PassRefPtrWillBeRawPtr<HTMLCollection> Document::windowNamedItems(const AtomicString& name)
 {
-    return ensureRareData().ensureNodeLists().addCache<WindowNameCollection>(*this, WindowNamedItems, name);
+    return ensureCachedCollection<WindowNameCollection>(WindowNamedItems, name);
 }
 
 PassRefPtrWillBeRawPtr<HTMLCollection> Document::documentNamedItems(const AtomicString& name)
 {
-    return ensureRareData().ensureNodeLists().addCache<DocumentNameCollection>(*this, DocumentNamedItems, name);
+    return ensureCachedCollection<DocumentNameCollection>(DocumentNamedItems, name);
 }
 
 void Document::finishedParsing()

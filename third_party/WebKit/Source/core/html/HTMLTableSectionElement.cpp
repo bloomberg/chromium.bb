@@ -29,6 +29,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/NodeListsNodeData.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/html/HTMLTableRowElement.h"
@@ -101,7 +102,7 @@ int HTMLTableSectionElement::numRows() const
 
 PassRefPtrWillBeRawPtr<HTMLCollection> HTMLTableSectionElement::rows()
 {
-    return ensureCachedHTMLCollection(TSectionRows);
+    return ensureCachedCollection<HTMLCollection>(TSectionRows);
 }
 
 }

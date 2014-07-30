@@ -25,6 +25,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/NodeListsNodeData.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLCollection.h"
@@ -113,7 +114,7 @@ void HTMLMapElement::parseAttribute(const QualifiedName& name, const AtomicStrin
 
 PassRefPtrWillBeRawPtr<HTMLCollection> HTMLMapElement::areas()
 {
-    return ensureCachedHTMLCollection(MapAreas);
+    return ensureCachedCollection<HTMLCollection>(MapAreas);
 }
 
 Node::InsertionNotificationRequest HTMLMapElement::insertedInto(ContainerNode* insertionPoint)

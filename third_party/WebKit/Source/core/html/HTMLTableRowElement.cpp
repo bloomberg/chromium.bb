@@ -29,6 +29,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/NodeListsNodeData.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTableElement.h"
@@ -155,7 +156,7 @@ void HTMLTableRowElement::deleteCell(int index, ExceptionState& exceptionState)
 
 PassRefPtrWillBeRawPtr<HTMLCollection> HTMLTableRowElement::cells()
 {
-    return ensureCachedHTMLCollection(TRCells);
+    return ensureCachedCollection<HTMLCollection>(TRCells);
 }
 
 }

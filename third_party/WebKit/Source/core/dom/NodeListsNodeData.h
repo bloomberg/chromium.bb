@@ -236,6 +236,32 @@ inline bool NodeListsNodeData::deleteThisAndUpdateNodeRareDataIfAboutToRemoveLas
 }
 #endif
 
+template <typename Collection>
+inline PassRefPtrWillBeRawPtr<Collection> ContainerNode::ensureCachedCollection(CollectionType type)
+{
+    return ensureNodeLists().addCache<Collection>(*this, type);
+}
+
+template <typename Collection>
+inline PassRefPtrWillBeRawPtr<Collection> ContainerNode::ensureCachedCollection(CollectionType type, const AtomicString& name)
+{
+    return ensureNodeLists().addCache<Collection>(*this, type, name);
+}
+
+template <typename Collection>
+inline PassRefPtrWillBeRawPtr<Collection> ContainerNode::ensureCachedCollection(CollectionType type, const AtomicString& namespaceURI, const AtomicString& localName)
+{
+    ASSERT_UNUSED(type, type == TagCollectionType);
+    return ensureNodeLists().addCache(*this, namespaceURI, localName);
+}
+
+template <typename Collection>
+inline Collection* ContainerNode::cachedCollection(CollectionType type)
+{
+    NodeListsNodeData* nodeLists = this->nodeLists();
+    return nodeLists ? nodeLists->cached<Collection>(type) : 0;
+}
+
 } // namespace blink
 
 #endif // NodeListsNodeData_h

@@ -35,6 +35,7 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/NodeListsNodeData.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/events/GestureEvent.h"
 #include "core/events/KeyboardEvent.h"
@@ -386,12 +387,12 @@ RenderObject* HTMLSelectElement::createRenderer(RenderStyle*)
 PassRefPtrWillBeRawPtr<HTMLCollection> HTMLSelectElement::selectedOptions()
 {
     updateListItemSelectedStates();
-    return ensureCachedHTMLCollection(SelectedOptions);
+    return ensureCachedCollection<HTMLCollection>(SelectedOptions);
 }
 
 PassRefPtrWillBeRawPtr<HTMLOptionsCollection> HTMLSelectElement::options()
 {
-    return toHTMLOptionsCollection(ensureCachedHTMLCollection(SelectOptions).get());
+    return ensureCachedCollection<HTMLOptionsCollection>(SelectOptions);
 }
 
 void HTMLSelectElement::updateListItemSelectedStates()
@@ -754,7 +755,7 @@ const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& HTMLSelectElement::lis
 
 void HTMLSelectElement::invalidateSelectedItems()
 {
-    if (HTMLCollection* collection = cachedHTMLCollection(SelectedOptions))
+    if (HTMLCollection* collection = cachedCollection<HTMLCollection>(SelectedOptions))
         collection->invalidateCache();
 }
 
@@ -769,7 +770,7 @@ void HTMLSelectElement::setRecalcListItems()
     setOptionsChangedOnRenderer();
     setNeedsStyleRecalc(SubtreeStyleChange);
     if (!inDocument()) {
-        if (HTMLCollection* collection = cachedHTMLCollection(SelectOptions))
+        if (HTMLOptionsCollection* collection = cachedCollection<HTMLOptionsCollection>(SelectOptions))
             collection->invalidateCache();
     }
     if (!inDocument())

@@ -26,6 +26,7 @@
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Node.h"
+#include "core/html/CollectionType.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
@@ -187,10 +188,17 @@ protected:
     void setFirstChild(Node* child) { m_firstChild = child; }
     void setLastChild(Node* child) { m_lastChild = child; }
 
+    // Utility functions for NodeListsNodeData API.
+    template <typename Collection> PassRefPtrWillBeRawPtr<Collection> ensureCachedCollection(CollectionType);
+    template <typename Collection> PassRefPtrWillBeRawPtr<Collection> ensureCachedCollection(CollectionType, const AtomicString& name);
+    template <typename Collection> PassRefPtrWillBeRawPtr<Collection> ensureCachedCollection(CollectionType, const AtomicString& namespaceURI, const AtomicString& localName);
+    template <typename Collection> Collection* cachedCollection(CollectionType);
+
 private:
     bool isContainerNode() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
     bool isTextNode() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
 
+    NodeListsNodeData& ensureNodeLists();
     void removeBetween(Node* previousChild, Node* nextChild, Node& oldChild);
     void insertBeforeCommon(Node& nextChild, Node& oldChild);
     void appendChildCommon(Node& child);

@@ -36,6 +36,7 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/NodeListsNodeData.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLTableCaptionElement.h"
 #include "core/html/HTMLTableCellElement.h"
@@ -558,12 +559,12 @@ const QualifiedName& HTMLTableElement::subResourceAttributeName() const
 
 PassRefPtrWillBeRawPtr<HTMLTableRowsCollection> HTMLTableElement::rows()
 {
-    return toHTMLTableRowsCollection(ensureCachedHTMLCollection(TableRows).get());
+    return ensureCachedCollection<HTMLTableRowsCollection>(TableRows);
 }
 
 PassRefPtrWillBeRawPtr<HTMLCollection> HTMLTableElement::tBodies()
 {
-    return ensureCachedHTMLCollection(TableTBodies);
+    return ensureCachedCollection<HTMLCollection>(TableTBodies);
 }
 
 const AtomicString& HTMLTableElement::rules() const

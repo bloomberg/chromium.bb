@@ -27,6 +27,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/NodeListsNodeData.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLFormControlsCollection.h"
 #include "core/html/HTMLLegendElement.h"
@@ -101,7 +102,7 @@ HTMLLegendElement* HTMLFieldSetElement::legend() const
 
 PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> HTMLFieldSetElement::elements()
 {
-    return toHTMLFormControlsCollection(ensureCachedHTMLCollection(FormControls).get());
+    return ensureCachedCollection<HTMLFormControlsCollection>(FormControls);
 }
 
 void HTMLFieldSetElement::refreshElementsIfNeeded() const

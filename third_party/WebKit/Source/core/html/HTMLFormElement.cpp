@@ -33,6 +33,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/IdTargetObserverRegistry.h"
+#include "core/dom/NodeListsNodeData.h"
 #include "core/events/AutocompleteErrorEvent.h"
 #include "core/events/Event.h"
 #include "core/events/GenericEventQueue.h"
@@ -589,7 +590,7 @@ void HTMLFormElement::didAssociateByParser()
 
 PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> HTMLFormElement::elements()
 {
-    return toHTMLFormControlsCollection(ensureCachedHTMLCollection(FormControls).get());
+    return ensureCachedCollection<HTMLFormControlsCollection>(FormControls);
 }
 
 void HTMLFormElement::collectAssociatedElements(Node& root, FormAssociatedElement::List& elements) const
