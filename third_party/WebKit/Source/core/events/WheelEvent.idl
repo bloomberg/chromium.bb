@@ -41,17 +41,4 @@
     // WebKit Extension
     [MeasureAs=PrefixedWheelEventDirectionInvertedFromDevice]
     readonly attribute boolean webkitDirectionInvertedFromDevice;
-
-    [MeasureAs=PrefixedWheelEventInit]
-    void initWebKitWheelEvent([Default=Undefined] optional long wheelDeltaX,
-                              [Default=Undefined] optional long wheelDeltaY,
-                              [Default=Undefined] optional Window view,
-                              [Default=Undefined] optional long screenX,
-                              [Default=Undefined] optional long screenY,
-                              [Default=Undefined] optional long clientX,
-                              [Default=Undefined] optional long clientY,
-                              [Default=Undefined] optional boolean ctrlKey,
-                              [Default=Undefined] optional boolean altKey,
-                              [Default=Undefined] optional boolean shiftKey,
-                              [Default=Undefined] optional boolean metaKey);
 };
