@@ -225,7 +225,7 @@ private:
 
     void findFosterSite(HTMLConstructionSiteTask&);
 
-    PassRefPtrWillBeRawPtr<Element> createHTMLElement(AtomicHTMLToken*);
+    PassRefPtrWillBeRawPtr<HTMLElement> createHTMLElement(AtomicHTMLToken*);
     PassRefPtrWillBeRawPtr<Element> createElement(AtomicHTMLToken*, const AtomicString& namespaceURI);
 
     void mergeAttributesFromTokenIntoElement(AtomicHTMLToken*, Element*);

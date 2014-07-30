@@ -599,7 +599,7 @@ void HTMLConstructionSite::insertHTMLHeadElement(AtomicHTMLToken* token)
 void HTMLConstructionSite::insertHTMLBodyElement(AtomicHTMLToken* token)
 {
     ASSERT(!shouldFosterParent());
-    RefPtrWillBeRawPtr<Element> body = createHTMLElement(token);
+    RefPtrWillBeRawPtr<HTMLElement> body = createHTMLElement(token);
     attachLater(currentNode(), body);
     m_openElements.pushHTMLBodyElement(HTMLStackItem::create(body.release(), token));
     if (LocalFrame* frame = m_document->frame())
@@ -608,7 +608,7 @@ void HTMLConstructionSite::insertHTMLBodyElement(AtomicHTMLToken* token)
 
 void HTMLConstructionSite::insertHTMLFormElement(AtomicHTMLToken* token, bool isDemoted)
 {
-    RefPtrWillBeRawPtr<Element> element = createHTMLElement(token);
+    RefPtrWillBeRawPtr<HTMLElement> element = createHTMLElement(token);
     ASSERT(isHTMLFormElement(element));
     m_form = static_pointer_cast<HTMLFormElement>(element.release());
     m_form->setDemoted(isDemoted);
@@ -618,7 +618,7 @@ void HTMLConstructionSite::insertHTMLFormElement(AtomicHTMLToken* token, bool is
 
 void HTMLConstructionSite::insertHTMLElement(AtomicHTMLToken* token)
 {
-    RefPtrWillBeRawPtr<Element> element = createHTMLElement(token);
+    RefPtrWillBeRawPtr<HTMLElement> element = createHTMLElement(token);
     attachLater(currentNode(), element);
     m_openElements.push(HTMLStackItem::create(element.release(), token));
 }
@@ -743,7 +743,7 @@ inline Document& HTMLConstructionSite::ownerDocumentForCurrentNode()
     return currentNode()->document();
 }
 
-PassRefPtrWillBeRawPtr<Element> HTMLConstructionSite::createHTMLElement(AtomicHTMLToken* token)
+PassRefPtrWillBeRawPtr<HTMLElement> HTMLConstructionSite::createHTMLElement(AtomicHTMLToken* token)
 {
     Document& document = ownerDocumentForCurrentNode();
     // Only associate the element with the current form if we're creating the new element
@@ -752,9 +752,8 @@ PassRefPtrWillBeRawPtr<Element> HTMLConstructionSite::createHTMLElement(AtomicHT
     // FIXME: This can't use HTMLConstructionSite::createElement because we
     // have to pass the current form element.  We should rework form association
     // to occur after construction to allow better code sharing here.
-    RefPtrWillBeRawPtr<Element> element = HTMLElementFactory::createHTMLElement(token->name(), document, form, true);
+    RefPtrWillBeRawPtr<HTMLElement> element = HTMLElementFactory::createHTMLElement(token->name(), document, form, true);
     setAttributes(element.get(), token, m_parserContentPolicy);
-    ASSERT(element->isHTMLElement());
     return element.release();
 }
 
