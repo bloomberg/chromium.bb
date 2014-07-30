@@ -19,6 +19,7 @@ class GpuMemoryBufferFactoryImpl : public gpu::InProcessGpuMemoryBufferFactory {
   virtual ~GpuMemoryBufferFactoryImpl();
 
   static void SetAwDrawGLFunctionTable(AwDrawGLFunctionTable* table);
+  bool Initialize();
 
   // Overridden from gpu::InProcessGpuMemoryBufferFactory:
   virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(

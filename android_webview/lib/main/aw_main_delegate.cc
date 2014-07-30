@@ -24,7 +24,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
-#include "gpu/command_buffer/service/in_process_command_buffer.h"
 #include "media/base/media_switches.h"
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
@@ -49,14 +48,16 @@ AwMainDelegate::~AwMainDelegate() {
 bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   content::SetContentClient(&content_client_);
 
-  gpu::InProcessCommandBuffer::SetGpuMemoryBufferFactory(
-      gpu_memory_buffer_factory_.get());
+  CommandLine* cl = CommandLine::ForCurrentProcess();
+  if (gpu_memory_buffer_factory_.get()->Initialize()) {
+    cl->AppendSwitch(switches::kEnableZeroCopy);
+  } else {
+    LOG(WARNING) << "Failed to initialize GpuMemoryBuffer factory";
+  }
 
   BrowserViewRenderer::CalculateTileMemoryPolicy();
 
-  CommandLine* cl = CommandLine::ForCurrentProcess();
   cl->AppendSwitch(switches::kEnableBeginFrameScheduling);
-  cl->AppendSwitch(switches::kEnableZeroCopy);
   cl->AppendSwitch(switches::kEnableImplSidePainting);
 
   // WebView uses the Android system's scrollbars and overscroll glow.

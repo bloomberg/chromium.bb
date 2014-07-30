@@ -6,6 +6,7 @@
 
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/logging.h"
+#include "gpu/command_buffer/service/in_process_command_buffer.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_bindings.h"
@@ -110,6 +111,14 @@ GpuMemoryBufferFactoryImpl::CreateImageForGpuMemoryBuffer(
 void GpuMemoryBufferFactoryImpl::SetAwDrawGLFunctionTable(
     AwDrawGLFunctionTable* table) {
   g_gl_draw_functions = table;
+}
+
+bool GpuMemoryBufferFactoryImpl::Initialize() {
+  if (!g_gl_draw_functions)
+    return false;
+
+  gpu::InProcessCommandBuffer::SetGpuMemoryBufferFactory(this);
+  return true;
 }
 
 }  // namespace android_webview
