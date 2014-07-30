@@ -426,7 +426,7 @@
     },
     {
       'target_name': 'mojo_surfaces_service',
-      'type': 'shared_library',
+      'type': 'loadable_module',
       'dependencies': [
         '../base/base.gyp:base',
         '../cc/cc.gyp:cc',
@@ -440,7 +440,7 @@
         'mojo_gles2',
         'mojo_surfaces_bindings',
         'mojo_surfaces_lib',
-        'mojo_system_impl',
+        '<(mojo_system_for_loadable_module)',
       ],
       'sources': [
         'services/surfaces/surfaces_impl.cc',

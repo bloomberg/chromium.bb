@@ -285,7 +285,7 @@
     },
     {
       'target_name': 'mojo_surfaces_app',
-      'type': 'shared_library',
+      'type': 'loadable_module',
       'dependencies': [
         '../base/base.gyp:base',
         '../cc/cc.gyp:cc',
@@ -303,7 +303,7 @@
         'mojo_surfaces_bindings',
         'mojo_surfaces_app_bindings',
         'mojo_surfaces_lib',
-        'mojo_system_impl',
+        '<(mojo_system_for_loadable_module)',
       ],
       'sources': [
         'examples/surfaces_app/embedder.cc',
@@ -339,7 +339,7 @@
     },
     {
       'target_name': 'mojo_surfaces_child_app',
-      'type': 'shared_library',
+      'type': 'loadable_module',
       'dependencies': [
         '../base/base.gyp:base',
         '../cc/cc.gyp:cc',
@@ -355,7 +355,7 @@
         'mojo_surfaces_app_bindings',
         'mojo_surfaces_bindings',
         'mojo_surfaces_lib',
-        'mojo_system_impl',
+        '<(mojo_system_for_loadable_module)',
       ],
       'sources': [
         'examples/surfaces_app/child_app.cc',
