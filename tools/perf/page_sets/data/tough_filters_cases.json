@@ -1,0 +1,9 @@
+{
+    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "tough_filters_cases_000.wpr": [
+            "http://letmespellitoutforyou.com/samples/svg/filter_terrain.svg", 
+            "http://static.bobdo.net/Analog_Clock.svg"
+        ]
+    }
+}

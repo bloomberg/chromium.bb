@@ -188,6 +188,9 @@
   "smoothness.tough_canvas_cases":{
     "description":"Measures frame rate and a variety of other statistics on a selection of pages making use of the 2D Canvas API."
   },
+  "smoothness.tough_filters_cases":{
+    "description":"Measures frame rate and a variety of other statistics on a selection of pages making use of SVG and CSS Filter Effects."
+  },
   "spaceport":{
     "description":"Performance on [spaceport.io's perfmarks benchmark](http://spaceport.io/community/perfmarks). This test performs 3 animations (rotate, translate, scale) using a variety of methods (css, webgl, canvas, etc) and reports the number of objects that can be simultaneously animated while still achieving 30FPS."
   },
