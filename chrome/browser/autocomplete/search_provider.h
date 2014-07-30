@@ -140,15 +140,16 @@ class SearchProvider : public BaseSearchProvider {
 
   // Removes non-inlineable results until either the top result can inline
   // autocomplete the current input or verbatim outscores the top result.
-  static void RemoveStaleResults(const base::string16& input,
-                                 int verbatim_relevance,
-                                 SuggestResults* suggest_results,
-                                 NavigationResults* navigation_results);
+  static void RemoveStaleResults(
+      const base::string16& input,
+      int verbatim_relevance,
+      SearchSuggestionParser::SuggestResults* suggest_results,
+      SearchSuggestionParser::NavigationResults* navigation_results);
 
   // Recalculates the match contents class of |results| to better display
   // against the current input and user's language.
   void UpdateMatchContentsClass(const base::string16& input_text,
-                                Results* results);
+                                SearchSuggestionParser::Results* results);
 
   // Calculates the relevance score for the keyword verbatim result (if the
   // input matches one of the profile's keyword).
@@ -162,13 +163,14 @@ class SearchProvider : public BaseSearchProvider {
 
   // BaseSearchProvider:
   virtual void SortResults(bool is_keyword,
-                           const base::ListValue* relevances,
-                           Results* results) OVERRIDE;
+                           bool relevances_from_server,
+                           SearchSuggestionParser::Results* results) OVERRIDE;
   virtual const TemplateURL* GetTemplateURL(bool is_keyword) const OVERRIDE;
   virtual const AutocompleteInput GetInput(bool is_keyword) const OVERRIDE;
-  virtual Results* GetResultsToFill(bool is_keyword) OVERRIDE;
+  virtual SearchSuggestionParser::Results* GetResultsToFill(
+      bool is_keyword) OVERRIDE;
   virtual bool ShouldAppendExtraParams(
-      const SuggestResult& result) const OVERRIDE;
+      const SearchSuggestionParser::SuggestResult& result) const OVERRIDE;
   virtual void StopSuggest() OVERRIDE;
   virtual void ClearAllResults() OVERRIDE;
   virtual int GetDefaultResultRelevance() const OVERRIDE;
@@ -200,8 +202,10 @@ class SearchProvider : public BaseSearchProvider {
 
   // Apply calculated relevance scores to the current results.
   void ApplyCalculatedRelevance();
-  void ApplyCalculatedSuggestRelevance(SuggestResults* list);
-  void ApplyCalculatedNavigationRelevance(NavigationResults* list);
+  void ApplyCalculatedSuggestRelevance(
+      SearchSuggestionParser::SuggestResults* list);
+  void ApplyCalculatedNavigationRelevance(
+      SearchSuggestionParser::NavigationResults* list);
 
   // Starts a new URLFetcher requesting suggest results from |template_url|;
   // callers own the returned URLFetcher, which is NULL for invalid providers.
@@ -224,7 +228,7 @@ class SearchProvider : public BaseSearchProvider {
   // Converts an appropriate number of navigation results in
   // |navigation_results| to matches and adds them to |matches|.
   void AddNavigationResultsToMatches(
-      const NavigationResults& navigation_results,
+      const SearchSuggestionParser::NavigationResults& navigation_results,
       ACMatches* matches);
 
   // Adds a match for each result in |results| to |map|. |is_keyword| indicates
@@ -235,16 +239,18 @@ class SearchProvider : public BaseSearchProvider {
                               MatchMap* map);
 
   // Calculates relevance scores for all |results|.
-  SuggestResults ScoreHistoryResults(const HistoryResults& results,
-                                     bool base_prevent_inline_autocomplete,
-                                     bool input_multiple_words,
-                                     const base::string16& input_text,
-                                     bool is_keyword);
+  SearchSuggestionParser::SuggestResults ScoreHistoryResults(
+      const HistoryResults& results,
+      bool base_prevent_inline_autocomplete,
+      bool input_multiple_words,
+      const base::string16& input_text,
+      bool is_keyword);
 
   // Adds matches for |results| to |map|.
-  void AddSuggestResultsToMap(const SuggestResults& results,
-                              const std::string& metadata,
-                              MatchMap* map);
+  void AddSuggestResultsToMap(
+      const SearchSuggestionParser::SuggestResults& results,
+      const std::string& metadata,
+      MatchMap* map);
 
   // Gets the relevance score for the verbatim result.  This value may be
   // provided by the suggest server or calculated locally; if
@@ -283,7 +289,8 @@ class SearchProvider : public BaseSearchProvider {
                                    bool prevent_search_history_inlining) const;
 
   // Returns an AutocompleteMatch for a navigational suggestion.
-  AutocompleteMatch NavigationToMatch(const NavigationResult& navigation);
+  AutocompleteMatch NavigationToMatch(
+      const SearchSuggestionParser::NavigationResult& navigation);
 
   // Updates the value of |done_| from the internal state.
   void UpdateDone();
@@ -324,8 +331,8 @@ class SearchProvider : public BaseSearchProvider {
   scoped_ptr<net::URLFetcher> default_fetcher_;
 
   // Results from the default and keyword search providers.
-  Results default_results_;
-  Results keyword_results_;
+  SearchSuggestionParser::Results default_results_;
+  SearchSuggestionParser::Results keyword_results_;
 
   GURL current_page_url_;
 

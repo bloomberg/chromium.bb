@@ -119,7 +119,8 @@ const TemplateURL* SearchProvider::Providers::GetKeywordProviderURL() const {
 
 class SearchProvider::CompareScoredResults {
  public:
-  bool operator()(const Result& a, const Result& b) {
+  bool operator()(const SearchSuggestionParser::Result& a,
+                  const SearchSuggestionParser::Result& b) {
     // Sort in descending relevance order.
     return a.relevance() > b.relevance();
   }
@@ -149,15 +150,18 @@ void SearchProvider::ResetSession() {
 SearchProvider::~SearchProvider() {
 }
 
-void SearchProvider::UpdateMatchContentsClass(const base::string16& input_text,
-                                              Results* results) {
-  for (SuggestResults::iterator sug_it = results->suggest_results.begin();
+void SearchProvider::UpdateMatchContentsClass(
+    const base::string16& input_text,
+    SearchSuggestionParser::Results* results) {
+  for (SearchSuggestionParser::SuggestResults::iterator sug_it =
+           results->suggest_results.begin();
        sug_it != results->suggest_results.end(); ++sug_it) {
     sug_it->ClassifyMatchContents(false, input_text);
   }
   const std::string languages(
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
-  for (NavigationResults::iterator nav_it = results->navigation_results.begin();
+  for (SearchSuggestionParser::NavigationResults::iterator nav_it =
+           results->navigation_results.begin();
        nav_it != results->navigation_results.end(); ++nav_it) {
     nav_it->CalculateAndClassifyMatchContents(false, input_text, languages);
   }
@@ -263,16 +267,16 @@ void SearchProvider::Start(const AutocompleteInput& input,
 }
 
 void SearchProvider::SortResults(bool is_keyword,
-                                 const base::ListValue* relevances,
-                                 Results* results) {
+                                 bool relevances_from_server,
+                                 SearchSuggestionParser::Results* results) {
   // Ignore suggested scores for non-keyword matches in keyword mode; if the
   // server is allowed to score these, it could interfere with the user's
   // ability to get good keyword results.
   const bool abandon_suggested_scores =
       !is_keyword && !providers_.keyword_provider().empty();
-  // Apply calculated relevance scores to suggestions if a valid list was
+  // Apply calculated relevance scores to suggestions if valid relevances were
   // not provided or we're abandoning suggested scores entirely.
-  if ((relevances == NULL) || abandon_suggested_scores) {
+  if (!relevances_from_server || abandon_suggested_scores) {
     ApplyCalculatedSuggestRelevance(&results->suggest_results);
     ApplyCalculatedNavigationRelevance(&results->navigation_results);
     // If abandoning scores entirely, also abandon the verbatim score.
@@ -299,12 +303,13 @@ const AutocompleteInput SearchProvider::GetInput(bool is_keyword) const {
   return is_keyword ? keyword_input_ : input_;
 }
 
-BaseSearchProvider::Results* SearchProvider::GetResultsToFill(bool is_keyword) {
+SearchSuggestionParser::Results* SearchProvider::GetResultsToFill(
+    bool is_keyword) {
   return is_keyword ? &keyword_results_ : &default_results_;
 }
 
 bool SearchProvider::ShouldAppendExtraParams(
-    const SuggestResult& result) const {
+    const SearchSuggestionParser::SuggestResult& result) const {
   return !result.from_keyword_provider() ||
       providers_.default_provider().empty();
 }
@@ -612,9 +617,10 @@ void SearchProvider::ApplyCalculatedRelevance() {
   keyword_results_.verbatim_relevance = -1;
 }
 
-void SearchProvider::ApplyCalculatedSuggestRelevance(SuggestResults* list) {
+void SearchProvider::ApplyCalculatedSuggestRelevance(
+    SearchSuggestionParser::SuggestResults* list) {
   for (size_t i = 0; i < list->size(); ++i) {
-    SuggestResult& result = (*list)[i];
+    SearchSuggestionParser::SuggestResult& result = (*list)[i];
     result.set_relevance(
         result.CalculateRelevance(input_, providers_.has_keyword_provider()) +
         (list->size() - i - 1));
@@ -623,9 +629,9 @@ void SearchProvider::ApplyCalculatedSuggestRelevance(SuggestResults* list) {
 }
 
 void SearchProvider::ApplyCalculatedNavigationRelevance(
-    NavigationResults* list) {
+    SearchSuggestionParser::NavigationResults* list) {
   for (size_t i = 0; i < list->size(); ++i) {
-    NavigationResult& result = (*list)[i];
+    SearchSuggestionParser::NavigationResult& result = (*list)[i];
     result.set_relevance(
         result.CalculateRelevance(input_, providers_.has_keyword_provider()) +
         (list->size() - i - 1));
@@ -707,7 +713,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   if (verbatim_relevance > 0) {
     const base::string16& trimmed_verbatim =
         base::CollapseWhitespace(input_.text(), false);
-    SuggestResult verbatim(
+    SearchSuggestionParser::SuggestResult verbatim(
         trimmed_verbatim, AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
         trimmed_verbatim, base::string16(), base::string16(), base::string16(),
         base::string16(), std::string(), std::string(), false,
@@ -732,7 +738,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       if (keyword_verbatim_relevance > 0) {
         const base::string16& trimmed_verbatim =
             base::CollapseWhitespace(keyword_input_.text(), false);
-        SuggestResult verbatim(
+        SearchSuggestionParser::SuggestResult verbatim(
             trimmed_verbatim, AutocompleteMatchType::SEARCH_OTHER_ENGINE,
             trimmed_verbatim, base::string16(), base::string16(),
             base::string16(), base::string16(), std::string(), std::string(),
@@ -832,10 +838,10 @@ bool SearchProvider::IsTopMatchSearchWithURLInput() const {
 }
 
 void SearchProvider::AddNavigationResultsToMatches(
-    const NavigationResults& navigation_results,
+    const SearchSuggestionParser::NavigationResults& navigation_results,
     ACMatches* matches) {
-  for (NavigationResults::const_iterator it = navigation_results.begin();
-        it != navigation_results.end(); ++it) {
+  for (SearchSuggestionParser::NavigationResults::const_iterator it =
+           navigation_results.begin(); it != navigation_results.end(); ++it) {
     matches->push_back(NavigationToMatch(*it));
     // In the absence of suggested relevance scores, use only the single
     // highest-scoring result.  (The results are already sorted by relevance.)
@@ -858,7 +864,7 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
       is_keyword ? keyword_input_.text() : input_.text();
   bool input_multiple_words = HasMultipleWords(input_text);
 
-  SuggestResults scored_results;
+  SearchSuggestionParser::SuggestResults scored_results;
   if (!prevent_inline_autocomplete && input_multiple_words) {
     // ScoreHistoryResults() allows autocompletion of multi-word, 1-visit
     // queries if the input also has multiple words.  But if we were already
@@ -879,21 +885,21 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
     scored_results = ScoreHistoryResults(results, prevent_inline_autocomplete,
                                          input_multiple_words, input_text,
                                          is_keyword);
-  for (SuggestResults::const_iterator i(scored_results.begin());
-       i != scored_results.end(); ++i) {
+  for (SearchSuggestionParser::SuggestResults::const_iterator i(
+           scored_results.begin()); i != scored_results.end(); ++i) {
     AddMatchToMap(*i, std::string(), did_not_accept_suggestion, true, map);
   }
   UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.AddHistoryResultsTime",
                       base::TimeTicks::Now() - start_time);
 }
 
-SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
+SearchSuggestionParser::SuggestResults SearchProvider::ScoreHistoryResults(
     const HistoryResults& results,
     bool base_prevent_inline_autocomplete,
     bool input_multiple_words,
     const base::string16& input_text,
     bool is_keyword) {
-  SuggestResults scored_results;
+  SearchSuggestionParser::SuggestResults scored_results;
   // True if the user has asked this exact query previously.
   bool found_what_you_typed_match = false;
   const bool prevent_search_history_inlining =
@@ -918,16 +924,19 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
     // Add the match to |scored_results| by putting the what-you-typed match
     // on the front and appending all other matches.  We want the what-you-
     // typed match to always be first.
-    SuggestResults::iterator insertion_position = scored_results.end();
+    SearchSuggestionParser::SuggestResults::iterator insertion_position =
+        scored_results.end();
     if (trimmed_suggestion == trimmed_input) {
       found_what_you_typed_match = true;
       insertion_position = scored_results.begin();
     }
-    scored_results.insert(insertion_position, SuggestResult(
-        trimmed_suggestion, AutocompleteMatchType::SEARCH_HISTORY,
-        trimmed_suggestion, base::string16(), base::string16(),
-        base::string16(), base::string16(), std::string(), std::string(),
-        is_keyword, relevance, false, false, trimmed_input));
+    scored_results.insert(
+        insertion_position,
+        SearchSuggestionParser::SuggestResult(
+            trimmed_suggestion, AutocompleteMatchType::SEARCH_HISTORY,
+            trimmed_suggestion, base::string16(), base::string16(),
+            base::string16(), base::string16(), std::string(), std::string(),
+            is_keyword, relevance, false, false, trimmed_input));
   }
 
   // History returns results sorted for us.  However, we may have docked some
@@ -986,8 +995,8 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
     }
   }
 
-  for (SuggestResults::iterator i(scored_results.begin());
-       i != scored_results.end(); ++i) {
+  for (SearchSuggestionParser::SuggestResults::iterator i(
+           scored_results.begin()); i != scored_results.end(); ++i) {
     if ((last_relevance != 0) && (i->relevance() >= last_relevance))
       i->set_relevance(last_relevance - 1);
     last_relevance = i->relevance();
@@ -996,9 +1005,10 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
   return scored_results;
 }
 
-void SearchProvider::AddSuggestResultsToMap(const SuggestResults& results,
-                                            const std::string& metadata,
-                                            MatchMap* map) {
+void SearchProvider::AddSuggestResultsToMap(
+    const SearchSuggestionParser::SuggestResults& results,
+    const std::string& metadata,
+    MatchMap* map) {
   for (size_t i = 0; i < results.size(); ++i)
     AddMatchToMap(results[i], metadata, i, false, map);
 }
@@ -1112,7 +1122,7 @@ int SearchProvider::CalculateRelevanceForHistory(
 }
 
 AutocompleteMatch SearchProvider::NavigationToMatch(
-    const NavigationResult& navigation) {
+    const SearchSuggestionParser::NavigationResult& navigation) {
   base::string16 input;
   const bool trimmed_whitespace = base::TrimWhitespace(
       navigation.from_keyword_provider() ?

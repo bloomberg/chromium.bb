@@ -2376,7 +2376,7 @@ TEST_F(SearchProviderTest, NavigationInline) {
     // First test regular mode.
     QueryForInput(ASCIIToUTF16(cases[i].input), false, false);
     AutocompleteMatch match(
-        provider_->NavigationToMatch(SearchProvider::NavigationResult(
+        provider_->NavigationToMatch(SearchSuggestionParser::NavigationResult(
             ChromeAutocompleteSchemeClassifier(&profile_), GURL(cases[i].url),
             AutocompleteMatchType::NAVSUGGEST, base::string16(), std::string(),
             false, 0, false, ASCIIToUTF16(cases[i].input), std::string())));
@@ -2389,7 +2389,7 @@ TEST_F(SearchProviderTest, NavigationInline) {
     // Then test prevent-inline-autocomplete mode.
     QueryForInput(ASCIIToUTF16(cases[i].input), true, false);
     AutocompleteMatch match_prevent_inline(
-        provider_->NavigationToMatch(SearchProvider::NavigationResult(
+        provider_->NavigationToMatch(SearchSuggestionParser::NavigationResult(
             ChromeAutocompleteSchemeClassifier(&profile_), GURL(cases[i].url),
             AutocompleteMatchType::NAVSUGGEST, base::string16(), std::string(),
             false, 0, false, ASCIIToUTF16(cases[i].input), std::string())));
@@ -2406,7 +2406,7 @@ TEST_F(SearchProviderTest, NavigationInline) {
 TEST_F(SearchProviderTest, NavigationInlineSchemeSubstring) {
   const base::string16 input(ASCIIToUTF16("ht"));
   const base::string16 url(ASCIIToUTF16("http://a.com"));
-  const SearchProvider::NavigationResult result(
+  const SearchSuggestionParser::NavigationResult result(
       ChromeAutocompleteSchemeClassifier(&profile_), GURL(url),
       AutocompleteMatchType::NAVSUGGEST,
       base::string16(), std::string(), false, 0, false, input, std::string());
@@ -2431,7 +2431,7 @@ TEST_F(SearchProviderTest, NavigationInlineSchemeSubstring) {
 TEST_F(SearchProviderTest, NavigationInlineDomainClassify) {
   QueryForInput(ASCIIToUTF16("w"), false, false);
   AutocompleteMatch match(
-      provider_->NavigationToMatch(SearchProvider::NavigationResult(
+      provider_->NavigationToMatch(SearchSuggestionParser::NavigationResult(
           ChromeAutocompleteSchemeClassifier(&profile_),
           GURL("http://www.wow.com"),
           AutocompleteMatchType::NAVSUGGEST, base::string16(), std::string(),

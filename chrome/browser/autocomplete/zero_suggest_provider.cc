@@ -212,14 +212,14 @@ const AutocompleteInput ZeroSuggestProvider::GetInput(bool is_keyword) const {
       true, ChromeAutocompleteSchemeClassifier(profile_));
 }
 
-BaseSearchProvider::Results* ZeroSuggestProvider::GetResultsToFill(
+SearchSuggestionParser::Results* ZeroSuggestProvider::GetResultsToFill(
     bool is_keyword) {
   DCHECK(!is_keyword);
   return &results_;
 }
 
 bool ZeroSuggestProvider::ShouldAppendExtraParams(
-      const SuggestResult& result) const {
+      const SearchSuggestionParser::SuggestResult& result) const {
   // We always use the default provider for search, so append the params.
   return true;
 }
@@ -272,14 +272,14 @@ void ZeroSuggestProvider::UpdateMatches() {
 }
 
 void ZeroSuggestProvider::AddSuggestResultsToMap(
-    const SuggestResults& results,
+    const SearchSuggestionParser::SuggestResults& results,
     MatchMap* map) {
   for (size_t i = 0; i < results.size(); ++i)
     AddMatchToMap(results[i], std::string(), i, false, map);
 }
 
 AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
-    const NavigationResult& navigation) {
+    const SearchSuggestionParser::NavigationResult& navigation) {
   AutocompleteMatch match(this, navigation.relevance(), false,
                           navigation.type());
   match.destination_url = navigation.url();
@@ -376,7 +376,7 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
         profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
     for (size_t i = 0; i < most_visited_urls_.size(); i++) {
       const history::MostVisitedURL& url = most_visited_urls_[i];
-      NavigationResult nav(
+      SearchSuggestionParser::NavigationResult nav(
           ChromeAutocompleteSchemeClassifier(profile_), url.url,
           AutocompleteMatchType::NAVSUGGEST, url.title, std::string(), false,
           relevance, true, current_query_string16, languages);
@@ -396,9 +396,10 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
   for (MatchMap::const_iterator it(map.begin()); it != map.end(); ++it)
     matches_.push_back(it->second);
 
-  const NavigationResults& nav_results(results_.navigation_results);
-  for (NavigationResults::const_iterator it(nav_results.begin());
-       it != nav_results.end(); ++it)
+  const SearchSuggestionParser::NavigationResults& nav_results(
+      results_.navigation_results);
+  for (SearchSuggestionParser::NavigationResults::const_iterator it(
+           nav_results.begin()); it != nav_results.end(); ++it)
     matches_.push_back(NavigationToMatch(*it));
 }
 

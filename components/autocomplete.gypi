@@ -31,6 +31,8 @@
         'autocomplete/autocomplete_provider.cc',
         'autocomplete/autocomplete_provider.h',
         'autocomplete/autocomplete_scheme_classifier.h',
+        'autocomplete/search_suggestion_parser.cc',
+        'autocomplete/search_suggestion_parser.h',
         'autocomplete/url_prefix.cc',
         'autocomplete/url_prefix.h',
       ],

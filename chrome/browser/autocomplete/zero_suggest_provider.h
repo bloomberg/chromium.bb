@@ -80,9 +80,10 @@ class ZeroSuggestProvider : public BaseSearchProvider {
                                        const base::Value& parsed_data) OVERRIDE;
   virtual const TemplateURL* GetTemplateURL(bool is_keyword) const OVERRIDE;
   virtual const AutocompleteInput GetInput(bool is_keyword) const OVERRIDE;
-  virtual Results* GetResultsToFill(bool is_keyword) OVERRIDE;
+  virtual SearchSuggestionParser::Results* GetResultsToFill(
+      bool is_keyword) OVERRIDE;
   virtual bool ShouldAppendExtraParams(
-      const SuggestResult& result) const OVERRIDE;
+      const SearchSuggestionParser::SuggestResult& result) const OVERRIDE;
   virtual void StopSuggest() OVERRIDE;
   virtual void ClearAllResults() OVERRIDE;
   virtual int GetDefaultResultRelevance() const OVERRIDE;
@@ -93,10 +94,13 @@ class ZeroSuggestProvider : public BaseSearchProvider {
 
   // Adds AutocompleteMatches for each of the suggestions in |results| to
   // |map|.
-  void AddSuggestResultsToMap(const SuggestResults& results, MatchMap* map);
+  void AddSuggestResultsToMap(
+      const SearchSuggestionParser::SuggestResults& results,
+      MatchMap* map);
 
   // Returns an AutocompleteMatch for a navigational suggestion |navigation|.
-  AutocompleteMatch NavigationToMatch(const NavigationResult& navigation);
+  AutocompleteMatch NavigationToMatch(
+      const SearchSuggestionParser::NavigationResult& navigation);
 
   // Fetches zero-suggest suggestions by sending a request using |suggest_url|.
   void Run(const GURL& suggest_url);
@@ -149,7 +153,7 @@ class ZeroSuggestProvider : public BaseSearchProvider {
 
   // Contains suggest and navigation results as well as relevance parsed from
   // the response for the most recent zero suggest input URL.
-  Results results_;
+  SearchSuggestionParser::Results results_;
 
   // Whether we are currently showing cached zero suggest results.
   bool results_from_cache_;
