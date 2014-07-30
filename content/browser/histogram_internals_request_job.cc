@@ -47,8 +47,8 @@ void AboutHistogram(std::string* data, const std::string& path) {
   data->append("</head><body>");
 
   // Display any stats for which we sent off requests the last time.
-  data->append("<p>Stats as of last page load;");
-  data->append("reload to get stats as of this page load.</p>\n");
+  data->append("<p>Stats accumulated from browser startup to previous ");
+  data->append("page load; reload to get stats as of this page load.</p>\n");
   data->append("<table width=\"100%\">\n");
 
   base::StatisticsRecorder::WriteHTMLGraph(unescaped_query, data);

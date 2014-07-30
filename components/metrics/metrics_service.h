@@ -76,6 +76,7 @@ struct SyntheticTrialGroup {
   SyntheticTrialGroup(uint32 trial, uint32 group);
 };
 
+// See metrics_service.cc for a detailed description.
 class MetricsService : public base::HistogramFlattener {
  public:
   // The execution phase of the browser.
