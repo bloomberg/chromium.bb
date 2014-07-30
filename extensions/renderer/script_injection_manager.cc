@@ -54,7 +54,18 @@ class ScriptInjectionManager::RVOHelper : public content::RenderViewObserver {
   // document_idle.
   void RunIdle(blink::WebFrame* frame);
 
+  // Indicate that the given |frame| is no longer valid because it is starting
+  // a new load or closing.
+  void InvalidateFrame(blink::WebFrame* frame);
+
+  // The owning ScriptInjectionManager.
   ScriptInjectionManager* manager_;
+
+  // The set of frames that we are about to notify for DOCUMENT_IDLE. We keep
+  // a set of those that are valid, so we don't notify that an invalid frame
+  // became idle.
+  std::set<blink::WebFrame*> pending_idle_frames_;
+
   base::WeakPtrFactory<RVOHelper> weak_factory_;
 };
 
@@ -89,6 +100,14 @@ void ScriptInjectionManager::RVOHelper::DidCreateDocumentElement(
 void ScriptInjectionManager::RVOHelper::DidFinishDocumentLoad(
     blink::WebLocalFrame* frame) {
   manager_->InjectScripts(frame, UserScript::DOCUMENT_END);
+  pending_idle_frames_.insert(frame);
+  // We try to run idle in two places: here and DidFinishLoad.
+  // DidFinishDocumentLoad() corresponds to completing the document's load,
+  // whereas DidFinishLoad corresponds to completing the document and all
+  // subresources' load. We don't want to hold up script injection for a
+  // particularly slow subresource, so we set a delayed task from here - but if
+  // we finish everything before that point (i.e., DidFinishLoad() is
+  // triggered), then there's no reason to keep waiting.
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ScriptInjectionManager::RVOHelper::RunIdle,
@@ -99,7 +118,11 @@ void ScriptInjectionManager::RVOHelper::DidFinishDocumentLoad(
 
 void ScriptInjectionManager::RVOHelper::DidFinishLoad(
     blink::WebLocalFrame* frame) {
-  // Ensure that running scripts does not keep any progress UI running.
+  // Ensure that we don't block any UI progress by running scripts.
+  // We *don't* add the frame to |pending_idle_frames_| here because
+  // DidFinishDocumentLoad should strictly come before DidFinishLoad, so the
+  // first posted task to RunIdle() pops it out of the set. This ensures we
+  // don't try to run idle twice.
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ScriptInjectionManager::RVOHelper::RunIdle,
@@ -109,11 +132,13 @@ void ScriptInjectionManager::RVOHelper::DidFinishLoad(
 
 void ScriptInjectionManager::RVOHelper::DidStartProvisionalLoad(
     blink::WebLocalFrame* frame) {
-  manager_->InvalidateForFrame(frame);
+  // We're starting a new load - invalidate.
+  InvalidateFrame(frame);
 }
 
 void ScriptInjectionManager::RVOHelper::FrameDetached(blink::WebFrame* frame) {
-  manager_->InvalidateForFrame(frame);
+  // The frame is closing - invalidate.
+  InvalidateFrame(frame);
 }
 
 void ScriptInjectionManager::RVOHelper::OnDestruct() {
@@ -131,7 +156,18 @@ void ScriptInjectionManager::RVOHelper::OnPermitScriptInjection(
 }
 
 void ScriptInjectionManager::RVOHelper::RunIdle(blink::WebFrame* frame) {
-  manager_->InjectScripts(frame, UserScript::DOCUMENT_IDLE);
+  // Only notify the manager if the frame hasn't either been removed or already
+  // had idle run since the task to RunIdle() was posted.
+  if (pending_idle_frames_.count(frame) > 0) {
+    manager_->InjectScripts(frame, UserScript::DOCUMENT_IDLE);
+    pending_idle_frames_.erase(frame);
+  }
+}
+
+void ScriptInjectionManager::RVOHelper::InvalidateFrame(
+    blink::WebFrame* frame) {
+  pending_idle_frames_.erase(frame);
+  manager_->InvalidateForFrame(frame);
 }
 
 ScriptInjectionManager::ScriptInjectionManager(
@@ -191,30 +227,31 @@ void ScriptInjectionManager::InvalidateForFrame(blink::WebFrame* frame) {
 void ScriptInjectionManager::InjectScripts(
     blink::WebFrame* frame, UserScript::RunLocation run_location) {
   FrameStatusMap::iterator iter = frame_statuses_.find(frame);
-  // Check if the frame is already in our map.
-  if (iter == frame_statuses_.end()) {
-    // If the frame isn't in our map, and the run location isn't document_start,
-    // then abort. This can happen in two ways:
-    // 1. We just received a delayed idle run for a frame which is invalidated.
-    //    Obviously, we don't want to run.
-    // 2. We somehow received a document_end or document_idle notification
-    //    without ever receiving a document_start. We don't want to run because
-    //    extensions may have requirements that scripts running at start have
-    //    run by the time scripts run at idle. Better to just not run.
-    if (run_location != UserScript::DOCUMENT_START)
-      return;
-
-    // Otherwise, add a new entry to the map.
-    frame_statuses_[frame] = UserScript::DOCUMENT_START;
-  } else {  // Already in the map.
-    // If we've already run the given location (happens in the case of idle
-    // since we notify in two places), return.
-    if (iter->second == run_location)
-      return;
-
-    // Otherwise, update the frame status.
-    iter->second = run_location;
+  // We also don't execute if we detect that the run location is somehow out of
+  // order. This can happen if:
+  // - The first run location reported for the frame isn't DOCUMENT_START, or
+  // - The run location reported doesn't immediately follow the previous
+  //   reported run location.
+  // We don't want to run because extensions may have requirements that scripts
+  // running in an earlier run location have run by the time a later script
+  // runs. Better to just not run.
+  if ((iter == frame_statuses_.end() &&
+           run_location != UserScript::DOCUMENT_START) ||
+      (iter != frame_statuses_.end() && run_location - iter->second > 1)) {
+    // We also invalidate the frame, because the run order of pending injections
+    // may also be bad.
+    InvalidateForFrame(frame);
+    return;
+  } else if (iter != frame_statuses_.end() && iter->second > run_location) {
+    // Certain run location signals (like DidCreateDocumentElement) can happen
+    // multiple times. Ignore the subsequent signals.
+    return;
   }
+
+  // Otherwise, all is right in the world, and we can get on with the
+  // injections!
+
+  frame_statuses_[frame] = run_location;
 
   // Inject any scripts that were waiting for the right run location.
   ScriptsRunInfo scripts_run_info;

@@ -49,6 +49,9 @@ class UserScript {
   static const InjectionType INJECTION_TYPE_LAST = PROGRAMMATIC_SCRIPT;
 
   // Locations that user scripts can be run inside the document.
+  // The three run locations must strictly follow each other in both load order
+  // (i.e., start *always* comes before end) and numerically, as we use
+  // arithmetic checking (e.g., curr == last + 1). So, no bitmasks here!!
   enum RunLocation {
     UNDEFINED,
     DOCUMENT_START,  // After the documentElement is created, but before
