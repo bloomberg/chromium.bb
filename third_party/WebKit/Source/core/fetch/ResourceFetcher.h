@@ -212,12 +212,12 @@ private:
 
     int m_requestCount;
 
-    OwnPtr<ListHashSet<Resource*> > m_preloads;
+    OwnPtrWillBeMember<WillBeHeapListHashSet<RawPtrWillBeMember<Resource> > > m_preloads;
 
     Timer<ResourceFetcher> m_garbageCollectDocumentResourcesTimer;
     Timer<ResourceFetcher> m_resourceTimingReportTimer;
 
-    typedef HashMap<Resource*, RefPtr<ResourceTimingInfo> > ResourceTimingInfoMap;
+    typedef WillBeHeapHashMap<RawPtrWillBeMember<Resource>, RefPtr<ResourceTimingInfo> > ResourceTimingInfoMap;
     ResourceTimingInfoMap m_resourceTimingInfoMap;
 
     HashMap<RefPtr<ResourceTimingInfo>, bool> m_scheduledResourceTimingReports;

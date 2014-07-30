@@ -216,7 +216,7 @@ TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask)
 
     private:
         ResourcePtr<Resource> m_live;
-        Resource* m_dead;
+        RawPtrWillBePersistent<Resource> m_dead;
     };
 
     class Task2 : public blink::WebThread::Task {

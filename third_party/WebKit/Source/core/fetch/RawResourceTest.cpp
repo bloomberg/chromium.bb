@@ -126,7 +126,7 @@ public:
     }
 private:
     DummyClient* m_dummyClient;
-    Resource* m_resource;
+    RawPtrWillBePersistent<Resource> m_resource;
     Timer<AddingClient> m_removeClientTimer;
 };
 

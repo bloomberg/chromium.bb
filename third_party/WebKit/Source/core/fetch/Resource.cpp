@@ -902,9 +902,9 @@ bool Resource::ResourceCallback::isScheduled(Resource* resource) const
 
 void Resource::ResourceCallback::timerFired(Timer<ResourceCallback>*)
 {
-    HashSet<Resource*>::iterator end = m_resourcesWithPendingClients.end();
+    WillBePersistentHeapHashSet<RawPtrWillBeMember<Resource> >::iterator end = m_resourcesWithPendingClients.end();
     Vector<ResourcePtr<Resource> > resources;
-    for (HashSet<Resource*>::iterator it = m_resourcesWithPendingClients.begin(); it != end; ++it)
+    for (WillBePersistentHeapHashSet<RawPtrWillBeMember<Resource> >::iterator it = m_resourcesWithPendingClients.begin(); it != end; ++it)
         resources.append(*it);
     m_resourcesWithPendingClients.clear();
 
