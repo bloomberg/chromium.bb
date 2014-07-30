@@ -1396,7 +1396,7 @@
         },
       ],
     }],
-    ['chromeos==1 or OS=="win" or OS=="android"', {
+    ['(chromeos==1 or OS=="win" or OS=="android") and use_ozone==0', {
       'targets': [
           {
             'target_name': 'video_decode_accelerator_unittest',
