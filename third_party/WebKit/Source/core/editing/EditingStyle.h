@@ -50,6 +50,7 @@ class CSSStyleDeclaration;
 class CSSComputedStyleDeclaration;
 class CSSPrimitiveValue;
 class CSSValue;
+class ContainerNode;
 class Document;
 class Element;
 class HTMLElement;
@@ -74,7 +75,7 @@ public:
         return adoptRefWillBeNoop(new EditingStyle());
     }
 
-    static PassRefPtrWillBeRawPtr<EditingStyle> create(Node* node, PropertiesToInclude propertiesToInclude = OnlyEditingInheritableProperties)
+    static PassRefPtrWillBeRawPtr<EditingStyle> create(ContainerNode* node, PropertiesToInclude propertiesToInclude = OnlyEditingInheritableProperties)
     {
         return adoptRefWillBeNoop(new EditingStyle(node, propertiesToInclude));
     }
@@ -105,14 +106,14 @@ public:
     PassRefPtrWillBeRawPtr<EditingStyle> extractAndRemoveBlockProperties();
     PassRefPtrWillBeRawPtr<EditingStyle> extractAndRemoveTextDirection();
     void removeBlockProperties();
-    void removeStyleAddedByNode(Node*);
-    void removeStyleConflictingWithStyleOfNode(Node*);
+    void removeStyleAddedByElement(Element*);
+    void removeStyleConflictingWithStyleOfElement(Element*);
     void collapseTextDecorationProperties();
     enum ShouldIgnoreTextOnlyProperties { IgnoreTextOnlyProperties, DoNotIgnoreTextOnlyProperties };
     TriState triStateOfStyle(EditingStyle*) const;
     TriState triStateOfStyle(const VisibleSelection&) const;
-    bool conflictsWithInlineStyleOfElement(Element* element) const { return conflictsWithInlineStyleOfElement(element, 0, 0); }
-    bool conflictsWithInlineStyleOfElement(Element* element, EditingStyle* extractedStyle, Vector<CSSPropertyID>& conflictingProperties) const
+    bool conflictsWithInlineStyleOfElement(HTMLElement* element) const { return conflictsWithInlineStyleOfElement(element, 0, 0); }
+    bool conflictsWithInlineStyleOfElement(HTMLElement* element, EditingStyle* extractedStyle, Vector<CSSPropertyID>& conflictingProperties) const
     {
         return conflictsWithInlineStyleOfElement(element, extractedStyle, &conflictingProperties);
     }
@@ -127,11 +128,11 @@ public:
     void prepareToApplyAt(const Position&, ShouldPreserveWritingDirection = DoNotPreserveWritingDirection);
     void mergeTypingStyle(Document*);
     enum CSSPropertyOverrideMode { OverrideValues, DoNotOverrideValues };
-    void mergeInlineStyleOfElement(Element*, CSSPropertyOverrideMode, PropertiesToInclude = AllProperties);
-    static PassRefPtrWillBeRawPtr<EditingStyle> wrappingStyleForSerialization(Node* context, bool shouldAnnotate);
+    void mergeInlineStyleOfElement(HTMLElement*, CSSPropertyOverrideMode, PropertiesToInclude = AllProperties);
+    static PassRefPtrWillBeRawPtr<EditingStyle> wrappingStyleForSerialization(ContainerNode* context, bool shouldAnnotate);
     void mergeStyleFromRules(Element*);
     void mergeStyleFromRulesForSerialization(Element*);
-    void removeStyleFromRulesAndContext(Element*, Node* context);
+    void removeStyleFromRulesAndContext(Element*, ContainerNode* context);
     void removePropertiesInElementDefaultStyle(Element*);
     void addAbsolutePositioningFromElement(const Element&);
     void forceInline();
@@ -147,7 +148,7 @@ public:
 
 private:
     EditingStyle();
-    EditingStyle(Node*, PropertiesToInclude);
+    EditingStyle(ContainerNode*, PropertiesToInclude);
     EditingStyle(const Position&, PropertiesToInclude);
     explicit EditingStyle(const StylePropertySet*);
     EditingStyle(CSSPropertyID, const String& value);
@@ -157,7 +158,7 @@ private:
     void replaceFontSizeByKeywordIfPossible(RenderStyle*, CSSComputedStyleDeclaration*);
     void extractFontSizeDelta();
     TriState triStateOfStyle(CSSStyleDeclaration* styleToCompare, ShouldIgnoreTextOnlyProperties) const;
-    bool conflictsWithInlineStyleOfElement(Element*, EditingStyle* extractedStyle, Vector<CSSPropertyID>* conflictingProperties) const;
+    bool conflictsWithInlineStyleOfElement(HTMLElement*, EditingStyle* extractedStyle, Vector<CSSPropertyID>* conflictingProperties) const;
     void mergeInlineAndImplicitStyleOfElement(Element*, CSSPropertyOverrideMode, PropertiesToInclude);
     void mergeStyle(const StylePropertySet*, CSSPropertyOverrideMode);
 

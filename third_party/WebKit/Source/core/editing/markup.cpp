@@ -313,7 +313,7 @@ void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element
         if (shouldApplyWrappingStyle(element)) {
             newInlineStyle = m_wrappingStyle->copy();
             newInlineStyle->removePropertiesInElementDefaultStyle(&element);
-            newInlineStyle->removeStyleConflictingWithStyleOfNode(&element);
+            newInlineStyle->removeStyleConflictingWithStyleOfElement(&element);
         } else
             newInlineStyle = EditingStyle::create();
 

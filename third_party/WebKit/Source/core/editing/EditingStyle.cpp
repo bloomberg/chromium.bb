@@ -166,7 +166,7 @@ public:
     virtual bool matches(const Element* element) const { return !m_tagName || element->hasTagName(*m_tagName); }
     virtual bool hasAttribute() const { return false; }
     virtual bool propertyExistsInStyle(const StylePropertySet* style) const { return style->getPropertyCSSValue(m_propertyID); }
-    virtual bool valueIsPresentInStyle(Element*, StylePropertySet*) const;
+    virtual bool valueIsPresentInStyle(HTMLElement*, StylePropertySet*) const;
     virtual void addToStyle(Element*, EditingStyle*) const;
 
     virtual void trace(Visitor* visitor) { visitor->trace(m_primitiveValue); }
@@ -202,7 +202,7 @@ HTMLElementEquivalent::HTMLElementEquivalent(CSSPropertyID id, CSSValueID primit
     ASSERT(primitiveValue != CSSValueInvalid);
 }
 
-bool HTMLElementEquivalent::valueIsPresentInStyle(Element* element, StylePropertySet* style) const
+bool HTMLElementEquivalent::valueIsPresentInStyle(HTMLElement* element, StylePropertySet* style) const
 {
     RefPtrWillBeRawPtr<CSSValue> value = style->getPropertyCSSValue(m_propertyID);
     return matches(element) && value && value->isPrimitiveValue() && toCSSPrimitiveValue(value.get())->getValueID() == m_primitiveValue->getValueID();
@@ -220,7 +220,7 @@ public:
         return adoptPtrWillBeNoop(new HTMLTextDecorationEquivalent(primitiveValue, tagName));
     }
     virtual bool propertyExistsInStyle(const StylePropertySet*) const OVERRIDE;
-    virtual bool valueIsPresentInStyle(Element*, StylePropertySet*) const OVERRIDE;
+    virtual bool valueIsPresentInStyle(HTMLElement*, StylePropertySet*) const OVERRIDE;
 
     virtual void trace(Visitor* visitor) OVERRIDE { HTMLElementEquivalent::trace(visitor); }
 
@@ -240,7 +240,7 @@ bool HTMLTextDecorationEquivalent::propertyExistsInStyle(const StylePropertySet*
         || style->getPropertyCSSValue(textDecorationPropertyForEditing());
 }
 
-bool HTMLTextDecorationEquivalent::valueIsPresentInStyle(Element* element, StylePropertySet* style) const
+bool HTMLTextDecorationEquivalent::valueIsPresentInStyle(HTMLElement* element, StylePropertySet* style) const
 {
     RefPtrWillBeRawPtr<CSSValue> styleValue = style->getPropertyCSSValue(CSSPropertyWebkitTextDecorationsInEffect);
     if (!styleValue)
@@ -259,9 +259,9 @@ public:
         return adoptPtrWillBeNoop(new HTMLAttributeEquivalent(propertyID, attrName));
     }
 
-    virtual bool matches(const Element* elem) const OVERRIDE { return HTMLElementEquivalent::matches(elem) && elem->hasAttribute(m_attrName); }
+    virtual bool matches(const Element* element) const OVERRIDE { return HTMLElementEquivalent::matches(element) && element->hasAttribute(m_attrName); }
     virtual bool hasAttribute() const OVERRIDE { return true; }
-    virtual bool valueIsPresentInStyle(Element*, StylePropertySet*) const OVERRIDE;
+    virtual bool valueIsPresentInStyle(HTMLElement*, StylePropertySet*) const OVERRIDE;
     virtual void addToStyle(Element*, EditingStyle*) const OVERRIDE;
     virtual PassRefPtrWillBeRawPtr<CSSValue> attributeValueAsCSSValue(Element*) const;
     inline const QualifiedName& attributeName() const { return m_attrName; }
@@ -286,7 +286,7 @@ HTMLAttributeEquivalent::HTMLAttributeEquivalent(CSSPropertyID id, const Qualifi
 {
 }
 
-bool HTMLAttributeEquivalent::valueIsPresentInStyle(Element* element, StylePropertySet* style) const
+bool HTMLAttributeEquivalent::valueIsPresentInStyle(HTMLElement* element, StylePropertySet* style) const
 {
     RefPtrWillBeRawPtr<CSSValue> value = attributeValueAsCSSValue(element);
     RefPtrWillBeRawPtr<CSSValue> styleValue = style->getPropertyCSSValue(m_propertyID);
@@ -352,7 +352,7 @@ EditingStyle::EditingStyle()
 {
 }
 
-EditingStyle::EditingStyle(Node* node, PropertiesToInclude propertiesToInclude)
+EditingStyle::EditingStyle(ContainerNode* node, PropertiesToInclude propertiesToInclude)
     : m_fixedPitchFontType(NonFixedPitchFont)
     , m_fontSizeDelta(NoFontDelta)
 {
@@ -627,23 +627,23 @@ void EditingStyle::removeBlockProperties()
     m_mutableStyle->removeBlockProperties();
 }
 
-void EditingStyle::removeStyleAddedByNode(Node* node)
+void EditingStyle::removeStyleAddedByElement(Element* element)
 {
-    if (!node || !node->parentNode())
+    if (!element || !element->parentNode())
         return;
-    RefPtrWillBeRawPtr<MutableStylePropertySet> parentStyle = editingStyleFromComputedStyle(CSSComputedStyleDeclaration::create(node->parentNode()), AllEditingProperties);
-    RefPtrWillBeRawPtr<MutableStylePropertySet> nodeStyle = editingStyleFromComputedStyle(CSSComputedStyleDeclaration::create(node), AllEditingProperties);
+    RefPtrWillBeRawPtr<MutableStylePropertySet> parentStyle = editingStyleFromComputedStyle(CSSComputedStyleDeclaration::create(element->parentNode()), AllEditingProperties);
+    RefPtrWillBeRawPtr<MutableStylePropertySet> nodeStyle = editingStyleFromComputedStyle(CSSComputedStyleDeclaration::create(element), AllEditingProperties);
     nodeStyle->removeEquivalentProperties(parentStyle.get());
     m_mutableStyle->removeEquivalentProperties(nodeStyle.get());
 }
 
-void EditingStyle::removeStyleConflictingWithStyleOfNode(Node* node)
+void EditingStyle::removeStyleConflictingWithStyleOfElement(Element* element)
 {
-    if (!node || !node->parentNode() || !m_mutableStyle)
+    if (!element || !element->parentNode() || !m_mutableStyle)
         return;
 
-    RefPtrWillBeRawPtr<MutableStylePropertySet> parentStyle = editingStyleFromComputedStyle(CSSComputedStyleDeclaration::create(node->parentNode()), AllEditingProperties);
-    RefPtrWillBeRawPtr<MutableStylePropertySet> nodeStyle = editingStyleFromComputedStyle(CSSComputedStyleDeclaration::create(node), AllEditingProperties);
+    RefPtrWillBeRawPtr<MutableStylePropertySet> parentStyle = editingStyleFromComputedStyle(CSSComputedStyleDeclaration::create(element->parentNode()), AllEditingProperties);
+    RefPtrWillBeRawPtr<MutableStylePropertySet> nodeStyle = editingStyleFromComputedStyle(CSSComputedStyleDeclaration::create(element), AllEditingProperties);
     nodeStyle->removeEquivalentProperties(parentStyle.get());
 
     unsigned propertyCount = nodeStyle->propertyCount();
@@ -732,7 +732,7 @@ TriState EditingStyle::triStateOfStyle(const VisibleSelection& selection) const
     return state;
 }
 
-bool EditingStyle::conflictsWithInlineStyleOfElement(Element* element, EditingStyle* extractedStyle, Vector<CSSPropertyID>* conflictingProperties) const
+bool EditingStyle::conflictsWithInlineStyleOfElement(HTMLElement* element, EditingStyle* extractedStyle, Vector<CSSPropertyID>* conflictingProperties) const
 {
     ASSERT(element);
     ASSERT(!conflictingProperties || conflictingProperties->isEmpty());
@@ -989,7 +989,7 @@ void EditingStyle::mergeTypingStyle(Document* document)
     mergeStyle(typingStyle->style(), OverrideValues);
 }
 
-void EditingStyle::mergeInlineStyleOfElement(Element* element, CSSPropertyOverrideMode mode, PropertiesToInclude propertiesToInclude)
+void EditingStyle::mergeInlineStyleOfElement(HTMLElement* element, CSSPropertyOverrideMode mode, PropertiesToInclude propertiesToInclude)
 {
     ASSERT(element);
     if (!element->inlineStyle())
@@ -1058,7 +1058,7 @@ void EditingStyle::mergeInlineAndImplicitStyleOfElement(Element* element, CSSPro
     }
 }
 
-PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::wrappingStyleForSerialization(Node* context, bool shouldAnnotate)
+PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::wrappingStyleForSerialization(ContainerNode* context, bool shouldAnnotate)
 {
     RefPtrWillBeRawPtr<EditingStyle> wrappingStyle = nullptr;
     if (shouldAnnotate) {
@@ -1067,7 +1067,7 @@ PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::wrappingStyleForSerialization
         // Styles that Mail blockquotes contribute should only be placed on the Mail blockquote,
         // to help us differentiate those styles from ones that the user has applied.
         // This helps us get the color of content pasted into blockquotes right.
-        wrappingStyle->removeStyleAddedByNode(enclosingNodeOfType(firstPositionInOrBeforeNode(context), isMailHTMLBlockquoteElement, CanCrossEditingBoundary));
+        wrappingStyle->removeStyleAddedByElement(toHTMLElement(enclosingNodeOfType(firstPositionInOrBeforeNode(context), isMailHTMLBlockquoteElement, CanCrossEditingBoundary)));
 
         // Call collapseTextDecorationProperties first or otherwise it'll copy the value over from in-effect to text-decorations.
         wrappingStyle->collapseTextDecorationProperties();
@@ -1078,7 +1078,7 @@ PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::wrappingStyleForSerialization
     wrappingStyle = EditingStyle::create();
 
     // When not annotating for interchange, we only preserve inline style declarations.
-    for (Node* node = context; node && !node->isDocumentNode(); node = node->parentNode()) {
+    for (ContainerNode* node = context; node && !node->isDocumentNode(); node = node->parentNode()) {
         if (node->isStyledElement() && !isMailHTMLBlockquoteElement(node)) {
             wrappingStyle->mergeInlineAndImplicitStyleOfElement(toElement(node), EditingStyle::DoNotOverrideValues,
                 EditingStyle::EditingPropertiesInEffect);
@@ -1188,7 +1188,7 @@ static void removePropertiesInStyle(MutableStylePropertySet* styleToRemoveProper
     styleToRemovePropertiesFrom->removePropertiesInSet(propertiesToRemove.data(), propertiesToRemove.size());
 }
 
-void EditingStyle::removeStyleFromRulesAndContext(Element* element, Node* context)
+void EditingStyle::removeStyleFromRulesAndContext(Element* element, ContainerNode* context)
 {
     ASSERT(element);
     if (!m_mutableStyle)
@@ -1357,7 +1357,8 @@ WritingDirection EditingStyle::textDirectionForSelection(const VisibleSelection&
         if (!node->isStyledElement())
             continue;
 
-        RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> style = CSSComputedStyleDeclaration::create(node);
+        Element* element = toElement(node);
+        RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> style = CSSComputedStyleDeclaration::create(element);
         RefPtrWillBeRawPtr<CSSValue> unicodeBidi = style->getPropertyCSSValue(CSSPropertyUnicodeBidi);
         if (!unicodeBidi || !unicodeBidi->isPrimitiveValue())
             continue;
@@ -1382,7 +1383,7 @@ WritingDirection EditingStyle::textDirectionForSelection(const VisibleSelection&
             return NaturalWritingDirection;
 
         // In the range case, make sure that the embedding element persists until the end of the range.
-        if (selection.isRange() && !end.deprecatedNode()->isDescendantOf(node))
+        if (selection.isRange() && !end.deprecatedNode()->isDescendantOf(element))
             return NaturalWritingDirection;
 
         foundDirection = directionValue == CSSValueLtr ? LeftToRightWritingDirection : RightToLeftWritingDirection;
