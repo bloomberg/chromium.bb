@@ -205,21 +205,45 @@ class NetworkConnectionHandlerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void ImportClientCertAndKey(const std::string& pkcs12_file,
-                              net::NSSCertDatabase* nssdb,
-                              net::CertificateList* loaded_certs) {
+  scoped_refptr<net::X509Certificate> ImportTestClientCert() {
+    net::CertificateList ca_cert_list =
+        net::CreateCertificateListFromFile(net::GetTestCertsDirectory(),
+                                           "websocket_cacert.pem",
+                                           net::X509Certificate::FORMAT_AUTO);
+    if (ca_cert_list.empty()) {
+      LOG(ERROR) << "No CA cert loaded.";
+      return NULL;
+    }
+    net::NSSCertDatabase::ImportCertFailureList failures;
+    EXPECT_TRUE(test_nssdb_->ImportCACerts(
+        ca_cert_list, net::NSSCertDatabase::TRUST_DEFAULT, &failures));
+    if (!failures.empty()) {
+      LOG(ERROR) << net::ErrorToString(failures[0].net_error);
+      return NULL;
+    }
+
     std::string pkcs12_data;
     base::FilePath pkcs12_path =
-        net::GetTestCertsDirectory().Append(pkcs12_file);
-    ASSERT_TRUE(base::ReadFileToString(pkcs12_path, &pkcs12_data));
+        net::GetTestCertsDirectory().Append("websocket_client_cert.p12");
+    if (!base::ReadFileToString(pkcs12_path, &pkcs12_data))
+      return NULL;
 
-    scoped_refptr<net::CryptoModule> module(
-        net::CryptoModule::CreateFromHandle(nssdb->GetPrivateSlot().get()));
-    ASSERT_EQ(
-        net::OK,
-        nssdb->ImportFromPKCS12(module, pkcs12_data, base::string16(), false,
-                                loaded_certs));
-    ASSERT_EQ(1U, loaded_certs->size());
+    net::CertificateList loaded_certs;
+    scoped_refptr<net::CryptoModule> module(net::CryptoModule::CreateFromHandle(
+        test_nssdb_->GetPrivateSlot().get()));
+    if (test_nssdb_->ImportFromPKCS12(
+            module, pkcs12_data, base::string16(), false, &loaded_certs) !=
+        net::OK) {
+      LOG(ERROR) << "Error while importing to NSSDB.";
+      return NULL;
+    }
+
+    // File contains two certs, the client cert first and the CA cert second.
+    if (loaded_certs.size() != 2U) {
+      LOG(ERROR) << "Expected two certs in file, found " << loaded_certs.size();
+      return NULL;
+    }
+    return loaded_certs[0];
   }
 
   void SetupPolicy(const std::string& network_configs_json,
@@ -355,14 +379,11 @@ TEST_F(NetworkConnectionHandlerTest, ConnectCertificateMissing) {
 
 TEST_F(NetworkConnectionHandlerTest, ConnectWithCertificateSuccess) {
   StartCertLoader();
-
-  net::CertificateList certs;
-  ImportClientCertAndKey("websocket_client_cert.p12",
-                         test_nssdb_.get(),
-                         &certs);
+  scoped_refptr<net::X509Certificate> cert = ImportTestClientCert();
+  ASSERT_TRUE(cert);
 
   SetupPolicy(base::StringPrintf(kPolicyWithCertPatternTemplate,
-                                 certs[0]->subject().common_name.c_str()),
+                                 cert->subject().common_name.c_str()),
               base::DictionaryValue(),  // no global config
               true);                    // load as user policy
 
@@ -373,13 +394,11 @@ TEST_F(NetworkConnectionHandlerTest, ConnectWithCertificateSuccess) {
 // Disabled, see http://crbug.com/396729.
 TEST_F(NetworkConnectionHandlerTest,
        DISABLED_ConnectWithCertificateRequestedBeforeCertsAreLoaded) {
-  net::CertificateList certs;
-  ImportClientCertAndKey("websocket_client_cert.p12",
-                         test_nssdb_.get(),
-                         &certs);
+  scoped_refptr<net::X509Certificate> cert = ImportTestClientCert();
+  ASSERT_TRUE(cert);
 
   SetupPolicy(base::StringPrintf(kPolicyWithCertPatternTemplate,
-                                 certs[0]->subject().common_name.c_str()),
+                                 cert->subject().common_name.c_str()),
               base::DictionaryValue(),  // no global config
               true);                    // load as user policy
 

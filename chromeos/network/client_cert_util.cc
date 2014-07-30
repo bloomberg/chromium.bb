@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chromeos/network/certificate_pattern.h"
 #include "chromeos/network/network_event_log.h"
@@ -29,71 +31,7 @@ namespace client_cert {
 
 namespace {
 
-// Functor to filter out non-matching issuers.
-class IssuerFilter {
- public:
-  explicit IssuerFilter(const IssuerSubjectPattern& issuer)
-    : issuer_(issuer) {}
-  bool operator()(const scoped_refptr<net::X509Certificate>& cert) const {
-    return !CertPrincipalMatches(issuer_, cert.get()->issuer());
-  }
- private:
-  const IssuerSubjectPattern& issuer_;
-};
-
-// Functor to filter out non-matching subjects.
-class SubjectFilter {
- public:
-  explicit SubjectFilter(const IssuerSubjectPattern& subject)
-    : subject_(subject) {}
-  bool operator()(const scoped_refptr<net::X509Certificate>& cert) const {
-    return !CertPrincipalMatches(subject_, cert.get()->subject());
-  }
- private:
-  const IssuerSubjectPattern& subject_;
-};
-
-// Functor to filter out certs that don't have private keys, or are invalid.
-class PrivateKeyFilter {
- public:
-  explicit PrivateKeyFilter(net::CertDatabase* cert_db) : cert_db_(cert_db) {}
-  bool operator()(const scoped_refptr<net::X509Certificate>& cert) const {
-    return cert_db_->CheckUserCert(cert.get()) != net::OK;
-  }
- private:
-  net::CertDatabase* cert_db_;
-};
-
-// Functor to filter out certs that don't have an issuer in the associated
-// IssuerCAPEMs list.
-class IssuerCaFilter {
- public:
-  explicit IssuerCaFilter(const std::vector<std::string>& issuer_ca_pems)
-    : issuer_ca_pems_(issuer_ca_pems) {}
-  bool operator()(const scoped_refptr<net::X509Certificate>& cert) const {
-    // Find the certificate issuer for each certificate.
-    // TODO(gspencer): this functionality should be available from
-    // X509Certificate or NSSCertDatabase.
-    net::ScopedCERTCertificate issuer_cert(CERT_FindCertIssuer(
-        cert.get()->os_cert_handle(), PR_Now(), certUsageAnyCA));
-
-    if (!issuer_cert)
-      return true;
-
-    std::string pem_encoded;
-    if (!net::X509Certificate::GetPEMEncoded(issuer_cert.get(),
-                                             &pem_encoded)) {
-      LOG(ERROR) << "Couldn't PEM-encode certificate.";
-      return true;
-    }
-
-    return (std::find(issuer_ca_pems_.begin(), issuer_ca_pems_.end(),
-                      pem_encoded) ==
-            issuer_ca_pems_.end());
-  }
- private:
-  const std::vector<std::string>& issuer_ca_pems_;
-};
+const char kDefaultTPMPin[] = "111111";
 
 std::string GetStringFromDictionary(const base::DictionaryValue& dict,
                                     const std::string& key) {
@@ -159,65 +97,6 @@ bool CertPrincipalMatches(const IssuerSubjectPattern& pattern,
   return true;
 }
 
-scoped_refptr<net::X509Certificate> GetCertificateMatch(
-    const CertificatePattern& pattern,
-    const net::CertificateList& all_certs) {
-  typedef std::list<scoped_refptr<net::X509Certificate> > CertificateStlList;
-
-  // Start with all the certs, and narrow it down from there.
-  CertificateStlList matching_certs;
-
-  if (all_certs.empty())
-    return NULL;
-
-  for (net::CertificateList::const_iterator iter = all_certs.begin();
-       iter != all_certs.end(); ++iter) {
-    matching_certs.push_back(*iter);
-  }
-
-  // Strip off any certs that don't have the right issuer and/or subject.
-  if (!pattern.issuer().Empty()) {
-    matching_certs.remove_if(IssuerFilter(pattern.issuer()));
-    if (matching_certs.empty())
-      return NULL;
-  }
-
-  if (!pattern.subject().Empty()) {
-    matching_certs.remove_if(SubjectFilter(pattern.subject()));
-    if (matching_certs.empty())
-      return NULL;
-  }
-
-  if (!pattern.issuer_ca_pems().empty()) {
-    matching_certs.remove_if(IssuerCaFilter(pattern.issuer_ca_pems()));
-    if (matching_certs.empty())
-      return NULL;
-  }
-
-  // Eliminate any certs that don't have private keys associated with
-  // them.  The CheckUserCert call in the filter is a little slow (because of
-  // underlying PKCS11 calls), so we do this last to reduce the number of times
-  // we have to call it.
-  PrivateKeyFilter private_filter(net::CertDatabase::GetInstance());
-  matching_certs.remove_if(private_filter);
-
-  if (matching_certs.empty())
-    return NULL;
-
-  // We now have a list of certificates that match the pattern we're
-  // looking for.  Now we find the one with the latest start date.
-  scoped_refptr<net::X509Certificate> latest(NULL);
-
-  // Iterate over the rest looking for the one that was issued latest.
-  for (CertificateStlList::iterator iter = matching_certs.begin();
-       iter != matching_certs.end(); ++iter) {
-    if (!latest.get() || (*iter)->valid_start() > latest->valid_start())
-      latest = *iter;
-  }
-
-  return latest;
-}
-
 std::string GetPkcs11IdFromEapCertId(const std::string& cert_id) {
   if (cert_id.empty())
     return std::string();
@@ -235,62 +114,82 @@ std::string GetPkcs11IdFromEapCertId(const std::string& cert_id) {
 }
 
 void SetShillProperties(const ConfigType cert_config_type,
-                        const std::string& tpm_slot,
-                        const std::string& tpm_pin,
-                        const std::string* pkcs11_id,
+                        const int tpm_slot,
+                        const std::string& pkcs11_id,
                         base::DictionaryValue* properties) {
-  const char* tpm_pin_property = NULL;
   switch (cert_config_type) {
     case CONFIG_TYPE_NONE: {
       return;
     }
     case CONFIG_TYPE_OPENVPN: {
-      tpm_pin_property = shill::kOpenVPNPinProperty;
-      if (pkcs11_id) {
-        properties->SetStringWithoutPathExpansion(
-            shill::kOpenVPNClientCertIdProperty, *pkcs11_id);
-      }
+      properties->SetStringWithoutPathExpansion(shill::kOpenVPNPinProperty,
+                                                kDefaultTPMPin);
+      properties->SetStringWithoutPathExpansion(
+          shill::kOpenVPNClientCertIdProperty, pkcs11_id);
       break;
     }
     case CONFIG_TYPE_IPSEC: {
-      tpm_pin_property = shill::kL2tpIpsecPinProperty;
-      if (!tpm_slot.empty()) {
-        properties->SetStringWithoutPathExpansion(
-            shill::kL2tpIpsecClientCertSlotProperty, tpm_slot);
-      }
-      if (pkcs11_id) {
-        properties->SetStringWithoutPathExpansion(
-            shill::kL2tpIpsecClientCertIdProperty, *pkcs11_id);
-      }
+      properties->SetStringWithoutPathExpansion(shill::kL2tpIpsecPinProperty,
+                                                kDefaultTPMPin);
+      properties->SetStringWithoutPathExpansion(
+          shill::kL2tpIpsecClientCertSlotProperty, base::IntToString(tpm_slot));
+      properties->SetStringWithoutPathExpansion(
+          shill::kL2tpIpsecClientCertIdProperty, pkcs11_id);
       break;
     }
     case CONFIG_TYPE_EAP: {
-      tpm_pin_property = shill::kEapPinProperty;
-      if (pkcs11_id) {
-        std::string key_id;
-        if (pkcs11_id->empty()) {
-          // An empty pkcs11_id means that we should clear the properties.
-        } else {
-          if (tpm_slot.empty())
-            NET_LOG_ERROR("Missing TPM slot id", "");
-          else
-            key_id = tpm_slot + ":";
-          key_id.append(*pkcs11_id);
-        }
-        // Shill requires both CertID and KeyID for TLS connections, despite the
-        // fact that by convention they are the same ID, because one identifies
-        // the certificate and the other the private key.
-        properties->SetStringWithoutPathExpansion(shill::kEapCertIdProperty,
-                                                  key_id);
-        properties->SetStringWithoutPathExpansion(shill::kEapKeyIdProperty,
-                                                  key_id);
-      }
+      properties->SetStringWithoutPathExpansion(shill::kEapPinProperty,
+                                                kDefaultTPMPin);
+      std::string key_id =
+          base::StringPrintf("%i:%s", tpm_slot, pkcs11_id.c_str());
+
+      // Shill requires both CertID and KeyID for TLS connections, despite the
+      // fact that by convention they are the same ID, because one identifies
+      // the certificate and the other the private key.
+      properties->SetStringWithoutPathExpansion(shill::kEapCertIdProperty,
+                                                key_id);
+      properties->SetStringWithoutPathExpansion(shill::kEapKeyIdProperty,
+                                                key_id);
       break;
     }
   }
-  DCHECK(tpm_pin_property);
-  if (!tpm_pin.empty())
-    properties->SetStringWithoutPathExpansion(tpm_pin_property, tpm_pin);
+}
+
+void SetEmptyShillProperties(const ConfigType cert_config_type,
+                             base::DictionaryValue* properties) {
+  switch (cert_config_type) {
+    case CONFIG_TYPE_NONE: {
+      return;
+    }
+    case CONFIG_TYPE_OPENVPN: {
+      properties->SetStringWithoutPathExpansion(shill::kOpenVPNPinProperty,
+                                                std::string());
+      properties->SetStringWithoutPathExpansion(
+          shill::kOpenVPNClientCertIdProperty, std::string());
+      break;
+    }
+    case CONFIG_TYPE_IPSEC: {
+      properties->SetStringWithoutPathExpansion(shill::kL2tpIpsecPinProperty,
+                                                std::string());
+      properties->SetStringWithoutPathExpansion(
+          shill::kL2tpIpsecClientCertSlotProperty, std::string());
+      properties->SetStringWithoutPathExpansion(
+          shill::kL2tpIpsecClientCertIdProperty, std::string());
+      break;
+    }
+    case CONFIG_TYPE_EAP: {
+      properties->SetStringWithoutPathExpansion(shill::kEapPinProperty,
+                                                std::string());
+      // Shill requires both CertID and KeyID for TLS connections, despite the
+      // fact that by convention they are the same ID, because one identifies
+      // the certificate and the other the private key.
+      properties->SetStringWithoutPathExpansion(shill::kEapCertIdProperty,
+                                                std::string());
+      properties->SetStringWithoutPathExpansion(shill::kEapKeyIdProperty,
+                                                std::string());
+      break;
+    }
+  }
 }
 
 ClientCertConfig::ClientCertConfig()

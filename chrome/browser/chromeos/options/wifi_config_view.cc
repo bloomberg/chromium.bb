@@ -22,7 +22,6 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/shill_property_util.h"
-#include "chromeos/tpm_token_loader.h"
 #include "components/onc/onc_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -735,9 +734,6 @@ bool WifiConfigView::Login() {
       properties.SetStringWithoutPathExpansion(shill::kTypeProperty,
                                                shill::kTypeEthernetEap);
       share_network = false;
-      // Set the TPM PIN.
-      properties.SetStringWithoutPathExpansion(
-          shill::kEapPinProperty, TPMTokenLoader::Get()->tpm_user_pin());
       ash::network_connect::CreateConfiguration(&properties, share_network);
     } else {
       ash::network_connect::ConfigureNetworkAndConnect(
@@ -840,14 +836,21 @@ std::string WifiConfigView::GetEapSubjectMatch() const {
   return base::UTF16ToUTF8(subject_match_textfield_->text());
 }
 
-std::string WifiConfigView::GetEapClientCertPkcs11Id() const {
+void WifiConfigView::SetEapClientCertProperties(
+    base::DictionaryValue* properties) const {
   DCHECK(user_cert_combobox_);
   if (!HaveUserCerts() || !UserCertActive()) {
-    return std::string();  // No certificate selected or not required.
+    // No certificate selected or not required.
+    client_cert::SetEmptyShillProperties(client_cert::CONFIG_TYPE_EAP,
+                                         properties);
   } else {
     // Certificates are listed in the order they appear in the model.
     int index = user_cert_combobox_->selected_index();
-    return CertLibrary::Get()->GetUserCertPkcs11IdAt(index);
+    int slot_id = -1;
+    const std::string pkcs11_id =
+        CertLibrary::Get()->GetUserCertPkcs11IdAt(index, &slot_id);
+    client_cert::SetShillProperties(
+        client_cert::CONFIG_TYPE_EAP, slot_id, pkcs11_id, properties);
   }
 }
 
@@ -873,12 +876,7 @@ void WifiConfigView::SetEapProperties(base::DictionaryValue* properties) {
   properties->SetStringWithoutPathExpansion(
       shill::kEapSubjectMatchProperty, GetEapSubjectMatch());
 
-  const std::string pkcs11id = GetEapClientCertPkcs11Id();
-  client_cert::SetShillProperties(client_cert::CONFIG_TYPE_EAP,
-                                  CertLibrary::Get()->GetTPMSlotID(),
-                                  TPMTokenLoader::Get()->tpm_user_pin(),
-                                  &pkcs11id,
-                                  properties);
+  SetEapClientCertProperties(properties);
 
   properties->SetBooleanWithoutPathExpansion(
       shill::kEapUseSystemCasProperty, GetEapUseSystemCas());

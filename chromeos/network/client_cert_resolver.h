@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/network/client_cert_util.h"
 #include "chromeos/network/network_policy_observer.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
@@ -46,6 +47,15 @@ class CHROMEOS_EXPORT ClientCertResolver : public NetworkStateHandlerObserver,
   // to the NSS database. If not set, uses base::WorkerPool.
   void SetSlowTaskRunnerForTest(
       const scoped_refptr<base::TaskRunner>& task_runner);
+
+  // Returns true and sets the Shill properties that have to be configured in
+  // |shill_properties| if the certificate pattern |pattern| could be resolved.
+  // Returns false otherwise and sets empty Shill properties to clear the
+  // certificate configuration.
+  static bool ResolveCertificatePatternSync(
+      const client_cert::ConfigType client_cert_type,
+      const CertificatePattern& pattern,
+      base::DictionaryValue* shill_properties);
 
  private:
    // NetworkStateHandlerObserver overrides

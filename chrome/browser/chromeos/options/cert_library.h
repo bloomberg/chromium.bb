@@ -63,16 +63,13 @@ class CertLibrary : public CertLoader::Observer {
   // Returns true if the TPM is available for hardware-backed certificates.
   bool IsHardwareBacked() const;
 
-  // Returns the id of the slot that contains the user certificates.
-  std::string GetTPMSlotID() const;
-
   // Retruns the number of certificates available for |type|.
   int NumCertificates(CertType type) const;
 
   // Retreives the certificate property for |type| at |index|.
   base::string16 GetCertDisplayStringAt(CertType type, int index) const;
   std::string GetServerCACertPEMAt(int index) const;
-  std::string GetUserCertPkcs11IdAt(int index) const;
+  std::string GetUserCertPkcs11IdAt(int index, int* slot_id) const;
   bool IsCertHardwareBackedAt(CertType type, int index) const;
 
   // Returns the index of a Certificate matching |pem_encoded| or -1 if none

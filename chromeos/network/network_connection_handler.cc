@@ -14,6 +14,7 @@
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/certificate_pattern.h"
+#include "chromeos/network/client_cert_resolver.h"
 #include "chromeos/network/client_cert_util.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
@@ -23,7 +24,6 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/shill_property_util.h"
-#include "chromeos/tpm_token_loader.h"
 #include "dbus/object_path.h"
 #include "net/cert/x509_certificate.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -473,18 +473,13 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
       return;
     }
 
-    // If the client certificate must be configured, this will be set to a
-    // non-empty string.
-    std::string pkcs11_id;
-
     // Check certificate properties from policy.
-    // Note: Wifi/VPNConfigView set the KeyID and CertID properties directly,
-    // in which case only the TPM must be configured.
     if (cert_config_from_policy.client_cert_type ==
         onc::client_cert::kPattern) {
-      pkcs11_id = CertificateIsConfigured(cert_config_from_policy.pattern);
-      // Ensure the certificate is available and configured.
-      if (!cert_loader_->IsHardwareBacked() || pkcs11_id.empty()) {
+      if (!ClientCertResolver::ResolveCertificatePatternSync(
+              client_cert_type,
+              cert_config_from_policy.pattern,
+              &config_properties)) {
         ErrorCallbackForPendingRequest(service_path, kErrorCertificateRequired);
         return;
       }
@@ -494,19 +489,6 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
       // Network may not be configured.
       ErrorCallbackForPendingRequest(service_path, kErrorConfigurationRequired);
       return;
-    }
-
-    // The network may not be 'Connectable' because the TPM properties are not
-    // set up, so configure tpm slot/pin before connecting.
-    if (cert_loader_ && cert_loader_->IsHardwareBacked()) {
-      // Pass NULL if pkcs11_id is empty, so that it doesn't clear any
-      // previously configured client cert.
-      client_cert::SetShillProperties(
-          client_cert_type,
-          base::IntToString(cert_loader_->TPMTokenSlotID()),
-          TPMTokenLoader::Get()->tpm_user_pin(),
-          pkcs11_id.empty() ? NULL : &pkcs11_id,
-          &config_properties);
     }
   }
 
@@ -743,18 +725,6 @@ void NetworkConnectionHandler::CheckAllPendingRequests() {
            pending_requests_.begin(); iter != pending_requests_.end(); ++iter) {
     CheckPendingRequest(iter->first);
   }
-}
-
-std::string NetworkConnectionHandler::CertificateIsConfigured(
-    const CertificatePattern& pattern) {
-  if (pattern.Empty())
-    return std::string();
-  // Find the matching certificate.
-  scoped_refptr<net::X509Certificate> matching_cert =
-      client_cert::GetCertificateMatch(pattern, cert_loader_->cert_list());
-  if (!matching_cert.get())
-    return std::string();
-  return CertLoader::GetPkcs11IdForCert(*matching_cert.get());
 }
 
 void NetworkConnectionHandler::ErrorCallbackForPendingRequest(

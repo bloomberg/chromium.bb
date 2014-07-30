@@ -189,8 +189,6 @@ TEST_F(CertLoaderTest, Basic) {
 
   EXPECT_TRUE(cert_loader_->certificates_loaded());
   EXPECT_FALSE(cert_loader_->CertificatesLoading());
-  EXPECT_EQ(GetDbPrivateSlotId(primary_db_.get()),
-            cert_loader_->TPMTokenSlotID());
 
   // Default CA cert roots should get loaded.
   EXPECT_FALSE(cert_loader_->cert_list().empty());

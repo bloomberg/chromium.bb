@@ -453,13 +453,21 @@ const std::string VPNConfigView::GetServerCACertPEM() const {
   }
 }
 
-const std::string VPNConfigView::GetUserCertID() const {
+void VPNConfigView::SetUserCertProperties(
+    chromeos::client_cert::ConfigType client_cert_type,
+    base::DictionaryValue* properties) const {
   if (!HaveUserCerts()) {
-    return std::string();  // "None installed"
+    // No certificate selected or not required.
+    chromeos::client_cert::SetEmptyShillProperties(
+        chromeos::client_cert::CONFIG_TYPE_EAP, properties);
   } else {
     // Certificates are listed in the order they appear in the model.
     int index = user_cert_combobox_ ? user_cert_combobox_->selected_index() : 0;
-    return CertLibrary::Get()->GetUserCertPkcs11IdAt(index);
+    int slot_id = -1;
+    const std::string pkcs11_id =
+        CertLibrary::Get()->GetUserCertPkcs11IdAt(index, &slot_id);
+    chromeos::client_cert::SetShillProperties(
+        client_cert_type, slot_id, pkcs11_id, properties);
   }
 }
 
@@ -837,8 +845,7 @@ void VPNConfigView::SetConfigProperties(
         properties->SetWithoutPathExpansion(
             shill::kL2tpIpsecCaCertPemProperty, pem_list);
       }
-      properties->SetStringWithoutPathExpansion(
-          shill::kL2tpIpsecClientCertIdProperty, GetUserCertID());
+      SetUserCertProperties(client_cert::CONFIG_TYPE_IPSEC, properties);
       if (!group_name.empty()) {
         properties->SetStringWithoutPathExpansion(
             shill::kL2tpIpsecTunnelGroupProperty, GetGroupName());
@@ -861,8 +868,7 @@ void VPNConfigView::SetConfigProperties(
         properties->SetWithoutPathExpansion(
             shill::kOpenVPNCaCertPemProperty, pem_list);
       }
-      properties->SetStringWithoutPathExpansion(
-          shill::kOpenVPNClientCertIdProperty, GetUserCertID());
+      SetUserCertProperties(client_cert::CONFIG_TYPE_OPENVPN, properties);
       properties->SetStringWithoutPathExpansion(
           shill::kOpenVPNUserProperty, GetUsername());
       if (!user_passphrase.empty()) {

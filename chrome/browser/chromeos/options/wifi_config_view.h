@@ -128,6 +128,10 @@ class WifiConfigView : public ChildNetworkConfigView,
   std::string GetEapIdentity() const;
   std::string GetEapAnonymousIdentity() const;
 
+  // Fill in |properties| with the properties for the selected client
+  // certificate or empty properties if no client cert is required.
+  void SetEapClientCertProperties(base::DictionaryValue* properties) const;
+
   // Fill in |properties| with the appropriate values.
   void SetEapProperties(base::DictionaryValue* properties);
 

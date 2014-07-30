@@ -24,7 +24,6 @@
 
 namespace chromeos {
 
-class CertificatePattern;
 class NetworkState;
 
 // The NetworkConnectionHandler class is used to manage network connection
@@ -194,9 +193,6 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   void CheckPendingRequest(const std::string service_path);
   void CheckAllPendingRequests();
 
-  // Returns the PKCS#11 ID of a cert matching the certificate pattern. Returns
-  // empty string otherwise.
-  std::string CertificateIsConfigured(const CertificatePattern& pattern);
   void ErrorCallbackForPendingRequest(const std::string& service_path,
                                       const std::string& error_name);
 

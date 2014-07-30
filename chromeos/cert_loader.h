@@ -58,13 +58,11 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer {
   static bool IsInitialized();
 
   // Returns the PKCS#11 attribute CKA_ID for a certificate as an upper-case
-  // hex string, or the empty string if none is found. Note that the returned ID
-  // should be used only to identify the cert in its slot.
-  // This should be used only for user certificates, assuming that only one
-  // private slot is loaded for a user.
-  // TODO(tbarzic): Make this check cert slot id if we start loading
-  // certificates for secondary users.
-  static std::string GetPkcs11IdForCert(const net::X509Certificate& cert);
+  // hex string and sets |slot_id| to the id of the containing slot, or returns
+  // an empty string and doesn't modify |slot_id| if the PKCS#11 id could not be
+  // determined.
+  static std::string GetPkcs11IdAndSlotForCert(const net::X509Certificate& cert,
+                                               int* slot_id);
 
   // Starts the CertLoader with the NSS cert database.
   // The CertLoader will _not_ take the ownership of the database, but it
@@ -76,7 +74,6 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer {
   void AddObserver(CertLoader::Observer* observer);
   void RemoveObserver(CertLoader::Observer* observer);
 
-  int TPMTokenSlotID() const;
   bool IsHardwareBacked() const;
 
   // Whether the certificate is hardware backed. Returns false if the CertLoader

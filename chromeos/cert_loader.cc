@@ -84,14 +84,6 @@ void CertLoader::RemoveObserver(CertLoader::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-int CertLoader::TPMTokenSlotID() const {
-  if (!database_)
-    return -1;
-  crypto::ScopedPK11Slot slot(database_->GetPrivateSlot());
-  DCHECK(slot);
-  return static_cast<int>(PK11_GetSlotID(slot.get()));
-}
-
 bool CertLoader::IsHardwareBacked() const {
   if (force_hardware_backed_for_test_)
     return true;
@@ -122,12 +114,18 @@ bool CertLoader::CertificatesLoading() const {
 // is shared between a certificate and its associated private and public
 // keys.  I tried to implement this with PK11_GetLowLevelKeyIDForCert(),
 // but that always returns NULL on Chrome OS for me.
-std::string CertLoader::GetPkcs11IdForCert(const net::X509Certificate& cert) {
+std::string CertLoader::GetPkcs11IdAndSlotForCert(
+    const net::X509Certificate& cert,
+    int* slot_id) {
+  DCHECK(slot_id);
+
   CERTCertificateStr* cert_handle = cert.os_cert_handle();
   SECKEYPrivateKey *priv_key =
       PK11_FindKeyByAnyCert(cert_handle, NULL /* wincx */);
   if (!priv_key)
     return std::string();
+
+  *slot_id = static_cast<int>(PK11_GetSlotID(priv_key->pkcs11Slot));
 
   // Get the CKA_ID attribute for a key.
   SECItem* sec_item = PK11_GetLowLevelKeyIDForPrivateKey(priv_key);

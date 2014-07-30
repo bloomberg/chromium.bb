@@ -101,17 +101,16 @@ class ClientCertResolverTest : public testing::Test {
   void StartCertLoader() {
     cert_loader_->StartWithNSSDB(test_nssdb_.get());
     if (test_client_cert_) {
-      test_pkcs11_id_ = base::StringPrintf(
-          "%i:%s",
-          cert_loader_->TPMTokenSlotID(),
-          CertLoader::GetPkcs11IdForCert(*test_client_cert_).c_str());
-      ASSERT_TRUE(!test_pkcs11_id_.empty());
+      int slot_id = 0;
+      const std::string pkcs11_id =
+          CertLoader::GetPkcs11IdAndSlotForCert(*test_client_cert_, &slot_id);
+      test_cert_id_ = base::StringPrintf("%i:%s", slot_id, pkcs11_id.c_str());
     }
   }
 
   // Imports a CA cert (stored as PEM in test_ca_cert_pem_) and a client
   // certificate signed by that CA. Its PKCS#11 ID is stored in
-  // |test_pkcs11_id_|.
+  // |test_cert_id_|.
   void SetupTestCerts() {
     // Import a CA cert.
     net::CertificateList ca_cert_list =
@@ -235,7 +234,7 @@ class ClientCertResolverTest : public testing::Test {
 
   ShillServiceClient::TestInterface* service_test_;
   ShillProfileClient::TestInterface* profile_test_;
-  std::string test_pkcs11_id_;
+  std::string test_cert_id_;
   scoped_refptr<net::X509Certificate> test_ca_cert_;
   std::string test_ca_cert_pem_;
   base::MessageLoop message_loop_;
@@ -295,7 +294,7 @@ TEST_F(ClientCertResolverTest, ResolveOnCertificatesLoaded) {
   // the test client cert and configured the network.
   std::string pkcs11_id;
   GetClientCertProperties(&pkcs11_id);
-  EXPECT_EQ(test_pkcs11_id_, pkcs11_id);
+  EXPECT_EQ(test_cert_id_, pkcs11_id);
 }
 
 TEST_F(ClientCertResolverTest, ResolveAfterPolicyApplication) {
@@ -313,7 +312,7 @@ TEST_F(ClientCertResolverTest, ResolveAfterPolicyApplication) {
   // the test client cert and configured the network.
   std::string pkcs11_id;
   GetClientCertProperties(&pkcs11_id);
-  EXPECT_EQ(test_pkcs11_id_, pkcs11_id);
+  EXPECT_EQ(test_cert_id_, pkcs11_id);
 }
 
 }  // namespace chromeos

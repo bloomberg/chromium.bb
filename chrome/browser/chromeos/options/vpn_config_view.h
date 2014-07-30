@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/options/network_property_ui_data.h"
 #include "chrome/browser/chromeos/options/passphrase_textfield.h"
+#include "chromeos/network/client_cert_util.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -83,6 +84,11 @@ class VPNConfigView : public ChildNetworkConfigView,
   void GetPropertiesError(const std::string& error_name,
                           scoped_ptr<base::DictionaryValue> error_data);
 
+  // Fill in |properties| with the properties for the selected client (user)
+  // certificate or empty properties if no client cert is required.
+  void SetUserCertProperties(chromeos::client_cert::ConfigType client_cert_type,
+                             base::DictionaryValue* properties) const;
+
   // Helper function to set configurable properties.
   void SetConfigProperties(base::DictionaryValue* properties);
 
@@ -120,7 +126,6 @@ class VPNConfigView : public ChildNetworkConfigView,
   const std::string GetOTP() const;
   const std::string GetGroupName() const;
   const std::string GetServerCACertPEM() const;
-  const std::string GetUserCertID() const;
   bool GetSaveCredentials() const;
   int GetProviderTypeIndex() const;
   std::string GetProviderTypeString() const;

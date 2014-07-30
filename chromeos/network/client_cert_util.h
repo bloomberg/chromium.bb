@@ -24,8 +24,6 @@ typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
 
 namespace chromeos {
 
-class IssuerSubjectPattern;
-
 namespace client_cert {
 
 enum ConfigType {
@@ -57,25 +55,22 @@ struct CHROMEOS_EXPORT ClientCertConfig {
 bool CertPrincipalMatches(const IssuerSubjectPattern& pattern,
                           const net::CertPrincipal& principal);
 
-// Fetches the matching certificate that has the latest valid start date.
-// Returns a NULL refptr if there is no such match.
-CHROMEOS_EXPORT scoped_refptr<net::X509Certificate> GetCertificateMatch(
-    const CertificatePattern& pattern,
-    const net::CertificateList& all_certs);
-
 // Returns the PKCS11 id part of |cert_id|, which is expected to be the value of
 // the Shill property kEapCertIdProperty or kEapKeyIdProperty.
 CHROMEOS_EXPORT std::string GetPkcs11IdFromEapCertId(
     const std::string& cert_id);
 
-// If not empty, sets the TPM properties in |properties|. If |pkcs11_id| is not
-// NULL, also sets the ClientCertID. |cert_config_type| determines which
-// dictionary entries to set.
+// Sets the properties of a client cert and the TPM slot that it's contained in.
+// |cert_config_type| determines which dictionary entries to set.
 CHROMEOS_EXPORT void SetShillProperties(const ConfigType cert_config_type,
-                                        const std::string& tpm_slot,
-                                        const std::string& tpm_pin,
-                                        const std::string* pkcs11_id,
+                                        const int tpm_slot,
+                                        const std::string& pkcs11_id,
                                         base::DictionaryValue* properties);
+
+// Like SetShillProperties but instead sets the properties to empty strings.
+// This should be used to clear previously set client certificate properties.
+CHROMEOS_EXPORT void SetEmptyShillProperties(const ConfigType cert_config_type,
+                                             base::DictionaryValue* properties);
 
 // Returns true if all required configuration properties are set and not empty.
 bool IsCertificateConfigured(const client_cert::ConfigType cert_config_type,

@@ -149,10 +149,6 @@ bool CertLibrary::IsHardwareBacked() const {
   return CertLoader::Get()->IsHardwareBacked();
 }
 
-std::string CertLibrary::GetTPMSlotID() const {
-  return base::IntToString(CertLoader::Get()->TPMTokenSlotID());
-}
-
 int CertLibrary::NumCertificates(CertType type) const {
   const net::CertificateList& cert_list = GetCertificateListForType(type);
   return static_cast<int>(cert_list.size());
@@ -169,9 +165,9 @@ std::string CertLibrary::GetServerCACertPEMAt(int index) const {
   return CertToPEM(*GetCertificateAt(CERT_TYPE_SERVER_CA, index));
 }
 
-std::string CertLibrary::GetUserCertPkcs11IdAt(int index) const {
+std::string CertLibrary::GetUserCertPkcs11IdAt(int index, int* slot_id) const {
   net::X509Certificate* cert = GetCertificateAt(CERT_TYPE_USER, index);
-  return CertLoader::GetPkcs11IdForCert(*cert);
+  return CertLoader::GetPkcs11IdAndSlotForCert(*cert, slot_id);
 }
 
 bool CertLibrary::IsCertHardwareBackedAt(CertType type, int index) const {
@@ -196,7 +192,8 @@ int CertLibrary::GetUserCertIndexByPkcs11Id(
   int num_certs = NumCertificates(CERT_TYPE_USER);
   for (int index = 0; index < num_certs; ++index) {
     net::X509Certificate* cert = GetCertificateAt(CERT_TYPE_USER, index);
-    std::string id = CertLoader::GetPkcs11IdForCert(*cert);
+    int slot_id = -1;
+    std::string id = CertLoader::GetPkcs11IdAndSlotForCert(*cert, &slot_id);
     if (id == pkcs11_id)
       return index;
   }
