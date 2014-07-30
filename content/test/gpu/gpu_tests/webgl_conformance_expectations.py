@@ -122,6 +122,26 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     self.Fail('conformance/extensions/webgl-compressed-texture-size-limit.html',
         ['lion', 'intel'], bug=393331)
 
+    # Linux NVIDIA failures
+    self.Fail('conformance/glsl/constructors/glsl-construct-bvec2.html',
+        ['linux', 'nvidia'], bug=391960)
+    self.Fail('conformance/glsl/constructors/glsl-construct-bvec3.html',
+        ['linux', 'nvidia'], bug=391960)
+    self.Fail('conformance/glsl/constructors/glsl-construct-bvec4.html',
+        ['linux', 'nvidia'], bug=391960)
+    self.Fail('conformance/glsl/constructors/glsl-construct-ivec2.html',
+        ['linux', 'nvidia'], bug=391960)
+    self.Fail('conformance/glsl/constructors/glsl-construct-ivec3.html',
+        ['linux', 'nvidia'], bug=391960)
+    self.Fail('conformance/glsl/constructors/glsl-construct-ivec4.html',
+        ['linux', 'nvidia'], bug=391960)
+    self.Fail('conformance/glsl/constructors/glsl-construct-vec2.html',
+        ['linux', 'nvidia'], bug=391960)
+    self.Fail('conformance/glsl/constructors/glsl-construct-vec3.html',
+        ['linux', 'nvidia'], bug=391960)
+    self.Fail('conformance/glsl/constructors/glsl-construct-vec4.html',
+        ['linux', 'nvidia'], bug=391960)
+
     # Android failures
     # The following test is very slow and therefore times out on Android bot.
     self.Skip('conformance/rendering/multisample-corruption.html',
