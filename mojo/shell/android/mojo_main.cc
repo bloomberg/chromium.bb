@@ -37,11 +37,9 @@ LazyInstance<scoped_ptr<base::android::JavaHandlerThread> > g_shell_thread =
     LAZY_INSTANCE_INITIALIZER;
 
 void RunShell(std::vector<GURL> app_urls) {
-  shell::Context* shell_context = new shell::Context();
-  shell_context->set_ui_loop(g_java_message_loop.Get().get());
-
-  g_context.Get().reset(shell_context);
-  shell::Run(shell_context, app_urls);
+  g_context.Get()->Init();
+  g_context.Get()->set_ui_loop(g_java_message_loop.Get().get());
+  shell::Run(g_context.Get().get(), app_urls);
 }
 
 }  // namespace
@@ -54,6 +52,11 @@ static void Init(JNIEnv* env, jclass clazz, jobject context) {
   base::CommandLine::Init(0, 0);
   mojo::shell::InitializeLogging();
 
+  // We want ~MessageLoop to happen prior to ~Context. Initializing
+  // LazyInstances is akin to stack-allocating objects; their destructors
+  // will be invoked first-in-last-out.
+  shell::Context* shell_context = new shell::Context();
+  g_context.Get().reset(shell_context);
   g_java_message_loop.Get().reset(new base::MessageLoopForUI);
   base::MessageLoopForUI::current()->Start();
 

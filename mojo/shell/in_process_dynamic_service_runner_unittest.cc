@@ -10,8 +10,9 @@ namespace mojo {
 namespace shell {
 
 TEST(InProcessDynamicServiceRunnerTest, NotStarted) {
-  base::MessageLoop loop;
   Context context;
+  base::MessageLoop loop;
+  context.Init();
   InProcessDynamicServiceRunner runner(&context);
   // Shouldn't crash or DCHECK on destruction.
 }

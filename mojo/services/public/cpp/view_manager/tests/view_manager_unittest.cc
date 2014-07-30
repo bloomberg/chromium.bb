@@ -391,7 +391,6 @@ class ViewManagerTest : public testing::Test {
 
   base::RunLoop* connect_loop_;
   shell::ShellTestHelper test_helper_;
-  base::MessageLoop loop_;
   ViewManagerInitServicePtr view_manager_init_;
   // Used to receive the most recent view manager loaded by an embed action.
   ViewManager* loaded_view_manager_;

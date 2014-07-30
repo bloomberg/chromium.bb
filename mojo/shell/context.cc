@@ -81,9 +81,14 @@ class Context::NativeViewportServiceLoader : public ServiceLoader {
   DISALLOW_COPY_AND_ASSIGN(NativeViewportServiceLoader);
 };
 
-Context::Context()
-    : task_runners_(base::MessageLoop::current()->message_loop_proxy()) {
+Context::Context() {
+  DCHECK(!base::MessageLoop::current());
+}
+
+void Context::Init() {
   setup.Get();
+  task_runners_.reset(
+      new TaskRunners(base::MessageLoop::current()->message_loop_proxy()));
 
   for (size_t i = 0; i < arraysize(kLocalMojoURLs); ++i)
     mojo_url_resolver_.AddLocalFileMapping(GURL(kLocalMojoURLs[i]));
@@ -162,6 +167,7 @@ void Context::Shutdown() {
 }
 
 Context::~Context() {
+  DCHECK(!base::MessageLoop::current());
   Shutdown();
 }
 

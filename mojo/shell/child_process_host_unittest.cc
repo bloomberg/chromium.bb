@@ -34,10 +34,10 @@ class TestChildProcessHostDelegate : public ChildProcessHost::Delegate {
 typedef testing::Test ChildProcessHostTest;
 
 TEST_F(ChildProcessHostTest, Basic) {
+  Context context;
   base::MessageLoop message_loop(
       scoped_ptr<base::MessagePump>(new common::MessagePumpMojo()));
-
-  Context context;
+  context.Init();
   TestChildProcessHostDelegate child_process_host_delegate;
   ChildProcessHost child_process_host(&context,
                                       &child_process_host_delegate,

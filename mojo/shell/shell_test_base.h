@@ -48,8 +48,8 @@ class ShellTestBase : public testing::Test {
 
  private:
   scoped_ptr<net::test_server::EmbeddedTestServer> test_server_;
-  base::MessageLoop message_loop_;
   Context shell_context_;
+  base::MessageLoop message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellTestBase);
 };

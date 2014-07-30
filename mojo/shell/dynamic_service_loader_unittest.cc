@@ -55,13 +55,14 @@ class DynamicServiceLoaderTest : public testing::Test {
   DynamicServiceLoaderTest() {}
   virtual ~DynamicServiceLoaderTest() {}
   virtual void SetUp() OVERRIDE {
+    context_.Init();
     scoped_ptr<DynamicServiceRunnerFactory> factory(
         new TestDynamicServiceRunnerFactory(&state_));
     loader_.reset(new DynamicServiceLoader(&context_, factory.Pass()));
   }
  protected:
-  base::MessageLoop loop_;
   Context context_;
+  base::MessageLoop loop_;
   scoped_ptr<DynamicServiceLoader> loader_;
   TestState state_;
 };

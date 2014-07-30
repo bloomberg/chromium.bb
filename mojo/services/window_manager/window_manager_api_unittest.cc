@@ -268,7 +268,6 @@ class WindowManagerApiTest : public testing::Test {
   }
 
   shell::ShellTestHelper test_helper_;
-  base::MessageLoop loop_;
   ViewManagerInitServicePtr view_manager_init_;
   scoped_ptr<TestWindowManagerClient> window_manager_client_;
   TestServiceLoader::RootAddedCallback root_added_callback_;

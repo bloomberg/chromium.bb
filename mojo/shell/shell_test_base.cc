@@ -25,6 +25,7 @@ ShellTestBase::~ShellTestBase() {
 }
 
 void ShellTestBase::SetUp() {
+  shell_context_.Init();
   test_server_.reset(new net::test_server::EmbeddedTestServer());
   ASSERT_TRUE(test_server_->InitializeAndWaitUntilReady());
   base::FilePath service_dir;

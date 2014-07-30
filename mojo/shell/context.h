@@ -30,11 +30,12 @@ class Context {
   Context();
   ~Context();
 
+  void Init();
   // Tear down context in safe order prior to deleting. Shutdown() is also
   // called by the destructor.
   void Shutdown();
 
-  TaskRunners* task_runners() { return &task_runners_; }
+  TaskRunners* task_runners() { return task_runners_.get(); }
   ServiceManager* service_manager() { return &service_manager_; }
   KeepAliveCounter* keep_alive_counter() { return &keep_alive_counter_; }
   MojoURLResolver* mojo_url_resolver() { return &mojo_url_resolver_; }
@@ -47,7 +48,7 @@ class Context {
  private:
   class NativeViewportServiceLoader;
 
-  TaskRunners task_runners_;
+  scoped_ptr<TaskRunners> task_runners_;
   ServiceManager service_manager_;
   MojoURLResolver mojo_url_resolver_;
   scoped_ptr<Spy> spy_;

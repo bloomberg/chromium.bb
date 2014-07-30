@@ -528,7 +528,6 @@ class ViewManagerTest : public testing::Test {
 
   base::ShadowingAtExitManager at_exit_;
   shell::ShellTestHelper test_helper_;
-  base::MessageLoop loop_;
 
   ViewManagerInitServicePtr view_manager_init_;
 
