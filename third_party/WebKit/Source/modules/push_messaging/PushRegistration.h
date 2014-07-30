@@ -18,7 +18,7 @@ class PushRegistration FINAL : public GarbageCollectedFinalized<PushRegistration
 public:
     // For CallbackPromiseAdapter.
     typedef blink::WebPushRegistration WebType;
-    static PushRegistration* from(ScriptPromiseResolver*, WebType* registrationRaw);
+    static PushRegistration* take(ScriptPromiseResolver*, WebType* registrationRaw);
     static void dispose(WebType* registrationRaw);
 
     virtual ~PushRegistration();

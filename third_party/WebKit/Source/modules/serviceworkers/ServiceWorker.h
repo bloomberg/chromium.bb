@@ -54,7 +54,7 @@ public:
 
     // For CallbackPromiseAdapter
     typedef blink::WebServiceWorker WebType;
-    static PassRefPtrWillBeRawPtr<ServiceWorker> from(ScriptPromiseResolver*, WebType* worker);
+    static PassRefPtrWillBeRawPtr<ServiceWorker> take(ScriptPromiseResolver*, WebType* worker);
 
     static PassRefPtrWillBeRawPtr<ServiceWorker> from(ExecutionContext*, WebType*);
     static void dispose(WebType*);

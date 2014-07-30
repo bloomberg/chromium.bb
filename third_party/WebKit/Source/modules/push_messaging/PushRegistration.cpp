@@ -9,7 +9,7 @@
 
 namespace blink {
 
-PushRegistration* PushRegistration::from(ScriptPromiseResolver*, WebType* registrationRaw)
+PushRegistration* PushRegistration::take(ScriptPromiseResolver*, WebType* registrationRaw)
 {
     OwnPtr<WebType> registration = adoptPtr(registrationRaw);
     return new PushRegistration(registration->endpoint, registration->registrationId);

@@ -154,7 +154,7 @@ PassRefPtrWillBeRawPtr<ServiceWorker> ServiceWorker::from(ExecutionContext* exec
     return create(executionContext, adoptPtr(worker));
 }
 
-PassRefPtrWillBeRawPtr<ServiceWorker> ServiceWorker::from(ScriptPromiseResolver* resolver, WebType* worker)
+PassRefPtrWillBeRawPtr<ServiceWorker> ServiceWorker::take(ScriptPromiseResolver* resolver, WebType* worker)
 {
     RefPtrWillBeRawPtr<ServiceWorker> serviceWorker = ServiceWorker::from(resolver->scriptState()->executionContext(), worker);
     ScriptState::Scope scope(resolver->scriptState());

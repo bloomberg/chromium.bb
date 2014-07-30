@@ -46,7 +46,7 @@ namespace blink {
 //
 // class MyClass ... {
 //    typedef blink::WebMyClass WebType;
-//    static PassRefPtr<MyClass> from(ScriptPromiseResolver* resolver,
+//    static PassRefPtr<MyClass> take(ScriptPromiseResolver* resolver,
 //                                    blink::WebMyClass* webInstance) {
 //        // convert/create as appropriate, but often it's just:
 //        return MyClass::create(adoptPtr(webInstance));
@@ -91,7 +91,7 @@ public:
             S::dispose(result);
             return;
         }
-        m_resolver->resolve(S::from(m_resolver.get(), result));
+        m_resolver->resolve(S::take(m_resolver.get(), result));
     }
 
     virtual void onError(typename T::WebType* error) OVERRIDE
@@ -100,7 +100,7 @@ public:
             T::dispose(error);
             return;
         }
-        m_resolver->reject(T::from(m_resolver.get(), error));
+        m_resolver->reject(T::take(m_resolver.get(), error));
     }
 
 private:

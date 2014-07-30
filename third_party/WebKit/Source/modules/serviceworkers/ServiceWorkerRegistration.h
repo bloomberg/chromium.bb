@@ -35,7 +35,7 @@ public:
 
     // For CallbackPromiseAdapter.
     typedef WebServiceWorkerRegistration WebType;
-    static PassRefPtrWillBeRawPtr<ServiceWorkerRegistration> from(ScriptPromiseResolver*, WebType* registration);
+    static PassRefPtrWillBeRawPtr<ServiceWorkerRegistration> take(ScriptPromiseResolver*, WebType* registration);
 
     String scope() const;
 

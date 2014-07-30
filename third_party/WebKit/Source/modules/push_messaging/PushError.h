@@ -18,7 +18,7 @@ class PushError {
 public:
     // For CallbackPromiseAdapter.
     typedef blink::WebPushError WebType;
-    static PassRefPtrWillBeRawPtr<DOMException> from(ScriptPromiseResolver*, WebType* webErrorRaw);
+    static PassRefPtrWillBeRawPtr<DOMException> take(ScriptPromiseResolver*, WebType* webErrorRaw);
     static void dispose(WebType* webErrorRaw);
 
 private:

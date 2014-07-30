@@ -135,14 +135,14 @@ public:
 #else
     typedef WebServiceWorkerRegistration WebType;
 #endif
-    static V8UndefinedType from(ScriptPromiseResolver* resolver, WebType* registration)
+    static V8UndefinedType take(ScriptPromiseResolver* resolver, WebType* registration)
     {
         ASSERT(!registration); // Anything passed here will be leaked.
         return V8UndefinedType();
     }
-    static void dispose(WebServiceWorker* worker)
+    static void dispose(WebType* registration)
     {
-        ASSERT(!worker); // Anything passed here will be leaked.
+        ASSERT(!registration); // Anything passed here will be leaked.
     }
 
 private:

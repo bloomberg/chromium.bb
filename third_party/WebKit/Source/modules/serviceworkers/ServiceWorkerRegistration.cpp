@@ -26,7 +26,7 @@ public:
 #else
     typedef WebServiceWorkerRegistration WebType;
 #endif
-    static V8UndefinedType from(ScriptPromiseResolver* resolver, WebType* registration)
+    static V8UndefinedType take(ScriptPromiseResolver* resolver, WebType* registration)
     {
         ASSERT(!registration); // Anything passed here will be leaked.
         return V8UndefinedType();
@@ -45,7 +45,7 @@ const AtomicString& ServiceWorkerRegistration::interfaceName() const
     return EventTargetNames::ServiceWorkerRegistration;
 }
 
-PassRefPtrWillBeRawPtr<ServiceWorkerRegistration> ServiceWorkerRegistration::from(ScriptPromiseResolver* resolver, WebType* registration)
+PassRefPtrWillBeRawPtr<ServiceWorkerRegistration> ServiceWorkerRegistration::take(ScriptPromiseResolver* resolver, WebType* registration)
 {
     if (!registration)
         return nullptr;
