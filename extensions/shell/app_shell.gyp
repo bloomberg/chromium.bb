@@ -8,69 +8,10 @@
   },
   'targets': [
     {
-      'target_name': 'app_shell_resources',
-      'type': 'none',
-      'actions': [
-        {
-          'action_name': 'generate_app_shell_resources',
-          'variables': {
-            'grit_grd_file': 'app_shell_resources.grd',
-            'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/extensions/shell',
-          },
-          'includes': [ '../../build/grit_action.gypi' ],
-        },
-      ],
-    },
-    {
-      'target_name': 'app_shell_pak',
-      'type': 'none',
-      'dependencies': [
-        'app_shell_resources',
-        # Need extension related resources in common_resources.pak and
-        # renderer_resources_100_percent.pak
-        '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
-        # Need dev-tools related resources in shell_resources.pak and
-        # devtools_resources.pak.
-        '<(DEPTH)/content/content_shell_and_tests.gyp:content_shell_resources',
-        '<(DEPTH)/content/browser/devtools/devtools_resources.gyp:devtools_resources',
-        '<(DEPTH)/extensions/extensions_resources.gyp:extensions_resources',
-        '<(DEPTH)/extensions/extensions_strings.gyp:extensions_strings',
-        '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',
-        '<(DEPTH)/ui/strings/ui_strings.gyp:ui_strings',
-      ],
-      'actions': [
-        {
-          'action_name': 'repack_app_shell_pack',
-          'variables': {
-            'pak_inputs': [
-              '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/chrome/extensions_api_resources.pak',
-              # TODO(jamescook): Extract the extension/app related resources
-              # from generated_resources_en-US.pak. http://crbug.com/397250
-              '<(SHARED_INTERMEDIATE_DIR)/chrome/generated_resources_en-US.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources_100_percent.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/content/shell_resources.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_renderer_resources.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_resources.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/extensions/shell/app_shell_resources.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/extensions/strings/extensions_strings_en-US.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_resources_100_percent.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/ui/strings/app_locale_settings_en-US.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/ui/strings/ui_strings_en-US.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
-            ],
-            'pak_output': '<(PRODUCT_DIR)/app_shell.pak',
-          },
-         'includes': [ '../../build/repack_action.gypi' ],
-        },
-      ],
-    },
-    {
       'target_name': 'app_shell_lib',
       'type': 'static_library',
       'defines!': ['CONTENT_IMPLEMENTATION'],
       'dependencies': [
-        'app_shell_pak',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:base_prefs_test_support',
         '<(DEPTH)/components/components.gyp:omaha_query_params',
@@ -85,6 +26,7 @@
         '<(DEPTH)/extensions/extensions.gyp:extensions_browser',
         '<(DEPTH)/extensions/extensions.gyp:extensions_common',
         '<(DEPTH)/extensions/extensions.gyp:extensions_renderer',
+        '<(DEPTH)/extensions/extensions.gyp:extensions_shell_and_test_pak',
         '<(DEPTH)/extensions/extensions_resources.gyp:extensions_resources',
         '<(DEPTH)/extensions/shell/common/api/api.gyp:shell_api',
         '<(DEPTH)/mojo/mojo.gyp:mojo_environment_chromium',
@@ -173,7 +115,7 @@
       'defines!': ['CONTENT_IMPLEMENTATION'],
       'dependencies': [
         'app_shell_lib',
-        'app_shell_pak',
+        '<(DEPTH)/extensions/extensions.gyp:extensions_shell_and_test_pak',
       ],
       'include_dirs': [
         '../..',

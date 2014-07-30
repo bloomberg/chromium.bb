@@ -89,10 +89,11 @@ ShellMainDelegate::CreateShellRendererMainDelegate() {
 }
 
 void ShellMainDelegate::InitializeResourceBundle() {
-  base::FilePath pak_dir;
-  PathService::Get(base::DIR_MODULE, &pak_dir);
+  base::FilePath extensions_shell_and_test_pak_path;
+  PathService::Get(base::DIR_MODULE, &extensions_shell_and_test_pak_path);
   ui::ResourceBundle::InitSharedInstanceWithPakPath(
-      pak_dir.AppendASCII("app_shell.pak"));
+      extensions_shell_and_test_pak_path.AppendASCII(
+          "extensions_shell_and_test.pak"));
 }
 
 // static

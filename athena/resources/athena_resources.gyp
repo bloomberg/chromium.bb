@@ -13,7 +13,7 @@
       'dependencies': [
         '../../ash/ash_resources.gyp:ash_resources',
         '../../content/content_resources.gyp:content_resources',
-        '../../extensions/shell/app_shell.gyp:app_shell_pak',
+        '../../extensions/extensions.gyp:extensions_shell_and_test_pak',
         '../../third_party/WebKit/public/blink_resources.gyp:blink_resources',
         '../../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
         '../../ui/chromeos/ui_chromeos.gyp:ui_chromeos_strings',
