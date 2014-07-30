@@ -482,6 +482,29 @@ public class ImeTest extends ContentShellTestBase {
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 3, "hello\n\n", 6, 6, -1, -1);
     }
 
+    @SmallTest
+    @Feature({"TextInput", "Main"})
+    public void testTransitionsWhileComposingText() throws Throwable {
+        DOMUtils.focusNode(mContentViewCore, "textarea");
+        assertWaitForKeyboardStatus(true);
+
+        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
+
+        // H
+        expectUpdateStateCall(mConnection);
+        setComposingText(mConnection, "h", 1);
+        assertEquals(KeyEvent.KEYCODE_H, mImeAdapter.mLastSyntheticKeyCode);
+
+        // Simulate switch of input fields.
+        finishComposingText(mConnection);
+
+        // H
+        expectUpdateStateCall(mConnection);
+        setComposingText(mConnection, "h", 1);
+        assertEquals(KeyEvent.KEYCODE_H, mImeAdapter.mLastSyntheticKeyCode);
+    }
+
     private void performGo(final AdapterInputConnection inputConnection,
             TestCallbackHelperContainer testCallbackHelperContainer) throws Throwable {
         handleBlockingCallbackAction(

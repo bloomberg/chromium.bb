@@ -180,6 +180,7 @@ public class ImeAdapter {
      */
     void setInputConnection(AdapterInputConnection inputConnection) {
         mInputConnection = inputConnection;
+        mLastComposeText = null;
     }
 
     /**
@@ -259,6 +260,7 @@ public class ImeAdapter {
         }
         mNativeImeAdapterAndroid = nativeImeAdapter;
         mTextInputType = textInputType;
+        mLastComposeText = null;
         if (nativeImeAdapter != 0) {
             nativeAttachImeAdapter(mNativeImeAdapterAndroid);
         }
@@ -435,6 +437,7 @@ public class ImeAdapter {
     }
 
     void finishComposingText() {
+        mLastComposeText = null;
         if (mNativeImeAdapterAndroid == 0) return;
         nativeFinishComposingText(mNativeImeAdapterAndroid);
     }
