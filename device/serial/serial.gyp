@@ -34,12 +34,12 @@
       ],
       'dependencies': [
         'device_serial_mojo',
-        '../../mojo/mojo.gyp:mojo_cpp_bindings',
+        '../../mojo/mojo_base.gyp:mojo_cpp_bindings',
         '../../net/net.gyp:net',
       ],
       'export_dependent_settings': [
         'device_serial_mojo',
-        '../../mojo/mojo.gyp:mojo_cpp_bindings',
+        '../../mojo/mojo_base.gyp:mojo_cpp_bindings',
       ],
       'sources': [
         '<(SHARED_INTERMEDIATE_DIR)/device/serial/serial.mojom.cc',

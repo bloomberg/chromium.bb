@@ -2611,7 +2611,7 @@
             '../components/components.gyp:autofill_content_risk_proto',
             '../components/components.gyp:translate_content_common',
             '../media/media.gyp:media',
-            '../mojo/mojo.gyp:mojo_system_impl',
+            '../mojo/mojo_base.gyp:mojo_system_impl',
             '../net/net.gyp:net_with_v8',
             '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
             '../third_party/expat/expat.gyp:expat',

@@ -102,9 +102,9 @@
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
         'mojo_application',
-        'mojo_run_all_unittests',
-        'mojo_environment_standalone',
         'mojo_utility',
+        'mojo_environment_standalone',
+        'mojo_run_all_unittests',
       ],
       'sources': [
         'public/cpp/application/tests/service_registry_unittest.cc',

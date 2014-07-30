@@ -47,7 +47,7 @@
           'dependencies': [
             '../content/content_shell_and_tests.gyp:content_shell_apk',
             '../mojo/mojo.gyp:mojo_shell_apk',
-            '../mojo/mojo.gyp:mojo_test_apk',
+            '../mojo/mojo_base.gyp:mojo_test_apk',
             '<@(android_app_targets)',
             'android_builder_tests',
             '../android_webview/android_webview.gyp:android_webview_apk',
@@ -90,6 +90,7 @@
             '../media/cast/cast.gyp:*',
             '../media/media.gyp:*',
             '../mojo/mojo.gyp:*',
+            '../mojo/mojo_base.gyp:*',
             '../ppapi/ppapi.gyp:*',
             '../ppapi/ppapi_internal.gyp:*',
             '../ppapi/tools/ppapi_tools.gyp:*',

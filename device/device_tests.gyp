@@ -13,8 +13,8 @@
       'dependencies': [
         '../base/base.gyp:test_support_base',
         '../components/components.gyp:usb_service',
-        '../mojo/mojo.gyp:mojo_environment_chromium',
-        '../mojo/mojo.gyp:mojo_system_impl',
+        '../mojo/mojo_base.gyp:mojo_environment_chromium',
+        '../mojo/mojo_base.gyp:mojo_system_impl',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../tools/usb_gadget.gyp:usb_gadget',

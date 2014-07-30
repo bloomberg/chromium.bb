@@ -6,7 +6,7 @@
   'conditions': [
     ['enable_plugins==1 and OS!="linux"', {
       'dependencies': [
-        '../mojo/mojo.gyp:mojo_service_provider_bindings',
+        '../mojo/mojo_base.gyp:mojo_service_provider_bindings',
         '../skia/skia.gyp:skia',
         '../third_party/WebKit/public/blink.gyp:blink',
         '../third_party/npapi/npapi.gyp:npapi',
