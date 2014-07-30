@@ -104,6 +104,38 @@ def ShellQuote(s):
   return '"%s"' % s
 
 
+def ShellUnquote(s):
+  """Do the opposite of ShellQuote.
+  This function assumes that the input is a valid escaped string. The behaviour
+  is undefined on malformed strings.
+
+  Args:
+    s: An escaped string.
+
+  Returns:
+    The unescaped version of the string.
+  """
+  if not s:
+    return ''
+
+  if s[0] == "'":
+    return s[1:-1]
+
+  if s[0] != '"':
+    return s
+
+  s = s[1:-1]
+  output = ''
+  i = 0
+  while i < len(s) - 1:
+    # Skip the backslash when it makes sense.
+    if s[i] == '\\' and s[i + 1] in _SHELL_ESCAPE_CHARS:
+      i += 1
+    output += s[i]
+    i += 1
+  return output + s[i] if i < len(s) else output
+
+
 def CmdToStr(cmd):
   """Translate a command list into a space-separated string.
 

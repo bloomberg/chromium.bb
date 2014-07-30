@@ -52,20 +52,21 @@ class CmdToStrTest(cros_test_lib.TestCase):
            (func, test_input, test_output, result, diff))
     self.assertEqual(test_output, result, msg)
 
-    # Also make sure the result is a string, otherwise the %r output will
-    # include a "u" prefix and that is not good for logging.
-    self.assertEqual(type(test_output), str)
-
-  def _testData(self, functor, tests):
+  def _testData(self, functor, tests, check_type=True):
     """Process a dict of test data."""
     for test_output, test_input in tests.iteritems():
       result = functor(test_input)
       self._assertEqual(functor.__name__, test_input, test_output, result)
 
+      if check_type:
+        # Also make sure the result is a string, otherwise the %r output will
+        # include a "u" prefix and that is not good for logging.
+        self.assertEqual(type(test_output), str)
+
   def testShellQuote(self):
     """Basic ShellQuote tests."""
     # Dict of expected output strings to input lists.
-    tests = {
+    tests_quote = {
         "''": '',
         'a': unicode('a'),
         "'a b c'": unicode('a b c'),
@@ -76,8 +77,25 @@ class CmdToStrTest(cros_test_lib.TestCase):
         "'a@()b'": 'a@()b',
         'j%k': 'j%k',
         r'''"s'a\$va\\rs"''': r"s'a$va\rs",
+        r'''"\\'\\\""''': r'''\'\"''',
+        r'''"'\\\$"''': r"""'\$""",
     }
-    self._testData(cros_build_lib.ShellQuote, tests)
+
+    # Expected input output specific to ShellUnquote. This string cannot be
+    # produced by ShellQuote but is still a valid bash escaped string.
+    tests_unquote = {
+        r'''\$''': r'''"\\$"''',
+    }
+
+    def aux(s):
+      return cros_build_lib.ShellUnquote(cros_build_lib.ShellQuote(s))
+
+    self._testData(cros_build_lib.ShellQuote, tests_quote)
+    self._testData(cros_build_lib.ShellUnquote, tests_unquote)
+
+    # Test that the operations are reversible.
+    self._testData(aux, {k: k for k in tests_quote.values()}, False)
+    self._testData(aux, {k: k for k in tests_quote.keys()}, False)
 
   def testCmdToStr(self):
     # Dict of expected output strings to input lists.
