@@ -157,8 +157,11 @@ public class AwContentsClientVisitedHistoryTest extends AwTestBase {
         }
     }
 
+    /*
     @Feature({"AndroidWebView"})
     @SmallTest
+    http://crbug.com/398768
+    */
     public void testGetVisitedHistoryCallbackAfterDestroy() throws Throwable {
         GetVisitedHistoryHelper visitedHistoryHelper =
             mContentsClient.getGetVisitedHistoryHelper();
