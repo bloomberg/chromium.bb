@@ -180,8 +180,12 @@ void QuicCryptoClientStream::DoHandshakeLoop(
     next_state_ = STATE_IDLE;
     switch (state) {
       case STATE_INITIALIZE: {
-        if (!cached->IsEmpty() && !cached->proof_valid() &&
-            !cached->signature().empty() && server_id_.is_https()) {
+        if (!cached->IsEmpty() && !cached->signature().empty() &&
+            server_id_.is_https()) {
+          // Note that we verify the proof even if the cached proof is valid.
+          // This allows us to respond to CA trust changes or certificate
+          // expiration because it may have been a while since we last verified
+          // the proof.
           DCHECK(crypto_config_->proof_verifier());
           // If the cached state needs to be verified, do it now.
           next_state_ = STATE_VERIFY_PROOF;
@@ -298,6 +302,11 @@ void QuicCryptoClientStream::DoHandshakeLoop(
             // We don't check the certificates for insecure QUIC connections.
             SetCachedProofValid(cached);
           } else if (!cached->signature().empty()) {
+            // Note that we only verify the proof if the cached proof is not
+            // valid. If the cached proof is valid here, someone else must have
+            // just added the server config to the cache and verified the proof,
+            // so we can assume no CA trust changes or certificate expiration
+            // has happened since then.
             next_state_ = STATE_VERIFY_PROOF;
             break;
           }
