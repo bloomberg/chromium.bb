@@ -48,12 +48,6 @@ RenderSVGContainer::~RenderSVGContainer()
 {
 }
 
-void RenderSVGContainer::trace(Visitor* visitor)
-{
-    visitor->trace(m_children);
-    RenderSVGModelObject::trace(visitor);
-}
-
 void RenderSVGContainer::layout()
 {
     ASSERT(needsLayout());

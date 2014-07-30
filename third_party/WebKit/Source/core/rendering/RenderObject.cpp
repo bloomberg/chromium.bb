@@ -132,7 +132,6 @@ COMPILE_ASSERT(sizeof(RenderObject) == sizeof(SameSizeAsRenderObject), RenderObj
 
 bool RenderObject::s_affectsParentBlock = false;
 
-#if !ENABLE(OILPAN)
 void* RenderObject::operator new(size_t sz)
 {
     ASSERT(isMainThread());
@@ -144,7 +143,6 @@ void RenderObject::operator delete(void* ptr)
     ASSERT(isMainThread());
     partitionFree(ptr);
 }
-#endif
 
 RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
 {
@@ -215,9 +213,9 @@ RenderObject::RenderObject(Node* node)
     : ImageResourceClient()
     , m_style(nullptr)
     , m_node(node)
-    , m_parent(nullptr)
-    , m_previous(nullptr)
-    , m_next(nullptr)
+    , m_parent(0)
+    , m_previous(0)
+    , m_next(0)
 #if ENABLE(ASSERT)
     , m_hasAXObject(false)
     , m_setNeedsLayoutForbidden(false)
@@ -236,14 +234,6 @@ RenderObject::~RenderObject()
 #ifndef NDEBUG
     renderObjectCounter.decrement();
 #endif
-}
-
-void RenderObject::trace(Visitor* visitor)
-{
-    visitor->trace(m_node);
-    visitor->trace(m_parent);
-    visitor->trace(m_previous);
-    visitor->trace(m_next);
 }
 
 String RenderObject::debugName() const
@@ -2850,9 +2840,8 @@ void RenderObject::postDestroy()
 
         removeShapeImageClient(m_style->shapeOutside());
     }
-#if !ENABLE(OILPAN)
+
     delete this;
-#endif
 }
 
 PositionWithAffinity RenderObject::positionForPoint(const LayoutPoint&)

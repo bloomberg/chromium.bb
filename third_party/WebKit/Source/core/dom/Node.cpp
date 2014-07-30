@@ -2447,12 +2447,8 @@ void Node::trace(Visitor* visitor)
     visitor->trace(m_parentOrShadowHostNode);
     visitor->trace(m_previous);
     visitor->trace(m_next);
-    // rareData() and m_data.m_renderer share their storage. We have to trace
-    // only one of them.
     if (hasRareData())
         visitor->trace(rareData());
-    else
-        visitor->trace(m_data.m_renderer);
     visitor->trace(m_treeScope);
 #endif
     EventTarget::trace(visitor);

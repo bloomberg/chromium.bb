@@ -97,12 +97,6 @@ RenderTableSection::~RenderTableSection()
 {
 }
 
-void RenderTableSection::trace(Visitor* visitor)
-{
-    visitor->trace(m_children);
-    RenderBox::trace(visitor);
-}
-
 void RenderTableSection::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
     RenderBox::styleDidChange(diff, oldStyle);

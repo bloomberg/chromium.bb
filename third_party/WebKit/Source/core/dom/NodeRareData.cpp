@@ -33,7 +33,6 @@
 #include "core/dom/Element.h"
 #include "core/dom/ElementRareData.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderObject.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -48,9 +47,6 @@ COMPILE_ASSERT(sizeof(NodeRareData) == sizeof(SameSizeAsNodeRareData), NodeRareD
 
 void NodeRareData::traceAfterDispatch(Visitor* visitor)
 {
-#if ENABLE(OILPAN)
-    visitor->trace(m_renderer);
-#endif
     visitor->trace(m_mutationObserverData);
     // Do not keep empty NodeListsNodeData objects around.
     if (m_nodeLists && m_nodeLists->isEmpty())

@@ -33,7 +33,6 @@ namespace blink {
 class RenderInline : public RenderBoxModelObject {
 public:
     explicit RenderInline(Element*);
-    virtual void trace(Visitor*) OVERRIDE;
 
     static RenderInline* createAnonymous(Document*);
 

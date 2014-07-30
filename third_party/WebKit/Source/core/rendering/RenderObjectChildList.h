@@ -26,7 +26,6 @@
 #ifndef RenderObjectChildList_h
 #define RenderObjectChildList_h
 
-#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -34,17 +33,15 @@ namespace blink {
 class RenderObject;
 
 class RenderObjectChildList {
-    DISALLOW_ALLOCATION();
 public:
     RenderObjectChildList()
-        : m_firstChild(nullptr)
-        , m_lastChild(nullptr)
+        : m_firstChild(0)
+        , m_lastChild(0)
     {
     }
-    void trace(Visitor*);
 
-    RenderObject* firstChild() const { return m_firstChild.get(); }
-    RenderObject* lastChild() const { return m_lastChild.get(); }
+    RenderObject* firstChild() const { return m_firstChild; }
+    RenderObject* lastChild() const { return m_lastChild; }
 
     // FIXME: Temporary while RenderBox still exists. Eventually this will just happen during insert/append/remove methods on the child list, and nobody
     // will need to manipulate firstChild or lastChild directly.
@@ -61,8 +58,8 @@ public:
     }
 
 private:
-    RawPtrWillBeMember<RenderObject> m_firstChild;
-    RawPtrWillBeMember<RenderObject> m_lastChild;
+    RenderObject* m_firstChild;
+    RenderObject* m_lastChild;
 };
 
 } // namespace blink

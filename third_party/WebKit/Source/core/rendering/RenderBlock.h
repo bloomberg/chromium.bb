@@ -60,7 +60,6 @@ public:
 protected:
     explicit RenderBlock(ContainerNode*);
     virtual ~RenderBlock();
-    virtual void trace(Visitor*) OVERRIDE;
 
 public:
     RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }

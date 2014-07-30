@@ -250,7 +250,7 @@ TextIterator::TextIterator(const Range* range, TextIteratorBehaviorFlags behavio
     , m_needsAnotherNewline(false)
     , m_textBox(0)
     , m_remainingTextBox(0)
-    , m_firstLetterText(nullptr)
+    , m_firstLetterText(0)
     , m_lastTextNode(nullptr)
     , m_lastTextNodeEndedWithCollapsedSpace(false)
     , m_lastCharacter(0)
@@ -281,7 +281,7 @@ TextIterator::TextIterator(const Position& start, const Position& end, TextItera
     , m_needsAnotherNewline(false)
     , m_textBox(0)
     , m_remainingTextBox(0)
-    , m_firstLetterText(nullptr)
+    , m_firstLetterText(0)
     , m_lastTextNode(nullptr)
     , m_lastTextNodeEndedWithCollapsedSpace(false)
     , m_lastCharacter(0)
@@ -396,7 +396,7 @@ void TextIterator::advance()
     if (!m_textBox && m_remainingTextBox) {
         m_textBox = m_remainingTextBox;
         m_remainingTextBox = 0;
-        m_firstLetterText = nullptr;
+        m_firstLetterText = 0;
         m_offset = 0;
     }
     // handle remembered text box
@@ -537,7 +537,7 @@ void TextIterator::advance()
                         m_fullyClippedStack.pop();
                     }
                     m_handledFirstLetter = false;
-                    m_firstLetterText = nullptr;
+                    m_firstLetterText = 0;
                     continue;
                 }
             }
@@ -550,7 +550,7 @@ void TextIterator::advance()
             pushFullyClippedState(m_fullyClippedStack, m_node);
         m_iterationProgress = HandledNone;
         m_handledFirstLetter = false;
-        m_firstLetterText = nullptr;
+        m_firstLetterText = 0;
 
         // how would this ever be?
         if (m_positionNode)
@@ -622,7 +622,7 @@ bool TextIterator::handleTextNode()
             if (m_firstLetterText) {
                 String firstLetter = m_firstLetterText->text();
                 emitText(m_node, m_firstLetterText, m_offset, m_offset + firstLetter.length());
-                m_firstLetterText = nullptr;
+                m_firstLetterText = 0;
                 m_textBox = 0;
                 return false;
             }
@@ -674,7 +674,7 @@ bool TextIterator::handleTextNode()
 
 void TextIterator::handleTextBox()
 {
-    RenderText* renderer = m_firstLetterText ? m_firstLetterText.get() : toRenderText(m_node->renderer());
+    RenderText* renderer = m_firstLetterText ? m_firstLetterText : toRenderText(m_node->renderer());
     if (renderer->style()->visibility() != VISIBLE && !m_ignoresStyleVisibility) {
         m_textBox = 0;
         return;
@@ -752,7 +752,7 @@ void TextIterator::handleTextBox()
     if (!m_textBox && m_remainingTextBox) {
         m_textBox = m_remainingTextBox;
         m_remainingTextBox = 0;
-        m_firstLetterText = nullptr;
+        m_firstLetterText = 0;
         m_offset = 0;
         handleTextBox();
     }

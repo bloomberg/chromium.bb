@@ -47,12 +47,6 @@ RenderTableRow::RenderTableRow(Element* element)
     setInline(false);   // our object is not Inline
 }
 
-void RenderTableRow::trace(Visitor* visitor)
-{
-    visitor->trace(m_children);
-    RenderBox::trace(visitor);
-}
-
 void RenderTableRow::willBeRemovedFromTree()
 {
     RenderBox::willBeRemovedFromTree();
