@@ -22,6 +22,7 @@
 
 namespace content {
 
+static const size_t kCoalescedTimerPeriod = 5000;
 static const size_t kMaxNumDelayableRequestsPerClient = 10;
 static const size_t kMaxNumDelayableRequestsPerHost = 6;
 static const size_t kMaxNumThrottledRequestsPerClient = 1;
@@ -233,13 +234,22 @@ class ResourceScheduler::Client {
       : is_audible_(false),
         is_visible_(false),
         is_loaded_(false),
+        is_paused_(false),
         has_body_(false),
         using_spdy_proxy_(false),
         total_delayable_count_(0),
         throttle_state_(ResourceScheduler::THROTTLED) {
     scheduler_ = scheduler;
   }
-  ~Client() {}
+
+  ~Client() {
+    // Update to default state and pause to ensure the scheduler has a
+    // correct count of relevant types of clients.
+    is_visible_ = false;
+    is_audible_ = false;
+    is_paused_ = true;
+    UpdateThrottleState();
+  }
 
   void ScheduleRequest(
       net::URLRequest* url_request,
@@ -302,12 +312,19 @@ class ResourceScheduler::Client {
     UpdateThrottleState();
   }
 
+  void SetPaused() {
+    is_paused_ = true;
+    UpdateThrottleState();
+  }
+
   void UpdateThrottleState() {
     ClientThrottleState old_throttle_state = throttle_state_;
     if (is_active() && !is_loaded_) {
       SetThrottleState(ACTIVE_AND_LOADING);
     } else if (is_active()) {
       SetThrottleState(UNTHROTTLED);
+    } else if (is_paused_) {
+      SetThrottleState(PAUSED);
     } else if (!scheduler_->active_clients_loaded()) {
       SetThrottleState(THROTTLED);
     } else if (is_loaded_ && scheduler_->should_coalesce()) {
@@ -315,6 +332,7 @@ class ResourceScheduler::Client {
     } else if (!is_active()) {
       SetThrottleState(UNTHROTTLED);
     }
+
     if (throttle_state_ == old_throttle_state) {
       return;
     }
@@ -322,6 +340,11 @@ class ResourceScheduler::Client {
       scheduler_->IncrementActiveClientsLoading();
     } else if (old_throttle_state == ACTIVE_AND_LOADING) {
       scheduler_->DecrementActiveClientsLoading();
+    }
+    if (throttle_state_ == COALESCED) {
+      scheduler_->IncrementCoalescedClients();
+    } else if (old_throttle_state == COALESCED) {
+      scheduler_->DecrementCoalescedClients();
     }
   }
 
@@ -384,6 +407,9 @@ class ResourceScheduler::Client {
       return;
     }
     throttle_state_ = throttle_state;
+    if (throttle_state_ != PAUSED) {
+      is_paused_ = false;
+    }
     LoadAnyStartablePendingRequests();
     // TODO(aiolos): Stop any started but not inflght requests when
     // switching to stricter throttle state?
@@ -624,6 +650,7 @@ class ResourceScheduler::Client {
   bool is_audible_;
   bool is_visible_;
   bool is_loaded_;
+  bool is_paused_;
   bool has_body_;
   bool using_spdy_proxy_;
   RequestQueue pending_requests_;
@@ -634,9 +661,13 @@ class ResourceScheduler::Client {
   ResourceScheduler::ClientThrottleState throttle_state_;
 };
 
-ResourceScheduler::ResourceScheduler(): should_coalesce_(false),
-                                        should_throttle_(false),
-                                        active_clients_loading_(0) {
+ResourceScheduler::ResourceScheduler()
+    : should_coalesce_(false),
+      should_throttle_(false),
+      active_clients_loading_(0),
+      coalesced_clients_(0),
+      coalescing_timer_(new base::Timer(true /* retain_user_task */,
+                                        true /* is_repeating */)) {
 }
 
 ResourceScheduler::~ResourceScheduler() {
@@ -648,7 +679,7 @@ void ResourceScheduler::SetThrottleOptionsForTesting(bool should_throttle,
                                                      bool should_coalesce) {
   should_coalesce_ = should_coalesce;
   should_throttle_ = should_throttle;
-  OnLoadingActiveClientsStateChanged();
+  OnLoadingActiveClientsStateChangedForAllClients();
 }
 
 ResourceScheduler::ClientThrottleState
@@ -722,7 +753,6 @@ void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
     return;
 
   Client* client = it->second;
-  client->OnLoadingStateChanged(true);
   // FYI, ResourceDispatcherHost cancels all of the requests after this function
   // is called. It should end up canceling all of the requests except for a
   // cross-renderer navigation.
@@ -818,7 +848,7 @@ void ResourceScheduler::DecrementActiveClientsLoading() {
   --active_clients_loading_;
   DCHECK_EQ(active_clients_loading_, CountActiveClientsLoading());
   if (active_clients_loading_ == 0) {
-    OnLoadingActiveClientsStateChanged();
+    OnLoadingActiveClientsStateChangedForAllClients();
   }
 }
 
@@ -826,11 +856,11 @@ void ResourceScheduler::IncrementActiveClientsLoading() {
   ++active_clients_loading_;
   DCHECK_EQ(active_clients_loading_, CountActiveClientsLoading());
   if (active_clients_loading_ == 1) {
-    OnLoadingActiveClientsStateChanged();
+    OnLoadingActiveClientsStateChangedForAllClients();
   }
 }
 
-void ResourceScheduler::OnLoadingActiveClientsStateChanged() {
+void ResourceScheduler::OnLoadingActiveClientsStateChangedForAllClients() {
   ClientMap::iterator client_it = client_map_.begin();
   while (client_it != client_map_.end()) {
     Client* client = client_it->second;
@@ -839,9 +869,9 @@ void ResourceScheduler::OnLoadingActiveClientsStateChanged() {
   }
 }
 
-size_t ResourceScheduler::CountActiveClientsLoading() {
+size_t ResourceScheduler::CountActiveClientsLoading() const {
   size_t active_and_loading = 0;
-  ClientMap::iterator client_it = client_map_.begin();
+  ClientMap::const_iterator client_it = client_map_.begin();
   while (client_it != client_map_.end()) {
     Client* client = client_it->second;
     if (client->throttle_state() == ACTIVE_AND_LOADING) {
@@ -850,6 +880,53 @@ size_t ResourceScheduler::CountActiveClientsLoading() {
     ++client_it;
   }
   return active_and_loading;
+}
+
+void ResourceScheduler::IncrementCoalescedClients() {
+  ++coalesced_clients_;
+  DCHECK(should_coalesce_);
+  DCHECK_EQ(coalesced_clients_, CountCoalescedClients());
+  if (coalesced_clients_ == 1) {
+    coalescing_timer_->Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kCoalescedTimerPeriod),
+        base::Bind(&ResourceScheduler::LoadCoalescedRequests,
+                   base::Unretained(this)));
+  }
+}
+
+void ResourceScheduler::DecrementCoalescedClients() {
+  DCHECK(should_coalesce_);
+  DCHECK_NE(0U, coalesced_clients_);
+  --coalesced_clients_;
+  DCHECK_EQ(coalesced_clients_, CountCoalescedClients());
+  if (coalesced_clients_ == 0) {
+    coalescing_timer_->Stop();
+  }
+}
+
+size_t ResourceScheduler::CountCoalescedClients() const {
+  DCHECK(should_coalesce_);
+  size_t coalesced_clients = 0;
+  ClientMap::const_iterator client_it = client_map_.begin();
+  while (client_it != client_map_.end()) {
+    Client* client = client_it->second;
+    if (client->throttle_state() == COALESCED) {
+      ++coalesced_clients;
+    }
+    ++client_it;
+  }
+  return coalesced_clients_;
+}
+
+void ResourceScheduler::LoadCoalescedRequests() {
+  DCHECK(should_coalesce_);
+  ClientMap::iterator client_it = client_map_.begin();
+  while (client_it != client_map_.end()) {
+    Client* client = client_it->second;
+    client->LoadCoalescedRequests();
+    ++client_it;
+  }
 }
 
 void ResourceScheduler::ReprioritizeRequest(ScheduledResourceRequest* request,

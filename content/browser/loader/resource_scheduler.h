@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "net/base/priority_queue.h"
 #include "net/base/request_priority.h"
@@ -53,6 +54,17 @@ class ResourceThrottle;
 class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
  public:
   enum ClientThrottleState {
+    // TODO(aiolos): Add logic to ShouldStartRequest for PAUSED Clients to only
+    // issue synchronous requests.
+    // TODO(aiolos): Add max number of THROTTLED Clients, and logic to set
+    // subsquent Clients to PAUSED instead. Also add logic to unpause a Client
+    // when a background Client becomes COALESCED (ie, finishes loading.)
+    // TODO(aiolos): Add tests for the above mentioned logic.
+
+    // Currently being deleted client.
+    // This state currently follows the same logic for loading requests as
+    // UNTHROTTLED/ACTIVE_AND_LOADING Clients. See above TODO's.
+    PAUSED,
     // Loaded background client, all observable clients loaded.
     COALESCED,
     // Background client, an observable client is loading.
@@ -68,6 +80,11 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
 
   ResourceScheduler();
   ~ResourceScheduler();
+
+  // Use a mock timer when testing.
+  void set_timer_for_testing(scoped_ptr<base::Timer> timer) {
+    coalescing_timer_.reset(timer.release());
+  }
 
   // TODO(aiolos): Remove when throttling and coalescing have landed
   void SetThrottleOptionsForTesting(bool should_throttle, bool should_coalesce);
@@ -136,16 +153,26 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
   // Called when a ScheduledResourceRequest is destroyed.
   void RemoveRequest(ScheduledResourceRequest* request);
 
-  // These Calls may update the ThrottleState of all clients, and have the
-  // potential to be re-entarant.
+  // These calls may update the ThrottleState of all clients, and have the
+  // potential to be re-entrant.
   // Called when a Client newly becomes active loading.
-  void DecrementActiveClientsLoading();
-  // Caled when a Client stops being active loading.
   void IncrementActiveClientsLoading();
+  // Called when an active and loading Client either completes loading or
+  // becomes inactive.
+  void DecrementActiveClientsLoading();
 
-  void OnLoadingActiveClientsStateChanged();
+  void OnLoadingActiveClientsStateChangedForAllClients();
 
-  size_t CountActiveClientsLoading();
+  size_t CountActiveClientsLoading() const;
+
+  // Called when a Client becomes coalesced.
+  void IncrementCoalescedClients();
+  // Called when a client stops being coalesced.
+  void DecrementCoalescedClients();
+
+  void LoadCoalescedRequests();
+
+  size_t CountCoalescedClients() const;
 
   // Update the queue position for |request|, possibly causing it to start
   // loading.
@@ -167,6 +194,9 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
   bool should_throttle_;
   ClientMap client_map_;
   size_t active_clients_loading_;
+  size_t coalesced_clients_;
+  // This is a repeating timer to initiate requests on COALESCED Clients.
+  scoped_ptr<base::Timer> coalescing_timer_;
   RequestSet unowned_requests_;
 };
 
