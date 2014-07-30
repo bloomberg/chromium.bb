@@ -10,7 +10,6 @@
 
 namespace net {
 
-#if !defined(USE_OPENSSL)
 // This is the ASN.1 prefix for a P-256 public key. Specifically it's:
 // SEQUENCE
 //   SEQUENCE
@@ -28,7 +27,6 @@ static const unsigned char kP256SpkiPrefix[] = {
     0x42, 0x00, 0x04
 };
 static const unsigned int kEcCoordinateSize = 32U;
-#endif
 
 // This is a valid P-256 public key.
 static const unsigned char kSpkiEc[] = {
@@ -46,24 +44,23 @@ static const unsigned char kSpkiEc[] = {
     0x05, 0xd3, 0xd2, 0xca, 0xdf, 0x44, 0x2f, 0xf4
 };
 
-#if !defined(USE_OPENSSL)
-// This is a P-256 public key with 0 X and Y values.
-static const unsigned char kSpkiEcWithZeroXY[] = {
+// This is a P-256 public key with a leading 0.
+static const unsigned char kSpkiEcWithLeadingZero[] = {
     0x30, 0x59, 0x30, 0x13, 0x06, 0x07, 0x2a, 0x86,
     0x48, 0xce, 0x3d, 0x02, 0x01, 0x06, 0x08, 0x2a,
     0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07, 0x03,
     0x42, 0x00, 0x04,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    0x00, 0x8e, 0xd5, 0x49, 0x51, 0xad, 0x7d, 0xd3,
+    0x3a, 0x59, 0x86, 0xd1, 0x2c, 0xba, 0x05, 0xd3,
+    0xa6, 0x3c, 0x5d, 0x6d, 0x28, 0xde, 0x8f, 0xdd,
+    0xa5, 0x3d, 0x30, 0x18, 0x05, 0x86, 0x76, 0x9c,
+    0x7c, 0xa7, 0xba, 0x58, 0xea, 0x1a, 0x84, 0x19,
+    0x29, 0x0a, 0x15, 0x30, 0x7d, 0x6b, 0x00, 0x41,
+    0x64, 0x56, 0x84, 0x19, 0x54, 0x3e, 0x26, 0x13,
+    0xc9, 0x1e, 0x31, 0x89, 0xe2, 0x62, 0xcb, 0x3f
 };
 
-TEST(JwkSerializerNSSTest, ConvertSpkiFromDerToJwkEc) {
+TEST(JwkSerializerTest, ConvertSpkiFromDerToJwkEc) {
   base::StringPiece spki;
   base::DictionaryValue public_key_jwk;
 
@@ -99,8 +96,8 @@ TEST(JwkSerializerNSSTest, ConvertSpkiFromDerToJwkEc) {
 
   // Test the result of a corner case: leading 0s in the x, y coordinates are
   // not trimmed, but the point is fixed-length encoded.
-  spki.set(reinterpret_cast<const char*>(kSpkiEcWithZeroXY),
-           sizeof(kSpkiEcWithZeroXY));
+  spki.set(reinterpret_cast<const char*>(kSpkiEcWithLeadingZero),
+           sizeof(kSpkiEcWithLeadingZero));
   EXPECT_TRUE(JwkSerializer::ConvertSpkiFromDerToJwk(spki, &public_key_jwk));
 
   EXPECT_TRUE(public_key_jwk.GetString("kty", &string_value));
@@ -113,37 +110,16 @@ TEST(JwkSerializerNSSTest, ConvertSpkiFromDerToJwkEc) {
   EXPECT_EQ(kEcCoordinateSize, decoded_coordinate.size());
   EXPECT_EQ(0,
             memcmp(decoded_coordinate.data(),
-                   kSpkiEcWithZeroXY + sizeof(kP256SpkiPrefix),
+                   kSpkiEcWithLeadingZero + sizeof(kP256SpkiPrefix),
                    kEcCoordinateSize));
 
   EXPECT_TRUE(public_key_jwk.GetString("y", &string_value));
   EXPECT_TRUE(base::Base64Decode(string_value, &decoded_coordinate));
   EXPECT_EQ(kEcCoordinateSize, decoded_coordinate.size());
-  EXPECT_EQ(0,
-      memcmp(decoded_coordinate.data(),
-             kSpkiEcWithZeroXY + sizeof(kP256SpkiPrefix) + kEcCoordinateSize,
-             kEcCoordinateSize));
+  EXPECT_EQ(0, memcmp(
+      decoded_coordinate.data(),
+      kSpkiEcWithLeadingZero + sizeof(kP256SpkiPrefix) + kEcCoordinateSize,
+      kEcCoordinateSize));
 }
-
-#else
-
-// For OpenSSL, JwkSerializer::ConvertSpkiFromDerToJwk() is not yet implemented
-// and should return false.  This unit test ensures that a stub implementation
-// is present.
-TEST(JwkSerializerOpenSSLTest, ConvertSpkiFromDerToJwkNotImplemented) {
-  base::StringPiece spki;
-  base::DictionaryValue public_key_jwk;
-
-  // The empty SPKI is trivially non-convertible...
-  EXPECT_FALSE(JwkSerializer::ConvertSpkiFromDerToJwk(spki, &public_key_jwk));
-  EXPECT_TRUE(public_key_jwk.empty());
-  // but even a valid SPKI is non-convertible via the stub OpenSSL
-  // implementation.
-  spki.set(reinterpret_cast<const char*>(kSpkiEc), sizeof(kSpkiEc));
-  EXPECT_FALSE(JwkSerializer::ConvertSpkiFromDerToJwk(spki, &public_key_jwk));
-  EXPECT_TRUE(public_key_jwk.empty());
-}
-
-#endif  // !defined(USE_OPENSSL)
 
 }  // namespace net
