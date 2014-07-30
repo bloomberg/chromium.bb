@@ -31,6 +31,7 @@
 #include "core/css/MediaValuesDynamic.h"
 #include "core/css/parser/SizesAttributeParser.h"
 #include "core/dom/Attribute.h"
+#include "core/dom/NodeTraversal.h"
 #include "core/fetch/ImageResource.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLCanvasElement.h"
@@ -146,7 +147,7 @@ HTMLFormElement* HTMLImageElement::formOwner() const
 void HTMLImageElement::formRemovedFromTree(const Node& formRoot)
 {
     ASSERT(m_form);
-    if (highestAncestorOrSelf() != formRoot)
+    if (NodeTraversal::highestAncestorOrSelf(*this) != formRoot)
         resetFormOwner();
 }
 
@@ -296,7 +297,7 @@ void HTMLImageElement::attach(const AttachContext& context)
 
 Node::InsertionNotificationRequest HTMLImageElement::insertedInto(ContainerNode* insertionPoint)
 {
-    if (!m_formWasSetByParser || insertionPoint->highestAncestorOrSelf() != m_form->highestAncestorOrSelf())
+    if (!m_formWasSetByParser || NodeTraversal::highestAncestorOrSelf(*insertionPoint) != NodeTraversal::highestAncestorOrSelf(*m_form.get()))
         resetFormOwner();
 
     bool imageWasModified = false;
@@ -318,7 +319,7 @@ Node::InsertionNotificationRequest HTMLImageElement::insertedInto(ContainerNode*
 
 void HTMLImageElement::removedFrom(ContainerNode* insertionPoint)
 {
-    if (!m_form || m_form->highestAncestorOrSelf() != highestAncestorOrSelf())
+    if (!m_form || NodeTraversal::highestAncestorOrSelf(*m_form.get()) != NodeTraversal::highestAncestorOrSelf(*this))
         resetFormOwner();
     HTMLElement::removedFrom(insertionPoint);
 }

@@ -27,6 +27,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/IdTargetObserver.h"
+#include "core/dom/NodeTraversal.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLObjectElement.h"
@@ -83,7 +84,7 @@ void FormAssociatedElement::didMoveToNewDocument(Document& oldDocument)
 
 void FormAssociatedElement::insertedInto(ContainerNode* insertionPoint)
 {
-    if (!m_formWasSetByParser || insertionPoint->highestAncestorOrSelf() != m_form->highestAncestorOrSelf())
+    if (!m_formWasSetByParser || NodeTraversal::highestAncestorOrSelf(*insertionPoint) != NodeTraversal::highestAncestorOrSelf(*m_form.get()))
         resetFormOwner();
 
     if (!insertionPoint->inDocument())
@@ -101,7 +102,7 @@ void FormAssociatedElement::removedFrom(ContainerNode* insertionPoint)
         setFormAttributeTargetObserver(nullptr);
     // If the form and element are both in the same tree, preserve the connection to the form.
     // Otherwise, null out our form and remove ourselves from the form's list of elements.
-    if (m_form && element->highestAncestorOrSelf() != m_form->highestAncestorOrSelf())
+    if (m_form && NodeTraversal::highestAncestorOrSelf(*element) != NodeTraversal::highestAncestorOrSelf(*m_form.get()))
         resetFormOwner();
 }
 
@@ -128,7 +129,7 @@ HTMLFormElement* FormAssociatedElement::findAssociatedForm(const HTMLElement* el
 void FormAssociatedElement::formRemovedFromTree(const Node& formRoot)
 {
     ASSERT(m_form);
-    if (toHTMLElement(this)->highestAncestorOrSelf() == formRoot)
+    if (NodeTraversal::highestAncestorOrSelf(toHTMLElement(*this)) == formRoot)
         return;
     resetFormOwner();
 }

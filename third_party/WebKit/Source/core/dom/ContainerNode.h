@@ -295,15 +295,6 @@ inline Node* Node::lastChild() const
     return toContainerNode(this)->lastChild();
 }
 
-inline Node& Node::highestAncestorOrSelf() const
-{
-    Node* node = const_cast<Node*>(this);
-    Node* highest = node;
-    for (; node; node = node->parentNode())
-        highest = node;
-    return *highest;
-}
-
 inline ContainerNode* Node::parentElementOrShadowRoot() const
 {
     ContainerNode* parent = parentNode();

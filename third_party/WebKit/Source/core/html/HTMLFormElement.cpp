@@ -167,13 +167,13 @@ void HTMLFormElement::removedFrom(ContainerNode* insertionPoint)
     // We don't need to take care of form association by 'form' content
     // attribute becuse IdTargetObserver handles it.
     if (m_hasElementsAssociatedByParser) {
-        Node& root = highestAncestorOrSelf();
+        Node& root = NodeTraversal::highestAncestorOrSelf(*this);
         if (!m_associatedElementsAreDirty) {
             FormAssociatedElement::List elements(associatedElements());
             notifyFormRemovedFromTree(elements, root);
         } else {
             FormAssociatedElement::List elements;
-            collectAssociatedElements(insertionPoint->highestAncestorOrSelf(), elements);
+            collectAssociatedElements(NodeTraversal::highestAncestorOrSelf(*insertionPoint), elements);
             notifyFormRemovedFromTree(elements, root);
             collectAssociatedElements(root, elements);
             notifyFormRemovedFromTree(elements, root);
@@ -184,7 +184,7 @@ void HTMLFormElement::removedFrom(ContainerNode* insertionPoint)
             notifyFormRemovedFromTree(images, root);
         } else {
             WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> > images;
-            collectImageElements(insertionPoint->highestAncestorOrSelf(), images);
+            collectImageElements(NodeTraversal::highestAncestorOrSelf(*insertionPoint), images);
             notifyFormRemovedFromTree(images, root);
             collectImageElements(root, images);
             notifyFormRemovedFromTree(images, root);
@@ -617,7 +617,7 @@ const FormAssociatedElement::List& HTMLFormElement::associatedElements() const
     HTMLFormElement* mutableThis = const_cast<HTMLFormElement*>(this);
     Node* scope = mutableThis;
     if (m_hasElementsAssociatedByParser)
-        scope = &highestAncestorOrSelf();
+        scope = &NodeTraversal::highestAncestorOrSelf(*mutableThis);
     if (inDocument() && treeScope().idTargetObserverRegistry().hasObservers(fastGetAttribute(idAttr)))
         scope = &treeScope().rootNode();
     ASSERT(scope);
@@ -639,7 +639,7 @@ const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >& HTMLFormElement::
 {
     if (!m_imageElementsAreDirty)
         return m_imageElements;
-    collectImageElements(m_hasElementsAssociatedByParser ? highestAncestorOrSelf() : *this, m_imageElements);
+    collectImageElements(m_hasElementsAssociatedByParser ? NodeTraversal::highestAncestorOrSelf(*this) : *this, m_imageElements);
     m_imageElementsAreDirty = false;
     return m_imageElements;
 }

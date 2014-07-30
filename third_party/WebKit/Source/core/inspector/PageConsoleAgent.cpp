@@ -32,6 +32,7 @@
 #include "core/inspector/PageConsoleAgent.h"
 
 #include "core/dom/Node.h"
+#include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
@@ -83,7 +84,7 @@ void PageConsoleAgent::addInspectedNode(ErrorString* errorString, int nodeId)
         return;
     }
     while (node->isInShadowTree()) {
-        Node& ancestor = node->highestAncestorOrSelf();
+        Node& ancestor = NodeTraversal::highestAncestorOrSelf(*node);
         if (!ancestor.isShadowRoot() || toShadowRoot(ancestor).type() == ShadowRoot::AuthorShadowRoot)
             break;
         // User agent shadow root, keep climbing up.

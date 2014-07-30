@@ -26,6 +26,7 @@
 #ifndef NodeTraversal_h
 #define NodeTraversal_h
 
+#include "core/dom/ContainerNode.h"
 #include "core/dom/Node.h"
 
 namespace blink {
@@ -67,6 +68,7 @@ public:
 
     static Node* nextAncestorSibling(const Node&);
     static Node* nextAncestorSibling(const Node&, const Node* stayWithin);
+    static Node& highestAncestorOrSelf(Node&);
 
 private:
     template <class NodeType>
@@ -111,6 +113,14 @@ inline Node* NodeTraversal::nextSkippingChildren(const Node& current, const Node
     if (current.nextSibling())
         return current.nextSibling();
     return nextAncestorSibling(current, stayWithin);
+}
+
+inline Node& NodeTraversal::highestAncestorOrSelf(Node& current)
+{
+    Node* highest = &current;
+    while (highest->parentNode())
+        highest = highest->parentNode();
+    return *highest;
 }
 
 } // namespace blink
