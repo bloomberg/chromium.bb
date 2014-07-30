@@ -52,7 +52,7 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
   const Extension* InstallAndLaunchPlatformApp(const char* name);
 
   // Launch the given platform app.
-  void LaunchPlatformApp(const Extension* extension);
+  virtual void LaunchPlatformApp(const Extension* extension);
 
   // Gets the WebContents associated with the first app window that is found
   // (most tests only deal with one platform app window, so this is good
@@ -114,6 +114,9 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
   // chrome.app.window.create() in the test app.
   apps::AppWindow* CreateTestAppWindow(
       const std::string& window_create_options);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PlatformAppBrowserTest);
 };
 
 class ExperimentalPlatformAppBrowserTest : public PlatformAppBrowserTest {

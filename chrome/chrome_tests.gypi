@@ -876,6 +876,7 @@
         'browser/apps/app_view_browsertest.cc',
         'browser/apps/app_window_browsertest.cc',
         'browser/apps/app_url_redirector_browsertest.cc',
+        'browser/apps/custom_launcher_page_browsertest_views.cc',
         'browser/apps/drive/drive_app_converter_browsertest.cc',
         'browser/apps/drive/drive_app_provider_browsertest.cc',
         'browser/apps/ephemeral_app_browsertest.cc',

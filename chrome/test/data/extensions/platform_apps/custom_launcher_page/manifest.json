@@ -1,0 +1,13 @@
+{
+  "name": "Platform App Test: Custom Launcher Page",
+  // chrome-extension://lmadimbbgapmngbiclpjjngmdickadpl
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAv7Qi8BghDr2b2Wdg5vv7vGWQxWpo6dD4Jt3okhb3oOF0zmnhr1G/e16J8WxtygaF2mshjVP11/j/yu8n7AsrFw5hwi3ROwmsB8T1vB+rHGh9NfF/iX8w1z2rLkXlPemHof7nzC67Y3TRrl0ONqIO4ef9z4NEnnzQ0EeIX51924G5pj9YjTderWIso9+8mehelDwMgBZu66T1jTuxq4SOEvuDe9IKXwJfVPfhTf0f8YAH+NUdleKY+2zR7u8BDK42OkhhKs4XB3ZHDTr+n7KObXYXJukpr/eNqbXyU4lsUlJobFDzygZxjEOw87HhP9fK3V0v+eYrQ4+9JctqxorT5wIDAQAB",
+  "version": "1",
+  "manifest_version": 2,
+  // Currently necessary to give it an app context.
+  "app": {
+    "background": {
+      "scripts": ["dummy.js"]
+    }
+  }
+}
