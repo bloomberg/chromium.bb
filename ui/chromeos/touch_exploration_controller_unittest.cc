@@ -112,12 +112,6 @@ class TouchExplorationControllerTestApi {
     }
   }
 
-  void SetEventHandlerForTesting(
-      ui::EventHandler* event_handler_for_testing) {
-    touch_exploration_controller_->event_handler_for_testing_ =
-        event_handler_for_testing;
-  }
-
   bool IsInNoFingersDownStateForTesting() const {
     return touch_exploration_controller_->state_ ==
            touch_exploration_controller_->NO_FINGERS_DOWN;
@@ -260,8 +254,6 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
       touch_exploration_controller_.reset(
           new ui::TouchExplorationControllerTestApi(
               new TouchExplorationController(root_window(), &delegate_)));
-      touch_exploration_controller_->SetEventHandlerForTesting(
-          &event_capturer_);
       cursor_client()->ShowCursor();
       cursor_client()->DisableMouseEvents();
     }
