@@ -25,6 +25,10 @@ config("executable_ldconfig") {
     "-Wl,-rpath=\$ORIGIN/lib/",
 
     "-Wl,-rpath-link=lib/",
+
+    # Newer binutils don't set DT_RPATH unless you disable "new" dtags
+    # and the new DT_RUNPATH doesn't work without --no-as-needed flag.
+    "-Wl,--disable-new-dtags",
   ]
 
   if (is_android) {
