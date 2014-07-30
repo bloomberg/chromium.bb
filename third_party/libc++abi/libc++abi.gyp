@@ -32,24 +32,9 @@
         '../libc++/trunk/include'
       ],
       'cflags': [
-        '-g', '-O3', '-fPIC',
-        '-std=c++11',
         '-fstrict-aliasing',
-        '-Wsign-conversion',
-        '-Wshadow',
-        '-Wconversion',
-        '-Wunused-variable',
-        '-Wmissing-field-initializers',
-        '-Wchar-subscripts',
-        '-Wmismatched-tags',
-        '-Wmissing-braces',
-        '-Wshorten-64-to-32',
-        '-Wsign-compare',
-        '-Wstrict-aliasing=2',
-        '-Wstrict-overflow=4',
-        '-Wunused-parameter',
-        '-Wnewline-eof',
         '-nostdinc++',
+        '-std=c++11',
       ],
       'cflags_cc!': [
         '-fno-rtti',
@@ -65,10 +50,10 @@
         '-pthread',
       ],
       'libraries': [
-        '-lrt',
+        '-lc',
         '-lgcc_s',
         '-lpthread',
-        '-lc',
+        '-lrt',
       ]
     },
   ]
