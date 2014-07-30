@@ -1497,7 +1497,8 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   // Checks if the current program and vertex attributes are valid for drawing.
   bool IsDrawValid(
-      const char* function_name, GLuint max_vertex_accessed, GLsizei primcount);
+      const char* function_name, GLuint max_vertex_accessed, bool instanced,
+      GLsizei primcount);
 
   // Returns true if successful, simulated will be true if attrib0 was
   // simulated.
@@ -1521,7 +1522,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void RestoreStateForSimulatedFixedAttribs();
 
   // Handle DrawArrays and DrawElements for both instanced and non-instanced
-  // cases (primcount is 0 for non-instanced).
+  // cases (primcount is always 1 for non-instanced).
   error::Error DoDrawArrays(
       const char* function_name,
       bool instanced, GLenum mode, GLint first, GLsizei count,
@@ -6218,7 +6219,10 @@ bool GLES2DecoderImpl::ClearUnclearedTextures() {
 }
 
 bool GLES2DecoderImpl::IsDrawValid(
-    const char* function_name, GLuint max_vertex_accessed, GLsizei primcount) {
+    const char* function_name, GLuint max_vertex_accessed, bool instanced,
+    GLsizei primcount) {
+  DCHECK(instanced || primcount == 1);
+
   // NOTE: We specifically do not check current_program->IsValid() because
   // it could never be invalid since glUseProgram would have failed. While
   // glLinkProgram could later mark the program as invalid the previous
@@ -6236,6 +6240,7 @@ bool GLES2DecoderImpl::IsDrawValid(
                          feature_info_.get(),
                          state_.current_program.get(),
                          max_vertex_accessed,
+                         instanced,
                          primcount);
 }
 
@@ -6493,13 +6498,13 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
     return error::kNoError;
   }
 
-  if (count == 0 || (instanced && primcount == 0)) {
+  if (count == 0 || primcount == 0) {
     LOCAL_RENDER_WARNING("Render count or primcount is 0.");
     return error::kNoError;
   }
 
   GLuint max_vertex_accessed = first + count - 1;
-  if (IsDrawValid(function_name, max_vertex_accessed, primcount)) {
+  if (IsDrawValid(function_name, max_vertex_accessed, instanced, primcount)) {
     if (!ClearUnclearedTextures()) {
       LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "out of memory");
       return error::kNoError;
@@ -6546,7 +6551,7 @@ error::Error GLES2DecoderImpl::HandleDrawArrays(
                       static_cast<GLenum>(c.mode),
                       static_cast<GLint>(c.first),
                       static_cast<GLsizei>(c.count),
-                      0);
+                      1);
 }
 
 error::Error GLES2DecoderImpl::HandleDrawArraysInstancedANGLE(
@@ -6607,7 +6612,7 @@ error::Error GLES2DecoderImpl::DoDrawElements(
     return error::kNoError;
   }
 
-  if (count == 0 || (instanced && primcount == 0)) {
+  if (count == 0 || primcount == 0) {
     return error::kNoError;
   }
 
@@ -6622,7 +6627,7 @@ error::Error GLES2DecoderImpl::DoDrawElements(
     return error::kNoError;
   }
 
-  if (IsDrawValid(function_name, max_vertex_accessed, primcount)) {
+  if (IsDrawValid(function_name, max_vertex_accessed, instanced, primcount)) {
     if (!ClearUnclearedTextures()) {
       LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "out of memory");
       return error::kNoError;
@@ -6686,7 +6691,7 @@ error::Error GLES2DecoderImpl::HandleDrawElements(
                         static_cast<GLsizei>(c.count),
                         static_cast<GLenum>(c.type),
                         static_cast<int32>(c.index_offset),
-                        0);
+                        1);
 }
 
 error::Error GLES2DecoderImpl::HandleDrawElementsInstancedANGLE(

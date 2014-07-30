@@ -72,8 +72,7 @@ class GPU_EXPORT VertexAttrib {
   // Find the maximum vertex accessed, accounting for instancing.
   GLuint MaxVertexAccessed(GLsizei primcount,
                            GLuint max_vertex_accessed) const {
-    return (primcount && divisor_) ? ((primcount - 1) / divisor_) :
-                                     max_vertex_accessed;
+    return divisor_ ? ((primcount - 1) / divisor_) : max_vertex_accessed;
   }
 
   bool is_client_side_array() const {
@@ -247,6 +246,7 @@ class GPU_EXPORT VertexAttribManager :
       FeatureInfo* feature_info,
       Program* current_program,
       GLuint max_vertex_accessed,
+      bool instanced,
       GLsizei primcount);
 
  private:

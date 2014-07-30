@@ -163,10 +163,13 @@ bool VertexAttribManager::ValidateBindings(
     FeatureInfo* feature_info,
     Program* current_program,
     GLuint max_vertex_accessed,
+    bool instanced,
     GLsizei primcount) {
+  DCHECK(primcount);
   ErrorState* error_state = decoder->GetErrorState();
   // true if any enabled, used divisor is zero
   bool divisor0 = false;
+  bool have_enabled_active_attribs = false;
   const GLuint kInitialBufferId = 0xFFFFFFFFU;
   GLuint current_buffer_id = kInitialBufferId;
   bool use_client_side_arrays_for_stream_buffers = feature_info->workarounds(
@@ -182,6 +185,7 @@ bool VertexAttribManager::ValidateBindings(
         current_program->GetAttribInfoByLocation(attrib->index());
     if (attrib_info) {
       divisor0 |= (attrib->divisor() == 0);
+      have_enabled_active_attribs = true;
       GLuint count = attrib->MaxVertexAccessed(primcount, max_vertex_accessed);
       // This attrib is used in the current program.
       if (!attrib->CanAccess(count)) {
@@ -251,11 +255,14 @@ bool VertexAttribManager::ValidateBindings(
     }
   }
 
-  if (primcount && !divisor0) {
+  // Instanced drawing needs at least one enabled attribute with divisor zero.
+  // Non-instanced drawing is fine with having no attributes at all, but if
+  // there are attributes, at least one should have divisor zero.
+  // (See ANGLE_instanced_arrays spec)
+  if (!divisor0 && (instanced || have_enabled_active_attribs)) {
     ERRORSTATE_SET_GL_ERROR(
         error_state, GL_INVALID_OPERATION, function_name,
-        "attempt instanced render with all attributes having "
-        "non-zero divisors");
+        "attempt to draw with all attributes having non-zero divisors");
     return false;
   }
 

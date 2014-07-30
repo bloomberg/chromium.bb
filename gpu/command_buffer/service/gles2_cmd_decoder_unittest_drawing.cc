@@ -1118,6 +1118,30 @@ TEST_P(GLES2DecoderGeometryInstancingTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+// Regular drawArrays takes the divisor into account
+TEST_P(GLES2DecoderGeometryInstancingTest,
+       DrawArraysWithDivisorSucceeds) {
+  SetupTexture();
+  SetupVertexBuffer();
+  SetupExpectationsForApplyingDefaultDirtyState();
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+
+  DoEnableVertexAttribArray(0);
+  // Access the data right at the end of the buffer.
+  DoVertexAttribPointer(
+      0, 2, GL_FLOAT, 0, (kNumVertices - 1) * 2 * sizeof(GLfloat));
+  DoVertexAttribDivisorANGLE(0, 1);
+  EXPECT_CALL(
+      *gl_,
+      DrawArrays(GL_TRIANGLES, 0, kNumVertices))
+      .Times(1)
+      .RetiresOnSaturation();
+  DrawArrays cmd;
+  cmd.Init(GL_TRIANGLES, 0, kNumVertices);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 // Per-instance data is twice as large, but divisor is twice
 TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawArraysInstancedANGLELargeDivisorSucceeds) {
@@ -1203,6 +1227,26 @@ TEST_P(GLES2DecoderGeometryInstancingTest,
       .RetiresOnSaturation();
   DrawArraysInstancedANGLE cmd;
   cmd.Init(GL_TRIANGLES, 0, kNumVertices, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderGeometryInstancingTest,
+       DrawArraysNoDivisor0Fails) {
+  SetupTexture();
+  SetupVertexBuffer();
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+
+  DoEnableVertexAttribArray(0);
+  DoVertexAttribPointer(0, 2, GL_FLOAT, 0, 0);
+  DoVertexAttribDivisorANGLE(0, 1);
+  DoVertexAttribDivisorANGLE(1, 1);
+  EXPECT_CALL(*gl_, DrawArrays(_, _, _))
+      .Times(0)
+      .RetiresOnSaturation();
+  DrawArrays cmd;
+  cmd.Init(GL_TRIANGLES, 0, kNumVertices);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -1589,6 +1633,43 @@ TEST_P(GLES2DecoderGeometryInstancingTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+// Regular drawElements takes the divisor into account
+TEST_P(GLES2DecoderGeometryInstancingTest,
+       DrawElementsWithDivisorSucceeds) {
+  SetupTexture();
+  SetupIndexBuffer();
+  SetupVertexBuffer();
+  SetupExpectationsForApplyingDefaultDirtyState();
+  // Add offset so we're sure we're accessing data near the end of the buffer.
+  DoVertexAttribPointer(
+      1,
+      2,
+      GL_FLOAT,
+      0,
+      (kNumVertices - kMaxValidIndex - 1) * 2 * sizeof(GLfloat));
+
+  DoEnableVertexAttribArray(0);
+  // Access the data right at the end of the buffer.
+  DoVertexAttribPointer(
+      0, 2, GL_FLOAT, 0, (kNumVertices - 1) * 2 * sizeof(GLfloat));
+  DoVertexAttribDivisorANGLE(0, 1);
+  EXPECT_CALL(
+      *gl_,
+      DrawElements(GL_TRIANGLES,
+                   kValidIndexRangeCount,
+                   GL_UNSIGNED_SHORT,
+                   BufferOffset(kValidIndexRangeStart * 2)))
+      .Times(1)
+      .RetiresOnSaturation();
+  DrawElements cmd;
+  cmd.Init(GL_TRIANGLES,
+           kValidIndexRangeCount,
+           GL_UNSIGNED_SHORT,
+           kValidIndexRangeStart * 2);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 // Per-instance data is twice as large, but divisor is twice
 TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawElementsInstancedANGLELargeDivisorSucceeds) {
@@ -1731,6 +1812,30 @@ TEST_P(GLES2DecoderGeometryInstancingTest,
            GL_UNSIGNED_SHORT,
            kValidIndexRangeStart * 2,
            kNumVertices);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderGeometryInstancingTest,
+       DrawElementsNoDivisor0Fails) {
+  SetupTexture();
+  SetupIndexBuffer();
+  SetupVertexBuffer();
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+
+  DoEnableVertexAttribArray(0);
+  DoVertexAttribPointer(0, 2, GL_FLOAT, 0, 0);
+  DoVertexAttribDivisorANGLE(0, 1);
+  DoVertexAttribDivisorANGLE(1, 1);
+  EXPECT_CALL(*gl_, DrawElements(_, _, _, _))
+      .Times(0)
+      .RetiresOnSaturation();
+  DrawElements cmd;
+  cmd.Init(GL_TRIANGLES,
+           kValidIndexRangeCount,
+           GL_UNSIGNED_SHORT,
+           kValidIndexRangeStart * 2);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
