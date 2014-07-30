@@ -22,6 +22,8 @@ source_set("config") {
     "gpu_info.cc",
     "gpu_info.h",
     "gpu_info_collector_android.cc",
+    "gpu_info_collector_linux.cc",
+    "gpu_info_collector_linux.h",
     "gpu_info_collector_mac.mm",
     "gpu_info_collector_ozone.cc",
     "gpu_info_collector_win.cc",
@@ -57,13 +59,17 @@ source_set("config") {
       ]
     }
   }
+  if (is_linux) {
+    deps += [
+      "//build/config/linux:libpci",
+    ]
+  }
   if (is_linux && use_x11) {
     configs += [
       "//build/config/linux:x11",
       "//build/config/linux:xext",
     ]
     deps += [
-      "//build/config/linux:libpci",
       "//third_party/libXNVCtrl",
     ]
   } else {

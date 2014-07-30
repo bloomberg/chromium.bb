@@ -28,6 +28,8 @@
     'config/gpu_info.cc',
     'config/gpu_info.h',
     'config/gpu_info_collector_android.cc',
+    'config/gpu_info_collector_linux.cc',
+    'config/gpu_info_collector_linux.h',
     'config/gpu_info_collector_mac.mm',
     'config/gpu_info_collector_ozone.cc',
     'config/gpu_info_collector_win.cc',
@@ -63,11 +65,15 @@
         '../third_party/amd/amd_videocard_info_win.cc',
       ],
     }],
+    ['OS=="linux"', {
+      'dependencies': [
+        '../build/linux/system.gyp:libpci',
+      ],
+    }],
     ['OS=="linux" and use_x11==1', {
       'dependencies': [
         '../build/linux/system.gyp:x11',
         '../build/linux/system.gyp:xext',
-        '../build/linux/system.gyp:libpci',
         '../third_party/libXNVCtrl/libXNVCtrl.gyp:libXNVCtrl',
       ],
     }],
