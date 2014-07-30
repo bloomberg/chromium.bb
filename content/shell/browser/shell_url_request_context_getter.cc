@@ -210,12 +210,14 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     bool set_protocol = job_factory->SetProtocolHandler(
         url::kDataScheme, new net::DataProtocolHandler);
     DCHECK(set_protocol);
+#if !defined(DISABLE_FILE_SUPPORT)
     set_protocol = job_factory->SetProtocolHandler(
         url::kFileScheme,
         new net::FileProtocolHandler(
             BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
                 base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
     DCHECK(set_protocol);
+#endif
 
     // Set up interceptors in the reverse order.
     scoped_ptr<net::URLRequestJobFactory> top_job_factory =
