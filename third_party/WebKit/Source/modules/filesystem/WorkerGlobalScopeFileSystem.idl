@@ -28,8 +28,8 @@ partial interface WorkerGlobalScope {
     const unsigned short TEMPORARY = 0;
     const unsigned short PERSISTENT = 1;
 
-    [RuntimeEnabled=FileSystem] void webkitRequestFileSystem(unsigned short type, long long size, optional FileSystemCallback successCallback, optional ErrorCallback errorCallback);
-    [RuntimeEnabled=FileSystem, RaisesException] DOMFileSystemSync webkitRequestFileSystemSync(unsigned short type, long long size);
+    [RuntimeEnabled=FileSystem, MeasureAs=RequestFileSystemWorker] void webkitRequestFileSystem(unsigned short type, long long size, optional FileSystemCallback successCallback, optional ErrorCallback errorCallback);
+    [RuntimeEnabled=FileSystem, RaisesException, MeasureAs=RequestFileSystemSyncWorker] DOMFileSystemSync webkitRequestFileSystemSync(unsigned short type, long long size);
     [RuntimeEnabled=FileSystem] void webkitResolveLocalFileSystemURL(DOMString url, EntryCallback successCallback, optional ErrorCallback errorCallback);
     [RuntimeEnabled=FileSystem, RaisesException] EntrySync webkitResolveLocalFileSystemSyncURL(DOMString url);
 
