@@ -329,10 +329,16 @@ enum ReservedVariationID {
   INSTANT_SEARCH_CLICKS_FIELD_TRIAL_ID_MIN = 3312322,
   INSTANT_SEARCH_CLICKS_FIELD_TRIAL_ID_MAX = 3312371,
 
+  // iOS Phone modal dialog field trial.
+  IOS_PHONE_NTP_MODAL_DIALOG_ENABLED_1 = 3312374,
+  IOS_PHONE_NTP_MODAL_DIALOG_ENABLED_2 = 3312375,
+  IOS_PHONE_NTP_MODAL_DIALOG_CONTROL_1 = 3312376,
+  IOS_PHONE_NTP_MODAL_DIALOG_CONTROL_2 = 3312377,
+
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of NEXT_ID, and updating NEXT_ID to (end of your reserved
   // range) + 1.
-  NEXT_ID = 3312374,
+  NEXT_ID = 3312378,
 
   // USABLE IDs END HERE.
   //
