@@ -162,9 +162,9 @@ void FolderHeaderView::Layout() {
   back_button_->SetBoundsRect(back_bounds);
 
   gfx::Rect text_bounds(rect);
-  base::string16 text = folder_item_->name().empty()
-                            ? folder_name_placeholder_text_
-                            : base::UTF8ToUTF16(folder_item_->name());
+  base::string16 text = folder_item_ && !folder_item_->name().empty()
+                            ? base::UTF8ToUTF16(folder_item_->name())
+                            : folder_name_placeholder_text_;
   int text_width =
       gfx::Canvas::GetStringWidth(text, folder_name_view_->GetFontList()) +
       folder_name_view_->GetCaretBounds().width();

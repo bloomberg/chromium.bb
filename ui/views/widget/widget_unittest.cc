@@ -1856,7 +1856,7 @@ TEST_F(WidgetTest, CloseWidgetWhileAnimating) {
     // Normal animations for tests have ZERO_DURATION, make sure we are actually
     // animating the movement.
     ui::ScopedAnimationDurationScaleMode animation_scale_mode(
-        ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+        ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
     ui::ScopedLayerAnimationSettings animation_settings(
         widget->GetLayer()->GetAnimator());
     animation_settings.AddObserver(&animation_observer);

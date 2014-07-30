@@ -17,6 +17,10 @@ class COMPOSITOR_EXPORT ScopedAnimationDurationScaleMode {
     NORMAL_DURATION,
     FAST_DURATION,
     SLOW_DURATION,
+    // A very short but guaranteed non-zero duration for individual tests that
+    // need to assert things about animations after creating them.
+    NON_ZERO_DURATION,
+    // Animations complete immediately after being created. Used by most tests.
     ZERO_DURATION
   };
 

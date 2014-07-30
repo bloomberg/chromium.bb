@@ -65,6 +65,9 @@ class MinimizeAnimationObserver : public ui::LayerAnimationObserver {
 };
 
 TEST_F(WindowAnimationsTest, HideShowBrightnessGrayscaleAnimation) {
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
   scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   window->Show();
   EXPECT_TRUE(window->layer()->visible());
@@ -110,8 +113,8 @@ TEST_F(WindowAnimationsTest, LayerTargetVisibility) {
 namespace wm {
 
 TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
-  ui::ScopedAnimationDurationScaleMode normal_duration_mode(
-      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
   scoped_ptr<Window> window(CreateTestWindowInShellWithId(0));
   window->SetBounds(gfx::Rect(5, 10, 320, 240));
@@ -168,8 +171,8 @@ TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
 }  // namespace wm
 
 TEST_F(WindowAnimationsTest, LockAnimationDuration) {
-  ui::ScopedAnimationDurationScaleMode normal_duration_mode(
-      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
   scoped_ptr<Window> window(CreateTestWindowInShellWithId(0));
   Layer* layer = window->layer();

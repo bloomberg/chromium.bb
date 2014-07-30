@@ -20,11 +20,11 @@ namespace ui {
 
 namespace {
 
-// The factor by which duration is scaled up or down when
-// ScopedAnimationDurationScaleMode::duration_scale_mode() is SLOW_DURATION or
-// FAST_DURATION.
-const int kSlowDurationScaleFactor = 4;
-const int kFastDurationScaleFactor = 4;
+// The factor by which duration is scaled up or down when using
+// ScopedAnimationDurationScaleMode.
+const int kSlowDurationScaleMultiplier = 4;
+const int kFastDurationScaleDivisor = 4;
+const int kNonZeroDurationScaleDivisor = 20;
 
 // Pause -----------------------------------------------------------------------
 class Pause : public LayerAnimationElement {
@@ -761,9 +761,11 @@ base::TimeDelta LayerAnimationElement::GetEffectiveDuration(
     case ScopedAnimationDurationScaleMode::NORMAL_DURATION:
       return duration;
     case ScopedAnimationDurationScaleMode::FAST_DURATION:
-      return duration / kFastDurationScaleFactor;
+      return duration / kFastDurationScaleDivisor;
     case ScopedAnimationDurationScaleMode::SLOW_DURATION:
-      return duration * kSlowDurationScaleFactor;
+      return duration * kSlowDurationScaleMultiplier;
+    case ScopedAnimationDurationScaleMode::NON_ZERO_DURATION:
+      return duration / kNonZeroDurationScaleDivisor;
     case ScopedAnimationDurationScaleMode::ZERO_DURATION:
       return base::TimeDelta();
     default:

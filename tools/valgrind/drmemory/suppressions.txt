@@ -638,21 +638,3 @@ KERNEL32.dll!CreateWaitableTimerW
 UNADDRESSABLE ACCESS
 name=http://code.google.com/p/dynamorio/issues/detail?id=1443
 dynamorio.dll!*
-
-UNADDRESSABLE ACCESS
-name=http://crbug.com/397124
-...
-*!ash::wm::WindowAnimationsTest_CrossFadeToBounds_Test::TestBody
-
-# Unfortunately there's some FPO and the TestBody is skipped:
-UNADDRESSABLE ACCESS
-name=http://crbug.com/397124_b
-compositor.dll!ui::Layer::GetTargetOpacity
-*!testing::internal::HandleExceptionsInMethodIfSupported<>
-
-# Unfortunately there's some FPO and the TestBody is skipped:
-UNADDRESSABLE ACCESS
-name=http://crbug.com/397124_c
-compositor.dll!ui::Layer::SetAnimator
-compositor.dll!ui::Layer::GetAnimator
-*!testing::internal::HandleExceptionsInMethodIfSupported<>

@@ -22,8 +22,8 @@ typedef aura::test::AuraTestBase VisibilityControllerTest;
 // ignored.
 TEST_F(VisibilityControllerTest, AnimateTransparencyToZeroAndHideHides) {
   // We cannot disable animations for this test.
-  ui::ScopedAnimationDurationScaleMode normal_duration_mode(
-      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
   VisibilityController controller;
   aura::client::SetVisibilityClient(root_window(), &controller);

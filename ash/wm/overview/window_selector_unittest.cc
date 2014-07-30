@@ -458,15 +458,15 @@ TEST_F(WindowSelectorTest, DISABLED_MinimizedWindowVisibility) {
   EXPECT_FALSE(window1->IsVisible());
   EXPECT_FALSE(window1->layer()->GetTargetVisibility());
   {
-    ui::ScopedAnimationDurationScaleMode normal_duration_mode(
-        ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+    ui::ScopedAnimationDurationScaleMode test_duration_mode(
+        ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
     ToggleOverview();
     EXPECT_TRUE(window1->IsVisible());
     EXPECT_TRUE(window1->layer()->GetTargetVisibility());
   }
   {
-    ui::ScopedAnimationDurationScaleMode normal_duration_mode(
-        ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+    ui::ScopedAnimationDurationScaleMode test_duration_mode(
+        ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
     ToggleOverview();
     EXPECT_FALSE(window1->IsVisible());
     EXPECT_FALSE(window1->layer()->GetTargetVisibility());
@@ -561,8 +561,8 @@ TEST_F(WindowSelectorTest, QuickReentryRestoresInitialTransform) {
   // animating when we reenter. We cannot short circuit animations for this but
   // we also don't have to wait for them to complete.
   {
-    ui::ScopedAnimationDurationScaleMode normal_duration_mode(
-        ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+    ui::ScopedAnimationDurationScaleMode test_duration_mode(
+        ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
     ToggleOverview();
     ToggleOverview();
   }
