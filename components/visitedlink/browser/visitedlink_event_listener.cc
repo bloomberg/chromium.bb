@@ -50,7 +50,8 @@ class VisitedLinkUpdater {
     if (!process)
       return;  // Happens in tests
     base::SharedMemoryHandle handle_for_process;
-    table_memory->ShareToProcess(process->GetHandle(), &handle_for_process);
+    table_memory->ShareReadOnlyToProcess(process->GetHandle(),
+                                         &handle_for_process);
     if (base::SharedMemory::IsHandleValid(handle_for_process))
       process->Send(new ChromeViewMsg_VisitedLink_NewTable(
           handle_for_process));

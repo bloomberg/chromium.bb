@@ -675,7 +675,11 @@ bool VisitedLinkMaster::CreateURLTable(int32 num_entries, bool init_to_empty) {
   if (!shared_memory_)
     return false;
 
-  if (!shared_memory_->CreateAndMapAnonymous(alloc_size)) {
+  base::SharedMemoryCreateOptions options;
+  options.size = alloc_size;
+  options.share_read_only = true;
+
+  if (!shared_memory_->Create(options) || !shared_memory_->Map(alloc_size)) {
     delete shared_memory_;
     shared_memory_ = NULL;
     return false;
