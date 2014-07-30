@@ -96,7 +96,10 @@ static const double resourcePriorityUpdateDelayAfterScroll = 0.250;
 
 static RenderLayer::UpdateLayerPositionsFlags updateLayerPositionFlags(RenderLayer* layer, bool isRelayoutingSubtree, bool didFullPaintInvalidation)
 {
-    RenderLayer::UpdateLayerPositionsFlags flags = didFullPaintInvalidation ? RenderLayer::NeedsFullPaintInvalidationInBacking : RenderLayer::CheckForPaintInvalidation;
+    RenderLayer::UpdateLayerPositionsFlags flags = 0;
+
+    if (didFullPaintInvalidation)
+        flags |= RenderLayer::NeedsFullPaintInvalidationInBacking;
 
     if (isRelayoutingSubtree && (layer->isPaginated() || layer->enclosingPaginationLayer()))
         flags |= RenderLayer::UpdatePagination;

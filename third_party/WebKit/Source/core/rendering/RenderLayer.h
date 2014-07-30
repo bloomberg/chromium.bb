@@ -154,10 +154,9 @@ public:
     void contentChanged(ContentChangeType);
 
     enum UpdateLayerPositionsFlag {
-        CheckForPaintInvalidation = 1 << 0,
-        NeedsFullPaintInvalidationInBacking = 1 << 1,
-        UpdatePagination = 1 << 2,
-        ForceMayNeedPaintInvalidation = 1 << 3,
+        NeedsFullPaintInvalidationInBacking = 1 << 0,
+        UpdatePagination = 1 << 1,
+        ForceMayNeedPaintInvalidation = 1 << 2,
     };
     typedef unsigned UpdateLayerPositionsFlags;
 
@@ -165,7 +164,7 @@ public:
     void updateLayerPositionsAfterOverflowScroll();
 
     // FIXME: Should updateLayerPositions be private?
-    void updateLayerPositionRecursive(UpdateLayerPositionsFlags = CheckForPaintInvalidation);
+    void updateLayerPositionRecursive(UpdateLayerPositionsFlags = 0);
 
     bool isPaginated() const { return m_isPaginated; }
     RenderLayer* enclosingPaginationLayer() const { return m_enclosingPaginationLayer; }
