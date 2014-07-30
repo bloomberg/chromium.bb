@@ -383,8 +383,7 @@ bool MP4StreamParser::PrepareAVCBuffer(
     RCHECK(AVC::InsertParamSetsAnnexB(avc_config, frame_buf, subsamples));
   }
 
-  // TODO(acolwell): Improve IsValidAnnexB() so it can handle encrypted content.
-  DCHECK(runs_->is_encrypted() || AVC::IsValidAnnexB(*frame_buf));
+  DCHECK(AVC::IsValidAnnexB(*frame_buf, *subsamples));
   return true;
 }
 

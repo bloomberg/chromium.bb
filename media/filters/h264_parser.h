@@ -10,12 +10,16 @@
 #include <sys/types.h>
 
 #include <map>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "media/base/media_export.h"
+#include "media/base/ranges.h"
 #include "media/filters/h264_bit_reader.h"
 
 namespace media {
+
+struct SubsampleEntry;
 
 // For explanations of each struct and its members, see H.264 specification
 // at http://www.itu.int/rec/T-REC-H.264.
@@ -337,7 +341,11 @@ class MEDIA_EXPORT H264Parser {
   void Reset();
   // Set current stream pointer to |stream| of |stream_size| in bytes,
   // |stream| owned by caller.
+  // |subsamples| contains information about what parts of |stream| are
+  // encrypted.
   void SetStream(const uint8* stream, off_t stream_size);
+  void SetEncryptedStream(const uint8* stream, off_t stream_size,
+                          const std::vector<SubsampleEntry>& subsamples);
 
   // Read the stream to find the next NALU, identify it and return
   // that information in |*nalu|. This advances the stream to the beginning
@@ -392,6 +400,12 @@ class MEDIA_EXPORT H264Parser {
   // - the size in bytes of the start code is returned in |*start_code_size|.
   bool LocateNALU(off_t* nalu_size, off_t* start_code_size);
 
+  // Wrapper for FindStartCode() that skips over start codes that
+  // may appear inside of |encrypted_ranges_|.
+  // Returns true if a start code was found. Otherwise returns false.
+  bool FindStartCodeInClearRanges(const uint8* data, off_t data_size,
+                                  off_t* offset, off_t* start_code_size);
+
   // Exp-Golomb code parsing as specified in chapter 9.1 of the spec.
   // Read one unsigned exp-Golomb code from the stream and return in |*val|.
   Result ReadUE(int* val);
@@ -440,6 +454,10 @@ class MEDIA_EXPORT H264Parser {
   typedef std::map<int, H264PPS*> PPSById;
   SPSById active_SPSes_;
   PPSById active_PPSes_;
+
+  // Ranges of encrypted bytes in the buffer passed to
+  // SetEncryptedStream().
+  Ranges<const uint8*> encrypted_ranges_;
 
   DISALLOW_COPY_AND_ASSIGN(H264Parser);
 };

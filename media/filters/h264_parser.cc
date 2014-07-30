@@ -6,6 +6,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 
+#include "media/base/decrypt_config.h"
 #include "media/filters/h264_parser.h"
 
 namespace media {
@@ -129,14 +130,33 @@ H264Parser::~H264Parser() {
 void H264Parser::Reset() {
   stream_ = NULL;
   bytes_left_ = 0;
+  encrypted_ranges_.clear();
 }
 
 void H264Parser::SetStream(const uint8* stream, off_t stream_size) {
+  std::vector<SubsampleEntry> subsamples;
+  SetEncryptedStream(stream, stream_size, subsamples);
+}
+
+void H264Parser::SetEncryptedStream(
+    const uint8* stream, off_t stream_size,
+    const std::vector<SubsampleEntry>& subsamples) {
   DCHECK(stream);
   DCHECK_GT(stream_size, 0);
 
   stream_ = stream;
   bytes_left_ = stream_size;
+
+  encrypted_ranges_.clear();
+  const uint8* start = stream;
+  const uint8* stream_end = stream_ + bytes_left_;
+  for (size_t i = 0; i < subsamples.size() && start < stream_end; ++i) {
+    start += subsamples[i].clear_bytes;
+
+    const uint8* end = std::min(start + subsamples[i].cypher_bytes, stream_end);
+    encrypted_ranges_.Add(start, end);
+    start = end;
+  }
 }
 
 const H264PPS* H264Parser::GetPPS(int pps_id) {
@@ -191,8 +211,9 @@ bool H264Parser::LocateNALU(off_t* nalu_size, off_t* start_code_size) {
   // Find the start code of next NALU.
   off_t nalu_start_off = 0;
   off_t annexb_start_code_size = 0;
-  if (!FindStartCode(stream_, bytes_left_,
-                     &nalu_start_off, &annexb_start_code_size)) {
+
+  if (!FindStartCodeInClearRanges(stream_, bytes_left_,
+                                  &nalu_start_off, &annexb_start_code_size)) {
     DVLOG(4) << "Could not find start code, end of stream?";
     return false;
   }
@@ -216,12 +237,49 @@ bool H264Parser::LocateNALU(off_t* nalu_size, off_t* start_code_size) {
   // belong to the current NALU.
   off_t next_start_code_size = 0;
   off_t nalu_size_without_start_code = 0;
-  if (!FindStartCode(nalu_data, max_nalu_data_size,
-                     &nalu_size_without_start_code, &next_start_code_size)) {
+  if (!FindStartCodeInClearRanges(nalu_data, max_nalu_data_size,
+                                  &nalu_size_without_start_code,
+                                  &next_start_code_size)) {
     nalu_size_without_start_code = max_nalu_data_size;
   }
   *nalu_size = nalu_size_without_start_code + annexb_start_code_size;
   *start_code_size = annexb_start_code_size;
+  return true;
+}
+
+bool H264Parser::FindStartCodeInClearRanges(
+    const uint8* data,
+    off_t data_size,
+    off_t* offset,
+    off_t* start_code_size) {
+  if (encrypted_ranges_.size() == 0)
+    return FindStartCode(data, data_size, offset, start_code_size);
+
+  DCHECK_GE(data_size, 0);
+  const uint8* start = data;
+  do {
+    off_t bytes_left = data_size - (start - data);
+
+    if (!FindStartCode(start, bytes_left, offset, start_code_size))
+      return false;
+
+    // Construct a Ranges object that represents the region occupied
+    // by the start code and the 1 byte needed to read the NAL unit type.
+    const uint8* start_code = start + *offset;
+    const uint8* start_code_end = start_code + *start_code_size;
+    Ranges<const uint8*> start_code_range;
+    start_code_range.Add(start_code, start_code_end + 1);
+
+    if (encrypted_ranges_.IntersectionWith(start_code_range).size() > 0) {
+      // The start code is inside an encrypted section so we need to scan
+      // for another start code.
+      *start_code_size = 0;
+      start += std::min(*offset + 1, bytes_left);
+    }
+  } while (*start_code_size == 0);
+
+  // Update |*offset| to include the data we skipped over.
+  *offset += start - data;
   return true;
 }
 

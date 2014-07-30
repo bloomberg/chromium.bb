@@ -875,8 +875,14 @@ static void ValidateAnnexB(DemuxerStream* stream,
     return;
   }
 
+  std::vector<SubsampleEntry> subsamples;
+
+  if (buffer->decrypt_config())
+    subsamples = buffer->decrypt_config()->subsamples();
+
   bool is_valid =
-      mp4::AVC::IsValidAnnexB(buffer->data(), buffer->data_size());
+      mp4::AVC::IsValidAnnexB(buffer->data(), buffer->data_size(),
+                              subsamples);
   EXPECT_TRUE(is_valid);
 
   if (!is_valid) {

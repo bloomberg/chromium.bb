@@ -76,11 +76,11 @@ bool AVC::ConvertFrameToAnnexB(int length_size, std::vector<uint8>* buffer) {
 bool AVC::InsertParamSetsAnnexB(const AVCDecoderConfigurationRecord& avc_config,
                                 std::vector<uint8>* buffer,
                                 std::vector<SubsampleEntry>* subsamples) {
-  DCHECK(AVC::IsValidAnnexB(*buffer));
+  DCHECK(AVC::IsValidAnnexB(*buffer, *subsamples));
 
   scoped_ptr<H264Parser> parser(new H264Parser());
   const uint8* start = &(*buffer)[0];
-  parser->SetStream(start, buffer->size());
+  parser->SetEncryptedStream(start, buffer->size(), *subsamples);
 
   H264NALU nalu;
   if (parser->AdvanceToNextNALU(&nalu) != H264Parser::kOk)
@@ -126,7 +126,7 @@ bool AVC::InsertParamSetsAnnexB(const AVCDecoderConfigurationRecord& avc_config,
   buffer->insert(config_insert_point,
                  param_sets.begin(), param_sets.end());
 
-  DCHECK(AVC::IsValidAnnexB(*buffer));
+  DCHECK(AVC::IsValidAnnexB(*buffer, *subsamples));
   return true;
 }
 
@@ -171,11 +171,13 @@ bool AVC::ConvertConfigToAnnexB(
 }
 
 // Verifies AnnexB NALU order according to ISO/IEC 14496-10 Section 7.4.1.2.3
-bool AVC::IsValidAnnexB(const std::vector<uint8>& buffer) {
-  return IsValidAnnexB(&buffer[0], buffer.size());
+bool AVC::IsValidAnnexB(const std::vector<uint8>& buffer,
+                        const std::vector<SubsampleEntry>& subsamples) {
+  return IsValidAnnexB(&buffer[0], buffer.size(), subsamples);
 }
 
-bool AVC::IsValidAnnexB(const uint8* buffer, size_t size) {
+bool AVC::IsValidAnnexB(const uint8* buffer, size_t size,
+                        const std::vector<SubsampleEntry>& subsamples) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(buffer);
 
@@ -183,7 +185,7 @@ bool AVC::IsValidAnnexB(const uint8* buffer, size_t size) {
     return true;
 
   H264Parser parser;
-  parser.SetStream(buffer, size);
+  parser.SetEncryptedStream(buffer, size, subsamples);
 
   typedef enum {
     kAUDAllowed,
@@ -305,6 +307,5 @@ bool AVC::IsValidAnnexB(const uint8* buffer, size_t size) {
 
   return order_state >= kAfterFirstVCL;
 }
-
 }  // namespace mp4
 }  // namespace media
