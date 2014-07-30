@@ -24,6 +24,14 @@ config("internal_config") {
   }
 }
 
+config("client_config") {
+  include_dirs = [ "src" ]
+  if (is_android) {
+    include_dirs += [ "src/common/android/include" ]
+  }
+}
+
+
 # minidump_stackwalk and minidump_dump are tool-type executables that do
 # not build on iOS.
 if (current_toolchain == host_toolchain && !is_win) {
@@ -241,6 +249,7 @@ if (is_mac) {
     include_dirs = [
       "src/client/apple/Framework",
       "src/common/mac",
+      "src",
     ]
     libs = [
       "CoreServices.framework",
@@ -281,8 +290,13 @@ if (is_mac) {
     deps = [
       ":utilities",
       ":crash_inspector",
-      ":crash_report_sender",
+      # TODO(GYP): Make this link
+      #":crash_report_sender",
     ]
+  }
+
+  group("client") {
+    direct_dependent_configs = [ ":client_config" ]
   }
 }
 
@@ -360,13 +374,6 @@ if (is_linux && current_toolchain == host_toolchain) {
     defines = [ "HAVE_A_OUT_H" ]
 
     include_dirs = [ "src" ]
-  }
-
-  config("client_config") {
-    include_dirs = [ "src" ]
-    if (is_android) {
-      include_dirs += [ "src/common/android/include" ]
-    }
   }
 
   static_library("client") {
@@ -644,4 +651,10 @@ if (is_ios) {
   }
 
   # TODO(GYP) There is some XCode-only targets like ninja-breakpad.
+}
+
+if (is_win) {
+  group("client") {
+    direct_dependent_configs = [ ":client_config" ]
+  }
 }

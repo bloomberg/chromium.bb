@@ -470,7 +470,7 @@ static_library("browser") {
 
   if (is_mac) {
     deps += [
-      #"../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac",  TODO(GYP)
+      "//third_party/google_toolbox_for_mac",
       #"../third_party/mozilla/mozilla.gyp:mozilla",  TODO(GYP)
     ]
     libs += [

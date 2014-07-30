@@ -28,6 +28,7 @@ source_set("browser") {
   # headers, so add the dependency here.
   if (is_posix && !is_ios &&
              (!is_android || !is_android_webview_build)) {
-    deps += [ "//breakpad:client" ]
+    configs += [ "//breakpad:client_config" ]
+    direct_dependent_configs = [ "//breakpad:client_config" ]
   }
 }

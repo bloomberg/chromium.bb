@@ -169,6 +169,12 @@ static_library("extensions") {
         ]
       }
     }
+    if (!use_x11) {
+      sources -= [
+        "global_shortcut_listener_x11.cc",
+        "global_shortcut_listener_x11.h",
+      ]
+    }
 
     if (safe_browsing_mode == 1) {
       defines += [ "FULL_SAFE_BROWSING" ]

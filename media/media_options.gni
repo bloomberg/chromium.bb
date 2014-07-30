@@ -27,7 +27,7 @@ if (is_android) {
 # Original conditional: (OS=="linux" or OS=="freebsd" or OS=="solaris") and embedded!=1
 use_alsa = false
 use_pulseaudio = false
-if (is_posix && !is_android) {
+if (is_posix && !is_android && !is_mac) {
   use_alsa = true
   if (!use_cras) {
     use_pulseaudio = true

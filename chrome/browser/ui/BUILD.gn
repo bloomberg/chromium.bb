@@ -298,37 +298,17 @@ static_library("ui") {
       "tabs/tab_resources.h",
     ]
     deps += [
+      "//third_party/google_toolbox_for_mac",
+      ":generate_localizer",
       #'../third_party/apple_sample_code/apple_sample_code.gyp:apple_sample_code',  TODO(GYP)
-      #'../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac',  TODO(GYP)
       #'../third_party/molokocacao/molokocacao.gyp:molokocacao',  TODO(GYP)
       #'../third_party/mozilla/mozilla.gyp:mozilla',  TODO(GYP)
     ]
+    include_dirs = [ "$target_gen_dir" ]
     libs += [ "Quartz.framework" ]
-    # TODO(GYP)
-    #'actions': [
-    #  {
-    #    # This action is used to extract the localization data from xib
-    #    # files and generate table for the ui localizer from it.
-    #    'variables': {
-    #      'xib_localizer_tool_path':
-    #          'tools/build/mac/generate_localizer',
-    #    },
-    #    'includes': [
-    #      'chrome_nibs.gypi',
-    #    ],
-    #    'action_name': 'Process xibs for localization',
-    #    'inputs': [
-    #      '<(xib_localizer_tool_path)',
-    #      '<@(mac_translated_xibs)',
-    #    ],
-    #    'outputs': [
-    #      '<(INTERMEDIATE_DIR)/ui_localizer_table.h',
-    #    ],
-    #    'action': ['<(xib_localizer_tool_path)',
-    #                '<@(_outputs)',
-    #                '<@(mac_translated_xibs)'],
-    #  },
-    #]
+    configs += [
+      "//third_party/google_toolbox_for_mac:google_toolbox_for_mac_config",
+    ]
   } else {  # non-Mac.
     sources += rebase_path(gypi_values.chrome_browser_ui_non_mac_sources,
                            ".", "//chrome")
@@ -421,5 +401,24 @@ static_library("ui") {
   }
   if (enable_spellcheck) {
     deps += [ "//third_party/hunspell" ]
+  }
+}
+
+if (is_mac) {
+  nib_gypi_values = exec_script(
+      "//build/gypi_to_gn.py",
+      [ rebase_path("../../chrome_nibs.gypi") ],
+      "scope",
+      [ "../../chrome_nibs.gypi" ])
+
+  action("generate_localizer") {
+    script = "//chrome/tools/build/mac/generate_localizer"
+    sources = [ ]
+    table_path = "$target_gen_dir/ui_localizer_table.h"
+    outputs = [ table_path ]
+    args = [ rebase_path(table_path, root_build_dir) ] +
+             rebase_path(nib_gypi_values.mac_translated_xibs,
+                         root_build_dir,
+                         "//chrome")
   }
 }

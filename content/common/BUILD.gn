@@ -163,6 +163,10 @@ source_set("common") {
         "gpu/x_util.h",
       ]
     }
+  } else {
+    sources -= [
+      "gpu/gpu_memory_buffer_factory_x11.cc",
+    ]
   }
 
   if (enable_plugins) {

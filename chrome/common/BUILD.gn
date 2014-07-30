@@ -123,6 +123,7 @@ static_library("common") {
         "extensions/api/networking_private/networking_private_crypto_openssl.cc",
       ]
     }
+    deps += [ "//breakpad:client" ]
   }
   if (is_mac) {
     sources += rebase_path(
@@ -203,7 +204,7 @@ static_library("common") {
     ]
     deps += [
       "//third_party/mach_override",
-      #'../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac',  TODO(GYP)
+      "//third_party/google_toolbox_for_mac",
     ]
   }
 
