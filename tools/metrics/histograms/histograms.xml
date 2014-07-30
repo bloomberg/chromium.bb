@@ -26738,6 +26738,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Sdch3.Experiment2_Decode">
+  <obsolete>
+    Replaced by Sdch3.Experiment3_Holdback.
+  </obsolete>
   <owner>rdsmith@chromium.org</owner>
   <summary>
     Duration in time from when a request was made, until all bytes were
@@ -26748,12 +26751,35 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Sdch3.Experiment2_Holdback">
+  <obsolete>
+    Replaced by Sdch3.Experiment3_Holdback.
+  </obsolete>
   <owner>rdsmith@chromium.org</owner>
   <summary>
     Duration in time from when a request was made, until all bytes were
     received.  During the running of an SDCH latency experiment, these packets
     were part of a holdback, which precluded SDCH despite the fact that the link
     had proven it was capable of handling SDCH compression.
+  </summary>
+</histogram>
+
+<histogram name="Sdch3.Experiment3_Decode">
+  <owner>rdsmith@chromium.org</owner>
+  <summary>
+    Duration in time from the first byte of a request was received, until all
+    bytes were received.  During the running of an SDCH latency experiment,
+    these packets were part of an SDCH encoded transmission made after the link
+    had proven it was capable of handling SDCH compression.
+  </summary>
+</histogram>
+
+<histogram name="Sdch3.Experiment3_Holdback">
+  <owner>rdsmith@chromium.org</owner>
+  <summary>
+    Duration in time from the first byte of a request was received, until all
+    bytes were received.  During the running of an SDCH latency experiment,
+    these packets were part of a holdback, which precluded SDCH despite the fact
+    that the link had proven it was capable of handling SDCH compression.
   </summary>
 </histogram>
 

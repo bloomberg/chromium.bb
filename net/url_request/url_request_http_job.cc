@@ -1350,9 +1350,10 @@ void URLRequestHttpJob::UpdatePacketReadTimes() {
     return;  // No new bytes have arrived.
   }
 
-  final_packet_time_ = base::Time::Now();
+  base::Time now(base::Time::Now());
   if (!bytes_observed_in_packets_)
-    request_time_snapshot_ = request_ ? request_->request_time() : base::Time();
+    request_time_snapshot_ = now;
+  final_packet_time_ = now;
 
   bytes_observed_in_packets_ = filter_input_byte_count();
 }
@@ -1376,14 +1377,14 @@ void URLRequestHttpJob::RecordPacketStats(
     }
 
     case FilterContext::SDCH_EXPERIMENT_DECODE: {
-      UMA_HISTOGRAM_CUSTOM_TIMES("Sdch3.Experiment2_Decode",
+      UMA_HISTOGRAM_CUSTOM_TIMES("Sdch3.Experiment3_Decode",
                                   duration,
                                   base::TimeDelta::FromMilliseconds(20),
                                   base::TimeDelta::FromMinutes(10), 100);
       return;
     }
     case FilterContext::SDCH_EXPERIMENT_HOLDBACK: {
-      UMA_HISTOGRAM_CUSTOM_TIMES("Sdch3.Experiment2_Holdback",
+      UMA_HISTOGRAM_CUSTOM_TIMES("Sdch3.Experiment3_Holdback",
                                   duration,
                                   base::TimeDelta::FromMilliseconds(20),
                                   base::TimeDelta::FromMinutes(10), 100);
