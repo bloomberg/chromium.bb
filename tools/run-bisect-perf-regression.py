@@ -91,7 +91,7 @@ class Goma(object):
     subprocess.call([self._abs_path_to_goma_file, 'stop'])
 
 
-def _LoadConfigFile(path_to_file):
+def _LoadConfigFile(config_file_path):
   """Attempts to load the specified config file as a module
   and grab the global config dict.
 
