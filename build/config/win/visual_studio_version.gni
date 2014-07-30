@@ -20,6 +20,11 @@ declare_args() {
   # This value is the default location, override if you have a different
   # installation location.
   windows_sdk_path = "C:\Program Files (x86)\Windows Kits\8.0"
+
+  # The list of include directories that are treated as "system" include
+  # directories. TODO(scottmg): These are incorrectly put on the command line
+  # in GN, they should really be stored into %INCLUDE%.
+  system_include_dirs = []
 }
 
 if (visual_studio_path == "") {
@@ -38,3 +43,22 @@ if (visual_studio_path == "") {
 
 # Set when using the "Express" version of a Visual Studio version we support.
 is_visual_studio_express = (visual_studio_version == "2013e")
+
+
+# The Windows SDK include directories must be first. They both have a sal.h,
+# and the SDK one is newer and the SDK uses some newer features from it not
+# present in the Visual Studio one.
+system_include_dirs = [
+  "$windows_sdk_path\Include\shared",
+  "$windows_sdk_path\Include\um",
+  "$windows_sdk_path\Include\winrt",
+  "$visual_studio_path\VC\include",
+  "$visual_studio_path\VC\atlmfc\include",
+]
+
+if (is_visual_studio_express) {
+  system_include_dirs += [
+    "$wdk_path/inc/atl71",
+    "$wdk_path/inc/mfc42",
+  ]
+}

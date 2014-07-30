@@ -4,6 +4,8 @@
 
 assert(is_win)
 
+import("//build/config/win/visual_studio_version.gni")
+
 # This template defines a rule to invoke the MS IDL compiler.
 #
 # Parameters
@@ -77,6 +79,10 @@ template("midl") {
       "/env", idl_target_platform,
       "/Oicf",
     ]
+
+    foreach(include, system_include_dirs) {
+      args += [ "/I", include ]
+    }
   }
 
   source_set(target_name) {

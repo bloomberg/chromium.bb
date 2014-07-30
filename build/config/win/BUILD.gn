@@ -20,23 +20,9 @@ config("sdk") {
     "WINVER=0x0602",
   ]
 
-  # The Windows SDK include directories must be first. They both have a sal.h,
-  # and the SDK one is newer and the SDK uses some newer features from it not
-  # present in the Visual Studio one.
-  include_dirs = [
-    "$windows_sdk_path\Include\shared",
-    "$windows_sdk_path\Include\um",
-    "$windows_sdk_path\Include\winrt",
-    "$visual_studio_path\VC\include",
-    "$visual_studio_path\VC\atlmfc\include",
-  ]
+  include_dirs = system_include_dirs
 
   if (is_visual_studio_express) {
-    include_dirs += [
-      "$wdk_path/inc/atl71",
-      "$wdk_path/inc/mfc42",
-    ]
-
     # https://code.google.com/p/chromium/issues/detail?id=372451#c20
     # Warning 4702 ("Unreachable code") should be re-enabled once Express users
     # are updated to VS2013 Update 2.
