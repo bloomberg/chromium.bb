@@ -27,6 +27,7 @@
 #include "chrome/browser/extensions/navigation_observer.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
+#include "chrome/browser/extensions/state_store_notification_observer.h"
 #include "chrome/browser/extensions/updater/manifest_fetch_data.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/profiles/profile.h"
@@ -115,6 +116,8 @@ void ExtensionSystemImpl::Shared::InitPrefs() {
       profile_,
       profile_->GetPath().AppendASCII(extensions::kStateStoreName),
       true));
+  state_store_notification_observer_.reset(
+      new StateStoreNotificationObserver(state_store_.get()));
 
   rules_store_.reset(new StateStore(
       profile_,

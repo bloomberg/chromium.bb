@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_STATE_STORE_H_
-#define CHROME_BROWSER_EXTENSIONS_STATE_STORE_H_
+#ifndef EXTENSIONS_BROWSER_STATE_STORE_H_
+#define EXTENSIONS_BROWSER_STATE_STORE_H_
 
 #include <set>
 #include <string>
@@ -40,6 +40,11 @@ class StateStore : public base::SupportsWeakPtr<StateStore>,
   StateStore(content::BrowserContext* context, scoped_ptr<ValueStore> store);
   virtual ~StateStore();
 
+  // Requests that the state store to be initialized after its usual delay. Can
+  // be explicitly called by an embedder when the embedder does not trigger the
+  // usual page load notifications.
+  void RequestInitAfterDelay();
+
   // Register a key for removal upon extension install/uninstall. We remove
   // for install to reset state when an extension upgrades.
   void RegisterKey(const std::string& key);
@@ -71,6 +76,10 @@ class StateStore : public base::SupportsWeakPtr<StateStore>,
                        const content::NotificationDetails& details) OVERRIDE;
 
   void Init();
+
+  // When StateStore is constructed with |deferred_load| its initialization is
+  // delayed to avoid slowing down startup.
+  void InitAfterDelay();
 
   // Removes all keys registered for the given extension.
   void RemoveKeysForExtension(const std::string& extension_id);
@@ -108,4 +117,4 @@ class StateStore : public base::SupportsWeakPtr<StateStore>,
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_STATE_STORE_H_
+#endif  // EXTENSIONS_BROWSER_STATE_STORE_H_

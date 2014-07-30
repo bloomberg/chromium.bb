@@ -244,6 +244,8 @@
       'browser/extensions/shared_module_service.h',
       'browser/extensions/standard_management_policy_provider.cc',
       'browser/extensions/standard_management_policy_provider.h',
+      'browser/extensions/state_store_notification_observer.cc',
+      'browser/extensions/state_store_notification_observer.h',
       'browser/extensions/startup_helper.cc',
       'browser/extensions/startup_helper.h',
       'browser/extensions/suggest_permission_util.cc',

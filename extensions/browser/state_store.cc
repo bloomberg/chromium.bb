@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -74,14 +73,11 @@ StateStore::StateStore(content::BrowserContext* context,
   extension_registry_observer_.Add(ExtensionRegistry::Get(context));
 
   if (deferred_load) {
-    // Don't Init until the first page is loaded or the session restored.
+    // Don't Init() until the first page is loaded or the embedder explicitly
+    // requests it.
     registrar_.Add(
         this,
         content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-        content::NotificationService::AllBrowserContextsAndSources());
-    registrar_.Add(
-        this,
-        chrome::NOTIFICATION_SESSION_RESTORE_DONE,
         content::NotificationService::AllBrowserContextsAndSources());
   } else {
     Init();
@@ -100,6 +96,10 @@ StateStore::StateStore(content::BrowserContext* context,
 }
 
 StateStore::~StateStore() {
+}
+
+void StateStore::RequestInitAfterDelay() {
+  InitAfterDelay();
 }
 
 void StateStore::RegisterKey(const std::string& key) {
@@ -138,14 +138,9 @@ bool StateStore::IsInitialized() const {
 void StateStore::Observe(int type,
                          const content::NotificationSource& source,
                          const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_SESSION_RESTORE_DONE ||
-         type == content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME);
+  DCHECK_EQ(type, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME);
   registrar_.RemoveAll();
-
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&StateStore::Init, AsWeakPtr()),
-      base::TimeDelta::FromSeconds(kInitDelaySeconds));
+  InitAfterDelay();
 }
 
 void StateStore::OnExtensionWillBeInstalled(
@@ -165,9 +160,24 @@ void StateStore::OnExtensionUninstalled(
 }
 
 void StateStore::Init() {
+  // Could be called twice if InitAfterDelay() is requested explicitly by the
+  // embedder in addition to internally after first page load.
+  if (IsInitialized())
+    return;
+
   if (!db_path_.empty())
     store_.Init(db_path_);
   task_queue_->SetReady();
+}
+
+void StateStore::InitAfterDelay() {
+  if (IsInitialized())
+    return;
+
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&StateStore::Init, AsWeakPtr()),
+      base::TimeDelta::FromSeconds(kInitDelaySeconds));
 }
 
 void StateStore::RemoveKeysForExtension(const std::string& extension_id) {
