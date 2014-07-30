@@ -39,6 +39,8 @@
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "net/base/mime_util.h"
+#include "third_party/WebKit/public/platform/Platform.h"
+#include "third_party/WebKit/public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -47,7 +49,6 @@
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkTypeface.h"
@@ -460,10 +461,79 @@ bool WebMediaPlayerAndroid::didLoadingProgress() {
   return ret;
 }
 
+bool WebMediaPlayerAndroid::EnsureTextureBackedSkBitmap(GrContext* gr,
+                                                        SkBitmap& bitmap,
+                                                        const WebSize& size,
+                                                        GrSurfaceOrigin origin,
+                                                        GrPixelConfig config) {
+  if (!bitmap.getTexture() || bitmap.width() != size.width
+      || bitmap.height() != size.height) {
+    if (!gr)
+      return false;
+    GrTextureDesc desc;
+    desc.fConfig = config;
+    desc.fFlags = kRenderTarget_GrTextureFlagBit | kNoStencil_GrTextureFlagBit;
+    desc.fSampleCnt = 0;
+    desc.fOrigin = origin;
+    desc.fWidth = size.width;
+    desc.fHeight = size.height;
+    skia::RefPtr<GrTexture> texture;
+    texture = skia::AdoptRef(gr->createUncachedTexture(desc, 0, 0));
+    if (!texture.get())
+      return false;
+
+    SkImageInfo info = SkImageInfo::MakeN32Premul(desc.fWidth, desc.fHeight);
+    SkGrPixelRef* pixelRef = SkNEW_ARGS(SkGrPixelRef, (info, texture.get()));
+    if (!pixelRef)
+      return false;
+    bitmap.setInfo(info);
+    bitmap.setPixelRef(pixelRef)->unref();
+  }
+
+  return true;
+}
+
 void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
                                   const blink::WebRect& rect,
                                   unsigned char alpha) {
-  NOTIMPLEMENTED();
+  scoped_ptr<blink::WebGraphicsContext3DProvider> provider =
+    scoped_ptr<blink::WebGraphicsContext3DProvider>(blink::Platform::current(
+      )->createSharedOffscreenGraphicsContext3DProvider());
+  if (!provider)
+    return;
+  blink::WebGraphicsContext3D* context3D = provider->context3d();
+  if (!context3D || !context3D->makeContextCurrent())
+    return;
+
+  // Copy video texture into a RGBA texture based bitmap first as video texture
+  // on Android is GL_TEXTURE_EXTERNAL_OES which is not supported by Skia yet.
+  // The bitmap's size needs to be the same as the video and use naturalSize()
+  // here. Check if we could reuse existing texture based bitmap.
+  // Otherwise, release existing texture based bitmap and allocate
+  // a new one based on video size.
+  if (!EnsureTextureBackedSkBitmap(provider->grContext(), bitmap_,
+      naturalSize(), kTopLeft_GrSurfaceOrigin, kSkia8888_GrPixelConfig)) {
+    return;
+  }
+
+  unsigned textureId = static_cast<unsigned>(
+    (bitmap_.getTexture())->getTextureHandle());
+  if (!copyVideoTextureToPlatformTexture(context3D, textureId, 0,
+      GL_RGBA, GL_UNSIGNED_BYTE, true, false)) {
+    return;
+  }
+
+  // Draw the texture based bitmap onto the Canvas. If the canvas is
+  // hardware based, this will do a GPU-GPU texture copy.
+  // If the canvas is software based, the texture based bitmap will be
+  // readbacked to system memory then draw onto the canvas.
+  SkRect dest;
+  dest.set(rect.x, rect.y, rect.x + rect.width, rect.y + rect.height);
+  SkPaint paint;
+  paint.setAlpha(alpha);
+  // It is not necessary to pass the dest into the drawBitmap call since all
+  // the context have been set up before calling paintCurrentFrameInContext.
+  canvas->drawBitmapRect(bitmap_, 0, dest, &paint);
 }
 
 bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
@@ -506,7 +576,7 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
 
   // Ensure the target of texture is set before copyTextureCHROMIUM, otherwise
   // an invalid texture target may be used for copy texture.
-  uint32 source_texture = web_graphics_context->createAndConsumeTextureCHROMIUM(
+  uint32 src_texture = web_graphics_context->createAndConsumeTextureCHROMIUM(
       mailbox_holder->texture_target, mailbox_holder->mailbox.name);
 
   // The video is stored in an unmultiplied format, so premultiply if
@@ -519,14 +589,14 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
   // flip_y==true means to reverse the video orientation while
   // flip_y==false means to keep the intrinsic orientation.
   web_graphics_context->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, flip_y);
-  web_graphics_context->copyTextureCHROMIUM(GL_TEXTURE_2D, source_texture,
+  web_graphics_context->copyTextureCHROMIUM(GL_TEXTURE_2D, src_texture,
                                             texture, level, internal_format,
                                             type);
   web_graphics_context->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, false);
   web_graphics_context->pixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
                                     false);
 
-  web_graphics_context->deleteTexture(source_texture);
+  web_graphics_context->deleteTexture(src_texture);
   web_graphics_context->flush();
 
   SyncPointClientImpl client(web_graphics_context);

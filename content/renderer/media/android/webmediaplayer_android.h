@@ -29,6 +29,9 @@
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/SkGrPixelRef.h"
 #include "ui/gfx/rect_f.h"
 
 namespace base {
@@ -103,6 +106,10 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   virtual void setPoster(const blink::WebURL& poster) OVERRIDE;
 
   // Methods for painting.
+  // FIXME: This path "only works" on Android. It is a workaround for the
+  // issue that Skia could not handle Android's GL_TEXTURE_EXTERNAL_OES texture
+  // internally. It should be removed and replaced by the normal paint path.
+  // https://code.google.com/p/skia/issues/detail?id=1189
   virtual void paint(blink::WebCanvas* canvas,
                      const blink::WebRect& rect,
                      unsigned char alpha);
@@ -277,6 +284,11 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // NULL immediately and reset.
   void SetDecryptorReadyCB(const media::DecryptorReadyCB& decryptor_ready_cb);
 
+  bool EnsureTextureBackedSkBitmap(GrContext* gr, SkBitmap& bitmap,
+                                   const blink::WebSize& size,
+                                   GrSurfaceOrigin origin,
+                                   GrPixelConfig config);
+
   blink::WebFrame* const frame_;
 
   blink::WebMediaPlayerClient* const client_;
@@ -435,6 +447,8 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // systems, a browser side CDM will be used and we set CDM by calling
   // player_manager_->SetCdm() directly.
   media::DecryptorReadyCB decryptor_ready_cb_;
+
+  SkBitmap bitmap_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<WebMediaPlayerAndroid> weak_factory_;
