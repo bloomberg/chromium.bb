@@ -7,9 +7,11 @@
 #include <CommonCrypto/CommonCryptor.h>  // for kCCBlockSizeAES128
 
 #include "base/command_line.h"
+#include "base/debug/leak_annotations.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "components/os_crypt/keychain_password_mac.h"
 #include "components/os_crypt/os_crypt_switches.h"
 #include "crypto/apple_keychain.h"
@@ -38,10 +40,17 @@ static bool use_mock_keychain = false;
 const char kEncryptionVersionPrefix[] = "v10";
 
 // Generates a newly allocated SymmetricKey object based on the password found
-// in the Keychain.  The generated key is for AES encryption.  Ownership of the
-// key is passed to the caller.  Returns NULL key in the case password access
-// is denied or key generation error occurs.
+// in the Keychain.  The generated key is for AES encryption.  Returns NULL key
+// in the case password access is denied or key generation error occurs.
 crypto::SymmetricKey* GetEncryptionKey() {
+  static crypto::SymmetricKey* cached_encryption_key = NULL;
+  static bool key_is_cached = false;
+  static base::Lock lock;
+  base::AutoLock auto_lock(lock);
+
+  if (key_is_cached)
+    return cached_encryption_key;
+
   static bool mock_keychain_command_line_flag =
       CommandLine::ForCurrentProcess()->HasSwitch(
           os_crypt::switches::kUseMockKeychain);
@@ -55,21 +64,26 @@ crypto::SymmetricKey* GetEncryptionKey() {
     password = encryptor_password.GetPassword();
   }
 
+  // Subsequent code must guarantee that the correct key is cached before
+  // returning.
+  key_is_cached = true;
+
   if (password.empty())
-    return NULL;
+    return cached_encryption_key;
 
   std::string salt(kSalt);
 
-  // Create an encryption key from our password and salt.
-  scoped_ptr<crypto::SymmetricKey> encryption_key(
+  // Create an encryption key from our password and salt. The key is
+  // intentionally leaked.
+  cached_encryption_key =
       crypto::SymmetricKey::DeriveKeyFromPassword(crypto::SymmetricKey::AES,
                                                   password,
                                                   salt,
                                                   kEncryptionIterations,
-                                                  kDerivedKeySizeInBits));
-  DCHECK(encryption_key.get());
-
-  return encryption_key.release();
+                                                  kDerivedKeySizeInBits);
+  ANNOTATE_LEAKING_OBJECT_PTR(cached_encryption_key);
+  DCHECK(cached_encryption_key);
+  return cached_encryption_key;
 }
 
 }  // namespace
@@ -96,13 +110,13 @@ bool OSCrypt::EncryptString(const std::string& plaintext,
     return true;
   }
 
-  scoped_ptr<crypto::SymmetricKey> encryption_key(GetEncryptionKey());
-  if (!encryption_key.get())
+  crypto::SymmetricKey* encryption_key = GetEncryptionKey();
+  if (!encryption_key)
     return false;
 
   std::string iv(kCCBlockSizeAES128, ' ');
   crypto::Encryptor encryptor;
-  if (!encryptor.Init(encryption_key.get(), crypto::Encryptor::CBC, iv))
+  if (!encryptor.Init(encryption_key, crypto::Encryptor::CBC, iv))
     return false;
 
   if (!encryptor.Encrypt(plaintext, ciphertext))
@@ -134,13 +148,13 @@ bool OSCrypt::DecryptString(const std::string& ciphertext,
   std::string raw_ciphertext =
       ciphertext.substr(strlen(kEncryptionVersionPrefix));
 
-  scoped_ptr<crypto::SymmetricKey> encryption_key(GetEncryptionKey());
-  if (!encryption_key.get())
+  crypto::SymmetricKey* encryption_key = GetEncryptionKey();
+  if (!encryption_key)
     return false;
 
   std::string iv(kCCBlockSizeAES128, ' ');
   crypto::Encryptor encryptor;
-  if (!encryptor.Init(encryption_key.get(), crypto::Encryptor::CBC, iv))
+  if (!encryptor.Init(encryption_key, crypto::Encryptor::CBC, iv))
     return false;
 
   if (!encryptor.Decrypt(raw_ciphertext, plaintext))
