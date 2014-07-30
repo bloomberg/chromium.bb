@@ -305,18 +305,12 @@ Running: testNavigation
     Location disposed: b.js:3
   Resolving provisional breakpoint.
   Adding script: a.js
-    breakpointAdded(a.js, 11, 0, foo == bar, true)
-    Location created: a.js:11
-  Adding UISourceCode: a.js
-    breakpointRemoved(a.js, 11, 0)
-    breakpointAdded(a.js, 10, 0, foo == bar, true)
-    Location disposed: a.js:11
-    debuggerModel.removeBreakpoint(a.js:10)
-    breakpointAdded(a.js, 20, 0, , false)
-    debuggerModel.setBreakpoint(a.js:10:foo == bar)
-    breakpointRemoved(a.js, 10, 0)
     breakpointAdded(a.js, 10, 0, foo == bar, true)
     Location created: a.js:10
+  Adding UISourceCode: a.js
+    breakpointAdded(a.js, 20, 0, , false)
+    breakpointRemoved(a.js, 10, 0)
+    breakpointAdded(a.js, 10, 0, foo == bar, true)
   Dumping Breakpoint Locations
     UISourceCode (url='a.js', uri='a.js')
       Location: (10, 0)
@@ -452,17 +446,13 @@ Running: testSourceMappingReload
     breakpointAdded(a.js, 10, 0, foo == bar, true)
     Location created: a.js:10
   Adding UISourceCode: a.js
-  Adding UISourceCode: b.js
     breakpointRemoved(a.js, 10, 0)
-    breakpointAdded(b.js, 20, 0, foo == bar, true)
-    Location disposed: a.js:10
-    debuggerModel.removeBreakpoint(a.js:10)
+    breakpointAdded(a.js, 10, 0, foo == bar, true)
+  Adding UISourceCode: b.js
 
   Toggling source mapping.
-    debuggerModel.setBreakpoint(a.js:10:foo == bar)
-    breakpointRemoved(b.js, 20, 0)
+    breakpointRemoved(a.js, 10, 0)
     breakpointAdded(b.js, 20, 0, foo == bar, true)
-    Location created: a.js:10
   Dumping Breakpoint Locations
     UISourceCode (url='b.js', uri='b.js')
       Location: (20, 0)
@@ -498,21 +488,13 @@ Running: testBreakpointInCollectedReload
   Adding script: a.js
   Adding UISourceCode: a.js
     breakpointAdded(a.js, 10, 0, , true)
-    debuggerModel.removeBreakpoint(a.js:10)
 
   Emulating breakpoint resolved event:
     breakpointRemoved(a.js, 10, 0)
     breakpointAdded(a.js, 10, 0, , true)
     Location created: a.js:10
 
-  Waiting for breakpoint to be set in debugger again:
-    breakpointRemoved(a.js, 10, 0)
-    breakpointAdded(a.js, 10, 0, , true)
-    Location disposed: a.js:10
-    debuggerModel.setBreakpoint(a.js:10:)
-    breakpointRemoved(a.js, 10, 0)
-    breakpointAdded(a.js, 10, 0, , true)
-    Location created: a.js:10
+  Make sure we don't do any unnecessary breakpoint actions:
   Dumping Breakpoint Locations
     UISourceCode (url='a.js', uri='a.js')
       Location: (10, 0)

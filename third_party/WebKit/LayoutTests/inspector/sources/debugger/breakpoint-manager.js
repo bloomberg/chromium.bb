@@ -116,6 +116,16 @@ InspectorTest.DebuggerModelMock.prototype = {
         }
         this._breakpoints[breakpointId] = true;
 
+        if (lineNumber >= 2000) {
+            this._scheduleSetBeakpointCallback(callback, breakpointId, []);
+            return;
+        }
+        if (lineNumber >= 1000) {
+            var shiftedLocation = new WebInspector.DebuggerModel.Location(this._target, url, lineNumber + 10, columnNumber);
+            this._scheduleSetBeakpointCallback(callback, breakpointId, [shiftedLocation]);
+            return;
+        }
+
         var locations = [];
         var script = this._scriptForURL(url);
         if (script) {
@@ -124,30 +134,6 @@ InspectorTest.DebuggerModelMock.prototype = {
         }
 
         this._scheduleSetBeakpointCallback(callback, breakpointId, locations);
-    },
-
-    setBreakpointByScriptLocation: function(location, condition, callback)
-    {
-        InspectorTest.addResult("    " + InspectorTest.dumpTarget(this) + "debuggerModel.setBreakpoint(" + [location.scriptId, location.lineNumber, condition].join(":") + ")");
-
-        var breakpointId = location.scriptId + ":" + location.lineNumber;
-        if (this._breakpoints[breakpointId]) {
-            this._scheduleSetBeakpointCallback(callback, null);
-            return;
-        }
-        this._breakpoints[breakpointId] = true;
-
-        if (location.lineNumber >= 2000) {
-            this._scheduleSetBeakpointCallback(callback, breakpointId, []);
-            return;
-        }
-        if (location.lineNumber >= 1000) {
-            var shiftedLocation = new WebInspector.DebuggerModel.Location(this._target, location.scriptId, location.lineNumber + 10, location.columnNumber);
-            this._scheduleSetBeakpointCallback(callback, breakpointId, [shiftedLocation]);
-            return;
-        }
-
-        this._scheduleSetBeakpointCallback(callback, breakpointId, [WebInspector.DebuggerModel.Location.fromPayload(this._target, location)]);
     },
 
     removeBreakpoint: function(breakpointId, callback)
@@ -239,8 +225,10 @@ InspectorTest.addUISourceCode = function(target, breakpointManager, url, doNotSe
     var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
     var uiSourceCode = breakpointManager._networkWorkspaceBinding.addFileForURL(url, contentProvider);
     InspectorTest.uiSourceCodes[url] = uiSourceCode;
-    if (!doNotSetSourceMapping)
+    if (!doNotSetSourceMapping) {
         uiSourceCode.setSourceMappingForTarget(target, target.defaultMapping);
+        target.debuggerModel.scriptForId(url).updateLocations();
+    }
     return uiSourceCode;
 }
 

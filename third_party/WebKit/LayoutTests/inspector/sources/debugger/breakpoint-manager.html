@@ -160,7 +160,7 @@ function test()
                 resetWorkspace(breakpointManager);
                 InspectorTest.addResult("  Resolving provisional breakpoint.");
                 InspectorTest.addScript(mockTarget, breakpointManager, "a.js");
-                mockTarget.debuggerModel._breakpointResolved("a.js:10", new WebInspector.DebuggerModel.Location(mockTarget, "a.js", 11, 5));
+                mockTarget.debuggerModel._breakpointResolved("a.js:10", new WebInspector.DebuggerModel.Location(mockTarget, "a.js", 10, 5));
                 addUISourceCode(breakpointManager, "a.js", false, true);
                 InspectorTest.finishBreakpointTest(breakpointManager, next);
             }
@@ -323,7 +323,7 @@ function test()
                 InspectorTest.addResult("\n  Emulating breakpoint resolved event:");
                 mockTarget.debuggerModel._breakpointResolved("a.js:10", new WebInspector.DebuggerModel.Location(mockTarget, "a.js", 10, 5));
 
-                InspectorTest.addResult("\n  Waiting for breakpoint to be set in debugger again:");
+                InspectorTest.addResult("\n  Make sure we don't do any unnecessary breakpoint actions:");
                 InspectorTest.runAfterPendingBreakpointUpdates(breakpointManager, breakpointActionsPerformed.bind(this));
 
                 function breakpointActionsPerformed()
