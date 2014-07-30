@@ -279,7 +279,7 @@ class ForwardingFilter : public TestFilter {
 };
 
 // This class is a variation on URLRequestTestJob that will call
-// URLRequest::OnBeforeNetworkStart before starting.
+// URLRequest::WillStartUsingNetwork before starting.
 class URLRequestTestDelayedNetworkJob : public net::URLRequestTestJob {
  public:
   URLRequestTestDelayedNetworkJob(net::URLRequest* request,
@@ -597,7 +597,7 @@ class GenericResourceThrottle : public ResourceThrottle {
     }
   }
 
-  virtual void OnBeforeNetworkStart(bool* defer) OVERRIDE {
+  virtual void WillStartUsingNetwork(bool* defer) OVERRIDE {
     ASSERT_EQ(NULL, active_throttle_);
 
     if (flags_ & DEFER_NETWORK_START) {
@@ -1367,7 +1367,7 @@ TEST_F(ResourceDispatcherHostTest, PausedStartError) {
   EXPECT_EQ(0, host_.pending_requests());
 }
 
-// Test the OnBeforeNetworkStart throttle.
+// Test the WillStartUsingNetwork throttle.
 TEST_F(ResourceDispatcherHostTest, ThrottleNetworkStart) {
   // Arrange to have requests deferred before processing response headers.
   TestResourceDispatcherHostDelegate delegate;

@@ -87,7 +87,7 @@ bool ThrottlingResourceHandler::OnBeforeNetworkStart(const GURL& url,
   *defer = false;
   while (next_index_ < throttles_.size()) {
     int index = next_index_;
-    throttles_[index]->OnBeforeNetworkStart(defer);
+    throttles_[index]->WillStartUsingNetwork(defer);
     next_index_++;
     if (cancelled_by_resource_throttle_)
       return false;

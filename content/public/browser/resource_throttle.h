@@ -23,9 +23,9 @@ class ResourceThrottle {
   virtual ~ResourceThrottle() {}
 
   virtual void WillStartRequest(bool* defer) {}
+  virtual void WillStartUsingNetwork(bool* defer) {}
   virtual void WillRedirectRequest(const GURL& new_url, bool* defer) {}
   virtual void WillProcessResponse(bool* defer) {}
-  virtual void OnBeforeNetworkStart(bool* defer) {}
 
   // Returns the name of the throttle, as a UTF-8 C-string, for logging
   // purposes.  NULL is not allowed.  Caller does *not* take ownership of the
