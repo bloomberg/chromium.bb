@@ -649,6 +649,7 @@ class ChromeSDKCommand(cros.CrosCommand):
     else:
       gyp_dict.pop('branding', None)
       gyp_dict.pop('buildtype', None)
+      gyp_dict.pop('internal_gles2_conform_tests', None)
 
     # Enable goma if requested.
     if goma_dir:
