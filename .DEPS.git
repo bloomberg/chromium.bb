@@ -58,7 +58,7 @@ deps = {
     'src/third_party/colorama/src':
         Var('git_url') + '/external/colorama.git@799604a1041e9b3bc5d2789ecbd7e8db2e18e6b8',
     'src/third_party/ffmpeg':
-        Var('git_url') + '/chromium/third_party/ffmpeg.git@bffe77cd01d3982fe6ba710396615824ae4559ea',
+        Var('git_url') + '/chromium/third_party/ffmpeg.git@e2a05d173d49547ed8aa5edc0209941a8941f450',
     'src/third_party/flac':
         Var('git_url') + '/chromium/deps/flac.git@71e33f190a7bb144fe4e2014897b8d15c8247198',
     'src/third_party/hunspell':
