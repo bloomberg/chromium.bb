@@ -1733,14 +1733,10 @@ void RenderBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
 
 void RenderBlock::markPositionedObjectsForLayout()
 {
-    TrackedRendererListHashSet* positionedDescendants = positionedObjects();
-    if (positionedDescendants) {
-        RenderBox* r;
+    if (TrackedRendererListHashSet* positionedDescendants = positionedObjects()) {
         TrackedRendererListHashSet::iterator end = positionedDescendants->end();
-        for (TrackedRendererListHashSet::iterator it = positionedDescendants->begin(); it != end; ++it) {
-            r = *it;
-            r->setChildNeedsLayout();
-        }
+        for (TrackedRendererListHashSet::iterator it = positionedDescendants->begin(); it != end; ++it)
+            (*it)->setChildNeedsLayout();
     }
 }
 
