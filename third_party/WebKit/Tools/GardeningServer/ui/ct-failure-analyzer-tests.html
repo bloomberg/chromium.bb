@@ -1,0 +1,29 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="ct-failure-analyzer.html">
+
+<script>
+(function() {
+
+module("ct-failure-analyzer");
+
+test("_failureComparator", 1, function() {
+  var analyzer = document.createElement('ct-failure-analyzer');
+
+  var resultsByBuilder = {};
+  var failure1 = new CTFailure("step1", "reason1", resultsByBuilder, 123, 123);
+  var failure2 = new CTFailure("step1", "reason2", resultsByBuilder, 123, 123);
+  var failure3 = new CTFailure("step1", "reason3", resultsByBuilder, 123, 123);
+  var failure4 = new CTFailure("step2", "reason1", resultsByBuilder, 123, 123);
+
+  var failures = [failure4, failure3, failure2, failure1];
+  var expectedFailures = [failure1, failure2, failure3, failure4];
+  deepEqual(failures.sort(analyzer._failureComparator), expectedFailures);
+});
+
+})()
+</script>

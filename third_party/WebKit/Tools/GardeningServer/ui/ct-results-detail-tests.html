@@ -6,6 +6,8 @@ found in the LICENSE file.
 
 <link rel="import" href="ct-results-detail.html">
 
+<link rel="import" href="../model/ct-failure.html">
+
 <script>
 (function () {
 
@@ -26,9 +28,18 @@ asyncTest("image+text", 4, function() {
 
   simulator.runTest(function() {
     var comparisonResult = document.createElement('ct-results-detail');
-    comparisonResult.test = 'dummy/test.html';
     comparisonResult.builder = 'dummy builder';
-    comparisonResult.result = 'IMAGE+TEXT';
+    // FIXME: Use a proper mock model object.
+    comparisonResult.failure = {
+      "testName": "dummy/test.html",
+      "resultNodesByBuilder": {
+        "dummy builder": {
+          "actual": "IMAGE+TEXT",
+        },
+      },
+      "oldestFailingRevision": 177164,
+      "newestPassingRevision": 177165,
+    };
 
     comparisonResult.async(function() {
       deepEqual(probedUrls, [
@@ -64,9 +75,18 @@ asyncTest("crash", 4, function() {
 
   simulator.runTest(function() {
     var crashResult = document.createElement('ct-results-detail');
-    crashResult.test = 'dummy/test.html';
     crashResult.builder = 'dummy builder';
-    crashResult.result = 'CRASH';
+    // FIXME: Use a proper mock model object.
+    crashResult.failure = {
+      "testName": "dummy/test.html",
+      "resultNodesByBuilder": {
+        "dummy builder": {
+          "actual": "CRASH",
+        },
+      },
+      "oldestFailingRevision": 177164,
+      "newestPassingRevision": 177165,
+    };
 
     crashResult.async(function() {
       deepEqual(probedUrls, [
@@ -76,9 +96,54 @@ asyncTest("crash", 4, function() {
       var crashOutputs = crashResult.shadowRoot.querySelectorAll('ct-test-output');
       equal(crashOutputs.length, 1);
       equal(crashResult.shadowRoot.querySelectorAll('ct-results-comparison').length, 0);
-
       start();
     });
+  });
+});
+
+asyncTest("unknown", 3, function() {
+  var result = document.createElement('ct-results-detail');
+
+  result.builder = 'dummy builder';
+
+  var resultsByBuilder = {
+    "dummy builder": {
+      actual: "UNKNOWN",
+      lastFailingBuild: 124,
+      masterUrl: 'http://masterurl/'
+    },
+  };
+  result.failure = new CTFailure('foo_step', 'test.html', resultsByBuilder, 123, 124);
+
+  requestAnimationFrame(function() {
+    var outputs = result.shadowRoot.querySelectorAll('ct-test-output');
+    equal(outputs.length, 1);
+    equal(outputs[0].url, 'http://masterurl//builders/dummy%20builder/builds/124/steps/foo_step/logs/stdio');
+    equal(result.shadowRoot.querySelectorAll('ct-results-comparison').length, 0);
+    start();
+  });
+});
+
+asyncTest("unknown", 3, function() {
+  var result = document.createElement('ct-results-detail');
+
+  result.builder = 'dummy builder';
+
+  var resultsByBuilder = {
+    "dummy builder": {
+      actual: "FAIL",
+      lastFailingBuild: 124,
+      masterUrl: 'http://masterurl/'
+    },
+  };
+  result.failure = new CTFailure('foo_step', 'TestSuite.TestName', resultsByBuilder, 123, 124);
+
+  requestAnimationFrame(function() {
+    var outputs = result.shadowRoot.querySelectorAll('ct-test-output');
+    equal(outputs.length, 1);
+    equal(outputs[0].url, 'http://masterurl//builders/dummy%20builder/builds/124/steps/foo_step/logs/TestName');
+    equal(result.shadowRoot.querySelectorAll('ct-results-comparison').length, 0);
+    start();
   });
 });
 

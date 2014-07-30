@@ -11,14 +11,19 @@ found in the LICENSE file.
         display: block;
       }
     </style>
-    <template repeat="{{testName in tests}}">
-      <div><a href="{{testName|flakinessDashboardURL}}">{{testName}}</a></div>
+    <template repeat="{{ test in tests }}">
+      <!-- FIXME: Find a less redundant UI than repeating the step on each line. -->
+      <div>
+        {{ test.step }}
+        <template if="{{ test.testName }}"><a href="{{ test | flakinessDashboardURL }}">{{ test.testName }}</a></template>
+        <template if="{{ !test.testName }}"><b>whole step failed</b></template>
+      </div>
     </template>
   </template>
   <script>
     Polymer({
-      flakinessDashboardURL: function(testName) {
-        return ui.urlForFlakinessDashboard([testName]);
+      flakinessDashboardURL: function(test) {
+        return ui.urlForFlakinessDashboard(test.testName, test.step);
       },
     });
   </script>

@@ -57,7 +57,7 @@ found in the LICENSE file.
     </style>
     <ct-builder-grid failures="{{failures}}"></ct-builder-grid>
     <div class="failure">
-      <ct-test-list tests="{{failures|testNames}}"></ct-test-list>
+      <ct-test-list tests="{{failures}}"></ct-test-list>
       <ct-commit-list first="{{failures[0].newestPassingRevision + 1}}"
           last="{{failures[0].oldestFailingRevision}}"
           commits="{{commits}}"></ct-commit-list>
@@ -68,10 +68,6 @@ found in the LICENSE file.
     Polymer({
       failures: [],
       commits: {},
-
-      testNames: function(failures) {
-        return failures.map(function(failureAnalysis) { return failureAnalysis.testName }).sort();
-      },
 
       examine: function() {
         this.fire('ct-examine-failures', this.failures);

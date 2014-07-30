@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,38 +23,26 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-var ui = ui || {};
-
 (function () {
 
-// FIXME: Put this all in a more appropriate place.
+module("ui");
 
-ui.displayNameForBuilder = function(builderName)
-{
-    return builderName.replace(/Webkit /i, '');
-}
+var flakinessBaseUrl = 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#';
 
-// FIXME: Take a master name argument as well.
-ui.urlForFlakinessDashboard = function(testNames, testType)
-{
-    if (Array.isArray(testNames))
-        testNames = testNames.join(',');
+test('urlForFlakinessDashboard', 4, function() {
+    equal(ui.urlForFlakinessDashboard('foo', 'bar'),
+        flakinessBaseUrl + 'tests=foo&testType=bar');
+    equal(ui.urlForFlakinessDashboard(['foo', 'baz'], 'bar'),
+        flakinessBaseUrl + 'tests=foo%2Cbaz&testType=bar');
+    equal(ui.urlForFlakinessDashboard('foo', 'webkit_tests'),
+        flakinessBaseUrl + 'tests=foo&testType=layout-tests');
+    equal(ui.urlForFlakinessDashboard('foo', 'layout-tests'),
+        flakinessBaseUrl + 'tests=foo&testType=layout-tests');
+});
 
-    // FIXME: Remove this once the flakiness dashboard stops having webkit_tests
-    // masquerade as layout-tests.
-    if (testType == 'webkit_tests')
-        testType = 'layout-tests';
-
-    return 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#' +
-        Object.toQueryString({
-            tests: testNames,
-            testType: testType,
-        });
-}
-
-ui.urlForEmbeddedFlakinessDashboard = function(testNames, testType)
-{
-    return ui.urlForFlakinessDashboard(testNames, testType) + '&showChrome=false';
-}
+test('urlForEmbeddedFlakinessDashboard', 1, function() {
+    equal(ui.urlForEmbeddedFlakinessDashboard('foo', 'bar'),
+        flakinessBaseUrl + 'tests=foo&testType=bar&showChrome=false');
+});
 
 })();

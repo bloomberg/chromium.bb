@@ -12,29 +12,20 @@ found in the LICENSE file.
 var kExampleFailure = {
     "testName": "inspector/console/console-viewport-selection.html",
     "resultNodesByBuilder": {
-        "WebKit Linux (dbg)": {
-            "expected": "SLOW",
-            "is_unexpected": true,
-            "actual": "TEXT",
-            "bugs": ["webkit.org/b/90488"],
-            "time": 5.9
-        },
         "WebKit Mac10.6 (dbg)": {
             "actual": "IMAGE",
-            "time": 6.5,
-            "bugs": ["webkit.org/b/90488"],
-            "is_unexpected": true,
-            "expected": "SLOW",
-            "has_stderr": true
-        }
+        },
+        "WebKit Linux (dbg)": {
+            "actual": "TEXT",
+        },
     },
     "oldestFailingRevision": 177164,
-    "newestPassingRevision": 177165
+    "newestPassingRevision": 177165,
 };
 
 module("ct-results-by-builder");
 
-asyncTest("basic", 11, function() {
+asyncTest("basic", 9, function() {
   // FIXME: Remove this override when ct-results-detail is fixed to not use
   // results.fetchResultsURLs.
   var oldFetchResultsURLs = results.fetchResultsURLs;
@@ -51,9 +42,8 @@ asyncTest("basic", 11, function() {
 
     var detail = resultsByBuilder.shadowRoot.querySelectorAll('ct-results-detail');
     equal(detail.length, 1);
-    equal(detail[0].test, 'inspector/console/console-viewport-selection.html');
+    equal(detail[0].failure.testName, 'inspector/console/console-viewport-selection.html');
     equal(detail[0].builder, 'WebKit Linux (dbg)');
-    equal(detail[0].result, 'TEXT');
 
     resultsByBuilder.shadowRoot.querySelector('paper-tabs').selected = 1;
 
@@ -62,9 +52,8 @@ asyncTest("basic", 11, function() {
 
       var detail = resultsByBuilder.shadowRoot.querySelectorAll('ct-results-detail');
       equal(detail.length, 1);
-      equal(detail[0].test, 'inspector/console/console-viewport-selection.html');
+      equal(detail[0].failure.testName, 'inspector/console/console-viewport-selection.html');
       equal(detail[0].builder, 'WebKit Mac10.6 (dbg)');
-      equal(detail[0].result, 'IMAGE');
 
       start();
     });

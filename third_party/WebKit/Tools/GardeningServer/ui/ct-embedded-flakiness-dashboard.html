@@ -31,7 +31,7 @@ found in the LICENSE file.
       },
 
       testChanged: function() {
-        this.$.iframe.src = ui.urlForEmbeddedFlakinessDashboard([this.test]);
+        this.$.iframe.src = ui.urlForEmbeddedFlakinessDashboard(this.test.testName, this.test.step);
       },
 
     });

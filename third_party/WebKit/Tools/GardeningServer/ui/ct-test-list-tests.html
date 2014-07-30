@@ -10,9 +10,39 @@ found in the LICENSE file.
 (function () {
 
 var kExampleTests = [
-  "plugins/gesture-events-scrolled.html",
-  "plugins/transformed-events.html",
-  "plugins/gesture-events.html",
+{
+  "testName": "plugins/gesture-events-scrolled.html",
+  "step": "foo_step",
+  "resultNodesByBuilder": {
+    "WebKit Mac10.6 (dbg)": {
+      "actual": "IMAGE",
+    },
+  },
+  "oldestFailingRevision": 177164,
+  "newestPassingRevision": 177165,
+},
+{
+  "testName": "plugins/transformed-events.html",
+  "step": "foo_step",
+  "resultNodesByBuilder": {
+    "WebKit Mac10.6 (dbg)": {
+      "actual": "IMAGE",
+    },
+  },
+  "oldestFailingRevision": 177164,
+  "newestPassingRevision": 177165,
+},
+{
+  "testName": "plugins/gesture-events.html",
+  "step": "foo_step",
+  "resultNodesByBuilder": {
+    "WebKit Mac10.6 (dbg)": {
+      "actual": "IMAGE",
+    },
+  },
+  "oldestFailingRevision": 177164,
+  "newestPassingRevision": 177165,
+},
 ];
 
 module("ct-test-list");
@@ -25,9 +55,9 @@ asyncTest("basic", 4, function() {
   Platform.endOfMicrotask(function() {
     var tests = list.shadowRoot.querySelectorAll('a');
     equal(tests.length, 3);
-    equal(tests[0].href, 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=plugins%2Fgesture-events-scrolled.html');
-    equal(tests[1].href, 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=plugins%2Ftransformed-events.html');
-    equal(tests[2].href, 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=plugins%2Fgesture-events.html');
+    equal(tests[0].href, 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=plugins%2Fgesture-events-scrolled.html&testType=foo_step');
+    equal(tests[1].href, 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=plugins%2Ftransformed-events.html&testType=foo_step');
+    equal(tests[2].href, 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=plugins%2Fgesture-events.html&testType=foo_step');
 
     start();
   });

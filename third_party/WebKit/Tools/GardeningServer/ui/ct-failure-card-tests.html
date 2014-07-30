@@ -11,17 +11,6 @@ found in the LICENSE file.
 
 module("ct-failure-card");
 
-test("testNames", 1, function() {
-  var card = document.createElement('ct-failure-card');
-  // FIXME: Use a proper model class instead of a dumb object.
-  var failures = [
-    {testName: 'foo'},
-    {testName: 'bar'},
-    {testName: 'baz'},
-  ];
-  deepEqual(card.testNames(failures), ['bar', 'baz', 'foo']);
-});
-
 asyncTest("examine", 1, function() {
   var card = document.createElement('ct-failure-card');
   card.failures = [];

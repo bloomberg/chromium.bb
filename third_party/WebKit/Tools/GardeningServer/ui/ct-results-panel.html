@@ -50,11 +50,15 @@ found in the LICENSE file.
     <template if="{{ failures.length }}">
       <core-menu selected="{{ selected }}">
         <template repeat="{{ failure in failures }}">
-          <paper-item label="{{ failure.testName }}"></paper-item>
+          <template if="{{ failure.testName }}">
+            <paper-item label="{{ failure.testName }}"></paper-item>
+          </template>
         </template>
       </core-menu>
       <div class="results">
-        <ct-embedded-flakiness-dashboard test="{{ failures[selected].testName }}"></ct-embedded-flakiness-dashboard>
+        <template if="{{ failures[selected].testName }}">
+          <ct-embedded-flakiness-dashboard test="{{ failures[selected] }}"></ct-embedded-flakiness-dashboard>
+        </template>
         <ct-results-by-builder failure="{{ failures[selected] }}"></ct-results-by-builder>
       </div>
     </template>

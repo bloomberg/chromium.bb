@@ -94,7 +94,7 @@ module("ct-results-panel");
 asyncTest("empty", 1, function() {
   var panel = document.createElement('ct-results-panel');
 
-  Platform.endOfMicrotask(function() {
+  requestAnimationFrame(function() {
     var message = panel.shadowRoot.querySelector('.message');
     equal(message.textContent, 'No results to display.');
 
@@ -107,7 +107,7 @@ asyncTest("basic", 8, function() {
 
   panel.failures = kExampleFailures;
 
-  Platform.endOfMicrotask(function() {
+  requestAnimationFrame(function() {
     var items = panel.shadowRoot.querySelectorAll('paper-item');
     equal(items.length, 3);
     equal(items[0].label, 'plugins/gesture-events-scrolled.html');
@@ -120,13 +120,44 @@ asyncTest("basic", 8, function() {
 
     panel.shadowRoot.querySelector('core-menu').selected = 2;
 
-    Platform.endOfMicrotask(function() {
+    requestAnimationFrame(function() {
       var results = panel.shadowRoot.querySelectorAll('ct-results-by-builder');
       equal(results.length, 1);
       equal(results[0].failure, kExampleFailures[2]);
 
       start();
     });
+  });
+});
+
+asyncTest("whole step failed", 4, function() {
+  var panel = document.createElement('ct-results-panel');
+
+  var failure = {
+    testName: null,
+    step: 'foo-step',
+    resultNodesByBuilder: {
+      'WebKit Win7 (dbg)': {
+        actual: 'UNKNOWN',
+      },
+    },
+    oldestFailingRevision: 123,
+    newestPassingRevision: 124,
+  };
+
+  panel.failures = [failure];
+
+  requestAnimationFrame(function() {
+    var items = panel.shadowRoot.querySelectorAll('paper-item');
+    equal(items.length, 0);
+
+    var results = panel.shadowRoot.querySelectorAll('ct-results-by-builder');
+    equal(results.length, 1);
+    equal(results[0].failure, failure);
+
+    equal(panel.shadowRoot.querySelectorAll('ct-embedded-flakiness-dashboard').length, 0);
+
+    start();
   });
 });
 

@@ -6,7 +6,7 @@ found in the LICENSE file.
 
 <link rel="import" href="ct-results-comparison.html">
 
-<polymer-element name="ct-results-detail" attributes="test builder result">
+<polymer-element name="ct-results-detail" attributes="failure builder">
   <template>
     <style>
       :host {
@@ -28,14 +28,12 @@ found in the LICENSE file.
   </template>
   <script>
     Polymer({
-      test: '',
+      failure: null,
       // FIXME: Initializing builder gives a JS error. Presumably because
       // ct-results-by-builder sets builder="{{builders[selected]}}". But,
       // it seems wrong that the way the parent uses this element constrains
       // what the element can do. Polymer bug?
       // builder: '',
-      // FIXME: Initializing result gives a JS error like above.
-      // result: '',
 
       _urlGroups: [],
       _kExpectedKind: results.kExpectedKind,
@@ -44,16 +42,30 @@ found in the LICENSE file.
       _kUnknownKind: results.kUnknownKind,
 
       observe: {
-        result: '_update',
-        test: '_update',
+        failure: '_update',
         builder: '_update',
       },
 
       _update: function() {
-        if (!this.test || !this.builder || !this.result)
+        if (!this.failure || !this.builder)
           return;
 
-        var failureInfo = results.failureInfo(this.test, this.builder, this.result);
+        // FIXME: If the types of groups doesn't change, then it'd be better to do this
+        // update in place so that the user doesn't see a flicker.
+        this._urlGroups = [];
+
+        var result = this.failure.resultNodesByBuilder[this.builder];
+        // FIXME: There's probably a less hacky way to check this.
+        if (result.actual == 'FAIL' || result.actual == 'UNKNOWN')
+          this._updateUrls();
+        else
+          this._updateWebkitTestUrls();
+      },
+
+      _updateWebkitTestUrls: function() {
+        var result = this.failure.resultNodesByBuilder[this.builder];
+        var failureInfo = results.failureInfo(this.failure.testName, this.builder, result.actual);
+
         // FIXME: Move this logic to a proper model class so that the network requests this makes
         // can be easily mocked out in tests.
         results.fetchResultsURLs(failureInfo).then(function(resultsUrls) {
@@ -65,7 +77,6 @@ found in the LICENSE file.
               resultsUrlsByTypeAndKind[resultType][results.resultKind(url)] = url;
           });
 
-          this._urlGroups = [];
           Object.keys(resultsUrlsByTypeAndKind, function(resultType, resultsUrlsByKind) {
             this._urlGroups.push({
               type: resultType,
@@ -73,6 +84,30 @@ found in the LICENSE file.
             });
           }.bind(this));
         }.bind(this));
+      },
+
+      _updateUrls: function() {
+        // FIXME: Along with _updateWebkitTestUrls, move this logic to a proper model class
+        // so that the network requests this makes can be easily mocked out in tests.
+
+        var result = this.failure.resultNodesByBuilder[this.builder];
+
+        // FIXME: We only store build logs by the test name, not the testsuite.testname,
+        // which means that two failing tests from different test suites conflict!
+        var testPart = result.actual == 'UNKNOWN' ? 'stdio' : this.failure.testName.split('.')[1];
+        var url = result.masterUrl +
+            '/builders/' + encodeURIComponent(this.builder) +
+            '/builds/' + result.lastFailingBuild +
+            '/steps/' + this.failure.step +
+            '/logs/' + testPart;
+
+        var resultsUrlsByKind = {};
+        resultsUrlsByKind[this._kUnknownKind] = url;
+
+        this._urlGroups.push({
+          type: results.kTextType,
+          urls: resultsUrlsByKind,
+        });
       },
     });
   </script>

@@ -16,13 +16,12 @@ found in the LICENSE file.
         display: block;
       }
     </style>
-    <paper-tabs selected="{{selected}}">
-      <template repeat="{{builder in builders}}">
-        <paper-tab>{{builder|displayName}}</paper-tab>
+    <paper-tabs selected="{{ selected }}">
+      <template repeat="{{ builder in builders }}">
+        <paper-tab>{{ builder | displayName }}</paper-tab>
       </template>
     </paper-tabs>
-    <ct-results-detail test="{{failure.testName}}" builder="{{builders[selected]}}"
-        result="{{failure.resultNodesByBuilder[builders[selected]].actual}}"></ct-results-detail>
+    <ct-results-detail failure="{{ failure }}" builder="{{ builders[selected] }}"></ct-results-detail>
   </template>
   <script>
     Polymer({
@@ -31,7 +30,7 @@ found in the LICENSE file.
       selected: 0,
 
       failureChanged: function() {
-        this.builders = Object.getOwnPropertyNames(this.failure.resultNodesByBuilder);
+        this.builders = Object.getOwnPropertyNames(this.failure.resultNodesByBuilder).sort();
         this.selected = 0;
       },
 

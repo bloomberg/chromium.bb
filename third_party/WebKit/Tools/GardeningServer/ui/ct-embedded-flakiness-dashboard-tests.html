@@ -18,14 +18,18 @@ asyncTest("url", 1, function() {
   }
 
   try {
-    ui.urlForEmbeddedFlakinessDashboard = function(testList) { return "about:blank#" + testList.join(','); }
+    ui.urlForEmbeddedFlakinessDashboard = function(test, step) { return "about:blank#" + test + step; }
     var embeddedFlakinessDashboard = document.createElement('ct-embedded-flakiness-dashboard');
     var testName = "foo/bar.html";
-    embeddedFlakinessDashboard.test = testName;
+    var step = "foo_tests";
+    embeddedFlakinessDashboard.test = {
+      testName: testName,
+      step: step,
+    };
 
     requestAnimationFrame(function() {
       var iframe = embeddedFlakinessDashboard.shadowRoot.querySelector('#iframe');
-      equal(iframe.src, ui.urlForEmbeddedFlakinessDashboard([testName]));
+      equal(iframe.src, ui.urlForEmbeddedFlakinessDashboard(testName, step));
       reset();
       start();
     });
