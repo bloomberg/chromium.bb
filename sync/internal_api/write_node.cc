@@ -413,6 +413,15 @@ WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreation(
 
       existing_entry->PutNonUniqueName(dummy);
       existing_entry->PutParentId(parent_id);
+
+      // Put specifics to handle the case where this is not actually an
+      // undeletion, but instead a collision with a newly downloaded,
+      // processed, and unapplied server update.  This is a fix for
+      // http://crbug.com/397766.
+      sync_pb::EntitySpecifics specifics;
+      AddDefaultFieldValue(model_type, &specifics);
+      existing_entry->PutSpecifics(specifics);
+
       entry_ = existing_entry.release();
     } else {
       return INIT_FAILED_ENTRY_ALREADY_EXISTS;
