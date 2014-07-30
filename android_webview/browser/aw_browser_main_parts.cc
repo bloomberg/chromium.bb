@@ -51,34 +51,25 @@ int AwBrowserMainParts::PreCreateThreads() {
   int64 pak_off = 0;
   int64 pak_len = 0;
 
-  // TODO(primiano): at present state there is a cyclic logic dependency
-  // between l10n_util::GetApplicationLocale and our code here. l10n_util
-  // decides which locale to ultimately use by scanning the pak files in the
-  // data folder. What we ultimately want to achieve is knowing the pak file to
-  // load from the apk beforehand, without looking at the data folder at all.
-  // Fixing this cyclic dependency involves some refactoring in ResourceBundle
-  // and l10n_util.
-  // In the meanwhile we use the mmap path only as a fallback (i.e. we check
-  // first for the existence of the pak files in the data dir). In the immediate
-  // future this order should be reversed, and we should look in the data
-  // directory only if we failed to mmap the pak file from the apk.
-  bool did_init_from_file = !ui::ResourceBundle::InitSharedInstanceLocaleOnly(
-                                 l10n_util::GetDefaultLocale(), NULL).empty();
-  if (!did_init_from_file) {
-    LOG(WARNING) << "Failed to load the locale pak from PATH_SERVICE. "
-                    " Trying to mmap en-US.pak from the apk";
-    if (AwAssets::OpenAsset("en-US.pak", &pak_fd, &pak_off, &pak_len)) {
-      VLOG(0) << "Load from apk succesful, fd=" << pak_fd << " off=" << pak_off
-              << " len=" << pak_len;
-      ui::ResourceBundle::CleanupSharedInstance();
-      ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
-          base::File(pak_fd),
-          base::MemoryMappedFile::Region(pak_off, pak_len),
-          /*should_load_common_resources=*/false);
-    } else {
-      LOG(WARNING) << "Failed to load en-US.pak from the apk too. "
-                      "Bringing up WebView without any locale";
-    }
+  // TODO(primiano, mkosiba): GetApplicationLocale requires a ResourceBundle
+  // instance to be present to work correctly so we call this (knowing it will
+  // fail) just to create the ResourceBundle instance. We should refactor
+  // ResourceBundle/GetApplicationLocale to not require an instance to be
+  // initialized.
+  ui::ResourceBundle::InitSharedInstanceLocaleOnly(
+      l10n_util::GetDefaultLocale(), NULL);
+  std::string locale = l10n_util::GetApplicationLocale(std::string()) + ".pak";
+  if (AwAssets::OpenAsset(locale, &pak_fd, &pak_off, &pak_len)) {
+    VLOG(0) << "Load from apk succesful, fd=" << pak_fd << " off=" << pak_off
+            << " len=" << pak_len;
+    ui::ResourceBundle::CleanupSharedInstance();
+    ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
+        base::File(pak_fd),
+        base::MemoryMappedFile::Region(pak_off, pak_len),
+        /*should_load_common_resources=*/false);
+  } else {
+    LOG(WARNING) << "Failed to load " << locale << ".pak from the apk too. "
+                    "Bringing up WebView without any locale";
   }
 
   // Try to directly mmap the webviewchromium.pak from the apk. Fall back to
