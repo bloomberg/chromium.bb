@@ -200,6 +200,7 @@ if __name__ == '__main__':
     args.pop(0)
     os.environ['GYP_GENERATORS'] = 'analyzer'
     args.append('-Gconfig_path=' + args.pop(0))
+    args.append('-Ganalyzer_output_path=' + args.pop(0))
 
   if int(os.environ.get('GYP_CHROMIUM_NO_ACTION', 0)):
     # Check for landmines (reasons to clobber the build) in any case.
