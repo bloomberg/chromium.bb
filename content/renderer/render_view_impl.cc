@@ -157,6 +157,7 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebGlyphCache.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
+#include "third_party/WebKit/public/web/WebHitTestResult.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebKit.h"
@@ -206,7 +207,6 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
-#include "third_party/WebKit/public/web/WebHitTestResult.h"
 #include "ui/gfx/rect_f.h"
 
 #elif defined(OS_WIN)
@@ -2179,9 +2179,16 @@ void RenderViewImpl::didHandleGestureEvent(
     bool event_cancelled) {
   RenderWidget::didHandleGestureEvent(event, event_cancelled);
 
+  if (!event_cancelled) {
+    FOR_EACH_OBSERVER(
+        RenderViewObserver, observers_, DidHandleGestureEvent(event));
+  }
+
   if (event.type != blink::WebGestureEvent::GestureTap)
     return;
 
+  // TODO(estade): hit test the event against focused node to make sure
+  // the tap actually hit the focused node.
   blink::WebTextInputType text_input_type =
       GetWebView()->textInputInfo().type;
 
@@ -2607,6 +2614,13 @@ bool RenderViewImpl::IsEditableNode(const WebNode& node) const {
   }
 
   return false;
+}
+
+bool RenderViewImpl::NodeContainsPoint(const WebNode& node,
+                                       const gfx::Point& point) const {
+  blink::WebHitTestResult hit_test =
+      webview()->hitTestResultAt(WebPoint(point.x(), point.y()));
+  return node.containsIncludingShadowDOM(hit_test.node());
 }
 
 bool RenderViewImpl::ShouldDisplayScrollbars(int width, int height) const {

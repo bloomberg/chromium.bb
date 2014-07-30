@@ -102,14 +102,17 @@ class AutofillManagerTestDelegateImpl
 
   // autofill::AutofillManagerTestDelegate:
   virtual void DidPreviewFormData() OVERRIDE {
+    ASSERT_TRUE(loop_runner_->loop_running());
     loop_runner_->Quit();
   }
 
   virtual void DidFillFormData() OVERRIDE {
+    ASSERT_TRUE(loop_runner_->loop_running());
     loop_runner_->Quit();
   }
 
   virtual void DidShowSuggestions() OVERRIDE {
+    ASSERT_TRUE(loop_runner_->loop_running());
     loop_runner_->Quit();
   }
 
@@ -336,6 +339,45 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     ASSERT_TRUE(result);
   }
 
+  // Simulates a click on the middle of the DOM element with the given |id|.
+  void ClickElementWithId(const std::string& id) {
+    int x;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+        GetRenderViewHost(),
+        "var bounds = document.getElementById('" +
+            id +
+            "').getBoundingClientRect();"
+            "domAutomationController.send("
+            "    Math.floor(bounds.left + bounds.width / 2));",
+        &x));
+    int y;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+        GetRenderViewHost(),
+        "var bounds = document.getElementById('" +
+            id +
+            "').getBoundingClientRect();"
+            "domAutomationController.send("
+            "    Math.floor(bounds.top + bounds.height / 2));",
+        &y));
+    content::SimulateMouseClickAt(GetWebContents(),
+                                  0,
+                                  blink::WebMouseEvent::ButtonLeft,
+                                  gfx::Point(x, y));
+  }
+
+  void ClickFirstNameField() {
+    ASSERT_NO_FATAL_FAILURE(ClickElementWithId("firstname"));
+  }
+
+  // Make a pointless round trip to the renderer, giving the popup a chance to
+  // show if it's going to. If it does show, an assert in
+  // AutofillManagerTestDelegateImpl will trigger.
+  void MakeSurePopupDoesntAppear() {
+    int unused;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+        GetRenderViewHost(), "domAutomationController.send(42)", &unused));
+  }
+
   void ExpectFilledTestForm() {
     ExpectFieldValue("firstname", "Milton");
     ExpectFieldValue("lastname", "Waddams");
@@ -403,6 +445,8 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     // The form should be filled.
     ExpectFilledTestForm();
   }
+
+  AutofillManagerTestDelegateImpl* test_delegate() { return &test_delegate_; }
 
  private:
   AutofillManagerTestDelegateImpl test_delegate_;
@@ -481,6 +525,76 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillSelectViaTab) {
 
   // The form should be filled.
   ExpectFilledTestForm();
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillViaClick) {
+  CreateTestProfile();
+
+  // Load the test page.
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string(kDataURIPrefix) + kTestFormString)));
+  // Focus a fillable field.
+  ASSERT_NO_FATAL_FAILURE(FocusFirstNameField());
+
+  // Now click it.
+  test_delegate()->Reset();
+  ASSERT_NO_FATAL_FAILURE(ClickFirstNameField());
+  test_delegate()->Wait();
+
+  // Press the down arrow to select the suggestion and preview the autofilled
+  // form.
+  SendKeyToPopupAndWait(ui::VKEY_DOWN);
+
+  // Press Enter to accept the autofill suggestions.
+  SendKeyToPopupAndWait(ui::VKEY_RETURN);
+
+  // The form should be filled.
+  ExpectFilledTestForm();
+}
+
+// Makes sure that the first click does *not* activate the popup.
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DontAutofillForFirstClick) {
+  CreateTestProfile();
+
+  // Load the test page.
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string(kDataURIPrefix) + kTestFormString)));
+
+  // Click the first name field while it's out of focus, then twiddle our thumbs
+  // a bit. If a popup were to show, it would hit the asserts in
+  // AutofillManagerTestDelegateImpl while we're wasting time.
+  ASSERT_NO_FATAL_FAILURE(ClickFirstNameField());
+  ASSERT_NO_FATAL_FAILURE(MakeSurePopupDoesntAppear());
+
+  // The second click should activate the popup since the first click focused
+  // the field.
+  test_delegate()->Reset();
+  ASSERT_NO_FATAL_FAILURE(ClickFirstNameField());
+  test_delegate()->Wait();
+}
+
+// Makes sure that clicking outside the focused field doesn't activate
+// the popup.
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DontAutofillForOutsideClick) {
+  CreateTestProfile();
+
+  // Load the test page.
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(),
+      GURL(std::string(kDataURIPrefix) + kTestFormString +
+           "<button disabled id='disabled-button'>Cant click this</button>")));
+
+  ASSERT_NO_FATAL_FAILURE(FocusFirstNameField());
+
+  // Clicking a disabled button will generate a mouse event but focus doesn't
+  // change. This tests that autofill can handle a mouse event outside a focused
+  // input *without* showing the popup.
+  ASSERT_NO_FATAL_FAILURE(ClickElementWithId("disabled-button"));
+  ASSERT_NO_FATAL_FAILURE(MakeSurePopupDoesntAppear());
+
+  test_delegate()->Reset();
+  ASSERT_NO_FATAL_FAILURE(ClickFirstNameField());
+  test_delegate()->Wait();
 }
 
 // Test that a field is still autofillable after the previously autofilled

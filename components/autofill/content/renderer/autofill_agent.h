@@ -73,7 +73,6 @@ class AutofillAgent : public content::RenderViewObserver,
   virtual void FormControlElementClicked(
       const blink::WebFormControlElement& element,
       bool was_focused) OVERRIDE;
-  virtual void FormControlElementLostFocus() OVERRIDE;
 
   // blink::WebAutofillClient:
   virtual void textFieldDidEndEditing(

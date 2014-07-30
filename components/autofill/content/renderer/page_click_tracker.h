@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebDOMEventListener.h"
 #include "third_party/WebKit/public/web/WebNode.h"
@@ -16,20 +17,15 @@ namespace autofill {
 
 class PageClickListener;
 
-// This class is responsible for tracking clicks on elements in web pages and
-// notifiying the associated listener when a node is clicked.
-// Compared to a simple WebDOMEventListener, it offers the added capability of
-// notifying the listeners of whether the clicked node was already focused
-// before it was clicked.
+// This class is responsible notifiying the associated listener when a node is
+// clicked or tapped. It also tracks whether a node was focused before the event
+// was handled.
 //
 // This is useful for password/form autofill where we want to trigger a
 // suggestion popup when a text input is clicked.
-// It only notifies of WebInputElement that are text inputs being clicked, but
-// could easily be changed to report click on any type of WebNode.
 //
 // There is one PageClickTracker per RenderView.
-class PageClickTracker : public content::RenderViewObserver,
-                         public blink::WebDOMEventListener {
+class PageClickTracker : public content::RenderViewObserver {
  public:
   // The |listener| will be notified when an element is clicked.  It must
   // outlive this class.
@@ -39,29 +35,26 @@ class PageClickTracker : public content::RenderViewObserver,
 
  private:
   // RenderView::Observer implementation.
-  virtual void DidFinishDocumentLoad(blink::WebLocalFrame* frame) OVERRIDE;
-  virtual void FrameDetached(blink::WebFrame* frame) OVERRIDE;
   virtual void DidHandleMouseEvent(const blink::WebMouseEvent& event) OVERRIDE;
+  virtual void DidHandleGestureEvent(
+      const blink::WebGestureEvent& event) OVERRIDE;
+  virtual void FocusedNodeChanged(const blink::WebNode& node) OVERRIDE;
 
-  // blink::WebDOMEventListener implementation.
-  virtual void handleEvent(const blink::WebDOMEvent& event);
+  // Called there is a tap or click at |x|, |y|.
+  void PotentialActivationAt(int x, int y);
 
-  // Checks to see if a text field is losing focus and inform listeners if
-  // it is.
-  void HandleTextFieldMaybeLosingFocus(
-      const blink::WebNode& newly_clicked_node);
+  // Sets |was_focused_before_now_| to true.
+  void SetWasFocused();
 
-  // The last node that was clicked and had focus.
-  blink::WebNode last_node_clicked_;
-
-  // Whether the last clicked node had focused before it was clicked.
-  bool was_focused_;
-
-  // The frames we are listening to for mouse events.
-  std::vector<blink::WebFrame*> tracked_frames_;
+  // This is set to false when the focus changes, then set back to true soon
+  // afterwards. This helps track whether an event happened after a node was
+  // already focused, or if it caused the focus to change.
+  bool was_focused_before_now_;
 
   // The listener getting the actual notifications.
   PageClickListener* listener_;
+
+  base::WeakPtrFactory<PageClickTracker> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PageClickTracker);
 };

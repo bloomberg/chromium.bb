@@ -469,6 +469,8 @@ class CONTENT_EXPORT RenderViewImpl
   virtual blink::WebView* GetWebView() OVERRIDE;
   virtual blink::WebElement GetFocusedElement() const OVERRIDE;
   virtual bool IsEditableNode(const blink::WebNode& node) const OVERRIDE;
+  virtual bool NodeContainsPoint(const blink::WebNode& node,
+                                 const gfx::Point& point) const OVERRIDE;
   virtual bool ShouldDisplayScrollbars(int width, int height) const OVERRIDE;
   virtual int GetEnabledBindings() const OVERRIDE;
   virtual bool GetContentStateImmediately() const OVERRIDE;

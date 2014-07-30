@@ -217,6 +217,8 @@ void AutofillAgent::WillSubmitForm(WebLocalFrame* frame,
 }
 
 void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
+  HidePopup();
+
   if (password_generation_agent_ &&
       password_generation_agent_->FocusedNodeHasChanged(node)) {
     is_popup_possibly_visible_ = true;
@@ -326,10 +328,6 @@ void AutofillAgent::FormControlElementClicked(
                   false,
                   show_full_suggestion_list,
                   show_password_suggestions_only);
-}
-
-void AutofillAgent::FormControlElementLostFocus() {
-  HidePopup();
 }
 
 void AutofillAgent::textFieldDidEndEditing(const WebInputElement& element) {

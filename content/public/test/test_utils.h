@@ -80,6 +80,8 @@ class MessageLoopRunner : public base::RefCounted<MessageLoopRunner> {
   //   runner->Run();
   base::Closure QuitClosure();
 
+  bool loop_running() const { return loop_running_; }
+
  private:
   friend class base::RefCounted<MessageLoopRunner>;
   ~MessageLoopRunner();

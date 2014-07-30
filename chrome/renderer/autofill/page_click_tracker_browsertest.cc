@@ -21,31 +21,23 @@ class TestPageClickListener : public PageClickListener {
  public:
   TestPageClickListener()
       : form_control_element_clicked_called_(false),
-        form_control_element_lost_focus_called_(false),
-        was_focused_(false) {
-  }
+        was_focused_(false) {}
 
   virtual void FormControlElementClicked(
       const blink::WebFormControlElement& element,
-      bool was_focused)  OVERRIDE {
+      bool was_focused) OVERRIDE {
     form_control_element_clicked_called_ = true;
     form_control_element_clicked_ = element;
     was_focused_ = was_focused;
   }
 
-  virtual void FormControlElementLostFocus() OVERRIDE {
-    form_control_element_lost_focus_called_ = true;
-  }
-
   void ClearResults() {
     form_control_element_clicked_called_ = false;
-    form_control_element_lost_focus_called_ = false;
     form_control_element_clicked_.reset();
     was_focused_ = false;
   }
 
   bool form_control_element_clicked_called_;
-  bool form_control_element_lost_focus_called_;
   blink::WebFormControlElement form_control_element_clicked_;
   bool was_focused_;
 };
@@ -83,6 +75,13 @@ class PageClickTrackerTest : public content::RenderViewTest {
     content::RenderViewTest::TearDown();
   }
 
+  // Simulates a click on the given element and then waits for the stack
+  // to unwind.
+  void SendElementClick(const std::string& element_id) {
+    EXPECT_TRUE(SimulateElementClick(element_id));
+    ProcessPendingMessages();
+  }
+
   // Send all the messages required for a complete key press.
   void SendKeyPress(int key_code) {
     blink::WebKeyboardEvent keyboard_event;
@@ -108,22 +107,23 @@ class PageClickTrackerTest : public content::RenderViewTest {
 // Tests that PageClickTracker does notify correctly when an input
 // node is clicked.
 TEST_F(PageClickTrackerTest, PageClickTrackerInputClicked) {
+  EXPECT_NE(text_, text_.document().focusedElement());
   // Click the text field once.
-  EXPECT_TRUE(SimulateElementClick("text_1"));
+  SendElementClick("text_1");
   EXPECT_TRUE(test_listener_.form_control_element_clicked_called_);
   EXPECT_FALSE(test_listener_.was_focused_);
   EXPECT_TRUE(text_ == test_listener_.form_control_element_clicked_);
   test_listener_.ClearResults();
 
   // Click the text field again to test that was_focused_ is set correctly.
-  EXPECT_TRUE(SimulateElementClick("text_1"));
+  SendElementClick("text_1");
   EXPECT_TRUE(test_listener_.form_control_element_clicked_called_);
   EXPECT_TRUE(test_listener_.was_focused_);
   EXPECT_TRUE(text_ == test_listener_.form_control_element_clicked_);
   test_listener_.ClearResults();
 
   // Click the button, no notification should happen (this is not a text-input).
-  EXPECT_TRUE(SimulateElementClick("button"));
+  SendElementClick("button");
   EXPECT_FALSE(test_listener_.form_control_element_clicked_called_);
 }
 
@@ -131,96 +131,22 @@ TEST_F(PageClickTrackerTest, PageClickTrackerInputClicked) {
 // node is clicked.
 TEST_F(PageClickTrackerTest, PageClickTrackerTextAreaClicked) {
   // Click the textarea field once.
-  EXPECT_TRUE(SimulateElementClick("textarea_1"));
+  SendElementClick("textarea_1");
   EXPECT_TRUE(test_listener_.form_control_element_clicked_called_);
   EXPECT_FALSE(test_listener_.was_focused_);
   EXPECT_TRUE(textarea_ == test_listener_.form_control_element_clicked_);
   test_listener_.ClearResults();
 
   // Click the textarea field again to test that was_focused_ is set correctly.
-  EXPECT_TRUE(SimulateElementClick("textarea_1"));
+  SendElementClick("textarea_1");
   EXPECT_TRUE(test_listener_.form_control_element_clicked_called_);
   EXPECT_TRUE(test_listener_.was_focused_);
   EXPECT_TRUE(textarea_ == test_listener_.form_control_element_clicked_);
   test_listener_.ClearResults();
 
   // Click the button, no notification should happen (this is not a text-input).
-  EXPECT_TRUE(SimulateElementClick("button"));
+  SendElementClick("button");
   EXPECT_FALSE(test_listener_.form_control_element_clicked_called_);
-}
-
-TEST_F(PageClickTrackerTest, PageClickTrackerInputFocusLost) {
-  // Gain focus on the text field by using tab.
-  EXPECT_NE(text_, text_.document().focusedElement());
-  SendKeyPress(ui::VKEY_TAB);
-  EXPECT_EQ(text_, text_.document().focusedElement());
-  EXPECT_FALSE(test_listener_.form_control_element_lost_focus_called_);
-
-  // Click a button and ensure that the lost focus notification was sent,
-  // even though focus was gained without the mouse.
-  EXPECT_TRUE(SimulateElementClick("button"));
-  EXPECT_TRUE(test_listener_.form_control_element_lost_focus_called_);
-  test_listener_.ClearResults();
-
-  // Click a text field and test that no lost focus notifications are sent.
-  EXPECT_TRUE(SimulateElementClick("text_1"));
-  EXPECT_FALSE(test_listener_.form_control_element_lost_focus_called_);
-  test_listener_.ClearResults();
-
-  // Select another text field to test that the notification for the
-  // first text field losing focus is sent.
-  EXPECT_TRUE(SimulateElementClick("text_2"));
-  EXPECT_TRUE(test_listener_.form_control_element_lost_focus_called_);
-  test_listener_.ClearResults();
-
-  // Click the button, a notification should happen since a text field has
-  // lost focus.
-  EXPECT_TRUE(SimulateElementClick("button"));
-  EXPECT_TRUE(test_listener_.form_control_element_lost_focus_called_);
-  test_listener_.ClearResults();
-
-  // Click on a text field while the button has focus and ensure no lost focus
-  // notification is sent.
-  EXPECT_TRUE(SimulateElementClick("text_1"));
-  EXPECT_FALSE(test_listener_.form_control_element_lost_focus_called_);
-}
-
-TEST_F(PageClickTrackerTest, PageClickTrackerTextAreaFocusLost) {
-  // Gain focus on the textare field by using tab.
-  EXPECT_NE(textarea_, textarea_.document().focusedElement());
-  SendKeyPress(ui::VKEY_TAB);
-  SendKeyPress(ui::VKEY_TAB);
-  SendKeyPress(ui::VKEY_TAB);
-  EXPECT_EQ(textarea_, textarea_.document().focusedElement());
-  EXPECT_FALSE(test_listener_.form_control_element_lost_focus_called_);
-
-  // Click a button and ensure that the lost focus notification was sent,
-  // even though focus was gained without the mouse.
-  EXPECT_TRUE(SimulateElementClick("button"));
-  EXPECT_TRUE(test_listener_.form_control_element_lost_focus_called_);
-  test_listener_.ClearResults();
-
-  // Click a textarea field and test that no lost focus notifications are sent.
-  EXPECT_TRUE(SimulateElementClick("textarea_1"));
-  EXPECT_FALSE(test_listener_.form_control_element_lost_focus_called_);
-  test_listener_.ClearResults();
-
-  // Select another textarea field to test that the notification for the
-  // first textarea field losing focus is sent.
-  EXPECT_TRUE(SimulateElementClick("textarea_2"));
-  EXPECT_TRUE(test_listener_.form_control_element_lost_focus_called_);
-  test_listener_.ClearResults();
-
-  // Click the button, a notification should happen since a textarea field has
-  // lost focus.
-  EXPECT_TRUE(SimulateElementClick("button"));
-  EXPECT_TRUE(test_listener_.form_control_element_lost_focus_called_);
-  test_listener_.ClearResults();
-
-  // Click on a textarea field while the button has focus and ensure no lost
-  // focus notification is sent.
-  EXPECT_TRUE(SimulateElementClick("textarea_1"));
-  EXPECT_FALSE(test_listener_.form_control_element_lost_focus_called_);
 }
 
 }  // namespace autofill

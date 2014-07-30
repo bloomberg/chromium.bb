@@ -27,6 +27,7 @@ struct WebContextMenuData;
 }
 
 namespace gfx {
+class Point;
 class Size;
 }
 
@@ -79,6 +80,10 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // Returns true if the parameter node is a textfield, text area, a content
   // editable div, or has an ARIA role of textbox.
   virtual bool IsEditableNode(const blink::WebNode& node) const = 0;
+
+  // Returns true if a hit test for |point| returns a descendant of |node|.
+  virtual bool NodeContainsPoint(const blink::WebNode& node,
+                                 const gfx::Point& point) const = 0;
 
   // Returns true if we should display scrollbars for the given view size and
   // false if the scrollbars should be hidden.
