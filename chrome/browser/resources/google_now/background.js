@@ -48,7 +48,7 @@ var MINIMUM_POLLING_PERIOD_SECONDS = 5 * 60;  // 5 minutes
  * Maximal period for polling for Google Now Notifications cards to use when the
  * period from the server is not available.
  */
-var MAXIMUM_POLLING_PERIOD_SECONDS = 60 * 60;  // 1 hour
+var MAXIMUM_POLLING_PERIOD_SECONDS = 30 * 60;  // 30 minutes
 
 /**
  * Initial period for polling for Google Now optin notification after push
@@ -736,6 +736,17 @@ function requestNotificationCards() {
 }
 
 /**
+ * Determines if an immediate retry should occur based off of the given groups.
+ * The NOR group is expected most often and less latency sensitive, so we will
+ * simply wait MAXIMUM_POLLING_PERIOD_SECONDS before trying again.
+ * @param {Array.<string>} groupNames Names of groups that need to be refreshed.
+ * @return {boolean} Whether a retry should occur.
+ */
+function shouldScheduleRetryFromGroupList(groupNames) {
+  return (groupNames.length != 1) || (groupNames[0] !== 'NOR');
+}
+
+/**
  * Requests and shows notification cards.
  */
 function requestCards() {
@@ -751,7 +762,13 @@ function requestCards() {
         // The cards are requested only if there are no unsent dismissals.
         processPendingDismissals()
             .then(requestNotificationCards)
-            .catch(updateCardsAttempts.scheduleRetry);
+            .catch(function() {
+              return getGroupsToRequest().then(function(groupsToRequest) {
+                if (shouldScheduleRetryFromGroupList(groupsToRequest)) {
+                  updateCardsAttempts.scheduleRetry();
+                }
+              });
+            });
       }
     });
   });

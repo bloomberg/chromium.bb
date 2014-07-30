@@ -463,12 +463,12 @@ function registerPromiseAdapter() {
   Promise.prototype.then = function(onResolved, onRejected) {
     instrumentPromise(this);
     return this.__tracker.handleThen(onResolved, onRejected);
-  }
+  };
 
   Promise.prototype.catch = function(onRejected) {
     instrumentPromise(this);
     return this.__tracker.handleCatch(onRejected);
-  }
+  };
 
   /**
    * Promise Callback Tracker.
@@ -884,9 +884,8 @@ function buildAttemptManager(
    * @param {number} durationSeconds Number of seconds before firing the alarm.
    */
   function scheduleAlarm(durationSeconds) {
-    var randomizedRetryDuration =
-        Math.min(durationSeconds * (1 + 0.2 * Math.random()),
-                 maximumDelaySeconds);
+    durationSeconds = Math.min(durationSeconds, maximumDelaySeconds);
+    var randomizedRetryDuration = durationSeconds * (1 + 0.2 * Math.random());
 
     createAlarm(randomizedRetryDuration);
 

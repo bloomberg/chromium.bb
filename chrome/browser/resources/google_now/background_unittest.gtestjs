@@ -331,6 +331,25 @@ TEST_F(TEST_NAME, 'RequestNotificationGroupsFromServerFailure', function() {
 });
 
 /**
+ * shouldScheduleRetryFromGroupList Tests
+ */
+TEST_F(TEST_NAME, 'ShouldScheduleRetryEmptyGroupList', function() {
+  assertTrue(shouldScheduleRetryFromGroupList([]));
+});
+
+TEST_F(TEST_NAME, 'ShouldScheduleRetryNorOnlyGroupList', function() {
+  assertFalse(shouldScheduleRetryFromGroupList(['NOR']));
+});
+
+TEST_F(TEST_NAME, 'ShouldScheduleRetryNotOnlyGroupList', function() {
+  assertTrue(shouldScheduleRetryFromGroupList(['NOT']));
+});
+
+TEST_F(TEST_NAME, 'ShouldScheduleRetryMultipleGroupsList', function() {
+  assertTrue(shouldScheduleRetryFromGroupList(['NOR', 'NOT']));
+});
+
+/**
  * requestAndUpdateOptIn Tests
  */
 TEST_F(TEST_NAME, 'RequestAndUpdateOptInOptedIn', function() {

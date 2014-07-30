@@ -946,7 +946,8 @@ TEST_F('GoogleNowUtilityUnitTest', 'AttemptManagerGrowthLimit', function() {
   // Call scheduleRetry, which schedules a retry.
   // Current retry time is greater than 1/2 of the maximum delay.
   // Expectations.
-  var expectedRetryDelaySeconds = testMaximumDelaySeconds;
+  var expectedRetryDelaySeconds =
+      testMaximumDelaySeconds * (1 + testRandomValue * 0.2);
   expectChromeLocalStorageGet(
       this,
       createTestAttemptStorageEntryRequest(),
