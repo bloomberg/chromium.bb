@@ -69,11 +69,7 @@ public:
     // AnimationPlayers which have animations targeting this element.
     AnimationPlayerCountedSet& players() { return m_players; }
 
-#if ENABLE(OILPAN)
-    bool isEmpty() const { return m_defaultStack.isEmpty() && m_cssAnimations.isEmpty(); }
-#else
-    bool isEmpty() const { return m_defaultStack.isEmpty() && m_cssAnimations.isEmpty() && m_animations.isEmpty(); }
-#endif
+    bool isEmpty() const { return m_defaultStack.isEmpty() && m_cssAnimations.isEmpty() && m_players.isEmpty(); }
 
     void cancelAnimationOnCompositor();
 
