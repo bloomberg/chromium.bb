@@ -57,18 +57,20 @@ def Mean(values):
   return TruncatedMean(values, 0.0)
 
 
-def StandardDeviation(values):
-  """Calculates the sample standard deviation of the given list of values."""
+def Variance(values):
+  """Calculates the sample variance."""
   if len(values) == 1:
     return 0.0
-
   mean = Mean(values)
   differences_from_mean = [float(x) - mean for x in values]
   squared_differences = [float(x * x) for x in differences_from_mean]
   variance = sum(squared_differences) / (len(values) - 1)
-  std_dev = math.sqrt(variance)
+  return variance
 
-  return std_dev
+
+def StandardDeviation(values):
+  """Calculates the sample standard deviation of the given list of values."""
+  return math.sqrt(Variance(values))
 
 
 def RelativeChange(before, after):

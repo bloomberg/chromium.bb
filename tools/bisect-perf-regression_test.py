@@ -31,36 +31,65 @@ class BisectPerfRegressionTest(unittest.TestCase):
     """Cleans up the test environment after each test method."""
     pass
 
-  def testConfidenceScore(self):
+  def testConfidenceScoreHigh(self):
     """Tests the confidence calculation."""
-    bad_values = [[0, 1], [1, 2]]
-    good_values = [[6, 7], [7, 8]]
-    # Closest means are mean(1, 2) and mean(6, 7).
-    distance = 6.5 - 1.5
-    # Standard deviation of [n-1, n, n, n+1] is 0.8165.
-    stddev_sum = 0.8165 + 0.8165
-    # Expected confidence is an int in the range [0, 100].
-    expected_confidence = min(100, int(100 * distance / float(stddev_sum)))
-    self.assertEqual(
-        expected_confidence,
-        bisect_perf_module.ConfidenceScore(bad_values, good_values))
+    bad_values = [[0, 1, 1], [1, 2, 2]]
+    good_values = [[1, 2, 2], [3, 3, 4]]
+    confidence = bisect_perf_module.ConfidenceScore(bad_values, good_values)
+    self.assertEqual(95.0, confidence)
 
-  def testConfidenceScoreZeroConfidence(self):
+  def testConfidenceScoreNotSoHigh(self):
+    """Tests the confidence calculation."""
+    bad_values = [[0, 1, 1], [1, 2, 2]]
+    good_values = [[1, 1, 1], [3, 3, 4]]
+    # The good and bad groups are closer together than in the above test,
+    # so the confidence that they're different is a little lower.
+    confidence = bisect_perf_module.ConfidenceScore(bad_values, good_values)
+    self.assertEqual(80.0, confidence)
+
+  def testConfidenceScoreZero(self):
     """Tests the confidence calculation when it's expected to be 0."""
-    bad_values = [[0, 1], [1, 2], [4, 5], [0, 2]]
-    good_values = [[4, 5], [6, 7], [7, 8]]
-    # Both groups have value lists with means of 4.5, which means distance
-    # between groups is zero, and thus confidence is zero.
-    self.assertEqual(
-        0, bisect_perf_module.ConfidenceScore(bad_values, good_values))
+    bad_values = [[4, 5], [7, 6], [8, 7]]
+    good_values = [[8, 7], [6, 7], [5, 4]]
+    # The good and bad sets contain the same values, so the confidence that
+    # they're different should be zero.
+    confidence = bisect_perf_module.ConfidenceScore(bad_values, good_values)
+    self.assertEqual(0.0, confidence)
 
-  def testConfidenceScoreMaxConfidence(self):
-    """Tests the confidence calculation when it's expected to be 100."""
+  def testConfidenceScoreVeryHigh(self):
+    """Tests the confidence calculation when it's expected to be high."""
     bad_values = [[1, 1], [1, 1]]
     good_values = [[1.2, 1.2], [1.2, 1.2]]
-    # Standard deviation in both groups is zero, so confidence is 100.
-    self.assertEqual(
-        100, bisect_perf_module.ConfidenceScore(bad_values, good_values))
+    confidence = bisect_perf_module.ConfidenceScore(bad_values, good_values)
+    self.assertEqual(99.9, confidence)
+
+  def testConfidenceScoreImbalance(self):
+    """Tests the confidence calculation one set of numbers is small."""
+    bad_values = [[1.1, 1.2], [1.1, 1.2], [1.0, 1.3], [1.2, 1.3]]
+    good_values = [[1.4]]
+    confidence = bisect_perf_module.ConfidenceScore(bad_values, good_values)
+    self.assertEqual(80.0, confidence)
+
+  def testConfidenceScoreImbalance(self):
+    """Tests the confidence calculation one set of numbers is empty."""
+    bad_values = [[1.1, 1.2], [1.1, 1.2], [1.0, 1.3], [1.2, 1.3]]
+    good_values = []
+    confidence = bisect_perf_module.ConfidenceScore(bad_values, good_values)
+    self.assertEqual(0.0, confidence)
+
+  def testConfidenceScoreFunctionalTestResultsInconsistent(self):
+    """Tests the confidence calculation when the numbers are just 0 and 1."""
+    bad_values = [[1], [1], [0], [1], [1], [1], [0], [1]]
+    good_values = [[0], [0], [1], [0], [1], [0]]
+    confidence = bisect_perf_module.ConfidenceScore(bad_values, good_values)
+    self.assertEqual(80.0, confidence)
+
+  def testConfidenceScoreFunctionalTestResultsConsistent(self):
+    """Tests the confidence calculation when the numbers are 0 and 1."""
+    bad_values = [[1], [1], [1], [1], [1], [1], [1], [1]]
+    good_values = [[0], [0], [0], [0], [0], [0]]
+    confidence = bisect_perf_module.ConfidenceScore(bad_values, good_values)
+    self.assertEqual(99.9, confidence)
 
   def testParseDEPSStringManually(self):
     """Tests DEPS parsing."""

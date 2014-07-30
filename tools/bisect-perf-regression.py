@@ -55,6 +55,7 @@ from auto_bisect import bisect_utils
 from auto_bisect import math_utils
 from auto_bisect import post_perf_builder_job as bisect_builder
 from auto_bisect import source_control as source_control_module
+from auto_bisect import ttest
 from telemetry.util import cloud_storage
 
 # The additional repositories that might need to be bisected.
@@ -260,44 +261,31 @@ def _AddAdditionalDepotInfo(depot_info):
 
 
 def ConfidenceScore(good_results_lists, bad_results_lists):
-  """Calculates a confidence percentage.
+  """Calculates a confidence score.
 
-  This is calculated based on how distinct the "good" and "bad" values are,
-  and how noisy the results are. More precisely, the confidence is the quotient
-  of the difference between the closest values across the good and bad groups
-  and the sum of the standard deviations of the good and bad groups.
+  This score is a percentage which represents our degree of confidence in the
+  proposition that the good results and bad results are distinct groups, and
+  their differences aren't due to chance alone.
 
-  TODO(qyearsley): Replace this confidence function with a function that
-      uses a Student's t-test. The confidence would be (1 - p-value), where
-      p-value is the probability of obtaining the given a set of good and bad
-      values just by chance.
 
   Args:
     good_results_lists: A list of lists of "good" result numbers.
     bad_results_lists: A list of lists of "bad" result numbers.
 
   Returns:
-    A number between in the range [0, 100].
+    A number in the range [0, 100].
   """
-  # Get the distance between the two groups.
-  means_good = map(math_utils.Mean, good_results_lists)
-  means_bad = map(math_utils.Mean, bad_results_lists)
-  bounds_good = (min(means_good), max(means_good))
-  bounds_bad = (min(means_bad), max(means_bad))
-  dist_between_groups = min(
-      math.fabs(bounds_bad[1] - bounds_good[0]),
-      math.fabs(bounds_bad[0] - bounds_good[1]))
+  if not good_results_lists or not bad_results_lists:
+    return 0.0
 
-  # Get the sum of the standard deviations of the two groups.
-  good_results_flattened = sum(good_results_lists, [])
-  bad_results_flattened = sum(bad_results_lists, [])
-  stddev_good = math_utils.StandardDeviation(good_results_flattened)
-  stddev_bad = math_utils.StandardDeviation(bad_results_flattened)
-  stddev_sum = stddev_good + stddev_bad
+  # Flatten the lists of results lists.
+  sample1 = sum(good_results_lists, [])
+  sample2 = sum(bad_results_lists, [])
 
-  confidence = dist_between_groups / (max(0.0001, stddev_sum))
-  confidence = int(min(1.0, max(confidence, 0.0)) * 100.0)
-  return confidence
+  # The p-value is approximately the probability of obtaining the given set
+  # of good and bad values just by chance.
+  _, _, p_value = ttest.WelchsTTest(sample1, sample2)
+  return 100.0 * (1.0 - p_value)
 
 
 def GetSHA1HexDigest(contents):
