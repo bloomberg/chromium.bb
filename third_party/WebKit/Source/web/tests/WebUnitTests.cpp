@@ -31,11 +31,13 @@
 #include "config.h"
 #include "web/tests/WebUnitTests.h"
 
+#include "platform/heap/Handle.h"
 #include <base/bind.h>
 #include <base/message_loop/message_loop.h>
 #include <base/run_loop.h>
 #include <base/test/launcher/unit_test_launcher.h>
 #include <base/test/test_suite.h>
+#include <v8.h>
 
 namespace blink {
 
@@ -45,7 +47,14 @@ int runHelper(TestSuite* testSuite, void (*preTestHook)(void), void (*postTestHo
 {
     preTestHook();
     int result = testSuite->Run();
+
+    // Collect garbage in order to release mock objects referred from v8 or
+    // Oilpan heap. Otherwise false mock leaks will be reported.
+    v8::Isolate::GetCurrent()->RequestGarbageCollectionForTesting(v8::Isolate::kFullGarbageCollection);
+    blink::Heap::collectAllGarbage();
+
     postTestHook();
+
     return result;
 }
 
