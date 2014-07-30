@@ -409,81 +409,81 @@ class CHROME_DBUS_EXPORT Property : public PropertyBase {
 template <> Property<uint8>::Property();
 template <> bool Property<uint8>::PopValueFromReader(MessageReader* reader);
 template <> void Property<uint8>::AppendSetValueToWriter(MessageWriter* writer);
-extern template class CHROME_DBUS_EXPORT Property<uint8>;
+extern template class Property<uint8>;
 
 template <> Property<bool>::Property();
 template <> bool Property<bool>::PopValueFromReader(MessageReader* reader);
 template <> void Property<bool>::AppendSetValueToWriter(MessageWriter* writer);
-extern template class CHROME_DBUS_EXPORT Property<bool>;
+extern template class Property<bool>;
 
 template <> Property<int16>::Property();
 template <> bool Property<int16>::PopValueFromReader(MessageReader* reader);
 template <> void Property<int16>::AppendSetValueToWriter(MessageWriter* writer);
-extern template class CHROME_DBUS_EXPORT Property<int16>;
+extern template class Property<int16>;
 
 template <> Property<uint16>::Property();
 template <> bool Property<uint16>::PopValueFromReader(MessageReader* reader);
 template <> void Property<uint16>::AppendSetValueToWriter(
   MessageWriter* writer);
-extern template class CHROME_DBUS_EXPORT Property<uint16>;
+extern template class Property<uint16>;
 
 template <> Property<int32>::Property();
 template <> bool Property<int32>::PopValueFromReader(MessageReader* reader);
 template <> void Property<int32>::AppendSetValueToWriter(MessageWriter* writer);
-extern template class CHROME_DBUS_EXPORT Property<int32>;
+extern template class Property<int32>;
 
 template <> Property<uint32>::Property();
 template <> bool Property<uint32>::PopValueFromReader(MessageReader* reader);
 template <> void Property<uint32>::AppendSetValueToWriter(
   MessageWriter* writer);
-extern template class CHROME_DBUS_EXPORT Property<uint32>;
+extern template class Property<uint32>;
 
 template <> Property<int64>::Property();
 template <> bool Property<int64>::PopValueFromReader(MessageReader* reader);
 template <> void Property<int64>::AppendSetValueToWriter(MessageWriter* writer);
-extern template class CHROME_DBUS_EXPORT Property<int64>;
+extern template class Property<int64>;
 
 template <> Property<uint64>::Property();
 template <> bool Property<uint64>::PopValueFromReader(MessageReader* reader);
 template <> void Property<uint64>::AppendSetValueToWriter(
   MessageWriter* writer);
-extern template class CHROME_DBUS_EXPORT Property<uint64>;
+extern template class Property<uint64>;
 
 template <> Property<double>::Property();
 template <> bool Property<double>::PopValueFromReader(MessageReader* reader);
 template <> void Property<double>::AppendSetValueToWriter(
   MessageWriter* writer);
-extern template class CHROME_DBUS_EXPORT Property<double>;
+extern template class Property<double>;
 
 template <> bool Property<std::string>::PopValueFromReader(
   MessageReader* reader);
 template <> void Property<std::string>::AppendSetValueToWriter(
   MessageWriter* writer);
-extern template class CHROME_DBUS_EXPORT Property<std::string>;
+extern template class Property<std::string>;
 
 template <> bool Property<ObjectPath>::PopValueFromReader(
   MessageReader* reader);
 template <> void Property<ObjectPath>::AppendSetValueToWriter(
   MessageWriter* writer);
-extern template class CHROME_DBUS_EXPORT Property<ObjectPath>;
+extern template class Property<ObjectPath>;
 
 template <> bool Property<std::vector<std::string> >::PopValueFromReader(
   MessageReader* reader);
 template <> void Property<std::vector<std::string> >::AppendSetValueToWriter(
   MessageWriter* writer);
-extern template class CHROME_DBUS_EXPORT Property<std::vector<std::string> >;
+extern template class Property<std::vector<std::string> >;
 
 template <> bool Property<std::vector<ObjectPath> >::PopValueFromReader(
   MessageReader* reader);
 template <> void Property<std::vector<ObjectPath> >::AppendSetValueToWriter(
   MessageWriter* writer);
-extern template class CHROME_DBUS_EXPORT Property<std::vector<ObjectPath> >;
+extern template class Property<std::vector<ObjectPath> >;
 
 template <> bool Property<std::vector<uint8> >::PopValueFromReader(
   MessageReader* reader);
 template <> void Property<std::vector<uint8> >::AppendSetValueToWriter(
   MessageWriter* writer);
-extern template class CHROME_DBUS_EXPORT Property<std::vector<uint8> >;
+extern template class Property<std::vector<uint8> >;
 
 }  // namespace dbus
 
