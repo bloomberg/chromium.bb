@@ -1371,6 +1371,10 @@ def _CreateParser():
   group.add_remote_option('--metadata_dump', default=None,
                           help=('Path to a json dumped metadata file. This '
                                 'will be used as the initial metadata.'))
+  group.add_remote_option('--master-build-id', default=None, type=int,
+                          api=constants.REEXEC_API_MASTER_BUILD_ID,
+                          help=('cidb build id of the master build to this '
+                                'slave build.'))
   group.add_remote_option('--mock-tree-status', dest='mock_tree_status',
                           default=None, action='store',
                           help=('Override the tree status value that would be '

@@ -54,8 +54,11 @@ FINAL_STATUS_FAILED = 'failed'
 # Major is used for tracking heavy API breakage- for example, no longer
 # supporting the --resume option.
 REEXEC_API_MAJOR = 0
-REEXEC_API_MINOR = 2
+REEXEC_API_MINOR = 3
 REEXEC_API_VERSION = '%i.%i' % (REEXEC_API_MAJOR, REEXEC_API_MINOR)
+
+# Minor version 3 is the first to support --master-build-id
+REEXEC_API_MASTER_BUILD_ID = 3
 
 # We rely on the (waterfall, builder name, build number) to uniquely identify
 # a build. However, future migrations or state wipes of the buildbot master may
