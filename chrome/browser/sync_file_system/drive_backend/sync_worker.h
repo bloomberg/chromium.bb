@@ -135,7 +135,8 @@ class SyncWorker : public SyncWorkerInterface,
                            const SyncStatusCallback& callback,
                            SyncStatusCode status);
 
-  void MaybeStartFetchChanges();
+  // Returns true if a FetchChanges task is scheduled.
+  bool MaybeStartFetchChanges();
   void DidResolveConflict(SyncStatusCode status);
   void DidFetchChanges(SyncStatusCode status);
 
@@ -161,6 +162,7 @@ class SyncWorker : public SyncWorkerInterface,
   base::TimeTicks time_to_check_changes_;
 
   bool sync_enabled_;
+  base::Closure call_on_idle_callback_;
 
   scoped_ptr<SyncTaskManager> task_manager_;
 

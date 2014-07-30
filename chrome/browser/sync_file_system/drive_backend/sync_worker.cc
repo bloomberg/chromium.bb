@@ -269,7 +269,14 @@ void SyncWorker::MaybeScheduleNextTask() {
   // TODO(tzik): Add an interface to get the number of dirty trackers to
   // MetadataDatabase.
 
-  MaybeStartFetchChanges();
+  if (MaybeStartFetchChanges())
+    return;
+
+  if (!call_on_idle_callback_.is_null()) {
+    base::Closure callback = call_on_idle_callback_;
+    call_on_idle_callback_.Reset();
+    callback.Run();
+  }
 }
 
 void SyncWorker::NotifyLastOperationStatus(
@@ -553,30 +560,30 @@ void SyncWorker::DidApplyLocalChange(LocalToRemoteSyncer* syncer,
   callback.Run(status);
 }
 
-void SyncWorker::MaybeStartFetchChanges() {
+bool SyncWorker::MaybeStartFetchChanges() {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   if (GetCurrentState() == REMOTE_SERVICE_DISABLED)
-    return;
+    return false;
 
   if (!GetMetadataDatabase())
-    return;
+    return false;
 
   if (listing_remote_changes_)
-    return;
+    return false;
 
   base::TimeTicks now = base::TimeTicks::Now();
   if (!should_check_remote_change_ && now < time_to_check_changes_) {
     if (!GetMetadataDatabase()->HasDirtyTracker() &&
         should_check_conflict_) {
       should_check_conflict_ = false;
-      task_manager_->ScheduleSyncTaskIfIdle(
+      return task_manager_->ScheduleSyncTaskIfIdle(
           FROM_HERE,
           scoped_ptr<SyncTask>(new ConflictResolver(context_.get())),
           base::Bind(&SyncWorker::DidResolveConflict,
                      weak_ptr_factory_.GetWeakPtr()));
     }
-    return;
+    return false;
   }
 
   if (task_manager_->ScheduleSyncTaskIfIdle(
@@ -588,7 +595,9 @@ void SyncWorker::MaybeStartFetchChanges() {
     listing_remote_changes_ = true;
     time_to_check_changes_ =
         now + base::TimeDelta::FromSeconds(kListChangesRetryDelaySeconds);
+    return true;
   }
+  return false;
 }
 
 void SyncWorker::DidResolveConflict(SyncStatusCode status) {
