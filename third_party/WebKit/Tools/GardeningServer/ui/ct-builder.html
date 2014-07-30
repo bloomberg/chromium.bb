@@ -5,11 +5,10 @@ found in the LICENSE file.
 -->
 
 <!--
-Styled link to a builder composed of the version and architecture, or the
-builder name if the builder is unknown. If an array is passed to |steps|, the
+Styled link to a builder. If an array is passed to |steps|, the
 link will show the builder name and architecture followed by the steps instead.
 -->
-<polymer-element name="ct-builder" attributes="builder steps">
+<polymer-element name="ct-builder" attributes="builder masterUrl steps">
   <template>
     <style>
       a {
@@ -40,6 +39,8 @@ link will show the builder name and architecture followed by the steps instead.
   </template>
   <script>
     Polymer({
+      builder: '',
+      masterUrl: '',
       steps: [],
 
       stepsChanged: function() {
@@ -47,9 +48,9 @@ link will show the builder name and architecture followed by the steps instead.
       },
 
       builderURL: function() {
-        // FIXME: Pass in the waterfall URL instead so this can work with different waterfalls.
-        var waterfall = 'http://build.chromium.org/p/chromium.webkit';
-        return waterfall + '/waterfall?' + Object.toQueryString({
+        // FIXME: This should move a model class.
+        // FIXME: Don't link to the waterfall, link to the first failing build.
+        return this.masterUrl + '/waterfall?' + Object.toQueryString({
           builder: this.builder,
         });
       },
