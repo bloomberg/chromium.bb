@@ -54,22 +54,11 @@ BluetoothRemoteGattServiceChromeOS::~BluetoothRemoteGattServiceChromeOS() {
   characteristics_.clear();
   for (CharacteristicMap::iterator iter = characteristics.begin();
        iter != characteristics.end(); ++iter) {
-    FOR_EACH_OBSERVER(device::BluetoothGattService::Observer, observers_,
-                      GattCharacteristicRemoved(this, iter->second));
+    DCHECK(adapter_);
+    adapter_->NotifyGattCharacteristicRemoved(iter->second);
+
     delete iter->second;
   }
-}
-
-void BluetoothRemoteGattServiceChromeOS::AddObserver(
-    device::BluetoothGattService::Observer* observer) {
-  DCHECK(observer);
-  observers_.AddObserver(observer);
-}
-
-void BluetoothRemoteGattServiceChromeOS::RemoveObserver(
-    device::BluetoothGattService::Observer* observer) {
-  DCHECK(observer);
-  observers_.RemoveObserver(observer);
 }
 
 std::string BluetoothRemoteGattServiceChromeOS::GetIdentifier() const {
@@ -152,7 +141,7 @@ void BluetoothRemoteGattServiceChromeOS::Unregister(
   error_callback.Run();
 }
 
-scoped_refptr<device::BluetoothAdapter>
+BluetoothAdapterChromeOS*
 BluetoothRemoteGattServiceChromeOS::GetAdapter() const {
   return adapter_;
 }
@@ -164,18 +153,16 @@ void BluetoothRemoteGattServiceChromeOS::NotifyServiceChanged() {
   if (!discovery_complete_)
     return;
 
-  FOR_EACH_OBSERVER(device::BluetoothGattService::Observer, observers_,
-                    GattServiceChanged(this));
+  DCHECK(adapter_);
+  adapter_->NotifyGattServiceChanged(this);
 }
 
 void BluetoothRemoteGattServiceChromeOS::NotifyCharacteristicValueChanged(
     BluetoothRemoteGattCharacteristicChromeOS* characteristic,
     const std::vector<uint8>& value) {
   DCHECK(characteristic->GetService() == this);
-  FOR_EACH_OBSERVER(
-      device::BluetoothGattService::Observer,
-      observers_,
-      GattCharacteristicValueChanged(this, characteristic, value));
+  DCHECK(adapter_);
+  adapter_->NotifyGattCharacteristicValueChanged(characteristic, value);
 }
 
 void BluetoothRemoteGattServiceChromeOS::NotifyDescriptorAddedOrRemoved(
@@ -184,13 +171,14 @@ void BluetoothRemoteGattServiceChromeOS::NotifyDescriptorAddedOrRemoved(
     bool added) {
   DCHECK(characteristic->GetService() == this);
   DCHECK(descriptor->GetCharacteristic() == characteristic);
+  DCHECK(adapter_);
+
   if (added) {
-    FOR_EACH_OBSERVER(device::BluetoothGattService::Observer, observers_,
-                      GattDescriptorAdded(characteristic, descriptor));
+    adapter_->NotifyGattDescriptorAdded(descriptor);
     return;
   }
-  FOR_EACH_OBSERVER(device::BluetoothGattService::Observer, observers_,
-                    GattDescriptorRemoved(characteristic, descriptor));
+
+  adapter_->NotifyGattDescriptorRemoved(descriptor);
 }
 
 void BluetoothRemoteGattServiceChromeOS::NotifyDescriptorValueChanged(
@@ -199,9 +187,8 @@ void BluetoothRemoteGattServiceChromeOS::NotifyDescriptorValueChanged(
     const std::vector<uint8>& value) {
   DCHECK(characteristic->GetService() == this);
   DCHECK(descriptor->GetCharacteristic() == characteristic);
-  FOR_EACH_OBSERVER(
-      device::BluetoothGattService::Observer, observers_,
-      GattDescriptorValueChanged(characteristic, descriptor, value));
+  DCHECK(adapter_);
+  adapter_->NotifyGattDescriptorValueChanged(descriptor, value);
 }
 
 void BluetoothRemoteGattServiceChromeOS::GattServicePropertyChanged(
@@ -228,9 +215,8 @@ void BluetoothRemoteGattServiceChromeOS::GattServicePropertyChanged(
   VLOG(1) << "All characteristics were discovered for service: "
           << object_path.value();
   discovery_complete_ = true;
-  FOR_EACH_OBSERVER(device::BluetoothGattService::Observer,
-                    observers_,
-                    GattDiscoveryCompleteForService(this));
+  DCHECK(adapter_);
+  adapter_->NotifyGattDiscoveryComplete(this);
 }
 
 void BluetoothRemoteGattServiceChromeOS::GattCharacteristicAdded(
@@ -259,8 +245,8 @@ void BluetoothRemoteGattServiceChromeOS::GattCharacteristicAdded(
   DCHECK(characteristic->GetIdentifier() == object_path.value());
   DCHECK(characteristic->GetUUID().IsValid());
 
-  FOR_EACH_OBSERVER(device::BluetoothGattService::Observer, observers_,
-                    GattCharacteristicAdded(this, characteristic));
+  DCHECK(adapter_);
+  adapter_->NotifyGattCharacteristicAdded(characteristic);
 }
 
 void BluetoothRemoteGattServiceChromeOS::GattCharacteristicRemoved(
@@ -278,8 +264,8 @@ void BluetoothRemoteGattServiceChromeOS::GattCharacteristicRemoved(
   DCHECK(characteristic->object_path() == object_path);
   characteristics_.erase(iter);
 
-  FOR_EACH_OBSERVER(device::BluetoothGattService::Observer, observers_,
-                    GattCharacteristicRemoved(this, characteristic));
+  DCHECK(adapter_);
+  adapter_->NotifyGattCharacteristicRemoved(characteristic);
 
   delete characteristic;
 }

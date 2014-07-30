@@ -291,8 +291,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetService) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
 
-  event_router()->DeviceAdded(mock_adapter_, device0_.get());
-  event_router()->GattServiceAdded(device0_.get(), service0_.get());
+  event_router()->GattServiceAdded(
+      mock_adapter_, device0_.get(), service0_.get());
 
   EXPECT_CALL(*mock_adapter_, GetDevice(_))
       .Times(3)
@@ -314,8 +314,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetService) {
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 
-  event_router()->GattServiceRemoved(device0_.get(), service0_.get());
-  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
+  event_router()->GattServiceRemoved(
+      mock_adapter_, device0_.get(), service0_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ServiceEvents) {
@@ -327,29 +327,31 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ServiceEvents) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("bluetooth_low_energy/service_events")));
 
-  // Cause events to be sent to the extension.
-  event_router()->DeviceAdded(mock_adapter_, device0_.get());
-
   // These will create the identifier mappings.
-  event_router()->GattServiceAdded(device0_.get(), service0_.get());
-  event_router()->GattServiceAdded(device0_.get(), service1_.get());
+  event_router()->GattServiceAdded(
+      mock_adapter_, device0_.get(), service0_.get());
+  event_router()->GattServiceAdded(
+      mock_adapter_, device0_.get(), service1_.get());
 
   // These will send the onServiceAdded event to apps.
-  event_router()->GattDiscoveryCompleteForService(service0_.get());
-  event_router()->GattDiscoveryCompleteForService(service1_.get());
+  event_router()->GattDiscoveryCompleteForService(mock_adapter_,
+                                                  service0_.get());
+  event_router()->GattDiscoveryCompleteForService(mock_adapter_,
+                                                  service1_.get());
 
   // This will send the onServiceChanged event to apps.
-  event_router()->GattServiceChanged(service1_.get());
+  event_router()->GattServiceChanged(mock_adapter_, service1_.get());
 
   // This will send the  onServiceRemoved event to apps.
-  event_router()->GattServiceRemoved(device0_.get(), service0_.get());
+  event_router()->GattServiceRemoved(
+      mock_adapter_, device0_.get(), service0_.get());
 
   EXPECT_TRUE(listener.WaitUntilSatisfied());
   listener.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-  event_router()->GattServiceRemoved(device0_.get(), service1_.get());
-  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
+  event_router()->GattServiceRemoved(
+      mock_adapter_, device0_.get(), service1_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedService) {
@@ -368,9 +370,10 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedService) {
       .Times(1)
       .WillOnce(Return(service0_.get()));
 
-  event_router()->DeviceAdded(mock_adapter_, device0_.get());
-  event_router()->GattServiceAdded(device0_.get(), service0_.get());
-  event_router()->GattDiscoveryCompleteForService(service0_.get());
+  event_router()->GattServiceAdded(
+      mock_adapter_, device0_.get(), service0_.get());
+  event_router()->GattDiscoveryCompleteForService(mock_adapter_,
+                                                  service0_.get());
 
   ExtensionTestMessageListener get_service_success_listener("getServiceSuccess",
                                                             true);
@@ -382,7 +385,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedService) {
   EXPECT_CALL(*mock_adapter_, GetDevice(_)).Times(0);
   EXPECT_CALL(*device0_, GetGattService(kTestServiceId0)).Times(0);
 
-  event_router()->GattServiceRemoved(device0_.get(), service0_.get());
+  event_router()->GattServiceRemoved(
+      mock_adapter_, device0_.get(), service0_.get());
 
   ExtensionTestMessageListener get_service_fail_listener("getServiceFail",
                                                          true);
@@ -393,7 +397,6 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedService) {
   get_service_fail_listener.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetIncludedServices) {
@@ -410,8 +413,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetIncludedServices) {
   // Set up for the rest of the calls before replying. Included services can be
   // returned even if there is no instance ID mapping for them yet, so no need
   // to call GattServiceAdded for |service1_| here.
-  event_router()->DeviceAdded(mock_adapter_, device0_.get());
-  event_router()->GattServiceAdded(device0_.get(), service0_.get());
+  event_router()->GattServiceAdded(
+      mock_adapter_, device0_.get(), service0_.get());
 
   std::vector<BluetoothGattService*> includes;
   includes.push_back(service1_.get());
@@ -434,8 +437,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetIncludedServices) {
   listener.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-  event_router()->GattServiceRemoved(device0_.get(), service0_.get());
-  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
+  event_router()->GattServiceRemoved(
+      mock_adapter_, device0_.get(), service0_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetCharacteristics) {
@@ -446,8 +449,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetCharacteristics) {
   characteristics.push_back(chrc0_.get());
   characteristics.push_back(chrc1_.get());
 
-  event_router()->DeviceAdded(mock_adapter_, device0_.get());
-  event_router()->GattServiceAdded(device0_.get(), service0_.get());
+  event_router()->GattServiceAdded(
+      mock_adapter_, device0_.get(), service0_.get());
 
   EXPECT_CALL(*mock_adapter_, GetDevice(_)).Times(3).WillRepeatedly(
       Return(device0_.get()));
@@ -468,17 +471,17 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetCharacteristics) {
   listener.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-  event_router()->GattServiceRemoved(device0_.get(), service0_.get());
-  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
+  event_router()->GattServiceRemoved(
+      mock_adapter_, device0_.get(), service0_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetCharacteristic) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
 
-  event_router()->DeviceAdded(mock_adapter_, device0_.get());
-  event_router()->GattServiceAdded(device0_.get(), service0_.get());
-  event_router()->GattCharacteristicAdded(service0_.get(), chrc0_.get());
+  event_router()->GattServiceAdded(
+      mock_adapter_, device0_.get(), service0_.get());
+  event_router()->GattCharacteristicAdded(mock_adapter_, chrc0_.get());
 
   EXPECT_CALL(*mock_adapter_, GetDevice(_))
       .Times(4)
@@ -505,18 +508,18 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetCharacteristic) {
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 
-  event_router()->GattCharacteristicRemoved(service0_.get(), chrc0_.get());
-  event_router()->GattServiceRemoved(device0_.get(), service0_.get());
-  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
+  event_router()->GattCharacteristicRemoved(mock_adapter_, chrc0_.get());
+  event_router()->GattServiceRemoved(
+      mock_adapter_, device0_.get(), service0_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, CharacteristicProperties) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
 
-  event_router()->DeviceAdded(mock_adapter_, device0_.get());
-  event_router()->GattServiceAdded(device0_.get(), service0_.get());
-  event_router()->GattCharacteristicAdded(service0_.get(), chrc0_.get());
+  event_router()->GattServiceAdded(
+      mock_adapter_, device0_.get(), service0_.get());
+  event_router()->GattCharacteristicAdded(mock_adapter_, chrc0_.get());
 
   EXPECT_CALL(*mock_adapter_, GetDevice(_))
       .Times(12)
@@ -565,9 +568,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, CharacteristicProperties) {
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 
-  event_router()->GattCharacteristicRemoved(service0_.get(), chrc0_.get());
-  event_router()->GattServiceRemoved(device0_.get(), service0_.get());
-  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
+  event_router()->GattCharacteristicRemoved(mock_adapter_, chrc0_.get());
+  event_router()->GattServiceRemoved(
+      mock_adapter_, device0_.get(), service0_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedCharacteristic) {
@@ -584,9 +587,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedCharacteristic) {
       .Times(1)
       .WillOnce(Return(chrc0_.get()));
 
-  event_router()->DeviceAdded(mock_adapter_, device0_.get());
-  event_router()->GattServiceAdded(device0_.get(), service0_.get());
-  event_router()->GattCharacteristicAdded(service0_.get(), chrc0_.get());
+  event_router()->GattServiceAdded(
+      mock_adapter_, device0_.get(), service0_.get());
+  event_router()->GattCharacteristicAdded(mock_adapter_, chrc0_.get());
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "bluetooth_low_energy/get_removed_characteristic")));
@@ -601,7 +604,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedCharacteristic) {
   EXPECT_CALL(*device0_, GetGattService(_)).Times(0);
   EXPECT_CALL(*service0_, GetCharacteristic(_)).Times(0);
 
-  event_router()->GattCharacteristicRemoved(service0_.get(), chrc0_.get());
+  event_router()->GattCharacteristicRemoved(mock_adapter_, chrc0_.get());
 
   listener.Reply("go");
   listener.Reset();
@@ -610,8 +613,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedCharacteristic) {
   listener.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-  event_router()->GattServiceRemoved(device0_.get(), service0_.get());
-  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
+  event_router()->GattServiceRemoved(
+      mock_adapter_, device0_.get(), service0_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, CharacteristicValueChanged) {
@@ -619,11 +622,12 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, CharacteristicValueChanged) {
   catcher.RestrictToProfile(browser()->profile());
 
   // Cause events to be sent to the extension.
-  event_router()->DeviceAdded(mock_adapter_, device0_.get());
-  event_router()->GattServiceAdded(device0_.get(), service0_.get());
-  event_router()->GattServiceAdded(device0_.get(), service1_.get());
-  event_router()->GattCharacteristicAdded(service0_.get(), chrc0_.get());
-  event_router()->GattCharacteristicAdded(service1_.get(), chrc2_.get());
+  event_router()->GattServiceAdded(
+      mock_adapter_, device0_.get(), service0_.get());
+  event_router()->GattServiceAdded(
+      mock_adapter_, device0_.get(), service1_.get());
+  event_router()->GattCharacteristicAdded(mock_adapter_, chrc0_.get());
+  event_router()->GattCharacteristicAdded(mock_adapter_, chrc2_.get());
 
   EXPECT_CALL(*mock_adapter_, GetDevice(_))
       .Times(2)
@@ -667,27 +671,28 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, CharacteristicValueChanged) {
 
   std::vector<uint8> value;
   event_router()->GattCharacteristicValueChanged(
-      service0_.get(), chrc0_.get(), value);
+      mock_adapter_, chrc0_.get(), value);
   event_router()->GattCharacteristicValueChanged(
-      service1_.get(), chrc2_.get(), value);
+      mock_adapter_, chrc2_.get(), value);
 
   listener.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-  event_router()->GattCharacteristicRemoved(service1_.get(), chrc2_.get());
-  event_router()->GattCharacteristicRemoved(service0_.get(), chrc0_.get());
-  event_router()->GattServiceRemoved(device0_.get(), service1_.get());
-  event_router()->GattServiceRemoved(device0_.get(), service0_.get());
-  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
+  event_router()->GattCharacteristicRemoved(mock_adapter_, chrc2_.get());
+  event_router()->GattCharacteristicRemoved(mock_adapter_, chrc0_.get());
+  event_router()->GattServiceRemoved(
+      mock_adapter_, device0_.get(), service1_.get());
+  event_router()->GattServiceRemoved(
+      mock_adapter_, device0_.get(), service0_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ReadCharacteristicValue) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
 
-  event_router()->DeviceAdded(mock_adapter_, device0_.get());
-  event_router()->GattServiceAdded(device0_.get(), service0_.get());
-  event_router()->GattCharacteristicAdded(service0_.get(), chrc0_.get());
+  event_router()->GattServiceAdded(
+      mock_adapter_, device0_.get(), service0_.get());
+  event_router()->GattCharacteristicAdded(mock_adapter_, chrc0_.get());
 
   EXPECT_CALL(*mock_adapter_, GetDevice(_))
       .Times(3)
@@ -716,18 +721,18 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ReadCharacteristicValue) {
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 
-  event_router()->GattCharacteristicRemoved(service0_.get(), chrc0_.get());
-  event_router()->GattServiceRemoved(device0_.get(), service0_.get());
-  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
+  event_router()->GattCharacteristicRemoved(mock_adapter_, chrc0_.get());
+  event_router()->GattServiceRemoved(
+      mock_adapter_, device0_.get(), service0_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, WriteCharacteristicValue) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
 
-  event_router()->DeviceAdded(mock_adapter_, device0_.get());
-  event_router()->GattServiceAdded(device0_.get(), service0_.get());
-  event_router()->GattCharacteristicAdded(service0_.get(), chrc0_.get());
+  event_router()->GattServiceAdded(
+      mock_adapter_, device0_.get(), service0_.get());
+  event_router()->GattCharacteristicAdded(mock_adapter_, chrc0_.get());
 
   EXPECT_CALL(*mock_adapter_, GetDevice(_))
       .Times(3)
@@ -758,9 +763,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, WriteCharacteristicValue) {
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 
-  event_router()->GattCharacteristicRemoved(service0_.get(), chrc0_.get());
-  event_router()->GattServiceRemoved(device0_.get(), service0_.get());
-  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
+  event_router()->GattCharacteristicRemoved(mock_adapter_, chrc0_.get());
+  event_router()->GattServiceRemoved(
+      mock_adapter_, device0_.get(), service0_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetDescriptors) {
@@ -771,9 +776,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetDescriptors) {
   descriptors.push_back(desc0_.get());
   descriptors.push_back(desc1_.get());
 
-  event_router()->DeviceAdded(mock_adapter_, device0_.get());
-  event_router()->GattServiceAdded(device0_.get(), service0_.get());
-  event_router()->GattCharacteristicAdded(service0_.get(), chrc0_.get());
+  event_router()->GattServiceAdded(
+      mock_adapter_, device0_.get(), service0_.get());
+  event_router()->GattCharacteristicAdded(mock_adapter_, chrc0_.get());
 
   EXPECT_CALL(*mock_adapter_, GetDevice(_))
       .Times(3)
@@ -799,19 +804,19 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetDescriptors) {
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 
-  event_router()->GattCharacteristicRemoved(service0_.get(), chrc0_.get());
-  event_router()->GattServiceRemoved(device0_.get(), service0_.get());
-  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
+  event_router()->GattCharacteristicRemoved(mock_adapter_, chrc0_.get());
+  event_router()->GattServiceRemoved(
+      mock_adapter_, device0_.get(), service0_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetDescriptor) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
 
-  event_router()->DeviceAdded(mock_adapter_, device0_.get());
-  event_router()->GattServiceAdded(device0_.get(), service0_.get());
-  event_router()->GattCharacteristicAdded(service0_.get(), chrc0_.get());
-  event_router()->GattDescriptorAdded(chrc0_.get(), desc0_.get());
+  event_router()->GattServiceAdded(
+      mock_adapter_, device0_.get(), service0_.get());
+  event_router()->GattCharacteristicAdded(mock_adapter_, chrc0_.get());
+  event_router()->GattDescriptorAdded(mock_adapter_, desc0_.get());
 
   EXPECT_CALL(*mock_adapter_, GetDevice(_))
       .Times(5)
@@ -843,10 +848,10 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetDescriptor) {
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 
-  event_router()->GattDescriptorRemoved(chrc0_.get(), desc0_.get());
-  event_router()->GattCharacteristicRemoved(service0_.get(), chrc0_.get());
-  event_router()->GattServiceRemoved(device0_.get(), service0_.get());
-  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
+  event_router()->GattDescriptorRemoved(mock_adapter_, desc0_.get());
+  event_router()->GattCharacteristicRemoved(mock_adapter_, chrc0_.get());
+  event_router()->GattServiceRemoved(
+      mock_adapter_, device0_.get(), service0_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedDescriptor) {
@@ -866,10 +871,10 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedDescriptor) {
       .Times(1)
       .WillOnce(Return(desc0_.get()));
 
-  event_router()->DeviceAdded(mock_adapter_, device0_.get());
-  event_router()->GattServiceAdded(device0_.get(), service0_.get());
-  event_router()->GattCharacteristicAdded(service0_.get(), chrc0_.get());
-  event_router()->GattDescriptorAdded(chrc0_.get(), desc0_.get());
+  event_router()->GattServiceAdded(
+      mock_adapter_, device0_.get(), service0_.get());
+  event_router()->GattCharacteristicAdded(mock_adapter_, chrc0_.get());
+  event_router()->GattDescriptorAdded(mock_adapter_, desc0_.get());
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "bluetooth_low_energy/get_removed_descriptor")));
@@ -886,7 +891,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedDescriptor) {
   EXPECT_CALL(*service0_, GetCharacteristic(_)).Times(0);
   EXPECT_CALL(*chrc0_, GetDescriptor(_)).Times(0);
 
-  event_router()->GattDescriptorRemoved(chrc0_.get(), desc0_.get());
+  event_router()->GattDescriptorRemoved(mock_adapter_, desc0_.get());
 
   listener.Reply("go");
   listener.Reset();
@@ -895,20 +900,20 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedDescriptor) {
   listener.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-  event_router()->GattCharacteristicRemoved(service0_.get(), chrc0_.get());
-  event_router()->GattServiceRemoved(device0_.get(), service0_.get());
-  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
+  event_router()->GattCharacteristicRemoved(mock_adapter_, chrc0_.get());
+  event_router()->GattServiceRemoved(
+      mock_adapter_, device0_.get(), service0_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, DescriptorValueChanged) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
 
-  event_router()->DeviceAdded(mock_adapter_, device0_.get());
-  event_router()->GattServiceAdded(device0_.get(), service0_.get());
-  event_router()->GattCharacteristicAdded(service0_.get(), chrc0_.get());
-  event_router()->GattDescriptorAdded(chrc0_.get(), desc0_.get());
-  event_router()->GattDescriptorAdded(chrc0_.get(), desc1_.get());
+  event_router()->GattServiceAdded(
+      mock_adapter_, device0_.get(), service0_.get());
+  event_router()->GattCharacteristicAdded(mock_adapter_, chrc0_.get());
+  event_router()->GattDescriptorAdded(mock_adapter_, desc0_.get());
+  event_router()->GattDescriptorAdded(mock_adapter_, desc1_.get());
 
   // Load the extension and let it set up.
   ExtensionTestMessageListener listener("ready", true);
@@ -917,28 +922,30 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, DescriptorValueChanged) {
 
   // Cause events to be sent to the extension.
   std::vector<uint8> value;
-  event_router()->GattDescriptorValueChanged(chrc0_.get(), desc0_.get(), value);
-  event_router()->GattDescriptorValueChanged(chrc0_.get(), desc1_.get(), value);
+  event_router()->GattDescriptorValueChanged(
+      mock_adapter_, desc0_.get(), value);
+  event_router()->GattDescriptorValueChanged(
+      mock_adapter_, desc1_.get(), value);
 
   EXPECT_TRUE(listener.WaitUntilSatisfied());
   listener.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-  event_router()->GattDescriptorRemoved(chrc0_.get(), desc1_.get());
-  event_router()->GattDescriptorRemoved(chrc0_.get(), desc0_.get());
-  event_router()->GattCharacteristicRemoved(service0_.get(), chrc0_.get());
-  event_router()->GattServiceRemoved(device0_.get(), service0_.get());
-  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
+  event_router()->GattDescriptorRemoved(mock_adapter_, desc1_.get());
+  event_router()->GattDescriptorRemoved(mock_adapter_, desc0_.get());
+  event_router()->GattCharacteristicRemoved(mock_adapter_, chrc0_.get());
+  event_router()->GattServiceRemoved(
+      mock_adapter_, device0_.get(), service0_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ReadDescriptorValue) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
 
-  event_router()->DeviceAdded(mock_adapter_, device0_.get());
-  event_router()->GattServiceAdded(device0_.get(), service0_.get());
-  event_router()->GattCharacteristicAdded(service0_.get(), chrc0_.get());
-  event_router()->GattDescriptorAdded(chrc0_.get(), desc0_.get());
+  event_router()->GattServiceAdded(
+      mock_adapter_, device0_.get(), service0_.get());
+  event_router()->GattCharacteristicAdded(mock_adapter_, chrc0_.get());
+  event_router()->GattDescriptorAdded(mock_adapter_, desc0_.get());
 
   EXPECT_CALL(*mock_adapter_, GetDevice(_))
       .Times(3)
@@ -971,20 +978,20 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ReadDescriptorValue) {
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 
-  event_router()->GattDescriptorRemoved(chrc0_.get(), desc0_.get());
-  event_router()->GattCharacteristicRemoved(service0_.get(), chrc0_.get());
-  event_router()->GattServiceRemoved(device0_.get(), service0_.get());
-  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
+  event_router()->GattDescriptorRemoved(mock_adapter_, desc0_.get());
+  event_router()->GattCharacteristicRemoved(mock_adapter_, chrc0_.get());
+  event_router()->GattServiceRemoved(
+      mock_adapter_, device0_.get(), service0_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, WriteDescriptorValue) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
 
-  event_router()->DeviceAdded(mock_adapter_, device0_.get());
-  event_router()->GattServiceAdded(device0_.get(), service0_.get());
-  event_router()->GattCharacteristicAdded(service0_.get(), chrc0_.get());
-  event_router()->GattDescriptorAdded(chrc0_.get(), desc0_.get());
+  event_router()->GattServiceAdded(
+      mock_adapter_, device0_.get(), service0_.get());
+  event_router()->GattCharacteristicAdded(mock_adapter_, chrc0_.get());
+  event_router()->GattDescriptorAdded(mock_adapter_, desc0_.get());
 
   EXPECT_CALL(*mock_adapter_, GetDevice(_))
       .Times(3)
@@ -1019,10 +1026,10 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, WriteDescriptorValue) {
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 
-  event_router()->GattDescriptorRemoved(chrc0_.get(), desc0_.get());
-  event_router()->GattCharacteristicRemoved(service0_.get(), chrc0_.get());
-  event_router()->GattServiceRemoved(device0_.get(), service0_.get());
-  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
+  event_router()->GattDescriptorRemoved(mock_adapter_, desc0_.get());
+  event_router()->GattCharacteristicRemoved(mock_adapter_, chrc0_.get());
+  event_router()->GattServiceRemoved(
+      mock_adapter_, device0_.get(), service0_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, PermissionDenied) {
@@ -1038,10 +1045,10 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, UuidPermissionMethods) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
 
-  event_router()->DeviceAdded(mock_adapter_, device0_.get());
-  event_router()->GattServiceAdded(device0_.get(), service0_.get());
-  event_router()->GattCharacteristicAdded(service0_.get(), chrc0_.get());
-  event_router()->GattDescriptorAdded(chrc0_.get(), desc0_.get());
+  event_router()->GattServiceAdded(
+      mock_adapter_, device0_.get(), service0_.get());
+  event_router()->GattCharacteristicAdded(mock_adapter_, chrc0_.get());
+  event_router()->GattDescriptorAdded(mock_adapter_, desc0_.get());
 
   std::vector<BluetoothGattService*> services;
   services.push_back(service0_.get());
@@ -1060,10 +1067,10 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, UuidPermissionMethods) {
       "bluetooth_low_energy/uuid_permission_methods")));
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 
-  event_router()->GattDescriptorRemoved(chrc0_.get(), desc0_.get());
-  event_router()->GattCharacteristicRemoved(service0_.get(), chrc0_.get());
-  event_router()->GattServiceRemoved(device0_.get(), service0_.get());
-  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
+  event_router()->GattDescriptorRemoved(mock_adapter_, desc0_.get());
+  event_router()->GattCharacteristicRemoved(mock_adapter_, chrc0_.get());
+  event_router()->GattServiceRemoved(
+      mock_adapter_, device0_.get(), service0_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, UuidPermissionEvents) {
@@ -1075,33 +1082,32 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, UuidPermissionEvents) {
       "bluetooth_low_energy/uuid_permission_events")));
 
   // Cause events to be sent to the extension.
-  event_router()->DeviceAdded(mock_adapter_, device0_.get());
-  event_router()->GattServiceAdded(device0_.get(), service0_.get());
-  event_router()->GattCharacteristicAdded(service0_.get(), chrc0_.get());
-  event_router()->GattDescriptorAdded(chrc0_.get(), desc0_.get());
+  event_router()->GattServiceAdded(
+      mock_adapter_, device0_.get(), service0_.get());
+  event_router()->GattCharacteristicAdded(mock_adapter_, chrc0_.get());
+  event_router()->GattDescriptorAdded(mock_adapter_, desc0_.get());
 
   std::vector<uint8> value;
   event_router()->GattCharacteristicValueChanged(
-      service0_.get(), chrc0_.get(), value);
-  event_router()->GattDescriptorValueChanged(chrc0_.get(), desc0_.get(), value);
-  event_router()->GattServiceChanged(service0_.get());
+      mock_adapter_, chrc0_.get(), value);
+  event_router()->GattDescriptorValueChanged(
+      mock_adapter_, desc0_.get(), value);
+  event_router()->GattServiceChanged(mock_adapter_, service0_.get());
 
   EXPECT_TRUE(listener.WaitUntilSatisfied());
   listener.Reply("go");
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 
-  event_router()->GattDescriptorRemoved(chrc0_.get(), desc0_.get());
-  event_router()->GattCharacteristicRemoved(service0_.get(), chrc0_.get());
-  event_router()->GattServiceRemoved(device0_.get(), service0_.get());
-  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
+  event_router()->GattDescriptorRemoved(mock_adapter_, desc0_.get());
+  event_router()->GattCharacteristicRemoved(mock_adapter_, chrc0_.get());
+  event_router()->GattServiceRemoved(
+      mock_adapter_, device0_.get(), service0_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GattConnection) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
 
-  event_router()->DeviceAdded(mock_adapter_, device0_.get());
-  event_router()->DeviceAdded(mock_adapter_, device1_.get());
 
   EXPECT_CALL(*mock_adapter_, GetDevice(_))
       .WillRepeatedly(Return(static_cast<BluetoothDevice*>(NULL)));
@@ -1127,16 +1133,12 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GattConnection) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("bluetooth_low_energy/gatt_connection")));
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-
-  event_router()->DeviceRemoved(mock_adapter_, device1_.get());
-  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ReconnectAfterDisconnected) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
 
-  event_router()->DeviceAdded(mock_adapter_, device0_.get());
 
   EXPECT_CALL(*mock_adapter_, GetDevice(kTestLeDeviceAddress0))
       .WillRepeatedly(Return(device0_.get()));
@@ -1161,14 +1163,12 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ReconnectAfterDisconnected) {
       "bluetooth_low_energy/reconnect_after_disconnected")));
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 
-  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ConnectInProgress) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
 
-  event_router()->DeviceAdded(mock_adapter_, device0_.get());
 
   EXPECT_CALL(*mock_adapter_, GetDevice(kTestLeDeviceAddress0))
       .WillRepeatedly(Return(device0_.get()));
@@ -1201,19 +1201,19 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ConnectInProgress) {
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 
-  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, StartStopNotifications) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
 
-  event_router()->DeviceAdded(mock_adapter_, device0_.get());
-  event_router()->GattServiceAdded(device0_.get(), service0_.get());
-  event_router()->GattServiceAdded(device0_.get(), service1_.get());
-  event_router()->GattCharacteristicAdded(service0_.get(), chrc0_.get());
-  event_router()->GattCharacteristicAdded(service0_.get(), chrc1_.get());
-  event_router()->GattCharacteristicAdded(service1_.get(), chrc2_.get());
+  event_router()->GattServiceAdded(
+      mock_adapter_, device0_.get(), service0_.get());
+  event_router()->GattServiceAdded(
+      mock_adapter_, device0_.get(), service1_.get());
+  event_router()->GattCharacteristicAdded(mock_adapter_, chrc0_.get());
+  event_router()->GattCharacteristicAdded(mock_adapter_, chrc1_.get());
+  event_router()->GattCharacteristicAdded(mock_adapter_, chrc2_.get());
 
   EXPECT_CALL(*mock_adapter_, GetDevice(_))
       .WillRepeatedly(Return(device0_.get()));
@@ -1262,21 +1262,22 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, StartStopNotifications) {
 
   std::vector<uint8> value;
   event_router()->GattCharacteristicValueChanged(
-      service0_.get(), chrc0_.get(), value);
+      mock_adapter_, chrc0_.get(), value);
   event_router()->GattCharacteristicValueChanged(
-      service0_.get(), chrc1_.get(), value);
+      mock_adapter_, chrc1_.get(), value);
   event_router()->GattCharacteristicValueChanged(
-      service1_.get(), chrc2_.get(), value);
+      mock_adapter_, chrc2_.get(), value);
 
   listener.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-  event_router()->GattCharacteristicRemoved(service1_.get(), chrc2_.get());
-  event_router()->GattCharacteristicRemoved(service0_.get(), chrc1_.get());
-  event_router()->GattCharacteristicRemoved(service0_.get(), chrc0_.get());
-  event_router()->GattServiceRemoved(device0_.get(), service1_.get());
-  event_router()->GattServiceRemoved(device0_.get(), service0_.get());
-  event_router()->DeviceRemoved(mock_adapter_, device0_.get());
+  event_router()->GattCharacteristicRemoved(mock_adapter_, chrc2_.get());
+  event_router()->GattCharacteristicRemoved(mock_adapter_, chrc1_.get());
+  event_router()->GattCharacteristicRemoved(mock_adapter_, chrc0_.get());
+  event_router()->GattServiceRemoved(
+      mock_adapter_, device0_.get(), service1_.get());
+  event_router()->GattServiceRemoved(
+      mock_adapter_, device0_.get(), service0_.get());
 }
 
 }  // namespace

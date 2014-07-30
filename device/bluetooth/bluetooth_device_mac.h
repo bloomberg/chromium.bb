@@ -24,10 +24,6 @@ class BluetoothDeviceMac : public BluetoothDevice {
   virtual ~BluetoothDeviceMac();
 
   // BluetoothDevice override
-  virtual void AddObserver(
-      device::BluetoothDevice::Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(
-      device::BluetoothDevice::Observer* observer) OVERRIDE;
   virtual uint32 GetBluetoothClass() const OVERRIDE;
   virtual std::string GetAddress() const OVERRIDE;
   virtual VendorIDSource GetVendorIDSource() const OVERRIDE;
@@ -88,9 +84,6 @@ class BluetoothDeviceMac : public BluetoothDevice {
   // |power_level_type|.
   int GetHostTransmitPower(
       BluetoothHCITransmitPowerLevelType power_level_type) const;
-
-  // List of observers interested in event notifications from us.
-  ObserverList<Observer> observers_;
 
   base::scoped_nsobject<IOBluetoothDevice> device_;
 

@@ -61,19 +61,6 @@ void BluetoothDeviceWin::SetVisible(bool visible) {
   visible_ = visible;
 }
 
-void BluetoothDeviceWin::AddObserver(
-    device::BluetoothDevice::Observer* observer) {
-  DCHECK(observer);
-  observers_.AddObserver(observer);
-}
-
-void BluetoothDeviceWin::RemoveObserver(
-    device::BluetoothDevice::Observer* observer) {
-  DCHECK(observer);
-  observers_.RemoveObserver(observer);
-}
-
-
 uint32 BluetoothDeviceWin::GetBluetoothClass() const {
   return bluetooth_class_;
 }

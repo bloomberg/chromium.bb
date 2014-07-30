@@ -22,6 +22,9 @@
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_device_chromeos.h"
 #include "device/bluetooth/bluetooth_pairing_chromeos.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic_chromeos.h"
+#include "device/bluetooth/bluetooth_remote_gatt_descriptor_chromeos.h"
+#include "device/bluetooth/bluetooth_remote_gatt_service_chromeos.h"
 #include "device/bluetooth/bluetooth_socket_chromeos.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -750,6 +753,117 @@ void BluetoothAdapterChromeOS::NotifyDeviceChanged(
 
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                     DeviceChanged(this, device));
+}
+
+void BluetoothAdapterChromeOS::NotifyGattServiceAdded(
+    BluetoothRemoteGattServiceChromeOS* service) {
+  DCHECK_EQ(service->GetAdapter(), this);
+  DCHECK_EQ(
+      static_cast<BluetoothDeviceChromeOS*>(service->GetDevice())->adapter_,
+      this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
+                    observers_,
+                    GattServiceAdded(this, service->GetDevice(), service));
+}
+
+void BluetoothAdapterChromeOS::NotifyGattServiceRemoved(
+    BluetoothRemoteGattServiceChromeOS* service) {
+  DCHECK_EQ(service->GetAdapter(), this);
+  DCHECK_EQ(
+      static_cast<BluetoothDeviceChromeOS*>(service->GetDevice())->adapter_,
+      this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
+                    observers_,
+                    GattServiceRemoved(this, service->GetDevice(), service));
+}
+
+void BluetoothAdapterChromeOS::NotifyGattServiceChanged(
+    BluetoothRemoteGattServiceChromeOS* service) {
+  DCHECK_EQ(service->GetAdapter(), this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
+                    observers_,
+                    GattServiceChanged(this, service));
+}
+
+void BluetoothAdapterChromeOS::NotifyGattDiscoveryComplete(
+    BluetoothRemoteGattServiceChromeOS* service) {
+  DCHECK_EQ(service->GetAdapter(), this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
+                    observers_,
+                    GattDiscoveryCompleteForService(this, service));
+}
+
+void BluetoothAdapterChromeOS::NotifyGattCharacteristicAdded(
+    BluetoothRemoteGattCharacteristicChromeOS* characteristic) {
+  DCHECK_EQ(static_cast<BluetoothRemoteGattServiceChromeOS*>(
+                characteristic->GetService())->GetAdapter(),
+            this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
+                    observers_,
+                    GattCharacteristicAdded(this, characteristic));
+}
+
+void BluetoothAdapterChromeOS::NotifyGattCharacteristicRemoved(
+    BluetoothRemoteGattCharacteristicChromeOS* characteristic) {
+  DCHECK_EQ(static_cast<BluetoothRemoteGattServiceChromeOS*>(
+                characteristic->GetService())->GetAdapter(),
+            this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
+                    observers_,
+                    GattCharacteristicRemoved(this, characteristic));
+}
+
+void BluetoothAdapterChromeOS::NotifyGattDescriptorAdded(
+    BluetoothRemoteGattDescriptorChromeOS* descriptor) {
+  DCHECK_EQ(static_cast<BluetoothRemoteGattServiceChromeOS*>(
+                descriptor->GetCharacteristic()->GetService())->GetAdapter(),
+            this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
+                    observers_,
+                    GattDescriptorAdded(this, descriptor));
+}
+
+void BluetoothAdapterChromeOS::NotifyGattDescriptorRemoved(
+    BluetoothRemoteGattDescriptorChromeOS* descriptor) {
+  DCHECK_EQ(static_cast<BluetoothRemoteGattServiceChromeOS*>(
+                descriptor->GetCharacteristic()->GetService())->GetAdapter(),
+            this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
+                    observers_,
+                    GattDescriptorRemoved(this, descriptor));
+}
+
+void BluetoothAdapterChromeOS::NotifyGattCharacteristicValueChanged(
+    BluetoothRemoteGattCharacteristicChromeOS* characteristic,
+    const std::vector<uint8>& value) {
+  DCHECK_EQ(static_cast<BluetoothRemoteGattServiceChromeOS*>(
+                characteristic->GetService())->GetAdapter(),
+            this);
+
+  FOR_EACH_OBSERVER(
+      BluetoothAdapter::Observer,
+      observers_,
+      GattCharacteristicValueChanged(this, characteristic, value));
+}
+
+void BluetoothAdapterChromeOS::NotifyGattDescriptorValueChanged(
+    BluetoothRemoteGattDescriptorChromeOS* descriptor,
+    const std::vector<uint8>& value) {
+  DCHECK_EQ(static_cast<BluetoothRemoteGattServiceChromeOS*>(
+                descriptor->GetCharacteristic()->GetService())->GetAdapter(),
+            this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
+                    observers_,
+                    GattDescriptorValueChanged(this, descriptor, value));
 }
 
 void BluetoothAdapterChromeOS::OnSetDiscoverable(

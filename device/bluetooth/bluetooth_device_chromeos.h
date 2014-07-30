@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "chromeos/dbus/bluetooth_device_client.h"
 #include "chromeos/dbus/bluetooth_gatt_service_client.h"
@@ -33,10 +32,6 @@ class BluetoothDeviceChromeOS
       public BluetoothGattServiceClient::Observer {
  public:
   // BluetoothDevice override
-  virtual void AddObserver(
-      device::BluetoothDevice::Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(
-      device::BluetoothDevice::Observer* observer) OVERRIDE;
   virtual uint32 GetBluetoothClass() const OVERRIDE;
   virtual std::string GetAddress() const OVERRIDE;
   virtual VendorIDSource GetVendorIDSource() const OVERRIDE;
@@ -171,9 +166,6 @@ class BluetoothDeviceChromeOS
 
   // The dbus object path of the device object.
   dbus::ObjectPath object_path_;
-
-  // List of observers interested in event notifications from us.
-  ObserverList<device::BluetoothDevice::Observer> observers_;
 
   // Number of ongoing calls to Connect().
   int num_connecting_calls_;

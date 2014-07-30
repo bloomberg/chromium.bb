@@ -81,26 +81,6 @@ class BluetoothDevice {
     ERROR_UNSUPPORTED_DEVICE
   };
 
-  // Interface for observing changes from bluetooth devices.
-  class Observer {
-   public:
-    virtual ~Observer() {}
-
-    // Called when a new GATT service |service| is added to the device |device|,
-    // as the service is received from the device. Don't cache |service|. Store
-    // its identifier instead (i.e. BluetoothGattService::GetIdentifier).
-    virtual void GattServiceAdded(BluetoothDevice* device,
-                                  BluetoothGattService* service) {}
-
-    // Called when the GATT service |service| is removed from the device
-    // |device|. This can happen if the attribute database of the remote device
-    // changes or when |device| gets removed.
-    virtual void GattServiceRemoved(BluetoothDevice* device,
-                                    BluetoothGattService* service) {}
-
-    // TODO(keybuk): add observers for pairing and connection.
-  };
-
   // Interface for negotiating pairing of bluetooth devices.
   class PairingDelegate {
    public:
@@ -189,12 +169,6 @@ class BluetoothDevice {
   };
 
   virtual ~BluetoothDevice();
-
-  // Adds and removes observers for events on this Bluetooth device. If
-  // monitoring multiple devices, check the |device| parameter of the observer
-  // methods to determine which device is issuing the event.
-  virtual void AddObserver(Observer* observer) = 0;
-  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Returns the Bluetooth class of the device, used by GetDeviceType()
   // and metrics logging,

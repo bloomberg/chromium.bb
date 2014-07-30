@@ -46,9 +46,7 @@ class Extension;
 // The BluetoothLowEnergyEventRouter is used by the bluetoothLowEnergy API to
 // interface with the internal Bluetooth API in device/bluetooth.
 class BluetoothLowEnergyEventRouter
-    : public device::BluetoothAdapter::Observer,
-      public device::BluetoothDevice::Observer,
-      public device::BluetoothGattService::Observer {
+    : public device::BluetoothAdapter::Observer {
  public:
   explicit BluetoothLowEnergyEventRouter(content::BrowserContext* context);
   virtual ~BluetoothLowEnergyEventRouter();
@@ -228,41 +226,37 @@ class BluetoothLowEnergyEventRouter
   void SetAdapterForTesting(device::BluetoothAdapter* adapter);
 
   // device::BluetoothAdapter::Observer overrides.
-  virtual void DeviceAdded(device::BluetoothAdapter* adapter,
-                           device::BluetoothDevice* device) OVERRIDE;
-  virtual void DeviceRemoved(device::BluetoothAdapter* adapter,
-                             device::BluetoothDevice* device) OVERRIDE;
-
-  // device::BluetoothDevice::Observer overrides.
-  virtual void GattServiceAdded(device::BluetoothDevice* device,
+  virtual void GattServiceAdded(device::BluetoothAdapter* adapter,
+                                device::BluetoothDevice* device,
                                 device::BluetoothGattService* service) OVERRIDE;
   virtual void GattServiceRemoved(
+      device::BluetoothAdapter* adapter,
       device::BluetoothDevice* device,
       device::BluetoothGattService* service) OVERRIDE;
-
-  // device::BluetoothGattService::Observer overrides.
   virtual void GattDiscoveryCompleteForService(
+      device::BluetoothAdapter* adapter,
       device::BluetoothGattService* service) OVERRIDE;
   virtual void GattServiceChanged(
+      device::BluetoothAdapter* adapter,
       device::BluetoothGattService* service) OVERRIDE;
   virtual void GattCharacteristicAdded(
-      device::BluetoothGattService* service,
+      device::BluetoothAdapter* adapter,
       device::BluetoothGattCharacteristic* characteristic) OVERRIDE;
   virtual void GattCharacteristicRemoved(
-      device::BluetoothGattService* service,
+      device::BluetoothAdapter* adapter,
       device::BluetoothGattCharacteristic* characteristic) OVERRIDE;
   virtual void GattDescriptorAdded(
-      device::BluetoothGattCharacteristic* characteristic,
+      device::BluetoothAdapter* adapter,
       device::BluetoothGattDescriptor* descriptor) OVERRIDE;
   virtual void GattDescriptorRemoved(
-      device::BluetoothGattCharacteristic* characteristic,
+      device::BluetoothAdapter* adapter,
       device::BluetoothGattDescriptor* descriptor) OVERRIDE;
   virtual void GattCharacteristicValueChanged(
-      device::BluetoothGattService* service,
+      device::BluetoothAdapter* adapter,
       device::BluetoothGattCharacteristic* characteristic,
       const std::vector<uint8>& value) OVERRIDE;
   virtual void GattDescriptorValueChanged(
-      device::BluetoothGattCharacteristic* characteristic,
+      device::BluetoothAdapter* adapter,
       device::BluetoothGattDescriptor* descriptor,
       const std::vector<uint8>& value) OVERRIDE;
 
@@ -393,12 +387,6 @@ class BluetoothLowEnergyEventRouter
   InstanceIdMap service_id_to_device_address_;
   InstanceIdMap chrc_id_to_service_id_;
   InstanceIdMap desc_id_to_chrc_id_;
-
-  // Sets of BluetoothDevice and BluetoothGattService objects that are being
-  // observed, used to remove the BluetoothLowEnergyEventRouter as an observer
-  // during clean up.
-  std::set<std::string> observed_devices_;
-  std::set<std::string> observed_gatt_services_;
 
   // Pointer to the current BluetoothAdapter instance. This represents a local
   // Bluetooth adapter of the system.

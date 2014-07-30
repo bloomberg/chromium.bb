@@ -26,8 +26,6 @@ class MockBluetoothGattService : public BluetoothGattService {
                            bool is_local);
   virtual ~MockBluetoothGattService();
 
-  MOCK_METHOD1(AddObserver, void(BluetoothGattService::Observer*));
-  MOCK_METHOD1(RemoveObserver, void(BluetoothGattService::Observer*));
   MOCK_CONST_METHOD0(GetIdentifier, std::string());
   MOCK_CONST_METHOD0(GetUUID, BluetoothUUID());
   MOCK_CONST_METHOD0(IsLocal, bool());

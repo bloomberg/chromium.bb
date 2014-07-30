@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_adapter_chromeos.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session_chromeos.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor_chromeos.h"
@@ -244,6 +244,7 @@ void BluetoothRemoteGattCharacteristicChromeOS::StartNotifySession(
 
       ++num_notify_sessions_;
       DCHECK(service_);
+      DCHECK(service_->GetAdapter());
       DCHECK(service_->GetDevice());
       scoped_ptr<device::BluetoothGattNotifySession> session(
           new BluetoothGattNotifySessionChromeOS(

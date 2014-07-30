@@ -26,8 +26,6 @@ class MockBluetoothDevice : public BluetoothDevice {
                       bool connected);
   virtual ~MockBluetoothDevice();
 
-  MOCK_METHOD1(AddObserver, void(BluetoothDevice::Observer*));
-  MOCK_METHOD1(RemoveObserver, void(BluetoothDevice::Observer*));
   MOCK_CONST_METHOD0(GetBluetoothClass, uint32());
   MOCK_CONST_METHOD0(GetDeviceName, std::string());
   MOCK_CONST_METHOD0(GetAddress, std::string());

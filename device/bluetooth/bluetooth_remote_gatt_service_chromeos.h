@@ -40,10 +40,6 @@ class BluetoothRemoteGattServiceChromeOS
       public BluetoothGattCharacteristicClient::Observer {
  public:
   // device::BluetoothGattService overrides.
-  virtual void AddObserver(
-      device::BluetoothGattService::Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(
-      device::BluetoothGattService::Observer* observer) OVERRIDE;
   virtual std::string GetIdentifier() const OVERRIDE;
   virtual device::BluetoothUUID GetUUID() const OVERRIDE;
   virtual bool IsLocal() const OVERRIDE;
@@ -68,7 +64,7 @@ class BluetoothRemoteGattServiceChromeOS
   const dbus::ObjectPath& object_path() const { return object_path_; }
 
   // Returns the adapter associated with this service.
-  scoped_refptr<device::BluetoothAdapter> GetAdapter() const;
+  BluetoothAdapterChromeOS* GetAdapter() const;
 
   // Notifies its observers that the GATT service has changed. This is mainly
   // used by BluetoothRemoteGattCharacteristicChromeOS instances to notify
@@ -126,9 +122,6 @@ class BluetoothRemoteGattServiceChromeOS
 
   // Object path of the GATT service.
   dbus::ObjectPath object_path_;
-
-  // List of observers interested in event notifications from us.
-  ObserverList<device::BluetoothGattService::Observer> observers_;
 
   // The adapter associated with this service. It's ok to store a raw pointer
   // here since |adapter_| indirectly owns this instance.

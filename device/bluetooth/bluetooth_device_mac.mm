@@ -63,18 +63,6 @@ BluetoothDeviceMac::BluetoothDeviceMac(IOBluetoothDevice* device)
 BluetoothDeviceMac::~BluetoothDeviceMac() {
 }
 
-void BluetoothDeviceMac::AddObserver(
-    device::BluetoothDevice::Observer* observer) {
-  DCHECK(observer);
-  observers_.AddObserver(observer);
-}
-
-void BluetoothDeviceMac::RemoveObserver(
-    device::BluetoothDevice::Observer* observer) {
-  DCHECK(observer);
-  observers_.RemoveObserver(observer);
-}
-
 uint32 BluetoothDeviceMac::GetBluetoothClass() const {
   return [device_ classOfDevice];
 }

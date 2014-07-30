@@ -125,86 +125,10 @@ class BluetoothGattService {
         const ErrorCallback& error_callback) = 0;
   };
 
-  // Interface for observing changes from a BluetoothGattService. Properties
-  // of remote services are received asynchronously. The Observer interface can
-  // be used to be notified when the initial values of a service are received
-  // as well as when successive changes occur during its life cycle.
-  class Observer {
-   public:
-    // Called when all characteristic and descriptor discovery procedures are
-    // known to be completed for the GATT service |service|. This method will be
-    // called after the initial discovery of a GATT service and will usually be
-    // preceded by calls to GattCharacteristicAdded and GattDescriptorAdded.
-    virtual void GattDiscoveryCompleteForService(
-        BluetoothGattService* service) {}
-
-    // Called when properties of the remote GATT service |service| have changed.
-    // This will get called for properties such as UUID, as well as for changes
-    // to the list of known characteristics and included services. Observers
-    // should read all GATT characteristic and descriptors objects and do any
-    // necessary set up required for a changed service.
-    virtual void GattServiceChanged(BluetoothGattService* service) {}
-
-    // Called when the remote GATT characteristic |characteristic| belonging to
-    // GATT service |service| has been discovered. Use this to issue any initial
-    // read/write requests to the characteristic but don't cache the pointer as
-    // it may become invalid. Instead, use the specially assigned identifier
-    // to obtain a characteristic and cache that identifier as necessary, as it
-    // can be used to retrieve the characteristic from its GATT service. The
-    // number of characteristics with the same UUID belonging to a service
-    // depends on the particular profile the remote device implements, hence the
-    // client of a GATT based profile will usually operate on the whole set of
-    // characteristics and not just one.
-    virtual void GattCharacteristicAdded(
-        BluetoothGattService* service,
-        BluetoothGattCharacteristic* characteristic) {}
-
-    // Called when a GATT characteristic |characteristic| belonging to GATT
-    // service |service| has been removed.
-    virtual void GattCharacteristicRemoved(
-        BluetoothGattService* service,
-        BluetoothGattCharacteristic* characteristic) {}
-
-    // Called when the remote GATT characteristic descriptor |descriptor|
-    // belonging to characteristic |characteristic| has been discovered. Don't
-    // cache the arguments as the pointers may become invalid. Instead, use the
-    // specially assigned identifier to obtain a descriptor and cache that
-    // identifier as necessary.
-    virtual void GattDescriptorAdded(
-        BluetoothGattCharacteristic* characteristic,
-        BluetoothGattDescriptor* descriptor) {}
-
-    // Called when a GATT characteristic descriptor |descriptor| belonging to
-    // characteristic |characteristic| has been removed.
-    virtual void GattDescriptorRemoved(
-        BluetoothGattCharacteristic* characteristic,
-        BluetoothGattDescriptor* descriptor) {}
-
-    // Called when the value of a characteristic has changed. This might be a
-    // result of a read/write request to, or a notification/indication from, a
-    // remote GATT characteristic.
-    virtual void GattCharacteristicValueChanged(
-        BluetoothGattService* service,
-        BluetoothGattCharacteristic* characteristic,
-        const std::vector<uint8>& value) {}
-
-    // Called when the value of a characteristic descriptor has been updated.
-    virtual void GattDescriptorValueChanged(
-        BluetoothGattCharacteristic* characteristic,
-        BluetoothGattDescriptor* descriptor,
-        const std::vector<uint8>& value) {}
-  };
-
   // The ErrorCallback is used by methods to asynchronously report errors.
   typedef base::Closure ErrorCallback;
 
   virtual ~BluetoothGattService();
-
-  // Adds and removes observers for events on this GATT service. If monitoring
-  // multiple services, check the |service| parameter of observer methods to
-  // determine which service is issuing the event.
-  virtual void AddObserver(Observer* observer) = 0;
-  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Constructs a BluetoothGattService that can be locally hosted when the local
   // adapter is in the peripheral role. The resulting object can then be made
