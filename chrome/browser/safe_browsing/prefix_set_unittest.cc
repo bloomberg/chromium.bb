@@ -677,9 +677,9 @@ TEST_F(PrefixSetTest, ReadSigned) {
   ASSERT_FALSE(prefix_set.get());
 }
 
-// Test that a golden v2 file can be read by the current code.  All platforms
-// generating v2 files are little-endian, so there is no point to testing this
-// transition if/when a big-endian port is added.
+// Test that a golden v2 file is discarded on read.  All platforms generating v2
+// files are little-endian, so there is no point to testing this transition
+// if/when a big-endian port is added.
 #if defined(ARCH_CPU_LITTLE_ENDIAN)
 TEST_F(PrefixSetTest, Version2) {
   std::vector<SBPrefix> ref_prefixes;
@@ -692,8 +692,7 @@ TEST_F(PrefixSetTest, Version2) {
   golden_path = golden_path.AppendASCII(kBasename);
 
   scoped_ptr<PrefixSet> prefix_set = PrefixSet::LoadFile(golden_path);
-  ASSERT_TRUE(prefix_set.get());
-  CheckPrefixes(*prefix_set, ref_prefixes);
+  ASSERT_FALSE(prefix_set.get());
 }
 #endif
 

@@ -23,20 +23,13 @@ static uint32 kMagic = 0x864088dd;
 // Version history:
 // Version 1: b6cb7cfe/r74487 by shess@chromium.org on 2011-02-10
 // Version 2: 2b59b0a6/r253924 by shess@chromium.org on 2014-02-27
-// Version 3: ????????/r?????? by shess@chromium.org on 2014-04-??
+// Version 3: dd07faf5/r268145 by shess@chromium.org on 2014-05-05
 
 // Version 2 layout is identical to version 1.  The sort order of |index_|
 // changed from |int32| to |uint32| to match the change of |SBPrefix|.
 // Version 3 adds storage for full hashes.
 static uint32 kVersion = 3;
-static uint32 kDeprecatedVersion = 1;  // And lower.
-
-typedef struct {
-  uint32 magic;
-  uint32 version;
-  uint32 index_size;
-  uint32 deltas_size;
-} FileHeader_v2;
+static uint32 kDeprecatedVersion = 2;  // And lower.
 
 typedef struct {
   uint32 magic;
@@ -169,9 +162,7 @@ scoped_ptr<PrefixSet> PrefixSet::LoadFile(const base::FilePath& filter_name) {
   if (!base::GetFileSize(filter_name, &size_64))
     return scoped_ptr<PrefixSet>();
   using base::MD5Digest;
-  // TODO(shess): Revert to sizeof(FileHeader) for sanity check once v2 is
-  // deprecated.
-  if (size_64 < static_cast<int64>(sizeof(FileHeader_v2) + sizeof(MD5Digest)))
+  if (size_64 < static_cast<int64>(sizeof(FileHeader) + sizeof(MD5Digest)))
     return scoped_ptr<PrefixSet>();
 
   base::ScopedFILE file(base::OpenFile(filter_name, "rb"));
@@ -195,34 +186,8 @@ scoped_ptr<PrefixSet> PrefixSet::LoadFile(const base::FilePath& filter_name) {
   // Track version read to inform removal of support for older versions.
   UMA_HISTOGRAM_SPARSE_SLOWLY("SB2.PrefixSetVersionRead", header.version);
 
-  // TODO(shess): <http://crbug.com/368044> for removing v2 support.
-  size_t header_size = sizeof(header);
   if (header.version <= kDeprecatedVersion) {
     return scoped_ptr<PrefixSet>();
-  } else if (header.version == 2) {
-    // Rewind the file and restart building the digest with the old header
-    // structure.
-    FileHeader_v2 v2_header;
-    if (0 != fseek(file.get(), 0, SEEK_SET))
-      return scoped_ptr<PrefixSet>();
-
-    size_t read = fread(&v2_header, sizeof(v2_header), 1, file.get());
-    if (read != 1)
-      return scoped_ptr<PrefixSet>();
-
-    base::MD5Init(&context);
-    base::MD5Update(&context,
-                    base::StringPiece(reinterpret_cast<char*>(&v2_header),
-                                      sizeof(v2_header)));
-
-    // The current header is a superset of the old header, fill it in with the
-    // information read.
-    header.magic = v2_header.magic;
-    header.version = v2_header.version;
-    header.index_size = v2_header.index_size;
-    header.deltas_size = v2_header.deltas_size;
-    header.full_hashes_size = 0;
-    header_size = sizeof(v2_header);
   } else if (header.version != kVersion) {
     return scoped_ptr<PrefixSet>();
   }
@@ -238,7 +203,7 @@ scoped_ptr<PrefixSet> PrefixSet::LoadFile(const base::FilePath& filter_name) {
       sizeof(full_hashes[0]) * header.full_hashes_size;
 
   // Check for bogus sizes before allocating any space.
-  const size_t expected_bytes = header_size +
+  const size_t expected_bytes = sizeof(header) +
       index_bytes + deltas_bytes + full_hashes_bytes + sizeof(MD5Digest);
   if (static_cast<int64>(expected_bytes) != size_64)
     return scoped_ptr<PrefixSet>();
