@@ -5,20 +5,20 @@
 #include "chrome/browser/extensions/install_tracker_factory.h"
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/install_tracker.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_factory.h"
+#include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 
 namespace extensions {
 
 // static
-InstallTracker* InstallTrackerFactory::GetForProfile(Profile* profile) {
+InstallTracker* InstallTrackerFactory::GetForBrowserContext(
+    content::BrowserContext* context) {
   return static_cast<InstallTracker*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 InstallTrackerFactory* InstallTrackerFactory::GetInstance() {
@@ -38,8 +38,7 @@ InstallTrackerFactory::~InstallTrackerFactory() {
 
 KeyedService* InstallTrackerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = Profile::FromBrowserContext(context);
-  return new InstallTracker(profile, ExtensionPrefs::Get(context));
+  return new InstallTracker(context, ExtensionPrefs::Get(context));
 }
 
 content::BrowserContext* InstallTrackerFactory::GetBrowserContextToUse(

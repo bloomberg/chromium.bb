@@ -7,8 +7,6 @@
 #include "base/bind.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -16,15 +14,16 @@
 
 namespace extensions {
 
-InstallTracker::InstallTracker(Profile* profile,
+InstallTracker::InstallTracker(content::BrowserContext* browser_context,
                                extensions::ExtensionPrefs* prefs)
     : extension_registry_observer_(this) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
-                 content::Source<Profile>(profile));
-  registrar_.Add(this, chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
-      content::Source<Profile>(profile));
-  extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
+                 content::Source<content::BrowserContext>(browser_context));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
+                 content::Source<content::BrowserContext>(browser_context));
+  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context));
 
   // Prefs may be null in tests.
   if (prefs) {
@@ -44,8 +43,7 @@ InstallTracker::~InstallTracker() {
 
 // static
 InstallTracker* InstallTracker::Get(content::BrowserContext* context) {
-  return InstallTrackerFactory::GetForProfile(
-      Profile::FromBrowserContext(context));
+  return InstallTrackerFactory::GetForBrowserContext(context);
 }
 
 void InstallTracker::AddObserver(InstallObserver* observer) {

@@ -17,8 +17,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
 
-class Profile;
-
 namespace content {
 class BrowserContext;
 }
@@ -32,7 +30,7 @@ class InstallTracker : public KeyedService,
                        public content::NotificationObserver,
                        public ExtensionRegistryObserver {
  public:
-  InstallTracker(Profile* profile,
+  InstallTracker(content::BrowserContext* browser_context,
                  extensions::ExtensionPrefs* prefs);
   virtual ~InstallTracker();
 

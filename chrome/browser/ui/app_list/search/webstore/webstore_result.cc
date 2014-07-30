@@ -132,7 +132,8 @@ scoped_ptr<ChromeSearchResult> WebstoreResult::Duplicate() {
 void WebstoreResult::InitAndStartObserving() {
   DCHECK(!install_tracker_ && !extension_registry_);
 
-  install_tracker_ = extensions::InstallTrackerFactory::GetForProfile(profile_);
+  install_tracker_ =
+      extensions::InstallTrackerFactory::GetForBrowserContext(profile_);
   extension_registry_ = extensions::ExtensionRegistry::Get(profile_);
 
   const extensions::ActiveInstallData* install_data =

@@ -814,7 +814,7 @@ void CrxInstaller::ReportSuccessFromUIThread() {
 }
 
 void CrxInstaller::NotifyCrxInstallBegin() {
-  InstallTrackerFactory::GetForProfile(profile())
+  InstallTrackerFactory::GetForBrowserContext(profile())
       ->OnBeginCrxInstall(expected_id_);
 }
 
@@ -830,7 +830,7 @@ void CrxInstaller::NotifyCrxInstallComplete(bool success) {
       content::Details<const Extension>(
           success ? extension() : NULL));
 
-  InstallTrackerFactory::GetForProfile(profile())
+  InstallTrackerFactory::GetForBrowserContext(profile())
       ->OnFinishCrxInstall(success ? extension()->id() : expected_id_, success);
 
   if (success)

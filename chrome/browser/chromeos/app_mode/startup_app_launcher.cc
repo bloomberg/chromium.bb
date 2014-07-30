@@ -273,7 +273,7 @@ void StartupAppLauncher::OnFinishCrxInstall(const std::string& extension_id,
     return;
 
   extensions::InstallTracker* tracker =
-      extensions::InstallTrackerFactory::GetForProfile(profile_);
+      extensions::InstallTrackerFactory::GetForBrowserContext(profile_);
   tracker->RemoveObserver(this);
   if (delegate_->IsShowingNetworkConfigScreen()) {
     LOG(WARNING) << "Showing network config screen";
@@ -371,7 +371,7 @@ void StartupAppLauncher::BeginInstall() {
     delegate_->OnInstallingApp();
     // Observe the crx installation events.
     extensions::InstallTracker* tracker =
-        extensions::InstallTrackerFactory::GetForProfile(profile_);
+        extensions::InstallTrackerFactory::GetForBrowserContext(profile_);
     tracker->AddObserver(this);
     return;
   }

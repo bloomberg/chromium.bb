@@ -9,15 +9,13 @@
 
 template <typename T> struct DefaultSingletonTraits;
 
-class Profile;
-
 namespace extensions {
 
 class InstallTracker;
 
 class InstallTrackerFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static InstallTracker* GetForProfile(Profile* profile);
+  static InstallTracker* GetForBrowserContext(content::BrowserContext* context);
   static InstallTrackerFactory* GetInstance();
 
  private:
@@ -35,6 +33,6 @@ class InstallTrackerFactory : public BrowserContextKeyedServiceFactory {
   DISALLOW_COPY_AND_ASSIGN(InstallTrackerFactory);
 };
 
-}  // namespace extensions;
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_INSTALL_TRACKER_FACTORY_H_

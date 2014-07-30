@@ -11,8 +11,6 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/install_observer.h"
 
-class Profile;
-
 namespace extensions {
 
 class InstallTracker;

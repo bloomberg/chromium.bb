@@ -8,7 +8,6 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "extensions/browser/extension_system.h"
 #include "ipc/ipc_sender.h"
@@ -47,8 +46,8 @@ WebstoreAPI::WebstoreAPI(content::BrowserContext* browser_context)
     : browser_context_(browser_context),
       install_observer_(
           new ScopedObserver<InstallTracker, InstallObserver>(this)) {
-  install_observer_->Add(InstallTrackerFactory::GetForProfile(
-      Profile::FromBrowserContext(browser_context)));
+  install_observer_->Add(
+      InstallTrackerFactory::GetForBrowserContext(browser_context));
 }
 
 WebstoreAPI::~WebstoreAPI() {}
