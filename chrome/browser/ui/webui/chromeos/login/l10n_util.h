@@ -8,9 +8,11 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace base {
+class DictionaryValue;
 class ListValue;
 }
 
@@ -55,14 +57,21 @@ scoped_ptr<base::ListValue> GetLoginKeyboardLayouts(
     const std::string& locale,
     const std::string& selected);
 
-// Return a list of keyboard layouts that can be used for |locale|. Each list
-// entry is a dictionary that contains data such as an ID and a display name.
-// The list will consist of the device's hardware layouts, followed by a divider
-// and locale-specific keyboard layouts, if any. All layouts supported for
-// |locale| are returned, including those that produce non-Latin characters by
-// default.
-scoped_ptr<base::ListValue> GetKeyboardLayoutsForLocale(
+// Invokes |callback| with a list of keyboard layouts that can be used for
+// |locale|. Each list entry is a dictionary that contains data such as an ID
+// and a display name. The list will consist of the device's hardware layouts,
+// followed by a divider and locale-specific keyboard layouts, if any. All
+// layouts supported for |locale| are returned, including those that produce
+// non-Latin characters by default.
+typedef base::Callback<void(scoped_ptr<base::ListValue>)>
+    GetKeyboardLayoutsForLocaleCallback;
+void GetKeyboardLayoutsForLocale(
+    const GetKeyboardLayoutsForLocaleCallback& callback,
     const std::string& locale);
+
+// Returns the current keyboard layout, expressed as a dictionary that contains
+// data such as an ID and a display name.
+scoped_ptr<base::DictionaryValue> GetCurrentKeyboardLayout();
 
 }  // namespace chromeos
 

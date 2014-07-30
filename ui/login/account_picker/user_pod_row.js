@@ -1054,12 +1054,9 @@ cr.define('login', function() {
 
       var languageSelect = this.querySelector('.language-select');
       languageSelect.tabIndex = UserPodTabOrder.POD_INPUT;
-      languageSelect.addEventListener('change', function() {
-        chrome.send('getPublicSessionKeyboardLayouts', [
-            this.user.username,
-            languageSelect.options[languageSelect.selectedIndex].value]);
-      }.bind(this));
-
+      languageSelect.addEventListener(
+          'change',
+          this.getPublicSessionKeyboardLayouts_.bind(this));
       this.querySelector('.keyboard-select').tabIndex =
           UserPodTabOrder.POD_INPUT;
 
@@ -1100,7 +1097,8 @@ cr.define('login', function() {
       id = this.user.username + '-keyboard';
       this.querySelector('.keyboard-select-label').htmlFor = id;
       this.querySelector('.keyboard-select').setAttribute('id', id);
-      this.populateKeyboardSelect_(this.user.initialKeyboardLayouts);
+      this.populateKeyboardSelect_([this.user.initialKeyboardLayout]);
+      this.getPublicSessionKeyboardLayouts_();
     },
 
     /** @override **/
@@ -1210,6 +1208,17 @@ cr.define('login', function() {
         ensureTransitionEndEvent(languageAndInputSection, 380);
       }, 0);
     },
+
+    /**
+     * Retrieves the list of keyboard layouts available for the currently
+     * selected locale.
+     */
+    getPublicSessionKeyboardLayouts_: function() {
+      var languageSelect = this.querySelector('.language-select');
+      chrome.send('getPublicSessionKeyboardLayouts', [
+                  this.user.username,
+                  languageSelect.options[languageSelect.selectedIndex].value]);
+     },
 
     /**
      * Populates the keyboard layout "select" element with a list of layouts.

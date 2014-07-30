@@ -80,8 +80,6 @@
 #include "ash/wm/lock_state_controller.h"
 #endif
 
-using content::BrowserThread;
-
 namespace {
 
 // Max number of users to show.
@@ -1293,10 +1291,20 @@ void SigninScreenHandler::HandleRetrieveAuthenticatedUserEmail(
 void SigninScreenHandler::HandleGetPublicSessionKeyboardLayouts(
     const std::string& user_id,
     const std::string& locale) {
+  GetKeyboardLayoutsForLocale(
+      base::Bind(&SigninScreenHandler::SendPublicSessionKeyboardLayouts,
+                 weak_factory_.GetWeakPtr(),
+                 user_id),
+      locale);
+}
+
+void SigninScreenHandler::SendPublicSessionKeyboardLayouts(
+    const std::string& user_id,
+    scoped_ptr<base::ListValue> keyboard_layouts) {
   web_ui()->CallJavascriptFunction(
       "login.AccountPickerScreen.setPublicSessionKeyboardLayouts",
       base::StringValue(user_id),
-      *GetKeyboardLayoutsForLocale(locale).release());
+      *keyboard_layouts);
 }
 
 void SigninScreenHandler::HandleLaunchKioskApp(const std::string& app_id,

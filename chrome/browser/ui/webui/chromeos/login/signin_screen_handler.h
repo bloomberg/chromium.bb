@@ -358,6 +358,12 @@ class SigninScreenHandler
   void HandleGetPublicSessionKeyboardLayouts(const std::string& user_id,
                                              const std::string& locale);
 
+  // Sends the list of keyboard layouts available for the currently selected
+  // public session locale.
+  void SendPublicSessionKeyboardLayouts(
+      const std::string& user_id,
+      scoped_ptr<base::ListValue> keyboard_layouts);
+
   // Returns true iff
   // (i)   log in is restricted to some user list,
   // (ii)  all users in the restricted list are present.

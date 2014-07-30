@@ -38,7 +38,7 @@ const char kKeyInitialAuthType[] = "initialAuthType";
 const char kKeyMultiProfilesAllowed[] = "isMultiProfilesAllowed";
 const char kKeyMultiProfilesPolicy[] = "multiProfilesPolicy";
 const char kKeyInitialLocales[] = "initialLocales";
-const char kKeyInitialKeyboardLayouts[] = "initialKeyboardLayouts";
+const char kKeyInitialKeyboardLayout[] = "initialKeyboardLayout";
 
 // Max number of users to show.
 // Please keep synced with one in signin_userlist_unittest.cc.
@@ -103,15 +103,14 @@ void UserSelectionScreen::FillUserDictionary(
                            policy_connector->GetEnterpriseDomain());
     }
 
-    // TODO(bartfab): Initialize |locale| and |most_relevant_languages| based on
-    // policy.
+    // TODO(bartfab): Initialize |locale| based on policy.
     const std::string locale;
     std::vector<std::string> most_relevant_languages;
     user_dict->Set(
         kKeyInitialLocales,
         GetUILanguageList(&most_relevant_languages, locale).release());
-    user_dict->Set(kKeyInitialKeyboardLayouts,
-                   GetKeyboardLayoutsForLocale(locale).release());
+    user_dict->Set(kKeyInitialKeyboardLayout,
+                   GetCurrentKeyboardLayout().release());
   }
 }
 
