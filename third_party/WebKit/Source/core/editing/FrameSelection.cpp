@@ -1823,8 +1823,7 @@ void FrameSelection::setSelectionFromNone()
     Element* documentElement = document->documentElement();
     if (!documentElement)
         return;
-    HTMLBodyElement* body = isHTMLBodyElement(*documentElement) ? toHTMLBodyElement(documentElement) : Traversal<HTMLBodyElement>::next(*documentElement);
-    if (body)
+    if (HTMLBodyElement* body = Traversal<HTMLBodyElement>::firstChild(*documentElement))
         setSelection(VisibleSelection(firstPositionInOrBeforeNode(body), DOWNSTREAM));
 }
 
