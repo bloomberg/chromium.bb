@@ -116,6 +116,8 @@ class ShelfButton::BarView : public views::ImageView,
   BarView(ShelfButton* host)
       : host_(host),
         show_attention_(false) {
+    // Make sure the events reach the parent view for handling.
+    set_interactive(false);
   }
 
   virtual ~BarView() {
@@ -124,11 +126,6 @@ class ShelfButton::BarView : public views::ImageView,
   }
 
   // views::View:
-  virtual bool CanProcessEventsWithinSubtree() const OVERRIDE {
-    // Send events to the parent view for handling.
-    return false;
-  }
-
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     if (show_attention_) {
       int alpha = ShelfButtonAnimation::GetInstance()->GetAlpha();
@@ -196,14 +193,12 @@ class ShelfButton::BarView : public views::ImageView,
 // ShelfButton::IconView
 
 ShelfButton::IconView::IconView() : icon_size_(kIconSize) {
+  // Do not make this interactive, so that events are sent to ShelfView for
+  // handling.
+  set_interactive(false);
 }
 
 ShelfButton::IconView::~IconView() {
-}
-
-bool ShelfButton::IconView::CanProcessEventsWithinSubtree() const {
-  // Return false so that events are sent to ShelfView for handling.
-  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

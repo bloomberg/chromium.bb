@@ -195,21 +195,6 @@ void EditProfileLink::OnBlur() {
 }
 
 
-// ProfileImageView -----------------------------------------------------------
-
-// A custom image view that ignores mouse events so that the parent can receive
-// them instead.
-class ProfileImageView : public views::ImageView {
- public:
-  // views::View:
-  virtual bool CanProcessEventsWithinSubtree() const OVERRIDE;
-};
-
-bool ProfileImageView::CanProcessEventsWithinSubtree() const {
-  // Send events to the parent view for handling.
-  return false;
-}
-
 }  // namespace
 
 // ProfileItemView ------------------------------------------------------------
@@ -260,7 +245,11 @@ ProfileItemView::ProfileItemView(const AvatarMenu::Item& item,
       menu_(menu) {
   set_notify_enter_exit_on_child(true);
 
-  image_view_ = new ProfileImageView();
+  // Create an image-view for the profile. Make sure it ignores events so that
+  // the parent can receive the events instead.
+  image_view_ = new views::ImageView();
+  image_view_->set_interactive(false);
+
   // GetSizedAvatarIcon will resize the icon in case it's too large.
   const gfx::ImageSkia profile_icon = *profiles::GetSizedAvatarIcon(item_.icon,
       false, profiles::kAvatarIconWidth, kItemHeight).ToImageSkia();
