@@ -56,7 +56,7 @@ function test()
 
         linkifier = new WebInspector.Linkifier();
         var count1 = liveLocationsCount();
-        link = linkifier.linkifyLocation(WebInspector.targetManager.mainTarget(), WebInspector.resourceTreeModel.inspectedPageURL(), 8, 0, "dummy-class");
+        link = linkifier.linkifyScriptLocation(WebInspector.targetManager.mainTarget(), null, WebInspector.resourceTreeModel.inspectedPageURL(), 8, 0, "dummy-class");
         var count2 = liveLocationsCount();
 
         InspectorTest.addResult("listeners added on raw source code: " + (count2 - count1));

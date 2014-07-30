@@ -7,6 +7,6 @@ Script execution resumed.
 setTimeout(testFunction, 0)
 1
 console.error(42)
-42testFunction console-error-on-call-frame.html:10
+42 (program):2(anonymous function) (program):2evaluate (program):426testFunction console-error-on-call-frame.html:10
 undefined
 

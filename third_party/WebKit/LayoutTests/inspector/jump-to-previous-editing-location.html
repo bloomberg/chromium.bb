@@ -223,7 +223,7 @@ function test()
                 var linkifier = new WebInspector.Linkifier();
                 WebInspector.inspectorView.showPanel("timeline");
                 var anchorURI = uiSourceCode.url;
-                var anchor = linkifier.linkifyLocation(WebInspector.targetManager.mainTarget(), anchorURI, 10, 1);
+                var anchor = linkifier.linkifyScriptLocation(WebInspector.targetManager.mainTarget(), null, anchorURI, 10, 1);
                 WebInspector.Revealer.reveal(anchor.__uiLocation);
                 InspectorTest.addResult("Selection: " + panel.visibleView.textEditor.selection().toString());
                 dumpSelection(panel.visibleView.textEditor, "Showed anchor in " + anchorURI.split("/").pop() + " with line 333 column 3");
