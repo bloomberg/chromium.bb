@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "8.8",
+  "version": "8.9",
   "entries": [
     {
       "id": 1,
@@ -154,6 +154,10 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
             "op": "=",
             "value": "osmesa"
           }
+        },
+        {
+          "vendor_id": "0x1414",
+          "device_id": ["0x02c1"]
         }
       ],
       "features": [
@@ -652,37 +656,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       ]
     },
     {
-      "id": 55,
-      "description": "Drivers older than 2007-01 on Windows are assumed to be buggy",
-      "cr_bugs": [72979, 89802],
-      "os": {
-        "type": "win"
-      },
-      "driver_date": {
-        "op": "<",
-        "value": "2007.1"
-      },
-      "exceptions": [
-        {
-          "vendor_id": "0x8086",
-          "device_id": ["0x29a2"],
-          "driver_version": {
-            "op": ">=",
-            "value": "7.15.10.1624"
-          }
-        },
-        {
-          "driver_vendor": {
-            "op": "=",
-            "value": "osmesa"
-          }
-        }
-      ],
-      "features": [
-        "all"
-      ]
-    },
-    {
       "id": 56,
       "description": "NVIDIA linux drivers are unstable when using multiple Open GL contexts and with low memory",
       "cr_bugs": [145600],
@@ -879,6 +852,12 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "op": "=",
         "value": "Microsoft"
       },
+      "exceptions": [
+        {
+          "vendor_id": "0x1414",
+          "device_id": ["0x02c1"]
+        }
+      ],
       "features": [
         "all"
       ]
