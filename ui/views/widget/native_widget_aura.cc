@@ -908,7 +908,6 @@ void NativeWidgetAura::OnWindowFocused(aura::Window* gained_focus,
     if (GetWidget()->GetInputMethod())  // Null in tests.
       GetWidget()->GetInputMethod()->OnFocus();
     delegate_->OnNativeFocus(lost_focus);
-    GetWidget()->GetFocusManager()->RestoreFocusedView();
   } else if (window_ == lost_focus) {
     // GetInputMethod() recreates the input method if it's previously been
     // destroyed.  If we get called during destruction, the input method will be
@@ -925,8 +924,6 @@ void NativeWidgetAura::OnWindowFocused(aura::Window* gained_focus,
     }
 
     delegate_->OnNativeBlur(gained_focus);
-    if (GetWidget()->GetFocusManager())
-      GetWidget()->GetFocusManager()->StoreFocusedView(true);
   }
 }
 

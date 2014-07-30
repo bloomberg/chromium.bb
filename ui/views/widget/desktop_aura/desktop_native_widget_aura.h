@@ -293,7 +293,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
       window_modality_controller_;
 
   bool restore_focus_on_activate_;
-  bool restore_focus_on_window_focus_;
 
   gfx::NativeCursor cursor_;
   // We must manually reference count the number of users of |cursor_manager_|

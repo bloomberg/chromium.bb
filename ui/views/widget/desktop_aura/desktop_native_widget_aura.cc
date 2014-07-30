@@ -259,7 +259,6 @@ DesktopNativeWidgetAura::DesktopNativeWidgetAura(
       native_widget_delegate_(delegate),
       last_drop_operation_(ui::DragDropTypes::DRAG_NONE),
       restore_focus_on_activate_(false),
-      restore_focus_on_window_focus_(false),
       cursor_(gfx::kNullCursor),
       widget_type_(Widget::InitParams::TYPE_WINDOW) {
   aura::client::SetFocusChangeObserver(content_window_, this);
@@ -1095,23 +1094,14 @@ void DesktopNativeWidgetAura::OnWindowFocused(aura::Window* gained_focus,
     native_widget_delegate_->OnNativeFocus(lost_focus);
 
     // If focus is moving from a descendant Window to |content_window_| then
-    // native activation hasn't changed. Still, the InputMethod and FocusManager
-    // must be informed of the Window focus change.
+    // native activation hasn't changed. Still, the InputMethod must be informed
+    // of the Window focus change.
     InputMethod* input_method = GetWidget()->GetInputMethod();
     if (input_method)
       input_method->OnFocus();
-
-    if (restore_focus_on_window_focus_) {
-      restore_focus_on_window_focus_ = false;
-      GetWidget()->GetFocusManager()->RestoreFocusedView();
-    }
   } else if (content_window_ == lost_focus) {
     desktop_window_tree_host_->OnNativeWidgetBlur();
     native_widget_delegate_->OnNativeBlur(gained_focus);
-
-    DCHECK(!restore_focus_on_window_focus_);
-    restore_focus_on_window_focus_ = true;
-    GetWidget()->GetFocusManager()->StoreFocusedView(false);
   }
 }
 
