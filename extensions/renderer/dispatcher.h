@@ -21,7 +21,7 @@
 #include "extensions/renderer/resource_bundle_source_map.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
-#include "extensions/renderer/user_script_set.h"
+#include "extensions/renderer/user_script_set_manager.h"
 #include "extensions/renderer/v8_schema_registry.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -63,7 +63,7 @@ struct Message;
 // Dispatches extension control messages sent to the renderer and stores
 // renderer extension related state.
 class Dispatcher : public content::RenderProcessObserver,
-                   public UserScriptSet::Observer {
+                   public UserScriptSetManager::Observer {
  public:
   explicit Dispatcher(DispatcherDelegate* delegate);
   virtual ~Dispatcher();
@@ -194,7 +194,7 @@ class Dispatcher : public content::RenderProcessObserver,
                                       const URLPatternSet& origin_set);
   void OnUsingWebRequestAPI(bool webrequest_used);
 
-  // UserScriptSet::Observer implementation.
+  // UserScriptSetManager::Observer implementation.
   virtual void OnUserScriptsUpdated(
       const std::set<std::string>& changed_extensions,
       const std::vector<UserScript*>& scripts) OVERRIDE;
@@ -272,7 +272,7 @@ class Dispatcher : public content::RenderProcessObserver,
 
   scoped_ptr<ContentWatcher> content_watcher_;
 
-  scoped_ptr<UserScriptSet> user_script_set_;
+  scoped_ptr<UserScriptSetManager> user_script_set_manager_;
 
   scoped_ptr<ScriptInjectionManager> script_injection_manager_;
 
@@ -306,8 +306,8 @@ class Dispatcher : public content::RenderProcessObserver,
 
   // It is important for this to come after the ScriptInjectionManager, so that
   // the observer is destroyed before the UserScriptSet.
-  ScopedObserver<UserScriptSet, UserScriptSet::Observer>
-      user_script_set_observer_;
+  ScopedObserver<UserScriptSetManager, UserScriptSetManager::Observer>
+      user_script_set_manager_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(Dispatcher);
 };

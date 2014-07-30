@@ -136,11 +136,11 @@ void ScriptInjectionManager::RVOHelper::RunIdle(blink::WebFrame* frame) {
 
 ScriptInjectionManager::ScriptInjectionManager(
     const ExtensionSet* extensions,
-    UserScriptSet* user_script_set)
+    UserScriptSetManager* user_script_set_manager)
     : extensions_(extensions),
-      user_script_set_(user_script_set),
-      user_script_set_observer_(this) {
-  user_script_set_observer_.Add(user_script_set_);
+      user_script_set_manager_(user_script_set_manager),
+      user_script_set_manager_observer_(this) {
+  user_script_set_manager_observer_.Add(user_script_set_manager_);
 }
 
 ScriptInjectionManager::~ScriptInjectionManager() {
@@ -237,7 +237,7 @@ void ScriptInjectionManager::InjectScripts(
   ScopedVector<ScriptInjection> user_script_injections;
   int tab_id = ExtensionHelper::Get(content::RenderView::FromWebView(
                                         frame->top()->view()))->tab_id();
-  user_script_set_->GetInjections(
+  user_script_set_manager_->GetAllInjections(
       &user_script_injections, frame, tab_id, run_location);
   for (ScopedVector<ScriptInjection>::iterator iter =
            user_script_injections.begin();

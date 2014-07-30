@@ -668,6 +668,8 @@
         'renderer/user_script_injector.h',
         'renderer/user_script_set.cc',
         'renderer/user_script_set.h',
+        'renderer/user_script_set_manager.cc',
+        'renderer/user_script_set_manager.h',
         'renderer/utils_native_handler.cc',
         'renderer/utils_native_handler.h',
         'renderer/v8_context_native_handler.cc',

@@ -182,7 +182,7 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
       source_map_(&ResourceBundle::GetSharedInstance()),
       v8_schema_registry_(new V8SchemaRegistry),
       is_webkit_initialized_(false),
-      user_script_set_observer_(this) {
+      user_script_set_manager_observer_(this) {
   const CommandLine& command_line = *(CommandLine::ForCurrentProcess());
   is_extension_process_ =
       command_line.HasSwitch(extensions::switches::kExtensionProcess) ||
@@ -195,10 +195,10 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
 
   RenderThread::Get()->RegisterExtension(SafeBuiltins::CreateV8Extension());
 
-  user_script_set_.reset(new UserScriptSet(&extensions_));
+  user_script_set_manager_.reset(new UserScriptSetManager(&extensions_));
   script_injection_manager_.reset(
-      new ScriptInjectionManager(&extensions_, user_script_set_.get()));
-  user_script_set_observer_.Add(user_script_set_.get());
+      new ScriptInjectionManager(&extensions_, user_script_set_manager_.get()));
+  user_script_set_manager_observer_.Add(user_script_set_manager_.get());
   request_sender_.reset(new RequestSender(this));
   PopulateSourceMap();
 }
@@ -923,7 +923,7 @@ void Dispatcher::OnUserScriptsUpdated(
 
 void Dispatcher::UpdateActiveExtensions() {
   std::set<std::string> active_extensions = active_extension_ids_;
-  user_script_set_->GetActiveExtensionIds(&active_extensions);
+  user_script_set_manager_->GetAllActiveExtensionIds(&active_extensions);
   delegate_->OnActiveExtensionsUpdated(active_extensions);
 }
 

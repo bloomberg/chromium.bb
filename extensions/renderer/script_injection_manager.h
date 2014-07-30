@@ -15,7 +15,7 @@
 #include "base/scoped_observer.h"
 #include "extensions/common/user_script.h"
 #include "extensions/renderer/script_injection.h"
-#include "extensions/renderer/user_script_set.h"
+#include "extensions/renderer/user_script_set_manager.h"
 
 struct ExtensionMsg_ExecuteCode_Params;
 
@@ -36,10 +36,10 @@ class ExtensionSet;
 // via both content/user scripts and tabs.executeScript(). It is responsible for
 // maintaining any pending injections awaiting permission or the appropriate
 // load point, and injecting them when ready.
-class ScriptInjectionManager : public UserScriptSet::Observer {
+class ScriptInjectionManager : public UserScriptSetManager::Observer {
  public:
   ScriptInjectionManager(const ExtensionSet* extensions,
-                         UserScriptSet* user_script_set);
+                         UserScriptSetManager* user_script_set_manager);
   virtual ~ScriptInjectionManager();
 
   // Notifies that a new render view has been created.
@@ -53,7 +53,7 @@ class ScriptInjectionManager : public UserScriptSet::Observer {
 
   typedef std::map<blink::WebFrame*, UserScript::RunLocation> FrameStatusMap;
 
-  // UserScriptSet::Observer implementation.
+  // UserScriptSetManager::Observer implementation.
   virtual void OnUserScriptsUpdated(
       const std::set<std::string>& changed_extensions,
       const std::vector<UserScript*>& scripts) OVERRIDE;
@@ -86,14 +86,14 @@ class ScriptInjectionManager : public UserScriptSet::Observer {
   ScopedVector<RVOHelper> rvo_helpers_;
 
   // The set of UserScripts associated with extensions. Owned by the Dispatcher.
-  UserScriptSet* user_script_set_;
+  UserScriptSetManager* user_script_set_manager_;
 
   // Pending injections which are waiting for either the proper run location or
   // user consent.
   ScopedVector<ScriptInjection> pending_injections_;
 
-  ScopedObserver<UserScriptSet, UserScriptSet::Observer>
-      user_script_set_observer_;
+  ScopedObserver<UserScriptSetManager, UserScriptSetManager::Observer>
+      user_script_set_manager_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ScriptInjectionManager);
 };

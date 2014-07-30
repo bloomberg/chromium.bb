@@ -544,8 +544,8 @@ void UserScriptMaster::SendUpdate(
     return;  // This can legitimately fail if the renderer asserts at startup.
 
   if (base::SharedMemory::IsHandleValid(handle_for_process)) {
-    process->Send(new ExtensionMsg_UpdateUserScripts(handle_for_process,
-                                                     changed_extensions));
+    process->Send(new ExtensionMsg_UpdateUserScripts(
+        handle_for_process, "" /* owner */, changed_extensions));
   }
 }
 

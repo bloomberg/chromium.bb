@@ -381,10 +381,17 @@ IPC_MESSAGE_ROUTED1(ExtensionMsg_ExecuteCode,
 // Notification that the user scripts have been updated. It has one
 // SharedMemoryHandle argument consisting of the pickled script data. This
 // handle is valid in the context of the renderer.
+// If |owner| is not empty, then the shared memory handle refers to |owner|'s
+// programmatically-defined scripts. Otherwise, the handle refers to all
+// extensions' statically defined scripts.
 // If |changed_extensions| is not empty, only the extensions in that set will
-// be updated. Otherwise, all extensions will be updated.
-IPC_MESSAGE_CONTROL2(ExtensionMsg_UpdateUserScripts,
+// be updated. Otherwise, all extensions that have scripts in the shared memory
+// region will be updated. Note that the empty set => all extensions case is not
+// supported for per-extension programmatically-defined script regions; in such
+// regions, the owner is expected to list itself as the only changed extension.
+IPC_MESSAGE_CONTROL3(ExtensionMsg_UpdateUserScripts,
                      base::SharedMemoryHandle,
+                     extensions::ExtensionId /* owner */,
                      std::set<std::string> /* changed extensions */)
 
 // Tell the render view which browser window it's being attached to.

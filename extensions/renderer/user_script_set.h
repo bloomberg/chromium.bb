@@ -31,7 +31,7 @@ class ScriptInjection;
 // The UserScriptSet is a collection of UserScripts which knows how to update
 // itself from SharedMemory and create ScriptInjections for UserScripts to
 // inject on a page.
-class UserScriptSet : public content::RenderProcessObserver {
+class UserScriptSet {
  public:
   class Observer {
    public:
@@ -40,8 +40,8 @@ class UserScriptSet : public content::RenderProcessObserver {
         const std::vector<UserScript*>& scripts) = 0;
   };
 
-  UserScriptSet(const ExtensionSet* extensions);
-  virtual ~UserScriptSet();
+  explicit UserScriptSet(const ExtensionSet* extensions);
+  ~UserScriptSet();
 
   // Adds or removes observers.
   void AddObserver(Observer* observer);
@@ -59,17 +59,14 @@ class UserScriptSet : public content::RenderProcessObserver {
                      int tab_id,
                      UserScript::RunLocation run_location);
 
+  // Updates scripts given the shared memory region containing user scripts.
+  // Returns true if the scripts were successfully updated.
+  bool UpdateUserScripts(base::SharedMemoryHandle shared_memory,
+                         const std::set<std::string>& changed_extensions);
+
+  const std::vector<UserScript*>& scripts() const { return scripts_.get(); }
+
  private:
-  // content::RenderProcessObserver implementation.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
-
-  // Handle the UpdateUserScripts extension message.
-  void OnUpdateUserScripts(base::SharedMemoryHandle shared_memory,
-                           const std::set<std::string>& changed_extensions);
-
-  // Update the parsed scripts from |shared memory|.
-  bool UpdateScripts(base::SharedMemoryHandle shared_memory);
-
   // Returns a new ScriptInjection for the given |script| to execute in the
   // |web_frame|, or NULL if the script should not execute.
   scoped_ptr<ScriptInjection> GetInjectionForScript(

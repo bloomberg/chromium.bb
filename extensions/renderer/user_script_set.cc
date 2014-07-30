@@ -36,7 +36,6 @@ GURL GetDocumentUrlForFrame(blink::WebFrame* frame) {
 
 UserScriptSet::UserScriptSet(const ExtensionSet* extensions)
     : extensions_(extensions) {
-  content::RenderThread::Get()->AddObserver(this);
 }
 
 UserScriptSet::~UserScriptSet() {
@@ -79,42 +78,9 @@ void UserScriptSet::GetInjections(
   }
 }
 
-bool UserScriptSet::OnControlMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(UserScriptSet, message)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateUserScripts, OnUpdateUserScripts)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void UserScriptSet::OnUpdateUserScripts(
+bool UserScriptSet::UpdateUserScripts(
     base::SharedMemoryHandle shared_memory,
     const std::set<std::string>& changed_extensions) {
-  if (!base::SharedMemory::IsHandleValid(shared_memory)) {
-    NOTREACHED() << "Bad scripts handle";
-    return;
-  }
-
-  for (std::set<std::string>::const_iterator iter = changed_extensions.begin();
-       iter != changed_extensions.end();
-       ++iter) {
-    if (!Extension::IdIsValid(*iter)) {
-      NOTREACHED() << "Invalid extension id: " << *iter;
-      return;
-    }
-  }
-
-  if (UpdateScripts(shared_memory)) {
-    FOR_EACH_OBSERVER(Observer,
-                      observers_,
-                      OnUserScriptsUpdated(changed_extensions, scripts_.get()));
-  }
-}
-
-bool UserScriptSet::UpdateScripts(
-    base::SharedMemoryHandle shared_memory) {
   bool only_inject_incognito =
       ExtensionsRendererClient::Get()->IsIncognitoProcess();
 
@@ -171,6 +137,9 @@ bool UserScriptSet::UpdateScripts(
     scripts_.push_back(script.release());
   }
 
+  FOR_EACH_OBSERVER(Observer,
+                    observers_,
+                    OnUserScriptsUpdated(changed_extensions, scripts_.get()));
   return true;
 }
 
