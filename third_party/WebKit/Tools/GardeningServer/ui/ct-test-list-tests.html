@@ -51,13 +51,14 @@ asyncTest("basic", 4, function() {
   var list = document.createElement('ct-test-list');
 
   list.tests = kExampleTests;
+  list.tree = 'blink';
 
   Platform.endOfMicrotask(function() {
     var tests = list.shadowRoot.querySelectorAll('a');
     equal(tests.length, 3);
-    equal(tests[0].href, 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=plugins%2Fgesture-events-scrolled.html&testType=foo_step');
-    equal(tests[1].href, 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=plugins%2Ftransformed-events.html&testType=foo_step');
-    equal(tests[2].href, 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=plugins%2Fgesture-events.html&testType=foo_step');
+    equal(tests[0].href, 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#group=@ToT%20Blink&tests=plugins%2Fgesture-events-scrolled.html&testType=foo_step');
+    equal(tests[1].href, 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#group=@ToT%20Blink&tests=plugins%2Ftransformed-events.html&testType=foo_step');
+    equal(tests[2].href, 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#group=@ToT%20Blink&tests=plugins%2Fgesture-events.html&testType=foo_step');
 
     start();
   });

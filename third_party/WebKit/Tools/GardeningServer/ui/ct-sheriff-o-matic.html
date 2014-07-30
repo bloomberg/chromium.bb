@@ -30,6 +30,7 @@ found in the LICENSE file.
         color: white;
         cursor: default;
         display: flex;
+        justify-content: space-between;
         font-size: 1.1em;
       }
       header a, header span {
@@ -44,25 +45,39 @@ found in the LICENSE file.
     </style>
 
     <header>
-      <template if="{{ selected == 0 }}">
-        <span><img src="../favicon.ico"> Auto-sheriff-o-maticon</span>
-      </template>
-      <template if="{{ selected == 1 }}">
-        <a on-click="{{ onBack }}">
-          &lt;&lt; Go back
-        </a>
-      </template>
+      <div>
+        <template if="{{ selected == 0 }}">
+          <span><img src="../favicon.ico"> Auto-sheriff-o-maticon</span>
+        </template>
+        <template if="{{ selected == 1 }}">
+          <a on-click="{{ onBack }}">
+            &lt;&lt; Go back
+          </a>
+        </template>
+      </div>
+      <!-- FIXME: Use a proper polymer component with data binding. -->
+      <select id="tree" on-change="{{ _updateTree }}">
+        <option value="blink">Blink</option>
+        <option value="chromium">Chromium</option>
+      </select>
     </header>
 
     <core-animated-pages selected="{{ selected }}" transitions="slide-from-right">
-      <ct-unexpected-failures on-ct-examine-failures="{{ onExamine }}"></ct-unexpected-failures>
-      <ct-results-panel failures="{{ currentFailures }}"></ct-results-panel>
+      <ct-unexpected-failures tree="{{ tree }}" on-ct-examine-failures="{{ onExamine }}"></ct-unexpected-failures>
+      <ct-results-panel failures="{{ currentFailures }}" tree="{{ tree }}"></ct-results-panel>
     </core-animated-pages>
   </template>
   <script>
     Polymer({
+      // FIXME: Make chromium the default.
+      // That requires updating the select to the right value.
+      tree: 'blink',
       selected: 0,
       currentFailures: [],
+
+      _updateTree: function() {
+        this.tree = this.$.tree.selectedOptions[0].value;
+      },
 
       onBack: function() {
         this.selected = 0;

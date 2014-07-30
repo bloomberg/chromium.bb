@@ -13,17 +13,45 @@ found in the LICENSE file.
 
 module("ct-commit-list");
 
-asyncTest("basic", 2, function() {
+asyncTest("basic", 1, function() {
   var list = document.createElement('ct-commit-list');
 
-  list.first = 158545;
-  list.last = 158547;
   list.commits = new CTCommitLogMock();
 
-  Platform.endOfMicrotask(function() {
+  var blinkCommits = list.commits.commits.blink;
+  var revision;
+  for (revision in blinkCommits)
+    break;
+
+  var numCommits = 2;
+
+  list.first = {blink: revision};
+  list.last = {blink: Number(revision) + numCommits};
+
+  requestAnimationFrame(function() {
     var commits = list.shadowRoot.querySelectorAll('ct-commit');
-    equal(commits.length, 1);
-    deepEqual(list._revisions, [158545, 158546, 158547])
+    equal(commits.length, numCommits);
+
+    start();
+  });
+});
+
+asyncTest("backwards", 1, function() {
+  var list = document.createElement('ct-commit-list');
+
+  list.commits = new CTCommitLogMock();
+
+  var blinkCommits = list.commits.commits.blink;
+  var revision;
+  for (revision in blinkCommits)
+    break;
+
+  list.first = {blink: revision};
+  list.last = {blink: Number(revision) - 1};
+
+  requestAnimationFrame(function() {
+    var commits = list.shadowRoot.querySelectorAll('ct-commit');
+    equal(commits.length, 0);
 
     start();
   });

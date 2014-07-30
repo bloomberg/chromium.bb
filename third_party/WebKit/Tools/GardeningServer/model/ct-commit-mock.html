@@ -21,7 +21,8 @@ var kExampleCommitMessage =
     "git-svn-id: svn://svn.chromium.org/blink/trunk@158545 bbb929c8-8fbe-4397-9dbb-9b2b20218538";
 
 window.CTCommitMock = function() {
-  return new CTCommit("mkwst@chromium.org", kExampleCommitMessage, 'http://src.chromium.org/viewvc/blink');
+  return CTCommit.create("mkwst@chromium.org", kExampleCommitMessage,
+        'http://mockurl/?{revision}', 'blink');
 };
 
 })();

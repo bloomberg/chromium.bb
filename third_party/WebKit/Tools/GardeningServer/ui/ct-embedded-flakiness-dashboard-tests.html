@@ -18,18 +18,20 @@ asyncTest("url", 1, function() {
   }
 
   try {
-    ui.urlForEmbeddedFlakinessDashboard = function(test, step) { return "about:blank#" + test + step; }
+    ui.urlForEmbeddedFlakinessDashboard = function(test, step, tree) { return "about:blank#" + test + step + tree; }
     var embeddedFlakinessDashboard = document.createElement('ct-embedded-flakiness-dashboard');
     var testName = "foo/bar.html";
     var step = "foo_tests";
+    var tree = "blink";
     embeddedFlakinessDashboard.test = {
       testName: testName,
       step: step,
     };
+    embeddedFlakinessDashboard.tree = tree;
 
     requestAnimationFrame(function() {
       var iframe = embeddedFlakinessDashboard.shadowRoot.querySelector('#iframe');
-      equal(iframe.src, ui.urlForEmbeddedFlakinessDashboard(testName, step));
+      equal(iframe.src, ui.urlForEmbeddedFlakinessDashboard(testName, step, tree));
       reset();
       start();
     });

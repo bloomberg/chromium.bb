@@ -11,7 +11,7 @@ found in the LICENSE file.
 
 module("ct-commit");
 
-test("basic", 5, function() {
+test("basic", 6, function() {
   var message =
       "This matches Gecko's behavior for these types of properties.\n" +
       "\n" +
@@ -22,16 +22,18 @@ test("basic", 5, function() {
       "Review URL: https://chromiumcodereview.appspot.com/25022002\n" +
       "\n" +
       "git-svn-id: svn://svn.chromium.org/chrome/trunk@158545 bbb929c8-8fbe-4397-9dbb-9b2b20218538";
-  var urlBase = "http://mockbase.com";
+  var url = "http://mockbase.com?{revision}";
   var author = "mkwst@chromium.org";
+  var repository = 'blink';
 
-  var commit = new CTCommit(author, message, urlBase);
+  var commit = CTCommit.create(author, message, url, repository);
 
   equal(commit.author, author);
   equal(commit.message, message);
   equal(commit.revision, 158545);
   equal(commit.summary, "This matches Gecko's behavior for these types of properties.");
-  equal(commit.url, urlBase + "?view=rev&revision=158545");
+  equal(commit.url, url.assign({revision: "158545"}));
+  equal(commit.repository, repository);
 });
 
 test("blink", 2, function() {
@@ -45,13 +47,24 @@ test("blink", 2, function() {
       "Review URL: https://chromiumcodereview.appspot.com/25022002\n" +
       "\n" +
       "git-svn-id: svn://svn.chromium.org/blink/trunk@158545 bbb929c8-8fbe-4397-9dbb-9b2b20218538";
-  var urlBase = "http://mockbase.com";
+  var url = "http://mockbase.com?{revision}";
   var author = "mkwst@chromium.org";
 
-  var commit = new CTCommit(author, message, urlBase);
+  var commit = CTCommit.create(author, message, url);
 
   equal(commit.revision, 158545);
-  equal(commit.url, urlBase + "?view=rev&revision=158545");
+  equal(commit.url, url.assign({revision: "158545"}));
+});
+
+test("createIncomplete", 3, function() {
+  var url = "http://mockbase.com?{revision}";
+  var repository = 'blink';
+  var revison = 158545;
+  var commit = CTCommit.createIncomplete(url, revison, repository);
+
+  equal(commit.revision, 158545);
+  equal(commit.url, url.assign({revision: "158545"}));
+  equal(commit.repository, repository);
 });
 
 })();

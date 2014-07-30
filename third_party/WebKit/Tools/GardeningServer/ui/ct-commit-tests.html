@@ -14,16 +14,16 @@ found in the LICENSE file.
 module("ct-commit");
 
 asyncTest("basic", 3, function() {
-  var grouper = document.createElement('ct-commit');
+  var commit = document.createElement('ct-commit');
 
-  grouper.data = new CTCommitMock();
+  commit.data = new CTCommitMock();
 
   requestAnimationFrame(function() {
-    var html = grouper.shadowRoot.innerHTML;
+    var html = commit.shadowRoot.innerHTML;
 
     equal(html.indexOf('mkwst') != -1, true);
     equal(html.indexOf('behavior for these types') != -1, true);
-    equal(grouper.shadowRoot.querySelector('a').href, grouper.data.url);
+    equal(commit.shadowRoot.querySelector('a').href, commit.data.url);
 
     start();
   });

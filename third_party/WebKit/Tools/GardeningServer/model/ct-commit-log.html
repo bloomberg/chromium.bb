@@ -6,32 +6,54 @@ found in the LICENSE file.
 
 <link rel='import' href='ct-commit.html'>
 
+<link rel='import' href='ct-repositories.html'>
+
 <script>
 function CTCommitLog() {
-  // FIXME: This should be a map of repo-name to revision log using the same
-  // repo names that auto-sheriff.appspot's json uses.
-
-  // FIXME: Use better feeds.
-  // https://chromium.googlesource.com/chromium/blink/+log/master?format=json
-  // https://chromium.googlesource.com/chromium/chromium/+log/master?format=json
-  // https://code.google.com/feeds/p/skia/svnchanges/basic
-  // https://code.google.com/feeds/p/v8/svnchanges/basic
-  // https://code.google.com/feeds/p/nativeclient/svnchanges/basic
   this.commits = {};
+  this.firstRevision = {};
+  this._repositories = new CTRepositories();
 }
 
 CTCommitLog.prototype.update = function() {
-  // FIXME: Turn net.js into net.html and import it at the top of this file.
-  return net.xml('http://blink.lc/blink/atom').then(this._processXml.bind(this));
+  var requests = [];
+  Object.keys(this._repositories.repositories, (function(name, repository) {
+    var responseHandler = this._handleResponse.bind(this, repository.repositoryUrl, repository.name);
+    // FIXME: Turn net.js into net.html and import it at the top of this file.
+    requests.push(net.ajax({url: repository.dataUrl}).then(responseHandler));
+  }.bind(this)));
+  return Promise.all(requests);
 }
 
-CTCommitLog.prototype._processXml = function(xml) {
-  Array.prototype.forEach.call(xml.getElementsByTagName('entry'), function(logentry) {
-    var author = logentry.getElementsByTagName('author')[0].textContent.trim();
-    var message = logentry.getElementsByTagName('content')[0].textContent.trim();
-    // FIXME: Handle base urls for different repos.
-    var commit = new CTCommit(author, message, 'http://src.chromium.org/viewvc/blink');
-    this.commits[commit.revision] = commit;
+CTCommitLog.prototype._handleResponse = function(repositoryUrl, repository, json) {
+  if (!this.commits[repository])
+    this.commits[repository] = {};
+
+  // FIXME: Fix googlesource to not do this outdated JSON XSS mitigation.
+  json = json.substring(')]}\n'.length);
+  JSON.parse(json).log.forEach(function(entry) {
+    var commit = CTCommit.create(entry.author.name, entry.message, repositoryUrl, repository);
+    this.commits[repository][commit.revision] = commit;
   }.bind(this));
+
+  this.firstRevision[repository] = Object.keys(this.commits[repository]).sort()[0];
+}
+
+CTCommitLog.prototype.range = function(repository, first, last) {
+  var commits = [];
+  for (var revision = first; revision <= last; revision++) {
+    // Until we've seen a commit we have data for, fill in dummy data
+    // so that we show something. Assume that we have the correct data
+    // for all the commits after the first one we have data for.
+    if (revision >= this.firstRevision[repository]) {
+      var commit = this.commits[repository][revision];
+      if (commit)
+        commits.push(commit);
+    } else {
+      var url = this._repositories.repositories[repository].repositoryUrl;
+      commits.push(CTCommit.createIncomplete(url, revision, repository));
+    }
+  }
+  return commits;
 }
 </script>

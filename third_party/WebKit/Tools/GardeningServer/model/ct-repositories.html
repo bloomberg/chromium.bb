@@ -1,0 +1,32 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel='import' href='ct-repository.html'>
+
+<script>
+function CTRepositories() {
+    // FIXME: Include skia once their commit messages have a numeric value we can use.
+    // Right now it only has git hashes.
+    this.repositories = {
+        blink: new CTRepository(
+            'blink',
+            'https://chromium.googlesource.com/chromium/blink/+log?format=json',
+            'http://src.chromium.org/viewvc/blink?view=rev&revision={revision}'),
+        chromium: new CTRepository(
+            'chromium',
+            'https://chromium.googlesource.com/chromium/src/+log?format=json',
+            'http://src.chromium.org/viewvc/chrome?view=rev&revision={revision}'),
+        nacl: new CTRepository(
+            'nacl',
+            'https://chromium.googlesource.com/native_client/src/native_client/+log/master?format=json',
+            'http://src.chromium.org/viewvc/native_client?view=rev&revision={revision}'),
+        v8: new CTRepository(
+            'v8',
+            'https://chromium.googlesource.com/external/v8/+log/master?format=json',
+            'https://code.google.com/p/v8/source/detail?r={revision}'),
+    };
+}
+</script>

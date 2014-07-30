@@ -8,7 +8,7 @@ found in the LICENSE file.
 <link rel="import" href="ct-commit-list.html">
 <link rel="import" href="ct-test-list.html">
 
-<polymer-element name="ct-failure-card" attributes="failures commits">
+<polymer-element name="ct-failure-card" attributes="failures commits tree">
   <template>
     <style>
       :host {
@@ -55,19 +55,20 @@ found in the LICENSE file.
         align-self: flex-start;
       }
     </style>
-    <ct-builder-grid failures="{{failures}}"></ct-builder-grid>
+    <ct-builder-grid failures="{{ failures }}"></ct-builder-grid>
     <div class="failure">
-      <ct-test-list tests="{{failures}}"></ct-test-list>
-      <ct-commit-list first="{{failures[0].newestPassingRevision + 1}}"
-          last="{{failures[0].oldestFailingRevision}}"
-          commits="{{commits}}"></ct-commit-list>
+      <ct-test-list tests="{{ failures }}" tree="{{ tree }}"></ct-test-list>
+      <ct-commit-list first="{{ failures[0].lastPassingRevisions }}"
+          last="{{ failures[0].firstFailingRevisions }}"
+          commits="{{ commits }}"></ct-commit-list>
     </div>
-    <paper-button id="examine" on-tap="{{examine}}">Examine</paper-button>
+    <paper-button id="examine" on-tap="{{ examine }}">Examine</paper-button>
   </template>
   <script>
     Polymer({
       failures: [],
       commits: {},
+      tree: '',
 
       examine: function() {
         this.fire('ct-examine-failures', this.failures);

@@ -7,11 +7,10 @@ found in the LICENSE file.
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../model/ct-commit-log.html">
 <link rel="import" href="ct-failure-analyzer.html">
-<link rel="import" href="ct-failure-grouper.html">
 <link rel="import" href="ct-failure-stream.html">
 <link rel="import" href="ct-tree-status.html">
 
-<polymer-element name="ct-unexpected-failures">
+<polymer-element name="ct-unexpected-failures" attributes="tree">
   <template>
     <style>
       ct-tree-status {
@@ -30,7 +29,7 @@ found in the LICENSE file.
     <ct-failure-analyzer id="analyzer" failures="{{ failures }}" builderLatestRevisions="{{ builderLatestRevisions }}"></ct-failure-analyzer>
     <ct-tree-status project="chromium"></ct-tree-status>
     <ct-tree-status project="blink"></ct-tree-status>
-    <ct-failure-stream groups="{{ failures }}" commits="{{revisionLog.commits}}"></ct-failure-stream>
+    <ct-failure-stream groups="{{ failures[tree] }}" commits="{{ revisionLog }}" tree="{{ tree }}"></ct-failure-stream>
   </template>
   <script>
   (function() {
@@ -38,6 +37,7 @@ found in the LICENSE file.
 
     Polymer({
       revisionLog: new CTCommitLog(),
+      tree: '',
 
       attached: function() {
         this.update();

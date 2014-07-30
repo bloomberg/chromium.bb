@@ -29,20 +29,22 @@ module("ui");
 
 var flakinessBaseUrl = 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#';
 
-test('urlForFlakinessDashboard', 4, function() {
-    equal(ui.urlForFlakinessDashboard('foo', 'bar'),
-        flakinessBaseUrl + 'tests=foo&testType=bar');
-    equal(ui.urlForFlakinessDashboard(['foo', 'baz'], 'bar'),
-        flakinessBaseUrl + 'tests=foo%2Cbaz&testType=bar');
-    equal(ui.urlForFlakinessDashboard('foo', 'webkit_tests'),
-        flakinessBaseUrl + 'tests=foo&testType=layout-tests');
-    equal(ui.urlForFlakinessDashboard('foo', 'layout-tests'),
-        flakinessBaseUrl + 'tests=foo&testType=layout-tests');
+test('urlForFlakinessDashboard', 5, function() {
+    equal(ui.urlForFlakinessDashboard('foo', 'bar', 'blink'),
+        flakinessBaseUrl + 'group=@ToT%20Blink&tests=foo&testType=bar');
+    equal(ui.urlForFlakinessDashboard('foo', 'bar', 'chromium'),
+        flakinessBaseUrl + 'group=@ToT%20Chromium&tests=foo&testType=bar');
+    equal(ui.urlForFlakinessDashboard(['foo', 'baz'], 'bar', 'blink'),
+        flakinessBaseUrl + 'group=@ToT%20Blink&tests=foo%2Cbaz&testType=bar');
+    equal(ui.urlForFlakinessDashboard('foo', 'webkit_tests', 'blink'),
+        flakinessBaseUrl + 'group=@ToT%20Blink&tests=foo&testType=layout-tests');
+    equal(ui.urlForFlakinessDashboard('foo', 'layout-tests', 'blink'),
+        flakinessBaseUrl + 'group=@ToT%20Blink&tests=foo&testType=layout-tests');
 });
 
 test('urlForEmbeddedFlakinessDashboard', 1, function() {
-    equal(ui.urlForEmbeddedFlakinessDashboard('foo', 'bar'),
-        flakinessBaseUrl + 'tests=foo&testType=bar&showChrome=false');
+    equal(ui.urlForEmbeddedFlakinessDashboard('foo', 'bar', 'blink'),
+        flakinessBaseUrl + 'group=@ToT%20Blink&tests=foo&testType=bar&showChrome=false');
 });
 
 })();

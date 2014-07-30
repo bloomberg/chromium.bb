@@ -5,19 +5,31 @@ found in the LICENSE file.
 -->
 
 <script>
-function CTCommit(author, message, baseUrl) {
-  this.author = author;
-  this.message = message;
-  this.revision = this._findRevision();
-  this.summary = this._findSummary();
-  this.url = this._url(baseUrl);
+function CTCommit() {}
+
+CTCommit.create = function(author, message, baseUrl, repository) {
+  var commit = new CTCommit();
+  commit.author = author;
+  commit.message = message;
+  commit.revision = commit._findRevision();
+  commit.summary = commit._findSummary();
+  commit.url = commit._url(baseUrl);
+  commit.repository = repository;
+  return commit;
+}
+
+// This is for cases where we can't get the commit data off the
+// repository for some reason.
+CTCommit.createIncomplete = function(baseUrl, revision, repository) {
+  var commit = new CTCommit();
+  commit.revision = revision;
+  commit.url = commit._url(baseUrl);
+  commit.repository = repository;
+  return commit;
 }
 
 CTCommit.prototype._url = function(baseUrl) {
-  return baseUrl + '?' + Object.toQueryString({
-    view: 'rev',
-    revision: this.revision,
-  });
+  return baseUrl.assign({revision: this.revision});
 }
 
 CTCommit.prototype._findRevision = function() {

@@ -12,9 +12,11 @@ found in the LICENSE file.
 (function () {
 
 window.CTCommitLogMock = function() {
+  var repository = 'blink';
   var log = new CTCommitLog();
   var commit = new CTCommitMock();
-  log[commit.revision] = commit;
+  log.commits[repository] = {};
+  log.commits[repository][commit.revision] = commit;
   return log;
 };
 

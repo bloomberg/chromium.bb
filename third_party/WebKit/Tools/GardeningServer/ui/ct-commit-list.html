@@ -13,28 +13,40 @@ found in the LICENSE file.
         display: block;
       }
     </style>
-    <template repeat="{{revision in _revisions}}">
-      <template if="{{commits[revision]}}">
-        <ct-commit data="{{commits[revision]}}"></ct-commit>
+    <template repeat="{{ repository in commits.commits | _repositories }}">
+      <template repeat="{{ commit in repository | _commits }}">
+        <ct-commit data="{{ commit }}"></ct-commit>
       </template>
     </template>
   </template>
   <script>
     Polymer({
-      commits: {},
-      first: 0,
-      last: 0,
-      _revisions: [],
+      commits: null,
+      first: null,
+      last: null,
 
-      observe: {
-        first: '_update',
-        last: '_update',
+      _repositories: function(commits) {
+        if (!commits)
+          return [];
+        return Object.keys(commits).sort();
       },
 
-      _update: function() {
+      _commits: function(repository) {
+        var commits = [];
         if (!this.first || !this.last)
-          return;
-        this._revisions = Number.range(this.first, this.last).every();
+          return commits;
+
+        var first = Number(this.first[repository]);
+        var last = Number(this.last[repository]);
+        if (first == last)
+          return commits;
+
+        if (first > last) {
+          console.warn('Revision range is backwards, which is invalid:', first, last);
+          return commits;
+        }
+
+        return this.commits.range(repository, first + 1, last);
       },
     });
   </script>
