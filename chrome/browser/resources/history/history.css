@@ -497,14 +497,16 @@ html[dir='rtl'] .site-domain-arrow.expand {
 .entry .bookmark-section {
   -webkit-margin-end: 3px;
   -webkit-margin-start: 8px;
+  background:
+      url(../../../../ui/webui/resources/images/star_small.png) no-repeat;
   display: inline-block;
   height: 11px;
   min-width: 15px;
+  visibility: hidden;
 }
 
 .entry .starred {
-  background:
-      url(../../../../ui/webui/resources/images/star_small.png) no-repeat;
+  visibility: visible;
 }
 
 .entry .title > a {
