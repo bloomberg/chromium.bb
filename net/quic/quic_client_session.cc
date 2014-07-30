@@ -488,6 +488,10 @@ bool QuicClientSession::CanPool(const std::string& hostname) const {
     return true;
   }
 
+  // Disable pooling for secure sessions.
+  // TODO(rch): re-enable this.
+  return false;
+#if 0
   bool unused = false;
   // Pooling is prohibited if the server cert is not valid for the new domain,
   // and for connections on which client certs were sent. It is also prohibited
@@ -505,6 +509,7 @@ bool QuicClientSession::CanPool(const std::string& hostname) const {
   }
 
   return true;
+#endif
 }
 
 QuicDataStream* QuicClientSession::CreateIncomingDataStream(

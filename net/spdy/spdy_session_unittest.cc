@@ -2375,7 +2375,7 @@ TEST_P(SpdySessionTest, CloseActivatedStreamThatClosesSession) {
   EXPECT_TRUE(session == NULL);
 }
 
-TEST_P(SpdySessionTest, VerifyDomainAuthentication) {
+TEST_P(SpdySessionTest, DISABLED_VerifyDomainAuthentication) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockConnect connect_data(SYNCHRONOUS, OK);
@@ -2417,7 +2417,8 @@ TEST_P(SpdySessionTest, VerifyDomainAuthentication) {
   EXPECT_FALSE(session->VerifyDomainAuthentication("mail.google.com"));
 }
 
-TEST_P(SpdySessionTest, ConnectionPooledWithTlsChannelId) {
+// TODO(rch): re-enable this.
+TEST_P(SpdySessionTest, DISABLED_ConnectionPooledWithTlsChannelId) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockConnect connect_data(SYNCHRONOUS, OK);

@@ -172,7 +172,8 @@ TEST_P(QuicClientSessionTest, GoAwayReceived) {
   EXPECT_EQ(NULL, session_.CreateOutgoingDataStream());
 }
 
-TEST_P(QuicClientSessionTest, CanPool) {
+// TODO(rch): re-enable this.
+TEST_P(QuicClientSessionTest, DISABLED_CanPool) {
   // Load a cert that is valid for:
   //   www.example.org
   //   mail.example.org
@@ -195,7 +196,8 @@ TEST_P(QuicClientSessionTest, CanPool) {
   EXPECT_FALSE(session_.CanPool("mail.google.com"));
 }
 
-TEST_P(QuicClientSessionTest, ConnectionPooledWithTlsChannelId) {
+// TODO(rch): re-enable this.
+TEST_P(QuicClientSessionTest, DISABLED_ConnectionPooledWithTlsChannelId) {
   // Load a cert that is valid for:
   //   www.example.org
   //   mail.example.org
