@@ -31,7 +31,6 @@
 #include "core/css/TreeBoundaryCrossingRules.h"
 #include "core/css/resolver/MatchedPropertiesCache.h"
 #include "core/css/resolver/ScopedStyleResolver.h"
-#include "core/css/resolver/ScopedStyleTree.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResourceLoader.h"
 #include "platform/heap/Handle.h"
@@ -148,10 +147,7 @@ public:
 
     bool styleTreeHasOnlyScopedResolverForDocument() const { return m_scopedStyleResolvers.size() == 1; }
 
-    void styleTreeResolveScopedKeyframesRules(const Element* element, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolvers)
-    {
-        m_styleTree.resolveScopedKeyframesRules(element, resolvers);
-    }
+    void styleTreeResolveScopedKeyframesRules(const Element*, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>&);
 
     // These methods will give back the set of rules that matched for a given element (or a pseudo-element).
     enum CSSRuleFilter {
@@ -247,6 +243,9 @@ private:
     void applyMatchedProperties(StyleResolverState&, const MatchResult&);
     bool applyAnimatedProperties(StyleResolverState&, Element* animatingElement);
 
+    void resolveScopedStyles(const Element*, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>&);
+    void collectScopedResolversForHostedShadowTrees(const Element*, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>&);
+
     enum StyleApplicationPass {
         HighPriorityProperties,
         LowPriorityProperties
@@ -297,7 +296,6 @@ private:
 
     WillBeHeapListHashSet<RawPtrWillBeMember<CSSStyleSheet>, 16> m_pendingStyleSheets;
 
-    ScopedStyleTree m_styleTree;
     // FIXME: Probably this should move to StyleEngine eventually.
     WillBeHeapHashSet<RawPtrWillBeMember<const ScopedStyleResolver> > m_scopedStyleResolvers;
 

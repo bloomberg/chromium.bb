@@ -173,8 +173,7 @@ public:
     static bool isAnimatableProperty(CSSPropertyID);
     static const StylePropertyShorthand& animatableProperties();
     static bool isAllowedAnimation(CSSPropertyID);
-    // FIXME: This should take a const ScopedStyleTree instead of a StyleResolver.
-    // We should also change the Element* to a const Element*
+    // FIXME: We should change the Element* to a const Element*
     static PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> calculateUpdate(Element*, const Element& parentElement, const RenderStyle&, RenderStyle* parentStyle, StyleResolver*);
 
     void setPendingUpdate(PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> update) { m_pendingUpdate = update; }

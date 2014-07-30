@@ -417,10 +417,10 @@ void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& col
     }
 
     WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8> resolvers;
-    m_styleTree.resolveScopedStyles(element, resolvers);
+    resolveScopedStyles(element, resolvers);
 
     WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8> resolversInShadowTree;
-    m_styleTree.collectScopedResolversForHostedShadowTrees(element, resolversInShadowTree);
+    collectScopedResolversForHostedShadowTrees(element, resolversInShadowTree);
     if (!resolversInShadowTree.isEmpty()) {
         matchAuthorRulesForShadowHost(element, collector, includeEmptyRules, resolvers, resolversInShadowTree);
         return;
@@ -1039,6 +1039,52 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, Element* 
     return true;
 }
 
+static inline ScopedStyleResolver* scopedResolverFor(const Element* element)
+{
+    for (TreeScope* treeScope = &element->treeScope(); treeScope; treeScope = treeScope->parentTreeScope()) {
+        if (ScopedStyleResolver* scopedStyleResolver = treeScope->scopedStyleResolver())
+            return scopedStyleResolver;
+    }
+    return 0;
+}
+
+void StyleResolver::resolveScopedStyles(const Element* element, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolvers)
+{
+    for (ScopedStyleResolver* scopedResolver = scopedResolverFor(element); scopedResolver; scopedResolver = scopedResolver->parent())
+        resolvers.append(scopedResolver);
+}
+
+void StyleResolver::collectScopedResolversForHostedShadowTrees(const Element* element, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolvers)
+{
+    ElementShadow* shadow = element->shadow();
+    if (!shadow)
+        return;
+
+    // Adding scoped resolver for active shadow roots for shadow host styling.
+    for (ShadowRoot* shadowRoot = shadow->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot()) {
+        if (shadowRoot->numberOfStyles() > 0) {
+            if (ScopedStyleResolver* resolver = shadowRoot->scopedStyleResolver())
+                resolvers.append(resolver);
+        }
+    }
+}
+
+void StyleResolver::styleTreeResolveScopedKeyframesRules(const Element* element, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolvers)
+{
+    Document& document = element->document();
+    TreeScope& treeScope = element->treeScope();
+    bool applyAuthorStyles = treeScope.applyAuthorStyles();
+
+    // Add resolvers for shadow roots hosted by the given element.
+    collectScopedResolversForHostedShadowTrees(element, resolvers);
+
+    // Add resolvers while walking up DOM tree from the given element.
+    for (ScopedStyleResolver* scopedResolver = scopedResolverFor(element); scopedResolver; scopedResolver = scopedResolver->parent()) {
+        if (scopedResolver->treeScope() == treeScope || (applyAuthorStyles && scopedResolver->treeScope() == document))
+            resolvers.append(scopedResolver);
+    }
+}
+
 template <StyleResolver::StyleApplicationPass pass>
 void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& activeInterpolations)
 {
@@ -1565,7 +1611,6 @@ void StyleResolver::trace(Visitor* visitor)
     visitor->trace(m_treeBoundaryCrossingRules);
     visitor->trace(m_styleSharingLists);
     visitor->trace(m_pendingStyleSheets);
-    visitor->trace(m_styleTree);
     visitor->trace(m_scopedStyleResolvers);
 #endif
 }
