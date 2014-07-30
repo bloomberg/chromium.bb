@@ -33,11 +33,6 @@ const EVP_MD* GetDigest(blink::WebCryptoAlgorithmId id) {
   }
 }
 
-AlgorithmImplementation* CreatePlatformRsaOaepImplementation() {
-  // TODO(eroman):
-  return NULL;
-}
-
 }  // namespace webcrypto
 
 }  // namespace content

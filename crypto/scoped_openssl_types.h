@@ -31,6 +31,10 @@ struct ScopedOpenSSL {
       Type;
 };
 
+struct OpenSSLFree {
+  void operator()(uint8_t* ptr) const { OPENSSL_free(ptr); }
+};
+
 // Several typedefs are provided for crypto-specific primitives, for
 // short-hand and prevalence. Note that OpenSSL types related to X.509 are
 // intentionally not included, as crypto/ does not generally deal with
@@ -43,7 +47,11 @@ typedef ScopedOpenSSL<ECDSA_SIG, ECDSA_SIG_free>::Type ScopedECDSA_SIG;
 typedef ScopedOpenSSL<EC_KEY, EC_KEY_free>::Type ScopedEC_KEY;
 typedef ScopedOpenSSL<EVP_MD_CTX, EVP_MD_CTX_destroy>::Type ScopedEVP_MD_CTX;
 typedef ScopedOpenSSL<EVP_PKEY, EVP_PKEY_free>::Type ScopedEVP_PKEY;
+typedef ScopedOpenSSL<EVP_PKEY_CTX, EVP_PKEY_CTX_free>::Type ScopedEVP_PKEY_CTX;
 typedef ScopedOpenSSL<RSA, RSA_free>::Type ScopedRSA;
+
+// The bytes must have been allocated with OPENSSL_malloc.
+typedef scoped_ptr<uint8_t, OpenSSLFree> ScopedOpenSSLBytes;
 
 }  // namespace crypto
 

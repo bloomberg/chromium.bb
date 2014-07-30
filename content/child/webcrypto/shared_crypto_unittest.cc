@@ -121,7 +121,7 @@ bool SupportsAesGcm() {
 
 bool SupportsRsaOaep() {
 #if defined(USE_OPENSSL)
-  return false;
+  return true;
 #else
   crypto::EnsureNSSInit();
   // TODO(eroman): Exclude version test for OS_CHROMEOS
