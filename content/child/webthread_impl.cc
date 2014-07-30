@@ -5,8 +5,6 @@
 // An implementation of WebThread in terms of base::MessageLoop and
 // base::Thread
 
-#include <math.h>
-
 #include "content/child/webthread_impl.h"
 
 #include "base/bind.h"
@@ -88,37 +86,6 @@ void WebThreadImpl::exitRunLoop() {
 
 bool WebThreadImpl::isCurrentThread() const {
   return thread_->thread_id() == base::PlatformThread::CurrentId();
-}
-
-void WebThreadImpl::setSharedTimerFiredFunction(
-    SharedTimerFunction timerFunction) {
-  shared_timer_function_ = timerFunction;
-  if (shared_timer_function_ != NULL)
-    shared_timer_.reset(new base::OneShotTimer<WebThreadImpl>());
-  else
-    shared_timer_.reset(NULL);
-}
-
-void WebThreadImpl::setSharedTimerFireInterval(double interval_seconds) {
-  DCHECK(shared_timer_function_);
-
-  // See BlinkPlatformImpl::setSharedTimerFireInterval for explanation of
-  // why ceil is used in the interval calculation.
-  int64 interval = static_cast<int64>(
-      ceil(interval_seconds * base::Time::kMillisecondsPerSecond)
-      * base::Time::kMicrosecondsPerMillisecond);
-
-  if (interval < 0)
-    interval = 0;
-
-  shared_timer_->Stop();
-  shared_timer_->Start(FROM_HERE, base::TimeDelta::FromMicroseconds(interval),
-                      this, &WebThreadImpl::OnTimeout);
-}
-
-void WebThreadImpl::stopSharedTimer() {
-  DCHECK(shared_timer_function_);
-  shared_timer_->Stop();
 }
 
 WebThreadImpl::~WebThreadImpl() {
