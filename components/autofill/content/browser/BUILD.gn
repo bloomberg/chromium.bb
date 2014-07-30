@@ -48,7 +48,6 @@ static_library("browser") {
     "//components/os_crypt",
     "//components/resources",
     "//components/strings",
-    "//components/user_prefs",
     "//components/webdata/common",
     "//content/public/browser",
     "//content/public/common",
@@ -63,6 +62,7 @@ static_library("browser") {
     "//ui/gfx/geometry",
     "//url",
     #"../third_party/libjingle/libjingle.gyp:libjingle",  TODO(GYP)
+    #"user_prefs",  TODO(GYP)
   ]
 
   forward_dependent_configs_from = [
