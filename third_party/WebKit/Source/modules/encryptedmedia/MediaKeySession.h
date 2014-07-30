@@ -26,7 +26,9 @@
 #ifndef MediaKeySession_h
 #define MediaKeySession_h
 
+#include "bindings/core/v8/ScriptPromiseProperty.h"
 #include "core/dom/ActiveDOMObject.h"
+#include "core/dom/DOMException.h"
 #include "modules/EventTargetModules.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
@@ -40,9 +42,8 @@ class WebString;
 
 namespace blink {
 
-class ScriptState;
 class ScriptPromise;
-class ExceptionState;
+class ScriptState;
 class GenericEventQueue;
 class MediaKeyError;
 class MediaKeys;
@@ -71,6 +72,7 @@ public:
 
     const String& keySystem() const { return m_keySystem; }
     String sessionId() const;
+    ScriptPromise closed(ScriptState*);
 
     void setError(MediaKeyError*);
     MediaKeyError* error() { return m_error.get(); }
@@ -117,6 +119,10 @@ private:
 
     // Is the CDM finished with this session?
     bool m_isClosed;
+
+    // Keep track of the closed promise.
+    typedef ScriptPromiseProperty<Member<MediaKeySession>, V8UndefinedType, RefPtrWillBeMember<DOMException> > ClosedPromise;
+    Member<ClosedPromise> m_closedPromise;
 
     HeapDeque<Member<PendingAction> > m_pendingActions;
     Timer<MediaKeySession> m_actionTimer;

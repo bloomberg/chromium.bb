@@ -35,6 +35,7 @@
     // session properties
     readonly attribute DOMString keySystem;
     readonly attribute DOMString sessionId;
+    [CallWith=ScriptState] readonly attribute Promise closed;
 
     // session operations
     [CallWith=ScriptState] Promise update(ArrayBuffer response);

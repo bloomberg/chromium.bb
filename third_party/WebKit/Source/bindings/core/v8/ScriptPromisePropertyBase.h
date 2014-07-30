@@ -25,7 +25,7 @@ public:
     virtual ~ScriptPromisePropertyBase();
 
     enum Name {
-#define P(Name) Name
+#define P(Name) Name,
         SCRIPT_PROMISE_PROPERTIES(P)
 #undef P
     };

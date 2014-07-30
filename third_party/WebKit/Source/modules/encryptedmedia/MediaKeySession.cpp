@@ -26,10 +26,10 @@
 #include "config.h"
 #include "modules/encryptedmedia/MediaKeySession.h"
 
+#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
-#include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/events/Event.h"
 #include "core/events/GenericEventQueue.h"
@@ -286,6 +286,7 @@ MediaKeySession::MediaKeySession(ExecutionContext* context, MediaKeys* keys, Pas
     , m_session(cdmSession)
     , m_keys(keys)
     , m_isClosed(false)
+    , m_closedPromise(new ClosedPromise(context, this, ClosedPromise::Closed))
     , m_actionTimer(this, &MediaKeySession::actionTimerFired)
 {
     WTF_LOG(Media, "MediaKeySession(%p)::MediaKeySession", this);
@@ -325,6 +326,11 @@ void MediaKeySession::setError(MediaKeyError* error)
 String MediaKeySession::sessionId() const
 {
     return m_session->sessionId();
+}
+
+ScriptPromise MediaKeySession::closed(ScriptState* scriptState)
+{
+    return m_closedPromise->promise(scriptState->world());
 }
 
 ScriptPromise MediaKeySession::update(ScriptState* scriptState, ArrayBuffer* response)
@@ -475,7 +481,8 @@ void MediaKeySession::close()
     // the CDM so this object can be garbage collected.
     m_isClosed = true;
 
-    // FIXME: Implement closed() attribute.
+    // Resolve the closed promise.
+    m_closedPromise->resolve(V8UndefinedType());
 }
 
 // Queue a task to fire a simple event named keyadded at the MediaKeySession object.
@@ -570,6 +577,7 @@ void MediaKeySession::trace(Visitor* visitor)
     visitor->trace(m_asyncEventQueue);
     visitor->trace(m_pendingActions);
     visitor->trace(m_keys);
+    visitor->trace(m_closedPromise);
     EventTargetWithInlineData::trace(visitor);
 }
 
