@@ -32,39 +32,42 @@ ManageProfileUITest.prototype = {
   defaultNames: [],
 
   /**
-   * Returns a test profile-info object with configurable "managed" status.
-   * @param {boolean} managed If true, the test profile will be marked as
-   *     managed.
+   * Returns a test profile-info object with configurable "supervised" status.
+   * @param {boolean} supervised If true, the test profile will be marked as
+   *     supervised.
    * @return {Object} A test profile-info object.
    */
-  testProfileInfo_: function(managed) {
+  testProfileInfo_: function(supervised) {
     return {
       name: 'Test Profile',
       iconURL: 'chrome://path/to/icon/image',
       filePath: '/path/to/profile/data/on/disk',
       isCurrentProfile: true,
-      isManaged: managed
+      isSupervised: supervised
     };
   },
 
   /**
    * Overrides WebUI methods that provide profile info, making them return a
    * test profile-info object.
-   * @param {boolean} managed Whether the test profile should be marked managed.
+   * @param {boolean} supervised Whether the test profile should be marked
+   *     as supervised.
    * @param {string} mode The mode of the overlay (either 'manage' or 'create').
    */
-  setProfileManaged_: function(managed, mode) {
+  setProfileSupervised_: function(supervised, mode) {
     // Override the BrowserOptions method to return the fake info.
     BrowserOptions.getCurrentProfile = function() {
-      return this.testProfileInfo_(managed);
+      return this.testProfileInfo_(supervised);
     }.bind(this);
     // Set the profile info in the overlay.
-    ManageProfileOverlay.setProfileInfo(this.testProfileInfo_(managed), mode);
+    ManageProfileOverlay.setProfileInfo(this.testProfileInfo_(supervised),
+                                        mode);
   },
 
   /**
    * Set some default profile infos (icon URLs and names).
-   * @param {boolean} managed Whether the test profile should be marked managed.
+   * @param {boolean} supervised Whether the test profile should be marked as
+   *     supervised.
    * @param {string} mode The mode of the overlay (either 'manage' or 'create').
    */
   initDefaultProfiles_: function(mode) {
@@ -113,12 +116,12 @@ TEST_F('ManageProfileUITest', 'NewProfileDefaultsFocus', function() {
   checkFocus('createProfile',
              $('create-profile-name'),
              $('create-profile-cancel'));
-  checkFocus('managedUserLearnMore',
-             $('managed-user-learn-more-done'),
-             $('managed-user-learn-more-done'));
-  checkFocus('managedUserLearnMore',
-             document.querySelector('#managed-user-learn-more-text a'),
-             document.querySelector('#managed-user-learn-more-text a'));
+  checkFocus('supervisedUserLearnMore',
+             $('supervised-user-learn-more-done'),
+             $('supervised-user-learn-more-done'));
+  checkFocus('supervisedUserLearnMore',
+             document.querySelector('#supervised-user-learn-more-text a'),
+             document.querySelector('#supervised-user-learn-more-text a'));
 });
 
 // The default options should be reset each time the creation overlay is shown.
@@ -126,22 +129,22 @@ TEST_F('ManageProfileUITest', 'DefaultCreateOptions', function() {
   OptionsPage.showPageByName('createProfile');
   var shortcutsAllowed = loadTimeData.getBoolean('profileShortcutsEnabled');
   var createShortcut = $('create-shortcut');
-  var createManaged = $('create-profile-managed');
+  var createSupervised = $('create-profile-supervised');
   assertEquals(shortcutsAllowed, createShortcut.checked);
-  assertFalse(createManaged.checked);
+  assertFalse(createSupervised.checked);
 
   createShortcut.checked = !shortcutsAllowed;
-  createManaged.checked = true;
+  createSupervised.checked = true;
   OptionsPage.closeOverlay();
   OptionsPage.showPageByName('createProfile');
   assertEquals(shortcutsAllowed, createShortcut.checked);
-  assertFalse(createManaged.checked);
+  assertFalse(createSupervised.checked);
 });
 
 // The checkbox label should change depending on whether the user is signed in.
-TEST_F('ManageProfileUITest', 'CreateManagedUserText', function() {
-  var signedInText = $('create-profile-managed-signed-in');
-  var notSignedInText = $('create-profile-managed-not-signed-in');
+TEST_F('ManageProfileUITest', 'CreateSupervisedUserText', function() {
+  var signedInText = $('create-profile-supervised-signed-in');
+  var notSignedInText = $('create-profile-supervised-not-signed-in');
 
   ManageProfileOverlay.getInstance().initializePage();
 
@@ -159,8 +162,8 @@ TEST_F('ManageProfileUITest', 'CreateManagedUserText', function() {
   assertEquals('', CreateProfileOverlay.getInstance().signedInEmail_);
   assertTrue(signedInText.hidden);
   assertFalse(notSignedInText.hidden);
-  assertFalse($('create-profile-managed').checked);
-  assertTrue($('create-profile-managed').disabled);
+  assertFalse($('create-profile-supervised').checked);
+  assertTrue($('create-profile-supervised').disabled);
 });
 
 function ManageProfileUITestAsync() {}
@@ -172,40 +175,40 @@ ManageProfileUITestAsync.prototype = {
 };
 
 // The import link should show up if the user tries to create a profile with the
-// same name as an existing managed user profile.
-TEST_F('ManageProfileUITestAsync', 'CreateExistingManagedUser', function() {
-  // Initialize the list of existing managed users.
-  var managedUsers = [
+// same name as an existing supervised user profile.
+TEST_F('ManageProfileUITestAsync', 'CreateExistingSupervisedUser', function() {
+  // Initialize the list of existing supervised users.
+  var supervisedUsers = [
     {
-      id: 'managedUser1',
+      id: 'supervisedUser1',
       name: 'Rosalie',
       iconURL: 'chrome://path/to/icon/image',
       onCurrentDevice: false,
       needAvatar: false
     },
     {
-      id: 'managedUser2',
+      id: 'supervisedUser2',
       name: 'Fritz',
       iconURL: 'chrome://path/to/icon/image',
       onCurrentDevice: false,
       needAvatar: true
     },
     {
-      id: 'managedUser3',
+      id: 'supervisedUser3',
       name: 'Test',
       iconURL: 'chrome://path/to/icon/image',
       onCurrentDevice: true,
       needAvatar: false
     },
     {
-      id: 'managedUser4',
+      id: 'supervisedUser4',
       name: 'SameName',
       iconURL: 'chrome://path/to/icon/image',
       onCurrentDevice: false,
       needAvatar: false
     }];
-  var promise = Promise.resolve(managedUsers);
-  options.ManagedUserListData.getInstance().promise_ = promise;
+  var promise = Promise.resolve(supervisedUsers);
+  options.SupervisedUserListData.getInstance().promise_ = promise;
 
   // Initialize the ManageProfileOverlay.
   ManageProfileOverlay.getInstance().initializePage();
@@ -213,7 +216,7 @@ TEST_F('ManageProfileUITestAsync', 'CreateExistingManagedUser', function() {
   CreateProfileOverlay.updateSignedInStatus(custodianEmail);
   assertEquals(custodianEmail,
                CreateProfileOverlay.getInstance().signedInEmail_);
-  this.setProfileManaged_(false, 'create');
+  this.setProfileSupervised_(false, 'create');
 
   // Also add the names 'Test' and 'SameName' to |existingProfileNames_| to
   // simulate that profiles with those names exist on the device.
@@ -223,10 +226,10 @@ TEST_F('ManageProfileUITestAsync', 'CreateExistingManagedUser', function() {
   // Initially, the ok button should be enabled and the import link should not
   // exist.
   assertFalse($('create-profile-ok').disabled);
-  assertTrue($('supervised-user-import') == null);
+  assertTrue($('supervised-user-import-existing') == null);
 
   // Now try to create profiles with the names of existing supervised users.
-  $('create-profile-managed').checked = true;
+  $('create-profile-supervised').checked = true;
   var nameField = $('create-profile-name');
   // A profile which already has an avatar.
   nameField.value = 'Rosalie';
@@ -234,57 +237,57 @@ TEST_F('ManageProfileUITestAsync', 'CreateExistingManagedUser', function() {
   // Need to wait until the promise resolves.
   promise.then(function() {
     assertTrue($('create-profile-ok').disabled);
-    assertFalse($('supervised-user-import') == null);
+    assertFalse($('supervised-user-import-existing') == null);
 
     // A profile which doesn't have an avatar yet.
     nameField.value = 'Fritz';
     ManageProfileOverlay.getInstance().onNameChanged_('create');
-    return options.ManagedUserListData.getInstance().promise_;
+    return options.SupervisedUserListData.getInstance().promise_;
   }).then(function() {
     assertTrue($('create-profile-ok').disabled);
-    assertFalse($('supervised-user-import') == null);
+    assertFalse($('supervised-user-import-existing') == null);
 
     // A profile which already exists on the device.
     nameField.value = 'Test';
     ManageProfileOverlay.getInstance().onNameChanged_('create');
-    return options.ManagedUserListData.getInstance().promise_;
+    return options.SupervisedUserListData.getInstance().promise_;
   }).then(function() {
     assertTrue($('create-profile-ok').disabled);
-    assertTrue($('supervised-user-import') == null);
+    assertTrue($('supervised-user-import-existing') == null);
 
     // A profile which does not exist on the device, but there is a profile with
     // the same name already on the device.
     nameField.value = 'SameName';
     ManageProfileOverlay.getInstance().onNameChanged_('create');
-    return options.ManagedUserListData.getInstance().promise_;
+    return options.SupervisedUserListData.getInstance().promise_;
   }).then(function() {
     assertTrue($('create-profile-ok').disabled);
-    assertFalse($('supervised-user-import') == null);
+    assertFalse($('supervised-user-import-existing') == null);
 
     // A profile which does not exist yet.
     nameField.value = 'NewProfileName';
     ManageProfileOverlay.getInstance().onNameChanged_('create');
-    return options.ManagedUserListData.getInstance().promise_;
+    return options.SupervisedUserListData.getInstance().promise_;
   }).then(function() {
     assertFalse($('create-profile-ok').disabled);
-    assertTrue($('supervised-user-import') == null);
+    assertTrue($('supervised-user-import-existing') == null);
     testDone();
   });
 });
 
-// Managed users should not be able to edit their profile names, and the initial
-// focus should be adjusted accordingly.
-TEST_F('ManageProfileUITest', 'EditManagedUserNameAllowed', function() {
+// Supervised users should not be able to edit their profile names, and the
+// initial focus should be adjusted accordingly.
+TEST_F('ManageProfileUITest', 'EditSupervisedUserNameAllowed', function() {
   var nameField = $('manage-profile-name');
 
-  this.setProfileManaged_(false, 'manage');
+  this.setProfileSupervised_(false, 'manage');
   ManageProfileOverlay.showManageDialog();
   expectFalse(nameField.disabled);
   expectEquals(nameField, document.activeElement);
 
   OptionsPage.closeOverlay();
 
-  this.setProfileManaged_(true, 'manage');
+  this.setProfileSupervised_(true, 'manage');
   ManageProfileOverlay.showManageDialog();
   expectTrue(nameField.disabled);
   expectEquals($('manage-profile-ok'), document.activeElement);
@@ -294,10 +297,10 @@ TEST_F('ManageProfileUITest', 'EditManagedUserNameAllowed', function() {
 TEST_F('ManageProfileUITest', 'ShowCreateConfirmation', function() {
   var testProfile = this.testProfileInfo_(true);
   testProfile.custodianEmail = 'foo@bar.example.com';
-  ManagedUserCreateConfirmOverlay.setProfileInfo(testProfile);
-  assertTrue(ManagedUserCreateConfirmOverlay.getInstance().canShowPage());
-  OptionsPage.showPageByName('managedUserCreateConfirm', false);
-  assertEquals('managedUserCreateConfirm',
+  SupervisedUserCreateConfirmOverlay.setProfileInfo(testProfile);
+  assertTrue(SupervisedUserCreateConfirmOverlay.getInstance().canShowPage());
+  OptionsPage.showPageByName('supervisedUserCreateConfirm', false);
+  assertEquals('supervisedUserCreateConfirm',
                OptionsPage.getTopmostVisiblePage().name);
 });
 
@@ -305,12 +308,12 @@ TEST_F('ManageProfileUITest', 'ShowCreateConfirmation', function() {
 // back to the default (main) settings page.
 TEST_F('ManageProfileUITest', 'NoEmptyConfirmation', function() {
   assertEquals('manageProfile', OptionsPage.getTopmostVisiblePage().name);
-  assertFalse(ManagedUserCreateConfirmOverlay.getInstance().canShowPage());
-  OptionsPage.showPageByName('managedUserCreateConfirm', true);
+  assertFalse(SupervisedUserCreateConfirmOverlay.getInstance().canShowPage());
+  OptionsPage.showPageByName('supervisedUserCreateConfirm', true);
   assertEquals('settings', OptionsPage.getTopmostVisiblePage().name);
 });
 
-// A confirmation dialog should be shown after creating a new managed user.
+// A confirmation dialog should be shown after creating a new supervised user.
 TEST_F('ManageProfileUITest', 'ShowCreateConfirmationOnSuccess', function() {
   OptionsPage.showPageByName('createProfile');
   assertEquals('createProfile', OptionsPage.getTopmostVisiblePage().name);
@@ -320,12 +323,12 @@ TEST_F('ManageProfileUITest', 'ShowCreateConfirmationOnSuccess', function() {
   OptionsPage.showPageByName('createProfile');
   assertEquals('createProfile', OptionsPage.getTopmostVisiblePage().name);
   CreateProfileOverlay.onSuccess(this.testProfileInfo_(true));
-  assertEquals('managedUserCreateConfirm',
+  assertEquals('supervisedUserCreateConfirm',
                OptionsPage.getTopmostVisiblePage().name);
-  expectEquals($('managed-user-created-switch'), document.activeElement);
+  expectEquals($('supervised-user-created-switch'), document.activeElement);
 });
 
-// An error should be shown if creating a new managed user fails.
+// An error should be shown if creating a new supervised user fails.
 TEST_F('ManageProfileUITest', 'NoCreateConfirmationOnError', function() {
   OptionsPage.showPageByName('createProfile');
   assertEquals('createProfile', OptionsPage.getTopmostVisiblePage().name);
@@ -355,16 +358,16 @@ TEST_F('ManageProfileUITest', 'CreateConfirmationText', function() {
     var testProfile = self.testProfileInfo_(true);
     testProfile.name = name;
     CreateProfileOverlay.onSuccess(testProfile);
-    assertEquals('managedUserCreateConfirm',
+    assertEquals('supervisedUserCreateConfirm',
                  OptionsPage.getTopmostVisiblePage().name);
 
     // Check for the presence of the name and email in the UI, without depending
-    // on the details of the messsages.
+    // on the details of the messages.
     assertNotEquals(-1,
-        $('managed-user-created-title').textContent.indexOf(expectedText));
+        $('supervised-user-created-title').textContent.indexOf(expectedText));
     assertNotEquals(-1,
-        $('managed-user-created-switch').textContent.indexOf(expectedText));
-    var message = $('managed-user-created-text');
+        $('supervised-user-created-switch').textContent.indexOf(expectedText));
+    var message = $('supervised-user-created-text');
     assertNotEquals(-1, message.textContent.indexOf(expectedText));
     assertNotEquals(-1, message.textContent.indexOf(custodianEmail));
 
@@ -407,9 +410,9 @@ TEST_F('ManageProfileUITest', 'CreateConfirmationText', function() {
       name60Characters, name49Characters + '\u2026', escaped + '\u2026');
 });
 
-// An additional warning should be shown when deleting a managed user.
-TEST_F('ManageProfileUITest', 'DeleteManagedUserWarning', function() {
-  var addendum = $('delete-managed-profile-addendum');
+// An additional warning should be shown when deleting a supervised user.
+TEST_F('ManageProfileUITest', 'DeleteSupervisedUserWarning', function() {
+  var addendum = $('delete-supervised-profile-addendum');
 
   ManageProfileOverlay.showDeleteDialog(this.testProfileInfo_(true));
   assertFalse(addendum.hidden);
@@ -418,16 +421,16 @@ TEST_F('ManageProfileUITest', 'DeleteManagedUserWarning', function() {
   assertTrue(addendum.hidden);
 });
 
-// The policy prohibiting managed users should update the UI dynamically.
+// The policy prohibiting supervised users should update the UI dynamically.
 TEST_F('ManageProfileUITest', 'PolicyDynamicRefresh', function() {
   ManageProfileOverlay.getInstance().initializePage();
 
   var custodianEmail = 'chrome.playpen.test@gmail.com';
   CreateProfileOverlay.updateSignedInStatus(custodianEmail);
-  CreateProfileOverlay.updateManagedUsersAllowed(true);
-  var checkbox = $('create-profile-managed');
-  var link = $('create-profile-managed-not-signed-in-link');
-  var indicator = $('create-profile-managed-indicator');
+  CreateProfileOverlay.updateSupervisedUsersAllowed(true);
+  var checkbox = $('create-profile-supervised');
+  var link = $('create-profile-supervised-not-signed-in-link');
+  var indicator = $('create-profile-supervised-indicator');
 
   assertFalse(checkbox.disabled, 'allowed and signed in');
   assertFalse(link.hidden, 'allowed and signed in');
@@ -435,14 +438,14 @@ TEST_F('ManageProfileUITest', 'PolicyDynamicRefresh', function() {
                'allowed and signed in');
 
   CreateProfileOverlay.updateSignedInStatus('');
-  CreateProfileOverlay.updateManagedUsersAllowed(true);
+  CreateProfileOverlay.updateSupervisedUsersAllowed(true);
   assertTrue(checkbox.disabled, 'allowed, not signed in');
   assertFalse(link.hidden, 'allowed, not signed in');
   assertEquals('none', window.getComputedStyle(indicator, null).display,
                'allowed, not signed in');
 
   CreateProfileOverlay.updateSignedInStatus('');
-  CreateProfileOverlay.updateManagedUsersAllowed(false);
+  CreateProfileOverlay.updateSupervisedUsersAllowed(false);
   assertTrue(checkbox.disabled, 'disallowed, not signed in');
   assertTrue(link.hidden, 'disallowed, not signed in');
   assertEquals('inline-block', window.getComputedStyle(indicator, null).display,
@@ -450,7 +453,7 @@ TEST_F('ManageProfileUITest', 'PolicyDynamicRefresh', function() {
   assertEquals('policy', indicator.getAttribute('controlled-by'));
 
   CreateProfileOverlay.updateSignedInStatus(custodianEmail);
-  CreateProfileOverlay.updateManagedUsersAllowed(false);
+  CreateProfileOverlay.updateSupervisedUsersAllowed(false);
   assertTrue(checkbox.disabled, 'disallowed, signed in');
   assertTrue(link.hidden, 'disallowed, signed in');
   assertEquals('inline-block', window.getComputedStyle(indicator, null).display,
@@ -458,24 +461,24 @@ TEST_F('ManageProfileUITest', 'PolicyDynamicRefresh', function() {
   assertEquals('policy', indicator.getAttribute('controlled-by'));
 
   CreateProfileOverlay.updateSignedInStatus(custodianEmail);
-  CreateProfileOverlay.updateManagedUsersAllowed(true);
+  CreateProfileOverlay.updateSupervisedUsersAllowed(true);
   assertFalse(checkbox.disabled, 're-allowed and signed in');
   assertFalse(link.hidden, 're-allowed and signed in');
   assertEquals('none', window.getComputedStyle(indicator, null).display,
                're-allowed and signed in');
 });
 
-// The managed user checkbox should correctly update its state during profile
+// The supervised user checkbox should correctly update its state during profile
 // creation and afterwards.
 TEST_F('ManageProfileUITest', 'CreateInProgress', function() {
   ManageProfileOverlay.getInstance().initializePage();
 
   var custodianEmail = 'chrome.playpen.test@gmail.com';
   CreateProfileOverlay.updateSignedInStatus(custodianEmail);
-  CreateProfileOverlay.updateManagedUsersAllowed(true);
-  var checkbox = $('create-profile-managed');
-  var link = $('create-profile-managed-not-signed-in-link');
-  var indicator = $('create-profile-managed-indicator');
+  CreateProfileOverlay.updateSupervisedUsersAllowed(true);
+  var checkbox = $('create-profile-supervised');
+  var link = $('create-profile-supervised-not-signed-in-link');
+  var indicator = $('create-profile-supervised-indicator');
 
   assertFalse(checkbox.disabled, 'allowed and signed in');
   assertFalse(link.hidden, 'allowed and signed in');
@@ -488,16 +491,16 @@ TEST_F('ManageProfileUITest', 'CreateInProgress', function() {
 
   // A no-op update to the sign-in status should not change the UI.
   CreateProfileOverlay.updateSignedInStatus(custodianEmail);
-  CreateProfileOverlay.updateManagedUsersAllowed(true);
+  CreateProfileOverlay.updateSupervisedUsersAllowed(true);
   assertTrue(checkbox.disabled, 'creation in progress');
 
   CreateProfileOverlay.updateCreateInProgress(false);
   assertFalse(checkbox.disabled, 'creation finished');
 });
 
-// Managed users shouldn't be able to open the delete or create dialogs.
-TEST_F('ManageProfileUITest', 'ManagedShowDeleteAndCreate', function() {
-  this.setProfileManaged_(false, 'create');
+// Supervised users shouldn't be able to open the delete or create dialogs.
+TEST_F('ManageProfileUITest', 'SupervisedShowDeleteAndCreate', function() {
+  this.setProfileSupervised_(false, 'create');
 
   ManageProfileOverlay.showCreateDialog();
   assertEquals('createProfile', OptionsPage.getTopmostVisiblePage().name);
@@ -509,15 +512,15 @@ TEST_F('ManageProfileUITest', 'ManagedShowDeleteAndCreate', function() {
   OptionsPage.closeOverlay();
   assertEquals('settings', OptionsPage.getTopmostVisiblePage().name);
 
-  this.setProfileManaged_(true, 'create');
+  this.setProfileSupervised_(true, 'create');
   ManageProfileOverlay.showCreateDialog();
   assertEquals('settings', OptionsPage.getTopmostVisiblePage().name);
   ManageProfileOverlay.showDeleteDialog(this.testProfileInfo_(false));
   assertEquals('settings', OptionsPage.getTopmostVisiblePage().name);
 });
 
-// Only non-managed users should be able to delete profiles.
-TEST_F('ManageProfileUITest', 'ManagedDelete', function() {
+// Only non-supervised users should be able to delete profiles.
+TEST_F('ManageProfileUITest', 'SupervisedDelete', function() {
   ManageProfileOverlay.showDeleteDialog(this.testProfileInfo_(false));
   assertEquals('manageProfile', OptionsPage.getTopmostVisiblePage().name);
   assertFalse($('manage-profile-overlay-delete').hidden);
@@ -536,14 +539,14 @@ TEST_F('ManageProfileUITest', 'ManagedDelete', function() {
     return chromeSendMessages;
   }
 
-  this.setProfileManaged_(false, 'manage');
+  this.setProfileSupervised_(false, 'manage');
   var messages = clickAndListen();
   assertEquals(1, messages.length);
   assertEquals('deleteProfile', messages[0]);
   assertEquals('settings', OptionsPage.getTopmostVisiblePage().name);
 
   ManageProfileOverlay.showDeleteDialog(this.testProfileInfo_(false));
-  this.setProfileManaged_(true, 'manage');
+  this.setProfileSupervised_(true, 'manage');
   messages = clickAndListen();
   assertEquals(0, messages.length);
   assertEquals('settings', OptionsPage.getTopmostVisiblePage().name);
@@ -626,7 +629,7 @@ TEST_F('ManageProfileUITest', 'Create_NoNameUpdateOnAvatarSelectedAfterRevert',
 TEST_F('ManageProfileUITest', 'Manage_NoNameUpdateOnAvatarSelected',
     function() {
   var mode = 'manage';
-  this.setProfileManaged_(false, mode);
+  this.setProfileSupervised_(false, mode);
   OptionsPage.showPageByName(mode + 'Profile');
 
   var testProfile = this.testProfileInfo_(false);

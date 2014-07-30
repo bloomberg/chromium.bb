@@ -71,10 +71,10 @@ cr.define('options', function() {
       };
       $('delete-profile-ok').onclick = function(event) {
         OptionsPage.closeOverlay();
-        if (BrowserOptions.getCurrentProfile().isManaged)
+        if (BrowserOptions.getCurrentProfile().isSupervised)
           return;
         chrome.send('deleteProfile', [self.profileInfo_.filePath]);
-        options.ManagedUserListData.resetPromise();
+        options.SupervisedUserListData.resetPromise();
       };
       $('add-shortcut-button').onclick = function(event) {
         chrome.send('addProfileShortcut', [self.profileInfo_.filePath]);
@@ -89,13 +89,14 @@ cr.define('options', function() {
                     [BrowserOptions.getCurrentProfile().filePath]);
       };
 
-      $('create-profile-managed-signed-in-learn-more-link').onclick =
+      $('create-profile-supervised-signed-in-learn-more-link').onclick =
           function(event) {
-        OptionsPage.navigateToPage('managedUserLearnMore');
+        OptionsPage.navigateToPage('supervisedUserLearnMore');
         return false;
       };
 
-      $('create-profile-managed-not-signed-in-link').onclick = function(event) {
+      $('create-profile-supervised-not-signed-in-link').onclick =
+          function(event) {
         // The signin process will open an overlay to configure sync, which
         // would replace this overlay. It's smoother to close this one now.
         // TODO(pamg): Move the sync-setup overlay to a higher layer so this one
@@ -105,17 +106,18 @@ cr.define('options', function() {
         SyncSetupOverlay.startSignIn();
       };
 
-      $('create-profile-managed-sign-in-again-link').onclick = function(event) {
+      $('create-profile-supervised-sign-in-again-link').onclick =
+          function(event) {
         OptionsPage.closeOverlay();
         SyncSetupOverlay.showSetupUI();
       };
 
-      $('import-existing-managed-user-link').onclick = function(event) {
+      $('import-existing-supervised-user-link').onclick = function(event) {
         // Hide the import button to trigger a cursor update. The import button
         // is shown again when the import overlay loads. TODO(akuegel): Remove
         // this temporary fix when crbug/246304 is resolved.
-        $('import-existing-managed-user-link').hidden = true;
-        OptionsPage.navigateToPage('managedUserImport');
+        $('import-existing-supervised-user-link').hidden = true;
+        OptionsPage.navigateToPage('supervisedUserImport');
       };
     },
 
@@ -178,7 +180,7 @@ cr.define('options', function() {
      *       iconURL: "chrome://path/to/icon/image",
      *       filePath: "/path/to/profile/data/on/disk",
      *       isCurrentProfile: false,
-     *       isManaged: false
+     *       isSupervised: false
      *     };
      * @param {string} mode A label that specifies the type of dialog box which
      *     is currently being viewed (i.e. 'create' or 'manage').
@@ -323,18 +325,19 @@ cr.define('options', function() {
     },
 
     /**
-     * Called when the profile name is changed or the 'create managed' checkbox
-     * is toggled. Updates the 'ok' button and the 'import existing supervised
-     * user' link.
+     * Called when the profile name is changed or the 'create supervised'
+     * checkbox is toggled. Updates the 'ok' button and the 'import existing
+     * supervised user' link.
      * @param {string} mode A label that specifies the type of dialog box which
      *     is currently being viewed (i.e. 'create' or 'manage').
      * @private
      */
     updateCreateOrImport_: function(mode) {
-      // In 'create' mode, check for existing managed users with the same name.
-      if (mode == 'create' && $('create-profile-managed').checked) {
-        options.ManagedUserListData.requestExistingManagedUsers().then(
-            this.receiveExistingManagedUsers_.bind(this),
+      // In 'create' mode, check for existing supervised users with the same
+      // name.
+      if (mode == 'create' && $('create-profile-supervised').checked) {
+        options.SupervisedUserListData.requestExistingSupervisedUsers().then(
+            this.receiveExistingSupervisedUsers_.bind(this),
             this.onSigninError_.bind(this));
       } else {
         this.updateOkButton_(mode);
@@ -342,19 +345,19 @@ cr.define('options', function() {
     },
 
     /**
-     * Callback which receives the list of existing managed users. Checks if the
-     * currently entered name is the name of an already existing managed user.
-     * If yes, the user is prompted to import the existing managed user, and the
-     * create button is disabled.
-     * @param {Array.<Object>} The list of existing managed users.
+     * Callback which receives the list of existing supervised users. Checks if
+     * the currently entered name is the name of an already existing supervised
+     * user. If yes, the user is prompted to import the existing supervised
+     * user, and the create button is disabled.
+     * @param {Array.<Object>} The list of existing supervised users.
      * @private
      */
-    receiveExistingManagedUsers_: function(managedUsers) {
+    receiveExistingSupervisedUsers_: function(supervisedUsers) {
       var newName = $('create-profile-name').value;
       var i;
-      for (i = 0; i < managedUsers.length; ++i) {
-        if (managedUsers[i].name == newName &&
-            !managedUsers[i].onCurrentDevice) {
+      for (i = 0; i < supervisedUsers.length; ++i) {
+        if (supervisedUsers[i].name == newName &&
+            !supervisedUsers[i].onCurrentDevice) {
           var errorHtml = loadTimeData.getStringF(
               'manageProfilesExistingSupervisedUser',
               HTMLEscape(elide(newName, /* maxLength */ 50)));
@@ -363,28 +366,28 @@ cr.define('options', function() {
           // Check if another supervised user also exists with that name.
           var nameIsUnique = true;
           var j;
-          for (j = i + 1; j < managedUsers.length; ++j) {
-            if (managedUsers[j].name == newName) {
+          for (j = i + 1; j < supervisedUsers.length; ++j) {
+            if (supervisedUsers[j].name == newName) {
               nameIsUnique = false;
               break;
             }
           }
           var self = this;
-          function getImportHandler(managedUser, nameIsUnique) {
+          function getImportHandler(supervisedUser, nameIsUnique) {
             return function() {
-              if (managedUser.needAvatar || !nameIsUnique) {
-                OptionsPage.navigateToPage('managedUserImport');
+              if (supervisedUser.needAvatar || !nameIsUnique) {
+                OptionsPage.navigateToPage('supervisedUserImport');
               } else {
                 self.hideErrorBubble_('create');
                 CreateProfileOverlay.updateCreateInProgress(true);
                 chrome.send('createProfile',
-                    [managedUser.name, managedUser.iconURL, false, true,
-                        managedUser.id]);
+                    [supervisedUser.name, supervisedUser.iconURL, false, true,
+                         supervisedUser.id]);
               }
             }
           };
-          $('supervised-user-import').onclick =
-              getImportHandler(managedUsers[i], nameIsUnique);
+          $('supervised-user-import-existing').onclick =
+              getImportHandler(supervisedUsers[i], nameIsUnique);
           $('create-profile-ok').disabled = true;
           return;
         }
@@ -393,12 +396,12 @@ cr.define('options', function() {
     },
 
     /**
-     * Called in case the request for the list of managed users fails because of
-     * a signin error.
+     * Called in case the request for the list of supervised users fails because
+     * of a signin error.
      * @private
      */
     onSigninError_: function() {
-      this.updateImportExistingManagedUserLink_(false);
+      this.updateImportExistingSupervisedUserLink_(false);
     },
 
     /**
@@ -438,7 +441,7 @@ cr.define('options', function() {
       chrome.send('setProfileIconAndName',
                   [this.profileInfo_.filePath, iconURL, name]);
       if (name != this.profileInfo_.name)
-        options.ManagedUserListData.resetPromise();
+        options.SupervisedUserListData.resetPromise();
     },
 
     /**
@@ -448,8 +451,8 @@ cr.define('options', function() {
      */
     submitCreateProfile_: function() {
       // This is visual polish: the UI to access this should be disabled for
-      // managed users, and the back end will prevent user creation anyway.
-      if (this.profileInfo_ && this.profileInfo_.isManaged)
+      // supervised users, and the back end will prevent user creation anyway.
+      if (this.profileInfo_ && this.profileInfo_.isSupervised)
         return;
 
       this.hideErrorBubble_('create');
@@ -460,13 +463,13 @@ cr.define('options', function() {
       var name = $('create-profile-name').value;
       var iconUrl = $('create-profile-icon-grid').selectedItem;
       var createShortcut = $('create-shortcut').checked;
-      var isManaged = $('create-profile-managed').checked;
-      var existingManagedUserId = '';
+      var isSupervised = $('create-profile-supervised').checked;
+      var existingSupervisedUserId = '';
 
       // 'createProfile' is handled by the CreateProfileHandler.
       chrome.send('createProfile',
                   [name, iconUrl, createShortcut,
-                   isManaged, existingManagedUserId]);
+                   isSupervised, existingSupervisedUserId]);
     },
 
     /**
@@ -506,7 +509,7 @@ cr.define('options', function() {
       $('manage-profile-overlay-manage').hidden = false;
       $('manage-profile-overlay-delete').hidden = true;
       $('manage-profile-overlay-disconnect-managed').hidden = true;
-      $('manage-profile-name').disabled = profileInfo.isManaged;
+      $('manage-profile-name').disabled = profileInfo.isSupervised;
       this.hideErrorBubble_('manage');
     },
 
@@ -525,7 +528,7 @@ cr.define('options', function() {
      * @private
      */
     showDeleteDialog_: function(profileInfo) {
-      if (BrowserOptions.getCurrentProfile().isManaged)
+      if (BrowserOptions.getCurrentProfile().isSupervised)
         return;
 
       ManageProfileOverlay.setProfileInfo(profileInfo, 'manage');
@@ -538,7 +541,8 @@ cr.define('options', function() {
       $('delete-profile-text').textContent =
           loadTimeData.getStringF('deleteProfileMessage',
                                   elide(profileInfo.name, /* maxLength */ 50));
-      $('delete-managed-profile-addendum').hidden = !profileInfo.isManaged;
+      $('delete-supervised-profile-addendum').hidden =
+          !profileInfo.isSupervised;
 
       // Because this dialog isn't useful when refreshing or as part of the
       // history, don't create a history entry for it when showing.
@@ -611,7 +615,7 @@ cr.define('options', function() {
 
     /** @override */
     canShowPage: function() {
-      return !BrowserOptions.getCurrentProfile().isManaged;
+      return !BrowserOptions.getCurrentProfile().isSupervised;
     },
 
     /**
@@ -640,14 +644,14 @@ cr.define('options', function() {
       $('create-profile-name').hidden = true;
       $('create-profile-ok').disabled = true;
 
-      $('create-profile-managed').checked = false;
-      $('import-existing-managed-user-link').hidden = true;
-      $('create-profile-managed').onchange = function() {
+      $('create-profile-supervised').checked = false;
+      $('import-existing-supervised-user-link').hidden = true;
+      $('create-profile-supervised').onchange = function() {
         ManageProfileOverlay.getInstance().updateCreateOrImport_('create');
       };
-      $('create-profile-managed-signed-in').disabled = true;
-      $('create-profile-managed-signed-in').hidden = true;
-      $('create-profile-managed-not-signed-in').hidden = true;
+      $('create-profile-supervised-signed-in').disabled = true;
+      $('create-profile-supervised-signed-in').hidden = true;
+      $('create-profile-supervised-not-signed-in').hidden = true;
 
       this.profileNameIsDefault_ = false;
     },
@@ -679,13 +683,13 @@ cr.define('options', function() {
      */
     updateCreateInProgress_: function(inProgress) {
       this.createInProgress_ = inProgress;
-      this.updateCreateManagedUserCheckbox_();
+      this.updateCreateSupervisedUserCheckbox_();
 
       $('create-profile-icon-grid').disabled = inProgress;
       $('create-profile-name').disabled = inProgress;
       $('create-shortcut').disabled = inProgress;
       $('create-profile-ok').disabled = inProgress;
-      $('import-existing-managed-user-link').disabled = inProgress;
+      $('import-existing-supervised-user-link').disabled = inProgress;
 
       $('create-profile-throbber').hidden = !inProgress;
     },
@@ -731,18 +735,18 @@ cr.define('options', function() {
      *     profileInfo = {
      *       name: "Profile Name",
      *       filePath: "/path/to/profile/data/on/disk"
-     *       isManaged: (true|false),
+     *       isSupervised: (true|false),
      *     };
      * @private
      */
     onSuccess_: function(profileInfo) {
       this.updateCreateInProgress_(false);
       OptionsPage.closeOverlay();
-      if (profileInfo.isManaged) {
-        options.ManagedUserListData.resetPromise();
+      if (profileInfo.isSupervised) {
+        options.SupervisedUserListData.resetPromise();
         profileInfo.custodianEmail = this.signedInEmail_;
-        ManagedUserCreateConfirmOverlay.setProfileInfo(profileInfo);
-        OptionsPage.showPageByName('managedUserCreateConfirm', false);
+        SupervisedUserCreateConfirmOverlay.setProfileInfo(profileInfo);
+        OptionsPage.showPageByName('supervisedUserCreateConfirm', false);
         BrowserOptions.updateManagesSupervisedUsers(true);
       }
     },
@@ -750,7 +754,7 @@ cr.define('options', function() {
     /**
      * Updates the signed-in or not-signed-in UI when in create mode. Called by
      * the handler in response to the 'requestCreateProfileUpdate' message.
-     * updateManagedUsersAllowed_ is expected to be called after this is, and
+     * updateSupervisedUsersAllowed_ is expected to be called after this is, and
      * will update additional UI elements.
      * @param {string} email The email address of the currently signed-in user.
      *     An empty string indicates that the user is not signed in.
@@ -762,76 +766,79 @@ cr.define('options', function() {
       this.signedInEmail_ = email;
       this.hasError_ = hasError;
       var isSignedIn = email !== '';
-      $('create-profile-managed-signed-in').hidden = !isSignedIn;
-      $('create-profile-managed-not-signed-in').hidden = isSignedIn;
+      $('create-profile-supervised-signed-in').hidden = !isSignedIn;
+      $('create-profile-supervised-not-signed-in').hidden = isSignedIn;
 
       if (isSignedIn) {
         var accountDetailsOutOfDate =
-            $('create-profile-managed-account-details-out-of-date-label');
+            $('create-profile-supervised-account-details-out-of-date-label');
         accountDetailsOutOfDate.textContent = loadTimeData.getStringF(
-            'manageProfilesManagedAccountDetailsOutOfDate', email);
+            'manageProfilesSupervisedAccountDetailsOutOfDate', email);
         accountDetailsOutOfDate.hidden = !hasError;
 
-        $('create-profile-managed-signed-in-label').textContent =
+        $('create-profile-supervised-signed-in-label').textContent =
             loadTimeData.getStringF(
-                'manageProfilesManagedSignedInLabel', email);
-        $('create-profile-managed-signed-in-label').hidden = hasError;
+                'manageProfilesSupervisedSignedInLabel', email);
+        $('create-profile-supervised-signed-in-label').hidden = hasError;
 
-        $('create-profile-managed-sign-in-again-link').hidden = !hasError;
-        $('create-profile-managed-signed-in-learn-more-link').hidden = hasError;
+        $('create-profile-supervised-sign-in-again-link').hidden = !hasError;
+        $('create-profile-supervised-signed-in-learn-more-link').hidden =
+            hasError;
       }
 
-      this.updateImportExistingManagedUserLink_(isSignedIn && !hasError);
+      this.updateImportExistingSupervisedUserLink_(isSignedIn && !hasError);
     },
 
     /**
-     * Enables/disables the 'import existing managed users' link button.
+     * Enables/disables the 'import existing supervised users' link button.
      * It also updates the button text.
      * @param {boolean} enable True to enable the link button and
      *     false otherwise.
      * @private
      */
-    updateImportExistingManagedUserLink_: function(enable) {
-      var importManagedUserElement = $('import-existing-managed-user-link');
-      importManagedUserElement.hidden = false;
-      importManagedUserElement.disabled = !enable || this.createInProgress_;
-      importManagedUserElement.textContent = enable ?
-          loadTimeData.getString('importExistingManagedUserLink') :
-          loadTimeData.getString('signInToImportManagedUsers');
+    updateImportExistingSupervisedUserLink_: function(enable) {
+      var importSupervisedUserElement =
+          $('import-existing-supervised-user-link');
+      importSupervisedUserElement.hidden = false;
+      importSupervisedUserElement.disabled = !enable || this.createInProgress_;
+      importSupervisedUserElement.textContent = enable ?
+          loadTimeData.getString('importExistingSupervisedUserLink') :
+          loadTimeData.getString('signInToImportSupervisedUsers');
     },
 
     /**
-     * Sets whether creating managed users is allowed or not. Called by the
+     * Sets whether creating supervised users is allowed or not. Called by the
      * handler in response to the 'requestCreateProfileUpdate' message or a
-     * change in the (policy-controlled) pref that prohibits creating managed
+     * change in the (policy-controlled) pref that prohibits creating supervised
      * users, after the signed-in status has been updated.
-     * @param {boolean} allowed True if creating managed users should be
+     * @param {boolean} allowed True if creating supervised users should be
      *     allowed.
      * @private
      */
-    updateManagedUsersAllowed_: function(allowed) {
-      this.managedUsersAllowed_ = allowed;
-      this.updateCreateManagedUserCheckbox_();
+    updateSupervisedUsersAllowed_: function(allowed) {
+      this.supervisedUsersAllowed_ = allowed;
+      this.updateCreateSupervisedUserCheckbox_();
 
-      $('create-profile-managed-not-signed-in-link').hidden = !allowed;
+      $('create-profile-supervised-not-signed-in-link').hidden = !allowed;
       if (!allowed) {
-        $('create-profile-managed-indicator').setAttribute('controlled-by',
-                                                           'policy');
+        $('create-profile-supervised-indicator').setAttribute('controlled-by',
+                                                              'policy');
       } else {
-        $('create-profile-managed-indicator').removeAttribute('controlled-by');
+        $('create-profile-supervised-indicator').removeAttribute(
+            'controlled-by');
       }
     },
 
     /**
-     * Updates the status of the "create managed user" checkbox. Called from
-     * updateManagedUsersAllowed_() or updateCreateInProgress_().
+     * Updates the status of the "create supervised user" checkbox. Called from
+     * updateSupervisedUsersAllowed_() or updateCreateInProgress_().
      * updateSignedInStatus_() does not call this method directly, because it
-     * will be followed by a call to updateManagedUsersAllowed_().
+     * will be followed by a call to updateSupervisedUsersAllowed_().
      * @private
      */
-    updateCreateManagedUserCheckbox_: function() {
-      $('create-profile-managed').disabled =
-          !this.managedUsersAllowed_ || this.createInProgress_ ||
+    updateCreateSupervisedUserCheckbox_: function() {
+      $('create-profile-supervised').disabled =
+          !this.supervisedUsersAllowed_ || this.createInProgress_ ||
           this.signedInEmail_ == '' || this.hasError_;
     },
   };
@@ -843,8 +850,8 @@ cr.define('options', function() {
     'onSuccess',
     'onWarning',
     'updateCreateInProgress',
-    'updateManagedUsersAllowed',
     'updateSignedInStatus',
+    'updateSupervisedUsersAllowed',
   ].forEach(function(name) {
     CreateProfileOverlay[name] = function() {
       var instance = CreateProfileOverlay.getInstance();

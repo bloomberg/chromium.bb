@@ -22,7 +22,7 @@
 /** @const */ var SCREEN_TPM_ERROR = 'tpm-error-message';
 /** @const */ var SCREEN_PASSWORD_CHANGED = 'password-changed';
 /** @const */ var SCREEN_CREATE_MANAGED_USER_FLOW =
-    'managed-user-creation';
+    'supervised-user-creation';
 /** @const */ var SCREEN_APP_LAUNCH_SPLASH = 'app-launch-splash';
 /** @const */ var SCREEN_CONFIRM_PASSWORD = 'confirm-password';
 /** @const */ var SCREEN_FATAL_ERROR = 'fatal-error';
@@ -53,7 +53,7 @@
   GAIA_SIGNIN: 1,
   ACCOUNT_PICKER: 2,
   WRONG_HWID_WARNING: 3,
-  MANAGED_USER_CREATION_FLOW: 4,
+  SUPERVISED_USER_CREATION_FLOW: 4,
   SAML_PASSWORD_CONFIRM: 5,
 };
 
@@ -62,7 +62,7 @@
   UNKNOWN: 'ui-state-unknown',
   UPDATE: 'ui-state-update',
   SIGNIN: 'ui-state-signin',
-  MANAGED_USER_CREATION_FLOW: 'ui-state-locally-managed',
+  SUPERVISED_USER_CREATION_FLOW: 'ui-state-supervised',
   KIOSK_MODE: 'ui-state-kiosk-mode',
   LOCAL_STATE_ERROR: 'ui-state-local-state-error',
   AUTO_ENROLLMENT_ERROR: 'ui-state-auto-enrollment-error',
@@ -962,10 +962,10 @@ cr.define('cr.ui.login', function() {
   };
 
   /**
-   * Shows dialog to create managed user.
+   * Shows dialog to create a supervised user.
    */
-  DisplayManager.showManagedUserCreationScreen = function() {
-    login.ManagedUserCreationScreen.show();
+  DisplayManager.showSupervisedUserCreationScreen = function() {
+    login.SupervisedUserCreationScreen.show();
   };
 
   /**

@@ -67,19 +67,21 @@ void SupervisedUserImportHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
-      { "managedUserImportTitle", IDS_IMPORT_EXISTING_SUPERVISED_USER_TITLE },
-      { "managedUserImportText", IDS_IMPORT_EXISTING_SUPERVISED_USER_TEXT },
+      { "supervisedUserImportTitle",
+          IDS_IMPORT_EXISTING_SUPERVISED_USER_TITLE },
+      { "supervisedUserImportText", IDS_IMPORT_EXISTING_SUPERVISED_USER_TEXT },
       { "createNewUserLink", IDS_CREATE_NEW_USER_LINK },
-      { "managedUserImportOk", IDS_IMPORT_EXISTING_SUPERVISED_USER_OK },
-      { "managedUserImportSigninError",
+      { "supervisedUserImportOk", IDS_IMPORT_EXISTING_SUPERVISED_USER_OK },
+      { "supervisedUserImportSigninError",
           IDS_SUPERVISED_USER_IMPORT_SIGN_IN_ERROR },
-      { "managedUserAlreadyOnThisDevice",
+      { "supervisedUserAlreadyOnThisDevice",
           IDS_SUPERVISED_USER_ALREADY_ON_THIS_DEVICE },
-      { "noExistingManagedUsers", IDS_SUPERVISED_USER_NO_EXISTING_ERROR },
-      { "managedUserSelectAvatarTitle",
+      { "noExistingSupervisedUsers", IDS_SUPERVISED_USER_NO_EXISTING_ERROR },
+      { "supervisedUserSelectAvatarTitle",
           IDS_SUPERVISED_USER_SELECT_AVATAR_TITLE },
-      { "managedUserSelectAvatarText", IDS_SUPERVISED_USER_SELECT_AVATAR_TEXT },
-      { "managedUserSelectAvatarOk", IDS_SUPERVISED_USER_SELECT_AVATAR_OK },
+      { "supervisedUserSelectAvatarText",
+          IDS_SUPERVISED_USER_SELECT_AVATAR_TEXT },
+      { "supervisedUserSelectAvatarOk", IDS_SUPERVISED_USER_SELECT_AVATAR_OK },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -110,7 +112,7 @@ void SupervisedUserImportHandler::InitializeHandler() {
 }
 
 void SupervisedUserImportHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("requestManagedUserImportUpdate",
+  web_ui()->RegisterMessageCallback("requestSupervisedUserImportUpdate",
       base::Bind(&SupervisedUserImportHandler::
                       RequestSupervisedUserImportUpdate,
                  base::Unretained(this)));
@@ -121,7 +123,8 @@ void SupervisedUserImportHandler::OnSupervisedUsersChanged() {
 }
 
 void SupervisedUserImportHandler::FetchSupervisedUsers() {
-  web_ui()->CallJavascriptFunction("options.ManagedUserListData.resetPromise");
+  web_ui()->CallJavascriptFunction(
+      "options.SupervisedUserListData.resetPromise");
   RequestSupervisedUserImportUpdate(NULL);
 }
 
@@ -205,12 +208,13 @@ void SupervisedUserImportHandler::SendExistingSupervisedUsers(
   }
 
   web_ui()->CallJavascriptFunction(
-      "options.ManagedUserListData.receiveExistingManagedUsers",
+      "options.SupervisedUserListData.receiveExistingSupervisedUsers",
       supervised_users);
 }
 
 void SupervisedUserImportHandler::ClearSupervisedUsersAndShowError() {
-  web_ui()->CallJavascriptFunction("options.ManagedUserListData.onSigninError");
+  web_ui()->CallJavascriptFunction(
+      "options.SupervisedUserListData.onSigninError");
 }
 
 bool SupervisedUserImportHandler::IsAccountConnected() const {

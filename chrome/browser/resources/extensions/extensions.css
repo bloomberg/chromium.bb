@@ -380,14 +380,14 @@ html[dir='rtl'] #extension-settings .trash {
   display: none;
 }
 
-/* Managed mode */
+/* Supervised users */
 
-.page:not(.profile-is-managed) .profile-is-managed-banner,
-.profile-is-managed .more-extensions-link {
+.page:not(.profile-is-supervised) .profile-is-supervised-banner,
+.profile-is-supervised .more-extensions-link {
   display: none;
 }
 
-.profile-is-managed-banner .page-banner-text {
+.profile-is-supervised-banner .page-banner-text {
   background-image: url(chrome://theme/IDR_WARNING);
 }
 

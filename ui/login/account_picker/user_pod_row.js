@@ -486,15 +486,14 @@ cr.define('login', function() {
           loadTimeData.getStringF('ownerUserPattern', this.user_.displayName) :
           this.user_.displayName;
       this.actionBoxMenuTitleEmailElement.textContent = this.user_.emailAddress;
-      this.actionBoxMenuTitleEmailElement.hidden =
-          this.user_.locallyManagedUser;
+      this.actionBoxMenuTitleEmailElement.hidden = this.user_.supervisedUser;
 
       this.actionBoxMenuCommandElement.textContent =
           loadTimeData.getString('removeUser');
     },
 
     customizeUserPodPerUserType: function() {
-      if (this.user_.locallyManagedUser && !this.user_.isDesktopUser) {
+      if (this.user_.supervisedUser && !this.user_.isDesktopUser) {
         this.setUserPodIconType('supervised');
       } else if (this.multiProfilesPolicyApplied) {
         // Mark user pod as not focusable which in addition to the grayed out
@@ -707,7 +706,7 @@ cr.define('login', function() {
     },
 
     showSupervisedUserSigninWarning: function() {
-      // Locally managed user token has been invalidated.
+      // Supervised user token has been invalidated.
       // Make sure that pod is focused i.e. "Sign in" button is seen.
       this.parentNode.focusPod(this);
 
@@ -730,7 +729,7 @@ cr.define('login', function() {
      * Shows signin UI for this user.
      */
     showSigninUI: function() {
-      if (this.user.locallyManagedUser && !this.user.isDesktopUser) {
+      if (this.user.supervisedUser && !this.user.isDesktopUser) {
         this.showSupervisedUserSigninWarning();
       } else {
         // Special case for multi-profiles sign in. We show users even if they
@@ -817,7 +816,7 @@ cr.define('login', function() {
      * @param {Event} e Click event.
      */
     handleRemoveCommandClick_: function(e) {
-      if (this.user.locallyManagedUser || this.user.isDesktopUser) {
+      if (this.user.supervisedUser || this.user.isDesktopUser) {
         this.showRemoveWarning_();
         return;
       }
@@ -875,7 +874,7 @@ cr.define('login', function() {
         return;
       switch (e.keyIdentifier) {
         case 'Enter':
-          if (this.user.locallyManagedUser || this.user.isDesktopUser) {
+          if (this.user.supervisedUser || this.user.isDesktopUser) {
             // Prevent default so that we don't trigger a 'click' event on the
             // remove button that will be focused.
             e.preventDefault();
@@ -1257,7 +1256,7 @@ cr.define('login', function() {
       this.nameElement.textContent = this.user.displayName;
 
       var isLockedUser = this.user.needsSignin;
-      var isSupervisedUser = this.user.locallyManagedUser;
+      var isSupervisedUser = this.user.supervisedUser;
       this.classList.toggle('locked', isLockedUser);
       this.classList.toggle('supervised-user', isSupervisedUser);
 

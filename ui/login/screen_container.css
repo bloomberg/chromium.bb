@@ -50,25 +50,25 @@
 }
 
 /* Screens that have a border and background. */
+#oobe.auto-enrollment-check #inner-container,
 #oobe.autolaunch #inner-container,
+#oobe.confirm-password #inner-container,
 #oobe.connect #inner-container,
 #oobe.enrollment #inner-container,
 #oobe.eula #inner-container,
+#oobe.fatal-error #inner-container,
 #oobe.gaia-signin #inner-container,
+#oobe.hid-detection #inner-container,
 #oobe.kiosk-enable #inner-container,
 #oobe.oauth-enrollment #inner-container,
+#oobe.password-changed #inner-container,
 #oobe.reset #inner-container,
-#oobe.hid-detection #inner-container,
+#oobe.supervised-user-creation #inner-container,
+#oobe.supervised-user-creation-dialog #inner-container,
+#oobe.terms-of-service #inner-container,
 #oobe.update #inner-container,
 #oobe.user-image #inner-container,
-#oobe.managed-user-creation-dialog #inner-container,
-#oobe.managed-user-creation #inner-container,
-#oobe.password-changed #inner-container,
-#oobe.terms-of-service #inner-container,
-#oobe.auto-enrollment-check #inner-container,
-#oobe.wrong-hwid #inner-container,
-#oobe.confirm-password #inner-container,
-#oobe.fatal-error #inner-container {
+#oobe.wrong-hwid #inner-container {
   background: white;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
               0 4px 23px 5px rgba(0, 0, 0, 0.2),
@@ -141,11 +141,11 @@
 #hid-detection-dot,
 #host-pairing-dot,
 #kiosk-enable-dot,
-#managed-user-creation-dot,
-#managed-user-creation-dialog-dot,
 #oauth-enrollment-dot,
 #password-changed-dot,
 #reset-dot,
+#supervised-user-creation-dot,
+#supervised-user-creation-dialog-dot,
 #terms-of-service-dot,
 #tpm-error-message-dot,
 #wrong-hwid-dot {

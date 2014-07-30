@@ -28,9 +28,6 @@ var HotwordConfirmDialog = options.HotwordConfirmDialog;
 var ImportDataOverlay = options.ImportDataOverlay;
 var LanguageOptions = options.LanguageOptions;
 var ManageProfileOverlay = options.ManageProfileOverlay;
-var ManagedUserCreateConfirmOverlay = options.ManagedUserCreateConfirmOverlay;
-var ManagedUserImportOverlay = options.ManagedUserImportOverlay;
-var ManagedUserLearnMoreOverlay = options.ManagedUserLearnMoreOverlay;
 var OptionsFocusManager = options.OptionsFocusManager;
 var OptionsPage = options.OptionsPage;
 var PasswordManager = options.PasswordManager;
@@ -41,6 +38,10 @@ var ResetProfileSettingsOverlay = options.ResetProfileSettingsOverlay;
 var SearchEngineManager = options.SearchEngineManager;
 var SearchPage = options.SearchPage;
 var StartupOverlay = options.StartupOverlay;
+var SupervisedUserCreateConfirmOverlay =
+    options.SupervisedUserCreateConfirmOverlay;
+var SupervisedUserImportOverlay = options.SupervisedUserImportOverlay;
+var SupervisedUserLearnMoreOverlay = options.SupervisedUserLearnMoreOverlay;
 var SyncSetupOverlay = options.SyncSetupOverlay;
 var WebsiteSettingsManager = options.WebsiteSettingsManager;
 var ThirdPartyImeConfirmOverlay = options.ThirdPartyImeConfirmOverlay;
@@ -148,11 +149,12 @@ function load() {
   OptionsPage.registerOverlay(ManageProfileOverlay.getInstance(),
                               BrowserOptions.getInstance());
   if (!cr.isChromeOS) {
-    OptionsPage.registerOverlay(ManagedUserCreateConfirmOverlay.getInstance(),
+    OptionsPage.registerOverlay(SupervisedUserCreateConfirmOverlay.
+                                    getInstance(),
                                 BrowserOptions.getInstance());
-    OptionsPage.registerOverlay(ManagedUserImportOverlay.getInstance(),
+    OptionsPage.registerOverlay(SupervisedUserImportOverlay.getInstance(),
                                 CreateProfileOverlay.getInstance());
-    OptionsPage.registerOverlay(ManagedUserLearnMoreOverlay.getInstance(),
+    OptionsPage.registerOverlay(SupervisedUserLearnMoreOverlay.getInstance(),
                                 CreateProfileOverlay.getInstance());
   }
   OptionsPage.registerOverlay(PasswordManager.getInstance(),

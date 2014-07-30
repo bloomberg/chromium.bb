@@ -299,13 +299,14 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       $('createAccount').hidden = !data.createAccount;
       $('guestSignin').hidden = !data.guestSignin;
-      $('createManagedUserPane').hidden = !data.managedUsersEnabled;
+      $('createSupervisedUserPane').hidden = !data.supervisedUsersEnabled;
 
-      $('createManagedUserLinkPlaceholder').hidden =
-          !data.managedUsersCanCreate;
-      $('createManagedUserNoManagerText').hidden = data.managedUsersCanCreate;
-      $('createManagedUserNoManagerText').textContent =
-          data.managedUsersRestrictionReason;
+      $('createSupervisedUserLinkPlaceholder').hidden =
+          !data.supervisedUsersCanCreate;
+      $('createSupervisedUserNoManagerText').hidden =
+          data.supervisedUsersCanCreate;
+      $('createSupervisedUserNoManagerText').textContent =
+          data.supervisedUsersRestrictionReason;
 
       this.isShowUsers_ = data.isShowUsers;
       this.updateCancelButtonState();
@@ -314,7 +315,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       var noRightPanel = $('gaia-signin-reason').hidden &&
                          $('createAccount').hidden &&
                          $('guestSignin').hidden &&
-                         $('createManagedUserPane').hidden;
+                         $('createSupervisedUserPane').hidden;
       this.classList.toggle('no-right-panel', noRightPanel);
       if (Oobe.getInstance().currentScreen === this)
         Oobe.getInstance().updateScreenSize(this);
@@ -557,10 +558,11 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           'guestSignin',
           '<a id="guestSigninLink" class="signin-link" href="#">',
           '</a>');
-      $('createManagedUserLinkPlaceholder').innerHTML = loadTimeData.getStringF(
-            'createLocallyManagedUser',
-            '<a id="createManagedUserLink" class="signin-link" href="#">',
-            '</a>');
+      $('createSupervisedUserLinkPlaceholder').innerHTML =
+          loadTimeData.getStringF(
+              'createSupervisedUser',
+              '<a id="createSupervisedUserLink" class="signin-link" href="#">',
+              '</a>');
       $('createAccountLink').addEventListener('click', function(e) {
         chrome.send('createAccount');
         e.preventDefault();
@@ -569,8 +571,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         chrome.send('launchIncognito');
         e.preventDefault();
       });
-      $('createManagedUserLink').addEventListener('click', function(e) {
-        chrome.send('showLocallyManagedUserCreationScreen');
+      $('createSupervisedUserLink').addEventListener('click', function(e) {
+        chrome.send('showSupervisedUserCreationScreen');
         e.preventDefault();
       });
     },

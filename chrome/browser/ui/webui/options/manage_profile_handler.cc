@@ -87,20 +87,21 @@ void ManageProfileHandler::GetLocalizedValues(
     { "manageProfilesIconLabel", IDS_PROFILES_MANAGE_ICON_LABEL },
     { "manageProfilesExistingSupervisedUser",
         IDS_PROFILES_CREATE_EXISTING_SUPERVISED_USER_ERROR },
-    { "manageProfilesManagedSignedInLabel",
+    { "manageProfilesSupervisedSignedInLabel",
         IDS_PROFILES_CREATE_SUPERVISED_SIGNED_IN_LABEL },
-    { "manageProfilesManagedNotSignedInLabel",
+    { "manageProfilesSupervisedNotSignedInLabel",
         IDS_PROFILES_CREATE_SUPERVISED_NOT_SIGNED_IN_LABEL },
-    { "manageProfilesManagedAccountDetailsOutOfDate",
+    { "manageProfilesSupervisedAccountDetailsOutOfDate",
         IDS_PROFILES_CREATE_SUPERVISED_ACCOUNT_DETAILS_OUT_OF_DATE_LABEL },
-    { "manageProfilesManagedSignInAgainLink",
+    { "manageProfilesSupervisedSignInAgainLink",
         IDS_PROFILES_CREATE_SUPERVISED_SIGN_IN_AGAIN_LINK },
-    { "manageProfilesManagedNotSignedInLink",
+    { "manageProfilesSupervisedNotSignedInLink",
         IDS_PROFILES_CREATE_SUPERVISED_NOT_SIGNED_IN_LINK },
     { "deleteProfileTitle", IDS_PROFILES_DELETE_TITLE },
     { "deleteProfileOK", IDS_PROFILES_DELETE_OK_BUTTON_LABEL },
     { "deleteProfileMessage", IDS_PROFILES_DELETE_MESSAGE },
-    { "deleteManagedProfileAddendum", IDS_PROFILES_DELETE_SUPERVISED_ADDENDUM },
+    { "deleteSupervisedProfileAddendum",
+        IDS_PROFILES_DELETE_SUPERVISED_ADDENDUM },
     { "disconnectManagedProfileTitle",
         IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_TITLE },
     { "disconnectManagedProfileOK",
@@ -111,9 +112,9 @@ void ManageProfileHandler::GetLocalizedValues(
     { "createProfileShortcutCheckbox", IDS_PROFILES_CREATE_SHORTCUT_CHECKBOX },
     { "createProfileShortcutButton", IDS_PROFILES_CREATE_SHORTCUT_BUTTON },
     { "removeProfileShortcutButton", IDS_PROFILES_REMOVE_SHORTCUT_BUTTON },
-    { "importExistingManagedUserLink",
+    { "importExistingSupervisedUserLink",
         IDS_PROFILES_IMPORT_EXISTING_SUPERVISED_USER_LINK },
-    { "signInToImportManagedUsers",
+    { "signInToImportSupervisedUsers",
         IDS_PROFILES_IMPORT_SUPERVISED_USER_NOT_SIGNED_IN },
   };
 
@@ -487,7 +488,7 @@ void ManageProfileHandler::OnCreateSupervisedUserPrefChange() {
   base::FundamentalValue allowed(
       prefs->GetBoolean(prefs::kSupervisedUserCreationAllowed));
   web_ui()->CallJavascriptFunction(
-      "CreateProfileOverlay.updateManagedUsersAllowed", allowed);
+      "CreateProfileOverlay.updateSupervisedUsersAllowed", allowed);
 }
 
 void ManageProfileHandler::OnHasProfileShortcuts(bool has_shortcuts) {

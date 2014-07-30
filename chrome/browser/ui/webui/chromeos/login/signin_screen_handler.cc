@@ -710,7 +710,7 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("getUsers", &SigninScreenHandler::HandleGetUsers);
   AddCallback("launchDemoUser", &SigninScreenHandler::HandleLaunchDemoUser);
   AddCallback("launchIncognito", &SigninScreenHandler::HandleLaunchIncognito);
-  AddCallback("showLocallyManagedUserCreationScreen",
+  AddCallback("showSupervisedUserCreationScreen",
               &SigninScreenHandler::HandleShowSupervisedUserCreationScreen);
   AddCallback("launchPublicAccount",
               &SigninScreenHandler::HandleLaunchPublicAccount);

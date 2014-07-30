@@ -52,8 +52,8 @@ cr.define('uiAccountTweaks', function() {
   /**
    * @return {boolean} Whether we're currently in supervised user mode.
    */
-  UIAccountTweaks.loggedInAsLocallyManagedUser = function() {
-    return loadTimeData.getBoolean('loggedInAsLocallyManagedUser');
+  UIAccountTweaks.loggedInAsSupervisedUser = function() {
+    return loadTimeData.getBoolean('loggedInAsSupervisedUser');
   };
 
   /**

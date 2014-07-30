@@ -514,7 +514,7 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_POLICY_CONTROLLED));
   source->AddString("extensionSettingsDependentExtensions",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_DEPENDENT_EXTENSIONS));
-  source->AddString("extensionSettingsManagedMode",
+  source->AddString("extensionSettingsSupervisedUser",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOCKED_SUPERVISED_USER));
   source->AddString("extensionSettingsCorruptInstall",
       l10n_util::GetStringUTF16(
@@ -859,7 +859,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   bool developer_mode =
       !is_supervised &&
       profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
-  results.SetBoolean("profileIsManaged", is_supervised);
+  results.SetBoolean("profileIsSupervised", is_supervised);
   results.SetBoolean("incognitoAvailable", incognito_available);
   results.SetBoolean("developerMode", developer_mode);
 

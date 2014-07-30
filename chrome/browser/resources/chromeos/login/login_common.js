@@ -23,8 +23,8 @@
 <include src="screen_app_launch_splash.js">
 <include src="screen_error_message.js">
 <include src="screen_gaia_signin.js">
-<include src="screen_locally_managed_user_creation.js">
 <include src="screen_password_changed.js">
+<include src="screen_supervised_user_creation.js">
 <include src="screen_tpm_error.js">
 <include src="screen_wrong_hwid.js">
 <include src="screen_confirm_password.js">
@@ -157,10 +157,10 @@ cr.define('cr.ui', function() {
   };
 
   /**
-   * Shows dialog to create managed user.
+   * Shows dialog to create a supervised user.
    */
-  Oobe.showManagedUserCreationScreen = function() {
-    DisplayManager.showManagedUserCreationScreen();
+  Oobe.showSupervisedUserCreationScreen = function() {
+    DisplayManager.showSupervisedUserCreationScreen();
   };
 
   /**

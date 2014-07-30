@@ -122,7 +122,7 @@ html[dir='rtl'] #create-profile-error-bubble {
   -webkit-margin-end: 10px;
 }
 
-#delete-managed-profile-addendum {
+#delete-supervised-profile-addendum {
   -webkit-padding-start: 48px;
   margin-top: 10px;
 }
@@ -137,26 +137,26 @@ html[dir='rtl'] #delete-profile-icon {
   margin-left: 10px;
 }
 
-#create-profile-managed-not-signed-in {
+#create-profile-supervised-not-signed-in {
   color: #999;
 }
 
-#create-profile-managed-not-signed-in-label,
-#create-profile-managed-account-details-out-of-date-label {
+#create-profile-supervised-not-signed-in-label,
+#create-profile-supervised-account-details-out-of-date-label {
   white-space: pre-wrap;
   word-wrap: break-word;
 }
 
-#create-profile-managed-content-area {
+#create-profile-supervised-content-area {
   padding-top: 5px;
 }
 
-#import-existing-managed-user-link {
+#import-existing-supervised-user-link {
   left: 17px;
   position: absolute;
 }
 
-#supervised-user-import {
+#supervised-user-import-existing {
   margin: 0;
   padding: 0;
 }

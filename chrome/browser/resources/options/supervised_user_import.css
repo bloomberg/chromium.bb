@@ -1,36 +1,36 @@
-/* Copyright 2013 The Chromium Authors. All rights reserved.
+/* Copyright 2014 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#managed-user-import {
+#supervised-user-import {
   width: 612px;
 }
 
-#managed-user-import-text,
-#managed-user-select-avatar-text {
+#supervised-user-import-text,
+#supervised-user-select-avatar-text {
   padding-bottom: 10px;
   padding-left: 17px;
   white-space: pre-wrap;
   word-wrap: break-word;
 }
 
-#managed-user-list {
+#supervised-user-list {
   height: 240px;
   margin-bottom: 10px;
 }
 
-#managed-user-list .profile-name {
-  -webkit-box-flex: 1;
+#supervised-user-list .profile-name {
+  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-#managed-user-list > * {
+#supervised-user-list > * {
   height: 40px;
 }
 
-#managed-user-list:focus {
+#supervised-user-list:focus {
   border-color: rgb(77, 144, 254);
 }
 
@@ -39,7 +39,7 @@
   padding: 2px;
 }
 
-#managed-user-import-error-bubble {
+#supervised-user-import-error-bubble {
   -webkit-transition: max-height 200ms, padding 200ms;
   background-color: rgb(238, 185, 57);
   border-radius: 4px;
@@ -54,7 +54,7 @@
   width: 80%;
 }
 
-#managed-user-import-error-bubble[hidden] {
+#supervised-user-import-error-bubble[hidden] {
   max-height: 0;
 }
 

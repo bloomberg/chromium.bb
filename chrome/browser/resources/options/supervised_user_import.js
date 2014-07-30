@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,26 +7,27 @@ cr.define('options', function() {
   var ArrayDataModel = cr.ui.ArrayDataModel;
 
   /**
-   * ManagedUserImportOverlay class.
-   * Encapsulated handling of the 'Import existing managed user' overlay page.
+   * SupervisedUserImportOverlay class.
+   * Encapsulated handling of the 'Import existing supervised user' overlay
+   * page.
    * @constructor
    * @class
    */
-  function ManagedUserImportOverlay() {
-    var title = loadTimeData.getString('managedUserImportTitle');
-    OptionsPage.call(this, 'managedUserImport',
-                     title, 'managed-user-import');
+  function SupervisedUserImportOverlay() {
+    var title = loadTimeData.getString('supervisedUserImportTitle');
+    OptionsPage.call(this, 'supervisedUserImport',
+                     title, 'supervised-user-import');
   };
 
-  cr.addSingletonGetter(ManagedUserImportOverlay);
+  cr.addSingletonGetter(SupervisedUserImportOverlay);
 
-  ManagedUserImportOverlay.prototype = {
+  SupervisedUserImportOverlay.prototype = {
     // Inherit from OptionsPage.
     __proto__: OptionsPage.prototype,
 
     /** @override */
     canShowPage: function() {
-      return !BrowserOptions.getCurrentProfile().isManaged;
+      return !BrowserOptions.getCurrentProfile().isSupervised;
     },
 
     /** @override */
@@ -34,25 +35,26 @@ cr.define('options', function() {
       // Call base class implementation to start preference initialization.
       OptionsPage.prototype.initializePage.call(this);
 
-      var managedUserList = $('managed-user-list');
-      options.managedUserOptions.ManagedUserList.decorate(managedUserList);
+      var supervisedUserList = $('supervised-user-list');
+      options.supervisedUserOptions.SupervisedUserList.decorate(
+          supervisedUserList);
 
       var avatarGrid = $('select-avatar-grid');
       options.ProfilesIconGrid.decorate(avatarGrid);
       var avatarIcons = loadTimeData.getValue('avatarIcons');
       avatarGrid.dataModel = new ArrayDataModel(avatarIcons);
 
-      managedUserList.addEventListener('change', function(event) {
-        var managedUser = managedUserList.selectedItem;
-        if (!managedUser)
+      supervisedUserList.addEventListener('change', function(event) {
+        var supervisedUser = supervisedUserList.selectedItem;
+        if (!supervisedUser)
           return;
 
-        $('managed-user-import-ok').disabled =
-            managedUserList.selectedItem.onCurrentDevice;
+        $('supervised-user-import-ok').disabled =
+          supervisedUserList.selectedItem.onCurrentDevice;
       });
 
       var self = this;
-      $('managed-user-import-cancel').onclick = function(event) {
+      $('supervised-user-import-cancel').onclick = function(event) {
         if (self.inProgress_) {
           self.updateImportInProgress_(false);
 
@@ -62,9 +64,9 @@ cr.define('options', function() {
         OptionsPage.closeOverlay();
       };
 
-      $('managed-user-import-ok').onclick =
+      $('supervised-user-import-ok').onclick =
           this.showAvatarGridOrSubmit_.bind(this);
-      $('managed-user-select-avatar-ok').onclick =
+      $('supervised-user-select-avatar-ok').onclick =
           this.showAvatarGridOrSubmit_.bind(this);
     },
 
@@ -76,15 +78,15 @@ cr.define('options', function() {
       // order to trigger a cursor update. We can show the import link again
       // now. TODO(akuegel): Remove this temporary fix when crbug/246304 is
       // resolved.
-      $('import-existing-managed-user-link').hidden = false;
+      $('import-existing-supervised-user-link').hidden = false;
 
-      options.ManagedUserListData.requestExistingManagedUsers().then(
-          this.receiveExistingManagedUsers_, this.onSigninError_.bind(this));
-      options.ManagedUserListData.addObserver(this);
+      options.SupervisedUserListData.requestExistingSupervisedUsers().then(
+          this.receiveExistingSupervisedUsers_, this.onSigninError_.bind(this));
+      options.SupervisedUserListData.addObserver(this);
 
       this.updateImportInProgress_(false);
-      $('managed-user-import-error-bubble').hidden = true;
-      $('managed-user-import-ok').disabled = true;
+      $('supervised-user-import-error-bubble').hidden = true;
+      $('supervised-user-import-ok').disabled = true;
       this.showAppropriateElements_(/* isSelectAvatarMode */ false);
     },
 
@@ -92,60 +94,60 @@ cr.define('options', function() {
      * @override
      */
     didClosePage: function() {
-      options.ManagedUserListData.removeObserver(this);
+      options.SupervisedUserListData.removeObserver(this);
     },
 
     /**
-     * Shows either the managed user import dom elements or the select avatar
+     * Shows either the supervised user import dom elements or the select avatar
      * dom elements.
      * @param {boolean} isSelectAvatarMode True if the overlay should show the
-     *     select avatar grid, and false if the overlay should show the managed
-     *     user list.
+     *     select avatar grid, and false if the overlay should show the
+     *     supervised user list.
      * @private
      */
     showAppropriateElements_: function(isSelectAvatarMode) {
       var avatarElements =
-          this.pageDiv.querySelectorAll('.managed-user-select-avatar');
+          this.pageDiv.querySelectorAll('.supervised-user-select-avatar');
       for (var i = 0; i < avatarElements.length; i++)
         avatarElements[i].hidden = !isSelectAvatarMode;
       var importElements =
-          this.pageDiv.querySelectorAll('.managed-user-import');
+          this.pageDiv.querySelectorAll('.supervised-user-import');
       for (var i = 0; i < importElements.length; i++)
         importElements[i].hidden = isSelectAvatarMode;
     },
 
     /**
-     * Called when the user clicks the "OK" button. In case the managed
+     * Called when the user clicks the "OK" button. In case the supervised
      * user being imported has no avatar in sync, it shows the avatar
-     * icon grid. In case the avatar grid is visible or the managed user
+     * icon grid. In case the avatar grid is visible or the supervised user
      * already has an avatar stored in sync, it proceeds with importing
-     * the managed user.
+     * the supervised user.
      * @private
      */
     showAvatarGridOrSubmit_: function() {
-      var managedUser = $('managed-user-list').selectedItem;
-      if (!managedUser)
+      var supervisedUser = $('supervised-user-list').selectedItem;
+      if (!supervisedUser)
         return;
 
-      $('managed-user-import-error-bubble').hidden = true;
+      $('supervised-user-import-error-bubble').hidden = true;
 
-      if ($('select-avatar-grid').hidden && managedUser.needAvatar) {
+      if ($('select-avatar-grid').hidden && supervisedUser.needAvatar) {
         this.showAvatarGridHelper_();
         return;
       }
 
-      var avatarUrl = managedUser.needAvatar ?
-          $('select-avatar-grid').selectedItem : managedUser.iconURL;
+      var avatarUrl = supervisedUser.needAvatar ?
+          $('select-avatar-grid').selectedItem : supervisedUser.iconURL;
 
       this.updateImportInProgress_(true);
 
       // 'createProfile' is handled by CreateProfileHandler.
-      chrome.send('createProfile', [managedUser.name, avatarUrl,
-                                    false, true, managedUser.id]);
+      chrome.send('createProfile', [supervisedUser.name, avatarUrl,
+                                    false, true, supervisedUser.id]);
     },
 
     /**
-     * Hides the 'managed user list' and shows the avatar grid instead.
+     * Hides the 'supervised user list' and shows the avatar grid instead.
      * It also updates the overlay text and title to instruct the user
      * to choose an avatar for the supervised user.
      * @private
@@ -165,71 +167,71 @@ cr.define('options', function() {
      */
     updateImportInProgress_: function(inProgress) {
       this.inProgress_ = inProgress;
-      $('managed-user-import-ok').disabled = inProgress;
-      $('managed-user-select-avatar-ok').disabled = inProgress;
-      $('managed-user-list').disabled = inProgress;
+      $('supervised-user-import-ok').disabled = inProgress;
+      $('supervised-user-select-avatar-ok').disabled = inProgress;
+      $('supervised-user-list').disabled = inProgress;
       $('select-avatar-grid').disabled = inProgress;
-      $('managed-user-import-throbber').hidden = !inProgress;
+      $('supervised-user-import-throbber').hidden = !inProgress;
     },
 
     /**
-     * Sets the data model of the managed user list to |managedUsers|.
-     * @param {Array.<Object>} managedUsers An array of managed user objects.
+     * Sets the data model of the supervised user list to |supervisedUsers|.
+     * @param {Array.<Object>} supervisedUsers Array of supervised user objects.
      *     Each object is of the form:
-     *       managedUser = {
-     *         id: "Managed User ID",
-     *         name: "Managed User Name",
+     *       supervisedUser = {
+     *         id: "Supervised User ID",
+     *         name: "Supervised User Name",
      *         iconURL: "chrome://path/to/icon/image",
      *         onCurrentDevice: true or false,
      *         needAvatar: true or false
      *       }
      * @private
      */
-    receiveExistingManagedUsers_: function(managedUsers) {
-      managedUsers.sort(function(a, b) {
+    receiveExistingSupervisedUsers_: function(supervisedUsers) {
+      supervisedUsers.sort(function(a, b) {
         if (a.onCurrentDevice != b.onCurrentDevice)
           return a.onCurrentDevice ? 1 : -1;
         return a.name.localeCompare(b.name);
       });
 
-      $('managed-user-list').dataModel = new ArrayDataModel(managedUsers);
-      if (managedUsers.length == 0) {
-        this.onError_(loadTimeData.getString('noExistingManagedUsers'));
-        $('managed-user-import-ok').disabled = true;
+      $('supervised-user-list').dataModel = new ArrayDataModel(supervisedUsers);
+      if (supervisedUsers.length == 0) {
+        this.onError_(loadTimeData.getString('noExistingSupervisedUsers'));
+        $('supervised-user-import-ok').disabled = true;
       } else {
         // Hide the error bubble.
-        $('managed-user-import-error-bubble').hidden = true;
+        $('supervised-user-import-error-bubble').hidden = true;
       }
     },
 
     onSigninError_: function() {
-      $('managed-user-list').dataModel = null;
-      this.onError_(loadTimeData.getString('managedUserImportSigninError'));
+      $('supervised-user-list').dataModel = null;
+      this.onError_(loadTimeData.getString('supervisedUserImportSigninError'));
     },
 
     /**
      * Displays an error message if an error occurs while
-     * importing a managed user.
+     * importing a supervised user.
      * Called by BrowserOptions via the BrowserOptionsHandler.
      * @param {string} error The error message to display.
      * @private
      */
     onError_: function(error) {
-      var errorBubble = $('managed-user-import-error-bubble');
+      var errorBubble = $('supervised-user-import-error-bubble');
       errorBubble.hidden = false;
       errorBubble.textContent = error;
       this.updateImportInProgress_(false);
     },
 
     /**
-     * Closes the overlay if importing the managed user was successful. Also
-     * reset the cached list of managed users in order to get an updated list
+     * Closes the overlay if importing the supervised user was successful. Also
+     * reset the cached list of supervised users in order to get an updated list
      * when the overlay is reopened.
      * @private
      */
     onSuccess_: function() {
       this.updateImportInProgress_(false);
-      options.ManagedUserListData.resetPromise();
+      options.SupervisedUserListData.resetPromise();
       OptionsPage.closeAllOverlays();
     },
   };
@@ -238,14 +240,14 @@ cr.define('options', function() {
   [
     'onSuccess',
   ].forEach(function(name) {
-    ManagedUserImportOverlay[name] = function() {
-      var instance = ManagedUserImportOverlay.getInstance();
+    SupervisedUserImportOverlay[name] = function() {
+      var instance = SupervisedUserImportOverlay.getInstance();
       return instance[name + '_'].apply(instance, arguments);
     };
   });
 
   // Export
   return {
-    ManagedUserImportOverlay: ManagedUserImportOverlay,
+    SupervisedUserImportOverlay: SupervisedUserImportOverlay,
   };
 });

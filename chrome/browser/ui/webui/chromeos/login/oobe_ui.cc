@@ -141,7 +141,7 @@ const char OobeUI::kScreenUserImagePicker[] = "user-image";
 const char OobeUI::kScreenTpmError[] = "tpm-error-message";
 const char OobeUI::kScreenPasswordChanged[] = "password-changed";
 const char OobeUI::kScreenSupervisedUserCreationFlow[] =
-    "managed-user-creation";
+    "supervised-user-creation";
 const char OobeUI::kScreenTermsOfService[] = "terms-of-service";
 const char OobeUI::kScreenWrongHWID[] = "wrong-hwid";
 const char OobeUI::kScreenAutoEnrollmentCheck[] = "auto-enrollment-check";

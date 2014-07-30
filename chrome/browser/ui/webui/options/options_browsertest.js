@@ -4,7 +4,7 @@
 
 GEN('#include "chrome/browser/ui/webui/options/options_browsertest.h"');
 
-/** @const */ var MANAGED_USERS_PREF = 'profile.managed_users';
+/** @const */ var SUPERVISED_USERS_PREF = 'profile.managed_users';
 
 /**
  * Wait for the method specified by |methodName|, on the |object| object, to be
@@ -243,7 +243,7 @@ TEST_F('OptionsWebUITest', 'EnableAndDisableDoNotTrack', function() {
       default:
         assertNotReached();
     }
-  }
+  };
   dntOverlay.addEventListener('visibleChange', visibleChangeHandler);
 
   this.mockHandler.expects(once()).setBooleanPref(
@@ -255,7 +255,7 @@ TEST_F('OptionsWebUITest', 'EnableAndDisableDoNotTrack', function() {
       assertFalse(dntCheckbox.checked);
       testDone();
     }, 0);
-  }
+  };
   this.mockHandler.expects(once()).setBooleanPref(
       eq(['enable_do_not_track', false, 'Options_DoNotTrackCheckbox'])).will(
           callFunction(verifyCorrectEndState));
@@ -372,7 +372,7 @@ OptionsWebUIExtendedTest.prototype = {
 
   testGenPreamble: function() {
     // Start with no supervised users managed by this profile.
-    GEN('  ClearPref("' + MANAGED_USERS_PREF + '");');
+    GEN('  ClearPref("' + SUPERVISED_USERS_PREF + '");');
   },
 
   /** @override */
@@ -809,10 +809,10 @@ TEST_F('OptionsWebUIExtendedTest', 'SupervisingUsers', function() {
   // Remove all supervised users, then add some, watching for the pref change
   // notifications and UI updates in each case. Any non-empty pref dictionary
   // is interpreted as having supervised users.
-  chrome.send('optionsTestSetPref', [MANAGED_USERS_PREF, {key: 'value'}]);
+  chrome.send('optionsTestSetPref', [SUPERVISED_USERS_PREF, {key: 'value'}]);
   waitForResponse(BrowserOptions, 'updateManagesSupervisedUsers', function() {
     assertFalse($('profiles-supervised-dashboard-tip').hidden);
-    chrome.send('optionsTestSetPref', [MANAGED_USERS_PREF, {}]);
+    chrome.send('optionsTestSetPref', [SUPERVISED_USERS_PREF, {}]);
     waitForResponse(BrowserOptions, 'updateManagesSupervisedUsers', function() {
       assertTrue($('profiles-supervised-dashboard-tip').hidden);
       testDone();

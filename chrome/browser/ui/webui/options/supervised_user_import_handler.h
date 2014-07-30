@@ -52,7 +52,7 @@ class SupervisedUserImportHandler : public OptionsPageUIHandler,
   // supervised users.
   void FetchSupervisedUsers();
 
-  // Callback for the "requestManagedUserImportUpdate" message.
+  // Callback for the "requestSupervisedUserImportUpdate" message.
   // Checks the sign-in status of the custodian and accordingly
   // sends an update to the WebUI. The update can be to show/hide
   // an error bubble and update/clear the supervised user list.

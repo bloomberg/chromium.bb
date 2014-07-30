@@ -41,9 +41,9 @@ class NotificationServiceSessionsRouter
 
  private:
   // Called when the URL visited in |web_contents| was blocked by the
-  // ManagedUserService. We forward this on to our handler_ via the
+  // SupervisedUserService. We forward this on to our handler_ via the
   // normal OnLocalTabModified, but pass through here via a WeakPtr
-  // callback from ManagedUserService and to extract the tab delegate
+  // callback from SupervisedUserService and to extract the tab delegate
   // from WebContents.
   void OnNavigationBlocked(content::WebContents* web_contents);
 

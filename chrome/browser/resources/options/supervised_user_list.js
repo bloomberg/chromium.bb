@@ -1,19 +1,19 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('options.managedUserOptions', function() {
+cr.define('options.supervisedUserOptions', function() {
   /** @const */ var List = cr.ui.List;
   /** @const */ var ListItem = cr.ui.ListItem;
   /** @const */ var ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
 
   /**
-   * Create a new managed user list item.
-   * @param {Object} entry The managed user this item represents.
+   * Create a new supervised user list item.
+   * @param {Object} entry The supervised user this item represents.
    *     It has the following form:
-   *       managedUser = {
-   *         id: "Managed User ID",
-   *         name: "Managed User Name",
+   *       supervisedUser = {
+   *         id: "Supervised User ID",
+   *         name: "Supervised User Name",
    *         iconURL: "chrome://path/to/icon/image",
    *         onCurrentDevice: true or false,
    *         needAvatar: true or false
@@ -21,57 +21,57 @@ cr.define('options.managedUserOptions', function() {
    * @constructor
    * @extends {cr.ui.ListItem}
    */
-  function ManagedUserListItem(entry) {
+  function SupervisedUserListItem(entry) {
     var el = cr.doc.createElement('div');
-    el.managedUser_ = entry;
-    el.__proto__ = ManagedUserListItem.prototype;
+    el.supervisedUser_ = entry;
+    el.__proto__ = SupervisedUserListItem.prototype;
     el.decorate();
     return el;
   }
 
-  ManagedUserListItem.prototype = {
+  SupervisedUserListItem.prototype = {
     __proto__: ListItem.prototype,
 
     /**
-     * @type {string} the ID of this managed user list item.
+     * @type {string} the ID of this supervised user list item.
      */
     get id() {
-      return this.managedUser_.id;
+      return this.supervisedUser_.id;
     },
 
     /**
-     * @type {string} the name of this managed user list item.
+     * @type {string} the name of this supervised user list item.
      */
     get name() {
-      return this.managedUser_.name;
+      return this.supervisedUser_.name;
     },
 
     /**
-     * @type {string} the path to the avatar icon of this managed
+     * @type {string} the path to the avatar icon of this supervised
      *     user list item.
      */
     get iconURL() {
-      return this.managedUser_.iconURL;
+      return this.supervisedUser_.iconURL;
     },
 
     /** @override */
     decorate: function() {
       ListItem.prototype.decorate.call(this);
-      var managedUser = this.managedUser_;
+      var supervisedUser = this.supervisedUser_;
 
       // Add the avatar.
       var iconElement = this.ownerDocument.createElement('img');
       iconElement.className = 'profile-img';
-      iconElement.style.content = getProfileAvatarIcon(managedUser.iconURL);
+      iconElement.style.content = getProfileAvatarIcon(supervisedUser.iconURL);
       this.appendChild(iconElement);
 
       // Add the profile name.
       var nameElement = this.ownerDocument.createElement('div');
       nameElement.className = 'profile-name';
-      nameElement.textContent = managedUser.name;
+      nameElement.textContent = supervisedUser.name;
       this.appendChild(nameElement);
 
-      if (managedUser.onCurrentDevice) {
+      if (supervisedUser.onCurrentDevice) {
         iconElement.className += ' profile-img-disabled';
         nameElement.className += ' profile-name-disabled';
 
@@ -80,25 +80,25 @@ cr.define('options.managedUserOptions', function() {
         alreadyOnDeviceElement.className =
             'profile-name-disabled already-on-this-device';
         alreadyOnDeviceElement.textContent =
-            loadTimeData.getString('managedUserAlreadyOnThisDevice');
+            loadTimeData.getString('supervisedUserAlreadyOnThisDevice');
         this.appendChild(alreadyOnDeviceElement);
       }
     },
   };
 
   /**
-   * Create a new managed users list.
+   * Create a new supervised users list.
    * @constructor
    * @extends {cr.ui.List}
    */
-  var ManagedUserList = cr.ui.define('list');
+  var SupervisedUserList = cr.ui.define('list');
 
-  ManagedUserList.prototype = {
+  SupervisedUserList.prototype = {
     __proto__: List.prototype,
 
     /** @override */
     createItem: function(entry) {
-      return new ManagedUserListItem(entry);
+      return new SupervisedUserListItem(entry);
     },
 
     /** @override */
@@ -110,7 +110,7 @@ cr.define('options.managedUserOptions', function() {
   };
 
   return {
-    ManagedUserListItem: ManagedUserListItem,
-    ManagedUserList: ManagedUserList,
+    SupervisedUserListItem: SupervisedUserListItem,
+    SupervisedUserList: SupervisedUserList,
   };
 });

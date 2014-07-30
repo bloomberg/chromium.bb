@@ -159,7 +159,7 @@ const char WizardController::kAutoEnrollmentCheckScreenName[] =
   "auto-enrollment-check";
 const char WizardController::kWrongHWIDScreenName[] = "wrong-hwid";
 const char WizardController::kSupervisedUserCreationScreenName[] =
-  "locally-managed-user-creation-flow";
+  "supervised-user-creation-flow";
 const char WizardController::kAppLaunchSplashScreenName[] =
   "app-launch-splash";
 const char WizardController::kHIDDetectionScreenName[] = "hid-detection";

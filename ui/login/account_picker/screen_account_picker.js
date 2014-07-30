@@ -150,9 +150,9 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
                                           error);
         return;
       }
-      // Show web authentication if this is not a locally managed user.
+      // Show web authentication if this is not a supervised user.
       if (loginAttempts > MAX_LOGIN_ATTEMPTS_IN_POD &&
-          !activatedPod.user.locallyManagedUser) {
+          !activatedPod.user.supervisedUser) {
         activatedPod.showSigninUI();
       } else {
         // We want bubble's arrow to point to the first letter of input.

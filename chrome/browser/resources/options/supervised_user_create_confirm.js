@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,21 +6,21 @@ cr.define('options', function() {
   var OptionsPage = options.OptionsPage;
 
   /**
-   * ManagedUserCreateConfirm class.
+   * SupervisedUserCreateConfirm class.
    * Encapsulated handling of the confirmation overlay page when creating a
-   * managed user.
+   * supervised user.
    * @constructor
    * @class
    */
-  function ManagedUserCreateConfirmOverlay() {
-    OptionsPage.call(this, 'managedUserCreateConfirm',
+  function SupervisedUserCreateConfirmOverlay() {
+    OptionsPage.call(this, 'supervisedUserCreateConfirm',
                      '',  // The title will be based on the new profile name.
-                     'managed-user-created');
+                     'supervised-user-created');
   };
 
-  cr.addSingletonGetter(ManagedUserCreateConfirmOverlay);
+  cr.addSingletonGetter(SupervisedUserCreateConfirmOverlay);
 
-  ManagedUserCreateConfirmOverlay.prototype = {
+  SupervisedUserCreateConfirmOverlay.prototype = {
     // Inherit from OptionsPage.
     __proto__: OptionsPage.prototype,
 
@@ -31,13 +31,13 @@ cr.define('options', function() {
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 
-      $('managed-user-created-done').onclick = function(event) {
+      $('supervised-user-created-done').onclick = function(event) {
         OptionsPage.closeOverlay();
       };
 
       var self = this;
 
-      $('managed-user-created-switch').onclick = function(event) {
+      $('supervised-user-created-switch').onclick = function(event) {
         OptionsPage.closeOverlay();
         chrome.send('switchToProfile', [self.profileInfo_.filePath]);
       };
@@ -45,7 +45,7 @@ cr.define('options', function() {
 
     /** @override */
     didShowPage: function() {
-      $('managed-user-created-switch').focus();
+      $('supervised-user-created-switch').focus();
     },
 
     /**
@@ -56,7 +56,7 @@ cr.define('options', function() {
      *     info = {
      *       name: "Profile Name",
      *       filePath: "/path/to/profile/data/on/disk",
-     *       isManaged: (true|false)
+     *       isSupervised: (true|false)
      *       custodianEmail: "example@gmail.com"
      *     };
      * @private
@@ -65,16 +65,16 @@ cr.define('options', function() {
       this.profileInfo_ = info;
       var MAX_LENGTH = 50;
       var elidedName = elide(info.name, MAX_LENGTH);
-      $('managed-user-created-title').textContent =
-          loadTimeData.getStringF('managedUserCreatedTitle', elidedName);
-      $('managed-user-created-switch').textContent =
-          loadTimeData.getStringF('managedUserCreatedSwitch', elidedName);
+      $('supervised-user-created-title').textContent =
+          loadTimeData.getStringF('supervisedUserCreatedTitle', elidedName);
+      $('supervised-user-created-switch').textContent =
+          loadTimeData.getStringF('supervisedUserCreatedSwitch', elidedName);
 
       // HTML-escape the user-supplied strings before putting them into
       // innerHTML. This is probably excessive for the email address, but
       // belt-and-suspenders is cheap here.
-      $('managed-user-created-text').innerHTML =
-          loadTimeData.getStringF('managedUserCreatedText',
+      $('supervised-user-created-text').innerHTML =
+          loadTimeData.getStringF('supervisedUserCreatedText',
                                   HTMLEscape(elidedName),
                                   HTMLEscape(elide(info.custodianEmail,
                                                    MAX_LENGTH)));
@@ -90,14 +90,14 @@ cr.define('options', function() {
   [
     'setProfileInfo',
   ].forEach(function(name) {
-    ManagedUserCreateConfirmOverlay[name] = function() {
-      var instance = ManagedUserCreateConfirmOverlay.getInstance();
+    SupervisedUserCreateConfirmOverlay[name] = function() {
+      var instance = SupervisedUserCreateConfirmOverlay.getInstance();
       return instance[name + '_'].apply(instance, arguments);
     };
   });
 
   // Export
   return {
-    ManagedUserCreateConfirmOverlay: ManagedUserCreateConfirmOverlay,
+    SupervisedUserCreateConfirmOverlay: SupervisedUserCreateConfirmOverlay,
   };
 });

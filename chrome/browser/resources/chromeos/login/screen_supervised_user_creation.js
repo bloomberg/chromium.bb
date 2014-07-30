@@ -1,19 +1,19 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 /**
- * @fileoverview Locally managed user creation flow screen.
+ * @fileoverview Supervised user creation flow screen.
  */
 
-login.createScreen('LocallyManagedUserCreationScreen',
-                   'managed-user-creation', function() {
+login.createScreen('SupervisedUserCreationScreen',
+                   'supervised-user-creation', function() {
   var MAX_NAME_LENGTH = 50;
   var UserImagesGrid = options.UserImagesGrid;
   var ButtonImages = UserImagesGrid.ButtonImages;
 
   var ManagerPod = cr.ui.define(function() {
-    var node = $('managed-user-creation-manager-template').cloneNode(true);
+    var node = $('supervised-user-creation-manager-template').cloneNode(true);
     node.removeAttribute('id');
     node.removeAttribute('hidden');
     return node;
@@ -23,7 +23,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
 
   /**
    * UI element for displaying single account in list of possible managers for
-   * new locally managed user.
+   * new supervised user.
    * @type {Object}
    */
   ManagerPod.prototype = {
@@ -35,7 +35,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
       // event later.
       this.addEventListener('mousedown',
                             this.handleMouseDown_.bind(this));
-      var screen = $('managed-user-creation');
+      var screen = $('supervised-user-creation');
       var managerPod = this;
       var managerPodList = screen.managerList_;
       var hideManagerPasswordError = function(element) {
@@ -81,7 +81,8 @@ login.createScreen('LocallyManagedUserCreationScreen',
       this.passwordElement.classList.add('password-error');
       $('bubble').showTextForElement(
           this.passwordElement,
-          loadTimeData.getString('createManagedUserWrongManagerPasswordText'),
+          loadTimeData.getString(
+              'createSupervisedUserWrongManagerPasswordText'),
           cr.ui.Bubble.Attachment.BOTTOM,
           24, 4);
     },
@@ -98,7 +99,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @type {!HTMLImageElement}
      */
     get imageElement() {
-      return this.querySelector('.managed-user-creation-manager-image');
+      return this.querySelector('.supervised-user-creation-manager-image');
     },
 
     /**
@@ -106,7 +107,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @type {!HTMLDivElement}
      */
     get nameElement() {
-      return this.querySelector('.managed-user-creation-manager-name');
+      return this.querySelector('.supervised-user-creation-manager-name');
     },
 
     /**
@@ -114,7 +115,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @type {!HTMLDivElement}
      */
     get emailElement() {
-      return this.querySelector('.managed-user-creation-manager-email');
+      return this.querySelector('.supervised-user-creation-manager-email');
     },
 
     /**
@@ -122,7 +123,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @type {!HTMLDivElement}
      */
     get passwordElement() {
-      return this.querySelector('.managed-user-creation-manager-password');
+      return this.querySelector('.supervised-user-creation-manager-password');
     },
 
     /**
@@ -157,7 +158,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
   var ManagerPodList = cr.ui.define('div');
 
   /**
-   * UI element for selecting manager account for new managed user.
+   * UI element for selecting manager account for new supervised user.
    * @type {Object}
    */
   ManagerPodList.prototype = {
@@ -207,7 +208,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
       podToSelect.passwordBlock.hidden = false;
       podToSelect.passwordElement.value = '';
       podToSelect.focusInput();
-      chrome.send('managerSelectedOnLocallyManagedUserCreationFlow',
+      chrome.send('managerSelectedOnSupervisedUserCreationFlow',
           [podToSelect.user.username]);
     },
 
@@ -238,7 +239,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
   };
 
   var ImportPod = cr.ui.define(function() {
-    var node = $('managed-user-creation-import-template').cloneNode(true);
+    var node = $('supervised-user-creation-import-template').cloneNode(true);
     node.removeAttribute('id');
     node.removeAttribute('hidden');
     return node;
@@ -257,7 +258,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
       // Mousedown has to be used instead of click to be able to prevent 'focus'
       // event later.
       this.addEventListener('mousedown', this.handleMouseDown_.bind(this));
-      var screen = $('managed-user-creation');
+      var screen = $('supervised-user-creation');
       var importList = screen.importList_;
     },
 
@@ -334,7 +335,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
       this.setAttribute('tabIndex', 0);
       this.classList.add('nofocus');
       var importList = this;
-      var screen = $('managed-user-creation');
+      var screen = $('supervised-user-creation');
 
       this.addEventListener('focus', function(e) {
         if (importList.selectedPod_ == null) {
@@ -448,14 +449,14 @@ login.createScreen('LocallyManagedUserCreationScreen',
         return;
       podToSelect.classList.add('focused');
       podToSelect.focus();
-      var screen = $('managed-user-creation');
+      var screen = $('supervised-user-creation');
       if (!this.selectedPod_) {
         screen.getScreenButton('import').disabled = true;
       } else {
         screen.getScreenButton('import').disabled =
             this.selectedPod_.user.exists;
         if (!this.selectedPod_.user.exists) {
-          chrome.send('userSelectedForImportInManagedUserCreationFlow',
+          chrome.send('userSelectedForImportInSupervisedUserCreationFlow',
                       [podToSelect.user.id]);
         }
       }
@@ -494,22 +495,22 @@ login.createScreen('LocallyManagedUserCreationScreen',
   return {
     EXTERNAL_API: [
       'loadManagers',
-      'managedUserSuggestImport',
-      'managedUserNameError',
-      'managedUserNameOk',
+      'setCameraPresent',
+      'setDefaultImages',
+      'setExistingSupervisedUsers',
       'showErrorPage',
       'showIntroPage',
       'showManagerPage',
       'showManagerPasswordError',
+      'showPage',
       'showPasswordError',
       'showProgress',
       'showStatusError',
       'showTutorialPage',
       'showUsernamePage',
-      'showPage',
-      'setDefaultImages',
-      'setCameraPresent',
-      'setExistingManagedUsers',
+      'supervisedUserNameError',
+      'supervisedUserNameOk',
+      'supervisedUserSuggestImport',
     ],
 
     lastVerifiedName_: null,
@@ -526,20 +527,22 @@ login.createScreen('LocallyManagedUserCreationScreen',
     /** @override */
     decorate: function() {
       this.managerList_ = new ManagerPodList();
-      $('managed-user-creation-managers-pane').appendChild(this.managerList_);
+      $('supervised-user-creation-managers-pane').appendChild(
+          this.managerList_);
 
       this.importList_ = new ImportPodList();
-      $('managed-user-creation-import-pane').appendChild(this.importList_);
+      $('supervised-user-creation-import-pane').appendChild(this.importList_);
 
-      var userNameField = $('managed-user-creation-name');
-      var passwordField = $('managed-user-creation-password');
-      var password2Field = $('managed-user-creation-password-confirm');
+      var userNameField = $('supervised-user-creation-name');
+      var passwordField = $('supervised-user-creation-password');
+      var password2Field = $('supervised-user-creation-password-confirm');
 
       var creationScreen = this;
 
       var hideUserPasswordError = function(element) {
         $('bubble').hide();
-        $('managed-user-creation-password').classList.remove('password-error');
+        $('supervised-user-creation-password').classList.remove(
+            'password-error');
       };
 
       this.configureTextInput(userNameField,
@@ -769,35 +772,35 @@ login.createScreen('LocallyManagedUserCreationScreen',
 
       buttons.appendChild(this.makeButton(
           'start',
-          'managedUserCreationFlow',
+          'supervisedUserCreationFlow',
           this.startButtonPressed_.bind(this),
           ['intro'],
           ['custom-appearance', 'button-fancy', 'button-blue']));
 
       buttons.appendChild(this.makeButton(
           'prev',
-          'managedUserCreationFlow',
+          'supervisedUserCreationFlow',
           this.prevButtonPressed_.bind(this),
           ['manager'],
           []));
 
       buttons.appendChild(this.makeButton(
           'next',
-          'managedUserCreationFlow',
+          'supervisedUserCreationFlow',
           this.nextButtonPressed_.bind(this),
           ['manager', 'username'],
           []));
 
       buttons.appendChild(this.makeButton(
           'import',
-          'managedUserCreationFlow',
+          'supervisedUserCreationFlow',
           this.importButtonPressed_.bind(this),
           ['import', 'import-password'],
           []));
 
       buttons.appendChild(this.makeButton(
           'gotit',
-          'managedUserCreationFlow',
+          'supervisedUserCreationFlow',
           this.gotItButtonPressed_.bind(this),
           ['created'],
           ['custom-appearance', 'button-fancy', 'button-blue']));
@@ -825,7 +828,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
       this.context_.managerId = managerId;
       this.context_.managerDisplayId = managerDisplayId;
       this.context_.managerName = selectedPod.user.displayName;
-      chrome.send('authenticateManagerInLocallyManagedUserCreationFlow',
+      chrome.send('authenticateManagerInSupervisedUserCreationFlow',
           [managerId, managerPassword]);
     },
 
@@ -834,22 +837,22 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * to create a user.
      * @private
      */
-    validateAndCreateLocallyManagedUser_: function() {
-      var firstPassword = $('managed-user-creation-password').value;
+    validateAndCreateSupervisedUser_: function() {
+      var firstPassword = $('supervised-user-creation-password').value;
       var secondPassword =
-          $('managed-user-creation-password-confirm').value;
-      var userName = $('managed-user-creation-name').value;
+          $('supervised-user-creation-password-confirm').value;
+      var userName = $('supervised-user-creation-name').value;
       if (firstPassword != secondPassword) {
-        this.showPasswordError(
-            loadTimeData.getString('createManagedUserPasswordMismatchError'));
+        this.showPasswordError(loadTimeData.getString(
+            'createSupervisedUserPasswordMismatchError'));
         return;
       }
       if (this.disabled)
         return;
       this.disabled = true;
 
-      this.context_.managedName = userName;
-      chrome.send('specifyLocallyManagedUserCreationFlowUserData',
+      this.context_.supervisedName = userName;
+      chrome.send('specifySupervisedUserCreationFlowUserData',
           [userName, firstPassword]);
     },
 
@@ -865,8 +868,8 @@ login.createScreen('LocallyManagedUserCreationScreen',
         var firstPassword = this.getScreenElement('password').value;
         var secondPassword = this.getScreenElement('password-confirm').value;
         if (firstPassword != secondPassword) {
-          this.showPasswordError(
-              loadTimeData.getString('createManagedUserPasswordMismatchError'));
+          this.showPasswordError(loadTimeData.getString(
+              'createSupervisedUserPasswordMismatchError'));
           return;
         }
         var userId = this.context_.importUserId;
@@ -882,7 +885,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
         var userId = user.id;
 
         this.context_.importUserId = userId;
-        this.context_.managedName = user.name;
+        this.context_.supervisedName = user.name;
         this.context_.selectedImageUrl = user.avatarurl;
         if (!user.needPassword) {
           this.disabled = true;
@@ -895,7 +898,8 @@ login.createScreen('LocallyManagedUserCreationScreen',
 
     /**
      * Calls backend part to check if current user name is valid/not taken.
-     * Results in call to either managedUserNameOk or managedUserNameError.
+     * Results in a call to either supervisedUserNameOk or
+     * supervisedUserNameError.
      * @private
      */
     checkUserName_: function() {
@@ -907,7 +911,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
         return;
       }
       if (userName.length > 0) {
-        chrome.send('checkLocallyManagedUserName', [userName]);
+        chrome.send('checkSupervisedUserName', [userName]);
       } else {
         this.nameErrorVisible = false;
         this.lastVerifiedName_ = null;
@@ -920,10 +924,10 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * Called by backend part in case of successful name validation.
      * @param {string} name - name that was validated.
      */
-    managedUserNameOk: function(name) {
+    supervisedUserNameOk: function(name) {
       this.lastVerifiedName_ = name;
       this.lastIncorrectUserName_ = null;
-      if ($('managed-user-creation-name').value == name)
+      if ($('supervised-user-creation-name').value == name)
         this.clearUserNameError_();
       this.updateNextButtonForUser_();
     },
@@ -933,16 +937,16 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @param {string} name - name that was validated.
      * @param {string} errorText - reason why this name is invalid.
      */
-    managedUserNameError: function(name, errorText) {
+    supervisedUserNameError: function(name, errorText) {
       this.disabled = false;
       this.lastIncorrectUserName_ = name;
       this.lastVerifiedName_ = null;
 
-      var userNameField = $('managed-user-creation-name');
+      var userNameField = $('supervised-user-creation-name');
       if (userNameField.value == this.lastIncorrectUserName_) {
         this.nameErrorVisible = true;
         $('bubble').showTextForElement(
-            $('managed-user-creation-name'),
+            $('supervised-user-creation-name'),
             errorText,
             cr.ui.Bubble.Attachment.RIGHT,
             12, 4);
@@ -950,12 +954,12 @@ login.createScreen('LocallyManagedUserCreationScreen',
       }
     },
 
-    managedUserSuggestImport: function(name, user_id) {
+    supervisedUserSuggestImport: function(name, user_id) {
       this.disabled = false;
       this.lastIncorrectUserName_ = name;
       this.lastVerifiedName_ = null;
 
-      var userNameField = $('managed-user-creation-name');
+      var userNameField = $('supervised-user-creation-name');
       var creationScreen = this;
 
       if (userNameField.value == this.lastIncorrectUserName_) {
@@ -972,7 +976,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
               e.stopPropagation();
             });
         $('bubble').showContentForElement(
-            $('managed-user-creation-name'),
+            $('supervised-user-creation-name'),
             cr.ui.Bubble.Attachment.RIGHT,
             link,
             12, 4);
@@ -986,7 +990,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      */
     clearUserNameError_: function() {
       // Avoid flickering
-      if ($('managed-user-creation-name').value ==
+      if ($('supervised-user-creation-name').value ==
               this.lastIncorrectUserName_) {
         return;
       }
@@ -999,12 +1003,12 @@ login.createScreen('LocallyManagedUserCreationScreen',
      */
     showPasswordError: function(errorText) {
       $('bubble').showTextForElement(
-          $('managed-user-creation-password'),
+          $('supervised-user-creation-password'),
           errorText,
           cr.ui.Bubble.Attachment.RIGHT,
           12, 4);
-      $('managed-user-creation-password').classList.add('password-error');
-      $('managed-user-creation-password').focus();
+      $('supervised-user-creation-password').classList.add('password-error');
+      $('supervised-user-creation-password').focus();
       this.disabled = false;
       this.setButtonDisabledStatus('next', true);
     },
@@ -1014,7 +1018,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @type {boolean}
      */
     set nameErrorVisible(value) {
-      $('managed-user-creation-name').
+      $('supervised-user-creation-name').
           classList.toggle('duplicate-name', value);
       if (!value)
         $('bubble').hide();
@@ -1104,7 +1108,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
 
       for (i in pageNames) {
         var pageName = pageNames[i];
-        var page = $('managed-user-creation-' + pageName);
+        var page = $('supervised-user-creation-' + pageName);
         page.hidden = (pageName != pageToDisplay);
         if (pageName == pageToDisplay)
           $('step-logo').hidden = page.classList.contains('step-no-logo');
@@ -1131,7 +1135,8 @@ login.createScreen('LocallyManagedUserCreationScreen',
       this.currentPage_ = visiblePage;
 
       if (visiblePage == 'manager' || visiblePage == 'intro') {
-        $('managed-user-creation-password').classList.remove('password-error');
+        $('supervised-user-creation-password').classList.remove(
+            'password-error');
         if (this.managerList_.pods.length > 0)
           this.managerList_.selectPod(this.managerList_.pods[0]);
       }
@@ -1191,16 +1196,16 @@ login.createScreen('LocallyManagedUserCreationScreen',
     },
 
     setButtonDisabledStatus: function(buttonName, status) {
-      var button = $('managed-user-creation-' + buttonName + '-button');
+      var button = $('supervised-user-creation-' + buttonName + '-button');
       button.disabled = status;
     },
 
     gotItButtonPressed_: function() {
-      chrome.send('finishLocalManagedUserCreation');
+      chrome.send('finishLocalSupervisedUserCreation');
     },
 
     handleErrorButtonPressed_: function() {
-      chrome.send('abortLocalManagedUserCreation');
+      chrome.send('abortLocalSupervisedUserCreation');
     },
 
     startButtonPressed_: function() {
@@ -1214,7 +1219,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
         return;
       }
       if (this.currentPage_ == 'username') {
-        this.validateAndCreateLocallyManagedUser_();
+        this.validateAndCreateSupervisedUser_();
       }
     },
 
@@ -1274,7 +1279,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      **/
     onBeforeShow: function(data) {
       $('login-header-bar').signinUIState =
-          SIGNIN_UI_STATE.MANAGED_USER_CREATION_FLOW;
+          SIGNIN_UI_STATE.SUPERVISED_USER_CREATION_FLOW;
       if (data['managers']) {
         this.loadManagers(data['managers']);
       }
@@ -1294,7 +1299,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * Returns a control which should receive an initial focus.
      */
     get defaultControl() {
-      return $('managed-user-creation-name');
+      return $('supervised-user-creation-name');
     },
 
     /**
@@ -1322,7 +1327,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @param {Array} userList - list of users that can be managers.
      */
     loadManagers: function(userList) {
-      $('managed-user-creation-managers-block').hidden = false;
+      $('supervised-user-creation-managers-block').hidden = false;
       this.managerList_.clearPods();
       for (var i = 0; i < userList.length; ++i)
         this.managerList_.addPod(userList[i]);
@@ -1347,31 +1352,31 @@ login.createScreen('LocallyManagedUserCreationScreen',
         return;
       }
       if (postCreationPages.indexOf(this.currentPage_) >= 0) {
-        chrome.send('finishLocalManagedUserCreation');
+        chrome.send('finishLocalSupervisedUserCreation');
         return;
       }
-      chrome.send('abortLocalManagedUserCreation');
+      chrome.send('abortLocalSupervisedUserCreation');
     },
 
     updateText_: function() {
       var managerDisplayId = this.context_.managerDisplayId;
       this.updateElementText_('intro-alternate-text',
-                              'createManagedUserIntroAlternateText');
+                              'createSupervisedUserIntroAlternateText');
       this.updateElementText_('created-text-1',
-                              'createManagedUserCreatedText1',
-                              this.context_.managedName);
+                              'createSupervisedUserCreatedText1',
+                              this.context_.supervisedName);
       // TODO(antrim): Move wrapping with strong in grd file, and eliminate this
       //call.
       this.updateElementText_('created-text-2',
-                              'createManagedUserCreatedText2',
+                              'createSupervisedUserCreatedText2',
                               this.wrapStrong(
                                   loadTimeData.getString('managementURL')),
-                                  this.context_.managedName);
+                                  this.context_.supervisedName);
       this.updateElementText_('created-text-3',
-                              'createManagedUserCreatedText3',
+                              'createSupervisedUserCreatedText3',
                               managerDisplayId);
       this.updateElementText_('name-explanation',
-                              'createManagedUserNameExplanation',
+                              'createSupervisedUserNameExplanation',
                               managerDisplayId);
     },
 
@@ -1389,14 +1394,14 @@ login.createScreen('LocallyManagedUserCreationScreen',
     },
 
     showIntroPage: function() {
-      $('managed-user-creation-password').value = '';
-      $('managed-user-creation-password-confirm').value = '';
-      $('managed-user-creation-name').value = '';
+      $('supervised-user-creation-password').value = '';
+      $('supervised-user-creation-password-confirm').value = '';
+      $('supervised-user-creation-name').value = '';
 
       this.lastVerifiedName_ = null;
       this.lastIncorrectUserName_ = null;
       this.passwordErrorVisible = false;
-      $('managed-user-creation-password').classList.remove('password-error');
+      $('supervised-user-creation-password').classList.remove('password-error');
       this.nameErrorVisible = false;
 
       this.setVisiblePage_('intro');
@@ -1420,9 +1425,9 @@ login.createScreen('LocallyManagedUserCreationScreen',
 
     showErrorPage: function(errorTitle, errorText, errorButtonText) {
       this.disabled = false;
-      $('managed-user-creation-error-title').innerHTML = errorTitle;
-      $('managed-user-creation-error-text').innerHTML = errorText;
-      $('managed-user-creation-error-button').textContent = errorButtonText;
+      $('supervised-user-creation-error-title').innerHTML = errorTitle;
+      $('supervised-user-creation-error-text').innerHTML = errorText;
+      $('supervised-user-creation-error-button').textContent = errorButtonText;
       this.setVisiblePage_('error');
     },
 
@@ -1473,7 +1478,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
       var imageGrid = this.getScreenElement('image-grid');
       this.updateNextButtonForUser_();
 
-      $('managed-user-creation-flip-photo').tabIndex =
+      $('supervised-user-creation-flip-photo').tabIndex =
           (imageGrid.selectionType == 'camera') ? 0 : -1;
       if (imageGrid.cameraLive || imageGrid.selectionType != 'camera')
         imageGrid.previewElement.classList.remove('phototaken');
@@ -1494,12 +1499,12 @@ login.createScreen('LocallyManagedUserCreationScreen',
           imageGrid.startCamera(
               function() {
                 // Start capture if camera is still the selected item.
-                $('managed-user-creation-image-preview-img').classList.toggle(
-                    'animated-transform', true);
+                $('supervised-user-creation-image-preview-img').classList.
+                    toggle('animated-transform', true);
                 return imageGrid.selectedItem == imageGrid.cameraImage;
               });
         } else {
-          $('managed-user-creation-image-preview-img').classList.toggle(
+          $('supervised-user-creation-image-preview-img').classList.toggle(
               'animated-transform', false);
           imageGrid.stopCamera();
         }
@@ -1555,7 +1560,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
       this.getScreenElement('image-grid').cameraPresent = present;
     },
 
-    setExistingManagedUsers: function(users) {
+    setExistingSupervisedUsers: function(users) {
       var selectedUser = null;
       // Store selected user
       if (this.importList_.selectedPod)

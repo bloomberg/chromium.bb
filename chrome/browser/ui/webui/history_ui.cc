@@ -189,7 +189,7 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   source->SetDefaultResource(IDR_HISTORY_HTML);
   source->SetUseJsonJSFormatV2();
   source->DisableDenyXFrameOptions();
-  source->AddBoolean("isManagedProfile", profile->IsSupervised());
+  source->AddBoolean("isSupervisedProfile", profile->IsSupervised());
   source->AddBoolean("showDeleteVisitUI", !profile->IsSupervised());
 
   return source;

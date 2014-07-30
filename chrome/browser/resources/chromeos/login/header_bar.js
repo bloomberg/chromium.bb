@@ -206,8 +206,9 @@ cr.define('login', function() {
       var gaiaIsActive = (this.signinUIState_ == SIGNIN_UI_STATE.GAIA_SIGNIN);
       var accountPickerIsActive =
           (this.signinUIState_ == SIGNIN_UI_STATE.ACCOUNT_PICKER);
-      var managedUserCreationDialogIsActive =
-          (this.signinUIState_ == SIGNIN_UI_STATE.MANAGED_USER_CREATION_FLOW);
+      var supervisedUserCreationDialogIsActive =
+          (this.signinUIState_ ==
+               SIGNIN_UI_STATE.SUPERVISED_USER_CREATION_FLOW);
       var wrongHWIDWarningIsActive =
           (this.signinUIState_ == SIGNIN_UI_STATE.WRONG_HWID_WARNING);
       var isSamlPasswordConfirm =
@@ -224,7 +225,7 @@ cr.define('login', function() {
           wrongHWIDWarningIsActive ||
           isMultiProfilesUI;
       $('guest-user-header-bar-item').hidden = gaiaIsActive ||
-          managedUserCreationDialogIsActive ||
+          supervisedUserCreationDialogIsActive ||
           !this.showGuest_ ||
           wrongHWIDWarningIsActive ||
           isSamlPasswordConfirm ||
@@ -304,7 +305,7 @@ cr.define('login', function() {
    */
   HeaderBar.animateIn = function(callback) {
     $('login-header-bar').animateIn(callback);
-  }
+  };
 
   return {
     HeaderBar: HeaderBar

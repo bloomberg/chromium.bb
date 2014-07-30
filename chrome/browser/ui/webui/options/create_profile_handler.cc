@@ -255,7 +255,7 @@ void CreateProfileHandler::CreateShortcutAndShowSuccess(
   bool is_supervised =
       profile_creation_type_ == SUPERVISED_PROFILE_CREATION ||
       profile_creation_type_ == SUPERVISED_PROFILE_IMPORT;
-  dict.SetBoolean("isManaged", is_supervised);
+  dict.SetBoolean("isSupervised", is_supervised);
   web_ui()->CallJavascriptFunction(
       GetJavascriptMethodName(PROFILE_CREATION_SUCCESS), dict);
 
@@ -396,11 +396,11 @@ std::string CreateProfileHandler::GetJavascriptMethodName(
   switch (status) {
     case PROFILE_CREATION_SUCCESS:
       return profile_creation_type_ == SUPERVISED_PROFILE_IMPORT ?
-          "BrowserOptions.showManagedUserImportSuccess" :
+          "BrowserOptions.showSupervisedUserImportSuccess" :
           "BrowserOptions.showCreateProfileSuccess";
     case PROFILE_CREATION_ERROR:
       return profile_creation_type_ == SUPERVISED_PROFILE_IMPORT ?
-          "BrowserOptions.showManagedUserImportError" :
+          "BrowserOptions.showSupervisedUserImportError" :
           "BrowserOptions.showCreateProfileError";
   }
 

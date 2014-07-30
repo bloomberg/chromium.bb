@@ -20,9 +20,10 @@ void SupervisedUserLearnMoreHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
-    { "managedUserLearnMoreTitle", IDS_SUPERVISED_USER_LEARN_MORE_TITLE },
-    { "managedUserLearnMoreText", IDS_SUPERVISED_USER_LEARN_MORE_TEXT },
-    { "managedUserLearnMoreDone", IDS_SUPERVISED_USER_LEARN_MORE_DONE_BUTTON },
+    { "supervisedUserLearnMoreTitle", IDS_SUPERVISED_USER_LEARN_MORE_TITLE },
+    { "supervisedUserLearnMoreText", IDS_SUPERVISED_USER_LEARN_MORE_TEXT },
+    { "supervisedUserLearnMoreDone",
+        IDS_SUPERVISED_USER_LEARN_MORE_DONE_BUTTON },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));

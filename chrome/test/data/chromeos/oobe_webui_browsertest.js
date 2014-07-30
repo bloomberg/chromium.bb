@@ -58,25 +58,25 @@ TEST_F('OobeWebUITest', 'OobeGaiaSignIn', function() {
 
 TEST_F('OobeWebUITest', 'OobeSupervisedUsers', function() {
   Oobe.getInstance().showScreen(
-      {'id'   : 'managed-user-creation',
+      {'id'   : 'supervised-user-creation',
        'data' : createOobeWebUITestSupervisedManagerData()});
 });
 
 TEST_F('OobeWebUITest', 'OobeSupervisedUsers2', function() {
   Oobe.getInstance().showScreen(
-      {'id'   : 'managed-user-creation',
+      {'id'   : 'supervised-user-creation',
        'data' : createOobeWebUITestSupervisedManagerData()});
-  $('managed-user-creation').setVisiblePage_('manager');
+  $('supervised-user-creation').setVisiblePage_('manager');
 });
 
 TEST_F('OobeWebUITest', 'OobeSupervisedUsers3', function() {
   Oobe.getInstance().showScreen(
-      {'id'   : 'managed-user-creation',
+      {'id'   : 'supervised-user-creation',
        'data' : createOobeWebUITestSupervisedManagerData()});
-  $('managed-user-creation').setDefaultImages(
+  $('supervised-user-creation').setDefaultImages(
       [{'url': 'chrome://nothing/', 'title': 'None'},
        {'url': 'chrome://nothing/', 'title': 'None'}]);
-  $('managed-user-creation').setVisiblePage_('username');
+  $('supervised-user-creation').setVisiblePage_('username');
 });
 
 // TODO: this either needs a WebUILoginDisplay instance or some

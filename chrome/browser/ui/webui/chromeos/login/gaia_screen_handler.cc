@@ -64,10 +64,10 @@ void UpdateAuthParams(base::DictionaryValue* params, bool has_users) {
     message_id = IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_RESTRICTED_TEXT;
   }
 
-  params->SetBoolean("managedUsersEnabled", supervised_users_allowed);
-  params->SetBoolean("managedUsersCanCreate", supervised_users_can_create);
+  params->SetBoolean("supervisedUsersEnabled", supervised_users_allowed);
+  params->SetBoolean("supervisedUsersCanCreate", supervised_users_can_create);
   if (!supervised_users_can_create) {
-    params->SetString("managedUsersRestrictionReason",
+    params->SetString("supervisedUsersRestrictionReason",
                       l10n_util::GetStringUTF16(message_id));
   }
 
@@ -76,7 +76,7 @@ void UpdateAuthParams(base::DictionaryValue* params, bool has_users) {
   if (UserAddingScreen::Get()->IsRunning()) {
     params->SetBoolean("createAccount", false);
     params->SetBoolean("guestSignin", false);
-    params->SetBoolean("managedUsersEnabled", false);
+    params->SetBoolean("supervisedUsersEnabled", false);
   }
 }
 
@@ -205,9 +205,9 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_SIGNIN_SCREEN_PASSWORD_CHANGED);
   builder->Add("createAccount", IDS_CREATE_ACCOUNT_HTML);
   builder->Add("guestSignin", IDS_BROWSE_WITHOUT_SIGNING_IN_HTML);
-  builder->Add("createLocallyManagedUser",
+  builder->Add("createSupervisedUser",
                IDS_CREATE_LOCALLY_MANAGED_USER_HTML);
-  builder->Add("createManagedUserFeatureName",
+  builder->Add("createSupervisedUserFeatureName",
                IDS_CREATE_LOCALLY_MANAGED_USER_FEATURE_NAME);
 
   // Strings used by the SAML fatal error dialog.

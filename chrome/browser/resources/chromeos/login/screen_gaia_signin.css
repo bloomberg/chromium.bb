@@ -124,27 +124,27 @@
   height: 100%;
 }
 
-#createManagedUserSeparator {
+#createSupervisedUserSeparator {
   background-color: rgba(128,128,128,0.3);
   height: 1px;
   width: 200px;
 }
 
-#createManagedUserLogo {
+#createSupervisedUserLogo {
   font-weight: bold;
   margin-top: 16px;
 }
 
-#createManagedUserLogo img {
+#createSupervisedUserLogo img {
   vertical-align: text-bottom;
 }
 
-#createManagedUserLogo span {
+#createSupervisedUserLogo span {
   vertical-align: -10%;
 }
 
-#createManagedUserLinkPlaceholder,
-#createManagedUserNoManagerText {
+#createSupervisedUserLinkPlaceholder,
+#createSupervisedUserNoManagerText {
   margin-top: 10px;
 }
 

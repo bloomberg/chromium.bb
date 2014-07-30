@@ -33,11 +33,12 @@ var activeVisit = null;
 /** @const */ var MenuButton = cr.ui.MenuButton;
 
 /**
- * Enum that shows the filtering behavior for a host or URL to a managed user.
- * Must behave like the FilteringBehavior enum from managed_mode_url_filter.h.
+ * Enum that shows the filtering behavior for a host or URL to a supervised
+ * user. Must behave like the FilteringBehavior enum from
+ * supervised_user_url_filter.h.
  * @enum {number}
  */
-ManagedModeFilteringBehavior = {
+SupervisedUserFilteringBehavior = {
   ALLOW: 0,
   WARN: 1,
   BLOCK: 2
@@ -115,10 +116,11 @@ function Visit(result, continued, model) {
   this.dateTimeOfDay = result.dateTimeOfDay || '';
   this.dateShort = result.dateShort || '';
 
-  // Shows the filtering behavior for that host (only used for managed users).
-  // A value of |ManagedModeFilteringBehavior.ALLOW| is not displayed so it is
-  // used as the default value.
-  this.hostFilteringBehavior = ManagedModeFilteringBehavior.ALLOW;
+  // Shows the filtering behavior for that host (only used for supervised
+  // users).
+  // A value of |SupervisedUserFilteringBehavior.ALLOW| is not displayed so it
+  // is used as the default value.
+  this.hostFilteringBehavior = SupervisedUserFilteringBehavior.ALLOW;
   if (typeof result.hostFilteringBehavior != 'undefined')
     this.hostFilteringBehavior = result.hostFilteringBehavior;
 
@@ -757,8 +759,8 @@ HistoryModel.prototype.removeVisit = function(visit) {
 HistoryModel.prototype.clearModel_ = function() {
   this.inFlight_ = false;  // Whether a query is inflight.
   this.searchText_ = '';
-  // Whether this user is a managed user.
-  this.isManagedProfile = loadTimeData.getBoolean('isManagedProfile');
+  // Whether this user is a supervised user.
+  this.isSupervisedProfile = loadTimeData.getBoolean('isSupervisedProfile');
   this.deletingHistoryAllowed = loadTimeData.getBoolean('allowDeletingHistory');
 
   // Only create checkboxes for editing entries if they can be used either to
@@ -1292,9 +1294,9 @@ HistoryView.prototype.getGroupedVisitsDOM_ = function(
 
   siteDomainWrapper.addEventListener('click', toggleHandler);
 
-  if (this.model_.isManagedProfile) {
+  if (this.model_.isSupervisedProfile) {
     siteDomainWrapper.appendChild(
-        getManagedStatusDOM(domainVisits[0].hostFilteringBehavior));
+        getFilteringStatusDOM(domainVisits[0].hostFilteringBehavior));
   }
 
   siteResults.appendChild(siteDomainWrapper);
@@ -1563,9 +1565,9 @@ HistoryView.prototype.displayResults_ = function(doneLoading) {
 HistoryView.prototype.updateNavBar_ = function() {
   this.updateRangeButtons_();
 
-  // Managed users have the control bar on top, don't show it on the bottom
+  // Supervised users have the control bar on top, don't show it on the bottom
   // as well.
-  if (!loadTimeData.getBoolean('isManagedProfile')) {
+  if (!loadTimeData.getBoolean('isSupervisedProfile')) {
     $('newest-button').hidden = this.pageIndex_ == 0;
     $('newer-button').hidden = this.pageIndex_ == 0;
     $('older-button').hidden =
@@ -1919,9 +1921,9 @@ function load() {
 
   // Only show the controls if the command line switch is activated.
   if (loadTimeData.getBoolean('groupByDomain') ||
-      loadTimeData.getBoolean('isManagedProfile')) {
+      loadTimeData.getBoolean('isSupervisedProfile')) {
     // Hide the top container which has the "Clear browsing data" and "Remove
-    // selected entries" buttons since they're unavailable in managed mode
+    // selected entries" buttons since they're unavailable for supervised users.
     $('top-container').hidden = true;
     $('history-page').classList.add('big-topbar-page');
     $('filter-controls').hidden = false;
@@ -1978,10 +1980,9 @@ function load() {
 }
 
 /**
- * Updates the managed filter status labels of a host/URL entry to the current
- * value.
+ * Updates the filter status labels of a host/URL entry to the current value.
  * @param {Element} statusElement The div which contains the status labels.
- * @param {ManagedModeFilteringBehavior} newStatus The filter status of the
+ * @param {SupervisedUserFilteringBehavior} newStatus The filter status of the
  *     current domain/URL.
  */
 function updateHostStatus(statusElement, newStatus) {
@@ -1989,7 +1990,7 @@ function updateHostStatus(statusElement, newStatus) {
       statusElement.querySelector('.filtering-behavior');
   // Reset to the base class first, then add modifier classes if needed.
   filteringBehaviorDiv.className = 'filtering-behavior';
-  if (newStatus == ManagedModeFilteringBehavior.BLOCK) {
+  if (newStatus == SupervisedUserFilteringBehavior.BLOCK) {
     filteringBehaviorDiv.textContent =
         loadTimeData.getString('filterBlocked');
     filteringBehaviorDiv.classList.add('filter-blocked');
@@ -2275,12 +2276,12 @@ function toggleHandler(e) {
 }
 
 /**
- * Builds the DOM elements to show the managed status of a domain/URL.
- * @param {ManagedModeFilteringBehavior} filteringBehavior The filter behavior
- *     for this item.
+ * Builds the DOM elements to show the filtering status of a domain/URL.
+ * @param {SupervisedUserFilteringBehavior} filteringBehavior The filter
+ *     behavior for this item.
  * @return {Element} Returns the DOM elements which show the status.
  */
-function getManagedStatusDOM(filteringBehavior) {
+function getFilteringStatusDOM(filteringBehavior) {
   var filterStatusDiv = createElementWithClassName('div', 'filter-status');
   var filteringBehaviorDiv =
       createElementWithClassName('div', 'filtering-behavior');

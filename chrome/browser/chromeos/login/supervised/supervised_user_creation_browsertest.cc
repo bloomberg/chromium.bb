@@ -98,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
                        DISABLED_PRE_PRE_CreateAndRemoveSupervisedUser) {
   StartFlowLoginAsManager();
   FillNewUserData(kTestSupervisedUserDisplayName);
-  StartUserCreation("managed-user-creation-next-button",
+  StartUserCreation("supervised-user-creation-next-button",
                     kTestSupervisedUserDisplayName);
 }
 
@@ -121,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserOwnerCreationTest,
                        DISABLED_PRE_PRE_CreateAndRemoveSupervisedUser) {
   StartFlowLoginAsManager();
   FillNewUserData(kTestSupervisedUserDisplayName);
-  StartUserCreation("managed-user-creation-next-button",
+  StartUserCreation("supervised-user-creation-next-button",
                     kTestSupervisedUserDisplayName);
 }
 
@@ -148,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTransactionCleanupTest,
   EXPECT_CALL(*mock_homedir_methods_, MountEx(_, _, _, _)).Times(1);
   EXPECT_CALL(*mock_homedir_methods_, AddKeyEx(_, _, _, _, _)).Times(1);
 
-  JSEval("$('managed-user-creation-next-button').click()");
+  JSEval("$('supervised-user-creation-next-button').click()");
 
   testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
 

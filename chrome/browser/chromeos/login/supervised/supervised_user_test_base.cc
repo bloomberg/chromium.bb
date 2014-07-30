@@ -50,7 +50,7 @@ namespace chromeos {
 
 namespace {
 
-const char kCurrentPage[] = "$('managed-user-creation').currentPage_";
+const char kCurrentPage[] = "$('supervised-user-creation').currentPage_";
 
 const char kStubEthernetGuid[] = "eth0";
 
@@ -247,31 +247,31 @@ void SupervisedUserTestBase::PrepareUsers() {
 
 void SupervisedUserTestBase::StartFlowLoginAsManager() {
   // Navigate to supervised user creation screen.
-  JSEval("chrome.send('showLocallyManagedUserCreationScreen')");
+  JSEval("chrome.send('showSupervisedUserCreationScreen')");
 
   // Read intro and proceed.
   JSExpect(StringPrintf("%s == 'intro'", kCurrentPage));
 
-  JSEval("$('managed-user-creation-start-button').click()");
+  JSEval("$('supervised-user-creation-start-button').click()");
 
   // Check that both users appear as managers, and test-manager@gmail.com is
   // the first one.
   JSExpect(StringPrintf("%s == 'manager'", kCurrentPage));
 
   std::string manager_pods =
-      "document.querySelectorAll('#managed-user-creation-managers-pane "
+      "document.querySelectorAll('#supervised-user-creation-managers-pane "
       ".manager-pod')";
   std::string selected_manager_pods =
-      "document.querySelectorAll('#managed-user-creation-managers-pane "
+      "document.querySelectorAll('#supervised-user-creation-managers-pane "
       ".manager-pod.focused')";
 
   int managers_on_device = 2;
 
   JSExpect(StringPrintf("%s.length == 1", selected_manager_pods.c_str()));
 
-  JSExpect(
-      StringPrintf("$('managed-user-creation').managerList_.pods.length == %d",
-                   managers_on_device));
+  JSExpect(StringPrintf(
+      "$('supervised-user-creation').managerList_.pods.length == %d",
+      managers_on_device));
   JSExpect(StringPrintf(
       "%s.length == %d", manager_pods.c_str(), managers_on_device));
   JSExpect(StringPrintf("%s[%d].user.emailAddress == '%s'",
@@ -280,14 +280,14 @@ void SupervisedUserTestBase::StartFlowLoginAsManager() {
                         kTestManager));
 
   // Select the first user as manager, and enter password.
-  JSExpect("$('managed-user-creation-next-button').disabled");
-  JSSetTextField("#managed-user-creation .manager-pod.focused input",
+  JSExpect("$('supervised-user-creation-next-button').disabled");
+  JSSetTextField("#supervised-user-creation .manager-pod.focused input",
                  kTestManagerPassword);
 
-  JSEval("$('managed-user-creation').updateNextButtonForManager_()");
+  JSEval("$('supervised-user-creation').updateNextButtonForManager_()");
 
   // Next button is now enabled.
-  JSExpect("!$('managed-user-creation-next-button').disabled");
+  JSExpect("!$('supervised-user-creation-next-button').disabled");
   UserContext user_context(kTestManager);
   user_context.SetKey(Key(kTestManagerPassword));
   SetExpectedCredentials(user_context);
@@ -296,7 +296,7 @@ void SupervisedUserTestBase::StartFlowLoginAsManager() {
       content::NotificationService::AllSources());
 
   // Log in as manager.
-  JSEval("$('managed-user-creation-next-button').click()");
+  JSEval("$('supervised-user-creation-next-button').click()");
   login_observer.Wait();
 
   // OAuth token is valid.
@@ -309,19 +309,19 @@ void SupervisedUserTestBase::StartFlowLoginAsManager() {
 }
 
 void SupervisedUserTestBase::FillNewUserData(const std::string& display_name) {
-  JSExpect("$('managed-user-creation-next-button').disabled");
-  JSSetTextField("#managed-user-creation-name", display_name);
-  JSEval("$('managed-user-creation').checkUserName_()");
+  JSExpect("$('supervised-user-creation-next-button').disabled");
+  JSSetTextField("#supervised-user-creation-name", display_name);
+  JSEval("$('supervised-user-creation').checkUserName_()");
 
   base::RunLoop().RunUntilIdle();
 
-  JSSetTextField("#managed-user-creation-password",
+  JSSetTextField("#supervised-user-creation-password",
                  kTestSupervisedUserPassword);
-  JSSetTextField("#managed-user-creation-password-confirm",
+  JSSetTextField("#supervised-user-creation-password-confirm",
                  kTestSupervisedUserPassword);
 
-  JSEval("$('managed-user-creation').updateNextButtonForUser_()");
-  JSExpect("!$('managed-user-creation-next-button').disabled");
+  JSEval("$('supervised-user-creation').updateNextButtonForUser_()");
+  JSExpect("!$('supervised-user-creation-next-button').disabled");
 }
 
 void SupervisedUserTestBase::StartUserCreation(
@@ -346,7 +346,7 @@ void SupervisedUserTestBase::StartUserCreation(
   base::RunLoop().RunUntilIdle();
 
   JSExpect(StringPrintf("%s == 'created'", kCurrentPage));
-  JSEval("$('managed-user-creation-gotit-button').click()");
+  JSEval("$('supervised-user-creation-gotit-button').click()");
 }
 
 void SupervisedUserTestBase::SigninAsSupervisedUser(

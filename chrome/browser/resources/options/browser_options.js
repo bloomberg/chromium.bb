@@ -206,7 +206,7 @@ cr.define('options', function() {
         chrome.send('themesReset');
       };
 
-      if (loadTimeData.getBoolean('profileIsManaged')) {
+      if (loadTimeData.getBoolean('profileIsSupervised')) {
         if ($('themes-native-button')) {
           $('themes-native-button').disabled = true;
           $('themes-native-button').hidden = true;
@@ -271,7 +271,7 @@ cr.define('options', function() {
           if (selectedProfile)
             ManageProfileOverlay.showDeleteDialog(selectedProfile);
         };
-        if (loadTimeData.getBoolean('profileIsManaged')) {
+        if (loadTimeData.getBoolean('profileIsSupervised')) {
           $('profiles-create').disabled = true;
           $('profiles-delete').disabled = true;
           $('profiles-list').canDeleteItems = false;
@@ -484,7 +484,7 @@ cr.define('options', function() {
       };
       if (cr.isChromeOS) {
         $('disable-drive-row').hidden =
-            UIAccountTweaks.loggedInAsLocallyManagedUser();
+            UIAccountTweaks.loggedInAsSupervisedUser();
       }
       $('autoOpenFileTypesResetToDefault').onclick = function(event) {
         chrome.send('autoOpenFileTypesAction');
@@ -1211,14 +1211,14 @@ cr.define('options', function() {
       var selectedProfile = profilesList.selectedItem;
       var hasSelection = selectedProfile != null;
       var hasSingleProfile = profilesList.dataModel.length == 1;
-      var isManaged = loadTimeData.getBoolean('profileIsManaged');
+      var isSupervised = loadTimeData.getBoolean('profileIsSupervised');
       $('profiles-manage').disabled = !hasSelection ||
           !selectedProfile.isCurrentProfile;
       if (hasSelection && !selectedProfile.isCurrentProfile)
         $('profiles-manage').title = loadTimeData.getString('currentUserOnly');
       else
         $('profiles-manage').title = '';
-      $('profiles-delete').disabled = isManaged ||
+      $('profiles-delete').disabled = isSupervised ||
                                       (!hasSelection && !hasSingleProfile);
       if (OptionsPage.isSettingsApp()) {
         $('profiles-app-list-switch').disabled = !hasSelection ||
@@ -1259,7 +1259,7 @@ cr.define('options', function() {
      *         iconURL: "chrome://path/to/icon/image",
      *         filePath: "/path/to/profile/data/on/disk",
      *         isCurrentProfile: false,
-     *         isManaged: false
+     *         isSupervised: false
      *       };
      * @private
      */
@@ -1282,21 +1282,21 @@ cr.define('options', function() {
     },
 
     /**
-     * Reports managed user import errors to the ManagedUserImportOverlay.
+     * Reports supervised user import errors to the SupervisedUserImportOverlay.
      * @param {string} error The error message to display.
      * @private
      */
-    showManagedUserImportError_: function(error) {
-      ManagedUserImportOverlay.onError(error);
+    showSupervisedUserImportError_: function(error) {
+      SupervisedUserImportOverlay.onError(error);
     },
 
     /**
-     * Reports successful importing of a managed user to
-     * the ManagedUserImportOverlay.
+     * Reports successful importing of a supervised user to
+     * the SupervisedUserImportOverlay.
      * @private
      */
-    showManagedUserImportSuccess_: function() {
-      ManagedUserImportOverlay.onSuccess();
+    showSupervisedUserImportSuccess_: function() {
+      SupervisedUserImportOverlay.onSuccess();
     },
 
     /**
@@ -1323,7 +1323,7 @@ cr.define('options', function() {
      *     profileInfo = {
      *       name: "Profile Name",
      *       filePath: "/path/to/profile/data/on/disk"
-     *       isManaged: (true|false),
+     *       isSupervised: (true|false),
      *     };
     * @private
     */
@@ -1852,9 +1852,9 @@ cr.define('options', function() {
     'showCreateProfileSuccess',
     'showCreateProfileWarning',
     'showHotwordSection',
-    'showManagedUserImportError',
-    'showManagedUserImportSuccess',
     'showMouseControls',
+    'showSupervisedUserImportError',
+    'showSupervisedUserImportSuccess',
     'showTouchpadControls',
     'toggleExtensionIndicators',
     'updateAccountPicture',

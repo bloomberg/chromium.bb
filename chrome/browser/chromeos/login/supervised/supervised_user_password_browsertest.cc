@@ -68,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
                        DISABLED_PRE_PRE_PasswordChangeFromUserTest) {
   StartFlowLoginAsManager();
   FillNewUserData(kTestSupervisedUserDisplayName);
-  StartUserCreation("managed-user-creation-next-button",
+  StartUserCreation("supervised-user-creation-next-button",
                     kTestSupervisedUserDisplayName);
 }
 
@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
                        DISABLED_PRE_PRE_PasswordChangeFromManagerTest) {
   StartFlowLoginAsManager();
   FillNewUserData(kTestSupervisedUserDisplayName);
-  StartUserCreation("managed-user-creation-next-button",
+  StartUserCreation("supervised-user-creation-next-button",
                     kTestSupervisedUserDisplayName);
 }
 
@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
                        DISABLED_PRE_PRE_PRE_PasswordChangeUserAndManagerTest) {
   StartFlowLoginAsManager();
   FillNewUserData(kTestSupervisedUserDisplayName);
-  StartUserCreation("managed-user-creation-next-button",
+  StartUserCreation("supervised-user-creation-next-button",
                     kTestSupervisedUserDisplayName);
 }
 
