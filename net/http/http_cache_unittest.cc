@@ -6443,3 +6443,73 @@ TEST(HttpCache, ReceivedBytesRange) {
 
   RemoveMockTransaction(&kRangeGET_TransactionOK);
 }
+
+static void CheckResourceFreshnessHeader(const net::HttpRequestInfo* request,
+                                         std::string* response_status,
+                                         std::string* response_headers,
+                                         std::string* response_data) {
+  std::string value;
+  EXPECT_TRUE(
+      request->extra_headers.GetHeader("Chromium-Resource-Freshness", &value));
+  EXPECT_EQ("max-age=3600,stale-while-revalidate=7200,age=10801", value);
+}
+
+// Verify that the Chromium-Resource-Freshness header is sent on a revalidation
+// if the stale-while-revalidate directive was on the response.
+// TODO(ricea): Rename this test when a final name for the header is decided.
+TEST(HttpCache, ResourceFreshnessHeaderSent) {
+  MockHttpCache cache;
+
+  ScopedMockTransaction stale_while_revalidate_transaction(
+      kSimpleGET_Transaction);
+  stale_while_revalidate_transaction.response_headers =
+      "Last-Modified: Sat, 18 Apr 2007 01:10:43 GMT\n"
+      "Age: 10801\n"
+      "Cache-Control: max-age=3600,stale-while-revalidate=7200\n";
+
+  // Write to the cache.
+  RunTransactionTest(cache.http_cache(), stale_while_revalidate_transaction);
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+
+  // Send the request again and check that Chromium-Resource-Freshness header is
+  // added.
+  stale_while_revalidate_transaction.handler = CheckResourceFreshnessHeader;
+
+  RunTransactionTest(cache.http_cache(), stale_while_revalidate_transaction);
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+}
+
+static void CheckResourceFreshnessAbsent(const net::HttpRequestInfo* request,
+                                         std::string* response_status,
+                                         std::string* response_headers,
+                                         std::string* response_data) {
+  EXPECT_FALSE(request->extra_headers.HasHeader("Chromium-Resource-Freshness"));
+}
+
+// Verify that the Chromium-Resource-Freshness header is not sent when
+// stale-while-revalidate is 0.
+TEST(HttpCache, ResourceFreshnessHeaderNotSent) {
+  MockHttpCache cache;
+
+  ScopedMockTransaction stale_while_revalidate_transaction(
+      kSimpleGET_Transaction);
+  stale_while_revalidate_transaction.response_headers =
+      "Last-Modified: Sat, 18 Apr 2007 01:10:43 GMT\n"
+      "Age: 10801\n"
+      "Cache-Control: max-age=3600,stale-while-revalidate=0\n";
+
+  // Write to the cache.
+  RunTransactionTest(cache.http_cache(), stale_while_revalidate_transaction);
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+
+  // Send the request again and check that Chromium-Resource-Freshness header is
+  // absent.
+  stale_while_revalidate_transaction.handler = CheckResourceFreshnessAbsent;
+
+  RunTransactionTest(cache.http_cache(), stale_while_revalidate_transaction);
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+}

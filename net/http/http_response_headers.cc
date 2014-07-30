@@ -753,6 +753,32 @@ size_t HttpResponseHeaders::FindHeader(size_t from,
   return std::string::npos;
 }
 
+bool HttpResponseHeaders::GetCacheControlDirective(const StringPiece& directive,
+                                                   TimeDelta* result) const {
+  StringPiece name("cache-control");
+  std::string value;
+
+  size_t directive_size = directive.size();
+
+  void* iter = NULL;
+  while (EnumerateHeader(&iter, name, &value)) {
+    if (value.size() > directive_size + 1 &&
+        LowerCaseEqualsASCII(value.begin(),
+                             value.begin() + directive_size,
+                             directive.begin()) &&
+        value[directive_size] == '=') {
+      int64 seconds;
+      base::StringToInt64(
+          StringPiece(value.begin() + directive_size + 1, value.end()),
+          &seconds);
+      *result = TimeDelta::FromSeconds(seconds);
+      return true;
+    }
+  }
+
+  return false;
+}
+
 void HttpResponseHeaders::AddHeader(std::string::const_iterator name_begin,
                                     std::string::const_iterator name_end,
                                     std::string::const_iterator values_begin,
@@ -1092,29 +1118,7 @@ TimeDelta HttpResponseHeaders::GetCurrentAge(const Time& request_time,
 }
 
 bool HttpResponseHeaders::GetMaxAgeValue(TimeDelta* result) const {
-  std::string name = "cache-control";
-  std::string value;
-
-  const char kMaxAgePrefix[] = "max-age=";
-  const size_t kMaxAgePrefixLen = arraysize(kMaxAgePrefix) - 1;
-
-  void* iter = NULL;
-  while (EnumerateHeader(&iter, name, &value)) {
-    if (value.size() > kMaxAgePrefixLen) {
-      if (LowerCaseEqualsASCII(value.begin(),
-                               value.begin() + kMaxAgePrefixLen,
-                               kMaxAgePrefix)) {
-        int64 seconds;
-        base::StringToInt64(StringPiece(value.begin() + kMaxAgePrefixLen,
-                                        value.end()),
-                            &seconds);
-        *result = TimeDelta::FromSeconds(seconds);
-        return true;
-      }
-    }
-  }
-
-  return false;
+  return GetCacheControlDirective("max-age", result);
 }
 
 bool HttpResponseHeaders::GetAgeValue(TimeDelta* result) const {
@@ -1138,6 +1142,11 @@ bool HttpResponseHeaders::GetLastModifiedValue(Time* result) const {
 
 bool HttpResponseHeaders::GetExpiresValue(Time* result) const {
   return GetTimeValuedHeader("Expires", result);
+}
+
+bool HttpResponseHeaders::GetStaleWhileRevalidateValue(
+    TimeDelta* result) const {
+  return GetCacheControlDirective("stale-while-revalidate", result);
 }
 
 bool HttpResponseHeaders::GetTimeValuedHeader(const std::string& name,

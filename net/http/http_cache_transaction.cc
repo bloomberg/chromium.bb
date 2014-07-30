@@ -15,13 +15,16 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/format_macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
@@ -47,6 +50,9 @@ using base::TimeDelta;
 using base::TimeTicks;
 
 namespace {
+
+// TODO(ricea): Move this to HttpResponseHeaders once it is standardised.
+static const char kFreshnessHeader[] = "Chromium-Resource-Freshness";
 
 // Stores data relevant to the statistics of writing and reading entire
 // certificate chains using DiskBasedCertCache. |num_pending_ops| is the number
@@ -2256,6 +2262,28 @@ bool HttpCache::Transaction::ConditionalizeRequest() {
 
   bool use_if_range = partial_.get() && !partial_->IsCurrentRangeCached() &&
                       !invalid_range_;
+
+  if (!use_if_range) {
+    // stale-while-revalidate is not useful when we only have a partial response
+    // cached, so don't set the header in that case.
+    TimeDelta stale_while_revalidate;
+    if (response_.headers->GetStaleWhileRevalidateValue(
+            &stale_while_revalidate) &&
+        stale_while_revalidate > TimeDelta()) {
+      TimeDelta max_age =
+          response_.headers->GetFreshnessLifetime(response_.response_time);
+      TimeDelta current_age = response_.headers->GetCurrentAge(
+          response_.request_time, response_.response_time, Time::Now());
+
+      custom_request_->extra_headers.SetHeader(
+          kFreshnessHeader,
+          base::StringPrintf("max-age=%" PRId64
+                             ",stale-while-revalidate=%" PRId64 ",age=%" PRId64,
+                             max_age.InSeconds(),
+                             stale_while_revalidate.InSeconds(),
+                             current_age.InSeconds()));
+    }
+  }
 
   if (!etag_value.empty()) {
     if (use_if_range) {

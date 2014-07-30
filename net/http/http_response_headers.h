@@ -229,6 +229,7 @@ class NET_EXPORT HttpResponseHeaders
   bool GetDateValue(base::Time* value) const;
   bool GetLastModifiedValue(base::Time* value) const;
   bool GetExpiresValue(base::Time* value) const;
+  bool GetStaleWhileRevalidateValue(base::TimeDelta* value) const;
 
   // Extracts the time value of a particular header.  This method looks for the
   // first matching header value and parses its value as a HTTP-date.
@@ -319,6 +320,12 @@ class NET_EXPORT HttpResponseHeaders
   // Find the header in our list (case-insensitive) starting with parsed_ at
   // index |from|.  Returns string::npos if not found.
   size_t FindHeader(size_t from, const base::StringPiece& name) const;
+
+  // Search the Cache-Control header for a directive matching |directive|. If
+  // present, treat its value as a time offset in seconds, write it to |result|,
+  // and return true.
+  bool GetCacheControlDirective(const base::StringPiece& directive,
+                                base::TimeDelta* result) const;
 
   // Add a header->value pair to our list.  If we already have header in our
   // list, append the value to it.

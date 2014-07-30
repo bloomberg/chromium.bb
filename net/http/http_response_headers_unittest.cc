@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <limits>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -42,6 +43,53 @@ void HeadersToRaw(std::string* headers) {
   if (!headers->empty())
     *headers += '\0';
 }
+
+class HttpResponseHeadersCacheControlTest : public HttpResponseHeadersTest {
+ protected:
+  // Make tests less verbose.
+  typedef base::TimeDelta TimeDelta;
+
+  // Initilise the headers() value with a Cache-Control header set to
+  // |cache_control|. |cache_control| is copied and so can safely be a
+  // temporary.
+  void InitializeHeadersWithCacheControl(const char* cache_control) {
+    std::string raw_headers("HTTP/1.1 200 OK\n");
+    raw_headers += "Cache-Control: ";
+    raw_headers += cache_control;
+    raw_headers += "\n";
+    HeadersToRaw(&raw_headers);
+    headers_ = new net::HttpResponseHeaders(raw_headers);
+  }
+
+  const scoped_refptr<net::HttpResponseHeaders>& headers() { return headers_; }
+
+  // Return a pointer to a TimeDelta object. For use when the value doesn't
+  // matter.
+  TimeDelta* TimeDeltaPointer() { return &delta_; }
+
+  // Get the max-age value. This should only be used in tests where a valid
+  // max-age parameter is expected to be present.
+  TimeDelta GetMaxAgeValue() {
+    DCHECK(headers_) << "Call InitializeHeadersWithCacheControl() first";
+    TimeDelta max_age_value;
+    EXPECT_TRUE(headers()->GetMaxAgeValue(&max_age_value));
+    return max_age_value;
+  }
+
+  // Get the stale-while-revalidate value. This should only be used in tests
+  // where a valid max-age parameter is expected to be present.
+  TimeDelta GetStaleWhileRevalidateValue() {
+    DCHECK(headers_) << "Call InitializeHeadersWithCacheControl() first";
+    TimeDelta stale_while_revalidate_value;
+    EXPECT_TRUE(
+        headers()->GetStaleWhileRevalidateValue(&stale_while_revalidate_value));
+    return stale_while_revalidate_value;
+  }
+
+ private:
+  scoped_refptr<net::HttpResponseHeaders> headers_;
+  TimeDelta delta_;
+};
 
 void TestCommon(const TestData& test) {
   std::string raw_headers(test.raw_headers);
@@ -1934,4 +1982,106 @@ TEST(HttpResponseHeadersTest, ToNetLogParamAndBackAgain) {
   std::string normalized_recreated;
   parsed->GetNormalizedHeaders(&normalized_recreated);
   EXPECT_EQ(normalized_parsed, normalized_recreated);
+}
+
+TEST_F(HttpResponseHeadersCacheControlTest, AbsentMaxAgeReturnsFalse) {
+  InitializeHeadersWithCacheControl("nocache");
+  EXPECT_FALSE(headers()->GetMaxAgeValue(TimeDeltaPointer()));
+}
+
+TEST_F(HttpResponseHeadersCacheControlTest, MaxAgeWithNoParameterRejected) {
+  InitializeHeadersWithCacheControl("max-age=,private");
+  EXPECT_FALSE(headers()->GetMaxAgeValue(TimeDeltaPointer()));
+}
+
+TEST_F(HttpResponseHeadersCacheControlTest, MaxAgeWithSpaceParameterRejected) {
+  InitializeHeadersWithCacheControl("max-age= ,private");
+  EXPECT_FALSE(headers()->GetMaxAgeValue(TimeDeltaPointer()));
+}
+
+TEST_F(HttpResponseHeadersCacheControlTest,
+       MaxAgeWithSpaceBeforeEqualsIsRejected) {
+  InitializeHeadersWithCacheControl("max-age = 7");
+  EXPECT_FALSE(headers()->GetMaxAgeValue(TimeDeltaPointer()));
+}
+
+TEST_F(HttpResponseHeadersCacheControlTest, MaxAgeFirstMatchUsed) {
+  InitializeHeadersWithCacheControl("max-age=10, max-age=20");
+  EXPECT_EQ(TimeDelta::FromSeconds(10), GetMaxAgeValue());
+}
+
+TEST_F(HttpResponseHeadersCacheControlTest, MaxAgeBogusFirstMatchUsed) {
+  // max-age10 isn't parsed as max-age; max-age=now is parsed as max-age=0 and
+  // so max-age=20 is not used.
+  InitializeHeadersWithCacheControl("max-age10, max-age=now, max-age=20");
+  EXPECT_EQ(TimeDelta::FromSeconds(0), GetMaxAgeValue());
+}
+
+TEST_F(HttpResponseHeadersCacheControlTest, MaxAgeCaseInsensitive) {
+  InitializeHeadersWithCacheControl("Max-aGe=15");
+  EXPECT_EQ(TimeDelta::FromSeconds(15), GetMaxAgeValue());
+}
+
+TEST_F(HttpResponseHeadersCacheControlTest, MaxAgeEdgeCases) {
+  // This test doesn't use TEST_P() for consistency with the rest of the tests
+  // in this file.
+  // TODO(ricea): Port the tests in this file to use TEST_P().
+  const struct {
+    const char* max_age_string;
+    int64 expected_seconds;
+  } tests[] = {
+        {" 1 ", 1},  // Spaces are ignored
+        {"-1", -1},  // Negative numbers are passed through
+        {"--1", 0},  // Leading junk gives 0
+        {"2s", 2},  // trailing junk is ignored
+        {"3 days", 3},
+        {"'4'", 0},    // single quotes don't work
+        {"\"5\"", 0},  // double quotes don't work
+        {"0x6", 0},    // hex not parsed as hex
+        {"7F", 7},     // hex without 0x still not parsed as hex
+        {"010", 10},   // octal not parsed as octal
+        {"9223372036854", 9223372036854},
+        //  {"9223372036855", -9223372036854},  // undefined behaviour
+        //  {"9223372036854775806", -2},        // undefined behaviour
+        {"9223372036854775807", 9223372036854775807},
+        {"20000000000000000000",
+         std::numeric_limits<int64>::max()},  // overflow int64
+  };
+  std::string max_age = "max-age=";
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    InitializeHeadersWithCacheControl(
+        (max_age + tests[i].max_age_string).c_str());
+    EXPECT_EQ(tests[i].expected_seconds, GetMaxAgeValue().InSeconds())
+        << " for max-age=" << tests[i].max_age_string;
+  }
+}
+
+TEST_F(HttpResponseHeadersCacheControlTest,
+       AbsentStaleWhileRevalidateReturnsFalse) {
+  InitializeHeadersWithCacheControl("max-age=3600");
+  EXPECT_FALSE(headers()->GetStaleWhileRevalidateValue(TimeDeltaPointer()));
+}
+
+TEST_F(HttpResponseHeadersCacheControlTest,
+       StaleWhileRevalidateWithoutValueRejected) {
+  InitializeHeadersWithCacheControl("max-age=3600,stale-while-revalidate=");
+  EXPECT_FALSE(headers()->GetStaleWhileRevalidateValue(TimeDeltaPointer()));
+}
+
+TEST_F(HttpResponseHeadersCacheControlTest,
+       StaleWhileRevalidateWithInvalidValueTreatedAsZero) {
+  InitializeHeadersWithCacheControl("max-age=3600,stale-while-revalidate=true");
+  EXPECT_EQ(TimeDelta(), GetStaleWhileRevalidateValue());
+}
+
+TEST_F(HttpResponseHeadersCacheControlTest, StaleWhileRevalidateValueReturned) {
+  InitializeHeadersWithCacheControl("max-age=3600,stale-while-revalidate=7200");
+  EXPECT_EQ(TimeDelta::FromSeconds(7200), GetStaleWhileRevalidateValue());
+}
+
+TEST_F(HttpResponseHeadersCacheControlTest,
+       FirstStaleWhileRevalidateValueUsed) {
+  InitializeHeadersWithCacheControl(
+      "stale-while-revalidate=1,stale-while-revalidate=7200");
+  EXPECT_EQ(TimeDelta::FromSeconds(1), GetStaleWhileRevalidateValue());
 }
