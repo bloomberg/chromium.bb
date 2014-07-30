@@ -36,6 +36,8 @@ public:
         TemporaryChange<unsigned> m_change;
     };
 
+    static void enter();
+    static void exit();
     static bool isScriptForbidden();
 };
 

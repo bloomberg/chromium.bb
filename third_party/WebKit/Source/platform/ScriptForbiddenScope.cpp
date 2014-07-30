@@ -14,15 +14,28 @@ static unsigned s_scriptForbiddenCount = 0;
 
 ScriptForbiddenScope::ScriptForbiddenScope()
 {
-    // FIXME: Support non-main threads.
-    if (isMainThread())
-        ++s_scriptForbiddenCount;
+    ASSERT(isMainThread());
+    ++s_scriptForbiddenCount;
 }
 
 ScriptForbiddenScope::~ScriptForbiddenScope()
 {
-    if (isMainThread())
-        --s_scriptForbiddenCount;
+    ASSERT(isMainThread());
+    ASSERT(s_scriptForbiddenCount);
+    --s_scriptForbiddenCount;
+}
+
+void ScriptForbiddenScope::enter()
+{
+    ASSERT(isMainThread());
+    ++s_scriptForbiddenCount;
+}
+
+void ScriptForbiddenScope::exit()
+{
+    ASSERT(isMainThread());
+    ASSERT(s_scriptForbiddenCount);
+    --s_scriptForbiddenCount;
 }
 
 bool ScriptForbiddenScope::isScriptForbidden()

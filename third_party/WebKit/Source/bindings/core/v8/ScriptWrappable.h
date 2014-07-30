@@ -290,7 +290,6 @@ private:
 
     static void setWeakCallback(const v8::WeakCallbackData<v8::Object, ScriptWrappable>& data)
     {
-        ScriptForbiddenScope forbiddenScope;
         v8::Persistent<v8::Object> persistent;
         data.GetParameter()->getPersistent(&persistent);
         ASSERT(persistent == data.GetValue());

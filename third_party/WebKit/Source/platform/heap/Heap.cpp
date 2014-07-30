@@ -2062,7 +2062,9 @@ void Heap::collectGarbage(ThreadState::StackState stackState)
         return;
     }
 
-    ScriptForbiddenScope forbiddenScope;
+    if (state->isMainThread())
+        ScriptForbiddenScope::enter();
+
     s_lastGCWasConservative = false;
 
     TRACE_EVENT0("blink", "Heap::collectGarbage");
@@ -2118,6 +2120,9 @@ void Heap::collectGarbage(ThreadState::StackState stackState)
         blink::Platform::current()->histogramCustomCounts("BlinkGC.TotalObjectSpace", objectSpaceSize / 1024, 0, 4 * 1024 * 1024, 50);
         blink::Platform::current()->histogramCustomCounts("BlinkGC.TotalAllocatedSpace", allocatedSpaceSize / 1024, 0, 4 * 1024 * 1024, 50);
     }
+
+    if (state->isMainThread())
+        ScriptForbiddenScope::exit();
 }
 
 void Heap::collectGarbageForTerminatingThread(ThreadState* state)

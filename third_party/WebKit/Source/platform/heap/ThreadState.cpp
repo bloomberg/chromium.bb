@@ -883,12 +883,13 @@ void ThreadState::performPendingSweep()
         return;
 
     TRACE_EVENT0("blink", "ThreadState::performPendingSweep");
-    ScriptForbiddenScope forbiddenScope;
 
     double timeStamp = WTF::currentTimeMS();
     const char* samplingState = TRACE_EVENT_GET_SAMPLING_STATE();
-    if (isMainThread())
+    if (isMainThread()) {
+        ScriptForbiddenScope::enter();
         TRACE_EVENT_SET_SAMPLING_STATE("blink", "BlinkGCSweeping");
+    }
 
     m_sweepInProgress = true;
     // Disallow allocation during weak processing.
@@ -909,8 +910,10 @@ void ThreadState::performPendingSweep()
         blink::Platform::current()->histogramCustomCounts("BlinkGC.PerformPendingSweep", WTF::currentTimeMS() - timeStamp, 0, 10 * 1000, 50);
     }
 
-    if (isMainThread())
+    if (isMainThread()) {
         TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(samplingState);
+        ScriptForbiddenScope::exit();
+    }
 }
 
 void ThreadState::addInterruptor(Interruptor* interruptor)

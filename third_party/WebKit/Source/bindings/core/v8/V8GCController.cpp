@@ -343,6 +343,7 @@ void V8GCController::minorGCPrologue(v8::Isolate* isolate)
 {
     TRACE_EVENT_BEGIN0("v8", "minorGC");
     if (isMainThread()) {
+        ScriptForbiddenScope::enter();
         {
             TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMMinorGC");
             v8::HandleScope scope(isolate);
@@ -361,6 +362,7 @@ void V8GCController::majorGCPrologue(bool constructRetainedObjectInfos, v8::Isol
     v8::HandleScope scope(isolate);
     TRACE_EVENT_BEGIN0("v8", "majorGC");
     if (isMainThread()) {
+        ScriptForbiddenScope::enter();
         {
             TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMMajorGC");
             MajorGCWrapperVisitor visitor(isolate, constructRetainedObjectInfos);
@@ -412,8 +414,10 @@ void V8GCController::gcEpilogue(v8::GCType type, v8::GCCallbackFlags flags)
 void V8GCController::minorGCEpilogue(v8::Isolate* isolate)
 {
     TRACE_EVENT_END0("v8", "minorGC");
-    if (isMainThread())
+    if (isMainThread()) {
         TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
+        ScriptForbiddenScope::exit();
+    }
 }
 
 void V8GCController::majorGCEpilogue(v8::Isolate* isolate)
@@ -421,8 +425,10 @@ void V8GCController::majorGCEpilogue(v8::Isolate* isolate)
     v8::HandleScope scope(isolate);
 
     TRACE_EVENT_END0("v8", "majorGC");
-    if (isMainThread())
+    if (isMainThread()) {
         TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
+        ScriptForbiddenScope::exit();
+    }
 }
 
 void V8GCController::collectGarbage(v8::Isolate* isolate)
