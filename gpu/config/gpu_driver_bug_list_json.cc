@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "6.9",
+  "version": "6.8",
   "entries": [
     {
       "id": 1,
@@ -1072,6 +1072,40 @@ LONG_STRING_CONST(
       },
       "features": [
         "disable_async_readpixels"
+      ]
+    },
+    {
+      "id": 83,
+      "cr_bugs": [393810],
+      "description": "Shader vec/mat construction is buggy on Linux",
+      "os": {
+        "type": "linux"
+      },
+      "features": [
+        "scalarize_vec_and_mat_constructor_args"
+      ]
+    },
+    {
+      "id": 84,
+      "cr_bugs": [393810],
+      "description": "Shader vec/mat construction is buggy on Linux",
+      "os": {
+        "type": "chromeos"
+      },
+      "features": [
+        "scalarize_vec_and_mat_constructor_args"
+      ]
+    },
+    {
+      "id": 85,
+      "cr_bugs": [393810],
+      "description": "Shader vec/mat construction is buggy on Mac NVIDIA",
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x10de",
+      "features": [
+        "scalarize_vec_and_mat_constructor_args"
       ]
     },
     {
