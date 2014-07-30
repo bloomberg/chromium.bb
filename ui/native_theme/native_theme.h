@@ -320,6 +320,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_ResultsTableHoveredDivider,
     kColorId_ResultsTableSelectedDivider,
     // TODO(benrg): move other hardcoded colors here.
+
+    kColorId_NumColors,
   };
 
   // Return a color from the system theme.

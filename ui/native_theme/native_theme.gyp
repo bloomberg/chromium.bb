@@ -47,5 +47,20 @@
         'native_theme_win.h',
       ],
     },
+    {
+      'target_name': 'native_theme_unittests',
+      'type': '<(gtest_target_type)',
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../../base/base.gyp:test_support_base',
+        '../../skia/skia.gyp:skia',
+        '../../testing/gtest.gyp:gtest',
+        'native_theme',
+      ],
+      'sources': [
+        '../../base/test/run_all_unittests.cc',
+        'native_theme_mac_unittest.cc',
+      ],
+    },
   ],
 }

@@ -373,6 +373,9 @@ GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
       return GdkAlphaBlend(win_style->text[GTK_STATE_SELECTED],
                            win_style->bg[GTK_STATE_SELECTED], 0x34);
     }
+    case kColorId_NumColors:
+      NOTREACHED();
+      break;
   }
 
   return SkColorToGdkColor(kInvalidColorIdColor);
