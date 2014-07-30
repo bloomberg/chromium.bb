@@ -10,7 +10,6 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
 import org.chromium.base.CalledByNative;
@@ -68,17 +67,12 @@ public class HandleViewResources {
 
         Drawable drawable = getHandleDrawable(context, attrs);
         assert drawable != null;
-        if (drawable instanceof BitmapDrawable) {
-            final Bitmap drawableBitmap = ((BitmapDrawable)drawable).getBitmap();
-            if (drawableBitmap != null && drawableBitmap.getConfig() == config) {
-                return drawableBitmap;
-            }
-        }
 
         final int width = drawable.getIntrinsicWidth();
         final int height = drawable.getIntrinsicHeight();
         Bitmap canvasBitmap = Bitmap.createBitmap(width, height, config);
         Canvas canvas = new Canvas(canvasBitmap);
+        drawable.setBounds(0, 0, width, height);
         drawable.draw(canvas);
         return canvasBitmap;
     }

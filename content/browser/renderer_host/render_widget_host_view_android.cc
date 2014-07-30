@@ -1058,7 +1058,7 @@ scoped_ptr<TouchHandleDrawable> RenderWidgetHostViewAndroid::CreateDrawable() {
   return scoped_ptr<TouchHandleDrawable>(new CompositedTouchHandleDrawable(
       content_view_core_->GetLayer(),
       content_view_core_->GetDpiScale(),
-      content_view_core_->GetContext().obj()));
+      base::android::GetApplicationContext()));
 }
 
 void RenderWidgetHostViewAndroid::SynchronousCopyContents(
