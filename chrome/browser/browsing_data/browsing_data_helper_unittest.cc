@@ -154,4 +154,19 @@ TEST_F(BrowsingDataHelperTest, TestMatches) {
                      mock_policy.get()));
 }
 
+// If extensions are disabled, there is no policy.
+TEST_F(BrowsingDataHelperTest, TestNoPolicyMatches) {
+  EXPECT_FALSE(Match(kOrigin1, kExtension, NULL));
+  EXPECT_TRUE(Match(kOrigin1, kUnprotected, NULL));
+  EXPECT_FALSE(Match(kOrigin1, kProtected, NULL));
+
+  EXPECT_TRUE(Match(kOriginExt, kExtension, NULL));
+  EXPECT_FALSE(Match(kOriginExt, kUnprotected, NULL));
+  EXPECT_FALSE(Match(kOriginExt, kProtected, NULL));
+
+  EXPECT_FALSE(Match(kOriginDevTools, kExtension, NULL));
+  EXPECT_FALSE(Match(kOriginDevTools, kUnprotected, NULL));
+  EXPECT_FALSE(Match(kOriginDevTools, kProtected, NULL));
+}
+
 }  // namespace

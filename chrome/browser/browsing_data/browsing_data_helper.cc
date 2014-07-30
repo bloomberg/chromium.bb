@@ -18,18 +18,17 @@ bool BrowsingDataHelper::IsWebScheme(const std::string& scheme) {
   // Special-case `file://` scheme iff cookies and site data are enabled via
   // the `--allow-file-cookies` CLI flag.
   if (scheme == url::kFileScheme) {
-    return CommandLine::ForCurrentProcess()->HasSwitch(
+    return base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableFileCookies);
+  }
 
   // Otherwise, all "web safe" schemes are valid, except `chrome-extension://`
   // and `chrome-devtools://`.
-  } else {
-    content::ChildProcessSecurityPolicy* policy =
-        content::ChildProcessSecurityPolicy::GetInstance();
-    return (policy->IsWebSafeScheme(scheme) &&
-            !BrowsingDataHelper::IsExtensionScheme(scheme) &&
-            scheme != content::kChromeDevToolsScheme);
-  }
+  content::ChildProcessSecurityPolicy* policy =
+      content::ChildProcessSecurityPolicy::GetInstance();
+  return (policy->IsWebSafeScheme(scheme) &&
+          !BrowsingDataHelper::IsExtensionScheme(scheme) &&
+          scheme != content::kChromeDevToolsScheme);
 }
 
 // Static
@@ -56,13 +55,14 @@ bool BrowsingDataHelper::DoesOriginMatchMask(const GURL& origin,
     return true;
 
   // If a websafe origin is unprotected, it matches iff UNPROTECTED_WEB.
-  if (!policy->IsStorageProtected(origin.GetOrigin()) &&
+  if ((!policy || !policy->IsStorageProtected(origin.GetOrigin())) &&
       BrowsingDataHelper::HasWebScheme(origin.GetOrigin()) &&
       origin_set_mask & UNPROTECTED_WEB)
     return true;
 
   // Hosted applications (protected and websafe origins) iff PROTECTED_WEB.
-  if (policy->IsStorageProtected(origin.GetOrigin()) &&
+  if (policy &&
+      policy->IsStorageProtected(origin.GetOrigin()) &&
       BrowsingDataHelper::HasWebScheme(origin.GetOrigin()) &&
       origin_set_mask & PROTECTED_WEB)
     return true;
