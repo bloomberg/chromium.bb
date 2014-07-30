@@ -89,6 +89,10 @@ def calculate_version(url):
   return generate_version(StringIO.StringIO(net.url_read(url)))
 
 
+def get_hostname():
+  return socket.getfqdn().lower().split('.', 1)[0]
+
+
 class FakeSwarmBot(object):
   """This is a Fake swarm_bot implementation simulating it is running
   Comodore64.
@@ -97,8 +101,8 @@ class FakeSwarmBot(object):
   result.
   """
   def __init__(
-      self, swarming_url, dimensions, swarm_bot_version_hash, index, progress,
-      duration, events, kill_event):
+      self, swarming_url, dimensions, swarm_bot_version_hash, hostname, index,
+      progress, duration, events, kill_event):
     self._lock = threading.Lock()
     self._swarming = swarming_url
     self._index = index
@@ -106,7 +110,7 @@ class FakeSwarmBot(object):
     self._duration = duration
     self._events = events
     self._kill_event = kill_event
-    self._bot_id = '%s-%d' % (socket.getfqdn().lower(), index)
+    self._bot_id = '%s-%d' % (hostname, index)
     self._attributes = {
       'dimensions': dimensions,
       'id': self._bot_id,
@@ -236,6 +240,8 @@ def main():
       '-S', '--swarming',
       metavar='URL', default='',
       help='Swarming server to use')
+  parser.add_option(
+      '--suffix', metavar='NAME', default='', help='Bot suffix name to use')
   swarming.add_filter_options(parser)
   # Use improbable values to reduce the chance of interferring with real slaves.
   parser.set_defaults(
@@ -291,10 +297,13 @@ def main():
   kill_event = threading.Event()
   swarm_bot_version_hash = calculate_version(
       options.swarming + '/get_slave_code')
+  hostname = get_hostname()
+  if options.suffix:
+    hostname += '-' + options.suffix
   slaves = [
     FakeSwarmBot(
-      options.swarming, options.dimensions, swarm_bot_version_hash, i, progress,
-      options.consume, events, kill_event)
+      options.swarming, options.dimensions, swarm_bot_version_hash, hostname, i,
+      progress, options.consume, events, kill_event)
     for i in range(options.slaves)
   ]
   try:
