@@ -6,8 +6,11 @@
 #define CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_DRAG_DROP_VIEWS_H_
 
 class BookmarkNode;
-struct BookmarkNodeData;
 class Profile;
+
+namespace bookmarks {
+struct BookmarkNodeData;
+}
 
 namespace content {
 class BrowserContext;
@@ -33,7 +36,7 @@ int GetPreferredBookmarkDropOperation(int source_operations, int operations);
 // drop is over.
 int GetBookmarkDropOperation(Profile* profile,
                              const ui::DropTargetEvent& event,
-                             const BookmarkNodeData& data,
+                             const bookmarks::BookmarkNodeData& data,
                              const BookmarkNode* parent,
                              int index);
 
@@ -43,7 +46,7 @@ int GetBookmarkDropOperation(Profile* profile,
 // |data| are an ancestor of |drop_parent| and one of the nodes isn't already
 // a child of |drop_parent| at |index|.
 bool IsValidBookmarkDropLocation(Profile* profile,
-                                 const BookmarkNodeData& data,
+                                 const bookmarks::BookmarkNodeData& data,
                                  const BookmarkNode* drop_parent,
                                  int index);
 

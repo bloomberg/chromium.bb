@@ -31,6 +31,7 @@ using bookmarks::BookmarkExpandedStateTracker;
 using bookmarks::BookmarkIndex;
 using bookmarks::BookmarkLoadDetails;
 using bookmarks::BookmarkMatch;
+using bookmarks::BookmarkNodeData;
 using bookmarks::BookmarkStorage;
 
 namespace {

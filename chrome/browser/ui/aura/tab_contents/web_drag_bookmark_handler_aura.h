@@ -42,7 +42,7 @@ class WebDragBookmarkHandlerAura : public content::WebDragDestDelegate {
   content::WebContents* web_contents_;
 
   // The bookmark data for the active drag.  Empty when there is no active drag.
-  BookmarkNodeData bookmark_drag_data_;
+  bookmarks::BookmarkNodeData bookmark_drag_data_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDragBookmarkHandlerAura);
 };

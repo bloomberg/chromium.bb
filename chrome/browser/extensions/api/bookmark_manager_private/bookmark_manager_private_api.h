@@ -17,8 +17,11 @@
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 
-struct BookmarkNodeData;
 class Profile;
+
+namespace bookmarks {
+struct BookmarkNodeData;
+}
 
 namespace content {
 class BrowserContext;
@@ -92,14 +95,14 @@ class BookmarkManagerPrivateDragEventRouter
   virtual ~BookmarkManagerPrivateDragEventRouter();
 
   // BookmarkTabHelper::BookmarkDrag interface
-  virtual void OnDragEnter(const BookmarkNodeData& data) OVERRIDE;
-  virtual void OnDragOver(const BookmarkNodeData& data) OVERRIDE;
-  virtual void OnDragLeave(const BookmarkNodeData& data) OVERRIDE;
-  virtual void OnDrop(const BookmarkNodeData& data) OVERRIDE;
+  virtual void OnDragEnter(const bookmarks::BookmarkNodeData& data) OVERRIDE;
+  virtual void OnDragOver(const bookmarks::BookmarkNodeData& data) OVERRIDE;
+  virtual void OnDragLeave(const bookmarks::BookmarkNodeData& data) OVERRIDE;
+  virtual void OnDrop(const bookmarks::BookmarkNodeData& data) OVERRIDE;
 
   // The bookmark drag and drop data. This gets set after a drop was done on
   // the page. This returns NULL if no data is available.
-  const BookmarkNodeData* GetBookmarkNodeData();
+  const bookmarks::BookmarkNodeData* GetBookmarkNodeData();
 
   // Clears the drag and drop data.
   void ClearBookmarkNodeData();
@@ -111,7 +114,7 @@ class BookmarkManagerPrivateDragEventRouter
 
   Profile* profile_;
   content::WebContents* web_contents_;
-  BookmarkNodeData bookmark_drag_data_;
+  bookmarks::BookmarkNodeData bookmark_drag_data_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkManagerPrivateDragEventRouter);
 };

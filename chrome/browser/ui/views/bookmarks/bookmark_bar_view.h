@@ -343,7 +343,7 @@ class BookmarkBarView : public DetachableToolbarView,
 
   // Calculates the location for the drop in |location|.
   void CalculateDropLocation(const ui::DropTargetEvent& event,
-                             const BookmarkNodeData& data,
+                             const bookmarks::BookmarkNodeData& data,
                              DropLocation* location);
 
   // Writes a BookmarkNodeData for node to data.

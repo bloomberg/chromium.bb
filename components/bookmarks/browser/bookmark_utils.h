@@ -140,7 +140,7 @@ base::string16 CleanUpTitleForMatching(const base::string16& title);
 
 // Returns true if all the |nodes| can be edited by the user,
 // as determined by BookmarkClient::CanBeEditedByUser().
-bool CanAllBeEditedByUser(bookmarks::BookmarkClient* client,
+bool CanAllBeEditedByUser(BookmarkClient* client,
                           const std::vector<const BookmarkNode*>& nodes);
 
 // Returns true if |url| has a bookmark in the |model| that can be edited

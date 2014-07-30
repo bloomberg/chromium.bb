@@ -11,8 +11,11 @@
 #include "ui/gfx/native_widget_types.h"
 
 class BookmarkNode;
-struct BookmarkNodeData;
 class Profile;
+
+namespace bookmarks {
+struct BookmarkNodeData;
+}
 
 namespace chrome {
 
@@ -27,7 +30,7 @@ void DragBookmarks(Profile* profile,
 // are copied, otherwise they are moved if they belong to the same |profile|.
 // Returns the drop type used.
 int DropBookmarks(Profile* profile,
-                  const BookmarkNodeData& data,
+                  const bookmarks::BookmarkNodeData& data,
                   const BookmarkNode* parent_node,
                   int index,
                   bool copy);

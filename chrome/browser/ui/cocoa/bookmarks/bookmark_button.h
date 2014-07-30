@@ -9,7 +9,6 @@
 
 @class BookmarkBarFolderController;
 @class BookmarkButton;
-struct BookmarkNodeData;
 class BookmarkModel;
 class BookmarkNode;
 @class BrowserWindowController;

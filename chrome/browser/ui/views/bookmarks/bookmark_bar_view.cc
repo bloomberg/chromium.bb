@@ -89,6 +89,7 @@
 #include "ui/views/window/non_client_view.h"
 
 using base::UserMetricsAction;
+using bookmarks::BookmarkNodeData;
 using content::OpenURLParams;
 using content::PageNavigator;
 using content::Referrer;

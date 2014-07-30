@@ -128,7 +128,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   const BookmarkNode* node_;
 
   // Data for the drop.
-  BookmarkNodeData drop_data_;
+  bookmarks::BookmarkNodeData drop_data_;
 
   // The observer, may be null.
   BookmarkMenuControllerObserver* observer_;

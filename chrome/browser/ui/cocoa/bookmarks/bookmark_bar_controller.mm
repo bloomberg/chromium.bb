@@ -65,6 +65,7 @@
 #include "ui/gfx/image/image.h"
 
 using base::UserMetricsAction;
+using bookmarks::BookmarkNodeData;
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;

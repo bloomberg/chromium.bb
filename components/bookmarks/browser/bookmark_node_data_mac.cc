@@ -6,6 +6,8 @@
 
 #include "components/bookmarks/browser/bookmark_pasteboard_helper_mac.h"
 
+namespace bookmarks {
+
 // static
 bool BookmarkNodeData::ClipboardContainsBookmarks() {
   return PasteboardContainsBookmarks(ui::CLIPBOARD_TYPE_COPY_PASTE);
@@ -24,3 +26,5 @@ bool BookmarkNodeData::ReadFromClipboard(ui::ClipboardType type) {
 
   return false;
 }
+
+}  // namespace bookmarks

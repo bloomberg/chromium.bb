@@ -18,6 +18,8 @@
 
 using base::ASCIIToUTF16;
 
+namespace bookmarks {
+
 class BookmarkNodeDataTest : public testing::Test {
  public:
   BookmarkNodeDataTest() {}
@@ -294,3 +296,5 @@ TEST_F(BookmarkNodeDataTest, MetaInfo) {
   EXPECT_EQ("somevalue", meta_info_map["somekey"]);
   EXPECT_EQ("someothervalue", meta_info_map["someotherkey"]);
 }
+
+}  // namespace bookmarks

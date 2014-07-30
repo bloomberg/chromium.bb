@@ -11,6 +11,8 @@
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "ui/base/clipboard/clipboard.h"
 
+using bookmarks::BookmarkNodeData;
+
 NSString* const kBookmarkDictionaryListPboardType =
     @"BookmarkDictionaryListPboardType";
 

@@ -24,6 +24,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
+using bookmarks::BookmarkNodeData;
+
 namespace chrome {
 
 namespace {

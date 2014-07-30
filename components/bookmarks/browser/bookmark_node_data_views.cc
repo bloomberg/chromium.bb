@@ -9,6 +9,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/clipboard/clipboard.h"
 
+namespace bookmarks {
+
 namespace {
 
 const char kJavaScriptScheme[] = "javascript";
@@ -69,3 +71,5 @@ bool BookmarkNodeData::Read(const ui::OSExchangeData& data) {
 
   return is_valid();
 }
+
+}  // namespace bookmarks

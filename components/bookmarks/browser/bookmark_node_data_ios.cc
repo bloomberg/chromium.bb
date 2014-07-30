@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 
+namespace bookmarks {
+
 // static
 bool BookmarkNodeData::ClipboardContainsBookmarks() {
   NOTREACHED();
@@ -20,3 +22,5 @@ bool BookmarkNodeData::ReadFromClipboard(ui::ClipboardType type) {
   NOTREACHED();
   return false;
 }
+
+}  // namespace bookmarks

@@ -22,6 +22,8 @@ class BookmarkModel;
 class Pickle;
 class PickleIterator;
 
+namespace bookmarks {
+
 // BookmarkNodeData is used to represent the following:
 //
 // . A single URL.
@@ -170,5 +172,7 @@ struct BookmarkNodeData {
   // Path of the profile we originated from.
   base::FilePath profile_path_;
 };
+
+}  // namespace bookmarks
 
 #endif  // COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_NODE_DATA_H_

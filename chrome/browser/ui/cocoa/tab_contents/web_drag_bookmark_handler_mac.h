@@ -39,7 +39,7 @@ class WebDragBookmarkHandlerMac : public content::WebDragDestDelegate {
 
   // The bookmark data for the current tab. This will be empty if there is not
   // a native bookmark drag.
-  BookmarkNodeData bookmark_drag_data_;
+  bookmarks::BookmarkNodeData bookmark_drag_data_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDragBookmarkHandlerMac);
 };

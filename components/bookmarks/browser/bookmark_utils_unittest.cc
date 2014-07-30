@@ -315,7 +315,7 @@ TEST_F(BookmarkUtilsTest, PasteNonEditableNodes) {
   test::TestBookmarkClient client;
   // Load a model with an extra node that is not editable.
   BookmarkPermanentNode* extra_node = new BookmarkPermanentNode(100);
-  bookmarks::BookmarkPermanentNodeList extra_nodes;
+  BookmarkPermanentNodeList extra_nodes;
   extra_nodes.push_back(extra_node);
   client.SetExtraNodesToLoad(extra_nodes.Pass());
 
@@ -418,7 +418,7 @@ TEST_F(BookmarkUtilsTest, RemoveAllBookmarks) {
   test::TestBookmarkClient client;
   // Load a model with an extra node that is not editable.
   BookmarkPermanentNode* extra_node = new BookmarkPermanentNode(100);
-  bookmarks::BookmarkPermanentNodeList extra_nodes;
+  BookmarkPermanentNodeList extra_nodes;
   extra_nodes.push_back(extra_node);
   client.SetExtraNodesToLoad(extra_nodes.Pass());
 

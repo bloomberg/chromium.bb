@@ -15,6 +15,8 @@
 #include "components/bookmarks/browser/scoped_group_bookmark_actions.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 
+using bookmarks::BookmarkNodeData;
+
 namespace chrome {
 
 int DropBookmarks(Profile* profile,

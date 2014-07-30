@@ -73,7 +73,7 @@ class BookmarkClient : public KeyedService {
 
   // Returns a task that will be used to load any additional root nodes. This
   // task will be invoked in the Profile's IO task runner.
-  virtual bookmarks::LoadExtraCallback GetLoadExtraNodesCallback() = 0;
+  virtual LoadExtraCallback GetLoadExtraNodesCallback() = 0;
 
   // Returns true if the |permanent_node| can have its title updated.
   virtual bool CanSetPermanentNodeTitle(const BookmarkNode* permanent_node) = 0;

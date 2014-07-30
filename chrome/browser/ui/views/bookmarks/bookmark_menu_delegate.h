@@ -184,7 +184,7 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
   views::MenuItemView* menu_;
 
   // Data for the drop.
-  BookmarkNodeData drop_data_;
+  bookmarks::BookmarkNodeData drop_data_;
 
   // Used when a context menu is shown.
   scoped_ptr<BookmarkContextMenu> context_menu_;

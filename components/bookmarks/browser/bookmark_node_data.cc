@@ -13,6 +13,8 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
+namespace bookmarks {
+
 const char* BookmarkNodeData::kClipboardFormatString =
     "chromium/x-bookmark-entries";
 
@@ -251,8 +253,7 @@ std::vector<const BookmarkNode*> BookmarkNodeData::GetNodes(
     return nodes;
 
   for (size_t i = 0; i < elements.size(); ++i) {
-    const BookmarkNode* node =
-        bookmarks::GetBookmarkNodeByID(model, elements[i].id_);
+    const BookmarkNode* node = GetBookmarkNodeByID(model, elements[i].id_);
     if (!node) {
       nodes.clear();
       return nodes;
@@ -285,3 +286,5 @@ bool BookmarkNodeData::IsFromProfilePath(
   // An empty path means the data is not associated with any profile.
   return !profile_path_.empty() && profile_path_ == profile_path;
 }
+
+}  // namespace bookmarks

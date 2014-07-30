@@ -9,8 +9,11 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-struct BookmarkNodeData;
 class BookmarkTabHelperDelegate;
+
+namespace bookmarks {
+struct BookmarkNodeData;
+}
 
 namespace content {
 class WebContents;
@@ -25,10 +28,10 @@ class BookmarkTabHelper
   // Interface for forwarding bookmark drag and drop to extenstions.
   class BookmarkDrag {
    public:
-    virtual void OnDragEnter(const BookmarkNodeData& data) = 0;
-    virtual void OnDragOver(const BookmarkNodeData& data) = 0;
-    virtual void OnDragLeave(const BookmarkNodeData& data) = 0;
-    virtual void OnDrop(const BookmarkNodeData& data) = 0;
+    virtual void OnDragEnter(const bookmarks::BookmarkNodeData& data) = 0;
+    virtual void OnDragOver(const bookmarks::BookmarkNodeData& data) = 0;
+    virtual void OnDragLeave(const bookmarks::BookmarkNodeData& data) = 0;
+    virtual void OnDrop(const bookmarks::BookmarkNodeData& data) = 0;
 
    protected:
     virtual ~BookmarkDrag() {}

@@ -63,6 +63,7 @@
 #include "chrome/browser/browser_process.h"
 #endif
 
+using bookmarks::BookmarkNodeData;
 
 namespace {
 

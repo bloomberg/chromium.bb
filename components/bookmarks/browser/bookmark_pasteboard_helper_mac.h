@@ -21,13 +21,13 @@ class FilePath;
 // Writes a set of bookmark elements from a profile to the specified pasteboard.
 void WriteBookmarksToPasteboard(
     ui::ClipboardType type,
-    const std::vector<BookmarkNodeData::Element>& elements,
+    const std::vector<bookmarks::BookmarkNodeData::Element>& elements,
     const base::FilePath& profile_path);
 
 // Reads a set of bookmark elements from the specified pasteboard.
 bool ReadBookmarksFromPasteboard(
     ui::ClipboardType type,
-    std::vector<BookmarkNodeData::Element>& elements,
+    std::vector<bookmarks::BookmarkNodeData::Element>& elements,
     base::FilePath* profile_path);
 
 // Returns true if the specified pasteboard contains any sort of bookmark
