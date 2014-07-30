@@ -145,6 +145,8 @@ class SyncWorker : public SyncWorkerInterface,
   void UpdateServiceState(RemoteServiceState state,
                           const std::string& description);
 
+  void CallOnIdleForTesting(const base::Closure& callback);
+
   drive::DriveServiceInterface* GetDriveService();
   drive::DriveUploaderInterface* GetDriveUploader();
   MetadataDatabase* GetMetadataDatabase();

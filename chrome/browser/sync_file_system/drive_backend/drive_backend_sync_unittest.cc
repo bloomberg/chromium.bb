@@ -12,6 +12,7 @@
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/drive/test_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/callback_helper.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/fake_drive_service_helper.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
@@ -331,7 +332,7 @@ class DriveBackendSyncTest : public testing::Test,
 
   void FetchRemoteChanges() {
     remote_sync_service_->OnNotificationReceived();
-    base::RunLoop().RunUntilIdle();
+    WaitForIdleWorker();
   }
 
   SyncStatusCode ProcessChangesUntilDone() {
@@ -595,13 +596,27 @@ class DriveBackendSyncTest : public testing::Test,
     return fake_drive_service_helper_.get();
   }
 
+  void WaitForIdleWorker() {
+    base::RunLoop run_loop;
+    worker_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&SyncWorker::CallOnIdleForTesting,
+                   base::Unretained(sync_worker()),
+                   RelayCallbackToCurrentThread(
+                       FROM_HERE,
+                       run_loop.QuitClosure())));
+    run_loop.Run();
+  }
+
  private:
+  SyncWorker* sync_worker() {
+    return static_cast<SyncWorker*>(remote_sync_service_->sync_worker_.get());
+  }
+
   // MetadataDatabase is normally used on the worker thread.
   // Use this only when there is no task running on the worker.
   MetadataDatabase* metadata_database() {
-    SyncWorker* worker = static_cast<SyncWorker*>(
-        remote_sync_service_->sync_worker_.get());
-    return worker->context_->metadata_database_.get();
+    return sync_worker()->context_->metadata_database_.get();
   }
 
   content::TestBrowserThreadBundle thread_bundle_;

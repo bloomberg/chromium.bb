@@ -36,6 +36,12 @@ namespace {
 
 void EmptyStatusCallback(SyncStatusCode status) {}
 
+void InvokeIdleCallback(const base::Closure& idle_callback,
+                        const SyncStatusCallback& callback) {
+  idle_callback.Run();
+  callback.Run(SYNC_STATUS_OK);
+}
+
 }  // namespace
 
 SyncWorker::SyncWorker(
@@ -676,6 +682,18 @@ void SyncWorker::UpdateServiceState(RemoteServiceState state,
   FOR_EACH_OBSERVER(
       Observer, observers_,
       UpdateServiceState(GetCurrentState(), description));
+}
+
+void SyncWorker::CallOnIdleForTesting(const base::Closure& callback) {
+  if (task_manager_->ScheduleTaskIfIdle(
+          FROM_HERE,
+          base::Bind(&InvokeIdleCallback, callback),
+          base::Bind(&EmptyStatusCallback)))
+    return;
+  call_on_idle_callback_ = base::Bind(
+      &SyncWorker::CallOnIdleForTesting,
+      weak_ptr_factory_.GetWeakPtr(),
+      callback);
 }
 
 drive::DriveServiceInterface* SyncWorker::GetDriveService() {
