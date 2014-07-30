@@ -236,6 +236,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   typedef ServiceWorkerVersion self;
   typedef std::map<ServiceWorkerProviderHost*, int> ControlleeMap;
   typedef IDMap<ServiceWorkerProviderHost> ControlleeByIDMap;
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, ScheduleStopWorker);
 
   virtual ~ServiceWorkerVersion();
 
