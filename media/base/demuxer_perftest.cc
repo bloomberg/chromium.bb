@@ -207,7 +207,13 @@ static void RunDemuxerBenchmark(const std::string& filename) {
                          true);
 }
 
-TEST(DemuxerPerfTest, Demuxer) {
+#if defined(OS_WIN)
+// http://crbug.com/399002
+#define MAYBE_Demuxer DISABLED_Demuxer
+#else
+#define MAYBE_Demuxer Demuxer
+#endif
+TEST(DemuxerPerfTest, MAYBE_Demuxer) {
   RunDemuxerBenchmark("bear.ogv");
   RunDemuxerBenchmark("bear-640x360.webm");
   RunDemuxerBenchmark("sfx_s16le.wav");
