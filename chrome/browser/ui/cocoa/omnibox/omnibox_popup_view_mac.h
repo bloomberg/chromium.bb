@@ -10,9 +10,9 @@
 #include "base/basictypes.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/autocomplete/autocomplete_match.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_popup_matrix.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
+#include "components/autocomplete/autocomplete_match.h"
 #include "ui/gfx/font.h"
 
 class AutocompleteResult;

@@ -10,8 +10,8 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/shortcuts_backend.h"
+#include "components/autocomplete/autocomplete_provider.h"
 
 class Profile;
 class ShortcutsProviderTest;

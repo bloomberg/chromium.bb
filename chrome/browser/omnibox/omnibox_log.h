@@ -9,8 +9,8 @@
 
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/sessions/session_id.h"
+#include "components/autocomplete/autocomplete_provider.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 

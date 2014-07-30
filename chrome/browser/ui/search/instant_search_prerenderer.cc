@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/search/instant_search_prerenderer.h"
 
-#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
+#include "components/autocomplete/autocomplete_match.h"
 
 namespace {
 

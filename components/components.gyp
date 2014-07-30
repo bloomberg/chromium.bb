@@ -11,7 +11,6 @@
   },
   'includes': [
     'auto_login_parser.gypi',
-    'autocomplete.gypi',
     'autofill.gypi',
     'bookmarks.gypi',
     'breakpad.gypi',
@@ -101,6 +100,7 @@
       # Android WebView fails to build if a dependency on these targets is
       # introduced.
       'includes': [
+        'autocomplete.gypi',
         'gcm_driver.gypi',
         'search_engines.gypi',
         'sync_driver.gypi',

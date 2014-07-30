@@ -6,9 +6,9 @@
 
 #include "base/auto_reset.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
-#include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "components/autocomplete/autocomplete_input.h"
+#include "components/autocomplete/autocomplete_match.h"
+#include "components/autocomplete/autocomplete_provider.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "url/gurl.h"
 

@@ -1,6 +1,15 @@
 include_rules = [
   "+components/metrics/proto",
+  "+components/search_engines",
   "+components/url_fixer",
+  "+grit",
   "+net",
   "+url",
 ]
+
+specific_include_rules = {
+  "autocomplete_match.\h": [
+    # For content::PageTransition enum. crbug.com/372373
+    "!content/public/common/page_transition_types.h",
+  ],
+}

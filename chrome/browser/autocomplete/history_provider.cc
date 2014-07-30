@@ -8,7 +8,6 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "components/autocomplete/autocomplete_input.h"
+#include "components/autocomplete/autocomplete_match.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "url/url_util.h"
 

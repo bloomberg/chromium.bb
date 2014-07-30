@@ -145,7 +145,6 @@ static_library("browser") {
       "//components/autofill/content/browser",
       "//components/dom_distiller/content",
       "//components/keyed_service/content",
-      "//components/resources",
       "//components/storage_monitor",
       "//components/translate/content/browser",
       "//components/url_matcher",

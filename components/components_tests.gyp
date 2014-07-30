@@ -23,6 +23,7 @@
             # directory that are then linked into the final content_unittests.
             'auto_login_parser/auto_login_parser_unittest.cc',
             'autocomplete/autocomplete_input_unittest.cc',
+            'autocomplete/autocomplete_match_unittest.cc',
             'autofill/content/browser/content_autofill_driver_unittest.cc',
             'autofill/content/browser/request_autocomplete_manager_unittest.cc',
             'autofill/content/browser/wallet/full_wallet_unittest.cc',

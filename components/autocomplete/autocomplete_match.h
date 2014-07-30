@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_MATCH_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_MATCH_H_
+#ifndef COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_MATCH_H_
+#define COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_MATCH_H_
 
 #include <map>
 #include <string>
@@ -386,4 +386,4 @@ typedef AutocompleteMatch::ACMatchClassification ACMatchClassification;
 typedef std::vector<ACMatchClassification> ACMatchClassifications;
 typedef std::vector<AutocompleteMatch> ACMatches;
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_MATCH_H_
+#endif  // COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_MATCH_H_

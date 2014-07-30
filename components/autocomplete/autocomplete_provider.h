@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_PROVIDER_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_PROVIDER_H_
+#ifndef COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_PROVIDER_H_
+#define COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_PROVIDER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "components/autocomplete/autocomplete_match.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 
 class AutocompleteInput;
@@ -245,4 +245,4 @@ class AutocompleteProvider
   DISALLOW_COPY_AND_ASSIGN(AutocompleteProvider);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_PROVIDER_H_
+#endif  // COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_PROVIDER_H_

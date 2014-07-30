@@ -4,10 +4,10 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
-#include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/ui/omnibox/omnibox_controller.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/autocomplete/autocomplete_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class OmniboxControllerTest : public testing::Test {

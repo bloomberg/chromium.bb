@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
-#include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "components/autocomplete/autocomplete_match.h"
 
 class OmniboxPopupViewMac;
 

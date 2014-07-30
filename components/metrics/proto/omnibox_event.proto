@@ -171,7 +171,7 @@ message OmniboxEventProto {
 
     // What kind of result this is.
     // This corresponds to the AutocompleteMatch::Type enumeration in
-    // chrome/browser/autocomplete/autocomplete_match.h (except for Android
+    // components/autocomplete/autocomplete_match.h (except for Android
     // GSA result types).
     enum ResultType {
       UNKNOWN_RESULT_TYPE = 0;    // Unknown type (should not reach here)

@@ -12,7 +12,9 @@
         '../base/base.gyp:base',
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
+        'search_engines',
         'component_metrics_proto',
+        'components_resources.gyp:components_resources',
         'url_fixer',
       ],
       'include_dirs': [
@@ -22,8 +24,12 @@
         # Note: sources list duplicated in GN build.
         'autocomplete/autocomplete_input.cc',
         'autocomplete/autocomplete_input.h',
+        'autocomplete/autocomplete_match.cc',
+        'autocomplete/autocomplete_match.h',
         'autocomplete/autocomplete_match_type.cc',
         'autocomplete/autocomplete_match_type.h',
+        'autocomplete/autocomplete_provider.cc',
+        'autocomplete/autocomplete_provider.h',
         'autocomplete/autocomplete_scheme_classifier.h',
         'autocomplete/url_prefix.cc',
         'autocomplete/url_prefix.h',

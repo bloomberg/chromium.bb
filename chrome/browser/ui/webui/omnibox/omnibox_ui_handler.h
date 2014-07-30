@@ -10,10 +10,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
-#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/ui/webui/mojo_web_ui_handler.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox.mojom.h"
 #include "components/autocomplete/autocomplete_input.h"
+#include "components/autocomplete/autocomplete_match.h"
 
 class AutocompleteController;
 class Profile;

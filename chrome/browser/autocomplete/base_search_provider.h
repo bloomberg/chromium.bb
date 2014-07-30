@@ -16,9 +16,9 @@
 
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "components/autocomplete/autocomplete_input.h"
+#include "components/autocomplete/autocomplete_match.h"
+#include "components/autocomplete/autocomplete_provider.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
