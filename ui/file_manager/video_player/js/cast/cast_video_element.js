@@ -39,6 +39,13 @@ CastVideoElement.prototype = {
   __proto__: cr.EventTarget.prototype,
 
   /**
+   * Prepares for unloading this objects.
+   */
+  dispose: function() {
+    this.unloadMedia_();
+  },
+
+  /**
    * Returns a parent node. This must always be null.
    * @type {Element}
    */
@@ -146,6 +153,9 @@ CastVideoElement.prototype = {
   get src() {
     return null;
   },
+  set src(value) {
+    // Do nothing.
+  },
 
   /**
    * Plays the video.
@@ -202,8 +212,14 @@ CastVideoElement.prototype = {
    * @private
    */
   unloadMedia_: function() {
-    this.castMedia_.removeUpdateListener(this.onCastMediaUpdatedBound_);
-    this.castMedia_ = null;
+    if (this.castMedia_) {
+      this.castMedia_.stop(null,
+          function () {},
+          this.onCastCommandError_.wrap(this));
+
+      this.castMedia_.removeUpdateListener(this.onCastMediaUpdatedBound_);
+      this.castMedia_ = null;
+    }
     clearInterval(this.updateTimerId_);
   },
 
@@ -280,13 +296,13 @@ CastVideoElement.prototype = {
       this.currentMediaPlayerState_ = newState;
     }
     if (this.currentMediaCurrentTime_ !== media.getEstimatedTime()) {
-      this.dispatchEvent(new Event('timeupdate'));
       this.currentMediaCurrentTime_ = media.getEstimatedTime();
+      this.dispatchEvent(new Event('timeupdate'));
     }
 
     if (this.currentMediaDuration_ !== media.media.duration) {
-      this.dispatchEvent(new Event('durationchange'));
       this.currentMediaDuration_ = media.media.duration;
+      this.dispatchEvent(new Event('durationchange'));
     }
 
     // Media is being unloaded.

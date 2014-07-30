@@ -51,14 +51,28 @@ function FullWindowVideoControls(
   }.wrap(this));
 
   // TODO(mtomasz): Simplify. crbug.com/254318.
+  var clickInProgress = false;
   videoContainer.addEventListener('click', function(e) {
-    if (e.ctrlKey) {
-      this.toggleLoopedModeWithFeedback(true);
-      if (!this.isPlaying())
+    if (clickInProgress)
+      return;
+
+    clickInProgress = true;
+    var togglePlayState = function() {
+      clickInProgress = false;
+
+      if (e.ctrlKey) {
+        this.toggleLoopedModeWithFeedback(true);
+        if (!this.isPlaying())
+          this.togglePlayStateWithFeedback();
+      } else {
         this.togglePlayStateWithFeedback();
-    } else {
-      this.togglePlayStateWithFeedback();
-    }
+      }
+    }.wrap(this);
+
+    if (!this.media_)
+      player.reloadCurrentVideo(togglePlayState);
+    else
+      setTimeout(togglePlayState);
   }.wrap(this));
 
   this.inactivityWatcher_ = new MouseInactivityWatcher(playerContainer);
@@ -134,7 +148,10 @@ function VideoPlayer() {
   this.videos_ = null;
   this.currentPos_ = 0;
 
+  this.currentSession_ = null;
   this.currentCast_ = null;
+
+  this.loadQueue_ = new AsyncUtil.Queue();
 
   Object.seal(this);
 }
@@ -209,7 +226,7 @@ VideoPlayer.prototype.prepare = function(videos) {
     if (this.controls_.decodeErrorOccured &&
         // Ignore shortcut keys
         !e.ctrlKey && !e.altKey && !e.shiftKey && !e.metaKey) {
-      this.reloadCurrentVideo_(function() {
+      this.reloadCurrentVideo(function() {
         this.videoElement_.play();
       }.wrap(this));
       e.preventDefault();
@@ -249,100 +266,105 @@ function unload() {
  * @private
  */
 VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
-  this.unloadVideo();
+  this.unloadVideo(true);
 
-  document.title = video.title;
+  this.loadQueue_.run(function(callback) {
+    document.title = video.title;
 
-  document.querySelector('#title').innerText = video.title;
+    document.querySelector('#title').innerText = video.title;
 
-  var videoPlayerElement = document.querySelector('#video-player');
-  if (this.currentPos_ === (this.videos_.length - 1))
-    videoPlayerElement.setAttribute('last-video', true);
-  else
-    videoPlayerElement.removeAttribute('last-video');
+    var videoPlayerElement = document.querySelector('#video-player');
+    if (this.currentPos_ === (this.videos_.length - 1))
+      videoPlayerElement.setAttribute('last-video', true);
+    else
+      videoPlayerElement.removeAttribute('last-video');
 
-  if (this.currentPos_ === 0)
-    videoPlayerElement.setAttribute('first-video', true);
-  else
-    videoPlayerElement.removeAttribute('first-video');
+    if (this.currentPos_ === 0)
+      videoPlayerElement.setAttribute('first-video', true);
+    else
+      videoPlayerElement.removeAttribute('first-video');
 
-  // Re-enables ui and hides error message if already displayed.
-  document.querySelector('#video-player').removeAttribute('disabled');
-  document.querySelector('#error').removeAttribute('visible');
-  this.controls.inactivityWatcher.disabled = false;
-  this.controls.decodeErrorOccured = false;
+    // Re-enables ui and hides error message if already displayed.
+    document.querySelector('#video-player').removeAttribute('disabled');
+    document.querySelector('#error').removeAttribute('visible');
+    this.controls.inactivityWatcher.disabled = false;
+    this.controls.decodeErrorOccured = false;
 
-  var videoElementInitializePromise;
-  if (this.currentCast_) {
-    videoPlayerElement.setAttribute('casting', true);
+    var videoElementInitializePromise;
+    if (this.currentCast_) {
+      videoPlayerElement.setAttribute('casting', true);
 
-    document.querySelector('#cast-name-label').textContent =
-        loadTimeData.getString('VIDEO_PLAYER_PLAYING_ON');
-    document.querySelector('#cast-name').textContent =
-        this.currentCast_.friendlyName;
+      document.querySelector('#cast-name-label').textContent =
+          loadTimeData.getString('VIDEO_PLAYER_PLAYING_ON');
+      document.querySelector('#cast-name').textContent =
+          this.currentCast_.friendlyName;
 
-    var downloadUrlPromise = new Promise(function(fulfill, reject) {
-      chrome.fileBrowserPrivate.getDownloadUrl(video.url, fulfill);
-    });
+      var urlPromise = new Promise(function(fulfill, reject) {
+        chrome.fileBrowserPrivate.getDownloadUrl(video.url, fulfill);
+      });
 
-    var mimePromise = new Promise(function(fulfill, reject) {
-      chrome.fileBrowserPrivate.getDriveEntryProperties(
-          [video.entry.toURL()], fulfill);
-    });
+      var mimePromise = new Promise(function(fulfill, reject) {
+        chrome.fileBrowserPrivate.getDriveEntryProperties(
+            [video.entry.toURL()], fulfill);
+      });
 
-    videoElementInitializePromise =
-        Promise.all([downloadUrlPromise, mimePromise]).then(function(results) {
-          var downloadUrl = results[0];
-          var props = results[1];
-          var mime = '';
-          if (!props || props.length === 0 || !props[0].contentMimeType) {
-            // TODO(yoshiki): Adds a logic to guess the mime.
-          } else {
-            mime = props[0].contentMimeType;
-          }
+      videoElementInitializePromise =
+          Promise.all([urlPromise, mimePromise]).then(function(results) {
+            var downloadUrl = results[0];
+            var props = results[1];
+            var mime = '';
+            if (!props || props.length === 0 || !props[0].contentMimeType) {
+              // TODO(yoshiki): Adds a logic to guess the mime.
+            } else {
+              mime = props[0].contentMimeType;
+            }
 
-          return new Promise(function(fulfill, reject) {
-            chrome.cast.requestSession(
-                fulfill, reject, undefined, this.currentCast_.label);
-          }.bind(this)).then(function(session) {
-            var mediaInfo = new chrome.cast.media.MediaInfo(downloadUrl);
-            mediaInfo.contentType = mime;
-            this.videoElement_ = new CastVideoElement(mediaInfo, session);
-            this.controls.attachMedia(this.videoElement_);
+            return new Promise(function(fulfill, reject) {
+              chrome.cast.requestSession(
+                  fulfill, reject, undefined, this.currentCast_.label);
+            }.bind(this)).then(function(session) {
+              this.currentSession_ = session;
+              var mediaInfo = new chrome.cast.media.MediaInfo(downloadUrl);
+              mediaInfo.contentType = mime;
+              this.videoElement_ = new CastVideoElement(mediaInfo, session);
+              this.controls.attachMedia(this.videoElement_);
+            }.bind(this));
           }.bind(this));
+    } else {
+      videoPlayerElement.removeAttribute('casting');
+
+      this.videoElement_ = document.createElement('video');
+      document.querySelector('#video-container').appendChild(
+          this.videoElement_);
+
+      this.controls.attachMedia(this.videoElement_);
+      this.videoElement_.src = video.url;
+
+      videoElementInitializePromise = Promise.resolve();
+    }
+
+    videoElementInitializePromise.then(
+        function() {
+          this.videoElement_.load();
+
+          if (opt_callback) {
+            var handler = function(currentPos, event) {
+              if (currentPos === this.currentPos_)
+                opt_callback();
+              this.videoElement_.removeEventListener('loadedmetadata', handler);
+            }.wrap(this, this.currentPos_);
+
+            this.videoElement_.addEventListener('loadedmetadata', handler);
+          }
+          callback();
+        }.bind(this),
+        function videoElementInitializePromiseRejected(error) {
+          console.error('Failed to initialize the video element.',
+                        error.stack || error);
+          this.controls_.showErrorMessage('GALLERY_VIDEO_ERROR');
+          callback();
         }.bind(this));
-  } else {
-    videoPlayerElement.removeAttribute('casting');
-
-    this.videoElement_ = document.createElement('video');
-    document.querySelector('#video-container').appendChild(
-        this.videoElement_);
-
-    this.controls.attachMedia(this.videoElement_);
-    this.videoElement_.src = video.url;
-
-    videoElementInitializePromise = Promise.resolve();
-  }
-
-  videoElementInitializePromise.then(
-      function() {
-        this.videoElement_.load();
-
-        if (opt_callback) {
-          var handler = function(currentPos, event) {
-            if (currentPos === this.currentPos_)
-              opt_callback();
-            this.videoElement_.removeEventListener('loadedmetadata', handler);
-          }.wrap(this, this.currentPos_);
-
-          this.videoElement_.addEventListener('loadedmetadata', handler);
-        }
-      }.bind(this),
-      function videoElementInitializePromiseRejected(error) {
-        console.error('Failed to initialize the video element.',
-                      error.stack || error);
-        this.controls_.showErrorMessage('GALLERY_VIDEO_ERROR');
-      }.bind(this));
+  }.wrap(this));
 };
 
 /**
@@ -350,17 +372,33 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
  */
 VideoPlayer.prototype.playFirstVideo = function() {
   this.currentPos_ = 0;
-  this.reloadCurrentVideo_(this.onFirstVideoReady_.wrap(this));
+  this.reloadCurrentVideo(this.onFirstVideoReady_.wrap(this));
 };
 
 /**
  * Unloads the current video.
+ * @param {boolean=} opt_keepSession If true, keep using the current session.
+ *     Otherwise, discards the session.
  */
-VideoPlayer.prototype.unloadVideo = function() {
-  // Detach the previous video element, if exists.
-  if (this.videoElement_ && this.videoElement_.parentNode)
-    this.videoElement_.parentNode.removeChild(this.videoElement_);
-  this.videoElement_ = null;
+VideoPlayer.prototype.unloadVideo = function(opt_keepSession) {
+  this.loadQueue_.run(function(callback) {
+    if (this.videoElement_) {
+      // If the element has dispose method, call it (CastVideoElement has it).
+      if (this.videoElement_.dispose)
+        this.videoElement_.dispose();
+      // Detach the previous video element, if exists.
+      if (this.videoElement_.parentNode)
+        this.videoElement_.parentNode.removeChild(this.videoElement_);
+    }
+    this.videoElement_ = null;
+
+    if (!opt_keepSession && this.currentSession_) {
+      this.currentSession_.stop(callback, callback);
+      this.currentSession_ = null;
+    } else {
+      callback();
+    }
+  }.wrap(this));
 };
 
 /**
@@ -416,7 +454,7 @@ VideoPlayer.prototype.advance_ = function(direction) {
   var newPos = this.currentPos_ + (direction ? 1 : -1);
   if (0 <= newPos && newPos < this.videos_.length) {
     this.currentPos_ = newPos;
-    this.reloadCurrentVideo_(function() {
+    this.reloadCurrentVideo(function() {
       this.videoElement_.play();
     }.wrap(this));
   }
@@ -426,9 +464,8 @@ VideoPlayer.prototype.advance_ = function(direction) {
  * Reloads the current video.
  *
  * @param {function()=} opt_callback Completion callback.
- * @private
  */
-VideoPlayer.prototype.reloadCurrentVideo_ = function(opt_callback) {
+VideoPlayer.prototype.reloadCurrentVideo = function(opt_callback) {
   var currentVideo = this.videos_[this.currentPos_];
   this.loadVideo_(currentVideo, opt_callback);
 };
@@ -443,7 +480,7 @@ VideoPlayer.prototype.onCastSelected_ = function(cast) {
     return;
 
   this.currentCast_ = cast || null;
-  this.reloadCurrentVideo_();
+  this.reloadCurrentVideo();
 };
 
 /**
@@ -461,7 +498,7 @@ VideoPlayer.prototype.setCastList = function(casts) {
     button.classList.add('hidden');
     if (!this.currentCast_) {
       this.currentCast_ = null;
-      this.reloadCurrentVideo_();
+      this.reloadCurrentVideo();
     }
     return;
   }

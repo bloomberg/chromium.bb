@@ -27,6 +27,7 @@
 (function() {
 'use strict';
 
+//<include src="../../file_manager/common/js/async_util.js"/>
 //<include src="../../file_manager/common/js/util.js"/>
 //<include src="../../file_manager/foreground/js/media/media_controls.js"/>
 //<include src="../../file_manager/foreground/js/media/mouse_inactivity_watcher.js"/>
