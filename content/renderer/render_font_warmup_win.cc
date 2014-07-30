@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/win/iat_patch_function.h"
 #include "base/win/windows_version.h"
+#include "content/renderer/renderer_font_platform_win.h"
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
@@ -126,7 +127,6 @@ void PatchServiceManagerCalls() {
   DCHECK(patched == 0);
 }
 
-
 // Windows-only DirectWrite support. These warm up the DirectWrite paths
 // before sandbox lock down to allow Skia access to the Font Manager service.
 void CreateDirectWriteFactory(IDWriteFactory** factory) {
@@ -158,6 +158,25 @@ void CreateDirectWriteFactory(IDWriteFactory** factory) {
                                  reinterpret_cast<IUnknown**>(factory))));
 }
 
+HRESULT STDMETHODCALLTYPE StubFontCollection(IDWriteFactory* factory,
+                                             IDWriteFontCollection** col,
+                                             BOOL checkUpdates) {
+  // We always return pre-created font collection from here.
+  IDWriteFontCollection* custom_collection = GetCustomFontCollection(factory);
+  DCHECK(custom_collection != NULL);
+  *col = custom_collection;
+  return S_OK;
+}
+
+void PatchDWriteFactory(IDWriteFactory* factory) {
+  const unsigned int kGetSystemFontCollectionVTableIndex = 3;
+
+  PROC* vtable = *reinterpret_cast<PROC**>(factory);
+  PROC* function_ptr = &vtable[kGetSystemFontCollectionVTableIndex];
+  void* stub_function = &StubFontCollection;
+  base::win::ModifyCode(function_ptr, &stub_function, sizeof(PROC));
+}
+
 }  // namespace
 
 void DoPreSandboxWarmupForTypeface(SkTypeface* typeface) {
@@ -171,6 +190,11 @@ SkFontMgr* GetPreSandboxWarmupFontMgr() {
   if (!g_warmup_fontmgr) {
     IDWriteFactory* factory;
     CreateDirectWriteFactory(&factory);
+
+    IDWriteFontCollection* collection = GetCustomFontCollection(factory);
+
+    PatchDWriteFactory(factory);
+
     blink::WebFontRendering::setDirectWriteFactory(factory);
     g_warmup_fontmgr = SkFontMgr_New_DirectWrite(factory);
   }

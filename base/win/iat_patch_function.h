@@ -59,6 +59,7 @@ class BASE_EXPORT IATPatchFunction {
 
   void* original_function() const;
 
+
  private:
   HMODULE module_handle_;
   void* intercept_function_;
@@ -67,6 +68,8 @@ class BASE_EXPORT IATPatchFunction {
 
   DISALLOW_COPY_AND_ASSIGN(IATPatchFunction);
 };
+
+BASE_EXPORT DWORD ModifyCode(void* old_code, void* new_code, int length);
 
 }  // namespace win
 }  // namespace base
