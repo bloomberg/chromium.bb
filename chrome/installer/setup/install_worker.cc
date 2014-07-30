@@ -20,7 +20,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
@@ -819,16 +818,13 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
 // Create Version key for a product (if not already present) and sets the new
 // product version as the last step.
 void AddVersionKeyWorkItems(HKEY root,
-                            BrowserDistribution* dist,
+                            const base::string16& version_key,
+                            const base::string16& product_name,
                             const Version& new_version,
                             bool add_language_identifier,
                             WorkItemList* list) {
-  // Create Version key for each distribution (if not already present) and set
-  // the new product version as the last step.
-  base::string16 version_key(dist->GetVersionKey());
   list->AddCreateRegKeyWorkItem(root, version_key, KEY_WOW64_32KEY);
 
-  base::string16 product_name(dist->GetDisplayName());
   list->AddSetRegValueWorkItem(root,
                                version_key,
                                KEY_WOW64_32KEY,
@@ -1306,8 +1302,13 @@ void AddInstallWorkItems(const InstallationState& original_state,
     AddUninstallShortcutWorkItems(installer_state, setup_path, new_version,
                                   product, install_list);
 
-    AddVersionKeyWorkItems(root, product.distribution(), new_version,
-                           add_language_identifier, install_list);
+    BrowserDistribution* dist = product.distribution();
+    AddVersionKeyWorkItems(root,
+                           dist->GetVersionKey(),
+                           dist->GetDisplayName(),
+                           new_version,
+                           add_language_identifier,
+                           install_list);
 
     AddDelegateExecuteWorkItems(installer_state, target_path, new_version,
                                 product, install_list);
@@ -1327,8 +1328,12 @@ void AddInstallWorkItems(const InstallationState& original_state,
     BrowserDistribution* shadow_app_launcher_dist =
         BrowserDistribution::GetSpecificDistribution(
             BrowserDistribution::CHROME_APP_HOST);
-    AddVersionKeyWorkItems(root, shadow_app_launcher_dist, new_version,
-                           add_language_identifier, install_list);
+    AddVersionKeyWorkItems(root,
+                           shadow_app_launcher_dist->GetVersionKey(),
+                           shadow_app_launcher_dist->GetDisplayName(),
+                           new_version,
+                           add_language_identifier,
+                           install_list);
   }
 
   // Add any remaining work items that involve special settings for

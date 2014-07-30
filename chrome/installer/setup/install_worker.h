@@ -12,6 +12,8 @@
 
 #include <vector>
 
+#include "base/strings/string16.h"
+
 class BrowserDistribution;
 class WorkItemList;
 
@@ -40,7 +42,8 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
 // product version as the last step.  If |add_language_identifier| is true, the
 // "lang" value is also set according to the currently selected translation.
 void AddVersionKeyWorkItems(HKEY root,
-                            BrowserDistribution* dist,
+                            const base::string16& version_key,
+                            const base::string16& product_name,
                             const base::Version& new_version,
                             bool add_language_identifier,
                             WorkItemList* list);
