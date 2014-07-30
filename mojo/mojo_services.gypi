@@ -195,6 +195,43 @@
       ],
     },
     {
+      # GN version: //mojo/public/gles2
+      'target_name': 'mojo_gles2',
+      'type': 'shared_library',
+      'defines': [
+        'MOJO_GLES2_IMPLEMENTATION',
+        'GLES2_USE_MOJO',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../third_party/khronos/khronos.gyp:khronos_headers'
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '..',
+        ],
+        'defines': [
+          'GLES2_USE_MOJO',
+        ],
+      },
+      'sources': [
+        'public/c/gles2/gles2.h',
+        'public/c/gles2/gles2_export.h',
+        'public/gles2/gles2_private.cc',
+        'public/gles2/gles2_private.h',
+      ],
+      'conditions': [
+        ['OS=="mac"', {
+          'xcode_settings': {
+            # Make it a run-path dependent library.
+            'DYLIB_INSTALL_NAME_BASE': '@loader_path',
+          },
+        }],
+      ],
+    },
+    {
       # GN version: //mojo/services/gles2:interfaces (for files generated from
       # the mojom file)
       # GN version: //mojo/services/gles2:bindings
@@ -673,12 +710,12 @@
             'mojo_environment_chromium',
             'mojo_geometry_bindings',
             'mojo_geometry_lib',
+            'mojo_gles2',
             'mojo_input_events_bindings',
             'mojo_input_events_lib',
             'mojo_native_viewport_bindings',
             'mojo_view_manager_bindings',
             'mojo_view_manager_common',
-            '<(mojo_gles2_for_component)',
             '<(mojo_system_for_component)',
           ],
           'sources': [
