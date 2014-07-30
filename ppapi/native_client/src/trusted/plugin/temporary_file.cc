@@ -25,10 +25,8 @@ TempFile::TempFile(Plugin* plugin, PP_FileHandle handle)
 TempFile::~TempFile() { }
 
 int32_t TempFile::Open(bool writeable) {
-  if (internal_handle_ == PP_kInvalidFileHandle) {
-    PLUGIN_PRINTF(("TempFile::Open failed w/ PP_kInvalidFileHandle\n"));
+  if (internal_handle_ == PP_kInvalidFileHandle)
     return PP_ERROR_FAILED;
-  }
 
 #if NACL_WINDOWS
   HANDLE handle = internal_handle_;
@@ -38,9 +36,10 @@ int32_t TempFile::Open(bool writeable) {
   int32_t posix_desc = _open_osfhandle(reinterpret_cast<intptr_t>(handle),
                                        rdwr_flag | _O_BINARY
                                        | _O_TEMPORARY | _O_SHORT_LIVED );
+
+  // Close the Windows HANDLE if it can't be converted.
   if (posix_desc == -1) {
     PLUGIN_PRINTF(("TempFile::Open failed to convert HANDLE to posix\n"));
-    // Close the Windows HANDLE if it can't be converted.
     CloseHandle(handle);
   }
   int32_t fd = posix_desc;
@@ -48,17 +47,13 @@ int32_t TempFile::Open(bool writeable) {
   int32_t fd = internal_handle_;
 #endif
 
-  if (fd < 0) {
-    PLUGIN_PRINTF(("TempFile::Open failed\n"));
+  if (fd < 0)
     return PP_ERROR_FAILED;
-  }
 
   // dup the fd to make allow making separate read and write wrappers.
   int32_t read_fd = DUP(fd);
-  if (read_fd == NACL_NO_FILE_DESC) {
-    PLUGIN_PRINTF(("TempFile::Open DUP failed\n"));
+  if (read_fd == NACL_NO_FILE_DESC)
     return PP_ERROR_FAILED;
-  }
 
   if (writeable) {
     write_wrapper_.reset(
@@ -71,7 +66,6 @@ int32_t TempFile::Open(bool writeable) {
 }
 
 bool TempFile::Reset() {
-  PLUGIN_PRINTF(("TempFile::Reset\n"));
   // Use the read_wrapper_ to reset the file pos.  The write_wrapper_ is also
   // backed by the same file, so it should also reset.
   CHECK(read_wrapper_.get() != NULL);

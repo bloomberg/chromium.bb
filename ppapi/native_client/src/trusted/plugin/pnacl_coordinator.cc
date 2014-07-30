@@ -133,8 +133,6 @@ PnaclCoordinator::PnaclCoordinator(
     pexe_size_(0),
     pexe_bytes_compiled_(0),
     expected_pexe_size_(-1) {
-  PLUGIN_PRINTF(("PnaclCoordinator::PnaclCoordinator (this=%p, plugin=%p)\n",
-                 static_cast<void*>(this), static_cast<void*>(plugin)));
   callback_factory_.Initialize(this);
 }
 
@@ -203,9 +201,6 @@ void PnaclCoordinator::ExitWithError() {
         plugin_->pp_instance(),
         PP_FALSE, 0, 0, 0);
     translate_notify_callback_.Run(PP_ERROR_FAILED);
-  } else {
-    PLUGIN_PRINTF(("PnaclCoordinator::ExitWithError an earlier error was "
-                   "already reported -- Skipping.\n"));
   }
 }
 
@@ -234,11 +229,8 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
   }
   struct nacl_abi_stat stbuf;
   struct NaClDesc* desc = temp_nexe_file_->read_wrapper()->desc();
-  int stat_ret;
-  if (0 != (stat_ret = (*((struct NaClDescVtbl const *) desc->base.vtbl)->
-                        Fstat)(desc, &stbuf))) {
-    PLUGIN_PRINTF(("PnaclCoordinator::TranslateFinished can't stat nexe.\n"));
-  } else {
+  if (0 == (*((struct NaClDescVtbl const *)desc->base.vtbl)->Fstat)(desc,
+                                                                    &stbuf)) {
     size_t nexe_size = stbuf.nacl_abi_st_size;
     HistogramSizeKB(plugin_->uma_interface(),
                     "NaCl.Perf.Size.PNaClTranslatedNexe",
@@ -282,7 +274,7 @@ void PnaclCoordinator::NexeReadDidOpen(int32_t pp_error) {
     return;
   }
 
-  translate_notify_callback_.Run(pp_error);
+  translate_notify_callback_.Run(PP_OK);
 }
 
 void PnaclCoordinator::OpenBitcodeStream() {
