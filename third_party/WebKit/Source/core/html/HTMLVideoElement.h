@@ -28,6 +28,7 @@
 
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/canvas/CanvasImageSource.h"
+#include "platform/graphics/GraphicsTypes3D.h"
 
 namespace blink {
 class WebGraphicsContext3D;
@@ -37,6 +38,13 @@ namespace blink {
 
 class ExceptionState;
 class HTMLImageLoader;
+class GraphicsContext;
+
+// GL types as defined in OpenGL ES 2.0 header file gl2.h from khronos.org.
+// That header cannot be included directly due to a conflict with NPAPI headers.
+// See crbug.com/328085.
+typedef unsigned GLenum;
+typedef int GC3Dint;
 
 class HTMLVideoElement FINAL : public HTMLMediaElement, public CanvasImageSource {
 public:
@@ -61,7 +69,7 @@ public:
 
     // Used by WebGL to do GPU-GPU textures copy if possible.
     // See more details at MediaPlayer::copyVideoTextureToPlatformTexture() defined in Source/WebCore/platform/graphics/MediaPlayer.h.
-    bool copyVideoTextureToPlatformTexture(blink::WebGraphicsContext3D*, Platform3DObject texture, GC3Dint level, GC3Denum type, GC3Denum internalFormat, bool premultiplyAlpha, bool flipY);
+    bool copyVideoTextureToPlatformTexture(WebGraphicsContext3D*, Platform3DObject texture, GC3Dint level, GLenum internalFormat, GLenum type, bool premultiplyAlpha, bool flipY);
 
     bool shouldDisplayPosterImage() const { return displayMode() == Poster || displayMode() == PosterWaitingForVideo; }
 

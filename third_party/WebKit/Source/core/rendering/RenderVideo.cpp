@@ -170,7 +170,7 @@ void RenderVideo::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
     if (displayingPoster)
         paintIntoRect(context, rect);
     else if ((document().view() && document().view()->paintBehavior() & PaintBehaviorFlattenCompositingLayers) || !acceleratedRenderingInUse())
-        mediaPlayer->paint(context, pixelSnappedIntRect(rect));
+        videoElement()->paintCurrentFrameInContext(context, pixelSnappedIntRect(rect));
 
     if (clip)
         context->restore();

@@ -26,14 +26,11 @@
 #ifndef MediaPlayer_h
 #define MediaPlayer_h
 
-#include "platform/PlatformExport.h"
-#include "platform/graphics/GraphicsTypes3D.h"
 #include "public/platform/WebMediaPlayer.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
-class WebGraphicsContext3D;
 class WebContentDecryptionModule;
 class WebInbandTextTrack;
 class WebLayer;
@@ -43,17 +40,9 @@ class WebMediaSource;
 namespace blink {
 
 class AudioSourceProvider;
-class GraphicsContext;
-class IntRect;
 class KURL;
 class MediaPlayer;
 class TimeRanges;
-
-// GL types as defined in OpenGL ES 2.0 header file gl2.h from khronos.org.
-// That header cannot be included directly due to a conflict with NPAPI headers.
-// See crbug.com/328085.
-typedef unsigned GC3Denum;
-typedef int GC3Dint;
 
 class MediaPlayerClient {
 public:
@@ -111,9 +100,6 @@ public:
     virtual ~MediaPlayer() { }
 
     virtual void load(blink::WebMediaPlayer::LoadType, const String& url, blink::WebMediaPlayer::CORSMode) = 0;
-
-    virtual void paint(GraphicsContext*, const IntRect&) = 0;
-    virtual bool copyVideoTextureToPlatformTexture(blink::WebGraphicsContext3D*, Platform3DObject, GC3Dint, GC3Denum, GC3Denum, bool, bool) = 0;
 
     enum Preload { None, MetaData, Auto };
     virtual void setPreload(Preload) = 0;

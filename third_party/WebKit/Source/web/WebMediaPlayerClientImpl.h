@@ -35,12 +35,6 @@
 #include "platform/graphics/media/MediaPlayer.h"
 #include "public/platform/WebAudioSourceProviderClient.h"
 #include "public/platform/WebMediaPlayerClient.h"
-#include "third_party/khronos/GLES2/gl2.h"
-#if OS(ANDROID)
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
-#include "third_party/skia/include/gpu/GrTexture.h"
-#endif
 #include "platform/weborigin/KURL.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -56,7 +50,6 @@ namespace blink {
 class WebAudioSourceProvider;
 class WebContentDecryptionModule;
 class WebMediaPlayer;
-class WebGraphicsContext3D;
 
 // This class serves as a bridge between blink::MediaPlayer and
 // blink::WebMediaPlayer.
@@ -98,8 +91,6 @@ public:
     // MediaPlayer methods:
     virtual WebMediaPlayer* webMediaPlayer() const OVERRIDE;
     virtual void load(WebMediaPlayer::LoadType, const WTF::String& url, WebMediaPlayer::CORSMode) OVERRIDE;
-    virtual void paint(blink::GraphicsContext*, const blink::IntRect&) OVERRIDE;
-    virtual bool copyVideoTextureToPlatformTexture(WebGraphicsContext3D*, Platform3DObject texture, GLint level, GLenum type, GLenum internalFormat, bool premultiplyAlpha, bool flipY) OVERRIDE;
     virtual void setPreload(blink::MediaPlayer::Preload) OVERRIDE;
 
 #if ENABLE(WEB_AUDIO)
@@ -114,15 +105,6 @@ private:
     blink::MediaPlayerClient* m_client;
     OwnPtr<WebMediaPlayer> m_webMediaPlayer;
     blink::MediaPlayer::Preload m_preload;
-
-#if OS(ANDROID)
-    // FIXME: This path "only works" on Android. It is a workaround for the problem that Skia could not handle Android's GL_TEXTURE_EXTERNAL_OES
-    // texture internally. It should be removed and replaced by the normal paint path.
-    // https://code.google.com/p/skia/issues/detail?id=1189
-    void paintOnAndroid(blink::GraphicsContext*, const blink::IntRect&, uint8_t alpha);
-    SkBitmap m_bitmap;
-    bool m_usePaintOnAndroid;
-#endif
 
 #if ENABLE(WEB_AUDIO)
     // AudioClientImpl wraps an AudioSourceProviderClient.

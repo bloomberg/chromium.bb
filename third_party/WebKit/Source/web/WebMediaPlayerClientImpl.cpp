@@ -216,43 +216,9 @@ void WebMediaPlayerClientImpl::load(WebMediaPlayer::LoadType loadType, const WTF
 
     m_webMediaPlayer->setPoster(poster);
 
-#if OS(ANDROID)
-    m_usePaintOnAndroid = (loadType != WebMediaPlayer::LoadTypeMediaStream);
-#endif
-
     // Tell WebMediaPlayer about any connected CDM (may be null).
     m_webMediaPlayer->setContentDecryptionModule(HTMLMediaElementEncryptedMedia::contentDecryptionModule(mediaElement()));
     m_webMediaPlayer->load(loadType, kurl, corsMode);
-}
-
-
-void WebMediaPlayerClientImpl::paint(GraphicsContext* context, const IntRect& rect)
-{
-    // Normally GraphicsContext operations do nothing when painting is disabled.
-    // Since we're accessing platformContext() directly we have to manually
-    // check.
-    if (m_webMediaPlayer && !context->paintingDisabled()) {
-        // On Android, video frame is emitted as GL_TEXTURE_EXTERNAL_OES texture. We use a different path to
-        // paint the video frame into the context.
-#if OS(ANDROID)
-        if (m_usePaintOnAndroid) {
-            paintOnAndroid(context, rect, context->getNormalizedAlpha());
-            return;
-        }
-#endif
-        WebCanvas* canvas = context->canvas();
-        m_webMediaPlayer->paint(canvas, rect, context->getNormalizedAlpha());
-    }
-}
-
-bool WebMediaPlayerClientImpl::copyVideoTextureToPlatformTexture(WebGraphicsContext3D* context, Platform3DObject texture, GLint level, GLenum type, GLenum internalFormat, bool premultiplyAlpha, bool flipY)
-{
-    if (!context || !m_webMediaPlayer)
-        return false;
-    if (!Extensions3DUtil::canUseCopyTextureCHROMIUM(internalFormat, type, level) || !context->makeContextCurrent())
-        return false;
-
-    return m_webMediaPlayer->copyVideoTextureToPlatformTexture(context, texture, level, internalFormat, type, premultiplyAlpha, flipY);
 }
 
 void WebMediaPlayerClientImpl::setPreload(MediaPlayer::Preload preload)
@@ -275,49 +241,9 @@ PassOwnPtr<MediaPlayer> WebMediaPlayerClientImpl::create(MediaPlayerClient* clie
     return adoptPtr(new WebMediaPlayerClientImpl(client));
 }
 
-#if OS(ANDROID)
-void WebMediaPlayerClientImpl::paintOnAndroid(blink::GraphicsContext* context, const IntRect& rect, uint8_t alpha)
-{
-    OwnPtr<blink::WebGraphicsContext3DProvider> provider = adoptPtr(blink::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
-    if (!provider)
-        return;
-    WebGraphicsContext3D* context3D = provider->context3d();
-    if (!context || !context3D || !m_webMediaPlayer || context->paintingDisabled())
-        return;
-
-    if (!context3D->makeContextCurrent())
-        return;
-
-    // Copy video texture into a RGBA texture based bitmap first as video texture on Android is GL_TEXTURE_EXTERNAL_OES
-    // which is not supported by Skia yet. The bitmap's size needs to be the same as the video and use naturalSize() here.
-    // Check if we could reuse existing texture based bitmap.
-    // Otherwise, release existing texture based bitmap and allocate a new one based on video size.
-    if (!ensureTextureBackedSkBitmap(provider->grContext(), m_bitmap, m_webMediaPlayer->naturalSize(), kTopLeft_GrSurfaceOrigin, kSkia8888_GrPixelConfig))
-        return;
-
-    // Copy video texture to bitmap texture.
-    WebCanvas* canvas = context->canvas();
-    unsigned textureId = static_cast<unsigned>((m_bitmap.getTexture())->getTextureHandle());
-    if (!m_webMediaPlayer->copyVideoTextureToPlatformTexture(context3D, textureId, 0, GL_RGBA, GL_UNSIGNED_BYTE, true, false))
-        return;
-
-    // Draw the texture based bitmap onto the Canvas. If the canvas is hardware based, this will do a GPU-GPU texture copy. If the canvas is software based,
-    // the texture based bitmap will be readbacked to system memory then draw onto the canvas.
-    SkRect dest;
-    dest.set(rect.x(), rect.y(), rect.x() + rect.width(), rect.y() + rect.height());
-    SkPaint paint;
-    paint.setAlpha(alpha);
-    // It is not necessary to pass the dest into the drawBitmap call since all the context have been set up before calling paintCurrentFrameInContext.
-    canvas->drawBitmapRect(m_bitmap, NULL, dest, &paint);
-}
-#endif
-
 WebMediaPlayerClientImpl::WebMediaPlayerClientImpl(MediaPlayerClient* client)
     : m_client(client)
     , m_preload(MediaPlayer::Auto)
-#if OS(ANDROID)
-    , m_usePaintOnAndroid(false)
-#endif
 {
     ASSERT(m_client);
 }

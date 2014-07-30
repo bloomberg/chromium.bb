@@ -40,6 +40,10 @@
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderVideo.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/gpu/Extensions3DUtil.h"
+#include "public/platform/WebCanvas.h"
+#include "public/platform/WebGraphicsContext3D.h"
 
 namespace blink {
 
@@ -197,17 +201,23 @@ void HTMLVideoElement::updateDisplayState()
 
 void HTMLVideoElement::paintCurrentFrameInContext(GraphicsContext* context, const IntRect& destRect) const
 {
-    MediaPlayer* player = HTMLMediaElement::player();
-    if (!player)
+    if (!webMediaPlayer())
         return;
-    player->paint(context, destRect);
+    if (!context->paintingDisabled()) {
+        WebCanvas* canvas = context->canvas();
+        webMediaPlayer()->paint(canvas, destRect, context->getNormalizedAlpha());
+    }
 }
 
-bool HTMLVideoElement::copyVideoTextureToPlatformTexture(blink::WebGraphicsContext3D* context, Platform3DObject texture, GLint level, GLenum type, GLenum internalFormat, bool premultiplyAlpha, bool flipY)
+bool HTMLVideoElement::copyVideoTextureToPlatformTexture(WebGraphicsContext3D* context, Platform3DObject texture, GLint level, GLenum internalFormat, GLenum type, bool premultiplyAlpha, bool flipY)
 {
-    if (!player())
+    if (!webMediaPlayer())
         return false;
-    return player()->copyVideoTextureToPlatformTexture(context, texture, level, type, internalFormat, premultiplyAlpha, flipY);
+
+    if (!Extensions3DUtil::canUseCopyTextureCHROMIUM(internalFormat, type, level) || !context->makeContextCurrent())
+        return false;
+
+    return webMediaPlayer()->copyVideoTextureToPlatformTexture(context, texture, level, internalFormat, type, premultiplyAlpha, flipY);
 }
 
 bool HTMLVideoElement::hasAvailableVideoFrame() const
