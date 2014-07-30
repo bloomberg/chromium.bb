@@ -227,6 +227,7 @@ void HidServiceWin::PlatformAddDevice(const std::string& device_path) {
             int report_id = button_caps[i].ReportID;
             if (report_id != 0) {
               collection_info.report_ids.insert(report_id);
+              device_info.has_report_id = true;
             }
           }
         }
