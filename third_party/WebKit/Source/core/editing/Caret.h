@@ -48,8 +48,10 @@ protected:
 
     void invalidateCaretRect(Node*, bool caretRectChanged = false);
     void clearCaretRect();
+    // Creating VisiblePosition causes synchronous layout so we should use the
+    // PositionWithAffinity version if possible.
+    // A position in HTMLTextFromControlElement is a typical example.
     bool updateCaretRect(Document*, const PositionWithAffinity& caretPosition);
-    // Simply calls above updateCaretRect using deepEquivalent() and affinity().
     bool updateCaretRect(Document*, const VisiblePosition& caretPosition);
     IntRect absoluteBoundsForLocalRect(Node*, const LayoutRect&) const;
     bool shouldRepaintCaret(const RenderView*, bool isContentEditable) const;
