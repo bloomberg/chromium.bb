@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "components/component_updater/component_updater_paths.h"
-#include "components/translate/content/browser/data_file_browser_cld_data_provider.h"
+#include "components/translate/content/browser/browser_cld_data_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/ssl/ssl_config_service.h"
 
@@ -25,7 +25,11 @@ namespace {
 // If you change this, also update component_cld_data_harness.cc
 // and cld_component_installer_unittest.cc accordingly!
 const base::FilePath::CharType kCldDataFileName[] =
-    FILE_PATH_LITERAL("cld2_data.bin");
+  FILE_PATH_LITERAL("cld2_data.bin");
+
+// Tracks the last value seen in SetLatestCldDataFile.
+base::LazyInstance<base::FilePath>::Leaky g_latest_cld_data_file =
+  LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
 namespace component_updater {
@@ -116,7 +120,12 @@ void RegisterCldComponent(ComponentUpdateService* cus) {
 void CldComponentInstallerTraits::SetLatestCldDataFile(
     const base::FilePath& path) {
   VLOG(1) << "Setting CLD data file location: " << path.value();
-  translate::DataFileBrowserCldDataProvider::SetCldDataFilePath(path);
+  g_latest_cld_data_file.Get() = path;
+  translate::SetCldDataFilePath(path);
+}
+
+base::FilePath CldComponentInstallerTraits::GetLatestCldDataFile() {
+  return g_latest_cld_data_file.Get();
 }
 
 }  // namespace component_updater

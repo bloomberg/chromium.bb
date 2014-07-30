@@ -23,19 +23,6 @@ class DataFileBrowserCldDataProvider : public BrowserCldDataProvider {
   virtual void OnCldDataRequest() OVERRIDE;
   virtual void SendCldDataResponse() OVERRIDE;
 
-  // Sets the data file that this data provider will use to fulfill requests.
-  // This method does nothing if the specified path is equal to the path that
-  // is already configured. Otherwise, the specified path is cached and
-  // subsequent requests for data will attempt to load CLD data from the file
-  // at the specified path.
-  // This method is threadsafe.
-  static void SetCldDataFilePath(const base::FilePath& filePath);
-
-  // Returns the path most recently set by SetDataFilePath. The initial value
-  // prior to any such call is the empty path.
-  // This method is threadsafe.
-  static base::FilePath GetCldDataFilePath();
-
  private:
   void SendCldDataResponseInternal(const base::File*,
                                    const uint64,

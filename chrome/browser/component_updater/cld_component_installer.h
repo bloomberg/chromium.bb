@@ -60,6 +60,9 @@ class CldComponentInstallerTraits : public ComponentInstallerTraits {
   // This method is threadsafe.
   static void SetLatestCldDataFile(const base::FilePath& path);
 
+  // Returns the file path that was most recently set in SetLatestCldDataFile.
+  static base::FilePath GetLatestCldDataFile();
+
   DISALLOW_COPY_AND_ASSIGN(CldComponentInstallerTraits);
 };
 

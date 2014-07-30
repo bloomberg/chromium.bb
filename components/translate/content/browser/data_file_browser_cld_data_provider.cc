@@ -44,8 +44,7 @@ BrowserCldDataProvider* CreateBrowserCldDataProviderFor(
   return new DataFileBrowserCldDataProvider(web_contents);
 }
 
-void DataFileBrowserCldDataProvider::SetCldDataFilePath(
-    const base::FilePath& path) {
+void SetCldDataFilePath(const base::FilePath& path) {
   VLOG(1) << "Setting CLD data file path to: " << path.value();
   base::AutoLock lock(g_file_lock_.Get());
   if (g_cached_filepath == path)
@@ -57,7 +56,7 @@ void DataFileBrowserCldDataProvider::SetCldDataFilePath(
   g_cached_data_offset = -1;
 }
 
-base::FilePath DataFileBrowserCldDataProvider::GetCldDataFilePath() {
+base::FilePath GetCldDataFilePath() {
   base::AutoLock lock(g_file_lock_.Get());
   return g_cached_filepath;
 }

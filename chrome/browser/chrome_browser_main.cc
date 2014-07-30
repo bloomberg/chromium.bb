@@ -42,6 +42,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
+#include "chrome/browser/component_updater/cld_component_installer.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/component_updater/flash_component_installer.h"
 #include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
@@ -180,10 +181,6 @@
 
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/mac/keystone_glue.h"
-#endif
-
-#if defined(CLD_DATA_FROM_COMPONENT)
-#include "chrome/browser/component_updater/cld_component_installer.h"
 #endif
 
 #if !defined(DISABLE_NACL)

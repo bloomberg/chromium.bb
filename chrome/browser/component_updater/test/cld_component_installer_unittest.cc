@@ -14,14 +14,17 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/component_updater/cld_component_installer.h"
-#include "components/translate/content/browser/data_file_browser_cld_data_provider.h"
+#include "components/translate/content/browser/browser_cld_data_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+using component_updater::CldComponentInstallerTraits;
 
 namespace {
 // This has to match what's in cld_component_installer.cc.
 const base::FilePath::CharType kTestCldDataFileName[] =
     FILE_PATH_LITERAL("cld2_data.bin");
+
 }  // namespace
 
 namespace component_updater {
@@ -41,16 +44,15 @@ class CldComponentInstallerTest : public PlatformTest {
 
     // The "latest CLD data file" is a static piece of information, and thus
     // for correctness we empty it before each test.
-    component_updater::CldComponentInstallerTraits::SetLatestCldDataFile(
-        base::FilePath());
+    CldComponentInstallerTraits::SetLatestCldDataFile(base::FilePath());
     base::FilePath path_now =
-        translate::DataFileBrowserCldDataProvider::GetCldDataFilePath();
+        CldComponentInstallerTraits::GetLatestCldDataFile();
     ASSERT_TRUE(path_now.empty());
   }
 
  protected:
   base::ScopedTempDir temp_dir_;
-  component_updater::CldComponentInstallerTraits traits_;
+  CldComponentInstallerTraits traits_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CldComponentInstallerTest);
@@ -58,10 +60,9 @@ class CldComponentInstallerTest : public PlatformTest {
 
 TEST_F(CldComponentInstallerTest, SetLatestCldDataFile) {
   const base::FilePath expected(FILE_PATH_LITERAL("test/foo.test"));
-  component_updater::CldComponentInstallerTraits::SetLatestCldDataFile(
-      expected);
+  CldComponentInstallerTraits::SetLatestCldDataFile(expected);
   base::FilePath result =
-      translate::DataFileBrowserCldDataProvider::GetCldDataFilePath();
+      CldComponentInstallerTraits::GetLatestCldDataFile();
   ASSERT_EQ(expected, result);
 }
 
@@ -115,7 +116,7 @@ TEST_F(CldComponentInstallerTest, ComponentReady) {
   const base::Version version("1.2.3.4");
   traits_.ComponentReady(version, install_dir, manifest.Pass());
   base::FilePath result =
-      translate::DataFileBrowserCldDataProvider::GetCldDataFilePath();
+      CldComponentInstallerTraits::GetLatestCldDataFile();
   ASSERT_TRUE(StartsWith(result.AsUTF16Unsafe(),
                          install_dir.AsUTF16Unsafe(),
                          true));

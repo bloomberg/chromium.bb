@@ -72,7 +72,7 @@ void InitCldFilePath() {
   g_cld_file_path_initialized_ = true;
   path = path.Append(kCldDataFileName);
   VLOG(1) << "Setting CLD data file path: " << path.value();
-  translate::DataFileBrowserCldDataProvider::SetCldDataFilePath(path);
+  translate::SetCldDataFilePath(path);
 }
 #endif
 

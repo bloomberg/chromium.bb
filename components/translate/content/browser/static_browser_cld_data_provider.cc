@@ -20,6 +20,19 @@ BrowserCldDataProvider* CreateBrowserCldDataProviderFor(
   return new StaticBrowserCldDataProvider();
 }
 
+void SetCldDataFilePath(const base::FilePath& path) {
+  LOG(WARNING) << "Not supported: SetCldDataFilePath";
+  return;
+}
+
+base::FilePath GetCldDataFilePath() {
+  return base::FilePath();  // empty path
+}
+
+void ConfigureBrowserCldDataProvider(const void* config) {
+  // No-op: data is statically linked
+}
+
 StaticBrowserCldDataProvider::StaticBrowserCldDataProvider() {
 }
 

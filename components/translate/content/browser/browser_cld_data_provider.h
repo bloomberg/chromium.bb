@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_TRANSLATE_CONTENT_BROWSER_BROWSER_CLD_DATA_PROVIDER_H_
 #define COMPONENTS_TRANSLATE_CONTENT_BROWSER_BROWSER_CLD_DATA_PROVIDER_H_
 
+#include <string>
+
+#include "base/files/file_path.h"
 #include "ipc/ipc_listener.h"
 
 namespace IPC {
@@ -59,6 +62,21 @@ class BrowserCldDataProvider : public IPC::Listener {
 BrowserCldDataProvider* CreateBrowserCldDataProviderFor(
     content::WebContents*);
 
+// For data sources that support a separate CLD data file, configures the path
+// of that data file.
+//
+// The 'component' and 'standalone' data sources need this method to be called
+// in order to locate the CLD data on disk.
+// If the data source doesn't need or doesn't support such configuration, this
+// function should do nothing. This is the case for, e.g., the static data
+// source.
+void SetCldDataFilePath(const base::FilePath& path);
+
+// Returns the path most recently set by SetCldDataFilePath. The initial value
+// prior to any such call is the empty path. If the data source doesn't support
+// a data file, returns the empty path.
+base::FilePath GetCldDataFilePath();
+
 }  // namespace translate
 
-#endif  // COMPONENTS_TRANSLATE_CONTENT_BROWSER_BROWSER_CLD_DATAP_PROVIDER_H_
+#endif  // COMPONENTS_TRANSLATE_CONTENT_BROWSER_BROWSER_CLD_DATA_PROVIDER_H_

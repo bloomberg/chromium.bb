@@ -824,6 +824,7 @@
         'browser/chromeos/ui/idle_app_name_notification_view_unittest.cc',
         'browser/chromeos/version_loader_unittest.cc',
         'browser/command_updater_unittest.cc',
+        'browser/component_updater/test/cld_component_installer_unittest.cc',
         'browser/component_updater/test/component_installers_unittest.cc',
         'browser/component_updater/test/component_patcher_unittest.cc',
         'browser/component_updater/test/component_updater_ping_manager_unittest.cc',
@@ -2067,11 +2068,6 @@
           'includes': ['chrome_ios_bundle_resources.gypi'],
           'xcode_settings': {'OTHER_LDFLAGS': ['-ObjC']},
         }],
-        ['cld2_data_source=="component"', {
-          'sources': [
-            'browser/component_updater/test/cld_component_installer_unittest.cc',
-          ]},
-        ],
         ['enable_background==0', {
           'sources/': [
             ['exclude', '^browser/background/'],
