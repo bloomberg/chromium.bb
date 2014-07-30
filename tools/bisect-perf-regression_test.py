@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import math
 import unittest
 
 from auto_bisect import source_control as source_control_module
@@ -20,6 +19,8 @@ RESULT telemetry_page_measurement_results: num_errored= 0 count
 """
 
 
+# Some private methods of the bisect-perf-regression module are tested below.
+# pylint: disable=W0212
 class BisectPerfRegressionTest(unittest.TestCase):
   """Test case for top-level functions in the bisect-perf-regrssion module."""
 
@@ -93,135 +94,122 @@ class BisectPerfRegressionTest(unittest.TestCase):
 
   def testParseDEPSStringManually(self):
     """Tests DEPS parsing."""
-    bisect_options = bisect_perf_module.BisectOptions()
-    bisect_instance = bisect_perf_module.BisectPerformanceMetrics(
-        None, bisect_options)
-
     deps_file_contents = """
-vars = {
-    'ffmpeg_hash':
-         '@ac4a9f31fe2610bd146857bbd55d7a260003a888',
-    'webkit_url':
-         'https://chromium.googlesource.com/chromium/blink.git',
-    'git_url':
-         'https://chromium.googlesource.com',
-    'webkit_rev':
-         '@e01ac0a267d1017288bc67fa3c366b10469d8a24',
-    'angle_revision':
-         '74697cf2064c0a2c0d7e1b1b28db439286766a05'
-}"""
+    vars = {
+        'ffmpeg_hash':
+             '@ac4a9f31fe2610bd146857bbd55d7a260003a888',
+        'webkit_url':
+             'https://chromium.googlesource.com/chromium/blink.git',
+        'git_url':
+             'https://chromium.googlesource.com',
+        'webkit_rev':
+             '@e01ac0a267d1017288bc67fa3c366b10469d8a24',
+        'angle_revision':
+             '74697cf2064c0a2c0d7e1b1b28db439286766a05'
+    }"""
 
-    # Should only expect svn/git revisions to come through, and urls to be
+    # Should only expect svn/git revisions to come through, and urls should be
     # filtered out.
     expected_vars_dict = {
         'ffmpeg_hash': '@ac4a9f31fe2610bd146857bbd55d7a260003a888',
         'webkit_rev': '@e01ac0a267d1017288bc67fa3c366b10469d8a24',
         'angle_revision': '74697cf2064c0a2c0d7e1b1b28db439286766a05'
     }
-    vars_dict = bisect_instance._ParseRevisionsFromDEPSFileManually(
+    vars_dict = bisect_perf_module._ParseRevisionsFromDEPSFileManually(
         deps_file_contents)
     self.assertEqual(vars_dict, expected_vars_dict)
 
   def testTryParseResultValuesFromOutputWithSingleValue(self):
     """Tests result pattern <*>RESULT <graph>: <trace>= <value>"""
-    bisect_options = bisect_perf_module.BisectOptions()
-    bisect_instance = bisect_perf_module.BisectPerformanceMetrics(
-        None, bisect_options)
     metrics = ['Total', 'Total_ref']
     self.assertEqual(
-        [66.88], bisect_instance.TryParseResultValuesFromOutput(
+        [66.88], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '66.88 kb'}))
     self.assertEqual(
-        [66.88], bisect_instance.TryParseResultValuesFromOutput(
+        [66.88], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '66.88kb'}))
     self.assertEqual(
-        [66.88], bisect_instance.TryParseResultValuesFromOutput(
+        [66.88], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': ' 66.88 '}))
     self.assertEqual(
-        [-66.88], bisect_instance.TryParseResultValuesFromOutput(
+        [-66.88], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': ' -66.88 kb'}))
     self.assertEqual(
-        [66], bisect_instance.TryParseResultValuesFromOutput(
+        [66], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '66 kb'}))
     self.assertEqual(
-        [.66], bisect_instance.TryParseResultValuesFromOutput(
+        [.66], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '.66 kb'}))
     self.assertEqual(
-        [], bisect_instance.TryParseResultValuesFromOutput(
+        [], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '. kb'}))
     self.assertEqual(
-        [], bisect_instance.TryParseResultValuesFromOutput(
+        [], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': 'aaa kb'}))
 
   def testTryParseResultValuesFromOutputWithMulitValue(self):
     """Tests result pattern <*>RESULT <graph>: <trace>= [<value>,<value>, ..]"""
-    bisect_options = bisect_perf_module.BisectOptions()
-    bisect_instance = bisect_perf_module.BisectPerformanceMetrics(
-        None, bisect_options)
     metrics = ['Total', 'Total_ref']
     self.assertEqual(
-        [66.88], bisect_instance.TryParseResultValuesFromOutput(
+        [66.88], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '[66.88] kb'}))
     self.assertEqual(
-        [66.88, 99.44], bisect_instance.TryParseResultValuesFromOutput(
+        [66.88, 99.44], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '[66.88, 99.44]kb'}))
     self.assertEqual(
-        [66.88, 99.44], bisect_instance.TryParseResultValuesFromOutput(
+        [66.88, 99.44], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '[ 66.88, 99.44 ]'}))
     self.assertEqual(
-        [-66.88, 99.44], bisect_instance.TryParseResultValuesFromOutput(
+        [-66.88, 99.44], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '[-66.88,99.44] kb'}))
     self.assertEqual(
-        [-66, 99], bisect_instance.TryParseResultValuesFromOutput(
+        [-66, 99], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '[-66,99] kb'}))
     self.assertEqual(
-        [-66, 99], bisect_instance.TryParseResultValuesFromOutput(
+        [-66, 99], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '[-66,99,] kb'}))
     self.assertEqual(
-        [.66, .99], bisect_instance.TryParseResultValuesFromOutput(
+        [.66, .99], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '[.66,.99] kb'}))
     self.assertEqual(
-        [], bisect_instance.TryParseResultValuesFromOutput(
+        [], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '[] kb'}))
     self.assertEqual(
-        [], bisect_instance.TryParseResultValuesFromOutput(
+        [], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '[-66,abc] kb'}))
 
   def testTryParseResultValuesFromOutputWithMeanStd(self):
     """Tests result pattern <*>RESULT <graph>: <trace>= {<mean, std}"""
-    bisect_options = bisect_perf_module.BisectOptions()
-    bisect_instance = bisect_perf_module.BisectPerformanceMetrics(
-        None, bisect_options)
     metrics = ['Total', 'Total_ref']
     self.assertEqual(
-        [33.22], bisect_instance.TryParseResultValuesFromOutput(
+        [33.22], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '{33.22, 3.6} kb'}))
     self.assertEqual(
-        [33.22], bisect_instance.TryParseResultValuesFromOutput(
+        [33.22], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '{33.22,3.6}kb'}))
     self.assertEqual(
-        [33.22], bisect_instance.TryParseResultValuesFromOutput(
+        [33.22], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '{33.22,3.6} kb'}))
     self.assertEqual(
-        [33.22], bisect_instance.TryParseResultValuesFromOutput(
+        [33.22], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '{ 33.22,3.6 }kb'}))
     self.assertEqual(
-        [-33.22], bisect_instance.TryParseResultValuesFromOutput(
+        [-33.22], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '{-33.22,3.6}kb'}))
     self.assertEqual(
-        [22], bisect_instance.TryParseResultValuesFromOutput(
+        [22], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '{22,6}kb'}))
     self.assertEqual(
-        [.22], bisect_instance.TryParseResultValuesFromOutput(
+        [.22], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '{.22,6}kb'}))
     self.assertEqual(
-        [], bisect_instance.TryParseResultValuesFromOutput(
+        [], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '{.22,6, 44}kb'}))
     self.assertEqual(
-        [], bisect_instance.TryParseResultValuesFromOutput(
+        [], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '{}kb'}))
     self.assertEqual(
-        [], bisect_instance.TryParseResultValuesFromOutput(
+        [], bisect_perf_module._TryParseResultValuesFromOutput(
             metrics, RESULTS_OUTPUT % {'value': '{XYZ}kb'}))
 
   def testGetCompatibleCommand(self):
