@@ -90,7 +90,7 @@ void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::resolve(Pass
         ASSERT_NOT_REACHED();
         return;
     }
-    if (!executionContext())
+    if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
         return;
     m_resolved = value;
     resolveOrReject(Resolved);
@@ -104,7 +104,7 @@ void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::reject(PassR
         ASSERT_NOT_REACHED();
         return;
     }
-    if (!executionContext())
+    if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
         return;
     m_rejected = value;
     resolveOrReject(Rejected);

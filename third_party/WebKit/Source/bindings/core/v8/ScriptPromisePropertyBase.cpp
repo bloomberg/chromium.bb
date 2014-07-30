@@ -5,6 +5,8 @@
 #include "config.h"
 #include "bindings/core/v8/ScriptPromisePropertyBase.h"
 
+#include "bindings/core/v8/ScopedPersistent.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "core/dom/ExecutionContext.h"
@@ -22,10 +24,12 @@ ScriptPromisePropertyBase::ScriptPromisePropertyBase(ExecutionContext* execution
 ScriptPromisePropertyBase::~ScriptPromisePropertyBase()
 {
     v8::HandleScope handleScope(m_isolate);
-    v8::Handle<v8::Object> wrapper = m_mainWorldWrapper.newLocal(m_isolate);
-    if (!wrapper.IsEmpty()) {
-        wrapper->DeleteHiddenValue(resolverName());
-        wrapper->DeleteHiddenValue(promiseName());
+    for (WeakPersistentSet::iterator i = m_wrappers.begin(); i != m_wrappers.end(); ++i) {
+        v8::Local<v8::Object> wrapper = (*i)->newLocal(m_isolate);
+        if (!wrapper.IsEmpty()) {
+            wrapper->DeleteHiddenValue(resolverName());
+            wrapper->DeleteHiddenValue(promiseName());
+        }
     }
 }
 
@@ -39,11 +43,6 @@ ScriptPromise ScriptPromisePropertyBase::promise(DOMWrapperWorld& world)
     if (!executionContext())
         return ScriptPromise();
 
-    if (!world.isMainWorld()) {
-        // FIXME: Support isolated worlds.
-        return ScriptPromise();
-    }
-
     v8::HandleScope handleScope(m_isolate);
     v8::Handle<v8::Context> context = toV8Context(executionContext(), world);
     if (context.IsEmpty())
@@ -51,15 +50,7 @@ ScriptPromise ScriptPromisePropertyBase::promise(DOMWrapperWorld& world)
     ScriptState* scriptState = ScriptState::from(context);
     ScriptState::Scope scope(scriptState);
 
-    v8::Handle<v8::Object> wrapper = m_mainWorldWrapper.newLocal(m_isolate);
-    if (wrapper.IsEmpty()) {
-        wrapper = holder(context->Global(), m_isolate);
-        ASSERT(!wrapper.IsEmpty());
-        ASSERT(V8HiddenValue::getHiddenValue(m_isolate, wrapper, resolverName()).IsEmpty());
-        ASSERT(V8HiddenValue::getHiddenValue(m_isolate, wrapper, promiseName()).IsEmpty());
-        m_mainWorldWrapper.set(m_isolate, wrapper);
-        m_mainWorldWrapper.setWeak(&m_mainWorldWrapper, &clearHandle);
-    }
+    v8::Handle<v8::Object> wrapper = ensureHolderWrapper(scriptState);
     ASSERT(wrapper->CreationContext() == context);
 
     v8::Handle<v8::Value> cachedPromise = V8HiddenValue::getHiddenValue(m_isolate, wrapper, promiseName());
@@ -94,15 +85,25 @@ void ScriptPromisePropertyBase::resolveOrReject(State targetState)
     m_state = targetState;
 
     v8::HandleScope handleScope(m_isolate);
-    v8::Handle<v8::Object> wrapper = m_mainWorldWrapper.newLocal(m_isolate);
-    if (wrapper.IsEmpty())
-        return; // wrapper has died or was never populated
-    ScriptState::Scope scope(ScriptState::from(wrapper->CreationContext()));
+    size_t i = 0;
+    while (i < m_wrappers.size()) {
+        const OwnPtr<ScopedPersistent<v8::Object> >& persistent = m_wrappers[i];
+        if (persistent->isEmpty()) {
+            // wrapper has died.
+            // Since v8 GC can run during the iteration and clear the reference,
+            // we can't move this check out of the loop.
+            m_wrappers.remove(i);
+            continue;
+        }
+        v8::Local<v8::Object> wrapper = persistent->newLocal(m_isolate);
+        ScriptState::Scope scope(ScriptState::from(wrapper->CreationContext()));
 
-    v8::Handle<v8::Promise::Resolver> resolver = V8HiddenValue::getHiddenValue(m_isolate, wrapper, resolverName()).As<v8::Promise::Resolver>();
+        v8::Local<v8::Promise::Resolver> resolver = V8HiddenValue::getHiddenValue(m_isolate, wrapper, resolverName()).As<v8::Promise::Resolver>();
 
-    V8HiddenValue::deleteHiddenValue(m_isolate, wrapper, resolverName());
-    resolveOrRejectInternal(resolver);
+        V8HiddenValue::deleteHiddenValue(m_isolate, wrapper, resolverName());
+        resolveOrRejectInternal(resolver);
+        ++i;
+    }
 }
 
 void ScriptPromisePropertyBase::resolveOrRejectInternal(v8::Handle<v8::Promise::Resolver> resolver)
@@ -118,6 +119,33 @@ void ScriptPromisePropertyBase::resolveOrRejectInternal(v8::Handle<v8::Promise::
         resolver->Reject(rejectedValue(resolver->CreationContext()->Global(), m_isolate));
         break;
     }
+}
+
+v8::Local<v8::Object> ScriptPromisePropertyBase::ensureHolderWrapper(ScriptState* scriptState)
+{
+    v8::Local<v8::Context> context = scriptState->context();
+    size_t i = 0;
+    while (i < m_wrappers.size()) {
+        const OwnPtr<ScopedPersistent<v8::Object> >& persistent = m_wrappers[i];
+        if (persistent->isEmpty()) {
+            // wrapper has died.
+            // Since v8 GC can run during the iteration and clear the reference,
+            // we can't move this check out of the loop.
+            m_wrappers.remove(i);
+            continue;
+        }
+
+        v8::Local<v8::Object> wrapper = persistent->newLocal(m_isolate);
+        if (wrapper->CreationContext() == context)
+            return wrapper;
+        ++i;
+    }
+    v8::Local<v8::Object> wrapper = holder(context->Global(), m_isolate);
+    OwnPtr<ScopedPersistent<v8::Object> > weakPersistent = adoptPtr(new ScopedPersistent<v8::Object>);
+    weakPersistent->set(m_isolate, wrapper);
+    weakPersistent->setWeak(weakPersistent.get(), &clearHandle);
+    m_wrappers.append(weakPersistent.release());
+    return wrapper;
 }
 
 v8::Handle<v8::String> ScriptPromisePropertyBase::promiseName()

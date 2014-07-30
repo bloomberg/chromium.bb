@@ -9,12 +9,16 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseProperties.h"
 #include "core/dom/ContextLifecycleObserver.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 #include <v8.h>
 
 namespace blink {
 
+class DOMWrapperWorld;
 class ExecutionContext;
+class ScriptState;
 
 class ScriptPromisePropertyBase : public GarbageCollectedFinalized<ScriptPromisePropertyBase>, public ContextLifecycleObserver {
 public:
@@ -53,7 +57,10 @@ protected:
     virtual v8::Handle<v8::Value> rejectedValue(v8::Handle<v8::Object> creationContext, v8::Isolate*) = 0;
 
 private:
+    typedef Vector<OwnPtr<ScopedPersistent<v8::Object> > > WeakPersistentSet;
+
     void resolveOrRejectInternal(v8::Handle<v8::Promise::Resolver>);
+    v8::Local<v8::Object> ensureHolderWrapper(ScriptState*);
 
     v8::Handle<v8::String> promiseName();
     v8::Handle<v8::String> resolverName();
@@ -62,9 +69,7 @@ private:
     Name m_name;
     State m_state;
 
-    // FIXME: When isolated worlds are supported replace this with a
-    // set of wrappers.
-    ScopedPersistent<v8::Object> m_mainWorldWrapper;
+    WeakPersistentSet m_wrappers;
 };
 
 } // namespace blink
