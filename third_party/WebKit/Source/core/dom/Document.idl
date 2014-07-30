@@ -164,6 +164,8 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
     [MeasureAs=DocumentExitPointerLock] void exitPointerLock();
     [MeasureAs=DocumentPointerLockElement] readonly attribute Element pointerLockElement;
+    [MeasureAs=PrefixedDocumentExitPointerLock, ImplementedAs=exitPointerLock] void webkitExitPointerLock();
+    [MeasureAs=PrefixedDocumentPointerLockElement, ImplementedAs=pointerLockElement] readonly attribute Element webkitPointerLockElement;
 
     // Event handler attributes
     attribute EventHandler onbeforecopy;
@@ -185,6 +187,8 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
     [RuntimeEnabled=Touch] attribute EventHandler ontouchstart;
     attribute EventHandler onwebkitfullscreenchange;
     attribute EventHandler onwebkitfullscreenerror;
+    attribute EventHandler onwebkitpointerlockchange;
+    attribute EventHandler onwebkitpointerlockerror;
     attribute EventHandler onwheel;
 
     [RuntimeEnabled=Touch] Touch createTouch([Default=Undefined] optional Window window,

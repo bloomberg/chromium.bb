@@ -266,6 +266,8 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(touchstart);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenchange);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenerror);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitpointerlockchange);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitpointerlockerror);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(wheel);
 
     bool shouldMergeWithLegacyDescription(ViewportDescription::Type);
