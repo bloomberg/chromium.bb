@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "third_party/WebKit/public/web/WebDOMEventListener.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 
 namespace autofill {
