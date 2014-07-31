@@ -247,16 +247,6 @@ void RemoveDownloadFileFromChildSecurityPolicy(int child_id,
       child_id, path);
 }
 
-#if defined(OS_WIN)
-#pragma warning(disable: 4748)
-#pragma optimize("", off)
-#endif
-
-#if defined(OS_WIN)
-#pragma optimize("", on)
-#pragma warning(default: 4748)
-#endif
-
 DownloadInterruptReason CallbackAndReturn(
     const DownloadUrlParameters::OnStartedCallback& started_cb,
     DownloadInterruptReason interrupt_reason) {
