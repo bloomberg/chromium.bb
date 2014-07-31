@@ -1715,10 +1715,8 @@ void RenderBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
             oldLogicalTop = logicalTopForChild(r);
         }
 
-        // FIXME: We should be able to do a r->setNeedsPositionedMovementLayout() here instead of a full layout. Need
-        // to investigate why it does not trigger the correct invalidations in that case. crbug.com/350756
         if (info == ForcedLayoutAfterContainingBlockMoved)
-            r->setNeedsLayout();
+            r->setNeedsPositionedMovementLayout();
 
         r->layoutIfNeeded();
 
