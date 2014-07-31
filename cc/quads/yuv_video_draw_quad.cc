@@ -4,6 +4,7 @@
 
 #include "cc/quads/yuv_video_draw_quad.h"
 
+#include "base/debug/trace_event_argument.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
@@ -74,8 +75,10 @@ const YUVVideoDrawQuad* YUVVideoDrawQuad::MaterialCast(
   return static_cast<const YUVVideoDrawQuad*>(quad);
 }
 
-void YUVVideoDrawQuad::ExtendValue(base::DictionaryValue* value) const {
-  value->Set("tex_coord_rect", MathUtil::AsValue(tex_coord_rect).release());
+void YUVVideoDrawQuad::ExtendValue(base::debug::TracedValue* value) const {
+  value->BeginArray("tex_coord_rect");
+  MathUtil::AddToTracedValue(tex_coord_rect, value);
+  value->EndArray();
   value->SetInteger("y_plane_resource_id", y_plane_resource_id);
   value->SetInteger("u_plane_resource_id", u_plane_resource_id);
   value->SetInteger("v_plane_resource_id", v_plane_resource_id);

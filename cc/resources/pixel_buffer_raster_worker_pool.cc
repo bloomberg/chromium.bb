@@ -8,6 +8,7 @@
 
 #include "base/containers/stack_container.h"
 #include "base/debug/trace_event.h"
+#include "base/debug/trace_event_argument.h"
 #include "cc/debug/traced_value.h"
 #include "cc/resources/resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -222,12 +223,7 @@ void PixelBufferRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
   check_for_completed_raster_task_notifier_.Schedule();
 
   TRACE_EVENT_ASYNC_STEP_INTO1(
-      "cc",
-      "ScheduledTasks",
-      this,
-      StateName(),
-      "state",
-      TracedValue::FromValue(StateAsValue().release()));
+      "cc", "ScheduledTasks", this, StateName(), "state", StateAsValue());
 }
 
 void PixelBufferRasterWorkerPool::CheckForCompletedTasks() {
@@ -460,12 +456,7 @@ void PixelBufferRasterWorkerPool::CheckForCompletedRasterTasks() {
     ScheduleMoreTasks();
 
   TRACE_EVENT_ASYNC_STEP_INTO1(
-      "cc",
-      "ScheduledTasks",
-      this,
-      StateName(),
-      "state",
-      TracedValue::FromValue(StateAsValue().release()));
+      "cc", "ScheduledTasks", this, StateName(), "state", StateAsValue());
 
   // Schedule another check for completed raster tasks while there are
   // pending raster tasks or pending uploads.
@@ -742,29 +733,29 @@ void PixelBufferRasterWorkerPool::CheckForCompletedRasterizerTasks() {
   completed_tasks_.clear();
 }
 
-scoped_ptr<base::Value> PixelBufferRasterWorkerPool::StateAsValue() const {
-  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue);
-
+scoped_refptr<base::debug::ConvertableToTraceFormat>
+PixelBufferRasterWorkerPool::StateAsValue() const {
+  scoped_refptr<base::debug::TracedValue> state =
+      new base::debug::TracedValue();
   state->SetInteger("completed_count", completed_raster_tasks_.size());
   state->SetInteger("pending_count", raster_task_states_.size());
   state->SetInteger("pending_upload_count",
                     raster_tasks_with_pending_upload_.size());
   state->SetInteger("pending_required_for_activation_count",
                     raster_tasks_required_for_activation_count_);
-  state->Set("throttle_state", ThrottleStateAsValue().release());
-  return state.PassAs<base::Value>();
+  state->BeginDictionary("throttle_state");
+  ThrottleStateAsValueInto(state.get());
+  state->EndDictionary();
+  return state;
 }
 
-scoped_ptr<base::Value> PixelBufferRasterWorkerPool::ThrottleStateAsValue()
-    const {
-  scoped_ptr<base::DictionaryValue> throttle_state(new base::DictionaryValue);
-
+void PixelBufferRasterWorkerPool::ThrottleStateAsValueInto(
+    base::debug::TracedValue* throttle_state) const {
   throttle_state->SetInteger("bytes_available_for_upload",
                              max_bytes_pending_upload_ - bytes_pending_upload_);
   throttle_state->SetInteger("bytes_pending_upload", bytes_pending_upload_);
   throttle_state->SetInteger("scheduled_raster_task_count",
                              scheduled_raster_task_count_);
-  return throttle_state.PassAs<base::Value>();
 }
 
 }  // namespace cc

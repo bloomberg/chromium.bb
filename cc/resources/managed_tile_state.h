@@ -104,7 +104,7 @@ class CC_EXPORT ManagedTileState {
   ManagedTileState();
   ~ManagedTileState();
 
-  scoped_ptr<base::Value> AsValue() const;
+  void AsValueInto(base::debug::TracedValue* dict) const;
 
   // Persisted state: valid all the time.
   TileVersion tile_versions[NUM_RASTER_MODES];

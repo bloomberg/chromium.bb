@@ -4,6 +4,7 @@
 
 #include "cc/quads/render_pass_draw_quad.h"
 
+#include "base/debug/trace_event_argument.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/traced_value.h"
@@ -81,16 +82,24 @@ const RenderPassDrawQuad* RenderPassDrawQuad::MaterialCast(
   return static_cast<const RenderPassDrawQuad*>(quad);
 }
 
-void RenderPassDrawQuad::ExtendValue(base::DictionaryValue* value) const {
-  value->Set("render_pass_id",
-             TracedValue::CreateIDRef(render_pass_id.AsTracingId()).release());
+void RenderPassDrawQuad::ExtendValue(base::debug::TracedValue* value) const {
+  TracedValue::SetIDRef(render_pass_id.AsTracingId(), value, "render_pass_id");
   value->SetBoolean("is_replica", is_replica);
   value->SetInteger("mask_resource_id", mask_resource_id);
-  value->Set("contents_changed_since_last_frame",
-             MathUtil::AsValue(contents_changed_since_last_frame).release());
-  value->Set("mask_uv_rect", MathUtil::AsValue(mask_uv_rect).release());
-  value->Set("filters", filters.AsValue().release());
-  value->Set("background_filters", background_filters.AsValue().release());
+  value->BeginArray("contents_changed_since_last_frame");
+  MathUtil::AddToTracedValue(contents_changed_since_last_frame, value);
+  value->EndArray();
+
+  value->BeginArray("mask_uv_rect");
+  MathUtil::AddToTracedValue(mask_uv_rect, value);
+  value->EndArray();
+  value->BeginDictionary("filters");
+  filters.AsValueInto(value);
+  value->EndDictionary();
+
+  value->BeginDictionary("background_filters");
+  background_filters.AsValueInto(value);
+  value->EndDictionary();
 }
 
 }  // namespace cc

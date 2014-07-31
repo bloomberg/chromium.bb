@@ -5,6 +5,7 @@
 #include "cc/layers/tiled_layer_impl.h"
 
 #include "base/basictypes.h"
+#include "base/debug/trace_event_argument.h"
 #include "base/strings/stringprintf.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/debug_colors.h"
@@ -99,9 +100,11 @@ scoped_ptr<LayerImpl> TiledLayerImpl::CreateLayerImpl(
   return TiledLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
-void TiledLayerImpl::AsValueInto(base::DictionaryValue* state) const {
+void TiledLayerImpl::AsValueInto(base::debug::TracedValue* state) const {
   LayerImpl::AsValueInto(state);
-  state->Set("invalidation", MathUtil::AsValue(update_rect()).release());
+  state->BeginArray("invalidation");
+  MathUtil::AddToTracedValue(update_rect(), state);
+  state->EndArray();
 }
 
 size_t TiledLayerImpl::GPUMemoryUsageInBytes() const {

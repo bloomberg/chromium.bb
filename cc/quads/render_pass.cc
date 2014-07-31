@@ -4,6 +4,7 @@
 
 #include "cc/quads/render_pass.h"
 
+#include "base/debug/trace_event_argument.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/traced_value.h"
@@ -157,27 +158,39 @@ void RenderPass::SetAll(Id id,
   DCHECK(shared_quad_state_list.empty());
 }
 
-scoped_ptr<base::Value> RenderPass::AsValue() const {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
-  value->Set("output_rect", MathUtil::AsValue(output_rect).release());
-  value->Set("damage_rect", MathUtil::AsValue(damage_rect).release());
+void RenderPass::AsValueInto(base::debug::TracedValue* value) const {
+  value->BeginArray("output_rect");
+  MathUtil::AddToTracedValue(output_rect, value);
+  value->EndArray();
+
+  value->BeginArray("damage_rect");
+  MathUtil::AddToTracedValue(damage_rect, value);
+  value->EndArray();
+
   value->SetBoolean("has_transparent_background", has_transparent_background);
   value->SetInteger("copy_requests", copy_requests.size());
-  scoped_ptr<base::ListValue> shared_states_value(new base::ListValue());
+
+  value->BeginArray("shared_quad_state_list");
   for (size_t i = 0; i < shared_quad_state_list.size(); ++i) {
-    shared_states_value->Append(shared_quad_state_list[i]->AsValue().release());
+    value->BeginDictionary();
+    shared_quad_state_list[i]->AsValueInto(value);
+    value->EndDictionary();
   }
-  value->Set("shared_quad_state_list", shared_states_value.release());
-  scoped_ptr<base::ListValue> quad_list_value(new base::ListValue());
+  value->EndArray();
+
+  value->BeginArray("quad_list");
   for (size_t i = 0; i < quad_list.size(); ++i) {
-    quad_list_value->Append(quad_list[i]->AsValue().release());
+    value->BeginDictionary();
+    quad_list[i]->AsValueInto(value);
+    value->EndDictionary();
   }
-  value->Set("quad_list", quad_list_value.release());
+  value->EndArray();
 
   TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
       TRACE_DISABLED_BY_DEFAULT("cc.debug.quads"),
-      value.get(), "cc::RenderPass", id.AsTracingId());
-  return value.PassAs<base::Value>();
+      value,
+      "cc::RenderPass",
+      id.AsTracingId());
 }
 
 SharedQuadState* RenderPass::CreateAndAppendSharedQuadState() {

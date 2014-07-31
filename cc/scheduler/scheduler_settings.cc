@@ -4,6 +4,7 @@
 
 #include "cc/scheduler/scheduler_settings.h"
 
+#include "base/debug/trace_event_argument.h"
 #include "cc/trees/layer_tree_settings.h"
 
 namespace cc {
@@ -36,8 +37,10 @@ SchedulerSettings::SchedulerSettings(const LayerTreeSettings& settings)
 
 SchedulerSettings::~SchedulerSettings() {}
 
-scoped_ptr<base::Value> SchedulerSettings::AsValue() const {
-  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue);
+scoped_refptr<base::debug::ConvertableToTraceFormat>
+SchedulerSettings::AsValue() const {
+  scoped_refptr<base::debug::TracedValue> state =
+      new base::debug::TracedValue();
   state->SetBoolean("begin_frame_scheduling_enabled",
                     begin_frame_scheduling_enabled);
   state->SetBoolean("main_frame_before_draw_enabled",
@@ -52,7 +55,7 @@ scoped_ptr<base::Value> SchedulerSettings::AsValue() const {
   state->SetBoolean("using_synchronous_renderer_compositor",
                     using_synchronous_renderer_compositor);
   state->SetBoolean("throttle_frame_production", throttle_frame_production);
-  return state.PassAs<base::Value>();
+  return state;
 }
 
 }  // namespace cc

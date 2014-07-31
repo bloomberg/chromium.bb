@@ -5,6 +5,7 @@
 #include "cc/scheduler/scheduler_state_machine.h"
 
 #include "base/debug/trace_event.h"
+#include "base/debug/trace_event_argument.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -147,98 +148,96 @@ const char* SchedulerStateMachine::ActionToString(Action action) {
   return "???";
 }
 
-scoped_ptr<base::Value> SchedulerStateMachine::AsValue() const  {
-  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue);
+scoped_refptr<base::debug::ConvertableToTraceFormat>
+SchedulerStateMachine::AsValue() const {
+  scoped_refptr<base::debug::TracedValue> state =
+      new base::debug::TracedValue();
+  AsValueInto(state);
+  return state;
+}
 
-  scoped_ptr<base::DictionaryValue> major_state(new base::DictionaryValue);
-  major_state->SetString("next_action", ActionToString(NextAction()));
-  major_state->SetString("begin_impl_frame_state",
-                         BeginImplFrameStateToString(begin_impl_frame_state_));
-  major_state->SetString("commit_state", CommitStateToString(commit_state_));
-  major_state->SetString("output_surface_state_",
-                         OutputSurfaceStateToString(output_surface_state_));
-  major_state->SetString(
-      "forced_redraw_state",
-      ForcedRedrawOnTimeoutStateToString(forced_redraw_state_));
-  state->Set("major_state", major_state.release());
+void SchedulerStateMachine::AsValueInto(base::debug::TracedValue* state) const {
+  state->BeginDictionary("major_state");
+  state->SetString("next_action", ActionToString(NextAction()));
+  state->SetString("begin_impl_frame_state",
+                   BeginImplFrameStateToString(begin_impl_frame_state_));
+  state->SetString("commit_state", CommitStateToString(commit_state_));
+  state->SetString("output_surface_state_",
+                   OutputSurfaceStateToString(output_surface_state_));
+  state->SetString("forced_redraw_state",
+                   ForcedRedrawOnTimeoutStateToString(forced_redraw_state_));
+  state->EndDictionary();
 
-  scoped_ptr<base::DictionaryValue> timestamps_state(new base::DictionaryValue);
+  state->BeginDictionary("major_timestamps_in_ms");
   base::TimeTicks now = gfx::FrameTime::Now();
-  timestamps_state->SetDouble(
-      "0_interval", begin_impl_frame_args_.interval.InMicroseconds() / 1000.0L);
-  timestamps_state->SetDouble(
+  state->SetDouble("0_interval",
+                   begin_impl_frame_args_.interval.InMicroseconds() / 1000.0L);
+  state->SetDouble(
       "1_now_to_deadline",
       (begin_impl_frame_args_.deadline - now).InMicroseconds() / 1000.0L);
-  timestamps_state->SetDouble(
+  state->SetDouble(
       "2_frame_time_to_now",
       (now - begin_impl_frame_args_.frame_time).InMicroseconds() / 1000.0L);
-  timestamps_state->SetDouble(
-      "3_frame_time_to_deadline",
-      (begin_impl_frame_args_.deadline - begin_impl_frame_args_.frame_time)
-              .InMicroseconds() /
-          1000.0L);
-  timestamps_state->SetDouble(
-      "4_now", (now - base::TimeTicks()).InMicroseconds() / 1000.0L);
-  timestamps_state->SetDouble(
+  state->SetDouble("3_frame_time_to_deadline",
+                   (begin_impl_frame_args_.deadline -
+                    begin_impl_frame_args_.frame_time).InMicroseconds() /
+                       1000.0L);
+  state->SetDouble("4_now",
+                   (now - base::TimeTicks()).InMicroseconds() / 1000.0L);
+  state->SetDouble(
       "5_frame_time",
       (begin_impl_frame_args_.frame_time - base::TimeTicks()).InMicroseconds() /
           1000.0L);
-  timestamps_state->SetDouble(
+  state->SetDouble(
       "6_deadline",
       (begin_impl_frame_args_.deadline - base::TimeTicks()).InMicroseconds() /
           1000.0L);
-  state->Set("major_timestamps_in_ms", timestamps_state.release());
+  state->EndDictionary();
 
-  scoped_ptr<base::DictionaryValue> minor_state(new base::DictionaryValue);
-  minor_state->SetInteger("commit_count", commit_count_);
-  minor_state->SetInteger("current_frame_number", current_frame_number_);
+  state->BeginDictionary("minor_state");
+  state->SetInteger("commit_count", commit_count_);
+  state->SetInteger("current_frame_number", current_frame_number_);
 
-  minor_state->SetInteger("last_frame_number_animate_performed",
-                          last_frame_number_animate_performed_);
-  minor_state->SetInteger("last_frame_number_swap_performed",
-                          last_frame_number_swap_performed_);
-  minor_state->SetInteger("last_frame_number_swap_requested",
-                          last_frame_number_swap_requested_);
-  minor_state->SetInteger(
-      "last_frame_number_begin_main_frame_sent",
-      last_frame_number_begin_main_frame_sent_);
-  minor_state->SetInteger(
-      "last_frame_number_update_visible_tiles_was_called",
-      last_frame_number_update_visible_tiles_was_called_);
+  state->SetInteger("last_frame_number_animate_performed",
+                    last_frame_number_animate_performed_);
+  state->SetInteger("last_frame_number_swap_performed",
+                    last_frame_number_swap_performed_);
+  state->SetInteger("last_frame_number_swap_requested",
+                    last_frame_number_swap_requested_);
+  state->SetInteger("last_frame_number_begin_main_frame_sent",
+                    last_frame_number_begin_main_frame_sent_);
+  state->SetInteger("last_frame_number_update_visible_tiles_was_called",
+                    last_frame_number_update_visible_tiles_was_called_);
 
-  minor_state->SetInteger("manage_tiles_funnel", manage_tiles_funnel_);
-  minor_state->SetInteger("consecutive_checkerboard_animations",
-                          consecutive_checkerboard_animations_);
-  minor_state->SetInteger("max_pending_swaps_", max_pending_swaps_);
-  minor_state->SetInteger("pending_swaps_", pending_swaps_);
-  minor_state->SetBoolean("needs_redraw", needs_redraw_);
-  minor_state->SetBoolean("needs_animate_", needs_animate_);
-  minor_state->SetBoolean("needs_manage_tiles", needs_manage_tiles_);
-  minor_state->SetBoolean("swap_used_incomplete_tile",
-                          swap_used_incomplete_tile_);
-  minor_state->SetBoolean("needs_commit", needs_commit_);
-  minor_state->SetBoolean("visible", visible_);
-  minor_state->SetBoolean("can_start", can_start_);
-  minor_state->SetBoolean("can_draw", can_draw_);
-  minor_state->SetBoolean("has_pending_tree", has_pending_tree_);
-  minor_state->SetBoolean("pending_tree_is_ready_for_activation",
-                          pending_tree_is_ready_for_activation_);
-  minor_state->SetBoolean("active_tree_needs_first_draw",
-                          active_tree_needs_first_draw_);
-  minor_state->SetBoolean("did_create_and_initialize_first_output_surface",
-                          did_create_and_initialize_first_output_surface_);
-  minor_state->SetBoolean("smoothness_takes_priority",
-                          smoothness_takes_priority_);
-  minor_state->SetBoolean("main_thread_is_in_high_latency_mode",
-                          MainThreadIsInHighLatencyMode());
-  minor_state->SetBoolean("skip_begin_main_frame_to_reduce_latency",
-                          skip_begin_main_frame_to_reduce_latency_);
-  minor_state->SetBoolean("skip_next_begin_main_frame_to_reduce_latency",
-                          skip_next_begin_main_frame_to_reduce_latency_);
-  minor_state->SetBoolean("continuous_painting", continuous_painting_);
-  state->Set("minor_state", minor_state.release());
-
-  return state.PassAs<base::Value>();
+  state->SetInteger("manage_tiles_funnel", manage_tiles_funnel_);
+  state->SetInteger("consecutive_checkerboard_animations",
+                    consecutive_checkerboard_animations_);
+  state->SetInteger("max_pending_swaps_", max_pending_swaps_);
+  state->SetInteger("pending_swaps_", pending_swaps_);
+  state->SetBoolean("needs_redraw", needs_redraw_);
+  state->SetBoolean("needs_animate_", needs_animate_);
+  state->SetBoolean("needs_manage_tiles", needs_manage_tiles_);
+  state->SetBoolean("swap_used_incomplete_tile", swap_used_incomplete_tile_);
+  state->SetBoolean("needs_commit", needs_commit_);
+  state->SetBoolean("visible", visible_);
+  state->SetBoolean("can_start", can_start_);
+  state->SetBoolean("can_draw", can_draw_);
+  state->SetBoolean("has_pending_tree", has_pending_tree_);
+  state->SetBoolean("pending_tree_is_ready_for_activation",
+                    pending_tree_is_ready_for_activation_);
+  state->SetBoolean("active_tree_needs_first_draw",
+                    active_tree_needs_first_draw_);
+  state->SetBoolean("did_create_and_initialize_first_output_surface",
+                    did_create_and_initialize_first_output_surface_);
+  state->SetBoolean("smoothness_takes_priority", smoothness_takes_priority_);
+  state->SetBoolean("main_thread_is_in_high_latency_mode",
+                    MainThreadIsInHighLatencyMode());
+  state->SetBoolean("skip_begin_main_frame_to_reduce_latency",
+                    skip_begin_main_frame_to_reduce_latency_);
+  state->SetBoolean("skip_next_begin_main_frame_to_reduce_latency",
+                    skip_next_begin_main_frame_to_reduce_latency_);
+  state->SetBoolean("continuous_painting", continuous_painting_);
+  state->EndDictionary();
 }
 
 void SchedulerStateMachine::AdvanceCurrentFrameNumber() {
@@ -810,26 +809,27 @@ bool SchedulerStateMachine::ProactiveBeginFrameWanted() const {
 void SchedulerStateMachine::OnBeginImplFrame(const BeginFrameArgs& args) {
   AdvanceCurrentFrameNumber();
   begin_impl_frame_args_ = args;
-  DCHECK_EQ(begin_impl_frame_state_, BEGIN_IMPL_FRAME_STATE_IDLE) << *AsValue();
+  DCHECK_EQ(begin_impl_frame_state_, BEGIN_IMPL_FRAME_STATE_IDLE)
+      << AsValue()->ToString();
   begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING;
 }
 
 void SchedulerStateMachine::OnBeginImplFrameDeadlinePending() {
   DCHECK_EQ(begin_impl_frame_state_,
             BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING)
-      << *AsValue();
+      << AsValue()->ToString();
   begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME;
 }
 
 void SchedulerStateMachine::OnBeginImplFrameDeadline() {
   DCHECK_EQ(begin_impl_frame_state_, BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME)
-      << *AsValue();
+      << AsValue()->ToString();
   begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE;
 }
 
 void SchedulerStateMachine::OnBeginImplFrameIdle() {
   DCHECK_EQ(begin_impl_frame_state_, BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE)
-      << *AsValue();
+      << AsValue()->ToString();
   begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_IDLE;
 }
 
@@ -1009,7 +1009,8 @@ void SchedulerStateMachine::DidDrawIfPossibleCompleted(DrawResult result) {
 void SchedulerStateMachine::SetNeedsCommit() { needs_commit_ = true; }
 
 void SchedulerStateMachine::NotifyReadyToCommit() {
-  DCHECK(commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED) << *AsValue();
+  DCHECK(commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED)
+      << AsValue()->ToString();
   commit_state_ = COMMIT_STATE_READY_TO_COMMIT;
 }
 

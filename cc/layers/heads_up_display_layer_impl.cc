@@ -7,11 +7,12 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/debug/trace_event.h"
+#include "base/debug/trace_event_argument.h"
 #include "base/strings/stringprintf.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/debug/frame_rate_counter.h"
 #include "cc/debug/paint_time_counter.h"
-#include "cc/debug/traced_value.h"
 #include "cc/output/renderer.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/memory_history.h"
@@ -761,7 +762,8 @@ const char* HeadsUpDisplayLayerImpl::LayerTypeAsString() const {
   return "cc::HeadsUpDisplayLayerImpl";
 }
 
-void HeadsUpDisplayLayerImpl::AsValueInto(base::DictionaryValue* dict) const {
+void HeadsUpDisplayLayerImpl::AsValueInto(
+    base::debug::TracedValue* dict) const {
   LayerImpl::AsValueInto(dict);
   dict->SetString("layer_name", "Heads Up Display Layer");
 }

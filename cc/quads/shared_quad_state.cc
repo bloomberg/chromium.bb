@@ -4,6 +4,7 @@
 
 #include "cc/quads/shared_quad_state.h"
 
+#include "base/debug/trace_event_argument.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/traced_value.h"
@@ -45,22 +46,32 @@ void SharedQuadState::SetAll(const gfx::Transform& content_to_target_transform,
   this->sorting_context_id = sorting_context_id;
 }
 
-scoped_ptr<base::Value> SharedQuadState::AsValue() const {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
-  value->Set("transform",
-             MathUtil::AsValue(content_to_target_transform).release());
-  value->Set("layer_content_bounds",
-             MathUtil::AsValue(content_bounds).release());
-  value->Set("layer_visible_content_rect",
-             MathUtil::AsValue(visible_content_rect).release());
+void SharedQuadState::AsValueInto(base::debug::TracedValue* value) const {
+  value->BeginArray("transform");
+  MathUtil::AddToTracedValue(content_to_target_transform, value);
+  value->EndArray();
+
+  value->BeginDictionary("layer_content_bounds");
+  MathUtil::AddToTracedValue(content_bounds, value);
+  value->EndDictionary();
+
+  value->BeginArray("layer_visible_content_rect");
+  MathUtil::AddToTracedValue(visible_content_rect, value);
+  value->EndArray();
+
   value->SetBoolean("is_clipped", is_clipped);
-  value->Set("clip_rect", MathUtil::AsValue(clip_rect).release());
+
+  value->BeginArray("clip_rect");
+  MathUtil::AddToTracedValue(clip_rect, value);
+  value->EndArray();
+
   value->SetDouble("opacity", opacity);
   value->SetString("blend_mode", SkXfermode::ModeName(blend_mode));
   TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
       TRACE_DISABLED_BY_DEFAULT("cc.debug.quads"),
-      value.get(), "cc::SharedQuadState", this);
-  return value.PassAs<base::Value>();
+      value,
+      "cc::SharedQuadState",
+      this);
 }
 
 }  // namespace cc

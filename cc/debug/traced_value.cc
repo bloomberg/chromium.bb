@@ -4,26 +4,34 @@
 
 #include "cc/debug/traced_value.h"
 
-#include "base/json/json_writer.h"
+#include "base/debug/trace_event_argument.h"
 #include "base/strings/stringprintf.h"
-#include "base/values.h"
 
 namespace cc {
 
-scoped_ptr<base::Value> TracedValue::CreateIDRef(const void* id) {
-  scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
-  res->SetString("id_ref", base::StringPrintf("%p", id));
-  return res.PassAs<base::Value>();
+void TracedValue::AppendIDRef(const void* id, base::debug::TracedValue* state) {
+  state->BeginDictionary();
+  state->SetString("id_ref", base::StringPrintf("%p", id));
+  state->EndDictionary();
 }
 
-void TracedValue::MakeDictIntoImplicitSnapshot(
-    base::DictionaryValue* dict, const char* object_name, const void* id) {
+void TracedValue::SetIDRef(const void* id,
+                           base::debug::TracedValue* state,
+                           const char* name) {
+  state->BeginDictionary(name);
+  state->SetString("id_ref", base::StringPrintf("%p", id));
+  state->EndDictionary();
+}
+
+void TracedValue::MakeDictIntoImplicitSnapshot(base::debug::TracedValue* dict,
+                                               const char* object_name,
+                                               const void* id) {
   dict->SetString("id", base::StringPrintf("%s/%p", object_name, id));
 }
 
 void TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
     const char* category,
-    base::DictionaryValue* dict,
+    base::debug::TracedValue* dict,
     const char* object_name,
     const void* id) {
   dict->SetString("cat", category);
@@ -32,32 +40,13 @@ void TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
 
 void TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
     const char* category,
-    base::DictionaryValue* dict,
+    base::debug::TracedValue* dict,
     const char* object_base_type_name,
     const char* object_name,
     const void* id) {
   dict->SetString("cat", category);
   dict->SetString("base_type", object_base_type_name);
   MakeDictIntoImplicitSnapshot(dict, object_name, id);
-}
-
-scoped_refptr<base::debug::ConvertableToTraceFormat> TracedValue::FromValue(
-    base::Value* value) {
-  return scoped_refptr<base::debug::ConvertableToTraceFormat>(
-      new TracedValue(value));
-}
-
-TracedValue::TracedValue(base::Value* value)
-  : value_(value) {
-}
-
-TracedValue::~TracedValue() {
-}
-
-void TracedValue::AppendAsTraceFormat(std::string* out) const {
-  std::string tmp;
-  base::JSONWriter::Write(value_.get(), &tmp);
-  *out += tmp;
 }
 
 }  // namespace cc

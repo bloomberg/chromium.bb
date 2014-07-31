@@ -35,7 +35,7 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
  private:
   virtual void GetDebugBorderProperties(SkColor* color,
                                         float* width) const OVERRIDE;
-  virtual void AsValueInto(base::DictionaryValue* dict) const OVERRIDE;
+  virtual void AsValueInto(base::debug::TracedValue* dict) const OVERRIDE;
   virtual const char* LayerTypeAsString() const OVERRIDE;
 
   SurfaceId surface_id_;

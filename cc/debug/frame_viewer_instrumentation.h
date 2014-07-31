@@ -23,17 +23,18 @@ const char kRasterMode[] = "rasterMode";
 const char kAnalyzeTask[] = "AnalyzeTask";
 const char kRasterTask[] = "RasterTask";
 
-scoped_ptr<base::Value> TileDataAsValue(const void* tile_id,
-                                        TileResolution tile_resolution,
-                                        int source_frame_number,
-                                        int layer_id) {
-  scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue);
-  res->Set(internal::kTileId, TracedValue::CreateIDRef(tile_id).release());
-  res->Set(internal::kTileResolution,
-           TileResolutionAsValue(tile_resolution).release());
+scoped_refptr<base::debug::ConvertableToTraceFormat> TileDataAsValue(
+    const void* tile_id,
+    TileResolution tile_resolution,
+    int source_frame_number,
+    int layer_id) {
+  scoped_refptr<base::debug::TracedValue> res(new base::debug::TracedValue());
+  TracedValue::SetIDRef(tile_id, res, internal::kTileId);
+  res->SetString(internal::kTileResolution,
+                 TileResolutionToString(tile_resolution));
   res->SetInteger(internal::kSourceFrameNumber, source_frame_number);
   res->SetInteger(internal::kLayerId, layer_id);
-  return res.PassAs<base::Value>();
+  return res;
 }
 
 }  // namespace internal
@@ -48,10 +49,8 @@ class ScopedAnalyzeTask {
         internal::kCategory,
         internal::kAnalyzeTask,
         internal::kTileData,
-        TracedValue::FromValue(internal::TileDataAsValue(tile_id,
-                                                         tile_resolution,
-                                                         source_frame_number,
-                                                         layer_id).release()));
+        internal::TileDataAsValue(
+            tile_id, tile_resolution, source_frame_number, layer_id));
   }
   ~ScopedAnalyzeTask() {
     TRACE_EVENT_END0(internal::kCategory, internal::kAnalyzeTask);
@@ -72,12 +71,10 @@ class ScopedRasterTask {
         internal::kCategory,
         internal::kRasterTask,
         internal::kTileData,
-        TracedValue::FromValue(internal::TileDataAsValue(tile_id,
-                                                         tile_resolution,
-                                                         source_frame_number,
-                                                         layer_id).release()),
+        internal::TileDataAsValue(
+            tile_id, tile_resolution, source_frame_number, layer_id),
         internal::kRasterMode,
-        TracedValue::FromValue(RasterModeAsValue(raster_mode).release()));
+        RasterModeToString(raster_mode));
   }
   ~ScopedRasterTask() {
     TRACE_EVENT_END0(internal::kCategory, internal::kRasterTask);

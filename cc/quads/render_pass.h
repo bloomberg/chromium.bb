@@ -18,6 +18,9 @@
 #include "ui/gfx/transform.h"
 
 namespace base {
+namespace debug {
+class TracedValue;
+}
 class Value;
 };
 
@@ -87,7 +90,7 @@ class CC_EXPORT RenderPass {
               const gfx::Transform& transform_to_root_target,
               bool has_transparent_background);
 
-  scoped_ptr<base::Value> AsValue() const;
+  void AsValueInto(base::debug::TracedValue* dict) const;
 
   SharedQuadState* CreateAndAppendSharedQuadState();
   template <typename DrawQuadType>

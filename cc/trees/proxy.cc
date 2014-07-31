@@ -83,8 +83,4 @@ Proxy::~Proxy() {
   DCHECK(IsMainThread());
 }
 
-scoped_ptr<base::Value> Proxy::SchedulerAsValueForTesting() {
-  return make_scoped_ptr(base::Value::CreateNullValue());
-}
-
 }  // namespace cc

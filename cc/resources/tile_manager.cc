@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/debug/trace_event_argument.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -336,12 +337,13 @@ inline ManagedTileBin BinFromTilePriority(const TilePriority& prio) {
 RasterTaskCompletionStats::RasterTaskCompletionStats()
     : completed_count(0u), canceled_count(0u) {}
 
-scoped_ptr<base::Value> RasterTaskCompletionStatsAsValue(
-    const RasterTaskCompletionStats& stats) {
-  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+scoped_refptr<base::debug::ConvertableToTraceFormat>
+RasterTaskCompletionStatsAsValue(const RasterTaskCompletionStats& stats) {
+  scoped_refptr<base::debug::TracedValue> state =
+      new base::debug::TracedValue();
   state->SetInteger("completed_count", stats.completed_count);
   state->SetInteger("canceled_count", stats.canceled_count);
-  return state.PassAs<base::Value>();
+  return state;
 }
 
 // static
@@ -667,7 +669,7 @@ void TileManager::ManageTiles(const GlobalStateThatImpactsTilePriority& state) {
                        "DidManage",
                        TRACE_EVENT_SCOPE_THREAD,
                        "state",
-                       TracedValue::FromValue(BasicStateAsValue().release()));
+                       BasicStateAsValue());
 
   TRACE_COUNTER_ID1("cc",
                     "unused_memory_bytes",
@@ -687,8 +689,7 @@ bool TileManager::UpdateVisibleTiles() {
       "DidUpdateVisibleTiles",
       TRACE_EVENT_SCOPE_THREAD,
       "stats",
-      TracedValue::FromValue(RasterTaskCompletionStatsAsValue(
-                                 update_visible_tiles_stats_).release()));
+      RasterTaskCompletionStatsAsValue(update_visible_tiles_stats_));
   update_visible_tiles_stats_ = RasterTaskCompletionStats();
 
   bool did_initialize_visible_tile = did_initialize_visible_tile_;
@@ -696,19 +697,27 @@ bool TileManager::UpdateVisibleTiles() {
   return did_initialize_visible_tile;
 }
 
-scoped_ptr<base::Value> TileManager::BasicStateAsValue() const {
-  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
-  state->SetInteger("tile_count", tiles_.size());
-  state->Set("global_state", global_state_.AsValue().release());
-  return state.PassAs<base::Value>();
+scoped_refptr<base::debug::ConvertableToTraceFormat>
+TileManager::BasicStateAsValue() const {
+  scoped_refptr<base::debug::TracedValue> value =
+      new base::debug::TracedValue();
+  BasicStateAsValueInto(value.get());
+  return value;
 }
 
-scoped_ptr<base::Value> TileManager::AllTilesAsValue() const {
-  scoped_ptr<base::ListValue> state(new base::ListValue());
-  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
-    state->Append(it->second->AsValue().release());
+void TileManager::BasicStateAsValueInto(base::debug::TracedValue* state) const {
+  state->SetInteger("tile_count", tiles_.size());
+  state->BeginDictionary("global_state");
+  global_state_.AsValueInto(state);
+  state->EndDictionary();
+}
 
-  return state.PassAs<base::Value>();
+void TileManager::AllTilesAsValueInto(base::debug::TracedValue* state) const {
+  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
+    state->BeginDictionary();
+    it->second->AsValueInto(state);
+    state->EndDictionary();
+  }
 }
 
 void TileManager::AssignGpuMemoryToTiles(

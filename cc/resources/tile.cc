@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/debug/trace_event_argument.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/traced_value.h"
 #include "cc/resources/tile_manager.h"
@@ -61,20 +62,31 @@ void Tile::MarkRequiredForActivation() {
   tile_manager_->DidChangeTilePriority(this);
 }
 
-scoped_ptr<base::Value> Tile::AsValue() const {
-  scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
+void Tile::AsValueInto(base::debug::TracedValue* res) const {
   TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug"), res.get(), "cc::Tile", this);
-  res->Set("picture_pile",
-           TracedValue::CreateIDRef(picture_pile_.get()).release());
+      TRACE_DISABLED_BY_DEFAULT("cc.debug"), res, "cc::Tile", this);
+  TracedValue::SetIDRef(picture_pile_.get(), res, "picture_pile");
   res->SetDouble("contents_scale", contents_scale_);
-  res->Set("content_rect", MathUtil::AsValue(content_rect_).release());
+
+  res->BeginArray("content_rect");
+  MathUtil::AddToTracedValue(content_rect_, res);
+  res->EndArray();
+
   res->SetInteger("layer_id", layer_id_);
-  res->Set("active_priority", priority_[ACTIVE_TREE].AsValue().release());
-  res->Set("pending_priority", priority_[PENDING_TREE].AsValue().release());
-  res->Set("managed_state", managed_state_.AsValue().release());
+
+  res->BeginDictionary("active_priority");
+  priority_[ACTIVE_TREE].AsValueInto(res);
+  res->EndDictionary();
+
+  res->BeginDictionary("pending_priority");
+  priority_[PENDING_TREE].AsValueInto(res);
+  res->EndDictionary();
+
+  res->BeginDictionary("managed_state");
+  managed_state_.AsValueInto(res);
+  res->EndDictionary();
+
   res->SetBoolean("use_picture_analysis", use_picture_analysis());
-  return res.PassAs<base::Value>();
 }
 
 size_t Tile::GPUMemoryUsageInBytes() const {

@@ -4,6 +4,7 @@
 
 #include "cc/quads/stream_video_draw_quad.h"
 
+#include "base/debug/trace_event_argument.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
@@ -49,9 +50,11 @@ const StreamVideoDrawQuad* StreamVideoDrawQuad::MaterialCast(
   return static_cast<const StreamVideoDrawQuad*>(quad);
 }
 
-void StreamVideoDrawQuad::ExtendValue(base::DictionaryValue* value) const {
+void StreamVideoDrawQuad::ExtendValue(base::debug::TracedValue* value) const {
   value->SetInteger("resource_id", resource_id);
-  value->Set("matrix", MathUtil::AsValue(matrix).release());
+  value->BeginArray("matrix");
+  MathUtil::AddToTracedValue(matrix, value);
+  value->EndArray();
 }
 
 }  // namespace cc

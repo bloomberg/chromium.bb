@@ -4,6 +4,7 @@
 
 #include "cc/quads/surface_draw_quad.h"
 
+#include "base/debug/trace_event_argument.h"
 #include "base/logging.h"
 #include "base/values.h"
 
@@ -42,7 +43,7 @@ const SurfaceDrawQuad* SurfaceDrawQuad::MaterialCast(const DrawQuad* quad) {
   return static_cast<const SurfaceDrawQuad*>(quad);
 }
 
-void SurfaceDrawQuad::ExtendValue(base::DictionaryValue* value) const {
+void SurfaceDrawQuad::ExtendValue(base::debug::TracedValue* value) const {
   value->SetInteger("surface_id", surface_id.id);
 }
 

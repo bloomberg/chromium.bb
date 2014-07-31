@@ -58,7 +58,7 @@ class CC_EXPORT TiledLayerImpl : public LayerImpl {
 
   virtual void GetDebugBorderProperties(SkColor* color, float* width) const
       OVERRIDE;
-  virtual void AsValueInto(base::DictionaryValue* state) const OVERRIDE;
+  virtual void AsValueInto(base::debug::TracedValue* dict) const OVERRIDE;
 
  private:
   virtual const char* LayerTypeAsString() const OVERRIDE;

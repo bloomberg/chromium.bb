@@ -13,6 +13,13 @@
 #include "cc/resources/raster_worker_pool.h"
 #include "cc/resources/rasterizer.h"
 
+namespace base {
+namespace debug {
+class ConvertableToTraceFormat;
+class TracedValue;
+}
+}
+
 namespace cc {
 class ResourcePool;
 class ResourceProvider;
@@ -77,8 +84,8 @@ class CC_EXPORT ImageCopyRasterWorkerPool : public RasterWorkerPool,
   void OnRasterFinished();
   void OnRasterRequiredForActivationFinished();
   void FlushCopies();
-  scoped_ptr<base::Value> StateAsValue() const;
-  scoped_ptr<base::Value> StagingStateAsValue() const;
+  scoped_refptr<base::debug::ConvertableToTraceFormat> StateAsValue() const;
+  void StagingStateAsValueInto(base::debug::TracedValue* staging_state) const;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   TaskGraphRunner* task_graph_runner_;

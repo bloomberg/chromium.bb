@@ -16,6 +16,9 @@
 #include "ui/gfx/geometry/point.h"
 
 namespace base {
+namespace debug {
+class TracedValue;
+}
 class Value;
 }
 
@@ -220,7 +223,7 @@ class CC_EXPORT FilterOperation {
                                const FilterOperation* to,
                                double progress);
 
-  scoped_ptr<base::Value> AsValue() const;
+  void AsValueInto(base::debug::TracedValue* value) const;
 
  private:
   FilterOperation(FilterType type, float amount);

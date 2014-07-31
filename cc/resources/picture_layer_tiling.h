@@ -18,6 +18,12 @@
 #include "cc/resources/tile_priority.h"
 #include "ui/gfx/rect.h"
 
+namespace base {
+namespace debug {
+class TracedValue;
+}
+}
+
 namespace cc {
 
 template <typename LayerType>
@@ -242,7 +248,7 @@ class CC_EXPORT PictureLayerTiling {
     return frame_time_in_seconds != last_impl_frame_time_in_seconds_;
   }
 
-  scoped_ptr<base::Value> AsValue() const;
+  void AsValueInto(base::debug::TracedValue* array) const;
   size_t GPUMemoryUsageInBytes() const;
 
   struct RectExpansionCache {

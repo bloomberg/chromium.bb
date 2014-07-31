@@ -39,6 +39,7 @@
 namespace base {
 namespace debug {
 class ConvertableToTraceFormat;
+class TracedValue;
 }
 
 class DictionaryValue;
@@ -521,7 +522,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);
   virtual void PushPropertiesTo(LayerImpl* layer);
 
-  scoped_ptr<base::Value> AsValue() const;
+  virtual void AsValueInto(base::debug::TracedValue* dict) const;
+
   virtual size_t GPUMemoryUsageInBytes() const;
 
   void SetNeedsPushProperties();
@@ -562,8 +564,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
                              AppendQuadsData* append_quads_data,
                              SkColor color,
                              float width) const;
-
-  virtual void AsValueInto(base::DictionaryValue* dict) const;
 
   void NoteLayerPropertyChanged();
   void NoteLayerPropertyChangedForSubtree();

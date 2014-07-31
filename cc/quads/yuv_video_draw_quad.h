@@ -61,7 +61,7 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
   static const YUVVideoDrawQuad* MaterialCast(const DrawQuad*);
 
  private:
-  virtual void ExtendValue(base::DictionaryValue* value) const OVERRIDE;
+  virtual void ExtendValue(base::debug::TracedValue* value) const OVERRIDE;
 };
 
 }  // namespace cc

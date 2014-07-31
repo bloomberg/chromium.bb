@@ -10,6 +10,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
+#include "base/debug/trace_event_argument.h"
 #include "base/debug/trace_event_synthetic_delay.h"
 #include "cc/base/swap_promise.h"
 #include "cc/debug/benchmark_instrumentation.h"
@@ -1295,28 +1296,27 @@ ThreadProxy::BeginMainFrameAndCommitState::BeginMainFrameAndCommitState()
 
 ThreadProxy::BeginMainFrameAndCommitState::~BeginMainFrameAndCommitState() {}
 
-scoped_ptr<base::Value> ThreadProxy::AsValue() const {
-  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
-
+void ThreadProxy::AsValueInto(base::debug::TracedValue* state) const {
   CompletionEvent completion;
   {
     DebugScopedSetMainThreadBlocked main_thread_blocked(
         const_cast<ThreadProxy*>(this));
+    scoped_refptr<base::debug::TracedValue> state_refptr(state);
     Proxy::ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(&ThreadProxy::AsValueOnImplThread,
                    impl_thread_weak_ptr_,
                    &completion,
-                   state.get()));
+                   state_refptr));
     completion.Wait();
   }
-  return state.PassAs<base::Value>();
 }
 
 void ThreadProxy::AsValueOnImplThread(CompletionEvent* completion,
-                                      base::DictionaryValue* state) const {
-  state->Set("layer_tree_host_impl",
-             impl().layer_tree_host_impl->AsValue().release());
+                                      base::debug::TracedValue* state) const {
+  state->BeginDictionary("layer_tree_host_impl");
+  impl().layer_tree_host_impl->AsValueInto(state);
+  state->EndDictionary();
   completion->Signal();
 }
 
@@ -1342,30 +1342,6 @@ void ThreadProxy::CommitPendingOnImplThreadForTesting(
     request->commit_pending = impl().scheduler->CommitPending();
   else
     request->commit_pending = false;
-  request->completion.Signal();
-}
-
-scoped_ptr<base::Value> ThreadProxy::SchedulerAsValueForTesting() {
-  if (IsImplThread())
-    return impl().scheduler->AsValue().Pass();
-
-  SchedulerStateRequest scheduler_state_request;
-  {
-    DebugScopedSetMainThreadBlocked main_thread_blocked(this);
-    Proxy::ImplThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ThreadProxy::SchedulerAsValueOnImplThreadForTesting,
-                   impl_thread_weak_ptr_,
-                   &scheduler_state_request));
-    scheduler_state_request.completion.Wait();
-  }
-  return scheduler_state_request.state.Pass();
-}
-
-void ThreadProxy::SchedulerAsValueOnImplThreadForTesting(
-    SchedulerStateRequest* request) {
-  DCHECK(IsImplThread());
-  request->state = impl().scheduler->AsValue();
   request->completion.Signal();
 }
 

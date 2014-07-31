@@ -4,6 +4,7 @@
 
 #include "cc/layers/surface_layer_impl.h"
 
+#include "base/debug/trace_event_argument.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/trees/occlusion_tracker.h"
@@ -66,7 +67,7 @@ void SurfaceLayerImpl::GetDebugBorderProperties(SkColor* color,
   *width = DebugColors::SurfaceLayerBorderWidth(layer_tree_impl());
 }
 
-void SurfaceLayerImpl::AsValueInto(base::DictionaryValue* dict) const {
+void SurfaceLayerImpl::AsValueInto(base::debug::TracedValue* dict) const {
   LayerImpl::AsValueInto(dict);
   dict->SetInteger("surface_id", surface_id_.id);
 }
