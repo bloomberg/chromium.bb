@@ -244,6 +244,14 @@ void BookmarksBridge::SetBookmarkUrl(JNIEnv* env,
       GURL(base::android::ConvertJavaStringToUTF16(env, url)));
 }
 
+bool BookmarksBridge::DoesBookmarkExist(JNIEnv* env,
+                                        jobject obj,
+                                        jlong id,
+                                        jint type) {
+  DCHECK(IsLoaded());
+  return GetNodeByID(id, type);
+}
+
 void BookmarksBridge::GetBookmarksForFolder(JNIEnv* env,
                                             jobject obj,
                                             jobject j_folder_id_obj,

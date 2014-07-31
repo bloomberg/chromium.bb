@@ -234,6 +234,14 @@ public class BookmarksBridge {
     }
 
     /**
+     * @return Whether the given bookmark exist in the current bookmark model, e.g., not deleted.
+     */
+    public boolean doesBookmarkExist(BookmarkId id) {
+        assert mIsNativeBookmarkModelLoaded;
+        return nativeDoesBookmarkExist(mNativeBookmarksBridge, id.mId, id.mType);
+    }
+
+    /**
      * Fetches the bookmarks of the given folder. This is an always-synchronous version of another
      * getBookmarksForForder function.
      *
@@ -416,6 +424,7 @@ public class BookmarksBridge {
             String title);
     private native void nativeSetBookmarkUrl(long nativeBookmarksBridge, long id, int type,
             String url);
+    private native boolean nativeDoesBookmarkExist(long nativeBookmarksBridge, long id, int type);
     private native void nativeGetBookmarksForFolder(long nativeBookmarksBridge,
             BookmarkId folderId, BookmarksCallback callback,
             List<BookmarkItem> bookmarksList);

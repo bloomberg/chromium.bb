@@ -62,6 +62,8 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
                       jint type,
                       jstring url);
 
+  bool DoesBookmarkExist(JNIEnv* env, jobject obj, jlong id, jint type);
+
   void GetBookmarksForFolder(JNIEnv* env,
                              jobject obj,
                              jobject j_folder_id_obj,
