@@ -587,11 +587,6 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
   size_t    unmap_offset;
   size_t    chunk_size;
 
-  NaClLog(4,
-          ("NaClHostDescMap(0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR
-           ", 0x%"NACL_PRIxS", 0x%x, 0x%x, 0x%016"NACL_PRIxNACL_OFF64")\n"),
-          (uintptr_t) d, (uintptr_t) start_addr,
-          len, prot, flags, offset);
   if (NULL == d && 0 == (flags & NACL_ABI_MAP_ANONYMOUS)) {
     NaClLog(LOG_FATAL, "NaClHostDescMap: 'this' is NULL and not anon map\n");
   }

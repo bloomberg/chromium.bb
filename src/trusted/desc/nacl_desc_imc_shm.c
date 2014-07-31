@@ -144,10 +144,6 @@ static uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
   void          *result;
   nacl_off64_t  tmp_off64;
 
-  NaClLog(4,
-          "NaClDescImcShmMmap(,,0x%08"NACL_PRIxPTR",0x%"NACL_PRIxS","
-          "0x%x,0x%x,0x%08"NACL_PRIxNACL_OFF64")\n",
-          (uintptr_t) start_addr, len, prot, flags, offset);
   /*
    * shm must have NACL_ABI_MAP_SHARED in flags, and all calls through
    * this API must supply a start_addr, so NACL_ABI_MAP_FIXED is

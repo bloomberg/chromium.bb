@@ -26,13 +26,6 @@
 #define NULL 0
 #endif
 
-#define NACL_CONCAT3_(a, b, c) a ## b ## c
-#ifdef __native_client__
-#define NACL_PRI_(fmt, size) NACL_CONCAT3_(PRI, fmt, size)
-#else
-#define NACL_PRI_(fmt, size) NACL_CONCAT3_(NACL_PRI, fmt, size)
-#endif
-
 #ifndef nacl_abi___dev_t_defined
 #define nacl_abi___dev_t_defined
 typedef int64_t nacl_abi___dev_t;
@@ -89,13 +82,6 @@ typedef nacl_abi__off_t nacl_abi_off_t;
 #endif
 #endif
 
-#define NACL_PRIdNACL_OFF NACL_PRI_(d, 64)
-#define NACL_PRIiNACL_OFF NACL_PRI_(i, 64)
-#define NACL_PRIoNACL_OFF NACL_PRI_(o, 64)
-#define NACL_PRIuNACL_OFF NACL_PRI_(u, 64)
-#define NACL_PRIxNACL_OFF NACL_PRI_(x, 64)
-#define NACL_PRIXNACL_OFF NACL_PRI_(X, 64)
-
 #ifndef nacl_abi___off64_t_defined
 #define nacl_abi___off64_t_defined
 typedef int64_t nacl_abi__off64_t;
@@ -103,13 +89,6 @@ typedef int64_t nacl_abi__off64_t;
 typedef nacl_abi__off64_t nacl_abi_off64_t;
 #endif
 #endif
-
-#define NACL_PRIdNACL_OFF64 NACL_PRI_(d, 64)
-#define NACL_PRIiNACL_OFF64 NACL_PRI_(i, 64)
-#define NACL_PRIoNACL_OFF64 NACL_PRI_(o, 64)
-#define NACL_PRIuNACL_OFF64 NACL_PRI_(u, 64)
-#define NACL_PRIxNACL_OFF64 NACL_PRI_(x, 64)
-#define NACL_PRIXNACL_OFF64 NACL_PRI_(X, 64)
 
 
 #if !(defined(__GLIBC__) && defined(__native_client__))

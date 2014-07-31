@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
@@ -245,11 +246,7 @@ int BasicPermChecks(struct NaClHostDesc *test_file,
   CHECK(params->seq_read_bytes1 <= sizeof buffer);
   CHECK(params->seq_read_bytes2 <= sizeof buffer);
   seek_result = NaClHostDescSeek(test_file, 0, 0);
-  if (0 != seek_result) {
-    fprintf(stderr, "BasicPermChecks: Initial seek, got %"
-            NACL_PRIdNACL_OFF64"\n", seek_result);
-    return 0;
-  }
+  ASSERT_EQ(0, seek_result);
   /*
    * Some tests skip the initial read.
    */
@@ -329,13 +326,7 @@ int BasicPermChecks(struct NaClHostDesc *test_file,
     if (result == (ssize_t) len) {
       /* re-read by seek/sequential read and check data, using ro_view */
       seek_result = NaClHostDescSeek(ro_view, params->pwrite_offset, 0);
-      if (params->pwrite_offset != seek_result) {
-        fprintf(stderr,
-                "BasicPermChecks: pwrite verification seek failed: %"
-                NACL_PRIdNACL_OFF64"\n",
-                seek_result);
-        return 0;
-      }
+      ASSERT_EQ(params->pwrite_offset, seek_result);
       memset(buffer, 0, sizeof buffer);
       CHECK(len <= sizeof buffer);
       result = NaClHostDescRead(ro_view, buffer, len);
@@ -390,26 +381,14 @@ int SeekPastEndAndWriteTest(struct NaClHostDesc *test_file,
     fprintf(stderr, "SeekPastEndAndWriteTest: post-write fstat failed\n");
     return 0;
   }
-  if (stbuf.st_size != new_size + 1) {
-    fprintf(stderr,
-            "SeekPastEndAndWriteTest: size did not extend to expected value\n"
-            " got %"NACL_PRIdNACL_OFF64", expected %"NACL_PRIdNACL_OFF64"\n",
-            (nacl_off64_t) stbuf.st_size, new_size + 1);
-    return 0;
-  }
+  ASSERT_EQ(stbuf.st_size, new_size + 1);
   err = NaClHostDescFstat(ro_view, &stbuf);
   if (0 != err) {
     fprintf(stderr,
             "SeekPastEndAndWriteTest: post-write ro_view fstat failed\n");
     return 0;
   }
-  if (stbuf.st_size != new_size + 1) {
-    fprintf(stderr,
-            "SeekPastEndAndWriteTest: ro_view size error\n"
-            " got %"NACL_PRIdNACL_OFF64", expected %"NACL_PRIdNACL_OFF64"\n",
-            (nacl_off64_t) stbuf.st_size, new_size + 1);
-    return 0;
-  }
+  ASSERT_EQ(stbuf.st_size, new_size + 1);
   return 1;
 }
 
@@ -483,13 +462,7 @@ int PWriteUsesOffsetSeekReadVerification(struct NaClHostDesc *test_file,
             " seek failed, errno %d\n", -(int) seek_err);
     return 0;
   }
-  if (seek_err != (nacl_off64_t) 0) {
-    fprintf(stderr,
-            "PWriteUsesOffsetSeekReadVerification:"
-            " seek returned bad position %"NACL_PRIdNACL_OFF64"\n",
-            seek_err);
-    return 0;
-  }
+  ASSERT_EQ(seek_err, (nacl_off64_t) 0);
   CHECK(len <= sizeof buffer);
   io_rv = NaClHostDescRead(test_file, buffer, len);
   if (io_rv < 0) {

@@ -363,8 +363,8 @@ static int CheckNull(char const *buffer, size_t nbytes, nacl_off64_t offset) {
   for (ix = 0; ix < nbytes; ++ix) {
     if (buffer[ix] != '\0') {
       fprintf(stderr,
-              "CheckHole: byte 0x%"NACL_PRIxNACL_OFF64" not NUL\n",
-              offset + ix);
+              "CheckHole: byte 0x%"NACL_PRIx64" not NUL\n",
+              (uint64_t) (offset + ix));
       return 0;
     }
   }

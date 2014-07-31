@@ -337,8 +337,8 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
    */
   if (offset < 0) {
     NaClLog(1,  /* application bug */
-            "NaClSysMmap: negative file offset: %"NACL_PRIdNACL_OFF"\n",
-            offset);
+            "NaClSysMmap: negative file offset: %"NACL_PRId64"\n",
+            (int64_t) offset);
     map_result = -NACL_ABI_EINVAL;
     goto cleanup;
   }
@@ -423,9 +423,6 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
     }
 
     file_bytes = file_size - offset;
-    NaClLog(4,
-            "NaClSysMmapIntern: file_bytes 0x%016"NACL_PRIxNACL_OFF"\n",
-            file_bytes);
     if ((nacl_off64_t) kMaxUsableFileSize < file_bytes) {
       host_rounded_file_bytes = kMaxUsableFileSize;
     } else {
@@ -973,7 +970,7 @@ int32_t NaClSysMmap(struct NaClAppThread  *natp,
   }
   offset = *(nacl_abi_off_t volatile *) sysaddr;
 
-  NaClLog(4, " offset = 0x%08"NACL_PRIxNACL_OFF"\n", offset);
+  NaClLog(4, " offset = 0x%08"NACL_PRIx64"\n", (uint64_t) offset);
 
   retval = NaClSysMmapIntern(nap, start, length, prot, flags, d, offset);
 cleanup:

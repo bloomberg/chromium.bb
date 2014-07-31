@@ -50,8 +50,8 @@ int32_t NaClSysPRead(struct NaClAppThread *natp,
     goto cleanup;
   }
   NaClLog(3,
-          "... pread offset %"NACL_PRIuNACL_OFF" (0x%"NACL_PRIxNACL_OFF")\n",
-          offset, offset);
+          "... pread offset %"NACL_PRIu64" (0x%"NACL_PRIx64")\n",
+          (uint64_t) offset, (uint64_t) offset);
   sysaddr = NaClUserToSysAddrRange(nap, (uintptr_t) usr_addr, buffer_bytes);
   if (kNaClBadAddress == sysaddr) {
     retval = -NACL_ABI_EFAULT;
@@ -99,8 +99,8 @@ int32_t NaClSysPWrite(struct NaClAppThread *natp,
     goto cleanup;
   }
   NaClLog(3,
-          "... pwrite offset %"NACL_PRIuNACL_OFF" (0x%"NACL_PRIxNACL_OFF")\n",
-          offset, offset);
+          "... pwrite offset %"NACL_PRIu64" (0x%"NACL_PRIx64")\n",
+          (uint64_t) offset, (uint64_t) offset);
   sysaddr = NaClUserToSysAddrRange(nap, (uintptr_t) usr_addr, buffer_bytes);
   if (kNaClBadAddress == sysaddr) {
     retval = -NACL_ABI_EFAULT;

@@ -368,20 +368,14 @@ static int NaClGioShmCtorIntern(struct NaClGioShm  *self,
    * equal to -1.
    */
   if (stbuf.nacl_abi_st_size < 0) {
-    NaClLog(LOG_ERROR,
-            ("NaClGioShmCtorIntern: actual shm size negative"
-             " %"NACL_PRIdNACL_OFF"\n"),
-            stbuf.nacl_abi_st_size);
+    NaClLog(LOG_ERROR, "NaClGioShmCtorIntern: actual shm size negative\n");
     goto cleanup;
   }
   if (stbuf.nacl_abi_st_size <= (nacl_abi_off_t) SIZE_T_MAX
       && (size_t) stbuf.nacl_abi_st_size < shm_size) {
     NaClLog(LOG_ERROR,
-            ("NaClGioShmCtorIntern: claimed shm file size greater than"
-             " actual shm segment size, %"NACL_PRIuS" vs"
-             " %"NACL_PRIuNACL_OFF"\n"),
-            shm_size,
-            stbuf.nacl_abi_st_size);
+            "NaClGioShmCtorIntern: claimed shm file size greater than"
+            " actual shm segment size\n");
     goto cleanup;
   }
   if (OFF_T_MAX < SIZE_T_MAX && (size_t) OFF_T_MAX < shm_size) {

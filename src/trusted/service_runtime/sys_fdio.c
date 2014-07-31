@@ -370,7 +370,7 @@ int32_t NaClSysLseek(struct NaClAppThread *natp,
     retval = -NACL_ABI_EFAULT;
     goto cleanup_unref;
   }
-  NaClLog(4, "offset 0x%08"NACL_PRIxNACL_OFF"\n", offset);
+  NaClLog(4, "offset 0x%08"NACL_PRIx64"\n", (uint64_t) offset);
 
   retval64 = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
               Seek)(ndp, (nacl_off64_t) offset, whence);

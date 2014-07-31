@@ -41,11 +41,6 @@ static int NaClPageAllocInternalFlags(void **p, size_t size, int map_flags) {
 
   map_flags |= MAP_PRIVATE | MAP_ANONYMOUS;
 
-  NaClLog(4,
-          "NaClPageAllocInternalFlags:"
-          " mmap(%p, %"NACL_PRIxS", %#x, %#x, %d, %"NACL_PRIdNACL_OFF64")\n",
-          *p, size, PROT_NONE, map_flags, -1,
-          (nacl_abi_off64_t) 0);
   addr = mmap(*p, size, PROT_NONE, map_flags, -1, (off_t) 0);
   if (MAP_FAILED == addr) {
     addr = NULL;
