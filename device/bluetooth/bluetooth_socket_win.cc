@@ -192,7 +192,8 @@ void BluetoothSocketWin::DoConnect(
     return;
   }
 
-  ResetTCPSocket();
+  scoped_ptr<net::TCPSocket> scoped_socket(
+      new net::TCPSocket(NULL, net::NetLog::Source()));
   net::EnsureWinsockInit();
   SOCKET socket_fd = socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
   SOCKADDR_BTH sa;
@@ -217,7 +218,7 @@ void BluetoothSocketWin::DoConnect(
   // Note: We don't have a meaningful |IPEndPoint|, but that is ok since the
   // TCPSocket implementation does not actually require one.
   int net_result =
-      tcp_socket()->AdoptConnectedSocket(socket_fd, net::IPEndPoint());
+      scoped_socket->AdoptConnectedSocket(socket_fd, net::IPEndPoint());
   if (net_result != net::OK) {
     error_callback.Run("Error connecting to socket: " +
                        std::string(net::ErrorToString(net_result)));
@@ -225,6 +226,7 @@ void BluetoothSocketWin::DoConnect(
     return;
   }
 
+  SetTCPSocket(scoped_socket.Pass());
   success_callback.Run();
 }
 
