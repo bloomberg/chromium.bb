@@ -57,6 +57,7 @@ GIT_REPOS = {
     'nacl-newlib': 'nacl-newlib.git',
     'llvm-test-suite': 'pnacl-llvm-testsuite.git',
     'compiler-rt': 'pnacl-compiler-rt.git',
+    'subzero': 'pnacl-subzero.git',
     }
 
 GIT_BASE_URL = 'https://chromium.googlesource.com/native_client/'
@@ -266,6 +267,11 @@ def HostToolsSources(GetGitSyncCmds):
           'output_dirname': 'llvm',
           'commands': GetGitSyncCmds('llvm'),
       },
+      'subzero_src': {
+          'type': 'source',
+          'output_dirname': 'subzero',
+          'commands': GetGitSyncCmds('subzero'),
+      },
   }
   return sources
 
@@ -398,7 +404,8 @@ def HostTools(host, options):
   }
   llvm_autoconf = {
       H('llvm'): {
-          'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src'],
+          'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src',
+                           'subzero_src'],
           'type': 'build',
           'output_subdir': HostSubdir(host),
           'commands': [
@@ -421,6 +428,7 @@ def HostTools(host, options):
               command.Command(MakeCommand(host) + [
                   'VERBOSE=1',
                   'NACL_SANDBOX=0',
+                  'SUBZERO_SRC_ROOT=%(abs_subzero_src)s',
                   'all']),
               command.Command(MAKE_DESTDIR_CMD + ['install']),
               command.Remove(*[os.path.join('%(output)s', 'lib', f) for f in
