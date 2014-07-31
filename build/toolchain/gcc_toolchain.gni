@@ -106,7 +106,7 @@ template("gcc_toolchain") {
       # TODO(cjhopman): There needs to be a way for gn to correctly figure out
       # the outputs of a solink command.
 
-      link_command = "$ld -shared \$ldflags -o \$lib -Wl,-soname=\$soname $rspfile_content"
+      link_command = "$ld -shared \$ldflags -o \$lib -Wl,-soname=\$soname @\$rspfile"
       toc_command = "{ readelf -d \${lib} | grep SONAME ; nm -gD -f p \${lib} | cut -f1-2 -d' '; } > \${lib}.tmp"
       replace_command = "if ! cmp -s \${lib}.tmp \${lib}.TOC; then mv \${lib}.tmp \${lib}.TOC; fi"
       command = "$link_command && $toc_command && $replace_command"
