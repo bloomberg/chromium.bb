@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/api/gcd_private/gcd_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/local_discovery/gcd_api_flow.h"
 #include "chrome/common/extensions/api/mdns.h"
 #include "extensions/common/switches.h"
 #include "net/url_request/test_url_fetcher_factory.h"

@@ -5,21 +5,30 @@
 #include "chrome/browser/extensions/api/gcd_private/gcd_private_api.h"
 
 #include "base/lazy_instance.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/local_discovery/cloud_device_list.h"
 #include "chrome/browser/local_discovery/cloud_print_printer_list.h"
+#include "chrome/browser/local_discovery/gcd_api_flow.h"
 #include "chrome/browser/local_discovery/gcd_constants.h"
 #include "chrome/browser/local_discovery/privet_device_lister_impl.h"
 #include "chrome/browser/local_discovery/privet_http_impl.h"
+#include "chrome/browser/local_discovery/privetv3_session.h"
+#include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "extensions/browser/event_router.h"
 #include "net/base/net_util.h"
+
+#if defined(ENABLE_WIFI_BOOTSTRAPPING)
+#include "chrome/browser/local_discovery/wifi/wifi_manager.h"
+#endif
 
 namespace extensions {
 
@@ -84,11 +93,106 @@ scoped_ptr<local_discovery::GCDApiFlow> MakeGCDApiFlow(Profile* profile) {
 
 }  // namespace
 
+class GcdPrivateSessionHolder;
+
+class GcdPrivateAPIImpl : public EventRouter::Observer,
+                          public local_discovery::PrivetDeviceLister::Delegate {
+ public:
+  typedef base::Callback<void(bool success)> SuccessCallback;
+
+  typedef base::Callback<void(int session_id,
+                              api::gcd_private::Status status,
+                              const std::string& code,
+                              api::gcd_private::ConfirmationType type)>
+      ConfirmationCodeCallback;
+
+  typedef base::Callback<void(api::gcd_private::Status status)>
+      SessionEstablishedCallback;
+
+  typedef base::Callback<void(api::gcd_private::Status status,
+                              const base::DictionaryValue& response)>
+      MessageResponseCallback;
+
+  explicit GcdPrivateAPIImpl(content::BrowserContext* context);
+  virtual ~GcdPrivateAPIImpl();
+
+  static GcdPrivateAPIImpl* Get(content::BrowserContext* context);
+
+  bool QueryForDevices();
+
+  void EstablishSession(const std::string& ip_address,
+                        int port,
+                        ConfirmationCodeCallback callback);
+
+  void ConfirmCode(int session_id, SessionEstablishedCallback callback);
+
+  void SendMessage(int session_id,
+                   const std::string& api,
+                   const base::DictionaryValue& input,
+                   MessageResponseCallback callback);
+
+  void RequestWifiPassword(const std::string& ssid,
+                           const SuccessCallback& callback);
+
+  void RemoveSession(int session_id);
+
+ private:
+  typedef std::map<std::string /* id_string */,
+                   linked_ptr<api::gcd_private::GCDDevice> > GCDDeviceMap;
+
+  typedef std::map<int /* session id*/, linked_ptr<GcdPrivateSessionHolder> >
+      GCDSessionMap;
+
+  typedef std::map<std::string /* ssid */, std::string /* password */>
+      PasswordMap;
+
+  // EventRouter::Observer implementation.
+  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
+
+  // local_discovery::PrivetDeviceLister implementation.
+  virtual void DeviceChanged(
+      bool added,
+      const std::string& name,
+      const local_discovery::DeviceDescription& description) OVERRIDE;
+  virtual void DeviceRemoved(const std::string& name) OVERRIDE;
+  virtual void DeviceCacheFlushed() OVERRIDE;
+
+  void SendMessageInternal(int session_id,
+                           const std::string& api,
+                           const base::DictionaryValue& input,
+                           const MessageResponseCallback& callback);
+
+#if defined(ENABLE_WIFI_BOOTSTRAPPING)
+  void OnWifiPassword(const SuccessCallback& callback,
+                      bool success,
+                      const std::string& ssid,
+                      const std::string& password);
+  void StartWifiIfNotStarted();
+#endif
+
+  int num_device_listeners_;
+  scoped_refptr<local_discovery::ServiceDiscoverySharedClient>
+      service_discovery_client_;
+  scoped_ptr<local_discovery::PrivetDeviceLister> privet_device_lister_;
+  GCDDeviceMap known_devices_;
+
+  GCDSessionMap sessions_;
+  int last_session_id_;
+
+  content::BrowserContext* const browser_context_;
+
+#if defined(ENABLE_WIFI_BOOTSTRAPPING)
+  scoped_ptr<local_discovery::wifi::WifiManager> wifi_manager_;
+  PasswordMap wifi_passwords_;
+#endif
+};
+
 class GcdPrivateRequest : public local_discovery::PrivetV3Session::Request {
  public:
   GcdPrivateRequest(const std::string& api,
                     const base::DictionaryValue& input,
-                    const GcdPrivateAPI::MessageResponseCallback& callback,
+                    const GcdPrivateAPIImpl::MessageResponseCallback& callback,
                     GcdPrivateSessionHolder* session_holder);
   virtual ~GcdPrivateRequest();
 
@@ -103,7 +207,7 @@ class GcdPrivateRequest : public local_discovery::PrivetV3Session::Request {
  private:
   std::string api_;
   scoped_ptr<base::DictionaryValue> input_;
-  GcdPrivateAPI::MessageResponseCallback callback_;
+  GcdPrivateAPIImpl::MessageResponseCallback callback_;
   GcdPrivateSessionHolder* session_holder_;
 };
 
@@ -122,11 +226,12 @@ class GcdPrivateSessionHolder
 
   void Start(const ConfirmationCodeCallback& callback);
 
-  void ConfirmCode(const GcdPrivateAPI::SessionEstablishedCallback& callback);
+  void ConfirmCode(
+      const GcdPrivateAPIImpl::SessionEstablishedCallback& callback);
 
   void SendMessage(const std::string& api,
                    const base::DictionaryValue& input,
-                   GcdPrivateAPI::MessageResponseCallback callback);
+                   GcdPrivateAPIImpl::MessageResponseCallback callback);
 
   void DeleteRequest(GcdPrivateRequest* request);
 
@@ -143,10 +248,10 @@ class GcdPrivateSessionHolder
   RequestVector requests_;
 
   ConfirmationCodeCallback confirm_callback_;
-  GcdPrivateAPI::SessionEstablishedCallback session_established_callback_;
+  GcdPrivateAPIImpl::SessionEstablishedCallback session_established_callback_;
 };
 
-GcdPrivateAPI::GcdPrivateAPI(content::BrowserContext* context)
+GcdPrivateAPIImpl::GcdPrivateAPIImpl(content::BrowserContext* context)
     : num_device_listeners_(0), last_session_id_(0), browser_context_(context) {
   DCHECK(browser_context_);
   if (EventRouter::Get(context)) {
@@ -157,19 +262,13 @@ GcdPrivateAPI::GcdPrivateAPI(content::BrowserContext* context)
   }
 }
 
-GcdPrivateAPI::~GcdPrivateAPI() {
+GcdPrivateAPIImpl::~GcdPrivateAPIImpl() {
   if (EventRouter::Get(browser_context_)) {
     EventRouter::Get(browser_context_)->UnregisterObserver(this);
   }
 }
 
-// static
-BrowserContextKeyedAPIFactory<GcdPrivateAPI>*
-GcdPrivateAPI::GetFactoryInstance() {
-  return g_factory.Pointer();
-}
-
-void GcdPrivateAPI::OnListenerAdded(const EventListenerInfo& details) {
+void GcdPrivateAPIImpl::OnListenerAdded(const EventListenerInfo& details) {
   if (details.event_name == gcd_private::OnDeviceStateChanged::kEventName ||
       details.event_name == gcd_private::OnDeviceRemoved::kEventName) {
     num_device_listeners_++;
@@ -191,7 +290,7 @@ void GcdPrivateAPI::OnListenerAdded(const EventListenerInfo& details) {
   }
 }
 
-void GcdPrivateAPI::OnListenerRemoved(const EventListenerInfo& details) {
+void GcdPrivateAPIImpl::OnListenerRemoved(const EventListenerInfo& details) {
   if (details.event_name == gcd_private::OnDeviceStateChanged::kEventName ||
       details.event_name == gcd_private::OnDeviceRemoved::kEventName) {
     num_device_listeners_--;
@@ -203,7 +302,7 @@ void GcdPrivateAPI::OnListenerRemoved(const EventListenerInfo& details) {
   }
 }
 
-void GcdPrivateAPI::DeviceChanged(
+void GcdPrivateAPIImpl::DeviceChanged(
     bool added,
     const std::string& name,
     const local_discovery::DeviceDescription& description) {
@@ -222,7 +321,7 @@ void GcdPrivateAPI::DeviceChanged(
       ->BroadcastEvent(MakeDeviceStateChangedEvent(*device));
 }
 
-void GcdPrivateAPI::DeviceRemoved(const std::string& name) {
+void GcdPrivateAPIImpl::DeviceRemoved(const std::string& name) {
   GCDDeviceMap::iterator found = known_devices_.find(kIDPrefixMdns + name);
   linked_ptr<gcd_private::GCDDevice> device = found->second;
   known_devices_.erase(found);
@@ -231,7 +330,7 @@ void GcdPrivateAPI::DeviceRemoved(const std::string& name) {
       ->BroadcastEvent(MakeDeviceRemovedEvent(device->device_id));
 }
 
-void GcdPrivateAPI::DeviceCacheFlushed() {
+void GcdPrivateAPIImpl::DeviceCacheFlushed() {
   for (GCDDeviceMap::iterator i = known_devices_.begin();
        i != known_devices_.end();
        i++) {
@@ -242,7 +341,14 @@ void GcdPrivateAPI::DeviceCacheFlushed() {
   known_devices_.clear();
 }
 
-bool GcdPrivateAPI::QueryForDevices() {
+// static
+GcdPrivateAPIImpl* GcdPrivateAPIImpl::Get(content::BrowserContext* context) {
+  GcdPrivateAPI* gcd_api =
+      BrowserContextKeyedAPIFactory<GcdPrivateAPI>::Get(context);
+  return gcd_api ? gcd_api->impl_.get() : NULL;
+}
+
+bool GcdPrivateAPIImpl::QueryForDevices() {
   if (!privet_device_lister_)
     return false;
 
@@ -251,9 +357,9 @@ bool GcdPrivateAPI::QueryForDevices() {
   return true;
 }
 
-void GcdPrivateAPI::EstablishSession(const std::string& ip_address,
-                                     int port,
-                                     ConfirmationCodeCallback callback) {
+void GcdPrivateAPIImpl::EstablishSession(const std::string& ip_address,
+                                         int port,
+                                         ConfirmationCodeCallback callback) {
   int session_id = last_session_id_++;
   linked_ptr<GcdPrivateSessionHolder> session_handler(
       new GcdPrivateSessionHolder(
@@ -262,8 +368,8 @@ void GcdPrivateAPI::EstablishSession(const std::string& ip_address,
   session_handler->Start(base::Bind(callback, session_id));
 }
 
-void GcdPrivateAPI::ConfirmCode(int session_id,
-                                SessionEstablishedCallback callback) {
+void GcdPrivateAPIImpl::ConfirmCode(int session_id,
+                                    SessionEstablishedCallback callback) {
   GCDSessionMap::iterator found = sessions_.find(session_id);
 
   if (found == sessions_.end()) {
@@ -274,10 +380,10 @@ void GcdPrivateAPI::ConfirmCode(int session_id,
   found->second->ConfirmCode(callback);
 }
 
-void GcdPrivateAPI::SendMessage(int session_id,
-                                const std::string& api,
-                                const base::DictionaryValue& input,
-                                MessageResponseCallback callback) {
+void GcdPrivateAPIImpl::SendMessage(int session_id,
+                                    const std::string& api,
+                                    const base::DictionaryValue& input,
+                                    MessageResponseCallback callback) {
   const base::DictionaryValue* input_actual = &input;
 #if defined(ENABLE_WIFI_BOOTSTRAPPING)
   scoped_ptr<base::DictionaryValue> input_cloned;
@@ -322,24 +428,25 @@ void GcdPrivateAPI::SendMessage(int session_id,
   found->second->SendMessage(api, *input_actual, callback);
 }
 
-void GcdPrivateAPI::RequestWifiPassword(const std::string& ssid,
-                                        const SuccessCallback& callback) {
+void GcdPrivateAPIImpl::RequestWifiPassword(const std::string& ssid,
+                                            const SuccessCallback& callback) {
 #if defined(ENABLE_WIFI_BOOTSTRAPPING)
   StartWifiIfNotStarted();
   wifi_manager_->RequestNetworkCredentials(
       ssid,
-      base::Bind(
-          &GcdPrivateAPI::OnWifiPassword, base::Unretained(this), callback));
+      base::Bind(&GcdPrivateAPIImpl::OnWifiPassword,
+                 base::Unretained(this),
+                 callback));
 #else
   callback.Run(false);
 #endif
 }
 
 #if defined(ENABLE_WIFI_BOOTSTRAPPING)
-void GcdPrivateAPI::OnWifiPassword(const SuccessCallback& callback,
-                                   bool success,
-                                   const std::string& ssid,
-                                   const std::string& password) {
+void GcdPrivateAPIImpl::OnWifiPassword(const SuccessCallback& callback,
+                                       bool success,
+                                       const std::string& ssid,
+                                       const std::string& password) {
   if (success) {
     wifi_passwords_[ssid] = password;
   }
@@ -347,7 +454,7 @@ void GcdPrivateAPI::OnWifiPassword(const SuccessCallback& callback,
   callback.Run(success);
 }
 
-void GcdPrivateAPI::StartWifiIfNotStarted() {
+void GcdPrivateAPIImpl::StartWifiIfNotStarted() {
   if (!wifi_manager_) {
     wifi_manager_ = local_discovery::wifi::WifiManager::Create();
     wifi_manager_->Start();
@@ -356,20 +463,14 @@ void GcdPrivateAPI::StartWifiIfNotStarted() {
 
 #endif
 
-void GcdPrivateAPI::RemoveSession(int session_id) {
+void GcdPrivateAPIImpl::RemoveSession(int session_id) {
   sessions_.erase(session_id);
-}
-
-// static
-void GcdPrivateAPI::SetGCDApiFlowFactoryForTests(
-    GCDApiFlowFactoryForTests* factory) {
-  g_gcd_api_flow_factory = factory;
 }
 
 GcdPrivateRequest::GcdPrivateRequest(
     const std::string& api,
     const base::DictionaryValue& input,
-    const GcdPrivateAPI::MessageResponseCallback& callback,
+    const GcdPrivateAPIImpl::MessageResponseCallback& callback,
     GcdPrivateSessionHolder* session_holder)
     : api_(api),
       input_(input.DeepCopy()),
@@ -432,7 +533,7 @@ void GcdPrivateSessionHolder::Start(const ConfirmationCodeCallback& callback) {
 }
 
 void GcdPrivateSessionHolder::ConfirmCode(
-    const GcdPrivateAPI::SessionEstablishedCallback& callback) {
+    const GcdPrivateAPIImpl::SessionEstablishedCallback& callback) {
   session_established_callback_ = callback;
   privet_session_->ConfirmCode();
 }
@@ -440,7 +541,7 @@ void GcdPrivateSessionHolder::ConfirmCode(
 void GcdPrivateSessionHolder::SendMessage(
     const std::string& api,
     const base::DictionaryValue& input,
-    GcdPrivateAPI::MessageResponseCallback callback) {
+    GcdPrivateAPIImpl::MessageResponseCallback callback) {
   GcdPrivateRequest* request =
       new GcdPrivateRequest(api, input, callback, this);
   requests_.push_back(request);
@@ -477,6 +578,25 @@ void GcdPrivateSessionHolder::OnCannotEstablishSession() {
   session_established_callback_.Run(gcd_private::STATUS_SESSIONERROR);
 
   session_established_callback_.Reset();
+}
+
+GcdPrivateAPI::GcdPrivateAPI(content::BrowserContext* context)
+    : impl_(new GcdPrivateAPIImpl(context)) {
+}
+
+GcdPrivateAPI::~GcdPrivateAPI() {
+}
+
+// static
+BrowserContextKeyedAPIFactory<GcdPrivateAPI>*
+GcdPrivateAPI::GetFactoryInstance() {
+  return g_factory.Pointer();
+}
+
+// static
+void GcdPrivateAPI::SetGCDApiFlowFactoryForTests(
+    GCDApiFlowFactoryForTests* factory) {
+  g_gcd_api_flow_factory = factory;
 }
 
 GcdPrivateGetCloudDeviceListFunction::GcdPrivateGetCloudDeviceListFunction() {
@@ -564,8 +684,7 @@ GcdPrivateQueryForNewLocalDevicesFunction::
 }
 
 bool GcdPrivateQueryForNewLocalDevicesFunction::RunSync() {
-  GcdPrivateAPI* gcd_api =
-      BrowserContextKeyedAPIFactory<GcdPrivateAPI>::Get(GetProfile());
+  GcdPrivateAPIImpl* gcd_api = GcdPrivateAPIImpl::Get(GetProfile());
 
   if (!gcd_api)
     return false;
@@ -595,8 +714,7 @@ bool GcdPrivatePrefetchWifiPasswordFunction::RunAsync() {
   if (!params)
     return false;
 
-  GcdPrivateAPI* gcd_api =
-      BrowserContextKeyedAPIFactory<GcdPrivateAPI>::Get(GetProfile());
+  GcdPrivateAPIImpl* gcd_api = GcdPrivateAPIImpl::Get(GetProfile());
 
   if (!gcd_api)
     return false;
@@ -628,8 +746,7 @@ bool GcdPrivateEstablishSessionFunction::RunAsync() {
   if (!params)
     return false;
 
-  GcdPrivateAPI* gcd_api =
-      BrowserContextKeyedAPIFactory<GcdPrivateAPI>::Get(GetProfile());
+  GcdPrivateAPIImpl* gcd_api = GcdPrivateAPIImpl::Get(GetProfile());
 
   if (!gcd_api)
     return false;
@@ -666,8 +783,7 @@ bool GcdPrivateConfirmCodeFunction::RunAsync() {
   if (!params)
     return false;
 
-  GcdPrivateAPI* gcd_api =
-      BrowserContextKeyedAPIFactory<GcdPrivateAPI>::Get(GetProfile());
+  GcdPrivateAPIImpl* gcd_api = GcdPrivateAPIImpl::Get(GetProfile());
 
   if (!gcd_api)
     return false;
@@ -699,8 +815,7 @@ bool GcdPrivateSendMessageFunction::RunAsync() {
   if (!params)
     return false;
 
-  GcdPrivateAPI* gcd_api =
-      BrowserContextKeyedAPIFactory<GcdPrivateAPI>::Get(GetProfile());
+  GcdPrivateAPIImpl* gcd_api = GcdPrivateAPIImpl::Get(GetProfile());
 
   if (!gcd_api)
     return false;
@@ -737,8 +852,7 @@ bool GcdPrivateTerminateSessionFunction::RunAsync() {
   if (!params)
     return false;
 
-  GcdPrivateAPI* gcd_api =
-      BrowserContextKeyedAPIFactory<GcdPrivateAPI>::Get(GetProfile());
+  GcdPrivateAPIImpl* gcd_api = GcdPrivateAPIImpl::Get(GetProfile());
 
   if (!gcd_api)
     return false;

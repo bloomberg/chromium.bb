@@ -5,45 +5,22 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_GCD_PRIVATE_GCD_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_GCD_PRIVATE_GCD_PRIVATE_API_H_
 
-#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/local_discovery/cloud_device_list_delegate.h"
-#include "chrome/browser/local_discovery/gcd_api_flow.h"
-#include "chrome/browser/local_discovery/privet_device_lister.h"
-#include "chrome/browser/local_discovery/privetv3_session.h"
-#include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/common/extensions/api/gcd_private.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
-#include "extensions/browser/event_router.h"
 
-#if defined(ENABLE_WIFI_BOOTSTRAPPING)
-#include "chrome/browser/local_discovery/wifi/wifi_manager.h"
-#endif
+namespace local_discovery {
+class GCDApiFlow;
+}
 
 namespace extensions {
 
-class GcdPrivateSessionHolder;
+class GcdPrivateAPIImpl;
 
-class GcdPrivateAPI : public BrowserContextKeyedAPI,
-                      public EventRouter::Observer,
-                      public local_discovery::PrivetDeviceLister::Delegate {
+class GcdPrivateAPI : public BrowserContextKeyedAPI {
  public:
-  typedef base::Callback<void(int session_id,
-                              api::gcd_private::Status status,
-                              const std::string& code,
-                              api::gcd_private::ConfirmationType type)>
-      ConfirmationCodeCallback;
-
-  typedef base::Callback<void(api::gcd_private::Status status)>
-      SessionEstablishedCallback;
-
-  typedef base::Callback<void(api::gcd_private::Status status,
-                              const base::DictionaryValue& response)>
-      MessageResponseCallback;
-
-  typedef base::Callback<void(bool success)> SuccessCallback;
-
   class GCDApiFlowFactoryForTests {
    public:
     virtual ~GCDApiFlowFactoryForTests() {}
@@ -59,79 +36,14 @@ class GcdPrivateAPI : public BrowserContextKeyedAPI,
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<GcdPrivateAPI>* GetFactoryInstance();
 
-  bool QueryForDevices();
-
-  void EstablishSession(const std::string& ip_address,
-                        int port,
-                        ConfirmationCodeCallback callback);
-
-  void ConfirmCode(int session_id, SessionEstablishedCallback callback);
-
-  void SendMessage(int session_id,
-                   const std::string& api,
-                   const base::DictionaryValue& input,
-                   MessageResponseCallback callback);
-
-  void RemoveSession(int session_id);
-
-  void RequestWifiPassword(const std::string& ssid,
-                           const SuccessCallback& callback);
-
  private:
   friend class BrowserContextKeyedAPIFactory<GcdPrivateAPI>;
-
-  typedef std::map<std::string /* id_string */,
-                   linked_ptr<api::gcd_private::GCDDevice> > GCDDeviceMap;
-
-  typedef std::map<int /* session id*/, linked_ptr<GcdPrivateSessionHolder> >
-      GCDSessionMap;
-
-  typedef std::map<std::string /* ssid */, std::string /* password */>
-      PasswordMap;
-
-  // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
-  virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
+  friend class GcdPrivateAPIImpl;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "GcdPrivateAPI"; }
 
-  // local_discovery::PrivetDeviceLister implementation.
-  virtual void DeviceChanged(
-      bool added,
-      const std::string& name,
-      const local_discovery::DeviceDescription& description) OVERRIDE;
-  virtual void DeviceRemoved(const std::string& name) OVERRIDE;
-  virtual void DeviceCacheFlushed() OVERRIDE;
-
-  void SendMessageInternal(int session_id,
-                           const std::string& api,
-                           const base::DictionaryValue& input,
-                           const MessageResponseCallback& callback);
-
-#if defined(ENABLE_WIFI_BOOTSTRAPPING)
-  void OnWifiPassword(const SuccessCallback& callback,
-                      bool success,
-                      const std::string& ssid,
-                      const std::string& password);
-  void StartWifiIfNotStarted();
-#endif
-
-  int num_device_listeners_;
-  scoped_refptr<local_discovery::ServiceDiscoverySharedClient>
-      service_discovery_client_;
-  scoped_ptr<local_discovery::PrivetDeviceLister> privet_device_lister_;
-  GCDDeviceMap known_devices_;
-
-  GCDSessionMap sessions_;
-  int last_session_id_;
-
-  content::BrowserContext* const browser_context_;
-
-#if defined(ENABLE_WIFI_BOOTSTRAPPING)
-  scoped_ptr<local_discovery::wifi::WifiManager> wifi_manager_;
-  PasswordMap wifi_passwords_;
-#endif
+  scoped_ptr<GcdPrivateAPIImpl> impl_;
 };
 
 class GcdPrivateGetCloudDeviceListFunction
