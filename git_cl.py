@@ -2013,7 +2013,7 @@ def SendUpstream(parser, args, cmd):
     if cmd == 'dcommit' and 'Committed r' in output:
       revision = re.match('.*?\nCommitted r(\\d+)', output, re.DOTALL).group(1)
     elif cmd == 'push' and retcode == 0:
-      match = (re.match(r'.*?([a-f0-9]{7})\.\.([a-f0-9]{7})$', l)
+      match = (re.match(r'.*?([a-f0-9]{7,})\.\.([a-f0-9]{7,})$', l)
                for l in output.splitlines(False))
       match = filter(None, match)
       if len(match) != 1:
@@ -2057,7 +2057,7 @@ def CMDdcommit(parser, args):
 If your project has a git mirror with an upstream SVN master, you probably need
 to run 'git svn init', see your project's git mirror documentation.
 If your project has a true writeable upstream repository, you probably want
-to run 'git cl push' instead.
+to run 'git cl land' instead.
 Choose wisely, if you get this wrong, your commit might appear to succeed but
 will instead be silently ignored."""
     print(message)
