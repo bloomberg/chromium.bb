@@ -90,11 +90,7 @@ String BaseDateAndTimeInputType::rangeUnderflowText(const Decimal& minimum) cons
 
 Decimal BaseDateAndTimeInputType::defaultValueForStepUp() const
 {
-    double ms = currentTimeMS();
-    double utcOffset = calculateUTCOffset();
-    double dstOffset = calculateDSTOffset(ms, utcOffset);
-    int offset = static_cast<int>((utcOffset + dstOffset) / msPerMinute);
-    return Decimal::fromDouble(ms + (offset * msPerMinute));
+    return Decimal::fromDouble(convertToLocalTime(currentTimeMS()));
 }
 
 bool BaseDateAndTimeInputType::isSteppable() const

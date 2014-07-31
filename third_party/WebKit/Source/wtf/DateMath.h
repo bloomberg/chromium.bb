@@ -78,9 +78,8 @@ WTF_EXPORT int dayInYear(double ms, int year);
 WTF_EXPORT int monthFromDayInYear(int dayInYear, bool leapYear);
 WTF_EXPORT int dayInMonthFromDayInYear(int dayInYear, bool leapYear);
 
-// Returns offset milliseconds for UTC and DST.
-WTF_EXPORT int32_t calculateUTCOffset();
-WTF_EXPORT double calculateDSTOffset(double ms, double utcOffset);
+// Returns milliseconds with UTC and DST.
+WTF_EXPORT double convertToLocalTime(double ms);
 
 } // namespace WTF
 
@@ -98,7 +97,6 @@ using WTF::msToYear;
 using WTF::secondsPerMinute;
 using WTF::parseDateFromNullTerminatedCharacters;
 using WTF::makeRFC2822DateString;
-using WTF::calculateUTCOffset;
-using WTF::calculateDSTOffset;
+using WTF::convertToLocalTime;
 
 #endif // DateMath_h

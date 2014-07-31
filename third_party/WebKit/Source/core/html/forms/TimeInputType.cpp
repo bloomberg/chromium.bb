@@ -73,14 +73,8 @@ const AtomicString& TimeInputType::formControlType() const
 
 Decimal TimeInputType::defaultValueForStepUp() const
 {
-    double current = currentTimeMS();
-    double utcOffset = calculateUTCOffset();
-    double dstOffset = calculateDSTOffset(current, utcOffset);
-    int offset = static_cast<int>((utcOffset + dstOffset) / msPerMinute);
-    current += offset * msPerMinute;
-
     DateComponents date;
-    date.setMillisecondsSinceMidnight(current);
+    date.setMillisecondsSinceMidnight(convertToLocalTime(currentTimeMS()));
     double milliseconds = date.millisecondsSinceEpoch();
     ASSERT(std::isfinite(milliseconds));
     return Decimal::fromDouble(milliseconds);

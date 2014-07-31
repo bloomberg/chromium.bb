@@ -196,6 +196,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/DateMath.h"
 #include "wtf/HashFunctions.h"
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
@@ -4084,7 +4085,7 @@ String Document::lastModified() const
         if (DocumentLoader* documentLoader = loader()) {
             const AtomicString& httpLastModified = documentLoader->response().httpHeaderField("Last-Modified");
             if (!httpLastModified.isEmpty()) {
-                date.setMillisecondsSinceEpochForDateTime(parseDate(httpLastModified));
+                date.setMillisecondsSinceEpochForDateTime(convertToLocalTime(parseDate(httpLastModified)));
                 foundDate = true;
             }
         }
@@ -4093,7 +4094,7 @@ String Document::lastModified() const
     // specificiation tells us to read the last modification date from the file
     // system.
     if (!foundDate)
-        date.setMillisecondsSinceEpochForDateTime(currentTimeMS());
+        date.setMillisecondsSinceEpochForDateTime(convertToLocalTime(currentTimeMS()));
     return String::format("%02d/%02d/%04d %02d:%02d:%02d", date.month() + 1, date.monthDay(), date.fullYear(), date.hour(), date.minute(), date.second());
 }
 

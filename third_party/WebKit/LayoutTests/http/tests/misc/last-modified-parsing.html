@@ -4,8 +4,20 @@ if (window.testRunner) {
     testRunner.dumpChildFramesAsText();
 }
 
+function getExpectedLastModified(lastModified) {
+    var date = new Date(lastModified);
+    var month = ('0' + (date.getMonth() + 1)).slice(-2);
+    var day = ('0' + date.getDate()).slice(-2);
+    var hour = ('0' + date.getHours()).slice(-2);
+    var minute = ('0' + date.getMinutes()).slice(-2);
+    var second = ('0' + date.getSeconds()).slice(-2);
+    var result = month + '/' + day + '/' + date.getFullYear() + ' ' + hour + ':' + minute + ':' + second;
+    return result;
+}
+
 function test(text) {
-    document.write('<iframe src="../resources/last-modified.php?date=' + escape(text) + '"></iframe>');
+    var url = '../resources/last-modified.php?date=' + escape(text) + '&expected=' + escape(getExpectedLastModified(text));
+    document.write('<iframe id="test" src="' + url + '"></iframe>');
 }
 
 test('Mon, 21 Nov 2008 01:03:33 GMT');

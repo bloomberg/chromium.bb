@@ -103,7 +103,6 @@ namespace WTF {
 
 static const double hoursPerDay = 24.0;
 static const double secondsPerDay = 24.0 * 60.0 * 60.0;
-static const double secondsPerHour = 60.0 * 60.0;
 
 static const double maxUnixTime = 2145859200.0; // 12/31/2037
 
@@ -193,22 +192,6 @@ static inline double msToMilliseconds(double ms)
     if (result < 0)
         result += msPerDay;
     return result;
-}
-
-static int msToMinutes(double ms)
-{
-    double result = fmod(floor(ms / msPerMinute), minutesPerHour);
-    if (result < 0)
-        result += minutesPerHour;
-    return static_cast<int>(result);
-}
-
-static int msToHours(double ms)
-{
-    double result = fmod(floor(ms/msPerHour), hoursPerDay);
-    if (result < 0)
-        result += hoursPerDay;
-    return static_cast<int>(result);
 }
 
 int monthFromDayInYear(int dayInYear, bool leapYear)
@@ -358,7 +341,7 @@ static int equivalentYearForDST(int year)
     return year;
 }
 
-int32_t calculateUTCOffset()
+static double calculateUTCOffset()
 {
 #if OS(WIN)
     TIME_ZONE_INFORMATION timeZoneInformation;
@@ -370,32 +353,8 @@ int32_t calculateUTCOffset()
     tm localt;
     getLocalTime(&localTime, &localt);
 
-    // Get the difference between this time zone and UTC on the 1st of January of this year.
-    localt.tm_sec = 0;
-    localt.tm_min = 0;
-    localt.tm_hour = 0;
-    localt.tm_mday = 1;
-    localt.tm_mon = 0;
-    // Not setting localt.tm_year!
-    localt.tm_wday = 0;
-    localt.tm_yday = 0;
-    localt.tm_isdst = 0;
-#if HAVE(TM_GMTOFF)
-    localt.tm_gmtoff = 0;
-#endif
-#if HAVE(TM_ZONE)
-    localt.tm_zone = 0;
-#endif
-
-#if HAVE(TIMEGM)
-    time_t utcOffset = timegm(&localt) - mktime(&localt);
-#else
-    // Using a canned date of 01/01/2009 on platforms with weaker date-handling foo.
-    localt.tm_year = 109;
-    time_t utcOffset = 1230768000 - mktime(&localt);
-#endif
-
-    return static_cast<int32_t>(utcOffset * 1000);
+    // tm_gmtoff includes any daylight savings offset, so subtract it.
+    return static_cast<double>(localt.tm_gmtoff * msPerSecond - (localt.tm_isdst > 0 ? msPerHour : 0));
 #endif
 }
 
@@ -409,29 +368,17 @@ static double calculateDSTOffsetSimple(double localTimeSeconds, double utcOffset
     else if (localTimeSeconds < 0) // Go ahead a day to make localtime work (does not work with 0)
         localTimeSeconds += secondsPerDay;
 
-    //input is UTC so we have to shift back to local time to determine DST thus the + getUTCOffset()
-    double offsetTime = (localTimeSeconds * msPerSecond) + utcOffset;
-
-    // Offset from UTC but doesn't include DST obviously
-    int offsetHour =  msToHours(offsetTime);
-    int offsetMinute =  msToMinutes(offsetTime);
-
     // FIXME: time_t has a potential problem in 2038
     time_t localTime = static_cast<time_t>(localTimeSeconds);
 
     tm localTM;
     getLocalTime(&localTime, &localTM);
 
-    double diff = ((localTM.tm_hour - offsetHour) * secondsPerHour) + ((localTM.tm_min - offsetMinute) * 60);
-
-    if (diff < 0)
-        diff += secondsPerDay;
-
-    return (diff * msPerSecond);
+    return localTM.tm_isdst > 0 ? msPerHour : 0;
 }
 
 // Get the DST offset, given a time in UTC
-double calculateDSTOffset(double ms, double utcOffset)
+static double calculateDSTOffset(double ms, double utcOffset)
 {
     // On Mac OS X, the call to localtime (see calculateDSTOffsetSimple) will return historically accurate
     // DST information (e.g. New Zealand did not have DST from 1946 to 1974) however the JavaScript
@@ -879,6 +826,13 @@ String makeRFC2822DateString(unsigned dayOfWeek, unsigned day, unsigned month, u
     stringBuilder.append(twoDigitStringFromNumber(absoluteUTCOffset % 60));
 
     return stringBuilder.toString();
+}
+
+double convertToLocalTime(double ms)
+{
+    double utcOffset = calculateUTCOffset();
+    double dstOffset = calculateDSTOffset(ms, utcOffset);
+    return (ms + utcOffset + dstOffset);
 }
 
 } // namespace WTF

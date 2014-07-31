@@ -589,14 +589,8 @@ PassRefPtrWillBeRawPtr<DateTimeYearFieldElement> DateTimeYearFieldElement::creat
 
 static int currentFullYear()
 {
-    double current = currentTimeMS();
-    double utcOffset = calculateUTCOffset();
-    double dstOffset = calculateDSTOffset(current, utcOffset);
-    int offset = static_cast<int>((utcOffset + dstOffset) / msPerMinute);
-    current += offset * msPerMinute;
-
     DateComponents date;
-    date.setMillisecondsSinceEpochForMonth(current);
+    date.setMillisecondsSinceEpochForMonth(convertToLocalTime(currentTimeMS()));
     return date.fullYear();
 }
 

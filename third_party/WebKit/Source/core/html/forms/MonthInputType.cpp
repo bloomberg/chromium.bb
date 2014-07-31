@@ -86,14 +86,8 @@ String MonthInputType::serializeWithMilliseconds(double value) const
 
 Decimal MonthInputType::defaultValueForStepUp() const
 {
-    double current = currentTimeMS();
-    double utcOffset = calculateUTCOffset();
-    double dstOffset = calculateDSTOffset(current, utcOffset);
-    int offset = static_cast<int>((utcOffset + dstOffset) / msPerMinute);
-    current += offset * msPerMinute;
-
     DateComponents date;
-    date.setMillisecondsSinceEpochForMonth(current);
+    date.setMillisecondsSinceEpochForMonth(convertToLocalTime(currentTimeMS()));
     double months = date.monthsSinceEpoch();
     ASSERT(std::isfinite(months));
     return Decimal::fromDouble(months);
