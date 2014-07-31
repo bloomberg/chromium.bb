@@ -18,3 +18,17 @@ Install bower with:
 SYNCING POLYMER
 1. cd Tools/GardeningServer
 2. bower update
+
+PUSHING
+Fill in the revision you're pushing for XXXX.
+1. appcfg.py update . --version rXXXX
+2. Go to appengine.google.com and select the sheriff-o-matic app.
+3. Click on the version tab
+4. Make the rXXXX version the default
+
+The versioning is so that we can easily roll back if there's something
+wrong with the push and so we can know what we've pushed.
+
+If you're unsure about whether you might have broken things, before
+step 4, you can click on the link for that version to see that
+version of the server before you make it the default.
