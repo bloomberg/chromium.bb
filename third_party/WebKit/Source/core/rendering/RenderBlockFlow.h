@@ -480,12 +480,11 @@ private:
     void layoutRunsAndFloats(LineLayoutState&);
     const InlineIterator& restartLayoutRunsAndFloatsInRange(LayoutUnit oldLogicalHeight, LayoutUnit newLogicalHeight,  FloatingObject* lastFloatFromPreviousLine, InlineBidiResolver&,  const InlineIterator&);
     void layoutRunsAndFloatsInRange(LineLayoutState&, InlineBidiResolver&,
-        BidiRunList<BidiRun>&, const InlineIterator& cleanLineStart,
-        const BidiStatus& cleanLineBidiStatus);
+        const InlineIterator& cleanLineStart, const BidiStatus& cleanLineBidiStatus);
     void linkToEndLineIfNeeded(LineLayoutState&);
     static void repaintDirtyFloats(Vector<FloatWithRect>& floats);
     void checkFloatsInCleanLine(RootInlineBox*, Vector<FloatWithRect>&, size_t& floatIndex, bool& encounteredNewFloat, bool& dirtiedByFloat);
-    RootInlineBox* determineStartPosition(LineLayoutState&, InlineBidiResolver&, BidiRunList<BidiRun>&);
+    RootInlineBox* determineStartPosition(LineLayoutState&, InlineBidiResolver&);
     void determineEndPosition(LineLayoutState&, RootInlineBox* startBox, InlineIterator& cleanLineStart, BidiStatus& cleanLineBidiStatus);
     bool checkPaginationAndFloatsAtEndLine(LineLayoutState&);
     bool matchedEndLine(LineLayoutState&, const InlineBidiResolver&, const InlineIterator& endLineStart, const BidiStatus& endLineStatus);

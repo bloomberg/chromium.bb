@@ -133,9 +133,12 @@ void constructBidiRunsForLine(InlineBidiResolver& topResolver,
     VisualDirectionOverride override, bool previousLineBrokeCleanly,
     bool isNewUBAParagraph)
 {
+    // FIXME: We should pass a BidiRunList into createBidiRunsForLine instead
+    // of the resolver owning the runs.
+    ASSERT(&topResolver.runs() == &bidiRuns);
     ASSERT(topResolver.position() != endOfLine);
     RenderObject* currentRoot = topResolver.position().root();
-    topResolver.createBidiRunsForLine(endOfLine, bidiRuns, override,
+    topResolver.createBidiRunsForLine(endOfLine, override,
         previousLineBrokeCleanly);
 
     while (!topResolver.isolatedRuns().isEmpty()) {
@@ -158,7 +161,6 @@ void constructBidiRunsForLine(InlineBidiResolver& topResolver,
         ASSERT(isolatedInline);
 
         InlineBidiResolver isolatedResolver;
-        BidiRunList<BidiRun> isolatedRuns;
         LineMidpointState& isolatedLineMidpointState =
             isolatedResolver.midpointState();
         isolatedLineMidpointState = topResolver.midpointStateForIsolatedRun(
@@ -190,14 +192,12 @@ void constructBidiRunsForLine(InlineBidiResolver& topResolver,
         // FIXME: What should end and previousLineBrokeCleanly be?
         // rniwa says previousLineBrokeCleanly is just a WinIE hack and could
         // always be false here?
-        isolatedResolver.createBidiRunsForLine(endOfLine,
-            isolatedRuns,
-            NoVisualOverride,
+        isolatedResolver.createBidiRunsForLine(endOfLine, NoVisualOverride,
             previousLineBrokeCleanly);
 
-        ASSERT(isolatedRuns.runCount());
-        if (isolatedRuns.runCount())
-            bidiRuns.replaceRunWithRuns(isolatedRun, isolatedRuns);
+        ASSERT(isolatedResolver.runs().runCount());
+        if (isolatedResolver.runs().runCount())
+            bidiRuns.replaceRunWithRuns(isolatedRun, isolatedResolver.runs());
 
         // If we encountered any nested isolate runs, just move them
         // to the top resolver's list for later processing.

@@ -924,7 +924,6 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
     BidiResolver<TextRunIterator, BidiCharacterRun> bidiResolver;
 
     BidiCharacterRun* run;
-    BidiRunList<BidiCharacterRun> bidiRuns;
     TextDirection textDirection = styleToUse->direction();
     if (isOverride(styleToUse->unicodeBidi())) {
         run = 0;
@@ -934,7 +933,8 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
         bidiResolver.setPositionIgnoringNestedIsolates(TextRunIterator(&textRun, 0));
         bool hardLineBreak = false;
         bool reorderRuns = false;
-        bidiResolver.createBidiRunsForLine(TextRunIterator(&textRun, textRun.length()), bidiRuns, NoVisualOverride, hardLineBreak, reorderRuns);
+        bidiResolver.createBidiRunsForLine(TextRunIterator(&textRun, textRun.length()), NoVisualOverride, hardLineBreak, reorderRuns);
+        BidiRunList<BidiCharacterRun>& bidiRuns = bidiResolver.runs();
         run = bidiRuns.firstRun();
     }
 
@@ -1112,6 +1112,8 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
             lastWordBoundary++;
         }
     }
+    if (run)
+        bidiResolver.runs().deleteRuns();
 
     if (firstGlyphLeftOverflow > 0)
         glyphOverflow.left = firstGlyphLeftOverflow;

@@ -191,8 +191,8 @@ void BidiTestRunner::runTest(const std::basic_string<UChar>& input, const std::v
     resolver.setStatus(BidiStatus(textRun.direction(), textRun.directionalOverride()));
     resolver.setPositionIgnoringNestedIsolates(TextRunIterator(&textRun, 0));
 
-    BidiRunList<BidiCharacterRun> runs;
-    resolver.createBidiRunsForLine(TextRunIterator(&textRun, textRun.length()), runs);
+    BidiRunList<BidiCharacterRun>& runs = resolver.runs();
+    resolver.createBidiRunsForLine(TextRunIterator(&textRun, textRun.length()));
 
     std::ostringstream errorContext;
     errorContext << ", line " << lineNumber << " \"" << line << "\"";
@@ -240,6 +240,7 @@ void BidiTestRunner::runTest(const std::basic_string<UChar>& input, const std::v
             break;
         }
     }
+    runs.deleteRuns();
 }
 
 

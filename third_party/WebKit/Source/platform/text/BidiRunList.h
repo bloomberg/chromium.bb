@@ -40,7 +40,8 @@ public:
     {
     }
 
-    ~BidiRunList() { deleteRuns(); }
+    // FIXME: Once BidiResolver no longer owns the BidiRunList,
+    // then ~BidiRunList should call deleteRuns() automatically.
 
     Run* firstRun() const { return m_firstRun; }
     Run* lastRun() const { return m_lastRun; }
@@ -152,7 +153,7 @@ void BidiRunList<Run>::replaceRunWithRuns(Run* toReplace, BidiRunList<Run>& newR
     } else {
         // Find the run just before "toReplace" in the list of runs.
         Run* previousRun = m_firstRun;
-        while (previousRun->next() && previousRun->next() != toReplace)
+        while (previousRun->next() != toReplace)
             previousRun = previousRun->next();
         ASSERT(previousRun);
         previousRun->setNext(newRuns.firstRun());

@@ -962,8 +962,10 @@ void GraphicsContext::drawBidiText(const Font& font, const TextRunPaintInfo& run
     bidiResolver.setStatus(BidiStatus(run.direction(), run.directionalOverride()));
     bidiResolver.setPositionIgnoringNestedIsolates(TextRunIterator(&run, 0));
 
-    BidiRunList<BidiCharacterRun> bidiRuns;
-    bidiResolver.createBidiRunsForLine(TextRunIterator(&run, run.length()), bidiRuns);
+    // FIXME: This ownership should be reversed. We should pass BidiRunList
+    // to BidiResolver in createBidiRunsForLine.
+    BidiRunList<BidiCharacterRun>& bidiRuns = bidiResolver.runs();
+    bidiResolver.createBidiRunsForLine(TextRunIterator(&run, run.length()));
     if (!bidiRuns.runCount())
         return;
 
@@ -984,6 +986,8 @@ void GraphicsContext::drawBidiText(const Font& font, const TextRunPaintInfo& run
         if (bidiRun)
             currPoint.move(font.width(subrun), 0);
     }
+
+    bidiRuns.deleteRuns();
 }
 
 void GraphicsContext::drawHighlightForText(const Font& font, const TextRun& run, const FloatPoint& point, int h, const Color& backgroundColor, int from, int to)

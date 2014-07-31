@@ -730,9 +730,7 @@ void RenderBlockFlow::layoutRunsAndFloats(LineLayoutState& layoutState)
 {
     // We want to skip ahead to the first dirty line
     InlineBidiResolver resolver;
-    BidiRunList<BidiRun> bidiRuns;
-    RootInlineBox* startLine = determineStartPosition(layoutState, resolver,
-        bidiRuns);
+    RootInlineBox* startLine = determineStartPosition(layoutState, resolver);
 
     if (containsFloats())
         layoutState.setLastFloat(m_floatingObjects->set().last().get());
@@ -766,8 +764,7 @@ void RenderBlockFlow::layoutRunsAndFloats(LineLayoutState& layoutState)
         }
     }
 
-    layoutRunsAndFloatsInRange(layoutState, resolver, bidiRuns, cleanLineStart,
-        cleanLineBidiStatus);
+    layoutRunsAndFloatsInRange(layoutState, resolver, cleanLineStart, cleanLineBidiStatus);
     linkToEndLineIfNeeded(layoutState);
     repaintDirtyFloats(layoutState.floats());
 }
@@ -782,8 +779,8 @@ inline const InlineIterator& RenderBlockFlow::restartLayoutRunsAndFloatsInRange(
 }
 
 void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
-    InlineBidiResolver& resolver, BidiRunList<BidiRun>& bidiRuns,
-    const InlineIterator& cleanLineStart, const BidiStatus& cleanLineBidiStatus)
+    InlineBidiResolver& resolver, const InlineIterator& cleanLineStart,
+    const BidiStatus& cleanLineBidiStatus)
 {
     RenderStyle* styleToUse = style();
     bool paginated = view()->layoutState() && view()->layoutState()->isPaginated();
@@ -815,17 +812,13 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
         FloatingObject* lastFloatFromPreviousLine = (containsFloats()) ? m_floatingObjects->set().last().get() : 0;
 
         WordMeasurements wordMeasurements;
-        endOfLine = lineBreaker.nextLineBreak(resolver, bidiRuns,
-            layoutState.lineInfo(), renderTextInfo,
+        endOfLine = lineBreaker.nextLineBreak(resolver, layoutState.lineInfo(), renderTextInfo,
             lastFloatFromPreviousLine, wordMeasurements);
         renderTextInfo.m_lineBreakIterator.resetPriorContext();
         if (resolver.position().atEnd()) {
             // FIXME: We shouldn't be creating any runs in nextLineBreak to begin with!
-            // Figure out why we create new runs in nextLineBreak and why we
-            // seem to rely on that behavior.
-            // Removing the addRun calls in LineBreaker::skipLeadingWhitespace
-            // breaks a bunch of bidi layout tests.
-            bidiRuns.deleteRuns();
+            // Once BidiRunList is separated from BidiResolver this will not be needed.
+            resolver.runs().deleteRuns();
             resolver.markCurrentRunEmpty(); // FIXME: This can probably be replaced by an ASSERT (or just removed).
             layoutState.setCheckForFloatsFromLastLine(true);
             resolver.setPosition(InlineIterator(resolver.position().root(), 0, 0), 0);
@@ -844,6 +837,8 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
                 TextDirection direction = determinePlaintextDirectionality(resolver.position().root(), resolver.position().object(), resolver.position().offset());
                 resolver.setStatus(BidiStatus(direction, isOverride(styleToUse->unicodeBidi())));
             }
+            // FIXME: This ownership is reversed. We should own the BidiRunList and pass it to createBidiRunsForLine.
+            BidiRunList<BidiRun>& bidiRuns = resolver.runs();
             constructBidiRunsForLine(resolver, bidiRuns, endOfLine, override, layoutState.lineInfo().previousLineBrokeCleanly(), isNewUBAParagraph);
             ASSERT(resolver.position() == endOfLine);
 
@@ -1635,7 +1630,7 @@ void RenderBlockFlow::checkFloatsInCleanLine(RootInlineBox* line, Vector<FloatWi
     }
 }
 
-RootInlineBox* RenderBlockFlow::determineStartPosition(LineLayoutState& layoutState, InlineBidiResolver& resolver, BidiRunList<BidiRun>& bidiRuns)
+RootInlineBox* RenderBlockFlow::determineStartPosition(LineLayoutState& layoutState, InlineBidiResolver& resolver)
 {
     RootInlineBox* curr = 0;
     RootInlineBox* last = 0;
@@ -1752,7 +1747,7 @@ RootInlineBox* RenderBlockFlow::determineStartPosition(LineLayoutState& layoutSt
         if (style()->unicodeBidi() == Plaintext)
             direction = determinePlaintextDirectionality(this);
         resolver.setStatus(BidiStatus(direction, isOverride(style()->unicodeBidi())));
-        InlineIterator iter = InlineIterator(this, bidiFirstSkippingEmptyInlines(this, bidiRuns, &resolver), 0);
+        InlineIterator iter = InlineIterator(this, bidiFirstSkippingEmptyInlines(this, resolver.runs(), &resolver), 0);
         resolver.setPosition(iter, numberOfIsolateAncestors(iter));
     }
     return curr;
