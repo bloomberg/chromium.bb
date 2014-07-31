@@ -13,14 +13,16 @@
             if (!window.testRunner) {
                 testFailed("This test depends on window.testRunner to toggle permissions.");
             } else {
+                testRunner.clearWebNotificationPermissions();
+
                 // The "default" state indicates that no permission request has
                 // been answered yet.
                 shouldBeEqualToString("Notification.permission", "default");
 
-                window.testRunner.grantWebNotificationPermission("file://", false);
+                testRunner.grantWebNotificationPermission("file://", false);
                 shouldBeEqualToString("Notification.permission", "denied");
 
-                window.testRunner.grantWebNotificationPermission("file://", true);
+                testRunner.grantWebNotificationPermission("file://", true);
                 shouldBeEqualToString("Notification.permission", "granted");
             }
         </script>

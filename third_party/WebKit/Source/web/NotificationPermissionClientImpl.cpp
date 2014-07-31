@@ -30,14 +30,16 @@ public:
 
     virtual void permissionRequestComplete(WebNotificationPermission permission) OVERRIDE
     {
-        m_callback->handleEvent(Notification::permissionString(static_cast<NotificationClient::Permission>(permission)));
+        if (m_callback)
+            m_callback->handleEvent(Notification::permissionString(static_cast<NotificationClient::Permission>(permission)));
     }
 
     // FIXME: Deprecated. Notification::permission() requires another round-trip
     // to the browser process using a synchronous IPC.
     virtual void permissionRequestComplete() OVERRIDE
     {
-        m_callback->handleEvent(Notification::permission(m_executionContext));
+        if (m_callback)
+            m_callback->handleEvent(Notification::permission(m_executionContext));
     }
 
 private:
@@ -63,7 +65,6 @@ NotificationPermissionClientImpl::~NotificationPermissionClientImpl()
 void NotificationPermissionClientImpl::requestPermission(ExecutionContext* context, PassOwnPtr<NotificationPermissionCallback> callback)
 {
     ASSERT(context && context->isDocument());
-    ASSERT(callback);
 
     Document* document = toDocument(context);
     WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());

@@ -1,5 +1,8 @@
-DESKTOP NOTIFICATION PERMISSION REQUESTED: file://
-Requesting notification permission...
+Tests that it is possible to request permission to display Web Notifications from a document context, for which the passed callback will be invoked with the requests' result. It also makes sure that not passing a callback won't result in a crash.
 
-PASS: Permission callback invoked.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+PASS result is "default"
+PASS result is "granted"
 

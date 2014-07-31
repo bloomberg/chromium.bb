@@ -51,7 +51,6 @@ public:
     virtual void close(blink::Notification*) OVERRIDE;
     virtual void notificationObjectDestroyed(blink::Notification*) OVERRIDE;
     virtual blink::NotificationClient::Permission checkPermission(blink::ExecutionContext*) OVERRIDE;
-    virtual void requestPermission(blink::ExecutionContext*, WTF::PassOwnPtr<blink::NotificationPermissionCallback>) OVERRIDE;
 
 private:
     // WebNotificationPresenter that this object delegates to.

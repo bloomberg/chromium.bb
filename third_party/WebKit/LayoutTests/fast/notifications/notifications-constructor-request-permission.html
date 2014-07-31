@@ -1,36 +1,47 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <script type="text/javascript">
-        function log(message)
-        {
-            document.getElementById("result").innerHTML += message + "<br>";
-        }
-        
-        function runTests()
-        {
+    <head>
+        <script src="../../resources/js-test.js"></script>
+    </head>
+    <body>
+        <p>
+            Tests that it is possible to request permission to display Web
+            Notifications from a document context, for which the passed callback
+            will be invoked with the requests' result. It also makes sure that
+            not passing a callback won't result in a crash.
+        </p>
+        <div id="console"></div>
+        <script>
             if (window.testRunner) {
                 testRunner.dumpAsText();
+                testRunner.waitUntilDone();
+                testRunner.clearWebNotificationPermissions();
             }
 
-            if (!window.Notification) {
-                log("FAIL: No Notification interface!");
-            }
-            
-            var N = window.Notification.requestPermission(
-                function() { log("PASS: Permission callback invoked."); }
-            );
-        }
-    </script>
-</head>
-<body>
-    <p>Requesting notification permission...</p>
-    
-<div id="result"></div>    
-<script type="text/javascript">
-runTests();
-</script>
+            var result;
 
+            // This should not crash given that the callback is optional.
+            Notification.requestPermission();
 
-</body>
+            // This should log the default permission, since no other permission
+            // has been set yet.
+            Notification.requestPermission(function (localResult) {
+                result = localResult;
+                shouldBeEqualToString("result", "default");
+
+                if (!window.testRunner) {
+                    testPassed("The remainder of this test requires the TestRunner.");
+                    return;
+                }
+
+                testRunner.grantWebNotificationPermission("file://", true);
+                Notification.requestPermission(function (localResult) {
+                    result = localResult;
+                    shouldBeEqualToString("result", "granted");
+
+                    testRunner.notifyDone();
+                });
+            });
+        </script>
+    </body>
 </html>

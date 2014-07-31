@@ -43,37 +43,6 @@ using namespace blink;
 
 namespace blink {
 
-class NotificationPermissionCallbackClient : public WebNotificationPermissionCallback {
-public:
-    NotificationPermissionCallbackClient(WebNotificationPresenter* presenter, PassRefPtr<SecurityOrigin> securityOrigin, PassOwnPtr<NotificationPermissionCallback> callback)
-        : m_presenter(presenter)
-        , m_securityOrigin(securityOrigin)
-        , m_callback(callback)
-    {
-    }
-
-    virtual ~NotificationPermissionCallbackClient() { }
-
-    virtual void permissionRequestComplete(WebNotificationPermission permission) OVERRIDE
-    {
-        if (m_callback)
-            m_callback->handleEvent(Notification::permissionString(static_cast<NotificationClient::Permission>(permission)));
-        delete this;
-    }
-
-    virtual void permissionRequestComplete() OVERRIDE
-    {
-        if (m_callback)
-            m_callback->handleEvent(Notification::permissionString(static_cast<NotificationClient::Permission>(m_presenter->checkPermission(WebSecurityOrigin(m_securityOrigin)))));
-        delete this;
-    }
-
-private:
-    WebNotificationPresenter* m_presenter;
-    RefPtr<SecurityOrigin> m_securityOrigin;
-    OwnPtr<NotificationPermissionCallback> m_callback;
-};
-
 void NotificationPresenterImpl::initialize(WebNotificationPresenter* presenter)
 {
     m_presenter = presenter;
@@ -106,11 +75,6 @@ NotificationClient::Permission NotificationPresenterImpl::checkPermission(Execut
 {
     int result = m_presenter->checkPermission(WebSecurityOrigin(context->securityOrigin()));
     return static_cast<NotificationClient::Permission>(result);
-}
-
-void NotificationPresenterImpl::requestPermission(ExecutionContext* context, WTF::PassOwnPtr<NotificationPermissionCallback> callback)
-{
-    m_presenter->requestPermission(WebSecurityOrigin(context->securityOrigin()), new NotificationPermissionCallbackClient(m_presenter, context->securityOrigin(), callback));
 }
 
 } // namespace blink
