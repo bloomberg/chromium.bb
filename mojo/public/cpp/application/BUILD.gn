@@ -25,10 +25,14 @@ source_set("main_chromium") {
   sources = [
     "lib/mojo_main_chromium.cc"
   ]
+
+  deps = [ ":application" ]
 }
 
 source_set("main_standalone") {
   sources = [
     "lib/mojo_main_standalone.cc"
   ]
+
+  deps = [ ":application" ]
 }
