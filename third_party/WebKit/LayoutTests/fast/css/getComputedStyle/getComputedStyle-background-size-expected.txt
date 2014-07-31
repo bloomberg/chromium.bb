@@ -13,5 +13,5 @@ getPropertyCSSValue(-webkit-background-size): [object CSSValueList]
 
 Test getting initial value of the background size.
 getPropertyValue(-webkit-background-size): auto
-getPropertyCSSValue(-webkit-background-size): [object CSSPrimitiveValue]
+getPropertyCSSValue(-webkit-background-size): [object CSSValueList]
 
