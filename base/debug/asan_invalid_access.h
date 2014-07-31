@@ -29,7 +29,7 @@ BASE_EXPORT NOINLINE void AsanHeapUseAfterFree();
 
 // The "corrupt-block" and "corrupt-heap" classes of bugs is specific to
 // SyzyASan.
-#if defined(SYZYASAN)
+#if defined(SYZYASAN) && defined(COMPILER_MSVC)
 
 // Corrupts a memory block and makes sure that the corruption gets detected when
 // we try to free this block.
@@ -39,7 +39,7 @@ BASE_EXPORT NOINLINE void AsanCorruptHeapBlock();
 // crash occur.
 BASE_EXPORT NOINLINE void AsanCorruptHeap();
 
-#endif  // SYZYASAN
+#endif  // SYZYASAN && COMPILER_MSVC
 
 }  // namespace debug
 }  // namespace base

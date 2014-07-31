@@ -16,7 +16,7 @@ namespace debug {
 
 namespace {
 
-#if defined(SYZYASAN)
+#if defined(SYZYASAN) && defined(COMPILER_MSVC)
 // Disable warning C4530: "C++ exception handler used, but unwind semantics are
 // not enabled". We don't want to change the compilation flags just for this
 // test, and no exception should be triggered here, so this warning has no value
@@ -46,7 +46,7 @@ NOINLINE void CorruptMemoryBlock(bool induce_crash) {
   delete[] array;
 }
 #pragma warning(pop)
-#endif
+#endif  // SYZYASAN && COMPILER_MSVC
 
 }  // namespace
 
@@ -91,7 +91,7 @@ void AsanHeapUseAfterFree() {
 
 #endif  // ADDRESS_SANITIZER || SYZYASAN
 
-#if defined(SYZYASAN)
+#if defined(SYZYASAN) && defined(COMPILER_MSVC)
 void AsanCorruptHeapBlock() {
   CorruptMemoryBlock(false);
 }
@@ -99,7 +99,7 @@ void AsanCorruptHeapBlock() {
 void AsanCorruptHeap() {
   CorruptMemoryBlock(true);
 }
-#endif  // SYZYASAN
+#endif  // SYZYASAN && COMPILER_MSVC
 
 }  // namespace debug
 }  // namespace base
