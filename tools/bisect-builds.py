@@ -12,50 +12,62 @@ unzipping, and opening Chromium for you. After testing the specific revision,
 it will ask you whether it is good or bad before continuing the search.
 """
 
-# The root URL for storage.
-CHROMIUM_BASE_URL = 'http://commondatastorage.googleapis.com/chromium-browser-snapshots'
-WEBKIT_BASE_URL = 'http://commondatastorage.googleapis.com/chromium-webkit-snapshots'
+# The base URL for stored build archives.
+CHROMIUM_BASE_URL = ('http://commondatastorage.googleapis.com'
+                     '/chromium-browser-snapshots')
+WEBKIT_BASE_URL = ('http://commondatastorage.googleapis.com'
+                   '/chromium-webkit-snapshots')
 
-# The root URL for official builds.
+# The base URL for official builds.
 OFFICIAL_BASE_URL = 'http://master.chrome.corp.google.com/official_builds'
 
-# Changelogs URL.
-CHANGELOG_URL = 'http://build.chromium.org/f/chromium/' \
-                'perf/dashboard/ui/changelog.html?' \
-                'url=/trunk/src&range=%d%%3A%d'
+# URL template for viewing changelogs between revisions.
+CHANGELOG_URL = ('http://build.chromium.org'
+                 '/f/chromium/perf/dashboard/ui/changelog.html'
+                 '?url=/trunk/src&range=%d%%3A%d')
 
-# Official Changelogs URL.
-OFFICIAL_CHANGELOG_URL = 'http://omahaproxy.appspot.com/'\
-                         'changelog?old_version=%s&new_version=%s'
+# URL template for viewing changelogs between official versions.
+OFFICIAL_CHANGELOG_URL = ('http://omahaproxy.appspot.com/changelog'
+                          '?old_version=%s&new_version=%s')
 
 # DEPS file URL.
 DEPS_FILE = 'http://src.chromium.org/viewvc/chrome/trunk/src/DEPS?revision=%d'
-# Blink Changelogs URL.
-BLINK_CHANGELOG_URL = 'http://build.chromium.org/f/chromium/' \
-                      'perf/dashboard/ui/changelog_blink.html?' \
-                      'url=/trunk&range=%d%%3A%d'
 
-DONE_MESSAGE_GOOD_MIN = 'You are probably looking for a change made after %s ' \
-                        '(known good), but no later than %s (first known bad).'
-DONE_MESSAGE_GOOD_MAX = 'You are probably looking for a change made after %s ' \
-                        '(known bad), but no later than %s (first known good).'
+# Blink changelogs URL.
+BLINK_CHANGELOG_URL = ('http://build.chromium.org'
+                      '/f/chromium/perf/dashboard/ui/changelog_blink.html'
+                      '?url=/trunk&range=%d%%3A%d')
+
+DONE_MESSAGE_GOOD_MIN = ('You are probably looking for a change made after %s ('
+                         'known good), but no later than %s (first known bad).')
+DONE_MESSAGE_GOOD_MAX = ('You are probably looking for a change made after %s ('
+                         'known bad), but no later than %s (first known good).')
 
 CHROMIUM_GITHASH_TO_SVN_URL = (
     'https://chromium.googlesource.com/chromium/src/+/%s?format=json')
+
 BLINK_GITHASH_TO_SVN_URL = (
     'https://chromium.googlesource.com/chromium/blink/+/%s?format=json')
-GITHASH_TO_SVN_URL = { 'chromium': CHROMIUM_GITHASH_TO_SVN_URL,
-                       'blink': BLINK_GITHASH_TO_SVN_URL }
-# Search pattern to be matched in the json output from
+
+GITHASH_TO_SVN_URL = {
+    'chromium': CHROMIUM_GITHASH_TO_SVN_URL,
+    'blink': BLINK_GITHASH_TO_SVN_URL,
+}
+
+# Search pattern to be matched in the JSON output from
 # CHROMIUM_GITHASH_TO_SVN_URL to get the chromium revision (svn revision).
 CHROMIUM_SEARCH_PATTERN = (
     r'.*git-svn-id: svn://svn.chromium.org/chrome/trunk/src@(\d+) ')
+
 # Search pattern to be matched in the json output from
 # BLINK_GITHASH_TO_SVN_URL to get the blink revision (svn revision).
 BLINK_SEARCH_PATTERN = (
     r'.*git-svn-id: svn://svn.chromium.org/blink/trunk@(\d+) ')
-SEARCH_PATTERN = { 'chromium': CHROMIUM_SEARCH_PATTERN,
-                   'blink': BLINK_SEARCH_PATTERN }
+
+SEARCH_PATTERN = {
+    'chromium': CHROMIUM_SEARCH_PATTERN,
+    'blink': BLINK_SEARCH_PATTERN,
+}
 
 ###############################################################################
 
@@ -160,19 +172,19 @@ class PathContext(object):
     marker_param = ''
     if marker:
       marker_param = '&marker=' + str(marker)
-    return self.base_url + '/?delimiter=/&prefix=' + \
-        self._listing_platform_dir + marker_param
+    return (self.base_url + '/?delimiter=/&prefix=' +
+            self._listing_platform_dir + marker_param)
 
   def GetDownloadURL(self, revision):
     """Gets the download URL for a build archive of a specific revision."""
     if self.is_official:
-      return "%s/%s/%s%s" % (
+      return '%s/%s/%s%s' % (
           OFFICIAL_BASE_URL, revision, self._listing_platform_dir,
           self.archive_name)
     else:
       if str(revision) in self.githash_svn_dict:
         revision = self.githash_svn_dict[str(revision)]
-      return "%s/%s%s/%s" % (self.base_url, self._listing_platform_dir,
+      return '%s/%s%s/%s' % (self.base_url, self._listing_platform_dir,
                              revision, self.archive_name)
 
   def GetLastChangeURL(self):
@@ -184,12 +196,14 @@ class PathContext(object):
     that is used to run the executable."""
     return os.path.join(self._archive_extract_dir, self._binary_name)
 
-  def IsAuraBuild(self, build):
-    """Check the given build is Aura."""
+  @staticmethod
+  def IsAuraBuild(build):
+    """Checks whether the given build is an Aura build."""
     return build.split('.')[3] == '1'
 
-  def IsASANBuild(self, build):
-    """Check the given build is ASAN build."""
+  @staticmethod
+  def IsASANBuild(build):
+    """Checks whether the given build is an ASAN build."""
     return build.split('.')[3] == '2'
 
   def ParseDirectoryIndex(self):
@@ -209,7 +223,7 @@ class PathContext(object):
       root_tag = document.getroot().tag
       end_ns_pos = root_tag.find('}')
       if end_ns_pos == -1:
-        raise Exception("Could not locate end namespace for directory index")
+        raise Exception('Could not locate end namespace for directory index')
       namespace = root_tag[:end_ns_pos + 1]
 
       # Find the prefix (_listing_platform_dir) and whether or not the list is
@@ -242,8 +256,8 @@ class PathContext(object):
       return (revisions, next_marker, githash_svn_dict)
 
     # Fetch the first list of revisions.
-    (revisions, next_marker, self.githash_svn_dict) =\
-        _FetchAndParse(self.GetListingURL())
+    (revisions, next_marker, self.githash_svn_dict) = _FetchAndParse(
+        self.GetListingURL())
     # If the result list was truncated, refetch with the next marker. Do this
     # until an entire directory listing is done.
     while next_marker:
@@ -354,8 +368,8 @@ class PathContext(object):
     i = 0
     parsed_build_numbers = [LooseVersion(x) for x in build_numbers]
     for build_number in sorted(parsed_build_numbers):
-      path = OFFICIAL_BASE_URL + '/' + str(build_number) + '/' + \
-             self._listing_platform_dir + self.archive_name
+      path = (OFFICIAL_BASE_URL + '/' + str(build_number) + '/' +
+              self._listing_platform_dir + self.archive_name)
       i = i + 1
       try:
         connection = urllib.urlopen(path)
@@ -374,7 +388,7 @@ class PathContext(object):
           elif (not self.IsAuraBuild(str(build_number)) and
                 not self.IsASANBuild(str(build_number))):
             final_list.append(str(build_number))
-      except urllib.HTTPError, e:
+      except urllib.HTTPError:
         pass
     return final_list
 
@@ -419,17 +433,17 @@ def FetchRevision(context, rev, filename, quit_event=None, progress_event=None):
   """
   def ReportHook(blocknum, blocksize, totalsize):
     if quit_event and quit_event.isSet():
-      raise RuntimeError("Aborting download of revision %s" % str(rev))
+      raise RuntimeError('Aborting download of revision %s' % str(rev))
     if progress_event and progress_event.isSet():
       size = blocknum * blocksize
       if totalsize == -1:  # Total size not known.
-        progress = "Received %d bytes" % size
+        progress = 'Received %d bytes' % size
       else:
         size = min(totalsize, size)
-        progress = "Received %d of %d bytes, %.2f%%" % (
+        progress = 'Received %d of %d bytes, %.2f%%' % (
             size, totalsize, 100.0 * size / totalsize)
       # Send a \r to let all progress messages use just one line of output.
-      sys.stdout.write("\r" + progress)
+      sys.stdout.write('\r' + progress)
       sys.stdout.flush()
 
   download_url = context.GetDownloadURL(rev)
@@ -437,18 +451,18 @@ def FetchRevision(context, rev, filename, quit_event=None, progress_event=None):
     urllib.urlretrieve(download_url, filename, ReportHook)
     if progress_event and progress_event.isSet():
       print
-  except RuntimeError, e:
+  except RuntimeError:
     pass
 
 
-def RunRevision(context, revision, zipfile, profile, num_runs, command, args):
+def RunRevision(context, revision, zip_file, profile, num_runs, command, args):
   """Given a zipped revision, unzip it and run the test."""
-  print "Trying revision %s..." % str(revision)
+  print 'Trying revision %s...' % str(revision)
 
   # Create a temp directory and unzip the revision into it.
   cwd = os.getcwd()
   tempdir = tempfile.mkdtemp(prefix='bisect_tmp')
-  UnzipFilenameToDir(zipfile, tempdir)
+  UnzipFilenameToDir(zip_file, tempdir)
   os.chdir(tempdir)
 
   # Run the build as many times as specified.
@@ -471,15 +485,15 @@ def RunRevision(context, revision, zipfile, profile, num_runs, command, args):
 
   runcommand = []
   for token in shlex.split(command):
-    if token == "%a":
+    if token == '%a':
       runcommand.extend(testargs)
     else:
-      runcommand.append( \
-          token.replace('%p', os.path.abspath(context.GetLaunchPath())) \
-               .replace('%s', ' '.join(testargs)))
+      runcommand.append(
+          token.replace('%p',os.path.abspath(context.GetLaunchPath())).replace(
+              '%s', ' '.join(testargs)))
 
   results = []
-  for i in range(0, num_runs):
+  for _ in range(num_runs):
     subproc = subprocess.Popen(runcommand,
                                bufsize=-1,
                                stdout=subprocess.PIPE,
@@ -490,7 +504,7 @@ def RunRevision(context, revision, zipfile, profile, num_runs, command, args):
   os.chdir(cwd)
   try:
     shutil.rmtree(tempdir, True)
-  except Exception, e:
+  except Exception:
     pass
 
   for (returncode, stdout, stderr) in results:
@@ -499,11 +513,15 @@ def RunRevision(context, revision, zipfile, profile, num_runs, command, args):
   return results[0]
 
 
+# The arguments official_builds, status, stdout and stderr are unused.
+# They are present here because this function is passed to Bisect which then
+# calls it with 5 arguments.
+# pylint: disable=W0613
 def AskIsGoodBuild(rev, official_builds, status, stdout, stderr):
-  """Ask the user whether build |rev| is good or bad."""
+  """Asks the user whether build |rev| is good or bad."""
   # Loop until we get a response that we can parse.
   while True:
-    response = raw_input('Revision %s is ' \
+    response = raw_input('Revision %s is '
                          '[(g)ood/(b)ad/(r)etry/(u)nknown/(q)uit]: ' %
                          str(rev))
     if response and response in ('g', 'b', 'r', 'u'):
@@ -514,21 +532,23 @@ def AskIsGoodBuild(rev, official_builds, status, stdout, stderr):
 
 class DownloadJob(object):
   """DownloadJob represents a task to download a given Chromium revision."""
-  def __init__(self, context, name, rev, zipfile):
+
+  def __init__(self, context, name, rev, zip_file):
     super(DownloadJob, self).__init__()
     # Store off the input parameters.
     self.context = context
     self.name = name
     self.rev = rev
-    self.zipfile = zipfile
+    self.zip_file = zip_file
     self.quit_event = threading.Event()
     self.progress_event = threading.Event()
+    self.thread = None
 
   def Start(self):
     """Starts the download."""
     fetchargs = (self.context,
                  self.rev,
-                 self.zipfile,
+                 self.zip_file,
                  self.quit_event,
                  self.progress_event)
     self.thread = threading.Thread(target=FetchRevision,
@@ -538,14 +558,16 @@ class DownloadJob(object):
 
   def Stop(self):
     """Stops the download which must have been started previously."""
+    assert self.thread, 'DownloadJob must be started before Stop is called.'
     self.quit_event.set()
     self.thread.join()
-    os.unlink(self.zipfile)
+    os.unlink(self.zip_file)
 
   def WaitFor(self):
     """Prints a message and waits for the download to complete. The download
     must have been started previously."""
-    print "Downloading revision %s..." % str(self.rev)
+    assert self.thread, 'DownloadJob must be started before WaitFor is called.'
+    print 'Downloading revision %s...' % str(self.rev)
     self.progress_event.set()  # Display progress of download.
     self.thread.join()
 
@@ -558,7 +580,7 @@ def Bisect(base_url,
            good_rev=0,
            bad_rev=0,
            num_runs=1,
-           command="%p %a",
+           command='%p %a',
            try_args=(),
            profile=None,
            flash_path=None,
@@ -603,7 +625,7 @@ def Bisect(base_url,
                         pdf_path)
   cwd = os.getcwd()
 
-  print "Downloading list of known revisions..."
+  print 'Downloading list of known revisions...'
   _GetDownloadPath = lambda rev: os.path.join(cwd,
       '%s-%s' % (str(rev), context.archive_name))
   if official_builds:
@@ -621,18 +643,18 @@ def Bisect(base_url,
   maxrev = len(revlist) - 1
   pivot = maxrev / 2
   rev = revlist[pivot]
-  zipfile = _GetDownloadPath(rev)
-  fetch = DownloadJob(context, 'initial_fetch', rev, zipfile)
+  zip_file = _GetDownloadPath(rev)
+  fetch = DownloadJob(context, 'initial_fetch', rev, zip_file)
   fetch.Start()
   fetch.WaitFor()
 
   # Binary search time!
-  while fetch and fetch.zipfile and maxrev - minrev > 1:
+  while fetch and fetch.zip_file and maxrev - minrev > 1:
     if bad_rev < good_rev:
-      min_str, max_str = "bad", "good"
+      min_str, max_str = 'bad', 'good'
     else:
-      min_str, max_str = "good", "bad"
-    print 'Bisecting range [%s (%s), %s (%s)].' % (revlist[minrev], min_str, \
+      min_str, max_str = 'good', 'bad'
+    print 'Bisecting range [%s (%s), %s (%s)].' % (revlist[minrev], min_str,
                                                    revlist[maxrev], max_str)
 
     # Pre-fetch next two possible pivots
@@ -663,7 +685,7 @@ def Bisect(base_url,
     try:
       (status, stdout, stderr) = RunRevision(context,
                                              rev,
-                                             fetch.zipfile,
+                                             fetch.zip_file,
                                              profile,
                                              num_runs,
                                              command,
@@ -684,8 +706,8 @@ def Bisect(base_url,
           print 'Good revision: %s' % rev
       else:
         answer = evaluate(rev, official_builds, status, stdout, stderr)
-      if answer == 'g' and good_rev < bad_rev or \
-          answer == 'b' and bad_rev < good_rev:
+      if ((answer == 'g' and good_rev < bad_rev)
+          or (answer == 'b' and bad_rev < good_rev)):
         fetch.Stop()
         minrev = pivot
         if down_fetch:
@@ -695,8 +717,8 @@ def Bisect(base_url,
           up_fetch.WaitFor()
           pivot = up_pivot
           fetch = up_fetch
-      elif answer == 'b' and good_rev < bad_rev or \
-          answer == 'g' and bad_rev < good_rev:
+      elif ((answer == 'b' and good_rev < bad_rev)
+            or (answer == 'g' and bad_rev < good_rev)):
         fetch.Stop()
         maxrev = pivot
         if up_fetch:
@@ -731,16 +753,16 @@ def Bisect(base_url,
             pivot = up_pivot - 1  # Subtracts 1 because revlist was resized.
           else:
             pivot = down_pivot
-          zipfile = fetch.zipfile
+          zip_file = fetch.zip_file
 
         if down_fetch and fetch != down_fetch:
           down_fetch.Stop()
         if up_fetch and fetch != up_fetch:
           up_fetch.Stop()
       else:
-        assert False, "Unexpected return value from evaluate(): " + answer
+        assert False, 'Unexpected return value from evaluate(): ' + answer
     except SystemExit:
-      print "Cleaning up..."
+      print 'Cleaning up...'
       for f in [_GetDownloadPath(revlist[down_pivot]),
                 _GetDownloadPath(revlist[up_pivot])]:
         try:
@@ -765,8 +787,7 @@ def GetBlinkDEPSRevisionForChromiumRevision(rev):
   if m:
     return int(m.group(1))
   else:
-    raise Exception('Could not get Blink revision for Chromium rev %d'
-                    % rev)
+    raise Exception('Could not get Blink revision for Chromium rev %d' % rev)
 
 
 def GetBlinkRevisionForChromiumRevision(self, rev):
@@ -779,7 +800,7 @@ def GetBlinkRevisionForChromiumRevision(self, rev):
       return revision.isdigit()
   if str(rev) in self.githash_svn_dict:
     rev = self.githash_svn_dict[str(rev)]
-  file_url = "%s/%s%s/REVISIONS" % (self.base_url,
+  file_url = '%s/%s%s/REVISIONS' % (self.base_url,
                                     self._listing_platform_dir, rev)
   url = urllib.urlopen(file_url)
   data = json.loads(url.read())
@@ -791,6 +812,7 @@ def GetBlinkRevisionForChromiumRevision(self, rev):
     return blink_rev
   else:
     raise Exception('Could not get blink revision for cr rev %d' % rev)
+
 
 def FixChromiumRevForBlink(revisions_final, revisions, self, rev):
   """Returns the chromium revision that has the correct blink revision
@@ -810,6 +832,7 @@ def FixChromiumRevForBlink(revisions_final, revisions, self, rev):
   revisions_final.sort()
   return rev
 
+
 def GetChromiumRevision(context, url):
   """Returns the chromium revision read from given URL."""
   try:
@@ -818,8 +841,8 @@ def GetChromiumRevision(context, url):
     if latest_revision.isdigit():
       return int(latest_revision)
     return context.GetSVNRevisionFromGitHash(latest_revision)
-  except Exception, e:
-    print('Could not determine latest revision. This could be bad...')
+  except Exception:
+    print 'Could not determine latest revision. This could be bad...'
     return 999999999
 
 
@@ -845,51 +868,63 @@ def main():
   choices = ['mac', 'win', 'linux', 'linux64', 'linux-arm']
             # linux-chromiumos lacks a continuous archive http://crbug.com/78158
   parser.add_option('-a', '--archive',
-                    choices = choices,
-                    help = 'The buildbot archive to bisect [%s].' %
-                           '|'.join(choices))
-  parser.add_option('-o', action="store_true", dest='official_builds',
-                    help = 'Bisect across official ' +
-                    'Chrome builds (internal only) instead of ' +
-                    'Chromium archives.')
-  parser.add_option('-b', '--bad', type = 'str',
-                    help = 'A bad revision to start bisection. ' +
-                    'May be earlier or later than the good revision. ' +
-                    'Default is HEAD.')
-  parser.add_option('-f', '--flash_path', type = 'str',
-                    help = 'Absolute path to a recent Adobe Pepper Flash ' +
-                    'binary to be used in this bisection (e.g. ' +
-                    'on Windows C:\...\pepflashplayer.dll and on Linux ' +
-                    '/opt/google/chrome/PepperFlash/libpepflashplayer.so).')
-  parser.add_option('-d', '--pdf_path', type = 'str',
-                    help = 'Absolute path to a recent PDF pluggin ' +
-                    'binary to be used in this bisection (e.g. ' +
-                    'on Windows C:\...\pdf.dll and on Linux ' +
-                    '/opt/google/chrome/libpdf.so). Option also enables ' +
-                    'print preview.')
-  parser.add_option('-g', '--good', type = 'str',
-                    help = 'A good revision to start bisection. ' +
-                    'May be earlier or later than the bad revision. ' +
-                    'Default is 0.')
-  parser.add_option('-p', '--profile', '--user-data-dir', type = 'str',
-                    help = 'Profile to use; this will not reset every run. ' +
-                    'Defaults to a clean profile.', default = 'profile')
-  parser.add_option('-t', '--times', type = 'int',
-                    help = 'Number of times to run each build before asking ' +
-                    'if it\'s good or bad. Temporary profiles are reused.',
-                    default = 1)
-  parser.add_option('-c', '--command', type = 'str',
-                    help = 'Command to execute. %p and %a refer to Chrome ' +
-                    'executable and specified extra arguments respectively. ' +
-                    'Use %s to specify all extra arguments as one string. ' +
-                    'Defaults to "%p %a". Note that any extra paths ' +
-                    'specified should be absolute.',
-                    default = '%p %a')
-  parser.add_option('-l', '--blink', action='store_true',
-                    help = 'Use Blink bisect instead of Chromium. ')
-  parser.add_option('', '--not-interactive', action='store_true',
-                    help = 'Use command exit code to tell good/bad revision.',
-                    default=False)
+                    choices=choices,
+                    help='The buildbot archive to bisect [%s].' %
+                         '|'.join(choices))
+  parser.add_option('-o',
+                    action='store_true',
+                    dest='official_builds',
+                    help='Bisect across official Chrome builds (internal '
+                         'only) instead of Chromium archives.')
+  parser.add_option('-b', '--bad',
+                    type='str',
+                    help='A bad revision to start bisection. '
+                         'May be earlier or later than the good revision. '
+                         'Default is HEAD.')
+  parser.add_option('-f', '--flash_path',
+                    type='str',
+                    help='Absolute path to a recent Adobe Pepper Flash '
+                         'binary to be used in this bisection (e.g. '
+                         'on Windows C:\...\pepflashplayer.dll and on Linux '
+                         '/opt/google/chrome/PepperFlash/'
+                         'libpepflashplayer.so).')
+  parser.add_option('-d', '--pdf_path',
+                    type='str',
+                    help='Absolute path to a recent PDF plugin '
+                         'binary to be used in this bisection (e.g. '
+                         'on Windows C:\...\pdf.dll and on Linux '
+                         '/opt/google/chrome/libpdf.so). Option also enables '
+                         'print preview.')
+  parser.add_option('-g', '--good',
+                    type='str',
+                    help='A good revision to start bisection. ' +
+                         'May be earlier or later than the bad revision. ' +
+                         'Default is 0.')
+  parser.add_option('-p', '--profile', '--user-data-dir',
+                    type='str',
+                    default='profile',
+                    help='Profile to use; this will not reset every run. '
+                         'Defaults to a clean profile.')
+  parser.add_option('-t', '--times',
+                    type='int',
+                    default=1,
+                    help='Number of times to run each build before asking '
+                         'if it\'s good or bad. Temporary profiles are reused.')
+  parser.add_option('-c', '--command',
+                    type='str',
+                    default='%p %a',
+                    help='Command to execute. %p and %a refer to Chrome '
+                         'executable and specified extra arguments '
+                         'respectively. Use %s to specify all extra arguments '
+                         'as one string. Defaults to "%p %a". Note that any '
+                         'extra paths specified should be absolute.')
+  parser.add_option('-l', '--blink',
+                    action='store_true',
+                    help='Use Blink bisect instead of Chromium. ')
+  parser.add_option('', '--not-interactive',
+                    action='store_true',
+                    default=False,
+                    help='Use command exit code to tell good/bad revision.')
   parser.add_option('--aura',
                     dest='aura',
                     action='store_true',
@@ -899,9 +934,9 @@ def main():
                     dest='use_local_repo',
                     action='store_true',
                     default=False,
-                    help='Allow the script to convert git SHA1 to SVN ' +
-                    'revision using "git svn find-rev <SHA1>" ' +
-                    'command from a Chromium checkout.')
+                    help='Allow the script to convert git SHA1 to SVN '
+                         'revision using "git svn find-rev <SHA1>" '
+                         'command from a Chromium checkout.')
 
   (opts, args) = parser.parse_args()
 
@@ -913,8 +948,8 @@ def main():
 
   if opts.aura:
     if opts.archive != 'win' or not opts.official_builds:
-      print 'Error: Aura is supported only on Windows platform '\
-            'and official builds.'
+      print ('Error: Aura is supported only on Windows platform '
+             'and official builds.')
       return 1
 
   if opts.blink:
@@ -975,7 +1010,7 @@ def main():
                                                         min_chromium_rev)
     max_blink_rev = GetBlinkRevisionForChromiumRevision(context,
                                                         max_chromium_rev)
-  except Exception, e:
+  except Exception:
     # Silently ignore the failure.
     min_blink_rev, max_blink_rev = 0, 0
 
@@ -998,14 +1033,15 @@ def main():
       print DONE_MESSAGE_GOOD_MIN % (str(min_chromium_rev),
                                      str(max_chromium_rev))
     if min_blink_rev != max_blink_rev:
-      print ("NOTE: There is a Blink roll in the range, "
-             "you might also want to do a Blink bisect.")
+      print ('NOTE: There is a Blink roll in the range, '
+             'you might also want to do a Blink bisect.')
 
     print 'CHANGELOG URL:'
     if opts.official_builds:
       print OFFICIAL_CHANGELOG_URL % (min_chromium_rev, max_chromium_rev)
     else:
       print '  ' + CHANGELOG_URL % (min_chromium_rev, max_chromium_rev)
+
 
 if __name__ == '__main__':
   sys.exit(main())
