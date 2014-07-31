@@ -122,6 +122,7 @@
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
+#include "chrome/browser/ui/settings_window_manager.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/sync/browser_synced_window_delegate.h"
@@ -1228,6 +1229,18 @@ bool Browser::PreHandleGestureEvent(content::WebContents* source,
            event.type == blink::WebGestureEvent::GesturePinchEnd;
 
   return false;
+}
+
+bool Browser::CanDragEnter(content::WebContents* source,
+                           const content::DropData& data,
+                           blink::WebDragOperationsMask operations_allowed) {
+  // Disallow drag-and-drop navigation for Settings windows which do not support
+  // external navigation.
+  if ((operations_allowed & blink::WebDragOperationLink) &&
+      chrome::SettingsWindowManager::GetInstance()->IsSettingsBrowser(this)) {
+    return false;
+  }
+  return true;
 }
 
 bool Browser::IsMouseLocked() const {

@@ -450,6 +450,10 @@ class Browser : public TabStripModelObserver,
   virtual bool PreHandleGestureEvent(
       content::WebContents* source,
       const blink::WebGestureEvent& event) OVERRIDE;
+  virtual bool CanDragEnter(
+      content::WebContents* source,
+      const content::DropData& data,
+      blink::WebDragOperationsMask operations_allowed) OVERRIDE;
 
   bool is_type_tabbed() const { return type_ == TYPE_TABBED; }
   bool is_type_popup() const { return type_ == TYPE_POPUP; }
