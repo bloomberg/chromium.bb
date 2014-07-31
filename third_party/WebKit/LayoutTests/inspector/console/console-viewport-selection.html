@@ -77,7 +77,7 @@ function test()
 
         function testHalfScrollSelectionDown(next)
         {
-            viewport.forceScrollItemToBeLast(middleMessage);
+            viewport.forceScrollItemToBeFirst(middleMessage - viewportMessagesCount + 1);
             dumpSelectionModel();
             dumpViewportRenderedItems();
             next();
