@@ -53,8 +53,6 @@
         '../components/components.gyp:onc_component',
         '../components/components.gyp:pairing',
         '../components/components.gyp:policy',
-        '../components/components.gyp:session_manager_component',
-        '../components/components.gyp:user_manager',
         # This depends directly on the variations target, rather than just
         # transitively via the common target because the proto sources need to
         # be generated before code in this target can start building.
@@ -1098,6 +1096,8 @@
             '../ash/ash.gyp:ash_with_content',
             '../ash/ash_resources.gyp:ash_resources',
             '../ash/ash_strings.gyp:ash_strings',
+            '../components/components.gyp:session_manager_component',
+            '../components/components.gyp:user_manager',
             '../ui/app_list/app_list.gyp:app_list',
             '../ui/message_center/message_center.gyp:message_center',
           ],

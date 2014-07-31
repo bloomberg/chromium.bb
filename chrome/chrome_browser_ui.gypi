@@ -2687,7 +2687,6 @@
           'sources': [ '<@(chrome_browser_ui_chromeos_sources)' ],
           'dependencies': [
             'browser_chromeos',
-            '../components/components.gyp:user_manager',
             '../device/nfc/nfc.gyp:device_nfc',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',

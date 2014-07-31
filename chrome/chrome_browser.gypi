@@ -3403,7 +3403,7 @@
         ['enable_managed_users==1', {
           'sources': [ '<@(chrome_browser_supervised_user_sources)' ],
           'conditions' : [
-            [ 'chromeos==1', {
+            [ 'use_ash==1', {
               'dependencies': [
                 '<(DEPTH)/components/components.gyp:user_manager',
               ]
