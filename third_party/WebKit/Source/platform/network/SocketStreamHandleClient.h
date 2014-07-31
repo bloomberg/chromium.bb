@@ -38,7 +38,7 @@ class KURL;
 class SocketStreamError;
 class SocketStreamHandle;
 
-class SocketStreamHandleClient : public WillBeGarbageCollectedMixin {
+class SocketStreamHandleClient : public GarbageCollectedMixin {
 public:
     virtual ~SocketStreamHandleClient() { }
 

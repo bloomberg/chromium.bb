@@ -57,16 +57,15 @@ class SocketStreamError;
 class WebSocketChannelClient;
 
 class MainThreadWebSocketChannel FINAL : public WebSocketChannel, public SocketStreamHandleClient, public FileReaderLoaderClient {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MainThreadWebSocketChannel);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    USING_GARBAGE_COLLECTED_MIXIN(MainThreadWebSocketChannel);
 public:
     // You can specify the source file and the line number information
     // explicitly by passing the last parameter.
     // In the usual case, they are set automatically and you don't have to
     // pass it.
-    static PassRefPtrWillBeRawPtr<MainThreadWebSocketChannel> create(Document* document, WebSocketChannelClient* client, const String& sourceURL = String(), unsigned lineNumber = 0)
+    static MainThreadWebSocketChannel* create(Document* document, WebSocketChannelClient* client, const String& sourceURL = String(), unsigned lineNumber = 0)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MainThreadWebSocketChannel(document, client, sourceURL, lineNumber));
+        return adoptRefCountedGarbageCollected(new MainThreadWebSocketChannel(document, client, sourceURL, lineNumber));
     }
     virtual ~MainThreadWebSocketChannel();
 
@@ -203,9 +202,9 @@ private:
     };
 
     RawPtrWillBeMember<Document> m_document;
-    RawPtrWillBeMember<WebSocketChannelClient> m_client;
-    OwnPtrWillBeMember<WebSocketHandshake> m_handshake;
-    RefPtrWillBeMember<SocketStreamHandle> m_handle;
+    Member<WebSocketChannelClient> m_client;
+    Member<WebSocketHandshake> m_handshake;
+    Member<SocketStreamHandle> m_handle;
     Vector<char> m_buffer;
 
     Timer<MainThreadWebSocketChannel> m_resumeTimer;

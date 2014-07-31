@@ -47,8 +47,8 @@ namespace blink {
 class WebDocument;
 class WebURL;
 
-class WebSocketImpl FINAL : public NoBaseWillBeGarbageCollectedFinalized<WebSocketImpl>, public WebSocket, public blink::WebSocketChannelClient {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WebSocketImpl)
+class WebSocketImpl FINAL : public GarbageCollectedFinalized<WebSocketImpl>, public WebSocket, public blink::WebSocketChannelClient {
+    USING_GARBAGE_COLLECTED_MIXIN(WebSocketImpl)
 public:
     WebSocketImpl(const WebDocument&, WebSocketClient*);
     virtual ~WebSocketImpl();
@@ -79,7 +79,7 @@ public:
     virtual void trace(blink::Visitor*) OVERRIDE;
 
 private:
-    RefPtrWillBeMember<blink::WebSocketChannel> m_private;
+    Member<blink::WebSocketChannel> m_private;
     WebSocketClient* m_client;
     BinaryType m_binaryType;
     WebString m_subprotocol;

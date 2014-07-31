@@ -125,8 +125,6 @@ void DOMWebSocket::EventQueue::dispatchQueuedEvents()
     if (m_state != Active)
         return;
 
-    RefPtrWillBeRawPtr<EventQueue> protect(this);
-
     WillBeHeapDeque<RefPtrWillBeMember<Event> > events;
     events.swap(m_events);
     while (!events.isEmpty()) {
@@ -249,30 +247,30 @@ void DOMWebSocket::logError(const String& message)
     executionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message);
 }
 
-PassRefPtrWillBeRawPtr<DOMWebSocket> DOMWebSocket::create(ExecutionContext* context, const String& url, ExceptionState& exceptionState)
+DOMWebSocket* DOMWebSocket::create(ExecutionContext* context, const String& url, ExceptionState& exceptionState)
 {
     Vector<String> protocols;
     return create(context, url, protocols, exceptionState);
 }
 
-PassRefPtrWillBeRawPtr<DOMWebSocket> DOMWebSocket::create(ExecutionContext* context, const String& url, const Vector<String>& protocols, ExceptionState& exceptionState)
+DOMWebSocket* DOMWebSocket::create(ExecutionContext* context, const String& url, const Vector<String>& protocols, ExceptionState& exceptionState)
 {
     if (url.isNull()) {
         exceptionState.throwDOMException(SyntaxError, "Failed to create a WebSocket: the provided URL is invalid.");
         return nullptr;
     }
 
-    RefPtrWillBeRawPtr<DOMWebSocket> webSocket(adoptRefWillBeRefCountedGarbageCollected(new DOMWebSocket(context)));
+    DOMWebSocket* webSocket(adoptRefCountedGarbageCollectedWillBeNoop(new DOMWebSocket(context)));
     webSocket->suspendIfNeeded();
 
     webSocket->connect(url, protocols, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
 
-    return webSocket.release();
+    return webSocket;
 }
 
-PassRefPtrWillBeRawPtr<DOMWebSocket> DOMWebSocket::create(ExecutionContext* context, const String& url, const String& protocol, ExceptionState& exceptionState)
+DOMWebSocket* DOMWebSocket::create(ExecutionContext* context, const String& url, const String& protocol, ExceptionState& exceptionState)
 {
     Vector<String> protocols;
     protocols.append(protocol);

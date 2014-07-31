@@ -100,7 +100,7 @@ bool MainThreadWebSocketChannel::connect(const KURL& url, const String& protocol
         m_document->addConsoleMessage(JSMessageSource, WarningMessageLevel, message);
     }
 
-    m_handshake = adoptPtrWillBeNoop(new WebSocketHandshake(url, protocol, m_document));
+    m_handshake = new WebSocketHandshake(url, protocol, m_document);
     m_handshake->reset();
     m_handshake->addExtensionProcessor(m_perMessageDeflate.createExtensionProcessor());
     m_handshake->addExtensionProcessor(m_deflateFramer.createExtensionProcessor());
@@ -195,7 +195,6 @@ void MainThreadWebSocketChannel::fail(const String& reason, MessageLevel level, 
     }
     // Hybi-10 specification explicitly states we must not continue to handle incoming data
     // once the WebSocket connection is failed (section 7.1.7).
-    RefPtrWillBeRawPtr<MainThreadWebSocketChannel> protect(this); // The client can close the channel, potentially removing the last reference.
     m_shouldDiscardReceivedData = true;
     if (!m_buffer.isEmpty())
         skipBuffer(m_buffer.size()); // Save memory.
@@ -292,7 +291,6 @@ void MainThreadWebSocketChannel::didCloseSocketStream(SocketStreamHandle* handle
 void MainThreadWebSocketChannel::didReceiveSocketStreamData(SocketStreamHandle* handle, const char* data, int len)
 {
     WTF_LOG(Network, "MainThreadWebSocketChannel %p didReceiveSocketStreamData() Received %d bytes", this, len);
-    RefPtrWillBeRawPtr<MainThreadWebSocketChannel> protect(this); // The client can close the channel, potentially removing the last reference.
     ASSERT(handle == m_handle);
     if (!m_document)
         return;
@@ -363,8 +361,6 @@ void MainThreadWebSocketChannel::didFailSocketStream(SocketStreamHandle* handle,
     if (failingURL.isNull())
         failingURL = m_handshake->url().string();
     WTF_LOG(Network, "Error Message: '%s', FailURL: '%s'", message.utf8().data(), failingURL.utf8().data());
-
-    RefPtrWillBeRawPtr<WebSocketChannel> protect(this);
 
     if (m_state != ChannelClosing && m_state != ChannelClosed)
         callDidReceiveMessageError();
@@ -449,8 +445,6 @@ bool MainThreadWebSocketChannel::processOneItemFromBuffer()
         return false;
     }
 
-    RefPtrWillBeRawPtr<MainThreadWebSocketChannel> protect(this); // The client can close the channel, potentially removing the last reference.
-
     if (m_handshake->mode() == WebSocketHandshake::Incomplete) {
         int headerLength = m_handshake->readServerHandshake(m_buffer.data(), m_buffer.size());
         if (headerLength <= 0)
@@ -492,7 +486,6 @@ void MainThreadWebSocketChannel::resumeTimerFired(Timer<MainThreadWebSocketChann
 {
     ASSERT_UNUSED(timer, timer == &m_resumeTimer);
 
-    RefPtrWillBeRawPtr<MainThreadWebSocketChannel> protect(this); // The client can close the channel, potentially removing the last reference.
     processBuffer();
     if (!m_suspended && m_client && (m_state == ChannelClosed) && m_handle)
         didCloseSocketStream(m_handle.get());

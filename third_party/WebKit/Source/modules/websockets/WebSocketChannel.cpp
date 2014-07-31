@@ -47,7 +47,7 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<WebSocketChannel> WebSocketChannel::create(ExecutionContext* context, WebSocketChannelClient* client)
+WebSocketChannel* WebSocketChannel::create(ExecutionContext* context, WebSocketChannelClient* client)
 {
     ASSERT(context);
     ASSERT(client);
