@@ -13,17 +13,15 @@
 class LazyBackgroundObserver {
  public:
   LazyBackgroundObserver()
-      : page_created_(chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
+      : page_created_(extensions::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
                       content::NotificationService::AllSources()),
-        page_closed_(chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-                     content::NotificationService::AllSources()) {
-  }
+        page_closed_(extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+                     content::NotificationService::AllSources()) {}
   explicit LazyBackgroundObserver(Profile* profile)
-      : page_created_(chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
+      : page_created_(extensions::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
                       content::NotificationService::AllSources()),
-        page_closed_(chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-                     content::Source<Profile>(profile)) {
-  }
+        page_closed_(extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+                     content::Source<Profile>(profile)) {}
   void Wait() {
     page_created_.Wait();
     page_closed_.Wait();

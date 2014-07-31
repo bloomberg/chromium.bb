@@ -143,12 +143,15 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
   }
 
   registrar_.Add(
-      this, chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
+      this,
+      extensions::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
       content::NotificationService::AllSources());
   content::Source<Profile> profile_source = content::Source<Profile>(profile);
-  registrar_.Add(
-      this, chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED, profile_source);
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+                 profile_source);
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  profile_source);
 
   edit_bookmarks_enabled_.Init(
@@ -218,7 +221,7 @@ void LocationBarViewMac::UpdatePageActions() {
   Layout();
   if (page_action_decorations_.size() != count_before) {
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
+        extensions::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
         content::Source<LocationBar>(this),
         content::NotificationService::NoDetails());
   }
@@ -230,7 +233,7 @@ void LocationBarViewMac::InvalidatePageActions() {
   Layout();
   if (page_action_decorations_.size() != count_before) {
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
+        extensions::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
         content::Source<LocationBar>(this),
         content::NotificationService::NoDetails());
   }
@@ -618,7 +621,7 @@ void LocationBarViewMac::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED: {
+    case extensions::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED: {
       WebContents* contents = GetWebContents();
       if (content::Details<WebContents>(contents) != details)
         return;
@@ -628,8 +631,8 @@ void LocationBarViewMac::Observe(int type,
       break;
     }
 
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
+    case extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
+    case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
       Update(NULL);
       break;
 

@@ -12,7 +12,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/commands/commands.h"
 #include "chrome/browser/extensions/extension_commands_global_registry.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
@@ -28,6 +27,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -286,10 +286,10 @@ bool CommandService::AddKeybindingPref(
   std::pair<const std::string, const std::string> details =
       std::make_pair(extension_id, command_name);
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_COMMAND_ADDED,
+      extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED,
       content::Source<Profile>(profile_),
-      content::Details<
-          std::pair<const std::string, const std::string> >(&details));
+      content::Details<std::pair<const std::string, const std::string> >(
+          &details));
 
   return true;
 }
@@ -804,10 +804,10 @@ void CommandService::RemoveKeybindingPrefs(const std::string& extension_id,
     std::pair<const std::string, const std::string> details =
         std::make_pair(extension_id, command_name);
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_COMMAND_REMOVED,
+        extensions::NOTIFICATION_EXTENSION_COMMAND_REMOVED,
         content::Source<Profile>(profile_),
-        content::Details<
-            std::pair<const std::string, const std::string> >(&details));
+        content::Details<std::pair<const std::string, const std::string> >(
+            &details));
   }
 }
 

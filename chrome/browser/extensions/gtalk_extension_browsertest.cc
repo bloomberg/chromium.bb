@@ -85,8 +85,8 @@ class GtalkExtensionTest : public ExtensionBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(GtalkExtensionTest, InstallCurrent) {
   content::WindowedNotificationObserver panel_loaded(
-    chrome::NOTIFICATION_EXTENSION_VIEW_REGISTERED,
-    content::NotificationService::AllSources());
+      extensions::NOTIFICATION_EXTENSION_VIEW_REGISTERED,
+      content::NotificationService::AllSources());
   InstallGtalkExtension(ReadCurrentVersion());
   panel_loaded.Wait();
   ASSERT_TRUE(GetViewer());

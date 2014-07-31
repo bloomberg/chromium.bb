@@ -268,7 +268,7 @@ void TabHelper::DidNavigateMainFrame(
     if (browser_action) {
       browser_action->ClearAllValuesForTab(SessionID::IdForTab(web_contents()));
       content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
+          extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
           content::Source<ExtensionAction>(browser_action),
           content::NotificationService::NoDetails());
     }

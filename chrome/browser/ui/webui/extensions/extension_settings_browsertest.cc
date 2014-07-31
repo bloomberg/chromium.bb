@@ -98,7 +98,7 @@ const Extension* ExtensionSettingsUIBrowserTest::InstallExtension(
         extensions::CrxInstaller::OffStoreInstallAllowedInTest);
 
     observer_->Watch(
-        chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
         content::Source<extensions::CrxInstaller>(installer.get()));
 
     installer->InstallCrx(crx_path);

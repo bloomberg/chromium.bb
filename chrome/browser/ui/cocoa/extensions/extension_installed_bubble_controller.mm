@@ -61,10 +61,11 @@ class ExtensionLoadedNotificationObserver
       ExtensionInstalledBubbleController* controller, Profile* profile)
           : controller_(controller) {
     registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+                   extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                    content::Source<Profile>(profile));
-    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-        content::Source<Profile>(profile));
+    registrar_.Add(this,
+                   extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+                   content::Source<Profile>(profile));
   }
 
  private:
@@ -74,7 +75,7 @@ class ExtensionLoadedNotificationObserver
       int type,
       const content::NotificationSource& source,
       const content::NotificationDetails& details) OVERRIDE {
-    if (type == chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED) {
+    if (type == extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED) {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
       if (extension == [controller_ extension]) {
@@ -82,7 +83,7 @@ class ExtensionLoadedNotificationObserver
                                       withObject:controller_
                                    waitUntilDone:NO];
       }
-    } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
+    } else if (type == extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
       const Extension* extension =
           content::Details<const UnloadedExtensionInfo>(details)->extension;
       if (extension == [controller_ extension]) {

@@ -5,7 +5,6 @@
 #include "extensions/browser/lazy_background_task_queue.h"
 
 #include "base/callback.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -16,6 +15,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/common/extension.h"
@@ -28,9 +28,11 @@ namespace extensions {
 LazyBackgroundTaskQueue::LazyBackgroundTaskQueue(
     content::BrowserContext* browser_context)
     : browser_context_(browser_context), extension_registry_observer_(this) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
 
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context));
@@ -137,7 +139,7 @@ void LazyBackgroundTaskQueue::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
+    case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
       // If an on-demand background page finished loading, dispatch queued up
       // events for it.
       ExtensionHost* host =
@@ -148,7 +150,7 @@ void LazyBackgroundTaskQueue::Observe(
       }
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
+    case extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
       // Notify consumers about the load failure when the background host dies.
       // This can happen if the extension crashes. This is not strictly
       // necessary, since we also unload the extension in that case (which

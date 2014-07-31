@@ -13,10 +13,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/notification_types.h"
 
 ExtensionErrorReporter* ExtensionErrorReporter::instance_ = NULL;
 
@@ -46,7 +46,7 @@ void ExtensionErrorReporter::ReportLoadError(
     content::BrowserContext* browser_context,
     bool be_noisy) {
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_LOAD_ERROR,
+      extensions::NOTIFICATION_EXTENSION_LOAD_ERROR,
       content::Source<Profile>(Profile::FromBrowserContext(browser_context)),
       content::Details<const std::string>(&error));
 

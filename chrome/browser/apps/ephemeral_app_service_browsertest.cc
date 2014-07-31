@@ -10,6 +10,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/manifest.h"
 
 using extensions::Extension;
@@ -83,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppServiceBrowserTest,
 
   // Perform garbage collection.
   content::WindowedNotificationObserver uninstall_signal(
-      chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
+      extensions::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
       content::Source<Profile>(browser()->profile()));
   GarbageCollectEphemeralApps();
   uninstall_signal.Wait();

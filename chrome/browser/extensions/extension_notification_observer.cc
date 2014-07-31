@@ -14,11 +14,13 @@ namespace extensions {
 
 namespace {
 
-std::string Str(const std::vector<chrome::NotificationType>& types) {
+std::string Str(const std::vector<extensions::NotificationType>& types) {
   std::string str = "[";
   bool needs_comma = false;
-  for (std::vector<chrome::NotificationType>::const_iterator it =
-       types.begin(); it != types.end(); ++it) {
+  for (std::vector<extensions::NotificationType>::const_iterator it =
+           types.begin();
+       it != types.end();
+       ++it) {
     if (needs_comma)
       str += ",";
     needs_comma = true;
@@ -35,39 +37,40 @@ ExtensionNotificationObserver::ExtensionNotificationObserver(
     const std::set<std::string>& extension_ids)
     : extension_ids_(extension_ids) {
   registrar_.Add(
-      this, chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED, source);
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-                 source);
+      this, extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED, source);
   registrar_.Add(
-      this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED, source);
+      this,
+      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
+      source);
+  registrar_.Add(
+      this, extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED, source);
 }
 
 ExtensionNotificationObserver::~ExtensionNotificationObserver() {}
 
 testing::AssertionResult ExtensionNotificationObserver::CheckNotifications() {
-  return CheckNotifications(std::vector<chrome::NotificationType>());
+  return CheckNotifications(std::vector<extensions::NotificationType>());
 }
 
 testing::AssertionResult ExtensionNotificationObserver::CheckNotifications(
-    chrome::NotificationType type) {
-  return CheckNotifications(std::vector<chrome::NotificationType>(1, type));
+    extensions::NotificationType type) {
+  return CheckNotifications(std::vector<extensions::NotificationType>(1, type));
 }
 
 testing::AssertionResult ExtensionNotificationObserver::CheckNotifications(
-    chrome::NotificationType t1,
-    chrome::NotificationType t2) {
-  std::vector<chrome::NotificationType> types;
+    extensions::NotificationType t1,
+    extensions::NotificationType t2) {
+  std::vector<extensions::NotificationType> types;
   types.push_back(t1);
   types.push_back(t2);
   return CheckNotifications(types);
 }
 
 testing::AssertionResult ExtensionNotificationObserver::CheckNotifications(
-    chrome::NotificationType t1,
-    chrome::NotificationType t2,
-    chrome::NotificationType t3) {
-  std::vector<chrome::NotificationType> types;
+    extensions::NotificationType t1,
+    extensions::NotificationType t2,
+    extensions::NotificationType t3) {
+  std::vector<extensions::NotificationType> types;
   types.push_back(t1);
   types.push_back(t2);
   types.push_back(t3);
@@ -75,13 +78,13 @@ testing::AssertionResult ExtensionNotificationObserver::CheckNotifications(
 }
 
 testing::AssertionResult ExtensionNotificationObserver::CheckNotifications(
-    chrome::NotificationType t1,
-    chrome::NotificationType t2,
-    chrome::NotificationType t3,
-    chrome::NotificationType t4,
-    chrome::NotificationType t5,
-    chrome::NotificationType t6) {
-  std::vector<chrome::NotificationType> types;
+    extensions::NotificationType t1,
+    extensions::NotificationType t2,
+    extensions::NotificationType t3,
+    extensions::NotificationType t4,
+    extensions::NotificationType t5,
+    extensions::NotificationType t6) {
+  std::vector<extensions::NotificationType> types;
   types.push_back(t1);
   types.push_back(t2);
   types.push_back(t3);
@@ -97,27 +100,30 @@ void ExtensionNotificationObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED: {
+    case extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED: {
       const Extension* extension =
           content::Details<const InstalledExtensionInfo>(details)->extension;
       if (extension_ids_.count(extension->id()))
-        notifications_.push_back(static_cast<chrome::NotificationType>(type));
+        notifications_.push_back(
+            static_cast<extensions::NotificationType>(type));
       break;
     }
 
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
+    case extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
       if (extension_ids_.count(extension->id()))
-        notifications_.push_back(static_cast<chrome::NotificationType>(type));
+        notifications_.push_back(
+            static_cast<extensions::NotificationType>(type));
       break;
     }
 
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
+    case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       UnloadedExtensionInfo* reason =
           content::Details<UnloadedExtensionInfo>(details).ptr();
       if (extension_ids_.count(reason->extension->id())) {
-        notifications_.push_back(static_cast<chrome::NotificationType>(type));
+        notifications_.push_back(
+            static_cast<extensions::NotificationType>(type));
         // The only way that extensions are unloaded in these tests is
         // by blacklisting.
         EXPECT_EQ(UnloadedExtensionInfo::REASON_BLACKLIST,
@@ -133,7 +139,7 @@ void ExtensionNotificationObserver::Observe(
 }
 
 testing::AssertionResult ExtensionNotificationObserver::CheckNotifications(
-    const std::vector<chrome::NotificationType>& types) {
+    const std::vector<extensions::NotificationType>& types) {
   testing::AssertionResult result = (notifications_ == types) ?
       testing::AssertionSuccess() :
       testing::AssertionFailure() << "Expected " << Str(types) << ", " <<

@@ -15,7 +15,7 @@ SyncedExtensionInstaller::SyncedExtensionInstaller(Profile* profile)
       weak_ptr_factory_(this) {
   DoInstallSyncedExtensions();
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UPDATING_STARTED,
+                 extensions::NOTIFICATION_EXTENSION_UPDATING_STARTED,
                  content::Source<Profile>(profile_));
 }
 
@@ -26,7 +26,7 @@ void SyncedExtensionInstaller::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_UPDATING_STARTED, type);
+  DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_UPDATING_STARTED, type);
 
   // The extension system is trying to check for updates.  In the real world,
   // this would be where synced extensions are asynchronously downloaded from

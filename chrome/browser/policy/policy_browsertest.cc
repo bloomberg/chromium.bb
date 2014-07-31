@@ -672,7 +672,7 @@ class PolicyTest : public InProcessBrowserTest {
     installer->set_creation_flags(extensions::Extension::FROM_WEBSTORE);
 
     content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
         content::NotificationService::AllSources());
     installer->InstallCrx(extension_path);
     observer.Wait();
@@ -687,8 +687,8 @@ class PolicyTest : public InProcessBrowserTest {
     scoped_refptr<extensions::UnpackedInstaller> installer =
         extensions::UnpackedInstaller::Create(extension_service());
     content::WindowedNotificationObserver observer(
-        expect_success ? chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED
-                       : chrome::NOTIFICATION_EXTENSION_LOAD_ERROR,
+        expect_success ? extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED
+                       : extensions::NOTIFICATION_EXTENSION_LOAD_ERROR,
         content::NotificationService::AllSources());
     installer->Load(extension_path);
     observer.Wait();
@@ -705,8 +705,9 @@ class PolicyTest : public InProcessBrowserTest {
 
   void UninstallExtension(const std::string& id, bool expect_success) {
     content::WindowedNotificationObserver observer(
-        expect_success ? chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED
-                       : chrome::NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
+        expect_success
+            ? extensions::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED
+            : extensions::NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
         content::NotificationService::AllSources());
     extension_service()->UninstallExtension(
         id,
@@ -1621,7 +1622,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   policies.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, forcelist.DeepCopy(), NULL);
   content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
+      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
       content::NotificationService::AllSources());
   UpdateProviderPolicy(policies);
   observer.Wait();
@@ -1659,7 +1660,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   extensions::ExtensionUpdater::CheckParams params;
   params.install_immediately = true;
   content::WindowedNotificationObserver update_observer(
-      chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
+      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
       content::NotificationService::AllSources());
   updater->CheckNow(params);
   update_observer.Wait();
@@ -1702,10 +1703,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   BackgroundContentsService::
       SetRestartDelayForForceInstalledAppsAndExtensionsForTesting(0);
   content::WindowedNotificationObserver extension_crashed_observer(
-      chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
+      extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
       content::NotificationService::AllSources());
   content::WindowedNotificationObserver extension_loaded_observer(
-      chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+      extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
       content::NotificationService::AllSources());
   extensions::ExtensionHost* extension_host =
       extensions::ExtensionSystem::Get(browser()->profile())->
@@ -1789,7 +1790,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallSources) {
   UpdateProviderPolicy(policies);
 
   content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
+      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
       content::NotificationService::AllSources());
   PerformClick(1, 0);
   observer.Wait();

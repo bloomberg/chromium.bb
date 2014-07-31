@@ -42,7 +42,7 @@ class BrowserActionsContainerTest : public ExtensionBrowserTest {
           browser_actions_bar_->GetExtensionAction(extension_index);
 
       content::WindowedNotificationObserver observer(
-          chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
+          extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
           content::Source<ExtensionAction>(browser_action));
       observer.Wait();
     }

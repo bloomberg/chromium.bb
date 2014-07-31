@@ -19,6 +19,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
@@ -62,7 +63,7 @@ class InputViewBrowserTest : public VirtualKeyboardBrowserTest {
         extensions::CrxInstaller::CreateSilent(service);
 
     ExtensionTestNotificationObserver observer(browser());
-    observer.Watch(chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+    observer.Watch(extensions::NOTIFICATION_CRX_INSTALLER_DONE,
                    content::Source<extensions::CrxInstaller>(installer.get()));
     installer->set_allow_silent_install(true);
     installer->set_creation_flags(extensions::Extension::FROM_WEBSTORE);

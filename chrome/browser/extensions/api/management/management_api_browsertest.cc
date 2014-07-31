@@ -6,7 +6,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/management/management_api.h"
 #include "chrome/browser/extensions/api/management/management_api_constants.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -22,6 +21,7 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/notification_types.h"
 
 namespace keys = extension_management_api_constants;
 namespace util = extension_function_test_utils;
@@ -297,7 +297,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
   // crash it.  (NOTIFICATION_RENDERER_PROCESS_CREATED does not wait for the
   // latter and can cause KillProcess to fail on Windows.)
   content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_EXTENSION_HOST_CREATED,
+      extensions::NOTIFICATION_EXTENSION_HOST_CREATED,
       content::NotificationService::AllSources());
   ExtensionInstallPrompt::g_auto_confirm_for_tests =
       ExtensionInstallPrompt::ACCEPT;

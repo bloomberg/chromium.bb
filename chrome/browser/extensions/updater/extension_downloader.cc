@@ -825,7 +825,7 @@ void ExtensionDownloader::NotifyUpdateFound(const std::string& id,
                                             const std::string& version) {
   UpdateDetails updateInfo(id, Version(version));
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND,
+      extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND,
       content::NotificationService::AllBrowserContextsAndSources(),
       content::Details<UpdateDetails>(&updateInfo));
 }

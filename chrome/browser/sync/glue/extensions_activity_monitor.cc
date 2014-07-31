@@ -25,7 +25,7 @@ ExtensionsActivityMonitor::ExtensionsActivityMonitor()
   // wanted to use the string name).  Thus, we use all sources and filter in
   // Observe.
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
+                 extensions::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
                  content::NotificationService::AllSources());
 }
 

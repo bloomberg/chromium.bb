@@ -52,7 +52,7 @@ void FireBookmarksApiEvent(
   bookmarks_function->set_name(T::function_name());
   for (int i = 0; i < repeats; i++) {
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
+        extensions::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
         content::Source<Extension>(extension.get()),
         content::Details<const extensions::BookmarksFunction>(
             bookmarks_function.get()));

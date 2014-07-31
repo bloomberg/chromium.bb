@@ -7,7 +7,6 @@
 #include <cctype>
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/favicon_downloader.h"
@@ -18,6 +17,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/image_loader.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
@@ -174,11 +174,11 @@ BookmarkAppHelper::BookmarkAppHelper(ExtensionService* service,
     : web_app_info_(web_app_info),
       crx_installer_(extensions::CrxInstaller::CreateSilent(service)) {
   registrar_.Add(this,
-                 chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+                 extensions::NOTIFICATION_CRX_INSTALLER_DONE,
                  content::Source<CrxInstaller>(crx_installer_.get()));
 
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
+                 extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
                  content::Source<CrxInstaller>(crx_installer_.get()));
 
   crx_installer_->set_error_on_unsupported_requirements(true);
@@ -330,7 +330,7 @@ void BookmarkAppHelper::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_CRX_INSTALLER_DONE: {
+    case extensions::NOTIFICATION_CRX_INSTALLER_DONE: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
       DCHECK(extension);
@@ -339,7 +339,7 @@ void BookmarkAppHelper::Observe(int type,
       callback_.Run(extension, web_app_info_);
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR:
+    case extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR:
       callback_.Run(NULL, web_app_info_);
       break;
     default:

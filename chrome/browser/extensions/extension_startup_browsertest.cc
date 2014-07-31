@@ -129,7 +129,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     ASSERT_EQ(expect_extensions_enabled, service->extensions_enabled());
 
     content::WindowedNotificationObserver user_scripts_observer(
-        chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
+        extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
         content::NotificationService::AllSources());
     extensions::UserScriptMaster* master =
         extensions::ExtensionSystem::Get(browser()->profile())->
@@ -221,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, MAYBE_NoFileAccess) {
 
   for (size_t i = 0; i < extension_list.size(); ++i) {
     content::WindowedNotificationObserver user_scripts_observer(
-        chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
+        extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
         content::NotificationService::AllSources());
     extensions::util::SetAllowFileAccess(
         extension_list[i]->id(), browser()->profile(), false);

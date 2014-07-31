@@ -8,7 +8,6 @@
 #include "apps/app_restore_service.h"
 #include "apps/app_window_registry.h"
 #include "apps/launcher.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,6 +17,7 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 
 using extensions::Extension;
@@ -33,12 +33,12 @@ AppLoadService::PostReloadAction::PostReloadAction()
 
 AppLoadService::AppLoadService(Profile* profile)
     : profile_(profile) {
-  registrar_.Add(
-      this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-      content::NotificationService::AllSources());
-  registrar_.Add(
-      this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-      content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+                 content::NotificationService::AllSources());
 }
 
 AppLoadService::~AppLoadService() {}
@@ -85,7 +85,7 @@ void AppLoadService::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
+    case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
       extensions::ExtensionHost* host =
           content::Details<extensions::ExtensionHost>(details).ptr();
       const Extension* extension = host->extension();
@@ -116,7 +116,7 @@ void AppLoadService::Observe(int type,
       post_reload_actions_.erase(it);
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
+    case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       const extensions::UnloadedExtensionInfo* unload_info =
           content::Details<extensions::UnloadedExtensionInfo>(details).ptr();
       if (!unload_info->extension->is_platform_app())

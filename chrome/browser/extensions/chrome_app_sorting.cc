@@ -218,7 +218,7 @@ void ChromeAppSorting::FixNTPOrdinalCollisions() {
   }
 
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
+      chrome::NOTIFICATION_APP_LAUNCHER_REORDERED,
       content::Source<ChromeAppSorting>(this),
       content::NotificationService::NoDetails());
 }
@@ -281,7 +281,7 @@ void ChromeAppSorting::OnExtensionMoved(
   SyncIfNeeded(moved_extension_id);
 
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
+      chrome::NOTIFICATION_APP_LAUNCHER_REORDERED,
       content::Source<ChromeAppSorting>(this),
       content::Details<const std::string>(&moved_extension_id));
 }

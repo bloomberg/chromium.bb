@@ -6,13 +6,13 @@
 #include "apps/app_restore_service_factory.h"
 #include "apps/saved_files_service.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 
 using extensions::Extension;
@@ -29,7 +29,7 @@ namespace apps {
 // Tests that a running app is recorded in the preferences as such.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, RunningAppsAreRecorded) {
   content::WindowedNotificationObserver extension_suspended(
-      chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+      extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
       content::NotificationService::AllSources());
 
   const Extension* extension = LoadExtension(
@@ -111,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ActiveAppsAreRecorded) {
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, FileAccessIsSavedToPrefs) {
   content::WindowedNotificationObserver extension_suspended(
-      chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+      extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
       content::NotificationService::AllSources());
 
   base::ScopedTempDir temp_directory;
@@ -151,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, FileAccessIsSavedToPrefs) {
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_FileAccessIsRestored) {
   content::WindowedNotificationObserver extension_suspended(
-      chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+      extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
       content::NotificationService::AllSources());
 
   base::ScopedTempDir temp_directory;

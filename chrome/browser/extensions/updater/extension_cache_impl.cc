@@ -51,7 +51,7 @@ ExtensionCacheImpl::ExtensionCacheImpl()
                 base::SequencedWorkerPool::SKIP_ON_SHUTDOWN))) {
   notification_registrar_.Add(
       this,
-      chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
+      extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
       content::NotificationService::AllBrowserContextsAndSources());
   cache_->Init(true, base::Bind(&ExtensionCacheImpl::OnCacheInitialized,
                                 weak_ptr_factory_.GetWeakPtr()));
@@ -123,7 +123,7 @@ void ExtensionCacheImpl::Observe(int type,
     return;
 
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR: {
+    case extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR: {
       extensions::CrxInstaller* installer =
           content::Source<extensions::CrxInstaller>(source).ptr();
       // TODO(dpolukhin): remove extension from cache only if installation

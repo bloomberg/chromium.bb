@@ -26,7 +26,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_helpers.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
@@ -48,6 +47,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -156,7 +156,7 @@ bool BookmarksFunction::RunAsync() {
   bool success = RunOnReady();
   if (success) {
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
+        extensions::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
         content::Source<const Extension>(extension()),
         content::Details<const BookmarksFunction>(this));
   }

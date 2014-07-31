@@ -6,7 +6,6 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +18,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "ui/gfx/image/image.h"
 
@@ -127,7 +127,8 @@ SystemIndicatorManager::SystemIndicatorManager(Profile* profile,
       extension_registry_observer_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
 
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_SYSTEM_INDICATOR_UPDATED,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_SYSTEM_INDICATOR_UPDATED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
 }
 
@@ -151,7 +152,7 @@ void SystemIndicatorManager::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(type, chrome::NOTIFICATION_EXTENSION_SYSTEM_INDICATOR_UPDATED);
+  DCHECK_EQ(type, extensions::NOTIFICATION_EXTENSION_SYSTEM_INDICATOR_UPDATED);
 
   OnSystemIndicatorChanged(content::Details<ExtensionAction>(details).ptr());
 }

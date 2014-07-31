@@ -41,6 +41,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/api/app_runtime.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -938,9 +939,10 @@ namespace {
 class CheckExtensionInstalledObserver : public content::NotificationObserver {
  public:
   CheckExtensionInstalledObserver() : seen_(false) {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-                   content::NotificationService::AllSources());
+    registrar_.Add(
+        this,
+        extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
+        content::NotificationService::AllSources());
   }
 
   bool seen() const {

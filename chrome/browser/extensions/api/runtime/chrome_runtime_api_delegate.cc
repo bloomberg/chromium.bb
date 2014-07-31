@@ -7,7 +7,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_warning_service.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
@@ -19,6 +18,7 @@
 #include "components/omaha_query_params/omaha_query_params.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/api/runtime.h"
 
 #if defined(OS_CHROMEOS)
@@ -53,7 +53,7 @@ ChromeRuntimeAPIDelegate::ChromeRuntimeAPIDelegate(
     content::BrowserContext* context)
     : browser_context_(context), registered_for_updates_(false) {
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND,
+                 extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND,
                  content::NotificationService::AllSources());
 }
 
@@ -245,7 +245,7 @@ void ChromeRuntimeAPIDelegate::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND);
+  DCHECK(type == extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND);
   typedef const std::pair<std::string, Version> UpdateDetails;
   const std::string& id = content::Details<UpdateDetails>(details)->first;
   const Version& version = content::Details<UpdateDetails>(details)->second;

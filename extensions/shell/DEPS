@@ -1,6 +1,7 @@
 include_rules = [
   # The apps module has dependencies on chrome.
   "-apps",
+
   # Individual subdirectories should have their own DEPS that include
   # their allowed directories.
   "-extensions/shell",
@@ -17,7 +18,4 @@ include_rules = [
   "+grit/extensions_resources.h",
 
   # Real DEPS go in subdirectories, for example extensions/shell/browser/DEPS.
-  # Temporary exceptions for app_shell bring-up go here.
-  # TODO(jamescook): Remove these. http://crbug.com/305404
-  "!chrome/browser/chrome_notification_types.h",
 ]

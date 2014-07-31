@@ -8,7 +8,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/stl_util.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
@@ -28,6 +27,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/browser/pref_names.h"
 #include "net/url_request/url_fetcher.h"
 
@@ -174,10 +174,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, DisableEnable) {
 class NotificationListener : public content::NotificationObserver {
  public:
   NotificationListener() : started_(false), finished_(false) {
-    int types[] = {
-      chrome::NOTIFICATION_EXTENSION_UPDATING_STARTED,
-      chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND
-    };
+    int types[] = {extensions::NOTIFICATION_EXTENSION_UPDATING_STARTED,
+                   extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND};
     for (size_t i = 0; i < arraysize(types); i++) {
       registrar_.Add(
           this, types[i], content::NotificationService::AllSources());
@@ -202,12 +200,12 @@ class NotificationListener : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
-      case chrome::NOTIFICATION_EXTENSION_UPDATING_STARTED: {
+      case extensions::NOTIFICATION_EXTENSION_UPDATING_STARTED: {
         EXPECT_FALSE(started_);
         started_ = true;
         break;
       }
-      case chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND: {
+      case extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND: {
         const std::string& id =
             content::Details<extensions::UpdateDetails>(details)->id;
         updates_.insert(id);

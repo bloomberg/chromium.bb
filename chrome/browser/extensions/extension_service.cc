@@ -269,7 +269,8 @@ ExtensionService::ExtensionService(Profile* profile,
 
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -707,7 +708,7 @@ bool ExtensionService::UninstallExtension(
       !system_->management_policy()->UserMayModifySettings(
         extension.get(), error)) {
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
+        extensions::NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
         content::Source<Profile>(profile_),
         content::Details<const Extension>(extension.get()));
     return false;
@@ -749,7 +750,7 @@ bool ExtensionService::UninstallExtension(
 
   // Notify interested parties that we've uninstalled this extension.
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
+      extensions::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
       content::Source<Profile>(profile_),
       content::Details<const Extension>(extension.get()));
   ExtensionRegistry::Get(profile_)
@@ -831,7 +832,7 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
 
   // Notify listeners that the extension was enabled.
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_ENABLED,
+      extensions::NOTIFICATION_EXTENSION_ENABLED,
       content::Source<Profile>(profile_),
       content::Details<const Extension>(extension));
 
@@ -997,7 +998,7 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
   registry_->TriggerOnLoaded(extension);
 
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+      extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
       content::Source<Profile>(profile_),
       content::Details<const Extension>(extension));
 
@@ -1047,7 +1048,7 @@ void ExtensionService::NotifyExtensionUnloaded(
   registry_->TriggerOnUnloaded(extension, reason);
 
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+      extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
       content::Source<Profile>(profile_),
       content::Details<UnloadedExtensionInfo>(&details));
 
@@ -1280,7 +1281,7 @@ void ExtensionService::UnloadExtension(
   }
 
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_REMOVED,
+      extensions::NOTIFICATION_EXTENSION_REMOVED,
       content::Source<Profile>(profile_),
       content::Details<const Extension>(extension.get()));
 }
@@ -1292,7 +1293,7 @@ void ExtensionService::RemoveComponentExtension(
   UnloadExtension(extension_id, UnloadedExtensionInfo::REASON_UNINSTALL);
   if (extension.get()) {
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
+        extensions::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
         content::Source<Profile>(profile_),
         content::Details<const Extension>(extension.get()));
     ExtensionRegistry::Get(profile_)->TriggerOnUninstalled(
@@ -1317,7 +1318,7 @@ void ExtensionService::ReloadExtensionsForTest() {
 void ExtensionService::SetReadyAndNotifyListeners() {
   ready_->Signal();
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSIONS_READY,
+      extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
       content::Source<Profile>(profile_),
       content::NotificationService::NoDetails());
 }
@@ -1388,7 +1389,7 @@ void ExtensionService::AddExtension(const Extension* extension) {
     if (extension_sync_service_)
       extension_sync_service_->SyncExtensionChangeIfNeeded(*extension);
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
+        extensions::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
         content::Source<Profile>(profile_),
         content::Details<const Extension>(extension));
 
@@ -1792,7 +1793,7 @@ void ExtensionService::FinishInstallation(
   extensions::InstalledExtensionInfo details(
       extension, is_update, from_ephemeral, old_name);
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
+      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
       content::Source<Profile>(profile_),
       content::Details<const extensions::InstalledExtensionInfo>(&details));
 
@@ -1854,7 +1855,7 @@ void ExtensionService::PromoteEphemeralApp(
       true /* from ephemeral */,
       extension->name() /* old name */);
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
+      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
       content::Source<Profile>(profile_),
       content::Details<const extensions::InstalledExtensionInfo>(&details));
 
@@ -1866,7 +1867,7 @@ void ExtensionService::PromoteEphemeralApp(
 
   if (registry_->enabled_extensions().Contains(extension->id())) {
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+        extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
         content::Source<Profile>(profile_),
         content::Details<const Extension>(extension));
 
@@ -1903,7 +1904,7 @@ void ExtensionService::UntrackTerminatedExtension(const std::string& id) {
   registry_->RemoveTerminated(lowercase_id);
   if (extension) {
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_REMOVED,
+        extensions::NOTIFICATION_EXTENSION_REMOVED,
         content::Source<Profile>(profile_),
         content::Details<const Extension>(extension));
   }
@@ -2012,7 +2013,7 @@ void ExtensionService::Observe(int type,
       // happens too late in browser teardown.)
       browser_terminating_ = true;
       break;
-    case chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED: {
+    case extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED: {
       if (profile_ !=
           content::Source<Profile>(source).ptr()->GetOriginalProfile()) {
         break;

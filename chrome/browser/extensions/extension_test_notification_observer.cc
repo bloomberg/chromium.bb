@@ -156,7 +156,7 @@ bool ExtensionTestNotificationObserver::WaitForPageActionCountChangeTo(
   WaitForCondition(
       base::Bind(
           &HasExtensionPageActionCountReachedTarget, location_bar, count),
-      chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED);
+      extensions::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED);
   return true;
 }
 
@@ -167,7 +167,7 @@ bool ExtensionTestNotificationObserver::WaitForPageActionVisibilityChangeTo(
   WaitForCondition(
       base::Bind(
           &HasExtensionPageActionVisibilityReachedTarget, location_bar, count),
-      chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED);
+      extensions::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED);
   return true;
 }
 
@@ -186,20 +186,20 @@ bool ExtensionTestNotificationObserver::WaitForExtensionViewsToLoad() {
 bool ExtensionTestNotificationObserver::WaitForExtensionInstall() {
   int before = extension_installs_observed_;
   WaitForNotification(
-      chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED);
+      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED);
   return extension_installs_observed_ == (before + 1);
 }
 
 bool ExtensionTestNotificationObserver::WaitForExtensionInstallError() {
   int before = extension_installs_observed_;
   content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
+      extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
       content::NotificationService::AllSources()).Wait();
   return extension_installs_observed_ == before;
 }
 
 void ExtensionTestNotificationObserver::WaitForExtensionLoad() {
-  WaitForNotification(chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED);
+  WaitForNotification(extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED);
 }
 
 void ExtensionTestNotificationObserver::WaitForExtensionAndViewLoad() {
@@ -209,7 +209,7 @@ void ExtensionTestNotificationObserver::WaitForExtensionAndViewLoad() {
 
 bool ExtensionTestNotificationObserver::WaitForExtensionLoadError() {
   int before = extension_load_errors_observed_;
-  WaitForNotification(chrome::NOTIFICATION_EXTENSION_LOAD_ERROR);
+  WaitForNotification(extensions::NOTIFICATION_EXTENSION_LOAD_ERROR);
   return extension_load_errors_observed_ != before;
 }
 
@@ -223,14 +223,14 @@ bool ExtensionTestNotificationObserver::WaitForExtensionCrash(
     return true;
   }
   content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
+      extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
       content::NotificationService::AllSources()).Wait();
   return (service->GetExtensionById(extension_id, true) == NULL);
 }
 
 bool ExtensionTestNotificationObserver::WaitForCrxInstallerDone() {
   int before = crx_installers_done_observed_;
-  WaitForNotification(chrome::NOTIFICATION_CRX_INSTALLER_DONE);
+  WaitForNotification(extensions::NOTIFICATION_CRX_INSTALLER_DONE);
   return crx_installers_done_observed_ == (before + 1);
 }
 
@@ -254,13 +254,13 @@ void ExtensionTestNotificationObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
+    case extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
       last_loaded_extension_id_ =
         content::Details<const Extension>(details).ptr()->id();
       VLOG(1) << "Got EXTENSION_LOADED notification.";
       break;
 
-    case chrome::NOTIFICATION_CRX_INSTALLER_DONE:
+    case extensions::NOTIFICATION_CRX_INSTALLER_DONE:
       VLOG(1) << "Got CRX_INSTALLER_DONE notification.";
       {
           const Extension* extension =
@@ -273,12 +273,12 @@ void ExtensionTestNotificationObserver::Observe(
       ++crx_installers_done_observed_;
       break;
 
-    case chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED:
+    case extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED:
       VLOG(1) << "Got EXTENSION_INSTALLED notification.";
       ++extension_installs_observed_;
       break;
 
-    case chrome::NOTIFICATION_EXTENSION_LOAD_ERROR:
+    case extensions::NOTIFICATION_EXTENSION_LOAD_ERROR:
       VLOG(1) << "Got EXTENSION_LOAD_ERROR notification.";
       ++extension_load_errors_observed_;
       break;

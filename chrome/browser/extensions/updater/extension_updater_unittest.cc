@@ -185,8 +185,8 @@ class MockExtensionDownloaderDelegate : public ExtensionDownloaderDelegate {
 };
 
 const int kNotificationsObserved[] = {
-  chrome::NOTIFICATION_EXTENSION_UPDATING_STARTED,
-  chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND,
+    extensions::NOTIFICATION_EXTENSION_UPDATING_STARTED,
+    extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND,
 };
 
 // A class that observes the notifications sent by the ExtensionUpdater and
@@ -234,7 +234,7 @@ class NotificationsObserver : public content::NotificationObserver {
     for (size_t i = 0; i < arraysize(kNotificationsObserved); ++i) {
       if (kNotificationsObserved[i] == type) {
         count_[i]++;
-        if (type == chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND) {
+        if (type == extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND) {
           updated_.insert(
               content::Details<UpdateDetails>(details)->id);
         }

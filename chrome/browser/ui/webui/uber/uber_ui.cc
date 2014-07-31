@@ -193,10 +193,12 @@ UberFrameUI::UberFrameUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   content::WebUIDataSource::Add(profile, CreateUberFrameHTMLSource(profile));
 
   // Register as an observer for when extensions are loaded and unloaded.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-      content::Source<Profile>(profile));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-      content::Source<Profile>(profile));
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+                 content::Source<Profile>(profile));
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+                 content::Source<Profile>(profile));
 }
 
 UberFrameUI::~UberFrameUI() {
@@ -212,8 +214,8 @@ void UberFrameUI::Observe(int type,
     // we must update the behavior of the History navigation element so that
     // it opens the history extension if one is installed and enabled or
     // opens the default history page if one is uninstalled or disabled.
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
+    case extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
+    case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       Profile* profile = Profile::FromWebUI(web_ui());
       bool overrides_history =
           HasExtensionType(profile, chrome::kChromeUIHistoryHost);

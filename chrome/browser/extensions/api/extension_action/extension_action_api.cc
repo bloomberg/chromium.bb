@@ -9,7 +9,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/extension_action/extension_page_actions_api_constants.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -29,6 +28,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/image_util.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/browser/state_store.h"
 #include "extensions/common/error_utils.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -308,7 +308,7 @@ void ExtensionActionAPI::SetBrowserActionVisibility(
                              kBrowserActionVisible,
                              new base::FundamentalValue(visible));
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
+      extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
       content::Source<ExtensionPrefs>(prefs),
       content::Details<const std::string>(&extension_id));
 }
@@ -420,7 +420,8 @@ void ExtensionActionAPI::ExtensionActionExecuted(
 ExtensionActionStorageManager::ExtensionActionStorageManager(Profile* profile)
     : profile_(profile), extension_registry_observer_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
                  content::NotificationService::AllBrowserContextsAndSources());
 
   StateStore* storage = ExtensionSystem::Get(profile_)->state_store();
@@ -453,7 +454,7 @@ void ExtensionActionStorageManager::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED);
+  DCHECK_EQ(type, extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED);
   ExtensionAction* extension_action =
       content::Source<ExtensionAction>(source).ptr();
   Profile* profile = content::Details<Profile>(details).ptr();
@@ -627,7 +628,7 @@ void ExtensionActionFunction::NotifyChange() {
 
 void ExtensionActionFunction::NotifyBrowserActionChange() {
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
+      extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
       content::Source<ExtensionAction>(extension_action_),
       content::Details<Profile>(GetProfile()));
 }
@@ -638,7 +639,7 @@ void ExtensionActionFunction::NotifyLocationBarChange() {
 
 void ExtensionActionFunction::NotifySystemIndicatorChange() {
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_SYSTEM_INDICATOR_UPDATED,
+      extensions::NOTIFICATION_EXTENSION_SYSTEM_INDICATOR_UPDATED,
       content::Source<Profile>(GetProfile()),
       content::Details<ExtensionAction>(extension_action_));
 }
@@ -807,7 +808,7 @@ bool BrowserActionOpenPopupFunction::RunAsync() {
   }
 
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+                 extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                  content::Source<Profile>(GetProfile()));
 
   // Set a timeout for waiting for the notification that the popup is loaded.
@@ -835,7 +836,7 @@ void BrowserActionOpenPopupFunction::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING, type);
+  DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING, type);
   if (response_sent_)
     return;
 

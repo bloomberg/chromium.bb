@@ -5,7 +5,6 @@
 #include "chrome/browser/autocomplete/keyword_extensions_delegate_impl.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -13,6 +12,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/notification_types.h"
 
 namespace omnibox_api = extensions::api::omnibox;
 
@@ -28,15 +28,16 @@ KeywordExtensionsDelegateImpl::KeywordExtensionsDelegateImpl(
   // Extension suggestions always come from the original profile, since that's
   // where extensions run. We use the input ID to distinguish whether the
   // suggestions are meant for us.
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY,
+                 content::Source<Profile>(profile()->GetOriginalProfile()));
   registrar_.Add(
-      this, chrome::NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY,
+      this,
+      extensions::NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
       content::Source<Profile>(profile()->GetOriginalProfile()));
-  registrar_.Add(
-      this, chrome::NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
-      content::Source<Profile>(profile()->GetOriginalProfile()));
-  registrar_.Add(
-      this, chrome::NOTIFICATION_EXTENSION_OMNIBOX_INPUT_ENTERED,
-      content::Source<Profile>(profile()));
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_OMNIBOX_INPUT_ENTERED,
+                 content::Source<Profile>(profile()));
 }
 
 KeywordExtensionsDelegateImpl::~KeywordExtensionsDelegateImpl() {
@@ -123,7 +124,7 @@ void KeywordExtensionsDelegateImpl::Observe(
   const AutocompleteInput& input = extension_suggest_last_input_;
 
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_OMNIBOX_INPUT_ENTERED:
+    case extensions::NOTIFICATION_EXTENSION_OMNIBOX_INPUT_ENTERED:
       // Input has been accepted, so we're done with this input session. Ensure
       // we don't send the OnInputCancelled event, or handle any more stray
       // suggestions_ready events.
@@ -131,7 +132,8 @@ void KeywordExtensionsDelegateImpl::Observe(
       current_input_id_ = 0;
       return;
 
-    case chrome::NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED: {
+    case extensions::NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED
+        : {
       // It's possible to change the default suggestion while not in an editing
       // session.
       base::string16 keyword, remaining_input;
@@ -148,7 +150,7 @@ void KeywordExtensionsDelegateImpl::Observe(
       return;
     }
 
-    case chrome::NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY: {
+    case extensions::NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY: {
       const omnibox_api::SendSuggestions::Params& suggestions =
           *content::Details<
               omnibox_api::SendSuggestions::Params>(details).ptr();

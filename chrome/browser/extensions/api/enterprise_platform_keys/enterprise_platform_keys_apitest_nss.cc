@@ -6,7 +6,6 @@
 
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/net/nss_context.h"
@@ -18,6 +17,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/net/url_request_mock_http_job.h"
+#include "extensions/browser/notification_types.h"
 #include "net/base/net_errors.h"
 #include "net/cert/nss_cert_database.h"
 #include "policy/policy_constants.h"
@@ -160,7 +160,7 @@ class EnterprisePlatformKeysTest : public ExtensionApiTest {
 
     // Set the policy and wait until the extension is installed.
     content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
+        extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
         content::NotificationService::AllSources());
     policy_provider_.UpdateChromePolicy(policy);
     observer.Wait();

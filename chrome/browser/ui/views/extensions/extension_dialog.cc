@@ -39,13 +39,16 @@ ExtensionDialog::ExtensionDialog(extensions::ExtensionViewHost* host,
       observer_(observer) {
   AddRef();  // Balanced in DeleteDelegate();
 
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                  content::Source<BrowserContext>(host->browser_context()));
   // Listen for the containing view calling window.close();
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  content::Source<BrowserContext>(host->browser_context()));
   // Listen for a crash or other termination of the extension process.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
                  content::Source<BrowserContext>(host->browser_context()));
 }
 
@@ -194,7 +197,7 @@ void ExtensionDialog::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
+    case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
       // Avoid potential overdraw by removing the temporary background after
       // the extension finishes loading.
       GetExtensionView(host_.get())->set_background(NULL);
@@ -203,13 +206,13 @@ void ExtensionDialog::Observe(int type,
       if (content::Details<extensions::ExtensionHost>(host()) == details)
         MaybeFocusRenderView();
       break;
-    case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE:
+    case extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE:
       // If we aren't the host of the popup, then disregard the notification.
       if (content::Details<extensions::ExtensionHost>(host()) != details)
         return;
       GetWidget()->Close();
       break;
-    case chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED:
+    case extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED:
       if (content::Details<extensions::ExtensionHost>(host()) != details)
         return;
       if (observer_)

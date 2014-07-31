@@ -72,11 +72,13 @@ UserScriptListener::UserScriptListener()
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+                 extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::NotificationService::AllSources());
@@ -208,7 +210,7 @@ void UserScriptListener::Observe(int type,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
+    case extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       Profile* profile = content::Source<Profile>(source).ptr();
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
@@ -225,7 +227,7 @@ void UserScriptListener::Observe(int type,
       break;
     }
 
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
+    case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       Profile* profile = content::Source<Profile>(source).ptr();
       const Extension* unloaded_extension =
           content::Details<UnloadedExtensionInfo>(details)->extension;
@@ -247,7 +249,7 @@ void UserScriptListener::Observe(int type,
       break;
     }
 
-    case chrome::NOTIFICATION_USER_SCRIPTS_UPDATED: {
+    case extensions::NOTIFICATION_USER_SCRIPTS_UPDATED: {
       Profile* profile = content::Source<Profile>(source).ptr();
       BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
           &UserScriptListener::UserScriptsReady, this, profile));

@@ -13,7 +13,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -33,6 +32,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager_delegate.h"
 #include "extensions/browser/process_manager_observer.h"
 #include "extensions/browser/view_type_utils.h"
@@ -94,7 +94,7 @@ bool IsFrameInExtensionHost(ExtensionHost* extension_host,
 void OnRenderViewHostUnregistered(BrowserContext* context,
                                   RenderViewHost* render_view_host) {
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_VIEW_UNREGISTERED,
+      extensions::NOTIFICATION_EXTENSION_VIEW_UNREGISTERED,
       content::Source<BrowserContext>(context),
       content::Details<RenderViewHost>(render_view_host));
 }
@@ -248,16 +248,20 @@ ProcessManager::ProcessManager(BrowserContext* context,
       weak_ptr_factory_(this) {
   // ExtensionRegistry is shared between incognito and regular contexts.
   DCHECK_EQ(original_context, extension_registry_->browser_context());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
                  content::Source<BrowserContext>(original_context));
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+                 extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<BrowserContext>(original_context));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<BrowserContext>(original_context));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                  content::Source<BrowserContext>(context));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  content::Source<BrowserContext>(context));
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
                  content::NotificationService::AllSources());
@@ -653,14 +657,14 @@ void ProcessManager::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSIONS_READY: {
+    case extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED: {
       // TODO(jamescook): Convert this to use ExtensionSystem::ready() instead
       // of a notification.
       MaybeCreateStartupBackgroundHosts();
       break;
     }
 
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
+    case extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       BrowserContext* context = content::Source<BrowserContext>(source).ptr();
       ExtensionSystem* system = ExtensionSystem::Get(context);
       if (system->ready().is_signaled()) {
@@ -672,7 +676,7 @@ void ProcessManager::Observe(int type,
       break;
     }
 
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
+    case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       const Extension* extension =
           content::Details<UnloadedExtensionInfo>(details)->extension;
       for (ExtensionHostSet::iterator iter = background_hosts_.begin();
@@ -687,7 +691,7 @@ void ProcessManager::Observe(int type,
       break;
     }
 
-    case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
+    case extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
       ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
       if (background_hosts_.erase(host)) {
         ClearBackgroundPageData(host->extension()->id());
@@ -697,7 +701,7 @@ void ProcessManager::Observe(int type,
       break;
     }
 
-    case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
+    case extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
       ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
       if (host->extension_host_type() == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
         CloseBackgroundHost(host);
@@ -741,7 +745,7 @@ void ProcessManager::Observe(int type,
       // RegisterRenderViewHost is called too early (before the process is
       // available), so we need to wait until now to notify.
       content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_EXTENSION_VIEW_REGISTERED,
+          extensions::NOTIFICATION_EXTENSION_VIEW_REGISTERED,
           content::Source<BrowserContext>(GetBrowserContext()),
           content::Details<RenderViewHost>(contents->GetRenderViewHost()));
       break;
@@ -802,10 +806,10 @@ void ProcessManager::MaybeCreateStartupBackgroundHosts() {
       ExtensionsBrowserClient::Get()->GetOriginalContext(GetBrowserContext());
   if (registrar_.IsRegistered(
           this,
-          chrome::NOTIFICATION_EXTENSIONS_READY,
+          extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
           content::Source<BrowserContext>(original_context))) {
     registrar_.Remove(this,
-                      chrome::NOTIFICATION_EXTENSIONS_READY,
+                      extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
                       content::Source<BrowserContext>(original_context));
   }
 }
@@ -898,7 +902,8 @@ IncognitoProcessManager::IncognitoProcessManager(
   // load the background pages of the spanning extensions. This process
   // manager need only worry about the split mode extensions, which is handled
   // in the NOTIFICATION_BROWSER_WINDOW_READY notification handler.
-  registrar_.Remove(this, chrome::NOTIFICATION_EXTENSIONS_READY,
+  registrar_.Remove(this,
+                    extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
                     content::Source<BrowserContext>(original_context));
 }
 

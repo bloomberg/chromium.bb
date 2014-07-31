@@ -508,7 +508,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, UpdateExtensionEvent) {
 
   // Create an observer to wait for the update to finish.
   content::WindowedNotificationObserver windowed_observer(
-      chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+      extensions::NOTIFICATION_CRX_INSTALLER_DONE,
       content::Source<extensions::CrxInstaller>(crx_installer));
   ASSERT_TRUE(extension_service->UpdateExtension(
       extension->id(), path_v2_, true, &crx_installer));

@@ -120,7 +120,7 @@ void RemoteDesktopBrowserTest::InstallChromotingAppUnpacked() {
   installer->set_prompt_for_plugins(false);
 
   content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+      extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
       content::NotificationService::AllSources());
 
   installer->Load(webapp_unpacked_);

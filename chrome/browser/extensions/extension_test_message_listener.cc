@@ -6,11 +6,11 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/test/test_api.h"
+#include "extensions/browser/notification_types.h"
 
 ExtensionTestMessageListener::ExtensionTestMessageListener(
     const std::string& expected_message,
@@ -22,7 +22,8 @@ ExtensionTestMessageListener::ExtensionTestMessageListener(
       will_reply_(will_reply),
       replied_(false),
       failed_(false) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_TEST_MESSAGE,
                  content::NotificationService::AllSources());
 }
 
@@ -34,7 +35,7 @@ ExtensionTestMessageListener::ExtensionTestMessageListener(bool will_reply)
       replied_(false),
       failed_(false) {
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
+                 extensions::NOTIFICATION_EXTENSION_TEST_MESSAGE,
                  content::NotificationService::AllSources());
 }
 
@@ -81,7 +82,7 @@ void ExtensionTestMessageListener::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE, type);
+  DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_TEST_MESSAGE, type);
 
   // Return immediately if we're already satisfied or it's not the right
   // extension.

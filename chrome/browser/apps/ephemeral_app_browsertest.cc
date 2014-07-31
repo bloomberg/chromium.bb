@@ -30,6 +30,7 @@
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
@@ -202,7 +203,7 @@ const Extension* EphemeralAppTestBase::UpdateEphemeralApp(
   // Update the ephemeral app and wait for the update to finish.
   extensions::CrxInstaller* crx_installer = NULL;
   content::WindowedNotificationObserver windowed_observer(
-      chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+      extensions::NOTIFICATION_CRX_INSTALLER_DONE,
       content::Source<extensions::CrxInstaller>(crx_installer));
   ExtensionService* service =
       ExtensionSystem::Get(profile())->extension_service();
@@ -223,7 +224,7 @@ void EphemeralAppTestBase::PromoteEphemeralApp(
 
 void EphemeralAppTestBase::CloseApp(const std::string& app_id) {
   content::WindowedNotificationObserver event_page_destroyed_signal(
-      chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+      extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
       content::Source<Profile>(profile()));
 
   EXPECT_EQ(1U, GetAppWindowCountForApp(app_id));
@@ -238,7 +239,7 @@ void EphemeralAppTestBase::EvictApp(const std::string& app_id) {
   // Uninstall the app, which is what happens when ephemeral apps get evicted
   // from the cache.
   content::WindowedNotificationObserver uninstalled_signal(
-      chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
+      extensions::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
       content::Source<Profile>(profile()));
 
   ExtensionService* service =
@@ -697,7 +698,7 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
 
   // The delayed installation will occur when the ephemeral app is closed.
   content::WindowedNotificationObserver installed_signal(
-      chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
+      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
       content::Source<Profile>(profile()));
   InstallObserver installed_observer(profile());
   CloseApp(app_id);

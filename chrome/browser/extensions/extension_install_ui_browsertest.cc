@@ -200,7 +200,7 @@ class NewTabUISortingBrowserTest : public ExtensionInstallUIBrowserTest,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    if (type != chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED) {
+    if (type != chrome::NOTIFICATION_APP_LAUNCHER_REORDERED) {
       observer_->Observe(type, source, details);
       return;
     }
@@ -233,8 +233,9 @@ IN_PROC_BROWSER_TEST_F(NewTabUISortingBrowserTest,
       extensions::ExtensionPrefs::Get(browser()->profile())->app_sorting();
 
   // Register for notifications in the same way as AppLauncherHandler.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
-      content::Source<AppSorting>(sorting));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_APP_LAUNCHER_REORDERED,
+                 content::Source<AppSorting>(sorting));
   // ExtensionAppItem calls this when an app install starts.
   sorting->EnsureValidOrdinals(app_id, syncer::StringOrdinal());
   // Vefify the app is not actually installed yet.

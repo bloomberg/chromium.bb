@@ -99,7 +99,7 @@ TEST_F(ExternalProviderImplChromeOSTest, Normal) {
 
   service_->CheckForExternalUpdates();
   content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+      extensions::NOTIFICATION_CRX_INSTALLER_DONE,
       content::NotificationService::AllSources()).Wait();
 
   EXPECT_TRUE(service_->GetInstalledExtension(kExternalAppId));

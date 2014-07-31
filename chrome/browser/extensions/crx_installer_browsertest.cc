@@ -26,6 +26,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/file_util.h"
@@ -424,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   // Make test extension non-idle by opening the extension's browser action
   // popup. This should cause the installation to be delayed.
   content::WindowedNotificationObserver loading_observer(
-      chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+      extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
       content::Source<Profile>(profile()));
   BrowserActionTestUtil util(browser());
   // There is only one extension, so just click the first browser action.

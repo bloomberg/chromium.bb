@@ -122,11 +122,14 @@ BrowserActionButton::BrowserActionButton(const Extension* extension,
 
   content::NotificationSource notification_source =
       content::Source<Profile>(browser_->profile()->GetOriginalProfile());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
                  content::Source<ExtensionAction>(browser_action_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_COMMAND_ADDED,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED,
                  notification_source);
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_COMMAND_REMOVED,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_COMMAND_REMOVED,
                  notification_source);
 
   // We also listen for browser theme changes on linux because a switch from or
@@ -326,21 +329,21 @@ void BrowserActionButton::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED:
+    case extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED:
       UpdateState();
       // The browser action may have become visible/hidden so we need to make
       // sure the state gets updated.
       delegate_->OnBrowserActionVisibilityChanged();
       break;
-    case chrome::NOTIFICATION_EXTENSION_COMMAND_ADDED:
-    case chrome::NOTIFICATION_EXTENSION_COMMAND_REMOVED: {
+    case extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED:
+    case extensions::NOTIFICATION_EXTENSION_COMMAND_REMOVED: {
       std::pair<const std::string, const std::string>* payload =
           content::Details<std::pair<const std::string, const std::string> >(
               details).ptr();
       if (extension_->id() == payload->first &&
           payload->second ==
               extensions::manifest_values::kBrowserActionCommandEvent) {
-        if (type == chrome::NOTIFICATION_EXTENSION_COMMAND_ADDED)
+        if (type == extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED)
           MaybeRegisterExtensionCommand();
         else
           MaybeUnregisterExtensionCommand(true);

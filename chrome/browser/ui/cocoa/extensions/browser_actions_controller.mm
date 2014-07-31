@@ -184,11 +184,13 @@ class ExtensionServiceObserverBridge
   ExtensionServiceObserverBridge(BrowserActionsController* owner,
                                  Browser* browser)
     : owner_(owner), browser_(browser) {
-    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-                   content::Source<Profile>(browser->profile()));
     registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSION_COMMAND_BROWSER_ACTION_MAC,
+                   extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                    content::Source<Profile>(browser->profile()));
+    registrar_.Add(
+        this,
+        extensions::NOTIFICATION_EXTENSION_COMMAND_BROWSER_ACTION_MAC,
+        content::Source<Profile>(browser->profile()));
   }
 
   // Overridden from content::NotificationObserver.
@@ -197,14 +199,14 @@ class ExtensionServiceObserverBridge
       const content::NotificationSource& source,
       const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
-      case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
+      case extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
         ExtensionPopupController* popup = [ExtensionPopupController popup];
         if (popup && ![popup isClosing])
           [popup close];
 
         break;
       }
-      case chrome::NOTIFICATION_EXTENSION_COMMAND_BROWSER_ACTION_MAC: {
+      case extensions::NOTIFICATION_EXTENSION_COMMAND_BROWSER_ACTION_MAC: {
         std::pair<const std::string, gfx::NativeWindow>* payload =
             content::Details<std::pair<const std::string, gfx::NativeWindow> >(
                 details).ptr();

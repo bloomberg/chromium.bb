@@ -1421,7 +1421,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   extensions::UnloadedExtensionInfo details(
       extension.get(), extensions::UnloadedExtensionInfo::REASON_UNINSTALL);
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+      extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
       content::Source<Profile>(browser()->profile()),
       content::Details<extensions::UnloadedExtensionInfo>(&details));
 

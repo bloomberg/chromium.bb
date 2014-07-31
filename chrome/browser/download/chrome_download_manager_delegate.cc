@@ -21,7 +21,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_completion_blocker.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_file_picker.h"
@@ -47,6 +46,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/page_navigator.h"
+#include "extensions/browser/notification_types.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
 
@@ -360,7 +360,7 @@ bool ChromeDownloadManagerDelegate::ShouldOpenDownload(
     // time, Observe() will call the passed callback.
     registrar_.Add(
         this,
-        chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
         content::Source<extensions::CrxInstaller>(crx_installer.get()));
 
     crx_installers_[crx_installer.get()] = callback;
@@ -669,11 +669,9 @@ void ChromeDownloadManagerDelegate::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
 #if defined(ENABLE_EXTENSIONS)
-  DCHECK(type == chrome::NOTIFICATION_CRX_INSTALLER_DONE);
+  DCHECK(type == extensions::NOTIFICATION_CRX_INSTALLER_DONE);
 
-  registrar_.Remove(this,
-                    chrome::NOTIFICATION_CRX_INSTALLER_DONE,
-                    source);
+  registrar_.Remove(this, extensions::NOTIFICATION_CRX_INSTALLER_DONE, source);
 
   scoped_refptr<extensions::CrxInstaller> installer =
       content::Source<extensions::CrxInstaller>(source).ptr();

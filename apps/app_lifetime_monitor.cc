@@ -10,6 +10,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 
 namespace apps {
@@ -19,12 +20,12 @@ using extensions::ExtensionHost;
 
 AppLifetimeMonitor::AppLifetimeMonitor(Profile* profile)
     : profile_(profile) {
-  registrar_.Add(
-      this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-      content::NotificationService::AllSources());
-  registrar_.Add(
-      this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-      content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+                 content::NotificationService::AllSources());
   registrar_.Add(
       this, chrome::NOTIFICATION_APP_TERMINATING,
       content::NotificationService::AllSources());
@@ -50,7 +51,7 @@ void AppLifetimeMonitor::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
+    case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
       ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
       const Extension* extension = host->extension();
       if (!extension || !extension->is_platform_app())
@@ -60,7 +61,7 @@ void AppLifetimeMonitor::Observe(int type,
       break;
     }
 
-    case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
+    case extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
       ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
       const Extension* extension = host->extension();
       if (!extension || !extension->is_platform_app())

@@ -14,7 +14,6 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/updater/extension_downloader.h"
@@ -22,6 +21,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -44,7 +44,7 @@ ExternalCache::ExternalCache(const base::FilePath& cache_dir,
       weak_ptr_factory_(this) {
   notification_registrar_.Add(
       this,
-      chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
+      extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
       content::NotificationService::AllBrowserContextsAndSources());
 }
 
@@ -130,7 +130,7 @@ void ExternalCache::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR: {
+    case extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR: {
       extensions::CrxInstaller* installer =
           content::Source<extensions::CrxInstaller>(source).ptr();
       OnDamagedFileDetected(installer->source_file());

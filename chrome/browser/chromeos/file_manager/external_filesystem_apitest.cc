@@ -8,7 +8,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/drive_test_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
@@ -24,6 +23,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/notification_types.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
 #include "google_apis/drive/time_util.h"
@@ -293,11 +293,10 @@ bool InitializeDriveService(
 class BackgroundObserver {
  public:
   BackgroundObserver()
-      : page_created_(chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
+      : page_created_(extensions::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
                       content::NotificationService::AllSources()),
-        page_closed_(chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-                     content::NotificationService::AllSources()) {
-  }
+        page_closed_(extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+                     content::NotificationService::AllSources()) {}
 
   void WaitUntilLoaded() {
     page_created_.Wait();

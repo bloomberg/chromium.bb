@@ -26,7 +26,6 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_danger_prompt.h"
 #include "chrome/browser/download/download_file_icon_extractor.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -64,6 +63,7 @@
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
@@ -1911,7 +1911,7 @@ void ExtensionDownloadsEventRouter::DispatchEvent(
   content::Source<DownloadsNotificationSource> content_source(
       &notification_source);
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_DOWNLOADS_EVENT,
+      extensions::NOTIFICATION_EXTENSION_DOWNLOADS_EVENT,
       content_source,
       content::Details<std::string>(&json_args));
 }

@@ -6,7 +6,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/notifications/notifications_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -15,6 +14,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/test/test_api.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/features/feature.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_list.h"
@@ -32,7 +32,7 @@ class UserGestureCatcher : public content::NotificationObserver {
  public:
   UserGestureCatcher() : waiting_(false) {
     registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
+                   extensions::NOTIFICATION_EXTENSION_TEST_MESSAGE,
                    content::NotificationService::AllSources());
   }
 
@@ -83,7 +83,7 @@ class NotificationsApiTest : public ExtensionApiTest {
       const std::string& test_name) {
     base::FilePath extdir = test_data_dir_.AppendASCII(test_name);
     content::WindowedNotificationObserver page_created(
-        chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
+        extensions::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
         content::NotificationService::AllSources());
     const extensions::Extension* extension = LoadExtension(extdir);
     if (extension) {

@@ -573,7 +573,7 @@ void ExtensionUpdater::MaybeInstallCRXFile() {
       // Source parameter ensures that we only see the completion event for the
       // the installer we started.
       registrar_.Add(this,
-                     chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+                     extensions::NOTIFICATION_CRX_INSTALLER_DONE,
                      content::Source<CrxInstaller>(installer));
     } else {
       for (std::set<int>::const_iterator it = crx_file.request_ids.begin();
@@ -596,11 +596,9 @@ void ExtensionUpdater::MaybeInstallCRXFile() {
 void ExtensionUpdater::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_CRX_INSTALLER_DONE);
+  DCHECK_EQ(type, extensions::NOTIFICATION_CRX_INSTALLER_DONE);
 
-  registrar_.Remove(this,
-                    chrome::NOTIFICATION_CRX_INSTALLER_DONE,
-                    source);
+  registrar_.Remove(this, extensions::NOTIFICATION_CRX_INSTALLER_DONE, source);
   crx_install_is_running_ = false;
 
   const FetchedCRXFile& crx_file = current_crx_file_;
@@ -626,7 +624,7 @@ void ExtensionUpdater::OnExtensionWillBeInstalled(
 
 void ExtensionUpdater::NotifyStarted() {
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_UPDATING_STARTED,
+      extensions::NOTIFICATION_EXTENSION_UPDATING_STARTED,
       content::Source<Profile>(profile_),
       content::NotificationService::NoDetails());
 }

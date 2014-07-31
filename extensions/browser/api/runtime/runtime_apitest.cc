@@ -97,10 +97,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_ChromeRuntimeReload) {
   // anyway.
   for (int i = 0; i < 30; i++) {
     content::WindowedNotificationObserver unload_observer(
-        chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+        extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
         content::NotificationService::AllSources());
     content::WindowedNotificationObserver load_observer(
-        chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+        extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
         content::NotificationService::AllSources());
 
     ASSERT_TRUE(ExecuteScriptInBackgroundPageNoWait(

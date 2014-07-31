@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -12,6 +11,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/notification_types.h"
 
 namespace extensions {
 
@@ -25,7 +25,7 @@ class ExtensionFunctionalTest : public ExtensionBrowserTest {
     base::FilePath path = test_data_dir_.AppendASCII(filename);
 
     content::WindowedNotificationObserver extension_loaded_observer(
-        chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+        extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
         content::NotificationService::AllSources());
 
     scoped_refptr<extensions::CrxInstaller> installer(
@@ -37,7 +37,7 @@ class ExtensionFunctionalTest : public ExtensionBrowserTest {
         extensions::CrxInstaller::OffStoreInstallAllowedInTest);
 
     observer_->Watch(
-        chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
         content::Source<extensions::CrxInstaller>(installer.get()));
 
     installer->InstallCrx(path);

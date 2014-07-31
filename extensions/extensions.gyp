@@ -451,6 +451,7 @@
         'browser/lazy_background_task_queue.h',
         'browser/management_policy.cc',
         'browser/management_policy.h',
+        'browser/notification_types.h',
         'browser/pref_names.cc',
         'browser/pref_names.h',
         'browser/process_manager.cc',

@@ -46,7 +46,8 @@ class UserScriptMasterTest : public testing::Test,
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     // Register for all user script notifications.
-    registrar_.Add(this, chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
+    registrar_.Add(this,
+                   extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
                    content::NotificationService::AllSources());
 
     // UserScriptMaster posts tasks to the file thread so make the current
@@ -65,7 +66,7 @@ class UserScriptMasterTest : public testing::Test,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    DCHECK(type == chrome::NOTIFICATION_USER_SCRIPTS_UPDATED);
+    DCHECK(type == extensions::NOTIFICATION_USER_SCRIPTS_UPDATED);
 
     shared_memory_ = content::Details<base::SharedMemory>(details).ptr();
     if (base::MessageLoop::current() == &message_loop_)

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -10,6 +9,7 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/api/test/test_api.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/switches.h"
 
 namespace extensions {
@@ -51,7 +51,7 @@ class ScreenlockPrivateApiTest : public ExtensionApiTest,
   // ExtensionApiTest override:
   virtual void RunTestOnMainThreadLoop() OVERRIDE {
     registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
+                   extensions::NOTIFICATION_EXTENSION_TEST_MESSAGE,
                    content::NotificationService::AllSources());
     ExtensionApiTest::RunTestOnMainThreadLoop();
     registrar_.RemoveAll();

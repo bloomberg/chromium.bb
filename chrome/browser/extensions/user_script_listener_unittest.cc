@@ -217,7 +217,7 @@ TEST_F(UserScriptListenerTest, DelayAndUpdate) {
   ASSERT_FALSE(request->is_pending());
 
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
+      extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
       content::Source<Profile>(profile_.get()),
       content::NotificationService::NoDetails());
   base::MessageLoop::current()->RunUntilIdle();
@@ -242,7 +242,7 @@ TEST_F(UserScriptListenerTest, DelayAndUnload) {
   ASSERT_FALSE(request->is_pending());
 
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
+      extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
       content::Source<Profile>(profile_.get()),
       content::NotificationService::NoDetails());
   base::MessageLoop::current()->RunUntilIdle();
@@ -294,7 +294,7 @@ TEST_F(UserScriptListenerTest, MultiProfile) {
   extensions::ExtensionRegistry::Get(&profile2)->AddEnabled(extension);
 
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+      extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
       content::Source<Profile>(&profile2),
       content::Details<Extension>(extension.get()));
 
@@ -307,7 +307,7 @@ TEST_F(UserScriptListenerTest, MultiProfile) {
   // When the first profile's user scripts are ready, the request should still
   // be blocked waiting for profile2.
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
+      extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
       content::Source<Profile>(profile_.get()),
       content::NotificationService::NoDetails());
   base::MessageLoop::current()->RunUntilIdle();
@@ -316,7 +316,7 @@ TEST_F(UserScriptListenerTest, MultiProfile) {
 
   // After profile2 is ready, the request should proceed.
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
+      extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
       content::Source<Profile>(&profile2),
       content::NotificationService::NoDetails());
   base::MessageLoop::current()->RunUntilIdle();
@@ -343,7 +343,7 @@ TEST_F(UserScriptListenerTest, ResumeBeforeStart) {
   ASSERT_FALSE(request->is_pending());
 
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
+      extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
       content::Source<Profile>(profile_.get()),
       content::NotificationService::NoDetails());
   base::MessageLoop::current()->RunUntilIdle();

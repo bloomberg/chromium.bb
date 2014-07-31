@@ -25,7 +25,7 @@ void ExtensionLoadWaiterOneShot::WaitForExtension(const char* extension_id,
   extension_id_ = extension_id;
   load_looper_ = new content::MessageLoopRunner();
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+                 extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                  content::NotificationService::AllSources());
   load_cb.Run();
   load_looper_->Run();
@@ -35,15 +35,16 @@ void ExtensionLoadWaiterOneShot::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
+    case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
       extensions::ExtensionHost* host =
           content::Details<extensions::ExtensionHost>(details).ptr();
       if (host->extension_id() == extension_id_) {
         browser_context_ = host->browser_context();
         CHECK(browser_context_);
-        registrar_.Remove(this,
-                          chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-                          content::NotificationService::AllSources());
+        registrar_.Remove(
+            this,
+            extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+            content::NotificationService::AllSources());
         load_looper_->Quit();
       }
       break;

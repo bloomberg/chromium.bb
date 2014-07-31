@@ -18,7 +18,7 @@ InstallTracker::InstallTracker(content::BrowserContext* browser_context,
                                extensions::ExtensionPrefs* prefs)
     : extension_registry_observer_(this) {
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
+                 extensions::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
                  content::Source<content::BrowserContext>(browser_context));
   registrar_.Add(this,
                  chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
@@ -29,7 +29,7 @@ InstallTracker::InstallTracker(content::BrowserContext* browser_context,
   if (prefs) {
     AppSorting* sorting = prefs->app_sorting();
     registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
+                   chrome::NOTIFICATION_APP_LAUNCHER_REORDERED,
                    content::Source<AppSorting>(sorting));
     pref_change_registrar_.Init(prefs->pref_service());
     pref_change_registrar_.Add(
@@ -135,14 +135,14 @@ void InstallTracker::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED: {
+    case extensions::NOTIFICATION_EXTENSION_UPDATE_DISABLED: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
       FOR_EACH_OBSERVER(
           InstallObserver, observers_, OnDisabledExtensionUpdated(extension));
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED: {
+    case chrome::NOTIFICATION_APP_LAUNCHER_REORDERED: {
       FOR_EACH_OBSERVER(InstallObserver, observers_, OnAppsReordered());
       break;
     }

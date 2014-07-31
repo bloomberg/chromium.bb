@@ -46,7 +46,8 @@ namespace {
 class MessageSender : public content::NotificationObserver {
  public:
   MessageSender() {
-    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+    registrar_.Add(this,
+                   extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                    content::NotificationService::AllSources());
   }
 

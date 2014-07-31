@@ -7,7 +7,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,6 +17,7 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/api/test/test_api.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "net/base/escape.h"
@@ -144,9 +144,11 @@ ExtensionApiTest::~ExtensionApiTest() {}
 ExtensionApiTest::ResultCatcher::ResultCatcher()
     : profile_restriction_(NULL),
       waiting_(false) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_TEST_PASSED,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_TEST_PASSED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_TEST_FAILED,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_TEST_FAILED,
                  content::NotificationService::AllSources());
 }
 
@@ -185,7 +187,7 @@ void ExtensionApiTest::ResultCatcher::Observe(
   }
 
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_TEST_PASSED:
+    case extensions::NOTIFICATION_EXTENSION_TEST_PASSED:
       VLOG(1) << "Got EXTENSION_TEST_PASSED notification.";
       results_.push_back(true);
       messages_.push_back(std::string());
@@ -193,7 +195,7 @@ void ExtensionApiTest::ResultCatcher::Observe(
         base::MessageLoopForUI::current()->Quit();
       break;
 
-    case chrome::NOTIFICATION_EXTENSION_TEST_FAILED:
+    case extensions::NOTIFICATION_EXTENSION_TEST_FAILED:
       VLOG(1) << "Got EXTENSION_TEST_FAILED notification.";
       results_.push_back(false);
       messages_.push_back(*(content::Details<std::string>(details).ptr()));

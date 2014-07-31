@@ -65,7 +65,9 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
                  content::Source<content::WebContents>(host->host_contents()));
 
   // Listen for the containing view calling window.close();
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+  registrar_.Add(
+      this,
+      extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
       content::Source<content::BrowserContext>(host->browser_context()));
   content::DevToolsManager::GetInstance()->AddAgentStateCallback(
       devtools_callback_);
@@ -91,7 +93,7 @@ void ExtensionPopup::Observe(int type,
       // Show when the content finishes loading and its width is computed.
       ShowBubble();
       break;
-    case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE:
+    case extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE:
       // If we aren't the host of the popup, then disregard the notification.
       if (content::Details<extensions::ExtensionHost>(host()) == details)
         GetWidget()->Close();

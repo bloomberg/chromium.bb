@@ -234,7 +234,8 @@ AppListSyncableService::AppListSyncableService(
   }
 
   // The extensions for this profile have not yet all been loaded.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
                  content::Source<Profile>(profile));
 }
 
@@ -280,7 +281,7 @@ void AppListSyncableService::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_EXTENSIONS_READY, type);
+  DCHECK_EQ(extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED, type);
   DCHECK_EQ(profile_, content::Source<Profile>(source).ptr());
   registrar_.RemoveAll();
   BuildModel();

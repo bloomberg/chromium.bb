@@ -412,10 +412,11 @@ void LocationBarView::Init() {
   hide_url_animation_->SetSlideDuration(175);
 
   content::Source<Profile> profile_source = content::Source<Profile>(profile());
-  registrar_.Add(
-      this, chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED, profile_source);
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+                 extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+                 profile_source);
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  profile_source);
 
   // Initialize the location entry. We do this to avoid a black flash which is
@@ -1216,7 +1217,7 @@ bool LocationBarView::RefreshPageActionViews() {
           old_visibility[action] != (*i)->visible()) {
         changed = true;
         content::NotificationService::current()->Notify(
-            chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
+            extensions::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
             content::Source<ExtensionAction>(action),
             content::Details<WebContents>(web_contents));
       }
@@ -1383,7 +1384,7 @@ void LocationBarView::UpdatePageActions() {
   bool changed = RefreshPageActionViews();
   if (page_action_views_.size() != count_before) {
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
+        extensions::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
         content::Source<LocationBar>(this),
         content::NotificationService::NoDetails());
   }
@@ -1399,7 +1400,7 @@ void LocationBarView::InvalidatePageActions() {
   DeletePageActionViews();
   if (page_action_views_.size() != count_before) {
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
+        extensions::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
         content::Source<LocationBar>(this),
         content::NotificationService::NoDetails());
   }
@@ -1748,8 +1749,8 @@ void LocationBarView::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
+    case extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
+    case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
       Update(NULL);
       break;
 

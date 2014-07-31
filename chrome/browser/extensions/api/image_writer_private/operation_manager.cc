@@ -4,7 +4,6 @@
 
 #include "base/lazy_instance.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/image_writer_private/destroy_partitions_operation.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "chrome/browser/extensions/api/image_writer_private/operation.h"
@@ -19,6 +18,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/notification_types.h"
 
 namespace image_writer_api = extensions::api::image_writer_private;
 
@@ -34,13 +34,13 @@ OperationManager::OperationManager(content::BrowserContext* context)
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
   Profile* profile = Profile::FromBrowserContext(browser_context_);
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
+                 extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
                  content::Source<Profile>(profile));
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+                 extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  content::Source<Profile>(profile));
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+                 extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                  content::Source<Profile>(profile));
 }
 
@@ -229,16 +229,16 @@ void OperationManager::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED: {
+    case extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED: {
       DeleteOperation(content::Details<const Extension>(details).ptr()->id());
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
+    case extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
       DeleteOperation(
         content::Details<ExtensionHost>(details)->extension()->id());
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
+    case extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
       DeleteOperation(
         content::Details<ExtensionHost>(details)->extension()->id());
       break;

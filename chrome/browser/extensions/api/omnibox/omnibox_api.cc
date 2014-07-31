@@ -7,7 +7,6 @@
 #include "base/lazy_instance.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -21,6 +20,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/notification_types.h"
 #include "ui/gfx/image/image.h"
 
 namespace extensions {
@@ -159,7 +159,7 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
       ->DispatchEventToExtension(extension_id, event.Pass());
 
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_OMNIBOX_INPUT_ENTERED,
+      extensions::NOTIFICATION_EXTENSION_OMNIBOX_INPUT_ENTERED,
       content::Source<Profile>(profile),
       content::NotificationService::NoDetails());
 }
@@ -282,7 +282,7 @@ bool OmniboxSendSuggestionsFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY,
+      extensions::NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY,
       content::Source<Profile>(GetProfile()->GetOriginalProfile()),
       content::Details<SendSuggestions::Params>(params.get()));
 
@@ -297,7 +297,7 @@ bool OmniboxSetDefaultSuggestionFunction::RunSync() {
   if (SetOmniboxDefaultSuggestion(
           GetProfile(), extension_id(), params->suggestion)) {
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
+        extensions::NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
         content::Source<Profile>(GetProfile()->GetOriginalProfile()),
         content::NotificationService::NoDetails());
   }

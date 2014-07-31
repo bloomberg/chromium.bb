@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_CHROME_NOTIFICATION_TYPES_H_
 
 #include "build/build_config.h"
-#include "content/public/browser/notification_types.h"
+#include "extensions/browser/notification_types.h"
 
 namespace chrome {
 
 enum NotificationType {
-  NOTIFICATION_CHROME_START = content::NOTIFICATION_CONTENT_END,
+  NOTIFICATION_CHROME_START = extensions::NOTIFICATION_EXTENSIONS_END,
 
   // Browser-window ----------------------------------------------------------
 
@@ -363,210 +363,6 @@ enum NotificationType {
   // are all source and no details.
   NOTIFICATION_SESSION_END,
 
-  // User Scripts ------------------------------------------------------------
-
-  // Sent when there are new user scripts available.  The details are a
-  // pointer to SharedMemory containing the new scripts.
-  NOTIFICATION_USER_SCRIPTS_UPDATED,
-
-  // Extensions --------------------------------------------------------------
-
-  // Sent when a CrxInstaller finishes. Source is the CrxInstaller that
-  // finished. The details are the extension which was installed.
-  NOTIFICATION_CRX_INSTALLER_DONE,
-
-  // Sent when the known installed extensions have all been loaded.  In
-  // testing scenarios this can happen multiple times if extensions are
-  // unloaded and reloaded. The source is a Profile.
-  NOTIFICATION_EXTENSIONS_READY,
-
-  // DEPRECATED: Use ExtensionRegistry::AddObserver instead.
-  //
-  // Sent when a new extension is loaded. The details are an Extension, and
-  // the source is a Profile.
-  NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-
-  // An error occured while attempting to load an extension. The details are a
-  // string with details about why the load failed.
-  NOTIFICATION_EXTENSION_LOAD_ERROR,
-
-  // Sent when an extension is enabled. Under most circumstances, listeners
-  // will want to use NOTIFICATION_EXTENSION_LOADED_DEPRECATED. This
-  // notification is only
-  // fired when the "Enable" button is hit in the extensions tab.  The details
-  // are an Extension, and the source is a Profile.
-  NOTIFICATION_EXTENSION_ENABLED,
-
-  // Sent when attempting to load a new extension, but they are disabled. The
-  // details are an Extension*, and the source is a Profile*.
-  NOTIFICATION_EXTENSION_UPDATE_DISABLED,
-
-  // Sent when an extension's permissions change. The details are an
-  // UpdatedExtensionPermissionsInfo, and the source is a Profile.
-  NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
-
-  // DEPRECATED: Use ExtensionRegistry::AddObserver instead.
-  //
-  // Sent immediately before new extensions are installed or existing
-  // extensions are updated. The details are an InstalledExtensionInfo, and the
-  // source is a Profile.
-  NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-
-  // An error occured during extension install. The details are a string with
-  // details about why the install failed.
-  NOTIFICATION_EXTENSION_INSTALL_ERROR,
-
-  // DEPRECATED: Use ExtensionRegistry::AddObserver instead.
-  //
-  // Sent when an extension has been uninstalled. The details are an Extension,
-  // and the source is a Profile.
-  NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
-
-  // Sent when an extension uninstall is not allowed because the extension is
-  // not user manageable.  The details are an Extension, and the source is a
-  // Profile.
-  NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
-
-  // DEPRECATED: Use ExtensionRegistry::AddObserver instead.
-  //
-  // Sent when an extension is unloaded. This happens when an extension is
-  // uninstalled or disabled. The details are an UnloadedExtensionInfo, and
-  // the source is a Profile.
-  //
-  // Note that when this notification is sent, ExtensionService has already
-  // removed the extension from its internal state.
-  NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-
-  // Sent when an Extension object is removed from ExtensionService. This
-  // can happen when an extension is uninstalled, upgraded, or blacklisted,
-  // including all cases when the Extension is deleted. The details are an
-  // Extension, and the source is a Profile.
-  NOTIFICATION_EXTENSION_REMOVED,
-
-  // Sent after a new ExtensionHost is created. The details are
-  // an ExtensionHost* and the source is a Profile*.
-  NOTIFICATION_EXTENSION_HOST_CREATED,
-
-  // Sent before an ExtensionHost is destroyed. The details are
-  // an ExtensionHost* and the source is a Profile*.
-  NOTIFICATION_EXTENSION_HOST_DESTROYED,
-
-  // Sent by an ExtensionHost when it has finished its initial page load,
-  // including any external resources.
-  // The details are an ExtensionHost* and the source is a Profile*.
-  NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-
-  // Sent by an ExtensionHost when its render view requests closing through
-  // window.close(). The details are an ExtensionHost* and the source is a
-  // Profile*.
-  NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-
-  // Sent when extension render process ends (whether it crashes or closes).
-  // The details are an ExtensionHost* and the source is a Profile*. Not sent
-  // during browser shutdown.
-  NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
-
-  // Sent when a background page is ready so other components can load.
-  NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
-
-  // Sent when a browser action's state has changed. The source is the
-  // ExtensionAction* that changed.  The details are the Profile* that the
-  // browser action belongs to.
-  NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
-
-  // Sent when the count of page actions has changed. Note that some of them
-  // may not apply to the current page. The source is a LocationBar*. There
-  // are no details.
-  NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
-
-  // Sent when a browser action's visibility has changed. The source is the
-  // ExtensionPrefs* that changed, and the details are a std::string with the
-  // extension's ID.
-  NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
-
-  // Sent when a page action's visibility has changed. The source is the
-  // ExtensionAction* that changed. The details are a WebContents*.
-  NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
-
-  // Sent when a system indicator action's state has changed. The source is the
-  // Profile* that the browser action belongs to. The details are the
-  // ExtensionAction* that changed.
-  NOTIFICATION_EXTENSION_SYSTEM_INDICATOR_UPDATED,
-
-  // Sent when an extension command has been removed. The source is the profile
-  // and the details is a std::pair of two std::string objects (an extension ID
-  // and the name of the command being removed).
-  NOTIFICATION_EXTENSION_COMMAND_REMOVED,
-
-  // Sent when an extension command has been added. The source is the profile
-  // and the details is a std::pair of two std::string objects (an extension ID
-  // and the name of the command being added).
-  NOTIFICATION_EXTENSION_COMMAND_ADDED,
-
-  // Sent when an extension command shortcut for a browser action is activated
-  // on Mac. The source is the profile and the details is a std::pair of a
-  // std::string containing an extension ID and a gfx::NativeWindow for the
-  // associated window.
-  NOTIFICATION_EXTENSION_COMMAND_BROWSER_ACTION_MAC,
-
-  // Sent when an extension command shortcut for a page action is activated
-  // on Mac. The source is the profile and the details is a std::pair of a
-  // std::string containing an extension ID and a gfx::NativeWindow for the
-  // associated window.
-  NOTIFICATION_EXTENSION_COMMAND_PAGE_ACTION_MAC,
-
-  // A new extension RenderViewHost has been registered. The details are
-  // the RenderViewHost*.
-  NOTIFICATION_EXTENSION_VIEW_REGISTERED,
-
-  // An extension RenderViewHost has been unregistered. The details are
-  // the RenderViewHost*.
-  NOTIFICATION_EXTENSION_VIEW_UNREGISTERED,
-
-  // Sent by an extension to notify the browser about the results of a unit
-  // test.
-  NOTIFICATION_EXTENSION_TEST_PASSED,
-  NOTIFICATION_EXTENSION_TEST_FAILED,
-
-  // Sent by extension test javascript code, typically in a browser test. The
-  // sender is a std::string representing the extension id, and the details
-  // are a std::string with some message. This is particularly useful when you
-  // want to have C++ code wait for javascript code to do something.
-  NOTIFICATION_EXTENSION_TEST_MESSAGE,
-
-  // Sent when an bookmarks extensions API function was successfully invoked.
-  // The source is the id of the extension that invoked the function, and the
-  // details are a pointer to the const BookmarksFunction in question.
-  NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
-
-  // Sent when a downloads extensions API event is fired. The source is an
-  // ExtensionDownloadsEventRouter::NotificationSource, and the details is a
-  // std::string containing json. Used for testing.
-  NOTIFICATION_EXTENSION_DOWNLOADS_EVENT,
-
-  // Sent when an omnibox extension has sent back omnibox suggestions. The
-  // source is the profile, and the details are an
-  // extensions::api::omnibox::SendSuggestions::Params object.
-  NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY,
-
-  // Sent when the user accepts the input in an extension omnibox keyword
-  // session. The source is the profile.
-  NOTIFICATION_EXTENSION_OMNIBOX_INPUT_ENTERED,
-
-  // Sent when an omnibox extension has updated the default suggestion. The
-  // source is the profile.
-  NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
-
-  // Sent when the extension updater starts checking for updates to installed
-  // extensions. The source is a Profile, and there are no details.
-  NOTIFICATION_EXTENSION_UPDATING_STARTED,
-
-  // The extension updater found an update and will attempt to download and
-  // install it. The source is a Profile, and the details are an
-  // extensions::UpdateDetails object with the extension id and version of the
-  // found update.
-  NOTIFICATION_EXTENSION_UPDATE_FOUND,
-
   // Upgrade notifications ---------------------------------------------------
 
   // Sent when Chrome believes an update has been installed and available for
@@ -799,14 +595,14 @@ enum NotificationType {
   // Sent when the applications in the NTP app launcher have been reordered.
   // The details, if not NoDetails, is the std::string ID of the extension that
   // was moved.
-  NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
+  NOTIFICATION_APP_LAUNCHER_REORDERED,
 
   // Sent when an app is installed and an NTP has been shown. Source is the
   // WebContents that was shown, and Details is the string ID of the extension
   // which was installed.
   NOTIFICATION_APP_INSTALLED_TO_NTP,
 
-  // Similar to NOTIFICATION_APP_INSTALLED_TO_NTP but used to nofity ash AppList
+  // Similar to NOTIFICATION_APP_INSTALLED_TO_NTP but used to notify ash AppList
   // about installed app. Source is the profile in which the app is installed
   // and Details is the string ID of the extension.
   NOTIFICATION_APP_INSTALLED_TO_APPLIST,
@@ -819,6 +615,7 @@ enum NotificationType {
   // generated when the metro app has connected to the browser IPC channel.
   // Used only on Windows.
   NOTIFICATION_ASH_SESSION_STARTED,
+
   // Sent when the Ash session ended. Currently this means the metro app exited.
   // Used only on Windows.
   NOTIFICATION_ASH_SESSION_ENDED,

@@ -60,10 +60,12 @@ PageActionDecoration::PageActionDecoration(
   icon_factory_.reset(new ExtensionActionIconFactory(
       browser_->profile(), extension, page_action, this));
 
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-      content::Source<Profile>(browser_->profile()));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_COMMAND_PAGE_ACTION_MAC,
-      content::Source<Profile>(browser_->profile()));
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+                 content::Source<Profile>(browser_->profile()));
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_COMMAND_PAGE_ACTION_MAC,
+                 content::Source<Profile>(browser_->profile()));
 
   // We set the owner last of all so that we can determine whether we are in
   // the process of initializing this class or not.
@@ -161,7 +163,7 @@ void PageActionDecoration::UpdateVisibility(WebContents* contents,
   if (IsVisible() != visible) {
     SetVisible(visible);
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
+        extensions::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
         content::Source<ExtensionAction>(page_action_),
         content::Details<WebContents>(contents));
   }
@@ -232,14 +234,14 @@ void PageActionDecoration::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
+    case extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
       ExtensionPopupController* popup = [ExtensionPopupController popup];
       if (popup && ![popup isClosing])
         [popup close];
 
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_COMMAND_PAGE_ACTION_MAC: {
+    case extensions::NOTIFICATION_EXTENSION_COMMAND_PAGE_ACTION_MAC: {
       std::pair<const std::string, gfx::NativeWindow>* payload =
       content::Details<std::pair<const std::string, gfx::NativeWindow> >(
           details).ptr();

@@ -299,7 +299,8 @@ void BackgroundModeManager::RegisterProfile(Profile* profile) {
   // Check for the presence of background apps after all extensions have been
   // loaded, to handle the case where an extension has been manually removed
   // while Chrome was not running.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
                  content::Source<Profile>(profile));
 
   bmd->applications_->AddObserver(this);
@@ -332,7 +333,7 @@ void BackgroundModeManager::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSIONS_READY:
+    case extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED:
       // Extensions are loaded, so we don't need to manually keep the browser
       // process alive any more when running in no-startup-window mode.
       DecrementKeepAliveCountForStartup();

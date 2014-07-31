@@ -15,7 +15,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_pairing_delegate.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_utils.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_private_api.h"
@@ -30,6 +29,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/notification_types.h"
 
 namespace extensions {
 
@@ -45,7 +45,7 @@ BluetoothEventRouter::BluetoothEventRouter(content::BrowserContext* context)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(browser_context_);
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+                 extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                  content::Source<content::BrowserContext>(browser_context_));
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }
@@ -352,7 +352,7 @@ void BluetoothEventRouter::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED, type);
+  DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED, type);
   ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
   CleanUpForExtension(host->extension_id());
 }

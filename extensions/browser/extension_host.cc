@@ -14,7 +14,6 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -31,6 +30,7 @@
 #include "extensions/browser/extension_host_delegate.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/browser/view_type_utils.h"
@@ -140,7 +140,8 @@ ExtensionHost::ExtensionHost(const Extension* extension,
 
   // Listen for when an extension is unloaded from the same profile, as it may
   // be the same extension that this points to.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<BrowserContext>(browser_context_));
 
   // Set up web contents observers and pref observers.
@@ -154,7 +155,7 @@ ExtensionHost::~ExtensionHost() {
                              since_created_.Elapsed());
   }
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+      extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
       content::Source<BrowserContext>(browser_context_),
       content::Details<ExtensionHost>(this));
   ProcessCreationQueue::GetInstance()->Remove(this);
@@ -210,7 +211,7 @@ bool ExtensionHost::IsBackgroundPage() const {
 
 void ExtensionHost::Close() {
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+      extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
       content::Source<BrowserContext>(browser_context_),
       content::Details<ExtensionHost>(this));
 }
@@ -219,7 +220,7 @@ void ExtensionHost::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
+    case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
       // The extension object will be deleted after this notification has been
       // sent. NULL it out so that dirty pointer issues don't arise in cases
       // when multiple ExtensionHost objects pointing to the same Extension are
@@ -256,7 +257,7 @@ void ExtensionHost::RenderProcessGone(base::TerminationStatus status) {
   // and they aren't all going to use ExtensionHost. This should be in someplace
   // more central, like EPM maybe.
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
+      extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
       content::Source<BrowserContext>(browser_context_),
       content::Details<ExtensionHost>(this));
 }
@@ -288,7 +289,7 @@ void ExtensionHost::DidStopLoading(content::RenderViewHost* render_view_host) {
     // Send the notification last, because it might result in this being
     // deleted.
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+        extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
         content::Source<BrowserContext>(browser_context_),
         content::Details<ExtensionHost>(this));
   }
@@ -314,7 +315,7 @@ void ExtensionHost::OnDocumentAvailable() {
       ->runtime_data()
       ->SetBackgroundPageReady(extension_, true);
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
+      extensions::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
       content::Source<const Extension>(extension_),
       content::NotificationService::NoDetails());
 }
@@ -414,7 +415,7 @@ void ExtensionHost::AddNewContents(WebContents* source,
 
 void ExtensionHost::RenderViewReady() {
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_HOST_CREATED,
+      extensions::NOTIFICATION_EXTENSION_HOST_CREATED,
       content::Source<BrowserContext>(browser_context_),
       content::Details<ExtensionHost>(this));
 }

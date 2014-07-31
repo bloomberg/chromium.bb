@@ -302,7 +302,7 @@ void PermissionsUpdater::NotifyPermissionsUpdated(
       extension, changed, reason);
   Profile* profile = Profile::FromBrowserContext(browser_context_);
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
+      extensions::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
       content::Source<Profile>(profile),
       content::Details<UpdatedExtensionPermissionsInfo>(&info));
 

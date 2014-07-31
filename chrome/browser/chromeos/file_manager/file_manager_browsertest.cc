@@ -23,7 +23,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -45,6 +44,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/test/test_api.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
@@ -485,13 +485,13 @@ class FileManagerTestListener : public content::NotificationObserver {
 
   FileManagerTestListener() {
     registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSION_TEST_PASSED,
+                   extensions::NOTIFICATION_EXTENSION_TEST_PASSED,
                    content::NotificationService::AllSources());
     registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSION_TEST_FAILED,
+                   extensions::NOTIFICATION_EXTENSION_TEST_FAILED,
                    content::NotificationService::AllSources());
     registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
+                   extensions::NOTIFICATION_EXTENSION_TEST_MESSAGE,
                    content::NotificationService::AllSources());
   }
 
@@ -508,12 +508,13 @@ class FileManagerTestListener : public content::NotificationObserver {
                        const content::NotificationDetails& details) OVERRIDE {
     Message entry;
     entry.type = type;
-    entry.message = type != chrome::NOTIFICATION_EXTENSION_TEST_PASSED ?
-        *content::Details<std::string>(details).ptr() :
-        std::string();
-    entry.function = type == chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE ?
-        content::Source<extensions::TestSendMessageFunction>(source).ptr() :
-        NULL;
+    entry.message = type != extensions::NOTIFICATION_EXTENSION_TEST_PASSED
+                        ? *content::Details<std::string>(details).ptr()
+                        : std::string();
+    entry.function =
+        type == extensions::NOTIFICATION_EXTENSION_TEST_MESSAGE
+            ? content::Source<extensions::TestSendMessageFunction>(source).ptr()
+            : NULL;
     messages_.push_back(entry);
     base::MessageLoopForUI::current()->Quit();
   }
@@ -621,10 +622,10 @@ void FileManagerBrowserTestBase::RunTestMessageLoop() {
   FileManagerTestListener listener;
   while (true) {
     FileManagerTestListener::Message entry = listener.GetNextMessage();
-    if (entry.type == chrome::NOTIFICATION_EXTENSION_TEST_PASSED) {
+    if (entry.type == extensions::NOTIFICATION_EXTENSION_TEST_PASSED) {
       // Test succeed.
       break;
-    } else if (entry.type == chrome::NOTIFICATION_EXTENSION_TEST_FAILED) {
+    } else if (entry.type == extensions::NOTIFICATION_EXTENSION_TEST_FAILED) {
       // Test failed.
       ADD_FAILURE() << entry.message;
       break;

@@ -117,7 +117,7 @@ void ExtensionViewHost::LoadInitialURL() {
           runtime_data()->IsBackgroundPageReady(extension())) {
     // Make sure the background page loads before any others.
     registrar()->Add(this,
-                     chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
+                     extensions::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
                      content::Source<Extension>(extension()));
     return;
   }
@@ -305,7 +305,7 @@ WebContents* ExtensionViewHost::GetVisibleWebContents() const {
 void ExtensionViewHost::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY) {
+  if (type == extensions::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY) {
     DCHECK(ExtensionSystem::Get(browser_context())->
                runtime_data()->IsBackgroundPageReady(extension()));
     LoadInitialURL();

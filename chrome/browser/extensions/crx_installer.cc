@@ -21,7 +21,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/version.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/convert_user_script.h"
 #include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/extensions/crx_installer_error.h"
@@ -45,6 +44,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/install_flag.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/file_util.h"
@@ -750,7 +750,7 @@ void CrxInstaller::ReportFailureFromUIThread(const CrxInstallerError& error) {
 
   content::NotificationService* service =
       content::NotificationService::current();
-  service->Notify(chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
+  service->Notify(extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
                   content::Source<CrxInstaller>(this),
                   content::Details<const base::string16>(&error.message()));
 
@@ -825,10 +825,9 @@ void CrxInstaller::NotifyCrxInstallComplete(bool success) {
   // extension before it is unpacked, so they cannot filter based
   // on the extension.
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+      extensions::NOTIFICATION_CRX_INSTALLER_DONE,
       content::Source<CrxInstaller>(this),
-      content::Details<const Extension>(
-          success ? extension() : NULL));
+      content::Details<const Extension>(success ? extension() : NULL));
 
   InstallTrackerFactory::GetForBrowserContext(profile())
       ->OnFinishCrxInstall(success ? extension()->id() : expected_id_, success);

@@ -12,13 +12,8 @@ include_rules = [
   "+testing",
   "+ui",
 
-  # Temporarily allowed includes as part of the app shell/extensions refactor.
-  #
   # NOTE: Please do not add includes without talking to the app shell team;
   # see OWNERS for this directory.
-  #
-  # TODO(jamescook): Remove this. http://crbug.com/392622
-  "!chrome/browser/chrome_notification_types.h",
 ]
 
 specific_include_rules = {

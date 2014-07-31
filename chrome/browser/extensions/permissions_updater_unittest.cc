@@ -101,7 +101,7 @@ class PermissionsUpdaterListener : public content::NotificationObserver {
   PermissionsUpdaterListener()
       : received_notification_(false), waiting_(false) {
     registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
+                   extensions::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
                    content::NotificationService::AllSources());
   }
 

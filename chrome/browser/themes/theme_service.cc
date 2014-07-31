@@ -101,7 +101,7 @@ void ThemeService::Init(Profile* profile) {
   LoadThemePrefs();
 
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSIONS_READY,
+                 extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
                  content::Source<Profile>(profile_));
 
   theme_syncable_service_.reset(new ThemeSyncableService(profile_, this));
@@ -247,12 +247,13 @@ void ThemeService::Observe(int type,
                            const content::NotificationDetails& details) {
   using content::Details;
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSIONS_READY:
-      registrar_.Remove(this, chrome::NOTIFICATION_EXTENSIONS_READY,
-          content::Source<Profile>(profile_));
+    case extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED:
+      registrar_.Remove(this,
+                        extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
+                        content::Source<Profile>(profile_));
       OnExtensionServiceReady();
       break;
-    case chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED: {
+    case extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED: {
       // The theme may be initially disabled. Wait till it is loaded (if ever).
       Details<const extensions::InstalledExtensionInfo> installed_details(
           details);
@@ -260,8 +261,7 @@ void ThemeService::Observe(int type,
         installed_pending_load_id_ = installed_details->extension->id();
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
-    {
+    case extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       const Extension* extension = Details<const Extension>(details).ptr();
       if (extension->is_theme() &&
           installed_pending_load_id_ != kDefaultThemeID &&
@@ -271,15 +271,13 @@ void ThemeService::Observe(int type,
       installed_pending_load_id_ = kDefaultThemeID;
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_ENABLED:
-    {
+    case extensions::NOTIFICATION_EXTENSION_ENABLED: {
       const Extension* extension = Details<const Extension>(details).ptr();
       if (extension->is_theme())
         SetTheme(extension);
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
-    {
+    case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       Details<const UnloadedExtensionInfo> unloaded_details(details);
       if (unloaded_details->reason != UnloadedExtensionInfo::REASON_UPDATE &&
           unloaded_details->extension->is_theme() &&
@@ -508,17 +506,18 @@ void ThemeService::OnExtensionServiceReady() {
     NotifyThemeChanged();
   }
 
+  registrar_.Add(
+      this,
+      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
+      content::Source<Profile>(profile_));
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
+                 extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+                 extensions::NOTIFICATION_EXTENSION_ENABLED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_ENABLED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+                 extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
 
   base::MessageLoop::current()->PostDelayedTask(FROM_HERE,

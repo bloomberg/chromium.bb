@@ -15,7 +15,6 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_file_icon_extractor.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -44,6 +43,7 @@
 #include "content/public/test/download_test_observer.h"
 #include "content/test/net/url_request_slow_download_job.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/notification_types.h"
 #include "net/base/data_url.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
@@ -80,12 +80,14 @@ class DownloadsEventsListener : public content::NotificationObserver {
  public:
   DownloadsEventsListener()
     : waiting_(false) {
-    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_DOWNLOADS_EVENT,
+    registrar_.Add(this,
+                   extensions::NOTIFICATION_EXTENSION_DOWNLOADS_EVENT,
                    content::NotificationService::AllSources());
   }
 
   virtual ~DownloadsEventsListener() {
-    registrar_.Remove(this, chrome::NOTIFICATION_EXTENSION_DOWNLOADS_EVENT,
+    registrar_.Remove(this,
+                      extensions::NOTIFICATION_EXTENSION_DOWNLOADS_EVENT,
                       content::NotificationService::AllSources());
     STLDeleteElements(&events_);
   }
@@ -176,8 +178,7 @@ class DownloadsEventsListener : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
-      case chrome::NOTIFICATION_EXTENSION_DOWNLOADS_EVENT:
-        {
+      case extensions::NOTIFICATION_EXTENSION_DOWNLOADS_EVENT: {
           DownloadsNotificationSource* dns =
               content::Source<DownloadsNotificationSource>(source).ptr();
           Event* new_event = new Event(

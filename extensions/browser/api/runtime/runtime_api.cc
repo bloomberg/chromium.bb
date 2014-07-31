@@ -12,7 +12,6 @@
 #include "base/metrics/histogram.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/notification_service.h"
@@ -27,6 +26,7 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/lazy_background_task_queue.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/api/runtime.h"
 #include "extensions/common/error_utils.h"
@@ -141,7 +141,7 @@ RuntimeAPI::RuntimeAPI(content::BrowserContext* context)
       dispatch_chrome_updated_event_(false),
       extension_registry_observer_(this) {
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSIONS_READY,
+                 extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
                  content::Source<BrowserContext>(context));
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 
@@ -161,7 +161,7 @@ RuntimeAPI::~RuntimeAPI() {
 void RuntimeAPI::Observe(int type,
                          const content::NotificationSource& source,
                          const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_EXTENSIONS_READY, type);
+  DCHECK_EQ(extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED, type);
   // We're done restarting Chrome after an update.
   dispatch_chrome_updated_event_ = false;
 

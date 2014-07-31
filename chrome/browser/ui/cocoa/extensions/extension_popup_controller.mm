@@ -127,7 +127,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
       const content::NotificationSource& source,
       const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
-      case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
+      case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
         if (content::Details<extensions::ExtensionViewHost>(
                 [controller_ extensionViewHost]) == details) {
           [controller_ showDevTools];
@@ -195,7 +195,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
       // Listen for the extension to finish loading so the dev tools can be
       // opened.
       registrar_->Add(notificationBridge_.get(),
-                      chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+                      extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                       content::Source<BrowserContext>(host->browser_context()));
     }
   }

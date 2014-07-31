@@ -9,12 +9,12 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/notification_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -32,22 +32,22 @@ class ExtensionNotificationObserver : public content::NotificationObserver {
   // notifications occurred for any extensions in |extension_ids|, and no more,
   // since the last time any of these methods were called.
   testing::AssertionResult CheckNotifications() WARN_UNUSED_RESULT;
-  testing::AssertionResult CheckNotifications(
-      chrome::NotificationType type) WARN_UNUSED_RESULT;
-  testing::AssertionResult CheckNotifications(
-      chrome::NotificationType t1,
-      chrome::NotificationType t2) WARN_UNUSED_RESULT;
-  testing::AssertionResult CheckNotifications(
-      chrome::NotificationType t1,
-      chrome::NotificationType t2,
-      chrome::NotificationType t3) WARN_UNUSED_RESULT;
-  testing::AssertionResult CheckNotifications(
-      chrome::NotificationType t1,
-      chrome::NotificationType t2,
-      chrome::NotificationType t3,
-      chrome::NotificationType t4,
-      chrome::NotificationType t5,
-      chrome::NotificationType t6) WARN_UNUSED_RESULT;
+  testing::AssertionResult CheckNotifications(extensions::NotificationType type)
+      WARN_UNUSED_RESULT;
+  testing::AssertionResult CheckNotifications(extensions::NotificationType t1,
+                                              extensions::NotificationType t2)
+      WARN_UNUSED_RESULT;
+  testing::AssertionResult CheckNotifications(extensions::NotificationType t1,
+                                              extensions::NotificationType t2,
+                                              extensions::NotificationType t3)
+      WARN_UNUSED_RESULT;
+  testing::AssertionResult CheckNotifications(extensions::NotificationType t1,
+                                              extensions::NotificationType t2,
+                                              extensions::NotificationType t3,
+                                              extensions::NotificationType t4,
+                                              extensions::NotificationType t5,
+                                              extensions::NotificationType t6)
+      WARN_UNUSED_RESULT;
 
  private:
   // content::NotificationObserver implementation.
@@ -57,10 +57,10 @@ class ExtensionNotificationObserver : public content::NotificationObserver {
 
   // Checks then clears notifications for our extensions.
   testing::AssertionResult CheckNotifications(
-      const std::vector<chrome::NotificationType>& types);
+      const std::vector<extensions::NotificationType>& types);
 
   const std::set<std::string> extension_ids_;
-  std::vector<chrome::NotificationType> notifications_;
+  std::vector<extensions::NotificationType> notifications_;
   content::NotificationRegistrar registrar_;
 };
 

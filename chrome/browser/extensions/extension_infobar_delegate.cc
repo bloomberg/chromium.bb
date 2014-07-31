@@ -50,7 +50,8 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
 
   extension_registry_observer_.Add(
       extensions::ExtensionRegistry::Get(browser->profile()));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  content::Source<Profile>(browser->profile()));
 
   height_ = std::max(0, height);
@@ -109,7 +110,7 @@ void ExtensionInfoBarDelegate::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE);
+  DCHECK_EQ(type, extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE);
   if (extension_view_host_.get() ==
       content::Details<extensions::ExtensionHost>(details).ptr())
     infobar()->RemoveSelf();

@@ -92,7 +92,7 @@ class TwoClientAppListSyncTest : public SyncTest {
     if (extension_service && extension_service->is_ready())
       return;
     content::WindowedNotificationObserver extensions_loaded_observer(
-        chrome::NOTIFICATION_EXTENSIONS_READY,
+        extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
         content::NotificationService::AllSources());
     extensions_loaded_observer.Wait();
   }

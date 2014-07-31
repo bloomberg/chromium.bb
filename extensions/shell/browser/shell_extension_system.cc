@@ -8,7 +8,6 @@
 
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -20,6 +19,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/lazy_background_task_queue.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/runtime_data.h"
@@ -66,14 +66,14 @@ bool ShellExtensionSystem::LoadApp(const base::FilePath& app_dir) {
   RegisterExtensionWithRequestContexts(extension_);
 
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+      extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
       content::Source<BrowserContext>(browser_context_),
       content::Details<const Extension>(extension_));
 
   // Inform the rest of the extensions system to start.
   ready_.Signal();
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSIONS_READY,
+      extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
       content::Source<BrowserContext>(browser_context_),
       content::NotificationService::NoDetails());
   return true;

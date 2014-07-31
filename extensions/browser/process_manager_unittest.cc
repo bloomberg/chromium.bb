@@ -4,7 +4,6 @@
 
 #include "extensions/browser/process_manager.h"
 
-#include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/site_instance.h"
@@ -12,6 +11,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_test.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager_delegate.h"
 #include "extensions/browser/test_extensions_browser_client.h"
 
@@ -108,16 +108,17 @@ TEST_F(ProcessManagerTest, ExtensionNotificationRegistration) {
 
   // It observes other notifications from this context.
   EXPECT_TRUE(IsRegistered(manager1.get(),
-                           chrome::NOTIFICATION_EXTENSIONS_READY,
+                           extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
                            original_context()));
   EXPECT_TRUE(IsRegistered(manager1.get(),
-                           chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+                           extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                            original_context()));
+  EXPECT_TRUE(
+      IsRegistered(manager1.get(),
+                   extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+                   original_context()));
   EXPECT_TRUE(IsRegistered(manager1.get(),
-                           chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                           original_context()));
-  EXPECT_TRUE(IsRegistered(manager1.get(),
-                           chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+                           extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                            original_context()));
 
   // Test for an incognito context ProcessManager.
@@ -132,18 +133,19 @@ TEST_F(ProcessManagerTest, ExtensionNotificationRegistration) {
 
   // Some notifications are observed for the original context.
   EXPECT_TRUE(IsRegistered(manager2.get(),
-                           chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+                           extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                            original_context()));
 
   // Some notifications are observed for the incognito context.
   EXPECT_TRUE(IsRegistered(manager2.get(),
-                           chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+                           extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                            incognito_context()));
 
   // Some are not observed at all.
-  EXPECT_FALSE(IsRegistered(manager2.get(),
-                            chrome::NOTIFICATION_EXTENSIONS_READY,
-                            original_context()));
+  EXPECT_FALSE(
+      IsRegistered(manager2.get(),
+                   extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
+                   original_context()));
 }
 
 // Test that startup background hosts are created when the extension system
@@ -159,7 +161,7 @@ TEST_F(ProcessManagerTest, CreateBackgroundHostsOnExtensionsReady) {
 
   // Simulate the extension system becoming ready.
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSIONS_READY,
+      extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
       content::Source<BrowserContext>(original_context()),
       content::NotificationService::NoDetails());
   EXPECT_TRUE(manager->startup_background_hosts_created_for_test());
@@ -192,7 +194,7 @@ TEST_F(ProcessManagerTest, CreateBackgroundHostsDeferred) {
 
   // The extension system becoming ready still doesn't create the hosts.
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSIONS_READY,
+      extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
       content::Source<BrowserContext>(original_context()),
       content::NotificationService::NoDetails());
   EXPECT_FALSE(manager->startup_background_hosts_created_for_test());
@@ -217,7 +219,7 @@ TEST_F(ProcessManagerTest, IsBackgroundHostAllowed) {
 
   // The extension system becoming ready still doesn't create the hosts.
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSIONS_READY,
+      extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
       content::Source<BrowserContext>(original_context()),
       content::NotificationService::NoDetails());
   EXPECT_FALSE(manager->startup_background_hosts_created_for_test());

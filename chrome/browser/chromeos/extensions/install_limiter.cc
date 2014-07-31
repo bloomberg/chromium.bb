@@ -9,11 +9,11 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/extensions/install_limiter_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/notification_types.h"
 
 using content::BrowserThread;
 
@@ -117,7 +117,7 @@ void InstallLimiter::CheckAndRunDeferrredInstalls() {
 void InstallLimiter::RunInstall(const scoped_refptr<CrxInstaller>& installer,
                                 const base::FilePath& path) {
   registrar_.Add(this,
-                 chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+                 extensions::NOTIFICATION_CRX_INSTALLER_DONE,
                  content::Source<CrxInstaller>(installer.get()));
 
   installer->InstallCrx(path);
@@ -127,11 +127,9 @@ void InstallLimiter::RunInstall(const scoped_refptr<CrxInstaller>& installer,
 void InstallLimiter::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_CRX_INSTALLER_DONE, type);
+  DCHECK_EQ(extensions::NOTIFICATION_CRX_INSTALLER_DONE, type);
 
-  registrar_.Remove(this,
-                    chrome::NOTIFICATION_CRX_INSTALLER_DONE,
-                    source);
+  registrar_.Remove(this, extensions::NOTIFICATION_CRX_INSTALLER_DONE, source);
 
   const scoped_refptr<CrxInstaller> installer =
       content::Source<extensions::CrxInstaller>(source).ptr();

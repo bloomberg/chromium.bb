@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,6 +13,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_constants.h"
 
@@ -31,10 +31,10 @@ ExtensionKeybindingRegistry::ExtensionKeybindingRegistry(
 
   Profile* profile = Profile::FromBrowserContext(browser_context_);
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_COMMAND_ADDED,
+                 extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED,
                  content::Source<Profile>(profile->GetOriginalProfile()));
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_COMMAND_REMOVED,
+                 extensions::NOTIFICATION_EXTENSION_COMMAND_REMOVED,
                  content::Source<Profile>(profile->GetOriginalProfile()));
 }
 
@@ -184,8 +184,8 @@ void ExtensionKeybindingRegistry::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_COMMAND_ADDED:
-    case chrome::NOTIFICATION_EXTENSION_COMMAND_REMOVED: {
+    case extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED:
+    case extensions::NOTIFICATION_EXTENSION_COMMAND_REMOVED: {
       std::pair<const std::string, const std::string>* payload =
           content::Details<std::pair<const std::string, const std::string> >(
               details).ptr();
@@ -200,7 +200,7 @@ void ExtensionKeybindingRegistry::Observe(
         return;
 
       if (ExtensionMatchesFilter(extension)) {
-        if (type == chrome::NOTIFICATION_EXTENSION_COMMAND_ADDED)
+        if (type == extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED)
           AddExtensionKeybinding(extension, payload->second);
         else
           RemoveExtensionKeybinding(extension, payload->second);

@@ -16,7 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/updater/extension_downloader.h"
 #include "chrome/common/chrome_paths.h"
@@ -30,6 +29,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/external_provider_interface.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -252,7 +252,7 @@ TEST_F(DeviceLocalAccountExternalPolicyLoaderTest, ForceInstallListSet) {
 
   // Wait for the manifest to be parsed.
   content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND,
+      extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND,
       content::NotificationService::AllSources()).Wait();
 
   // Verify that the downloader is attempting to download a CRX file.

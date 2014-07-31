@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/apps/app_browsertest_util.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/notification_types.h"
 
 using extensions::Extension;
 using extensions::PlatformAppBrowserTest;
@@ -22,7 +22,7 @@ class AppEventPageTest : public PlatformAppBrowserTest {
     ASSERT_TRUE(extension);
 
     content::WindowedNotificationObserver event_page_suspended(
-        chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+        extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
         content::NotificationService::AllSources());
 
     // Close the app window.

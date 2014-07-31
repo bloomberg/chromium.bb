@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -22,6 +21,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
@@ -44,7 +44,8 @@ class ExtensionFromWebAppTest
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    if (type == chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED) {
+    if (type ==
+        extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED) {
       const Extension* extension =
           content::Details<const InstalledExtensionInfo>(details)->extension;
       if (extension->id() == expected_extension_id_) {
@@ -69,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionFromWebAppTest, DISABLED_Basic) {
 
   content::NotificationRegistrar registrar;
   registrar.Add(this,
-                chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
+                extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
                 content::NotificationService::AllSources());
 
   expected_extension_id_ = "ffnmbohohhobhkjpfbefbjifapgcmpaa";

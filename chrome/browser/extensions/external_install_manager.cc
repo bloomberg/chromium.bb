@@ -68,7 +68,7 @@ ExternalInstallManager::ExternalInstallManager(
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
   registrar_.Add(
       this,
-      chrome::NOTIFICATION_EXTENSION_REMOVED,
+      extensions::NOTIFICATION_EXTENSION_REMOVED,
       content::Source<Profile>(Profile::FromBrowserContext(browser_context_)));
 }
 
@@ -216,7 +216,7 @@ void ExternalInstallManager::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_REMOVED, type);
+  DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_REMOVED, type);
   // The error is invalidated if the extension has been loaded or removed.
   // It's a shame we have to use the notification system (instead of the
   // registry observer) for this, but the ExtensionUnloaded notification is

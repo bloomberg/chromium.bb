@@ -39,6 +39,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/image_loader.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
@@ -309,7 +310,8 @@ BackgroundContentsService::GetBackgroundContents() const
 
 void BackgroundContentsService::StartObserving(Profile* profile) {
   // On startup, load our background pages after extension-apps have loaded.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
                  content::Source<Profile>(profile));
 
   // Track the lifecycle of all BackgroundContents in the system to allow us
@@ -331,7 +333,8 @@ void BackgroundContentsService::StartObserving(Profile* profile) {
 
   // Track when the extensions crash so that the user can be notified
   // about it, and the crashed contents can be restarted.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_BACKGROUND_CONTENTS_TERMINATED,
                  content::Source<Profile>(profile));
@@ -345,7 +348,7 @@ void BackgroundContentsService::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSIONS_READY: {
+    case extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED: {
       Profile* profile = content::Source<Profile>(source).ptr();
       LoadBackgroundContentsFromManifests(profile);
       LoadBackgroundContentsFromPrefs(profile);
@@ -385,7 +388,7 @@ void BackgroundContentsService::Observe(
       RegisterBackgroundContents(bgcontents);
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED:
+    case extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED:
     case chrome::NOTIFICATION_BACKGROUND_CONTENTS_TERMINATED: {
       Profile* profile = content::Source<Profile>(source).ptr();
       const Extension* extension = NULL;

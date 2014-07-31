@@ -49,6 +49,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/switches.h"
 #include "net/socket/tcp_listen_socket.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -322,7 +323,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
     {
       content::NotificationRegistrar registrar;
       registrar.Add(this,
-                    chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+                    extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                     content::NotificationService::AllSources());
       base::CancelableClosure timeout(
           base::Bind(&TimeoutCallback, "Extension load timed out."));
@@ -345,7 +346,8 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
     // this method is running.
 
     content::NotificationRegistrar registrar;
-    registrar.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+    registrar.Add(this,
+                  extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                   content::NotificationService::AllSources());
     base::CancelableClosure timeout(
         base::Bind(&TimeoutCallback, "Extension host load timed out."));
@@ -373,8 +375,8 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
-      case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
-      case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
+      case extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
+      case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
         base::MessageLoopForUI::current()->Quit();
         break;
       default:

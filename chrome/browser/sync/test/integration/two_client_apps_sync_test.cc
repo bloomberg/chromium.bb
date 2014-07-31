@@ -542,7 +542,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, BookmarkApp) {
   ++num_extensions;
   {
     content::WindowedNotificationObserver windowed_observer(
-        chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
         content::NotificationService::AllSources());
     extensions::CreateOrUpdateBookmarkApp(GetExtensionService(GetProfile(0)),
                                           web_app_info);
@@ -552,7 +552,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, BookmarkApp) {
   }
   {
     content::WindowedNotificationObserver windowed_observer(
-        chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
         content::NotificationService::AllSources());
     extensions::CreateOrUpdateBookmarkApp(GetExtensionService(verifier()),
                                           web_app_info);
@@ -563,7 +563,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, BookmarkApp) {
   {
     // Wait for the synced app to install.
     content::WindowedNotificationObserver windowed_observer(
-        chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
         content::NotificationService::AllSources());
     ASSERT_TRUE(AwaitQuiescence());
     windowed_observer.Wait();

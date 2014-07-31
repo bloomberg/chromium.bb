@@ -350,7 +350,8 @@ UserScriptMaster::UserScriptMaster(Profile* profile)
       extension_registry_observer_(this),
       weak_factory_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -396,7 +397,7 @@ void UserScriptMaster::OnScriptsLoaded(
   changed_extensions_.clear();
 
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
+      extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
       content::Source<Profile>(profile_),
       content::Details<base::SharedMemory>(shared_memory_.get()));
 }
@@ -438,7 +439,7 @@ void UserScriptMaster::Observe(int type,
                                const content::NotificationDetails& details) {
   bool should_start_load = false;
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSIONS_READY:
+    case extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED:
       extensions_service_ready_ = true;
       should_start_load = true;
       break;

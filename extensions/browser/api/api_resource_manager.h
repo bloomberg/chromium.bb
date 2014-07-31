@@ -12,7 +12,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
@@ -20,6 +19,7 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {
@@ -117,10 +117,10 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
   explicit ApiResourceManager(content::BrowserContext* context)
       : data_(new ApiResourceData()) {
     registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+                   extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                    content::NotificationService::AllSources());
     registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+                   extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                    content::NotificationService::AllSources());
   }
   // For Testing.
@@ -186,13 +186,13 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
-      case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
+      case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
         std::string id = content::Details<extensions::UnloadedExtensionInfo>(
                              details)->extension->id();
         data_->InitiateExtensionUnloadedCleanup(id);
         break;
       }
-      case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
+      case extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
         ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
         data_->InitiateExtensionSuspendedCleanup(host->extension_id());
         break;

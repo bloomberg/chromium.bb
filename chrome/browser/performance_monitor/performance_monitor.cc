@@ -229,17 +229,21 @@ void PerformanceMonitor::RegisterForNotifications() {
   DCHECK(database_logging_enabled_);
 
   // Extensions
+  registrar_.Add(
+      this,
+      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
+      content::NotificationService::AllSources());
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
+                 extensions::NOTIFICATION_EXTENSION_ENABLED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_ENABLED,
-      content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-      content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_CRX_INSTALLER_DONE,
-      content::NotificationService::AllSources());
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
+                 extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
                  content::NotificationService::AllSources());
 
   // Crashes
@@ -556,19 +560,19 @@ void PerformanceMonitor::Observe(int type,
   DCHECK(database_logging_enabled_);
 
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED: {
+    case extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED: {
       AddExtensionEvent(
           EVENT_EXTENSION_INSTALL,
           content::Details<const extensions::InstalledExtensionInfo>(details)->
               extension);
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_ENABLED: {
+    case extensions::NOTIFICATION_EXTENSION_ENABLED: {
       AddExtensionEvent(EVENT_EXTENSION_ENABLE,
                         content::Details<Extension>(details).ptr());
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
+    case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       const UnloadedExtensionInfo* info =
           content::Details<UnloadedExtensionInfo>(details).ptr();
 
@@ -579,7 +583,7 @@ void PerformanceMonitor::Observe(int type,
       }
       break;
     }
-    case chrome::NOTIFICATION_CRX_INSTALLER_DONE: {
+    case extensions::NOTIFICATION_CRX_INSTALLER_DONE: {
       const extensions::CrxInstaller* installer =
           content::Source<extensions::CrxInstaller>(source).ptr();
       const extensions::Extension* extension =
@@ -593,7 +597,7 @@ void PerformanceMonitor::Observe(int type,
       }
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED: {
+    case extensions::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED: {
       AddExtensionEvent(EVENT_EXTENSION_UNINSTALL,
                         content::Details<Extension>(details).ptr());
       break;

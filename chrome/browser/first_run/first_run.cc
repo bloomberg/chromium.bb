@@ -126,7 +126,8 @@ class FirstRunDelayedTasks : public content::NotificationObserver {
 
   explicit FirstRunDelayedTasks(Tasks task) {
     if (task == INSTALL_EXTENSIONS) {
-      registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
+      registrar_.Add(this,
+                     extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
                      content::NotificationService::AllSources());
     }
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
@@ -137,7 +138,7 @@ class FirstRunDelayedTasks : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     // After processing the notification we always delete ourselves.
-    if (type == chrome::NOTIFICATION_EXTENSIONS_READY) {
+    if (type == extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED) {
       Profile* profile = content::Source<Profile>(source).ptr();
       ExtensionService* service =
           extensions::ExtensionSystem::Get(profile)->extension_service();

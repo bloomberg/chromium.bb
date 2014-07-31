@@ -8,11 +8,11 @@
 
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/api/test.h"
 
 namespace {
@@ -49,7 +49,7 @@ TestNotifyPassFunction::~TestNotifyPassFunction() {}
 
 bool TestNotifyPassFunction::RunSafe() {
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_TEST_PASSED,
+      extensions::NOTIFICATION_EXTENSION_TEST_PASSED,
       content::Source<content::BrowserContext>(dispatcher()->browser_context()),
       content::NotificationService::NoDetails());
   return true;
@@ -61,7 +61,7 @@ bool TestNotifyFailFunction::RunSafe() {
   scoped_ptr<NotifyFail::Params> params(NotifyFail::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_TEST_FAILED,
+      extensions::NOTIFICATION_EXTENSION_TEST_FAILED,
       content::Source<content::BrowserContext>(dispatcher()->browser_context()),
       content::Details<std::string>(&params->message));
   return true;
@@ -80,7 +80,7 @@ bool TestSendMessageFunction::RunAsync() {
   scoped_ptr<PassMessage::Params> params(PassMessage::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
+      extensions::NOTIFICATION_EXTENSION_TEST_MESSAGE,
       content::Source<TestSendMessageFunction>(this),
       content::Details<std::string>(&params->message));
   return true;

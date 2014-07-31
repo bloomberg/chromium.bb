@@ -348,7 +348,7 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   base::FilePath extension_path =
       test_data_dir.AppendASCII("extensions/supervised_user/content_pack");
   content::WindowedNotificationObserver extension_load_observer(
-      chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+      extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
       content::Source<Profile>(profile_.get()));
   installer->Load(extension_path);
   extension_load_observer.Wait();

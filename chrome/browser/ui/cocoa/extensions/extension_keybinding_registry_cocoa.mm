@@ -61,9 +61,9 @@ bool ExtensionKeybindingRegistryCocoa::ProcessKeyEvent(
 
   int type = 0;
   if (command_name == values::kPageActionCommandEvent) {
-    type = chrome::NOTIFICATION_EXTENSION_COMMAND_PAGE_ACTION_MAC;
+    type = extensions::NOTIFICATION_EXTENSION_COMMAND_PAGE_ACTION_MAC;
   } else if (command_name == values::kBrowserActionCommandEvent) {
-    type = chrome::NOTIFICATION_EXTENSION_COMMAND_BROWSER_ACTION_MAC;
+    type = extensions::NOTIFICATION_EXTENSION_COMMAND_BROWSER_ACTION_MAC;
   } else {
     // Not handled by using notifications. Route it through the Browser Event
     // Router using the base class (it will iterate through all targets).

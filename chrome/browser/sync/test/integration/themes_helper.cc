@@ -130,7 +130,7 @@ void ThemePendingInstallChecker::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_UPDATING_STARTED, type);
+  DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_UPDATING_STARTED, type);
   CheckExitCondition();
 }
 
@@ -138,7 +138,7 @@ void ThemePendingInstallChecker::Wait() {
   // We'll check to see if the condition is met whenever the extension system
   // tries to contact the web store.
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UPDATING_STARTED,
+                 extensions::NOTIFICATION_EXTENSION_UPDATING_STARTED,
                  content::Source<Profile>(profile_));
 
   if (IsExitConditionSatisfied()) {
