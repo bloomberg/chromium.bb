@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_win.h"
@@ -18,6 +19,13 @@ namespace {
 const char kAdapterAddress[] = "A1:B2:C3:D4:E5:F6";
 const char kAdapterName[] = "Bluetooth Adapter Name";
 
+const char kTestAudioSdpName[] = "Audio";
+const char kTestAudioSdpName2[] = "Audio2";
+const char kTestAudioSdpBytes[] =
+    "35510900000a00010001090001350319110a09000435103506190100090019350619001909"
+    "010209000535031910020900093508350619110d090102090100250c417564696f20536f75"
+    "726365090311090001";
+const device::BluetoothUUID kTestAudioSdpUuid("110a");
 
 void MakeDeviceState(const std::string& name,
                      const std::string& address,
@@ -31,11 +39,15 @@ void MakeDeviceState(const std::string& name,
 
 class AdapterObserver : public device::BluetoothAdapter::Observer {
  public:
-  AdapterObserver()
-      : num_present_changed_(0),
-        num_powered_changed_(0),
-        num_discovering_changed_(0),
-        num_device_added_(0) {
+  AdapterObserver() { ResetCounters(); }
+
+  void ResetCounters() {
+    num_present_changed_ = 0;
+    num_powered_changed_ = 0;
+    num_discovering_changed_ = 0;
+    num_device_added_ = 0;
+    num_device_removed_ = 0;
+    num_device_changed_ = 0;
   }
 
   virtual void AdapterPresentChanged(
@@ -59,27 +71,35 @@ class AdapterObserver : public device::BluetoothAdapter::Observer {
     num_device_added_++;
   }
 
-  int num_present_changed() const {
-    return num_present_changed_;
+  virtual void DeviceRemoved(device::BluetoothAdapter* adapter,
+                             device::BluetoothDevice* device) OVERRIDE {
+    num_device_removed_++;
   }
 
-  int num_powered_changed() const {
-    return num_powered_changed_;
+  virtual void DeviceChanged(device::BluetoothAdapter* adapter,
+                             device::BluetoothDevice* device) OVERRIDE {
+    num_device_changed_++;
   }
 
-  int num_discovering_changed() const {
-    return num_discovering_changed_;
-  }
+  int num_present_changed() const { return num_present_changed_; }
 
-  int num_device_added() const {
-    return num_device_added_;
-  }
+  int num_powered_changed() const { return num_powered_changed_; }
+
+  int num_discovering_changed() const { return num_discovering_changed_; }
+
+  int num_device_added() const { return num_device_added_; }
+
+  int num_device_removed() const { return num_device_removed_; }
+
+  int num_device_changed() const { return num_device_changed_; }
 
  private:
   int num_present_changed_;
   int num_powered_changed_;
   int num_discovering_changed_;
   int num_device_added_;
+  int num_device_removed_;
+  int num_device_changed_;
 };
 
 }  // namespace
@@ -487,23 +507,79 @@ TEST_F(BluetoothAdapterWinTest, StopDiscoveryBeforeDiscoveryStartedAndFailed) {
   EXPECT_EQ(0, adapter_observer_.num_discovering_changed());
 }
 
-TEST_F(BluetoothAdapterWinTest, DevicesDiscovered) {
+TEST_F(BluetoothAdapterWinTest, DevicesPolled) {
   BluetoothTaskManagerWin::DeviceState* android_phone_state =
       new BluetoothTaskManagerWin::DeviceState();
-  MakeDeviceState("phone", "android phone address", android_phone_state);
+  MakeDeviceState("phone", "A1:B2:C3:D4:E5:E0", android_phone_state);
   BluetoothTaskManagerWin::DeviceState* laptop_state =
       new BluetoothTaskManagerWin::DeviceState();
-  MakeDeviceState("laptop", "laptop address", laptop_state);
+  MakeDeviceState("laptop", "A1:B2:C3:D4:E5:E1", laptop_state);
   BluetoothTaskManagerWin::DeviceState* iphone_state =
       new BluetoothTaskManagerWin::DeviceState();
-  MakeDeviceState("phone", "iphone address", iphone_state);
+  MakeDeviceState("phone", "A1:B2:C3:D4:E5:E2", iphone_state);
   ScopedVector<BluetoothTaskManagerWin::DeviceState> devices;
   devices.push_back(android_phone_state);
   devices.push_back(laptop_state);
   devices.push_back(iphone_state);
 
-  adapter_win_->DevicesDiscovered(devices);
+  // Add 3 devices
+  adapter_observer_.ResetCounters();
+  adapter_win_->DevicesPolled(devices);
   EXPECT_EQ(3, adapter_observer_.num_device_added());
+  EXPECT_EQ(0, adapter_observer_.num_device_removed());
+  EXPECT_EQ(0, adapter_observer_.num_device_changed());
+
+  // Change a device name
+  android_phone_state->name = "phone2";
+  adapter_observer_.ResetCounters();
+  adapter_win_->DevicesPolled(devices);
+  EXPECT_EQ(0, adapter_observer_.num_device_added());
+  EXPECT_EQ(0, adapter_observer_.num_device_removed());
+  EXPECT_EQ(1, adapter_observer_.num_device_changed());
+
+  // Change a device address
+  android_phone_state->address = "A1:B2:C3:D4:E5:E6";
+  adapter_observer_.ResetCounters();
+  adapter_win_->DevicesPolled(devices);
+  EXPECT_EQ(1, adapter_observer_.num_device_added());
+  EXPECT_EQ(1, adapter_observer_.num_device_removed());
+  EXPECT_EQ(0, adapter_observer_.num_device_changed());
+
+  // Remove a device
+  devices.erase(devices.begin());
+  adapter_observer_.ResetCounters();
+  adapter_win_->DevicesPolled(devices);
+  EXPECT_EQ(0, adapter_observer_.num_device_added());
+  EXPECT_EQ(1, adapter_observer_.num_device_removed());
+  EXPECT_EQ(0, adapter_observer_.num_device_changed());
+
+  // Add a service
+  BluetoothTaskManagerWin::ServiceRecordState* audio_state =
+      new BluetoothTaskManagerWin::ServiceRecordState();
+  audio_state->name = kTestAudioSdpName;
+  base::HexStringToBytes(kTestAudioSdpBytes, &audio_state->sdp_bytes);
+  laptop_state->service_record_states.push_back(audio_state);
+  adapter_observer_.ResetCounters();
+  adapter_win_->DevicesPolled(devices);
+  EXPECT_EQ(0, adapter_observer_.num_device_added());
+  EXPECT_EQ(0, adapter_observer_.num_device_removed());
+  EXPECT_EQ(1, adapter_observer_.num_device_changed());
+
+  // Change a service
+  audio_state->name = kTestAudioSdpName2;
+  adapter_observer_.ResetCounters();
+  adapter_win_->DevicesPolled(devices);
+  EXPECT_EQ(0, adapter_observer_.num_device_added());
+  EXPECT_EQ(0, adapter_observer_.num_device_removed());
+  EXPECT_EQ(1, adapter_observer_.num_device_changed());
+
+  // Remove a service
+  laptop_state->service_record_states.clear();
+  adapter_observer_.ResetCounters();
+  adapter_win_->DevicesPolled(devices);
+  EXPECT_EQ(0, adapter_observer_.num_device_added());
+  EXPECT_EQ(0, adapter_observer_.num_device_removed());
+  EXPECT_EQ(1, adapter_observer_.num_device_changed());
 }
 
 }  // namespace device

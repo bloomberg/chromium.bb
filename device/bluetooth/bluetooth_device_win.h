@@ -22,9 +22,9 @@ class BluetoothSocketThread;
 class BluetoothDeviceWin : public BluetoothDevice {
  public:
   explicit BluetoothDeviceWin(
-      const BluetoothTaskManagerWin::DeviceState& state,
-      scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-      scoped_refptr<BluetoothSocketThread> socket_thread,
+      const BluetoothTaskManagerWin::DeviceState& device_state,
+      const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
+      const scoped_refptr<BluetoothSocketThread>& socket_thread,
       net::NetLog* net_log,
       const net::NetLog::Source& net_log_source);
   virtual ~BluetoothDeviceWin();
@@ -76,6 +76,14 @@ class BluetoothDeviceWin : public BluetoothDevice {
   const BluetoothServiceRecordWin* GetServiceRecord(
       const device::BluetoothUUID& uuid) const;
 
+  // Returns true if all fields and services of this instance are equal to the
+  // fields and services stored in |device_state|.
+  bool IsEqual(const BluetoothTaskManagerWin::DeviceState& device_state);
+
+  // Updates this instance with all fields and properties stored in
+  // |device_state|.
+  void Update(const BluetoothTaskManagerWin::DeviceState& device_state);
+
  protected:
   // BluetoothDevice override
   virtual std::string GetDeviceName() const OVERRIDE;
@@ -86,6 +94,9 @@ class BluetoothDeviceWin : public BluetoothDevice {
   // Used by BluetoothAdapterWin to update the visible state during
   // discovery.
   void SetVisible(bool visible);
+
+  // Updates the services with services stored in |device_state|.
+  void UpdateServices(const BluetoothTaskManagerWin::DeviceState& device_state);
 
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
   scoped_refptr<BluetoothSocketThread> socket_thread_;

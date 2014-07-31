@@ -21,6 +21,8 @@ class BluetoothServiceRecordWin {
                             const std::vector<uint8>& sdp_bytes,
                             const BluetoothUUID& gatt_uuid);
 
+  bool IsEqual(const BluetoothServiceRecordWin& other);
+
   // The BTH_ADDR address of the BluetoothDevice providing this service.
   BTH_ADDR device_bth_addr() const { return device_bth_addr_; }
 

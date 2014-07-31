@@ -152,4 +152,11 @@ BluetoothServiceRecordWin::BluetoothServiceRecordWin(
   }
 }
 
+bool BluetoothServiceRecordWin::IsEqual(
+    const BluetoothServiceRecordWin& other) {
+  return device_address_ == other.device_address_ && name_ == other.name_ &&
+         uuid_ == other.uuid_ && supports_rfcomm_ == other.supports_rfcomm_ &&
+         rfcomm_channel_ == other.rfcomm_channel_;
+}
+
 }  // namespace device

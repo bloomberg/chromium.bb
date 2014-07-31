@@ -42,36 +42,39 @@ namespace device {
 class BluetoothDeviceWinTest : public testing::Test {
  public:
   BluetoothDeviceWinTest() {
-    BluetoothTaskManagerWin::DeviceState device_state;
-    device_state.name = kDeviceName;
-    device_state.address = kDeviceAddress;
+    scoped_refptr<base::SequencedTaskRunner> ui_task_runner(
+        new base::TestSimpleTaskRunner());
+    scoped_refptr<BluetoothSocketThread> socket_thread(
+        BluetoothSocketThread::Get());
 
     // Add device with audio/video services.
+    device_state_.reset(new BluetoothTaskManagerWin::DeviceState());
+    device_state_->name = kDeviceName;
+    device_state_->address = kDeviceAddress;
+
     BluetoothTaskManagerWin::ServiceRecordState* audio_state =
         new BluetoothTaskManagerWin::ServiceRecordState();
     audio_state->name = kTestAudioSdpName;
     base::HexStringToBytes(kTestAudioSdpBytes, &audio_state->sdp_bytes);
-    device_state.service_record_states.push_back(audio_state);
+    device_state_->service_record_states.push_back(audio_state);
 
     BluetoothTaskManagerWin::ServiceRecordState* video_state =
         new BluetoothTaskManagerWin::ServiceRecordState();
     video_state->name = kTestVideoSdpName;
     base::HexStringToBytes(kTestVideoSdpBytes, &video_state->sdp_bytes);
-    device_state.service_record_states.push_back(video_state);
+    device_state_->service_record_states.push_back(video_state);
 
-    scoped_refptr<base::SequencedTaskRunner> ui_task_runner(
-        new base::TestSimpleTaskRunner());
-    scoped_refptr<BluetoothSocketThread> socket_thread(
-        BluetoothSocketThread::Get());
-    device_.reset(new BluetoothDeviceWin(device_state,
+    device_.reset(new BluetoothDeviceWin(*device_state_,
                                          ui_task_runner,
                                          socket_thread,
                                          NULL,
                                          net::NetLog::Source()));
 
     // Add empty device.
-    device_state.service_record_states.clear();
-    empty_device_.reset(new BluetoothDeviceWin(device_state,
+    empty_device_state_.reset(new BluetoothTaskManagerWin::DeviceState());
+    empty_device_state_->name = kDeviceName;
+    empty_device_state_->address = kDeviceAddress;
+    empty_device_.reset(new BluetoothDeviceWin(*empty_device_state_,
                                                ui_task_runner,
                                                socket_thread,
                                                NULL,
@@ -79,8 +82,10 @@ class BluetoothDeviceWinTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<BluetoothDevice> device_;
-  scoped_ptr<BluetoothDevice> empty_device_;
+  scoped_ptr<BluetoothDeviceWin> device_;
+  scoped_ptr<BluetoothTaskManagerWin::DeviceState> device_state_;
+  scoped_ptr<BluetoothDeviceWin> empty_device_;
+  scoped_ptr<BluetoothTaskManagerWin::DeviceState> empty_device_state_;
 };
 
 TEST_F(BluetoothDeviceWinTest, GetUUIDs) {
@@ -92,6 +97,13 @@ TEST_F(BluetoothDeviceWinTest, GetUUIDs) {
 
   uuids = empty_device_->GetUUIDs();
   EXPECT_EQ(0, uuids.size());
+}
+
+TEST_F(BluetoothDeviceWinTest, IsEqual) {
+  EXPECT_TRUE(device_->IsEqual(*device_state_));
+  EXPECT_FALSE(device_->IsEqual(*empty_device_state_));
+  EXPECT_FALSE(empty_device_->IsEqual(*device_state_));
+  EXPECT_TRUE(empty_device_->IsEqual(*empty_device_state_));
 }
 
 }  // namespace device

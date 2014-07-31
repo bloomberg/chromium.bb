@@ -102,12 +102,12 @@ bool EnumerateKnownBluetoothLowEnergyDevices(
     std::string* error);
 
 // Enumerates the list of known (i.e. cached) GATT services for a given
-// Bluetooth LE device |device_info| into |services|. In case of error, returns
+// Bluetooth LE device |device_path| into |services|. In case of error, returns
 // false and sets |error| with an error message describing the problem. Note:
 // This function returns an error if Bluetooth Low Energy is not supported on
 // this Windows platform.
 bool EnumerateKnownBluetoothLowEnergyServices(
-    BluetoothLowEnergyDeviceInfo* device_info,
+    const base::FilePath& device_path,
     ScopedVector<BluetoothLowEnergyServiceInfo>* services,
     std::string* error);
 

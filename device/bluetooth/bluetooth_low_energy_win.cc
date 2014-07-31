@@ -652,11 +652,15 @@ bool EnumerateKnownBluetoothLowEnergyDevices(
 }
 
 bool EnumerateKnownBluetoothLowEnergyServices(
-    BluetoothLowEnergyDeviceInfo* device_info,
+    const base::FilePath& device_path,
     ScopedVector<BluetoothLowEnergyServiceInfo>* services,
     std::string* error) {
-  return CollectBluetoothLowEnergyDeviceServices(
-      device_info->path, services, error);
+  if (!IsBluetoothLowEnergySupported()) {
+    *error = kPlatformNotSupported;
+    return false;
+  }
+
+  return CollectBluetoothLowEnergyDeviceServices(device_path, services, error);
 }
 
 bool ExtractBluetoothAddressFromDeviceInstanceIdForTesting(
