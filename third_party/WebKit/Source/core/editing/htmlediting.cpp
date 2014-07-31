@@ -336,11 +336,11 @@ Element* enclosingBlock(Node* node, EditingBoundaryCrossingRule rule)
 
 Element* enclosingBlockFlowElement(Node& node)
 {
-    if (node.isBlockFlowElement())
+    if (isBlockFlowElement(node))
         return &toElement(node);
 
     for (Node* n = node.parentNode(); n; n = n->parentNode()) {
-        if (n->isBlockFlowElement() || isHTMLBodyElement(*n))
+        if (isBlockFlowElement(*n) || isHTMLBodyElement(*n))
             return toElement(n);
     }
     return 0;
@@ -1197,6 +1197,12 @@ bool isNonTableCellHTMLBlockElement(const Node* node)
         || element.hasTagName(h3Tag)
         || element.hasTagName(h4Tag)
         || element.hasTagName(h5Tag);
+}
+
+bool isBlockFlowElement(const Node& node)
+{
+    RenderObject* renderer = node.renderer();
+    return node.isElementNode() && renderer && renderer->isRenderBlockFlow();
 }
 
 Position adjustedSelectionStartForStyleComputation(const VisibleSelection& selection)

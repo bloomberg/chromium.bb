@@ -121,6 +121,7 @@ bool isNodeVisiblyContainedWithin(Node&, const Range&);
 bool isRenderedAsNonInlineTableImageOrHR(const Node*);
 bool areIdenticalElements(const Node*, const Node*);
 bool isNonTableCellHTMLBlockElement(const Node*);
+bool isBlockFlowElement(const Node&);
 TextDirection directionOfEnclosingBlock(const Position&);
 
 // -------------------------------------------------------------------------

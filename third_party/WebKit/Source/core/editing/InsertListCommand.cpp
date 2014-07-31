@@ -232,7 +232,7 @@ void InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
             insertNodeBefore(newList, listElement);
 
             Node* firstChildInList = enclosingListChild(VisiblePosition(firstPositionInNode(listElement.get())).deepEquivalent().deprecatedNode(), listElement.get());
-            Element* outerBlock = firstChildInList && firstChildInList->isBlockFlowElement() ? toElement(firstChildInList) : listElement.get();
+            Element* outerBlock = firstChildInList && isBlockFlowElement(*firstChildInList) ? toElement(firstChildInList) : listElement.get();
 
             moveParagraphWithClones(VisiblePosition(firstPositionInNode(listElement.get())), VisiblePosition(lastPositionInNode(listElement.get())), newList.get(), outerBlock);
 
