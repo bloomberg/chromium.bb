@@ -70,6 +70,7 @@
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/ftp_protocol_handler.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/url_request/url_request_interceptor.h"
@@ -599,9 +600,9 @@ ProfileIOData::~ProfileIOData() {
   size_t num_media_contexts = isolated_media_request_context_map_.size();
   size_t current_context = 0;
   static const size_t kMaxCachedContexts = 20;
-  ChromeURLRequestContext* app_context_cache[kMaxCachedContexts] = {0};
+  net::URLRequestContext* app_context_cache[kMaxCachedContexts] = {0};
   void* app_context_vtable_cache[kMaxCachedContexts] = {0};
-  ChromeURLRequestContext* media_context_cache[kMaxCachedContexts] = {0};
+  net::URLRequestContext* media_context_cache[kMaxCachedContexts] = {0};
   void* media_context_vtable_cache[kMaxCachedContexts] = {0};
   void* tmp_vtable = NULL;
   base::debug::Alias(&num_app_contexts);
@@ -736,32 +737,32 @@ content::ResourceContext* ProfileIOData::GetResourceContext() const {
   return resource_context_.get();
 }
 
-ChromeURLRequestContext* ProfileIOData::GetMainRequestContext() const {
+net::URLRequestContext* ProfileIOData::GetMainRequestContext() const {
   DCHECK(initialized_);
   return main_request_context_.get();
 }
 
-ChromeURLRequestContext* ProfileIOData::GetMediaRequestContext() const {
+net::URLRequestContext* ProfileIOData::GetMediaRequestContext() const {
   DCHECK(initialized_);
-  ChromeURLRequestContext* context = AcquireMediaRequestContext();
+  net::URLRequestContext* context = AcquireMediaRequestContext();
   DCHECK(context);
   return context;
 }
 
-ChromeURLRequestContext* ProfileIOData::GetExtensionsRequestContext() const {
+net::URLRequestContext* ProfileIOData::GetExtensionsRequestContext() const {
   DCHECK(initialized_);
   return extensions_request_context_.get();
 }
 
-ChromeURLRequestContext* ProfileIOData::GetIsolatedAppRequestContext(
-    ChromeURLRequestContext* main_context,
+net::URLRequestContext* ProfileIOData::GetIsolatedAppRequestContext(
+    net::URLRequestContext* main_context,
     const StoragePartitionDescriptor& partition_descriptor,
     scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
         protocol_handler_interceptor,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) const {
   DCHECK(initialized_);
-  ChromeURLRequestContext* context = NULL;
+  net::URLRequestContext* context = NULL;
   if (ContainsKey(app_request_context_map_, partition_descriptor)) {
     context = app_request_context_map_[partition_descriptor];
   } else {
@@ -777,11 +778,11 @@ ChromeURLRequestContext* ProfileIOData::GetIsolatedAppRequestContext(
   return context;
 }
 
-ChromeURLRequestContext* ProfileIOData::GetIsolatedMediaRequestContext(
-    ChromeURLRequestContext* app_context,
+net::URLRequestContext* ProfileIOData::GetIsolatedMediaRequestContext(
+    net::URLRequestContext* app_context,
     const StoragePartitionDescriptor& partition_descriptor) const {
   DCHECK(initialized_);
-  ChromeURLRequestContext* context = NULL;
+  net::URLRequestContext* context = NULL;
   if (ContainsKey(isolated_media_request_context_map_, partition_descriptor)) {
     context = isolated_media_request_context_map_[partition_descriptor];
   } else {
@@ -1011,8 +1012,8 @@ void ProfileIOData::Init(
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   // Create the common request contexts.
-  main_request_context_.reset(new ChromeURLRequestContext());
-  extensions_request_context_.reset(new ChromeURLRequestContext());
+  main_request_context_.reset(new net::URLRequestContext());
+  extensions_request_context_.reset(new net::URLRequestContext());
 
   ChromeNetworkDelegate* network_delegate =
       new ChromeNetworkDelegate(
@@ -1116,7 +1117,7 @@ void ProfileIOData::Init(
 }
 
 void ProfileIOData::ApplyProfileParamsToContext(
-    ChromeURLRequestContext* context) const {
+    net::URLRequestContext* context) const {
   context->set_http_user_agent_settings(
       chrome_http_user_agent_settings_.get());
   context->set_ssl_config_service(profile_params_->ssl_config_service.get());
@@ -1254,7 +1255,7 @@ scoped_ptr<net::HttpCache> ProfileIOData::CreateMainHttpFactory(
     const ProfileParams* profile_params,
     net::HttpCache::BackendFactory* main_backend) const {
   net::HttpNetworkSession::Params params;
-  ChromeURLRequestContext* context = main_request_context();
+  net::URLRequestContext* context = main_request_context();
 
   IOThread* const io_thread = profile_params->io_thread;
 

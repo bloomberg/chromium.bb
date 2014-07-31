@@ -4,8 +4,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -17,6 +17,7 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
+#include "net/url_request/url_request_context.h"
 #include "webkit/browser/quota/special_storage_policy.h"
 
 namespace {
@@ -57,7 +58,7 @@ class SessionDataDeleter
   // session-only.
   void DeleteSessionOnlyOriginCookies(const net::CookieList& cookies);
 
-  base::WeakPtr<ChromeURLRequestContext> request_context_;
+  scoped_refptr<net::CookieMonster> cookie_monster_;
   scoped_refptr<quota::SpecialStoragePolicy> storage_policy_;
   const bool delete_only_by_session_only_policy_;
 
@@ -104,40 +105,28 @@ void SessionDataDeleter::ClearSessionOnlyLocalStorage(
 void SessionDataDeleter::DeleteSessionCookiesOnIOThread(
     ProfileIOData* profile_io_data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  ChromeURLRequestContext* request_context =
+  net::URLRequestContext* request_context =
       profile_io_data->GetMainRequestContext();
-  request_context_ = request_context->GetWeakPtr();
-  net::CookieMonster* cookie_monster =
-      request_context_->cookie_store()->GetCookieMonster();
+  cookie_monster_ = request_context->cookie_store()->GetCookieMonster();
   if (delete_only_by_session_only_policy_) {
-    cookie_monster->GetAllCookiesAsync(
+    cookie_monster_->GetAllCookiesAsync(
         base::Bind(&SessionDataDeleter::DeleteSessionOnlyOriginCookies, this));
   } else {
-    cookie_monster->DeleteSessionCookiesAsync(
+    cookie_monster_->DeleteSessionCookiesAsync(
         base::Bind(&SessionDataDeleter::DeleteSessionCookiesDone, this));
   }
 }
 
 void SessionDataDeleter::DeleteSessionCookiesDone(int num_deleted) {
-  ChromeURLRequestContext* request_context = request_context_.get();
-  if (!request_context)
-    return;
-
-  request_context->cookie_store()->GetCookieMonster()->GetAllCookiesAsync(
+  cookie_monster_->GetAllCookiesAsync(
       base::Bind(&SessionDataDeleter::DeleteSessionOnlyOriginCookies, this));
 }
 
 void SessionDataDeleter::DeleteSessionOnlyOriginCookies(
     const net::CookieList& cookies) {
-  ChromeURLRequestContext* request_context = request_context_.get();
-  if (!request_context)
-    return;
-
   if (!storage_policy_ || !storage_policy_->HasSessionOnlyOrigins())
     return;
 
-  net::CookieMonster* cookie_monster =
-      request_context->cookie_store()->GetCookieMonster();
   for (net::CookieList::const_iterator it = cookies.begin();
        it != cookies.end();
        ++it) {
@@ -145,7 +134,7 @@ void SessionDataDeleter::DeleteSessionOnlyOriginCookies(
         net::cookie_util::CookieOriginToURL(it->Domain(), it->IsSecure());
     if (!storage_policy_->IsStorageSessionOnly(url))
       continue;
-    cookie_monster->DeleteCanonicalCookieAsync(*it, base::Bind(CookieDeleted));
+    cookie_monster_->DeleteCanonicalCookieAsync(*it, base::Bind(CookieDeleted));
   }
 }
 

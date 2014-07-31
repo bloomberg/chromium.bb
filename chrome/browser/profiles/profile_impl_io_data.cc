@@ -103,6 +103,26 @@ ProfileImplIOData::Handle::~Handle() {
 
   if (io_data_->http_server_properties_manager_)
     io_data_->http_server_properties_manager_->ShutdownOnPrefThread();
+
+  ChromeURLRequestContextGetterMap::iterator iter;
+
+  iter = isolated_media_request_context_getter_map_.begin();
+  for (; iter != isolated_media_request_context_getter_map_.end(); ++iter)
+    iter->second->Invalidate();
+
+  iter = app_request_context_getter_map_.begin();
+  for (; iter != app_request_context_getter_map_.end(); ++iter)
+    iter->second->Invalidate();
+
+  if (extensions_request_context_getter_)
+    extensions_request_context_getter_->Invalidate();
+
+  if (media_request_context_getter_)
+    media_request_context_getter_->Invalidate();
+
+  if (main_request_context_getter_)
+    main_request_context_getter_->Invalidate();
+
   io_data_->ShutdownOnUIThread();
 }
 
@@ -366,7 +386,7 @@ void ProfileImplIOData::InitializeInternal(
     ProfileParams* profile_params,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) const {
-  ChromeURLRequestContext* main_context = main_request_context();
+  net::URLRequestContext* main_context = main_request_context();
 
   IOThread* const io_thread = profile_params->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
@@ -528,7 +548,7 @@ void ProfileImplIOData::InitializeInternal(
 
 void ProfileImplIOData::
     InitializeExtensionsRequestContext(ProfileParams* profile_params) const {
-  ChromeURLRequestContext* extensions_context = extensions_request_context();
+  net::URLRequestContext* extensions_context = extensions_request_context();
   IOThread* const io_thread = profile_params->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
   ApplyProfileParamsToContext(extensions_context);
@@ -574,8 +594,8 @@ void ProfileImplIOData::
   extensions_context->set_job_factory(extensions_job_factory_.get());
 }
 
-ChromeURLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
-    ChromeURLRequestContext* main_context,
+net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
+    net::URLRequestContext* main_context,
     const StoragePartitionDescriptor& partition_descriptor,
     scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
         protocol_handler_interceptor,
@@ -658,9 +678,9 @@ ChromeURLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
   return context;
 }
 
-ChromeURLRequestContext*
+net::URLRequestContext*
 ProfileImplIOData::InitializeMediaRequestContext(
-    ChromeURLRequestContext* original_context,
+    net::URLRequestContext* original_context,
     const StoragePartitionDescriptor& partition_descriptor) const {
   // Copy most state from the original context.
   MediaRequestContext* context = new MediaRequestContext();
@@ -711,21 +731,21 @@ ProfileImplIOData::InitializeMediaRequestContext(
   return context;
 }
 
-ChromeURLRequestContext*
+net::URLRequestContext*
 ProfileImplIOData::AcquireMediaRequestContext() const {
   DCHECK(media_request_context_);
   return media_request_context_.get();
 }
 
-ChromeURLRequestContext* ProfileImplIOData::AcquireIsolatedAppRequestContext(
-    ChromeURLRequestContext* main_context,
+net::URLRequestContext* ProfileImplIOData::AcquireIsolatedAppRequestContext(
+    net::URLRequestContext* main_context,
     const StoragePartitionDescriptor& partition_descriptor,
     scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
         protocol_handler_interceptor,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) const {
   // We create per-app contexts on demand, unlike the others above.
-  ChromeURLRequestContext* app_request_context =
+  net::URLRequestContext* app_request_context =
       InitializeAppRequestContext(main_context,
                                   partition_descriptor,
                                   protocol_handler_interceptor.Pass(),
@@ -735,12 +755,12 @@ ChromeURLRequestContext* ProfileImplIOData::AcquireIsolatedAppRequestContext(
   return app_request_context;
 }
 
-ChromeURLRequestContext*
+net::URLRequestContext*
 ProfileImplIOData::AcquireIsolatedMediaRequestContext(
-    ChromeURLRequestContext* app_context,
+    net::URLRequestContext* app_context,
     const StoragePartitionDescriptor& partition_descriptor) const {
   // We create per-app media contexts on demand, unlike the others above.
-  ChromeURLRequestContext* media_request_context =
+  net::URLRequestContext* media_request_context =
       InitializeMediaRequestContext(app_context, partition_descriptor);
   DCHECK(media_request_context);
   return media_request_context;

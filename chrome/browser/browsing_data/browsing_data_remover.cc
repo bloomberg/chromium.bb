@@ -26,7 +26,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_device_id_salt.h"
-#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/predictors/logged_in_predictor_table.h"

@@ -334,6 +334,8 @@ class SyncTest : public InProcessBrowserTest {
   void SetProxyConfig(net::URLRequestContextGetter* context,
                       const net::ProxyConfig& proxy_config);
 
+  void SetupNetwork(net::URLRequestContextGetter* context);
+
   // Helper method used to set up fake responses for kClientLoginUrl,
   // kIssueAuthTokenUrl, kGetUserInfoUrl and kSearchDomainCheckUrl in order to
   // mock out calls to GAIA servers.

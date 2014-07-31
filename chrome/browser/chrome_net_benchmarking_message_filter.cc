@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/benchmarking_messages.h"
@@ -19,6 +18,8 @@
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_cache.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace {
 

@@ -22,6 +22,7 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/net/chrome_url_request_context_getter.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"

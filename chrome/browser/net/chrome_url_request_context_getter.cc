@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/net/chrome_url_request_context_getter.h"
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -24,7 +24,7 @@ class ChromeURLRequestContextFactory {
   virtual ~ChromeURLRequestContextFactory() {}
 
   // Called to create a new instance (will only be called once).
-  virtual ChromeURLRequestContext* Create() = 0;
+  virtual net::URLRequestContext* Create() = 0;
 
  protected:
   DISALLOW_COPY_AND_ASSIGN(ChromeURLRequestContextFactory);
@@ -36,7 +36,7 @@ namespace {
 // Helper factories
 // ----------------------------------------------------------------------------
 
-// Factory that creates the main ChromeURLRequestContext.
+// Factory that creates the main URLRequestContext.
 class FactoryForMain : public ChromeURLRequestContextFactory {
  public:
   FactoryForMain(
@@ -48,7 +48,7 @@ class FactoryForMain : public ChromeURLRequestContextFactory {
     std::swap(protocol_handlers_, *protocol_handlers);
   }
 
-  virtual ChromeURLRequestContext* Create() OVERRIDE {
+  virtual net::URLRequestContext* Create() OVERRIDE {
     profile_io_data_->Init(&protocol_handlers_, request_interceptors_.Pass());
     return profile_io_data_->GetMainRequestContext();
   }
@@ -59,13 +59,13 @@ class FactoryForMain : public ChromeURLRequestContextFactory {
   content::URLRequestInterceptorScopedVector request_interceptors_;
 };
 
-// Factory that creates the ChromeURLRequestContext for extensions.
+// Factory that creates the URLRequestContext for extensions.
 class FactoryForExtensions : public ChromeURLRequestContextFactory {
  public:
   explicit FactoryForExtensions(const ProfileIOData* profile_io_data)
       : profile_io_data_(profile_io_data) {}
 
-  virtual ChromeURLRequestContext* Create() OVERRIDE {
+  virtual net::URLRequestContext* Create() OVERRIDE {
     return profile_io_data_->GetExtensionsRequestContext();
   }
 
@@ -73,7 +73,7 @@ class FactoryForExtensions : public ChromeURLRequestContextFactory {
   const ProfileIOData* const profile_io_data_;
 };
 
-// Factory that creates the ChromeURLRequestContext for a given isolated app.
+// Factory that creates the URLRequestContext for a given isolated app.
 class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
  public:
   FactoryForIsolatedApp(
@@ -92,7 +92,7 @@ class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
     std::swap(protocol_handlers_, *protocol_handlers);
   }
 
-  virtual ChromeURLRequestContext* Create() OVERRIDE {
+  virtual net::URLRequestContext* Create() OVERRIDE {
     // We will copy most of the state from the main request context.
     //
     // Note that this factory is one-shot.  After Create() is called once, the
@@ -117,7 +117,7 @@ class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
   content::URLRequestInterceptorScopedVector request_interceptors_;
 };
 
-// Factory that creates the media ChromeURLRequestContext for a given isolated
+// Factory that creates the media URLRequestContext for a given isolated
 // app.  The media context is based on the corresponding isolated app's context.
 class FactoryForIsolatedMedia : public ChromeURLRequestContextFactory {
  public:
@@ -129,7 +129,7 @@ class FactoryForIsolatedMedia : public ChromeURLRequestContextFactory {
       partition_descriptor_(partition_descriptor),
       app_context_getter_(app_context) {}
 
-  virtual ChromeURLRequestContext* Create() OVERRIDE {
+  virtual net::URLRequestContext* Create() OVERRIDE {
     // We will copy most of the state from the corresopnding app's
     // request context. We expect to have the same lifetime as
     // the associated |app_context_getter_| so we can just reuse
@@ -146,14 +146,14 @@ class FactoryForIsolatedMedia : public ChromeURLRequestContextFactory {
   scoped_refptr<ChromeURLRequestContextGetter> app_context_getter_;
 };
 
-// Factory that creates the ChromeURLRequestContext for media.
+// Factory that creates the URLRequestContext for media.
 class FactoryForMedia : public ChromeURLRequestContextFactory {
  public:
   explicit FactoryForMedia(const ProfileIOData* profile_io_data)
       : profile_io_data_(profile_io_data) {
   }
 
-  virtual ChromeURLRequestContext* Create() OVERRIDE {
+  virtual net::URLRequestContext* Create() OVERRIDE {
     return profile_io_data_->GetMediaRequestContext();
   }
 
@@ -169,28 +169,29 @@ class FactoryForMedia : public ChromeURLRequestContextFactory {
 
 ChromeURLRequestContextGetter::ChromeURLRequestContextGetter(
     ChromeURLRequestContextFactory* factory)
-    : factory_(factory) {
+    : factory_(factory),
+      url_request_context_(NULL) {
   DCHECK(factory);
 }
 
 ChromeURLRequestContextGetter::~ChromeURLRequestContextGetter() {}
 
-// Lazily create a ChromeURLRequestContext using our factory.
-ChromeURLRequestContext*
+// Lazily create a URLRequestContext using our factory.
+net::URLRequestContext*
 ChromeURLRequestContextGetter::GetURLRequestContext() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (!url_request_context_.get()) {
-    DCHECK(factory_.get());
-    url_request_context_ = factory_->Create()->GetWeakPtr();
+  if (factory_.get()) {
+    DCHECK(!url_request_context_);
+    url_request_context_ = factory_->Create();
     factory_.reset();
   }
 
-  // Should not be NULL, unless we're trying to use the URLRequestContextGetter
-  // after the Profile has already been deleted.
-  CHECK(url_request_context_.get());
+  // Context reference is valid, unless we're trying to use the
+  // URLRequestContextGetter after the Profile has already been deleted.
+  CHECK(url_request_context_);
 
-  return url_request_context_.get();
+  return url_request_context_;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -255,24 +256,4 @@ ChromeURLRequestContextGetter::CreateForIsolatedMedia(
   return new ChromeURLRequestContextGetter(
       new FactoryForIsolatedMedia(
           profile_io_data, partition_descriptor, app_context));
-}
-
-// ----------------------------------------------------------------------------
-// ChromeURLRequestContext
-// ----------------------------------------------------------------------------
-
-ChromeURLRequestContext::ChromeURLRequestContext()
-    : weak_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-}
-
-ChromeURLRequestContext::~ChromeURLRequestContext() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  AssertNoURLRequests();
-}
-
-void ChromeURLRequestContext::CopyFrom(ChromeURLRequestContext* other) {
-  URLRequestContext::CopyFrom(other);
-
-  // Copy ChromeURLRequestContext parameters.
 }

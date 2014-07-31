@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"

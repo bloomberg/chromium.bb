@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_CHROME_URL_REQUEST_CONTEXT_H_
-#define CHROME_BROWSER_NET_CHROME_URL_REQUEST_CONTEXT_H_
+#ifndef CHROME_BROWSER_NET_CHROME_URL_REQUEST_CONTEXT_GETTER_H_
+#define CHROME_BROWSER_NET_CHROME_URL_REQUEST_CONTEXT_GETTER_H_
 
 #include <string>
 
@@ -19,34 +19,6 @@ class Profile;
 class ProfileIOData;
 struct StoragePartitionDescriptor;
 
-// Subclass of net::URLRequestContext which can be used to store extra
-// information for requests.
-//
-// All methods of this class must be called from the IO thread,
-// including the constructor and destructor.
-class ChromeURLRequestContext : public net::URLRequestContext {
- public:
-  ChromeURLRequestContext();
-  virtual ~ChromeURLRequestContext();
-
-  base::WeakPtr<ChromeURLRequestContext> GetWeakPtr() {
-    return weak_factory_.GetWeakPtr();
-  }
-
-  // Copies the state from |other| into this context.
-  void CopyFrom(ChromeURLRequestContext* other);
-
- private:
-  base::WeakPtrFactory<ChromeURLRequestContext> weak_factory_;
-
-  // ---------------------------------------------------------------------------
-  // Important: When adding any new members below, consider whether they need to
-  // be added to CopyFrom.
-  // ---------------------------------------------------------------------------
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeURLRequestContext);
-};
-
 // A net::URLRequestContextGetter subclass used by the browser. This returns a
 // subclass of net::URLRequestContext which can be used to store extra
 // information about requests.
@@ -56,7 +28,7 @@ class ChromeURLRequestContext : public net::URLRequestContext {
 class ChromeURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   // Constructs a ChromeURLRequestContextGetter that will use |factory| to
-  // create the ChromeURLRequestContext.
+  // create the URLRequestContext.
   explicit ChromeURLRequestContextGetter(
       ChromeURLRequestContextFactory* factory);
 
@@ -65,7 +37,7 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter {
   // GetIOMessageLoopProxy however can be called from any thread.
   //
   // net::URLRequestContextGetter implementation.
-  virtual ChromeURLRequestContext* GetURLRequestContext() OVERRIDE;
+  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
   virtual scoped_refptr<base::SingleThreadTaskRunner>
       GetNetworkTaskRunner() const OVERRIDE;
 
@@ -107,19 +79,22 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter {
       const ProfileIOData* profile_io_data,
       const StoragePartitionDescriptor& partition_descriptor);
 
+  void Invalidate() { url_request_context_ = NULL; }
+
  private:
   virtual ~ChromeURLRequestContextGetter();
 
-  // Deferred logic for creating a ChromeURLRequestContext.
+  // Deferred logic for creating a URLRequestContext.
   // Access only from the IO thread.
   scoped_ptr<ChromeURLRequestContextFactory> factory_;
 
-  // NULL if not yet initialized. Otherwise, it is the ChromeURLRequestContext
-  // instance that was lazily created by GetURLRequestContext().
+  // NULL before initialization and after invalidation.
+  // Otherwise, it is the URLRequestContext instance that
+  // was lazily created by GetURLRequestContext().
   // Access only from the IO thread.
-  base::WeakPtr<ChromeURLRequestContext> url_request_context_;
+  net::URLRequestContext* url_request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeURLRequestContextGetter);
 };
 
-#endif  // CHROME_BROWSER_NET_CHROME_URL_REQUEST_CONTEXT_H_
+#endif  // CHROME_BROWSER_NET_CHROME_URL_REQUEST_CONTEXT_GETTER_H_

@@ -44,6 +44,7 @@
 #include "components/sync_driver/sync_prefs.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 

@@ -65,6 +65,7 @@
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
+#include "net/cookies/cookie_monster.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
@@ -133,6 +134,14 @@ class EncryptionChecker : public SingleClientStatusChangeChecker {
     return "Encryption";
   }
 };
+
+void SetupNetworkCallback(
+    base::WaitableEvent* done,
+    net::URLRequestContextGetter* url_request_context_getter) {
+  url_request_context_getter->GetURLRequestContext()->
+      set_cookie_store(new net::CookieMonster(NULL, NULL));
+  done->Signal();
+}
 
 void SetProxyConfigCallback(
     base::WaitableEvent* done,
@@ -383,6 +392,8 @@ void SyncTest::InitializeInstance(int index) {
   // already exist.
   ProfileSyncService* profile_sync_service =
       ProfileSyncServiceFactory::GetForProfile(GetProfile(index));
+
+  SetupNetwork(GetProfile(index)->GetRequestContext());
 
   if (server_type_ == IN_PROCESS_FAKE_SERVER) {
     // TODO(pvalenzuela): Run the fake server via EmbeddedTestServer.
@@ -1044,6 +1055,15 @@ void SyncTest::TriggerCreateSyncedBookmarks() {
             base::UTF16ToASCII(
                 browser()->tab_strip_model()->GetActiveWebContents()->
                     GetTitle()));
+}
+
+void SyncTest::SetupNetwork(net::URLRequestContextGetter* context_getter) {
+  base::WaitableEvent done(false, false);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&SetupNetworkCallback, &done,
+                 make_scoped_refptr(context_getter)));
+  done.Wait();
 }
 
 void SyncTest::SetProxyConfig(net::URLRequestContextGetter* context_getter,

@@ -15,7 +15,6 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 
-class ChromeURLRequestContext;
 class ChromeURLRequestContextGetter;
 class Profile;
 
@@ -23,6 +22,7 @@ namespace net {
 class FtpTransactionFactory;
 class HttpTransactionFactory;
 class SdchManager;
+class URLRequestContext;
 }  // namespace net
 
 // OffTheRecordProfile owns a OffTheRecordProfileIOData::Handle, which holds a
@@ -115,30 +115,30 @@ class OffTheRecordProfileIOData : public ProfileIOData {
           const OVERRIDE;
   virtual void InitializeExtensionsRequestContext(
       ProfileParams* profile_params) const OVERRIDE;
-  virtual ChromeURLRequestContext* InitializeAppRequestContext(
-      ChromeURLRequestContext* main_context,
+  virtual net::URLRequestContext* InitializeAppRequestContext(
+      net::URLRequestContext* main_context,
       const StoragePartitionDescriptor& partition_descriptor,
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors)
           const OVERRIDE;
-  virtual ChromeURLRequestContext* InitializeMediaRequestContext(
-      ChromeURLRequestContext* original_context,
+  virtual net::URLRequestContext* InitializeMediaRequestContext(
+      net::URLRequestContext* original_context,
       const StoragePartitionDescriptor& partition_descriptor) const OVERRIDE;
-  virtual ChromeURLRequestContext*
+  virtual net::URLRequestContext*
       AcquireMediaRequestContext() const OVERRIDE;
-  virtual ChromeURLRequestContext* AcquireIsolatedAppRequestContext(
-      ChromeURLRequestContext* main_context,
+  virtual net::URLRequestContext* AcquireIsolatedAppRequestContext(
+      net::URLRequestContext* main_context,
       const StoragePartitionDescriptor& partition_descriptor,
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors)
           const OVERRIDE;
-  virtual ChromeURLRequestContext*
+  virtual net::URLRequestContext*
       AcquireIsolatedMediaRequestContext(
-          ChromeURLRequestContext* app_context,
+          net::URLRequestContext* app_context,
           const StoragePartitionDescriptor& partition_descriptor)
               const OVERRIDE;
 

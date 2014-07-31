@@ -205,7 +205,7 @@ class URLRequestChromeJob : public net::URLRequestJob,
   // True when job is generated from an incognito profile.
   const bool is_incognito_;
 
-  // The backend is owned by ChromeURLRequestContext and always outlives us.
+  // The backend is owned by net::URLRequestContext and always outlives us.
   URLDataManagerBackend* backend_;
 
   base::WeakPtrFactory<URLRequestChromeJob> weak_factory_;

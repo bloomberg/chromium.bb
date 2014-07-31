@@ -10,6 +10,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/net/chrome_url_request_context_getter.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "content/public/browser/cookie_store_factory.h"
 
@@ -169,30 +170,30 @@ class ProfileImplIOData : public ProfileIOData {
           const OVERRIDE;
   virtual void InitializeExtensionsRequestContext(
       ProfileParams* profile_params) const OVERRIDE;
-  virtual ChromeURLRequestContext* InitializeAppRequestContext(
-      ChromeURLRequestContext* main_context,
+  virtual net::URLRequestContext* InitializeAppRequestContext(
+      net::URLRequestContext* main_context,
       const StoragePartitionDescriptor& partition_descriptor,
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors)
           const OVERRIDE;
-  virtual ChromeURLRequestContext* InitializeMediaRequestContext(
-      ChromeURLRequestContext* original_context,
+  virtual net::URLRequestContext* InitializeMediaRequestContext(
+      net::URLRequestContext* original_context,
       const StoragePartitionDescriptor& partition_descriptor) const OVERRIDE;
-  virtual ChromeURLRequestContext*
+  virtual net::URLRequestContext*
       AcquireMediaRequestContext() const OVERRIDE;
-  virtual ChromeURLRequestContext* AcquireIsolatedAppRequestContext(
-      ChromeURLRequestContext* main_context,
+  virtual net::URLRequestContext* AcquireIsolatedAppRequestContext(
+      net::URLRequestContext* main_context,
       const StoragePartitionDescriptor& partition_descriptor,
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors)
           const OVERRIDE;
-  virtual ChromeURLRequestContext*
+  virtual net::URLRequestContext*
       AcquireIsolatedMediaRequestContext(
-          ChromeURLRequestContext* app_context,
+          net::URLRequestContext* app_context,
           const StoragePartitionDescriptor& partition_descriptor)
               const OVERRIDE;
 
@@ -215,7 +216,7 @@ class ProfileImplIOData : public ProfileIOData {
 
   mutable scoped_ptr<chrome_browser_net::Predictor> predictor_;
 
-  mutable scoped_ptr<ChromeURLRequestContext> media_request_context_;
+  mutable scoped_ptr<net::URLRequestContext> media_request_context_;
 
   mutable scoped_ptr<net::URLRequestJobFactory> main_job_factory_;
   mutable scoped_ptr<net::URLRequestJobFactory> extensions_job_factory_;

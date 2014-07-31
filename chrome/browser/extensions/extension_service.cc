@@ -960,7 +960,7 @@ void ExtensionService::RecordPermissionMessagesHistogram(
 }
 
 void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
-  // The ChromeURLRequestContexts need to be first to know that the extension
+  // The URLRequestContexts need to be first to know that the extension
   // was loaded, otherwise a race can arise where a renderer that is created
   // for the extension may try to load an extension URL with an extension id
   // that the request context doesn't yet know about. The profile is responsible

@@ -18,7 +18,6 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -28,6 +27,7 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory.h"
 
 class ChromeHttpUserAgentSettings;
@@ -105,18 +105,18 @@ class ProfileIOData {
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors) const;
 
-  ChromeURLRequestContext* GetMainRequestContext() const;
-  ChromeURLRequestContext* GetMediaRequestContext() const;
-  ChromeURLRequestContext* GetExtensionsRequestContext() const;
-  ChromeURLRequestContext* GetIsolatedAppRequestContext(
-      ChromeURLRequestContext* main_context,
+  net::URLRequestContext* GetMainRequestContext() const;
+  net::URLRequestContext* GetMediaRequestContext() const;
+  net::URLRequestContext* GetExtensionsRequestContext() const;
+  net::URLRequestContext* GetIsolatedAppRequestContext(
+      net::URLRequestContext* main_context,
       const StoragePartitionDescriptor& partition_descriptor,
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors) const;
-  ChromeURLRequestContext* GetIsolatedMediaRequestContext(
-      ChromeURLRequestContext* app_context,
+  net::URLRequestContext* GetIsolatedMediaRequestContext(
+      net::URLRequestContext* app_context,
       const StoragePartitionDescriptor& partition_descriptor) const;
 
   // These are useful when the Chrome layer is called from the content layer
@@ -162,7 +162,7 @@ class ProfileIOData {
     return &one_click_signin_rejected_email_list_;
   }
 
-  ChromeURLRequestContext* extensions_request_context() const {
+  net::URLRequestContext* extensions_request_context() const {
     return extensions_request_context_.get();
   }
 
@@ -260,7 +260,7 @@ class ProfileIOData {
  protected:
   // A URLRequestContext for media that owns its HTTP factory, to ensure
   // it is deleted.
-  class MediaRequestContext : public ChromeURLRequestContext {
+  class MediaRequestContext : public net::URLRequestContext {
    public:
     MediaRequestContext();
 
@@ -275,7 +275,7 @@ class ProfileIOData {
 
   // A URLRequestContext for apps that owns its cookie store and HTTP factory,
   // to ensure they are deleted.
-  class AppRequestContext : public ChromeURLRequestContext {
+  class AppRequestContext : public net::URLRequestContext {
    public:
     AppRequestContext();
 
@@ -341,7 +341,7 @@ class ProfileIOData {
   static std::string GetSSLSessionCacheShard();
 
   void InitializeOnUIThread(Profile* profile);
-  void ApplyProfileParamsToContext(ChromeURLRequestContext* context) const;
+  void ApplyProfileParamsToContext(net::URLRequestContext* context) const;
 
 #if defined(OS_ANDROID)
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
@@ -387,7 +387,7 @@ class ProfileIOData {
   void set_http_server_properties(
       scoped_ptr<net::HttpServerProperties> http_server_properties) const;
 
-  ChromeURLRequestContext* main_request_context() const {
+  net::URLRequestContext* main_request_context() const {
     return main_request_context_.get();
   }
 
@@ -448,7 +448,7 @@ class ProfileIOData {
   };
 
   typedef std::map<StoragePartitionDescriptor,
-                   ChromeURLRequestContext*,
+                   net::URLRequestContext*,
                    StoragePartitionDescriptorLess>
       URLRequestContextMap;
 
@@ -469,8 +469,8 @@ class ProfileIOData {
       ProfileParams* profile_params) const = 0;
   // Does an on-demand initialization of a RequestContext for the given
   // isolated app.
-  virtual ChromeURLRequestContext* InitializeAppRequestContext(
-      ChromeURLRequestContext* main_context,
+  virtual net::URLRequestContext* InitializeAppRequestContext(
+      net::URLRequestContext* main_context,
       const StoragePartitionDescriptor& details,
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
@@ -480,25 +480,25 @@ class ProfileIOData {
 
   // Does an on-demand initialization of a media RequestContext for the given
   // isolated app.
-  virtual ChromeURLRequestContext* InitializeMediaRequestContext(
-      ChromeURLRequestContext* original_context,
+  virtual net::URLRequestContext* InitializeMediaRequestContext(
+      net::URLRequestContext* original_context,
       const StoragePartitionDescriptor& details) const = 0;
 
   // These functions are used to transfer ownership of the lazily initialized
   // context from ProfileIOData to the URLRequestContextGetter.
-  virtual ChromeURLRequestContext*
+  virtual net::URLRequestContext*
       AcquireMediaRequestContext() const = 0;
-  virtual ChromeURLRequestContext* AcquireIsolatedAppRequestContext(
-      ChromeURLRequestContext* main_context,
+  virtual net::URLRequestContext* AcquireIsolatedAppRequestContext(
+      net::URLRequestContext* main_context,
       const StoragePartitionDescriptor& partition_descriptor,
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector
           request_interceptors) const = 0;
-  virtual ChromeURLRequestContext*
+  virtual net::URLRequestContext*
       AcquireIsolatedMediaRequestContext(
-          ChromeURLRequestContext* app_context,
+          net::URLRequestContext* app_context,
           const StoragePartitionDescriptor& partition_descriptor) const = 0;
 
   // The order *DOES* matter for the majority of these member variables, so
@@ -596,8 +596,8 @@ class ProfileIOData {
 
   // These are only valid in between LazyInitialize() and their accessor being
   // called.
-  mutable scoped_ptr<ChromeURLRequestContext> main_request_context_;
-  mutable scoped_ptr<ChromeURLRequestContext> extensions_request_context_;
+  mutable scoped_ptr<net::URLRequestContext> main_request_context_;
+  mutable scoped_ptr<net::URLRequestContext> extensions_request_context_;
   // One URLRequestContext per isolated app for main and media requests.
   mutable URLRequestContextMap app_request_context_map_;
   mutable URLRequestContextMap isolated_media_request_context_map_;

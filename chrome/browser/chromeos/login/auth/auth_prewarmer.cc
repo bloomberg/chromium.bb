@@ -6,12 +6,13 @@
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/preconnect.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_source.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "url/gurl.h"
 

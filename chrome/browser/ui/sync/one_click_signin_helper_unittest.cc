@@ -122,8 +122,8 @@ class TestProfileIOData : public ProfileIOData {
       ProfileParams* profile_params) const OVERRIDE {
     NOTREACHED();
   }
-  virtual ChromeURLRequestContext* InitializeAppRequestContext(
-      ChromeURLRequestContext* main_context,
+  virtual net::URLRequestContext* InitializeAppRequestContext(
+      net::URLRequestContext* main_context,
       const StoragePartitionDescriptor& details,
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
@@ -133,19 +133,19 @@ class TestProfileIOData : public ProfileIOData {
     NOTREACHED();
     return NULL;
   }
-  virtual ChromeURLRequestContext* InitializeMediaRequestContext(
-      ChromeURLRequestContext* original_context,
+  virtual net::URLRequestContext* InitializeMediaRequestContext(
+      net::URLRequestContext* original_context,
       const StoragePartitionDescriptor& details) const OVERRIDE {
     NOTREACHED();
     return NULL;
   }
-  virtual ChromeURLRequestContext*
+  virtual net::URLRequestContext*
       AcquireMediaRequestContext() const OVERRIDE {
     NOTREACHED();
     return NULL;
   }
-  virtual ChromeURLRequestContext* AcquireIsolatedAppRequestContext(
-      ChromeURLRequestContext* main_context,
+  virtual net::URLRequestContext* AcquireIsolatedAppRequestContext(
+      net::URLRequestContext* main_context,
       const StoragePartitionDescriptor& partition_descriptor,
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
@@ -155,9 +155,9 @@ class TestProfileIOData : public ProfileIOData {
     NOTREACHED();
     return NULL;
   }
-  virtual ChromeURLRequestContext*
+  virtual net::URLRequestContext*
       AcquireIsolatedMediaRequestContext(
-          ChromeURLRequestContext* app_context,
+          net::URLRequestContext* app_context,
           const StoragePartitionDescriptor& partition_descriptor)
           const OVERRIDE {
     NOTREACHED();
