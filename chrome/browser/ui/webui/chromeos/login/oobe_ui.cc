@@ -247,7 +247,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   AddScreenHandler(enrollment_screen_handler);
 
   TermsOfServiceScreenHandler* terms_of_service_screen_handler =
-      new TermsOfServiceScreenHandler;
+      new TermsOfServiceScreenHandler(core_handler_);
   terms_of_service_screen_actor_ = terms_of_service_screen_handler;
   AddScreenHandler(terms_of_service_screen_handler);
 

@@ -710,8 +710,8 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("launchIncognito", &SigninScreenHandler::HandleLaunchIncognito);
   AddCallback("showSupervisedUserCreationScreen",
               &SigninScreenHandler::HandleShowSupervisedUserCreationScreen);
-  AddCallback("launchPublicAccount",
-              &SigninScreenHandler::HandleLaunchPublicAccount);
+  AddCallback("launchPublicSession",
+              &SigninScreenHandler::HandleLaunchPublicSession);
   AddRawCallback("offlineLogin", &SigninScreenHandler::HandleOfflineLogin);
   AddCallback("rebootSystem", &SigninScreenHandler::HandleRebootSystem);
   AddRawCallback("showAddUser", &SigninScreenHandler::HandleShowAddUser);
@@ -1050,11 +1050,17 @@ void SigninScreenHandler::HandleShowSupervisedUserCreationScreen() {
       params.Pass());
 }
 
-void SigninScreenHandler::HandleLaunchPublicAccount(
-    const std::string& username) {
-  UserContext context(user_manager::USER_TYPE_PUBLIC_ACCOUNT, username);
-  if (delegate_)
-    delegate_->Login(context, SigninSpecifics());
+void SigninScreenHandler::HandleLaunchPublicSession(
+    const std::string& user_id,
+    const std::string& locale,
+    const std::string& input_method) {
+  if (!delegate_)
+    return;
+
+  UserContext context(user_manager::USER_TYPE_PUBLIC_ACCOUNT, user_id);
+  context.SetPublicSessionLocale(locale),
+  context.SetPublicSessionInputMethod(input_method);
+  delegate_->Login(context, SigninSpecifics());
 }
 
 void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {

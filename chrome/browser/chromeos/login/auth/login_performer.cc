@@ -280,13 +280,14 @@ void LoginPerformer::LoginOffTheRecord() {
       base::Bind(&Authenticator::LoginOffTheRecord, authenticator_.get()));
 }
 
-void LoginPerformer::LoginAsPublicAccount(const std::string& username) {
+void LoginPerformer::LoginAsPublicSession(const UserContext& user_context) {
   // Login is not allowed if policy could not be loaded for the account.
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   policy::DeviceLocalAccountPolicyService* policy_service =
       connector->GetDeviceLocalAccountPolicyService();
-  if (!policy_service || !policy_service->IsPolicyAvailableForUser(username)) {
+  if (!policy_service ||
+      !policy_service->IsPolicyAvailableForUser(user_context.GetUserID())) {
     DCHECK(delegate_);
     if (delegate_)
       delegate_->PolicyLoadFailed();
@@ -296,8 +297,9 @@ void LoginPerformer::LoginAsPublicAccount(const std::string& username) {
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&Authenticator::LoginAsPublicAccount, authenticator_.get(),
-                 username));
+      base::Bind(&Authenticator::LoginAsPublicSession,
+                 authenticator_.get(),
+                 user_context));
 }
 
 void LoginPerformer::LoginAsKioskAccount(const std::string& app_user_id,

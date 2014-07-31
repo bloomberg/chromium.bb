@@ -80,10 +80,7 @@ class WebUIScreenLocker : public WebUILoginView,
   virtual bool IsSigninInProgress() const OVERRIDE;
   virtual void Login(const UserContext& user_context,
                      const SigninSpecifics& specifics) OVERRIDE;
-  //  virtual void LoginAsRetailModeUser() OVERRIDE;
-  //  virtual void LoginAsGuest() OVERRIDE;
   virtual void MigrateUserData(const std::string& old_password) OVERRIDE;
-  //  virtual void LoginAsPublicAccount(const std::string& username) OVERRIDE;
   virtual void OnSigninScreenReady() OVERRIDE;
   virtual void OnStartEnterpriseEnrollment() OVERRIDE;
   virtual void OnStartKioskEnableScreen() OVERRIDE;

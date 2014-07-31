@@ -110,9 +110,12 @@ class UserSessionManager
     exit_after_session_restore_ = value;
   }
 
-  // Invoked when the user is logging in for the first time, or is logging in as
-  // a guest user.
-  static void SetFirstLoginPrefs(PrefService* prefs);
+  // Invoked when the user is logging in for the first time, or is logging in to
+  // an ephemeral session type, such as guest or a public session.
+  static void SetFirstLoginPrefs(
+      PrefService* prefs,
+      const std::string& public_session_locale,
+      const std::string& public_session_input_method);
 
   // Gets/sets Chrome OAuth client id and secret for kiosk app mode. The default
   // values can be overridden with kiosk auth file.
@@ -164,7 +167,7 @@ class UserSessionManager
   void PrepareProfile();
 
   // Callback for asynchronous profile creation.
-  void OnProfileCreated(const std::string& user_id,
+  void OnProfileCreated(const UserContext& user_context,
                         bool is_incognito_profile,
                         Profile* profile,
                         Profile::CreateStatus status);
@@ -174,7 +177,7 @@ class UserSessionManager
   // early profile initialization that needs to happen before
   // ProfileManager::DoFinalInit() gets called is done here.
   void InitProfilePreferences(Profile* profile,
-                              const std::string& email);
+                              const UserContext& user_context);
 
   // Callback for Profile::CREATE_STATUS_INITIALIZED profile state.
   // Profile is created, extensions and promo resources are initialized.

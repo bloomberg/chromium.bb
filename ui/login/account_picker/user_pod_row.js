@@ -1018,6 +1018,10 @@ cr.define('login', function() {
       ensureTransitionEndEvent(this, 200);
     },
 
+    get advanced() {
+      return this.classList.contains('advanced');
+    },
+
     /** @override */
     get mainInput() {
       if (this.expanded)
@@ -1067,7 +1071,16 @@ cr.define('login', function() {
 
       this.enterButtonElement.addEventListener('click', (function(e) {
         this.enterButtonElement.disabled = true;
-        chrome.send('launchPublicAccount', [this.user.username]);
+        var locale = '';
+        var keyboardLayout = '';
+        if (this.advanced) {
+          // If the advanced pod is being shown, honor the selected UI language
+          // and keyboard layout.
+          locale = this.querySelector('.language-select').value;
+          keyboardLayout = this.querySelector('.keyboard-select').value;
+        }
+        chrome.send('launchPublicSession',
+                    [this.user.username, locale, keyboardLayout]);
       }).bind(this));
     },
 

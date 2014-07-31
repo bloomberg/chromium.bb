@@ -325,7 +325,9 @@ class SigninScreenHandler
   void HandleAttemptUnlock(const std::string& username);
   void HandleLaunchDemoUser();
   void HandleLaunchIncognito();
-  void HandleLaunchPublicAccount(const std::string& username);
+  void HandleLaunchPublicSession(const std::string& user_id,
+                                 const std::string& locale,
+                                 const std::string& input_method);
   void HandleOfflineLogin(const base::ListValue* args);
   void HandleShutdownSystem();
   void HandleLoadWallpaper(const std::string& email);

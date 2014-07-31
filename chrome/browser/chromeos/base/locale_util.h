@@ -31,15 +31,15 @@ namespace locale_util {
 typedef base::Callback<void(const std::string&, const std::string&, bool)>
     SwitchLanguageCallback;
 
-// This function updates input methods only if requested. In general you want
-// "enableLocaleKeyboardLayouts=true".
-// Note: in case of "enableLocaleKeyboardLayouts=false" the input
-// method currently in use may not be supported by the new locale. (i.e.
-// using new locale with unsupported input method may lead to undefined
-// behavior; use "enableLocaleKeyboardLayouts=false" with caution)
-// Note2: login_layouts_only=true enables only login-capable layouts.
+// This function updates input methods only if requested. In general, you want
+// |enable_locale_keyboard_layouts = true|.
+// Note: in case of |enable_locale_keyboard_layouts = false|, the input method
+// currently in use may not be supported by the new locale. Using the new locale
+// with an unsupported input method may lead to undefined behavior. Use
+// |enable_locale_keyboard_layouts = false| with caution.
+// Note 2: |login_layouts_only = true| enables only login-capable layouts.
 void SwitchLanguage(const std::string& locale,
-                    const bool enableLocaleKeyboardLayouts,
+                    const bool enable_locale_keyboard_layouts,
                     const bool login_layouts_only,
                     scoped_ptr<SwitchLanguageCallback> callback);
 

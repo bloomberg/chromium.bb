@@ -14,11 +14,13 @@
 
 namespace chromeos {
 
+class CoreOobeActor;
+
 // The sole implementation of the TermsOfServiceScreenActor, using WebUI.
 class TermsOfServiceScreenHandler : public BaseScreenHandler,
                                     public TermsOfServiceScreenActor {
  public:
-  TermsOfServiceScreenHandler();
+  explicit TermsOfServiceScreenHandler(CoreOobeActor* core_oobe_actor);
   virtual ~TermsOfServiceScreenHandler();
 
   // content::WebUIMessageHandler:
@@ -39,6 +41,16 @@ class TermsOfServiceScreenHandler : public BaseScreenHandler,
   // BaseScreenHandler:
   virtual void Initialize() OVERRIDE;
 
+  // Callback invoked after the UI locale has been changed.
+  void OnLanguageChangedCallback(const std::string& requested_locale,
+                                 const std::string& loaded_locale,
+                                 const bool success);
+
+  // Switch to the user's preferred input method and show the screen. This
+  // method is called after it has been ensured that the current UI locale
+  // matches the UI locale chosen by the user.
+  void DoShow();
+
   // Update the domain name shown in the UI.
   void UpdateDomainInUI();
 
@@ -56,6 +68,8 @@ class TermsOfServiceScreenHandler : public BaseScreenHandler,
   void HandleAccept();
 
   TermsOfServiceScreenHandler::Delegate* screen_;
+
+  CoreOobeActor* core_oobe_actor_;
 
   // Whether the screen should be shown right after initialization.
   bool show_on_init_;

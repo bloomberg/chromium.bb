@@ -60,10 +60,10 @@ void MockAuthenticator::LoginOffTheRecord() {
   consumer_->OnOffTheRecordAuthSuccess();
 }
 
-void MockAuthenticator::LoginAsPublicAccount(const std::string& username) {
-  UserContext user_context(expected_user_context_.GetUserID());
-  user_context.SetUserIDHash(expected_user_context_.GetUserID());
-  consumer_->OnAuthSuccess(user_context);
+void MockAuthenticator::LoginAsPublicSession(const UserContext& user_context) {
+  UserContext logged_in_user_context = user_context;
+  logged_in_user_context.SetUserIDHash(logged_in_user_context.GetUserID());
+  consumer_->OnAuthSuccess(logged_in_user_context);
 }
 
 void MockAuthenticator::LoginAsKioskAccount(const std::string& app_user_id,

@@ -48,6 +48,15 @@ cr.define('cr.ui.Oobe', function() {
     setOemEulaUrl: function(oemEulaUrl) {},
     setTpmPassword: function(password) {},
     refreshA11yInfo: function(data) {},
-    reloadContent: function(data) {},
+
+    /**
+     * Reloads content of the page.
+     * @param {!Object} data New dictionary with i18n values.
+     */
+    reloadContent: function(data) {
+      loadTimeData.overrideValues(data);
+      i18nTemplate.process(document, loadTimeData);
+      Oobe.getInstance().updateLocalizedContent_();
+    },
   };
 });

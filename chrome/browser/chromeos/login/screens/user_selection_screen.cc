@@ -103,8 +103,9 @@ void UserSelectionScreen::FillUserDictionary(
                            policy_connector->GetEnterpriseDomain());
     }
 
-    // TODO(bartfab): Initialize |locale| based on policy.
-    const std::string locale;
+    // TODO(bartfab): Initialize |most_relevant_languages| and |locale| based on
+    // policy.
+    const std::string locale = g_browser_process->GetApplicationLocale();
     std::vector<std::string> most_relevant_languages;
     user_dict->Set(
         kKeyInitialLocales,

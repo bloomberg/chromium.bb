@@ -19,19 +19,19 @@ namespace {
 
 struct SwitchLanguageData {
   SwitchLanguageData(const std::string& locale,
-                     const bool enableLocaleKeyboardLayouts,
+                     const bool enable_locale_keyboard_layouts,
                      const bool login_layouts_only,
                      scoped_ptr<locale_util::SwitchLanguageCallback> callback)
       : callback(callback.Pass()),
         locale(locale),
-        enableLocaleKeyboardLayouts(enableLocaleKeyboardLayouts),
+        enable_locale_keyboard_layouts(enable_locale_keyboard_layouts),
         login_layouts_only(login_layouts_only),
         success(false) {}
 
   scoped_ptr<locale_util::SwitchLanguageCallback> callback;
 
   const std::string locale;
-  const bool enableLocaleKeyboardLayouts;
+  const bool enable_locale_keyboard_layouts;
   const bool login_layouts_only;
   std::string loaded_locale;
   bool success;
@@ -56,29 +56,33 @@ void FinishSwitchLanguage(scoped_ptr<SwitchLanguageData> data) {
   if (data->success) {
     g_browser_process->SetApplicationLocale(data->loaded_locale);
 
-    if (data->enableLocaleKeyboardLayouts) {
-      // If we have switched the locale, enable the keyboard layouts that
-      // are necessary for the new locale.  Change the current input method
-      // to the hardware keyboard layout since the input method currently in
-      // use may not be supported by the new locale (3rd parameter).
+    if (data->enable_locale_keyboard_layouts) {
       input_method::InputMethodManager* manager =
           input_method::InputMethodManager::Get();
-      manager->EnableLoginLayouts(
-          data->loaded_locale,
-          manager->GetInputMethodUtil()->GetHardwareLoginInputMethodIds());
-      if (!data->login_layouts_only) {
-        // Enable all the other layouts
-        std::vector<std::string> candidates;
-        input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
-        // Add input methods associated with the language.
-        util->GetInputMethodIdsFromLanguageCode(
+      if (data->login_layouts_only) {
+        // Enable the hardware keyboard layouts and locale-specific layouts
+        // suitable for use on the login screen. This will also switch to the
+        // first hardware keyboard layout since the input method currently in
+        // use may not be supported by the new locale.
+        manager->EnableLoginLayouts(
+            data->loaded_locale,
+            manager->GetInputMethodUtil()->GetHardwareLoginInputMethodIds());
+      } else {
+        // Enable all hardware keyboard layouts. This will also switch to the
+        // first hardware keyboard layout.
+        manager->ReplaceEnabledInputMethods(
+            manager->GetInputMethodUtil()->GetHardwareInputMethodIds());
+
+        // Enable all locale-specific layouts.
+        std::vector<std::string> input_methods;
+        manager->GetInputMethodUtil()->GetInputMethodIdsFromLanguageCode(
             data->loaded_locale,
             input_method::kKeyboardLayoutsOnly,
-            &candidates);
-        for (std::vector<std::string>::const_iterator i = candidates.begin();
-             i != candidates.end();
-             ++i)
-          manager->EnableInputMethod(*i);
+            &input_methods);
+        for (std::vector<std::string>::const_iterator it =
+                input_methods.begin(); it != input_methods.end(); ++it) {
+          manager->EnableInputMethod(*it);
+        }
       }
     }
   }
@@ -92,13 +96,13 @@ void FinishSwitchLanguage(scoped_ptr<SwitchLanguageData> data) {
 namespace locale_util {
 
 void SwitchLanguage(const std::string& locale,
-                    const bool enableLocaleKeyboardLayouts,
+                    const bool enable_locale_keyboard_layouts,
                     const bool login_layouts_only,
                     scoped_ptr<SwitchLanguageCallback> callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   scoped_ptr<SwitchLanguageData> data(
       new SwitchLanguageData(locale,
-                             enableLocaleKeyboardLayouts,
+                             enable_locale_keyboard_layouts,
                              login_layouts_only,
                              callback.Pass()));
   base::Closure reloader(

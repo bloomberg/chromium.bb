@@ -54,8 +54,8 @@ class CHROMEOS_EXPORT Authenticator
   // Initiates incognito ("browse without signing in") login.
   virtual void LoginOffTheRecord() = 0;
 
-  // Initiates login into the public account identified by |username|.
-  virtual void LoginAsPublicAccount(const std::string& username) = 0;
+  // Initiates login into the public account identified by |user_context|.
+  virtual void LoginAsPublicSession(const UserContext& user_context) = 0;
 
   // Initiates login into kiosk mode account identified by |app_user_id|.
   // The |app_user_id| is a generated username for the account.

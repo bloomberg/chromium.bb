@@ -94,10 +94,10 @@ class ExistingUserController : public LoginDisplay::Delegate,
   virtual void ShowWrongHWIDScreen() OVERRIDE;
   virtual void Signout() OVERRIDE;
 
-  virtual void LoginAsRetailModeUser();
-  virtual void LoginAsGuest();
-  virtual void LoginAsPublicAccount(const std::string& username);
-  virtual void LoginAsKioskApp(const std::string& app_id, bool diagnostic_mode);
+  void LoginAsRetailModeUser();
+  void LoginAsGuest();
+  void LoginAsPublicSession(const UserContext& user_context);
+  void LoginAsKioskApp(const std::string& app_id, bool diagnostic_mode);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

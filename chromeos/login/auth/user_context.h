@@ -46,6 +46,8 @@ class CHROMEOS_EXPORT UserContext {
   bool IsUsingOAuth() const;
   AuthFlow GetAuthFlow() const;
   user_manager::UserType GetUserType() const;
+  const std::string& GetPublicSessionLocale() const;
+  const std::string& GetPublicSessionInputMethod() const;
 
   bool HasCredentials() const;
 
@@ -56,6 +58,8 @@ class CHROMEOS_EXPORT UserContext {
   void SetIsUsingOAuth(bool is_using_oauth);
   void SetAuthFlow(AuthFlow auth_flow);
   void SetUserType(user_manager::UserType user_type);
+  void SetPublicSessionLocale(const std::string& locale);
+  void SetPublicSessionInputMethod(const std::string& input_method);
 
   void ClearSecrets();
 
@@ -67,6 +71,8 @@ class CHROMEOS_EXPORT UserContext {
   bool is_using_oauth_;
   AuthFlow auth_flow_;
   user_manager::UserType user_type_;
+  std::string public_session_locale_;
+  std::string public_session_input_method_;
 };
 
 }  // namespace chromeos

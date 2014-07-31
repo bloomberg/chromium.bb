@@ -126,10 +126,10 @@ class ParallelAuthenticator : public Authenticator,
   // Mounts tmpfs and notifies consumer on the success/failure.
   virtual void LoginOffTheRecord() OVERRIDE;
 
-  // Initiates login into the public account identified by |username|.
+  // Initiates login into a public session.
   // Mounts an ephemeral cryptohome and notifies consumer on the
   // success/failure.
-  virtual void LoginAsPublicAccount(const std::string& username) OVERRIDE;
+  virtual void LoginAsPublicSession(const UserContext& user_context) OVERRIDE;
 
   // Initiates login into the kiosk mode account identified by |app_user_id|.
   // Mounts an ephemeral guest cryptohome if |use_guest_mount| is |true|.

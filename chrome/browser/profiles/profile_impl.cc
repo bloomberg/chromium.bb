@@ -1139,7 +1139,8 @@ void ProfileImpl::ChangeAppLocale(
       // while user's profile determines his personal locale preference.
       break;
     }
-    case APP_LOCALE_CHANGED_VIA_LOGIN: {
+    case APP_LOCALE_CHANGED_VIA_LOGIN:
+    case APP_LOCALE_CHANGED_VIA_PUBLIC_SESSION_LOGIN: {
       if (!pref_locale.empty()) {
         DCHECK(pref_locale == new_locale);
         std::string accepted_locale =
@@ -1184,7 +1185,8 @@ void ProfileImpl::ChangeAppLocale(
   }
   if (do_update_pref)
     GetPrefs()->SetString(prefs::kApplicationLocale, new_locale);
-  local_state->SetString(prefs::kApplicationLocale, new_locale);
+  if (via != APP_LOCALE_CHANGED_VIA_PUBLIC_SESSION_LOGIN)
+    local_state->SetString(prefs::kApplicationLocale, new_locale);
 
   if (chromeos::UserManager::Get()->GetOwnerEmail() ==
       chromeos::ProfileHelper::Get()->GetUserByProfile(this)->email())

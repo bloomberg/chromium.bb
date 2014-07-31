@@ -33,7 +33,7 @@ class CHROMEOS_EXPORT MockAuthenticator : public Authenticator {
   virtual void LoginAsSupervisedUser(const UserContext& user_context) OVERRIDE;
   virtual void LoginRetailMode() OVERRIDE;
   virtual void LoginOffTheRecord() OVERRIDE;
-  virtual void LoginAsPublicAccount(const std::string& username) OVERRIDE;
+  virtual void LoginAsPublicSession(const UserContext& user_context) OVERRIDE;
   virtual void LoginAsKioskAccount(const std::string& app_user_id,
                                    bool use_guest_mount) OVERRIDE;
   virtual void OnRetailModeAuthSuccess() OVERRIDE;

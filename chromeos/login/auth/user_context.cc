@@ -20,7 +20,9 @@ UserContext::UserContext(const UserContext& other)
       user_id_hash_(other.user_id_hash_),
       is_using_oauth_(other.is_using_oauth_),
       auth_flow_(other.auth_flow_),
-      user_type_(other.user_type_) {
+      user_type_(other.user_type_),
+      public_session_locale_(other.public_session_locale_),
+      public_session_input_method_(other.public_session_input_method_) {
 }
 
 UserContext::UserContext(const std::string& user_id)
@@ -45,11 +47,15 @@ UserContext::~UserContext() {
 }
 
 bool UserContext::operator==(const UserContext& context) const {
-  return context.user_id_ == user_id_ && context.key_ == key_ &&
+  return context.user_id_ == user_id_ &&
+         context.key_ == key_ &&
          context.auth_code_ == auth_code_ &&
          context.user_id_hash_ == user_id_hash_ &&
          context.is_using_oauth_ == is_using_oauth_ &&
-         context.auth_flow_ == auth_flow_ && context.user_type_ == user_type_;
+         context.auth_flow_ == auth_flow_ &&
+         context.user_type_ == user_type_ &&
+         context.public_session_locale_ == public_session_locale_ &&
+         context.public_session_input_method_ == public_session_input_method_;
 }
 
 bool UserContext::operator!=(const UserContext& context) const {
@@ -88,6 +94,14 @@ user_manager::UserType UserContext::GetUserType() const {
   return user_type_;
 }
 
+const std::string& UserContext::GetPublicSessionLocale() const {
+  return public_session_locale_;
+}
+
+const std::string& UserContext::GetPublicSessionInputMethod() const {
+  return public_session_input_method_;
+}
+
 bool UserContext::HasCredentials() const {
   return (!user_id_.empty() && !key_.GetSecret().empty()) ||
          !auth_code_.empty();
@@ -119,6 +133,14 @@ void UserContext::SetAuthFlow(AuthFlow auth_flow) {
 
 void UserContext::SetUserType(user_manager::UserType user_type) {
   user_type_ = user_type;
+}
+
+void UserContext::SetPublicSessionLocale(const std::string& locale) {
+  public_session_locale_ = locale;
+}
+
+void UserContext::SetPublicSessionInputMethod(const std::string& input_method) {
+  public_session_input_method_ = input_method;
 }
 
 void UserContext::ClearSecrets() {

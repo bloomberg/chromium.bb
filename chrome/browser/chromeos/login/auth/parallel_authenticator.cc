@@ -348,10 +348,11 @@ void ParallelAuthenticator::LoginOffTheRecord() {
              scoped_refptr<ParallelAuthenticator>(this));
 }
 
-void ParallelAuthenticator::LoginAsPublicAccount(const std::string& username) {
+void ParallelAuthenticator::LoginAsPublicSession(
+    const UserContext& user_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   current_state_.reset(
-      new AuthAttemptState(UserContext(username),
+      new AuthAttemptState(user_context,
                            user_manager::USER_TYPE_PUBLIC_ACCOUNT,
                            false,    // unlock
                            false,    // online_complete

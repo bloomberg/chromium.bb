@@ -62,6 +62,7 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
@@ -69,14 +70,40 @@ namespace chromeos {
 
 namespace {
 
-void InitLocaleAndInputMethodsForNewUser(PrefService* prefs) {
+void InitLocaleAndInputMethodsForNewUser(
+    PrefService* prefs,
+    const std::string& public_session_locale,
+    const std::string& public_session_input_method) {
+  std::string locale;
+  if (!public_session_locale.empty()) {
+    // If this is a public session and the user chose a |public_session_locale|,
+    // write it to |prefs| so that the UI switches to it.
+    locale = public_session_locale;
+    prefs->SetString(prefs::kApplicationLocale, locale);
+
+    // Suppress the locale change dialog.
+    prefs->SetString(prefs::kApplicationLocaleAccepted, locale);
+  } else {
+    // Otherwise, assume that the session will use the current UI locale.
+    locale = g_browser_process->GetApplicationLocale();
+  }
+
   // First, we'll set kLanguagePreloadEngines.
-  std::string locale = g_browser_process->GetApplicationLocale();
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
   std::vector<std::string> input_method_ids;
-  manager->GetInputMethodUtil()->GetFirstLoginInputMethodIds(
-      locale, manager->GetCurrentInputMethod(), &input_method_ids);
+
+  if (!public_session_input_method.empty()) {
+    // If this is a public session and the user chose a
+    // |public_session_input_method|, set kLanguagePreloadEngines to this input
+    // method only.
+    input_method_ids.push_back(public_session_input_method);
+  } else {
+    // Otherwise, set kLanguagePreloadEngines to a list of input methods derived
+    // from the |locale| and the currently active input method.
+    manager->GetInputMethodUtil()->GetFirstLoginInputMethodIds(
+        locale, manager->GetCurrentInputMethod(), &input_method_ids);
+  }
 
   // Save the input methods in the user's preferences.
   StringPrefMember language_preload_engines;
@@ -301,9 +328,14 @@ UserSessionManager::GetSigninSessionRestoreStrategy() {
 }
 
 // static
-void UserSessionManager::SetFirstLoginPrefs(PrefService* prefs) {
+void UserSessionManager::SetFirstLoginPrefs(
+    PrefService* prefs,
+    const std::string& public_session_locale,
+    const std::string& public_session_input_method) {
   VLOG(1) << "Setting first login prefs";
-  InitLocaleAndInputMethodsForNewUser(prefs);
+  InitLocaleAndInputMethodsForNewUser(prefs,
+                                      public_session_locale,
+                                      public_session_input_method);
 }
 
 bool UserSessionManager::GetAppModeChromeClientOAuthInfo(
@@ -383,7 +415,11 @@ bool UserSessionManager::RespectLocalePreference(
                  "'. ")
               : (std::string("account_locale - unused. ")))
           << " Selected '" << pref_locale << "'";
-  profile->ChangeAppLocale(pref_locale, Profile::APP_LOCALE_CHANGED_VIA_LOGIN);
+  profile->ChangeAppLocale(
+      pref_locale,
+      user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT ?
+          Profile::APP_LOCALE_CHANGED_VIA_PUBLIC_SESSION_LOGIN :
+          Profile::APP_LOCALE_CHANGED_VIA_LOGIN);
 
   // Here we don't enable keyboard layouts for normal users. Input methods
   // are set up when the user first logs in. Then the user may customize the
@@ -530,7 +566,7 @@ void UserSessionManager::OnProfilePrepared(Profile* profile) {
 }
 
 void UserSessionManager::CreateUserSession(const UserContext& user_context,
-                                       bool has_auth_cookies) {
+                                           bool has_auth_cookies) {
   user_context_ = user_context;
   has_auth_cookies_ = has_auth_cookies;
   InitSessionRestoreStrategy();
@@ -570,29 +606,31 @@ void UserSessionManager::PrepareProfile() {
       ProfileHelper::GetUserProfileDirByUserId(user_context_.GetUserID()),
       base::Bind(&UserSessionManager::OnProfileCreated,
                  AsWeakPtr(),
-                 user_context_.GetUserID(),
+                 user_context_,
                  is_demo_session),
       base::string16(),
       base::string16(),
       std::string());
 }
 
-void UserSessionManager::OnProfileCreated(const std::string& user_id,
-                                      bool is_incognito_profile,
-                                      Profile* profile,
-                                      Profile::CreateStatus status) {
+void UserSessionManager::OnProfileCreated(const UserContext& user_context,
+                                          bool is_incognito_profile,
+                                          Profile* profile,
+                                          Profile::CreateStatus status) {
   CHECK(profile);
 
   switch (status) {
     case Profile::CREATE_STATUS_CREATED:
       // Profile created but before initializing extensions and promo resources.
-      InitProfilePreferences(profile, user_id);
+      InitProfilePreferences(profile, user_context);
       break;
     case Profile::CREATE_STATUS_INITIALIZED:
       // Profile is created, extensions and promo resources are initialized.
       // At this point all other Chrome OS services will be notified that it is
       // safe to use this profile.
-      UserProfileInitialized(profile, is_incognito_profile, user_id);
+      UserProfileInitialized(profile,
+                             is_incognito_profile,
+                             user_context.GetUserID());
       break;
     case Profile::CREATE_STATUS_LOCAL_FAIL:
     case Profile::CREATE_STATUS_REMOTE_FAIL:
@@ -603,10 +641,14 @@ void UserSessionManager::OnProfileCreated(const std::string& user_id,
   }
 }
 
-void UserSessionManager::InitProfilePreferences(Profile* profile,
-                                            const std::string& user_id) {
-  if (UserManager::Get()->IsCurrentUserNew())
-    SetFirstLoginPrefs(profile->GetPrefs());
+void UserSessionManager::InitProfilePreferences(
+    Profile* profile,
+    const UserContext& user_context) {
+  if (UserManager::Get()->IsCurrentUserNew()) {
+    SetFirstLoginPrefs(profile->GetPrefs(),
+                       user_context.GetPublicSessionLocale(),
+                       user_context.GetPublicSessionInputMethod());
+  }
 
   if (UserManager::Get()->IsLoggedInAsSupervisedUser()) {
     user_manager::User* active_user = UserManager::Get()->GetActiveUser();
@@ -621,7 +663,7 @@ void UserSessionManager::InitProfilePreferences(Profile* profile,
     // profiles that might not have it set yet).
     SigninManagerBase* signin_manager =
         SigninManagerFactory::GetForProfile(profile);
-    signin_manager->SetAuthenticatedUsername(user_id);
+    signin_manager->SetAuthenticatedUsername(user_context.GetUserID());
   }
 }
 

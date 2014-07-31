@@ -80,8 +80,8 @@ class LoginPerformer : public AuthStatusConsumer,
   // Performs actions to prepare guest mode login.
   void LoginOffTheRecord();
 
-  // Performs a login into the public account identified by |username|.
-  void LoginAsPublicAccount(const std::string& username);
+  // Performs public session login with a given |user_context|.
+  void LoginAsPublicSession(const UserContext& user_context);
 
   // Performs a login into the kiosk mode account with |app_user_id|.
   void LoginAsKioskAccount(const std::string& app_user_id,

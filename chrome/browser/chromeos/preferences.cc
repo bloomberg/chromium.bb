@@ -369,7 +369,7 @@ void Preferences::Init(PrefServiceSyncable* prefs,
   // login. For a regular user this is done in
   // UserSessionManager::InitProfilePreferences().
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession))
-    UserSessionManager::SetFirstLoginPrefs(prefs);
+    UserSessionManager::SetFirstLoginPrefs(prefs, std::string(), std::string());
 }
 
 void Preferences::InitUserPrefsForTesting(PrefServiceSyncable* prefs,

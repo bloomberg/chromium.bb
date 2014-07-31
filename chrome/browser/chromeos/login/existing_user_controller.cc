@@ -402,7 +402,7 @@ void ExistingUserController::Login(const UserContext& user_context,
     return;
   } else if (user_context.GetUserType() ==
              user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
-    LoginAsPublicAccount(user_context.GetUserID());
+    LoginAsPublicSession(user_context);
     return;
   } else if (user_context.GetUserType() ==
              user_manager::USER_TYPE_RETAIL_MODE) {
@@ -540,8 +540,8 @@ void ExistingUserController::MigrateUserData(const std::string& old_password) {
     login_performer_->RecoverEncryptedData(old_password);
 }
 
-void ExistingUserController::LoginAsPublicAccount(
-    const std::string& username) {
+void ExistingUserController::LoginAsPublicSession(
+    const UserContext& user_context) {
   if (is_login_in_progress_ || UserManager::Get()->IsUserLoggedIn())
     return;
 
@@ -553,9 +553,9 @@ void ExistingUserController::LoginAsPublicAccount(
 
   CrosSettingsProvider::TrustedStatus status =
       cros_settings_->PrepareTrustedValues(
-          base::Bind(&ExistingUserController::LoginAsPublicAccount,
+          base::Bind(&ExistingUserController::LoginAsPublicSession,
                      weak_factory_.GetWeakPtr(),
-                     username));
+                     user_context));
   // If device policy is permanently unavailable, logging into public accounts
   // is not possible.
   if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
@@ -571,9 +571,10 @@ void ExistingUserController::LoginAsPublicAccount(
   if (status != CrosSettingsProvider::TRUSTED)
     return;
 
-  // If there is no public account with the given |username|, logging in is not
+  // If there is no public account with the given user ID, logging in is not
   // possible.
-  const user_manager::User* user = UserManager::Get()->FindUser(username);
+  const user_manager::User* user =
+      UserManager::Get()->FindUser(user_context.GetUserID());
   if (!user || user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
     // Re-enable clicking on other windows.
     login_display_->SetUIEnabled(true);
@@ -585,7 +586,7 @@ void ExistingUserController::LoginAsPublicAccount(
   login_performer_.reset(NULL);
   login_performer_.reset(new LoginPerformer(this));
   is_login_in_progress_ = true;
-  login_performer_->LoginAsPublicAccount(username);
+  login_performer_->LoginAsPublicSession(user_context);
   SendAccessibilityAlert(
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNIN_PUBLIC_ACCOUNT));
 }
@@ -1023,7 +1024,9 @@ void ExistingUserController::OnPublicSessionAutoLoginTimerFire() {
   CHECK(signin_screen_ready_ &&
         !is_login_in_progress_ &&
         !public_session_auto_login_username_.empty());
-  LoginAsPublicAccount(public_session_auto_login_username_);
+  // TODO(bartfab): Set the UI language and initial locale.
+  LoginAsPublicSession(UserContext(user_manager::USER_TYPE_PUBLIC_ACCOUNT,
+                                   public_session_auto_login_username_));
 }
 
 void ExistingUserController::StopPublicSessionAutoLoginTimer() {

@@ -44,6 +44,7 @@
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_type.h"
 #include "content/public/test/mock_notification_observer.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/mock_url_fetcher_factory.h"
@@ -527,7 +528,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
                        AutoLoginNoDelay) {
   // Set up mocks to check login success.
-  UserContext user_context(public_session_user_id_);
+  UserContext user_context(user_manager::USER_TYPE_PUBLIC_ACCOUNT,
+                           public_session_user_id_);
   user_context.SetUserIDHash(user_context.GetUserID());
   ExpectSuccessfulLogin(user_context);
   existing_user_controller()->OnSigninScreenReady();
@@ -540,7 +542,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
                        AutoLoginShortDelay) {
   // Set up mocks to check login success.
-  UserContext user_context(public_session_user_id_);
+  UserContext user_context(user_manager::USER_TYPE_PUBLIC_ACCOUNT,
+                           public_session_user_id_);
   user_context.SetUserIDHash(user_context.GetUserID());
   ExpectSuccessfulLogin(user_context);
   existing_user_controller()->OnSigninScreenReady();
@@ -648,7 +651,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
                        PublicSessionLoginStopsAutoLogin) {
   // Set up mocks to check login success.
-  UserContext user_context(public_session_user_id_);
+  UserContext user_context(user_manager::USER_TYPE_PUBLIC_ACCOUNT,
+                           public_session_user_id_);
   user_context.SetUserIDHash(user_context.GetUserID());
   ExpectSuccessfulLogin(user_context);
   existing_user_controller()->OnSigninScreenReady();
@@ -656,7 +660,10 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   ASSERT_TRUE(auto_login_timer());
 
   // Login and check that it stopped the timer.
-  existing_user_controller()->LoginAsPublicAccount(public_session_user_id_);
+  existing_user_controller()->LoginAsPublicSession(UserContext(
+      user_manager::USER_TYPE_PUBLIC_ACCOUNT,
+      public_session_user_id_));
+
   EXPECT_TRUE(is_login_in_progress());
   ASSERT_TRUE(auto_login_timer());
   EXPECT_FALSE(auto_login_timer()->IsRunning());
