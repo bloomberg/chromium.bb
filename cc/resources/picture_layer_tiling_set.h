@@ -20,6 +20,20 @@ namespace cc {
 
 class CC_EXPORT PictureLayerTilingSet {
  public:
+  enum TilingRangeType {
+    HIGHER_THAN_HIGH_RES,
+    HIGH_RES,
+    BETWEEN_HIGH_AND_LOW_RES,
+    LOW_RES,
+    LOWER_THAN_LOW_RES
+  };
+  struct TilingRange {
+    TilingRange(size_t start, size_t end) : start(start), end(end) {}
+
+    size_t start;
+    size_t end;
+  };
+
   PictureLayerTilingSet(PictureLayerTilingClient* client,
                         const gfx::Size& layer_bounds);
   ~PictureLayerTilingSet();
@@ -109,6 +123,8 @@ class CC_EXPORT PictureLayerTilingSet {
 
   void AsValueInto(base::debug::TracedValue* array) const;
   size_t GPUMemoryUsageInBytes() const;
+
+  TilingRange GetTilingRange(TilingRangeType type) const;
 
  private:
   PictureLayerTilingClient* client_;
