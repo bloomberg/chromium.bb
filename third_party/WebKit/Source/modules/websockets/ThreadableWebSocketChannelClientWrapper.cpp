@@ -38,9 +38,9 @@ ThreadableWebSocketChannelClientWrapper::ThreadableWebSocketChannelClientWrapper
 {
 }
 
-ThreadableWebSocketChannelClientWrapper* ThreadableWebSocketChannelClientWrapper::create(WebSocketChannelClient* client)
+PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> ThreadableWebSocketChannelClientWrapper::create(WebSocketChannelClient* client)
 {
-    return new ThreadableWebSocketChannelClientWrapper(client);
+    return adoptRefWillBeNoop(new ThreadableWebSocketChannelClientWrapper(client));
 }
 
 void ThreadableWebSocketChannelClientWrapper::clearClient()

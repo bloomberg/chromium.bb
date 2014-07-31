@@ -38,12 +38,12 @@ namespace {
 
 typedef testing::StrictMock< testing::MockFunction<void(int)> > Checkpoint;
 
-class MockWebSocketChannelClient : public GarbageCollectedFinalized<MockWebSocketChannelClient>, public WebSocketChannelClient {
-    USING_GARBAGE_COLLECTED_MIXIN(MockWebSocketChannelClient);
+class MockWebSocketChannelClient : public RefCountedWillBeRefCountedGarbageCollected<MockWebSocketChannelClient>, public WebSocketChannelClient {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MockWebSocketChannelClient);
 public:
-    static MockWebSocketChannelClient* create()
+    static PassRefPtrWillBeRawPtr<MockWebSocketChannelClient> create()
     {
-        return new testing::StrictMock<MockWebSocketChannelClient>();
+        return adoptRefWillBeRefCountedGarbageCollected(new testing::StrictMock<MockWebSocketChannelClient>());
     }
 
     MockWebSocketChannelClient() { }
@@ -100,10 +100,12 @@ public:
 
     ~NewWebSocketChannelImplTest()
     {
+#if ENABLE(OILPAN)
         channel()->disconnect();
         m_channelClient.clear();
         m_channel.clear();
         Heap::collectAllGarbage();
+#endif
     }
 
     MockWebSocketChannelClient* channelClient()
@@ -145,9 +147,9 @@ public:
     }
 
     OwnPtr<DummyPageHolder> m_pageHolder;
-    Persistent<MockWebSocketChannelClient> m_channelClient;
+    RefPtrWillBePersistent<MockWebSocketChannelClient> m_channelClient;
     MockWebSocketHandle* m_handle;
-    Persistent<NewWebSocketChannelImpl> m_channel;
+    RefPtrWillBePersistent<NewWebSocketChannelImpl> m_channel;
     unsigned long m_sumOfConsumedBufferedAmount;
 };
 

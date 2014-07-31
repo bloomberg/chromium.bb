@@ -41,6 +41,7 @@
 #include "platform/weborigin/KURL.h"
 #include "wtf/Deque.h"
 #include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
 #include "wtf/text/AtomicStringHash.h"
 
 namespace blink {
@@ -48,17 +49,17 @@ namespace blink {
 class Blob;
 class ExceptionState;
 
-class DOMWebSocket : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<DOMWebSocket>, public EventTargetWithInlineData, public ActiveDOMObject, public WebSocketChannelClient {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<DOMWebSocket>);
-    USING_GARBAGE_COLLECTED_MIXIN(DOMWebSocket);
+class DOMWebSocket : public RefCountedWillBeRefCountedGarbageCollected<DOMWebSocket>, public EventTargetWithInlineData, public ActiveDOMObject, public WebSocketChannelClient {
+    REFCOUNTED_EVENT_TARGET(DOMWebSocket);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWebSocket);
 public:
     static const char* subprotocolSeperator();
     // DOMWebSocket instances must be used with a wrapper since this class's
     // lifetime management is designed assuming the V8 holds a ref on it while
     // hasPendingActivity() returns true.
-    static DOMWebSocket* create(ExecutionContext*, const String& url, ExceptionState&);
-    static DOMWebSocket* create(ExecutionContext*, const String& url, const String& protocol, ExceptionState&);
-    static DOMWebSocket* create(ExecutionContext*, const String& url, const Vector<String>& protocols, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<DOMWebSocket> create(ExecutionContext*, const String& url, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<DOMWebSocket> create(ExecutionContext*, const String& url, const String& protocol, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<DOMWebSocket> create(ExecutionContext*, const String& url, const Vector<String>& protocols, ExceptionState&);
     virtual ~DOMWebSocket();
 
     enum State {
@@ -130,11 +131,11 @@ protected:
 
 private:
     // FIXME: This should inherit blink::EventQueue.
-    class EventQueue FINAL : public GarbageCollectedFinalized<EventQueue> {
+    class EventQueue FINAL : public RefCountedWillBeGarbageCollectedFinalized<EventQueue> {
     public:
-        static EventQueue* create(EventTarget* target)
+        static PassRefPtrWillBeRawPtr<EventQueue> create(EventTarget* target)
         {
-            return new EventQueue(target);
+            return adoptRefWillBeNoop(new EventQueue(target));
         }
         ~EventQueue();
 
@@ -181,7 +182,7 @@ private:
 
     // This function is virtual for unittests.
     // FIXME: Move WebSocketChannel::create here.
-    virtual WebSocketChannel* createChannel(ExecutionContext* context, WebSocketChannelClient* client)
+    virtual PassRefPtrWillBeRawPtr<WebSocketChannel> createChannel(ExecutionContext* context, WebSocketChannelClient* client)
     {
         return WebSocketChannel::create(context, client);
     }
@@ -208,7 +209,7 @@ private:
         BinaryTypeArrayBuffer
     };
 
-    Member<WebSocketChannel> m_channel;
+    RefPtrWillBeMember<WebSocketChannel> m_channel;
 
     State m_state;
     KURL m_url;
@@ -222,7 +223,7 @@ private:
     String m_subprotocol;
     String m_extensions;
 
-    Member<EventQueue> m_eventQueue;
+    RefPtrWillBeMember<EventQueue> m_eventQueue;
     Timer<DOMWebSocket> m_bufferedAmountConsumeTimer;
 };
 

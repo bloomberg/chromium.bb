@@ -44,8 +44,9 @@ namespace blink {
 
 class Document;
 
-class WebSocketHandshake : public GarbageCollectedFinalized<WebSocketHandshake> {
+class WebSocketHandshake : public NoBaseWillBeGarbageCollectedFinalized<WebSocketHandshake> {
     WTF_MAKE_NONCOPYABLE(WebSocketHandshake);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     // This enum is reused for histogram. When this needs to be modified, add a
     // new enum for histogram and convert mode values into values in the new

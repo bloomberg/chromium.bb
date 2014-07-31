@@ -38,7 +38,7 @@
 
 namespace blink {
 
-class WebSocketChannelClient : public GarbageCollectedMixin {
+class WebSocketChannelClient : public WillBeGarbageCollectedMixin {
 public:
     virtual ~WebSocketChannelClient() { }
     virtual void didConnect(const String& subprotocol, const String& extensions) { }

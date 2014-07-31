@@ -44,12 +44,12 @@ class WebSocketStreamHandle;
 
 namespace blink {
 
-class PLATFORM_EXPORT SocketStreamHandleInternal : public GarbageCollectedFinalized<SocketStreamHandleInternal>, public blink::WebSocketStreamHandleClient {
+class PLATFORM_EXPORT SocketStreamHandleInternal : public NoBaseWillBeGarbageCollectedFinalized<SocketStreamHandleInternal>, public blink::WebSocketStreamHandleClient {
     WTF_MAKE_NONCOPYABLE(SocketStreamHandleInternal);
 public:
-    static SocketStreamHandleInternal* create(SocketStreamHandle* handle)
+    static PassOwnPtrWillBeRawPtr<SocketStreamHandleInternal> create(SocketStreamHandle* handle)
     {
-        return new SocketStreamHandleInternal(handle);
+        return adoptPtrWillBeNoop(new SocketStreamHandleInternal(handle));
     }
     virtual ~SocketStreamHandleInternal();
 
@@ -75,7 +75,7 @@ public:
 private:
     explicit SocketStreamHandleInternal(SocketStreamHandle*);
 
-    Member<SocketStreamHandle> m_handle;
+    RawPtrWillBeMember<SocketStreamHandle> m_handle;
     OwnPtr<blink::WebSocketStreamHandle> m_socket;
     int m_maxPendingSendAllowed;
     int m_pendingAmountSent;

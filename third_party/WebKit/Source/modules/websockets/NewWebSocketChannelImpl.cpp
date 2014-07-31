@@ -59,7 +59,7 @@ using blink::WebSocketHandle;
 
 namespace blink {
 
-class NewWebSocketChannelImpl::BlobLoader FINAL : public GarbageCollectedFinalized<NewWebSocketChannelImpl::BlobLoader>, public FileReaderLoaderClient {
+class NewWebSocketChannelImpl::BlobLoader FINAL : public NoBaseWillBeGarbageCollectedFinalized<NewWebSocketChannelImpl::BlobLoader>, public FileReaderLoaderClient {
 public:
     BlobLoader(PassRefPtr<BlobDataHandle>, NewWebSocketChannelImpl*);
     virtual ~BlobLoader() { }
@@ -78,7 +78,7 @@ public:
     }
 
 private:
-    Member<NewWebSocketChannelImpl> m_channel;
+    RawPtrWillBeMember<NewWebSocketChannelImpl> m_channel;
     FileReaderLoader m_loader;
 };
 
@@ -322,7 +322,7 @@ void NewWebSocketChannelImpl::sendInternal()
         }
         case MessageTypeBlob:
             ASSERT(!m_blobLoader);
-            m_blobLoader = new BlobLoader(message->blobDataHandle, this);
+            m_blobLoader = adoptPtrWillBeNoop(new BlobLoader(message->blobDataHandle, this));
             break;
         case MessageTypeArrayBuffer: {
             WebSocketHandle::MessageType type =

@@ -35,13 +35,14 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
-class ThreadableWebSocketChannelClientWrapper : public GarbageCollected<ThreadableWebSocketChannelClientWrapper> {
+class ThreadableWebSocketChannelClientWrapper : public ThreadSafeRefCountedWillBeGarbageCollected<ThreadableWebSocketChannelClientWrapper> {
 public:
-    static ThreadableWebSocketChannelClientWrapper* create(WebSocketChannelClient*);
+    static PassRefPtrWillBeRawPtr<ThreadableWebSocketChannelClientWrapper> create(WebSocketChannelClient*);
 
     void clearClient();
 
@@ -56,9 +57,9 @@ public:
     void trace(Visitor*);
 
 private:
-    explicit ThreadableWebSocketChannelClientWrapper(WebSocketChannelClient*);
+    ThreadableWebSocketChannelClientWrapper(WebSocketChannelClient*);
 
-    Member<WebSocketChannelClient> m_client;
+    RawPtrWillBeMember<WebSocketChannelClient> m_client;
 };
 
 } // namespace blink

@@ -35,6 +35,8 @@
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 #include "wtf/StreamBuffer.h"
 
 namespace blink {
@@ -42,13 +44,13 @@ namespace blink {
 class SocketStreamHandleClient;
 class SocketStreamHandleInternal;
 
-class PLATFORM_EXPORT SocketStreamHandle : public GarbageCollectedFinalized<SocketStreamHandle> {
+class PLATFORM_EXPORT SocketStreamHandle : public RefCountedWillBeGarbageCollectedFinalized<SocketStreamHandle> {
 public:
     enum SocketStreamState { Connecting, Open, Closing, Closed };
 
-    static SocketStreamHandle* create(SocketStreamHandleClient* client)
+    static PassRefPtrWillBeRawPtr<SocketStreamHandle> create(SocketStreamHandleClient* client)
     {
-        return new SocketStreamHandle(client);
+        return adoptRefWillBeNoop(new SocketStreamHandle(client));
     }
 
     virtual ~SocketStreamHandle();
@@ -72,12 +74,12 @@ private:
     int sendInternal(const char* data, int length);
     void closeInternal();
 
-    Member<SocketStreamHandleClient> m_client;
+    RawPtrWillBeMember<SocketStreamHandleClient> m_client;
     StreamBuffer<char, 1024 * 1024> m_buffer;
     SocketStreamState m_state;
 
     friend class SocketStreamHandleInternal;
-    Member<SocketStreamHandleInternal> m_internal;
+    OwnPtrWillBeMember<SocketStreamHandleInternal> m_internal;
 };
 
 } // namespace blink

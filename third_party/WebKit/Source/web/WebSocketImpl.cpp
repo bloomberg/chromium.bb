@@ -66,6 +66,9 @@ WebSocketImpl::WebSocketImpl(const WebDocument& document, WebSocketClient* clien
 
 WebSocketImpl::~WebSocketImpl()
 {
+#if !ENABLE(OILPAN)
+    m_private->disconnect();
+#endif
 }
 
 WebSocket::BinaryType WebSocketImpl::binaryType() const
