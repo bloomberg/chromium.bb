@@ -12,8 +12,7 @@ class ObjectStore(object):
     '''Gets a |Future| with the value of |key| in the object store, or None
     if |key| is not in the object store.
     '''
-    multi_get_future = self.GetMulti((key,))
-    return Future(callback=lambda: multi_get_future.Get().get(key))
+    return self.GetMulti((key,)).Then(lambda keys: keys.get(key))
 
   def GetMulti(self, keys):
     '''Gets a |Future| with values mapped to |keys| from the object store, with

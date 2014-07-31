@@ -19,7 +19,7 @@ def All(futures, except_pass=None):
     for f in futures:
       try:
         resolved.append(f.Get())
-      # "except None" will simply not catch any errors
+      # "except None" will simply not catch any errors.
       except except_pass:
         pass
     return resolved
@@ -60,6 +60,14 @@ class Future(object):
         self._callback is None and
         self._exc_info is None):
       raise ValueError('Must have either a value, error, or callback.')
+
+  def Then(self, callback):
+    '''Creates and returns a future that runs |callback| on the value of this
+    future.
+    '''
+    def then():
+      return callback(self.Get())
+    return Future(callback=then)
 
   def Get(self):
     '''Gets the stored value, error, or callback contents.

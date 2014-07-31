@@ -162,32 +162,28 @@ class CompiledFileSystem(object):
     if not first_layer_dirs:
       return Future(value=first_layer_files)
 
-    second_layer_listing = self._file_system.Read(
-        add_prefix(path, first_layer_dirs))
+    def get_from_future_listing(listings):
+      '''Recursively lists files from directory listing |futures|.
+      '''
+      dirs, files = [], []
+      for dir_name, listing in listings.iteritems():
+        new_dirs, new_files = split_dirs_from_files(listing)
+        # |dirs| are paths for reading. Add the full prefix relative to
+        # |path| so that |file_system| can find the files.
+        dirs += add_prefix(dir_name, new_dirs)
+        # |files| are not for reading, they are for returning to the caller.
+        # This entire function set (i.e. GetFromFileListing) is defined to
+        # not include the fetched-path in the result, however, |dir_name|
+        # will be prefixed with |path|. Strip it.
+        assert dir_name.startswith(path)
+        files += add_prefix(dir_name[len(path):], new_files)
+      if dirs:
+        files += self._file_system.Read(dirs).Then(
+            lambda results: get_from_future_listing(results)).Get()
+      return files
 
-    def resolve():
-      def get_from_future_listing(futures):
-        '''Recursively lists files from directory listing |futures|.
-        '''
-        dirs, files = [], []
-        for dir_name, listing in futures.Get().iteritems():
-          new_dirs, new_files = split_dirs_from_files(listing)
-          # |dirs| are paths for reading. Add the full prefix relative to
-          # |path| so that |file_system| can find the files.
-          dirs += add_prefix(dir_name, new_dirs)
-          # |files| are not for reading, they are for returning to the caller.
-          # This entire function set (i.e. GetFromFileListing) is defined to
-          # not include the fetched-path in the result, however, |dir_name|
-          # will be prefixed with |path|. Strip it.
-          assert dir_name.startswith(path)
-          files += add_prefix(dir_name[len(path):], new_files)
-        if dirs:
-          files += get_from_future_listing(self._file_system.Read(dirs))
-        return files
-
-      return first_layer_files + get_from_future_listing(second_layer_listing)
-
-    return Future(callback=resolve)
+    return self._file_system.Read(add_prefix(path, first_layer_dirs)).Then(
+        lambda results: first_layer_files + get_from_future_listing(results))
 
   def GetFromFile(self, path):
     '''Calls |compilation_function| on the contents of the file at |path|.  If
@@ -206,12 +202,11 @@ class CompiledFileSystem(object):
     if (cache_entry is not None) and (version == cache_entry.version):
       return Future(value=cache_entry._cache_data)
 
-    future_files = self._file_system.ReadSingle(path)
-    def resolve():
-      cache_data = self._compilation_function(path, future_files.Get())
+    def next(files):
+      cache_data = self._compilation_function(path, files)
       self._file_object_store.Set(path, _CacheEntry(cache_data, version))
       return cache_data
-    return Future(callback=resolve)
+    return self._file_system.ReadSingle(path).Then(next)
 
   def GetFromFileListing(self, path):
     '''Calls |compilation_function| on the listing of the files at |path|.
@@ -228,12 +223,11 @@ class CompiledFileSystem(object):
     if (cache_entry is not None) and (version == cache_entry.version):
       return Future(value=cache_entry._cache_data)
 
-    recursive_list_future = self._RecursiveList(path)
-    def resolve():
-      cache_data = self._compilation_function(path, recursive_list_future.Get())
+    def next(files):
+      cache_data = self._compilation_function(path, files)
       self._list_object_store.Set(path, _CacheEntry(cache_data, version))
       return cache_data
-    return Future(callback=resolve)
+    return self._RecursiveList(path).Then(next)
 
   def GetFileVersion(self, path):
     cache_entry = self._file_object_store.Get(path).Get()
