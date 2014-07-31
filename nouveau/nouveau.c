@@ -62,14 +62,14 @@ debug_init(char *args)
  * is kept here to prevent AIGLX from crashing if the DDX is linked against
  * the new libdrm, but the DRI driver against the old
  */
-int
+drm_public int
 nouveau_device_open_existing(struct nouveau_device **pdev, int close, int fd,
 			     drm_context_t ctx)
 {
 	return -EACCES;
 }
 
-int
+drm_public int
 nouveau_device_wrap(int fd, int close, struct nouveau_device **pdev)
 {
 	struct nouveau_device_priv *nvdev = calloc(1, sizeof(*nvdev));
@@ -147,7 +147,7 @@ nouveau_device_wrap(int fd, int close, struct nouveau_device **pdev)
 	return 0;
 }
 
-int
+drm_public int
 nouveau_device_open(const char *busid, struct nouveau_device **pdev)
 {
 	int ret = -ENODEV, fd = drmOpen("nouveau", busid);
@@ -159,7 +159,7 @@ nouveau_device_open(const char *busid, struct nouveau_device **pdev)
 	return ret;
 }
 
-void
+drm_public void
 nouveau_device_del(struct nouveau_device **pdev)
 {
 	struct nouveau_device_priv *nvdev = nouveau_device(*pdev);
@@ -173,7 +173,7 @@ nouveau_device_del(struct nouveau_device **pdev)
 	}
 }
 
-int
+drm_public int
 nouveau_getparam(struct nouveau_device *dev, uint64_t param, uint64_t *value)
 {
 	struct drm_nouveau_getparam r = { param, 0 };
@@ -183,14 +183,14 @@ nouveau_getparam(struct nouveau_device *dev, uint64_t param, uint64_t *value)
 	return ret;
 }
 
-int
+drm_public int
 nouveau_setparam(struct nouveau_device *dev, uint64_t param, uint64_t value)
 {
 	struct drm_nouveau_setparam r = { param, value };
 	return drmCommandWrite(dev->fd, DRM_NOUVEAU_SETPARAM, &r, sizeof(r));
 }
 
-int
+drm_public int
 nouveau_client_new(struct nouveau_device *dev, struct nouveau_client **pclient)
 {
 	struct nouveau_device_priv *nvdev = nouveau_device(dev);
@@ -229,7 +229,7 @@ unlock:
 	return ret;
 }
 
-void
+drm_public void
 nouveau_client_del(struct nouveau_client **pclient)
 {
 	struct nouveau_client_priv *pcli = nouveau_client(*pclient);
@@ -245,7 +245,7 @@ nouveau_client_del(struct nouveau_client **pclient)
 	}
 }
 
-int
+drm_public int
 nouveau_object_new(struct nouveau_object *parent, uint64_t handle,
 		   uint32_t oclass, void *data, uint32_t length,
 		   struct nouveau_object **pobj)
@@ -307,7 +307,7 @@ nouveau_object_new(struct nouveau_object *parent, uint64_t handle,
 	return 0;
 }
 
-void
+drm_public void
 nouveau_object_del(struct nouveau_object **pobj)
 {
 	struct nouveau_object *obj = *pobj;
@@ -331,7 +331,7 @@ nouveau_object_del(struct nouveau_object **pobj)
 	*pobj = NULL;
 }
 
-void *
+drm_public void *
 nouveau_object_find(struct nouveau_object *obj, uint32_t pclass)
 {
 	while (obj && obj->oclass != pclass) {
@@ -385,7 +385,7 @@ nouveau_bo_del(struct nouveau_bo *bo)
 	free(nvbo);
 }
 
-int
+drm_public int
 nouveau_bo_new(struct nouveau_device *dev, uint32_t flags, uint32_t align,
 	       uint64_t size, union nouveau_bo_config *config,
 	       struct nouveau_bo **pbo)
@@ -451,7 +451,7 @@ nouveau_bo_wrap_locked(struct nouveau_device *dev, uint32_t handle,
 	return -ENOMEM;
 }
 
-int
+drm_public int
 nouveau_bo_wrap(struct nouveau_device *dev, uint32_t handle,
 		struct nouveau_bo **pbo)
 {
@@ -463,7 +463,7 @@ nouveau_bo_wrap(struct nouveau_device *dev, uint32_t handle,
 	return ret;
 }
 
-int
+drm_public int
 nouveau_bo_name_ref(struct nouveau_device *dev, uint32_t name,
 		    struct nouveau_bo **pbo)
 {
@@ -492,7 +492,7 @@ nouveau_bo_name_ref(struct nouveau_device *dev, uint32_t name,
 	return ret;
 }
 
-int
+drm_public int
 nouveau_bo_name_get(struct nouveau_bo *bo, uint32_t *name)
 {
 	struct drm_gem_flink req = { .handle = bo->handle };
@@ -510,7 +510,7 @@ nouveau_bo_name_get(struct nouveau_bo *bo, uint32_t *name)
 	return 0;
 }
 
-void
+drm_public void
 nouveau_bo_ref(struct nouveau_bo *bo, struct nouveau_bo **pref)
 {
 	struct nouveau_bo *ref = *pref;
@@ -524,7 +524,7 @@ nouveau_bo_ref(struct nouveau_bo *bo, struct nouveau_bo **pref)
 	*pref = bo;
 }
 
-int
+drm_public int
 nouveau_bo_prime_handle_ref(struct nouveau_device *dev, int prime_fd,
 			    struct nouveau_bo **bo)
 {
@@ -553,7 +553,7 @@ nouveau_bo_prime_handle_ref(struct nouveau_device *dev, int prime_fd,
 	return ret;
 }
 
-int
+drm_public int
 nouveau_bo_set_prime(struct nouveau_bo *bo, int *prime_fd)
 {
 	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
@@ -567,7 +567,7 @@ nouveau_bo_set_prime(struct nouveau_bo *bo, int *prime_fd)
 	return 0;
 }
 
-int
+drm_public int
 nouveau_bo_wait(struct nouveau_bo *bo, uint32_t access,
 		struct nouveau_client *client)
 {
@@ -601,7 +601,7 @@ nouveau_bo_wait(struct nouveau_bo *bo, uint32_t access,
 	return ret;
 }
 
-int
+drm_public int
 nouveau_bo_map(struct nouveau_bo *bo, uint32_t access,
 	       struct nouveau_client *client)
 {

@@ -68,7 +68,7 @@ nouveau_bufctx(struct nouveau_bufctx *bctx)
 	return (struct nouveau_bufctx_priv *)bctx;
 }
 
-int
+drm_public int
 nouveau_bufctx_new(struct nouveau_client *client, int bins,
 		   struct nouveau_bufctx **pbctx)
 {
@@ -88,7 +88,7 @@ nouveau_bufctx_new(struct nouveau_client *client, int bins,
 	return -ENOMEM;
 }
 
-void
+drm_public void
 nouveau_bufctx_del(struct nouveau_bufctx **pbctx)
 {
 	struct nouveau_bufctx_priv *pctx = nouveau_bufctx(*pbctx);
@@ -105,7 +105,7 @@ nouveau_bufctx_del(struct nouveau_bufctx **pbctx)
 	}
 }
 
-void
+drm_public void
 nouveau_bufctx_reset(struct nouveau_bufctx *bctx, int bin)
 {
 	struct nouveau_bufctx_priv *pctx = nouveau_bufctx(bctx);
@@ -123,7 +123,7 @@ nouveau_bufctx_reset(struct nouveau_bufctx *bctx, int bin)
 	pbin->relocs  = 0;
 }
 
-struct nouveau_bufref *
+drm_public struct nouveau_bufref *
 nouveau_bufctx_refn(struct nouveau_bufctx *bctx, int bin,
 		    struct nouveau_bo *bo, uint32_t flags)
 {
@@ -150,7 +150,7 @@ nouveau_bufctx_refn(struct nouveau_bufctx *bctx, int bin,
 	return &pref->base;
 }
 
-struct nouveau_bufref *
+drm_public struct nouveau_bufref *
 nouveau_bufctx_mthd(struct nouveau_bufctx *bctx, int bin, uint32_t packet,
 		    struct nouveau_bo *bo, uint64_t data, uint32_t flags,
 		    uint32_t vor, uint32_t tor)

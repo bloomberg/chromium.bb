@@ -1,6 +1,7 @@
 #ifndef __NOUVEAU_LIBDRM_PRIVATE_H__
 #define __NOUVEAU_LIBDRM_PRIVATE_H__
 
+#include <libdrm.h>
 #include <xf86drm.h>
 #include <xf86atomic.h>
 #include <pthread.h>
