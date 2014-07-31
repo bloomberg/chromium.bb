@@ -40,6 +40,27 @@ class MetadataTest(cros_test_lib.TestCase):
     ending_dict = metadata.GetDict()
     self.assertEqual(starting_dict, ending_dict)
 
+  def testUpdateKeyDictWithDict(self):
+    expected_dict = {str(x): x for x in range(20)}
+    m = multiprocessing.Manager()
+    metadata = metadata_lib.CBuildbotMetadata(multiprocess_manager=m)
+
+    metadata.UpdateKeyDictWithDict('my_dict', expected_dict)
+
+    self.assertEqual(expected_dict, metadata.GetDict()['my_dict'])
+
+
+  def testUpdateKeyDictWithDictMultiprocess(self):
+    expected_dict = {str(x): x for x in range(20)}
+    m = multiprocessing.Manager()
+    metadata = metadata_lib.CBuildbotMetadata(multiprocess_manager=m)
+
+    with parallel.BackgroundTaskRunner(metadata.UpdateKeyDictWithDict) as q:
+      for k, v in expected_dict.iteritems():
+        q.put(['my_dict', {k: v}])
+
+    self.assertEqual(expected_dict, metadata.GetDict()['my_dict'])
+
   def testMultiprocessSafety(self):
     m = multiprocessing.Manager()
     metadata = metadata_lib.CBuildbotMetadata(multiprocess_manager=m)

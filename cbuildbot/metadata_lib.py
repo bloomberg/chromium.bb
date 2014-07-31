@@ -51,9 +51,11 @@ class CBuildbotMetadata(object):
     if multiprocess_manager:
       self._metadata_dict = multiprocess_manager.dict()
       self._cl_action_list = multiprocess_manager.list()
+      self._subdict_update_lock = multiprocess_manager.RLock()
     else:
       self._metadata_dict = {}
       self._cl_action_list = []
+      self._subdict_update_lock = multiprocessing.RLock()
 
     if metadata_dict:
       self.UpdateWithDict(metadata_dict)
@@ -103,8 +105,9 @@ class CBuildbotMetadata(object):
 
     This method merges the dictionary for the given key with the given key
     metadata dictionary (allowing them to be effectively updated from any
-    stage). This may not be multiprocess safe if two processes attempt to
-    modify a dictionary with the same key.
+    stage).
+
+    This method is multiprocess safe.
 
     Args:
       key: The key name (e.g. 'version' or 'status')
@@ -115,11 +118,11 @@ class CBuildbotMetadata(object):
     Returns:
       self
     """
-    # If the key already exists, then use its dictionary
-    metadata_dict = self._metadata_dict.copy()
-    update_dict = metadata_dict.pop(key, {})
-    update_dict.update(key_metadata_dict)
-    self._metadata_dict[key] = update_dict
+    with self._subdict_update_lock:
+      # If the key already exists, then use its dictionary
+      target_dict = self._metadata_dict.setdefault(key, {})
+      target_dict.update(key_metadata_dict)
+      self._metadata_dict[key] = target_dict
 
     return self
 
