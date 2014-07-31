@@ -284,11 +284,23 @@ def UpdateChromeEbuildAFDOFile(board, arch_profiles):
 
   ebuild_dir = cros_build_lib.FromChrootPath(os.path.dirname(ebuild_file))
   git.RunGit(ebuild_dir, ['add', 'Manifest'])
+
+  # Check if anything changed compared to the previous version.
+  mod_files = ['Manifest', os.path.basename(ebuild_file),
+               os.path.basename(ebuild_9999)]
+  modifications = git.RunGit(ebuild_dir,
+                             ['status', '--porcelain', '--'] + mod_files,
+                             capture_output=True, print_cmd=True).output
+  if not modifications:
+    cros_build_lib.Info('AFDO info for the Chrome ebuild did not change. '
+                        'Nothing to commit')
+    return
+
+  # If there are changes to ebuild or Manifest, commit them.
   commit_msg = ('"Set {arch: afdo_file} pairs %s and updated Manifest"'
                 % arch_profiles)
   git.RunGit(ebuild_dir,
-             ['commit', '--allow-empty', '-m', commit_msg, '--', 'Manifest',
-              os.path.basename(ebuild_file), os.path.basename(ebuild_9999)],
+             ['commit', '-m', commit_msg, '--'] + mod_files,
              print_cmd=True)
 
 
@@ -326,6 +338,8 @@ def VerifyLatestAFDOFile(afdo_release_spec, buildroot, gs_context):
   curr_date = datetime.datetime.now()
   allowed_stale_days = datetime.timedelta(days=AFDO_ALLOWED_STALE)
   if (curr_date - mod_date) > allowed_stale_days:
+    cros_build_lib.Info('Found latest AFDO info file %s but it is too old' %
+                        latest_afdo_url)
     return None
 
   # Then get the name of the latest valid AFDO profile file.
