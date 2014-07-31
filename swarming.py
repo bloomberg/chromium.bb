@@ -5,9 +5,8 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.4.12'
+__version__ = '0.4.13'
 
-import datetime
 import getpass
 import hashlib
 import json
@@ -998,16 +997,11 @@ def CMDquery(parser, args):
   if data is None:
     print >> sys.stderr, 'Failed to access %s' % options.swarming
     return 1
-  timeout = datetime.timedelta(seconds=data['machine_death_timeout'])
-  utcnow = datetime.datetime.utcnow()
   for machine in natsort.natsorted(data['machines'], key=lambda x: x['id']):
-    last_seen = datetime.datetime.strptime(
-        machine['last_seen'], '%Y-%m-%d %H:%M:%S')
-    is_dead = utcnow - last_seen > timeout
     if options.dead_only:
-      if not is_dead:
+      if not machine['is_dead']:
         continue
-    elif not options.keep_dead and is_dead:
+    elif not options.keep_dead and machine['is_dead']:
       continue
 
     # If the user requested to filter on dimensions, ensure the bot has all the

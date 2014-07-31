@@ -865,22 +865,26 @@ def mock_swarming_api_v1_bots():
       {
         'dimensions': {},
         'id': 'no-dimensions',
-        'last_seen': now,
+        'is_dead': False,
+        'last_seen_ts': now,
       },
       {
         'dimensions': {'os': 'amiga'},
         'id': 'amig1',
-        'last_seen': now,
+        'is_dead': False,
+        'last_seen_ts': now,
       },
       {
         'dimensions': {'os': ['amiga', 'atari'], 'foo': 1},
         'id': 'amig2',
-        'last_seen': now,
+        'is_dead': False,
+        'last_seen_ts': now,
       },
       {
         'dimensions': {'os': 'amiga'},
         'id': 'dead',
-        'last_seen': dead,
+        'is_dead': True,
+        'last_seen_ts': dead,
       },
     ],
   }
