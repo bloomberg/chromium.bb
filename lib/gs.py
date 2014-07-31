@@ -760,15 +760,21 @@ class GSContext(object):
       return False
     return True
 
-  def Remove(self, path, ignore_missing=False):
+  def Remove(self, path, recurse=False, ignore_missing=False):
     """Remove the specified file.
 
     Args:
       path: Full gs:// url of the file to delete.
+      recurse: Remove recursively starting at path. Same as rm -R. Defaults
+        to False.
       ignore_missing: Whether to suppress errors about missing files.
     """
+    cmd = ['rm']
+    if recurse:
+      cmd.append('-R')
+    cmd.append(path)
     try:
-      self.DoCommand(['rm', path])
+      self.DoCommand(cmd)
     except GSNoSuchKey:
       if not ignore_missing:
         raise
