@@ -165,11 +165,15 @@ TEST_F(LabelTest, TooltipProperty) {
   label.SetBounds(0, 0, 1000, 40);
   EXPECT_FALSE(label.GetTooltipText(gfx::Point(), &tooltip));
 
-  // Verify that setting the tooltip still shows it.
+  // Shrinking the single-line label's height shouldn't trigger a tooltip.
+  label.SetBounds(0, 0, 1000, label.GetPreferredSize().height() / 2);
+  EXPECT_FALSE(label.GetTooltipText(gfx::Point(), &tooltip));
+
+  // Verify that explicitly set tooltip text is shown, regardless of size.
   label.SetTooltipText(tooltip_text);
   EXPECT_TRUE(label.GetTooltipText(gfx::Point(), &tooltip));
   EXPECT_EQ(tooltip_text, tooltip);
-  // Clear out the tooltip.
+  // Clear out the explicitly set tooltip text.
   label.SetTooltipText(base::string16());
 
   // Shrink the bounds and the tooltip should come back.

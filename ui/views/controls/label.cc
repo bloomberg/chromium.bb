@@ -533,7 +533,7 @@ bool Label::ShouldShowDefaultTooltip() const {
   const gfx::Size text_size = GetTextSize();
   const gfx::Size size = GetContentsBounds().size();
   return !obscured() && (text_size.width() > size.width() ||
-                         text_size.height() > size.height());
+                         (multi_line_ && text_size.height() > size.height()));
 }
 
 }  // namespace views

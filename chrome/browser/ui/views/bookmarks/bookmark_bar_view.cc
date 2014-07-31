@@ -165,7 +165,7 @@ bool animations_enabled = true;
 
 // BookmarkButtonBase -----------------------------------------------
 
-// Base class for text buttons used on the bookmark bar.
+// Base class for buttons used on the bookmark bar.
 
 class BookmarkButtonBase : public views::LabelButton {
  public:
@@ -183,10 +183,8 @@ class BookmarkButtonBase : public views::LabelButton {
     }
   }
 
-  virtual bool IsTriggerableEvent(const ui::Event& e) OVERRIDE {
-    return e.type() == ui::ET_GESTURE_TAP ||
-           e.type() == ui::ET_GESTURE_TAP_DOWN ||
-           event_utils::IsPossibleDispositionEvent(e);
+  virtual View* GetTooltipHandlerForPoint(const gfx::Point& point) OVERRIDE {
+    return HitTestPoint(point) && CanProcessEventsWithinSubtree() ? this : NULL;
   }
 
   virtual scoped_ptr<LabelButtonBorder> CreateDefaultBorder() const OVERRIDE {
@@ -196,6 +194,12 @@ class BookmarkButtonBase : public views::LabelButton {
                                    kButtonPaddingVertical,
                                    kButtonPaddingHorizontal));
     return border.Pass();
+  }
+
+  virtual bool IsTriggerableEvent(const ui::Event& e) OVERRIDE {
+    return e.type() == ui::ET_GESTURE_TAP ||
+           e.type() == ui::ET_GESTURE_TAP_DOWN ||
+           event_utils::IsPossibleDispositionEvent(e);
   }
 
  private:
