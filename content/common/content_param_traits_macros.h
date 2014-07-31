@@ -19,8 +19,8 @@
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
-IPC_ENUM_TRAITS_MAX_VALUE(content::ResourceType::Type,
-                          content::ResourceType::LAST_TYPE - 1)
+IPC_ENUM_TRAITS_MAX_VALUE(content::ResourceType,
+                          content::RESOURCE_TYPE_LAST_TYPE - 1)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContentSecurityPolicyType,
                           blink::WebContentSecurityPolicyTypeLast)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebInputEvent::Type,

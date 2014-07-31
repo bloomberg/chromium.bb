@@ -734,7 +734,7 @@ class CONTENT_EXPORT WebContentsImpl
                                         const std::string& security_info,
                                         const std::string& http_request,
                                         const std::string& mime_type,
-                                        ResourceType::Type resource_type);
+                                        ResourceType resource_type);
   void OnDidDisplayInsecureContent();
   void OnDidRunInsecureContent(const std::string& security_origin,
                                const GURL& target_url);

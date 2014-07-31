@@ -39,41 +39,39 @@ struct ResourceResponse;
 class CONTENT_EXPORT ResourceDispatcherHostDelegate {
  public:
   // Called when a request begins. Return false to abort the request.
-  virtual bool ShouldBeginRequest(
-      int child_id,
-      int route_id,
-      const std::string& method,
-      const GURL& url,
-      ResourceType::Type resource_type,
-      ResourceContext* resource_context);
+  virtual bool ShouldBeginRequest(int child_id,
+                                  int route_id,
+                                  const std::string& method,
+                                  const GURL& url,
+                                  ResourceType resource_type,
+                                  ResourceContext* resource_context);
 
   // Called after ShouldBeginRequest to allow the embedder to add resource
   // throttles.
-  virtual void RequestBeginning(
-      net::URLRequest* request,
-      ResourceContext* resource_context,
-      AppCacheService* appcache_service,
-      ResourceType::Type resource_type,
-      int child_id,
-      int route_id,
-      ScopedVector<ResourceThrottle>* throttles);
+  virtual void RequestBeginning(net::URLRequest* request,
+                                ResourceContext* resource_context,
+                                AppCacheService* appcache_service,
+                                ResourceType resource_type,
+                                int child_id,
+                                int route_id,
+                                ScopedVector<ResourceThrottle>* throttles);
 
   // Allows an embedder to add additional resource handlers for a download.
   // |must_download| is set if the request must be handled as a download.
-  virtual void DownloadStarting(
-      net::URLRequest* request,
-      ResourceContext* resource_context,
-      int child_id,
-      int route_id,
-      int request_id,
-      bool is_content_initiated,
-      bool must_download,
-      ScopedVector<ResourceThrottle>* throttles);
+  virtual void DownloadStarting(net::URLRequest* request,
+                                ResourceContext* resource_context,
+                                int child_id,
+                                int route_id,
+                                int request_id,
+                                bool is_content_initiated,
+                                bool must_download,
+                                ScopedVector<ResourceThrottle>* throttles);
 
   // Creates a ResourceDispatcherHostLoginDelegate that asks the user for a
   // username and password.
   virtual ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
-      net::AuthChallengeInfo* auth_info, net::URLRequest* request);
+      net::AuthChallengeInfo* auth_info,
+      net::URLRequest* request);
 
   // Launches the url for the given tab. Returns true if an attempt to handle
   // the url was made, e.g. by launching an app. Note that this does not
@@ -84,8 +82,8 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
 
   // Returns true if we should force the given resource to be downloaded.
   // Otherwise, the content layer decides.
-  virtual bool ShouldForceDownloadResource(
-      const GURL& url, const std::string& mime_type);
+  virtual bool ShouldForceDownloadResource(const GURL& url,
+                                           const std::string& mime_type);
 
   // Returns true and sets |origin| if a Stream should be created for the
   // resource.
@@ -98,31 +96,27 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   // If the stream will be rendered in a BrowserPlugin, |payload| will contain
   // the data that should be given to the old ResourceHandler to forward to the
   // renderer process.
-  virtual bool ShouldInterceptResourceAsStream(
-      net::URLRequest* request,
-      const std::string& mime_type,
-      GURL* origin,
-      std::string* payload);
+  virtual bool ShouldInterceptResourceAsStream(net::URLRequest* request,
+                                               const std::string& mime_type,
+                                               GURL* origin,
+                                               std::string* payload);
 
   // Informs the delegate that a Stream was created. The Stream can be read from
   // the blob URL of the Stream, but can only be read once.
-  virtual void OnStreamCreated(
-      net::URLRequest* request,
-      scoped_ptr<content::StreamHandle> stream);
+  virtual void OnStreamCreated(net::URLRequest* request,
+                               scoped_ptr<content::StreamHandle> stream);
 
   // Informs the delegate that a response has started.
-  virtual void OnResponseStarted(
-      net::URLRequest* request,
-      ResourceContext* resource_context,
-      ResourceResponse* response,
-      IPC::Sender* sender);
+  virtual void OnResponseStarted(net::URLRequest* request,
+                                 ResourceContext* resource_context,
+                                 ResourceResponse* response,
+                                 IPC::Sender* sender);
 
   // Informs the delegate that a request has been redirected.
-  virtual void OnRequestRedirected(
-      const GURL& redirect_url,
-      net::URLRequest* request,
-      ResourceContext* resource_context,
-      ResourceResponse* response);
+  virtual void OnRequestRedirected(const GURL& redirect_url,
+                                   net::URLRequest* request,
+                                   ResourceContext* resource_context,
+                                   ResourceResponse* response);
 
   // Notification that a request has completed.
   virtual void RequestComplete(net::URLRequest* url_request);

@@ -629,8 +629,8 @@ bool ChromeNetworkDelegate::OnCanGetCookies(
   bool is_for_blocking_resource = false;
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(&request);
   if (info && ((!info->IsAsync()) ||
-               info->GetResourceType() == ResourceType::STYLESHEET ||
-               info->GetResourceType() == ResourceType::SCRIPT)) {
+               info->GetResourceType() == content::RESOURCE_TYPE_STYLESHEET ||
+               info->GetResourceType() == content::RESOURCE_TYPE_SCRIPT)) {
     is_for_blocking_resource = true;
   }
 

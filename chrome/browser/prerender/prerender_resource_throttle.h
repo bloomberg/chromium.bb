@@ -49,7 +49,7 @@ class PrerenderResourceThrottle
   static void WillStartRequestOnUI(
       const base::WeakPtr<PrerenderResourceThrottle>& throttle,
       const std::string& method,
-      content::ResourceType::Type resource_type,
+      content::ResourceType resource_type,
       int render_process_id,
       int render_frame_id,
       const GURL& url);
@@ -57,7 +57,7 @@ class PrerenderResourceThrottle
   static void WillRedirectRequestOnUI(
       const base::WeakPtr<PrerenderResourceThrottle>& throttle,
       const std::string& follow_only_when_prerender_shown_header,
-      content::ResourceType::Type resource_type,
+      content::ResourceType resource_type,
       bool async,
       int render_process_id,
       int render_frame_id,

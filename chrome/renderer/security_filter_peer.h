@@ -21,7 +21,7 @@ class SecurityFilterPeer : public content::RequestPeer {
   virtual ~SecurityFilterPeer();
 
   static SecurityFilterPeer* CreateSecurityFilterPeerForDeniedRequest(
-      content::ResourceType::Type resource_type,
+      content::ResourceType resource_type,
       content::RequestPeer* peer,
       int os_error);
 

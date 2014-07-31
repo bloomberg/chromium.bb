@@ -2612,7 +2612,7 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
     const std::string& security_info,
     const std::string& http_method,
     const std::string& mime_type,
-    ResourceType::Type resource_type) {
+    ResourceType resource_type) {
   base::StatsCounter cache("WebKit.CacheHit");
   cache.Increment();
 
@@ -2637,7 +2637,7 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
 
   if (url.is_valid() && url.SchemeIsHTTPOrHTTPS()) {
     scoped_refptr<net::URLRequestContextGetter> request_context(
-        resource_type == ResourceType::MEDIA ?
+        resource_type == RESOURCE_TYPE_MEDIA ?
             GetBrowserContext()->GetMediaRequestContextForRenderProcess(
                 GetRenderProcessHost()->GetID()) :
             GetBrowserContext()->GetRequestContextForRenderProcess(

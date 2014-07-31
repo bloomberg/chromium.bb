@@ -21,7 +21,7 @@ SecurityFilterPeer::~SecurityFilterPeer() {
 // static
 SecurityFilterPeer*
 SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
-    content::ResourceType::Type resource_type,
+    content::ResourceType resource_type,
     content::RequestPeer* peer,
     int os_error) {
   // Create a filter for SSL and CERT errors.
@@ -40,7 +40,7 @@ SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
     case net::ERR_CERT_NAME_CONSTRAINT_VIOLATION:
     case net::ERR_INSECURE_RESPONSE:
     case net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN:
-      if (content::ResourceType::IsFrame(resource_type))
+      if (content::IsResourceTypeFrame(resource_type))
         return CreateSecurityFilterPeerForFrame(peer, os_error);
       // Any other content is entirely filtered-out.
       return new ReplaceContentPeer(peer, std::string(), std::string());

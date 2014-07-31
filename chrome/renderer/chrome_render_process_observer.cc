@@ -67,7 +67,7 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
 
   virtual content::RequestPeer* OnRequestComplete(
       content::RequestPeer* current_peer,
-      content::ResourceType::Type resource_type,
+      content::ResourceType resource_type,
       int error_code) OVERRIDE {
     // Update the browser about our cache.
     // Rate limit informing the host of our cache stats.

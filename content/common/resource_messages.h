@@ -160,7 +160,7 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
 
   // What this resource load is for (main frame, sub-frame, sub-resource,
   // object).
-  IPC_STRUCT_MEMBER(content::ResourceType::Type, resource_type)
+  IPC_STRUCT_MEMBER(content::ResourceType, resource_type)
 
   // The priority of this request.
   IPC_STRUCT_MEMBER(net::RequestPriority, priority)

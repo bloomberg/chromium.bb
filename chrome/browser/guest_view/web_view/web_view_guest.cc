@@ -606,8 +606,8 @@ void WebViewGuest::Observe(int type,
                 guest_web_contents());
       content::ResourceRedirectDetails* resource_redirect_details =
           content::Details<content::ResourceRedirectDetails>(details).ptr();
-      bool is_top_level =
-          resource_redirect_details->resource_type == ResourceType::MAIN_FRAME;
+      bool is_top_level = resource_redirect_details->resource_type ==
+                          content::RESOURCE_TYPE_MAIN_FRAME;
       LoadRedirect(resource_redirect_details->url,
                    resource_redirect_details->new_url,
                    is_top_level);

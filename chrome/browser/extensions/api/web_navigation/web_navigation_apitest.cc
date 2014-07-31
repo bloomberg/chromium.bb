@@ -94,7 +94,7 @@ class TestNavigationListener
   // Needs to be invoked on the IO thread.
   content::ResourceThrottle* CreateResourceThrottle(
       const GURL& url,
-      ResourceType::Type resource_type) {
+      ResourceType resource_type) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     if (urls_to_delay_.find(url) == urls_to_delay_.end())
       return NULL;
@@ -229,7 +229,7 @@ class TestResourceDispatcherHostDelegate
       net::URLRequest* request,
       content::ResourceContext* resource_context,
       content::AppCacheService* appcache_service,
-      ResourceType::Type resource_type,
+      ResourceType resource_type,
       int child_id,
       int route_id,
       ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE {

@@ -18,7 +18,7 @@ ServiceWorkerContextRequestHandler::ServiceWorkerContextRequestHandler(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context,
-    ResourceType::Type resource_type)
+    ResourceType resource_type)
     : ServiceWorkerRequestHandler(context,
                                   provider_host,
                                   blob_storage_context,
@@ -45,8 +45,8 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
   // retrieve it from the script cache.
   // TODO(michaeln): Get the desired behavior clarified in the spec,
   // and make tweak the behavior here to match.
-  if (resource_type_ != ResourceType::SERVICE_WORKER &&
-      resource_type_ != ResourceType::SCRIPT) {
+  if (resource_type_ != RESOURCE_TYPE_SERVICE_WORKER &&
+      resource_type_ != RESOURCE_TYPE_SCRIPT) {
     return NULL;
   }
 

@@ -75,7 +75,7 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   const GURL& request_url() const { return request_url_; }
 
   // Available on either thread.
-  ResourceType::Type resource_type() const { return resource_type_; }
+  ResourceType resource_type() const { return resource_type_; }
 
   // Cancels the associated net::URLRequest.
   // This method can be called from OnDispatchFailed and OnDispatched.
@@ -109,7 +109,7 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   // Construct on the IO thread.
   SSLErrorHandler(const base::WeakPtr<Delegate>& delegate,
                   const GlobalRequestID& id,
-                  ResourceType::Type resource_type,
+                  ResourceType resource_type,
                   const GURL& url,
                   int render_process_id,
                   int render_frame_id);
@@ -158,7 +158,7 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   // What kind of resource is associated with the requested that generated
   // that error.
   // This read-only member can be accessed on any thread.
-  const ResourceType::Type resource_type_;
+  const ResourceType resource_type_;
 
   // A flag to make sure we notify the net::URLRequest exactly once.
   // Should only be accessed on the IO thread

@@ -18,8 +18,8 @@ AppCacheInterceptor* AppCacheInterceptor::GetInstance() {
   return Singleton<AppCacheInterceptor>::get();
 }
 
-void AppCacheInterceptor::SetHandler(
-    net::URLRequest* request, AppCacheRequestHandler* handler) {
+void AppCacheInterceptor::SetHandler(net::URLRequest* request,
+                                     AppCacheRequestHandler* handler) {
   request->SetUserData(GetInstance(), handler);  // request takes ownership
 }
 
@@ -30,8 +30,11 @@ AppCacheRequestHandler* AppCacheInterceptor::GetHandler(
 }
 
 void AppCacheInterceptor::SetExtraRequestInfo(
-    net::URLRequest* request, AppCacheServiceImpl* service, int process_id,
-    int host_id, ResourceType::Type resource_type) {
+    net::URLRequest* request,
+    AppCacheServiceImpl* service,
+    int process_id,
+    int host_id,
+    ResourceType resource_type) {
   if (!service || (host_id == kAppCacheNoHostId))
     return;
 

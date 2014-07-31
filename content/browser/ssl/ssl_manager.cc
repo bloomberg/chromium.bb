@@ -50,7 +50,7 @@ class SSLManagerSet : public base::SupportsUserData::Data {
 void SSLManager::OnSSLCertificateError(
     const base::WeakPtr<SSLErrorHandler::Delegate>& delegate,
     const GlobalRequestID& id,
-    const ResourceType::Type resource_type,
+    const ResourceType resource_type,
     const GURL& url,
     int render_process_id,
     int render_frame_id,
@@ -171,7 +171,7 @@ void SSLManager::DidLoadFromMemoryCache(
   // resouces aren't cachable.
   scoped_refptr<SSLRequestInfo> info(new SSLRequestInfo(
       details.url,
-      ResourceType::SUB_RESOURCE,
+      RESOURCE_TYPE_SUB_RESOURCE,
       details.pid,
       details.cert_id,
       details.cert_status));

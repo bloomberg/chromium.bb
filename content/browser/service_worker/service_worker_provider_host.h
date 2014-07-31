@@ -94,7 +94,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Returns a handler for a request, the handler may return NULL if
   // the request doesn't require special handling.
   scoped_ptr<ServiceWorkerRequestHandler> CreateRequestHandler(
-      ResourceType::Type resource_type,
+      ResourceType resource_type,
       base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context);
 
   // Returns true if |version| can be associated with this provider.

@@ -1981,12 +1981,12 @@ void ChromeContentBrowserClient::AllowCertificateError(
     int cert_error,
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
-    ResourceType::Type resource_type,
+    ResourceType resource_type,
     bool overridable,
     bool strict_enforcement,
     const base::Callback<void(bool)>& callback,
     content::CertificateRequestResultType* result) {
-  if (resource_type != ResourceType::MAIN_FRAME) {
+  if (resource_type != content::RESOURCE_TYPE_MAIN_FRAME) {
     // A sub-resource has a certificate error.  The user doesn't really
     // have a context for making the right decision, so block the
     // request hard, without an info bar to allow showing the insecure

@@ -84,7 +84,7 @@ UserScriptListener::UserScriptListener()
 
 ResourceThrottle* UserScriptListener::CreateResourceThrottle(
     const GURL& url,
-    ResourceType::Type resource_type) {
+    ResourceType resource_type) {
   if (!ShouldDelayRequest(url, resource_type))
     return NULL;
 
@@ -97,13 +97,13 @@ UserScriptListener::~UserScriptListener() {
 }
 
 bool UserScriptListener::ShouldDelayRequest(const GURL& url,
-                                            ResourceType::Type resource_type) {
+                                            ResourceType resource_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // If it's a frame load, then we need to check the URL against the list of
   // user scripts to see if we need to wait.
-  if (resource_type != ResourceType::MAIN_FRAME &&
-      resource_type != ResourceType::SUB_FRAME)
+  if (resource_type != content::RESOURCE_TYPE_MAIN_FRAME &&
+      resource_type != content::RESOURCE_TYPE_SUB_FRAME)
     return false;
 
   // Note: we could delay only requests made by the profile who is causing the

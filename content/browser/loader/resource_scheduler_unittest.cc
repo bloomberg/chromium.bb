@@ -175,7 +175,7 @@ class ResourceSchedulerTest : public testing::Test {
         false,                                   // is_main_frame
         false,                                   // parent_is_main_frame
         0,                                       // parent_render_frame_id
-        ResourceType::SUB_RESOURCE,              // resource_type
+        RESOURCE_TYPE_SUB_RESOURCE,              // resource_type
         PAGE_TRANSITION_LINK,                    // transition_type
         false,                                   // should_replace_current_entry
         false,                                   // is_download

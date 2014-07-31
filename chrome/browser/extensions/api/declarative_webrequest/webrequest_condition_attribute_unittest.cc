@@ -84,7 +84,7 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
   std::string error;
   base::ListValue resource_types;
   // The 'sub_frame' value is chosen arbitrarily, so as the corresponding
-  // ResourceType::Type is not 0, the default value.
+  // content::ResourceType is not 0, the default value.
   resource_types.Append(new base::StringValue("sub_frame"));
 
   scoped_refptr<const WebRequestConditionAttribute> attribute =
@@ -98,14 +98,26 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
   net::TestURLRequest url_request_ok(
       GURL("http://www.example.com"), net::DEFAULT_PRIORITY, NULL, &context);
   content::ResourceRequestInfo::AllocateForTesting(
-      &url_request_ok, ResourceType::SUB_FRAME, NULL, -1, -1, -1, false);
+      &url_request_ok,
+      content::RESOURCE_TYPE_SUB_FRAME,
+      NULL,
+      -1,
+      -1,
+      -1,
+      false);
   EXPECT_TRUE(attribute->IsFulfilled(WebRequestData(&url_request_ok,
                                                     ON_BEFORE_REQUEST)));
 
   net::TestURLRequest url_request_fail(
       GURL("http://www.example.com"), net::DEFAULT_PRIORITY, NULL, &context);
   content::ResourceRequestInfo::AllocateForTesting(
-      &url_request_fail, ResourceType::MAIN_FRAME, NULL, -1, -1, -1, false);
+      &url_request_fail,
+      content::RESOURCE_TYPE_MAIN_FRAME,
+      NULL,
+      -1,
+      -1,
+      -1,
+      false);
   EXPECT_FALSE(attribute->IsFulfilled(WebRequestData(&url_request_fail,
                                                      ON_BEFORE_REQUEST)));
 }

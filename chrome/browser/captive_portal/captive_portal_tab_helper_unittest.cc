@@ -204,7 +204,7 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
   }
 
   // Simulates a redirect.  Uses OnRedirect rather than Observe, for simplicity.
-  void OnRedirect(ResourceType::Type type, const GURL& new_url, int child_id) {
+  void OnRedirect(ResourceType type, const GURL& new_url, int child_id) {
     tab_helper().OnRedirect(child_id, type, new_url);
   }
 
@@ -483,7 +483,8 @@ TEST_F(CaptivePortalTabHelperTest, HttpToHttpsRedirectTimeout) {
 
   GURL https_url(kHttpsUrl);
   EXPECT_CALL(mock_reloader(), OnRedirect(true)).Times(1);
-  OnRedirect(ResourceType::MAIN_FRAME, https_url,
+  OnRedirect(content::RESOURCE_TYPE_MAIN_FRAME,
+             https_url,
              render_view_host1()->GetProcess()->GetID());
 
   tab_helper().DidFailProvisionalLoad(main_render_frame1(),
@@ -511,7 +512,7 @@ TEST_F(CaptivePortalTabHelperTest, HttpsToHttpRedirect) {
 
   GURL http_url(kHttpUrl);
   EXPECT_CALL(mock_reloader(), OnRedirect(http_url.SchemeIsSecure())).Times(1);
-  OnRedirect(ResourceType::MAIN_FRAME, http_url,
+  OnRedirect(content::RESOURCE_TYPE_MAIN_FRAME, http_url,
              render_view_host1()->GetProcess()->GetID());
 
   EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::OK)).Times(1);
@@ -528,7 +529,7 @@ TEST_F(CaptivePortalTabHelperTest, HttpToHttpRedirect) {
       main_render_frame1(), http_url, false, false);
 
   EXPECT_CALL(mock_reloader(), OnRedirect(http_url.SchemeIsSecure())).Times(1);
-  OnRedirect(ResourceType::MAIN_FRAME, http_url,
+  OnRedirect(content::RESOURCE_TYPE_MAIN_FRAME, http_url,
              render_view_host1()->GetProcess()->GetID());
 
   EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::OK)).Times(1);
@@ -545,7 +546,8 @@ TEST_F(CaptivePortalTabHelperTest, SubframeRedirect) {
       main_render_frame1(), http_url, false, false);
 
   GURL https_url(kHttpsUrl);
-  OnRedirect(ResourceType::SUB_FRAME, https_url,
+  OnRedirect(content::RESOURCE_TYPE_SUB_FRAME,
+             https_url,
              render_view_host1()->GetProcess()->GetID());
 
   EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::OK)).Times(1);
@@ -563,7 +565,8 @@ TEST_F(CaptivePortalTabHelperTest, OtherRenderViewHostRedirect) {
   // Another RenderViewHost sees a redirect.  None of the reloader's functions
   // should be called.
   GURL https_url(kHttpsUrl);
-  OnRedirect(ResourceType::MAIN_FRAME, https_url,
+  OnRedirect(content::RESOURCE_TYPE_MAIN_FRAME,
+             https_url,
              render_view_host2()->GetProcess()->GetID());
 
   tab_helper().DidFailProvisionalLoad(main_render_frame1(),

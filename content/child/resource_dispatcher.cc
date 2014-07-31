@@ -574,7 +574,7 @@ void ResourceDispatcher::OnRequestComplete(
 }
 
 int ResourceDispatcher::AddPendingRequest(RequestPeer* callback,
-                                          ResourceType::Type resource_type,
+                                          ResourceType resource_type,
                                           int origin_pid,
                                           const GURL& frame_origin,
                                           const GURL& request_url,
@@ -672,7 +672,7 @@ bool ResourceDispatcher::AttachThreadedDataReceiver(
 ResourceDispatcher::PendingRequestInfo::PendingRequestInfo()
     : peer(NULL),
       threaded_data_provider(NULL),
-      resource_type(ResourceType::SUB_RESOURCE),
+      resource_type(RESOURCE_TYPE_SUB_RESOURCE),
       is_deferred(false),
       download_to_file(false),
       blocked_response(false),
@@ -681,7 +681,7 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo()
 
 ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
     RequestPeer* peer,
-    ResourceType::Type resource_type,
+    ResourceType resource_type,
     int origin_pid,
     const GURL& frame_origin,
     const GURL& request_url,

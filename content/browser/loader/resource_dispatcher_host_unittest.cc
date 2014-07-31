@@ -125,10 +125,9 @@ static int RequestIDForMessage(const IPC::Message& msg) {
   return request_id;
 }
 
-static ResourceHostMsg_Request CreateResourceRequest(
-    const char* method,
-    ResourceType::Type type,
-    const GURL& url) {
+static ResourceHostMsg_Request CreateResourceRequest(const char* method,
+                                                     ResourceType type,
+                                                     const GURL& url) {
   ResourceHostMsg_Request request;
   request.method = std::string(method);
   request.url = url;
@@ -662,7 +661,7 @@ class TestResourceDispatcherHostDelegate
       net::URLRequest* request,
       ResourceContext* resource_context,
       AppCacheService* appcache_service,
-      ResourceType::Type resource_type,
+      ResourceType resource_type,
       int child_id,
       int route_id,
       ScopedVector<ResourceThrottle>* throttles) OVERRIDE {
@@ -798,9 +797,10 @@ class ResourceDispatcherHostTest : public testing::Test,
 
   // Generates a request using the given filter and resource type.
   void MakeTestRequestWithResourceType(ResourceMessageFilter* filter,
-                                       int render_view_id, int request_id,
+                                       int render_view_id,
+                                       int request_id,
                                        const GURL& url,
-                                       ResourceType::Type type);
+                                       ResourceType type);
 
   void CancelRequest(int request_id);
   void RendererCancelRequest(int request_id) {
@@ -892,7 +892,7 @@ void ResourceDispatcherHostTest::MakeTestRequest(int render_view_id,
                                                  int request_id,
                                                  const GURL& url) {
   MakeTestRequestWithResourceType(filter_.get(), render_view_id, request_id,
-                                  url, ResourceType::SUB_RESOURCE);
+                                  url, RESOURCE_TYPE_SUB_RESOURCE);
 }
 
 void ResourceDispatcherHostTest::MakeTestRequestWithResourceType(
@@ -900,7 +900,7 @@ void ResourceDispatcherHostTest::MakeTestRequestWithResourceType(
     int render_view_id,
     int request_id,
     const GURL& url,
-    ResourceType::Type type) {
+    ResourceType type) {
   ResourceHostMsg_Request request =
       CreateResourceRequest("GET", type, url);
   ResourceHostMsg_RequestResource msg(render_view_id, request_id, request);
@@ -1039,7 +1039,7 @@ TEST_F(ResourceDispatcherHostTest, TestMany) {
   MakeTestRequest(0, 3, net::URLRequestTestJob::test_url_3());
   MakeTestRequestWithResourceType(filter_.get(), 0, 4,
                                   net::URLRequestTestJob::test_url_4(),
-                                  ResourceType::PREFETCH);  // detachable type
+                                  RESOURCE_TYPE_PREFETCH);  // detachable type
   MakeTestRequest(0, 5, net::URLRequestTestJob::test_url_redirect_to_url_2());
 
   // Finish the redirection
@@ -1073,7 +1073,7 @@ TEST_F(ResourceDispatcherHostTest, Cancel) {
 
   MakeTestRequestWithResourceType(filter_.get(), 0, 4,
                                   net::URLRequestTestJob::test_url_4(),
-                                  ResourceType::PREFETCH);  // detachable type
+                                  RESOURCE_TYPE_PREFETCH);  // detachable type
 
   CancelRequest(2);
 
@@ -1124,7 +1124,7 @@ TEST_F(ResourceDispatcherHostTest, Cancel) {
 TEST_F(ResourceDispatcherHostTest, DetachedResourceTimesOut) {
   MakeTestRequestWithResourceType(filter_.get(), 0, 1,
                                   net::URLRequestTestJob::test_url_2(),
-                                  ResourceType::PREFETCH);  // detachable type
+                                  RESOURCE_TYPE_PREFETCH);  // detachable type
   GlobalRequestID global_request_id(filter_->child_id(), 1);
   ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(
       host_.GetURLRequest(global_request_id));
@@ -1166,9 +1166,9 @@ TEST_F(ResourceDispatcherHostTest, DetachedResourceTimesOut) {
 TEST_F(ResourceDispatcherHostTest, DeletedFilterDetached) {
   // test_url_1's data is available synchronously, so use 2 and 3.
   ResourceHostMsg_Request request_prefetch = CreateResourceRequest(
-      "GET", ResourceType::PREFETCH, net::URLRequestTestJob::test_url_2());
+      "GET", RESOURCE_TYPE_PREFETCH, net::URLRequestTestJob::test_url_2());
   ResourceHostMsg_Request request_ping = CreateResourceRequest(
-      "GET", ResourceType::PING, net::URLRequestTestJob::test_url_3());
+      "GET", RESOURCE_TYPE_PING, net::URLRequestTestJob::test_url_3());
 
   ResourceHostMsg_RequestResource msg_prefetch(0, 1, request_prefetch);
   host_.OnMessageReceived(msg_prefetch, filter_);
@@ -1217,7 +1217,7 @@ TEST_F(ResourceDispatcherHostTest, DeletedFilterDetached) {
 // resources should continue to load, even when redirected.
 TEST_F(ResourceDispatcherHostTest, DeletedFilterDetachedRedirect) {
   ResourceHostMsg_Request request = CreateResourceRequest(
-      "GET", ResourceType::PREFETCH,
+      "GET", RESOURCE_TYPE_PREFETCH,
       net::URLRequestTestJob::test_url_redirect_to_url_2());
 
   ResourceHostMsg_RequestResource msg(0, 1, request);
@@ -1297,7 +1297,7 @@ TEST_F(ResourceDispatcherHostTest, DetachWhileStartIsDeferred) {
 
   MakeTestRequestWithResourceType(filter_.get(), 0, 1,
                                   net::URLRequestTestJob::test_url_1(),
-                                  ResourceType::PREFETCH);  // detachable type
+                                  RESOURCE_TYPE_PREFETCH);  // detachable type
   // Cancel request must come from the renderer for a detachable resource to
   // detach.
   RendererCancelRequest(1);
@@ -1463,11 +1463,11 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
 
   // request 1 goes to the test delegate
   ResourceHostMsg_Request request = CreateResourceRequest(
-      "GET", ResourceType::SUB_RESOURCE, net::URLRequestTestJob::test_url_1());
+      "GET", RESOURCE_TYPE_SUB_RESOURCE, net::URLRequestTestJob::test_url_1());
 
   MakeTestRequestWithResourceType(test_filter.get(), 0, 1,
                                   net::URLRequestTestJob::test_url_1(),
-                                  ResourceType::SUB_RESOURCE);
+                                  RESOURCE_TYPE_SUB_RESOURCE);
 
   // request 2 goes to us
   MakeTestRequest(0, 2, net::URLRequestTestJob::test_url_2());
@@ -1475,12 +1475,12 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
   // request 3 goes to the test delegate
   MakeTestRequestWithResourceType(test_filter.get(), 0, 3,
                                   net::URLRequestTestJob::test_url_3(),
-                                  ResourceType::SUB_RESOURCE);
+                                  RESOURCE_TYPE_SUB_RESOURCE);
 
   // request 4 goes to us
   MakeTestRequestWithResourceType(filter_.get(), 0, 4,
                                   net::URLRequestTestJob::test_url_4(),
-                                  ResourceType::PREFETCH);  // detachable type
+                                  RESOURCE_TYPE_PREFETCH);  // detachable type
 
 
   // Make sure all requests have finished stage one. test_url_1 will have
@@ -1537,7 +1537,7 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
 TEST_F(ResourceDispatcherHostTest, TestProcessCancelDetachedTimesOut) {
   MakeTestRequestWithResourceType(filter_.get(), 0, 1,
                                   net::URLRequestTestJob::test_url_4(),
-                                  ResourceType::PREFETCH);  // detachable type
+                                  RESOURCE_TYPE_PREFETCH);  // detachable type
   GlobalRequestID global_request_id(filter_->child_id(), 1);
   ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(
       host_.GetURLRequest(global_request_id));
@@ -1648,7 +1648,7 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingCancelingRequests) {
   // Blocked detachable resources should not delay cancellation.
   MakeTestRequestWithResourceType(filter_.get(), 1, 5,
                                   net::URLRequestTestJob::test_url_4(),
-                                  ResourceType::PREFETCH);  // detachable type
+                                  RESOURCE_TYPE_PREFETCH);  // detachable type
 
   // Flush all the pending requests.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
@@ -1682,19 +1682,19 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsProcessDies) {
 
   MakeTestRequestWithResourceType(filter_.get(), 0, 1,
                                   net::URLRequestTestJob::test_url_1(),
-                                  ResourceType::SUB_RESOURCE);
+                                  RESOURCE_TYPE_SUB_RESOURCE);
   MakeTestRequestWithResourceType(second_filter.get(), 0, 2,
                                   net::URLRequestTestJob::test_url_2(),
-                                  ResourceType::SUB_RESOURCE);
+                                  RESOURCE_TYPE_SUB_RESOURCE);
   MakeTestRequestWithResourceType(filter_.get(), 0, 3,
                                   net::URLRequestTestJob::test_url_3(),
-                                  ResourceType::SUB_RESOURCE);
+                                  RESOURCE_TYPE_SUB_RESOURCE);
   MakeTestRequestWithResourceType(second_filter.get(), 0, 4,
                                   net::URLRequestTestJob::test_url_1(),
-                                  ResourceType::SUB_RESOURCE);
+                                  RESOURCE_TYPE_SUB_RESOURCE);
   MakeTestRequestWithResourceType(second_filter.get(), 0, 5,
                                   net::URLRequestTestJob::test_url_4(),
-                                  ResourceType::PREFETCH);  // detachable type
+                                  RESOURCE_TYPE_PREFETCH);  // detachable type
 
   // Simulate process death.
   host_.CancelRequestsForProcess(second_filter->child_id());
@@ -1730,28 +1730,28 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsDontLeak) {
 
   MakeTestRequestWithResourceType(filter_.get(), 0, 1,
                                   net::URLRequestTestJob::test_url_1(),
-                                  ResourceType::SUB_RESOURCE);
+                                  RESOURCE_TYPE_SUB_RESOURCE);
   MakeTestRequestWithResourceType(filter_.get(), 1, 2,
                                   net::URLRequestTestJob::test_url_2(),
-                                  ResourceType::SUB_RESOURCE);
+                                  RESOURCE_TYPE_SUB_RESOURCE);
   MakeTestRequestWithResourceType(filter_.get(), 0, 3,
                                   net::URLRequestTestJob::test_url_3(),
-                                  ResourceType::SUB_RESOURCE);
+                                  RESOURCE_TYPE_SUB_RESOURCE);
   MakeTestRequestWithResourceType(second_filter.get(), 1, 4,
                                   net::URLRequestTestJob::test_url_1(),
-                                  ResourceType::SUB_RESOURCE);
+                                  RESOURCE_TYPE_SUB_RESOURCE);
   MakeTestRequestWithResourceType(filter_.get(), 2, 5,
                                   net::URLRequestTestJob::test_url_2(),
-                                  ResourceType::SUB_RESOURCE);
+                                  RESOURCE_TYPE_SUB_RESOURCE);
   MakeTestRequestWithResourceType(filter_.get(), 2, 6,
                                   net::URLRequestTestJob::test_url_3(),
-                                  ResourceType::SUB_RESOURCE);
+                                  RESOURCE_TYPE_SUB_RESOURCE);
   MakeTestRequestWithResourceType(filter_.get(), 0, 7,
                                   net::URLRequestTestJob::test_url_4(),
-                                  ResourceType::PREFETCH);  // detachable type
+                                  RESOURCE_TYPE_PREFETCH);  // detachable type
   MakeTestRequestWithResourceType(second_filter.get(), 1, 8,
                                   net::URLRequestTestJob::test_url_4(),
-                                  ResourceType::PREFETCH);  // detachable type
+                                  RESOURCE_TYPE_PREFETCH);  // detachable type
 
   host_.CancelRequestsForProcess(filter_->child_id());
   host_.CancelRequestsForProcess(second_filter->child_id());
@@ -1812,25 +1812,25 @@ TEST_F(ResourceDispatcherHostTest, TooMuchOutstandingRequestsMemory) {
   for (size_t i = 0; i < kMaxRequests; ++i) {
     MakeTestRequestWithResourceType(filter_.get(), 0, i + 1,
                                     net::URLRequestTestJob::test_url_2(),
-                                    ResourceType::SUB_RESOURCE);
+                                    RESOURCE_TYPE_SUB_RESOURCE);
   }
 
   // Issue two more requests for our process -- these should fail immediately.
   MakeTestRequestWithResourceType(filter_.get(), 0, kMaxRequests + 1,
                                   net::URLRequestTestJob::test_url_2(),
-                                  ResourceType::SUB_RESOURCE);
+                                  RESOURCE_TYPE_SUB_RESOURCE);
   MakeTestRequestWithResourceType(filter_.get(), 0, kMaxRequests + 2,
                                   net::URLRequestTestJob::test_url_2(),
-                                  ResourceType::SUB_RESOURCE);
+                                  RESOURCE_TYPE_SUB_RESOURCE);
 
   // Issue two requests for the second process -- these should succeed since
   // it is just process 0 that is saturated.
   MakeTestRequestWithResourceType(second_filter.get(), 0, kMaxRequests + 3,
                                   net::URLRequestTestJob::test_url_2(),
-                                  ResourceType::SUB_RESOURCE);
+                                  RESOURCE_TYPE_SUB_RESOURCE);
   MakeTestRequestWithResourceType(second_filter.get(), 0, kMaxRequests + 4,
                                   net::URLRequestTestJob::test_url_2(),
-                                  ResourceType::SUB_RESOURCE);
+                                  RESOURCE_TYPE_SUB_RESOURCE);
 
   // Flush all the pending requests.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
@@ -1881,25 +1881,25 @@ TEST_F(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
   for (size_t i = 0; i < kMaxRequestsPerProcess; ++i) {
     MakeTestRequestWithResourceType(filter_.get(), 0, i + 1,
                                     net::URLRequestTestJob::test_url_2(),
-                                    ResourceType::SUB_RESOURCE);
+                                    RESOURCE_TYPE_SUB_RESOURCE);
   }
 
   // Issue another request for our process -- this should fail immediately.
   MakeTestRequestWithResourceType(filter_.get(), 0, kMaxRequestsPerProcess + 1,
                                   net::URLRequestTestJob::test_url_2(),
-                                  ResourceType::SUB_RESOURCE);
+                                  RESOURCE_TYPE_SUB_RESOURCE);
 
   // Issue a request for the second process -- this should succeed, because it
   // is just process 0 that is saturated.
   MakeTestRequestWithResourceType(
       second_filter.get(), 0, kMaxRequestsPerProcess + 2,
-      net::URLRequestTestJob::test_url_2(), ResourceType::SUB_RESOURCE);
+      net::URLRequestTestJob::test_url_2(), RESOURCE_TYPE_SUB_RESOURCE);
 
   // Issue a request for the third process -- this should fail, because the
   // global limit has been reached.
   MakeTestRequestWithResourceType(
       third_filter.get(), 0, kMaxRequestsPerProcess + 3,
-      net::URLRequestTestJob::test_url_2(), ResourceType::SUB_RESOURCE);
+      net::URLRequestTestJob::test_url_2(), RESOURCE_TYPE_SUB_RESOURCE);
 
   // Flush all the pending requests.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
@@ -2043,7 +2043,7 @@ TEST_F(ResourceDispatcherHostTest, ForbiddenDownload) {
 
   // Only MAIN_FRAMEs can trigger a download.
   MakeTestRequestWithResourceType(filter_.get(), 0, 1, GURL("http:bla"),
-                                  ResourceType::MAIN_FRAME);
+                                  RESOURCE_TYPE_MAIN_FRAME);
 
   // Flush all pending requests.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
@@ -2089,7 +2089,7 @@ TEST_F(ResourceDispatcherHostTest, IgnoreCancelForDownloads) {
 
   MakeTestRequestWithResourceType(filter_.get(), render_view_id, request_id,
                                   GURL("http://example.com/blah"),
-                                  ResourceType::MAIN_FRAME);
+                                  RESOURCE_TYPE_MAIN_FRAME);
   // Return some data so that the request is identified as a download
   // and the proper resource handlers are created.
   EXPECT_TRUE(net::URLRequestTestJob::ProcessOnePendingMessage());
@@ -2124,7 +2124,7 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContext) {
 
   MakeTestRequestWithResourceType(filter_.get(), render_view_id, request_id,
                                   GURL("http://example.com/blah"),
-                                  ResourceType::MAIN_FRAME);
+                                  RESOURCE_TYPE_MAIN_FRAME);
   // Return some data so that the request is identified as a download
   // and the proper resource handlers are created.
   EXPECT_TRUE(net::URLRequestTestJob::ProcessOnePendingMessage());
@@ -2155,7 +2155,7 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContextDetached) {
 
   MakeTestRequestWithResourceType(filter_.get(), render_view_id, request_id,
                                   net::URLRequestTestJob::test_url_4(),
-                                  ResourceType::PREFETCH);  // detachable type
+                                  RESOURCE_TYPE_PREFETCH);  // detachable type
 
   // Simulate a cancel coming from the renderer.
   RendererCancelRequest(request_id);
@@ -2191,7 +2191,7 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContextTransferred) {
 
   MakeTestRequestWithResourceType(filter_.get(), render_view_id, request_id,
                                   GURL("http://example.com/blah"),
-                                  ResourceType::MAIN_FRAME);
+                                  RESOURCE_TYPE_MAIN_FRAME);
 
 
   GlobalRequestID global_request_id(filter_->child_id(), request_id);
@@ -2240,7 +2240,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationHtml) {
 
   MakeTestRequestWithResourceType(filter_.get(), render_view_id, request_id,
                                   GURL("http://example.com/blah"),
-                                  ResourceType::MAIN_FRAME);
+                                  RESOURCE_TYPE_MAIN_FRAME);
 
   // Now that we're blocked on the redirect, update the response and unblock by
   // telling the AsyncResourceHandler to follow the redirect.
@@ -2266,7 +2266,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationHtml) {
   int new_request_id = 2;
 
   ResourceHostMsg_Request request =
-      CreateResourceRequest("GET", ResourceType::MAIN_FRAME,
+      CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME,
                             GURL("http://other.com/blech"));
   request.transferred_request_child_id = filter_->child_id();
   request.transferred_request_request_id = request_id;
@@ -2311,7 +2311,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationText) {
 
   MakeTestRequestWithResourceType(filter_.get(), render_view_id, request_id,
                                   GURL("http://example.com/blah"),
-                                  ResourceType::MAIN_FRAME);
+                                  RESOURCE_TYPE_MAIN_FRAME);
 
   // Now that we're blocked on the redirect, update the response and unblock by
   // telling the AsyncResourceHandler to follow the redirect.  Use a text/plain
@@ -2339,7 +2339,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationText) {
   int new_request_id = 2;
 
   ResourceHostMsg_Request request =
-      CreateResourceRequest("GET", ResourceType::MAIN_FRAME,
+      CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME,
                             GURL("http://other.com/blech"));
   request.transferred_request_child_id = filter_->child_id();
   request.transferred_request_request_id = request_id;
@@ -2387,7 +2387,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
     first_child_id = first_filter->child_id();
 
     ResourceHostMsg_Request first_request =
-        CreateResourceRequest("GET", ResourceType::MAIN_FRAME,
+        CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME,
                               GURL("http://example.com/blah"));
 
     ResourceHostMsg_RequestResource first_request_msg(
@@ -2423,7 +2423,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
   int new_request_id = 2;
 
   ResourceHostMsg_Request request =
-      CreateResourceRequest("GET", ResourceType::MAIN_FRAME,
+      CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME,
                             GURL("http://other.com/blech"));
   request.transferred_request_child_id = first_child_id;
   request.transferred_request_request_id = request_id;
@@ -2467,7 +2467,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
 
   MakeTestRequestWithResourceType(filter_.get(), render_view_id, request_id,
                                   GURL("http://example.com/blah"),
-                                  ResourceType::MAIN_FRAME);
+                                  RESOURCE_TYPE_MAIN_FRAME);
 
   // Now that we're blocked on the redirect, simulate hitting another redirect.
   SetResponse("HTTP/1.1 302 Found\n"
@@ -2502,7 +2502,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
   int new_request_id = 2;
 
   ResourceHostMsg_Request request =
-      CreateResourceRequest("GET", ResourceType::MAIN_FRAME,
+      CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME,
                             GURL("http://other.com/blech"));
   request.transferred_request_child_id = filter_->child_id();
   request.transferred_request_request_id = request_id;
@@ -2540,7 +2540,7 @@ TEST_F(ResourceDispatcherHostTest, UnknownURLScheme) {
   HandleScheme("http");
 
   MakeTestRequestWithResourceType(filter_.get(), 0, 1, GURL("foo://bar"),
-                                  ResourceType::MAIN_FRAME);
+                                  RESOURCE_TYPE_MAIN_FRAME);
 
   // Flush all pending requests.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
@@ -2602,7 +2602,7 @@ TEST_F(ResourceDispatcherHostTest, DataSentBeforeDetach) {
 
   MakeTestRequestWithResourceType(filter_.get(), render_view_id, request_id,
                                   GURL("http://example.com/blah"),
-                                  ResourceType::PREFETCH);
+                                  RESOURCE_TYPE_PREFETCH);
 
   // Get a bit of data before cancelling.
   EXPECT_TRUE(net::URLRequestTestJob::ProcessOnePendingMessage());
@@ -2816,7 +2816,7 @@ TEST_F(ResourceDispatcherHostTest, ReleaseTemporiesOnProcessExit) {
 TEST_F(ResourceDispatcherHostTest, DownloadToFile) {
   // Make a request which downloads to file.
   ResourceHostMsg_Request request = CreateResourceRequest(
-      "GET", ResourceType::SUB_RESOURCE, net::URLRequestTestJob::test_url_1());
+      "GET", RESOURCE_TYPE_SUB_RESOURCE, net::URLRequestTestJob::test_url_1());
   request.download_to_file = true;
   ResourceHostMsg_RequestResource request_msg(0, 1, request);
   host_.OnMessageReceived(request_msg, filter_);

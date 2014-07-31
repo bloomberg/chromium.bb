@@ -165,7 +165,7 @@ void ResourceLoader::ReportUploadProgress() {
 }
 
 void ResourceLoader::MarkAsTransferring() {
-  CHECK(ResourceType::IsFrame(GetRequestInfo()->GetResourceType()))
+  CHECK(IsResourceTypeFrame(GetRequestInfo()->GetResourceType()))
       << "Can only transfer for navigations";
   is_transferring_ = true;
 }
@@ -679,7 +679,7 @@ void ResourceLoader::CallDidFinishLoading() {
 void ResourceLoader::RecordHistograms() {
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
-  if (info->GetResourceType() == ResourceType::PREFETCH) {
+  if (info->GetResourceType() == RESOURCE_TYPE_PREFETCH) {
     PrefetchStatus status = STATUS_UNDEFINED;
     TimeDelta total_time = base::TimeTicks::Now() - request_->creation_time();
 

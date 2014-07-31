@@ -20,6 +20,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "net/base/request_priority.h"
+#include "url/gurl.h"
 
 struct ResourceMsg_RequestCompleteData;
 
@@ -60,7 +61,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   // Adds a request from the |pending_requests_| list, returning the new
   // requests' ID.
   int AddPendingRequest(RequestPeer* callback,
-                        ResourceType::Type resource_type,
+                        ResourceType resource_type,
                         int origin_pid,
                         const GURL& frame_origin,
                         const GURL& request_url,
@@ -108,7 +109,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
     PendingRequestInfo();
 
     PendingRequestInfo(RequestPeer* peer,
-                       ResourceType::Type resource_type,
+                       ResourceType resource_type,
                        int origin_pid,
                        const GURL& frame_origin,
                        const GURL& request_url,
@@ -118,7 +119,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
 
     RequestPeer* peer;
     ThreadedDataProvider* threaded_data_provider;
-    ResourceType::Type resource_type;
+    ResourceType resource_type;
     // The PID of the original process which issued this request. This gets
     // non-zero only for a request proxied by another renderer, particularly
     // requests from plugins.

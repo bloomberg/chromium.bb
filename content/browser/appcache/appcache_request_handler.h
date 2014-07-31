@@ -50,16 +50,16 @@ class CONTENT_EXPORT AppCacheRequestHandler
   void PrepareForCrossSiteTransfer(int old_process_id);
   void CompleteCrossSiteTransfer(int new_process_id, int new_host_id);
 
-  static bool IsMainResourceType(ResourceType::Type type) {
-    return ResourceType::IsFrame(type) ||
-           ResourceType::IsSharedWorker(type);
+  static bool IsMainResourceType(ResourceType type) {
+    return IsResourceTypeFrame(type) ||
+           type == RESOURCE_TYPE_SHARED_WORKER;
   }
 
  private:
   friend class AppCacheHost;
 
   // Callers should use AppCacheHost::CreateRequestHandler.
-  AppCacheRequestHandler(AppCacheHost* host, ResourceType::Type resource_type);
+  AppCacheRequestHandler(AppCacheHost* host, ResourceType resource_type);
 
   // AppCacheHost::Observer override
   virtual void OnDestructionImminent(AppCacheHost* host) OVERRIDE;
@@ -108,7 +108,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
   AppCacheHost* host_;
 
   // Frame vs subresource vs sharedworker loads are somewhat different.
-  ResourceType::Type resource_type_;
+  ResourceType resource_type_;
 
   // Subresource requests wait until after cache selection completes.
   bool is_waiting_for_cache_selection_;

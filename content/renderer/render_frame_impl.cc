@@ -26,6 +26,7 @@
 #include "content/child/service_worker/service_worker_network_provider.h"
 #include "content/child/service_worker/web_service_worker_provider_impl.h"
 #include "content/child/web_socket_stream_handle_impl.h"
+#include "content/child/web_url_request_util.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/child/websocket_bridge.h"
 #include "content/child/weburlresponse_extradata_impl.h"
@@ -2664,7 +2665,7 @@ void RenderFrameImpl::didLoadResourceFromMemoryCache(
       response.securityInfo(),
       request.httpMethod().utf8(),
       response.mimeType().utf8(),
-      ResourceType::FromWebURLRequest(request)));
+      WebURLRequestToResourceType(request)));
 }
 
 void RenderFrameImpl::didDisplayInsecureContent(blink::WebLocalFrame* frame) {

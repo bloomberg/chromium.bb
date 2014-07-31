@@ -194,10 +194,10 @@ bool CaptivePortalTabHelper::IsLoginTab() const {
 }
 
 void CaptivePortalTabHelper::OnRedirect(int child_id,
-                                        ResourceType::Type resource_type,
+                                        ResourceType resource_type,
                                         const GURL& new_url) {
   // Only main frame redirects for the provisional RenderViewHost matter.
-  if (resource_type != ResourceType::MAIN_FRAME ||
+  if (resource_type != content::RESOURCE_TYPE_MAIN_FRAME ||
       !provisional_render_view_host_ ||
       provisional_render_view_host_->GetProcess()->GetID() != child_id) {
     return;

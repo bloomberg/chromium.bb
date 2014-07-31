@@ -167,8 +167,8 @@ class UserScriptListenerTest : public ExtensionServiceTestBase {
     net::TestURLRequest* request =
         new net::TestURLRequest(url, net::DEFAULT_PRIORITY, delegate, context);
 
-    ResourceThrottle* throttle =
-        listener_->CreateResourceThrottle(url, ResourceType::MAIN_FRAME);
+    ResourceThrottle* throttle = listener_->CreateResourceThrottle(
+        url, content::RESOURCE_TYPE_MAIN_FRAME);
 
     bool defer = false;
     if (throttle) {
@@ -336,7 +336,7 @@ TEST_F(UserScriptListenerTest, ResumeBeforeStart) {
       new net::TestURLRequest(url, net::DEFAULT_PRIORITY, &delegate, &context));
 
   ResourceThrottle* throttle =
-      listener_->CreateResourceThrottle(url, ResourceType::MAIN_FRAME);
+      listener_->CreateResourceThrottle(url, content::RESOURCE_TYPE_MAIN_FRAME);
   ASSERT_TRUE(throttle);
   request->SetUserData(NULL, new ThrottleController(request.get(), throttle));
 

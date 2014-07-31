@@ -23,14 +23,13 @@ const ResourceRequestInfo* ResourceRequestInfo::ForRequest(
 }
 
 // static
-void ResourceRequestInfo::AllocateForTesting(
-    net::URLRequest* request,
-    ResourceType::Type resource_type,
-    ResourceContext* context,
-    int render_process_id,
-    int render_view_id,
-    int render_frame_id,
-    bool is_async) {
+void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
+                                             ResourceType resource_type,
+                                             ResourceContext* context,
+                                             int render_process_id,
+                                             int render_view_id,
+                                             int render_frame_id,
+                                             bool is_async) {
   ResourceRequestInfoImpl* info =
       new ResourceRequestInfoImpl(
           PROCESS_TYPE_RENDERER,             // process_type
@@ -39,7 +38,7 @@ void ResourceRequestInfo::AllocateForTesting(
           0,                                 // origin_pid
           0,                                 // request_id
           render_frame_id,                   // render_frame_id
-          resource_type == ResourceType::MAIN_FRAME,  // is_main_frame
+          resource_type == RESOURCE_TYPE_MAIN_FRAME,  // is_main_frame
           false,                             // parent_is_main_frame
           0,                                 // parent_render_frame_id
           resource_type,                     // resource_type
@@ -96,7 +95,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     bool is_main_frame,
     bool parent_is_main_frame,
     int parent_render_frame_id,
-    ResourceType::Type resource_type,
+    ResourceType resource_type,
     PageTransition transition_type,
     bool should_replace_current_entry,
     bool is_download,
@@ -174,7 +173,7 @@ int ResourceRequestInfoImpl::GetParentRenderFrameID() const {
   return parent_render_frame_id_;
 }
 
-ResourceType::Type ResourceRequestInfoImpl::GetResourceType() const {
+ResourceType ResourceRequestInfoImpl::GetResourceType() const {
   return resource_type_;
 }
 

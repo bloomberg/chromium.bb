@@ -20,7 +20,7 @@ struct LoadFromMemoryCacheDetails {
                              net::CertStatus cert_status,
                              const std::string& http_method,
                              const std::string& mime_type,
-                             ResourceType::Type resource_type);
+                             ResourceType resource_type);
   ~LoadFromMemoryCacheDetails();
 
   GURL url;
@@ -29,7 +29,7 @@ struct LoadFromMemoryCacheDetails {
   net::CertStatus cert_status;
   std::string http_method;
   std::string mime_type;
-  ResourceType::Type resource_type;
+  ResourceType resource_type;
 };
 
 }  // namespace content

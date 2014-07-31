@@ -678,12 +678,11 @@ void ClientSideDetectionHost::MalwareFeatureExtractionDone(
   }
 }
 
-void ClientSideDetectionHost::UpdateIPUrlMap(
-    const std::string& ip,
-    const std::string& url,
-    const std::string& method,
-    const std::string& referrer,
-    const ResourceType::Type resource_type) {
+void ClientSideDetectionHost::UpdateIPUrlMap(const std::string& ip,
+                                             const std::string& url,
+                                             const std::string& method,
+                                             const std::string& referrer,
+                                             const ResourceType resource_type) {
   if (ip.empty() || url.empty())
     return;
 

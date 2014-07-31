@@ -163,10 +163,10 @@ bool IsControlGroupExperiment(uint8 experiment_id) {
   return experiment_id == 7 || experiment_id == 8;
 }
 
-void GatherPagespeedData(const ResourceType::Type resource_type,
+void GatherPagespeedData(const ResourceType resource_type,
                          const GURL& request_url,
                          const net::HttpResponseHeaders* response_headers) {
-  if (resource_type != ResourceType::MAIN_FRAME ||
+  if (resource_type != content::RESOURCE_TYPE_MAIN_FRAME ||
       !request_url.SchemeIsHTTPOrHTTPS())
     return;
 

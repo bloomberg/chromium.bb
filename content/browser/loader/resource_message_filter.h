@@ -60,8 +60,7 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
                    net::URLRequestContext** request_context);
 
   // Returns the net::URLRequestContext for the given request.
-  net::URLRequestContext* GetURLRequestContext(
-      ResourceType::Type request_type);
+  net::URLRequestContext* GetURLRequestContext(ResourceType request_type);
 
   ChromeAppCacheService* appcache_service() const {
     return appcache_service_.get();

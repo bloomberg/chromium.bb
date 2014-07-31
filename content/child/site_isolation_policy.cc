@@ -117,7 +117,7 @@ void HistogramCountBlockedResponse(
     IncrementHistogramEnum(
         bucket_prefix + block_label + ".RenderableStatusCode",
         resp_data->resource_type,
-        ResourceType::LAST_TYPE);
+        RESOURCE_TYPE_LAST_TYPE);
   } else {
     IncrementHistogramCount(bucket_prefix + block_label +
                             ".NonRenderableStatusCode");
@@ -142,7 +142,7 @@ void SiteIsolationPolicy::SetPolicyEnabled(bool enabled) {
 linked_ptr<SiteIsolationResponseMetaData>
 SiteIsolationPolicy::OnReceivedResponse(const GURL& frame_origin,
                                         const GURL& response_url,
-                                        ResourceType::Type resource_type,
+                                        ResourceType resource_type,
                                         int origin_pid,
                                         const ResourceResponseInfo& info) {
   if (!g_policy_enabled)
@@ -160,7 +160,7 @@ SiteIsolationPolicy::OnReceivedResponse(const GURL& frame_origin,
 
   // See if this is for navigation. If it is, don't block it, under the
   // assumption that we will put it in an appropriate process.
-  if (ResourceType::IsFrame(resource_type))
+  if (IsResourceTypeFrame(resource_type))
     return linked_ptr<SiteIsolationResponseMetaData>();
 
   if (!IsBlockableScheme(response_url))

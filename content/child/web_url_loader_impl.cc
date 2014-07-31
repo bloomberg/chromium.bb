@@ -18,6 +18,7 @@
 #include "content/child/request_info.h"
 #include "content/child/resource_dispatcher.h"
 #include "content/child/sync_load_response.h"
+#include "content/child/web_url_request_util.h"
 #include "content/child/weburlresponse_extradata_impl.h"
 #include "content/common/resource_request_body.h"
 #include "content/public/child/request_peer.h"
@@ -387,7 +388,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   // the render process, so we can use requestorProcessID even for requests
   // from in-process plugins.
   request_info.requestor_pid = request.requestorProcessID();
-  request_info.request_type = ResourceType::FromWebURLRequest(request);
+  request_info.request_type = WebURLRequestToResourceType(request);
   request_info.priority =
       ConvertWebKitPriorityToNetPriority(request.priority());
   request_info.appcache_host_id = request.appCacheHostID();

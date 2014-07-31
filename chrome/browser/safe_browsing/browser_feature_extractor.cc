@@ -59,7 +59,7 @@ void FilterBenignIpsOnIOThread(
 IPUrlInfo::IPUrlInfo(const std::string& url,
                      const std::string& method,
                      const std::string& referrer,
-                     const ResourceType::Type& resource_type)
+                     const ResourceType& resource_type)
       : url(url),
         method(method),
         referrer(referrer),

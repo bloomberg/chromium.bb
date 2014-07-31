@@ -197,6 +197,8 @@
       'child/web_socket_stream_handle_impl.h',
       'child/web_url_loader_impl.cc',
       'child/web_url_loader_impl.h',
+      'child/web_url_request_util.cc',
+      'child/web_url_request_util.h',
       'child/webblobregistry_impl.cc',
       'child/webblobregistry_impl.h',
       'child/webcrypto/algorithm_dispatch.cc',

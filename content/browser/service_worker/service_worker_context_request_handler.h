@@ -20,7 +20,7 @@ class CONTENT_EXPORT ServiceWorkerContextRequestHandler
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context,
-      ResourceType::Type resource_type);
+      ResourceType resource_type);
   virtual ~ServiceWorkerContextRequestHandler();
 
   // Called via custom URLRequestJobFactory.

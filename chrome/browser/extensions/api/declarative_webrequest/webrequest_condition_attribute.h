@@ -105,10 +105,10 @@ class WebRequestConditionAttributeResourceType
 
  private:
   explicit WebRequestConditionAttributeResourceType(
-      const std::vector<content::ResourceType::Type>& types);
+      const std::vector<content::ResourceType>& types);
   virtual ~WebRequestConditionAttributeResourceType();
 
-  const std::vector<content::ResourceType::Type> types_;
+  const std::vector<content::ResourceType> types_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestConditionAttributeResourceType);
 };

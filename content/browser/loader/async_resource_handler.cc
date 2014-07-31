@@ -185,7 +185,7 @@ bool AsyncResourceHandler::OnResponseStarted(ResourceResponse* response,
   HostZoomMap* host_zoom_map =
       GetHostZoomMapForResourceContext(info->GetContext());
 
-  if (info->GetResourceType() == ResourceType::MAIN_FRAME && host_zoom_map) {
+  if (info->GetResourceType() == RESOURCE_TYPE_MAIN_FRAME && host_zoom_map) {
     const GURL& request_url = request()->url();
     info->filter()->Send(new ViewMsg_SetZoomLevelForLoadingURL(
         info->GetRouteID(),

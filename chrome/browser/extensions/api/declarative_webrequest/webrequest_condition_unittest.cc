@@ -85,7 +85,13 @@ TEST(WebRequestConditionTest, CreateCondition) {
   request_data.url_match_ids = matcher.MatchURL(http_url);
   EXPECT_EQ(1u, request_data.url_match_ids.size());
   content::ResourceRequestInfo::AllocateForTesting(
-      &match_request, ResourceType::MAIN_FRAME, NULL, -1, -1, -1, false);
+      &match_request,
+      content::RESOURCE_TYPE_MAIN_FRAME,
+      NULL,
+      -1,
+      -1,
+      -1,
+      false);
   EXPECT_TRUE(result->IsFulfilled(request_data));
 
   const GURL https_url("https://www.example.com");
@@ -96,7 +102,13 @@ TEST(WebRequestConditionTest, CreateCondition) {
   // Make sure IsFulfilled does not fail because of URL matching.
   EXPECT_EQ(1u, request_data.url_match_ids.size());
   content::ResourceRequestInfo::AllocateForTesting(
-      &wrong_resource_type, ResourceType::SUB_FRAME, NULL, -1, -1, -1, false);
+      &wrong_resource_type,
+      content::RESOURCE_TYPE_SUB_FRAME,
+      NULL,
+      -1,
+      -1,
+      -1,
+      false);
   EXPECT_FALSE(result->IsFulfilled(request_data));
 }
 
@@ -136,7 +148,13 @@ TEST(WebRequestConditionTest, CreateConditionFirstPartyForCookies) {
   request_data.first_party_url_match_ids = matcher.MatchURL(first_party_url);
   EXPECT_EQ(1u, request_data.first_party_url_match_ids.size());
   content::ResourceRequestInfo::AllocateForTesting(
-      &match_request, ResourceType::MAIN_FRAME, NULL, -1, -1, -1, false);
+      &match_request,
+      content::RESOURCE_TYPE_MAIN_FRAME,
+      NULL,
+      -1,
+      -1,
+      -1,
+      false);
   EXPECT_TRUE(result->IsFulfilled(request_data));
 }
 

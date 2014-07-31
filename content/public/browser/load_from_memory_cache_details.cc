@@ -13,7 +13,7 @@ LoadFromMemoryCacheDetails::LoadFromMemoryCacheDetails(
     net::CertStatus cert_status,
     const std::string& http_method,
     const std::string& mime_type,
-    ResourceType::Type resource_type)
+    ResourceType resource_type)
     : url(url),
       pid(pid),
       cert_id(cert_id),

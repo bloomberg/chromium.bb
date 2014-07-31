@@ -113,7 +113,7 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
   request_info.referrer = referrer;
   request_info.load_flags = net::LOAD_NORMAL;
   request_info.requestor_pid = origin_pid;
-  request_info.request_type = ResourceType::OBJECT;
+  request_info.request_type = RESOURCE_TYPE_OBJECT;
   request_info.routing_id = render_view_id;
 
   RequestExtraData extra_data;

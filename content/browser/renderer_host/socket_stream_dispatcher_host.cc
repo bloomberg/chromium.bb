@@ -144,7 +144,7 @@ void SocketStreamDispatcherHost::OnSSLCertificateError(
   DCHECK(socket_stream_host);
   GlobalRequestID request_id(-1, socket_id);
   SSLManager::OnSSLCertificateError(
-      weak_ptr_factory_.GetWeakPtr(), request_id, ResourceType::SUB_RESOURCE,
+      weak_ptr_factory_.GetWeakPtr(), request_id, RESOURCE_TYPE_SUB_RESOURCE,
       socket->url(), render_process_id_, socket_stream_host->render_frame_id(),
       ssl_info, fatal);
 }
@@ -287,7 +287,7 @@ void SocketStreamDispatcherHost::DeleteSocketStreamHost(int socket_id) {
 }
 
 net::URLRequestContext* SocketStreamDispatcherHost::GetURLRequestContext() {
-  return request_context_callback_.Run(ResourceType::SUB_RESOURCE);
+  return request_context_callback_.Run(RESOURCE_TYPE_SUB_RESOURCE);
 }
 
 void SocketStreamDispatcherHost::Shutdown() {

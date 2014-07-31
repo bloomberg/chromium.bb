@@ -203,7 +203,7 @@ void ExtractRequestInfoDetails(net::URLRequest* request,
                                int* window_id,
                                int* render_process_host_id,
                                int* routing_id,
-                               ResourceType::Type* resource_type) {
+                               ResourceType* resource_type) {
   if (!request->GetUserData(NULL))
     return;
 
@@ -221,7 +221,7 @@ void ExtractRequestInfoDetails(net::URLRequest* request,
   if (helpers::IsRelevantResourceType(info->GetResourceType()))
     *resource_type = info->GetResourceType();
   else
-    *resource_type = ResourceType::LAST_TYPE;
+    *resource_type = content::RESOURCE_TYPE_LAST_TYPE;
 }
 
 // Extracts from |request| information for the keys requestId, url, method,
@@ -238,7 +238,7 @@ void ExtractRequestInfo(net::URLRequest* request, base::DictionaryValue* out) {
   int window_id = -1;
   int render_process_host_id = -1;
   int routing_id = -1;
-  ResourceType::Type resource_type = ResourceType::LAST_TYPE;
+  ResourceType resource_type = content::RESOURCE_TYPE_LAST_TYPE;
   ExtractRequestInfoDetails(request, &is_main_frame, &frame_id,
                             &parent_is_main_frame, &parent_frame_id, &tab_id,
                             &window_id, &render_process_host_id, &routing_id,
@@ -623,7 +623,7 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
         return false;
       for (size_t i = 0; i < types_value->GetSize(); ++i) {
         std::string type_str;
-        ResourceType::Type type;
+        ResourceType type;
         if (!types_value->GetString(i, &type_str) ||
             !helpers::ParseResourceType(type_str, &type))
           return false;
@@ -1412,14 +1412,14 @@ bool ExtensionWebRequestEventRouter::IsPageLoad(
   int window_id = -1;
   int render_process_host_id = -1;
   int routing_id = -1;
-  ResourceType::Type resource_type = ResourceType::LAST_TYPE;
+  ResourceType resource_type = content::RESOURCE_TYPE_LAST_TYPE;
 
   ExtractRequestInfoDetails(request, &is_main_frame, &frame_id,
                             &parent_is_main_frame, &parent_frame_id,
                             &tab_id, &window_id, &render_process_host_id,
                             &routing_id, &resource_type);
 
-  return resource_type == ResourceType::MAIN_FRAME;
+  return resource_type == content::RESOURCE_TYPE_MAIN_FRAME;
 }
 
 void ExtensionWebRequestEventRouter::NotifyPageLoad() {
@@ -1464,7 +1464,7 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     int window_id,
     int render_process_host_id,
     int routing_id,
-    ResourceType::Type resource_type,
+    ResourceType resource_type,
     bool is_async_request,
     bool is_request_from_extension,
     int* extra_info_spec,
@@ -1520,8 +1520,9 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     // and therefore prevent the extension from processing the request
     // handler. This is only a problem for blocking listeners.
     // http://crbug.com/105656
-    bool synchronous_xhr_from_extension = !is_async_request &&
-        is_request_from_extension && resource_type == ResourceType::XHR;
+    bool synchronous_xhr_from_extension =
+        !is_async_request && is_request_from_extension &&
+        resource_type == content::RESOURCE_TYPE_XHR;
 
     // Only send webRequest events for URLs the extension has access to.
     if (blocking_listener && synchronous_xhr_from_extension)
@@ -1550,7 +1551,7 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
   int window_id = -1;
   int render_process_host_id = -1;
   int routing_id = -1;
-  ResourceType::Type resource_type = ResourceType::LAST_TYPE;
+  ResourceType resource_type = content::RESOURCE_TYPE_LAST_TYPE;
   const GURL& url = request->url();
 
   ExtractRequestInfoDetails(request, &is_main_frame, &frame_id,

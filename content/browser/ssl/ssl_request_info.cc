@@ -7,7 +7,7 @@
 namespace content {
 
 SSLRequestInfo::SSLRequestInfo(const GURL& url,
-                               ResourceType::Type resource_type,
+                               ResourceType resource_type,
                                int child_id,
                                int ssl_cert_id,
                                net::CertStatus ssl_cert_status)

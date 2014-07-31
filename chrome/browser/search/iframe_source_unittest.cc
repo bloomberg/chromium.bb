@@ -104,13 +104,14 @@ class IframeSourceTest : public testing::Test {
                             NULL,
                             resource_context_.GetRequestContext());
     if (allocate_info) {
-      content::ResourceRequestInfo::AllocateForTesting(request,
-                                                       ResourceType::SUB_FRAME,
-                                                       &resource_context_,
-                                                       render_process_id,
-                                                       render_frame_id,
-                                                       MSG_ROUTING_NONE,
-                                                       false);
+      content::ResourceRequestInfo::AllocateForTesting(
+          request,
+          content::RESOURCE_TYPE_SUB_FRAME,
+          &resource_context_,
+          render_process_id,
+          render_frame_id,
+          MSG_ROUTING_NONE,
+          false);
     }
     return request;
   }

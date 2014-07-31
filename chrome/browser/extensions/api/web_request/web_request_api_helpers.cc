@@ -55,21 +55,21 @@ static const char* kResourceTypeStrings[] = {
   "other",
 };
 
-static ResourceType::Type kResourceTypeValues[] = {
-  ResourceType::MAIN_FRAME,
-  ResourceType::SUB_FRAME,
-  ResourceType::STYLESHEET,
-  ResourceType::SCRIPT,
-  ResourceType::IMAGE,
-  ResourceType::OBJECT,
-  ResourceType::XHR,
-  ResourceType::LAST_TYPE,  // represents "other"
+static ResourceType kResourceTypeValues[] = {
+  content::RESOURCE_TYPE_MAIN_FRAME,
+  content::RESOURCE_TYPE_SUB_FRAME,
+  content::RESOURCE_TYPE_STYLESHEET,
+  content::RESOURCE_TYPE_SCRIPT,
+  content::RESOURCE_TYPE_IMAGE,
+  content::RESOURCE_TYPE_OBJECT,
+  content::RESOURCE_TYPE_XHR,
+  content::RESOURCE_TYPE_LAST_TYPE,  // represents "other"
   // TODO(jochen): We duplicate the last entry, so the array's size is not a
   // power of two. If it is, this triggers a bug in gcc 4.4 in Release builds
   // (http://gcc.gnu.org/bugzilla/show_bug.cgi?id=43949). Once we use a version
   // of gcc with this bug fixed, or the array is changed so this duplicate
   // entry is no longer required, this should be removed.
-  ResourceType::LAST_TYPE,
+  content::RESOURCE_TYPE_LAST_TYPE,
 };
 
 COMPILE_ASSERT(
@@ -1184,14 +1184,14 @@ bool MergeOnAuthRequiredResponses(
 
 #define ARRAYEND(array) (array + arraysize(array))
 
-bool IsRelevantResourceType(ResourceType::Type type) {
-  ResourceType::Type* iter =
+bool IsRelevantResourceType(ResourceType type) {
+  ResourceType* iter =
       std::find(kResourceTypeValues, ARRAYEND(kResourceTypeValues), type);
   return iter != ARRAYEND(kResourceTypeValues);
 }
 
-const char* ResourceTypeToString(ResourceType::Type type) {
-  ResourceType::Type* iter =
+const char* ResourceTypeToString(ResourceType type) {
+  ResourceType* iter =
       std::find(kResourceTypeValues, ARRAYEND(kResourceTypeValues), type);
   if (iter == ARRAYEND(kResourceTypeValues))
     return "other";
@@ -1200,7 +1200,7 @@ const char* ResourceTypeToString(ResourceType::Type type) {
 }
 
 bool ParseResourceType(const std::string& type_str,
-                       ResourceType::Type* type) {
+                       ResourceType* type) {
   const char** iter =
       std::find(kResourceTypeStrings, ARRAYEND(kResourceTypeStrings), type_str);
   if (iter == ARRAYEND(kResourceTypeStrings))

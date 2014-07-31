@@ -102,7 +102,7 @@ TEST_F(PrerenderUtilTest, CountPageSpeedHeadersTest) {
   scoped_ptr<base::HistogramSamples> version_samples;
 
   // No PageSpeed header. The VersionCounts histogram isn't created yet.
-  GatherPagespeedData(ResourceType::MAIN_FRAME, url, headers.get());
+  GatherPagespeedData(content::RESOURCE_TYPE_MAIN_FRAME, url, headers.get());
   base::HistogramBase* server_histogram =
       base::StatisticsRecorder::FindHistogram(
           "Prerender.PagespeedHeader.ServerCounts");
@@ -119,7 +119,7 @@ TEST_F(PrerenderUtilTest, CountPageSpeedHeadersTest) {
 
   // X-Mod-Pagespeed header in expected format. VersionCounts now exists.
   headers->AddHeader("X-Mod-Pagespeed: 1.2.24.1-2300");
-  GatherPagespeedData(ResourceType::MAIN_FRAME, url, headers.get());
+  GatherPagespeedData(content::RESOURCE_TYPE_MAIN_FRAME, url, headers.get());
   base::HistogramBase* version_histogram =
       base::StatisticsRecorder::FindHistogram(
           "Prerender.PagespeedHeader.VersionCounts");
@@ -138,7 +138,7 @@ TEST_F(PrerenderUtilTest, CountPageSpeedHeadersTest) {
 
   // X-Mod-Pagespeed header in unexpected format.
   headers->AddHeader("X-Mod-Pagespeed: Powered By PageSpeed!");
-  GatherPagespeedData(ResourceType::MAIN_FRAME, url, headers.get());
+  GatherPagespeedData(content::RESOURCE_TYPE_MAIN_FRAME, url, headers.get());
   server_samples = server_histogram->SnapshotSamples();
   version_samples = version_histogram->SnapshotSamples();
   EXPECT_EQ(++num_responses, server_samples->GetCount(0));
@@ -153,7 +153,7 @@ TEST_F(PrerenderUtilTest, CountPageSpeedHeadersTest) {
 
   // X-Page-Speed header in mod_pagespeed format (so ngx_pagespeed).
   headers->AddHeader("X-Page-Speed: 1.3.25.2-2530");
-  GatherPagespeedData(ResourceType::MAIN_FRAME, url, headers.get());
+  GatherPagespeedData(content::RESOURCE_TYPE_MAIN_FRAME, url, headers.get());
   server_samples = server_histogram->SnapshotSamples();
   version_samples = version_histogram->SnapshotSamples();
   EXPECT_EQ(++num_responses, server_samples->GetCount(0));
@@ -168,7 +168,7 @@ TEST_F(PrerenderUtilTest, CountPageSpeedHeadersTest) {
 
   // X-Page-Speed header in PageSpeed Service format.
   headers->AddHeader("X-Page-Speed: 97_4_bo");
-  GatherPagespeedData(ResourceType::MAIN_FRAME, url, headers.get());
+  GatherPagespeedData(content::RESOURCE_TYPE_MAIN_FRAME, url, headers.get());
   server_samples = server_histogram->SnapshotSamples();
   version_samples = version_histogram->SnapshotSamples();
   EXPECT_EQ(++num_responses, server_samples->GetCount(0));
@@ -183,7 +183,7 @@ TEST_F(PrerenderUtilTest, CountPageSpeedHeadersTest) {
 
   // X-Page-Speed header in an unrecognized format (IISpeed in this case).
   headers->AddHeader("X-Page-Speed: 1.0PS1.2-20130615");
-  GatherPagespeedData(ResourceType::MAIN_FRAME, url, headers.get());
+  GatherPagespeedData(content::RESOURCE_TYPE_MAIN_FRAME, url, headers.get());
   server_samples = server_histogram->SnapshotSamples();
   version_samples = version_histogram->SnapshotSamples();
   EXPECT_EQ(++num_responses, server_samples->GetCount(0));
@@ -195,7 +195,7 @@ TEST_F(PrerenderUtilTest, CountPageSpeedHeadersTest) {
   EXPECT_EQ(  num_bucket_33, version_samples->GetCount(33));
 
   // Not a main frame => not counted at all.
-  GatherPagespeedData(ResourceType::SUB_FRAME, url, headers.get());
+  GatherPagespeedData(content::RESOURCE_TYPE_SUB_FRAME, url, headers.get());
   server_samples = server_histogram->SnapshotSamples();
   version_samples = version_histogram->SnapshotSamples();
   EXPECT_EQ(  num_responses, server_samples->GetCount(0));
@@ -209,7 +209,8 @@ TEST_F(PrerenderUtilTest, CountPageSpeedHeadersTest) {
 
   // Not a http/https URL => not counted at all.
   GURL data_url("data:image/png;base64,yadda yadda==");
-  GatherPagespeedData(ResourceType::MAIN_FRAME, data_url, headers.get());
+  GatherPagespeedData(
+      content::RESOURCE_TYPE_MAIN_FRAME, data_url, headers.get());
   server_samples = server_histogram->SnapshotSamples();
   version_samples = version_histogram->SnapshotSamples();
   EXPECT_EQ(  num_responses, server_samples->GetCount(0));

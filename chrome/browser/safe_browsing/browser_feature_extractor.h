@@ -45,12 +45,12 @@ struct IPUrlInfo {
   std::string url;
   std::string method;
   std::string referrer;
-  content::ResourceType::Type resource_type;
+  content::ResourceType resource_type;
 
   IPUrlInfo(const std::string& url,
             const std::string& method,
             const std::string& referrer,
-            const content::ResourceType::Type& resource_type);
+            const content::ResourceType& resource_type);
   ~IPUrlInfo();
 };
 

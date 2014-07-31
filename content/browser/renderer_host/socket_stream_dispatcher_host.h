@@ -32,7 +32,7 @@ class SocketStreamDispatcherHost
       public net::SocketStream::Delegate,
       public SSLErrorHandler::Delegate {
  public:
-  typedef base::Callback<net::URLRequestContext*(ResourceType::Type)>
+  typedef base::Callback<net::URLRequestContext*(ResourceType)>
       GetRequestContextCallback;
   SocketStreamDispatcherHost(
       int render_process_id,

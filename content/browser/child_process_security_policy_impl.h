@@ -140,7 +140,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // Only might return false if --site-per-process flag is used.
   bool CanLoadPage(int child_id,
                    const GURL& url,
-                   ResourceType::Type resource_type);
+                   ResourceType resource_type);
 
   // Explicit permissions checks for FileSystemURL specified files.
   bool CanReadFileSystemFile(int child_id, const fileapi::FileSystemURL& url);

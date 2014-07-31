@@ -13,7 +13,7 @@ bool ResourceDispatcherHostDelegate::ShouldBeginRequest(
     int route_id,
     const std::string& method,
     const GURL& url,
-    ResourceType::Type resource_type,
+    ResourceType resource_type,
     ResourceContext* resource_context) {
   return true;
 }
@@ -22,7 +22,7 @@ void ResourceDispatcherHostDelegate::RequestBeginning(
     net::URLRequest* request,
     ResourceContext* resource_context,
     AppCacheService* appcache_service,
-    ResourceType::Type resource_type,
+    ResourceType resource_type,
     int child_id,
     int route_id,
     ScopedVector<ResourceThrottle>* throttles) {

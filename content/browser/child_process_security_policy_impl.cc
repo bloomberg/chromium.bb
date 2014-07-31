@@ -580,14 +580,13 @@ void ChildProcessSecurityPolicyImpl::RevokeReadRawCookies(int child_id) {
   state->second->RevokeReadRawCookies();
 }
 
-bool ChildProcessSecurityPolicyImpl::CanLoadPage(
-    int child_id,
-    const GURL& url,
-    ResourceType::Type resource_type) {
+bool ChildProcessSecurityPolicyImpl::CanLoadPage(int child_id,
+                                                 const GURL& url,
+                                                 ResourceType resource_type) {
   // If --site-per-process flag is passed, we should enforce
   // stronger security restrictions on page navigation.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess) &&
-      ResourceType::IsFrame(resource_type)) {
+      IsResourceTypeFrame(resource_type)) {
     // TODO(nasko): Do the proper check for site-per-process, once
     // out-of-process iframes is ready to go.
     return true;

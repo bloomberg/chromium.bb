@@ -285,7 +285,7 @@ AppCacheHost* AppCacheHost::GetParentAppCacheHost() const {
 
 AppCacheRequestHandler* AppCacheHost::CreateRequestHandler(
     net::URLRequest* request,
-    ResourceType::Type resource_type) {
+    ResourceType resource_type) {
   if (is_for_dedicated_worker()) {
     AppCacheHost* parent_host = GetParentAppCacheHost();
     if (parent_host)

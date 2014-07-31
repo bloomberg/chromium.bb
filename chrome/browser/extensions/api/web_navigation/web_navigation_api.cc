@@ -560,8 +560,8 @@ void WebNavigationTabObserver::DidFailLoad(
 void WebNavigationTabObserver::DidGetRedirectForResourceRequest(
     content::RenderViewHost* render_view_host,
     const content::ResourceRedirectDetails& details) {
-  if (details.resource_type != ResourceType::MAIN_FRAME &&
-      details.resource_type != ResourceType::SUB_FRAME) {
+  if (details.resource_type != content::RESOURCE_TYPE_MAIN_FRAME &&
+      details.resource_type != content::RESOURCE_TYPE_SUB_FRAME) {
     return;
   }
   content::RenderFrameHost* render_frame_host =

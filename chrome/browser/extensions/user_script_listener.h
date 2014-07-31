@@ -46,7 +46,7 @@ class UserScriptListener
   // given URL.  Otherwise, this method returns NULL.
   content::ResourceThrottle* CreateResourceThrottle(
       const GURL& url,
-      content::ResourceType::Type resource_type);
+      content::ResourceType resource_type);
 
  private:
   friend struct content::BrowserThread::DeleteOnThread<
@@ -58,7 +58,7 @@ class UserScriptListener
   virtual ~UserScriptListener();
 
   bool ShouldDelayRequest(const GURL& url,
-                          content::ResourceType::Type resource_type);
+                          content::ResourceType resource_type);
   void StartDelayedRequests();
 
   // Update user_scripts_ready_ based on the status of all profiles. On a

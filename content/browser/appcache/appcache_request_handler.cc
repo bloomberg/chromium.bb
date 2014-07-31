@@ -13,12 +13,16 @@
 
 namespace content {
 
-AppCacheRequestHandler::AppCacheRequestHandler(
-    AppCacheHost* host, ResourceType::Type resource_type)
-    : host_(host), resource_type_(resource_type),
-      is_waiting_for_cache_selection_(false), found_group_id_(0),
-      found_cache_id_(0), found_network_namespace_(false),
-      cache_entry_not_found_(false), maybe_load_resource_executed_(false) {
+AppCacheRequestHandler::AppCacheRequestHandler(AppCacheHost* host,
+                                               ResourceType resource_type)
+    : host_(host),
+      resource_type_(resource_type),
+      is_waiting_for_cache_selection_(false),
+      found_group_id_(0),
+      found_cache_id_(0),
+      found_network_namespace_(false),
+      cache_entry_not_found_(false),
+      maybe_load_resource_executed_(false) {
   DCHECK(host_);
   host_->AddObserver(this);
 }
@@ -210,7 +214,7 @@ void AppCacheRequestHandler::DeliverAppCachedResponse(
   DCHECK(host_ && job_.get() && job_->is_waiting());
   DCHECK(entry.has_response_id());
 
-  if (ResourceType::IsFrame(resource_type_) && !namespace_entry_url.is_empty())
+  if (IsResourceTypeFrame(resource_type_) && !namespace_entry_url.is_empty())
     host_->NotifyMainResourceIsNamespaceEntry(namespace_entry_url);
 
   job_->DeliverAppCachedResponse(manifest_url, group_id, cache_id,
@@ -235,8 +239,8 @@ void AppCacheRequestHandler::MaybeLoadMainResource(
   DCHECK(host_);
 
   const AppCacheHost* spawning_host =
-      ResourceType::IsSharedWorker(resource_type_) ?
-          host_ : host_->GetSpawningHost();
+      (resource_type_ == RESOURCE_TYPE_SHARED_WORKER) ?
+      host_ : host_->GetSpawningHost();
   GURL preferred_manifest_url = spawning_host ?
       spawning_host->preferred_manifest_url() : GURL();
 
@@ -267,17 +271,17 @@ void AppCacheRequestHandler::OnMainResponseFound(
       !policy->CanLoadAppCache(manifest_url, host_->first_party_url());
 
   if (was_blocked_by_policy) {
-    if (ResourceType::IsFrame(resource_type_)) {
+    if (IsResourceTypeFrame(resource_type_)) {
       host_->NotifyMainResourceBlocked(manifest_url);
     } else {
-      DCHECK(ResourceType::IsSharedWorker(resource_type_));
+      DCHECK_EQ(resource_type_, RESOURCE_TYPE_SHARED_WORKER);
       host_->frontend()->OnContentBlocked(host_->host_id(), manifest_url);
     }
     DeliverNetworkResponse();
     return;
   }
 
-  if (ResourceType::IsFrame(resource_type_) && cache_id != kAppCacheNoCacheId) {
+  if (IsResourceTypeFrame(resource_type_) && cache_id != kAppCacheNoCacheId) {
     // AppCacheHost loads and holds a reference to the main resource cache
     // for two reasons, firstly to preload the cache into the working set
     // in advance of subresource loads happening, secondly to prevent the

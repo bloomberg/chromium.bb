@@ -1136,7 +1136,7 @@ IPC_MESSAGE_ROUTED5(ViewHostMsg_DidLoadResourceFromMemoryCache,
                     std::string  /* security info */,
                     std::string  /* http method */,
                     std::string  /* mime type */,
-                    content::ResourceType::Type /* resource type */)
+                    content::ResourceType /* resource type */)
 
 // Sent when the renderer displays insecure content in a secure page.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_DidDisplayInsecureContent)

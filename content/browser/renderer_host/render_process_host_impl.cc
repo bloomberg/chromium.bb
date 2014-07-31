@@ -193,11 +193,11 @@ void RemoveShaderInfo(int32 id) {
 net::URLRequestContext* GetRequestContext(
     scoped_refptr<net::URLRequestContextGetter> request_context,
     scoped_refptr<net::URLRequestContextGetter> media_request_context,
-    ResourceType::Type resource_type) {
-  // If the request has resource type of ResourceType::MEDIA, we use a request
+    ResourceType resource_type) {
+  // If the request has resource type of RESOURCE_TYPE_MEDIA, we use a request
   // context specific to media for handling it because these resources have
   // specific needs for caching.
-  if (resource_type == ResourceType::MEDIA)
+  if (resource_type == RESOURCE_TYPE_MEDIA)
     return media_request_context->GetURLRequestContext();
   return request_context->GetURLRequestContext();
 }
@@ -817,7 +817,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   WebSocketDispatcherHost::GetRequestContextCallback
       websocket_request_context_callback(
           base::Bind(&GetRequestContext, request_context,
-                     media_request_context, ResourceType::SUB_RESOURCE));
+                     media_request_context, RESOURCE_TYPE_SUB_RESOURCE));
 
   AddFilter(
       new WebSocketDispatcherHost(GetID(), websocket_request_context_callback));

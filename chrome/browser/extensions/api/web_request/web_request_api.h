@@ -119,7 +119,7 @@ class ExtensionWebRequestEventRouter
     bool InitFromValue(const base::DictionaryValue& value, std::string* error);
 
     extensions::URLPatternSet urls;
-    std::vector<content::ResourceType::Type> types;
+    std::vector<content::ResourceType> types;
     int tab_id;
     int window_id;
   };
@@ -357,7 +357,7 @@ class ExtensionWebRequestEventRouter
       int window_id,
       int render_process_host_id,
       int routing_id,
-      content::ResourceType::Type resource_type,
+      content::ResourceType resource_type,
       bool is_async_request,
       bool is_request_from_extension,
       int* extra_info_spec,

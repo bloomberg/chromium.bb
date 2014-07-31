@@ -10,7 +10,7 @@ RequestInfo::RequestInfo()
     : referrer_policy(blink::WebReferrerPolicyDefault),
       load_flags(0),
       requestor_pid(0),
-      request_type(ResourceType::MAIN_FRAME),
+      request_type(RESOURCE_TYPE_MAIN_FRAME),
       priority(net::LOW),
       request_context(0),
       appcache_host_id(0),

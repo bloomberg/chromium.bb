@@ -161,7 +161,7 @@ bool ServiceWorkerProviderHost::SetHostedVersionId(int64 version_id) {
 
 scoped_ptr<ServiceWorkerRequestHandler>
 ServiceWorkerProviderHost::CreateRequestHandler(
-    ResourceType::Type resource_type,
+    ResourceType resource_type,
     base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context) {
   if (IsHostToRunningServiceWorker()) {
     return scoped_ptr<ServiceWorkerRequestHandler>(

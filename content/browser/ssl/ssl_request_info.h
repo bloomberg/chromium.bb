@@ -20,13 +20,13 @@ namespace content {
 class SSLRequestInfo : public base::RefCounted<SSLRequestInfo> {
  public:
   SSLRequestInfo(const GURL& url,
-                 ResourceType::Type resource_type,
+                 ResourceType resource_type,
                  int child_id,
                  int ssl_cert_id,
                  net::CertStatus ssl_cert_status);
 
   const GURL& url() const { return url_; }
-  ResourceType::Type resource_type() const { return resource_type_; }
+  ResourceType resource_type() const { return resource_type_; }
   int child_id() const { return child_id_; }
   int ssl_cert_id() const { return ssl_cert_id_; }
   net::CertStatus ssl_cert_status() const { return ssl_cert_status_; }
@@ -37,7 +37,7 @@ class SSLRequestInfo : public base::RefCounted<SSLRequestInfo> {
   virtual ~SSLRequestInfo();
 
   GURL url_;
-  ResourceType::Type resource_type_;
+  ResourceType resource_type_;
   int child_id_;
   int ssl_cert_id_;
   net::CertStatus ssl_cert_status_;

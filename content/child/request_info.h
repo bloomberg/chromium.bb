@@ -54,7 +54,7 @@ struct CONTENT_EXPORT RequestInfo {
 
   // Indicates if the current request is the main frame load, a sub-frame
   // load, or a sub objects load.
-  ResourceType::Type request_type;
+  ResourceType request_type;
 
   // Indicates the priority of this request, as determined by WebKit.
   net::RequestPriority priority;

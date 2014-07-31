@@ -49,7 +49,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       bool is_main_frame,
       bool parent_is_main_frame,
       int parent_render_frame_id,
-      ResourceType::Type resource_type,
+      ResourceType resource_type,
       PageTransition transition_type,
       bool should_replace_current_entry,
       bool is_download,
@@ -73,7 +73,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   virtual bool IsMainFrame() const OVERRIDE;
   virtual bool ParentIsMainFrame() const OVERRIDE;
   virtual int GetParentRenderFrameID() const OVERRIDE;
-  virtual ResourceType::Type GetResourceType() const OVERRIDE;
+  virtual ResourceType GetResourceType() const OVERRIDE;
   virtual int GetProcessType() const OVERRIDE;
   virtual blink::WebReferrerPolicy GetReferrerPolicy() const OVERRIDE;
   virtual blink::WebPageVisibilityState GetVisibilityState() const OVERRIDE;
@@ -176,7 +176,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool allow_download_;
   bool has_user_gesture_;
   bool was_ignored_by_handler_;
-  ResourceType::Type resource_type_;
+  ResourceType resource_type_;
   PageTransition transition_type_;
   int memory_cost_;
   blink::WebReferrerPolicy referrer_policy_;

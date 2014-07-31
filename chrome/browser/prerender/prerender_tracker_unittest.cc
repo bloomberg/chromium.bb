@@ -228,9 +228,13 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectResume) {
       net::DEFAULT_PRIORITY,
       &delegate,
       &url_request_context);
-  content::ResourceRequestInfo::AllocateForTesting(
-      &request, ResourceType::IMAGE, NULL,
-      kDefaultChildId, kDefaultRouteId, MSG_ROUTING_NONE, true);
+  content::ResourceRequestInfo::AllocateForTesting(&request,
+                                                   content::RESOURCE_TYPE_IMAGE,
+                                                   NULL,
+                                                   kDefaultChildId,
+                                                   kDefaultRouteId,
+                                                   MSG_ROUTING_NONE,
+                                                   true);
 
   // Install a prerender throttle.
   PrerenderResourceThrottle throttle(&request);
@@ -268,8 +272,13 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectMainFrame) {
       &delegate,
       &url_request_context);
   content::ResourceRequestInfo::AllocateForTesting(
-      &request, ResourceType::MAIN_FRAME, NULL,
-      kDefaultChildId, kDefaultRouteId, MSG_ROUTING_NONE, true);
+      &request,
+      content::RESOURCE_TYPE_MAIN_FRAME,
+      NULL,
+      kDefaultChildId,
+      kDefaultRouteId,
+      MSG_ROUTING_NONE,
+      true);
 
   // Install a prerender throttle.
   PrerenderResourceThrottle throttle(&request);
@@ -304,9 +313,13 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectSyncXHR) {
       net::DEFAULT_PRIORITY,
       &delegate,
       &url_request_context);
-  content::ResourceRequestInfo::AllocateForTesting(
-      &request, ResourceType::XHR, NULL,
-      kDefaultChildId, kDefaultRouteId, MSG_ROUTING_NONE, false);
+  content::ResourceRequestInfo::AllocateForTesting(&request,
+                                                   content::RESOURCE_TYPE_XHR,
+                                                   NULL,
+                                                   kDefaultChildId,
+                                                   kDefaultRouteId,
+                                                   MSG_ROUTING_NONE,
+                                                   false);
 
   // Install a prerender throttle.
   PrerenderResourceThrottle throttle(&request);

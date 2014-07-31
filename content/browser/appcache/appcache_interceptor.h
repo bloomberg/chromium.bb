@@ -31,7 +31,7 @@ class CONTENT_EXPORT AppCacheInterceptor
                                   AppCacheServiceImpl* service,
                                   int process_id,
                                   int host_id,
-                                  ResourceType::Type resource_type);
+                                  ResourceType resource_type);
 
   // May be called after response headers are complete to retrieve extra
   // info about the response.

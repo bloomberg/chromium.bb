@@ -108,7 +108,7 @@ class CaptivePortalTabHelper
 
   // Called by Observe in response to the corresponding event.
   void OnRedirect(int child_id,
-                  content::ResourceType::Type resource_type,
+                  content::ResourceType resource_type,
                   const GURL& new_url);
 
   // Called by Observe in response to the corresponding event.

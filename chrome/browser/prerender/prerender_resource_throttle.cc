@@ -78,7 +78,7 @@ void PrerenderResourceThrottle::Cancel() {
 void PrerenderResourceThrottle::WillStartRequestOnUI(
     const base::WeakPtr<PrerenderResourceThrottle>& throttle,
     const std::string& method,
-    ResourceType::Type resource_type,
+    ResourceType resource_type,
     int render_process_id,
     int render_frame_id,
     const GURL& url) {
@@ -96,7 +96,7 @@ void PrerenderResourceThrottle::WillStartRequestOnUI(
       ReportUnsupportedPrerenderScheme(url);
       cancel = true;
 #if defined(OS_ANDROID)
-    } else if (resource_type == ResourceType::FAVICON) {
+    } else if (resource_type == content::RESOURCE_TYPE_FAVICON) {
       // Delay icon fetching until the contents are getting swapped in
       // to conserve network usage in mobile devices.
       prerender_contents->AddResourceThrottle(throttle);
@@ -115,7 +115,7 @@ void PrerenderResourceThrottle::WillStartRequestOnUI(
 void PrerenderResourceThrottle::WillRedirectRequestOnUI(
     const base::WeakPtr<PrerenderResourceThrottle>& throttle,
     const std::string& follow_only_when_prerender_shown_header,
-    ResourceType::Type resource_type,
+    ResourceType resource_type,
     bool async,
     int render_process_id,
     int render_frame_id,
@@ -130,7 +130,7 @@ void PrerenderResourceThrottle::WillRedirectRequestOnUI(
       ReportUnsupportedPrerenderScheme(new_url);
       cancel = true;
     } else if (follow_only_when_prerender_shown_header == "1" &&
-               resource_type != ResourceType::MAIN_FRAME) {
+               resource_type != content::RESOURCE_TYPE_MAIN_FRAME) {
       // Only defer redirects with the Follow-Only-When-Prerender-Shown
       // header. Do not defer redirects on main frame loads.
       if (!async) {

@@ -599,15 +599,15 @@ TEST_F(BrowserFeatureExtractorTest, MalwareFeatures) {
   request.set_url("http://www.foo.com/");
 
   std::vector<IPUrlInfo> bad_urls;
-  bad_urls.push_back(IPUrlInfo("http://bad.com", "GET", "",
-                               ResourceType::SCRIPT));
-  bad_urls.push_back(IPUrlInfo("http://evil.com", "GET", "",
-                               ResourceType::SCRIPT));
+  bad_urls.push_back(
+      IPUrlInfo("http://bad.com", "GET", "", content::RESOURCE_TYPE_SCRIPT));
+  bad_urls.push_back(
+      IPUrlInfo("http://evil.com", "GET", "", content::RESOURCE_TYPE_SCRIPT));
   browse_info_->ips.insert(std::make_pair("193.5.163.8", bad_urls));
   browse_info_->ips.insert(std::make_pair("92.92.92.92", bad_urls));
   std::vector<IPUrlInfo> good_urls;
-  good_urls.push_back(IPUrlInfo("http://ok.com", "GET", "",
-                                ResourceType::SCRIPT));
+  good_urls.push_back(
+      IPUrlInfo("http://ok.com", "GET", "", content::RESOURCE_TYPE_SCRIPT));
   browse_info_->ips.insert(std::make_pair("23.94.78.1", good_urls));
   EXPECT_CALL(*db_manager_, MatchMalwareIP("193.5.163.8"))
       .WillOnce(Return(true));
@@ -639,8 +639,8 @@ TEST_F(BrowserFeatureExtractorTest, MalwareFeatures_ExceedLimit) {
   request.set_url("http://www.foo.com/");
 
   std::vector<IPUrlInfo> bad_urls;
-  bad_urls.push_back(IPUrlInfo("http://bad.com", "GET", "",
-                               ResourceType::SCRIPT));
+  bad_urls.push_back(
+      IPUrlInfo("http://bad.com", "GET", "", content::RESOURCE_TYPE_SCRIPT));
   std::vector<std::string> ips;
   for (int i = 0; i < 7; ++i) {  // Add 7 ips
     std::string ip = base::StringPrintf("%d.%d.%d.%d", i, i, i, i);

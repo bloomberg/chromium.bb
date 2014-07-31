@@ -330,7 +330,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     request_info.headers = std::string();
     request_info.load_flags = 0;
     request_info.requestor_pid = 0;
-    request_info.request_type = ResourceType::SUB_RESOURCE;
+    request_info.request_type = RESOURCE_TYPE_SUB_RESOURCE;
     request_info.appcache_host_id = kAppCacheNoHostId;
     request_info.routing_id = 0;
     request_info.download_to_file = download_to_file;

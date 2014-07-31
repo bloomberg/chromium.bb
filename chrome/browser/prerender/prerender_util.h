@@ -51,7 +51,7 @@ bool IsControlGroupExperiment(uint8 experiment_id);
 // Called by URLRequestResponseStarted to gather data about Pagespeed headers
 // into the Prerender.PagespeedHeader histogram. Public so it can be accessed
 // by the unit test.
-void GatherPagespeedData(const content::ResourceType::Type resource_type,
+void GatherPagespeedData(const content::ResourceType resource_type,
                          const GURL& request_url,
                          const net::HttpResponseHeaders* response_headers);
 

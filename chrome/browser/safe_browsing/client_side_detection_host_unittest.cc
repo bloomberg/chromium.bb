@@ -250,7 +250,7 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
   }
 
   void UpdateIPUrlMap(const std::string& ip, const std::string& host) {
-    csd_host_->UpdateIPUrlMap(ip, host, "", "", ResourceType::OBJECT);
+    csd_host_->UpdateIPUrlMap(ip, host, "", "", content::RESOURCE_TYPE_OBJECT);
   }
 
   BrowseInfo* GetBrowseInfo() {
@@ -836,7 +836,8 @@ TEST_F(ClientSideDetectionHostTest, UpdateIPUrlMap) {
   std::vector<IPUrlInfo> expected_urls;
   for (int i = 0; i < 20; i++) {
     std::string url = base::StringPrintf("http://%d.com/", i);
-    expected_urls.push_back(IPUrlInfo(url, "", "", ResourceType::OBJECT));
+    expected_urls.push_back(
+        IPUrlInfo(url, "", "", content::RESOURCE_TYPE_OBJECT));
     UpdateIPUrlMap("250.10.10.10", url);
   }
   ASSERT_EQ(1U, browse_info->ips.size());
@@ -855,8 +856,8 @@ TEST_F(ClientSideDetectionHostTest, UpdateIPUrlMap) {
   for (int i = 0; i < 199; i++) {
     std::string ip = base::StringPrintf("%d.%d.%d.256", i, i, i);
     expected_urls.clear();
-    expected_urls.push_back(IPUrlInfo("test.com/", "", "",
-                            ResourceType::OBJECT));
+    expected_urls.push_back(
+        IPUrlInfo("test.com/", "", "", content::RESOURCE_TYPE_OBJECT));
     UpdateIPUrlMap(ip, "test.com/");
     ASSERT_EQ(1U, browse_info->ips[ip].size());
     CheckIPUrlEqual(expected_urls,
@@ -874,8 +875,10 @@ TEST_F(ClientSideDetectionHostTest, UpdateIPUrlMap) {
   UpdateIPUrlMap("100.100.100.256", "more.com/");
   ASSERT_EQ(2U, browse_info->ips["100.100.100.256"].size());
   expected_urls.clear();
-  expected_urls.push_back(IPUrlInfo("test.com/", "", "", ResourceType::OBJECT));
-  expected_urls.push_back(IPUrlInfo("more.com/", "", "", ResourceType::OBJECT));
+  expected_urls.push_back(
+      IPUrlInfo("test.com/", "", "", content::RESOURCE_TYPE_OBJECT));
+  expected_urls.push_back(
+      IPUrlInfo("more.com/", "", "", content::RESOURCE_TYPE_OBJECT));
   CheckIPUrlEqual(expected_urls,
                   browse_info->ips["100.100.100.256"]);
 }

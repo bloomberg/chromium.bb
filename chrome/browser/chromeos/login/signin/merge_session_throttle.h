@@ -36,7 +36,7 @@ class MergeSessionThrottle
   typedef base::Closure CompletionCallback;
 
   explicit MergeSessionThrottle(net::URLRequest* request,
-                                content::ResourceType::Type resource_type);
+                                content::ResourceType resource_type);
   virtual ~MergeSessionThrottle();
 
   // content::ResourceThrottle implementation:
@@ -70,18 +70,18 @@ class MergeSessionThrottle
                                  int render_view_id);
 
   // Tests merge session status and if needed generates request
-  // waiter (for ResourceType::XHR content) or shows interstitial page
-  // (for ResourceType::MAIN_FRAME).
+  // waiter (for content::RESOURCE_TYPE_XHR content) or shows interstitial page
+  // (for content::RESOURCE_TYPE_MAIN_FRAME).
   // The function must be called from UI thread.
   static void DeleayResourceLoadingOnUIThread(
-      content::ResourceType::Type resource_type,
+      content::ResourceType resource_type,
       int render_process_id,
       int render_view_id,
       const GURL& url,
       const MergeSessionThrottle::CompletionCallback& callback);
 
   net::URLRequest* request_;
-  content::ResourceType::Type resource_type_;
+  content::ResourceType resource_type_;
 
   // Global counter that keeps the track of session merge status for all
   // encountered profiles. This is used to determine if a throttle should

@@ -1768,7 +1768,7 @@ class AppCacheStorageImplTest : public testing::Test {
       AppCacheInterceptor::SetExtraRequestInfo(
           request_.get(), service_.get(),
           backend_->process_id(), host2->host_id(),
-          ResourceType::MAIN_FRAME);
+          RESOURCE_TYPE_MAIN_FRAME);
       request_->Start();
     }
 

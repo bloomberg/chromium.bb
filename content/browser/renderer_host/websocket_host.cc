@@ -280,7 +280,7 @@ ChannelState WebSocketEventHandler::OnSSLCertificateError(
   GlobalRequestID request_id(-1, -1);
   SSLManager::OnSSLCertificateError(ssl_error_handler_delegate_->GetWeakPtr(),
                                     request_id,
-                                    ResourceType::SUB_RESOURCE,
+                                    RESOURCE_TYPE_SUB_RESOURCE,
                                     url,
                                     dispatcher_->render_process_id(),
                                     render_frame_id_,

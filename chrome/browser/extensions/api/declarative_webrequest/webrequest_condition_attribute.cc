@@ -125,7 +125,7 @@ WebRequestConditionAttribute::Create(
 
 WebRequestConditionAttributeResourceType::
 WebRequestConditionAttributeResourceType(
-    const std::vector<ResourceType::Type>& types)
+    const std::vector<ResourceType>& types)
     : types_(types) {}
 
 WebRequestConditionAttributeResourceType::
@@ -148,11 +148,11 @@ WebRequestConditionAttributeResourceType::Create(
 
   size_t number_types = value_as_list->GetSize();
 
-  std::vector<ResourceType::Type> passed_types;
+  std::vector<ResourceType> passed_types;
   passed_types.reserve(number_types);
   for (size_t i = 0; i < number_types; ++i) {
     std::string resource_type_string;
-    ResourceType::Type type = ResourceType::LAST_TYPE;
+    ResourceType type = content::RESOURCE_TYPE_LAST_TYPE;
     if (!value_as_list->GetString(i, &resource_type_string) ||
         !helpers::ParseResourceType(resource_type_string, &type)) {
       *error = ErrorUtils::FormatErrorMessage(kInvalidValue,

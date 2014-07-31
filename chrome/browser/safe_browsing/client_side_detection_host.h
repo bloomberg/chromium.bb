@@ -118,7 +118,7 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
                       const std::string& url,
                       const std::string& method,
                       const std::string& referrer,
-                      const content::ResourceType::Type resource_type);
+                      const content::ResourceType resource_type);
 
   // From NotificationObserver.  Called when a notification comes in.  This
   // method is called in the UI thread.

@@ -98,7 +98,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
           context()->AsWeakPtr(),
           provider_host_,
           base::WeakPtr<webkit_blob::BlobStorageContext>(),
-          ResourceType::MAIN_FRAME));
+          RESOURCE_TYPE_MAIN_FRAME));
   scoped_refptr<net::URLRequestJob> job =
       handler->MaybeCreateJob(request.get(), NULL);
   ServiceWorkerURLRequestJob* sw_job =

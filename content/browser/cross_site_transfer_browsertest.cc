@@ -37,7 +37,7 @@ class TrackingResourceDispatcherHostDelegate
       net::URLRequest* request,
       ResourceContext* resource_context,
       AppCacheService* appcache_service,
-      ResourceType::Type resource_type,
+      ResourceType resource_type,
       int child_id,
       int route_id,
       ScopedVector<ResourceThrottle>* throttles) OVERRIDE {

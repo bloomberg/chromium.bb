@@ -131,9 +131,13 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
     int view_id = 17;
     net::TestURLRequest sensitive_request(
         non_sensitive_url, net::DEFAULT_PRIORITY, NULL, &context);
-    ResourceRequestInfo::AllocateForTesting(
-        &sensitive_request, ResourceType::SCRIPT, NULL,
-        process_id, view_id, MSG_ROUTING_NONE, false);
+    ResourceRequestInfo::AllocateForTesting(&sensitive_request,
+                                            content::RESOURCE_TYPE_SCRIPT,
+                                            NULL,
+                                            process_id,
+                                            view_id,
+                                            MSG_ROUTING_NONE,
+                                            false);
     extension_info_map_->RegisterExtensionProcess(
         extension_misc::kWebStoreAppId, process_id, site_instance_id);
     EXPECT_TRUE(WebRequestPermissions::HideRequest(extension_info_map_.get(),
@@ -145,9 +149,13 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
     int view_id = 19;
     net::TestURLRequest sensitive_request(
         non_sensitive_url, net::DEFAULT_PRIORITY, NULL, &context);
-    ResourceRequestInfo::AllocateForTesting(
-        &sensitive_request, ResourceType::SCRIPT, NULL,
-        process_id, view_id, MSG_ROUTING_NONE, false);
+    ResourceRequestInfo::AllocateForTesting(&sensitive_request,
+                                            content::RESOURCE_TYPE_SCRIPT,
+                                            NULL,
+                                            process_id,
+                                            view_id,
+                                            MSG_ROUTING_NONE,
+                                            false);
     EXPECT_TRUE(WebRequestPermissions::HideRequest(extension_info_map_.get(),
                                                    &sensitive_request));
   }

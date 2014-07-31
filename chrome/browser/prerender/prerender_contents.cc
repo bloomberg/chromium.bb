@@ -684,7 +684,7 @@ void PrerenderContents::DidGetRedirectForResourceRequest(
   // it's a redirect on the top-level resource, the name needs to be remembered
   // for future matching, and if it redirects to an https resource, it needs to
   // be canceled. If a subresource is redirected, nothing changes.
-  if (details.resource_type != ResourceType::MAIN_FRAME)
+  if (details.resource_type != content::RESOURCE_TYPE_MAIN_FRAME)
     return;
   CheckURL(details.new_url);
 }

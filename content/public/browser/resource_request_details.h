@@ -37,7 +37,7 @@ struct ResourceRequestDetails {
   net::URLRequestStatus status;
   int ssl_cert_id;
   net::CertStatus ssl_cert_status;
-  ResourceType::Type resource_type;
+  ResourceType resource_type;
   net::HostPortPair socket_address;
   int render_frame_id;
   // HTTP response code. See HttpResponseHeaders::response_code().
