@@ -33,21 +33,6 @@ static const char* kBadURL3 = "http://www.badguys3.com/";
 namespace {
 
 // A SafeBrowingBlockingPage class that does not create windows.
-class TestSafeBrowsingBlockingPageV1 :  public SafeBrowsingBlockingPageV1 {
- public:
-  TestSafeBrowsingBlockingPageV1(SafeBrowsingUIManager* manager,
-                                 WebContents* web_contents,
-                                 const UnsafeResourceList& unsafe_resources)
-      : SafeBrowsingBlockingPageV1(manager, web_contents, unsafe_resources) {
-    // Don't delay details at all for the unittest.
-    malware_details_proceed_delay_ms_ = 0;
-
-    // Don't create a view.
-    interstitial_page()->DontCreateViewForTesting();
-  }
-};
-
-// A SafeBrowingBlockingPage class that does not create windows.
 class TestSafeBrowsingBlockingPageV2 :  public SafeBrowsingBlockingPageV2 {
  public:
   TestSafeBrowsingBlockingPageV2(SafeBrowsingUIManager* manager,
@@ -110,14 +95,13 @@ class TestSafeBrowsingBlockingPageFactory
       WebContents* web_contents,
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
       OVERRIDE {
-    // TODO(mattm): remove this when SafeBrowsingBlockingPageV2 supports
-    // multi-threat warnings.
+    // The V2 version doesn't handle multiple threats.
     if (unsafe_resources.size() == 1 &&
         (unsafe_resources[0].threat_type == SB_THREAT_TYPE_URL_MALWARE ||
          unsafe_resources[0].threat_type == SB_THREAT_TYPE_URL_PHISHING)) {
       return new SBInterstitialPage(manager, web_contents, unsafe_resources);
     }
-    return new TestSafeBrowsingBlockingPageV1(manager, web_contents,
+    return new TestSafeBrowsingBlockingPageV3(manager, web_contents,
                                               unsafe_resources);
   }
 };

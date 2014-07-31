@@ -272,7 +272,6 @@
       </if>
       <include name="IDR_PROFILER_HTML" file="resources\profiler\profiler.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_PROFILER_JS" file="resources\profiler\profiler.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_SAFE_BROWSING_MULTIPLE_THREAT_BLOCK" file="resources\safe_browsing_multiple_threat_block.html" flattenhtml="true" type="BINDATA" />
       <if expr="enable_settings_app">
         <include name="IDR_SETTINGS_APP_MANIFEST" file="resources\settings_app\manifest.json" type="BINDATA" />
       </if>
