@@ -5,7 +5,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/debug/debugger.h"
-#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -71,7 +70,7 @@ TEST_F(FramedBrowserWindowTest, ShowAndClose) {
   [window_ display];
 }
 
-// Test that the title-hiding API we're using does the job.
+// Test that undocumented title-hiding API we're using does the job.
 TEST_F(FramedBrowserWindowTest, DoesHideTitle) {
   // The -display calls are not strictly necessary, but they do
   // make it easier to see what's happening when debugging (without
@@ -98,11 +97,8 @@ TEST_F(FramedBrowserWindowTest, DoesHideTitle) {
 
   // With our magic setting, the window with a title should look the
   // same as the window with an empty title.
+  EXPECT_TRUE([window_ _isTitleHidden]);
   EXPECT_TRUE([emptyTitleData isEqualToData:hiddenTitleData]);
-
-  // Test the secret API only on versions of the system in which it exists.
-  if (base::mac::IsOSMavericksOrEarlier())
-    EXPECT_TRUE([window_ _isTitleHidden]);
 }
 
 // Test to make sure that our window widgets are in the right place.

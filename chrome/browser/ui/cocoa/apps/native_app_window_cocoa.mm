@@ -212,29 +212,10 @@ std::vector<gfx::Rect> CalculateNonDraggableRegions(
 @end
 @implementation ShellNSWindow
 
-- (instancetype)initWithContentRect:(NSRect)contentRect
-                          styleMask:(NSUInteger)windowStyle
-                            backing:(NSBackingStoreType)bufferingType
-                              defer:(BOOL)deferCreation {
-  if ((self = [super initWithContentRect:contentRect
-                               styleMask:windowStyle
-                                 backing:bufferingType
-                                   defer:deferCreation])) {
-    if ([self respondsToSelector:@selector(setTitleVisibility:)])
-      self.titleVisibility = NSWindowTitleHidden;
-  }
-
-  return self;
-}
-
 // Similar to ChromeBrowserWindow, don't draw the title, but allow it to be seen
 // in menus, Expose, etc.
 - (BOOL)_isTitleHidden {
-  // Only intervene with 10.6-10.9.
-  if ([self respondsToSelector:@selector(setTitleVisibility:)])
-    return [super _isTitleHidden];
-  else
-    return YES;
+  return YES;
 }
 
 - (void)drawCustomFrameRect:(NSRect)frameRect forView:(NSView*)view {

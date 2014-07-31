@@ -25,7 +25,6 @@ const NSInteger kFramedWindowButtonsWithoutTabStripOffsetFromLeft = 8;
 // this. We also handle our own window controls and custom window frame drawing.
 @interface FramedBrowserWindow : ChromeBrowserWindow {
  @private
-  // Only used from 10.6-10.9.
   BOOL shouldHideTitle_;
   BOOL hasTabStrip_;
   NSButton* closeButton_;
@@ -67,9 +66,10 @@ const NSInteger kFramedWindowButtonsWithoutTabStripOffsetFromLeft = 8;
 
 @interface NSWindow (UndocumentedAPI)
 
-// Undocumented Cocoa API (10.6-10.9) to suppress drawing of the window's title.
-// -setTitle: still works, but the title set only applies to the miniwindow and
-// menus (and, importantly, Expose). Overridden to return |shouldHideTitle_|.
+// Undocumented Cocoa API to suppress drawing of the window's title.
+// -setTitle: still works, but the title set only applies to the
+// miniwindow and menus (and, importantly, Expose).  Overridden to
+// return |shouldHideTitle_|.
 -(BOOL)_isTitleHidden;
 
 @end
