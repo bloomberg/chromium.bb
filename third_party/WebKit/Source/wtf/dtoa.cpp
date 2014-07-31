@@ -44,13 +44,6 @@
 #pragma warning(disable: 4244)
 #pragma warning(disable: 4245)
 #pragma warning(disable: 4554)
-
-#if _MSC_VER == 1800
-// TODO(scottmg): VS2013 currently ICEs on a bunch of functions in this file.
-// Upstream bug fixed in next release. See http://crbug.com/288498.
-#pragma optimize("", off)
-#endif
-
 #endif
 
 namespace WTF {
