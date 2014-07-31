@@ -401,9 +401,9 @@ bool GoogleUpdate::ReportFailure(HRESULT hr,
                                  GoogleUpdateErrorCode error_code,
                                  const base::string16& error_message,
                                  base::MessageLoop* main_loop) {
-  NOTREACHED() << "Communication with Google Update failed: " << hr
-               << " error: " << error_code
-               << ", message: " << error_message.c_str();
+  DLOG(ERROR) << "Communication with Google Update failed: " << hr
+              << " error: " << error_code
+              << ", message: " << error_message.c_str();
   main_loop->PostTask(
       FROM_HERE,
       base::Bind(&GoogleUpdate::ReportResults, this,
