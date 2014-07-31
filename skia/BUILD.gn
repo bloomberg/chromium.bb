@@ -390,7 +390,8 @@ component("skia") {
   "//third_party/skia/src/fonts/SkGScalerContext.h",
   ]
 
-  # need separate win section to handle chromes auto gn filter (build/config/BUILDCONFIG.gn)
+  # need separate win section to handle chromes auto gn filter
+  # (build/config/BUILDCONFIG.gn)
   if (is_win) {
     sources -= [
       "//third_party/skia/src/utils/SkThreadUtils_win.h",
@@ -590,11 +591,15 @@ source_set("skia_opts") {
       "//third_party/skia/include/core/SkTypes.h",
     ]
 
-    # SSE 4
-    if (cpu_arch == "x86") {
-      sources += [ "//third_party/skia/src/opts/SkBlitRow_opts_SSE4_asm.S" ]
-    } else {  # x64
-      sources += [ "//third_party/skia/src/opts/SkBlitRow_opts_SSE4_x64_asm.S" ]
+    if (!is_win) {
+      # SSE 4
+      if (cpu_arch == "x86") {
+        sources += [ "//third_party/skia/src/opts/SkBlitRow_opts_SSE4_asm.S" ]
+      } else {  # x64
+        sources += [
+          "//third_party/skia/src/opts/SkBlitRow_opts_SSE4_x64_asm.S"
+        ]
+      }
     }
 
     if (is_linux || is_mac) {
