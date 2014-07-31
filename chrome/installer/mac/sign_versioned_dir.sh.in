@@ -45,6 +45,17 @@ helper_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper.app"
 helper_eh_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper EH.app"
 helper_np_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper NP.app"
 
+# libplugin_carbon_interpose.dylib was removed in r280670, but it's still
+# present on the 37.0.2062 branch (and earlier). Accounting for it here makes
+# it easier to merge the fix for http://crbug.com/399276 to other branches.
+#
+# TODO(mark): Remove this plugin_carbon_interpose code on the trunk as soon
+# as it lands.
+plugin_carbon_interpose="${versioned_dir}/libplugin_carbon_interpose.dylib"
+if [[ ! -e "${plugin_carbon_interpose}" ]]; then
+  plugin_carbon_interpose=
+fi
+
 requirement_suffix="\
 and certificate leaf = H\"85cee8254216185620ddc8851c7a9fc4dfe120ef\"\
 "
@@ -64,8 +75,21 @@ codesign -s "${codesign_id}" --keychain "${codesign_keychain}" \
     -r="designated => identifier \"com.google.Chrome.helper.NP\" \
 ${requirement_suffix}"
 
+if [[ -n "${plugin_carbon_interpose}" ]]; then
+  plugin_carbon_interpose_identifier="com.google.Chrome.plugin_carbon_interpose"
+  codesign -s "${codesign_id}" --keychain "${codesign_keychain}" \
+      "${plugin_carbon_interpose}" \
+      -i "${plugin_carbon_interpose_identifier}" \
+      -r="designated => identifier \"${plugin_carbon_interpose_identifier}\" \
+${requirement_suffix}"
+fi
+
 # Verify everything.
 codesign -v "${framework}"
 codesign -v "${helper_app}"
 codesign -v "${helper_eh_app}"
 codesign -v "${helper_np_app}"
+
+if [[ -n "${plugin_carbon_interpose}" ]]; then
+  codesign -v "${plugin_carbon_interpose}"
+fi
