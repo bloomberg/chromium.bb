@@ -29,13 +29,14 @@
                                     [Default=Undefined] optional Window view,
                                     [Default=Undefined] optional long detail);
 
-    // extensions
-    readonly attribute long                 keyCode;
-    readonly attribute long                 charCode;
-    readonly attribute long                 layerX;
-    readonly attribute long                 layerY;
-    readonly attribute long                 pageX;
-    readonly attribute long                 pageY;
-    readonly attribute long                 which;
-};
+    // Non-standard
+    [MeasureAs=UIEventLayerX] readonly attribute long layerX;
+    [MeasureAs=UIEventLayerY] readonly attribute long layerY;
+    [MeasureAs=UIEventPageX] readonly attribute long pageX;
+    [MeasureAs=UIEventPageY] readonly attribute long pageY;
 
+    // FIXME: these belong on the KeyboardEvent interface
+    readonly attribute long keyCode;
+    readonly attribute long charCode;
+    readonly attribute long which;
+};
