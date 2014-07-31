@@ -225,7 +225,8 @@ Visit.prototype.getResultDOM = function(propertyBag) {
 
     // Support clicking anywhere inside the entry box.
     entryBox.addEventListener('click', function(e) {
-      self.titleLink.click();
+      if (!e.defaultPrevented)
+        self.titleLink.click();
     });
   } else {
     var dropDown = createElementWithClassName('button', 'drop-down');
