@@ -100,7 +100,17 @@ namespace chromeos {
 class ImeObserver : public InputMethodEngineInterface::Observer {
  public:
   ImeObserver(Profile* profile, const std::string& extension_id)
-      : profile_(profile), extension_id_(extension_id) {
+      : profile_(profile), extension_id_(extension_id), has_background_(false) {
+    extensions::ExtensionSystem* extension_system =
+        extensions::ExtensionSystem::Get(profile_);
+    ExtensionService* extension_service = extension_system->extension_service();
+    const extensions::Extension* extension =
+        extension_service->GetExtensionById(extension_id, false);
+    DCHECK(extension);
+    extensions::BackgroundInfo* info = static_cast<extensions::BackgroundInfo*>(
+        extension->GetManifestData("background"));
+    if (info)
+      has_background_ = info->has_background_page();
   }
 
   virtual ~ImeObserver() {}
@@ -194,10 +204,9 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
-    // If there is no listener for the key event, no need to dispatch the event
-    // to extension. Instead, releases it for default system behavior.
-    if (!extensions::InputImeEventRouter::GetInstance()
-        ->DoesExtensionHaveKeyListener(extension_id_)) {
+    // If there is no listener for the event, no need to dispatch the event to
+    // extension. Instead, releases the key event for default system behavior.
+    if (!ShouldForwardKeyEvent()) {
       // Continue processing the key event so that the physical keyboard can
       // still work.
       CallbackKeyEventHandle(key_data, false);
@@ -312,8 +321,20 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
   }
 
  private:
+  // Returns true if the extension is ready to accept key event, otherwise
+  // returns false.
+  bool ShouldForwardKeyEvent() const {
+    // Need to check the background page first since the
+    // ExtensionHasEventListner returns true if the extension does not have a
+    // background page. See crbug.com/394682.
+    return has_background_ && extensions::EventRouter::Get(profile_)
+        ->ExtensionHasEventListener(extension_id_,
+                                    input_ime::OnKeyEvent::kEventName);
+  }
+
   Profile* profile_;
   std::string extension_id_;
+  bool has_background_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeObserver);
 };
@@ -424,20 +445,6 @@ InputMethodEngineInterface* InputImeEventRouter::GetActiveEngine(
       return i->second;
   }
   return NULL;
-}
-
-bool InputImeEventRouter::DoesExtensionHaveKeyListener(
-    const std::string& extension_id) {
-  return extensions_with_key_listener_.find(extension_id) !=
-      extensions_with_key_listener_.end();
-}
-
-void InputImeEventRouter::SetExtensionHasKeyListener(
-    const std::string& extension_id, bool has_listener) {
-  if (has_listener)
-    extensions_with_key_listener_.insert(extension_id);
-  else
-    extensions_with_key_listener_.erase(extension_id);
 }
 
 void InputImeEventRouter::OnKeyEventHandled(
@@ -820,7 +827,7 @@ InputImeAPI::InputImeAPI(content::BrowserContext* context)
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 
   EventRouter* event_router = EventRouter::Get(browser_context_);
-  event_router->RegisterObserver(this, input_ime::OnKeyEvent::kEventName);
+  event_router->RegisterObserver(this, input_ime::OnActivate::kEventName);
   event_router->RegisterObserver(this, input_ime::OnFocus::kEventName);
 }
 
@@ -868,42 +875,13 @@ void InputImeAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
     return;
   if (input_components->size() > 0)
     input_ime_event_router()->UnregisterAllImes(extension->id());
-
-  extensions::InputImeEventRouter::GetInstance()->SetExtensionHasKeyListener(
-      extension->id(), false);
 }
 
 void InputImeAPI::OnListenerAdded(const EventListenerInfo& details) {
-  extensions::ExtensionSystem* extension_system =
-      extensions::ExtensionSystem::Get(details.browser_context);
-  if (!extension_system)
-    return;
-  // Extension framework may add listeners at very early stage to support
-  // persistent=false background page (a.k.a. lazy background).
-  // At that point, ExtensionHost for the background is not created yet (even
-  // ExtensionSystem may not be ready yet).
-  // So if ExtensionHost is available, there must be a listener added from JS
-  // code. And IMF is only interested in OnListenerAdded triggered by JS here.
-  if (!extension_system->process_manager()
-      ->GetBackgroundHostForExtension(details.extension_id))
-    return;
-
-  if (details.event_name == input_ime::OnFocus::kEventName) {
-    InputMethodEngineInterface* engine =
-        input_ime_event_router()->GetActiveEngine(details.extension_id);
-    if (engine)
-      engine->NotifyImeReady();
-  } else if (details.event_name == input_ime::OnKeyEvent::kEventName) {
-    extensions::InputImeEventRouter::GetInstance()->SetExtensionHasKeyListener(
-        details.extension_id, true);
-  }
-}
-
-void InputImeAPI::OnListenerRemoved(const EventListenerInfo& details) {
-  if (details.event_name == input_ime::OnKeyEvent::kEventName) {
-    extensions::InputImeEventRouter::GetInstance()->SetExtensionHasKeyListener(
-        details.extension_id, false);
-  }
+  InputMethodEngineInterface* engine =
+      input_ime_event_router()->GetActiveEngine(details.extension_id);
+  if (engine)
+    engine->NotifyImeReady();
 }
 
 InputImeEventRouter* InputImeAPI::input_ime_event_router() {
