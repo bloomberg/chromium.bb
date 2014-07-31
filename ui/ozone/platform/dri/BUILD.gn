@@ -5,6 +5,10 @@
 import("//build/config/linux/pkg_config.gni")
 import("//ui/ozone/ozone.gni")
 
+pkg_config("libdrm") {
+  packages = [ "libdrm" ]
+}
+
 source_set("dri_common") {
   sources = [
     "chromeos/display_mode_dri.cc",
@@ -57,7 +61,7 @@ source_set("dri_common") {
   ]
 
   direct_dependent_configs = [
-    "//build/config/linux:libdrm",
+    ":libdrm",
   ]
 }
 

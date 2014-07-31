@@ -21,7 +21,7 @@
       'type': 'static_library',
       'dependencies': [
         '../../base/base.gyp:base',
-        '../../build/linux/system.gyp:dridrm',
+        '../../build/linux/system.gyp:libdrm',
         '../../skia/skia.gyp:skia',
         '../base/ui_base.gyp:ui_base',
         '../display/display.gyp:display_types',
@@ -88,13 +88,13 @@
       'target_name': 'ozone_platform_dri_unittests',
       'type': 'none',
       'dependencies': [
-        '../../build/linux/system.gyp:dridrm',
+        '../../build/linux/system.gyp:libdrm',
         '../../skia/skia.gyp:skia',
         '../gfx/gfx.gyp:gfx_geometry',
         'ozone_platform_dri',
       ],
       'export_dependent_settings': [
-        '../../build/linux/system.gyp:dridrm',
+        '../../build/linux/system.gyp:libdrm',
         '../../skia/skia.gyp:skia',
         '../gfx/gfx.gyp:gfx_geometry',
       ],

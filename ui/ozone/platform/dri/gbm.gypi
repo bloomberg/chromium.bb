@@ -17,7 +17,7 @@
       'type': 'static_library',
       'dependencies': [
         '../../base/base.gyp:base',
-        '../../build/linux/system.gyp:dridrm',
+        '../../build/linux/system.gyp:libdrm',
         '../../build/linux/system.gyp:gbm',
         '../../skia/skia.gyp:skia',
         '../../third_party/khronos/khronos.gyp:khronos_headers',

@@ -21,10 +21,6 @@ config("sdk") {
   }
 }
 
-pkg_config("libdrm") {
-  packages = [ "libdrm" ]
-}
-
 config("fontconfig") {
   libs = [ "fontconfig" ]
 }
