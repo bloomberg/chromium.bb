@@ -46,6 +46,7 @@ private:
     void adjustStyleForDisplay(RenderStyle* styleToAdjust, RenderStyle* parentStyle);
     void adjustStyleForTagName(RenderStyle* styleToAdjust, RenderStyle* parentStyle, Element&);
     void adjustOverflow(RenderStyle* styleToAdjust);
+    void adjustStyleForAlignment(RenderStyle& styleToAdjust, const RenderStyle& parentStyle);
 
     bool m_useQuirksModeStyles;
 };

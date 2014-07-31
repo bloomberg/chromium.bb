@@ -5,6 +5,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 Test getting align-self set through CSS
 PASS getComputedStyle(alignSelfBaseline, '').getPropertyValue('align-self') is 'baseline'
+PASS getComputedStyle(alignSelfLastBaseline, '').getPropertyValue('align-self') is 'last-baseline'
 PASS getComputedStyle(alignSelfStretch, '').getPropertyValue('align-self') is 'stretch'
 PASS getComputedStyle(alignSelfStart, '').getPropertyValue('align-self') is 'start'
 PASS getComputedStyle(alignSelfEnd, '').getPropertyValue('align-self') is 'end'
@@ -13,48 +14,141 @@ PASS getComputedStyle(alignSelfSelfEnd, '').getPropertyValue('align-self') is 's
 PASS getComputedStyle(alignSelfSelfStart, '').getPropertyValue('align-self') is 'self-start'
 PASS getComputedStyle(alignSelfLeft, '').getPropertyValue('align-self') is 'left'
 PASS getComputedStyle(alignSelfRight, '').getPropertyValue('align-self') is 'right'
+PASS getComputedStyle(alignSelfFlexStart, '').getPropertyValue('align-self') is 'flex-start'
+PASS getComputedStyle(alignSelfFlexEnd, '').getPropertyValue('align-self') is 'flex-end'
 PASS getComputedStyle(alignSelfEndTrue, '').getPropertyValue('align-self') is 'end true'
 PASS getComputedStyle(alignSelfCenterTrue, '').getPropertyValue('align-self') is 'center true'
 PASS getComputedStyle(alignSelfSelfEndSafe, '').getPropertyValue('align-self') is 'self-end safe'
 PASS getComputedStyle(alignSelfSelfStartSafe, '').getPropertyValue('align-self') is 'self-start safe'
 PASS getComputedStyle(alignSelfRightSafe, '').getPropertyValue('align-self') is 'right safe'
 PASS getComputedStyle(alignSelfLeftTrue, '').getPropertyValue('align-self') is 'left true'
+PASS getComputedStyle(alignSelfFlexStartTrue, '').getPropertyValue('align-self') is 'flex-start true'
+PASS getComputedStyle(alignSelfFlexEndSafe, '').getPropertyValue('align-self') is 'flex-end safe'
 
 Test initial value of align-self through JS
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'stretch'
+PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'start'
 
 Test getting and setting align-self through JS
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'center'
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'start true'
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'stretch'
+PASS element.style.alignSelf is "center"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "center"
+PASS element.style.alignSelf is "start true"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start true"
+PASS element.style.alignSelf is "flex-end safe"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "flex-end safe"
+PASS element.style.alignSelf is "right"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "right"
+PASS element.style.alignSelf is "center"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "center"
+PASS element.style.alignSelf is "self-start"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "self-start"
+PASS element.style.alignSelf is "auto"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is "auto"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "stretch"
+PASS element.style.alignSelf is "auto"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "stretch"
+PASS element.style.alignSelf is "self-end"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "self-end"
 
-Test bad combinaisons of align-self
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'stretch'
+Test bad combinations of align-self
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+PASS element.style.alignSelf is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
 
 Test the value 'initial'
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'center'
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'stretch'
+PASS element.style.alignSelf is "center"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "center"
+PASS element.style.alignSelf is "initial"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "start"
+
+Test the value 'initial' for grid containers
+PASS element.style.alignSelf is "left safe"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "left safe"
+PASS element.style.alignSelf is "initial"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "stretch"
+
+Test the value 'initial' for flex containers
+PASS element.style.alignSelf is "right true"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "right true"
+PASS element.style.alignSelf is "initial"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "stretch"
+
+Test the value 'initial' for positioned elements
+PASS element.style.alignSelf is "left"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "left"
+PASS element.style.alignSelf is "initial"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "stretch"
+
+Test the value 'initial' for positioned elements in grid containers
+PASS element.style.alignSelf is "right"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "right"
+PASS element.style.alignSelf is "initial"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "stretch"
+
+Test the value 'initial' for positioned elements in grid containers
+PASS element.style.alignSelf is "end"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "end"
+PASS element.style.alignSelf is "initial"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "stretch"
 
 Test the value 'inherit'
-PASS getComputedStyle(parentElement, '').getPropertyValue('align-self') is 'end'
-PASS getComputedStyle(element, '').getPropertyValue('align-self') is 'end'
+PASS element.style.alignSelf is "end"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "end"
+PASS element.style.alignSelf is "inherit"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "end"
+PASS element.style.alignSelf is "left safe"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "left safe"
+PASS element.style.alignSelf is "inherit"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "left safe"
+PASS element.style.alignSelf is "center true"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "center true"
+PASS element.style.alignSelf is "inherit"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-self') is "center true"
 PASS successfullyParsed is true
 
 TEST COMPLETE

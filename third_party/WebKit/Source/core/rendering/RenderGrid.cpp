@@ -1219,7 +1219,7 @@ LayoutUnit RenderGrid::centeredRowPositionForChild(const RenderBox* child) const
 static ItemPosition resolveAlignment(const RenderStyle* parentStyle, const RenderStyle* childStyle)
 {
     ItemPosition align = childStyle->alignSelf();
-    // The auto keyword computes to the computed value of align-items on the parent.
+    // The auto keyword computes to the parent's align-items computed value, or to "stretch", if not set or "auto".
     if (align == ItemPositionAuto)
         align = (parentStyle->alignItems() == ItemPositionAuto) ? ItemPositionStretch : parentStyle->alignItems();
     return align;

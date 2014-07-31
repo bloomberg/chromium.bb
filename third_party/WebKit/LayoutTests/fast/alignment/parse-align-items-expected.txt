@@ -5,56 +5,132 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 Test getting align-items set through CSS
 PASS getComputedStyle(alignItemsBaseline, '').getPropertyValue('align-items') is 'baseline'
+PASS getComputedStyle(alignItemsLastBaseline, '').getPropertyValue('align-items') is 'last-baseline'
 PASS getComputedStyle(alignItemsStretch, '').getPropertyValue('align-items') is 'stretch'
 PASS getComputedStyle(alignItemsStart, '').getPropertyValue('align-items') is 'start'
 PASS getComputedStyle(alignItemsEnd, '').getPropertyValue('align-items') is 'end'
 PASS getComputedStyle(alignItemsCenter, '').getPropertyValue('align-items') is 'center'
-PASS getComputedStyle(alignItemsItemsEnd, '').getPropertyValue('align-items') is 'self-end'
-PASS getComputedStyle(alignItemsItemsStart, '').getPropertyValue('align-items') is 'self-start'
+PASS getComputedStyle(alignItemsSelfEnd, '').getPropertyValue('align-items') is 'self-end'
+PASS getComputedStyle(alignItemsSelfStart, '').getPropertyValue('align-items') is 'self-start'
 PASS getComputedStyle(alignItemsLeft, '').getPropertyValue('align-items') is 'left'
 PASS getComputedStyle(alignItemsRight, '').getPropertyValue('align-items') is 'right'
+PASS getComputedStyle(alignItemsFlexStart, '').getPropertyValue('align-items') is 'flex-start'
+PASS getComputedStyle(alignItemsFlexEnd, '').getPropertyValue('align-items') is 'flex-end'
 PASS getComputedStyle(alignItemsEndTrue, '').getPropertyValue('align-items') is 'end true'
 PASS getComputedStyle(alignItemsCenterTrue, '').getPropertyValue('align-items') is 'center true'
-PASS getComputedStyle(alignItemsItemsEndSafe, '').getPropertyValue('align-items') is 'self-end safe'
-PASS getComputedStyle(alignItemsItemsStartSafe, '').getPropertyValue('align-items') is 'self-start safe'
+PASS getComputedStyle(alignItemsSelfEndSafe, '').getPropertyValue('align-items') is 'self-end safe'
+PASS getComputedStyle(alignItemsSelfStartSafe, '').getPropertyValue('align-items') is 'self-start safe'
 PASS getComputedStyle(alignItemsRightSafe, '').getPropertyValue('align-items') is 'right safe'
 PASS getComputedStyle(alignItemsLeftTrue, '').getPropertyValue('align-items') is 'left true'
+PASS getComputedStyle(alignItemsFlexStartTrue, '').getPropertyValue('align-items') is 'flex-start true'
+PASS getComputedStyle(alignItemsFlexEndSafe, '').getPropertyValue('align-items') is 'flex-end safe'
 
 Test initial value of align-items through JS
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'stretch'
+PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'start'
 
 Test getting and setting align-items through JS
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'center'
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'start true'
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'auto'
+PASS element.style.alignItems is "center"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "center"
+PASS element.style.alignItems is "start true"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start true"
+PASS element.style.alignItems is "flex-end safe"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "flex-end safe"
+PASS element.style.alignItems is "right"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "right"
+PASS element.style.alignItems is "center"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "center"
+PASS element.style.alignItems is "self-start"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "self-start"
+PASS element.style.alignItems is "auto"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is "auto"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "stretch"
+PASS element.style.alignItems is "auto"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "stretch"
+PASS element.style.alignItems is "self-end"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "self-end"
 
-Test bad combinaisons of align-items
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'stretch'
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'stretch'
+Test bad combinations of align-items
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+PASS element.style.alignItems is ""
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
 
 Test the value 'initial'
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'center'
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'stretch'
+PASS element.style.alignItems is "center"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "center"
+PASS element.style.alignItems is "initial"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "start"
+
+Test the value 'initial' for grid containers
+PASS element.style.alignItems is "left safe"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "left safe"
+PASS element.style.alignItems is "initial"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "stretch"
+
+Test the value 'initial' for flex containers
+PASS element.style.alignItems is "right true"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "right true"
+PASS element.style.alignItems is "initial"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "stretch"
 
 Test the value 'inherit'
-PASS getComputedStyle(parentElement, '').getPropertyValue('align-items') is 'end'
-PASS getComputedStyle(element, '').getPropertyValue('align-items') is 'end'
+PASS element.style.alignItems is "end"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "end"
+PASS element.style.alignItems is "inherit"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "end"
+PASS element.style.alignItems is "left safe"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "left safe"
+PASS element.style.alignItems is "inherit"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "left safe"
+PASS element.style.alignItems is "center true"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "center true"
+PASS element.style.alignItems is "inherit"
+PASS window.getComputedStyle(element, '').getPropertyValue('align-items') is "center true"
 PASS successfullyParsed is true
 
 TEST COMPLETE

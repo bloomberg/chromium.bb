@@ -196,7 +196,7 @@ static ItemPosition resolveAlignment(const RenderStyle* parentStyle, const Rende
 {
     ItemPosition align = childStyle->alignSelf();
     if (align == ItemPositionAuto)
-        align = parentStyle->alignItems();
+        align = (parentStyle->alignItems() == ItemPositionAuto) ? ItemPositionStretch : parentStyle->alignItems();
     return align;
 }
 

@@ -1610,7 +1610,7 @@ public:
     static Length initialFlexBasis() { return Length(Auto); }
     static int initialOrder() { return 0; }
     static EAlignContent initialAlignContent() { return AlignContentStretch; }
-    static ItemPosition initialAlignItems() { return ItemPositionStretch; }
+    static ItemPosition initialAlignItems() { return ItemPositionAuto; }
     static OverflowAlignment initialAlignItemsOverflowAlignment() { return OverflowAlignmentDefault; }
     static ItemPosition initialAlignSelf() { return ItemPositionAuto; }
     static OverflowAlignment initialAlignSelfOverflowAlignment() { return OverflowAlignmentDefault; }

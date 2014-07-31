@@ -8,44 +8,39 @@ function checkValues(element, property, propertyID, value, computedValue)
 
 function checkBadValues(element, property, propertyID, value)
 {
-    element.style.justifyItems = value;
+    element.style[property] = value;
     checkValues(element, property, propertyID, "", "start");
 }
 
-function checkInitialValues(element, property, propertyID, display, value)
+function checkInitialValues(element, property, propertyID, value, initial)
 {
-    var initial = "start";
-    if (display == "grid" || display == "flex") {
-      element.style.display = display;
-      initial = "stretch";
-    }
-
-    element.style.justifyItems = value;
+    element.style[property] = value;
     checkValues(element, property, propertyID, value, value);
-    element.style.justifyItems = "initial";
+    element.style[property] = "initial";
     checkValues(element, property, propertyID, "initial", initial);
 }
 
-function checkInheritValues(element, property, propertyID, value)
+function checkInheritValues(property, propertyID, value)
 {
-    parentElement = document.createElement("div");
+    var parentElement = document.createElement("div");
     document.body.appendChild(parentElement);
-    parentElement.style.justifyItems = value;
+    parentElement.style[property] = value;
     checkValues(parentElement, property, propertyID, value, value);
 
-    element = document.createElement("div");
+    var element = document.createElement("div");
     parentElement.appendChild(element);
-    element.style.justifyItems = "inherit";
+    element.style[property] = "inherit";
     checkValues(element, property, propertyID, "inherit", value);
 }
 
-function checkLegacyValues(element, property, propertyID, value)
+function checkLegacyValues(property, propertyID, value)
 {
+    var parentElement = document.createElement("div");
     document.body.appendChild(parentElement);
-    parentElement.style.justifyItems = value;
+    parentElement.style[property] = value;
     checkValues(parentElement, property, propertyID, value, value);
 
-    element = document.createElement("div");
+    var element = document.createElement("div");
     parentElement.appendChild(element);
     checkValues(element, property, propertyID, "", value);
 }

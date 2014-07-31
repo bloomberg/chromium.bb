@@ -257,8 +257,6 @@ checkValues(element, "justifyItems", "justify-items",  "auto", "stretch");
 element.style.display = "grid";
 element.style.justifyItems = "auto";
 checkValues(element, "justifyItems", "justify-items",  "auto", "stretch");
-shouldBe("getComputedStyle(element, '').getPropertyValue('justify-items')", "'stretch'");
-shouldBe("element.style.justifyItems", "'auto'");
 
 element.style.justifyItems = "self-end";
 checkValues(element, "justifyItems", "justify-items",  "self-end", "self-end");
@@ -295,27 +293,30 @@ checkBadValues(element, "justifyItems", "justify-items",  "legacy left right");
 
 debug("");
 debug("Test the value 'initial'");
-checkInitialValues(element, "justifyItems", "justify-items", "", "legacy center");
+element.style.display = "";
+checkInitialValues(element, "justifyItems", "justify-items", "legacy center", "start");
 
 debug("");
 debug("Test the value 'initial' for grid containers");
-checkInitialValues(element, "justifyItems", "justify-items", "grid", "left safe");
+element.style.display = "grid";
+checkInitialValues(element, "justifyItems", "justify-items", "left safe", "stretch");
 
 debug("");
 debug("Test the value 'initial' for flex containers");
-checkInitialValues(element, "justifyItems", "justify-items", "flex", "right true");
+element.style.display = "flex";
+checkInitialValues(element, "justifyItems", "justify-items", "right true", "stretch");
 
 debug("");
 debug("Test the value 'inherit'");
-checkInheritValues(element, "justifyItems", "justify-items", "end");
-checkInheritValues(element, "justifyItems", "justify-items", "left safe");
-checkInheritValues(element, "justifyItems", "justify-items", "legacy center");
+checkInheritValues("justifyItems", "justify-items", "end");
+checkInheritValues("justifyItems", "justify-items", "left safe");
+checkInheritValues("justifyItems", "justify-items", "legacy center");
 
 debug("");
 debug("Test the value 'legacy'");
-checkLegacyValues(element, "justifyItems", "justify-items", "legacy left");
-checkLegacyValues(element, "justifyItems", "justify-items", "legacy center");
-checkLegacyValues(element, "justifyItems", "justify-items", "legacy right");
+checkLegacyValues("justifyItems", "justify-items", "legacy left");
+checkLegacyValues("justifyItems", "justify-items", "legacy center");
+checkLegacyValues("justifyItems", "justify-items", "legacy right");
 
 </script>
 </body>

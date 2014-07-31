@@ -6,6 +6,10 @@
     align-items: baseline;
 }
 
+#alignItemsLastBaseline {
+    align-items: last-baseline;
+}
+
 #alignItemsStretch {
     align-items: stretch;
 }
@@ -22,11 +26,11 @@
     align-items: center;
 }
 
-#alignItemsItemsStart {
+#alignItemsSelfStart {
     align-items: self-start;
 }
 
-#alignItemsItemsEnd {
+#alignItemsSelfEnd {
     align-items: self-end;
 }
 
@@ -38,6 +42,14 @@
     align-items: right;
 }
 
+#alignItemsFlexStart {
+    align-items: flex-start;
+}
+
+#alignItemsFlexEnd {
+    align-items: flex-end;
+}
+
 #alignItemsEndTrue {
     align-items: end true;
 }
@@ -46,11 +58,11 @@
     align-items: center true;
 }
 
-#alignItemsItemsEndSafe {
+#alignItemsSelfEndSafe {
     align-items: self-end safe;
 }
 
-#alignItemsItemsStartSafe {
+#alignItemsSelfStartSafe {
     align-items: self-start safe;
 }
 
@@ -61,32 +73,50 @@
 #alignItemsLeftTrue {
     align-items: left true;
 }
+
+#alignItemsFlexStartTrue {
+    align-items: flex-start true;
+}
+
+#alignItemsFlexEndSafe {
+    align-items: flex-end safe;
+}
+
 </style>
 <script src="../../resources/js-test.js"></script>
 </head>
 <body>
 <div id="alignItemsBaseline"></div>
+<div id="alignItemsLastBaseline"></div>
 <div id="alignItemsStretch"></div>
 <div id="alignItemsStart"></div>
 <div id="alignItemsEnd"></div>
 <div id="alignItemsCenter"></div>
-<div id="alignItemsItemsStart"></div>
-<div id="alignItemsItemsEnd"></div>
+<div id="alignItemsSelfStart"></div>
+<div id="alignItemsSelfEnd"></div>
 <div id="alignItemsLeft"></div>
 <div id="alignItemsRight"></div>
+<div id="alignItemsFlexStart"></div>
+<div id="alignItemsFlexEnd"></div>
 
 <div id="alignItemsEndTrue"></div>
 <div id="alignItemsCenterTrue"></div>
-<div id="alignItemsItemsEndSafe"></div>
-<div id="alignItemsItemsStartSafe"></div>
+<div id="alignItemsSelfEndSafe"></div>
+<div id="alignItemsSelfStartSafe"></div>
 <div id="alignItemsRightSafe"></div>
 <div id="alignItemsLeftTrue"></div>
+<div id="alignItemsFlexStartTrue"></div>
+<div id="alignItemsFlexEndSafe"></div>
+<script src="resources/alignment-parsing-utils.js"></script>
 <script>
 description('Test that setting and getting align-items works as expected');
 
 debug("Test getting align-items set through CSS");
 var alignItemsBaseline = document.getElementById("alignItemsBaseline");
 shouldBe("getComputedStyle(alignItemsBaseline, '').getPropertyValue('align-items')", "'baseline'");
+
+var alignItemsLastBaseline = document.getElementById("alignItemsLastBaseline");
+shouldBe("getComputedStyle(alignItemsLastBaseline, '').getPropertyValue('align-items')", "'last-baseline'");
 
 var alignItemsStretch = document.getElementById("alignItemsStretch");
 shouldBe("getComputedStyle(alignItemsStretch, '').getPropertyValue('align-items')", "'stretch'");
@@ -100,11 +130,11 @@ shouldBe("getComputedStyle(alignItemsEnd, '').getPropertyValue('align-items')", 
 var alignItemsCenter = document.getElementById("alignItemsCenter");
 shouldBe("getComputedStyle(alignItemsCenter, '').getPropertyValue('align-items')", "'center'");
 
-var alignItemsItemsEnd = document.getElementById("alignItemsItemsEnd");
-shouldBe("getComputedStyle(alignItemsItemsEnd, '').getPropertyValue('align-items')", "'self-end'");
+var alignItemsSelfEnd = document.getElementById("alignItemsSelfEnd");
+shouldBe("getComputedStyle(alignItemsSelfEnd, '').getPropertyValue('align-items')", "'self-end'");
 
-var alignItemsItemsStart = document.getElementById("alignItemsItemsStart");
-shouldBe("getComputedStyle(alignItemsItemsStart, '').getPropertyValue('align-items')", "'self-start'");
+var alignItemsSelfStart = document.getElementById("alignItemsSelfStart");
+shouldBe("getComputedStyle(alignItemsSelfStart, '').getPropertyValue('align-items')", "'self-start'");
 
 var alignItemsLeft = document.getElementById("alignItemsLeft");
 shouldBe("getComputedStyle(alignItemsLeft, '').getPropertyValue('align-items')", "'left'");
@@ -112,17 +142,23 @@ shouldBe("getComputedStyle(alignItemsLeft, '').getPropertyValue('align-items')",
 var alignItemsRight = document.getElementById("alignItemsRight");
 shouldBe("getComputedStyle(alignItemsRight, '').getPropertyValue('align-items')", "'right'");
 
+var alignItemsFlexStart = document.getElementById("alignItemsFlexStart");
+shouldBe("getComputedStyle(alignItemsFlexStart, '').getPropertyValue('align-items')", "'flex-start'");
+
+var alignItemsFlexEnd = document.getElementById("alignItemsFlexEnd");
+shouldBe("getComputedStyle(alignItemsFlexEnd, '').getPropertyValue('align-items')", "'flex-end'");
+
 var alignItemsEndTrue = document.getElementById("alignItemsEndTrue");
 shouldBe("getComputedStyle(alignItemsEndTrue, '').getPropertyValue('align-items')", "'end true'");
 
 var alignItemsCenterTrue = document.getElementById("alignItemsCenterTrue");
 shouldBe("getComputedStyle(alignItemsCenterTrue, '').getPropertyValue('align-items')", "'center true'");
 
-var alignItemsItemsEndSafe = document.getElementById("alignItemsItemsEndSafe");
-shouldBe("getComputedStyle(alignItemsItemsEndSafe, '').getPropertyValue('align-items')", "'self-end safe'");
+var alignItemsSelfEndSafe = document.getElementById("alignItemsSelfEndSafe");
+shouldBe("getComputedStyle(alignItemsSelfEndSafe, '').getPropertyValue('align-items')", "'self-end safe'");
 
-var alignItemsItemsStartSafe = document.getElementById("alignItemsItemsStartSafe");
-shouldBe("getComputedStyle(alignItemsItemsStartSafe, '').getPropertyValue('align-items')", "'self-start safe'");
+var alignItemsSelfStartSafe = document.getElementById("alignItemsSelfStartSafe");
+shouldBe("getComputedStyle(alignItemsSelfStartSafe, '').getPropertyValue('align-items')", "'self-start safe'");
 
 var alignItemsRightSafe = document.getElementById("alignItemsRightSafe");
 shouldBe("getComputedStyle(alignItemsRightSafe, '').getPropertyValue('align-items')", "'right safe'");
@@ -130,103 +166,105 @@ shouldBe("getComputedStyle(alignItemsRightSafe, '').getPropertyValue('align-item
 var alignItemsLeftTrue = document.getElementById("alignItemsLeftTrue");
 shouldBe("getComputedStyle(alignItemsLeftTrue, '').getPropertyValue('align-items')", "'left true'");
 
+var alignItemsFlexStartTrue = document.getElementById("alignItemsFlexStartTrue");
+shouldBe("getComputedStyle(alignItemsFlexStartTrue, '').getPropertyValue('align-items')", "'flex-start true'");
+
+var alignItemsFlexEndSafe = document.getElementById("alignItemsFlexEndSafe");
+shouldBe("getComputedStyle(alignItemsFlexEndSafe, '').getPropertyValue('align-items')", "'flex-end safe'");
+
 debug("");
 debug("Test initial value of align-items through JS");
 element = document.createElement("div");
 document.body.appendChild(element);
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'stretch'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'start'");
 
 debug("");
 debug("Test getting and setting align-items through JS");
 element = document.createElement("div");
 document.body.appendChild(element);
 element.style.alignItems = "center";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'center'");
+checkValues(element, "alignItems", "align-items",  "center", "center");
 
-element = document.createElement("div");
-document.body.appendChild(element);
 element.style.alignItems = "true start";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'start true'");
+checkValues(element, "alignItems", "align-items",  "start true", "start true");
+
+element.style.alignItems = "flex-end safe";
+checkValues(element, "alignItems", "align-items",  "flex-end safe", "flex-end safe");
+
+element.style.alignItems = "right";
+checkValues(element, "alignItems", "align-items",  "right", "right");
+
+element.style.alignItems = "center";
+checkValues(element, "alignItems", "align-items",  "center", "center");
+
+element.style.alignItems = "self-start";
+checkValues(element, "alignItems", "align-items",  "self-start", "self-start");
 
 element.style.alignItems = "auto";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'auto'");
+checkValues(element, "alignItems", "align-items",  "auto", "start");
+
+element.style.display = "flex";
+element.style.alignItems = "auto";
+checkValues(element, "alignItems", "align-items",  "auto", "stretch");
+
+element.style.display = "grid";
+element.style.alignItems = "auto";
+checkValues(element, "alignItems", "align-items",  "auto", "stretch");
+
+element.style.alignItems = "self-end";
+checkValues(element, "alignItems", "align-items",  "self-end", "self-end");
 
 debug("");
-debug("Test bad combinaisons of align-items");
+debug("Test bad combinations of align-items");
 element = document.createElement("div");
 document.body.appendChild(element);
-element.style.alignItems = "true auto";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'stretch'");
 
-element.style.alignItems = "auto safe";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'stretch'");
-
-element.style.alignItems = "auto left";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'stretch'");
-
-element.style.alignItems = "baseline safe";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'stretch'");
-
-element.style.alignItems = "baseline center";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'stretch'");
-
-element.style.alignItems = "stretch true";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'stretch'");
-
-element.style.alignItems = "stretch right";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'stretch'");
-
-element.style.alignItems = "true true";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'stretch'");
-
-element.style.alignItems = "true safe";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'stretch'");
-
-element.style.alignItems = "center start";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'stretch'");
-
-element.style.alignItems = "stretch true";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'stretch'");
-
-element.style.alignItems = "safe stretch";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'stretch'");
-
-element.style.alignItems = "baseline safe";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'stretch'");
-
-element.style.alignItems = "true baseline";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'stretch'");
-
-element.style.alignItems = "true safe";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'stretch'");
-
-element.style.alignItems = "true safe left";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'stretch'");
-
-element.style.alignItems = "true left safe";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'stretch'");
-
-element.style.alignItems = "left safe true safe";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'stretch'");
+checkBadValues(element, "alignItems", "align-items",  "true auto");
+checkBadValues(element, "alignItems", "align-items",  "auto safe");
+checkBadValues(element, "alignItems", "align-items",  "auto left");
+checkBadValues(element, "alignItems", "align-items",  "baseline safe");
+checkBadValues(element, "alignItems", "align-items",  "baseline center");
+checkBadValues(element, "alignItems", "align-items",  "stretch true");
+checkBadValues(element, "alignItems", "align-items",  "stretch right");
+checkBadValues(element, "alignItems", "align-items",  "true true");
+checkBadValues(element, "alignItems", "align-items",  "true safe");
+checkBadValues(element, "alignItems", "align-items",  "center start");
+checkBadValues(element, "alignItems", "align-items",  "stretch true");
+checkBadValues(element, "alignItems", "align-items",  "safe stretch");
+checkBadValues(element, "alignItems", "align-items",  "baseline safe");
+checkBadValues(element, "alignItems", "align-items",  "true baseline");
+checkBadValues(element, "alignItems", "align-items",  "true safe left");
+checkBadValues(element, "alignItems", "align-items",  "true left safe");
+checkBadValues(element, "alignItems", "align-items",  "left safe true safe");
+checkBadValues(element, "alignItems", "align-items",  "legacy start");
+checkBadValues(element, "alignItems", "align-items",  "legacy end");
+checkBadValues(element, "alignItems", "align-items",  "legacy right true");
+checkBadValues(element, "alignItems", "align-items",  "legacy auto");
+checkBadValues(element, "alignItems", "align-items",  "legacy stretch");
+checkBadValues(element, "alignItems", "align-items",  "legacy");
+checkBadValues(element, "alignItems", "align-items",  "legacy left right");
 
 debug("");
 debug("Test the value 'initial'");
-element.style.alignItems = "center";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'center'");
-element.style.alignItems = "initial";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'stretch'");
+element.style.display = "";
+checkInitialValues(element, "alignItems", "align-items", "center", "start");
+
+debug("");
+debug("Test the value 'initial' for grid containers");
+element.style.display = "grid";
+checkInitialValues(element, "alignItems", "align-items", "left safe", "stretch");
+
+debug("");
+debug("Test the value 'initial' for flex containers");
+element.style.display = "flex";
+checkInitialValues(element, "alignItems", "align-items", "right true", "stretch");
 
 debug("");
 debug("Test the value 'inherit'");
-parentElement = document.createElement("div");
-document.body.appendChild(parentElement);
-parentElement.style.alignItems = "end";
-shouldBe("getComputedStyle(parentElement, '').getPropertyValue('align-items')", "'end'");
+checkInheritValues("alignItems", "align-items", "end");
+checkInheritValues("alignItems", "align-items", "left safe");
+checkInheritValues("alignItems", "align-items", "center true");
 
-element = document.createElement("div");
-parentElement.appendChild(element);
-element.style.alignItems = "inherit";
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'end'");
 </script>
 </body>
 </html>

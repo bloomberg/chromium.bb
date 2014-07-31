@@ -53,8 +53,6 @@ PASS element.style.justifyItems is "auto"
 PASS window.getComputedStyle(element, '').getPropertyValue('justify-items') is "stretch"
 PASS element.style.justifyItems is "auto"
 PASS window.getComputedStyle(element, '').getPropertyValue('justify-items') is "stretch"
-PASS getComputedStyle(element, '').getPropertyValue('justify-items') is 'stretch'
-PASS element.style.justifyItems is 'auto'
 PASS element.style.justifyItems is "self-end"
 PASS window.getComputedStyle(element, '').getPropertyValue('justify-items') is "self-end"
 

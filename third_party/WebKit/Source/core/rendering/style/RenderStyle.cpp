@@ -179,7 +179,9 @@ StyleRecalcChange RenderStyle::stylePropagationDiff(const RenderStyle* oldStyle,
         || oldStyle->hasPseudoStyle(FIRST_LETTER) != newStyle->hasPseudoStyle(FIRST_LETTER)
         || oldStyle->columnSpan() != newStyle->columnSpan()
         || !oldStyle->contentDataEquivalent(newStyle)
-        || oldStyle->hasTextCombine() != newStyle->hasTextCombine())
+        || oldStyle->hasTextCombine() != newStyle->hasTextCombine()
+        || oldStyle->justifyItems() != newStyle->justifyItems()
+        || oldStyle->alignItems() != newStyle->alignItems())
         return Reattach;
 
     if (*oldStyle == *newStyle)
