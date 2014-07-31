@@ -12,10 +12,8 @@
 #include "base/metrics/histogram.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "extensions/browser/api/runtime/runtime_api_delegate.h"
@@ -33,6 +31,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
+#include "extensions/common/one_shot_event.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 
@@ -139,11 +138,13 @@ BrowserContextKeyedAPIFactory<RuntimeAPI>* RuntimeAPI::GetFactoryInstance() {
 RuntimeAPI::RuntimeAPI(content::BrowserContext* context)
     : browser_context_(context),
       dispatch_chrome_updated_event_(false),
-      extension_registry_observer_(this) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSIONS_READY,
-                 content::Source<BrowserContext>(context));
+      extension_registry_observer_(this),
+      weak_ptr_factory_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
+  ExtensionSystem::Get(browser_context_)->ready().Post(
+      FROM_HERE,
+      base::Bind(&RuntimeAPI::OnExtensionReady,
+                 weak_ptr_factory_.GetWeakPtr()));
 
   delegate_ = ExtensionsBrowserClient::Get()->CreateRuntimeAPIDelegate(
       browser_context_);
@@ -156,25 +157,6 @@ RuntimeAPI::RuntimeAPI(content::BrowserContext* context)
 
 RuntimeAPI::~RuntimeAPI() {
   delegate_->RemoveUpdateObserver(this);
-}
-
-void RuntimeAPI::Observe(int type,
-                         const content::NotificationSource& source,
-                         const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_EXTENSIONS_READY, type);
-  // We're done restarting Chrome after an update.
-  dispatch_chrome_updated_event_ = false;
-
-  delegate_->AddUpdateObserver(this);
-
-  // RuntimeAPI is redirected in incognito, so |browser_context_| is never
-  // incognito. We don't observe incognito ProcessManagers but that is OK
-  // because we don't send onStartup events to incognito browser contexts.
-  DCHECK(!browser_context_->IsOffTheRecord());
-  // Some tests use partially constructed Profiles without a process manager.
-  ExtensionSystem* extension_system = ExtensionSystem::Get(browser_context_);
-  if (extension_system->process_manager())
-    extension_system->process_manager()->AddObserver(this);
 }
 
 void RuntimeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
@@ -226,6 +208,22 @@ void RuntimeAPI::OnExtensionUninstalled(
 
   RuntimeEventRouter::OnExtensionUninstalled(
       browser_context_, extension->id(), reason);
+}
+
+void RuntimeAPI::OnExtensionReady() {
+  // We're done restarting Chrome after an update.
+  dispatch_chrome_updated_event_ = false;
+
+  delegate_->AddUpdateObserver(this);
+
+  // RuntimeAPI is redirected in incognito, so |browser_context_| is never
+  // incognito. We don't observe incognito ProcessManagers but that is OK
+  // because we don't send onStartup events to incognito browser contexts.
+  DCHECK(!browser_context_->IsOffTheRecord());
+  // Some tests use partially constructed Profiles without a process manager.
+  ExtensionSystem* extension_system = ExtensionSystem::Get(browser_context_);
+  if (extension_system->process_manager())
+    extension_system->process_manager()->AddObserver(this);
 }
 
 void RuntimeAPI::Shutdown() {

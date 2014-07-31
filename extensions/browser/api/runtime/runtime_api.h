@@ -7,9 +7,8 @@
 
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/api/runtime/runtime_api_delegate.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
@@ -42,7 +41,6 @@ class ExtensionRegistry;
 // extensions. There is one instance shared between a browser context and
 // its related incognito instance.
 class RuntimeAPI : public BrowserContextKeyedAPI,
-                   public content::NotificationObserver,
                    public ExtensionRegistryObserver,
                    public UpdateObserver,
                    public ProcessManagerObserver {
@@ -51,11 +49,6 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
 
   explicit RuntimeAPI(content::BrowserContext* context);
   virtual ~RuntimeAPI();
-
-  // content::NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
   void ReloadExtension(const std::string& extension_id);
   bool CheckForUpdates(const std::string& extension_id,
@@ -79,6 +72,7 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
   virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
                                       const Extension* extension,
                                       UninstallReason reason) OVERRIDE;
+  void OnExtensionReady();
 
   // BrowserContextKeyedAPI implementation:
   static const char* service_name() { return "RuntimeAPI"; }
@@ -101,11 +95,11 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
   // reason "chrome_update" upon loading each extension.
   bool dispatch_chrome_updated_event_;
 
-  content::NotificationRegistrar registrar_;
-
   // Listen to extension notifications.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
+
+  base::WeakPtrFactory<RuntimeAPI> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RuntimeAPI);
 };
