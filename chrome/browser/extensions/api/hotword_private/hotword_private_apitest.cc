@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/api/hotword_private/hotword_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -12,6 +13,9 @@
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/common/pref_names.h"
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#endif
 
 namespace {
 
@@ -150,6 +154,28 @@ IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, IsAvailableFalse) {
   ASSERT_TRUE(RunComponentExtensionTest("isAvailable")) << message_;
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
+
+IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, ExperimentalHotwordEnabled) {
+  // Disabled by default.
+  ExtensionTestMessageListener listener("experimentalHotwordEnabled: false",
+                                        false);
+  ASSERT_TRUE(RunComponentExtensionTest("experimentalHotwordEnabled"))
+      << message_;
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+}
+
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest,
+                       ExperimentalHotwordEnabled_ChromeOS) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      chromeos::switches::kEnableOkGoogleVoiceSearch);
+  ExtensionTestMessageListener listener("experimentalHotwordEnabled: true",
+                                        false);
+  ASSERT_TRUE(RunComponentExtensionTest("experimentalHotwordEnabled"))
+      << message_;
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+}
+#endif
 
 IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, OnEnabledChanged) {
   // Trigger the pref registrar.

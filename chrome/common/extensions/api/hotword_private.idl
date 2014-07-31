@@ -26,6 +26,10 @@
     // Whether the sound of "Ok, Google" plus a few seconds before is sent
     // back to Google.
     boolean audioLoggingEnabled;
+
+    // Whether experimental hotwording functionality is enabled. Mirrors the
+    // "enable-ok-google-voice-search" flag.
+    boolean experimentalHotwordEnabled;
   };
 
   // The type of the recognized hotword. Right now it only has 'search' but
