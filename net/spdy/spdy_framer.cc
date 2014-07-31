@@ -31,6 +31,25 @@ uLong CalculateDictionaryId(const char* dictionary,
                  dictionary_size);
 }
 
+// Check to see if the name and value of a cookie are both empty.
+bool IsCookieEmpty(const base::StringPiece& cookie) {
+  if (cookie.size() == 0) {
+     return true;
+  }
+  size_t pos = cookie.find('=');
+  if (pos  == base::StringPiece::npos) {
+     return false;
+  }
+  // Ignore leading whitespaces of cookie value.
+  size_t value_start = pos + 1;
+  for (; value_start < cookie.size(); value_start++) {
+     if (!(cookie[value_start] == ' ' || cookie[value_start] == '\t')) {
+        break;
+     }
+  }
+  return (pos == 0) && ((cookie.size() - value_start) == 0);
+}
+
 struct DictionaryIds {
   DictionaryIds()
     : v2_dictionary_id(CalculateDictionaryId(kV2Dictionary, kV2DictionarySize)),
@@ -1257,12 +1276,18 @@ void SpdyFramer::WriteHeaderBlockToZ(const SpdyHeaderBlock* headers,
             break;
         }
         if (i < cookie_data.size()) {
-          cookie_values.push_back(cookie_data.substr(0, i));
-          cookie_length += i + 2 /* semicolon and space */;
+          if (!IsCookieEmpty(cookie_data.substr(0, i))) {
+            cookie_values.push_back(cookie_data.substr(0, i));
+            cookie_length += i + 2 /* semicolon and space */;
+          }
           cookie_data.remove_prefix(i + 1);
         } else {
-          cookie_values.push_back(cookie_data);
-          cookie_length += cookie_data.size();
+          if (!IsCookieEmpty(cookie_data)) {
+            cookie_values.push_back(cookie_data);
+            cookie_length += cookie_data.size();
+          } else if (cookie_length > 2) {
+            cookie_length -= 2 /* compensate for previously added length */;
+          }
           cookie_data.remove_prefix(i);
         }
       }
@@ -1313,6 +1338,7 @@ void SpdyFramer::WriteHeaderBlockToZ(const SpdyHeaderBlock* headers,
   DCHECK_EQ(Z_OK, rv);
   z->clas = kZStandardData;
 }
+
 #endif  // !defined(USE_SYSTEM_ZLIB)
 
 size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,

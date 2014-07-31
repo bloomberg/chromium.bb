@@ -668,6 +668,35 @@ INSTANTIATE_TEST_CASE_P(SpdyFramerTests,
                         SpdyFramerTest,
                         ::testing::Values(SPDY2, SPDY3, SPDY4));
 
+// Test that we ignore cookie where both name and value are empty.
+TEST_P(SpdyFramerTest, HeaderBlockWithEmptyCookie) {
+  if (spdy_version_ > SPDY3) {
+    // Not implemented for hpack.
+    return;
+  }
+
+  SpdyFramer framer(spdy_version_);
+  framer.set_enable_compression(true);
+  SpdyHeadersIR headers(1);
+  headers.set_priority(1);
+  headers.SetHeader("cookie",
+                    "=; key=value; ;  = ; foo; bar=;  ;  =   ; k2=v2 ; =");
+  scoped_ptr<SpdyFrame> frame(framer.SerializeHeaders(headers));
+  EXPECT_TRUE(frame.get() != NULL);
+
+  TestSpdyVisitor visitor(spdy_version_);
+  visitor.use_compression_ = true;
+  visitor.SimulateInFramer(
+      reinterpret_cast<unsigned char*>(frame->data()),
+      frame->size());
+
+  EXPECT_EQ(1, visitor.zero_length_control_frame_header_data_count_);
+  EXPECT_FALSE(CompareHeaderBlocks(&headers.name_value_block(),
+                                  &visitor.headers_));
+  EXPECT_EQ(1u, visitor.headers_.size());
+  EXPECT_EQ("key=value; foo; bar=; k2=v2 ", visitor.headers_["cookie"]);
+}
+
 // Test that we can encode and decode a SpdyHeaderBlock in serialized form.
 TEST_P(SpdyFramerTest, HeaderBlockInBuffer) {
   SpdyFramer framer(spdy_version_);
