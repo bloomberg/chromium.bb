@@ -279,6 +279,9 @@
       'filepath': 'Source/modules/device_light/' \
                   '|LayoutTests/fast/dom/DeviceLight/'
     },
+    'websockets': {
+      'filepath': 'Source/modules/websockets/'
+    },
   },
 
   'WATCHLISTS': {
@@ -395,5 +398,6 @@
     'battery_status': [ 'timvolodine@chromium.org' ],
     'out_of_process_frames': [ 'dcheng@chromium.org' ],
     'device_light': [ 'timvolodine@chromium.org' ],
+    'websockets': [ 'tyoshino+watch@chromium.org', 'yhirano+watch@chromium.org' ],
   },
 }
