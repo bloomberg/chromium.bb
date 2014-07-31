@@ -222,6 +222,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       content::RemoteMediaStreamImpl*> RemoteStreamMap;
   RemoteStreamMap remote_streams_;
   scoped_refptr<webrtc::UMAObserver> uma_observer_;
+  base::TimeTicks ice_connection_checking_start_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCPeerConnectionHandler);
 };

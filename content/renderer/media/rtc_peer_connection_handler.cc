@@ -863,6 +863,18 @@ void RTCPeerConnectionHandler::OnSignalingChange(
 // Called any time the IceConnectionState changes
 void RTCPeerConnectionHandler::OnIceConnectionChange(
     webrtc::PeerConnectionInterface::IceConnectionState new_state) {
+  if (new_state == webrtc::PeerConnectionInterface::kIceConnectionChecking) {
+    ice_connection_checking_start_ = base::TimeTicks::Now();
+  } else if (new_state ==
+      webrtc::PeerConnectionInterface::kIceConnectionConnected) {
+    // If the state becomes connected, send the time needed for PC to become
+    // connected from checking to UMA. UMA data will help to know how much
+    // time needed for PC to connect with remote peer.
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "WebRTC.PeerConnection.TimeToConnect",
+        base::TimeTicks::Now() - ice_connection_checking_start_);
+  }
+
   track_metrics_.IceConnectionChange(new_state);
   blink::WebRTCPeerConnectionHandlerClient::ICEConnectionState state =
       GetWebKitIceConnectionState(new_state);
