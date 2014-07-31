@@ -16,6 +16,9 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.ui.base.WindowAndroid;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /***
  * This view is used by a ContentView to render its content.
  * Call {@link #setCurrentContentViewCore(ContentViewCore)} with the contentViewCore that should be
@@ -27,7 +30,7 @@ public class ContentViewRenderView extends FrameLayout {
     // The native side of this object.
     private long mNativeContentViewRenderView;
     private SurfaceHolder.Callback mSurfaceCallback;
-    private DelayedSurfaceRunnable mDelayedSurfaceRunnable;
+    private List<DelayedSurfaceRunnable> mDelayedSurfaceRunnableList;
 
     private final SurfaceView mSurfaceView;
     protected ContentViewCore mContentViewCore;
@@ -59,7 +62,6 @@ public class ContentViewRenderView extends FrameLayout {
         @Override
         public void run() {
             assert mNativeContentViewRenderView != 0;
-            nativeSurfaceCreated(mNativeContentViewRenderView);
             nativeSurfaceChanged(mNativeContentViewRenderView, mFormat, mWidth, mHeight,
                     mHolder.getSurface());
             if (mContentViewCore != null) {
@@ -88,19 +90,19 @@ public class ContentViewRenderView extends FrameLayout {
         mSurfaceCallback = new SurfaceHolder.Callback() {
             @Override
             public void surfaceDestroyed(SurfaceHolder holder) {
-                mDelayedSurfaceRunnable = null;
+                mDelayedSurfaceRunnableList = null;
             }
 
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
+                mDelayedSurfaceRunnableList =
+                        new ArrayList<ContentViewRenderView.DelayedSurfaceRunnable>();
             }
 
             @Override
             public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-                if (mDelayedSurfaceRunnable == null) {
-                    mDelayedSurfaceRunnable =
-                            new DelayedSurfaceRunnable(holder, format, width, height);
-                }
+                mDelayedSurfaceRunnableList.add(
+                        new DelayedSurfaceRunnable(holder, format, width, height));
                 return;
             }
         };
@@ -157,9 +159,12 @@ public class ContentViewRenderView extends FrameLayout {
             }
         };
         mContentReadbackHandler.initNativeContentReadbackHandler();
-        if (mDelayedSurfaceRunnable != null) {
-            mDelayedSurfaceRunnable.run();
-            mDelayedSurfaceRunnable = null;
+        if (mDelayedSurfaceRunnableList != null) {
+            nativeSurfaceCreated(mNativeContentViewRenderView);
+            for (int i = 0; i < mDelayedSurfaceRunnableList.size(); i++) {
+                mDelayedSurfaceRunnableList.get(i).run();
+            }
+            mDelayedSurfaceRunnableList = null;
         }
     }
 
