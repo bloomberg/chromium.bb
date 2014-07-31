@@ -13,7 +13,7 @@ class TestPageMeasurementResults(
     super(TestPageMeasurementResults, self).__init__()
     self.test = test
     page = page_module.Page("http://www.google.com", {})
-    self.StartTest(page)
+    self.WillRunPage(page)
 
   def GetPageSpecificValueNamed(self, name):
     values = [value for value in self.all_page_specific_values
