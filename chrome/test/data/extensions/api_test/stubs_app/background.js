@@ -10,9 +10,12 @@ function getApiPaths() {
   var apiDefinitions = chrome.test.getApiDefinitions();
   apiDefinitions.forEach(function(module) {
     var namespace = module.namespace;
+    var apiFeature = apiFeatures[namespace];
+    if (Array.isArray(apiFeature))
+      apiFeature = apiFeatures[namespace][0];
 
     // Skip internal APIs.
-    if (apiFeatures[namespace].internal)
+    if (apiFeature.internal)
       return;
 
     // Get the API functions and events.
