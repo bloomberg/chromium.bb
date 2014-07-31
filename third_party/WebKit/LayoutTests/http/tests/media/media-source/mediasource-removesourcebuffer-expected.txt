@@ -3,4 +3,5 @@ PASS Test addSourceBuffer(), removeSourceBuffer(), addSourceBuffer() sequence.
 PASS Test removeSourceBuffer() with null 
 PASS Test calling removeSourceBuffer() twice with the same object. 
 PASS Test calling removeSourceBuffer() in ended state. 
+PASS Test removesourcebuffer event on activeSourceBuffers. 
 

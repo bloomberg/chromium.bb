@@ -61,7 +61,33 @@
               
               test.done();
           }, "Test calling removeSourceBuffer() in ended state.");
+          
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
+          {
+              var initSegment = MediaSourceUtil.extractSegmentData(mediaData, segmentInfo.init);
+              
+              test.expectEvent(sourceBuffer, 'updateend', 'initSegment append ended.');
+              test.expectEvent(mediaElement, 'loadedmetadata', 'loadedmetadata done.');
+              sourceBuffer.appendBuffer(initSegment);
 
+              test.waitForExpectedEvents(function()
+              {
+                  assert_true(mediaSource.sourceBuffers.length == 1, "MediaSource.sourceBuffers is not empty");
+                  assert_true(mediaSource.activeSourceBuffers.length == 1, "MediaSource.activesourceBuffers is not empty");
+                  assert_equals(mediaElement.readyState, mediaElement.HAVE_METADATA);
+                  assert_equals(mediaSource.duration, segmentInfo.durationInInitSegment);
+                  test.expectEvent(mediaSource.activeSourceBuffers, 'removesourcebuffer', 'SourceBuffer removed from activeSourceBuffers.');
+                  test.expectEvent(mediaSource.sourceBuffers, 'removesourcebuffer', 'SourceBuffer removed.');
+                  mediaSource.removeSourceBuffer(sourceBuffer);
+              });
+                                   
+              test.waitForExpectedEvents(function()
+              {
+                  assert_true(mediaSource.sourceBuffers.length == 0, "MediaSource.sourceBuffers is empty");
+                  assert_true(mediaSource.activeSourceBuffers.length == 0, "MediaSource.activesourceBuffers is empty");
+                  test.done();
+              });
+          }, 'Test removesourcebuffer event on activeSourceBuffers.');  
         </script>
     </body>
 </html>
