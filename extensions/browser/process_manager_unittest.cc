@@ -11,9 +11,9 @@
 #include "content/public/common/content_client.h"
 #include "content/public/test/test_browser_context.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extensions_test.h"
 #include "extensions/browser/process_manager_delegate.h"
 #include "extensions/browser/test_extensions_browser_client.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserContext;
 using content::SiteInstance;
@@ -22,26 +22,6 @@ using content::TestBrowserContext;
 namespace extensions {
 
 namespace {
-
-// Sets up a temporary ContentClient and ContentBrowserClient for testing.
-class ScopedContentClient {
- public:
-  ScopedContentClient() {
-    content::SetContentClient(&content_client_);
-    content::SetBrowserClientForTesting(&content_browser_client_);
-  }
-
-  ~ScopedContentClient() {
-    content::SetBrowserClientForTesting(NULL);
-    content::SetContentClient(NULL);
-  }
-
- private:
-  content::ContentClient content_client_;
-  content::ContentBrowserClient content_browser_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedContentClient);
-};
 
 // An incognito version of a TestBrowserContext.
 class TestBrowserContextIncognito : public TestBrowserContext {
@@ -79,23 +59,20 @@ class TestProcessManagerDelegate : public ProcessManagerDelegate {
 
 }  // namespace
 
-class ProcessManagerTest : public testing::Test {
+class ProcessManagerTest : public ExtensionsTest {
  public:
   ProcessManagerTest()
       : notification_service_(content::NotificationService::Create()),
-        extension_registry_(&original_context_),
-        extensions_browser_client_(&original_context_) {
-    extensions_browser_client_.SetIncognitoContext(&incognito_context_);
-    extensions_browser_client_.set_process_manager_delegate(
+        extension_registry_(browser_context()) {
+    extensions_browser_client()->SetIncognitoContext(&incognito_context_);
+    extensions_browser_client()->set_process_manager_delegate(
         &process_manager_delegate_);
-    ExtensionsBrowserClient::Set(&extensions_browser_client_);
   }
 
-  virtual ~ProcessManagerTest() {
-    ExtensionsBrowserClient::Set(NULL);
-  }
+  virtual ~ProcessManagerTest() {}
 
-  BrowserContext* original_context() { return &original_context_; }
+  // Use original_context() to make it clear it is a non-incognito context.
+  BrowserContext* original_context() { return browser_context(); }
   BrowserContext* incognito_context() { return &incognito_context_; }
   ExtensionRegistry* extension_registry() { return &extension_registry_; }
   TestProcessManagerDelegate* process_manager_delegate() {
@@ -112,16 +89,10 @@ class ProcessManagerTest : public testing::Test {
   }
 
  private:
-  // Content module setup.
-  ScopedContentClient content_client_;
   scoped_ptr<content::NotificationService> notification_service_;
-
-  TestBrowserContext original_context_;
   TestBrowserContextIncognito incognito_context_;
-
   ExtensionRegistry extension_registry_;  // Shared between BrowserContexts.
   TestProcessManagerDelegate process_manager_delegate_;
-  TestExtensionsBrowserClient extensions_browser_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessManagerTest);
 };

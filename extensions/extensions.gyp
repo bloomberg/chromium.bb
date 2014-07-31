@@ -714,6 +714,8 @@
         'browser/api/dns/mock_host_resolver_creator.h',
         'browser/api_test_utils.cc',
         'browser/api_test_utils.h',
+        'browser/extensions_test.cc',
+        'browser/extensions_test.h',
         'browser/test_extensions_browser_client.cc',
         'browser/test_extensions_browser_client.h',
         'browser/test_management_policy.cc',
