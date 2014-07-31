@@ -54,6 +54,8 @@ v8::Handle<v8::Value> V8ThrowException::createDOMException(int ec, const String&
     // FIXME: Handle other WebIDL exception types.
     if (ec == TypeError)
         return V8ThrowException::createTypeError(sanitizedMessage, isolate);
+    if (ec == RangeError)
+        return V8ThrowException::createRangeError(sanitizedMessage, isolate);
 
     RefPtrWillBeRawPtr<DOMException> domException = DOMException::create(ec, sanitizedMessage, unsanitizedMessage);
     v8::Handle<v8::Value> exception = toV8(domException, creationContext, isolate);
@@ -115,6 +117,17 @@ v8::Handle<v8::Value> V8ThrowException::createTypeError(const String& message, v
 v8::Handle<v8::Value> V8ThrowException::throwTypeError(const String& message, v8::Isolate* isolate)
 {
     v8::Handle<v8::Value> exception = V8ThrowException::createTypeError(message, isolate);
+    return V8ThrowException::throwError(exception, isolate);
+}
+
+v8::Handle<v8::Value> V8ThrowException::createRangeError(const String& message, v8::Isolate* isolate)
+{
+    return v8::Exception::RangeError(v8String(isolate, message.isNull() ? "Range error" : message));
+}
+
+v8::Handle<v8::Value> V8ThrowException::throwRangeError(const String& message, v8::Isolate* isolate)
+{
+    v8::Handle<v8::Value> exception = V8ThrowException::createRangeError(message, isolate);
     return V8ThrowException::throwError(exception, isolate);
 }
 

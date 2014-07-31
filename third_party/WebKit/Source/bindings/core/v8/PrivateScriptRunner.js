@@ -78,7 +78,7 @@ function DOMExceptionInPrivateScript(code, message)
 {
     this.code = domExceptionCode[code] || 0;
     this.message = message;
-    this.type = "DOMExceptionInPrivateScript";
+    this.name = "DOMExceptionInPrivateScript";
 }
 
 function privateScriptClass()

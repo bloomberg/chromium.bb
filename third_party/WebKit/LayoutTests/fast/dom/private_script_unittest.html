@@ -65,6 +65,9 @@ shouldBe('privateScriptTest.nodeAttribute', 'node8');
 shouldThrow('privateScriptTest.nodeAttributeThrowsIndexSizeError');
 shouldThrow('privateScriptTest.nodeAttributeThrowsIndexSizeError = null');
 shouldThrow('privateScriptTest.voidMethodThrowsSyntaxError()');
+shouldThrow('privateScriptTest.voidMethodThrowsTypeError()');
+shouldThrow('privateScriptTest.voidMethodThrowsRangeError()');
+shouldThrow('privateScriptTest.voidMethodWithStackOverflow()');
 
 shouldBe('privateScriptTest.addIntegerImplementedInCPP(111, 222)', '333');
 shouldBeEqualToString('privateScriptTest.stringAttributeImplementedInCPP', 'undefined');

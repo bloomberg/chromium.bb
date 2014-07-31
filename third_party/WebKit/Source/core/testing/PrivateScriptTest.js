@@ -123,6 +123,19 @@ installClass("PrivateScriptTest", function(global, InternalsPrototype) {
         throw new DOMExceptionInPrivateScript("SyntaxError", "method threw error");
     }
 
+    InternalsPrototype.voidMethodThrowsTypeError = function() {
+        throw new DOMExceptionInPrivateScript("TypeError", "method threw TypeError");
+    }
+
+    InternalsPrototype.voidMethodThrowsRangeError = function() {
+        throw new DOMExceptionInPrivateScript("RangeError", "method threw RangeError");
+    }
+
+    InternalsPrototype.voidMethodWithStackOverflow = function() {
+        function f() { f(); }
+        f();
+    }
+
     InternalsPrototype.addIntegerForPrivateScriptOnly = function(value1, value2) {
         return value1 + value2;
     }

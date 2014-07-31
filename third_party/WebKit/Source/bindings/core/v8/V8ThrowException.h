@@ -59,6 +59,8 @@ public:
 
     static v8::Handle<v8::Value> createTypeError(const String&, v8::Isolate*);
     static v8::Handle<v8::Value> throwTypeError(const String&, v8::Isolate*);
+    static v8::Handle<v8::Value> createRangeError(const String&, v8::Isolate*);
+    static v8::Handle<v8::Value> throwRangeError(const String&, v8::Isolate*);
 };
 
 } // namespace blink

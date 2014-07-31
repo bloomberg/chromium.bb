@@ -30,6 +30,9 @@
     [ImplementedInPrivateScript] attribute Node nodeAttribute;
     [ImplementedInPrivateScript] attribute Node nodeAttributeThrowsIndexSizeError;
     [ImplementedInPrivateScript] void voidMethodThrowsSyntaxError();
+    [ImplementedInPrivateScript] void voidMethodThrowsTypeError();
+    [ImplementedInPrivateScript] void voidMethodThrowsRangeError();
+    [ImplementedInPrivateScript] void voidMethodWithStackOverflow();
     [ImplementedInPrivateScript, OnlyExposedToPrivateScript] short addIntegerForPrivateScriptOnly(short value1, short value2);
     [ImplementedInPrivateScript, OnlyExposedToPrivateScript] attribute DOMString stringAttributeForPrivateScriptOnly;
     [ImplementedInPrivateScript] short addIntegerImplementedInCPP(short value1, short value2);

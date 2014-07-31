@@ -14,6 +14,7 @@
 #ifndef NDEBUG
 #include "core/PrivateScriptSourcesForTesting.h"
 #endif
+#include "core/dom/ExceptionCode.h"
 
 namespace blink {
 
@@ -181,20 +182,35 @@ bool PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(v8::Isolate* 
         return false;
 
     v8::Handle<v8::Object> exceptionObject = v8::Handle<v8::Object>::Cast(exception);
-    v8::Handle<v8::Value> type = exceptionObject->Get(v8String(isolate, "type"));
-    if (type.IsEmpty() || !type->IsString())
+    v8::Handle<v8::Value> name = exceptionObject->Get(v8String(isolate, "name"));
+    if (name.IsEmpty() || !name->IsString())
         return false;
-    if (toCoreString(v8::Handle<v8::String>::Cast(type)) != "DOMExceptionInPrivateScript")
-        return false;
-
-    v8::Handle<v8::Value> message = exceptionObject->Get(v8String(isolate, "message"));
-    RELEASE_ASSERT(!message.IsEmpty() && message->IsString());
-    v8::Handle<v8::Value> code = exceptionObject->Get(v8String(isolate, "code"));
-    RELEASE_ASSERT(!code.IsEmpty() && code->IsInt32());
-    // FIXME: Support JavaScript errors such as TypeError, RangeError and SecurityError.
-    exceptionState.throwDOMException(toInt32(code), toCoreString(v8::Handle<v8::String>::Cast(message)));
-    exceptionState.throwIfNeeded();
-    return true;
+    String exceptionName = toCoreString(v8::Handle<v8::String>::Cast(name));
+    if (exceptionName == "DOMExceptionInPrivateScript") {
+        v8::Handle<v8::Value> message = exceptionObject->Get(v8String(isolate, "message"));
+        RELEASE_ASSERT(!message.IsEmpty() && message->IsString());
+        v8::Handle<v8::Value> code = exceptionObject->Get(v8String(isolate, "code"));
+        RELEASE_ASSERT(!code.IsEmpty() && code->IsInt32());
+        exceptionState.throwDOMException(toInt32(code), toCoreString(v8::Handle<v8::String>::Cast(message)));
+        exceptionState.throwIfNeeded();
+        return true;
+    }
+    if (exceptionName == "TypeError") {
+        v8::Handle<v8::Value> message = exceptionObject->Get(v8String(isolate, "message"));
+        RELEASE_ASSERT(!message.IsEmpty() && message->IsString());
+        exceptionState.throwDOMException(TypeError, toCoreString(v8::Handle<v8::String>::Cast(message)));
+        exceptionState.throwIfNeeded();
+        return true;
+    }
+    if (exceptionName == "RangeError") {
+        v8::Handle<v8::Value> message = exceptionObject->Get(v8String(isolate, "message"));
+        RELEASE_ASSERT(!message.IsEmpty() && message->IsString());
+        exceptionState.throwDOMException(RangeError, toCoreString(v8::Handle<v8::String>::Cast(message)));
+        exceptionState.throwIfNeeded();
+        return true;
+    }
+    // FIXME: Support other JavaScript errors such as SecurityError.
+    return false;
 }
 
 } // namespace blink

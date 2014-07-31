@@ -31,6 +31,9 @@ PASS privateScriptTest.nodeAttribute is node8
 PASS privateScriptTest.nodeAttributeThrowsIndexSizeError threw exception IndexSizeError: Failed to read the 'nodeAttributeThrowsIndexSizeError' property from 'PrivateScriptTest': getter threw error.
 PASS privateScriptTest.nodeAttributeThrowsIndexSizeError = null threw exception IndexSizeError: Failed to set the 'nodeAttributeThrowsIndexSizeError' property on 'PrivateScriptTest': setter threw error.
 PASS privateScriptTest.voidMethodThrowsSyntaxError() threw exception SyntaxError: Failed to execute 'voidMethodThrowsSyntaxError' on 'PrivateScriptTest': method threw error.
+PASS privateScriptTest.voidMethodThrowsTypeError() threw exception TypeError: Failed to execute 'voidMethodThrowsTypeError' on 'PrivateScriptTest': method threw TypeError.
+PASS privateScriptTest.voidMethodThrowsRangeError() threw exception RangeError: Failed to execute 'voidMethodThrowsRangeError' on 'PrivateScriptTest': method threw RangeError.
+PASS privateScriptTest.voidMethodWithStackOverflow() threw exception RangeError: Failed to execute 'voidMethodWithStackOverflow' on 'PrivateScriptTest': Maximum call stack size exceeded.
 PASS privateScriptTest.addIntegerImplementedInCPP(111, 222) is 333
 PASS privateScriptTest.stringAttributeImplementedInCPP is "undefined"
 PASS privateScriptTest.stringAttributeImplementedInCPP is "foo"
