@@ -60,13 +60,6 @@ public class AppMenuButtonHelper implements OnTouchListener {
     }
 
     /**
-     * @return Whether the App Menu is currently showing.
-     */
-    public boolean isAppMenuShowing() {
-        return mMenuHandler.isAppMenuShowing();
-    }
-
-    /**
      * @return Whether app menu is active. That is, AppMenu is showing or menu button is consuming
      *         touch events to prepare AppMenu showing.
      */
