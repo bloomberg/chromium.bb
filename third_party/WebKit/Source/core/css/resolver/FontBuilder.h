@@ -99,6 +99,7 @@ public:
     static FontStyle initialStyle() { return FontStyleNormal; }
     static FontDescription::Kerning initialKerning() { return FontDescription::AutoKerning; }
     static FontSmoothingMode initialFontSmoothing() { return AutoSmoothing; }
+    static FontStretch initialStretch() { return FontStretchNormal; }
 
     friend class FontDescriptionChangeScope;
 
