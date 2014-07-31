@@ -41,6 +41,8 @@ source_set("libwebp_demux") {
   all_dependent_configs = [
     ":libwebp_config"
   ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
 }
 
 
