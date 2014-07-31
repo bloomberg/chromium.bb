@@ -4,7 +4,6 @@
 
 package org.chromium.content.browser.input;
 
-import android.app.DatePickerDialog.OnDateSetListener;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.widget.DatePicker;
@@ -23,7 +22,7 @@ class ChromeDatePickerDialog extends android.app.DatePickerDialog {
             int year,
             int monthOfYear,
             int dayOfMonth) {
-        super(context, 0, null, year, monthOfYear, dayOfMonth);
+        super(context, 0, callBack, year, monthOfYear, dayOfMonth);
         mCallBack = callBack;
     }
 

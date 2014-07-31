@@ -295,4 +295,10 @@ public class ApiCompatibilityUtils {
             return intent.getTargetPackage();
         }
     }
+
+    public static boolean datePickerRequiresAccept() {
+        // TODO(miguelg) use the final code for the L
+        // https://crbug.com/399198
+        return Build.VERSION.SDK_INT <  20; /* CUR_DEVELOPMENT */
+    }
 }
