@@ -105,6 +105,8 @@ def BuildScriptX86(status, context):
                     'run_prctl_test',
                     'run_printf_test',
                     'run_pwrite_test',
+                    'run_sigaction_test',
+                    'run_signal_test',
                     'run_socket_test',
                     'run_stack_alignment_test',
                     'run_syscall_test',

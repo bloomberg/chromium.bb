@@ -42,3 +42,19 @@ nexe = env.ComponentProgram('prctl_test',
 node = env.CommandSelLdrTestNacl('prctl_test.out', nexe)
 
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_prctl_test')
+
+nexe = env.ComponentProgram('sigaction_test',
+                            'sigaction_test.cc',
+                            EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+node = env.CommandSelLdrTestNacl('sigaction_test.out', nexe)
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_sigaction_test')
+
+nexe = env.ComponentProgram('signal_test',
+                            'signal_test.cc',
+                            EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+node = env.CommandSelLdrTestNacl('signal_test.out', nexe)
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_signal_test')

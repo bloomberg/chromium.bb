@@ -7,6 +7,7 @@
 #ifndef NATIVE_CLIENT_SRC_NONSFI_LINUX_LINUX_SYSCALL_STRUCTS_H_
 #define NATIVE_CLIENT_SRC_NONSFI_LINUX_LINUX_SYSCALL_STRUCTS_H_ 1
 
+#include <signal.h>
 #include <stdint.h>
 
 #if defined(__i386__)
@@ -68,6 +69,24 @@ struct linux_termios {
   int8_t c_cc[13];
   int8_t c_ispeed;
   int8_t c_ospeed;
+};
+
+typedef struct {
+  int si_signo;
+  int si_errno;
+  int si_code;
+} linux_siginfo_t;
+
+struct linux_sigaction {
+  void (*sa_sigaction)(int, linux_siginfo_t *, void *);
+  int sa_flags;
+  void *sa_restorer;
+  /*
+   * Though newlib's sigset_t is bigger than linux kernel's, their
+   * layout is compatible. We do not define linux_sigset_t and helper
+   * functions such as sigaddset by ourselves.
+   */
+  sigset_t sa_mask;
 };
 
 #endif

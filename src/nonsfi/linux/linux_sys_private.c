@@ -13,7 +13,9 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sched.h>
+#include <signal.h>
 #include <stdarg.h>
+#include <string.h>
 #include <sys/mman.h>
 #include <sys/time.h>
 #include <time.h>
@@ -21,6 +23,7 @@
 
 #include "native_client/src/include/elf32.h"
 #include "native_client/src/nonsfi/linux/abi_conversion.h"
+#include "native_client/src/nonsfi/linux/linux_sys_private.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_defines.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_structs.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_wrappers.h"
@@ -436,6 +439,40 @@ pid_t waitpid(pid_t pid, int *status, int options) {
   return errno_value_call(
       linux_syscall4(__NR_wait4, pid, (uintptr_t) status, options,
                      0  /* rusage */));
+}
+
+int linux_sigaction(int signum, const struct linux_sigaction *act,
+                    struct linux_sigaction *oldact) {
+  /* This is the size of Linux kernel's sigset_t. */
+  const int kSigsetSize = 8;
+  /*
+   * We do not support returning from a signal handler invoked by a
+   * real time signal. To support this, we need to set sa_restorer
+   * when it is not set by the caller, but we probably will not need
+   * this. See the following for how we do it.
+   * https://code.google.com/p/linux-syscall-support/source/browse/trunk/lss/linux_syscall_support.h
+   */
+  return errno_value_call(
+      linux_syscall4(__NR_rt_sigaction, signum,
+                     (uintptr_t) act, (uintptr_t) oldact, kSigsetSize));
+}
+
+sighandler_t signal(int signum, sighandler_t handler) {
+  struct linux_sigaction sa;
+  memset(&sa, 0, sizeof(sa));
+  /*
+   * In Linux's sigaction, sa_sigaction and sa_handler share the same
+   * memory region by union.
+   */
+  sa.sa_sigaction = (void (*)(int, linux_siginfo_t *, void *)) handler;
+  sa.sa_flags = LINUX_SA_RESTART;
+  sigemptyset(&sa.sa_mask);
+  sigaddset(&sa.sa_mask, signum);
+  struct linux_sigaction osa;
+  int result = linux_sigaction(signum, &sa, &osa);
+  if (result != 0)
+    return SIG_ERR;
+  return (sighandler_t) osa.sa_sigaction;
 }
 
 /*
