@@ -31,14 +31,7 @@
     Conditional=WEB_AUDIO
 ] interface AudioParam {
     attribute float value;
-    readonly attribute float minValue;
-    readonly attribute float maxValue;
     readonly attribute float defaultValue;
-
-    readonly attribute DOMString name;
-
-    // FIXME: Could define units constants here (seconds, decibels, cents, etc.)...
-    readonly attribute unsigned short units;
 
     // Parameter automation.
     void setValueAtTime(float value, double time);

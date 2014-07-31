@@ -42,13 +42,11 @@ BiquadProcessor::BiquadProcessor(AudioContext* context, float sampleRate, size_t
     , m_filterCoefficientsDirty(true)
     , m_hasSampleAccurateValues(false)
 {
-    double nyquist = 0.5 * this->sampleRate();
-
     // Create parameters for BiquadFilterNode.
-    m_parameter1 = AudioParam::create(context, "frequency", 350.0, 10.0, nyquist);
-    m_parameter2 = AudioParam::create(context, "Q", 1, 0.0001, 1000.0);
-    m_parameter3 = AudioParam::create(context, "gain", 0.0, -40, 40);
-    m_parameter4 = AudioParam::create(context, "detune", 0.0, -4800, 4800);
+    m_parameter1 = AudioParam::create(context, 350.0);
+    m_parameter2 = AudioParam::create(context, 1);
+    m_parameter3 = AudioParam::create(context, 0.0);
+    m_parameter4 = AudioParam::create(context, 0.0);
 
     if (autoInitialize)
         initialize();

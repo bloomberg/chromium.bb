@@ -58,9 +58,9 @@ OscillatorNode::OscillatorNode(AudioContext* context, float sampleRate)
     setNodeType(NodeTypeOscillator);
 
     // Use musical pitch standard A440 as a default.
-    m_frequency = AudioParam::create(context, "frequency", 440, 0, 100000);
+    m_frequency = AudioParam::create(context, 440);
     // Default to no detuning.
-    m_detune = AudioParam::create(context, "detune", 0, -4800, 4800);
+    m_detune = AudioParam::create(context, 0);
 
     // Sets up default wavetable.
     setType(m_type);

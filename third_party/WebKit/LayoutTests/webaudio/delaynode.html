@@ -37,8 +37,6 @@ function runTest() {
     shouldBeTrue("delay.numberOfInputs === 1");
     shouldBeTrue("delay.numberOfOutputs === 1");
     shouldBeTrue("delay.delayTime.defaultValue === 0.0");
-    shouldBeTrue("delay.delayTime.minValue === 0.0");
-    shouldBeTrue("delay.delayTime.maxValue === 1.0");
     shouldBeTrue("delay.delayTime.value === 0.0");
 
     delay.delayTime.value = delayTimeSeconds;

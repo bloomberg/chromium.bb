@@ -66,7 +66,7 @@ AudioBufferSourceNode::AudioBufferSourceNode(AudioContext* context, float sample
     ScriptWrappable::init(this);
     setNodeType(NodeTypeAudioBufferSource);
 
-    m_playbackRate = AudioParam::create(context, "playbackRate", 1.0, 0.0, MaxRate);
+    m_playbackRate = AudioParam::create(context, 1.0);
 
     // Default to mono. A call to setBuffer() will set the number of output
     // channels to that of the buffer.
