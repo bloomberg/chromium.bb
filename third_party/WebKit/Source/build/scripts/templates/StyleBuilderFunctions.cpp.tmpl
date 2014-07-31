@@ -304,12 +304,10 @@ static bool lengthTypeAndValueMatch(const BorderImageLengthBox& borderImageLengt
 
 {{declare_value_function(property_id)}}
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-
     if (state.applyPropertyToRegularStyle())
-        {{set_value(property)}}(state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->color()));
+        {{set_value(property)}}(StyleBuilderConverter::convertColor(state, value));
     if (state.applyPropertyToVisitedLinkStyle())
-        state.style()->{{visited_link_setter}}(state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->color(), true));
+        state.style()->{{visited_link_setter}}(StyleBuilderConverter::convertColor(state, value, true));
 }
 {% endmacro %}
 {{apply_color('CSSPropertyBackgroundColor', initial_color='RenderStyle::initialBackgroundColor') }}

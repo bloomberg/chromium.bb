@@ -248,7 +248,7 @@ perspective-origin custom_all
 -webkit-print-color-adjust type_name=PrintColorAdjust
 -webkit-rtl-ordering type_name=Order, setter=setRTLOrdering, initial=initialRTLOrdering
 -webkit-ruby-position type_name=RubyPosition
--webkit-tap-highlight-color custom_value
+-webkit-tap-highlight-color converter=convertColor
 -webkit-text-combine type_name=TextCombine
 -webkit-text-emphasis-color custom_all
 -webkit-text-emphasis-position type_name=TextEmphasisPosition
