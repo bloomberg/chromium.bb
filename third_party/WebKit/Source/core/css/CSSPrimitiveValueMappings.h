@@ -3419,7 +3419,7 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(FontWeight weight)
         m_value.valueID = CSSValue800;
         return;
     case FontWeight700:
-        m_value.valueID = CSSValue700;
+        m_value.valueID = CSSValueBold;
         return;
     case FontWeight600:
         m_value.valueID = CSSValue600;
@@ -3428,7 +3428,7 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(FontWeight weight)
         m_value.valueID = CSSValue500;
         return;
     case FontWeight400:
-        m_value.valueID = CSSValue400;
+        m_value.valueID = CSSValueNormal;
         return;
     case FontWeight300:
         m_value.valueID = CSSValue300;

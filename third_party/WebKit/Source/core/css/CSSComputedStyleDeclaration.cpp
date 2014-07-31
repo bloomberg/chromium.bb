@@ -1410,68 +1410,22 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontSize(RenderStyle& s
 
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontStretch(RenderStyle& style)
 {
-    switch (style.fontDescription().stretch()) {
-    case FontStretchUltraCondensed:
-        return cssValuePool().createIdentifierValue(CSSValueUltraCondensed);
-    case FontStretchExtraCondensed:
-        return cssValuePool().createIdentifierValue(CSSValueExtraCondensed);
-    case FontStretchCondensed:
-        return cssValuePool().createIdentifierValue(CSSValueCondensed);
-    case FontStretchSemiCondensed:
-        return cssValuePool().createIdentifierValue(CSSValueSemiCondensed);
-    case FontStretchNormal:
-        return cssValuePool().createIdentifierValue(CSSValueNormal);
-    case FontStretchSemiExpanded:
-        return cssValuePool().createIdentifierValue(CSSValueSemiExpanded);
-    case FontStretchExpanded:
-        return cssValuePool().createIdentifierValue(CSSValueExpanded);
-    case FontStretchExtraExpanded:
-        return cssValuePool().createIdentifierValue(CSSValueExtraExpanded);
-    case FontStretchUltraExpanded:
-        return cssValuePool().createIdentifierValue(CSSValueUltraExpanded);
-    }
-    ASSERT_NOT_REACHED();
-    return cssValuePool().createIdentifierValue(CSSValueNormal);
+    return cssValuePool().createValue(style.fontDescription().stretch());
 }
 
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontStyle(RenderStyle& style)
 {
-    if (style.fontDescription().style() == FontStyleItalic)
-        return cssValuePool().createIdentifierValue(CSSValueItalic);
-    return cssValuePool().createIdentifierValue(CSSValueNormal);
+    return cssValuePool().createValue(style.fontDescription().style());
 }
 
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontVariant(RenderStyle& style)
 {
-    if (style.fontDescription().variant() == FontVariantSmallCaps)
-        return cssValuePool().createIdentifierValue(CSSValueSmallCaps);
-    return cssValuePool().createIdentifierValue(CSSValueNormal);
+    return cssValuePool().createValue(style.fontDescription().variant());
 }
 
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontWeight(RenderStyle& style)
 {
-    switch (style.fontDescription().weight()) {
-    case FontWeight100:
-        return cssValuePool().createIdentifierValue(CSSValue100);
-    case FontWeight200:
-        return cssValuePool().createIdentifierValue(CSSValue200);
-    case FontWeight300:
-        return cssValuePool().createIdentifierValue(CSSValue300);
-    case FontWeightNormal:
-        return cssValuePool().createIdentifierValue(CSSValueNormal);
-    case FontWeight500:
-        return cssValuePool().createIdentifierValue(CSSValue500);
-    case FontWeight600:
-        return cssValuePool().createIdentifierValue(CSSValue600);
-    case FontWeightBold:
-        return cssValuePool().createIdentifierValue(CSSValueBold);
-    case FontWeight800:
-        return cssValuePool().createIdentifierValue(CSSValue800);
-    case FontWeight900:
-        return cssValuePool().createIdentifierValue(CSSValue900);
-    }
-    ASSERT_NOT_REACHED();
-    return cssValuePool().createIdentifierValue(CSSValueNormal);
+    return cssValuePool().createValue(style.fontDescription().weight());
 }
 
 static PassRefPtrWillBeRawPtr<CSSValue> valueForShape(const RenderStyle& style, ShapeValue* shapeValue)
