@@ -326,6 +326,9 @@ class HttpCache::Transaction : public HttpTransaction {
   // Handles a response validation error by bypassing the cache.
   void IgnoreRangeRequest();
 
+  // Removes content-length and byte range related info if needed.
+  void FixHeadersForHead();
+
   // Changes the response code of a range request to be 416 (Requested range not
   // satisfiable).
   void FailRangeRequest();

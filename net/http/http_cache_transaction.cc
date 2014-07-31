@@ -714,7 +714,7 @@ int HttpCache::Transaction::HandleResult(int rv) {
 
 // A few common patterns: (Foo* means Foo -> FooComplete)
 //
-// Not-cached entry:
+// 1. Not-cached entry:
 //   Start():
 //   GetBackend* -> InitEntry -> OpenEntry* -> CreateEntry* -> AddToEntry* ->
 //   SendRequest* -> SuccessfulSendRequest -> OverwriteCachedResponse ->
@@ -724,15 +724,16 @@ int HttpCache::Transaction::HandleResult(int rv) {
 //   Read():
 //   NetworkRead* -> CacheWriteData*
 //
-// Cached entry, no validation:
+// 2. Cached entry, no validation:
 //   Start():
 //   GetBackend* -> InitEntry -> OpenEntry* -> AddToEntry* -> CacheReadResponse*
-//   -> BeginPartialCacheValidation() -> BeginCacheValidation()
+//   -> BeginPartialCacheValidation() -> BeginCacheValidation() ->
+//   SetupEntryForRead()
 //
 //   Read():
 //   CacheReadData*
 //
-// Cached entry, validation (304):
+// 3. Cached entry, validation (304):
 //   Start():
 //   GetBackend* -> InitEntry -> OpenEntry* -> AddToEntry* -> CacheReadResponse*
 //   -> BeginPartialCacheValidation() -> BeginCacheValidation() ->
@@ -743,7 +744,7 @@ int HttpCache::Transaction::HandleResult(int rv) {
 //   Read():
 //   CacheReadData*
 //
-// Cached entry, validation and replace (200):
+// 4. Cached entry, validation and replace (200):
 //   Start():
 //   GetBackend* -> InitEntry -> OpenEntry* -> AddToEntry* -> CacheReadResponse*
 //   -> BeginPartialCacheValidation() -> BeginCacheValidation() ->
@@ -754,7 +755,7 @@ int HttpCache::Transaction::HandleResult(int rv) {
 //   Read():
 //   NetworkRead* -> CacheWriteData*
 //
-// Sparse entry, partially cached, byte range request:
+// 5. Sparse entry, partially cached, byte range request:
 //   Start():
 //   GetBackend* -> InitEntry -> OpenEntry* -> AddToEntry* -> CacheReadResponse*
 //   -> BeginPartialCacheValidation() -> CacheQueryData* ->
@@ -776,6 +777,42 @@ int HttpCache::Transaction::HandleResult(int rv) {
 //   CompletePartialCacheValidation -> BeginCacheValidation() -> SendRequest* ->
 //   SuccessfulSendRequest -> UpdateCachedResponse* -> OverwriteCachedResponse
 //   -> PartialHeadersReceived -> NetworkRead* -> CacheWriteData*
+//
+// 6. HEAD. Not-cached entry:
+//   Pass through. Don't save a HEAD by itself.
+//   Start():
+//   GetBackend* -> InitEntry -> OpenEntry* -> SendRequest*
+//
+// 7. HEAD. Cached entry, no validation:
+//   Start():
+//   The same flow as for a GET request (example #2)
+//
+//   Read():
+//   CacheReadData (returns 0)
+//
+// 8. HEAD. Cached entry, validation (304):
+//   The request updates the stored headers.
+//   Start(): Same as for a GET request (example #3)
+//
+//   Read():
+//   CacheReadData (returns 0)
+//
+// 9. HEAD. Cached entry, validation and replace (200):
+//   Pass through. The request dooms the old entry, as a HEAD won't be stored by
+//   itself.
+//   Start():
+//   GetBackend* -> InitEntry -> OpenEntry* -> AddToEntry* -> CacheReadResponse*
+//   -> BeginPartialCacheValidation() -> BeginCacheValidation() ->
+//   SendRequest* -> SuccessfulSendRequest -> OverwriteCachedResponse
+//
+// 10. HEAD. Sparse entry, partially cached:
+//   Serve the request from the cache, as long as it doesn't require
+//   revalidation. Ignore missing ranges when deciding to revalidate. If the
+//   entry requires revalidation, ignore the whole request and go to full pass
+//   through (the result of the HEAD request will NOT update the entry).
+//
+//   Start(): Basically the same as example 7, as we never create a partial_
+//   object for this request.
 //
 int HttpCache::Transaction::DoLoop(int result) {
   DCHECK(next_state_ != STATE_NONE);
@@ -979,6 +1016,14 @@ int HttpCache::Transaction::DoGetBackendComplete(int result) {
     mode_ = NONE;
   }
 
+  // Note that if mode_ == UPDATE (which is tied to external_validation_), the
+  // transaction behaves the same for GET and HEAD requests at this point: if it
+  // was not modified, the entry is updated and a response is not returned from
+  // the cache. If we receive 200, it doesn't matter if there was a validation
+  // header or not.
+  if (request_->method == "HEAD" && mode_ == WRITE)
+    mode_ = NONE;
+
   // If must use cache, then we must fail.  This can happen for back/forward
   // navigations to a page generated via a form post.
   if (!(mode_ & READ) && effective_load_flags_ & LOAD_ONLY_FROM_CACHE)
@@ -1161,7 +1206,7 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
 
   if (new_response_->headers->response_code() == 416 &&
       (request_->method == "GET" || request_->method == "POST")) {
-    // If there is an ective entry it may be destroyed with this transaction.
+    // If there is an active entry it may be destroyed with this transaction.
     response_ = *new_response_;
     return OK;
   }
@@ -1241,8 +1286,9 @@ int HttpCache::Transaction::DoOpenEntryComplete(int result) {
     return OK;
   }
 
-  if (request_->method == "PUT" || request_->method == "DELETE") {
-    DCHECK(mode_ == READ_WRITE || mode_ == WRITE);
+  if (request_->method == "PUT" || request_->method == "DELETE" ||
+      (request_->method == "HEAD" && mode_ == READ_WRITE)) {
+    DCHECK(mode_ == READ_WRITE || mode_ == WRITE || request_->method == "HEAD");
     mode_ = NONE;
     next_state_ = STATE_SEND_REQUEST;
     return OK;
@@ -1504,6 +1550,14 @@ int HttpCache::Transaction::DoOverwriteCachedResponse() {
     partial_->FixContentLength(new_response_->headers.get());
 
   response_ = *new_response_;
+
+  if (request_->method == "HEAD") {
+    // This response is replacing the cached one.
+    DoneWritingToEntry(false);
+    mode_ = NONE;
+    new_response_ = NULL;
+    return OK;
+  }
 
   if (handling_206_ && !CanResume(false)) {
     // There is no point in storing this resource because it will never be used.
@@ -1998,7 +2052,7 @@ bool HttpCache::Transaction::ShouldPassThrough() {
   if (effective_load_flags_ & LOAD_DISABLE_CACHE)
     return true;
 
-  if (request_->method == "GET")
+  if (request_->method == "GET" || request_->method == "HEAD")
     return false;
 
   if (request_->method == "POST" && request_->upload_data_stream &&
@@ -2012,7 +2066,6 @@ bool HttpCache::Transaction::ShouldPassThrough() {
   if (request_->method == "DELETE")
     return false;
 
-  // TODO(darin): add support for caching HEAD responses
   return true;
 }
 
@@ -2022,6 +2075,9 @@ int HttpCache::Transaction::BeginCacheRead() {
     NOTREACHED();
     return ERR_CACHE_MISS;
   }
+
+  if (request_->method == "HEAD")
+    FixHeadersForHead();
 
   // We don't have the whole resource.
   if (truncated_)
@@ -2037,6 +2093,18 @@ int HttpCache::Transaction::BeginCacheValidation() {
   DCHECK(mode_ == READ_WRITE);
 
   bool skip_validation = !RequiresValidation();
+
+  if (request_->method == "HEAD" &&
+      (truncated_ || response_.headers->response_code() == 206)) {
+    DCHECK(!partial_);
+    if (skip_validation)
+      return SetupEntryForRead();
+
+    // Bail out!
+    next_state_ = STATE_SEND_REQUEST;
+    mode_ = NONE;
+    return OK;
+  }
 
   if (truncated_) {
     // Truncated entries can cause partial gets, so we shouldn't record this
@@ -2091,7 +2159,12 @@ int HttpCache::Transaction::BeginPartialCacheValidation() {
     next_state_ = STATE_CACHE_QUERY_DATA;
     return OK;
   }
+
   // The request is not for a range, but we have stored just ranges.
+
+  if (request_->method == "HEAD")
+    return BeginCacheValidation();
+
   partial_.reset(new PartialData());
   partial_->SetHeaders(request_->extra_headers);
   if (!custom_request_.get()) {
@@ -2441,6 +2514,14 @@ void HttpCache::Transaction::IgnoreRangeRequest() {
   mode_ = NONE;
 }
 
+void HttpCache::Transaction::FixHeadersForHead() {
+  if (response_.headers->response_code() == 206) {
+    response_.headers->RemoveHeader("Content-Length");
+    response_.headers->RemoveHeader("Content-Range");
+    response_.headers->ReplaceStatusLine("HTTP/1.1 200 OK");
+  }
+}
+
 void HttpCache::Transaction::FailRangeRequest() {
   response_ = *new_response_;
   partial_->FixResponseHeaders(response_.headers.get(), false);
@@ -2462,6 +2543,9 @@ int HttpCache::Transaction::SetupEntryForRead() {
   cache_->ConvertWriterToReader(entry_);
   mode_ = READ;
 
+  if (request_->method == "HEAD")
+    FixHeadersForHead();
+
   if (entry_->disk_entry->GetDataSize(kMetadataIndex))
     next_state_ = STATE_CACHE_READ_METADATA;
   return OK;
@@ -2476,6 +2560,9 @@ int HttpCache::Transaction::ReadFromNetwork(IOBuffer* data, int data_len) {
 }
 
 int HttpCache::Transaction::ReadFromEntry(IOBuffer* data, int data_len) {
+  if (request_->method == "HEAD")
+    return 0;
+
   read_buf_ = data;
   io_buf_len_ = data_len;
   next_state_ = STATE_CACHE_READ_DATA;
