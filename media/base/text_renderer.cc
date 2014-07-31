@@ -233,7 +233,7 @@ void TextRenderer::CueReady(
       if (pending_eos_set_.empty()) {
         DCHECK_EQ(pending_read_count_, 0);
         state_ = kEnded;
-        ended_cb_.Run();
+        task_runner_->PostTask(FROM_HERE, ended_cb_);
         return;
       }
 

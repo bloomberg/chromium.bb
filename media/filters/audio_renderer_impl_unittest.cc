@@ -278,7 +278,7 @@ class AudioRendererImplTest : public ::testing::Test {
         FROM_HERE,
         base::Bind(base::ResetAndReturn(&decode_cb_), AudioDecoder::kOk));
 
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Delivers frames until |renderer_|'s internal buffer is full and no longer
@@ -382,7 +382,7 @@ class AudioRendererImplTest : public ::testing::Test {
     if (!reset_cb_.is_null())
       base::ResetAndReturn(&reset_cb_).Run();
 
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void OnEnded() {
@@ -453,10 +453,12 @@ TEST_F(AudioRendererImplTest, EndOfStream) {
 
   // Consume all remaining data. We shouldn't have signal ended yet.
   EXPECT_TRUE(ConsumeBufferedData(frames_buffered()));
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(ended());
 
   // Ended should trigger on next render call.
   EXPECT_FALSE(ConsumeBufferedData(OutputFrames(1)));
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(ended());
 }
 
@@ -664,6 +666,7 @@ TEST_F(AudioRendererImplTest, ImmediateEndOfStream) {
   // Read a single frame. We shouldn't be able to satisfy it.
   EXPECT_FALSE(ended());
   EXPECT_FALSE(ConsumeBufferedData(OutputFrames(1)));
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(ended());
 }
 
@@ -674,6 +677,7 @@ TEST_F(AudioRendererImplTest, OnRenderErrorCausesDecodeError) {
 
   EXPECT_CALL(*this, OnError(PIPELINE_ERROR_DECODE));
   sink_->OnRenderError();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test for AudioRendererImpl calling Pause()/Play() on the sink when the

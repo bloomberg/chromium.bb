@@ -591,7 +591,7 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
           audio_clock_->CurrentMediaTimestamp(base::TimeDelta()) ==
               audio_clock_->last_endpoint_timestamp()) {
         rendered_end_of_stream_ = true;
-        ended_cb_.Run();
+        task_runner_->PostTask(FROM_HERE, ended_cb_);
       } else if (!received_end_of_stream_ && state_ == kPlaying) {
         if (buffering_state_ != BUFFERING_HAVE_NOTHING) {
           algorithm_->IncreaseQueueCapacity();
@@ -631,10 +631,13 @@ void AudioRendererImpl::OnRenderError() {
   // OnRenderError() should be removed and the audio stack handle errors without
   // notifying clients. See http://crbug.com/234708 for details.
   HistogramRendererEvent(RENDER_ERROR);
-  error_cb_.Run(PIPELINE_ERROR_DECODE);
+  // Post to |task_runner_| as this is called on the audio callback thread.
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(error_cb_, PIPELINE_ERROR_DECODE));
 }
 
 void AudioRendererImpl::HandleAbortedReadOrDecodeError(bool is_decode_error) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   lock_.AssertAcquired();
 
   PipelineStatus status = is_decode_error ? PIPELINE_ERROR_DECODE : PIPELINE_OK;
