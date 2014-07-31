@@ -97,3 +97,7 @@ android_webview_final_pak_names := \
 android_webview_intermediates_pak_additional_deps := \
   $(foreach name,$(android_webview_final_pak_names), \
     $(call intermediates-dir-for,APPS,webviewchromium-paks)/$(name))
+
+# This is the stamp file for the android_webview_resources target.
+android_webview_resources_stamp := \
+  $(call intermediates-dir-for,GYP,android_webview_resources)/android_webview_resources.stamp
