@@ -161,11 +161,17 @@ class TestStoragePartition : public StoragePartition {
     return NULL;
   }
 
-  virtual void ClearDataForOrigin(
-      uint32 remove_mask,
-      uint32 quota_storage_remove_mask,
-      const GURL& storage_origin,
-      net::URLRequestContextGetter* rq_context) OVERRIDE {}
+  virtual void ClearDataForOrigin(uint32 remove_mask,
+                                  uint32 quota_storage_remove_mask,
+                                  const GURL& storage_origin,
+                                  net::URLRequestContextGetter* rq_context,
+                                  const base::Closure& callback) OVERRIDE {
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(&TestStoragePartition::AsyncRunCallback,
+                                       base::Unretained(this),
+                                       callback));
+  }
 
   virtual void ClearData(uint32 remove_mask,
                          uint32 quota_storage_remove_mask,

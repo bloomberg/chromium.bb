@@ -146,6 +146,7 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUninstall) {
   base::string16 error;
   service()->UninstallExtension(importing_extension->id(),
                                 extensions::UNINSTALL_REASON_FOR_TESTING,
+                                base::Bind(&base::DoNothing),
                                 &error);
   EXPECT_TRUE(error.empty());
 

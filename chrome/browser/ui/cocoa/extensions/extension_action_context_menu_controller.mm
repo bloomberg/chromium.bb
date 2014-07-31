@@ -59,6 +59,7 @@ class AsyncUninstaller : public extensions::ExtensionUninstallDialog::Delegate {
         ->extension_service()
         ->UninstallExtension(extension_->id(),
                              extensions::UNINSTALL_REASON_USER_INITIATED,
+                             base::Bind(&base::DoNothing),
                              NULL);
   }
   virtual void ExtensionUninstallCanceled() OVERRIDE {}

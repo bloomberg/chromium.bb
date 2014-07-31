@@ -190,7 +190,10 @@ TEST_F(ActivityLogEnabledTest, WatchdogSwitch) {
   EXPECT_FALSE(activity_log2->IsDatabaseEnabled());
 
   extension_service1->UninstallExtension(
-      kExtensionID, extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
+      kExtensionID,
+      extensions::UNINSTALL_REASON_FOR_TESTING,
+      base::Bind(&base::DoNothing),
+      NULL);
 
   EXPECT_EQ(0,
       profile1->GetPrefs()->GetInteger(prefs::kWatchdogExtensionActive));
@@ -266,7 +269,10 @@ TEST_F(ActivityLogEnabledTest, AppAndCommandLine) {
   EXPECT_TRUE(activity_log->IsWatchdogAppActive());
 
   extension_service->UninstallExtension(
-      kExtensionID, extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
+      kExtensionID,
+      extensions::UNINSTALL_REASON_FOR_TESTING,
+      base::Bind(&base::DoNothing),
+      NULL);
 
   EXPECT_TRUE(activity_log->IsDatabaseEnabled());
   EXPECT_EQ(0,

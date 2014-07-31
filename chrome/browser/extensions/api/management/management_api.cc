@@ -652,7 +652,10 @@ void ManagementUninstallFunctionBase::Finish(bool should_uninstall) {
       SendResponse(false);
     } else {
       bool success = service()->UninstallExtension(
-          extension_id_, extensions::UNINSTALL_REASON_MANAGEMENT_API, NULL);
+          extension_id_,
+          extensions::UNINSTALL_REASON_MANAGEMENT_API,
+          base::Bind(&base::DoNothing),
+          NULL);
 
       // TODO set error_ if !success
       SendResponse(success);

@@ -372,8 +372,10 @@ void ThemeService::RemoveUnusedThemes(bool ignore_infobars) {
   // policy provider.
 
   for (size_t i = 0; i < remove_list.size(); ++i) {
-    service->UninstallExtension(
-        remove_list[i], extensions::UNINSTALL_REASON_ORPHANED_THEME, NULL);
+    service->UninstallExtension(remove_list[i],
+                                extensions::UNINSTALL_REASON_ORPHANED_THEME,
+                                base::Bind(&base::DoNothing),
+                                NULL);
   }
 }
 

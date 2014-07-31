@@ -245,7 +245,10 @@ void EphemeralAppTestBase::EvictApp(const std::string& app_id) {
       ExtensionSystem::Get(profile())->extension_service();
   ASSERT_TRUE(service);
   service->UninstallExtension(
-      app_id, extensions::UNINSTALL_REASON_ORPHANED_EPHEMERAL_EXTENSION, NULL);
+      app_id,
+      extensions::UNINSTALL_REASON_ORPHANED_EPHEMERAL_EXTENSION,
+      base::Bind(&base::DoNothing),
+      NULL);
 
   uninstalled_signal.Wait();
 }

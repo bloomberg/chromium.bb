@@ -120,8 +120,10 @@ TEST_F(ThemeServiceTest, ThemeInstallUninstall) {
   EXPECT_EQ(extension_id, theme_service->GetThemeID());
 
   // Now uninstall the extension, should revert to the default theme.
-  service_->UninstallExtension(
-      extension_id, extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
+  service_->UninstallExtension(extension_id,
+                               extensions::UNINSTALL_REASON_FOR_TESTING,
+                               base::Bind(&base::DoNothing),
+                               NULL);
   EXPECT_TRUE(theme_service->UsingDefaultTheme());
 }
 

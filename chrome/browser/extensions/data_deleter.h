@@ -7,6 +7,7 @@
 
 #include <string>
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 
 class Profile;
 
@@ -20,7 +21,12 @@ class DataDeleter {
   // called. Cookies are deleted on the current thread, local storage and
   // databases/settings are deleted asynchronously on the webkit and file
   // threads, respectively. This function must be called from the UI thread.
-  static void StartDeleting(Profile* profile, const Extension* extenion);
+  //
+  // |callback| is called when data deletion is done or at least the deletion
+  // is scheduled.
+  static void StartDeleting(Profile* profile,
+                            const Extension* extenion,
+                            const base::Closure& callback);
 
   DISALLOW_COPY_AND_ASSIGN(DataDeleter);
 };

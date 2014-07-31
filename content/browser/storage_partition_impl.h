@@ -48,7 +48,8 @@ class StoragePartitionImpl : public StoragePartition {
       uint32 remove_mask,
       uint32 quota_storage_remove_mask,
       const GURL& storage_origin,
-      net::URLRequestContextGetter* request_context_getter) OVERRIDE;
+      net::URLRequestContextGetter* request_context_getter,
+      const base::Closure& callback) OVERRIDE;
   virtual void ClearData(uint32 remove_mask,
                          uint32 quota_storage_remove_mask,
                          const GURL& storage_origin,

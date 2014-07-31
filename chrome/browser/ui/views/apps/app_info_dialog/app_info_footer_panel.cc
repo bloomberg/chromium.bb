@@ -115,8 +115,10 @@ void AppInfoFooterPanel::ButtonPressed(views::Button* sender,
 void AppInfoFooterPanel::ExtensionUninstallAccepted() {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
-  service->UninstallExtension(
-      app_->id(), extensions::UNINSTALL_REASON_USER_INITIATED, NULL);
+  service->UninstallExtension(app_->id(),
+                              extensions::UNINSTALL_REASON_USER_INITIATED,
+                              base::Bind(&base::DoNothing),
+                              NULL);
 
   // Close the App Info dialog as well (which will free the dialog too).
   GetWidget()->Close();

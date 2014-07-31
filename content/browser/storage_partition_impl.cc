@@ -757,16 +757,21 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
   DecrementTaskCountOnUI();
 }
 
-
 void StoragePartitionImpl::ClearDataForOrigin(
     uint32 remove_mask,
     uint32 quota_storage_remove_mask,
     const GURL& storage_origin,
-    net::URLRequestContextGetter* request_context_getter) {
+    net::URLRequestContextGetter* request_context_getter,
+    const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ClearDataImpl(remove_mask, quota_storage_remove_mask, storage_origin,
-                OriginMatcherFunction(), request_context_getter,
-                base::Time(), base::Time::Max(), base::Bind(&base::DoNothing));
+  ClearDataImpl(remove_mask,
+                quota_storage_remove_mask,
+                storage_origin,
+                OriginMatcherFunction(),
+                request_context_getter,
+                base::Time(),
+                base::Time::Max(),
+                callback);
 }
 
 void StoragePartitionImpl::ClearData(

@@ -207,8 +207,11 @@ void BookmarkAppBubbleView::WindowClosing() {
   bookmark_app_bubble_ = NULL;
 
   if (remove_app_) {
-    GetExtensionService(profile_)->UninstallExtension(
-        extension_id_, extensions::UNINSTALL_REASON_INSTALL_CANCELED, NULL);
+    GetExtensionService(profile_)
+        ->UninstallExtension(extension_id_,
+                             extensions::UNINSTALL_REASON_INSTALL_CANCELED,
+                             base::Bind(&base::DoNothing),
+                             NULL);
   } else {
     ApplyEdits();
   }

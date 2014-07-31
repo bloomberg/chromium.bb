@@ -287,6 +287,7 @@ void ExternalInstallError::InstallUIAbort(bool user_initiated) {
         ->extension_service()
         ->UninstallExtension(extension_id_,
                              extensions::UNINSTALL_REASON_INSTALL_CANCELED,
+                             base::Bind(&base::DoNothing),
                              NULL);  // Ignore error.
     // Since the manager listens for the extension to be removed, this will
     // remove the error...

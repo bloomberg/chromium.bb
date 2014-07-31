@@ -324,6 +324,7 @@ void ExtensionStorageMonitor::ExtensionUninstallAccepted() {
   service->UninstallExtension(
       extension->id(),
       extensions::UNINSTALL_REASON_STORAGE_THRESHOLD_EXCEEDED,
+      base::Bind(&base::DoNothing),
       NULL);
 }
 

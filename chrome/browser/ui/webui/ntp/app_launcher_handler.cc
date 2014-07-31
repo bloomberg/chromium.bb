@@ -793,6 +793,7 @@ void AppLauncherHandler::ExtensionUninstallAccepted() {
   extension_service_->UninstallExtension(
       extension_id_prompting_,
       extensions::UNINSTALL_REASON_USER_INITIATED,
+      base::Bind(&base::DoNothing),
       NULL);
   CleanupAfterUninstall();
 }

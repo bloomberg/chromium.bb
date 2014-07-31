@@ -709,7 +709,10 @@ class PolicyTest : public InProcessBrowserTest {
                        : chrome::NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
         content::NotificationService::AllSources());
     extension_service()->UninstallExtension(
-        id, extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
+        id,
+        extensions::UNINSTALL_REASON_FOR_TESTING,
+        base::Bind(&base::DoNothing),
+        NULL);
     observer.Wait();
   }
 

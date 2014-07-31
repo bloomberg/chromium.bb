@@ -103,6 +103,7 @@ void EphemeralAppService::ClearCachedApps() {
     service->UninstallExtension(
         extension_id,
         extensions::UNINSTALL_REASON_ORPHANED_EPHEMERAL_EXTENSION,
+        base::Bind(&base::DoNothing),
         NULL);
   }
 }
@@ -238,7 +239,10 @@ void EphemeralAppService::GarbageCollectApps() {
         continue;
 
       service->UninstallExtension(
-          *id, extensions::UNINSTALL_REASON_ORPHANED_EPHEMERAL_EXTENSION, NULL);
+          *id,
+          extensions::UNINSTALL_REASON_ORPHANED_EPHEMERAL_EXTENSION,
+          base::Bind(&base::DoNothing),
+          NULL);
     }
   }
 }

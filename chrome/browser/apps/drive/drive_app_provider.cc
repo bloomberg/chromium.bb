@@ -83,8 +83,10 @@ void DriveAppProvider::UpdateMappingAndExtensionSystem(
   if (existing_app && is_existing_app_generated) {
     extensions::ExtensionSystem::Get(profile_)
         ->extension_service()
-        ->UninstallExtension(
-            existing_chrome_app_id, extensions::UNINSTALL_REASON_SYNC, NULL);
+        ->UninstallExtension(existing_chrome_app_id,
+                             extensions::UNINSTALL_REASON_SYNC,
+                             base::Bind(&base::DoNothing),
+                             NULL);
   }
 }
 
@@ -193,8 +195,10 @@ void DriveAppProvider::ProcessRemovedDriveApp(const std::string& drive_app_id) {
 
   extensions::ExtensionSystem::Get(profile_)
       ->extension_service()
-      ->UninstallExtension(
-          chrome_app_id, extensions::UNINSTALL_REASON_SYNC, NULL);
+      ->UninstallExtension(chrome_app_id,
+                           extensions::UNINSTALL_REASON_SYNC,
+                           base::Bind(&base::DoNothing),
+                           NULL);
 }
 
 void DriveAppProvider::OnDriveAppRegistryUpdated() {

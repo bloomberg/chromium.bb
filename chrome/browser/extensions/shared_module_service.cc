@@ -168,6 +168,7 @@ void SharedModuleService::PruneSharedModules() {
     service->UninstallExtension(
         *shared_modules_iter,
         extensions::UNINSTALL_REASON_ORPHANED_SHARED_MODULE,
+        base::Bind(&base::DoNothing),
         NULL);  // Ignore error.
   }
 }
