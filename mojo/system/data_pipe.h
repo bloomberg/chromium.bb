@@ -61,7 +61,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe
   MojoResult ProducerAddWaiter(Waiter* waiter,
                                MojoHandleSignals signals,
                                uint32_t context);
-  void ProducerRemoveWaiter(Waiter* waiter);
+  void ProducerRemoveWaiter(Waiter* waiter, HandleSignalsState* signals_state);
   bool ProducerIsBusy() const;
 
   // These are called by the consumer dispatcher to implement its methods of
@@ -84,7 +84,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe
   MojoResult ConsumerAddWaiter(Waiter* waiter,
                                MojoHandleSignals signals,
                                uint32_t context);
-  void ConsumerRemoveWaiter(Waiter* waiter);
+  void ConsumerRemoveWaiter(Waiter* waiter, HandleSignalsState* signals_state);
   bool ConsumerIsBusy() const;
 
  protected:

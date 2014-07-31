@@ -69,7 +69,9 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe
                        Waiter* waiter,
                        MojoHandleSignals signals,
                        uint32_t context);
-  void RemoveWaiter(unsigned port, Waiter* waiter);
+  void RemoveWaiter(unsigned port,
+                    Waiter* waiter,
+                    HandleSignalsState* signals_state);
 
   // This is called by the dispatcher to convert a local endpoint to a proxy
   // endpoint.

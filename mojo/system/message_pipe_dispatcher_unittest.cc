@@ -49,6 +49,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
     }
     Waiter w;
     uint32_t context = 0;
+    HandleSignalsState hss;
 
     // Try adding a writable waiter when already writable.
     w.Init();
@@ -71,7 +72,12 @@ TEST(MessagePipeDispatcherTest, Basic) {
     EXPECT_EQ(MOJO_RESULT_OK, w.Wait(MOJO_DEADLINE_INDEFINITE, &context));
     EXPECT_EQ(1u, context);
     EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
-    d0->RemoveWaiter(&w);
+    hss = HandleSignalsState();
+    d0->RemoveWaiter(&w, &hss);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+              hss.satisfied_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+              hss.satisfiable_signals);
 
     // Try adding a readable waiter when already readable (from above).
     w.Init();
@@ -98,7 +104,11 @@ TEST(MessagePipeDispatcherTest, Basic) {
     stopwatch.Start();
     EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, w.Wait(0, NULL));
     EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
-    d0->RemoveWaiter(&w);
+    hss = HandleSignalsState();
+    d0->RemoveWaiter(&w, &hss);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+              hss.satisfiable_signals);
 
     // Wait for non-zero, finite time for readability on |d0| (will time out).
     w.Init();
@@ -110,7 +120,11 @@ TEST(MessagePipeDispatcherTest, Basic) {
     base::TimeDelta elapsed = stopwatch.Elapsed();
     EXPECT_GT(elapsed, (2 - 1) * test::EpsilonTimeout());
     EXPECT_LT(elapsed, (2 + 1) * test::EpsilonTimeout());
-    d0->RemoveWaiter(&w);
+    hss = HandleSignalsState();
+    d0->RemoveWaiter(&w, &hss);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+              hss.satisfiable_signals);
 
     EXPECT_EQ(MOJO_RESULT_OK, d0->Close());
     EXPECT_EQ(MOJO_RESULT_OK, d1->Close());
@@ -320,6 +334,7 @@ TEST(MessagePipeDispatcherTest, MAYBE_BasicThreaded) {
   bool did_wait;
   MojoResult result;
   uint32_t context;
+  HandleSignalsState hss;
 
   // Run this test both with |d0| as port 0, |d1| as port 1 and vice versa.
   for (unsigned i = 0; i < 2; i++) {
@@ -341,7 +356,8 @@ TEST(MessagePipeDispatcherTest, MAYBE_BasicThreaded) {
                                 1,
                                 &did_wait,
                                 &result,
-                                &context);
+                                &context,
+                                &hss);
       stopwatch.Start();
       thread.Start();
       base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
@@ -359,6 +375,10 @@ TEST(MessagePipeDispatcherTest, MAYBE_BasicThreaded) {
     EXPECT_TRUE(did_wait);
     EXPECT_EQ(MOJO_RESULT_OK, result);
     EXPECT_EQ(1u, context);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+              hss.satisfied_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+              hss.satisfiable_signals);
 
     // Now |d1| is already readable. Try waiting for it again.
     {
@@ -368,13 +388,18 @@ TEST(MessagePipeDispatcherTest, MAYBE_BasicThreaded) {
                                 2,
                                 &did_wait,
                                 &result,
-                                &context);
+                                &context,
+                                &hss);
       stopwatch.Start();
       thread.Start();
     }  // Joins the thread.
     EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
     EXPECT_FALSE(did_wait);
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS, result);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+              hss.satisfied_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+              hss.satisfiable_signals);
 
     // Consume what we wrote to |d0|.
     buffer[0] = 0;
@@ -397,7 +422,8 @@ TEST(MessagePipeDispatcherTest, MAYBE_BasicThreaded) {
                                 3,
                                 &did_wait,
                                 &result,
-                                &context);
+                                &context,
+                                &hss);
       stopwatch.Start();
       thread.Start();
       base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
@@ -409,6 +435,8 @@ TEST(MessagePipeDispatcherTest, MAYBE_BasicThreaded) {
     EXPECT_TRUE(did_wait);
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
     EXPECT_EQ(3u, context);
+    EXPECT_EQ(0u, hss.satisfied_signals);
+    EXPECT_EQ(0u, hss.satisfiable_signals);
 
     EXPECT_EQ(MOJO_RESULT_OK, d1->Close());
   }
@@ -433,7 +461,8 @@ TEST(MessagePipeDispatcherTest, MAYBE_BasicThreaded) {
                                 4,
                                 &did_wait,
                                 &result,
-                                &context);
+                                &context,
+                                &hss);
       stopwatch.Start();
       thread.Start();
       base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
@@ -445,6 +474,8 @@ TEST(MessagePipeDispatcherTest, MAYBE_BasicThreaded) {
     EXPECT_TRUE(did_wait);
     EXPECT_EQ(MOJO_RESULT_CANCELLED, result);
     EXPECT_EQ(4u, context);
+    EXPECT_EQ(0u, hss.satisfied_signals);
+    EXPECT_EQ(0u, hss.satisfiable_signals);
 
     EXPECT_EQ(MOJO_RESULT_OK, d0->Close());
   }
@@ -541,7 +572,11 @@ class ReaderThread : public base::SimpleThread {
       if (result == MOJO_RESULT_OK) {
         // Actually need to wait.
         EXPECT_EQ(MOJO_RESULT_OK, w.Wait(MOJO_DEADLINE_INDEFINITE, NULL));
-        read_dispatcher_->RemoveWaiter(&w);
+        HandleSignalsState hss;
+        read_dispatcher_->RemoveWaiter(&w, &hss);
+        // We may not actually be readable, since we're racing with other
+        // threads.
+        EXPECT_TRUE((hss.satisfiable_signals & MOJO_HANDLE_SIGNAL_READABLE));
       }
 
       // Now, try to do the read.

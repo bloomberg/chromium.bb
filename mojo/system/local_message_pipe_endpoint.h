@@ -40,7 +40,8 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
   virtual MojoResult AddWaiter(Waiter* waiter,
                                MojoHandleSignals signals,
                                uint32_t context) OVERRIDE;
-  virtual void RemoveWaiter(Waiter* waiter) OVERRIDE;
+  virtual void RemoveWaiter(Waiter* waiter,
+                            HandleSignalsState* signals_state) OVERRIDE;
 
   // This is only to be used by |ProxyMessagePipeEndpoint|:
   MessageInTransitQueue* message_queue() { return &message_queue_; }

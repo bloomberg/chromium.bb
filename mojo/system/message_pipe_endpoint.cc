@@ -39,8 +39,11 @@ MojoResult MessagePipeEndpoint::AddWaiter(Waiter* /*waiter*/,
   return MOJO_RESULT_INTERNAL;
 }
 
-void MessagePipeEndpoint::RemoveWaiter(Waiter* /*waiter*/) {
+void MessagePipeEndpoint::RemoveWaiter(Waiter* /*waiter*/,
+                                       HandleSignalsState* signals_state) {
   NOTREACHED();
+  if (signals_state)
+    *signals_state = HandleSignalsState();
 }
 
 void MessagePipeEndpoint::Attach(scoped_refptr<Channel> /*channel*/,

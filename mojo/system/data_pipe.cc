@@ -216,10 +216,13 @@ MojoResult DataPipe::ProducerAddWaiter(Waiter* waiter,
   return MOJO_RESULT_OK;
 }
 
-void DataPipe::ProducerRemoveWaiter(Waiter* waiter) {
+void DataPipe::ProducerRemoveWaiter(Waiter* waiter,
+                                    HandleSignalsState* signals_state) {
   base::AutoLock locker(lock_);
   DCHECK(has_local_producer_no_lock());
   producer_waiter_list_->RemoveWaiter(waiter);
+  if (signals_state)
+    *signals_state = ProducerGetHandleSignalsStateImplNoLock();
 }
 
 bool DataPipe::ProducerIsBusy() const {
@@ -396,10 +399,13 @@ MojoResult DataPipe::ConsumerAddWaiter(Waiter* waiter,
   return MOJO_RESULT_OK;
 }
 
-void DataPipe::ConsumerRemoveWaiter(Waiter* waiter) {
+void DataPipe::ConsumerRemoveWaiter(Waiter* waiter,
+                                    HandleSignalsState* signals_state) {
   base::AutoLock locker(lock_);
   DCHECK(has_local_consumer_no_lock());
   consumer_waiter_list_->RemoveWaiter(waiter);
+  if (signals_state)
+    *signals_state = ConsumerGetHandleSignalsStateImplNoLock();
 }
 
 bool DataPipe::ConsumerIsBusy() const {

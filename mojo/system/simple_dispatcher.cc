@@ -40,9 +40,13 @@ MojoResult SimpleDispatcher::AddWaiterImplNoLock(Waiter* waiter,
   return MOJO_RESULT_OK;
 }
 
-void SimpleDispatcher::RemoveWaiterImplNoLock(Waiter* waiter) {
+void SimpleDispatcher::RemoveWaiterImplNoLock(
+    Waiter* waiter,
+    HandleSignalsState* signals_state) {
   lock().AssertAcquired();
   waiter_list_.RemoveWaiter(waiter);
+  if (signals_state)
+    *signals_state = GetHandleSignalsStateImplNoLock();
 }
 
 }  // namespace system

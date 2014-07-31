@@ -408,6 +408,7 @@ TEST(MessagePipeTest, DiscardMode) {
 TEST(MessagePipeTest, BasicWaiting) {
   scoped_refptr<MessagePipe> mp(new MessagePipe());
   Waiter waiter;
+  HandleSignalsState hss;
 
   int32_t buffer[1];
   const uint32_t kBufferSize = static_cast<uint32_t>(sizeof(buffer));
@@ -430,7 +431,11 @@ TEST(MessagePipeTest, BasicWaiting) {
   ASSERT_EQ(MOJO_RESULT_OK,
             mp->AddWaiter(0, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 1));
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, waiter.Wait(0, NULL));
-  mp->RemoveWaiter(0, &waiter);
+  hss = HandleSignalsState();
+  mp->RemoveWaiter(0, &waiter, &hss);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfiable_signals);
 
   // Write from port 0 (to port 1), to make port 1 readable.
   buffer[0] = 123456789;
@@ -517,7 +522,12 @@ TEST(MessagePipeTest, ThreadedWaiting) {
                                NULL,
                                MOJO_WRITE_MESSAGE_FLAG_NONE));
 
-    mp->RemoveWaiter(1, thread.waiter());
+    HandleSignalsState hss;
+    mp->RemoveWaiter(1, thread.waiter(), &hss);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+              hss.satisfied_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+              hss.satisfiable_signals);
 
     mp->Close(0);
     mp->Close(1);
@@ -565,7 +575,10 @@ TEST(MessagePipeTest, ThreadedWaiting) {
     mp->CancelAllWaiters(0);
     mp->Close(0);
 
-    mp->RemoveWaiter(1, thread.waiter());
+    HandleSignalsState hss;
+    mp->RemoveWaiter(1, thread.waiter(), &hss);
+    EXPECT_EQ(0u, hss.satisfied_signals);
+    EXPECT_EQ(0u, hss.satisfiable_signals);
 
     mp->CancelAllWaiters(1);
     mp->Close(1);

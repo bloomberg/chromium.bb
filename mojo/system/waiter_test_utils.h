@@ -13,6 +13,7 @@
 #include "base/threading/simple_thread.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/system/dispatcher.h"
+#include "mojo/system/handle_signals_state.h"
 #include "mojo/system/waiter.h"
 
 namespace mojo {
@@ -67,15 +68,17 @@ class SimpleWaiterThread : public base::SimpleThread {
 // |SimpleWaiterThread|, it requires the machinery of |Dispatcher|.
 class WaiterThread : public base::SimpleThread {
  public:
-  // Note: |*did_wait_out|, |*result_out|, and |*context_out| "belong" to this
-  // object (i.e., may be modified by, on some other thread) while it's alive.
+  // Note: |*did_wait_out|, |*result_out|, |*context_out| and
+  // |*signals_state_out| "belong" to this object (i.e., may be modified by, on
+  // some other thread) while it's alive.
   WaiterThread(scoped_refptr<Dispatcher> dispatcher,
                MojoHandleSignals handle_signals,
                MojoDeadline deadline,
                uint32_t context,
                bool* did_wait_out,
                MojoResult* result_out,
-               uint32_t* context_out);
+               uint32_t* context_out,
+               HandleSignalsState* signals_state_out);
   virtual ~WaiterThread();
 
  private:
@@ -88,6 +91,7 @@ class WaiterThread : public base::SimpleThread {
   bool* const did_wait_out_;
   MojoResult* const result_out_;
   uint32_t* const context_out_;
+  HandleSignalsState* const signals_state_out_;
 
   Waiter waiter_;
 

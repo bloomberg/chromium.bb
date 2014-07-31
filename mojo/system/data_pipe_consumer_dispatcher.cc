@@ -113,9 +113,11 @@ MojoResult DataPipeConsumerDispatcher::AddWaiterImplNoLock(
   return data_pipe_->ConsumerAddWaiter(waiter, signals, context);
 }
 
-void DataPipeConsumerDispatcher::RemoveWaiterImplNoLock(Waiter* waiter) {
+void DataPipeConsumerDispatcher::RemoveWaiterImplNoLock(
+    Waiter* waiter,
+    HandleSignalsState* signals_state) {
   lock().AssertAcquired();
-  data_pipe_->ConsumerRemoveWaiter(waiter);
+  data_pipe_->ConsumerRemoveWaiter(waiter, signals_state);
 }
 
 bool DataPipeConsumerDispatcher::IsBusyNoLock() const {

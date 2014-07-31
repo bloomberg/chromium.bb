@@ -138,7 +138,11 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   MojoResult AddWaiter(Waiter* waiter,
                        MojoHandleSignals signals,
                        uint32_t context);
-  void RemoveWaiter(Waiter* waiter);
+  // Removes a waiter from this dispatcher. (It is valid to call this multiple
+  // times for the same |waiter| on the same object, so long as |AddWaiter()|
+  // was called at most once.) If |signals_state| is non-null, |*signals_state|
+  // will be set to the current handle signals state.
+  void RemoveWaiter(Waiter* waiter, HandleSignalsState* signals_state);
 
   // A dispatcher must be put into a special state in order to be sent across a
   // message pipe. Outside of tests, only |HandleTableAccess| is allowed to do
@@ -257,7 +261,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   virtual MojoResult AddWaiterImplNoLock(Waiter* waiter,
                                          MojoHandleSignals signals,
                                          uint32_t context);
-  virtual void RemoveWaiterImplNoLock(Waiter* waiter);
+  virtual void RemoveWaiterImplNoLock(Waiter* waiter,
+                                      HandleSignalsState* signals_state);
 
   // These implement the API used to serialize dispatchers to a |Channel|
   // (described below). They will only be called on a dispatcher that's attached

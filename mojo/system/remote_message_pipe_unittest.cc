@@ -182,6 +182,7 @@ TEST_F(RemoteMessagePipeTest, Basic) {
   char buffer[100] = {0};
   uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
   Waiter waiter;
+  HandleSignalsState hss;
   uint32_t context = 0;
 
   // Connect message pipes. MP 0, port 1 will be attached to channel 0 and
@@ -215,7 +216,12 @@ TEST_F(RemoteMessagePipeTest, Basic) {
   // Wait.
   EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
   EXPECT_EQ(123u, context);
-  mp1->RemoveWaiter(1, &waiter);
+  hss = HandleSignalsState();
+  mp1->RemoveWaiter(1, &waiter, &hss);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfiable_signals);
 
   // Read from MP 1, port 1.
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -243,7 +249,12 @@ TEST_F(RemoteMessagePipeTest, Basic) {
 
   EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
   EXPECT_EQ(456u, context);
-  mp0->RemoveWaiter(0, &waiter);
+  hss = HandleSignalsState();
+  mp0->RemoveWaiter(0, &waiter, &hss);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfiable_signals);
 
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -269,7 +280,10 @@ TEST_F(RemoteMessagePipeTest, Basic) {
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
               waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
     EXPECT_EQ(789u, context);
-    mp1->RemoveWaiter(1, &waiter);
+    hss = HandleSignalsState();
+    mp1->RemoveWaiter(1, &waiter, &hss);
+    EXPECT_EQ(0u, hss.satisfied_signals);
+    EXPECT_EQ(0u, hss.satisfiable_signals);
   } else {
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
   }
@@ -284,6 +298,7 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
   char buffer[100] = {0};
   uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
   Waiter waiter;
+  HandleSignalsState hss;
   uint32_t context = 0;
 
   // Connect message pipes as in the |Basic| test.
@@ -321,7 +336,12 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
 
   EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
   EXPECT_EQ(789u, context);
-  mp3->RemoveWaiter(1, &waiter);
+  hss = HandleSignalsState();
+  mp3->RemoveWaiter(1, &waiter, &hss);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfiable_signals);
 
   // Make sure there's nothing on MP 0, port 0 or MP 1, port 1 or MP 2, port 0.
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
@@ -376,7 +396,12 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
 
   EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
   EXPECT_EQ(123u, context);
-  mp1->RemoveWaiter(1, &waiter);
+  hss = HandleSignalsState();
+  mp1->RemoveWaiter(1, &waiter, &hss);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfiable_signals);
 
   // Make sure there's nothing on the other ports.
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
@@ -426,6 +451,7 @@ TEST_F(RemoteMessagePipeTest, CloseBeforeConnect) {
   char buffer[100] = {0};
   uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
   Waiter waiter;
+  HandleSignalsState hss;
   uint32_t context = 0;
 
   // Connect message pipes. MP 0, port 1 will be attached to channel 0 and
@@ -464,7 +490,14 @@ TEST_F(RemoteMessagePipeTest, CloseBeforeConnect) {
   // Wait.
   EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
   EXPECT_EQ(123u, context);
-  mp1->RemoveWaiter(1, &waiter);
+  hss = HandleSignalsState();
+  // Note: MP 1, port 1 should definitely should be readable, but it may or may
+  // not appear as writable (there's a race, and it may not have noticed that
+  // the other side was closed yet -- e.g., inserting a sleep here would make it
+  // much more likely to notice that it's no longer writable).
+  mp1->RemoveWaiter(1, &waiter, &hss);
+  EXPECT_TRUE((hss.satisfied_signals & MOJO_HANDLE_SIGNAL_READABLE));
+  EXPECT_TRUE((hss.satisfiable_signals & MOJO_HANDLE_SIGNAL_READABLE));
 
   // Read from MP 1, port 1.
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -484,6 +517,7 @@ TEST_F(RemoteMessagePipeTest, CloseBeforeConnect) {
 TEST_F(RemoteMessagePipeTest, HandlePassing) {
   static const char kHello[] = "hello";
   Waiter waiter;
+  HandleSignalsState hss;
   uint32_t context = 0;
 
   scoped_refptr<MessagePipe> mp0(new MessagePipe(
@@ -531,7 +565,12 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   // Wait.
   EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
   EXPECT_EQ(123u, context);
-  mp1->RemoveWaiter(1, &waiter);
+  hss = HandleSignalsState();
+  mp1->RemoveWaiter(1, &waiter, &hss);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfiable_signals);
 
   // Read from MP 1, port 1.
   char read_buffer[100] = {0};
@@ -574,7 +613,12 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   // Wait for the dispatcher to become readable.
   EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
   EXPECT_EQ(456u, context);
-  dispatcher->RemoveWaiter(&waiter);
+  hss = HandleSignalsState();
+  dispatcher->RemoveWaiter(&waiter, &hss);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfiable_signals);
 
   // Read from the dispatcher.
   memset(read_buffer, 0, sizeof(read_buffer));
@@ -603,7 +647,12 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   // Wait.
   EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
   EXPECT_EQ(789u, context);
-  local_mp->RemoveWaiter(1, &waiter);
+  hss = HandleSignalsState();
+  local_mp->RemoveWaiter(1, &waiter, &hss);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfiable_signals);
 
   // Read from "local_mp", port 1.
   memset(read_buffer, 0, sizeof(read_buffer));
@@ -638,6 +687,7 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
 TEST_F(RemoteMessagePipeTest, MAYBE_SharedBufferPassing) {
   static const char kHello[] = "hello";
   Waiter waiter;
+  HandleSignalsState hss;
   uint32_t context = 0;
 
   scoped_refptr<MessagePipe> mp0(new MessagePipe(
@@ -699,7 +749,12 @@ TEST_F(RemoteMessagePipeTest, MAYBE_SharedBufferPassing) {
   // Wait.
   EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
   EXPECT_EQ(123u, context);
-  mp1->RemoveWaiter(1, &waiter);
+  hss = HandleSignalsState();
+  mp1->RemoveWaiter(1, &waiter, &hss);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfiable_signals);
 
   // Read from MP 1, port 1.
   char read_buffer[100] = {0};
@@ -769,6 +824,7 @@ TEST_F(RemoteMessagePipeTest, MAYBE_PlatformHandlePassing) {
   static const char kWorld[] = "world";
   Waiter waiter;
   uint32_t context = 0;
+  HandleSignalsState hss;
 
   scoped_refptr<MessagePipe> mp0(new MessagePipe(
       scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
@@ -819,7 +875,12 @@ TEST_F(RemoteMessagePipeTest, MAYBE_PlatformHandlePassing) {
   // Wait.
   EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
   EXPECT_EQ(123u, context);
-  mp1->RemoveWaiter(1, &waiter);
+  hss = HandleSignalsState();
+  mp1->RemoveWaiter(1, &waiter, &hss);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            hss.satisfiable_signals);
 
   // Read from MP 1, port 1.
   char read_buffer[100] = {0};

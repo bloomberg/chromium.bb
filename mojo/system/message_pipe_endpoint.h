@@ -68,7 +68,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeEndpoint {
   virtual MojoResult AddWaiter(Waiter* waiter,
                                MojoHandleSignals signals,
                                uint32_t context);
-  virtual void RemoveWaiter(Waiter* waiter);
+  virtual void RemoveWaiter(Waiter* waiter, HandleSignalsState* signals_state);
 
   // Implementations must override these if they represent a proxy endpoint. An
   // implementation for a local endpoint needs not override these methods, since

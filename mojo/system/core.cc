@@ -554,7 +554,7 @@ MojoResult Core::WaitManyInternal(const MojoHandle* handles,
   // |Wait()|/|WaitMany()| call. (Only after doing this can |waiter| be
   // destroyed, but this would still be required if the waiter were in TLS.)
   for (i = 0; i < num_added; i++)
-    dispatchers[i]->RemoveWaiter(&waiter);
+    dispatchers[i]->RemoveWaiter(&waiter, NULL);
 
   return rv;
 }

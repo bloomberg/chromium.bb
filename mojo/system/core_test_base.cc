@@ -135,9 +135,13 @@ class MockDispatcher : public Dispatcher {
     return MOJO_RESULT_FAILED_PRECONDITION;
   }
 
-  virtual void RemoveWaiterImplNoLock(Waiter* /*waiter*/) OVERRIDE {
+  virtual void RemoveWaiterImplNoLock(
+      Waiter* /*waiter*/,
+      HandleSignalsState* signals_state) OVERRIDE {
     info_->IncrementRemoveWaiterCallCount();
     lock().AssertAcquired();
+    if (signals_state)
+      *signals_state = HandleSignalsState();
   }
 
   virtual void CancelAllWaitersNoLock() OVERRIDE {

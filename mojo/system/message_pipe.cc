@@ -118,13 +118,15 @@ MojoResult MessagePipe::AddWaiter(unsigned port,
   return endpoints_[port]->AddWaiter(waiter, signals, context);
 }
 
-void MessagePipe::RemoveWaiter(unsigned port, Waiter* waiter) {
+void MessagePipe::RemoveWaiter(unsigned port,
+                               Waiter* waiter,
+                               HandleSignalsState* signals_state) {
   DCHECK(port == 0 || port == 1);
 
   base::AutoLock locker(lock_);
   DCHECK(endpoints_[port]);
 
-  endpoints_[port]->RemoveWaiter(waiter);
+  endpoints_[port]->RemoveWaiter(waiter, signals_state);
 }
 
 void MessagePipe::ConvertLocalToProxy(unsigned port) {

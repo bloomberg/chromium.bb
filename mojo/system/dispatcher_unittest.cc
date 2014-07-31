@@ -75,8 +75,14 @@ TEST(DispatcherTest, Basic) {
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             d->AddWaiter(&w, ~MOJO_HANDLE_SIGNAL_NONE, 0));
   // Okay to remove even if it wasn't added (or was already removed).
-  d->RemoveWaiter(&w);
-  d->RemoveWaiter(&w);
+  HandleSignalsState hss;
+  d->RemoveWaiter(&w, &hss);
+  EXPECT_EQ(0u, hss.satisfied_signals);
+  EXPECT_EQ(0u, hss.satisfiable_signals);
+  hss = HandleSignalsState();
+  d->RemoveWaiter(&w, &hss);
+  EXPECT_EQ(0u, hss.satisfied_signals);
+  EXPECT_EQ(0u, hss.satisfiable_signals);
 
   EXPECT_EQ(MOJO_RESULT_OK, d->Close());
 
@@ -109,7 +115,10 @@ TEST(DispatcherTest, Basic) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, d->EndReadData(0));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             d->AddWaiter(&w, ~MOJO_HANDLE_SIGNAL_NONE, 0));
-  d->RemoveWaiter(&w);
+  hss = HandleSignalsState();
+  d->RemoveWaiter(&w, &hss);
+  EXPECT_EQ(0u, hss.satisfied_signals);
+  EXPECT_EQ(0u, hss.satisfiable_signals);
 }
 
 class ThreadSafetyStressThread : public base::SimpleThread {
@@ -221,16 +230,23 @@ class ThreadSafetyStressThread : public base::SimpleThread {
                     r == MOJO_RESULT_INVALID_ARGUMENT);
         break;
       }
-      case REMOVE_WAITER:
-        dispatcher_->RemoveWaiter(&waiter_);
+      case REMOVE_WAITER: {
+        HandleSignalsState hss;
+        dispatcher_->RemoveWaiter(&waiter_, &hss);
+        EXPECT_EQ(0u, hss.satisfied_signals);
+        EXPECT_EQ(0u, hss.satisfiable_signals);
         break;
+      }
       default:
         NOTREACHED();
         break;
     }
 
     // Always try to remove the waiter, in case we added it.
-    dispatcher_->RemoveWaiter(&waiter_);
+    HandleSignalsState hss;
+    dispatcher_->RemoveWaiter(&waiter_, &hss);
+    EXPECT_EQ(0u, hss.satisfied_signals);
+    EXPECT_EQ(0u, hss.satisfiable_signals);
   }
 
   base::WaitableEvent* const event_;

@@ -221,9 +221,11 @@ MojoResult MessagePipeDispatcher::AddWaiterImplNoLock(Waiter* waiter,
   return message_pipe_->AddWaiter(port_, waiter, signals, context);
 }
 
-void MessagePipeDispatcher::RemoveWaiterImplNoLock(Waiter* waiter) {
+void MessagePipeDispatcher::RemoveWaiterImplNoLock(
+    Waiter* waiter,
+    HandleSignalsState* signals_state) {
   lock().AssertAcquired();
-  message_pipe_->RemoveWaiter(port_, waiter);
+  message_pipe_->RemoveWaiter(port_, waiter, signals_state);
 }
 
 void MessagePipeDispatcher::StartSerializeImplNoLock(

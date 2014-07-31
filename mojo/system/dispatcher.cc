@@ -228,11 +228,15 @@ MojoResult Dispatcher::AddWaiter(Waiter* waiter,
   return AddWaiterImplNoLock(waiter, signals, context);
 }
 
-void Dispatcher::RemoveWaiter(Waiter* waiter) {
+void Dispatcher::RemoveWaiter(Waiter* waiter,
+                              HandleSignalsState* handle_signals_state) {
   base::AutoLock locker(lock_);
-  if (is_closed_)
+  if (is_closed_) {
+    if (handle_signals_state)
+      *handle_signals_state = HandleSignalsState();
     return;
-  RemoveWaiterImplNoLock(waiter);
+  }
+  RemoveWaiterImplNoLock(waiter, handle_signals_state);
 }
 
 Dispatcher::Dispatcher() : is_closed_(false) {
@@ -370,11 +374,14 @@ MojoResult Dispatcher::AddWaiterImplNoLock(Waiter* /*waiter*/,
   return MOJO_RESULT_FAILED_PRECONDITION;
 }
 
-void Dispatcher::RemoveWaiterImplNoLock(Waiter* /*waiter*/) {
+void Dispatcher::RemoveWaiterImplNoLock(Waiter* /*waiter*/,
+                                        HandleSignalsState* signals_state) {
   lock_.AssertAcquired();
   DCHECK(!is_closed_);
   // By default, waiting isn't supported. Only dispatchers that can be waited on
   // will do something nontrivial.
+  if (signals_state)
+    *signals_state = HandleSignalsState();
 }
 
 void Dispatcher::StartSerializeImplNoLock(Channel* /*channel*/,

@@ -90,9 +90,11 @@ MojoResult DataPipeProducerDispatcher::AddWaiterImplNoLock(
   return data_pipe_->ProducerAddWaiter(waiter, signals, context);
 }
 
-void DataPipeProducerDispatcher::RemoveWaiterImplNoLock(Waiter* waiter) {
+void DataPipeProducerDispatcher::RemoveWaiterImplNoLock(
+    Waiter* waiter,
+    HandleSignalsState* signals_state) {
   lock().AssertAcquired();
-  data_pipe_->ProducerRemoveWaiter(waiter);
+  data_pipe_->ProducerRemoveWaiter(waiter, signals_state);
 }
 
 bool DataPipeProducerDispatcher::IsBusyNoLock() const {

@@ -156,9 +156,12 @@ MojoResult LocalMessagePipeEndpoint::AddWaiter(Waiter* waiter,
   return MOJO_RESULT_OK;
 }
 
-void LocalMessagePipeEndpoint::RemoveWaiter(Waiter* waiter) {
+void LocalMessagePipeEndpoint::RemoveWaiter(Waiter* waiter,
+                                            HandleSignalsState* signals_state) {
   DCHECK(is_open_);
   waiter_list_.RemoveWaiter(waiter);
+  if (signals_state)
+    *signals_state = GetHandleSignalsState();
 }
 
 }  // namespace system

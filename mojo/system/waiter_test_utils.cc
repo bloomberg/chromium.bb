@@ -29,7 +29,8 @@ WaiterThread::WaiterThread(scoped_refptr<Dispatcher> dispatcher,
                            uint32_t context,
                            bool* did_wait_out,
                            MojoResult* result_out,
-                           uint32_t* context_out)
+                           uint32_t* context_out,
+                           HandleSignalsState* signals_state_out)
     : base::SimpleThread("waiter_thread"),
       dispatcher_(dispatcher),
       handle_signals_(handle_signals),
@@ -37,10 +38,14 @@ WaiterThread::WaiterThread(scoped_refptr<Dispatcher> dispatcher,
       context_(context),
       did_wait_out_(did_wait_out),
       result_out_(result_out),
-      context_out_(context_out) {
+      context_out_(context_out),
+      signals_state_out_(signals_state_out) {
   *did_wait_out_ = false;
-  *result_out_ = -8542346;   // Totally invalid result.
-  *context_out_ = 89023444;  // "Random".
+  // Initialize these with invalid results (so that we'll be sure to catch any
+  // case where they're not set).
+  *result_out_ = -8542346;
+  *context_out_ = 89023444;
+  *signals_state_out_ = HandleSignalsState(~0u, ~0u);
 }
 
 WaiterThread::~WaiterThread() {
@@ -51,12 +56,16 @@ void WaiterThread::Run() {
   waiter_.Init();
 
   *result_out_ = dispatcher_->AddWaiter(&waiter_, handle_signals_, context_);
-  if (*result_out_ != MOJO_RESULT_OK)
+  if (*result_out_ != MOJO_RESULT_OK) {
+    // TODO(vtl): Get rid of this once we've added a |HandleSignalsState*|
+    // argument to |AddWaiter()|.
+    *signals_state_out_ = dispatcher_->GetHandleSignalsState();
     return;
+  }
 
   *did_wait_out_ = true;
   *result_out_ = waiter_.Wait(deadline_, context_out_);
-  dispatcher_->RemoveWaiter(&waiter_);
+  dispatcher_->RemoveWaiter(&waiter_, signals_state_out_);
 }
 
 }  // namespace test
