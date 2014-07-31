@@ -35,7 +35,9 @@ class ActivityWidget {
     activity_->GetActivityViewModel()->Init();
   }
 
-  virtual ~ActivityWidget() {}
+  virtual ~ActivityWidget() {
+    widget_->Close();
+  }
 
   void Show() {
     Update();
@@ -79,8 +81,11 @@ class ActivityViewManagerImpl : public ActivityViewManager {
   virtual void RemoveActivity(Activity* activity) OVERRIDE {
     std::map<Activity*, ActivityWidget*>::iterator find =
         activity_widgets_.find(activity);
-    if (find != activity_widgets_.end())
+    if (find != activity_widgets_.end()) {
+      ActivityWidget* widget = find->second;
       activity_widgets_.erase(activity);
+      delete widget;
+    }
   }
 
   virtual void UpdateActivity(Activity* activity) OVERRIDE {

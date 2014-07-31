@@ -9,8 +9,7 @@
 
 typedef athena::test::AthenaTestBase ActivityManagerTest;
 
-// TODO(flackr): Fix memory leak and re-enable - http://crbug.com/399241
-TEST_F(ActivityManagerTest, DISABLED_Basic) {
+TEST_F(ActivityManagerTest, Basic) {
   athena::ActivityManager::Get()->AddActivity(
       athena::ActivityFactory::Get()->CreateWebActivity(NULL, GURL()));
 }
