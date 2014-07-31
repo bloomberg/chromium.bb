@@ -690,6 +690,7 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
     case XK_Alt_R:
       return VKEY_MENU;
     case XK_ISO_Level3_Shift:
+    case XK_Mode_switch:
       return VKEY_ALTGR;
     case XK_Multi_key:
       return VKEY_COMPOSE;
