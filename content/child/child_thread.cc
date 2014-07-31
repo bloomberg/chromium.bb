@@ -34,6 +34,7 @@
 #include "content/child/fileapi/webfilesystem_impl.h"
 #include "content/child/mojo/mojo_application.h"
 #include "content/child/power_monitor_broadcast_source.h"
+#include "content/child/process_background_message_filter.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/quota_message_filter.h"
 #include "content/child/resource_dispatcher.h"
@@ -253,6 +254,7 @@ void ChildThread::Init() {
   histogram_message_filter_ = new ChildHistogramMessageFilter();
   resource_message_filter_ =
       new ChildResourceMessageFilter(resource_dispatcher());
+  process_background_message_filter_ = new ProcessBackgroundMessageFilter();
 
   service_worker_message_filter_ =
       new ServiceWorkerMessageFilter(thread_safe_sender_.get());
@@ -265,6 +267,7 @@ void ChildThread::Init() {
   channel_->AddFilter(histogram_message_filter_.get());
   channel_->AddFilter(sync_message_filter_.get());
   channel_->AddFilter(resource_message_filter_.get());
+  channel_->AddFilter(process_background_message_filter_.get());
   channel_->AddFilter(quota_message_filter_->GetFilter());
   channel_->AddFilter(service_worker_message_filter_->GetFilter());
 
@@ -337,6 +340,7 @@ ChildThread::~ChildThread() {
 
   channel_->RemoveFilter(histogram_message_filter_.get());
   channel_->RemoveFilter(sync_message_filter_.get());
+  channel_->RemoveFilter(process_background_message_filter_.get());
 
   // The ChannelProxy object caches a pointer to the IPC thread, so need to
   // reset it as it's not guaranteed to outlive this object.
@@ -447,8 +451,6 @@ bool ChildThread::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ChildProcessMsg_GetChildProfilerData,
                         OnGetChildProfilerData)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_DumpHandles, OnDumpHandles)
-    IPC_MESSAGE_HANDLER(ChildProcessMsg_SetProcessBackgrounded,
-                        OnProcessBackgrounded)
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_GetTcmallocStats, OnGetTcmallocStats)
 #endif
@@ -555,22 +557,6 @@ void ChildThread::OnProcessFinalRelease() {
 void ChildThread::EnsureConnected() {
   VLOG(0) << "ChildThread::EnsureConnected()";
   base::KillProcess(base::GetCurrentProcessHandle(), 0, false);
-}
-
-void ChildThread::OnProcessBackgrounded(bool background) {
-  // Set timer slack to maximum on main thread when in background.
-  base::TimerSlack timer_slack = base::TIMER_SLACK_NONE;
-  if (background)
-    timer_slack = base::TIMER_SLACK_MAXIMUM;
-  base::MessageLoop::current()->SetTimerSlack(timer_slack);
-
-#ifdef OS_WIN
-  // Windows Vista+ has a fancy process backgrounding mode that can only be set
-  // from within the process.
-  // TODO(wfh) Do not set background from within process until the issue with
-  // white tabs is resolved.  See http://crbug.com/398103.
-  // base::Process::Current().SetProcessBackgrounded(background);
-#endif  // OS_WIN
 }
 
 }  // namespace content
