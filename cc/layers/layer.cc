@@ -863,8 +863,10 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetContentsScale(contents_scale_x(), contents_scale_y());
 
   bool is_tracing;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-                                     &is_tracing);
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("cc.debug") "," TRACE_DISABLED_BY_DEFAULT(
+          "devtools.timeline.layers"),
+      &is_tracing);
   if (is_tracing)
     layer->SetDebugInfo(TakeDebugInfo());
 
