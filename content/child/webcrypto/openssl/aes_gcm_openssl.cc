@@ -43,76 +43,19 @@ Status AesGcmEncryptDecrypt(EncryptOrDecrypt mode,
       SymKeyOpenSsl::Cast(key)->raw_key_data();
   const blink::WebCryptoAesGcmParams* params = algorithm.aesGcmParams();
 
-  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-
   unsigned int tag_length_bits;
   Status status = GetAesGcmTagLengthInBits(params, &tag_length_bits);
   if (status.IsError())
     return status;
-  unsigned int tag_length_bytes = tag_length_bits / 8;
 
-  CryptoData iv(params->iv());
-  CryptoData additional_data(params->optionalAdditionalData());
-
-  EVP_AEAD_CTX ctx;
-
-  const EVP_AEAD* const aead_alg =
-      GetAesGcmAlgorithmFromKeySize(raw_key.size());
-  if (!aead_alg)
-    return Status::ErrorUnexpected();
-
-  if (!EVP_AEAD_CTX_init(&ctx,
-                         aead_alg,
-                         vector_as_array(&raw_key),
-                         raw_key.size(),
-                         tag_length_bytes,
-                         NULL)) {
-    return Status::OperationError();
-  }
-
-  crypto::ScopedOpenSSL<EVP_AEAD_CTX, EVP_AEAD_CTX_cleanup>::Type ctx_cleanup(
-      &ctx);
-
-  size_t len;
-  int ok;
-
-  if (mode == DECRYPT) {
-    if (data.byte_length() < tag_length_bytes)
-      return Status::ErrorDataTooSmall();
-
-    buffer->resize(data.byte_length() - tag_length_bytes);
-
-    ok = EVP_AEAD_CTX_open(&ctx,
-                           vector_as_array(buffer),
-                           &len,
-                           buffer->size(),
-                           iv.bytes(),
-                           iv.byte_length(),
-                           data.bytes(),
-                           data.byte_length(),
-                           additional_data.bytes(),
-                           additional_data.byte_length());
-  } else {
-    // No need to check for unsigned integer overflow here (seal fails if
-    // the output buffer is too small).
-    buffer->resize(data.byte_length() + tag_length_bytes);
-
-    ok = EVP_AEAD_CTX_seal(&ctx,
-                           vector_as_array(buffer),
-                           &len,
-                           buffer->size(),
-                           iv.bytes(),
-                           iv.byte_length(),
-                           data.bytes(),
-                           data.byte_length(),
-                           additional_data.bytes(),
-                           additional_data.byte_length());
-  }
-
-  if (!ok)
-    return Status::OperationError();
-  buffer->resize(len);
-  return Status::Success();
+  return AeadEncryptDecrypt(mode,
+                            raw_key,
+                            data,
+                            tag_length_bits / 8,
+                            CryptoData(params->iv()),
+                            CryptoData(params->optionalAdditionalData()),
+                            GetAesGcmAlgorithmFromKeySize(raw_key.size()),
+                            buffer);
 }
 
 class AesGcmImplementation : public AesAlgorithm {

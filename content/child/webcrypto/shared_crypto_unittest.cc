@@ -2947,7 +2947,7 @@ TEST_F(SharedCryptoTest, RsaSignVerifyKnownAnswer) {
   }
 }
 
-TEST_F(SharedCryptoTest, MAYBE(AesKwKeyImport)) {
+TEST_F(SharedCryptoTest, AesKwKeyImport) {
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
   blink::WebCryptoAlgorithm algorithm =
       CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw);
@@ -3031,7 +3031,7 @@ TEST_F(SharedCryptoTest, MAYBE(AesKwKeyImport)) {
                       &key));
 }
 
-TEST_F(SharedCryptoTest, MAYBE(UnwrapFailures)) {
+TEST_F(SharedCryptoTest, UnwrapFailures) {
   // This test exercises the code path common to all unwrap operations.
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("aes_kw.json", &tests));
@@ -3061,7 +3061,7 @@ TEST_F(SharedCryptoTest, MAYBE(UnwrapFailures)) {
                 &unwrapped_key));
 }
 
-TEST_F(SharedCryptoTest, MAYBE(AesKwRawSymkeyWrapUnwrapKnownAnswer)) {
+TEST_F(SharedCryptoTest, AesKwRawSymkeyWrapUnwrapKnownAnswer) {
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("aes_kw.json", &tests));
 
@@ -3127,7 +3127,7 @@ TEST_F(SharedCryptoTest, MAYBE(AesKwRawSymkeyWrapUnwrapKnownAnswer)) {
 
 // Unwrap a HMAC key using AES-KW, and then try doing a sign/verify with the
 // unwrapped key
-TEST_F(SharedCryptoTest, MAYBE(AesKwRawSymkeyUnwrapSignVerifyHmac)) {
+TEST_F(SharedCryptoTest, AesKwRawSymkeyUnwrapSignVerifyHmac) {
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("aes_kw.json", &tests));
 
@@ -3183,7 +3183,7 @@ TEST_F(SharedCryptoTest, MAYBE(AesKwRawSymkeyUnwrapSignVerifyHmac)) {
                    &verify_result));
 }
 
-TEST_F(SharedCryptoTest, MAYBE(AesKwRawSymkeyWrapUnwrapErrors)) {
+TEST_F(SharedCryptoTest, AesKwRawSymkeyWrapUnwrapErrors) {
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("aes_kw.json", &tests));
   base::DictionaryValue* test;
@@ -3236,7 +3236,7 @@ TEST_F(SharedCryptoTest, MAYBE(AesKwRawSymkeyWrapUnwrapErrors)) {
                       &unwrapped_key));
 }
 
-TEST_F(SharedCryptoTest, MAYBE(AesKwRawSymkeyUnwrapCorruptData)) {
+TEST_F(SharedCryptoTest, AesKwRawSymkeyUnwrapCorruptData) {
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("aes_kw.json", &tests));
   base::DictionaryValue* test;
@@ -3270,7 +3270,7 @@ TEST_F(SharedCryptoTest, MAYBE(AesKwRawSymkeyUnwrapCorruptData)) {
                 &unwrapped_key));
 }
 
-TEST_F(SharedCryptoTest, MAYBE(AesKwJwkSymkeyUnwrapKnownData)) {
+TEST_F(SharedCryptoTest, AesKwJwkSymkeyUnwrapKnownData) {
   // The following data lists a known HMAC SHA-256 key, then a JWK
   // representation of this key which was encrypted ("wrapped") using AES-KW and
   // the following wrapping key.
@@ -3490,7 +3490,7 @@ TEST_F(SharedCryptoTest, GenerateAesCbc192) {
 }
 
 // AES 192-bit is not allowed: http://crbug.com/381829
-TEST_F(SharedCryptoTest, MAYBE(UnwrapAesCbc192)) {
+TEST_F(SharedCryptoTest, UnwrapAesCbc192) {
   std::vector<uint8_t> wrapping_key_data(16, 0);
   std::vector<uint8_t> wrapped_key = HexStringToBytes(
       "1A07ACAB6C906E50883173C29441DB1DE91D34F45C435B5F99C822867FB3956F");
@@ -4145,7 +4145,7 @@ TEST_F(SharedCryptoTest, ImportAesCbcKeyBadUsage_Raw) {
 // Try importing an AES-KW key with unsupported key usages using raw
 // format. AES-KW keys support the following usages:
 //   'wrapKey', 'unwrapKey'
-TEST_F(SharedCryptoTest, MAYBE(ImportAesKwKeyBadUsage_Raw)) {
+TEST_F(SharedCryptoTest, ImportAesKwKeyBadUsage_Raw) {
   const blink::WebCryptoAlgorithm algorithm =
       CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw);
 
@@ -4177,7 +4177,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportAesKwKeyBadUsage_Raw)) {
 // Try unwrapping an HMAC key with unsupported usages using JWK format and
 // AES-KW. HMAC keys support the following usages:
 //   'sign', 'verify'
-TEST_F(SharedCryptoTest, MAYBE(UnwrapHmacKeyBadUsage_JWK)) {
+TEST_F(SharedCryptoTest, UnwrapHmacKeyBadUsage_JWK) {
   const blink::WebCryptoAlgorithm unwrap_algorithm =
       CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw);
 
@@ -4227,7 +4227,7 @@ TEST_F(SharedCryptoTest, MAYBE(UnwrapHmacKeyBadUsage_JWK)) {
 // Try unwrapping an RSA-SSA public key with unsupported usages using JWK format
 // and AES-KW. RSA-SSA public keys support the following usages:
 //   'verify'
-TEST_F(SharedCryptoTest, MAYBE(UnwrapRsaSsaPublicKeyBadUsage_JWK)) {
+TEST_F(SharedCryptoTest, UnwrapRsaSsaPublicKeyBadUsage_JWK) {
   const blink::WebCryptoAlgorithm unwrap_algorithm =
       CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw);
 
