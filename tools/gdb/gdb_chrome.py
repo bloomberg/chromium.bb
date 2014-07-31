@@ -11,9 +11,6 @@ Add this to your gdb by amending your ~/.gdbinit as follows:
   import gdb_chrome
   end
 
-This module relies on the WebKit gdb module already existing in
-your Python path.
-
 Use
   (gdb) p /r any_variable
 to print |any_variable| without using any printers.
@@ -22,7 +19,16 @@ to print |any_variable| without using any printers.
 import datetime
 import gdb
 import gdb.printing
-import webkit
+import os
+import sys
+
+sys.path.insert(0, os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    '..', '..', 'third_party', 'WebKit', 'Tools', 'gdb'))
+try:
+  import webkit
+finally:
+  sys.path.pop(0)
 
 # When debugging this module, set the below variable to True, and then use
 #   (gdb) python del sys.modules['gdb_chrome']
