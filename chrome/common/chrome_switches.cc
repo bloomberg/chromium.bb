@@ -1304,6 +1304,10 @@ const char kAppsKeepChromeAliveInTests[]    = "apps-keep-chrome-alive-in-tests";
 const char kDisableSystemFullscreenForTesting[] =
     "disable-system-fullscreen-for-testing";
 
+// Makes the browser window's contentView take up the full size of the
+// window in OSX Yosemite.
+const char kEnableFullSizeContentView[]     = "enable-full-size-content-view";
+
 // Enables a simplified fullscreen UI on Mac.
 const char kEnableSimplifiedFullscreen[]    = "enable-simplified-fullscreen";
 
