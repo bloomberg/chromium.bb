@@ -34,6 +34,10 @@ from utils import threading_utils
 import swarming_load_test_bot
 
 
+# Amount of time the timer should be reduced on the Swarming side.
+TIMEOUT_OVERHEAD = 10
+
+
 def print_results(results, columns, buckets):
   delays = [i for i in results if isinstance(i, float)]
   failures = [i for i in results if not isinstance(i, float)]
@@ -74,7 +78,7 @@ def trigger_task(
     extra_args=[],
     env={},
     dimensions=dimensions,
-    deadline=timeout-10,
+    deadline=timeout-TIMEOUT_OVERHEAD,
     verbose=False,
     profile=False,
     priority=100)
@@ -168,7 +172,8 @@ def main():
   group.add_option(
       '-t', '--timeout', type='float', default=15*60., metavar='N',
       help='Task expiration and timeout to get results, the task itself will '
-           'have 10s less than the value provided. Default: %default')
+           'have %ds less than the value provided. Default: %%default' %
+               TIMEOUT_OVERHEAD)
   group.add_option(
       '-o', '--output-size', type='int', default=100, metavar='N',
       help='Bytes sent to stdout, default: %default')
