@@ -177,10 +177,10 @@ TEST(NinjaBinaryTargetWriter, ProductExtension) {
       "\n"
       "ldflags =\n"
       "libs =\n"
-      "build lib/libshlib.so.6: solink obj/foo/shlib.input1.o "
+      "build libshlib.so.6: solink obj/foo/shlib.input1.o "
           "obj/foo/shlib.input2.o\n"
       "  soname = libshlib.so.6\n"
-      "  lib = lib/libshlib.so.6\n"
+      "  lib = libshlib.so.6\n"
       "\n";
 
   std::string out_str = out.str();
@@ -226,10 +226,10 @@ TEST(NinjaBinaryTargetWriter, EmptyProductExtension) {
       "\n"
       "ldflags =\n"
       "libs =\n"
-      "build lib/libshlib.so: solink obj/foo/shlib.input1.o "
+      "build libshlib.so: solink obj/foo/shlib.input1.o "
           "obj/foo/shlib.input2.o\n"
       "  soname = libshlib.so\n"
-      "  lib = lib/libshlib.so\n"
+      "  lib = libshlib.so\n"
       "\n";
 
   std::string out_str = out.str();

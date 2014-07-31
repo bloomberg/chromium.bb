@@ -12,7 +12,6 @@
 
 namespace {
 
-const char kLibDirWithSlash[] = "lib/";
 const char kObjectDirNoSlash[] = "obj";
 
 }  // namespace
@@ -178,24 +177,10 @@ OutputFile NinjaHelper::GetTargetOutputFile(const Target* target) const {
   // default toolchain, and will end in a slash otherwise).
   ret.value().append(target->settings()->toolchain_output_subdir().value());
 
-  // Binaries and loadable libraries go into the toolchain root.
+  // Binaries and shared libraries go into the toolchain root.
   if (target->output_type() == Target::EXECUTABLE ||
-      ((target->settings()->IsMac() || target->settings()->IsWin()) &&
-       target->output_type() == Target::SHARED_LIBRARY)) {
+      target->output_type() == Target::SHARED_LIBRARY) {
     // Generate a name like "<toolchain>/<prefix><name>.<extension>".
-    ret.value().append(prefix);
-    ret.value().append(name);
-    if (extension[0]) {
-      ret.value().push_back('.');
-      ret.value().append(extension);
-    }
-    return ret;
-  }
-
-  // Libraries go into the library subdirectory like
-  // "<toolchain>/lib/<prefix><name>.<extension>".
-  if (target->output_type() == Target::SHARED_LIBRARY) {
-    ret.value().append(kLibDirWithSlash);
     ret.value().append(prefix);
     ret.value().append(name);
     if (extension[0]) {
