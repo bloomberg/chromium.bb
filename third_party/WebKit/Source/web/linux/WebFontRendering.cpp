@@ -34,10 +34,6 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontPlatformData.h"
 
-#if OS(LINUX)
-#include "public/platform/linux/WebFontInfo.h"
-#endif
-
 using blink::FontDescription;
 using blink::FontPlatformData;
 
@@ -77,9 +73,6 @@ void WebFontRendering::setSubpixelRendering(bool useSubpixelRendering)
 void WebFontRendering::setSubpixelPositioning(bool useSubpixelPositioning)
 {
     FontDescription::setSubpixelPositioning(useSubpixelPositioning);
-#if OS(LINUX)
-    WebFontInfo::setSubpixelPositioning(useSubpixelPositioning);
-#endif
 }
 
 // static

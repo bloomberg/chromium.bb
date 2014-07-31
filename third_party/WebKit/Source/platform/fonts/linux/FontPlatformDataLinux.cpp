@@ -36,7 +36,6 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/harfbuzz/FontPlatformDataHarfBuzz.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "public/platform/linux/WebFontInfo.h"
 #include "public/platform/linux/WebFontRenderStyle.h"
 #include "public/platform/linux/WebSandboxSupport.h"
 
@@ -101,28 +100,21 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context)
     paint->setTextSkewX(m_syntheticItalic ? -SK_Scalar1 / 4 : 0);
 }
 
-
-static inline void getRenderStyleForStrike(FontRenderStyle& fontRenderStyle, const char* font, int sizeAndStyle)
+void FontPlatformData::querySystemForRenderStyle(bool useSkiaSubpixelPositioning)
 {
     blink::WebFontRenderStyle style;
-
 #if OS(ANDROID)
     style.setDefaults();
 #else
-    if (!font || !*font)
-        style.setDefaults(); // It's probably a webfont. Take the system defaults.
-    else if (blink::Platform::current()->sandboxSupport())
-        blink::Platform::current()->sandboxSupport()->getRenderStyleForStrike(font, sizeAndStyle, &style);
-    else
-        blink::WebFontInfo::renderStyleForStrike(font, sizeAndStyle, &style);
+    // If the font name is missing (i.e. probably a web font) or the sandbox is disabled, use the system defaults.
+    if (!m_family.length() || !blink::Platform::current()->sandboxSupport()) {
+        style.setDefaults();
+    } else {
+        const int sizeAndStyle = (((int)m_textSize) << 2) | (m_typeface->style() & 3);
+        blink::Platform::current()->sandboxSupport()->getRenderStyleForStrike(m_family.data(), sizeAndStyle, &style);
+    }
 #endif
-
-    style.toFontRenderStyle(&fontRenderStyle);
-}
-
-void FontPlatformData::querySystemForRenderStyle(bool useSkiaSubpixelPositioning)
-{
-    getRenderStyleForStrike(m_style, m_family.data(), (((int)m_textSize) << 2) | (m_typeface->style() & 3));
+    style.toFontRenderStyle(&m_style);
 
     // Fix FontRenderStyle::NoPreference to actual styles.
     if (m_style.useAntiAlias == FontRenderStyle::NoPreference)

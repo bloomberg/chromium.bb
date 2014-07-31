@@ -33,7 +33,6 @@
 
 #include "../WebCString.h"
 #include "WebFallbackFont.h"
-#include "WebFontRenderStyle.h"
 
 #include <string.h>
 #include <unistd.h>
@@ -42,11 +41,6 @@ namespace blink {
 
 class WebFontInfo {
 public:
-    // Set a global preference describing whether renderStyleForStrike() should
-    // enable subpixel positioning or not. FontConfig doesn't currently provide
-    // a parameter for controlling this.
-    BLINK_EXPORT static void setSubpixelPositioning(bool);
-
     // Return a font family which provides a glyph for the Unicode code point
     // specified by character.
     //   character: a UTF-32 code point
@@ -56,19 +50,6 @@ public:
     // Returns: the font family or an empty string if the request could not be satisfied.
     // Returns: the font family instance. The instance has an empty font name if the request could not be satisfied.
     BLINK_EXPORT static void fallbackFontForChar(const WebUChar32 character, const char* preferredLocale, WebFallbackFont*);
-
-    // Fill out the given WebFontRenderStyle with the user's preferences for
-    // rendering the given font at the given size (in pixels).
-    //   family: i.e. "Times New Roman"
-    //   sizeAndStyle:
-    //      3322222222221111111111
-    //      10987654321098765432109876543210
-    //     +--------------------------------+
-    //     |..............Size............IB|
-    //     +--------------------------------+
-    //     I: italic flag
-    //     B: bold flag
-    BLINK_EXPORT static void renderStyleForStrike(const char* family, int sizeAndStyle, WebFontRenderStyle* result);
 };
 
 } // namespace blink

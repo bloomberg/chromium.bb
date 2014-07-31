@@ -53,6 +53,18 @@ public:
     // The instance has empty font name if the request cannot be satisfied.
     virtual void getFallbackFontForCharacter(WebUChar32, const char* preferredLocale, WebFallbackFont*) = 0;
 
+    // Fill out the given WebFontRenderStyle with the user's preferences for
+    // rendering the given font at the given size (in pixels).
+    //   family: i.e. "Times New Roman"
+    //   sizeAndStyle:
+    //      3322222222221111111111
+    //      10987654321098765432109876543210
+    //     +--------------------------------+
+    //     |..............Size............IB|
+    //     +--------------------------------+
+    //     I: italic flag
+    //     B: bold flag
+    // TODO(derat): Use separate parameters for the size and the style.
     virtual void getRenderStyleForStrike(const char* family, int sizeAndStyle, WebFontRenderStyle*) = 0;
 };
 
