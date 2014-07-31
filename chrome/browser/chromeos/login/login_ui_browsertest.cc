@@ -148,8 +148,6 @@ class LoginUITest : public chromeos::LoginManagerTest {
     enable_test_screenshots_ = screenshot_tester.TryInitialize();
     if (enable_test_screenshots_) {
       animation_delay_handler.Initialize();
-    } else {
-      LOG(WARNING) << "Screenshots will not be taken";
     }
     LoginManagerTest::SetUpOnMainThread();
   }
