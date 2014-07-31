@@ -21,6 +21,7 @@
 #endif
 #if defined(OS_MACOSX)
 #include <malloc/malloc.h>
+#include "base/mac/mac_util.h"
 #include "base/process/memory_unittest_mac.h"
 #endif
 #if defined(OS_LINUX)
@@ -108,6 +109,14 @@ TEST(ProcessMemoryTest, EnableLFH) {
 // The following code tests the system implementation of malloc() thus no need
 // to test it under AddressSanitizer.
 TEST(ProcessMemoryTest, MacMallocFailureDoesNotTerminate) {
+#if ARCH_CPU_32_BITS
+  // The Mavericks malloc library changed in a way which breaks the tricks used
+  // to implement EnableTerminationOnOutOfMemory() with UncheckedMalloc() under
+  // 32-bit.  Under 64-bit the oom_killer code handles this.
+  if (base::mac::IsOSMavericksOrLater())
+    return;
+#endif
+
   // Test that ENOMEM doesn't crash via CrMallocErrorBreak two ways: the exit
   // code and lack of the error string. The number of bytes is one less than
   // MALLOC_ABSOLUTE_MAX_SIZE, more than which the system early-returns NULL and
@@ -397,6 +406,13 @@ class OutOfMemoryHandledTest : public OutOfMemoryTest {
 // under sanitizer tools.
 #if !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 TEST_F(OutOfMemoryHandledTest, UncheckedMalloc) {
+#if defined(OS_MACOSX) && ARCH_CPU_32_BITS
+  // The Mavericks malloc library changed in a way which breaks the tricks used
+  // to implement EnableTerminationOnOutOfMemory() with UncheckedMalloc() under
+  // 32-bit.  The 64-bit malloc library works as desired without tricks.
+  if (base::mac::IsOSMavericksOrLater())
+    return;
+#endif
   EXPECT_TRUE(base::UncheckedMalloc(kSafeMallocSize, &value_));
   EXPECT_TRUE(value_ != NULL);
   free(value_);
@@ -406,6 +422,13 @@ TEST_F(OutOfMemoryHandledTest, UncheckedMalloc) {
 }
 
 TEST_F(OutOfMemoryHandledTest, UncheckedCalloc) {
+#if defined(OS_MACOSX) && ARCH_CPU_32_BITS
+  // The Mavericks malloc library changed in a way which breaks the tricks used
+  // to implement EnableTerminationOnOutOfMemory() with UncheckedCalloc() under
+  // 32-bit.  The 64-bit malloc library works as desired without tricks.
+  if (base::mac::IsOSMavericksOrLater())
+    return;
+#endif
   EXPECT_TRUE(base::UncheckedCalloc(1, kSafeMallocSize, &value_));
   EXPECT_TRUE(value_ != NULL);
   const char* bytes = static_cast<const char*>(value_);
