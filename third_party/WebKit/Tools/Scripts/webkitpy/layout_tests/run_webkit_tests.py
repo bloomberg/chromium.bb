@@ -40,7 +40,7 @@ from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port import configuration_options, platform_options
 from webkitpy.layout_tests.views import buildbot_results
 from webkitpy.layout_tests.views import printing
-
+from webkitpy.layout_tests.generate_results_dashboard import GenerateDashBoard
 
 _log = logging.getLogger(__name__)
 
@@ -77,7 +77,12 @@ def main(argv, stdout, stderr):
             bot_printer = buildbot_results.BuildBotPrinter(stdout, options.debug_rwt_logging)
             bot_printer.print_results(run_details)
 
+        if options.enable_versioned_results:
+            gen_dash_board = GenerateDashBoard(port)
+            gen_dash_board.generate()
+
         return run_details.exit_code
+
     # We need to still handle KeyboardInterrupt, atleast for webkitpy unittest cases.
     except KeyboardInterrupt:
         return test_run_results.INTERRUPTED_EXIT_STATUS
@@ -166,6 +171,8 @@ def parse_args(args):
             help="Show all failures in results.html, rather than only regressions"),
         optparse.make_option("--clobber-old-results", action="store_true",
             default=False, help="Clobbers test results from previous runs."),
+        optparse.make_option("--enable-versioned-results", action="store_true",
+            default=False, help="Archive the test results for later access."),
         optparse.make_option("--smoke", action="store_true",
             help="Run just the SmokeTests"),
         optparse.make_option("--no-smoke", dest="smoke", action="store_false",

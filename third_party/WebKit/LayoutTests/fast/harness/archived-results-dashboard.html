@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<style>
+html {
+    height: 100%;
+}
+body {
+    margin: 0;
+    font-family: Helvetica, sans-serif;
+    font-size: 11pt;
+    display: -webkit-flex;
+    -webkit-flex-direction: column;
+    height: 100%;
+}
+
+body > * {
+    margin-left: 4px;
+    margin-top: 4px;
+}
+
+h1 {
+    font-size: 14pt;
+    margin-top: 1.5em;
+    text-align: center;
+    text-decoration: underline;
+}
+
+a {
+    text-decoration: none;
+}
+
+tr {
+    background-color: white;
+}
+
+tr:hover {
+    background-color: #999999;
+}
+
+td {
+    padding: 1px 4px;
+    valign: center;
+}
+
+td:hover .note{
+    display: block;
+}
+
+.test-pass {
+    background-color:rgb(0,255,0);
+}
+
+.test-fail {
+    background-color:rgb(255,0,0);
+}
+
+.test-skip {
+    background-color:rgb(255,255,255);
+}
+</style>
+<script>
+var g_state;
+function globalState()
+{
+    if (!g_state) {
+        g_state = {
+            results: {}
+        }
+    }
+    return g_state;
+}
+
+function ADD_RESULTS(input)
+{
+    globalState().results = input;
+}
+</script>
+<script src="archived_results.json"></script>
+<script>
+function processGlobalStateFor(testObject)
+{
+    var table = document.getElementById('results-table');
+    var row = table.insertRow(-1);
+    var cell = row.insertCell(-1);
+    cell.innerHTML = testObject.name;
+    for (var result in testObject.archived_results) {
+        var res = testObject.archived_results[result];        
+        var cell = row.insertCell(-1);
+        if( res == 'PASS')
+            cell.className = 'test-pass';
+        else if( res == 'SKIP')
+            cell.className = 'test-skip';
+        else
+            cell.className = 'test-fail';
+        var hrefElement = document.createElement("a");
+        hrefElement.href = globalState().results.result_links[result];
+        hrefElement.innerHTML = '&nbsp;&nbsp;';
+        cell.appendChild(hrefElement);
+    }
+
+
+}
+function forEachTest(handler, opt_tree, opt_prefix)
+{
+    var tree = opt_tree || globalState().results.tests;
+    var prefix = opt_prefix || '';
+
+    for (var key in tree) {
+        var newPrefix = prefix ? (prefix + '/' + key) : key;
+        if ('archived_results' in tree[key]) {
+            var testObject = tree[key];
+            testObject.name = newPrefix;
+            handler(testObject);
+        } else
+            forEachTest(handler, tree[key], newPrefix);
+    }
+}
+function generatePage()
+{
+    var count = globalState().results.result_links.length;
+    var tableHeader= '<div><table id= results-table><thead><tr>' +
+        '<th>Failing Tests ( Latest &#8594; Oldest )</th>';
+    for( var i = 0; i < count; i++)
+        tableHeader += '<th>'+ (i+1) +'</th>';
+    tableHeader += '</thead>';
+    document.body.innerHTML += tableHeader;
+    document.body.innerHTML += '</table></div>';
+
+    forEachTest(processGlobalStateFor);
+}
+</script>
+<!-- To run the tests -->
+<script src="resources/archived-results-dashboard-test.js"></script>
+<body onload="generatePage()"><h1>Dashboard</h1></body>
+</html>

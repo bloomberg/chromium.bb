@@ -151,6 +151,21 @@ class Manager(object):
     def needs_servers(self, test_names):
         return any(self._test_requires_lock(test_name) for test_name in test_names)
 
+    def _rename_results_folder(self):
+        try:
+            timestamp = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime(self._filesystem.mtime(self._filesystem.join(self._results_directory, "results.html"))))
+        except OSError, e:
+            # It might be possible that results.html was not generated in previous run, because the test
+            # run was interrupted even before testing started. In those cases, don't archive the folder.
+            # Simply override the current folder contents with new results.
+            import errno
+            if e.errno == errno.EEXIST:
+                _log.warning("No results.html file found in previous run, skipping it.")
+                return None
+        archived_name = ''.join((self._filesystem.basename(self._results_directory), "_", timestamp))
+        archived_path = self._filesystem.join(self._filesystem.dirname(self._results_directory), archived_name)
+        self._filesystem.move(self._results_directory, archived_path)
+
     def _set_up_run(self, test_names):
         self._printer.write_update("Checking build ...")
         if self._options.build:
@@ -173,7 +188,13 @@ class Manager(object):
                 self._port.stop_helper()
                 return exit_code
 
-        if self._options.clobber_old_results:
+        # FIXME : Add a condition here to limit the number of archived results (total_archived_results < MAX_ARCHIVE_RESULTS)
+        if self._options.enable_versioned_results and self._filesystem.exists(self._results_directory):
+            if self._options.clobber_old_results:
+                _log.warning("Flag --enable_versioned_results overrides --clobber-old-results.")
+            # Rename the existing results folder for archiving.
+            self._rename_results_folder()
+        elif self._options.clobber_old_results:
             self._clobber_old_results()
 
         # Create the output directory if it doesn't already exist.
