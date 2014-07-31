@@ -45,17 +45,6 @@ helper_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper.app"
 helper_eh_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper EH.app"
 helper_np_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper NP.app"
 
-# libplugin_carbon_interpose.dylib was removed in r280670, but it's still
-# present on the 37.0.2062 branch (and earlier). Accounting for it here makes
-# it easier to merge the fix for http://crbug.com/399276 to other branches.
-#
-# TODO(mark): Remove this plugin_carbon_interpose code on the trunk as soon
-# as it lands.
-plugin_carbon_interpose="${versioned_dir}/libplugin_carbon_interpose.dylib"
-if [[ ! -e "${plugin_carbon_interpose}" ]]; then
-  plugin_carbon_interpose=
-fi
-
 requirement_string="\
 designated => \
 (identifier \"com.google.Chrome\" or identifier \"com.google.Chrome.canary\") \
@@ -73,7 +62,3 @@ codesign -v "${helper_app}"
 codesign -v "${helper_eh_app}"
 codesign -v "${helper_np_app}"
 codesign -v "${browser_app}"
-
-if [[ -n "${plugin_carbon_interpose}" ]]; then
-  codesign -v "${plugin_carbon_interpose}"
-fi
