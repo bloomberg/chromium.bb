@@ -1421,7 +1421,8 @@ bool PictureLayerImpl::AllTilesRequiredForActivationAreReadyToDraw() const {
 }
 
 PictureLayerImpl::LayerRasterTileIterator::LayerRasterTileIterator()
-    : layer_(NULL) {}
+    : layer_(NULL), current_stage_(arraysize(stages_)) {
+}
 
 PictureLayerImpl::LayerRasterTileIterator::LayerRasterTileIterator(
     PictureLayerImpl* layer,
@@ -1442,8 +1443,7 @@ PictureLayerImpl::LayerRasterTileIterator::LayerRasterTileIterator(
     return;
   }
 
-  WhichTree tree =
-      layer_->layer_tree_impl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
+  WhichTree tree = layer_->GetTree();
 
   // Find high and low res tilings and initialize the iterators.
   for (size_t i = 0; i < layer_->tilings_->num_tilings(); ++i) {
@@ -1481,23 +1481,19 @@ PictureLayerImpl::LayerRasterTileIterator::LayerRasterTileIterator(
 
   IteratorType index = stages_[current_stage_].iterator_type;
   TilePriority::PriorityBin tile_type = stages_[current_stage_].tile_type;
-  if (!iterators_[index] || iterators_[index].get_type() != tile_type ||
-      (*iterators_[index])->is_occluded(tree))
+  if (!iterators_[index] || iterators_[index].get_type() != tile_type)
     ++(*this);
 }
 
 PictureLayerImpl::LayerRasterTileIterator::~LayerRasterTileIterator() {}
 
 PictureLayerImpl::LayerRasterTileIterator::operator bool() const {
-  return layer_ && static_cast<size_t>(current_stage_) < arraysize(stages_);
+  return current_stage_ < arraysize(stages_);
 }
 
 PictureLayerImpl::LayerRasterTileIterator&
 PictureLayerImpl::LayerRasterTileIterator::
 operator++() {
-  WhichTree tree =
-      layer_->layer_tree_impl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
-
   IteratorType index = stages_[current_stage_].iterator_type;
   TilePriority::PriorityBin tile_type = stages_[current_stage_].tile_type;
 
@@ -1505,22 +1501,16 @@ operator++() {
   if (iterators_[index])
     ++iterators_[index];
 
-  while (iterators_[index] && iterators_[index].get_type() == tile_type &&
-         (*iterators_[index])->is_occluded(tree))
-    ++iterators_[index];
-
   if (iterators_[index] && iterators_[index].get_type() == tile_type)
     return *this;
 
   // Next, advance the stage.
-  int stage_count = arraysize(stages_);
   ++current_stage_;
-  while (current_stage_ < stage_count) {
+  while (current_stage_ < arraysize(stages_)) {
     index = stages_[current_stage_].iterator_type;
     tile_type = stages_[current_stage_].tile_type;
 
-    if (iterators_[index] && iterators_[index].get_type() == tile_type &&
-        !(*iterators_[index])->is_occluded(tree))
+    if (iterators_[index] && iterators_[index].get_type() == tile_type)
       break;
     ++current_stage_;
   }

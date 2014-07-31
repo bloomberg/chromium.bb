@@ -57,7 +57,7 @@ class CC_EXPORT PictureLayerImpl
       TilePriority::PriorityBin tile_type;
     };
 
-    int current_stage_;
+    size_t current_stage_;
 
     // One low res stage, and three high res stages.
     IterationStage stages_[4];

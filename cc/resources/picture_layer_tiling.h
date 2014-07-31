@@ -84,7 +84,7 @@ class CC_EXPORT PictureLayerTiling {
     void AdvancePhase();
     bool TileNeedsRaster(Tile* tile) const {
       RasterMode mode = tile->DetermineRasterModeForTree(tree_);
-      return tile->NeedsRasterForMode(mode);
+      return !tile->is_occluded(tree_) && tile->NeedsRasterForMode(mode);
     }
 
     PictureLayerTiling* tiling_;
