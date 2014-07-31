@@ -5,6 +5,7 @@
 #include "crypto/hkdf.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "crypto/hmac.h"
 
 namespace crypto {
@@ -15,7 +16,8 @@ HKDF::HKDF(const base::StringPiece& secret,
            const base::StringPiece& salt,
            const base::StringPiece& info,
            size_t key_bytes_to_generate,
-           size_t iv_bytes_to_generate) {
+           size_t iv_bytes_to_generate,
+           size_t subkey_secret_bytes_to_generate) {
   // https://tools.ietf.org/html/rfc5869#section-2.2
   base::StringPiece actual_salt = salt;
   char zeros[kSHA256HashLength];
@@ -40,8 +42,9 @@ HKDF::HKDF(const base::StringPiece& secret,
   // https://tools.ietf.org/html/rfc5869#section-2.3
   // Perform the Expand phase to turn the pseudorandom key
   // and info into the output keying material.
-  const size_t material_length =
-      2*key_bytes_to_generate + 2*iv_bytes_to_generate;
+  const size_t material_length = 2 * key_bytes_to_generate +
+                                 2 * iv_bytes_to_generate +
+                                 subkey_secret_bytes_to_generate;
   const size_t n = (material_length + kSHA256HashLength-1) /
                    kSHA256HashLength;
   DCHECK_LT(n, 256u);
@@ -90,6 +93,11 @@ HKDF::HKDF(const base::StringPiece& secret,
     j += iv_bytes_to_generate;
     server_write_iv_ = base::StringPiece(reinterpret_cast<char*>(&output_[j]),
                                          iv_bytes_to_generate);
+    j += iv_bytes_to_generate;
+  }
+  if (subkey_secret_bytes_to_generate) {
+    subkey_secret_ = base::StringPiece(reinterpret_cast<char*>(&output_[j]),
+                                       subkey_secret_bytes_to_generate);
   }
 }
 

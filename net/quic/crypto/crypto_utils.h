@@ -49,19 +49,31 @@ class NET_EXPORT_PRIVATE CryptoUtils {
   // literals. IsValidSNI() should be called before calling NormalizeHostname().
   static std::string NormalizeHostname(const char* hostname);
 
-  // DeriveKeys populates |out->encrypter| and |out->decrypter| given the
-  // contents of |premaster_secret|, |client_nonce|, |server_nonce| and
-  // |hkdf_input|. |aead| determines which cipher will be used. |perspective|
-  // controls whether the server's keys are assigned to |encrypter| or
-  // |decrypter|. |server_nonce| is optional and, if non-empty, is mixed into
-  // the key derivation.
+  // DeriveKeys populates |crypters->encrypter|, |crypters->decrypter|, and
+  // |subkey_secret| (optional -- may be null) given the contents of
+  // |premaster_secret|, |client_nonce|, |server_nonce| and |hkdf_input|. |aead|
+  // determines which cipher will be used. |perspective| controls whether the
+  // server's keys are assigned to |encrypter| or |decrypter|. |server_nonce| is
+  // optional and, if non-empty, is mixed into the key derivation.
+  // |subkey_secret| will have the same length as |premaster_secret|.
   static bool DeriveKeys(base::StringPiece premaster_secret,
                          QuicTag aead,
                          base::StringPiece client_nonce,
                          base::StringPiece server_nonce,
                          const std::string& hkdf_input,
                          Perspective perspective,
-                         CrypterPair* out);
+                         CrypterPair* crypters,
+                         std::string* subkey_secret);
+
+  // Performs key extraction to derive a new secret of |result_len| bytes
+  // dependent on |subkey_secret|, |label|, and |context|. Returns false if the
+  // parameters are invalid (e.g. |label| contains null bytes); returns true on
+  // success.
+  static bool ExportKeyingMaterial(base::StringPiece subkey_secret,
+                                   base::StringPiece label,
+                                   base::StringPiece context,
+                                   size_t result_len,
+                                   std::string* result);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CryptoUtils);

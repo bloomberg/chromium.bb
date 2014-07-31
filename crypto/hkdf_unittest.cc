@@ -82,7 +82,7 @@ TEST(HKDFTest, HKDF) {
 
     // We set the key_length to the length of the expected output and then take
     // the result from the first key, which is the client write key.
-    HKDF hkdf(key, salt, info, expected.size(), 0);
+    HKDF hkdf(key, salt, info, expected.size(), 0, 0);
 
     ASSERT_EQ(expected.size(), hkdf.client_write_key().size());
     EXPECT_EQ(0, memcmp(expected.data(), hkdf.client_write_key().data(),

@@ -100,6 +100,8 @@ struct NET_EXPORT_PRIVATE QuicCryptoNegotiatedParameters {
   QuicTag aead;
   std::string initial_premaster_secret;
   std::string forward_secure_premaster_secret;
+  // subkey_secret is used as the PRK input to the HKDF used for key extraction.
+  std::string subkey_secret;
   CrypterPair initial_crypters;
   CrypterPair forward_secure_crypters;
   // Normalized SNI: converted to lower case and trailing '.' removed.

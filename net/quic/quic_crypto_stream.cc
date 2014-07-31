@@ -8,6 +8,7 @@
 
 #include "base/strings/string_piece.h"
 #include "net/quic/crypto/crypto_handshake.h"
+#include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_session.h"
 #include "net/quic/quic_utils.h"
@@ -60,6 +61,24 @@ void QuicCryptoStream::SendHandshakeMessage(
   const QuicData& data = message.GetSerialized();
   // TODO(wtc): check the return value.
   WriteOrBufferData(string(data.data(), data.length()), false, NULL);
+}
+
+bool QuicCryptoStream::ExportKeyingMaterial(
+    StringPiece label,
+    StringPiece context,
+    size_t result_len,
+    string* result) const {
+  if (!handshake_confirmed()) {
+    DLOG(ERROR) << "ExportKeyingMaterial was called before forward-secure"
+                << "encryption was established.";
+    return false;
+  }
+  return CryptoUtils::ExportKeyingMaterial(
+      crypto_negotiated_params_.subkey_secret,
+      label,
+      context,
+      result_len,
+      result);
 }
 
 const QuicCryptoNegotiatedParameters&

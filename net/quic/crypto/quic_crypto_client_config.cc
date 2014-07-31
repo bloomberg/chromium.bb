@@ -515,7 +515,8 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     if (!CryptoUtils::DeriveKeys(out_params->initial_premaster_secret,
                                  out_params->aead, out_params->client_nonce,
                                  out_params->server_nonce, hkdf_input,
-                                 CryptoUtils::CLIENT, &crypters)) {
+                                 CryptoUtils::CLIENT, &crypters,
+                                 NULL /* subkey secret */)) {
       *error_details = "Symmetric key setup failed";
       return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
     }
@@ -557,7 +558,8 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   if (!CryptoUtils::DeriveKeys(
            out_params->initial_premaster_secret, out_params->aead,
            out_params->client_nonce, out_params->server_nonce, hkdf_input,
-           CryptoUtils::CLIENT, &out_params->initial_crypters)) {
+           CryptoUtils::CLIENT, &out_params->initial_crypters,
+           NULL /* subkey secret */)) {
     *error_details = "Symmetric key setup failed";
     return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
   }
@@ -737,7 +739,8 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
   if (!CryptoUtils::DeriveKeys(
            out_params->forward_secure_premaster_secret, out_params->aead,
            out_params->client_nonce, out_params->server_nonce, hkdf_input,
-           CryptoUtils::CLIENT, &out_params->forward_secure_crypters)) {
+           CryptoUtils::CLIENT, &out_params->forward_secure_crypters,
+           &out_params->subkey_secret)) {
     *error_details = "Symmetric key setup failed";
     return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
   }

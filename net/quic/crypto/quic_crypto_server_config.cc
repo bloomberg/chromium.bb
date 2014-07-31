@@ -54,7 +54,8 @@ string DeriveSourceAddressTokenKey(StringPiece source_address_token_secret) {
                     StringPiece() /* no salt */,
                     "QUIC source address token key",
                     CryptoSecretBoxer::GetKeySize(),
-                    0 /* no fixed IV needed */);
+                    0 /* no fixed IV needed */,
+                    0 /* no subkey secret */);
   return hkdf.server_write_key().as_string();
 }
 
@@ -682,7 +683,8 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     CrypterPair crypters;
     if (!CryptoUtils::DeriveKeys(params->initial_premaster_secret, params->aead,
                                  info.client_nonce, info.server_nonce,
-                                 hkdf_input, CryptoUtils::SERVER, &crypters)) {
+                                 hkdf_input, CryptoUtils::SERVER, &crypters,
+                                 NULL /* subkey secret */)) {
       *error_details = "Symmetric key setup failed";
       return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
     }
@@ -723,7 +725,8 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   if (!CryptoUtils::DeriveKeys(params->initial_premaster_secret, params->aead,
                                info.client_nonce, info.server_nonce, hkdf_input,
                                CryptoUtils::SERVER,
-                               &params->initial_crypters)) {
+                               &params->initial_crypters,
+                               NULL /* subkey secret */)) {
     *error_details = "Symmetric key setup failed";
     return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
   }
@@ -756,7 +759,8 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   if (!CryptoUtils::DeriveKeys(
            params->forward_secure_premaster_secret, params->aead,
            info.client_nonce, info.server_nonce, forward_secure_hkdf_input,
-           CryptoUtils::SERVER, &params->forward_secure_crypters)) {
+           CryptoUtils::SERVER, &params->forward_secure_crypters,
+           &params->subkey_secret)) {
     *error_details = "Symmetric key setup failed";
     return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
   }

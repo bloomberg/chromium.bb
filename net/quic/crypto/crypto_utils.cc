@@ -15,6 +15,7 @@
 #include "url/url_canon.h"
 
 using base::StringPiece;
+using std::numeric_limits;
 using std::string;
 
 namespace net {
@@ -83,11 +84,14 @@ bool CryptoUtils::DeriveKeys(StringPiece premaster_secret,
                              StringPiece server_nonce,
                              const string& hkdf_input,
                              Perspective perspective,
-                             CrypterPair* out) {
-  out->encrypter.reset(QuicEncrypter::Create(aead));
-  out->decrypter.reset(QuicDecrypter::Create(aead));
-  size_t key_bytes = out->encrypter->GetKeySize();
-  size_t nonce_prefix_bytes = out->encrypter->GetNoncePrefixSize();
+                             CrypterPair* crypters,
+                             string* subkey_secret) {
+  crypters->encrypter.reset(QuicEncrypter::Create(aead));
+  crypters->decrypter.reset(QuicDecrypter::Create(aead));
+  size_t key_bytes = crypters->encrypter->GetKeySize();
+  size_t nonce_prefix_bytes = crypters->encrypter->GetNoncePrefixSize();
+  size_t subkey_secret_bytes =
+      subkey_secret == NULL ? 0 : premaster_secret.length();
 
   StringPiece nonce = client_nonce;
   string nonce_storage;
@@ -97,23 +101,59 @@ bool CryptoUtils::DeriveKeys(StringPiece premaster_secret,
   }
 
   crypto::HKDF hkdf(premaster_secret, nonce, hkdf_input, key_bytes,
-                    nonce_prefix_bytes);
+                    nonce_prefix_bytes, subkey_secret_bytes);
   if (perspective == SERVER) {
-    if (!out->encrypter->SetKey(hkdf.server_write_key()) ||
-        !out->encrypter->SetNoncePrefix(hkdf.server_write_iv()) ||
-        !out->decrypter->SetKey(hkdf.client_write_key()) ||
-        !out->decrypter->SetNoncePrefix(hkdf.client_write_iv())) {
+    if (!crypters->encrypter->SetKey(hkdf.server_write_key()) ||
+        !crypters->encrypter->SetNoncePrefix(hkdf.server_write_iv()) ||
+        !crypters->decrypter->SetKey(hkdf.client_write_key()) ||
+        !crypters->decrypter->SetNoncePrefix(hkdf.client_write_iv())) {
       return false;
     }
   } else {
-    if (!out->encrypter->SetKey(hkdf.client_write_key()) ||
-        !out->encrypter->SetNoncePrefix(hkdf.client_write_iv()) ||
-        !out->decrypter->SetKey(hkdf.server_write_key()) ||
-        !out->decrypter->SetNoncePrefix(hkdf.server_write_iv())) {
+    if (!crypters->encrypter->SetKey(hkdf.client_write_key()) ||
+        !crypters->encrypter->SetNoncePrefix(hkdf.client_write_iv()) ||
+        !crypters->decrypter->SetKey(hkdf.server_write_key()) ||
+        !crypters->decrypter->SetNoncePrefix(hkdf.server_write_iv())) {
       return false;
     }
   }
+  if (subkey_secret != NULL) {
+    hkdf.subkey_secret().CopyToString(subkey_secret);
+  }
 
+  return true;
+}
+
+// static
+bool CryptoUtils::ExportKeyingMaterial(StringPiece subkey_secret,
+                                       StringPiece label,
+                                       StringPiece context,
+                                       size_t result_len,
+                                       string* result) {
+  for (size_t i = 0; i < label.length(); i++) {
+    if (label[i] == '\0') {
+      LOG(ERROR) << "ExportKeyingMaterial label may not contain NULs";
+      return false;
+    }
+  }
+  // Create HKDF info input: null-terminated label + length-prefixed context
+  if (context.length() >= numeric_limits<uint32>::max()) {
+    LOG(ERROR) << "Context value longer than 2^32";
+    return false;
+  }
+  uint32 context_length = static_cast<uint32>(context.length());
+  string info = label.as_string();
+  info.push_back('\0');
+  info.append(reinterpret_cast<char*>(&context_length), sizeof(context_length));
+  info.append(context.data(), context.length());
+
+  crypto::HKDF hkdf(subkey_secret,
+                    StringPiece() /* no salt */,
+                    info,
+                    result_len,
+                    0 /* no fixed IV */,
+                    0 /* no subkey secret */);
+  hkdf.client_write_key().CopyToString(result);
   return true;
 }
 
