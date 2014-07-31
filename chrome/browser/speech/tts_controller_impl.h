@@ -36,7 +36,6 @@ class TtsControllerImpl : public TtsController {
                   const std::string& error_message) OVERRIDE;
   virtual void GetVoices(Profile* profile,
                          std::vector<VoiceData>* out_voices) OVERRIDE;
-  virtual void RetrySpeakingQueuedUtterances() OVERRIDE;
   virtual void VoicesChanged() OVERRIDE;
   virtual void AddVoicesChangedDelegate(
       VoicesChangedDelegate* delegate) OVERRIDE;

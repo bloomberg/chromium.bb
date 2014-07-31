@@ -51,8 +51,6 @@ class TtsEngineExtensionObserver
 
   Profile* profile_;
 
-  bool saw_tts_engine_added_;
-
   std::set<std::string> engine_extension_ids_;
 
   friend class TtsEngineExtensionObserverFactory;

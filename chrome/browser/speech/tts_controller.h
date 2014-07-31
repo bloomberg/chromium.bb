@@ -307,10 +307,6 @@ class TtsController {
   virtual void GetVoices(Profile* profile,
                          std::vector<VoiceData>* out_voices) = 0;
 
-  // Called by TtsExtensionLoaderChromeOs::LoadTtsExtension when it
-  // finishes loading the built-in TTS component extension.
-  virtual void RetrySpeakingQueuedUtterances() = 0;
-
   // Called by the extension system or platform implementation when the
   // list of voices may have changed and should be re-queried.
   virtual void VoicesChanged() = 0;

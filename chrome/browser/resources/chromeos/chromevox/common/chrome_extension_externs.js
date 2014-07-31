@@ -1170,3 +1170,42 @@ VisitItem.prototype.referringVisitId;
 
 /** @type {string} */
 VisitItem.prototype.transition;
+
+
+/**
+ * @const
+ */
+chrome.storage = {};
+
+
+/**
+ * @const
+ */
+chrome.storage.local = {};
+
+
+/**
+ * @param {string|!Object|null} keys
+ * @param {function(Object, string)} callback
+ */
+chrome.storage.local.get = function(keys, callback) {};
+
+
+/**
+ * @param {Object} items
+ * @param {function()=} opt_callback
+ */
+chrome.storage.local.set = function(items, opt_callback) {};
+
+
+/**
+ * @param {string|!Object|null} keys
+ * @param {function()=} opt_callback
+ */
+chrome.storage.local.remove = function(keys, opt_callback) {};
+
+
+/**
+ * @type {ChromeEvent}
+ */
+chrome.storage.onChanged;

@@ -261,3 +261,12 @@ cvox.ChromeVox.isStickyModeOn = function() {
     return cvox.ChromeVox.isStickyPrefOn;
   }
 };
+
+/**
+ * Shortcut for document.getElementById.
+ * @param {string} id of the element.
+ * @return {HTMLElement} with the id.
+ */
+function $(id) {
+  return document.getElementById(id);
+}

@@ -64,9 +64,7 @@ TtsEngineExtensionObserver* TtsEngineExtensionObserver::GetInstance(
 }
 
 TtsEngineExtensionObserver::TtsEngineExtensionObserver(Profile* profile)
-    : extension_registry_observer_(this),
-      profile_(profile),
-      saw_tts_engine_added_(false) {
+    : extension_registry_observer_(this), profile_(profile) {
   extension_registry_observer_.Add(
       extensions::ExtensionRegistry::Get(profile_));
 
@@ -119,11 +117,6 @@ void TtsEngineExtensionObserver::OnListenerAdded(
     const extensions::EventListenerInfo& details) {
   if (!IsLoadedTtsEngine(details.extension_id))
     return;
-
-  if (!saw_tts_engine_added_) {
-    saw_tts_engine_added_ = true;
-    TtsController::GetInstance()->RetrySpeakingQueuedUtterances();
-  }
 
   TtsController::GetInstance()->VoicesChanged();
   engine_extension_ids_.insert(details.extension_id);

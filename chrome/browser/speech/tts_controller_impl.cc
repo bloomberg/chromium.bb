@@ -349,11 +349,6 @@ void TtsControllerImpl::SpeakNextUtterance() {
   }
 }
 
-void TtsControllerImpl::RetrySpeakingQueuedUtterances() {
-  if (current_utterance_ == NULL && !utterance_queue_.empty())
-    SpeakNextUtterance();
-}
-
 void TtsControllerImpl::ClearUtteranceQueue(bool send_events) {
   while (!utterance_queue_.empty()) {
     Utterance* utterance = utterance_queue_.front();

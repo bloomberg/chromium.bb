@@ -94,11 +94,11 @@ cvox.OptionsPage.init = function() {
     }
   });
 
-  document.getElementById('selectKeys').addEventListener(
+  $('selectKeys').addEventListener(
       'click', cvox.OptionsPage.reset, false);
 
   if (cvox.PlatformUtil.matchesPlatform(cvox.PlatformFilter.WML)) {
-    document.getElementById('version').textContent =
+    $('version').textContent =
         chrome.app.getDetails().version;
   }
 };
@@ -124,7 +124,7 @@ cvox.OptionsPage.update = function() {
  * Populate the keymap select element with stored keymaps
  */
 cvox.OptionsPage.populateKeyMapSelect = function() {
-  var select = document.getElementById('cvox_keymaps');
+  var select = $('cvox_keymaps');
   for (var id in cvox.KeyMap.AVAILABLE_MAP_INFO) {
     var info = cvox.KeyMap.AVAILABLE_MAP_INFO[id];
     var option = document.createElement('option');
@@ -145,7 +145,7 @@ cvox.OptionsPage.populateKeyMapSelect = function() {
  * in the page. They're sorted in order of description.
  */
 cvox.OptionsPage.addKeys = function() {
-  var container = document.getElementById('keysContainer');
+  var container = $('keysContainer');
   var keyMap = cvox.OptionsPage.prefs.getKeyMap();
 
   cvox.OptionsPage.prevTime = new Date().getTime();
@@ -256,7 +256,7 @@ cvox.OptionsPage.addKeys = function() {
       container.appendChild(brElement);
   }
 
-  if (document.getElementById('cvoxKey') == null) {
+  if ($('cvoxKey') == null) {
     // Add the cvox key field
     var inputElement = document.createElement('input');
     inputElement.type = 'text';
@@ -269,11 +269,11 @@ cvox.OptionsPage.addKeys = function() {
     labelElement.setAttribute('for', 'cvoxKey');
 
     var modifierSectionSibling =
-        document.getElementById('modifier_keys').nextSibling;
+        $('modifier_keys').nextSibling;
     var modifierSectionParent = modifierSectionSibling.parentNode;
     modifierSectionParent.insertBefore(labelElement, modifierSectionSibling);
     modifierSectionParent.insertBefore(inputElement, labelElement);
-    var cvoxKey = document.getElementById('cvoxKey');
+    var cvoxKey = $('cvoxKey');
     cvoxKey.value = localStorage['cvoxKey'];
 
     cvoxKey.addEventListener('keydown', function(evt) {
@@ -327,23 +327,32 @@ cvox.OptionsPage.addKeys = function() {
  * Populates the voices select with options.
  */
 cvox.OptionsPage.populateVoicesSelect = function() {
-  var select = document.getElementById('voices');
-  chrome.tts.getVoices(function(voices) {
-    voices.forEach(function(voice) {
-      var option = document.createElement('option');
-      option.voiceName = voice.voiceName || '';
-      option.innerText = option.voiceName;
-      if (localStorage['voiceName'] == voice.voiceName) {
-        option.setAttribute('selected', '');
-      }
-      select.add(option);
-    });
+  var select = $('voices');
+
+  function setVoiceList() {
+    select.innerHTML = '';
+    chrome.tts.getVoices(function(voices) {
+      voices.forEach(function(voice) {
+        var option = document.createElement('option');
+        option.voiceName = voice.voiceName || '';
+        option.innerText = option.voiceName;
+        chrome.storage.local.get('voiceName', function(items) {
+          if (items.voiceName == voice.voiceName) {
+            option.setAttribute('selected', '');
+          }
+        });
+        select.add(option);
+      });
   });
+  }
+
+  window.speechSynthesis.onvoiceschanged = setVoiceList.bind(this);
+  setVoiceList();
 
   select.addEventListener('change', function(evt) {
     var selIndex = select.selectedIndex;
     var sel = select.options[selIndex];
-    localStorage['voiceName'] = sel.voiceName;
+    chrome.storage.local.set({voiceName: sel.voiceName});
   }, true);
 };
 
@@ -384,8 +393,8 @@ cvox.OptionsPage.populateBrailleTablesSelect = function() {
       node.appendChild(item);
     }
   };
-  var select6 = document.getElementById('brailleTable6');
-  var select8 = document.getElementById('brailleTable8');
+  var select6 = $('brailleTable6');
+  var select8 = $('brailleTable8');
   populateSelect(select6, '6');
   populateSelect(select8, '8');
 
@@ -404,7 +413,7 @@ cvox.OptionsPage.populateBrailleTablesSelect = function() {
   select6.addEventListener('change', handleBrailleSelect(select6), true);
   select8.addEventListener('change', handleBrailleSelect(select8), true);
 
-  var tableTypeButton = document.getElementById('brailleTableType');
+  var tableTypeButton = $('brailleTableType');
   var updateTableType = function(setFocus) {
     var currentTableType = localStorage['brailleTableType'] || 'brailleTable6';
     if (currentTableType == 'brailleTable6') {
@@ -509,7 +518,7 @@ cvox.OptionsPage.eventListener = function(event) {
 This includes all key related information.
  */
 cvox.OptionsPage.reset = function() {
-  var selectKeyMap = document.getElementById('cvox_keymaps');
+  var selectKeyMap = $('cvox_keymaps');
   var id = selectKeyMap.options[selectKeyMap.selectedIndex].id;
 
   var msgs = cvox.ChromeVox.msgs;
@@ -519,7 +528,7 @@ cvox.OptionsPage.reset = function() {
   cvox.OptionsPage.updateStatus_(announce);
 
   cvox.OptionsPage.prefs.switchToKeyMap(id);
-  document.getElementById('keysContainer').innerHTML = '';
+  $('keysContainer').innerHTML = '';
   cvox.OptionsPage.addKeys();
   cvox.ChromeVox.msgs.addTranslatedMessagesToDom(document);
 };
@@ -530,7 +539,7 @@ cvox.OptionsPage.reset = function() {
  * @private
  */
 cvox.OptionsPage.updateStatus_ = function(status) {
-  document.getElementById('status').innerText = status;
+  $('status').innerText = status;
 };
 
 
