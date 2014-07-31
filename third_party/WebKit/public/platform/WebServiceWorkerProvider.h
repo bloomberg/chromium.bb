@@ -57,8 +57,7 @@ public:
 #ifdef DISABLE_SERVICE_WORKER_REGISTRATION
     // The WebServiceWorker and WebServiceWorkerError ownership are passed to
     // the WebServiceWorkerCallbacks implementation.
-    typedef WebCallbacks<WebServiceWorker, WebServiceWorkerError> WebServiceWorkerCallbacks;
-    typedef WebServiceWorkerCallbacks WebServiceWorkerRegistrationCallbacks;
+    typedef WebCallbacks<WebServiceWorker, WebServiceWorkerError> WebServiceWorkerRegistrationCallbacks;
 #else
     // The WebServiceWorkerRegistration and WebServiceWorkerError ownership are
     // passed to the WebServiceWorkerRegistrationCallbacks implementation.

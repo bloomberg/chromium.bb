@@ -126,13 +126,13 @@ class NotReachedWebServiceWorkerProvider : public WebServiceWorkerProvider {
 public:
     virtual ~NotReachedWebServiceWorkerProvider() OVERRIDE { }
 
-    virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptURL, WebServiceWorkerCallbacks* callbacks) OVERRIDE
+    virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptURL, WebServiceWorkerRegistrationCallbacks* callbacks) OVERRIDE
     {
         ADD_FAILURE() << "the provider should not be called to register a Service Worker";
         delete callbacks;
     }
 
-    virtual void unregisterServiceWorker(const WebURL& pattern, WebServiceWorkerCallbacks* callbacks) OVERRIDE
+    virtual void unregisterServiceWorker(const WebURL& pattern, WebServiceWorkerRegistrationCallbacks* callbacks) OVERRIDE
     {
         ADD_FAILURE() << "the provider should not be called to unregister a Service Worker";
         delete callbacks;
@@ -280,7 +280,7 @@ private:
 
         virtual ~WebServiceWorkerProviderImpl() OVERRIDE { }
 
-        virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptURL, WebServiceWorkerCallbacks* callbacks) OVERRIDE
+        virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptURL, WebServiceWorkerRegistrationCallbacks* callbacks) OVERRIDE
         {
             m_owner.m_registerCallCount++;
             m_owner.m_registerScope = pattern;
@@ -288,7 +288,7 @@ private:
             m_callbacksToDelete.append(adoptPtr(callbacks));
         }
 
-        virtual void unregisterServiceWorker(const WebURL& pattern, WebServiceWorkerCallbacks* callbacks) OVERRIDE
+        virtual void unregisterServiceWorker(const WebURL& pattern, WebServiceWorkerRegistrationCallbacks* callbacks) OVERRIDE
         {
             m_owner.m_unregisterCallCount++;
             m_owner.m_unregisterScope = pattern;
@@ -297,7 +297,7 @@ private:
 
     private:
         StubWebServiceWorkerProvider& m_owner;
-        Vector<OwnPtr<WebServiceWorkerCallbacks> > m_callbacksToDelete;
+        Vector<OwnPtr<WebServiceWorkerRegistrationCallbacks> > m_callbacksToDelete;
     };
 
 private:
