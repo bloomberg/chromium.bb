@@ -4,8 +4,11 @@
 
 #include "chrome/browser/renderer_context_menu/context_menu_content_type_factory.h"
 
-#include "chrome/browser/renderer_context_menu/context_menu_content_type.h"
+#include "base/bind.h"
+#include "chrome/common/url_constants.h"
+#include "components/renderer_context_menu/context_menu_content_type.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -19,6 +22,15 @@
 #include "extensions/common/extension.h"
 #endif
 
+namespace {
+
+bool CheckInternalResourcesURL(const GURL& url) {
+  return url.SchemeIs(content::kChromeUIScheme) &&
+      (url.host() == chrome::kChromeUISyncResourcesHost);
+}
+
+}  // namespace
+
 ContextMenuContentTypeFactory::ContextMenuContentTypeFactory() {
 }
 
@@ -27,6 +39,22 @@ ContextMenuContentTypeFactory::~ContextMenuContentTypeFactory() {
 
 // static.
 ContextMenuContentType* ContextMenuContentTypeFactory::Create(
+    content::WebContents* web_contents,
+    const content::ContextMenuParams& params) {
+  return SetInternalResourcesURLChecker(CreateInternal(web_contents, params));
+}
+
+// static.
+ContextMenuContentType*
+ContextMenuContentTypeFactory::SetInternalResourcesURLChecker(
+    ContextMenuContentType* content_type) {
+  content_type->set_internal_resources_url_checker(
+      base::Bind(&CheckInternalResourcesURL));
+  return content_type;
+}
+
+// static
+ContextMenuContentType* ContextMenuContentTypeFactory::CreateInternal(
     content::WebContents* web_contents,
     const content::ContextMenuParams& params) {
 #if defined(ENABLE_EXTENSIONS)

@@ -1090,8 +1090,6 @@
       'browser/profiles/startup_task_runner_service_factory.h',
       'browser/profiles/storage_partition_descriptor.h',
       'browser/remove_rows_table_model.h',
-      'browser/renderer_context_menu/context_menu_content_type.cc',
-      'browser/renderer_context_menu/context_menu_content_type.h',
       'browser/renderer_context_menu/context_menu_content_type_app_mode.cc',
       'browser/renderer_context_menu/context_menu_content_type_app_mode.h',
       'browser/renderer_context_menu/context_menu_content_type_extension_popup.cc',

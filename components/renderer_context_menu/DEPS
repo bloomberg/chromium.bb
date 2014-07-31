@@ -1,3 +1,8 @@
 include_rules = [
   "+content/public/browser",
+  "+content/public/common",
+  "+extensions/browser",
+  "+extensions/common",
+  "+ui/base",
+  "+third_party/WebKit/public/web",
 ]

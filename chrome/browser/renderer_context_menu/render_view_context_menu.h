@@ -14,7 +14,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/menu_manager.h"
-#include "chrome/browser/renderer_context_menu/context_menu_content_type.h"
+#include "components/renderer_context_menu/context_menu_content_type.h"
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
 #include "components/renderer_context_menu/render_view_context_menu_proxy.h"
 #include "content/public/common/context_menu_params.h"

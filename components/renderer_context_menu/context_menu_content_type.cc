@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_context_menu/context_menu_content_type.h"
+#include "components/renderer_context_menu/context_menu_content_type.h"
 
-#include "chrome/common/url_constants.h"
+#include "base/bind.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
-
 
 using blink::WebContextMenuData;
 using content::WebContents;
@@ -23,9 +22,8 @@ bool IsDevToolsURL(const GURL& url) {
   return url.SchemeIs(content::kChromeDevToolsScheme);
 }
 
-bool IsInternalResourcesURL(const GURL& url) {
-  return url.SchemeIs(content::kChromeUIScheme) &&
-      (url.host() == chrome::kChromeUISyncResourcesHost);
+bool DefaultIsInternalResourcesURL(const GURL& url) {
+  return url.SchemeIs(content::kChromeUIScheme);
 }
 
 }  // namespace
@@ -36,7 +34,9 @@ ContextMenuContentType::ContextMenuContentType(
     bool supports_custom_items)
     : params_(params),
       source_web_contents_(web_contents),
-      supports_custom_items_(supports_custom_items) {
+      supports_custom_items_(supports_custom_items),
+      internal_resources_url_checker_(
+          base::Bind(&DefaultIsInternalResourcesURL)) {
 }
 
 ContextMenuContentType::~ContextMenuContentType() {
@@ -173,4 +173,8 @@ bool ContextMenuContentType::SupportsGroupInternal(int group) {
       NOTREACHED();
       return false;
   }
+}
+
+bool ContextMenuContentType::IsInternalResourcesURL(const GURL& url) {
+  return internal_resources_url_checker_.Run(url);
 }

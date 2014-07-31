@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_CONTEXT_MENU_CONTENT_TYPE_WEB_VIEW_H_
 #define CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_CONTEXT_MENU_CONTENT_TYPE_WEB_VIEW_H_
 
-#include "chrome/browser/renderer_context_menu/context_menu_content_type.h"
+#include "components/renderer_context_menu/context_menu_content_type.h"
 
 // A ContextMenuContentType for <webview> guest.
 // Guests are rendered inside chrome apps, but have most of the actions

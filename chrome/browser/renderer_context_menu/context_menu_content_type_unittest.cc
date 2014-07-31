@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_context_menu/context_menu_content_type.h"
-
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/browser/renderer_context_menu/context_menu_content_type_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/renderer_context_menu/context_menu_content_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-
 
 using extensions::MenuItem;
 
@@ -19,7 +18,8 @@ class ContextMenuContentTypeTest : public ChromeRenderViewHostTestHarness {
   static ContextMenuContentType* Create(
       content::WebContents* web_contents,
       content::ContextMenuParams& params) {
-    return new ContextMenuContentType(web_contents, params, true);
+    return ContextMenuContentTypeFactory::SetInternalResourcesURLChecker(
+        new ContextMenuContentType(web_contents, params, true));
   }
 };
 

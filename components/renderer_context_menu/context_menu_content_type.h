@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_CONTEXT_MENU_CONTEXT_MENU_CONTENT_TYPE_H_
-#define CHROME_BROWSER_RENDERER_CONTEXT_MENU_CONTEXT_MENU_CONTENT_TYPE_H_
+#ifndef COMPONENTS_RENDERER_CONTEXT_MENU_CONTEXT_MENU_CONTENT_TYPE_H_
+#define COMPONENTS_RENDERER_CONTEXT_MENU_CONTEXT_MENU_CONTENT_TYPE_H_
 
+#include "base/callback.h"
 #include "content/public/common/context_menu_params.h"
 #include "ui/base/models/simple_menu_model.h"
 
@@ -49,33 +50,40 @@ class ContextMenuContentType {
     ITEM_GROUP_PRINT_PREVIEW
   };
 
-  static ContextMenuContentType* Create(
-      content::WebContents* web_contents,
-      const content::ContextMenuParams& params);
+  typedef base::Callback<bool (const GURL& url)>
+      InternalResourcesURLChecker;
+
+  void set_internal_resources_url_checker(
+      const InternalResourcesURLChecker& checker) {
+    internal_resources_url_checker_ = checker;
+  }
 
   // Returns if |group| is enabled.
   virtual bool SupportsGroup(int group);
 
- protected:
   ContextMenuContentType(content::WebContents* web_contents,
                          const content::ContextMenuParams& params,
                          bool supports_custom_items);
 
+ protected:
   const content::ContextMenuParams& params() const { return params_; }
 
   const extensions::Extension* GetExtension() const;
 
  private:
-  friend class ContextMenuContentTypeFactory;
-  friend class ContextMenuContentTypeTest;
-
   bool SupportsGroupInternal(int group);
+
+  bool IsInternalResourcesURL(const GURL& url);
 
   const content::ContextMenuParams params_;
   content::WebContents* source_web_contents_;
   const bool supports_custom_items_;
 
+  // A boolean callback to check if the url points to the internal
+  // resources.
+  InternalResourcesURLChecker internal_resources_url_checker_;
+
   DISALLOW_COPY_AND_ASSIGN(ContextMenuContentType);
 };
 
-#endif  // CHROME_BROWSER_RENDERER_CONTEXT_MENU_CONTEXT_MENU_CONTENT_TYPE_H_
+#endif  // COMPONENTS_RENDERER_CONTEXT_MENU_CONTEXT_MENU_CONTENT_TYPE_H_

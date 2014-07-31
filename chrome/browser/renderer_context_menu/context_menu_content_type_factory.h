@@ -19,9 +19,18 @@ class ContextMenuContentTypeFactory {
       content::WebContents* web_contents,
       const content::ContextMenuParams& params);
 
+  // Sets the chrome specific url checker for internal resources.
+  // This is exposed for tests.
+  static ContextMenuContentType* SetInternalResourcesURLChecker(
+      ContextMenuContentType* content_type);
+
  private:
   ContextMenuContentTypeFactory();
   virtual ~ContextMenuContentTypeFactory();
+
+  static ContextMenuContentType* CreateInternal(
+      content::WebContents* web_contents,
+      const content::ContextMenuParams& params);
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenuContentTypeFactory);
 };

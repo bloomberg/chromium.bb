@@ -14,6 +14,8 @@
         '..',
       ],
       'sources': [
+        'renderer_context_menu/context_menu_content_type.cc',
+        'renderer_context_menu/context_menu_content_type.h',
         'renderer_context_menu/context_menu_delegate.cc',
         'renderer_context_menu/context_menu_delegate.h',
         'renderer_context_menu/render_view_context_menu_observer.cc',
