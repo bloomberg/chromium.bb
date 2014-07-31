@@ -1,0 +1,55 @@
+<!DOCTYPE HTML>
+<script src="../../../../resources/js-test.js"></script>
+<style>
+#target {
+  width: 50px;
+  height: 50px;
+}
+</style>
+<iframe id="target" src="resources/event-delegator.html"></iframe>
+<div id=console></div>
+<script>
+function onEventInFrame(e) {
+    debug("Received " + e.type + " in child frame");
+    if (e.type == 'mousemove') {
+        debug('Removing iframe');
+        target.parentNode.removeChild(target);
+        internals.gc();
+    }
+}
+
+function eventLogger(e) {
+    debug("Received " + e.type + " in main frame");
+}
+
+document.addEventListener('mousemove', eventLogger);
+document.addEventListener('mousedown', eventLogger);
+document.addEventListener('mouseup', eventLogger);
+document.addEventListener('click', eventLogger);
+
+var rect = target.getBoundingClientRect();
+var point = {
+    x: rect.left + rect.width / 2,
+    y: rect.top + rect.height / 2
+};
+
+description("Verifies that a tap occuring on an iframe that gets removed during tap handling doesn't cause a crash.");
+
+if (window.eventSender) {
+    jsTestIsAsync = true;
+    target.onload = function() {
+        debug("Sending GestureTapDown");
+        eventSender.gestureTapDown(point.x, point.y);
+
+        debug("Sending GestureShowPress");
+        eventSender.gestureShowPress(point.x, point.y);
+
+        debug("Sending GestureTap");
+        eventSender.gestureTap(point.x, point.y);
+
+        setTimeout(finishJSTest, 0);
+    }
+} else {
+    debug("This test requires eventSender");
+}
+</script>

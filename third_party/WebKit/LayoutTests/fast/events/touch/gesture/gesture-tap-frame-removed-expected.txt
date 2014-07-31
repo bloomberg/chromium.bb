@@ -1,0 +1,14 @@
+Verifies that a tap occuring on an iframe that gets removed during tap handling doesn't cause a crash.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Sending GestureTapDown
+Sending GestureShowPress
+Sending GestureTap
+Received mousemove in child frame
+Removing iframe
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
