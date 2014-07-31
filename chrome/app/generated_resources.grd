@@ -2206,6 +2206,18 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_APPLICATION_INFO_VERSION_LABEL" desc="Text displayed before the app's version in the details section of the dialog.">
           Version:
         </message>
+        <message name="IDS_APPLICATION_INFO_VERSION_BUILT_IN_LABEL" desc="Text displayed in the app's version field to show that it is a built-in app (such as the Chrome Web Store, or the Files app).">
+          Built-in
+        </message>
+        <message name="IDS_APPLICATION_INFO_INSTALLED_LABEL" desc="Text displayed before the app's installed date in the details section of the dialog.">
+          Installed:
+        </message>
+        <message name="IDS_APPLICATION_INFO_LAST_RUN_LABEL" desc="Text displayed before the day the app was last run in the details section of the dialog.">
+          Last run:
+        </message>
+        <message name="IDS_APPLICATION_INFO_LAST_RUN_NEVER_LABEL" desc="Text displayed in the 'Last Run' field of the details section of the dialog to indicate that the app has never been run.">
+          Never
+        </message>
         <message name="IDS_APPLICATION_INFO_ACTIVE_PERMISSIONS_TEXT" desc="Heading above the current permissions for the app (the permissions that the user has granted the app upon installation).">
           Permissions
         </message>
@@ -2237,6 +2249,18 @@ Even if you have downloaded files from this website before, the website might ha
         </message>
         <message name="IDS_APPLICATION_INFO_VERSION_LABEL" desc="In Title Case: Text displayed before the app's version in the details section of the dialog.">
           Version:
+        </message>
+        <message name="IDS_APPLICATION_INFO_VERSION_BUILT_IN_LABEL" desc="In Title Case: Text displayed in the app's version field to show that it is a built-in app (such as the Chrome Web Store, or the Files app).">
+          Built-In
+        </message>
+        <message name="IDS_APPLICATION_INFO_INSTALLED_LABEL" desc="In Title Case: Text displayed before the app's installed date in the details section of the dialog.">
+          Installed:
+        </message>
+        <message name="IDS_APPLICATION_INFO_LAST_RUN_LABEL" desc="In Title Case: Text displayed before the day the app was last run in the details section of the dialog.">
+          Last Run:
+        </message>
+        <message name="IDS_APPLICATION_INFO_LAST_RUN_NEVER_LABEL" desc="In Title Case: Text displayed in the 'Last Run' field of the details section of the dialog to indicate that the app has never been run.">
+          Never
         </message>
         <message name="IDS_APPLICATION_INFO_ACTIVE_PERMISSIONS_TEXT" desc="In Title Case: Heading above the current permissions for the app (the permissions that the user has granted the app upon installation).">
           Permissions

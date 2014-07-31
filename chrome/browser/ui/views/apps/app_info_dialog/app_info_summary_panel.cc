@@ -8,6 +8,7 @@
 
 #include "base/callback_forward.h"
 #include "base/command_line.h"
+#include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -28,12 +29,6 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-
-namespace {
-
-// The spacing between the key and the value labels in the Details section.
-const int kSpacingBetweenKeyAndStartOfValue = 3;
-}
 
 // A model for a combobox selecting the launch options for a hosted app.
 // Displays different options depending on the host OS.
@@ -137,6 +132,10 @@ AppInfoSummaryPanel::AppInfoSummaryPanel(Profile* profile,
       details_heading_(NULL),
       version_title_(NULL),
       version_value_(NULL),
+      installed_time_title_(NULL),
+      installed_time_value_(NULL),
+      last_run_time_title_(NULL),
+      last_run_time_value_(NULL),
       launch_options_combobox_(NULL) {
   // Create UI elements.
   CreateDescriptionControl();
@@ -181,17 +180,56 @@ void AppInfoSummaryPanel::CreateDescriptionControl() {
 }
 
 void AppInfoSummaryPanel::CreateDetailsControl() {
-  if (HasVersion()) {
-    details_heading_ = CreateHeading(
-        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_DETAILS_TITLE));
+  // The version doesn't make sense for bookmark apps.
+  if (!app_->from_bookmark()) {
+    // Display 'Version: Built-in' for component apps.
+    base::string16 version_str = base::ASCIIToUTF16(app_->VersionString());
+    if (app_->location() == extensions::Manifest::COMPONENT)
+      version_str = l10n_util::GetStringUTF16(
+          IDS_APPLICATION_INFO_VERSION_BUILT_IN_LABEL);
 
     version_title_ = new views::Label(
         l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_VERSION_LABEL));
     version_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-    version_value_ =
-        new views::Label(base::ASCIIToUTF16(app_->VersionString()));
+    version_value_ = new views::Label(version_str);
     version_value_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  }
+
+  // The install date doesn't make sense for component apps.
+  if (app_->location() != extensions::Manifest::COMPONENT) {
+    installed_time_title_ = new views::Label(
+        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_INSTALLED_LABEL));
+    installed_time_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+    installed_time_value_ =
+        new views::Label(base::TimeFormatShortDate(GetInstalledTime()));
+    installed_time_value_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  }
+
+  // The last run time is currently incorrect for component and hosted apps,
+  // since it is not updated when they are accessed outside of their shortcuts.
+  // TODO(sashab): Update the run time for these correctly: crbug.com/398716
+  if (app_->location() != extensions::Manifest::COMPONENT &&
+      !app_->is_hosted_app()) {
+    last_run_time_title_ = new views::Label(
+        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_LAST_RUN_LABEL));
+    last_run_time_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+    // Display 'Never' if the app has never been run.
+    base::string16 last_run_value_str =
+        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_LAST_RUN_NEVER_LABEL);
+    if (GetLastLaunchedTime() != base::Time())
+      last_run_value_str = base::TimeFormatShortDate(GetLastLaunchedTime());
+
+    last_run_time_value_ = new views::Label(last_run_value_str);
+    last_run_time_value_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  }
+
+  // Only generate the heading if we have at least one field to display.
+  if (version_title_ || installed_time_title_ || last_run_time_title_) {
+    details_heading_ = CreateHeading(
+        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_DETAILS_TITLE));
   }
 }
 
@@ -223,11 +261,18 @@ void AppInfoSummaryPanel::LayoutDetailsControl() {
         CreateVerticalStack(views::kRelatedControlSmallVerticalSpacing);
 
     if (version_title_ && version_value_) {
-      views::View* horizontal_stack =
-          CreateHorizontalStack(kSpacingBetweenKeyAndStartOfValue);
-      horizontal_stack->AddChildView(version_title_);
-      horizontal_stack->AddChildView(version_value_);
-      details_stack->AddChildView(horizontal_stack);
+      details_stack->AddChildView(
+          CreateKeyValueField(version_title_, version_value_));
+    }
+
+    if (installed_time_title_ && installed_time_value_) {
+      details_stack->AddChildView(
+          CreateKeyValueField(installed_time_title_, installed_time_value_));
+    }
+
+    if (last_run_time_title_ && last_run_time_value_) {
+      details_stack->AddChildView(
+          CreateKeyValueField(last_run_time_title_, last_run_time_value_));
     }
 
     views::View* vertical_stack = CreateVerticalStack();
@@ -246,10 +291,13 @@ void AppInfoSummaryPanel::OnPerformAction(views::Combobox* combobox) {
   }
 }
 
-bool AppInfoSummaryPanel::HasVersion() const {
-  // The version number doesn't make sense for bookmark or component apps.
-  return !app_->from_bookmark() &&
-         app_->location() != extensions::Manifest::COMPONENT;
+base::Time AppInfoSummaryPanel::GetInstalledTime() const {
+  return extensions::ExtensionPrefs::Get(profile_)->GetInstallTime(app_->id());
+}
+
+base::Time AppInfoSummaryPanel::GetLastLaunchedTime() const {
+  return extensions::ExtensionPrefs::Get(profile_)
+      ->GetLastLaunchTime(app_->id());
 }
 
 extensions::LaunchType AppInfoSummaryPanel::GetLaunchType() const {

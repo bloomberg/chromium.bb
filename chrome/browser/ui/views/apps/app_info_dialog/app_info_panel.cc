@@ -9,6 +9,12 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_constants.h"
 
+namespace {
+
+// The spacing between the key and the value labels in the Details section.
+const int kSpacingBetweenKeyAndStartOfValue = 3;
+}
+
 AppInfoPanel::AppInfoPanel(Profile* profile, const extensions::Extension* app)
     : profile_(profile), app_(app) {
 }
@@ -44,4 +50,13 @@ views::View* AppInfoPanel::CreateHorizontalStack(int child_spacing) const {
 
 views::View* AppInfoPanel::CreateHorizontalStack() const {
   return CreateVerticalStack(views::kRelatedControlHorizontalSpacing);
+}
+
+views::View* AppInfoPanel::CreateKeyValueField(views::View* key,
+                                               views::View* value) const {
+  views::View* horizontal_stack =
+      CreateHorizontalStack(kSpacingBetweenKeyAndStartOfValue);
+  horizontal_stack->AddChildView(key);
+  horizontal_stack->AddChildView(value);
+  return horizontal_stack;
 }

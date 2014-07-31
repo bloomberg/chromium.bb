@@ -43,8 +43,12 @@ class AppInfoSummaryPanel : public AppInfoPanel,
   // Overridden from views::ComboboxListener:
   virtual void OnPerformAction(views::Combobox* combobox) OVERRIDE;
 
-  // Returns true if the app has a version number that makes sense to display.
-  bool HasVersion() const;
+  // Returns the time this app was installed.
+  base::Time GetInstalledTime() const;
+
+  // Returns the time the app was last launched, or base::Time() if it's never
+  // been launched.
+  base::Time GetLastLaunchedTime() const;
 
   // Returns the launch type of the app (e.g. pinned tab, fullscreen, etc).
   extensions::LaunchType GetLaunchType() const;
@@ -61,6 +65,10 @@ class AppInfoSummaryPanel : public AppInfoPanel,
   views::Label* details_heading_;
   views::Label* version_title_;
   views::Label* version_value_;
+  views::Label* installed_time_title_;
+  views::Label* installed_time_value_;
+  views::Label* last_run_time_title_;
+  views::Label* last_run_time_value_;
 
   scoped_ptr<LaunchOptionsComboboxModel> launch_options_combobox_model_;
   views::Combobox* launch_options_combobox_;

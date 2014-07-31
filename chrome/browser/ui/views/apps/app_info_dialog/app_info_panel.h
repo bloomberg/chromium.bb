@@ -40,6 +40,10 @@ class AppInfoPanel : public views::View {
   views::View* CreateHorizontalStack(int child_spacing) const;
   views::View* CreateHorizontalStack() const;
 
+  // Given a key and a value, displays them side-by-side as a field and its
+  // value.
+  views::View* CreateKeyValueField(views::View* key, views::View* value) const;
+
   Profile* profile_;
   const extensions::Extension* app_;
 
