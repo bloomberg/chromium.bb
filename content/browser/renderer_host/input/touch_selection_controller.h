@@ -138,7 +138,6 @@ class CONTENT_EXPORT TouchSelectionController : public TouchHandleClient {
 
   bool selection_empty_;
   bool selection_editable_;
-  bool selection_editable_for_last_update_;
 
   bool temporarily_hidden_;
 
