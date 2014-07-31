@@ -6,6 +6,7 @@
 #define UI_ACCESSIBILITY_AX_PLATFORM_NODE_MAC_H_
 
 #include "base/mac/scoped_nsobject.h"
+#include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/platform/ax_platform_node_base.h"
 
 @class AXPlatformNodeCocoa;
@@ -30,6 +31,7 @@ class AXPlatformNodeMac : public AXPlatformNodeBase {
 
 }  // namespace ui
 
+AX_EXPORT
 @interface AXPlatformNodeCocoa : NSObject {
  @private
   ui::AXPlatformNodeBase* node_;  // Weak. Retains us.
