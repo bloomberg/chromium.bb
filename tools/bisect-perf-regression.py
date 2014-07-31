@@ -3233,7 +3233,7 @@ class BisectPerformanceMetrics(object):
                                   results_dict['confidence'])
     _PrintStepTime(revision_data_sorted)
     self._PrintReproSteps()
-    self._PrintThankYou()
+    _PrintThankYou()
     if self.opts.output_buildbot_annotations:
       bisect_utils.OutputAnnotationStepClosed()
 
