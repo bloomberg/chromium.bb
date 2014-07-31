@@ -820,25 +820,36 @@ cr.define('options.internet', function() {
   };
 
   DetailsInternetPage.updateConnectionButtonVisibilty = function(data) {
-    var connected = data.ConnectionState == 'Connected';
-    $('details-internet-login').hidden = connected;
-    $('details-internet-login').disabled = !data.Connectable;
-
-    if (data.Type == 'Ethernet') {
-      // Ethernet can be configured while connected (e.g. to set security).
+    if (data.type == 'Ethernet') {
+      // Ethernet can never be connected or disconnected and can always be
+      // configured (e.g. to set security).
+      $('details-internet-login').hidden = true;
+      $('details-internet-disconnect').hidden = true;
       $('details-internet-configure').hidden = false;
-    } else if (!connected &&
-               (!data.Connectable || isSecureWiFiNetwork(data) ||
-                (data.Type == 'Wimax' || data.Type == 'VPN'))) {
+      return;
+    }
+
+    var connectState = data.ConnectionState;
+    if (connectState == 'NotConnected') {
+      $('details-internet-login').hidden = false;
+      // Connecting to an unconfigured network might trigger certificate
+      // installation UI. Until that gets handled here, always enable the
+      // Connect button.
+      $('details-internet-login').disabled = false;
+      $('details-internet-disconnect').hidden = true;
+    } else {
+      $('details-internet-login').hidden = true;
+      $('details-internet-disconnect').hidden = false;
+    }
+
+    var connectable = data.Connectable;
+    if (connectState != 'Connected' &&
+        (!connectable || isSecureWiFiNetwork(data) ||
+        (data.Type == 'Wimax' || data.Type == 'VPN'))) {
       $('details-internet-configure').hidden = false;
     } else {
       $('details-internet-configure').hidden = true;
     }
-
-    if (data.Type == 'Ethernet')
-      $('details-internet-disconnect').hidden = true;
-    else
-      $('details-internet-disconnect').hidden = !connected;
   };
 
   DetailsInternetPage.updateConnectionData = function(update) {
