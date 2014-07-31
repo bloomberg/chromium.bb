@@ -6,6 +6,7 @@
 
 cr.define('options', function() {
   /** @const */ var SettingsBannerBase = options.SettingsBannerBase;
+  /** @const */ var PageManager = cr.ui.pageManager.PageManager;
 
   /**
    * AutomaticSettingsResetBanner class
@@ -43,7 +44,7 @@ cr.define('options', function() {
           function(event) {
         chrome.send('metricsHandler:recordAction',
             ['AutomaticSettingsReset_WebUIBanner_ResetClicked']);
-        OptionsPage.navigateToPage('resetProfileSettings');
+        PageManager.showPageByName('resetProfileSettings');
       };
     },
   };

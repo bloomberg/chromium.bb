@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  var OptionsPage = options.OptionsPage;
+  var Page = cr.ui.pageManager.Page;
+  var PageManager = cr.ui.pageManager.PageManager;
 
   // The scale ratio of the display rectangle to its original size.
   /** @const */ var VISUAL_SCALE = 1 / 10;
@@ -75,15 +76,15 @@ cr.define('options', function() {
    * @constructor
    */
   function DisplayOptions() {
-    OptionsPage.call(this, 'display',
-                     loadTimeData.getString('displayOptionsPageTabTitle'),
-                     'display-options-page');
+    Page.call(this, 'display',
+              loadTimeData.getString('displayOptionsPageTabTitle'),
+              'display-options-page');
   }
 
   cr.addSingletonGetter(DisplayOptions);
 
   DisplayOptions.prototype = {
-    __proto__: OptionsPage.prototype,
+    __proto__: Page.prototype,
 
     /**
      * Whether the current output status is mirroring displays or not.
@@ -146,7 +147,7 @@ cr.define('options', function() {
 
     /** @override */
     initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       $('display-options-toggle-mirroring').onclick = function() {
         this.mirroring_ = !this.mirroring_;
@@ -185,7 +186,7 @@ cr.define('options', function() {
         // we do not care back/forward.
         var displayOverscan = options.DisplayOverscan.getInstance();
         displayOverscan.setDisplayId(this.displays_[this.focusedIndex_].id);
-        OptionsPage.navigateToPage('displayOverscan');
+        PageManager.showPageByName('displayOverscan');
         chrome.send('coreOptionsUserMetricsAction',
                     ['Options_DisplaySetOverscan']);
       }.bind(this);
@@ -206,7 +207,7 @@ cr.define('options', function() {
 
     /** @override */
     onVisibilityChanged_: function() {
-      OptionsPage.prototype.onVisibilityChanged_(this);
+      Page.prototype.onVisibilityChanged_(this);
       if (this.visible)
         chrome.send('getDisplayInfo');
     },

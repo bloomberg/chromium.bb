@@ -60,7 +60,7 @@ cr.define('options', function() {
           this.handleAutoRepeatIntervalPrefChange_.bind(this);
 
       $('languages-and-input-settings').onclick = function(e) {
-        OptionsPage.navigateToPage('languages');
+        PageManager.showPageByName('languages');
         chrome.send('coreOptionsUserMetricsAction',
                     ['Options_KeyboardShowLanguageSettings']);
       };

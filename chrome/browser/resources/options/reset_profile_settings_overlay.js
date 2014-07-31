@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  var OptionsPage = options.OptionsPage;
+  var Page = cr.ui.pageManager.Page;
 
   var AutomaticSettingsResetBanner = options.AutomaticSettingsResetBanner;
   var ResetProfileSettingsBanner = options.ResetProfileSettingsBanner;
@@ -14,21 +14,20 @@ cr.define('options', function() {
    * @class
    */
   function ResetProfileSettingsOverlay() {
-    OptionsPage.call(
-        this, 'resetProfileSettings',
-        loadTimeData.getString('resetProfileSettingsOverlayTabTitle'),
-        'reset-profile-settings-overlay');
+    Page.call(this, 'resetProfileSettings',
+              loadTimeData.getString('resetProfileSettingsOverlayTabTitle'),
+              'reset-profile-settings-overlay');
   }
 
   cr.addSingletonGetter(ResetProfileSettingsOverlay);
 
   ResetProfileSettingsOverlay.prototype = {
-    // Inherit ResetProfileSettingsOverlay from OptionsPage.
-    __proto__: OptionsPage.prototype,
+    // Inherit ResetProfileSettingsOverlay from Page.
+    __proto__: Page.prototype,
 
     /** @override */
     initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       $('reset-profile-settings-dismiss').onclick = function(event) {
         ResetProfileSettingsOverlay.dismiss();
@@ -80,7 +79,7 @@ cr.define('options', function() {
    * Dismisses the overlay.
    */
   ResetProfileSettingsOverlay.dismiss = function() {
-    OptionsPage.closeOverlay();
+    PageManager.closeOverlay();
     ResetProfileSettingsOverlay.setResettingState(false);
   };
 

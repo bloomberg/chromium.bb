@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('options.network', function() {
-
   var ArrayDataModel = cr.ui.ArrayDataModel;
   var List = cr.ui.List;
   var ListItem = cr.ui.ListItem;
@@ -367,8 +366,9 @@ cr.define('options.network', function() {
   /**
    * Creates a control for selecting or configuring a network connection based
    * on the type of connection (e.g. wifi versus vpn).
-   * @param {{key: string,
-   *          networkList: Array.<Object>} data  Description of the network.
+   * @param {Object} data Description of the network.
+   * @param {string} data.key Item key.
+   * @param {Array.<Object>} data.networkList Description of the network.
    * @constructor
    */
   function NetworkSelectorItem(data) {
@@ -479,7 +479,7 @@ cr.define('options.network', function() {
         var callback = function(list) {
           $('remembered-network-list').clear();
           var dialog = options.PreferredNetworks.getInstance();
-          OptionsPage.showPageByName('preferredNetworksPage', false);
+          PageManager.showPageByName('preferredNetworksPage', false);
           dialog.update(list);
           chrome.send('coreOptionsUserMetricsAction',
                       ['Options_NetworkShowPreferred']);
@@ -658,9 +658,10 @@ cr.define('options.network', function() {
 
   /**
    * Creates a button-like control for configurating internet connectivity.
-   * @param {{key: string,
-   *          subtitle: string,
-   *          command: function} data  Description of the network control.
+   * @param {Object} data Description of the network control.
+   * @param {string} data.key Item key.
+   * @param {string} data.subtitle Subtitle.
+   * @param {function} data.command Item callback.
    * @constructor
    */
   function NetworkButtonItem(data) {
@@ -808,7 +809,7 @@ cr.define('options.network', function() {
      * @private
      */
     onSelectionChange_: function(event) {
-      OptionsPage.hideBubble();
+      PageManager.hideBubble();
       // A list item may temporarily become unselected while it is constructing
       // its menu. The menu should therefore only be closed if a different item
       // is selected, not when the menu's owner item is deselected.
@@ -1063,7 +1064,7 @@ cr.define('options.network', function() {
         closeMenu_();
       ControlledSettingIndicator.prototype.toggleBubble_.call(this);
       if (this.showingBubble) {
-        var bubble = OptionsPage.getVisibleBubble();
+        var bubble = PageManager.getVisibleBubble();
         bubble.addEventListener('mousedown', this.stopEvent);
         bubble.addEventListener('click', this.stopEvent);
       }

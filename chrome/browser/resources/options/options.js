@@ -30,6 +30,7 @@ var LanguageOptions = options.LanguageOptions;
 var ManageProfileOverlay = options.ManageProfileOverlay;
 var OptionsFocusManager = options.OptionsFocusManager;
 var OptionsPage = options.OptionsPage;
+var PageManager = cr.ui.pageManager.PageManager;
 var PasswordManager = options.PasswordManager;
 var Preferences = options.Preferences;
 var PreferredNetworks = options.PreferredNetworks;
@@ -67,24 +68,24 @@ function load() {
       options.ControlledSettingIndicator);
 
   // Top level pages.
-  OptionsPage.register(SearchPage.getInstance());
-  OptionsPage.register(BrowserOptions.getInstance());
+  PageManager.register(SearchPage.getInstance());
+  PageManager.register(BrowserOptions.getInstance());
 
   // Overlays.
-  OptionsPage.registerOverlay(AddLanguageOverlay.getInstance(),
+  PageManager.registerOverlay(AddLanguageOverlay.getInstance(),
                               LanguageOptions.getInstance());
-  OptionsPage.registerOverlay(AlertOverlay.getInstance());
-  OptionsPage.registerOverlay(AutofillEditAddressOverlay.getInstance(),
+  PageManager.registerOverlay(AlertOverlay.getInstance());
+  PageManager.registerOverlay(AutofillEditAddressOverlay.getInstance(),
                               AutofillOptions.getInstance());
-  OptionsPage.registerOverlay(AutofillEditCreditCardOverlay.getInstance(),
+  PageManager.registerOverlay(AutofillEditCreditCardOverlay.getInstance(),
                               AutofillOptions.getInstance());
-  OptionsPage.registerOverlay(AutofillOptions.getInstance(),
+  PageManager.registerOverlay(AutofillOptions.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('autofill-settings')]);
-  OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance(),
+  PageManager.registerOverlay(ClearBrowserDataOverlay.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('privacyClearDataButton')]);
-  OptionsPage.registerOverlay(
+  PageManager.registerOverlay(
       new ConfirmDialog(
           'doNotTrackConfirm',
           loadTimeData.getString('doNotTrackConfirmOverlayTabTitle'),
@@ -97,7 +98,7 @@ function load() {
   // 'spelling-enabled-control' element is only present on Chrome branded
   // builds.
   if ($('spelling-enabled-control')) {
-    OptionsPage.registerOverlay(
+    PageManager.registerOverlay(
         new ConfirmDialog(
             'spellingConfirm',
             loadTimeData.getString('spellingConfirmOverlayTabTitle'),
@@ -108,116 +109,116 @@ function load() {
             $('spelling-enabled-control').metric),
         BrowserOptions.getInstance());
   }
-  OptionsPage.registerOverlay(new HotwordConfirmDialog(),
+  PageManager.registerOverlay(new HotwordConfirmDialog(),
                               BrowserOptions.getInstance());
-  OptionsPage.registerOverlay(ContentSettings.getInstance(),
+  PageManager.registerOverlay(ContentSettings.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('privacyContentSettingsButton')]);
-  OptionsPage.registerOverlay(WebsiteSettingsManager.getInstance(),
+  PageManager.registerOverlay(WebsiteSettingsManager.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('website-management-button')]);
-  OptionsPage.registerOverlay(ContentSettingsExceptionsArea.getInstance(),
+  PageManager.registerOverlay(ContentSettingsExceptionsArea.getInstance(),
                               ContentSettings.getInstance());
-  OptionsPage.registerOverlay(CookiesView.getInstance(),
+  PageManager.registerOverlay(CookiesView.getInstance(),
                               ContentSettings.getInstance(),
                               [$('privacyContentSettingsButton'),
                                $('show-cookies-button')]);
-  OptionsPage.registerOverlay(CreateProfileOverlay.getInstance(),
+  PageManager.registerOverlay(CreateProfileOverlay.getInstance(),
                               BrowserOptions.getInstance());
   if (!cr.isMac) {
-    OptionsPage.registerOverlay(EditDictionaryOverlay.getInstance(),
+    PageManager.registerOverlay(EditDictionaryOverlay.getInstance(),
                                 LanguageOptions.getInstance(),
                                 [$('edit-dictionary-button')]);
   }
-  OptionsPage.registerOverlay(FontSettings.getInstance(),
+  PageManager.registerOverlay(FontSettings.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('fontSettingsCustomizeFontsButton')]);
   if (HandlerOptions && $('manage-handlers-button')) {
-    OptionsPage.registerOverlay(HandlerOptions.getInstance(),
+    PageManager.registerOverlay(HandlerOptions.getInstance(),
                                 ContentSettings.getInstance(),
                                 [$('manage-handlers-button')]);
   }
-  OptionsPage.registerOverlay(HomePageOverlay.getInstance(),
+  PageManager.registerOverlay(HomePageOverlay.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('change-home-page')]);
-  OptionsPage.registerOverlay(ImportDataOverlay.getInstance(),
+  PageManager.registerOverlay(ImportDataOverlay.getInstance(),
                               BrowserOptions.getInstance());
-  OptionsPage.registerOverlay(LanguageOptions.getInstance(),
+  PageManager.registerOverlay(LanguageOptions.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('language-button'),
                                $('manage-languages')]);
-  OptionsPage.registerOverlay(ManageProfileOverlay.getInstance(),
+  PageManager.registerOverlay(ManageProfileOverlay.getInstance(),
                               BrowserOptions.getInstance());
   if (!cr.isChromeOS) {
-    OptionsPage.registerOverlay(SupervisedUserCreateConfirmOverlay.
+    PageManager.registerOverlay(SupervisedUserCreateConfirmOverlay.
                                     getInstance(),
                                 BrowserOptions.getInstance());
-    OptionsPage.registerOverlay(SupervisedUserImportOverlay.getInstance(),
+    PageManager.registerOverlay(SupervisedUserImportOverlay.getInstance(),
                                 CreateProfileOverlay.getInstance());
-    OptionsPage.registerOverlay(SupervisedUserLearnMoreOverlay.getInstance(),
+    PageManager.registerOverlay(SupervisedUserLearnMoreOverlay.getInstance(),
                                 CreateProfileOverlay.getInstance());
   }
-  OptionsPage.registerOverlay(PasswordManager.getInstance(),
+  PageManager.registerOverlay(PasswordManager.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('manage-passwords')]);
-  OptionsPage.registerOverlay(ResetProfileSettingsOverlay.getInstance(),
+  PageManager.registerOverlay(ResetProfileSettingsOverlay.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('reset-profile-settings')]);
-  OptionsPage.registerOverlay(SearchEngineManager.getInstance(),
+  PageManager.registerOverlay(SearchEngineManager.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('manage-default-search-engines')]);
-  OptionsPage.registerOverlay(StartupOverlay.getInstance(),
+  PageManager.registerOverlay(StartupOverlay.getInstance(),
                               BrowserOptions.getInstance());
-  OptionsPage.registerOverlay(SyncSetupOverlay.getInstance(),
+  PageManager.registerOverlay(SyncSetupOverlay.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('customize-sync')]);
   if (cr.isChromeOS) {
-    OptionsPage.registerOverlay(AccountsOptions.getInstance(),
+    PageManager.registerOverlay(AccountsOptions.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('manage-accounts-button')]);
-    OptionsPage.registerOverlay(BluetoothOptions.getInstance(),
+    PageManager.registerOverlay(BluetoothOptions.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('bluetooth-add-device')]);
-    OptionsPage.registerOverlay(BluetoothPairing.getInstance(),
+    PageManager.registerOverlay(BluetoothPairing.getInstance(),
                                 BrowserOptions.getInstance());
-    OptionsPage.registerOverlay(FactoryResetOverlay.getInstance(),
+    PageManager.registerOverlay(FactoryResetOverlay.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('factory-reset-restart')]);
-    OptionsPage.registerOverlay(ChangePictureOptions.getInstance(),
+    PageManager.registerOverlay(ChangePictureOptions.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('account-picture')]);
-    OptionsPage.registerOverlay(ConsumerManagementOverlay.getInstance(),
+    PageManager.registerOverlay(ConsumerManagementOverlay.getInstance(),
                                 BrowserOptions.getInstance());
-    OptionsPage.registerOverlay(DetailsInternetPage.getInstance(),
+    PageManager.registerOverlay(DetailsInternetPage.getInstance(),
                                 BrowserOptions.getInstance());
-    OptionsPage.registerOverlay(DisplayOptions.getInstance(),
+    PageManager.registerOverlay(DisplayOptions.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('display-options')]);
-    OptionsPage.registerOverlay(DisplayOverscan.getInstance(),
+    PageManager.registerOverlay(DisplayOverscan.getInstance(),
                                 DisplayOptions.getInstance());
-    OptionsPage.registerOverlay(KeyboardOverlay.getInstance(),
+    PageManager.registerOverlay(KeyboardOverlay.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('keyboard-settings-button')]);
-    OptionsPage.registerOverlay(PointerOverlay.getInstance(),
+    PageManager.registerOverlay(PointerOverlay.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('pointer-settings-button')]);
-    OptionsPage.registerOverlay(PreferredNetworks.getInstance(),
+    PageManager.registerOverlay(PreferredNetworks.getInstance(),
                                 BrowserOptions.getInstance());
-    OptionsPage.registerOverlay(ThirdPartyImeConfirmOverlay.getInstance(),
+    PageManager.registerOverlay(ThirdPartyImeConfirmOverlay.getInstance(),
                                 LanguageOptions.getInstance());
   }
 
   if (!cr.isWindows && !cr.isMac) {
-    OptionsPage.registerOverlay(CertificateBackupOverlay.getInstance(),
+    PageManager.registerOverlay(CertificateBackupOverlay.getInstance(),
                                 CertificateManager.getInstance());
-    OptionsPage.registerOverlay(CertificateEditCaTrustOverlay.getInstance(),
+    PageManager.registerOverlay(CertificateEditCaTrustOverlay.getInstance(),
                                 CertificateManager.getInstance());
-    OptionsPage.registerOverlay(CertificateImportErrorOverlay.getInstance(),
+    PageManager.registerOverlay(CertificateImportErrorOverlay.getInstance(),
                                 CertificateManager.getInstance());
-    OptionsPage.registerOverlay(CertificateManager.getInstance(),
+    PageManager.registerOverlay(CertificateManager.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('certificatesManageButton')]);
-    OptionsPage.registerOverlay(CertificateRestoreOverlay.getInstance(),
+    PageManager.registerOverlay(CertificateRestoreOverlay.getInstance(),
                                 CertificateManager.getInstance());
   }
 
@@ -228,11 +229,11 @@ function load() {
   AutomaticSettingsResetBanner.getInstance().initialize();
   OptionsPage.initialize();
 
-  var pageName = OptionsPage.getPageNameFromPath();
+  var pageName = PageManager.getPageNameFromPath();
   // Still update history so that chrome://settings/nonexistant redirects
   // appropriately to chrome://settings/. If the URL matches, updateHistory_
   // will avoid the extra replaceState.
-  OptionsPage.showPageByName(pageName, true, {replaceState: true});
+  PageManager.showPageByName(pageName, true, {replaceState: true});
 
   var subpagesNavTabs = document.querySelectorAll('.subpages-nav-tabs');
   for (var i = 0; i < subpagesNavTabs.length; i++) {
@@ -254,7 +255,7 @@ document.addEventListener('DOMContentLoaded', load);
  * Listener for the |beforeunload| event.
  */
 window.onbeforeunload = function() {
-  options.OptionsPage.willClose();
+  PageManager.willClose();
 };
 
 /**
@@ -262,6 +263,6 @@ window.onbeforeunload = function() {
  * @param {Event} e The |popstate| event.
  */
 window.onpopstate = function(e) {
-  var pageName = options.OptionsPage.getPageNameFromPath();
-  options.OptionsPage.setState(pageName, e.state);
+  var pageName = PageManager.getPageNameFromPath();
+  PageManager.setState(pageName, e.state);
 };

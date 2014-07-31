@@ -56,7 +56,7 @@ cr.define('options', function() {
      * @param {Event} event Pref change event.
      */
     handlePrefChange: function(event) {
-      OptionsPage.hideBubble();
+      PageManager.hideBubble();
       if (event.value.controlledBy) {
         if (!this.value || String(event.value.value) == this.value) {
           this.controlledBy = event.value.controlledBy;
@@ -83,7 +83,7 @@ cr.define('options', function() {
      */
     toggleBubble_: function() {
       if (this.showingBubble) {
-        OptionsPage.hideBubble();
+        PageManager.hideBubble();
       } else {
         var self = this;
 
@@ -179,7 +179,7 @@ cr.define('options', function() {
           content.appendChild(extensionContainer);
         }
 
-        OptionsPage.showBubble(content, this.image, this, this.location);
+        PageManager.showBubble(content, this.image, this, this.location);
       }
     },
   };

@@ -4,6 +4,8 @@
 
 cr.define('options', function() {
   var OptionsPage = options.OptionsPage;
+  var Page = cr.ui.pageManager.Page;
+  var PageManager = cr.ui.pageManager.PageManager;
 
   /////////////////////////////////////////////////////////////////////////////
   // CertificateManagerTab class:
@@ -169,19 +171,19 @@ cr.define('options', function() {
    * @constructor
    */
   function CertificateManager(model) {
-    OptionsPage.call(this, 'certificates',
-                     loadTimeData.getString('certificateManagerPageTabTitle'),
-                     'certificateManagerPage');
+    Page.call(this, 'certificates',
+              loadTimeData.getString('certificateManagerPageTabTitle'),
+              'certificateManagerPage');
   }
 
   cr.addSingletonGetter(CertificateManager);
 
   CertificateManager.prototype = {
-    __proto__: OptionsPage.prototype,
+    __proto__: Page.prototype,
 
     /** @override */
     initializePage: function(isKiosk) {
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       this.personalTab = new CertificateManagerTab('personalCertsTab',
                                                    !!isKiosk);
@@ -192,14 +194,14 @@ cr.define('options', function() {
       this.addEventListener('visibleChange', this.handleVisibleChange_);
 
       $('certificate-confirm').onclick = function() {
-        OptionsPage.closeOverlay();
+        PageManager.closeOverlay();
       };
     },
 
     initalized_: false,
 
     /**
-     * Handler for OptionsPage's visible property change event.
+     * Handler for Page's visible property change event.
      * @private
      * @param {Event} e Property change event.
      */

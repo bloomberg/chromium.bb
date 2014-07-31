@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var OptionsPage = options.OptionsPage;
+var PageManager = cr.ui.pageManager.PageManager;
 var BluetoothPairing = options.BluetoothPairing;
 var FakeBluetoothOverlayParent = options.FakeBluetoothOverlayParent;
 
 /** @override */
-OptionsPage.closeOverlay = function() {
+PageManager.closeOverlay = function() {
   chrome.send('dialogClose');
 };
 
@@ -15,7 +15,7 @@ OptionsPage.closeOverlay = function() {
  * Listener for the |beforeunload| event.
  */
 window.onbeforeunload = function() {
-  OptionsPage.willClose();
+  PageManager.willClose();
 };
 
 /**
@@ -44,8 +44,8 @@ function load() {
 
   chrome.send('coreOptionsInitialize');
 
-  OptionsPage.register(FakeBluetoothOverlayParent.getInstance());
-  OptionsPage.registerOverlay(BluetoothPairing.getInstance(),
+  PageManager.register(FakeBluetoothOverlayParent.getInstance());
+  PageManager.registerOverlay(BluetoothPairing.getInstance(),
                               FakeBluetoothOverlayParent.getInstance());
 
   var device = {};

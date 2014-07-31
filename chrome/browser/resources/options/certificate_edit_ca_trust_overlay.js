@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  /** @const */ var OptionsPage = options.OptionsPage;
+  /** @const */ var Page = cr.ui.pageManager.Page;
+  /** @const */ var PageManager = cr.ui.pageManager.PageManager;
 
   /**
    * CertificateEditCaTrustOverlay class
@@ -11,22 +12,21 @@ cr.define('options', function() {
    * @class
    */
   function CertificateEditCaTrustOverlay() {
-    OptionsPage.call(this, 'certificateEditCaTrustOverlay',
-                     '',
-                     'certificateEditCaTrustOverlay');
+    Page.call(this, 'certificateEditCaTrustOverlay', '',
+              'certificateEditCaTrustOverlay');
   }
 
   cr.addSingletonGetter(CertificateEditCaTrustOverlay);
 
   CertificateEditCaTrustOverlay.prototype = {
-    __proto__: OptionsPage.prototype,
+    __proto__: Page.prototype,
 
     /**
      * Dismisses the overlay.
      * @private
      */
     dismissOverlay_: function() {
-      OptionsPage.closeOverlay();
+      PageManager.closeOverlay();
     },
 
     /**
@@ -104,7 +104,7 @@ cr.define('options', function() {
     $('certificateCaTrustEmailCheckbox').checked = trustEmail;
     $('certificateCaTrustObjSignCheckbox').checked = trustObjSign;
     CertificateEditCaTrustOverlay.getInstance().enableInputs_(true);
-  }
+  };
 
   /**
    * Show the Edit CA Trust overlay.
@@ -118,17 +118,17 @@ cr.define('options', function() {
     self.certId = certId;
     $('certificateEditCaTrustCancelButton').onclick = function(event) {
       self.cancelEdit_();
-    }
+    };
     $('certificateEditCaTrustOkButton').onclick = function(event) {
       self.finishEdit_();
-    }
+    };
     $('certificateEditCaTrustDescription').textContent =
         loadTimeData.getStringF('certificateEditCaTrustDescriptionFormat',
                                 certName);
     self.enableInputs_(false);
-    OptionsPage.navigateToPage('certificateEditCaTrustOverlay');
+    PageManager.showPageByName('certificateEditCaTrustOverlay');
     chrome.send('getCaCertificateTrust', [certId]);
-  }
+  };
 
   /**
    * Show the Import CA overlay.
@@ -142,16 +142,16 @@ cr.define('options', function() {
     // TODO(mattm): do we want a view certificate button here like firefox has?
     $('certificateEditCaTrustCancelButton').onclick = function(event) {
       self.cancelImport_();
-    }
+    };
     $('certificateEditCaTrustOkButton').onclick = function(event) {
       self.finishImport_();
-    }
+    };
     $('certificateEditCaTrustDescription').textContent =
         loadTimeData.getStringF('certificateImportCaDescriptionFormat',
                                 certName);
     CertificateEditCaTrustOverlay.populateTrust(false, false, false);
-    OptionsPage.navigateToPage('certificateEditCaTrustOverlay');
-  }
+    PageManager.showPageByName('certificateEditCaTrustOverlay');
+  };
 
   CertificateEditCaTrustOverlay.dismiss = function() {
     CertificateEditCaTrustOverlay.getInstance().dismissOverlay_();

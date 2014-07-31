@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  /** @const */ var OptionsPage = options.OptionsPage;
+  /** @const */ var Page = cr.ui.pageManager.Page;
 
   /**
    * Encapsulated handling of the BrowserOptions calls from
@@ -12,16 +12,13 @@ cr.define('options', function() {
    * @constructor
    */
   function BrowserOptions() {
-    OptionsPage.call(this,
-                     'bluetooth',
-                     '',
-                     'bluetooth-container');
+    Page.call(this, 'bluetooth', '', 'bluetooth-container');
   }
 
   cr.addSingletonGetter(BrowserOptions);
 
   BrowserOptions.prototype = {
-    __proto__: OptionsPage.prototype,
+    __proto__: Page.prototype,
   };
 
   BrowserOptions.showBluetoothSettings = function() {

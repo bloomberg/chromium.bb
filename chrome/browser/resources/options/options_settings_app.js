@@ -6,10 +6,10 @@
   if (document.location != 'chrome://settings-frame/options_settings_app.html')
     return;
 
-  OptionsPage.setIsSettingsApp();
+  OptionsPage.setIsSettingsApp(true);
 
   // Override the offset in the options page.
-  OptionsPage.setHorizontalOffset(38);
+  PageManager.setHorizontalOffset(38);
 
   document.addEventListener('DOMContentLoaded', function() {
     // Hide everything by default.

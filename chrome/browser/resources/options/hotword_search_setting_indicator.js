@@ -33,7 +33,7 @@ cr.define('options', function() {
      * @override
      */
     handlePrefChange: function(event) {
-      OptionsPage.hideBubble();
+      PageManager.hideBubble();
     },
 
     /**
@@ -82,7 +82,7 @@ cr.define('options', function() {
      */
     toggleBubble_: function() {
       if (this.showingBubble) {
-        OptionsPage.hideBubble();
+        PageManager.hideBubble();
         return;
       }
 
@@ -107,7 +107,7 @@ cr.define('options', function() {
       var content = document.createElement('div');
       content.appendChild(container);
 
-      OptionsPage.showBubble(content, this.image, this, this.location);
+      PageManager.showBubble(content, this.image, this, this.location);
     },
   };
 

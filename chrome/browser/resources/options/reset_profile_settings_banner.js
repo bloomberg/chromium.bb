@@ -5,7 +5,7 @@
 // Note: the native-side handler for this is ResetProfileSettingsHandler.
 
 cr.define('options', function() {
-  /** @const */ var OptionsPage = options.OptionsPage;
+  /** @const */ var PageManager = cr.ui.pageManager.PageManager;
   /** @const */ var SettingsBannerBase = options.SettingsBannerBase;
 
   /**
@@ -39,7 +39,7 @@ cr.define('options', function() {
       $('reset-profile-settings-banner-activate').onclick = function(event) {
         chrome.send('metricsHandler:recordAction',
             ['AutomaticReset_WebUIBanner_ResetClicked']);
-        OptionsPage.navigateToPage('resetProfileSettings');
+        PageManager.showPageByName('resetProfileSettings');
       };
     },
   };

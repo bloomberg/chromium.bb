@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  /** @const */ var OptionsPage = options.OptionsPage;
+  /** @const */ var Page = cr.ui.pageManager.Page;
+  /** @const */ var PageManager = cr.ui.pageManager.PageManager;
 
   //////////////////////////////////////////////////////////////////////////////
   // ContentSettings class:
@@ -14,19 +15,19 @@ cr.define('options', function() {
    */
   function ContentSettings() {
     this.activeNavTab = null;
-    OptionsPage.call(this, 'content',
-                     loadTimeData.getString('contentSettingsPageTabTitle'),
-                     'content-settings-page');
+    Page.call(this, 'content',
+              loadTimeData.getString('contentSettingsPageTabTitle'),
+              'content-settings-page');
   }
 
   cr.addSingletonGetter(ContentSettings);
 
   ContentSettings.prototype = {
-    __proto__: OptionsPage.prototype,
+    __proto__: Page.prototype,
 
     /** @override */
     initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       var exceptionsButtons =
           this.pageDiv.querySelectorAll('.exceptions-list-button');
@@ -42,14 +43,14 @@ cr.define('options', function() {
 
           // Navigate after the local history has been replaced in order to have
           // the correct hash loaded.
-          OptionsPage.showPageByName('contentExceptions', false);
+          PageManager.showPageByName('contentExceptions', false);
         };
       }
 
       var manageHandlersButton = $('manage-handlers-button');
       if (manageHandlersButton) {
         manageHandlersButton.onclick = function(event) {
-          OptionsPage.navigateToPage('handlers');
+          PageManager.showPageByName('handlers');
         };
       }
 
@@ -64,11 +65,11 @@ cr.define('options', function() {
       // Cookies filter page ---------------------------------------------------
       $('show-cookies-button').onclick = function(event) {
         chrome.send('coreOptionsUserMetricsAction', ['Options_ShowCookies']);
-        OptionsPage.navigateToPage('cookies');
+        PageManager.showPageByName('cookies');
       };
 
       $('content-settings-overlay-confirm').onclick =
-          OptionsPage.closeOverlay.bind(OptionsPage);
+          PageManager.closeOverlay.bind(PageManager);
 
       $('media-pepper-flash-default').hidden = true;
       $('media-pepper-flash-exceptions').hidden = true;
@@ -145,7 +146,7 @@ cr.define('options', function() {
     if (mediaSettings.cameraDisabled)
       $('media-select-camera').disabled = true;
 
-    OptionsPage.hideBubble();
+    PageManager.hideBubble();
     // Create a synthetic pref change event decorated as
     // CoreOptionsHandler::CreateValueForPref() does.
     // TODO(arv): It was not clear what event type this should use?

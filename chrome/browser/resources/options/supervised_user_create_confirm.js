@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  var OptionsPage = options.OptionsPage;
+  var Page = cr.ui.pageManager.Page;
+  var PageManager = cr.ui.pageManager.PageManager;
 
   /**
    * SupervisedUserCreateConfirm class.
@@ -13,32 +14,32 @@ cr.define('options', function() {
    * @class
    */
   function SupervisedUserCreateConfirmOverlay() {
-    OptionsPage.call(this, 'supervisedUserCreateConfirm',
-                     '',  // The title will be based on the new profile name.
-                     'supervised-user-created');
+    Page.call(this, 'supervisedUserCreateConfirm',
+              '',  // The title will be based on the new profile name.
+              'supervised-user-created');
   };
 
   cr.addSingletonGetter(SupervisedUserCreateConfirmOverlay);
 
   SupervisedUserCreateConfirmOverlay.prototype = {
-    // Inherit from OptionsPage.
-    __proto__: OptionsPage.prototype,
+    // Inherit from Page.
+    __proto__: Page.prototype,
 
     // Info about the newly created profile.
     profileInfo_: null,
 
     /** @override */
     initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       $('supervised-user-created-done').onclick = function(event) {
-        OptionsPage.closeOverlay();
+        PageManager.closeOverlay();
       };
 
       var self = this;
 
       $('supervised-user-created-switch').onclick = function(event) {
-        OptionsPage.closeOverlay();
+        PageManager.closeOverlay();
         chrome.send('switchToProfile', [self.profileInfo_.filePath]);
       };
     },

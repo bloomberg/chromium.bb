@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var OptionsPage = options.OptionsPage;
 var Preferences = options.Preferences;
 var DetailsInternetPage = options.internet.DetailsInternetPage;
 

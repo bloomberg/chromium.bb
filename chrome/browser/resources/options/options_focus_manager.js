@@ -4,7 +4,7 @@
 
 cr.define('options', function() {
   var FocusManager = cr.ui.FocusManager;
-  var OptionsPage = options.OptionsPage;
+  var PageManager = cr.ui.pageManager.PageManager;
 
   function OptionsFocusManager() {
   }
@@ -16,7 +16,7 @@ cr.define('options', function() {
 
     /** @override */
     getFocusParent: function() {
-      var topPage = OptionsPage.getTopmostVisiblePage().pageDiv;
+      var topPage = PageManager.getTopmostVisiblePage().pageDiv;
 
       // The default page and search page include a search field that is a
       // sibling of the rest of the page instead of a child. Thus, use the

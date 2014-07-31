@@ -589,7 +589,8 @@ cr.define('options.contentSettings', function() {
     },
   };
 
-  var OptionsPage = options.OptionsPage;
+  var Page = cr.ui.pageManager.Page;
+  var PageManager = cr.ui.pageManager.PageManager;
 
   /**
    * Encapsulated handling of content settings list subpage.
@@ -597,19 +598,19 @@ cr.define('options.contentSettings', function() {
    * @constructor
    */
   function ContentSettingsExceptionsArea() {
-    OptionsPage.call(this, 'contentExceptions',
-                     loadTimeData.getString('contentSettingsPageTabTitle'),
-                     'content-settings-exceptions-area');
+    Page.call(this, 'contentExceptions',
+              loadTimeData.getString('contentSettingsPageTabTitle'),
+              'content-settings-exceptions-area');
   }
 
   cr.addSingletonGetter(ContentSettingsExceptionsArea);
 
   ContentSettingsExceptionsArea.prototype = {
-    __proto__: OptionsPage.prototype,
+    __proto__: Page.prototype,
 
     /** @override */
     initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       var exceptionsLists = this.pageDiv.querySelectorAll('list');
       for (var i = 0; i < exceptionsLists.length; i++) {
@@ -622,7 +623,7 @@ cr.define('options.contentSettings', function() {
       this.showList('cookies');
 
       $('content-settings-exceptions-overlay-confirm').onclick =
-          OptionsPage.closeOverlay.bind(OptionsPage);
+          PageManager.closeOverlay.bind(PageManager);
     },
 
     /**

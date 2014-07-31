@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-
-  var OptionsPage = options.OptionsPage;
+  var Page = cr.ui.pageManager.Page;
+  var PageManager = cr.ui.pageManager.PageManager;
 
   /**
    * CertificateImportErrorOverlay class
@@ -12,23 +12,22 @@ cr.define('options', function() {
    * @class
    */
   function CertificateImportErrorOverlay() {
-    OptionsPage.call(this, 'certificateImportErrorOverlay', '',
-                     'certificateImportErrorOverlay');
+    Page.call(this, 'certificateImportErrorOverlay', '',
+              'certificateImportErrorOverlay');
   }
 
   cr.addSingletonGetter(CertificateImportErrorOverlay);
 
   CertificateImportErrorOverlay.prototype = {
-    // Inherit CertificateImportErrorOverlay from OptionsPage.
-    __proto__: OptionsPage.prototype,
+    // Inherit CertificateImportErrorOverlay from Page.
+    __proto__: Page.prototype,
 
     /** @override */
     initializePage: function() {
-      // Call base class implementation to start preference initialization.
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       $('certificateImportErrorOverlayOk').onclick = function(event) {
-        OptionsPage.closeOverlay();
+        PageManager.closeOverlay();
       };
     },
   };
@@ -55,7 +54,7 @@ cr.define('options', function() {
       ul.appendChild(li);
     }
 
-    OptionsPage.navigateToPage('certificateImportErrorOverlay');
+    PageManager.showPageByName('certificateImportErrorOverlay');
   };
 
   // Export

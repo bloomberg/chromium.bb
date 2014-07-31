@@ -4,7 +4,8 @@
 
 cr.define('options', function() {
 
-  var OptionsPage = options.OptionsPage;
+  var Page = cr.ui.pageManager.Page;
+  var PageManager = cr.ui.pageManager.PageManager;
 
   /////////////////////////////////////////////////////////////////////////////
   // CookiesView class:
@@ -14,15 +15,15 @@ cr.define('options', function() {
    * @constructor
    */
   function CookiesView(model) {
-    OptionsPage.call(this, 'cookies',
-                     loadTimeData.getString('cookiesViewPageTabTitle'),
-                     'cookies-view-page');
+    Page.call(this, 'cookies',
+              loadTimeData.getString('cookiesViewPageTabTitle'),
+              'cookies-view-page');
   }
 
   cr.addSingletonGetter(CookiesView);
 
   CookiesView.prototype = {
-    __proto__: OptionsPage.prototype,
+    __proto__: Page.prototype,
 
     /**
      * The timer id of the timer set on search query change events.
@@ -40,7 +41,7 @@ cr.define('options', function() {
 
     /** @override */
     initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       var searchBox = this.pageDiv.querySelector('.cookies-search-box');
       searchBox.addEventListener(
@@ -62,7 +63,7 @@ cr.define('options', function() {
       this.addEventListener('visibleChange', this.handleVisibleChange_);
 
       this.pageDiv.querySelector('.cookies-view-overlay-confirm').onclick =
-          OptionsPage.closeOverlay.bind(OptionsPage);
+          PageManager.closeOverlay.bind(PageManager);
     },
 
     /** @override */
@@ -103,7 +104,7 @@ cr.define('options', function() {
     initialized_: false,
 
     /**
-     * Handler for OptionsPage's visible property change event.
+     * Handler for Page's visible property change event.
      * @param {Event} e Property change event.
      * @private
      */

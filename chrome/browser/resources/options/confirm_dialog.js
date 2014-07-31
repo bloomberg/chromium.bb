@@ -11,9 +11,9 @@ cr.define('options', function() {
    * the new value is committed to Chrome. If the user clicks Cancel or leaves
    * the settings page, the new value is discarded.
    * @constructor
-   * @param {string} name See OptionsPage constructor.
-   * @param {string} title See OptionsPage constructor.
-   * @param {string} pageDivName See OptionsPage constructor.
+   * @param {string} name See Page constructor.
+   * @param {string} title See Page constructor.
+   * @param {string} pageDivName See Page constructor.
    * @param {HTMLInputElement} okButton The confirmation button element.
    * @param {HTMLInputElement} cancelButton The cancellation button element.
    * @param {string} pref The pref that requires confirmation.
@@ -50,7 +50,7 @@ cr.define('options', function() {
         return;
 
       if (event.value.value && !this.confirmed_)
-        OptionsPage.showPageByName(this.name, false);
+        PageManager.showPageByName(this.name, false);
       else
         Preferences.getInstance().commitPref(this.pref, this.metric);
     },

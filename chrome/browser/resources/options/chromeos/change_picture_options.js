@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-
-  var OptionsPage = options.OptionsPage;
+  var Page = cr.ui.pageManager.Page;
+  var PageManager = cr.ui.pageManager.PageManager;
   var UserImagesGrid = options.UserImagesGrid;
   var ButtonImages = UserImagesGrid.ButtonImages;
 
@@ -26,23 +26,20 @@ cr.define('options', function() {
    * @constructor
    */
   function ChangePictureOptions() {
-    OptionsPage.call(
-        this,
-        'changePicture',
-        loadTimeData.getString('changePicturePage'),
-        'change-picture-page');
+    Page.call(this, 'changePicture',
+              loadTimeData.getString('changePicturePage'),
+              'change-picture-page');
   }
 
   cr.addSingletonGetter(ChangePictureOptions);
 
   ChangePictureOptions.prototype = {
-    // Inherit ChangePictureOptions from OptionsPage.
-    __proto__: options.OptionsPage.prototype,
+    // Inherit ChangePictureOptions from Page.
+    __proto__: Page.prototype,
 
     /** @override */
     initializePage: function() {
-      // Call base class implementation to start preferences initialization.
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       var imageGrid = $('user-image-grid');
       UserImagesGrid.decorate(imageGrid);
@@ -146,7 +143,7 @@ cr.define('options', function() {
      */
     closeOverlay_: function() {
       if (!$('change-picture-page').hidden)
-        OptionsPage.closeOverlay();
+        PageManager.closeOverlay();
     },
 
     /**

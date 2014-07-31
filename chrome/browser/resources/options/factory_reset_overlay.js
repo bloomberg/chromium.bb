@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  var OptionsPage = options.OptionsPage;
+  var Page = cr.ui.pageManager.Page;
+  var PageManager = cr.ui.pageManager.PageManager;
 
   /**
    * FactoryResetOverlay class
@@ -11,21 +12,20 @@ cr.define('options', function() {
    * @class
    */
   function FactoryResetOverlay() {
-    OptionsPage.call(this, 'factoryResetData',
-                     loadTimeData.getString('factoryResetTitle'),
-                     'factory-reset-overlay');
+    Page.call(this, 'factoryResetData',
+              loadTimeData.getString('factoryResetTitle'),
+              'factory-reset-overlay');
   }
 
   cr.addSingletonGetter(FactoryResetOverlay);
 
   FactoryResetOverlay.prototype = {
-    // Inherit FactoryResetOverlay from OptionsPage.
-    __proto__: OptionsPage.prototype,
+    // Inherit FactoryResetOverlay from Page.
+    __proto__: Page.prototype,
 
     /** @override */
     initializePage: function() {
-      // Call base class implementation to starts preference initialization.
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       $('factory-reset-data-dismiss').onclick = function(event) {
         FactoryResetOverlay.dismiss();
@@ -37,7 +37,7 @@ cr.define('options', function() {
   };
 
   FactoryResetOverlay.dismiss = function() {
-    OptionsPage.closeOverlay();
+    PageManager.closeOverlay();
   };
 
   // Export

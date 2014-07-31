@@ -5,23 +5,24 @@
 cr.define('options', function() {
   /** @const */ var DictionaryWordsList =
       options.dictionary_words.DictionaryWordsList;
-  /** @const */ var OptionsPage = options.OptionsPage;
+  /** @const */ var Page = cr.ui.pageManager.Page;
+  /** @const */ var PageManager = cr.ui.pageManager.PageManager;
 
   /**
    * Adding and removing words in custom spelling dictionary.
    * @constructor
-   * @extends {options.OptionsPage}
+   * @extends {cr.ui.pageManager.Page}
    */
   function EditDictionaryOverlay() {
-    OptionsPage.call(this, 'editDictionary',
-                     loadTimeData.getString('languageDictionaryOverlayPage'),
-                     'language-dictionary-overlay-page');
+    Page.call(this, 'editDictionary',
+              loadTimeData.getString('languageDictionaryOverlayPage'),
+              'language-dictionary-overlay-page');
   }
 
   cr.addSingletonGetter(EditDictionaryOverlay);
 
   EditDictionaryOverlay.prototype = {
-    __proto__: OptionsPage.prototype,
+    __proto__: Page.prototype,
 
     /**
      * A list of words in the dictionary.
@@ -46,7 +47,7 @@ cr.define('options', function() {
 
     /** @override */
     initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       this.wordList_ = $('language-dictionary-overlay-word-list');
       DictionaryWordsList.decorate(this.wordList_);
@@ -69,7 +70,7 @@ cr.define('options', function() {
           'language-dictionary-overlay-no-matches');
 
       $('language-dictionary-overlay-done-button').onclick = function(e) {
-        OptionsPage.closeOverlay();
+        PageManager.closeOverlay();
       };
     },
 

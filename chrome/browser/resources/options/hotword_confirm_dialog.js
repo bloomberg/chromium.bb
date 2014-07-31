@@ -5,7 +5,7 @@
 cr.define('options', function() {
   /** @const */ var ConfirmDialog = options.ConfirmDialog;
   /** @const */ var SettingsDialog = options.SettingsDialog;
-  /** @const */ var OptionsPage = options.OptionsPage;
+  /** @const */ var PageManager = cr.ui.pageManager.PageManager;
 
   /**
    * A dialog that will pop up when the user attempts to set the value of the
@@ -50,7 +50,7 @@ cr.define('options', function() {
 
       if (event.value.value && !this.confirmed_) {
         if (!this.indicator.errorText) {
-          OptionsPage.showPageByName(this.name, false);
+          PageManager.showPageByName(this.name, false);
         } else {
           this.indicator.updateBasedOnError();
           this.handleCancel();

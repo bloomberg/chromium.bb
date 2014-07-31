@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  /** @const */ var OptionsPage = options.OptionsPage;
+  /** @const */ var Page = cr.ui.pageManager.Page;
+  /** @const */ var PageManager = cr.ui.pageManager.PageManager;
   /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
 
   /////////////////////////////////////////////////////////////////////////////
@@ -14,15 +15,15 @@ cr.define('options', function() {
    * @constructor
    */
   function WebsiteSettingsManager() {
-    OptionsPage.call(this, 'websiteSettings',
-                     loadTimeData.getString('websitesOptionsPageTabTitle'),
-                     'website-settings-page');
+    Page.call(this, 'websiteSettings',
+              loadTimeData.getString('websitesOptionsPageTabTitle'),
+              'website-settings-page');
   }
 
   cr.addSingletonGetter(WebsiteSettingsManager);
 
   WebsiteSettingsManager.prototype = {
-    __proto__: OptionsPage.prototype,
+    __proto__: Page.prototype,
 
     /**
      * The saved origins list.
@@ -33,10 +34,10 @@ cr.define('options', function() {
 
     /** @override */
     initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       $('website-settings-overlay-confirm').onclick =
-          OptionsPage.closeOverlay.bind(OptionsPage);
+          PageManager.closeOverlay.bind(PageManager);
 
       $('resourceType').onchange = function() {
         var target = event.target;

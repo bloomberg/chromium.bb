@@ -6,7 +6,8 @@
 // in js/cr/ui/notification.js .
 
 cr.define('options', function() {
-  /** @const */ var OptionsPage = options.OptionsPage;
+  /** @const */ var Page = cr.ui.pageManager.Page;
+  /** @const */ var PageManager = cr.ui.pageManager.PageManager;
   /** @const */ var LanguageList = options.LanguageList;
   /** @const */ var ThirdPartyImeConfirmOverlay =
       options.ThirdPartyImeConfirmOverlay;
@@ -73,16 +74,15 @@ cr.define('options', function() {
    * @constructor
    */
   function LanguageOptions(model) {
-    OptionsPage.call(this, 'languages',
-                     loadTimeData.getString('languagePageTabTitle'),
-                     'languagePage');
+    Page.call(this, 'languages',
+              loadTimeData.getString('languagePageTabTitle'), 'languagePage');
   }
 
   cr.addSingletonGetter(LanguageOptions);
 
-  // Inherit LanguageOptions from OptionsPage.
+  // Inherit LanguageOptions from Page.
   LanguageOptions.prototype = {
-    __proto__: OptionsPage.prototype,
+    __proto__: Page.prototype,
 
     /* For recording the prospective language (the next locale after relaunch).
      * @type {?string}
@@ -158,7 +158,7 @@ cr.define('options', function() {
 
     /** @override */
     initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       var languageOptionsList = $('language-options-list');
       LanguageList.decorate(languageOptionsList);
@@ -202,7 +202,7 @@ cr.define('options', function() {
           $('language-options-list').addLanguage(addLanguageCode);
           this.addBlockedLanguage_(addLanguageCode);
         } else {
-          OptionsPage.navigateToPage('addLanguage');
+          PageManager.showPageByName('addLanguage');
         }
       };
       $('language-options-add-button').onclick = onclick.bind(this);
@@ -210,7 +210,7 @@ cr.define('options', function() {
       if (!cr.isMac) {
         // Set up the button for editing custom spelling dictionary.
         $('edit-dictionary-button').onclick = function(e) {
-          OptionsPage.navigateToPage('editDictionary');
+          PageManager.showPageByName('editDictionary');
         };
         $('dictionary-download-retry-button').onclick = function(e) {
           chrome.send('retryDictionaryDownload');
@@ -250,11 +250,12 @@ cr.define('options', function() {
       }
 
       $('language-confirm').onclick =
-          OptionsPage.closeOverlay.bind(OptionsPage);
+          PageManager.closeOverlay.bind(PageManager);
 
       // Public session users cannot change the locale.
       if (cr.isChromeOS && UIAccountTweaks.loggedInAsPublicAccount())
         $('language-options-ui-language-section').hidden = true;
+          PageManager.closeOverlay.bind(PageManager);
     },
 
     /**
@@ -381,7 +382,7 @@ cr.define('options', function() {
     },
 
     /**
-     * Handles OptionsPage's visible property change event.
+     * Handles Page's visible property change event.
      * @param {Event} e Property change event.
      * @private
      */
@@ -890,7 +891,7 @@ cr.define('options', function() {
         var langCode = String(selection.value);
         $('language-options-list').addLanguage(langCode);
         this.addBlockedLanguage_(langCode);
-        OptionsPage.closeOverlay();
+        PageManager.closeOverlay();
       }
     },
 

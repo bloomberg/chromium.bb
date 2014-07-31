@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  var OptionsPage = options.OptionsPage;
+  var Page = cr.ui.pageManager.Page;
+  var PageManager = cr.ui.pageManager.PageManager;
   var ArrayDataModel = cr.ui.ArrayDataModel;
 
   /////////////////////////////////////////////////////////////////////////////
@@ -14,16 +15,15 @@ cr.define('options', function() {
    * @constructor
    */
   function AutofillOptions() {
-    OptionsPage.call(this,
-                     'autofill',
-                     loadTimeData.getString('autofillOptionsPageTabTitle'),
-                     'autofill-options');
+    Page.call(this, 'autofill',
+              loadTimeData.getString('autofillOptionsPageTabTitle'),
+              'autofill-options');
   }
 
   cr.addSingletonGetter(AutofillOptions);
 
   AutofillOptions.prototype = {
-    __proto__: OptionsPage.prototype,
+    __proto__: Page.prototype,
 
     /**
      * The address list.
@@ -41,7 +41,7 @@ cr.define('options', function() {
 
     /** @override */
     initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       this.createAddressList_();
       this.createCreditCardList_();
@@ -54,7 +54,7 @@ cr.define('options', function() {
         self.showAddCreditCardOverlay_();
       };
       $('autofill-options-confirm').onclick = function(event) {
-        OptionsPage.closeOverlay();
+        PageManager.closeOverlay();
       };
 <if expr="is_macosx">
       $('autofill-use-mac-address-book-checkbox').onchange = function(event) {
@@ -103,7 +103,7 @@ cr.define('options', function() {
     showAddAddressOverlay_: function() {
       var title = loadTimeData.getString('addAddressTitle');
       AutofillEditAddressOverlay.setTitle(title);
-      OptionsPage.navigateToPage('autofillEditAddress');
+      PageManager.showPageByName('autofillEditAddress');
     },
 
     /**
@@ -114,7 +114,7 @@ cr.define('options', function() {
     showAddCreditCardOverlay_: function() {
       var title = loadTimeData.getString('addCreditCardTitle');
       AutofillEditCreditCardOverlay.setTitle(title);
-      OptionsPage.navigateToPage('autofillEditCreditCard');
+      PageManager.showPageByName('autofillEditCreditCard');
     },
 
     /**
@@ -176,7 +176,7 @@ cr.define('options', function() {
       var title = loadTimeData.getString('editAddressTitle');
       AutofillEditAddressOverlay.setTitle(title);
       AutofillEditAddressOverlay.loadAddress(address);
-      OptionsPage.navigateToPage('autofillEditAddress');
+      PageManager.showPageByName('autofillEditAddress');
     },
 
     /**
@@ -189,7 +189,7 @@ cr.define('options', function() {
       var title = loadTimeData.getString('editCreditCardTitle');
       AutofillEditCreditCardOverlay.setTitle(title);
       AutofillEditCreditCardOverlay.loadCreditCard(creditCard);
-      OptionsPage.navigateToPage('autofillEditCreditCard');
+      PageManager.showPageByName('autofillEditCreditCard');
     },
   };
 

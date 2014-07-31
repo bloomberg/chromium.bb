@@ -3,22 +3,23 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  var OptionsPage = options.OptionsPage;
+  var Page = cr.ui.pageManager.Page;
+  var PageManager = cr.ui.pageManager.PageManager;
 
   /**
    * Encapsulated handling of the 'DisplayOverscan' page.
    * @constructor
    */
   function DisplayOverscan() {
-    OptionsPage.call(this, 'displayOverscan',
-                     loadTimeData.getString('displayOverscanPageTabTitle'),
-                     'display-overscan-page');
+    Page.call(this, 'displayOverscan',
+              loadTimeData.getString('displayOverscanPageTabTitle'),
+              'display-overscan-page');
   }
 
   cr.addSingletonGetter(DisplayOverscan);
 
   DisplayOverscan.prototype = {
-    __proto__: OptionsPage.prototype,
+    __proto__: Page.prototype,
 
     /**
      * The ID of the target display.
@@ -34,7 +35,7 @@ cr.define('options', function() {
 
     /** @override */
     initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       this.keyHandler_ = this.handleKeyevent_.bind(this);
       $('display-overscan-operation-reset').onclick = function() {
@@ -42,10 +43,10 @@ cr.define('options', function() {
       };
       $('display-overscan-operation-ok').onclick = function() {
         chrome.send('commit');
-        OptionsPage.closeOverlay();
+        PageManager.closeOverlay();
       };
       $('display-overscan-operation-cancel').onclick = function() {
-        OptionsPage.cancelOverlay();
+        PageManager.cancelOverlay();
       };
     },
 
@@ -53,13 +54,13 @@ cr.define('options', function() {
     handleCancel: function() {
       // signals the cancel event.
       chrome.send('cancel');
-      OptionsPage.closeOverlay();
+      PageManager.closeOverlay();
     },
 
     /** @override */
     didShowPage: function() {
       if (this.id_ == null) {
-        OptionsPage.cancelOverlay();
+        PageManager.cancelOverlay();
         return;
       }
 
@@ -95,8 +96,8 @@ cr.define('options', function() {
      * @private
      */
     onOverscanCanceled_: function() {
-      if (OptionsPage.getTopmostVisiblePage() == this)
-        OptionsPage.cancelOverlay();
+      if (PageManager.getTopmostVisiblePage() == this)
+        PageManager.cancelOverlay();
     },
 
     /**

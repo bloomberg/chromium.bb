@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  /** @const */ var OptionsPage = options.OptionsPage;
+  /** @const */ var PageManager = cr.ui.pageManager.PageManager;
   /** @const */ var SettingsDialog = options.SettingsDialog;
 
   /**
@@ -68,7 +68,7 @@ cr.define('options', function() {
       var message = loadTimeData.getStringF('thirdPartyImeConfirmMessage',
                                              data.extension);
       $('third-party-ime-confirm-text').textContent = message;
-      OptionsPage.showPageByName(this.name, false);
+      PageManager.showPageByName(this.name, false);
     },
   };
 

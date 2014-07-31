@@ -4,7 +4,8 @@
 
 cr.define('options', function() {
 
-  var OptionsPage = options.OptionsPage;
+  var Page = cr.ui.pageManager.Page;
+  var PageManager = cr.ui.pageManager.PageManager;
   var ArrayDataModel = cr.ui.ArrayDataModel;
   var DeletableItem = options.DeletableItem;
   var DeletableItemList = options.DeletableItemList;
@@ -17,23 +18,20 @@ cr.define('options', function() {
    * @constructor
    */
   function PreferredNetworks(model) {
-    OptionsPage.call(this,
-                     'preferredNetworksPage',
-                     null,
-                     'preferredNetworksPage');
+    Page.call(this, 'preferredNetworksPage', null, 'preferredNetworksPage');
   }
 
   cr.addSingletonGetter(PreferredNetworks);
 
   PreferredNetworks.prototype = {
-    __proto__: OptionsPage.prototype,
+    __proto__: Page.prototype,
 
     /** @override */
     initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
       PreferredNetworkList.decorate($('remembered-network-list'));
       $('preferred-networks-confirm').onclick =
-          OptionsPage.closeOverlay.bind(OptionsPage);
+          PageManager.closeOverlay.bind(PageManager);
     },
 
     update: function(rememberedNetworks) {

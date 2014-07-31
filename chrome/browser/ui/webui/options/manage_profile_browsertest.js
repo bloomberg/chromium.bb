@@ -71,7 +71,7 @@ ManageProfileUITest.prototype = {
    * @param {string} mode The mode of the overlay (either 'manage' or 'create').
    */
   initDefaultProfiles_: function(mode) {
-    OptionsPage.showPageByName(mode + 'Profile');
+    PageManager.showPageByName(mode + 'Profile');
 
     var defaultProfile = {
       name: 'Default Name',
@@ -98,14 +98,14 @@ TEST_F('ManageProfileUITest', 'NewProfileDefaultsFocus', function() {
   var self = this;
 
   function checkFocus(pageName, expectedFocus, initialFocus) {
-    OptionsPage.showPageByName(pageName);
+    PageManager.showPageByName(pageName);
     initialFocus.focus();
     expectEquals(initialFocus, document.activeElement, pageName);
 
     ManageProfileOverlay.receiveNewProfileDefaults(
         self.testProfileInfo_(false));
     expectEquals(expectedFocus, document.activeElement, pageName);
-    OptionsPage.closeOverlay();
+    PageManager.closeOverlay();
   }
 
   // Receiving new profile defaults sets focus to the name field if the create
@@ -126,7 +126,7 @@ TEST_F('ManageProfileUITest', 'NewProfileDefaultsFocus', function() {
 
 // The default options should be reset each time the creation overlay is shown.
 TEST_F('ManageProfileUITest', 'DefaultCreateOptions', function() {
-  OptionsPage.showPageByName('createProfile');
+  PageManager.showPageByName('createProfile');
   var shortcutsAllowed = loadTimeData.getBoolean('profileShortcutsEnabled');
   var createShortcut = $('create-shortcut');
   var createSupervised = $('create-profile-supervised');
@@ -135,8 +135,8 @@ TEST_F('ManageProfileUITest', 'DefaultCreateOptions', function() {
 
   createShortcut.checked = !shortcutsAllowed;
   createSupervised.checked = true;
-  OptionsPage.closeOverlay();
-  OptionsPage.showPageByName('createProfile');
+  PageManager.closeOverlay();
+  PageManager.showPageByName('createProfile');
   assertEquals(shortcutsAllowed, createShortcut.checked);
   assertFalse(createSupervised.checked);
 });
@@ -285,7 +285,7 @@ TEST_F('ManageProfileUITest', 'EditSupervisedUserNameAllowed', function() {
   expectFalse(nameField.disabled);
   expectEquals(nameField, document.activeElement);
 
-  OptionsPage.closeOverlay();
+  PageManager.closeOverlay();
 
   this.setProfileSupervised_(true, 'manage');
   ManageProfileOverlay.showManageDialog();
@@ -299,44 +299,44 @@ TEST_F('ManageProfileUITest', 'ShowCreateConfirmation', function() {
   testProfile.custodianEmail = 'foo@bar.example.com';
   SupervisedUserCreateConfirmOverlay.setProfileInfo(testProfile);
   assertTrue(SupervisedUserCreateConfirmOverlay.getInstance().canShowPage());
-  OptionsPage.showPageByName('supervisedUserCreateConfirm', false);
+  PageManager.showPageByName('supervisedUserCreateConfirm', false);
   assertEquals('supervisedUserCreateConfirm',
-               OptionsPage.getTopmostVisiblePage().name);
+               PageManager.getTopmostVisiblePage().name);
 });
 
 // Trying to show a confirmation dialog with no profile information should fall
 // back to the default (main) settings page.
 TEST_F('ManageProfileUITest', 'NoEmptyConfirmation', function() {
-  assertEquals('manageProfile', OptionsPage.getTopmostVisiblePage().name);
+  assertEquals('manageProfile', PageManager.getTopmostVisiblePage().name);
   assertFalse(SupervisedUserCreateConfirmOverlay.getInstance().canShowPage());
-  OptionsPage.showPageByName('supervisedUserCreateConfirm', true);
-  assertEquals('settings', OptionsPage.getTopmostVisiblePage().name);
+  PageManager.showPageByName('supervisedUserCreateConfirm', true);
+  assertEquals('settings', PageManager.getTopmostVisiblePage().name);
 });
 
 // A confirmation dialog should be shown after creating a new supervised user.
 TEST_F('ManageProfileUITest', 'ShowCreateConfirmationOnSuccess', function() {
-  OptionsPage.showPageByName('createProfile');
-  assertEquals('createProfile', OptionsPage.getTopmostVisiblePage().name);
+  PageManager.showPageByName('createProfile');
+  assertEquals('createProfile', PageManager.getTopmostVisiblePage().name);
   CreateProfileOverlay.onSuccess(this.testProfileInfo_(false));
-  assertEquals('settings', OptionsPage.getTopmostVisiblePage().name);
+  assertEquals('settings', PageManager.getTopmostVisiblePage().name);
 
-  OptionsPage.showPageByName('createProfile');
-  assertEquals('createProfile', OptionsPage.getTopmostVisiblePage().name);
+  PageManager.showPageByName('createProfile');
+  assertEquals('createProfile', PageManager.getTopmostVisiblePage().name);
   CreateProfileOverlay.onSuccess(this.testProfileInfo_(true));
   assertEquals('supervisedUserCreateConfirm',
-               OptionsPage.getTopmostVisiblePage().name);
+               PageManager.getTopmostVisiblePage().name);
   expectEquals($('supervised-user-created-switch'), document.activeElement);
 });
 
 // An error should be shown if creating a new supervised user fails.
 TEST_F('ManageProfileUITest', 'NoCreateConfirmationOnError', function() {
-  OptionsPage.showPageByName('createProfile');
-  assertEquals('createProfile', OptionsPage.getTopmostVisiblePage().name);
+  PageManager.showPageByName('createProfile');
+  assertEquals('createProfile', PageManager.getTopmostVisiblePage().name);
   var errorBubble = $('create-profile-error-bubble');
   assertTrue(errorBubble.hidden);
 
   CreateProfileOverlay.onError('An Error Message!');
-  assertEquals('createProfile', OptionsPage.getTopmostVisiblePage().name);
+  assertEquals('createProfile', PageManager.getTopmostVisiblePage().name);
   assertFalse(errorBubble.hidden);
 });
 
@@ -359,7 +359,7 @@ TEST_F('ManageProfileUITest', 'CreateConfirmationText', function() {
     testProfile.name = name;
     CreateProfileOverlay.onSuccess(testProfile);
     assertEquals('supervisedUserCreateConfirm',
-                 OptionsPage.getTopmostVisiblePage().name);
+                 PageManager.getTopmostVisiblePage().name);
 
     // Check for the presence of the name and email in the UI, without depending
     // on the details of the messages.
@@ -374,14 +374,14 @@ TEST_F('ManageProfileUITest', 'CreateConfirmationText', function() {
     // The name should be properly HTML-escaped.
     assertNotEquals(-1, message.innerHTML.indexOf(expectedHtml));
 
-    OptionsPage.closeOverlay();
-    assertEquals('settings', OptionsPage.getTopmostVisiblePage().name, name);
+    PageManager.closeOverlay();
+    assertEquals('settings', PageManager.getTopmostVisiblePage().name, name);
   }
 
   // Show and configure the create-profile dialog.
-  OptionsPage.showPageByName('createProfile');
+  PageManager.showPageByName('createProfile');
   CreateProfileOverlay.updateSignedInStatus(custodianEmail);
-  assertEquals('createProfile', OptionsPage.getTopmostVisiblePage().name);
+  assertEquals('createProfile', PageManager.getTopmostVisiblePage().name);
 
   checkDialog('OneWord');
   checkDialog('Multiple Words');
@@ -503,26 +503,26 @@ TEST_F('ManageProfileUITest', 'SupervisedShowDeleteAndCreate', function() {
   this.setProfileSupervised_(false, 'create');
 
   ManageProfileOverlay.showCreateDialog();
-  assertEquals('createProfile', OptionsPage.getTopmostVisiblePage().name);
-  OptionsPage.closeOverlay();
-  assertEquals('settings', OptionsPage.getTopmostVisiblePage().name);
+  assertEquals('createProfile', PageManager.getTopmostVisiblePage().name);
+  PageManager.closeOverlay();
+  assertEquals('settings', PageManager.getTopmostVisiblePage().name);
   ManageProfileOverlay.showDeleteDialog(this.testProfileInfo_(false));
-  assertEquals('manageProfile', OptionsPage.getTopmostVisiblePage().name);
+  assertEquals('manageProfile', PageManager.getTopmostVisiblePage().name);
   assertFalse($('manage-profile-overlay-delete').hidden);
-  OptionsPage.closeOverlay();
-  assertEquals('settings', OptionsPage.getTopmostVisiblePage().name);
+  PageManager.closeOverlay();
+  assertEquals('settings', PageManager.getTopmostVisiblePage().name);
 
   this.setProfileSupervised_(true, 'create');
   ManageProfileOverlay.showCreateDialog();
-  assertEquals('settings', OptionsPage.getTopmostVisiblePage().name);
+  assertEquals('settings', PageManager.getTopmostVisiblePage().name);
   ManageProfileOverlay.showDeleteDialog(this.testProfileInfo_(false));
-  assertEquals('settings', OptionsPage.getTopmostVisiblePage().name);
+  assertEquals('settings', PageManager.getTopmostVisiblePage().name);
 });
 
 // Only non-supervised users should be able to delete profiles.
 TEST_F('ManageProfileUITest', 'SupervisedDelete', function() {
   ManageProfileOverlay.showDeleteDialog(this.testProfileInfo_(false));
-  assertEquals('manageProfile', OptionsPage.getTopmostVisiblePage().name);
+  assertEquals('manageProfile', PageManager.getTopmostVisiblePage().name);
   assertFalse($('manage-profile-overlay-delete').hidden);
 
   // Clicks the "Delete" button, after overriding chrome.send to record what
@@ -543,13 +543,13 @@ TEST_F('ManageProfileUITest', 'SupervisedDelete', function() {
   var messages = clickAndListen();
   assertEquals(1, messages.length);
   assertEquals('deleteProfile', messages[0]);
-  assertEquals('settings', OptionsPage.getTopmostVisiblePage().name);
+  assertEquals('settings', PageManager.getTopmostVisiblePage().name);
 
   ManageProfileOverlay.showDeleteDialog(this.testProfileInfo_(false));
   this.setProfileSupervised_(true, 'manage');
   messages = clickAndListen();
   assertEquals(0, messages.length);
-  assertEquals('settings', OptionsPage.getTopmostVisiblePage().name);
+  assertEquals('settings', PageManager.getTopmostVisiblePage().name);
 });
 
 // Selecting a different avatar image should update the suggested profile name.
@@ -576,7 +576,7 @@ TEST_F('ManageProfileUITest', 'Create_NameUpdateOnAvatarSelected', function() {
   gridEl.selectedItem = this.defaultIconURLs[1];
   expectEquals(this.defaultNames[1], nameEl.value);
 
-  OptionsPage.closeOverlay();
+  PageManager.closeOverlay();
 });
 
 // After the user edited the profile name, selecting a different avatar image
@@ -596,7 +596,7 @@ TEST_F('ManageProfileUITest', 'Create_NoNameUpdateOnAvatarSelectedAfterEdit',
   gridEl.selectedItem = this.defaultIconURLs[0];
   expectEquals(this.defaultNames[3], nameEl.value);
 
-  OptionsPage.closeOverlay();
+  PageManager.closeOverlay();
 });
 
 // After the user edited the profile name, selecting a different avatar image
@@ -622,7 +622,7 @@ TEST_F('ManageProfileUITest', 'Create_NoNameUpdateOnAvatarSelectedAfterRevert',
   gridEl.selectedItem = this.defaultIconURLs[0];
   expectEquals(oldName, nameEl.value);
 
-  OptionsPage.closeOverlay();
+  PageManager.closeOverlay();
 });
 
 // In the manage dialog, the name should never be updated on avatar selection.
@@ -630,7 +630,7 @@ TEST_F('ManageProfileUITest', 'Manage_NoNameUpdateOnAvatarSelected',
     function() {
   var mode = 'manage';
   this.setProfileSupervised_(false, mode);
-  OptionsPage.showPageByName(mode + 'Profile');
+  PageManager.showPageByName(mode + 'Profile');
 
   var testProfile = this.testProfileInfo_(false);
   var iconURLs = [testProfile.iconURL, '/some/path', '/another/path'];
@@ -646,7 +646,7 @@ TEST_F('ManageProfileUITest', 'Manage_NoNameUpdateOnAvatarSelected',
   gridEl.selectedItem = iconURLs[1];
   expectEquals(oldName, nameEl.value);
 
-  OptionsPage.closeOverlay();
+  PageManager.closeOverlay();
 });
 
 GEN('#endif  // OS_CHROMEOS');

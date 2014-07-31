@@ -4,6 +4,8 @@
 
 cr.define('options', function() {
   var OptionsPage = options.OptionsPage;
+  var Page = cr.ui.pageManager.Page;
+  var PageManager = cr.ui.pageManager.PageManager;
   var ArrayDataModel = cr.ui.ArrayDataModel;
   var RepeatingButton = cr.ui.RepeatingButton;
   var HotwordSearchSettingIndicator = options.HotwordSearchSettingIndicator;
@@ -13,8 +15,8 @@ cr.define('options', function() {
   // Encapsulated handling of browser options page.
   //
   function BrowserOptions() {
-    OptionsPage.call(this, 'settings', loadTimeData.getString('settingsTitle'),
-                     'settings');
+    Page.call(this, 'settings', loadTimeData.getString('settingsTitle'),
+              'settings');
   }
 
   cr.addSingletonGetter(BrowserOptions);
@@ -30,7 +32,7 @@ cr.define('options', function() {
   };
 
   BrowserOptions.prototype = {
-    __proto__: options.OptionsPage.prototype,
+    __proto__: Page.prototype,
 
     /**
      * Keeps track of whether the user is signed in or not.
@@ -74,7 +76,7 @@ cr.define('options', function() {
 
     /** @override */
     initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
       var self = this;
 
       // Ensure that navigation events are unblocked on uber page. A reload of
@@ -166,7 +168,7 @@ cr.define('options', function() {
           });
 
       $('startup-set-pages').onclick = function() {
-        OptionsPage.navigateToPage('startup');
+        PageManager.showPageByName('startup');
       };
 
       // Appearance section.
@@ -179,7 +181,7 @@ cr.define('options', function() {
           this.onHomePageIsNtpChanged_.bind(this));
 
       $('change-home-page').onclick = function(event) {
-        OptionsPage.navigateToPage('homePageOverlay');
+        PageManager.showPageByName('homePageOverlay');
         chrome.send('coreOptionsUserMetricsAction',
                     ['Options_Homepage_ShowSettings']);
       };
@@ -219,12 +221,12 @@ cr.define('options', function() {
       // Device section (ChromeOS only).
       if (cr.isChromeOS) {
         $('keyboard-settings-button').onclick = function(evt) {
-          OptionsPage.navigateToPage('keyboard-overlay');
+          PageManager.showPageByName('keyboard-overlay');
           chrome.send('coreOptionsUserMetricsAction',
                       ['Options_ShowKeyboardSettings']);
         };
         $('pointer-settings-button').onclick = function(evt) {
-          OptionsPage.navigateToPage('pointer-overlay');
+          PageManager.showPageByName('pointer-overlay');
           chrome.send('coreOptionsUserMetricsAction',
                       ['Options_ShowTouchpadSettings']);
         };
@@ -232,7 +234,7 @@ cr.define('options', function() {
 
       // Search section.
       $('manage-default-search-engines').onclick = function(event) {
-        OptionsPage.navigateToPage('searchEngines');
+        PageManager.showPageByName('searchEngines');
         chrome.send('coreOptionsUserMetricsAction',
                     ['Options_ManageSearchEngines']);
       };
@@ -289,7 +291,7 @@ cr.define('options', function() {
         $('change-picture-caption').onclick = this.showImagerPickerOverlay_;
 
         $('manage-accounts-button').onclick = function(event) {
-          OptionsPage.navigateToPage('accounts');
+          PageManager.showPageByName('accounts');
           chrome.send('coreOptionsUserMetricsAction',
               ['Options_ManageAccounts']);
         };
@@ -329,13 +331,13 @@ cr.define('options', function() {
 
       // Privacy section.
       $('privacyContentSettingsButton').onclick = function(event) {
-        OptionsPage.navigateToPage('content');
+        PageManager.showPageByName('content');
         OptionsPage.showTab($('cookies-nav-tab'));
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ContentSettings']);
       };
       $('privacyClearDataButton').onclick = function(event) {
-        OptionsPage.navigateToPage('clearBrowserData');
+        PageManager.showPageByName('clearBrowserData');
         chrome.send('coreOptionsUserMetricsAction', ['Options_ClearData']);
       };
       $('privacyClearDataButton').hidden = OptionsPage.isSettingsApp();
@@ -366,7 +368,7 @@ cr.define('options', function() {
           var device = $('bluetooth-paired-devices-list').selectedItem;
           var address = device.address;
           chrome.send('updateBluetoothDevice', [address, 'connect']);
-          OptionsPage.closeOverlay();
+          PageManager.closeOverlay();
         };
 
         $('bluetooth-paired-devices-list').addEventListener('change',
@@ -379,12 +381,12 @@ cr.define('options', function() {
 
       // Passwords and Forms section.
       $('autofill-settings').onclick = function(event) {
-        OptionsPage.navigateToPage('autofill');
+        PageManager.showPageByName('autofill');
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ShowAutofillSettings']);
       };
       $('manage-passwords').onclick = function(event) {
-        OptionsPage.navigateToPage('passwords');
+        PageManager.showPageByName('passwords');
         OptionsPage.showTab($('passwords-nav-tab'));
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ShowPasswordManager']);
@@ -430,7 +432,7 @@ cr.define('options', function() {
         $('consumer-management-section').onclick = function(event) {
           // If either button is clicked.
           if (event.target.tagName == 'BUTTON')
-            OptionsPage.navigateToPage('consumer-management-overlay');
+            PageManager.showPageByName('consumer-management-overlay');
         };
       }
 
@@ -446,13 +448,13 @@ cr.define('options', function() {
       if (loadTimeData.getBoolean('websiteSettingsManagerEnabled')) {
         $('website-settings-section').hidden = false;
         $('website-management-button').onclick = function(event) {
-          OptionsPage.navigateToPage('websiteSettings');
+          PageManager.showPageByName('websiteSettings');
         };
       }
 
       // Web Content section.
       $('fontSettingsCustomizeFontsButton').onclick = function(event) {
-        OptionsPage.navigateToPage('fonts');
+        PageManager.showPageByName('fonts');
         chrome.send('coreOptionsUserMetricsAction', ['Options_FontSettings']);
       };
       $('defaultFontSize').onchange = function(event) {
@@ -469,7 +471,7 @@ cr.define('options', function() {
 
       // Languages section.
       var showLanguageOptions = function(event) {
-        OptionsPage.navigateToPage('languages');
+        PageManager.showPageByName('languages');
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_LanuageAndSpellCheckSettings']);
       };
@@ -497,7 +499,7 @@ cr.define('options', function() {
         };
       } else {
         $('certificatesManageButton').onclick = function(event) {
-          OptionsPage.navigateToPage('certificates');
+          PageManager.showPageByName('certificates');
           chrome.send('coreOptionsUserMetricsAction',
                       ['Options_ManageSSLCertificates']);
         };
@@ -553,7 +555,7 @@ cr.define('options', function() {
       // Display management section (CrOS only).
       if (cr.isChromeOS) {
         $('display-options').onclick = function(event) {
-          OptionsPage.navigateToPage('display');
+          PageManager.showPageByName('display');
           chrome.send('coreOptionsUserMetricsAction',
                       ['Options_Display']);
         };
@@ -562,7 +564,7 @@ cr.define('options', function() {
       // Factory reset section (CrOS only).
       if (cr.isChromeOS) {
         $('factory-reset-restart').onclick = function(event) {
-          OptionsPage.navigateToPage('factoryResetData');
+          PageManager.showPageByName('factoryResetData');
           chrome.send('onPowerwashDialogShow');
         };
       }
@@ -585,7 +587,7 @@ cr.define('options', function() {
 
       // Reset profile settings section.
       $('reset-profile-settings').onclick = function(event) {
-        OptionsPage.navigateToPage('resetProfileSettings');
+        PageManager.showPageByName('resetProfileSettings');
       };
       $('reset-profile-settings-section').hidden =
           !loadTimeData.getBoolean('enableResetProfileSettings');
@@ -1417,7 +1419,7 @@ cr.define('options', function() {
      */
     handleAddBluetoothDevice_: function() {
       chrome.send('findBluetoothDevices');
-      OptionsPage.showPageByName('bluetooth', false);
+      PageManager.showPageByName('bluetooth', false);
     },
 
     /**
@@ -1784,7 +1786,7 @@ cr.define('options', function() {
      * @private
      */
     showImagerPickerOverlay_: function() {
-      OptionsPage.navigateToPage('changePicture');
+      PageManager.showPageByName('changePicture');
     },
 
     /**

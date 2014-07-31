@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  var OptionsPage = options.OptionsPage;
+  var Page = cr.ui.pageManager.Page;
+  var PageManager = cr.ui.pageManager.PageManager;
 
   /**
    * ConsumerManagementOverlay class
@@ -12,10 +13,9 @@ cr.define('options', function() {
    * @constructor
    */
   function ConsumerManagementOverlay() {
-    OptionsPage.call(
-        this, 'consumer-management-overlay',
-        loadTimeData.getString('consumerManagementOverlayTabTitle'),
-        'consumer-management-overlay');
+    Page.call(this, 'consumer-management-overlay',
+              loadTimeData.getString('consumerManagementOverlayTabTitle'),
+              'consumer-management-overlay');
 
     var isEnrolled = loadTimeData.getBoolean('consumerManagementEnrolled');
     $('enroll-content').hidden = isEnrolled;
@@ -23,24 +23,24 @@ cr.define('options', function() {
 
     $('consumer-management-overlay-enroll').onclick = function(event) {
       chrome.send('enrollConsumerManagement');
-      OptionsPage.closeOverlay();
+      PageManager.closeOverlay();
     };
     $('consumer-management-overlay-unenroll').onclick = function(event) {
       chrome.send('unenrollConsumerManagement');
-      OptionsPage.closeOverlay();
+      PageManager.closeOverlay();
     };
     $('consumer-management-overlay-enroll-cancel').onclick = function(event) {
-      OptionsPage.closeOverlay();
+      PageManager.closeOverlay();
     };
     $('consumer-management-overlay-unenroll-cancel').onclick = function(event) {
-      OptionsPage.closeOverlay();
+      PageManager.closeOverlay();
     };
   }
 
   cr.addSingletonGetter(ConsumerManagementOverlay);
 
   ConsumerManagementOverlay.prototype = {
-    __proto__: OptionsPage.prototype,
+    __proto__: Page.prototype,
   };
 
   // Export

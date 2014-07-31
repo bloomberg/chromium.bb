@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  /** @const */ var OptionsPage = options.OptionsPage;
+  /** @const */ var Page = cr.ui.pageManager.Page;
+  /** @const */ var PageManager = cr.ui.pageManager.PageManager;
   /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
 
   /**
@@ -12,15 +13,15 @@ cr.define('options', function() {
    */
   function SearchEngineManager() {
     this.activeNavTab = null;
-    OptionsPage.call(this, 'searchEngines',
-                     loadTimeData.getString('searchEngineManagerPageTabTitle'),
-                     'search-engine-manager-page');
+    Page.call(this, 'searchEngines',
+              loadTimeData.getString('searchEngineManagerPageTabTitle'),
+              'search-engine-manager-page');
   }
 
   cr.addSingletonGetter(SearchEngineManager);
 
   SearchEngineManager.prototype = {
-    __proto__: OptionsPage.prototype,
+    __proto__: Page.prototype,
 
     /**
      * List for default search engine options.
@@ -42,7 +43,7 @@ cr.define('options', function() {
 
     /** @override */
     initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       this.defaultsList_ = $('default-search-engine-list');
       this.setUpList_(this.defaultsList_);
@@ -54,7 +55,7 @@ cr.define('options', function() {
       this.setUpList_(this.extensionList_);
 
       $('search-engine-manager-confirm').onclick = function() {
-        OptionsPage.closeOverlay();
+        PageManager.closeOverlay();
       };
     },
 

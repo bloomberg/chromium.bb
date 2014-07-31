@@ -6,32 +6,32 @@
 // AddLanguageOverlay class:
 
 cr.define('options', function() {
-  /** @const */ var OptionsPage = options.OptionsPage;
+  /** @const */ var Page = cr.ui.pageManager.Page;
+  /** @const */ var PageManager = cr.ui.pageManager.PageManager;
 
   /**
    * Encapsulated handling of ChromeOS add language overlay page.
    * @constructor
    */
   function AddLanguageOverlay() {
-    OptionsPage.call(this, 'addLanguage',
-                     loadTimeData.getString('addButton'),
-                     'add-language-overlay-page');
+    Page.call(this, 'addLanguage',
+              loadTimeData.getString('addButton'),
+              'add-language-overlay-page');
   }
 
   cr.addSingletonGetter(AddLanguageOverlay);
 
   AddLanguageOverlay.prototype = {
-    // Inherit AddLanguageOverlay from OptionsPage.
-    __proto__: OptionsPage.prototype,
+    // Inherit AddLanguageOverlay from Page.
+    __proto__: Page.prototype,
 
     /** @override */
     initializePage: function() {
-      // Call base class implementation to starts preference initialization.
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       // Set up the cancel button.
       $('add-language-overlay-cancel-button').onclick = function(e) {
-        OptionsPage.closeOverlay();
+        PageManager.closeOverlay();
       };
 
       // Create the language list with which users can add a language.

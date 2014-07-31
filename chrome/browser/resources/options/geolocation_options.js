@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  var OptionsPage = options.OptionsPage;
+  var Page = cr.ui.pageManager.Page;
 
   /**
    * GeolocationOptions class
@@ -12,16 +12,15 @@ cr.define('options', function() {
    * @class
    */
   function GeolocationOptions() {
-    OptionsPage.call(this,
-                     'geolocationOptions',
-                     loadTimeData.getString('geolocationOptionsPageTabTitle'),
-                     'geolocationCheckbox');
+    Page.call(this, 'geolocationOptions',
+              loadTimeData.getString('geolocationOptionsPageTabTitle'),
+              'geolocationCheckbox');
   };
 
   cr.addSingletonGetter(GeolocationOptions);
 
   GeolocationOptions.prototype = {
-    __proto__: OptionsPage.prototype
+    __proto__: Page.prototype
   };
 
   // TODO(robliao): Determine if a full unroll is necessary

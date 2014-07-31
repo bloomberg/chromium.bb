@@ -10,7 +10,8 @@
 // See crbug.com/279351 for more info.
 
 cr.define('options.internet', function() {
-  var OptionsPage = options.OptionsPage;
+  var Page = cr.ui.pageManager.Page;
+  var PageManager = cr.ui.pageManager.PageManager;
   /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
   /** @const */ var IPAddressField = options.internet.IPAddressField;
 
@@ -117,20 +118,17 @@ cr.define('options.internet', function() {
    * @constructor
    */
   function DetailsInternetPage() {
-    OptionsPage.call(this,
-                     'detailsInternetPage',
-                     null,
-                     'details-internet-page');
+    Page.call(this, 'detailsInternetPage', null, 'details-internet-page');
   }
 
   cr.addSingletonGetter(DetailsInternetPage);
 
   DetailsInternetPage.prototype = {
-    __proto__: OptionsPage.prototype,
+    __proto__: Page.prototype,
 
     /** @override */
     initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
       var params = parseQueryParams(window.location);
       this.initializePageContents_(params);
       this.showNetworkDetails_(params);
@@ -181,13 +179,13 @@ cr.define('options.internet', function() {
       $('buyplan-details').addEventListener('click', function(event) {
         var data = $('connection-state').data;
         chrome.send('buyDataPlan', [data.servicePath]);
-        OptionsPage.closeOverlay();
+        PageManager.closeOverlay();
       });
 
       $('view-account-details').addEventListener('click', function(event) {
         var data = $('connection-state').data;
         chrome.send('showMorePlanInfo', [data.servicePath]);
-        OptionsPage.closeOverlay();
+        PageManager.closeOverlay();
       });
 
       $('cellular-apn-use-default').addEventListener('click', function(event) {
@@ -710,21 +708,21 @@ cr.define('options.internet', function() {
     var data = $('connection-state').data;
     var servicePath = data.servicePath;
     chrome.send('networkCommand', [data.Type, servicePath, 'connect']);
-    OptionsPage.closeOverlay();
+    PageManager.closeOverlay();
   };
 
   DetailsInternetPage.disconnectNetwork = function() {
     var data = $('connection-state').data;
     var servicePath = data.servicePath;
     chrome.send('networkCommand', [data.Type, servicePath, 'disconnect']);
-    OptionsPage.closeOverlay();
+    PageManager.closeOverlay();
   };
 
   DetailsInternetPage.configureNetwork = function() {
     var data = $('connection-state').data;
     var servicePath = data.servicePath;
     chrome.send('networkCommand', [data.Type, servicePath, 'configure']);
-    OptionsPage.closeOverlay();
+    PageManager.closeOverlay();
   };
 
   DetailsInternetPage.activateFromDetails = function() {
@@ -732,7 +730,7 @@ cr.define('options.internet', function() {
     var servicePath = data.servicePath;
     if (data.Type == 'Cellular')
       chrome.send('networkCommand', [data.Type, servicePath, 'activate']);
-    OptionsPage.closeOverlay();
+    PageManager.closeOverlay();
   };
 
   DetailsInternetPage.setDetails = function() {
@@ -786,7 +784,7 @@ cr.define('options.internet', function() {
                  $('ip-gateway').model.value || '',
                  nameServerType,
                  userNameServers]);
-    OptionsPage.closeOverlay();
+    PageManager.closeOverlay();
   };
 
   DetailsInternetPage.updateNameServerDisplay = function(type) {
@@ -1256,7 +1254,7 @@ cr.define('options.internet', function() {
       var inetServerHostname = $('inet-server-hostname');
       inetServerHostname.value = data.serverHostname.value;
       inetServerHostname.resetHandler = function() {
-        OptionsPage.hideBubble();
+        PageManager.hideBubble();
         inetServerHostname.value = data.serverHostname.recommendedValue;
       };
       $('auto-connect-network-vpn').checked = data.autoConnect.value;
@@ -1301,7 +1299,7 @@ cr.define('options.internet', function() {
 
     // Don't show page name in address bar and in history to prevent people
     // navigate here by hand and solve issue with page session restore.
-    OptionsPage.showPageByName('detailsInternetPage', false);
+    PageManager.showPageByName('detailsInternetPage', false);
   };
 
   return {

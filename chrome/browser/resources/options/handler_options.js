@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  /** @const */ var OptionsPage = options.OptionsPage;
+  /** @const */ var Page = cr.ui.pageManager.Page;
+  /** @const */ var PageManager = cr.ui.pageManager.PageManager;
 
   /////////////////////////////////////////////////////////////////////////////
   // HandlerOptions class:
@@ -14,16 +15,16 @@ cr.define('options', function() {
    */
   function HandlerOptions() {
     this.activeNavTab = null;
-    OptionsPage.call(this,
-                     'handlers',
-                     loadTimeData.getString('handlersPageTabTitle'),
-                     'handler-options');
+    Page.call(this,
+              'handlers',
+              loadTimeData.getString('handlersPageTabTitle'),
+              'handler-options');
   }
 
   cr.addSingletonGetter(HandlerOptions);
 
   HandlerOptions.prototype = {
-    __proto__: OptionsPage.prototype,
+    __proto__: Page.prototype,
 
     /**
      * The handlers list.
@@ -34,12 +35,12 @@ cr.define('options', function() {
 
     /** @override */
     initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       this.createHandlersList_();
 
       $('handler-options-overlay-confirm').onclick =
-          OptionsPage.closeOverlay.bind(OptionsPage);
+          PageManager.closeOverlay.bind(PageManager);
     },
 
     /**

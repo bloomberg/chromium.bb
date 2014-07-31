@@ -166,7 +166,7 @@ OptionsWebUITest.prototype.testDoNotTrackInterstitial =
   var buttonToClick = confirmInterstitial ? $('do-not-track-confirm-ok') :
                                             $('do-not-track-confirm-cancel');
   var dntCheckbox = $('do-not-track-enabled');
-  var dntOverlay = OptionsPage.registeredOverlayPages['donottrackconfirm'];
+  var dntOverlay = PageManager.registeredOverlayPages['donottrackconfirm'];
   assertFalse(dntCheckbox.checked);
 
   var visibleChangeCounter = 0;
@@ -219,7 +219,7 @@ TEST_F('OptionsWebUITest', 'EnableDoNotTrackAndCancelInterstitial',
 TEST_F('OptionsWebUITest', 'EnableAndDisableDoNotTrack', function() {
   Preferences.prefsFetchedCallback({'enable_do_not_track': {'value': false}});
   var dntCheckbox = $('do-not-track-enabled');
-  var dntOverlay = OptionsPage.registeredOverlayPages.donottrackconfirm;
+  var dntOverlay = PageManager.registeredOverlayPages.donottrackconfirm;
   assertFalse(dntCheckbox.checked);
 
   var visibleChangeCounter = 0;
@@ -269,7 +269,7 @@ TEST_F('OptionsWebUITest', 'EnableAndDisableDoNotTrack', function() {
 // default button. See crbug.com/268336.
 TEST_F('OptionsWebUITest', 'EnterPreventsDefault', function() {
   var page = HomePageOverlay.getInstance();
-  OptionsPage.showPageByName(page.name);
+  PageManager.showPageByName(page.name);
   var event = new KeyboardEvent('keydown', {
     'bubbles': true,
     'cancelable': true,
@@ -306,7 +306,7 @@ TEST_F('OptionsWebUITest', 'DISABLED_OverlayShowDoesntShift', function() {
     testDone();
   });
 
-  OptionsPage.navigateToPage(overlayName);
+  PageManager.showPageByName(overlayName);
   var numFrozenPages = frozenPages.length;
   expectGT(numFrozenPages, 0);
 });
@@ -426,8 +426,8 @@ OptionsWebUIExtendedTest.prototype = {
    */
   verifyOpenPages_: function(expectedPages, opt_expectedUrl) {
     // Check the topmost page.
-    expectEquals(null, OptionsPage.getVisibleBubble());
-    var currentPage = OptionsPage.getTopmostVisiblePage();
+    expectEquals(null, PageManager.getVisibleBubble());
+    var currentPage = PageManager.getTopmostVisiblePage();
 
     var lastExpected = expectedPages[expectedPages.length - 1];
     expectEquals(lastExpected, currentPage.name);
@@ -444,13 +444,13 @@ OptionsWebUIExtendedTest.prototype = {
     expectEquals(fullExpectedUrl, window.location.href);
 
     // Collect open pages.
-    var allPageNames = Object.keys(OptionsPage.registeredPages).concat(
-                       Object.keys(OptionsPage.registeredOverlayPages));
+    var allPageNames = Object.keys(PageManager.registeredPages).concat(
+                       Object.keys(PageManager.registeredOverlayPages));
     var openPages = [];
     for (var i = 0; i < allPageNames.length; ++i) {
       var name = allPageNames[i];
-      var page = OptionsPage.registeredPages[name] ||
-                 OptionsPage.registeredOverlayPages[name];
+      var page = PageManager.registeredPages[name] ||
+                 PageManager.registeredOverlayPages[name];
       if (page.visible)
         openPages.push(page.name);
     }
@@ -488,7 +488,7 @@ OptionsWebUIExtendedTest.prototype = {
   },
 
   /**
-   * Overrides the page callbacks for the given OptionsPage overlay to verify
+   * Overrides the page callbacks for the given PageManager overlay to verify
    * that they are not called.
    * @param {Object} overlay The singleton instance of the overlay.
    * @private
@@ -514,7 +514,7 @@ OptionsWebUIExtendedTest.verifyHistoryCallback = null;
 // Test disabled because it's flaky. crbug.com/303841
 TEST_F('OptionsWebUIExtendedTest', 'DISABLED_ShowSearchPageNoQuery',
        function() {
-  OptionsPage.showPageByName('search');
+  PageManager.showPageByName('search');
   this.verifyOpenPages_(['settings']);
   this.verifyHistory_(['settings'], testDone);
 });
@@ -523,7 +523,7 @@ TEST_F('OptionsWebUIExtendedTest', 'DISABLED_ShowSearchPageNoQuery',
 TEST_F('OptionsWebUIExtendedTest', 'ShowPageNoHistory', function() {
   this.verifyOpenPages_(['settings'], '');
   // There are only two main pages, 'settings' and 'search'. It's not possible
-  // to show the search page using OptionsPage.showPageByName, because it
+  // to show the search page using PageManager.showPageByName, because it
   // reverts to the settings page if it has no search text set. So we show the
   // search page by performing a search, then test showPageByName.
   $('search-field').onsearch({currentTarget: {value: 'query'}});
@@ -535,7 +535,7 @@ TEST_F('OptionsWebUIExtendedTest', 'ShowPageNoHistory', function() {
   this.verifyOpenPages_(['settings', 'search'], 'search#query');
   var self = this;
   this.verifyHistory_(['', 'search#query'], function() {
-    OptionsPage.showPageByName('settings', false);
+    PageManager.showPageByName('settings', false);
     self.verifyOpenPages_(['settings'], 'search#query');
     self.verifyHistory_(['', 'search#query'], testDone);
   });
@@ -546,7 +546,7 @@ TEST_F('OptionsWebUIExtendedTest', 'ShowPageWithHistory', function() {
   $('search-field').onsearch({currentTarget: {value: 'query'}});
   var self = this;
   this.verifyHistory_(['', 'search#query'], function() {
-    OptionsPage.showPageByName('settings', true);
+    PageManager.showPageByName('settings', true);
     self.verifyOpenPages_(['settings'], '#query');
     self.verifyHistory_(['', 'search#query', '#query'],
                         testDone);
@@ -558,7 +558,7 @@ TEST_F('OptionsWebUIExtendedTest', 'ShowPageReplaceHistory', function() {
   $('search-field').onsearch({currentTarget: {value: 'query'}});
   var self = this;
   this.verifyHistory_(['', 'search#query'], function() {
-    OptionsPage.showPageByName('settings', true, {'replaceState': true});
+    PageManager.showPageByName('settings', true, {'replaceState': true});
     self.verifyOpenPages_(['settings'], '#query');
     self.verifyHistory_(['', '#query'], testDone);
   });
@@ -570,7 +570,7 @@ TEST_F('OptionsWebUIExtendedTest', 'NavigateToPage', function() {
   $('search-field').onsearch({currentTarget: {value: 'query'}});
   var self = this;
   this.verifyHistory_(['', 'search#query'], function() {
-    OptionsPage.navigateToPage('settings');
+    PageManager.showPageByName('settings');
     self.verifyOpenPages_(['settings'], '#query');
     self.verifyHistory_(['', 'search#query', '#query'],
                         testDone);
@@ -581,14 +581,14 @@ TEST_F('OptionsWebUIExtendedTest', 'NavigateToPage', function() {
 // normally with none of the latter's quirks in the expected history or URL.
 TEST_F('OptionsWebUIExtendedTest', 'ShowOverlayNoHistory', function() {
   // Open a layer-1 overlay, not updating history.
-  OptionsPage.showPageByName('languages', false);
+  PageManager.showPageByName('languages', false);
   this.verifyOpenPages_(['settings', 'languages'], '');
 
   var self = this;
   this.verifyHistory_([''], function() {
     // Open a layer-2 overlay for which the layer-1 is a parent, not updating
     // history.
-    OptionsPage.showPageByName('addLanguage', false);
+    PageManager.showPageByName('addLanguage', false);
     self.verifyOpenPages_(['settings', 'languages', 'addLanguage'],
                           '');
     self.verifyHistory_([''], testDone);
@@ -597,13 +597,13 @@ TEST_F('OptionsWebUIExtendedTest', 'ShowOverlayNoHistory', function() {
 
 TEST_F('OptionsWebUIExtendedTest', 'ShowOverlayWithHistory', function() {
   // Open a layer-1 overlay, updating history.
-  OptionsPage.showPageByName('languages', true);
+  PageManager.showPageByName('languages', true);
   this.verifyOpenPages_(['settings', 'languages']);
 
   var self = this;
   this.verifyHistory_(['', 'languages'], function() {
     // Open a layer-2 overlay, updating history.
-    OptionsPage.showPageByName('addLanguage', true);
+    PageManager.showPageByName('addLanguage', true);
     self.verifyOpenPages_(['settings', 'languages', 'addLanguage']);
     self.verifyHistory_(['', 'languages', 'addLanguage'], testDone);
   });
@@ -611,11 +611,11 @@ TEST_F('OptionsWebUIExtendedTest', 'ShowOverlayWithHistory', function() {
 
 TEST_F('OptionsWebUIExtendedTest', 'ShowOverlayReplaceHistory', function() {
   // Open a layer-1 overlay, updating history.
-  OptionsPage.showPageByName('languages', true);
+  PageManager.showPageByName('languages', true);
   var self = this;
   this.verifyHistory_(['', 'languages'], function() {
     // Open a layer-2 overlay, replacing history.
-    OptionsPage.showPageByName('addLanguage', true, {'replaceState': true});
+    PageManager.showPageByName('addLanguage', true, {'replaceState': true});
     self.verifyOpenPages_(['settings', 'languages', 'addLanguage']);
     self.verifyHistory_(['', 'addLanguage'], testDone);
   });
@@ -625,7 +625,7 @@ TEST_F('OptionsWebUIExtendedTest', 'ShowOverlayReplaceHistory', function() {
 // current page is an ancestor but not a parent.
 TEST_F('OptionsWebUIExtendedTest', 'ShowOverlayFurtherAbove', function() {
   // Open a layer-2 overlay directly.
-  OptionsPage.showPageByName('addLanguage', true);
+  PageManager.showPageByName('addLanguage', true);
   this.verifyOpenPages_(['settings', 'languages', 'addLanguage']);
   var self = this;
   this.verifyHistory_(['', 'addLanguage'], testDone);
@@ -635,13 +635,13 @@ TEST_F('OptionsWebUIExtendedTest', 'ShowOverlayFurtherAbove', function() {
 // parent.
 TEST_F('OptionsWebUIExtendedTest', 'ShowUnrelatedOverlay', function() {
   // Open a layer-1 overlay.
-  OptionsPage.showPageByName('languages', true);
+  PageManager.showPageByName('languages', true);
   this.verifyOpenPages_(['settings', 'languages']);
 
   var self = this;
   this.verifyHistory_(['', 'languages'], function() {
     // Open an unrelated layer-2 overlay.
-    OptionsPage.showPageByName('cookies', true);
+    PageManager.showPageByName('cookies', true);
     self.verifyOpenPages_(['settings', 'content', 'cookies']);
     self.verifyHistory_(['', 'languages', 'cookies'], testDone);
   });
@@ -650,21 +650,21 @@ TEST_F('OptionsWebUIExtendedTest', 'ShowUnrelatedOverlay', function() {
 // Close an overlay.
 TEST_F('OptionsWebUIExtendedTest', 'CloseOverlay', function() {
   // Open a layer-1 overlay, then a layer-2 overlay on top of it.
-  OptionsPage.showPageByName('languages', true);
+  PageManager.showPageByName('languages', true);
   this.verifyOpenPages_(['settings', 'languages']);
-  OptionsPage.showPageByName('addLanguage', true);
+  PageManager.showPageByName('addLanguage', true);
   this.verifyOpenPages_(['settings', 'languages', 'addLanguage']);
 
   var self = this;
   this.verifyHistory_(['', 'languages', 'addLanguage'], function() {
     // Close the layer-2 overlay.
-    OptionsPage.closeOverlay();
+    PageManager.closeOverlay();
     self.verifyOpenPages_(['settings', 'languages']);
     self.verifyHistory_(
         ['', 'languages', 'addLanguage', 'languages'],
         function() {
       // Close the layer-1 overlay.
-      OptionsPage.closeOverlay();
+      PageManager.closeOverlay();
       self.verifyOpenPages_(['settings'], '');
       self.verifyHistory_(
           ['', 'languages', 'addLanguage', 'languages', ''],
@@ -677,12 +677,12 @@ TEST_F('OptionsWebUIExtendedTest', 'CloseOverlay', function() {
 // again push history.
 TEST_F('OptionsWebUIExtendedTest', 'CloseOverlayNoHistory', function() {
   // Open the do not track confirmation prompt.
-  OptionsPage.showPageByName('doNotTrackConfirm', false);
+  PageManager.showPageByName('doNotTrackConfirm', false);
 
   // Opening the prompt does not add to the history.
   this.verifyHistory_([''], function() {
     // Close the overlay.
-    OptionsPage.closeOverlay();
+    PageManager.closeOverlay();
     // Still no history changes.
     this.verifyHistory_([''], testDone);
   }.bind(this));
@@ -692,20 +692,20 @@ TEST_F('OptionsWebUIExtendedTest', 'CloseOverlayNoHistory', function() {
 // opened on top.
 TEST_F('OptionsWebUIExtendedTest', 'OverlayAboveNoReset', function() {
   // Open a layer-1 overlay.
-  OptionsPage.showPageByName('languages', true);
+  PageManager.showPageByName('languages', true);
   this.verifyOpenPages_(['settings', 'languages']);
 
   // Open a layer-2 overlay on top. This should not close 'languages'.
   this.prohibitChangesToOverlay_(options.LanguageOptions.getInstance());
-  OptionsPage.showPageByName('addLanguage', true);
+  PageManager.showPageByName('addLanguage', true);
   this.verifyOpenPages_(['settings', 'languages', 'addLanguage']);
   testDone();
 });
 
 TEST_F('OptionsWebUIExtendedTest', 'OverlayTabNavigation', function() {
   // Open a layer-1 overlay, then a layer-2 overlay on top of it.
-  OptionsPage.showPageByName('languages', true);
-  OptionsPage.showPageByName('addLanguage', true);
+  PageManager.showPageByName('languages', true);
+  PageManager.showPageByName('addLanguage', true);
   var self = this;
 
   // Go back twice, then forward twice.
@@ -743,14 +743,14 @@ TEST_F('OptionsWebUIExtendedTest', 'OverlayTabNavigation', function() {
 // close the current one.
 TEST_F('OptionsWebUIExtendedTest', 'OverlayBackToChild', function() {
   // Open a layer-1 overlay, then a layer-2 overlay on top of it.
-  OptionsPage.showPageByName('languages', true);
-  OptionsPage.showPageByName('addLanguage', true);
+  PageManager.showPageByName('languages', true);
+  PageManager.showPageByName('addLanguage', true);
   var self = this;
 
   self.verifyOpenPages_(['settings', 'languages', 'addLanguage']);
   self.verifyHistory_(['', 'languages', 'addLanguage'], function() {
     // Close the top overlay, then go back to it.
-    OptionsPage.closeOverlay();
+    PageManager.closeOverlay();
     self.verifyOpenPages_(['settings', 'languages']);
     self.verifyHistory_(
         ['', 'languages', 'addLanguage', 'languages'],
@@ -770,8 +770,8 @@ TEST_F('OptionsWebUIExtendedTest', 'OverlayBackToChild', function() {
 // Going back to an unrelated overlay should close the overlay and its parent.
 TEST_F('OptionsWebUIExtendedTest', 'OverlayBackToUnrelated', function() {
   // Open a layer-1 overlay, then an unrelated layer-2 overlay.
-  OptionsPage.showPageByName('languages', true);
-  OptionsPage.showPageByName('cookies', true);
+  PageManager.showPageByName('languages', true);
+  PageManager.showPageByName('cookies', true);
   var self = this;
   self.verifyOpenPages_(['settings', 'content', 'cookies']);
   self.verifyHistory_(['', 'languages', 'cookies'], function() {
@@ -788,13 +788,13 @@ TEST_F('OptionsWebUIExtendedTest', 'HistoryUpdatedAfterLoading', function() {
   var loc = location.href;
 
   document.documentElement.classList.add('loading');
-  assertTrue(OptionsPage.isLoading());
-  OptionsPage.navigateToPage('searchEngines');
+  assertTrue(PageManager.isLoading());
+  PageManager.showPageByName('searchEngines');
   expectNotEquals(loc, location.href);
 
   document.documentElement.classList.remove('loading');
-  assertFalse(OptionsPage.isLoading());
-  OptionsPage.showDefaultPage();
+  assertFalse(PageManager.isLoading());
+  PageManager.showDefaultPage();
   expectEquals(loc, location.href);
 
   testDone();

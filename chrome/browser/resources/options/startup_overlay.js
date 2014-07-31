@@ -4,7 +4,6 @@
 
 cr.define('options', function() {
   /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
-  /** @const */ var OptionsPage = options.OptionsPage;
   /** @const */ var SettingsDialog = options.SettingsDialog;
 
   /**

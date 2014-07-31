@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  var OptionsPage = options.OptionsPage;
+  var Page = cr.ui.pageManager.Page;
+  var PageManager = cr.ui.pageManager.PageManager;
 
   /**
    * ImportDataOverlay class
@@ -11,22 +12,21 @@ cr.define('options', function() {
    * @class
    */
   function ImportDataOverlay() {
-    OptionsPage.call(this,
-                     'importData',
-                     loadTimeData.getString('importDataOverlayTabTitle'),
-                     'import-data-overlay');
+    Page.call(this,
+              'importData',
+              loadTimeData.getString('importDataOverlayTabTitle'),
+              'import-data-overlay');
   }
 
   cr.addSingletonGetter(ImportDataOverlay);
 
   ImportDataOverlay.prototype = {
-    // Inherit from OptionsPage.
-    __proto__: OptionsPage.prototype,
+    // Inherit from Page.
+    __proto__: Page.prototype,
 
     /** @override */
     initializePage: function() {
-      // Call base class implementation to start preference initialization.
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       var self = this;
       var checkboxes =
@@ -240,7 +240,7 @@ cr.define('options', function() {
    */
   ImportDataOverlay.dismiss = function() {
     ImportDataOverlay.clearUserPrefs();
-    OptionsPage.closeOverlay();
+    PageManager.closeOverlay();
   };
 
   /**
@@ -262,7 +262,7 @@ cr.define('options', function() {
     ImportDataOverlay.getInstance().updateSuccessState_(false);
     ImportDataOverlay.getInstance().validateCommitButton_();
 
-    OptionsPage.navigateToPage('importData');
+    PageManager.showPageByName('importData');
   };
 
   // Export

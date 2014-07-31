@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  var OptionsPage = options.OptionsPage;
+  var Page = cr.ui.pageManager.Page;
 
   /**
    * SupervisedUserLearnMore class.
@@ -12,23 +12,23 @@ cr.define('options', function() {
    * @class
    */
   function SupervisedUserLearnMoreOverlay() {
-    OptionsPage.call(this, 'supervisedUserLearnMore',
-                     loadTimeData.getString('supervisedUserLearnMoreTitle'),
-                     'supervised-user-learn-more');
+    Page.call(this, 'supervisedUserLearnMore',
+              loadTimeData.getString('supervisedUserLearnMoreTitle'),
+              'supervised-user-learn-more');
   };
 
   cr.addSingletonGetter(SupervisedUserLearnMoreOverlay);
 
   SupervisedUserLearnMoreOverlay.prototype = {
-    // Inherit from OptionsPage.
-    __proto__: OptionsPage.prototype,
+    // Inherit from Page.
+    __proto__: Page.prototype,
 
     /** @override */
     initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       $('supervised-user-learn-more-done').onclick = function(event) {
-        OptionsPage.closeOverlay();
+        Page.closeOverlay();
       };
     },
   };

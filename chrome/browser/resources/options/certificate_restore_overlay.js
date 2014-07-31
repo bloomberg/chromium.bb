@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  /** @const */ var OptionsPage = options.OptionsPage;
+  /** @const */ var Page = cr.ui.pageManager.Page;
+  /** @const */ var PageManager = cr.ui.pageManager.PageManager;
 
   /**
    * CertificateRestoreOverlay class
@@ -11,18 +12,17 @@ cr.define('options', function() {
    * @class
    */
   function CertificateRestoreOverlay() {
-    OptionsPage.call(this, 'certificateRestore', '',
-                     'certificateRestoreOverlay');
+    Page.call(this, 'certificateRestore', '', 'certificateRestoreOverlay');
   }
 
   cr.addSingletonGetter(CertificateRestoreOverlay);
 
   CertificateRestoreOverlay.prototype = {
-    __proto__: OptionsPage.prototype,
+    __proto__: Page.prototype,
 
     /** @override */
     initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       var self = this;
       $('certificateRestoreCancelButton').onclick = function(event) {
@@ -46,7 +46,7 @@ cr.define('options', function() {
      */
     dismissOverlay_: function() {
       this.clearInputFields_();
-      OptionsPage.closeOverlay();
+      PageManager.closeOverlay();
     },
 
     /**
@@ -84,7 +84,7 @@ cr.define('options', function() {
 
   CertificateRestoreOverlay.show = function() {
     CertificateRestoreOverlay.getInstance().clearInputFields_();
-    OptionsPage.navigateToPage('certificateRestore');
+    PageManager.showPageByName('certificateRestore');
   };
 
   CertificateRestoreOverlay.dismiss = function() {

@@ -4,6 +4,7 @@
 
 var AlertOverlay = options.AlertOverlay;
 var OptionsPage = options.OptionsPage;
+var PageManager = cr.ui.pageManager.PageManager;
 var CertificateManager = options.CertificateManager;
 var CertificateRestoreOverlay = options.CertificateRestoreOverlay;
 var CertificateBackupOverlay = options.CertificateBackupOverlay;
@@ -31,28 +32,28 @@ function load() {
     var overlay = containers[i];
     cr.ui.overlay.setupOverlay(overlay);
     overlay.addEventListener('cancelOverlay',
-                             OptionsPage.cancelOverlay.bind(OptionsPage));
+                             PageManager.cancelOverlay.bind(PageManager));
   }
 
   // Hide elements that should not be part of the dialog.
   $('certificate-confirm').hidden = true;
   $('cert-manager-header').hidden = true;
 
-  OptionsPage.isDialog = true;
+  PageManager.isDialog = true;
   CertificateManager.getInstance().initializePage(true);
-  OptionsPage.registerOverlay(AlertOverlay.getInstance(),
+  PageManager.registerOverlay(AlertOverlay.getInstance(),
       CertificateManager.getInstance());
-  OptionsPage.registerOverlay(CertificateBackupOverlay.getInstance(),
+  PageManager.registerOverlay(CertificateBackupOverlay.getInstance(),
       CertificateManager.getInstance());
-  OptionsPage.registerOverlay(CertificateEditCaTrustOverlay.getInstance(),
+  PageManager.registerOverlay(CertificateEditCaTrustOverlay.getInstance(),
       CertificateManager.getInstance());
-  OptionsPage.registerOverlay(CertificateImportErrorOverlay.getInstance(),
+  PageManager.registerOverlay(CertificateImportErrorOverlay.getInstance(),
       CertificateManager.getInstance());
-  OptionsPage.registerOverlay(CertificateManager.getInstance());
-  OptionsPage.registerOverlay(CertificateRestoreOverlay.getInstance(),
+  PageManager.registerOverlay(CertificateManager.getInstance());
+  PageManager.registerOverlay(CertificateRestoreOverlay.getInstance(),
       CertificateManager.getInstance());
 
-  OptionsPage.showPageByName('certificates', false);
+  PageManager.showPageByName('certificates', false);
 }
 
 disableTextSelectAndDrag(function(e) {

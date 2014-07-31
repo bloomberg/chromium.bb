@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  /** @const */ var OptionsPage = options.OptionsPage;
+  /** @const */ var Page = cr.ui.pageManager.Page;
+  /** @const */ var PageManager = cr.ui.pageManager.PageManager;
   /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
 
   /////////////////////////////////////////////////////////////////////////////
@@ -15,16 +16,15 @@ cr.define('options', function() {
    */
   function PasswordManager() {
     this.activeNavTab = null;
-    OptionsPage.call(this,
-                     'passwords',
-                     loadTimeData.getString('passwordsPageTabTitle'),
-                     'password-manager');
+    Page.call(this, 'passwords',
+              loadTimeData.getString('passwordsPageTabTitle'),
+              'password-manager');
   }
 
   cr.addSingletonGetter(PasswordManager);
 
   PasswordManager.prototype = {
-    __proto__: OptionsPage.prototype,
+    __proto__: Page.prototype,
 
     /**
      * The saved passwords list.
@@ -56,10 +56,10 @@ cr.define('options', function() {
 
     /** @override */
     initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       $('password-manager-confirm').onclick = function() {
-        OptionsPage.closeOverlay();
+        PageManager.closeOverlay();
       };
 
       $('password-search-box').addEventListener('search',

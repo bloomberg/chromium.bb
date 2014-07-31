@@ -67,7 +67,7 @@ TEST_F('SyncSetupWebUITestAsync', 'VerifySignIn', function() {
   // Handle SyncSetupShowSetupUI by navigating to chrome://settings/syncSetup.
   this.mockHandler.expects(once()).SyncSetupShowSetupUI().
       will(callFunction(function() {
-                          OptionsPage.navigateToPage('syncSetup');
+                          PageManager.showPageByName('syncSetup');
                         }));
 
   // Handle SyncSetupStartSignIn by displaying the sync setup dialog, verifying

@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  var OptionsPage = options.OptionsPage;
+  var Page = cr.ui.pageManager.Page;
+  var PageManager = cr.ui.pageManager.PageManager;
   var ArrayDataModel = cr.ui.ArrayDataModel;
 
   /**
@@ -15,15 +16,14 @@ cr.define('options', function() {
    */
   function SupervisedUserImportOverlay() {
     var title = loadTimeData.getString('supervisedUserImportTitle');
-    OptionsPage.call(this, 'supervisedUserImport',
-                     title, 'supervised-user-import');
+    Page.call(this, 'supervisedUserImport', title, 'supervised-user-import');
   };
 
   cr.addSingletonGetter(SupervisedUserImportOverlay);
 
   SupervisedUserImportOverlay.prototype = {
-    // Inherit from OptionsPage.
-    __proto__: OptionsPage.prototype,
+    // Inherit from Page.
+    __proto__: Page.prototype,
 
     /** @override */
     canShowPage: function() {
@@ -32,8 +32,7 @@ cr.define('options', function() {
 
     /** @override */
     initializePage: function() {
-      // Call base class implementation to start preference initialization.
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       var supervisedUserList = $('supervised-user-list');
       options.supervisedUserOptions.SupervisedUserList.decorate(
@@ -61,7 +60,7 @@ cr.define('options', function() {
           // 'cancelCreateProfile' is handled by CreateProfileHandler.
           chrome.send('cancelCreateProfile');
         }
-        OptionsPage.closeOverlay();
+        PageManager.closeOverlay();
       };
 
       $('supervised-user-import-ok').onclick =
@@ -232,7 +231,7 @@ cr.define('options', function() {
     onSuccess_: function() {
       this.updateImportInProgress_(false);
       options.SupervisedUserListData.resetPromise();
-      OptionsPage.closeAllOverlays();
+      PageManager.closeAllOverlays();
     },
   };
 

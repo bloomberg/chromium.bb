@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  var OptionsPage = options.OptionsPage;
+  var Page = cr.ui.pageManager.Page;
+  var PageManager = cr.ui.pageManager.PageManager;
   var ArrayDataModel = cr.ui.ArrayDataModel;
 
   /**
@@ -13,16 +14,16 @@ cr.define('options', function() {
    * @class
    */
   function ManageProfileOverlay() {
-    OptionsPage.call(this, 'manageProfile',
-                     loadTimeData.getString('manageProfileTabTitle'),
-                     'manage-profile-overlay');
+    Page.call(this, 'manageProfile',
+              loadTimeData.getString('manageProfileTabTitle'),
+              'manage-profile-overlay');
   };
 
   cr.addSingletonGetter(ManageProfileOverlay);
 
   ManageProfileOverlay.prototype = {
-    // Inherit from OptionsPage.
-    __proto__: OptionsPage.prototype,
+    // Inherit from Page.
+    __proto__: Page.prototype,
 
     // Info about the currently managed/deleted profile.
     profileInfo_: null,
@@ -43,8 +44,7 @@ cr.define('options', function() {
 
     /** @override */
     initializePage: function() {
-      // Call base class implementation to start preference initialization.
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       var self = this;
       options.ProfilesIconGrid.decorate($('manage-profile-icon-grid'));
@@ -67,10 +67,10 @@ cr.define('options', function() {
       $('manage-profile-cancel').onclick =
           $('disconnect-managed-profile-cancel').onclick =
           $('delete-profile-cancel').onclick = function(event) {
-        OptionsPage.closeOverlay();
+        PageManager.closeOverlay();
       };
       $('delete-profile-ok').onclick = function(event) {
-        OptionsPage.closeOverlay();
+        PageManager.closeOverlay();
         if (BrowserOptions.getCurrentProfile().isSupervised)
           return;
         chrome.send('deleteProfile', [self.profileInfo_.filePath]);
@@ -84,14 +84,14 @@ cr.define('options', function() {
       };
 
       $('disconnect-managed-profile-ok').onclick = function(event) {
-        OptionsPage.closeOverlay();
+        PageManager.closeOverlay();
         chrome.send('deleteProfile',
                     [BrowserOptions.getCurrentProfile().filePath]);
       };
 
       $('create-profile-supervised-signed-in-learn-more-link').onclick =
           function(event) {
-        OptionsPage.navigateToPage('supervisedUserLearnMore');
+        PageManager.showPageByName('supervisedUserLearnMore');
         return false;
       };
 
@@ -102,13 +102,13 @@ cr.define('options', function() {
         // TODO(pamg): Move the sync-setup overlay to a higher layer so this one
         // can stay open under it, after making sure that doesn't break anything
         // else.
-        OptionsPage.closeOverlay();
+        PageManager.closeOverlay();
         SyncSetupOverlay.startSignIn();
       };
 
       $('create-profile-supervised-sign-in-again-link').onclick =
           function(event) {
-        OptionsPage.closeOverlay();
+        PageManager.closeOverlay();
         SyncSetupOverlay.showSetupUI();
       };
 
@@ -117,7 +117,7 @@ cr.define('options', function() {
         // is shown again when the import overlay loads. TODO(akuegel): Remove
         // this temporary fix when crbug/246304 is resolved.
         $('import-existing-supervised-user-link').hidden = true;
-        OptionsPage.navigateToPage('supervisedUserImport');
+        PageManager.showPageByName('managedUserImport');
       };
     },
 
@@ -167,7 +167,7 @@ cr.define('options', function() {
         self.onNameChanged_(mode);
       };
       $(mode + '-profile-ok').onclick = function(event) {
-        OptionsPage.closeOverlay();
+        PageManager.closeOverlay();
         submitFunction();
       };
     },
@@ -252,7 +252,7 @@ cr.define('options', function() {
       // But the C++ handler calls this method directly on ManageProfileOverlay,
       // so check the pageDiv to also include its subclasses (in particular
       // CreateProfileOverlay, which has higher sub-overlays).
-      if (OptionsPage.getTopmostVisiblePage().pageDiv == this.pageDiv) {
+      if (PageManager.getTopmostVisiblePage().pageDiv == this.pageDiv) {
         // This will only have an effect if the 'create-profile-name' element
         //  is visible, i.e. if the overlay is in create mode.
         $('create-profile-name').focus();
@@ -376,7 +376,7 @@ cr.define('options', function() {
           function getImportHandler(supervisedUser, nameIsUnique) {
             return function() {
               if (supervisedUser.needAvatar || !nameIsUnique) {
-                OptionsPage.navigateToPage('supervisedUserImport');
+                PageManager.showPageByName('supervisedUserImport');
               } else {
                 self.hideErrorBubble_('create');
                 CreateProfileOverlay.updateCreateInProgress(true);
@@ -519,7 +519,7 @@ cr.define('options', function() {
      */
     showManageDialog_: function() {
       this.prepareForManageDialog_();
-      OptionsPage.navigateToPage('manageProfile');
+      PageManager.showPageByName('manageProfile');
     },
 
     /**
@@ -546,7 +546,7 @@ cr.define('options', function() {
 
       // Because this dialog isn't useful when refreshing or as part of the
       // history, don't create a history entry for it when showing.
-      OptionsPage.showPageByName('manageProfile', false);
+      PageManager.showPageByName('manageProfile', false);
     },
 
     /**
@@ -566,7 +566,7 @@ cr.define('options', function() {
 
       // Because this dialog isn't useful when refreshing or as part of the
       // history, don't create a history entry for it when showing.
-      OptionsPage.showPageByName('manageProfile', false);
+      PageManager.showPageByName('manageProfile', false);
     },
 
     /**
@@ -574,7 +574,7 @@ cr.define('options', function() {
      * @private
      */
     showCreateDialog_: function() {
-      OptionsPage.navigateToPage('createProfile');
+      PageManager.showPageByName('createProfile');
     },
   };
 
@@ -598,9 +598,9 @@ cr.define('options', function() {
   });
 
   function CreateProfileOverlay() {
-    OptionsPage.call(this, 'createProfile',
-                     loadTimeData.getString('createProfileTabTitle'),
-                     'manage-profile-overlay');
+    Page.call(this, 'createProfile',
+              loadTimeData.getString('createProfileTabTitle'),
+              'manage-profile-overlay');
   };
 
   cr.addSingletonGetter(CreateProfileOverlay);
@@ -700,7 +700,7 @@ cr.define('options', function() {
      * @private
      */
     cancelCreateProfile_: function() {
-      OptionsPage.closeOverlay();
+      PageManager.closeOverlay();
       chrome.send('cancelCreateProfile');
       this.hideErrorBubble_();
       this.updateCreateInProgress_(false);
@@ -741,12 +741,12 @@ cr.define('options', function() {
      */
     onSuccess_: function(profileInfo) {
       this.updateCreateInProgress_(false);
-      OptionsPage.closeOverlay();
+      PageManager.closeOverlay();
       if (profileInfo.isSupervised) {
         options.SupervisedUserListData.resetPromise();
         profileInfo.custodianEmail = this.signedInEmail_;
         SupervisedUserCreateConfirmOverlay.setProfileInfo(profileInfo);
-        OptionsPage.showPageByName('supervisedUserCreateConfirm', false);
+        PageManager.showPageByName('supervisedUserCreateConfirm', false);
         BrowserOptions.updateManagesSupervisedUsers(true);
       }
     },

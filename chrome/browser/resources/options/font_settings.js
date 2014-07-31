@@ -5,6 +5,8 @@
 cr.define('options', function() {
 
   var OptionsPage = options.OptionsPage;
+  var Page = cr.ui.pageManager.Page;
+  var PageManager = cr.ui.pageManager.PageManager;
 
   /**
    * FontSettings class
@@ -12,20 +14,19 @@ cr.define('options', function() {
    * @class
    */
   function FontSettings() {
-    OptionsPage.call(this,
-                     'fonts',
-                     loadTimeData.getString('fontSettingsPageTabTitle'),
-                     'font-settings');
+    Page.call(this, 'fonts',
+              loadTimeData.getString('fontSettingsPageTabTitle'),
+              'font-settings');
   }
 
   cr.addSingletonGetter(FontSettings);
 
   FontSettings.prototype = {
-    __proto__: OptionsPage.prototype,
+    __proto__: Page.prototype,
 
     /** @override */
     initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       var standardFontRange = $('standard-font-size');
       standardFontRange.valueMap = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20,
@@ -57,7 +58,7 @@ cr.define('options', function() {
       });
 
       $('font-settings-confirm').onclick = function() {
-        OptionsPage.closeOverlay();
+        PageManager.closeOverlay();
       };
 
       $('advanced-font-settings-options').onclick = function() {

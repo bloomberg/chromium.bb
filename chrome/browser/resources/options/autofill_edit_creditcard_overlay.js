@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  /** @const */ var OptionsPage = options.OptionsPage;
+  /** @const */ var Page = cr.ui.pageManager.Page;
+  /** @const */ var PageManager = cr.ui.pageManager.PageManager;
 
   /**
    * AutofillEditCreditCardOverlay class
@@ -11,19 +12,19 @@ cr.define('options', function() {
    * @class
    */
   function AutofillEditCreditCardOverlay() {
-    OptionsPage.call(this, 'autofillEditCreditCard',
-                     loadTimeData.getString('autofillEditCreditCardTitle'),
-                     'autofill-edit-credit-card-overlay');
+    Page.call(this, 'autofillEditCreditCard',
+              loadTimeData.getString('autofillEditCreditCardTitle'),
+              'autofill-edit-credit-card-overlay');
   }
 
   cr.addSingletonGetter(AutofillEditCreditCardOverlay);
 
   AutofillEditCreditCardOverlay.prototype = {
-    __proto__: OptionsPage.prototype,
+    __proto__: Page.prototype,
 
     /** @override */
     initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
+      Page.prototype.initializePage.call(this);
 
       var self = this;
       $('autofill-edit-credit-card-cancel-button').onclick = function(event) {
@@ -57,7 +58,7 @@ cr.define('options', function() {
     dismissOverlay_: function() {
       this.clearInputFields_();
       this.guid_ = '';
-      OptionsPage.closeOverlay();
+      PageManager.closeOverlay();
     },
 
     /**
