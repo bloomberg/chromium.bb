@@ -1467,16 +1467,25 @@ class Port(object):
         """Returns the port's driver implementation."""
         return driver.Driver
 
+    def _output_contains_sanitizer_messages(self, output):
+        if not output:
+            return None
+        if 'AddressSanitizer' in output:
+            return 'AddressSanitizer'
+        if 'MemorySanitizer' in output:
+            return 'MemorySanitizer'
+        return None
+
     def _get_crash_log(self, name, pid, stdout, stderr, newer_than):
-        if stderr and 'AddressSanitizer' in stderr:
-            # Running the AddressSanitizer take a lot of memory, so we need to
+        if self._output_contains_sanitizer_messages(stderr):
+            # Running the symbolizer script can take a lot of memory, so we need to
             # serialize access to it across all the concurrently running drivers.
 
             # FIXME: investigate using LLVM_SYMBOLIZER_PATH here to reduce the overhead.
-            asan_filter_path = self.path_from_chromium_base('tools', 'valgrind', 'asan', 'asan_symbolize.py')
-            if self._filesystem.exists(asan_filter_path):
-                output = self._executive.run_command(['flock', sys.executable, asan_filter_path], input=stderr, decode_output=False)
-                stderr = self._executive.run_command(['c++filt'], input=output, decode_output=False)
+            sanitizer_filter_path = self.path_from_chromium_base('tools', 'valgrind', 'asan', 'asan_symbolize.py')
+            sanitizer_strip_path_prefix = 'Release/../../'
+            if self._filesystem.exists(sanitizer_filter_path):
+                stderr = self._executive.run_command(['flock', sys.executable, sanitizer_filter_path, sanitizer_strip_path_prefix], input=stderr, decode_output=False)
 
         name_str = name or '<unknown process name>'
         pid_str = str(pid or '<unknown>')
