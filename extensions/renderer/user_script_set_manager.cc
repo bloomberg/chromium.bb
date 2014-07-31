@@ -107,11 +107,21 @@ void UserScriptSetManager::OnUpdateUserScripts(
   }
   DCHECK(scripts);
 
-  if (scripts->UpdateUserScripts(shared_memory, changed_extensions)) {
+  // If no extensions are included in the set, that indicates that all
+  // extensions were updated. Add them all to the set so that observers and
+  // individual UserScriptSets don't need to know this detail.
+  const std::set<std::string>* effective_extensions = &changed_extensions;
+  std::set<std::string> all_extensions;
+  if (changed_extensions.empty()) {
+    all_extensions = extensions_->GetIDs();
+    effective_extensions = &all_extensions;
+  }
+
+  if (scripts->UpdateUserScripts(shared_memory, *effective_extensions)) {
     FOR_EACH_OBSERVER(
         Observer,
         observers_,
-        OnUserScriptsUpdated(changed_extensions, scripts->scripts()));
+        OnUserScriptsUpdated(*effective_extensions, scripts->scripts()));
   }
 }
 
