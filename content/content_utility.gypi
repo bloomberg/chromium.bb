@@ -6,7 +6,7 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../courgette/courgette.gyp:courgette_lib',
-    '../mojo/mojo_base.gyp:mojo_service_provider_bindings',
+    '../mojo/mojo_base.gyp:mojo_application_bindings',
   ],
   'sources': [
     'public/utility/content_utility_client.cc',

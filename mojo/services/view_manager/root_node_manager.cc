@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "mojo/public/cpp/application/application_connection.h"
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
+#include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
 #include "mojo/services/view_manager/view.h"
 #include "mojo/services/view_manager/view_manager_service_impl.h"

@@ -4,8 +4,10 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("service_provider") {
+mojom("application") {
   sources = [
+    "application.mojom",
     "service_provider.mojom",
+    "shell.mojom",
   ]
 }

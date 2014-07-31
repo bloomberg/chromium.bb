@@ -5,7 +5,6 @@
 #include "mojo/services/view_manager/view_manager_init_service_impl.h"
 
 #include "base/bind.h"
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/view_manager/ids.h"
 #include "mojo/services/view_manager/view_manager_init_service_context.h"
 #include "mojo/services/view_manager/view_manager_service_impl.h"

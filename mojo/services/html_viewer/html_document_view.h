@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/application/lazy_interface_ptr.h"
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"

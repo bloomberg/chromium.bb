@@ -9,7 +9,7 @@
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/interface_factory.h"
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
+#include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/service_manager/background_service_loader.h"
 #include "mojo/service_manager/service_loader.h"
 #include "mojo/service_manager/service_manager.h"

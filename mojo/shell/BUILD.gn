@@ -36,7 +36,7 @@ source_set("lib") {
     "//mojo/common",
     "//mojo/gles2",
     "//mojo/public/cpp/application",
-    "//mojo/public/interfaces/service_provider",
+    "//mojo/public/interfaces/application",
     "//mojo/service_manager",
     "//mojo/services/native_viewport",
     "//mojo/services/public/interfaces/native_viewport",

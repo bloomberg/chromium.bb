@@ -17,7 +17,7 @@ source_set("application") {
 
   deps = [
     "//mojo/public/cpp/bindings",
-    "//mojo/public/interfaces/service_provider",
+    "//mojo/public/interfaces/application",
   ]
 }
 

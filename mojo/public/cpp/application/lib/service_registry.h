@@ -6,10 +6,11 @@
 #define MOJO_PUBLIC_CPP_APPLICATION_LIB_SERVICE_REGISTRY_H_
 
 #include "mojo/public/cpp/application/application_connection.h"
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
+#include "mojo/public/interfaces/application/service_provider.mojom.h"
 
 namespace mojo {
 
+class Application;
 class ApplicationImpl;
 
 namespace internal {

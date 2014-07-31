@@ -9,7 +9,6 @@
 #include "base/stl_util.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/connect.h"
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/public/cpp/view_manager/lib/node_private.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_private.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"

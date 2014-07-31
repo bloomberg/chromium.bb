@@ -7,7 +7,6 @@
 
 #include "mojo/public/cpp/application/interface_factory.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 
 namespace mojo {
 class ApplicationConnection;

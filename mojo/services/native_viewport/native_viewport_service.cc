@@ -10,7 +10,6 @@
 #include "base/time/time.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/interface_factory.h"
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/gles2/command_buffer_impl.h"
 #include "mojo/services/native_viewport/native_viewport.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"

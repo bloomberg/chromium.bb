@@ -11,7 +11,6 @@
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/interfaces/native_viewport/native_viewport.mojom.h"
 #include "ui/gfx/rect.h"

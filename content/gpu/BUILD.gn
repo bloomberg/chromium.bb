@@ -27,7 +27,7 @@ source_set("gpu") {
   deps = [
     "//base",
     "//content:export",
-    "//mojo/public/interfaces/service_provider",
+    "//mojo/public/interfaces/application",
     "//skia",
     "//ui/gl",
   ]

@@ -21,7 +21,7 @@ source_set("ppapi_plugin") {
   deps = [
     "//base",
     "//content:export",
-    "//mojo/public/interfaces/service_provider",
+    "//mojo/public/interfaces/application",
     "//ppapi:ppapi_ipc",
     "//skia",
     "//third_party/icu",

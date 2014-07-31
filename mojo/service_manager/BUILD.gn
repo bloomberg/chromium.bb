@@ -23,11 +23,11 @@ component("service_manager") {
     "//url",
     "//mojo/common",
     "//mojo/environment:chromium",
-    "//mojo/public/interfaces/service_provider:service_provider",
+    "//mojo/public/interfaces/application:application",
     "//mojo/system",
   ]
 
   forward_dependent_configs_from = [
-    "//mojo/public/interfaces/service_provider:service_provider",
+    "//mojo/public/interfaces/application:application",
   ]
 }

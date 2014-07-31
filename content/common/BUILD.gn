@@ -60,7 +60,7 @@ source_set("common") {
       "//gpu/skia_bindings",
       "//media",
       "//media:shared_memory_support",
-      "//mojo/public/interfaces/service_provider",
+      "//mojo/public/interfaces/application",
       "//third_party/WebKit/public:blink",
       "//ui/gl",
       "//webkit/browser:storage",
@@ -276,6 +276,6 @@ mojom("mojo_bindings") {
   ]
 
   deps = [
-    "//mojo/public/interfaces/service_provider:service_provider",
+    "//mojo/public/interfaces/application:application",
   ]
 }

@@ -1,0 +1,16 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import "mojo/public/interfaces/application/service_provider.mojom"
+
+module mojo {
+
+// Applications vend Services through the ServiceProvider interface. Services
+// implement Interfaces.
+[Client=Shell]
+interface Application {
+  AcceptConnection(string requestor_url, ServiceProvider provider);
+};
+
+}

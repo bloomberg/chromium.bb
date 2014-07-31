@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/service_manager/service_loader.h"
 #include "mojo/shell/context.h"
 
@@ -21,8 +20,8 @@ class ServiceLoader;
 namespace shell {
 
 // ShellTestHelper is useful for tests to establish a connection to the
-// ServiceProvider. Invoke Init() to establish the connection. Once done,
-// service_provider() returns the handle to the ServiceProvider.
+// ServiceManager. Invoke Init() to establish the connection. Once done,
+// service_manager() returns the ServiceManager.
 class ShellTestHelper {
  public:
   ShellTestHelper();
@@ -30,8 +29,6 @@ class ShellTestHelper {
 
   void Init();
 
-  // Returns a handle to the ServiceManager. ShellTestHelper owns the
-  // ServiceProvider.
   ServiceManager* service_manager() { return context_.service_manager(); }
 
   // Sets a ServiceLoader for the specified URL. |loader| is ultimately used on

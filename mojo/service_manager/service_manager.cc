@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "mojo/common/common_type_converters.h"
+#include "mojo/public/interfaces/application/application.mojom.h"
+#include "mojo/public/interfaces/application/shell.mojom.h"
 #include "mojo/service_manager/service_loader.h"
 
 namespace mojo {

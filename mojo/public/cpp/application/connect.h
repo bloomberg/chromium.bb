@@ -5,7 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_APPLICATION_CONNECT_H_
 #define MOJO_PUBLIC_CPP_APPLICATION_CONNECT_H_
 
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
+#include "mojo/public/interfaces/application/service_provider.mojom.h"
 
 namespace mojo {
 

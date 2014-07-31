@@ -29,7 +29,7 @@ if (enable_plugins && !is_linux) {
 
     deps = [
       "//content:export",
-      "//mojo/public/interfaces/service_provider",
+      "//mojo/public/interfaces/application",
       "//skia",
       "//third_party/npapi",
       "//third_party/WebKit/public:blink",

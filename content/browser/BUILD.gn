@@ -92,7 +92,7 @@ source_set("browser") {
       "//cc",
       "//cc/surfaces",
       "//mojo/public/cpp/bindings",
-      "//mojo/public/interfaces/service_provider",
+      "//mojo/public/interfaces/application",
       "//mojo/public/js/bindings",
       "//net:http_server",
       "//third_party/icu",

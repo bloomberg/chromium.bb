@@ -17,7 +17,7 @@ source_set("utility") {
     "//base",
     "//content:export",
     "//courgette:courgette_lib",
-    "//mojo/public/interfaces/service_provider",
+    "//mojo/public/interfaces/application",
     "//third_party/WebKit/public:blink_headers",
   ]
 }

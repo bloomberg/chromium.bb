@@ -6,8 +6,8 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../components/tracing.gyp:tracing',
+    '../mojo/mojo_base.gyp:mojo_application_bindings',
     '../mojo/mojo_base.gyp:mojo_environment_chromium',
-    '../mojo/mojo_base.gyp:mojo_service_provider_bindings',
     '../skia/skia.gyp:skia',
     '../ui/base/ui_base.gyp:ui_base',
     '../ui/gfx/gfx.gyp:gfx',

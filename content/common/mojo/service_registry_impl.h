@@ -15,7 +15,7 @@
 #include "content/public/common/service_registry.h"
 #include "mojo/public/cpp/bindings/interface_impl.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
+#include "mojo/public/interfaces/application/service_provider.mojom.h"
 
 namespace content {
 

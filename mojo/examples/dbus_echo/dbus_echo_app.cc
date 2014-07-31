@@ -12,7 +12,6 @@
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/macros.h"
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/dbus_echo/echo.mojom.h"
 
 namespace mojo {

@@ -163,8 +163,8 @@
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
+        'mojo_base.gyp:mojo_application_bindings',
         'mojo_base.gyp:mojo_common_lib',
-        'mojo_base.gyp:mojo_service_provider_bindings',
         'mojo_base.gyp:mojo_system_impl',
         'mojo_base.gyp:mojo_application',
         'mojo_external_service_bindings',
@@ -338,9 +338,9 @@
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
+        'mojo_base.gyp:mojo_application_bindings',
         'mojo_base.gyp:mojo_common_lib',
         'mojo_base.gyp:mojo_environment_chromium',
-        'mojo_base.gyp:mojo_service_provider_bindings',
         '<(mojo_system_for_component)',
       ],
       'sources': [
@@ -353,7 +353,7 @@
       ],
       'export_dependent_settings': [
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        'mojo_base.gyp:mojo_service_provider_bindings',
+        'mojo_base.gyp:mojo_application_bindings',
       ],
     },
     {
@@ -416,10 +416,10 @@
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_geometry',
             '../ui/gl/gl.gyp:gl',
+            'mojo_base.gyp:mojo_application_bindings',
             'mojo_base.gyp:mojo_common_lib',
             'mojo_base.gyp:mojo_environment_chromium',
             'mojo_base.gyp:mojo_jni_headers',
-            'mojo_base.gyp:mojo_service_provider_bindings',
             'mojo_shell_lib',
           ],
           'sources': [

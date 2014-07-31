@@ -164,11 +164,13 @@
       ],
     },
     {
-      # GN version: //mojo/public/interfaces/service_provider
-      'target_name': 'mojo_service_provider_bindings',
+      # GN version: //mojo/public/interfaces/application:application
+      'target_name': 'mojo_application_bindings',
       'type': 'static_library',
       'sources': [
-        'public/interfaces/service_provider/service_provider.mojom',
+        'public/interfaces/application/application.mojom',
+        'public/interfaces/application/service_provider.mojom',
+        'public/interfaces/application/shell.mojom',
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [
@@ -198,10 +200,10 @@
         'public/cpp/application/lib/service_registry.h',
       ],
       'dependencies': [
-        'mojo_service_provider_bindings',
+        'mojo_application_bindings',
       ],
       'export_dependent_settings': [
-        'mojo_service_provider_bindings',
+        'mojo_application_bindings',
       ],
     },
   ],

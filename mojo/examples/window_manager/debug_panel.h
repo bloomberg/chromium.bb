@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/layout/layout_manager.h"

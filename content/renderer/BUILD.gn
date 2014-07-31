@@ -31,7 +31,7 @@ source_set("renderer") {
     "//mojo/bindings/js",
     "//mojo/environment:chromium",
     "//mojo/public/js/bindings",
-    "//mojo/public/interfaces/service_provider",
+    "//mojo/public/interfaces/application",
     "//net",
     "//skia",
     "//third_party/icu",

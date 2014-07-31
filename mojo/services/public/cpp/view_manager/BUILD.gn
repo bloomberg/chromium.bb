@@ -7,7 +7,7 @@ source_set("view_manager") {
     ":common",
     "//base",
     "//mojo/public/cpp/application",
-    "//mojo/public/interfaces/service_provider",
+    "//mojo/public/interfaces/application",
     "//mojo/services/public/cpp/geometry",
     "//mojo/services/public/interfaces/geometry",
     "//mojo/services/public/interfaces/view_manager",
