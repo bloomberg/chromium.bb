@@ -92,6 +92,9 @@ class ChannelWin : public Channel,
   // Determines if we should validate a client's secret on connection.
   bool validate_client_;
 
+  // True if there is a write in progress. TODO(rvargas): remove this.
+  bool writing_;
+
   // Tracks the lifetime of this object, for debugging purposes.
   int32 debug_flags_;
 

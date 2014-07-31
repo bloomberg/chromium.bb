@@ -63,10 +63,11 @@ ChannelWin::ChannelWin(const IPC::ChannelHandle &channel_handle,
       peer_pid_(base::kNullProcessId),
       waiting_connect_(mode & MODE_SERVER_FLAG),
       processing_incoming_(false),
-      weak_factory_(this),
       validate_client_(false),
+      writing_(false),
       debug_flags_(0),
-      client_secret_(0) {
+      client_secret_(0),
+      weak_factory_(this) {
   CreatePipe(channel_handle, mode);
 }
 
@@ -426,6 +427,8 @@ bool ChannelWin::ProcessOutgoingMessages(
   Message* m = output_queue_.front();
   DCHECK(m->size() <= INT_MAX);
   debug_flags_ |= WRITE_MSG;
+  CHECK(!writing_);
+  writing_ = true;
   BOOL ok = WriteFile(pipe_,
                       m->data(),
                       static_cast<int>(m->size()),
@@ -441,6 +444,7 @@ bool ChannelWin::ProcessOutgoingMessages(
 
       return true;
     }
+    writing_ = false;
     LOG(ERROR) << "pipe error: " << err;
     return false;
   }
@@ -498,6 +502,9 @@ void ChannelWin::OnIOCompleted(
       ok = ProcessIncomingMessages();
   } else {
     DCHECK(context == &output_state_.context);
+    CHECK(writing_);
+    CHECK(output_state_.is_pending);
+    writing_ = false;
     debug_flags_ |= WRITE_COMPLETED;
     if (debug_flags_ & WAIT_FOR_WRITE) {
       CHECK(!(debug_flags_ & WAIT_FOR_WRITE_COMPLETE));
