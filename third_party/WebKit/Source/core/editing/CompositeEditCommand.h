@@ -37,6 +37,7 @@ class EditingStyle;
 class Element;
 class HTMLBRElement;
 class HTMLElement;
+class HTMLSpanElement;
 class Text;
 
 class EditCommandComposition FINAL : public UndoStep {
@@ -122,7 +123,7 @@ protected:
     void removeNodeAttribute(PassRefPtrWillBeRawPtr<Element>, const QualifiedName& attribute);
     void removeChildrenInRange(PassRefPtrWillBeRawPtr<Node>, unsigned from, unsigned to);
     virtual void removeNode(PassRefPtrWillBeRawPtr<Node>, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable);
-    HTMLElement* replaceElementWithSpanPreservingChildrenAndAttributes(PassRefPtrWillBeRawPtr<HTMLElement>);
+    HTMLSpanElement* replaceElementWithSpanPreservingChildrenAndAttributes(PassRefPtrWillBeRawPtr<HTMLElement>);
     void removeNodePreservingChildren(PassRefPtrWillBeRawPtr<Node>, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable);
     void removeNodeAndPruneAncestors(PassRefPtrWillBeRawPtr<Node>, Node* excludeNode = 0);
     void moveRemainingSiblingsToNewParent(Node*, Node* pastLastNodeToMove, PassRefPtrWillBeRawPtr<Element> prpNewParent);

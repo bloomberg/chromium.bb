@@ -159,7 +159,7 @@ PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRangeFor(const ContainerNode
     return resultRange.release();
 }
 
-PlainTextRange PlainTextRange::create(const Node& scope, const Range& range)
+PlainTextRange PlainTextRange::create(const ContainerNode& scope, const Range& range)
 {
     if (!range.startContainer())
         return PlainTextRange();
@@ -174,7 +174,7 @@ PlainTextRange PlainTextRange::create(const Node& scope, const Range& range)
     if (range.endContainer() != scope && !range.endContainer()->isDescendantOf(&scope))
         return PlainTextRange();
 
-    RefPtrWillBeRawPtr<Range> testRange = Range::create(scope.document(), const_cast<Node*>(&scope), 0, range.startContainer(), range.startOffset());
+    RefPtrWillBeRawPtr<Range> testRange = Range::create(scope.document(), const_cast<ContainerNode*>(&scope), 0, range.startContainer(), range.startOffset());
     ASSERT(testRange->startContainer() == &scope);
     size_t start = TextIterator::rangeLength(testRange.get());
 

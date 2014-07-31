@@ -53,6 +53,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLIElement.h"
+#include "core/html/HTMLSpanElement.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderText.h"
 #include "wtf/StdLibExtras.h"
@@ -498,10 +499,9 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
 
                 if (newInlineStyle->conflictsWithImplicitStyleOfElement(htmlElement)) {
                     // e.g. <b style="font-weight: normal;"> is converted to <span style="font-weight: normal;">
-                    node = replaceElementWithSpanPreservingChildrenAndAttributes(htmlElement);
-                    element = toElement(node);
+                    element = replaceElementWithSpanPreservingChildrenAndAttributes(htmlElement);
                     inlineStyle = element->inlineStyle();
-                    insertedNodes.didReplaceNode(*htmlElement, *node);
+                    insertedNodes.didReplaceNode(*htmlElement, *element);
                 } else if (newInlineStyle->extractConflictingImplicitStyleOfAttributes(htmlElement, EditingStyle::PreserveWritingDirection, 0, attributes,
                     EditingStyle::DoNotExtractMatchingStyle)) {
                     // e.g. <font size="3" style="font-size: 20px;"> is converted to <font style="font-size: 20px;">

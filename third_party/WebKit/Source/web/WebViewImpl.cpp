@@ -2158,8 +2158,8 @@ WebTextInputInfo WebViewImpl::textInputInfo()
         return info;
 
     FrameSelection& selection = focused->selection();
-    Node* node = selection.selection().rootEditableElement();
-    if (!node)
+    Element* element = selection.selection().rootEditableElement();
+    if (!element)
         return info;
 
     info.inputMode = inputModeOfFocusedElement();
@@ -2173,13 +2173,13 @@ WebTextInputInfo WebViewImpl::textInputInfo()
 
     // Emits an object replacement character for each replaced element so that
     // it is exposed to IME and thus could be deleted by IME on android.
-    info.value = plainText(rangeOfContents(node).get(), TextIteratorEmitsObjectReplacementCharacter);
+    info.value = plainText(rangeOfContents(element).get(), TextIteratorEmitsObjectReplacementCharacter);
 
     if (info.value.isEmpty())
         return info;
 
     if (RefPtrWillBeRawPtr<Range> range = selection.selection().firstRange()) {
-        PlainTextRange plainTextRange(PlainTextRange::create(*node, *range.get()));
+        PlainTextRange plainTextRange(PlainTextRange::create(*element, *range.get()));
         if (plainTextRange.isNotNull()) {
             info.selectionStart = plainTextRange.start();
             info.selectionEnd = plainTextRange.end();
@@ -2187,7 +2187,7 @@ WebTextInputInfo WebViewImpl::textInputInfo()
     }
 
     if (RefPtrWillBeRawPtr<Range> range = focused->inputMethodController().compositionRange()) {
-        PlainTextRange plainTextRange(PlainTextRange::create(*node, *range.get()));
+        PlainTextRange plainTextRange(PlainTextRange::create(*element, *range.get()));
         if (plainTextRange.isNotNull()) {
             info.compositionStart = plainTextRange.start();
             info.compositionEnd = plainTextRange.end();
