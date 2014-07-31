@@ -16,7 +16,19 @@ class NativeThemeMac : public FallbackTheme {
  public:
   static NativeThemeMac* instance();
 
+  // Overridden from NativeTheme:
   virtual SkColor GetSystemColor(ColorId color_id) const OVERRIDE;
+
+  // Overridden from NativeThemeBase:
+  virtual void PaintMenuPopupBackground(
+      SkCanvas* canvas,
+      const gfx::Size& size,
+      const MenuBackgroundExtraParams& menu_background) const OVERRIDE;
+  virtual void PaintMenuItemBackground(
+      SkCanvas* canvas,
+      State state,
+      const gfx::Rect& rect,
+      const MenuListExtraParams& menu_list) const OVERRIDE;
 
  private:
   NativeThemeMac();
