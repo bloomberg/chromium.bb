@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/p2p/socket_host_throttler.h"
-#include "third_party/libjingle/source/talk/base/ratelimiter.h"
-#include "third_party/libjingle/source/talk/base/timing.h"
+#include "third_party/webrtc/base/ratelimiter.h"
+#include "third_party/webrtc/base/timing.h"
 
 namespace content {
 
@@ -16,19 +16,19 @@ const int kMaxIceMessageBandwidth = 256 * 1024;
 
 
 P2PMessageThrottler::P2PMessageThrottler()
-    : timing_(new talk_base::Timing()),
-      rate_limiter_(new talk_base::RateLimiter(kMaxIceMessageBandwidth, 1.0)) {
+    : timing_(new rtc::Timing()),
+      rate_limiter_(new rtc::RateLimiter(kMaxIceMessageBandwidth, 1.0)) {
 }
 
 P2PMessageThrottler::~P2PMessageThrottler() {
 }
 
-void P2PMessageThrottler::SetTiming(scoped_ptr<talk_base::Timing> timing) {
+void P2PMessageThrottler::SetTiming(scoped_ptr<rtc::Timing> timing) {
   timing_ = timing.Pass();
 }
 
 void P2PMessageThrottler::SetSendIceBandwidth(int bandwidth_kbps) {
-  rate_limiter_.reset(new talk_base::RateLimiter(bandwidth_kbps, 1.0));
+  rate_limiter_.reset(new rtc::RateLimiter(bandwidth_kbps, 1.0));
 }
 
 bool P2PMessageThrottler::DropNextPacket(size_t packet_len) {

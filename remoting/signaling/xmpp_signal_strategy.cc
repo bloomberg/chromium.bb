@@ -17,9 +17,9 @@
 #include "jingle/notifier/base/gaia_token_pre_xmpp_auth.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "third_party/libjingle/source/talk/base/thread.h"
 #include "third_party/libjingle/source/talk/xmpp/prexmppauth.h"
 #include "third_party/libjingle/source/talk/xmpp/saslcookiemechanism.h"
+#include "third_party/webrtc/base/thread.h"
 
 const char kDefaultResourceName[] = "chromoting";
 
@@ -77,7 +77,7 @@ void XmppSignalStrategy::Connect() {
   settings.set_token_service(xmpp_server_config_.auth_service);
   settings.set_auth_token(buzz::AUTH_MECHANISM_GOOGLE_TOKEN,
                           xmpp_server_config_.auth_token);
-  settings.set_server(talk_base::SocketAddress(
+  settings.set_server(rtc::SocketAddress(
       xmpp_server_config_.host, xmpp_server_config_.port));
   settings.set_use_tls(
       xmpp_server_config_.use_tls ? buzz::TLS_ENABLED : buzz::TLS_DISABLED);

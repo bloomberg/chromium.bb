@@ -41,12 +41,12 @@ class ChromiumPortAllocator : public cricket::HttpPortAllocatorBase {
  private:
   ChromiumPortAllocator(
       const scoped_refptr<net::URLRequestContextGetter>& url_context,
-      scoped_ptr<talk_base::NetworkManager> network_manager,
-      scoped_ptr<talk_base::PacketSocketFactory> socket_factory);
+      scoped_ptr<rtc::NetworkManager> network_manager,
+      scoped_ptr<rtc::PacketSocketFactory> socket_factory);
 
   scoped_refptr<net::URLRequestContextGetter> url_context_;
-  scoped_ptr<talk_base::NetworkManager> network_manager_;
-  scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;
+  scoped_ptr<rtc::NetworkManager> network_manager_;
+  scoped_ptr<rtc::PacketSocketFactory> socket_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromiumPortAllocator);
 };

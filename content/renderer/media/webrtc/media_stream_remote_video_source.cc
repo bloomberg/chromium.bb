@@ -72,7 +72,7 @@ void MediaStreamRemoteVideoSource::
 RemoteVideoSourceDelegate::RenderFrame(
     const cricket::VideoFrame* frame) {
   base::TimeDelta timestamp = base::TimeDelta::FromMicroseconds(
-      frame->GetElapsedTime() / talk_base::kNumNanosecsPerMicrosec);
+      frame->GetElapsedTime() / rtc::kNumNanosecsPerMicrosec);
 
   scoped_refptr<media::VideoFrame> video_frame;
   if (frame->GetNativeHandle() != NULL) {

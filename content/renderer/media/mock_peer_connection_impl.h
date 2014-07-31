@@ -24,18 +24,18 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   explicit MockPeerConnectionImpl(MockPeerConnectionDependencyFactory* factory);
 
   // PeerConnectionInterface implementation.
-  virtual talk_base::scoped_refptr<webrtc::StreamCollectionInterface>
+  virtual rtc::scoped_refptr<webrtc::StreamCollectionInterface>
       local_streams() OVERRIDE;
-  virtual talk_base::scoped_refptr<webrtc::StreamCollectionInterface>
+  virtual rtc::scoped_refptr<webrtc::StreamCollectionInterface>
       remote_streams() OVERRIDE;
   virtual bool AddStream(
       webrtc::MediaStreamInterface* local_stream,
       const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
   virtual void RemoveStream(
       webrtc::MediaStreamInterface* local_stream) OVERRIDE;
-  virtual talk_base::scoped_refptr<webrtc::DtmfSenderInterface>
+  virtual rtc::scoped_refptr<webrtc::DtmfSenderInterface>
       CreateDtmfSender(webrtc::AudioTrackInterface* track) OVERRIDE;
-  virtual talk_base::scoped_refptr<webrtc::DataChannelInterface>
+  virtual rtc::scoped_refptr<webrtc::DataChannelInterface>
       CreateDataChannel(const std::string& label,
                         const webrtc::DataChannelInit* config) OVERRIDE;
 
@@ -124,8 +124,8 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   MockPeerConnectionDependencyFactory* dependency_factory_;
 
   std::string stream_label_;
-  talk_base::scoped_refptr<MockStreamCollection> local_streams_;
-  talk_base::scoped_refptr<MockStreamCollection> remote_streams_;
+  rtc::scoped_refptr<MockStreamCollection> local_streams_;
+  rtc::scoped_refptr<MockStreamCollection> remote_streams_;
   scoped_ptr<webrtc::SessionDescriptionInterface> local_desc_;
   scoped_ptr<webrtc::SessionDescriptionInterface> remote_desc_;
   scoped_ptr<webrtc::SessionDescriptionInterface> created_sessiondescription_;

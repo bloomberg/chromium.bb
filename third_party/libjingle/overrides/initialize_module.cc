@@ -7,9 +7,9 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "init_webrtc.h"
-#include "talk/base/basictypes.h"
 #include "talk/media/webrtc/webrtcmediaengine.h"
-#include "third_party/libjingle/overrides/talk/base/logging.h"
+#include "webrtc/base/basictypes.h"
+#include "webrtc/base/logging.h"
 
 #if !defined(LIBPEERCONNECTION_IMPLEMENTATION) || defined(LIBPEERCONNECTION_LIB)
 #error "Only compile the allocator proxy with the shared_library implementation"
@@ -81,7 +81,7 @@ bool InitializeModule(const CommandLine& command_line,
 
   *create_media_engine = &CreateWebRtcMediaEngine;
   *destroy_media_engine = &DestroyWebRtcMediaEngine;
-  *init_diagnostic_logging = &talk_base::InitDiagnosticLoggingDelegateFunction;
+  *init_diagnostic_logging = &rtc::InitDiagnosticLoggingDelegateFunction;
 
   if (CommandLine::Init(0, NULL)) {
 #if !defined(OS_WIN)

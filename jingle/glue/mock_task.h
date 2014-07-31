@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// A mock of talk_base::Task.
+// A mock of rtc::Task.
 
 #ifndef JINGLE_GLUE_MOCK_TASK_H_
 #define JINGLE_GLUE_MOCK_TASK_H_
 
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/libjingle/source/talk/base/task.h"
+#include "third_party/webrtc/base/task.h"
 
 namespace jingle_glue {
 
-class MockTask : public talk_base::Task {
+class MockTask : public rtc::Task {
  public:
   MockTask(TaskParent* parent);
 

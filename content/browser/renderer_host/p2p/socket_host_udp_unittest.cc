@@ -17,7 +17,7 @@
 #include "net/udp/datagram_server_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/libjingle/source/talk/base/timing.h"
+#include "third_party/webrtc/base/timing.h"
 
 using ::testing::_;
 using ::testing::DeleteArg;
@@ -26,7 +26,7 @@ using ::testing::Return;
 
 namespace {
 
-class FakeTiming : public talk_base::Timing {
+class FakeTiming : public rtc::Timing {
  public:
   FakeTiming() : now_(0.0) {}
   virtual double TimerNow() OVERRIDE { return now_; }
@@ -197,7 +197,7 @@ class P2PSocketHostUdpTest : public testing::Test {
     dest1_ = ParseAddress(kTestIpAddress1, kTestPort1);
     dest2_ = ParseAddress(kTestIpAddress2, kTestPort2);
 
-    scoped_ptr<talk_base::Timing> timing(new FakeTiming());
+    scoped_ptr<rtc::Timing> timing(new FakeTiming());
     throttler_.SetTiming(timing.Pass());
   }
 
@@ -221,7 +221,7 @@ TEST_F(P2PSocketHostUdpTest, SendStunNoAuth) {
       .Times(3)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
-  talk_base::PacketOptions options;
+  rtc::PacketOptions options;
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
   socket_host_->Send(dest1_, packet1, options, 0);
@@ -247,7 +247,7 @@ TEST_F(P2PSocketHostUdpTest, SendDataNoAuth) {
       MatchMessage(static_cast<uint32>(P2PMsg_OnError::ID))))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
-  talk_base::PacketOptions options;
+  rtc::PacketOptions options;
   std::vector<char> packet;
   CreateRandomPacket(&packet);
   socket_host_->Send(dest1_, packet, options, 0);
@@ -271,7 +271,7 @@ TEST_F(P2PSocketHostUdpTest, SendAfterStunRequest) {
       MatchMessage(static_cast<uint32>(P2PMsg_OnSendComplete::ID))))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
-  talk_base::PacketOptions options;
+  rtc::PacketOptions options;
   std::vector<char> packet;
   CreateRandomPacket(&packet);
   socket_host_->Send(dest1_, packet, options, 0);
@@ -296,7 +296,7 @@ TEST_F(P2PSocketHostUdpTest, SendAfterStunResponse) {
       MatchMessage(static_cast<uint32>(P2PMsg_OnSendComplete::ID))))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
-  talk_base::PacketOptions options;
+  rtc::PacketOptions options;
   std::vector<char> packet;
   CreateRandomPacket(&packet);
   socket_host_->Send(dest1_, packet, options, 0);
@@ -317,7 +317,7 @@ TEST_F(P2PSocketHostUdpTest, SendAfterStunResponseDifferentHost) {
   socket_->ReceivePacket(dest1_, request_packet);
 
   // Should fail when trying to send the same packet to |dest2_|.
-  talk_base::PacketOptions options;
+  rtc::PacketOptions options;
   std::vector<char> packet;
   CreateRandomPacket(&packet);
   EXPECT_CALL(sender_, Send(
@@ -334,7 +334,7 @@ TEST_F(P2PSocketHostUdpTest, ThrottleAfterLimit) {
       .Times(2)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
-  talk_base::PacketOptions options;
+  rtc::PacketOptions options;
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
   throttler_.SetSendIceBandwidth(packet1.size() * 2);
@@ -363,7 +363,7 @@ TEST_F(P2PSocketHostUdpTest, ThrottleAfterLimitAfterReceive) {
       .Times(4)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
-  talk_base::PacketOptions options;
+  rtc::PacketOptions options;
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
   throttler_.SetSendIceBandwidth(packet1.size());

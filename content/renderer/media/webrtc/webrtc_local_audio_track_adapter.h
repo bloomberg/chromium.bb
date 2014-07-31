@@ -67,7 +67,7 @@ class CONTENT_EXPORT WebRtcLocalAudioTrackAdapter
   virtual void AddSink(webrtc::AudioTrackSinkInterface* sink) OVERRIDE;
   virtual void RemoveSink(webrtc::AudioTrackSinkInterface* sink) OVERRIDE;
   virtual bool GetSignalLevel(int* level) OVERRIDE;
-  virtual talk_base::scoped_refptr<webrtc::AudioProcessorInterface>
+  virtual rtc::scoped_refptr<webrtc::AudioProcessorInterface>
       GetAudioProcessor() OVERRIDE;
 
   // cricket::AudioCapturer implementation.
@@ -83,7 +83,7 @@ class CONTENT_EXPORT WebRtcLocalAudioTrackAdapter
 
   // The source of the audio track which handles the audio constraints.
   // TODO(xians): merge |track_source_| to |capturer_| in WebRtcLocalAudioTrack.
-  talk_base::scoped_refptr<webrtc::AudioSourceInterface> track_source_;
+  rtc::scoped_refptr<webrtc::AudioSourceInterface> track_source_;
 
   // The audio processsor that applies audio processing on the data of audio
   // track.

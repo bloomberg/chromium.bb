@@ -29,7 +29,7 @@ P2PAsyncAddressResolver::~P2PAsyncAddressResolver() {
   DCHECK(!registered_);
 }
 
-void P2PAsyncAddressResolver::Start(const talk_base::SocketAddress& host_name,
+void P2PAsyncAddressResolver::Start(const rtc::SocketAddress& host_name,
                                     const DoneCallback& done_callback) {
   DCHECK(delegate_message_loop_->BelongsToCurrentThread());
   DCHECK_EQ(STATE_CREATED, state_);
@@ -51,7 +51,7 @@ void P2PAsyncAddressResolver::Cancel() {
 }
 
 void P2PAsyncAddressResolver::DoSendRequest(
-    const talk_base::SocketAddress& host_name,
+    const rtc::SocketAddress& host_name,
     const DoneCallback& done_callback) {
   DCHECK(ipc_message_loop_->BelongsToCurrentThread());
 

@@ -72,7 +72,7 @@ void P2PSocketClientImpl::DoInit(P2PSocketType type,
 void P2PSocketClientImpl::SendWithDscp(
     const net::IPEndPoint& address,
     const std::vector<char>& data,
-    const talk_base::PacketOptions& options) {
+    const rtc::PacketOptions& options) {
   if (!ipc_message_loop_->BelongsToCurrentThread()) {
     ipc_message_loop_->PostTask(
         FROM_HERE, base::Bind(
@@ -92,7 +92,7 @@ void P2PSocketClientImpl::SendWithDscp(
 
 void P2PSocketClientImpl::Send(const net::IPEndPoint& address,
                                const std::vector<char>& data) {
-  talk_base::PacketOptions options(talk_base::DSCP_DEFAULT);
+  rtc::PacketOptions options(rtc::DSCP_DEFAULT);
   SendWithDscp(address, data, options);
 }
 

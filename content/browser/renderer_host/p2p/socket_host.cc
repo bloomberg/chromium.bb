@@ -11,10 +11,10 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/hmac.h"
-#include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
-#include "third_party/libjingle/source/talk/base/byteorder.h"
-#include "third_party/libjingle/source/talk/base/messagedigest.h"
 #include "third_party/libjingle/source/talk/p2p/base/stun.h"
+#include "third_party/webrtc/base/asyncpacketsocket.h"
+#include "third_party/webrtc/base/byteorder.h"
+#include "third_party/webrtc/base/messagedigest.h"
 
 namespace {
 
@@ -48,7 +48,7 @@ bool IsRtcpPacket(const char* data) {
 }
 
 bool IsTurnSendIndicationPacket(const char* data) {
-  uint16 type = talk_base::GetBE16(data);
+  uint16 type = rtc::GetBE16(data);
   return (type == cricket::TURN_SEND_INDICATION);
 }
 
@@ -80,7 +80,7 @@ bool ValidateRtpHeader(const char* rtp, int length, size_t* header_length) {
 
   // Getting extension profile length.
   // Length is in 32 bit words.
-  uint16 extn_length = talk_base::GetBE16(rtp + 2) * 4;
+  uint16 extn_length = rtc::GetBE16(rtp + 2) * 4;
 
   // Verify input length against total header size.
   if (rtp_hdr_len_without_extn + kRtpExtnHdrLen + extn_length > length) {
@@ -129,7 +129,7 @@ void UpdateAbsSendTimeExtnValue(char* extn_data, int len,
 // Assumes |len| is actual packet length + tag length. Updates HMAC at end of
 // the RTP packet.
 void UpdateRtpAuthTag(char* rtp, int len,
-                      const talk_base::PacketOptions& options) {
+                      const rtc::PacketOptions& options) {
   // If there is no key, return.
   if (options.packet_time_params.srtp_auth_key.empty())
     return;
@@ -176,7 +176,7 @@ namespace content {
 namespace packet_processing_helpers {
 
 bool ApplyPacketOptions(char* data, int length,
-                        const talk_base::PacketOptions& options,
+                        const rtc::PacketOptions& options,
                         uint32 abs_send_time) {
   DCHECK(data != NULL);
   DCHECK(length > 0);
@@ -239,7 +239,7 @@ bool GetRtpPacketStartPositionAndLength(const char* packet,
     }
 
     rtp_begin = kTurnChannelHdrLen;
-    rtp_length = talk_base::GetBE16(&packet[2]);
+    rtp_length = rtc::GetBE16(&packet[2]);
     if (length < rtp_length + kTurnChannelHdrLen) {
       return false;
     }
@@ -249,7 +249,7 @@ bool GetRtpPacketStartPositionAndLength(const char* packet,
       return false;
     }
     // Validate STUN message length.
-    int stun_msg_len = talk_base::GetBE16(&packet[2]);
+    int stun_msg_len = rtc::GetBE16(&packet[2]);
     if (stun_msg_len + P2PSocketHost::kStunHeaderSize != length) {
       return false;
     }
@@ -275,8 +275,8 @@ bool GetRtpPacketStartPositionAndLength(const char* packet,
       // padding bits are ignored, and may be any value.
       uint16 attr_type, attr_length;
       // Getting attribute type and length.
-      attr_type = talk_base::GetBE16(&packet[rtp_begin]);
-      attr_length = talk_base::GetBE16(
+      attr_type = rtc::GetBE16(&packet[rtp_begin]);
+      attr_length = rtc::GetBE16(
           &packet[rtp_begin + sizeof(attr_type)]);
       // Checking for bogus attribute length.
       if (length < attr_length + rtp_begin) {
@@ -353,9 +353,9 @@ bool UpdateRtpAbsSendTimeExtn(char* rtp, int length,
   rtp += rtp_hdr_len_without_extn;
 
   // Getting extension profile ID and length.
-  uint16 profile_id = talk_base::GetBE16(rtp);
+  uint16 profile_id = rtc::GetBE16(rtp);
   // Length is in 32 bit words.
-  uint16 extn_length = talk_base::GetBE16(rtp + 2) * 4;
+  uint16 extn_length = rtc::GetBE16(rtp + 2) * 4;
 
   rtp += kRtpExtnHdrLen;  // Moving past extn header.
 

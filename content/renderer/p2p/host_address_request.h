@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "net/base/net_util.h"
-#include "third_party/libjingle/source/talk/base/asyncresolverinterface.h"
+#include "third_party/webrtc/base/asyncresolverinterface.h"
 
 namespace base {
 class MessageLoop;
@@ -31,7 +31,7 @@ class P2PAsyncAddressResolver
 
   P2PAsyncAddressResolver(P2PSocketDispatcher* dispatcher);
   // Start address resolve process.
-  void Start(const talk_base::SocketAddress& addr,
+  void Start(const rtc::SocketAddress& addr,
              const DoneCallback& done_callback);
   // Clients must unregister before exiting for cleanup.
   void Cancel();
@@ -49,7 +49,7 @@ class P2PAsyncAddressResolver
 
   virtual ~P2PAsyncAddressResolver();
 
-  void DoSendRequest(const talk_base::SocketAddress& host_name,
+  void DoSendRequest(const rtc::SocketAddress& host_name,
                      const DoneCallback& done_callback);
   void DoUnregister();
   void OnResponse(const net::IPAddressList& address);
@@ -65,7 +65,7 @@ class P2PAsyncAddressResolver
   // Accessed on the IPC thread only.
   int32 request_id_;
   bool registered_;
-  std::vector<talk_base::IPAddress> addresses_;
+  std::vector<rtc::IPAddress> addresses_;
   DoneCallback done_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PAsyncAddressResolver);

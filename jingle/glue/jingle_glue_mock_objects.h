@@ -6,24 +6,24 @@
 #define JINGLE_GLUE_JINGLE_GLUE_MOCK_OBJECTS_H_
 
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/libjingle/source/talk/base/stream.h"
+#include "third_party/webrtc/base/stream.h"
 
 namespace jingle_glue {
 
-class MockStream : public talk_base::StreamInterface {
+class MockStream : public rtc::StreamInterface {
  public:
   MockStream();
   virtual ~MockStream();
 
-  MOCK_CONST_METHOD0(GetState, talk_base::StreamState());
+  MOCK_CONST_METHOD0(GetState, rtc::StreamState());
 
-  MOCK_METHOD4(Read, talk_base::StreamResult(void*, size_t, size_t*, int*));
-  MOCK_METHOD4(Write, talk_base::StreamResult(const void*, size_t,
+  MOCK_METHOD4(Read, rtc::StreamResult(void*, size_t, size_t*, int*));
+  MOCK_METHOD4(Write, rtc::StreamResult(const void*, size_t,
                                               size_t*, int*));
   MOCK_CONST_METHOD1(GetAvailable, bool(size_t*));
   MOCK_METHOD0(Close, void());
 
-  MOCK_METHOD3(PostEvent, void(talk_base::Thread*, int, int));
+  MOCK_METHOD3(PostEvent, void(rtc::Thread*, int, int));
   MOCK_METHOD2(PostEvent, void(int, int));
 };
 

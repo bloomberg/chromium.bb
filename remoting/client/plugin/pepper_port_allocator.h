@@ -37,12 +37,12 @@ class PepperPortAllocator : public cricket::HttpPortAllocatorBase {
  private:
   PepperPortAllocator(
       const pp::InstanceHandle& instance,
-      scoped_ptr<talk_base::NetworkManager> network_manager,
-      scoped_ptr<talk_base::PacketSocketFactory> socket_factory);
+      scoped_ptr<rtc::NetworkManager> network_manager,
+      scoped_ptr<rtc::PacketSocketFactory> socket_factory);
 
   pp::InstanceHandle instance_;
-  scoped_ptr<talk_base::NetworkManager> network_manager_;
-  scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;
+  scoped_ptr<rtc::NetworkManager> network_manager_;
+  scoped_ptr<rtc::PacketSocketFactory> socket_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPortAllocator);
 };

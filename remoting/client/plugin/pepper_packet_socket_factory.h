@@ -11,26 +11,26 @@
 
 namespace remoting {
 
-class PepperPacketSocketFactory : public talk_base::PacketSocketFactory {
+class PepperPacketSocketFactory : public rtc::PacketSocketFactory {
  public:
   explicit PepperPacketSocketFactory(const pp::InstanceHandle& instance);
   virtual ~PepperPacketSocketFactory();
 
-  virtual talk_base::AsyncPacketSocket* CreateUdpSocket(
-      const talk_base::SocketAddress& local_address,
+  virtual rtc::AsyncPacketSocket* CreateUdpSocket(
+      const rtc::SocketAddress& local_address,
       int min_port, int max_port) OVERRIDE;
-  virtual talk_base::AsyncPacketSocket* CreateServerTcpSocket(
-      const talk_base::SocketAddress& local_address,
+  virtual rtc::AsyncPacketSocket* CreateServerTcpSocket(
+      const rtc::SocketAddress& local_address,
       int min_port,
       int max_port,
       int opts) OVERRIDE;
-  virtual talk_base::AsyncPacketSocket* CreateClientTcpSocket(
-      const talk_base::SocketAddress& local_address,
-      const talk_base::SocketAddress& remote_address,
-      const talk_base::ProxyInfo& proxy_info,
+  virtual rtc::AsyncPacketSocket* CreateClientTcpSocket(
+      const rtc::SocketAddress& local_address,
+      const rtc::SocketAddress& remote_address,
+      const rtc::ProxyInfo& proxy_info,
       const std::string& user_agent,
       int opts) OVERRIDE;
-  virtual talk_base::AsyncResolverInterface* CreateAsyncResolver() OVERRIDE;
+  virtual rtc::AsyncResolverInterface* CreateAsyncResolver() OVERRIDE;
 
  private:
   const pp::InstanceHandle pp_instance_;

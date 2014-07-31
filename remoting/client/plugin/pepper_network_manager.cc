@@ -12,7 +12,7 @@
 #include "ppapi/cpp/net_address.h"
 #include "ppapi/cpp/network_list.h"
 #include "remoting/client/plugin/pepper_util.h"
-#include "third_party/libjingle/source/talk/base/socketaddress.h"
+#include "third_party/webrtc/base/socketaddress.h"
 
 namespace remoting {
 
@@ -63,8 +63,8 @@ void PepperNetworkManager::OnNetworkList(int32_t result,
           &PepperNetworkManager::OnNetworkList);
   monitor_.UpdateNetworkList(callback);
 
-  // Convert the networks to talk_base::Network.
-  std::vector<talk_base::Network*> networks;
+  // Convert the networks to rtc::Network.
+  std::vector<rtc::Network*> networks;
   size_t count = list.GetCount();
   for (size_t i = 0; i < count; i++) {
     std::vector<pp::NetAddress> addresses;
@@ -74,7 +74,7 @@ void PepperNetworkManager::OnNetworkList(int32_t result,
       continue;
 
     for (size_t i = 0; i < addresses.size(); ++i) {
-      talk_base::SocketAddress address;
+      rtc::SocketAddress address;
       PpNetAddressToSocketAddress(addresses[i], &address);
 
       if (address.family() == AF_INET6 && IPIsSiteLocal(address.ipaddr())) {
@@ -84,7 +84,7 @@ void PepperNetworkManager::OnNetworkList(int32_t result,
         continue;
       }
 
-      talk_base::Network* network = new talk_base::Network(
+      rtc::Network* network = new rtc::Network(
           list.GetName(i), list.GetDisplayName(i), address.ipaddr(), 0);
       network->AddIP(address.ipaddr());
       networks.push_back(network);

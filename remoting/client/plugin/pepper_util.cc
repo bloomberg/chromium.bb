@@ -9,13 +9,13 @@
 #include "base/sys_byteorder.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/net_address.h"
-#include "third_party/libjingle/source/talk/base/socketaddress.h"
+#include "third_party/webrtc/base/socketaddress.h"
 
 namespace remoting {
 
 bool SocketAddressToPpNetAddressWithPort(
     const pp::InstanceHandle& instance,
-    const talk_base::SocketAddress& address,
+    const rtc::SocketAddress& address,
     pp::NetAddress* pp_address,
     uint16_t port) {
   switch (address.ipaddr().family()) {
@@ -43,7 +43,7 @@ bool SocketAddressToPpNetAddressWithPort(
 }
 
 bool SocketAddressToPpNetAddress(const pp::InstanceHandle& instance,
-                                 const talk_base::SocketAddress& address,
+                                 const rtc::SocketAddress& address,
                                  pp::NetAddress* pp_net_address) {
   return SocketAddressToPpNetAddressWithPort(instance,
                                              address,
@@ -52,12 +52,12 @@ bool SocketAddressToPpNetAddress(const pp::InstanceHandle& instance,
 }
 
 void PpNetAddressToSocketAddress(const pp::NetAddress& pp_net_address,
-                                 talk_base::SocketAddress* address) {
+                                 rtc::SocketAddress* address) {
   switch (pp_net_address.GetFamily()) {
     case PP_NETADDRESS_FAMILY_IPV4: {
       PP_NetAddress_IPv4 ipv4_addr;
       CHECK(pp_net_address.DescribeAsIPv4Address(&ipv4_addr));
-      address->SetIP(talk_base::IPAddress(
+      address->SetIP(rtc::IPAddress(
                          bit_cast<in_addr>(ipv4_addr.addr)));
       address->SetPort(base::NetToHost16(ipv4_addr.port));
       return;
@@ -65,7 +65,7 @@ void PpNetAddressToSocketAddress(const pp::NetAddress& pp_net_address,
     case PP_NETADDRESS_FAMILY_IPV6: {
       PP_NetAddress_IPv6 ipv6_addr;
       CHECK(pp_net_address.DescribeAsIPv6Address(&ipv6_addr));
-      address->SetIP(talk_base::IPAddress(
+      address->SetIP(rtc::IPAddress(
                          bit_cast<in6_addr>(ipv6_addr.addr)));
       address->SetPort(base::NetToHost16(ipv6_addr.port));
       return;

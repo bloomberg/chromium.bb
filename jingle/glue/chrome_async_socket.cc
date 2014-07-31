@@ -22,7 +22,7 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/ssl/ssl_config_service.h"
-#include "third_party/libjingle/source/talk/base/socketaddress.h"
+#include "third_party/webrtc/base/socketaddress.h"
 
 namespace jingle_glue {
 
@@ -84,7 +84,7 @@ void ChromeAsyncSocket::DoNetErrorFromStatus(int status) {
 
 // STATE_CLOSED -> STATE_CONNECTING
 
-bool ChromeAsyncSocket::Connect(const talk_base::SocketAddress& address) {
+bool ChromeAsyncSocket::Connect(const rtc::SocketAddress& address) {
   if (state_ != STATE_CLOSED) {
     LOG(DFATAL) << "Connect() called on non-closed socket";
     DoNonNetError(ERROR_WRONGSTATE);

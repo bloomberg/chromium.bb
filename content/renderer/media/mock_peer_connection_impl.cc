@@ -75,7 +75,7 @@ class MockStreamCollection : public webrtc::StreamCollectionInterface {
   virtual ~MockStreamCollection() {}
 
  private:
-  typedef std::vector<talk_base::scoped_refptr<MediaStreamInterface> >
+  typedef std::vector<rtc::scoped_refptr<MediaStreamInterface> >
       StreamVector;
   StreamVector streams_;
 };
@@ -194,7 +194,7 @@ class MockDtmfSender : public DtmfSenderInterface {
   virtual ~MockDtmfSender() {}
 
  private:
-  talk_base::scoped_refptr<AudioTrackInterface> track_;
+  rtc::scoped_refptr<AudioTrackInterface> track_;
   DtmfSenderObserverInterface* observer_;
   std::string tones_;
   int duration_;
@@ -207,8 +207,8 @@ const char MockPeerConnectionImpl::kDummyAnswer[] = "dummy answer";
 MockPeerConnectionImpl::MockPeerConnectionImpl(
     MockPeerConnectionDependencyFactory* factory)
     : dependency_factory_(factory),
-      local_streams_(new talk_base::RefCountedObject<MockStreamCollection>),
-      remote_streams_(new talk_base::RefCountedObject<MockStreamCollection>),
+      local_streams_(new rtc::RefCountedObject<MockStreamCollection>),
+      remote_streams_(new rtc::RefCountedObject<MockStreamCollection>),
       hint_audio_(false),
       hint_video_(false),
       getstats_result_(true),
@@ -221,12 +221,12 @@ MockPeerConnectionImpl::MockPeerConnectionImpl(
 
 MockPeerConnectionImpl::~MockPeerConnectionImpl() {}
 
-talk_base::scoped_refptr<webrtc::StreamCollectionInterface>
+rtc::scoped_refptr<webrtc::StreamCollectionInterface>
 MockPeerConnectionImpl::local_streams() {
   return local_streams_;
 }
 
-talk_base::scoped_refptr<webrtc::StreamCollectionInterface>
+rtc::scoped_refptr<webrtc::StreamCollectionInterface>
 MockPeerConnectionImpl::remote_streams() {
   return remote_streams_;
 }
@@ -247,18 +247,18 @@ void MockPeerConnectionImpl::RemoveStream(
   local_streams_->RemoveStream(local_stream);
 }
 
-talk_base::scoped_refptr<DtmfSenderInterface>
+rtc::scoped_refptr<DtmfSenderInterface>
 MockPeerConnectionImpl::CreateDtmfSender(AudioTrackInterface* track) {
   if (!track) {
     return NULL;
   }
-  return new talk_base::RefCountedObject<MockDtmfSender>(track);
+  return new rtc::RefCountedObject<MockDtmfSender>(track);
 }
 
-talk_base::scoped_refptr<webrtc::DataChannelInterface>
+rtc::scoped_refptr<webrtc::DataChannelInterface>
 MockPeerConnectionImpl::CreateDataChannel(const std::string& label,
                       const webrtc::DataChannelInit* config) {
-  return new talk_base::RefCountedObject<MockDataChannel>(label, config);
+  return new rtc::RefCountedObject<MockDataChannel>(label, config);
 }
 
 bool MockPeerConnectionImpl::GetStats(

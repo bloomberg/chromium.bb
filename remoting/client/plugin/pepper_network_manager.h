@@ -10,7 +10,7 @@
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/network_monitor.h"
 #include "ppapi/utility/completion_callback_factory.h"
-#include "third_party/libjingle/source/talk/base/network.h"
+#include "third_party/webrtc/base/network.h"
 
 namespace pp {
 class NetworkList;
@@ -21,7 +21,7 @@ namespace remoting {
 // PepperNetworkManager uses the PPB_NetworkMonitor API to
 // implement the NetworkManager interface that libjingle uses to
 // monitor the host system's network interfaces.
-class PepperNetworkManager : public talk_base::NetworkManagerBase {
+class PepperNetworkManager : public rtc::NetworkManagerBase {
  public:
   PepperNetworkManager(const pp::InstanceHandle& instance);
   virtual ~PepperNetworkManager();

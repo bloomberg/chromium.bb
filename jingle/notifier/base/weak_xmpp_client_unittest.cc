@@ -9,9 +9,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "jingle/glue/task_pump.h"
-#include "talk/base/sigslot.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webrtc/base/sigslot.h"
 
 namespace notifier {
 

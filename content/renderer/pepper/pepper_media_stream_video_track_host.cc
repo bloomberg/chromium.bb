@@ -20,7 +20,7 @@
 #include "ppapi/shared_impl/media_stream_buffer.h"
 
 // IS_ALIGNED is also defined in
-// third_party/libjingle/overrides/talk/base/basictypes.h
+// third_party/webrtc/overrides/webrtc/base/basictypes.h
 // TODO(ronghuawu): Avoid undef.
 #undef IS_ALIGNED
 #include "third_party/libyuv/include/libyuv.h"

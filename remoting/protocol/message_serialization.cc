@@ -8,7 +8,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
-#include "third_party/libjingle/source/talk/base/byteorder.h"
+#include "third_party/webrtc/base/byteorder.h"
 
 namespace remoting {
 namespace protocol {
@@ -20,7 +20,7 @@ scoped_refptr<net::IOBufferWithSize> SerializeAndFrameMessage(
   const int kExtraBytes = sizeof(int32);
   int size = msg.ByteSize() + kExtraBytes;
   scoped_refptr<net::IOBufferWithSize> buffer(new net::IOBufferWithSize(size));
-  talk_base::SetBE32(buffer->data(), msg.GetCachedSize());
+  rtc::SetBE32(buffer->data(), msg.GetCachedSize());
   msg.SerializeWithCachedSizesToArray(
       reinterpret_cast<uint8*>(buffer->data()) + kExtraBytes);
   return buffer;

@@ -8,7 +8,7 @@
 #include "net/base/io_buffer.h"
 #include "remoting/base/compound_buffer.h"
 #include "remoting/proto/internal.pb.h"
-#include "third_party/libjingle/source/talk/base/byteorder.h"
+#include "third_party/webrtc/base/byteorder.h"
 
 namespace remoting {
 namespace protocol {
@@ -61,7 +61,7 @@ bool MessageDecoder::GetPayloadSize(int* size) {
   char header[kHeaderSize];
   header_buffer.CopyFrom(buffer_, 0, kHeaderSize);
   header_buffer.CopyTo(header, kHeaderSize);
-  *size = talk_base::GetBE32(header);
+  *size = rtc::GetBE32(header);
   buffer_.CropFront(kHeaderSize);
   return true;
 }

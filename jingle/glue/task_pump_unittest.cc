@@ -23,7 +23,7 @@ TEST_F(TaskPumpTest, Basic) {
   TaskPump task_pump;
   MockTask* task = new MockTask(&task_pump);
   // We have to do this since the state enum is protected in
-  // talk_base::Task.
+  // rtc::Task.
   const int TASK_STATE_DONE = 2;
   EXPECT_CALL(*task, ProcessStart()).WillOnce(Return(TASK_STATE_DONE));
   task->Start();
@@ -35,7 +35,7 @@ TEST_F(TaskPumpTest, Stop) {
   TaskPump task_pump;
   MockTask* task = new MockTask(&task_pump);
   // We have to do this since the state enum is protected in
-  // talk_base::Task.
+  // rtc::Task.
   const int TASK_STATE_ERROR = 3;
   ON_CALL(*task, ProcessStart()).WillByDefault(Return(TASK_STATE_ERROR));
   EXPECT_CALL(*task, ProcessStart()).Times(0);

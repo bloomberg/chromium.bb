@@ -8,9 +8,9 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "net/socket/socket.h"
-#include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
-#include "third_party/libjingle/source/talk/base/socketaddress.h"
-#include "third_party/libjingle/source/talk/base/sigslot.h"
+#include "third_party/webrtc/base/asyncpacketsocket.h"
+#include "third_party/webrtc/base/sigslot.h"
+#include "third_party/webrtc/base/socketaddress.h"
 
 namespace base {
 class MessageLoop;
@@ -55,7 +55,7 @@ class TransportChannelSocketAdapter : public net::Socket,
   void OnNewPacket(cricket::TransportChannel* channel,
                    const char* data,
                    size_t data_size,
-                   const talk_base::PacketTime& packet_time,
+                   const rtc::PacketTime& packet_time,
                    int flags);
   void OnWritableState(cricket::TransportChannel* channel);
   void OnChannelDestroyed(cricket::TransportChannel* channel);

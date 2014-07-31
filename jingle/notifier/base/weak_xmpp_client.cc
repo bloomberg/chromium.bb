@@ -8,7 +8,7 @@
 
 namespace notifier {
 
-WeakXmppClient::WeakXmppClient(talk_base::TaskParent* parent)
+WeakXmppClient::WeakXmppClient(rtc::TaskParent* parent)
     : buzz::XmppClient(parent),
       weak_ptr_factory_(this) {}
 

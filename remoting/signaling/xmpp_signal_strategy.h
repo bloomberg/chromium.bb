@@ -18,17 +18,17 @@
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer/timer.h"
-#include "third_party/libjingle/source/talk/base/sigslot.h"
 #include "third_party/libjingle/source/talk/xmpp/xmppclient.h"
+#include "third_party/webrtc/base/sigslot.h"
 
 namespace net {
 class ClientSocketFactory;
 class URLRequestContextGetter;
 }  // namespace net
 
-namespace talk_base {
+namespace rtc {
 class TaskRunner;
-}  // namespace talk_base
+}  // namespace rtc
 
 namespace remoting {
 
@@ -96,7 +96,7 @@ class XmppSignalStrategy : public base::NonThreadSafe,
   net::ClientSocketFactory* socket_factory_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   std::string resource_name_;
-  scoped_ptr<talk_base::TaskRunner> task_runner_;
+  scoped_ptr<rtc::TaskRunner> task_runner_;
   buzz::XmppClient* xmpp_client_;
   XmppServerConfig xmpp_server_config_;
 

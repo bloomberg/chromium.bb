@@ -44,17 +44,17 @@ TEST_F(ConnectionSettingsTest, Basic) {
   ConnectionSettingsList expected_settings_list;
   expected_settings_list.push_back(
       ConnectionSettings(
-          talk_base::SocketAddress("supports_ssltcp.com", 100),
+          rtc::SocketAddress("supports_ssltcp.com", 100),
           DO_NOT_USE_SSLTCP,
           SUPPORTS_SSLTCP));
   expected_settings_list.push_back(
       ConnectionSettings(
-          talk_base::SocketAddress("supports_ssltcp.com", 443),
+          rtc::SocketAddress("supports_ssltcp.com", 443),
           USE_SSLTCP,
           SUPPORTS_SSLTCP));
   expected_settings_list.push_back(
       ConnectionSettings(
-          talk_base::SocketAddress("does_not_support_ssltcp.com", 200),
+          rtc::SocketAddress("does_not_support_ssltcp.com", 200),
           DO_NOT_USE_SSLTCP,
           DOES_NOT_SUPPORT_SSLTCP));
 
@@ -74,17 +74,17 @@ TEST_F(ConnectionSettingsTest, TrySslTcpFirst) {
   ConnectionSettingsList expected_settings_list;
   expected_settings_list.push_back(
       ConnectionSettings(
-          talk_base::SocketAddress("supports_ssltcp.com", 443),
+          rtc::SocketAddress("supports_ssltcp.com", 443),
           USE_SSLTCP,
           SUPPORTS_SSLTCP));
   expected_settings_list.push_back(
       ConnectionSettings(
-          talk_base::SocketAddress("supports_ssltcp.com", 100),
+          rtc::SocketAddress("supports_ssltcp.com", 100),
           DO_NOT_USE_SSLTCP,
           SUPPORTS_SSLTCP));
   expected_settings_list.push_back(
       ConnectionSettings(
-          talk_base::SocketAddress("does_not_support_ssltcp.com", 200),
+          rtc::SocketAddress("does_not_support_ssltcp.com", 200),
           DO_NOT_USE_SSLTCP,
           DOES_NOT_SUPPORT_SSLTCP));
 

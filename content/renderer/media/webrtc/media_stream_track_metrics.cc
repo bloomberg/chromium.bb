@@ -42,9 +42,9 @@ class MediaStreamTrackMetricsObserver : public webrtc::ObserverInterface {
   virtual void OnChanged() OVERRIDE;
 
   template <class T>
-  IdSet GetTrackIds(const std::vector<talk_base::scoped_refptr<T> >& tracks) {
+  IdSet GetTrackIds(const std::vector<rtc::scoped_refptr<T> >& tracks) {
     IdSet track_ids;
-    typename std::vector<talk_base::scoped_refptr<T> >::const_iterator it =
+    typename std::vector<rtc::scoped_refptr<T> >::const_iterator it =
         tracks.begin();
     for (; it != tracks.end(); ++it) {
       track_ids.insert((*it)->id());
@@ -72,7 +72,7 @@ class MediaStreamTrackMetricsObserver : public webrtc::ObserverInterface {
   IdSet video_track_ids_;
 
   MediaStreamTrackMetrics::StreamType stream_type_;
-  talk_base::scoped_refptr<MediaStreamInterface> stream_;
+  rtc::scoped_refptr<MediaStreamInterface> stream_;
 
   // Non-owning.
   MediaStreamTrackMetrics* owner_;

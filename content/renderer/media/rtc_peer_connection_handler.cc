@@ -292,8 +292,8 @@ class StatsResponse : public webrtc::StatsObserver {
                             blink::WebString::fromUTF8(value));
   }
 
-  talk_base::scoped_refptr<LocalRTCStatsRequest> request_;
-  talk_base::scoped_refptr<LocalRTCStatsResponse> response_;
+  rtc::scoped_refptr<LocalRTCStatsRequest> request_;
+  rtc::scoped_refptr<LocalRTCStatsResponse> response_;
 };
 
 // Implementation of LocalRTCStatsRequest.
@@ -315,7 +315,7 @@ blink::WebMediaStreamTrack LocalRTCStatsRequest::component() const {
 
 scoped_refptr<LocalRTCStatsResponse> LocalRTCStatsRequest::createResponse() {
   DCHECK(!response_);
-  response_ = new talk_base::RefCountedObject<LocalRTCStatsResponse>(
+  response_ = new rtc::RefCountedObject<LocalRTCStatsResponse>(
       impl_.createResponse());
   return response_.get();
 }
@@ -472,7 +472,7 @@ bool RTCPeerConnectionHandler::initialize(
     peer_connection_tracker_->RegisterPeerConnection(
         this, config, constraints, frame_);
 
-  uma_observer_ = new talk_base::RefCountedObject<PeerConnectionUMAObserver>();
+  uma_observer_ = new rtc::RefCountedObject<PeerConnectionUMAObserver>();
   native_peer_connection_->RegisterUMAObserver(uma_observer_.get());
   return true;
 }
@@ -500,7 +500,7 @@ void RTCPeerConnectionHandler::createOffer(
     const blink::WebRTCSessionDescriptionRequest& request,
     const blink::WebMediaConstraints& options) {
   scoped_refptr<CreateSessionDescriptionRequest> description_request(
-      new talk_base::RefCountedObject<CreateSessionDescriptionRequest>(
+      new rtc::RefCountedObject<CreateSessionDescriptionRequest>(
           request, this, PeerConnectionTracker::ACTION_CREATE_OFFER));
   RTCMediaConstraints constraints(options);
   native_peer_connection_->CreateOffer(description_request.get(), &constraints);
@@ -513,7 +513,7 @@ void RTCPeerConnectionHandler::createOffer(
     const blink::WebRTCSessionDescriptionRequest& request,
     const blink::WebRTCOfferOptions& options) {
   scoped_refptr<CreateSessionDescriptionRequest> description_request(
-      new talk_base::RefCountedObject<CreateSessionDescriptionRequest>(
+      new rtc::RefCountedObject<CreateSessionDescriptionRequest>(
           request, this, PeerConnectionTracker::ACTION_CREATE_OFFER));
 
   RTCMediaConstraints constraints;
@@ -528,7 +528,7 @@ void RTCPeerConnectionHandler::createAnswer(
     const blink::WebRTCSessionDescriptionRequest& request,
     const blink::WebMediaConstraints& options) {
   scoped_refptr<CreateSessionDescriptionRequest> description_request(
-      new talk_base::RefCountedObject<CreateSessionDescriptionRequest>(
+      new rtc::RefCountedObject<CreateSessionDescriptionRequest>(
           request, this, PeerConnectionTracker::ACTION_CREATE_ANSWER));
   RTCMediaConstraints constraints(options);
   native_peer_connection_->CreateAnswer(description_request.get(),
@@ -558,7 +558,7 @@ void RTCPeerConnectionHandler::setLocalDescription(
         this, description, PeerConnectionTracker::SOURCE_LOCAL);
 
   scoped_refptr<SetSessionDescriptionRequest> set_request(
-      new talk_base::RefCountedObject<SetSessionDescriptionRequest>(
+      new rtc::RefCountedObject<SetSessionDescriptionRequest>(
           request, this, PeerConnectionTracker::ACTION_SET_LOCAL_DESCRIPTION));
   native_peer_connection_->SetLocalDescription(set_request.get(), native_desc);
 }
@@ -583,7 +583,7 @@ void RTCPeerConnectionHandler::setRemoteDescription(
         this, description, PeerConnectionTracker::SOURCE_REMOTE);
 
   scoped_refptr<SetSessionDescriptionRequest> set_request(
-      new talk_base::RefCountedObject<SetSessionDescriptionRequest>(
+      new rtc::RefCountedObject<SetSessionDescriptionRequest>(
           request, this, PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION));
   native_peer_connection_->SetRemoteDescription(set_request.get(), native_desc);
 }
@@ -728,13 +728,13 @@ void RTCPeerConnectionHandler::removeStream(
 void RTCPeerConnectionHandler::getStats(
     const blink::WebRTCStatsRequest& request) {
   scoped_refptr<LocalRTCStatsRequest> inner_request(
-      new talk_base::RefCountedObject<LocalRTCStatsRequest>(request));
+      new rtc::RefCountedObject<LocalRTCStatsRequest>(request));
   getStats(inner_request.get());
 }
 
 void RTCPeerConnectionHandler::getStats(LocalRTCStatsRequest* request) {
-  talk_base::scoped_refptr<webrtc::StatsObserver> observer(
-      new talk_base::RefCountedObject<StatsResponse>(request));
+  rtc::scoped_refptr<webrtc::StatsObserver> observer(
+      new rtc::RefCountedObject<StatsResponse>(request));
   webrtc::MediaStreamTrackInterface* track = NULL;
   if (request->hasSelector()) {
     blink::WebMediaStreamSource::Type type =
@@ -798,7 +798,7 @@ blink::WebRTCDataChannelHandler* RTCPeerConnectionHandler::createDataChannel(
   config.maxRetransmitTime = init.maxRetransmitTime;
   config.protocol = base::UTF16ToUTF8(init.protocol);
 
-  talk_base::scoped_refptr<webrtc::DataChannelInterface> webrtc_channel(
+  rtc::scoped_refptr<webrtc::DataChannelInterface> webrtc_channel(
       native_peer_connection_->CreateDataChannel(base::UTF16ToUTF8(label),
                                                  &config));
   if (!webrtc_channel) {
@@ -826,7 +826,7 @@ blink::WebRTCDTMFSenderHandler* RTCPeerConnectionHandler::createDTMFSender(
   }
 
   webrtc::AudioTrackInterface* audio_track = native_track->GetAudioAdapter();
-  talk_base::scoped_refptr<webrtc::DtmfSenderInterface> sender(
+  rtc::scoped_refptr<webrtc::DtmfSenderInterface> sender(
       native_peer_connection_->CreateDtmfSender(audio_track));
   if (!sender) {
     DLOG(ERROR) << "Could not create native DTMF sender.";

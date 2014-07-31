@@ -17,7 +17,7 @@
 #include "remoting/protocol/message_reader.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/libjingle/source/talk/base/byteorder.h"
+#include "third_party/webrtc/base/byteorder.h"
 
 using testing::_;
 using testing::DoAll;
@@ -82,7 +82,7 @@ class MessageReaderTest : public testing::Test {
 
   void AddMessage(const std::string& message) {
     std::string data = std::string(4, ' ') + message;
-    talk_base::SetBE32(const_cast<char*>(data.data()), message.size());
+    rtc::SetBE32(const_cast<char*>(data.data()), message.size());
 
     socket_.AppendInputData(std::vector<char>(data.begin(), data.end()));
   }

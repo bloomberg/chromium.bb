@@ -38,7 +38,7 @@ class PeerConnectionIdentityService
 
   // The origin of the DTLS connection.
   GURL origin_;
-  talk_base::scoped_refptr<webrtc::DTLSIdentityRequestObserver>
+  rtc::scoped_refptr<webrtc::DTLSIdentityRequestObserver>
       pending_observer_;
   int pending_request_id_;
 

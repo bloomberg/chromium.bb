@@ -145,9 +145,9 @@ class MockMediaStream : public webrtc::MediaStreamInterface {
   virtual std::string label() const OVERRIDE;
   virtual webrtc::AudioTrackVector GetAudioTracks() OVERRIDE;
   virtual webrtc::VideoTrackVector GetVideoTracks() OVERRIDE;
-  virtual talk_base::scoped_refptr<webrtc::AudioTrackInterface>
+  virtual rtc::scoped_refptr<webrtc::AudioTrackInterface>
       FindAudioTrack(const std::string& track_id) OVERRIDE;
-  virtual talk_base::scoped_refptr<webrtc::VideoTrackInterface>
+  virtual rtc::scoped_refptr<webrtc::VideoTrackInterface>
       FindVideoTrack(const std::string& track_id) OVERRIDE;
   virtual void RegisterObserver(webrtc::ObserverInterface* observer) OVERRIDE;
   virtual void UnregisterObserver(webrtc::ObserverInterface* observer) OVERRIDE;

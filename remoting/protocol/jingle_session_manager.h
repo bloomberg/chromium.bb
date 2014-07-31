@@ -23,9 +23,9 @@ namespace buzz {
 class XmlElement;
 }  // namespace buzz
 
-namespace talk_base {
+namespace rtc {
 class SocketAddress;
-}  // namespace talk_base
+}  // namespace rtc
 
 namespace remoting {
 
@@ -71,7 +71,7 @@ class JingleSessionManager : public SessionManager,
   void OnJingleInfo(
       const std::string& relay_token,
       const std::vector<std::string>& relay_hosts,
-      const std::vector<talk_base::SocketAddress>& stun_hosts);
+      const std::vector<rtc::SocketAddress>& stun_hosts);
 
   IqSender* iq_sender() { return iq_sender_.get(); }
   void SendReply(const buzz::XmlElement* original_stanza,

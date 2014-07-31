@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "jingle/notifier/base/server_information.h"
-#include "talk/base/socketaddress.h"
+#include "webrtc/base/socketaddress.h"
 
 namespace buzz {
 class XmppClientSettings;
@@ -25,7 +25,7 @@ enum SslTcpMode { DO_NOT_USE_SSLTCP, USE_SSLTCP };
 
 struct ConnectionSettings {
  public:
-  ConnectionSettings(const talk_base::SocketAddress& server,
+  ConnectionSettings(const rtc::SocketAddress& server,
                      SslTcpMode ssltcp_mode,
                      SslTcpSupport ssltcp_support);
   ConnectionSettings();
@@ -38,7 +38,7 @@ struct ConnectionSettings {
   // Fill in the connection-related fields of |client_settings|.
   void FillXmppClientSettings(buzz::XmppClientSettings* client_settings) const;
 
-  talk_base::SocketAddress server;
+  rtc::SocketAddress server;
   SslTcpMode ssltcp_mode;
   SslTcpSupport ssltcp_support;
 };
