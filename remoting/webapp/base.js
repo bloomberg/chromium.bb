@@ -126,6 +126,24 @@ base.Promise.sleep = function(delay) {
     });
 };
 
+
+/**
+ * @param {Promise} promise
+ * @return {Promise} a Promise that will be fulfilled iff the specified Promise
+ *     is rejected.
+ */
+base.Promise.negate = function(promise) {
+  return promise.then(
+      /** @return {Promise} */
+      function() {
+        return Promise.reject();
+      },
+      /** @return {Promise} */
+      function() {
+        return Promise.resolve();
+      });
+};
+
 /**
  * A mixin for classes with events.
  *

@@ -78,6 +78,20 @@ QUnit.asyncTest('Promise.sleep(delay) should fulfill the promise after |delay|',
     }.bind(this));
 });
 
+QUnit.asyncTest('Promise.negate should fulfill iff the promise does not.',
+  function() {
+
+    base.Promise.negate(Promise.reject()).then(
+        ok.bind(null, true),
+        ok.bind(null, false));
+    base.Promise.negate(Promise.resolve()).then(
+        ok.bind(null, false),
+        ok.bind(null, true));
+    window.requestAnimationFrame(function(){
+      QUnit.start();
+    });
+});
+
 
 var source = null;
 var listener = null;

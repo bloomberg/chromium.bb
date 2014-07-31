@@ -184,8 +184,8 @@ MediaSource.prototype.addSourceBuffer = function(format) {}
 var Promise = function (init) {};
 
 /**
- * @param {function(*) : void} onFulfill
- * @param {function(*) : void} onReject
+ * @param {function(*=) : (Promise|void)} onFulfill
+ * @param {function(*=) : (Promise|void)} onReject
  * @return {Promise}
  */
 Promise.prototype.then = function (onFulfill, onReject) {};
@@ -209,13 +209,13 @@ Promise.prototype.race = function (promises) {}
 Promise.prototype.all = function (promises) {};
 
 /**
- * @param {*} reason
+ * @param {*=} reason
  * @return {Promise}
  */
 Promise.reject = function (reason) {};
 
 /**
- * @param {*} value
+ * @param {*=} value
  * @return {Promise}
  */
 Promise.resolve = function (value) {};
