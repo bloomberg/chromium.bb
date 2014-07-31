@@ -66,8 +66,6 @@ NativeViewAccessibilityWin
   virtual gfx::NativeViewAccessible GetNativeObject() OVERRIDE;
   virtual void Destroy() OVERRIDE;
 
-  void set_view(views::View* view) { view_ = view; }
-
   // Supported IAccessible methods.
 
   // Retrieves the child element or child object at a given point on the screen.
@@ -365,8 +363,6 @@ NativeViewAccessibilityWin
  protected:
   NativeViewAccessibilityWin();
 
-  const View* view() const { return view_; }
-
  private:
   // Determines navigation direction for accNavigate, based on left, up and
   // previous being mapped all to previous and right, down, next being mapped
@@ -417,9 +413,6 @@ NativeViewAccessibilityWin
 
   // Give CComObject access to the class constructor.
   template <class Base> friend class CComObject;
-
-  // Member View needed for view-specific calls.
-  View* view_;
 
   // A unique id for each object, needed for IAccessible2.
   long unique_id_;

@@ -484,6 +484,7 @@
       'corewm/tooltip_controller_test_helper.h',
     ],
     'views_unittests_sources': [
+      'accessibility/native_view_accessibility_unittest.cc',
       'accessibility/native_view_accessibility_win_unittest.cc',
       'accessible_pane_view_unittest.cc',
       'animation/bounds_animator_unittest.cc',

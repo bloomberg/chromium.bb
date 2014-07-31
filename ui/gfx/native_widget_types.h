@@ -143,11 +143,20 @@ typedef IAccessible* NativeViewAccessible;
 typedef UIFont* NativeFont;
 typedef UITextField* NativeEditView;
 typedef CGContext* NativeDrawingContext;
+#ifdef __OBJC__
+typedef id NativeViewAccessible;
+#else
+typedef void* NativeViewAccessible;
+#endif
 #elif defined(OS_MACOSX)
 typedef NSFont* NativeFont;
 typedef NSTextField* NativeEditView;
 typedef CGContext* NativeDrawingContext;
+#ifdef __OBJC__
+typedef id NativeViewAccessible;
+#else
 typedef void* NativeViewAccessible;
+#endif
 #elif defined(USE_CAIRO)
 typedef PangoFontDescription* NativeFont;
 typedef void* NativeEditView;

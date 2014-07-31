@@ -16,6 +16,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 #include "content/public/common/content_client.h"
 #include "grit/webkit_strings.h"
+#import "ui/accessibility/platform/ax_platform_node_mac.h"
 
 // See http://openradar.appspot.com/9896491. This SPI has been tested on 10.5,
 // 10.6, and 10.7. It allows accessibility clients to observe events posted on
@@ -39,195 +40,10 @@ NSString* NSStringForStringAttribute(
       browserAccessibility->GetStringAttribute(attribute));
 }
 
-struct MapEntry {
-  ui::AXRole webKitValue;
-  NSString* nativeValue;
-};
-
-typedef std::map<ui::AXRole, NSString*> RoleMap;
-
 // GetState checks the bitmask used in AXNodeData to check
 // if the given state was set on the accessibility object.
 bool GetState(BrowserAccessibility* accessibility, ui::AXState state) {
   return ((accessibility->GetState() >> state) & 1);
-}
-
-RoleMap BuildRoleMap() {
-  const MapEntry roles[] = {
-    { ui::AX_ROLE_ALERT, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_ALERT_DIALOG, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_ANNOTATION, NSAccessibilityUnknownRole },
-    { ui::AX_ROLE_APPLICATION, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_ARTICLE, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_BANNER, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_BROWSER, NSAccessibilityBrowserRole },
-    { ui::AX_ROLE_BUSY_INDICATOR, NSAccessibilityBusyIndicatorRole },
-    { ui::AX_ROLE_BUTTON, NSAccessibilityButtonRole },
-    { ui::AX_ROLE_CANVAS, NSAccessibilityImageRole },
-    { ui::AX_ROLE_CELL, @"AXCell" },
-    { ui::AX_ROLE_CHECK_BOX, NSAccessibilityCheckBoxRole },
-    { ui::AX_ROLE_COLOR_WELL, NSAccessibilityColorWellRole },
-    { ui::AX_ROLE_COLUMN, NSAccessibilityColumnRole },
-    { ui::AX_ROLE_COLUMN_HEADER, @"AXCell" },
-    { ui::AX_ROLE_COMBO_BOX, NSAccessibilityComboBoxRole },
-    { ui::AX_ROLE_COMPLEMENTARY, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_CONTENT_INFO, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_DEFINITION, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_DESCRIPTION_LIST_DETAIL, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_DESCRIPTION_LIST_TERM, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_DIALOG, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_DIRECTORY, NSAccessibilityListRole },
-    { ui::AX_ROLE_DISCLOSURE_TRIANGLE, NSAccessibilityDisclosureTriangleRole },
-    { ui::AX_ROLE_DIV, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_DOCUMENT, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_DRAWER, NSAccessibilityDrawerRole },
-    { ui::AX_ROLE_EDITABLE_TEXT, NSAccessibilityTextFieldRole },
-    { ui::AX_ROLE_FOOTER, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_FORM, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_GRID, NSAccessibilityGridRole },
-    { ui::AX_ROLE_GROUP, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_GROW_AREA, NSAccessibilityGrowAreaRole },
-    { ui::AX_ROLE_HEADING, @"AXHeading" },
-    { ui::AX_ROLE_HELP_TAG, NSAccessibilityHelpTagRole },
-    { ui::AX_ROLE_HORIZONTAL_RULE, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_IFRAME, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_IGNORED, NSAccessibilityUnknownRole },
-    { ui::AX_ROLE_IMAGE, NSAccessibilityImageRole },
-    { ui::AX_ROLE_IMAGE_MAP, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_IMAGE_MAP_LINK, NSAccessibilityLinkRole },
-    { ui::AX_ROLE_INCREMENTOR, NSAccessibilityIncrementorRole },
-    { ui::AX_ROLE_LABEL_TEXT, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_LINK, NSAccessibilityLinkRole },
-    { ui::AX_ROLE_LIST, NSAccessibilityListRole },
-    { ui::AX_ROLE_LIST_BOX, NSAccessibilityListRole },
-    { ui::AX_ROLE_LIST_BOX_OPTION, NSAccessibilityStaticTextRole },
-    { ui::AX_ROLE_LIST_ITEM, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_LIST_MARKER, @"AXListMarker" },
-    { ui::AX_ROLE_LOG, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_MAIN, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_MARQUEE, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_MATH, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_MATTE, NSAccessibilityMatteRole },
-    { ui::AX_ROLE_MENU, NSAccessibilityMenuRole },
-    { ui::AX_ROLE_MENU_BAR, NSAccessibilityMenuBarRole },
-    { ui::AX_ROLE_MENU_BUTTON, NSAccessibilityButtonRole },
-    { ui::AX_ROLE_MENU_ITEM, NSAccessibilityMenuItemRole },
-    { ui::AX_ROLE_MENU_LIST_OPTION, NSAccessibilityMenuItemRole },
-    { ui::AX_ROLE_MENU_LIST_POPUP, NSAccessibilityUnknownRole },
-    { ui::AX_ROLE_NAVIGATION, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_NOTE, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_OUTLINE, NSAccessibilityOutlineRole },
-    { ui::AX_ROLE_PARAGRAPH, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_POP_UP_BUTTON, NSAccessibilityPopUpButtonRole },
-    { ui::AX_ROLE_PRESENTATIONAL, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_PROGRESS_INDICATOR, NSAccessibilityProgressIndicatorRole },
-    { ui::AX_ROLE_RADIO_BUTTON, NSAccessibilityRadioButtonRole },
-    { ui::AX_ROLE_RADIO_GROUP, NSAccessibilityRadioGroupRole },
-    { ui::AX_ROLE_REGION, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_ROOT_WEB_AREA, @"AXWebArea" },
-    { ui::AX_ROLE_ROW, NSAccessibilityRowRole },
-    { ui::AX_ROLE_ROW_HEADER, @"AXCell" },
-    { ui::AX_ROLE_RULER, NSAccessibilityRulerRole },
-    { ui::AX_ROLE_RULER_MARKER, NSAccessibilityRulerMarkerRole },
-    { ui::AX_ROLE_SCROLL_BAR, NSAccessibilityScrollBarRole },
-    { ui::AX_ROLE_SEARCH, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_SHEET, NSAccessibilitySheetRole },
-    { ui::AX_ROLE_SLIDER, NSAccessibilitySliderRole },
-    { ui::AX_ROLE_SLIDER_THUMB, NSAccessibilityValueIndicatorRole },
-    { ui::AX_ROLE_SPIN_BUTTON, NSAccessibilitySliderRole },
-    { ui::AX_ROLE_SPLITTER, NSAccessibilitySplitterRole },
-    { ui::AX_ROLE_SPLIT_GROUP, NSAccessibilitySplitGroupRole },
-    { ui::AX_ROLE_STATIC_TEXT, NSAccessibilityStaticTextRole },
-    { ui::AX_ROLE_STATUS, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_SVG_ROOT, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_SYSTEM_WIDE, NSAccessibilityUnknownRole },
-    { ui::AX_ROLE_TAB, NSAccessibilityRadioButtonRole },
-    { ui::AX_ROLE_TABLE, NSAccessibilityTableRole },
-    { ui::AX_ROLE_TABLE_HEADER_CONTAINER, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_TAB_LIST, NSAccessibilityTabGroupRole },
-    { ui::AX_ROLE_TAB_PANEL, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_TEXT_AREA, NSAccessibilityTextAreaRole },
-    { ui::AX_ROLE_TEXT_FIELD, NSAccessibilityTextFieldRole },
-    { ui::AX_ROLE_TIMER, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_TOGGLE_BUTTON, NSAccessibilityCheckBoxRole },
-    { ui::AX_ROLE_TOOLBAR, NSAccessibilityToolbarRole },
-    { ui::AX_ROLE_TOOLTIP, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_TREE, NSAccessibilityOutlineRole },
-    { ui::AX_ROLE_TREE_GRID, NSAccessibilityTableRole },
-    { ui::AX_ROLE_TREE_ITEM, NSAccessibilityRowRole },
-    { ui::AX_ROLE_VALUE_INDICATOR, NSAccessibilityValueIndicatorRole },
-    { ui::AX_ROLE_WEB_AREA, @"AXWebArea" },
-    { ui::AX_ROLE_WINDOW, NSAccessibilityWindowRole },
-
-    // TODO(dtseng): we don't correctly support the attributes for these roles.
-    // { ui::AX_ROLE_SCROLL_AREA, NSAccessibilityScrollAreaRole },
-  };
-
-  RoleMap role_map;
-  for (size_t i = 0; i < arraysize(roles); ++i)
-    role_map[roles[i].webKitValue] = roles[i].nativeValue;
-  return role_map;
-}
-
-// A mapping of webkit roles to native roles.
-NSString* NativeRoleFromAXRole(
-    const ui::AXRole& role) {
-  CR_DEFINE_STATIC_LOCAL(RoleMap, web_accessibility_to_native_role,
-                         (BuildRoleMap()));
-  RoleMap::iterator it = web_accessibility_to_native_role.find(role);
-  if (it != web_accessibility_to_native_role.end())
-    return it->second;
-  else
-    return NSAccessibilityUnknownRole;
-}
-
-RoleMap BuildSubroleMap() {
-  const MapEntry subroles[] = {
-    { ui::AX_ROLE_ALERT, @"AXApplicationAlert" },
-    { ui::AX_ROLE_ALERT_DIALOG, @"AXApplicationAlertDialog" },
-    { ui::AX_ROLE_ARTICLE, @"AXDocumentArticle" },
-    { ui::AX_ROLE_DEFINITION, @"AXDefinition" },
-    { ui::AX_ROLE_DESCRIPTION_LIST_DETAIL, @"AXDescription" },
-    { ui::AX_ROLE_DESCRIPTION_LIST_TERM, @"AXTerm" },
-    { ui::AX_ROLE_DIALOG, @"AXApplicationDialog" },
-    { ui::AX_ROLE_DOCUMENT, @"AXDocument" },
-    { ui::AX_ROLE_FOOTER, @"AXLandmarkContentInfo" },
-    { ui::AX_ROLE_APPLICATION, @"AXLandmarkApplication" },
-    { ui::AX_ROLE_BANNER, @"AXLandmarkBanner" },
-    { ui::AX_ROLE_COMPLEMENTARY, @"AXLandmarkComplementary" },
-    { ui::AX_ROLE_CONTENT_INFO, @"AXLandmarkContentInfo" },
-    { ui::AX_ROLE_MAIN, @"AXLandmarkMain" },
-    { ui::AX_ROLE_NAVIGATION, @"AXLandmarkNavigation" },
-    { ui::AX_ROLE_SEARCH, @"AXLandmarkSearch" },
-    { ui::AX_ROLE_LOG, @"AXApplicationLog" },
-    { ui::AX_ROLE_MARQUEE, @"AXApplicationMarquee" },
-    { ui::AX_ROLE_MATH, @"AXDocumentMath" },
-    { ui::AX_ROLE_NOTE, @"AXDocumentNote" },
-    { ui::AX_ROLE_REGION, @"AXDocumentRegion" },
-    { ui::AX_ROLE_STATUS, @"AXApplicationStatus" },
-    { ui::AX_ROLE_TAB_PANEL, @"AXTabPanel" },
-    { ui::AX_ROLE_TIMER, @"AXApplicationTimer" },
-    { ui::AX_ROLE_TOGGLE_BUTTON, @"AXToggleButton" },
-    { ui::AX_ROLE_TOOLTIP, @"AXUserInterfaceTooltip" },
-    { ui::AX_ROLE_TREE_ITEM, NSAccessibilityOutlineRowSubrole },
-  };
-
-  RoleMap subrole_map;
-  for (size_t i = 0; i < arraysize(subroles); ++i)
-    subrole_map[subroles[i].webKitValue] = subroles[i].nativeValue;
-  return subrole_map;
-}
-
-// A mapping of webkit roles to native subroles.
-NSString* NativeSubroleFromAXRole(
-    const ui::AXRole& role) {
-  CR_DEFINE_STATIC_LOCAL(RoleMap, web_accessibility_to_native_subrole,
-                         (BuildSubroleMap()));
-  RoleMap::iterator it = web_accessibility_to_native_subrole.find(role);
-  if (it != web_accessibility_to_native_subrole.end())
-    return it->second;
-  else
-    return nil;
 }
 
 // A mapping from an accessibility attribute to its method name.
@@ -719,7 +535,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     else
       return NSAccessibilityButtonRole;
   }
-  return NativeRoleFromAXRole(role);
+  return [AXPlatformNodeCocoa nativeRoleFromAXRole:role];
 }
 
 // Returns a string indicating the role description of this object.
@@ -895,7 +711,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     }
   }
 
-  return NativeSubroleFromAXRole(browserAccessibilityRole);
+  return [AXPlatformNodeCocoa nativeSubroleFromAXRole:browserAccessibilityRole];
 }
 
 // Returns all tabs in this subtree.

@@ -293,4 +293,18 @@
   return @[];
 }
 
+// NSAccessibility informal protocol implementation.
+
+- (id)accessibilityAttributeValue:(NSString*)attribute {
+  if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
+    return @[ hostedView_->GetNativeViewAccessible() ];
+  }
+
+  return [super accessibilityAttributeValue:attribute];
+}
+
+- (id)accessibilityHitTest:(NSPoint)point {
+  return [hostedView_->GetNativeViewAccessible() accessibilityHitTest:point];
+}
+
 @end

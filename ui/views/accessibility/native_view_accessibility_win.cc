@@ -206,8 +206,7 @@ NativeViewAccessibility* NativeViewAccessibility::Create(View* view) {
 }
 
 NativeViewAccessibilityWin::NativeViewAccessibilityWin()
-    : view_(NULL),
-      unique_id_(next_unique_id_++) {
+    : unique_id_(next_unique_id_++) {
 }
 
 NativeViewAccessibilityWin::~NativeViewAccessibilityWin() {
