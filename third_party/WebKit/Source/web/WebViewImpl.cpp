@@ -3483,7 +3483,6 @@ void WebViewImpl::setInspectorSetting(const WebString& key,
                                       const WebString& value)
 {
     m_inspectorSettingsMap->set(key, value);
-    client()->didUpdateInspectorSetting(key, value);
 }
 
 void WebViewImpl::setCompositorDeviceScaleFactorOverride(float deviceScaleFactor)
