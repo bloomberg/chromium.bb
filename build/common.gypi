@@ -697,6 +697,7 @@
           'WIN32_LEAN_AND_MEAN',
           '_SECURE_ATL',
           '__STDC_LIMIT_MACROS=1',
+          '_HAS_EXCEPTIONS=0',
 
           'NACL_LINUX=0',
           'NACL_ANDROID=0',
@@ -704,11 +705,6 @@
           'NACL_WINDOWS=1'
         ],
         'conditions': [
-          ['component=="static_library"', {
-            'defines': [
-              '_HAS_EXCEPTIONS=0',
-            ],
-          }],
           ['MSVS_VERSION=="2008"', {
             'defines': [
               '_HAS_TR1=0',
@@ -728,14 +724,7 @@
             'WarningLevel': '3',
             'WarnAsError': 'true',
             'DebugInformationFormat': '3',
-
-            'conditions': [
-              ['component=="shared_library"', {
-                'ExceptionHandling': '1',  # /EHsc
-              }, {
-                'ExceptionHandling': '0',
-              }],
-            ],
+            'ExceptionHandling': '0',
           },
           'VCLibrarianTool': {
             'AdditionalOptions': ['/ignore:4221'],
