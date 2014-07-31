@@ -6,8 +6,9 @@
 #define CHROME_BROWSER_GUEST_VIEW_EXTENSION_OPTIONS_EXTENSION_OPTIONS_CONSTANTS_H_
 
 namespace extensionoptions {
-// create_params keys
+
 extern const char kExtensionId[];
+
 }  // namespace extensionoptions
 
 #endif  // CHROME_BROWSER_GUEST_VIEW_EXTENSION_OPTIONS_EXTENSION_OPTIONS_CONSTANTS_H_

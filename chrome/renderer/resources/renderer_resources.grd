@@ -58,6 +58,7 @@
         <include name="IDR_ENTERPRISE_PLATFORM_KEYS_TOKEN_JS" file="extensions\enterprise_platform_keys\token.js" type="BINDATA" />
         <include name="IDR_ENTERPRISE_PLATFORM_KEYS_UTILS_JS" file="extensions\enterprise_platform_keys\utils.js" type="BINDATA" />
         <include name="IDR_EXTENSION_OPTIONS_JS" file="extensions\extension_options.js" type="BINDATA"/>
+        <include name="IDR_EXTENSION_OPTIONS_EVENTS_JS" file="extensions\extension_options_events.js" type="BINDATA"/>
         <include name="IDR_FEEDBACK_PRIVATE_CUSTOM_BINDINGS_JS" file="extensions\feedback_private_custom_bindings.js" type="BINDATA" />
         <include name="IDR_FILE_BROWSER_HANDLER_CUSTOM_BINDINGS_JS" file="extensions\file_browser_handler_custom_bindings.js" type="BINDATA" />
         <include name="IDR_FILE_BROWSER_PRIVATE_CUSTOM_BINDINGS_JS" file="extensions\file_browser_private_custom_bindings.js" type="BINDATA" />

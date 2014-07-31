@@ -5,6 +5,7 @@
 #include "chrome/browser/guest_view/extension_options/extension_options_constants.h"
 
 namespace extensionoptions {
-// create_params keys
+
 const char kExtensionId[] = "extensionId";
+
 }  // namespace extensionoptions

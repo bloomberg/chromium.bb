@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 var DocumentNatives = requireNative('document_natives');
+var ExtensionOptionsEvents =
+    require('extensionOptionsEvents').ExtensionOptionsEvents;
 var GuestViewInternal =
     require('binding').Binding.create('guestViewInternal').generate();
 var IdGenerator = requireNative('id_generator');
@@ -10,6 +12,13 @@ var IdGenerator = requireNative('id_generator');
 function ExtensionOptionsInternal(extensionoptionsNode) {
   privates(extensionoptionsNode).internal = this;
   this.extensionoptionsNode = extensionoptionsNode;
+  this.viewInstanceId = IdGenerator.GetNextId();
+
+  // on* Event handlers.
+  this.eventHandlers = {};
+  new ExtensionOptionsEvents(this, this.viewInstanceId);
+
+  this.setupNodeProperties();
 
   if (this.parseExtensionAttribute())
     this.init();
@@ -38,9 +47,17 @@ ExtensionOptionsInternal.prototype.createGuest = function() {
       'extensionoptions',
       params,
       function(instanceId) {
-        self.instanceId = instanceId;
-        self.attachWindow(instanceId);
+        if (instanceId == 0) {
+          self.initCalled = false;
+        } else {
+          self.attachWindow(instanceId);
+        }
       });
+};
+
+ExtensionOptionsInternal.prototype.dispatchEvent =
+    function(extensionOptionsEvent) {
+  return this.extensionoptionsNode.dispatchEvent(extensionOptionsEvent);
 };
 
 ExtensionOptionsInternal.prototype.handleExtensionOptionsAttributeMutation =
@@ -64,10 +81,13 @@ ExtensionOptionsInternal.prototype.handleExtensionOptionsAttributeMutation =
 };
 
 ExtensionOptionsInternal.prototype.init = function() {
+  if (this.initCalled)
+    return;
+
+  this.initCalled = true;
   this.browserPluginNode = this.createBrowserPluginNode();
   var shadowRoot = this.extensionoptionsNode.createShadowRoot();
   shadowRoot.appendChild(this.browserPluginNode);
-  this.viewInstanceId = IdGenerator.GetNextId();
   this.createGuest();
 };
 
@@ -82,6 +102,42 @@ ExtensionOptionsInternal.prototype.parseExtensionAttribute = function() {
     }
   }
   return false;
+};
+
+// Adds an 'on<event>' property on the view, which can be used to set/unset
+// an event handler.
+ExtensionOptionsInternal.prototype.setupEventProperty = function(eventName) {
+  var propertyName = 'on' + eventName.toLowerCase();
+  var self = this;
+  var extensionoptionsNode = this.extensionoptionsNode;
+  Object.defineProperty(extensionoptionsNode, propertyName, {
+    get: function() {
+      return self.eventHandlers[propertyName];
+    },
+    set: function(value) {
+      if (self.eventHandlers[propertyName])
+        extensionoptionsNode.removeEventListener(
+            eventName, self.eventHandlers[propertyName]);
+      self.eventHandlers[propertyName] = value;
+      if (value)
+        extensionoptionsNode.addEventListener(eventName, value);
+    },
+    enumerable: true
+  });
+};
+
+ExtensionOptionsInternal.prototype.setupNodeProperties = function() {
+  var self = this;
+  this.extensionId = this.extensionoptionsNode.getAttribute('extension');
+  Object.defineProperty(this.extensionoptionsNode, 'extension', {
+    get: function() {
+      return self.extensionId;
+    },
+    set: function(value) {
+      self.extensionoptionsNode.setAttribute('extension', value);
+    },
+    enumerable: true
+  });
 };
 
 function registerBrowserPluginElement() {
@@ -115,7 +171,7 @@ function registerExtensionOptionsElement() {
   };
 
   proto.attributeChangedCallback = function(name, oldValue, newValue) {
-  var internal = privates(this).internal;
+    var internal = privates(this).internal;
     if (!internal)
       return;
     internal.handleExtensionOptionsAttributeMutation(name, oldValue, newValue);

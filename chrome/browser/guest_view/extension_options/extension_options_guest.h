@@ -32,6 +32,7 @@ class ExtensionOptionsGuest
       const WebContentsCreatedCallback& callback) OVERRIDE;
   virtual void DidAttachToEmbedder() OVERRIDE;
   virtual void DidInitialize() OVERRIDE;
+  virtual void DidStopLoading() OVERRIDE;
 
   // ExtensionFunctionDispatcher::Delegate implementation.
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;

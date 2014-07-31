@@ -54,6 +54,7 @@
       'enterprise_platform_keys_private.json',
       'events.json',
       'experience_sampling_private.json',
+      'extension_options_internal.idl',
       'feedback_private.idl',
       'file_browser_private.idl',
       'file_browser_private_internal.idl',

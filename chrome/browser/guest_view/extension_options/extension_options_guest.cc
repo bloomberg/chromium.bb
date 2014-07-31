@@ -4,9 +4,11 @@
 
 #include "chrome/browser/guest_view/extension_options/extension_options_guest.h"
 
+#include "base/values.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/guest_view/extension_options/extension_options_constants.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/extension_options_internal.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
@@ -109,6 +111,13 @@ void ExtensionOptionsGuest::DidInitialize() {
       new extensions::ExtensionFunctionDispatcher(browser_context(), this));
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       guest_web_contents());
+}
+
+void ExtensionOptionsGuest::DidStopLoading() {
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  DispatchEventToEmbedder(new GuestViewBase::Event(
+      extensions::api::extension_options_internal::OnLoad::kEventName,
+      args.Pass()));
 }
 
 content::WebContents* ExtensionOptionsGuest::GetAssociatedWebContents() const {
