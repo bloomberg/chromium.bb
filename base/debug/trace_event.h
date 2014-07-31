@@ -560,6 +560,15 @@
         category_group, name, id, TRACE_EVENT_FLAG_COPY, \
         arg1_name, arg1_val, arg2_name, arg2_val)
 
+// Similar to TRACE_EVENT_ASYNC_BEGINx but with a custom |at| timestamp
+// provided.
+#define TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0(category_group, \
+        name, id, timestamp) \
+    INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP( \
+        TRACE_EVENT_PHASE_ASYNC_BEGIN, category_group, name, id, \
+        static_cast<int>(base::PlatformThread::CurrentId()), \
+        timestamp, TRACE_EVENT_FLAG_NONE)
+
 // Records a single ASYNC_STEP_INTO event for |step| immediately. If the
 // category is not enabled, then this does nothing. The |name| and |id| must
 // match the ASYNC_BEGIN event above. The |step| param identifies this step
@@ -617,6 +626,13 @@
         category_group, name, id, TRACE_EVENT_FLAG_COPY, \
         arg1_name, arg1_val, arg2_name, arg2_val)
 
+// Similar to TRACE_EVENT_ASYNC_ENDx but with a custom |at| timestamp provided.
+#define TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(category_group, \
+        name, id, timestamp) \
+    INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP( \
+        TRACE_EVENT_PHASE_ASYNC_END, category_group, name, id, \
+        static_cast<int>(base::PlatformThread::CurrentId()), \
+        timestamp, TRACE_EVENT_FLAG_NONE)
 
 // Records a single FLOW_BEGIN event called "name" immediately, with 0, 1 or 2
 // associated arguments. If the category is not enabled, then this

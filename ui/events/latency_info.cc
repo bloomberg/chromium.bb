@@ -178,13 +178,48 @@ void LatencyInfo::AddLatencyNumberWithTimestamp(LatencyComponentType component,
                                                 int64 component_sequence_number,
                                                 base::TimeTicks time,
                                                 uint32 event_count) {
+
+  static const unsigned char* benchmark_enabled =
+      TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED("benchmark");
+
   if (IsBeginComponent(component)) {
     // Should only ever add begin component once.
     CHECK_EQ(-1, trace_id);
     trace_id = component_sequence_number;
-    TRACE_EVENT_ASYNC_BEGIN0("benchmark",
-                             "InputLatency",
-                             TRACE_ID_DONT_MANGLE(trace_id));
+
+    if (*benchmark_enabled) {
+      // The timestamp for ASYNC_BEGIN trace event is used for drawing the
+      // beginning of the trace event in trace viewer. For better visualization,
+      // for an input event, we want to draw the beginning as when the event is
+      // originally created, e.g. the timestamp of its ORIGINAL/UI_COMPONENT,
+      // not when we actually issue the ASYNC_BEGIN trace event.
+      LatencyComponent component;
+      int64 ts = 0;
+      if (FindLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
+                      0,
+                      &component) ||
+          FindLatency(INPUT_EVENT_LATENCY_UI_COMPONENT,
+                      0,
+                      &component)) {
+        // The timestamp stored in ORIGINAL/UI_COMPONENT is using clock
+        // CLOCK_MONOTONIC while TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0
+        // expects timestamp using CLOCK_MONOTONIC or CLOCK_SYSTEM_TRACE (on
+        // CrOS). So we need to adjust the diff between in CLOCK_MONOTONIC and
+        // CLOCK_SYSTEM_TRACE. Note that the diff is drifting overtime so we
+        // can't use a static value.
+        int64 diff = base::TimeTicks::HighResNow().ToInternalValue() -
+            base::TimeTicks::NowFromSystemTraceTime().ToInternalValue();
+        ts = component.event_time.ToInternalValue() - diff;
+      } else {
+        ts = base::TimeTicks::NowFromSystemTraceTime().ToInternalValue();
+      }
+      TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0(
+          "benchmark",
+          "InputLatency",
+          TRACE_ID_DONT_MANGLE(trace_id),
+          ts);
+    }
+
     TRACE_EVENT_FLOW_BEGIN0(
         "input", "LatencyInfo.Flow", TRACE_ID_DONT_MANGLE(trace_id));
   }
@@ -212,10 +247,14 @@ void LatencyInfo::AddLatencyNumberWithTimestamp(LatencyComponentType component,
     // Should only ever add terminal component once.
     CHECK(!terminated);
     terminated = true;
-    TRACE_EVENT_ASYNC_END1("benchmark",
-                           "InputLatency",
-                           TRACE_ID_DONT_MANGLE(trace_id),
-                           "data", AsTraceableData(*this));
+
+    if (*benchmark_enabled) {
+      TRACE_EVENT_ASYNC_END1("benchmark",
+                             "InputLatency",
+                             TRACE_ID_DONT_MANGLE(trace_id),
+                             "data", AsTraceableData(*this));
+    }
+
     TRACE_EVENT_FLOW_END0(
         "input", "LatencyInfo.Flow", TRACE_ID_DONT_MANGLE(trace_id));
   }
