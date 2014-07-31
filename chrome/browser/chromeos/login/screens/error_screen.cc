@@ -24,7 +24,8 @@ ErrorScreen::ErrorScreen(ScreenObserver* screen_observer,
 }
 
 ErrorScreen::~ErrorScreen() {
-  actor_->SetDelegate(NULL);
+  if (actor_)
+    actor_->SetDelegate(NULL);
 }
 
 void ErrorScreen::PrepareToShow() {
