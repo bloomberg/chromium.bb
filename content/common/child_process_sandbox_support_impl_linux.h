@@ -16,18 +16,22 @@ struct WebFontRenderStyle;
 
 namespace content {
 
-// Return a font family which provides glyphs for the Unicode code point
-// specified by |character|
-//   character: a UTF32 character
-//   preferred_locale: preferred locale identifier for the |character|
-//
-// Returns: a font family instance.
-// The instance has an empty font name if the request could not be satisfied.
+// Returns a font family which provides glyphs for the Unicode code point
+// specified by |character|, a UTF-32 character. |preferred_locale| contains the
+// preferred locale identifier for |character|. The instance has an empty font
+// name if the request could not be satisfied.
 void GetFallbackFontForCharacter(const int32_t character,
-                               const char* preferred_locale,
-                               blink::WebFallbackFont* family);
+                                 const char* preferred_locale,
+                                 blink::WebFallbackFont* family);
 
-void GetRenderStyleForStrike(const char* family, int sizeAndStyle,
+// Returns rendering settings for a provided font family, size, and style.
+// |size_and_style| stores the bold setting in its least-significant bit, the
+// italic setting in its second-least-significant bit, and holds the requested
+// size in pixels into its remaining bits.
+// TODO(derat): Update WebSandboxSupport's getRenderStyleForStrike() method to
+// pass the style and size separately instead of packing them into an int.
+void GetRenderStyleForStrike(const char* family,
+                             int size_and_style,
                              blink::WebFontRenderStyle* out);
 
 inline int GetSandboxFD() {

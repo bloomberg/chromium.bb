@@ -6,6 +6,9 @@
 
 #include <sys/stat.h>
 
+#include <limits>
+
+#include "base/basictypes.h"
 #include "base/debug/trace_event.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
@@ -59,42 +62,53 @@ void GetFallbackFontForCharacter(int32_t character,
   }
 }
 
-void GetRenderStyleForStrike(const char* family, int sizeAndStyle,
+void GetRenderStyleForStrike(const char* family,
+                             int size_and_style,
                              blink::WebFontRenderStyle* out) {
   TRACE_EVENT0("sandbox_ipc", "GetRenderStyleForStrike");
+
+  out->setDefaults();
+
+  if (size_and_style < 0)
+    return;
+
+  const bool bold = size_and_style & 1;
+  const bool italic = size_and_style & 2;
+  const int pixel_size = size_and_style >> 2;
+  if (pixel_size > std::numeric_limits<uint16>::max())
+    return;
 
   Pickle request;
   request.WriteInt(LinuxSandbox::METHOD_GET_STYLE_FOR_STRIKE);
   request.WriteString(family);
-  request.WriteInt(sizeAndStyle);
+  request.WriteBool(bold);
+  request.WriteBool(italic);
+  request.WriteUInt16(pixel_size);
 
   uint8_t buf[512];
   const ssize_t n = UnixDomainSocket::SendRecvMsg(GetSandboxFD(), buf,
                                                   sizeof(buf), NULL, request);
-
-  out->setDefaults();
-  if (n == -1) {
+  if (n == -1)
     return;
-  }
 
   Pickle reply(reinterpret_cast<char*>(buf), n);
   PickleIterator pickle_iter(reply);
-  int useBitmaps, useAutoHint, useHinting, hintStyle, useAntiAlias;
-  int useSubpixelRendering, useSubpixelPositioning;
-  if (reply.ReadInt(&pickle_iter, &useBitmaps) &&
-      reply.ReadInt(&pickle_iter, &useAutoHint) &&
-      reply.ReadInt(&pickle_iter, &useHinting) &&
-      reply.ReadInt(&pickle_iter, &hintStyle) &&
-      reply.ReadInt(&pickle_iter, &useAntiAlias) &&
-      reply.ReadInt(&pickle_iter, &useSubpixelRendering) &&
-      reply.ReadInt(&pickle_iter, &useSubpixelPositioning)) {
-    out->useBitmaps = useBitmaps;
-    out->useAutoHint = useAutoHint;
-    out->useHinting = useHinting;
-    out->hintStyle = hintStyle;
-    out->useAntiAlias = useAntiAlias;
-    out->useSubpixelRendering = useSubpixelRendering;
-    out->useSubpixelPositioning = useSubpixelPositioning;
+  int use_bitmaps, use_autohint, use_hinting, hint_style, use_antialias;
+  int use_subpixel_rendering, use_subpixel_positioning;
+  if (reply.ReadInt(&pickle_iter, &use_bitmaps) &&
+      reply.ReadInt(&pickle_iter, &use_autohint) &&
+      reply.ReadInt(&pickle_iter, &use_hinting) &&
+      reply.ReadInt(&pickle_iter, &hint_style) &&
+      reply.ReadInt(&pickle_iter, &use_antialias) &&
+      reply.ReadInt(&pickle_iter, &use_subpixel_rendering) &&
+      reply.ReadInt(&pickle_iter, &use_subpixel_positioning)) {
+    out->useBitmaps = use_bitmaps;
+    out->useAutoHint = use_autohint;
+    out->useHinting = use_hinting;
+    out->hintStyle = hint_style;
+    out->useAntiAlias = use_antialias;
+    out->useSubpixelRendering = use_subpixel_rendering;
+    out->useSubpixelPositioning = use_subpixel_positioning;
   }
 }
 

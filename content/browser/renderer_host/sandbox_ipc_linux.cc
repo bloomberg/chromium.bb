@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 
+#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
 #include "base/linux_util.h"
@@ -29,6 +30,7 @@
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
+#include "ui/gfx/font.h"
 #include "ui/gfx/font_render_params.h"
 
 using blink::WebCString;
@@ -38,13 +40,42 @@ using blink::WebUChar32;
 
 namespace content {
 
+namespace {
+
+// Converts gfx::FontRenderParams::Hinting to WebFontRenderStyle::hintStyle.
+// Returns an int for serialization, but the underlying Blink type is a char.
+int ConvertHinting(gfx::FontRenderParams::Hinting hinting) {
+  switch (hinting) {
+    case gfx::FontRenderParams::HINTING_NONE:   return 0;
+    case gfx::FontRenderParams::HINTING_SLIGHT: return 1;
+    case gfx::FontRenderParams::HINTING_MEDIUM: return 2;
+    case gfx::FontRenderParams::HINTING_FULL:   return 3;
+  }
+  NOTREACHED() << "Unexpected hinting value " << hinting;
+  return 0;
+}
+
+// Converts gfx::FontRenderParams::SubpixelRendering to
+// WebFontRenderStyle::useSubpixelRendering. Returns an int for serialization,
+// but the underlying Blink type is a char.
+int ConvertSubpixelRendering(
+    gfx::FontRenderParams::SubpixelRendering rendering) {
+  switch (rendering) {
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE: return 0;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_RGB:  return 1;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_BGR:  return 1;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VRGB: return 1;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VBGR: return 1;
+  }
+  NOTREACHED() << "Unexpected subpixel rendering value " << rendering;
+  return 0;
+}
+
+}  // namespace
+
 SandboxIPCHandler::SandboxIPCHandler(int lifeline_fd, int browser_socket)
-    : lifeline_fd_(lifeline_fd), browser_socket_(browser_socket) {
-  // FontConfig doesn't provide a standard property to control subpixel
-  // positioning, so we pass the current setting through to WebKit.
-  CR_DEFINE_STATIC_LOCAL(const gfx::FontRenderParams, params,
-      (gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(true), NULL)));
-  WebFontInfo::setSubpixelPositioning(params.subpixel_positioning);
+    : lifeline_fd_(lifeline_fd),
+      browser_socket_(browser_socket) {
 }
 
 void SandboxIPCHandler::Run() {
@@ -259,25 +290,35 @@ void SandboxIPCHandler::HandleGetStyleForStrike(
     PickleIterator iter,
     const std::vector<base::ScopedFD*>& fds) {
   std::string family;
-  int sizeAndStyle;
+  bool bold, italic;
+  uint16 pixel_size;
 
   if (!pickle.ReadString(&iter, &family) ||
-      !pickle.ReadInt(&iter, &sizeAndStyle)) {
+      !pickle.ReadBool(&iter, &bold) ||
+      !pickle.ReadBool(&iter, &italic) ||
+      !pickle.ReadUInt16(&iter, &pixel_size)) {
     return;
   }
 
   EnsureWebKitInitialized();
-  blink::WebFontRenderStyle style;
-  WebFontInfo::renderStyleForStrike(family.c_str(), sizeAndStyle, &style);
 
+  gfx::FontRenderParamsQuery query(true);
+  query.families.push_back(family);
+  query.pixel_size = pixel_size;
+  query.style = gfx::Font::NORMAL |
+      (bold ? gfx::Font::BOLD : 0) | (italic ? gfx::Font::ITALIC : 0);
+  const gfx::FontRenderParams params = gfx::GetFontRenderParams(query, NULL);
+
+  // These are passed as ints since they're interpreted as tri-state chars in
+  // Blink.
   Pickle reply;
-  reply.WriteInt(style.useBitmaps);
-  reply.WriteInt(style.useAutoHint);
-  reply.WriteInt(style.useHinting);
-  reply.WriteInt(style.hintStyle);
-  reply.WriteInt(style.useAntiAlias);
-  reply.WriteInt(style.useSubpixelRendering);
-  reply.WriteInt(style.useSubpixelPositioning);
+  reply.WriteInt(params.use_bitmaps);
+  reply.WriteInt(params.autohinter);
+  reply.WriteInt(params.hinting != gfx::FontRenderParams::HINTING_NONE);
+  reply.WriteInt(ConvertHinting(params.hinting));
+  reply.WriteInt(params.antialiasing);
+  reply.WriteInt(ConvertSubpixelRendering(params.subpixel_rendering));
+  reply.WriteInt(params.subpixel_positioning);
 
   SendRendererReply(fds, reply, -1);
 }
