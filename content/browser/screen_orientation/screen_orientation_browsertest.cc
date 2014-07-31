@@ -30,17 +30,12 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
-    command_line->AppendSwitch(switches::kEnablePixelOutputInTests);
   }
 
   virtual void SetUp() OVERRIDE {
     // Painting has to happen otherwise the Resize messages will be added on top
     // of each other without properly ack-painting which will fail and crash.
     UseSoftwareCompositing();
-    EnablePixelOutput();
-
-    // The browser process should not ack check, otherwise it will break.
-    RenderWidgetHostImpl::DisableResizeAckCheckForTesting();
 
     ContentBrowserTest::SetUp();
   }
@@ -68,7 +63,7 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
 
     ViewMsg_Resize_Params params;
     params.screen_info = screen_info;
-    params.new_size = gfx::Size(300, 300);
+    params.new_size = gfx::Size(0, 0);
     params.physical_backing_size = gfx::Size(300, 300);
     params.overdraw_bottom_height = 0.f;
     params.resizer_rect = gfx::Rect();
