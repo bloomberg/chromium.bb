@@ -14,7 +14,7 @@ class InstanceHandle;
 class NetAddress;
 }
 
-namespace rtc {
+namespace talk_base {
 class SocketAddress;
 }
 
@@ -23,14 +23,14 @@ namespace remoting {
 // Helpers to convert between different socket address representations.
 bool SocketAddressToPpNetAddressWithPort(
     const pp::InstanceHandle& instance,
-    const rtc::SocketAddress& address,
+    const talk_base::SocketAddress& address,
     pp::NetAddress* pp_net_address,
     uint16_t port);
 bool SocketAddressToPpNetAddress(const pp::InstanceHandle& instance,
-                                 const rtc::SocketAddress& address,
+                                 const talk_base::SocketAddress& address,
                                  pp::NetAddress* pp_net_address);
 void PpNetAddressToSocketAddress(const pp::NetAddress& pp_net_address,
-                                 rtc::SocketAddress* address);
+                                 talk_base::SocketAddress* address);
 
 }  // namespace remoting
 

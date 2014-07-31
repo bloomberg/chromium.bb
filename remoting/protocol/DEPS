@@ -8,6 +8,5 @@ include_rules = [
   "+remoting/codec",
   "+remoting/signaling",
   "+third_party/libjingle",
-  "+third_party/webrtc",
   "+third_party/protobuf/src",
 ]

@@ -33,7 +33,7 @@ class WebRtcMediaStreamAdapter;
 
 // Mockable wrapper for blink::WebRTCStatsResponse
 class CONTENT_EXPORT LocalRTCStatsResponse
-    : public NON_EXPORTED_BASE(rtc::RefCountInterface) {
+    : public NON_EXPORTED_BASE(talk_base::RefCountInterface) {
  public:
   explicit LocalRTCStatsResponse(const blink::WebRTCStatsResponse& impl)
       : impl_(impl) {
@@ -56,7 +56,7 @@ class CONTENT_EXPORT LocalRTCStatsResponse
 
 // Mockable wrapper for blink::WebRTCStatsRequest
 class CONTENT_EXPORT LocalRTCStatsRequest
-    : public NON_EXPORTED_BASE(rtc::RefCountInterface) {
+    : public NON_EXPORTED_BASE(talk_base::RefCountInterface) {
  public:
   explicit LocalRTCStatsRequest(blink::WebRTCStatsRequest impl);
   // Constructor for testing.
@@ -72,7 +72,7 @@ class CONTENT_EXPORT LocalRTCStatsRequest
 
  private:
   blink::WebRTCStatsRequest impl_;
-  rtc::scoped_refptr<LocalRTCStatsResponse> response_;
+  talk_base::scoped_refptr<LocalRTCStatsResponse> response_;
 };
 
 // RTCPeerConnectionHandler is a delegate for the RTC PeerConnection API

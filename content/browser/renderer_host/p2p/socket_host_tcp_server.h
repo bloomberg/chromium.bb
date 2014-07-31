@@ -38,7 +38,7 @@ class CONTENT_EXPORT P2PSocketHostTcpServer : public P2PSocketHost {
                     const P2PHostAndIPEndPoint& remote_address) OVERRIDE;
   virtual void Send(const net::IPEndPoint& to,
                     const std::vector<char>& data,
-                    const rtc::PacketOptions& options,
+                    const talk_base::PacketOptions& options,
                     uint64 packet_id) OVERRIDE;
   virtual P2PSocketHost* AcceptIncomingTcpConnection(
       const net::IPEndPoint& remote_address, int id) OVERRIDE;

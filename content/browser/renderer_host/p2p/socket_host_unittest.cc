@@ -297,7 +297,7 @@ TEST(P2PSocketHostTest, TestUpdateAbsSendTimeExtensionInTurnSendIndication) {
 // without HMAC value in the packet.
 TEST(P2PSocketHostTest, TestApplyPacketOptionsWithDefaultValues) {
   unsigned char fake_tag[4] = { 0xba, 0xdd, 0xba, 0xdd };
-  rtc::PacketOptions options;
+  talk_base::PacketOptions options;
   std::vector<char> rtp_packet;
   rtp_packet.resize(sizeof(kRtpMsgWithAbsSendTimeExtension) + 4);  // tag length
   memcpy(&rtp_packet[0], kRtpMsgWithAbsSendTimeExtension,
@@ -317,7 +317,7 @@ TEST(P2PSocketHostTest, TestApplyPacketOptionsWithDefaultValues) {
 
 // Veirfy HMAC is updated when packet option parameters are set.
 TEST(P2PSocketHostTest, TestApplyPacketOptionsWithAuthParams) {
-  rtc::PacketOptions options;
+  talk_base::PacketOptions options;
   options.packet_time_params.srtp_auth_key.resize(20);
   options.packet_time_params.srtp_auth_key.assign(
       kTestKey, kTestKey + sizeof(kTestKey));
@@ -348,7 +348,7 @@ TEST(P2PSocketHostTest, TestUpdateAbsSendTimeExtensionInRtpPacket) {
 
 // Verify we update both AbsSendTime extension header and HMAC.
 TEST(P2PSocketHostTest, TestApplyPacketOptionsWithAuthParamsAndAbsSendTime) {
-  rtc::PacketOptions options;
+  talk_base::PacketOptions options;
   options.packet_time_params.srtp_auth_key.resize(20);
   options.packet_time_params.srtp_auth_key.assign(
       kTestKey, kTestKey + sizeof(kTestKey));

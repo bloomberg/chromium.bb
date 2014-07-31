@@ -12,11 +12,11 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
-#include "third_party/webrtc/base/thread.h"
+#include "third_party/libjingle/source/talk/base/thread.h"
 
 namespace jingle_glue {
 
-// JingleThreadWrapper implements rtc::Thread interface on top of
+// JingleThreadWrapper implements talk_base::Thread interface on top of
 // Chromium's SingleThreadTaskRunner interface. Currently only the bare minimum
 // that is used by P2P part of libjingle is implemented. There are two ways to
 // create this object:
@@ -28,7 +28,7 @@ namespace jingle_glue {
 //   must pass a valid task runner for the current thread and also delete the
 //   wrapper later.
 class JingleThreadWrapper : public base::MessageLoop::DestructionObserver,
-                            public rtc::Thread {
+                            public talk_base::Thread {
  public:
   // Create JingleThreadWrapper for the current thread if it hasn't been created
   // yet. The thread wrapper is destroyed automatically when the current
@@ -54,21 +54,21 @@ class JingleThreadWrapper : public base::MessageLoop::DestructionObserver,
   // MessageLoop::DestructionObserver implementation.
   virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
 
-  // rtc::MessageQueue overrides.
-  virtual void Post(rtc::MessageHandler *phandler,
+  // talk_base::MessageQueue overrides.
+  virtual void Post(talk_base::MessageHandler *phandler,
                     uint32 id,
-                    rtc::MessageData *pdata,
+                    talk_base::MessageData *pdata,
                     bool time_sensitive) OVERRIDE;
   virtual void PostDelayed(int delay_ms,
-                           rtc::MessageHandler* handler,
+                           talk_base::MessageHandler* handler,
                            uint32 id,
-                           rtc::MessageData* data) OVERRIDE;
-  virtual void Clear(rtc::MessageHandler* handler,
+                           talk_base::MessageData* data) OVERRIDE;
+  virtual void Clear(talk_base::MessageHandler* handler,
                      uint32 id,
-                     rtc::MessageList* removed) OVERRIDE;
-  virtual void Send(rtc::MessageHandler *handler,
+                     talk_base::MessageList* removed) OVERRIDE;
+  virtual void Send(talk_base::MessageHandler *handler,
                     uint32 id,
-                    rtc::MessageData *data) OVERRIDE;
+                    talk_base::MessageData *data) OVERRIDE;
 
   // Following methods are not supported.They are overriden just to
   // ensure that they are not called (each of them contain NOTREACHED
@@ -77,30 +77,30 @@ class JingleThreadWrapper : public base::MessageLoop::DestructionObserver,
   virtual void Quit() OVERRIDE;
   virtual bool IsQuitting() OVERRIDE;
   virtual void Restart() OVERRIDE;
-  virtual bool Get(rtc::Message* message,
+  virtual bool Get(talk_base::Message* message,
                    int delay_ms,
                    bool process_io) OVERRIDE;
-  virtual bool Peek(rtc::Message* message,
+  virtual bool Peek(talk_base::Message* message,
                     int delay_ms) OVERRIDE;
   virtual void PostAt(uint32 timestamp,
-                      rtc::MessageHandler* handler,
+                      talk_base::MessageHandler* handler,
                       uint32 id,
-                      rtc::MessageData* data) OVERRIDE;
-  virtual void Dispatch(rtc::Message* message) OVERRIDE;
+                      talk_base::MessageData* data) OVERRIDE;
+  virtual void Dispatch(talk_base::Message* message) OVERRIDE;
   virtual void ReceiveSends() OVERRIDE;
   virtual int GetDelay() OVERRIDE;
 
-  // rtc::Thread overrides.
+  // talk_base::Thread overrides.
   virtual void Stop() OVERRIDE;
   virtual void Run() OVERRIDE;
 
  private:
-  typedef std::map<int, rtc::Message> MessagesQueue;
+  typedef std::map<int, talk_base::Message> MessagesQueue;
   struct PendingSend;
 
   void PostTaskInternal(
-      int delay_ms, rtc::MessageHandler* handler,
-      uint32 message_id, rtc::MessageData* data);
+      int delay_ms, talk_base::MessageHandler* handler,
+      uint32 message_id, talk_base::MessageData* data);
   void RunTask(int task_id);
   void ProcessPendingSends();
 
