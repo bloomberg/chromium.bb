@@ -57,6 +57,11 @@ MockIsolatedFileSystem.prototype = {
         this._innerRequestFilesRecursive();
     },
 
+    renameFile: function(filePath, newName, callback)
+    {
+        callback(true, newName);
+    },
+
     _innerRequestFilesRecursive: function()
     {
         if (!this._callback)

@@ -339,6 +339,46 @@ function test()
                 next();
             }
         },
+
+        function testURLAfterRenaming(next)
+        {
+            function uiSourceCodeAdded(uiSourceCode) { }
+
+            var fileSystemPath = "/var/www";
+            var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
+            var files = {"/html/foo.js": "<foo content>", "/bar.js": "<bar content>", "/foo/bar/baz.js": "<baz content>"};
+            createObjects();
+            InspectorTest.addResult("Adding file system.");
+            manager.addMockFileSystem(fileSystemPath);
+            InspectorTest.addResult("Adding file system mapping.");
+            InspectorTest.testFileSystemMapping.addFileMapping(fileSystemPath, "http://localhost/", "/");
+            InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded, 3);
+            manager.addFiles(fileSystemPath, files);
+
+            InspectorTest.addResult("Renaming files:");
+            var uiSourceCodes = InspectorTest.testWorkspace.uiSourceCodes();
+            var index = 0;
+            var oldURL;
+            renameNextFile();
+
+            function renameNextFile()
+            {
+                var uiSourceCode = uiSourceCodes[index];
+                oldURL = uiSourceCode.url;
+                uiSourceCodes[index].rename("newName.js", fileRenamed);
+            }
+
+            function fileRenamed()
+            {
+                var uiSourceCode = uiSourceCodes[index];
+                InspectorTest.addResult("    uiSourceCode URL change after renaming: " + oldURL + " -> " + uiSourceCode.url);
+                ++index;
+                if (index < uiSourceCodes.length)
+                    renameNextFile();
+                else
+                    next();
+            }
+        },
     ]);
 };
 </script>

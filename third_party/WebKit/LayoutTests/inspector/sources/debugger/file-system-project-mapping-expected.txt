@@ -96,3 +96,11 @@ Dumping uiSourceCodes origin URLs:
 Removing project:
 Received project removed event.
 
+Running: testURLAfterRenaming
+Adding file system.
+Adding file system mapping.
+Renaming files:
+    uiSourceCode URL change after renaming: http://localhost/html/foo.js -> http://localhost/html/newName.js
+    uiSourceCode URL change after renaming: http://localhost/bar.js -> http://localhost/newName.js
+    uiSourceCode URL change after renaming: http://localhost/foo/bar/baz.js -> http://localhost/foo/bar/newName.js
+
