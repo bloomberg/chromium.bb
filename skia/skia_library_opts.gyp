@@ -65,16 +65,6 @@
         }],
         [ 'target_arch == "arm"', {
           'conditions': [
-            [ 'arm_version >= 7 and arm_neon == 1', {
-              'defines': [
-                '__ARM_HAVE_NEON',
-              ],
-            }],
-            [ 'arm_version >= 7 and arm_neon_optional == 1', {
-              'defines': [
-                '__ARM_HAVE_OPTIONAL_NEON_SUPPORT',
-              ],
-            }],
             [ 'arm_version >= 7 and (arm_neon == 1 or arm_neon_optional == 1)', {
               'cflags': [
                 # The neon assembly contains conditional instructions which
@@ -331,18 +321,6 @@
             '../third_party/skia/src/opts/SkXfermode_opts_arm_neon.cpp',
             '../third_party/skia/src/opts/memset16_neon.S',
             '../third_party/skia/src/opts/memset32_neon.S',
-          ],
-          'conditions': [
-            ['arm_neon == 1', {
-              'defines': [
-                '__ARM_HAVE_NEON',
-              ],
-            }],
-            ['arm_neon_optional == 1', {
-              'defines': [
-                '__ARM_HAVE_OPTIONAL_NEON_SUPPORT',
-              ],
-            }],
           ],
         },
       ],
