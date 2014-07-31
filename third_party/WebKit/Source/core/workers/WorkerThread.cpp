@@ -76,8 +76,8 @@ unsigned WorkerThread::workerThreadCount()
 
 class WorkerSharedTimer : public SharedTimer {
 public:
-    explicit WorkerSharedTimer(blink::WebThread* webThread)
-        : m_thread(webThread)
+    explicit WorkerSharedTimer(WorkerThread* workerThread)
+        : m_workerThread(workerThread)
         , m_nextFireTime(0.0)
         , m_running(false)
     { }
@@ -105,7 +105,7 @@ public:
 
         m_running = true;
         m_nextFireTime = currentTime() + interval;
-        m_thread->postDelayedTask(new Task(WTF::bind(&WorkerSharedTimer::OnTimeout, this)), delay);
+        m_workerThread->webThread()->postDelayedTask(new Task(WTF::bind(&WorkerSharedTimer::OnTimeout, this)), delay);
     }
 
     virtual void stop()
@@ -118,11 +118,11 @@ public:
 private:
     void OnTimeout()
     {
-        if (m_sharedTimerFunction && m_running)
+        if (m_sharedTimerFunction && m_running && !m_workerThread->workerGlobalScope()->isClosing())
             m_sharedTimerFunction();
     }
 
-    WebThread* m_thread;
+    WorkerThread* m_workerThread;
     SharedTimerFunction m_sharedTimerFunction;
     double m_nextFireTime;
     bool m_running;
@@ -230,7 +230,7 @@ void WorkerThread::initialize()
         ThreadState::attach();
         m_workerGlobalScope = createWorkerGlobalScope(m_startupData.release());
 
-        m_sharedTimer = adoptPtr(new WorkerSharedTimer(m_thread.get()));
+        m_sharedTimer = adoptPtr(new WorkerSharedTimer(this));
         PlatformThreadData::current().threadTimers().setSharedTimer(m_sharedTimer.get());
 
         if (m_terminated) {
@@ -361,6 +361,7 @@ void WorkerThread::stop()
     m_workerGlobalScope->script()->scheduleExecutionTermination();
     m_workerGlobalScope->wasRequestedToTerminate();
     InspectorInstrumentation::didKillAllExecutionContextTasks(m_workerGlobalScope.get());
+    m_debuggerMessageQueue.kill();
     postTask(WorkerThreadShutdownStartTask::create());
     m_terminated = true;
 }
