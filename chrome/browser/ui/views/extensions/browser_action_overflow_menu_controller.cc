@@ -137,7 +137,7 @@ bool BrowserActionOverflowMenuController::IsCommandEnabled(int id) const {
 
 void BrowserActionOverflowMenuController::ExecuteCommand(int id) {
   BrowserActionView* view = (*views_)[start_index_ + id - 1];
-  owner_->OnBrowserActionExecuted(view->button());
+  view->button()->ExecuteBrowserAction();
 }
 
 bool BrowserActionOverflowMenuController::ShowContextMenu(
@@ -145,13 +145,12 @@ bool BrowserActionOverflowMenuController::ShowContextMenu(
     int id,
     const gfx::Point& p,
     ui::MenuSourceType source_type) {
-  const extensions::Extension* extension =
-      (*views_)[start_index_ + id - 1]->button()->extension();
-  if (!extension->ShowConfigureContextMenus())
+  BrowserActionButton* button = (*views_)[start_index_ + id - 1]->button();
+  if (!button->extension()->ShowConfigureContextMenus())
     return false;
 
   scoped_refptr<ExtensionContextMenuModel> context_menu_contents =
-      new ExtensionContextMenuModel(extension, browser_, owner_);
+      new ExtensionContextMenuModel(button->extension(), browser_, button);
   views::MenuRunner context_menu_runner(context_menu_contents.get(),
                                         views::MenuRunner::HAS_MNEMONICS |
                                             views::MenuRunner::IS_NESTED |

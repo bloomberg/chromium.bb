@@ -4,13 +4,14 @@
 
 #include "chrome/browser/ui/views/toolbar/browser_action_view.h"
 
+#include <string>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -111,6 +112,7 @@ BrowserActionButton::BrowserActionButton(const Extension* extension,
       icon_factory_(browser->profile(), extension, browser_action_, this),
       delegate_(delegate),
       called_registered_extension_command_(false),
+      popup_(NULL),
       icon_observer_(NULL) {
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   set_context_menu_controller(this);
@@ -138,7 +140,7 @@ BrowserActionButton::BrowserActionButton(const Extension* extension,
 
 void BrowserActionButton::Destroy() {
   MaybeUnregisterExtensionCommand(false);
-
+  HidePopup();
   if (menu_runner_) {
     menu_runner_->Cancel();
     base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
@@ -176,7 +178,7 @@ void BrowserActionButton::GetAccessibleState(ui::AXViewState* state) {
 
 void BrowserActionButton::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
-  delegate_->OnBrowserActionExecuted(this);
+  ExecuteBrowserAction();
 }
 
 void BrowserActionButton::ShowContextMenuForView(
@@ -190,7 +192,7 @@ void BrowserActionButton::ShowContextMenuForView(
 
   // Reconstructs the menu every time because the menu's contents are dynamic.
   scoped_refptr<ExtensionContextMenuModel> context_menu_contents(
-      new ExtensionContextMenuModel(extension(), browser_, delegate_));
+      new ExtensionContextMenuModel(extension(), browser_, this));
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(this, &screen_loc);
 
@@ -271,6 +273,55 @@ GURL BrowserActionButton::GetPopupUrl() {
   return (tab_id < 0) ? GURL() : browser_action_->GetPopupUrl(tab_id);
 }
 
+bool BrowserActionButton::ShowPopup(
+    ExtensionPopup::ShowAction show_action,
+    bool grant_tab_permissions) {
+  GURL popup_url;
+  if (delegate_->GetModel()->ExecuteBrowserAction(
+          extension_, browser_, &popup_url, grant_tab_permissions) ==
+      extensions::ExtensionToolbarModel::ACTION_NONE) {
+    return false;
+  }
+
+  // If we're already showing the popup for this browser action, just hide it
+  // and return.
+  bool already_showing = popup_ != NULL;
+
+  // Always hide the current popup, even if it's not the same.
+  // Only one popup should be visible at a time.
+  delegate_->HideActivePopup();
+  if (already_showing)
+    return false;
+
+  // Browser actions in the overflow menu can still show popups, so we may need
+  // a reference view other than this button's parent. If so, use the overflow
+  // view.
+  views::View* reference_view =
+      parent()->visible() ? this : delegate_->GetOverflowReferenceView();
+
+  popup_ = ExtensionPopup::ShowPopup(popup_url,
+                                     browser_,
+                                     reference_view,
+                                     views::BubbleBorder::TOP_RIGHT,
+                                     show_action);
+  popup_->GetWidget()->AddObserver(this);
+  delegate_->SetPopupOwner(this);
+
+  // Only set button as pushed if it was triggered by a user click.
+  if (grant_tab_permissions)
+    SetButtonPushed();
+  return true;
+}
+
+void BrowserActionButton::HidePopup() {
+  if (popup_)
+    CleanupPopup(true);
+}
+
+void BrowserActionButton::ExecuteBrowserAction() {
+  ShowPopup(ExtensionPopup::SHOW, true);
+}
+
 void BrowserActionButton::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
@@ -315,7 +366,7 @@ bool BrowserActionButton::Activate() {
   if (!IsPopup())
     return true;
 
-  delegate_->OnBrowserActionExecuted(this);
+  ExecuteBrowserAction();
 
   // TODO(erikkay): Run a nested modal loop while the mouse is down to
   // enable menu-like drag-select behavior.
@@ -386,7 +437,7 @@ bool BrowserActionButton::AcceleratorPressed(
       ui::AcceleratorManager::kNormalPriority)
     return false;
 
-  delegate_->OnBrowserActionExecuted(this);
+  ExecuteBrowserAction();
   return true;
 }
 
@@ -418,6 +469,16 @@ gfx::ImageSkia BrowserActionButton::GetIconForTest() {
 }
 
 BrowserActionButton::~BrowserActionButton() {
+}
+
+void BrowserActionButton::InspectPopup() {
+  ShowPopup(ExtensionPopup::SHOW_AND_INSPECT, true);
+}
+
+void BrowserActionButton::OnWidgetDestroying(views::Widget* widget) {
+  DCHECK(popup_);
+  DCHECK_EQ(popup_->GetWidget(), widget);
+  CleanupPopup(false);
 }
 
 void BrowserActionButton::MaybeRegisterExtensionCommand() {
@@ -455,4 +516,18 @@ void BrowserActionButton::MaybeUnregisterExtensionCommand(bool only_if_active) {
     GetFocusManager()->UnregisterAccelerator(*keybinding_.get(), this);
     keybinding_.reset(NULL);
   }
+}
+
+void BrowserActionButton::CleanupPopup(bool close_widget) {
+  DCHECK(popup_);
+  // We need to do these actions synchronously (instead of closing and then
+  // performing the rest of the cleanup in OnWidgetDestroyed()) because
+  // OnWidgetDestroyed() can be called asynchronously from Close(), and we need
+  // to keep the delegate's popup owner up-to-date.
+  popup_->GetWidget()->RemoveObserver(this);
+  if (close_widget)
+    popup_->GetWidget()->Close();
+  popup_ = NULL;
+  SetButtonNotPushed();
+  delegate_->SetPopupOwner(NULL);
 }

@@ -7,7 +7,6 @@
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -20,10 +19,10 @@
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
-#include "chrome/browser/ui/views/toolbar/browser_action_view.h"
+#include "chrome/browser/ui/views/toolbar/browser_actions_container_observer.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/extensions/command.h"
-#include "chrome/common/pref_names.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/runtime_data.h"
@@ -42,6 +41,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/button/label_button_border.h"
+#include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/resize_area.h"
 #include "ui/views/metrics.h"
 #include "ui/views/painter.h"
@@ -131,8 +131,7 @@ BrowserActionsContainer::BrowserActionsContainer(
       browser_(browser),
       owner_view_(owner_view),
       main_container_(main_container),
-      popup_(NULL),
-      popup_button_(NULL),
+      popup_owner_(NULL),
       model_(NULL),
       container_width_(0),
       resize_area_(NULL),
@@ -188,9 +187,7 @@ BrowserActionsContainer::~BrowserActionsContainer() {
   if (model_)
     model_->RemoveObserver(this);
   StopShowFolderDropMenuTimer();
-  if (popup_)
-    popup_->GetWidget()->RemoveObserver(this);
-  HidePopup();
+  HideActivePopup();
   DeleteBrowserActionViews();
 }
 
@@ -246,7 +243,7 @@ void BrowserActionsContainer::CreateBrowserActionViews() {
 }
 
 void BrowserActionsContainer::DeleteBrowserActionViews() {
-  HidePopup();
+  HideActivePopup();
   if (overflow_menu_)
     overflow_menu_->NotifyBrowserActionViewsDeleting();
   STLDeleteElements(&browser_action_views_);
@@ -289,6 +286,28 @@ void BrowserActionsContainer::OnBrowserActionViewDragDone() {
   FOR_EACH_OBSERVER(BrowserActionsContainerObserver,
                     observers_,
                     OnBrowserActionDragDone());
+}
+
+views::View* BrowserActionsContainer::GetOverflowReferenceView() {
+  // We should only need an overflow reference when using the traditional
+  // chevron overflow.
+  DCHECK(chevron_);
+  return chevron_;
+}
+
+void BrowserActionsContainer::SetPopupOwner(BrowserActionButton* popup_owner) {
+  // We should never be setting a popup owner when one already exists.
+  DCHECK(!popup_owner_ || !popup_owner);
+  popup_owner_ = popup_owner;
+}
+
+void BrowserActionsContainer::HideActivePopup() {
+  if (popup_owner_)
+    popup_owner_->HidePopup();
+}
+
+extensions::ExtensionToolbarModel* BrowserActionsContainer::GetModel() {
+  return model_;
 }
 
 void BrowserActionsContainer::AddObserver(
@@ -639,22 +658,6 @@ void BrowserActionsContainer::NotifyMenuDeleted(
   overflow_menu_ = NULL;
 }
 
-void BrowserActionsContainer::OnWidgetDestroying(views::Widget* widget) {
-  DCHECK_EQ(popup_->GetWidget(), widget);
-  popup_->GetWidget()->RemoveObserver(this);
-  popup_ = NULL;
-  // |popup_button_| is NULL if the extension has been removed.
-  if (popup_button_) {
-    popup_button_->SetButtonNotPushed();
-    popup_button_ = NULL;
-  }
-}
-
-void BrowserActionsContainer::InspectPopup(ExtensionAction* action) {
-  BrowserActionView* view = GetBrowserActionView(action);
-  ShowPopup(view->button(), ExtensionPopup::SHOW_AND_INSPECT, true);
-}
-
 int BrowserActionsContainer::GetCurrentTabId() const {
   content::WebContents* active_tab =
       browser_->tab_strip_model()->GetActiveWebContents();
@@ -662,11 +665,6 @@ int BrowserActionsContainer::GetCurrentTabId() const {
     return -1;
 
   return SessionTabHelper::FromWebContents(active_tab)->session_id().id();
-}
-
-void BrowserActionsContainer::OnBrowserActionExecuted(
-    BrowserActionButton* button) {
-  ShowPopup(button, ExtensionPopup::SHOW, true);
 }
 
 void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
@@ -689,57 +687,18 @@ extensions::ActiveTabPermissionGranter*
 
 void BrowserActionsContainer::MoveBrowserAction(const std::string& extension_id,
                                                 size_t new_index) {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  if (service) {
-    const Extension* extension = service->GetExtensionById(extension_id, false);
-    model_->MoveBrowserAction(extension, new_index);
-    SchedulePaint();
-  }
-}
-
-bool BrowserActionsContainer::ShowPopup(const extensions::Extension* extension,
-                                        bool should_grant) {
-  // Do not override other popups and only show in active window. The window
-  // must also have a toolbar, otherwise it should not be showing popups.
-  // TODO(justinlin): Remove toolbar check when http://crbug.com/308645 is
-  // fixed.
-  if (popup_ ||
-      !browser_->window()->IsActive() ||
-      !browser_->window()->IsToolbarVisible()) {
-    return false;
-  }
-
-  for (BrowserActionViews::iterator it = browser_action_views_.begin();
-       it != browser_action_views_.end(); ++it) {
-    BrowserActionButton* button = (*it)->button();
-    if (button && button->extension() == extension)
-      return ShowPopup(button, ExtensionPopup::SHOW, should_grant);
-  }
-  return false;
+  const Extension* extension = extensions::ExtensionRegistry::Get(profile_)->
+      enabled_extensions().GetByID(extension_id);
+  model_->MoveBrowserAction(extension, new_index);
+  SchedulePaint();
 }
 
 size_t BrowserActionsContainer::GetFirstVisibleIconIndex() const {
   return in_overflow_mode() ? model_->GetVisibleIconCount() : 0;
 }
 
-void BrowserActionsContainer::HidePopup() {
-  // Remove this as an observer and clear |popup_| and |popup_button_| here,
-  // since we might change them before OnWidgetDestroying() gets called.
-  if (popup_) {
-    popup_->GetWidget()->RemoveObserver(this);
-    popup_->GetWidget()->Close();
-    popup_ = NULL;
-  }
-  if (popup_button_) {
-    popup_button_->SetButtonNotPushed();
-    popup_button_ = NULL;
-  }
-}
-
-void BrowserActionsContainer::TestExecuteBrowserAction(int index) {
-  BrowserActionButton* button = browser_action_views_[index]->button();
-  OnBrowserActionExecuted(button);
+ExtensionPopup* BrowserActionsContainer::TestGetPopup() {
+  return popup_owner_ ? popup_owner_->popup() : NULL;
 }
 
 void BrowserActionsContainer::TestSetIconVisibilityCount(size_t icons) {
@@ -883,9 +842,6 @@ void BrowserActionsContainer::BrowserActionAdded(const Extension* extension,
 void BrowserActionsContainer::BrowserActionRemoved(const Extension* extension) {
   CloseOverflowMenu();
 
-  if (popup_ && popup_->host()->extension() == extension)
-    HidePopup();
-
   size_t visible_actions = VisibleBrowserActionsAfterAnimation();
   for (BrowserActionViews::iterator i(browser_action_views_.begin());
        i != browser_action_views_.end(); ++i) {
@@ -935,8 +891,8 @@ void BrowserActionsContainer::BrowserActionMoved(const Extension* extension,
 }
 
 bool BrowserActionsContainer::BrowserActionShowPopup(
-    const extensions::Extension* extension) {
-  return ShowPopup(extension, false);
+    const Extension* extension) {
+  return ShowPopupForExtension(extension, false, false);
 }
 
 void BrowserActionsContainer::VisibleCountChanged() {
@@ -1082,40 +1038,26 @@ bool BrowserActionsContainer::ShouldDisplayBrowserAction(
       extensions::util::IsIncognitoEnabled(extension->id(), profile_);
 }
 
-bool BrowserActionsContainer::ShowPopup(
-    BrowserActionButton* button,
-    ExtensionPopup::ShowAction show_action,
-    bool should_grant) {
-  const Extension* extension = button->extension();
-  GURL popup_url;
-  if (model_->ExecuteBrowserAction(
-          extension, browser_, &popup_url, should_grant) !=
-      extensions::ExtensionToolbarModel::ACTION_SHOW_POPUP) {
+bool BrowserActionsContainer::ShowPopupForExtension(
+    const extensions::Extension* extension,
+    bool grant_tab_permissions,
+    bool can_override) {
+  // If the popup cannot override other views, then no other popups can be
+  // showing, and it must be shown in the active widow with a visible toolbar.
+  // TODO(justinlin): Remove toolbar check when http://crbug.com/308645 is
+  // fixed.
+  if (!can_override &&
+      (popup_owner_ ||
+       !browser_->window()->IsActive() ||
+       !browser_->window()->IsToolbarVisible())) {
     return false;
   }
 
-  // If we're showing the same popup, just hide it and return.
-  bool same_showing = popup_ && button == popup_button_;
-
-  // Always hide the current popup, even if it's not the same.
-  // Only one popup should be visible at a time.
-  HidePopup();
-
-  if (same_showing)
-    return false;
-
-  // We can get the execute event for browser actions that are not visible,
-  // since buttons can be activated from the overflow menu (chevron). In that
-  // case we show the popup as originating from the chevron.
-  View* reference_view = button->parent()->visible() ? button : chevron_;
-  popup_ = ExtensionPopup::ShowPopup(popup_url, browser_, reference_view,
-                                     views::BubbleBorder::TOP_RIGHT,
-                                     show_action);
-  popup_->GetWidget()->AddObserver(this);
-  popup_button_ = button;
-
-  // Only set button as pushed if it was triggered by a user click.
-  if (should_grant)
-    popup_button_->SetButtonPushed();
-  return true;
+  for (BrowserActionViews::iterator iter = browser_action_views_.begin();
+       iter != browser_action_views_.end(); ++iter) {
+    BrowserActionButton* button = (*iter)->button();
+    if (button->extension() == extension)
+      return button->ShowPopup(ExtensionPopup::SHOW, grant_tab_permissions);
+  }
+  return false;
 }

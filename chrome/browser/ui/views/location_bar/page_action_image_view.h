@@ -55,7 +55,7 @@ class PageActionImageView : public views::ImageView,
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
 
   // Overridden from ExtensionContextMenuModel::Delegate
-  virtual void InspectPopup(ExtensionAction* action) OVERRIDE;
+  virtual void InspectPopup() OVERRIDE;
 
   // Overridden from views::WidgetObserver:
   virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;

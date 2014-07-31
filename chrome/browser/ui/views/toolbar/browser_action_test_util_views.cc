@@ -41,7 +41,8 @@ ExtensionAction* BrowserActionTestUtil::GetExtensionAction(int index) {
 }
 
 void BrowserActionTestUtil::InspectPopup(int index) {
-  GetContainer(browser_)->InspectPopup(GetExtensionAction(index));
+  GetContainer(browser_)->GetBrowserActionViewAt(index)->button()->
+      InspectPopup();
 }
 
 bool BrowserActionTestUtil::HasIcon(int index) {
@@ -56,7 +57,8 @@ gfx::Image BrowserActionTestUtil::GetIcon(int index) {
 }
 
 void BrowserActionTestUtil::Press(int index) {
-  GetContainer(browser_)->TestExecuteBrowserAction(index);
+  GetContainer(browser_)->GetBrowserActionViewAt(index)->
+      button()->ExecuteBrowserAction();
 }
 
 std::string BrowserActionTestUtil::GetExtensionId(int index) {
@@ -85,7 +87,7 @@ gfx::Rect BrowserActionTestUtil::GetPopupBounds() {
 }
 
 bool BrowserActionTestUtil::HidePopup() {
-  GetContainer(browser_)->HidePopup();
+  GetContainer(browser_)->HideActivePopup();
   return !HasPopup();
 }
 

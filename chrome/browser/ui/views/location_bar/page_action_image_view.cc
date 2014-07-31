@@ -219,7 +219,7 @@ void PageActionImageView::UpdateVisibility(WebContents* contents,
   SetVisible(true);
 }
 
-void PageActionImageView::InspectPopup(ExtensionAction* action) {
+void PageActionImageView::InspectPopup() {
   ExecuteAction(ExtensionPopup::SHOW_AND_INSPECT);
 }
 

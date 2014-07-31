@@ -338,7 +338,7 @@ void ToolbarView::ShowPageActionPopup(const extensions::Extension* extension) {
 
 void ToolbarView::ShowBrowserActionPopup(
     const extensions::Extension* extension) {
-  browser_actions_->ShowPopup(extension, true);
+  browser_actions_->ShowPopupForExtension(extension, true, false);
 }
 
 void ToolbarView::ShowAppMenu(bool for_drop) {

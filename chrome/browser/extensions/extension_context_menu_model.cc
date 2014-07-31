@@ -135,7 +135,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
       break;
     }
     case INSPECT_POPUP: {
-      delegate_->InspectPopup(extension_action_);
+      delegate_->InspectPopup();
       break;
     }
     default:
