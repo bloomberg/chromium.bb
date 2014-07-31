@@ -742,7 +742,9 @@ void HTMLDocumentParser::startBackgroundParser()
     RefPtr<WeakReference<BackgroundHTMLParser> > reference = WeakReference<BackgroundHTMLParser>::createUnbound();
     m_backgroundParser = WeakPtr<BackgroundHTMLParser>(reference);
 
-    document()->loader()->attachThreadedDataReceiver(adoptPtr(new ParserDataReceiver(m_backgroundParser)));
+    // TODO(oysteine): Disabled due to crbug.com/398076 until a full fix can be implemented.
+    if (RuntimeEnabledFeatures::threadedParserDataReceiverEnabled())
+        document()->loader()->attachThreadedDataReceiver(adoptPtr(new ParserDataReceiver(m_backgroundParser)));
 
     OwnPtr<BackgroundHTMLParser::Configuration> config = adoptPtr(new BackgroundHTMLParser::Configuration);
     config->options = m_options;
