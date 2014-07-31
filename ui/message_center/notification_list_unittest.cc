@@ -528,6 +528,44 @@ TEST_F(NotificationListTest, PriorityPromotionWithPopups) {
   EXPECT_EQ(0u, GetPopupCounts());
 }
 
+TEST_F(NotificationListTest, WebNotificationUpdatePromotion) {
+  std::string notification_id = "replaced-web-notification";
+  scoped_ptr<Notification> original_notification(
+      new Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
+                       notification_id,
+                       UTF8ToUTF16("Web Notification"),
+                       UTF8ToUTF16("Notification contents"),
+                       gfx::Image(),
+                       UTF8ToUTF16(kDisplaySource),
+                       NotifierId(GURL("https://example.com/")),
+                       message_center::RichNotificationData(),
+                       NULL));
+
+  EXPECT_EQ(0u, GetPopupCounts());
+  notification_list()->AddNotification(original_notification.Pass());
+  EXPECT_EQ(1u, GetPopupCounts());
+
+  notification_list()->MarkSinglePopupAsShown(notification_id, true);
+  EXPECT_EQ(0u, GetPopupCounts());
+
+  scoped_ptr<Notification> replaced_notification(
+      new Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
+                       notification_id,
+                       UTF8ToUTF16("Web Notification Replacement"),
+                       UTF8ToUTF16("New notification contents"),
+                       gfx::Image(),
+                       UTF8ToUTF16(kDisplaySource),
+                       NotifierId(GURL("https://example.com/")),
+                       message_center::RichNotificationData(),
+                       NULL));
+
+  // Web Notifications will be re-shown as popups even if their priority didn't
+  // change, to match the behavior of the Web Notification API.
+  notification_list()->UpdateNotificationMessage(notification_id,
+                                                 replaced_notification.Pass());
+  EXPECT_EQ(1u, GetPopupCounts());
+}
+
 TEST_F(NotificationListTest, NotificationOrderAndPriority) {
   base::Time now = base::Time::Now();
   message_center::RichNotificationData optional;

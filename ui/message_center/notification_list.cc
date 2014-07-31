@@ -100,8 +100,10 @@ void NotificationList::UpdateNotificationMessage(
 
   // Handles priority promotion. If the notification is already dismissed but
   // the updated notification has higher priority, it should re-appear as a
-  // toast.
-  if ((*iter)->priority() < new_notification->priority()) {
+  // toast. Notifications coming from websites through the Web Notification API
+  // will always re-appear on update.
+  if ((*iter)->priority() < new_notification->priority() ||
+      new_notification->notifier_id().type == NotifierId::WEB_PAGE) {
     new_notification->set_is_read(false);
     new_notification->set_shown_as_popup(false);
   }
