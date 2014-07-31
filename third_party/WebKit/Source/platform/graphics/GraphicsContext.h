@@ -425,6 +425,12 @@ public:
         blink::WebBlendMode,
         bool isLazyDecoded = false,
         bool isDataComplete = true) const;
+
+    static int focusRingOutsetExtent(int offset, int width)
+    {
+        return focusRingOutset(offset) + (focusRingWidth(width) + 1) / 2;
+    }
+
 private:
     const GraphicsContextState* immutableState() const { return m_paintState; }
 
@@ -440,9 +446,11 @@ private:
     static PassRefPtr<SkColorFilter> WebCoreColorFilterToSkiaColorFilter(ColorFilter);
 
 #if OS(MACOSX)
-    static inline int getFocusRingOutset(int offset) { return offset + 2; }
+    static inline int focusRingOutset(int offset) { return offset + 2; }
+    static inline int focusRingWidth(int width) { return width; }
 #else
-    static inline int getFocusRingOutset(int offset) { return 0; }
+    static inline int focusRingOutset(int offset) { return 0; }
+    static inline int focusRingWidth(int width) { return 1; }
     static const SkPMColor lineColors(int);
     static const SkPMColor antiColors1(int);
     static const SkPMColor antiColors2(int);

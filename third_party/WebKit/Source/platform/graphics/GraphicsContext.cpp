@@ -602,10 +602,10 @@ void GraphicsContext::drawFocusRing(const Vector<IntRect>& rects, int width, int
         return;
 
     SkRegion focusRingRegion;
-    const int focusRingOutset = getFocusRingOutset(offset);
+    const int outset = focusRingOutset(offset);
     for (unsigned i = 0; i < rectCount; i++) {
         SkIRect r = rects[i];
-        r.inset(-focusRingOutset, -focusRingOutset);
+        r.inset(-outset, -outset);
         focusRingRegion.op(r, SkRegion::kUnion_Op);
     }
 
@@ -1717,12 +1717,11 @@ void GraphicsContext::drawOuterPath(const SkPath& path, SkPaint& paint, int widt
 {
 #if OS(MACOSX)
     paint.setAlpha(64);
-    paint.setStrokeWidth(width);
     paint.setPathEffect(SkCornerPathEffect::Create((width - 1) * 0.5f))->unref();
 #else
-    paint.setStrokeWidth(1);
     paint.setPathEffect(SkCornerPathEffect::Create(1))->unref();
 #endif
+    paint.setStrokeWidth(focusRingWidth(width));
     drawPath(path, paint);
 }
 
