@@ -56,6 +56,10 @@ static_library("libpng") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
+  if (is_win) {
+    cflags = [ "/wd4267" ]  # TODO(jschuh): http://crbug.com/167187
+  }
+
   forward_dependent_configs_from = [ "//third_party/zlib" ]
 
   direct_dependent_configs = [ ":libpng_config" ]
