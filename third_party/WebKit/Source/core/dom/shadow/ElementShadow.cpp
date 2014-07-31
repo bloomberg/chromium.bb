@@ -29,11 +29,13 @@
 
 #include "core/css/StyleSheetList.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/NoEventDispatchAssertion.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ContentDistribution.h"
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLShadowElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "platform/ScriptForbiddenScope.h"
 
 namespace blink {
 
@@ -142,7 +144,8 @@ ElementShadow::~ElementShadow()
 
 ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRoot::ShadowRootType type)
 {
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = ShadowRoot::create(shadowHost.document(), type);
+    NoEventDispatchAssertion assertNoEventDispatch;
+    ScriptForbiddenScope forbidScript;
 
     if (type == ShadowRoot::AuthorShadowRoot && (!youngestShadowRoot() || youngestShadowRoot()->type() == ShadowRoot::UserAgentShadowRoot))
         shadowHost.willAddFirstAuthorShadowRoot();
@@ -150,17 +153,16 @@ ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRoot::Shadow
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot())
         root->lazyReattachIfAttached();
 
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = ShadowRoot::create(shadowHost.document(), type);
     shadowRoot->setParentOrShadowHostNode(&shadowHost);
     shadowRoot->setParentTreeScope(shadowHost.treeScope());
     m_shadowRoots.push(shadowRoot.get());
-    shadowHost.notifyNodeInserted(*shadowRoot);
     setNeedsDistributionRecalc();
 
+    shadowRoot->insertedInto(&shadowHost);
     InspectorInstrumentation::didPushShadowRoot(&shadowHost, shadowRoot.get());
 
-    ASSERT(m_shadowRoots.head());
-    ASSERT(shadowRoot.get() == m_shadowRoots.head());
-    return *m_shadowRoots.head();
+    return *shadowRoot;
 }
 
 #if !ENABLE(OILPAN)

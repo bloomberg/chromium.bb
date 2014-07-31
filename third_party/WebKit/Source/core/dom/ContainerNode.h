@@ -173,9 +173,6 @@ public:
 
     virtual void trace(Visitor*) OVERRIDE;
 
-    void notifyNodeInserted(Node&, ChildrenChangeSource = ChildrenChangeSourceAPI);
-    void notifyNodeRemoved(Node&);
-
 protected:
     ContainerNode(TreeScope*, ConstructionType = CreateContainer);
 
@@ -208,7 +205,9 @@ private:
     void removeDetachedChildrenInContainer(ContainerNode&);
     void addChildNodesToDeletionQueue(Node*&, Node*&, ContainerNode&);
 
+    void notifyNodeInserted(Node&, ChildrenChangeSource = ChildrenChangeSourceAPI);
     void notifyNodeInsertedInternal(Node&, NodeVector& postInsertionNotificationTargets);
+    void notifyNodeRemoved(Node&);
 
     bool hasRestyleFlag(DynamicRestyleFlags mask) const { return hasRareData() && hasRestyleFlagInternal(mask); }
     bool hasRestyleFlags() const { return hasRareData() && hasRestyleFlagsInternal(); }

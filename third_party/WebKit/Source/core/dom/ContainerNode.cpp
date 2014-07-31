@@ -774,6 +774,7 @@ void ContainerNode::parserAppendChild(PassRefPtrWillBeRawPtr<Node> newChild)
 void ContainerNode::notifyNodeInserted(Node& root, ChildrenChangeSource source)
 {
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
+    ASSERT(!root.isShadowRoot());
 
     InspectorInstrumentation::didInsertDOMNode(&root);
 
@@ -783,14 +784,8 @@ void ContainerNode::notifyNodeInserted(Node& root, ChildrenChangeSource source)
     NodeVector postInsertionNotificationTargets;
     notifyNodeInsertedInternal(root, postInsertionNotificationTargets);
 
-    // ShadowRoots are not real children, we don't need to tell host that it's
-    // children changed when one is added.
-    // FIXME: We should have a separate code path for ShadowRoot since it only
-    // needs to call insertedInto and the rest of this logic is not needed.
-    if (!root.isShadowRoot()) {
-        ChildrenChange change = {ChildInserted, root.previousSibling(), root.nextSibling(), source};
-        childrenChanged(change);
-    }
+    ChildrenChange change = {ChildInserted, root.previousSibling(), root.nextSibling(), source};
+    childrenChanged(change);
 
     for (size_t i = 0; i < postInsertionNotificationTargets.size(); ++i) {
         Node* targetNode = postInsertionNotificationTargets[i].get();
