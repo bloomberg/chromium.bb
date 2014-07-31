@@ -64,15 +64,6 @@ codesign -s "${codesign_id}" --keychain "${codesign_keychain}" \
     -r="designated => identifier \"com.google.Chrome.helper.NP\" \
 ${requirement_suffix}"
 
-if [[ -n "${plugin_carbon_interpose}" ]]; then
-  plugin_carbon_interpose_identifier="com.google.Chrome.plugin_carbon_interpose"
-  codesign -s "${codesign_id}" --keychain "${codesign_keychain}" \
-      "${plugin_carbon_interpose}" \
-      -i "${plugin_carbon_interpose_identifier}" \
-      -r="designated => identifier \"${plugin_carbon_interpose_identifier}\" \
-${requirement_suffix}"
-fi
-
 # Verify everything.
 codesign -v "${framework}"
 codesign -v "${helper_app}"
