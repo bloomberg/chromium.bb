@@ -132,8 +132,10 @@ loader.Loader.prototype = {
     _loadResultsFileForBuilder: function(builderName)
     {
         var resultsFilename;
+        // FIXME: times_ms.json should store the actual buildnumber and
+        // this should be changed to buildnumber=latest, which doesn't work.
         if (history.isTreeMap())
-            resultsFilename = 'times_ms.json';
+            resultsFilename = 'times_ms.json&buildnumber=0';
         else if (this._history.crossDashboardState.showAllRuns)
             resultsFilename = 'results.json';
         else
