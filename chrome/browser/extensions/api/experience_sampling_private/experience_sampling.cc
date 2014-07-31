@@ -59,6 +59,10 @@ ExperienceSamplingEvent::~ExperienceSamplingEvent() {
 
 void ExperienceSamplingEvent::CreateUserDecisionEvent(
     const std::string& decision_name) {
+  // Check if this is from an incognito context. If it is, don't create and send
+  // any events.
+  if (browser_context_->IsOffTheRecord())
+    return;
   api::experience_sampling_private::UserDecision decision;
   decision.name = decision_name;
   decision.learn_more = has_viewed_learn_more();
@@ -74,6 +78,10 @@ void ExperienceSamplingEvent::CreateUserDecisionEvent(
 }
 
 void ExperienceSamplingEvent::CreateOnDisplayedEvent() {
+  // Check if this is from an incognito context. If it is, don't create and send
+  // any events.
+  if (browser_context_->IsOffTheRecord())
+    return;
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(ui_element_.ToValue().release());
   scoped_ptr<Event> event(new Event(
