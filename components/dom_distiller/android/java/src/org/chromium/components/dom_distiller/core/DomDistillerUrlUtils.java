@@ -11,7 +11,6 @@ import org.chromium.base.JNINamespace;
  */
 @JNINamespace("dom_distiller::url_utils::android")
 public final class DomDistillerUrlUtils {
-
     private DomDistillerUrlUtils() {
     }
 
@@ -46,8 +45,12 @@ public final class DomDistillerUrlUtils {
         return nativeIsDistilledPage(url);
     }
 
+    public static boolean isUrlDistillable(String url) {
+        return nativeIsUrlDistillable(url);
+    }
+
     private static native String nativeGetDistillerViewUrlFromUrl(String scheme, String url);
     private static native String nativeGetOriginalUrlFromDistillerUrl(String viewerUrl);
     private static native boolean nativeIsDistilledPage(String url);
-
+    private static native boolean nativeIsUrlDistillable(String url);
 }

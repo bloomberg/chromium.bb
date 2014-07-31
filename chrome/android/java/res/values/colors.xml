@@ -31,4 +31,8 @@
 
     <!--  Website Settings Popup colors -->
     <color name="website_settings_popup_text_link">#5595fe</color>
+
+    <!--  Distilled Page Prefs colors -->
+    <color name="distilled_page_prefs_selected">#999999</color>
+    <color name="distilled_page_prefs_unselected">#ffffff</color>
 </resources>

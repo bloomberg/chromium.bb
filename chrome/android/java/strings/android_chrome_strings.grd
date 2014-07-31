@@ -354,6 +354,15 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_DISTILLATION_QUALITY_ANSWER_NO" desc="Text for the answering whether the text from a web page was extracted correctly and the answer is no.">
         No
       </message>
+      <message name="IDS_DARK_MODE" desc="Title of button that will change theme of distilled pages to dark mode.">
+        Dark
+      </message>
+      <message name="IDS_LIGHT_MODE" desc="Title of button that will change theme of distilled pages to light mode.">
+        Light
+      </message>
+      <message name="IDS_SEPIA_MODE" desc="Title of button that will change theme of distilled pages to sepia mode.">
+        Sepia
+      </message>
 
       <!-- TalkBack upgrade -->
       <message name="IDS_OLD_TALKBACK_TITLE" desc="Title of dialog notifying user that the version of TalkBack they're running is too old.">

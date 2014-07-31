@@ -131,7 +131,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "DataReductionProxySettings", DataReductionProxySettingsAndroid::Register },
   { "DevToolsServer", RegisterDevToolsServer },
   { "DomDistillerServiceFactory",
-    dom_distiller::android::DomDistillerServiceFactoryAndroid::Register},
+    dom_distiller::android::DomDistillerServiceFactoryAndroid::Register },
   { "DomDistillerTabUtils", RegisterDomDistillerTabUtils },
   { "ExternalPrerenderRequestHandler",
       prerender::ExternalPrerenderHandlerAndroid::

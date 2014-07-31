@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
+
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+
+<org.chromium.chrome.browser.dom_distiller.DistilledPagePrefsView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@drawable/distilled_page_pref_background"
+    android:padding="10dp" >
+
+    <RadioButton
+        android:id="@+id/light_mode"
+        android:text="@string/light_mode"
+        style="@style/DistilledPagePrefThemeButton" />
+
+    <RadioButton
+        android:id="@+id/dark_mode"
+        android:text="@string/dark_mode"
+        style="@style/DistilledPagePrefThemeButton" />
+
+    <RadioButton
+        android:id="@+id/sepia_mode"
+        android:text="@string/sepia_mode"
+        style="@style/DistilledPagePrefThemeButton" />
+</org.chromium.chrome.browser.dom_distiller.DistilledPagePrefsView>

@@ -58,6 +58,11 @@ jboolean IsDistilledPage(JNIEnv* env, jclass clazz, jstring j_url) {
   return dom_distiller::url_utils::IsDistilledPage(url);
 }
 
+jboolean IsUrlDistillable(JNIEnv* env, jclass clazz, jstring j_url) {
+  GURL url(base::android::ConvertJavaStringToUTF8(env, j_url));
+  return dom_distiller::url_utils::IsUrlDistillable(url);
+}
+
 bool RegisterUrlUtils(JNIEnv* env) { return RegisterNativesImpl(env); }
 
 }  // namespace android

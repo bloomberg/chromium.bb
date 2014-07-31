@@ -28,4 +28,18 @@
         <item name="android:windowEnterAnimation">@anim/menu_enter</item>
         <item name="android:windowExitAnimation">@anim/menu_exit</item>
     </style>
+    <style name="DistilledPagePrefThemeButton">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:button">@null</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textAppearance">
+            ?android:attr/textAppearanceMedium
+        </item>
+        <item name="android:padding">8dp</item>
+        <item name="android:background">
+            @drawable/distilled_page_prefs_button_bg
+        </item>
+    </style>
 </resources>
