@@ -169,10 +169,10 @@
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
+#include "core/rendering/TextAutosizer.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGFontFaceElement.h"
@@ -2153,9 +2153,9 @@ void Document::attach(const AttachContext& context)
 
     ContainerNode::attach(context);
 
-    // FastTextAutosizer can't update render view info while the Document is detached, so update now in case anything changed.
-    if (FastTextAutosizer* textAutosizer = fastTextAutosizer())
-        textAutosizer->updatePageInfo();
+    // The TextAutosizer can't update render view info while the Document is detached, so update now in case anything changed.
+    if (TextAutosizer* autosizer = textAutosizer())
+        autosizer->updatePageInfo();
 
     m_lifecycle.advanceTo(DocumentLifecycle::StyleClean);
 }
@@ -5655,11 +5655,11 @@ void Document::modifiedStyleSheet(StyleSheet* sheet, StyleResolverUpdateMode upd
     styleResolverChanged(updateMode);
 }
 
-FastTextAutosizer* Document::fastTextAutosizer()
+TextAutosizer* Document::textAutosizer()
 {
-    if (!m_fastTextAutosizer && RuntimeEnabledFeatures::fastTextAutosizingEnabled())
-        m_fastTextAutosizer = FastTextAutosizer::create(this);
-    return m_fastTextAutosizer.get();
+    if (!m_textAutosizer)
+        m_textAutosizer = TextAutosizer::create(this);
+    return m_textAutosizer.get();
 }
 
 void Document::setAutofocusElement(Element* element)
@@ -5846,7 +5846,7 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_styleSheetList);
     visitor->trace(m_mediaQueryMatcher);
     visitor->trace(m_scriptedAnimationController);
-    visitor->trace(m_fastTextAutosizer);
+    visitor->trace(m_textAutosizer);
     visitor->trace(m_registrationContext);
     visitor->trace(m_customElementMicrotaskRunQueue);
     visitor->trace(m_elementDataCache);

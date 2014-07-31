@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FastTextAutosizer_h
-#define FastTextAutosizer_h
+#ifndef TextAutosizer_h
+#define TextAutosizer_h
 
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderTable.h"
@@ -48,14 +48,14 @@ class RenderListItem;
 class RenderListMarker;
 
 // Single-pass text autosizer. Documentation at:
-// http://tinyurl.com/fasttextautosizer
+// http://tinyurl.com/TextAutosizer
 
-class FastTextAutosizer FINAL : public NoBaseWillBeGarbageCollectedFinalized<FastTextAutosizer> {
-    WTF_MAKE_NONCOPYABLE(FastTextAutosizer);
+class TextAutosizer FINAL : public NoBaseWillBeGarbageCollectedFinalized<TextAutosizer> {
+    WTF_MAKE_NONCOPYABLE(TextAutosizer);
 public:
-    static PassOwnPtrWillBeRawPtr<FastTextAutosizer> create(const Document* document)
+    static PassOwnPtrWillBeRawPtr<TextAutosizer> create(const Document* document)
     {
-        return adoptPtrWillBeNoop(new FastTextAutosizer(document));
+        return adoptPtrWillBeNoop(new TextAutosizer(document));
     }
     static float computeAutosizedFontSize(float specifiedSize, float multiplier);
 
@@ -72,7 +72,7 @@ public:
         explicit LayoutScope(RenderBlock*);
         ~LayoutScope();
     protected:
-        FastTextAutosizer* m_textAutosizer;
+        TextAutosizer* m_textAutosizer;
         RenderBlock* m_block;
     };
 
@@ -246,7 +246,7 @@ private:
         bool m_settingEnabled;
     };
 
-    explicit FastTextAutosizer(const Document*);
+    explicit TextAutosizer(const Document*);
 
     void beginLayout(RenderBlock*);
     void endLayout(RenderBlock*);
@@ -309,4 +309,4 @@ private:
 
 } // namespace blink
 
-#endif // FastTextAutosizer_h
+#endif // TextAutosizer_h

@@ -90,7 +90,6 @@ class EventListener;
 template <typename EventType>
 class EventWithHitTestResults;
 class ExceptionState;
-class FastTextAutosizer;
 class FloatQuad;
 class FloatRect;
 class FormController;
@@ -143,6 +142,7 @@ class StyleResolver;
 class StyleSheet;
 class StyleSheetList;
 class Text;
+class TextAutosizer;
 class Touch;
 class TouchList;
 class TransformSource;
@@ -961,7 +961,7 @@ public:
 
     IntSize initialViewportSize() const;
 
-    FastTextAutosizer* fastTextAutosizer();
+    TextAutosizer* textAutosizer();
 
     PassRefPtrWillBeRawPtr<Element> createElement(const AtomicString& localName, const AtomicString& typeExtension, ExceptionState&);
     PassRefPtrWillBeRawPtr<Element> createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, const AtomicString& typeExtension, ExceptionState&);
@@ -1351,7 +1351,7 @@ private:
 
     RefPtrWillBeMember<ScriptedAnimationController> m_scriptedAnimationController;
     OwnPtr<MainThreadTaskRunner> m_taskRunner;
-    OwnPtrWillBeMember<FastTextAutosizer> m_fastTextAutosizer;
+    OwnPtrWillBeMember<TextAutosizer> m_textAutosizer;
 
     RefPtrWillBeMember<CustomElementRegistrationContext> m_registrationContext;
     RefPtrWillBeMember<CustomElementMicrotaskRunQueue> m_customElementMicrotaskRunQueue;

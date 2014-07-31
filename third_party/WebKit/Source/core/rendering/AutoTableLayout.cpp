@@ -22,11 +22,11 @@
 #include "config.h"
 #include "core/rendering/AutoTableLayout.h"
 
-#include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/RenderTable.h"
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderTableCol.h"
 #include "core/rendering/RenderTableSection.h"
+#include "core/rendering/TextAutosizer.h"
 
 namespace blink {
 
@@ -209,7 +209,7 @@ static bool shouldScaleColumns(RenderTable* table)
 
 void AutoTableLayout::computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth)
 {
-    FastTextAutosizer::TableLayoutScope fastTextAutosizerTableLayoutScope(m_table);
+    TextAutosizer::TableLayoutScope textAutosizerTableLayoutScope(m_table);
 
     fullRecalc();
 

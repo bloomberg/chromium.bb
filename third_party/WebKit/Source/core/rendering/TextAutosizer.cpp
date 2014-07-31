@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/FastTextAutosizer.h"
+#include "core/rendering/TextAutosizer.h"
 
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
@@ -81,7 +81,7 @@ static void writeDebugInfo(RenderObject* renderer, const AtomicString& output)
     node->document().postTask(adoptPtr(new WriteDebugInfoTask(toElement(node), output)));
 }
 
-void FastTextAutosizer::writeClusterDebugInfo(Cluster* cluster)
+void TextAutosizer::writeClusterDebugInfo(Cluster* cluster)
 {
     String explanation = "";
     if (cluster->m_flags & SUPPRESSING) {
@@ -276,7 +276,7 @@ static bool hasExplicitWidth(const RenderBlock* block)
     return block->style() && block->style()->width().isSpecified();
 }
 
-FastTextAutosizer::FastTextAutosizer(const Document* document)
+TextAutosizer::TextAutosizer(const Document* document)
     : m_document(document)
     , m_firstBlockToBeginLayout(0)
 #if ENABLE(ASSERT)
@@ -290,7 +290,7 @@ FastTextAutosizer::FastTextAutosizer(const Document* document)
 {
 }
 
-void FastTextAutosizer::record(const RenderBlock* block)
+void TextAutosizer::record(const RenderBlock* block)
 {
     if (!m_pageInfo.m_settingEnabled)
         return;
@@ -304,7 +304,7 @@ void FastTextAutosizer::record(const RenderBlock* block)
         m_fingerprintMapper.addTentativeClusterRoot(block, fingerprint);
 }
 
-void FastTextAutosizer::destroy(const RenderBlock* block)
+void TextAutosizer::destroy(const RenderBlock* block)
 {
     if (!m_pageInfo.m_settingEnabled)
         return;
@@ -321,7 +321,7 @@ void FastTextAutosizer::destroy(const RenderBlock* block)
     }
 }
 
-FastTextAutosizer::BeginLayoutBehavior FastTextAutosizer::prepareForLayout(const RenderBlock* block)
+TextAutosizer::BeginLayoutBehavior TextAutosizer::prepareForLayout(const RenderBlock* block)
 {
 #if ENABLE(ASSERT)
     m_blocksThatHaveBegunLayout.add(block);
@@ -339,7 +339,7 @@ FastTextAutosizer::BeginLayoutBehavior FastTextAutosizer::prepareForLayout(const
     return ContinueLayout;
 }
 
-void FastTextAutosizer::prepareClusterStack(const RenderObject* renderer)
+void TextAutosizer::prepareClusterStack(const RenderObject* renderer)
 {
     if (!renderer)
         return;
@@ -355,7 +355,7 @@ void FastTextAutosizer::prepareClusterStack(const RenderObject* renderer)
     }
 }
 
-void FastTextAutosizer::beginLayout(RenderBlock* block)
+void TextAutosizer::beginLayout(RenderBlock* block)
 {
     ASSERT(shouldHandleLayout());
 
@@ -371,7 +371,7 @@ void FastTextAutosizer::beginLayout(RenderBlock* block)
         inflate(block);
 }
 
-void FastTextAutosizer::inflateListItem(RenderListItem* listItem, RenderListMarker* listItemMarker)
+void TextAutosizer::inflateListItem(RenderListItem* listItem, RenderListMarker* listItemMarker)
 {
     if (!shouldHandleLayout())
         return;
@@ -389,7 +389,7 @@ void FastTextAutosizer::inflateListItem(RenderListItem* listItem, RenderListMark
     applyMultiplier(listItemMarker, multiplier);
 }
 
-void FastTextAutosizer::inflateAutoTable(RenderTable* table)
+void TextAutosizer::inflateAutoTable(RenderTable* table)
 {
     ASSERT(table);
     ASSERT(!table->style()->isFixedTableLayout());
@@ -417,7 +417,7 @@ void FastTextAutosizer::inflateAutoTable(RenderTable* table)
     }
 }
 
-void FastTextAutosizer::endLayout(RenderBlock* block)
+void TextAutosizer::endLayout(RenderBlock* block)
 {
     ASSERT(shouldHandleLayout());
 
@@ -436,7 +436,7 @@ void FastTextAutosizer::endLayout(RenderBlock* block)
     }
 }
 
-float FastTextAutosizer::inflate(RenderObject* parent, InflateBehavior behavior, float multiplier)
+float TextAutosizer::inflate(RenderObject* parent, InflateBehavior behavior, float multiplier)
 {
     Cluster* cluster = currentCluster();
     bool hasTextChild = false;
@@ -477,24 +477,24 @@ float FastTextAutosizer::inflate(RenderObject* parent, InflateBehavior behavior,
     return multiplier;
 }
 
-bool FastTextAutosizer::shouldHandleLayout() const
+bool TextAutosizer::shouldHandleLayout() const
 {
     return m_pageInfo.m_settingEnabled && m_pageInfo.m_pageNeedsAutosizing && !m_updatePageInfoDeferred;
 }
 
-void FastTextAutosizer::updatePageInfoInAllFrames()
+void TextAutosizer::updatePageInfoInAllFrames()
 {
     ASSERT(!m_document->frame() || m_document->frame()->isMainFrame());
 
     for (Frame* frame = m_document->frame(); frame; frame = frame->tree().traverseNext()) {
         if (!frame->isLocalFrame())
             continue;
-        if (FastTextAutosizer* textAutosizer = toLocalFrame(frame)->document()->fastTextAutosizer())
+        if (TextAutosizer* textAutosizer = toLocalFrame(frame)->document()->textAutosizer())
             textAutosizer->updatePageInfo();
     }
 }
 
-void FastTextAutosizer::updatePageInfo()
+void TextAutosizer::updatePageInfo()
 {
     if (m_updatePageInfoDeferred || !m_document->page() || !m_document->settings())
         return;
@@ -545,7 +545,7 @@ void FastTextAutosizer::updatePageInfo()
     }
 }
 
-void FastTextAutosizer::resetMultipliers()
+void TextAutosizer::resetMultipliers()
 {
     RenderObject* renderer = m_document->renderView();
     while (renderer) {
@@ -557,7 +557,7 @@ void FastTextAutosizer::resetMultipliers()
     }
 }
 
-void FastTextAutosizer::setAllTextNeedsLayout()
+void TextAutosizer::setAllTextNeedsLayout()
 {
     RenderObject* renderer = m_document->renderView();
     while (renderer) {
@@ -567,7 +567,7 @@ void FastTextAutosizer::setAllTextNeedsLayout()
     }
 }
 
-FastTextAutosizer::BlockFlags FastTextAutosizer::classifyBlock(const RenderObject* renderer, BlockFlags mask)
+TextAutosizer::BlockFlags TextAutosizer::classifyBlock(const RenderObject* renderer, BlockFlags mask)
 {
     if (!renderer->isRenderBlock())
         return 0;
@@ -591,13 +591,13 @@ FastTextAutosizer::BlockFlags FastTextAutosizer::classifyBlock(const RenderObjec
     return flags;
 }
 
-bool FastTextAutosizer::clusterWouldHaveEnoughTextToAutosize(const RenderBlock* root, const RenderBlock* widthProvider)
+bool TextAutosizer::clusterWouldHaveEnoughTextToAutosize(const RenderBlock* root, const RenderBlock* widthProvider)
 {
     Cluster hypotheticalCluster(root, classifyBlock(root), 0);
     return clusterHasEnoughTextToAutosize(&hypotheticalCluster, widthProvider);
 }
 
-bool FastTextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const RenderBlock* widthProvider)
+bool TextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const RenderBlock* widthProvider)
 {
     if (cluster->m_hasEnoughTextToAutosize != UnknownAmountOfText)
         return cluster->m_hasEnoughTextToAutosize == HasEnoughText;
@@ -646,7 +646,7 @@ bool FastTextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const R
     return false;
 }
 
-FastTextAutosizer::Fingerprint FastTextAutosizer::getFingerprint(const RenderObject* renderer)
+TextAutosizer::Fingerprint TextAutosizer::getFingerprint(const RenderObject* renderer)
 {
     Fingerprint result = m_fingerprintMapper.get(renderer);
     if (!result) {
@@ -656,7 +656,7 @@ FastTextAutosizer::Fingerprint FastTextAutosizer::getFingerprint(const RenderObj
     return result;
 }
 
-FastTextAutosizer::Fingerprint FastTextAutosizer::computeFingerprint(const RenderObject* renderer)
+TextAutosizer::Fingerprint TextAutosizer::computeFingerprint(const RenderObject* renderer)
 {
     Node* node = renderer->generatingNode();
     if (!node || !node->isElementNode())
@@ -692,7 +692,7 @@ FastTextAutosizer::Fingerprint FastTextAutosizer::computeFingerprint(const Rende
         sizeof data / sizeof(UChar));
 }
 
-FastTextAutosizer::Cluster* FastTextAutosizer::maybeCreateCluster(const RenderBlock* block)
+TextAutosizer::Cluster* TextAutosizer::maybeCreateCluster(const RenderBlock* block)
 {
     BlockFlags flags = classifyBlock(block);
     if (!(flags & POTENTIAL_ROOT))
@@ -715,7 +715,7 @@ FastTextAutosizer::Cluster* FastTextAutosizer::maybeCreateCluster(const RenderBl
     return cluster;
 }
 
-FastTextAutosizer::Supercluster* FastTextAutosizer::getSupercluster(const RenderBlock* block)
+TextAutosizer::Supercluster* TextAutosizer::getSupercluster(const RenderBlock* block)
 {
     Fingerprint fingerprint = m_fingerprintMapper.get(block);
     if (!fingerprint)
@@ -734,7 +734,7 @@ FastTextAutosizer::Supercluster* FastTextAutosizer::getSupercluster(const Render
     return supercluster;
 }
 
-float FastTextAutosizer::clusterMultiplier(Cluster* cluster)
+float TextAutosizer::clusterMultiplier(Cluster* cluster)
 {
     if (cluster->m_multiplier)
         return cluster->m_multiplier;
@@ -762,7 +762,7 @@ float FastTextAutosizer::clusterMultiplier(Cluster* cluster)
     return cluster->m_multiplier;
 }
 
-bool FastTextAutosizer::superclusterHasEnoughTextToAutosize(Supercluster* supercluster, const RenderBlock* widthProvider)
+bool TextAutosizer::superclusterHasEnoughTextToAutosize(Supercluster* supercluster, const RenderBlock* widthProvider)
 {
     if (supercluster->m_hasEnoughTextToAutosize != UnknownAmountOfText)
         return supercluster->m_hasEnoughTextToAutosize == HasEnoughText;
@@ -778,7 +778,7 @@ bool FastTextAutosizer::superclusterHasEnoughTextToAutosize(Supercluster* superc
     return false;
 }
 
-float FastTextAutosizer::superclusterMultiplier(Cluster* cluster)
+float TextAutosizer::superclusterMultiplier(Cluster* cluster)
 {
     Supercluster* supercluster = cluster->m_supercluster;
     if (!supercluster->m_multiplier) {
@@ -790,7 +790,7 @@ float FastTextAutosizer::superclusterMultiplier(Cluster* cluster)
     return supercluster->m_multiplier;
 }
 
-const RenderBlock* FastTextAutosizer::clusterWidthProvider(const RenderBlock* root)
+const RenderBlock* TextAutosizer::clusterWidthProvider(const RenderBlock* root)
 {
     if (root->isTable() || root->isTableCell())
         return root;
@@ -798,7 +798,7 @@ const RenderBlock* FastTextAutosizer::clusterWidthProvider(const RenderBlock* ro
     return deepestBlockContainingAllText(root);
 }
 
-const RenderBlock* FastTextAutosizer::maxClusterWidthProvider(const Supercluster* supercluster, const RenderBlock* currentRoot)
+const RenderBlock* TextAutosizer::maxClusterWidthProvider(const Supercluster* supercluster, const RenderBlock* currentRoot)
 {
     const RenderBlock* result = clusterWidthProvider(currentRoot);
     float maxWidth = widthFromBlock(result);
@@ -818,7 +818,7 @@ const RenderBlock* FastTextAutosizer::maxClusterWidthProvider(const Supercluster
     return result;
 }
 
-float FastTextAutosizer::widthFromBlock(const RenderBlock* block)
+float TextAutosizer::widthFromBlock(const RenderBlock* block)
 {
     RELEASE_ASSERT(block);
     RELEASE_ASSERT(block->style());
@@ -851,7 +851,7 @@ float FastTextAutosizer::widthFromBlock(const RenderBlock* block)
     return 0;
 }
 
-float FastTextAutosizer::multiplierFromBlock(const RenderBlock* block)
+float TextAutosizer::multiplierFromBlock(const RenderBlock* block)
 {
     // If block->needsLayout() is false, it does not need to be in m_blocksThatHaveBegunLayout.
     // This can happen during layout of a positioned object if the cluster's DBCAT is deeper
@@ -865,7 +865,7 @@ float FastTextAutosizer::multiplierFromBlock(const RenderBlock* block)
     return std::max(m_pageInfo.m_baseMultiplier * multiplier, 1.0f);
 }
 
-const RenderBlock* FastTextAutosizer::deepestBlockContainingAllText(Cluster* cluster)
+const RenderBlock* TextAutosizer::deepestBlockContainingAllText(Cluster* cluster)
 {
     if (!cluster->m_deepestBlockContainingAllText)
         cluster->m_deepestBlockContainingAllText = deepestBlockContainingAllText(cluster->m_root);
@@ -873,9 +873,8 @@ const RenderBlock* FastTextAutosizer::deepestBlockContainingAllText(Cluster* clu
     return cluster->m_deepestBlockContainingAllText;
 }
 
-// FIXME: Refactor this to look more like FastTextAutosizer::deepestCommonAncestor. This is copied
-//        from TextAutosizer::findDeepestBlockContainingAllText.
-const RenderBlock* FastTextAutosizer::deepestBlockContainingAllText(const RenderBlock* root)
+// FIXME: Refactor this to look more like TextAutosizer::deepestCommonAncestor.
+const RenderBlock* TextAutosizer::deepestBlockContainingAllText(const RenderBlock* root)
 {
     size_t firstDepth = 0;
     const RenderObject* firstTextLeaf = findTextLeaf(root, firstDepth, First);
@@ -919,7 +918,7 @@ const RenderBlock* FastTextAutosizer::deepestBlockContainingAllText(const Render
     return containingBlock;
 }
 
-const RenderObject* FastTextAutosizer::findTextLeaf(const RenderObject* parent, size_t& depth, TextLeafSearch firstOrLast)
+const RenderObject* TextAutosizer::findTextLeaf(const RenderObject* parent, size_t& depth, TextLeafSearch firstOrLast)
 {
     // List items are treated as text due to the marker.
     // The actual renderer for the marker (RenderListMarker) may not be in the tree yet since it is added during layout.
@@ -945,7 +944,7 @@ const RenderObject* FastTextAutosizer::findTextLeaf(const RenderObject* parent, 
     return 0;
 }
 
-void FastTextAutosizer::applyMultiplier(RenderObject* renderer, float multiplier, RelayoutBehavior relayoutBehavior)
+void TextAutosizer::applyMultiplier(RenderObject* renderer, float multiplier, RelayoutBehavior relayoutBehavior)
 {
     ASSERT(renderer && renderer->style());
     RenderStyle* currentStyle = renderer->style();
@@ -976,7 +975,7 @@ void FastTextAutosizer::applyMultiplier(RenderObject* renderer, float multiplier
         m_pageInfo.m_hasAutosized = true;
 }
 
-bool FastTextAutosizer::isWiderOrNarrowerDescendant(Cluster* cluster)
+bool TextAutosizer::isWiderOrNarrowerDescendant(Cluster* cluster)
 {
     // FIXME: Why do we return true when hasExplicitWidth returns false??
     if (!cluster->m_parent || !hasExplicitWidth(cluster->m_root))
@@ -1003,14 +1002,14 @@ bool FastTextAutosizer::isWiderOrNarrowerDescendant(Cluster* cluster)
     return false;
 }
 
-FastTextAutosizer::Cluster* FastTextAutosizer::currentCluster() const
+TextAutosizer::Cluster* TextAutosizer::currentCluster() const
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!m_clusterStack.isEmpty());
     return m_clusterStack.last().get();
 }
 
 #if ENABLE(ASSERT)
-void FastTextAutosizer::FingerprintMapper::assertMapsAreConsistent()
+void TextAutosizer::FingerprintMapper::assertMapsAreConsistent()
 {
     // For each fingerprint -> block mapping in m_blocksForFingerprint we should have an associated
     // map from block -> fingerprint in m_fingerprints.
@@ -1026,7 +1025,7 @@ void FastTextAutosizer::FingerprintMapper::assertMapsAreConsistent()
 }
 #endif
 
-void FastTextAutosizer::FingerprintMapper::add(const RenderObject* renderer, Fingerprint fingerprint)
+void TextAutosizer::FingerprintMapper::add(const RenderObject* renderer, Fingerprint fingerprint)
 {
     remove(renderer);
 
@@ -1036,7 +1035,7 @@ void FastTextAutosizer::FingerprintMapper::add(const RenderObject* renderer, Fin
 #endif
 }
 
-void FastTextAutosizer::FingerprintMapper::addTentativeClusterRoot(const RenderBlock* block, Fingerprint fingerprint)
+void TextAutosizer::FingerprintMapper::addTentativeClusterRoot(const RenderBlock* block, Fingerprint fingerprint)
 {
     add(block, fingerprint);
 
@@ -1049,7 +1048,7 @@ void FastTextAutosizer::FingerprintMapper::addTentativeClusterRoot(const RenderB
 #endif
 }
 
-bool FastTextAutosizer::FingerprintMapper::remove(const RenderObject* renderer)
+bool TextAutosizer::FingerprintMapper::remove(const RenderObject* renderer)
 {
     Fingerprint fingerprint = m_fingerprints.take(renderer);
     if (!fingerprint || !renderer->isRenderBlock())
@@ -1069,18 +1068,18 @@ bool FastTextAutosizer::FingerprintMapper::remove(const RenderObject* renderer)
     return true;
 }
 
-FastTextAutosizer::Fingerprint FastTextAutosizer::FingerprintMapper::get(const RenderObject* renderer)
+TextAutosizer::Fingerprint TextAutosizer::FingerprintMapper::get(const RenderObject* renderer)
 {
     return m_fingerprints.get(renderer);
 }
 
-FastTextAutosizer::BlockSet* FastTextAutosizer::FingerprintMapper::getTentativeClusterRoots(Fingerprint fingerprint)
+TextAutosizer::BlockSet* TextAutosizer::FingerprintMapper::getTentativeClusterRoots(Fingerprint fingerprint)
 {
     return m_blocksForFingerprint.get(fingerprint);
 }
 
-FastTextAutosizer::LayoutScope::LayoutScope(RenderBlock* block)
-    : m_textAutosizer(block->document().fastTextAutosizer())
+TextAutosizer::LayoutScope::LayoutScope(RenderBlock* block)
+    : m_textAutosizer(block->document().textAutosizer())
     , m_block(block)
 {
     if (!m_textAutosizer)
@@ -1092,14 +1091,14 @@ FastTextAutosizer::LayoutScope::LayoutScope(RenderBlock* block)
         m_textAutosizer = 0;
 }
 
-FastTextAutosizer::LayoutScope::~LayoutScope()
+TextAutosizer::LayoutScope::~LayoutScope()
 {
     if (m_textAutosizer)
         m_textAutosizer->endLayout(m_block);
 }
 
 
-FastTextAutosizer::TableLayoutScope::TableLayoutScope(RenderTable* table)
+TextAutosizer::TableLayoutScope::TableLayoutScope(RenderTable* table)
     : LayoutScope(table)
 {
     if (m_textAutosizer) {
@@ -1108,25 +1107,25 @@ FastTextAutosizer::TableLayoutScope::TableLayoutScope(RenderTable* table)
     }
 }
 
-FastTextAutosizer::DeferUpdatePageInfo::DeferUpdatePageInfo(Page* page)
+TextAutosizer::DeferUpdatePageInfo::DeferUpdatePageInfo(Page* page)
     : m_mainFrame(page->deprecatedLocalMainFrame())
 {
-    if (FastTextAutosizer* textAutosizer = m_mainFrame->document()->fastTextAutosizer()) {
+    if (TextAutosizer* textAutosizer = m_mainFrame->document()->textAutosizer()) {
         ASSERT(!textAutosizer->m_updatePageInfoDeferred);
         textAutosizer->m_updatePageInfoDeferred = true;
     }
 }
 
-FastTextAutosizer::DeferUpdatePageInfo::~DeferUpdatePageInfo()
+TextAutosizer::DeferUpdatePageInfo::~DeferUpdatePageInfo()
 {
-    if (FastTextAutosizer* textAutosizer = m_mainFrame->document()->fastTextAutosizer()) {
+    if (TextAutosizer* textAutosizer = m_mainFrame->document()->textAutosizer()) {
         ASSERT(textAutosizer->m_updatePageInfoDeferred);
         textAutosizer->m_updatePageInfoDeferred = false;
         textAutosizer->updatePageInfoInAllFrames();
     }
 }
 
-float FastTextAutosizer::computeAutosizedFontSize(float specifiedSize, float multiplier)
+float TextAutosizer::computeAutosizedFontSize(float specifiedSize, float multiplier)
 {
     // Somewhat arbitrary "pleasant" font size.
     const float pleasantSize = 16;
@@ -1154,7 +1153,7 @@ float FastTextAutosizer::computeAutosizedFontSize(float specifiedSize, float mul
     return computedSize;
 }
 
-void FastTextAutosizer::trace(Visitor* visitor)
+void TextAutosizer::trace(Visitor* visitor)
 {
     visitor->trace(m_document);
 }

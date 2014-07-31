@@ -110,11 +110,6 @@ void WebRuntimeFeatures::enableFastMobileScrolling(bool enable)
     RuntimeEnabledFeatures::setFastMobileScrollingEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableFastTextAutosizing(bool enable)
-{
-    RuntimeEnabledFeatures::setFastTextAutosizingEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableFileSystem(bool enable)
 {
     RuntimeEnabledFeatures::setFileSystemEnabled(enable);

@@ -53,7 +53,6 @@
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/RenderCounter.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderLayer.h"
@@ -64,6 +63,7 @@
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
+#include "core/rendering/TextAutosizer.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/rendering/style/RenderStyle.h"
@@ -358,7 +358,7 @@ void FrameView::setFrameRect(const IntRect& newRect)
 
     if (autosizerNeedsUpdating) {
         // This needs to be after the call to ScrollView::setFrameRect, because it reads the new width.
-        if (FastTextAutosizer* textAutosizer = m_frame->document()->fastTextAutosizer())
+        if (TextAutosizer* textAutosizer = m_frame->document()->textAutosizer())
             textAutosizer->updatePageInfoInAllFrames();
     }
 
@@ -1734,7 +1734,7 @@ void FrameView::contentRectangleForPaintInvalidation(const IntRect& r)
 void FrameView::contentsResized()
 {
     if (m_frame->isMainFrame() && m_frame->document()) {
-        if (FastTextAutosizer* textAutosizer = m_frame->document()->fastTextAutosizer())
+        if (TextAutosizer* textAutosizer = m_frame->document()->textAutosizer())
             textAutosizer->updatePageInfoInAllFrames();
     }
 

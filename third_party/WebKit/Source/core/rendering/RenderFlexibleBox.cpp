@@ -32,9 +32,9 @@
 #include "core/rendering/RenderFlexibleBox.h"
 
 #include "core/frame/UseCounter.h"
-#include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/TextAutosizer.h"
 #include "platform/LengthFunctions.h"
 #include "wtf/MathExtras.h"
 #include <limits>
@@ -235,7 +235,7 @@ void RenderFlexibleBox::layoutBlock(bool relayoutChildren)
     setLogicalHeight(borderAndPaddingLogicalHeight() + scrollbarLogicalHeight());
 
     {
-        FastTextAutosizer::LayoutScope fastTextAutosizerLayoutScope(this);
+        TextAutosizer::LayoutScope textAutosizerLayoutScope(this);
         LayoutState state(*this, locationOffset());
 
         m_numberOfInFlowChildrenOnFirstLine = -1;

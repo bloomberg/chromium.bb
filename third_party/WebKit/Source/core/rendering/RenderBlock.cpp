@@ -38,7 +38,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/page/Page.h"
 #include "core/frame/Settings.h"
-#include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestLocation.h"
 #include "core/rendering/HitTestResult.h"
@@ -60,6 +59,7 @@
 #include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/TextAutosizer.h"
 #include "core/rendering/shapes/ShapeOutsideInfo.h"
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/RenderStyle.h"
@@ -265,7 +265,7 @@ void RenderBlock::willBeDestroyed()
     if (UNLIKELY(gDelayedUpdateScrollInfoSet != 0))
         gDelayedUpdateScrollInfoSet->remove(this);
 
-    if (FastTextAutosizer* textAutosizer = document().fastTextAutosizer())
+    if (TextAutosizer* textAutosizer = document().textAutosizer())
         textAutosizer->destroy(this);
 
     RenderBox::willBeDestroyed();
@@ -335,7 +335,7 @@ void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
         }
     }
 
-    if (FastTextAutosizer* textAutosizer = document().fastTextAutosizer())
+    if (TextAutosizer* textAutosizer = document().textAutosizer())
         textAutosizer->record(this);
 
     propagateStyleToAnonymousChildren(true);
@@ -1568,7 +1568,7 @@ bool RenderBlock::simplifiedLayout()
         if (needsPositionedMovementLayout() && !tryLayoutDoingPositionedMovementOnly())
             return false;
 
-        FastTextAutosizer::LayoutScope fastTextAutosizerLayoutScope(this);
+        TextAutosizer::LayoutScope textAutosizerLayoutScope(this);
 
         // Lay out positioned descendants or objects that just need to recompute overflow.
         if (needsSimplifiedNormalFlowLayout())

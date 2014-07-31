@@ -31,7 +31,6 @@
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/rendering/AutoTableLayout.h"
-#include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/FixedTableLayout.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"
@@ -42,6 +41,7 @@
 #include "core/rendering/RenderTableSection.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/SubtreeLayoutScope.h"
+#include "core/rendering/TextAutosizer.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
@@ -402,7 +402,7 @@ void RenderTable::layout()
 
     // Note: RenderTable is handled differently than other RenderBlocks and the LayoutScope
     //       must be created before the table begins laying out.
-    FastTextAutosizer::LayoutScope fastTextAutosizerLayoutScope(this);
+    TextAutosizer::LayoutScope textAutosizerLayoutScope(this);
 
     recalcSectionsIfNeeded();
     // FIXME: We should do this recalc lazily in borderStart/borderEnd so that we don't have to make sure

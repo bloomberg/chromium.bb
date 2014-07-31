@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/rendering/RenderGrid.h"
 
-#include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/TextAutosizer.h"
 #include "core/rendering/style/GridCoordinate.h"
 #include "platform/LengthFunctions.h"
 
@@ -333,7 +333,7 @@ void RenderGrid::layoutBlock(bool relayoutChildren)
     setLogicalHeight(0);
     updateLogicalWidth();
 
-    FastTextAutosizer::LayoutScope fastTextAutosizerLayoutScope(this);
+    TextAutosizer::LayoutScope textAutosizerLayoutScope(this);
 
     layoutGridItems();
 

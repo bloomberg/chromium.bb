@@ -52,8 +52,8 @@
 #include "core/page/StorageClient.h"
 #include "core/page/ValidationMessageClient.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/TextAutosizer.h"
 #include "core/storage/StorageNamespace.h"
 #include "platform/plugins/PluginData.h"
 #include "wtf/HashMap.h"
@@ -519,7 +519,7 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
     case SettingsDelegate::TextAutosizingChange:
         if (!mainFrame() || !mainFrame()->isLocalFrame())
             break;
-        if (FastTextAutosizer* textAutosizer = deprecatedLocalMainFrame()->document()->fastTextAutosizer())
+        if (TextAutosizer* textAutosizer = deprecatedLocalMainFrame()->document()->textAutosizer())
             textAutosizer->updatePageInfoInAllFrames();
         break;
     case SettingsDelegate::ScriptEnableChange:

@@ -27,9 +27,9 @@
 #include "core/HTMLNames.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/html/HTMLOListElement.h"
-#include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/TextAutosizer.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -318,7 +318,7 @@ void RenderListItem::layout()
         // The marker must be autosized before calling
         // updateMarkerLocationAndInvalidateWidth. It cannot be done in the
         // parent's beginLayout because it is not yet in the render tree.
-        if (FastTextAutosizer* textAutosizer = document().fastTextAutosizer())
+        if (TextAutosizer* textAutosizer = document().textAutosizer())
             textAutosizer->inflateListItem(this, m_marker);
 
         updateMarkerLocationAndInvalidateWidth();

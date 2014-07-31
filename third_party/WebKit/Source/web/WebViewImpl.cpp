@@ -80,9 +80,9 @@
 #include "core/page/PointerLockController.h"
 #include "core/page/ScopedPageLoadDeferrer.h"
 #include "core/page/TouchDisambiguation.h"
-#include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
+#include "core/rendering/TextAutosizer.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "modules/device_orientation/DeviceOrientationInspectorAgent.h"
 #include "modules/encryptedmedia/MediaKeysController.h"
@@ -1654,11 +1654,11 @@ void WebViewImpl::resize(const WebSize& newSize)
                                  FloatSize(viewportAnchorXCoord, viewportAnchorYCoord));
     }
 
-    // FIXME: FastTextAutosizer does not yet support out-of-process frames.
+    // FIXME: TextAutosizer does not yet support out-of-process frames.
     if (mainFrameImpl() && mainFrameImpl()->frame()->isLocalFrame())
     {
-        // Avoids unnecessary invalidations while various bits of state in FastTextAutosizer are updated.
-        FastTextAutosizer::DeferUpdatePageInfo deferUpdatePageInfo(page());
+        // Avoids unnecessary invalidations while various bits of state in TextAutosizer are updated.
+        TextAutosizer::DeferUpdatePageInfo deferUpdatePageInfo(page());
         performResize();
     } else {
         performResize();
@@ -3056,7 +3056,7 @@ void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription
     updateMainFrameLayoutSize();
 
     if (LocalFrame* frame = page()->deprecatedLocalMainFrame()) {
-        if (FastTextAutosizer* textAutosizer = frame->document()->fastTextAutosizer())
+        if (TextAutosizer* textAutosizer = frame->document()->textAutosizer())
             textAutosizer->updatePageInfoInAllFrames();
     }
 }

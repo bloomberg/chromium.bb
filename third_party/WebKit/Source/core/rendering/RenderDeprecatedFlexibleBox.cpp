@@ -26,9 +26,9 @@
 #include "core/rendering/RenderDeprecatedFlexibleBox.h"
 
 #include "core/frame/UseCounter.h"
-#include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/TextAutosizer.h"
 #include "core/rendering/TextRunConstructor.h"
 #include "platform/fonts/Font.h"
 #include "wtf/StdLibExtras.h"
@@ -267,7 +267,7 @@ void RenderDeprecatedFlexibleBox::layoutBlock(bool relayoutChildren)
         updateLogicalWidth();
         updateLogicalHeight();
 
-        FastTextAutosizer::LayoutScope fastTextAutosizerLayoutScope(this);
+        TextAutosizer::LayoutScope textAutosizerLayoutScope(this);
 
         if (previousSize != size()
             || (parent()->isDeprecatedFlexibleBox() && parent()->style()->boxOrient() == HORIZONTAL

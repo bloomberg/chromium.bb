@@ -33,7 +33,6 @@
 
 #include "core/accessibility/AXObjectCache.h"
 #include "core/frame/FrameView.h"
-#include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/HitTestLocation.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderLayer.h"
@@ -41,6 +40,7 @@
 #include "core/rendering/RenderPagedFlowThread.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/TextAutosizer.h"
 #include "core/rendering/line/LineWidth.h"
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
 #include "platform/text/BidiTextRun.h"
@@ -407,7 +407,7 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     if (!firstChild() && !isAnonymousBlock())
         setChildrenInline(true);
 
-    FastTextAutosizer::LayoutScope fastTextAutosizerLayoutScope(this);
+    TextAutosizer::LayoutScope textAutosizerLayoutScope(this);
 
     if (childrenInline())
         layoutInlineChildren(relayoutChildren, m_repaintLogicalTop, m_repaintLogicalBottom, afterEdge);
