@@ -42,7 +42,7 @@ class FontCollectionLoader
 
   UINT32 GetFontMapSize();
 
-  base::string16 GetFontNameFromKey(UINT32 idx);
+  std::wstring GetFontNameFromKey(UINT32 idx);
 
   bool LoadFontListFromRegistry();
 
@@ -52,7 +52,7 @@ class FontCollectionLoader
  private:
   mswr::ComPtr<IDWriteFontFileLoader> file_loader_;
 
-  std::vector<base::string16> reg_fonts_;
+  std::vector<std::wstring> reg_fonts_;
 };
 
 mswr::ComPtr<FontCollectionLoader> g_font_loader;
@@ -67,6 +67,9 @@ class FontFileStream
                    UINT64 file_offset,
                    UINT64 fragment_size,
                    void** context) {
+    if (!memory_.get() || !memory_->IsValid())
+      return E_FAIL;
+
     *fragment_start = static_cast<BYTE const*>(memory_->data()) +
                       static_cast<size_t>(file_offset);
     *context = NULL;
@@ -76,11 +79,17 @@ class FontFileStream
   virtual void STDMETHODCALLTYPE ReleaseFileFragment(void* context) {}
 
   virtual HRESULT STDMETHODCALLTYPE GetFileSize(UINT64* file_size) {
+    if (!memory_.get() || !memory_->IsValid())
+      return E_FAIL;
+
     *file_size = memory_->length();
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE GetLastWriteTime(UINT64* last_write_time) {
+    if (!memory_.get() || !memory_->IsValid())
+      return E_FAIL;
+
     // According to MSDN article http://goo.gl/rrSYzi the "last modified time"
     // is used by DirectWrite font selection algorithms to determine whether
     // one font resource is more up to date than another one.
@@ -91,9 +100,10 @@ class FontFileStream
     return S_OK;
   }
 
-  explicit FontFileStream::FontFileStream(UINT32 font_key)
-      : font_key_(font_key) {
-    base::MemoryMappedFile map_file_;
+  FontFileStream::FontFileStream() : font_key_(0) {
+  };
+
+  HRESULT RuntimeClassInitialize(UINT32 font_key) {
     base::FilePath path;
     PathService::Get(base::DIR_WINDOWS_FONTS, &path);
     path = path.Append(g_font_loader->GetFontNameFromKey(font_key).c_str());
@@ -104,8 +114,14 @@ class FontFileStream
     path.value().copy(font_name, arraysize(font_name));
     base::debug::Alias(font_name);
 
-    memory_->Initialize(path);
-  };
+    if (!memory_->Initialize(path)) {
+      memory_.reset();
+      return E_FAIL;
+    }
+
+    font_key_ = font_key;
+    return S_OK;
+  }
 
   virtual ~FontFileStream() {}
 
@@ -126,8 +142,14 @@ class FontFileLoader
       return E_FAIL;
 
     UINT32 font_key = *static_cast<const UINT32*>(ref_key);
-    *stream = mswr::Make<FontFileStream>(font_key).Detach();
-    return S_OK;
+    mswr::ComPtr<FontFileStream> font_stream;
+    HRESULT hr = mswr::MakeAndInitialize<FontFileStream>(&font_stream,
+                                                         font_key);
+    if (SUCCEEDED(hr)) {
+      *stream = font_stream.Detach();
+      return S_OK;
+    }
+    return E_FAIL;
   }
 
   FontFileLoader() {}
@@ -218,7 +240,7 @@ UINT32 FontCollectionLoader::GetFontMapSize() {
   return reg_fonts_.size();
 }
 
-base::string16 FontCollectionLoader::GetFontNameFromKey(UINT32 idx) {
+std::wstring FontCollectionLoader::GetFontNameFromKey(UINT32 idx) {
   DCHECK(idx < reg_fonts_.size());
   return reg_fonts_[idx];
 }
@@ -233,8 +255,8 @@ bool FontCollectionLoader::LoadFontListFromRegistry() {
     return false;
   }
 
-  base::string16 name;
-  base::string16 value;
+  std::wstring name;
+  std::wstring value;
   for (DWORD idx = 0; idx < regkey.GetValueCount(); idx++) {
     if (regkey.GetValueNameAt(idx, &name) == ERROR_SUCCESS &&
         regkey.ReadValue(name.c_str(), &value) == ERROR_SUCCESS) {
