@@ -76,6 +76,9 @@ CastTransportSenderImpl::CastTransportSenderImpl(
     // The default DSCP value for cast is AF41. Which gives it a higher
     // priority over other traffic.
     transport_->SetDscp(net::DSCP_AF41);
+    transport_->StartReceiving(
+        base::Bind(&CastTransportSenderImpl::OnReceivedPacket,
+                   weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -118,10 +121,6 @@ void CastTransportSenderImpl::InitializeAudio(
                config.feedback_ssrc,
                config.c_name));
   pacer_.RegisterAudioSsrc(config.ssrc);
-
-  // Only start receiving once.
-  if (!video_sender_)
-    StartReceiving();
   status_callback_.Run(TRANSPORT_AUDIO_INITIALIZED);
 }
 
@@ -154,10 +153,6 @@ void CastTransportSenderImpl::InitializeVideo(
                config.feedback_ssrc,
                config.c_name));
   pacer_.RegisterVideoSsrc(config.ssrc);
-
-  // Only start receiving once.
-  if (!audio_sender_)
-    StartReceiving();
   status_callback_.Run(TRANSPORT_VIDEO_INITIALIZED);
 }
 
@@ -246,14 +241,6 @@ void CastTransportSenderImpl::SendRawEvents() {
       base::Bind(&CastTransportSenderImpl::SendRawEvents,
                  weak_factory_.GetWeakPtr()),
       raw_events_callback_interval_);
-}
-
-void CastTransportSenderImpl::StartReceiving() {
-  if (!transport_)
-    return;
-  transport_->StartReceiving(
-      base::Bind(&CastTransportSenderImpl::OnReceivedPacket,
-                 weak_factory_.GetWeakPtr()));
 }
 
 void CastTransportSenderImpl::OnReceivedPacket(scoped_ptr<Packet> packet) {

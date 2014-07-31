@@ -92,9 +92,6 @@ class CastTransportSenderImpl : public CastTransportSender {
   // by |event_subscriber_| since last call.
   void SendRawEvents();
 
-  // Start receiving packets.
-  void StartReceiving();
-
   // Called when a packet is received.
   void OnReceivedPacket(scoped_ptr<Packet> packet);
 

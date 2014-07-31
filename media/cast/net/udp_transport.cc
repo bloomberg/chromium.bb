@@ -131,7 +131,6 @@ void UdpTransport::ReceiveNextPacket(int length_or_status) {
     if (length_or_status < 0) {
       VLOG(1) << "Failed to receive packet: Status code is "
               << length_or_status;
-      status_callback_.Run(TRANSPORT_SOCKET_ERROR);
       receive_pending_ = false;
       return;
     }
@@ -170,8 +169,8 @@ bool UdpTransport::SendPacket(PacketRef packet, const base::Closure& cb) {
   if (next_dscp_value_ != net::DSCP_NO_CHANGE) {
     int result = udp_socket_->SetDiffServCodePoint(next_dscp_value_);
     if (result != net::OK) {
-      LOG(ERROR) << "Unable to set DSCP: " << next_dscp_value_
-                 << " to socket; Error: " << result;
+      VLOG(1) << "Unable to set DSCP: " << next_dscp_value_
+              << " to socket; Error: " << result;
     }
     // Don't change DSCP in next send.
     next_dscp_value_ = net::DSCP_NO_CHANGE;
@@ -199,21 +198,17 @@ bool UdpTransport::SendPacket(PacketRef packet, const base::Closure& cb) {
                                  remote_addr_,
                                  callback);
   } else {
+    VLOG(1) << "Failed to send packet; socket is neither bound nor "
+            << "connected.";
     return true;
   }
 
   if (result == net::ERR_IO_PENDING) {
     send_pending_ = true;
     return false;
-  } else if (result < 0) {
-    LOG(ERROR) << "Failed to send packet: " << result << ".";
-    status_callback_.Run(TRANSPORT_SOCKET_ERROR);
-    return true;
-  } else {
-    // Successful send, re-start reading if needed.
-    ScheduleReceiveNextPacket();
-    return true;
   }
+  OnSent(buf, packet, base::Closure(), result);
+  return true;
 }
 
 void UdpTransport::OnSent(const scoped_refptr<net::IOBuffer>& buf,
@@ -224,12 +219,9 @@ void UdpTransport::OnSent(const scoped_refptr<net::IOBuffer>& buf,
 
   send_pending_ = false;
   if (result < 0) {
-    LOG(ERROR) << "Failed to send packet: " << result << ".";
-    status_callback_.Run(TRANSPORT_SOCKET_ERROR);
-  } else {
-    // Successful send, re-start reading if needed.
-    ScheduleReceiveNextPacket();
+    VLOG(1) << "Failed to send packet: " << result << ".";
   }
+  ScheduleReceiveNextPacket();
 
   if (!cb.is_null()) {
     cb.Run();
