@@ -104,7 +104,6 @@ ResourceType WebURLRequestToResourceType(const WebURLRequest& request) {
 
     // These should be handled by the FrameType checks at the top of the
     // function.
-    // Main Frame
     case WebURLRequest::RequestContextForm:
     case WebURLRequest::RequestContextHyperlink:
     case WebURLRequest::RequestContextLocation:
@@ -112,9 +111,11 @@ ResourceType WebURLRequestToResourceType(const WebURLRequest& request) {
     case WebURLRequest::RequestContextIframe:
       NOTREACHED();
       return RESOURCE_TYPE_SUB_RESOURCE;
+
+    default:
+      NOTREACHED();
+      return RESOURCE_TYPE_SUB_RESOURCE;
   }
-  NOTREACHED();
-  return RESOURCE_TYPE_SUB_RESOURCE;
 }
 
 }  // namespace content
