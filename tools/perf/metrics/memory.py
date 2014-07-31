@@ -11,24 +11,43 @@ from telemetry.value import scalar
 
 
 _HISTOGRAMS = [
-    {'name': 'V8.MemoryExternalFragmentationTotal', 'units': 'percent',
-     'display_name': 'V8_MemoryExternalFragmentationTotal',
-     'type': histogram_util.RENDERER_HISTOGRAM},
-    {'name': 'V8.MemoryHeapSampleTotalCommitted', 'units': 'kb',
-     'display_name': 'V8_MemoryHeapSampleTotalCommitted',
-     'type': histogram_util.RENDERER_HISTOGRAM},
-    {'name': 'V8.MemoryHeapSampleTotalUsed', 'units': 'kb',
-     'display_name': 'V8_MemoryHeapSampleTotalUsed',
-     'type': histogram_util.RENDERER_HISTOGRAM},
-    {'name': 'V8.MemoryHeapSampleMaximumCommitted', 'units': 'kb',
-     'display_name': 'V8_MemoryHeapSampleMaximumCommitted',
-     'type': histogram_util.RENDERER_HISTOGRAM},
-    {'name': 'Memory.RendererUsed', 'units': 'kb',
-     'display_name': 'Memory_RendererUsed',
-     'type': histogram_util.RENDERER_HISTOGRAM},
-    {'name': 'Memory.BrowserUsed', 'units': 'kb',
-     'display_name': 'Memory_BrowserUsed',
-     'type': histogram_util.BROWSER_HISTOGRAM}]
+    {
+        'name': 'V8.MemoryExternalFragmentationTotal', 'units': 'percent',
+        'display_name': 'V8_MemoryExternalFragmentationTotal',
+        'type': histogram_util.RENDERER_HISTOGRAM,
+        'description': 'Total external memory fragmentation after each GC in '
+                       'percent.',
+    },
+    {
+        'name': 'V8.MemoryHeapSampleTotalCommitted', 'units': 'kb',
+        'display_name': 'V8_MemoryHeapSampleTotalCommitted',
+        'type': histogram_util.RENDERER_HISTOGRAM,
+        'description': 'The total size of committed memory used by V8 after '
+                       'each GC in KB.'
+    },
+    {
+        'name': 'V8.MemoryHeapSampleTotalUsed', 'units': 'kb',
+        'display_name': 'V8_MemoryHeapSampleTotalUsed',
+        'type': histogram_util.RENDERER_HISTOGRAM,
+        'description': 'The total size of live memory used by V8 after each '
+                       'GC in KB.',
+    },
+    {
+        'name': 'V8.MemoryHeapSampleMaximumCommitted', 'units': 'kb',
+        'display_name': 'V8_MemoryHeapSampleMaximumCommitted',
+        'type': histogram_util.RENDERER_HISTOGRAM
+    },
+    {
+        'name': 'Memory.RendererUsed', 'units': 'kb',
+        'display_name': 'Memory_RendererUsed',
+        'type': histogram_util.RENDERER_HISTOGRAM
+    },
+    {
+        'name': 'Memory.BrowserUsed', 'units': 'kb',
+        'display_name': 'Memory_BrowserUsed',
+        'type': histogram_util.BROWSER_HISTOGRAM
+    },
+]
 
 class MemoryMetric(Metric):
   """MemoryMetric gathers memory statistics from the browser object.
@@ -98,7 +117,8 @@ class MemoryMetric(Metric):
         continue
       results.AddValue(histogram.HistogramValue(
           results.current_page, h['display_name'], h['units'],
-          raw_value_json=self._histogram_delta[h['name']], important=False))
+          raw_value_json=self._histogram_delta[h['name']], important=False,
+          description=h.get('description')))
     self._memory_stats = self._browser.memory_stats
     if not self._memory_stats['Browser']:
       return
@@ -110,14 +130,12 @@ class MemoryMetric(Metric):
     results.AddValue(scalar.ScalarValue(
         results.current_page,
         'commit_charge.' + (trace_name or 'commit_charge'),
-        'kb',
-        commit_charge_difference, important=False))
+        'kb', commit_charge_difference, important=False,
+        description='System commit charge (committed memory pages).'))
     results.AddValue(scalar.ScalarValue(
-        results.current_page,
-        'processes.' + (trace_name or 'processes'),
-        'count',
-        self._memory_stats['ProcessCount'],
-        important=False))
+        results.current_page, 'processes.' + (trace_name or 'processes'),
+        'count', self._memory_stats['ProcessCount'], important=False,
+        description='Number of processes used by Chrome.'))
 
 
 def AddResultsForProcesses(results, memory_stats, chart_trace_name='final',
@@ -143,15 +161,15 @@ def AddResultsForProcesses(results, memory_stats, chart_trace_name='final',
     """Add all results for a given set of process types.
 
     Args:
-      process_types_memory: A list of process types, e.g. Browser, 'Renderer'
-      process_type_trace: The name of this set of process types in the output
+      process_types_memory: A list of process types, e.g. Browser, 'Renderer'.
+      process_type_trace: The name of this set of process types in the output.
     """
-    def AddResult(value_name_memory, value_name_trace):
+    def AddResult(value_name_memory, value_name_trace, description):
       """Add a result for a given statistic.
 
       Args:
-        value_name_memory: Name of some statistic, e.g. VM, WorkingSetSize
-        value_name_trace: Name of this statistic to be used in the output
+        value_name_memory: Name of some statistic, e.g. VM, WorkingSetSize.
+        value_name_trace: Name of this statistic to be used in the output.
       """
       if value_name_memory in exclude_metrics:
         return
@@ -171,16 +189,38 @@ def AddResultsForProcesses(results, memory_stats, chart_trace_name='final',
           chart_name = current_trace
         results.AddValue(scalar.ScalarValue(
             results.current_page, '%s.%s' % (chart_name, current_trace), 'kb',
-            sum(values) / 1024, important=False))
+            sum(values) / 1024, important=False, description=description))
 
-    AddResult('VM', 'vm_%s_size' % chart_trace_name)
-    AddResult('WorkingSetSize', 'vm_%s_%s_size' % (metric, chart_trace_name))
-    AddResult('PrivateDirty', 'vm_private_dirty_%s' % chart_trace_name)
+    AddResult('VM', 'vm_%s_size' % chart_trace_name,
+              'Virtual Memory Size (address space allocated).')
+    AddResult('WorkingSetSize', 'vm_%s_%s_size' % (metric, chart_trace_name),
+              'Working Set Size (Windows) or Resident Set Size (other '
+              'platforms).')
+    AddResult('PrivateDirty', 'vm_private_dirty_%s' % chart_trace_name,
+              'Private Dirty is basically the amount of RAM inside the '
+              'process that can not be paged to disk (it is not backed by the '
+              'same data on disk), and is not shared with any other '
+              'processes. Another way to look at this is the RAM that will '
+              'become available to the system when that process goes away '
+              '(and probably quickly subsumed into caches and other uses of '
+              'it).')
     AddResult('ProportionalSetSize',
-              'vm_proportional_set_size_%s' % chart_trace_name)
-    AddResult('SharedDirty', 'vm_shared_dirty_%s' % chart_trace_name)
-    AddResult('VMPeak', 'vm_peak_size')
-    AddResult('WorkingSetSizePeak', '%s_peak_size' % metric)
+              'vm_proportional_set_size_%s' % chart_trace_name,
+              'The Proportional Set Size (PSS) number is a metric the kernel '
+              'computes that takes into account memory sharing -- basically '
+              'each page of RAM in a process is scaled by a ratio of the '
+              'number of other processes also using that page. This way you '
+              'can (in theory) add up the PSS across all processes to see '
+              'the total RAM they are using, and compare PSS between '
+              'processes to get a rough idea of their relative weight.')
+    AddResult('SharedDirty', 'vm_shared_dirty_%s' % chart_trace_name,
+              'Shared Dirty is the amount of RAM outside the process that can '
+              'not be paged to disk, and is shared with other processes.')
+    AddResult('VMPeak', 'vm_peak_size',
+              'The peak Virtual Memory Size (address space allocated) usage '
+              'achieved by the * process.')
+    AddResult('WorkingSetSizePeak', '%s_peak_size' % metric,
+              'Peak Working Set Size.')
 
   AddResultsForProcessTypes(['Browser'], 'browser')
   AddResultsForProcessTypes(['Renderer'], 'renderer')

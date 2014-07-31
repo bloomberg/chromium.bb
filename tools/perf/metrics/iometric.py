@@ -42,7 +42,8 @@ class IOMetric(Metric):
         process_type_trace: String to be added to the trace name in the results.
       """
 
-      def AddSummaryForOperation(operation_name, trace_name_prefix, units):
+      def AddSummaryForOperation(operation_name, trace_name_prefix, units,
+                                 description):
         """Adds summary results for an operation in a process.
 
         Args:
@@ -55,13 +56,17 @@ class IOMetric(Metric):
             value = value / 1024
           results.AddSummaryValue(
               scalar.ScalarValue(None, trace_name_prefix + process_type_trace,
-                                 units, value, important=False))
+                                 units, value, important=False,
+                                 description=description))
 
-      AddSummaryForOperation('ReadOperationCount', 'read_operations_', 'count')
+      AddSummaryForOperation('ReadOperationCount', 'read_operations_', 'count',
+                             'Number of IO read operations.')
       AddSummaryForOperation('WriteOperationCount', 'write_operations_',
-                             'count')
-      AddSummaryForOperation('ReadTransferCount', 'read_bytes_', 'kb')
-      AddSummaryForOperation('WriteTransferCount', 'write_bytes_', 'kb')
+                             'count', 'Number of IO write operations.')
+      AddSummaryForOperation('ReadTransferCount', 'read_bytes_', 'kb',
+                             'Number of IO bytes read.')
+      AddSummaryForOperation('WriteTransferCount', 'write_bytes_', 'kb',
+                             'Number of IO bytes written.')
 
     AddSummariesForProcessType('Browser', 'browser')
     AddSummariesForProcessType('Renderer', 'renderer')

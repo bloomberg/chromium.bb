@@ -69,7 +69,10 @@ class ImageDecoding(page_measurement.PageMeasurement):
 
     image_decoding_avg = sum(durations) / len(durations)
     results.AddValue(scalar.ScalarValue(
-        results.current_page, 'ImageDecoding_avg', 'ms', image_decoding_avg))
+        results.current_page, 'ImageDecoding_avg', 'ms', image_decoding_avg,
+        description='Average decode time for images in 4 different '
+                    'formats: gif, png, jpg, and webp. The image files are '
+                    'located at chrome/test/data/image_decoding.'))
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'ImageLoading_avg', 'ms',
         tab.EvaluateJavaScript('averageLoadingTimeMs()')))

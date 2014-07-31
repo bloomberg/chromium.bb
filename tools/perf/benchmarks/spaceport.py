@@ -14,6 +14,37 @@ from telemetry.page import page_set
 from telemetry.value import list_of_scalar_values
 from telemetry.value import scalar
 
+DESCRIPTIONS = {
+    'canvasDrawImageFullClear':
+        'Using a canvas element to render. Bitmaps are blitted to the canvas '
+        'using the "drawImage" function and the canvas is fully cleared at '
+        'the beginning of each frame.',
+    'canvasDrawImageFullClearAlign':
+        'Same as canvasDrawImageFullClear except all "x" and "y" values are '
+        'rounded to the nearest integer. This can be more efficient on '
+        'translate on certain browsers.',
+    'canvasDrawImagePartialClear':
+        'Using a canvas element to render. Bitmaps are blitted to the canvas '
+        'using the "drawImage" function and pixels drawn in the last frame '
+        'are cleared to the clear color at the beginning of each frame. '
+        'This is generally slower on hardware accelerated implementations, '
+        'but sometimes faster on CPU-based implementations.',
+    'canvasDrawImagePartialClearAlign':
+        'Same as canvasDrawImageFullClearAlign but only partially clearing '
+        'the canvas each frame.',
+    'css2dBackground':
+        'Using div elements that have a background image specified using CSS '
+        'styles. These div elements are translated, scaled, and rotated using '
+        'CSS-2D transforms.',
+    'css2dImg':
+        'Same as css2dBackground, but using img elements instead of div '
+        'elements.',
+    'css3dBackground':
+        'Same as css2dBackground, but using CSS-3D transforms.',
+    'css3dImg':
+        'Same as css2dImage but using CSS-3D tranforms.',
+}
+
 
 class _SpaceportMeasurement(page_measurement.PageMeasurement):
   def __init__(self):
@@ -35,7 +66,7 @@ class _SpaceportMeasurement(page_measurement.PageMeasurement):
             __results[key_val[0]] = key_val[1];
         };
         document.getElementById('start-performance-tests').click();
-    """)
+        """)
 
     num_results = 0
     num_tests_in_spaceport = 24
@@ -54,10 +85,11 @@ class _SpaceportMeasurement(page_measurement.PageMeasurement):
       results.AddValue(scalar.ScalarValue(
           results.current_page, '%s.%s'% (chart, trace),
           'objects (bigger is better)', float(result_dict[key]),
-          important=False))
+          important=False, description=DESCRIPTIONS.get(chart)))
     results.AddValue(list_of_scalar_values.ListOfScalarValues(
         results.current_page, 'Score', 'objects (bigger is better)',
-                [float(x) for x in result_dict.values()]))
+        [float(x) for x in result_dict.values()],
+        description='Combined score for all parts of the spaceport benchmark.'))
 
 
 # crbug.com/166703: This test frequently times out on Windows.

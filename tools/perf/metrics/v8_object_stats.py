@@ -154,8 +154,19 @@ _COUNTER_NAMES = [
     'V8.SizeOf_STRING_TYPE',
     'V8.SizeOf_SYMBOL_TYPE',
     'V8.SizeOf_TYPE_FEEDBACK_INFO_TYPE',
-    'V8.SizeOf_TYPE_SWITCH_INFO_TYPE'
-  ]
+    'V8.SizeOf_TYPE_SWITCH_INFO_TYPE',
+]
+
+# Descriptions for what different counter names represent.
+DESCRIPTIONS = {
+    'V8.MemoryExternalFragmentationTotal':
+        'Total external memory fragmentation after each GC in percent.',
+    'V8.MemoryHeapSampleTotalCommitted':
+        'The total size of committed memory used by V8 after each GC in KB.',
+    'V8.MemoryHeapSampleTotalUsed':
+        'The total size of live memory used by V8 after each GC in KB.',
+}
+
 
 class V8ObjectStatsMetric(Metric):
   """V8ObjectStatsMetric gathers statistics on the size of types in the V8 heap.
@@ -184,21 +195,22 @@ class V8ObjectStatsMetric(Metric):
   def GetV8StatsTable(tab, counters):
 
     return tab.EvaluateJavaScript("""
-     (function(counters) {
-       var results = {};
-       if (!window.chrome || !window.chrome.benchmarking)
-        return results;
-       try {
-        window.gc();  // Trigger GC to ensure stats are checkpointed.
-       } catch(e) {
-        // window.gc() could have been mapped to something else, just continue.
-       }
-       for (var i = 0; i < counters.length; i++)
-         results[counters[i]] =
-             chrome.benchmarking.counterForRenderer(counters[i]);
-       return results;
-     })(%s);
-     """ % json.dumps(counters))
+        (function(counters) {
+          var results = {};
+          if (!window.chrome || !window.chrome.benchmarking)
+            return results;
+          try {
+            window.gc();  // Trigger GC to ensure stats are checkpointed.
+          } catch(e) {
+            // window.gc() could have been mapped to something else,
+            // just continue.
+          }
+          for (var i = 0; i < counters.length; i++)
+            results[counters[i]] =
+                chrome.benchmarking.counterForRenderer(counters[i]);
+          return results;
+        })(%s);
+        """ % json.dumps(counters))
 
   def Start(self, page, tab):
     """Do Nothing."""
@@ -214,7 +226,8 @@ class V8ObjectStatsMetric(Metric):
     """Add results for this page to the results object."""
     assert self._results != None, 'Must call Stop() first'
     for counter_name in self._results:
+      description = DESCRIPTIONS.get(counter_name)
       display_name = counter_name.replace('.', '_')
       results.AddValue(scalar.ScalarValue(
           results.current_page, display_name, 'kb',
-          self._results[counter_name] / 1024.0))
+          self._results[counter_name] / 1024.0, description=description))
