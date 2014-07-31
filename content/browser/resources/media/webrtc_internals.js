@@ -67,7 +67,7 @@ var PeerConnectionRecord = (function() {
      *   "value".
      */
     addUpdate: function(update) {
-      var time = new Date(parseInt(update.time));
+      var time = new Date(parseFloat(update.time));
       this.record_.updateLog.push({
         time: time.toLocaleString(),
         type: update.type,

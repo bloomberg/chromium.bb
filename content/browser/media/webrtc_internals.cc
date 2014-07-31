@@ -137,8 +137,8 @@ void WebRTCInternals::OnUpdatePeerConnection(
     if (!log_entry)
       return;
 
-    int64 milliseconds = (base::Time::Now() - base::Time()).InMilliseconds();
-    string time = base::Int64ToString(milliseconds);
+    double epoch_time = base::Time::Now().ToJsTime();
+    string time = base::DoubleToString(epoch_time);
     log_entry->SetString("time", time);
     log_entry->SetString("type", type);
     log_entry->SetString("value", value);

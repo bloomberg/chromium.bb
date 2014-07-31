@@ -114,7 +114,7 @@ var StatsTable = (function(ssrcInfoManager) {
      * @private
      */
     addStatsToTable_: function(statsTable, time, statsData) {
-      var date = Date(time);
+      var date = new Date(time);
       this.updateStatsTableRow_(statsTable, 'timestamp', date.toLocaleString());
       for (var i = 0; i < statsData.length - 1; i = i + 2) {
         this.updateStatsTableRow_(statsTable, statsData[i], statsData[i + 1]);
